@@ -158,12 +158,6 @@ export class SharedStorageModel extends SDK.SDKModel.SDKModel {
     }
     cacheStorageContentUpdated(_event) {
     }
-    interestGroupAccessed(_event) {
-    }
-    interestGroupAuctionEventOccurred(_event) {
-    }
-    interestGroupAuctionNetworkRequestCreated(_event) {
-    }
     storageBucketCreatedOrUpdated(_event) {
     }
     storageBucketDeleted(_event) {

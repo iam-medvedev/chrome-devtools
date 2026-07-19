@@ -1,0 +1,292 @@
+// Copyright 2023 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+import { assert } from 'chai';
+import { describeWithEnvironment, setupActionRegistry, } from '../../testing/EnvironmentHelpers.js';
+import * as UI from '../../ui/legacy/legacy.js';
+import * as Models from './models/models.js';
+import { RecorderPanel, StepView } from './recorder.js';
+describeWithEnvironment('RecorderPanel', () => {
+    setupActionRegistry();
+    function makeRecording() {
+        const step = {
+            type: Models.Schema.StepType.Navigate,
+            url: 'https://example.com',
+        };
+        const recording = {
+            storageName: 'test',
+            flow: { title: 'test', steps: [step] },
+        };
+        return recording;
+    }
+    async function setupPanel(recording) {
+        const panel = new RecorderPanel.RecorderPanel();
+        panel.setCurrentPageForTesting("RecordingPage" /* RecorderPanel.Pages.RECORDING_PAGE */);
+        panel.setCurrentRecordingForTesting(recording);
+        const div = document.createElement('div');
+        panel.markAsRoot();
+        panel.show(div);
+        await panel.updateComplete;
+        return panel;
+    }
+    describe('Navigation', () => {
+        it('should return back to the previous page if recording was cancelled', async () => {
+            const previousPage = "AllRecordingsPage" /* RecorderPanel.Pages.ALL_RECORDINGS_PAGE */;
+            const panel = new RecorderPanel.RecorderPanel();
+            panel.setCurrentPageForTesting(previousPage);
+            panel.setCurrentPageForTesting("CreateRecordingPage" /* RecorderPanel.Pages.CREATE_RECORDING_PAGE */);
+            const div = document.createElement('div');
+            panel.markAsRoot();
+            panel.show(div);
+            await panel.updateComplete;
+            await panel.onRecordingCancelled();
+            assert.strictEqual(panel.getCurrentPageForTesting(), previousPage);
+        });
+    });
+    describe('StepView', () => {
+        async function dispatchRecordingViewEvent(panel, event) {
+            const recordingViewWidgetElement = panel.contentElement?.querySelector('.recording-view');
+            if (!recordingViewWidgetElement) {
+                throw new Error('Could not find RecordingView widget element');
+            }
+            const widget = UI.Widget.Widget.getOrCreateWidget(recordingViewWidgetElement);
+            await widget.updateComplete;
+            const recordingView = widget.contentElement?.querySelector('.recording-view');
+            assert.isOk(recordingView);
+            recordingView?.dispatchEvent(event);
+            await panel.updateComplete;
+        }
+        beforeEach(() => {
+            Models.RecordingStorage.RecordingStorage.instance().clearForTest();
+        });
+        after(() => {
+            Models.RecordingStorage.RecordingStorage.instance().clearForTest();
+        });
+        it('should add a new step after a step', async () => {
+            const recording = makeRecording();
+            const panel = await setupPanel(recording);
+            await dispatchRecordingViewEvent(panel, new StepView.AddStep(recording.flow.steps[0], "after" /* StepView.AddStepPosition.AFTER */));
+            const flow = panel.getUserFlow();
+            assert.deepEqual(flow, {
+                title: 'test',
+                steps: [
+                    {
+                        type: Models.Schema.StepType.Navigate,
+                        url: 'https://example.com',
+                    },
+                    {
+                        type: Models.Schema.StepType.WaitForElement,
+                        selectors: ['body'],
+                    },
+                ],
+            });
+        });
+        it('should add a new step after a section', async () => {
+            const recording = makeRecording();
+            const panel = await setupPanel(recording);
+            const sections = panel.getSectionsForTesting();
+            if (!sections) {
+                throw new Error('Panel is missing sections');
+            }
+            assert.lengthOf(sections, 1);
+            await dispatchRecordingViewEvent(panel, new StepView.AddStep(sections[0], "after" /* StepView.AddStepPosition.AFTER */));
+            const flow = panel.getUserFlow();
+            assert.deepEqual(flow, {
+                title: 'test',
+                steps: [
+                    {
+                        type: Models.Schema.StepType.Navigate,
+                        url: 'https://example.com',
+                    },
+                    {
+                        type: Models.Schema.StepType.WaitForElement,
+                        selectors: ['body'],
+                    },
+                ],
+            });
+        });
+        it('should add a new step before a step', async () => {
+            const recording = makeRecording();
+            const panel = await setupPanel(recording);
+            await dispatchRecordingViewEvent(panel, new StepView.AddStep(recording.flow.steps[0], "before" /* StepView.AddStepPosition.BEFORE */));
+            const flow = panel.getUserFlow();
+            assert.deepEqual(flow, {
+                title: 'test',
+                steps: [
+                    {
+                        type: Models.Schema.StepType.WaitForElement,
+                        selectors: ['body'],
+                    },
+                    {
+                        type: Models.Schema.StepType.Navigate,
+                        url: 'https://example.com',
+                    },
+                ],
+            });
+        });
+        it('should delete a step', async () => {
+            const recording = makeRecording();
+            const panel = await setupPanel(recording);
+            await dispatchRecordingViewEvent(panel, new StepView.RemoveStep(recording.flow.steps[0]));
+            const flow = panel.getUserFlow();
+            assert.deepEqual(flow, { title: 'test', steps: [] });
+        });
+        it('should adding a new step before a step with a breakpoint update the breakpoint indexes correctly', async () => {
+            const recording = makeRecording();
+            const panel = await setupPanel(recording);
+            const stepIndex = 3;
+            await dispatchRecordingViewEvent(panel, new StepView.AddBreakpointEvent(stepIndex));
+            assert.deepEqual(panel.getStepBreakpointIndexesForTesting(), [
+                stepIndex,
+            ]);
+            await dispatchRecordingViewEvent(panel, new StepView.AddStep(recording.flow.steps[0], "before" /* StepView.AddStepPosition.BEFORE */));
+            // Breakpoint index moves to the next index
+            assert.deepEqual(panel.getStepBreakpointIndexesForTesting(), [
+                stepIndex + 1,
+            ]);
+        });
+        it('should removing a step before a step with a breakpoint update the breakpoint indexes correctly', async () => {
+            const recording = makeRecording();
+            const panel = await setupPanel(recording);
+            const stepIndex = 3;
+            await dispatchRecordingViewEvent(panel, new StepView.AddBreakpointEvent(stepIndex));
+            assert.deepEqual(panel.getStepBreakpointIndexesForTesting(), [
+                stepIndex,
+            ]);
+            await dispatchRecordingViewEvent(panel, new StepView.RemoveStep(recording.flow.steps[0]));
+            // Breakpoint index moves to the previous index
+            assert.deepEqual(panel.getStepBreakpointIndexesForTesting(), [
+                stepIndex - 1,
+            ]);
+        });
+        it('should removing a step with a breakpoint remove the breakpoint index as well', async () => {
+            const recording = makeRecording();
+            const panel = await setupPanel(recording);
+            const stepIndex = 0;
+            await dispatchRecordingViewEvent(panel, new StepView.AddBreakpointEvent(stepIndex));
+            assert.deepEqual(panel.getStepBreakpointIndexesForTesting(), [
+                stepIndex,
+            ]);
+            await dispatchRecordingViewEvent(panel, new StepView.RemoveStep(recording.flow.steps[stepIndex]));
+            // Breakpoint index is removed
+            assert.deepEqual(panel.getStepBreakpointIndexesForTesting(), []);
+        });
+        it('should "add breakpoint" event add a breakpoint', async () => {
+            const recording = makeRecording();
+            const panel = await setupPanel(recording);
+            const stepIndex = 1;
+            assert.deepEqual(panel.getStepBreakpointIndexesForTesting(), []);
+            await dispatchRecordingViewEvent(panel, new StepView.AddBreakpointEvent(stepIndex));
+            assert.deepEqual(panel.getStepBreakpointIndexesForTesting(), [
+                stepIndex,
+            ]);
+        });
+        it('should "remove breakpoint" event remove a breakpoint', async () => {
+            const recording = makeRecording();
+            const panel = await setupPanel(recording);
+            const stepIndex = 1;
+            await dispatchRecordingViewEvent(panel, new StepView.AddBreakpointEvent(stepIndex));
+            assert.deepEqual(panel.getStepBreakpointIndexesForTesting(), [
+                stepIndex,
+            ]);
+            await dispatchRecordingViewEvent(panel, new StepView.RemoveBreakpointEvent(stepIndex));
+            assert.deepEqual(panel.getStepBreakpointIndexesForTesting(), []);
+        });
+    });
+    describe('Create new recording action', () => {
+        it('should execute action', async () => {
+            const recording = makeRecording();
+            const panel = await setupPanel(recording);
+            await panel.handleActions("chrome-recorder.create-recording" /* RecorderActions.CREATE_RECORDING */);
+            assert.strictEqual(panel.getCurrentPageForTesting(), "CreateRecordingPage" /* RecorderPanel.Pages.CREATE_RECORDING_PAGE */);
+        });
+        it('should not execute action while recording', async () => {
+            const recording = makeRecording();
+            const panel = await setupPanel(recording);
+            panel.setIsRecordingStateForTesting(true);
+            await panel.handleActions("chrome-recorder.create-recording" /* RecorderActions.CREATE_RECORDING */);
+            assert.strictEqual(panel.getCurrentPageForTesting(), "RecordingPage" /* RecorderPanel.Pages.RECORDING_PAGE */);
+        });
+        it('should not execute action while replaying', async () => {
+            const recording = makeRecording();
+            const panel = await setupPanel(recording);
+            panel.setRecordingStateForTesting({
+                isPlaying: true,
+                isPausedOnBreakpoint: false,
+            });
+            await panel.handleActions("chrome-recorder.create-recording" /* RecorderActions.CREATE_RECORDING */);
+            assert.strictEqual(panel.getCurrentPageForTesting(), "RecordingPage" /* RecorderPanel.Pages.RECORDING_PAGE */);
+        });
+    });
+    describe('Action is possible', () => {
+        it('should return true for create action when not replaying or recording', async () => {
+            const recording = makeRecording();
+            const panel = await setupPanel(recording);
+            assert.isTrue(panel.isActionPossible("chrome-recorder.create-recording" /* RecorderActions.CREATE_RECORDING */));
+        });
+        it('should return false for create action when recording', async () => {
+            const recording = makeRecording();
+            const panel = await setupPanel(recording);
+            panel.setRecordingStateForTesting({
+                isPlaying: true,
+                isPausedOnBreakpoint: false,
+            });
+            assert.isFalse(panel.isActionPossible("chrome-recorder.create-recording" /* RecorderActions.CREATE_RECORDING */));
+        });
+        it('should return false for create action when replaying', async () => {
+            const recording = makeRecording();
+            const panel = await setupPanel(recording);
+            panel.setIsRecordingStateForTesting(true);
+            assert.isFalse(panel.isActionPossible("chrome-recorder.create-recording" /* RecorderActions.CREATE_RECORDING */));
+        });
+        it('should return correct value for start/stop action', async () => {
+            const recording = makeRecording();
+            const panel = await setupPanel(recording);
+            assert.isTrue(panel.isActionPossible("chrome-recorder.start-recording" /* RecorderActions.START_RECORDING */));
+            panel.setRecordingStateForTesting({
+                isPlaying: true,
+                isPausedOnBreakpoint: false,
+            });
+            assert.isFalse(panel.isActionPossible("chrome-recorder.start-recording" /* RecorderActions.START_RECORDING */));
+        });
+        it('should return true for replay action when on the recording page', async () => {
+            const recording = makeRecording();
+            const panel = await setupPanel(recording);
+            panel.setCurrentPageForTesting("RecordingPage" /* RecorderPanel.Pages.RECORDING_PAGE */);
+            assert.isTrue(panel.isActionPossible("chrome-recorder.replay-recording" /* RecorderActions.REPLAY_RECORDING */));
+        });
+        it('should return false for replay action when not on the recording page', async () => {
+            const recording = makeRecording();
+            const panel = await setupPanel(recording);
+            panel.setCurrentPageForTesting("AllRecordingsPage" /* RecorderPanel.Pages.ALL_RECORDINGS_PAGE */);
+            assert.isFalse(panel.isActionPossible("chrome-recorder.replay-recording" /* RecorderActions.REPLAY_RECORDING */));
+            panel.setCurrentPageForTesting("CreateRecordingPage" /* RecorderPanel.Pages.CREATE_RECORDING_PAGE */);
+            assert.isFalse(panel.isActionPossible("chrome-recorder.replay-recording" /* RecorderActions.REPLAY_RECORDING */));
+            panel.setCurrentPageForTesting("StartPage" /* RecorderPanel.Pages.START_PAGE */);
+            assert.isFalse(panel.isActionPossible("chrome-recorder.replay-recording" /* RecorderActions.REPLAY_RECORDING */));
+            panel.setRecordingStateForTesting({
+                isPlaying: true,
+                isPausedOnBreakpoint: false,
+            });
+            panel.setCurrentPageForTesting("RecordingPage" /* RecorderPanel.Pages.RECORDING_PAGE */);
+            assert.isFalse(panel.isActionPossible("chrome-recorder.replay-recording" /* RecorderActions.REPLAY_RECORDING */));
+        });
+        it('should true for toggle when on the recording page', async () => {
+            const recording = makeRecording();
+            const panel = await setupPanel(recording);
+            panel.setCurrentPageForTesting("RecordingPage" /* RecorderPanel.Pages.RECORDING_PAGE */);
+            assert.isTrue(panel.isActionPossible("chrome-recorder.toggle-code-view" /* RecorderActions.TOGGLE_CODE_VIEW */));
+        });
+        it('should false for toggle when on the recording page', async () => {
+            const recording = makeRecording();
+            const panel = await setupPanel(recording);
+            panel.setCurrentPageForTesting("AllRecordingsPage" /* RecorderPanel.Pages.ALL_RECORDINGS_PAGE */);
+            assert.isFalse(panel.isActionPossible("chrome-recorder.toggle-code-view" /* RecorderActions.TOGGLE_CODE_VIEW */));
+            panel.setCurrentPageForTesting("StartPage" /* RecorderPanel.Pages.START_PAGE */);
+            assert.isFalse(panel.isActionPossible("chrome-recorder.toggle-code-view" /* RecorderActions.TOGGLE_CODE_VIEW */));
+            panel.setCurrentPageForTesting("AllRecordingsPage" /* RecorderPanel.Pages.ALL_RECORDINGS_PAGE */);
+            assert.isFalse(panel.isActionPossible("chrome-recorder.toggle-code-view" /* RecorderActions.TOGGLE_CODE_VIEW */));
+        });
+    });
+});
+//# sourceMappingURL=RecorderPanel.test.js.map

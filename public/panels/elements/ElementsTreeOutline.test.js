@@ -16,7 +16,8 @@ describeWithEnvironment('ElementsTreeOutline', () => {
     let treeOutline;
     beforeEach(() => {
         target = createTarget();
-        treeOutline = new Elements.ElementsTreeOutline.ElementsTreeOutline(/* omitRootDOMNode */ true);
+        treeOutline =
+            new Elements.ElementsTreeOutline.ElementsTreeOutline(/* omitRootDOMNode */ true, /* selectEnabled */ true);
         treeOutline.wireToDOMModel(target.model(SDK.DOMModel.DOMModel));
         const modelBeforeAssertion = target.model(SDK.DOMModel.DOMModel);
         assert.exists(modelBeforeAssertion);
@@ -624,6 +625,142 @@ describeWithEnvironment('ElementsTreeOutline', () => {
         const highlightSpy = sinon.spy(model.overlayModel(), 'highlightInOverlay');
         treeOutline['highlightTreeElement'](treeElement, true);
         sinon.assert.calledWith(highlightSpy, sinon.match({ node: childNode, selectorList: '*' }), 'all', true);
+    });
+    it('updates the DOM tree structure upon changing or removing namespaced attributes', () => {
+        const aNodePayload = {
+            nodeId: 2,
+            parentId: 1,
+            backendNodeId: 2,
+            nodeType: Node.ELEMENT_NODE,
+            nodeName: 'a',
+            localName: 'a',
+            nodeValue: '',
+            childNodeCount: 0,
+            attributes: ['id', 'node', 'xlink:href', 'http://localhost'],
+        };
+        const rootNode = SDK.DOMModel.DOMNode.create(model, null, false, {
+            nodeId: 1,
+            backendNodeId: 1,
+            nodeType: Node.ELEMENT_NODE,
+            nodeName: 'svg',
+            localName: 'svg',
+            nodeValue: '',
+            childNodeCount: 1,
+            children: [aNodePayload],
+            attributes: [],
+        });
+        assert.isNotNull(rootNode);
+        treeOutline.rootDOMNode = rootNode;
+        const aNode = rootNode.children()[0];
+        const treeElement = treeOutline.findTreeElement(aNode);
+        assert.isNotNull(treeElement);
+        const getAttributeValue = (name) => {
+            const attributes = treeElement.listItemElement.getElementsByClassName('webkit-html-attribute');
+            for (const attribute of attributes) {
+                const nameElement = attribute.getElementsByClassName('webkit-html-attribute-name')[0];
+                if (nameElement?.textContent === name) {
+                    const valueElement = attribute.getElementsByClassName('webkit-html-attribute-value')[0];
+                    return valueElement?.textContent ? valueElement.textContent.replace(/\u200B/g, '') : '';
+                }
+            }
+            return null;
+        };
+        // Initial state: namespaced attribute is present
+        assert.strictEqual(aNode.getAttribute('xlink:href'), 'http://localhost');
+        assert.strictEqual(getAttributeValue('xlink:href'), 'http://localhost');
+        // Modify attribute
+        model.attributeModified(aNode.id, 'xlink:href', 'changed-url');
+        treeOutline.runPendingUpdates();
+        assert.strictEqual(aNode.getAttribute('xlink:href'), 'changed-url');
+        assert.strictEqual(getAttributeValue('xlink:href'), 'changed-url');
+        // Remove attribute
+        model.attributeRemoved(aNode.id, 'xlink:href');
+        treeOutline.runPendingUpdates();
+        assert.isUndefined(aNode.getAttribute('xlink:href'));
+        assert.isNull(getAttributeValue('xlink:href'));
+    });
+    it('properly populates and selects after immediate updates', async () => {
+        sinon.stub(model.target().domAgent(), 'invoke_requestChildNodes').callsFake(async (payload) => {
+            const nodeId = payload.nodeId;
+            if (nodeId === 3) { // 3 is the BODY node ID
+                const child1 = {
+                    nodeId: 4,
+                    parentId: 3,
+                    backendNodeId: 4,
+                    nodeType: Node.ELEMENT_NODE,
+                    nodeName: 'DIV',
+                    localName: 'div',
+                    nodeValue: '',
+                    childNodeCount: 0,
+                    attributes: [],
+                };
+                const child2 = {
+                    nodeId: 5,
+                    parentId: 3,
+                    backendNodeId: 5,
+                    nodeType: Node.ELEMENT_NODE,
+                    nodeName: 'DIV',
+                    localName: 'div',
+                    nodeValue: '',
+                    childNodeCount: 0,
+                    attributes: [],
+                };
+                // Simulating the backend pushing the children to the model
+                model.setChildNodes(3, [child1, child2]);
+            }
+            return { getError: () => undefined };
+        });
+        const bodyPayload = {
+            nodeId: 3,
+            parentId: 2,
+            backendNodeId: 3,
+            nodeType: Node.ELEMENT_NODE,
+            nodeName: 'BODY',
+            localName: 'body',
+            nodeValue: '',
+            childNodeCount: 2,
+        };
+        const htmlPayload = {
+            nodeId: 2,
+            parentId: 1,
+            backendNodeId: 2,
+            nodeType: Node.ELEMENT_NODE,
+            nodeName: 'HTML',
+            localName: 'html',
+            nodeValue: '',
+            childNodeCount: 1,
+            children: [bodyPayload],
+        };
+        const rootNode = SDK.DOMModel.DOMNode.create(model, null, false, {
+            nodeId: 1,
+            backendNodeId: 1,
+            nodeType: Node.DOCUMENT_NODE,
+            nodeName: '#document',
+            localName: '',
+            nodeValue: '',
+            childNodeCount: 1,
+            children: [htmlPayload],
+        });
+        assert.isNotNull(rootNode);
+        treeOutline.rootDOMNode = rootNode;
+        const htmlNode = rootNode.children()[0];
+        const node = htmlNode.children()[0];
+        treeOutline.selectDOMNode(node);
+        assert.isNull(node.children());
+        assert.strictEqual(node.childNodeCount(), 2);
+        // Any operation that modifies the node, followed by an immediate, synchronous update.
+        model.childNodeCountUpdated(node.id, 3);
+        treeOutline.updateModifiedNodes();
+        assert.isNull(node.children());
+        assert.strictEqual(node.childNodeCount(), 3);
+        const treeElement = treeOutline.findTreeElement(node);
+        assert.isNotNull(treeElement);
+        treeElement.expand();
+        await new Promise(r => setTimeout(r, 0));
+        assert.strictEqual(treeElement.childCount(), 3);
+        treeOutline.selectDOMNode(node, true);
+        const selectedTreeElement = treeOutline.selectedTreeElement;
+        assert.strictEqual(selectedTreeElement?.node().nodeName(), 'BODY');
     });
 });
 //# sourceMappingURL=ElementsTreeOutline.test.js.map

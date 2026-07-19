@@ -56,7 +56,7 @@ const UIStrings = {
    */
   wrongLocale: 'To use this feature, set your language preference to English in DevTools settings.',
   /**
-   * @description Message shown to the user if the user’s region is not
+   * @description Message shown to the user if the user's region is not
    * supported.
    */
   geoRestricted: 'This feature is unavailable in your region.',

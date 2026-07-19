@@ -64,4 +64,49 @@ export default `/*
   color: var(--sys-color-on-surface-subtle);
 }
 
+.metrics-title,
+.ad-frames-title,
+.settings-title {
+  color: var(--sys-color-on-surface);
+  flex: 0 0 auto;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.ad-frames-data-grid {
+  flex: auto;
+}
+
+.ad-frames-container {
+  border: 1px solid var(--sys-color-divider);
+  display: flex;
+  flex: auto;
+  flex-direction: column;
+  margin-bottom: 24px;
+  height: 300px;
+  min-height: 150px;
+  position: relative;
+  resize: vertical;
+  overflow: hidden;
+}
+
+devtools-checkbox.setting-container {
+  /*
+   * Apply negative margins here to offset the default devtools-checkbox style
+   * to align this component with the rest of the Ads panel layout.
+   */
+  margin: 0 0 -6px -6px;
+}
+
+.setting-text-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.setting-explanation {
+  color: var(--sys-color-token-subtle);
+  white-space: break-spaces;
+  margin-top: 0;
+}
+
 /*# sourceURL=${import.meta.resolve('./adsView.css')} */`;

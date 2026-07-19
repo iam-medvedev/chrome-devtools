@@ -18,9 +18,6 @@ import * as ExtensionStorageModel from './ExtensionStorageModel.js';
 import * as FrameDetailsView from './FrameDetailsView.js';
 import * as IndexedDBModel from './IndexedDBModel.js';
 import * as IndexedDBViews from './IndexedDBViews.js';
-import * as InterestGroupStorageModel from './InterestGroupStorageModel.js';
-import * as InterestGroupStorageView from './InterestGroupStorageView.js';
-import * as InterestGroupTreeElement from './InterestGroupTreeElement.js';
 import * as KeyValueStorageItemsView from './KeyValueStorageItemsView.js';
 import * as OpenedWindowDetailsView from './OpenedWindowDetailsView.js';
 import * as OriginTrialTreeView from './OriginTrialTreeView.js';
@@ -62,9 +59,6 @@ export {
   FrameDetailsView,
   IndexedDBModel,
   IndexedDBViews,
-  InterestGroupStorageModel,
-  InterestGroupStorageView,
-  InterestGroupTreeElement,
   KeyValueStorageItemsView,
   OpenedWindowDetailsView,
   OriginTrialTreeView,

@@ -1080,9 +1080,11 @@ __export(XHRBreakpointsSidebarPane_exports, {
   XHRBreakpointsSidebarPane: () => XHRBreakpointsSidebarPane
 });
 import * as i18n5 from "./../../core/i18n/i18n.js";
+import * as Platform2 from "./../../core/platform/platform.js";
 import * as SDK6 from "./../../core/sdk/sdk.js";
 import * as Buttons2 from "./../../ui/components/buttons/buttons.js";
 import * as UI4 from "./../../ui/legacy/legacy.js";
+import { Directives as Directives3, html as html3, render as render3 } from "./../../ui/lit/lit.js";
 import * as VisualLogging6 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/browser_debugger/xhrBreakpointsSidebarPane.css.js
@@ -1154,6 +1156,7 @@ var xhrBreakpointsSidebarPane_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./xhrBreakpointsSidebarPane.css")} */`;
 
 // gen/front_end/panels/browser_debugger/XHRBreakpointsSidebarPane.js
+var { classMap, ifDefined, ref } = Directives3;
 var UIStrings3 = {
   /**
    * @description Title of the 'XHR/fetch Breakpoints' tool in the bottom sidebar of the Sources tool
@@ -1204,17 +1207,15 @@ var UIStrings3 = {
 var str_3 = i18n5.i18n.registerUIStrings("panels/browser_debugger/XHRBreakpointsSidebarPane.ts", UIStrings3);
 var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
 var containerToBreakpointEntry = /* @__PURE__ */ new WeakMap();
-var breakpointEntryToCheckbox = /* @__PURE__ */ new WeakMap();
-var xhrBreakpointsSidebarPaneInstance;
+var xhrBreakpointsSidebarPaneInstance = null;
 var XHRBreakpointsSidebarPane = class _XHRBreakpointsSidebarPane extends UI4.Widget.VBox {
   #breakpoints;
   #list;
   #emptyElement;
   #breakpointElements;
   #addButton;
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   #hitBreakpoint;
+  #editingBreakpoint = null;
   constructor() {
     super({
       jslog: `${VisualLogging6.section("source.xhr-breakpoints")}`,
@@ -1249,6 +1250,9 @@ var XHRBreakpointsSidebarPane = class _XHRBreakpointsSidebarPane extends UI4.Wid
     }
     return xhrBreakpointsSidebarPaneInstance;
   }
+  static removeInstance() {
+    xhrBreakpointsSidebarPaneInstance = null;
+  }
   toolbarItems() {
     return [this.#addButton];
   }
@@ -1261,12 +1265,10 @@ var XHRBreakpointsSidebarPane = class _XHRBreakpointsSidebarPane extends UI4.Wid
     await UI4.ViewManager.ViewManager.instance().showView("sources.xhr-breakpoints");
     const inputElementContainer = document.createElement("p");
     inputElementContainer.classList.add("breakpoint-condition");
-    inputElementContainer.textContent = i18nString3(UIStrings3.breakWhenUrlContains);
     inputElementContainer.setAttribute("jslog", `${VisualLogging6.value("condition").track({ change: true })}`);
-    const inputElement = inputElementContainer.createChild("span", "breakpoint-condition-input");
-    UI4.ARIAUtils.setLabel(inputElement, i18nString3(UIStrings3.urlBreakpoint));
     this.addListElement(inputElementContainer, this.#list.element.firstChild);
-    const commit = (_element, newText) => {
+    const commit = (e) => {
+      const newText = e.detail;
       this.removeListElement(inputElementContainer);
       SDK6.DOMDebuggerModel.DOMDebuggerManager.instance().addXHRBreakpoint(newText, true);
       this.setBreakpoint(newText);
@@ -1276,8 +1278,18 @@ var XHRBreakpointsSidebarPane = class _XHRBreakpointsSidebarPane extends UI4.Wid
       this.removeListElement(inputElementContainer);
       this.update();
     };
-    const config = new UI4.InplaceEditor.Config(commit, cancel, void 0);
-    UI4.InplaceEditor.InplaceEditor.startEditing(inputElement, config);
+    render3(html3`
+        ${i18nString3(UIStrings3.breakWhenUrlContains)}
+        <devtools-prompt
+            value=""
+            render-as-block
+            ?editing=${true}
+            aria-label=${i18nString3(UIStrings3.urlBreakpoint)}
+            class="breakpoint-condition-input"
+            @commit=${commit}
+            @cancel=${cancel}>
+        </devtools-prompt>
+      `, inputElementContainer);
   }
   heightForItem(_item) {
     return 0;
@@ -1289,15 +1301,7 @@ var XHRBreakpointsSidebarPane = class _XHRBreakpointsSidebarPane extends UI4.Wid
     if (this.#breakpoints.indexOf(breakKeyword) !== -1) {
       this.#list.refreshItem(breakKeyword);
     } else {
-      this.#breakpoints.insertWithComparator(breakKeyword, (a, b) => {
-        if (a > b) {
-          return 1;
-        }
-        if (a < b) {
-          return -1;
-        }
-        return 0;
-      });
+      this.#breakpoints.insertWithComparator(breakKeyword, Platform2.ArrayUtilities.DEFAULT_COMPARATOR);
     }
     if (!this.#list.selectedItem() || !this.hasFocus()) {
       this.#list.selectItem(this.#breakpoints.at(0));
@@ -1306,57 +1310,85 @@ var XHRBreakpointsSidebarPane = class _XHRBreakpointsSidebarPane extends UI4.Wid
   createElementForItem(item2) {
     const listItemElement = document.createElement("div");
     UI4.ARIAUtils.markAsListitem(listItemElement);
-    const element = listItemElement.createChild("div", "breakpoint-entry");
-    containerToBreakpointEntry.set(listItemElement, element);
     const enabled = SDK6.DOMDebuggerModel.DOMDebuggerManager.instance().xhrBreakpoints().get(item2) || false;
-    UI4.ARIAUtils.markAsCheckbox(element);
-    UI4.ARIAUtils.setChecked(element, enabled);
-    element.addEventListener("contextmenu", this.contextMenu.bind(this, item2), true);
     const title = item2 ? i18nString3(UIStrings3.urlContainsS, { PH1: item2 }) : i18nString3(UIStrings3.anyXhrOrFetch);
-    const checkbox = UI4.UIUtils.CheckboxLabel.create(
-      title,
-      enabled,
-      void 0,
-      void 0,
-      /* small */
-      true
-    );
-    UI4.ARIAUtils.setHidden(checkbox, true);
-    UI4.ARIAUtils.setLabel(element, title);
-    element.appendChild(checkbox);
-    checkbox.addEventListener("click", this.checkboxClicked.bind(this, item2, enabled), false);
-    element.addEventListener("click", (event) => {
-      if (event.target === element) {
+    const commit = (e) => {
+      if (this.#editingBreakpoint !== item2) {
+        return;
+      }
+      const newText = e.detail;
+      this.#editingBreakpoint = null;
+      this.#removeBreakpoint(item2);
+      this.#addBreakpoint(newText, enabled);
+      this.#list.selectItem(newText);
+      this.focus();
+    };
+    const cancel = () => {
+      if (this.#editingBreakpoint !== item2) {
+        return;
+      }
+      this.#editingBreakpoint = null;
+      this.#list.refreshItem(item2);
+      this.focus();
+    };
+    render3(html3`
+        <div class=${classMap({ "breakpoint-entry": true, "breakpoint-hit": item2 === this.#hitBreakpoint })}
+             role="checkbox"
+             aria-checked=${enabled ? "true" : "false"}
+             aria-label=${title}
+             aria-description=${ifDefined(item2 === this.#hitBreakpoint ? i18nString3(UIStrings3.breakpointHit) : void 0)}
+             tabindex=${item2 === this.#list.selectedItem() ? "0" : "-1"}
+             ?autofocus=${item2 === this.#list.selectedItem()}
+             ${ref((el) => {
+      if (el instanceof HTMLElement) {
+        containerToBreakpointEntry.set(listItemElement, el);
+        this.#breakpointElements.set(item2, listItemElement);
+      }
+    })}
+             @click=${(event) => {
+      if (event.target === event.currentTarget) {
         this.checkboxClicked(item2, enabled);
       }
-    }, false);
-    breakpointEntryToCheckbox.set(element, checkbox);
-    checkbox.tabIndex = -1;
-    element.tabIndex = -1;
-    if (item2 === this.#list.selectedItem()) {
-      element.tabIndex = 0;
-      this.setDefaultFocusedElement(element);
-    }
-    element.addEventListener("keydown", (event) => {
+    }}
+             @contextmenu=${(e) => this.contextMenu(item2, e)}
+             @keydown=${(event) => {
       let handled = false;
       if (event.key === " ") {
         this.checkboxClicked(item2, enabled);
         handled = true;
       } else if (event.key === "Enter") {
-        this.labelClicked(item2);
+        this.#startEditing(item2);
         handled = true;
       }
       if (handled) {
         event.consume(true);
       }
-    });
-    if (item2 === this.#hitBreakpoint) {
-      element.classList.add("breakpoint-hit");
-      UI4.ARIAUtils.setDescription(element, i18nString3(UIStrings3.breakpointHit));
-    }
-    checkbox.classList.add("cursor-auto");
-    checkbox.addEventListener("dblclick", this.labelClicked.bind(this, item2), false);
-    this.#breakpointElements.set(item2, listItemElement);
+    }}>
+          <devtools-checkbox
+              class="cursor-auto"
+              aria-hidden="true"
+              .checked=${enabled}
+              .small=${true}
+              .title=${title}
+              @click=${(e) => e.stopPropagation()}
+              @change=${() => this.checkboxClicked(item2, enabled)}
+              @dblclick=${() => this.#startEditing(item2)}
+              tabindex="-1"
+              jslog=${VisualLogging6.toggle().track({ click: true })}>
+            <devtools-prompt
+                value=${item2}
+                render-as-block
+                ?editing=${item2 === this.#editingBreakpoint}
+                aria-label=${title}
+                class=${classMap({ "breakpoint-condition-input": item2 === this.#editingBreakpoint })}
+                jslog=${VisualLogging6.value("condition").track({ change: true })}
+                @commit=${commit}
+                @cancel=${cancel}>
+              ${title}
+            </devtools-prompt>
+          </devtools-checkbox>
+        </div>
+      `, listItemElement);
     listItemElement.setAttribute("jslog", `${VisualLogging6.item().track({
       click: true,
       dblclick: true,
@@ -1378,9 +1410,14 @@ var XHRBreakpointsSidebarPane = class _XHRBreakpointsSidebarPane extends UI4.Wid
       if (!breakpointEntryElement) {
         throw new Error("Expected breakpoint entry to be found for an element");
       }
-      this.setDefaultFocusedElement(breakpointEntryElement);
+      const prompt = _to === this.#editingBreakpoint ? toElement.querySelector("devtools-prompt") : null;
+      this.setDefaultFocusedElement(prompt || breakpointEntryElement);
       breakpointEntryElement.tabIndex = 0;
       if (this.hasFocus()) {
+        if (prompt) {
+          prompt.focus();
+          return;
+        }
         breakpointEntryElement.focus();
       }
     }
@@ -1408,70 +1445,43 @@ var XHRBreakpointsSidebarPane = class _XHRBreakpointsSidebarPane extends UI4.Wid
       this.#list.element.classList.add("hidden");
     }
   }
+  #addBreakpoint(url, enabled = true) {
+    SDK6.DOMDebuggerModel.DOMDebuggerManager.instance().addXHRBreakpoint(url, enabled);
+    this.setBreakpoint(url);
+  }
+  #removeBreakpoint(url) {
+    SDK6.DOMDebuggerModel.DOMDebuggerManager.instance().removeXHRBreakpoint(url);
+    this.removeBreakpoint(url);
+  }
+  #removeAllBreakpoints() {
+    for (const url of this.#breakpointElements.keys()) {
+      this.#removeBreakpoint(url);
+    }
+    this.update();
+  }
+  #toggleBreakpoint(url, checked) {
+    SDK6.DOMDebuggerModel.DOMDebuggerManager.instance().toggleXHRBreakpoint(url, checked);
+    this.#list.refreshItem(url);
+    this.#list.selectItem(url);
+  }
   contextMenu(breakKeyword, event) {
     const contextMenu = new UI4.ContextMenu.ContextMenu(event);
-    function removeBreakpoint() {
-      SDK6.DOMDebuggerModel.DOMDebuggerManager.instance().removeXHRBreakpoint(breakKeyword);
-      this.removeBreakpoint(breakKeyword);
-    }
-    function removeAllBreakpoints() {
-      for (const url of this.#breakpointElements.keys()) {
-        SDK6.DOMDebuggerModel.DOMDebuggerManager.instance().removeXHRBreakpoint(url);
-        this.removeBreakpoint(url);
-      }
-      this.update();
-    }
     const removeAllTitle = i18nString3(UIStrings3.removeAllBreakpoints);
     contextMenu.defaultSection().appendItem(i18nString3(UIStrings3.addBreakpoint), this.addButtonClicked.bind(this), { jslogContext: "sources.add-xhr-fetch-breakpoint" });
-    contextMenu.defaultSection().appendItem(i18nString3(UIStrings3.removeBreakpoint), removeBreakpoint.bind(this), { jslogContext: "sources.remove-xhr-fetch-breakpoint" });
-    contextMenu.defaultSection().appendItem(removeAllTitle, removeAllBreakpoints.bind(this), { jslogContext: "sources.remove-all-xhr-fetch-breakpoints" });
+    contextMenu.defaultSection().appendItem(i18nString3(UIStrings3.removeBreakpoint), this.#removeBreakpoint.bind(this, breakKeyword), { jslogContext: "sources.remove-xhr-fetch-breakpoint" });
+    contextMenu.defaultSection().appendItem(removeAllTitle, this.#removeAllBreakpoints.bind(this), { jslogContext: "sources.remove-all-xhr-fetch-breakpoints" });
     void contextMenu.show();
   }
   checkboxClicked(breakKeyword, checked) {
     const hadFocus = this.hasFocus();
-    SDK6.DOMDebuggerModel.DOMDebuggerManager.instance().toggleXHRBreakpoint(breakKeyword, !checked);
-    this.#list.refreshItem(breakKeyword);
-    this.#list.selectItem(breakKeyword);
+    this.#toggleBreakpoint(breakKeyword, !checked);
     if (hadFocus) {
       this.focus();
     }
   }
-  labelClicked(breakKeyword) {
-    const element = this.#breakpointElements.get(breakKeyword);
-    const inputElement = document.createElement("span");
-    inputElement.classList.add("breakpoint-condition");
-    inputElement.textContent = breakKeyword;
-    inputElement.setAttribute("jslog", `${VisualLogging6.value("condition").track({ change: true })}`);
-    if (element) {
-      this.#list.element.insertBefore(inputElement, element);
-      element.classList.add("hidden");
-    }
-    const commit = (inputElement2, newText, _oldText, element2) => {
-      this.removeListElement(inputElement2);
-      SDK6.DOMDebuggerModel.DOMDebuggerManager.instance().removeXHRBreakpoint(breakKeyword);
-      this.removeBreakpoint(breakKeyword);
-      let enabled = true;
-      if (element2) {
-        const breakpointEntryElement = containerToBreakpointEntry.get(element2);
-        const checkboxElement = breakpointEntryElement ? breakpointEntryToCheckbox.get(breakpointEntryElement) : void 0;
-        if (checkboxElement) {
-          enabled = checkboxElement.checked;
-        }
-      }
-      SDK6.DOMDebuggerModel.DOMDebuggerManager.instance().addXHRBreakpoint(newText, enabled);
-      this.setBreakpoint(newText);
-      this.#list.selectItem(newText);
-      this.focus();
-    };
-    const cancel = (inputElement2, element2) => {
-      this.removeListElement(inputElement2);
-      if (element2) {
-        element2.classList.remove("hidden");
-      }
-      this.focus();
-    };
-    const config = new UI4.InplaceEditor.Config(commit, cancel, element);
-    UI4.InplaceEditor.InplaceEditor.startEditing(inputElement, config);
+  #startEditing(item2) {
+    this.#editingBreakpoint = item2;
+    this.#list.refreshItem(item2);
   }
   flavorChanged(_object) {
     this.update();

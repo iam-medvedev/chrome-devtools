@@ -272,7 +272,7 @@ var UIStrings3 = {
   /**
    * @description Link text the user can click to see documentation.
    */
-  learnMoreLink: "Learn More"
+  learnMoreLink: "Learn more"
 };
 var str_3 = i18n5.i18n.registerUIStrings("ui/components/panel_feedback/PreviewToggle.ts", UIStrings3);
 var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);

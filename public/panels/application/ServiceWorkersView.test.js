@@ -12,6 +12,7 @@ describeWithEnvironment('ServiceWorkersView', () => {
     let target;
     let view;
     beforeEach(() => {
+        Application.ServiceWorkersView.setThrottleDisabledForDebugging(true);
         const tabTarget = createTarget({ type: SDK.Target.Type.TAB });
         createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
         target = createTarget({ parentTarget: tabTarget });
@@ -42,9 +43,10 @@ describeWithEnvironment('ServiceWorkersView', () => {
             versionsByMode: () => new Map(),
             fingerprint: () => { },
         });
-        const sectionTitle = view.currentWorkersView.contentElement.querySelector('.report-section-title');
+        await view.updateComplete;
+        const sectionTitle = view.contentElement.querySelector('devtools-report-section-header');
         assert.exists(sectionTitle);
-        assert.strictEqual(sectionTitle.textContent, SCOPE_URL);
+        assert.include(sectionTitle.textContent, SCOPE_URL);
         await assertScreenshot('application/service-workers-view-basic.png');
     });
     describe('router info', () => {
@@ -64,12 +66,11 @@ describeWithEnvironment('ServiceWorkersView', () => {
         ];
         let serviceWorkersManager;
         const hasRouterField = () => {
-            return Array.from(view.currentWorkersView.contentElement.querySelectorAll('.report-field')).some(field => {
+            return Array.from(view.contentElement.querySelectorAll('.report-field')).some(field => {
                 return field.querySelector('.report-field-name')?.textContent === 'Routers';
             });
         };
         beforeEach(() => {
-            Application.ServiceWorkersView.setThrottleDisabledForDebugging(true);
             view = new Application.ServiceWorkersView.ServiceWorkersView();
             renderElementIntoDOM(view);
             serviceWorkersManager = target.model(SDK.ServiceWorkerManager.ServiceWorkerManager);
@@ -92,6 +93,7 @@ describeWithEnvironment('ServiceWorkersView', () => {
             };
             registration.updateVersion(versionPayload);
             serviceWorkersManager?.dispatchEventToListeners("RegistrationUpdated" /* SDK.ServiceWorkerManager.Events.REGISTRATION_UPDATED */, registration);
+            await view.updateComplete;
             assert.isTrue(hasRouterField());
         });
         it('does not show the router field if active version does not have router rules', async () => {
@@ -107,6 +109,7 @@ describeWithEnvironment('ServiceWorkersView', () => {
             };
             registration.updateVersion(versionPayload);
             serviceWorkersManager?.dispatchEventToListeners("RegistrationUpdated" /* SDK.ServiceWorkerManager.Events.REGISTRATION_UPDATED */, registration);
+            await view.updateComplete;
             assert.isFalse(hasRouterField());
             // Update the version with the empty router rules.
             versionId++;
@@ -116,6 +119,7 @@ describeWithEnvironment('ServiceWorkersView', () => {
             }));
             registration.updateVersion(versionPayload);
             serviceWorkersManager?.dispatchEventToListeners("RegistrationUpdated" /* SDK.ServiceWorkerManager.Events.REGISTRATION_UPDATED */, registration);
+            await view.updateComplete;
             assert.isFalse(hasRouterField());
         });
         it('does not show the router field if there is no active version', async () => {
@@ -130,22 +134,23 @@ describeWithEnvironment('ServiceWorkersView', () => {
                 runningStatus: "starting" /* Protocol.ServiceWorker.ServiceWorkerVersionRunningStatus.Starting */,
                 routerRules: JSON.stringify(routerRules),
             };
-            const updateAndDispatchEvent = (status) => {
+            const updateAndDispatchEvent = async (status) => {
                 versionId++;
                 registration.updateVersion(Object.assign({}, versionPayload, { versionId: versionId.toString(), status }));
                 serviceWorkersManager?.dispatchEventToListeners("RegistrationUpdated" /* SDK.ServiceWorkerManager.Events.REGISTRATION_UPDATED */, registration);
+                await view.updateComplete;
             };
-            updateAndDispatchEvent("new" /* Protocol.ServiceWorker.ServiceWorkerVersionStatus.New */);
+            await updateAndDispatchEvent("new" /* Protocol.ServiceWorker.ServiceWorkerVersionStatus.New */);
             assert.isFalse(hasRouterField());
-            updateAndDispatchEvent("redundant" /* Protocol.ServiceWorker.ServiceWorkerVersionStatus.Redundant */);
+            await updateAndDispatchEvent("redundant" /* Protocol.ServiceWorker.ServiceWorkerVersionStatus.Redundant */);
             assert.isFalse(hasRouterField());
-            updateAndDispatchEvent("installing" /* Protocol.ServiceWorker.ServiceWorkerVersionStatus.Installing */);
+            await updateAndDispatchEvent("installing" /* Protocol.ServiceWorker.ServiceWorkerVersionStatus.Installing */);
             assert.isFalse(hasRouterField());
-            updateAndDispatchEvent("installed" /* Protocol.ServiceWorker.ServiceWorkerVersionStatus.Installed */);
+            await updateAndDispatchEvent("installed" /* Protocol.ServiceWorker.ServiceWorkerVersionStatus.Installed */);
             assert.isFalse(hasRouterField());
-            updateAndDispatchEvent("activating" /* Protocol.ServiceWorker.ServiceWorkerVersionStatus.Activating */);
+            await updateAndDispatchEvent("activating" /* Protocol.ServiceWorker.ServiceWorkerVersionStatus.Activating */);
             assert.isTrue(hasRouterField());
-            updateAndDispatchEvent("activated" /* Protocol.ServiceWorker.ServiceWorkerVersionStatus.Activated */);
+            await updateAndDispatchEvent("activated" /* Protocol.ServiceWorker.ServiceWorkerVersionStatus.Activated */);
             assert.isTrue(hasRouterField());
         });
     });
@@ -181,7 +186,8 @@ describeWithEnvironment('ServiceWorkersView', () => {
             runningStatus: "running" /* Protocol.ServiceWorker.ServiceWorkerVersionRunningStatus.Running */,
         });
         serviceWorkersManager.dispatchEventToListeners("RegistrationUpdated" /* SDK.ServiceWorkerManager.Events.REGISTRATION_UPDATED */, registration);
-        const content = view.currentWorkersView.contentElement.textContent;
+        await view.updateComplete;
+        const content = view.contentElement.textContent;
         assert.include(content, SCOPE);
         assert.include(content, '#2 activated');
         assert.notInclude(content, '#1 is redundant');
@@ -211,6 +217,7 @@ describeWithEnvironment('ServiceWorkersView', () => {
             runningStatus: "running" /* Protocol.ServiceWorker.ServiceWorkerVersionRunningStatus.Running */,
         });
         serviceWorkersManager.dispatchEventToListeners("RegistrationUpdated" /* SDK.ServiceWorkerManager.Events.REGISTRATION_UPDATED */, registration1);
+        await view.updateComplete;
         // Dispatch registration 2
         const registration2 = new SDK.ServiceWorkerManager.ServiceWorkerRegistration({
             registrationId: 'sw-2',
@@ -225,7 +232,8 @@ describeWithEnvironment('ServiceWorkersView', () => {
             runningStatus: "running" /* Protocol.ServiceWorker.ServiceWorkerVersionRunningStatus.Running */,
         });
         serviceWorkersManager.dispatchEventToListeners("RegistrationUpdated" /* SDK.ServiceWorkerManager.Events.REGISTRATION_UPDATED */, registration2);
-        let content = view.currentWorkersView.contentElement.textContent;
+        await view.updateComplete;
+        let content = view.contentElement.textContent;
         assert.include(content, SCOPE_1);
         assert.include(content, '#101 activated');
         assert.include(content, SCOPE_2);
@@ -244,14 +252,16 @@ describeWithEnvironment('ServiceWorkersView', () => {
             runningStatus: "stopped" /* Protocol.ServiceWorker.ServiceWorkerVersionRunningStatus.Stopped */,
         });
         serviceWorkersManager.dispatchEventToListeners("RegistrationUpdated" /* SDK.ServiceWorkerManager.Events.REGISTRATION_UPDATED */, registration1);
-        content = view.currentWorkersView.contentElement.textContent;
+        await view.updateComplete;
+        content = view.contentElement.textContent;
         assert.include(content, `${SCOPE_1} - deleted`);
         assert.include(content, '#101 is redundant');
         assert.include(content, SCOPE_2);
         assert.include(content, '#201 activated');
         // Delete registration 1
         serviceWorkersManager.dispatchEventToListeners("RegistrationDeleted" /* SDK.ServiceWorkerManager.Events.REGISTRATION_DELETED */, registration1);
-        content = view.currentWorkersView.contentElement.textContent;
+        await view.updateComplete;
+        content = view.contentElement.textContent;
         assert.notInclude(content, SCOPE_1);
         assert.include(content, SCOPE_2);
     });

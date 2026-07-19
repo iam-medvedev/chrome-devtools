@@ -59,6 +59,80 @@ describe('NetworkManager', () => {
             const requestFormData = await request.requestFormData();
             assert.strictEqual(requestFormData, expectedPostData);
         });
+        it('returns decompressed base64 ContentData via requestPostDataContentData for gzip bodies', async () => {
+            const universe = new TestUniverse();
+            const connection = new MockCDPConnection();
+            // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
+            SDK.NetworkManager.MultitargetNetworkManager.instance({ forceNew: true, targetManager: universe.targetManager });
+            const originalText = 'a';
+            const compressedPostData = await Common.Gzip.compress(originalText);
+            const encodedPostData = btoa(String.fromCharCode(...new Uint8Array(compressedPostData)));
+            connection.setHandler('Network.getRequestPostData', () => ({
+                result: {
+                    postData: encodedPostData,
+                    base64Encoded: true,
+                }
+            }));
+            const request = await createPostRequestWithHeaders({
+                'Content-Type': 'application/octet-stream',
+                'Content-Encoding': 'gzip',
+            }, universe, connection);
+            const contentData = await SDK.NetworkManager.NetworkManager.requestPostDataContentData(request);
+            assert.isFalse(TextUtils.ContentData.ContentData.isError(contentData));
+            if (!TextUtils.ContentData.ContentData.isError(contentData)) {
+                assert.isTrue(contentData.createdFromBase64);
+                // The base64 should contain the DECOMPRESSED bytes, not the gzip bytes.
+                const decodedBytes = Common.Base64.decode(contentData.base64);
+                const decodedText = new TextDecoder().decode(decodedBytes);
+                assert.strictEqual(decodedText, originalText);
+            }
+        });
+        it('returns text ContentData via requestPostDataContentData for non-base64 bodies', async () => {
+            const universe = new TestUniverse();
+            const connection = new MockCDPConnection();
+            // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
+            SDK.NetworkManager.MultitargetNetworkManager.instance({ forceNew: true, targetManager: universe.targetManager });
+            const plainPostData = 'a=1&b=2';
+            connection.setHandler('Network.getRequestPostData', () => ({
+                result: {
+                    postData: plainPostData,
+                    base64Encoded: false,
+                }
+            }));
+            const request = await createPostRequestWithHeaders({ 'Content-Type': 'application/x-www-form-urlencoded' }, universe, connection);
+            const contentData = await SDK.NetworkManager.NetworkManager.requestPostDataContentData(request);
+            assert.isFalse(TextUtils.ContentData.ContentData.isError(contentData));
+            if (!TextUtils.ContentData.ContentData.isError(contentData)) {
+                assert.isFalse(contentData.createdFromBase64);
+            }
+        });
+        it('returns decompressed base64 ContentData via requestFormDataContentData on NetworkRequest', async () => {
+            const universe = new TestUniverse();
+            const connection = new MockCDPConnection();
+            // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
+            SDK.NetworkManager.MultitargetNetworkManager.instance({ forceNew: true, targetManager: universe.targetManager });
+            const originalText = 'hello';
+            const compressedPostData = await Common.Gzip.compress(originalText);
+            const encodedPostData = btoa(String.fromCharCode(...new Uint8Array(compressedPostData)));
+            connection.setHandler('Network.getRequestPostData', () => ({
+                result: {
+                    postData: encodedPostData,
+                    base64Encoded: true,
+                }
+            }));
+            const request = await createPostRequestWithHeaders({
+                'Content-Type': 'application/octet-stream',
+                'Content-Encoding': 'gzip',
+            }, universe, connection);
+            const contentData = await request.requestFormDataContentData();
+            assert.isFalse(TextUtils.ContentData.ContentData.isError(contentData));
+            if (!TextUtils.ContentData.ContentData.isError(contentData)) {
+                assert.isTrue(contentData.createdFromBase64);
+                const decodedBytes = Common.Base64.decode(contentData.base64);
+                const decodedText = new TextDecoder().decode(decodedBytes);
+                assert.strictEqual(decodedText, originalText);
+            }
+        });
     });
     describe('Direct TCP socket handling', () => {
         it('on CDP created event creates request ', () => {
@@ -1010,6 +1084,36 @@ describe('NetworkManager', () => {
                 assert.deepEqual(request.directSocketInfo?.joinedMulticastGroups, new Set());
                 assert.lengthOf(updatedRequests, 0);
             });
+        });
+    });
+    describe('WebSocket handling', () => {
+        it('handles WebSocket frame error event', () => {
+            const networkManager = new SDK.NetworkManager.NetworkManager(new TestUniverse().createTarget({}));
+            const networkDispatcher = new SDK.NetworkManager.NetworkDispatcher(networkManager);
+            const updatedRequests = [];
+            networkManager.addEventListener(SDK.NetworkManager.Events.RequestUpdated, event => {
+                updatedRequests.push(event.data);
+            });
+            const mockRequestId = 'mockRequestId';
+            const mockUrl = urlString `ws://example.com`;
+            networkDispatcher.webSocketCreated({
+                requestId: mockRequestId,
+                url: mockUrl,
+                initiator: { type: "other" /* Protocol.Network.InitiatorType.Other */ },
+            });
+            networkDispatcher.webSocketFrameError({
+                requestId: mockRequestId,
+                timestamp: 1000,
+                errorMessage: 'Error during WebSocket handshake: Unexpected response code: 404',
+            });
+            assert.lengthOf(updatedRequests, 1);
+            const req = updatedRequests[0];
+            assert.strictEqual(req.requestId(), mockRequestId);
+            assert.strictEqual(req.resourceType(), Common.ResourceType.resourceTypes.WebSocket);
+            const frames = req.frames();
+            assert.lengthOf(frames, 1);
+            assert.strictEqual(frames[0].type, SDK.NetworkRequest.WebSocketFrameType.Error);
+            assert.strictEqual(frames[0].text, 'Error during WebSocket handshake: Unexpected response code: 404');
         });
     });
 });

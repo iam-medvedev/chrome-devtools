@@ -6,11 +6,11 @@ import * as UI from "./../../ui/legacy/legacy.js";
 var loadedAnimationModule;
 var UIStrings = {
   /**
-   * @description Title for the 'Animations' tool in the bottom drawer
+   * @description Title for the 'Animations' tool in the bottom drawer.
    */
   animations: "Animations",
   /**
-   * @description Command for showing the 'Animations' tool in the bottom drawer
+   * @description Command for showing the 'Animations' tool in the bottom drawer.
    */
   showAnimations: "Show Animations"
 };

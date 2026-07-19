@@ -34,7 +34,7 @@ const UIStrings = {
      */
     javascriptIsDisabled: 'JavaScript is disabled',
     /**
-     * @description A message that prompts the user to open devtools for a specific environment (Node.js)
+     * @description Tooltip for the Node.js indicator prompting the user to open dedicated DevTools for Node.js.
      */
     openDedicatedTools: 'Open dedicated DevTools for `Node.js`',
 };
@@ -92,7 +92,7 @@ export class InspectorMainImpl {
         new BackendSettingsSync();
         new MobileThrottling.NetworkPanelIndicator.NetworkPanelIndicator();
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.ReloadInspectedPage, ({ data: hard }) => {
-            SDK.ResourceTreeModel.ResourceTreeModel.reloadAllPages(hard);
+            SDK.ResourceTreeModel.ResourceTreeModel.reloadAllPages(SDK.TargetManager.TargetManager.instance(), hard);
         });
     }
 }
@@ -101,10 +101,10 @@ export class ReloadActionDelegate {
     handleAction(_context, actionId) {
         switch (actionId) {
             case 'inspector-main.reload':
-                SDK.ResourceTreeModel.ResourceTreeModel.reloadAllPages(false);
+                SDK.ResourceTreeModel.ResourceTreeModel.reloadAllPages(SDK.TargetManager.TargetManager.instance(), false);
                 return true;
             case 'inspector-main.hard-reload':
-                SDK.ResourceTreeModel.ResourceTreeModel.reloadAllPages(true);
+                SDK.ResourceTreeModel.ResourceTreeModel.reloadAllPages(SDK.TargetManager.TargetManager.instance(), true);
                 return true;
         }
         return false;

@@ -819,19 +819,18 @@ export const PAYLOAD_DEFAULT_VIEW = (input, output, target) => {
     const isParsable = input.valueObject !== undefined;
     const createPayload = (parsedInput) => {
         const object = new SDK.RemoteObject.LocalJSONObject(parsedInput);
-        const section = new ObjectUI.ObjectPropertiesSection.RootElement(new ObjectUI.ObjectPropertiesSection.ObjectTree(object, {
+        const objectTree = new ObjectUI.ObjectPropertiesSection.ObjectTree(object, {
             readOnly: true,
             propertiesMode: 1 /* ObjectUI.ObjectPropertiesSection.ObjectPropertiesMode.OWN_AND_INTERNAL_AND_INHERITED */,
-        }));
-        section.title = document.createTextNode(object.description);
-        section.listItemElement.classList.add('source-code', 'object-properties-section');
-        section.childrenListElement.classList.add('source-code', 'object-properties-section');
-        section.expand();
+        });
         return html `<devtools-tree .template=${html `
           <style>${ObjectUI.ObjectPropertiesSection.objectValueStyles}</style>
           <style>${ObjectUI.ObjectPropertiesSection.objectPropertiesSectionStyles}</style>
           <ul role="tree">
-            <devtools-tree-wrapper .treeElement=${section}></devtools-tree-wrapper>
+            <li role=treeitem class="object-properties-section-root-element object-properties-section source-code" open>
+              ${object.description}
+              ${object.hasChildren ? ObjectUI.ObjectPropertiesSection.renderObjectTree(objectTree) : nothing}
+            </li>
           </ul>
         `}></devtools-tree>`;
     };

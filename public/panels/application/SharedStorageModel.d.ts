@@ -46,9 +46,6 @@ export declare class SharedStorageModel extends SDK.SDKModel.SDKModel<EventTypes
     indexedDBContentUpdated(_event: Protocol.Storage.IndexedDBContentUpdatedEvent): void;
     cacheStorageListUpdated(_event: Protocol.Storage.CacheStorageListUpdatedEvent): void;
     cacheStorageContentUpdated(_event: Protocol.Storage.CacheStorageContentUpdatedEvent): void;
-    interestGroupAccessed(_event: Protocol.Storage.InterestGroupAccessedEvent): void;
-    interestGroupAuctionEventOccurred(_event: Protocol.Storage.InterestGroupAuctionEventOccurredEvent): void;
-    interestGroupAuctionNetworkRequestCreated(_event: Protocol.Storage.InterestGroupAuctionNetworkRequestCreatedEvent): void;
     storageBucketCreatedOrUpdated(_event: Protocol.Storage.StorageBucketCreatedOrUpdatedEvent): void;
     storageBucketDeleted(_event: Protocol.Storage.StorageBucketDeletedEvent): void;
 }

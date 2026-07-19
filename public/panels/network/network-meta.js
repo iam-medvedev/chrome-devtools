@@ -103,7 +103,7 @@ var UIStrings = {
   /**
    * @description Title of a setting under the Network category that can be invoked through the Command Menu
    */
-  dontGroupNetworkLogItemsByFrame: "Don't group network log items by frame",
+  dontGroupNetworkLogItemsByFrame: "Don\u2019t group network log items by frame",
   /**
    * @description Title of a button for clearing the network log
    */
@@ -125,12 +125,12 @@ var UIStrings = {
    * @description Title of an action in the Network panel that disables options in the UI to copy or export
    *              HAR (not translatable) with sensitive data.
    */
-  dontAllowToGenerateHarWithSensitiveData: "Don't allow to generate `HAR` with sensitive data",
+  dontAllowToGenerateHarWithSensitiveData: "Don\u2019t allow to generate `HAR` with sensitive data",
   /**
    * @description Tooltip shown as documentation when hovering the (?) icon next to the "Allow to generate
    *              HAR with sensitive data" option in the Settings panel.
    */
-  allowToGenerateHarWithSensitiveDataDocumentation: "By default generated HAR logs are sanitized and don't include `Cookie`, `Set-Cookie`, or `Authorization` HTTP headers. When this setting is enabled, options to export/copy HAR with sensitive data are provided."
+  allowToGenerateHarWithSensitiveDataDocumentation: "By default generated HAR logs are sanitized and don\u2019t include `Cookie`, `Set-Cookie`, or `Authorization` HTTP headers. When this setting is enabled, options to export/copy HAR with sensitive data are provided."
 };
 var str_ = i18n.i18n.registerUIStrings("panels/network/network-meta.ts", UIStrings);
 var i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(void 0, str_);

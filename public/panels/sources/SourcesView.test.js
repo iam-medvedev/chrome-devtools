@@ -11,8 +11,9 @@ import * as Bindings from '../../models/bindings/bindings.js';
 import * as Breakpoints from '../../models/breakpoints/breakpoints.js';
 import * as Persistence from '../../models/persistence/persistence.js';
 import * as Workspace from '../../models/workspace/workspace.js';
-import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { checkForPendingActivity } from '../../testing/TrackAsyncOperations.js';
 import { createContentProviderUISourceCodes, createFileSystemUISourceCode, } from '../../testing/UISourceCodeHelpers.js';
 import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -43,6 +44,31 @@ describeWithEnvironment('SourcesView', () => {
         Persistence.Persistence.PersistenceImpl.instance({ forceNew: true, workspace, breakpointManager });
         Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance({ forceNew: true, workspace });
         UI.ShortcutRegistry.ShortcutRegistry.instance({ forceNew: true, actionRegistry: actionRegistryInstance });
+    });
+    it('renders the placeholder correctly', async () => {
+        const sourcesView = new Sources.SourcesView.SourcesView();
+        renderElementIntoDOM(sourcesView, { includeCommonStyles: true });
+        await assertScreenshot('sources/sources-view-placeholder.png');
+        sourcesView.detach();
+    });
+    it('triggers addFileSystem when select folder button is clicked', async () => {
+        const sourcesView = new Sources.SourcesView.SourcesView();
+        renderElementIntoDOM(sourcesView, { includeCommonStyles: true });
+        const addFileSystemStub = sinon.stub(Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance(), 'addFileSystem')
+            .resolves(null);
+        // Wait for widget rendering/updates
+        await checkForPendingActivity();
+        // Find the TabbedPane element
+        const tabbedPane = sourcesView.element.querySelector('.tabbed-pane');
+        assert.isNotNull(tabbedPane, 'TabbedPane element not found');
+        // Find the button in placeholder inside TabbedPane's shadow root
+        const button = tabbedPane.shadowRoot.querySelector('.workspace button');
+        assert.instanceOf(button, HTMLButtonElement);
+        button.click();
+        // Wait for async handler
+        await new Promise(resolve => setTimeout(resolve, 0));
+        sinon.assert.calledOnce(addFileSystemStub);
+        sourcesView.detach();
     });
     it('creates new source view of updated type when renamed file requires a different viewer', async () => {
         const sourcesView = new Sources.SourcesView.SourcesView();

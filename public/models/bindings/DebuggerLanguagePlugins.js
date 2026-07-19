@@ -35,7 +35,7 @@ const UIStrings = {
      * @example {C/C++ DevTools Support (DWARF)} PH1
      * @example {http://web.dev/file.wasm} PH2
      */
-    loadedDebugSymbolsForButDidnt: '[{PH1}] Loaded debug symbols for {PH2}, but didn\'t find any source files',
+    loadedDebugSymbolsForButDidnt: '[{PH1}] Loaded debug symbols for {PH2}, but didn’t find any source files',
     /**
      * @description Status message that is shown in the Console when debugging information is successfully loaded
      * @example {C/C++ DevTools Support (DWARF)} PH1
@@ -910,7 +910,8 @@ class ModelData {
     project;
     uiSourceCodeToScripts;
     constructor(debuggerModel, workspace) {
-        this.project = new ContentProviderBasedProject(workspace, 'language_plugins::' + debuggerModel.target().id(), Workspace.Workspace.projectTypes.Network, '', false /* isServiceProject */);
+        this.project =
+            new ContentProviderBasedProject(workspace, 'language_plugins::' + debuggerModel.target().id(), Workspace.Workspace.projectTypes.Network, '', false /* isServiceProject */);
         NetworkProject.setTargetForProject(this.project, debuggerModel.target());
         this.uiSourceCodeToScripts = new Map();
     }
@@ -929,7 +930,7 @@ class ModelData {
                 // and at that point we already need to have the mapping in place
                 // otherwise we will not get the breakpoint right.
                 this.uiSourceCodeToScripts.set(uiSourceCode, [script]);
-                const contentProvider = new SDK.CompilerSourceMappingContentProvider.CompilerSourceMappingContentProvider(url, Common.ResourceType.resourceTypes.SourceMapScript, initiator);
+                const contentProvider = new SDK.CompilerSourceMappingContentProvider.CompilerSourceMappingContentProvider(url, Common.ResourceType.resourceTypes.SourceMapScript, initiator, script.target().targetManager().getPageResourceLoader());
                 const mimeType = Common.ResourceType.ResourceType.mimeFromURL(url) || 'text/javascript';
                 this.project.addUISourceCodeWithProvider(uiSourceCode, contentProvider, null, mimeType);
             }

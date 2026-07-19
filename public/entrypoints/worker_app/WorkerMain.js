@@ -8,7 +8,7 @@ import * as MobileThrottling from '../../panels/mobile_throttling/mobile_throttl
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 const UIStrings = {
     /**
-     * @description Text that refers to the main target.
+     * @description Name of the primary target connection when debugging a service worker or dedicated worker.
      */
     main: 'Main',
 };

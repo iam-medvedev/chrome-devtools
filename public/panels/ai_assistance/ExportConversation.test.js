@@ -69,5 +69,31 @@ describeWithEnvironment('Export Conversation as Markdown', () => {
         const contents = fileContents;
         assert.strictEqual(contents.text, 'FAKE CONVERSATION TEXT');
     });
+    it('truncates the filename title safely without splitting surrogate pairs or combining characters', async () => {
+        const fileManager = stubFileManager();
+        // 𠜎 is 2 code units, so prefix (9) + title (50) + suffix (3) = 62.
+        // If we have a title of 'a' * 50 + '𠜎' (52 code units), it exceeds maxTitleLength (51).
+        // Safe truncation should drop '𠜎' entirely, resulting in 50 'a's (50 code units).
+        const longTitle = 'a'.repeat(50) + '𠜎';
+        const conversation = new AiAssistanceModel.AiConversation.AiConversation({
+            type: "none" /* AiAssistanceModel.AiHistoryStorage.ConversationType.NONE */,
+            data: [
+                {
+                    type: "user-query" /* AiAssistanceModel.AiAgent.ResponseType.USER_QUERY */,
+                    query: longTitle,
+                },
+            ],
+            id: 'test-id',
+            isReadOnly: false,
+            aidaClient: mockAidaClient([
+                [{ explanation: 'Answer' }],
+            ]),
+        });
+        await AiAssistancePanel.ExportConversation.saveToDisk(conversation);
+        sinon.assert.calledOnce(fileManager.save);
+        const [fileName] = fileManager.save.getCall(0).args;
+        const expectedTitle = 'a'.repeat(50);
+        assert.strictEqual(fileName, `devtools_${expectedTitle}.md`);
+    });
 });
 //# sourceMappingURL=ExportConversation.test.js.map

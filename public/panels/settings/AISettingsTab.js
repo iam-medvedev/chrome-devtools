@@ -67,7 +67,17 @@ const UIStrings = {
      */
     showLess: 'Show less',
     /**
-     * @description Header for a list of feature attributes. 'When on, you’ll be able to …'.
+     * @description Accessible label for a button to expand an accordion for a specific setting.
+     * @example {Code suggestions} PH1
+     */
+    showMoreOfSetting: 'Show more of {PH1}',
+    /**
+     * @description Accessible label for a button to collapse an accordion for a specific setting.
+     * @example {Code suggestions} PH1
+     */
+    showLessOfSetting: 'Show less of {PH1}',
+    /**
+     * @description Header for a list of feature attributes. 'When on, you'll be able to …'.
      */
     whenOn: 'When on',
     /**
@@ -221,11 +231,11 @@ const UIStrings = {
      */
     enableAiCodeSuggestions: 'Enable AI code suggestions',
     /**
-     * @description Message shown to the user if the age check isn’t successful.
+     * @description Message shown to the user if the age check isn't successful.
      */
     ageRestricted: 'This feature is only available to users 18 years or older.',
     /**
-     * @description The error message when the user isn’t logged in to Chrome.
+     * @description The error message when the user isn't logged in to Chrome.
      */
     notLoggedIn: 'This feature is only available when you sign in to Chrome with your Google account.',
     /**
@@ -233,7 +243,7 @@ const UIStrings = {
      */
     offline: 'This feature is only available with an active internet connection.',
     /**
-     * @description Text informing the user that AI assistance isn’t available in Incognito mode or Guest mode.
+     * @description Text informing the user that AI assistance isn't available in Incognito mode or Guest mode.
      */
     notAvailableInIncognitoMode: 'AI assistance isn’t available in Incognito mode or Guest mode.',
 };
@@ -297,6 +307,9 @@ export const AI_SETTINGS_TAB_DEFAULT_VIEW = (input, _output, target) => {
           <devtools-button
             .data=${{
             title: settingData.settingExpandState.isSettingExpanded ? i18nString(UIStrings.showLess) : i18nString(UIStrings.showMore),
+            accessibleLabel: settingData.settingExpandState.isSettingExpanded ?
+                i18nString(UIStrings.showLessOfSetting, { PH1: settingData.settingName }) :
+                i18nString(UIStrings.showMoreOfSetting, { PH1: settingData.settingName }),
             size: "SMALL" /* Buttons.Button.Size.SMALL */,
             iconName: settingData.settingExpandState.isSettingExpanded ? 'chevron-up' : 'chevron-down',
             variant: "icon" /* Buttons.Button.Variant.ICON */,

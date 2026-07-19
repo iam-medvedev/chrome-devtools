@@ -12,39 +12,39 @@ import { InputModel } from './InputModel.js';
 import screencastViewStyles from './screencastView.css.js';
 const UIStrings = {
     /**
-     * @description Accessible alt text for the screencast canvas rendering of the debug target webpage
+     * @description Accessible alt text for the Screencast canvas rendering of the debug target webpage.
      */
     screencastViewOfDebugTarget: 'Screencast view of debug target',
     /**
-     * @description Glass pane element text content in Screencast View of the Remote Devices tab when toggling screencast
+     * @description Glass pane element text content in the Screencast view of the Remote devices tab when toggling screencast.
      */
     theTabIsInactive: 'The tab is inactive',
     /**
-     * @description Glass pane element text content in Screencast View of the Remote Devices tab when toggling screencast
+     * @description Glass pane element text content in the Screencast view of the Remote devices tab when profiling is in progress.
      */
     profilingInProgress: 'Profiling in progress',
     /**
-     * @description Accessible text for the screencast back button
+     * @description Accessible label for the Screencast back button.
      */
-    back: 'back',
+    back: 'Back',
     /**
-     * @description Accessible text for the screencast forward button
+     * @description Accessible label for the Screencast forward button.
      */
-    forward: 'forward',
+    forward: 'Forward',
     /**
-     * @description Accessible text for the screencast reload button
+     * @description Accessible label for the Screencast reload button.
      */
-    reload: 'reload',
+    reload: 'Reload',
     /**
-     * @description Accessible text for the address bar in screencast view
+     * @description Accessible label for the address bar in the Screencast view.
      */
     addressBar: 'Address bar',
     /**
-     * @description Accessible text for the touch emulation button.
+     * @description Accessible label for the touch input button in the Screencast view.
      */
     touchInput: 'Use touch',
     /**
-     * @description Accessible text for the mouse emulation button.
+     * @description Accessible label for the mouse input button in the Screencast view.
      */
     mouseInput: 'Use mouse',
 };

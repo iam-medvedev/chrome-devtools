@@ -3233,6 +3233,7 @@ var DataGridElement = class extends UI3.UIUtils.HTMLElementWithLightDOMTemplate 
   #hideableColumns = /* @__PURE__ */ new Set();
   #hiddenColumns = /* @__PURE__ */ new Set();
   #usedCreationNode = null;
+  #sortingChangedScheduled = false;
   constructor() {
     super();
     this.style.display = "flex";
@@ -3352,10 +3353,15 @@ var DataGridElement = class extends UI3.UIUtils.HTMLElementWithLightDOMTemplate 
       const titleDOMFragment = column.firstElementChild ? document.createDocumentFragment() : void 0;
       if (titleDOMFragment) {
         title = "";
-        for (const child of column.children) {
+        for (const child of column.childNodes) {
           titleDOMFragment.appendChild(child.cloneNode(true));
-          title += child.shadowRoot ? child.shadowRoot.textContent : child.textContent;
+          if (child instanceof Element && child.shadowRoot) {
+            title += child.shadowRoot.textContent;
+          } else if (child.nodeType !== Node.COMMENT_NODE) {
+            title += child.textContent ?? "";
+          }
         }
+        title = title.trim();
       }
       const sortable = hasBooleanAttribute(column, "sortable");
       const width = column.getAttribute("width") ?? void 0;
@@ -3371,6 +3377,7 @@ var DataGridElement = class extends UI3.UIUtils.HTMLElementWithLightDOMTemplate 
         hasEditableColumn = true;
       }
       const sort = column.getAttribute("sort") === "descending" ? Order.Descending : column.getAttribute("sort") === "ascending" ? Order.Ascending : void 0;
+      const disclosure = hasBooleanAttribute(column, "disclosure");
       const columnDescriptor = {
         id,
         title,
@@ -3382,7 +3389,8 @@ var DataGridElement = class extends UI3.UIUtils.HTMLElementWithLightDOMTemplate 
         align,
         weight,
         editable,
-        dataType
+        dataType,
+        disclosure
       };
       this.#dataGrid.addColumn(columnDescriptor);
       this.#columns.push(columnDescriptor);
@@ -3393,7 +3401,7 @@ var DataGridElement = class extends UI3.UIUtils.HTMLElementWithLightDOMTemplate 
     const visibleColumns = new Set(this.#columns.map(({ id }) => id).filter((id) => !this.#hiddenColumns.has(id)));
     this.#dataGrid.setColumnsVisibility(visibleColumns);
     this.#dataGrid.setEditCallback(hasEditableColumn ? this.#editCallback.bind(this) : void 0, INTERNAL_TOKEN);
-    this.#dataGrid.deleteCallback = hasEditableColumn ? this.#deleteCallback.bind(this) : void 0;
+    this.#dataGrid.deleteCallback = this.#deleteCallback.bind(this);
   }
   #needUpdateColumns(mutationList) {
     for (const mutation of mutationList) {
@@ -3444,8 +3452,14 @@ var DataGridElement = class extends UI3.UIUtils.HTMLElementWithLightDOMTemplate 
   }
   addNodes(nodes) {
     for (const element of this.#getDataRows(nodes)) {
+      if (getNode(element)) {
+        continue;
+      }
       const parentRow = element.parentElement?.closest("td")?.closest("tr");
       const parentDataGridNode = parentRow ? getNode(parentRow) : void 0;
+      if (parentRow && !parentDataGridNode) {
+        continue;
+      }
       const parentNode = parentDataGridNode || this.#dataGrid.rootNode();
       const nextNode = this.#findNextExistingNode(element);
       const index = nextNode ? parentNode.children.indexOf(nextNode) : parentNode.children.length;
@@ -3467,14 +3481,14 @@ var DataGridElement = class extends UI3.UIUtils.HTMLElementWithLightDOMTemplate 
       if (hasBooleanAttribute(element, "highlighted")) {
         node.setHighlighted(true);
       }
+      if (hasBooleanAttribute(element, "expanded")) {
+        node.expand();
+      }
     }
-    for (const element of this.#getStyleElements(nodes)) {
+    for (const element of new Set(this.#getStyleElements(nodes))) {
       this.#shadowRoot.appendChild(element.cloneNode(true));
     }
-    this.#dataGrid.dispatchEventToListeners(
-      "SortingChanged"
-      /* DataGridEvents.SORTING_CHANGED */
-    );
+    this.#scheduleSortingChanged();
   }
   removeNodes(nodes) {
     for (const element of this.#getDataRows(nodes)) {
@@ -3503,11 +3517,30 @@ var DataGridElement = class extends UI3.UIUtils.HTMLElementWithLightDOMTemplate 
         dataGridNode.setInactive(hasBooleanAttribute(dataRow, "inactive"));
       } else if (attributeName === "highlighted") {
         dataGridNode.setHighlighted(hasBooleanAttribute(dataRow, "highlighted"));
+      } else if (attributeName === "expanded") {
+        if (hasBooleanAttribute(dataRow, "expanded")) {
+          dataGridNode.expand();
+        } else {
+          dataGridNode.collapse();
+        }
       } else {
         this.#updateHasChildren(dataGridNode, dataRow);
         dataGridNode.refresh();
       }
     }
+  }
+  #scheduleSortingChanged() {
+    if (this.#sortingChangedScheduled) {
+      return;
+    }
+    this.#sortingChangedScheduled = true;
+    queueMicrotask(() => {
+      this.#sortingChangedScheduled = false;
+      this.#dataGrid.dispatchEventToListeners(
+        "SortingChanged"
+        /* DataGridEvents.SORTING_CHANGED */
+      );
+    });
   }
   deselectRow() {
     this.#dataGrid.selectedNode?.deselect();
@@ -3536,10 +3569,7 @@ var DataGridElement = class extends UI3.UIUtils.HTMLElementWithLightDOMTemplate 
     this.#updateCreationNode();
     const hadAddedNodes = mutationList.some((m) => m.addedNodes.length > 0);
     if (this.#dataGrid.sortColumnId() !== null && !hadAddedNodes) {
-      this.#dataGrid.dispatchEventToListeners(
-        "SortingChanged"
-        /* DataGridEvents.SORTING_CHANGED */
-      );
+      this.#scheduleSortingChanged();
     }
   }
   #editCallback(node, columnId, valueBeforeEditing, newText, moveDirection) {

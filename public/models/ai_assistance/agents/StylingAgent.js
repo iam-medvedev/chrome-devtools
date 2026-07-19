@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import * as Host from '../../../core/host/host.js';
 import * as Root from '../../../core/root/root.js';
-import * as SDK from '../../../core/sdk/sdk.js';
 import { ChangeManager } from '../ChangeManager.js';
 import { ExtensionScope } from '../ExtensionScope.js';
 import { AI_ASSISTANCE_CSS_CLASS_NAME } from '../injected.js';
@@ -102,7 +101,7 @@ export class StylingAgent extends AiAgent {
     #createExtensionScope;
     constructor(opts) {
         super(opts);
-        this.#changes = opts.changeManager || new ChangeManager();
+        this.#changes = opts.changeManager || new ChangeManager(opts.targetManager);
         this.#execJs = opts.execJs ?? executeJsCode;
         this.#createExtensionScope = opts.createExtensionScope ?? ((changes) => {
             return new ExtensionScope(changes, this.sessionId, this.context?.getItem() ?? null);
@@ -122,7 +121,7 @@ export class StylingAgent extends AiAgent {
                 }
                 return await getStylesTool.handler(args, {
                     conversationContext: context,
-                    getTarget: () => SDK.TargetManager.TargetManager.instance().primaryPageTarget() ?? context.getItem().domModel().target(),
+                    getTarget: () => this.targetManager.primaryPageTarget() ?? context.getItem().domModel().target(),
                     getEstablishedOrigin: () => context.getOrigin(),
                 });
             },

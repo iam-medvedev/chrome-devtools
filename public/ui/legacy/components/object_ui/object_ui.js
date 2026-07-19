@@ -62,13 +62,13 @@ __export(ObjectPropertiesSection_exports, {
   ObjectTreeNode: () => ObjectTreeNode,
   ObjectTreeNodeBase: () => ObjectTreeNodeBase,
   Renderer: () => Renderer,
-  RootElement: () => RootElement,
   getObjectPropertiesSectionFrom: () => getObjectPropertiesSectionFrom,
   isWasmObject: () => isWasmObject,
   objectPropertiesSectionStyles: () => objectPropertiesSection_css_default,
   objectValueStyles: () => objectValue_css_default,
   populateObjectTreeContextMenu: () => populateObjectTreeContextMenu,
-  sortPropertiesAlphabeticallySetting: () => sortPropertiesAlphabeticallySetting
+  renderObjectPropertiesSection: () => renderObjectPropertiesSection,
+  renderObjectTree: () => renderObjectTree
 });
 import * as Common from "./../../../../core/common/common.js";
 import * as Host from "./../../../../core/host/host.js";
@@ -560,7 +560,7 @@ var objectValue_css_default = `/*
 .object-value-regexp,
 .object-value-symbol {
   white-space: pre;
-  unicode-bidi: -webkit-isolate;
+  unicode-bidi: isolate;
   color: var(--sys-color-token-property-special);
 }
 
@@ -609,6 +609,7 @@ var objectValue_css_default = `/*
 .name {
   color: var(--sys-color-token-tag);
   flex-shrink: 0;
+  unicode-bidi: isolate;
 }
 
 .object-properties-preview .name {
@@ -626,7 +627,7 @@ var objectValue_css_default = `/*
 
 // gen/front_end/ui/legacy/components/object_ui/ObjectPropertiesSection.js
 var { widget } = UI2.Widget;
-var { ref, repeat: repeat2, ifDefined: ifDefined2, classMap } = Directives2;
+var { ref, repeat: repeat2, ifDefined: ifDefined2, classMap, until } = Directives2;
 var UIStrings2 = {
   /**
    * @description Text in Object Properties Section
@@ -722,13 +723,7 @@ var str_2 = i18n3.i18n.registerUIStrings("ui/legacy/components/object_ui/ObjectP
 var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
 var EXPANDABLE_MAX_DEPTH = 100;
 var objectPropertiesSectionMap = /* @__PURE__ */ new WeakMap();
-var cachedSortAlphabeticallySetting;
-function sortPropertiesAlphabeticallySetting() {
-  if (!cachedSortAlphabeticallySetting) {
-    cachedSortAlphabeticallySetting = Common.Settings.Settings.instance().createSetting("object-properties-sort-alphabetically", true);
-  }
-  return cachedSortAlphabeticallySetting;
-}
+var topLevelNodesCache = /* @__PURE__ */ new WeakMap();
 function isWasmObject(object) {
   return object?.subtype === "webassemblymemory" || object?.subtype === "wasmvalue";
 }
@@ -909,11 +904,13 @@ var ObjectTreeNodeBase = class _ObjectTreeNodeBase extends Common.ObjectWrapper.
   filter = null;
   extraProperties = [];
   #expanded = false;
+  #sortPropertiesAlphabeticallySetting;
   constructor(parent, options) {
     super();
     this.parent = parent;
     this.filter = parent?.filter ?? null;
     this.options = { ...options };
+    this.#sortPropertiesAlphabeticallySetting = parent ? parent.#sortPropertiesAlphabeticallySetting : Common.Settings.Settings.instance().createSetting("object-properties-sort-alphabetically", true);
   }
   get isWasm() {
     return isWasmObject(this.object);
@@ -938,6 +935,9 @@ var ObjectTreeNodeBase = class _ObjectTreeNodeBase extends Common.ObjectWrapper.
   get propertiesMode() {
     return this.options.propertiesMode;
   }
+  get search() {
+    return this.options.search;
+  }
   get includeNullOrUndefinedValues() {
     return this.filter?.includeNullOrUndefinedValues ?? true;
   }
@@ -951,15 +951,21 @@ var ObjectTreeNodeBase = class _ObjectTreeNodeBase extends Common.ObjectWrapper.
     if (this.isWasm) {
       return false;
     }
-    return sortPropertiesAlphabeticallySetting().get();
+    return this.#sortPropertiesAlphabeticallySetting.get();
   }
   set sortPropertiesAlphabetically(value) {
-    const setting = sortPropertiesAlphabeticallySetting();
-    if (this.isWasm || setting.get() === value) {
+    if (this.isWasm || this.#sortPropertiesAlphabeticallySetting.get() === value) {
       return;
     }
-    setting.set(value);
+    this.#sortPropertiesAlphabeticallySetting.set(value);
     this.removeChildren();
+  }
+  *treeNodeChildren() {
+    if (this.#children) {
+      yield* this.#children.properties ?? [];
+      yield* this.#children.arrayRanges ?? [];
+      yield* this.#children.internalProperties ?? [];
+    }
   }
   // Performs a pre-order tree traversal over the populated children. If any children need to be populated, callers must
   // do that while walking (pre-order visitation enables that).
@@ -967,18 +973,11 @@ var ObjectTreeNodeBase = class _ObjectTreeNodeBase extends Common.ObjectWrapper.
     if (filter && !filter(this)) {
       return;
     }
-    function* walkChildren(children) {
-      if (children) {
-        for (const child of children) {
-          yield* child.#walk(Math.max(-1, maxDepth - 1), filter);
-        }
-      }
-    }
     yield this;
     if (maxDepth !== 0) {
-      yield* walkChildren(this.#children?.properties);
-      yield* walkChildren(this.#children?.arrayRanges);
-      yield* walkChildren(this.#children?.internalProperties);
+      for (const child of this.treeNodeChildren()) {
+        yield* child.#walk(Math.max(-1, maxDepth - 1), filter);
+      }
     }
   }
   async expandRecursively(maxDepth) {
@@ -1012,6 +1011,9 @@ var ObjectTreeNodeBase = class _ObjectTreeNodeBase extends Common.ObjectWrapper.
       "children-changed"
       /* ObjectTreeNodeBase.Events.CHILDREN_CHANGED */
     );
+  }
+  match(_regex) {
+    return [];
   }
   removeChild(child) {
     remove(this.#children?.arrayRanges, child);
@@ -1061,9 +1063,7 @@ var ObjectTreeNodeBase = class _ObjectTreeNodeBase extends Common.ObjectWrapper.
     if (this.arrayLength > ARRAY_LOAD_THRESHOLD) {
       const ranges = await arrayRangeGroups(object, 0, this.arrayLength - 1);
       const arrayRanges = ranges?.ranges.map(([fromIndex, toIndex, count]) => new ArrayGroupTreeNode(object, { fromIndex, toIndex, count }, effectiveParent, {
-        readOnly: this.readOnly,
-        propertiesMode: this.propertiesMode,
-        expansionTracker: this.options.expansionTracker
+        ...this.options
       }));
       if (!arrayRanges) {
         return {};
@@ -1075,14 +1075,12 @@ var ObjectTreeNodeBase = class _ObjectTreeNodeBase extends Common.ObjectWrapper.
         /* nonIndexedPropertiesOnly */
       );
       const properties2 = objectProperties2?.map((p) => new ObjectTreeNode(p, effectiveParent, {
-        readOnly: this.readOnly,
-        propertiesMode: 1,
-        expansionTracker: this.options.expansionTracker
+        ...this.options,
+        propertiesMode: 1
       }));
       const internalProperties2 = objectInternalProperties2?.map((p) => new ObjectTreeNode(p, effectiveParent, {
-        readOnly: this.readOnly,
-        propertiesMode: 1,
-        expansionTracker: this.options.expansionTracker
+        ...this.options,
+        propertiesMode: 1
       }));
       return { arrayRanges, properties: properties2, internalProperties: internalProperties2 };
     }
@@ -1105,17 +1103,15 @@ var ObjectTreeNodeBase = class _ObjectTreeNodeBase extends Common.ObjectWrapper.
         break;
     }
     const properties = objectProperties?.map((p) => new ObjectTreeNode(p, effectiveParent, {
-      readOnly: this.readOnly,
-      propertiesMode: 1,
-      expansionTracker: this.options.expansionTracker
+      ...this.options,
+      propertiesMode: 1
     }));
     properties?.push(...this.extraProperties);
     properties?.sort((a, b) => ObjectPropertiesSection.compareProperties(a, b, this.sortPropertiesAlphabetically));
     const accessors = properties && _ObjectTreeNodeBase.getGettersAndSetters(properties, this.options);
     const internalProperties = objectInternalProperties?.map((p) => new ObjectTreeNode(p, effectiveParent, {
-      readOnly: this.readOnly,
-      propertiesMode: 1,
-      expansionTracker: this.options.expansionTracker
+      ...this.options,
+      propertiesMode: 1
     }));
     return { properties, internalProperties, accessors };
   }
@@ -1131,9 +1127,8 @@ var ObjectTreeNodeBase = class _ObjectTreeNodeBase extends Common.ObjectWrapper.
   }
   addExtraProperties(...properties) {
     this.extraProperties.push(...properties.map((p) => new ObjectTreeNode(p, this, {
-      readOnly: this.readOnly,
-      propertiesMode: 1,
-      expansionTracker: this.options.expansionTracker
+      ...this.options,
+      propertiesMode: 1
     })));
   }
   static getGettersAndSetters(properties, options) {
@@ -1143,17 +1138,17 @@ var ObjectTreeNodeBase = class _ObjectTreeNodeBase extends Common.ObjectWrapper.
         if (property.property.getter) {
           const getterProperty = new SDK3.RemoteObject.RemoteObjectProperty("get " + property.property.name, property.property.getter, false);
           gettersAndSetters.push(new ObjectTreeNode(getterProperty, property.parent, {
+            ...options,
             propertiesMode: property.propertiesMode,
-            readOnly: property.readOnly,
-            expansionTracker: options.expansionTracker
+            readOnly: property.readOnly
           }));
         }
         if (property.property.setter) {
           const setterProperty = new SDK3.RemoteObject.RemoteObjectProperty("set " + property.property.name, property.property.setter, false);
           gettersAndSetters.push(new ObjectTreeNode(setterProperty, property.parent, {
+            ...options,
             propertiesMode: property.propertiesMode,
-            readOnly: property.readOnly,
-            expansionTracker: options.expansionTracker
+            readOnly: property.readOnly
           }));
         }
       }
@@ -1205,9 +1200,7 @@ var ArrayGroupTreeNode = class _ArrayGroupTreeNode extends ObjectTreeNodeBase {
     );
     arrayFragment.release();
     const properties = allProperties.properties?.map((p) => new ObjectTreeNode(p, this, {
-      propertiesMode: this.propertiesMode,
-      readOnly: this.readOnly,
-      expansionTracker: this.options.expansionTracker
+      ...this.options
     }));
     properties?.push(...this.extraProperties);
     properties?.sort((a, b) => ObjectPropertiesSection.compareProperties(a, b, this.sortPropertiesAlphabetically));
@@ -1259,7 +1252,7 @@ var ObjectTreeNode = class _ObjectTreeNode extends ObjectTreeNodeBase {
       } else if (isInteger.test(this.name)) {
         this.#path = `${parentPath}[${this.name}]`;
       } else {
-        this.#path = `${parentPath}[${JSON.stringify(this.name)}]`;
+        this.#path = `${parentPath}[${Platform2.StringUtilities.formatAsJSLiteral(this.name)}]`;
       }
     }
     return this.#path;
@@ -1317,6 +1310,51 @@ var ObjectTreeNode = class _ObjectTreeNode extends ObjectTreeNodeBase {
       /* ObjectTreeNodeBase.Events.VALUE_CHANGED */
     );
   }
+  #getSearchableNameText() {
+    return /^\s|\s$|^$|\n/.test(this.property.name) ? `"${this.property.name.replace(/\n/g, "\u21B5")}"` : this.property.name;
+  }
+  #getSearchableValueText() {
+    const value = this.property.value;
+    if (!value || value.type !== "string" && value.type !== "number" || value.description === void 0) {
+      return "";
+    }
+    if (value.type === "string" && typeof value.description === "string") {
+      const text = Platform2.StringUtilities.safeEscapeUnicode(JSON.stringify(value.description));
+      if (value.description.length > maxRenderableStringLength) {
+        return text.slice(0, ExpandableTextPropertyValue.EXPANDABLE_MAX_LENGTH);
+      }
+      return text;
+    }
+    return value.description;
+  }
+  match(regex) {
+    const results = [];
+    const nameText = this.#getSearchableNameText();
+    const nameGlobalRegex = regex.global ? regex : new RegExp(regex.source, regex.flags + "g");
+    for (const m of nameText.matchAll(nameGlobalRegex)) {
+      results.push({
+        node: this,
+        isPostOrderMatch: false,
+        matchIndexInNode: results.length,
+        matchType: "name",
+        range: new TextUtils.TextRange.SourceRange(m.index ?? 0, m[0].length)
+      });
+    }
+    const valueText = this.#getSearchableValueText();
+    if (valueText) {
+      const valueGlobalRegex = regex.global ? regex : new RegExp(regex.source, regex.flags + "g");
+      for (const m of valueText.matchAll(valueGlobalRegex)) {
+        results.push({
+          node: this,
+          isPostOrderMatch: false,
+          matchIndexInNode: results.length,
+          matchType: "value",
+          range: new TextUtils.TextRange.SourceRange(m.index ?? 0, m[0].length)
+        });
+      }
+    }
+    return results;
+  }
 };
 var getObjectPropertiesSectionFrom = (element) => {
   return objectPropertiesSectionMap.get(element);
@@ -1326,11 +1364,12 @@ var ObjectPropertiesSection = class _ObjectPropertiesSection extends UI2.TreeOut
   #objectTreeElement;
   titleElement;
   skipProtoInternal;
-  constructor(object, title, linkifier, showOverflow, editable = true) {
+  constructor(object, title, linkifier, showOverflow, editable = true, search) {
     super();
     this.root = new ObjectTree(object, {
       readOnly: !editable,
-      propertiesMode: 1
+      propertiesMode: 1,
+      search
     });
     if (!showOverflow) {
       this.setHideOverflow(true);
@@ -1341,7 +1380,7 @@ var ObjectPropertiesSection = class _ObjectPropertiesSection extends UI2.TreeOut
     this.appendChild(this.#objectTreeElement);
     if (typeof title === "string" || !title) {
       this.titleElement = this.element.createChild("span");
-      this.titleElement.textContent = title || "";
+      this.titleElement.textContent = title ? Platform2.StringUtilities.escapeUnicodeAsText(title) : "";
     } else {
       this.titleElement = title;
       this.element.appendChild(title);
@@ -1435,19 +1474,20 @@ var ObjectPropertiesSection = class _ObjectPropertiesSection extends UI2.TreeOut
     if (name === null) {
       return element;
     }
-    if (/^\s|\s$|^$|\n/.test(name)) {
-      element.textContent = `"${name.replace(/\n/g, "\u21B5")}"`;
+    const escapedName = Platform2.StringUtilities.escapeUnicodeAsText(name);
+    if (/^\s|\s$|^$|\n/.test(escapedName)) {
+      element.textContent = `"${escapedName.replace(/\n/g, "\u21B5")}"`;
       return element;
     }
     if (isPrivate) {
       const privatePropertyHash = document.createElement("span");
       privatePropertyHash.classList.add("private-property-hash");
-      privatePropertyHash.textContent = name[0];
+      privatePropertyHash.textContent = escapedName[0];
       element.appendChild(privatePropertyHash);
-      element.appendChild(document.createTextNode(name.substring(1)));
+      element.appendChild(document.createTextNode(escapedName.substring(1)));
       return element;
     }
-    element.textContent = name;
+    element.textContent = escapedName;
     return element;
   }
   static valueElementForFunctionDescription(description, includePreview, defaultName, className) {
@@ -1550,17 +1590,18 @@ var ObjectPropertiesSection = class _ObjectPropertiesSection extends UI2.TreeOut
         if (rawLocation && linkifier) {
           return html2`${linkifier.linkifyRawLocation(rawLocation, Platform2.DevToolsPath.EmptyUrlString, "value")}`;
         }
-        return html2`<span class=value title=${description}>${"<" + i18nString2(UIStrings2.unknown) + ">"}</span>`;
+        const title = description || void 0;
+        return html2`<span class=value title=${ifDefined2(title)}>${"<" + i18nString2(UIStrings2.unknown) + ">"}</span>`;
       }
       if (type === "string" && typeof description === "string") {
-        const text = JSON.stringify(description);
+        const text = Platform2.StringUtilities.escapeUnicodeAsText(JSON.stringify(description));
         const tooLong = description.length > maxRenderableStringLength;
         return html2`<span class="value object-value-string" title=${ifDefined2(tooLong ? void 0 : description)}>${tooLong ? widget(ExpandableTextPropertyValue, { text }) : text}</span>`;
       }
       if (type === "object" && subtype === "trustedtype") {
-        const text = `${className} '${description}'`;
+        const text = `${className} "${description}"`;
         const tooLong = text.length > maxRenderableStringLength;
-        return html2`<span class="value object-value-trustedtype" title=${ifDefined2(tooLong ? void 0 : text)}>${tooLong ? widget(ExpandableTextPropertyValue, { text }) : html2`${className} <span class=object-value-string title=${description}>${JSON.stringify(description)}</span>`}</span>`;
+        return html2`<span class="value object-value-trustedtype" title=${ifDefined2(tooLong ? void 0 : text)}>${tooLong ? widget(ExpandableTextPropertyValue, { text }) : renderTrustedType(description, className)}</span>`;
       }
       if (type === "function") {
         return _ObjectPropertiesSection.valueElementForFunctionDescription(description, void 0, void 0, "value");
@@ -1662,7 +1703,7 @@ function populateObjectTreeContextMenu(contextMenu, object, expandRecursively, c
   contextMenu.appendApplicableItems(object.object);
   if (object.object instanceof SDK3.RemoteObject.LocalJSONObject) {
     const { value } = object.object;
-    const propertyValue = typeof value === "object" ? JSON.stringify(value, null, 2) : value;
+    const propertyValue = typeof value === "object" ? Platform2.StringUtilities.escapeUnicodeAsText(JSON.stringify(value, null, 2)) : value;
     const copyValueHandler = () => {
       Host.userMetrics.actionTaken(Host.UserMetrics.Action.NetworkPanelCopyValue);
       Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(propertyValue);
@@ -1678,6 +1719,59 @@ function populateObjectTreeContextMenu(contextMenu, object, expandRecursively, c
     });
   }
   contextMenu.viewSection().appendCheckboxItem(i18nString2(UIStrings2.showAll), onShowAllToggled, { checked: object.includeNullOrUndefinedValues, jslogContext: "show-all" });
+}
+function renderObjectTreeInternal(objectTree, linkifier, emptyPlaceholder, classes = {}) {
+  const entry = topLevelNodesCache.get(objectTree);
+  if (entry && entry.linkifier === linkifier) {
+    return html2`
+      <ul class=${classMap(classes)} role="group">
+        ${entry.nodes.map((node) => html2`<devtools-tree-wrapper .treeElement=${node}></devtools-tree-wrapper>`)}
+      </ul>
+    `;
+  }
+  const promise = (async () => {
+    await ObjectPropertyTreeElement.populateChildrenIfNeeded(objectTree);
+    const nodes = Array.from(ObjectPropertyTreeElement.createNodes(
+      objectTree,
+      /* skipProto= */
+      false,
+      /* skipGettersAndSetters= */
+      false,
+      linkifier,
+      emptyPlaceholder
+    ));
+    topLevelNodesCache.set(objectTree, { linkifier, nodes });
+    const listener = () => {
+      topLevelNodesCache.delete(objectTree);
+      objectTree.removeEventListener("children-changed", listener);
+    };
+    objectTree.addEventListener("children-changed", listener);
+    return html2`
+      <ul class=${classMap(classes)} role="group">
+        ${nodes.map((node) => html2`<devtools-tree-wrapper .treeElement=${node}></devtools-tree-wrapper>`)}
+      </ul>
+    `;
+  })();
+  return until(promise, html2`<ul class=${classMap(classes)} role="group"></ul>`);
+}
+function renderObjectTree(objectTree, linkifier, emptyPlaceholder) {
+  return renderObjectTreeInternal(objectTree, linkifier, emptyPlaceholder, {
+    "source-code": true,
+    "object-properties-section": true
+  });
+}
+function renderObjectPropertiesSection(objectTree, title, linkifier) {
+  const treeContent = renderObjectTreeInternal(objectTree, linkifier, void 0, {});
+  return html2`<devtools-tree class="object-properties-section" show-selection-on-keyboard-focus .template=${html2`
+    <ul role="tree" class="source-code object-properties-section">
+      <style>${objectValue_css_default}</style>
+      <style>${objectPropertiesSection_css_default}</style>
+      <li role="treeitem" class="object-properties-section-root-element" ?open=${objectTree.expanded}>
+        ${title}
+        ${treeContent}
+      </li>
+    </ul>
+  `}></devtools-tree>`;
 }
 var RootElement = class extends UI2.TreeOutline.TreeElement {
   object;
@@ -1750,6 +1844,14 @@ var OBJECT_PROPERTY_DEFAULT_VIEW = (input, output, target) => {
   });
   const quotedName = /^\s|\s$|^$|\n/.test(property.name) ? `"${property.name.replace(/\n/g, "\u21B5")}"` : property.name;
   const isExpandable = !isInternalEntries && property.value && !property.wasThrown && property.value.hasChildren && !property.value.customPreview() && property.value.subtype !== "node" && property.value.type !== "function" && (property.value.type !== "object" || property.value.preview);
+  const search = input.search;
+  const entries = search?.getResults(input.node);
+  const currentMatch = search?.currentMatch();
+  const isCurrentNode = currentMatch?.node === input.node;
+  const nameCurrent = isCurrentNode && currentMatch?.matchType === "name" ? currentMatch.range.cssValue() : "";
+  const valueCurrent = isCurrentNode && currentMatch?.matchType === "value" ? currentMatch.range.cssValue() : "";
+  const nameRanges = (entries ?? []).filter((e) => e !== currentMatch && e.matchType === "name").map((e) => e.range.cssValue()).join(" ");
+  const valueRanges = (entries ?? []).filter((e) => e !== currentMatch && e.matchType === "value").map((e) => e.range.cssValue()).join(" ");
   const value = () => {
     const valueRef = ref((e) => {
       output.valueElement = e;
@@ -1793,7 +1895,7 @@ var OBJECT_PROPERTY_DEFAULT_VIEW = (input, output, target) => {
     output.nameElement = e;
   })}
           class=${nameClasses}
-          title=${input.node.path}>${property.private ? html2`<span class="private-property-hash">${property.name[0]}</span>${property.name.substring(1)}</span>` : quotedName}</span>${isInternalEntries ? nothing2 : html2`<span class='separator'>: </span><devtools-prompt
+          title=${input.node.path}><devtools-highlight ranges=${nameRanges} current-range=${nameCurrent}>${property.private ? html2`<span class="private-property-hash">${property.name[0]}</span>${property.name.substring(1)}` : quotedName}</devtools-highlight></span>${isInternalEntries ? nothing2 : html2`<span class='separator'>: </span><devtools-prompt
                 @commit=${(e) => input.editingCommitted(e.detail)}
                 @cancel=${() => input.editingEnded()}
                 @beforeautocomplete=${onAutoComplete}
@@ -1802,9 +1904,9 @@ var OBJECT_PROPERTY_DEFAULT_VIEW = (input, output, target) => {
                 completions=${completionsId}
                 placeholder=${i18nString2(UIStrings2.stringIsTooLargeToEdit)}
                 ?editing=${input.editing}>
-                  ${input.expanded && isExpandable && property.value ? html2`<span
+                  <devtools-highlight ranges=${valueRanges} current-range=${valueCurrent}>${input.expanded && isExpandable && property.value ? html2`<span
                       class="value object-value-${property.value.subtype || property.value.type}"
-                      title=${ifDefined2(property.value.description)}>${property.value.description === "Object" ? "" : Platform2.StringUtilities.trimMiddle(property.value.description ?? "", maxRenderableStringLength)}${property.synthetic ? nothing2 : ObjectPropertiesSection.getMemoryIcon(property.value)}</span>` : value()}
+                      title=${ifDefined2(property.value.description)}>${property.value.description === "Object" ? "" : Platform2.StringUtilities.trimMiddle(property.value.description ?? "", maxRenderableStringLength)}${property.synthetic ? nothing2 : ObjectPropertiesSection.getMemoryIcon(property.value)}</span>` : value()}</devtools-highlight>
                   <datalist id=${completionsId}>${repeat2(input.completions, (c) => html2`<option>${c}</option>`)}</datalist>
                 </devtools-prompt></span>`}</span>`, target);
 };
@@ -1819,6 +1921,7 @@ var ObjectPropertyWidget = class extends UI2.Widget.Widget {
   #expanded = false;
   #linkifier;
   #editable = false;
+  #search;
   constructor(target, view = OBJECT_PROPERTY_DEFAULT_VIEW) {
     super(target);
     this.#view = view;
@@ -1832,10 +1935,13 @@ var ObjectPropertyWidget = class extends UI2.Widget.Widget {
       this.#property.removeEventListener("children-changed", this.requestUpdate, this);
       this.#property.removeEventListener("filter-changed", this.requestUpdate, this);
     }
+    this.#search?.removeEventListener("SearchChanged", this.requestUpdate, this);
     this.#property = property;
     this.#property.addEventListener("value-changed", this.requestUpdate, this);
     this.#property.addEventListener("children-changed", this.requestUpdate, this);
     this.#property.addEventListener("filter-changed", this.requestUpdate, this);
+    this.#search = property.search;
+    this.#search?.addEventListener("SearchChanged", this.requestUpdate, this);
     this.requestUpdate();
   }
   get expanded() {
@@ -1874,7 +1980,8 @@ var ObjectPropertyWidget = class extends UI2.Widget.Widget {
       completions: this.#editing ? this.#completions : [],
       onAutoComplete: this.#updateCompletions.bind(this),
       invokeGetter: this.#invokeGetter.bind(this),
-      startEditing: this.startEditing.bind(this)
+      startEditing: this.startEditing.bind(this),
+      search: this.#search
     };
     const that = this;
     const output = {
@@ -1955,6 +2062,7 @@ var ObjectPropertyTreeElement = class _ObjectPropertyTreeElement extends UI2.Tre
   constructor(property, linkifier) {
     super();
     this.#widget = new ObjectPropertyWidget();
+    this.#widget.markAsRoot();
     this.property = property;
     this.hidden = property.isFiltered;
     this.property.addEventListener("value-changed", this.#updateValue, this);
@@ -2112,7 +2220,6 @@ var ObjectPropertyTreeElement = class _ObjectPropertyTreeElement extends UI2.Tre
   }
   onattach() {
     this.updateExpandable();
-    this.#widget.markAsRoot();
     this.#widget.show(this.listItemElement);
     this.#widget.property = this.property;
     this.#widget.linkifier = this.linkifier;
@@ -2154,7 +2261,7 @@ var ObjectPropertyTreeElement = class _ObjectPropertyTreeElement extends UI2.Tre
       contextMenu.appendApplicableItems(this.property.object);
       if (this.property.parent?.object instanceof SDK3.RemoteObject.LocalJSONObject) {
         const { object: { value } } = this.property;
-        const propertyValue = typeof value === "object" ? JSON.stringify(value, null, 2) : value;
+        const propertyValue = typeof value === "object" ? Platform2.StringUtilities.escapeUnicodeAsText(JSON.stringify(value, null, 2)) : value;
         const copyValueHandler = () => {
           Host.userMetrics.actionTaken(Host.UserMetrics.Action.NetworkPanelCopyValue);
           Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(propertyValue);
@@ -2444,7 +2551,7 @@ var EXPANDABLE_TEXT_DEFAULT_VIEW = (input, output, target) => {
                  data-text=${i18nString2(UIStrings2.copy)}
                  jslog=${VisualLogging.action("copy").track({ click: true })}
                  ></button>
-             </span>`,
+              </span>`,
     // clang-format on
     target
   );

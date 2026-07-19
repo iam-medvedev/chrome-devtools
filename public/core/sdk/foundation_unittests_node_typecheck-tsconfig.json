@@ -50,6 +50,7 @@
     "../../../../../../front_end/core/sdk/DebuggerModel.test.ts",
     "../../../../../../front_end/core/sdk/FrameManager.test.ts",
     "../../../../../../front_end/core/sdk/NetworkManager.test.ts",
+    "../../../../../../front_end/core/sdk/OverlayPersistentHighlighter.test.ts",
     "../../../../../../front_end/core/sdk/PageResourceLoader.test.ts",
     "../../../../../../front_end/core/sdk/RuntimeModel.test.ts",
     "../../../../../../front_end/core/sdk/ServerSentEventsProtocol.test.ts",

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
+import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import { AttributionReportingIssue } from './AttributionReportingIssue.js';
 import { BounceTrackingIssue } from './BounceTrackingIssue.js';
 import { ClientHintIssue } from './ClientHintIssue.js';
 import { ConnectionAllowlistIssue } from './ConnectionAllowlistIssue.js';
@@ -18,6 +18,7 @@ import { EmailVerificationRequestIssue } from './EmailVerificationRequestIssue.j
 import { FederatedAuthRequestIssue } from './FederatedAuthRequestIssue.js';
 import { GenericIssue } from './GenericIssue.js';
 import { HeavyAdIssue } from './HeavyAdIssue.js';
+import { LazyLoadImageIssue } from './LazyLoadImageIssue.js';
 import { MixedContentIssue } from './MixedContentIssue.js';
 import { PartitioningBlobURLIssue } from './PartitioningBlobURLIssue.js';
 import { PermissionElementIssue } from './PermissionElementIssue.js';
@@ -30,7 +31,6 @@ import { SourceFrameIssuesManager } from './SourceFrameIssuesManager.js';
 import { SRIMessageSignatureIssue } from './SRIMessageSignatureIssue.js';
 import { StylesheetLoadingIssue } from './StylesheetLoadingIssue.js';
 import { UnencodedDigestIssue } from './UnencodedDigestIssue.js';
-let issuesManagerInstance = null;
 function createIssuesForBlockedByResponseIssue(issuesModel, inspectorIssue) {
     const blockedByResponseIssueDetails = inspectorIssue.details.blockedByResponseIssueDetails;
     if (!blockedByResponseIssueDetails) {
@@ -75,10 +75,6 @@ const issueCodeHandlers = new Map([
     [
         "QuirksModeIssue" /* Protocol.Audits.InspectorIssueCode.QuirksModeIssue */,
         QuirksModeIssue.fromInspectorIssue,
-    ],
-    [
-        "AttributionReportingIssue" /* Protocol.Audits.InspectorIssueCode.AttributionReportingIssue */,
-        AttributionReportingIssue.fromInspectorIssue,
     ],
     [
         "GenericIssue" /* Protocol.Audits.InspectorIssueCode.GenericIssue */,
@@ -144,6 +140,10 @@ const issueCodeHandlers = new Map([
         "SelectivePermissionsInterventionIssue" /* Protocol.Audits.InspectorIssueCode.SelectivePermissionsInterventionIssue */,
         SelectivePermissionsInterventionIssue.fromInspectorIssue,
     ],
+    [
+        "LazyLoadImageIssue" /* Protocol.Audits.InspectorIssueCode.LazyLoadImageIssue */,
+        LazyLoadImageIssue.fromInspectorIssue,
+    ],
 ]);
 export function isIssueCodeSupported(code) {
     return issueCodeHandlers.has(code);
@@ -152,10 +152,10 @@ export function isIssueCodeSupported(code) {
  * Each issue reported by the backend can result in multiple `Issue` instances.
  * Handlers are simple functions hard-coded into a map.
  */
-export function createIssuesFromProtocolIssue(issuesModel, inspectorIssue) {
+export function createIssuesFromProtocolIssue(issuesModel, inspectorIssue, frameManager = SDK.FrameManager.FrameManager.instance()) {
     const handler = issueCodeHandlers.get(inspectorIssue.code);
     if (handler) {
-        return handler(issuesModel, inspectorIssue);
+        return handler(issuesModel, inspectorIssue, frameManager);
     }
     console.warn(`No handler registered for issue code ${inspectorIssue.code}`);
     return [];
@@ -164,8 +164,8 @@ export function defaultHideIssueByCodeSetting() {
     const setting = {};
     return setting;
 }
-export function getHideIssueByCodeSetting() {
-    return Common.Settings.Settings.instance().createSetting('hide-issue-by-code-setting-experiment-2021', defaultHideIssueByCodeSetting());
+export function getHideIssueByCodeSetting(settings = Common.Settings.Settings.instance()) {
+    return settings.createSetting('hide-issue-by-code-setting-experiment-2021', defaultHideIssueByCodeSetting());
 }
 /**
  * The `IssuesManager` is the central storage for issues. It collects issues from all the
@@ -190,20 +190,22 @@ export class IssuesManager extends Common.ObjectWrapper.ObjectWrapper {
     #issuesById = new Map();
     #issuesByOutermostTarget = new Map();
     #frameManager;
-    constructor(showThirdPartyIssuesSetting, hideIssueSetting, frameManager = SDK.FrameManager.FrameManager.instance()) {
+    #targetManager;
+    constructor(showThirdPartyIssuesSetting, hideIssueSetting, frameManager = SDK.FrameManager.FrameManager.instance(), targetManager = SDK.TargetManager.TargetManager.instance()) {
         super();
         this.showThirdPartyIssuesSetting = showThirdPartyIssuesSetting;
         this.hideIssueSetting = hideIssueSetting;
         this.#frameManager = frameManager;
+        this.#targetManager = targetManager;
         new SourceFrameIssuesManager(this);
-        SDK.TargetManager.TargetManager.instance().observeModels(SDK.IssuesModel.IssuesModel, this);
-        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
+        this.#targetManager.observeModels(SDK.IssuesModel.IssuesModel, this);
+        this.#targetManager.addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
         this.#frameManager.addEventListener("FrameAddedToTarget" /* SDK.FrameManager.Events.FRAME_ADDED_TO_TARGET */, this.#onFrameAddedToTarget, this);
         // issueFilter uses the 'show-third-party-issues' setting. Clients of IssuesManager need
         // a full update when the setting changes to get an up-to-date issues list.
         this.showThirdPartyIssuesSetting?.addChangeListener(() => this.#updateFilteredIssues());
         this.hideIssueSetting?.addChangeListener(() => this.#updateFilteredIssues());
-        SDK.TargetManager.TargetManager.instance().observeTargets({
+        this.#targetManager.observeTargets({
             targetAdded: (target) => {
                 if (target.outermostTarget() === target) {
                     this.#updateFilteredIssues();
@@ -216,17 +218,16 @@ export class IssuesManager extends Common.ObjectWrapper.ObjectWrapper {
         forceNew: false,
         ensureFirst: false,
     }) {
-        if (issuesManagerInstance && opts.ensureFirst) {
+        if (Root.DevToolsContext.globalInstance().has(IssuesManager) && opts.ensureFirst) {
             throw new Error('IssuesManager was already created. Either set "ensureFirst" to false or make sure that this invocation is really the first one.');
         }
-        if (!issuesManagerInstance || opts.forceNew) {
-            issuesManagerInstance =
-                new IssuesManager(opts.showThirdPartyIssuesSetting, opts.hideIssueSetting, opts.frameManager);
+        if (!Root.DevToolsContext.globalInstance().has(IssuesManager) || opts.forceNew) {
+            Root.DevToolsContext.globalInstance().set(IssuesManager, new IssuesManager(opts.showThirdPartyIssuesSetting, opts.hideIssueSetting, opts.frameManager));
         }
-        return issuesManagerInstance;
+        return Root.DevToolsContext.globalInstance().get(IssuesManager);
     }
     static removeInstance() {
-        issuesManagerInstance = null;
+        Root.DevToolsContext.globalInstance().delete(IssuesManager);
     }
     #onPrimaryPageChanged(event) {
         const { frame, type } = event.data;
@@ -258,7 +259,7 @@ export class IssuesManager extends Common.ObjectWrapper.ObjectWrapper {
         // When DevTools is opened after navigation has completed, issues may be received
         // before the outermost frame is available. Thus, we trigger a recalcuation of third-party-ness
         // when we attach to the outermost frame.
-        if (frame.isOutermostFrame() && SDK.TargetManager.TargetManager.instance().isInScope(frame.resourceTreeModel())) {
+        if (frame.isOutermostFrame() && this.#targetManager.isInScope(frame.resourceTreeModel())) {
             this.#updateFilteredIssues();
         }
     }
@@ -274,7 +275,7 @@ export class IssuesManager extends Common.ObjectWrapper.ObjectWrapper {
     }
     #onIssueAddedEvent(event) {
         const { issuesModel, inspectorIssue } = event.data;
-        const issues = createIssuesFromProtocolIssue(issuesModel, inspectorIssue);
+        const issues = createIssuesFromProtocolIssue(issuesModel, inspectorIssue, this.#frameManager);
         for (const issue of issues) {
             this.addIssue(issuesModel, issue);
             const message = issue.maybeCreateConsoleMessage();
@@ -358,7 +359,7 @@ export class IssuesManager extends Common.ObjectWrapper.ObjectWrapper {
         return this.#allIssues.size;
     }
     #issueFilter(issue) {
-        const scopeTarget = SDK.TargetManager.TargetManager.instance().scopeTarget();
+        const scopeTarget = this.#targetManager.scopeTarget();
         if (!scopeTarget) {
             return false;
         }

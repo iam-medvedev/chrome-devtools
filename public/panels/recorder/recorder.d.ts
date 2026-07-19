@@ -1,4 +1,12 @@
-import * as RecorderController from './RecorderController.js';
+import * as ControlButton from './ControlButton.js';
+import * as CreateRecordingView from './CreateRecordingView.js';
 import * as RecorderEvents from './RecorderEvents.js';
 import * as RecorderPanel from './RecorderPanel.js';
-export { RecorderController, RecorderEvents, RecorderPanel };
+import * as RecordingListView from './RecordingListView.js';
+import * as RecordingView from './RecordingView.js';
+import * as ReplaySection from './ReplaySection.js';
+import * as SelectorPicker from './SelectorPicker.js';
+import * as StepEditor from './StepEditor.js';
+import * as StepView from './StepView.js';
+import * as TimelineSection from './TimelineSection.js';
+export { ControlButton, CreateRecordingView, RecorderEvents, RecorderPanel, RecordingListView, RecordingView, ReplaySection, SelectorPicker, StepEditor, StepView, TimelineSection, };

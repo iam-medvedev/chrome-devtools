@@ -8,6 +8,7 @@ import { assertNotNullOrUndefined } from '../platform/platform.js';
 import * as Root from '../root/root.js';
 import { FrameManager } from './FrameManager.js';
 import { MultitargetNetworkManager } from './NetworkManager.js';
+import { PageResourceLoader } from './PageResourceLoader.js';
 import { SDKModel } from './SDKModel.js';
 import { Target, Type as TargetType } from './Target.js';
 export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
@@ -29,6 +30,7 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
     // TODO(crbug.com/493763857): Remove fallback once all unit tests use TestUniverse.
     getConsole() {
         if ('has' in this.context && typeof this.context.has === 'function' && !this.context.has(Common.Console.Console)) {
+            // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
             return Common.Console.Console.instance();
         }
         return this.context.get(Common.Console.Console);
@@ -36,6 +38,7 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
     // TODO(crbug.com/493763857): Remove fallback once all unit tests use TestUniverse.
     getFrameManager() {
         if ('has' in this.context && typeof this.context.has === 'function' && !this.context.has(FrameManager)) {
+            // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
             return FrameManager.instance();
         }
         return this.context.get(FrameManager);
@@ -44,9 +47,18 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
     getNetworkManager() {
         if ('has' in this.context && typeof this.context.has === 'function' &&
             !this.context.has(MultitargetNetworkManager)) {
+            // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
             return MultitargetNetworkManager.instance();
         }
         return this.context.get(MultitargetNetworkManager);
+    }
+    // TODO(crbug.com/493763857): Remove fallback once all unit tests use TestUniverse.
+    getPageResourceLoader() {
+        if ('has' in this.context && typeof this.context.has === 'function' && !this.context.has(PageResourceLoader)) {
+            // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
+            return PageResourceLoader.instance();
+        }
+        return this.context.get(PageResourceLoader);
     }
     /* eslint-disable @typescript-eslint/no-explicit-any */
     #modelListeners;
@@ -108,7 +120,7 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
     async #waitForPromiseWithTimeout(promise, timeoutMessage) {
         const { promise: timeoutPromise, resolve: timeoutResolve } = Promise.withResolvers();
         const timeoutId = globalThis.setTimeout(() => {
-            Common.Console.Console.instance().warn(timeoutMessage);
+            this.getConsole().warn(timeoutMessage);
             timeoutResolve();
         }, 2000);
         await Promise.race([promise, timeoutPromise]);

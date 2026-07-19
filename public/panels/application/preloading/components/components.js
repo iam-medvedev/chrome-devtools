@@ -36,7 +36,7 @@ var UIStrings = {
   /**
    * @description  Description text for Prefetch status PrefetchFailedMIMENotSupported.
    */
-  PrefetchFailedMIMENotSupported: "The prefetch failed because the response's Content-Type header was not supported.",
+  PrefetchFailedMIMENotSupported: "The prefetch failed because the response\u2019s Content-Type header was not supported.",
   /**
    * @description  Description text for Prefetch status PrefetchFailedNetError.
    */
@@ -267,7 +267,7 @@ var UIStrings = {
   /**
    *  Description text for PrerenderFinalStatus::kActivatedDuringMainFrameNavigation.
    */
-  prerenderFinalStatusActivatedDuringMainFrameNavigation: "Prerendered page activated during initiating page's main frame navigation.",
+  prerenderFinalStatusActivatedDuringMainFrameNavigation: "Prerendered page activated during initiating page\u2019s main frame navigation.",
   /**
    *  Description text for PrerenderFinalStatus::kCrossSiteRedirectInMainFrameNavigation.
    */
@@ -1128,7 +1128,7 @@ var PreloadingDetailsReportView = class extends LegacyWrapper.LegacyWrapper.Wrap
           <devtools-request-link-icon
             .data=${{
         affectedRequest,
-        requestResolver: this.#data.requestResolver || new Logs.RequestResolver.RequestResolver(),
+        requestResolver: this.#data.requestResolver || new Logs.RequestResolver.RequestResolver(Logs.NetworkLog.NetworkLog.instance()),
         displayURL: true,
         urlToDisplay: url
       }}
@@ -1399,7 +1399,7 @@ var UIStrings4 = {
   /**
    * @description Description in dialog
    */
-  descriptionDisabledByDataSaver: "Speculative loading is disabled because of the operating system's Data Saver mode.",
+  descriptionDisabledByDataSaver: "Speculative loading is disabled because of the operating system\u2019s Data Saver mode.",
   /**
    * @description Header in dialog
    */
@@ -1407,7 +1407,7 @@ var UIStrings4 = {
   /**
    * @description Description in dialog
    */
-  descriptionDisabledByBatterySaver: "Speculative loading is disabled because of the operating system's Battery Saver mode.",
+  descriptionDisabledByBatterySaver: "Speculative loading is disabled because of the operating system\u2019s Battery Saver mode.",
   /**
    * @description Header in dialog
    */
@@ -1892,7 +1892,7 @@ var RuleSetDetailsView = class extends UI5.Widget.VBox {
   }
   async #getSourceText() {
     if (this.#shouldPrettyPrint && this.#ruleSet?.sourceText !== void 0) {
-      const formattedResult = await Formatter.ScriptFormatter.formatScriptContent("application/json", this.#ruleSet.sourceText);
+      const formattedResult = await Formatter.ScriptFormatter.formatScriptContent(SDK5.TargetManager.TargetManager.instance().settings, "application/json", this.#ruleSet.sourceText);
       return formattedResult.formattedContent;
     }
     return this.#ruleSet?.sourceText || "";
@@ -2220,7 +2220,7 @@ var UIStrings8 = {
   /**
    * @description Message that tells this page was prerendered.
    */
-  downgradedPrefetchUsed: "The initiating page attempted to prerender this page's URL. The prerender failed, but the resulting response body was still used as a prefetch.",
+  downgradedPrefetchUsed: "The initiating page attempted to prerender this page\u2019s URL. The prerender failed, but the resulting response body was still used as a prefetch.",
   /**
    * @description Message that tells this page was prefetched.
    */
@@ -2232,15 +2232,15 @@ var UIStrings8 = {
   /**
    * @description Message that tells this page was prefetched.
    */
-  prefetchFailed: "The initiating page attempted to prefetch this page's URL, but the prefetch failed, so a full navigation was performed instead.",
+  prefetchFailed: "The initiating page attempted to prefetch this page\u2019s URL, but the prefetch failed, so a full navigation was performed instead.",
   /**
    * @description Message that tells this page was prerendered.
    */
-  prerenderFailed: "The initiating page attempted to prerender this page's URL, but the prerender failed, so a full navigation was performed instead.",
+  prerenderFailed: "The initiating page attempted to prerender this page\u2019s URL, but the prerender failed, so a full navigation was performed instead.",
   /**
    * @description Message that tells this page was not preloaded.
    */
-  noPreloads: "The initiating page did not attempt to speculatively load this page's URL.",
+  noPreloads: "The initiating page did not attempt to speculatively load this page\u2019s URL.",
   /**
    * @description Header for current URL.
    */

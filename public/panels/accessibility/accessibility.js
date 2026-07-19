@@ -137,7 +137,7 @@ var UIStrings = {
   /**
    * @description Tooltip text that appears when hovering over the 'Invalid user entry' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
-  ifTrueThisElementsUserentered: "If true, this element's user-entered value does not conform to validation requirement.",
+  ifTrueThisElementsUserentered: "If true, this element\u2019s user-entered value does not conform to validation requirement.",
   /**
    * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
    */
@@ -265,7 +265,7 @@ var UIStrings = {
   /**
    * @description Tooltip text that appears when hovering over the 'Orientation' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
-  whetherThisLinearElements: "Whether this linear element's orientation is horizontal or vertical.",
+  whetherThisLinearElements: "Whether this linear element\u2019s orientation is horizontal or vertical.",
   /**
    * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
    */
@@ -843,7 +843,7 @@ var objectValue_css_default = `/*
 .object-value-regexp,
 .object-value-symbol {
   white-space: pre;
-  unicode-bidi: -webkit-isolate;
+  unicode-bidi: isolate;
   color: var(--sys-color-token-property-special);
 }
 
@@ -892,6 +892,7 @@ var objectValue_css_default = `/*
 .name {
   color: var(--sys-color-token-tag);
   flex-shrink: 0;
+  unicode-bidi: isolate;
 }
 
 .object-properties-preview .name {
@@ -1028,7 +1029,7 @@ var UIStrings2 = {
   /**
    * @description Reason element in Accessibility Node View of the Accessibility panel
    */
-  ancestorChildrenAreAll: "Ancestor's children are all presentational:\xA0",
+  ancestorChildrenAreAll: "Ancestor\u2019s children are all presentational:\xA0",
   /**
    * @description Reason element in Accessibility Node View of the Accessibility panel
    * @example {aria-hidden} PH1

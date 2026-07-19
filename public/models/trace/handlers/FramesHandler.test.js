@@ -9,7 +9,6 @@ async function processTrace(events) {
     const handlersInOrder = [
         'Meta',
         'Samples',
-        'AuctionWorklets',
         'Renderer',
         'LayerTree',
         'Frames',

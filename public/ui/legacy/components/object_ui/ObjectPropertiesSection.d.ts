@@ -1,12 +1,17 @@
 import * as Common from '../../../../core/common/common.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
 import type * as Protocol from '../../../../generated/protocol.js';
-import { type LitTemplate } from '../../../lit/lit.js';
+import * as TextUtils from '../../../../models/text_utils/text_utils.js';
+import { type DirectiveResult, type LitTemplate } from '../../../lit/lit.js';
 import * as UI from '../../legacy.js';
 import type * as Components from '../utils/utils.js';
 import objectPropertiesSectionStyles from './objectPropertiesSection.css.js';
 import objectValueStyles from './objectValue.css.js';
 export { objectPropertiesSectionStyles, objectValueStyles };
+export interface ObjectPropertySearchResult extends UI.TreeOutline.TreeSearchResult<ObjectTreeNodeBase> {
+    matchType: 'name' | 'value';
+    range: TextUtils.TextRange.SourceRange;
+}
 export declare const EXPANDABLE_MAX_DEPTH = 100;
 interface NodeChildren {
     properties?: ObjectTreeNode[];
@@ -18,8 +23,8 @@ export interface ObjectTreeOptions {
     readonly propertiesMode: ObjectPropertiesMode;
     readonly readOnly: boolean;
     readonly expansionTracker?: ObjectTreeExpansionTracker;
+    readonly search?: UI.TreeOutline.TreeSearch<ObjectTreeNodeBase>;
 }
-export declare function sortPropertiesAlphabeticallySetting(): Common.Settings.Setting<boolean>;
 export declare function isWasmObject(object: SDK.RemoteObject.RemoteObject | undefined): boolean;
 export declare class ObjectTreeExpansionTracker {
     #private;
@@ -43,11 +48,13 @@ export declare abstract class ObjectTreeNodeBase extends Common.ObjectWrapper.Ob
     set expanded(val: boolean);
     get readOnly(): boolean;
     get propertiesMode(): ObjectPropertiesMode;
+    get search(): UI.TreeOutline.TreeSearch<ObjectTreeNodeBase> | undefined;
     get includeNullOrUndefinedValues(): boolean;
     set includeNullOrUndefinedValues(value: boolean);
     get canExpandRecursively(): boolean;
     get sortPropertiesAlphabetically(): boolean;
     set sortPropertiesAlphabetically(value: boolean);
+    treeNodeChildren(): Generator<ObjectTreeNodeBase>;
     expandRecursively(maxDepth: number): Promise<void>;
     collapseRecursively(): void;
     setFilter(filter: {
@@ -56,6 +63,7 @@ export declare abstract class ObjectTreeNodeBase extends Common.ObjectWrapper.Ob
     } | null): void;
     abstract get object(): SDK.RemoteObject.RemoteObject | undefined;
     removeChildren(): void;
+    match(_regex: RegExp): ObjectPropertySearchResult[];
     removeChild(child: ObjectTreeNodeBase): void;
     protected selfOrParentIfInternal(): ObjectTreeNodeBase;
     get children(): NodeChildren | undefined;
@@ -112,6 +120,7 @@ export declare class ObjectTreeNode extends ObjectTreeNodeBase {
     selfOrParentIfInternal(): ObjectTreeNodeBase;
     setValue(expression: string): Promise<void>;
     invokeGetter(getter: SDK.RemoteObject.RemoteObject): Promise<void>;
+    match(regex: RegExp): ObjectPropertySearchResult[];
 }
 export declare const getObjectPropertiesSectionFrom: (element: Element) => ObjectPropertiesSection | undefined;
 export declare class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow {
@@ -119,7 +128,7 @@ export declare class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineI
     readonly root: ObjectTree;
     titleElement: Element;
     skipProtoInternal?: boolean;
-    constructor(object: SDK.RemoteObject.RemoteObject, title?: string | Element | null, linkifier?: Components.Linkifier.Linkifier, showOverflow?: boolean, editable?: boolean);
+    constructor(object: SDK.RemoteObject.RemoteObject, title?: string | Element | null, linkifier?: Components.Linkifier.Linkifier, showOverflow?: boolean, editable?: boolean, search?: UI.TreeOutline.TreeSearch<ObjectTreeNodeBase>);
     static defaultObjectPresentation(object: SDK.RemoteObject.RemoteObject, linkifier?: Components.Linkifier.Linkifier, skipProto?: boolean, readOnly?: boolean): Element;
     static defaultObjectPropertiesSection(object: SDK.RemoteObject.RemoteObject, linkifier?: Components.Linkifier.Linkifier, skipProto?: boolean, readOnly?: boolean): ObjectPropertiesSection;
     static compareProperties(propertyA: ObjectTreeNode | SDK.RemoteObject.RemoteObjectProperty, propertyB: ObjectTreeNode | SDK.RemoteObject.RemoteObjectProperty, sortPropertiesAlphabetically?: boolean): number;
@@ -149,18 +158,8 @@ export declare const enum ObjectPropertiesMode {
     OWN_AND_INTERNAL_AND_INHERITED = 1
 }
 export declare function populateObjectTreeContextMenu(contextMenu: UI.ContextMenu.ContextMenu, object: ObjectTree, expandRecursively: () => void, collapseChildren: () => void, sortPropertiesAlphabetically: () => void, onShowAllToggled: () => void): void;
-export declare class RootElement extends UI.TreeOutline.TreeElement {
-    private readonly object;
-    private readonly linkifier;
-    private readonly emptyPlaceholder;
-    toggleOnClick: boolean;
-    constructor(object: ObjectTree, linkifier?: Components.Linkifier.Linkifier, emptyPlaceholder?: string | null);
-    onexpand(): void;
-    oncollapse(): void;
-    ondblclick(_e: Event): boolean;
-    private onContextMenu;
-    onpopulate(): Promise<void>;
-}
+export declare function renderObjectTree(objectTree: ObjectTree, linkifier?: Components.Linkifier.Linkifier, emptyPlaceholder?: string | null): LitTemplate | DirectiveResult;
+export declare function renderObjectPropertiesSection(objectTree: ObjectTree, title: LitTemplate, linkifier?: Components.Linkifier.Linkifier): LitTemplate;
 /**
  * Number of initially visible children in an ObjectPropertyTreeElement.
  * Remaining children are shown as soon as requested via a show more properties button.
@@ -178,6 +177,7 @@ export interface ObjectPropertyViewInput {
     editingEnded(): unknown;
     editingCommitted(detail: string): unknown;
     node: ObjectTreeNode;
+    search?: UI.TreeOutline.TreeSearch<ObjectTreeNodeBase>;
 }
 interface ObjectPropertyViewOutput {
     valueElement: Element | undefined;

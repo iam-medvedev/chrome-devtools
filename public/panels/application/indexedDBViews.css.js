@@ -15,36 +15,37 @@ export default `/*
   border-bottom: 1px solid var(--sys-color-divider);
 }
 
-.indexed-db-data-view .data-grid {
+.indexed-db-data-view devtools-data-grid {
+  border: 0;
   flex: auto;
 }
 
-.indexed-db-data-view .data-grid .data-container tr:nth-last-child(1) {
+:host-context(.indexed-db-data-view) .data-grid .data-container tr:nth-last-child(1) {
   background-color: var(--sys-color-cdt-base-container);
 }
 
-.indexed-db-data-view .data-grid .data-container tr:nth-last-child(1) td {
+:host-context(.indexed-db-data-view) .data-grid .data-container tr:nth-last-child(1) td {
   border: 0;
 }
 
-.indexed-db-data-view .data-grid .data-container tr:nth-last-child(2) td {
+:host-context(.indexed-db-data-view) .data-grid .data-container tr:nth-last-child(2) td {
   border-bottom: 1px solid var(--sys-color-divider);
 }
 
-.indexed-db-data-view .data-grid:focus .data-container tr.selected {
+:host-context(.indexed-db-data-view) .data-grid:focus .data-container tr.selected {
   background-color: var(--sys-color-tonal-container);
   color: inherit;
 }
 
-.indexed-db-data-view .section,
-.indexed-db-data-view .section > .header,
-.indexed-db-data-view .section > .header .title {
+:host-context(.indexed-db-data-view) .section,
+:host-context(.indexed-db-data-view) .section > .header,
+:host-context(.indexed-db-data-view) .section > .header .title {
   margin: 0;
   min-height: inherit;
   line-height: inherit;
 }
 
-.indexed-db-data-view .data-grid .data-container td .section .header .title {
+:host-context(.indexed-db-data-view) .data-grid .data-container td .section .header .title {
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
@@ -53,7 +54,7 @@ export default `/*
 .indexed-db-key-path {
   color: var(--sys-color-error);
   white-space: pre-wrap;
-  unicode-bidi: -webkit-isolate;
+  unicode-bidi: isolate;
 }
 
 .indexed-db-container {

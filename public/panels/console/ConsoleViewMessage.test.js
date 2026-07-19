@@ -5,6 +5,7 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as AiAssistanceModel from '../../models/ai_assistance/ai_assistance.js';
 import * as Bindings from '../../models/bindings/bindings.js';
@@ -15,6 +16,7 @@ import { createConsoleViewMessageWithStubDeps, createStackTrace, } from '../../t
 import { raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
+import { dispatchEvent } from '../../testing/MockConnection.js';
 import { mockResourceTree } from '../../testing/ResourceTreeHelpers.js';
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
@@ -80,6 +82,54 @@ describeWithEnvironment('ConsoleViewMessage', () => {
             const expectedCallFrame = stackTrace.callFrames[3]; // userFunction.
             sinon.assert.calledOnceWithExactly(linkifier.maybeLinkifyConsoleCallFrame, target, expectedCallFrame, { revealBreakpoint: true, userMetric: undefined });
         });
+        it('reveals script location on click for message added before script was parsed', async () => {
+            const target = createTarget();
+            const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+            assert.exists(runtimeModel);
+            const targetManager = SDK.TargetManager.TargetManager.instance();
+            const workspace = Workspace.Workspace.WorkspaceImpl.instance();
+            const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);
+            const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
+            const debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
+                forceNew: true,
+                resourceMapping,
+                targetManager,
+                ignoreListManager,
+                workspace,
+            });
+            const linkifier = new Components.Linkifier.Linkifier(100, false);
+            linkifier.targetAdded(target);
+            const requestResolver = sinon.createStubInstance(Logs.RequestResolver.RequestResolver);
+            const issuesResolver = sinon.createStubInstance(IssuesManager.IssueResolver.IssueResolver);
+            const url = Platform.DevToolsPath.urlString `http://example.com/source2.js`;
+            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, "info" /* Protocol.Log.LogEntryLevel.Info */, 'hello?', { url });
+            const message = new Console.ConsoleViewMessage.ConsoleViewMessage(rawMessage, linkifier, requestResolver, issuesResolver, /* onResize */ () => { });
+            const messageElement = message.toMessageElement();
+            const anchorElement = messageElement.querySelector('.devtools-link');
+            assert.exists(anchorElement);
+            const revealStub = sinon.stub(Common.Revealer.RevealerRegistry.instance(), 'reveal').resolves();
+            const scriptParsedEvent = {
+                scriptId: '1',
+                url,
+                startLine: 0,
+                startColumn: 0,
+                endLine: 10,
+                endColumn: 10,
+                executionContextId: 1,
+                hash: '',
+                buildId: '',
+                isLiveEdit: false,
+                sourceMapURL: undefined,
+                hasSourceURL: false,
+                length: 10,
+            };
+            dispatchEvent(target, 'Debugger.scriptParsed', scriptParsedEvent);
+            await debuggerWorkspaceBinding.pendingLiveLocationChangesPromise();
+            anchorElement.click();
+            sinon.assert.calledOnce(revealStub);
+            const revealedLocation = revealStub.firstCall.args[0];
+            assert.strictEqual(revealedLocation.uiSourceCode.url(), url);
+        });
     });
     describe('formatParameter', () => {
         it('creates an editable object properties section for objects', async () => {
@@ -98,6 +148,27 @@ describeWithEnvironment('ConsoleViewMessage', () => {
             const child = rootElement.childAt(0);
             assert.instanceOf(child, ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement);
             assert.isTrue(child.editable);
+        });
+        it('formats console.dir(document.__proto__) without exception', () => {
+            const target = createTarget();
+            const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+            assert.exists(runtimeModel);
+            const remoteObject = runtimeModel.createRemoteObject({
+                type: "object" /* Protocol.Runtime.RemoteObjectType.Object */,
+                subtype: "node" /* Protocol.Runtime.RemoteObjectSubtype.Node */,
+                className: 'HTMLDocument',
+                description: 'HTMLDocument',
+                objectId: '1',
+            });
+            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, "info" /* Protocol.Log.LogEntryLevel.Info */, '', {
+                type: "dir" /* Protocol.Runtime.ConsoleAPICalledEventType.Dir */,
+                parameters: [remoteObject],
+            });
+            const { message } = createConsoleViewMessageWithStubDeps(rawMessage);
+            const messageElement = message.toMessageElement();
+            const propertiesSectionElement = messageElement.querySelector('.console-view-object-properties-section');
+            assert.exists(propertiesSectionElement);
+            assert.include(propertiesSectionElement.textContent, 'HTMLDocument');
         });
     });
     describe('console insights', () => {
@@ -452,6 +523,85 @@ describeWithEnvironment('ConsoleViewMessage', () => {
             assert.deepEqual(getStructuredCallFrames(element), COLLAPSED_STRUCTURED);
             assert.deepEqual(getCallFrames(element), COLLAPSED_UNSTRUCTURED_WITH_BUILTIN);
         });
+        it('updates message anchor location when ignore listing pattern changes', async () => {
+            const connection = new MockCDPConnection([]);
+            mockResourceTree(connection);
+            const target = createTarget({ connection });
+            const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
+            assert.exists(debuggerModel);
+            const linkifier = new Components.Linkifier.Linkifier();
+            linkifier.targetAdded(target);
+            // Dispatch scriptParsed events for foo.js, boo.js, and main.js.
+            dispatchEvent(target, 'Debugger.scriptParsed', {
+                scriptId: '1',
+                url: 'http://example.com/foo.js',
+                startLine: 0,
+                startColumn: 0,
+                endLine: 100,
+                endColumn: 0,
+                executionContextId: 1,
+                hash: '',
+                buildId: '',
+                executionContextAuxData: { isDefault: true },
+            });
+            dispatchEvent(target, 'Debugger.scriptParsed', {
+                scriptId: '2',
+                url: 'http://example.com/boo.js',
+                startLine: 0,
+                startColumn: 0,
+                endLine: 100,
+                endColumn: 0,
+                executionContextId: 1,
+                hash: '',
+                buildId: '',
+                executionContextAuxData: { isDefault: true },
+            });
+            dispatchEvent(target, 'Debugger.scriptParsed', {
+                scriptId: '3',
+                url: 'http://example.com/main.js',
+                startLine: 0,
+                startColumn: 0,
+                endLine: 100,
+                endColumn: 0,
+                executionContextId: 1,
+                hash: '',
+                buildId: '',
+                executionContextAuxData: { isDefault: true },
+            });
+            const stackTrace = createStackTrace([
+                '1::foo::http://example.com/foo.js::19::0',
+                '2::boo::http://example.com/boo.js::26::0',
+                '3::main::http://example.com/main.js::31::0',
+            ]);
+            const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, "info" /* Protocol.Log.LogEntryLevel.Info */, 'trace', {
+                type: "trace" /* Protocol.Runtime.ConsoleAPICalledEventType.Trace */,
+                stackTrace,
+            });
+            const requestResolver = sinon.createStubInstance(Logs.RequestResolver.RequestResolver);
+            const issuesResolver = sinon.createStubInstance(IssuesManager.IssueResolver.IssueResolver);
+            const message = new Console.ConsoleViewMessage.ConsoleViewMessage(rawMessage, linkifier, requestResolver, issuesResolver, /* onResize */ () => { });
+            const element = message.toMessageElement();
+            const debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance();
+            await debuggerWorkspaceBinding.pendingLiveLocationChangesPromise();
+            const anchor = element.querySelector('.console-message-anchor');
+            assert.exists(anchor);
+            assert.strictEqual(anchor.textContent?.trim(), 'foo.js:20');
+            const setting = Common.Settings.Settings.instance().moduleSetting('skip-stack-frames-pattern');
+            // Ignore-list foo.js: anchor should now point to boo.js:27.
+            setting.setAsArray([{ pattern: 'foo\\.js', disabled: false }]);
+            await debuggerWorkspaceBinding.pendingLiveLocationChangesPromise();
+            assert.strictEqual(anchor.textContent?.trim(), 'boo.js:27');
+            // Ignore-list foo.js and boo.js: anchor should now point to main.js:32.
+            setting.setAsArray([{ pattern: 'foo\\.js|boo\\.js', disabled: false }]);
+            await debuggerWorkspaceBinding.pendingLiveLocationChangesPromise();
+            assert.strictEqual(anchor.textContent?.trim(), 'main.js:32');
+            // Reset ignore list: anchor should point back to foo.js:20.
+            setting.setAsArray([]);
+            await debuggerWorkspaceBinding.pendingLiveLocationChangesPromise();
+            assert.strictEqual(anchor.textContent?.trim(), 'foo.js:20');
+            linkifier.dispose();
+        });
     });
     describe('ConsoleTableMessageView Context Menu', () => {
         let copyTextStub;
@@ -535,6 +685,79 @@ describeWithEnvironment('ConsoleViewMessage', () => {
             const expectedCSV = '(index),a\n' +
                 '0,1';
             sinon.assert.calledOnceWithExactly(copyTextStub, expectedCSV);
+        });
+    });
+    describe('linkifyWithCustomLinkifier', () => {
+        it('linkifies links correctly', () => {
+            const cases = [
+                { text: 'www.chromium.org', expectedUrl: 'http://www.chromium.org' },
+                { text: 'http://www.chromium.org/', expectedUrl: 'http://www.chromium.org/' },
+                { text: 'follow http://www.chromium.org/', expectedUrl: 'http://www.chromium.org/' },
+                { text: 'string http://www.chromium.org/', expectedUrl: 'http://www.chromium.org/' },
+                { text: '123 \'http://www.chromium.org/\'', expectedUrl: 'http://www.chromium.org/' },
+                {
+                    text: 'http://www.chromium.org/some?v=114:56:57',
+                    expectedUrl: 'http://www.chromium.org/some?v=114',
+                    lineNumber: 55,
+                    columnNumber: 56,
+                },
+                {
+                    text: 'http://www.example.com/düsseldorf?neighbourhood=Lörick',
+                    expectedUrl: 'http://www.example.com/düsseldorf?neighbourhood=Lörick',
+                },
+                { text: 'http://👓.ws', expectedUrl: 'http://👓.ws' },
+                { text: 'http:/www.example.com/молодец', expectedUrl: 'http://www.example.com/молодец' },
+                { text: 'http://ar.wikipedia.org/wiki/نجيب_محفوظ/', expectedUrl: 'http://ar.wikipedia.org/wiki/نجيب_محفوظ/' },
+                { text: 'http://example.com/スター・ウォーズ/', expectedUrl: 'http://example.com/スター・ウォーズ/' },
+                { text: 'data:text/plain;a', expectedUrl: 'data:text/plain;a' },
+                { text: '\'www.chromium.org\'', expectedUrl: 'http://www.chromium.org' },
+                { text: '(www.chromium.org)', expectedUrl: 'http://www.chromium.org' },
+                { text: '"www.chromium.org"', expectedUrl: 'http://www.chromium.org' },
+                { text: '{www.chromium.org}', expectedUrl: 'http://www.chromium.org' },
+                { text: '[www.chromium.org]', expectedUrl: 'http://www.chromium.org' },
+                { text: 'www.chromium.org\u00a0', expectedUrl: 'http://www.chromium.org' },
+                { text: 'www.chromium.org~', expectedUrl: 'http://www.chromium.org~' },
+                { text: 'www.chromium.org,', expectedUrl: 'http://www.chromium.org' },
+                { text: 'www.chromium.org:', expectedUrl: 'http://www.chromium.org' },
+                { text: 'www.chromium.org;', expectedUrl: 'http://www.chromium.org' },
+                { text: 'www.chromium.org.', expectedUrl: 'http://www.chromium.org' },
+                { text: 'www.chromium.org...', expectedUrl: 'http://www.chromium.org' },
+                { text: 'www.chromium.org!', expectedUrl: 'http://www.chromium.org' },
+                { text: 'www.chromium.org?', expectedUrl: 'http://www.chromium.org' },
+                {
+                    text: 'at triggerError (http://localhost/show/:22:11)',
+                    expectedUrl: 'http://localhost/show/',
+                    lineNumber: 21,
+                    columnNumber: 10,
+                },
+            ];
+            for (const { text, expectedUrl, lineNumber, columnNumber } of cases) {
+                let firstExtractedUrl;
+                let firstExtractedLineNumber;
+                let firstExtractedColumnNumber;
+                Console.ConsoleViewMessage.ConsoleViewMessage.linkifyWithCustomLinkifier(text, (text, url, line, column) => {
+                    if (firstExtractedUrl === undefined) {
+                        firstExtractedUrl = url;
+                        firstExtractedLineNumber = line;
+                        firstExtractedColumnNumber = column;
+                    }
+                    const element = document.createElement('span');
+                    element.textContent = text;
+                    return element;
+                });
+                assert.strictEqual(firstExtractedUrl, expectedUrl, `Failed for text: ${text}`);
+                assert.strictEqual(firstExtractedLineNumber, lineNumber, `Failed for line number in text: ${text}`);
+                assert.strictEqual(firstExtractedColumnNumber, columnNumber, `Failed for column number in text: ${text}`);
+            }
+        });
+        it('does not bog down the regex with multiple slashes', () => {
+            const linkifier = (text) => {
+                const span = document.createElement('span');
+                span.textContent = text;
+                return span;
+            };
+            Console.ConsoleViewMessage.ConsoleViewMessage.linkifyWithCustomLinkifier('/'.repeat(1000), linkifier);
+            Console.ConsoleViewMessage.ConsoleViewMessage.linkifyWithCustomLinkifier('/a/'.repeat(1000), linkifier);
         });
     });
 });

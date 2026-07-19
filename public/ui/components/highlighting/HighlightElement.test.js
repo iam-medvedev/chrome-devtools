@@ -10,6 +10,12 @@ describe('HighlightElement', () => {
     let setStub;
     beforeEach(() => {
         setStub = sinon.stub(Highlighting.HighlightManager.HighlightManager.instance({ forceNew: true }), 'set');
+        CSS.highlights.get('highlighted-search-result')?.clear();
+        CSS.highlights.get('current-search-result')?.clear();
+    });
+    afterEach(() => {
+        CSS.highlights.get('highlighted-search-result')?.clear();
+        CSS.highlights.get('current-search-result')?.clear();
     });
     function createHighlightElement() {
         const element = document.createElement('devtools-highlight');

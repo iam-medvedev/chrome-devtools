@@ -23,6 +23,7 @@ export class DataGridElement extends UI.UIUtils.HTMLElementWithLightDOMTemplate 
     #hideableColumns = new Set();
     #hiddenColumns = new Set();
     #usedCreationNode = null;
+    #sortingChangedScheduled = false;
     constructor() {
         super();
         // TODO(dsv): Move this to the data_grid.css once all the data grid usage is migrated to this web component.
@@ -146,10 +147,16 @@ export class DataGridElement extends UI.UIUtils.HTMLElementWithLightDOMTemplate 
             const titleDOMFragment = column.firstElementChild ? document.createDocumentFragment() : undefined;
             if (titleDOMFragment) {
                 title = '';
-                for (const child of column.children) {
+                for (const child of column.childNodes) {
                     titleDOMFragment.appendChild(child.cloneNode(true));
-                    title += child.shadowRoot ? child.shadowRoot.textContent : child.textContent;
+                    if (child instanceof Element && child.shadowRoot) {
+                        title += child.shadowRoot.textContent;
+                    }
+                    else if (child.nodeType !== Node.COMMENT_NODE) {
+                        title += child.textContent ?? '';
+                    }
                 }
+                title = title.trim();
             }
             const sortable = hasBooleanAttribute(column, 'sortable');
             const width = column.getAttribute('width') ?? undefined;
@@ -167,6 +174,7 @@ export class DataGridElement extends UI.UIUtils.HTMLElementWithLightDOMTemplate 
             const sort = column.getAttribute('sort') === 'descending' ? Order.Descending :
                 column.getAttribute('sort') === 'ascending' ? Order.Ascending :
                     undefined;
+            const disclosure = hasBooleanAttribute(column, 'disclosure');
             const columnDescriptor = {
                 id,
                 title: title,
@@ -179,6 +187,7 @@ export class DataGridElement extends UI.UIUtils.HTMLElementWithLightDOMTemplate 
                 weight,
                 editable,
                 dataType,
+                disclosure,
             };
             this.#dataGrid.addColumn(columnDescriptor);
             this.#columns.push(columnDescriptor);
@@ -189,7 +198,7 @@ export class DataGridElement extends UI.UIUtils.HTMLElementWithLightDOMTemplate 
         const visibleColumns = new Set(this.#columns.map(({ id }) => id).filter(id => !this.#hiddenColumns.has(id)));
         this.#dataGrid.setColumnsVisibility(visibleColumns);
         this.#dataGrid.setEditCallback(hasEditableColumn ? this.#editCallback.bind(this) : undefined, INTERNAL_TOKEN);
-        this.#dataGrid.deleteCallback = hasEditableColumn ? this.#deleteCallback.bind(this) : undefined;
+        this.#dataGrid.deleteCallback = this.#deleteCallback.bind(this);
     }
     #needUpdateColumns(mutationList) {
         for (const mutation of mutationList) {
@@ -242,8 +251,14 @@ export class DataGridElement extends UI.UIUtils.HTMLElementWithLightDOMTemplate 
     }
     addNodes(nodes) {
         for (const element of this.#getDataRows(nodes)) {
+            if (getNode(element)) {
+                continue;
+            }
             const parentRow = element.parentElement?.closest('td')?.closest('tr');
             const parentDataGridNode = parentRow ? getNode(parentRow) : undefined;
+            if (parentRow && !parentDataGridNode) {
+                continue;
+            }
             const parentNode = parentDataGridNode || this.#dataGrid.rootNode();
             const nextNode = this.#findNextExistingNode(element);
             const index = nextNode ? parentNode.children.indexOf(nextNode) : parentNode.children.length;
@@ -266,11 +281,14 @@ export class DataGridElement extends UI.UIUtils.HTMLElementWithLightDOMTemplate 
             if (hasBooleanAttribute(element, 'highlighted')) {
                 node.setHighlighted(true);
             }
+            if (hasBooleanAttribute(element, 'expanded')) {
+                node.expand();
+            }
         }
-        for (const element of this.#getStyleElements(nodes)) {
+        for (const element of new Set(this.#getStyleElements(nodes))) {
             this.#shadowRoot.appendChild(element.cloneNode(true));
         }
-        this.#dataGrid.dispatchEventToListeners("SortingChanged" /* DataGridEvents.SORTING_CHANGED */);
+        this.#scheduleSortingChanged();
     }
     removeNodes(nodes) {
         for (const element of this.#getDataRows(nodes)) {
@@ -304,11 +322,29 @@ export class DataGridElement extends UI.UIUtils.HTMLElementWithLightDOMTemplate 
             else if (attributeName === 'highlighted') {
                 dataGridNode.setHighlighted(hasBooleanAttribute(dataRow, 'highlighted'));
             }
+            else if (attributeName === 'expanded') {
+                if (hasBooleanAttribute(dataRow, 'expanded')) {
+                    dataGridNode.expand();
+                }
+                else {
+                    dataGridNode.collapse();
+                }
+            }
             else {
                 this.#updateHasChildren(dataGridNode, dataRow);
                 dataGridNode.refresh();
             }
         }
+    }
+    #scheduleSortingChanged() {
+        if (this.#sortingChangedScheduled) {
+            return;
+        }
+        this.#sortingChangedScheduled = true;
+        queueMicrotask(() => {
+            this.#sortingChangedScheduled = false;
+            this.#dataGrid.dispatchEventToListeners("SortingChanged" /* DataGridEvents.SORTING_CHANGED */);
+        });
     }
     deselectRow() {
         this.#dataGrid.selectedNode?.deselect();
@@ -343,7 +379,7 @@ export class DataGridElement extends UI.UIUtils.HTMLElementWithLightDOMTemplate 
         // However, if we have nodes added, that will trigger a sort anyway so we
         // don't need to re-sort again.
         if (this.#dataGrid.sortColumnId() !== null && !hadAddedNodes) {
-            this.#dataGrid.dispatchEventToListeners("SortingChanged" /* DataGridEvents.SORTING_CHANGED */);
+            this.#scheduleSortingChanged();
         }
     }
     #editCallback(node, columnId, valueBeforeEditing, newText, moveDirection) {

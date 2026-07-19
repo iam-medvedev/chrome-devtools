@@ -7,5 +7,6 @@ import { CdpFrame } from './package/lib/puppeteer/cdp/Frame.js';
 import { CdpElementHandle } from './package/lib/puppeteer/cdp/ElementHandle.js';
 import { CdpPage } from './package/lib/puppeteer/cdp/Page.js';
 import { CdpTarget } from './package/lib/puppeteer/cdp/Target.js';
-export { CdpBrowser as Browser, CdpTarget as Target, Connection, CdpElementHandle as ElementHandle, CdpFrame as Frame, CdpPage as Page };
+import { CDPSession, CDPSessionEvent } from './package/lib/puppeteer/api/CDPSession.js';
+export { CdpBrowser as Browser, CdpTarget as Target, Connection, CdpElementHandle as ElementHandle, CdpFrame as Frame, CdpPage as Page, CDPSession, CDPSessionEvent, };
 //# sourceMappingURL=puppeteer.prebundle.js.map

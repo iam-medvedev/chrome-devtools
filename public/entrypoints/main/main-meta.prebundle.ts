@@ -17,163 +17,163 @@ import type * as Main from './main.js';
 
 const UIStrings = {
   /**
-   * @description Text in Main
+   * @description Action title to focus the page being debugged.
    */
   focusDebuggee: 'Focus page',
   /**
-   * @description Text in the Shortcuts page in settings to explain a keyboard shortcut
+   * @description Action title and shortcut description to toggle the Console drawer.
    */
   toggleDrawer: 'Toggle drawer',
   /**
-   * @description Title of an action that navigates to the next panel
+   * @description Title of an action that navigates to the next panel.
    */
   nextPanel: 'Next panel',
   /**
-   * @description Title of an action that navigates to the previous panel
+   * @description Title of an action that navigates to the previous panel.
    */
   previousPanel: 'Previous panel',
   /**
-   * @description Title of an action that reloads the DevTools
+   * @description Title of an action that reloads DevTools.
    */
   reloadDevtools: 'Reload DevTools',
   /**
-   * @description Title of an action in the main tool to toggle dock
+   * @description Title of an action in the main toolbar to restore the last dock position.
    */
   restoreLastDockPosition: 'Restore last dock position',
   /**
-   * @description Text in the Shortcuts page to explain a keyboard shortcut (zoom in)
+   * @description Shortcut description and action title to zoom in.
    */
   zoomIn: 'Zoom in',
   /**
-   * @description Text in the Shortcuts page to explain a keyboard shortcut (zoom out)
+   * @description Shortcut description and action title to zoom out.
    */
   zoomOut: 'Zoom out',
   /**
-   * @description Title of an action that reset the zoom level to its default
+   * @description Title of an action that resets the zoom level to default.
    */
   resetZoomLevel: 'Reset zoom level',
   /**
-   * @description Title of an action to search in panel
+   * @description Title of an action to search within the current panel.
    */
   searchInPanel: 'Search in panel',
   /**
-   * @description Title of an action that cancels the current search
+   * @description Title of an action that cancels the current search.
    */
   cancelSearch: 'Cancel search',
   /**
-   * @description Title of an action that finds the next search result
+   * @description Title of an action that finds the next search result.
    */
   findNextResult: 'Find next result',
   /**
-   * @description Title of an action to find the previous search result
+   * @description Title of an action to find the previous search result.
    */
   findPreviousResult: 'Find previous result',
   /**
-   * @description Title of a setting under the Appearance category in Settings
+   * @description Title of the theme setting under the Appearance category in Settings.
    */
   theme: 'Theme:',
   /**
-   * @description Title of a setting under the Appearance category that can be invoked through the Command Menu
+   * @description Command menu option to switch to the browser's preferred color theme.
    */
-  switchToBrowserPreferredTheme: 'Switch to browser\'s preferred theme',
+  switchToBrowserPreferredTheme: 'Switch to browser’s preferred theme',
   /**
-   * @description A drop-down menu option to switch to the same (light or dark) theme as the browser
+   * @description Drop-down menu option to match the browser's color theme.
    */
   autoTheme: 'Auto',
   /**
-   * @description Title of a setting under the Appearance category that can be invoked through the Command Menu
+   * @description Command menu option to switch to the light color theme.
    */
   switchToLightTheme: 'Switch to light theme',
   /**
-   * @description A drop-down menu option to switch to light theme
+   * @description Drop-down menu option to select the light color theme.
    */
   lightCapital: 'Light',
   /**
-   * @description Title of a setting under the Appearance category that can be invoked through the Command Menu
+   * @description Command menu option to switch to the dark color theme.
    */
   switchToDarkTheme: 'Switch to dark theme',
   /**
-   * @description A drop-down menu option to switch to dark theme
+   * @description Drop-down menu option to select the dark color theme.
    */
   darkCapital: 'Dark',
   /**
-   * @description A tag of theme preference settings that can be searched in the command menu
+   * @description Tag for theme preference settings when searched in the command menu.
    */
   darkLower: 'dark',
   /**
-   * @description A tag of theme preference settings that can be searched in the command menu
+   * @description Tag for theme preference settings when searched in the command menu.
    */
   lightLower: 'light',
   /**
-   * @description Title of a setting under the Appearance category in Settings
+   * @description Title of the panel layout setting under the Appearance category in Settings.
    */
   panelLayout: 'Panel layout:',
   /**
-   * @description Title of a setting under the Appearance category that can be invoked through the Command Menu
+   * @description Command menu option to use a horizontal panel layout.
    */
   useHorizontalPanelLayout: 'Use horizontal panel layout',
   /**
-   * @description A drop-down menu option to use horizontal panel layout
+   * @description Drop-down menu option for horizontal panel layout.
    */
   horizontal: 'horizontal',
   /**
-   * @description Title of a setting under the Appearance category that can be invoked through the Command Menu
+   * @description Command menu option to use a vertical panel layout.
    */
   useVerticalPanelLayout: 'Use vertical panel layout',
   /**
-   * @description A drop-down menu option to use vertical panel layout
+   * @description Drop-down menu option for vertical panel layout.
    */
   vertical: 'vertical',
   /**
-   * @description Title of a setting under the Appearance category that can be invoked through the Command Menu
+   * @description Command menu option to use automatic panel layout.
    */
   useAutomaticPanelLayout: 'Use automatic panel layout',
   /**
-   * @description Text short for automatic
+   * @description Drop-down menu option for automatic panel layout.
    */
   auto: 'auto',
   /**
-   * @description Title of a setting under the Appearance category in Settings
+   * @description Checkbox label for the setting to use Ctrl plus number keys to switch panels.
    */
   enableCtrlShortcutToSwitchPanels: 'Use Ctrl + 1-9 to switch panels',
   /**
-   * @description (Mac only) Title of a setting under the Appearance category in Settings
+   * @description Checkbox label for the setting to use Command plus number keys to switch panels on Mac.
    */
   enableShortcutToSwitchPanels: 'Use ⌘ + 1-9 to switch panels',
   /**
-   * @description A drop-down menu option to dock to right
+   * @description Drop-down menu option to dock DevTools to the right.
    */
   right: 'Right',
   /**
-   * @description Text to dock the DevTools to the right of the browser tab
+   * @description Title of the action and setting option to dock DevTools to the right of the browser window.
    */
   dockToRight: 'Dock to right',
   /**
-   * @description A drop-down menu option to dock to bottom
+   * @description Drop-down menu option to dock DevTools to the bottom.
    */
   bottom: 'Bottom',
   /**
-   * @description Text to dock the DevTools to the bottom of the browser tab
+   * @description Title of the action and setting option to dock DevTools to the bottom of the browser window.
    */
   dockToBottom: 'Dock to bottom',
   /**
-   * @description A drop-down menu option to dock to left
+   * @description Drop-down menu option to dock DevTools to the left.
    */
   left: 'Left',
   /**
-   * @description Text to dock the DevTools to the left of the browser tab
+   * @description Title of the action and setting option to dock DevTools to the left of the browser window.
    */
   dockToLeft: 'Dock to left',
   /**
-   * @description A drop-down menu option to undock into separate window
+   * @description Drop-down menu option for undocked DevTools in a separate window.
    */
   undocked: 'Undocked',
   /**
-   * @description Text to undock the DevTools
+   * @description Title of the action and setting option to undock DevTools into a separate window.
    */
   undockIntoSeparateWindow: 'Undock into separate window',
   /**
-   * @description Name of the default set of DevTools keyboard shortcuts
+   * @description Option label for the default set of DevTools keyboard shortcuts.
    */
   devtoolsDefault: 'DevTools (Default)',
   /**
@@ -228,7 +228,7 @@ const UIStrings = {
   /**
    * @description Command to turn the browser color scheme matching off through the command menu.
    */
-  dontMatchChromeColorSchemeCommand: 'Don\'t match Chrome color scheme',
+  dontMatchChromeColorSchemeCommand: 'Don’t match Chrome color scheme',
   /**
    * @description Command to toggle the drawer orientation.
    */

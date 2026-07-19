@@ -10,7 +10,6 @@ import { DeviceBoundSessionsModel } from './DeviceBoundSessionsModel.js';
 import { RootTreeElement as DeviceBoundSessionsRootTreeElement } from './DeviceBoundSessionsTreeElement.js';
 import { type ExtensionStorage } from './ExtensionStorageModel.js';
 import { type Database as IndexedDBModelDatabase, type DatabaseId, type Index, IndexedDBModel, type ObjectStore } from './IndexedDBModel.js';
-import { InterestGroupTreeElement } from './InterestGroupTreeElement.js';
 import type * as PreloadingHelper from './preloading/helper/helper.js';
 import { PreloadingSummaryTreeElement } from './PreloadingTreeElement.js';
 import { ReportingApiTreeElement } from './ReportingApiTreeElement.js';
@@ -40,7 +39,6 @@ export declare class ApplicationPanelSidebar extends UI.Widget.VBox implements S
     sessionStorageListTreeElement: ExpandableApplicationPanelTreeElement;
     extensionStorageListTreeElement: ExpandableApplicationPanelTreeElement;
     indexedDBListTreeElement: IndexedDBTreeElement;
-    interestGroupTreeElement: InterestGroupTreeElement;
     cookieListTreeElement: ExpandableApplicationPanelTreeElement;
     trustTokensTreeElement: TrustTokensTreeElement;
     cacheStorageListTreeElement: ServiceWorkerCacheTreeElement;
@@ -82,8 +80,6 @@ export declare class ApplicationPanelSidebar extends UI.Widget.VBox implements S
     private extensionStorageModelRemoved;
     private indexedDBModelAdded;
     private indexedDBModelRemoved;
-    private interestGroupModelAdded;
-    private interestGroupModelRemoved;
     private sharedStorageModelAdded;
     private sharedStorageModelRemoved;
     private storageBucketsModelAdded;
@@ -92,7 +88,6 @@ export declare class ApplicationPanelSidebar extends UI.Widget.VBox implements S
     private treeElementAdded;
     private reset;
     private frameNavigated;
-    private interestGroupAccess;
     private addCookieDocument;
     private domStorageAdded;
     private addDOMStorage;

@@ -76,7 +76,7 @@ export class AccessibilityAgent extends AiAgent {
     constructor(opts) {
         super(opts);
         this.#lighthouseRecording = opts.lighthouseRecording;
-        this.#changes = opts.changeManager || new ChangeManager();
+        this.#changes = opts.changeManager || new ChangeManager(opts.targetManager);
         this.#execJs = opts.execJs ?? executeJsCode;
         this.#createExtensionScope = opts.createExtensionScope ?? ((changes) => {
             return new ExtensionScope(changes, this.sessionId, this.#getDocumentBodyNode());
@@ -99,7 +99,7 @@ export class AccessibilityAgent extends AiAgent {
         };
     }
     async preRun() {
-        const target = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
+        const target = this.targetManager.primaryPageTarget();
         const domModel = target?.model(SDK.DOMModel.DOMModel);
         // We need to ensure the document is requested so that #getDocumentBodyNode()
         // can return a valid node for the JavaScript execution context.
@@ -118,10 +118,7 @@ export class AccessibilityAgent extends AiAgent {
      * so that the AI has a valid $0 to start with.
      */
     #getDocumentBodyNode() {
-        const document = SDK.TargetManager.TargetManager.instance()
-            .primaryPageTarget()
-            ?.model(SDK.DOMModel.DOMModel)
-            ?.existingDocument();
+        const document = this.targetManager.primaryPageTarget()?.model(SDK.DOMModel.DOMModel)?.existingDocument();
         return document?.body ?? document ?? null;
     }
     async *handleContextDetails(lhr) {
@@ -137,7 +134,7 @@ export class AccessibilityAgent extends AiAgent {
         }
     }
     async #resolvePathToNode(path) {
-        const target = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
+        const target = this.targetManager.primaryPageTarget();
         if (!target) {
             return null;
         }

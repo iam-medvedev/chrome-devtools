@@ -40,7 +40,7 @@ const UIStrings = {
      * @description Status text for the status of the back/forward cache status indicating that
      * the back/forward cache was not used and a normal navigation occurred instead.
      */
-    normalNavigation: 'Not served from back/forward cache: to trigger back/forward cache, use Chrome\'s back/forward buttons, or use the test button below to automatically navigate away and back.',
+    normalNavigation: 'Not served from back/forward cache: to trigger back/forward cache, use Chrome’s back/forward buttons, or use the test button below to automatically navigate away and back.',
     /**
      * @description Status text for the status of the back/forward cache status indicating that
      * the back/forward cache was used to restore the page instead of reloading it.

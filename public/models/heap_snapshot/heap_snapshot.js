@@ -251,6 +251,7 @@ import * as Common from "./../../core/common/common.js";
 import * as Platform from "./../../core/platform/platform.js";
 var HeapSnapshotWorkerProxy = class extends Common.ObjectWrapper.ObjectWrapper {
   eventHandler;
+  #console;
   nextObjectId = 1;
   nextCallId = 1;
   callbacks = /* @__PURE__ */ new Map();
@@ -258,12 +259,16 @@ var HeapSnapshotWorkerProxy = class extends Common.ObjectWrapper.ObjectWrapper {
   worker;
   interval;
   workerUrl;
-  constructor(eventHandler, workerUrl) {
+  constructor(eventHandler, console, workerUrl) {
     super();
     this.eventHandler = eventHandler;
+    this.#console = console;
     this.workerUrl = workerUrl;
     this.worker = Platform.HostRuntime.HOST_RUNTIME.createWorker(workerUrl ?? import.meta.resolve("../../entrypoints/heap_snapshot_worker/heap_snapshot_worker-entrypoint.js"));
     this.worker.onmessage = this.messageReceived.bind(this);
+  }
+  get console() {
+    return this.#console;
   }
   createLoader(profileUid, snapshotReceivedCallback) {
     const objectId = this.nextObjectId++;
@@ -367,8 +372,8 @@ var HeapSnapshotWorkerProxy = class extends Common.ObjectWrapper.ObjectWrapper {
       return;
     }
     if (data.error) {
-      Common.Console.Console.instance().error(`An error occurred when a call to method '${data.errorMethodName}' was requested`);
-      Common.Console.Console.instance().error(data["errorCallStack"]);
+      this.#console.error(`An error occurred when a call to method '${data.errorMethodName}' was requested`);
+      this.#console.error(data["errorCallStack"]);
       this.callbacks.delete(data.callId);
       return;
     }
@@ -417,7 +422,7 @@ var HeapSnapshotLoaderProxy = class extends HeapSnapshotProxyObject {
   async close() {
     await this.callMethodPromise("close");
     const secondWorker = new HeapSnapshotWorkerProxy(() => {
-    }, this.worker.workerUrl);
+    }, this.worker.console, this.worker.workerUrl);
     const channel = new MessageChannel();
     await secondWorker.setupForSecondaryInit(channel.port2);
     const snapshotProxy = await this.callFactoryMethodPromise("buildSnapshot", HeapSnapshotProxy, [channel.port1]);

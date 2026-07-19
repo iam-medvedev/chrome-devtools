@@ -11,6 +11,7 @@ __export(ArrayUtilities_exports, {
   arrayDoesNotContainNullOrUndefined: () => arrayDoesNotContainNullOrUndefined,
   assertArrayIsSorted: () => assertArrayIsSorted,
   binaryIndexOf: () => binaryIndexOf,
+  insertWithComparator: () => insertWithComparator,
   intersectOrdered: () => intersectOrdered,
   lowerBound: () => lowerBound,
   mergeOrdered: () => mergeOrdered,
@@ -128,6 +129,11 @@ function lowerBound(array, needle, comparator, left, right) {
     }
   }
   return r;
+}
+function insertWithComparator(array, value, comparator) {
+  const index = lowerBound(array, value, comparator);
+  array.splice(index, 0, value);
+  return index;
 }
 function upperBound(array, needle, comparator, left, right) {
   let l = left || 0;
@@ -556,6 +562,7 @@ __export(StringUtilities_exports, {
   escapeCharacters: () => escapeCharacters,
   escapeForRegExp: () => escapeForRegExp,
   escapeForURLPattern: () => escapeForURLPattern,
+  escapeUnicodeAsText: () => escapeUnicodeAsText,
   filterRegex: () => filterRegex,
   findIndexesOfSubString: () => findIndexesOfSubString,
   findLineEndingIndexes: () => findLineEndingIndexes,
@@ -570,6 +577,7 @@ __export(StringUtilities_exports, {
   replaceControlCharacters: () => replaceControlCharacters,
   replaceLast: () => replaceLast,
   reverse: () => reverse,
+  safeEscapeUnicode: () => safeEscapeUnicode,
   sprintf: () => sprintf,
   stringifyWithPrecision: () => stringifyWithPrecision,
   stripLineBreaks: () => stripLineBreaks,
@@ -581,8 +589,10 @@ __export(StringUtilities_exports, {
   toTitleCase: () => toTitleCase,
   trimEndWithMaxLength: () => trimEndWithMaxLength,
   trimMiddle: () => trimMiddle,
-  trimURL: () => trimURL
+  trimURL: () => trimURL,
+  truncateToCodeUnitLength: () => truncateToCodeUnitLength
 });
+var graphemeSegmenter = null;
 var escapeCharacters = (inputString, charsToEscape) => {
   let foundChar = false;
   for (let i = 0; i < charsToEscape.length; ++i) {
@@ -619,22 +629,52 @@ var escapedReplacements = /* @__PURE__ */ new Map([
   ["<script", "\\x3Cscript"],
   ["<\/script", "\\x3C/script"]
 ]);
+var UNICODE_ESCAPE_SOURCE = "[\\p{Format}\\p{Surrogate}]";
+var UNICODE_ESCAPE_REGEX = new RegExp(UNICODE_ESCAPE_SOURCE, "u");
+var UNICODE_ESCAPE_GLOBAL_REGEX = new RegExp(UNICODE_ESCAPE_SOURCE, "gu");
+var UNICODE_ESCAPE_EXCEPT_ZWSP_SOURCE = "(?![\\u200B\\u200C\\u200D])[\\p{Format}]|\\p{Surrogate}";
+var UNICODE_ESCAPE_EXCEPT_ZWSP_REGEX = new RegExp(UNICODE_ESCAPE_EXCEPT_ZWSP_SOURCE, "u");
+var UNICODE_ESCAPE_EXCEPT_ZWSP_GLOBAL_REGEX = new RegExp(UNICODE_ESCAPE_EXCEPT_ZWSP_SOURCE, "gu");
+var escapeUnicodeAsText = (content) => {
+  if (!UNICODE_ESCAPE_REGEX.test(content)) {
+    return content;
+  }
+  return content.replaceAll(UNICODE_ESCAPE_GLOBAL_REGEX, (match) => {
+    return match.split("").map((char) => "\\u" + toHexadecimal(char.charCodeAt(0), 4)).join("");
+  });
+};
+var safeEscapeUnicode = (content) => {
+  if (!UNICODE_ESCAPE_EXCEPT_ZWSP_REGEX.test(content)) {
+    return content;
+  }
+  return content.replaceAll(UNICODE_ESCAPE_EXCEPT_ZWSP_GLOBAL_REGEX, (match) => {
+    return match.split("").map((char) => "\\u" + toHexadecimal(char.charCodeAt(0), 4)).join("");
+  });
+};
 var formatAsJSLiteral = (content) => {
-  const patternsToEscape = /(\\|<(?:!--|\/?script))|(\p{Control})|(\p{Surrogate})/gu;
-  const patternsToEscapePlusSingleQuote = /(\\|'|<(?:!--|\/?script))|(\p{Control})|(\p{Surrogate})/gu;
+  const patternsToEscape = /(\\|<(?:!--|\/?script))|(\p{Control}|\p{Format})|(\p{Surrogate})/giu;
+  const patternsToEscapePlusSingleQuote = /(\\|'|<(?:!--|\/?script))|(\p{Control}|\p{Format})|(\p{Surrogate})/giu;
   const escapePattern = (match, pattern, controlChar, loneSurrogate) => {
     if (controlChar) {
       if (escapedReplacements.has(controlChar)) {
         return escapedReplacements.get(controlChar);
       }
-      const twoDigitHex = toHexadecimal(controlChar.charCodeAt(0), 2);
-      return "\\x" + twoDigitHex;
+      return controlChar.split("").map((char) => {
+        const charCode = char.charCodeAt(0);
+        if (controlChar.length === 1 && charCode <= 255) {
+          return "\\x" + toHexadecimal(charCode, 2);
+        }
+        return "\\u" + toHexadecimal(charCode, 4);
+      }).join("");
     }
     if (loneSurrogate) {
       const fourDigitHex = toHexadecimal(loneSurrogate.charCodeAt(0), 4);
       return "\\u" + fourDigitHex;
     }
     if (pattern) {
+      if (pattern.startsWith("<")) {
+        return "\\x3C" + pattern.slice(1);
+      }
       return escapedReplacements.get(pattern) || "";
     }
     return match;
@@ -917,6 +957,25 @@ var trimEndWithMaxLength = (str, maxLength) => {
     }
   }
   return str.slice(0, lastSegmentIndex) + ellipsis;
+};
+var truncateToCodeUnitLength = (str, maxCodeUnits) => {
+  if (isNaN(maxCodeUnits) || maxCodeUnits <= 0) {
+    return "";
+  }
+  if (str.length <= maxCodeUnits) {
+    return str;
+  }
+  if (!graphemeSegmenter) {
+    graphemeSegmenter = new Intl.Segmenter(void 0, { granularity: "grapheme" });
+  }
+  let lastSafeIndex = 0;
+  for (const { index, segment } of graphemeSegmenter.segment(str)) {
+    if (index + segment.length > maxCodeUnits) {
+      break;
+    }
+    lastSafeIndex = index + segment.length;
+  }
+  return str.slice(0, lastSafeIndex);
 };
 var escapeForRegExp = (str) => {
   return escapeCharacters(str, SPECIAL_REGEX_CHARACTERS);

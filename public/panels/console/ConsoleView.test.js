@@ -8,8 +8,10 @@ import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Bindings from '../../models/bindings/bindings.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
+import * as Workspace from '../../models/workspace/workspace.js';
 import { findMenuItemWithLabel, getContextMenuForElement } from '../../testing/ContextMenuHelpers.js';
 import { dispatchPasteEvent, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment, registerNoopActions, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
@@ -577,6 +579,228 @@ describeWithEnvironment('ConsoleView', () => {
             // After expanding, all three are visible.
             assert.strictEqual(consoleView.itemCount(), 3);
         });
+    });
+    describe('filtering', () => {
+        let target;
+        let consoleModel;
+        beforeEach(() => {
+            target = createTarget();
+            SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
+            consoleModel = target.model(SDK.ConsoleModel.ConsoleModel);
+            assert.exists(consoleModel);
+            consoleView.markAsRoot();
+            renderElementIntoDOM(consoleView);
+            addMessage(consoleModel, target, 'sample info', "info" /* Protocol.Runtime.ConsoleAPICalledEventType.Info */, "info" /* Protocol.Log.LogEntryLevel.Info */);
+            addMessage(consoleModel, target, 'sample log', "log" /* Protocol.Runtime.ConsoleAPICalledEventType.Log */, "info" /* Protocol.Log.LogEntryLevel.Info */);
+            addMessage(consoleModel, target, 'sample warning', "warning" /* Protocol.Runtime.ConsoleAPICalledEventType.Warning */, "warning" /* Protocol.Log.LogEntryLevel.Warning */);
+            addMessage(consoleModel, target, 'sample debug', "debug" /* Protocol.Runtime.ConsoleAPICalledEventType.Debug */, "verbose" /* Protocol.Log.LogEntryLevel.Verbose */);
+            addMessage(consoleModel, target, 'sample error', "error" /* Protocol.Runtime.ConsoleAPICalledEventType.Error */, "error" /* Protocol.Log.LogEntryLevel.Error */);
+            addMessage(consoleModel, target, 'abc info', "info" /* Protocol.Runtime.ConsoleAPICalledEventType.Info */, "info" /* Protocol.Log.LogEntryLevel.Info */);
+            addMessage(consoleModel, target, 'def info', "info" /* Protocol.Runtime.ConsoleAPICalledEventType.Info */, "info" /* Protocol.Log.LogEntryLevel.Info */);
+            addMessage(consoleModel, target, 'abc warn', "warning" /* Protocol.Runtime.ConsoleAPICalledEventType.Warning */, "warning" /* Protocol.Log.LogEntryLevel.Warning */);
+            addMessage(consoleModel, target, 'def warn', "warning" /* Protocol.Runtime.ConsoleAPICalledEventType.Warning */, "warning" /* Protocol.Log.LogEntryLevel.Warning */);
+            consoleModel.addMessage(createConsoleMessage(target, '\'Should be always visible\'', SDK.ConsoleModel.FrontendMessageType.Command));
+            consoleModel.addMessage(createConsoleMessage(target, '\'Should be always visible\'', SDK.ConsoleModel.FrontendMessageType.Result));
+        });
+        it('shows messages for all levels', async () => {
+            const levels = Console.ConsoleFilter.ConsoleFilter.allLevelsFilterValue();
+            Common.Settings.Settings.instance().createSetting('message-level-filters', levels).set(levels);
+            await consoleView.getScheduledRefreshPromiseForTest();
+            const messages = await getConsoleMessages();
+            assert.deepEqual(messages, [
+                'sample info',
+                'sample log',
+                'sample warning',
+                'sample debug',
+                'sample error',
+                'abc info',
+                'def info',
+                'abc warn',
+                'def warn',
+                '"\'Should be always visible\'"',
+            ]);
+        });
+        it('shows messages for default levels', async () => {
+            const levels = Console.ConsoleFilter.ConsoleFilter.defaultLevelsFilterValue();
+            Common.Settings.Settings.instance().createSetting('message-level-filters', levels).set(levels);
+            await consoleView.getScheduledRefreshPromiseForTest();
+            const messages = await getConsoleMessages();
+            assert.deepEqual(messages, [
+                'sample info',
+                'sample log',
+                'sample warning',
+                'sample error',
+                'abc info',
+                'def info',
+                'abc warn',
+                'def warn',
+                '"\'Should be always visible\'"',
+            ]);
+        });
+        it('shows messages for verbose level', async () => {
+            const levels = Console.ConsoleFilter.ConsoleFilter.singleLevelMask("verbose" /* Protocol.Log.LogEntryLevel.Verbose */);
+            Common.Settings.Settings.instance().createSetting('message-level-filters', levels).set(levels);
+            await consoleView.getScheduledRefreshPromiseForTest();
+            const messages = await getConsoleMessages();
+            assert.deepEqual(messages, [
+                'sample debug',
+                '"\'Should be always visible\'"',
+            ]);
+        });
+        it('shows messages for info level', async () => {
+            const levels = Console.ConsoleFilter.ConsoleFilter.singleLevelMask("info" /* Protocol.Log.LogEntryLevel.Info */);
+            Common.Settings.Settings.instance().createSetting('message-level-filters', levels).set(levels);
+            await consoleView.getScheduledRefreshPromiseForTest();
+            const messages = await getConsoleMessages();
+            assert.deepEqual(messages, [
+                'sample info',
+                'sample log',
+                'abc info',
+                'def info',
+                '"\'Should be always visible\'"',
+            ]);
+        });
+        it('shows messages for warning and error levels', async () => {
+            const levels = {
+                ["warning" /* Protocol.Log.LogEntryLevel.Warning */]: true,
+                ["error" /* Protocol.Log.LogEntryLevel.Error */]: true,
+            };
+            Common.Settings.Settings.instance().createSetting('message-level-filters', levels).set(levels);
+            await consoleView.getScheduledRefreshPromiseForTest();
+            const messages = await getConsoleMessages();
+            assert.deepEqual(messages, [
+                'sample warning',
+                'sample error',
+                'abc warn',
+                'def warn',
+                '"\'Should be always visible\'"',
+            ]);
+        });
+        it('filters messages by text', async () => {
+            const levels = Console.ConsoleFilter.ConsoleFilter.singleLevelMask("verbose" /* Protocol.Log.LogEntryLevel.Verbose */);
+            Common.Settings.Settings.instance().createSetting('message-level-filters', levels).set(levels);
+            const filter = consoleView.filter;
+            filter.textFilterUI.setValue('abc');
+            filter.onFilterChanged();
+            await consoleView.getScheduledRefreshPromiseForTest();
+            const messages = await getConsoleMessages();
+            assert.deepEqual(messages, [
+                '"\'Should be always visible\'"',
+            ]);
+        });
+        it('filters messages by regex', async () => {
+            const levels = Console.ConsoleFilter.ConsoleFilter.singleLevelMask("verbose" /* Protocol.Log.LogEntryLevel.Verbose */);
+            Common.Settings.Settings.instance().createSetting('message-level-filters', levels).set(levels);
+            const filter = consoleView.filter;
+            filter.textFilterUI.setValue('/ab[a-z]/');
+            filter.onFilterChanged();
+            await consoleView.getScheduledRefreshPromiseForTest();
+            const messages = await getConsoleMessages();
+            assert.deepEqual(messages, [
+                '"\'Should be always visible\'"',
+            ]);
+        });
+        it('filters messages by regex and warning level', async () => {
+            const levels = Console.ConsoleFilter.ConsoleFilter.singleLevelMask("warning" /* Protocol.Log.LogEntryLevel.Warning */);
+            Common.Settings.Settings.instance().createSetting('message-level-filters', levels).set(levels);
+            const filter = consoleView.filter;
+            filter.textFilterUI.setValue('/ab[a-z]/');
+            filter.onFilterChanged();
+            await consoleView.getScheduledRefreshPromiseForTest();
+            const messages = await getConsoleMessages();
+            assert.deepEqual(messages, [
+                'abc warn',
+                '"\'Should be always visible\'"',
+            ]);
+        });
+    });
+    describe('scroll preservation', () => {
+        it('preserves scroll position when hidden and shown again', async () => {
+            const tabTarget = createTarget({ type: SDK.Target.Type.TAB });
+            const target = createTarget({ parentTarget: tabTarget });
+            const consoleModel = target.model(SDK.ConsoleModel.ConsoleModel);
+            assert.exists(consoleModel);
+            // Render consoleView into DOM with fixed height container.
+            renderElementIntoDOM(consoleView, { height: 100 });
+            consoleView.element.style.height = '100%';
+            const parentElement = consoleView.element.parentElement;
+            assert.exists(parentElement);
+            for (let i = 0; i < 100; i++) {
+                consoleModel.addMessage(createConsoleMessage(target, `message ${i}`));
+            }
+            await consoleView.getScheduledRefreshPromiseForTest();
+            const messagesElement = consoleView.element.querySelector('#console-messages');
+            assert.exists(messagesElement);
+            // Scroll to 10 and trigger wheel to update stickToBottom.
+            messagesElement.scrollTop = 10;
+            messagesElement.dispatchEvent(new Event('wheel'));
+            assert.isTrue(messagesElement.scrollHeight > messagesElement.clientHeight, 'Viewport is not scrollable');
+            assert.strictEqual(messagesElement.scrollTop, 10);
+            // Hide and show again.
+            consoleView.detach();
+            consoleView.markAsRoot();
+            consoleView.show(parentElement);
+            assert.strictEqual(messagesElement.scrollTop, 10);
+        });
+    });
+    it('renders console messages with invalid stacktraces', async () => {
+        const targetManager = SDK.TargetManager.TargetManager.instance();
+        const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, Workspace.Workspace.WorkspaceImpl.instance());
+        const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
+        Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
+            forceNew: true,
+            resourceMapping,
+            targetManager,
+            ignoreListManager,
+            workspace: Workspace.Workspace.WorkspaceImpl.instance(),
+        });
+        const target = createTarget();
+        const consoleModel = target.model(SDK.ConsoleModel.ConsoleModel);
+        assert.exists(consoleModel);
+        // Add invalid message.
+        const badStackTrace = {
+            callFrames: [
+                {
+                    functionName: '',
+                    scriptId: 'invalid-ScriptId',
+                    url: '',
+                    lineNumber: 0,
+                    columnNumber: 0,
+                },
+            ],
+        };
+        const badStackTraceMessage = new SDK.ConsoleModel.ConsoleMessage(target.model(SDK.RuntimeModel.RuntimeModel), "javascript" /* Protocol.Log.LogEntrySource.Javascript */, "error" /* Protocol.Log.LogEntryLevel.Error */, 'This should be visible', {
+            type: "error" /* Protocol.Runtime.ConsoleAPICalledEventType.Error */,
+            stackTrace: badStackTrace,
+        });
+        consoleView.markAsRoot();
+        renderElementIntoDOM(consoleView);
+        consoleModel.addMessage(badStackTraceMessage);
+        await consoleView.getScheduledRefreshPromiseForTest();
+        await UI.Widget.Widget.allUpdatesComplete;
+        assert.strictEqual(consoleView.itemCount(), 1);
+        const messageView = consoleView.itemElement(0);
+        assert.exists(messageView);
+        const contentElement = messageView.contentElement();
+        const messageTextElement = contentElement.querySelector('.console-message-text');
+        assert.exists(messageTextElement);
+        assert.strictEqual(messageTextElement.textContent?.trim(), 'This should be visible');
+        const stackTraceWrapper = contentElement.querySelector('.console-message-stack-trace-wrapper');
+        assert.exists(stackTraceWrapper);
+        const stackTraceElement = stackTraceWrapper.querySelector('.hidden-stack-trace');
+        assert.exists(stackTraceElement);
+        const previewWidgetElement = stackTraceElement.firstElementChild;
+        assert.exists(previewWidgetElement);
+        assert.exists(previewWidgetElement.shadowRoot);
+        const shadowRoot = previewWidgetElement.shadowRoot;
+        const table = shadowRoot.querySelector('.stack-preview-container');
+        assert.exists(table);
+        const row = table.querySelector('tbody tr');
+        assert.exists(row);
+        const functionName = row.querySelector('.function-name')?.textContent?.trim();
+        assert.strictEqual(functionName, '(anonymous)');
+        const link = row.querySelector('.link')?.textContent?.trim();
+        assert.strictEqual(link, '(unknown)');
     });
 });
 //# sourceMappingURL=ConsoleView.test.js.map

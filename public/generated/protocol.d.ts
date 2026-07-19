@@ -877,7 +877,6 @@ export declare namespace Audits {
         MixedContentWarning = "MixedContentWarning"
     }
     const enum MixedContentResourceType {
-        AttributionSrc = "AttributionSrc",
         Audio = "Audio",
         Beacon = "Beacon",
         CSPReport = "CSPReport",
@@ -1041,29 +1040,6 @@ export declare namespace Audits {
         resourceIPAddressSpace?: Network.IPAddressSpace;
         clientSecurityState?: Network.ClientSecurityState;
     }
-    const enum AttributionReportingIssueType {
-        PermissionPolicyDisabled = "PermissionPolicyDisabled",
-        UntrustworthyReportingOrigin = "UntrustworthyReportingOrigin",
-        InsecureContext = "InsecureContext",
-        InvalidHeader = "InvalidHeader",
-        InvalidRegisterTriggerHeader = "InvalidRegisterTriggerHeader",
-        SourceAndTriggerHeaders = "SourceAndTriggerHeaders",
-        SourceIgnored = "SourceIgnored",
-        TriggerIgnored = "TriggerIgnored",
-        OsSourceIgnored = "OsSourceIgnored",
-        OsTriggerIgnored = "OsTriggerIgnored",
-        InvalidRegisterOsSourceHeader = "InvalidRegisterOsSourceHeader",
-        InvalidRegisterOsTriggerHeader = "InvalidRegisterOsTriggerHeader",
-        WebAndOsHeaders = "WebAndOsHeaders",
-        NoWebOrOsSupport = "NoWebOrOsSupport",
-        NavigationRegistrationWithoutTransientUserActivation = "NavigationRegistrationWithoutTransientUserActivation",
-        InvalidInfoHeader = "InvalidInfoHeader",
-        NoRegisterSourceHeader = "NoRegisterSourceHeader",
-        NoRegisterTriggerHeader = "NoRegisterTriggerHeader",
-        NoRegisterOsSourceHeader = "NoRegisterOsSourceHeader",
-        NoRegisterOsTriggerHeader = "NoRegisterOsTriggerHeader",
-        NavigationRegistrationUniqueScopeAlreadySet = "NavigationRegistrationUniqueScopeAlreadySet"
-    }
     const enum SharedDictionaryError {
         UseErrorCrossOriginNoCorsRequest = "UseErrorCrossOriginNoCorsRequest",
         UseErrorDictionaryLoadFailure = "UseErrorDictionaryLoadFailure",
@@ -1132,16 +1108,6 @@ export declare namespace Audits {
         InvalidAllowlistItemType = "InvalidAllowlistItemType",
         ReportingEndpointNotToken = "ReportingEndpointNotToken",
         InvalidUrlPattern = "InvalidUrlPattern"
-    }
-    /**
-     * Details for issues around "Attribution Reporting API" usage.
-     * Explainer: https://github.com/WICG/attribution-reporting-api
-     */
-    interface AttributionReportingIssueDetails {
-        violationType: AttributionReportingIssueType;
-        request?: AffectedRequest;
-        violatingNodeId?: DOM.BackendNodeId;
-        invalidParameter?: string;
     }
     /**
      * Details for issues about documents in Quirks Mode
@@ -1590,6 +1556,23 @@ export declare namespace Audits {
         stackTrace?: Runtime.StackTrace;
     }
     /**
+     * Details for issues about lazy-loaded images without explicit dimensions.
+     */
+    interface LazyLoadImageIssueDetails {
+        /**
+         * DOM node of the problematic HTMLImageElement.
+         */
+        nodeId: DOM.BackendNodeId;
+        /**
+         * URL or src attribute of the image.
+         */
+        url: string;
+        /**
+         * Frame containing the image.
+         */
+        frameId: Page.FrameId;
+    }
+    /**
      * A unique identifier for the type of issue. Each type may use one of the
      * optional fields in InspectorIssueDetails to convey more specific
      * information about the kind of issue.
@@ -1602,7 +1585,6 @@ export declare namespace Audits {
         ContentSecurityPolicyIssue = "ContentSecurityPolicyIssue",
         SharedArrayBufferIssue = "SharedArrayBufferIssue",
         CorsIssue = "CorsIssue",
-        AttributionReportingIssue = "AttributionReportingIssue",
         QuirksModeIssue = "QuirksModeIssue",
         PartitioningBlobURLIssue = "PartitioningBlobURLIssue",
         NavigatorUserAgentIssue = "NavigatorUserAgentIssue",
@@ -1624,7 +1606,8 @@ export declare namespace Audits {
         PermissionElementIssue = "PermissionElementIssue",
         PerformanceIssue = "PerformanceIssue",
         SelectivePermissionsInterventionIssue = "SelectivePermissionsInterventionIssue",
-        EmailVerificationRequestIssue = "EmailVerificationRequestIssue"
+        EmailVerificationRequestIssue = "EmailVerificationRequestIssue",
+        LazyLoadImageIssue = "LazyLoadImageIssue"
     }
     /**
      * This struct holds a list of optional fields with additional information
@@ -1639,7 +1622,6 @@ export declare namespace Audits {
         contentSecurityPolicyIssueDetails?: ContentSecurityPolicyIssueDetails;
         sharedArrayBufferIssueDetails?: SharedArrayBufferIssueDetails;
         corsIssueDetails?: CorsIssueDetails;
-        attributionReportingIssueDetails?: AttributionReportingIssueDetails;
         quirksModeIssueDetails?: QuirksModeIssueDetails;
         partitioningBlobURLIssueDetails?: PartitioningBlobURLIssueDetails;
         /**
@@ -1665,6 +1647,7 @@ export declare namespace Audits {
         performanceIssueDetails?: PerformanceIssueDetails;
         selectivePermissionsInterventionIssueDetails?: SelectivePermissionsInterventionIssueDetails;
         emailVerificationRequestIssueDetails?: EmailVerificationRequestIssueDetails;
+        lazyLoadImageIssueDetails?: LazyLoadImageIssueDetails;
     }
     /**
      * A unique id for a DevTools inspector issue. Allows other entities (e.g.
@@ -2335,10 +2318,6 @@ export declare namespace Browser {
          */
         buckets: Bucket[];
     }
-    const enum PrivacySandboxAPI {
-        BiddingAndAuctionServices = "BiddingAndAuctionServices",
-        TrustedKeyValue = "TrustedKeyValue"
-    }
     interface SetPermissionRequest {
         /**
          * Descriptor of permission to override.
@@ -2548,16 +2527,6 @@ export declare namespace Browser {
     }
     interface AddPrivacySandboxEnrollmentOverrideRequest {
         url: string;
-    }
-    interface AddPrivacySandboxCoordinatorKeyConfigRequest {
-        api: PrivacySandboxAPI;
-        coordinatorOrigin: string;
-        keyConfig: string;
-        /**
-         * BrowserContext to perform the action in. When omitted, default browser
-         * context is used.
-         */
-        browserContextId?: BrowserContextID;
     }
     /**
      * Fired when page is about to start a download.
@@ -11293,7 +11262,6 @@ export declare namespace Network {
         InitializedService = "InitializedService",
         Unreachable = "Unreachable",
         ServerError = "ServerError",
-        RefreshQuotaExceeded = "RefreshQuotaExceeded",
         FatalError = "FatalError",
         SigningQuotaExceeded = "SigningQuotaExceeded",
         RefreshedAsWaiter = "RefreshedAsWaiter",
@@ -13654,7 +13622,6 @@ export declare namespace Page {
         AllScreensCapture = "all-screens-capture",
         AmbientLightSensor = "ambient-light-sensor",
         AriaNotify = "aria-notify",
-        AttributionReporting = "attribution-reporting",
         Autofill = "autofill",
         Autoplay = "autoplay",
         Bluetooth = "bluetooth",
@@ -17009,49 +16976,11 @@ export declare namespace Storage {
         count: number;
     }
     /**
-     * Protected audience interest group auction identifier.
-     */
-    type InterestGroupAuctionId = OpaqueIdentifier<string, 'Protocol.Storage.InterestGroupAuctionId'>;
-    /**
-     * Enum of interest group access types.
-     */
-    const enum InterestGroupAccessType {
-        Join = "join",
-        Leave = "leave",
-        Update = "update",
-        Loaded = "loaded",
-        Bid = "bid",
-        Win = "win",
-        AdditionalBid = "additionalBid",
-        AdditionalBidWin = "additionalBidWin",
-        TopLevelBid = "topLevelBid",
-        TopLevelAdditionalBid = "topLevelAdditionalBid",
-        Clear = "clear"
-    }
-    /**
-     * Enum of auction events.
-     */
-    const enum InterestGroupAuctionEventType {
-        Started = "started",
-        ConfigResolved = "configResolved"
-    }
-    /**
-     * Enum of network fetches auctions can do.
-     */
-    const enum InterestGroupAuctionFetchType {
-        BidderJs = "bidderJs",
-        BidderWasm = "bidderWasm",
-        SellerJs = "sellerJs",
-        BidderTrustedSignals = "bidderTrustedSignals",
-        SellerTrustedSignals = "sellerTrustedSignals"
-    }
-    /**
      * Enum of shared storage access scopes.
      */
     const enum SharedStorageAccessScope {
         Window = "window",
         SharedStorageWorklet = "sharedStorageWorklet",
-        ProtectedAudienceWorklet = "protectedAudienceWorklet",
         Header = "header"
     }
     /**
@@ -17448,25 +17377,6 @@ export declare namespace Storage {
          */
         didDeleteTokens: boolean;
     }
-    interface GetInterestGroupDetailsRequest {
-        ownerOrigin: string;
-        name: string;
-    }
-    interface GetInterestGroupDetailsResponse extends ProtocolResponseWithError {
-        /**
-         * This largely corresponds to:
-         * https://wicg.github.io/turtledove/#dictdef-generatebidinterestgroup
-         * but has absolute expirationTime instead of relative lifetimeMs and
-         * also adds joiningOrigin.
-         */
-        details: any;
-    }
-    interface SetInterestGroupTrackingRequest {
-        enable: boolean;
-    }
-    interface SetInterestGroupAuctionTrackingRequest {
-        enable: boolean;
-    }
     interface GetSharedStorageMetadataRequest {
         ownerOrigin: string;
     }
@@ -17514,11 +17424,6 @@ export declare namespace Storage {
     }
     interface GetRelatedWebsiteSetsResponse extends ProtocolResponseWithError {
         sets: RelatedWebsiteSet[];
-    }
-    interface SetProtectedAudienceKAnonymityRequest {
-        owner: string;
-        name: string;
-        hashes: binary[];
     }
     /**
      * A cache's contents have been modified.
@@ -17599,63 +17504,6 @@ export declare namespace Storage {
          * Storage bucket to update.
          */
         bucketId: string;
-    }
-    /**
-     * One of the interest groups was accessed. Note that these events are global
-     * to all targets sharing an interest group store.
-     */
-    interface InterestGroupAccessedEvent {
-        accessTime: Network.TimeSinceEpoch;
-        type: InterestGroupAccessType;
-        ownerOrigin: string;
-        name: string;
-        /**
-         * For topLevelBid/topLevelAdditionalBid, and when appropriate,
-         * win and additionalBidWin
-         */
-        componentSellerOrigin?: string;
-        /**
-         * For bid or somethingBid event, if done locally and not on a server.
-         */
-        bid?: number;
-        bidCurrency?: string;
-        /**
-         * For non-global events --- links to interestGroupAuctionEvent
-         */
-        uniqueAuctionId?: InterestGroupAuctionId;
-    }
-    /**
-     * An auction involving interest groups is taking place. These events are
-     * target-specific.
-     */
-    interface InterestGroupAuctionEventOccurredEvent {
-        eventTime: Network.TimeSinceEpoch;
-        type: InterestGroupAuctionEventType;
-        uniqueAuctionId: InterestGroupAuctionId;
-        /**
-         * Set for child auctions.
-         */
-        parentAuctionId?: InterestGroupAuctionId;
-        /**
-         * Set for started and configResolved
-         */
-        auctionConfig?: any;
-    }
-    /**
-     * Specifies which auctions a particular network fetch may be related to, and
-     * in what role. Note that it is not ordered with respect to
-     * Network.requestWillBeSent (but will happen before loadingFinished
-     * loadingFailed).
-     */
-    interface InterestGroupAuctionNetworkRequestCreatedEvent {
-        type: InterestGroupAuctionFetchType;
-        requestId: Network.RequestId;
-        /**
-         * This is the set of the auctions using the worklet that issued this
-         * request.  In the case of trusted signals, it's possible that only some of
-         * them actually care about the keys being queried.
-         */
-        auctions: InterestGroupAuctionId[];
     }
     /**
      * Shared storage was accessed by the associated page.

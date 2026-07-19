@@ -728,7 +728,7 @@ __export(ProfilesPanel_exports, {
   ProfilesSidebarTreeElement: () => ProfilesSidebarTreeElement
 });
 import "./../../ui/legacy/legacy.js";
-import * as Common11 from "./../../core/common/common.js";
+import * as Common12 from "./../../core/common/common.js";
 import * as i18n25 from "./../../core/i18n/i18n.js";
 import * as SDK7 from "./../../core/sdk/sdk.js";
 import { createIcon as createIcon2 } from "./../../ui/kit/kit.js";
@@ -777,7 +777,7 @@ var objectValue_css_default = `/*
 .object-value-regexp,
 .object-value-symbol {
   white-space: pre;
-  unicode-bidi: -webkit-isolate;
+  unicode-bidi: isolate;
   color: var(--sys-color-token-property-special);
 }
 
@@ -826,6 +826,7 @@ var objectValue_css_default = `/*
 .name {
   color: var(--sys-color-token-tag);
   flex-shrink: 0;
+  unicode-bidi: isolate;
 }
 
 .object-properties-preview .name {
@@ -843,11 +844,11 @@ var objectValue_css_default = `/*
 
 // gen/front_end/panels/profiler/ProfilesPanel.js
 import * as UI13 from "./../../ui/legacy/legacy.js";
-import { render as render3 } from "./../../ui/lit/lit.js";
+import { render as render4 } from "./../../ui/lit/lit.js";
 import * as VisualLogging7 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/profiler/HeapDetachedElementsView.js
-import * as Common2 from "./../../core/common/common.js";
+import * as Common3 from "./../../core/common/common.js";
 import * as i18n7 from "./../../core/i18n/i18n.js";
 import * as SDK2 from "./../../core/sdk/sdk.js";
 import * as UI3 from "./../../ui/legacy/legacy.js";
@@ -1145,6 +1146,7 @@ var WritableProfileHeader_exports = {};
 __export(WritableProfileHeader_exports, {
   WritableProfileHeader: () => WritableProfileHeader
 });
+import * as Common2 from "./../../core/common/common.js";
 import * as i18n5 from "./../../core/i18n/i18n.js";
 import * as Platform3 from "./../../core/platform/platform.js";
 import * as Bindings from "./../../models/bindings/bindings.js";
@@ -1265,7 +1267,7 @@ var WritableProfileHeader = class extends ProfileHeader {
   setProtocolProfile(profile) {
     this.setProfile(profile);
     this.protocolProfileInternal = profile;
-    this.tempFile = new Bindings.TempFile.TempFile();
+    this.tempFile = new Bindings.TempFile.TempFile(Common2.Console.Console.instance());
     this.tempFile.write([JSON.stringify(profile)]);
     this.#profileReceivedPromise.resolve();
   }
@@ -1334,10 +1336,10 @@ var DetachedElementsProfileView = class extends UI3.View.SimpleView {
     }
   }
   async toolbarItems() {
-    return [...await super.toolbarItems(), this.selectedSizeText];
+    return [this.selectedSizeText];
   }
 };
-var DetachedElementsProfileType = class extends Common2.ObjectWrapper.eventMixin(ProfileType) {
+var DetachedElementsProfileType = class extends Common3.ObjectWrapper.eventMixin(ProfileType) {
   constructor(typeId, description) {
     super(typeId || i18nString4(UIStrings4.detachedElementsTitle), description || i18nString4(UIStrings4.detachedElementsTitle));
   }
@@ -1655,18 +1657,20 @@ __export(HeapProfileView_exports, {
   SamplingHeapProfileTypeBase: () => SamplingHeapProfileTypeBase,
   maxLinkLength: () => maxLinkLength
 });
-import * as Common5 from "./../../core/common/common.js";
+import "./../../ui/components/icon_button/icon_button.js";
+import * as Common6 from "./../../core/common/common.js";
 import * as Host from "./../../core/host/host.js";
 import * as i18n11 from "./../../core/i18n/i18n.js";
 import * as Platform6 from "./../../core/platform/platform.js";
 import * as SDK3 from "./../../core/sdk/sdk.js";
 import * as Bindings2 from "./../../models/bindings/bindings.js";
 import * as CPUProfile from "./../../models/cpu_profile/cpu_profile.js";
-import * as DataGrid5 from "./../../ui/legacy/components/data_grid/data_grid.js";
+import * as Buttons from "./../../ui/components/buttons/buttons.js";
 import * as PerfUI3 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
 import * as SettingsUI from "./../../ui/legacy/components/settings_ui/settings_ui.js";
 import * as Components from "./../../ui/legacy/components/utils/utils.js";
 import * as UI6 from "./../../ui/legacy/legacy.js";
+import { Directives, html, nothing, render } from "./../../ui/lit/lit.js";
 import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/profiler/HeapTimelineOverview.js
@@ -1677,14 +1681,14 @@ __export(HeapTimelineOverview_exports, {
   Samples: () => Samples,
   SmoothScale: () => SmoothScale
 });
-import * as Common3 from "./../../core/common/common.js";
+import * as Common4 from "./../../core/common/common.js";
 import * as i18n9 from "./../../core/i18n/i18n.js";
 import * as Platform4 from "./../../core/platform/platform.js";
 import * as PerfUI from "./../../ui/legacy/components/perf_ui/perf_ui.js";
 import * as UI4 from "./../../ui/legacy/legacy.js";
 import * as ThemeSupport from "./../../ui/legacy/theme_support/theme_support.js";
 import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
-var HeapTimelineOverview = class extends Common3.ObjectWrapper.eventMixin(UI4.Widget.VBox) {
+var HeapTimelineOverview = class extends Common4.ObjectWrapper.eventMixin(UI4.Widget.VBox) {
   overviewCalculator;
   overviewContainer;
   overviewGrid;
@@ -1974,7 +1978,7 @@ __export(ProfileFlameChartDataProvider_exports, {
   ProfileFlameChart: () => ProfileFlameChart,
   ProfileFlameChartDataProvider: () => ProfileFlameChartDataProvider
 });
-import * as Common4 from "./../../core/common/common.js";
+import * as Common5 from "./../../core/common/common.js";
 import * as i18n10 from "./../../core/i18n/i18n.js";
 import * as Platform5 from "./../../core/platform/platform.js";
 import * as PerfUI2 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
@@ -1996,7 +2000,7 @@ var ProfileFlameChartDataProvider = class _ProfileFlameChartDataProvider {
   }
   static colorGenerator() {
     if (!colorGeneratorInstance) {
-      colorGeneratorInstance = new Common4.Color.Generator({
+      colorGeneratorInstance = new Common5.Color.Generator({
         min: 30,
         max: 330
       }, {
@@ -2069,7 +2073,7 @@ var ProfileFlameChartDataProvider = class _ProfileFlameChartDataProvider {
     return this.entryNodes.length;
   }
 };
-var ProfileFlameChart = class extends Common4.ObjectWrapper.eventMixin(UI5.Widget.VBox) {
+var ProfileFlameChart = class extends Common5.ObjectWrapper.eventMixin(UI5.Widget.VBox) {
   searchableView;
   overviewPane;
   mainPane;
@@ -2213,7 +2217,7 @@ var OverviewCalculator2 = class {
     return this.maximumBoundaries - this.minimumBoundaries;
   }
 };
-var OverviewPane = class extends Common4.ObjectWrapper.eventMixin(UI5.Widget.VBox) {
+var OverviewPane = class extends Common5.ObjectWrapper.eventMixin(UI5.Widget.VBox) {
   overviewContainer;
   overviewCalculator;
   overviewGrid;
@@ -2411,6 +2415,7 @@ var TopDownProfileDataGridTree = class extends ProfileDataGridTree {
 };
 
 // gen/front_end/panels/profiler/HeapProfileView.js
+var { repeat, ref } = Directives;
 var UIStrings5 = {
   /**
    * @description The reported total size used in the selected time frame of the allocation sampling profile
@@ -2541,7 +2546,12 @@ var UIStrings5 = {
   /**
    * @description Text for selecting different profile views in the JS profiler tool. This option is a tree view.
    */
-  treeTopDown: "Tree (Top Down)"
+  treeTopDown: "Tree (Top Down)",
+  /**
+   * @description Tooltip to alert developers that some parts of code in execution were not optimized.
+   * @example {Optimized too many times} PH1
+   */
+  notOptimizedS: "Not optimized: {PH1}"
 };
 var str_5 = i18n11.i18n.registerUIStrings("panels/profiler/HeapProfileView.ts", UIStrings5);
 var i18nString5 = i18n11.i18n.getLocalizedString.bind(void 0, str_5);
@@ -2554,21 +2564,24 @@ var HeapProfileView = class extends UI6.View.SimpleView {
   profileType;
   adjustedTotal;
   selectedSizeText;
-  timestamps;
-  sizes;
-  max;
-  ordinals;
-  totalTime;
-  lastOrdinal;
-  timelineOverview;
-  profileInternal;
+  timestamps = [];
+  sizes = [];
+  max = [];
+  ordinals = [];
+  totalTime = 0;
+  lastOrdinal = 0;
+  timelineOverview = new HeapTimelineOverview();
+  profileInternal = null;
   searchableViewInternal;
   dataGrid;
   viewSelectComboBox;
   focusButton;
   excludeButton;
   resetButton;
-  linkifierInternal;
+  #sortColumnId = "self";
+  #sortAscending = false;
+  #selectedNode = null;
+  linkifierInternal = new Components.Linkifier.Linkifier(maxLinkLength);
   nodeFormatter;
   viewType;
   bottomUpProfileDataGridTree;
@@ -2579,70 +2592,29 @@ var HeapProfileView = class extends UI6.View.SimpleView {
   visibleView;
   searchableElement;
   profileDataGridTree;
+  #isNodeSelected = false;
+  #isResetEnabled = false;
+  #selectedSize = null;
+  #minId = null;
+  #maxId = null;
+  #lastAppliedRange = null;
+  #lastAppliedViewType = null;
   constructor(profileHeader) {
     super({
       title: i18nString5(UIStrings5.profile),
       viewId: "profile"
     });
-    this.profileInternal = null;
-    this.searchableViewInternal = new UI6.SearchableView.SearchableView(this, null);
-    this.searchableViewInternal.setPlaceholder(i18nString5(UIStrings5.findByCostMsNameOrFile));
-    this.searchableViewInternal.show(this.element);
-    const columns = [];
-    columns.push({
-      id: "self",
-      title: this.columnHeader("self"),
-      width: "120px",
-      fixedWidth: true,
-      sortable: true,
-      sort: DataGrid5.DataGrid.Order.Descending
-    });
-    columns.push({
-      id: "total",
-      title: this.columnHeader("total"),
-      width: "120px",
-      fixedWidth: true,
-      sortable: true
-    });
-    columns.push({
-      id: "function",
-      title: i18nString5(UIStrings5.function),
-      disclosure: true,
-      sortable: true
-    });
-    this.dataGrid = new DataGrid5.DataGrid.DataGridImpl({
-      displayName: i18nString5(UIStrings5.profiler),
-      columns
-    });
-    this.dataGrid.addEventListener("SortingChanged", this.sortProfile, this);
-    this.dataGrid.addEventListener("SelectedNode", this.nodeSelected.bind(this, true));
-    this.dataGrid.addEventListener("DeselectedNode", this.nodeSelected.bind(this, false));
-    this.dataGrid.setRowContextMenuCallback(this.populateContextMenu.bind(this));
-    this.viewSelectComboBox = new UI6.Toolbar.ToolbarComboBox(this.changeView.bind(this), i18nString5(UIStrings5.profileViewMode), void 0, "profile-view.selected-view");
-    this.focusButton = new UI6.Toolbar.ToolbarButton(i18nString5(UIStrings5.focusSelectedFunction), "eye", void 0, "profile-view.focus-selected-function");
-    this.focusButton.setEnabled(false);
-    this.focusButton.addEventListener("Click", this.focusClicked, this);
-    this.excludeButton = new UI6.Toolbar.ToolbarButton(i18nString5(UIStrings5.excludeSelectedFunction), "cross", void 0, "profile-view.exclude-selected-function");
-    this.excludeButton.setEnabled(false);
-    this.excludeButton.addEventListener("Click", this.excludeClicked, this);
-    this.resetButton = new UI6.Toolbar.ToolbarButton(i18nString5(UIStrings5.restoreAllFunctions), "refresh", void 0, "profile-view.restore-all-functions");
-    this.resetButton.setEnabled(false);
-    this.resetButton.addEventListener("Click", this.resetClicked, this);
-    this.linkifierInternal = new Components.Linkifier.Linkifier(maxLinkLength);
+    this.#setupSearchableView();
+    this.dataGrid = new UI6.Widget.VBox();
     this.profileHeader = profileHeader;
     this.profileType = profileHeader.profileType();
     this.initialize(new NodeFormatter(this));
     const profile = new SamplingHeapProfileModel(convertToSamplingHeapProfile(profileHeader));
     this.adjustedTotal = profile.total;
     this.setProfile(profile);
-    this.selectedSizeText = new UI6.Toolbar.ToolbarText();
-    this.timestamps = [];
-    this.sizes = [];
-    this.max = [];
-    this.ordinals = [];
-    this.totalTime = 0;
-    this.lastOrdinal = 0;
-    this.timelineOverview = new HeapTimelineOverview();
+    this.#setupTimelineOverview();
+  }
+  #setupTimelineOverview() {
     if (this.profileType.hasTemporaryView()) {
       this.timelineOverview.addEventListener("IdsRangeChanged", this.onIdsRangeChanged.bind(this));
       this.timelineOverview.show(this.element, this.element.firstChild);
@@ -2658,13 +2630,172 @@ var HeapProfileView = class extends UI6.View.SimpleView {
       });
     }
   }
+  #setupSearchableView() {
+    this.searchableViewInternal = new UI6.SearchableView.SearchableView(this, null);
+    this.searchableViewInternal.setPlaceholder(i18nString5(UIStrings5.findByCostMsNameOrFile));
+    this.searchableViewInternal.show(this.element);
+  }
+  #renderDataGrid() {
+    if (!this.profileDataGridTree) {
+      return;
+    }
+    const onSort = (e) => {
+      this.#sortColumnId = e.detail.columnId;
+      this.#sortAscending = e.detail.ascending;
+      this.sortProfile();
+    };
+    const onDeselect = () => {
+      this.#selectedNode = null;
+      this.nodeSelected(false);
+    };
+    render(html`
+      <devtools-data-grid class="flex-auto" name=${i18nString5(UIStrings5.profiler)} striped autofocus resize="last"
+                          @sort=${onSort} @deselect=${onDeselect} .template=${html`
+        <table>
+          <tr>
+            <th id="self" width="120px" fixed weight="1" sortable
+                sort=${this.#sortColumnId === "self" ? this.#sortAscending ? "ascending" : "descending" : "none"}>
+              ${this.columnHeader("self")}
+            </th>
+            <th id="total" width="120px" fixed weight="1" sortable
+                sort=${this.#sortColumnId === "total" ? this.#sortAscending ? "ascending" : "descending" : "none"}>
+              ${this.columnHeader("total")}
+            </th>
+            <th id="function" weight="3" sortable disclosure
+                sort=${this.#sortColumnId === "function" ? this.#sortAscending ? "ascending" : "descending" : "none"}>
+              ${i18nString5(UIStrings5.function)}
+            </th>
+          </tr>
+          ${repeat(this.profileDataGridTree.children, (node) => node.callUID, (node) => this.#renderNode(node))}
+        </table>`}>
+      </devtools-data-grid>
+    `, this.dataGrid.element);
+  }
+  #renderNode(node) {
+    const onSelect = () => {
+      this.#selectedNode = node;
+      this.nodeSelected(true);
+    };
+    const onContextMenu = (event) => {
+      this.populateContextMenu(event.detail, node);
+    };
+    const onExpand = () => {
+      node.expanded = true;
+      node.populate();
+      this.refresh();
+    };
+    const onCollapse = () => {
+      node.expanded = false;
+      this.refresh();
+    };
+    if (node.profileNode.scriptId !== "0" && !node.linkElement) {
+      node.linkElement = this.nodeFormatter.linkifyNode(node);
+      if (node.linkElement) {
+        node.linkElement.style.maxWidth = "75%";
+      }
+    }
+    return html`
+      <tr data-uid=${node.callUID} ?selected=${this.#selectedNode === node} ?expanded=${node.expanded} @select=${onSelect}
+          @contextmenu=${onContextMenu} @expand=${onExpand} @collapse=${onCollapse}>
+        <td data-value=${node.self} class="numeric-column ${node.searchMatchedSelfColumn ? "highlight" : ""}"
+            aria-label=${`${this.nodeFormatter.formatValueAccessibleText(node.self, node)}, ${this.nodeFormatter.formatPercent(node.selfPercent, node)}`}>
+          <div class="profile-multiple-values">
+            <span>${this.nodeFormatter.formatValue(node.self, node)}</span>
+            <span class="percent-column">${this.nodeFormatter.formatPercent(node.selfPercent, node)}</span>
+          </div>
+        </td>
+        <td data-value=${node.total} class="numeric-column ${node.searchMatchedTotalColumn ? "highlight" : ""}"
+            aria-label=${`${this.nodeFormatter.formatValueAccessibleText(node.total, node)}, ${this.nodeFormatter.formatPercent(node.totalPercent, node)}`}>
+          <div class="profile-multiple-values">
+            <span>${this.nodeFormatter.formatValue(node.total, node)}</span>
+            <span class="percent-column">${this.nodeFormatter.formatPercent(node.totalPercent, node)}</span>
+          </div>
+        </td>
+        <td data-value=${node.functionName} class="${node.searchMatchedFunctionColumn ? "highlight" : ""} ${node.deoptReason ? "not-optimized" : ""}">
+          ${node.deoptReason ? html`
+            <devtools-icon name="warning-filled" class="profile-warn-marker small"
+                           title=${i18nString5(UIStrings5.notOptimizedS, { PH1: node.deoptReason })}>
+            </devtools-icon>` : nothing}
+          ${node.functionName}
+          ${node.linkElement ? node.linkElement : nothing}
+        </td>
+        ${node.hasChildren() ? html`
+          <td><table>
+            ${node.expanded ? html`${repeat(node.children, (child) => child.callUID, (child) => this.#renderNode(child))}` : nothing}
+          </table></td>` : nothing}
+      </tr>`;
+  }
   async toolbarItems() {
-    return [this.viewSelectComboBox, this.focusButton, this.excludeButton, this.resetButton, this.selectedSizeText];
+    const currentViewType = this.viewType.get();
+    const isFlame = currentViewType === "Flame";
+    return html`
+      <select title=${i18nString5(UIStrings5.profileViewMode)} aria-label=${i18nString5(UIStrings5.profileViewMode)}
+              @change=${this.changeView.bind(this)}
+              jslog=${VisualLogging2.dropDown("profile-view.selected-view").track({ change: true })}
+              ${ref((e) => {
+      this.viewSelectComboBox = e;
+    })}>
+        <option value=${"Flame"} ?selected=${currentViewType === "Flame"}>
+          ${i18nString5(UIStrings5.chart)}
+        </option>
+        <option value=${"Heavy"} ?selected=${currentViewType === "Heavy"}>
+          ${i18nString5(UIStrings5.heavyBottomUp)}
+        </option>
+        <option value=${"Tree"} ?selected=${currentViewType === "Tree"}>
+          ${i18nString5(UIStrings5.treeTopDown)}
+        </option>
+      </select>
+      <devtools-button .data=${{
+      iconName: "eye",
+      variant: "toolbar",
+      title: i18nString5(UIStrings5.focusSelectedFunction),
+      jslogContext: "profile-view.focus-selected-function",
+      disabled: !this.#isNodeSelected
+    }}
+                       @click=${this.focusClicked.bind(this)}
+                       ?hidden=${isFlame}
+                       ${ref((e) => {
+      this.focusButton = e;
+    })}>
+      </devtools-button>
+      <devtools-button .data=${{
+      iconName: "cross",
+      variant: "toolbar",
+      title: i18nString5(UIStrings5.excludeSelectedFunction),
+      jslogContext: "profile-view.exclude-selected-function",
+      disabled: !this.#isNodeSelected
+    }}
+                       @click=${this.excludeClicked.bind(this)}
+                       ?hidden=${isFlame}
+                       ${ref((e) => {
+      this.excludeButton = e;
+    })}>
+      </devtools-button>
+      <devtools-button .data=${{
+      iconName: "refresh",
+      variant: "toolbar",
+      title: i18nString5(UIStrings5.restoreAllFunctions),
+      jslogContext: "profile-view.restore-all-functions",
+      disabled: !this.#isResetEnabled
+    }}
+                       @click=${this.resetClicked.bind(this)}
+                       ?hidden=${isFlame}
+                       ${ref((e) => {
+      this.resetButton = e;
+    })}>
+        </devtools-button>
+      <span ${ref((e) => {
+      this.selectedSizeText = e;
+    })}>
+        ${this.#selectedSize !== null ? i18nString5(UIStrings5.selectedSizeS, { PH1: i18n11.ByteUtilities.bytesToString(this.#selectedSize) }) : nothing}
+      </span>`;
   }
   onIdsRangeChanged(event) {
     const { minId, maxId } = event.data;
-    this.selectedSizeText.setText(i18nString5(UIStrings5.selectedSizeS, { PH1: i18n11.ByteUtilities.bytesToString(event.data.size) }));
-    this.setSelectionRange(minId, maxId);
+    this.#selectedSize = event.data.size;
+    this.#minId = minId;
+    this.#maxId = maxId;
+    this.performUpdate();
   }
   setSelectionRange(minId, maxId) {
     const profileData = convertToSamplingHeapProfile(this.profileHeader);
@@ -2696,14 +2827,7 @@ var HeapProfileView = class extends UI6.View.SimpleView {
     if (lastTimestamp - this.timestamps[0] > this.totalTime) {
       this.totalTime *= 2;
     }
-    const samples = {
-      sizes: this.sizes,
-      max: this.max,
-      ids: this.ordinals,
-      timestamps: this.timestamps,
-      totalTime: this.totalTime
-    };
-    this.timelineOverview.setSamples(samples);
+    this.performUpdate();
   }
   columnHeader(columnId) {
     switch (columnId) {
@@ -2712,7 +2836,7 @@ var HeapProfileView = class extends UI6.View.SimpleView {
       case "total":
         return i18nString5(UIStrings5.totalSizeBytes);
     }
-    return Common5.UIString.LocalizedEmptyString;
+    return Common6.UIString.LocalizedEmptyString;
   }
   createFlameChartDataProvider() {
     return new HeapFlameChartDataProvider(this.profile(), this.profileHeader.heapProfilerModel());
@@ -2738,26 +2862,11 @@ var HeapProfileView = class extends UI6.View.SimpleView {
   }
   initialize(nodeFormatter) {
     this.nodeFormatter = nodeFormatter;
-    this.viewType = Common5.Settings.Settings.instance().createSetting(
+    this.viewType = Common6.Settings.Settings.instance().createSetting(
       "profile-view",
       "Heavy"
       /* ViewTypes.HEAVY */
     );
-    const viewTypes = [
-      "Flame",
-      "Heavy",
-      "Tree"
-      /* ViewTypes.TREE */
-    ];
-    const optionNames = /* @__PURE__ */ new Map([
-      ["Flame", i18nString5(UIStrings5.chart)],
-      ["Heavy", i18nString5(UIStrings5.heavyBottomUp)],
-      ["Tree", i18nString5(UIStrings5.treeTopDown)]
-    ]);
-    const options = new Map(viewTypes.map((type) => [type, this.viewSelectComboBox.createOption(optionNames.get(type), type)]));
-    const optionName = this.viewType.get() || viewTypes[0];
-    const option = options.get(optionName) || options.get(viewTypes[0]);
-    this.viewSelectComboBox.select(option);
     this.changeView();
     if (this.flameChart) {
       this.flameChart.update();
@@ -2802,19 +2911,10 @@ var HeapProfileView = class extends UI6.View.SimpleView {
     if (!this.profileDataGridTree) {
       return;
     }
-    this.dataGrid.rootNode().removeChildren();
-    const children = this.profileDataGridTree.children;
-    const count = children.length;
-    for (let index = 0; index < count; ++index) {
-      this.dataGrid.rootNode().appendChild(children[index]);
-    }
+    this.#renderDataGrid();
   }
   refreshVisibleData() {
-    let child = this.dataGrid.rootNode().children[0];
-    while (child) {
-      child.refresh();
-      child = child.traverseNextNode(false, null, true);
-    }
+    this.#renderDataGrid();
   }
   searchableView() {
     return this.searchableViewInternal;
@@ -2831,21 +2931,38 @@ var HeapProfileView = class extends UI6.View.SimpleView {
   onSearchCanceled() {
     if (this.searchableElement) {
       this.searchableElement.onSearchCanceled();
+      this.refresh();
     }
   }
   performSearch(searchConfig, shouldJump, jumpBackwards) {
     if (this.searchableElement) {
       this.searchableElement.performSearch(searchConfig, shouldJump, jumpBackwards);
+      this.refresh();
     }
   }
   jumpToNextSearchResult() {
     if (this.searchableElement) {
       this.searchableElement.jumpToNextSearchResult();
+      this.#syncSearchSelection();
     }
   }
   jumpToPreviousSearchResult() {
     if (this.searchableElement) {
       this.searchableElement.jumpToPreviousSearchResult();
+      this.#syncSearchSelection();
+    }
+  }
+  #syncSearchSelection() {
+    if (this.searchableElement === this.profileDataGridTree && this.profileDataGridTree) {
+      const searchResult = this.profileDataGridTree.searchResults[this.profileDataGridTree.searchResultIndex];
+      this.#selectedNode = searchResult?.profileNode || null;
+      let node = this.#selectedNode;
+      while (node?.parent) {
+        node.parent.expanded = true;
+        node = node.parent;
+      }
+      this.nodeSelected(!!this.#selectedNode);
+      this.refresh();
     }
   }
   linkifier() {
@@ -2877,69 +2994,48 @@ var HeapProfileView = class extends UI6.View.SimpleView {
     }
     const location = debuggerModel.createRawLocation(script, node.lineNumber, node.columnNumber);
     const uiLocation = await Bindings2.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().rawLocationToUILocation(location);
-    void Common5.Revealer.reveal(uiLocation);
+    void Common6.Revealer.reveal(uiLocation);
   }
-  changeView() {
+  changeView(e) {
     if (!this.profileInternal) {
       return;
     }
-    this.searchableViewInternal.closeSearch();
-    if (this.visibleView) {
-      this.visibleView.detach();
+    if (e) {
+      const select = e.target;
+      this.viewType.set(select.value);
     }
-    this.viewType.set(this.viewSelectComboBox.selectedOption().value);
-    switch (this.viewType.get()) {
-      case "Flame":
-        this.ensureFlameChartCreated();
-        this.visibleView = this.flameChart;
-        this.searchableElement = this.flameChart;
-        break;
-      case "Tree":
-        this.profileDataGridTree = this.getTopDownProfileDataGridTree();
-        this.sortProfile();
-        this.visibleView = this.dataGrid.asWidget();
-        this.searchableElement = this.profileDataGridTree;
-        break;
-      case "Heavy":
-        this.profileDataGridTree = this.getBottomUpProfileDataGridTree();
-        this.sortProfile();
-        this.visibleView = this.dataGrid.asWidget();
-        this.searchableElement = this.profileDataGridTree;
-        break;
-    }
-    const isFlame = this.viewType.get() === "Flame";
-    this.focusButton.setVisible(!isFlame);
-    this.excludeButton.setVisible(!isFlame);
-    this.resetButton.setVisible(!isFlame);
-    if (this.visibleView) {
-      this.visibleView.show(this.searchableViewInternal.element);
-    }
+    this.#selectedNode = null;
+    this.#isNodeSelected = false;
+    this.performUpdate();
   }
   nodeSelected(selected) {
-    this.focusButton.setEnabled(selected);
-    this.excludeButton.setEnabled(selected);
+    this.#isNodeSelected = selected;
+    this.performUpdate();
   }
   focusClicked() {
-    if (!this.dataGrid.selectedNode) {
+    if (!this.#selectedNode) {
       return;
     }
-    this.resetButton.setEnabled(true);
-    this.resetButton.element.focus();
+    this.#isResetEnabled = true;
+    this.performUpdate();
+    this.resetButton?.focus();
     if (this.profileDataGridTree) {
-      this.profileDataGridTree.focus(this.dataGrid.selectedNode);
+      this.profileDataGridTree.focus(this.#selectedNode);
     }
     this.refresh();
     this.refreshVisibleData();
     Host.userMetrics.actionTaken(Host.UserMetrics.Action.CpuProfileNodeFocused);
   }
   excludeClicked() {
-    const selectedNode = this.dataGrid.selectedNode;
+    const selectedNode = this.#selectedNode;
     if (!selectedNode) {
       return;
     }
-    this.resetButton.setEnabled(true);
-    this.resetButton.element.focus();
-    selectedNode.deselect();
+    this.#isResetEnabled = true;
+    this.performUpdate();
+    this.resetButton?.focus();
+    this.#selectedNode = null;
+    this.nodeSelected(false);
     if (this.profileDataGridTree) {
       this.profileDataGridTree.exclude(selectedNode);
     }
@@ -2948,8 +3044,11 @@ var HeapProfileView = class extends UI6.View.SimpleView {
     Host.userMetrics.actionTaken(Host.UserMetrics.Action.CpuProfileNodeExcluded);
   }
   resetClicked() {
-    this.viewSelectComboBox.element.focus();
-    this.resetButton.setEnabled(false);
+    this.viewSelectComboBox?.focus();
+    this.#isResetEnabled = false;
+    this.#selectedNode = null;
+    this.#isNodeSelected = false;
+    this.performUpdate();
     if (this.profileDataGridTree) {
       this.profileDataGridTree.restore();
     }
@@ -2961,14 +3060,79 @@ var HeapProfileView = class extends UI6.View.SimpleView {
     if (!this.profileDataGridTree) {
       return;
     }
-    const sortAscending = this.dataGrid.isSortOrderAscending();
-    const sortColumnId = this.dataGrid.sortColumnId();
+    const sortAscending = this.#sortAscending;
+    const sortColumnId = this.#sortColumnId;
     const sortProperty = sortColumnId === "function" ? "functionName" : sortColumnId || "";
     this.profileDataGridTree.sort(ProfileDataGridTree.propertyComparator(sortProperty, sortAscending), false);
     this.refresh();
   }
+  performUpdate() {
+    const currentViewType = this.viewType ? this.viewType.get() : null;
+    if (currentViewType && currentViewType !== this.#lastAppliedViewType) {
+      this.searchableViewInternal.closeSearch();
+      if (this.visibleView) {
+        this.visibleView.detach();
+      }
+      switch (currentViewType) {
+        case "Flame":
+          this.ensureFlameChartCreated();
+          this.visibleView = this.flameChart;
+          this.searchableElement = this.flameChart;
+          break;
+        case "Tree":
+          this.profileDataGridTree = this.getTopDownProfileDataGridTree();
+          this.sortProfile();
+          this.visibleView = this.dataGrid;
+          this.searchableElement = this.profileDataGridTree;
+          break;
+        case "Heavy":
+          this.profileDataGridTree = this.getBottomUpProfileDataGridTree();
+          this.sortProfile();
+          this.visibleView = this.dataGrid;
+          this.searchableElement = this.profileDataGridTree;
+          break;
+      }
+      if (this.visibleView) {
+        this.visibleView.show(this.searchableViewInternal.element);
+      }
+      this.#lastAppliedViewType = currentViewType;
+    }
+    const isFlame = currentViewType === "Flame";
+    if (this.focusButton) {
+      this.focusButton.hidden = isFlame;
+      this.focusButton.disabled = !this.#isNodeSelected;
+    }
+    if (this.excludeButton) {
+      this.excludeButton.hidden = isFlame;
+      this.excludeButton.disabled = !this.#isNodeSelected;
+    }
+    if (this.resetButton) {
+      this.resetButton.hidden = isFlame;
+      this.resetButton.disabled = !this.#isResetEnabled;
+    }
+    if (this.#selectedSize !== null && this.selectedSizeText) {
+      this.selectedSizeText.textContent = i18nString5(UIStrings5.selectedSizeS, { PH1: i18n11.ByteUtilities.bytesToString(this.#selectedSize) });
+    }
+    if (this.#minId !== null && this.#maxId !== null) {
+      const rangeChanged = !this.#lastAppliedRange || this.#lastAppliedRange.minId !== this.#minId || this.#lastAppliedRange.maxId !== this.#maxId;
+      if (rangeChanged) {
+        this.setSelectionRange(this.#minId, this.#maxId);
+        this.#lastAppliedRange = { minId: this.#minId, maxId: this.#maxId };
+      }
+    }
+    if (this.sizes.length > 0) {
+      const samples = {
+        sizes: this.sizes,
+        max: this.max,
+        ids: this.ordinals,
+        timestamps: this.timestamps,
+        totalTime: this.totalTime
+      };
+      this.timelineOverview.setSamples(samples);
+    }
+  }
 };
-var SamplingHeapProfileTypeBase = class extends Common5.ObjectWrapper.eventMixin(ProfileType) {
+var SamplingHeapProfileTypeBase = class extends Common6.ObjectWrapper.eventMixin(ProfileType) {
   recording;
   clearedDuringRecording;
   constructor(typeId, description) {
@@ -3059,7 +3223,7 @@ var SamplingHeapProfileType = class _SamplingHeapProfileType extends SamplingHea
     }
     this.updateTimer = 0;
     this.updateIntervalMs = 200;
-    this.#recordTimelineSetting = Common5.Settings.Settings.instance().createSetting("record-sampling-heap-profiler-timeline", false);
+    this.#recordTimelineSetting = Common6.Settings.Settings.instance().createSetting("record-sampling-heap-profiler-timeline", false);
   }
   static get instance() {
     return samplingHeapProfileTypeInstance;
@@ -3247,17 +3411,35 @@ var SamplingHeapProfileModel = class extends CPUProfile.ProfileTreeModel.Profile
 };
 var NodeFormatter = class {
   profileView;
+  #formattedValueCache = /* @__PURE__ */ new Map();
+  #formattedValueAccessibleTextCache = /* @__PURE__ */ new Map();
+  #formattedPercentCache = /* @__PURE__ */ new Map();
   constructor(profileView) {
     this.profileView = profileView;
   }
   formatValue(value2) {
-    return i18n11.ByteUtilities.bytesToString(value2);
+    let result = this.#formattedValueCache.get(value2);
+    if (!result) {
+      result = i18n11.ByteUtilities.bytesToString(value2);
+      this.#formattedValueCache.set(value2, result);
+    }
+    return result;
   }
   formatValueAccessibleText(value2) {
-    return i18nString5(UIStrings5.sBytes, { PH1: value2 });
+    let result = this.#formattedValueAccessibleTextCache.get(value2);
+    if (!result) {
+      result = i18nString5(UIStrings5.sBytes, { PH1: value2 });
+      this.#formattedValueAccessibleTextCache.set(value2, result);
+    }
+    return result;
   }
   formatPercent(value2, _node) {
-    return i18nString5(UIStrings5.formatPercent, { PH1: value2.toFixed(2) });
+    let result = this.#formattedPercentCache.get(value2);
+    if (!result) {
+      result = i18nString5(UIStrings5.formatPercent, { PH1: value2.toFixed(2) });
+      this.#formattedPercentCache.set(value2, result);
+    }
+    return result;
   }
   linkifyNode(node) {
     const heapProfilerModel = this.profileView.profileHeader.heapProfilerModel();
@@ -3358,7 +3540,7 @@ __export(HeapSnapshotView_exports, {
   SummaryPerspective: () => SummaryPerspective,
   TrackingHeapSnapshotProfileType: () => TrackingHeapSnapshotProfileType
 });
-import * as Common8 from "./../../core/common/common.js";
+import * as Common9 from "./../../core/common/common.js";
 import * as Host2 from "./../../core/host/host.js";
 import * as i18n17 from "./../../core/i18n/i18n.js";
 import * as Platform8 from "./../../core/platform/platform.js";
@@ -3366,7 +3548,7 @@ import * as SDK5 from "./../../core/sdk/sdk.js";
 import * as Bindings3 from "./../../models/bindings/bindings.js";
 import * as HeapSnapshotModel5 from "./../../models/heap_snapshot/heap_snapshot.js";
 import * as Workspace2 from "./../../models/workspace/workspace.js";
-import * as DataGrid11 from "./../../ui/legacy/components/data_grid/data_grid.js";
+import * as DataGrid9 from "./../../ui/legacy/components/data_grid/data_grid.js";
 import * as ObjectUI from "./../../ui/legacy/components/object_ui/object_ui.js";
 import * as PerfUI4 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
 import * as SettingsUI3 from "./../../ui/legacy/components/settings_ui/settings_ui.js";
@@ -3387,10 +3569,10 @@ __export(HeapSnapshotDataGrids_exports, {
   HeapSnapshotSortableDataGridEvents: () => HeapSnapshotSortableDataGridEvents,
   HeapSnapshotViewportDataGrid: () => HeapSnapshotViewportDataGrid
 });
-import * as Common7 from "./../../core/common/common.js";
+import * as Common8 from "./../../core/common/common.js";
 import * as i18n15 from "./../../core/i18n/i18n.js";
 import * as HeapSnapshotModel3 from "./../../models/heap_snapshot/heap_snapshot.js";
-import * as DataGrid9 from "./../../ui/legacy/components/data_grid/data_grid.js";
+import * as DataGrid7 from "./../../ui/legacy/components/data_grid/data_grid.js";
 import * as Components2 from "./../../ui/legacy/components/utils/utils.js";
 import * as UI8 from "./../../ui/legacy/legacy.js";
 
@@ -3407,15 +3589,15 @@ __export(HeapSnapshotGridNodes_exports, {
   HeapSnapshotObjectNode: () => HeapSnapshotObjectNode,
   HeapSnapshotRetainingObjectNode: () => HeapSnapshotRetainingObjectNode
 });
-import * as Common6 from "./../../core/common/common.js";
+import * as Common7 from "./../../core/common/common.js";
 import * as i18n13 from "./../../core/i18n/i18n.js";
 import * as Platform7 from "./../../core/platform/platform.js";
 import * as SDK4 from "./../../core/sdk/sdk.js";
 import * as HeapSnapshotModel from "./../../models/heap_snapshot/heap_snapshot.js";
 import { createIcon } from "./../../ui/kit/kit.js";
-import * as DataGrid7 from "./../../ui/legacy/components/data_grid/data_grid.js";
+import * as DataGrid5 from "./../../ui/legacy/components/data_grid/data_grid.js";
 import * as UI7 from "./../../ui/legacy/legacy.js";
-import { Directives, html, render } from "./../../ui/lit/lit.js";
+import { Directives as Directives2, html as html2, render as render2 } from "./../../ui/lit/lit.js";
 import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
 var UIStrings6 = {
   /**
@@ -3518,9 +3700,9 @@ var UIStrings6 = {
 };
 var str_6 = i18n13.i18n.registerUIStrings("panels/profiler/HeapSnapshotGridNodes.ts", UIStrings6);
 var i18nString6 = i18n13.i18n.getLocalizedString.bind(void 0, str_6);
-var HeapSnapshotGridNodeBase = class extends DataGrid7.DataGrid.DataGridNode {
+var HeapSnapshotGridNodeBase = class extends DataGrid5.DataGrid.DataGridNode {
 };
-var HeapSnapshotGridNode = class _HeapSnapshotGridNode extends Common6.ObjectWrapper.eventMixin(HeapSnapshotGridNodeBase) {
+var HeapSnapshotGridNode = class _HeapSnapshotGridNode extends Common7.ObjectWrapper.eventMixin(HeapSnapshotGridNodeBase) {
   dataGridInternal;
   instanceCount = 0;
   savedChildren = /* @__PURE__ */ new Map();
@@ -3625,16 +3807,16 @@ var HeapSnapshotGridNode = class _HeapSnapshotGridNode extends Common6.ObjectWra
       const tooltipColumn = `${columnId}-tooltip`;
       const tooltip = this.data[tooltipColumn];
       if (percent) {
-        render(html`
+        render2(html2`
           <div class="profile-multiple-values">
-            <span aria-hidden="true" title=${Directives.ifDefined(tooltip)}>${value2}</span>
+            <span aria-hidden="true" title=${Directives2.ifDefined(tooltip)}>${value2}</span>
             <span class="percent-column" aria-hidden="true">${percent}</span>
           </div>`, cell);
         this.setCellAccessibleName(i18nString6(UIStrings6.genericStringsTwoPlaceholders, { PH1: value2, PH2: percent }), cell, columnId);
       } else {
-        render(html`
+        render2(html2`
           <div>
-            <span title=${Directives.ifDefined(tooltip)}>${value2}</span>
+            <span title=${Directives2.ifDefined(tooltip)}>${value2}</span>
           </div>`, cell);
       }
     }
@@ -3684,7 +3866,7 @@ var HeapSnapshotGridNode = class _HeapSnapshotGridNode extends Common6.ObjectWra
         this.dataGridInternal.insertChild(this, this.createChildNode(item), insertionIndex);
       }
       function insertShowMoreButton(from, to, insertionIndex) {
-        const button = new DataGrid7.ShowMoreDataGridNode.ShowMoreDataGridNode(this.populateChildren.bind(this), from, to, this.dataGridInternal.defaultPopulateCount());
+        const button = new DataGrid5.ShowMoreDataGridNode.ShowMoreDataGridNode(this.populateChildren.bind(this), from, to, this.dataGridInternal.defaultPopulateCount());
         this.dataGridInternal.insertChild(this, button, insertionIndex);
       }
       function childrenRetrieved(itemsRange, toPosition2) {
@@ -3907,10 +4089,10 @@ var HeapSnapshotGenericObjectNode = class extends HeapSnapshotGridNode {
     cell.className = "object-column disclosure";
     cell.setAttribute("jslog", jslog.toString());
     const output = {};
-    render(html`<div
+    render2(html2`<div
         class="source-code event-properties"
         style="overflow: visible;"
-        ${Directives.ref((el) => {
+        ${Directives2.ref((el) => {
       output.div = el;
     })}
       >
@@ -4027,7 +4209,7 @@ var HeapSnapshotGenericObjectNode = class extends HeapSnapshotGridNode {
       contextMenu.revealSection().appendItem(i18nString6(UIStrings6.storeAsGlobalVariable), async () => {
         const remoteObject = await this.tryQueryObjectContent(heapProfilerModel, "");
         if (!remoteObject) {
-          Common6.Console.Console.instance().error(i18nString6(UIStrings6.previewIsNotAvailable));
+          Common7.Console.Console.instance().error(i18nString6(UIStrings6.previewIsNotAvailable));
         } else {
           const consoleModel = heapProfilerModel.target().model(SDK4.ConsoleModel.ConsoleModel);
           await consoleModel?.saveToTempVariable(UI7.Context.Context.instance().flavor(SDK4.RuntimeModel.ExecutionContext), remoteObject);
@@ -4341,8 +4523,8 @@ var HeapSnapshotConstructorNode = class extends HeapSnapshotGridNode {
   createCell(columnId) {
     const cell = columnId === "object" ? super.createCell(columnId) : this.createValueCell(columnId);
     if (columnId === "object" && this.count > 1) {
-      const template = html`<span class="objects-count">×${this.data.count}</span>`;
-      render(template, cell);
+      const template = html2`<span class="objects-count">×${this.data.count}</span>`;
+      render2(template, cell);
     }
     return cell;
   }
@@ -4698,9 +4880,9 @@ var UIStrings7 = {
 var str_7 = i18n15.i18n.registerUIStrings("panels/profiler/HeapSnapshotDataGrids.ts", UIStrings7);
 var i18nString7 = i18n15.i18n.getLocalizedString.bind(void 0, str_7);
 var adjacencyMap = /* @__PURE__ */ new WeakMap();
-var HeapSnapshotSortableDataGridBase = class extends DataGrid9.DataGrid.DataGridImpl {
+var HeapSnapshotSortableDataGridBase = class extends DataGrid7.DataGrid.DataGridImpl {
 };
-var HeapSnapshotSortableDataGrid = class extends Common7.ObjectWrapper.eventMixin(HeapSnapshotSortableDataGridBase) {
+var HeapSnapshotSortableDataGrid = class extends Common8.ObjectWrapper.eventMixin(HeapSnapshotSortableDataGridBase) {
   snapshot = null;
   selectedNode = null;
   heapProfilerModelInternal;
@@ -5106,7 +5288,7 @@ var HeapSnapshotContainmentDataGrid = class extends HeapSnapshotSortableDataGrid
         width: "110px",
         sortable: true,
         fixedWidth: true,
-        sort: DataGrid9.DataGrid.Order.Descending
+        sort: DataGrid7.DataGrid.Order.Descending
       }
     ];
     columns = columns || defaultColumns;
@@ -5140,7 +5322,7 @@ var HeapSnapshotRetainmentDataGrid = class extends HeapSnapshotContainmentDataGr
         width: "70px",
         sortable: true,
         fixedWidth: true,
-        sort: DataGrid9.DataGrid.Order.Ascending
+        sort: DataGrid7.DataGrid.Order.Ascending
       },
       { id: "shallowSize", title: i18nString7(UIStrings7.shallowSize), width: "110px", sortable: true, fixedWidth: true },
       { id: "retainedSize", title: i18nString7(UIStrings7.retainedSize), width: "110px", sortable: true, fixedWidth: true }
@@ -5213,7 +5395,7 @@ var HeapSnapshotConstructorsDataGrid = class extends HeapSnapshotViewportDataGri
         id: "retainedSize",
         title: i18nString7(UIStrings7.retainedSize),
         width: "110px",
-        sort: DataGrid9.DataGrid.Order.Descending,
+        sort: DataGrid7.DataGrid.Order.Descending,
         sortable: true,
         fixedWidth: true
       }
@@ -5336,7 +5518,7 @@ var HeapSnapshotDiffDataGrid = class extends HeapSnapshotViewportDataGrid {
         width: "75px",
         sortable: true,
         fixedWidth: true,
-        sort: DataGrid9.DataGrid.Order.Descending
+        sort: DataGrid7.DataGrid.Order.Descending
       },
       { id: "removedSize", title: i18nString7(UIStrings7.freedSize), width: "75px", sortable: true, fixedWidth: true },
       { id: "sizeDelta", title: i18nString7(UIStrings7.sizeDelta), width: "75px", sortable: true, fixedWidth: true }
@@ -5407,7 +5589,7 @@ var AllocationDataGrid = class extends HeapSnapshotViewportDataGrid {
         width: "75px",
         sortable: true,
         fixedWidth: true,
-        sort: DataGrid9.DataGrid.Order.Descending
+        sort: DataGrid7.DataGrid.Order.Descending
       },
       { id: "name", title: i18nString7(UIStrings7.function), disclosure: true, sortable: true }
     ];
@@ -5443,7 +5625,7 @@ var AllocationDataGrid = class extends HeapSnapshotViewportDataGrid {
   }
   createComparator() {
     const fieldName = this.sortColumnId();
-    const compareResult = this.sortOrder() === DataGrid9.DataGrid.Order.Ascending ? 1 : -1;
+    const compareResult = this.sortOrder() === DataGrid7.DataGrid.Order.Ascending ? 1 : -1;
     function compare(a, b) {
       if (a[fieldName] > b[fieldName]) {
         return compareResult;
@@ -5796,7 +5978,7 @@ var UIStrings9 = {
   /**
    * @description Text of a DOM element in Heap Snapshot View of a profiler tool
    */
-  stackWasNotRecordedForThisObject: "Stack wasn't recorded for this object because it had been allocated before this profile recording started.",
+  stackWasNotRecordedForThisObject: "Stack wasn\u2019t recorded for this object because it had been allocated before this profile recording started.",
   /**
    * @description Text in Heap Snapshot View of a profiler tool.
    * This text is on a button to undo all previous "Ignore this retainer" actions.
@@ -5977,7 +6159,7 @@ var HeapSnapshotView = class _HeapSnapshotView extends UI9.View.SimpleView {
     this.currentPerspective.activate(this);
     this.dataGrid = this.currentPerspective.masterGrid(this);
     void this.populate();
-    this.searchThrottler = new Common8.Throttler.Throttler(0);
+    this.searchThrottler = new Common9.Throttler.Throttler(0);
     for (const existingProfile of this.profiles()) {
       existingProfile.addEventListener("ProfileTitleChanged", this.updateControls, this);
     }
@@ -6377,7 +6559,7 @@ var HeapSnapshotView = class _HeapSnapshotView extends UI9.View.SimpleView {
     if (node) {
       node.select();
     } else {
-      Common8.Console.Console.instance().error("Cannot find corresponding heap snapshot node");
+      Common9.Console.Console.instance().error("Cannot find corresponding heap snapshot node");
     }
   }
   getPopoverRequest(event) {
@@ -6664,7 +6846,7 @@ var StatisticsPerspective = class extends Perspective {
     return null;
   }
 };
-var HeapSnapshotProfileType = class _HeapSnapshotProfileType extends Common8.ObjectWrapper.eventMixin(ProfileType) {
+var HeapSnapshotProfileType = class _HeapSnapshotProfileType extends Common9.ObjectWrapper.eventMixin(ProfileType) {
   customContentInternal;
   constructor(id, title) {
     super(id || _HeapSnapshotProfileType.TypeId, title || i18nString8(UIStrings9.heapSnapshot));
@@ -6769,14 +6951,14 @@ var HeapSnapshotProfileType = class _HeapSnapshotProfileType extends Common8.Obj
   // eslint-disable-next-line @typescript-eslint/naming-convention
   static SnapshotReceived = "SnapshotReceived";
 };
-var TrackingHeapSnapshotProfileType = class _TrackingHeapSnapshotProfileType extends Common8.ObjectWrapper.eventMixin(HeapSnapshotProfileType) {
+var TrackingHeapSnapshotProfileType = class _TrackingHeapSnapshotProfileType extends Common9.ObjectWrapper.eventMixin(HeapSnapshotProfileType) {
   recordAllocationStacksSettingInternal;
   customContentInternal;
   recording;
   profileSamples;
   constructor() {
     super(_TrackingHeapSnapshotProfileType.TypeId, i18nString8(UIStrings9.allocationInstrumentationOn));
-    this.recordAllocationStacksSettingInternal = Common8.Settings.Settings.instance().createSetting("record-allocation-stacks", false);
+    this.recordAllocationStacksSettingInternal = Common9.Settings.Settings.instance().createSetting("record-allocation-stacks", false);
     this.customContentInternal = null;
     this.recording = false;
   }
@@ -7001,7 +7183,7 @@ var HeapProfileHeader = class extends ProfileHeader {
   }
   setupWorker() {
     console.assert(!this.workerProxy, "HeapSnapshotWorkerProxy already exists");
-    this.workerProxy = new HeapSnapshotModel5.HeapSnapshotProxy.HeapSnapshotWorkerProxy(this.handleWorkerEvent.bind(this));
+    this.workerProxy = new HeapSnapshotModel5.HeapSnapshotProxy.HeapSnapshotWorkerProxy(this.handleWorkerEvent.bind(this), Common9.Console.Console.instance());
     this.workerProxy.addEventListener("Wait", (event) => {
       this.updateStatus(null, event.data);
     }, this);
@@ -7009,7 +7191,7 @@ var HeapProfileHeader = class extends ProfileHeader {
   }
   handleWorkerEvent(eventName, data) {
     if (HeapSnapshotModel5.HeapSnapshotModel.HeapSnapshotProgressEvent.BrokenSnapshot === eventName) {
-      Common8.Console.Console.instance().error(data);
+      Common9.Console.Console.instance().error(data);
       return;
     }
     if (HeapSnapshotModel5.HeapSnapshotModel.HeapSnapshotProgressEvent.Update !== eventName) {
@@ -7033,7 +7215,7 @@ var HeapProfileHeader = class extends ProfileHeader {
   }
   transferChunk(chunk) {
     if (!this.bufferedWriter) {
-      this.bufferedWriter = new Bindings3.TempFile.TempFile();
+      this.bufferedWriter = new Bindings3.TempFile.TempFile(Common9.Console.Console.instance());
     }
     this.bufferedWriter.write([chunk]);
     ++this.totalNumberOfChunks;
@@ -7072,14 +7254,14 @@ var HeapProfileHeader = class extends ProfileHeader {
         return;
       }
       if (this.failedToCreateTempFile) {
-        Common8.Console.Console.instance().error("Failed to open temp file with heap snapshot");
+        Common9.Console.Console.instance().error("Failed to open temp file with heap snapshot");
         void fileOutputStream.close();
         return;
       }
       if (this.tempFile) {
         const error = await this.tempFile.copyToOutputStream(fileOutputStream, this.onChunkTransferred.bind(this));
         if (error) {
-          Common8.Console.Console.instance().error("Failed to read heap snapshot from temp file: " + error.message);
+          Common9.Console.Console.instance().error("Failed to read heap snapshot from temp file: " + error.message);
         }
         this.didCompleteSnapshotTransfer();
         return;
@@ -7242,11 +7424,11 @@ __export(ProfileLauncherView_exports, {
   DEFAULT_VIEW: () => DEFAULT_VIEW,
   ProfileLauncherView: () => ProfileLauncherView
 });
-import * as Common10 from "./../../core/common/common.js";
+import * as Common11 from "./../../core/common/common.js";
 import * as i18n21 from "./../../core/i18n/i18n.js";
-import * as Buttons from "./../../ui/components/buttons/buttons.js";
+import * as Buttons2 from "./../../ui/components/buttons/buttons.js";
 import * as UI11 from "./../../ui/legacy/legacy.js";
-import { html as html2, nothing, render as render2 } from "./../../ui/lit/lit.js";
+import { html as html3, nothing as nothing2, render as render3 } from "./../../ui/lit/lit.js";
 import * as VisualLogging5 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/profiler/IsolateSelector.js
@@ -7255,7 +7437,7 @@ __export(IsolateSelector_exports, {
   IsolateSelector: () => IsolateSelector,
   ListItem: () => ListItem
 });
-import * as Common9 from "./../../core/common/common.js";
+import * as Common10 from "./../../core/common/common.js";
 import * as i18n19 from "./../../core/i18n/i18n.js";
 import * as SDK6 from "./../../core/sdk/sdk.js";
 import * as UI10 from "./../../ui/legacy/legacy.js";
@@ -7491,7 +7673,7 @@ var ListItem = class {
       const target = model.target();
       const isPrimaryPageTarget = targetManager.primaryPageTarget() === target;
       const name = target.name();
-      const parsedURL = new Common9.ParsedURL.ParsedURL(target.inspectedURL());
+      const parsedURL = new Common10.ParsedURL.ParsedURL(target.inspectedURL());
       const domain = parsedURL.isValid ? parsedURL.domain() : "";
       const title = target.decorateLabel(domain && !isPrimaryPageTarget ? `${domain}: ${name}` : name || domain || i18nString9(UIStrings10.empty));
       modelCountByName.set(title, (modelCountByName.get(title) || 0) + 1);
@@ -7700,7 +7882,7 @@ var str_10 = i18n21.i18n.registerUIStrings("panels/profiler/ProfileLauncherView.
 var i18nString10 = i18n21.i18n.getLocalizedString.bind(void 0, str_10);
 var { widget, widgetRef } = UI11.Widget;
 var DEFAULT_VIEW = (input, output, target) => {
-  render2(html2`
+  render3(html3`
     <style>${profileLauncherView_css_default}</style>
     <div class="profile-launcher-view-content vbox">
       <div class="vbox">
@@ -7709,7 +7891,7 @@ var DEFAULT_VIEW = (input, output, target) => {
           ${input.profileTypes.map((entry) => {
     const radioId = `profile-type-${entry.profileType.id}`;
     const customContent = entry.customContent;
-    return html2`
+    return html3`
               <input id=${radioId} type="radio" name="profile-type"
                   .checked=${entry.selected}
                   ?disabled=${input.isProfiling}
@@ -7718,13 +7900,13 @@ var DEFAULT_VIEW = (input, output, target) => {
                 />
               <label for=${radioId}>${entry.profileType.name}</label>
               <p>${entry.profileType.description}</p>
-              ${customContent ? html2`
+              ${customContent ? html3`
                 <p>
                   <span role="group" aria-labelledby=${radioId}>
                     ${customContent}
                   </span>
                 </p>
-              ` : nothing}
+              ` : nothing2}
             `;
   })}
         </form>
@@ -7739,7 +7921,7 @@ var DEFAULT_VIEW = (input, output, target) => {
   })}
           ></devtools-widget>
         </div>
-        ${input.isolateSelector?.totalMemoryElement() ?? nothing}
+        ${input.isolateSelector?.totalMemoryElement() ?? nothing2}
       </div>
       <div class="hbox profile-launcher-buttons">
         <devtools-button
@@ -7759,7 +7941,7 @@ var DEFAULT_VIEW = (input, output, target) => {
     </div>
   `, target);
 };
-var ProfileLauncherView = class extends Common10.ObjectWrapper.eventMixin(UI11.Widget.VBox) {
+var ProfileLauncherView = class extends Common11.ObjectWrapper.eventMixin(UI11.Widget.VBox) {
   panel;
   selectedProfileTypeSetting;
   #view;
@@ -7774,7 +7956,7 @@ var ProfileLauncherView = class extends Common10.ObjectWrapper.eventMixin(UI11.W
     super({ classes: ["profile-launcher-view"] });
     this.#view = view;
     this.panel = profilesPanel;
-    this.selectedProfileTypeSetting = Common10.Settings.Settings.instance().createSetting("selected-profile-type", "CPU");
+    this.selectedProfileTypeSetting = Common11.Settings.Settings.instance().createSetting("selected-profile-type", "CPU");
   }
   wasShown() {
     super.wasShown();
@@ -7885,7 +8067,7 @@ __export(ProfileSidebarTreeElement_exports, {
   ProfileSidebarTreeElement: () => ProfileSidebarTreeElement
 });
 import * as i18n23 from "./../../core/i18n/i18n.js";
-import * as Buttons2 from "./../../ui/components/buttons/buttons.js";
+import * as Buttons3 from "./../../ui/components/buttons/buttons.js";
 import * as UI12 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging6 from "./../../ui/visual_logging/visual_logging.js";
 var UIStrings12 = {
@@ -7919,7 +8101,7 @@ var ProfileSidebarTreeElement = class extends UI12.TreeOutline.TreeElement {
     this.titleContainer = this.titlesElement.createChild("span", "title-container");
     this.titleElement = this.titleContainer.createChild("span", "title");
     this.subtitleElement = this.titlesElement.createChild("span", "subtitle");
-    this.menuElement = new Buttons2.Button.Button();
+    this.menuElement = new Buttons3.Button.Button();
     this.menuElement.data = {
       variant: "icon",
       iconName: "dots-vertical",
@@ -8602,11 +8784,11 @@ var ProfilesPanel = class _ProfilesPanel extends UI13.Panel.PanelWithSidebar {
     const profileType = this.findProfileTypeByExtension(file.name);
     if (!profileType) {
       const extensions = new Set(this.profileTypes.map((type) => type.fileExtension()).filter((ext) => ext));
-      Common11.Console.Console.instance().error(i18nString12(UIStrings13.cantLoadFileSupportedFile, { PH1: Array.from(extensions).join("', '") }));
+      Common12.Console.Console.instance().error(i18nString12(UIStrings13.cantLoadFileSupportedFile, { PH1: Array.from(extensions).join("', '") }));
       return;
     }
     if (Boolean(profileType.profileBeingRecorded())) {
-      Common11.Console.Console.instance().error(i18nString12(UIStrings13.cantLoadProfileWhileAnother));
+      Common12.Console.Console.instance().error(i18nString12(UIStrings13.cantLoadProfileWhileAnother));
       return;
     }
     const error = await profileType.loadFromFile(file);
@@ -8761,7 +8943,7 @@ var ProfilesPanel = class _ProfilesPanel extends UI13.Panel.PanelWithSidebar {
       if (Array.isArray(items)) {
         items.map((item) => this.profileViewToolbar.appendToolbarItem(item));
       } else {
-        render3(items, this.profileViewToolbar);
+        render4(items, this.profileViewToolbar);
       }
     });
     return view;

@@ -53,7 +53,7 @@ const UIStrings = {
   /**
    * @description Text of a setting that do turn off the measuring rulers when hover over a target
    */
-  doNotShowRulersOnHover: 'Don\'t show rulers on hover',
+  doNotShowRulersOnHover: 'Don’t show rulers on hover',
   /**
    * @description Title of a setting that turns on grid area name labels
    */
@@ -1355,7 +1355,6 @@ Common.Settings.registerSettingExtension({
   settingType: Common.Settings.SettingType.BOOLEAN,
   order: 0,
   defaultValue: false,
-  userActionCondition: 'hasOtherClients',
   options: [
     {
       value: true,

@@ -13,19 +13,16 @@ import * as Elements from './elements.js';
 const MAIN_FRAME_ID = 'MAIN_FRAME_ID';
 describeWithEnvironment('AccessibilityTreeView', () => {
     let target;
-    let treeComponent;
     beforeEach(() => {
         stubNoopSettings();
         target = createTarget();
-        treeComponent = new TreeOutline.TreeOutline.TreeOutline();
     });
     const updatesUiOnEvent = (inScope) => async () => {
         SDK.TargetManager.TargetManager.instance().setScopeTarget(inScope ? target : null);
-        const view = new Elements.AccessibilityTreeView.AccessibilityTreeView(treeComponent);
+        const view = new Elements.AccessibilityTreeView.AccessibilityTreeView();
         renderElementIntoDOM(view);
         const model = target.model(SDK.AccessibilityModel.AccessibilityModel);
         assert.exists(model);
-        const treeComponentDataSet = sinon.spy(treeComponent, 'data', ['set']);
         sinon.stub(SDK.FrameManager.FrameManager.instance(), 'getOutermostFrame').returns({
             id: MAIN_FRAME_ID,
         });
@@ -36,17 +33,29 @@ describeWithEnvironment('AccessibilityTreeView', () => {
             name: { type: 'computedString', value: 'Root Node' },
             frameId: MAIN_FRAME_ID,
         };
+        const renderSpy = sinon.spy(view, 'requestUpdate');
         model.loadComplete({ root: rootPayload });
-        await new Promise(resolve => queueMicrotask(resolve));
-        assert.strictEqual(treeComponentDataSet.set.called, inScope);
+        let isTreeUpdated = false;
+        if (inScope) {
+            assert.exists(renderSpy.firstCall);
+            await view.updateComplete;
+            isTreeUpdated = true;
+        }
+        else {
+            await view.updateComplete;
+        }
+        const treeOutline = view.contentElement.querySelector('devtools-tree-outline');
+        const isTreeRendered = Boolean(treeOutline && treeOutline.data.tree.length > 0);
+        assert.strictEqual(isTreeRendered, isTreeUpdated);
         view.detach();
     };
     it('updates UI on in scope update event', updatesUiOnEvent(true));
     it('does not update UI on out of scope update event', updatesUiOnEvent(false));
     describe('copying nodes', function () {
         it('copies selected node on context menu copy action', async () => {
-            const view = new Elements.AccessibilityTreeView.AccessibilityTreeView(treeComponent);
+            const view = new Elements.AccessibilityTreeView.AccessibilityTreeView();
             renderElementIntoDOM(view);
+            await view.updateComplete;
             const axNode = {
                 id: () => '1',
                 getFrameId: () => 'frame1',
@@ -61,20 +70,23 @@ describeWithEnvironment('AccessibilityTreeView', () => {
                 getChildren: SDK.AccessibilityModel.AccessibilityNode.prototype.getChildren,
                 axNodeToText: SDK.AccessibilityModel.AccessibilityNode.prototype.axNodeToText,
             };
-            treeComponent.dispatchEvent(new TreeOutline.TreeOutline.ItemSelectedEvent({
+            const treeOutline = view.contentElement.querySelector('devtools-tree-outline');
+            assert.exists(treeOutline);
+            treeOutline.dispatchEvent(new TreeOutline.TreeOutline.ItemSelectedEvent({
                 treeNodeData: axNode,
                 id: '1',
             }));
             const event = new MouseEvent('contextmenu', { bubbles: true });
             const customEvent = new TreeOutline.TreeOutline.ItemContextMenuEvent({ treeNodeData: axNode, id: '1' }, event);
             const showStub = sinon.stub(UI.ContextMenu.ContextMenu.prototype, 'show').resolves();
-            treeComponent.dispatchEvent(customEvent);
+            treeOutline.dispatchEvent(customEvent);
             sinon.assert.called(showStub);
             view.detach();
         });
         it('copies selected node on copy event', async () => {
-            const view = new Elements.AccessibilityTreeView.AccessibilityTreeView(treeComponent);
+            const view = new Elements.AccessibilityTreeView.AccessibilityTreeView();
             renderElementIntoDOM(view);
+            await view.updateComplete;
             const axNode = {
                 id: () => '1',
                 getFrameId: () => 'frame1',
@@ -89,13 +101,17 @@ describeWithEnvironment('AccessibilityTreeView', () => {
                 getChildren: SDK.AccessibilityModel.AccessibilityNode.prototype.getChildren,
                 axNodeToText: SDK.AccessibilityModel.AccessibilityNode.prototype.axNodeToText,
             };
-            treeComponent.dispatchEvent(new TreeOutline.TreeOutline.ItemSelectedEvent({
+            const treeOutline = view.contentElement.querySelector('devtools-tree-outline');
+            assert.exists(treeOutline);
+            treeOutline.dispatchEvent(new TreeOutline.TreeOutline.ItemSelectedEvent({
                 treeNodeData: axNode,
                 id: '1',
             }));
             const copyStub = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'copyText');
             const event = new Event('copy', { bubbles: true });
-            view.contentElement.dispatchEvent(event);
+            const container = view.contentElement.querySelector('.accessibility-tree-view-container');
+            assert.exists(container);
+            container.dispatchEvent(event);
             await new Promise(resolve => setTimeout(resolve, 50));
             sinon.assert.calledWith(copyStub, 'heading "Title"\n');
             copyStub.restore();
@@ -104,7 +120,7 @@ describeWithEnvironment('AccessibilityTreeView', () => {
     });
     it('renders the accessibility tree screenshot', async () => {
         SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
-        const view = new Elements.AccessibilityTreeView.AccessibilityTreeView(treeComponent);
+        const view = new Elements.AccessibilityTreeView.AccessibilityTreeView();
         const refreshSpy = sinon.spy(view, 'refreshAccessibilityTree');
         const model = target.model(SDK.AccessibilityModel.AccessibilityModel);
         assert.exists(model);

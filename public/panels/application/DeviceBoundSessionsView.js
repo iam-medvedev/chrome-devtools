@@ -499,10 +499,6 @@ const UIStrings = {
     /**
      *@description Explanation for an event outcome.
      */
-    refreshQuotaExceeded: 'Refresh quota exceeded',
-    /**
-     *@description Explanation for an event outcome.
-     */
     fatalError: 'Fatal error',
     /**
      *@description Explanation for an event outcome.
@@ -1025,8 +1021,6 @@ function refreshResultToString(refreshResult) {
             return i18nString(UIStrings.unreachable);
         case "ServerError" /* Protocol.Network.RefreshEventDetailsRefreshResult.ServerError */:
             return i18nString(UIStrings.serverError);
-        case "RefreshQuotaExceeded" /* Protocol.Network.RefreshEventDetailsRefreshResult.RefreshQuotaExceeded */:
-            return i18nString(UIStrings.refreshQuotaExceeded);
         case "FatalError" /* Protocol.Network.RefreshEventDetailsRefreshResult.FatalError */:
             return i18nString(UIStrings.fatalError);
         case "SigningQuotaExceeded" /* Protocol.Network.RefreshEventDetailsRefreshResult.SigningQuotaExceeded */:

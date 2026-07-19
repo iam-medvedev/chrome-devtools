@@ -61,7 +61,6 @@
     "../../../../../../front_end/core/sdk/NetworkRequest.test.ts",
     "../../../../../../front_end/core/sdk/OverlayColorGenerator.test.ts",
     "../../../../../../front_end/core/sdk/OverlayModel.test.ts",
-    "../../../../../../front_end/core/sdk/OverlayPersistentHighlighter.test.ts",
     "../../../../../../front_end/core/sdk/PreloadingModel.test.ts",
     "../../../../../../front_end/core/sdk/RehydratingConnection.test.ts",
     "../../../../../../front_end/core/sdk/RemoteObject.test.ts",

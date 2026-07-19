@@ -1,5 +1,6 @@
 import type * as Protocol from '../../generated/protocol.js';
-export declare function loadCodeLocationResolvingScenario(): Promise<{
+import { MockDebuggerBackend } from '../../testing/MockScopeChain.js';
+export declare function loadCodeLocationResolvingScenario(backend: MockDebuggerBackend): Promise<{
     authoredScriptURL: string;
     genScriptURL: string;
     scriptId: Protocol.Runtime.ScriptId;

@@ -11,13 +11,14 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Breakpoints from '../../models/breakpoints/breakpoints.js';
 import * as Persistence from '../../models/persistence/persistence.js';
+import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import { deinitializeGlobalVars } from '../../testing/EnvironmentHelpers.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { dispatchEvent } from '../../testing/MockConnection.js';
 import { MockDebuggerBackend } from '../../testing/MockScopeChain.js';
 import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
-import { createContentProviderUISourceCodes } from '../../testing/UISourceCodeHelpers.js';
+import { createContentProviderUISourceCodes, createFileSystemUISourceCode, } from '../../testing/UISourceCodeHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Sources from './sources.js';
 const { urlString } = Platform.DevToolsPath;
@@ -527,6 +528,109 @@ describe('NetworkNavigatorView', () => {
             await disableIgnoreListing();
             project.removeProject();
         });
+    });
+});
+describe('FilesNavigatorView', () => {
+    setupRuntimeHooks();
+    setupLocaleHooks();
+    let workspace;
+    let backend;
+    let networkProjectManager;
+    beforeEach(() => {
+        backend = new MockDebuggerBackend();
+        workspace = backend.universe.workspace;
+        const targetManager = backend.universe.targetManager;
+        sinon.stub(Workspace.Workspace.WorkspaceImpl, 'instance').returns(workspace);
+        sinon.stub(SDK.TargetManager.TargetManager, 'instance').returns(targetManager);
+        sinon.stub(Workspace.IgnoreListManager.IgnoreListManager, 'instance').returns(backend.universe.ignoreListManager);
+        sinon.stub(Common.Settings.Settings, 'instance').returns(backend.universe.settings);
+        const debuggerWorkspaceBinding = backend.universe.debuggerWorkspaceBinding;
+        const breakpointManager = Breakpoints.BreakpointManager.BreakpointManager.instance({
+            forceNew: true,
+            targetManager,
+            workspace,
+            debuggerWorkspaceBinding,
+            settings: backend.universe.settings,
+        });
+        Persistence.Persistence.PersistenceImpl.instance({ forceNew: true, workspace, breakpointManager });
+        Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance({ forceNew: true, workspace });
+        const automaticFileSystemManager = sinon.createStubInstance(Persistence.AutomaticFileSystemManager.AutomaticFileSystemManager);
+        sinon.stub(Persistence.AutomaticFileSystemManager.AutomaticFileSystemManager, 'instance')
+            .returns(automaticFileSystemManager);
+        networkProjectManager = new Bindings.NetworkProject.NetworkProjectManager();
+    });
+    afterEach(async () => {
+        sinon.restore();
+        await deinitializeGlobalVars();
+    });
+    it('shows unique names for file system UISourceCodes', async () => {
+        const { project: project1 } = createFileSystemUISourceCode({
+            url: urlString `file:///home/workspace/good/foo/bar/1.js`,
+            mimeType: 'application/javascript',
+            fileSystemPath: 'file:///home/workspace/good/foo/bar',
+            universe: backend.universe,
+        });
+        const { project: project2 } = createFileSystemUISourceCode({
+            url: urlString `file:///home/workspace/bad/foo/bar/2.js`,
+            mimeType: 'application/javascript',
+            fileSystemPath: 'file:///home/workspace/bad/foo/bar',
+            universe: backend.universe,
+        });
+        const { project: project3 } = createFileSystemUISourceCode({
+            url: urlString `file:///home/workspace/ugly/bar/3.js`,
+            mimeType: 'application/javascript',
+            fileSystemPath: 'file:///home/workspace/ugly/bar',
+            universe: backend.universe,
+        });
+        const navigatorView = new Sources.SourcesNavigator.FilesNavigatorView(networkProjectManager);
+        const rootElement = navigatorView.scriptsTree.rootElement();
+        const children = rootElement.children();
+        assert.lengthOf(children, 3);
+        const expectedTitles = ['bad/foo/bar', 'good/foo/bar', 'ugly/bar'];
+        assert.deepEqual(children.map((c) => c.title).sort(), expectedTitles);
+        const badProjectNode = children.find((c) => c.title === 'bad/foo/bar');
+        assert.strictEqual(badProjectNode?.childCount(), 1);
+        assert.strictEqual(badProjectNode?.childAt(0)?.title, '2.js');
+        const goodProjectNode = children.find((c) => c.title === 'good/foo/bar');
+        assert.strictEqual(goodProjectNode?.childCount(), 1);
+        assert.strictEqual(goodProjectNode?.childAt(0)?.title, '1.js');
+        const uglyProjectNode = children.find((c) => c.title === 'ugly/bar');
+        assert.strictEqual(uglyProjectNode?.childCount(), 1);
+        assert.strictEqual(uglyProjectNode?.childAt(0)?.title, '3.js');
+        project1.removeProject();
+        project2.removeProject();
+        project3.removeProject();
+    });
+    it('supports making a copy of a file', async () => {
+        const { uiSourceCode: originalUISourceCode, project } = createFileSystemUISourceCode({
+            url: urlString `file:///home/workspace/script.js`,
+            mimeType: 'application/javascript',
+            content: 'testme',
+            fileSystemPath: 'file:///home/workspace',
+            universe: backend.universe,
+        });
+        const navigatorView = new Sources.SourcesNavigator.FilesNavigatorView(networkProjectManager);
+        // Stub createFile on the platform file system to simulate successful creation.
+        const createFileStub = sinon.stub(project.fileSystem(), 'createFile');
+        createFileStub.callsFake((path, name) => {
+            const newFileName = name || 'NewFile';
+            const relativePath = path ? path + '/' + newFileName : newFileName;
+            return Promise.resolve(relativePath);
+        });
+        // Stub rename to avoid UI prompts.
+        sinon.stub(navigatorView, 'rename');
+        await navigatorView.create(project, '', originalUISourceCode);
+        // Verify that the new file was created in the project.
+        const newFileUrl = urlString `file:///home/workspace/NewFile`;
+        const newUISourceCode = project.uiSourceCodeForURL(newFileUrl);
+        assert.exists(newUISourceCode);
+        // Verify content was copied.
+        const contentData = await newUISourceCode.requestContentData();
+        if (TextUtils.ContentData.ContentData.isError(contentData)) {
+            throw new Error('Content data is an error: ' + contentData.error);
+        }
+        assert.strictEqual(contentData.text, 'testme');
+        project.removeProject();
     });
 });
 //# sourceMappingURL=SourcesNavigator.test.js.map

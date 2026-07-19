@@ -105,7 +105,7 @@ const UIStrings = {
      */
     insecureSha: 'insecure (SHA-1)',
     /**
-     * @description Description of the security explanation when the site’s certificate chain contains a certificate signed using SHA-1.
+     * @description Description of the security explanation when the site's certificate chain contains a certificate signed using SHA-1.
      */
     theCertificateChainForThisSite: 'The certificate chain for this site contains a certificate signed using SHA-1.',
     /**
@@ -113,7 +113,7 @@ const UIStrings = {
      */
     subjectAlternativeNameMissing: '`Subject Alternative Name` missing',
     /**
-     * @description Description of the security explanation when the site’s certificate is missing a Subject Alternative Name extension.
+     * @description Description of the security explanation when the site's certificate is missing a Subject Alternative Name extension.
      */
     theCertificateForThisSiteDoesNot: 'The certificate for this site doesn’t contain a `Subject Alternative Name` extension containing a domain name or IP address.',
     /**
@@ -252,7 +252,7 @@ const UIStrings = {
      */
     reloadThePageToRecordRequestsFor: 'Reload the page to record requests for HTTP resources.',
     /**
-     * @description Link text in the Security panel. Clicking the link navigates the user to the Network panel. Requests refers to network requests. Each request is a piece of data transmitted from the current user’s browser to a remote server.
+     * @description Link text in the Security panel. Clicking the link navigates the user to the Network panel. Requests refers to network requests. Each request is a piece of data transmitted from the current user's browser to a remote server.
      */
     viewDRequestsInNetworkPanel: '{n, plural, =1 {View # request in Network panel} other {View # requests in Network panel}}',
     /**

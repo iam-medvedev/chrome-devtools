@@ -5,9 +5,11 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
-import { addChildFrame, getInitializedResourceTreeModel, getMainFrame, LOADER_ID, MAIN_FRAME_ID, mockResourceTree, navigate, } from '../../testing/ResourceTreeHelpers.js';
+import { addChildFrame, createResource, getInitializedResourceTreeModel, getMainFrame, LOADER_ID, MAIN_FRAME_ID, mockResourceTree, navigate, } from '../../testing/ResourceTreeHelpers.js';
 import { TestUniverse } from '../../testing/TestUniverse.js';
+import * as Platform from '../platform/platform.js';
 import * as SDK from './sdk.js';
+const { urlString } = Platform.DevToolsPath;
 describeWithEnvironment('ResourceTreeModel', () => {
     let universe;
     let connection;
@@ -89,7 +91,7 @@ describeWithEnvironment('ResourceTreeModel', () => {
         const subframeTarget = universe.createTarget({ parentTarget: mainFrameTarget });
         const reloadMainFramePage = sinon.spy(getResourceTreeModel(mainFrameTarget), 'reloadPage');
         const reloadSubframePage = sinon.spy(getResourceTreeModel(subframeTarget), 'reloadPage');
-        SDK.ResourceTreeModel.ResourceTreeModel.reloadAllPages(undefined, undefined, universe.targetManager);
+        SDK.ResourceTreeModel.ResourceTreeModel.reloadAllPages(universe.targetManager);
         sinon.assert.calledOnce(reloadMainFramePage);
         sinon.assert.notCalled(reloadSubframePage);
     });
@@ -101,6 +103,18 @@ describeWithEnvironment('ResourceTreeModel', () => {
         resourceTreeModel.reloadPage();
         sinon.assert.calledOnce(reload);
         assert.deepEqual(reload.args[0], [{ ignoreCache: undefined, loaderId: LOADER_ID, scriptToEvaluateOnLoad: undefined }]);
+    });
+    it('resourceForURL can find resource', async () => {
+        const target = universe.createTarget({ connection });
+        await getInitializedResourceTreeModel(target);
+        const mainFrame = getMainFrame(target);
+        const url = urlString `https://example.com/script.js`;
+        const content = 'console.log("hello");';
+        const mimeType = 'text/javascript';
+        const resource = createResource(mainFrame, url, mimeType, content);
+        // Test with TargetManager
+        const foundResource = SDK.ResourceTreeModel.ResourceTreeModel.resourceForURL(universe.targetManager, url);
+        assert.strictEqual(foundResource, resource);
     });
     it('identifies not top frame', async () => {
         const tabTarget = universe.createTarget({ type: SDK.Target.Type.TAB });

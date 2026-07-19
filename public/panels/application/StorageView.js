@@ -53,13 +53,13 @@ const UIStrings = {
      */
     clearSiteData: 'Clear site data',
     /**
+     * @description Button text in the Storage View of the Application panel for clearing selected site-specific storage
+     */
+    clearSelected: 'Clear selected',
+    /**
      * @description Announce message when the "clear site data" task is complete
      */
     SiteDataCleared: 'Site data cleared',
-    /**
-     * @description Category description in the Clear Storage section of the Storage View of the Application panel
-     */
-    application: 'Application',
     /**
      * @description Checkbox label in the Clear Storage section of the Storage View of the Application panel
      */
@@ -83,7 +83,7 @@ const UIStrings = {
     /**
      * @description Checkbox label in the Clear Storage section of the Storage View of the Application panel
      */
-    includingThirdPartyCookies: 'including third-party cookies',
+    thirdPartyCookies: 'Third-party cookies',
     /**
      * @description Text for error message in Application Quota Override
      * @example {Image} PH1
@@ -149,6 +149,7 @@ export class StorageView extends UI.Widget.VBox {
     storageKey;
     settings;
     includeThirdPartyCookiesSetting;
+    includeThirdPartyCookiesCheckbox;
     quotaRow;
     quotaUsage;
     pieChart;
@@ -185,13 +186,45 @@ export class StorageView extends UI.Widget.VBox {
         }
         this.includeThirdPartyCookiesSetting =
             Common.Settings.Settings.instance().createSetting('clear-storage-include-third-party-cookies', false);
-        const clearButtonSection = this.reportView.appendSection('', 'clear-storage-button').appendRow();
-        this.clearButton = UI.UIUtils.createTextButton(i18nString(UIStrings.clearSiteData), this.clear.bind(this), { jslogContext: 'storage.clear-site-data' });
+        const clearSiteData = this.reportView.appendSection(i18nString(UIStrings.clearSiteData));
+        clearSiteData.element.setAttribute('jslog', `${VisualLogging.section('clear-storage')}`);
+        const clearSiteDataCheckboxesRow = clearSiteData.appendRow();
+        clearSiteDataCheckboxesRow.classList.add('clear-site-data-checkboxes-row');
+        const leftColumn = clearSiteDataCheckboxesRow.createChild('div', 'clear-site-data-checkbox-column');
+        this.appendSettingCheckbox(leftColumn, i18nString(UIStrings.cacheStorage), "cache_storage" /* Protocol.Storage.StorageType.Cache_storage */, 'cache-storage-checkbox');
+        this.appendSettingCheckbox(leftColumn, i18nString(UIStrings.indexDB), "indexeddb" /* Protocol.Storage.StorageType.Indexeddb */, 'indexeddb-checkbox');
+        this.appendSettingCheckbox(leftColumn, i18nString(UIStrings.localAndSessionStorage), "local_storage" /* Protocol.Storage.StorageType.Local_storage */, 'local-and-session-storage-checkbox');
+        const rightColumn = clearSiteDataCheckboxesRow.createChild('div', 'clear-site-data-checkbox-column');
+        this.appendSettingCheckbox(rightColumn, i18nString(UIStrings.unregisterServiceWorker), "service_workers" /* Protocol.Storage.StorageType.Service_workers */, 'unregister-service-worker-checkbox');
+        const cookiesCheckbox = this.appendSettingCheckbox(rightColumn, i18nString(UIStrings.cookies), "cookies" /* Protocol.Storage.StorageType.Cookies */, 'cookies-checkbox');
+        cookiesCheckbox.classList.add('cookies-row');
+        const includeThirdPartyCookiesRow = rightColumn.createChild('div', 'include-third-party-cookies-row');
+        this.includeThirdPartyCookiesCheckbox = SettingsUI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.thirdPartyCookies), this.includeThirdPartyCookiesSetting);
+        this.includeThirdPartyCookiesCheckbox.classList.add('third-party-cookies-checkbox');
+        includeThirdPartyCookiesRow.appendChild(this.includeThirdPartyCookiesCheckbox);
+        const clearButtonRow = clearSiteData.appendRow();
+        clearButtonRow.classList.add('clear-selected-button-row');
+        this.clearButton = UI.UIUtils.createTextButton(i18nString(UIStrings.clearSelected), this.clear.bind(this), { jslogContext: 'storage.clear-site-data' });
         this.clearButton.id = 'storage-view-clear-button';
-        clearButtonSection.appendChild(this.clearButton);
-        const includeThirdPartyCookiesCheckbox = SettingsUI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.includingThirdPartyCookies), this.includeThirdPartyCookiesSetting);
-        includeThirdPartyCookiesCheckbox.classList.add('include-third-party-cookies');
-        clearButtonSection.appendChild(includeThirdPartyCookiesCheckbox);
+        clearButtonRow.appendChild(this.clearButton);
+        clearSiteData.markFieldListAsGroup();
+        const cookiesSetting = this.settings.get("cookies" /* Protocol.Storage.StorageType.Cookies */);
+        if (cookiesSetting) {
+            cookiesSetting.addChangeListener(event => this.onCookiesSettingChanged(event.data));
+        }
+        this.includeThirdPartyCookiesSetting.addChangeListener(event => this.onIncludeThirdPartyCookiesSettingChanged(event.data));
+        cookiesCheckbox.addEventListener('change', () => {
+            this.syncCheckboxAttributeState(cookiesCheckbox);
+            if (!cookiesCheckbox.checked && this.includeThirdPartyCookiesCheckbox.checked) {
+                this.includeThirdPartyCookiesCheckbox.click();
+            }
+            this.onCookiesSettingChanged(cookiesCheckbox.checked);
+        });
+        this.includeThirdPartyCookiesCheckbox.addEventListener('change', () => {
+            this.syncCheckboxAttributeState(this.includeThirdPartyCookiesCheckbox);
+            this.onIncludeThirdPartyCookiesSettingChanged(this.includeThirdPartyCookiesCheckbox.checked);
+        });
+        this.onCookiesSettingChanged(Boolean(cookiesSetting?.get()));
         const quota = this.reportView.appendSection(i18nString(UIStrings.usage));
         quota.element.setAttribute('jslog', `${VisualLogging.section('usage')}`);
         this.quotaRow = quota.appendSelectableRow();
@@ -230,25 +263,44 @@ export class StorageView extends UI.Widget.VBox {
         });
         const errorMessageRow = quota.appendRow();
         this.quotaOverrideErrorMessage = errorMessageRow.createChild('div', 'quota-override-error');
-        const application = this.reportView.appendSection(i18nString(UIStrings.application));
-        application.element.setAttribute('jslog', `${VisualLogging.section('application')}`);
-        this.appendItem(application, i18nString(UIStrings.unregisterServiceWorker), "service_workers" /* Protocol.Storage.StorageType.Service_workers */);
-        application.markFieldListAsGroup();
-        const storage = this.reportView.appendSection(i18nString(UIStrings.storageTitle));
-        storage.element.setAttribute('jslog', `${VisualLogging.section('storage')}`);
-        this.appendItem(storage, i18nString(UIStrings.localAndSessionStorage), "local_storage" /* Protocol.Storage.StorageType.Local_storage */);
-        this.appendItem(storage, i18nString(UIStrings.indexDB), "indexeddb" /* Protocol.Storage.StorageType.Indexeddb */);
-        this.appendItem(storage, i18nString(UIStrings.cookies), "cookies" /* Protocol.Storage.StorageType.Cookies */);
-        this.appendItem(storage, i18nString(UIStrings.cacheStorage), "cache_storage" /* Protocol.Storage.StorageType.Cache_storage */);
-        storage.markFieldListAsGroup();
         SDK.TargetManager.TargetManager.instance().observeTargets(this);
     }
-    appendItem(section, title, settingName) {
-        const row = section.appendRow();
+    appendSettingCheckbox(container, title, settingName, className) {
         const setting = this.settings.get(settingName);
-        if (setting) {
-            row.appendChild(SettingsUI.SettingsUI.createSettingCheckbox(title, setting));
+        if (!setting) {
+            throw new Error(`Missing setting for storage type: ${settingName}`);
         }
+        const checkbox = SettingsUI.SettingsUI.createSettingCheckbox(title, setting);
+        if (className) {
+            checkbox.classList.add(className);
+        }
+        container.appendChild(checkbox);
+        return checkbox;
+    }
+    onCookiesSettingChanged(cookiesEnabled) {
+        if (!cookiesEnabled) {
+            this.includeThirdPartyCookiesCheckbox.toggleAttribute('checked', true);
+            this.includeThirdPartyCookiesCheckbox.toggleAttribute('checked', false);
+            if (this.includeThirdPartyCookiesSetting.get()) {
+                this.includeThirdPartyCookiesSetting.set(false);
+            }
+        }
+        this.updateThirdPartyCookiesCheckboxState();
+    }
+    onIncludeThirdPartyCookiesSettingChanged(includeThirdPartyCookiesEnabled) {
+        const cookiesSetting = this.settings.get("cookies" /* Protocol.Storage.StorageType.Cookies */);
+        if (includeThirdPartyCookiesEnabled && cookiesSetting && !cookiesSetting.get()) {
+            cookiesSetting.set(true);
+            return;
+        }
+        this.updateThirdPartyCookiesCheckboxState();
+    }
+    syncCheckboxAttributeState(checkbox) {
+        checkbox.toggleAttribute('checked', checkbox.checked);
+    }
+    updateThirdPartyCookiesCheckboxState() {
+        const cookiesSetting = this.settings.get("cookies" /* Protocol.Storage.StorageType.Cookies */);
+        this.includeThirdPartyCookiesCheckbox.disabled = !cookiesSetting?.get();
     }
     targetAdded(target) {
         if (target !== SDK.TargetManager.TargetManager.instance().primaryPageTarget()) {

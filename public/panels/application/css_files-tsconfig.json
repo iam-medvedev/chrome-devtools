@@ -10,7 +10,6 @@
         "deviceBoundSessionsView.css.js",
         "frameDetailsReportView.css.js",
         "indexedDBViews.css.js",
-        "interestGroupStorageView.css.js",
         "openedWindowDetailsView.css.js",
         "originTrialTokenRows.css.js",
         "originTrialTreeView.css.js",

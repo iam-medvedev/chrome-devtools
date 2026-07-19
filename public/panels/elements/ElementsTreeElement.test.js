@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import sinon from 'sinon';
-import * as UI from '../../../front_end/ui/legacy/legacy.js';
 import * as Common from '../../core/common/common.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
@@ -13,6 +13,8 @@ import * as Workspace from '../../models/workspace/workspace.js';
 import { assertScreenshot, raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment, registerActions } from '../../testing/EnvironmentHelpers.js';
 import { dispatchEvent } from '../../testing/MockConnection.js';
+import * as Components from '../../ui/legacy/components/utils/utils.js';
+import * as UI from '../../ui/legacy/legacy.js';
 import { html } from '../../ui/lit/lit.js';
 import * as PanelsCommon from '../common/common.js';
 import * as Elements from './elements.js';
@@ -540,6 +542,165 @@ describeWithEnvironment('ElementsTreeElement', () => {
         // (verifying no duplicate or redundant spaces are added/kept in the DOM)
         const finalSpacesCount = finalAttributeElement.textContent.split('\u200B').length - 1;
         assert.strictEqual(finalSpacesCount, initialSpacesCount);
+    });
+    it('truncates long data URL attribute values in the UI but shows them in full when editing', () => {
+        const target = createTarget();
+        const domModel = target.model(SDK.DOMModel.DOMModel);
+        assert.exists(domModel);
+        const longDataUrl = 'data:text/plain;,' +
+            '1234567890'.repeat(10);
+        const nodePayload = {
+            nodeId: 1,
+            backendNodeId: 2,
+            nodeType: Node.ELEMENT_NODE,
+            nodeName: 'A',
+            localName: 'a',
+            nodeValue: '',
+            attributes: ['href', longDataUrl, 'id', 'inspected'],
+            childNodeCount: 0,
+        };
+        const node = SDK.DOMModel.DOMNode.create(domModel, null, false, nodePayload);
+        // Stub resolveURL to return the URL as-is, which triggers DevTools linkification logic.
+        sinon.stub(node, 'resolveURL').callsFake(url => Platform.DevToolsPath.urlString `${url}`);
+        const treeOutline = new Elements.ElementsTreeOutline.ElementsTreeOutline();
+        const treeElement = new Elements.ElementsTreeElement.ElementsTreeElement(node);
+        treeElement.treeOutline = treeOutline;
+        treeElement.performUpdate();
+        const attributeElement = treeElement.listItemElement.querySelector('.webkit-html-attribute');
+        assert.exists(attributeElement);
+        const attributeValueElement = attributeElement.querySelector('.webkit-html-attribute-value');
+        assert.exists(attributeValueElement);
+        // The expected trimmed value when rendered in the UI (with zero-width spaces stripped for comparison).
+        // DevTools trims it to 60 characters (including ZWSPs).
+        // "data:text/plain;,1234567890" (27 chars) + "…" (1 char) + "23456789012345678901234567890" (29 chars) = 57 chars
+        const expectedTrimmedUrlClean = 'data:text/plain;,1234567890…23456789012345678901234567890';
+        // We strip zero-width spaces from the actual text content to compare it with our clean expected value,
+        // avoiding issues with invisible characters in the assertion.
+        const cleanActualText = attributeValueElement.textContent?.trim().replace(/\u200B/g, '') ?? '';
+        assert.strictEqual(cleanActualText, expectedTrimmedUrlClean);
+        // Start editing the 'href' attribute.
+        const editStarted = treeElement.triggerEditAttribute('href');
+        assert.isTrue(editStarted);
+        // When editing, the full, untrimmed value should be displayed without zero-width spaces.
+        assert.strictEqual(attributeValueElement.textContent?.trim(), longDataUrl);
+        // Cancel editing.
+        treeElement.editingCancelled(attributeElement, 'href');
+        // The value should be trimmed again.
+        const attributeElementAfterCancel = treeElement.listItemElement.querySelector('.webkit-html-attribute');
+        assert.exists(attributeElementAfterCancel);
+        const attributeValueElementAfterCancel = attributeElementAfterCancel.querySelector('.webkit-html-attribute-value');
+        assert.exists(attributeValueElementAfterCancel);
+        const cleanActualTextAfterCancel = attributeValueElementAfterCancel.textContent?.trim().replace(/\u200B/g, '') ?? '';
+        assert.strictEqual(cleanActualTextAfterCancel, expectedTrimmedUrlClean);
+    });
+    describe('Linkification', () => {
+        let target;
+        let domModel;
+        beforeEach(() => {
+            target = createTarget();
+            domModel = target.model(SDK.DOMModel.DOMModel);
+            assert.exists(domModel);
+        });
+        function renderTreeNode(node) {
+            const treeOutline = new Elements.ElementsTreeOutline.ElementsTreeOutline();
+            const treeElement = new Elements.ElementsTreeElement.ElementsTreeElement(node);
+            treeElement.treeOutline = treeOutline;
+            treeElement.performUpdate();
+            return treeElement;
+        }
+        function getLinkOutputs(treeElement) {
+            const attributeValueElement = treeElement.listItemElement.querySelector('.webkit-html-attribute-value');
+            assert.exists(attributeValueElement);
+            const linkElements = Array.from(attributeValueElement.querySelectorAll('.devtools-link'));
+            assert.isNotEmpty(linkElements, 'Expected to find .devtools-link elements');
+            return linkElements.map(link => {
+                const text = link.textContent?.trim().replace(/\u200B/g, '') ?? '';
+                let href = '';
+                if (link.tagName.toLowerCase() === 'devtools-link') {
+                    href = link.getAttribute('href') ?? '';
+                }
+                else {
+                    href = Components.Linkifier.Linkifier.linkInfo(link)?.url ?? '';
+                }
+                return { text, href };
+            });
+        }
+        it('renders src attribute on img as a link', () => {
+            const nodePayload = {
+                nodeId: 1,
+                backendNodeId: 2,
+                nodeType: Node.ELEMENT_NODE,
+                nodeName: 'IMG',
+                localName: 'img',
+                nodeValue: '',
+                attributes: ['src', 'image.png'],
+                childNodeCount: 0,
+            };
+            const node = SDK.DOMModel.DOMNode.create(domModel, null, false, nodePayload);
+            sinon.stub(node, 'resolveURL').callsFake(url => Platform.DevToolsPath.urlString `http://example.com/${url}`);
+            const treeElement = renderTreeNode(node);
+            const links = getLinkOutputs(treeElement);
+            assert.lengthOf(links, 1);
+            assert.deepEqual(links[0], { text: 'image.png', href: 'http://example.com/image.png' });
+        });
+        it('renders srcset attribute on img as multiple links', () => {
+            const nodePayload = {
+                nodeId: 1,
+                backendNodeId: 2,
+                nodeType: Node.ELEMENT_NODE,
+                nodeName: 'IMG',
+                localName: 'img',
+                nodeValue: '',
+                attributes: ['srcset', '1x.png 1x, 2x.png 2x'],
+                childNodeCount: 0,
+            };
+            const node = SDK.DOMModel.DOMNode.create(domModel, null, false, nodePayload);
+            sinon.stub(node, 'resolveURL').callsFake(url => Platform.DevToolsPath.urlString `http://example.com/${url}`);
+            const treeElement = renderTreeNode(node);
+            const links = getLinkOutputs(treeElement);
+            assert.lengthOf(links, 2);
+            assert.deepEqual(links[0], { text: '1x.png', href: 'http://example.com/1x.png' });
+            assert.deepEqual(links[1], { text: '2x.png', href: 'http://example.com/2x.png' });
+        });
+        it('renders href attribute on a as a devtools-link', () => {
+            const nodePayload = {
+                nodeId: 1,
+                backendNodeId: 2,
+                nodeType: Node.ELEMENT_NODE,
+                nodeName: 'A',
+                localName: 'a',
+                nodeValue: '',
+                attributes: ['href', 'http://example.com'],
+                childNodeCount: 0,
+            };
+            const node = SDK.DOMModel.DOMNode.create(domModel, null, false, nodePayload);
+            sinon.stub(node, 'resolveURL').callsFake(url => Platform.DevToolsPath.urlString `${url}`);
+            const treeElement = renderTreeNode(node);
+            const links = getLinkOutputs(treeElement);
+            assert.lengthOf(links, 1);
+            assert.deepEqual(links[0], { text: 'http://example.com', href: 'http://example.com' });
+            const attributeValueElement = treeElement.listItemElement.querySelector('.webkit-html-attribute-value');
+            const linkElement = attributeValueElement?.querySelector('.devtools-link');
+            assert.strictEqual(linkElement?.tagName.toLowerCase(), 'devtools-link');
+        });
+        it('renders href attribute on SVG image as a link', () => {
+            const nodePayload = {
+                nodeId: 1,
+                backendNodeId: 2,
+                nodeType: Node.ELEMENT_NODE,
+                nodeName: 'image',
+                localName: 'image',
+                nodeValue: '',
+                attributes: ['href', 'image.png'],
+                childNodeCount: 0,
+            };
+            const node = SDK.DOMModel.DOMNode.create(domModel, null, false, nodePayload);
+            sinon.stub(node, 'resolveURL').callsFake(url => Platform.DevToolsPath.urlString `http://example.com/${url}`);
+            const treeElement = renderTreeNode(node);
+            const links = getLinkOutputs(treeElement);
+            assert.lengthOf(links, 1);
+            assert.deepEqual(links[0], { text: 'image.png', href: 'http://example.com/image.png' });
+        });
     });
 });
 describeWithEnvironment('ElementsTreeElement highlighting', () => {

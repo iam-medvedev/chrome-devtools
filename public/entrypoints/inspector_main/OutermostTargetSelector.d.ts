@@ -4,9 +4,6 @@ export declare class OutermostTargetSelector implements SDK.TargetManager.Observ
     #private;
     readonly listItems: UI.ListModel.ListModel<SDK.Target.Target>;
     constructor();
-    static instance(opts?: {
-        forceNew: boolean | null;
-    }): OutermostTargetSelector;
     item(): UI.Toolbar.ToolbarItem;
     highlightedItemChanged(_from: SDK.Target.Target | null, _to: SDK.Target.Target | null, fromElement: Element | null, toElement: Element | null): void;
     titleFor(target: SDK.Target.Target): string;

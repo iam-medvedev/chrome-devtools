@@ -382,4 +382,42 @@ describeWithEnvironment('RemoteError', () => {
         assert.strictEqual(await error.cause(), causeValue);
     });
 });
+describeWithEnvironment('RemoteObject TypedArray', () => {
+    let target;
+    let runtimeModel;
+    beforeEach(() => {
+        target = createTarget();
+        runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+    });
+    const typedArrayTypes = [
+        'Int8Array',
+        'Int16Array',
+        'Int32Array',
+        'Uint8Array',
+        'Uint16Array',
+        'Uint32Array',
+        'Float32Array',
+        'Float64Array',
+    ];
+    it('correctly detects typed arrays as arrays and extracts length and name', () => {
+        for (const typeName of typedArrayTypes) {
+            const description = `${typeName}(10)`;
+            const object = new SDK.RemoteObject.RemoteObjectImpl(runtimeModel, '1', 'object', 'typedarray', null, undefined, description);
+            assert.strictEqual(object.type, 'object');
+            assert.strictEqual(object.subtype, 'typedarray');
+            assert.strictEqual(object.arrayLength(), 10);
+            assert.strictEqual(SDK.RemoteObject.RemoteObject.arrayLength(object), 10);
+            assert.strictEqual(SDK.RemoteObject.RemoteObject.arrayNameFromDescription(description), typeName);
+            const remoteArray = SDK.RemoteObject.RemoteArray.objectAsArray(object);
+            assert.strictEqual(remoteArray.length(), 10);
+            assert.isTrue(object.isLinearMemoryInspectable());
+        }
+    });
+    it('handles square bracket formatting for typed array descriptions', () => {
+        const object = new SDK.RemoteObject.RemoteObjectImpl(runtimeModel, '1', 'object', 'typedarray', null, undefined, 'Int32Array[20]');
+        assert.strictEqual(object.arrayLength(), 20);
+        assert.strictEqual(SDK.RemoteObject.RemoteObject.arrayLength(object), 20);
+        assert.strictEqual(SDK.RemoteObject.RemoteObject.arrayNameFromDescription('Int32Array[20]'), 'Int32Array');
+    });
+});
 //# sourceMappingURL=RemoteObject.test.js.map

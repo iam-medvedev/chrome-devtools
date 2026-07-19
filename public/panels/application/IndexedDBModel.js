@@ -356,12 +356,6 @@ export class IndexedDBModel extends SDK.SDKModel.SDKModel {
     }
     cacheStorageContentUpdated(_event) {
     }
-    interestGroupAccessed(_event) {
-    }
-    interestGroupAuctionEventOccurred(_event) {
-    }
-    interestGroupAuctionNetworkRequestCreated(_event) {
-    }
     sharedStorageAccessed(_event) {
     }
     sharedStorageWorkletOperationExecutionFinished(_event) {

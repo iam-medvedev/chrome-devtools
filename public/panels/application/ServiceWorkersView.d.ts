@@ -1,53 +1,83 @@
+import '../../ui/components/report_view/report_view.js';
+import '../../ui/kit/kit.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import type * as Protocol from '../../generated/protocol.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import { type LitTemplate, nothing } from '../../ui/lit/lit.js';
+export interface SectionData {
+    manager: SDK.ServiceWorkerManager.ServiceWorkerManager;
+    registration: SDK.ServiceWorkerManager.ServiceWorkerRegistration;
+}
+export interface ServiceWorkersViewInput {
+    canManageServiceWorkers: boolean;
+    sections: SectionData[];
+}
+type View = (input: ServiceWorkersViewInput, output: undefined, target: HTMLElement) => void;
+export declare const DEFAULT_VIEW: View;
 export declare const setThrottleDisabledForDebugging: (enable: boolean) => void;
 export declare class ServiceWorkersView extends UI.Widget.VBox implements SDK.TargetManager.SDKModelObserver<SDK.ServiceWorkerManager.ServiceWorkerManager> {
-    currentWorkersView: UI.ReportView.ReportView;
-    private readonly toolbar;
+    #private;
     private readonly sections;
     private manager;
     private securityOriginManager;
-    private readonly sectionToRegistration;
     private readonly eventListeners;
-    constructor();
-    private createOthersOriginView;
-    private setupToolbar;
+    constructor(view?: View);
+    wasShown(): void;
+    performUpdate(): Promise<void>;
     modelAdded(serviceWorkerManager: SDK.ServiceWorkerManager.ServiceWorkerManager): void;
     modelRemoved(serviceWorkerManager: SDK.ServiceWorkerManager.ServiceWorkerManager): void;
-    private getTimeStamp;
-    private updateSectionVisibility;
     private registrationUpdated;
     private gcRegistrations;
-    private getReportViewForOrigin;
+    private isOriginCurrent;
     private updateRegistration;
     private registrationDeleted;
     private removeRegistrationFromList;
     private isRegistrationVisible;
-    private updateListVisibility;
 }
+export interface SectionViewInput {
+    title: string;
+    isDeleted: boolean;
+    errorsLength: number;
+    pushData: string;
+    syncTag: string;
+    periodicSyncTag: string;
+    updateCycleTable: HTMLElement;
+    activeVersion?: SDK.ServiceWorkerManager.ServiceWorkerVersion;
+    waitingVersion?: SDK.ServiceWorkerManager.ServiceWorkerVersion;
+    installingVersion?: SDK.ServiceWorkerManager.ServiceWorkerVersion;
+    redundantVersion?: SDK.ServiceWorkerManager.ServiceWorkerVersion;
+    renderClientInfo: (clientId: Protocol.Target.TargetID) => Promise<LitTemplate | typeof nothing>;
+    onNetworkRequests: () => void;
+    onUpdate: () => void;
+    onUnregister: () => void;
+    onPush: (data: string) => void;
+    onSync: (tag: string) => void;
+    onPeriodicSync: (tag: string) => void;
+    onStop: (versionId: string) => void;
+    onStart: () => void;
+    onSkipWaiting: () => void;
+}
+type SectionView = (input: SectionViewInput, _output: undefined, target: HTMLElement) => void;
+export declare const DEFAULT_SECTION_VIEW: SectionView;
 export declare class Section extends UI.Widget.VBox {
+    #private;
     private manager;
-    section: UI.ReportView.Section;
     registration: SDK.ServiceWorkerManager.ServiceWorkerRegistration;
+    private sectionInternal;
     private fingerprint;
-    private readonly pushNotificationDataSetting;
-    private readonly syncTagNameSetting;
-    private readonly periodicSyncTagNameSetting;
-    private readonly updateCycleView;
+    private pushNotificationDataSetting;
+    private syncTagNameSetting;
+    private periodicSyncTagNameSetting;
+    private updateCycleView;
     private readonly clientInfoCache;
     private readonly throttler;
-    constructor(manager: SDK.ServiceWorkerManager.ServiceWorkerManager, section: UI.ReportView.Section, registration: SDK.ServiceWorkerManager.ServiceWorkerRegistration);
-    private renderHeaderButtons;
-    private renderSyncNotificationField;
-    scheduleUpdate(): void;
-    private renderVersion;
-    private renderClientsField;
-    private renderSourceField;
-    private renderStatusField;
+    constructor(element: HTMLElement, view?: SectionView);
+    set section(data: SectionData);
+    get section(): SectionData;
+    getTitle(): string;
+    requestUpdate(): void;
     performUpdate(): Promise<void>;
     private unregisterButtonClicked;
-    private renderUpdateCycleField;
-    private renderRouterField;
     private updateButtonClicked;
     private networkRequestsClicked;
     private push;
@@ -59,3 +89,4 @@ export declare class Section extends UI.Widget.VBox {
     private skipButtonClicked;
     private stopButtonClicked;
 }
+export {};

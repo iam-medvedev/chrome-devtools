@@ -8,6 +8,7 @@ describeWithEnvironment('LighthouseStartView', () => {
     let lighthouse;
     beforeEach(async () => {
         lighthouse = await import('./lighthouse.js');
+        lighthouse.LighthouseController.clearSettingsCacheForTest();
     });
     function createStartView() {
         const controller = {

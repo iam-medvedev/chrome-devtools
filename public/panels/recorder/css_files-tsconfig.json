@@ -4,6 +4,16 @@
         "outDir": "."
     },
     "files": [
-        "recorderController.css.js"
+        "controlButton.css.js",
+        "createRecordingView.css.js",
+        "extensionView.css.js",
+        "recorderPanel.css.js",
+        "recordingListView.css.js",
+        "recordingView.css.js",
+        "replaySection.css.js",
+        "selectorPicker.css.js",
+        "stepEditor.css.js",
+        "stepView.css.js",
+        "timelineSection.css.js"
     ]
 }

@@ -9,7 +9,6 @@ import { MockDebuggerBackend } from '../../testing/MockScopeChain.js';
 import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
 import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import { SnapshotTester } from '../../testing/SnapshotTester.js';
-import * as Bindings from '../bindings/bindings.js';
 import * as Workspace from '../workspace/workspace.js';
 import * as SourceMapScopes from './source_map_scopes.js';
 const { urlString } = Platform.DevToolsPath;
@@ -22,10 +21,8 @@ describe('FunctionCodeResolver', function () {
     let backend;
     beforeEach(() => {
         backend = new MockDebuggerBackend();
+        void backend.universe.debuggerWorkspaceBinding;
         target = backend.createTarget();
-        sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, 'instance')
-            .returns(backend.universe.debuggerWorkspaceBinding);
-        sinon.stub(SDK.PageResourceLoader.PageResourceLoader, 'instance').returns(backend.universe.pageResourceLoader);
     });
     afterEach(() => {
         sinon.restore();
@@ -147,7 +144,7 @@ describe('FunctionCodeResolver', function () {
             it(testCase.name, async function () {
                 const script = await backend.addScript(target, { url: URL, content: source }, testCase.sourceMap);
                 // Add raw performance data to script's UISourceCode.
-                const uiSourceCode = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().uiSourceCodeForScript(script);
+                const uiSourceCode = backend.universe.debuggerWorkspaceBinding.uiSourceCodeForScript(script);
                 assert.isOk(uiSourceCode);
                 uiSourceCode.setDecorationData("performance" /* Workspace.UISourceCode.DecoratorType.PERFORMANCE */, exampleRawPerformanceData);
                 // Add mapped performance data to source map url's UISourceCode.
@@ -157,7 +154,7 @@ describe('FunctionCodeResolver', function () {
                     assert.isOk(debuggerModel);
                     const url = sourceMap.sourceURLForSourceIndex(0);
                     assert.isOk(url);
-                    const uiSourceCode = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().uiSourceCodeForSourceMapSourceURL(debuggerModel, url, false);
+                    const uiSourceCode = backend.universe.debuggerWorkspaceBinding.uiSourceCodeForSourceMapSourceURL(debuggerModel, url, false);
                     assert.isOk(uiSourceCode);
                     const mappedPerformanceData = Workspace.UISourceCode.createMappedProfileData(exampleRawPerformanceData, (line, column) => {
                         const entry = sourceMap.findEntry(line, column);
@@ -168,7 +165,7 @@ describe('FunctionCodeResolver', function () {
                     });
                     uiSourceCode.setDecorationData("performance" /* Workspace.UISourceCode.DecoratorType.PERFORMANCE */, mappedPerformanceData);
                 }
-                const code = await SourceMapScopes.FunctionCodeResolver.getFunctionCodeFromLocation(target, testCase.url, testCase.line, testCase.column, { contextLength: 30, appendProfileData: true });
+                const code = await SourceMapScopes.FunctionCodeResolver.getFunctionCodeFromLocation(target, testCase.url, testCase.line, testCase.column, { contextLength: 30, appendProfileData: true }, backend.universe.debuggerWorkspaceBinding);
                 assert.isOk(code);
                 assert.strictEqual(code.code, testCase.expectedCode);
                 snapshotTester.assert(this, code.codeWithContext);
@@ -180,10 +177,10 @@ describe('FunctionCodeResolver', function () {
             const target2 = backend.createTarget({ parentTarget, id: 'child2' });
             await backend.addScript(target2, { url: URL, content: exampleSource }, null);
             // Attempt to retrieve code using target1
-            const codeFromTarget1 = await SourceMapScopes.FunctionCodeResolver.getFunctionCodeFromLocation(target1, URL, 0, 35);
+            const codeFromTarget1 = await SourceMapScopes.FunctionCodeResolver.getFunctionCodeFromLocation(target1, URL, 0, 35, undefined, backend.universe.debuggerWorkspaceBinding);
             assert.isNull(codeFromTarget1);
             // Retrieve code using target2 (which actually owns the script)
-            const codeFromTarget2 = await SourceMapScopes.FunctionCodeResolver.getFunctionCodeFromLocation(target2, URL, 0, 35);
+            const codeFromTarget2 = await SourceMapScopes.FunctionCodeResolver.getFunctionCodeFromLocation(target2, URL, 0, 35, undefined, backend.universe.debuggerWorkspaceBinding);
             assert.isNotNull(codeFromTarget2);
         });
     });

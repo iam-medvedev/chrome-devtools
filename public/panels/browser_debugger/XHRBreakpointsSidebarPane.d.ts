@@ -3,6 +3,7 @@ export declare class XHRBreakpointsSidebarPane extends UI.Widget.VBox implements
     #private;
     private constructor();
     static instance(): XHRBreakpointsSidebarPane;
+    static removeInstance(): void;
     toolbarItems(): UI.Toolbar.ToolbarItem[];
     private emptyElementContextMenu;
     private addButtonClicked;
@@ -17,7 +18,6 @@ export declare class XHRBreakpointsSidebarPane extends UI.Widget.VBox implements
     private removeListElement;
     private contextMenu;
     private checkboxClicked;
-    private labelClicked;
     flavorChanged(_object: Object | null): void;
     update(): void;
     private restoreBreakpoints;

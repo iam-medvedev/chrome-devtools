@@ -143,6 +143,10 @@ describe('Universe', () => {
             'DOMDebugger.setBreakOnCSPViolation',
             // TargetDetachedDialog,
             'Inspector.enable',
+            // ChildTargetManager
+            'Target.setAutoAttach',
+            'Target.setDiscoverTargets',
+            'Target.setRemoteLocations',
         ];
         for (const call of sendSpy.getCalls()) {
             const method = call.args[0];

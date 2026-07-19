@@ -274,6 +274,118 @@ describeWithEnvironment('ElementsPanel', () => {
         treeOutline.runPendingUpdates();
         panel.detach();
     });
+    it('updates elements tree after bfcache navigation', async () => {
+        SDK.TargetManager.TargetManager.instance().setScopeTarget(null);
+        const model = target.model(SDK.DOMModel.DOMModel);
+        assert.exists(model);
+        const page1Document = {
+            root: {
+                nodeId: 1,
+                backendNodeId: 2,
+                nodeType: Node.DOCUMENT_NODE,
+                nodeName: '#document',
+                childNodeCount: 1,
+                children: [{
+                        nodeId: 4,
+                        parentId: 1,
+                        backendNodeId: 5,
+                        nodeType: Node.ELEMENT_NODE,
+                        nodeName: 'HTML',
+                        childNodeCount: 1,
+                        children: [{
+                                nodeId: 6,
+                                parentId: 4,
+                                backendNodeId: 7,
+                                nodeType: Node.ELEMENT_NODE,
+                                nodeName: 'BODY',
+                                childNodeCount: 1,
+                                children: [{
+                                        nodeId: 8,
+                                        parentId: 6,
+                                        backendNodeId: 9,
+                                        nodeType: Node.ELEMENT_NODE,
+                                        nodeName: 'DIV',
+                                        childNodeCount: 0,
+                                        attributes: ['id', 'page1'],
+                                    }],
+                            }],
+                    }],
+            },
+        };
+        const page2Document = {
+            root: {
+                nodeId: 11,
+                backendNodeId: 12,
+                nodeType: Node.DOCUMENT_NODE,
+                nodeName: '#document',
+                childNodeCount: 1,
+                children: [{
+                        nodeId: 14,
+                        parentId: 11,
+                        backendNodeId: 15,
+                        nodeType: Node.ELEMENT_NODE,
+                        nodeName: 'HTML',
+                        childNodeCount: 1,
+                        children: [{
+                                nodeId: 16,
+                                parentId: 14,
+                                backendNodeId: 17,
+                                nodeType: Node.ELEMENT_NODE,
+                                nodeName: 'BODY',
+                                childNodeCount: 1,
+                                children: [{
+                                        nodeId: 18,
+                                        parentId: 16,
+                                        backendNodeId: 19,
+                                        nodeType: Node.ELEMENT_NODE,
+                                        nodeName: 'DIV',
+                                        childNodeCount: 0,
+                                        attributes: ['id', 'page2'],
+                                    }],
+                            }],
+                    }],
+            },
+        };
+        let currentDocument = page1Document;
+        connection.setHandler('DOM.getDocument', null);
+        connection.setSuccessHandler('DOM.getDocument', () => currentDocument);
+        const panel = Elements.ElementsPanel.ElementsPanel.instance({ forceNew: true });
+        panel.markAsRoot();
+        renderElementIntoDOM(panel);
+        SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
+        await model.requestDocument();
+        const treeOutline = Elements.ElementsTreeOutline.ElementsTreeOutline.forDOMModel(model);
+        assert.exists(treeOutline);
+        // Verify Page 1 is loaded
+        assert.strictEqual(treeOutline.rootDOMNode?.nodeName(), '#document');
+        const doc1 = treeOutline.rootDOMNode;
+        const body = doc1?.body;
+        assert.exists(body);
+        const children1 = body.children();
+        assert.exists(children1);
+        assert.strictEqual(children1[0].getAttribute('id'), 'page1');
+        // Simulate navigation to Page 2
+        currentDocument = page2Document;
+        dispatchEvent(target, 'DOM.documentUpdated');
+        await model.requestDocument();
+        // Verify Page 2 is loaded
+        const doc2 = treeOutline.rootDOMNode;
+        assert.exists(doc2?.body);
+        const children2 = doc2.body.children();
+        assert.exists(children2);
+        assert.strictEqual(children2[0].getAttribute('id'), 'page2');
+        // Simulate BFCache navigation back to Page 1
+        currentDocument = page1Document;
+        dispatchEvent(target, 'DOM.documentUpdated');
+        await model.requestDocument();
+        // Verify Page 1 is restored
+        const doc3 = treeOutline.rootDOMNode;
+        assert.exists(doc3?.body);
+        const children3 = doc3.body.children();
+        assert.exists(children3);
+        assert.strictEqual(children3[0].getAttribute('id'), 'page1');
+        panel.detach();
+    });
     describe('tracking and updating Computed styles', () => {
         const StylesSidebarPane = Elements.StylesSidebarPane.StylesSidebarPane;
         const ComputedStyleModel = ComputedStyle.ComputedStyleModel.ComputedStyleModel;

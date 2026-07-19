@@ -4,11 +4,45 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// gen/front_end/models/issues_manager/AttributionReportingIssue.js
-var AttributionReportingIssue_exports = {};
-__export(AttributionReportingIssue_exports, {
-  AttributionReportingIssue: () => AttributionReportingIssue
+// gen/front_end/models/issues_manager/CheckFormsIssuesTrigger.js
+var CheckFormsIssuesTrigger_exports = {};
+__export(CheckFormsIssuesTrigger_exports, {
+  CheckFormsIssuesTrigger: () => CheckFormsIssuesTrigger
 });
+import * as Root from "./../../core/root/root.js";
+import * as SDK from "./../../core/sdk/sdk.js";
+var CheckFormsIssuesTrigger = class _CheckFormsIssuesTrigger {
+  constructor(targetManager = SDK.TargetManager.TargetManager.instance()) {
+    targetManager.addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.Load, this.#pageLoaded, this, { scoped: true });
+    for (const model of targetManager.models(SDK.ResourceTreeModel.ResourceTreeModel)) {
+      if (model.target().outermostTarget() !== model.target()) {
+        continue;
+      }
+      this.#checkFormsIssues(model);
+    }
+  }
+  static instance({ forceNew } = { forceNew: false }) {
+    if (!Root.DevToolsContext.globalInstance().has(_CheckFormsIssuesTrigger) || forceNew) {
+      Root.DevToolsContext.globalInstance().set(_CheckFormsIssuesTrigger, new _CheckFormsIssuesTrigger());
+    }
+    return Root.DevToolsContext.globalInstance().get(_CheckFormsIssuesTrigger);
+  }
+  // TODO(crbug.com/1399414): Handle response by dropping current issues in favor of new ones.
+  #checkFormsIssues(resourceTreeModel) {
+    void resourceTreeModel.target().auditsAgent().invoke_checkFormsIssues();
+  }
+  #pageLoaded(event) {
+    const { resourceTreeModel } = event.data;
+    this.#checkFormsIssues(resourceTreeModel);
+  }
+};
+
+// gen/front_end/models/issues_manager/ClientHintIssue.js
+var ClientHintIssue_exports = {};
+__export(ClientHintIssue_exports, {
+  ClientHintIssue: () => ClientHintIssue
+});
+import * as i18n3 from "./../../core/i18n/i18n.js";
 
 // gen/front_end/models/issues_manager/Issue.js
 var Issue_exports = {};
@@ -20,7 +54,6 @@ __export(Issue_exports, {
   toZeroBasedLocation: () => toZeroBasedLocation,
   unionIssueKind: () => unionIssueKind
 });
-import * as Common from "./../../core/common/common.js";
 import * as Host from "./../../core/host/host.js";
 import * as i18n from "./../../core/i18n/i18n.js";
 var UIStrings = {
@@ -80,8 +113,8 @@ function unionIssueKind(a, b) {
   }
   return "Improvement";
 }
-function getShowThirdPartyIssuesSetting() {
-  return Common.Settings.Settings.instance().createSetting("show-third-party-issues", true);
+function getShowThirdPartyIssuesSetting(settings) {
+  return settings.createSetting("show-third-party-issues", true);
 }
 var Issue = class {
   #issueCode;
@@ -165,245 +198,6 @@ function toZeroBasedLocation(location) {
     columnNumber: location.columnNumber === 0 ? void 0 : location.columnNumber - 1
   };
 }
-
-// gen/front_end/models/issues_manager/AttributionReportingIssue.js
-function getIssueCode(details) {
-  switch (details.violationType) {
-    case "PermissionPolicyDisabled":
-      return "AttributionReportingIssue::PermissionPolicyDisabled";
-    case "UntrustworthyReportingOrigin":
-      return "AttributionReportingIssue::UntrustworthyReportingOrigin";
-    case "InsecureContext":
-      return "AttributionReportingIssue::InsecureContext";
-    case "InvalidHeader":
-      return "AttributionReportingIssue::InvalidRegisterSourceHeader";
-    case "InvalidRegisterTriggerHeader":
-      return "AttributionReportingIssue::InvalidRegisterTriggerHeader";
-    case "SourceAndTriggerHeaders":
-      return "AttributionReportingIssue::SourceAndTriggerHeaders";
-    case "SourceIgnored":
-      return "AttributionReportingIssue::SourceIgnored";
-    case "TriggerIgnored":
-      return "AttributionReportingIssue::TriggerIgnored";
-    case "OsSourceIgnored":
-      return "AttributionReportingIssue::OsSourceIgnored";
-    case "OsTriggerIgnored":
-      return "AttributionReportingIssue::OsTriggerIgnored";
-    case "InvalidRegisterOsSourceHeader":
-      return "AttributionReportingIssue::InvalidRegisterOsSourceHeader";
-    case "InvalidRegisterOsTriggerHeader":
-      return "AttributionReportingIssue::InvalidRegisterOsTriggerHeader";
-    case "WebAndOsHeaders":
-      return "AttributionReportingIssue::WebAndOsHeaders";
-    case "NoWebOrOsSupport":
-      return "AttributionReportingIssue::NoWebOrOsSupport";
-    case "NavigationRegistrationWithoutTransientUserActivation":
-      return "AttributionReportingIssue::NavigationRegistrationWithoutTransientUserActivation";
-    case "InvalidInfoHeader":
-      return "AttributionReportingIssue::InvalidInfoHeader";
-    case "NoRegisterSourceHeader":
-      return "AttributionReportingIssue::NoRegisterSourceHeader";
-    case "NoRegisterTriggerHeader":
-      return "AttributionReportingIssue::NoRegisterTriggerHeader";
-    case "NoRegisterOsSourceHeader":
-      return "AttributionReportingIssue::NoRegisterOsSourceHeader";
-    case "NoRegisterOsTriggerHeader":
-      return "AttributionReportingIssue::NoRegisterOsTriggerHeader";
-    case "NavigationRegistrationUniqueScopeAlreadySet":
-      return "AttributionReportingIssue::NavigationRegistrationUniqueScopeAlreadySet";
-    default:
-      return "AttributionReportingIssue::Unknown";
-  }
-}
-var structuredHeaderLink = {
-  link: "https://tools.ietf.org/id/draft-ietf-httpbis-header-structure-15.html#rfc.section.4.2.2",
-  linkTitle: "Structured Headers RFC"
-};
-var AttributionReportingIssue = class _AttributionReportingIssue extends Issue {
-  constructor(issueDetails, issuesModel) {
-    super(getIssueCode(issueDetails), issueDetails, issuesModel);
-  }
-  getCategory() {
-    return "AttributionReporting";
-  }
-  getHeaderValidatorLink(name) {
-    const url = new URL("https://wicg.github.io/attribution-reporting-api/validate-headers");
-    url.searchParams.set("header", name);
-    const details = this.details();
-    if (details.invalidParameter) {
-      url.searchParams.set("json", details.invalidParameter);
-    }
-    return {
-      link: url.toString(),
-      linkTitle: "Header Validator"
-    };
-  }
-  getDescription() {
-    switch (this.code()) {
-      case "AttributionReportingIssue::PermissionPolicyDisabled":
-        return {
-          file: "arPermissionPolicyDisabled.md",
-          links: []
-        };
-      case "AttributionReportingIssue::UntrustworthyReportingOrigin":
-        return {
-          file: "arUntrustworthyReportingOrigin.md",
-          links: []
-        };
-      case "AttributionReportingIssue::InsecureContext":
-        return {
-          file: "arInsecureContext.md",
-          links: []
-        };
-      case "AttributionReportingIssue::InvalidRegisterSourceHeader":
-        return {
-          file: "arInvalidRegisterSourceHeader.md",
-          links: [this.getHeaderValidatorLink("source")]
-        };
-      case "AttributionReportingIssue::InvalidRegisterTriggerHeader":
-        return {
-          file: "arInvalidRegisterTriggerHeader.md",
-          links: [this.getHeaderValidatorLink("trigger")]
-        };
-      case "AttributionReportingIssue::InvalidRegisterOsSourceHeader":
-        return {
-          file: "arInvalidRegisterOsSourceHeader.md",
-          links: [this.getHeaderValidatorLink("os-source")]
-        };
-      case "AttributionReportingIssue::InvalidRegisterOsTriggerHeader":
-        return {
-          file: "arInvalidRegisterOsTriggerHeader.md",
-          links: [this.getHeaderValidatorLink("os-trigger")]
-        };
-      case "AttributionReportingIssue::SourceAndTriggerHeaders":
-        return {
-          file: "arSourceAndTriggerHeaders.md",
-          links: []
-        };
-      case "AttributionReportingIssue::WebAndOsHeaders":
-        return {
-          file: "arWebAndOsHeaders.md",
-          links: []
-        };
-      case "AttributionReportingIssue::SourceIgnored":
-        return {
-          file: "arSourceIgnored.md",
-          links: [structuredHeaderLink]
-        };
-      case "AttributionReportingIssue::TriggerIgnored":
-        return {
-          file: "arTriggerIgnored.md",
-          links: [structuredHeaderLink]
-        };
-      case "AttributionReportingIssue::OsSourceIgnored":
-        return {
-          file: "arOsSourceIgnored.md",
-          links: [structuredHeaderLink]
-        };
-      case "AttributionReportingIssue::OsTriggerIgnored":
-        return {
-          file: "arOsTriggerIgnored.md",
-          links: [structuredHeaderLink]
-        };
-      case "AttributionReportingIssue::NavigationRegistrationWithoutTransientUserActivation":
-        return {
-          file: "arNavigationRegistrationWithoutTransientUserActivation.md",
-          links: []
-        };
-      case "AttributionReportingIssue::NoWebOrOsSupport":
-        return {
-          file: "arNoWebOrOsSupport.md",
-          links: []
-        };
-      case "AttributionReportingIssue::InvalidInfoHeader":
-        return {
-          file: "arInvalidInfoHeader.md",
-          links: []
-        };
-      case "AttributionReportingIssue::NoRegisterSourceHeader":
-        return {
-          file: "arNoRegisterSourceHeader.md",
-          links: []
-        };
-      case "AttributionReportingIssue::NoRegisterTriggerHeader":
-        return {
-          file: "arNoRegisterTriggerHeader.md",
-          links: []
-        };
-      case "AttributionReportingIssue::NoRegisterOsSourceHeader":
-        return {
-          file: "arNoRegisterOsSourceHeader.md",
-          links: []
-        };
-      case "AttributionReportingIssue::NoRegisterOsTriggerHeader":
-        return {
-          file: "arNoRegisterOsTriggerHeader.md",
-          links: []
-        };
-      case "AttributionReportingIssue::NavigationRegistrationUniqueScopeAlreadySet":
-        return {
-          file: "arNavigationRegistrationUniqueScopeAlreadySet.md",
-          links: []
-        };
-      case "AttributionReportingIssue::Unknown":
-        return null;
-    }
-  }
-  primaryKey() {
-    return JSON.stringify(this.details());
-  }
-  getKind() {
-    return "PageError";
-  }
-  static fromInspectorIssue(issuesModel, inspectorIssue) {
-    const { attributionReportingIssueDetails } = inspectorIssue.details;
-    if (!attributionReportingIssueDetails) {
-      console.warn("Attribution Reporting issue without details received.");
-      return [];
-    }
-    return [new _AttributionReportingIssue(attributionReportingIssueDetails, issuesModel)];
-  }
-};
-
-// gen/front_end/models/issues_manager/CheckFormsIssuesTrigger.js
-var CheckFormsIssuesTrigger_exports = {};
-__export(CheckFormsIssuesTrigger_exports, {
-  CheckFormsIssuesTrigger: () => CheckFormsIssuesTrigger
-});
-import * as SDK from "./../../core/sdk/sdk.js";
-var checkFormsIssuesTriggerInstance = null;
-var CheckFormsIssuesTrigger = class _CheckFormsIssuesTrigger {
-  constructor() {
-    SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.Load, this.#pageLoaded, this, { scoped: true });
-    for (const model of SDK.TargetManager.TargetManager.instance().models(SDK.ResourceTreeModel.ResourceTreeModel)) {
-      if (model.target().outermostTarget() !== model.target()) {
-        continue;
-      }
-      this.#checkFormsIssues(model);
-    }
-  }
-  static instance({ forceNew } = { forceNew: false }) {
-    if (!checkFormsIssuesTriggerInstance || forceNew) {
-      checkFormsIssuesTriggerInstance = new _CheckFormsIssuesTrigger();
-    }
-    return checkFormsIssuesTriggerInstance;
-  }
-  // TODO(crbug.com/1399414): Handle response by dropping current issues in favor of new ones.
-  #checkFormsIssues(resourceTreeModel) {
-    void resourceTreeModel.target().auditsAgent().invoke_checkFormsIssues();
-  }
-  #pageLoaded(event) {
-    const { resourceTreeModel } = event.data;
-    this.#checkFormsIssues(resourceTreeModel);
-  }
-};
-
-// gen/front_end/models/issues_manager/ClientHintIssue.js
-var ClientHintIssue_exports = {};
-__export(ClientHintIssue_exports, {
-  ClientHintIssue: () => ClientHintIssue
-});
-import * as i18n3 from "./../../core/i18n/i18n.js";
 
 // gen/front_end/models/issues_manager/MarkdownIssueDescription.js
 var MarkdownIssueDescription_exports = {};
@@ -823,7 +617,7 @@ __export(CookieIssue_exports, {
   CookieIssue: () => CookieIssue,
   isCausedByThirdParty: () => isCausedByThirdParty
 });
-import * as Common2 from "./../../core/common/common.js";
+import * as Common from "./../../core/common/common.js";
 import * as i18n11 from "./../../core/i18n/i18n.js";
 import * as SDK2 from "./../../core/sdk/sdk.js";
 var UIStrings6 = {
@@ -847,6 +641,11 @@ var UIStrings6 = {
 var str_6 = i18n11.i18n.registerUIStrings("models/issues_manager/CookieIssue.ts", UIStrings6);
 var i18nLazyString4 = i18n11.i18n.getLazilyComputedLocalizedString.bind(void 0, str_6);
 var CookieIssue = class _CookieIssue extends Issue {
+  #frameManager;
+  constructor(code, issueDetails, issuesModel, issueId, frameManager) {
+    super(code, issueDetails, issuesModel, issueId);
+    this.#frameManager = frameManager;
+  }
   cookieId() {
     const details = this.details();
     if (details.cookie) {
@@ -864,13 +663,13 @@ var CookieIssue = class _CookieIssue extends Issue {
   /**
    * Returns an array of issues from a given CookieIssueDetails.
    */
-  static createIssuesFromCookieIssueDetails(cookieIssueDetails, issuesModel, issueId) {
+  static createIssuesFromCookieIssueDetails(cookieIssueDetails, issuesModel, issueId, frameManager) {
     const issues = [];
     if (cookieIssueDetails.cookieExclusionReasons && cookieIssueDetails.cookieExclusionReasons.length > 0) {
       for (const exclusionReason of cookieIssueDetails.cookieExclusionReasons) {
         const code = _CookieIssue.codeForCookieIssueDetails(exclusionReason, cookieIssueDetails.cookieWarningReasons, cookieIssueDetails.operation, cookieIssueDetails.cookieUrl);
         if (code) {
-          issues.push(new _CookieIssue(code, cookieIssueDetails, issuesModel, issueId));
+          issues.push(new _CookieIssue(code, cookieIssueDetails, issuesModel, issueId, frameManager));
         }
       }
       return issues;
@@ -879,7 +678,7 @@ var CookieIssue = class _CookieIssue extends Issue {
       for (const warningReason of cookieIssueDetails.cookieWarningReasons) {
         const code = _CookieIssue.codeForCookieIssueDetails(warningReason, [], cookieIssueDetails.operation, cookieIssueDetails.cookieUrl);
         if (code) {
-          issues.push(new _CookieIssue(code, cookieIssueDetails, issuesModel, issueId));
+          issues.push(new _CookieIssue(code, cookieIssueDetails, issuesModel, issueId, frameManager));
         }
       }
     }
@@ -894,7 +693,7 @@ var CookieIssue = class _CookieIssue extends Issue {
    * The issue code will be mapped to a CookieIssueSubCategory enum for metric purpose.
    */
   static codeForCookieIssueDetails(reason, warningReasons, operation, cookieUrl) {
-    const isURLSecure = cookieUrl && (Common2.ParsedURL.schemeIs(cookieUrl, "https:") || Common2.ParsedURL.schemeIs(cookieUrl, "wss:"));
+    const isURLSecure = cookieUrl && (Common.ParsedURL.schemeIs(cookieUrl, "https:") || Common.ParsedURL.schemeIs(cookieUrl, "wss:"));
     const secure = isURLSecure ? "Secure" : "Insecure";
     if (reason === "ExcludeSameSiteStrict" || reason === "ExcludeSameSiteLax" || reason === "ExcludeSameSiteUnspecifiedTreatedAsLax") {
       if (warningReasons && warningReasons.length > 0) {
@@ -989,7 +788,7 @@ var CookieIssue = class _CookieIssue extends Issue {
     return resolveLazyDescription(description);
   }
   isCausedByThirdParty() {
-    const outermostFrame = SDK2.FrameManager.FrameManager.instance().getOutermostFrame();
+    const outermostFrame = this.#frameManager.getOutermostFrame();
     return isCausedByThirdParty(outermostFrame, this.details().cookieUrl, this.details().siteForCookies);
   }
   getKind() {
@@ -1025,13 +824,13 @@ var CookieIssue = class _CookieIssue extends Issue {
     }
     return;
   }
-  static fromInspectorIssue(issuesModel, inspectorIssue) {
+  static fromInspectorIssue(issuesModel, inspectorIssue, frameManager) {
     const cookieIssueDetails = inspectorIssue.details.cookieIssueDetails;
     if (!cookieIssueDetails) {
       console.warn("Cookie issue without details received.");
       return [];
     }
-    return _CookieIssue.createIssuesFromCookieIssueDetails(cookieIssueDetails, issuesModel, inspectorIssue.issueId);
+    return _CookieIssue.createIssuesFromCookieIssueDetails(cookieIssueDetails, issuesModel, inspectorIssue.issueId, frameManager);
   }
   static getSubCategory(code) {
     if (code.includes("SameSite") || code.includes("Downgrade")) {
@@ -1054,7 +853,7 @@ var CookieIssue = class _CookieIssue extends Issue {
       "ExcludeThirdPartyPhaseout"
       /* Protocol.Audits.CookieExclusionReason.ExcludeThirdPartyPhaseout */
     )) {
-      return new SDK2.ConsoleModel.ConsoleMessage(issuesModel.target().model(SDK2.RuntimeModel.RuntimeModel), Common2.Console.FrontendMessageSource.ISSUE_PANEL, "warning", UIStrings6.consoleTpcdErrorMessage, {
+      return new SDK2.ConsoleModel.ConsoleMessage(issuesModel.target().model(SDK2.RuntimeModel.RuntimeModel), Common.Console.FrontendMessageSource.ISSUE_PANEL, "warning", UIStrings6.consoleTpcdErrorMessage, {
         url: this.details().request?.url,
         affectedResources: { requestId: this.details().request?.requestId, issueId: this.issueId }
       });
@@ -1072,7 +871,7 @@ function isCausedByThirdParty(outermostFrame, cookieUrl, siteForCookies) {
   if (!cookieUrl || outermostFrame.domainAndRegistry() === "") {
     return false;
   }
-  const parsedCookieUrl = Common2.ParsedURL.ParsedURL.fromString(cookieUrl);
+  const parsedCookieUrl = Common.ParsedURL.ParsedURL.fromString(cookieUrl);
   if (!parsedCookieUrl) {
     return false;
   }
@@ -1297,7 +1096,7 @@ var UIStrings7 = {
 };
 var str_7 = i18n13.i18n.registerUIStrings("models/issues_manager/CorsIssue.ts", UIStrings7);
 var i18nString3 = i18n13.i18n.getLocalizedString.bind(void 0, str_7);
-function getIssueCode2(details) {
+function getIssueCode(details) {
   switch (details.corsErrorStatus.corsError) {
     case "InvalidAllowMethodsPreflightResponse":
     case "InvalidAllowHeadersPreflightResponse":
@@ -1347,13 +1146,13 @@ function getIssueCode2(details) {
 }
 var CorsIssue = class _CorsIssue extends Issue {
   constructor(issueDetails, issuesModel, issueId) {
-    super(getIssueCode2(issueDetails), issueDetails, issuesModel, issueId);
+    super(getIssueCode(issueDetails), issueDetails, issuesModel, issueId);
   }
   getCategory() {
     return "Cors";
   }
   getDescription() {
-    switch (getIssueCode2(this.details())) {
+    switch (getIssueCode(this.details())) {
       case "CorsIssue::InvalidHeaders":
         return {
           file: "corsInvalidHeaderValues.md",
@@ -3394,22 +3193,85 @@ __export(IssueAggregator_exports, {
   AggregatedIssue: () => AggregatedIssue,
   IssueAggregator: () => IssueAggregator
 });
-import * as Common3 from "./../../core/common/common.js";
+import * as Common2 from "./../../core/common/common.js";
+
+// gen/front_end/models/issues_manager/LazyLoadImageIssue.js
+var LazyLoadImageIssue_exports = {};
+__export(LazyLoadImageIssue_exports, {
+  LazyLoadImageIssue: () => LazyLoadImageIssue
+});
+import * as i18n27 from "./../../core/i18n/i18n.js";
+var UIStrings15 = {
+  /**
+   * @description Link title for the lazy-loaded image with zero size issue in the Issues panel.
+   */
+  lazyLoadImageZeroSize: "Lazy-loaded images should have explicit dimensions"
+};
+var str_14 = i18n27.i18n.registerUIStrings("models/issues_manager/LazyLoadImageIssue.ts", UIStrings15);
+var i18nString5 = i18n27.i18n.getLocalizedString.bind(void 0, str_14);
+var LazyLoadImageIssue = class _LazyLoadImageIssue extends Issue {
+  constructor(issueDetails, issuesModel) {
+    const umaCode = ["LazyLoadImageIssue", "ZeroSize"].join("::");
+    super({ code: "LazyLoadImageIssue", umaCode }, issueDetails, issuesModel);
+  }
+  primaryKey() {
+    return `${this.code()}-(${this.details().nodeId})-(${this.details().url})`;
+  }
+  getCategory() {
+    return "Other";
+  }
+  getDescription() {
+    return {
+      file: "lazyLoadImageZeroSize.md",
+      links: [
+        {
+          link: "https://web.dev/articles/browser-level-image-lazy-loading/#dimension-attributes",
+          linkTitle: i18nString5(UIStrings15.lazyLoadImageZeroSize)
+        }
+      ]
+    };
+  }
+  elementCount() {
+    return this.details().nodeId ? 1 : 0;
+  }
+  elements() {
+    if (this.details().nodeId) {
+      const target = this.model()?.target();
+      return [{
+        backendNodeId: this.details().nodeId,
+        nodeName: "img",
+        target: target || null
+      }];
+    }
+    return [];
+  }
+  getKind() {
+    return "Improvement";
+  }
+  static fromInspectorIssue(issuesModel, inspectorIssue) {
+    const details = inspectorIssue.details.lazyLoadImageIssueDetails;
+    if (!details) {
+      console.warn("Lazy-loaded image issue without details received.");
+      return [];
+    }
+    return [new _LazyLoadImageIssue(details, issuesModel)];
+  }
+};
 
 // gen/front_end/models/issues_manager/MixedContentIssue.js
 var MixedContentIssue_exports = {};
 __export(MixedContentIssue_exports, {
   MixedContentIssue: () => MixedContentIssue
 });
-import * as i18n27 from "./../../core/i18n/i18n.js";
-var UIStrings15 = {
+import * as i18n29 from "./../../core/i18n/i18n.js";
+var UIStrings16 = {
   /**
    * @description Label for the link for mixed content issues.
    */
   preventingMixedContent: "Preventing mixed content"
 };
-var str_14 = i18n27.i18n.registerUIStrings("models/issues_manager/MixedContentIssue.ts", UIStrings15);
-var i18nString5 = i18n27.i18n.getLocalizedString.bind(void 0, str_14);
+var str_15 = i18n29.i18n.registerUIStrings("models/issues_manager/MixedContentIssue.ts", UIStrings16);
+var i18nString6 = i18n29.i18n.getLocalizedString.bind(void 0, str_15);
 var MixedContentIssue = class _MixedContentIssue extends Issue {
   constructor(issueDetails, issuesModel) {
     super("MixedContentIssue", issueDetails, issuesModel);
@@ -3427,7 +3289,7 @@ var MixedContentIssue = class _MixedContentIssue extends Issue {
   getDescription() {
     return {
       file: "mixedContent.md",
-      links: [{ link: "https://web.dev/what-is-mixed-content/", linkTitle: i18nString5(UIStrings15.preventingMixedContent) }]
+      links: [{ link: "https://web.dev/what-is-mixed-content/", linkTitle: i18nString6(UIStrings16.preventingMixedContent) }]
     };
   }
   primaryKey() {
@@ -3458,8 +3320,8 @@ var PartitioningBlobURLIssue_exports = {};
 __export(PartitioningBlobURLIssue_exports, {
   PartitioningBlobURLIssue: () => PartitioningBlobURLIssue
 });
-import * as i18n29 from "./../../core/i18n/i18n.js";
-var UIStrings16 = {
+import * as i18n31 from "./../../core/i18n/i18n.js";
+var UIStrings17 = {
   /**
    * @description Title for Partitioning BlobURL explainer URL link.
    */
@@ -3469,8 +3331,8 @@ var UIStrings16 = {
    */
   chromeStatusEntry: "Chrome Status entry"
 };
-var str_15 = i18n29.i18n.registerUIStrings("models/issues_manager/PartitioningBlobURLIssue.ts", UIStrings16);
-var i18nString6 = i18n29.i18n.getLocalizedString.bind(void 0, str_15);
+var str_16 = i18n31.i18n.registerUIStrings("models/issues_manager/PartitioningBlobURLIssue.ts", UIStrings17);
+var i18nString7 = i18n31.i18n.getLocalizedString.bind(void 0, str_16);
 var PartitioningBlobURLIssue = class _PartitioningBlobURLIssue extends Issue {
   constructor(issueDetails, issuesModel) {
     super("PartitioningBlobURLIssue", issueDetails, issuesModel);
@@ -3485,11 +3347,11 @@ var PartitioningBlobURLIssue = class _PartitioningBlobURLIssue extends Issue {
       links: [
         {
           link: "https://developers.google.com/privacy-sandbox/cookies/storage-partitioning",
-          linkTitle: i18nString6(UIStrings16.partitioningBlobURL)
+          linkTitle: i18nString7(UIStrings17.partitioningBlobURL)
         },
         {
           link: "https://chromestatus.com/feature/5130361898795008",
-          linkTitle: i18nString6(UIStrings16.chromeStatusEntry)
+          linkTitle: i18nString7(UIStrings17.chromeStatusEntry)
         }
       ]
     };
@@ -3760,15 +3622,15 @@ var QuirksModeIssue_exports = {};
 __export(QuirksModeIssue_exports, {
   QuirksModeIssue: () => QuirksModeIssue
 });
-import * as i18n31 from "./../../core/i18n/i18n.js";
-var UIStrings17 = {
+import * as i18n33 from "./../../core/i18n/i18n.js";
+var UIStrings18 = {
   /**
    * @description Link title for the Quirks Mode issue in the Issues panel.
    */
   documentCompatibilityMode: "Document compatibility mode"
 };
-var str_16 = i18n31.i18n.registerUIStrings("models/issues_manager/QuirksModeIssue.ts", UIStrings17);
-var i18nString7 = i18n31.i18n.getLocalizedString.bind(void 0, str_16);
+var str_17 = i18n33.i18n.registerUIStrings("models/issues_manager/QuirksModeIssue.ts", UIStrings18);
+var i18nString8 = i18n33.i18n.getLocalizedString.bind(void 0, str_17);
 var QuirksModeIssue = class _QuirksModeIssue extends Issue {
   constructor(issueDetails, issuesModel) {
     const mode = issueDetails.isLimitedQuirksMode ? "LimitedQuirksMode" : "QuirksMode";
@@ -3787,7 +3649,7 @@ var QuirksModeIssue = class _QuirksModeIssue extends Issue {
       links: [
         {
           link: "https://web.dev/doctype/",
-          linkTitle: i18nString7(UIStrings17.documentCompatibilityMode)
+          linkTitle: i18nString8(UIStrings18.documentCompatibilityMode)
         }
       ]
     };
@@ -3810,15 +3672,15 @@ var SelectivePermissionsInterventionIssue_exports = {};
 __export(SelectivePermissionsInterventionIssue_exports, {
   SelectivePermissionsInterventionIssue: () => SelectivePermissionsInterventionIssue
 });
-import * as i18n33 from "./../../core/i18n/i18n.js";
-var UIStrings18 = {
+import * as i18n35 from "./../../core/i18n/i18n.js";
+var UIStrings19 = {
   /**
    * @description Title for a learn more link in selective permissions intervention issue description.
    */
   selectivePermissionsIntervention: "Selective permissions intervention"
 };
-var str_17 = i18n33.i18n.registerUIStrings("models/issues_manager/SelectivePermissionsInterventionIssue.ts", UIStrings18);
-var i18nString8 = i18n33.i18n.getLocalizedString.bind(void 0, str_17);
+var str_18 = i18n35.i18n.registerUIStrings("models/issues_manager/SelectivePermissionsInterventionIssue.ts", UIStrings19);
+var i18nString9 = i18n35.i18n.getLocalizedString.bind(void 0, str_18);
 var SelectivePermissionsInterventionIssue = class _SelectivePermissionsInterventionIssue extends Issue {
   constructor(issueDetails, issuesModel) {
     super("SelectivePermissionsInterventionIssue", issueDetails, issuesModel);
@@ -3832,7 +3694,7 @@ var SelectivePermissionsInterventionIssue = class _SelectivePermissionsIntervent
       links: [
         {
           link: "https://crbug.com/435223477",
-          linkTitle: i18nString8(UIStrings18.selectivePermissionsIntervention)
+          linkTitle: i18nString9(UIStrings19.selectivePermissionsIntervention)
         }
       ]
     };
@@ -3858,16 +3720,16 @@ var SharedArrayBufferIssue_exports = {};
 __export(SharedArrayBufferIssue_exports, {
   SharedArrayBufferIssue: () => SharedArrayBufferIssue
 });
-import * as i18n35 from "./../../core/i18n/i18n.js";
-var UIStrings19 = {
+import * as i18n37 from "./../../core/i18n/i18n.js";
+var UIStrings20 = {
   /**
    * @description Label for the link for SharedArrayBuffer issues. The full text reads "Enabling SharedArrayBuffer"
    * and is the title of an article that describes how to enable a JavaScript feature called SharedArrayBuffer.
    */
   enablingSharedArrayBuffer: "Enabling SharedArrayBuffer"
 };
-var str_18 = i18n35.i18n.registerUIStrings("models/issues_manager/SharedArrayBufferIssue.ts", UIStrings19);
-var i18nString9 = i18n35.i18n.getLocalizedString.bind(void 0, str_18);
+var str_19 = i18n37.i18n.registerUIStrings("models/issues_manager/SharedArrayBufferIssue.ts", UIStrings20);
+var i18nString10 = i18n37.i18n.getLocalizedString.bind(void 0, str_19);
 var SharedArrayBufferIssue = class _SharedArrayBufferIssue extends Issue {
   constructor(issueDetails, issuesModel) {
     const umaCode = ["SharedArrayBufferIssue", issueDetails.type].join("::");
@@ -3881,7 +3743,7 @@ var SharedArrayBufferIssue = class _SharedArrayBufferIssue extends Issue {
       file: "sharedArrayBuffer.md",
       links: [{
         link: "https://developer.chrome.com/blog/enabling-shared-array-buffer/",
-        linkTitle: i18nString9(UIStrings19.enablingSharedArrayBuffer)
+        linkTitle: i18nString10(UIStrings20.enablingSharedArrayBuffer)
       }]
     };
   }
@@ -3923,10 +3785,10 @@ var AggregatedIssue = class extends Issue {
   #mixedContentIssues = /* @__PURE__ */ new Set();
   #partitioningBlobURLIssues = /* @__PURE__ */ new Set();
   #permissionElementIssues = /* @__PURE__ */ new Set();
+  #lazyLoadImageIssues = /* @__PURE__ */ new Set();
   #selectivePermissionsInterventionIssues = /* @__PURE__ */ new Set();
   #sharedArrayBufferIssues = /* @__PURE__ */ new Set();
   #quirksModeIssues = /* @__PURE__ */ new Set();
-  #attributionReportingIssues = /* @__PURE__ */ new Set();
   #genericIssues = /* @__PURE__ */ new Set();
   #elementAccessibilityIssues = /* @__PURE__ */ new Set();
   #representative;
@@ -3990,9 +3852,6 @@ var AggregatedIssue = class extends Issue {
   getQuirksModeIssues() {
     return this.#quirksModeIssues;
   }
-  getAttributionReportingIssues() {
-    return this.#attributionReportingIssues;
-  }
   getGenericIssues() {
     return this.#genericIssues;
   }
@@ -4019,6 +3878,9 @@ var AggregatedIssue = class extends Issue {
   }
   getPermissionElementIssues() {
     return this.#permissionElementIssues;
+  }
+  getLazyLoadImageIssues() {
+    return this.#lazyLoadImageIssues;
   }
   /**
    * Produces a primary key for a cookie. Use this instead of `JSON.stringify` in
@@ -4096,9 +3958,6 @@ var AggregatedIssue = class extends Issue {
     if (issue instanceof QuirksModeIssue) {
       this.#quirksModeIssues.add(issue);
     }
-    if (issue instanceof AttributionReportingIssue) {
-      this.#attributionReportingIssues.add(issue);
-    }
     if (issue instanceof GenericIssue) {
       this.#genericIssues.add(issue);
     }
@@ -4110,6 +3969,9 @@ var AggregatedIssue = class extends Issue {
     }
     if (issue instanceof PermissionElementIssue) {
       this.#permissionElementIssues.add(issue);
+    }
+    if (issue instanceof LazyLoadImageIssue) {
+      this.#lazyLoadImageIssues.add(issue);
     }
     if (issue instanceof SelectivePermissionsInterventionIssue) {
       this.#selectivePermissionsInterventionIssues.add(issue);
@@ -4128,7 +3990,7 @@ var AggregatedIssue = class extends Issue {
     throw new Error("Should not call setHidden on aggregatedIssue");
   }
 };
-var IssueAggregator = class extends Common3.ObjectWrapper.ObjectWrapper {
+var IssueAggregator = class extends Common2.ObjectWrapper.ObjectWrapper {
   issuesManager;
   #aggregatedIssuesByKey = /* @__PURE__ */ new Map();
   #hiddenAggregatedIssuesByKey = /* @__PURE__ */ new Map();
@@ -4210,7 +4072,38 @@ var IssueResolver_exports = {};
 __export(IssueResolver_exports, {
   IssueResolver: () => IssueResolver
 });
-import * as Common6 from "./../../core/common/common.js";
+import * as Common3 from "./../../core/common/common.js";
+var IssueResolver = class extends Common3.ResolverBase.ResolverBase {
+  #issuesListener = null;
+  #issuesManager;
+  constructor(issuesManager) {
+    super();
+    this.#issuesManager = issuesManager;
+  }
+  getForId(id) {
+    return this.#issuesManager.getIssueById(id) || null;
+  }
+  #onIssueAdded(event) {
+    const { issue } = event.data;
+    const id = issue.getIssueId();
+    if (id) {
+      this.onResolve(id, issue);
+    }
+  }
+  startListening() {
+    if (this.#issuesListener) {
+      return;
+    }
+    this.#issuesListener = this.#issuesManager.addEventListener("IssueAdded", this.#onIssueAdded, this);
+  }
+  stopListening() {
+    if (!this.#issuesListener) {
+      return;
+    }
+    Common3.EventTarget.removeEventListeners([this.#issuesListener]);
+    this.#issuesListener = null;
+  }
+};
 
 // gen/front_end/models/issues_manager/IssuesManager.js
 var IssuesManager_exports = {};
@@ -4222,18 +4115,19 @@ __export(IssuesManager_exports, {
   isIssueCodeSupported: () => isIssueCodeSupported
 });
 import * as Common5 from "./../../core/common/common.js";
+import * as Root2 from "./../../core/root/root.js";
 import * as SDK3 from "./../../core/sdk/sdk.js";
 
 // gen/front_end/models/issues_manager/BounceTrackingIssue.js
-import * as i18n37 from "./../../core/i18n/i18n.js";
-var UIStrings20 = {
+import * as i18n39 from "./../../core/i18n/i18n.js";
+var UIStrings21 = {
   /**
    * @description Title for Bounce Tracking Mitigation explainer URL link.
    */
   bounceTrackingMitigations: "Bounce tracking mitigations"
 };
-var str_19 = i18n37.i18n.registerUIStrings("models/issues_manager/BounceTrackingIssue.ts", UIStrings20);
-var i18nString10 = i18n37.i18n.getLocalizedString.bind(void 0, str_19);
+var str_20 = i18n39.i18n.registerUIStrings("models/issues_manager/BounceTrackingIssue.ts", UIStrings21);
+var i18nString11 = i18n39.i18n.getLocalizedString.bind(void 0, str_20);
 var BounceTrackingIssue = class _BounceTrackingIssue extends Issue {
   constructor(issueDetails, issuesModel) {
     super("BounceTrackingIssue", issueDetails, issuesModel);
@@ -4247,7 +4141,7 @@ var BounceTrackingIssue = class _BounceTrackingIssue extends Issue {
       links: [
         {
           link: "https://privacycg.github.io/nav-tracking-mitigations/#bounce-tracking-mitigations",
-          linkTitle: i18nString10(UIStrings20.bounceTrackingMitigations)
+          linkTitle: i18nString11(UIStrings21.bounceTrackingMitigations)
         }
       ]
     };
@@ -4272,15 +4166,15 @@ var BounceTrackingIssue = class _BounceTrackingIssue extends Issue {
 };
 
 // gen/front_end/models/issues_manager/FederatedAuthRequestIssue.js
-import * as i18n39 from "./../../core/i18n/i18n.js";
-var UIStrings21 = {
+import * as i18n41 from "./../../core/i18n/i18n.js";
+var UIStrings22 = {
   /**
    * @description Title for Federated Credential Management API specification URL link.
    */
   fedCm: "Federated Credential Management API"
 };
-var str_20 = i18n39.i18n.registerUIStrings("models/issues_manager/FederatedAuthRequestIssue.ts", UIStrings21);
-var i18nLazyString10 = i18n39.i18n.getLazilyComputedLocalizedString.bind(void 0, str_20);
+var str_21 = i18n41.i18n.registerUIStrings("models/issues_manager/FederatedAuthRequestIssue.ts", UIStrings22);
+var i18nLazyString10 = i18n41.i18n.getLazilyComputedLocalizedString.bind(void 0, str_21);
 var FederatedAuthRequestIssue = class _FederatedAuthRequestIssue extends Issue {
   constructor(issueDetails, issuesModel) {
     super({
@@ -4323,7 +4217,7 @@ var issueDescriptions9 = /* @__PURE__ */ new Map([
       file: "federatedAuthRequestTooManyRequests.md",
       links: [{
         link: "https://fedidcg.github.io/FedCM/",
-        linkTitle: i18nLazyString10(UIStrings21.fedCm)
+        linkTitle: i18nLazyString10(UIStrings22.fedCm)
       }]
     }
   ],
@@ -4333,7 +4227,7 @@ var issueDescriptions9 = /* @__PURE__ */ new Map([
       file: "federatedAuthRequestManifestHttpNotFound.md",
       links: [{
         link: "https://fedidcg.github.io/FedCM/",
-        linkTitle: i18nLazyString10(UIStrings21.fedCm)
+        linkTitle: i18nLazyString10(UIStrings22.fedCm)
       }]
     }
   ],
@@ -4343,7 +4237,7 @@ var issueDescriptions9 = /* @__PURE__ */ new Map([
       file: "federatedAuthRequestManifestNoResponse.md",
       links: [{
         link: "https://fedidcg.github.io/FedCM/",
-        linkTitle: i18nLazyString10(UIStrings21.fedCm)
+        linkTitle: i18nLazyString10(UIStrings22.fedCm)
       }]
     }
   ],
@@ -4353,7 +4247,7 @@ var issueDescriptions9 = /* @__PURE__ */ new Map([
       file: "federatedAuthRequestManifestInvalidResponse.md",
       links: [{
         link: "https://fedidcg.github.io/FedCM/",
-        linkTitle: i18nLazyString10(UIStrings21.fedCm)
+        linkTitle: i18nLazyString10(UIStrings22.fedCm)
       }]
     }
   ],
@@ -4363,7 +4257,7 @@ var issueDescriptions9 = /* @__PURE__ */ new Map([
       file: "federatedAuthRequestErrorFetchingSignin.md",
       links: [{
         link: "https://fedidcg.github.io/FedCM/",
-        linkTitle: i18nLazyString10(UIStrings21.fedCm)
+        linkTitle: i18nLazyString10(UIStrings22.fedCm)
       }]
     }
   ],
@@ -4373,7 +4267,7 @@ var issueDescriptions9 = /* @__PURE__ */ new Map([
       file: "federatedAuthRequestInvalidSigninResponse.md",
       links: [{
         link: "https://fedidcg.github.io/FedCM/",
-        linkTitle: i18nLazyString10(UIStrings21.fedCm)
+        linkTitle: i18nLazyString10(UIStrings22.fedCm)
       }]
     }
   ],
@@ -4383,7 +4277,7 @@ var issueDescriptions9 = /* @__PURE__ */ new Map([
       file: "federatedAuthRequestAccountsHttpNotFound.md",
       links: [{
         link: "https://fedidcg.github.io/FedCM/",
-        linkTitle: i18nLazyString10(UIStrings21.fedCm)
+        linkTitle: i18nLazyString10(UIStrings22.fedCm)
       }]
     }
   ],
@@ -4393,7 +4287,7 @@ var issueDescriptions9 = /* @__PURE__ */ new Map([
       file: "federatedAuthRequestAccountsNoResponse.md",
       links: [{
         link: "https://fedidcg.github.io/FedCM/",
-        linkTitle: i18nLazyString10(UIStrings21.fedCm)
+        linkTitle: i18nLazyString10(UIStrings22.fedCm)
       }]
     }
   ],
@@ -4403,7 +4297,7 @@ var issueDescriptions9 = /* @__PURE__ */ new Map([
       file: "federatedAuthRequestAccountsInvalidResponse.md",
       links: [{
         link: "https://fedidcg.github.io/FedCM/",
-        linkTitle: i18nLazyString10(UIStrings21.fedCm)
+        linkTitle: i18nLazyString10(UIStrings22.fedCm)
       }]
     }
   ],
@@ -4413,7 +4307,7 @@ var issueDescriptions9 = /* @__PURE__ */ new Map([
       file: "federatedAuthRequestIdTokenHttpNotFound.md",
       links: [{
         link: "https://fedidcg.github.io/FedCM/",
-        linkTitle: i18nLazyString10(UIStrings21.fedCm)
+        linkTitle: i18nLazyString10(UIStrings22.fedCm)
       }]
     }
   ],
@@ -4423,7 +4317,7 @@ var issueDescriptions9 = /* @__PURE__ */ new Map([
       file: "federatedAuthRequestIdTokenNoResponse.md",
       links: [{
         link: "https://fedidcg.github.io/FedCM/",
-        linkTitle: i18nLazyString10(UIStrings21.fedCm)
+        linkTitle: i18nLazyString10(UIStrings22.fedCm)
       }]
     }
   ],
@@ -4433,7 +4327,7 @@ var issueDescriptions9 = /* @__PURE__ */ new Map([
       file: "federatedAuthRequestIdTokenInvalidResponse.md",
       links: [{
         link: "https://fedidcg.github.io/FedCM/",
-        linkTitle: i18nLazyString10(UIStrings21.fedCm)
+        linkTitle: i18nLazyString10(UIStrings22.fedCm)
       }]
     }
   ],
@@ -4443,7 +4337,7 @@ var issueDescriptions9 = /* @__PURE__ */ new Map([
       file: "federatedAuthRequestIdTokenInvalidRequest.md",
       links: [{
         link: "https://fedidcg.github.io/FedCM/",
-        linkTitle: i18nLazyString10(UIStrings21.fedCm)
+        linkTitle: i18nLazyString10(UIStrings22.fedCm)
       }]
     }
   ],
@@ -4453,7 +4347,7 @@ var issueDescriptions9 = /* @__PURE__ */ new Map([
       file: "federatedAuthRequestErrorIdToken.md",
       links: [{
         link: "https://fedidcg.github.io/FedCM/",
-        linkTitle: i18nLazyString10(UIStrings21.fedCm)
+        linkTitle: i18nLazyString10(UIStrings22.fedCm)
       }]
     }
   ],
@@ -4463,7 +4357,7 @@ var issueDescriptions9 = /* @__PURE__ */ new Map([
       file: "federatedAuthRequestCanceled.md",
       links: [{
         link: "https://fedidcg.github.io/FedCM/",
-        linkTitle: i18nLazyString10(UIStrings21.fedCm)
+        linkTitle: i18nLazyString10(UIStrings22.fedCm)
       }]
     }
   ]
@@ -4534,16 +4428,16 @@ var SharedDictionaryIssue_exports = {};
 __export(SharedDictionaryIssue_exports, {
   SharedDictionaryIssue: () => SharedDictionaryIssue
 });
-import * as i18n41 from "./../../core/i18n/i18n.js";
-var UIStrings22 = {
+import * as i18n43 from "./../../core/i18n/i18n.js";
+var UIStrings23 = {
   /**
    * @description Title for Compression Dictionary Transport specification URL link.
    */
   compressionDictionaryTransport: "Compression Dictionary Transport"
 };
-var str_21 = i18n41.i18n.registerUIStrings("models/issues_manager/SharedDictionaryIssue.ts", UIStrings22);
-var i18nLazyString11 = i18n41.i18n.getLazilyComputedLocalizedString.bind(void 0, str_21);
-function getIssueCode3(details) {
+var str_22 = i18n43.i18n.registerUIStrings("models/issues_manager/SharedDictionaryIssue.ts", UIStrings23);
+var i18nLazyString11 = i18n43.i18n.getLazilyComputedLocalizedString.bind(void 0, str_22);
+function getIssueCode2(details) {
   switch (details.sharedDictionaryError) {
     case "UseErrorCrossOriginNoCorsRequest":
       return "SharedDictionaryIssue::UseErrorCrossOriginNoCorsRequest";
@@ -4602,7 +4496,7 @@ function getIssueCode3(details) {
 var SharedDictionaryIssue = class _SharedDictionaryIssue extends Issue {
   constructor(issueDetails, issuesModel) {
     super({
-      code: getIssueCode3(issueDetails),
+      code: getIssueCode2(issueDetails),
       umaCode: [
         "SharedDictionaryIssue",
         issueDetails.sharedDictionaryError
@@ -4642,7 +4536,7 @@ var SharedDictionaryIssue = class _SharedDictionaryIssue extends Issue {
 };
 var specLinks = [{
   link: "https://datatracker.ietf.org/doc/draft-ietf-httpbis-compression-dictionary/",
-  linkTitle: i18nLazyString11(UIStrings22.compressionDictionaryTransport)
+  linkTitle: i18nLazyString11(UIStrings23.compressionDictionaryTransport)
 }];
 var issueDescriptions10 = /* @__PURE__ */ new Map([
   [
@@ -4970,8 +4864,8 @@ var SRIMessageSignatureIssue_exports = {};
 __export(SRIMessageSignatureIssue_exports, {
   SRIMessageSignatureIssue: () => SRIMessageSignatureIssue
 });
-import * as i18n43 from "./../../core/i18n/i18n.js";
-var UIStrings23 = {
+import * as i18n45 from "./../../core/i18n/i18n.js";
+var UIStrings24 = {
   /**
    * @description Title for HTTP Message Signatures specification URL.
    */
@@ -4981,8 +4875,8 @@ var UIStrings23 = {
    */
   signatureBasedIntegrity: "Signature-based Integrity"
 };
-var str_22 = i18n43.i18n.registerUIStrings("models/issues_manager/SRIMessageSignatureIssue.ts", UIStrings23);
-var i18nLazyString12 = i18n43.i18n.getLazilyComputedLocalizedString.bind(void 0, str_22);
+var str_23 = i18n45.i18n.registerUIStrings("models/issues_manager/SRIMessageSignatureIssue.ts", UIStrings24);
+var i18nLazyString12 = i18n45.i18n.getLazilyComputedLocalizedString.bind(void 0, str_23);
 function generateGroupingIssueCode(details) {
   const issueCode = `${"SRIMessageSignatureIssue"}::${details.error}`;
   if (details.error === "ValidationFailedSignatureMismatch") {
@@ -5011,11 +4905,11 @@ var SRIMessageSignatureIssue = class _SRIMessageSignatureIssue extends Issue {
       links: [
         {
           link: "https://www.rfc-editor.org/rfc/rfc9421.html",
-          linkTitle: i18nLazyString12(UIStrings23.httpMessageSignatures)
+          linkTitle: i18nLazyString12(UIStrings24.httpMessageSignatures)
         },
         {
           link: "https://wicg.github.io/signature-based-sri/",
-          linkTitle: i18nLazyString12(UIStrings23.signatureBasedIntegrity)
+          linkTitle: i18nLazyString12(UIStrings24.signatureBasedIntegrity)
         }
       ],
       substitutions: /* @__PURE__ */ new Map()
@@ -5055,8 +4949,8 @@ var UnencodedDigestIssue_exports = {};
 __export(UnencodedDigestIssue_exports, {
   UnencodedDigestIssue: () => UnencodedDigestIssue
 });
-import * as i18n45 from "./../../core/i18n/i18n.js";
-var UIStrings24 = {
+import * as i18n47 from "./../../core/i18n/i18n.js";
+var UIStrings25 = {
   /**
    * @description Title for HTTP Unencoded Digest specification URL.
    */
@@ -5066,8 +4960,8 @@ var UIStrings24 = {
    */
   integrityIntegration: "Server-initiated integrity checks"
 };
-var str_23 = i18n45.i18n.registerUIStrings("models/issues_manager/UnencodedDigestIssue.ts", UIStrings24);
-var i18nLazyString13 = i18n45.i18n.getLazilyComputedLocalizedString.bind(void 0, str_23);
+var str_24 = i18n47.i18n.registerUIStrings("models/issues_manager/UnencodedDigestIssue.ts", UIStrings25);
+var i18nLazyString13 = i18n47.i18n.getLazilyComputedLocalizedString.bind(void 0, str_24);
 var UnencodedDigestIssue = class _UnencodedDigestIssue extends Issue {
   constructor(issueDetails, issuesModel) {
     super({
@@ -5084,11 +4978,11 @@ var UnencodedDigestIssue = class _UnencodedDigestIssue extends Issue {
       links: [
         {
           link: "https://www.ietf.org/archive/id/draft-ietf-httpbis-unencoded-digest-01.html",
-          linkTitle: i18nLazyString13(UIStrings24.unencodedDigestHeader)
+          linkTitle: i18nLazyString13(UIStrings25.unencodedDigestHeader)
         },
         {
           link: "https://wicg.github.io/signature-based-sri/#unencoded-digest-validation",
-          linkTitle: i18nLazyString13(UIStrings24.integrityIntegration)
+          linkTitle: i18nLazyString13(UIStrings25.integrityIntegration)
         }
       ]
     };
@@ -5114,7 +5008,6 @@ var UnencodedDigestIssue = class _UnencodedDigestIssue extends Issue {
 };
 
 // gen/front_end/models/issues_manager/IssuesManager.js
-var issuesManagerInstance = null;
 function createIssuesForBlockedByResponseIssue(issuesModel, inspectorIssue) {
   const blockedByResponseIssueDetails = inspectorIssue.details.blockedByResponseIssueDetails;
   if (!blockedByResponseIssueDetails) {
@@ -5159,10 +5052,6 @@ var issueCodeHandlers = /* @__PURE__ */ new Map([
   [
     "QuirksModeIssue",
     QuirksModeIssue.fromInspectorIssue
-  ],
-  [
-    "AttributionReportingIssue",
-    AttributionReportingIssue.fromInspectorIssue
   ],
   [
     "GenericIssue",
@@ -5227,15 +5116,19 @@ var issueCodeHandlers = /* @__PURE__ */ new Map([
   [
     "SelectivePermissionsInterventionIssue",
     SelectivePermissionsInterventionIssue.fromInspectorIssue
+  ],
+  [
+    "LazyLoadImageIssue",
+    LazyLoadImageIssue.fromInspectorIssue
   ]
 ]);
 function isIssueCodeSupported(code) {
   return issueCodeHandlers.has(code);
 }
-function createIssuesFromProtocolIssue(issuesModel, inspectorIssue) {
+function createIssuesFromProtocolIssue(issuesModel, inspectorIssue, frameManager = SDK3.FrameManager.FrameManager.instance()) {
   const handler = issueCodeHandlers.get(inspectorIssue.code);
   if (handler) {
-    return handler(issuesModel, inspectorIssue);
+    return handler(issuesModel, inspectorIssue, frameManager);
   }
   console.warn(`No handler registered for issue code ${inspectorIssue.code}`);
   return [];
@@ -5244,8 +5137,8 @@ function defaultHideIssueByCodeSetting() {
   const setting = {};
   return setting;
 }
-function getHideIssueByCodeSetting() {
-  return Common5.Settings.Settings.instance().createSetting("hide-issue-by-code-setting-experiment-2021", defaultHideIssueByCodeSetting());
+function getHideIssueByCodeSetting(settings = Common5.Settings.Settings.instance()) {
+  return settings.createSetting("hide-issue-by-code-setting-experiment-2021", defaultHideIssueByCodeSetting());
 }
 var IssuesManager = class _IssuesManager extends Common5.ObjectWrapper.ObjectWrapper {
   showThirdPartyIssuesSetting;
@@ -5259,18 +5152,20 @@ var IssuesManager = class _IssuesManager extends Common5.ObjectWrapper.ObjectWra
   #issuesById = /* @__PURE__ */ new Map();
   #issuesByOutermostTarget = /* @__PURE__ */ new Map();
   #frameManager;
-  constructor(showThirdPartyIssuesSetting, hideIssueSetting, frameManager = SDK3.FrameManager.FrameManager.instance()) {
+  #targetManager;
+  constructor(showThirdPartyIssuesSetting, hideIssueSetting, frameManager = SDK3.FrameManager.FrameManager.instance(), targetManager = SDK3.TargetManager.TargetManager.instance()) {
     super();
     this.showThirdPartyIssuesSetting = showThirdPartyIssuesSetting;
     this.hideIssueSetting = hideIssueSetting;
     this.#frameManager = frameManager;
+    this.#targetManager = targetManager;
     new SourceFrameIssuesManager(this);
-    SDK3.TargetManager.TargetManager.instance().observeModels(SDK3.IssuesModel.IssuesModel, this);
-    SDK3.TargetManager.TargetManager.instance().addModelListener(SDK3.ResourceTreeModel.ResourceTreeModel, SDK3.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
+    this.#targetManager.observeModels(SDK3.IssuesModel.IssuesModel, this);
+    this.#targetManager.addModelListener(SDK3.ResourceTreeModel.ResourceTreeModel, SDK3.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
     this.#frameManager.addEventListener("FrameAddedToTarget", this.#onFrameAddedToTarget, this);
     this.showThirdPartyIssuesSetting?.addChangeListener(() => this.#updateFilteredIssues());
     this.hideIssueSetting?.addChangeListener(() => this.#updateFilteredIssues());
-    SDK3.TargetManager.TargetManager.instance().observeTargets({
+    this.#targetManager.observeTargets({
       targetAdded: (target) => {
         if (target.outermostTarget() === target) {
           this.#updateFilteredIssues();
@@ -5284,16 +5179,16 @@ var IssuesManager = class _IssuesManager extends Common5.ObjectWrapper.ObjectWra
     forceNew: false,
     ensureFirst: false
   }) {
-    if (issuesManagerInstance && opts.ensureFirst) {
+    if (Root2.DevToolsContext.globalInstance().has(_IssuesManager) && opts.ensureFirst) {
       throw new Error('IssuesManager was already created. Either set "ensureFirst" to false or make sure that this invocation is really the first one.');
     }
-    if (!issuesManagerInstance || opts.forceNew) {
-      issuesManagerInstance = new _IssuesManager(opts.showThirdPartyIssuesSetting, opts.hideIssueSetting, opts.frameManager);
+    if (!Root2.DevToolsContext.globalInstance().has(_IssuesManager) || opts.forceNew) {
+      Root2.DevToolsContext.globalInstance().set(_IssuesManager, new _IssuesManager(opts.showThirdPartyIssuesSetting, opts.hideIssueSetting, opts.frameManager));
     }
-    return issuesManagerInstance;
+    return Root2.DevToolsContext.globalInstance().get(_IssuesManager);
   }
   static removeInstance() {
-    issuesManagerInstance = null;
+    Root2.DevToolsContext.globalInstance().delete(_IssuesManager);
   }
   #onPrimaryPageChanged(event) {
     const { frame, type } = event.data;
@@ -5315,7 +5210,7 @@ var IssuesManager = class _IssuesManager extends Common5.ObjectWrapper.ObjectWra
   }
   #onFrameAddedToTarget(event) {
     const { frame } = event.data;
-    if (frame.isOutermostFrame() && SDK3.TargetManager.TargetManager.instance().isInScope(frame.resourceTreeModel())) {
+    if (frame.isOutermostFrame() && this.#targetManager.isInScope(frame.resourceTreeModel())) {
       this.#updateFilteredIssues();
     }
   }
@@ -5331,7 +5226,7 @@ var IssuesManager = class _IssuesManager extends Common5.ObjectWrapper.ObjectWra
   }
   #onIssueAddedEvent(event) {
     const { issuesModel, inspectorIssue } = event.data;
-    const issues = createIssuesFromProtocolIssue(issuesModel, inspectorIssue);
+    const issues = createIssuesFromProtocolIssue(issuesModel, inspectorIssue, this.#frameManager);
     for (const issue of issues) {
       this.addIssue(issuesModel, issue);
       const message = issue.maybeCreateConsoleMessage();
@@ -5413,7 +5308,7 @@ var IssuesManager = class _IssuesManager extends Common5.ObjectWrapper.ObjectWra
     return this.#allIssues.size;
   }
   #issueFilter(issue) {
-    const scopeTarget = SDK3.TargetManager.TargetManager.instance().scopeTarget();
+    const scopeTarget = this.#targetManager.scopeTarget();
     if (!scopeTarget) {
       return false;
     }
@@ -5481,39 +5376,6 @@ globalThis.addIssueForTest = (issue) => {
   issuesModel?.issueAdded({ issue });
 };
 
-// gen/front_end/models/issues_manager/IssueResolver.js
-var IssueResolver = class extends Common6.ResolverBase.ResolverBase {
-  #issuesListener = null;
-  #issuesManager;
-  constructor(issuesManager = IssuesManager.instance()) {
-    super();
-    this.#issuesManager = issuesManager;
-  }
-  getForId(id) {
-    return this.#issuesManager.getIssueById(id) || null;
-  }
-  #onIssueAdded(event) {
-    const { issue } = event.data;
-    const id = issue.getIssueId();
-    if (id) {
-      this.onResolve(id, issue);
-    }
-  }
-  startListening() {
-    if (this.#issuesListener) {
-      return;
-    }
-    this.#issuesListener = this.#issuesManager.addEventListener("IssueAdded", this.#onIssueAdded, this);
-  }
-  stopListening() {
-    if (!this.#issuesListener) {
-      return;
-    }
-    Common6.EventTarget.removeEventListeners([this.#issuesListener]);
-    this.#issuesListener = null;
-  }
-};
-
 // gen/front_end/models/issues_manager/RelatedIssue.js
 var RelatedIssue_exports = {};
 __export(RelatedIssue_exports, {
@@ -5522,7 +5384,7 @@ __export(RelatedIssue_exports, {
   issuesAssociatedWith: () => issuesAssociatedWith,
   reveal: () => reveal
 });
-import * as Common7 from "./../../core/common/common.js";
+import * as Common6 from "./../../core/common/common.js";
 import * as SDK4 from "./../../core/sdk/sdk.js";
 function issuesAssociatedWithNetworkRequest(issues, request) {
   return issues.filter((issue) => {
@@ -5553,29 +5415,28 @@ function issuesAssociatedWith(issues, obj) {
   }
   throw new Error(`issues can not be associated with ${JSON.stringify(obj)}`);
 }
-function hasIssues(obj) {
-  const issues = Array.from(IssuesManager.instance().issues());
+function hasIssues(obj, issuesManager) {
+  const issues = Array.from(issuesManager.issues());
   return issuesAssociatedWith(issues, obj).length > 0;
 }
-function hasIssueOfCategory(obj, category) {
-  const issues = Array.from(IssuesManager.instance().issues());
+function hasIssueOfCategory(obj, category, issuesManager) {
+  const issues = Array.from(issuesManager.issues());
   return issuesAssociatedWith(issues, obj).some((issue) => issue.getCategory() === category);
 }
-async function reveal(obj, category) {
+async function reveal(obj, issuesManager, category) {
   if (typeof obj === "string") {
-    const issue = IssuesManager.instance().getIssueById(obj);
+    const issue = issuesManager.getIssueById(obj);
     if (issue) {
-      return await Common7.Revealer.reveal(issue);
+      return await Common6.Revealer.reveal(issue);
     }
   }
-  const issues = Array.from(IssuesManager.instance().issues());
+  const issues = Array.from(issuesManager.issues());
   const candidates = issuesAssociatedWith(issues, obj).filter((issue) => !category || issue.getCategory() === category);
   if (candidates.length > 0) {
-    return await Common7.Revealer.reveal(candidates[0]);
+    return await Common6.Revealer.reveal(candidates[0]);
   }
 }
 export {
-  AttributionReportingIssue_exports as AttributionReportingIssue,
   CheckFormsIssuesTrigger_exports as CheckFormsIssuesTrigger,
   ClientHintIssue_exports as ClientHintIssue,
   ConnectionAllowlistIssue_exports as ConnectionAllowlistIssue,
@@ -5594,6 +5455,7 @@ export {
   IssueAggregator_exports as IssueAggregator,
   IssueResolver_exports as IssueResolver,
   IssuesManager_exports as IssuesManager,
+  LazyLoadImageIssue_exports as LazyLoadImageIssue,
   MarkdownIssueDescription_exports as MarkdownIssueDescription,
   MixedContentIssue_exports as MixedContentIssue,
   PartitioningBlobURLIssue_exports as PartitioningBlobURLIssue,

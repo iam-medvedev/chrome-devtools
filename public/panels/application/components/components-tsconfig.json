@@ -42,7 +42,6 @@
     "../../../../../../../front_end/panels/application/components/BounceTrackingMitigationsView.ts",
     "../../../../../../../front_end/panels/application/components/CrashReportContextGrid.ts",
     "../../../../../../../front_end/panels/application/components/EndpointsGrid.ts",
-    "../../../../../../../front_end/panels/application/components/InterestGroupAccessGrid.ts",
     "../../../../../../../front_end/panels/application/components/PermissionsPolicySection.ts",
     "../../../../../../../front_end/panels/application/components/ProtocolHandlersView.ts",
     "../../../../../../../front_end/panels/application/components/ReportsGrid.ts",
