@@ -47,8 +47,7 @@ describeWithEnvironment('AiCodeCompletionDisclaimer', () => {
         checkAccessPreconditionsStub.resolves("no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */);
         const { view, widget } = await createDisclaimer();
         assert.strictEqual(view.input.aidaAvailability, "no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */);
-        checkAccessPreconditionsStub.resolves("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
-        Host.AidaClient.HostConfigTracker.instance().dispatchEventToListeners("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */);
+        Host.AidaClient.HostConfigTracker.instance().dispatchEventToListeners("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */, "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
         await view.nextInput;
         assert.strictEqual(view.input.aidaAvailability, "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
         widget.detach();
@@ -58,8 +57,7 @@ describeWithEnvironment('AiCodeCompletionDisclaimer', () => {
         checkAccessPreconditionsStub.resolves("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
         const { view, widget } = await createDisclaimer();
         assert.strictEqual(view.input.aidaAvailability, "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
-        checkAccessPreconditionsStub.resolves("no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */);
-        Host.AidaClient.HostConfigTracker.instance().dispatchEventToListeners("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */);
+        Host.AidaClient.HostConfigTracker.instance().dispatchEventToListeners("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */, "no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */);
         await view.nextInput;
         assert.strictEqual(view.input.aidaAvailability, "no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */);
         widget.detach();

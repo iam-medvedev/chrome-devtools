@@ -7,9 +7,49 @@ import * as UI from '../../ui/legacy/legacy.js';
 import * as Lighthouse from './lighthouse.js';
 const UIStrings = {
     /**
-     * @description Command for showing the 'Lighthouse' tool
+     * @description Command for showing the Lighthouse panel.
      */
     showLighthouse: 'Show `Lighthouse`',
+    /**
+     * @description Title of Lighthouse performance category setting.
+     */
+    performance: 'Performance',
+    /**
+     * @description Title of Lighthouse accessibility category setting.
+     */
+    accessibility: 'Accessibility',
+    /**
+     * @description Title of Lighthouse best practices category setting.
+     */
+    bestPractices: 'Best practices',
+    /**
+     * @description Title of Lighthouse SEO category setting.
+     */
+    seo: 'SEO',
+    /**
+     * @description Title of Lighthouse agentic browsing category setting.
+     */
+    agenticBrowsing: 'Agentic browsing',
+    /**
+     * @description Title of Lighthouse device type setting.
+     */
+    device: 'Apply mobile emulation',
+    /**
+     * @description Title of Lighthouse mode setting.
+     */
+    mode: 'Lighthouse mode',
+    /**
+     * @description Title of Lighthouse throttling setting.
+     */
+    throttling: 'Throttling method',
+    /**
+     * @description Title of Lighthouse clear storage setting.
+     */
+    clearStorage: 'Clear storage',
+    /**
+     * @description Title of Lighthouse JavaScript sampling setting.
+     */
+    enableSampling: 'Enable JS sampling',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/lighthouse/lighthouse-meta.ts', UIStrings);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
@@ -46,5 +86,85 @@ Common.Revealer.registerRevealer({
         const Lighthouse = await loadLighthouseModule();
         return new Lighthouse.LighthousePanel.ReportRevealer();
     },
+});
+Common.Settings.registerSettingExtension({
+    category: "" /* Common.Settings.SettingCategory.NONE */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
+    title: i18nLazyString(UIStrings.performance),
+    settingName: 'lighthouse.cat-perf',
+    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+    defaultValue: true,
+});
+Common.Settings.registerSettingExtension({
+    category: "" /* Common.Settings.SettingCategory.NONE */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
+    title: i18nLazyString(UIStrings.accessibility),
+    settingName: 'lighthouse.cat-a11y',
+    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+    defaultValue: true,
+});
+Common.Settings.registerSettingExtension({
+    category: "" /* Common.Settings.SettingCategory.NONE */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
+    title: i18nLazyString(UIStrings.bestPractices),
+    settingName: 'lighthouse.cat-best-practices',
+    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+    defaultValue: true,
+});
+Common.Settings.registerSettingExtension({
+    category: "" /* Common.Settings.SettingCategory.NONE */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
+    title: i18nLazyString(UIStrings.seo),
+    settingName: 'lighthouse.cat-seo',
+    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+    defaultValue: true,
+});
+Common.Settings.registerSettingExtension({
+    category: "" /* Common.Settings.SettingCategory.NONE */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
+    title: i18nLazyString(UIStrings.agenticBrowsing),
+    settingName: 'lighthouse.cat-agentic-browsing',
+    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+    defaultValue: false,
+});
+Common.Settings.registerSettingExtension({
+    category: "" /* Common.Settings.SettingCategory.NONE */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
+    title: i18nLazyString(UIStrings.device),
+    settingName: 'lighthouse.device-type',
+    settingType: "enum" /* Common.Settings.SettingType.ENUM */,
+    defaultValue: 'mobile',
+});
+Common.Settings.registerSettingExtension({
+    category: "" /* Common.Settings.SettingCategory.NONE */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
+    title: i18nLazyString(UIStrings.mode),
+    settingName: 'lighthouse.mode',
+    settingType: "enum" /* Common.Settings.SettingType.ENUM */,
+    defaultValue: 'navigation',
+});
+Common.Settings.registerSettingExtension({
+    category: "" /* Common.Settings.SettingCategory.NONE */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
+    title: i18nLazyString(UIStrings.throttling),
+    settingName: 'lighthouse.throttling',
+    settingType: "enum" /* Common.Settings.SettingType.ENUM */,
+    defaultValue: 'simulate',
+});
+Common.Settings.registerSettingExtension({
+    category: "" /* Common.Settings.SettingCategory.NONE */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
+    title: i18nLazyString(UIStrings.clearStorage),
+    settingName: 'lighthouse.clear-storage',
+    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+    defaultValue: true,
+});
+Common.Settings.registerSettingExtension({
+    category: "" /* Common.Settings.SettingCategory.NONE */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
+    title: i18nLazyString(UIStrings.enableSampling),
+    settingName: 'lighthouse.enable-sampling',
+    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+    defaultValue: false,
 });
 //# sourceMappingURL=lighthouse-meta.prebundle.js.map

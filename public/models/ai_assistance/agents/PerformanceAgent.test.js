@@ -6,9 +6,10 @@ import sinon from 'sinon';
 import * as Common from '../../../core/common/common.js';
 import * as Host from '../../../core/host/host.js';
 import * as SDK from '../../../core/sdk/sdk.js';
+import * as TextUtils from '../../../core/text_utils/text_utils.js';
 import * as Tracing from '../../../services/tracing/tracing.js';
 import { createNetworkRequest, mockAidaClient } from '../../../testing/AiAssistanceHelpers.js';
-import { deinitializeGlobalVars, restoreUserAgentForTesting, setUserAgentForTesting, updateHostConfig } from '../../../testing/EnvironmentHelpers.js';
+import { deinitializeGlobalVars, restoreUserAgentForTesting, setUserAgentForTesting, updateHostConfig, } from '../../../testing/EnvironmentHelpers.js';
 import { getInsightOrError } from '../../../testing/InsightHelpers.js';
 import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import { setupSettingsHooks } from '../../../testing/SettingsHelpers.js';
@@ -18,7 +19,6 @@ import { allThreadEntriesInTrace } from '../../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Bindings from '../../bindings/bindings.js';
 import * as Logs from '../../logs/logs.js';
-import * as TextUtils from '../../text_utils/text_utils.js';
 import * as Trace from '../../trace/trace.js';
 import { AICallTree, AIContext, PerformanceAgent, PerformanceTraceContext, PerformanceTraceFormatter, } from '../ai_assistance.js';
 /**
@@ -225,13 +225,14 @@ describe('PerformanceAgent', function () {
     };
     const FAKE_INSIGHTS = new Map([
         [
-            '', {
+            '',
+            {
                 model: {
                     LCPBreakdown: FAKE_LCP_MODEL,
                     INPBreakdown: FAKE_INP_MODEL,
                 },
                 bounds: { min: 0, max: 0, range: 0 },
-            }
+            },
         ],
     ]);
     const FAKE_METADATA = {};
@@ -308,7 +309,7 @@ code
             assert.deepEqual(response, {
                 answer: `\`\`\`
 code
-\`\`\``
+\`\`\``,
             });
         });
         it('translates eventKey: URLs in link destinations', async function () {
@@ -345,7 +346,7 @@ code
             await agent.run('', { selected: context }).next();
             const response = agent.parseTextResponse('The LCP element is an image [IMG class=\'h-auto w-full\'] (eventKey: r-12227) loaded from [https://media.diy.com/is/image] (eventKey: s-2069)');
             assert.deepEqual(response, {
-                answer: 'The LCP element is an image [IMG class=\'h-auto w-full\'](#r-12227) loaded from [https://media.diy.com/is/image](#s-2069)'
+                answer: 'The LCP element is an image [IMG class=\'h-auto w-full\'](#r-12227) loaded from [https://media.diy.com/is/image](#s-2069)',
             });
         });
     });
@@ -359,8 +360,8 @@ code
                             explanation: 'This is the answer',
                             metadata: {
                                 rpcGlobalId: 123,
-                            }
-                        }]])
+                            },
+                        }]]),
             });
             const responses = await Array.fromAsync(agent.run('test', { selected: context }));
             deleteAllWidgetData(responses);
@@ -416,10 +417,10 @@ code
                 aidaClient: mockAidaClient([
                     [{
                             explanation: '',
-                            functionCalls: [{ name: 'getNetworkTrackSummary', args: { min: bounds.min, max: bounds.max } }]
+                            functionCalls: [{ name: 'getNetworkTrackSummary', args: { min: bounds.min, max: bounds.max } }],
                         }],
-                    [{ explanation: 'done' }]
-                ])
+                    [{ explanation: 'done' }],
+                ]),
             });
             const context = PerformanceTraceContext.PerformanceTraceContext.fromInsight(parsedTrace, lcpBreakdown);
             const responses = await Array.fromAsync(agent.run('test', { selected: context }));
@@ -429,7 +430,8 @@ code
                 'https://chromedevtools.github.io/performance-stories/lcp-large-image/index.html',
                 'https://fonts.googleapis.com/css2?family=Poppins:ital,wght@1,800',
                 'https://chromedevtools.github.io/performance-stories/lcp-large-image/app.css',
-                'https://via.placeholder.com/50.jpg', 'https://via.placeholder.com/2000.jpg'
+                'https://via.placeholder.com/50.jpg',
+                'https://via.placeholder.com/2000.jpg',
             ];
             expectedRequestUrls.forEach(url => {
                 const match = parsedTrace.data.NetworkRequests.byTime.find(r => r.args.data.url === url);
@@ -461,7 +463,7 @@ code
             const lcpBreakdown = getInsightOrError('LCPBreakdown', parsedTrace.insights, firstNav);
             const url = 'https://chromedevtools.github.io/performance-stories/lcp-large-image/index.html';
             const agent = createAgentForConversation({
-                aidaClient: mockAidaClient([[{ explanation: '', functionCalls: [{ name: 'getResourceContent', args: { url } }] }], [{ explanation: 'done' }]])
+                aidaClient: mockAidaClient([[{ explanation: '', functionCalls: [{ name: 'getResourceContent', args: { url } }] }], [{ explanation: 'done' }]]),
             });
             const context = PerformanceTraceContext.PerformanceTraceContext.fromInsight(parsedTrace, lcpBreakdown);
             // Mock scripts in trace
@@ -488,7 +490,7 @@ code
             const lcpBreakdown = getInsightOrError('LCPBreakdown', parsedTrace.insights, firstNav);
             const url = 'https://victim.com/sensitive.js';
             const agent = createAgentForConversation({
-                aidaClient: mockAidaClient([[{ explanation: '', functionCalls: [{ name: 'getResourceContent', args: { url } }] }], [{ explanation: 'done' }]])
+                aidaClient: mockAidaClient([[{ explanation: '', functionCalls: [{ name: 'getResourceContent', args: { url } }] }], [{ explanation: 'done' }]]),
             });
             const context = PerformanceTraceContext.PerformanceTraceContext.fromInsight(parsedTrace, lcpBreakdown);
             // Mock script in trace
@@ -511,7 +513,7 @@ code
             const lcpBreakdown = getInsightOrError('LCPBreakdown', parsedTrace.insights, firstNav);
             const url = 'file:///tmp/sensitive.js';
             const agent = createAgentForConversation({
-                aidaClient: mockAidaClient([[{ explanation: '', functionCalls: [{ name: 'getResourceContent', args: { url } }] }], [{ explanation: 'done' }]])
+                aidaClient: mockAidaClient([[{ explanation: '', functionCalls: [{ name: 'getResourceContent', args: { url } }] }], [{ explanation: 'done' }]]),
             });
             const context = PerformanceTraceContext.PerformanceTraceContext.fromInsight(parsedTrace, lcpBreakdown);
             sinon.stub(context, 'getOrigin').returns('file://');
@@ -535,7 +537,7 @@ code
             const lcpBreakdown = getInsightOrError('LCPBreakdown', parsedTrace.insights, firstNav);
             const url = 'https://example.com/script.js';
             const agent = createAgentForConversation({
-                aidaClient: mockAidaClient([[{ explanation: '', functionCalls: [{ name: 'getResourceContent', args: { url } }] }], [{ explanation: 'done' }]])
+                aidaClient: mockAidaClient([[{ explanation: '', functionCalls: [{ name: 'getResourceContent', args: { url } }] }], [{ explanation: 'done' }]]),
             });
             const context = PerformanceTraceContext.PerformanceTraceContext.fromInsight(parsedTrace, lcpBreakdown);
             const responses = await Array.fromAsync(agent.run('test', { selected: context }));
@@ -555,8 +557,8 @@ code
             const agent = createAgentForConversation({
                 aidaClient: mockAidaClient([
                     [{ explanation: '', functionCalls: [{ name: 'getFunctionCode', args: { scriptUrl, line: 10, column: 5 } }] }],
-                    [{ explanation: 'done' }]
-                ])
+                    [{ explanation: 'done' }],
+                ]),
             });
             const context = PerformanceTraceContext.PerformanceTraceContext.fromInsight(parsedTrace, lcpBreakdown);
             // Stub prototype methods of PerformanceTraceFormatter
@@ -589,8 +591,8 @@ code
             const agent = createAgentForConversation({
                 aidaClient: mockAidaClient([
                     [{ explanation: '', functionCalls: [{ name: 'getFunctionCode', args: { scriptUrl, line: 10, column: 5 } }] }],
-                    [{ explanation: 'done' }]
-                ])
+                    [{ explanation: 'done' }],
+                ]),
             });
             const context = PerformanceTraceContext.PerformanceTraceContext.fromInsight(parsedTrace, lcpBreakdown);
             // Stub recordingIsFresh to return false
@@ -609,10 +611,10 @@ code
                 aidaClient: mockAidaClient([
                     [{
                             explanation: '',
-                            functionCalls: [{ name: 'getMainThreadTrackSummaryByLabel', args: { label: 'LCPBreakdown' } }]
+                            functionCalls: [{ name: 'getMainThreadTrackSummaryByLabel', args: { label: 'LCPBreakdown' } }],
                         }],
-                    [{ explanation: 'done' }]
-                ])
+                    [{ explanation: 'done' }],
+                ]),
             });
             const context = PerformanceTraceContext.PerformanceTraceContext.fromInsight(parsedTrace, lcpBreakdown);
             const responses = await Array.fromAsync(agent.run('test', { selected: context }));
@@ -646,7 +648,7 @@ code
             assert.exists(event);
             const eventKey = 'r-0';
             const agent = createAgentForConversation({
-                aidaClient: mockAidaClient([[{ explanation: '', functionCalls: [{ name: 'getEventByKey', args: { eventKey } }] }], [{ explanation: 'done' }]])
+                aidaClient: mockAidaClient([[{ explanation: '', functionCalls: [{ name: 'getEventByKey', args: { eventKey } }] }], [{ explanation: 'done' }]]),
             });
             const context = PerformanceTraceContext.PerformanceTraceContext.fromInsight(parsedTrace, lcpBreakdown);
             sinon.stub(context.getItem(), 'lookupEvent').withArgs(eventKey).returns(event);
@@ -670,8 +672,9 @@ code
             const eventKey = 'r-0';
             const agent = createAgentForConversation({
                 aidaClient: mockAidaClient([
-                    [{ explanation: '', functionCalls: [{ name: 'selectEventByKey', args: { eventKey } }] }], [{ explanation: 'done' }]
-                ])
+                    [{ explanation: '', functionCalls: [{ name: 'selectEventByKey', args: { eventKey } }] }],
+                    [{ explanation: 'done' }],
+                ]),
             });
             const context = PerformanceTraceContext.PerformanceTraceContext.fromInsight(parsedTrace, lcpBreakdown);
             sinon.stub(context.getItem(), 'lookupEvent').withArgs(eventKey).returns(event);
@@ -703,14 +706,14 @@ code
             const agent = createAgentForConversation({
                 aidaClient: mockAidaClient([
                     [
-                        { explanation: '', functionCalls: [{ name: 'getNetworkTrackSummary', args: {} }] }
+                        { explanation: '', functionCalls: [{ name: 'getNetworkTrackSummary', args: {} }] },
                     ], // Run 1 ('test 1 LCP'), step 1: LLM requests tool execution
                     [{ explanation: 'done' }], // Run 1 ('test 1 LCP'), step 2: LLM receives tool output and finishes
                     [{ explanation: 'done' }], // Run 2 ('test 2 LCP'), step 1: LLM answers immediately (uses cached fact)
                     [
-                        { explanation: 'done' }
+                        { explanation: 'done' },
                     ], // Run 3 ('test 1 RenderBlocking'), step 1: LLM answers immediately (context changed, no cache)
-                ])
+                ]),
             });
             const lcpContext = PerformanceTraceContext.PerformanceTraceContext.fromInsight(parsedTrace, lcpBreakdown);
             const renderBlockingContext = PerformanceTraceContext.PerformanceTraceContext.fromInsight(parsedTrace, renderBlocking);
@@ -730,9 +733,10 @@ code
             const lcpBreakdown = getInsightOrError('LCPBreakdown', parsedTrace.insights, firstNav);
             const agent = createAgentForConversation({
                 aidaClient: mockAidaClient([
-                    [{ explanation: '', functionCalls: [{ name: 'getNetworkTrackSummary', args: {} }] }], [{ explanation: 'done' }],
-                    [{ explanation: 'done' }]
-                ])
+                    [{ explanation: '', functionCalls: [{ name: 'getNetworkTrackSummary', args: {} }] }],
+                    [{ explanation: 'done' }],
+                    [{ explanation: 'done' }],
+                ]),
             });
             const context = PerformanceTraceContext.PerformanceTraceContext.fromInsight(parsedTrace, lcpBreakdown);
             await Array.fromAsync(agent.run('test 1', { selected: context }));
@@ -742,8 +746,15 @@ code
                 return fact.metadata.source;
             }), [
                 // https://www.youtube.com/watch?v=Vhh_GeBPOhs
-                'devtools', 'devtools', 'devtools', 'devtools', 'devtools', 'devtools', 'devtools', 'devtools',
-                'getNetworkTrackSummary({min: 197695826524, max: 197698633660})'
+                'devtools',
+                'devtools',
+                'devtools',
+                'devtools',
+                'devtools',
+                'devtools',
+                'devtools',
+                'devtools',
+                'getNetworkTrackSummary({min: 197695826524, max: 197698633660})',
             ]);
         });
         it('will clear cache on error', async function () {
@@ -755,11 +766,12 @@ code
             const agent = new PerformanceAgent.PerformanceAgent({
                 aidaClient: mockAidaClient([
                     // Run 1: calls function
-                    [{ explanation: '', functionCalls: [{ name: 'getNetworkTrackSummary', args: {} }] }], [{ explanation: 'done' }],
+                    [{ explanation: '', functionCalls: [{ name: 'getNetworkTrackSummary', args: {} }] }],
+                    [{ explanation: 'done' }],
                     // Run 2: starts, but we will block origin.
                     [{ explanation: '', functionCalls: [{ name: 'getNetworkTrackSummary', args: {} }] }],
                     // Run 3: after error, we try again.
-                    [{ explanation: 'done' }]
+                    [{ explanation: 'done' }],
                 ]),
                 allowedOrigin: () => originBlocked ? { blocked: true } : { origin: 'https://google.com' },
             });
@@ -803,16 +815,16 @@ code
                             explanation: '',
                             functionCalls: [
                                 { name: 'getInsightDetails', args: { insightSetId: insightSet.id, insightName: 'LCPDiscovery' } },
-                            ]
+                            ],
                         }],
                     [{
                             explanation: '',
                             functionCalls: [
                                 { name: 'getInsightDetails', args: { insightSetId: insightSet.id, insightName: 'LCPDiscovery' } },
-                            ]
+                            ],
                         }],
-                    [{ explanation: 'done' }]
-                ])
+                    [{ explanation: 'done' }],
+                ]),
             });
             const target = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
             assert.exists(target);
@@ -856,7 +868,7 @@ code
                             explanation: '',
                             functionCalls: [
                                 { name: 'getInsightDetails', args: { insightSetId: insightSet.id, insightName: 'LCPDiscovery' } },
-                            ]
+                            ],
                         }],
                     [{ explanation: 'done' }],
                     // Second run
@@ -864,10 +876,10 @@ code
                             explanation: '',
                             functionCalls: [
                                 { name: 'getInsightDetails', args: { insightSetId: insightSet.id, insightName: 'LCPDiscovery' } },
-                            ]
+                            ],
                         }],
-                    [{ explanation: 'done' }]
-                ])
+                    [{ explanation: 'done' }],
+                ]),
             });
             const target = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
             assert.exists(target);
@@ -875,7 +887,7 @@ code
             assert.exists(domModel);
             sinon.stub(domModel, 'pushNodesByBackendIdsToFrontend').resolves(new Map([[
                     4,
-                    { takeSnapshot: sinon.stub().resolves({ root: { nodeName: 'IMG' } }) }
+                    { takeSnapshot: sinon.stub().resolves({ root: { nodeName: 'IMG' } }) },
                 ]]));
             // First run
             const firstResponses = await Array.fromAsync(agent.run('first test', { selected: context }));
@@ -917,10 +929,10 @@ code
                             explanation: '',
                             functionCalls: [
                                 { name: 'getInsightDetails', args: { insightSetId: insightSet.id, insightName: 'LCPDiscovery' } },
-                            ]
+                            ],
                         }],
-                    [{ explanation: 'done' }]
-                ])
+                    [{ explanation: 'done' }],
+                ]),
             });
             const target = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
             assert.exists(target);
@@ -928,11 +940,11 @@ code
             assert.exists(domModel);
             sinon.stub(domModel, 'pushNodesByBackendIdsToFrontend').resolves(new Map([[
                     4,
-                    { takeSnapshot: sinon.stub().resolves({ root: { nodeName: 'IMG' } }) }
+                    { takeSnapshot: sinon.stub().resolves({ root: { nodeName: 'IMG' } }) },
                 ]]));
             const mockRequest = createNetworkRequest();
             sinon.stub(mockRequest, 'contentType').returns({
-                isImage: () => true
+                isImage: () => true,
             });
             sinon.stub(mockRequest, 'requestContentData')
                 .resolves(new TextUtils.ContentData.ContentData('base64', true, 'image/jpeg'));
@@ -977,10 +989,10 @@ code
                                 explanation: '',
                                 functionCalls: [
                                     { name: 'getInsightDetails', args: { insightSetId: insightSet.id, insightName: 'LCPBreakdown' } },
-                                ]
+                                ],
                             }],
-                        [{ explanation: 'done' }]
-                    ])
+                        [{ explanation: 'done' }],
+                    ]),
                 });
                 const responses = await Array.fromAsync(agent.run('test', { selected: context }));
                 const actions = responses.filter(r => r.type === "action" /* AiAgent.ResponseType.ACTION */);
@@ -1003,10 +1015,10 @@ code
                                 explanation: '',
                                 functionCalls: [
                                     { name: 'getInsightDetails', args: { insightSetId: insightSet.id, insightName: 'RenderBlocking' } },
-                                ]
+                                ],
                             }],
-                        [{ explanation: 'done' }]
-                    ])
+                        [{ explanation: 'done' }],
+                    ]),
                 });
                 const responses = await Array.fromAsync(agent.run('test', { selected: context }));
                 const actions = responses.filter(r => r.type === "action" /* AiAgent.ResponseType.ACTION */);
@@ -1028,10 +1040,10 @@ code
                                 explanation: '',
                                 functionCalls: [
                                     { name: 'getInsightDetails', args: { insightSetId: insightSet.id, insightName: 'LCPDiscovery' } },
-                                ]
+                                ],
                             }],
-                        [{ explanation: 'done' }]
-                    ])
+                        [{ explanation: 'done' }],
+                    ]),
                 });
                 const responses = await Array.fromAsync(agent.run('test', { selected: context }));
                 const actions = responses.filter(r => r.type === "action" /* AiAgent.ResponseType.ACTION */);
@@ -1055,10 +1067,10 @@ code
                                 explanation: '',
                                 functionCalls: [
                                     { name: 'getInsightDetails', args: { insightSetId: insightSet.id, insightName: 'CLSCulprits' } },
-                                ]
+                                ],
                             }],
-                        [{ explanation: 'done' }]
-                    ])
+                        [{ explanation: 'done' }],
+                    ]),
                 });
                 const responses = await Array.fromAsync(agent.run('test', { selected: context }));
                 const actions = responses.filter(r => r.type === "action" /* AiAgent.ResponseType.ACTION */);
@@ -1084,10 +1096,10 @@ code
                                 explanation: '',
                                 functionCalls: [
                                     { name: 'getInsightDetails', args: { insightSetId: insightSet.id, insightName: 'NetworkDependencyTree' } },
-                                ]
+                                ],
                             }],
-                        [{ explanation: 'done' }]
-                    ])
+                        [{ explanation: 'done' }],
+                    ]),
                 });
                 const responses = await Array.fromAsync(agent.run('test', { selected: context }));
                 const actions = responses.filter(r => r.type === "action" /* AiAgent.ResponseType.ACTION */);
@@ -1110,10 +1122,10 @@ code
                                 explanation: '',
                                 functionCalls: [
                                     { name: 'getInsightDetails', args: { insightSetId: insightSet.id, insightName: 'ThirdParties' } },
-                                ]
+                                ],
                             }],
-                        [{ explanation: 'done' }]
-                    ])
+                        [{ explanation: 'done' }],
+                    ]),
                 });
                 const responses = await Array.fromAsync(agent.run('test', { selected: context }));
                 const actions = responses.filter(r => r.type === "action" /* AiAgent.ResponseType.ACTION */);
@@ -1136,10 +1148,10 @@ code
                                 explanation: '',
                                 functionCalls: [
                                     { name: 'getInsightDetails', args: { insightSetId: insightSet.id, insightName: 'ForcedReflow' } },
-                                ]
+                                ],
                             }],
-                        [{ explanation: 'done' }]
-                    ])
+                        [{ explanation: 'done' }],
+                    ]),
                 });
                 const responses = await Array.fromAsync(agent.run('test', { selected: context }));
                 const actions = responses.filter(r => r.type === "action" /* AiAgent.ResponseType.ACTION */);
@@ -1162,10 +1174,10 @@ code
                                 explanation: '',
                                 functionCalls: [
                                     { name: 'getInsightDetails', args: { insightSetId: insightSet.id, insightName: 'Cache' } },
-                                ]
+                                ],
                             }],
-                        [{ explanation: 'done' }]
-                    ])
+                        [{ explanation: 'done' }],
+                    ]),
                 });
                 const responses = await Array.fromAsync(agent.run('test', { selected: context }));
                 const actions = responses.filter(r => r.type === "action" /* AiAgent.ResponseType.ACTION */);
@@ -1187,10 +1199,10 @@ code
                                 explanation: '',
                                 functionCalls: [
                                     { name: 'getInsightDetails', args: { insightSetId: insightSet.id, insightName: 'INPBreakdown' } },
-                                ]
+                                ],
                             }],
-                        [{ explanation: 'done' }]
-                    ])
+                        [{ explanation: 'done' }],
+                    ]),
                 });
                 const responses = await Array.fromAsync(agent.run('test', { selected: context }));
                 const actions = responses.filter(r => r.type === "action" /* AiAgent.ResponseType.ACTION */);
@@ -1212,10 +1224,10 @@ code
                                 explanation: '',
                                 functionCalls: [
                                     { name: 'getInsightDetails', args: { insightSetId: insightSet.id, insightName: 'DocumentLatency' } },
-                                ]
+                                ],
                             }],
-                        [{ explanation: 'done' }]
-                    ])
+                        [{ explanation: 'done' }],
+                    ]),
                 });
                 const responses = await Array.fromAsync(agent.run('test', { selected: context }));
                 const actions = responses.filter(r => r.type === "action" /* AiAgent.ResponseType.ACTION */);
@@ -1239,10 +1251,10 @@ code
                                 explanation: '',
                                 functionCalls: [
                                     { name: 'getInsightDetails', args: { insightSetId: insightSet.id, insightName: 'DOMSize' } },
-                                ]
+                                ],
                             }],
-                        [{ explanation: 'done' }]
-                    ])
+                        [{ explanation: 'done' }],
+                    ]),
                 });
                 const responses = await Array.fromAsync(agent.run('test', { selected: context }));
                 const actions = responses.filter(r => r.type === "action" /* AiAgent.ResponseType.ACTION */);
@@ -1266,10 +1278,10 @@ code
                                 explanation: '',
                                 functionCalls: [
                                     { name: 'getInsightDetails', args: { insightSetId: insightSet.id, insightName: 'DuplicatedJavaScript' } },
-                                ]
+                                ],
                             }],
-                        [{ explanation: 'done' }]
-                    ])
+                        [{ explanation: 'done' }],
+                    ]),
                 });
                 const responses = await Array.fromAsync(agent.run('test', { selected: context }));
                 const actions = responses.filter(r => r.type === "action" /* AiAgent.ResponseType.ACTION */);
@@ -1293,10 +1305,10 @@ code
                                 explanation: '',
                                 functionCalls: [
                                     { name: 'getInsightDetails', args: { insightSetId: insightSet.id, insightName: 'ImageDelivery' } },
-                                ]
+                                ],
                             }],
-                        [{ explanation: 'done' }]
-                    ])
+                        [{ explanation: 'done' }],
+                    ]),
                 });
                 const responses = await Array.fromAsync(agent.run('test', { selected: context }));
                 const actions = responses.filter(r => r.type === "action" /* AiAgent.ResponseType.ACTION */);
@@ -1319,10 +1331,10 @@ code
                                 explanation: '',
                                 functionCalls: [
                                     { name: 'getInsightDetails', args: { insightSetId: insightSet.id, insightName: 'FontDisplay' } },
-                                ]
+                                ],
                             }],
-                        [{ explanation: 'done' }]
-                    ])
+                        [{ explanation: 'done' }],
+                    ]),
                 });
                 const responses = await Array.fromAsync(agent.run('test', { selected: context }));
                 const actions = responses.filter(r => r.type === "action" /* AiAgent.ResponseType.ACTION */);
@@ -1347,10 +1359,10 @@ code
                                 explanation: '',
                                 functionCalls: [
                                     { name: 'getInsightDetails', args: { insightSetId: insightSet.id, insightName: 'SlowCSSSelector' } },
-                                ]
+                                ],
                             }],
-                        [{ explanation: 'done' }]
-                    ])
+                        [{ explanation: 'done' }],
+                    ]),
                 });
                 const responses = await Array.fromAsync(agent.run('test', { selected: context }));
                 const actions = responses.filter(r => r.type === "action" /* AiAgent.ResponseType.ACTION */);
@@ -1373,10 +1385,10 @@ code
                                 explanation: '',
                                 functionCalls: [
                                     { name: 'getInsightDetails', args: { insightSetId: insightSet.id, insightName: 'LegacyJavaScript' } },
-                                ]
+                                ],
                             }],
-                        [{ explanation: 'done' }]
-                    ])
+                        [{ explanation: 'done' }],
+                    ]),
                 });
                 const responses = await Array.fromAsync(agent.run('test', { selected: context }));
                 const actions = responses.filter(r => r.type === "action" /* AiAgent.ResponseType.ACTION */);
@@ -1399,10 +1411,10 @@ code
                                 explanation: '',
                                 functionCalls: [
                                     { name: 'getInsightDetails', args: { insightSetId: insightSet.id, insightName: 'Viewport' } },
-                                ]
+                                ],
                             }],
-                        [{ explanation: 'done' }]
-                    ])
+                        [{ explanation: 'done' }],
+                    ]),
                 });
                 const responses = await Array.fromAsync(agent.run('test', { selected: context }));
                 const actions = responses.filter(r => r.type === "action" /* AiAgent.ResponseType.ACTION */);
@@ -1425,10 +1437,10 @@ code
                                 explanation: '',
                                 functionCalls: [
                                     { name: 'getInsightDetails', args: { insightSetId: insightSet.id, insightName: 'ModernHTTP' } },
-                                ]
+                                ],
                             }],
-                        [{ explanation: 'done' }]
-                    ])
+                        [{ explanation: 'done' }],
+                    ]),
                 });
                 const responses = await Array.fromAsync(agent.run('test', { selected: context }));
                 const actions = responses.filter(r => r.type === "action" /* AiAgent.ResponseType.ACTION */);
@@ -1451,10 +1463,10 @@ code
                                 explanation: '',
                                 functionCalls: [
                                     { name: 'getInsightDetails', args: { insightSetId: insightSet.id, insightName: 'CharacterSet' } },
-                                ]
+                                ],
                             }],
-                        [{ explanation: 'done' }]
-                    ])
+                        [{ explanation: 'done' }],
+                    ]),
                 });
                 const responses = await Array.fromAsync(agent.run('test', { selected: context }));
                 const actions = responses.filter(r => r.type === "action" /* AiAgent.ResponseType.ACTION */);
@@ -1479,10 +1491,10 @@ code
                             explanation: '',
                             functionCalls: [
                                 { name: 'getDetailedCallTree', args: { eventKey: key } },
-                            ]
+                            ],
                         }],
-                    [{ explanation: 'done' }]
-                ])
+                    [{ explanation: 'done' }],
+                ]),
             });
             const context = PerformanceTraceContext.PerformanceTraceContext.fromParsedTrace(parsedTrace);
             const responses = await Array.fromAsync(agent.run('test', { selected: context }));
@@ -1707,10 +1719,10 @@ code
                             explanation: '',
                             functionCalls: [
                                 { name: 'getEventByKey', args: { eventKey: 'valid-event-key' } },
-                            ]
+                            ],
                         }],
-                    [{ explanation: 'done' }]
-                ])
+                    [{ explanation: 'done' }],
+                ]),
             });
             const parsedTrace = {
                 insights: new Map(),
@@ -1723,8 +1735,8 @@ code
                         mainFrameNavigations: [],
                         traceBounds: { min: 0, max: 100 },
                         mainFrameURL: 'https://example.com',
-                    }
-                }
+                    },
+                },
             };
             const context = PerformanceTraceContext.PerformanceTraceContext.fromParsedTrace(parsedTrace);
             await agent.run('test', { selected: context }).next();
@@ -1767,10 +1779,10 @@ code
                             explanation: '',
                             functionCalls: [
                                 { name: 'getEventByKey', args: { eventKey: 'valid-event-key' } },
-                            ]
+                            ],
                         }],
-                    [{ explanation: 'done' }]
-                ])
+                    [{ explanation: 'done' }],
+                ]),
             });
             const parsedTrace = {
                 insights: new Map(),
@@ -1783,8 +1795,8 @@ code
                         mainFrameNavigations: [],
                         traceBounds: { min: 0, max: 100 },
                         mainFrameURL: 'https://example.com',
-                    }
-                }
+                    },
+                },
             };
             const context = PerformanceTraceContext.PerformanceTraceContext.fromParsedTrace(parsedTrace);
             await agent.run('test', { selected: context }).next();
@@ -1827,10 +1839,10 @@ code
                             explanation: '',
                             functionCalls: [
                                 { name: 'getEventByKey', args: { eventKey: 'valid-event-key' } },
-                            ]
+                            ],
                         }],
-                    [{ explanation: 'done' }]
-                ])
+                    [{ explanation: 'done' }],
+                ]),
             });
             const parsedTrace = {
                 insights: new Map(),
@@ -1843,8 +1855,8 @@ code
                         mainFrameNavigations: [],
                         traceBounds: { min: 0, max: 100 },
                         mainFrameURL: 'https://example.com',
-                    }
-                }
+                    },
+                },
             };
             const context = PerformanceTraceContext.PerformanceTraceContext.fromParsedTrace(parsedTrace);
             await agent.run('test', { selected: context }).next();
@@ -1883,10 +1895,10 @@ code
                             explanation: '',
                             functionCalls: [
                                 { name: 'getEventByKey', args: { eventKey: 'valid-event-key' } },
-                            ]
+                            ],
                         }],
-                    [{ explanation: 'done' }]
-                ])
+                    [{ explanation: 'done' }],
+                ]),
             });
             const parsedTrace = {
                 insights: new Map(),
@@ -1899,8 +1911,8 @@ code
                         mainFrameNavigations: [],
                         traceBounds: { min: 0, max: 100 },
                         mainFrameURL: 'https://example.com',
-                    }
-                }
+                    },
+                },
             };
             const context = PerformanceTraceContext.PerformanceTraceContext.fromParsedTrace(parsedTrace);
             await agent.run('test', { selected: context }).next();
@@ -1998,11 +2010,12 @@ code
             const primaryPageTargetStub = sinon.stub(SDK.TargetManager.TargetManager.instance(), 'primaryPageTarget');
             primaryPageTargetStub.returns(target1);
             const aidaClient = mockAidaClient([
-                [{ explanation: 'answer 1' }], [{
+                [{ explanation: 'answer 1' }],
+                [{
                         explanation: '',
-                        functionCalls: [{ name: 'getFunctionCode', args: { scriptUrl: 'https://example.com/script.js', line: 10, column: 5 } }]
+                        functionCalls: [{ name: 'getFunctionCode', args: { scriptUrl: 'https://example.com/script.js', line: 10, column: 5 } }],
                     }],
-                [{ explanation: 'done' }]
+                [{ explanation: 'done' }],
             ]);
             const agent = new PerformanceAgent.PerformanceAgent({ aidaClient });
             const context = PerformanceTraceContext.PerformanceTraceContext.fromParsedTrace(parsedTrace);

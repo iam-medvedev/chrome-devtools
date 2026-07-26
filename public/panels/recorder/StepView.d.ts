@@ -3,7 +3,6 @@ import * as Menus from '../../ui/components/menus/menus.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import type * as Converters from './converters/converters.js';
 import * as Models from './models/models.js';
-import { type StepEditedEvent } from './StepEditor.js';
 export declare const enum State {
     DEFAULT = "default",
     SUCCESS = "success",
@@ -12,46 +11,9 @@ export declare const enum State {
     ERROR = "error",
     STOPPED = "stopped"
 }
-export declare class CaptureSelectorsEvent extends Event {
-    static readonly eventName = "captureselectors";
-    data: Models.Schema.StepWithSelectors & Partial<Models.Schema.ClickAttributes>;
-    constructor(step: Models.Schema.StepWithSelectors & Partial<Models.Schema.ClickAttributes>);
-}
-export declare class CopyStepEvent extends Event {
-    static readonly eventName = "copystep";
-    step: Models.Schema.Step;
-    constructor(step: Models.Schema.Step);
-}
-export declare class StepChanged extends Event {
-    static readonly eventName = "stepchanged";
-    currentStep: Models.Schema.Step;
-    newStep: Models.Schema.Step;
-    constructor(currentStep: Models.Schema.Step, newStep: Models.Schema.Step);
-}
 export declare const enum AddStepPosition {
     BEFORE = "before",
     AFTER = "after"
-}
-export declare class AddStep extends Event {
-    static readonly eventName = "addstep";
-    position: AddStepPosition;
-    stepOrSection: Models.Schema.Step | Models.Section.Section;
-    constructor(stepOrSection: Models.Schema.Step | Models.Section.Section, position: AddStepPosition);
-}
-export declare class RemoveStep extends Event {
-    static readonly eventName = "removestep";
-    step: Models.Schema.Step;
-    constructor(step: Models.Schema.Step);
-}
-export declare class AddBreakpointEvent extends Event {
-    static readonly eventName = "addbreakpoint";
-    index: number;
-    constructor(index: number);
-}
-export declare class RemoveBreakpointEvent extends Event {
-    static readonly eventName = "removebreakpoint";
-    index: number;
-    constructor(index: number);
 }
 interface Action {
     id: string;
@@ -82,7 +44,8 @@ export interface ViewInput {
     isSelected: boolean;
     recorderSettings?: Models.RecorderSettings.RecorderSettings;
     actions: Action[];
-    stepEdited: (event: StepEditedEvent) => void;
+    stepEdited: (newStep: Models.Schema.Step) => void;
+    onAttributeRequested?: (send: (attribute?: string) => void) => void;
     onBreakpointClick: () => void;
     handleStepAction: (event: Menus.Menu.MenuItemSelectedEvent) => void;
     toggleShowDetails: () => void;
@@ -95,6 +58,13 @@ export type ViewOutput = unknown;
 export declare const DEFAULT_VIEW: (input: ViewInput, _output: ViewOutput, target: HTMLElement | ShadowRoot) => void;
 export declare class StepView extends UI.Widget.Widget<ShadowRoot> {
     #private;
+    onStepChanged?: (currentStep: Models.Schema.Step, newStep: Models.Schema.Step) => void;
+    onAddStep?: (stepOrSection: Models.Schema.Step | Models.Section.Section, position: AddStepPosition) => void;
+    onRemoveStep?: (step: Models.Schema.Step) => void;
+    onAddBreakpoint?: (index: number) => void;
+    onRemoveBreakpoint?: (index: number) => void;
+    onCopyStep?: (step: Models.Schema.Step) => void;
+    onAttributeRequested?: (send: (attribute?: string) => void) => void;
     constructor(element?: HTMLElement, view?: typeof DEFAULT_VIEW);
     set step(step: Models.Schema.Step | undefined);
     set section(section: Models.Section.Section | undefined);

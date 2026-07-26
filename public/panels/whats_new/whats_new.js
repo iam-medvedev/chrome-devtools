@@ -25,30 +25,30 @@ function getReleaseNote() {
   return releaseNote;
 }
 var releaseNote = {
-  version: 150,
-  header: "What\u2019s new in DevTools 150",
+  version: 151,
+  header: "What\u2019s new in DevTools 151",
   markdownLinks: [
     {
       key: "devtools-for-agents",
-      link: "https://developer.chrome.com/blog/new-in-devtools-150/#devtools-for-agents"
+      link: "https://developer.chrome.com/blog/new-in-devtools-151/#devtools-for-agents"
     },
     {
       key: "ai-assistance",
-      link: "https://developer.chrome.com/blog/new-in-devtools-150/#ai-assistance"
+      link: "https://developer.chrome.com/blog/new-in-devtools-151/#ai-assistance"
     },
     {
-      key: "css-container-function",
-      link: "https://developer.chrome.com/blog/new-in-devtools-150/#css-container-function"
+      key: "css-specificity",
+      link: "https://developer.chrome.com/blog/new-in-devtools-151/#css-specificity"
     }
   ],
   videoLinks: [
     {
       description: "See all highlights from Chrome 148-150",
-      link: "https://developer.chrome.com/blog/new-in-devtools-150",
+      link: "https://www.youtube.com/watch?v=wBNCPp5gdqg",
       type: "WhatsNew"
     }
   ],
-  link: "https://developer.chrome.com/blog/new-in-devtools-150/"
+  link: "https://developer.chrome.com/blog/new-in-devtools-151/"
 };
 
 // gen/front_end/panels/whats_new/ReleaseNoteView.js

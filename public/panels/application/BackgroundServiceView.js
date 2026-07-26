@@ -13,6 +13,7 @@ import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 // eslint-disable-next-line @devtools/es-modules-import
 import emptyWidgetStyles from '../../ui/legacy/emptyWidget.css.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import { html, render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { Events } from './BackgroundServiceModel.js';
 import backgroundServiceViewStyles from './backgroundServiceView.css.js';
@@ -463,26 +464,20 @@ export class EventDataNode extends DataGrid.DataGrid.DataGridNode {
         const preview = new UI.Widget.VBox();
         preview.element.classList.add('background-service-metadata');
         preview.element.setAttribute('jslog', `${VisualLogging.section('metadata')}`);
-        for (const entry of this.eventMetadata) {
-            const div = document.createElement('div');
-            div.classList.add('background-service-metadata-entry');
-            div.createChild('div', 'background-service-metadata-name').textContent = entry.key + ': ';
-            if (entry.value) {
-                div.createChild('div', 'background-service-metadata-value source-code').textContent = entry.value;
-            }
-            else {
-                div.createChild('div', 'background-service-metadata-value background-service-empty-value').textContent =
-                    i18nString(UIStrings.empty);
-            }
-            preview.element.appendChild(div);
-        }
-        if (!preview.element.children.length) {
-            const div = document.createElement('div');
-            div.classList.add('background-service-metadata-entry');
-            div.createChild('div', 'background-service-metadata-name background-service-empty-value').textContent =
-                i18nString(UIStrings.noMetadataForThisEvent);
-            preview.element.appendChild(div);
-        }
+        // clang-format off
+        // eslint-disable-next-line @devtools/no-lit-render-outside-of-view
+        render(html `${this.eventMetadata.length > 0 ? this.eventMetadata.map(entry => html `
+        <div class="background-service-metadata-entry">
+          <div class="background-service-metadata-name">${entry.key}: </div>${entry.value ?
+            html `<div class="background-service-metadata-value source-code">${entry.value}</div>` :
+            html `<div class="background-service-metadata-value background-service-empty-value">${i18nString(UIStrings.empty)}</div>`}
+        </div>
+      `) : html `
+        <div class="background-service-metadata-entry">
+          <div class="background-service-metadata-name background-service-empty-value">${i18nString(UIStrings.noMetadataForThisEvent)}</div>
+        </div>
+      `}`, preview.element, { host: this });
+        // clang-format on
         return preview;
     }
 }

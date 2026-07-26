@@ -2,6 +2,7 @@ import '../../ui/kit/kit.js';
 import * as Common from '../../core/common/common.js';
 import * as Root from '../../core/root/root.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as SettingUIRegistration from '../../ui/settings/settings.js';
 export declare class SettingsScreen extends UI.Widget.VBox implements UI.View.ViewLocationResolver {
     private readonly tabbedLocation;
     private keybindsTab?;
@@ -27,7 +28,7 @@ export declare class GenericSettingsTab extends UI.Widget.VBox implements Settin
     private readonly settingToControl;
     private readonly containerElement;
     constructor();
-    static isSettingVisible(setting: Common.Settings.SettingRegistration): boolean;
+    static isSettingVisible(setting: SettingUIRegistration.SettingUIRegistration.RegisteredSettingUI): boolean;
     wasShown(): void;
     willHide(): void;
     private updateSyncSection;

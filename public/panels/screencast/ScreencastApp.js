@@ -23,7 +23,9 @@ export class ScreencastApp {
     screenCaptureModel;
     screencastView;
     rootView;
-    constructor() {
+    #universe;
+    constructor(universe) {
+        this.#universe = universe;
         this.enabledSetting = Common.Settings.Settings.instance().createSetting('screencast-enabled', true);
         this.toggleButton = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.toggleScreencast), 'devices');
         this.toggleButton.setToggled(this.enabledSetting.get());
@@ -31,14 +33,17 @@ export class ScreencastApp {
         this.toggleButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, this.toggleButtonClicked, this);
         SDK.TargetManager.TargetManager.instance().observeModels(SDK.ScreenCaptureModel.ScreenCaptureModel, this);
     }
-    static instance() {
+    static instance(universe) {
         if (!appInstance) {
-            appInstance = new ScreencastApp();
+            if (!universe) {
+                throw new Error('ScreencastApp.instance() requires a Universe on initial instantiation');
+            }
+            appInstance = new ScreencastApp(universe);
         }
         return appInstance;
     }
     presentUI(document) {
-        this.rootView = new UI.RootView.RootView();
+        this.rootView = new UI.RootView.RootView(this.#universe);
         this.rootView.registerRequiredCSS(UI.inspectorCommonStyles);
         this.rootSplitWidget =
             new UI.SplitWidget.SplitWidget(false, true, 'inspector-view.screencast-split-view-state', 300, 300);
@@ -117,8 +122,8 @@ export class ScreencastAppProvider {
         }
         return screencastAppProviderInstance;
     }
-    createApp() {
-        return ScreencastApp.instance();
+    createApp(universe) {
+        return ScreencastApp.instance(universe);
     }
 }
 //# sourceMappingURL=ScreencastApp.js.map

@@ -338,6 +338,7 @@
       <include file="core/root/root.js" name="CORE_ROOT_ROOT_JS" resource_path="core/root/root.js" type="BINDATA" compress="false"/>
       <include file="core/sdk/sdk-meta.js" name="CORE_SDK_SDK_META_JS" resource_path="core/sdk/sdk-meta.js" type="BINDATA" compress="false"/>
       <include file="core/sdk/sdk.js" name="CORE_SDK_SDK_JS" resource_path="core/sdk/sdk.js" type="BINDATA" compress="false"/>
+      <include file="core/text_utils/text_utils.js" name="CORE_TEXT_UTILS_TEXT_UTILS_JS" resource_path="core/text_utils/text_utils.js" type="BINDATA" compress="false"/>
       <include file="design_system_tokens.css" name="DESIGN_SYSTEM_TOKENS_CSS" resource_path="design_system_tokens.css" type="BINDATA" compress="false"/>
       <include file="device_mode_emulation_frame.html" name="DEVICE_MODE_EMULATION_FRAME_HTML" resource_path="device_mode_emulation_frame.html" type="BINDATA" compress="false"/>
       <include file="devtools_app.html" name="DEVTOOLS_APP_HTML" resource_path="devtools_app.html" type="BINDATA" compress="false"/>
@@ -411,6 +412,7 @@
       <include file="models/ai_code_completion/ai_code_completion.js" name="MODELS_AI_CODE_COMPLETION_AI_CODE_COMPLETION_JS" resource_path="models/ai_code_completion/ai_code_completion.js" type="BINDATA" compress="false"/>
       <include file="models/ai_code_generation/ai_code_generation.js" name="MODELS_AI_CODE_GENERATION_AI_CODE_GENERATION_JS" resource_path="models/ai_code_generation/ai_code_generation.js" type="BINDATA" compress="false"/>
       <include file="models/autofill_manager/autofill_manager.js" name="MODELS_AUTOFILL_MANAGER_AUTOFILL_MANAGER_JS" resource_path="models/autofill_manager/autofill_manager.js" type="BINDATA" compress="false"/>
+      <include file="models/badges/badges-meta.js" name="MODELS_BADGES_BADGES_META_JS" resource_path="models/badges/badges-meta.js" type="BINDATA" compress="false"/>
       <include file="models/badges/badges.js" name="MODELS_BADGES_BADGES_JS" resource_path="models/badges/badges.js" type="BINDATA" compress="false"/>
       <include file="models/bindings/bindings.js" name="MODELS_BINDINGS_BINDINGS_JS" resource_path="models/bindings/bindings.js" type="BINDATA" compress="false"/>
       <include file="models/breakpoints/breakpoints.js" name="MODELS_BREAKPOINTS_BREAKPOINTS_JS" resource_path="models/breakpoints/breakpoints.js" type="BINDATA" compress="false"/>
@@ -432,18 +434,12 @@
       <include file="models/issues_manager/descriptions/CompatibilityModeQuirks.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_COMPATIBILITYMODEQUIRKS_MD" resource_path="models/issues_manager/descriptions/CompatibilityModeQuirks.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/CookieAttributeValueExceedsMaxSize.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_COOKIEATTRIBUTEVALUEEXCEEDSMAXSIZE_MD" resource_path="models/issues_manager/descriptions/CookieAttributeValueExceedsMaxSize.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/LowTextContrast.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_LOWTEXTCONTRAST_MD" resource_path="models/issues_manager/descriptions/LowTextContrast.md" type="BINDATA" compress="false"/>
-      <include file="models/issues_manager/descriptions/SameSiteExcludeContextDowngradeRead.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_SAMESITEEXCLUDECONTEXTDOWNGRADEREAD_MD" resource_path="models/issues_manager/descriptions/SameSiteExcludeContextDowngradeRead.md" type="BINDATA" compress="false"/>
-      <include file="models/issues_manager/descriptions/SameSiteExcludeContextDowngradeSet.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_SAMESITEEXCLUDECONTEXTDOWNGRADESET_MD" resource_path="models/issues_manager/descriptions/SameSiteExcludeContextDowngradeSet.md" type="BINDATA" compress="false"/>
-      <include file="models/issues_manager/descriptions/SameSiteExcludeNavigationContextDowngrade.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_SAMESITEEXCLUDENAVIGATIONCONTEXTDOWNGRADE_MD" resource_path="models/issues_manager/descriptions/SameSiteExcludeNavigationContextDowngrade.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/SameSiteNoneInsecureErrorRead.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_SAMESITENONEINSECUREERRORREAD_MD" resource_path="models/issues_manager/descriptions/SameSiteNoneInsecureErrorRead.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/SameSiteNoneInsecureErrorSet.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_SAMESITENONEINSECUREERRORSET_MD" resource_path="models/issues_manager/descriptions/SameSiteNoneInsecureErrorSet.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/SameSiteNoneInsecureWarnRead.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_SAMESITENONEINSECUREWARNREAD_MD" resource_path="models/issues_manager/descriptions/SameSiteNoneInsecureWarnRead.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/SameSiteNoneInsecureWarnSet.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_SAMESITENONEINSECUREWARNSET_MD" resource_path="models/issues_manager/descriptions/SameSiteNoneInsecureWarnSet.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/SameSiteUnspecifiedLaxAllowUnsafeRead.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_SAMESITEUNSPECIFIEDLAXALLOWUNSAFEREAD_MD" resource_path="models/issues_manager/descriptions/SameSiteUnspecifiedLaxAllowUnsafeRead.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/SameSiteUnspecifiedLaxAllowUnsafeSet.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_SAMESITEUNSPECIFIEDLAXALLOWUNSAFESET_MD" resource_path="models/issues_manager/descriptions/SameSiteUnspecifiedLaxAllowUnsafeSet.md" type="BINDATA" compress="false"/>
-      <include file="models/issues_manager/descriptions/SameSiteWarnCrossDowngradeRead.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_SAMESITEWARNCROSSDOWNGRADEREAD_MD" resource_path="models/issues_manager/descriptions/SameSiteWarnCrossDowngradeRead.md" type="BINDATA" compress="false"/>
-      <include file="models/issues_manager/descriptions/SameSiteWarnCrossDowngradeSet.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_SAMESITEWARNCROSSDOWNGRADESET_MD" resource_path="models/issues_manager/descriptions/SameSiteWarnCrossDowngradeSet.md" type="BINDATA" compress="false"/>
-      <include file="models/issues_manager/descriptions/SameSiteWarnStrictLaxDowngradeStrict.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_SAMESITEWARNSTRICTLAXDOWNGRADESTRICT_MD" resource_path="models/issues_manager/descriptions/SameSiteWarnStrictLaxDowngradeStrict.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/bounceTrackingMitigations.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_BOUNCETRACKINGMITIGATIONS_MD" resource_path="models/issues_manager/descriptions/bounceTrackingMitigations.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/clientHintMetaTagAllowListInvalidOrigin.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_CLIENTHINTMETATAGALLOWLISTINVALIDORIGIN_MD" resource_path="models/issues_manager/descriptions/clientHintMetaTagAllowListInvalidOrigin.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/clientHintMetaTagModifiedHTML.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_CLIENTHINTMETATAGMODIFIEDHTML_MD" resource_path="models/issues_manager/descriptions/clientHintMetaTagModifiedHTML.md" type="BINDATA" compress="false"/>
@@ -689,7 +685,6 @@
       <include file="models/source_map_scopes/source_map_scopes.js" name="MODELS_SOURCE_MAP_SCOPES_SOURCE_MAP_SCOPES_JS" resource_path="models/source_map_scopes/source_map_scopes.js" type="BINDATA" compress="false"/>
       <include file="models/stack_trace/stack_trace.js" name="MODELS_STACK_TRACE_STACK_TRACE_JS" resource_path="models/stack_trace/stack_trace.js" type="BINDATA" compress="false"/>
       <include file="models/stack_trace/stack_trace_impl.js" name="MODELS_STACK_TRACE_STACK_TRACE_IMPL_JS" resource_path="models/stack_trace/stack_trace_impl.js" type="BINDATA" compress="false"/>
-      <include file="models/text_utils/text_utils.js" name="MODELS_TEXT_UTILS_TEXT_UTILS_JS" resource_path="models/text_utils/text_utils.js" type="BINDATA" compress="false"/>
       <include file="models/trace/extras/extras.js" name="MODELS_TRACE_EXTRAS_EXTRAS_JS" resource_path="models/trace/extras/extras.js" type="BINDATA" compress="false"/>
       <include file="models/trace/handlers/handlers.js" name="MODELS_TRACE_HANDLERS_HANDLERS_JS" resource_path="models/trace/handlers/handlers.js" type="BINDATA" compress="false"/>
       <include file="models/trace/helpers/helpers.js" name="MODELS_TRACE_HELPERS_HELPERS_JS" resource_path="models/trace/helpers/helpers.js" type="BINDATA" compress="false"/>
@@ -906,6 +901,7 @@
       <include file="ui/legacy/legacy.js" name="UI_LEGACY_LEGACY_JS" resource_path="ui/legacy/legacy.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/theme_support/theme_support.js" name="UI_LEGACY_THEME_SUPPORT_THEME_SUPPORT_JS" resource_path="ui/legacy/theme_support/theme_support.js" type="BINDATA" compress="false"/>
       <include file="ui/lit/lit.js" name="UI_LIT_LIT_JS" resource_path="ui/lit/lit.js" type="BINDATA" compress="false"/>
+      <include file="ui/settings/settings.js" name="UI_SETTINGS_SETTINGS_JS" resource_path="ui/settings/settings.js" type="BINDATA" compress="false"/>
       <include file="ui/visual_logging/visual_logging.js" name="UI_VISUAL_LOGGING_VISUAL_LOGGING_JS" resource_path="ui/visual_logging/visual_logging.js" type="BINDATA" compress="false"/>
       <include file="worker_app.html" name="WORKER_APP_HTML" resource_path="worker_app.html" type="BINDATA" compress="false"/></includes>
   </release>

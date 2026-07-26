@@ -466,7 +466,6 @@ var ExtensionTrackAppender = class {
       padding: 2,
       nestingLevel: 1,
       collapsible: 0
-      /* PerfUI.FlameChart.GroupCollapsibleState.ALWAYS */
     });
     const group = buildTrackHeader(
       "extension",
@@ -2573,8 +2572,7 @@ var CounterUI = class {
     this.countersPane = countersPane;
     this.counter = counter;
     this.formatter = formatter;
-    this.setting = Common4.Settings.Settings.instance().createSetting("timeline-counters-graph-" + settingsKey, true);
-    this.setting.setTitle(title);
+    this.setting = Common4.Settings.Settings.instance().moduleSetting("timeline-counters-graph-" + settingsKey);
     this.filter = new UI.Toolbar.ToolbarSettingCheckbox(this.setting, title);
     const parsedColor = Common4.Color.parse(graphColor);
     if (parsedColor) {
@@ -2839,8 +2837,8 @@ import * as i18n37 from "./../../core/i18n/i18n.js";
 import * as Platform11 from "./../../core/platform/platform.js";
 import * as Root3 from "./../../core/root/root.js";
 import * as SDK8 from "./../../core/sdk/sdk.js";
+import * as TextUtils3 from "./../../core/text_utils/text_utils.js";
 import * as Bindings2 from "./../../models/bindings/bindings.js";
-import * as TextUtils3 from "./../../models/text_utils/text_utils.js";
 import * as Trace23 from "./../../models/trace/trace.js";
 import * as SourceMapsResolver3 from "./../../models/trace_source_maps_resolver/trace_source_maps_resolver.js";
 import * as Workspace3 from "./../../models/workspace/workspace.js";
@@ -3055,6 +3053,7 @@ __export(TimelinePanel_exports, {
   InsightRevealer: () => InsightRevealer,
   ParsedTraceRevealable: () => ParsedTraceRevealable,
   ParsedTraceRevealer: () => ParsedTraceRevealer,
+  ProfileFinishedRevealer: () => ProfileFinishedRevealer,
   SelectedInsight: () => SelectedInsight,
   TimeRangeRevealer: () => TimeRangeRevealer,
   TimelinePanel: () => TimelinePanel,
@@ -3070,10 +3069,10 @@ import * as i18n35 from "./../../core/i18n/i18n.js";
 import * as Platform10 from "./../../core/platform/platform.js";
 import * as Root2 from "./../../core/root/root.js";
 import * as SDK7 from "./../../core/sdk/sdk.js";
+import * as TextUtils2 from "./../../core/text_utils/text_utils.js";
 import * as AiAssistanceModel from "./../../models/ai_assistance/ai_assistance.js";
 import * as Badges from "./../../models/badges/badges.js";
 import * as CrUXManager3 from "./../../models/crux-manager/crux-manager.js";
-import * as TextUtils2 from "./../../models/text_utils/text_utils.js";
 import * as Trace22 from "./../../models/trace/trace.js";
 import * as SourceMapsResolver from "./../../models/trace_source_maps_resolver/trace_source_maps_resolver.js";
 import * as Workspace2 from "./../../models/workspace/workspace.js";
@@ -3271,7 +3270,7 @@ function* traceJsonGenerator(traceEvents, metadata) {
 import "./../../ui/legacy/legacy.js";
 import * as i18n21 from "./../../core/i18n/i18n.js";
 import * as Platform6 from "./../../core/platform/platform.js";
-import * as TextUtils from "./../../models/text_utils/text_utils.js";
+import * as TextUtils from "./../../core/text_utils/text_utils.js";
 import * as Workspace from "./../../models/workspace/workspace.js";
 import * as Buttons from "./../../ui/components/buttons/buttons.js";
 import * as UI3 from "./../../ui/legacy/legacy.js";
@@ -3853,8 +3852,15 @@ var TimelineController = class {
     if (options.capturePictures) {
       categoriesArray.push(disabledByDefault("devtools.timeline.layers"), disabledByDefault("devtools.timeline.picture"), disabledByDefault("blink.graphics_context_annotations"));
     }
+    const screenshotOptions = {};
     if (options.captureFilmStrip) {
       categoriesArray.push(disabledByDefault("devtools.screenshot"));
+      if (options.screenshotMaxSize !== void 0) {
+        screenshotOptions.screenshotMaxSize = options.screenshotMaxSize;
+      }
+      if (options.screenshotMaxCount !== void 0) {
+        screenshotOptions.screenshotMaxCount = options.screenshotMaxCount;
+      }
     }
     if (options.captureSelectorStats) {
       categoriesArray.push(disabledByDefault("blink.debug"));
@@ -3865,7 +3871,7 @@ var TimelineController = class {
     this.#navigationUrls = [];
     this.#fieldData = null;
     this.#recordingStartTime = Date.now();
-    const response = await this.startRecordingWithCategories(categoriesArray.join(","));
+    const response = await this.startRecordingWithCategories(categoriesArray.join(","), screenshotOptions);
     if (response.getError()) {
       await SDK5.TargetManager.TargetManager.instance().resumeAllTargets();
       throw new Error(response.getError());
@@ -3940,13 +3946,13 @@ var TimelineController = class {
       await this.tracingCompletePromise?.promise;
     }
   }
-  async startRecordingWithCategories(categories2) {
+  async startRecordingWithCategories(categories2, tracingStartOptions = {}) {
     if (!this.tracingManager) {
       throw new Error(i18nString12(UIStrings12.tracingNotSupported));
     }
     await SDK5.TargetManager.TargetManager.instance().suspendAllTargets("performance-timeline");
     this.tracingCompletePromise = Promise.withResolvers();
-    const response = await this.tracingManager.start(this, categories2);
+    const response = await this.tracingManager.start(this, categories2, tracingStartOptions);
     await this.warmupJsProfiler();
     PanelCommon.ExtensionServer.ExtensionServer.instance().profilingStarted();
     return response;
@@ -6345,25 +6351,25 @@ var UIStrings18 = {
    */
   dropTimelineFileOrUrlHere: "Drop trace file or URL here",
   /**
-   * @description Title of disable capture jsprofile setting in timeline panel of the performance panel
+   * @description Dropdown option in the performance panel for the default screenshot capture preset (500 x 500 pixels,
+   * up to 450 frames).
    */
-  disableJavascriptSamples: "Disable JavaScript samples",
+  screenshotPresetDefault: "500 x 500 px, up to 450 frames",
   /**
-   *@description Title of capture layers and pictures setting in timeline panel of the performance panel
+   * @description Dropdown option in the performance panel for a screenshot capture preset that uses smaller frames so
+   * more of them fit in the per-session memory budget (250 x 250 pixels, up to 1800 frames).
    */
-  enableAdvancedPaint: "Enable advanced paint instrumentation (slow)",
+  screenshotPresetMedium: "250 x 250 px, up to 1800 frames",
   /**
-   * @description Title of CSS selector stats setting in timeline panel of the performance panel
+   * @description Dropdown option in the performance panel for a screenshot capture preset that uses higher-resolution
+   * frames at the cost of capturing fewer of them (1000 x 1000 pixels, up to 100 frames).
    */
-  enableSelectorStats: "Enable CSS selector stats (slow)",
+  screenshotPresetLarge: "1000 x 1000 px, up to 100 frames",
   /**
-   * @description Title of show screenshots setting in timeline panel of the performance panel
+   * @description Dropdown option in the performance panel for a screenshot capture preset that uses very small frames
+   * so many of them fit in the per-session memory budget (100 x 100 pixels, up to 11250 frames).
    */
-  screenshots: "Screenshots",
-  /**
-   * @description Text for the memory of the page
-   */
-  memory: "Memory",
+  screenshotPresetTiny: "100 x 100 px, up to 11250 frames",
   /**
    * @description Text to clear content
    */
@@ -6494,10 +6500,6 @@ var UIStrings18 = {
    */
   showDataAddedByExtensions: "Show data added by extensions of the Performance panel",
   /**
-   * Label for a checkbox that toggles the visibility of data added by extensions of this panel (Performance).
-   */
-  showCustomtracks: "Show custom tracks",
-  /**
    * @description Tooltip for the the sidebar toggle in the Performance panel. Command to open/show the sidebar.
    */
   showSidebar: "Show sidebar",
@@ -6543,10 +6545,6 @@ var UIStrings18 = {
    */
   timelineScrollPan: "Scroll & Pan",
   /**
-   * @description Title for the Dim 3rd Parties checkbox.
-   */
-  dimThirdParties: "Dim 3rd parties",
-  /**
    * @description Description for the Dim 3rd Parties checkbox tooltip describing how 3rd parties are classified.
    */
   thirdPartiesByThirdPartyWeb: "3rd parties classified by third-party-web",
@@ -6557,6 +6555,32 @@ var UIStrings18 = {
 };
 var str_18 = i18n35.i18n.registerUIStrings("panels/timeline/TimelinePanel.ts", UIStrings18);
 var i18nString18 = i18n35.i18n.getLocalizedString.bind(void 0, str_18);
+var SCREENSHOT_CAPTURE_PRESETS = [
+  {
+    key: "500-450",
+    maxSize: 500,
+    maxCount: 450,
+    label: () => i18nString18(UIStrings18.screenshotPresetDefault)
+  },
+  {
+    key: "250-1800",
+    maxSize: 250,
+    maxCount: 1800,
+    label: () => i18nString18(UIStrings18.screenshotPresetMedium)
+  },
+  {
+    key: "1000-100",
+    maxSize: 1e3,
+    maxCount: 100,
+    label: () => i18nString18(UIStrings18.screenshotPresetLarge)
+  },
+  {
+    key: "100-11250",
+    maxSize: 100,
+    maxCount: 11250,
+    label: () => i18nString18(UIStrings18.screenshotPresetTiny)
+  }
+];
 var timelinePanelInstance;
 var SOURCE_MAP_LOAD_TIMEOUT_MS = 5e3;
 var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMixin(UI8.Panel.Panel) {
@@ -6570,6 +6594,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
   disableCaptureJSProfileSetting;
   captureLayersAndPicturesSetting;
   captureSelectorStatsSetting;
+  screenshotCaptureModeSetting;
   #thirdPartyTracksSetting;
   showScreenshotsSetting;
   showMemorySetting;
@@ -6698,49 +6723,18 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     this.recordReloadAction = UI8.ActionRegistry.ActionRegistry.instance().getAction("timeline.record-reload");
     this.#historyManager = new TimelineHistoryManager(this.#minimapComponent, this.#isNode);
     this.traceLoadStart = null;
-    this.disableCaptureJSProfileSetting = Common10.Settings.Settings.instance().createSetting(
-      "timeline-disable-js-sampling",
-      false,
-      "Session"
-      /* Common.Settings.SettingStorageType.SESSION */
-    );
-    this.disableCaptureJSProfileSetting.setTitle(i18nString18(UIStrings18.disableJavascriptSamples));
-    this.captureLayersAndPicturesSetting = Common10.Settings.Settings.instance().createSetting(
-      "timeline-capture-layers-and-pictures",
-      false,
-      "Session"
-      /* Common.Settings.SettingStorageType.SESSION */
-    );
-    this.captureLayersAndPicturesSetting.setTitle(i18nString18(UIStrings18.enableAdvancedPaint));
-    this.captureSelectorStatsSetting = Common10.Settings.Settings.instance().createSetting(
-      "timeline-capture-selector-stats",
-      false,
-      "Session"
-      /* Common.Settings.SettingStorageType.SESSION */
-    );
-    this.captureSelectorStatsSetting.setTitle(i18nString18(UIStrings18.enableSelectorStats));
-    this.showScreenshotsSetting = Common10.Settings.Settings.instance().createSetting("timeline-show-screenshots", !this.#isNode);
-    this.showScreenshotsSetting.setTitle(i18nString18(UIStrings18.screenshots));
+    this.disableCaptureJSProfileSetting = Common10.Settings.Settings.instance().moduleSetting("timeline-disable-js-sampling");
+    this.captureLayersAndPicturesSetting = Common10.Settings.Settings.instance().moduleSetting("timeline-capture-layers-and-pictures");
+    this.captureSelectorStatsSetting = Common10.Settings.Settings.instance().moduleSetting("timeline-capture-selector-stats");
+    this.screenshotCaptureModeSetting = Common10.Settings.Settings.instance().moduleSetting("timeline-screenshot-capture-mode");
+    this.showScreenshotsSetting = Common10.Settings.Settings.instance().moduleSetting("timeline-show-screenshots");
     this.showScreenshotsSetting.addChangeListener(this.updateMiniMap, this);
-    this.showMemorySetting = Common10.Settings.Settings.instance().createSetting(
-      "timeline-show-memory",
-      false,
-      "Session"
-      /* Common.Settings.SettingStorageType.SESSION */
-    );
-    this.showMemorySetting.setTitle(i18nString18(UIStrings18.memory));
+    this.showMemorySetting = Common10.Settings.Settings.instance().moduleSetting("timeline-show-memory");
     this.showMemorySetting.addChangeListener(this.onMemoryModeChanged, this);
-    this.#dimThirdPartiesSetting = Common10.Settings.Settings.instance().createSetting(
-      "timeline-dim-third-parties",
-      false,
-      "Session"
-      /* Common.Settings.SettingStorageType.SESSION */
-    );
-    this.#dimThirdPartiesSetting.setTitle(i18nString18(UIStrings18.dimThirdParties));
+    this.#dimThirdPartiesSetting = Common10.Settings.Settings.instance().moduleSetting("timeline-dim-third-parties");
     this.#dimThirdPartiesSetting.addChangeListener(this.onDimThirdPartiesChanged, this);
     this.#thirdPartyTracksSetting = _TimelinePanel.extensionDataVisibilitySetting();
     this.#thirdPartyTracksSetting.addChangeListener(this.#extensionDataVisibilityChanged, this);
-    this.#thirdPartyTracksSetting.setTitle(i18nString18(UIStrings18.showCustomtracks));
     const timelineToolbarContainer = this.element.createChild("div", "timeline-toolbar-container");
     timelineToolbarContainer.setAttribute("jslog", `${VisualLogging4.toolbar()}`);
     timelineToolbarContainer.role = "toolbar";
@@ -6863,19 +6857,6 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     this.#showLandingPage();
     this.updateTimelineControls();
     SDK7.TargetManager.TargetManager.instance().addEventListener("SuspendStateChanged", this.onSuspendStateChanged, this);
-    const profilerModels = SDK7.TargetManager.TargetManager.instance().models(SDK7.CPUProfilerModel.CPUProfilerModel);
-    for (const model of profilerModels) {
-      for (const message of model.registeredConsoleProfileMessages) {
-        this.consoleProfileFinished(message);
-      }
-    }
-    SDK7.TargetManager.TargetManager.instance().observeModels(SDK7.CPUProfilerModel.CPUProfilerModel, {
-      modelAdded: (model) => {
-        model.addEventListener("ConsoleProfileFinished", (event) => this.consoleProfileFinished(event.data));
-      },
-      modelRemoved: (_model) => {
-      }
-    });
   }
   zoomEvent(event) {
     this.flameChart.zoomEvent(event);
@@ -6944,7 +6925,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     return this.#traceEngineModel;
   }
   static extensionDataVisibilitySetting() {
-    return Common10.Settings.Settings.instance().createSetting("timeline-show-extension-data", true);
+    return Common10.Settings.Settings.instance().moduleSetting("timeline-show-extension-data");
   }
   searchableView() {
     return this.#searchableView;
@@ -7368,6 +7349,24 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     networkThrottlingPane.append(this.createNetworkConditionsSelectToolbarItem().element);
     this.settingsPane.append(SettingsUI.SettingsUI.createSettingCheckbox(this.captureLayersAndPicturesSetting.title(), this.captureLayersAndPicturesSetting, i18nString18(UIStrings18.capturesAdvancedPaint)));
     this.settingsPane.append(SettingsUI.SettingsUI.createSettingCheckbox(this.disableCaptureJSProfileSetting.title(), this.disableCaptureJSProfileSetting, i18nString18(UIStrings18.disablesJavascriptSampling)));
+    const screenshotPresetSelect = new UI8.Toolbar.ToolbarComboBox(() => this.screenshotCaptureModeSetting.set(screenshotPresetSelect.selectedOption().value), this.screenshotCaptureModeSetting.title(), "", "screenshot-capture-mode");
+    let selectedScreenshotPresetIndex = 0;
+    for (let i = 0; i < SCREENSHOT_CAPTURE_PRESETS.length; ++i) {
+      const preset = SCREENSHOT_CAPTURE_PRESETS[i];
+      screenshotPresetSelect.addOption(screenshotPresetSelect.createOption(preset.label(), preset.key, `tracing.screenshot-size.${preset.key}`));
+      if (preset.key === this.screenshotCaptureModeSetting.get()) {
+        selectedScreenshotPresetIndex = i;
+      }
+    }
+    screenshotPresetSelect.setSelectedIndex(selectedScreenshotPresetIndex);
+    const screenshotPresetPane = this.settingsPane.createChild("div");
+    screenshotPresetPane.append(this.screenshotCaptureModeSetting.title());
+    screenshotPresetPane.append(screenshotPresetSelect.element);
+    const updateScreenshotPresetVisibility = () => {
+      screenshotPresetPane.hidden = !this.showScreenshotsSetting.get();
+    };
+    this.showScreenshotsSetting.addChangeListener(updateScreenshotPresetVisibility);
+    updateScreenshotPresetVisibility();
     const thirdPartyCheckbox = this.createSettingCheckbox(this.#thirdPartyTracksSetting, i18nString18(UIStrings18.showDataAddedByExtensions));
     const localLink = Link.create("https://developer.chrome.com/docs/devtools/performance/extension", i18nString18(UIStrings18.learnMore));
     localLink.style.marginLeft = "5px";
@@ -7844,12 +7843,14 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
         throw new Error("Could not create Timeline controller");
       }
       const urlToTrace = await this.#evaluateInspectedURL();
+      const screenshotPreset = SCREENSHOT_CAPTURE_PRESETS.find((p) => p.key === this.screenshotCaptureModeSetting.get()) ?? SCREENSHOT_CAPTURE_PRESETS[0];
       await this.controller.startRecording({
         enableJSSampling: !this.disableCaptureJSProfileSetting.get(),
         capturePictures: this.captureLayersAndPicturesSetting.get(),
         captureFilmStrip: this.showScreenshotsSetting.get(),
         captureSelectorStats: this.captureSelectorStatsSetting.get(),
-        navigateToUrl: this.recordingPageReload ? urlToTrace : void 0
+        navigateToUrl: this.recordingPageReload ? urlToTrace : void 0,
+        ...this.showScreenshotsSetting.get() ? { screenshotMaxSize: screenshotPreset.maxSize, screenshotMaxCount: screenshotPreset.maxCount } : {}
       });
       this.recordingStarted();
     } catch (e) {
@@ -7941,10 +7942,6 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
   }
   onSuspendStateChanged() {
     this.updateTimelineControls();
-  }
-  consoleProfileFinished(data) {
-    this.loadFromCpuProfile(data.cpuProfile);
-    void UI8.InspectorView.InspectorView.instance().showPanel("timeline");
   }
   updateTimelineControls() {
     if (this.#viewMode.mode === "VIEWING_TRACE") {
@@ -8857,6 +8854,12 @@ var BottomUpProfileRevealer = class {
     panel.getFlameChart().selectDetailsViewTab(Tab.BottomUp, revealable.node ?? null);
   }
 };
+var ProfileFinishedRevealer = class {
+  async reveal(data) {
+    await UI8.ViewManager.ViewManager.instance().showView("timeline");
+    TimelinePanel.instance().loadFromCpuProfile(data.cpuProfile);
+  }
+};
 var ActionDelegate = class {
   handleAction(context, actionId) {
     const panel = context.flavor(TimelinePanel);
@@ -8916,7 +8919,7 @@ var UIStrings19 = {
    * @example {100ms (at 200ms)} PH1
    */
   emptyPlaceholder: "{PH1}",
-  // eslint-disable-line @devtools/l10n-no-locked-or-placeholder-only-phrase
+  // eslint-disable-line @devtools/l10n-uistrings-text-style
   /**
    * @description Text for timestamps of items
    */
@@ -9032,7 +9035,7 @@ var UIStrings19 = {
   /**
    * @description Text to refer to the URL associated with a given event.
    */
-  url: "Url",
+  url: "URL",
   /**
    * @description Text to indicate to the user the size of the cache (as a filesize - e.g. 5mb).
    */
@@ -9312,6 +9315,7 @@ var UIStrings19 = {
 var str_19 = i18n37.i18n.registerUIStrings("panels/timeline/TimelineUIUtils.ts", UIStrings19);
 var i18nString19 = i18n37.i18n.getLocalizedString.bind(void 0, str_19);
 var URL_REGEX = /(?:[a-zA-Z][a-zA-Z0-9+.-]{2,}:\/\/)[^\s"]{2,}[^\s"'\)\}\],:;.!?]/u;
+var ALWAYS_LINKIFIED_SCHEMES = /* @__PURE__ */ new Set(["http", "https"]);
 var eventDispatchDesciptors;
 var colorGenerator;
 var { SamplesIntegrator } = Trace23.Helpers.SamplesIntegrator;
@@ -9604,7 +9608,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
   }
   static maybeCreateLinkElement(url) {
     const parsedURL = new Common11.ParsedURL.ParsedURL(url);
-    if (!parsedURL.scheme) {
+    if (!_TimelineUIUtils.isLinkifiableScheme(parsedURL.scheme)) {
       return null;
     }
     const splitResult = Common11.ParsedURL.ParsedURL.splitLineAndColumn(url);
@@ -9619,6 +9623,18 @@ var TimelineUIUtils = class _TimelineUIUtils {
       omitOrigin: true
     };
     return LegacyComponents.Linkifier.Linkifier.linkifyURL(rawURL, options);
+  }
+  /**
+   * Don't linkify URLs to privileged schemes. See https://crbug.com/530450502.
+   */
+  static isLinkifiableScheme(scheme) {
+    if (ALWAYS_LINKIFIED_SCHEMES.has(scheme)) {
+      return true;
+    }
+    if (LegacyComponents.Linkifier.Linkifier.isRegisteredLinkHandlerScheme(scheme + ":")) {
+      return true;
+    }
+    return false;
   }
   /**
    * Takes an input string and parses it to look for links. It does this by
@@ -9735,7 +9751,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
       if (userDetail && Object.keys(userDetail).length) {
         const hasExclusiveLink = typeof userDetail === "object" && typeof userDetail.url === "string" && typeof userDetail.description === "string";
         if (hasExclusiveLink && Boolean(Root3.Runtime.hostConfig.devToolsDeepLinksViaExtensibilityApi?.enabled)) {
-          const linkElement = this.maybeCreateLinkElement(String(userDetail.url));
+          const linkElement = _TimelineUIUtils.maybeCreateLinkElement(String(userDetail.url));
           if (linkElement) {
             contentHelper.appendElementRow(String(userDetail.description), linkElement);
             delete userDetail.url;
@@ -15493,6 +15509,11 @@ var timelineFlameChartView_css_default = `/*
   top: unset;
   bottom: 0;
   height: 100px;
+
+  &.positioned-by-event {
+    top: 0;
+    bottom: unset;
+  }
 }
 
 .overlay-type-TIMINGS_MARKER {

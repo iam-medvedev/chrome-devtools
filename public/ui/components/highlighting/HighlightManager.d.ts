@@ -1,4 +1,4 @@
-import type * as TextUtils from '../../../models/text_utils/text_utils.js';
+import type * as TextUtils from '../../../core/text_utils/text_utils.js';
 export declare class RangeWalker {
     #private;
     readonly root: Node;
@@ -15,6 +15,7 @@ export declare class HighlightManager {
     static instance(opts?: {
         forceNew: boolean | null;
     } | undefined): HighlightManager;
+    static removeInstance(): void;
     addHighlights(ranges: Range[]): void;
     removeHighlights(ranges: Range[]): void;
     addCurrentHighlight(range: Range): void;

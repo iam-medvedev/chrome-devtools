@@ -5,15 +5,17 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Persistence from '../../models/persistence/persistence.js';
-import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import { createWorkspaceProject } from '../../testing/OverridesHelpers.js';
 import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
+import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
+import * as Root from '../root/root.js';
+import * as TextUtils from '../text_utils/text_utils.js';
 import * as SDK from './sdk.js';
 const { urlString } = Platform.DevToolsPath;
 const LONG_URL_PART = 'LoremIpsumDolorSitAmetConsecteturAdipiscingElitPhasellusVitaeOrciInAugueCondimentumTinciduntUtEgetDolorQuisqueEfficiturUltricesTinciduntVivamusVelitPurusCommodoQuisErosSitAmetTemporMalesuadaNislNullamTtempusVulputateAugueEgetScelerisqueLacusVestibulumNon/index.html';
@@ -71,7 +73,7 @@ describe('NetworkManager', () => {
                 result: {
                     postData: encodedPostData,
                     base64Encoded: true,
-                }
+                },
             }));
             const request = await createPostRequestWithHeaders({
                 'Content-Type': 'application/octet-stream',
@@ -97,7 +99,7 @@ describe('NetworkManager', () => {
                 result: {
                     postData: plainPostData,
                     base64Encoded: false,
-                }
+                },
             }));
             const request = await createPostRequestWithHeaders({ 'Content-Type': 'application/x-www-form-urlencoded' }, universe, connection);
             const contentData = await SDK.NetworkManager.NetworkManager.requestPostDataContentData(request);
@@ -118,7 +120,7 @@ describe('NetworkManager', () => {
                 result: {
                     postData: encodedPostData,
                     base64Encoded: true,
-                }
+                },
             }));
             const request = await createPostRequestWithHeaders({
                 'Content-Type': 'application/octet-stream',
@@ -174,7 +176,7 @@ describe('NetworkManager', () => {
                     sendBufferSize: 1003,
                     receiveBufferSize: 1004,
                     dnsQueryType: "ipv4" /* Protocol.Network.DirectSocketDnsQueryType.Ipv4 */,
-                }
+                },
             });
             assert.strictEqual(req.resourceType(), Common.ResourceType.resourceTypes.DirectSocket);
             assert.strictEqual(req.issueTime(), 1000);
@@ -261,7 +263,7 @@ describe('NetworkManager', () => {
                         remotePort: 1010,
                         localAddr: '127.0.0.1',
                         localPort: 8000,
-                    }
+                    },
                 });
             });
         });
@@ -458,7 +460,7 @@ describe('NetworkManager', () => {
                         type: SDK.NetworkRequest.DirectSocketChunkType.SEND,
                         data: 'c2VudCBkYXRh',
                         timestamp: 3000,
-                    }
+                    },
                 },
                 {
                     description: 'adds RECEIVED chunk to request successfully',
@@ -467,7 +469,7 @@ describe('NetworkManager', () => {
                         type: SDK.NetworkRequest.DirectSocketChunkType.RECEIVE,
                         data: 'cmVjZWl2ZWQgZGF0YQ==',
                         timestamp: 4000,
-                    }
+                    },
                 },
             ];
             testCases.forEach(testCase => {
@@ -499,6 +501,59 @@ describe('NetworkManager', () => {
                     assert.deepEqual(chunks[0], testCase.expectedChunk, 'Chunk details should match expected');
                 });
             });
+        });
+    });
+    describe('WebSocket handling', () => {
+        it('updates request with handshake info on CDP events', () => {
+            const networkManager = new SDK.NetworkManager.NetworkManager(new TestUniverse().createTarget({}));
+            const networkDispatcher = new SDK.NetworkManager.NetworkDispatcher(networkManager);
+            const updatedRequests = [];
+            networkManager.addEventListener(SDK.NetworkManager.Events.RequestUpdated, event => {
+                updatedRequests.push(event.data);
+            });
+            networkDispatcher.webSocketCreated({
+                requestId: 'mockWsId',
+                url: 'ws://example.com/ws',
+                initiator: { type: "script" /* Protocol.Network.InitiatorType.Script */ },
+            });
+            assert.lengthOf(updatedRequests, 0);
+            networkDispatcher.webSocketWillSendHandshakeRequest({
+                requestId: 'mockWsId',
+                timestamp: 1000,
+                wallTime: 1000,
+                request: {
+                    headers: { Connection: 'Upgrade', Upgrade: 'websocket', 'Sec-WebSocket-Key': 'key', 'Sec-WebSocket-Version': '13' },
+                },
+            });
+            assert.lengthOf(updatedRequests, 1);
+            let req = updatedRequests[updatedRequests.length - 1];
+            assert.strictEqual(req.requestMethod, 'GET');
+            assert.deepEqual(req.requestHeaders(), [
+                { name: 'Connection', value: 'Upgrade' },
+                { name: 'Upgrade', value: 'websocket' },
+                { name: 'Sec-WebSocket-Key', value: 'key' },
+                { name: 'Sec-WebSocket-Version', value: '13' },
+            ]);
+            networkDispatcher.webSocketHandshakeResponseReceived({
+                requestId: 'mockWsId',
+                timestamp: 1001,
+                response: {
+                    status: 101,
+                    statusText: 'Switching Protocols',
+                    headers: { Connection: 'Upgrade', Upgrade: 'websocket', 'Sec-WebSocket-Accept': 'accept' },
+                    headersText: 'HTTP/1.1 101 Switching Protocols',
+                },
+            });
+            assert.lengthOf(updatedRequests, 2);
+            req = updatedRequests[updatedRequests.length - 1];
+            assert.strictEqual(req.statusCode, 101);
+            assert.strictEqual(req.statusText, 'Switching Protocols');
+            assert.deepEqual(req.responseHeaders, [
+                { name: 'Connection', value: 'Upgrade' },
+                { name: 'Upgrade', value: 'websocket' },
+                { name: 'Sec-WebSocket-Accept', value: 'accept' },
+            ]);
+            assert.strictEqual(req.responseHeadersText, 'HTTP/1.1 101 Switching Protocols');
         });
     });
     describe('Direct UDP socket handling', () => {
@@ -881,15 +936,15 @@ describe('NetworkManager', () => {
                     eventPayload: {
                         // No remoteAddr/Port for connected.
                         message: { data: 'c2VudCBkYXRh==' },
-                        timestamp: 3100
+                        timestamp: 3100,
                     },
                     expectedChunk: {
                         type: SDK.NetworkRequest.DirectSocketChunkType.SEND,
                         data: 'c2VudCBkYXRh==',
                         timestamp: 3100,
                         remoteAddress: undefined,
-                        remotePort: undefined
-                    }
+                        remotePort: undefined,
+                    },
                 },
                 {
                     description: 'adds SENT chunk to request successfully (bound with address)',
@@ -899,8 +954,8 @@ describe('NetworkManager', () => {
                         data: 'Ym91bmQgc2VudA==',
                         timestamp: 3150,
                         remoteAddress: '10.0.0.1',
-                        remotePort: 4000
-                    }
+                        remotePort: 4000,
+                    },
                 },
                 {
                     description: 'adds SENT chunk to request successfully (bound with address, no port)',
@@ -910,8 +965,8 @@ describe('NetworkManager', () => {
                         data: 'Ym91bmQgc2VudCBwbA==',
                         timestamp: 3160,
                         remoteAddress: '10.0.0.2',
-                        remotePort: undefined
-                    }
+                        remotePort: undefined,
+                    },
                 },
                 {
                     description: 'adds RECEIVED chunk to request successfully (connected)',
@@ -921,8 +976,8 @@ describe('NetworkManager', () => {
                         data: 'cmVjZWl2ZWQgZGF0YQ==',
                         timestamp: 3200,
                         remoteAddress: undefined,
-                        remotePort: undefined
-                    }
+                        remotePort: undefined,
+                    },
                 },
                 {
                     description: 'adds RECEIVED chunk to request successfully (bound with address)',
@@ -932,8 +987,8 @@ describe('NetworkManager', () => {
                         data: 'Ym91bmQgcmVjZWl2ZWQ=',
                         timestamp: 3250,
                         remoteAddress: '10.0.0.3',
-                        remotePort: 4001
-                    }
+                        remotePort: 4001,
+                    },
                 },
             ];
             testCases.forEach(testCase => {
@@ -1116,11 +1171,185 @@ describe('NetworkManager', () => {
             assert.strictEqual(frames[0].text, 'Error during WebSocket handshake: Unexpected response code: 404');
         });
     });
+    describe('canResendRequest', () => {
+        setupLocaleHooks();
+        setupSettingsHooks();
+        setupRuntimeHooks();
+        it('returns false when request has no backendRequestId', () => {
+            const request = SDK.NetworkRequest.NetworkRequest.create('', urlString `https://example.test/`, urlString `https://example.test/`, null, null, null);
+            assert.isFalse(SDK.NetworkManager.NetworkManager.canResendRequest(request));
+        });
+        it('returns false when request is a redirect', async () => {
+            const universe = new TestUniverse();
+            const connection = new MockCDPConnection();
+            const networkManager = new SDK.NetworkManager.NetworkManager(universe.createTarget({ connection }));
+            const requestRedirectedPromise = networkManager.once(SDK.NetworkManager.Events.RequestRedirected);
+            networkManager.dispatcher.requestWillBeSent({
+                requestId: 'redirect-req',
+                loaderId: 'loader-1',
+                documentURL: 'https://example.test/',
+                request: { url: 'https://example.test/a', method: 'GET', headers: {} },
+                timestamp: 1,
+                wallTime: 1,
+                initiator: { type: "other" /* Protocol.Network.InitiatorType.Other */ },
+                type: "Fetch" /* Protocol.Network.ResourceType.Fetch */,
+            });
+            // Second requestWillBeSent with redirectResponse makes the original a redirect.
+            networkManager.dispatcher.requestWillBeSent({
+                requestId: 'redirect-req',
+                loaderId: 'loader-1',
+                documentURL: 'https://example.test/',
+                request: { url: 'https://example.test/b', method: 'GET', headers: {} },
+                timestamp: 2,
+                wallTime: 2,
+                initiator: { type: "other" /* Protocol.Network.InitiatorType.Other */ },
+                type: "Fetch" /* Protocol.Network.ResourceType.Fetch */,
+                redirectHasExtraInfo: false,
+                redirectResponse: {
+                    url: 'https://example.test/a',
+                    status: 302,
+                    statusText: 'Found',
+                    headers: {},
+                    mimeType: 'text/html',
+                    charset: '',
+                    connectionReused: false,
+                    connectionId: 0,
+                    encodedDataLength: 0,
+                    securityState: "secure" /* Protocol.Security.SecurityState.Secure */,
+                },
+            });
+            const newRequest = await requestRedirectedPromise;
+            const redirectedRequest = newRequest.redirectSource();
+            assert.isTrue(redirectedRequest.isRedirect());
+            assert.isFalse(SDK.NetworkManager.NetworkManager.canResendRequest(redirectedRequest));
+        });
+    });
+    describe('resendRequest', () => {
+        setupLocaleHooks();
+        setupSettingsHooks();
+        setupRuntimeHooks();
+        it('uses invoke_replayXHR for XHR requests', async () => {
+            const universe = new TestUniverse();
+            const connection = new MockCDPConnection();
+            const networkManager = new SDK.NetworkManager.NetworkManager(universe.createTarget({ connection }));
+            const requestStartedPromise = networkManager.once(SDK.NetworkManager.Events.RequestStarted);
+            networkManager.dispatcher.requestWillBeSent({
+                requestId: 'xhr-req',
+                loaderId: 'loader-1',
+                documentURL: 'https://example.test/',
+                request: { url: 'https://example.test/api', method: 'POST', headers: {} },
+                timestamp: 1,
+                wallTime: 1,
+                initiator: { type: "other" /* Protocol.Network.InitiatorType.Other */ },
+                type: "XHR" /* Protocol.Network.ResourceType.XHR */,
+            });
+            const { request } = await requestStartedPromise;
+            let replayedRequestId;
+            connection.setSuccessHandler('Network.replayXHR', params => {
+                replayedRequestId = params.requestId;
+                return {};
+            });
+            await SDK.NetworkManager.NetworkManager.resendRequest(request);
+            assert.strictEqual(replayedRequestId, 'xhr-req');
+        });
+        it('uses Runtime.evaluate with fetch, filtering forbidden headers', async () => {
+            const universe = new TestUniverse();
+            const connection = new MockCDPConnection();
+            const networkManager = new SDK.NetworkManager.NetworkManager(universe.createTarget({ connection }));
+            const requestStartedPromise = networkManager.once(SDK.NetworkManager.Events.RequestStarted);
+            networkManager.dispatcher.requestWillBeSent({
+                requestId: 'fetch-req',
+                loaderId: 'loader-1',
+                documentURL: 'https://example.test/',
+                request: {
+                    url: 'https://example.test/data.json',
+                    method: 'GET',
+                    headers: {
+                        accept: 'application/json',
+                        ':authority': 'example.test',
+                        ':method': 'GET',
+                        host: 'example.test',
+                        cookie: 'session=abc',
+                    },
+                    initialPriority: "Medium" /* Protocol.Network.ResourcePriority.Medium */,
+                    referrerPolicy: "origin" /* Protocol.Network.RequestReferrerPolicy.Origin */,
+                },
+                timestamp: 1,
+                wallTime: 1,
+                initiator: { type: "other" /* Protocol.Network.InitiatorType.Other */ },
+                type: "Fetch" /* Protocol.Network.ResourceType.Fetch */,
+                redirectHasExtraInfo: false,
+            });
+            const { request } = await requestStartedPromise;
+            let evaluatedExpression;
+            connection.setSuccessHandler('Runtime.evaluate', params => {
+                evaluatedExpression = params.expression;
+                return { result: { type: "object" /* Protocol.Runtime.RemoteObjectType.Object */ } };
+            });
+            // Provide a default execution context for the runtime model.
+            const runtimeModel = networkManager.target().model(SDK.RuntimeModel.RuntimeModel);
+            assert.exists(runtimeModel);
+            runtimeModel.executionContextCreated({
+                id: 1,
+                origin: 'https://example.test',
+                name: 'top',
+                uniqueId: 'ctx-1',
+            });
+            await SDK.NetworkManager.NetworkManager.resendRequest(request);
+            assert.isDefined(evaluatedExpression);
+            assert.include(evaluatedExpression, 'fetch(');
+            assert.include(evaluatedExpression, 'https://example.test/data.json');
+            assert.include(evaluatedExpression, '"credentials":"include"');
+            // Pseudo-headers and forbidden headers are excluded.
+            assert.notInclude(evaluatedExpression, ':authority');
+            assert.notInclude(evaluatedExpression, ':method');
+            assert.notInclude(evaluatedExpression, '"host"');
+            assert.notInclude(evaluatedExpression, '"cookie"');
+            // Allowed headers are included.
+            assert.include(evaluatedExpression, '"accept"');
+        });
+    });
 });
 describe('MultitargetNetworkManager', () => {
     let universe;
     beforeEach(() => {
         universe = new TestUniverse();
+    });
+    describe('User agent', () => {
+        it('is patched with Chrome version', () => {
+            const cases = [
+                'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Safari/537.36',
+                'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:46.0) Gecko/20100101 Firefox/46.0',
+                'GoogleChrome/%s Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Safari/537.36',
+                'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Safari/537.36 Edg/%s',
+            ];
+            const version = Root.Runtime.getChromeVersion();
+            let expected0 = cases[0];
+            const expected1 = cases[1];
+            let expected2 = cases[2];
+            let expected3 = cases[3];
+            if (version.length > 0) {
+                const appVer = version.split('.', 1)[0] + '.0.100.0';
+                expected0 = cases[0].replace('%s', version);
+                expected2 = cases[2].replace('%s', version);
+                expected3 = cases[3].replace('%s', version).replace('%s', appVer);
+            }
+            assert.strictEqual(SDK.NetworkManager.MultitargetNetworkManager.patchUserAgentWithChromeVersion(cases[0]), expected0);
+            assert.strictEqual(SDK.NetworkManager.MultitargetNetworkManager.patchUserAgentWithChromeVersion(cases[1]), expected1);
+            assert.strictEqual(SDK.NetworkManager.MultitargetNetworkManager.patchUserAgentWithChromeVersion(cases[2]), expected2);
+            assert.strictEqual(SDK.NetworkManager.MultitargetNetworkManager.patchUserAgentWithChromeVersion(cases[3]), expected3);
+        });
+        it('can be overridden manually', () => {
+            const target = universe.createTarget();
+            const networkAgent = target.networkAgent();
+            const setUserAgentOverrideSpy = sinon.spy(networkAgent, 'invoke_setUserAgentOverride');
+            universe.multitargetNetworkManager.setCustomUserAgentOverride('foobar with %s inside');
+            sinon.assert.calledOnce(setUserAgentOverrideSpy);
+            assert.deepEqual(setUserAgentOverrideSpy.firstCall.args[0], {
+                userAgent: 'foobar with %s inside',
+                userAgentMetadata: undefined,
+            });
+        });
     });
     describe('Trust Token done event', () => {
         it('is not lost when arriving before the corresponding requestWillBeSent event', () => {
@@ -1344,7 +1573,7 @@ describe('RequestConditions', () => {
     });
     it('loads settings with url', () => {
         universe.settings.createSetting('network-blocked-patterns', []).set([
-            { enabled: true, url: 'foo' }
+            { enabled: true, url: 'foo' },
         ]);
         const conditions = new SDK.NetworkManager.RequestConditions(universe.settings);
         const condition = conditions.conditions.next().value;
@@ -1371,7 +1600,7 @@ describe('RequestConditions', () => {
         assert.deepEqual(setting.get()[0], {
             enabled: true,
             urlPattern: '*://example.com',
-            conditions: "NO_THROTTLING" /* SDK.NetworkManager.PredefinedThrottlingConditionKey.NO_THROTTLING */
+            conditions: "NO_THROTTLING" /* SDK.NetworkManager.PredefinedThrottlingConditionKey.NO_THROTTLING */,
         });
         assert.deepEqual(setting.get()[1], { enabled: true, url: 'foo' });
     });
@@ -1413,32 +1642,32 @@ describe('RequestConditions', () => {
             conditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({
                 urlPattern: '*://nothrottle:*',
                 enabled: true,
-                conditions: "NO_THROTTLING" /* SDK.NetworkManager.PredefinedThrottlingConditionKey.NO_THROTTLING */
+                conditions: "NO_THROTTLING" /* SDK.NetworkManager.PredefinedThrottlingConditionKey.NO_THROTTLING */,
             }, universe.settings));
             conditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({
                 urlPattern: '*://block:*',
                 enabled: true,
-                conditions: "BLOCKING" /* SDK.NetworkManager.PredefinedThrottlingConditionKey.BLOCKING */
+                conditions: "BLOCKING" /* SDK.NetworkManager.PredefinedThrottlingConditionKey.BLOCKING */,
             }, universe.settings));
             conditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({
                 urlPattern: '*://throttle:*',
                 enabled: true,
-                conditions: "SPEED_3G" /* SDK.NetworkManager.PredefinedThrottlingConditionKey.SPEED_3G */
+                conditions: "SPEED_3G" /* SDK.NetworkManager.PredefinedThrottlingConditionKey.SPEED_3G */,
             }, universe.settings));
             conditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({
                 urlPattern: '*://disabled_nothrottle:*',
                 enabled: false,
-                conditions: "NO_THROTTLING" /* SDK.NetworkManager.PredefinedThrottlingConditionKey.NO_THROTTLING */
+                conditions: "NO_THROTTLING" /* SDK.NetworkManager.PredefinedThrottlingConditionKey.NO_THROTTLING */,
             }, universe.settings));
             conditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({
                 urlPattern: '*://disabled_block:*',
                 enabled: false,
-                conditions: "BLOCKING" /* SDK.NetworkManager.PredefinedThrottlingConditionKey.BLOCKING */
+                conditions: "BLOCKING" /* SDK.NetworkManager.PredefinedThrottlingConditionKey.BLOCKING */,
             }, universe.settings));
             conditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({
                 urlPattern: '*://disabled_throttle:*',
                 enabled: false,
-                conditions: "SPEED_3G" /* SDK.NetworkManager.PredefinedThrottlingConditionKey.SPEED_3G */
+                conditions: "SPEED_3G" /* SDK.NetworkManager.PredefinedThrottlingConditionKey.SPEED_3G */,
             }, universe.settings));
             conditions.applyConditions(false, null, agent);
             sinon.assert.notCalled(emulateNetworkConditions);
@@ -1456,14 +1685,14 @@ describe('RequestConditions', () => {
                         packetReordering: undefined,
                         connectionType: "cellular3g" /* Protocol.Network.ConnectionType.Cellular3g */,
                         offline: false,
-                    }]
+                    }],
             });
             sinon.assert.calledOnceWithExactly(setBlockedURLs, {
                 urlPatterns: [
                     { urlPattern: '*://foo*', block: true },
                     { urlPattern: '*://block:*', block: true },
                     { urlPattern: '*://throttle:*', block: false },
-                ]
+                ],
             });
             setBlockedURLs.resetHistory();
             emulateNetworkConditions.resetHistory();
@@ -1496,15 +1725,15 @@ describe('RequestConditions', () => {
                         packetReordering: undefined,
                         connectionType: "cellular4g" /* Protocol.Network.ConnectionType.Cellular4g */,
                         offline: true,
-                    }
-                ]
+                    },
+                ],
             });
             sinon.assert.calledOnceWithExactly(setBlockedURLs, {
                 urlPatterns: [
                     { urlPattern: '*://foo*', block: true },
                     { urlPattern: '*://block:*', block: true },
                     { urlPattern: '*://throttle:*', block: false },
-                ]
+                ],
             });
         });
         it('disables throttling and blocking when the effect gets disabled globally', () => {
@@ -1515,7 +1744,7 @@ describe('RequestConditions', () => {
             conditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({
                 urlPattern: '*://throttle:*',
                 enabled: true,
-                conditions: "SPEED_3G" /* SDK.NetworkManager.PredefinedThrottlingConditionKey.SPEED_3G */
+                conditions: "SPEED_3G" /* SDK.NetworkManager.PredefinedThrottlingConditionKey.SPEED_3G */,
             }, universe.settings));
             emulateNetworkConditions.resetHistory();
             emulateNetworkConditionsByRule.resetHistory();
@@ -1542,13 +1771,13 @@ describe('RequestConditions', () => {
                         packetReordering: undefined,
                         connectionType: "cellular3g" /* Protocol.Network.ConnectionType.Cellular3g */,
                         offline: false,
-                    }]
+                    }],
             });
             sinon.assert.calledOnceWithExactly(setBlockedURLs, {
                 urlPatterns: [
                     { urlPattern: '*://foo*', block: true },
                     { urlPattern: '*://throttle:*', block: false },
-                ]
+                ],
             });
         });
         it('correctly maps ruleIds to conditions', async () => {
@@ -1661,7 +1890,7 @@ describe('NetworkDispatcher', () => {
                 headers: {},
                 resourceIPAddressSpace: "Public" /* Protocol.Network.IPAddressSpace.Public */,
                 statusCode: 200,
-                headersText: 'HTTP/1.1 200 OK\r\n'
+                headersText: 'HTTP/1.1 200 OK\r\n',
             };
             networkDispatcher.requestWillBeSent(hop1RequestWillBeSent);
             networkDispatcher.requestWillBeSent(hop2RequestWillBeSent);
@@ -1684,7 +1913,7 @@ describe('NetworkDispatcher', () => {
                 headers: {},
                 resourceIPAddressSpace: "Public" /* Protocol.Network.IPAddressSpace.Public */,
                 statusCode: 200,
-                headersText: 'HTTP/1.1 200 OK\r\n'
+                headersText: 'HTTP/1.1 200 OK\r\n',
             };
             networkDispatcher.responseReceivedExtraInfo(responseExtraInfo);
             const request = networkDispatcher.requestForId('mockId');

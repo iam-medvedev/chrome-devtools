@@ -6,13 +6,12 @@ import sinon from 'sinon';
 import * as Common from '../../../core/common/common.js';
 import * as Host from '../../../core/host/host.js';
 import * as SDK from '../../../core/sdk/sdk.js';
+import * as TextUtils from '../../../core/text_utils/text_utils.js';
 import * as AIAssistanceModel from '../../../models/ai_assistance/ai_assistance.js';
-import * as TextUtils from '../../../models/text_utils/text_utils.js';
 import { assertScreenshot, querySelectorErrorOnMissing, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment, updateHostConfig, waitFor, } from '../../../testing/EnvironmentHelpers.js';
 import { getBaseTraceHandlerData, makeFakeParsedTrace, microsecondsTraceWindow, } from '../../../testing/TraceHelpers.js';
 import { createViewFunctionStub, } from '../../../testing/ViewFunctionHelpers.js';
-import * as MarkdownView from '../../../ui/components/markdown_view/markdown_view.js';
 import * as Snackbars from '../../../ui/components/snackbars/snackbars.js';
 import * as AiAssistance from '../ai_assistance.js';
 describeWithEnvironment('ChatMessage', () => {
@@ -31,7 +30,6 @@ describeWithEnvironment('ChatMessage', () => {
             isLastMessage: true,
             isFirstMessage: false,
             prompt: 'test prompt',
-            shouldShowCSSChangeSummary: false,
             markdownRenderer: new AiAssistance.MarkdownRendererWithCodeBlock(),
             canShowFeedbackForm: true,
             onSuggestionClick: sinon.stub(),
@@ -69,7 +67,6 @@ describeWithEnvironment('ChatMessage', () => {
             isLastMessage: true,
             isFirstMessage: false,
             prompt: 'test prompt',
-            shouldShowCSSChangeSummary: false,
             showActions: true,
             message: {
                 entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
@@ -1042,46 +1039,6 @@ describeWithEnvironment('ChatMessage', () => {
             assert.isNull(exportButton);
         });
     });
-    describe('CSS change summary', () => {
-        beforeEach(() => {
-            updateHostConfig({ devToolsAiAssistanceV2: { enabled: true } });
-        });
-        it('should render devtools-code-block when hasAiV2 is true, changeSummary is present and shouldShowCSSChangeSummary is true', async () => {
-            const target = renderView({
-                shouldShowCSSChangeSummary: true,
-                changeSummary: 'test summary',
-            });
-            const codeBlock = target.querySelector('devtools-code-block');
-            assert.instanceOf(codeBlock, MarkdownView.CodeBlock.CodeBlock);
-            assert.strictEqual(codeBlock.code, 'test summary');
-            assert.strictEqual(codeBlock.displayLimit, 11);
-        });
-        it('should NOT render devtools-code-block when changeSummary is missing', async () => {
-            const target = renderView({
-                shouldShowCSSChangeSummary: true,
-                changeSummary: undefined,
-            });
-            const codeBlock = target.querySelector('devtools-code-block');
-            assert.isNull(codeBlock);
-        });
-        it('should NOT render devtools-code-block when shouldShowCSSChangeSummary is false', async () => {
-            const target = renderView({
-                shouldShowCSSChangeSummary: false,
-                changeSummary: 'test summary',
-            });
-            const codeBlock = target.querySelector('devtools-code-block');
-            assert.isNull(codeBlock);
-        });
-        it('should NOT render devtools-code-block when hasAiV2 is false', async () => {
-            updateHostConfig({ devToolsAiAssistanceV2: { enabled: false } });
-            const target = renderView({
-                shouldShowCSSChangeSummary: true,
-                changeSummary: 'test summary',
-            });
-            const codeBlock = target.querySelector('devtools-code-block');
-            assert.isNull(codeBlock);
-        });
-    });
     describe('view', () => {
         it('renders a minimal model message', async () => {
             const target = document.createElement('div');
@@ -1103,7 +1060,6 @@ describeWithEnvironment('ChatMessage', () => {
                 isLastMessage: true,
                 isFirstMessage: false,
                 prompt: 'test prompt',
-                shouldShowCSSChangeSummary: false,
                 showActions: true,
                 message: {
                     entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
@@ -1140,7 +1096,6 @@ describeWithEnvironment('ChatMessage', () => {
                 isLastMessage: true,
                 isFirstMessage: false,
                 prompt: 'test prompt',
-                shouldShowCSSChangeSummary: false,
                 showActions: false,
                 message: {
                     entity: "user" /* AiAssistance.ChatMessage.ChatMessageEntity.USER */,
@@ -1175,7 +1130,6 @@ describeWithEnvironment('ChatMessage', () => {
                 isLastMessage: false,
                 isFirstMessage: true,
                 prompt: 'test prompt',
-                shouldShowCSSChangeSummary: false,
                 showActions: false,
                 message: {
                     entity: "user" /* AiAssistance.ChatMessage.ChatMessageEntity.USER */,
@@ -1209,7 +1163,6 @@ describeWithEnvironment('ChatMessage', () => {
                 isLastMessage: false,
                 isFirstMessage: true,
                 prompt: 'test prompt',
-                shouldShowCSSChangeSummary: false,
                 showActions: false,
                 message: {
                     entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
@@ -1508,6 +1461,18 @@ describeWithEnvironment('ChatMessage', () => {
             const errorP = targetElement.querySelector('.error');
             assert.isNotNull(errorP);
             assert.strictEqual(errorP?.textContent, 'You reached your limit for AI assistance requests. Try again later.');
+        });
+        it('renders payload too large error message', async () => {
+            const message = {
+                entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
+                parts: [],
+                error: "payload-too-large" /* AIAssistanceModel.AiAgent.ErrorType.PAYLOAD_TOO_LARGE */,
+                id: '1',
+            };
+            const targetElement = renderView({ message });
+            const errorP = targetElement.querySelector('.error');
+            assert.isNotNull(errorP);
+            assert.strictEqual(errorP?.textContent, 'The request payload is too large. Please try a smaller image or a screenshot.');
         });
     });
 });

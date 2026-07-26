@@ -26,7 +26,7 @@ describe('LinearMemoryInspector', () => {
         const valueTypes = new Set([
             "Float 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.FLOAT32 */,
             "Integer 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT32 */,
-            "Pointer 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.POINTER32 */
+            "Pointer 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.POINTER32 */,
         ]);
         const valueTypeModes = new Map();
         LinearMemoryInspectorComponents.LinearMemoryInspector.DEFAULT_VIEW({

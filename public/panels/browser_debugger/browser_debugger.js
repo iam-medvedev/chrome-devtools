@@ -74,23 +74,23 @@ devtools-checkbox.source-code {
 // gen/front_end/panels/browser_debugger/CategorizedBreakpointsSidebarPane.js
 var UIStrings = {
   /**
-   * @description Category of breakpoints
+   * @description Category of event listener breakpoints for Ad Auction Worklet events.
    */
-  auctionWorklet: "Ad Auction Worklet",
+  auctionWorklet: "Ad auction worklet",
   /**
-   * @description Text that refers to the animation of the web page
+   * @description Category of event listener breakpoints for animation events.
    */
   animation: "Animation",
   /**
-   * @description Screen reader description of a hit breakpoint in the Sources panel
+   * @description Screen reader description of a hit breakpoint in the Sources panel.
    */
   breakpointHit: "breakpoint hit",
   /**
-   * @description Text in DOMDebugger Model
+   * @description Category of event listener breakpoints for canvas events.
    */
   canvas: "Canvas",
   /**
-   * @description Text in DOMDebugger Model
+   * @description Category of event listener breakpoints for clipboard events.
    */
   clipboard: "Clipboard",
   /**
@@ -98,87 +98,87 @@ var UIStrings = {
    */
   control: "Control",
   /**
-   * @description Text that refers to device such as a phone
+   * @description Category of event listener breakpoints for device events.
    */
   device: "Device",
   /**
-   * @description Text in DOMDebugger Model
+   * @description Category of event listener breakpoints for DOM mutation events.
    */
-  domMutation: "DOM Mutation",
+  domMutation: "DOM mutation",
   /**
-   * @description Text in DOMDebugger Model
+   * @description Category of event listener breakpoints for drag and drop events.
    */
   dragDrop: "Drag / drop",
   /**
-   * @description Title for a group of cities
+   * @description Category of event listener breakpoints for geolocation events.
    */
   geolocation: "Geolocation",
   /**
-   * @description Text in DOMDebugger Model
+   * @description Category of event listener breakpoints for keyboard events.
    */
   keyboard: "Keyboard",
   /**
-   * @description Text to load something
+   * @description Category of event listener breakpoints for load events.
    */
   load: "Load",
   /**
-   * @description Text that appears on a button for the media resource type filter.
+   * @description Category of event listener breakpoints for media events.
    */
   media: "Media",
   /**
-   * @description Text in DOMDebugger Model
+   * @description Category of event listener breakpoints for mouse events.
    */
   mouse: "Mouse",
   /**
-   * @description Text in DOMDebugger Model
+   * @description Category of event listener breakpoints for notification events.
    */
   notification: "Notification",
   /**
-   * @description Text to parse something
+   * @description Category of event listener breakpoints for parse events.
    */
   parse: "Parse",
   /**
-   * @description Text in DOMDebugger Model
+   * @description Category of event listener breakpoints for picture-in-picture events.
    */
-  pictureinpicture: "Picture-in-Picture",
+  pictureinpicture: "Picture-in-picture",
   /**
-   * @description Text in DOMDebugger Model
+   * @description Category of event listener breakpoints for pointer events.
    */
   pointer: "Pointer",
   /**
-   * @description Label for a group of JavaScript files
+   * @description Category of event listener breakpoints for script events.
    */
   script: "Script",
   /**
-   * @description Category of breakpoints
+   * @description Category of event listener breakpoints for shared storage worklet events.
    */
-  sharedStorageWorklet: "Shared Storage Worklet",
+  sharedStorageWorklet: "Shared storage worklet",
   /**
-   * @description Text in DOMDebugger Model
+   * @description Category of event listener breakpoints for timer events.
    */
   timer: "Timer",
   /**
-   * @description Text for the touch type to simulate on a device
+   * @description Category of event listener breakpoints for touch events.
    */
   touch: "Touch",
   /**
-   * @description Title for a category of breakpoints on Trusted Type violations
+   * @description Category of event listener breakpoints for Trusted Type violations.
    */
-  trustedTypeViolations: "Trusted Type Violations",
+  trustedTypeViolations: "`Trusted Type` violations",
   /**
-   * @description Title of the WebAudio tool
+   * @description Category of event listener breakpoints for WebAudio events.
    */
   webaudio: "WebAudio",
   /**
-   * @description Text in DOMDebugger Model
+   * @description Category of event listener breakpoints for window events.
    */
   window: "Window",
   /**
-   * @description Text for the service worker type.
+   * @description Category of event listener breakpoints for worker events.
    */
   worker: "Worker",
   /**
-   * @description Text that appears on a button for the xhr resource type filter.
+   * @description Category of event listener breakpoints for XHR events.
    */
   xhr: "XHR"
 };
@@ -606,25 +606,25 @@ var domBreakpointsSidebarPane_css_default = `/*
 // gen/front_end/panels/browser_debugger/DOMBreakpointsSidebarPane.js
 var UIStrings2 = {
   /**
-   * @description Header text to indicate there are no breakpoints
+   * @description Header text to indicate there are no DOM breakpoints.
    */
   noBreakpoints: "No DOM breakpoints",
   /**
-   * @description DOM breakpoints description that shows if no DOM breakpoints are set
+   * @description Description shown when no DOM breakpoints are set.
    */
   domBreakpointsDescription: "DOM breakpoints pause on the code that changes a DOM node or its children.",
   /**
-   * @description Accessibility label for the DOM breakpoints list in the Sources panel
+   * @description Accessibility label for the DOM breakpoints list in the Sources panel.
    */
-  domBreakpointsList: "DOM Breakpoints list",
+  domBreakpointsList: "DOM breakpoints list",
   /**
-   * @description Text with two placeholders separated by a colon
+   * @description Text with two placeholders separated by a colon.
    * @example {Node removed} PH1
    * @example {div#id1} PH2
    */
   sS: "{PH1}: {PH2}",
   /**
-   * @description Text with three placeholders separated by a colon and a comma
+   * @description Text with three placeholders separated by a colon and a comma.
    * @example {Node removed} PH1
    * @example {div#id1} PH2
    * @example {checked} PH3
@@ -644,7 +644,7 @@ var UIStrings2 = {
    */
   sBreakpointHit: "{PH1} breakpoint hit",
   /**
-   * @description Screen reader description of a hit breakpoint in the Sources panel
+   * @description Screen reader description of a hit breakpoint in the Sources panel.
    */
   breakpointHit: "breakpoint hit",
   /**
@@ -652,30 +652,30 @@ var UIStrings2 = {
    */
   revealDomNodeInElementsPanel: "Reveal DOM node in Elements panel",
   /**
-   * @description Text to remove a breakpoint
+   * @description Context menu item to remove a breakpoint.
    */
   removeBreakpoint: "Remove breakpoint",
   /**
-   * @description A context menu item in the DOMBreakpoints Sidebar Pane of the JavaScript Debugging pane in the Sources panel or the DOM Breakpoints pane in the Elements panel
+   * @description Context menu item in the DOM Breakpoints sidebar of the Sources panel or the Elements panel to remove all DOM breakpoints.
    */
   removeAllDomBreakpoints: "Remove all DOM breakpoints",
   /**
-   * @description Text in DOMBreakpoints Sidebar Pane of the JavaScript Debugging pane in the Sources panel or the DOM Breakpoints pane in the Elements panel
+   * @description Label for subtree modified DOM breakpoint type.
    */
   subtreeModified: "Subtree modified",
   /**
-   * @description Text in DOMBreakpoints Sidebar Pane of the JavaScript Debugging pane in the Sources panel or the DOM Breakpoints pane in the Elements panel
+   * @description Label for attribute modified DOM breakpoint type.
    */
   attributeModified: "Attribute modified",
   /**
-   * @description Text in DOMBreakpoints Sidebar Pane of the JavaScript Debugging pane in the Sources panel or the DOM Breakpoints pane in the Elements panel
+   * @description Label for node removed DOM breakpoint type.
    */
   nodeRemoved: "Node removed",
   /**
-   * @description Entry in context menu of the elements pane, allowing developers to select a DOM
+   * @description Entry in context menu of the Elements panel, allowing developers to select a DOM
    * breakpoint for the element that they have right-clicked on. Short for the action 'set a
-   * breakpoint on this DOM Element'. A breakpoint pauses the website when the code reaches a
-   * specified line, or when a specific action happen (in this case, when the DOM Element is
+   * breakpoint on this DOM element'. A breakpoint pauses the website when the code reaches a
+   * specified line, or when a specific action happens (in this case, when the DOM element is
    * modified).
    */
   breakOn: "Break on",
@@ -1159,11 +1159,11 @@ var xhrBreakpointsSidebarPane_css_default = `/*
 var { classMap, ifDefined, ref } = Directives3;
 var UIStrings3 = {
   /**
-   * @description Title of the 'XHR/fetch Breakpoints' tool in the bottom sidebar of the Sources tool
+   * @description Title of the XHR/fetch breakpoints sidebar in the Sources panel.
    */
-  xhrfetchBreakpoints: "XHR/fetch Breakpoints",
+  xhrfetchBreakpoints: "XHR/fetch breakpoints",
   /**
-   * @description Text to indicate there are no breakpoints
+   * @description Text to indicate there are no XHR/fetch breakpoints.
    */
   noBreakpoints: "No breakpoints",
   /**
@@ -1171,36 +1171,36 @@ var UIStrings3 = {
    */
   addXhrfetchBreakpoint: "Add XHR/fetch breakpoint",
   /**
-   * @description Text to add a breakpoint
+   * @description Context menu item to add an XHR/fetch breakpoint.
    */
   addBreakpoint: "Add breakpoint",
   /**
-   * @description Input element container text content in XHRBreakpoints Sidebar Pane of the JavaScript Debugging pane in the Sources panel or the DOM Breakpoints pane in the Elements panel
+   * @description Text preceding the input field to add an XHR/fetch breakpoint in the Sources panel.
    */
   breakWhenUrlContains: "Break when URL contains:",
   /**
-   * @description Accessible label for XHR/fetch breakpoint text input
+   * @description Accessible label for XHR/fetch breakpoint text input.
    */
-  urlBreakpoint: "URL Breakpoint",
+  urlBreakpoint: "URL breakpoint",
   /**
-   * @description Text in XHRBreakpoints Sidebar Pane of the JavaScript Debugging pane in the Sources panel or the DOM Breakpoints pane in the Elements panel
+   * @description Label for an XHR/fetch breakpoint targeting a specific URL in the Sources panel.
    * @example {example.com} PH1
    */
   urlContainsS: 'URL contains "{PH1}"',
   /**
-   * @description Text in XHRBreakpoints Sidebar Pane of the JavaScript Debugging pane in the Sources panel or the DOM Breakpoints pane in the Elements panel
+   * @description Label for an XHR/fetch breakpoint matching any XHR or fetch request in the Sources panel.
    */
   anyXhrOrFetch: "Any XHR or fetch",
   /**
-   * @description Screen reader description of a hit breakpoint in the Sources panel
+   * @description Screen reader description of a hit breakpoint in the Sources panel.
    */
   breakpointHit: "breakpoint hit",
   /**
-   * @description Text to remove all breakpoints
+   * @description Context menu item to remove all XHR/fetch breakpoints.
    */
   removeAllBreakpoints: "Remove all breakpoints",
   /**
-   * @description Text to remove a breakpoint
+   * @description Context menu item to remove an XHR/fetch breakpoint.
    */
   removeBreakpoint: "Remove breakpoint"
 };

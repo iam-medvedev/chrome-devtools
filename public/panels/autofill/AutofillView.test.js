@@ -257,5 +257,39 @@ describeWithEnvironment('AutofillView', () => {
             sinon.assert.notCalled(showViewStub);
         });
     });
+    it('renders default view correctly when empty', async () => {
+        const autofillManager = sinon.createStubInstance(AutofillManager.AutofillManager.AutofillManager);
+        autofillManager.getLastFilledAddressForm.returns(null);
+        const autofillView = new Autofill.AutofillView.AutofillView(autofillManager);
+        renderElementIntoDOM(autofillView);
+        await autofillView.updateComplete;
+        assert.isNotNull(autofillView.contentElement.querySelector('.top-left-corner'));
+        assert.isNotNull(autofillView.contentElement.querySelector('.placeholder-container'));
+    });
+    it('renders default view correctly with filled address form', async () => {
+        const autofillManager = sinon.createStubInstance(AutofillManager.AutofillManager.AutofillManager);
+        autofillManager.getLastFilledAddressForm.returns({
+            address: '1 Test Road',
+            filledFields: [
+                {
+                    htmlType: 'text',
+                    id: 'input1',
+                    name: '',
+                    value: 'Crocodile',
+                    autofillType: 'First name',
+                    fillingStrategy: "autofillInferred" /* Protocol.Autofill.FillingStrategy.AutofillInferred */,
+                    fieldId: 1,
+                    frameId: '1',
+                },
+            ],
+            matches: [{ startIndex: 0, endIndex: 9, filledFieldIndex: 0 }],
+        });
+        const autofillView = new Autofill.AutofillView.AutofillView(autofillManager);
+        renderElementIntoDOM(autofillView);
+        await autofillView.updateComplete;
+        assert.isNotNull(autofillView.contentElement.querySelector('.header'));
+        assert.isNotNull(autofillView.contentElement.querySelector('.address'));
+        assert.isNotNull(autofillView.contentElement.querySelector('.grid-wrapper'));
+    });
 });
 //# sourceMappingURL=AutofillView.test.js.map

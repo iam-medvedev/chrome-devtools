@@ -4,11 +4,32 @@ import type { AidaClientResult } from './InspectorFrontendHostAPI.js';
 export * from './AidaClientTypes.js';
 export declare const CLIENT_NAME = "CHROME_DEVTOOLS";
 export declare const SERVICE_NAME = "aidaService";
-export declare class AidaAbortError extends Error {
+export declare abstract class AidaClientError extends Error {
+    name: string;
 }
-export declare class AidaBlockError extends Error {
+export declare class AidaUnknownError extends AidaClientError {
+    name: string;
 }
-export declare class AidaQuotaError extends Error {
+export declare class AidaAbortError extends AidaClientError {
+    name: string;
+}
+export declare class AidaBlockError extends AidaClientError {
+    name: string;
+}
+export declare class AidaQuotaError extends AidaClientError {
+    name: string;
+}
+export declare class AidaPayloadTooLargeError extends AidaClientError {
+    name: string;
+}
+export declare class AidaPermissionDeniedError extends AidaClientError {
+    name: string;
+}
+export declare class AidaTimeoutError extends AidaClientError {
+    name: string;
+}
+export declare class AidaInvalidJsonResponseError extends AidaClientError {
+    name: string;
 }
 export declare class AidaClient {
     #private;
@@ -27,6 +48,7 @@ export declare function convertToUserTierEnum(userTier: string | undefined): Use
 export declare function getClientFeatureName(feature: ClientFeature): string;
 export declare class HostConfigTracker extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
     #private;
+    get aidaAvailability(): AidaAccessPreconditions | undefined;
     static instance({ forceNew }?: {
         forceNew: boolean;
     }): HostConfigTracker;
@@ -40,5 +62,12 @@ export declare const enum Events {
     AIDA_AVAILABILITY_CHANGED = "aidaAvailabilityChanged"
 }
 export interface EventTypes {
-    [Events.AIDA_AVAILABILITY_CHANGED]: void;
+    [Events.AIDA_AVAILABILITY_CHANGED]: AidaAccessPreconditions;
 }
+export declare function isQuotaError(...inputs: Array<string | undefined>): boolean;
+export declare function isPayloadTooLargeError(...inputs: Array<string | undefined>): boolean;
+/**
+ * Maps AIDA-specific errors, DispatchHttpRequestErrors, strings, and generic
+ * Errors to dedicated AidaClientError subclasses.
+ */
+export declare function mapError(err: unknown, detail?: string): AidaClientError;

@@ -14,17 +14,6 @@ import selectorPickerStyles from './selectorPicker.css.js';
 import * as Util from './util/util.js';
 const { html } = Lit;
 const BINDING_NAME = 'captureSelectors';
-export class RequestSelectorAttributeEvent extends Event {
-    static eventName = 'requestselectorattribute';
-    send;
-    constructor(send) {
-        super(RequestSelectorAttributeEvent.eventName, {
-            bubbles: true,
-            composed: true,
-        });
-        this.send = send;
-    }
-}
 const UIStrings = {
     /**
      * @description The title of a button that allows you to select an element on the page and update CSS/ARIA selectors.

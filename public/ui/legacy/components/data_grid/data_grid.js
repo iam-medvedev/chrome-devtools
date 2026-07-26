@@ -63,7 +63,7 @@ var dataGrid_css_default = `/*
   position: sticky;
   top: 0;
   height: 21px;
-  z-index: 1;
+  z-index: 2;
 }
 
 .data-grid .aria-live-label {
@@ -3220,7 +3220,7 @@ import * as UI3 from "./../../legacy.js";
 var DUMMY_COLUMN_ID = "dummy";
 var elementToNode = /* @__PURE__ */ new WeakMap();
 var DataGridElement = class extends UI3.UIUtils.HTMLElementWithLightDOMTemplate {
-  static observedAttributes = ["striped", "name", "inline", "resize"];
+  static observedAttributes = ["striped", "name", "inline", "resize", "highlight"];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   #dataGrid;
   #resizeObserver = new ResizeObserver(() => {
@@ -3228,6 +3228,13 @@ var DataGridElement = class extends UI3.UIUtils.HTMLElementWithLightDOMTemplate 
       this.#dataGrid.onResize();
     }
   });
+  #scrollResizeObserver = new ResizeObserver(() => {
+    if (this.hasAttribute("autoscroll") && this.#stickToBottom) {
+      const scroll = this.#dataGrid.scrollContainer;
+      scroll.scrollTop = scroll.scrollHeight;
+    }
+  });
+  #stickToBottom = true;
   #shadowRoot;
   #columns = [];
   #hideableColumns = /* @__PURE__ */ new Set();
@@ -3279,6 +3286,19 @@ var DataGridElement = class extends UI3.UIUtils.HTMLElementWithLightDOMTemplate 
     this.#updateColumns();
     this.addNodes(this.templateRoot.querySelectorAll("tr"));
   }
+  connectedCallback() {
+    const scroll = this.#dataGrid.scrollContainer;
+    scroll.addEventListener("scroll", this.#onScroll);
+    this.#scrollResizeObserver.observe(scroll.firstElementChild || scroll);
+  }
+  disconnectedCallback() {
+    const scroll = this.#dataGrid.scrollContainer;
+    scroll.removeEventListener("scroll", this.#onScroll);
+    this.#scrollResizeObserver.disconnect();
+  }
+  #onScroll = () => {
+    this.#stickToBottom = UI3.UIUtils.isScrolledToBottom(this.#dataGrid.scrollContainer);
+  };
   attributeChangedCallback(name, oldValue, newValue) {
     if (oldValue === newValue) {
       return;
@@ -3295,6 +3315,11 @@ var DataGridElement = class extends UI3.UIUtils.HTMLElementWithLightDOMTemplate 
         break;
       case "resize":
         this.#dataGrid.setResizeMethod(newValue);
+        break;
+      case "highlight":
+        queueMicrotask(() => {
+          this.#revealHighlightedNode(Number(newValue));
+        });
         break;
     }
   }
@@ -3339,6 +3364,23 @@ var DataGridElement = class extends UI3.UIUtils.HTMLElementWithLightDOMTemplate 
       hasChildren = Boolean(dataRow.querySelector("td table"));
     }
     dataGridNode.setHasChildren(hasChildren);
+  }
+  #revealHighlightedNode(index) {
+    if (isNaN(index) || index < 1) {
+      return;
+    }
+    let count = 0;
+    let node = this.#dataGrid.rootNode().traverseNextNode(true);
+    while (node) {
+      if (node.configElement.hasAttribute("highlighted")) {
+        count++;
+        if (count === index) {
+          node.revealAndSelect();
+          return;
+        }
+      }
+      node = node.traverseNextNode(true);
+    }
   }
   #updateColumns() {
     for (const column of Object.keys(this.#dataGrid.columns)) {

@@ -64,7 +64,7 @@ describeWithEnvironment('ViewManager', () => {
             { id: 'view-1', location: "panel" /* UI.ViewManager.ViewLocationValues.PANEL */ },
             { id: 'view-2', location: "panel" /* UI.ViewManager.ViewLocationValues.PANEL */ },
             { id: 'view-3', location: "panel" /* UI.ViewManager.ViewLocationValues.PANEL */ },
-            { id: 'drawer-view-1', location: "drawer-view" /* UI.ViewManager.ViewLocationValues.DRAWER_VIEW */ }
+            { id: 'drawer-view-1', location: "drawer-view" /* UI.ViewManager.ViewLocationValues.DRAWER_VIEW */ },
         ];
         for (const { id, location } of testViews) {
             UI.ViewManager.registerViewExtension({

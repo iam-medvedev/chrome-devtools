@@ -1,4 +1,5 @@
 {
+  "checkJs": true,
   "compilerOptions": {
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
@@ -45,6 +46,7 @@
     "../../../../../../../../front_end/ui/legacy/components/object_ui/JavaScriptREPL.test.ts",
     "../../../../../../../../front_end/ui/legacy/components/object_ui/ObjectPopoverHelper.test.ts",
     "../../../../../../../../front_end/ui/legacy/components/object_ui/ObjectPropertiesSection.test.ts",
+    "../../../../../../../../front_end/ui/legacy/components/object_ui/RemoteObjectPreviewFormatter.test.ts",
     "../../../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../../../front_end/global_typings/global_defs.d.ts",
     "../../../../../../../../node_modules/@types/filesystem/index.d.ts"

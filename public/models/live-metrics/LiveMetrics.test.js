@@ -5,9 +5,11 @@ import { assert } from 'chai';
 import * as SDK from '../../core/sdk/sdk.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import { mockResourceTree } from '../../testing/ResourceTreeHelpers.js';
+import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as Spec from './web-vitals-injected/spec/spec.js';
 describe('LiveMetrics', () => {
+    setupSettingsHooks();
     let liveMetrics;
     let primaryTarget;
     beforeEach(async () => {
@@ -31,14 +33,14 @@ describe('LiveMetrics', () => {
                         timeToFirstByte: 0,
                         resourceLoadDelay: 0,
                         resourceLoadTime: 0,
-                        elementRenderDelay: 0
-                    }
+                        elementRenderDelay: 0,
+                    },
                 },
                 cls: { value: 0.1, clusterShiftIds: [] },
                 inp: {
                     value: 50,
                     subparts: { inputDelay: 0, processingDuration: 0, presentationDelay: 0 },
-                    interactionId: 'interaction-1-1'
+                    interactionId: 'interaction-1-1',
                 },
                 interactions: new Map([['interaction-1-1', { interactionId: 'interaction-1-1' }]]),
                 layoutShifts: [{ score: 0.1 }],
@@ -130,6 +132,20 @@ describe('LiveMetrics', () => {
                 layoutShifts: [],
             });
             assert.isTrue(statusReceived);
+        });
+        it('dispatches status events with navigationType', () => {
+            let statusEvent = null;
+            liveMetrics.addEventListener("status" /* LiveMetrics.Events.STATUS */, event => {
+                statusEvent = event.data;
+            });
+            liveMetrics.setStatusForTesting({
+                interactions: new Map(),
+                layoutShifts: [],
+                navigationType: 'soft-navigation',
+            });
+            assert.exists(statusEvent);
+            assert.strictEqual(statusEvent.navigationType, 'soft-navigation');
+            assert.strictEqual(liveMetrics.navigationType, 'soft-navigation');
         });
         it('clears interactions via clearInteractions', () => {
             const interactionId = 'interaction-1-1';

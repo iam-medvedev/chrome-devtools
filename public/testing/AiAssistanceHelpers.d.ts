@@ -17,9 +17,12 @@ export declare const MockAidaFetchError: {
 export declare const MockAidaQuotaError: {
     readonly quotaError: true;
 };
+export declare const MockAidaPayloadLimitError: {
+    readonly payloadLimitError: true;
+};
 export type MockAidaResponse = Omit<Host.AidaClient.DoConversationResponse, 'completed' | 'metadata'> & {
     metadata?: Host.AidaClient.ResponseMetadata;
-} | typeof MockAidaAbortError | typeof MockAidaFetchError | typeof MockAidaQuotaError;
+} | typeof MockAidaAbortError | typeof MockAidaFetchError | typeof MockAidaQuotaError | typeof MockAidaPayloadLimitError;
 /**
  * Creates a mock AIDA client that responds using `data`.
  *
@@ -57,24 +60,6 @@ export declare function createAiAssistancePanel(options?: {
 export declare const setupAutomaticFileSystem: (options?: {
     hasFileSystem: boolean;
 }) => void;
-/**
- * Creates and shows an AiAssistancePanel instance returning the view
- * stubs and the initial view input caused by Widget.show().
- */
-export declare function createPatchWidget(options?: {
-    aidaClient?: Host.AidaClient.AidaClient;
-}): Promise<{
-    widget: AiAssistancePanel.PatchWidget.PatchWidget;
-    view: import("./ViewFunctionHelpers.js").ViewFunctionStub<typeof AiAssistancePanel.PatchWidget.PatchWidget>;
-    aidaClient: Host.AidaClient.AidaClient;
-}>;
-export declare function createPatchWidgetWithDiffView(options?: {
-    aidaClient?: Host.AidaClient.AidaClient;
-}): Promise<{
-    widget: AiAssistancePanel.PatchWidget.PatchWidget;
-    view: import("./ViewFunctionHelpers.js").ViewFunctionStub<typeof AiAssistancePanel.PatchWidget.PatchWidget>;
-    aidaClient: Host.AidaClient.AidaClient;
-}>;
 export declare function initializePersistenceImplForTests(): void;
 export declare function cleanup(): void;
 /**
@@ -111,3 +96,10 @@ export declare function assertRequiresApproval<T>(response: AiAssistance.AiAgent
     requiresApproval: true;
     description: string | null;
 };
+/**
+ * Creates a dummy File object containing a solid red image with the given dimensions.
+ *
+ * @param width Width of the dummy image in pixels (px).
+ * @param height Height of the dummy image in pixels (px).
+ */
+export declare function createDummyImageFile(width: number, height: number): Promise<File>;

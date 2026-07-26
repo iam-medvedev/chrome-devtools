@@ -195,7 +195,7 @@ export class StorageAgent extends AiAgent {
                         type: 1 /* Host.AidaClient.ParametersTypes.STRING */,
                         description: 'Optional. Specific storageKey to to list keys for.',
                         nullable: true,
-                    }
+                    },
                 },
                 required: ['type', 'origin'],
             },
@@ -210,7 +210,7 @@ export class StorageAgent extends AiAgent {
                 if (!isSamePrimaryPageOrigin(this.targetManager, this.context)) {
                     return { error: 'No origin available or not allowed.' };
                 }
-                const storages = resolveDOMStorages(this.context, args.type, args.origin, args.storageKey, this.targetManager);
+                const storages = resolveDOMStorages(this.context, args.type, args.origin, this.targetManager, args.storageKey);
                 const keyAndItems = await Promise.all(storages.map(async (storage) => {
                     const items = await storage.getItems();
                     return { storageKey: storage.storageKey, items };
@@ -255,7 +255,7 @@ export class StorageAgent extends AiAgent {
                         type: 1 /* Host.AidaClient.ParametersTypes.STRING */,
                         description: 'Optional. Specific storageKey partition to get values for.',
                         nullable: true,
-                    }
+                    },
                 },
                 required: ['type', 'keys', 'origin'],
             },
@@ -270,7 +270,7 @@ export class StorageAgent extends AiAgent {
                 if (!isSamePrimaryPageOrigin(this.targetManager, this.context)) {
                     return { error: 'No origin available or not allowed.' };
                 }
-                const storages = resolveDOMStorages(this.context, args.type, args.origin, args.storageKey, this.targetManager);
+                const storages = resolveDOMStorages(this.context, args.type, args.origin, this.targetManager, args.storageKey);
                 if (storages.length === 0) {
                     return { error: 'No matching storage partitions found.' };
                 }
@@ -323,7 +323,7 @@ export class StorageAgent extends AiAgent {
                         type: 1 /* Host.AidaClient.ParametersTypes.STRING */,
                         description: 'Origin to list cookies for.',
                         nullable: false,
-                    }
+                    },
                 },
                 required: ['origin'],
             },
@@ -365,7 +365,7 @@ export class StorageAgent extends AiAgent {
                         type: 1 /* Host.AidaClient.ParametersTypes.STRING */,
                         description: 'The specific origin the cookies belong to.',
                         nullable: false,
-                    }
+                    },
                 },
                 required: ['cookieNames', 'origin'],
             },
@@ -519,7 +519,7 @@ export async function getCookiesForDomain(target, origin) {
     }
     return allCookies.filter(cookie => !cookie.httpOnly());
 }
-export function findFrameForOrigin(context, origin, targetManager = SDK.TargetManager.TargetManager.instance()) {
+export function findFrameForOrigin(context, origin, targetManager) {
     for (const frame of SDK.ResourceTreeModel.ResourceTreeModel.frames(targetManager)) {
         if (frame.securityOrigin === origin) {
             const target = frame.resourceTreeModel().target();
@@ -530,7 +530,7 @@ export function findFrameForOrigin(context, origin, targetManager = SDK.TargetMa
     }
     return null;
 }
-export function resolveDOMStorages(context, type, origin, storageKey, targetManager = SDK.TargetManager.TargetManager.instance()) {
+export function resolveDOMStorages(context, type, origin, targetManager, storageKey) {
     const resolvedStorages = [];
     const isLocalStorage = type === 'localStorage';
     const domStorageModels = targetManager.models(SDK.DOMStorageModel.DOMStorageModel);

@@ -6,11 +6,11 @@ import * as UI from '../../ui/legacy/legacy.js';
 let loadedChangesModule;
 const UIStrings = {
     /**
-     * @description Title of the 'Changes' tool in the bottom drawer
+     * @description Title of the Changes panel.
      */
     changes: 'Changes',
     /**
-     * @description Command for showing the 'Changes' tool in the bottom drawer
+     * @description Command for showing the Changes panel.
      */
     showChanges: 'Show Changes',
 };

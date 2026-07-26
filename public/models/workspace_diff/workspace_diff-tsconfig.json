@@ -1,4 +1,5 @@
 {
+  "checkJs": true,
   "compilerOptions": {
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
@@ -49,13 +50,13 @@
       "path": "../../core/host/bundle-tsconfig.json"
     },
     {
+      "path": "../../core/text_utils/bundle-tsconfig.json"
+    },
+    {
       "path": "../formatter/bundle-tsconfig.json"
     },
     {
       "path": "../persistence/bundle-tsconfig.json"
-    },
-    {
-      "path": "../text_utils/bundle-tsconfig.json"
     },
     {
       "path": "../workspace/bundle-tsconfig.json"

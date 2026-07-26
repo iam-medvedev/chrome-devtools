@@ -6,6 +6,7 @@ import type { ResourcesPanel } from './ResourcesPanel.js';
 export declare class ServiceWorkerCacheTreeElement extends ExpandableApplicationPanelTreeElement {
     private swCacheModels;
     private swCacheTreeElements;
+    private swCacheModelObserver?;
     private storageBucket?;
     constructor(resourcesPanel: ResourcesPanel, storageBucket?: Protocol.Storage.StorageBucket);
     initialize(): void;

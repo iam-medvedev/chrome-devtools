@@ -165,7 +165,7 @@ export class AnimationGroupPreviewUI extends UI.Widget.Widget {
             },
             onFocusPreviousGroup: () => {
                 this.#config.onFocusPreviousGroup();
-            }
+            },
         }, this.#viewOutput, this.contentElement);
     }
     focus() {

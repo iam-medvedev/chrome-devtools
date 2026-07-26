@@ -13,7 +13,7 @@ function createCallbacks(editor) {
         getSelectionHead: () => editor.editor.state.selection.main.head,
         getCompletionHint: () => editor.editor.plugin(TextEditor.Config.showCompletionHint)?.currentHint,
         setAiAutoCompletion: (args) => editor.dispatch({
-            effects: TextEditor.Config.setAiAutoCompleteSuggestion.of(args)
+            effects: TextEditor.Config.setAiAutoCompleteSuggestion.of(args),
         }),
     };
 }
@@ -131,7 +131,7 @@ describeWithEnvironment('AiCodeCompletion', () => {
                     sampleId: 1,
                     score: 1,
                 }],
-            metadata: {}
+            metadata: {},
         };
         mockAidaClient.completeCode.onSecondCall().resolves(nonEmptyResponse);
         const aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion.AiCodeCompletion({ aidaClient: mockAidaClient, serverSideLoggingEnabled: false }, "console" /* AiCodeCompletion.AiCodeCompletion.ContextFlavor.CONSOLE */, createCallbacks(sinon.createStubInstance(TextEditor.TextEditor.TextEditor)));

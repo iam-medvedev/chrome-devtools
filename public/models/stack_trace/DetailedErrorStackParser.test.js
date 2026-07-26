@@ -224,8 +224,8 @@ describe('DetailedErrorStackParser', () => {
                         scriptId: '16',
                         lineNumber: 26,
                         columnNumber: 28,
-                    }
-                ]
+                    },
+                ],
             };
             StackTraceImpl.DetailedErrorStackParser.augmentRawFramesWithScriptIds(rawFrames, protocolStackTrace);
             assert.strictEqual(rawFrames[0].scriptId, '17');
@@ -255,8 +255,8 @@ describe('DetailedErrorStackParser', () => {
                         scriptId: '20',
                         lineNumber: 0,
                         columnNumber: 33, // 0x21
-                    }
-                ]
+                    },
+                ],
             };
             StackTraceImpl.DetailedErrorStackParser.augmentRawFramesWithScriptIds(rawFrames, protocolStackTrace);
             assert.strictEqual(rawFrames[0].scriptId, '10');

@@ -1,13 +1,18 @@
 import '../../ui/kit/kit.js';
+import * as SDK from '../../core/sdk/sdk.js';
 import * as PublicExtensions from '../../models/extensions/extensions.js';
+import * as Buttons from '../../ui/components/buttons/buttons.js';
+import type * as Dialogs from '../../ui/components/dialogs/dialogs.js';
+import type * as Menus from '../../ui/components/menus/menus.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import * as Lit from '../../ui/lit/lit.js';
 import * as Converters from './converters/converters.js';
+import { CreateRecordingView } from './CreateRecordingView.js';
 import * as Extensions from './extensions/extensions.js';
 import * as Models from './models/models.js';
 import * as Actions from './recorder-actions/recorder-actions.js';
-import { type ReplayState } from './RecordingView.js';
-interface StoredRecording {
+import { type PlayRecordingEvent as ViewPlayRecordingEvent, RecordingView, type ReplayState } from './RecordingView.js';
+import { AddStepPosition } from './StepView.js';
+export interface StoredRecording {
     storageName: string;
     flow: Models.Schema.UserFlow;
 }
@@ -17,6 +22,67 @@ export declare const enum Pages {
     CREATE_RECORDING_PAGE = "CreateRecordingPage",
     RECORDING_PAGE = "RecordingPage"
 }
+export interface ViewInput {
+    recordings: StoredRecording[];
+    currentRecording?: StoredRecording;
+    currentPage: Pages;
+    isRecording: boolean;
+    isToggling: boolean;
+    importError?: Error;
+    recordingError?: Error;
+    sections: Models.Section.Section[];
+    settings?: Models.RecordingSettings.RecordingSettings;
+    recorderSettings: Models.RecorderSettings.RecorderSettings;
+    lastReplayResult?: Models.RecordingPlayer.ReplayResult;
+    replayAllowed: boolean;
+    breakpointIndexes: Set<number>;
+    builtInConverters: readonly Converters.Converter.Converter[];
+    extensionConverters: Converters.Converter.Converter[];
+    replayExtensions: Extensions.ExtensionManager.Extension[];
+    extensionDescriptor?: PublicExtensions.RecorderPluginManager.ViewDescriptor;
+    exportMenuExpanded: boolean;
+    replayState: ReplayState;
+    shortcutsInfo: Dialogs.ShortcutDialog.Shortcut[];
+    currentStep?: Models.Schema.Step;
+    onCreateNewRecording: (event?: Event) => void;
+    onImportRecording: (event: Event) => void;
+    onExportRecording: (event: Event) => void;
+    onDeleteRecording: (event: Event | string) => void;
+    onRecordingSelected: (event: Event | string) => void;
+    onPlayRecordingByName: (storageName: string) => void;
+    onPlayRecording: (event: ViewPlayRecordingEvent) => void;
+    onAbortReplay: () => void;
+    onNetworkConditionsChanged: (data?: SDK.NetworkManager.Conditions) => void;
+    onTimeoutChanged: (timeout?: number) => void;
+    handleRecordingTitleChanged: (title: string) => void;
+    handleRecordingChanged: (currentStep: Models.Schema.Step, newStep: Models.Schema.Step) => void;
+    handleStepAdded: (stepOrSection: Models.Schema.Step | Models.Section.Section, position: AddStepPosition) => void;
+    handleStepRemoved: (step: Models.Schema.Step) => void;
+    onAddBreakpoint: (index: number) => void;
+    onRemoveBreakpoint: (index: number) => void;
+    onExtensionViewClosed: () => void;
+    onExportMenuClosed: () => void;
+    onExportOptionSelected: (event: Menus.SelectMenu.SelectMenuItemSelectedEvent) => void;
+    onRecordingFinished: () => void;
+    handleAddAssertionEvent: () => void;
+    onSetRecording: (event: Event) => void;
+    onContinueReplay: () => void;
+    onStepOverReplay: () => void;
+    getExportMenuButton: () => Buttons.Button.Button;
+    onRecordingStarted: (data: {
+        name: string;
+        selectorTypesToRecord: Models.Schema.SelectorType[];
+        selectorAttribute?: string;
+    }) => void;
+    onRecordingCancelled: () => void;
+}
+export interface ViewOutput {
+    exportMenuButton: Buttons.Button.Button;
+    recordingView: RecordingView;
+    createRecordingView: CreateRecordingView;
+}
+export type View = (input: ViewInput, output: ViewOutput, target: DocumentFragment) => void;
+export declare const DEFAULT_VIEW: View;
 export declare class RecorderPanel extends UI.Widget.VBox<DocumentFragment> {
     #private;
     static panelName: string;
@@ -57,7 +123,7 @@ export declare class RecorderPanel extends UI.Widget.VBox<DocumentFragment> {
     set replayExtensions(value: Extensions.ExtensionManager.Extension[]);
     get viewDescriptor(): PublicExtensions.RecorderPluginManager.ViewDescriptor | undefined;
     set viewDescriptor(value: PublicExtensions.RecorderPluginManager.ViewDescriptor | undefined);
-    constructor(element?: HTMLElement);
+    constructor(element?: HTMLElement, view?: typeof DEFAULT_VIEW);
     wasShown(): void;
     willHide(): void;
     onDetach(): void;
@@ -74,9 +140,7 @@ export declare class RecorderPanel extends UI.Widget.VBox<DocumentFragment> {
     handleActions(actionId: Actions.RecorderActions): void;
     isActionPossible(actionId: Actions.RecorderActions): boolean;
     performUpdate(): void;
-    protected render(): Lit.TemplateResult;
 }
 export declare class ActionDelegate implements UI.ActionRegistration.ActionDelegate {
     handleAction(_context: UI.Context.Context, actionId: Actions.RecorderActions): boolean;
 }
-export {};

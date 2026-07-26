@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import sinon from 'sinon';
+import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { getMenuForToolbarButton } from '../../testing/ContextMenuHelpers.js';
 import { createTarget, describeWithEnvironment, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
@@ -14,7 +15,7 @@ describeWithEnvironment('MainMenuItem', () => {
         sinon.stub(UI.ShortcutRegistry.ShortcutRegistry, 'instance').returns({
             keyAndModifiersForAction: () => { },
             shortcutTitleForAction: () => { },
-            shortcutsForAction: () => [],
+            shortcutsForAction: () => [{ title: () => 'Ctrl+Shift+D' }],
         });
         const tabTaget = createTarget({ type: SDK.Target.Type.TAB });
         createTarget({ parentTarget: tabTaget, subtype: 'prerender' });
@@ -43,6 +44,42 @@ describeWithEnvironment('MainMenuItem', () => {
         }));
         sinon.assert.calledOnce(contextMenuShow);
         assert.notExists(contextMenuShow.thisValues[0].defaultSection().items.find((item) => item.buildDescriptor().label === 'Focus page'));
+    });
+    it('does not focus main menu button when undocking or re-docking', async () => {
+        const dockController = UI.DockController.DockController.instance({ forceNew: true, canDock: true });
+        dockController.setDockSide("undocked" /* UI.DockController.DockState.UNDOCKED */);
+        const mainMenuItem = new Main.MainImpl.MainMenuItem();
+        const item = mainMenuItem.item();
+        const focusSpy = sinon.spy(item.element, 'focus');
+        const menu = getMenuForToolbarButton(item);
+        const dockSideItem = menu.headerSection().items.find((item) => item.buildDescriptor().jslogContext === 'dock-side');
+        assert.exists(dockSideItem);
+        // Trigger re-docking from UNDOCKED to LEFT.
+        const customElement = dockSideItem.customElement;
+        const leftButton = customElement.querySelector('devtools-button[aria-label="Dock to left"]');
+        assert.exists(leftButton);
+        leftButton.click();
+        // Verify focus is not scheduled on AFTER_DOCK_SIDE_CHANGED.
+        sinon.assert.notCalled(focusSpy);
+    });
+});
+describeWithEnvironment('ConsoleProfileFinishedListener', () => {
+    it('reveals profile finished data on console profile finished event', async () => {
+        const revealStub = sinon.stub(Common.Revealer.RevealerRegistry.instance(), 'reveal').resolves();
+        // Class created to register the listener since we need to verify reveal is called
+        new Main.MainImpl.ConsoleProfileFinishedListener();
+        const target = createTarget({ type: SDK.Target.Type.FRAME });
+        const cpuProfilerModel = target.model(SDK.CPUProfilerModel.CPUProfilerModel);
+        assert.exists(cpuProfilerModel);
+        cpuProfilerModel.consoleProfileFinished({
+            id: 'profile1',
+            location: { lineNumber: 0, columnNumber: 0, scriptId: '1' },
+            profile: { nodes: [], startTime: 0, endTime: 1000 },
+            title: 'my-profile',
+        });
+        sinon.assert.calledOnce(revealStub);
+        const [revealable] = revealStub.getCall(0).args;
+        assert.instanceOf(revealable, SDK.CPUProfilerModel.ProfileFinishedData);
     });
 });
 //# sourceMappingURL=MainImpl.test.js.map

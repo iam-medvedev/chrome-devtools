@@ -93,7 +93,7 @@ const str_ = i18n.i18n.registerUIStrings('panels/recorder/CreateRecordingView.ts
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const { widget } = UI.Widget;
 export const DEFAULT_VIEW = (input, output, target) => {
-    const { name, selectorAttribute, selectorTypes, error, onUpdate, onRecordingStarted, onRecordingCancelled, onErrorReset } = input;
+    const { name, selectorAttribute, selectorTypes, error, onUpdate, onRecordingStarted, onRecordingCancelled, onErrorReset, } = input;
     const nameInputRef = createRef();
     const onKeyDown = (event) => {
         if (error) {
@@ -151,7 +151,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
           id="user-flow-name"
           ${ref(nameInputRef)}
           @input=${(e) => onUpdate({
-        name: e.target.value.trim()
+        name: e.target.value.trim(),
     })}
         />
         <label class="row-label" for="selector-attribute">
@@ -172,7 +172,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
           class="devtools-text-input"
           id="selector-attribute"
           @input=${(e) => onUpdate({
-        selectorAttribute: e.target.value.trim()
+        selectorAttribute: e.target.value.trim(),
     })}
         />
         <label class="row-label">
@@ -197,7 +197,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
                   type="checkbox"
                   @change=${(e) => onUpdate({
             selectorType: item.selectorType,
-            checked: e.target.checked
+            checked: e.target.checked,
         })}
                 />
                 ${selectorTypeToLabel.get(item.selectorType) || item.selectorType}

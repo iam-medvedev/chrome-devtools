@@ -90,7 +90,7 @@ describeWithEnvironment('CreateRecordingView', () => {
                     { selectorType: Models.Schema.SelectorType.ARIA, checked: false },
                     { selectorType: Models.Schema.SelectorType.Text, checked: false },
                     { selectorType: Models.Schema.SelectorType.XPath, checked: false },
-                    { selectorType: Models.Schema.SelectorType.Pierce, checked: false }
+                    { selectorType: Models.Schema.SelectorType.Pierce, checked: false },
                 ],
                 onRecordingStarted: sinon.stub(),
                 onRecordingCancelled: sinon.stub(),
@@ -110,7 +110,7 @@ describeWithEnvironment('CreateRecordingView', () => {
                     { selectorType: Models.Schema.SelectorType.ARIA, checked: false },
                     { selectorType: Models.Schema.SelectorType.Text, checked: false },
                     { selectorType: Models.Schema.SelectorType.XPath, checked: false },
-                    { selectorType: Models.Schema.SelectorType.Pierce, checked: false }
+                    { selectorType: Models.Schema.SelectorType.Pierce, checked: false },
                 ],
                 error: new Error('error'),
                 onRecordingStarted: sinon.stub(),

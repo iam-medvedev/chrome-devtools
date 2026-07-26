@@ -31,8 +31,8 @@
 // each child still represent the root node. We have to be particularly careful of recursion with this mode
 // because a root node can represent itself AND an ancestor.
 import * as Platform from '../../core/platform/platform.js';
-import { ProfileDataGridNode, ProfileDataGridTree } from './ProfileDataGrid.js';
-export class BottomUpProfileDataGridNode extends ProfileDataGridNode {
+import { ProfileDataGridTree, ProfileEntry } from './ProfileDataGrid.js';
+export class BottomUpProfileEntry extends ProfileEntry {
     remainingNodeInfos;
     constructor(profileNode, owningTree) {
         super(profileNode, owningTree, profileNode.parent !== null && Boolean(profileNode.parent.parent));
@@ -58,7 +58,7 @@ export class BottomUpProfileDataGridNode extends ProfileDataGridNode {
                 }
             }
             else {
-                child = new BottomUpProfileDataGridNode(ancestor, container.tree);
+                child = new BottomUpProfileEntry(ancestor, container.tree);
                 if (ancestor !== focusNode) {
                     // But the actual statistics from the "root" node (bottom of the callstack).
                     child.self = focusNode.self;
@@ -77,10 +77,10 @@ export class BottomUpProfileDataGridNode extends ProfileDataGridNode {
         }
         delete container.remainingNodeInfos;
     }
-    takePropertiesFromProfileDataGridNode(profileDataGridNode) {
+    takePropertiesFromProfileEntry(profileEntry) {
         this.save();
-        this.self = profileDataGridNode.self;
-        this.total = profileDataGridNode.total;
+        this.self = profileEntry.self;
+        this.total = profileEntry.total;
     }
     /**
      * When focusing, we keep just the members of the callstack.
@@ -116,7 +116,7 @@ export class BottomUpProfileDataGridNode extends ProfileDataGridNode {
         super.merge(child, shouldAbsorb);
     }
     populateChildren() {
-        BottomUpProfileDataGridNode.sharedPopulate(this);
+        BottomUpProfileEntry.sharedPopulate(this);
     }
     willHaveChildren(profileNode) {
         // In bottom up mode, our parents are our children since we display an inverted tree.
@@ -179,7 +179,7 @@ export class BottomUpProfileDataGridTree extends ProfileDataGridTree {
             }
         }
         // Populate the top level nodes.
-        ProfileDataGridNode.populate(this);
+        ProfileEntry.populate(this);
         return this;
     }
     /**
@@ -192,15 +192,16 @@ export class BottomUpProfileDataGridTree extends ProfileDataGridTree {
         this.save();
         let currentNode = profileDataGridNode;
         let focusNode = profileDataGridNode;
-        while (currentNode.parent && (currentNode instanceof BottomUpProfileDataGridNode)) {
-            currentNode.takePropertiesFromProfileDataGridNode(profileDataGridNode);
+        while (currentNode instanceof BottomUpProfileEntry && currentNode.parent) {
+            currentNode.takePropertiesFromProfileEntry(profileDataGridNode);
             focusNode = currentNode;
             currentNode = currentNode.parent;
-            if (currentNode instanceof BottomUpProfileDataGridNode) {
+            if (currentNode instanceof BottomUpProfileEntry) {
                 currentNode.keepOnlyChild(focusNode);
             }
         }
-        this.children = [focusNode];
+        this.removeChildren();
+        this.appendChild(focusNode);
         this.total = profileDataGridNode.total;
     }
     exclude(profileDataGridNode) {
@@ -220,12 +221,9 @@ export class BottomUpProfileDataGridTree extends ProfileDataGridTree {
         for (let index = 0; index < count; ++index) {
             children[index].exclude(excludedCallUID);
         }
-        if (this.lastComparator) {
-            this.sort(this.lastComparator, true);
-        }
     }
     populateChildren() {
-        BottomUpProfileDataGridNode.sharedPopulate(this);
+        BottomUpProfileEntry.sharedPopulate(this);
     }
 }
 //# sourceMappingURL=BottomUpProfileDataGrid.js.map

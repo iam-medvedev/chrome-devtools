@@ -10,7 +10,7 @@ export declare class HeapSnapshotWorkerProxy extends Common.ObjectWrapper.Object
     callbacks: Map<number, (...args: any[]) => void>;
     readonly previousCallbacks: Set<number>;
     readonly worker: PlatformApi.HostRuntime.Worker;
-    interval?: number;
+    interval?: ReturnType<typeof setInterval>;
     readonly workerUrl?: string;
     constructor(eventHandler: (arg0: string, arg1: string) => void, console: Common.Console.Console, workerUrl?: string);
     get console(): Common.Console.Console;

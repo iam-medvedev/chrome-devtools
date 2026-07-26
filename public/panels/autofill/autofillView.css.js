@@ -12,10 +12,12 @@ export default `/*
 @scope to (devtools-widget > *) {
   main {
     height: 100%;
+    overflow: auto;
   }
 
   .header {
     display: flex;
+    flex-wrap: wrap;
     border-bottom: 1px solid var(--sys-color-divider);
     width: 100%;
   }
@@ -25,11 +27,12 @@ export default `/*
     display: flex;
     justify-content: center;
     align-items: center;
+    overflow: auto;
   }
 
   .address {
     padding: 10px;
-    margin-right: auto;
+    border-bottom: 1px solid var(--sys-color-divider);
   }
 
   .filled-fields-grid {
@@ -41,10 +44,12 @@ export default `/*
     display: flex;
     flex-flow: column;
     height: 100%;
+    overflow: auto;
   }
 
   .grid-wrapper {
     flex-grow: 1;
+    min-height: 0;
   }
 
   devtools-data-grid {
@@ -57,13 +62,6 @@ export default `/*
     align-items: center;
   }
 
-  .right-to-left {
-    border-bottom: 1px solid var(--sys-color-divider);
-    display: flex;
-    flex-flow: row-reverse wrap;
-    justify-content: flex-end;
-  }
-
   .label-container {
     padding: 5px;
     display: flex;
@@ -73,6 +71,7 @@ export default `/*
   .top-left-corner {
     border-bottom: 1px solid var(--sys-color-divider);
     display: flex;
+    flex-wrap: wrap;
     padding: 5px;
     gap: 10px;
   }

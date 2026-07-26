@@ -123,66 +123,6 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/recorder/StepView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export class CaptureSelectorsEvent extends Event {
-    static eventName = 'captureselectors';
-    data;
-    constructor(step) {
-        super(CaptureSelectorsEvent.eventName, { bubbles: true, composed: true });
-        this.data = step;
-    }
-}
-export class CopyStepEvent extends Event {
-    static eventName = 'copystep';
-    step;
-    constructor(step) {
-        super(CopyStepEvent.eventName, { bubbles: true, composed: true });
-        this.step = step;
-    }
-}
-export class StepChanged extends Event {
-    static eventName = 'stepchanged';
-    currentStep;
-    newStep;
-    constructor(currentStep, newStep) {
-        super(StepChanged.eventName, { bubbles: true, composed: true });
-        this.currentStep = currentStep;
-        this.newStep = newStep;
-    }
-}
-export class AddStep extends Event {
-    static eventName = 'addstep';
-    position;
-    stepOrSection;
-    constructor(stepOrSection, position) {
-        super(AddStep.eventName, { bubbles: true, composed: true });
-        this.stepOrSection = stepOrSection;
-        this.position = position;
-    }
-}
-export class RemoveStep extends Event {
-    static eventName = 'removestep';
-    step;
-    constructor(step) {
-        super(RemoveStep.eventName, { bubbles: true, composed: true });
-        this.step = step;
-    }
-}
-export class AddBreakpointEvent extends Event {
-    static eventName = 'addbreakpoint';
-    index;
-    constructor(index) {
-        super(AddBreakpointEvent.eventName, { bubbles: true, composed: true });
-        this.index = index;
-    }
-}
-export class RemoveBreakpointEvent extends Event {
-    static eventName = 'removebreakpoint';
-    index;
-    constructor(index) {
-        super(RemoveBreakpointEvent.eventName, { bubbles: true, composed: true });
-        this.index = index;
-    }
-}
 const COPY_ACTION_PREFIX = 'copy-step-as-';
 function getStepTypeTitle(input) {
     if (input.section) {
@@ -359,16 +299,19 @@ export const DEFAULT_VIEW = (input, _output, target) => {
         html `<devtools-widget ${widget(StepEditor, {
             step: input.step,
             disabled: input.isPlaying,
+            onStepEdited: input.stepEdited,
+            onAttributeRequested: input.onAttributeRequested,
         })}
-            class=${input.isSelected ? 'is-selected' : ''}
-            @stepedited=${input.stepEdited}></devtools-widget>`}
+            class=${input.isSelected ? 'is-selected' : ''}></devtools-widget>`}
           ${input.section?.causingStep &&
         html `<devtools-widget ${widget(StepEditor, {
             step: input.section.causingStep,
             isTypeEditable: false,
             disabled: input.isPlaying,
-        })}
-            @stepedited=${input.stepEdited}></devtools-widget>`}
+            onStepEdited: input.stepEdited,
+            onAttributeRequested: input.onAttributeRequested,
+        })}></devtools-widget>`}
+          }
         </div>
         ${input.error &&
         html `
@@ -385,6 +328,13 @@ export class StepView extends UI.Widget.Widget {
     #observer = new IntersectionObserver(result => {
         this.#viewInput.isVisible = result[0].isIntersecting;
     });
+    onStepChanged;
+    onAddStep;
+    onRemoveStep;
+    onAddBreakpoint;
+    onRemoveBreakpoint;
+    onCopyStep;
+    onAttributeRequested;
     #viewInput = {
         state: "default" /* State.DEFAULT */,
         showDetails: false,
@@ -404,6 +354,7 @@ export class StepView extends UI.Widget.Widget {
         isSelected: false,
         actions: [],
         stepEdited: this.#stepEdited.bind(this),
+        onAttributeRequested: send => this.onAttributeRequested?.(send),
         onBreakpointClick: this.#onBreakpointClick.bind(this),
         handleStepAction: this.#handleStepAction.bind(this),
         toggleShowDetails: this.#toggleShowDetails.bind(this),
@@ -528,12 +479,12 @@ export class StepView extends UI.Widget.Widget {
             event.preventDefault();
         }
     }
-    #stepEdited(event) {
+    #stepEdited(newStep) {
         const step = this.#viewInput.step || this.#viewInput.section?.causingStep;
         if (!step) {
             throw new Error('Expected step.');
         }
-        this.contentElement.dispatchEvent(new StepChanged(step, event.data));
+        this.onStepChanged?.(step, newStep);
     }
     #handleStepAction(event) {
         switch (event.itemValue) {
@@ -542,7 +493,7 @@ export class StepView extends UI.Widget.Widget {
                 if (!stepOrSection) {
                     throw new Error('Expected step or section.');
                 }
-                this.contentElement.dispatchEvent(new AddStep(stepOrSection, "before" /* AddStepPosition.BEFORE */));
+                this.onAddStep?.(stepOrSection, "before" /* AddStepPosition.BEFORE */);
                 break;
             }
             case 'add-step-after': {
@@ -550,7 +501,7 @@ export class StepView extends UI.Widget.Widget {
                 if (!stepOrSection) {
                     throw new Error('Expected step or section.');
                 }
-                this.contentElement.dispatchEvent(new AddStep(stepOrSection, "after" /* AddStepPosition.AFTER */));
+                this.onAddStep?.(stepOrSection, "after" /* AddStepPosition.AFTER */);
                 break;
             }
             case 'remove-step': {
@@ -558,21 +509,21 @@ export class StepView extends UI.Widget.Widget {
                 if (!this.#viewInput.step && !causingStep) {
                     throw new Error('Expected step.');
                 }
-                this.contentElement.dispatchEvent(new RemoveStep(this.#viewInput.step || causingStep));
+                this.onRemoveStep?.(this.#viewInput.step || causingStep);
                 break;
             }
             case 'add-breakpoint': {
                 if (!this.#viewInput.step) {
                     throw new Error('Expected step');
                 }
-                this.contentElement.dispatchEvent(new AddBreakpointEvent(this.#viewInput.stepIndex));
+                this.onAddBreakpoint?.(this.#viewInput.stepIndex);
                 break;
             }
             case 'remove-breakpoint': {
                 if (!this.#viewInput.step) {
                     throw new Error('Expected step');
                 }
-                this.contentElement.dispatchEvent(new RemoveBreakpointEvent(this.#viewInput.stepIndex));
+                this.onRemoveBreakpoint?.(this.#viewInput.stepIndex);
                 break;
             }
             default: {
@@ -588,16 +539,16 @@ export class StepView extends UI.Widget.Widget {
                 if (this.#viewInput.recorderSettings) {
                     this.#viewInput.recorderSettings.preferredCopyFormat = converterId;
                 }
-                this.contentElement.dispatchEvent(new CopyStepEvent(structuredClone(copyStep)));
+                this.onCopyStep?.(structuredClone(copyStep));
             }
         }
     }
     #onBreakpointClick() {
         if (this.#viewInput.hasBreakpoint) {
-            this.contentElement.dispatchEvent(new RemoveBreakpointEvent(this.#viewInput.stepIndex));
+            this.onRemoveBreakpoint?.(this.#viewInput.stepIndex);
         }
         else {
-            this.contentElement.dispatchEvent(new AddBreakpointEvent(this.#viewInput.stepIndex));
+            this.onAddBreakpoint?.(this.#viewInput.stepIndex);
         }
         this.requestUpdate();
     }

@@ -6,19 +6,21 @@ import sinon from 'sinon';
 import * as Host from '../../../core/host/host.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
+import * as TextUtils from '../../../core/text_utils/text_utils.js';
 import { mockAidaClient } from '../../../testing/AiAssistanceHelpers.js';
 import { deinitializeGlobalVars, updateHostConfig } from '../../../testing/EnvironmentHelpers.js';
 import { setupSettingsHooks } from '../../../testing/SettingsHelpers.js';
 import { SnapshotTester } from '../../../testing/SnapshotTester.js';
+import { TestUniverse } from '../../../testing/TestUniverse.js';
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as Logs from '../../logs/logs.js';
 import * as NetworkTimeCalculator from '../../network_time_calculator/network_time_calculator.js';
-import * as TextUtils from '../../text_utils/text_utils.js';
 import { NetworkAgent, RequestContext } from '../ai_assistance.js';
 const { urlString } = Platform.DevToolsPath;
 describe('NetworkAgent', function () {
     setupSettingsHooks();
     const snapshotTester = new SnapshotTester(this, import.meta);
+    let universe;
     function mockHostConfig(modelId, temperature) {
         updateHostConfig({
             devToolsAiAssistanceNetworkAgent: {
@@ -27,6 +29,10 @@ describe('NetworkAgent', function () {
             },
         });
     }
+    beforeEach(() => {
+        universe = new TestUniverse();
+        sinon.stub(Logs.NetworkLog.NetworkLog, 'instance').returns(universe.networkLog);
+    });
     afterEach(async () => {
         await RenderCoordinator.done();
         await deinitializeGlobalVars();
@@ -81,7 +87,7 @@ describe('NetworkAgent', function () {
             const initiatorNetworkRequest = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.initiator.com`, urlString ``, null, null, null);
             const initiatedNetworkRequest1 = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/1`, urlString ``, null, null, null);
             const initiatedNetworkRequest2 = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/2`, urlString ``, null, null, null);
-            sinon.stub(Logs.NetworkLog.NetworkLog.instance(), 'initiatorGraphForRequest')
+            sinon.stub(universe.networkLog, 'initiatorGraphForRequest')
                 .withArgs(selectedNetworkRequest)
                 .returns({
                 initiators: new Set([selectedNetworkRequest, initiatorNetworkRequest]),

@@ -1,4 +1,5 @@
 {
+  "checkJs": true,
   "compilerOptions": {
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
@@ -41,6 +42,7 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../front_end/panels/media/EventDisplayTable.test.ts",
     "../../../../../../front_end/panels/media/MainView.test.ts",
     "../../../../../../front_end/panels/media/PlayerListView.test.ts",
     "../../../../../../front_end/panels/media/PlayerMessagesView.test.ts",

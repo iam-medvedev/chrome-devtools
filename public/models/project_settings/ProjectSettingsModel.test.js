@@ -69,7 +69,7 @@ describe('ProjectSettingsModel', () => {
             workspace: {
                 root: '/home/foo',
                 uuid: '8f7b028c-0323-485f-bcb9-b404edc0f186',
-            }
+            },
         });
     });
     it('doesn\'t load the devtools.json from DevTools-on-DevTools (without --custom-devtools-frontend)', async () => {
@@ -111,7 +111,7 @@ describe('ProjectSettingsModel', () => {
             workspace: {
                 root: '/path/to/front_end',
                 uuid: '5a509b03-1da9-460d-bc38-0c8166ba0c41',
-            }
+            },
         });
     });
     it('listens for navigations', () => {

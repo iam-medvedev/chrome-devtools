@@ -523,7 +523,7 @@ describeWithEnvironment('NetworkLogView', () => {
                                     isDefault: true,
                                     name: 'https://example.com/name',
                                     frameId: 'frame-id',
-                                    label: () => 'https://example.com/label'
+                                    label: () => 'https://example.com/label',
                                 }],
                         };
                     }
@@ -551,7 +551,7 @@ describeWithEnvironment('NetworkLogView', () => {
                                     isDefault: true,
                                     name: 'https://other.com/name',
                                     frameId: 'other-frame',
-                                    label: () => 'https://other.com/label'
+                                    label: () => 'https://other.com/label',
                                 }],
                         };
                     }
@@ -653,7 +653,9 @@ describeWithEnvironment('NetworkLogView', () => {
                 type: "script" /* Protocol.Network.InitiatorType.Script */,
                 url: urlString ``,
                 stack: {
-                    callFrames: [{ url: '', scriptId: '55', functionName: '', lineNumber: 0, columnNumber: 0 }]
+                    callFrames: [
+                        { url: '', scriptId: '55', functionName: '', lineNumber: 0, columnNumber: 0 },
+                    ],
                 },
             });
             assert.isTrue(Network.NetworkDataGridNode.NetworkRequestNode.isConsoleOriginated(request));
@@ -663,7 +665,9 @@ describeWithEnvironment('NetworkLogView', () => {
                 type: "script" /* Protocol.Network.InitiatorType.Script */,
                 url: urlString ``,
                 stack: {
-                    callFrames: [{ url: '', scriptId: '55', functionName: '', lineNumber: 0, columnNumber: 0 }]
+                    callFrames: [
+                        { url: '', scriptId: '55', functionName: '', lineNumber: 0, columnNumber: 0 },
+                    ],
                 },
             });
             assert.isTrue(Network.NetworkDataGridNode.NetworkRequestNode.isConsoleOriginated(request));
@@ -673,7 +677,9 @@ describeWithEnvironment('NetworkLogView', () => {
                 type: "script" /* Protocol.Network.InitiatorType.Script */,
                 url: urlString ``,
                 stack: {
-                    callFrames: [{ url: '', scriptId: '55', functionName: '', lineNumber: 0, columnNumber: 0 }]
+                    callFrames: [
+                        { url: '', scriptId: '55', functionName: '', lineNumber: 0, columnNumber: 0 },
+                    ],
                 },
             });
             assert.isFalse(Network.NetworkDataGridNode.NetworkRequestNode.isConsoleOriginated(request));
@@ -694,7 +700,9 @@ describeWithEnvironment('NetworkLogView', () => {
                 type: "script" /* Protocol.Network.InitiatorType.Script */,
                 url: urlString `https://example.com/script.js`,
                 stack: {
-                    callFrames: [{ url: '', scriptId: '55', functionName: '', lineNumber: 0, columnNumber: 0 }]
+                    callFrames: [
+                        { url: '', scriptId: '55', functionName: '', lineNumber: 0, columnNumber: 0 },
+                    ],
                 },
             });
             assert.isFalse(Network.NetworkDataGridNode.NetworkRequestNode.isConsoleOriginated(request));
@@ -715,7 +723,9 @@ describeWithEnvironment('NetworkLogView', () => {
                 type: "script" /* Protocol.Network.InitiatorType.Script */,
                 url: urlString ``,
                 stack: {
-                    callFrames: [{ url: '', scriptId: '55', functionName: '', lineNumber: 0, columnNumber: 0 }]
+                    callFrames: [
+                        { url: '', scriptId: '55', functionName: '', lineNumber: 0, columnNumber: 0 },
+                    ],
                 },
             });
             const networkRequestNode = new Network.NetworkDataGridNode.NetworkRequestNode({}, request);

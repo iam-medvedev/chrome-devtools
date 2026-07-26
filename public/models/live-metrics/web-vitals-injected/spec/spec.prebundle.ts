@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import type {INPAttribution} from '../../../../third_party/web-vitals/web-vitals.js';
+import type {INPAttribution, Metric} from '../../../../third_party/web-vitals/web-vitals.js';
 import type * as Trace from '../../../trace/trace.js';
 
 export const EVENT_BINDING_NAME = '__chromium_devtools_metrics_reporter';
@@ -84,21 +84,30 @@ export interface PerformanceLongAnimationFrameTimingJSON {
 }
 
 /**
- * This event is not 1:1 with the interactions that the user sees in the interactions log.
- * It is 1:1 with a `PerformanceEventTiming` entry.
+ * This event is not 1:1 with the interactions that the user sees in the
+ * interactions log. It is 1:1 with a web-vitals entry.
+ *
+ * Note web-vitals can emit "fake" INP events without an interactionType nor a
+ * nextPaintTime for small interactions after soft navs or bfcache restores.
+ * For hardNavs these would have a FID event, but for soft navs or bfcache
+ * restores there is no FID equivalent (it's only emitted once per page)
+ * so dummy events without full details are used.
  */
 export interface InteractionEntryEvent {
   name: 'InteractionEntry';
-  interactionType: INPAttribution['interactionType'];
+  interactionType?: INPAttribution['interactionType'];
   eventName: string;
   entryGroupId: InteractionEntryGroupId;
   startTime: number;
-  nextPaintTime: number;
+  navigationId: number;
+  nextPaintTime?: number;
   duration: Trace.Types.Timing.Milli;
   subparts: InpSubparts;
   nodeIndex?: number;
   longAnimationFrameEntries: PerformanceLongAnimationFrameTimingJSON[];
 }
+
+export type NavigationType = Metric['navigationType'];
 
 export interface LayoutShiftEvent {
   name: 'LayoutShift';
@@ -109,6 +118,8 @@ export interface LayoutShiftEvent {
 
 export interface ResetEvent {
   name: 'reset';
+  url?: string;
+  navigationType?: NavigationType;
 }
 
 export type WebVitalsEvent =

@@ -75,7 +75,7 @@ import * as Host from "./../../../../core/host/host.js";
 import * as i18n3 from "./../../../../core/i18n/i18n.js";
 import * as Platform2 from "./../../../../core/platform/platform.js";
 import * as SDK3 from "./../../../../core/sdk/sdk.js";
-import * as TextUtils from "./../../../../models/text_utils/text_utils.js";
+import * as TextUtils from "./../../../../core/text_utils/text_utils.js";
 import * as uiI18n from "./../../../i18n/i18n.js";
 import * as Highlighting from "./../../../components/highlighting/highlighting.js";
 import * as TextEditor from "./../../../components/text_editor/text_editor.js";
@@ -89,6 +89,7 @@ __export(JavaScriptREPL_exports, {
   JavaScriptREPL: () => JavaScriptREPL
 });
 import * as SDK2 from "./../../../../core/sdk/sdk.js";
+import * as Bindings from "./../../../../models/bindings/bindings.js";
 import * as Formatter from "./../../../../models/formatter/formatter.js";
 import * as SourceMapScopes from "./../../../../models/source_map_scopes/source_map_scopes.js";
 import * as Acorn from "./../../../../third_party/acorn/acorn.js";
@@ -350,7 +351,7 @@ var JavaScriptREPL = class _JavaScriptREPL {
     let expression = text;
     const callFrame = executionContext.debuggerModel.selectedCallFrame();
     if (callFrame?.script.isJavaScript()) {
-      const nameMap = await SourceMapScopes.NamesResolver.allVariablesInCallFrame(callFrame);
+      const nameMap = await SourceMapScopes.NamesResolver.allVariablesInCallFrame(callFrame, Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance());
       try {
         expression = await Formatter.FormatterWorkerPool.formatterWorkerPool().javaScriptSubstitute(expression, nameMap);
       } catch {

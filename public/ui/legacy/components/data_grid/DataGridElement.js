@@ -5,12 +5,12 @@
 import * as Lit from '../../../lit/lit.js';
 import * as UI from '../../legacy.js';
 import dataGridStyles from './dataGrid.css.js';
-import { DataGridImpl, DataGridNode, Order } from './DataGrid.js';
+import { DataGridImpl, DataGridNode, Order, } from './DataGrid.js';
 import { SortableDataGrid, SortableDataGridNode } from './SortableDataGrid.js';
 const DUMMY_COLUMN_ID = 'dummy'; // SortableDataGrid.create requires at least one column.
 const elementToNode = new WeakMap();
 export class DataGridElement extends UI.UIUtils.HTMLElementWithLightDOMTemplate {
-    static observedAttributes = ['striped', 'name', 'inline', 'resize'];
+    static observedAttributes = ['striped', 'name', 'inline', 'resize', 'highlight'];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     #dataGrid;
     #resizeObserver = new ResizeObserver(() => {
@@ -18,6 +18,13 @@ export class DataGridElement extends UI.UIUtils.HTMLElementWithLightDOMTemplate 
             this.#dataGrid.onResize();
         }
     });
+    #scrollResizeObserver = new ResizeObserver(() => {
+        if (this.hasAttribute('autoscroll') && this.#stickToBottom) {
+            const scroll = this.#dataGrid.scrollContainer;
+            scroll.scrollTop = scroll.scrollHeight;
+        }
+    });
+    #stickToBottom = true;
     #shadowRoot;
     #columns = [];
     #hideableColumns = new Set();
@@ -48,7 +55,7 @@ export class DataGridElement extends UI.UIUtils.HTMLElementWithLightDOMTemplate 
         this.#dataGrid.addEventListener("ExpandedNode" /* DataGridEvents.EXPANDED_NODE */, e => e.data.configElement.dispatchEvent(new CustomEvent('expand')));
         this.#dataGrid.addEventListener("CollapsedNode" /* DataGridEvents.COLLAPSED_NODE */, e => e.data.configElement.dispatchEvent(new CustomEvent('collapse')));
         this.#dataGrid.addEventListener("SortingChanged" /* DataGridEvents.SORTING_CHANGED */, () => this.dispatchEvent(new CustomEvent('sort', {
-            detail: { columnId: this.#dataGrid.sortColumnId(), ascending: this.#dataGrid.isSortOrderAscending() }
+            detail: { columnId: this.#dataGrid.sortColumnId(), ascending: this.#dataGrid.isSortOrderAscending() },
         })));
         this.#dataGrid.setRowContextMenuCallback((menu, node) => {
             node.configElement.dispatchEvent(new CustomEvent('contextmenu', { detail: menu }));
@@ -72,6 +79,19 @@ export class DataGridElement extends UI.UIUtils.HTMLElementWithLightDOMTemplate 
         this.#updateColumns();
         this.addNodes(this.templateRoot.querySelectorAll('tr'));
     }
+    connectedCallback() {
+        const scroll = this.#dataGrid.scrollContainer;
+        scroll.addEventListener('scroll', this.#onScroll);
+        this.#scrollResizeObserver.observe(scroll.firstElementChild || scroll);
+    }
+    disconnectedCallback() {
+        const scroll = this.#dataGrid.scrollContainer;
+        scroll.removeEventListener('scroll', this.#onScroll);
+        this.#scrollResizeObserver.disconnect();
+    }
+    #onScroll = () => {
+        this.#stickToBottom = UI.UIUtils.isScrolledToBottom(this.#dataGrid.scrollContainer);
+    };
     attributeChangedCallback(name, oldValue, newValue) {
         if (oldValue === newValue) {
             return;
@@ -88,6 +108,11 @@ export class DataGridElement extends UI.UIUtils.HTMLElementWithLightDOMTemplate 
                 break;
             case 'resize':
                 this.#dataGrid.setResizeMethod(newValue);
+                break;
+            case 'highlight':
+                queueMicrotask(() => {
+                    this.#revealHighlightedNode(Number(newValue));
+                });
                 break;
         }
     }
@@ -133,6 +158,23 @@ export class DataGridElement extends UI.UIUtils.HTMLElementWithLightDOMTemplate 
             hasChildren = Boolean(dataRow.querySelector('td table'));
         }
         dataGridNode.setHasChildren(hasChildren);
+    }
+    #revealHighlightedNode(index) {
+        if (isNaN(index) || index < 1) {
+            return;
+        }
+        let count = 0;
+        let node = this.#dataGrid.rootNode().traverseNextNode(true);
+        while (node) {
+            if (node.configElement.hasAttribute('highlighted')) {
+                count++;
+                if (count === index) {
+                    node.revealAndSelect();
+                    return;
+                }
+            }
+            node = node.traverseNextNode(true);
+        }
     }
     #updateColumns() {
         for (const column of Object.keys(this.#dataGrid.columns)) {
@@ -560,7 +602,7 @@ function hasBooleanAttribute(element, name) {
     return element.hasAttribute(name) && element.getAttribute(name) !== 'false';
 }
 const INTERNAL_TOKEN = {
-    token: 'DataGridInternalToken'
+    token: 'DataGridInternalToken',
 };
 class IfExpandedDirective extends Lit.Directive.Directive {
     #partInfo;

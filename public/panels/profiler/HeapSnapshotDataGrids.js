@@ -330,6 +330,7 @@ export var HeapSnapshotSortableDataGridEvents;
     HeapSnapshotSortableDataGridEvents["ContentShown"] = "ContentShown";
     HeapSnapshotSortableDataGridEvents["SortingComplete"] = "SortingComplete";
     HeapSnapshotSortableDataGridEvents["ExpandRetainersComplete"] = "ExpandRetainersComplete";
+    HeapSnapshotSortableDataGridEvents["AggregatesReceived"] = "AggregatesReceived";
     /* eslint-enable @typescript-eslint/naming-convention */
 })(HeapSnapshotSortableDataGridEvents || (HeapSnapshotSortableDataGridEvents = {}));
 export class HeapSnapshotViewportDataGrid extends HeapSnapshotSortableDataGrid {
@@ -634,6 +635,8 @@ export class HeapSnapshotConstructorsDataGrid extends HeapSnapshotViewportDataGr
     nextRequestedFilter = null;
     lastFilter;
     filterInProgress;
+    filterTotalCount;
+    filterTotalSize;
     constructor(heapProfilerModel, dataDisplayDelegate) {
         const columns = [
             { id: 'object', title: i18nString(UIStrings.constructorString), disclosure: true, sortable: true },
@@ -724,11 +727,17 @@ export class HeapSnapshotConstructorsDataGrid extends HeapSnapshotViewportDataGr
         }
         this.removeTopLevelNodes();
         this.resetSortingCache();
+        this.filterTotalCount = 0;
+        this.filterTotalSize = 0;
         for (const classKey in aggregates) {
-            this.appendNode(this.rootNode(), new HeapSnapshotConstructorNode(this, classKey, aggregates[classKey], nodeFilter));
+            const aggregate = aggregates[classKey];
+            this.filterTotalCount += aggregate.count;
+            this.filterTotalSize += aggregate.self;
+            this.appendNode(this.rootNode(), new HeapSnapshotConstructorNode(this, classKey, aggregate, nodeFilter));
         }
         this.sortingChanged();
         this.lastFilter = nodeFilter;
+        this.dispatchEventToListeners(HeapSnapshotSortableDataGridEvents.AggregatesReceived, { count: this.filterTotalCount, size: this.filterTotalSize });
     }
     async populateChildren(maybeNodeFilter) {
         const nodeFilter = maybeNodeFilter || new HeapSnapshotModel.HeapSnapshotModel.NodeFilter();

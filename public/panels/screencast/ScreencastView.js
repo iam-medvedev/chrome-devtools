@@ -157,6 +157,14 @@ export class ScreencastView extends UI.Widget.VBox {
         super.willHide();
         this.stopCasting();
     }
+    onDetach() {
+        this.navigationProgressBar?.dispose();
+        SDK.TargetManager.TargetManager.instance().removeEventListener("SuspendStateChanged" /* SDK.TargetManager.Events.SUSPEND_STATE_CHANGED */, this.onSuspendStateChange, this);
+        if (this.resourceTreeModel) {
+            this.resourceTreeModel.removeEventListener(SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.requestNavigationHistoryEvent, this);
+            this.resourceTreeModel.removeEventListener(SDK.ResourceTreeModel.Events.CachedResourcesLoaded, this.requestNavigationHistoryEvent, this);
+        }
+    }
     async startCasting() {
         if (SDK.TargetManager.TargetManager.instance().allTargetsSuspended()) {
             return;
@@ -543,10 +551,8 @@ export class ScreencastView extends UI.Widget.VBox {
     highlightFrame(_frameId) {
     }
     createCheckerboardPattern(context) {
-        const pattern = document.createElement('canvas');
         const size = 32;
-        pattern.width = size * 2;
-        pattern.height = size * 2;
+        const pattern = new OffscreenCanvas(size * 2, size * 2);
         const pctx = pattern.getContext('2d', { willReadFrequently: true });
         pctx.fillStyle = 'var(--sys-color-neutral-outline)';
         pctx.fillRect(0, 0, size * 2, size * 2);
@@ -674,6 +680,8 @@ export const NAVBAR_HEIGHT = 29;
 export const HTTP_REGEX = /^http:\/\/(.+)/;
 export const SCHEME_REGEX = /^(https?|about|chrome):/;
 export class ProgressTracker {
+    resourceTreeModel;
+    networkManager;
     element;
     requestIds;
     startedRequests;
@@ -681,18 +689,30 @@ export class ProgressTracker {
     maxDisplayedProgress;
     constructor(resourceTreeModel, networkManager, element) {
         this.element = element;
-        if (resourceTreeModel) {
-            resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.onPrimaryPageChanged, this);
-            resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.Load, this.onLoad, this);
+        this.resourceTreeModel = resourceTreeModel;
+        this.networkManager = networkManager;
+        if (this.resourceTreeModel) {
+            this.resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.onPrimaryPageChanged, this);
+            this.resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.Load, this.onLoad, this);
         }
-        if (networkManager) {
-            networkManager.addEventListener(SDK.NetworkManager.Events.RequestStarted, this.onRequestStarted, this);
-            networkManager.addEventListener(SDK.NetworkManager.Events.RequestFinished, this.onRequestFinished, this);
+        if (this.networkManager) {
+            this.networkManager.addEventListener(SDK.NetworkManager.Events.RequestStarted, this.onRequestStarted, this);
+            this.networkManager.addEventListener(SDK.NetworkManager.Events.RequestFinished, this.onRequestFinished, this);
         }
         this.requestIds = null;
         this.startedRequests = 0;
         this.finishedRequests = 0;
         this.maxDisplayedProgress = 0;
+    }
+    dispose() {
+        if (this.resourceTreeModel) {
+            this.resourceTreeModel.removeEventListener(SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.onPrimaryPageChanged, this);
+            this.resourceTreeModel.removeEventListener(SDK.ResourceTreeModel.Events.Load, this.onLoad, this);
+        }
+        if (this.networkManager) {
+            this.networkManager.removeEventListener(SDK.NetworkManager.Events.RequestStarted, this.onRequestStarted, this);
+            this.networkManager.removeEventListener(SDK.NetworkManager.Events.RequestFinished, this.onRequestFinished, this);
+        }
     }
     onPrimaryPageChanged() {
         this.requestIds = new Map();

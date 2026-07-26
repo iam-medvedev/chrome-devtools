@@ -31,7 +31,7 @@ describeWithEnvironment('NetworkDependencyTree', () => {
                     url: 'https://example.com/',
                 },
             },
-            name: "SyntheticNetworkRequest" /* Trace.Types.Events.Name.SYNTHETIC_NETWORK_REQUEST */
+            name: "SyntheticNetworkRequest" /* Trace.Types.Events.Name.SYNTHETIC_NETWORK_REQUEST */,
         };
     }
     it('should return a TableDataRow for a node within the chain limit', () => {

@@ -53,6 +53,7 @@ export declare class ScreencastView extends UI.Widget.VBox implements SDK.Overla
     constructor(screenCaptureModel: SDK.ScreenCaptureModel.ScreenCaptureModel);
     initialize(): void;
     willHide(): void;
+    onDetach(): void;
     private startCasting;
     private stopCasting;
     private screencastFrame;
@@ -93,12 +94,15 @@ export declare const NAVBAR_HEIGHT = 29;
 export declare const HTTP_REGEX: RegExp;
 export declare const SCHEME_REGEX: RegExp;
 export declare class ProgressTracker {
+    private readonly resourceTreeModel;
+    private readonly networkManager;
     private element;
     private requestIds;
     private startedRequests;
     private finishedRequests;
     private maxDisplayedProgress;
     constructor(resourceTreeModel: SDK.ResourceTreeModel.ResourceTreeModel | null, networkManager: SDK.NetworkManager.NetworkManager | null, element: HTMLElement);
+    dispose(): void;
     private onPrimaryPageChanged;
     private onLoad;
     private navigationProgressVisible;

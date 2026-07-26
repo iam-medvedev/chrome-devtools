@@ -6,10 +6,10 @@ import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as TextUtils from '../../core/text_utils/text_utils.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Extensions from '../../models/extensions/extensions.js';
 import * as Logs from '../../models/logs/logs.js';
-import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import { createTarget, expectConsoleLogs } from '../../testing/EnvironmentHelpers.js';
 import { spyCall } from '../../testing/ExpectStubCall.js';
@@ -102,7 +102,7 @@ describe('Extensions', () => {
             expectConsoleLogs({
                 error: [
                     'Extension server error: Invalid argument command: expected a source map script resource for url: https://example.com/',
-                    'Extension server error: Invalid argument command: expected valid scriptUrl and non-empty NamedFunctionRanges'
+                    'Extension server error: Invalid argument command: expected valid scriptUrl and non-empty NamedFunctionRanges',
                 ],
             });
             const validFunctionRanges = [{ start: { line: 0, column: 0 }, end: { line: 10, column: 1 }, name: 'foo' }];
@@ -192,7 +192,7 @@ describe('Extensions', () => {
     expectConsoleLogs({
         error: [
             'Extension server error: Invalid argument urlScheme: Scheme is forbidden',
-            'Extension server error: Invalid argument urlScheme: Scheme is forbidden'
+            'Extension server error: Invalid argument urlScheme: Scheme is forbidden',
         ],
     });
     beforeEach(() => {
@@ -236,7 +236,7 @@ describe('Extensions', () => {
         warn: ['evaluate: the main frame is not yet available'],
         error: [
             'Extension server error: Object not found: <top>',
-            'Extension server error: Operation failed: https://example.com/ has no execution context'
+            'Extension server error: Operation failed: https://example.com/ has no execution context',
         ],
     });
     beforeEach(() => {
@@ -856,7 +856,7 @@ describe('Runtime hosts policy', () => {
                         url: blockedScriptUrl,
                         lineNumber: 1,
                         columnNumber: 0,
-                    }]
+                    }],
             },
         });
         // Entry with no blocked references — should be kept.
@@ -907,7 +907,7 @@ describe('Runtime hosts policy', () => {
                         url: blockedScriptUrl,
                         lineNumber: 10,
                         columnNumber: 1,
-                    }]
+                    }],
             },
         });
         // Clean entry — should be delivered.

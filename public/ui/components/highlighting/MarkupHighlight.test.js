@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import * as TextUtils from '../../../models/text_utils/text_utils.js';
+import * as TextUtils from '../../../core/text_utils/text_utils.js';
 import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import * as Highlighting from './highlighting.js';
 describe('MarkupHighlight', () => {
@@ -58,21 +58,21 @@ describe('MarkupHighlight', () => {
         performTest(['<span>function</span>', '<span> </span>', '<span>functionName</span>'], [range(0, 1), range(8, 1), range(9, 1)], [
             '<span><span class="highlighted">f</span>unction</span>', //
             '<span><span class="highlighted"> </span></span>',
-            '<span><span class="highlighted">f</span>unctionName</span>'
+            '<span><span class="highlighted">f</span>unctionName</span>',
         ]);
     });
     it('highlights last characters in text node', () => {
         performTest(['<span>function</span>', '<span> </span>', '<span>functionName</span>'], [range(7, 1), range(8, 1), range(20, 1)], [
             '<span>functio<span class="highlighted">n</span></span>', //
             '<span><span class="highlighted"> </span></span>',
-            '<span>functionNam<span class="highlighted">e</span></span>'
+            '<span>functionNam<span class="highlighted">e</span></span>',
         ]);
     });
     it('highlights across nodes with first and last characters', () => {
         performTest(['<span>function</span>', '<span> </span>', '<span>functionName</span>'], [range(0, 1), range(7, 3), range(20, 1)], [
             '<span><span class="highlighted">f</span>unctio<span class="highlighted">n f</span></span>', //
             '<span></span>', //
-            '<span>unctionNam<span class="highlighted">e</span></span>'
+            '<span>unctionNam<span class="highlighted">e</span></span>',
         ]);
     });
 });

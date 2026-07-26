@@ -30,7 +30,7 @@ function createNetworkRequest() {
             receiveBufferSize: 1003,
             dnsQueryType: "ipv4" /* Protocol.Network.DirectSocketDnsQueryType.Ipv4 */,
         },
-        openInfo: { remoteAddr: 'www.sample.com', remotePort: 3005, localAddr: '127.0.0.1', localPort: 9472 }
+        openInfo: { remoteAddr: 'www.sample.com', remotePort: 3005, localAddr: '127.0.0.1', localPort: 9472 },
     };
     networkRequest.setResourceType(Common.ResourceType.resourceTypes.DirectSocket);
     networkRequest.setIssueTime(Date.now(), Date.now());
@@ -71,10 +71,10 @@ describeWithEnvironment('DirectSocketConnectionView', () => {
                 target: {
                     parentElement: {
                         // current state
-                        open: false
-                    }
+                        open: false,
+                    },
                 },
-                key: 'ArrowRight'
+                key: 'ArrowRight',
             }, categoryName);
             assert.isTrue((await view.nextInput).openCategories.includes(categoryName));
         });
@@ -87,10 +87,10 @@ describeWithEnvironment('DirectSocketConnectionView', () => {
                 target: {
                     parentElement: {
                         // current state
-                        open: true
-                    }
+                        open: true,
+                    },
                 },
-                key: 'ArrowLeft'
+                key: 'ArrowLeft',
             }, categoryName);
             assert.isFalse((await view.nextInput).openCategories.includes(categoryName));
         });
@@ -108,11 +108,11 @@ describeWithEnvironment('DirectSocketConnectionView', () => {
                 target: {
                     parentElement: {
                         // current state
-                        open: true
-                    }
+                        open: true,
+                    },
                 },
                 // unknown key
-                key: 'ArrowDown'
+                key: 'ArrowDown',
             }, categoryName);
             assert.isTrue((await view.nextInput).openCategories.includes(categoryName));
         });
@@ -147,16 +147,16 @@ describeWithEnvironment('view', () => {
                     receiveBufferSize: 1003,
                     dnsQueryType: "ipv4" /* Protocol.Network.DirectSocketDnsQueryType.Ipv4 */,
                 },
-                openInfo: { remoteAddr: 'www.sample.com', remotePort: 3005, localAddr: '127.0.0.1', localPort: 9472 }
+                openInfo: { remoteAddr: 'www.sample.com', remotePort: 3005, localAddr: '127.0.0.1', localPort: 9472 },
             },
             openCategories: [
                 NetworkComponents.DirectSocketConnectionView.CATEGORY_NAME_GENERAL,
                 NetworkComponents.DirectSocketConnectionView.CATEGORY_NAME_OPEN_INFO,
-                NetworkComponents.DirectSocketConnectionView.CATEGORY_NAME_OPTIONS
+                NetworkComponents.DirectSocketConnectionView.CATEGORY_NAME_OPTIONS,
             ],
             onSummaryKeyDown: () => { },
             onToggleCategory: () => { },
-            onCopyRow: () => { }
+            onCopyRow: () => { },
         };
         view(viewInput, undefined, target);
         await assertScreenshot('direct_socket_connection_view/all_categories_open.png');
@@ -175,11 +175,11 @@ describeWithEnvironment('view', () => {
             openCategories: [
                 NetworkComponents.DirectSocketConnectionView.CATEGORY_NAME_GENERAL,
                 NetworkComponents.DirectSocketConnectionView.CATEGORY_NAME_OPEN_INFO,
-                NetworkComponents.DirectSocketConnectionView.CATEGORY_NAME_OPTIONS
+                NetworkComponents.DirectSocketConnectionView.CATEGORY_NAME_OPTIONS,
             ],
             onSummaryKeyDown: () => { },
             onToggleCategory: () => { },
-            onCopyRow: () => { }
+            onCopyRow: () => { },
         };
         view(viewInput, undefined, target);
         await assertScreenshot('direct_socket_connection_view/all_categories_open_values_absent.png');
@@ -198,12 +198,12 @@ describeWithEnvironment('view', () => {
                     receiveBufferSize: 2003,
                     dnsQueryType: "ipv4" /* Protocol.Network.DirectSocketDnsQueryType.Ipv4 */,
                 },
-                openInfo: { remoteAddr: 'www.sample.com', remotePort: 3005, localAddr: '127.0.0.1', localPort: 9472 }
+                openInfo: { remoteAddr: 'www.sample.com', remotePort: 3005, localAddr: '127.0.0.1', localPort: 9472 },
             },
             openCategories: [],
             onSummaryKeyDown: () => { },
             onToggleCategory: () => { },
-            onCopyRow: () => { }
+            onCopyRow: () => { },
         };
         view(viewInput, undefined, target);
         await assertScreenshot('direct_socket_connection_view/all_categories_closed.png');

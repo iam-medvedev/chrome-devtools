@@ -10,6 +10,15 @@ import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as Common from './common.js';
 describeWithEnvironment('AiCodeCompletionSummaryToolbar', () => {
+    let aidaAvailabilityStub;
+    beforeEach(() => {
+        sinon.stub(Host.AidaClient.HostConfigTracker.instance(), 'pollAidaAvailability').callsFake(async () => { });
+        aidaAvailabilityStub = sinon.stub(Host.AidaClient.HostConfigTracker.instance(), 'aidaAvailability')
+            .get(() => "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
+    });
+    afterEach(() => {
+        aidaAvailabilityStub.restore();
+    });
     async function createToolbar() {
         const view = createViewFunctionStub(Common.AiCodeCompletionSummaryToolbar.AiCodeCompletionSummaryToolbar);
         const widget = new Common.AiCodeCompletionSummaryToolbar.AiCodeCompletionSummaryToolbar({
@@ -65,32 +74,25 @@ describeWithEnvironment('AiCodeCompletionSummaryToolbar', () => {
         widget.detach();
     });
     it('renders when AIDA becomes available', async () => {
-        const checkAccessPreconditionsStub = sinon.stub(Host.AidaClient.AidaClient, 'checkAccessPreconditions');
-        checkAccessPreconditionsStub.resolves("no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */);
+        aidaAvailabilityStub.get(() => "no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */);
         const { view, widget } = await createToolbar();
         assert.strictEqual(view.input.aidaAvailability, "no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */);
-        checkAccessPreconditionsStub.resolves("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
-        Host.AidaClient.HostConfigTracker.instance().dispatchEventToListeners("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */);
+        Host.AidaClient.HostConfigTracker.instance().dispatchEventToListeners("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */, "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
         await view.nextInput;
         assert.strictEqual(view.input.aidaAvailability, "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
         widget.detach();
     });
     it('does not render when AIDA becomes unavailable', async () => {
-        const checkAccessPreconditionsStub = sinon.stub(Host.AidaClient.AidaClient, 'checkAccessPreconditions');
-        checkAccessPreconditionsStub.resolves("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
+        aidaAvailabilityStub.get(() => "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
         const { view, widget } = await createToolbar();
         assert.strictEqual(view.input.aidaAvailability, "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
-        checkAccessPreconditionsStub.resolves("no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */);
-        Host.AidaClient.HostConfigTracker.instance().dispatchEventToListeners("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */);
+        Host.AidaClient.HostConfigTracker.instance().dispatchEventToListeners("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */, "no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */);
         await view.nextInput;
         assert.strictEqual(view.input.aidaAvailability, "no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */);
         widget.detach();
     });
     describe('screenshots', () => {
         beforeEach(() => {
-            sinon.stub(Host.AidaClient.HostConfigTracker.instance(), 'pollAidaAvailability').callsFake(async () => { });
-            const checkAccessPreconditionsStub = sinon.stub(Host.AidaClient.AidaClient, 'checkAccessPreconditions');
-            checkAccessPreconditionsStub.resolves("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
         });
         function createTarget(width) {
             const container = document.createElement('div');

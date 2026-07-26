@@ -112,15 +112,16 @@ describeWithEnvironment('CategorizedBreakpointsSidebarPane', () => {
                 "animation" /* SDK.CategorizedBreakpoint.Category.ANIMATION */,
                 [
                     new SDK.CategorizedBreakpoint.CategorizedBreakpoint("animation" /* SDK.CategorizedBreakpoint.Category.ANIMATION */, 'animation'),
-                    new SDK.CategorizedBreakpoint.CategorizedBreakpoint("animation" /* SDK.CategorizedBreakpoint.Category.ANIMATION */, 'bnimation')
-                ]
+                    new SDK.CategorizedBreakpoint.CategorizedBreakpoint("animation" /* SDK.CategorizedBreakpoint.Category.ANIMATION */, 'bnimation'),
+                ],
             ],
             [
-                "canvas" /* SDK.CategorizedBreakpoint.Category.CANVAS */, [new SDK.CategorizedBreakpoint.CategorizedBreakpoint("canvas" /* SDK.CategorizedBreakpoint.Category.CANVAS */, 'also_animation')]
+                "canvas" /* SDK.CategorizedBreakpoint.Category.CANVAS */,
+                [new SDK.CategorizedBreakpoint.CategorizedBreakpoint("canvas" /* SDK.CategorizedBreakpoint.Category.CANVAS */, 'also_animation')],
             ],
             [
                 "load" /* SDK.CategorizedBreakpoint.Category.LOAD */,
-                [new SDK.CategorizedBreakpoint.CategorizedBreakpoint("load" /* SDK.CategorizedBreakpoint.Category.LOAD */, 'different')]
+                [new SDK.CategorizedBreakpoint.CategorizedBreakpoint("load" /* SDK.CategorizedBreakpoint.Category.LOAD */, 'different')],
             ],
         ]);
         function renderView(inputOverrides = {}) {

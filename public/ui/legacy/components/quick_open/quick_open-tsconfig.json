@@ -1,4 +1,5 @@
 {
+  "checkJs": true,
   "compilerOptions": {
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
@@ -58,10 +59,10 @@
       "path": "../../../../core/platform/bundle-tsconfig.json"
     },
     {
-      "path": "../../../../models/geometry/bundle-tsconfig.json"
+      "path": "../../../../core/text_utils/bundle-tsconfig.json"
     },
     {
-      "path": "../../../../models/text_utils/bundle-tsconfig.json"
+      "path": "../../../../models/geometry/bundle-tsconfig.json"
     },
     {
       "path": "../../../../third_party/diff/bundle-tsconfig.json"
@@ -80,6 +81,9 @@
     },
     {
       "path": "../../../lit/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../settings/bundle-tsconfig.json"
     },
     {
       "path": "../../../visual_logging/bundle-tsconfig.json"

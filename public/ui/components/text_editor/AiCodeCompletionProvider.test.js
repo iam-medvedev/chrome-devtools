@@ -34,7 +34,12 @@ function createEditorWithProvider(doc, config = {
 describeWithEnvironment('AiCodeCompletionProvider', () => {
     let clock;
     let checkAccessPreconditionsStub;
-    beforeEach(() => {
+    let originalPoll;
+    async function setAidaAvailability(availability) {
+        checkAccessPreconditionsStub.resolves(availability);
+        await originalPoll.call(Host.AidaClient.HostConfigTracker.instance());
+    }
+    beforeEach(async () => {
         clock = sinon.useFakeTimers();
         updateHostConfig({
             devToolsAiCodeCompletion: {
@@ -44,14 +49,19 @@ describeWithEnvironment('AiCodeCompletionProvider', () => {
                 enabled: true,
                 blockedByAge: false,
                 blockedByGeo: false,
-            }
+            },
         });
+        const tracker = Host.AidaClient.HostConfigTracker.instance();
+        originalPoll = tracker.pollAidaAvailability;
+        sinon.stub(tracker, 'pollAidaAvailability').callsFake(async () => { });
         checkAccessPreconditionsStub = sinon.stub(Host.AidaClient.AidaClient, 'checkAccessPreconditions');
+        await setAidaAvailability("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
     });
     afterEach(() => {
         Common.Settings.Settings.instance().settingForTest('ai-code-completion-teaser-dismissed').set(false);
         Common.Settings.Settings.instance().settingForTest('ai-code-completion-enabled').set(false);
         clock.restore();
+        checkAccessPreconditionsStub.restore();
     });
     it('does not create a provider when the feature is disabled', () => {
         updateHostConfig({
@@ -62,9 +72,6 @@ describeWithEnvironment('AiCodeCompletionProvider', () => {
         assert.throws(() => createEditorWithProvider(''), 'AI code completion feature is not available.');
     });
     describe('Teaser decoration', () => {
-        beforeEach(() => {
-            checkAccessPreconditionsStub.resolves("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
-        });
         it('shows teaser when mode is ON', async () => {
             const { editor, provider } = createEditorWithProvider('');
             editor.dispatch({
@@ -151,7 +158,6 @@ describeWithEnvironment('AiCodeCompletionProvider', () => {
     });
     describe('Triggers code completion', () => {
         it('triggers code completion on text change', async () => {
-            checkAccessPreconditionsStub.resolves("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
             Common.Settings.Settings.instance().settingForTest('ai-code-completion-enabled').set(true);
             const { editor, provider } = createEditorWithProvider('');
             const completeCodeStub = sinon.stub(AiCodeCompletion.AiCodeCompletion.AiCodeCompletion.prototype, 'completeCode');
@@ -163,7 +169,7 @@ describeWithEnvironment('AiCodeCompletionProvider', () => {
             provider.dispose();
         });
         it('triggers code completion when AIDA becomes available', async () => {
-            checkAccessPreconditionsStub.resolves("no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */);
+            await setAidaAvailability("no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */);
             const completeCodeStub = sinon.stub(AiCodeCompletion.AiCodeCompletion.AiCodeCompletion.prototype, 'completeCode');
             Common.Settings.Settings.instance().settingForTest('ai-code-completion-enabled').set(true);
             const { editor, provider } = createEditorWithProvider('');
@@ -171,8 +177,7 @@ describeWithEnvironment('AiCodeCompletionProvider', () => {
             editor.dispatch({ changes: { from: 0, insert: 'Hello' }, selection: { anchor: 5 } });
             await clock.tickAsync(AiCodeCompletionProvider.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS);
             sinon.assert.notCalled(completeCodeStub);
-            checkAccessPreconditionsStub.resolves("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
-            await Host.AidaClient.HostConfigTracker.instance().dispatchEventToListeners("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */);
+            await setAidaAvailability("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
             await clock.tickAsync(0);
             editor.dispatch({ changes: { from: 5, insert: 'Bye' }, selection: { anchor: 8 } });
             await clock.tickAsync(AiCodeCompletionProvider.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS);
@@ -181,7 +186,6 @@ describeWithEnvironment('AiCodeCompletionProvider', () => {
             provider.dispose();
         });
         it('does not trigger code completion when AIDA becomes unavailable', async () => {
-            checkAccessPreconditionsStub.resolves("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
             const completeCodeStub = sinon.stub(AiCodeCompletion.AiCodeCompletion.AiCodeCompletion.prototype, 'completeCode');
             Common.Settings.Settings.instance().settingForTest('ai-code-completion-enabled').set(true);
             const { editor, provider } = createEditorWithProvider('');
@@ -189,8 +193,7 @@ describeWithEnvironment('AiCodeCompletionProvider', () => {
             editor.dispatch({ changes: { from: 0, insert: 'Hello' }, selection: { anchor: 5 } });
             await clock.tickAsync(AiCodeCompletionProvider.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS);
             sinon.assert.calledOnce(completeCodeStub);
-            checkAccessPreconditionsStub.resolves("no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */);
-            await Host.AidaClient.HostConfigTracker.instance().dispatchEventToListeners("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */);
+            await setAidaAvailability("no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */);
             await clock.tickAsync(0);
             editor.dispatch({ changes: { from: 5, insert: 'Bye' }, selection: { anchor: 8 } });
             await clock.tickAsync(AiCodeCompletionProvider.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS);
@@ -199,7 +202,6 @@ describeWithEnvironment('AiCodeCompletionProvider', () => {
             provider.dispose();
         });
         it('debounces requests for code completion', async () => {
-            checkAccessPreconditionsStub.resolves("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
             const completeCodeStub = sinon.stub(AiCodeCompletion.AiCodeCompletion.AiCodeCompletion.prototype, 'completeCode');
             Common.Settings.Settings.instance().settingForTest('ai-code-completion-enabled').set(true);
             const { editor, provider } = createEditorWithProvider('');
@@ -215,7 +217,6 @@ describeWithEnvironment('AiCodeCompletionProvider', () => {
     });
     describe('Dispatches', () => {
         beforeEach(() => {
-            checkAccessPreconditionsStub.resolves("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
             Common.Settings.Settings.instance().settingForTest('ai-code-completion-enabled').set(true);
         });
         it('dispatches a suggestion to the editor when AIDA returns one', async () => {
@@ -285,7 +286,7 @@ describeWithEnvironment('AiCodeCompletionProvider', () => {
                             attributionMetadata: {
                                 attributionAction: Host.AidaClient.RecitationAction.BLOCK,
                                 citations: [{ uri: 'https://www.example.com' }],
-                            }
+                            },
                         }],
                     metadata: {},
                 },
@@ -353,7 +354,6 @@ describeWithEnvironment('AiCodeCompletionProvider', () => {
     });
     describe('Editor keymap', () => {
         beforeEach(() => {
-            checkAccessPreconditionsStub.resolves("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
         });
         it('accepts suggestion on Tab', async () => {
             Common.Settings.Settings.instance().settingForTest('ai-code-completion-enabled').set(true);

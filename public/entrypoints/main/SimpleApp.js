@@ -3,16 +3,20 @@
 // found in the LICENSE file.
 import * as UI from '../../ui/legacy/legacy.js';
 export class SimpleApp {
+    #universe;
+    constructor(universe) {
+        this.#universe = universe;
+    }
     presentUI(document) {
-        const rootView = new UI.RootView.RootView();
+        const rootView = new UI.RootView.RootView(this.#universe);
         UI.InspectorView.InspectorView.instance().show(rootView.element);
         rootView.attachToDocument(document);
         rootView.focus();
     }
 }
 export class SimpleAppProvider {
-    createApp() {
-        return new SimpleApp();
+    createApp(universe) {
+        return new SimpleApp(universe);
     }
 }
 //# sourceMappingURL=SimpleApp.js.map

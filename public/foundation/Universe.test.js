@@ -48,6 +48,16 @@ describe('Universe', () => {
         });
         assert.isNull(universe.deviceModeModel);
     });
+    it('retrieves registered services via universe.get(...)', () => {
+        const universe = new Foundation.Universe.Universe({
+            settingsCreationOptions: createSettingsCreationOptions(),
+            hostConfig: {},
+            inspectorFrontendHost: Host.InspectorFrontendHost.InspectorFrontendHostInstance,
+            supportsEmulation: false,
+        });
+        assert.strictEqual(universe.get(SDK.TargetManager.TargetManager), universe.targetManager);
+        assert.strictEqual(universe.get(Common.Settings.Settings), universe.settings);
+    });
     it('does not produce unexpected CDP traffic during target bootstrapping', async () => {
         const settingsCreationOptions = createSettingsCreationOptions();
         const universe = new Foundation.Universe.Universe({

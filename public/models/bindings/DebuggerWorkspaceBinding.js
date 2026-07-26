@@ -24,7 +24,7 @@ export class DebuggerWorkspaceBinding {
     #settings;
     constructor(resourceMapping, targetManager, ignoreListManager, workspace) {
         this.resourceMapping = resourceMapping;
-        this.resourceMapping.debuggerWorkspaceBinding = this;
+        this.resourceMapping.debuggerLocationUpdater = this;
         this.ignoreListManager = ignoreListManager;
         this.workspace = workspace;
         this.#settings = targetManager.settings;
@@ -512,7 +512,7 @@ class ModelData {
                         uiSourceCode: uiLocation.uiSourceCode,
                         name: functionName,
                         line: uiLocation.lineNumber,
-                        column: uiLocation.columnNumber ?? -1
+                        column: uiLocation.columnNumber ?? -1,
                     }]);
                 return;
             }

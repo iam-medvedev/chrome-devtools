@@ -39,6 +39,10 @@ export declare class PauseListener {
     #private;
     constructor();
 }
+export declare class ConsoleProfileFinishedListener {
+    #private;
+    constructor();
+}
 /** Unused but mentioned at https://chromedevtools.github.io/devtools-protocol/#:~:text=use%20Main.MainImpl.-,sendOverProtocol,-()%20in%20the **/
 export declare function sendOverProtocol(method: ProtocolClient.InspectorBackend.QualifiedName, params: Object | null): Promise<unknown[] | null>;
 export declare class ReloadActionDelegate implements UI.ActionRegistration.ActionDelegate {

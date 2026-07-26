@@ -9,7 +9,7 @@ import * as Root from '../root/root.js';
 import { RehydratingConnectionTransport } from './RehydratingConnection.js';
 const UIStrings = {
     /**
-     * @description Text on the remote debugging window to indicate the connection is lost
+     * @description Text on the remote debugging window to indicate the connection is lost.
      */
     websocketDisconnected: 'WebSocket disconnected',
 };
@@ -160,7 +160,7 @@ export class StubTransport {
         this.#onDisconnect = onDisconnect;
     }
     sendRawMessage(message) {
-        window.setTimeout(this.respondWithError.bind(this, message), 0);
+        globalThis.setTimeout(this.respondWithError.bind(this, message), 0);
     }
     respondWithError(message) {
         const messageObject = JSON.parse(message);

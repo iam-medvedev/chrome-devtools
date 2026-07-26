@@ -632,7 +632,7 @@ export class SecondaryInitManager {
                 ...retainers,
                 essentialEdges: Platform.TypedArrayUtilities.createBitVector(argsStep2.essentialEdgesBuffer),
                 port,
-                nodeSelfSizesPromise: this.getNodeSelfSizes()
+                nodeSelfSizesPromise: this.getNodeSelfSizes(),
             };
             const dominatorsAndRetainedSizes = await HeapSnapshot.calculateDominatorsAndRetainedSizes(args);
             const dominatedNodesOutputs = HeapSnapshot.buildDominatedNodes({ ...args, ...dominatorsAndRetainedSizes });
@@ -1745,7 +1745,7 @@ export class HeapSnapshot {
     // ACM Trans. Program. Lang. Syst. 1, 1 (July 1979), 121–141. https://doi.org/10.1145/357062.357071
     static async calculateDominatorsAndRetainedSizes(inputs) {
         // Preload fields into local variables for better performance.
-        const { nodeCount, firstEdgeIndexes, edgeFieldsCount, nodeFieldCount, firstRetainerIndex, retainingEdges, retainingNodes, edgeToNodeOrdinals, rootNodeOrdinal, essentialEdges, nodeSelfSizesPromise, port } = inputs;
+        const { nodeCount, firstEdgeIndexes, edgeFieldsCount, nodeFieldCount, firstRetainerIndex, retainingEdges, retainingNodes, edgeToNodeOrdinals, rootNodeOrdinal, essentialEdges, nodeSelfSizesPromise, port, } = inputs;
         function isEssentialEdge(edgeIndex) {
             return essentialEdges.getBit(edgeIndex / edgeFieldsCount);
         }
@@ -2463,7 +2463,6 @@ export class HeapSnapshot {
         if (this.nodeDetachednessAndClassIndexOffset === -1) {
             return;
         }
-        console.time('propagateDOMState');
         const visited = new Uint8Array(this.nodeCount);
         const attached = [];
         const detached = [];
@@ -2542,7 +2541,6 @@ export class HeapSnapshot {
             }
             propagateState(this, nodeOrdinal, 2 /* HeapSnapshotModel.HeapSnapshotModel.DOMLinkState.DETACHED */);
         }
-        console.timeEnd('propagateDOMState');
     }
     buildSamples() {
         const samples = this.#rawSamples;
@@ -2737,7 +2735,7 @@ export class HeapSnapshot {
         return new HeapSnapshotEdgesProvider(this, filter, node.retainers(), indexProvider);
     }
     getRetainingPaths(nodeIndex, maxDepth = 30, maxNodes = 5000, maxSiblings = 100) {
-        const { nodeFieldCount, firstRetainerIndex, retainingNodes, retainingEdges, edgeTypeOffset, edgeWeakType, containmentEdges } = this;
+        const { nodeFieldCount, firstRetainerIndex, retainingNodes, retainingEdges, edgeTypeOffset, edgeWeakType, containmentEdges, } = this;
         const distances = this.#nodeDistancesForRetainersView ?? this.nodeDistances;
         let traversedNodesCount = 0;
         const visiting = new Set();
@@ -3611,7 +3609,7 @@ export class JSHeapSnapshot extends HeapSnapshot {
                 jsArrays: sizeJSArrays,
                 strings: sizeStrings,
                 system: sizeSystem,
-            }
+            },
         };
     }
     calculateArraySize(node) {

@@ -14,7 +14,8 @@ import * as Logs from '../../models/logs/logs.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import { createConsoleViewMessageWithStubDeps, createStackTrace, } from '../../testing/ConsoleHelpers.js';
 import { raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, describeWithEnvironment, } from '../../testing/EnvironmentHelpers.js';
+import { expectCall } from '../../testing/ExpectStubCall.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import { dispatchEvent } from '../../testing/MockConnection.js';
 import { mockResourceTree } from '../../testing/ResourceTreeHelpers.js';
@@ -39,7 +40,8 @@ describeWithEnvironment('ConsoleViewMessage', () => {
                 type: "log" /* Protocol.Runtime.ConsoleAPICalledEventType.Log */,
                 stackTrace,
             };
-            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, /* level */ null, 'got here', messageDetails);
+            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, 
+            /* level */ null, 'got here', messageDetails);
             const { message, linkifier } = createConsoleViewMessageWithStubDeps(rawMessage);
             message.toMessageElement(); // Trigger rendering.
             sinon.assert.calledOnceWithExactly(linkifier.linkifyStackTraceTopFrame, target, stackTrace);
@@ -56,7 +58,8 @@ describeWithEnvironment('ConsoleViewMessage', () => {
                 type: "log" /* Protocol.Runtime.ConsoleAPICalledEventType.Log */,
                 stackTrace,
             };
-            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, /* level */ null, 'value of x is 42', messageDetails);
+            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, 
+            /* level */ null, 'value of x is 42', messageDetails);
             const { message, linkifier } = createConsoleViewMessageWithStubDeps(rawMessage);
             message.toMessageElement(); // Trigger rendering.
             const expectedCallFrame = stackTrace.callFrames[1]; // userFunction.
@@ -76,7 +79,8 @@ describeWithEnvironment('ConsoleViewMessage', () => {
                 type: "log" /* Protocol.Runtime.ConsoleAPICalledEventType.Log */,
                 stackTrace,
             };
-            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, /* level */ null, 'value of x is 42', messageDetails);
+            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, 
+            /* level */ null, 'value of x is 42', messageDetails);
             const { message, linkifier } = createConsoleViewMessageWithStubDeps(rawMessage);
             message.toMessageElement(); // Trigger rendering.
             const expectedCallFrame = stackTrace.callFrames[3]; // userFunction.
@@ -89,7 +93,9 @@ describeWithEnvironment('ConsoleViewMessage', () => {
             const targetManager = SDK.TargetManager.TargetManager.instance();
             const workspace = Workspace.Workspace.WorkspaceImpl.instance();
             const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);
-            const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
+            const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance({
+                forceNew: true,
+            });
             const debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
                 forceNew: true,
                 resourceMapping,
@@ -103,7 +109,8 @@ describeWithEnvironment('ConsoleViewMessage', () => {
             const issuesResolver = sinon.createStubInstance(IssuesManager.IssueResolver.IssueResolver);
             const url = Platform.DevToolsPath.urlString `http://example.com/source2.js`;
             const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, "info" /* Protocol.Log.LogEntryLevel.Info */, 'hello?', { url });
-            const message = new Console.ConsoleViewMessage.ConsoleViewMessage(rawMessage, linkifier, requestResolver, issuesResolver, /* onResize */ () => { });
+            const message = new Console.ConsoleViewMessage.ConsoleViewMessage(rawMessage, linkifier, requestResolver, issuesResolver, 
+            /* onResize */ () => { });
             const messageElement = message.toMessageElement();
             const anchorElement = messageElement.querySelector('.devtools-link');
             assert.exists(anchorElement);
@@ -135,7 +142,9 @@ describeWithEnvironment('ConsoleViewMessage', () => {
         it('creates an editable object properties section for objects', async () => {
             const target = createTarget();
             const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
-            const remoteObject = SDK.RemoteObject.RemoteObject.fromLocalObject({ foo: 'bar' });
+            const remoteObject = SDK.RemoteObject.RemoteObject.fromLocalObject({
+                foo: 'bar',
+            });
             const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, "info" /* Protocol.Log.LogEntryLevel.Info */, '', { parameters: [remoteObject] });
             const { message } = createConsoleViewMessageWithStubDeps(rawMessage);
             const messageElement = message.toMessageElement();
@@ -169,6 +178,121 @@ describeWithEnvironment('ConsoleViewMessage', () => {
             const propertiesSectionElement = messageElement.querySelector('.console-view-object-properties-section');
             assert.exists(propertiesSectionElement);
             assert.include(propertiesSectionElement.textContent, 'HTMLDocument');
+        });
+        it('formats an object which throws on string conversion without crashing', () => {
+            const target = createTarget();
+            const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+            assert.exists(runtimeModel);
+            const remoteObject = runtimeModel.createRemoteObject({
+                type: "object" /* Protocol.Runtime.RemoteObjectType.Object */,
+                className: 'Object',
+                description: 'Object',
+                objectId: '1',
+                preview: {
+                    type: "object" /* Protocol.Runtime.ObjectPreviewType.Object */,
+                    description: 'Object',
+                    overflow: false,
+                    properties: [
+                        {
+                            name: 'toString',
+                            type: "object" /* Protocol.Runtime.PropertyPreviewType.Object */,
+                            value: 'Object',
+                        },
+                    ],
+                },
+            });
+            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, "info" /* Protocol.Log.LogEntryLevel.Info */, '', {
+                type: "log" /* Protocol.Runtime.ConsoleAPICalledEventType.Log */,
+                parameters: [remoteObject],
+            });
+            const { message } = createConsoleViewMessageWithStubDeps(rawMessage);
+            const messageElement = message.toMessageElement();
+            const propertiesSectionElement = messageElement.querySelector('.console-view-object-properties-section');
+            assert.exists(propertiesSectionElement);
+            assert.include(propertiesSectionElement.textContent, 'toString');
+        });
+        it('formats native functions without exception', async () => {
+            const target = createTarget();
+            const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+            assert.exists(runtimeModel);
+            const mathRandomFunction = runtimeModel.createRemoteObject({
+                type: "function" /* Protocol.Runtime.RemoteObjectType.Function */,
+                description: 'function random() { [native code] }',
+                objectId: '1',
+            });
+            const appendChildFunction = runtimeModel.createRemoteObject({
+                type: "function" /* Protocol.Runtime.RemoteObjectType.Function */,
+                description: 'function appendChild() { [native code] }',
+                objectId: '2',
+            });
+            const rawMessage1 = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, "info" /* Protocol.Log.LogEntryLevel.Info */, '', {
+                type: SDK.ConsoleModel.FrontendMessageType.Result,
+                parameters: [mathRandomFunction],
+            });
+            const { message: message1 } = createConsoleViewMessageWithStubDeps(rawMessage1);
+            const formattedPromise1 = expectCall(sinon.stub(message1, 'formattedParameterAsFunctionForTest'));
+            const messageElement1 = message1.toMessageElement();
+            await formattedPromise1;
+            assert.strictEqual(messageElement1.deepTextContent(), 'ƒ random() { [native code] }');
+            const rawMessage2 = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, "info" /* Protocol.Log.LogEntryLevel.Info */, '', {
+                type: SDK.ConsoleModel.FrontendMessageType.Result,
+                parameters: [appendChildFunction],
+            });
+            const { message: message2 } = createConsoleViewMessageWithStubDeps(rawMessage2);
+            const formattedPromise2 = expectCall(sinon.stub(message2, 'formattedParameterAsFunctionForTest'));
+            const messageElement2 = message2.toMessageElement();
+            await formattedPromise2;
+            assert.strictEqual(messageElement2.deepTextContent(), 'ƒ appendChild() { [native code] }');
+        });
+        it('formats performance getters (PerformanceTiming and MemoryInfo)', () => {
+            const target = createTarget();
+            const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+            assert.exists(runtimeModel);
+            const performanceTimingObject = runtimeModel.createRemoteObject({
+                type: "object" /* Protocol.Runtime.RemoteObjectType.Object */,
+                className: 'PerformanceTiming',
+                description: 'PerformanceTiming',
+                objectId: '1',
+                preview: {
+                    type: "object" /* Protocol.Runtime.ObjectPreviewType.Object */,
+                    description: 'PerformanceTiming',
+                    overflow: true,
+                    properties: [
+                        { name: 'navigationStart', type: "number" /* Protocol.Runtime.PropertyPreviewType.Number */, value: '1000' },
+                        { name: 'unloadEventStart', type: "number" /* Protocol.Runtime.PropertyPreviewType.Number */, value: '0' },
+                        { name: 'unloadEventEnd', type: "number" /* Protocol.Runtime.PropertyPreviewType.Number */, value: '0' },
+                        { name: 'redirectStart', type: "number" /* Protocol.Runtime.PropertyPreviewType.Number */, value: '0' },
+                        { name: 'redirectEnd', type: "number" /* Protocol.Runtime.PropertyPreviewType.Number */, value: '0' },
+                    ],
+                },
+            });
+            const memoryInfoObject = runtimeModel.createRemoteObject({
+                type: "object" /* Protocol.Runtime.RemoteObjectType.Object */,
+                className: 'MemoryInfo',
+                description: 'MemoryInfo',
+                objectId: '2',
+                preview: {
+                    type: "object" /* Protocol.Runtime.ObjectPreviewType.Object */,
+                    description: 'MemoryInfo',
+                    overflow: false,
+                    properties: [
+                        { name: 'totalJSHeapSize', type: "number" /* Protocol.Runtime.PropertyPreviewType.Number */, value: '10000000' },
+                        { name: 'usedJSHeapSize', type: "number" /* Protocol.Runtime.PropertyPreviewType.Number */, value: '1000000' },
+                        { name: 'jsHeapSizeLimit', type: "number" /* Protocol.Runtime.PropertyPreviewType.Number */, value: '2000000000' },
+                    ],
+                },
+            });
+            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, "info" /* Protocol.Log.LogEntryLevel.Info */, '', {
+                type: "log" /* Protocol.Runtime.ConsoleAPICalledEventType.Log */,
+                parameters: [performanceTimingObject, memoryInfoObject],
+            });
+            const { message } = createConsoleViewMessageWithStubDeps(rawMessage);
+            const messageElement = message.toMessageElement();
+            const textContent = messageElement.deepTextContent();
+            assert.include(textContent, 'PerformanceTiming');
+            assert.include(textContent, 'navigationStart');
+            assert.include(textContent, 'MemoryInfo');
+            assert.include(textContent, 'totalJSHeapSize');
         });
     });
     describe('console insights', () => {
@@ -244,13 +368,13 @@ describeWithEnvironment('ConsoleViewMessage', () => {
         function errorMessageForStack(stack, withBuiltinFrames) {
             const lines = [
                 'Error:',
-                ...(stack.callFrames.flatMap(frame => {
+                ...stack.callFrames.flatMap(frame => {
                     const line = `    at ${frame.functionName} (${frame.url}:${frame.lineNumber}:${frame.columnNumber})`;
                     if (withBuiltinFrames) {
                         return [line, '    at JSON.parse (<anonymous>)'];
                     }
                     return [line];
-                })),
+                }),
             ];
             return lines.join('\n');
         }
@@ -273,7 +397,8 @@ describeWithEnvironment('ConsoleViewMessage', () => {
             return results;
         }
         async function expandStructuredTrace(element) {
-            element.querySelector('.console-message-stack-trace-wrapper > div').click();
+            element.querySelector('.console-message-stack-trace-wrapper > div')
+                .click();
             await UI.Widget.Widget.allUpdatesComplete;
         }
         async function expandIgnored(element) {
@@ -300,17 +425,22 @@ describeWithEnvironment('ConsoleViewMessage', () => {
             const messageDetails = {
                 type: "error" /* Protocol.Runtime.ConsoleAPICalledEventType.Error */,
                 stackTrace,
-                parameters: [{
+                parameters: [
+                    {
                         type: 'object',
                         subtype: 'error',
                         className: 'Error',
                         description: stackTraceMessage,
-                    }],
+                    },
+                ],
             };
             const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, "error" /* Protocol.Log.LogEntryLevel.Error */, stackTraceMessage, messageDetails);
             const { message, linkifier } = createConsoleViewMessageWithStubDeps(rawMessage);
             linkifier.linkifyScriptLocation.callsFake((_target, _scriptId, sourceURL, lineNumber, options) => {
-                const link = Components.Linkifier.Linkifier.linkifyURL(sourceURL, { lineNumber, ...options });
+                const link = Components.Linkifier.Linkifier.linkifyURL(sourceURL, {
+                    lineNumber,
+                    ...options,
+                });
                 if (ignoreListFn(sourceURL)) {
                     link.classList.add(IGNORE_LIST_LINK);
                 }
@@ -368,7 +498,9 @@ describeWithEnvironment('ConsoleViewMessage', () => {
         beforeEach(() => {
             const targetManager = SDK.TargetManager.TargetManager.instance();
             const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, Workspace.Workspace.WorkspaceImpl.instance());
-            const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
+            const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance({
+                forceNew: true,
+            });
             Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
                 forceNew: true,
                 resourceMapping,
@@ -416,12 +548,14 @@ describeWithEnvironment('ConsoleViewMessage', () => {
             const messageDetails = {
                 type: "error" /* Protocol.Runtime.ConsoleAPICalledEventType.Error */,
                 stackTrace: consoleStackTrace,
-                parameters: [{
+                parameters: [
+                    {
                         type: "object" /* Protocol.Runtime.RemoteObjectType.Object */,
                         subtype: "error" /* Protocol.Runtime.RemoteObjectSubtype.Error */,
                         className: 'Error',
                         description: stackTraceMessage,
-                    }],
+                    },
+                ],
             };
             const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, "error" /* Protocol.Log.LogEntryLevel.Error */, stackTraceMessage, messageDetails);
             const { message } = createConsoleViewMessageWithStubDeps(rawMessage);
@@ -580,7 +714,8 @@ describeWithEnvironment('ConsoleViewMessage', () => {
             });
             const requestResolver = sinon.createStubInstance(Logs.RequestResolver.RequestResolver);
             const issuesResolver = sinon.createStubInstance(IssuesManager.IssueResolver.IssueResolver);
-            const message = new Console.ConsoleViewMessage.ConsoleViewMessage(rawMessage, linkifier, requestResolver, issuesResolver, /* onResize */ () => { });
+            const message = new Console.ConsoleViewMessage.ConsoleViewMessage(rawMessage, linkifier, requestResolver, issuesResolver, 
+            /* onResize */ () => { });
             const element = message.toMessageElement();
             const debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance();
             await debuggerWorkspaceBinding.pendingLiveLocationChangesPromise();
@@ -603,7 +738,7 @@ describeWithEnvironment('ConsoleViewMessage', () => {
             linkifier.dispose();
         });
     });
-    describe('ConsoleTableMessageView Context Menu', () => {
+    describe('ConsoleTableMessageView', () => {
         let copyTextStub;
         beforeEach(() => {
             copyTextStub = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'copyText');
@@ -615,7 +750,8 @@ describeWithEnvironment('ConsoleViewMessage', () => {
             const linkifier = sinon.createStubInstance(Components.Linkifier.Linkifier);
             const requestResolver = sinon.createStubInstance(Logs.RequestResolver.RequestResolver);
             const issuesResolver = sinon.createStubInstance(IssuesManager.IssueResolver.IssueResolver);
-            const message = new Console.ConsoleViewMessage.ConsoleTableMessageView(rawMessage, linkifier, requestResolver, issuesResolver, /* onResize */ () => { });
+            const message = new Console.ConsoleViewMessage.ConsoleTableMessageView(rawMessage, linkifier, requestResolver, issuesResolver, 
+            /* onResize */ () => { });
             return { message, linkifier };
         }
         function setupMockTableMessageView() {
@@ -624,22 +760,45 @@ describeWithEnvironment('ConsoleViewMessage', () => {
             const preview = {
                 type: "object" /* Protocol.Runtime.ObjectPreviewType.Object */,
                 overflow: false,
-                properties: [{
+                properties: [
+                    {
                         name: '0',
                         type: "object" /* Protocol.Runtime.PropertyPreviewType.Object */,
                         valuePreview: {
                             type: "object" /* Protocol.Runtime.ObjectPreviewType.Object */,
                             overflow: false,
-                            properties: [{ name: 'a', type: "number" /* Protocol.Runtime.PropertyPreviewType.Number */, value: '1' }]
-                        }
-                    }],
+                            properties: [
+                                {
+                                    name: 'a',
+                                    type: "number" /* Protocol.Runtime.PropertyPreviewType.Number */,
+                                    value: '1',
+                                },
+                            ],
+                        },
+                    },
+                ],
             };
             const mockRemoteObject = sinon.createStubInstance(SDK.RemoteObject.RemoteObject);
-            Object.defineProperty(mockRemoteObject, 'preview', { get: () => preview, configurable: true });
-            Object.defineProperty(mockRemoteObject, 'type', { get: () => 'object', configurable: true });
-            Object.defineProperty(mockRemoteObject, 'subtype', { get: () => undefined, configurable: true });
-            Object.defineProperty(mockRemoteObject, 'description', { get: () => 'Object', configurable: true });
-            Object.defineProperty(mockRemoteObject, 'hasChildren', { get: () => false, configurable: true });
+            Object.defineProperty(mockRemoteObject, 'preview', {
+                get: () => preview,
+                configurable: true,
+            });
+            Object.defineProperty(mockRemoteObject, 'type', {
+                get: () => 'object',
+                configurable: true,
+            });
+            Object.defineProperty(mockRemoteObject, 'subtype', {
+                get: () => undefined,
+                configurable: true,
+            });
+            Object.defineProperty(mockRemoteObject, 'description', {
+                get: () => 'Object',
+                configurable: true,
+            });
+            Object.defineProperty(mockRemoteObject, 'hasChildren', {
+                get: () => false,
+                configurable: true,
+            });
             mockRemoteObject.customPreview.returns(null);
             const messageDetails = {
                 type: "table" /* Protocol.Runtime.ConsoleAPICalledEventType.Table */,
@@ -686,15 +845,212 @@ describeWithEnvironment('ConsoleViewMessage', () => {
                 '0,1';
             sinon.assert.calledOnceWithExactly(copyTextStub, expectedCSV);
         });
+        function setupMockTableMessageViewWithLargeObject(tableType) {
+            const target = createTarget();
+            const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+            const aProperties = [];
+            const bProperties = [];
+            for (let i = 0; i < 15; ++i) {
+                bProperties.push({
+                    name: 'a' + i,
+                    type: "string" /* Protocol.Runtime.PropertyPreviewType.String */,
+                    value: 'a' + i,
+                });
+            }
+            for (let i = 0; i < 15; ++i) {
+                aProperties.push({
+                    name: 'b' + i,
+                    type: "string" /* Protocol.Runtime.PropertyPreviewType.String */,
+                    value: 'b' + i,
+                });
+                bProperties.push({
+                    name: 'b' + i,
+                    type: "string" /* Protocol.Runtime.PropertyPreviewType.String */,
+                    value: 'b' + i,
+                });
+            }
+            const aPreview = {
+                type: "object" /* Protocol.Runtime.ObjectPreviewType.Object */,
+                overflow: false,
+                properties: aProperties,
+            };
+            const bPreview = {
+                type: "object" /* Protocol.Runtime.ObjectPreviewType.Object */,
+                overflow: false,
+                properties: bProperties,
+            };
+            const preview = {
+                type: "object" /* Protocol.Runtime.ObjectPreviewType.Object */,
+                overflow: false,
+                properties: [],
+            };
+            if (tableType === 'c') {
+                preview.properties = [
+                    { name: '0', type: "object" /* Protocol.Runtime.PropertyPreviewType.Object */, valuePreview: aPreview },
+                    { name: '1', type: "object" /* Protocol.Runtime.PropertyPreviewType.Object */, valuePreview: bPreview },
+                    { name: '2', type: "object" /* Protocol.Runtime.PropertyPreviewType.Object */, valuePreview: aPreview },
+                    { name: '3', type: "object" /* Protocol.Runtime.PropertyPreviewType.Object */, valuePreview: bPreview },
+                ];
+            }
+            else {
+                preview.properties = [
+                    { name: '0', type: "object" /* Protocol.Runtime.PropertyPreviewType.Object */, valuePreview: bPreview },
+                    { name: '1', type: "object" /* Protocol.Runtime.PropertyPreviewType.Object */, valuePreview: aPreview },
+                    { name: '2', type: "object" /* Protocol.Runtime.PropertyPreviewType.Object */, valuePreview: bPreview },
+                    { name: '3', type: "object" /* Protocol.Runtime.PropertyPreviewType.Object */, valuePreview: aPreview },
+                ];
+            }
+            const mockRemoteObject = sinon.createStubInstance(SDK.RemoteObject.RemoteObject);
+            Object.defineProperty(mockRemoteObject, 'preview', {
+                get: () => preview,
+                configurable: true,
+            });
+            Object.defineProperty(mockRemoteObject, 'type', {
+                get: () => 'object',
+                configurable: true,
+            });
+            Object.defineProperty(mockRemoteObject, 'subtype', {
+                get: () => undefined,
+                configurable: true,
+            });
+            Object.defineProperty(mockRemoteObject, 'description', {
+                get: () => 'Object',
+                configurable: true,
+            });
+            Object.defineProperty(mockRemoteObject, 'hasChildren', {
+                get: () => false,
+                configurable: true,
+            });
+            mockRemoteObject.customPreview.returns(null);
+            const messageDetails = {
+                type: "table" /* Protocol.Runtime.ConsoleAPICalledEventType.Table */,
+                parameters: [mockRemoteObject],
+            };
+            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, null, '', messageDetails);
+            const { message } = createConsoleTableMessageView(rawMessage);
+            return message;
+        }
+        it('properly renders tables with more than 20 columns (maxColumnsToRender) for object c', () => {
+            const message = setupMockTableMessageViewWithLargeObject('c');
+            message.toMessageElement(); // Render
+            const dataGrid = message.getDataGridForTest();
+            assert.exists(dataGrid);
+            const contextMenu = new UI.ContextMenu.ContextMenu(new MouseEvent('contextmenu'));
+            message.populateTableContextMenuForTest(contextMenu);
+            const clipboardSection = contextMenu.clipboardSection();
+            const copySubMenu = clipboardSection.items.find(item => item.buildDescriptor().label === 'Copy table as');
+            assert.exists(copySubMenu);
+            const subItems = copySubMenu.defaultSection().items;
+            const csvItem = subItems.find(item => item.buildDescriptor().label === 'Copy as CSV');
+            assert.exists(csvItem);
+            contextMenu.invokeHandler(csvItem.id());
+            const expectedCSV = `(index),b0,b1,b2,b3,b4,b5,b6,b7,b8,b9,b10,b11,b12,b13,b14,a0,a1,a2,a3,a4
+0,'b0','b1','b2','b3','b4','b5','b6','b7','b8','b9','b10','b11','b12','b13','b14',,,,,
+1,'b0','b1','b2','b3','b4','b5','b6','b7','b8','b9','b10','b11','b12','b13','b14','a0','a1','a2','a3','a4'
+2,'b0','b1','b2','b3','b4','b5','b6','b7','b8','b9','b10','b11','b12','b13','b14',,,,,
+3,'b0','b1','b2','b3','b4','b5','b6','b7','b8','b9','b10','b11','b12','b13','b14','a0','a1','a2','a3','a4'`;
+            sinon.assert.calledOnceWithExactly(copyTextStub, expectedCSV);
+        });
+        it('properly renders tables with more than 20 columns (maxColumnsToRender) for object d', () => {
+            const message = setupMockTableMessageViewWithLargeObject('d');
+            message.toMessageElement(); // Render
+            const dataGrid = message.getDataGridForTest();
+            assert.exists(dataGrid);
+            const contextMenu = new UI.ContextMenu.ContextMenu(new MouseEvent('contextmenu'));
+            message.populateTableContextMenuForTest(contextMenu);
+            const clipboardSection = contextMenu.clipboardSection();
+            const copySubMenu = clipboardSection.items.find(item => item.buildDescriptor().label === 'Copy table as');
+            assert.exists(copySubMenu);
+            const subItems = copySubMenu.defaultSection().items;
+            const csvItem = subItems.find(item => item.buildDescriptor().label === 'Copy as CSV');
+            assert.exists(csvItem);
+            contextMenu.invokeHandler(csvItem.id());
+            const expectedCSV = `(index),a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,b0,b1,b2,b3,b4
+0,'a0','a1','a2','a3','a4','a5','a6','a7','a8','a9','a10','a11','a12','a13','a14','b0','b1','b2','b3','b4'
+1,,,,,,,,,,,,,,,,'b0','b1','b2','b3','b4'
+2,'a0','a1','a2','a3','a4','a5','a6','a7','a8','a9','a10','a11','a12','a13','a14','b0','b1','b2','b3','b4'
+3,,,,,,,,,,,,,,,,'b0','b1','b2','b3','b4'`;
+            sinon.assert.calledOnceWithExactly(copyTextStub, expectedCSV);
+        });
+    });
+    describe('console.dir', () => {
+        it('does not make boolean primitives expandable', () => {
+            const target = createTarget();
+            const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+            const messageDetails = {
+                type: "dir" /* Protocol.Runtime.ConsoleAPICalledEventType.Dir */,
+                parameters: [{ type: "boolean" /* Protocol.Runtime.RemoteObjectType.Boolean */, value: true }],
+            };
+            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, /* level */ null, '', messageDetails);
+            const { message } = createConsoleViewMessageWithStubDeps(rawMessage);
+            const messageElement = message.toMessageElement();
+            assert.isNull(messageElement.querySelector('.console-view-object-properties-section'));
+        });
+        it('makes boolean object wrappers expandable', () => {
+            const target = createTarget();
+            const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+            const messageDetails = {
+                type: "dir" /* Protocol.Runtime.ConsoleAPICalledEventType.Dir */,
+                parameters: [{
+                        type: "object" /* Protocol.Runtime.RemoteObjectType.Object */,
+                        objectId: '1',
+                        description: 'Boolean',
+                    }],
+            };
+            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, /* level */ null, '', messageDetails);
+            const { message } = createConsoleViewMessageWithStubDeps(rawMessage);
+            const messageElement = message.toMessageElement();
+            assert.isNotNull(messageElement.querySelector('.console-view-object-properties-section'));
+        });
+        it('does not make string primitives expandable', () => {
+            const target = createTarget();
+            const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+            const messageDetails = {
+                type: "dir" /* Protocol.Runtime.ConsoleAPICalledEventType.Dir */,
+                parameters: [{ type: "string" /* Protocol.Runtime.RemoteObjectType.String */, value: 'foo' }],
+            };
+            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, /* level */ null, '', messageDetails);
+            const { message } = createConsoleViewMessageWithStubDeps(rawMessage);
+            const messageElement = message.toMessageElement();
+            assert.isNull(messageElement.querySelector('.console-view-object-properties-section'));
+        });
+        it('makes string object wrappers expandable', () => {
+            const target = createTarget();
+            const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+            const messageDetails = {
+                type: "dir" /* Protocol.Runtime.ConsoleAPICalledEventType.Dir */,
+                parameters: [{
+                        type: "object" /* Protocol.Runtime.RemoteObjectType.Object */,
+                        objectId: '2',
+                        description: 'String',
+                    }],
+            };
+            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, /* level */ null, '', messageDetails);
+            const { message } = createConsoleViewMessageWithStubDeps(rawMessage);
+            const messageElement = message.toMessageElement();
+            assert.isNotNull(messageElement.querySelector('.console-view-object-properties-section'));
+        });
     });
     describe('linkifyWithCustomLinkifier', () => {
         it('linkifies links correctly', () => {
             const cases = [
                 { text: 'www.chromium.org', expectedUrl: 'http://www.chromium.org' },
-                { text: 'http://www.chromium.org/', expectedUrl: 'http://www.chromium.org/' },
-                { text: 'follow http://www.chromium.org/', expectedUrl: 'http://www.chromium.org/' },
-                { text: 'string http://www.chromium.org/', expectedUrl: 'http://www.chromium.org/' },
-                { text: '123 \'http://www.chromium.org/\'', expectedUrl: 'http://www.chromium.org/' },
+                {
+                    text: 'http://www.chromium.org/',
+                    expectedUrl: 'http://www.chromium.org/',
+                },
+                {
+                    text: 'follow http://www.chromium.org/',
+                    expectedUrl: 'http://www.chromium.org/',
+                },
+                {
+                    text: 'string http://www.chromium.org/',
+                    expectedUrl: 'http://www.chromium.org/',
+                },
+                {
+                    text: '123 \'http://www.chromium.org/\'',
+                    expectedUrl: 'http://www.chromium.org/',
+                },
                 {
                     text: 'http://www.chromium.org/some?v=114:56:57',
                     expectedUrl: 'http://www.chromium.org/some?v=114',
@@ -706,16 +1062,28 @@ describeWithEnvironment('ConsoleViewMessage', () => {
                     expectedUrl: 'http://www.example.com/düsseldorf?neighbourhood=Lörick',
                 },
                 { text: 'http://👓.ws', expectedUrl: 'http://👓.ws' },
-                { text: 'http:/www.example.com/молодец', expectedUrl: 'http://www.example.com/молодец' },
-                { text: 'http://ar.wikipedia.org/wiki/نجيب_محفوظ/', expectedUrl: 'http://ar.wikipedia.org/wiki/نجيب_محفوظ/' },
-                { text: 'http://example.com/スター・ウォーズ/', expectedUrl: 'http://example.com/スター・ウォーズ/' },
+                {
+                    text: 'http:/www.example.com/молодец',
+                    expectedUrl: 'http://www.example.com/молодец',
+                },
+                {
+                    text: 'http://ar.wikipedia.org/wiki/نجيب_محفوظ/',
+                    expectedUrl: 'http://ar.wikipedia.org/wiki/نجيب_محفوظ/',
+                },
+                {
+                    text: 'http://example.com/スター・ウォーズ/',
+                    expectedUrl: 'http://example.com/スター・ウォーズ/',
+                },
                 { text: 'data:text/plain;a', expectedUrl: 'data:text/plain;a' },
                 { text: '\'www.chromium.org\'', expectedUrl: 'http://www.chromium.org' },
                 { text: '(www.chromium.org)', expectedUrl: 'http://www.chromium.org' },
                 { text: '"www.chromium.org"', expectedUrl: 'http://www.chromium.org' },
                 { text: '{www.chromium.org}', expectedUrl: 'http://www.chromium.org' },
                 { text: '[www.chromium.org]', expectedUrl: 'http://www.chromium.org' },
-                { text: 'www.chromium.org\u00a0', expectedUrl: 'http://www.chromium.org' },
+                {
+                    text: 'www.chromium.org\u00a0',
+                    expectedUrl: 'http://www.chromium.org',
+                },
                 { text: 'www.chromium.org~', expectedUrl: 'http://www.chromium.org~' },
                 { text: 'www.chromium.org,', expectedUrl: 'http://www.chromium.org' },
                 { text: 'www.chromium.org:', expectedUrl: 'http://www.chromium.org' },
@@ -758,6 +1126,245 @@ describeWithEnvironment('ConsoleViewMessage', () => {
             };
             Console.ConsoleViewMessage.ConsoleViewMessage.linkifyWithCustomLinkifier('/'.repeat(1000), linkifier);
             Console.ConsoleViewMessage.ConsoleViewMessage.linkifyWithCustomLinkifier('/a/'.repeat(1000), linkifier);
+        });
+    });
+    describe('ConsoleCommand', () => {
+        it('substitutes control characters with replacement characters', () => {
+            const target = createTarget();
+            const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, "info" /* Protocol.Log.LogEntryLevel.Info */, 'var\u001d i = 0;', {
+                type: SDK.ConsoleModel.FrontendMessageType.Command,
+            });
+            const linkifier = sinon.createStubInstance(Components.Linkifier.Linkifier);
+            const requestResolver = sinon.createStubInstance(Logs.RequestResolver.RequestResolver);
+            const issuesResolver = sinon.createStubInstance(IssuesManager.IssueResolver.IssueResolver);
+            const commandMessage = new Console.ConsoleViewMessage.ConsoleCommand(rawMessage, linkifier, requestResolver, issuesResolver, 
+            /* onResize */ () => { });
+            const messageElement = commandMessage.toMessageElement();
+            const formattedCommand = messageElement.querySelector('.source-code');
+            assert.exists(formattedCommand);
+            assert.strictEqual(formattedCommand.textContent, 'var\uFFFD i = 0;');
+        });
+    });
+    describe('ES2025 format', () => {
+        let target;
+        let runtimeModel;
+        beforeEach(() => {
+            target = createTarget();
+            runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+        });
+        it('formats Promise correctly', () => {
+            const promisePreview = {
+                type: "object" /* Protocol.Runtime.ObjectPreviewType.Object */,
+                subtype: "promise" /* Protocol.Runtime.ObjectPreviewSubtype.Promise */,
+                description: 'Promise',
+                overflow: false,
+                properties: [
+                    { name: '[[PromiseState]]', type: "string" /* Protocol.Runtime.PropertyPreviewType.String */, value: 'rejected' },
+                    { name: '[[PromiseResult]]', type: "number" /* Protocol.Runtime.PropertyPreviewType.Number */, value: '-0' },
+                ],
+            };
+            const remoteObject = new SDK.RemoteObject.RemoteObjectImpl(runtimeModel, 'mock-id', 'object', 'promise', undefined, undefined, 'Promise', promisePreview);
+            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, "info" /* Protocol.Log.LogEntryLevel.Info */, '', { parameters: [remoteObject] });
+            const { message } = createConsoleViewMessageWithStubDeps(rawMessage);
+            const messageElement = message.toMessageElement();
+            assert.strictEqual(messageElement.textContent, 'Promise {<rejected>: -0}');
+        });
+        it('formats Symbol correctly', () => {
+            const remoteObject = new SDK.RemoteObject.RemoteObjectImpl(runtimeModel, undefined, 'symbol', undefined, undefined, undefined, 'Symbol(a)');
+            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, "info" /* Protocol.Log.LogEntryLevel.Info */, '', { parameters: [remoteObject] });
+            const { message } = createConsoleViewMessageWithStubDeps(rawMessage);
+            const messageElement = message.toMessageElement();
+            assert.strictEqual(messageElement.textContent, 'Symbol(a)');
+        });
+        it('formats Map correctly', () => {
+            const mapPreview = {
+                type: "object" /* Protocol.Runtime.ObjectPreviewType.Object */,
+                subtype: "map" /* Protocol.Runtime.ObjectPreviewSubtype.Map */,
+                description: 'Map(1)',
+                overflow: false,
+                properties: [],
+                entries: [{
+                        key: {
+                            type: "object" /* Protocol.Runtime.ObjectPreviewType.Object */,
+                            description: 'Object',
+                            overflow: false,
+                            properties: [],
+                        },
+                        value: {
+                            type: "object" /* Protocol.Runtime.ObjectPreviewType.Object */,
+                            description: 'Object',
+                            overflow: false,
+                            properties: [],
+                        },
+                    }],
+            };
+            const remoteObject = new SDK.RemoteObject.RemoteObjectImpl(runtimeModel, 'mock-id', 'object', 'map', undefined, undefined, 'Map(1)', mapPreview);
+            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, "info" /* Protocol.Log.LogEntryLevel.Info */, '', { parameters: [remoteObject] });
+            const { message } = createConsoleViewMessageWithStubDeps(rawMessage);
+            const messageElement = message.toMessageElement();
+            assert.strictEqual(messageElement.textContent, 'Map(1) {{…} => {…}}');
+        });
+        it('formats Set correctly', () => {
+            const setPreview = {
+                type: "object" /* Protocol.Runtime.ObjectPreviewType.Object */,
+                subtype: "set" /* Protocol.Runtime.ObjectPreviewSubtype.Set */,
+                description: 'Set(1)',
+                overflow: false,
+                properties: [],
+                entries: [{
+                        value: {
+                            type: "object" /* Protocol.Runtime.ObjectPreviewType.Object */,
+                            description: 'Object',
+                            overflow: false,
+                            properties: [],
+                        },
+                    }],
+            };
+            const remoteObject = new SDK.RemoteObject.RemoteObjectImpl(runtimeModel, 'mock-id', 'object', 'set', undefined, undefined, 'Set(1)', setPreview);
+            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, "info" /* Protocol.Log.LogEntryLevel.Info */, '', { parameters: [remoteObject] });
+            const { message } = createConsoleViewMessageWithStubDeps(rawMessage);
+            const messageElement = message.toMessageElement();
+            assert.strictEqual(messageElement.textContent, 'Set(1) {{…}}');
+        });
+    });
+    describe('ConsoleMessageFormat', () => {
+        let target;
+        let runtimeModel;
+        beforeEach(() => {
+            target = createTarget();
+            runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+        });
+        const createMessageElement = (formatString, parameters) => {
+            const formatStringObj = SDK.RemoteObject.RemoteObject.fromLocalObject(formatString);
+            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, "info" /* Protocol.Log.LogEntryLevel.Info */, formatString, {
+                type: "log" /* Protocol.Runtime.ConsoleAPICalledEventType.Log */,
+                parameters: [formatStringObj, ...parameters],
+            });
+            const { message } = createConsoleViewMessageWithStubDeps(rawMessage);
+            return message.toMessageElement();
+        };
+        it('formats numbers correctly', () => {
+            const element = createMessageElement('Message format number %i, %d and %f', [
+                SDK.RemoteObject.RemoteObject.fromLocalObject(1),
+                SDK.RemoteObject.RemoteObject.fromLocalObject(2),
+                SDK.RemoteObject.RemoteObject.fromLocalObject(3.5),
+            ]);
+            assert.strictEqual(element.deepTextContent(), 'Message format number 1, 2 and 3.5');
+        });
+        it('formats strings correctly', () => {
+            const element = createMessageElement('Message %s for %s', [
+                SDK.RemoteObject.RemoteObject.fromLocalObject('format'),
+                SDK.RemoteObject.RemoteObject.fromLocalObject('string'),
+            ]);
+            assert.strictEqual(element.deepTextContent(), 'Message format for string');
+        });
+        it('formats objects optimally (%o)', () => {
+            const obj = runtimeModel.createRemoteObject({
+                type: "object" /* Protocol.Runtime.RemoteObjectType.Object */,
+                className: 'Object',
+                description: 'Object',
+                objectId: '1',
+                preview: {
+                    type: "object" /* Protocol.Runtime.ObjectPreviewType.Object */,
+                    description: 'Object',
+                    overflow: false,
+                    properties: [
+                        { name: 'foo', type: "string" /* Protocol.Runtime.PropertyPreviewType.String */, value: 'bar' },
+                    ],
+                },
+            });
+            const element = createMessageElement('Object %o', [obj]);
+            assert.include(element.deepTextContent(), 'Object');
+            assert.include(element.deepTextContent(), 'foo');
+            assert.include(element.deepTextContent(), 'bar');
+        });
+        it('formats arrays optimally (%o)', () => {
+            const arr = runtimeModel.createRemoteObject({
+                type: "object" /* Protocol.Runtime.RemoteObjectType.Object */,
+                subtype: "array" /* Protocol.Runtime.RemoteObjectSubtype.Array */,
+                className: 'Array',
+                description: 'Array(2)',
+                objectId: '1',
+                preview: {
+                    type: "object" /* Protocol.Runtime.ObjectPreviewType.Object */,
+                    subtype: "array" /* Protocol.Runtime.ObjectPreviewSubtype.Array */,
+                    description: 'Array(2)',
+                    overflow: false,
+                    properties: [
+                        { name: '0', type: "string" /* Protocol.Runtime.PropertyPreviewType.String */, value: 'foo' },
+                        { name: '1', type: "string" /* Protocol.Runtime.PropertyPreviewType.String */, value: 'bar' },
+                    ],
+                },
+            });
+            const element = createMessageElement('Array %o', [arr]);
+            assert.include(element.deepTextContent(), 'Array');
+            assert.include(element.deepTextContent(), 'foo');
+            assert.include(element.deepTextContent(), 'bar');
+        });
+        it('formats objects generically (%O)', () => {
+            const obj = runtimeModel.createRemoteObject({
+                type: "object" /* Protocol.Runtime.RemoteObjectType.Object */,
+                className: 'Object',
+                description: 'Object',
+                objectId: '1',
+            });
+            const element = createMessageElement('Object as object: %O', [obj]);
+            assert.strictEqual(element.deepTextContent(), 'Object as object: Object');
+        });
+        it('formats arrays generically (%O)', () => {
+            const arr = runtimeModel.createRemoteObject({
+                type: "object" /* Protocol.Runtime.RemoteObjectType.Object */,
+                subtype: "array" /* Protocol.Runtime.RemoteObjectSubtype.Array */,
+                className: 'Array',
+                description: 'Array(2)',
+                objectId: '1',
+            });
+            const element = createMessageElement('Array as object: %O', [arr]);
+            assert.strictEqual(element.deepTextContent(), 'Array as object: Array(2)');
+        });
+        it('formats floating points as integers (%d %i)', () => {
+            const element = createMessageElement('Floating as integers: %d %i', [
+                SDK.RemoteObject.RemoteObject.fromLocalObject(42.5),
+                SDK.RemoteObject.RemoteObject.fromLocalObject(42.5),
+            ]);
+            assert.strictEqual(element.deepTextContent(), 'Floating as integers: 42 42');
+        });
+        it('formats floating points as is (%f)', () => {
+            const element = createMessageElement('Floating as is: %f', [
+                SDK.RemoteObject.RemoteObject.fromLocalObject(42.5),
+            ]);
+            assert.strictEqual(element.deepTextContent(), 'Floating as is: 42.5');
+        });
+        it('formats non-numbers as numbers (%d %i %f)', () => {
+            const doc = runtimeModel.createRemoteObject({
+                type: "object" /* Protocol.Runtime.RemoteObjectType.Object */,
+                subtype: "node" /* Protocol.Runtime.RemoteObjectSubtype.Node */,
+                className: 'HTMLDocument',
+                description: 'document',
+            });
+            const element = createMessageElement('Non-numbers as numbers: %d %i %f', [
+                doc,
+                SDK.RemoteObject.RemoteObject.fromLocalObject(null),
+                SDK.RemoteObject.RemoteObject.fromLocalObject('document'),
+            ]);
+            assert.strictEqual(element.deepTextContent(), 'Non-numbers as numbers: NaN NaN NaN');
+        });
+        it('formats string as is (%s)', () => {
+            const element = createMessageElement('String as is: %s', [
+                SDK.RemoteObject.RemoteObject.fromLocalObject('string'),
+            ]);
+            assert.strictEqual(element.deepTextContent(), 'String as is: string');
+        });
+        it('formats object as string (%s)', () => {
+            const doc = runtimeModel.createRemoteObject({
+                type: "object" /* Protocol.Runtime.RemoteObjectType.Object */,
+                subtype: "node" /* Protocol.Runtime.RemoteObjectSubtype.Node */,
+                className: 'HTMLDocument',
+                description: '[object HTMLDocument]',
+            });
+            const element = createMessageElement('Object as string: %s', [doc]);
+            assert.strictEqual(element.deepTextContent(), 'Object as string: [object HTMLDocument]');
         });
     });
 });

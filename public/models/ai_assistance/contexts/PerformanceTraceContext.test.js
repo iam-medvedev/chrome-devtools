@@ -3,9 +3,15 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import sinon from 'sinon';
-import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
+import { setupSettingsHooks } from '../../../testing/SettingsHelpers.js';
+import { TestUniverse } from '../../../testing/TestUniverse.js';
 import * as AiAssistance from '../ai_assistance.js';
-describeWithEnvironment('PerformanceTraceContext', () => {
+describe('PerformanceTraceContext', () => {
+    setupSettingsHooks();
+    let universe;
+    beforeEach(() => {
+        universe = new TestUniverse();
+    });
     it('should return prompt details correctly by combining trace formatter output', async () => {
         const mockTrace = {
             insights: new Map(),
@@ -16,7 +22,7 @@ describeWithEnvironment('PerformanceTraceContext', () => {
                 },
             },
         };
-        const context = AiAssistance.PerformanceTraceContext.PerformanceTraceContext.fromParsedTrace(mockTrace);
+        const context = AiAssistance.PerformanceTraceContext.PerformanceTraceContext.fromParsedTrace(mockTrace, universe.targetManager, undefined, universe.debuggerWorkspaceBinding);
         const formatterProto = AiAssistance.PerformanceTraceFormatter.PerformanceTraceFormatter.prototype;
         sinon.stub(formatterProto, 'formatTraceSummary').returns('Mock Trace Summary');
         sinon.stub(formatterProto, 'formatCriticalRequests').resolves('Mock Critical Requests');
@@ -45,7 +51,7 @@ Mock Longest Tasks`);
                 },
             },
         };
-        const context = AiAssistance.PerformanceTraceContext.PerformanceTraceContext.fromParsedTrace(mockTrace);
+        const context = AiAssistance.PerformanceTraceContext.PerformanceTraceContext.fromParsedTrace(mockTrace, universe.targetManager, undefined, universe.debuggerWorkspaceBinding);
         const formatterProto = AiAssistance.PerformanceTraceFormatter.PerformanceTraceFormatter.prototype;
         sinon.stub(formatterProto, 'formatTraceSummary').returns('Mock Trace Summary');
         sinon.stub(formatterProto, 'formatCriticalRequests').resolves('Mock Critical Requests');

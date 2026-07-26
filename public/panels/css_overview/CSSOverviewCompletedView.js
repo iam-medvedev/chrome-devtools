@@ -7,8 +7,8 @@ import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as TextUtils from '../../core/text_utils/text_utils.js';
 import * as Geometry from '../../models/geometry/geometry.js';
-import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { Directives, html, nothing, render } from '../../ui/lit/lit.js';
@@ -211,7 +211,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
             { name: i18nString(UIStrings.colors), id: 'colors' },
             { name: i18nString(UIStrings.fontInfo), id: 'font-info' },
             { name: i18nString(UIStrings.unusedDeclarations), id: 'unused-declarations' },
-            { name: i18nString(UIStrings.mediaQueries), id: 'media-queries' }
+            { name: i18nString(UIStrings.mediaQueries), id: 'media-queries' },
         ],
         selectedId: input.selectedSection,
         onItemSelected: input.onSectionSelected,
@@ -446,7 +446,7 @@ export class CSSOverviewCompletedView extends UI.Widget.VBox {
     #viewOutput = {
         revealSection: new Map(),
         closeAllTabs: () => { },
-        addTab: (_id, _tabTitle, _view, _jslogContext) => { }
+        addTab: (_id, _tabTitle, _view, _jslogContext) => { },
     };
     constructor(element, view = DEFAULT_VIEW) {
         super(element);
@@ -681,7 +681,7 @@ export class CSSOverviewCompletedView extends UI.Widget.VBox {
                 font,
                 fontMetrics: fontMetricInfo.map(([label, values]) => {
                     return { label, values: this.#sortGroupBySize(values) };
-                })
+                }),
             };
         });
     }

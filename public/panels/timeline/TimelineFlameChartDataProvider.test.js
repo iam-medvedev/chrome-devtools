@@ -133,11 +133,20 @@ describeWithEnvironment('TimelineFlameChartDataProvider', function () {
         dataProvider.setModel(parsedTrace, entityMapper);
         const groupNames = dataProvider.timelineData().groups.map(g => [g.name, g.subtitle]);
         assert.deepEqual(groupNames, [
-            ['Frames', undefined], ['Timings', undefined], ['Interactions', undefined], ['A track group', '— Custom'],
-            ['Another Extension Track', undefined], ['An Extension Track', '— Custom'], ['TimeStamp track', '— Custom'],
-            ['Main — http://localhost:3000/', undefined], ['Thread pool', undefined], ['Thread pool worker 1', undefined],
-            ['Thread pool worker 2', undefined], ['Thread pool worker 3', undefined], ['StackSamplingProfiler', undefined],
-            ['GPU', undefined]
+            ['Frames', undefined],
+            ['Timings', undefined],
+            ['Interactions', undefined],
+            ['A track group', '— Custom'],
+            ['Another Extension Track', undefined],
+            ['An Extension Track', '— Custom'],
+            ['TimeStamp track', '— Custom'],
+            ['Main — http://localhost:3000/', undefined],
+            ['Thread pool', undefined],
+            ['Thread pool worker 1', undefined],
+            ['Thread pool worker 2', undefined],
+            ['Thread pool worker 3', undefined],
+            ['StackSamplingProfiler', undefined],
+            ['GPU', undefined],
         ]);
     });
     it('can return the FlameChart group for a given event', async function () {
@@ -306,7 +315,7 @@ describeWithEnvironment('TimelineFlameChartDataProvider', function () {
                 originalIndex: 2,
                 visualIndex: 1,
                 trackName: 'Animations',
-            }
+            },
         ]);
     });
 });

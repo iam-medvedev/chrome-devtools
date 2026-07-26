@@ -4,6 +4,8 @@
 import * as Common from '../../core/common/common.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Bindings from '../bindings/bindings.js';
+import * as Workspace from '../workspace/workspace.js';
 import { BounceTrackingIssue } from './BounceTrackingIssue.js';
 import { ClientHintIssue } from './ClientHintIssue.js';
 import { ConnectionAllowlistIssue } from './ConnectionAllowlistIssue.js';
@@ -191,13 +193,13 @@ export class IssuesManager extends Common.ObjectWrapper.ObjectWrapper {
     #issuesByOutermostTarget = new Map();
     #frameManager;
     #targetManager;
-    constructor(showThirdPartyIssuesSetting, hideIssueSetting, frameManager = SDK.FrameManager.FrameManager.instance(), targetManager = SDK.TargetManager.TargetManager.instance()) {
+    constructor(showThirdPartyIssuesSetting, hideIssueSetting, frameManager = SDK.FrameManager.FrameManager.instance(), targetManager = SDK.TargetManager.TargetManager.instance(), workspace = Workspace.Workspace.WorkspaceImpl.instance(), debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance(), cssWorkspaceBinding = Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.instance()) {
         super();
         this.showThirdPartyIssuesSetting = showThirdPartyIssuesSetting;
         this.hideIssueSetting = hideIssueSetting;
         this.#frameManager = frameManager;
         this.#targetManager = targetManager;
-        new SourceFrameIssuesManager(this);
+        new SourceFrameIssuesManager(this, targetManager, workspace, debuggerWorkspaceBinding, cssWorkspaceBinding);
         this.#targetManager.observeModels(SDK.IssuesModel.IssuesModel, this);
         this.#targetManager.addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
         this.#frameManager.addEventListener("FrameAddedToTarget" /* SDK.FrameManager.Events.FRAME_ADDED_TO_TARGET */, this.#onFrameAddedToTarget, this);

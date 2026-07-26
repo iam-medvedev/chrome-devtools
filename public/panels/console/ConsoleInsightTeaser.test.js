@@ -226,8 +226,7 @@ describeWithEnvironment('ConsoleInsightTeaser', () => {
         await teaser.maybeGenerateTeaser();
         let input = await view.nextInput;
         assert.isTrue(input.hasTellMeMoreButton);
-        checkAccessPreconditionsStub.resolves("no-internet" /* Host.AidaClient.AidaAccessPreconditions.NO_INTERNET */);
-        Host.AidaClient.HostConfigTracker.instance().dispatchEventToListeners("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */);
+        Host.AidaClient.HostConfigTracker.instance().dispatchEventToListeners("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */, "no-internet" /* Host.AidaClient.AidaAccessPreconditions.NO_INTERNET */);
         input = await view.nextInput;
         assert.isFalse(input.hasTellMeMoreButton);
         teaser.detach();

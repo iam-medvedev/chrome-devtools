@@ -8,7 +8,7 @@ import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Logs from '../../models/logs/logs.js';
 import * as NetworkTimeCalculator from '../../models/network_time_calculator/network_time_calculator.js';
-import { assertScreenshot, getCleanTextContentFromElements, raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { assertScreenshot, getCleanTextContentFromElements, raf, renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
 import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
@@ -151,7 +151,7 @@ describe('ResourceTimingView', () => {
             endTime: 100,
             timeRanges,
             calculator: new NetworkTimeCalculator.NetworkTimeCalculator(true),
-            wasThrottled
+            wasThrottled,
         };
         Network.RequestTimingView.DEFAULT_VIEW(input, {}, container);
         await assertScreenshot('network/request-timing-view-throttling.png');

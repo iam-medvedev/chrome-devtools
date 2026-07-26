@@ -4,10 +4,12 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Bindings from '../../models/bindings/bindings.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import { doubleRaf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment, expectConsoleLogs } from '../../testing/EnvironmentHelpers.js';
 import { MockIssuesModel } from '../../testing/MockIssuesModel.js';
+import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Elements from './elements.js';
 describeWithEnvironment('ElementsTreeOutline', () => {
@@ -15,6 +17,10 @@ describeWithEnvironment('ElementsTreeOutline', () => {
     let model;
     let treeOutline;
     beforeEach(() => {
+        const universe = new TestUniverse();
+        sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, 'instance')
+            .returns(universe.debuggerWorkspaceBinding);
+        sinon.stub(Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding, 'instance').returns(universe.cssWorkspaceBinding);
         target = createTarget();
         treeOutline =
             new Elements.ElementsTreeOutline.ElementsTreeOutline(/* omitRootDOMNode */ true, /* selectEnabled */ true);
@@ -374,8 +380,16 @@ describeWithEnvironment('ElementsTreeOutline', () => {
             /* enableContextMenu */ false, /* showComments */ false, /* showAIButton */ false, /* disableEdits */ true, 
             /* expandRoot */ true);
             const eventsToCheck = [
-                'dragstart', 'dragover', 'dragleave', 'drop', 'dragend', 'contextmenu', 'clipboard-beforecopy',
-                'clipboard-copy', 'clipboard-cut', 'clipboard-paste'
+                'dragstart',
+                'dragover',
+                'dragleave',
+                'drop',
+                'dragend',
+                'contextmenu',
+                'clipboard-beforecopy',
+                'clipboard-copy',
+                'clipboard-cut',
+                'clipboard-paste',
             ];
             for (const event of eventsToCheck) {
                 assert.isFalse(addEventListenerSpy.calledWith(event), `Event listener for ${event} should not be attached in snapshot mode`);
@@ -761,6 +775,553 @@ describeWithEnvironment('ElementsTreeOutline', () => {
         treeOutline.selectDOMNode(node, true);
         const selectedTreeElement = treeOutline.selectedTreeElement;
         assert.strictEqual(selectedTreeElement?.node().nodeName(), 'BODY');
+    });
+    it('tests that elements hidden by "Show more" limit are revealed properly', async () => {
+        const childrenPayload = [];
+        for (let i = 1; i <= 10; i++) {
+            childrenPayload.push({
+                nodeId: (i + 2),
+                parentId: 2,
+                backendNodeId: (i + 2),
+                nodeType: Node.ELEMENT_NODE,
+                nodeName: 'DIV',
+                localName: 'div',
+                nodeValue: '',
+                childNodeCount: 1,
+                children: [{
+                        nodeId: (i + 100),
+                        parentId: (i + 2),
+                        backendNodeId: (i + 100),
+                        nodeType: Node.ELEMENT_NODE,
+                        nodeName: 'SPAN',
+                        localName: 'span',
+                        nodeValue: '',
+                        childNodeCount: 0,
+                        attributes: ['id', `id${i}`],
+                    }],
+                attributes: [],
+            });
+        }
+        const containerPayload = {
+            nodeId: 2,
+            parentId: 1,
+            backendNodeId: 2,
+            nodeType: Node.ELEMENT_NODE,
+            nodeName: 'DIV',
+            localName: 'div',
+            nodeValue: '',
+            attributes: ['id', 'data'],
+            childNodeCount: 10,
+            children: childrenPayload,
+        };
+        const rootNode = SDK.DOMModel.DOMNode.create(model, null, false, {
+            nodeId: 1,
+            backendNodeId: 1,
+            nodeType: Node.ELEMENT_NODE,
+            nodeName: 'DIV',
+            localName: 'div',
+            nodeValue: '',
+            childNodeCount: 1,
+            children: [containerPayload],
+            attributes: [],
+        });
+        treeOutline.rootDOMNode = rootNode;
+        const containerNode = rootNode.children()[0];
+        assert.exists(containerNode);
+        const containerTreeElement = treeOutline.findTreeElement(containerNode);
+        assert.exists(containerTreeElement);
+        // Set the expanded children limit to 5.
+        treeOutline.setExpandedChildrenLimit(containerTreeElement, 5);
+        await treeOutline.populateTreeElement(containerTreeElement);
+        containerTreeElement.expand();
+        // Verify only 5 children are visible, along with 1 button and 1 closing tag.
+        assert.strictEqual(containerTreeElement.childCount(), 7); // Five children, one button, and one closing tag.
+        assert.exists(containerTreeElement.expandAllButtonElement);
+        assert.strictEqual(containerTreeElement.expandAllButtonElement.title, 'Show all nodes (5 more)');
+        // Now reveal the 10th child (id10).
+        const hiddenNode = containerNode.children()[9];
+        assert.exists(hiddenNode);
+        // Select the hidden node, which should trigger a reveal and expand the limit.
+        treeOutline.selectDOMNode(hiddenNode);
+        // Wait for updates.
+        await new Promise(r => setTimeout(r, 0));
+        // Verify the limit is expanded to 10.
+        assert.strictEqual(containerTreeElement.expandedChildrenLimit(), 10);
+        // Verify the "Show all" button is gone.
+        assert.isNull(containerTreeElement.expandAllButtonElement);
+        // Verify all 10 children are visible, plus 1 closing tag.
+        assert.strictEqual(containerTreeElement.childCount(), 11);
+    });
+    it('expands elements recursively', async () => {
+        let childPayload = {
+            nodeId: 10,
+            parentId: 9,
+            backendNodeId: 10,
+            nodeType: Node.ELEMENT_NODE,
+            nodeName: 'DIV',
+            localName: 'div',
+            nodeValue: '',
+            childNodeCount: 0,
+            attributes: ['id', 'depth-10'],
+        };
+        for (let i = 9; i >= 1; i--) {
+            childPayload = {
+                nodeId: i,
+                parentId: (i - 1),
+                backendNodeId: i,
+                nodeType: Node.ELEMENT_NODE,
+                nodeName: 'DIV',
+                localName: 'div',
+                nodeValue: '',
+                childNodeCount: 1,
+                children: [childPayload],
+                attributes: ['id', `depth-${i}`],
+            };
+        }
+        const rootNode = SDK.DOMModel.DOMNode.create(model, null, false, {
+            nodeId: 0,
+            backendNodeId: 0,
+            nodeType: Node.DOCUMENT_NODE,
+            nodeName: '#document',
+            localName: '',
+            nodeValue: '',
+            childNodeCount: 1,
+            children: [childPayload],
+            attributes: [],
+        });
+        treeOutline.rootDOMNode = rootNode;
+        const depth1Node = rootNode.children()[0];
+        const treeElement = treeOutline.findTreeElement(depth1Node);
+        await treeElement.expandRecursively();
+        let currentTreeElement = treeElement;
+        for (let i = 1; i < 10; i++) {
+            assert.isTrue(currentTreeElement.expanded, `depth-${i} should be expanded`);
+            // It should have some visible child
+            assert.isAbove(currentTreeElement.childCount(), 0, `depth-${i} should have at least 1 child`);
+            currentTreeElement = currentTreeElement.childAt(0);
+        }
+        assert.isFalse(currentTreeElement.expanded, 'depth-10 should not be expanded');
+    });
+    it('updates the DOM tree structure upon node insertion', async () => {
+        const child1Payload = {
+            nodeId: 3,
+            parentId: 2,
+            backendNodeId: 3,
+            nodeType: Node.ELEMENT_NODE,
+            nodeName: 'DIV',
+            localName: 'div',
+            nodeValue: '',
+            childNodeCount: 0,
+            children: [],
+            attributes: ['id', 'child1'],
+        };
+        const child2Payload = {
+            nodeId: 4,
+            parentId: 2,
+            backendNodeId: 4,
+            nodeType: Node.ELEMENT_NODE,
+            nodeName: 'DIV',
+            localName: 'div',
+            nodeValue: '',
+            childNodeCount: 0,
+            children: [],
+            attributes: ['id', 'child2'],
+        };
+        const child3Payload = {
+            nodeId: 5,
+            parentId: 2,
+            backendNodeId: 5,
+            nodeType: Node.ELEMENT_NODE,
+            nodeName: 'DIV',
+            localName: 'div',
+            nodeValue: '',
+            childNodeCount: 0,
+            children: [],
+            attributes: ['id', 'child3'],
+        };
+        const containerPayload = {
+            nodeId: 2,
+            parentId: 1,
+            backendNodeId: 2,
+            nodeType: Node.ELEMENT_NODE,
+            nodeName: 'DIV',
+            localName: 'div',
+            nodeValue: '',
+            childNodeCount: 3,
+            children: [child1Payload, child2Payload, child3Payload],
+            attributes: ['id', 'container'],
+        };
+        const rootNode = SDK.DOMModel.DOMNode.create(model, null, false, {
+            nodeId: 1,
+            backendNodeId: 1,
+            nodeType: Node.DOCUMENT_NODE,
+            nodeName: '#document',
+            localName: '',
+            nodeValue: '',
+            childNodeCount: 1,
+            children: [containerPayload],
+            attributes: [],
+        });
+        treeOutline.rootDOMNode = rootNode;
+        const containerNode = rootNode.children()[0];
+        assert.exists(containerNode);
+        const containerTreeElement = treeOutline.findTreeElement(containerNode);
+        assert.exists(containerTreeElement);
+        await treeOutline.populateTreeElement(containerTreeElement);
+        containerTreeElement.expand();
+        const getChildIds = () => {
+            return (containerNode.children() || []).map(child => child.getAttribute('id') || '');
+        };
+        // Verify the initial state.
+        assert.deepEqual(getChildIds(), ['child1', 'child2', 'child3']);
+        assert.isNotNull(treeOutline.findTreeElement(containerNode.children()[0]));
+        assert.isNotNull(treeOutline.findTreeElement(containerNode.children()[1]));
+        assert.isNotNull(treeOutline.findTreeElement(containerNode.children()[2]));
+        // Insert before first child.
+        const childBeforePayload = {
+            nodeId: 6,
+            parentId: 2,
+            backendNodeId: 6,
+            nodeType: Node.ELEMENT_NODE,
+            nodeName: 'DIV',
+            localName: 'div',
+            nodeValue: '',
+            childNodeCount: 0,
+            children: [],
+            attributes: ['id', 'child-before'],
+        };
+        model.childNodeInserted(2, 0, childBeforePayload);
+        treeOutline.runPendingUpdates();
+        assert.deepEqual(getChildIds(), ['child-before', 'child1', 'child2', 'child3']);
+        const childBeforeNode = model.nodeForId(6);
+        assert.exists(childBeforeNode);
+        assert.isNotNull(treeOutline.findTreeElement(childBeforeNode));
+        // Insert middle child (before child2, after child1).
+        const childMiddlePayload = {
+            nodeId: 7,
+            parentId: 2,
+            backendNodeId: 7,
+            nodeType: Node.ELEMENT_NODE,
+            nodeName: 'DIV',
+            localName: 'div',
+            nodeValue: '',
+            childNodeCount: 0,
+            children: [],
+            attributes: ['id', 'child-middle'],
+        };
+        model.childNodeInserted(2, 3, childMiddlePayload);
+        treeOutline.runPendingUpdates();
+        assert.deepEqual(getChildIds(), ['child-before', 'child1', 'child-middle', 'child2', 'child3']);
+        const childMiddleNode = model.nodeForId(7);
+        assert.exists(childMiddleNode);
+        assert.isNotNull(treeOutline.findTreeElement(childMiddleNode));
+        // Append child (after child3).
+        const childAfterPayload = {
+            nodeId: 8,
+            parentId: 2,
+            backendNodeId: 8,
+            nodeType: Node.ELEMENT_NODE,
+            nodeName: 'DIV',
+            localName: 'div',
+            nodeValue: '',
+            childNodeCount: 0,
+            children: [],
+            attributes: ['id', 'child-after'],
+        };
+        model.childNodeInserted(2, 5, childAfterPayload);
+        treeOutline.runPendingUpdates();
+        assert.deepEqual(getChildIds(), ['child-before', 'child1', 'child-middle', 'child2', 'child3', 'child-after']);
+        const childAfterNode = model.nodeForId(8);
+        assert.exists(childAfterNode);
+        assert.isNotNull(treeOutline.findTreeElement(childAfterNode));
+        // Append child with text node.
+        const textChildPayload = {
+            nodeId: 10,
+            parentId: 9,
+            backendNodeId: 10,
+            nodeType: Node.TEXT_NODE,
+            nodeName: '#text',
+            localName: '',
+            nodeValue: 'Text',
+            childNodeCount: 0,
+        };
+        const childWithTextPayload = {
+            nodeId: 9,
+            parentId: 2,
+            backendNodeId: 9,
+            nodeType: Node.ELEMENT_NODE,
+            nodeName: 'DIV',
+            localName: 'div',
+            nodeValue: '',
+            childNodeCount: 1,
+            children: [textChildPayload],
+            attributes: ['id', 'child-with-text', 'style', 'display: none;'],
+        };
+        model.childNodeInserted(2, 8, childWithTextPayload);
+        treeOutline.runPendingUpdates();
+        assert.deepEqual(getChildIds(), ['child-before', 'child1', 'child-middle', 'child2', 'child3', 'child-after', 'child-with-text']);
+        const childWithTextNode = model.nodeForId(9);
+        assert.exists(childWithTextNode);
+        assert.isNotNull(treeOutline.findTreeElement(childWithTextNode));
+        const boundTextNode = model.nodeForId(10);
+        assert.exists(boundTextNode);
+        assert.strictEqual(boundTextNode.nodeValue(), 'Text');
+        // Insert first text node into child3.
+        const firstTextPayload = {
+            nodeId: 11,
+            parentId: 5,
+            backendNodeId: 11,
+            nodeType: Node.TEXT_NODE,
+            nodeName: '#text',
+            localName: '',
+            nodeValue: 'First text',
+            childNodeCount: 0,
+        };
+        model.childNodeInserted(5, 0, firstTextPayload);
+        treeOutline.runPendingUpdates();
+        const child3Node = model.nodeForId(5);
+        assert.exists(child3Node);
+        const boundFirstTextNode = model.nodeForId(11);
+        assert.exists(boundFirstTextNode);
+        assert.strictEqual(boundFirstTextNode.nodeValue(), 'First text');
+    });
+    it('updates the DOM tree structure upon node removal', async () => {
+        const textNodePayload = {
+            nodeId: 7,
+            parentId: 3,
+            backendNodeId: 7,
+            nodeType: Node.TEXT_NODE,
+            nodeName: '#text',
+            localName: '',
+            nodeValue: 'Text',
+            childNodeCount: 0,
+            children: [],
+        };
+        const child1Payload = {
+            nodeId: 3,
+            parentId: 2,
+            backendNodeId: 3,
+            nodeType: Node.ELEMENT_NODE,
+            nodeName: 'DIV',
+            localName: 'div',
+            nodeValue: '',
+            childNodeCount: 1,
+            children: [textNodePayload],
+            attributes: ['id', 'child1'],
+        };
+        const child2Payload = {
+            nodeId: 4,
+            parentId: 2,
+            backendNodeId: 4,
+            nodeType: Node.ELEMENT_NODE,
+            nodeName: 'DIV',
+            localName: 'div',
+            nodeValue: '',
+            childNodeCount: 0,
+            children: [],
+            attributes: ['id', 'child2'],
+        };
+        const child3Payload = {
+            nodeId: 5,
+            parentId: 2,
+            backendNodeId: 5,
+            nodeType: Node.ELEMENT_NODE,
+            nodeName: 'DIV',
+            localName: 'div',
+            nodeValue: '',
+            childNodeCount: 0,
+            children: [],
+            attributes: ['id', 'child3'],
+        };
+        const child4Payload = {
+            nodeId: 6,
+            parentId: 2,
+            backendNodeId: 6,
+            nodeType: Node.ELEMENT_NODE,
+            nodeName: 'DIV',
+            localName: 'div',
+            nodeValue: '',
+            childNodeCount: 0,
+            children: [],
+            attributes: ['id', 'child4'],
+        };
+        const containerPayload = {
+            nodeId: 2,
+            parentId: 1,
+            backendNodeId: 2,
+            nodeType: Node.ELEMENT_NODE,
+            nodeName: 'DIV',
+            localName: 'div',
+            nodeValue: '',
+            childNodeCount: 4,
+            children: [child1Payload, child2Payload, child3Payload, child4Payload],
+            attributes: ['id', 'container'],
+        };
+        const rootNode = SDK.DOMModel.DOMNode.create(model, null, false, {
+            nodeId: 1,
+            backendNodeId: 1,
+            nodeType: Node.DOCUMENT_NODE,
+            nodeName: '#document',
+            localName: '',
+            nodeValue: '',
+            childNodeCount: 1,
+            children: [containerPayload],
+            attributes: [],
+        });
+        treeOutline.rootDOMNode = rootNode;
+        const containerNode = rootNode.children()[0];
+        assert.exists(containerNode);
+        const containerTreeElement = treeOutline.findTreeElement(containerNode);
+        assert.exists(containerTreeElement);
+        await treeOutline.populateTreeElement(containerTreeElement);
+        containerTreeElement.expand();
+        const getChildIds = () => {
+            return (containerNode.children() || []).map(child => child.getAttribute('id') || '');
+        };
+        // Verify the initial state.
+        assert.deepEqual(getChildIds(), ['child1', 'child2', 'child3', 'child4']);
+        assert.isNotNull(treeOutline.findTreeElement(containerNode.children()[0]));
+        assert.isNotNull(treeOutline.findTreeElement(containerNode.children()[1]));
+        assert.isNotNull(treeOutline.findTreeElement(containerNode.children()[2]));
+        assert.isNotNull(treeOutline.findTreeElement(containerNode.children()[3]));
+        // Remove text node
+        model.childNodeRemoved(3, 7);
+        treeOutline.runPendingUpdates();
+        assert.deepEqual(getChildIds(), ['child1', 'child2', 'child3', 'child4']);
+        assert.isNull(model.nodeForId(7));
+        const child1Node = model.nodeForId(3);
+        assert.exists(child1Node);
+        assert.strictEqual(child1Node.childNodeCount(), 0);
+        // Remove first child
+        model.childNodeRemoved(2, 3);
+        treeOutline.runPendingUpdates();
+        assert.deepEqual(getChildIds(), ['child2', 'child3', 'child4']);
+        assert.isNull(model.nodeForId(3));
+        // Remove middle child (child3)
+        model.childNodeRemoved(2, 5);
+        treeOutline.runPendingUpdates();
+        assert.deepEqual(getChildIds(), ['child2', 'child4']);
+        assert.isNull(model.nodeForId(5));
+        // Remove last child (child4)
+        model.childNodeRemoved(2, 6);
+        treeOutline.runPendingUpdates();
+        assert.deepEqual(getChildIds(), ['child2']);
+        assert.isNull(model.nodeForId(6));
+        // Remove the only (child2)
+        model.childNodeRemoved(2, 4);
+        treeOutline.runPendingUpdates();
+        assert.deepEqual(getChildIds(), []);
+        assert.isNull(model.nodeForId(4));
+    });
+    it('displays author shadow roots and hides user-agent ones by default', async () => {
+        const nodePayload = {
+            nodeId: 2,
+            parentId: 1,
+            backendNodeId: 2,
+            nodeType: Node.ELEMENT_NODE,
+            nodeName: 'DIV',
+            localName: 'div',
+            nodeValue: '',
+            childNodeCount: 0,
+            shadowRoots: [
+                {
+                    nodeId: 3,
+                    parentId: 2,
+                    backendNodeId: 3,
+                    nodeType: Node.DOCUMENT_FRAGMENT_NODE,
+                    nodeName: '#shadow-root',
+                    localName: '',
+                    nodeValue: '',
+                    childNodeCount: 1,
+                    shadowRootType: "open" /* Protocol.DOM.ShadowRootType.Open */,
+                    children: [{
+                            nodeId: 4,
+                            parentId: 3,
+                            backendNodeId: 4,
+                            nodeType: Node.TEXT_NODE,
+                            nodeName: '#text',
+                            localName: '',
+                            nodeValue: '',
+                            childNodeCount: 0,
+                        }],
+                },
+                {
+                    nodeId: 5,
+                    parentId: 2,
+                    backendNodeId: 5,
+                    nodeType: Node.DOCUMENT_FRAGMENT_NODE,
+                    nodeName: '#shadow-root',
+                    localName: '',
+                    nodeValue: '',
+                    childNodeCount: 1,
+                    shadowRootType: "closed" /* Protocol.DOM.ShadowRootType.Closed */,
+                    children: [{
+                            nodeId: 6,
+                            parentId: 5,
+                            backendNodeId: 6,
+                            nodeType: Node.TEXT_NODE,
+                            nodeName: '#text',
+                            localName: '',
+                            nodeValue: '',
+                            childNodeCount: 0,
+                        }],
+                },
+                {
+                    nodeId: 7,
+                    parentId: 2,
+                    backendNodeId: 7,
+                    nodeType: Node.DOCUMENT_FRAGMENT_NODE,
+                    nodeName: '#shadow-root',
+                    localName: '',
+                    nodeValue: '',
+                    childNodeCount: 1,
+                    shadowRootType: "user-agent" /* Protocol.DOM.ShadowRootType.UserAgent */,
+                    children: [{
+                            nodeId: 8,
+                            parentId: 7,
+                            backendNodeId: 8,
+                            nodeType: Node.TEXT_NODE,
+                            nodeName: '#text',
+                            localName: '',
+                            nodeValue: '',
+                            childNodeCount: 0,
+                        }],
+                },
+            ],
+            children: [],
+            attributes: ['id', 'container'],
+        };
+        const rootNode = SDK.DOMModel.DOMNode.create(model, null, false, {
+            nodeId: 1,
+            backendNodeId: 1,
+            nodeType: Node.DOCUMENT_NODE,
+            nodeName: '#document',
+            localName: '',
+            nodeValue: '',
+            childNodeCount: 1,
+            children: [nodePayload],
+            attributes: [],
+        });
+        treeOutline.rootDOMNode = rootNode;
+        const containerNode = rootNode.children()[0];
+        assert.exists(containerNode);
+        const containerTreeElement = treeOutline.findTreeElement(containerNode);
+        assert.exists(containerTreeElement);
+        await treeOutline.populateTreeElement(containerTreeElement);
+        containerTreeElement.expand();
+        const children = [];
+        for (let i = 0; i < containerTreeElement.childCount(); i++) {
+            const child = containerTreeElement.childAt(i);
+            if (child instanceof Elements.ElementsTreeElement.ElementsTreeElement) {
+                children.push(child);
+            }
+        }
+        const shadowRoots = children.filter(child => child.node().isShadowRoot());
+        assert.lengthOf(shadowRoots, 2);
+        assert.strictEqual(shadowRoots[0].node().id, 3);
+        assert.strictEqual(shadowRoots[0].node().shadowRootType(), "open" /* Protocol.DOM.ShadowRootType.Open */);
+        assert.strictEqual(shadowRoots[1].node().id, 5);
+        assert.strictEqual(shadowRoots[1].node().shadowRootType(), "closed" /* Protocol.DOM.ShadowRootType.Closed */);
     });
 });
 //# sourceMappingURL=ElementsTreeOutline.test.js.map

@@ -154,7 +154,11 @@ var UIStrings = {
   /**
    * @description Whether CSS rules that do not apply active styles in the Styles pane are collapsed by default.
    */
-  collapseNonContributingCSSRules: "Collapse non-contributing CSS rules"
+  collapseNonContributingCSSRules: "Collapse non-contributing CSS rules",
+  /**
+   * @description Title of a setting in the Event Listeners widget.
+   */
+  frameworkListeners: "Framework listeners"
 };
 var str_ = i18n.i18n.registerUIStrings("panels/elements/elements-meta.ts", UIStrings);
 var i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(void 0, str_);
@@ -658,5 +662,13 @@ UI.UIUtils.registerRenderer({
     const Elements2 = await loadElementsModule();
     return Elements2.ElementsTreeOutlineRenderer.Renderer.instance();
   }
+});
+Common.Settings.registerSettingExtension({
+  category: "",
+  storageType: "Global",
+  title: i18nLazyString(UIStrings.frameworkListeners),
+  settingName: "show-frameowkr-listeners",
+  settingType: "boolean",
+  defaultValue: true
 });
 //# sourceMappingURL=elements-meta.js.map

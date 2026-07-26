@@ -11,7 +11,7 @@ import * as Components from './components.js';
 function getInsightComponents(insightSetComponent) {
     assert.isOk(insightSetComponent.element.shadowRoot);
     return [
-        ...insightSetComponent.element.shadowRoot.querySelectorAll('.insight-component-widget')
+        ...insightSetComponent.element.shadowRoot.querySelectorAll('.insight-component-widget'),
     ].map(widgetElement => {
         const widget = widgetElement.getWidget();
         assert.isOk(widget);

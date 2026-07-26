@@ -117,12 +117,112 @@ describeWithEnvironment('IndexedDBModel', () => {
             keyRange: undefined,
         });
     });
-    it('calls protocol method on getMetadata', async () => {
-        const getMetadataSpy = sinon.stub(indexedDBAgent, 'invoke_getMetadata')
-            .resolves({ entriesCount: 0, keyGeneratorValue: 0, getError: () => undefined });
+    it('loads object store data with entries and key range', async () => {
+        const requestDataSpy = sinon.spy(indexedDBAgent, 'invoke_requestData');
+        const dataEntries = [
+            {
+                key: { type: "string" /* Protocol.Runtime.RemoteObjectType.String */, value: 'key_03' },
+                primaryKey: { type: "string" /* Protocol.Runtime.RemoteObjectType.String */, value: 'key_03' },
+                value: { type: "string" /* Protocol.Runtime.RemoteObjectType.String */, value: 'value_03' },
+            },
+            {
+                key: { type: "string" /* Protocol.Runtime.RemoteObjectType.String */, value: 'key_04' },
+                primaryKey: { type: "string" /* Protocol.Runtime.RemoteObjectType.String */, value: 'key_04' },
+                value: { type: "string" /* Protocol.Runtime.RemoteObjectType.String */, value: 'value_04' },
+            },
+        ];
+        connection.setSuccessHandler('IndexedDB.requestDatabaseNames', () => ({ databaseNames: ['test-database'] }));
+        connection.setSuccessHandler('IndexedDB.requestData', () => ({ objectStoreDataEntries: dataEntries, hasMore: true }));
         indexedDBModel.enable();
-        await indexedDBModel.getMetadata(testDBId, new Resources.IndexedDBModel.ObjectStore('test-store', null, false));
+        manager?.storageBucketCreatedOrUpdated({ bucketInfo: testStorageBucketInfo });
+        await indexedDBModel.refreshDatabaseNames();
+        const idbKeyRange = IDBKeyRange.bound('key_02', 'key_05', true, false);
+        const dataPromise = new Promise(resolve => {
+            indexedDBModel.loadObjectStoreData(testDBId, 'test-store', idbKeyRange, 0, 2, (entries, hasMore) => {
+                resolve({ entries, hasMore });
+            });
+        });
+        const { entries, hasMore } = await dataPromise;
+        sinon.assert.calledOnceWithExactly(requestDataSpy, {
+            storageBucket: testStorageBucket,
+            databaseName: 'test-database',
+            objectStoreName: 'test-store',
+            indexName: undefined,
+            skipCount: 0,
+            pageSize: 2,
+            keyRange: {
+                lower: { type: "string" /* Protocol.IndexedDB.KeyType.String */, string: 'key_02' },
+                upper: { type: "string" /* Protocol.IndexedDB.KeyType.String */, string: 'key_05' },
+                lowerOpen: true,
+                upperOpen: false,
+            },
+        });
+        assert.isTrue(hasMore);
+        assert.lengthOf(entries, 2);
+        assert.strictEqual(entries[0].key.value, 'key_03');
+        assert.strictEqual(entries[0].primaryKey.value, 'key_03');
+        assert.strictEqual(entries[0].value.value, 'value_03');
+        assert.strictEqual(entries[1].key.value, 'key_04');
+        assert.strictEqual(entries[1].primaryKey.value, 'key_04');
+        assert.strictEqual(entries[1].value.value, 'value_04');
+    });
+    it('loads index data with entries and indexName', async () => {
+        const requestDataSpy = sinon.spy(indexedDBAgent, 'invoke_requestData');
+        const dataEntries = [
+            {
+                key: { type: "string" /* Protocol.Runtime.RemoteObjectType.String */, value: 'value_01' },
+                primaryKey: { type: "string" /* Protocol.Runtime.RemoteObjectType.String */, value: 'key_01' },
+                value: { type: "string" /* Protocol.Runtime.RemoteObjectType.String */, value: 'value_01' },
+            },
+        ];
+        connection.setSuccessHandler('IndexedDB.requestDatabaseNames', () => ({ databaseNames: ['test-database'] }));
+        connection.setSuccessHandler('IndexedDB.requestData', () => ({ objectStoreDataEntries: dataEntries, hasMore: false }));
+        indexedDBModel.enable();
+        manager?.storageBucketCreatedOrUpdated({ bucketInfo: testStorageBucketInfo });
+        await indexedDBModel.refreshDatabaseNames();
+        const dataPromise = new Promise(resolve => {
+            indexedDBModel.loadIndexData(testDBId, 'test-store', 'test-index', null, 0, 2, (entries, hasMore) => {
+                resolve({ entries, hasMore });
+            });
+        });
+        const { entries, hasMore } = await dataPromise;
+        sinon.assert.calledOnceWithExactly(requestDataSpy, {
+            storageBucket: testStorageBucket,
+            databaseName: 'test-database',
+            objectStoreName: 'test-store',
+            indexName: 'test-index',
+            skipCount: 0,
+            pageSize: 2,
+            keyRange: undefined,
+        });
+        assert.isFalse(hasMore);
+        assert.lengthOf(entries, 1);
+        assert.strictEqual(entries[0].key.value, 'value_01');
+        assert.strictEqual(entries[0].primaryKey.value, 'key_01');
+        assert.strictEqual(entries[0].value.value, 'value_01');
+    });
+    it('converts IDBKey to protocol key correctly', () => {
+        const date = new Date(1600000000000);
+        assert.isUndefined(Resources.IndexedDBModel.IndexedDBModel.keyFromIDBKey(undefined));
+        assert.isUndefined(Resources.IndexedDBModel.IndexedDBModel.keyFromIDBKey(null));
+        assert.deepEqual(Resources.IndexedDBModel.IndexedDBModel.keyFromIDBKey(123), { type: "number" /* Protocol.IndexedDB.KeyType.Number */, number: 123 });
+        assert.deepEqual(Resources.IndexedDBModel.IndexedDBModel.keyFromIDBKey('abc'), { type: "string" /* Protocol.IndexedDB.KeyType.String */, string: 'abc' });
+        assert.deepEqual(Resources.IndexedDBModel.IndexedDBModel.keyFromIDBKey(date), { type: "date" /* Protocol.IndexedDB.KeyType.Date */, date: 1600000000000 });
+        assert.deepEqual(Resources.IndexedDBModel.IndexedDBModel.keyFromIDBKey(['abc', 123]), {
+            type: "array" /* Protocol.IndexedDB.KeyType.Array */,
+            array: [
+                { type: "string" /* Protocol.IndexedDB.KeyType.String */, string: 'abc' },
+                { type: "number" /* Protocol.IndexedDB.KeyType.Number */, number: 123 },
+            ],
+        });
+    });
+    it('calls protocol method on getMetadata and returns metadata', async () => {
+        const getMetadataSpy = sinon.stub(indexedDBAgent, 'invoke_getMetadata')
+            .resolves({ entriesCount: 6, keyGeneratorValue: 7, getError: () => undefined });
+        indexedDBModel.enable();
+        const metadata = await indexedDBModel.getMetadata(testDBId, new Resources.IndexedDBModel.ObjectStore('test-store', null, false));
         sinon.assert.calledOnceWithExactly(getMetadataSpy, { storageBucket: testStorageBucket, databaseName: 'test-database', objectStoreName: 'test-store' });
+        assert.deepEqual(metadata, { entriesCount: 6, keyGeneratorValue: 7 });
     });
     it('dispatches event on indexedDBContentUpdated', () => {
         const dispatcherSpy = sinon.spy(indexedDBModel, 'dispatchEventToListeners');
@@ -153,6 +253,45 @@ describeWithEnvironment('IndexedDBModel', () => {
         await indexedDBModel.refreshDatabaseNames();
         const databases = indexedDBModel.databases();
         assert.deepEqual(databases.map(db => db.name), dbNames);
+    });
+    it('updates databases and dispatches events when databases are added or removed', async () => {
+        indexedDBModel.enable();
+        manager?.storageBucketCreatedOrUpdated({ bucketInfo: testStorageBucketInfo });
+        const dispatcherSpy = sinon.spy(indexedDBModel, 'dispatchEventToListeners');
+        connection.setSuccessHandler('IndexedDB.requestDatabaseNames', () => ({ databaseNames: ['testDatabase1'] }));
+        await indexedDBModel.refreshDatabaseNames();
+        assert.deepEqual(indexedDBModel.databases().map(db => db.name), ['testDatabase1']);
+        sinon.assert.calledWithExactly(dispatcherSpy, Resources.IndexedDBModel.Events.DatabaseAdded, {
+            model: indexedDBModel,
+            databaseId: sinon.match({ name: 'testDatabase1' }),
+        });
+        dispatcherSpy.resetHistory();
+        connection.setHandler('IndexedDB.requestDatabaseNames', null);
+        connection.setSuccessHandler('IndexedDB.requestDatabaseNames', () => ({ databaseNames: ['testDatabase1', 'testDatabase2'] }));
+        await indexedDBModel.refreshDatabaseNames();
+        assert.deepEqual(indexedDBModel.databases().map(db => db.name), ['testDatabase1', 'testDatabase2']);
+        sinon.assert.calledWithExactly(dispatcherSpy, Resources.IndexedDBModel.Events.DatabaseAdded, {
+            model: indexedDBModel,
+            databaseId: sinon.match({ name: 'testDatabase2' }),
+        });
+        dispatcherSpy.resetHistory();
+        connection.setHandler('IndexedDB.requestDatabaseNames', null);
+        connection.setSuccessHandler('IndexedDB.requestDatabaseNames', () => ({ databaseNames: ['testDatabase1'] }));
+        await indexedDBModel.refreshDatabaseNames();
+        assert.deepEqual(indexedDBModel.databases().map(db => db.name), ['testDatabase1']);
+        sinon.assert.calledWithExactly(dispatcherSpy, Resources.IndexedDBModel.Events.DatabaseRemoved, {
+            model: indexedDBModel,
+            databaseId: sinon.match({ name: 'testDatabase2' }),
+        });
+        dispatcherSpy.resetHistory();
+        connection.setHandler('IndexedDB.requestDatabaseNames', null);
+        connection.setSuccessHandler('IndexedDB.requestDatabaseNames', () => ({ databaseNames: [] }));
+        await indexedDBModel.refreshDatabaseNames();
+        assert.isEmpty(indexedDBModel.databases());
+        sinon.assert.calledWithExactly(dispatcherSpy, Resources.IndexedDBModel.Events.DatabaseRemoved, {
+            model: indexedDBModel,
+            databaseId: sinon.match({ name: 'testDatabase1' }),
+        });
     });
     it('calls protocol method on deleteDatabase', () => {
         const deleteDBSpy = sinon.spy(indexedDBAgent, 'invoke_deleteDatabase');
@@ -194,6 +333,92 @@ describeWithEnvironment('IndexedDBModel', () => {
         indexedDBModel.loadObjectStoreData(testDBId, 'test-store', null, 0, 2, callbackSpy);
         await new Promise(resolve => setTimeout(resolve, 0));
         sinon.assert.notCalled(callbackSpy);
+    });
+    it('loads database structure with object stores and indexes', async () => {
+        const databaseWithObjectStores = {
+            name: 'test-database',
+            version: 1,
+            objectStores: [
+                {
+                    name: 'testObjectStore1',
+                    keyPath: {
+                        type: "string" /* Protocol.IndexedDB.KeyPathType.String */,
+                        string: 'test.key.path',
+                    },
+                    autoIncrement: true,
+                    indexes: [],
+                },
+                {
+                    name: 'testObjectStore2',
+                    keyPath: {
+                        type: "null" /* Protocol.IndexedDB.KeyPathType.Null */,
+                    },
+                    autoIncrement: false,
+                    indexes: [
+                        {
+                            name: 'testIndexName1',
+                            keyPath: {
+                                type: "string" /* Protocol.IndexedDB.KeyPathType.String */,
+                                string: '',
+                            },
+                            unique: false,
+                            multiEntry: true,
+                        },
+                        {
+                            name: 'testIndexName2',
+                            keyPath: {
+                                type: "array" /* Protocol.IndexedDB.KeyPathType.Array */,
+                                array: ['key.path1', 'key.path2'],
+                            },
+                            unique: true,
+                            multiEntry: false,
+                        },
+                    ],
+                },
+            ],
+        };
+        const databaseLoadedPromise = new Promise(resolve => {
+            indexedDBModel.addEventListener(Resources.IndexedDBModel.Events.DatabaseLoaded, event => {
+                resolve(event.data.database);
+            });
+        });
+        connection.setSuccessHandler('IndexedDB.requestDatabaseNames', () => ({ databaseNames: ['test-database'] }));
+        connection.setSuccessHandler('IndexedDB.requestDatabase', () => ({ databaseWithObjectStores }));
+        indexedDBModel.enable();
+        manager?.storageBucketCreatedOrUpdated({ bucketInfo: testStorageBucketInfo });
+        indexedDBModel.refreshDatabase(testDBId);
+        const database = await databaseLoadedPromise;
+        assert.strictEqual(database.databaseId.name, 'test-database');
+        assert.strictEqual(database.version, 1);
+        assert.strictEqual(database.objectStores.size, 2);
+        const store1 = database.objectStores.get('testObjectStore1');
+        assert.exists(store1);
+        assert.strictEqual(store1.name, 'testObjectStore1');
+        assert.strictEqual(store1.keyPath, 'test.key.path');
+        assert.strictEqual(store1.keyPathString, '"test.key.path"');
+        assert.isTrue(store1.autoIncrement);
+        assert.strictEqual(store1.indexes.size, 0);
+        const store2 = database.objectStores.get('testObjectStore2');
+        assert.exists(store2);
+        assert.strictEqual(store2.name, 'testObjectStore2');
+        assert.isNull(store2.keyPath);
+        assert.isNull(store2.keyPathString);
+        assert.isFalse(store2.autoIncrement);
+        assert.strictEqual(store2.indexes.size, 2);
+        const index1 = store2.indexes.get('testIndexName1');
+        assert.exists(index1);
+        assert.strictEqual(index1.name, 'testIndexName1');
+        assert.strictEqual(index1.keyPath, '');
+        assert.strictEqual(index1.keyPathString, '""');
+        assert.isFalse(index1.unique);
+        assert.isTrue(index1.multiEntry);
+        const index2 = store2.indexes.get('testIndexName2');
+        assert.exists(index2);
+        assert.strictEqual(index2.name, 'testIndexName2');
+        assert.deepEqual(index2.keyPath, ['key.path1', 'key.path2']);
+        assert.strictEqual(index2.keyPathString, '["key.path1", "key.path2"]');
+        assert.isTrue(index2.unique);
+        assert.isFalse(index2.multiEntry);
     });
 });
 //# sourceMappingURL=IndexedDBModel.test.js.map

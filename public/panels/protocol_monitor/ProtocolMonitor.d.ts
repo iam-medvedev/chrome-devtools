@@ -1,7 +1,7 @@
 import '../../ui/legacy/legacy.js';
 import '../../ui/legacy/components/data_grid/data_grid.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import * as TextUtils from '../../models/text_utils/text_utils.js';
+import * as TextUtils from '../../core/text_utils/text_utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { JSONEditor, type Parameter } from './JSONEditor.js';
 export declare const buildProtocolMetadata: (domains: Iterable<ProtocolDomain>) => Map<string, {

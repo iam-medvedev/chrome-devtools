@@ -7,7 +7,7 @@ import * as Platform from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
 import * as Bindings from '../../../../models/bindings/bindings.js';
 import * as Workspace from '../../../../models/workspace/workspace.js';
-import { createTarget, deinitializeGlobalVars, describeWithEnvironment, initializeGlobalVars } from '../../../../testing/EnvironmentHelpers.js';
+import { createTarget, deinitializeGlobalVars, describeWithEnvironment, initializeGlobalVars, } from '../../../../testing/EnvironmentHelpers.js';
 import { setupMockedUISourceCode } from '../../../../testing/UISourceCodeHelpers.js';
 import * as PerfUI from './perf_ui.js';
 const { urlString } = Platform.DevToolsPath;

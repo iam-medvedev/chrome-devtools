@@ -103,7 +103,7 @@ export class _TestObserver {
 Common.Runnable.registerEarlyInitializationRunnable(() => ({
     run() {
         SDK.TargetManager.TargetManager.instance().observeTargets(new _TestObserver());
-    }
+    },
 }));
 const globalTestRunner = self.TestRunner;
 export { globalTestRunner as TestRunner };

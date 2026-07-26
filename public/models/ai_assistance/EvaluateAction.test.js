@@ -142,7 +142,7 @@ describe('FreestylerEvaluateAction', () => {
             it('should serialize error containing the stack when stack exists', () => {
                 const exampleError = {
                     message: 'Cannot read properties of undefined (reading \'bar\')',
-                    stack: 'Cannot read properties of undefined (reading \'bar\')\n    at myTestFunction (myScript.js:3:10)'
+                    stack: 'Cannot read properties of undefined (reading \'bar\')\n    at myTestFunction (myScript.js:3:10)',
                 };
                 const result = AiAssistance.EvaluateAction.EvaluateAction.stringifyError(exampleError, exampleCode);
                 assert.strictEqual(result, `Error: executing the line \"console.log(object.bar);\" failed with the following error:
@@ -153,7 +153,7 @@ Cannot read properties of undefined (reading 'bar')`);
                 getExecutedLineFromStackStub.returns(null);
                 const exampleError = {
                     message: 'Error Message',
-                    stack: 'Cannot read properties of undefined (reading \'bar\')\n    at myTestFunction (myScript.js:3:10)'
+                    stack: 'Cannot read properties of undefined (reading \'bar\')\n    at myTestFunction (myScript.js:3:10)',
                 };
                 const result = AiAssistance.EvaluateAction.EvaluateAction.stringifyError(exampleError, exampleCode);
                 assert.strictEqual(result, `Error: Error Message`);
@@ -163,7 +163,7 @@ Cannot read properties of undefined (reading 'bar')`);
                 getExecutedLineFromStackStub.returns(30);
                 const exampleError = {
                     message: 'Error Message',
-                    stack: 'Cannot read properties of undefined (reading \'bar\')\n    at myTestFunction (myScript.js:3:10)'
+                    stack: 'Cannot read properties of undefined (reading \'bar\')\n    at myTestFunction (myScript.js:3:10)',
                 };
                 const result = AiAssistance.EvaluateAction.EvaluateAction.stringifyError(exampleError, exampleCode);
                 assert.strictEqual(result, `Error: Error Message`);

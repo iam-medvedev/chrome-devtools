@@ -114,7 +114,7 @@ describeWithEnvironment('NetworkItemView', () => {
                 sendBufferSize: 1002,
                 receiveBufferSize: 1003,
                 dnsQueryType: undefined,
-            }
+            },
         };
         const networkItemView = renderNetworkItemView(request);
         assert.isTrue(networkItemView.hasTab("direct-socket-connection" /* NetworkForward.UIRequestLocation.UIRequestTabs.DIRECT_SOCKET_CONNECTION */));

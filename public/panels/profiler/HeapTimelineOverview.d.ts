@@ -27,7 +27,7 @@ export declare class HeapTimelineOverview extends HeapTimelineOverview_base {
     updateGridTimerId?: number;
     updateTimerId?: number | null;
     windowWidthRatio?: number;
-    constructor();
+    constructor(element?: HTMLElement);
     start(): void;
     stop(): void;
     setSamples(samples: Samples): void;
@@ -36,6 +36,7 @@ export declare class HeapTimelineOverview extends HeapTimelineOverview_base {
     onWindowChanged(): void;
     scheduleUpdate(): void;
     updateBoundaries(): void;
+    performUpdate(): void;
     update(): void;
     updateGrid(): void;
 }

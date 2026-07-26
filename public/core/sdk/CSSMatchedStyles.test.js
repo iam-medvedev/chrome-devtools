@@ -169,8 +169,8 @@ describe('CSSMatchedStyles', () => {
                                 matches: [ruleMatch('.a::highlight(highlight-foo)', [
                                         { name: '--color', value: 'blue' },
                                     ])],
-                            }]
-                    }]
+                            }],
+                    }],
             });
             // Compute the variable value as it is visible to `startingCascade` and compare with the expectation
             const testComputedVariableValueEquals = (name, startingCascade, expectedValue) => {
@@ -264,7 +264,7 @@ describe('CSSMatchedStyles', () => {
                 connection,
                 matchedPayload: [ruleMatch('div', [{ name: '--color', value: 'inherit' }])],
                 inheritedPayload: [{ matchedCSSRules: [ruleMatch('div', [{ name: '--color', value: 'inherited-color' }])] }],
-                node
+                node,
             });
             assert.strictEqual(matchedStyles.computeCSSVariable(matchedStyles.nodeStyles()[0], '--color')?.value, 'inherited-color');
         });
@@ -387,6 +387,37 @@ describe('CSSMatchedStyles', () => {
             assert.strictEqual(await compute('--a', [notACycle], [[inherited]]), '1');
             assert.isNull(await compute('--b', [notACycle], [[inherited]]));
         });
+    });
+    it('deduplicates inherited styles from the same source', async () => {
+        const parentNode1 = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+        parentNode1.id = 0;
+        const parentNode2 = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+        parentNode2.id = 1;
+        parentNode2.parentNode = parentNode1;
+        const parentNode3 = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+        parentNode3.id = 2;
+        parentNode3.parentNode = parentNode2;
+        const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+        node.parentNode = parentNode3;
+        node.id = 3;
+        const range = { startLine: 0, startColumn: 0, endLine: 2, endColumn: 1 };
+        const styleSheetId = '1';
+        const rule = ruleMatch('div', [{ name: 'color', value: 'red' }], { range, styleSheetId });
+        const matchedPayload = [rule];
+        const inheritedPayload = [
+            { matchedCSSRules: [rule] },
+            { matchedCSSRules: [rule] },
+            { matchedCSSRules: [rule] },
+        ];
+        const matchedStyles = await getMatchedStyles({
+            connection,
+            node,
+            matchedPayload,
+            inheritedPayload,
+        });
+        assert.deepEqual(matchedStyles.nodeStyles().map(style => style.allProperties().map(prop => prop.propertyText)), [
+            ['color: red;'],
+        ]);
     });
     it('does not hide inherited rules that also apply directly to the node if it contains custom properties', async () => {
         const parentNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
@@ -520,7 +551,7 @@ describe('CSSMatchedStyles', () => {
                 matchedPayload: [ruleMatch('div', properties)],
                 inheritedPayload,
                 cssPropertyRegistrations,
-                node
+                node,
             });
             checkResolution(matchedStyles, properties);
         });
@@ -558,7 +589,7 @@ describe('CSSMatchedStyles', () => {
                 matchedPayload: [ruleMatch('div', properties)],
                 inheritedPayload,
                 cssPropertyRegistrations,
-                node
+                node,
             });
             checkResolution(matchedStyles, properties);
         });
@@ -596,7 +627,7 @@ describe('CSSMatchedStyles', () => {
                 matchedPayload: [ruleMatch('div', properties)],
                 inheritedPayload,
                 cssPropertyRegistrations,
-                node
+                node,
             });
             checkResolution(matchedStyles, properties);
         });
@@ -640,7 +671,7 @@ describe('CSSMatchedStyles', () => {
                 matchedPayload: [uaRule, userRule, ruleMatch('div', properties)],
                 inheritedPayload,
                 cssPropertyRegistrations,
-                node
+                node,
             });
             checkResolution(matchedStyles, properties);
         });
@@ -765,7 +796,7 @@ describe('CSSMatchedStyles', () => {
                     ruleMatch('div', { '--f': 'F' }),
                     ruleMatch('div', { 'background-color': 'x' }),
                     ruleMatch('div', { color: 'y' }),
-                ]
+                ],
             }];
         const matchedStyles = await getMatchedStyles({ connection, node, matchedPayload, inheritedPayload });
         const styles = matchedStyles.nodeStyles();
@@ -842,7 +873,7 @@ describe('CSSMatchedStyles', () => {
             { name: '--test-number-to-length', value: 'attr(data-test-number in)' },
             {
                 name: '--test-number-as-length',
-                value: 'attr(data-test-number type(<length>), var(--test-self-loop-fallback-2))'
+                value: 'attr(data-test-number type(<length>), var(--test-self-loop-fallback-2))',
             },
             { name: '--test-length', value: 'attr(data-test-length type(<length>))' },
             { name: '--test-bad-unit-indirect', value: 'attr(data-test-bad-unit type(*), 4px)' },
@@ -890,7 +921,7 @@ describe('CSSMatchedStyles', () => {
                             style: {
                                 cssProperties: [{ name: 'color', value: 'red' }],
                                 shorthandEntries: [],
-                            }
+                            },
                         }],
                     origin: "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */,
                     styleSheetId: '0',
@@ -1119,6 +1150,354 @@ describe('CSSMatchedStyles', () => {
                 assert.exists(property);
                 assert.isFalse(matchedStyles.isPropertyOverriddenByAnimation(property));
             });
+        });
+        describe('availableCSSVariables', () => {
+            it('verifies that CSS variables are defined correctly wrt DOM inheritance', async () => {
+                const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+                node.id = 1;
+                node.nodeType.returns(Node.ELEMENT_NODE);
+                const parent1 = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+                parent1.id = 2;
+                parent1.nodeType.returns(Node.ELEMENT_NODE);
+                node.parentNode = parent1;
+                const parent2 = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+                parent2.id = 3;
+                parent2.nodeType.returns(Node.ELEMENT_NODE);
+                parent1.parentNode = parent2;
+                const matchedStyles = await getMatchedStyles({
+                    connection,
+                    node,
+                    inlinePayload: {
+                        cssProperties: [],
+                        shorthandEntries: [],
+                    },
+                    matchedPayload: [ruleMatch('span', [{ name: '--span-variable', value: 'green' }, { name: '--camelCased', value: 'blue' }])],
+                    inheritedPayload: [
+                        {
+                            matchedCSSRules: [
+                                ruleMatch('.myelement', [{ name: '--another-div-variable', value: 'grey' }]),
+                                ruleMatch('div', [{ name: '--div-variable', value: 'blue' }]),
+                            ],
+                        },
+                        {
+                            matchedCSSRules: [ruleMatch('body', [{ name: '--body-variable', value: 'red' }])],
+                        },
+                    ],
+                });
+                const styles = matchedStyles.nodeStyles();
+                assert.sameMembers(matchedStyles.availableCSSVariables(styles[0]), ['--body-variable', '--div-variable', '--another-div-variable', '--span-variable', '--camelCased']);
+                assert.sameMembers(matchedStyles.availableCSSVariables(styles[1]), ['--body-variable', '--div-variable', '--another-div-variable', '--span-variable', '--camelCased']);
+                assert.sameMembers(matchedStyles.availableCSSVariables(styles[2]), ['--body-variable', '--div-variable', '--another-div-variable']);
+                assert.sameMembers(matchedStyles.availableCSSVariables(styles[3]), ['--body-variable', '--div-variable', '--another-div-variable']);
+            });
+        });
+        describe('propertyState', () => {
+            it('marks a shorthand as overloaded if all its longhands are overloaded', async () => {
+                const shorthandRule = ruleMatch('div.foo', []);
+                shorthandRule.rule.style.shorthandEntries = [{ name: 'margin', value: '10px' }];
+                shorthandRule.rule.style.cssProperties = [
+                    { name: 'margin-top', value: '10px' },
+                    { name: 'margin-right', value: '10px' },
+                    { name: 'margin-bottom', value: '10px' },
+                    { name: 'margin-left', value: '10px' },
+                ];
+                const longhandRule = ruleMatch('div', [
+                    { name: 'margin-top', value: '0px', important: true },
+                    { name: 'margin-right', value: '0px', important: true },
+                    { name: 'margin-bottom', value: '0px', important: true },
+                    { name: 'margin-left', value: '0px', important: true },
+                ]);
+                const matchedStyles = await getMatchedStyles({
+                    connection,
+                    matchedPayload: [
+                        longhandRule,
+                        shorthandRule,
+                    ],
+                });
+                const style = matchedStyles.nodeStyles().find(s => s.allProperties().find(p => p.name === 'margin-top' && p.value === '10px'));
+                assert.exists(style);
+                const marginShorthand = style.allProperties().find(p => p.name === 'margin');
+                assert.exists(marginShorthand);
+                assert.strictEqual(matchedStyles.propertyState(marginShorthand), "Overloaded" /* SDK.CSSMatchedStyles.PropertyState.OVERLOADED */);
+            });
+            it('does not mark a shorthand as overloaded if not all its longhands are overloaded', async () => {
+                const shorthandRule = ruleMatch('div.foo', []);
+                shorthandRule.rule.style.shorthandEntries = [{ name: 'margin', value: '10px' }];
+                shorthandRule.rule.style.cssProperties = [
+                    { name: 'margin-top', value: '10px' },
+                    { name: 'margin-right', value: '10px' },
+                    { name: 'margin-bottom', value: '10px' },
+                    { name: 'margin-left', value: '10px' },
+                ];
+                const longhandRule = ruleMatch('div', [
+                    { name: 'margin-top', value: '0px', important: true },
+                    { name: 'margin-left', value: '0px', important: true },
+                ]);
+                const matchedStyles = await getMatchedStyles({
+                    connection,
+                    matchedPayload: [
+                        longhandRule,
+                        shorthandRule,
+                    ],
+                });
+                const style = matchedStyles.nodeStyles().find(s => s.allProperties().find(p => p.name === 'margin-top' && p.value === '10px'));
+                assert.exists(style);
+                const marginShorthand = style.allProperties().find(p => p.name === 'margin');
+                assert.exists(marginShorthand);
+                assert.strictEqual(matchedStyles.propertyState(marginShorthand), "Active" /* SDK.CSSMatchedStyles.PropertyState.ACTIVE */);
+            });
+        });
+    });
+    describe('findParentRule', () => {
+        const findNestedCSSSelectorRule = (styles) => styles.map(s => s.parentRule).find(r => r instanceof SDK.CSSRule.CSSStyleRule && r.selectors.length === 0);
+        it('locates direct single-level parent rule in the cascade', async () => {
+            // Evaluated HTML element:
+            // <div class="card">
+            //   <div class="title"></div> <!-- Inspected node -->
+            // </div>
+            //
+            // Formatted stylesheet:
+            // div {
+            //   color: red;
+            //   & .title { color: blue; }
+            // }
+            const parentRule = ruleMatch({ selectors: [{ text: 'div', specificity: { a: 0, b: 0, c: 1 } }], text: 'div' }, { color: 'red' });
+            const childRule = ruleMatch({ selectors: [{ text: '& .title', specificity: { a: 0, b: 1, c: 1 } }], text: '& .title' }, { color: 'blue' }, { nestingSelectors: ['div'] });
+            const matchedStyles = await getMatchedStyles({
+                connection,
+                matchedPayload: [parentRule, childRule],
+            });
+            const childCSSRule = matchedStyles.nodeStyles()
+                .map(s => s.parentRule)
+                .find(r => r instanceof SDK.CSSRule.CSSStyleRule && r.selectorText() === '& .title');
+            assert.exists(childCSSRule);
+            const result = matchedStyles.findParentRule(childCSSRule, 0);
+            assert.exists(result);
+            assert.strictEqual(result?.selectorText(), 'div');
+            assert.deepEqual(result?.selectors[0].specificity, { a: 0, b: 0, c: 1 });
+        });
+        it('locates parent rule with comma-separated list of selectors in the cascade', async () => {
+            // Evaluated HTML element:
+            // <div class="card">
+            //   <div class="title"></div> <!-- Inspected node -->
+            // </div>
+            //
+            // Formatted stylesheet:
+            // div, #foo, .bar {
+            //   color: red;
+            //   & .title { color: blue; }
+            // }
+            const parentRule = ruleMatch({
+                selectors: [
+                    { text: 'div', specificity: { a: 0, b: 0, c: 1 } },
+                    { text: '#foo', specificity: { a: 1, b: 0, c: 0 } },
+                    { text: '.bar', specificity: { a: 0, b: 1, c: 0 } },
+                ],
+                text: 'div, #foo, .bar',
+            }, { color: 'red' });
+            const childRule = ruleMatch({ selectors: [{ text: '& .title', specificity: { a: 1, b: 1, c: 0 } }], text: '& .title' }, { color: 'blue' }, { nestingSelectors: ['div, #foo, .bar'] });
+            const matchedStyles = await getMatchedStyles({
+                connection,
+                matchedPayload: [parentRule, childRule],
+            });
+            const childCSSRule = matchedStyles.nodeStyles()
+                .map(s => s.parentRule)
+                .find(r => r instanceof SDK.CSSRule.CSSStyleRule && r.selectorText() === '& .title');
+            assert.exists(childCSSRule);
+            const result = matchedStyles.findParentRule(childCSSRule, 0);
+            assert.exists(result);
+            assert.strictEqual(result?.selectorText(), 'div, #foo, .bar');
+            assert.strictEqual(result?.selectors.length, 3);
+            assert.deepEqual(result?.selectors[0].specificity, { a: 0, b: 0, c: 1 });
+            assert.deepEqual(result?.selectors[1].specificity, { a: 1, b: 0, c: 0 });
+            assert.deepEqual(result?.selectors[2].specificity, { a: 0, b: 1, c: 0 });
+        });
+        it('correctly resolves parent rule for CSSNestedDeclarations following a child rule', async () => {
+            // Evaluated HTML element:
+            // <div class="card"></div> <!-- Inspected node -->
+            //
+            // Formatted stylesheet:
+            // .card {
+            //   & .title { font-size: 14px; }
+            //   color: red; /* CSSNestedDeclarations block */
+            // }
+            const parentRule = ruleMatch({ selectors: [{ text: '.card', specificity: { a: 0, b: 1, c: 0 } }], text: '.card' }, []);
+            const nestedDeclarationsRule = ruleMatch({ selectors: [], text: '.card' }, { color: 'red' }, { nestingSelectors: ['.card'] });
+            const matchedStyles = await getMatchedStyles({
+                connection,
+                matchedPayload: [parentRule, nestedDeclarationsRule],
+            });
+            const nestedDeclCSSRule = findNestedCSSSelectorRule(matchedStyles.nodeStyles());
+            assert.exists(nestedDeclCSSRule);
+            const parent = matchedStyles.findParentRule(nestedDeclCSSRule, 0);
+            assert.exists(parent);
+            assert.strictEqual(parent?.selectorText(), '.card');
+            assert.deepEqual(parent?.selectors[0].specificity, { a: 0, b: 1, c: 0 });
+        });
+        it('resolves parent rule for CSSNestedDeclarations inside a nested @media block', async () => {
+            // Evaluated HTML element:
+            // <div class="panel"></div> <!-- Inspected node -->
+            //
+            // Formatted stylesheet:
+            // .panel {
+            //   @media (min-width: 600px) {
+            //     & .inner { font-size: 14px; }
+            //     width: 100%; /* CSSNestedDeclarations inside @media */
+            //   }
+            // }
+            const parentPanelRule = ruleMatch({ selectors: [{ text: '.panel', specificity: { a: 0, b: 1, c: 0 } }], text: '.panel' }, []);
+            const mediaNestedDeclarations = ruleMatch({ selectors: [], text: '.panel' }, { width: '100%' }, { nestingSelectors: ['.panel'] });
+            const matchedStyles = await getMatchedStyles({
+                connection,
+                matchedPayload: [parentPanelRule, mediaNestedDeclarations],
+            });
+            const mediaDeclCSSRule = findNestedCSSSelectorRule(matchedStyles.nodeStyles());
+            assert.exists(mediaDeclCSSRule);
+            const parent = matchedStyles.findParentRule(mediaDeclCSSRule, 0);
+            assert.exists(parent);
+            assert.strictEqual(parent?.selectorText(), '.panel');
+        });
+        it('disambiguates CSSNestedDeclarations parent rules across identical nested class names under different roots', async () => {
+            // Evaluated HTML element:
+            // <div>
+            //   <div class="card-item"></div> <!-- Inspected node A -->
+            // </div>
+            // <span>
+            //   <span>
+            //     <span class="card-item"></span> <!-- Inspected node B -->
+            //   </span>
+            // </span>
+            //
+            // Formatted stylesheet:
+            // div {
+            //   & .card-item {
+            //     & .badge { font-size: 12px; }
+            //     color: darkblue; /* CSSNestedDeclarations block A */
+            //   }
+            // }
+            // span span {
+            //   & .card-item {
+            //     & .badge { font-size: 14px; }
+            //     color: darkred; /* CSSNestedDeclarations block B */
+            //   }
+            // }
+            const rootA = ruleMatch({ selectors: [{ text: 'div', specificity: { a: 0, b: 0, c: 1 } }], text: 'div' }, []);
+            const cardItemA = ruleMatch({ selectors: [{ text: '& .card-item', specificity: { a: 0, b: 1, c: 1 } }], text: '& .card-item' }, [], { nestingSelectors: ['div'] });
+            const nestedDeclA = ruleMatch({ selectors: [], text: '& .card-item' }, { color: 'darkblue' }, { nestingSelectors: ['& .card-item', 'div'] });
+            const matchedStylesA = await getMatchedStyles({
+                connection,
+                matchedPayload: [rootA, cardItemA, nestedDeclA],
+            });
+            const rootB = ruleMatch({ selectors: [{ text: 'span span', specificity: { a: 0, b: 0, c: 2 } }], text: 'span span' }, []);
+            const cardItemB = ruleMatch({ selectors: [{ text: '& .card-item', specificity: { a: 0, b: 1, c: 2 } }], text: '& .card-item' }, [], { nestingSelectors: ['span span'] });
+            const nestedDeclB = ruleMatch({ selectors: [], text: '& .card-item' }, { color: 'darkred' }, { nestingSelectors: ['& .card-item', 'span span'] });
+            const matchedStylesB = await getMatchedStyles({
+                connection,
+                matchedPayload: [rootB, cardItemB, nestedDeclB],
+            });
+            const nestedDeclCSSRuleA = findNestedCSSSelectorRule(matchedStylesA.nodeStyles());
+            assert.exists(nestedDeclCSSRuleA);
+            const parentA = matchedStylesA.findParentRule(nestedDeclCSSRuleA, 0);
+            assert.exists(parentA);
+            assert.deepEqual(parentA?.selectors[0].specificity, { a: 0, b: 1, c: 1 });
+            const nestedDeclCSSRuleB = findNestedCSSSelectorRule(matchedStylesB.nodeStyles());
+            assert.exists(nestedDeclCSSRuleB);
+            const parentB = matchedStylesB.findParentRule(nestedDeclCSSRuleB, 0);
+            assert.exists(parentB);
+            assert.deepEqual(parentB?.selectors[0].specificity, { a: 0, b: 1, c: 2 });
+        });
+        it('locates parent rules present in inherited styles payload', async () => {
+            // Evaluated HTML element:
+            // <header class="site-header">
+            //   <nav class="nav">
+            //     <a class="link"></a> <!-- Inspected node -->
+            //   </nav>
+            // </header>
+            //
+            // Formatted stylesheet:
+            // .site-header {
+            //   font-family: sans-serif;
+            //   & .link { color: green; }
+            // }
+            const parentRule = ruleMatch({ selectors: [{ text: '.site-header', specificity: { a: 0, b: 1, c: 0 } }], text: '.site-header' }, { 'font-family': 'sans-serif' });
+            const childRule = ruleMatch({ selectors: [{ text: '& .link', specificity: { a: 0, b: 2, c: 0 } }], text: '& .link' }, { color: 'green' }, { nestingSelectors: ['.site-header'] });
+            const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+            node.id = 1;
+            node.parentNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+            node.parentNode.id = 2;
+            const matchedStyles = await getMatchedStyles({
+                connection,
+                node,
+                matchedPayload: [childRule],
+                inheritedPayload: [{
+                        matchedCSSRules: [parentRule],
+                    }],
+            });
+            const childCSSRule = matchedStyles.nodeStyles()
+                .map(s => s.parentRule)
+                .find(r => r instanceof SDK.CSSRule.CSSStyleRule && r.selectorText() === '& .link');
+            assert.exists(childCSSRule);
+            const result = matchedStyles.findParentRule(childCSSRule, 0);
+            assert.exists(result);
+            assert.strictEqual(result?.selectorText(), '.site-header');
+            assert.deepEqual(result?.selectors[0].specificity, { a: 0, b: 1, c: 0 });
+        });
+        it('locates CSSNestedDeclarations parent rules present in inherited styles payload', async () => {
+            // Evaluated HTML element:
+            // <div class="card-nested-decl">
+            //   <p class="inspected-nested-decl"></p> <!-- Inspected node inheriting from parent -->
+            // </div>
+            //
+            // Formatted stylesheet:
+            // .card-nested-decl {
+            //   font-family: sans-serif;
+            //   & .child { font-size: 14px; }
+            //   color: darkgreen; /* CSSNestedDeclarations block */
+            // }
+            const parentRule = ruleMatch({ selectors: [{ text: '.card-nested-decl', specificity: { a: 0, b: 1, c: 0 } }], text: '.card-nested-decl' }, { 'font-family': 'sans-serif' });
+            const nestedDeclRule = ruleMatch({ selectors: [], text: '.card-nested-decl' }, { color: 'darkgreen' }, { nestingSelectors: ['.card-nested-decl'] });
+            const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+            node.id = 1;
+            node.parentNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+            node.parentNode.id = 2;
+            const matchedStyles = await getMatchedStyles({
+                connection,
+                node,
+                matchedPayload: [],
+                inheritedPayload: [{
+                        matchedCSSRules: [parentRule, nestedDeclRule],
+                    }],
+            });
+            const inheritedNestedDeclCSSRule = findNestedCSSSelectorRule(matchedStyles.inheritedStyles());
+            assert.exists(inheritedNestedDeclCSSRule);
+            const result = matchedStyles.findParentRule(inheritedNestedDeclCSSRule, 0);
+            assert.exists(result);
+            assert.strictEqual(result?.selectorText(), '.card-nested-decl');
+            assert.deepEqual(result?.selectors[0].specificity, { a: 0, b: 1, c: 0 });
+        });
+        // TODO: This test highlights a CDP limitation. Currently, CSS.getMatchedStylesForNode omits ancestor
+        // CSSStyleRules from inheritedPayload if they lack inheritable properties for the inspected element.
+        // To resolve this, InspectorCSSAgent in Chromium backend should be updated to return all ancestor
+        // nesting rules in the cascade regardless of whether they contain inheritable properties.
+        it('returns null gracefully when CSSNestedDeclarations parent rule is missing from cascade', async () => {
+            // Evaluated HTML element:
+            // <div class="sidebar"></div> <!-- Inspected node -->
+            //
+            // Formatted stylesheet:
+            // .sidebar {
+            //   & .item { color: red; }
+            //   opacity: 0.9; /* CSSNestedDeclarations */
+            // }
+            const nestedDecl = ruleMatch({ selectors: [], text: '.sidebar' }, { opacity: '0.9' }, { nestingSelectors: ['.sidebar'] });
+            const matchedStyles = await getMatchedStyles({
+                connection,
+                matchedPayload: [nestedDecl],
+                inheritedPayload: [],
+            });
+            const missingDeclCSSRule = findNestedCSSSelectorRule(matchedStyles.nodeStyles());
+            assert.exists(missingDeclCSSRule);
+            const parent = matchedStyles.findParentRule(missingDeclCSSRule, 0);
+            assert.isNull(parent);
         });
     });
 });

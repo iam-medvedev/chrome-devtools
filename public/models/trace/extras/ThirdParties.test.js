@@ -35,7 +35,7 @@ describeWithEnvironment('ThirdParties', function () {
                         'http://localhost:8080/styles.css',
                         'http://localhost:8080/blocking.js',
                         'http://localhost:8080/module.js',
-                    ]
+                    ],
                 ],
             ]);
         });

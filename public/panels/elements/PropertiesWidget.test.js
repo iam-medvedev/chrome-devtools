@@ -221,7 +221,7 @@ describeWithEnvironment('PropertiesWidget DEFAULT_VIEW', () => {
             onRegexToggled: function () {
                 throw new Error('Function not implemented.');
             },
-            isRegex: false
+            isRegex: false,
         }, {}, container);
         await UI.Widget.Widget.allUpdatesComplete;
         const tree = container.querySelector('devtools-tree');
@@ -240,7 +240,7 @@ describeWithEnvironment('PropertiesWidget DEFAULT_VIEW', () => {
             onRegexToggled: function () {
                 throw new Error('Function not implemented.');
             },
-            isRegex: false
+            isRegex: false,
         }, {}, container);
         await assertScreenshot('elements/properties_widget_no_filter.png');
     });
@@ -253,7 +253,7 @@ describeWithEnvironment('PropertiesWidget DEFAULT_VIEW', () => {
             onRegexToggled: function () {
                 throw new Error('Function not implemented.');
             },
-            isRegex: false
+            isRegex: false,
         }, {}, container);
         await UI.Widget.Widget.allUpdatesComplete;
         const tree = container.querySelector('devtools-tree');
@@ -273,7 +273,7 @@ describeWithEnvironment('PropertiesWidget DEFAULT_VIEW', () => {
             onRegexToggled: function () {
                 throw new Error('Function not implemented.');
             },
-            isRegex: false
+            isRegex: false,
         }, {}, container);
         await assertScreenshot('elements/properties_widget_partial_filter.png');
     });
@@ -286,7 +286,7 @@ describeWithEnvironment('PropertiesWidget DEFAULT_VIEW', () => {
             onRegexToggled: function () {
                 throw new Error('Function not implemented.');
             },
-            isRegex: false
+            isRegex: false,
         }, {}, container);
         await assertScreenshot('elements/properties_widget_no_matches.png');
     });

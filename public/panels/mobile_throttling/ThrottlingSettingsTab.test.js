@@ -18,7 +18,7 @@ function makeFakeNetworkConditions(index) {
         upload: -1,
         latency: 0,
         packetLoss: 0,
-        packetReordering: false
+        packetReordering: false,
     };
 }
 describe('ThrottlingSettingsTab', () => {

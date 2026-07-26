@@ -5,7 +5,7 @@ import * as Platform from '../platform/platform.js';
 import { CSSMetadata, cssMetadata } from './CSSMetadata.js';
 import { CSSProperty } from './CSSProperty.js';
 import * as PropertyParser from './CSSPropertyParser.js';
-import { AnchorFunctionMatcher, AngleMatcher, AttributeMatcher, AutoBaseMatcher, BaseVariableMatcher, BezierMatcher, BinOpMatcher, ColorMatcher, ColorMixMatcher, ContrastColorMatcher, CustomFunctionMatcher, defaultValueForCSSType, EnvFunctionMatcher, FlexGridGridLanesMatcher, GridTemplateMatcher, LengthMatcher, LightDarkColorMatcher, LinearGradientMatcher, LinkableNameMatcher, localEvalCSS, MathFunctionMatcher, PositionAnchorMatcher, PositionTryMatcher, RelativeColorChannelMatcher, ShadowMatcher, StringMatcher, URLMatcher, VariableMatcher, VariableNameMatcher } from './CSSPropertyParserMatchers.js';
+import { AnchorFunctionMatcher, AngleMatcher, AttributeMatcher, AutoBaseMatcher, BaseVariableMatcher, BezierMatcher, BinOpMatcher, ColorMatcher, ColorMixMatcher, ContrastColorMatcher, CustomFunctionMatcher, defaultValueForCSSType, EnvFunctionMatcher, FlexGridGridLanesMatcher, GridTemplateMatcher, LengthMatcher, LightDarkColorMatcher, LinearGradientMatcher, LinkableNameMatcher, localEvalCSS, MathFunctionMatcher, PositionAnchorMatcher, PositionTryMatcher, RelativeColorChannelMatcher, ShadowMatcher, StringMatcher, URLMatcher, VariableMatcher, VariableNameMatcher, } from './CSSPropertyParserMatchers.js';
 import { CSSAtRule, CSSFunctionRule, CSSKeyframeRule, CSSKeyframesRule, CSSPositionTryRule, CSSPropertyRule, CSSStyleRule, } from './CSSRule.js';
 import { CSSStyleDeclaration, Type } from './CSSStyleDeclaration.js';
 function containsStyle(styles, query) {
@@ -313,7 +313,7 @@ export class CSSMatchedStyles {
             nodeStyles.push(style);
         }
         // Inline style takes precedence over regular and inherited rules.
-        if (inlinePayload && this.#node.nodeType() === Node.ELEMENT_NODE) {
+        if (inlinePayload && this.#node.nodeType() === 1 /* NodeType.ELEMENT_NODE */) {
             const style = new CSSStyleDeclaration(this.#cssModel, null, inlinePayload, Type.Inline);
             this.#nodeForStyle.set(style, this.#node);
             nodeStyles.push(style);
@@ -671,6 +671,72 @@ export class CSSMatchedStyles {
     customHighlightPseudoNames() {
         Platform.assertNotNullOrUndefined(this.#customHighlightPseudoDOMCascades);
         return new Set(this.#customHighlightPseudoDOMCascades.keys());
+    }
+    /**
+     * Looks for a rule with the same selector chain as a specific parent rule of the current one.
+     * This finds a rule with the same guaranteed specificity, not necessarily THE parent rule,
+     * as the same selector string can be used on multiple rules in the same scope, in the same
+     * or different stylesheet.
+     *
+     * @param rule The (nested) rule whose parent rule selector should be matched
+     * @param nestingIndex Nesting depth of the parent selector to be matched, with 0 meaning direct parent, 1 grandparent rule and so on
+     * @returns A rule with the same selector chain and specificity as selected parent rule, if found. `null` otherwise
+     */
+    findParentRule(rule, nestingIndex) {
+        const selectorText = rule.nestingSelectors?.[nestingIndex];
+        if (!selectorText) {
+            return null;
+        }
+        const nestingSelectors = rule.nestingSelectors?.slice(nestingIndex + 1) ?? [];
+        const matchCascade = (cascade) => {
+            for (const style of cascade.styles()) {
+                const parentRule = style.parentRule;
+                if (!(parentRule instanceof CSSStyleRule)) {
+                    continue;
+                }
+                if (parentRule.selectorText() !== selectorText) {
+                    continue;
+                }
+                const ruleNestingSelectors = parentRule.nestingSelectors ?? [];
+                if (ruleNestingSelectors.length !== nestingSelectors.length) {
+                    continue;
+                }
+                let matchesChain = true;
+                for (let i = 0; i < nestingSelectors.length; i++) {
+                    if (ruleNestingSelectors[i] !== nestingSelectors[i]) {
+                        matchesChain = false;
+                        break;
+                    }
+                }
+                if (matchesChain) {
+                    return parentRule;
+                }
+            }
+            return null;
+        };
+        if (this.#mainDOMCascade) {
+            const match = matchCascade(this.#mainDOMCascade);
+            if (match) {
+                return match;
+            }
+        }
+        if (this.#pseudoDOMCascades) {
+            for (const cascade of this.#pseudoDOMCascades.values()) {
+                const match = matchCascade(cascade);
+                if (match) {
+                    return match;
+                }
+            }
+        }
+        if (this.#customHighlightPseudoDOMCascades) {
+            for (const cascade of this.#customHighlightPseudoDOMCascades.values()) {
+                const match = matchCascade(cascade);
+                if (match) {
+                    return match;
+                }
+            }
+        }
+        return null;
     }
     nodeForStyle(style) {
         return this.#addedStyles.get(style) || this.#nodeForStyle.get(style) || null;
@@ -1238,7 +1304,7 @@ class DOMInheritanceCascade {
                     return defaultValueForCSSType(match.type);
                 }
                 return evaluateFallback(match.fallback, match.matching);
-            })
+            }),
         ]);
         const decl = PropertyParser.ASTUtils.siblings(PropertyParser.ASTUtils.declValue(matching.ast.tree));
         const declText = decl.length > 0 ? matching.getComputedTextRange(decl[0], decl[decl.length - 1]) : '';
@@ -1281,7 +1347,7 @@ class DOMInheritanceCascade {
                 // We've seen the variable before, so we can look up the text directly.
                 return {
                     value: computedCSSVariablesMap.get(innerNodeCascade)?.get(recordName)?.value ?? null,
-                    mayFallback: false
+                    mayFallback: false,
                 };
             }
             const value = func(innerNodeCascade);

@@ -181,7 +181,15 @@ const DEFAULT_VIEW = (input, output, target) => {
             </tr>
             ${input.adFrames.map(frame => html `
               <tr>
-                <td title=${frame.elementId}>${frame.elementId}</td>
+                <td title=${frame.elementId}>
+                  ${frame.elementId
+        ? html `
+                        <button class="text-button link-style devtools-link" @click=${frame.revealFrame}>
+                          ${frame.elementId}
+                        </button>
+                      `
+        : Lit.nothing}
+                </td>
                 <td title=${frame.initialOrigin}>${frame.initialOrigin}</td>
                 <td title=${frame.cpuTime}>${frame.cpuTime}</td>
                 <td title=${frame.networkBytes}>${frame.networkBytes}</td>
@@ -317,11 +325,7 @@ export class AdsView extends UI.Widget.Widget {
         if (!frame) {
             return undefined;
         }
-        const domModel = frame.resourceTreeModel().target().model(SDK.DOMModel.DOMModel);
-        if (!domModel) {
-            return undefined;
-        }
-        const deferredNode = await domModel.getOwnerNodeForFrame(frameId);
+        const deferredNode = await frame.getOwnerDeferredDOMNode();
         if (deferredNode) {
             const node = await deferredNode.resolvePromise();
             return node?.getAttribute('id') || null;
@@ -352,11 +356,20 @@ export class AdsView extends UI.Widget.Widget {
             const elementIdText = this.#adIframeElementIds.has(frameId) ?
                 (this.#adIframeElementIds.get(frameId) || i18nString(UIStrings.unnamed)) :
                 '';
+            const revealFrame = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const frameToReveal = SDK.FrameManager.FrameManager.instance().getFrame(frameId);
+                if (frameToReveal) {
+                    void Common.Revealer.reveal(frameToReveal);
+                }
+            };
             adFramesArray.push({
                 elementId: elementIdText,
                 initialOrigin: frame.initialOrigin || '',
                 cpuTime: formatCpu(frame.cpuTime),
                 networkBytes: formatNetwork(frame.networkBytes),
+                revealFrame,
             });
         }
         const viewInput = {

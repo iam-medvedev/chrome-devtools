@@ -24,7 +24,7 @@ describeWithEnvironment('AISettingsTab', () => {
             },
             devToolsAiCodeCompletion: {
                 enabled: true,
-            }
+            },
         });
         aidaAccessStub = sinon.stub(Host.AidaClient.AidaClient, 'checkAccessPreconditions');
         aidaAccessStub.returns(Promise.resolve("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */));
@@ -164,8 +164,7 @@ describeWithEnvironment('AISettingsTab', () => {
         aidaAccessStub.returns(Promise.resolve("no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */));
         const { view } = await setupWidget();
         assert.deepEqual(view.input.disabledReasons, [notLoggedInExplainer]);
-        aidaAccessStub.returns(Promise.resolve("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */));
-        Host.AidaClient.HostConfigTracker.instance().dispatchEventToListeners("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */);
+        Host.AidaClient.HostConfigTracker.instance().dispatchEventToListeners("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */, "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
         await view.nextInput;
         assert.deepEqual(view.input.disabledReasons, []);
     });

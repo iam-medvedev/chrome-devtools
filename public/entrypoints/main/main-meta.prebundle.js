@@ -187,11 +187,6 @@ const UIStrings = {
      */
     saveSettings: 'Save `DevTools` settings to your `Google` account',
     /**
-     * @description Label for a checkbox in the settings UI. Allows developers to opt-in/opt-out
-     * of receiving Google Developer Program (GDP) badges based on their activity in Chrome DevTools.
-     */
-    earnBadges: 'Earn badges',
-    /**
      * @description A command available in the command menu to perform searches, for example in the
      * elements panel, as user types, rather than only when they press Enter.
      */
@@ -284,7 +279,7 @@ UI.ActionRegistration.registerActionExtension({
             shortcut: 'Shift+Esc',
         },
     ],
-    condition: config => Boolean(config?.devToolsFlexibleLayout?.verticalDrawerEnabled)
+    condition: config => Boolean(config?.devToolsFlexibleLayout?.verticalDrawerEnabled),
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'main.next-tab',
@@ -757,15 +752,6 @@ Common.Settings.registerSettingExtension({
     settingName: 'sync-preferences',
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     title: i18nLazyString(UIStrings.saveSettings),
-    defaultValue: false,
-    reloadRequired: true,
-});
-Common.Settings.registerSettingExtension({
-    category: "ACCOUNT" /* Common.Settings.SettingCategory.ACCOUNT */,
-    settingName: 'receive-gdp-badges',
-    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
-    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
-    title: i18nLazyString(UIStrings.earnBadges),
     defaultValue: false,
     reloadRequired: true,
 });

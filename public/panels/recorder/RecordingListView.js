@@ -34,36 +34,6 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/recorder/RecordingListView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export class CreateRecordingEvent extends Event {
-    static eventName = 'createrecording';
-    constructor() {
-        super(CreateRecordingEvent.eventName, { composed: true, bubbles: true });
-    }
-}
-export class DeleteRecordingEvent extends Event {
-    storageName;
-    static eventName = 'deleterecording';
-    constructor(storageName) {
-        super(DeleteRecordingEvent.eventName, { composed: true, bubbles: true });
-        this.storageName = storageName;
-    }
-}
-export class OpenRecordingEvent extends Event {
-    storageName;
-    static eventName = 'openrecording';
-    constructor(storageName) {
-        super(OpenRecordingEvent.eventName, { composed: true, bubbles: true });
-        this.storageName = storageName;
-    }
-}
-export class PlayRecordingEvent extends Event {
-    storageName;
-    static eventName = 'playrecording';
-    constructor(storageName) {
-        super(PlayRecordingEvent.eventName, { composed: true, bubbles: true });
-        this.storageName = storageName;
-    }
-}
 export const DEFAULT_VIEW = (input, _output, target) => {
     const { recordings, replayAllowed, onCreateClick, onDeleteClick, onOpenClick, onPlayRecordingClick, onKeyDown, } = input;
     // clang-format off
@@ -138,6 +108,10 @@ export class RecordingListView extends UI.Widget.Widget {
     #recordings = [];
     #replayAllowed = true;
     #view;
+    onCreateRecording;
+    onDeleteRecording;
+    onOpenRecording;
+    onPlayRecording;
     constructor(element, view) {
         super(element, { useShadowDom: true });
         this.#view = view || DEFAULT_VIEW;
@@ -151,19 +125,19 @@ export class RecordingListView extends UI.Widget.Widget {
         this.performUpdate();
     }
     #onCreateClick() {
-        this.contentElement.dispatchEvent(new CreateRecordingEvent());
+        this.onCreateRecording?.();
     }
     #onDeleteClick(storageName, event) {
         event.stopPropagation();
-        this.contentElement.dispatchEvent(new DeleteRecordingEvent(storageName));
+        this.onDeleteRecording?.(storageName);
     }
     #onOpenClick(storageName, event) {
         event.stopPropagation();
-        this.contentElement.dispatchEvent(new OpenRecordingEvent(storageName));
+        this.onOpenRecording?.(storageName);
     }
     #onPlayRecordingClick(storageName, event) {
         event.stopPropagation();
-        this.contentElement.dispatchEvent(new PlayRecordingEvent(storageName));
+        this.onPlayRecording?.(storageName);
     }
     #onKeyDown(storageName, event) {
         if (event.key !== 'Enter') {

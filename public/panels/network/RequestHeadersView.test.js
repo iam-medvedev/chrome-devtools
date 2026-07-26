@@ -168,7 +168,7 @@ describeWithEnvironment('RequestHeadersView', () => {
             },
             toggleShowRawRequestHeaders: function () {
                 throw new Error('Function not implemented.');
-            }
+            },
         }, {}, container);
         await UI.Widget.Widget.allUpdatesComplete;
         await RenderCoordinator.done();
@@ -185,7 +185,7 @@ describeWithEnvironment('RequestHeadersView', () => {
             },
             toggleShowRawRequestHeaders: function () {
                 throw new Error('Function not implemented.');
-            }
+            },
         }, {}, container);
         await UI.Widget.Widget.allUpdatesComplete;
         await RenderCoordinator.done();
@@ -211,7 +211,7 @@ describeWithEnvironment('RequestHeadersView', () => {
             },
             toggleShowRawRequestHeaders: function () {
                 throw new Error('Function not implemented.');
-            }
+            },
         }, {}, container);
         await UI.Widget.Widget.allUpdatesComplete;
         await RenderCoordinator.done();

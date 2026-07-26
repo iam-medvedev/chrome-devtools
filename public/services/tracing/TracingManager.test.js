@@ -23,9 +23,12 @@ const fakeEvents = [
 ];
 describeWithEnvironment('TracingManager', () => {
     let connection;
+    let lastStartRequest = null;
     beforeEach(() => {
+        lastStartRequest = null;
         connection = new MockCDPConnection();
-        connection.setSuccessHandler('Tracing.start', () => {
+        connection.setSuccessHandler('Tracing.start', request => {
+            lastStartRequest = request ?? {};
             return {};
         });
         connection.setSuccessHandler('Tracing.end', () => {
@@ -86,6 +89,24 @@ describeWithEnvironment('TracingManager', () => {
         assert.throws(() => {
             manager.stop();
         }, /Tracing is not started/);
+    });
+    it('does not forward screenshot params by default', async () => {
+        const target = createTarget({ connection });
+        const manager = new Tracing.TracingManager.TracingManager(target);
+        const client = new FakeClient();
+        await manager.start(client, 'devtools-timeline');
+        assert.isNotNull(lastStartRequest);
+        assert.isUndefined(lastStartRequest?.screenshotMaxSize);
+        assert.isUndefined(lastStartRequest?.screenshotMaxCount);
+    });
+    it('forwards screenshot params when provided', async () => {
+        const target = createTarget({ connection });
+        const manager = new Tracing.TracingManager.TracingManager(target);
+        const client = new FakeClient();
+        await manager.start(client, 'devtools-timeline', { screenshotMaxSize: 250, screenshotMaxCount: 1800 });
+        assert.isNotNull(lastStartRequest);
+        assert.strictEqual(lastStartRequest?.screenshotMaxSize, 250);
+        assert.strictEqual(lastStartRequest?.screenshotMaxCount, 1800);
     });
 });
 //# sourceMappingURL=TracingManager.test.js.map

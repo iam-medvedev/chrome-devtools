@@ -271,7 +271,7 @@ const UIStrings = {
     /**
      * @description Description text in the Application Panel describing a frame's resources
      */
-    resourceDescription: 'On this page you can view the frame’s resources.'
+    resourceDescription: 'On this page you can view the frame’s resources.',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/application/ApplicationPanelSidebar.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -539,7 +539,6 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
             SDK.TargetManager.TargetManager.instance())) {
             this.addCookieDocument(frame);
         }
-        this.cacheStorageListTreeElement.initialize();
         const backgroundServiceModel = this.target?.model(BackgroundServiceModel) || null;
         this.backgroundFetchTreeElement.initialize(backgroundServiceModel);
         this.backgroundSyncTreeElement.initialize(backgroundServiceModel);

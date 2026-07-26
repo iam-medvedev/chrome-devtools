@@ -5,7 +5,7 @@ import { assert } from 'chai';
 import { describeWithEnvironment, setupActionRegistry, } from '../../testing/EnvironmentHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Models from './models/models.js';
-import { RecorderPanel, StepView } from './recorder.js';
+import { RecorderPanel } from './recorder.js';
 describeWithEnvironment('RecorderPanel', () => {
     setupActionRegistry();
     function makeRecording() {
@@ -44,16 +44,15 @@ describeWithEnvironment('RecorderPanel', () => {
         });
     });
     describe('StepView', () => {
-        async function dispatchRecordingViewEvent(panel, event) {
+        async function triggerRecordingViewCallback(panel, callbackName, ...args) {
             const recordingViewWidgetElement = panel.contentElement?.querySelector('.recording-view');
             if (!recordingViewWidgetElement) {
                 throw new Error('Could not find RecordingView widget element');
             }
             const widget = UI.Widget.Widget.getOrCreateWidget(recordingViewWidgetElement);
             await widget.updateComplete;
-            const recordingView = widget.contentElement?.querySelector('.recording-view');
-            assert.isOk(recordingView);
-            recordingView?.dispatchEvent(event);
+            const callback = widget[callbackName];
+            callback?.(...args);
             await panel.updateComplete;
         }
         beforeEach(() => {
@@ -65,7 +64,7 @@ describeWithEnvironment('RecorderPanel', () => {
         it('should add a new step after a step', async () => {
             const recording = makeRecording();
             const panel = await setupPanel(recording);
-            await dispatchRecordingViewEvent(panel, new StepView.AddStep(recording.flow.steps[0], "after" /* StepView.AddStepPosition.AFTER */));
+            await triggerRecordingViewCallback(panel, 'onAddStep', recording.flow.steps[0], "after" /* StepView.AddStepPosition.AFTER */);
             const flow = panel.getUserFlow();
             assert.deepEqual(flow, {
                 title: 'test',
@@ -89,7 +88,7 @@ describeWithEnvironment('RecorderPanel', () => {
                 throw new Error('Panel is missing sections');
             }
             assert.lengthOf(sections, 1);
-            await dispatchRecordingViewEvent(panel, new StepView.AddStep(sections[0], "after" /* StepView.AddStepPosition.AFTER */));
+            await triggerRecordingViewCallback(panel, 'onAddStep', sections[0], "after" /* StepView.AddStepPosition.AFTER */);
             const flow = panel.getUserFlow();
             assert.deepEqual(flow, {
                 title: 'test',
@@ -108,7 +107,7 @@ describeWithEnvironment('RecorderPanel', () => {
         it('should add a new step before a step', async () => {
             const recording = makeRecording();
             const panel = await setupPanel(recording);
-            await dispatchRecordingViewEvent(panel, new StepView.AddStep(recording.flow.steps[0], "before" /* StepView.AddStepPosition.BEFORE */));
+            await triggerRecordingViewCallback(panel, 'onAddStep', recording.flow.steps[0], "before" /* StepView.AddStepPosition.BEFORE */);
             const flow = panel.getUserFlow();
             assert.deepEqual(flow, {
                 title: 'test',
@@ -127,7 +126,7 @@ describeWithEnvironment('RecorderPanel', () => {
         it('should delete a step', async () => {
             const recording = makeRecording();
             const panel = await setupPanel(recording);
-            await dispatchRecordingViewEvent(panel, new StepView.RemoveStep(recording.flow.steps[0]));
+            await triggerRecordingViewCallback(panel, 'onRemoveStep', recording.flow.steps[0]);
             const flow = panel.getUserFlow();
             assert.deepEqual(flow, { title: 'test', steps: [] });
         });
@@ -135,11 +134,11 @@ describeWithEnvironment('RecorderPanel', () => {
             const recording = makeRecording();
             const panel = await setupPanel(recording);
             const stepIndex = 3;
-            await dispatchRecordingViewEvent(panel, new StepView.AddBreakpointEvent(stepIndex));
+            await triggerRecordingViewCallback(panel, 'onAddBreakpoint', stepIndex);
             assert.deepEqual(panel.getStepBreakpointIndexesForTesting(), [
                 stepIndex,
             ]);
-            await dispatchRecordingViewEvent(panel, new StepView.AddStep(recording.flow.steps[0], "before" /* StepView.AddStepPosition.BEFORE */));
+            await triggerRecordingViewCallback(panel, 'onAddStep', recording.flow.steps[0], "before" /* StepView.AddStepPosition.BEFORE */);
             // Breakpoint index moves to the next index
             assert.deepEqual(panel.getStepBreakpointIndexesForTesting(), [
                 stepIndex + 1,
@@ -149,11 +148,11 @@ describeWithEnvironment('RecorderPanel', () => {
             const recording = makeRecording();
             const panel = await setupPanel(recording);
             const stepIndex = 3;
-            await dispatchRecordingViewEvent(panel, new StepView.AddBreakpointEvent(stepIndex));
+            await triggerRecordingViewCallback(panel, 'onAddBreakpoint', stepIndex);
             assert.deepEqual(panel.getStepBreakpointIndexesForTesting(), [
                 stepIndex,
             ]);
-            await dispatchRecordingViewEvent(panel, new StepView.RemoveStep(recording.flow.steps[0]));
+            await triggerRecordingViewCallback(panel, 'onRemoveStep', recording.flow.steps[0]);
             // Breakpoint index moves to the previous index
             assert.deepEqual(panel.getStepBreakpointIndexesForTesting(), [
                 stepIndex - 1,
@@ -163,11 +162,11 @@ describeWithEnvironment('RecorderPanel', () => {
             const recording = makeRecording();
             const panel = await setupPanel(recording);
             const stepIndex = 0;
-            await dispatchRecordingViewEvent(panel, new StepView.AddBreakpointEvent(stepIndex));
+            await triggerRecordingViewCallback(panel, 'onAddBreakpoint', stepIndex);
             assert.deepEqual(panel.getStepBreakpointIndexesForTesting(), [
                 stepIndex,
             ]);
-            await dispatchRecordingViewEvent(panel, new StepView.RemoveStep(recording.flow.steps[stepIndex]));
+            await triggerRecordingViewCallback(panel, 'onRemoveStep', recording.flow.steps[stepIndex]);
             // Breakpoint index is removed
             assert.deepEqual(panel.getStepBreakpointIndexesForTesting(), []);
         });
@@ -176,7 +175,7 @@ describeWithEnvironment('RecorderPanel', () => {
             const panel = await setupPanel(recording);
             const stepIndex = 1;
             assert.deepEqual(panel.getStepBreakpointIndexesForTesting(), []);
-            await dispatchRecordingViewEvent(panel, new StepView.AddBreakpointEvent(stepIndex));
+            await triggerRecordingViewCallback(panel, 'onAddBreakpoint', stepIndex);
             assert.deepEqual(panel.getStepBreakpointIndexesForTesting(), [
                 stepIndex,
             ]);
@@ -185,11 +184,11 @@ describeWithEnvironment('RecorderPanel', () => {
             const recording = makeRecording();
             const panel = await setupPanel(recording);
             const stepIndex = 1;
-            await dispatchRecordingViewEvent(panel, new StepView.AddBreakpointEvent(stepIndex));
+            await triggerRecordingViewCallback(panel, 'onAddBreakpoint', stepIndex);
             assert.deepEqual(panel.getStepBreakpointIndexesForTesting(), [
                 stepIndex,
             ]);
-            await dispatchRecordingViewEvent(panel, new StepView.RemoveBreakpointEvent(stepIndex));
+            await triggerRecordingViewCallback(panel, 'onRemoveBreakpoint', stepIndex);
             assert.deepEqual(panel.getStepBreakpointIndexesForTesting(), []);
         });
     });

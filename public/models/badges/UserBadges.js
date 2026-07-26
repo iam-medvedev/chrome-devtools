@@ -21,6 +21,7 @@ export class UserBadges extends Common.ObjectWrapper.ObjectWrapper {
     #starterBadgeDismissed;
     #settings;
     #gdpClient;
+    #inspectorFrontendHost;
     static BADGE_REGISTRY = [
         StarterBadge,
         SpeedsterBadge,
@@ -28,10 +29,11 @@ export class UserBadges extends Common.ObjectWrapper.ObjectWrapper {
         CodeWhispererBadge,
         AiExplorerBadge,
     ];
-    constructor(settings, gdpClient) {
+    constructor(settings, gdpClient, inspectorFrontendHost) {
         super();
         this.#settings = settings;
         this.#gdpClient = gdpClient;
+        this.#inspectorFrontendHost = inspectorFrontendHost;
         this.#receiveBadgesSetting = this.#settings.moduleSetting('receive-gdp-badges');
         if (!Host.GdpClient.isBadgesEnabled()) {
             this.#receiveBadgesSetting.set(false);
@@ -42,14 +44,16 @@ export class UserBadges extends Common.ObjectWrapper.ObjectWrapper {
         this.#starterBadgeLastSnoozedTimestamp = this.#settings.createSetting('starter-badge-last-snoozed-timestamp', 0, "Synced" /* Common.Settings.SettingStorageType.SYNCED */);
         this.#starterBadgeDismissed =
             this.#settings.createSetting('starter-badge-dismissed', false, "Synced" /* Common.Settings.SettingStorageType.SYNCED */);
-        this.#allBadges = UserBadges.BADGE_REGISTRY.map(badgeCtor => new badgeCtor({
+        const badgeContext = {
             onTriggerBadge: this.#onTriggerBadge.bind(this),
             badgeActionEventTarget: this.#badgeActionEventTarget,
-        }));
+            settings: this.#settings,
+        };
+        this.#allBadges = UserBadges.BADGE_REGISTRY.map(badgeCtor => new badgeCtor(badgeContext));
     }
     static instance({ forceNew } = { forceNew: false }) {
         if (!Root.DevToolsContext.globalInstance().has(UserBadges) || forceNew) {
-            Root.DevToolsContext.globalInstance().set(UserBadges, new UserBadges(Common.Settings.Settings.instance(), Host.GdpClient.GdpClient.instance()));
+            Root.DevToolsContext.globalInstance().set(UserBadges, new UserBadges(Common.Settings.Settings.instance(), Host.GdpClient.GdpClient.instance(), Host.InspectorFrontendHost.InspectorFrontendHostInstance));
         }
         return Root.DevToolsContext.globalInstance().get(UserBadges);
     }
@@ -134,7 +138,7 @@ export class UserBadges extends Common.ObjectWrapper.ObjectWrapper {
         return snoozeCount >= MAX_SNOOZE_COUNT || snoozedRecently;
     }
     async #reconcileBadges() {
-        const syncInfo = await new Promise(resolve => Host.InspectorFrontendHost.InspectorFrontendHostInstance.getSyncInformation(resolve));
+        const syncInfo = await new Promise(resolve => this.#inspectorFrontendHost.getSyncInformation(resolve));
         // If the user is not signed in, do not activate any badges.
         if (!syncInfo.accountEmail) {
             this.#deactivateAllBadges();

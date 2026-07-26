@@ -347,7 +347,7 @@ __export(ConsoleFilter_exports, {
   FilterType: () => FilterType
 });
 import * as SDK2 from "./../../core/sdk/sdk.js";
-import * as TextUtils from "./../../models/text_utils/text_utils.js";
+import * as TextUtils from "./../../core/text_utils/text_utils.js";
 var ConsoleFilter = class _ConsoleFilter {
   name;
   parsedFilters;
@@ -852,10 +852,10 @@ import * as Host from "./../../core/host/host.js";
 import * as i18n3 from "./../../core/i18n/i18n.js";
 import * as Platform2 from "./../../core/platform/platform.js";
 import * as SDK3 from "./../../core/sdk/sdk.js";
+import * as TextUtils3 from "./../../core/text_utils/text_utils.js";
 import * as AiAssistanceModel from "./../../models/ai_assistance/ai_assistance.js";
 import * as Bindings2 from "./../../models/bindings/bindings.js";
 import * as Logs from "./../../models/logs/logs.js";
-import * as TextUtils3 from "./../../models/text_utils/text_utils.js";
 import * as Workspace from "./../../models/workspace/workspace.js";
 import * as CodeHighlighter from "./../../ui/components/code_highlighter/code_highlighter.js";
 import * as Highlighting from "./../../ui/components/highlighting/highlighting.js";
@@ -3755,11 +3755,11 @@ __export(PromptBuilder_exports, {
   lineWhitespace: () => lineWhitespace
 });
 import * as SDK4 from "./../../core/sdk/sdk.js";
+import * as TextUtils5 from "./../../core/text_utils/text_utils.js";
 import * as AiAssistanceModel2 from "./../../models/ai_assistance/ai_assistance.js";
 import * as Bindings3 from "./../../models/bindings/bindings.js";
 import * as Formatter from "./../../models/formatter/formatter.js";
 import * as Logs2 from "./../../models/logs/logs.js";
-import * as TextUtils5 from "./../../models/text_utils/text_utils.js";
 import * as Components3 from "./../../ui/legacy/components/utils/utils.js";
 import * as UI4 from "./../../ui/legacy/legacy.js";
 var MAX_MESSAGE_SIZE = 1e3;
@@ -4344,12 +4344,14 @@ var ConsoleInsightTeaser = class extends UI5.Widget.Widget {
   #getOnboardingCompletedSetting() {
     return Common4.Settings.Settings.instance().createLocalSetting("console-insights-onboarding-finished", true);
   }
-  async #onAidaAvailabilityChange() {
-    const currentAidaAvailability = await Host2.AidaClient.AidaClient.checkAccessPreconditions();
-    if (currentAidaAvailability !== this.#aidaAvailability) {
-      this.#aidaAvailability = currentAidaAvailability;
+  #updateAidaAvailability(aidaAvailability) {
+    if (aidaAvailability !== this.#aidaAvailability) {
+      this.#aidaAvailability = aidaAvailability;
       this.requestUpdate();
     }
+  }
+  #onAidaAvailabilityChange(ev) {
+    this.#updateAidaAvailability(ev.data);
   }
   #executeConsoleInsightAction() {
     UI5.Context.Context.instance().setFlavor(ConsoleViewMessage, this.#consoleViewMessage);
@@ -4596,7 +4598,10 @@ var ConsoleInsightTeaser = class extends UI5.Widget.Widget {
   wasShown() {
     super.wasShown();
     Host2.AidaClient.HostConfigTracker.instance().addEventListener("aidaAvailabilityChanged", this.#boundOnAidaAvailabilityChange);
-    void this.#onAidaAvailabilityChange();
+    const initialAvailability = Host2.AidaClient.HostConfigTracker.instance().aidaAvailability;
+    if (initialAvailability !== void 0) {
+      this.#updateAidaAvailability(initialAvailability);
+    }
   }
   willHide() {
     super.willHide();
@@ -4752,7 +4757,7 @@ var UIStrings3 = {
    * @description Warning shown to users when pasting text/code into DevTools. IMPORTANT: keep double quotes around PH1 and do not use single quotes.
    * @example {allow pasting} PH1
    */
-  doNotPaste: "Don\u2019t paste code you don\u2019t understand or haven\u2019t reviewed yourself into DevTools. This could allow attackers to steal your identity or take control of your computer. Type \u201C{PH1}\u201D below to allow pasting.",
+  doNotPaste: 'Don\u2019t paste code you don\u2019t understand or haven\u2019t reviewed yourself into DevTools. This could allow attackers to steal your identity or take control of your computer. Type "{PH1}" below to allow pasting.',
   /**
    * @description Text a user needs to type in order to confirm that they are aware of the danger of pasting code into the DevTools Console.
    */
@@ -4761,7 +4766,7 @@ var UIStrings3 = {
    * @description Input box placeholder which instructs the user to type 'allow pasting' into the input box. IMPORTANT: keep double quotes around PH1 and do not use single quotes.
    * @example {allow pasting} PH1
    */
-  typeAllowPasting: "Type \u201C{PH1}\u201D"
+  typeAllowPasting: 'Type "{PH1}"'
 };
 var str_3 = i18n7.i18n.registerUIStrings("panels/console/ConsolePinPane.ts", UIStrings3);
 var i18nString3 = i18n7.i18n.getLocalizedString.bind(void 0, str_3);
@@ -6126,6 +6131,7 @@ import * as i18n13 from "./../../core/i18n/i18n.js";
 import * as Root4 from "./../../core/root/root.js";
 import * as SDK8 from "./../../core/sdk/sdk.js";
 import * as Badges from "./../../models/badges/badges.js";
+import * as Bindings5 from "./../../models/bindings/bindings.js";
 import * as Formatter2 from "./../../models/formatter/formatter.js";
 import * as SourceMapScopes from "./../../models/source_map_scopes/source_map_scopes.js";
 import * as CodeMirror2 from "./../../third_party/codemirror.next/codemirror.next.js";
@@ -6159,12 +6165,12 @@ import * as i18n11 from "./../../core/i18n/i18n.js";
 import * as Platform5 from "./../../core/platform/platform.js";
 import * as Root3 from "./../../core/root/root.js";
 import * as SDK7 from "./../../core/sdk/sdk.js";
+import * as TextUtils6 from "./../../core/text_utils/text_utils.js";
 import * as AiCodeCompletion from "./../../models/ai_code_completion/ai_code_completion.js";
 import * as AiCodeGeneration from "./../../models/ai_code_generation/ai_code_generation.js";
 import * as Bindings4 from "./../../models/bindings/bindings.js";
 import * as IssuesManager from "./../../models/issues_manager/issues_manager.js";
 import * as Logs3 from "./../../models/logs/logs.js";
-import * as TextUtils6 from "./../../models/text_utils/text_utils.js";
 import * as Workspace2 from "./../../models/workspace/workspace.js";
 import * as CodeHighlighter3 from "./../../ui/components/code_highlighter/code_highlighter.js";
 import * as Highlighting2 from "./../../ui/components/highlighting/highlighting.js";
@@ -6346,9 +6352,9 @@ var UIStrings5 = {
    */
   copyVisibleStyledSelection: "Copy visible styled selection",
   /**
-   * @description Text to replay an XHR request.
+   * @description Text to resend a network request.
    */
-  replayXhr: "Replay XHR",
+  resend: "Resend",
   /**
    * @description Text to indicate DevTools is writing to a file.
    */
@@ -7260,8 +7266,8 @@ var ConsoleView = class _ConsoleView extends UI9.Widget.VBox {
     }
     if (consoleMessage) {
       const request = Logs3.NetworkLog.NetworkLog.requestForConsoleMessage(consoleMessage);
-      if (request && SDK7.NetworkManager.NetworkManager.canReplayRequest(request)) {
-        contextMenu.debugSection().appendItem(i18nString5(UIStrings5.replayXhr), SDK7.NetworkManager.NetworkManager.replayRequest.bind(null, request), { jslogContext: "replay-xhr" });
+      if (request && SDK7.NetworkManager.NetworkManager.canResendRequest(request)) {
+        contextMenu.debugSection().appendItem(i18nString5(UIStrings5.resend), SDK7.NetworkManager.NetworkManager.replayRequest.bind(null, request), { jslogContext: "resend" });
       }
     }
     void contextMenu.show();
@@ -8021,7 +8027,7 @@ var UIStrings6 = {
    * @description Warning shown to users when pasting text into the DevTools Console. IMPORTANT: keep double quotes around PH1 and do not use single quotes.
    * @example {allow pasting} PH1
    */
-  selfXssWarning: "Warning: Don\u2019t paste code into the DevTools Console that you don\u2019t understand or haven\u2019t reviewed yourself. This could allow attackers to steal your identity or take control of your computer. Type \u201C{PH1}\u201D below and press Enter to allow pasting.",
+  selfXssWarning: 'Warning: Don\u2019t paste code into the DevTools Console that you don\u2019t understand or haven\u2019t reviewed yourself. This could allow attackers to steal your identity or take control of your computer. Type "{PH1}" below and press Enter to allow pasting.',
   /**
    * @description Text a user needs to type in order to confirm that they are aware of the danger of pasting code into the DevTools Console.
    */
@@ -8372,7 +8378,7 @@ var ConsolePrompt = class extends Common8.ObjectWrapper.eventMixin(UI11.Widget.W
   async evaluateCommandInConsole(executionContext, message, expression, useCommandLineAPI) {
     const callFrame = executionContext.debuggerModel.selectedCallFrame();
     if (callFrame?.script.isJavaScript()) {
-      const nameMap = await SourceMapScopes.NamesResolver.allVariablesInCallFrame(callFrame);
+      const nameMap = await SourceMapScopes.NamesResolver.allVariablesInCallFrame(callFrame, Bindings5.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance());
       expression = await this.substituteNames(expression, nameMap);
     }
     await executionContext.target().model(SDK8.ConsoleModel.ConsoleModel)?.evaluateCommandInConsole(executionContext, message, expression, useCommandLineAPI);

@@ -39,7 +39,7 @@ describeWithEnvironment('SourcesView', () => {
             targetManager,
             workspace,
             debuggerWorkspaceBinding,
-            settings: Common.Settings.Settings.instance()
+            settings: Common.Settings.Settings.instance(),
         });
         Persistence.Persistence.PersistenceImpl.instance({ forceNew: true, workspace, breakpointManager });
         Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance({ forceNew: true, workspace });
@@ -130,7 +130,7 @@ describeWithEnvironment('SourcesView', () => {
         const uiSourceCodeFrame = widget;
         // Only load the AiWarningInfobarPlugin
         sinon.stub(Sources.UISourceCodeFrame.UISourceCodeFrame, 'sourceFramePlugins').returns([
-            Sources.AiWarningInfobarPlugin.AiWarningInfobarPlugin
+            Sources.AiWarningInfobarPlugin.AiWarningInfobarPlugin,
         ]);
         uiSourceCodeFrame.wasShown();
         await contentLoadedPromise;
@@ -186,7 +186,7 @@ describeWithEnvironment('SourcesView', () => {
             targetManager,
             workspace,
             debuggerWorkspaceBinding,
-            settings: Common.Settings.Settings.instance()
+            settings: Common.Settings.Settings.instance(),
         });
         Persistence.Persistence.PersistenceImpl.instance({ forceNew: true, workspace, breakpointManager });
         Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance({ forceNew: true, workspace });

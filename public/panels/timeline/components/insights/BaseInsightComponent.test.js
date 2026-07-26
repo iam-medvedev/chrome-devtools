@@ -244,7 +244,7 @@ describeWithEnvironment('BaseInsightComponent', () => {
                 },
                 devToolsAiAssistancePerformanceAgent: {
                     enabled: true,
-                }
+                },
             });
             const component = await renderComponent({ insightHasAISupport: true });
             assert.isOk(component.element.shadowRoot);
@@ -255,7 +255,7 @@ describeWithEnvironment('BaseInsightComponent', () => {
             updateHostConfig({
                 devToolsAiAssistancePerformanceAgent: {
                     enabled: true,
-                }
+                },
             });
             const component = await renderComponent({ insightHasAISupport: true });
             assert.isOk(component.element.shadowRoot);
@@ -269,7 +269,7 @@ describeWithEnvironment('BaseInsightComponent', () => {
                 },
                 devToolsAiAssistancePerformanceAgent: {
                     enabled: true,
-                }
+                },
             });
             const component = await renderComponent({ insightHasAISupport: true });
             assert.isOk(component.element.shadowRoot);
@@ -284,7 +284,7 @@ describeWithEnvironment('BaseInsightComponent', () => {
                 },
                 aidaAvailability: {
                     enterprisePolicyValue: Root.Runtime.GenAiEnterprisePolicyValue.DISABLE,
-                }
+                },
             });
             const component = await renderComponent({ insightHasAISupport: true });
             assert.isOk(component.element.shadowRoot);
@@ -295,7 +295,7 @@ describeWithEnvironment('BaseInsightComponent', () => {
             updateHostConfig({
                 devToolsAiAssistancePerformanceAgent: {
                     enabled: true,
-                }
+                },
             });
             const component = await renderComponent({ insightHasAISupport: false });
             assert.isOk(component.element.shadowRoot);
@@ -311,7 +311,7 @@ describeWithEnvironment('BaseInsightComponent', () => {
                 },
                 devToolsAiAssistancePerformanceAgent: {
                     enabled: true,
-                }
+                },
             });
             const component = await renderComponent({ insightHasAISupport: true });
             component.agentFocus = focus;
@@ -358,7 +358,7 @@ describeWithEnvironment('BaseInsightComponent', () => {
             updateHostConfig({
                 devToolsAiAssistancePerformanceAgent: {
                     enabled: false,
-                }
+                },
             });
             const component = await renderComponent({ insightHasAISupport: true }); // The Insight supports it, but the feature is not enabled
             assert.isOk(component.element.shadowRoot);

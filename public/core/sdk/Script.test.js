@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import sinon from 'sinon';
-import * as TextUtils from '../../models/text_utils/text_utils.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import { TestUniverse } from '../../testing/TestUniverse.js';
+import * as TextUtils from '../text_utils/text_utils.js';
 import * as SDK from './sdk.js';
 describeWithEnvironment('Script', () => {
     let universe;

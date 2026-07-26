@@ -8,7 +8,7 @@ import type * as Converters from './converters/converters.js';
 import type * as Extensions from './extensions/extensions.js';
 import * as Models from './models/models.js';
 import { PlayRecordingSpeed } from './models/RecordingPlayer.js';
-import { type CopyStepEvent, State } from './StepView.js';
+import { type AddStepPosition, State } from './StepView.js';
 declare global {
     interface HTMLElementTagNameMap {
         'devtools-recording-view': RecordingView;
@@ -59,7 +59,7 @@ interface ViewInput {
     onMeasurePerformanceClick: (event: Event) => void;
     onTogglePlaying: (speed: PlayRecordingSpeed, extension?: Extensions.ExtensionManager.Extension) => void;
     onCodeFormatChange: (event: Menus.SelectMenu.SelectMenuItemSelectedEvent) => void;
-    onCopyStep: (event: CopyStepEvent) => void;
+    onCopyStep: (step: Models.Schema.Step) => void;
     onEditTitleButtonClick: (event: Event) => void;
     onNetworkConditionsChange: (event: Event) => void;
     onReplaySettingsKeydown: (event: Event) => void;
@@ -69,6 +69,12 @@ interface ViewInput {
     onTimeoutInput: (event: Event) => void;
     onTitleBlur: (event: Event) => void;
     onTitleInputKeyDown: (event: KeyboardEvent) => void;
+    onStepChanged?: (currentStep: Models.Schema.Step, newStep: Models.Schema.Step) => void;
+    onAddStep?: (stepOrSection: Models.Schema.Step | Models.Section.Section, position: AddStepPosition) => void;
+    onRemoveStep?: (step: Models.Schema.Step) => void;
+    onAddBreakpoint?: (index: number) => void;
+    onRemoveBreakpoint?: (index: number) => void;
+    onAttributeRequested?: (send: (attribute?: string) => void) => void;
     onToggleReplaySettings: (event: Event) => void;
     onWrapperClick: () => void;
     showCodeToggle: () => void;
@@ -93,13 +99,19 @@ export declare class RecordingView extends UI.Widget.Widget {
     extensionConverters: readonly Converters.Converter.Converter[];
     replayExtensions?: Extensions.ExtensionManager.Extension[];
     extensionDescriptor?: PublicExtensions.RecorderPluginManager.ViewDescriptor;
-    addAssertion?: () => void;
-    abortReplay?: () => void;
-    recordingFinished?: () => void;
-    playRecording?: (event: PlayRecordingEvent) => void;
-    networkConditionsChanged?: (data?: SDK.NetworkManager.Conditions) => void;
-    timeoutChanged?: (timeout?: number) => void;
-    titleChanged?: (title: string) => void;
+    onPlayRecording?: (detail: PlayRecordingEvent) => void;
+    onNetworkConditionsChanged?: (conditions: SDK.NetworkManager.Conditions | undefined) => void;
+    onTimeoutChanged?: (timeout: number) => void;
+    onTitleChanged?: (title: string) => void;
+    onAddAssertion?: () => void;
+    onRecordingFinished?: () => void;
+    onAbortReplay?: () => void;
+    onStepChanged?: (currentStep: Models.Schema.Step, newStep: Models.Schema.Step) => void;
+    onAddStep?: (stepOrSection: Models.Schema.Step | Models.Section.Section, position: AddStepPosition) => void;
+    onRemoveStep?: (step: Models.Schema.Step) => void;
+    onAddBreakpoint?: (index: number) => void;
+    onRemoveBreakpoint?: (index: number) => void;
+    onAttributeRequested?: (send: (attribute?: string) => void) => void;
     get recorderSettings(): Models.RecorderSettings.RecorderSettings | undefined;
     set recorderSettings(settings: Models.RecorderSettings.RecorderSettings | undefined);
     get builtInConverters(): readonly Converters.Converter.Converter[];

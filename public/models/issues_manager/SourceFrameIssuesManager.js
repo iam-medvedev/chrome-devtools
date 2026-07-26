@@ -11,9 +11,12 @@ import { PropertyRuleIssue } from './PropertyRuleIssue.js';
 import { lateImportStylesheetLoadingCode } from './StylesheetLoadingIssue.js';
 export class SourceFrameIssuesManager {
     issuesManager;
-    #sourceFrameMessageManager = new Bindings.PresentationConsoleMessageHelper.PresentationSourceFrameMessageManager();
-    constructor(issuesManager) {
+    #sourceFrameMessageManager;
+    constructor(issuesManager, targetManager, workspace, debuggerWorkspaceBinding, cssWorkspaceBinding) {
         this.issuesManager = issuesManager;
+        this.#sourceFrameMessageManager =
+            new Bindings.PresentationConsoleMessageHelper.PresentationSourceFrameMessageManager(targetManager, workspace, debuggerWorkspaceBinding, cssWorkspaceBinding);
+        this.#sourceFrameMessageManager.enable();
         this.issuesManager.addEventListener("IssueAdded" /* Events.ISSUE_ADDED */, this.#onIssueAdded, this);
         this.issuesManager.addEventListener("FullUpdateRequired" /* Events.FULL_UPDATE_REQUIRED */, this.#onFullUpdateRequired, this);
     }

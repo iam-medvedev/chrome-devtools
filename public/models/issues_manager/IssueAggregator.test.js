@@ -316,7 +316,7 @@ describe('IssueAggregator', () => {
             getTestCookieIssue("WarnDeprecationTrialMetadata" /* Protocol.Audits.CookieWarningReason.WarnDeprecationTrialMetadata */),
             getTestCookieIssue("WarnThirdPartyCookieHeuristic" /* Protocol.Audits.CookieWarningReason.WarnThirdPartyCookieHeuristic */),
             getTestCookieIssue("WarnThirdPartyPhaseout" /* Protocol.Audits.CookieWarningReason.WarnThirdPartyPhaseout */),
-            getTestCookieIssue(undefined, "ExcludeThirdPartyPhaseout" /* Protocol.Audits.CookieExclusionReason.ExcludeThirdPartyPhaseout */)
+            getTestCookieIssue(undefined, "ExcludeThirdPartyPhaseout" /* Protocol.Audits.CookieExclusionReason.ExcludeThirdPartyPhaseout */),
         ];
         for (const issue of issues) {
             issuesManager.addIssue(issue);

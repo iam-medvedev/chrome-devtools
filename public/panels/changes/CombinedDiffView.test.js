@@ -40,7 +40,7 @@ function createWorkspaceDiff({ workspace }) {
     });
     Persistence.Persistence.PersistenceImpl.instance({ forceNew: true, workspace, breakpointManager });
     Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance({ forceNew: true, workspace });
-    return new WorkspaceDiff.WorkspaceDiff.WorkspaceDiffImpl(workspace);
+    return new WorkspaceDiff.WorkspaceDiff.WorkspaceDiffImpl(workspace, Persistence.Persistence.PersistenceImpl.instance(), Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance(), Common.Settings.Settings.instance());
 }
 async function createCombinedDiffView({ workspaceDiff }) {
     const view = createViewFunctionStub(CombinedDiffView.CombinedDiffView);
@@ -91,7 +91,7 @@ describeWithEnvironment('CombinedDiffView', () => {
                 content: ORIGINAL_CONTENT,
                 autoMapping: true,
                 mimeType: 'text/javascript',
-                fileSystemPath: 'file:///workspace'
+                fileSystemPath: 'file:///workspace',
             });
             const { uiSourceCode: contentProviderUiSourceCode } = createContentProviderUISourceCode({
                 url: URL,
@@ -122,7 +122,7 @@ describeWithEnvironment('CombinedDiffView', () => {
                 content: ORIGINAL_CONTENT,
                 autoMapping: true,
                 mimeType: 'text/css',
-                fileSystemPath: ''
+                fileSystemPath: '',
             });
             const { widget, view } = await createCombinedDiffView({ workspaceDiff });
             widget.ignoredUrls = ['inspector://'];

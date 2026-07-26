@@ -105,6 +105,23 @@ describe('Button', () => {
         button.title = 'Custom2';
         assert.strictEqual(innerButton.title, 'Custom2');
     });
+    it('sets aria-expanded on the internal button', () => {
+        const button = renderButton({
+            variant: "primary" /* Buttons.Button.Variant.PRIMARY */,
+            accessibleExpanded: false,
+        });
+        const innerButton = button.shadowRoot?.querySelector('button');
+        assert.isOk(innerButton);
+        assert.strictEqual(innerButton.getAttribute('aria-expanded'), 'false');
+        button.accessibleExpanded = true;
+        assert.strictEqual(innerButton.getAttribute('aria-expanded'), 'true');
+    });
+    it('does not set aria-expanded on the internal button when accessibleExpanded is not provided', () => {
+        const button = renderButton();
+        const innerButton = button.shadowRoot?.querySelector('button');
+        assert.isOk(innerButton);
+        assert.isNull(innerButton.getAttribute('aria-expanded'));
+    });
     it('gets the text-with-icon class set for the inner button if text and icon is provided', () => {
         const button = renderButton({
             variant: "primary" /* Buttons.Button.Variant.PRIMARY */,

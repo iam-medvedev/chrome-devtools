@@ -222,7 +222,7 @@ export class StorageMetadataView extends LegacyWrapper.LegacyWrapper.WrappableCo
         @click=${revealBucket}
         title=${name}
         jslog=${VisualLogging.action('storage-bucket').track({
-                click: true
+                click: true,
             })}
       >${name}</devtools-link>`;
         };

@@ -50,7 +50,7 @@ describeWithEnvironment('Export Trace Options ', () => {
     it('should show include annotations checkbox only when annotations are present', async () => {
         const component = await renderExportTraceOptionsDialog();
         component.updateContentVisibility({
-            annotationsExist: false
+            annotationsExist: false,
         });
         assert.isNotNull(component.shadowRoot);
         await waitFor('devtools-button-dialog', component.shadowRoot);

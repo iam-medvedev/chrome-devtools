@@ -12,6 +12,7 @@ __export(CompilerScriptMapping_exports, {
 import * as Common5 from "./../../core/common/common.js";
 import * as Platform2 from "./../../core/platform/platform.js";
 import * as SDK3 from "./../../core/sdk/sdk.js";
+import * as TextUtils2 from "./../../core/text_utils/text_utils.js";
 
 // gen/front_end/models/stack_trace/stack_trace_impl.js
 import * as Common from "./../../core/common/common.js";
@@ -773,7 +774,6 @@ function parseOrScriptMatch(debuggerModel, url) {
 SDK.SDKModel.SDKModel.register(StackTraceModel, { capabilities: 0, autostart: false });
 
 // gen/front_end/models/bindings/CompilerScriptMapping.js
-import * as TextUtils2 from "./../text_utils/text_utils.js";
 import * as Workspace3 from "./../workspace/workspace.js";
 
 // gen/front_end/models/bindings/ContentProviderBasedProject.js
@@ -783,11 +783,11 @@ __export(ContentProviderBasedProject_exports, {
 });
 import * as i18n from "./../../core/i18n/i18n.js";
 import * as Platform from "./../../core/platform/platform.js";
-import * as TextUtils from "./../text_utils/text_utils.js";
+import * as TextUtils from "./../../core/text_utils/text_utils.js";
 import * as Workspace from "./../workspace/workspace.js";
 var UIStrings = {
   /**
-   * @description Error message that is displayed in the Sources panel when can't be loaded.
+   * @description Error message displayed in the Sources panel when a file can't be loaded.
    */
   unknownErrorLoadingFile: "Unknown error loading file"
 };
@@ -1548,7 +1548,7 @@ __export(SASSSourceMapping_exports, {
 });
 import * as Common6 from "./../../core/common/common.js";
 import * as SDK4 from "./../../core/sdk/sdk.js";
-import * as TextUtils3 from "./../text_utils/text_utils.js";
+import * as TextUtils3 from "./../../core/text_utils/text_utils.js";
 import * as Workspace5 from "./../workspace/workspace.js";
 var SASSSourceMapping = class {
   #sourceMapManager;
@@ -1732,7 +1732,7 @@ __export(StylesSourceMapping_exports, {
 });
 import * as Common8 from "./../../core/common/common.js";
 import * as SDK6 from "./../../core/sdk/sdk.js";
-import * as TextUtils4 from "./../text_utils/text_utils.js";
+import * as TextUtils4 from "./../../core/text_utils/text_utils.js";
 import * as Workspace9 from "./../workspace/workspace.js";
 
 // gen/front_end/models/bindings/ResourceUtils.js
@@ -2094,7 +2094,7 @@ var CSSWorkspaceBinding = class _CSSWorkspaceBinding {
   #liveLocationPromises;
   constructor(resourceMapping, targetManager) {
     this.#resourceMapping = resourceMapping;
-    this.#resourceMapping.cssWorkspaceBinding = this;
+    this.#resourceMapping.cssLocationUpdater = this;
     this.#modelToInfo = /* @__PURE__ */ new Map();
     targetManager.observeModels(SDK7.CSSModel.CSSModel, this);
     this.#liveLocationPromises = /* @__PURE__ */ new Set();
@@ -2336,44 +2336,43 @@ import * as Common10 from "./../../core/common/common.js";
 import * as i18n3 from "./../../core/i18n/i18n.js";
 import { assertNotNullOrUndefined } from "./../../core/platform/platform.js";
 import * as SDK8 from "./../../core/sdk/sdk.js";
+import * as TextUtils5 from "./../../core/text_utils/text_utils.js";
 import * as StackTrace2 from "./../stack_trace/stack_trace.js";
-import * as TextUtils5 from "./../text_utils/text_utils.js";
 import * as Workspace11 from "./../workspace/workspace.js";
 var UIStrings2 = {
   /**
-   * @description Error message that is displayed in the Console when language #plugins report errors
+   * @description Error message displayed in the Console panel when language plugins report errors.
    * @example {File not found} PH1
    */
   errorInDebuggerLanguagePlugin: "Error in debugger language plugin: {PH1}",
   /**
-   * @description Status message that is shown in the Console when debugging information is being
-   *loaded. The 2nd and 3rd placeholders are URLs.
+   * @description Status message shown in the Console panel when debugging information is being loaded. PH2 and PH3 are URLs.
    * @example {C/C++ DevTools Support (DWARF)} PH1
    * @example {http://web.dev/file.wasm} PH2
    * @example {http://web.dev/file.wasm.debug.wasm} PH3
    */
   loadingDebugSymbolsForVia: "[{PH1}] Loading debug symbols for {PH2} (via {PH3})\u2026",
   /**
-   * @description Status message that is shown in the Console when debugging information is being loaded
+   * @description Status message shown in the Console panel when debugging information is being loaded.
    * @example {C/C++ DevTools Support (DWARF)} PH1
    * @example {http://web.dev/file.wasm} PH2
    */
   loadingDebugSymbolsFor: "[{PH1}] Loading debug symbols for {PH2}\u2026",
   /**
-   * @description Warning message that is displayed in the Console when debugging information was loaded, but no source files were found
+   * @description Warning message displayed in the Console panel when debugging information was loaded, but no source files were found.
    * @example {C/C++ DevTools Support (DWARF)} PH1
    * @example {http://web.dev/file.wasm} PH2
    */
   loadedDebugSymbolsForButDidnt: "[{PH1}] Loaded debug symbols for {PH2}, but didn\u2019t find any source files",
   /**
-   * @description Status message that is shown in the Console when debugging information is successfully loaded
+   * @description Status message shown in the Console panel when debugging information is successfully loaded.
    * @example {C/C++ DevTools Support (DWARF)} PH1
    * @example {http://web.dev/file.wasm} PH2
    * @example {42} PH3
    */
   loadedDebugSymbolsForFound: "[{PH1}] Loaded debug symbols for {PH2}, found {PH3} source file(s)",
   /**
-   * @description Error message that is displayed in the Console when debugging information cannot be loaded
+   * @description Error message displayed in the Console panel when debugging information cannot be loaded.
    * @example {C/C++ DevTools Support (DWARF)} PH1
    * @example {http://web.dev/file.wasm} PH2
    * @example {File not found} PH3
@@ -3413,19 +3412,17 @@ import * as i18n5 from "./../../core/i18n/i18n.js";
 import * as Platform5 from "./../../core/platform/platform.js";
 import * as Root3 from "./../../core/root/root.js";
 import * as SDK10 from "./../../core/sdk/sdk.js";
+import * as TextUtils6 from "./../../core/text_utils/text_utils.js";
 import * as Formatter from "./../formatter/formatter.js";
-import * as TextUtils6 from "./../text_utils/text_utils.js";
 import * as Workspace15 from "./../workspace/workspace.js";
 var UIStrings3 = {
   /**
-   * @description Error text displayed in the console when editing a live script fails. LiveEdit is
-   *the name of the feature for editing code that is already running.
+   * @description Error text displayed in the Console panel when editing a live script fails. LiveEdit is the name of the feature for editing code that is already running.
    * @example {warning} PH1
    */
   liveEditFailed: "`LiveEdit` failed: {PH1}",
   /**
-   * @description Error text displayed in the console when compiling a live-edited script fails. LiveEdit is
-   *the name of the feature for editing code that is already running.
+   * @description Error text displayed in the Console panel when compiling a live-edited script fails. LiveEdit is the name of the feature for editing code that is already running.
    * @example {connection lost} PH1
    */
   liveEditCompileFailed: "`LiveEdit` compile failed: {PH1}"
@@ -3739,11 +3736,11 @@ var ResourceScriptFile = class extends Common12.ObjectWrapper.ObjectWrapper {
     function getErrorText(status2) {
       switch (status2) {
         case "BlockedByActiveFunction":
-          return "Functions that are on the stack (currently being executed) can not be edited";
+          return "Functions that are on the stack (currently being executed) can\u2019t be edited";
         case "BlockedByActiveGenerator":
-          return "Async functions/generators that are active can not be edited";
+          return "Async functions/generators that are active can\u2019t be edited";
         case "BlockedByTopLevelEsModuleChange":
-          return "The top-level of ES modules can not be edited";
+          return "The top level of JavaScript modules can\u2019t be edited";
         case "CompileError":
         case "Ok":
           throw new Error("Compile errors and Ok status must not be reported on the console");
@@ -3952,7 +3949,7 @@ var DebuggerWorkspaceBinding = class _DebuggerWorkspaceBinding {
   #settings;
   constructor(resourceMapping, targetManager, ignoreListManager, workspace) {
     this.resourceMapping = resourceMapping;
-    this.resourceMapping.debuggerWorkspaceBinding = this;
+    this.resourceMapping.debuggerLocationUpdater = this;
     this.ignoreListManager = ignoreListManager;
     this.workspace = workspace;
     this.#settings = targetManager.settings;
@@ -4515,7 +4512,7 @@ __export(FileUtils_exports, {
   FileOutputStream: () => FileOutputStream
 });
 import * as Common14 from "./../../core/common/common.js";
-import * as TextUtils7 from "./../text_utils/text_utils.js";
+import * as TextUtils7 from "./../../core/text_utils/text_utils.js";
 import * as Workspace19 from "./../workspace/workspace.js";
 var ChunkedFileReader = class {
   #file;
@@ -4712,17 +4709,27 @@ __export(PresentationConsoleMessageHelper_exports, {
   PresentationSourceFrameMessageManager: () => PresentationSourceFrameMessageManager
 });
 import * as SDK13 from "./../../core/sdk/sdk.js";
-import * as TextUtils8 from "./../text_utils/text_utils.js";
+import * as TextUtils8 from "./../../core/text_utils/text_utils.js";
 import * as Workspace20 from "./../workspace/workspace.js";
 var PresentationSourceFrameMessageManager = class {
   #targetToMessageHelperMap = /* @__PURE__ */ new WeakMap();
-  constructor() {
-    SDK13.TargetManager.TargetManager.instance().observeModels(SDK13.DebuggerModel.DebuggerModel, this);
-    SDK13.TargetManager.TargetManager.instance().observeModels(SDK13.CSSModel.CSSModel, this);
+  #targetManager;
+  #workspace;
+  #debuggerWorkspaceBinding;
+  #cssWorkspaceBinding;
+  constructor(targetManager, workspace, debuggerWorkspaceBinding, cssWorkspaceBinding) {
+    this.#workspace = workspace;
+    this.#targetManager = targetManager;
+    this.#debuggerWorkspaceBinding = debuggerWorkspaceBinding;
+    this.#cssWorkspaceBinding = cssWorkspaceBinding;
+  }
+  enable() {
+    this.#targetManager.observeModels(SDK13.DebuggerModel.DebuggerModel, this);
+    this.#targetManager.observeModels(SDK13.CSSModel.CSSModel, this);
   }
   modelAdded(model) {
     const target = model.target();
-    const helper = this.#targetToMessageHelperMap.get(target) ?? new PresentationSourceFrameMessageHelper();
+    const helper = this.#targetToMessageHelperMap.get(target) ?? new PresentationSourceFrameMessageHelper(this.#workspace, this.#debuggerWorkspaceBinding, this.#cssWorkspaceBinding);
     if (model instanceof SDK13.DebuggerModel.DebuggerModel) {
       helper.setDebuggerModel(model);
     } else {
@@ -4740,18 +4747,22 @@ var PresentationSourceFrameMessageManager = class {
     void helper?.addMessage(message, source);
   }
   clear() {
-    for (const target of SDK13.TargetManager.TargetManager.instance().targets()) {
+    for (const target of this.#targetManager.targets()) {
       const helper = this.#targetToMessageHelperMap.get(target);
       helper?.clear();
     }
   }
 };
 var PresentationConsoleMessageManager = class {
-  #sourceFrameMessageManager = new PresentationSourceFrameMessageManager();
-  constructor() {
-    SDK13.TargetManager.TargetManager.instance().addModelListener(SDK13.ConsoleModel.ConsoleModel, SDK13.ConsoleModel.Events.MessageAdded, (event) => this.consoleMessageAdded(event.data));
-    SDK13.ConsoleModel.ConsoleModel.allMessagesUnordered(SDK13.TargetManager.TargetManager.instance()).forEach(this.consoleMessageAdded, this);
-    SDK13.TargetManager.TargetManager.instance().addModelListener(SDK13.ConsoleModel.ConsoleModel, SDK13.ConsoleModel.Events.ConsoleCleared, () => this.#sourceFrameMessageManager.clear());
+  #sourceFrameMessageManager;
+  constructor(targetManager, workspace, debuggerWorkspaceBinding, cssWorkspaceBinding) {
+    this.#sourceFrameMessageManager = new PresentationSourceFrameMessageManager(targetManager, workspace, debuggerWorkspaceBinding, cssWorkspaceBinding);
+    targetManager.addModelListener(SDK13.ConsoleModel.ConsoleModel, SDK13.ConsoleModel.Events.MessageAdded, (event) => this.consoleMessageAdded(event.data));
+    SDK13.ConsoleModel.ConsoleModel.allMessagesUnordered(targetManager).forEach(this.consoleMessageAdded, this);
+    targetManager.addModelListener(SDK13.ConsoleModel.ConsoleModel, SDK13.ConsoleModel.Events.ConsoleCleared, () => this.#sourceFrameMessageManager.clear());
+  }
+  enable() {
+    this.#sourceFrameMessageManager.enable();
   }
   consoleMessageAdded(consoleMessage) {
     const runtimeModel = consoleMessage.runtimeModel();
@@ -4767,9 +4778,15 @@ var PresentationSourceFrameMessageHelper = class {
   #cssModel;
   #presentationMessages = /* @__PURE__ */ new Map();
   #locationPool;
-  constructor() {
+  #workspace;
+  #debuggerWorkspaceBinding;
+  #cssWorkspaceBinding;
+  constructor(workspace, debuggerWorkspaceBinding, cssWorkspaceBinding) {
+    this.#workspace = workspace;
+    this.#debuggerWorkspaceBinding = debuggerWorkspaceBinding;
+    this.#cssWorkspaceBinding = cssWorkspaceBinding;
     this.#locationPool = new LiveLocationPool();
-    Workspace20.Workspace.WorkspaceImpl.instance().addEventListener(Workspace20.Workspace.Events.UISourceCodeAdded, this.#uiSourceCodeAdded.bind(this));
+    this.#workspace.addEventListener(Workspace20.Workspace.Events.UISourceCodeAdded, this.#uiSourceCodeAdded.bind(this));
   }
   setDebuggerModel(debuggerModel) {
     if (this.#debuggerModel) {
@@ -4791,7 +4808,7 @@ var PresentationSourceFrameMessageHelper = class {
     cssModel.addEventListener(SDK13.CSSModel.Events.StyleSheetAdded, (event) => queueMicrotask(() => this.#styleSheetAdded(event)));
   }
   async addMessage(message, source) {
-    const presentation = new PresentationSourceFrameMessage(message, this.#locationPool);
+    const presentation = new PresentationSourceFrameMessage(message, this.#locationPool, this.#debuggerWorkspaceBinding, this.#cssWorkspaceBinding);
     const location = this.#rawLocation(source) ?? this.#cssLocation(source) ?? this.#uiLocation(source);
     if (location) {
       await presentation.updateLocationSource(location);
@@ -4809,7 +4826,7 @@ var PresentationSourceFrameMessageHelper = class {
     if (!source.url) {
       return null;
     }
-    const uiSourceCode = Workspace20.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(source.url);
+    const uiSourceCode = this.#workspace.uiSourceCodeForURL(source.url);
     if (!uiSourceCode) {
       return null;
     }
@@ -4903,15 +4920,19 @@ var PresentationSourceFrameMessage = class {
   #liveLocation;
   #locationPool;
   #message;
-  constructor(message, locationPool) {
+  #debuggerWorkspaceBinding;
+  #cssWorkspaceBinding;
+  constructor(message, locationPool, debuggerWorkspaceBinding, cssWorkspaceBinding) {
+    this.#debuggerWorkspaceBinding = debuggerWorkspaceBinding;
+    this.#cssWorkspaceBinding = cssWorkspaceBinding;
     this.#message = message;
     this.#locationPool = locationPool;
   }
   async updateLocationSource(source) {
     if (source instanceof SDK13.DebuggerModel.Location) {
-      await DebuggerWorkspaceBinding.instance().createLiveLocation(source, this.#updateLocation.bind(this), this.#locationPool);
+      await this.#debuggerWorkspaceBinding.createLiveLocation(source, this.#updateLocation.bind(this), this.#locationPool);
     } else if (source instanceof SDK13.CSSModel.CSSLocation) {
-      await CSSWorkspaceBinding.instance().createLiveLocation(source, this.#updateLocation.bind(this), this.#locationPool);
+      await this.#cssWorkspaceBinding.createLiveLocation(source, this.#updateLocation.bind(this), this.#locationPool);
     } else if (source instanceof Workspace20.UISourceCode.UILocation) {
       if (!this.#liveLocation) {
         this.#liveLocation = new FrozenLiveLocation(source, this.#updateLocation.bind(this), this.#locationPool);
@@ -4949,8 +4970,8 @@ __export(ResourceMapping_exports, {
 });
 import * as Common15 from "./../../core/common/common.js";
 import * as SDK14 from "./../../core/sdk/sdk.js";
+import * as TextUtils9 from "./../../core/text_utils/text_utils.js";
 import * as Formatter2 from "./../formatter/formatter.js";
-import * as TextUtils9 from "./../text_utils/text_utils.js";
 import * as Workspace22 from "./../workspace/workspace.js";
 var styleSheetRangeMap = /* @__PURE__ */ new WeakMap();
 var scriptRangeMap = /* @__PURE__ */ new WeakMap();
@@ -4964,31 +4985,31 @@ function computeStyleSheetRange(header) {
 var ResourceMapping = class {
   workspace;
   #modelToInfo = /* @__PURE__ */ new Map();
-  #debuggerWorkspaceBinding = null;
-  #cssWorkspaceBinding = null;
+  #debuggerLocationUpdater = null;
+  #cssLocationUpdater = null;
   constructor(targetManager, workspace) {
     this.workspace = workspace;
     targetManager.observeModels(SDK14.ResourceTreeModel.ResourceTreeModel, this);
   }
-  get debuggerWorkspaceBinding() {
-    return this.#debuggerWorkspaceBinding;
+  get debuggerLocationUpdater() {
+    return this.#debuggerLocationUpdater;
   }
-  /* {@link DebuggerWorkspaceBinding} and ResourceMapping form a cycle so we can't wire it up at ctor time. */
-  set debuggerWorkspaceBinding(debuggerWorkspaceBinding) {
-    if (this.#debuggerWorkspaceBinding) {
-      throw new Error("DebuggerWorkspaceBinding already set");
+  /* The concrete DebuggerWorkspaceBinding requires ResourceMapping during construction, so we must wire up this updater afterward. */
+  set debuggerLocationUpdater(debuggerLocationUpdater) {
+    if (this.#debuggerLocationUpdater) {
+      throw new Error("DebuggerLocationUpdater already set");
     }
-    this.#debuggerWorkspaceBinding = debuggerWorkspaceBinding;
+    this.#debuggerLocationUpdater = debuggerLocationUpdater;
   }
-  get cssWorkspaceBinding() {
-    return this.#cssWorkspaceBinding;
+  get cssLocationUpdater() {
+    return this.#cssLocationUpdater;
   }
-  /* {@link CSSWorkspaceBinding} and ResourceMapping form a cycle so we can't wire it up at ctor time. */
-  set cssWorkspaceBinding(cssWorkspaceBinding) {
-    if (this.#cssWorkspaceBinding) {
-      throw new Error("CSSWorkspaceBinding already set");
+  /* The concrete CSSWorkspaceBinding requires ResourceMapping during construction, so we must wire up this updater afterward. */
+  set cssLocationUpdater(cssLocationUpdater) {
+    if (this.#cssLocationUpdater) {
+      throw new Error("CSSLocationUpdater already set");
     }
-    this.#cssWorkspaceBinding = cssWorkspaceBinding;
+    this.#cssLocationUpdater = cssLocationUpdater;
   }
   modelAdded(resourceTreeModel) {
     const info = new ModelInfo2(this, resourceTreeModel);
@@ -5365,13 +5386,13 @@ var Binding2 = class {
   #project;
   #uiSourceCode;
   #edits = [];
-  #debuggerWorkspaceBinding;
-  #cssWorkspaceBinding;
+  #debuggerLocationUpdater;
+  #cssLocationUpdater;
   constructor(modelInfo, resource) {
     this.resources = /* @__PURE__ */ new Set([resource]);
     this.#project = modelInfo.project;
-    this.#debuggerWorkspaceBinding = modelInfo.resourceMapping.debuggerWorkspaceBinding;
-    this.#cssWorkspaceBinding = modelInfo.resourceMapping.cssWorkspaceBinding;
+    this.#debuggerLocationUpdater = modelInfo.resourceMapping.debuggerLocationUpdater;
+    this.#cssLocationUpdater = modelInfo.resourceMapping.cssLocationUpdater;
     this.#uiSourceCode = this.#project.createUISourceCode(resource.url, resource.contentType());
     boundUISourceCodes.add(this.#uiSourceCode);
     if (resource.frameId) {
@@ -5379,8 +5400,8 @@ var Binding2 = class {
     }
     this.#project.addUISourceCodeWithProvider(this.#uiSourceCode, this, resourceMetadata(resource), resource.mimeType);
     void Promise.all([
-      ...this.inlineScripts().map((script) => this.#debuggerWorkspaceBinding?.updateLocations(script)),
-      ...this.inlineStyles().map((style) => this.#cssWorkspaceBinding?.updateLocations(style))
+      ...this.inlineScripts().map((script) => this.#debuggerLocationUpdater?.updateLocations(script)),
+      ...this.inlineStyles().map((style) => this.#cssLocationUpdater?.updateLocations(style))
     ]);
   }
   inlineStyles() {
@@ -5443,7 +5464,7 @@ var Binding2 = class {
           continue;
         }
         scriptRangeMap.set(script, range.rebaseAfterTextEdit(oldRange, newRange));
-        updatePromises.push(this.#debuggerWorkspaceBinding?.updateLocations(script));
+        updatePromises.push(this.#debuggerLocationUpdater?.updateLocations(script));
       }
       for (const style of styles) {
         const range = styleSheetRangeMap.get(style) ?? computeStyleSheetRange(style);
@@ -5451,7 +5472,7 @@ var Binding2 = class {
           continue;
         }
         styleSheetRangeMap.set(style, range.rebaseAfterTextEdit(oldRange, newRange));
-        updatePromises.push(this.#cssWorkspaceBinding?.updateLocations(style));
+        updatePromises.push(this.#cssLocationUpdater?.updateLocations(style));
       }
       await Promise.all(updatePromises);
     }
@@ -5472,8 +5493,8 @@ var Binding2 = class {
   dispose() {
     this.#project.removeUISourceCode(this.#uiSourceCode.url());
     void Promise.all([
-      ...this.inlineScripts().map((script) => this.#debuggerWorkspaceBinding?.updateLocations(script)),
-      ...this.inlineStyles().map((style) => this.#cssWorkspaceBinding?.updateLocations(style))
+      ...this.inlineScripts().map((script) => this.#debuggerLocationUpdater?.updateLocations(script)),
+      ...this.inlineStyles().map((style) => this.#cssLocationUpdater?.updateLocations(style))
     ]);
   }
   firstResource() {

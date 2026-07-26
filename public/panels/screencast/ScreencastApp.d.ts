@@ -1,14 +1,16 @@
 import * as SDK from '../../core/sdk/sdk.js';
+import type * as Foundation from '../../foundation/foundation.js';
 import * as UI from '../../ui/legacy/legacy.js';
 export declare class ScreencastApp implements UI.App.App, SDK.TargetManager.SDKModelObserver<SDK.ScreenCaptureModel.ScreenCaptureModel> {
+    #private;
     private readonly enabledSetting;
     toggleButton: UI.Toolbar.ToolbarToggle;
     private rootSplitWidget?;
     private screenCaptureModel?;
     private screencastView?;
     rootView?: UI.RootView.RootView;
-    constructor();
-    static instance(): ScreencastApp;
+    constructor(universe: Foundation.Universe.Universe);
+    static instance(universe?: Foundation.Universe.Universe): ScreencastApp;
     presentUI(document: Document): void;
     modelAdded(screenCaptureModel: SDK.ScreenCaptureModel.ScreenCaptureModel): void;
     modelRemoved(screenCaptureModel: SDK.ScreenCaptureModel.ScreenCaptureModel): void;
@@ -25,5 +27,5 @@ export declare class ScreencastAppProvider implements UI.AppProvider.AppProvider
     static instance(opts?: {
         forceNew: boolean;
     }): ScreencastAppProvider;
-    createApp(): UI.App.App;
+    createApp(universe: Foundation.Universe.Universe): UI.App.App;
 }

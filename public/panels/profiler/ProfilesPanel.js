@@ -36,10 +36,10 @@ import objectValueStyles from '../../ui/legacy/components/object_ui/objectValue.
 import * as UI from '../../ui/legacy/legacy.js';
 import { render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
-import { DetachedElementsProfileHeader, DetachedElementsProfileType, DetachedElementsProfileView } from './HeapDetachedElementsView.js';
+import { DetachedElementsProfileHeader, DetachedElementsProfileType, DetachedElementsProfileView, } from './HeapDetachedElementsView.js';
 import heapProfilerStyles from './heapProfiler.css.js';
 import { HeapProfileView, SamplingHeapProfileHeader, SamplingHeapProfileType } from './HeapProfileView.js';
-import { HeapProfileHeader, HeapSnapshotProfileType, HeapSnapshotView, TrackingHeapSnapshotProfileType } from './HeapSnapshotView.js';
+import { HeapProfileHeader, HeapSnapshotProfileType, HeapSnapshotView, TrackingHeapSnapshotProfileType, } from './HeapSnapshotView.js';
 import { ProfileHeader, } from './ProfileHeader.js';
 import { ProfileLauncherView } from './ProfileLauncherView.js';
 import { ProfileSidebarTreeElement } from './ProfileSidebarTreeElement.js';

@@ -1,13 +1,13 @@
 // Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable @devtools/no-imperative-dom-api */
 import '../../ui/kit/kit.js';
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import { html, render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import locationsSettingsTabStyles from './locationsSettingsTab.css.js';
 const UIStrings = {
@@ -109,25 +109,92 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/sensors/LocationsSettingsTab.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+function renderItemView(location) {
+    // clang-format off
+    return html `
+    <div class="locations-list-item" role="row">
+      <div class="locations-list-text locations-list-title" role="cell">
+        <div class="locations-list-title-text" title=${location.title}>${location.title}</div>
+      </div>
+      <div class="locations-list-separator"></div>
+      <div class="locations-list-text" role="cell">${location.lat}</div>
+      <div class="locations-list-separator"></div>
+      <div class="locations-list-text" role="cell">${location.long}</div>
+      <div class="locations-list-separator"></div>
+      <div class="locations-list-text" role="cell">${location.timezoneId}</div>
+      <div class="locations-list-separator"></div>
+      <div class="locations-list-text" role="cell">${location.locale}</div>
+      <div class="locations-list-separator"></div>
+      <div class="locations-list-text" role="cell">${location.accuracy ?? SDK.EmulationModel.Location.DEFAULT_ACCURACY}</div>
+    </div>`;
+    // clang-format on
+}
+function renderEditorView(controls) {
+    // clang-format off
+    return html `
+    <div class="locations-edit-row">
+      <div class="locations-list-text locations-list-title">${i18nString(UIStrings.locationName)}</div>
+      <div class="locations-list-separator locations-list-separator-invisible"></div>
+      <div class="locations-list-text">${i18nString(UIStrings.lat)}</div>
+      <div class="locations-list-separator locations-list-separator-invisible"></div>
+      <div class="locations-list-text">${i18nString(UIStrings.long)}</div>
+      <div class="locations-list-separator locations-list-separator-invisible"></div>
+      <div class="locations-list-text">${i18nString(UIStrings.timezoneId)}</div>
+      <div class="locations-list-separator locations-list-separator-invisible"></div>
+      <div class="locations-list-text">${i18nString(UIStrings.locale)}</div>
+      <div class="locations-list-separator locations-list-separator-invisible"></div>
+      <div class="locations-list-text">${i18nString(UIStrings.accuracy)}</div>
+    </div>
+    <div class="locations-edit-row">
+      <div class="locations-list-text locations-list-title locations-input-container">${controls.titleInput}</div>
+      <div class="locations-list-separator locations-list-separator-invisible"></div>
+      <div class="locations-list-text locations-input-container">${controls.latInput}</div>
+      <div class="locations-list-separator locations-list-separator-invisible"></div>
+      <div class="locations-list-text locations-list-text-longitude locations-input-container">${controls.longInput}</div>
+      <div class="locations-list-separator locations-list-separator-invisible"></div>
+      <div class="locations-list-text locations-input-container">${controls.timezoneIdInput}</div>
+      <div class="locations-list-separator locations-list-separator-invisible"></div>
+      <div class="locations-list-text locations-input-container">${controls.localeInput}</div>
+      <div class="locations-list-separator locations-list-separator-invisible"></div>
+      <div class="locations-list-text locations-input-container">${controls.accuracyInput}</div>
+    </div>`;
+    // clang-format on
+}
+export const DEFAULT_VIEW = (input, _output, target) => {
+    // clang-format off
+    render(html `
+    <style>${locationsSettingsTabStyles}</style>
+    <div class="settings-card-container-wrapper">
+      <div class="settings-card-container">
+        <devtools-card .heading=${i18nString(UIStrings.locations)}>
+          <div class="list-container"></div>
+          <devtools-button
+            class="add-locations-button"
+            .variant=${"outlined" /* Buttons.Button.Variant.OUTLINED */}
+            .iconName=${'plus'}
+            .jslogContext=${'emulation.add-location'}
+            @click=${input.onAddLocation}>
+            ${i18nString(UIStrings.addLocation)}
+          </devtools-button>
+        </devtools-card>
+      </div>
+    </div>`, target);
+    // clang-format on
+};
 export class LocationsSettingsTab extends UI.Widget.VBox {
     list;
     customSetting;
     editor;
-    constructor() {
-        super({
+    #view;
+    constructor(element, view = DEFAULT_VIEW) {
+        super(element, {
             jslog: `${VisualLogging.pane('emulation-locations')}`,
             useShadowDom: true,
         });
-        this.registerRequiredCSS(locationsSettingsTabStyles);
-        const settingsContent = this.contentElement.createChild('div', 'settings-card-container-wrapper').createChild('div');
-        settingsContent.classList.add('settings-card-container');
-        const locationsCard = settingsContent.createChild('devtools-card');
-        locationsCard.heading = i18nString(UIStrings.locations);
-        const listContainer = locationsCard.createChild('div');
+        this.#view = view;
         this.list = new UI.ListWidget.ListWidget(this, undefined, true);
         this.list.element.classList.add('locations-list');
         this.list.registerRequiredCSS(locationsSettingsTabStyles);
-        this.list.show(listContainer);
         this.customSetting =
             Common.Settings.Settings.instance().moduleSetting('emulation.locations');
         const list = this.customSetting.get().map(location => replaceLocationTitles(location, this.customSetting.defaultValue));
@@ -150,22 +217,22 @@ export class LocationsSettingsTab extends UI.Widget.VBox {
             }
             return location;
         }
-        const addButton = new Buttons.Button.Button();
-        addButton.classList.add('add-locations-button');
-        addButton.data = {
-            variant: "outlined" /* Buttons.Button.Variant.OUTLINED */,
-            iconName: 'plus',
-            jslogContext: 'emulation.add-location',
-        };
-        addButton.textContent = i18nString(UIStrings.addLocation);
-        addButton.addEventListener('click', () => this.addButtonClicked());
-        locationsCard.append(addButton);
         this.customSetting.set(list);
         this.customSetting.addChangeListener(this.locationsUpdated, this);
     }
     wasShown() {
         super.wasShown();
         this.locationsUpdated();
+    }
+    performUpdate() {
+        const viewInput = {
+            onAddLocation: () => this.addButtonClicked(),
+        };
+        this.#view(viewInput, undefined, this.contentElement);
+        const listContainer = this.contentElement.querySelector('.list-container');
+        if (listContainer) {
+            this.list.show(listContainer);
+        }
     }
     locationsUpdated() {
         this.list.clear();
@@ -174,6 +241,7 @@ export class LocationsSettingsTab extends UI.Widget.VBox {
             this.list.appendItem(condition, true);
         }
         this.list.appendSeparator();
+        this.requestUpdate();
     }
     addButtonClicked() {
         this.list.addNewItem(this.customSetting.get().length, {
@@ -182,38 +250,14 @@ export class LocationsSettingsTab extends UI.Widget.VBox {
             long: 0,
             timezoneId: '',
             locale: '',
-            accuracy: SDK.EmulationModel.Location.DEFAULT_ACCURACY
+            accuracy: SDK.EmulationModel.Location.DEFAULT_ACCURACY,
         });
     }
     renderItem(location, _editable) {
-        const element = document.createElement('div');
-        element.role = 'row';
-        element.classList.add('locations-list-item');
-        const title = element.createChild('div', 'locations-list-text locations-list-title');
-        title.role = 'cell';
-        const titleText = title.createChild('div', 'locations-list-title-text');
-        titleText.textContent = location.title;
-        UI.Tooltip.Tooltip.install(titleText, location.title);
-        element.createChild('div', 'locations-list-separator');
-        const lat = element.createChild('div', 'locations-list-text');
-        lat.textContent = String(location.lat);
-        lat.role = 'cell';
-        element.createChild('div', 'locations-list-separator');
-        const long = element.createChild('div', 'locations-list-text');
-        long.textContent = String(location.long);
-        long.role = 'cell';
-        element.createChild('div', 'locations-list-separator');
-        const timezoneId = element.createChild('div', 'locations-list-text');
-        timezoneId.textContent = location.timezoneId;
-        timezoneId.role = 'cell';
-        element.createChild('div', 'locations-list-separator');
-        const locale = element.createChild('div', 'locations-list-text');
-        locale.textContent = location.locale;
-        locale.role = 'cell';
-        element.createChild('div', 'locations-list-separator');
-        element.createChild('div', 'locations-list-text').textContent =
-            String(location.accuracy || SDK.EmulationModel.Location.DEFAULT_ACCURACY);
-        return element;
+        const fragment = document.createDocumentFragment();
+        // eslint-disable-next-line @devtools/no-lit-render-outside-of-view
+        render(renderItemView(location), fragment);
+        return fragment.firstElementChild;
     }
     removeItemRequested(_item, index) {
         const list = this.customSetting.get();
@@ -245,7 +289,7 @@ export class LocationsSettingsTab extends UI.Widget.VBox {
         editor.control('long').value = String(location.long);
         editor.control('timezone-id').value = location.timezoneId;
         editor.control('locale').value = location.locale;
-        editor.control('accuracy').value = String(location.accuracy || SDK.EmulationModel.Location.DEFAULT_ACCURACY);
+        editor.control('accuracy').value = String(location.accuracy ?? SDK.EmulationModel.Location.DEFAULT_ACCURACY);
         return editor;
     }
     createEditor() {
@@ -255,165 +299,120 @@ export class LocationsSettingsTab extends UI.Widget.VBox {
         const editor = new UI.ListWidget.Editor();
         this.editor = editor;
         const content = editor.contentElement();
-        const titles = content.createChild('div', 'locations-edit-row');
-        titles.createChild('div', 'locations-list-text locations-list-title').textContent =
-            i18nString(UIStrings.locationName);
-        titles.createChild('div', 'locations-list-separator locations-list-separator-invisible');
-        titles.createChild('div', 'locations-list-text').textContent = i18nString(UIStrings.lat);
-        titles.createChild('div', 'locations-list-separator locations-list-separator-invisible');
-        titles.createChild('div', 'locations-list-text').textContent = i18nString(UIStrings.long);
-        titles.createChild('div', 'locations-list-separator locations-list-separator-invisible');
-        titles.createChild('div', 'locations-list-text').textContent = i18nString(UIStrings.timezoneId);
-        titles.createChild('div', 'locations-list-separator locations-list-separator-invisible');
-        titles.createChild('div', 'locations-list-text').textContent = i18nString(UIStrings.locale);
-        titles.createChild('div', 'locations-list-separator locations-list-separator-invisible');
-        titles.createChild('div', 'locations-list-text').textContent = i18nString(UIStrings.accuracy);
-        const fields = content.createChild('div', 'locations-edit-row');
-        fields.createChild('div', 'locations-list-text locations-list-title locations-input-container')
-            .appendChild(editor.createInput('title', 'text', i18nString(UIStrings.locationName), titleValidator));
-        fields.createChild('div', 'locations-list-separator locations-list-separator-invisible');
-        let cell = fields.createChild('div', 'locations-list-text locations-input-container');
-        cell.appendChild(editor.createInput('lat', 'text', i18nString(UIStrings.latitude), latValidator));
-        fields.createChild('div', 'locations-list-separator locations-list-separator-invisible');
-        cell = fields.createChild('div', 'locations-list-text locations-list-text-longitude locations-input-container');
-        cell.appendChild(editor.createInput('long', 'text', i18nString(UIStrings.longitude), longValidator));
-        fields.createChild('div', 'locations-list-separator locations-list-separator-invisible');
-        cell = fields.createChild('div', 'locations-list-text locations-input-container');
-        cell.appendChild(editor.createInput('timezone-id', 'text', i18nString(UIStrings.timezoneId), timezoneIdValidator));
-        fields.createChild('div', 'locations-list-separator locations-list-separator-invisible');
-        cell = fields.createChild('div', 'locations-list-text locations-input-container');
-        cell.appendChild(editor.createInput('locale', 'text', i18nString(UIStrings.locale), localeValidator));
-        fields.createChild('div', 'locations-list-separator locations-list-separator-invisible');
-        cell = fields.createChild('div', 'locations-list-text locations-input-container');
-        cell.appendChild(editor.createInput('accuracy', 'text', i18nString(UIStrings.accuracy), accuracyValidator));
+        const createValidator = (validator) => (_item, _index, input) => {
+            const errorMessage = validator(input.value);
+            if (errorMessage) {
+                return { valid: false, errorMessage };
+            }
+            return { valid: true };
+        };
+        const titleInput = editor.createInput('title', 'text', i18nString(UIStrings.locationName), createValidator(validateTitle));
+        const latInput = editor.createInput('lat', 'text', i18nString(UIStrings.latitude), createValidator(validateLatitude));
+        const longInput = editor.createInput('long', 'text', i18nString(UIStrings.longitude), createValidator(validateLongitude));
+        const timezoneIdInput = editor.createInput('timezone-id', 'text', i18nString(UIStrings.timezoneId), createValidator(validateTimezoneId));
+        const localeInput = editor.createInput('locale', 'text', i18nString(UIStrings.locale), createValidator(validateLocale));
+        const accuracyInput = editor.createInput('accuracy', 'text', i18nString(UIStrings.accuracy), createValidator(validateAccuracy));
+        // eslint-disable-next-line @devtools/no-lit-render-outside-of-view
+        render(renderEditorView({
+            titleInput,
+            latInput,
+            longInput,
+            timezoneIdInput,
+            localeInput,
+            accuracyInput,
+        }), content);
         return editor;
-        function titleValidator(_item, _index, input) {
-            const maxLength = 50;
-            const value = input.value.trim();
-            let errorMessage;
-            if (!value.length) {
-                errorMessage = i18nString(UIStrings.locationNameCannotBeEmpty);
-            }
-            else if (value.length > maxLength) {
-                errorMessage = i18nString(UIStrings.locationNameMustBeLessThanS, { PH1: maxLength });
-            }
-            if (errorMessage) {
-                return { valid: false, errorMessage };
-            }
-            return {
-                valid: true,
-            };
-        }
-        function latValidator(_item, _index, input) {
-            const minLat = -90;
-            const maxLat = 90;
-            const value = input.value.trim();
-            const parsedValue = Number(value);
-            if (!value) {
-                return {
-                    valid: true,
-                };
-            }
-            let errorMessage;
-            if (Number.isNaN(parsedValue)) {
-                errorMessage = i18nString(UIStrings.latitudeMustBeANumber);
-            }
-            else if (parseFloat(value) < minLat) {
-                errorMessage = i18nString(UIStrings.latitudeMustBeGreaterThanOrEqual, { PH1: minLat });
-            }
-            else if (parseFloat(value) > maxLat) {
-                errorMessage = i18nString(UIStrings.latitudeMustBeLessThanOrEqualToS, { PH1: maxLat });
-            }
-            if (errorMessage) {
-                return { valid: false, errorMessage };
-            }
-            return {
-                valid: true,
-            };
-        }
-        function longValidator(_item, _index, input) {
-            const minLong = -180;
-            const maxLong = 180;
-            const value = input.value.trim();
-            const parsedValue = Number(value);
-            if (!value) {
-                return {
-                    valid: true,
-                };
-            }
-            let errorMessage;
-            if (Number.isNaN(parsedValue)) {
-                errorMessage = i18nString(UIStrings.longitudeMustBeANumber);
-            }
-            else if (parseFloat(value) < minLong) {
-                errorMessage = i18nString(UIStrings.longitudeMustBeGreaterThanOr, { PH1: minLong });
-            }
-            else if (parseFloat(value) > maxLong) {
-                errorMessage = i18nString(UIStrings.longitudeMustBeLessThanOrEqualTo, { PH1: maxLong });
-            }
-            if (errorMessage) {
-                return { valid: false, errorMessage };
-            }
-            return {
-                valid: true,
-            };
-        }
-        function timezoneIdValidator(_item, _index, input) {
-            const value = input.value.trim();
-            // Chromium uses ICU's timezone implementation, which is very
-            // liberal in what it accepts. ICU does not simply use an allowlist
-            // but instead tries to make sense of the input, even for
-            // weird-looking timezone IDs. There's not much point in validating
-            // the input other than checking if it contains at least one
-            // alphabetic character. The empty string resets the override,
-            // and is accepted as well.
-            if (value === '' || /[a-zA-Z]/.test(value)) {
-                return {
-                    valid: true,
-                };
-            }
-            const errorMessage = i18nString(UIStrings.timezoneIdMustContainAlphabetic);
-            return { valid: false, errorMessage };
-        }
-        function localeValidator(_item, _index, input) {
-            const value = input.value.trim();
-            // Similarly to timezone IDs, there's not much point in validating
-            // input locales other than checking if it contains at least two
-            // alphabetic characters.
-            // https://unicode.org/reports/tr35/#Unicode_language_identifier
-            // The empty string resets the override, and is accepted as
-            // well.
-            if (value === '' || /[a-zA-Z]{2}/.test(value)) {
-                return {
-                    valid: true,
-                };
-            }
-            const errorMessage = i18nString(UIStrings.localeMustContainAlphabetic);
-            return { valid: false, errorMessage };
-        }
-        function accuracyValidator(_item, _index, input) {
-            const minAccuracy = 0;
-            const value = input.value.trim();
-            const parsedValue = Number(value);
-            if (!value) {
-                return {
-                    valid: true,
-                };
-            }
-            let errorMessage;
-            if (Number.isNaN(parsedValue)) {
-                errorMessage = i18nString(UIStrings.accuracyMustBeANumber);
-            }
-            else if (parseFloat(value) < minAccuracy) {
-                errorMessage = i18nString(UIStrings.accuracyMustBeGreaterThanOrEqual, { PH1: minAccuracy });
-            }
-            if (errorMessage) {
-                return { valid: false, errorMessage };
-            }
-            return {
-                valid: true,
-            };
-        }
     }
+}
+export function validateTitle(value) {
+    const maxLength = 50;
+    const trimmedValue = value.trim();
+    if (!trimmedValue.length) {
+        return i18nString(UIStrings.locationNameCannotBeEmpty);
+    }
+    if (trimmedValue.length > maxLength) {
+        return i18nString(UIStrings.locationNameMustBeLessThanS, { PH1: maxLength });
+    }
+    return null;
+}
+export function validateLatitude(value) {
+    const minLat = -90;
+    const maxLat = 90;
+    const trimmedValue = value.trim();
+    const parsedValue = Number(trimmedValue);
+    if (!trimmedValue) {
+        return null;
+    }
+    if (Number.isNaN(parsedValue)) {
+        return i18nString(UIStrings.latitudeMustBeANumber);
+    }
+    if (parsedValue < minLat) {
+        return i18nString(UIStrings.latitudeMustBeGreaterThanOrEqual, { PH1: minLat });
+    }
+    if (parsedValue > maxLat) {
+        return i18nString(UIStrings.latitudeMustBeLessThanOrEqualToS, { PH1: maxLat });
+    }
+    return null;
+}
+export function validateLongitude(value) {
+    const minLong = -180;
+    const maxLong = 180;
+    const trimmedValue = value.trim();
+    const parsedValue = Number(trimmedValue);
+    if (!trimmedValue) {
+        return null;
+    }
+    if (Number.isNaN(parsedValue)) {
+        return i18nString(UIStrings.longitudeMustBeANumber);
+    }
+    if (parsedValue < minLong) {
+        return i18nString(UIStrings.longitudeMustBeGreaterThanOr, { PH1: minLong });
+    }
+    if (parsedValue > maxLong) {
+        return i18nString(UIStrings.longitudeMustBeLessThanOrEqualTo, { PH1: maxLong });
+    }
+    return null;
+}
+export function validateTimezoneId(value) {
+    const trimmedValue = value.trim();
+    // Chromium uses ICU's timezone implementation, which is very
+    // liberal in what it accepts. ICU does not simply use an allowlist
+    // but instead tries to make sense of the input, even for
+    // weird-looking timezone IDs. There's not much point in validating
+    // the input other than checking if it contains at least one
+    // alphabetic character. The empty string resets the override,
+    // and is accepted as well.
+    if (trimmedValue === '' || /[a-zA-Z]/.test(trimmedValue)) {
+        return null;
+    }
+    return i18nString(UIStrings.timezoneIdMustContainAlphabetic);
+}
+export function validateLocale(value) {
+    const trimmedValue = value.trim();
+    // Similarly to timezone IDs, there's not much point in validating
+    // input locales other than checking if it contains at least two
+    // alphabetic characters.
+    // https://unicode.org/reports/tr35/#Unicode_language_identifier
+    // The empty string resets the override, and is accepted as
+    // well.
+    if (trimmedValue === '' || /[a-zA-Z]{2}/.test(trimmedValue)) {
+        return null;
+    }
+    return i18nString(UIStrings.localeMustContainAlphabetic);
+}
+export function validateAccuracy(value) {
+    const minAccuracy = 0;
+    const trimmedValue = value.trim();
+    const parsedValue = Number(trimmedValue);
+    if (!trimmedValue) {
+        return null;
+    }
+    if (Number.isNaN(parsedValue)) {
+        return i18nString(UIStrings.accuracyMustBeANumber);
+    }
+    if (parsedValue < minAccuracy) {
+        return i18nString(UIStrings.accuracyMustBeGreaterThanOrEqual, { PH1: minAccuracy });
+    }
+    return null;
 }
 //# sourceMappingURL=LocationsSettingsTab.js.map

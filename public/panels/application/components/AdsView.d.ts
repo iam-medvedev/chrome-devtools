@@ -9,6 +9,7 @@ interface AdFrameNodeData {
     initialOrigin: string;
     networkBytes: string;
     cpuTime: string;
+    revealFrame: (e: Event) => void;
 }
 export interface ViewInput {
     metrics: Protocol.Ads.AdMetrics;

@@ -37,12 +37,12 @@ import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as TextUtils from '../../core/text_utils/text_utils.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as HAR from '../../models/har/har.js';
 import * as Logs from '../../models/logs/logs.js';
 import * as NetworkTimeCalculator from '../../models/network_time_calculator/network_time_calculator.js';
 import * as Persistence from '../../models/persistence/persistence.js';
-import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as NetworkForward from '../../panels/network/forward/forward.js';
 import * as Sources from '../../panels/sources/sources.js';
@@ -451,9 +451,9 @@ const UIStrings = {
      */
     blockRequestDomain: 'Block request domain',
     /**
-     * @description Text to replay an XHR request
+     * @description Text to resend a network request
      */
-    replayXhr: 'Replay XHR',
+    resend: 'Resend',
     /**
      * @description Text in Network Log View of the Network panel
      */
@@ -665,11 +665,11 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
     static negativeFilter(filter, request) {
         return !filter(request);
     }
-    static requestPathFilter(regex, request) {
+    static requestHostAndPathFilter(regex, request) {
         if (!regex) {
             return false;
         }
-        return regex.test(request.path() + '/' + request.name());
+        return regex.test(request.parsedURL.urlWithoutScheme());
     }
     static subdomains(domain) {
         const result = [domain];
@@ -1042,9 +1042,9 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
                 if (!request) {
                     return;
                 }
-                if (SDK.NetworkManager.NetworkManager.canReplayRequest(request)) {
+                if (SDK.NetworkManager.NetworkManager.canResendRequest(request)) {
                     SDK.NetworkManager.NetworkManager.replayRequest(request);
-                    void VisualLogging.logKeyDown(this.dataGrid.selectedNode.element(), event, 'replay-xhr');
+                    void VisualLogging.logKeyDown(this.dataGrid.selectedNode.element(), event, 'resend');
                 }
             }
         });
@@ -1645,8 +1645,8 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
                     i18nString(UIStrings.throttleRequestDomain), () => isThrottling ? removeRequestCondition(domainPattern) :
                     addRequestCondition(domainPattern, SDK.NetworkManager.Slow3GConditions), { jslogContext: 'throttle-request-domain' });
             }
-            if (SDK.NetworkManager.NetworkManager.canReplayRequest(request)) {
-                contextMenu.debugSection().appendItem(i18nString(UIStrings.replayXhr), SDK.NetworkManager.NetworkManager.replayRequest.bind(null, request), { jslogContext: 'replay-xhr' });
+            if (SDK.NetworkManager.NetworkManager.canResendRequest(request)) {
+                contextMenu.debugSection().appendItem(i18nString(UIStrings.resend), SDK.NetworkManager.NetworkManager.replayRequest.bind(null, request), { jslogContext: 'resend' });
             }
         }
     }
@@ -1812,16 +1812,16 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
             if (key) {
                 const defaultText = Platform.StringUtilities.escapeForRegExp(key + ':' + text);
                 filter = this.createSpecialFilter(key, text) ||
-                    NetworkLogView.requestPathFilter.bind(null, new RegExp(defaultText, 'i'));
+                    NetworkLogView.requestHostAndPathFilter.bind(null, new RegExp(defaultText, 'i'));
             }
             else if (descriptor.regex) {
-                filter = NetworkLogView.requestPathFilter.bind(null, regex);
+                filter = NetworkLogView.requestHostAndPathFilter.bind(null, regex);
             }
             else if (this.isValidUrl(text)) {
                 filter = NetworkLogView.requestUrlFilter.bind(null, text);
             }
             else {
-                filter = NetworkLogView.requestPathFilter.bind(null, new RegExp(Platform.StringUtilities.escapeForRegExp(text), 'i'));
+                filter = NetworkLogView.requestHostAndPathFilter.bind(null, new RegExp(Platform.StringUtilities.escapeForRegExp(text), 'i'));
             }
             if ((descriptor.negative && !invert) || (!descriptor.negative && invert)) {
                 return NetworkLogView.negativeFilter.bind(null, filter);

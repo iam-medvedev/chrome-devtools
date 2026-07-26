@@ -5,7 +5,8 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
-import { deinitializeGlobalVars, describeWithEnvironment, initializeGlobalVars } from '../../testing/EnvironmentHelpers.js';
+import { deinitializeGlobalVars, describeWithEnvironment, initializeGlobalVars, } from '../../testing/EnvironmentHelpers.js';
+import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
 import * as Emulation from './emulation.js';
 describeWithEnvironment('AdvancedApp', () => {
@@ -56,10 +57,11 @@ describeWithEnvironment('AdvancedApp', () => {
         await initializeGlobalVars({ reset: false });
     });
     afterEach(async () => {
+        Emulation.AdvancedApp.AdvancedApp.removeInstance();
         await deinitializeGlobalVars();
     });
     it('updates colors node link on ColorThemeChanged', async () => {
-        const advancedApp = Emulation.AdvancedApp.AdvancedApp.instance();
+        const advancedApp = Emulation.AdvancedApp.AdvancedApp.instance(new TestUniverse());
         assert.exists(advancedApp);
         const fetchColorsSpy = sinon.spy(ThemeSupport.ThemeSupport.instance(), 'fetchColorsAndApplyHostTheme');
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.dispatchEventToListeners(Host.InspectorFrontendHostAPI.Events.ColorThemeChanged);

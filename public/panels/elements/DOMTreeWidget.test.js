@@ -4,12 +4,18 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Bindings from '../../models/bindings/bindings.js';
 import { createTarget, describeWithEnvironment, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
+import { TestUniverse } from '../../testing/TestUniverse.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as Elements from './elements.js';
 describeWithEnvironment('DOMTreeWidget', () => {
     let target;
     beforeEach(() => {
+        const universe = new TestUniverse();
+        sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, 'instance')
+            .returns(universe.debuggerWorkspaceBinding);
+        sinon.stub(Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding, 'instance').returns(universe.cssWorkspaceBinding);
         stubNoopSettings();
         target = createTarget();
     });

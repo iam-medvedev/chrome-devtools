@@ -4,39 +4,6 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// gen/front_end/models/issues_manager/CheckFormsIssuesTrigger.js
-var CheckFormsIssuesTrigger_exports = {};
-__export(CheckFormsIssuesTrigger_exports, {
-  CheckFormsIssuesTrigger: () => CheckFormsIssuesTrigger
-});
-import * as Root from "./../../core/root/root.js";
-import * as SDK from "./../../core/sdk/sdk.js";
-var CheckFormsIssuesTrigger = class _CheckFormsIssuesTrigger {
-  constructor(targetManager = SDK.TargetManager.TargetManager.instance()) {
-    targetManager.addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.Load, this.#pageLoaded, this, { scoped: true });
-    for (const model of targetManager.models(SDK.ResourceTreeModel.ResourceTreeModel)) {
-      if (model.target().outermostTarget() !== model.target()) {
-        continue;
-      }
-      this.#checkFormsIssues(model);
-    }
-  }
-  static instance({ forceNew } = { forceNew: false }) {
-    if (!Root.DevToolsContext.globalInstance().has(_CheckFormsIssuesTrigger) || forceNew) {
-      Root.DevToolsContext.globalInstance().set(_CheckFormsIssuesTrigger, new _CheckFormsIssuesTrigger());
-    }
-    return Root.DevToolsContext.globalInstance().get(_CheckFormsIssuesTrigger);
-  }
-  // TODO(crbug.com/1399414): Handle response by dropping current issues in favor of new ones.
-  #checkFormsIssues(resourceTreeModel) {
-    void resourceTreeModel.target().auditsAgent().invoke_checkFormsIssues();
-  }
-  #pageLoaded(event) {
-    const { resourceTreeModel } = event.data;
-    this.#checkFormsIssues(resourceTreeModel);
-  }
-};
-
 // gen/front_end/models/issues_manager/ClientHintIssue.js
 var ClientHintIssue_exports = {};
 __export(ClientHintIssue_exports, {
@@ -619,16 +586,12 @@ __export(CookieIssue_exports, {
 });
 import * as Common from "./../../core/common/common.js";
 import * as i18n11 from "./../../core/i18n/i18n.js";
-import * as SDK2 from "./../../core/sdk/sdk.js";
+import * as SDK from "./../../core/sdk/sdk.js";
 var UIStrings6 = {
   /**
    * @description Label for the link for SameSite cookie issues.
    */
   samesiteCookiesExplained: "SameSite cookies explained",
-  /**
-   * @description Label for the link for Schemeful Same-Site issues.
-   */
-  howSchemefulSamesiteWorks: "How Schemeful Same-Site works",
   /**
    * @description Label for a link for cross-site redirect issues.
    */
@@ -667,7 +630,7 @@ var CookieIssue = class _CookieIssue extends Issue {
     const issues = [];
     if (cookieIssueDetails.cookieExclusionReasons && cookieIssueDetails.cookieExclusionReasons.length > 0) {
       for (const exclusionReason of cookieIssueDetails.cookieExclusionReasons) {
-        const code = _CookieIssue.codeForCookieIssueDetails(exclusionReason, cookieIssueDetails.cookieWarningReasons, cookieIssueDetails.operation, cookieIssueDetails.cookieUrl);
+        const code = _CookieIssue.codeForCookieIssueDetails(exclusionReason, cookieIssueDetails.cookieWarningReasons, cookieIssueDetails.operation);
         if (code) {
           issues.push(new _CookieIssue(code, cookieIssueDetails, issuesModel, issueId, frameManager));
         }
@@ -676,7 +639,7 @@ var CookieIssue = class _CookieIssue extends Issue {
     }
     if (cookieIssueDetails.cookieWarningReasons) {
       for (const warningReason of cookieIssueDetails.cookieWarningReasons) {
-        const code = _CookieIssue.codeForCookieIssueDetails(warningReason, [], cookieIssueDetails.operation, cookieIssueDetails.cookieUrl);
+        const code = _CookieIssue.codeForCookieIssueDetails(warningReason, [], cookieIssueDetails.operation);
         if (code) {
           issues.push(new _CookieIssue(code, cookieIssueDetails, issuesModel, issueId, frameManager));
         }
@@ -692,42 +655,8 @@ var CookieIssue = class _CookieIssue extends Issue {
    *
    * The issue code will be mapped to a CookieIssueSubCategory enum for metric purpose.
    */
-  static codeForCookieIssueDetails(reason, warningReasons, operation, cookieUrl) {
-    const isURLSecure = cookieUrl && (Common.ParsedURL.schemeIs(cookieUrl, "https:") || Common.ParsedURL.schemeIs(cookieUrl, "wss:"));
-    const secure = isURLSecure ? "Secure" : "Insecure";
+  static codeForCookieIssueDetails(reason, warningReasons, operation) {
     if (reason === "ExcludeSameSiteStrict" || reason === "ExcludeSameSiteLax" || reason === "ExcludeSameSiteUnspecifiedTreatedAsLax") {
-      if (warningReasons && warningReasons.length > 0) {
-        if (warningReasons.includes(
-          "WarnSameSiteStrictLaxDowngradeStrict"
-          /* Protocol.Audits.CookieWarningReason.WarnSameSiteStrictLaxDowngradeStrict */
-        )) {
-          return [
-            "CookieIssue",
-            "ExcludeNavigationContextDowngrade",
-            secure
-          ].join("::");
-        }
-        if (warningReasons.includes(
-          "WarnSameSiteStrictCrossDowngradeStrict"
-          /* Protocol.Audits.CookieWarningReason.WarnSameSiteStrictCrossDowngradeStrict */
-        ) || warningReasons.includes(
-          "WarnSameSiteStrictCrossDowngradeLax"
-          /* Protocol.Audits.CookieWarningReason.WarnSameSiteStrictCrossDowngradeLax */
-        ) || warningReasons.includes(
-          "WarnSameSiteLaxCrossDowngradeStrict"
-          /* Protocol.Audits.CookieWarningReason.WarnSameSiteLaxCrossDowngradeStrict */
-        ) || warningReasons.includes(
-          "WarnSameSiteLaxCrossDowngradeLax"
-          /* Protocol.Audits.CookieWarningReason.WarnSameSiteLaxCrossDowngradeLax */
-        )) {
-          return [
-            "CookieIssue",
-            "ExcludeContextDowngrade",
-            operation,
-            secure
-          ].join("::");
-        }
-      }
       if (warningReasons.includes(
         "WarnCrossSiteRedirectDowngradeChangesInclusion"
         /* Protocol.Audits.CookieWarningReason.WarnCrossSiteRedirectDowngradeChangesInclusion */
@@ -741,12 +670,6 @@ var CookieIssue = class _CookieIssue extends Issue {
         return ["CookieIssue", reason, operation].join("::");
       }
       return null;
-    }
-    if (reason === "WarnSameSiteStrictLaxDowngradeStrict") {
-      return ["CookieIssue", reason, secure].join("::");
-    }
-    if (reason === "WarnSameSiteStrictCrossDowngradeStrict" || reason === "WarnSameSiteStrictCrossDowngradeLax" || reason === "WarnSameSiteLaxCrossDowngradeLax" || reason === "WarnSameSiteLaxCrossDowngradeStrict") {
-      return ["CookieIssue", "WarnCrossDowngrade", operation, secure].join("::");
     }
     if (reason === "ExcludePortMismatch") {
       return ["CookieIssue", "ExcludePortMismatch"].join("::");
@@ -853,7 +776,7 @@ var CookieIssue = class _CookieIssue extends Issue {
       "ExcludeThirdPartyPhaseout"
       /* Protocol.Audits.CookieExclusionReason.ExcludeThirdPartyPhaseout */
     )) {
-      return new SDK2.ConsoleModel.ConsoleMessage(issuesModel.target().model(SDK2.RuntimeModel.RuntimeModel), Common.Console.FrontendMessageSource.ISSUE_PANEL, "warning", UIStrings6.consoleTpcdErrorMessage, {
+      return new SDK.ConsoleModel.ConsoleMessage(issuesModel.target().model(SDK.RuntimeModel.RuntimeModel), Common.Console.FrontendMessageSource.ISSUE_PANEL, "warning", UIStrings6.consoleTpcdErrorMessage, {
         url: this.details().request?.url,
         affectedResources: { requestId: this.details().request?.requestId, issueId: this.issueId }
       });
@@ -941,56 +864,6 @@ var sameSiteNoneInsecureWarnSet = {
     }
   ]
 };
-var schemefulSameSiteArticles = [{ link: "https://web.dev/schemeful-samesite/", linkTitle: i18nLazyString4(UIStrings6.howSchemefulSamesiteWorks) }];
-function schemefulSameSiteSubstitutions({ isDestinationSecure, isOriginSecure }) {
-  return /* @__PURE__ */ new Map([
-    // TODO(crbug.com/1168438): Use translated phrases once the issue description is localized.
-    ["PLACEHOLDER_destination", () => isDestinationSecure ? "a secure" : "an insecure"],
-    ["PLACEHOLDER_origin", () => isOriginSecure ? "a secure" : "an insecure"]
-  ]);
-}
-function sameSiteWarnStrictLaxDowngradeStrict(isSecure) {
-  return {
-    file: "SameSiteWarnStrictLaxDowngradeStrict.md",
-    substitutions: schemefulSameSiteSubstitutions({ isDestinationSecure: isSecure, isOriginSecure: !isSecure }),
-    links: schemefulSameSiteArticles
-  };
-}
-function sameSiteExcludeNavigationContextDowngrade(isSecure) {
-  return {
-    file: "SameSiteExcludeNavigationContextDowngrade.md",
-    substitutions: schemefulSameSiteSubstitutions({ isDestinationSecure: isSecure, isOriginSecure: !isSecure }),
-    links: schemefulSameSiteArticles
-  };
-}
-function sameSiteWarnCrossDowngradeRead(isSecure) {
-  return {
-    file: "SameSiteWarnCrossDowngradeRead.md",
-    substitutions: schemefulSameSiteSubstitutions({ isDestinationSecure: isSecure, isOriginSecure: !isSecure }),
-    links: schemefulSameSiteArticles
-  };
-}
-function sameSiteExcludeContextDowngradeRead(isSecure) {
-  return {
-    file: "SameSiteExcludeContextDowngradeRead.md",
-    substitutions: schemefulSameSiteSubstitutions({ isDestinationSecure: isSecure, isOriginSecure: !isSecure }),
-    links: schemefulSameSiteArticles
-  };
-}
-function sameSiteWarnCrossDowngradeSet(isSecure) {
-  return {
-    file: "SameSiteWarnCrossDowngradeSet.md",
-    substitutions: schemefulSameSiteSubstitutions({ isDestinationSecure: !isSecure, isOriginSecure: isSecure }),
-    links: schemefulSameSiteArticles
-  };
-}
-function sameSiteExcludeContextDowngradeSet(isSecure) {
-  return {
-    file: "SameSiteExcludeContextDowngradeSet.md",
-    substitutions: schemefulSameSiteSubstitutions({ isDestinationSecure: isSecure, isOriginSecure: !isSecure }),
-    links: schemefulSameSiteArticles
-  };
-}
 var attributeValueExceedsMaxSize = {
   file: "CookieAttributeValueExceedsMaxSize.md",
   links: []
@@ -1036,21 +909,6 @@ var issueDescriptions3 = /* @__PURE__ */ new Map([
   ["CookieIssue::ExcludeSameSiteNoneInsecure::SetCookie", sameSiteNoneInsecureErrorSet],
   ["CookieIssue::WarnSameSiteNoneInsecure::ReadCookie", sameSiteNoneInsecureWarnRead],
   ["CookieIssue::WarnSameSiteNoneInsecure::SetCookie", sameSiteNoneInsecureWarnSet],
-  ["CookieIssue::WarnSameSiteStrictLaxDowngradeStrict::Secure", sameSiteWarnStrictLaxDowngradeStrict(true)],
-  ["CookieIssue::WarnSameSiteStrictLaxDowngradeStrict::Insecure", sameSiteWarnStrictLaxDowngradeStrict(false)],
-  ["CookieIssue::WarnCrossDowngrade::ReadCookie::Secure", sameSiteWarnCrossDowngradeRead(true)],
-  ["CookieIssue::WarnCrossDowngrade::ReadCookie::Insecure", sameSiteWarnCrossDowngradeRead(false)],
-  ["CookieIssue::WarnCrossDowngrade::SetCookie::Secure", sameSiteWarnCrossDowngradeSet(true)],
-  ["CookieIssue::WarnCrossDowngrade::SetCookie::Insecure", sameSiteWarnCrossDowngradeSet(false)],
-  ["CookieIssue::ExcludeNavigationContextDowngrade::Secure", sameSiteExcludeNavigationContextDowngrade(true)],
-  [
-    "CookieIssue::ExcludeNavigationContextDowngrade::Insecure",
-    sameSiteExcludeNavigationContextDowngrade(false)
-  ],
-  ["CookieIssue::ExcludeContextDowngrade::ReadCookie::Secure", sameSiteExcludeContextDowngradeRead(true)],
-  ["CookieIssue::ExcludeContextDowngrade::ReadCookie::Insecure", sameSiteExcludeContextDowngradeRead(false)],
-  ["CookieIssue::ExcludeContextDowngrade::SetCookie::Secure", sameSiteExcludeContextDowngradeSet(true)],
-  ["CookieIssue::ExcludeContextDowngrade::SetCookie::Insecure", sameSiteExcludeContextDowngradeSet(false)],
   ["CookieIssue::WarnAttributeValueExceedsMaxSize::ReadCookie", attributeValueExceedsMaxSize],
   ["CookieIssue::WarnAttributeValueExceedsMaxSize::SetCookie", attributeValueExceedsMaxSize],
   ["CookieIssue::WarnDomainNonASCII::ReadCookie", warnDomainNonAscii],
@@ -4115,8 +3973,10 @@ __export(IssuesManager_exports, {
   isIssueCodeSupported: () => isIssueCodeSupported
 });
 import * as Common5 from "./../../core/common/common.js";
-import * as Root2 from "./../../core/root/root.js";
-import * as SDK3 from "./../../core/sdk/sdk.js";
+import * as Root from "./../../core/root/root.js";
+import * as SDK2 from "./../../core/sdk/sdk.js";
+import * as Bindings2 from "./../bindings/bindings.js";
+import * as Workspace2 from "./../workspace/workspace.js";
 
 // gen/front_end/models/issues_manager/BounceTrackingIssue.js
 import * as i18n39 from "./../../core/i18n/i18n.js";
@@ -4791,9 +4651,11 @@ var StylesheetLoadingIssue = class _StylesheetLoadingIssue extends Issue {
 // gen/front_end/models/issues_manager/SourceFrameIssuesManager.js
 var SourceFrameIssuesManager = class {
   issuesManager;
-  #sourceFrameMessageManager = new Bindings.PresentationConsoleMessageHelper.PresentationSourceFrameMessageManager();
-  constructor(issuesManager) {
+  #sourceFrameMessageManager;
+  constructor(issuesManager, targetManager, workspace, debuggerWorkspaceBinding, cssWorkspaceBinding) {
     this.issuesManager = issuesManager;
+    this.#sourceFrameMessageManager = new Bindings.PresentationConsoleMessageHelper.PresentationSourceFrameMessageManager(targetManager, workspace, debuggerWorkspaceBinding, cssWorkspaceBinding);
+    this.#sourceFrameMessageManager.enable();
     this.issuesManager.addEventListener("IssueAdded", this.#onIssueAdded, this);
     this.issuesManager.addEventListener("FullUpdateRequired", this.#onFullUpdateRequired, this);
   }
@@ -5125,7 +4987,7 @@ var issueCodeHandlers = /* @__PURE__ */ new Map([
 function isIssueCodeSupported(code) {
   return issueCodeHandlers.has(code);
 }
-function createIssuesFromProtocolIssue(issuesModel, inspectorIssue, frameManager = SDK3.FrameManager.FrameManager.instance()) {
+function createIssuesFromProtocolIssue(issuesModel, inspectorIssue, frameManager = SDK2.FrameManager.FrameManager.instance()) {
   const handler = issueCodeHandlers.get(inspectorIssue.code);
   if (handler) {
     return handler(issuesModel, inspectorIssue, frameManager);
@@ -5153,15 +5015,15 @@ var IssuesManager = class _IssuesManager extends Common5.ObjectWrapper.ObjectWra
   #issuesByOutermostTarget = /* @__PURE__ */ new Map();
   #frameManager;
   #targetManager;
-  constructor(showThirdPartyIssuesSetting, hideIssueSetting, frameManager = SDK3.FrameManager.FrameManager.instance(), targetManager = SDK3.TargetManager.TargetManager.instance()) {
+  constructor(showThirdPartyIssuesSetting, hideIssueSetting, frameManager = SDK2.FrameManager.FrameManager.instance(), targetManager = SDK2.TargetManager.TargetManager.instance(), workspace = Workspace2.Workspace.WorkspaceImpl.instance(), debuggerWorkspaceBinding = Bindings2.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance(), cssWorkspaceBinding = Bindings2.CSSWorkspaceBinding.CSSWorkspaceBinding.instance()) {
     super();
     this.showThirdPartyIssuesSetting = showThirdPartyIssuesSetting;
     this.hideIssueSetting = hideIssueSetting;
     this.#frameManager = frameManager;
     this.#targetManager = targetManager;
-    new SourceFrameIssuesManager(this);
-    this.#targetManager.observeModels(SDK3.IssuesModel.IssuesModel, this);
-    this.#targetManager.addModelListener(SDK3.ResourceTreeModel.ResourceTreeModel, SDK3.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
+    new SourceFrameIssuesManager(this, targetManager, workspace, debuggerWorkspaceBinding, cssWorkspaceBinding);
+    this.#targetManager.observeModels(SDK2.IssuesModel.IssuesModel, this);
+    this.#targetManager.addModelListener(SDK2.ResourceTreeModel.ResourceTreeModel, SDK2.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
     this.#frameManager.addEventListener("FrameAddedToTarget", this.#onFrameAddedToTarget, this);
     this.showThirdPartyIssuesSetting?.addChangeListener(() => this.#updateFilteredIssues());
     this.hideIssueSetting?.addChangeListener(() => this.#updateFilteredIssues());
@@ -5179,16 +5041,16 @@ var IssuesManager = class _IssuesManager extends Common5.ObjectWrapper.ObjectWra
     forceNew: false,
     ensureFirst: false
   }) {
-    if (Root2.DevToolsContext.globalInstance().has(_IssuesManager) && opts.ensureFirst) {
+    if (Root.DevToolsContext.globalInstance().has(_IssuesManager) && opts.ensureFirst) {
       throw new Error('IssuesManager was already created. Either set "ensureFirst" to false or make sure that this invocation is really the first one.');
     }
-    if (!Root2.DevToolsContext.globalInstance().has(_IssuesManager) || opts.forceNew) {
-      Root2.DevToolsContext.globalInstance().set(_IssuesManager, new _IssuesManager(opts.showThirdPartyIssuesSetting, opts.hideIssueSetting, opts.frameManager));
+    if (!Root.DevToolsContext.globalInstance().has(_IssuesManager) || opts.forceNew) {
+      Root.DevToolsContext.globalInstance().set(_IssuesManager, new _IssuesManager(opts.showThirdPartyIssuesSetting, opts.hideIssueSetting, opts.frameManager));
     }
-    return Root2.DevToolsContext.globalInstance().get(_IssuesManager);
+    return Root.DevToolsContext.globalInstance().get(_IssuesManager);
   }
   static removeInstance() {
-    Root2.DevToolsContext.globalInstance().delete(_IssuesManager);
+    Root.DevToolsContext.globalInstance().delete(_IssuesManager);
   }
   #onPrimaryPageChanged(event) {
     const { frame, type } = event.data;
@@ -5199,7 +5061,7 @@ var IssuesManager = class _IssuesManager extends Common5.ObjectWrapper.ObjectWra
       } else if (type === "Activation" && frame.resourceTreeModel().target() === issue.model()?.target()) {
         keptIssues.set(key, issue);
       } else if (issue.code() === "BounceTrackingIssue" || issue.code() === "CookieIssue") {
-        const networkManager = frame.resourceTreeModel().target().model(SDK3.NetworkManager.NetworkManager);
+        const networkManager = frame.resourceTreeModel().target().model(SDK2.NetworkManager.NetworkManager);
         if (networkManager?.requestForLoaderId(frame.loaderId)?.hasUserGesture() === false) {
           keptIssues.set(key, issue);
         }
@@ -5233,7 +5095,7 @@ var IssuesManager = class _IssuesManager extends Common5.ObjectWrapper.ObjectWra
       if (!message) {
         continue;
       }
-      issuesModel.target().model(SDK3.ConsoleModel.ConsoleModel)?.addMessage(message);
+      issuesModel.target().model(SDK2.ConsoleModel.ConsoleModel)?.addMessage(message);
     }
   }
   addIssue(issuesModel, issue) {
@@ -5371,8 +5233,8 @@ var IssuesManager = class _IssuesManager extends Common5.ObjectWrapper.ObjectWra
   }
 };
 globalThis.addIssueForTest = (issue) => {
-  const mainTarget = SDK3.TargetManager.TargetManager.instance().primaryPageTarget();
-  const issuesModel = mainTarget?.model(SDK3.IssuesModel.IssuesModel);
+  const mainTarget = SDK2.TargetManager.TargetManager.instance().primaryPageTarget();
+  const issuesModel = mainTarget?.model(SDK2.IssuesModel.IssuesModel);
   issuesModel?.issueAdded({ issue });
 };
 
@@ -5385,7 +5247,7 @@ __export(RelatedIssue_exports, {
   reveal: () => reveal
 });
 import * as Common6 from "./../../core/common/common.js";
-import * as SDK4 from "./../../core/sdk/sdk.js";
+import * as SDK3 from "./../../core/sdk/sdk.js";
 function issuesAssociatedWithNetworkRequest(issues, request) {
   return issues.filter((issue) => {
     for (const affectedRequest of issue.requests()) {
@@ -5407,10 +5269,10 @@ function issuesAssociatedWithCookie(issues, domain, name, path) {
   });
 }
 function issuesAssociatedWith(issues, obj) {
-  if (obj instanceof SDK4.NetworkRequest.NetworkRequest) {
+  if (obj instanceof SDK3.NetworkRequest.NetworkRequest) {
     return issuesAssociatedWithNetworkRequest(issues, obj);
   }
-  if (obj instanceof SDK4.Cookie.Cookie) {
+  if (obj instanceof SDK3.Cookie.Cookie) {
     return issuesAssociatedWithCookie(issues, obj.domain(), obj.name(), obj.path());
   }
   throw new Error(`issues can not be associated with ${JSON.stringify(obj)}`);
@@ -5437,7 +5299,6 @@ async function reveal(obj, issuesManager, category) {
   }
 }
 export {
-  CheckFormsIssuesTrigger_exports as CheckFormsIssuesTrigger,
   ClientHintIssue_exports as ClientHintIssue,
   ConnectionAllowlistIssue_exports as ConnectionAllowlistIssue,
   ContentSecurityPolicyIssue_exports as ContentSecurityPolicyIssue,

@@ -5,6 +5,7 @@ import '../../models/workspace/workspace-meta.js';
 import '../../Images/Images.js';
 import '../../models/logs/logs-meta.js';
 import '../../models/persistence/persistence-meta.js';
+import '../../models/badges/badges-meta.js';
 import '../../panels/browser_debugger/browser_debugger-meta.js';
 import '../../panels/developer_resources/developer_resources-meta.js';
 import '../../panels/mobile_throttling/mobile_throttling-meta.js';

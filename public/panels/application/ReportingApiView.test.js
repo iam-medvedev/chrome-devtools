@@ -212,6 +212,7 @@ describeWithEnvironment('ReportingApiView', () => {
                 focusedReport: reports[0],
                 onReportSelected: () => { },
             }, undefined, target);
+            document.activeElement?.blur();
             await assertScreenshot('application/report_details.png');
             Application.ReportingApiView.DEFAULT_VIEW({
                 hasReports: true,
@@ -221,6 +222,7 @@ describeWithEnvironment('ReportingApiView', () => {
                 focusedReport: reports[1],
                 onReportSelected: () => { },
             }, undefined, target);
+            document.activeElement?.blur();
             await assertScreenshot('application/report_details_updated.png');
         });
     });

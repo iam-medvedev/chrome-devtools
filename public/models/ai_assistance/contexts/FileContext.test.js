@@ -4,33 +4,23 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import * as Platform from '../../../core/platform/platform.js';
-import * as SDK from '../../../core/sdk/sdk.js';
 import { createUISourceCode } from '../../../testing/AiAssistanceHelpers.js';
-import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
-import * as Bindings from '../../bindings/bindings.js';
-import * as Workspace from '../../workspace/workspace.js';
+import { setupSettingsHooks } from '../../../testing/SettingsHelpers.js';
+import { TestUniverse } from '../../../testing/TestUniverse.js';
 import * as AiAssistance from '../ai_assistance.js';
 const { urlString } = Platform.DevToolsPath;
-describeWithEnvironment('FileContext', () => {
+describe('FileContext', () => {
+    setupSettingsHooks();
+    let universe;
     beforeEach(() => {
-        const workspace = Workspace.Workspace.WorkspaceImpl.instance();
-        const targetManager = SDK.TargetManager.TargetManager.instance();
-        const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);
-        const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
-        Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
-            forceNew: true,
-            resourceMapping,
-            targetManager,
-            ignoreListManager,
-            workspace,
-        });
+        universe = new TestUniverse();
     });
     it('should return URL, item, and title correctly', async () => {
         const uiSourceCode = await createUISourceCode({
             url: urlString `https://example.com/script.js`,
             content: 'console.log("hello");',
         });
-        const context = new AiAssistance.FileContext.FileContext(uiSourceCode);
+        const context = new AiAssistance.FileContext.FileContext(uiSourceCode, universe.debuggerWorkspaceBinding);
         assert.strictEqual(context.getURL(), 'https://example.com/script.js');
         assert.strictEqual(context.getItem(), uiSourceCode);
         assert.strictEqual(context.getTitle(), 'script.js');
@@ -41,7 +31,7 @@ describeWithEnvironment('FileContext', () => {
             content: 'console.log("hello");',
             requestContentData: true,
         });
-        const context = new AiAssistance.FileContext.FileContext(uiSourceCode);
+        const context = new AiAssistance.FileContext.FileContext(uiSourceCode, universe.debuggerWorkspaceBinding);
         const promptDetails = await context.getPromptDetails();
         assert.strictEqual(promptDetails, `# Selected file
 File name: script.js
@@ -57,7 +47,7 @@ console.log("hello");
             content: 'console.log("hello");',
             requestContentData: true,
         });
-        const context = new AiAssistance.FileContext.FileContext(uiSourceCode);
+        const context = new AiAssistance.FileContext.FileContext(uiSourceCode, universe.debuggerWorkspaceBinding);
         const details = await context.getUserFacingDetails();
         assert.deepEqual(details, [
             {
@@ -76,7 +66,7 @@ console.log("hello");
             url: urlString `https://example.com/script.js`,
             content: 'console.log("hello");',
         });
-        const context = new AiAssistance.FileContext.FileContext(uiSourceCode);
+        const context = new AiAssistance.FileContext.FileContext(uiSourceCode, universe.debuggerWorkspaceBinding);
         const requestContentDataSpy = sinon.spy(uiSourceCode, 'requestContentData');
         await context.refresh();
         sinon.assert.calledOnce(requestContentDataSpy);

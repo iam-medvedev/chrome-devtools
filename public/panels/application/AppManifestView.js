@@ -844,7 +844,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
     ${isEmpty ? widget(UI.EmptyWidget.EmptyWidget, {
         header: i18nString(UIStrings.noManifestDetected),
         text: i18nString(UIStrings.manifestDescription),
-        link: 'https://web.dev/add-manifest/'
+        link: 'https://web.dev/add-manifest/',
     }) : html `
     <devtools-report .data=${{ reportTitle: i18nString(UIStrings.appManifest), reportUrl: url }}>
       ${renderErrors(warnings, errors, imageErrors, output)}

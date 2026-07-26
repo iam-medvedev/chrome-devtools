@@ -62,7 +62,7 @@ const mockScript1 = {
         isDefault: true,
         type: 'type',
     },
-    buildId: ''
+    buildId: '',
 };
 const mockScript2 = {
     scriptId: '2',
@@ -85,7 +85,7 @@ const mockScript2 = {
         isDefault: true,
         type: 'type',
     },
-    buildId: ''
+    buildId: '',
 };
 const mockResource = {
     url: 'example.com',

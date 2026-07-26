@@ -26,6 +26,7 @@ import * as PreloadingTreeElement from './PreloadingTreeElement.js';
 import * as ReportingApiTreeElement from './ReportingApiTreeElement.js';
 import * as ReportingApiView from './ReportingApiView.js';
 import * as ResourcesPanel from './ResourcesPanel.js';
+import * as ServiceWorkerCacheTreeElement from './ServiceWorkerCacheTreeElement.js';
 import * as ServiceWorkerCacheViews from './ServiceWorkerCacheViews.js';
 import * as ServiceWorkersView from './ServiceWorkersView.js';
 import * as ServiceWorkerUpdateCycleView from './ServiceWorkerUpdateCycleView.js';
@@ -67,6 +68,7 @@ export {
   ReportingApiTreeElement,
   ReportingApiView,
   ResourcesPanel,
+  ServiceWorkerCacheTreeElement,
   ServiceWorkerCacheViews,
   ServiceWorkersView,
   ServiceWorkerUpdateCycleView,

@@ -5,16 +5,21 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as Platform from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
+import * as TextUtils from '../../../core/text_utils/text_utils.js';
 import { assertIsError, assertIsResult, } from '../../../testing/AiAssistanceHelpers.js';
-import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
-import * as Logs from '../../logs/logs.js';
-import * as TextUtils from '../../text_utils/text_utils.js';
+import { deinitializeGlobalVars } from '../../../testing/EnvironmentHelpers.js';
+import { TestUniverse } from '../../../testing/TestUniverse.js';
 import * as AiAssistance from '../ai_assistance.js';
 const { urlString } = Platform.DevToolsPath;
-describeWithEnvironment('GetNetworkRequestDetailsTool', () => {
+describe('GetNetworkRequestDetailsTool', () => {
+    let universe;
     let networkLog;
     beforeEach(() => {
-        networkLog = Logs.NetworkLog.NetworkLog.instance();
+        universe = new TestUniverse();
+        networkLog = universe.networkLog;
+    });
+    afterEach(async () => {
+        await deinitializeGlobalVars();
     });
     it('retrieves details successfully', async () => {
         const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://example.com/api/users`, urlString `https://example.com/`, null, null, null);
@@ -25,7 +30,7 @@ describeWithEnvironment('GetNetworkRequestDetailsTool', () => {
             return Promise.resolve(new TextUtils.ContentData.ContentData('{}', false, 'application/json', 'utf-8'));
         };
         sinon.stub(networkLog, 'requests').returns([request]);
-        const tool = new AiAssistance.GetNetworkRequestDetails.GetNetworkRequestDetailsTool();
+        const tool = new AiAssistance.GetNetworkRequestDetails.GetNetworkRequestDetailsTool(networkLog);
         const context = {
             conversationContext: null,
             getEstablishedOrigin: () => 'https://example.com',
@@ -39,7 +44,7 @@ describeWithEnvironment('GetNetworkRequestDetailsTool', () => {
     });
     it('returns error if request is not found', async () => {
         sinon.stub(networkLog, 'requests').returns([]);
-        const tool = new AiAssistance.GetNetworkRequestDetails.GetNetworkRequestDetailsTool();
+        const tool = new AiAssistance.GetNetworkRequestDetails.GetNetworkRequestDetailsTool(networkLog);
         const context = {
             conversationContext: null,
             getEstablishedOrigin: () => 'https://example.com',
@@ -51,7 +56,7 @@ describeWithEnvironment('GetNetworkRequestDetailsTool', () => {
     it('returns error if request origin does not match established origin', async () => {
         const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://another.com/api/users`, urlString `https://another.com/`, null, null, null);
         sinon.stub(networkLog, 'requests').returns([request]);
-        const tool = new AiAssistance.GetNetworkRequestDetails.GetNetworkRequestDetailsTool();
+        const tool = new AiAssistance.GetNetworkRequestDetails.GetNetworkRequestDetailsTool(networkLog);
         const context = {
             conversationContext: null,
             getEstablishedOrigin: () => 'https://example.com',
@@ -61,7 +66,7 @@ describeWithEnvironment('GetNetworkRequestDetailsTool', () => {
         assert.strictEqual(response.error, 'No request found');
     });
     it('returns error for opaque origins', async () => {
-        const tool = new AiAssistance.GetNetworkRequestDetails.GetNetworkRequestDetailsTool();
+        const tool = new AiAssistance.GetNetworkRequestDetails.GetNetworkRequestDetailsTool(networkLog);
         const context = {
             conversationContext: null,
             getEstablishedOrigin: () => 'null',

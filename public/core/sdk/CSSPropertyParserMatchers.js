@@ -4,7 +4,7 @@
 /* eslint-disable @devtools/no-imperative-dom-api */
 import * as Common from '../../core/common/common.js';
 import { CSSMetadata, cssMetadata, CubicBezierKeywordValues, } from './CSSMetadata.js';
-import { ASTUtils, matchDeclaration, matcherBase, tokenizeDeclaration } from './CSSPropertyParser.js';
+import { ASTUtils, matchDeclaration, matcherBase, tokenizeDeclaration, } from './CSSPropertyParser.js';
 export class BaseVariableMatch {
     text;
     node;
@@ -203,6 +203,17 @@ function getCssEvaluationElement() {
         }
     }
     return cssEvaluationElement;
+}
+/**
+ * If a test calls localEvalCSS, an element is created on demand for this
+ * purpose. This element is not removed from the DOM and will leak between tests
+ * if not removed.
+ */
+export function removeCSSEvaluationElement() {
+    if (cssEvaluationElement) {
+        document.body.removeChild(cssEvaluationElement);
+        cssEvaluationElement = null;
+    }
 }
 /**
  * These functions use an element in the frontend to evaluate CSS. The advantage
@@ -960,7 +971,7 @@ export class LengthMatcher extends matcherBase(LengthMatch) {
         'em', 'ex', 'ch', 'cap', 'ic', 'lh', 'rem', 'rex', 'rch', 'rlh', 'ric', 'rcap', 'pt', 'pc',
         'in', 'cm', 'mm', 'Q', 'vw', 'vh', 'vi', 'vb', 'vmin', 'vmax', 'dvw', 'dvh', 'dvi', 'dvb',
         'dvmin', 'dvmax', 'svw', 'svh', 'svi', 'svb', 'svmin', 'svmax', 'lvw', 'lvh', 'lvi', 'lvb', 'lvmin', 'lvmax',
-        'cqw', 'cqh', 'cqi', 'cqb', 'cqmin', 'cqmax', 'cqem', 'cqlh', 'cqex', 'cqch', '%'
+        'cqw', 'cqh', 'cqi', 'cqb', 'cqmin', 'cqmax', 'cqem', 'cqlh', 'cqex', 'cqch', '%',
     ]);
     matches(node, matching) {
         if (node.name !== 'NumberLiteral') {

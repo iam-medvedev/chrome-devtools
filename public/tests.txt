@@ -62,6 +62,14 @@ core/sdk/RuntimeModel.test.js
 core/sdk/ServerSentEventsProtocol.test.js
 core/sdk/Target.test.js
 core/sdk/TargetManager.test.js
+core/text_utils/ContentData.test.js
+core/text_utils/StaticContentProvider.test.js
+core/text_utils/StreamingContentData.test.js
+core/text_utils/Text.test.js
+core/text_utils/TextCursor.test.js
+core/text_utils/TextRange.test.js
+core/text_utils/TextUtils.test.js
+core/text_utils/WasmDisassembly.test.js
 entrypoints/formatter_worker/CSSFormatter.test.js
 entrypoints/formatter_worker/FormattedContentBuilder.test.js
 entrypoints/formatter_worker/FormatterWorker.test.js
@@ -106,20 +114,13 @@ models/stack_trace/StackTrace.test.js
 models/stack_trace/StackTraceImpl.test.js
 models/stack_trace/StackTraceModel.test.js
 models/stack_trace/Trie.test.js
-models/text_utils/ContentData.test.js
-models/text_utils/StaticContentProvider.test.js
-models/text_utils/StreamingContentData.test.js
-models/text_utils/Text.test.js
-models/text_utils/TextCursor.test.js
-models/text_utils/TextRange.test.js
-models/text_utils/TextUtils.test.js
-models/text_utils/WasmDisassembly.test.js
 models/workspace/IgnoreListManager.test.js
 models/workspace/SearchConfig.test.js
 models/workspace/UISourceCode.test.js
 models/workspace/WorkspaceImpl.test.js
 testing/TestIdGeneration.test.js
 core/sdk/CSSMatchedStyles.test.js
+core/sdk/CSSMetadata.test.js
 core/sdk/CSSModel.test.js
 core/sdk/CSSProperty.test.js
 core/sdk/CSSPropertyParser.test.js
@@ -142,6 +143,7 @@ core/sdk/OverlayModel.test.js
 core/sdk/PreloadingModel.test.js
 core/sdk/RehydratingConnection.test.js
 core/sdk/RemoteObject.test.js
+core/sdk/Resource.test.js
 core/sdk/ResourceTreeModel.test.js
 core/sdk/ScopeTreeCache.test.js
 core/sdk/ScreenCaptureModel.test.js
@@ -167,7 +169,6 @@ entrypoints/node_app/app/NodeMain.test.js
 entrypoints/wasmparser_worker/wasmparser_worker.test.js
 models/ai_assistance/data_formatters/FileFormatter.test.js
 models/ai_assistance/data_formatters/UnitFormatters.test.js
-models/ai_assistance/AgentProject.test.js
 models/ai_assistance/AiAgent2.test.js
 models/ai_assistance/AiConversation.test.js
 models/ai_assistance/AiHistoryStorage.test.js
@@ -184,7 +185,6 @@ models/ai_assistance/agents/AiAgent.test.js
 models/ai_assistance/agents/ContextSelectionAgent.test.js
 models/ai_assistance/agents/FileAgent.test.js
 models/ai_assistance/agents/NetworkAgent.test.js
-models/ai_assistance/agents/PatchAgent.test.js
 models/ai_assistance/agents/PerformanceAgent.test.js
 models/ai_assistance/agents/StorageAgent.test.js
 models/ai_assistance/agents/StylingAgent.test.js
@@ -233,7 +233,6 @@ models/extensions/HostUrlPattern.test.js
 models/extensions/LanguageExtensionEndpoint.test.js
 models/extensions/RecorderPluginManager.test.js
 models/geometry/Geometry.test.js
-models/issues_manager/CheckFormsIssuesTrigger.test.js
 models/issues_manager/IssuesManager.test.js
 models/issues_manager/SelectivePermissionsInterventionIssue.test.js
 models/javascript_metadata/JavaScriptMetadata.test.js
@@ -343,8 +342,6 @@ panels/accessibility/ARIAAttributesView.test.js
 panels/accessibility/AccessibilitySidebarView.test.js
 panels/ai_assistance/AiAssistancePanel.test.js
 panels/ai_assistance/ExportConversation.test.js
-panels/ai_assistance/PatchWidget.test.js
-panels/ai_assistance/SelectWorkspaceDialog.test.js
 panels/ai_assistance/components/AIv2MarkdownRenderer.test.js
 panels/ai_assistance/components/AccessibilityAgentMarkdownRenderer.test.js
 panels/ai_assistance/components/ChatInput.test.js
@@ -353,6 +350,7 @@ panels/ai_assistance/components/ChatView.test.js
 panels/ai_assistance/components/DisabledWidget.test.js
 panels/ai_assistance/components/ExploreWidget.test.js
 panels/ai_assistance/components/ExportForAgentsDialog.test.js
+panels/ai_assistance/components/ImageResize.test.js
 panels/ai_assistance/components/MarkdownRendererWithCodeBlock.test.js
 panels/ai_assistance/components/OptInChangeDialog.test.js
 panels/ai_assistance/components/WalkthroughUtils.test.js
@@ -377,6 +375,7 @@ panels/application/OriginTrialTreeView.test.js
 panels/application/PreloadingTreeElement.test.js
 panels/application/ReportingApiTreeElement.test.js
 panels/application/ReportingApiView.test.js
+panels/application/ServiceWorkerCacheTreeElement.test.js
 panels/application/ServiceWorkerCacheViews.test.js
 panels/application/ServiceWorkerUpdateCycleView.test.js
 panels/application/ServiceWorkersView.test.js
@@ -453,6 +452,7 @@ panels/elements/CSSValueTraceView.test.js
 panels/elements/ClassesPaneWidget.test.js
 panels/elements/ColorSwatchPopoverIcon.test.js
 panels/elements/ComputedStyleWidget.test.js
+panels/elements/DOMPath.test.js
 panels/elements/DOMTreeWidget.test.js
 panels/elements/ElementStatePaneWidget.test.js
 panels/elements/ElementsPanel.test.js
@@ -503,6 +503,7 @@ panels/linear_memory_inspector/components/LinearMemoryNavigator.test.js
 panels/linear_memory_inspector/components/LinearMemoryViewer.test.js
 panels/linear_memory_inspector/components/ValueInterpreterDisplay.test.js
 panels/linear_memory_inspector/components/ValueInterpreterSettings.test.js
+panels/media/EventDisplayTable.test.js
 panels/media/MainView.test.js
 panels/media/PlayerListView.test.js
 panels/media/PlayerMessagesView.test.js
@@ -790,6 +791,7 @@ ui/legacy/components/object_ui/CustomPreviewComponent.test.js
 ui/legacy/components/object_ui/JavaScriptREPL.test.js
 ui/legacy/components/object_ui/ObjectPopoverHelper.test.js
 ui/legacy/components/object_ui/ObjectPropertiesSection.test.js
+ui/legacy/components/object_ui/RemoteObjectPreviewFormatter.test.js
 ui/legacy/components/perf_ui/ChartViewport.test.js
 ui/legacy/components/perf_ui/FilmStripView.test.js
 ui/legacy/components/perf_ui/FlameChart.test.js
@@ -813,6 +815,7 @@ ui/legacy/theme_support/ThemeSupport.test.js
 ui/lit/i18n-template.test.js
 ui/lit/render.test.js
 ui/lit/strip-whitespace.test.js
+ui/settings/SettingUIRegistration.test.js
 ui/visual_logging/Debugging.test.js
 ui/visual_logging/DomState.test.js
 ui/visual_logging/LoggingConfig.test.js

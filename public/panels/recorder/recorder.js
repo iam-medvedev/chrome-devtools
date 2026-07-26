@@ -624,6 +624,7 @@ var RecordingStateChangedEvent = class _RecordingStateChangedEvent extends Event
 var RecorderPanel_exports = {};
 __export(RecorderPanel_exports, {
   ActionDelegate: () => ActionDelegate,
+  DEFAULT_VIEW: () => DEFAULT_VIEW11,
   RecorderPanel: () => RecorderPanel
 });
 import "./../../ui/kit/kit.js";
@@ -640,7 +641,7 @@ import * as Emulation from "./../emulation/emulation.js";
 import * as Tracing from "./../../services/tracing/tracing.js";
 import * as Buttons8 from "./../../ui/components/buttons/buttons.js";
 import * as UI11 from "./../../ui/legacy/legacy.js";
-import * as Lit11 from "./../../ui/lit/lit.js";
+import { Directives as Directives5, html as html11, render as render11 } from "./../../ui/lit/lit.js";
 import * as VisualLogging9 from "./../../ui/visual_logging/visual_logging.js";
 import * as Converters from "./converters/converters.js";
 import * as Extensions2 from "./extensions/extensions.js";
@@ -836,11 +837,7 @@ devtools-recording-list-view {
 // gen/front_end/panels/recorder/RecordingListView.js
 var RecordingListView_exports = {};
 __export(RecordingListView_exports, {
-  CreateRecordingEvent: () => CreateRecordingEvent,
   DEFAULT_VIEW: () => DEFAULT_VIEW3,
-  DeleteRecordingEvent: () => DeleteRecordingEvent,
-  OpenRecordingEvent: () => OpenRecordingEvent,
-  PlayRecordingEvent: () => PlayRecordingEvent,
   RecordingListView: () => RecordingListView
 });
 import "./../../ui/kit/kit.js";
@@ -976,36 +973,6 @@ var UIStrings2 = {
 };
 var str_2 = i18n3.i18n.registerUIStrings("panels/recorder/RecordingListView.ts", UIStrings2);
 var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
-var CreateRecordingEvent = class _CreateRecordingEvent extends Event {
-  static eventName = "createrecording";
-  constructor() {
-    super(_CreateRecordingEvent.eventName, { composed: true, bubbles: true });
-  }
-};
-var DeleteRecordingEvent = class _DeleteRecordingEvent extends Event {
-  storageName;
-  static eventName = "deleterecording";
-  constructor(storageName) {
-    super(_DeleteRecordingEvent.eventName, { composed: true, bubbles: true });
-    this.storageName = storageName;
-  }
-};
-var OpenRecordingEvent = class _OpenRecordingEvent extends Event {
-  storageName;
-  static eventName = "openrecording";
-  constructor(storageName) {
-    super(_OpenRecordingEvent.eventName, { composed: true, bubbles: true });
-    this.storageName = storageName;
-  }
-};
-var PlayRecordingEvent = class _PlayRecordingEvent extends Event {
-  storageName;
-  static eventName = "playrecording";
-  constructor(storageName) {
-    super(_PlayRecordingEvent.eventName, { composed: true, bubbles: true });
-    this.storageName = storageName;
-  }
-};
 var DEFAULT_VIEW3 = (input, _output, target) => {
   const { recordings, replayAllowed, onCreateClick, onDeleteClick, onOpenClick, onPlayRecordingClick, onKeyDown } = input;
   Lit3.render(html3`
@@ -1078,6 +1045,10 @@ var RecordingListView = class extends UI3.Widget.Widget {
   #recordings = [];
   #replayAllowed = true;
   #view;
+  onCreateRecording;
+  onDeleteRecording;
+  onOpenRecording;
+  onPlayRecording;
   constructor(element, view) {
     super(element, { useShadowDom: true });
     this.#view = view || DEFAULT_VIEW3;
@@ -1091,19 +1062,19 @@ var RecordingListView = class extends UI3.Widget.Widget {
     this.performUpdate();
   }
   #onCreateClick() {
-    this.contentElement.dispatchEvent(new CreateRecordingEvent());
+    this.onCreateRecording?.();
   }
   #onDeleteClick(storageName, event) {
     event.stopPropagation();
-    this.contentElement.dispatchEvent(new DeleteRecordingEvent(storageName));
+    this.onDeleteRecording?.(storageName);
   }
   #onOpenClick(storageName, event) {
     event.stopPropagation();
-    this.contentElement.dispatchEvent(new OpenRecordingEvent(storageName));
+    this.onOpenRecording?.(storageName);
   }
   #onPlayRecordingClick(storageName, event) {
     event.stopPropagation();
-    this.contentElement.dispatchEvent(new PlayRecordingEvent(storageName));
+    this.onPlayRecording?.(storageName);
   }
   #onKeyDown(storageName, event) {
     if (event.key !== "Enter") {
@@ -1978,14 +1949,7 @@ var ReplaySection = class extends UI5.Widget.Widget {
 // gen/front_end/panels/recorder/StepView.js
 var StepView_exports = {};
 __export(StepView_exports, {
-  AddBreakpointEvent: () => AddBreakpointEvent,
-  AddStep: () => AddStep,
-  CaptureSelectorsEvent: () => CaptureSelectorsEvent,
-  CopyStepEvent: () => CopyStepEvent,
   DEFAULT_VIEW: () => DEFAULT_VIEW9,
-  RemoveBreakpointEvent: () => RemoveBreakpointEvent,
-  RemoveStep: () => RemoveStep,
-  StepChanged: () => StepChanged,
   StepView: () => StepView
 });
 import "./../../ui/kit/kit.js";
@@ -2001,7 +1965,6 @@ import * as Models6 from "./models/models.js";
 var StepEditor_exports = {};
 __export(StepEditor_exports, {
   EditorState: () => EditorState,
-  StepEditedEvent: () => StepEditedEvent,
   StepEditor: () => StepEditor
 });
 import * as i18n11 from "./../../core/i18n/i18n.js";
@@ -2017,7 +1980,6 @@ import * as Models5 from "./models/models.js";
 var SelectorPicker_exports = {};
 __export(SelectorPicker_exports, {
   DEFAULT_VIEW: () => DEFAULT_VIEW6,
-  RequestSelectorAttributeEvent: () => RequestSelectorAttributeEvent,
   SelectorPicker: () => SelectorPicker
 });
 import * as Common from "./../../core/common/common.js";
@@ -2052,17 +2014,6 @@ var selectorPicker_css_default = `/*
 import * as Util from "./util/util.js";
 var { html: html6 } = Lit6;
 var BINDING_NAME = "captureSelectors";
-var RequestSelectorAttributeEvent = class _RequestSelectorAttributeEvent extends Event {
-  static eventName = "requestselectorattribute";
-  send;
-  constructor(send) {
-    super(_RequestSelectorAttributeEvent.eventName, {
-      bubbles: true,
-      composed: true
-    });
-    this.send = send;
-  }
-};
 var UIStrings5 = {
   /**
    * @description The title of a button that allows you to select an element on the page and update CSS/ARIA selectors.
@@ -2588,14 +2539,6 @@ var UIStrings6 = {
 };
 var str_6 = i18n11.i18n.registerUIStrings("panels/recorder/StepEditor.ts", UIStrings6);
 var i18nString6 = i18n11.i18n.getLocalizedString.bind(void 0, str_6);
-var StepEditedEvent = class _StepEditedEvent extends Event {
-  static eventName = "stepedited";
-  data;
-  constructor(step) {
-    super(_StepEditedEvent.eventName, { bubbles: true, composed: true });
-    this.data = step;
-  }
-};
 var cleanUndefineds = (value2) => {
   return JSON.parse(JSON.stringify(value2));
 };
@@ -3145,6 +3088,8 @@ var StepEditor = class extends UI7.Widget.Widget {
   #isTypeEditable = true;
   #disabled = false;
   #view;
+  onStepEdited;
+  onAttributeRequested;
   constructor(element, view = DEFAULT_VIEW7) {
     super(element, { useShadowDom: true });
     this.#state = { type: Models5.Schema.StepType.WaitForElement };
@@ -3182,7 +3127,7 @@ var StepEditor = class extends UI7.Widget.Widget {
   }
   #commit(updatedState) {
     try {
-      this.element.dispatchEvent(new StepEditedEvent(EditorState.toStep(updatedState)));
+      this.onStepEdited?.(EditorState.toStep(updatedState));
       this.#state = updatedState;
     } catch (error) {
       this.#error = error.message;
@@ -3199,7 +3144,7 @@ var StepEditor = class extends UI7.Widget.Widget {
     }));
   };
   #handleAttributeRequested = (send) => {
-    this.element.dispatchEvent(new RequestSelectorAttributeEvent(send));
+    this.onAttributeRequested?.(send);
   };
   #handleAddOrRemoveClick = (assignments, query) => (event) => {
     event.preventDefault();
@@ -3852,66 +3797,6 @@ var UIStrings7 = {
 };
 var str_7 = i18n13.i18n.registerUIStrings("panels/recorder/StepView.ts", UIStrings7);
 var i18nString7 = i18n13.i18n.getLocalizedString.bind(void 0, str_7);
-var CaptureSelectorsEvent = class _CaptureSelectorsEvent extends Event {
-  static eventName = "captureselectors";
-  data;
-  constructor(step) {
-    super(_CaptureSelectorsEvent.eventName, { bubbles: true, composed: true });
-    this.data = step;
-  }
-};
-var CopyStepEvent = class _CopyStepEvent extends Event {
-  static eventName = "copystep";
-  step;
-  constructor(step) {
-    super(_CopyStepEvent.eventName, { bubbles: true, composed: true });
-    this.step = step;
-  }
-};
-var StepChanged = class _StepChanged extends Event {
-  static eventName = "stepchanged";
-  currentStep;
-  newStep;
-  constructor(currentStep, newStep) {
-    super(_StepChanged.eventName, { bubbles: true, composed: true });
-    this.currentStep = currentStep;
-    this.newStep = newStep;
-  }
-};
-var AddStep = class _AddStep extends Event {
-  static eventName = "addstep";
-  position;
-  stepOrSection;
-  constructor(stepOrSection, position) {
-    super(_AddStep.eventName, { bubbles: true, composed: true });
-    this.stepOrSection = stepOrSection;
-    this.position = position;
-  }
-};
-var RemoveStep = class _RemoveStep extends Event {
-  static eventName = "removestep";
-  step;
-  constructor(step) {
-    super(_RemoveStep.eventName, { bubbles: true, composed: true });
-    this.step = step;
-  }
-};
-var AddBreakpointEvent = class _AddBreakpointEvent extends Event {
-  static eventName = "addbreakpoint";
-  index;
-  constructor(index) {
-    super(_AddBreakpointEvent.eventName, { bubbles: true, composed: true });
-    this.index = index;
-  }
-};
-var RemoveBreakpointEvent = class _RemoveBreakpointEvent extends Event {
-  static eventName = "removebreakpoint";
-  index;
-  constructor(index) {
-    super(_RemoveBreakpointEvent.eventName, { bubbles: true, composed: true });
-    this.index = index;
-  }
-};
 var COPY_ACTION_PREFIX = "copy-step-as-";
 function getStepTypeTitle(input) {
   if (input.section) {
@@ -4081,16 +3966,19 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
         <div class="details">
           ${input.step && html9`<devtools-widget ${widget3(StepEditor, {
     step: input.step,
-    disabled: input.isPlaying
+    disabled: input.isPlaying,
+    onStepEdited: input.stepEdited,
+    onAttributeRequested: input.onAttributeRequested
   })}
-            class=${input.isSelected ? "is-selected" : ""}
-            @stepedited=${input.stepEdited}></devtools-widget>`}
+            class=${input.isSelected ? "is-selected" : ""}></devtools-widget>`}
           ${input.section?.causingStep && html9`<devtools-widget ${widget3(StepEditor, {
     step: input.section.causingStep,
     isTypeEditable: false,
-    disabled: input.isPlaying
-  })}
-            @stepedited=${input.stepEdited}></devtools-widget>`}
+    disabled: input.isPlaying,
+    onStepEdited: input.stepEdited,
+    onAttributeRequested: input.onAttributeRequested
+  })}></devtools-widget>`}
+          }
         </div>
         ${input.error && html9`
           <div class="error" role="alert">
@@ -4105,6 +3993,13 @@ var StepView = class extends UI9.Widget.Widget {
   #observer = new IntersectionObserver((result) => {
     this.#viewInput.isVisible = result[0].isIntersecting;
   });
+  onStepChanged;
+  onAddStep;
+  onRemoveStep;
+  onAddBreakpoint;
+  onRemoveBreakpoint;
+  onCopyStep;
+  onAttributeRequested;
   #viewInput = {
     state: "default",
     showDetails: false,
@@ -4124,6 +4019,7 @@ var StepView = class extends UI9.Widget.Widget {
     isSelected: false,
     actions: [],
     stepEdited: this.#stepEdited.bind(this),
+    onAttributeRequested: (send) => this.onAttributeRequested?.(send),
     onBreakpointClick: this.#onBreakpointClick.bind(this),
     handleStepAction: this.#handleStepAction.bind(this),
     toggleShowDetails: this.#toggleShowDetails.bind(this),
@@ -4250,12 +4146,12 @@ var StepView = class extends UI9.Widget.Widget {
       event.preventDefault();
     }
   }
-  #stepEdited(event) {
+  #stepEdited(newStep) {
     const step = this.#viewInput.step || this.#viewInput.section?.causingStep;
     if (!step) {
       throw new Error("Expected step.");
     }
-    this.contentElement.dispatchEvent(new StepChanged(step, event.data));
+    this.onStepChanged?.(step, newStep);
   }
   #handleStepAction(event) {
     switch (event.itemValue) {
@@ -4264,11 +4160,11 @@ var StepView = class extends UI9.Widget.Widget {
         if (!stepOrSection) {
           throw new Error("Expected step or section.");
         }
-        this.contentElement.dispatchEvent(new AddStep(
+        this.onAddStep?.(
           stepOrSection,
           "before"
           /* AddStepPosition.BEFORE */
-        ));
+        );
         break;
       }
       case "add-step-after": {
@@ -4276,11 +4172,11 @@ var StepView = class extends UI9.Widget.Widget {
         if (!stepOrSection) {
           throw new Error("Expected step or section.");
         }
-        this.contentElement.dispatchEvent(new AddStep(
+        this.onAddStep?.(
           stepOrSection,
           "after"
           /* AddStepPosition.AFTER */
-        ));
+        );
         break;
       }
       case "remove-step": {
@@ -4288,21 +4184,21 @@ var StepView = class extends UI9.Widget.Widget {
         if (!this.#viewInput.step && !causingStep) {
           throw new Error("Expected step.");
         }
-        this.contentElement.dispatchEvent(new RemoveStep(this.#viewInput.step || causingStep));
+        this.onRemoveStep?.(this.#viewInput.step || causingStep);
         break;
       }
       case "add-breakpoint": {
         if (!this.#viewInput.step) {
           throw new Error("Expected step");
         }
-        this.contentElement.dispatchEvent(new AddBreakpointEvent(this.#viewInput.stepIndex));
+        this.onAddBreakpoint?.(this.#viewInput.stepIndex);
         break;
       }
       case "remove-breakpoint": {
         if (!this.#viewInput.step) {
           throw new Error("Expected step");
         }
-        this.contentElement.dispatchEvent(new RemoveBreakpointEvent(this.#viewInput.stepIndex));
+        this.onRemoveBreakpoint?.(this.#viewInput.stepIndex);
         break;
       }
       default: {
@@ -4318,15 +4214,15 @@ var StepView = class extends UI9.Widget.Widget {
         if (this.#viewInput.recorderSettings) {
           this.#viewInput.recorderSettings.preferredCopyFormat = converterId;
         }
-        this.contentElement.dispatchEvent(new CopyStepEvent(structuredClone(copyStep)));
+        this.onCopyStep?.(structuredClone(copyStep));
       }
     }
   }
   #onBreakpointClick() {
     if (this.#viewInput.hasBreakpoint) {
-      this.contentElement.dispatchEvent(new RemoveBreakpointEvent(this.#viewInput.stepIndex));
+      this.onRemoveBreakpoint?.(this.#viewInput.stepIndex);
     } else {
-      this.contentElement.dispatchEvent(new AddBreakpointEvent(this.#viewInput.stepIndex));
+      this.onAddBreakpoint?.(this.#viewInput.stepIndex);
     }
     this.requestUpdate();
   }
@@ -4829,13 +4725,19 @@ function renderSections(input) {
     hasBreakpoint: false,
     removable: input.recording.steps.length > 1 && Boolean(section5.causingStep),
     onStepClick: input.onStepClick,
-    onStepHover: input.onStepHover
+    onStepHover: input.onStepHover,
+    onStepChanged: input.onStepChanged,
+    onAddStep: input.onAddStep,
+    onRemoveStep: input.onRemoveStep,
+    onAddBreakpoint: input.onAddBreakpoint,
+    onRemoveBreakpoint: input.onRemoveBreakpoint,
+    onAttributeRequested: input.onAttributeRequested,
+    onCopyStep: input.onCopyStep
   })}
                   ${section5.steps.map((step) => {
     const stepIndex = input.recording.steps.indexOf(step);
     return html10`
                       <devtools-widget
-                      @copystep=${input.onCopyStep}
                       ${widget4(StepView, {
       step,
       state: input.getStepState(step),
@@ -4855,7 +4757,14 @@ function renderSections(input) {
       isSelected: input.selectedStep === step,
       recorderSettings: input.recorderSettings ?? void 0,
       onStepClick: input.onStepClick,
-      onStepHover: input.onStepHover
+      onStepHover: input.onStepHover,
+      onCopyStep: input.onCopyStep,
+      onStepChanged: input.onStepChanged,
+      onAddStep: input.onAddStep,
+      onRemoveStep: input.onRemoveStep,
+      onAddBreakpoint: input.onAddBreakpoint,
+      onRemoveBreakpoint: input.onRemoveBreakpoint,
+      onAttributeRequested: input.onAttributeRequested
     })}
                       jslog=${VisualLogging8.section("step").track({ click: true })}
                       ></devtools-widget>
@@ -5004,13 +4913,19 @@ var RecordingView = class extends UI10.Widget.Widget {
   extensionConverters = [];
   replayExtensions;
   extensionDescriptor;
-  addAssertion;
-  abortReplay;
-  recordingFinished;
-  playRecording;
-  networkConditionsChanged;
-  timeoutChanged;
-  titleChanged;
+  onPlayRecording;
+  onNetworkConditionsChanged;
+  onTimeoutChanged;
+  onTitleChanged;
+  onAddAssertion;
+  onRecordingFinished;
+  onAbortReplay;
+  onStepChanged;
+  onAddStep;
+  onRemoveStep;
+  onAddBreakpoint;
+  onRemoveBreakpoint;
+  onAttributeRequested;
   #recorderSettings;
   get recorderSettings() {
     return this.#recorderSettings;
@@ -5074,24 +4989,30 @@ var RecordingView = class extends UI10.Widget.Widget {
       settings: this.settings ?? null,
       showCodeView: this.#showCodeView,
       onAddAssertion: () => {
-        this.addAssertion?.();
+        this.onAddAssertion?.();
       },
       onRecordingFinished: () => {
-        this.recordingFinished?.();
+        this.onRecordingFinished?.();
       },
       getSectionState: this.#getSectionState.bind(this),
       getStepState: this.#getStepState.bind(this),
       onAbortReplay: () => {
-        this.abortReplay?.();
+        this.onAbortReplay?.();
       },
       onMeasurePerformanceClick: this.#handleMeasurePerformanceClickEvent.bind(this),
       onTogglePlaying: (speed, extension) => {
-        this.playRecording?.({
+        this.onPlayRecording?.({
           targetPanel: "chrome-recorder",
           speed,
           extension
         });
       },
+      onStepChanged: (currentStep, newStep) => this.onStepChanged?.(currentStep, newStep),
+      onAddStep: (stepOrSection, position) => this.onAddStep?.(stepOrSection, position),
+      onRemoveStep: (step) => this.onRemoveStep?.(step),
+      onAddBreakpoint: (index) => this.onAddBreakpoint?.(index),
+      onRemoveBreakpoint: (index) => this.onRemoveBreakpoint?.(index),
+      onAttributeRequested: (send) => this.onAttributeRequested?.(send),
       onCodeFormatChange: this.#onCodeFormatChange.bind(this),
       onCopyStep: this.#onCopyStepEvent.bind(this),
       onEditTitleButtonClick: this.#onEditTitleButtonClick.bind(this),
@@ -5210,7 +5131,7 @@ var RecordingView = class extends UI10.Widget.Widget {
     const throttlingMenu = event.target;
     if (throttlingMenu instanceof HTMLSelectElement) {
       const preset = networkConditionPresets.find((preset2) => preset2.i18nTitleKey === throttlingMenu.value);
-      this.networkConditionsChanged?.(preset?.i18nTitleKey === SDK2.NetworkManager.NoThrottlingConditions.i18nTitleKey ? void 0 : preset);
+      this.onNetworkConditionsChanged?.(preset?.i18nTitleKey === SDK2.NetworkManager.NoThrottlingConditions.i18nTitleKey ? void 0 : preset);
     }
   }
   #onTimeoutInput(event) {
@@ -5219,7 +5140,7 @@ var RecordingView = class extends UI10.Widget.Widget {
       target.reportValidity();
       return;
     }
-    this.timeoutChanged?.(Number(target.value));
+    this.onTimeoutChanged?.(Number(target.value));
   }
   #onTitleBlur = (event) => {
     const target = event.target;
@@ -5229,7 +5150,7 @@ var RecordingView = class extends UI10.Widget.Widget {
       this.performUpdate();
       return;
     }
-    this.titleChanged?.(title);
+    this.onTitleChanged?.(title);
   };
   #onTitleInputKeyDown = (event) => {
     switch (event.code) {
@@ -5272,9 +5193,8 @@ var RecordingView = class extends UI10.Widget.Widget {
     }
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(text);
   }
-  #onCopyStepEvent(event) {
-    event.stopPropagation();
-    void this.#copyCurrentSelection(event.step);
+  #onCopyStepEvent(step) {
+    void this.#copyCurrentSelection(step);
   }
   async #onCopy(event) {
     if (event.target !== document.body) {
@@ -5289,7 +5209,7 @@ var RecordingView = class extends UI10.Widget.Widget {
   }
   #handleMeasurePerformanceClickEvent(event) {
     event.stopPropagation();
-    this.playRecording?.({
+    this.onPlayRecording?.({
       targetPanel: "timeline",
       speed: "normal"
     });
@@ -5354,7 +5274,7 @@ var RecordingView = class extends UI10.Widget.Widget {
 };
 
 // gen/front_end/panels/recorder/RecorderPanel.js
-var { html: html11, Directives: { ref: ref2 } } = Lit11;
+var { ref: ref2, repeat: repeat3 } = Directives5;
 var recorderPanelInstance;
 var UIStrings9 = {
   /**
@@ -5457,7 +5377,7 @@ var UIStrings9 = {
    * @description Warning shown to users when importing code into the Recorder panel. IMPORTANT: keep double quotes around PH1 and do not use single quotes.
    * @example {allow importing} PH1
    */
-  doNotImport: "Don\u2019t import recordings you don\u2019t understand or haven\u2019t reviewed yourself into DevTools. This could allow attackers to steal your identity or take control of your computer. Type \u201C{PH1}\u201D below to allow importing.",
+  doNotImport: 'Don\u2019t import recordings you don\u2019t understand or haven\u2019t reviewed yourself into DevTools. This could allow attackers to steal your identity or take control of your computer. Type "{PH1}" below to allow importing.',
   /**
    * @description Text a user needs to type in order to confirm that they
    * are aware of the danger of importing code into the Recorder panel.
@@ -5467,7 +5387,7 @@ var UIStrings9 = {
    * @description Input box placeholder which instructs the user to type 'allow importing' into the input box. IMPORTANT: keep double quotes around PH1 and do not use single quotes.
    * @example {allow importing} PH1
    */
-  typeAllowImporting: "Type \u201C{PH1}\u201D"
+  typeAllowImporting: 'Type "{PH1}"'
 };
 var str_9 = i18n17.i18n.registerUIStrings("panels/recorder/RecorderPanel.ts", UIStrings9);
 var i18nString9 = i18n17.i18n.getLocalizedString.bind(void 0, str_9);
@@ -5506,6 +5426,265 @@ function verifyFlowSize(flow) {
     throw new Error("Recording with title over 300 characters is not allowed");
   }
 }
+var DEFAULT_VIEW11 = (input, output, target) => {
+  function renderCurrentPage() {
+    switch (input.currentPage) {
+      case "StartPage":
+        return renderStartPage();
+      case "AllRecordingsPage":
+        return renderAllRecordingsPage();
+      case "RecordingPage":
+        return renderRecordingPage();
+      case "CreateRecordingPage":
+        return renderCreateRecordingPage();
+    }
+  }
+  function renderAllRecordingsPage() {
+    return html11`
+      <devtools-widget
+        ${widget5(RecordingListView, {
+      recordings: input.recordings.map((recording) => ({
+        storageName: recording.storageName,
+        name: recording.flow.title
+      })),
+      replayAllowed: input.replayAllowed,
+      onCreateRecording: input.onCreateNewRecording,
+      onDeleteRecording: input.onDeleteRecording,
+      onOpenRecording: input.onRecordingSelected,
+      onPlayRecording: input.onPlayRecordingByName
+    })}
+      >
+      </devtools-widget>
+    `;
+  }
+  function renderStartPage() {
+    return html11`
+      <div class="empty-state" jslog=${VisualLogging9.section().context("start-view")}>
+        <div class="empty-state-header">${i18nString9(UIStrings9.header)}</div>
+        <div class="empty-state-description">
+          <span>${i18nString9(UIStrings9.recordingDescription)}</span>
+          <devtools-link
+            class="devtools-link"
+            href=${RECORDER_EXPLANATION_URL}
+            jslogcontext="learn-more"
+          >${i18nString9(UIStrings9.learnMore)}</devtools-link>
+        </div>
+        <devtools-button .variant=${"tonal"} jslogContext=${"chrome-recorder.create-recording"} @click=${input.onCreateNewRecording}>${i18nString9(UIStrings9.createRecording)}</devtools-button>
+      </div>
+    `;
+  }
+  function renderRecordingPage() {
+    return html11`
+      <devtools-widget
+          class="recording-view"
+          ${widget5(RecordingView, {
+      recording: input.currentRecording?.flow ?? { title: "", steps: [] },
+      replayState: input.replayState,
+      isRecording: input.isRecording,
+      recordingTogglingInProgress: input.isToggling,
+      currentStep: input.currentStep,
+      currentError: input.recordingError,
+      sections: input.sections ?? [],
+      settings: input.settings,
+      recorderSettings: input.recorderSettings,
+      lastReplayResult: input.lastReplayResult,
+      replayAllowed: input.replayAllowed,
+      breakpointIndexes: input.breakpointIndexes,
+      builtInConverters: input.builtInConverters,
+      extensionConverters: input.extensionConverters,
+      replayExtensions: input.replayExtensions,
+      extensionDescriptor: input.extensionDescriptor,
+      onRecordingFinished: input.onRecordingFinished,
+      onAddAssertion: input.handleAddAssertionEvent,
+      onAbortReplay: input.onAbortReplay,
+      onPlayRecording: input.onPlayRecording,
+      onNetworkConditionsChanged: input.onNetworkConditionsChanged,
+      onTimeoutChanged: input.onTimeoutChanged,
+      onTitleChanged: input.handleRecordingTitleChanged,
+      onStepChanged: input.handleRecordingChanged,
+      onAddStep: input.handleStepAdded,
+      onRemoveStep: input.handleStepRemoved,
+      onAddBreakpoint: input.onAddBreakpoint,
+      onRemoveBreakpoint: input.onRemoveBreakpoint,
+      onAttributeRequested: (send) => {
+        send(input.currentRecording?.flow.selectorAttribute);
+      }
+    })}
+          @recorderextensionviewclosed=${input.onExtensionViewClosed}
+          ${UI11.Widget.widgetRef(RecordingView, (widget6) => {
+      output.recordingView = widget6;
+    })}
+        ></devtools-widget>
+    `;
+  }
+  function renderCreateRecordingPage() {
+    return html11`
+      <devtools-widget
+        class="recording-view"
+        ${widget5(CreateRecordingView, {
+      recorderSettings: input.recorderSettings,
+      onRecordingStarted: input.onRecordingStarted,
+      onRecordingCancelled: input.onRecordingCancelled
+    })}
+        ${UI11.Widget.widgetRef(CreateRecordingView, (widget6) => {
+      output.createRecordingView = widget6;
+    })}
+      ></devtools-widget>
+    `;
+  }
+  const selectValue = input.currentRecording ? input.currentRecording.storageName : input.currentPage;
+  const values = [
+    input.recordings.length === 0 ? {
+      value: "StartPage",
+      name: i18nString9(UIStrings9.noRecordings),
+      selected: selectValue === "StartPage"
+    } : {
+      value: "AllRecordingsPage",
+      name: `${input.recordings.length} ${i18nString9(UIStrings9.numberOfRecordings)}`,
+      selected: selectValue === "AllRecordingsPage"
+    },
+    ...input.recordings.map((recording) => ({
+      value: recording.storageName,
+      name: recording.flow.title,
+      selected: selectValue === recording.storageName
+    }))
+  ];
+  render11(html11`
+        <style>${UI11.inspectorCommonStyles}</style>
+        <style>${recorderPanel_css_default}</style>
+        <div class="wrapper">
+          <div class="header" jslog=${VisualLogging9.toolbar()}>
+            <devtools-button
+              @click=${input.onCreateNewRecording}
+              .data=${{
+    variant: "toolbar",
+    iconName: "plus",
+    disabled: input.replayState.isPlaying || input.isRecording || input.isToggling,
+    title: Models8.Tooltip.getTooltipForActions(
+      i18nString9(UIStrings9.createRecording),
+      "chrome-recorder.create-recording"
+      /* Actions.RecorderActions.CREATE_RECORDING */
+    ),
+    jslogContext: "chrome-recorder.create-recording"
+  }}
+            ></devtools-button>
+            <div class="separator"></div>
+            <select
+              .disabled=${input.recordings.length === 0 || input.replayState.isPlaying || input.isRecording || input.isToggling}
+              @click=${(e) => e.stopPropagation()}
+              @change=${input.onRecordingSelected}
+              jslog=${VisualLogging9.dropDown("recordings").track({ change: true })}
+            >
+              ${repeat3(values, (item5) => item5.value, (item5) => {
+    return html11`<option .selected=${item5.selected} value=${item5.value}>${item5.name}</option>`;
+  })}
+            </select>
+            <div class="separator"></div>
+            <devtools-button
+              @click=${input.onImportRecording}
+              .data=${{
+    variant: "toolbar",
+    iconName: "import",
+    title: i18nString9(UIStrings9.importRecording),
+    jslogContext: "import-recording"
+  }}
+            ></devtools-button>
+            <devtools-button
+              id='origin'
+              @click=${input.onExportRecording}
+              ${ref2((el) => {
+    if (el instanceof HTMLElement) {
+      output.exportMenuButton = el;
+    }
+  })}
+              .data=${{
+    variant: "toolbar",
+    iconName: "download",
+    title: i18nString9(UIStrings9.exportRecording),
+    disabled: !input.currentRecording
+  }}
+              jslog=${VisualLogging9.dropDown("export-recording").track({ click: true })}
+            ></devtools-button>
+            <devtools-menu
+              @menucloserequest=${input.onExportMenuClosed}
+              @menuitemselected=${input.onExportOptionSelected}
+              .origin=${input.getExportMenuButton}
+              .showDivider=${false}
+              .showSelectedItem=${false}
+              .open=${input.exportMenuExpanded}
+            >
+              <devtools-menu-group .name=${i18nString9(UIStrings9.export)}>
+                ${repeat3(input.builtInConverters, (converter) => {
+    return html11`
+                    <devtools-menu-item
+                      .value=${converter.getId()}
+                      jslog=${VisualLogging9.item(`converter-${Platform7.StringUtilities.toKebabCase(converter.getId())}`).track({ click: true })}>
+                      ${converter.getFormatName()}
+                    </devtools-menu-item>
+                  `;
+  })}
+              </devtools-menu-group>
+              <devtools-menu-group .name=${i18nString9(UIStrings9.exportViaExtensions)}>
+                ${repeat3(input.extensionConverters, (converter) => {
+    return html11`
+                    <devtools-menu-item
+                     .value=${converter.getId()}
+                      jslog=${VisualLogging9.item("converter-extension").track({ click: true })}>
+                    ${converter.getFormatName()}
+                    </devtools-menu-item>
+                  `;
+  })}
+                <devtools-menu-item .value=${GET_EXTENSIONS_MENU_ITEM}>
+                  ${i18nString9(UIStrings9.getExtensions)}
+                </devtools-menu-item>
+              </devtools-menu-group>
+            </devtools-menu>
+            <devtools-button
+              @click=${input.onDeleteRecording}
+              .data=${{
+    variant: "toolbar",
+    iconName: "bin",
+    disabled: !input.currentRecording || input.replayState.isPlaying || input.isRecording || input.isToggling,
+    title: i18nString9(UIStrings9.deleteRecording),
+    jslogContext: "delete-recording"
+  }}
+            ></devtools-button>
+            <div class="separator"></div>
+            <devtools-button
+              @click=${input.onContinueReplay}
+              .data=${{
+    variant: "primary_toolbar",
+    iconName: "resume",
+    disabled: !input.replayState.isPausedOnBreakpoint,
+    title: i18nString9(UIStrings9.continueReplay),
+    jslogContext: "continue-replay"
+  }}
+            ></devtools-button>
+            <devtools-button
+              @click=${input.onStepOverReplay}
+              .data=${{
+    variant: "toolbar",
+    iconName: "step-over",
+    disabled: !input.replayState.isPausedOnBreakpoint,
+    title: i18nString9(UIStrings9.stepOverReplay),
+    jslogContext: "step-over"
+  }}
+            ></devtools-button>
+            <div class="feedback">
+              <devtools-link class="devtools-link" title=${i18nString9(UIStrings9.sendFeedback)} href=${FEEDBACK_URL} jslogcontext="feedback">${i18nString9(UIStrings9.sendFeedback)}</devtools-link>
+            </div>
+            <div class="separator"></div>
+            <devtools-shortcut-dialog
+              .data=${{
+    shortcuts: input.shortcutsInfo
+  }} jslog=${VisualLogging9.action("show-shortcuts").track({ click: true })}
+            ></devtools-shortcut-dialog>
+          </div>
+          ${input.importError ? html11`<div class='error'>Import error: ${input.importError.message}</div>` : ""}
+          ${renderCurrentPage()}
+        </div>
+    `, target, { container: { listeners: { setrecording: input.onSetRecording } } });
+};
 var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
   static panelName = "chrome-recorder";
   static instance(opts = {}) {
@@ -5712,9 +5891,11 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
   );
   #recordingView;
   #createRecordingView;
-  constructor(element) {
+  #view;
+  constructor(element, view) {
     const el = element || document.createElement("devtools-recorder-panel");
     super(el, { useShadowDom: "pure" });
+    this.#view = view || DEFAULT_VIEW11;
     this.setHideOnDetach();
     this.isRecording = false;
     this.isToggling = false;
@@ -6115,7 +6296,7 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
   getUserFlow() {
     return this.currentRecording?.flow;
   }
-  async #handleRecordingChanged(event) {
+  async #handleRecordingChanged(currentStep, newStep) {
     if (!this.currentRecording) {
       throw new Error("Current recording expected to be defined.");
     }
@@ -6123,30 +6304,29 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
       ...this.currentRecording,
       flow: {
         ...this.currentRecording.flow,
-        steps: this.currentRecording.flow.steps.map((step) => step === event.currentStep ? event.newStep : step)
+        steps: this.currentRecording.flow.steps.map((step) => step === currentStep ? newStep : step)
       }
     };
     this.#setCurrentRecording(await this.#storage.upsertRecording(recording.flow, recording.storageName), { keepBreakpoints: true, updateSession: true });
   }
-  async #handleStepAdded(event) {
+  async #handleStepAdded(stepOrSection, position) {
     if (!this.currentRecording) {
       throw new Error("Current recording expected to be defined.");
     }
-    const stepOrSection = event.stepOrSection;
     let step;
-    let position = event.position;
+    let actualPosition = position;
     if ("steps" in stepOrSection) {
       const sectionIdx = this.sections?.indexOf(stepOrSection);
       if (sectionIdx === void 0 || sectionIdx === -1) {
         throw new Error("There is no section to add a step to");
       }
-      if (event.position === "after") {
+      if (position === "after") {
         if (this.sections?.[sectionIdx].steps.length) {
           step = this.sections?.[sectionIdx].steps[0];
-          position = "before";
+          actualPosition = "before";
         } else {
           step = this.sections?.[sectionIdx].causingStep;
-          position = "after";
+          actualPosition = "after";
         }
       } else {
         if (sectionIdx <= 0) {
@@ -6154,7 +6334,7 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
         }
         const prevSection = this.sections?.[sectionIdx - 1];
         step = prevSection?.steps[prevSection.steps.length - 1];
-        position = "after";
+        actualPosition = "after";
       }
     } else {
       step = stepOrSection;
@@ -6164,7 +6344,7 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
     }
     const steps = this.currentRecording.flow.steps;
     const currentIndex = steps.indexOf(step);
-    const indexToInsertAt = currentIndex + (position === "before" ? 0 : 1);
+    const indexToInsertAt = currentIndex + (actualPosition === "before" ? 0 : 1);
     steps.splice(indexToInsertAt, 0, { type: Models8.Schema.StepType.WaitForElement, selectors: ["body"] });
     const recording = { ...this.currentRecording, flow: { ...this.currentRecording.flow, steps } };
     this.#stepBreakpointIndexes = new Set([...this.#stepBreakpointIndexes.values()].map((breakpointIndex) => {
@@ -6182,12 +6362,12 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
     const flow = { ...this.currentRecording.flow, title };
     this.#setCurrentRecording(await this.#storage.upsertRecording(flow, this.currentRecording.storageName));
   }
-  async #handleStepRemoved(event) {
+  async #handleStepRemoved(step) {
     if (!this.currentRecording) {
       throw new Error("Current recording expected to be defined.");
     }
     const steps = this.currentRecording.flow.steps;
-    const currentIndex = steps.indexOf(event.step);
+    const currentIndex = steps.indexOf(step);
     steps.splice(currentIndex, 1);
     const flow = { ...this.currentRecording.flow, steps };
     this.#stepBreakpointIndexes = new Set([...this.#stepBreakpointIndexes.values()].map((breakpointIndex) => {
@@ -6236,19 +6416,20 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
     this.currentRecording.flow.timeout = timeout;
     this.#setCurrentRecording(await this.#storage.upsertRecording(this.currentRecording.flow, this.currentRecording.storageName));
   }
-  async #onDeleteRecording(event) {
-    event.stopPropagation();
-    if (event instanceof DeleteRecordingEvent) {
-      await this.#storage.deleteRecording(event.storageName);
-      this.#screenshotStorage.deleteScreenshotsForRecording(event.storageName);
-      this.requestUpdate();
+  async #onDeleteRecording(storageNameOrEvent) {
+    let storageName;
+    if (typeof storageNameOrEvent === "string") {
+      storageName = storageNameOrEvent;
     } else {
+      storageNameOrEvent.stopPropagation();
       if (!this.currentRecording) {
         return;
       }
-      await this.#storage.deleteRecording(this.currentRecording.storageName);
-      this.#screenshotStorage.deleteScreenshotsForRecording(this.currentRecording.storageName);
+      storageName = this.currentRecording.storageName;
     }
+    await this.#storage.deleteRecording(storageName);
+    this.#screenshotStorage.deleteScreenshotsForRecording(storageName);
+    this.requestUpdate();
     UI11.ARIAUtils.LiveAnnouncer.alert(i18nString9(UIStrings9.recordingDeleted));
     if ((await this.#storage.getRecordings()).length) {
       this.#setCurrentPage(
@@ -6354,8 +6535,13 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
       this.#setCurrentPage(this.previousPage);
     }
   }
-  async #onRecordingSelected(event) {
-    const storageName = event instanceof OpenRecordingEvent || event instanceof PlayRecordingEvent ? event.storageName : event.target?.value;
+  async #onRecordingSelected(storageNameOrEvent) {
+    let storageName;
+    if (typeof storageNameOrEvent === "string") {
+      storageName = storageNameOrEvent;
+    } else {
+      storageName = storageNameOrEvent.target?.value;
+    }
     this.#setCurrentRecording(await this.#storage.getRecording(storageName));
     if (this.currentRecording) {
       this.#setCurrentPage(
@@ -6456,19 +6642,19 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
       this.#fileSelector.click();
     }
   }
-  async #onPlayRecordingByName(event) {
-    await this.#onRecordingSelected(event);
+  async #onPlayRecordingByName(storageName) {
+    await this.#onRecordingSelected(storageName);
     await this.#onPlayRecording({ targetPanel: "chrome-recorder", speed: this.#recorderSettings.speed });
   }
-  #onAddBreakpoint = (event) => {
+  #onAddBreakpoint = (index) => {
     this.#stepBreakpointIndexes = structuredClone(this.#stepBreakpointIndexes);
-    this.#stepBreakpointIndexes.add(event.index);
+    this.#stepBreakpointIndexes.add(index);
     this.recordingPlayer?.updateBreakpointIndexes(this.#stepBreakpointIndexes);
     this.requestUpdate();
   };
-  #onRemoveBreakpoint = (event) => {
+  #onRemoveBreakpoint = (index) => {
     this.#stepBreakpointIndexes = structuredClone(this.#stepBreakpointIndexes);
-    this.#stepBreakpointIndexes.delete(event.index);
+    this.#stepBreakpointIndexes.delete(index);
     this.recordingPlayer?.updateBreakpointIndexes(this.#stepBreakpointIndexes);
     this.requestUpdate();
   };
@@ -6559,112 +6745,6 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
       }
     ];
   }
-  #renderCurrentPage() {
-    switch (this.currentPage) {
-      case "StartPage":
-        return this.#renderStartPage();
-      case "AllRecordingsPage":
-        return this.#renderAllRecordingsPage();
-      case "RecordingPage":
-        return this.#renderRecordingPage();
-      case "CreateRecordingPage":
-        return this.#renderCreateRecordingPage();
-    }
-  }
-  #renderAllRecordingsPage() {
-    const recordings = this.#storage.getRecordings();
-    return html11`
-      <devtools-widget
-        ${widget5(RecordingListView, {
-      recordings: recordings.map((recording) => ({
-        storageName: recording.storageName,
-        name: recording.flow.title
-      })),
-      replayAllowed: this.#replayAllowed
-    })}
-        @createrecording=${this.#onCreateNewRecording.bind(this)}
-        @deleterecording=${this.#onDeleteRecording.bind(this)}
-        @openrecording=${this.#onRecordingSelected.bind(this)}
-        @playrecording=${this.#onPlayRecordingByName.bind(this)}
-      >
-      </devtools-widget>
-    `;
-  }
-  #renderStartPage() {
-    return html11`
-      <div class="empty-state" jslog=${VisualLogging9.section().context("start-view")}>
-        <div class="empty-state-header">${i18nString9(UIStrings9.header)}</div>
-        <div class="empty-state-description">
-          <span>${i18nString9(UIStrings9.recordingDescription)}</span>
-          <devtools-link
-            class="devtools-link"
-            href=${RECORDER_EXPLANATION_URL}
-            jslogcontext="learn-more"
-          >${i18nString9(UIStrings9.learnMore)}</devtools-link>
-        </div>
-        <devtools-button .variant=${"tonal"} jslogContext=${"chrome-recorder.create-recording"} @click=${this.#onCreateNewRecording.bind(this)}>${i18nString9(UIStrings9.createRecording)}</devtools-button>
-      </div>
-    `;
-  }
-  #renderRecordingPage() {
-    return html11`
-      <devtools-widget
-          class="recording-view"
-          ${widget5(RecordingView, {
-      recording: this.currentRecording?.flow ?? { title: "", steps: [] },
-      replayState: this.#replayState,
-      isRecording: this.isRecording,
-      recordingTogglingInProgress: this.isToggling,
-      currentStep: this.currentStep,
-      currentError: this.recordingError,
-      sections: this.sections ?? [],
-      settings: this.settings,
-      recorderSettings: this.#recorderSettings,
-      lastReplayResult: this.lastReplayResult,
-      replayAllowed: this.#replayAllowed,
-      breakpointIndexes: this.#stepBreakpointIndexes,
-      builtInConverters: this.#builtInConverters,
-      extensionConverters: this.extensionConverters,
-      replayExtensions: this.replayExtensions,
-      extensionDescriptor: this.viewDescriptor,
-      recordingFinished: this.#onRecordingFinished.bind(this),
-      addAssertion: this.#handleAddAssertionEvent.bind(this),
-      abortReplay: this.#onAbortReplay.bind(this),
-      playRecording: this.#onPlayRecording.bind(this),
-      networkConditionsChanged: this.#onNetworkConditionsChanged.bind(this),
-      timeoutChanged: this.#onTimeoutChanged.bind(this),
-      titleChanged: this.#handleRecordingTitleChanged.bind(this)
-    })}
-          @requestselectorattribute=${(event) => {
-      event.send(this.currentRecording?.flow.selectorAttribute);
-    }}
-          @stepchanged=${this.#handleRecordingChanged.bind(this)}
-          @addstep=${this.#handleStepAdded.bind(this)}
-          @removestep=${this.#handleStepRemoved.bind(this)}
-          @addbreakpoint=${this.#onAddBreakpoint.bind(this)}
-          @removebreakpoint=${this.#onRemoveBreakpoint.bind(this)}
-          @recorderextensionviewclosed=${this.#onExtensionViewClosed.bind(this)}
-          ${UI11.Widget.widgetRef(RecordingView, (widget6) => {
-      this.#recordingView = widget6;
-    })}
-        ></devtools-widget>
-    `;
-  }
-  #renderCreateRecordingPage() {
-    return html11`
-      <devtools-widget
-        class="recording-view"
-        ${widget5(CreateRecordingView, {
-      recorderSettings: this.#recorderSettings,
-      onRecordingStarted: this.#onRecordingStarted.bind(this),
-      onRecordingCancelled: this.onRecordingCancelled.bind(this)
-    })}
-        ${UI11.Widget.widgetRef(CreateRecordingView, (widget6) => {
-      this.#createRecordingView = widget6;
-    })}
-      ></devtools-widget>
-    `;
-  }
   #getExportMenuButton = () => {
     if (!this.#exportMenuButton) {
       throw new Error("#exportMenuButton not found");
@@ -6680,166 +6760,69 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
     this.exportMenuExpanded = false;
   }
   performUpdate() {
-    Lit11.render(this.render(), this.contentElement, {
-      container: {
-        listeners: { setrecording: this.#onSetRecording.bind(this) }
-      }
-    });
-  }
-  render() {
     const recordings = this.#storage.getRecordings();
-    const selectValue = this.currentRecording ? this.currentRecording.storageName : this.currentPage;
-    const values = [
-      recordings.length === 0 ? {
-        value: "StartPage",
-        name: i18nString9(UIStrings9.noRecordings),
-        selected: selectValue === "StartPage"
-      } : {
-        value: "AllRecordingsPage",
-        name: `${recordings.length} ${i18nString9(UIStrings9.numberOfRecordings)}`,
-        selected: selectValue === "AllRecordingsPage"
+    const that = this;
+    const output = {
+      set exportMenuButton(el) {
+        that.#exportMenuButton = el;
       },
-      ...recordings.map((recording) => ({
-        value: recording.storageName,
-        name: recording.flow.title,
-        selected: selectValue === recording.storageName
-      }))
-    ];
-    return html11`
-        <style>${UI11.inspectorCommonStyles}</style>
-        <style>${recorderPanel_css_default}</style>
-        <div class="wrapper">
-          <div class="header" jslog=${VisualLogging9.toolbar()}>
-            <devtools-button
-              @click=${this.#onCreateNewRecording.bind(this)}
-              .data=${{
-      variant: "toolbar",
-      iconName: "plus",
-      disabled: this.#replayState.isPlaying || this.isRecording || this.isToggling,
-      title: Models8.Tooltip.getTooltipForActions(
-        i18nString9(UIStrings9.createRecording),
-        "chrome-recorder.create-recording"
-        /* Actions.RecorderActions.CREATE_RECORDING */
-      ),
-      jslogContext: "chrome-recorder.create-recording"
-    }}
-            ></devtools-button>
-            <div class="separator"></div>
-            <select
-              .disabled=${recordings.length === 0 || this.#replayState.isPlaying || this.isRecording || this.isToggling}
-              @click=${(e) => e.stopPropagation()}
-              @change=${this.#onRecordingSelected.bind(this)}
-              jslog=${VisualLogging9.dropDown("recordings").track({ change: true })}
-            >
-              ${Lit11.Directives.repeat(values, (item5) => item5.value, (item5) => {
-      return html11`<option .selected=${item5.selected} value=${item5.value}>${item5.name}</option>`;
-    })}
-            </select>
-            <div class="separator"></div>
-            <devtools-button
-              @click=${this.#onImportRecording.bind(this)}
-              .data=${{
-      variant: "toolbar",
-      iconName: "import",
-      title: i18nString9(UIStrings9.importRecording),
-      jslogContext: "import-recording"
-    }}
-            ></devtools-button>
-            <devtools-button
-              id='origin'
-              @click=${this.#onExportRecording.bind(this)}
-              ${ref2((el) => {
-      if (el instanceof HTMLElement) {
-        this.#exportMenuButton = el;
+      set recordingView(widget6) {
+        that.#recordingView = widget6;
+      },
+      set createRecordingView(widget6) {
+        that.#createRecordingView = widget6;
       }
-    })}
-              .data=${{
-      variant: "toolbar",
-      iconName: "download",
-      title: i18nString9(UIStrings9.exportRecording),
-      disabled: !this.currentRecording
-    }}
-              jslog=${VisualLogging9.dropDown("export-recording").track({ click: true })}
-            ></devtools-button>
-            <devtools-menu
-              @menucloserequest=${this.#onExportMenuClosed.bind(this)}
-              @menuitemselected=${this.#onExportOptionSelected.bind(this)}
-              .origin=${this.#getExportMenuButton}
-              .showDivider=${false}
-              .showSelectedItem=${false}
-              .open=${this.exportMenuExpanded}
-            >
-              <devtools-menu-group .name=${i18nString9(UIStrings9.export)}>
-                ${Lit11.Directives.repeat(this.#builtInConverters, (converter) => {
-      return html11`
-                    <devtools-menu-item
-                      .value=${converter.getId()}
-                      jslog=${VisualLogging9.item(`converter-${Platform7.StringUtilities.toKebabCase(converter.getId())}`).track({ click: true })}>
-                      ${converter.getFormatName()}
-                    </devtools-menu-item>
-                  `;
-    })}
-              </devtools-menu-group>
-              <devtools-menu-group .name=${i18nString9(UIStrings9.exportViaExtensions)}>
-                ${Lit11.Directives.repeat(this.extensionConverters, (converter) => {
-      return html11`
-                    <devtools-menu-item
-                     .value=${converter.getId()}
-                      jslog=${VisualLogging9.item("converter-extension").track({ click: true })}>
-                    ${converter.getFormatName()}
-                    </devtools-menu-item>
-                  `;
-    })}
-                <devtools-menu-item .value=${GET_EXTENSIONS_MENU_ITEM}>
-                  ${i18nString9(UIStrings9.getExtensions)}
-                </devtools-menu-item>
-              </devtools-menu-group>
-            </devtools-menu>
-            <devtools-button
-              @click=${this.#onDeleteRecording.bind(this)}
-              .data=${{
-      variant: "toolbar",
-      iconName: "bin",
-      disabled: !this.currentRecording || this.#replayState.isPlaying || this.isRecording || this.isToggling,
-      title: i18nString9(UIStrings9.deleteRecording),
-      jslogContext: "delete-recording"
-    }}
-            ></devtools-button>
-            <div class="separator"></div>
-            <devtools-button
-              @click=${() => this.recordingPlayer?.continue()}
-              .data=${{
-      variant: "primary_toolbar",
-      iconName: "resume",
-      disabled: !this.recordingPlayer || !this.#replayState.isPausedOnBreakpoint,
-      title: i18nString9(UIStrings9.continueReplay),
-      jslogContext: "continue-replay"
-    }}
-            ></devtools-button>
-            <devtools-button
-              @click=${() => this.recordingPlayer?.stepOver()}
-              .data=${{
-      variant: "toolbar",
-      iconName: "step-over",
-      disabled: !this.recordingPlayer || !this.#replayState.isPausedOnBreakpoint,
-      title: i18nString9(UIStrings9.stepOverReplay),
-      jslogContext: "step-over"
-    }}
-            ></devtools-button>
-            <div class="feedback">
-              <devtools-link class="devtools-link" title=${i18nString9(UIStrings9.sendFeedback)} href=${FEEDBACK_URL} jslogcontext="feedback">${i18nString9(UIStrings9.sendFeedback)}</devtools-link>
-            </div>
-            <div class="separator"></div>
-            <devtools-shortcut-dialog
-              .data=${{
-      shortcuts: this.#getShortcutsInfo()
-    }} jslog=${VisualLogging9.action("show-shortcuts").track({ click: true })}
-            ></devtools-shortcut-dialog>
-          </div>
-          ${this.importError ? html11`<div class='error'>Import error: ${this.importError.message}</div>` : ""}
-          ${this.#renderCurrentPage()}
-        </div>
-      `;
+    };
+    this.#view({
+      recordings,
+      currentRecording: this.currentRecording,
+      currentPage: this.currentPage,
+      isRecording: this.isRecording,
+      isToggling: this.isToggling,
+      importError: this.importError,
+      recordingError: this.recordingError,
+      sections: this.sections ?? [],
+      settings: this.settings,
+      recorderSettings: this.#recorderSettings,
+      lastReplayResult: this.lastReplayResult,
+      replayAllowed: this.#replayAllowed,
+      breakpointIndexes: this.#stepBreakpointIndexes,
+      builtInConverters: this.#builtInConverters,
+      extensionConverters: this.extensionConverters,
+      replayExtensions: this.replayExtensions,
+      extensionDescriptor: this.viewDescriptor,
+      exportMenuExpanded: this.exportMenuExpanded,
+      replayState: this.#replayState,
+      shortcutsInfo: this.#getShortcutsInfo(),
+      currentStep: this.currentStep,
+      onCreateNewRecording: this.#onCreateNewRecording.bind(this),
+      onImportRecording: this.#onImportRecording.bind(this),
+      onExportRecording: this.#onExportRecording.bind(this),
+      onDeleteRecording: this.#onDeleteRecording.bind(this),
+      onRecordingSelected: this.#onRecordingSelected.bind(this),
+      onPlayRecordingByName: this.#onPlayRecordingByName.bind(this),
+      onPlayRecording: this.#onPlayRecording.bind(this),
+      onAbortReplay: this.#onAbortReplay.bind(this),
+      onNetworkConditionsChanged: this.#onNetworkConditionsChanged.bind(this),
+      onTimeoutChanged: this.#onTimeoutChanged.bind(this),
+      handleRecordingTitleChanged: this.#handleRecordingTitleChanged.bind(this),
+      handleRecordingChanged: this.#handleRecordingChanged.bind(this),
+      handleStepAdded: this.#handleStepAdded.bind(this),
+      handleStepRemoved: this.#handleStepRemoved.bind(this),
+      onAddBreakpoint: this.#onAddBreakpoint.bind(this),
+      onRemoveBreakpoint: this.#onRemoveBreakpoint.bind(this),
+      onExtensionViewClosed: this.#onExtensionViewClosed.bind(this),
+      onExportMenuClosed: this.#onExportMenuClosed.bind(this),
+      onExportOptionSelected: this.#onExportOptionSelected.bind(this),
+      onRecordingFinished: this.#onRecordingFinished.bind(this),
+      handleAddAssertionEvent: this.#handleAddAssertionEvent.bind(this),
+      onSetRecording: this.#onSetRecording.bind(this),
+      onContinueReplay: () => this.recordingPlayer?.continue(),
+      onStepOverReplay: () => this.recordingPlayer?.stepOver(),
+      getExportMenuButton: this.#getExportMenuButton.bind(this),
+      onRecordingStarted: this.#onRecordingStarted.bind(this),
+      onRecordingCancelled: this.onRecordingCancelled.bind(this)
+    }, output, this.contentElement);
   }
 };
 var ActionDelegate = class {

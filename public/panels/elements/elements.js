@@ -115,7 +115,15 @@ var UIStrings = {
   /**
    * @description Text for copying, copy should be used as a verb
    */
-  copy: "Copy"
+  copy: "Copy",
+  /**
+   * @description Text to scroll the displayed content into view
+   */
+  scrollIntoView: "Scroll into view",
+  /**
+   * @description A context menu item in the Accessibility Tree View to switch to DOM tree
+   */
+  switchToDomTree: "Switch to DOM tree"
 };
 var str_ = i18n.i18n.registerUIStrings("panels/elements/AccessibilityTreeView.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
@@ -149,11 +157,13 @@ var DEFAULT_VIEW = (input, output, target) => {
     input.onNodeClearHighlight();
   };
   const onItemContextMenu = (event) => {
-    event.data.originalEvent.preventDefault();
-    event.data.originalEvent.stopPropagation();
-    const contextMenu = new UI.ContextMenu.ContextMenu(event.data.originalEvent);
+    const contextMenu = event.createContextMenu();
     const axNode = event.data.node.treeNodeData;
     contextMenu.clipboardSection().appendItem(i18nString(UIStrings.copy), () => input.onCopy(axNode), { jslogContext: "copy" });
+    if (axNode.isDOMNode()) {
+      contextMenu.viewSection().appendItem(i18nString(UIStrings.scrollIntoView), () => input.onScrollIntoView(axNode), { jslogContext: "scroll-into-view" });
+    }
+    contextMenu.viewSection().appendItem(i18nString(UIStrings.switchToDomTree), () => input.onSwitchToDomTree(), { jslogContext: "switch-to-dom-tree" });
     void contextMenu.show();
   };
   const onCopy = (event) => {
@@ -211,6 +221,19 @@ var AccessibilityTreeView = class extends UI.Widget.VBox {
     const text = await axNode.axNodeToText();
     UI.UIUtils.copyTextToClipboard(text);
   };
+  #onScrollIntoView = (axNode) => {
+    const deferredNode = axNode.deferredDOMNode();
+    if (deferredNode) {
+      deferredNode.resolve((domNode) => {
+        if (domNode) {
+          void domNode.scrollIntoView();
+        }
+      });
+    }
+  };
+  #onSwitchToDomTree = async () => {
+    ElementsPanel.instance().toggleAccessibilityTree();
+  };
   async wasShown() {
     super.wasShown();
     this.requestUpdate();
@@ -235,7 +258,9 @@ var AccessibilityTreeView = class extends UI.Widget.VBox {
       onNodeSelected: this.#onNodeSelected,
       onNodeHighlight: this.#onNodeHighlight,
       onNodeClearHighlight: this.#onNodeClearHighlight,
-      onCopy: this.#onCopy
+      onCopy: this.#onCopy,
+      onScrollIntoView: this.#onScrollIntoView,
+      onSwitchToDomTree: this.#onSwitchToDomTree
     };
     this.#view(input, this.#treeOperations, this.contentElement);
   }
@@ -1071,9 +1096,9 @@ import * as Platform5 from "./../../core/platform/platform.js";
 import { assertNotNullOrUndefined } from "./../../core/platform/platform.js";
 import * as Root3 from "./../../core/root/root.js";
 import * as SDK7 from "./../../core/sdk/sdk.js";
+import * as TextUtils5 from "./../../core/text_utils/text_utils.js";
 import * as AiCodeCompletion3 from "./../../models/ai_code_completion/ai_code_completion.js";
 import * as Bindings4 from "./../../models/bindings/bindings.js";
-import * as TextUtils5 from "./../../models/text_utils/text_utils.js";
 import * as CodeMirror from "./../../third_party/codemirror.next/codemirror.next.js";
 import * as TextEditor2 from "./../../ui/components/text_editor/text_editor.js";
 import { createIcon as createIcon4, Icon as Icon2 } from "./../../ui/kit/kit.js";
@@ -1345,9 +1370,9 @@ import * as Host from "./../../core/host/host.js";
 import * as i18n9 from "./../../core/i18n/i18n.js";
 import * as Platform2 from "./../../core/platform/platform.js";
 import * as SDK5 from "./../../core/sdk/sdk.js";
+import * as TextUtils from "./../../core/text_utils/text_utils.js";
 import * as Badges from "./../../models/badges/badges.js";
 import * as Bindings2 from "./../../models/bindings/bindings.js";
-import * as TextUtils from "./../../models/text_utils/text_utils.js";
 import * as Tooltips from "./../../ui/components/tooltips/tooltips.js";
 import { createIcon, Icon } from "./../../ui/kit/kit.js";
 import * as ColorPicker2 from "./../../ui/legacy/components/color_picker/color_picker.js";
@@ -1523,7 +1548,7 @@ var UIStrings4 = {
    * @example {20} PH4
    * @example {Arial} PH5
    */
-  fontVariationSettingsWarning: "Value for setting \u201C{PH1}\u201D {PH2} is outside the supported range [{PH3}, {PH4}] for font-family \u201C{PH5}\u201D.",
+  fontVariationSettingsWarning: 'Value for setting "{PH1}" {PH2} is outside the supported range [{PH3}, {PH4}] for font-family "{PH5}".',
   /**
    * @description The message shown in the Style pane when the user hovers over a property declaration that has no effect on flex or grid child items.
    * @example {flex} CONTAINER_DISPLAY_NAME
@@ -5834,7 +5859,8 @@ __export(StylePropertiesSection_exports, {
   KeyframePropertiesSection: () => KeyframePropertiesSection,
   PositionTryRuleSection: () => PositionTryRuleSection,
   RegisteredPropertiesSection: () => RegisteredPropertiesSection,
-  StylePropertiesSection: () => StylePropertiesSection
+  StylePropertiesSection: () => StylePropertiesSection,
+  constructResolvedSelector: () => constructResolvedSelector
 });
 import "./../../ui/legacy/legacy.js";
 import * as Common3 from "./../../core/common/common.js";
@@ -5842,9 +5868,9 @@ import * as Host2 from "./../../core/host/host.js";
 import * as i18n13 from "./../../core/i18n/i18n.js";
 import * as Platform3 from "./../../core/platform/platform.js";
 import * as SDK6 from "./../../core/sdk/sdk.js";
+import * as TextUtils3 from "./../../core/text_utils/text_utils.js";
 import * as Badges2 from "./../../models/badges/badges.js";
 import * as Bindings3 from "./../../models/bindings/bindings.js";
-import * as TextUtils3 from "./../../models/text_utils/text_utils.js";
 import * as Buttons from "./../../ui/components/buttons/buttons.js";
 import * as Tooltips2 from "./../../ui/components/tooltips/tooltips.js";
 import { createIcon as createIcon3 } from "./../../ui/kit/kit.js";
@@ -6113,7 +6139,11 @@ var StylePropertiesSection = class _StylePropertiesSection {
     this.selectorElement.classList.add("selector");
     this.selectorElement.textContent = headerText;
     selectorContainer.appendChild(this.selectorElement);
-    this.selectorElement.addEventListener("mouseenter", this.onMouseEnterSelector.bind(this), false);
+    this.selectorElement.addEventListener("mouseenter", () => {
+      if (this.styleInternal.parentRule instanceof SDK6.CSSRule.CSSStyleRule) {
+        this.onMouseEnterSelector(this.styleInternal.parentRule);
+      }
+    }, false);
     this.selectorElement.addEventListener("mouseleave", this.onMouseOutSelector.bind(this), false);
     this.#specificityTooltips = selectorContainer.createChild("span");
     if (headerText.length > 0 || !(rule instanceof SDK6.CSSRule.CSSStyleRule)) {
@@ -6432,19 +6462,30 @@ var StylePropertiesSection = class _StylePropertiesSection {
     }
     SDK6.OverlayModel.OverlayModel.hideDOMNodeHighlight(SDK6.TargetManager.TargetManager.instance());
   }
-  onMouseEnterSelector() {
+  onMouseEnterSelector(rule, nestingIndex) {
     if (this.hoverTimer) {
       clearTimeout(this.hoverTimer);
     }
-    this.hoverTimer = window.setTimeout(this.highlight.bind(this), 300);
+    const selectorList = constructResolvedSelector(rule, nestingIndex);
+    if (!selectorList) {
+      return;
+    }
+    this.hoverTimer = setTimeout(this.highlight.bind(this, void 0, selectorList), 300);
   }
-  highlight(mode = "all") {
+  /**
+   * Highlights the DOM node associated with this style section in the page overlay.
+   * Use `selectorList` to highlight elements matching a specific parent/ancestor
+   * rule or selector.
+   *
+   * @param mode Highlight mode (defaults to `'all'`).
+   * @param selectorList Parent selector string to highlight.
+   */
+  highlight(mode = "all", selectorList) {
     SDK6.OverlayModel.OverlayModel.hideDOMNodeHighlight(SDK6.TargetManager.TargetManager.instance());
     const node = this.stylesContainer.node();
     if (!node) {
       return;
     }
-    const selectorList = this.styleInternal.parentRule && this.styleInternal.parentRule instanceof SDK6.CSSRule.CSSStyleRule ? this.styleInternal.parentRule.selectorText() : void 0;
     node.domModel().overlayModel().highlightInOverlay({ node, selectorList }, mode);
   }
   firstSibling() {
@@ -6618,7 +6659,7 @@ var StylePropertiesSection = class _StylePropertiesSection {
           ancestorRuleElement = this.createSupportsElement(rule.supports[supportsIndex++]);
           break;
         case "StyleRule":
-          ancestorRuleElement = this.createNestingElement(rule.nestingSelectors?.[nestingIndex++]);
+          ancestorRuleElement = this.createNestingElement(rule, nestingIndex++);
           break;
         case "StartingStyleRule":
           ancestorRuleElement = this.createStartingStyleElement();
@@ -6804,11 +6845,31 @@ var StylePropertiesSection = class _StylePropertiesSection {
     };
     return navigationElement;
   }
-  createNestingElement(nestingSelector) {
+  createNestingElement(rule, nestingIndex) {
+    const nestingSelector = rule.nestingSelectors?.[nestingIndex];
     if (!nestingSelector) {
       return;
     }
+    const parentRule = this.matchedStyles.findParentRule(rule, nestingIndex);
+    if (parentRule) {
+      const container = document.createElement("div");
+      const matchingSelectorIndexes = this.matchedStyles.getMatchingSelectors(parentRule);
+      const matchingSelectors = new Array(parentRule.selectors.length).fill(false);
+      for (const matchingIndex of matchingSelectorIndexes) {
+        matchingSelectors[matchingIndex] = true;
+      }
+      const selectorElement = container.createChild("span", "selector");
+      selectorElement.addEventListener("mouseenter", () => this.onMouseEnterSelector(parentRule), false);
+      selectorElement.addEventListener("mouseleave", this.onMouseOutSelector.bind(this), false);
+      const specificityContainer = container.createChild("span");
+      this.renderSelectorsToElement(parentRule.selectors, matchingSelectors, this.elementToSelectorIndex, selectorElement, specificityContainer);
+      const openBrace = container.createChild("span", "sidebar-pane-open-brace");
+      openBrace.textContent = " {";
+      return container;
+    }
     const nestingElement = document.createElement("div");
+    nestingElement.addEventListener("mouseenter", () => this.onMouseEnterSelector(rule, nestingIndex), false);
+    nestingElement.addEventListener("mouseleave", this.onMouseOutSelector.bind(this), false);
     nestingElement.textContent = `${nestingSelector} {`;
     return nestingElement;
   }
@@ -7074,18 +7135,21 @@ var StylePropertiesSection = class _StylePropertiesSection {
   renderSelectors(selectors, matchingSelectors, elementToSelectorIndex) {
     this.selectorElement.removeChildren();
     this.#specificityTooltips.removeChildren();
+    this.renderSelectorsToElement(selectors, matchingSelectors, elementToSelectorIndex, this.selectorElement, this.#specificityTooltips);
+  }
+  renderSelectorsToElement(selectors, matchingSelectors, elementToSelectorIndex, targetElement, tooltipContainer) {
     for (const [i, selector] of selectors.entries()) {
       if (i > 0) {
-        this.selectorElement.append(", ");
+        targetElement.append(", ");
       }
       const specificityTooltipId = selector.specificity ? _StylePropertiesSection.getNextSpecificityTooltipId() : null;
-      const span = this.selectorElement.createChild("span", "simple-selector");
+      const span = targetElement.createChild("span", "simple-selector");
       span.classList.toggle("selector-matches", matchingSelectors[i]);
       elementToSelectorIndex.set(span, i);
       span.textContent = selectors[i].text;
       if (specificityTooltipId && selector.specificity) {
         span.setAttribute("aria-details", specificityTooltipId);
-        const tooltip = this.#specificityTooltips.appendChild(new Tooltips2.Tooltip.Tooltip({
+        const tooltip = tooltipContainer.appendChild(new Tooltips2.Tooltip.Tooltip({
           id: specificityTooltipId,
           anchor: span,
           variant: "rich",
@@ -7107,7 +7171,7 @@ var StylePropertiesSection = class _StylePropertiesSection {
     }
   }
   markSelectorHighlights() {
-    const selectors = this.selectorElement.getElementsByClassName("simple-selector");
+    const selectors = this.element.getElementsByClassName("simple-selector");
     const regex = this.stylesContainer.filterRegex();
     for (let i = 0; i < selectors.length; ++i) {
       const selectorMatchesFilter = regex?.test(selectors[i].textContent || "");
@@ -7686,6 +7750,29 @@ var HighlightPseudoStylePropertiesSection = class extends StylePropertiesSection
     return false;
   }
 };
+function constructResolvedSelector(rule, nestingIndex) {
+  if (!(rule instanceof SDK6.CSSRule.CSSStyleRule)) {
+    return void 0;
+  }
+  const nestingSelectors = rule.nestingSelectors;
+  if (!nestingSelectors) {
+    return nestingIndex === void 0 ? rule.selectorText() : void 0;
+  }
+  if (nestingIndex !== void 0 && (nestingIndex < 0 || nestingIndex >= nestingSelectors.length)) {
+    return void 0;
+  }
+  const selectorText = nestingIndex !== void 0 ? nestingSelectors[nestingIndex] : rule.selectorText();
+  const parentIndex = nestingIndex !== void 0 ? nestingIndex + 1 : 0;
+  const parentSelector = constructResolvedSelector(rule, parentIndex);
+  if (!parentSelector) {
+    return selectorText;
+  }
+  const sanitizedParent = parentSelector.replace(/::[a-zA-Z-]+/g, "").trim();
+  if (selectorText.includes("&")) {
+    return selectorText.replaceAll("&", `:is(${sanitizedParent})`);
+  }
+  return `:is(${sanitizedParent}) ${selectorText.trim()}`;
+}
 
 // gen/front_end/panels/elements/StylePropertyHighlighter.js
 var StylePropertyHighlighter_exports = {};
@@ -7792,8 +7879,8 @@ import * as Common4 from "./../../core/common/common.js";
 import * as Host3 from "./../../core/host/host.js";
 import * as i18n15 from "./../../core/i18n/i18n.js";
 import * as Root from "./../../core/root/root.js";
+import * as TextUtils4 from "./../../core/text_utils/text_utils.js";
 import * as AiCodeCompletion from "./../../models/ai_code_completion/ai_code_completion.js";
-import * as TextUtils4 from "./../../models/text_utils/text_utils.js";
 import * as TextEditor from "./../../ui/components/text_editor/text_editor.js";
 var StylesAiCodeCompletionProvider = class _StylesAiCodeCompletionProvider {
   #aidaClient = new Host3.AidaClient.AidaClient();
@@ -7802,15 +7889,26 @@ var StylesAiCodeCompletionProvider = class _StylesAiCodeCompletionProvider {
   #aiCodeCompletionConfig;
   getCompletionHint;
   setAiAutoCompletion;
-  #boundOnUpdateAiCodeCompletionState = this.#updateAiCodeCompletionState.bind(this);
+  #boundOnAidaAvailabilityChange = (ev) => {
+    this.#updateAiCodeCompletionStateWithAvailability(ev.data);
+  };
+  #boundOnSettingChange = () => {
+    const aidaAvailability = Host3.AidaClient.HostConfigTracker.instance().aidaAvailability;
+    if (aidaAvailability !== void 0) {
+      this.#updateAiCodeCompletionStateWithAvailability(aidaAvailability);
+    }
+  };
   constructor(aiCodeCompletionConfig) {
     if (!AiCodeCompletion.AiCodeCompletion.AiCodeCompletion.isAiCodeCompletionStylesAvailable()) {
       throw new Error("AI code completion feature in Styles is not available.");
     }
     this.#aiCodeCompletionConfig = aiCodeCompletionConfig;
-    Host3.AidaClient.HostConfigTracker.instance().addEventListener("aidaAvailabilityChanged", this.#boundOnUpdateAiCodeCompletionState);
-    this.#aiCodeCompletionSetting.addChangeListener(this.#boundOnUpdateAiCodeCompletionState);
-    void this.#updateAiCodeCompletionState();
+    Host3.AidaClient.HostConfigTracker.instance().addEventListener("aidaAvailabilityChanged", this.#boundOnAidaAvailabilityChange);
+    this.#aiCodeCompletionSetting.addChangeListener(this.#boundOnSettingChange);
+    const initialAvailability = Host3.AidaClient.HostConfigTracker.instance().aidaAvailability;
+    if (initialAvailability !== void 0) {
+      this.#updateAiCodeCompletionStateWithAvailability(initialAvailability);
+    }
   }
   static createInstance(aiCodeCompletionConfig) {
     return new _StylesAiCodeCompletionProvider(aiCodeCompletionConfig);
@@ -7839,8 +7937,7 @@ var StylesAiCodeCompletionProvider = class _StylesAiCodeCompletionProvider {
     this.#aiCodeCompletion = void 0;
     this.#aiCodeCompletionConfig?.onFeatureDisabled();
   }
-  async #updateAiCodeCompletionState() {
-    const aidaAvailability = await Host3.AidaClient.AidaClient.checkAccessPreconditions();
+  #updateAiCodeCompletionStateWithAvailability(aidaAvailability) {
     const isAvailable = aidaAvailability === "available";
     const devtoolsLocale = i18n15.DevToolsLocale.DevToolsLocale.instance().locale;
     const isEnabled = AiCodeCompletion.AiCodeCompletion.AiCodeCompletion.isAiCodeCompletionStylesEnabled(devtoolsLocale) && this.#aiCodeCompletionSetting.get();
@@ -8528,6 +8625,7 @@ var StylesSidebarPane = class _StylesSidebarPane extends Common5.ObjectWrapper.e
   #shouldRenderLazily = false;
   #lazyRenderObserver;
   #lazyRenderCallbacks = /* @__PURE__ */ new WeakMap();
+  #elementsForSyncViewportCheck = [];
   #updateId = 0;
   constructor(computedStyleModel) {
     super(computedStyleModel, { delegatesFocus: true, useShadowDom: true, classes: ["flex-none"] });
@@ -9105,6 +9203,7 @@ var StylesSidebarPane = class _StylesSidebarPane extends Common5.ObjectWrapper.e
       return;
     }
     const focusedIndex = this.focusedSectionIndex();
+    this.#elementsForSyncViewportCheck = [];
     this.linkifier.reset();
     const prevSections = this.sectionBlocks.map((block) => block.sections).flat();
     const node = this.node();
@@ -9149,6 +9248,7 @@ var StylesSidebarPane = class _StylesSidebarPane extends Common5.ObjectWrapper.e
       }
     }
     this.sectionsContainer.contentElement.appendChild(fragment);
+    this.#performSyncViewportCheck();
     if (elementToFocus) {
       elementToFocus.focus();
     }
@@ -9637,7 +9737,47 @@ var StylesSidebarPane = class _StylesSidebarPane extends Common5.ObjectWrapper.e
       }, { rootMargin: "100px" });
     }
     this.#lazyRenderCallbacks.set(element, callback);
+    this.#elementsForSyncViewportCheck.push(element);
     this.#lazyRenderObserver.observe(element);
+  }
+  #performSyncViewportCheck() {
+    if (!this.#shouldRenderLazily || this.#elementsForSyncViewportCheck.length === 0) {
+      this.#elementsForSyncViewportCheck = [];
+      return;
+    }
+    const scrollContainer = this.contentElement.parentElement;
+    if (!scrollContainer) {
+      this.#elementsForSyncViewportCheck = [];
+      return;
+    }
+    const { top, bottom } = scrollContainer.getBoundingClientRect();
+    if (bottom === top) {
+      this.#elementsForSyncViewportCheck = [];
+      return;
+    }
+    const viewportTop = top - 100;
+    const viewportBottom = bottom + 100;
+    const visibleElements = [];
+    for (const element of this.#elementsForSyncViewportCheck) {
+      if (!element.isConnected || !this.#lazyRenderCallbacks.has(element)) {
+        continue;
+      }
+      const rect = element.getBoundingClientRect();
+      if (rect.top > viewportBottom) {
+        break;
+      }
+      if (rect.bottom >= viewportTop) {
+        visibleElements.push(element);
+      }
+    }
+    this.#elementsForSyncViewportCheck = [];
+    for (const element of visibleElements) {
+      const callback = this.#lazyRenderCallbacks.get(element);
+      if (callback) {
+        callback();
+        this.untrackForLazyRendering(element);
+      }
+    }
   }
   shouldRenderLazily() {
     return this.#shouldRenderLazily;
@@ -11574,7 +11714,7 @@ __export(AdoptedStyleSheetTreeElement_exports, {
   AdoptedStyleSheetTreeElement: () => AdoptedStyleSheetTreeElement
 });
 import * as SDK10 from "./../../core/sdk/sdk.js";
-import * as TextUtils6 from "./../../models/text_utils/text_utils.js";
+import * as TextUtils6 from "./../../core/text_utils/text_utils.js";
 import * as CodeHighlighter from "./../../ui/components/code_highlighter/code_highlighter.js";
 import * as Components5 from "./../../ui/legacy/components/utils/utils.js";
 import * as UI13 from "./../../ui/legacy/legacy.js";
@@ -11885,10 +12025,10 @@ import * as i18n26 from "./../../core/i18n/i18n.js";
 import * as Platform7 from "./../../core/platform/platform.js";
 import * as Root4 from "./../../core/root/root.js";
 import * as SDK12 from "./../../core/sdk/sdk.js";
+import * as TextUtils7 from "./../../core/text_utils/text_utils.js";
 import * as AIAssistance from "./../../models/ai_assistance/ai_assistance.js";
 import * as Badges3 from "./../../models/badges/badges.js";
 import * as Bindings5 from "./../../models/bindings/bindings.js";
-import * as TextUtils7 from "./../../models/text_utils/text_utils.js";
 import * as Workspace from "./../../models/workspace/workspace.js";
 import * as CodeMirror2 from "./../../third_party/codemirror.next/codemirror.next.js";
 import * as CodeHighlighter3 from "./../../ui/components/code_highlighter/code_highlighter.js";
@@ -12280,6 +12420,10 @@ var UIStrings13 = {
    * @description Text to scroll the displayed content into view
    */
   scrollIntoView: "Scroll into view",
+  /**
+   * @description A context menu item in the Elements panel to switch to Accessibility tree
+   */
+  switchToAccessibilityTree: "Switch to accessibility tree",
   /**
    * @description A context menu item in the Elements Tree Element of the Elements panel
    */
@@ -14125,6 +14269,7 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI14.TreeOutline.Tr
     }
     this.populateExpandRecursively(contextMenu);
     contextMenu.viewSection().appendItem(i18nString12(UIStrings13.collapseChildren), this.collapseChildren.bind(this), { jslogContext: "collapse-children" });
+    contextMenu.viewSection().appendItem(i18nString12(UIStrings13.switchToAccessibilityTree), () => ElementsPanel.instance().toggleAccessibilityTree(), { jslogContext: "switch-to-accessibility-tree" });
     const deviceModeWrapperAction = new Emulation.DeviceModeWrapper.ActionDelegate();
     contextMenu.viewSection().appendItem(i18nString12(UIStrings13.captureNodeScreenshot), deviceModeWrapperAction.handleAction.bind(null, UI14.Context.Context.instance(), "emulation.capture-node-screenshot"), { jslogContext: "emulation.capture-node-screenshot" });
     if (this.nodeInternal.frameOwnerFrameId()) {
@@ -17376,6 +17521,7 @@ import * as SDK15 from "./../../core/sdk/sdk.js";
 import * as Buttons2 from "./../../ui/components/buttons/buttons.js";
 import * as UI18 from "./../../ui/legacy/legacy.js";
 import * as Lit9 from "./../../ui/lit/lit.js";
+import * as SettingUIRegistration from "./../../ui/settings/settings.js";
 import * as VisualLogging10 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/elements/layoutPane.css.js
@@ -17855,16 +18001,23 @@ var LayoutPane = class _LayoutPane extends UI18.Widget.Widget {
       if (settingType !== "boolean" && settingType !== "enum") {
         throw new Error("A setting provided to LayoutSidebarPane does not have a supported setting type");
       }
+      const uiDescriptor = SettingUIRegistration.SettingUIRegistration.maybeResolve(setting.descriptor());
       const mappedSetting = {
         type: settingType,
         name: setting.name,
-        title: setting.title()
+        title: uiDescriptor?.title?.() ?? setting.title()
       };
+      const options = uiDescriptor?.options?.map((opt) => ({
+        value: opt.value,
+        title: opt.title(),
+        text: typeof opt.text === "function" ? opt.text() : opt.text,
+        raw: opt.raw
+      })) ?? setting.options();
       if (typeof settingValue === "boolean") {
         settings.push({
           ...mappedSetting,
           value: settingValue,
-          options: setting.options().map((opt) => ({
+          options: options.map((opt) => ({
             ...opt,
             value: opt.value
           }))
@@ -17873,7 +18026,7 @@ var LayoutPane = class _LayoutPane extends UI18.Widget.Widget {
         settings.push({
           ...mappedSetting,
           value: settingValue,
-          options: setting.options().map((opt) => ({
+          options: options.map((opt) => ({
             ...opt,
             value: opt.value
           }))
@@ -20135,8 +20288,7 @@ var EventListenersWidget = class _EventListenersWidget extends UI23.Widget.VBox 
     this.showForAncestorsSetting.addChangeListener(this.requestUpdate.bind(this));
     this.dispatchFilterBySetting = Common15.Settings.Settings.instance().createSetting("event-listener-dispatch-filter-type", DispatchFilterBy.All);
     this.dispatchFilterBySetting.addChangeListener(this.requestUpdate.bind(this));
-    this.showFrameworkListenersSetting = Common15.Settings.Settings.instance().createSetting("show-frameowkr-listeners", true);
-    this.showFrameworkListenersSetting.setTitle(i18nString18(UIStrings19.frameworkListeners));
+    this.showFrameworkListenersSetting = Common15.Settings.Settings.instance().moduleSetting("show-frameowkr-listeners");
     this.showFrameworkListenersSetting.addChangeListener(this.requestUpdate.bind(this));
     UI23.Context.Context.instance().addFlavorChangeListener(SDK19.DOMModel.DOMNode, this.requestUpdate.bind(this));
     this.requestUpdate();

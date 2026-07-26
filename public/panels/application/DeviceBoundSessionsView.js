@@ -148,13 +148,13 @@ const UIStrings = {
      */
     noEvents: 'No events have been logged yet.',
     /**
-     *@description Text to preserve the log of events after refreshing.
+     *@description Text to keep the log of events after refreshing.
      */
-    preserveLog: 'Preserve log',
+    preserveLog: 'Keep log',
     /**
-     *@description Tooltip text that appears on the preserve log setting when hovering over it.
+     *@description Tooltip text that appears on the keep log setting when hovering over it.
      */
-    doNotClearLogOnPageReload: 'Do not clear log on page reload/navigation.',
+    doNotClearLogOnPageReload: 'Don’t clear log on page reload/navigation',
     /**
      *@description Label for the ID of a session.
      */

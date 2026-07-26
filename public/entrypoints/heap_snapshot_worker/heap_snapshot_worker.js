@@ -2527,7 +2527,6 @@ var HeapSnapshot = class _HeapSnapshot {
     if (this.nodeDetachednessAndClassIndexOffset === -1) {
       return;
     }
-    console.time("propagateDOMState");
     const visited = new Uint8Array(this.nodeCount);
     const attached = [];
     const detached = [];
@@ -2595,7 +2594,6 @@ var HeapSnapshot = class _HeapSnapshot {
         /* HeapSnapshotModel.HeapSnapshotModel.DOMLinkState.DETACHED */
       );
     }
-    console.timeEnd("propagateDOMState");
   }
   buildSamples() {
     const samples = this.#rawSamples;
@@ -3880,7 +3878,7 @@ __export(HeapSnapshotLoader_exports, {
   HeapSnapshotLoader: () => HeapSnapshotLoader
 });
 import * as Platform2 from "./../../core/platform/platform.js";
-import * as TextUtils from "./../../models/text_utils/text_utils.js";
+import * as TextUtils from "./../../core/text_utils/text_utils.js";
 var HeapSnapshotLoader = class {
   #progress;
   #buffer;

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { createSettingsForTest } from '../../testing/SettingsHelpers.js';
 import * as EmulationModel from '../emulation/emulation.js';
 const BASE_URL = new URL('../../../front_end/emulated_devices/', import.meta.url).toString();
 describe('EmulatedDevices can compute CSS image URLs', () => {
@@ -35,7 +36,7 @@ describeWithEnvironment('emulatedDevices', () => {
         assert.isTrue(chromeRawDevices.every(d => d['user-agent'].includes('Chrome/%s')));
     });
     it('after parsing, all Chrome UAs all have %s placeholder for major version patching', () => {
-        const edList = new EmulationModel.EmulatedDevices.EmulatedDevicesList();
+        const edList = new EmulationModel.EmulatedDevices.EmulatedDevicesList(createSettingsForTest());
         const parsedDevices = edList.standard();
         const chromeDevices = parsedDevices.filter(d => d.userAgent.includes(' Chrome/'));
         assert.isAtLeast(chromeDevices.length, 20);

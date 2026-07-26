@@ -5,9 +5,11 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as AiAssistanceModel from '../../../models/ai_assistance/ai_assistance.js';
+import { createDummyImageFile } from '../../../testing/AiAssistanceHelpers.js';
 import { assertScreenshot, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment, } from '../../../testing/EnvironmentHelpers.js';
 import { createViewFunctionStub } from '../../../testing/ViewFunctionHelpers.js';
+import * as Snackbars from '../../../ui/components/snackbars/snackbars.js';
 import * as AiAssistance from '../ai_assistance.js';
 describeWithEnvironment('ChatInput', () => {
     function createComponent() {
@@ -16,16 +18,6 @@ describeWithEnvironment('ChatInput', () => {
         component.wasShown();
         component.performUpdate();
         return [view, component];
-    }
-    class MockFileReader {
-        result = null;
-        onload = null;
-        readAsDataURL(_file) {
-            if (this.onload) {
-                this.result = 'data:image/png;base64,dGVzdA==';
-                this.onload.call(this, new ProgressEvent('load'));
-            }
-        }
     }
     it('should disable the send button when the input is empty', async () => {
         const [view, component] = createComponent();
@@ -83,6 +75,12 @@ describeWithEnvironment('ChatInput', () => {
             assert.exists(maybeModel);
             model = maybeModel;
             SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
+            AiAssistance.ImageResize.setCompressImplementationForTest(async () => {
+                return { data: 'dGVzdA==', mimeType: 'image/jpeg' };
+            });
+        });
+        afterEach(() => {
+            AiAssistance.ImageResize.setCompressImplementationForTest(null);
         });
         it('handles screenshot capture', async () => {
             const captureScreenshotStub = sinon.stub(model, 'captureScreenshot').resolves('screenshot-data');
@@ -97,27 +95,22 @@ describeWithEnvironment('ChatInput', () => {
                 isLoading: false,
                 data: 'screenshot-data',
                 mimeType: 'image/jpeg',
-                inputType: "screenshot" /* AiAssistanceModel.AiAgent.MultimodalInputType.SCREENSHOT */
+                inputType: "screenshot" /* AiAssistanceModel.AiAgent.MultimodalInputType.SCREENSHOT */,
             });
         });
         it('handles image upload', async () => {
             const [view] = createComponent();
-            const file = new File(['test'], 'image.png', { type: 'image/png' });
-            const fileReaderStub = sinon.stub(window, 'FileReader');
-            fileReaderStub.returns(new MockFileReader());
+            const file = await createDummyImageFile(10, 10);
             await triggerImageUpload(view, file);
-            assert.deepEqual(view.input.imageInput, {
-                isLoading: false,
-                data: 'dGVzdA==',
-                mimeType: 'image/png',
-                inputType: "uploaded-image" /* AiAssistanceModel.AiAgent.MultimodalInputType.UPLOADED_IMAGE */
-            });
+            assert.exists(view.input.imageInput);
+            assert.isFalse(view.input.imageInput.isLoading);
+            assert.strictEqual(view.input.imageInput.data, 'dGVzdA==');
+            assert.strictEqual(view.input.imageInput.mimeType, 'image/jpeg');
+            assert.strictEqual(view.input.imageInput.inputType, "uploaded-image" /* AiAssistanceModel.AiAgent.MultimodalInputType.UPLOADED_IMAGE */);
         });
         it('removes image input', async () => {
             const [view] = createComponent();
-            const file = new File(['test'], 'image.png', { type: 'image/png' });
-            const fileReaderStub = sinon.stub(window, 'FileReader');
-            fileReaderStub.returns(new MockFileReader());
+            const file = await createDummyImageFile(10, 10);
             await triggerImageUpload(view, file);
             assert.isDefined(view.input.imageInput);
             view.input.onRemoveImageInput();
@@ -125,9 +118,7 @@ describeWithEnvironment('ChatInput', () => {
         });
         it('clears image input on submit', async () => {
             const [view, component] = createComponent();
-            const file = new File(['test'], 'image.png', { type: 'image/png' });
-            const fileReaderStub = sinon.stub(window, 'FileReader');
-            fileReaderStub.returns(new MockFileReader());
+            const file = await createDummyImageFile(10, 10);
             await triggerImageUpload(view, file);
             component.setInputValue('test');
             const submitEvent = new SubmitEvent('submit', { cancelable: true });
@@ -137,9 +128,7 @@ describeWithEnvironment('ChatInput', () => {
         it('handles image paste from clipboard', async () => {
             const [view, component] = createComponent();
             component.conversationType = "freestyler" /* AiAssistanceModel.AiHistoryStorage.ConversationType.STYLING */;
-            const file = new File(['test'], 'pasted_image.png', { type: 'image/png' });
-            const fileReaderStub = sinon.stub(window, 'FileReader');
-            fileReaderStub.returns(new MockFileReader());
+            const file = await createDummyImageFile(10, 10);
             const dataTransfer = new DataTransfer();
             dataTransfer.items.add(file);
             const clipboardEvent = new ClipboardEvent('paste', {
@@ -147,18 +136,15 @@ describeWithEnvironment('ChatInput', () => {
             });
             view.input.onImagePaste(clipboardEvent);
             await new Promise(resolve => setTimeout(resolve, 0));
-            assert.deepEqual(view.input.imageInput, {
-                isLoading: false,
-                data: btoa('test'),
-                mimeType: 'image/png',
-                inputType: "uploaded-image" /* AiAssistanceModel.AiAgent.MultimodalInputType.UPLOADED_IMAGE */
-            });
+            assert.exists(view.input.imageInput);
+            assert.isFalse(view.input.imageInput.isLoading);
+            assert.strictEqual(view.input.imageInput.data, 'dGVzdA==');
+            assert.strictEqual(view.input.imageInput.mimeType, 'image/jpeg');
+            assert.strictEqual(view.input.imageInput.inputType, "uploaded-image" /* AiAssistanceModel.AiAgent.MultimodalInputType.UPLOADED_IMAGE */);
         });
         it('handles drag-and-drop image upload', async () => {
             const [view] = createComponent();
-            const file = new File(['test'], 'dropped_image.png', { type: 'image/png' });
-            const fileReaderStub = sinon.stub(window, 'FileReader');
-            fileReaderStub.returns(new MockFileReader());
+            const file = await createDummyImageFile(10, 10);
             const dataTransfer = new DataTransfer();
             dataTransfer.items.add(file);
             const dragOverEvent = new DragEvent('dragover', {
@@ -172,20 +158,17 @@ describeWithEnvironment('ChatInput', () => {
             view.input.onImageDrop(dropEvent);
             dropEvent.preventDefault();
             await new Promise(resolve => setTimeout(resolve, 0));
-            assert.deepEqual(view.input.imageInput, {
-                isLoading: false,
-                data: btoa('test'),
-                mimeType: 'image/png',
-                inputType: "uploaded-image" /* AiAssistanceModel.AiAgent.MultimodalInputType.UPLOADED_IMAGE */
-            });
+            assert.exists(view.input.imageInput);
+            assert.isFalse(view.input.imageInput.isLoading);
+            assert.strictEqual(view.input.imageInput.data, 'dGVzdA==');
+            assert.strictEqual(view.input.imageInput.mimeType, 'image/jpeg');
+            assert.strictEqual(view.input.imageInput.inputType, "uploaded-image" /* AiAssistanceModel.AiAgent.MultimodalInputType.UPLOADED_IMAGE */);
         });
         it('should clear image input on primary page change', async () => {
             const target = createTarget();
             const [view] = createComponent();
             // Set up initial state with an image and non-empty conversation
-            const file = new File(['test'], 'image.png', { type: 'image/png' });
-            const fileReaderStub = sinon.stub(window, 'FileReader');
-            fileReaderStub.returns(new MockFileReader());
+            const file = await createDummyImageFile(10, 10);
             await triggerImageUpload(view, file);
             // Verify image input is present
             assert.isDefined(view.input.imageInput);
@@ -198,6 +181,27 @@ describeWithEnvironment('ChatInput', () => {
             });
             // Verify image input is cleared
             assert.isUndefined(view.input.imageInput);
+        });
+        it('rejects image files larger than 10MB', async () => {
+            const [view] = createComponent();
+            const largeFile = new File([new ArrayBuffer(11 * 1024 * 1024)], 'large.png', { type: 'image/png' });
+            const snackbarSpy = sinon.spy(Snackbars.Snackbar.Snackbar, 'show');
+            await triggerImageUpload(view, largeFile);
+            assert.isUndefined(view.input.imageInput);
+            sinon.assert.calledOnce(snackbarSpy);
+            assert.include(snackbarSpy.firstCall.args[0].message, 'File is too large');
+        });
+        it('handles image compression failures gracefully', async () => {
+            AiAssistance.ImageResize.setCompressImplementationForTest(async () => {
+                throw new Error('Failed to compress image');
+            });
+            const [view] = createComponent();
+            const file = new File(['test'], 'image.png', { type: 'image/png' });
+            const snackbarSpy = sinon.spy(Snackbars.Snackbar.Snackbar, 'show');
+            await triggerImageUpload(view, file);
+            assert.isUndefined(view.input.imageInput);
+            sinon.assert.calledOnce(snackbarSpy);
+            assert.include(snackbarSpy.firstCall.args[0].message, 'Failed to upload image');
         });
     });
     describe('history navigation', () => {

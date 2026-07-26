@@ -1,8 +1,10 @@
+import * as Common from '../common/common.js';
 export declare class UserMetrics {
     sourcesPanelFileDebugged(mediaType?: string): void;
     sourcesPanelFileOpened(mediaType?: string): void;
     networkPanelResponsePreviewOpened(mediaType: string): void;
     actionTaken(action: Action): void;
+    resendRequest(resourceType: ResendRequestType): void;
     keybindSetSettingChanged(keybindSet: string): void;
     keyboardShortcutFired(actionId: string): void;
     issuesPanelOpenedFrom(issueOpener: IssueOpener): void;
@@ -565,18 +567,6 @@ export declare enum IssueCreated {
     'CookieIssue::ExcludeSameSiteNoneInsecure::SetCookie' = 15,
     'CookieIssue::WarnSameSiteNoneInsecure::ReadCookie' = 16,
     'CookieIssue::WarnSameSiteNoneInsecure::SetCookie' = 17,
-    'CookieIssue::WarnSameSiteStrictLaxDowngradeStrict::Secure' = 18,
-    'CookieIssue::WarnSameSiteStrictLaxDowngradeStrict::Insecure' = 19,
-    'CookieIssue::WarnCrossDowngrade::ReadCookie::Secure' = 20,
-    'CookieIssue::WarnCrossDowngrade::ReadCookie::Insecure' = 21,
-    'CookieIssue::WarnCrossDowngrade::SetCookie::Secure' = 22,
-    'CookieIssue::WarnCrossDowngrade::SetCookie::Insecure' = 23,
-    'CookieIssue::ExcludeNavigationContextDowngrade::Secure' = 24,
-    'CookieIssue::ExcludeNavigationContextDowngrade::Insecure' = 25,
-    'CookieIssue::ExcludeContextDowngrade::ReadCookie::Secure' = 26,
-    'CookieIssue::ExcludeContextDowngrade::ReadCookie::Insecure' = 27,
-    'CookieIssue::ExcludeContextDowngrade::SetCookie::Secure' = 28,
-    'CookieIssue::ExcludeContextDowngrade::SetCookie::Insecure' = 29,
     'CookieIssue::ExcludeSameSiteUnspecifiedTreatedAsLax::ReadCookie' = 30,
     'CookieIssue::ExcludeSameSiteUnspecifiedTreatedAsLax::SetCookie' = 31,
     'CookieIssue::WarnSameSiteUnspecifiedLaxAllowUnsafe::ReadCookie' = 32,
@@ -915,3 +905,23 @@ export declare const enum BuiltInAiAvailability {
     DISABLED_NO_GPU = 9,
     MAX_VALUE = 10
 }
+export declare const enum ResendRequestType {
+    XHR = 0,
+    FETCH = 1,
+    SCRIPT = 2,
+    STYLESHEET = 3,
+    IMAGE = 4,
+    MEDIA = 5,
+    FONT = 6,
+    WASM = 7,
+    MANIFEST = 8,
+    TEXT_TRACK = 9,
+    SOURCE_MAP_SCRIPT = 10,
+    SOURCE_MAP_STYLE_SHEET = 11,
+    DOCUMENT = 12,
+    PREFETCH = 13,
+    PING = 14,
+    OTHER = 15,
+    MAX_VALUE = 16
+}
+export declare function resendRequestType(resourceType: Common.ResourceType.ResourceType): ResendRequestType;

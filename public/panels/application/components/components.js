@@ -292,7 +292,13 @@ var DEFAULT_VIEW = (input, output, target) => {
             </tr>
             ${input.adFrames.map((frame) => html`
               <tr>
-                <td title=${frame.elementId}>${frame.elementId}</td>
+                <td title=${frame.elementId}>
+                  ${frame.elementId ? html`
+                        <button class="text-button link-style devtools-link" @click=${frame.revealFrame}>
+                          ${frame.elementId}
+                        </button>
+                      ` : Lit.nothing}
+                </td>
                 <td title=${frame.initialOrigin}>${frame.initialOrigin}</td>
                 <td title=${frame.cpuTime}>${frame.cpuTime}</td>
                 <td title=${frame.networkBytes}>${frame.networkBytes}</td>
@@ -415,11 +421,7 @@ var AdsView = class extends UI.Widget.Widget {
     if (!frame) {
       return void 0;
     }
-    const domModel = frame.resourceTreeModel().target().model(SDK.DOMModel.DOMModel);
-    if (!domModel) {
-      return void 0;
-    }
-    const deferredNode = await domModel.getOwnerNodeForFrame(frameId);
+    const deferredNode = await frame.getOwnerDeferredDOMNode();
     if (deferredNode) {
       const node = await deferredNode.resolvePromise();
       return node?.getAttribute("id") || null;
@@ -446,11 +448,20 @@ var AdsView = class extends UI.Widget.Widget {
     const adFramesArray = [];
     for (const [frameId, frame] of this.#adFrames) {
       const elementIdText = this.#adIframeElementIds.has(frameId) ? this.#adIframeElementIds.get(frameId) || i18nString(UIStrings.unnamed) : "";
+      const revealFrame = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const frameToReveal = SDK.FrameManager.FrameManager.instance().getFrame(frameId);
+        if (frameToReveal) {
+          void Common.Revealer.reveal(frameToReveal);
+        }
+      };
       adFramesArray.push({
         elementId: elementIdText,
         initialOrigin: frame.initialOrigin || "",
         cpuTime: formatCpu(frame.cpuTime),
-        networkBytes: formatNetwork(frame.networkBytes)
+        networkBytes: formatNetwork(frame.networkBytes),
+        revealFrame
       });
     }
     const viewInput = {
@@ -476,7 +487,7 @@ import * as SDK2 from "./../../../core/sdk/sdk.js";
 import * as Buttons from "./../../../ui/components/buttons/buttons.js";
 import * as Components from "./../../../ui/legacy/components/utils/utils.js";
 import * as UI2 from "./../../../ui/legacy/legacy.js";
-import { html as html2, nothing, render as render2 } from "./../../../ui/lit/lit.js";
+import { html as html2, nothing as nothing2, render as render2 } from "./../../../ui/lit/lit.js";
 import * as VisualLogging2 from "./../../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/components/BackForwardCacheStrings.js
@@ -1393,7 +1404,7 @@ function renderMainFrameInformation(frame, frameTreeData, reasonToFramesMap, scr
 }
 function maybeRenderFrameTree(frameTreeData) {
   if (!frameTreeData || frameTreeData.frameCount === 0 && frameTreeData.issueCount === 0) {
-    return nothing;
+    return nothing2;
   }
   function renderFrameTreeNode(node) {
     return html2`
@@ -1401,12 +1412,12 @@ function maybeRenderFrameTree(frameTreeData) {
         ${node.iconName ? html2`
           <devtools-icon class="inline-icon extra-large" .name=${node.iconName} style="margin-bottom: -3px;">
           </devtools-icon>
-        ` : nothing}
+        ` : nothing2}
         ${node.text}
         ${node.children?.length ? html2`
           <ul role="group">
             ${node.children.map((child) => renderFrameTreeNode(child))}
-          </ul>` : nothing}
+          </ul>` : nothing2}
       </li>`;
   }
   let title = "";
@@ -1460,7 +1471,7 @@ function renderBackForwardCacheStatus(status) {
 }
 function maybeRenderExplanations(explanations, explanationTree, reasonToFramesMap) {
   if (explanations.length === 0) {
-    return nothing;
+    return nothing2;
   }
   const pageSupportNeeded = explanations.filter(
     (explanation) => explanation.type === "PageSupportNeeded"
@@ -1490,7 +1501,7 @@ function renderExplanations(category, explainerText, explanations, reasonToFrame
         </div>
       </devtools-report-section-header>
       ${explanations.map((explanation) => renderReason(explanation, reasonToFramesMap.get(explanation.reason)))}
-    ` : nothing}`;
+    ` : nothing2}`;
 }
 function maybeRenderReasonContext(explanation) {
   if (explanation.reason === "EmbedderExtensionSentMessageToCachedFrame" && explanation.context) {
@@ -1498,11 +1509,11 @@ function maybeRenderReasonContext(explanation) {
     return html2`${i18nString2(UIStrings3.blockingExtensionId)}
       <devtools-link .href=${link} allow-privileged>${explanation.context}</devtools-link>`;
   }
-  return nothing;
+  return nothing2;
 }
 function renderFramesPerReason(frames) {
   if (frames === void 0 || frames.length === 0) {
-    return nothing;
+    return nothing2;
   }
   const rows = [html2`<div>${i18nString2(UIStrings3.framesPerIssue, { n: frames.length })}</div>`];
   rows.push(...frames.map((url) => html2`<div class="text-ellipsis" title=${url}
@@ -1528,11 +1539,11 @@ function maybeRenderDeepLinkToUnload(explanation) {
           ${i18nString2(UIStrings3.neverUseUnload)}
         </devtools-link>`;
   }
-  return nothing;
+  return nothing2;
 }
 function maybeRenderJavaScriptDetails(details) {
   if (details === void 0 || details.length === 0) {
-    return nothing;
+    return nothing2;
   }
   const maxLengthForDisplayedURLs = 50;
   const rows = [html2`<div>${i18nString2(UIStrings3.filesPerIssue, { n: details.length })}</div>`];
@@ -1564,7 +1575,7 @@ function renderReason(explanation, frames) {
             ${NotRestoredReasonDescription[explanation.reason].name()}
             ${maybeRenderDeepLinkToUnload(explanation)}
             ${maybeRenderReasonContext(explanation)}
-          </div>` : nothing}
+          </div>` : nothing2}
     </devtools-report-section>
     <div class="gray-text">
       ${explanation.reason}
@@ -1588,9 +1599,17 @@ var BackForwardCacheView = class extends UI2.Widget.Widget {
   constructor(view = DEFAULT_VIEW2) {
     super({ useShadowDom: true, delegatesFocus: true });
     this.#view = view;
-    this.#getMainResourceTreeModel()?.addEventListener(SDK2.ResourceTreeModel.Events.PrimaryPageChanged, this.requestUpdate, this);
-    this.#getMainResourceTreeModel()?.addEventListener(SDK2.ResourceTreeModel.Events.BackForwardCacheDetailsUpdated, this.requestUpdate, this);
+  }
+  wasShown() {
+    super.wasShown();
+    SDK2.TargetManager.TargetManager.instance().addModelListener(SDK2.ResourceTreeModel.ResourceTreeModel, SDK2.ResourceTreeModel.Events.PrimaryPageChanged, this.requestUpdate, this);
+    SDK2.TargetManager.TargetManager.instance().addModelListener(SDK2.ResourceTreeModel.ResourceTreeModel, SDK2.ResourceTreeModel.Events.BackForwardCacheDetailsUpdated, this.requestUpdate, this);
     this.requestUpdate();
+  }
+  willHide() {
+    SDK2.TargetManager.TargetManager.instance().removeModelListener(SDK2.ResourceTreeModel.ResourceTreeModel, SDK2.ResourceTreeModel.Events.PrimaryPageChanged, this.requestUpdate, this);
+    SDK2.TargetManager.TargetManager.instance().removeModelListener(SDK2.ResourceTreeModel.ResourceTreeModel, SDK2.ResourceTreeModel.Events.BackForwardCacheDetailsUpdated, this.requestUpdate, this);
+    super.willHide();
   }
   #getMainResourceTreeModel() {
     const mainTarget = SDK2.TargetManager.TargetManager.instance().primaryPageTarget();
@@ -2186,7 +2205,7 @@ import * as SDK4 from "./../../../core/sdk/sdk.js";
 import * as NetworkForward from "./../../network/forward/forward.js";
 import * as Buttons3 from "./../../../ui/components/buttons/buttons.js";
 import * as UI6 from "./../../../ui/legacy/legacy.js";
-import { html as html6, nothing as nothing3, render as render6 } from "./../../../ui/lit/lit.js";
+import { html as html6, nothing as nothing4, render as render6 } from "./../../../ui/lit/lit.js";
 import * as VisualLogging5 from "./../../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/components/permissionsPolicySection.css.js
@@ -2312,7 +2331,7 @@ function renderIconLink(iconName, title, clickHandler, jsLogContext) {
 }
 function renderAllowed(allowed) {
   if (!allowed.length) {
-    return nothing3;
+    return nothing4;
   }
   return html6`
     <devtools-report-key>${i18nString6(UIStrings7.allowedFeatures)}</devtools-report-key>
@@ -2320,7 +2339,7 @@ function renderAllowed(allowed) {
 }
 function renderDisallowed(data, showDetails, onToggleShowDetails, onRevealDOMNode, onRevealHeader) {
   if (!data.length) {
-    return nothing3;
+    return nothing4;
   }
   if (!showDetails) {
     return html6`
@@ -2358,8 +2377,8 @@ function renderDisallowed(data, showDetails, onToggleShowDetails, onRevealDOMNod
         <div class="feature-name text-ellipsis">${policy.feature}</div>
         <div class="block-reason">${blockReasonText}</div>
         <div>
-          ${linkTargetDOMNode ? renderIconLink("code-circle", i18nString6(UIStrings7.clickToShowIframe), () => onRevealDOMNode(linkTargetDOMNode), "reveal-in-elements") : nothing3}
-          ${linkTargetRequest ? renderIconLink("arrow-up-down-circle", i18nString6(UIStrings7.clickToShowHeader), () => onRevealHeader(linkTargetRequest), "reveal-in-network") : nothing3}
+          ${linkTargetDOMNode ? renderIconLink("code-circle", i18nString6(UIStrings7.clickToShowIframe), () => onRevealDOMNode(linkTargetDOMNode), "reveal-in-elements") : nothing4}
+          ${linkTargetRequest ? renderIconLink("arrow-up-down-circle", i18nString6(UIStrings7.clickToShowHeader), () => onRevealHeader(linkTargetRequest), "reveal-in-network") : nothing4}
         </div>
       </div>`;
   });
@@ -2384,7 +2403,7 @@ var DEFAULT_VIEW6 = (input, output, target) => {
       ${i18n13.i18n.lockedString("Permissions Policy")}
     </devtools-report-section-header>
     ${renderAllowed(input.allowed)}
-    ${input.allowed.length > 0 && input.disallowed.length > 0 ? html6`<devtools-report-divider class="subsection-divider"></devtools-report-divider>` : nothing3}
+    ${input.allowed.length > 0 && input.disallowed.length > 0 ? html6`<devtools-report-divider class="subsection-divider"></devtools-report-divider>` : nothing4}
     ${renderDisallowed(input.disallowed, input.showDetails, input.onToggleShowDetails, input.onRevealDOMNode, input.onRevealHeader)}
     <devtools-report-divider></devtools-report-divider>`, target);
 };
@@ -2461,7 +2480,7 @@ import * as Buttons4 from "./../../../ui/components/buttons/buttons.js";
 import * as Input from "./../../../ui/components/input/input.js";
 import * as uiI18n from "./../../../ui/i18n/i18n.js";
 import * as UI7 from "./../../../ui/legacy/legacy.js";
-import { html as html7, i18nTemplate as unboundI18nTemplate, nothing as nothing4, render as render7 } from "./../../../ui/lit/lit.js";
+import { html as html7, i18nTemplate as unboundI18nTemplate, nothing as nothing5, render as render7 } from "./../../../ui/lit/lit.js";
 import * as VisualLogging6 from "./../../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/components/protocolHandlersView.css.js
@@ -2585,7 +2604,7 @@ function renderStatusMessage(protocolHandlers, manifestLink) {
 }
 function renderProtocolTest(protocolHandlers, queryInputState, protocolSelectHandler, queryInputChangeHandler, testProtocolClickHandler) {
   if (protocolHandlers.length === 0) {
-    return nothing4;
+    return nothing5;
   }
   return html7`
     <div class="protocol-handlers-row">
@@ -3212,7 +3231,7 @@ import * as Buttons5 from "./../../../ui/components/buttons/buttons.js";
 import * as LegacyWrapper from "./../../../ui/components/legacy_wrapper/legacy_wrapper.js";
 import * as RenderCoordinator from "./../../../ui/components/render_coordinator/render_coordinator.js";
 import * as UI11 from "./../../../ui/legacy/legacy.js";
-import { html as html11, nothing as nothing5, render as render11 } from "./../../../ui/lit/lit.js";
+import { html as html11, nothing as nothing6, render as render11 } from "./../../../ui/lit/lit.js";
 import * as VisualLogging9 from "./../../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/components/storageMetadataView.css.js
@@ -3378,7 +3397,7 @@ var StorageMetadataView = class extends LegacyWrapper.LegacyWrapper.WrappableCom
   }
   async renderReportContent() {
     if (!this.#storageKey) {
-      return nothing5;
+      return nothing6;
     }
     const origin = this.#storageKey.origin;
     const ancestorChainHasCrossSite = Boolean(this.#storageKey.components.get(
@@ -3401,17 +3420,17 @@ var StorageMetadataView = class extends LegacyWrapper.LegacyWrapper.WrappableCom
     const isIframeOrEmbedded = topLevelSite && origin !== topLevelSite;
     return html11`
         ${isIframeOrEmbedded ? html11`${this.key(i18nString10(UIStrings11.origin))}
-            ${this.value(html11`<div class="text-ellipsis" title=${origin}>${origin}</div>`)}` : nothing5}
-        ${topLevelSite || topLevelSiteIsOpaque ? this.key(i18nString10(UIStrings11.topLevelSite)) : nothing5}
-        ${topLevelSite ? this.value(topLevelSite) : nothing5}
-        ${topLevelSiteIsOpaque ? this.value(i18nString10(UIStrings11.opaque)) : nothing5}
+            ${this.value(html11`<div class="text-ellipsis" title=${origin}>${origin}</div>`)}` : nothing6}
+        ${topLevelSite || topLevelSiteIsOpaque ? this.key(i18nString10(UIStrings11.topLevelSite)) : nothing6}
+        ${topLevelSite ? this.value(topLevelSite) : nothing6}
+        ${topLevelSiteIsOpaque ? this.value(i18nString10(UIStrings11.opaque)) : nothing6}
         ${thirdPartyReason ? html11`
-          ${this.key(i18nString10(UIStrings11.isThirdParty))}${this.value(thirdPartyReason)}` : nothing5}
-        ${hasNonce || topLevelSiteIsOpaque ? this.key(i18nString10(UIStrings11.isOpaque)) : nothing5}
-        ${hasNonce ? this.value(i18nString10(UIStrings11.yes)) : nothing5}
-        ${topLevelSiteIsOpaque ? this.value(i18nString10(UIStrings11.yesBecauseTopLevelIsOpaque)) : nothing5}
-        ${this.#storageBucket ? this.#renderStorageBucketInfo() : nothing5}
-        ${this.#storageBucketsModel ? this.#renderBucketControls() : nothing5}`;
+          ${this.key(i18nString10(UIStrings11.isThirdParty))}${this.value(thirdPartyReason)}` : nothing6}
+        ${hasNonce || topLevelSiteIsOpaque ? this.key(i18nString10(UIStrings11.isOpaque)) : nothing6}
+        ${hasNonce ? this.value(i18nString10(UIStrings11.yes)) : nothing6}
+        ${topLevelSiteIsOpaque ? this.value(i18nString10(UIStrings11.yesBecauseTopLevelIsOpaque)) : nothing6}
+        ${this.#storageBucket ? this.#renderStorageBucketInfo() : nothing6}
+        ${this.#storageBucketsModel ? this.#renderBucketControls() : nothing6}`;
   }
   #renderStorageBucketInfo() {
     if (!this.#storageBucket) {
@@ -3453,7 +3472,7 @@ var StorageMetadataView = class extends LegacyWrapper.LegacyWrapper.WrappableCom
       ${quota !== 0 ? html11`
         ${this.key(i18nString10(UIStrings11.quota))}
         ${this.value(i18n21.ByteUtilities.bytesToString(quota))}
-      ` : nothing5}
+      ` : nothing6}
       ${this.key(i18nString10(UIStrings11.expiration))}
       ${this.value(this.#getExpirationString())}`;
   }

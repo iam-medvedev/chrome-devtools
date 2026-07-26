@@ -1,4 +1,5 @@
 {
+  "checkJs": true,
   "compilerOptions": {
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
@@ -60,6 +61,7 @@
     "../../../../../../front_end/panels/application/PreloadingTreeElement.test.ts",
     "../../../../../../front_end/panels/application/ReportingApiTreeElement.test.ts",
     "../../../../../../front_end/panels/application/ReportingApiView.test.ts",
+    "../../../../../../front_end/panels/application/ServiceWorkerCacheTreeElement.test.ts",
     "../../../../../../front_end/panels/application/ServiceWorkerCacheViews.test.ts",
     "../../../../../../front_end/panels/application/ServiceWorkerUpdateCycleView.test.ts",
     "../../../../../../front_end/panels/application/ServiceWorkersView.test.ts",

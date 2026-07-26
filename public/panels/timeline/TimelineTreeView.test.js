@@ -306,7 +306,7 @@ describe('TimelineTreeView', function () {
                 'https://web-dev.imgix.net/image/SZHNhsfjU9RbCestTGZU6N7JEWs1/VwL892KEz6bakZMlq10D.png?auto=format&w=740',
                 'https://web.dev/images/android-chrome-192x192.png',
                 'https://web.dev/images/favicon.ico',
-                'https://region1.google-analytics.com/g/collect?v=2&tid=G-18JR3Q8PJ8&gtm=45je3a40&_p=68725886&cid=1874137241.1685438100&ul=en-gb&sr=3360x1890&uaa=arm&uab=64&uafvl=Not_A%2520Brand%3B8.0.0.0%7CChromium%3B120.0.6049.0%7CGoogle%2520Chrome%3B120.0.6049.0&uamb=0&uam=&uap=macOS&uapv=13.6.0&uaw=0&are=1&dl=https%3A%2F%2Fweb.dev%2F&dp=&sid=1696581003&sct=2&seg=1&dt=web.dev&_s=1'
+                'https://region1.google-analytics.com/g/collect?v=2&tid=G-18JR3Q8PJ8&gtm=45je3a40&_p=68725886&cid=1874137241.1685438100&ul=en-gb&sr=3360x1890&uaa=arm&uab=64&uafvl=Not_A%2520Brand%3B8.0.0.0%7CChromium%3B120.0.6049.0%7CGoogle%2520Chrome%3B120.0.6049.0&uamb=0&uam=&uap=macOS&uapv=13.6.0&uaw=0&are=1&dl=https%3A%2F%2Fweb.dev%2F&dp=&sid=1696581003&sct=2&seg=1&dt=web.dev&_s=1',
             ]);
         });
     });

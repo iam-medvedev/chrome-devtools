@@ -13,11 +13,11 @@ import xhrBreakpointsSidebarPaneStyles from './xhrBreakpointsSidebarPane.css.js'
 const { classMap, ifDefined, ref } = Directives;
 const UIStrings = {
     /**
-     * @description Title of the 'XHR/fetch Breakpoints' tool in the bottom sidebar of the Sources tool
+     * @description Title of the XHR/fetch breakpoints sidebar in the Sources panel.
      */
-    xhrfetchBreakpoints: 'XHR/fetch Breakpoints',
+    xhrfetchBreakpoints: 'XHR/fetch breakpoints',
     /**
-     * @description Text to indicate there are no breakpoints
+     * @description Text to indicate there are no XHR/fetch breakpoints.
      */
     noBreakpoints: 'No breakpoints',
     /**
@@ -25,36 +25,36 @@ const UIStrings = {
      */
     addXhrfetchBreakpoint: 'Add XHR/fetch breakpoint',
     /**
-     * @description Text to add a breakpoint
+     * @description Context menu item to add an XHR/fetch breakpoint.
      */
     addBreakpoint: 'Add breakpoint',
     /**
-     * @description Input element container text content in XHRBreakpoints Sidebar Pane of the JavaScript Debugging pane in the Sources panel or the DOM Breakpoints pane in the Elements panel
+     * @description Text preceding the input field to add an XHR/fetch breakpoint in the Sources panel.
      */
     breakWhenUrlContains: 'Break when URL contains:',
     /**
-     * @description Accessible label for XHR/fetch breakpoint text input
+     * @description Accessible label for XHR/fetch breakpoint text input.
      */
-    urlBreakpoint: 'URL Breakpoint',
+    urlBreakpoint: 'URL breakpoint',
     /**
-     * @description Text in XHRBreakpoints Sidebar Pane of the JavaScript Debugging pane in the Sources panel or the DOM Breakpoints pane in the Elements panel
+     * @description Label for an XHR/fetch breakpoint targeting a specific URL in the Sources panel.
      * @example {example.com} PH1
      */
     urlContainsS: 'URL contains "{PH1}"',
     /**
-     * @description Text in XHRBreakpoints Sidebar Pane of the JavaScript Debugging pane in the Sources panel or the DOM Breakpoints pane in the Elements panel
+     * @description Label for an XHR/fetch breakpoint matching any XHR or fetch request in the Sources panel.
      */
     anyXhrOrFetch: 'Any XHR or fetch',
     /**
-     * @description Screen reader description of a hit breakpoint in the Sources panel
+     * @description Screen reader description of a hit breakpoint in the Sources panel.
      */
     breakpointHit: 'breakpoint hit',
     /**
-     * @description Text to remove all breakpoints
+     * @description Context menu item to remove all XHR/fetch breakpoints.
      */
     removeAllBreakpoints: 'Remove all breakpoints',
     /**
-     * @description Text to remove a breakpoint
+     * @description Context menu item to remove an XHR/fetch breakpoint.
      */
     removeBreakpoint: 'Remove breakpoint',
 };

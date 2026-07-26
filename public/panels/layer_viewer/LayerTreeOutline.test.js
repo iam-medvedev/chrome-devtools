@@ -1,59 +1,97 @@
 // Copyright 2026 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { assert } from 'chai';
 import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
+import * as RenderCoordinator from '../../ui/components/render_coordinator/render_coordinator.js';
 import * as LayerViewer from './layer_viewer.js';
+function createMockLayerTree() {
+    const rootLayer = {
+        id: () => '1',
+        width: () => 800,
+        height: () => 600,
+        drawsContent: () => true,
+        gpuMemoryUsage: () => 1024 * 1024,
+        parent: () => null,
+        nodeForSelfOrAncestor: () => null,
+    };
+    const childLayer = {
+        id: () => '2',
+        width: () => 400,
+        height: () => 300,
+        drawsContent: () => true,
+        gpuMemoryUsage: () => 512 * 1024,
+        parent: () => rootLayer,
+        nodeForSelfOrAncestor: () => null,
+    };
+    const layerTree = {
+        contentRoot: () => rootLayer,
+        root: () => rootLayer,
+        forEachLayer: (callback) => {
+            callback(rootLayer);
+            callback(childLayer);
+        },
+    };
+    return { rootLayer, childLayer, layerTree };
+}
 describeWithEnvironment('LayerTreeOutline', () => {
     it('renders a layer tree', async () => {
-        const layerViewHost = new LayerViewer.LayerViewHost.LayerViewHost();
-        const treeOutline = new LayerViewer.LayerTreeOutline.LayerTreeOutline(layerViewHost);
-        renderElementIntoDOM(treeOutline, { includeCommonStyles: true });
-        const rootLayer = {
-            id: () => '1',
-            children: () => [],
-            drawsContent: () => true,
-            gpuMemoryUsage: () => 1024 * 1024,
-            width: () => 800,
-            height: () => 600,
-            nodeForSelfOrAncestor: () => null,
-            parent: () => null,
+        const { rootLayer, childLayer } = createMockLayerTree();
+        const treeData = [{
+                layer: rootLayer,
+                isExpanded: true,
+                children: [{
+                        layer: childLayer,
+                        isExpanded: false,
+                        children: [],
+                    }],
+            }];
+        const viewInput = {
+            treeData,
+            hoveredLayer: null,
+            selectedLayer: rootLayer,
+            layerCount: 2,
+            totalLayerMemory: 1024 * 1024 + 512 * 1024,
+            onSelect: () => { },
+            onHover: () => { },
+            onContextMenu: () => { },
         };
-        const childLayer = {
-            id: () => '2',
-            children: () => [],
-            drawsContent: () => true,
-            gpuMemoryUsage: () => 512 * 1024,
-            width: () => 400,
-            height: () => 300,
-            nodeForSelfOrAncestor: () => null,
-            parent: () => rootLayer,
-        };
-        rootLayer.children = () => [childLayer];
-        const layerTree = {
-            root: () => rootLayer,
-            contentRoot: () => rootLayer,
-            forEachLayer: (callback) => {
-                callback(rootLayer);
-                callback(childLayer);
-                return false;
-            },
-            layerById: (id) => {
-                if (id === '1') {
-                    return rootLayer;
-                }
-                if (id === '2') {
-                    return childLayer;
-                }
-                return null;
-            },
-        };
-        treeOutline.setLayerTree(layerTree);
-        const rootNode = LayerViewer.LayerTreeOutline.layerToTreeElement.get(rootLayer);
-        if (rootNode) {
-            await rootNode.expandRecursively();
+        const target = document.createElement('div');
+        renderElementIntoDOM(target, { includeCommonStyles: true });
+        LayerViewer.LayerTreeOutline.DEFAULT_VIEW(viewInput, {}, target);
+        await RenderCoordinator.done();
+        const tree = target.querySelector('devtools-tree');
+        if (tree) {
+            const outline = tree.getInternalTreeOutlineForTest();
+            await outline.firstChild()?.expandRecursively();
         }
         await assertScreenshot('layer_viewer/layer_tree_outline.png');
+    });
+    it('handles hover and selection of layers', async () => {
+        const layerViewHost = new LayerViewer.LayerViewHost.LayerViewHost();
+        const view = createViewFunctionStub(LayerViewer.LayerTreeOutline.LayerTreeOutline);
+        const treeOutline = new LayerViewer.LayerTreeOutline.LayerTreeOutline(layerViewHost, view);
+        renderElementIntoDOM(treeOutline);
+        const { childLayer, layerTree } = createMockLayerTree();
+        treeOutline.setLayerTree(layerTree);
+        // Wait for the initial render triggered by wasShown / setLayerTree
+        let viewInput = await view.nextInput;
+        assert.strictEqual(viewInput.layerCount, 2);
+        // Simulate hover over the child layer
+        viewInput.onHover(childLayer);
+        viewInput = await view.nextInput;
+        assert.strictEqual(viewInput.hoveredLayer, childLayer, 'hovered layer should be updated');
+        // Simulate mouse leave
+        viewInput.onHover(null);
+        viewInput = await view.nextInput;
+        assert.isNull(viewInput.hoveredLayer, 'hovered layer should be null after mouse leave');
+        // Simulate selecting the child layer
+        viewInput.onSelect(childLayer);
+        viewInput = await view.nextInput;
+        assert.strictEqual(viewInput.selectedLayer, childLayer, 'selected layer should be updated');
+        assert.strictEqual(layerViewHost.selection()?.layer(), childLayer, 'layerViewHost selection should be the child layer');
     });
 });
 //# sourceMappingURL=LayerTreeOutline.test.js.map

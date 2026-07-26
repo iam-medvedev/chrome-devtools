@@ -17,7 +17,11 @@ const setUpEnvironmentWithUISourceCode = (url, resourceType, project) => {
     const { workspace } = setUpEnvironment();
     Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: false });
     if (!project) {
-        project = { id: () => url, type: () => Workspace.Workspace.projectTypes.Network };
+        project = {
+            id: () => url,
+            type: () => Workspace.Workspace.projectTypes.Network,
+            fullDisplayName: () => url,
+        };
     }
     const uiSourceCode = new Workspace.UISourceCode.UISourceCode(project, urlString `${url}`, resourceType);
     project.uiSourceCodes = () => [uiSourceCode];
@@ -124,6 +128,34 @@ describeWithEnvironment('FilteredUISourceCodeListProvider', () => {
         workspace.removeProject(networkProject);
         fileSystemProject.dispose();
     });
+    it('prioritizes file system files over network files in sorting', () => {
+        const { workspace, project: networkProject } = setUpEnvironmentWithUISourceCode('http://www.example.com/utils.js', Common.ResourceType.resourceTypes.Script);
+        const { project: fileSystemProject } = createFileSystemUISourceCode({
+            url: urlString `file:///var/www/utils.js`,
+            mimeType: 'text/javascript',
+            fileSystemPath: 'file:///var/www',
+        });
+        const provider = new Sources.FilteredUISourceCodeListProvider.FilteredUISourceCodeListProvider();
+        provider.attach();
+        let networkIndex = -1;
+        let fsIndex = -1;
+        for (let i = 0; i < provider.itemCount(); i++) {
+            if (provider.itemKeyAt(i) === 'http://www.example.com/utils.js') {
+                networkIndex = i;
+            }
+            else if (provider.itemKeyAt(i) === 'file:///var/www/utils.js') {
+                fsIndex = i;
+            }
+        }
+        assert.notStrictEqual(networkIndex, -1, 'Network file should be in provider');
+        assert.notStrictEqual(fsIndex, -1, 'FileSystem file should be in provider');
+        const networkScore = provider.itemScoreAt(networkIndex, 'utils');
+        const fsScore = provider.itemScoreAt(fsIndex, 'utils');
+        assert.isAtLeast(fsScore, 1_000_000, 'FileSystem score should include the 1_000_000 bonus');
+        assert.isBelow(networkScore, 1_000_000, 'Network score should not include the 1_000_000 bonus');
+        workspace.removeProject(networkProject);
+        fileSystemProject.dispose();
+    });
     describe('renderItem', () => {
         const url1 = urlString `http://test/helloWorld12.js`;
         const url2 = urlString `http://test/some/very-long-url/which/usually/breaks-rendering/due-to/trancation/so/that/the-path-is-cut-appropriately/and-no-horizontal-scrollbars/are-shown.js`;
@@ -198,6 +230,31 @@ describeWithEnvironment('FilteredUISourceCodeListProvider', () => {
             // This could be are-[shown.js], but current implementation doesn't support it.
             assert.strictEqual(title, 'are-shown.js');
             assert.include(subtitle, '[usually]');
+        });
+        it('renders workspace tag for file system files', async () => {
+            const { project: fileSystemProject } = createFileSystemUISourceCode({
+                url: urlString `file:///var/www/utils.js`,
+                mimeType: 'text/javascript',
+                fileSystemPath: 'file:///var/www',
+            });
+            const provider = new Sources.FilteredUISourceCodeListProvider.FilteredUISourceCodeListProvider();
+            provider.attach();
+            let fsIndex = -1;
+            for (let i = 0; i < provider.itemCount(); i++) {
+                if (provider.itemKeyAt(i) === 'file:///var/www/utils.js') {
+                    fsIndex = i;
+                    break;
+                }
+            }
+            assert.notStrictEqual(fsIndex, -1, 'FileSystem file should be in provider');
+            const template = provider.renderItem(fsIndex, '');
+            const container = document.createElement('div');
+            render(template, container);
+            await new Promise(resolve => queueMicrotask(resolve));
+            const tagElement = container.querySelector('.tag');
+            assert.isNotNull(tagElement);
+            assert.strictEqual(tagElement?.textContent, 'Workspace');
+            fileSystemProject.dispose();
         });
     });
 });

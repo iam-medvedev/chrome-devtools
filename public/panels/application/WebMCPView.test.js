@@ -8,9 +8,9 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as WebMCP from '../../models/web_mcp/web_mcp.js';
 import * as Workspace from '../../models/workspace/workspace.js';
-import { findMenuItemWithLabel, getContextMenuForElement, getMenuForToolbarButton } from '../../testing/ContextMenuHelpers.js';
+import { findMenuItemWithLabel, getContextMenuForElement, getMenuForToolbarButton, } from '../../testing/ContextMenuHelpers.js';
 import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget, deinitializeGlobalVars, initializeGlobalVars, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, deinitializeGlobalVars, initializeGlobalVars, updateHostConfig, } from '../../testing/EnvironmentHelpers.js';
 import { StubStackTrace } from '../../testing/StackTraceHelpers.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as RenderCoordinator from '../../ui/components/render_coordinator/render_coordinator.js';
@@ -19,7 +19,7 @@ import * as ProtocolMonitor from '../protocol_monitor/protocol_monitor.js';
 import * as Application from './application.js';
 const { DEFAULT_VIEW, WebMCPView, filterToolCalls } = Application.WebMCPView;
 function createTool(name, description, frameId, target, backendNodeId, inputSchema = {
-    type: 'object'
+    type: 'object',
 }) {
     return new WebMCP.WebMCPModel.Tool({ name, description, inputSchema, frameId, backendNodeId }, target);
 }
@@ -267,7 +267,7 @@ describe('WebMCPView (View)', () => {
         renderElementIntoDOM(container, { includeCommonStyles: true });
         const tools = [
             createTool('calculator', 'Calculates math expressions', 'frame1', sdkTarget),
-            createTool('weather', 'Gets the current weather', 'frame1', sdkTarget)
+            createTool('weather', 'Gets the current weather', 'frame1', sdkTarget),
         ];
         DEFAULT_VIEW({
             ...createDefaultViewInput(),
@@ -306,7 +306,7 @@ describe('WebMCPView (View)', () => {
         renderElementIntoDOM(target, { includeCommonStyles: true });
         const tools = [
             createTool('tool1', 'desc1', 'frame1', sdkTarget),
-            createTool('tool2', 'desc2', 'frame1', sdkTarget)
+            createTool('tool2', 'desc2', 'frame1', sdkTarget),
         ];
         DEFAULT_VIEW({
             ...createDefaultViewInput(),
@@ -327,7 +327,7 @@ describe('WebMCPView (View)', () => {
         renderElementIntoDOM(target, { includeCommonStyles: true });
         const tools = [
             createTool('tool1', 'desc1', 'frame1', sdkTarget),
-            createTool('tool2', 'desc2', 'frame1', sdkTarget)
+            createTool('tool2', 'desc2', 'frame1', sdkTarget),
         ];
         DEFAULT_VIEW({
             ...createDefaultViewInput(),
@@ -499,15 +499,15 @@ describe('WebMCPView Presenter', () => {
                     name: 'b-tool',
                     description: 'desc1',
                     inputSchema: { type: 'object' },
-                    frameId: 'frame1'
+                    frameId: 'frame1',
                 },
                 {
                     name: 'a-tool',
                     description: 'desc2',
                     inputSchema: { type: 'object' },
-                    frameId: 'frame1'
-                }
-            ]
+                    frameId: 'frame1',
+                },
+            ],
         });
         const input = await viewStub.nextInput;
         assert.lengthOf(input.tools, 2);
@@ -520,7 +520,7 @@ describe('WebMCPView Presenter', () => {
             name: 'tool1',
             description: 'desc1',
             inputSchema: { type: 'object' },
-            frameId: 'frame1'
+            frameId: 'frame1',
         };
         model.toolsAdded({ tools: [toolProtocol] });
         const input = await viewStub.nextInput;
@@ -535,7 +535,7 @@ describe('WebMCPView Presenter', () => {
             name: 'tool1',
             description: 'desc1',
             inputSchema: { type: 'object' },
-            frameId: 'frame1'
+            frameId: 'frame1',
         };
         model.toolsAdded({ tools: [toolProtocol] });
         const input = await viewStub.nextInput;
@@ -551,7 +551,7 @@ describe('WebMCPView Presenter', () => {
             name: 'tool1',
             description: 'desc1',
             inputSchema: { type: 'object' },
-            frameId: 'frame1'
+            frameId: 'frame1',
         };
         model.toolsAdded({ tools: [toolProtocol] });
         const input = await viewStub.nextInput;
@@ -564,14 +564,14 @@ describe('WebMCPView Presenter', () => {
             data: {
                 command: 'tool1',
                 parameters: { arg1: 'value' },
-            }
+            },
         });
         sinon.assert.calledWith(invokeStub, { toolName: 'tool1', frameId: 'frame1', input: { arg1: 'value' } });
         // Test with missing parameters
         nextInput.onRunTool({
             data: {
                 command: 'tool1',
-            }
+            },
         });
         sinon.assert.calledWith(invokeStub, { toolName: 'tool1', frameId: 'frame1', input: {} });
     });
@@ -581,7 +581,7 @@ describe('WebMCPView Presenter', () => {
             name: 'tool1',
             description: 'desc1',
             inputSchema: { type: 'object' },
-            frameId: 'frame1'
+            frameId: 'frame1',
         };
         model.toolsAdded({ tools: [tool] });
         await viewStub.nextInput;
@@ -596,7 +596,7 @@ describe('WebMCPView Presenter', () => {
             name: 'tool1',
             description: 'desc1',
             inputSchema: { type: 'object' },
-            frameId: 'frame1'
+            frameId: 'frame1',
         };
         model.toolsAdded({ tools: [toolProtocol] });
         const input = await viewStub.nextInput;
@@ -640,7 +640,7 @@ describe('WebMCPView Presenter', () => {
                 name: 'tool1',
                 description: 'desc1',
                 inputSchema: { type: 'object', properties: { arg1: { type: 'string' } } },
-                frameId: 'frame1'
+                frameId: 'frame1',
             };
             model.toolsAdded({ tools: [toolProtocol] });
             const input = await viewStub.nextInput;
@@ -658,7 +658,7 @@ describe('WebMCPView Presenter', () => {
                 name: 'tool1',
                 description: 'desc1',
                 inputSchema: { type: 'object' },
-                frameId: 'frame1'
+                frameId: 'frame1',
             };
             model.toolsAdded({ tools: [toolProtocol] });
             const input = await viewStub.nextInput;
@@ -720,7 +720,7 @@ describe('filterToolCalls', () => {
             input: '{}',
             result: new WebMCP.WebMCPModel.Result("Canceled" /* Protocol.WebMCP.InvocationStatus.Canceled */, undefined, undefined, undefined),
             cancel: () => { },
-        }
+        },
     ];
     it('filters by name/text', () => {
         const result = filterToolCalls(mockCalls, { text: 'secret.txt' });

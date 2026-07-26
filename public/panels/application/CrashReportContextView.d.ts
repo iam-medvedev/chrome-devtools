@@ -1,6 +1,6 @@
 import '../../ui/legacy/legacy.js';
+import type * as TextUtils from '../../core/text_utils/text_utils.js';
 import type * as Protocol from '../../generated/protocol.js';
-import type * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 export interface FrameContextData {
     url: string;

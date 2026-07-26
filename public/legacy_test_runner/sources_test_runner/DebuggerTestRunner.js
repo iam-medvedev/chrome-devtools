@@ -369,8 +369,11 @@ export const pausedScript = function(callFrames, reason, auxData, breakpointIds,
 
   const debuggerModel = this.target().model(SDK.DebuggerModel.DebuggerModel);
   pausedScriptArguments = [
-    SDK.DebuggerModel.CallFrame.fromPayloadArray(debuggerModel, callFrames), reason, breakpointIds, asyncStackTrace,
-    auxData
+    SDK.DebuggerModel.CallFrame.fromPayloadArray(debuggerModel, callFrames),
+    reason,
+    breakpointIds,
+    asyncStackTrace,
+    auxData,
   ];
 
   if (waitUntilPausedCallback) {

@@ -223,24 +223,24 @@ const DEFAULT_VIEW = (input, _output, target) => {
       <style>${UI.inspectorCommonStyles}</style>
       <main>
         <div class="content-container" jslog=${VisualLogging.pane('autofill')}>
-          <div class="right-to-left" role="region" aria-label=${i18nString(UIStrings.addressPreview)}>
-            <div class="header">
-              <div class="label-container">
-                <devtools-checkbox
-                    ${bindToSetting(input.showTestAddressesInAutofillMenuSetting)}
-                    title=${i18nString(UIStrings.showTestAddressesInAutofillMenu)}>
-                  ${i18nString(UIStrings.showTestAddressesInAutofillMenu)}
-                </devtools-checkbox>
-              </div>
-              <div class="label-container">
-                <devtools-checkbox
-                    ${bindToSetting(input.autoOpenViewSetting)}
-                    title=${i18nString(UIStrings.autoShowTooltip)}>
-                  ${i18nString(UIStrings.autoShow)}
-                </devtools-checkbox>
-              </div>
-              <devtools-link href=${AUTOFILL_FEEDBACK_URL} class="feedback link" jslogcontext="feedback">${i18nString(UIStrings.sendFeedback)}</devtools-link>
+          <div class="header">
+            <div class="label-container">
+              <devtools-checkbox
+                  ${bindToSetting(input.showTestAddressesInAutofillMenuSetting)}
+                  title=${i18nString(UIStrings.showTestAddressesInAutofillMenu)}>
+                ${i18nString(UIStrings.showTestAddressesInAutofillMenu)}
+              </devtools-checkbox>
             </div>
+            <div class="label-container">
+              <devtools-checkbox
+                  ${bindToSetting(input.autoOpenViewSetting)}
+                  title=${i18nString(UIStrings.autoShowTooltip)}>
+                ${i18nString(UIStrings.autoShow)}
+              </devtools-checkbox>
+            </div>
+            <devtools-link href=${AUTOFILL_FEEDBACK_URL} class="feedback link" jslogcontext="feedback">${i18nString(UIStrings.sendFeedback)}</devtools-link>
+          </div>
+          <div role="region" aria-label=${i18nString(UIStrings.addressPreview)}>
             ${renderAddress()}
           </div>
           ${renderFilledFields()}

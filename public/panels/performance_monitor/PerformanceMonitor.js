@@ -63,7 +63,7 @@ const DEFAULT_VIEW = (input, output, target) => {
     <devtools-widget ${widget(ControlPane, {
         onMetricChanged: input.onMetricChanged,
         chartsInfo: input.chartsInfo,
-        metrics: input.metrics
+        metrics: input.metrics,
     })} class=${classMap({ suspended: input.suspended })}></devtools-widget>
     <div class="perfmon-chart-container ${classMap({ suspended: input.suspended })}">
       <canvas tabindex="-1" aria-label=${i18nString(UIStrings.graphsDisplayingARealtimeViewOf)}

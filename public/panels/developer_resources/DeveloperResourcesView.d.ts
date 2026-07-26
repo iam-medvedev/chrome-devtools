@@ -1,7 +1,7 @@
 import '../../ui/legacy/legacy.js';
 import type * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import type * as TextUtils from '../../models/text_utils/text_utils.js';
+import type * as TextUtils from '../../core/text_utils/text_utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 export declare class DeveloperResourcesRevealer implements Common.Revealer.Revealer<SDK.PageResourceLoader.ResourceKey> {
     reveal(resourceInitiatorKey: SDK.PageResourceLoader.ResourceKey): Promise<void>;

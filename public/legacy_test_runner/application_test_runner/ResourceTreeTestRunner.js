@@ -45,7 +45,7 @@ export const dumpResourcesURLMap = function() {
     results.push({
       url: resource.url,
       resource: SDK.ResourceTreeModel.ResourceTreeModel.resourceForURL(SDK.TargetManager.TargetManager.instance(),
-                                                                       resource.url)
+                                                                       resource.url),
     });
   }
 

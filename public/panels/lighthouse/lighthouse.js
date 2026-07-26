@@ -238,77 +238,73 @@ import * as EmulationModel from "./../../models/emulation/emulation.js";
 import * as Emulation from "./../emulation/emulation.js";
 var UIStrings = {
   /**
-   * @description Explanation for user that Ligthhouse can only audit HTTP/HTTPS pages
+   * @description Explanation for user that Lighthouse can only audit HTTP/HTTPS pages.
    */
   canOnlyAuditHttphttpsPages: "Can only audit pages on HTTP or HTTPS. Navigate to a different page.",
   /**
-   * @description Text when stored data in one location may affect Lighthouse run
+   * @description Text when stored data in one location may affect Lighthouse run.
    * @example {IndexedDB} PH1
    */
-  thereMayBeStoredDataAffectingSingular: "There may be stored data affecting loading performance in this location: {PH1}. Audit this page in an incognito window to prevent those resources from affecting your scores.",
+  thereMayBeStoredDataAffectingSingular: "There may be stored data affecting loading performance in this location: {PH1}. Audit this page in an incognito window to stop those resources from affecting your scores.",
   /**
-   * @description Text when stored data in multiple locations may affect Lighthouse run
-   * @example {IndexedDB, WebSQL} PH1
+   * @description Text when stored data in multiple locations may affect Lighthouse run.
+   * @example {IndexedDB} PH1
    */
-  thereMayBeStoredDataAffectingLoadingPlural: "There may be stored data affecting loading performance in these locations: {PH1}. Audit this page in an incognito window to prevent those resources from affecting your scores.",
+  thereMayBeStoredDataAffectingLoadingPlural: "There may be stored data affecting loading performance in these locations: {PH1}. Audit this page in an incognito window to stop those resources from affecting your scores.",
   /**
-   * @description Help text in Lighthouse Controller
+   * @description Help text in the Lighthouse panel.
    */
   multipleTabsAreBeingControlledBy: "Multiple tabs are being controlled by the same `service worker`. Close your other tabs on the same origin to audit this page.",
   /**
-   * @description Help text in Lighthouse Controller
+   * @description Help text in the Lighthouse panel.
    */
   atLeastOneCategoryMustBeSelected: "At least one category must be selected.",
   /**
-   * @description Text in Application Panel Sidebar of the Application panel
+   * @description Text in sidebar of the Application panel.
    */
   localStorage: "Local storage",
   /**
-   * @description Text in Application Panel Sidebar of the Application panel
+   * @description Text in sidebar of the Application panel.
    */
   indexeddb: "IndexedDB",
   /**
-   * @description Text in Application Panel Sidebar of the Application panel
-   */
-  webSql: "Web SQL",
-  /**
-   * @description Text of checkbox to include running the performance audits in Lighthouse
+   * @description Text of checkbox to include running the performance audits in Lighthouse.
    */
   performance: "Performance",
   /**
-   * @description Tooltip text of checkbox to include running the performance audits in Lighthouse
+   * @description Tooltip text of checkbox to include running the performance audits in Lighthouse.
    */
   howLongDoesThisAppTakeToShow: "How long does this app take to show content and become usable",
   /**
-   * @description Text of checkbox to include running the Best Practices audits in Lighthouse
+   * @description Text of checkbox to include running the Best Practices audits in Lighthouse.
    */
   bestPractices: "Best practices",
   /**
-   * @description Tooltip text of checkbox to include running the Best Practices audits in Lighthouse
+   * @description Tooltip text of checkbox to include running the Best Practices audits in Lighthouse.
    */
   doesThisPageFollowBestPractices: "Does this page follow best practices for modern web development",
   /**
-   * @description Text of checkbox to include running the Accessibility audits in Lighthouse
+   * @description Text of checkbox to include running the Accessibility audits in Lighthouse.
    */
   accessibility: "Accessibility",
   /**
-   * @description Tooltip text of checkbox to include running the Accessibility audits in Lighthouse
+   * @description Tooltip text of checkbox to include running the Accessibility audits in Lighthouse.
    */
   isThisPageUsableByPeopleWith: "Is this page usable by people with disabilities or impairments",
   /**
-   * @description Text of checkbox to include running the Search Engine Optimization audits in Lighthouse
+   * @description Text of checkbox to include running the Search Engine Optimization audits in Lighthouse.
    */
   seo: "SEO",
   /**
-   * @description Tooltip text of checkbox to include running the Search Engine Optimization audits in Lighthouse
+   * @description Tooltip text of checkbox to include running the Search Engine Optimization audits in Lighthouse.
    */
   isThisPageOptimizedForSearch: "Is this page optimized for search engine results ranking",
   /**
-   * @description Text of checkbox to include running the Agentic Browsing audits in Lighthouse
+   * @description Text of checkbox to include running the Agentic Browsing audits in Lighthouse.
    */
   agenticBrowsing: "Agentic browsing",
   /**
-   * @description Tooltip text of checkbox to include running the Agentic Browsing audits in Lighthouse
+   * @description Tooltip text of checkbox to include running the Agentic Browsing audits in Lighthouse.
    */
   agenticBrowsingDescription: "These checks ensure high-quality, browsable websites for AI agents and validate the correctness of WebMCP integrations. This category is still under development and subject to change.",
   /**
@@ -316,11 +312,11 @@ var UIStrings = {
    */
   applyMobileEmulation: "Apply mobile emulation",
   /**
-   * @description Tooltip text of checkbox to emulate mobile device behavior when running audits in Lighthouse
+   * @description Tooltip text of checkbox to emulate mobile device behavior when running audits in Lighthouse.
    */
   applyMobileEmulationDuring: "Apply mobile emulation during auditing",
   /**
-   * @description Tooltip text of checkbox to emulate desktop device behavior when running audits in Lighthouse
+   * @description Tooltip text of checkbox to emulate desktop device behavior when running audits in Lighthouse.
    */
   applyDesktopEmulationDuring: "Apply desktop emulation during auditing",
   /**
@@ -334,7 +330,7 @@ var UIStrings = {
   /**
    * @description Label of a radio option for a Lighthouse mode that audits a page navigation. This should be marked as the default radio option.
    */
-  navigation: "Navigation (Default)",
+  navigation: "Navigation (default)",
   /**
    * @description Tooltip description of a radio option for a Lighthouse mode that audits a page navigation.
    */
@@ -356,11 +352,11 @@ var UIStrings = {
    */
   snapshotTooltip: "Snapshot mode analyzes the page in a particular state, typically after user interactions.",
   /**
-   * @description Text for the mobile platform, as opposed to desktop
+   * @description Text for the mobile platform, as opposed to desktop.
    */
   mobile: "Mobile",
   /**
-   * @description Text for the desktop platform, as opposed to mobile
+   * @description Text for the desktop platform, as opposed to mobile.
    */
   desktop: "Desktop",
   /**
@@ -376,11 +372,11 @@ var UIStrings = {
    */
   devtoolsThrottling: "DevTools throttling (advanced)",
   /**
-   * @description Tooltip text that appears when hovering over the 'Simulated Throttling' checkbox in the settings pane opened by clicking the setting cog in the start view of the audits panel
+   * @description Tooltip text that appears when hovering over the 'Simulated Throttling' checkbox in the settings toolbar of the Lighthouse panel.
    */
   simulateASlowerPageLoadBasedOn: "Simulated throttling simulates a slower page load based on data from an initial unthrottled load. DevTools throttling actually slows down the page.",
   /**
-   * @description Text of checkbox to reset storage features prior to running audits in Lighthouse
+   * @description Text of checkbox to reset storage features prior to running audits in Lighthouse.
    */
   clearStorage: "Clear storage",
   /**
@@ -389,18 +385,17 @@ var UIStrings = {
    */
   resetStorageLocalstorage: "Reset storage (`cache`, `service workers`, etc) before auditing. (Good for performance & `PWA` testing)",
   /**
-   * @description Text of checkbox to enable JavaScript sampling while running audits in Lighthouse
+   * @description Text of checkbox to enable JavaScript sampling while running audits in Lighthouse.
    */
   enableSampling: "Enable JS sampling",
   /**
-   * @description Tooltip text of checkbox to enable JavaScript sampling while running audits in
-   * Lighthouse. Resetting the storage clears/empties it to a neutral state.
+   * @description Tooltip text of checkbox to enable JavaScript sampling while running audits in Lighthouse.
    */
-  enableJavaScriptSampling: "Enable JavaScript sampling during the Lighthouse run. This will provide more execution details in the performance panel when you view the trace, but has higher CPU overhead and may impact the performance of the page.",
+  enableJavaScriptSampling: "Enable JavaScript sampling during the Lighthouse run. This will provide more execution details in the Performance panel when you view the trace, but has higher CPU overhead and may impact the performance of the page.",
   /**
-   * @description Explanation for user that Lighthouse can only audit when JavaScript is enabled
+   * @description Explanation for user that Lighthouse can only audit when JavaScript is enabled.
    */
-  javaScriptDisabled: "JavaScript is disabled. You need to enable JavaScript to audit this page. Open the Command Menu and run the Enable JavaScript command to enable JavaScript."
+  javaScriptDisabled: "JavaScript is disabled. You need to enable JavaScript to audit this page. Open the command menu and run the Enable JavaScript command to enable JavaScript."
 };
 var str_ = i18n.i18n.registerUIStrings("panels/lighthouse/LighthouseController.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
@@ -800,8 +795,7 @@ var LighthouseController = class extends Common.ObjectWrapper.ObjectWrapper {
 };
 var STORAGE_TYPE_NAMES = /* @__PURE__ */ new Map([
   ["local_storage", i18nLazyString(UIStrings.localStorage)],
-  ["indexeddb", i18nLazyString(UIStrings.indexeddb)],
-  ["websql", i18nLazyString(UIStrings.webSql)]
+  ["indexeddb", i18nLazyString(UIStrings.indexeddb)]
 ]);
 var presets = null;
 function getPresets() {
@@ -809,12 +803,7 @@ function getPresets() {
     presets = [
       // configID maps to Lighthouse's Object.keys(config.categories)[0] value
       {
-        setting: Common.Settings.Settings.instance().createSetting(
-          "lighthouse.cat-perf",
-          true,
-          "Synced"
-          /* Common.Settings.SettingStorageType.SYNCED */
-        ),
+        setting: Common.Settings.Settings.instance().moduleSetting("lighthouse.cat-perf"),
         configID: "performance",
         title: i18nLazyString(UIStrings.performance),
         description: i18nLazyString(UIStrings.howLongDoesThisAppTakeToShow),
@@ -822,12 +811,7 @@ function getPresets() {
         userMetric: 0
       },
       {
-        setting: Common.Settings.Settings.instance().createSetting(
-          "lighthouse.cat-a11y",
-          true,
-          "Synced"
-          /* Common.Settings.SettingStorageType.SYNCED */
-        ),
+        setting: Common.Settings.Settings.instance().moduleSetting("lighthouse.cat-a11y"),
         configID: "accessibility",
         title: i18nLazyString(UIStrings.accessibility),
         description: i18nLazyString(UIStrings.isThisPageUsableByPeopleWith),
@@ -835,12 +819,7 @@ function getPresets() {
         userMetric: 1
       },
       {
-        setting: Common.Settings.Settings.instance().createSetting(
-          "lighthouse.cat-best-practices",
-          true,
-          "Synced"
-          /* Common.Settings.SettingStorageType.SYNCED */
-        ),
+        setting: Common.Settings.Settings.instance().moduleSetting("lighthouse.cat-best-practices"),
         configID: "best-practices",
         title: i18nLazyString(UIStrings.bestPractices),
         description: i18nLazyString(UIStrings.doesThisPageFollowBestPractices),
@@ -848,12 +827,7 @@ function getPresets() {
         userMetric: 2
       },
       {
-        setting: Common.Settings.Settings.instance().createSetting(
-          "lighthouse.cat-seo",
-          true,
-          "Synced"
-          /* Common.Settings.SettingStorageType.SYNCED */
-        ),
+        setting: Common.Settings.Settings.instance().moduleSetting("lighthouse.cat-seo"),
         configID: "seo",
         title: i18nLazyString(UIStrings.seo),
         description: i18nLazyString(UIStrings.isThisPageOptimizedForSearch),
@@ -861,12 +835,7 @@ function getPresets() {
         userMetric: 3
       },
       {
-        setting: Common.Settings.Settings.instance().createSetting(
-          "lighthouse.cat-agentic-browsing",
-          false,
-          "Synced"
-          /* Common.Settings.SettingStorageType.SYNCED */
-        ),
+        setting: Common.Settings.Settings.instance().moduleSetting("lighthouse.cat-agentic-browsing"),
         configID: "agentic-browsing",
         title: i18nLazyString(UIStrings.agenticBrowsing),
         description: i18nLazyString(UIStrings.agenticBrowsingDescription),
@@ -882,12 +851,7 @@ function getRuntimeSettings() {
   if (!runtimeSettings) {
     runtimeSettings = [
       {
-        setting: Common.Settings.Settings.instance().createSetting(
-          "lighthouse.device-type",
-          "mobile",
-          "Synced"
-          /* Common.Settings.SettingStorageType.SYNCED */
-        ),
+        setting: Common.Settings.Settings.instance().moduleSetting("lighthouse.device-type"),
         title: i18nLazyString(UIStrings.applyMobileEmulation),
         description: i18nLazyString(UIStrings.applyMobileEmulationDuring),
         setFlags: (flags, value) => {
@@ -907,12 +871,7 @@ function getRuntimeSettings() {
         ]
       },
       {
-        setting: Common.Settings.Settings.instance().createSetting(
-          "lighthouse.mode",
-          "navigation",
-          "Synced"
-          /* Common.Settings.SettingStorageType.SYNCED */
-        ),
+        setting: Common.Settings.Settings.instance().moduleSetting("lighthouse.mode"),
         title: i18nLazyString(UIStrings.lighthouseMode),
         description: i18nLazyString(UIStrings.runLighthouseInMode),
         setFlags: (flags, value) => {
@@ -939,12 +898,7 @@ function getRuntimeSettings() {
       },
       {
         // This setting is disabled, but we keep it around to show in the UI.
-        setting: Common.Settings.Settings.instance().createSetting(
-          "lighthouse.throttling",
-          "simulate",
-          "Synced"
-          /* Common.Settings.SettingStorageType.SYNCED */
-        ),
+        setting: Common.Settings.Settings.instance().moduleSetting("lighthouse.throttling"),
         title: i18nLazyString(UIStrings.throttlingMethod),
         // We will disable this when we have a Lantern trace viewer within DevTools.
         learnMore: "https://github.com/GoogleChrome/lighthouse/blob/master/docs/throttling.md#devtools-lighthouse-panel-throttling",
@@ -962,12 +916,7 @@ function getRuntimeSettings() {
         ]
       },
       {
-        setting: Common.Settings.Settings.instance().createSetting(
-          "lighthouse.clear-storage",
-          true,
-          "Synced"
-          /* Common.Settings.SettingStorageType.SYNCED */
-        ),
+        setting: Common.Settings.Settings.instance().moduleSetting("lighthouse.clear-storage"),
         title: i18nLazyString(UIStrings.clearStorage),
         description: i18nLazyString(UIStrings.resetStorageLocalstorage),
         setFlags: (flags, value) => {
@@ -975,12 +924,7 @@ function getRuntimeSettings() {
         }
       },
       {
-        setting: Common.Settings.Settings.instance().createSetting(
-          "lighthouse.enable-sampling",
-          false,
-          "Synced"
-          /* Common.Settings.SettingStorageType.SYNCED */
-        ),
+        setting: Common.Settings.Settings.instance().moduleSetting("lighthouse.enable-sampling"),
         title: i18nLazyString(UIStrings.enableSampling),
         description: i18nLazyString(UIStrings.enableJavaScriptSampling),
         setFlags: (flags, value) => {
@@ -1402,7 +1346,7 @@ import * as Common3 from "./../../core/common/common.js";
 import * as Host2 from "./../../core/host/host.js";
 import * as Platform from "./../../core/platform/platform.js";
 import * as SDK3 from "./../../core/sdk/sdk.js";
-import * as TextUtils from "./../../models/text_utils/text_utils.js";
+import * as TextUtils from "./../../core/text_utils/text_utils.js";
 import * as Workspace from "./../../models/workspace/workspace.js";
 import * as LighthouseReport from "./../../third_party/lighthouse/report/report.js";
 import * as Components from "./../../ui/legacy/components/utils/utils.js";
@@ -1607,11 +1551,11 @@ import * as i18n4 from "./../../core/i18n/i18n.js";
 import * as UI2 from "./../../ui/legacy/legacy.js";
 var UIStrings2 = {
   /**
-   * @description Title of combo box in audits report selector
+   * @description Title of combo box in the Lighthouse report selector.
    */
   reports: "Reports",
   /**
-   * @description New report item label in Lighthouse Report Selector
+   * @description Label for new report item in the Lighthouse report selector.
    */
   newReport: "(new report)"
 };
@@ -1976,19 +1920,19 @@ var UIStrings3 = {
    */
   generateLighthouseReport: "Generate a Lighthouse report",
   /**
-   * @description Text that refers to the Lighthouse mode
+   * @description Section header for the Lighthouse mode options.
    */
   mode: "Mode",
   /**
-   * @description Title in the Lighthouse Start View for list of categories to run during audit
+   * @description Section header for the list of categories to run during an audit.
    */
   categories: "Categories",
   /**
-   * @description Label for a button to start analyzing a page navigation with Lighthouse
+   * @description Label for a button to start analyzing a page navigation with Lighthouse.
    */
   analyzeNavigation: "Analyze page load",
   /**
-   * @description Label for a button to start analyzing the current page state with Lighthouse
+   * @description Label for a button to start analyzing the current page state with Lighthouse.
    */
   analyzeSnapshot: "Analyze page state",
   /**
@@ -1996,11 +1940,11 @@ var UIStrings3 = {
    */
   startTimespan: "Start timespan",
   /**
-   * @description Text that is usually a hyperlink to more documentation
+   * @description Text that is usually a hyperlink to more documentation.
    */
   learnMore: "Learn more",
   /**
-   * @description Text that refers to device such as a phone
+   * @description Section header for selecting the device type for auditing.
    */
   device: "Device"
 };
@@ -2102,8 +2046,7 @@ var StartView = class extends UI4.Widget.Widget {
     if (!runtimeSetting?.title) {
       throw new Error(`${settingName} is not a setting with a title`);
     }
-    runtimeSetting.setting.setTitle(runtimeSetting.title());
-    const control = new UI4.Toolbar.ToolbarSettingCheckbox(runtimeSetting.setting, runtimeSetting.description());
+    const control = new UI4.Toolbar.ToolbarSettingCheckbox(runtimeSetting.setting, runtimeSetting.description(), runtimeSetting.title());
     toolbar2.appendToolbarItem(control);
     if (runtimeSetting.learnMore) {
       const link = Link.create(runtimeSetting.learnMore, i18nString3(UIStrings3.learnMore), "lighthouse-learn-more", "learn-more");
@@ -2117,7 +2060,6 @@ var StartView = class extends UI4.Widget.Widget {
       throw new Error(`${settingName} is not a setting with a title`);
     }
     const options = runtimeSetting.options?.map((option) => ({ label: option.label(), value: option.value })) || [];
-    runtimeSetting.setting.setTitle(runtimeSetting.title());
     const control = new UI4.Toolbar.ToolbarSettingComboBox(options, runtimeSetting.setting, runtimeSetting.title());
     control.setTitle(runtimeSetting.description());
     toolbar2.appendToolbarItem(control);
@@ -2133,8 +2075,7 @@ var StartView = class extends UI4.Widget.Widget {
     this.populateRuntimeSettingAsRadio("lighthouse.device-type", i18nString3(UIStrings3.device), deviceTypeFormElements);
     this.checkboxes = [];
     for (const preset of getPresets()) {
-      preset.setting.setTitle(preset.title());
-      const checkbox = new UI4.Toolbar.ToolbarSettingCheckbox(preset.setting, preset.description());
+      const checkbox = new UI4.Toolbar.ToolbarSettingCheckbox(preset.setting, preset.description(), preset.title());
       const row = categoryFormElements.createChild("div", "vbox lighthouse-launcher-row");
       row.appendChild(checkbox.element);
       checkbox.element.setAttribute("data-lh-category", preset.configID);
@@ -2402,66 +2343,66 @@ var lighthouseDialog_css_default = `/*
 var { html: html4 } = Lit;
 var UIStrings4 = {
   /**
-   * @description Text to cancel something
+   * @description Button text to cancel an operation.
    */
   cancel: "Cancel",
   /**
-   * @description Text when something is loading
+   * @description Status text when an operation is loading.
    */
   loading: "Loading\u2026",
   /**
-   * @description Status text in Lighthouse splash screen while an audit is being performed
+   * @description Status text in Lighthouse splash screen while an audit is being performed.
    * @example {github.com} PH1
    */
   auditingS: "Auditing {PH1}",
   /**
-   * @description Status text in Lighthouse splash screen while an audit is being performed
+   * @description Status text in Lighthouse splash screen while an audit is being performed.
    */
   auditingYourWebPage: "Auditing your web page",
   /**
-   * @description Status text in Lighthouse splash screen while an AI assistant is performing an audit
+   * @description Status text in Lighthouse splash screen while an AI assistant is performing an audit.
    * @example {github.com} PH1
    */
   aiAuditingS: "AI assistance is auditing {PH1}",
   /**
-   * @description Status text in Lighthouse splash screen while an AI assistant is performing an audit
+   * @description Status text in Lighthouse splash screen while an AI assistant is performing an audit.
    */
   aiAuditingYourWebPage: "AI assistance is auditing your web page",
   /**
-   * @description Status text in Lighthouse splash screen while an audit is being performed, and cancellation to take effect
+   * @description Status text in Lighthouse splash screen while an audit is being performed, and cancellation to take effect.
    */
   cancelling: "Cancelling\u2026",
   /**
-   * @description Status text in Lighthouse splash screen while preparing for an audit
+   * @description Status text in Lighthouse splash screen while preparing for an audit.
    */
   lighthouseIsWarmingUp: "`Lighthouse` is warming up\u2026",
   /**
-   * @description Status text in Lighthouse splash screen while an audit is being performed
+   * @description Status text in Lighthouse splash screen while an audit is being performed.
    */
   lighthouseIsLoadingYourPage: "`Lighthouse` is loading your page",
   /**
-   * @description Text in Lighthouse Status View
+   * @description Status message showing a fast fact with an icon.
    * @example {75% of global mobile users in 2016 were on 2G or 3G [Source: GSMA Mobile]} PH1
    */
   fastFactMessageWithPlaceholder: "\u{1F4A1} {PH1}",
   /**
-   * @description Text of a DOM element in Lighthouse Status View
+   * @description Error header shown when an audit encounters an error.
    */
-  ahSorryWeRanIntoAnError: "Ah, sorry! We ran into an error.",
+  ahSorryWeRanIntoAnError: "We ran into an error.",
   /**
-   * @description Text in Lighthouse Status View
+   * @description Suggestion for recovering from an audit error.
    */
   tryToNavigateToTheUrlInAFresh: "Try to navigate to the URL in a fresh `Chrome` profile without any other tabs or extensions open and try again.",
   /**
-   * @description Text of a DOM element in Lighthouse Status View
+   * @description Instruction to report a bug if the issue is reproducible.
    */
-  ifThisIssueIsReproduciblePlease: "If this issue is reproducible, please report it at the `Lighthouse` `GitHub` repo.",
+  ifThisIssueIsReproduciblePlease: "If this issue is reproducible, report it at the `Lighthouse` `GitHub` repo.",
   /**
-   * @description Text in Lighthouse splash screen when loading the page for auditing
+   * @description Text in Lighthouse splash screen when loading the page for auditing.
    */
-  lighthouseIsLoadingThePage: "Lighthouse is loading the page.",
+  lighthouseIsLoadingThePage: "`Lighthouse` is loading the page.",
   /**
-   * @description Text in Lighthouse splash screen when Lighthouse is gathering information for display
+   * @description Text in Lighthouse splash screen when Lighthouse is gathering information for display.
    */
   lighthouseIsGatheringInformation: "`Lighthouse` is gathering information about the page to compute your score.",
   /**
@@ -2469,63 +2410,63 @@ var UIStrings4 = {
    */
   almostThereLighthouseIsNow: "Almost there! `Lighthouse` is now generating your report.",
   /**
-   * @description Text in Lighthouse splash screen when loading the page for auditing
+   * @description Text in Lighthouse splash screen when loading the page for auditing.
    */
   lighthouseIsLoadingYourPageWith: "`Lighthouse` is loading your page with throttling to measure performance on a mobile device on 3G.",
   /**
-   * @description Text in Lighthouse splash screen when loading the page for auditing
+   * @description Text in Lighthouse splash screen when loading the page for auditing.
    */
   lighthouseIsLoadingYourPageWithThrottling: "`Lighthouse` is loading your page with throttling to measure performance on a slow desktop on 3G.",
   /**
-   * @description Text in Lighthouse splash screen when loading the page for auditing
+   * @description Text in Lighthouse splash screen when loading the page for auditing.
    */
   lighthouseIsLoadingYourPageWithMobile: "`Lighthouse` is loading your page with mobile emulation.",
   /**
-   * @description Fast fact in the splash screen while Lighthouse is performing an audit
+   * @description Fast fact in the splash screen while Lighthouse is performing an audit.
    */
   mbTakesAMinimumOfSecondsTo: "1MB takes a minimum of 5 seconds to download on a typical 3G connection [Source: `WebPageTest` and `DevTools` 3G definition].",
   /**
-   * @description Fast fact in the splash screen while Lighthouse is performing an audit
+   * @description Fast fact in the splash screen while Lighthouse is performing an audit.
    */
   rebuildingPinterestPagesFor: "Rebuilding Pinterest pages for performance increased conversion rates by 15% [Source: `WPO Stats`]",
   /**
-   * @description Fast fact in the splash screen while Lighthouse is performing an audit
+   * @description Fast fact in the splash screen while Lighthouse is performing an audit.
    */
   byReducingTheResponseSizeOfJson: "By reducing the response size of JSON needed for displaying comments, Instagram saw increased impressions [Source: `WPO Stats`]",
   /**
-   * @description Fast fact in the splash screen while Lighthouse is performing an audit
+   * @description Fast fact in the splash screen while Lighthouse is performing an audit.
    */
   walmartSawAIncreaseInRevenueFor: "Walmart saw a 1% increase in revenue for every 100ms improvement in page load [Source: `WPO Stats`]",
   /**
-   * @description Fast fact in the splash screen while Lighthouse is performing an audit
+   * @description Fast fact in the splash screen while Lighthouse is performing an audit.
    */
   ifASiteTakesSecondToBecome: "If a site takes >1 second to become interactive, users lose attention, and their perception of completing the page task is broken [Source: `Google Developers Blog`]",
   /**
-   * @description Fast fact in the splash screen while Lighthouse is performing an audit
+   * @description Fast fact in the splash screen while Lighthouse is performing an audit.
    */
   OfGlobalMobileUsersInWereOnGOrG: "75% of global mobile users in 2016 were on 2G or 3G [Source: `GSMA Mobile`]",
   /**
-   * @description Fast fact in the splash screen while Lighthouse is performing an audit
+   * @description Fast fact in the splash screen while Lighthouse is performing an audit.
    */
   theAverageUserDeviceCostsLess: "The average user device costs less than 200 USD. [Source: `International Data Corporation`]",
   /**
-   * @description Fast fact in the splash screen while Lighthouse is performing an audit
+   * @description Fast fact in the splash screen while Lighthouse is performing an audit.
    */
   SecondsIsTheAverageTimeAMobile: "19 seconds is the average time a mobile web page takes to load on a 3G connection [Source: `Google DoubleClick blog`]",
   /**
-   * @description Fast fact in the splash screen while Lighthouse is performing an audit
+   * @description Fast fact in the splash screen while Lighthouse is performing an audit.
    */
   OfMobilePagesTakeNearlySeconds: "70% of mobile pages take nearly 7 seconds for the visual content above the fold to display on the screen. [Source: `Think with Google`]",
   /**
-   * @description Fast fact in the splash screen while Lighthouse is performing an audit
+   * @description Fast fact in the splash screen while Lighthouse is performing an audit.
    */
   asPageLoadTimeIncreasesFromOne: "As page load time increases from one second to seven seconds, the probability of a mobile site visitor bouncing increases 113%. [Source: `Think with Google`]",
   /**
-   * @description Fast fact in the splash screen while Lighthouse is performing an audit
+   * @description Fast fact in the splash screen while Lighthouse is performing an audit.
    */
   asTheNumberOfElementsOnAPage: "As the number of elements on a page increases from 400 to 6,000, the probability of conversion drops 95%. [Source: `Think with Google`]",
   /**
-   * @description Fast fact in the splash screen while Lighthouse is performing an audit
+   * @description Fast fact in the splash screen while Lighthouse is performing an audit.
    */
   lighthouseOnlySimulatesMobile: "`Lighthouse` only simulates mobile performance; to measure performance on a real device, try WebPageTest.org [Source: `Lighthouse` team]"
 };
@@ -2975,31 +2916,31 @@ var TimespanView = class extends UI6.Dialog.Dialog {
 // gen/front_end/panels/lighthouse/LighthousePanel.js
 var UIStrings6 = {
   /**
-   * @description Text that appears when user drag and drop something (for example, a file) in Lighthouse Panel
+   * @description Text that appears when a user drags and drops a file in the Lighthouse panel.
    */
   dropLighthouseJsonHere: "Drop `Lighthouse` JSON here",
   /**
-   * @description Tooltip text that appears when hovering over the largeicon add button in the Lighthouse Panel
+   * @description Tooltip text that appears when hovering over the add button in the Lighthouse panel.
    */
   performAnAudit: "Perform an audit\u2026",
   /**
-   * @description Text to clear everything
+   * @description Button text to clear all audit reports.
    */
   clearAll: "Clear all",
   /**
-   * @description Tooltip text that appears when hovering over the largeicon settings gear in show settings pane setting in start view of the audits panel
+   * @description Tooltip text that appears when hovering over the settings gear in the Lighthouse panel.
    */
   lighthouseSettings: "`Lighthouse` settings",
   /**
-   * @description Status header in the Lighthouse panel
+   * @description Status header in the Lighthouse panel.
    */
   printing: "Printing",
   /**
-   * @description Status text in the Lighthouse panel
+   * @description Status text in the Lighthouse panel.
    */
-  thePrintPopupWindowIsOpenPlease: "The print popup window is open. Please close it to continue.",
+  thePrintPopupWindowIsOpenPlease: "The print popup window is open. Close it to continue.",
   /**
-   * @description Text in Lighthouse Panel
+   * @description Status text in the Lighthouse panel when an audit is cancelling.
    */
   cancelling: "Cancelling"
 };

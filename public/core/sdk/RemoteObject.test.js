@@ -328,8 +328,8 @@ describeWithEnvironment('ScopeRemoteObject', () => {
             result: [
                 { name: 'a', configurable: true, enumerable: true, writable: true },
                 { name: 'b', configurable: true, enumerable: true, writable: true },
-                { name: 'c', configurable: true, enumerable: true, writable: true }
-            ]
+                { name: 'c', configurable: true, enumerable: true, writable: true },
+            ],
         }));
         const target = createTarget({ connection });
         const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);

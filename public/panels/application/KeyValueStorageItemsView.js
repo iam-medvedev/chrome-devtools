@@ -177,7 +177,7 @@ export class KeyValueStorageItemsView extends UI.Widget.VBox {
         const viewOutput = {
             set toolbar(toolbar) {
                 that.#toolbar = toolbar;
-            }
+            },
         };
         const viewInput = {
             items: this.#items,
@@ -364,6 +364,16 @@ export class KeyValueStorageItemsView extends UI.Widget.VBox {
             this.#selectedKey = null;
             this.showPreview(null, null);
         }
+    }
+    set jslog(jslog) {
+        if (this.#jslog === jslog) {
+            return;
+        }
+        this.#jslog = jslog;
+        this.performUpdate();
+    }
+    get jslog() {
+        return this.#jslog;
     }
     set editable(editable) {
         this.#editable = editable;

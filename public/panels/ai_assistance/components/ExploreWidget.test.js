@@ -97,8 +97,8 @@ describe('ExploreWidget', () => {
                         jslogContext: 'open-elements-panel',
                         onClick: () => { },
                         panelName: 'Elements',
-                        text: 'to ask about CSS styles'
-                    }]
+                        text: 'to ask about CSS styles',
+                    }],
             }, {}, target);
             await assertScreenshot('ai_assistance/explore-default.png');
         });

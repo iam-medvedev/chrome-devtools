@@ -1,7 +1,6 @@
 // Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable @devtools/no-imperative-dom-api */
 /*
  * Copyright (C) 2008 Nokia Inc.  All rights reserved.
  * Copyright (C) 2013 Samsung Electronics. All rights reserved.
@@ -30,8 +29,8 @@
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as TextUtils from '../../core/text_utils/text_utils.js';
 import * as AiAssistanceModel from '../../models/ai_assistance/ai_assistance.js';
-import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
@@ -85,7 +84,7 @@ export class DOMStorageItemsView extends KeyValueStorageItemsView {
         Common.EventTarget.removeEventListeners(this.eventListeners);
         this.domStorage = domStorage;
         const storageKind = domStorage.isLocalStorage ? 'local-storage-data' : 'session-storage-data';
-        this.element.setAttribute('jslog', `${VisualLogging.pane().context(storageKind)}`);
+        this.jslog = `${VisualLogging.pane().context(storageKind)}`;
         if (domStorage.storageKey) {
             this.toolbar?.setStorageKey(domStorage.storageKey);
         }

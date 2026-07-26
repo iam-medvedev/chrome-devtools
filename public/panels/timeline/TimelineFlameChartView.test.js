@@ -6,12 +6,14 @@ import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as AIAssistance from '../../models/ai_assistance/ai_assistance.js';
+import * as Bindings from '../../models/bindings/bindings.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as TraceBounds from '../../services/trace_bounds/trace_bounds.js';
 import { assertScreenshot, dispatchClickEvent, doubleRaf, raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, deinitializeGlobalVars, initializeGlobalVars, } from '../../testing/EnvironmentHelpers.js';
-import { allThreadEntriesInTrace, microsecondsTraceWindow, renderWidgetInVbox, setupIgnoreListManagerEnvironment } from '../../testing/TraceHelpers.js';
+import { TestUniverse } from '../../testing/TestUniverse.js';
+import { allThreadEntriesInTrace, microsecondsTraceWindow, renderWidgetInVbox, setupIgnoreListManagerEnvironment, } from '../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../testing/TraceLoader.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -39,6 +41,20 @@ function clearPersistTrackConfigSettings() {
     mainGroupSetting.set(null);
     networkGroupSetting.set(null);
 }
+async function waitForWidgetSizeToUpdate(flameChartView) {
+    const mainChart = flameChartView.getMainFlameChart();
+    const networkChart = flameChartView.getNetworkFlameChart();
+    while (true) {
+        const expectedMainWidth = Math.round(1500 * (window.devicePixelRatio || 1));
+        const isMainReady = mainChart.getCanvas().width === expectedMainWidth;
+        const expectedNetworkWidth = networkChart.offsetWidth > 0 ? expectedMainWidth : 0;
+        const isNetworkReady = networkChart.getCanvas().width === expectedNetworkWidth;
+        if (isMainReady && isNetworkReady) {
+            break;
+        }
+        await new Promise(r => setTimeout(r, 10));
+    }
+}
 describe('TimelineFlameChartView', function () {
     before(async () => {
         await initializeGlobalVars();
@@ -49,6 +65,10 @@ describe('TimelineFlameChartView', function () {
         await deinitializeGlobalVars();
     });
     beforeEach(() => {
+        const universe = new TestUniverse();
+        sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, 'instance')
+            .returns(universe.debuggerWorkspaceBinding);
+        sinon.stub(Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding, 'instance').returns(universe.cssWorkspaceBinding);
         setupIgnoreListManagerEnvironment();
         const actionRegistryInstance = UI.ActionRegistry.ActionRegistry.instance({ forceNew: true });
         UI.ShortcutRegistry.ShortcutRegistry.instance({ forceNew: true, actionRegistry: actionRegistryInstance });
@@ -59,6 +79,22 @@ describe('TimelineFlameChartView', function () {
     });
     describe('rendering', () => {
         beforeEach(() => {
+            document.body.style.overflow = 'hidden';
+            // Force a consistent layout width across all bots and OSes by replacing updateContentElementSize.
+            // This prevents the native scrollbar width from unpredictablely altering offsetWidth,
+            // which scales the chart unpredictably on screenshots.
+            sinon.stub(PerfUI.ChartViewport.ChartViewport.prototype, 'updateContentElementSize')
+                .callsFake(function () {
+                this.offsetWidth = this.contentElement.offsetWidth;
+                this.offsetHeight = this.contentElement.offsetHeight;
+                this.delegate.setSize(this.offsetWidth, this.offsetHeight);
+            });
+        });
+        afterEach(() => {
+            document.body.style.overflow = '';
+            sinon.restore();
+        });
+        beforeEach(() => {
             // We persist collapsed/expanded states across sessions, but we want to
             // make sure each test here does not impact others.
             Common.Settings.Settings.instance().createSetting('timeline-flamechart-network-view-group-expansion', {}).set({});
@@ -68,7 +104,7 @@ describe('TimelineFlameChartView', function () {
             const mockViewDelegate = new MockViewDelegate();
             const flameChartView = new Timeline.TimelineFlameChartView.TimelineFlameChartView(mockViewDelegate);
             flameChartView.updateCountersGraphToggle(false); // don't care about the memory view in this test
-            renderWidgetInVbox(flameChartView);
+            renderWidgetInVbox(flameChartView, { width: 1500, height: 2000 });
             // IMPORTANT: order is important; for the flame chart view to render properly
             // it must be in the DOM before we set the model, so it can calculate and
             // set heights.
@@ -80,10 +116,20 @@ describe('TimelineFlameChartView', function () {
             const newBounds = microsecondsTraceWindow(min, max);
             TraceBounds.TraceBounds.BoundsManager.instance().setTimelineVisibleWindow(newBounds);
             await flameChartView.updateComplete;
+            flameChartView.getMainFlameChart().hideHighlight();
+            flameChartView.getNetworkFlameChart().hideHighlight();
+            await waitForWidgetSizeToUpdate(flameChartView);
+            flameChartView.getMainFlameChart().getCanvas().blur();
+            flameChartView.getNetworkFlameChart().getCanvas().blur();
             await raf();
             await assertScreenshot('timeline/flamechart_view_network_collapsed.png');
             flameChartView.getNetworkFlameChart().toggleGroupExpand(0);
             await flameChartView.updateComplete;
+            flameChartView.getMainFlameChart().hideHighlight();
+            flameChartView.getNetworkFlameChart().hideHighlight();
+            await waitForWidgetSizeToUpdate(flameChartView);
+            flameChartView.getMainFlameChart().getCanvas().blur();
+            flameChartView.getNetworkFlameChart().getCanvas().blur();
             await raf();
             await assertScreenshot('timeline/flamechart_view_network_expanded.png');
         });
@@ -91,11 +137,16 @@ describe('TimelineFlameChartView', function () {
             const parsedTrace = await TraceLoader.traceEngine(this, 'slow-interaction-keydown.json.gz');
             const mockViewDelegate = new MockViewDelegate();
             const flameChartView = new Timeline.TimelineFlameChartView.TimelineFlameChartView(mockViewDelegate);
-            renderWidgetInVbox(flameChartView);
+            renderWidgetInVbox(flameChartView, { width: 1500, height: 2000 });
             flameChartView.setModel(parsedTrace, new Map());
             await raf();
             flameChartView.updateCountersGraphToggle(false);
             await flameChartView.updateComplete;
+            flameChartView.getMainFlameChart().hideHighlight();
+            flameChartView.getNetworkFlameChart().hideHighlight();
+            await waitForWidgetSizeToUpdate(flameChartView);
+            flameChartView.getMainFlameChart().getCanvas().blur();
+            flameChartView.getNetworkFlameChart().getCanvas().blur();
             await raf();
             await assertScreenshot('timeline/flamechart_view_no_network_events.png');
         });
@@ -108,7 +159,7 @@ describe('TimelineFlameChartView', function () {
             searchableView.hideWidget();
             flameChartView.setSearchableView(searchableView);
             flameChartView.updateCountersGraphToggle(false); // don't care about the memory view in this test
-            renderWidgetInVbox(searchableView);
+            renderWidgetInVbox(searchableView, { width: 1500, height: 2000 });
             // IMPORTANT: order is important; for the flame chart view to render properly
             // it must be in the DOM before we set the model, so it can calculate and
             // set heights.
@@ -129,6 +180,11 @@ describe('TimelineFlameChartView', function () {
             const selection = Timeline.TimelineSelection.selectionFromEvent(networkRequest);
             await flameChartView.setSelectionAndReveal(selection);
             await flameChartView.updateComplete;
+            flameChartView.getMainFlameChart().hideHighlight();
+            flameChartView.getNetworkFlameChart().hideHighlight();
+            await waitForWidgetSizeToUpdate(flameChartView);
+            flameChartView.getMainFlameChart().getCanvas().blur();
+            flameChartView.getNetworkFlameChart().getCanvas().blur();
             await raf();
             await assertScreenshot('timeline/timeline_with_network_selection.png');
         });
@@ -142,7 +198,7 @@ describe('TimelineFlameChartView', function () {
             searchableView.hideWidget();
             flameChartView.setSearchableView(searchableView);
             flameChartView.updateCountersGraphToggle(false); // don't care about the memory view in this test
-            renderWidgetInVbox(searchableView);
+            renderWidgetInVbox(searchableView, { width: 1500, height: 2000 });
             // IMPORTANT: order is important; for the flame chart view to render properly
             // it must be in the DOM before we set the model, so it can calculate and
             // set heights.
@@ -165,6 +221,11 @@ describe('TimelineFlameChartView', function () {
             const selection = Timeline.TimelineSelection.selectionFromEvent(event);
             await flameChartView.setSelectionAndReveal(selection);
             await flameChartView.updateComplete;
+            flameChartView.getMainFlameChart().hideHighlight();
+            flameChartView.getNetworkFlameChart().hideHighlight();
+            await waitForWidgetSizeToUpdate(flameChartView);
+            flameChartView.getMainFlameChart().getCanvas().blur();
+            flameChartView.getNetworkFlameChart().getCanvas().blur();
             await raf();
             await assertScreenshot('timeline/timeline_with_main_thread_selection.png');
         });
@@ -203,21 +264,23 @@ describe('TimelineFlameChartView', function () {
         const visualMetadata = flameChartView.getPersistedConfigMetadata();
         assert.deepEqual(visualMetadata.network, [{ expanded: true, hidden: false, originalIndex: 0, visualIndex: 0, trackName: 'Network' }]);
         assert.deepEqual(visualMetadata.main, [
-            { expanded: false, hidden: true, originalIndex: 0, visualIndex: 0, trackName: 'Frames' }, {
+            { expanded: false, hidden: true, originalIndex: 0, visualIndex: 0, trackName: 'Frames' },
+            {
                 expanded: false,
                 hidden: false,
                 originalIndex: 1,
                 visualIndex: 1,
                 // screenshots but it has no visible title
-                trackName: ''
+                trackName: '',
             },
             { expanded: false, hidden: false, originalIndex: 2, visualIndex: 3, trackName: 'Animations' },
-            { expanded: true, hidden: false, originalIndex: 3, visualIndex: 2, trackName: 'Main — https://web.dev/' }, {
+            { expanded: true, hidden: false, originalIndex: 3, visualIndex: 2, trackName: 'Main — https://web.dev/' },
+            {
                 expanded: false,
                 hidden: false,
                 originalIndex: 4,
                 visualIndex: 4,
-                trackName: 'Frame — https://shared-storage-demo-content-producer.web.app/paa/scripts/private-aggregation-test.html'
+                trackName: 'Frame — https://shared-storage-demo-content-producer.web.app/paa/scripts/private-aggregation-test.html',
             },
             { expanded: false, hidden: false, originalIndex: 5, visualIndex: 5, trackName: 'Thread pool' },
             { expanded: false, hidden: false, originalIndex: 6, visualIndex: 6, trackName: 'Thread pool worker 1' },
@@ -226,7 +289,7 @@ describe('TimelineFlameChartView', function () {
             { expanded: false, hidden: false, originalIndex: 9, visualIndex: 9, trackName: 'Thread pool worker 4' },
             { expanded: false, hidden: false, originalIndex: 10, visualIndex: 10, trackName: 'Thread pool worker 5' },
             { expanded: false, hidden: false, originalIndex: 11, visualIndex: 11, trackName: 'StackSamplingProfiler' },
-            { expanded: false, hidden: false, originalIndex: 12, visualIndex: 12, trackName: 'GPU' }
+            { expanded: false, hidden: false, originalIndex: 12, visualIndex: 12, trackName: 'GPU' },
         ]);
     });
     it('does not apply visual config from a file', async function () {
@@ -244,7 +307,7 @@ describe('TimelineFlameChartView', function () {
             visualTrackConfig: {
                 main: null,
                 network: FROM_FILE_VISUAL_CONFIG_NETWORK,
-            }
+            },
         };
         const mockViewDelegate = new MockViewDelegate();
         const flameChartView = new Timeline.TimelineFlameChartView.TimelineFlameChartView(mockViewDelegate);
@@ -273,7 +336,7 @@ describe('TimelineFlameChartView', function () {
         searchableView.hideWidget();
         flameChartView.setSearchableView(searchableView);
         flameChartView.updateCountersGraphToggle(false); // don't care about the memory view in this test
-        renderWidgetInVbox(searchableView);
+        renderWidgetInVbox(searchableView, { width: 1500, height: 2000 });
         // IMPORTANT: order is important; for the flame chart view to render properly
         // it must be in the DOM before we set the model, so it can calculate and
         // set heights.

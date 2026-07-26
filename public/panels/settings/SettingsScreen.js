@@ -15,6 +15,7 @@ import * as SettingsUI from '../../ui/legacy/components/settings_ui/settings_ui.
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { html, render } from '../../ui/lit/lit.js';
+import * as SettingUIRegistration from '../../ui/settings/settings.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { PanelUtils } from '../utils/utils.js';
 import * as PanelComponents from './components/components.js';
@@ -215,21 +216,23 @@ export class GenericSettingsTab extends UI.Widget.VBox {
             "ACCOUNT" /* Common.Settings.SettingCategory.ACCOUNT */,
         ];
         // Some settings define their initial ordering.
-        const preRegisteredSettings = Common.Settings.Settings.instance().getRegisteredSettings().sort((firstSetting, secondSetting) => {
-            if (firstSetting.order && secondSetting.order) {
-                return (firstSetting.order - secondSetting.order);
+        const preRegisteredSettings = Array.from(SettingUIRegistration.SettingUIRegistration.getRegisteredSettings())
+            .sort((firstSetting, secondSetting) => {
+            const firstOrder = firstSetting.uiDescriptor.order;
+            const secondOrder = secondSetting.uiDescriptor.order;
+            if (firstOrder !== undefined && secondOrder !== undefined) {
+                return (firstOrder - secondOrder);
             }
-            if (firstSetting.order) {
+            if (firstOrder) {
                 return -1;
             }
-            if (secondSetting.order) {
+            if (secondOrder) {
                 return 1;
             }
             return 0;
         });
         for (const sectionCategory of explicitSectionOrder) {
-            const settingsForSection = preRegisteredSettings.filter(setting => setting.category === sectionCategory &&
-                GenericSettingsTab.isSettingVisible(setting));
+            const settingsForSection = preRegisteredSettings.filter(setting => setting.uiDescriptor.category === sectionCategory && GenericSettingsTab.isSettingVisible(setting));
             this.createSectionElement(sectionCategory, settingsForSection);
         }
         const restoreAndReloadButton = UI.UIUtils.createTextButton(i18nString(UIStrings.restoreDefaultsAndReload), restoreAndReload, { jslogContext: 'settings.restore-defaults-and-reload' });
@@ -240,7 +243,7 @@ export class GenericSettingsTab extends UI.Widget.VBox {
         }
     }
     static isSettingVisible(setting) {
-        return Boolean(setting.title?.()) && Boolean(setting.category);
+        return Boolean(setting.uiDescriptor.title?.()) && Boolean(setting.uiDescriptor.category);
     }
     wasShown() {
         UI.Context.Context.instance().setFlavor(GenericSettingsTab, this);
@@ -292,7 +295,7 @@ export class GenericSettingsTab extends UI.Widget.VBox {
         const uiSectionName = Common.Settings.getLocalizedSettingsCategory(category);
         const sectionElement = document.createElement('div');
         for (const settingRegistration of settings) {
-            const setting = Common.Settings.Settings.instance().moduleSetting(settingRegistration.settingName);
+            const setting = Common.Settings.Settings.instance().resolve(settingRegistration.descriptor);
             const settingControl = SettingsUI.SettingsUI.createControlForSetting(setting);
             if (settingControl) {
                 this.settingToControl.set(setting, settingControl);
@@ -470,11 +473,11 @@ export class Revealer {
             }
             return;
         }
-        for (const settingRegistration of Common.Settings.Settings.instance().getRegisteredSettings()) {
+        for (const settingRegistration of SettingUIRegistration.SettingUIRegistration.getRegisteredSettings()) {
             if (!GenericSettingsTab.isSettingVisible(settingRegistration)) {
                 continue;
             }
-            if (settingRegistration.settingName === object.name) {
+            if (settingRegistration.descriptor.name === object.name) {
                 Host.InspectorFrontendHost.InspectorFrontendHostInstance.bringToFront();
                 await SettingsScreen.showSettingsScreen();
                 const genericSettingsTab = context.flavor(GenericSettingsTab);

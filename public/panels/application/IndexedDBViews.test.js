@@ -360,5 +360,27 @@ describeWithEnvironment('IDBDataView', () => {
         assert.strictEqual(args[2].upper, 'primaryKey1');
         sinon.assert.calledOnce(refreshCallback);
     });
+    it('shows stale data warning on markNeedsRefresh and hides it after refresh', async () => {
+        const model = sinon.createStubInstance(Application.IndexedDBModel.IndexedDBModel);
+        model.loadObjectStoreData.callsFake((_dbId, _storeName, _keyRange, _skipCount, _pageSize, callback) => {
+            callback([], false);
+        });
+        model.getMetadata.resolves({ entriesCount: 0, keyGeneratorValue: 0 });
+        const databaseId = new Application.IndexedDBModel.DatabaseId({ storageKey: 'https://example.com' }, 'My Database');
+        const objectStore = new Application.IndexedDBModel.ObjectStore('My Object Store', 'key', false);
+        const refreshCallback = sinon.spy();
+        const component = new Application.IndexedDBViews.IDBDataView(model, databaseId, objectStore, null, refreshCallback);
+        renderElementIntoDOM(component);
+        await performActionAndWaitForSettle(component, () => {
+            component.update(objectStore);
+        });
+        assert.isNull(component.element.querySelector('.stale-data-warning'));
+        component.markNeedsRefresh();
+        assert.isNotNull(component.element.querySelector('.stale-data-warning'));
+        await performActionAndWaitForSettle(component, () => {
+            component.refreshData();
+        });
+        assert.isNull(component.element.querySelector('.stale-data-warning'));
+    });
 });
 //# sourceMappingURL=IndexedDBViews.test.js.map

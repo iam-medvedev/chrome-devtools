@@ -17,7 +17,7 @@ const UIStrings = {
      */
     local: 'Local',
     /**
-     * @description Text that refers to closure as a programming term
+     * @description Text that refers to closure as a programming term.
      */
     closure: 'Closure',
     /**
@@ -25,19 +25,19 @@ const UIStrings = {
      */
     block: 'Block',
     /**
-     * @description Label for a group of JavaScript files
+     * @description Label for a group of JavaScript files.
      */
     script: 'Script',
     /**
-     * @description Title of a section in the debugger showing JavaScript variables from the a 'with'
-     *block. Block here means section of code, 'with' refers to a JavaScript programming concept and
-     *is a fixed term.
+     * @description Title of a section in the debugger showing JavaScript variables from a 'with'
+     * block. Block here means section of code, 'with' refers to a JavaScript programming concept and
+     * is a fixed term.
      */
     withBlock: '`With` block',
     /**
-     * @description Title of a section in the debugger showing JavaScript variables from the a 'catch'
-     *block. Block here means section of code, 'catch' refers to a JavaScript programming concept and
-     *is a fixed term.
+     * @description Title of a section in the debugger showing JavaScript variables from a 'catch'
+     * block. Block here means section of code, 'catch' refers to a JavaScript programming concept and
+     * is a fixed term.
      */
     catchBlock: '`Catch` block',
     /**
@@ -45,19 +45,19 @@ const UIStrings = {
      */
     global: 'Global',
     /**
-     * @description Text for a JavaScript module, the programming concept
+     * @description Text for a JavaScript module, the programming concept.
      */
     module: 'Module',
     /**
-     * @description Text describing the expression scope in WebAssembly
+     * @description Text describing the expression scope in WebAssembly.
      */
     expression: 'Expression',
     /**
-     * @description Text in Scope Chain Sidebar Pane of the Sources panel
+     * @description Text in Scope Chain section of the Sources panel.
      */
     exception: 'Exception',
     /**
-     * @description Text in Scope Chain Sidebar Pane of the Sources panel
+     * @description Text in Scope Chain section of the Sources panel.
      */
     returnValue: 'Return value',
 };
@@ -126,7 +126,7 @@ export class DebuggerModel extends SDKModel {
     #selectedCallFrame = null;
     #debuggerEnabled = false;
     #debuggerId = null;
-    #skipAllPausesTimeout = 0;
+    #skipAllPausesTimeout;
     #beforePausedCallback = null;
     #computeAutoStepRangesCallback = null;
     evaluateOnCallFrameCallback = null;
@@ -283,19 +283,14 @@ export class DebuggerModel extends SDKModel {
         this.#debuggerId = null;
     }
     skipAllPauses(skip) {
-        if (this.#skipAllPausesTimeout) {
-            clearTimeout(this.#skipAllPausesTimeout);
-            this.#skipAllPausesTimeout = 0;
-        }
+        clearTimeout(this.#skipAllPausesTimeout);
         void this.agent.invoke_setSkipAllPauses({ skip });
     }
     skipAllPausesUntilReloadOrTimeout(timeout) {
-        if (this.#skipAllPausesTimeout) {
-            clearTimeout(this.#skipAllPausesTimeout);
-        }
+        clearTimeout(this.#skipAllPausesTimeout);
         void this.agent.invoke_setSkipAllPauses({ skip: true });
         // If reload happens before the timeout, the flag will be already unset and the timeout callback won't change anything.
-        this.#skipAllPausesTimeout = window.setTimeout(this.skipAllPauses.bind(this, false), timeout);
+        this.#skipAllPausesTimeout = globalThis.setTimeout(this.skipAllPauses.bind(this, false), timeout);
     }
     pauseOnExceptionStateChanged() {
         const settings = this.target().targetManager().settings;
@@ -751,7 +746,7 @@ export class DebuggerModel extends SDKModel {
             {
                 callFrames: [],
                 parent: stackTraceOrPausedDetails.asyncStackTrace,
-                parentId: stackTraceOrPausedDetails.asyncStackTraceId
+                parentId: stackTraceOrPausedDetails.asyncStackTraceId,
             } :
             stackTraceOrPausedDetails;
         let target = this.target();

@@ -1,6 +1,7 @@
 // Copyright 2011 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Common from '../common/common.js';
 import { InspectorFrontendHostInstance } from './InspectorFrontendHost.js';
 export class UserMetrics {
     sourcesPanelFileDebugged(mediaType) {
@@ -17,6 +18,9 @@ export class UserMetrics {
     }
     actionTaken(action) {
         InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.ActionTaken" /* EnumeratedHistogram.ActionTaken */, action, Action.MAX_VALUE);
+    }
+    resendRequest(resourceType) {
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.ResendRequest" /* EnumeratedHistogram.ResendRequest */, resourceType, 16 /* ResendRequestType.MAX_VALUE */);
     }
     keybindSetSettingChanged(keybindSet) {
         const value = KeybindSetSettings[keybindSet] || 0;
@@ -715,18 +719,6 @@ export var IssueCreated;
     IssueCreated[IssueCreated["CookieIssue::ExcludeSameSiteNoneInsecure::SetCookie"] = 15] = "CookieIssue::ExcludeSameSiteNoneInsecure::SetCookie";
     IssueCreated[IssueCreated["CookieIssue::WarnSameSiteNoneInsecure::ReadCookie"] = 16] = "CookieIssue::WarnSameSiteNoneInsecure::ReadCookie";
     IssueCreated[IssueCreated["CookieIssue::WarnSameSiteNoneInsecure::SetCookie"] = 17] = "CookieIssue::WarnSameSiteNoneInsecure::SetCookie";
-    IssueCreated[IssueCreated["CookieIssue::WarnSameSiteStrictLaxDowngradeStrict::Secure"] = 18] = "CookieIssue::WarnSameSiteStrictLaxDowngradeStrict::Secure";
-    IssueCreated[IssueCreated["CookieIssue::WarnSameSiteStrictLaxDowngradeStrict::Insecure"] = 19] = "CookieIssue::WarnSameSiteStrictLaxDowngradeStrict::Insecure";
-    IssueCreated[IssueCreated["CookieIssue::WarnCrossDowngrade::ReadCookie::Secure"] = 20] = "CookieIssue::WarnCrossDowngrade::ReadCookie::Secure";
-    IssueCreated[IssueCreated["CookieIssue::WarnCrossDowngrade::ReadCookie::Insecure"] = 21] = "CookieIssue::WarnCrossDowngrade::ReadCookie::Insecure";
-    IssueCreated[IssueCreated["CookieIssue::WarnCrossDowngrade::SetCookie::Secure"] = 22] = "CookieIssue::WarnCrossDowngrade::SetCookie::Secure";
-    IssueCreated[IssueCreated["CookieIssue::WarnCrossDowngrade::SetCookie::Insecure"] = 23] = "CookieIssue::WarnCrossDowngrade::SetCookie::Insecure";
-    IssueCreated[IssueCreated["CookieIssue::ExcludeNavigationContextDowngrade::Secure"] = 24] = "CookieIssue::ExcludeNavigationContextDowngrade::Secure";
-    IssueCreated[IssueCreated["CookieIssue::ExcludeNavigationContextDowngrade::Insecure"] = 25] = "CookieIssue::ExcludeNavigationContextDowngrade::Insecure";
-    IssueCreated[IssueCreated["CookieIssue::ExcludeContextDowngrade::ReadCookie::Secure"] = 26] = "CookieIssue::ExcludeContextDowngrade::ReadCookie::Secure";
-    IssueCreated[IssueCreated["CookieIssue::ExcludeContextDowngrade::ReadCookie::Insecure"] = 27] = "CookieIssue::ExcludeContextDowngrade::ReadCookie::Insecure";
-    IssueCreated[IssueCreated["CookieIssue::ExcludeContextDowngrade::SetCookie::Secure"] = 28] = "CookieIssue::ExcludeContextDowngrade::SetCookie::Secure";
-    IssueCreated[IssueCreated["CookieIssue::ExcludeContextDowngrade::SetCookie::Insecure"] = 29] = "CookieIssue::ExcludeContextDowngrade::SetCookie::Insecure";
     IssueCreated[IssueCreated["CookieIssue::ExcludeSameSiteUnspecifiedTreatedAsLax::ReadCookie"] = 30] = "CookieIssue::ExcludeSameSiteUnspecifiedTreatedAsLax::ReadCookie";
     IssueCreated[IssueCreated["CookieIssue::ExcludeSameSiteUnspecifiedTreatedAsLax::SetCookie"] = 31] = "CookieIssue::ExcludeSameSiteUnspecifiedTreatedAsLax::SetCookie";
     IssueCreated[IssueCreated["CookieIssue::WarnSameSiteUnspecifiedLaxAllowUnsafe::ReadCookie"] = 32] = "CookieIssue::WarnSameSiteUnspecifiedLaxAllowUnsafe::ReadCookie";
@@ -904,4 +896,24 @@ export var ManifestSectionCodes;
     /* eslint-enable @typescript-eslint/naming-convention */
     ManifestSectionCodes[ManifestSectionCodes["MAX_VALUE"] = 6] = "MAX_VALUE";
 })(ManifestSectionCodes || (ManifestSectionCodes = {}));
+const resendRequestTypeMap = new Map([
+    [Common.ResourceType.resourceTypes.XHR, 0 /* ResendRequestType.XHR */],
+    [Common.ResourceType.resourceTypes.Fetch, 1 /* ResendRequestType.FETCH */],
+    [Common.ResourceType.resourceTypes.Script, 2 /* ResendRequestType.SCRIPT */],
+    [Common.ResourceType.resourceTypes.Stylesheet, 3 /* ResendRequestType.STYLESHEET */],
+    [Common.ResourceType.resourceTypes.Image, 4 /* ResendRequestType.IMAGE */],
+    [Common.ResourceType.resourceTypes.Media, 5 /* ResendRequestType.MEDIA */],
+    [Common.ResourceType.resourceTypes.Font, 6 /* ResendRequestType.FONT */],
+    [Common.ResourceType.resourceTypes.Wasm, 7 /* ResendRequestType.WASM */],
+    [Common.ResourceType.resourceTypes.Manifest, 8 /* ResendRequestType.MANIFEST */],
+    [Common.ResourceType.resourceTypes.TextTrack, 9 /* ResendRequestType.TEXT_TRACK */],
+    [Common.ResourceType.resourceTypes.SourceMapScript, 10 /* ResendRequestType.SOURCE_MAP_SCRIPT */],
+    [Common.ResourceType.resourceTypes.SourceMapStyleSheet, 11 /* ResendRequestType.SOURCE_MAP_STYLE_SHEET */],
+    [Common.ResourceType.resourceTypes.Document, 12 /* ResendRequestType.DOCUMENT */],
+    [Common.ResourceType.resourceTypes.Prefetch, 13 /* ResendRequestType.PREFETCH */],
+    [Common.ResourceType.resourceTypes.Ping, 14 /* ResendRequestType.PING */],
+]);
+export function resendRequestType(resourceType) {
+    return resendRequestTypeMap.get(resourceType) ?? 15 /* ResendRequestType.OTHER */;
+}
 //# sourceMappingURL=UserMetrics.js.map

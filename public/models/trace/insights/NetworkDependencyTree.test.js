@@ -150,7 +150,7 @@ describe('generatePreconnectedOrigins', () => {
                     url: 'https://example.com',
                     unused: false,
                     crossorigin: false,
-                    source: 'DOM'
+                    source: 'DOM',
                 }]);
         });
         it('should mark preconnect origins as unused when they do not match context requests', () => {
@@ -177,7 +177,7 @@ describe('generatePreconnectedOrigins', () => {
                     url: 'https://example.com',
                     unused: true,
                     crossorigin: false,
-                    source: 'DOM'
+                    source: 'DOM',
                 }]);
         });
         it('sets crossorigin to true when a matching preconnect candidate exists', () => {
@@ -199,7 +199,7 @@ describe('generatePreconnectedOrigins', () => {
                     url: 'https://example.com',
                     unused: true,
                     crossorigin: true,
-                    source: 'DOM'
+                    source: 'DOM',
                 }]);
         });
         it('sets crossorigin to false when no matching preconnect candidate exists', () => {
@@ -221,7 +221,7 @@ describe('generatePreconnectedOrigins', () => {
                     url: 'https://example.com',
                     unused: true,
                     crossorigin: false,
-                    source: 'DOM'
+                    source: 'DOM',
                 }]);
         });
     });
@@ -312,7 +312,7 @@ describe('generatePreconnectedOrigins', () => {
             const result = Trace.Insights.Models.NetworkDependencyTree.handleLinkResponseHeader(linkHeader);
             assert.deepEqual(result, [{
                     url: 'https://imaginary.url.notreal/segment;foo=bar;baz/item?name=What,+me+worry',
-                    headerText: '<https://imaginary.url.notreal/segment;foo=bar;baz/item?name=What,+me+worry>; rel="preconnect"'
+                    headerText: '<https://imaginary.url.notreal/segment;foo=bar;baz/item?name=What,+me+worry>; rel="preconnect"',
                 }]);
         });
         it('should ignore links with other rel values', () => {
@@ -355,7 +355,7 @@ describeWithEnvironment('generatePreconnectCandidates', () => {
         },
         Samples: {
             entryToNode: new Map(),
-        }
+        },
     };
     const mockContext = {
         // This is not need to calculate the data of this insight, but is needed to check this is a context with lantern data.
@@ -393,14 +393,14 @@ describeWithEnvironment('generatePreconnectCandidates', () => {
                 url: 'https://main.com',
                 requestId: 'main-request',
                 syntheticData: { finishTime: 1_000 },
-                timing: { connectEnd: 0, connectStart: 0 }
+                timing: { connectEnd: 0, connectStart: 0 },
             },
         },
         ts: 0,
         rawSourceEvent: {
             cat: 'devtools.timeline',
             name: 'ResourceSendRequest',
-        }
+        },
     };
     const validRequest = {
         args: {
@@ -414,7 +414,7 @@ describeWithEnvironment('generatePreconnectCandidates', () => {
         rawSourceEvent: {
             cat: 'devtools.timeline',
             name: 'ResourceSendRequest',
-        }
+        },
     };
     beforeEach(() => {
         mockParsedTrace.NetworkRequests.incompleteInitiator.clear();

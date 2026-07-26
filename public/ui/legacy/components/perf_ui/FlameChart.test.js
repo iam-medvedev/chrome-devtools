@@ -382,7 +382,7 @@ describeWithEnvironment('FlameChart', () => {
                         style: {
                             ...defaultGroupStyle,
                             collapsible: 0 /* PerfUI.FlameChart.GroupCollapsibleState.ALWAYS */,
-                            nestingLevel: 1
+                            nestingLevel: 1,
                         },
                     },
                 ],
