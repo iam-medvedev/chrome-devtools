@@ -4,6 +4,7 @@
 import * as Common from '../../../core/common/common.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Tracing from '../../../services/tracing/tracing.js';
+import * as Bindings from '../../bindings/bindings.js';
 import * as SourceMapScopes from '../../source_map_scopes/source_map_scopes.js';
 import * as Trace from '../../trace/trace.js';
 import { ConversationContext, } from '../agents/AiAgent.js';
@@ -17,19 +18,25 @@ import { AgentFocus } from '../performance/AIContext.js';
  * the context data for the LLM prompt and user-facing accordion disclosures.
  */
 export class PerformanceTraceContext extends ConversationContext {
-    static fromParsedTrace(parsedTrace) {
-        return new PerformanceTraceContext(AgentFocus.fromParsedTrace(parsedTrace));
+    static fromParsedTrace(parsedTrace, targetManager = SDK.TargetManager.TargetManager.instance(), freshRecordingTracker = Tracing.FreshRecording.Tracker.instance(), debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()) {
+        return new PerformanceTraceContext(AgentFocus.fromParsedTrace(parsedTrace), targetManager, freshRecordingTracker, debuggerWorkspaceBinding);
     }
-    static fromInsight(parsedTrace, insight) {
-        return new PerformanceTraceContext(AgentFocus.fromInsight(parsedTrace, insight));
+    static fromInsight(parsedTrace, insight, targetManager = SDK.TargetManager.TargetManager.instance(), freshRecordingTracker = Tracing.FreshRecording.Tracker.instance(), debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()) {
+        return new PerformanceTraceContext(AgentFocus.fromInsight(parsedTrace, insight), targetManager, freshRecordingTracker, debuggerWorkspaceBinding);
     }
-    static fromCallTree(callTree) {
-        return new PerformanceTraceContext(AgentFocus.fromCallTree(callTree));
+    static fromCallTree(callTree, targetManager = SDK.TargetManager.TargetManager.instance(), freshRecordingTracker = Tracing.FreshRecording.Tracker.instance(), debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()) {
+        return new PerformanceTraceContext(AgentFocus.fromCallTree(callTree), targetManager, freshRecordingTracker, debuggerWorkspaceBinding);
     }
     #focus;
-    constructor(focus) {
+    #targetManager;
+    #freshRecordingTracker;
+    #debuggerWorkspaceBinding;
+    constructor(focus, targetManager = SDK.TargetManager.TargetManager.instance(), freshRecordingTracker = Tracing.FreshRecording.Tracker.instance(), debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()) {
         super();
         this.#focus = focus;
+        this.#targetManager = targetManager;
+        this.#freshRecordingTracker = freshRecordingTracker;
+        this.#debuggerWorkspaceBinding = debuggerWorkspaceBinding;
     }
     /**
      * Returns a PerformanceTraceFormatter configured to resolve function
@@ -41,14 +48,14 @@ export class PerformanceTraceContext extends ConversationContext {
      */
     createFormatter() {
         const focus = this.#focus;
-        const target = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
+        const target = this.#targetManager.primaryPageTarget();
         const formatter = new PerformanceTraceFormatter(focus);
-        const isFresh = Tracing.FreshRecording.Tracker.instance().recordingIsFresh(focus.parsedTrace);
+        const isFresh = this.#freshRecordingTracker.recordingIsFresh(focus.parsedTrace);
         formatter.resolveFunctionCode = async (url, line, column) => {
             if (!target || !isFresh) {
                 return null;
             }
-            return await SourceMapScopes.FunctionCodeResolver.getFunctionCodeFromLocation(target, url, line, column, { contextLength: 200, contextLineLength: 5, appendProfileData: true });
+            return await SourceMapScopes.FunctionCodeResolver.getFunctionCodeFromLocation(target, url, line, column, this.#debuggerWorkspaceBinding, { contextLength: 200, contextLineLength: 5, appendProfileData: true });
         };
         return formatter;
     }
@@ -76,7 +83,7 @@ export class PerformanceTraceContext extends ConversationContext {
         const parsedTrace = this.#focus.parsedTrace;
         const url = this.getURL();
         const origin = extractContextOrigin(url);
-        const isFresh = Tracing.FreshRecording.Tracker.instance().recordingIsFresh(parsedTrace);
+        const isFresh = this.#freshRecordingTracker.recordingIsFresh(parsedTrace);
         if (!isFresh) {
             const parsed = Common.ParsedURL.ParsedURL.fromString(origin);
             return `imported-trace://${parsed ? parsed.domain() : origin}`;

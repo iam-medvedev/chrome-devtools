@@ -80,7 +80,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
                          .iconName=${'refresh'}
                          .variant=${"toolbar" /* Buttons.Button.Variant.TOOLBAR */}
                          jslog=${VisualLogging.action('refresh').track({
-        click: true
+        click: true,
     })}>
         </devtools-button>
         <devtools-toolbar-input type="filter" placeholder=${i18nString(UIStrings.filterByText)}
@@ -100,8 +100,8 @@ export const DEFAULT_VIEW = (input, _output, target) => {
         data: {
             entries: frame.entries.map(e => ({ key: e.key, value: e.value })),
             selectedKey: input.selectedKey || undefined,
-            filters: input.filters
-        }
+            filters: input.filters,
+        },
     })}
                   @select=${(e) => input.onRowSelected(e.detail)}>
                 </devtools-widget>

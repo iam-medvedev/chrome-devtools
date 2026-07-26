@@ -17,19 +17,19 @@ const UIStrings = {
      */
     generateLighthouseReport: 'Generate a Lighthouse report',
     /**
-     * @description Text that refers to the Lighthouse mode
+     * @description Section header for the Lighthouse mode options.
      */
     mode: 'Mode',
     /**
-     * @description Title in the Lighthouse Start View for list of categories to run during audit
+     * @description Section header for the list of categories to run during an audit.
      */
     categories: 'Categories',
     /**
-     * @description Label for a button to start analyzing a page navigation with Lighthouse
+     * @description Label for a button to start analyzing a page navigation with Lighthouse.
      */
     analyzeNavigation: 'Analyze page load',
     /**
-     * @description Label for a button to start analyzing the current page state with Lighthouse
+     * @description Label for a button to start analyzing the current page state with Lighthouse.
      */
     analyzeSnapshot: 'Analyze page state',
     /**
@@ -37,11 +37,11 @@ const UIStrings = {
      */
     startTimespan: 'Start timespan',
     /**
-     * @description Text that is usually a hyperlink to more documentation
+     * @description Text that is usually a hyperlink to more documentation.
      */
     learnMore: 'Learn more',
     /**
-     * @description Text that refers to device such as a phone
+     * @description Section header for selecting the device type for auditing.
      */
     device: 'Device',
 };
@@ -145,8 +145,7 @@ export class StartView extends UI.Widget.Widget {
         if (!runtimeSetting?.title) {
             throw new Error(`${settingName} is not a setting with a title`);
         }
-        runtimeSetting.setting.setTitle(runtimeSetting.title());
-        const control = new UI.Toolbar.ToolbarSettingCheckbox(runtimeSetting.setting, runtimeSetting.description());
+        const control = new UI.Toolbar.ToolbarSettingCheckbox(runtimeSetting.setting, runtimeSetting.description(), runtimeSetting.title());
         toolbar.appendToolbarItem(control);
         if (runtimeSetting.learnMore) {
             const link = Link.create(runtimeSetting.learnMore, i18nString(UIStrings.learnMore), 'lighthouse-learn-more', 'learn-more');
@@ -160,7 +159,6 @@ export class StartView extends UI.Widget.Widget {
             throw new Error(`${settingName} is not a setting with a title`);
         }
         const options = runtimeSetting.options?.map(option => ({ label: option.label(), value: option.value })) || [];
-        runtimeSetting.setting.setTitle(runtimeSetting.title());
         const control = new UI.Toolbar.ToolbarSettingComboBox(options, runtimeSetting.setting, runtimeSetting.title());
         control.setTitle(runtimeSetting.description());
         toolbar.appendToolbarItem(control);
@@ -178,8 +176,7 @@ export class StartView extends UI.Widget.Widget {
         // Populate the categories
         this.checkboxes = [];
         for (const preset of getPresets()) {
-            preset.setting.setTitle(preset.title());
-            const checkbox = new UI.Toolbar.ToolbarSettingCheckbox(preset.setting, preset.description());
+            const checkbox = new UI.Toolbar.ToolbarSettingCheckbox(preset.setting, preset.description(), preset.title());
             const row = categoryFormElements.createChild('div', 'vbox lighthouse-launcher-row');
             row.appendChild(checkbox.element);
             checkbox.element.setAttribute('data-lh-category', preset.configID);

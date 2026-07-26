@@ -1,5 +1,5 @@
 import '../../../ui/legacy/components/data_grid/data_grid.js';
-import type * as TextUtils from '../../../models/text_utils/text_utils.js';
+import type * as TextUtils from '../../../core/text_utils/text_utils.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 export declare const i18nString: (id: string, values?: import("../../../core/i18n/i18nTypes.js").Values | undefined) => import("../../../core/platform/UIString.js").LocalizedString;
 export interface CrashReportContextGridData {

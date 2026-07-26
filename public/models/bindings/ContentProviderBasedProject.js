@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
-import * as TextUtils from '../text_utils/text_utils.js';
+import * as TextUtils from '../../core/text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
 const UIStrings = {
     /**
-     * @description Error message that is displayed in the Sources panel when can't be loaded.
+     * @description Error message displayed in the Sources panel when a file can't be loaded.
      */
     unknownErrorLoadingFile: 'Unknown error loading file',
 };

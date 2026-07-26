@@ -1727,6 +1727,7 @@ var emptyWidget_css_default = `/*
 
 // gen/front_end/panels/application/BackgroundServiceView.js
 import * as UI4 from "./../../ui/legacy/legacy.js";
+import { html as html3, render as render3 } from "./../../ui/lit/lit.js";
 import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/backgroundServiceView.css.js
@@ -2256,23 +2257,15 @@ var EventDataNode = class extends DataGrid.DataGrid.DataGridNode {
     const preview = new UI4.Widget.VBox();
     preview.element.classList.add("background-service-metadata");
     preview.element.setAttribute("jslog", `${VisualLogging2.section("metadata")}`);
-    for (const entry of this.eventMetadata) {
-      const div = document.createElement("div");
-      div.classList.add("background-service-metadata-entry");
-      div.createChild("div", "background-service-metadata-name").textContent = entry.key + ": ";
-      if (entry.value) {
-        div.createChild("div", "background-service-metadata-value source-code").textContent = entry.value;
-      } else {
-        div.createChild("div", "background-service-metadata-value background-service-empty-value").textContent = i18nString3(UIStrings3.empty);
-      }
-      preview.element.appendChild(div);
-    }
-    if (!preview.element.children.length) {
-      const div = document.createElement("div");
-      div.classList.add("background-service-metadata-entry");
-      div.createChild("div", "background-service-metadata-name background-service-empty-value").textContent = i18nString3(UIStrings3.noMetadataForThisEvent);
-      preview.element.appendChild(div);
-    }
+    render3(html3`${this.eventMetadata.length > 0 ? this.eventMetadata.map((entry) => html3`
+        <div class="background-service-metadata-entry">
+          <div class="background-service-metadata-name">${entry.key}: </div>${entry.value ? html3`<div class="background-service-metadata-value source-code">${entry.value}</div>` : html3`<div class="background-service-metadata-value background-service-empty-value">${i18nString3(UIStrings3.empty)}</div>`}
+        </div>
+      `) : html3`
+        <div class="background-service-metadata-entry">
+          <div class="background-service-metadata-name background-service-empty-value">${i18nString3(UIStrings3.noMetadataForThisEvent)}</div>
+        </div>
+      `}`, preview.element, { host: this });
     return preview;
   }
 };
@@ -2959,7 +2952,7 @@ import * as Buttons3 from "./../../ui/components/buttons/buttons.js";
 import * as UIHelpers from "./../../ui/helpers/helpers.js";
 import * as Components2 from "./../../ui/legacy/components/utils/utils.js";
 import * as UI8 from "./../../ui/legacy/legacy.js";
-import { html as html4, nothing as nothing3, render as render4 } from "./../../ui/lit/lit.js";
+import { html as html5, nothing as nothing3, render as render5 } from "./../../ui/lit/lit.js";
 import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
 import * as ApplicationComponents4 from "./components/components.js";
 
@@ -3108,7 +3101,7 @@ import "./../../ui/legacy/legacy.js";
 import "./../../ui/components/adorners/adorners.js";
 import * as i18n11 from "./../../core/i18n/i18n.js";
 import * as UI7 from "./../../ui/legacy/legacy.js";
-import { Directives as Directives2, html as html3, nothing as nothing2, render as render3 } from "./../../ui/lit/lit.js";
+import { Directives as Directives2, html as html4, nothing as nothing2, render as render4 } from "./../../ui/lit/lit.js";
 
 // gen/front_end/panels/application/originTrialTokenRows.css.js
 var originTrialTokenRows_css_default = `/*
@@ -3249,13 +3242,13 @@ var str_6 = i18n11.i18n.registerUIStrings("panels/application/OriginTrialTreeVie
 var i18nString6 = i18n11.i18n.getLocalizedString.bind(void 0, str_6);
 function renderOriginTrialTree(originTrial) {
   const success = originTrial.status === "Enabled";
-  return html3`
+  return html4`
     <li role="treeitem">
       ${originTrial.trialName}
       <devtools-adorner class="badge-${success ? "success" : "error"}">
         ${originTrial.status}
       </devtools-adorner>
-      ${originTrial.tokensWithStatus.length > 1 ? html3`
+      ${originTrial.tokensWithStatus.length > 1 ? html4`
         <devtools-adorner class="badge-secondary">
           ${i18nString6(UIStrings6.tokens, { PH1: originTrial.tokensWithStatus.length })}
         </devtools-adorner>` : nothing2}
@@ -3266,7 +3259,7 @@ function renderOriginTrialTree(originTrial) {
 }
 function renderTokenNode(token) {
   const success = token.status === "Success";
-  return html3`
+  return html4`
     <li role="treeitem">
       ${i18nString6(UIStrings6.token)}
       <devtools-adorner class="token-status-badge badge-${success ? "success" : "error"}">
@@ -3278,19 +3271,19 @@ function renderTokenNode(token) {
     </li>`;
 }
 function renderTokenDetails(token) {
-  return html3`
+  return html4`
     <li role="treeitem">
       ${widget2(OriginTrialTokenRows, { data: token })}
     </li>`;
 }
 function renderTokenDetailsNodes(token) {
-  return html3`
+  return html4`
     ${renderTokenDetails(token)}
     ${renderRawTokenTextNode(token.rawTokenText)}
   `;
 }
 function renderRawTokenTextNode(tokenText) {
-  return html3`
+  return html4`
     <li role="treeitem">
       ${i18nString6(UIStrings6.rawTokenText)}
       <ul role="group">
@@ -3304,7 +3297,7 @@ function renderRawTokenTextNode(tokenText) {
 }
 var ROWS_DEFAULT_VIEW = (input, _output, target) => {
   const success = input.tokenWithStatus.status === "Success";
-  render3(html3`
+  render4(html4`
     <style>
       ${originTrialTokenRows_css_default}
       ${originTrialTreeView_css_default}
@@ -3316,7 +3309,7 @@ var ROWS_DEFAULT_VIEW = (input, _output, target) => {
           ${input.tokenWithStatus.status}
         </devtools-adorner>
       </div>
-      ${input.parsedTokenDetails.map((field) => html3`
+      ${input.parsedTokenDetails.map((field) => html4`
         <div class="key">${field.name}</div>
         <div class="value">
           <div class=${classMap2({ "error-text": Boolean(field.value.hasError) })}>
@@ -3359,7 +3352,6 @@ var OriginTrialTokenRows = class extends UI7.Widget.Widget {
         value: {
           text: this.#dateFormatter.format(this.#tokenWithStatus.parsedToken.expiryTime * 1e3),
           hasError: this.#tokenWithStatus.status === "Expired"
-          /* Protocol.Page.OriginTrialTokenStatus.Expired */
         }
       },
       {
@@ -3399,16 +3391,16 @@ var OriginTrialTokenRows = class extends UI7.Widget.Widget {
 };
 var DEFAULT_VIEW2 = (input, _output, target) => {
   if (!input.trials.length) {
-    render3(html3`
+    render4(html4`
       <span class="status-badge">
         <devtools-icon class="medium" name="clear"></devtools-icon>
         <span>${i18nString6(UIStrings6.noTrialTokens)}</span>
       </span>`, target);
     return;
   }
-  render3(html3`
+  render4(html4`
     <style>${originTrialTreeView_css_default}</style>
-    <devtools-tree .template=${html3`
+    <devtools-tree .template=${html4`
       <style>${originTrialTreeView_css_default}</style>
       <ul role="tree">
         ${input.trials.map(renderOriginTrialTree)}
@@ -3660,7 +3652,7 @@ var DEFAULT_VIEW3 = (input, _output, target) => {
   if (!input.frame) {
     return;
   }
-  render4(html4`
+  render5(html5`
     <style>${frameDetailsReportView_css_default}</style>
     <devtools-report .data=${{ reportTitle: input.frame.displayName() }}
     jslog=${VisualLogging3.pane("frames")}>
@@ -3681,7 +3673,7 @@ function renderOriginTrial(trials) {
     return nothing3;
   }
   const data = { trials };
-  return html4`
+  return html5`
     <devtools-report-section-header>
       ${i18n13.i18n.lockedString("Origin trials")}
     </devtools-report-section-header>
@@ -3702,7 +3694,7 @@ function renderDocumentSection(input) {
   if (!input.frame) {
     return nothing3;
   }
-  return html4`
+  return html5`
       <devtools-report-section-header>${i18nString7(UIStrings7.document)}</devtools-report-section-header>
       <devtools-report-key>${i18nString7(UIStrings7.url)}</devtools-report-key>
       <devtools-report-value>
@@ -3730,7 +3722,7 @@ function maybeRenderUnreachableURL(unreachableUrl) {
   if (!unreachableUrl) {
     return nothing3;
   }
-  return html4`
+  return html5`
       <devtools-report-key>${i18nString7(UIStrings7.unreachableUrl)}</devtools-report-key>
       <devtools-report-value>
         <div class="inline-items">
@@ -3760,7 +3752,7 @@ function renderNetworkLinkForUnreachableURL(unreachableUrlString) {
 }
 function maybeRenderOrigin(securityOrigin) {
   if (securityOrigin && securityOrigin !== "://") {
-    return html4`
+    return html5`
         <devtools-report-key>${i18nString7(UIStrings7.origin)}</devtools-report-key>
         <devtools-report-value>
           <div class="text-ellipsis" title=${securityOrigin}>${securityOrigin}</div>
@@ -3771,7 +3763,7 @@ function maybeRenderOrigin(securityOrigin) {
 }
 function renderOwnerElement(linkTargetDOMNode) {
   if (linkTargetDOMNode) {
-    return html4`
+    return html5`
         <devtools-report-key>${i18nString7(UIStrings7.ownerElement)}</devtools-report-key>
         <devtools-report-value class="without-min-width">
           <div class="inline-items">
@@ -3784,7 +3776,7 @@ function renderOwnerElement(linkTargetDOMNode) {
 }
 function maybeRenderCreationStacktrace(stackTrace) {
   if (stackTrace) {
-    return html4`
+    return html5`
         <devtools-report-key title=${i18nString7(UIStrings7.creationStackTraceExplanation)}>${i18nString7(UIStrings7.creationStackTrace)}</devtools-report-key>
         <devtools-report-value jslog=${VisualLogging3.section("frame-creation-stack-trace")}>
           ${widget3(Components2.JSPresentationUtils.StackTracePreviewContent, { stackTrace, options: { expandable: true } })}
@@ -3816,11 +3808,11 @@ function maybeRenderAdStatus(adFrameType, adFrameStatus) {
     return nothing3;
   }
   const typeStrings = getAdFrameTypeStrings(adFrameType);
-  const rows = [html4`<div title=${typeStrings.description}>${typeStrings.value}</div>`];
+  const rows = [html5`<div title=${typeStrings.description}>${typeStrings.value}</div>`];
   for (const explanation of adFrameStatus?.explanations || []) {
-    rows.push(html4`<div>${getAdFrameExplanationString(explanation)}</div>`);
+    rows.push(html5`<div>${getAdFrameExplanationString(explanation)}</div>`);
   }
-  return html4`
+  return html5`
       <devtools-report-key>${i18nString7(UIStrings7.adStatus)}</devtools-report-key>
       <devtools-report-value class="ad-status-list" jslog=${VisualLogging3.section("ad-status")}>
         <devtools-expandable-list .data=${{ rows, title: i18nString7(UIStrings7.adStatus) }}>
@@ -3835,18 +3827,18 @@ function maybeRenderCreatorAdScriptAncestry(adFrameType, target, adScriptAncestr
     return nothing3;
   }
   const rows = adScriptAncestry.ancestryChain.map((adScriptId) => {
-    return html4`<div>
+    return html5`<div>
       ${widget3(Components2.Linkifier.ScriptLocationLink, { target, scriptId: adScriptId.scriptId, options: { jslogContext: "ad-script" } })}
     </div>`;
   });
   const shouldRenderFilterlistRule = adScriptAncestry.rootScriptFilterlistRule !== void 0;
-  return html4`
+  return html5`
       <devtools-report-key>${i18nString7(UIStrings7.creatorAdScriptAncestry)}</devtools-report-key>
       <devtools-report-value class="creator-ad-script-ancestry-list" jslog=${VisualLogging3.section("creator-ad-script-ancestry")}>
         <devtools-expandable-list .data=${{ rows, title: i18nString7(UIStrings7.creatorAdScriptAncestry) }}>
         </devtools-expandable-list>
       </devtools-report-value>
-      ${shouldRenderFilterlistRule ? html4`
+      ${shouldRenderFilterlistRule ? html5`
         <devtools-report-key>${i18nString7(UIStrings7.rootScriptFilterlistRule)}</devtools-report-key>
         <devtools-report-value jslog=${VisualLogging3.section("root-script-filterlist-rule")}>${adScriptAncestry.rootScriptFilterlistRule}</devtools-report-value>
       ` : nothing3}
@@ -3856,7 +3848,7 @@ function renderIsolationSection(input) {
   if (!input.frame) {
     return nothing3;
   }
-  return html4`
+  return html5`
       <devtools-report-section-header>${i18nString7(UIStrings7.securityIsolation)}</devtools-report-section-header>
       <devtools-report-key>${i18nString7(UIStrings7.secureContext)}</devtools-report-key>
       <devtools-report-value>
@@ -3873,7 +3865,7 @@ function renderIsolationSection(input) {
 function maybeRenderSecureContextExplanation(frame) {
   const explanation = getSecureContextExplanation(frame);
   if (explanation) {
-    return html4`<span class="inline-comment">${explanation}</span>`;
+    return html5`<span class="inline-comment">${explanation}</span>`;
   }
   return nothing3;
 }
@@ -3892,7 +3884,7 @@ function getSecureContextExplanation(frame) {
 }
 function maybeRenderCoopCoepCSPStatus(info) {
   if (info) {
-    return html4`
+    return html5`
           ${maybeRenderCrossOriginStatus(
       info.coep,
       i18n13.i18n.lockedString("Cross-Origin Embedder Policy (COEP)"),
@@ -3941,12 +3933,12 @@ function maybeRenderCrossOriginStatus(info, policyName, noneValue) {
   const isEnabled = info.value !== noneValue;
   const isReportOnly = !isEnabled && info.reportOnlyValue !== noneValue;
   const endpoint = isEnabled ? info.reportingEndpoint : info.reportOnlyReportingEndpoint;
-  return html4`
+  return html5`
       <devtools-report-key>${policyName}</devtools-report-key>
       <devtools-report-value>
         ${crossOriginValueToString(isEnabled ? info.value : info.reportOnlyValue)}
-        ${isReportOnly ? html4`<span class="inline-comment">report-only</span>` : nothing3}
-        ${endpoint ? html4`<span class="inline-name">${i18nString7(UIStrings7.reportingTo)}</span>${endpoint}` : nothing3}
+        ${isReportOnly ? html5`<span class="inline-comment">report-only</span>` : nothing3}
+        ${endpoint ? html5`<span class="inline-name">${i18nString7(UIStrings7.reportingTo)}</span>${endpoint}` : nothing3}
       </devtools-report-value>
     `;
 }
@@ -3954,7 +3946,7 @@ function renderEffectiveDirectives(directives) {
   const parsedDirectives = new CspEvaluator.CspParser.CspParser(directives).csp.directives;
   const result = [];
   for (const directive in parsedDirectives) {
-    result.push(html4`
+    result.push(html5`
           <div>
             <span class="bold">${directive}</span>
             ${": " + parsedDirectives[directive]?.join(", ")}
@@ -3963,9 +3955,9 @@ function renderEffectiveDirectives(directives) {
   return result;
 }
 function renderSingleCSP(cspInfo, divider) {
-  return html4`
+  return html5`
       <devtools-report-key>
-        ${cspInfo.isEnforced ? i18n13.i18n.lockedString("Content-Security-Policy") : html4`
+        ${cspInfo.isEnforced ? i18n13.i18n.lockedString("Content-Security-Policy") : html5`
           ${i18n13.i18n.lockedString("Content-Security-Policy-Report-Only")}
           <devtools-button
             .iconName=${"help"}
@@ -3983,16 +3975,16 @@ function renderSingleCSP(cspInfo, divider) {
         ${cspInfo.source === "HTTP" ? i18n13.i18n.lockedString("HTTP header") : i18n13.i18n.lockedString("Meta tag")}
         ${renderEffectiveDirectives(cspInfo.effectiveDirectives)}
       </devtools-report-value>
-      ${divider ? html4`<devtools-report-divider class="subsection-divider"></devtools-report-divider>` : nothing3}
+      ${divider ? html5`<devtools-report-divider class="subsection-divider"></devtools-report-divider>` : nothing3}
     `;
 }
 function renderCSPSection(cspInfos) {
-  return html4`
+  return html5`
       <devtools-report-divider></devtools-report-divider>
       <devtools-report-section-header>
         ${i18nString7(UIStrings7.contentSecurityPolicy)}
       </devtools-report-section-header>
-      ${cspInfos?.length ? cspInfos.map((cspInfo, index) => renderSingleCSP(cspInfo, index < cspInfos?.length - 1)) : html4`
+      ${cspInfos?.length ? cspInfos.map((cspInfo, index) => renderSingleCSP(cspInfo, index < cspInfos?.length - 1)) : html5`
         <devtools-report-key>
           ${i18n13.i18n.lockedString("Content-Security-Policy")}
         </devtools-report-key>
@@ -4006,7 +3998,7 @@ function renderApiAvailabilitySection(frame) {
   if (!frame) {
     return nothing3;
   }
-  return html4`
+  return html5`
       <devtools-report-section-header>
         ${i18nString7(UIStrings7.apiAvailability)}
       </devtools-report-section-header>
@@ -4034,15 +4026,15 @@ function renderSharedArrayBufferAvailability(frame) {
             return nothing3;
           case "NotIsolated":
             if (sabAvailable) {
-              return html4`
+              return html5`
                   <span class="inline-comment">
                     ${i18nString7(UIStrings7.willRequireCrossoriginIsolated)}
                   </span>`;
             }
-            return html4`<span class="inline-comment">${i18nString7(UIStrings7.requiresCrossoriginIsolated)}</span>`;
+            return html5`<span class="inline-comment">${i18nString7(UIStrings7.requiresCrossoriginIsolated)}</span>`;
           case "NotIsolatedFeatureDisabled":
             if (!sabTransferAvailable) {
-              return html4`
+              return html5`
                   <span class="inline-comment">
                     ${i18nString7(UIStrings7.transferRequiresCrossoriginIsolatedPermission)}
                     <code> cross-origin-isolated</code>
@@ -4062,7 +4054,7 @@ function renderSharedArrayBufferAvailability(frame) {
       );
       const availabilityText = sabTransferAvailable ? i18nString7(UIStrings7.availableTransferable) : sabAvailable ? i18nString7(UIStrings7.availableNotTransferable) : i18nString7(UIStrings7.unavailable);
       const tooltipText = sabTransferAvailable ? i18nString7(UIStrings7.sharedarraybufferConstructorIs) : sabAvailable ? i18nString7(UIStrings7.sharedarraybufferConstructorIsAvailable) : "";
-      return html4`
+      return html5`
           <devtools-report-key>SharedArrayBuffers</devtools-report-key>
           <devtools-report-value title=${tooltipText}>
             ${availabilityText}\xA0${renderHint(frame)}
@@ -4077,7 +4069,7 @@ function renderMeasureMemoryAvailability(frame) {
     const measureMemoryAvailable = frame.isCrossOriginIsolated();
     const availabilityText = measureMemoryAvailable ? i18nString7(UIStrings7.available) : i18nString7(UIStrings7.unavailable);
     const tooltipText = measureMemoryAvailable ? i18nString7(UIStrings7.thePerformanceAPI) : i18nString7(UIStrings7.thePerformancemeasureuseragentspecificmemory);
-    return html4`
+    return html5`
         <devtools-report-key>${i18nString7(UIStrings7.measureMemory)}</devtools-report-key>
         <devtools-report-value>
           <span title=${tooltipText}>${availabilityText}</span>\xA0<devtools-link class="link" href="https://web.dev/monitor-total-page-memory-usage/" jslogcontext="learn-more.monitor-memory-usage">${i18nString7(UIStrings7.learnMore)}</devtools-link>
@@ -4090,7 +4082,7 @@ function renderAdditionalInfoSection(frame) {
   if (!frame) {
     return nothing3;
   }
-  return html4`
+  return html5`
       <devtools-report-section-header
         title=${i18nString7(UIStrings7.thisAdditionalDebugging)}
       >${i18nString7(UIStrings7.additionalInformation)}</devtools-report-section-header>
@@ -4687,7 +4679,7 @@ import * as Buttons4 from "./../../ui/components/buttons/buttons.js";
 import * as DataGrid3 from "./../../ui/legacy/components/data_grid/data_grid.js";
 import * as ObjectUI from "./../../ui/legacy/components/object_ui/object_ui.js";
 import * as UI9 from "./../../ui/legacy/legacy.js";
-import { Directives as Directives3, html as html5, nothing as nothing4, render as render5 } from "./../../ui/lit/lit.js";
+import { Directives as Directives3, html as html6, nothing as nothing4, render as render6 } from "./../../ui/lit/lit.js";
 import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
 import * as ApplicationComponents5 from "./components/components.js";
 
@@ -4940,7 +4932,7 @@ var IDBDatabaseView = class extends ApplicationComponents5.StorageMetadataView.S
     if (!this.database) {
       return nothing4;
     }
-    return html5`
+    return html6`
       ${await super.renderReportContent()}
       ${this.key(i18nString8(UIStrings8.version))}
       ${this.value(this.database.version.toString())}
@@ -4996,41 +4988,41 @@ var IDBDatabaseView = class extends ApplicationComponents5.StorageMetadataView.S
 };
 customElements.define("devtools-idb-database-view", IDBDatabaseView);
 var renderKeyPathString = (keyPathString) => {
-  return html5`"<span class="source-code indexed-db-key-path">${keyPathString}</span>"`;
+  return html6`"<span class="source-code indexed-db-key-path">${keyPathString}</span>"`;
 };
 var renderKeyColumnHeader = (prefix, keyPath) => {
   if (keyPath === void 0 || keyPath === null || keyPath === "") {
-    return html5`${prefix}`;
+    return html6`${prefix}`;
   }
-  return html5`
-    ${prefix} (${i18nString8(UIStrings8.keyPath)}${Array.isArray(keyPath) ? html5`[${keyPath.map((path, i) => html5`${i > 0 ? ", " : ""}${renderKeyPathString(path)}`)}]` : renderKeyPathString(keyPath)})`;
+  return html6`
+    ${prefix} (${i18nString8(UIStrings8.keyPath)}${Array.isArray(keyPath) ? html6`[${keyPath.map((path, i) => html6`${i > 0 ? ", " : ""}${renderKeyPathString(path)}`)}]` : renderKeyPathString(keyPath)})`;
 };
 var renderDataGrid = (input) => {
   const keyPath = input.isIndex && input.index ? input.index.keyPath : input.objectStore.keyPath;
-  return html5`<devtools-data-grid striped style="flex: auto;" name=${i18nString8(UIStrings8.indexedDb)} .template=${html5`
+  return html6`<devtools-data-grid striped style="flex: auto;" name=${i18nString8(UIStrings8.indexedDb)} .template=${html6`
     <style>${indexedDBViews_css_default}</style>
     <table>
       <tr>
         <th id="number" fixed width="50px">#</th>
         <th id="key">${renderKeyColumnHeader(i18nString8(UIStrings8.keyString), keyPath)}</th>
-        ${input.isIndex ? html5`<th id="primary-key">${renderKeyColumnHeader(i18nString8(UIStrings8.primaryKey), input.objectStore.keyPath)}</th>` : nothing4}
+        ${input.isIndex ? html6`<th id="primary-key">${renderKeyColumnHeader(i18nString8(UIStrings8.primaryKey), input.objectStore.keyPath)}</th>` : nothing4}
         <th id="value">${i18nString8(UIStrings8.valueString)}</th>
       </tr>
-      ${repeat(input.entries, (_entry, index) => index, (entry, index) => html5`
+      ${repeat(input.entries, (_entry, index) => index, (entry, index) => html6`
         <tr ?selected=${index + input.skipCount === input.selectedRowNumber}
             @select=${() => input.onRowSelected(index + input.skipCount)}
             @delete=${() => input.deleteEntry(entry)}
             @contextmenu=${(e) => input.populateContextMenu(e, entry)}>
           <td>${index + input.skipCount}</td>
           <td>${widget4(ObjectPropertiesSectionWidget, { value: entry.key })}</td>
-          ${input.isIndex ? html5`<td>${widget4(ObjectPropertiesSectionWidget, { value: entry.primaryKey })}</td>` : nothing4}
+          ${input.isIndex ? html6`<td>${widget4(ObjectPropertiesSectionWidget, { value: entry.primaryKey })}</td>` : nothing4}
           <td class="value-column">${widget4(ObjectPropertiesSectionWidget, { value: entry.value })}</td>
         </tr>`)}
     </table>`}>
   </devtools-data-grid>`;
 };
 var renderToolbar = (input) => {
-  return html5`
+  return html6`
     <devtools-toolbar class="data-view-toolbar" jslog=${VisualLogging4.toolbar()}>
       <devtools-button
         class="toolbar-button"
@@ -5088,7 +5080,7 @@ var renderToolbar = (input) => {
   }}>
       </devtools-toolbar-input>
 
-      ${input.needsRefreshVisible ? html5`
+      ${input.needsRefreshVisible ? html6`
         <div class="toolbar-divider"></div>
         <div class="toolbar-item stale-data-warning" title=${i18nString8(UIStrings8.someEntriesMayHaveBeenModified)}>
           <devtools-icon name="warning" class="warning-icon"></devtools-icon>
@@ -5102,16 +5094,16 @@ var renderSummaryBar = (input) => {
   if (!metadata) {
     return nothing4;
   }
-  return html5`
+  return html6`
     <div class="object-store-summary-bar">
       <span>${i18nString8(UIStrings8.totalEntriesS, { PH1: String(metadata.entriesCount) })}</span>
-      ${input.objectStore.autoIncrement ? html5`
+      ${input.objectStore.autoIncrement ? html6`
         <span class="separator">\u2758</span>
         <span>${i18nString8(UIStrings8.keyGeneratorValueS, { PH1: String(metadata.keyGeneratorValue) })}</span>` : nothing4}
     </div>`;
 };
 var IDB_DATA_VIEW_DEFAULT_VIEW = (input, _output, target) => {
-  render5(html5`
+  render6(html6`
     ${renderToolbar(input)}
     <div class="data-grid-container">
       ${renderDataGrid(input)}
@@ -5373,7 +5365,7 @@ var IDBDataView = class extends UI9.View.SimpleView {
 var OBJECT_PROPERTIES_SECTION_WIDGET_DEFAULT_VIEW = (input, output, target) => {
   if (!input.value) {
     output.objectPropSection = null;
-    render5(nothing4, target);
+    render6(nothing4, target);
     return;
   }
   const objectPropSection = ObjectUI.ObjectPropertiesSection.ObjectPropertiesSection.defaultObjectPropertiesSection(
@@ -5385,7 +5377,7 @@ var OBJECT_PROPERTIES_SECTION_WIDGET_DEFAULT_VIEW = (input, output, target) => {
   );
   output.objectPropSection = objectPropSection;
   const element = input.value.hasChildren ? objectPropSection.element : objectPropSection.titleElement;
-  render5(html5`${element}`, target);
+  render6(html6`${element}`, target);
 };
 var ObjectPropertiesSectionWidget = class extends UI9.Widget.Widget {
   #value = null;
@@ -5775,10 +5767,10 @@ import * as i18n21 from "./../../core/i18n/i18n.js";
 import * as Platform4 from "./../../core/platform/platform.js";
 import { assertNotNullOrUndefined as assertNotNullOrUndefined2 } from "./../../core/platform/platform.js";
 import * as SDK11 from "./../../core/sdk/sdk.js";
-import * as TextUtils from "./../../models/text_utils/text_utils.js";
+import * as TextUtils from "./../../core/text_utils/text_utils.js";
 import * as Buttons5 from "./../../ui/components/buttons/buttons.js";
 import * as UI11 from "./../../ui/legacy/legacy.js";
-import { Directives as Directives4, html as html6, render as render6 } from "./../../ui/lit/lit.js";
+import { Directives as Directives4, html as html7, render as render7 } from "./../../ui/lit/lit.js";
 import * as VisualLogging5 from "./../../ui/visual_logging/visual_logging.js";
 import * as PreloadingComponents from "./preloading/components/components.js";
 
@@ -6063,7 +6055,7 @@ var UIStrings10 = {
   /**
    * Description text for PrerenderFinalStatus::kSpeculationRuleRemoved.
    */
-  prerenderFinalStatusSpeculationRuleRemoved: 'The prerendered page was unloaded because the initiating page removed the corresponding prerender rule from <script type="speculationrules">.',
+  prerenderFinalStatusSpeculationRuleRemoved: 'The prerendered page was unloaded because the initiating page removed the corresponding prerender rule from `<script type="speculationrules">`.',
   /**
    * Description text for PrerenderFinalStatus::kActivatedWithAuxiliaryBrowsingContexts.
    */
@@ -6071,7 +6063,7 @@ var UIStrings10 = {
   /**
    * Description text for PrerenderFinalStatus::kMaxNumOfRunningEagerPrerendersExceeded.
    */
-  prerenderFinalStatusMaxNumOfRunningEagerPrerendersExceeded: 'The prerender whose eagerness is "eager" was not performed because the initiating page already has too many prerenders ongoing. Remove other speculation rules with "eager" to enable further prerendering.',
+  prerenderFinalStatusMaxNumOfRunningEagerPrerendersExceeded: 'The prerender whose eagerness is "`eager`" was not performed because the initiating page already has too many prerenders ongoing. Remove other speculation rules with "`eager`" to enable further prerendering.',
   /**
    * Description text for PrerenderFinalStatus::kMaxNumOfRunningEmbedderPrerendersExceeded.
    */
@@ -6079,7 +6071,7 @@ var UIStrings10 = {
   /**
    * Description text for PrerenderFinalStatus::kMaxNumOfRunningNonEagerPrerendersExceeded.
    */
-  prerenderFinalStatusMaxNumOfRunningNonEagerPrerendersExceeded: 'The old non-eager prerender (with a "moderate" or "conservative" eagerness and triggered by hovering or clicking links) was automatically canceled due to starting a new non-eager prerender. It can be retriggered by interacting with the link again.',
+  prerenderFinalStatusMaxNumOfRunningNonEagerPrerendersExceeded: 'The old non-eager prerender (with a "`moderate`" or "`conservative`" eagerness and triggered by hovering or clicking links) was automatically canceled due to starting a new non-eager prerender. It can be retriggered by interacting with the link again.',
   /**
    * Description text for PrenderFinalStatus::kPrerenderingUrlHasEffectiveUrl.
    */
@@ -6435,7 +6427,7 @@ var PreloadingRuleSetView = class extends UI11.Widget.VBox {
       this.shouldPrettyPrint = !this.shouldPrettyPrint;
       this.updateRuleSetDetails();
     };
-    render6(html6`
+    render7(html7`
         <div class="empty-state">
           <span class="empty-state-header">${i18nString11(UIStrings11.noRulesDetected)}</span>
           <div class="empty-state-description">
@@ -6633,7 +6625,7 @@ var PreloadingAttemptView = class extends UI11.Widget.VBox {
     preloadingGridContainer.className = "preloading-grid-widget-container";
     preloadingGridContainer.style = "height: 100%";
     this.preloadingGrid.show(preloadingGridContainer, null, true);
-    render6(html6`
+    render7(html7`
         <div class="empty-state">
           <span class="empty-state-header">${i18nString11(UIStrings11.noPrefetchAttempts)}</span>
           <div class="empty-state-description">
@@ -7061,7 +7053,7 @@ import * as Platform5 from "./../../core/platform/platform.js";
 import * as SDK12 from "./../../core/sdk/sdk.js";
 import * as Buttons6 from "./../../ui/components/buttons/buttons.js";
 import * as UI12 from "./../../ui/legacy/legacy.js";
-import { html as html7, render as render7 } from "./../../ui/lit/lit.js";
+import { html as html8, render as render8 } from "./../../ui/lit/lit.js";
 import * as VisualLogging6 from "./../../ui/visual_logging/visual_logging.js";
 import * as ApplicationComponents6 from "./components/components.js";
 var UIStrings13 = {
@@ -7086,7 +7078,7 @@ var str_13 = i18n25.i18n.registerUIStrings("panels/application/CrashReportContex
 var i18nString13 = i18n25.i18n.getLocalizedString.bind(void 0, str_13);
 var DEFAULT_VIEW4 = (input, _output, target) => {
   const { widget: widget12 } = UI12.Widget;
-  render7(html7`
+  render8(html8`
     <style>${UI12.inspectorCommonStyles}</style>
     <style>
       .crash-report-context-view {
@@ -7140,9 +7132,9 @@ var DEFAULT_VIEW4 = (input, _output, target) => {
             @change=${(e) => input.onFilterChanged(e)} class="flex-auto">
         </devtools-toolbar-input>
       </devtools-toolbar>
-      ${input.frames.length > 0 ? html7`
+      ${input.frames.length > 0 ? html8`
         <div class="crash-report-context-view flex-auto">
-          ${input.frames.map((frame) => html7`
+          ${input.frames.map((frame) => html8`
             <div class="frame-section">
               <div class="frame-header">
                 <span class="frame-url" title="URL: ${frame.url}\nFrame ID: ${frame.frameId}">${frame.displayName}</span>
@@ -7162,7 +7154,7 @@ var DEFAULT_VIEW4 = (input, _output, target) => {
             </div>
           `)}
         </div>
-      ` : html7`
+      ` : html8`
         ${widget12(UI12.EmptyWidget.EmptyWidget, {
     header: i18nString13(UIStrings13.noContext)
   })}
@@ -7253,7 +7245,7 @@ import * as i18n27 from "./../../core/i18n/i18n.js";
 import * as SDK13 from "./../../core/sdk/sdk.js";
 import * as SourceFrame from "./../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI13 from "./../../ui/legacy/legacy.js";
-import { html as html8, render as render8 } from "./../../ui/lit/lit.js";
+import { html as html9, render as render9 } from "./../../ui/lit/lit.js";
 import * as VisualLogging7 from "./../../ui/visual_logging/visual_logging.js";
 import * as ApplicationComponents7 from "./components/components.js";
 var { widget: widget6 } = UI13.Widget;
@@ -7288,10 +7280,10 @@ var i18nString14 = i18n27.i18n.getLocalizedString.bind(void 0, str_14);
 var REPORTING_API_EXPLANATION_URL = "https://developer.chrome.com/docs/capabilities/web-apis/reporting-api";
 var DEFAULT_VIEW5 = (input, output, target) => {
   if (input.hasReports || input.hasEndpoints) {
-    render8(html8`
+    render9(html9`
       <style>${UI13.inspectorCommonStyles}</style>
       <devtools-split-view sidebar-position="second" sidebar-initial-size="150" jslog=${VisualLogging7.pane("reporting-api")}>
-        ${input.hasReports ? html8`
+        ${input.hasReports ? html9`
           <devtools-split-view slot="main" sidebar-position="second" sidebar-initial-size="150">
             <div slot="main">
               ${widget6(ApplicationComponents7.ReportsGrid.ReportsGrid, {
@@ -7306,7 +7298,7 @@ var DEFAULT_VIEW5 = (input, output, target) => {
     })}
             </div>
           </devtools-split-view>
-        ` : html8`
+        ` : html9`
           <div slot="main">
             ${widget6(ApplicationComponents7.ReportsGrid.ReportsGrid, {
       reports: input.reports,
@@ -7322,7 +7314,7 @@ var DEFAULT_VIEW5 = (input, output, target) => {
       </devtools-split-view>
     `, target);
   } else {
-    render8(html8`
+    render9(html9`
       <devtools-widget ${widget6(UI13.EmptyWidget.EmptyWidget, {
       header: i18nString14(UIStrings14.noReportOrEndpoint),
       text: i18nString14(UIStrings14.reportingApiDescription),
@@ -7547,6 +7539,11 @@ devtools-icon.navigator-font-tree-item {
 /*# sourceURL=${import.meta.resolve("./resourcesSidebar.css")} */`;
 
 // gen/front_end/panels/application/ServiceWorkerCacheTreeElement.js
+var ServiceWorkerCacheTreeElement_exports = {};
+__export(ServiceWorkerCacheTreeElement_exports, {
+  SWCacheTreeElement: () => SWCacheTreeElement,
+  ServiceWorkerCacheTreeElement: () => ServiceWorkerCacheTreeElement
+});
 import * as i18n33 from "./../../core/i18n/i18n.js";
 import * as SDK15 from "./../../core/sdk/sdk.js";
 import { createIcon as createIcon7 } from "./../../ui/kit/kit.js";
@@ -7564,7 +7561,7 @@ import * as Common9 from "./../../core/common/common.js";
 import * as i18n31 from "./../../core/i18n/i18n.js";
 import * as Platform6 from "./../../core/platform/platform.js";
 import * as SDK14 from "./../../core/sdk/sdk.js";
-import * as TextUtils3 from "./../../models/text_utils/text_utils.js";
+import * as TextUtils3 from "./../../core/text_utils/text_utils.js";
 import * as DataGrid4 from "./../../ui/legacy/components/data_grid/data_grid.js";
 import * as UI15 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging8 from "./../../ui/visual_logging/visual_logging.js";
@@ -8156,6 +8153,7 @@ var i18nString17 = i18n33.i18n.getLocalizedString.bind(void 0, str_17);
 var ServiceWorkerCacheTreeElement = class extends ExpandableApplicationPanelTreeElement {
   swCacheModels;
   swCacheTreeElements;
+  swCacheModelObserver;
   storageBucket;
   constructor(resourcesPanel, storageBucket) {
     super(resourcesPanel, i18nString17(UIStrings17.cacheStorage), i18nString17(UIStrings17.noCacheStorage), i18nString17(UIStrings17.cacheStorageDescription), "cache-storage");
@@ -8165,14 +8163,20 @@ var ServiceWorkerCacheTreeElement = class extends ExpandableApplicationPanelTree
     this.swCacheModels = /* @__PURE__ */ new Set();
     this.swCacheTreeElements = /* @__PURE__ */ new Set();
     this.storageBucket = storageBucket;
+    this.initialize();
   }
   initialize() {
+    this.removeChildren();
     this.swCacheModels.clear();
     this.swCacheTreeElements.clear();
-    SDK15.TargetManager.TargetManager.instance().observeModels(SDK15.ServiceWorkerCacheModel.ServiceWorkerCacheModel, {
+    if (this.swCacheModelObserver) {
+      SDK15.TargetManager.TargetManager.instance().unobserveModels(SDK15.ServiceWorkerCacheModel.ServiceWorkerCacheModel, this.swCacheModelObserver);
+    }
+    this.swCacheModelObserver = {
       modelAdded: (model) => this.serviceWorkerCacheModelAdded(model),
       modelRemoved: (model) => this.serviceWorkerCacheModelRemoved(model)
-    });
+    };
+    SDK15.TargetManager.TargetManager.instance().observeModels(SDK15.ServiceWorkerCacheModel.ServiceWorkerCacheModel, this.swCacheModelObserver, { scoped: true });
   }
   onattach() {
     super.onattach();
@@ -8318,7 +8322,7 @@ import * as NetworkForward2 from "./../network/forward/forward.js";
 import * as Buttons7 from "./../../ui/components/buttons/buttons.js";
 import * as Components3 from "./../../ui/legacy/components/utils/utils.js";
 import * as UI18 from "./../../ui/legacy/legacy.js";
-import { Directives as Directives5, html as html9, nothing as nothing5, render as render9 } from "./../../ui/lit/lit.js";
+import { Directives as Directives5, html as html10, nothing as nothing5, render as render10 } from "./../../ui/lit/lit.js";
 import * as VisualLogging10 from "./../../ui/visual_logging/visual_logging.js";
 import * as MobileThrottling from "./../mobile_throttling/mobile_throttling.js";
 import * as ApplicationComponents9 from "./components/components.js";
@@ -9121,7 +9125,7 @@ var { bindToSetting } = UI18.UIUtils;
 function renderToolbar2() {
   const updateOnReloadSetting = Common10.Settings.Settings.instance().createSetting("service-worker-update-on-reload", false);
   const bypassServiceWorkerSetting = Common10.Settings.Settings.instance().createSetting("bypass-service-worker", false);
-  return html9`<devtools-toolbar class="service-worker-toolbar">
+  return html10`<devtools-toolbar class="service-worker-toolbar">
     ${MobileThrottling.ThrottlingManager.throttlingManager().createOfflineToolbarCheckbox().element}
     <devtools-checkbox title=${i18nString19(UIStrings19.onPageReloadForceTheService)}
                        ${bindToSetting(updateOnReloadSetting)}>
@@ -9134,7 +9138,7 @@ function renderToolbar2() {
   </devtools-toolbar>`;
 }
 function renderOthersOriginView() {
-  return html9`<div class="service-workers-other-origin"
+  return html10`<div class="service-workers-other-origin"
                    jslog=${VisualLogging10.section("other-origin")}>
     <devtools-report>
       <devtools-report-section-header>
@@ -9190,15 +9194,15 @@ function renderOriginReport(input) {
     const bTimestamp = getTimeStamp(b.registration);
     return bTimestamp - aTimestamp;
   });
-  return html9`<div class="service-workers-this-origin" jslog=${VisualLogging10.section("this-origin")}>
+  return html10`<div class="service-workers-this-origin" jslog=${VisualLogging10.section("this-origin")}>
     <devtools-report .data=${{ reportTitle: i18n37.i18n.lockedString("Service workers") }}>
       <div class="service-worker-toolbar" slot="toolbar">${renderToolbar2()}</div>
-      ${sortedSections.map((section8) => html9`<devtools-widget class="service-worker-section-container" ${widget7(Section, { section: section8 })}></devtools-widget>`)}
+      ${sortedSections.map((section8) => html10`<devtools-widget class="service-worker-section-container" ${widget7(Section, { section: section8 })}></devtools-widget>`)}
     </devtools-report>
   </div>`;
 }
 var DEFAULT_VIEW6 = (input, _output, target) => {
-  render9(html9`
+  render10(html10`
     <!-- This Origin Report -->
     ${renderOriginReport(input)}
     ${renderOthersOriginView()}`, target, {
@@ -9349,7 +9353,7 @@ var ServiceWorkersView = class extends UI18.Widget.VBox {
   }
 };
 function renderHeaderButtons(input) {
-  return html9`
+  return html10`
     <devtools-button .data=${{
     variant: "text",
     title: i18nString19(UIStrings19.networkRequests),
@@ -9379,7 +9383,7 @@ function renderHeaderButtons(input) {
     </devtools-button>`;
 }
 function renderSyncNotificationField(label, initialValue, placeholder, callback, jslogContext) {
-  return html9`
+  return html10`
     <div class="report-field">
     <div class="report-field-name">${label}</div>
       <div class="report-field-value">
@@ -9407,7 +9411,7 @@ function renderSyncNotificationField(label, initialValue, placeholder, callback,
     </div>`;
 }
 function renderVersion(icon, label, content = nothing5) {
-  return html9`
+  return html10`
     <div class="service-worker-version">
       <div class=${icon}></div>
       <span class="service-worker-version-string" role="alert" aria-live="polite">
@@ -9418,15 +9422,15 @@ function renderVersion(icon, label, content = nothing5) {
 }
 function renderClientsField(input, version) {
   if (!version?.controlledClients?.length) {
-    return html9`<div class="report-field">
+    return html10`<div class="report-field">
       <div class="report-field-name">${i18nString19(UIStrings19.clients)}</div>
       <div class="report-field-value"></div>
     </div>`;
   }
-  return html9`<div class="report-field">
+  return html10`<div class="report-field">
       <div class="report-field-name">${i18nString19(UIStrings19.clients)}</div>
       <div class="report-field-value">
-      ${version.controlledClients.map((client) => html9`
+      ${version.controlledClients.map((client) => html10`
         <div class="service-worker-client">
           ${until(input.renderClientInfo(client))}
        </div>`)}
@@ -9435,13 +9439,13 @@ function renderClientsField(input, version) {
 }
 function renderSourceField(input, version) {
   if (!version) {
-    return html9`<div class="report-field">
+    return html10`<div class="report-field">
       <div class="report-field-name">${i18nString19(UIStrings19.source)}</div>
       <div class="report-field-value"></div>
     </div>`;
   }
   const fileName = Common10.ParsedURL.ParsedURL.extractName(version.scriptURL);
-  return html9`<div class="report-field">
+  return html10`<div class="report-field">
     <div class="report-field-name">${i18nString19(UIStrings19.source)}</div>
     <div class="report-field-value">
       <div class="report-field-value-filename">
@@ -9450,7 +9454,7 @@ function renderSourceField(input, version) {
     tabStop: true,
     jslogContext: "source-location"
   })}
-        ${input.errorsLength ? html9`
+        ${input.errorsLength ? html10`
           <button
               class="devtools-link link"
               tabindex="0"
@@ -9461,7 +9465,7 @@ function renderSourceField(input, version) {
             ${input.errorsLength}
           </button>` : nothing5}
       </div>
-      ${version.scriptResponseTime !== void 0 ? html9`
+      ${version.scriptResponseTime !== void 0 ? html10`
         <div class="report-field-value-subtitle">
           ${i18nString19(UIStrings19.receivedS, { PH1: new Date(version.scriptResponseTime * 1e3).toLocaleString() })}
         </div>
@@ -9470,7 +9474,7 @@ function renderSourceField(input, version) {
   </div>`;
 }
 function renderStatusField(input, active, waiting, installing, redundant) {
-  return html9`<div class="report-field">
+  return html10`<div class="report-field">
     <div class="report-field-name">${i18nString19(UIStrings19.status)}</div>
     <div class="report-field-value">
       <div class="service-worker-version-stack">
@@ -9478,7 +9482,7 @@ function renderStatusField(input, active, waiting, installing, redundant) {
         ${active ? renderVersion("service-worker-active-circle", i18nString19(UIStrings19.sActivatedAndIsS, {
     PH1: active.id,
     PH2: SDK17.ServiceWorkerManager.ServiceWorkerVersion.RunningStatus[active.currentState.runningStatus]()
-  }), active.isRunning() || active.isStarting() ? html9`
+  }), active.isRunning() || active.isStarting() ? html10`
               <devtools-button .data=${{
     jslogContext: "stop",
     variant: "outlined"
@@ -9486,7 +9490,7 @@ function renderStatusField(input, active, waiting, installing, redundant) {
   }}
                               @click=${() => input.onStop(active.id)}>
                   ${i18nString19(UIStrings19.stopString)}
-              </devtools-button>` : active.isStartable() ? html9`
+              </devtools-button>` : active.isStartable() ? html10`
               <devtools-button .data=${{
     jslogContext: "start",
     variant: "outlined"
@@ -9495,7 +9499,7 @@ function renderStatusField(input, active, waiting, installing, redundant) {
                               @click=${input.onStart}>
                   ${i18nString19(UIStrings19.startString)}
               </devtools-button>` : nothing5) : redundant ? renderVersion("service-worker-redundant-circle", i18nString19(UIStrings19.sIsRedundant, { PH1: redundant.id })) : nothing5}
-        ${waiting ? renderVersion("service-worker-waiting-circle", i18nString19(UIStrings19.sWaitingToActivate, { PH1: waiting.id }), html9`
+        ${waiting ? renderVersion("service-worker-waiting-circle", i18nString19(UIStrings19.sWaitingToActivate, { PH1: waiting.id }), html10`
               <devtools-button .data=${{
     jslogContext: "skip-waiting",
     title: i18n37.i18n.lockedString("skipWaiting"),
@@ -9505,13 +9509,13 @@ function renderStatusField(input, active, waiting, installing, redundant) {
                   @click=${input.onSkipWaiting}>
                 ${i18n37.i18n.lockedString("skipWaiting")}
               </devtools-button>
-              ${waiting.scriptResponseTime !== void 0 ? html9`
+              ${waiting.scriptResponseTime !== void 0 ? html10`
                 <div class="service-worker-subtitle">
                   ${i18nString19(UIStrings19.receivedS, { PH1: new Date(waiting.scriptResponseTime * 1e3).toLocaleString() })}
                 </div>
               ` : nothing5}
           `) : nothing5}
-        ${installing ? renderVersion("service-worker-installing-circle", i18nString19(UIStrings19.sTryingToInstall, { PH1: installing.id }), installing.scriptResponseTime !== void 0 ? html9`
+        ${installing ? renderVersion("service-worker-installing-circle", i18nString19(UIStrings19.sTryingToInstall, { PH1: installing.id }), installing.scriptResponseTime !== void 0 ? html10`
             <div class="service-worker-subtitle">
               ${i18nString19(UIStrings19.receivedS, { PH1: new Date(installing.scriptResponseTime * 1e3).toLocaleString() })}
             </div>` : nothing5) : nothing5}
@@ -9520,7 +9524,7 @@ function renderStatusField(input, active, waiting, installing, redundant) {
   </div>`;
 }
 function renderUpdateCycleField(input) {
-  return html9`
+  return html10`
     <div class="report-field">
       <div class="report-field-name">${i18nString19(UIStrings19.updateCycle)}</div>
       <div class="report-field-value">
@@ -9532,7 +9536,7 @@ function renderRouterField(input) {
   const active = input.activeVersion;
   const title = i18nString19(UIStrings19.routers);
   if (active?.routerRules && active.routerRules.length > 0) {
-    return html9`
+    return html10`
       <div class="report-field">
         <div class="report-field-name">${title}</div>
         <div class="report-field-value">
@@ -9543,7 +9547,7 @@ function renderRouterField(input) {
   return nothing5;
 }
 var DEFAULT_SECTION_VIEW = (input, _output, target) => {
-  render9(html9`
+  render10(html10`
       <style>${serviceWorkersView_css_default}</style>
       <style>${serviceWorkerUpdateCycleView_css_default}</style>
       <devtools-report-section-header role="heading" aria-level="2"
@@ -9703,11 +9707,11 @@ var Section = class extends UI18.Widget.VBox {
       this.clientInfoCache.set(clientId, targetInfo);
     }
     if (targetInfo.type !== "page" && targetInfo.type !== "iframe") {
-      return html9`<span class="service-worker-client-string">
+      return html10`<span class="service-worker-client-string">
         ${i18nString19(UIStrings19.workerS, { PH1: targetInfo.url })}
       </span>`;
     }
-    return html9`
+    return html10`
       <span class="service-worker-client-string">${targetInfo.url}</span>
       <devtools-button
         .data=${{
@@ -10126,7 +10130,7 @@ var dataGridAiButton_css_default = `/*
 
 // gen/front_end/panels/application/KeyValueStorageItemsView.js
 import * as UI21 from "./../../ui/legacy/legacy.js";
-import { Directives as LitDirectives, html as html11, nothing as nothing6, render as render11 } from "./../../ui/lit/lit.js";
+import { Directives as LitDirectives, html as html12, nothing as nothing6, render as render12 } from "./../../ui/lit/lit.js";
 import * as VisualLogging13 from "./../../ui/visual_logging/visual_logging.js";
 import * as ApplicationComponents12 from "./components/components.js";
 
@@ -10165,11 +10169,11 @@ var UIStrings22 = {
 };
 var str_22 = i18n43.i18n.registerUIStrings("panels/application/StorageItemsToolbar.ts", UIStrings22);
 var i18nString22 = i18n43.i18n.getLocalizedString.bind(void 0, str_22);
-var { html: html10, render: render10 } = Lit2;
+var { html: html11, render: render11 } = Lit2;
 var DEFAULT_VIEW7 = (input, _output, target) => {
-  render10(
+  render11(
     // clang-format off
-    html10`
+    html11`
       <devtools-toolbar class="top-resources-toolbar"
                         jslog=${VisualLogging12.toolbar()}>
         <devtools-button title=${i18nString22(UIStrings22.refresh)}
@@ -10352,8 +10356,8 @@ var KeyValueStorageItemsView = class extends UI21.Widget.VBox {
     metadataView ??= new ApplicationComponents12.StorageMetadataView.StorageMetadataView();
     if (!view) {
       view = (input, output, target) => {
-        render11(
-          html11`
+        render12(
+          html12`
             <devtools-widget
               ${widget8(StorageItemsToolbar, { metadataView })}
               class=flex-none
@@ -10378,7 +10382,7 @@ var KeyValueStorageItemsView = class extends UI21.Widget.VBox {
                   @deselect=${() => input.onSelect(null)}
                 >
                   <table>
-                    ${input.showAiButton ? html11`<style>${dataGridAiButton_css_default}</style>` : nothing6}
+                    ${input.showAiButton ? html12`<style>${dataGridAiButton_css_default}</style>` : nothing6}
                     <tr>
                       <th id="key" sortable ?editable=${input.editable}>
                         ${i18nString23(UIStrings23.key)}
@@ -10387,14 +10391,14 @@ var KeyValueStorageItemsView = class extends UI21.Widget.VBox {
                         ${i18nString23(UIStrings23.value)}
                       </th>
                     </tr>
-                    ${repeat2(input.items, (item2) => item2.key, (item2) => html11`
+                    ${repeat2(input.items, (item2) => item2.key, (item2) => html12`
                       <tr data-key=${item2.key} data-value=${item2.value}
                           @select=${() => input.onSelect(item2)}
                           @edit=${(e) => input.onEdit(item2.key, item2.value, e.detail.columnId, e.detail.valueBeforeEditing, e.detail.newText)}
                           @delete=${() => input.onDelete(item2.key)}
                           @contextmenu=${(e) => input.onContextMenu?.(item2, e.detail)}
                           selected=${input.selectedKey === item2.key || nothing6}>
-                        <td>${input.showAiButton ? html11`
+                        <td>${input.showAiButton ? html12`
                             <span class="ai-button-container">
                               <devtools-floating-button
                                 icon-name=${AIAssistance.AiUtils.getIconName()}
@@ -10620,6 +10624,16 @@ var KeyValueStorageItemsView = class extends UI21.Widget.VBox {
       this.#selectedKey = null;
       this.showPreview(null, null);
     }
+  }
+  set jslog(jslog) {
+    if (this.#jslog === jslog) {
+      return;
+    }
+    this.#jslog = jslog;
+    this.performUpdate();
+  }
+  get jslog() {
+    return this.#jslog;
   }
   set editable(editable) {
     this.#editable = editable;
@@ -11699,7 +11713,7 @@ __export(WebMCPTreeElement_exports, {
 });
 import { createIcon as createIcon12 } from "./../../ui/kit/kit.js";
 import * as UI27 from "./../../ui/legacy/legacy.js";
-import { html as html13, render as render13 } from "./../../ui/lit/lit.js";
+import { html as html14, render as render14 } from "./../../ui/lit/lit.js";
 
 // gen/front_end/panels/application/WebMCPView.js
 var WebMCPView_exports = {};
@@ -11730,7 +11744,7 @@ import * as Buttons9 from "./../../ui/components/buttons/buttons.js";
 import * as ObjectUI2 from "./../../ui/legacy/components/object_ui/object_ui.js";
 import * as Components4 from "./../../ui/legacy/components/utils/utils.js";
 import * as UI26 from "./../../ui/legacy/legacy.js";
-import { Directives as Directives6, html as html12, nothing as nothing7, render as render12 } from "./../../ui/lit/lit.js";
+import { Directives as Directives6, html as html13, nothing as nothing7, render as render13 } from "./../../ui/lit/lit.js";
 import * as VisualLogging16 from "./../../ui/visual_logging/visual_logging.js";
 import * as Console2 from "./../console/console.js";
 
@@ -12433,7 +12447,7 @@ var DEFAULT_VIEW8 = (input, output, target) => {
     }, { jslogContext: "webmcp.copy-tool-description" });
     void contextMenu.show();
   };
-  render12(html12`
+  render13(html13`
     <style>${webMCPView_css_default}</style>
     <style>${UI26.FilterBar.filterStyles}</style>
     <devtools-split-view class="webmcp-view" direction="row" sidebar-position="second" name="webmcp-split-view">
@@ -12462,13 +12476,13 @@ var DEFAULT_VIEW8 = (input, output, target) => {
                              ?hidden=${!isFilterActive}></devtools-button>
           </devtools-toolbar>
         </div>
-        ${input.toolCalls.length > 0 ? html12`
+        ${input.toolCalls.length > 0 ? html13`
           <devtools-split-view name="webmcp-call-split-view"
                                direction="column"
                                sidebar-position="second"
                                sidebar-visibility=${input.selectedCall ? "show" : "hidden"}>
             <div slot="main" style="display: flex; flex-direction: column; overflow: hidden; height: 100%;">
-              <devtools-data-grid striped .template=${html12`
+              <devtools-data-grid striped .template=${html13`
                 <table>
                   <style>${webMCPView_css_default}</style>
                   <tr>
@@ -12476,12 +12490,12 @@ var DEFAULT_VIEW8 = (input, output, target) => {
                       ${i18nString28(UIStrings28.name)}
                     </th>
                     <th id="status" weight="20">${i18nString28(UIStrings28.status)}</th>
-                            ${!input.selectedCall ? html12`
+                            ${!input.selectedCall ? html13`
                     <th id="input" weight="30">${i18nString28(UIStrings28.input)}</th>
                     <th id="output" weight="30">${i18nString28(UIStrings28.output)}</th>
                             ` : nothing7}
                   </tr>
-                      ${Directives6.repeat(input.toolCalls, (call) => call.invocationId + "-" + (call.result?.status ?? ""), (call) => html12`
+                      ${Directives6.repeat(input.toolCalls, (call) => call.invocationId + "-" + (call.result?.status ?? ""), (call) => html13`
                     <tr class=${Directives6.classMap({
     "status-error": call.result?.status === "Error",
     "status-cancelled": call.result?.status === "Canceled",
@@ -12534,11 +12548,11 @@ var DEFAULT_VIEW8 = (input, output, target) => {
     );
   }}>
                         <div class="status-cell">
-                          ${iconName(call) ? html12`<devtools-icon class="small" name=${iconName(call)}></devtools-icon>` : ""}
+                          ${iconName(call) ? html13`<devtools-icon class="small" name=${iconName(call)}></devtools-icon>` : ""}
                           <span>${statusString(call)}</span>
                         </div>
                       </td>
-                      ${!input.selectedCall ? html12`
+                      ${!input.selectedCall ? html13`
                         <td @click=${(e) => {
     e.stopPropagation();
     input.onCallSelect(
@@ -12613,7 +12627,7 @@ var DEFAULT_VIEW8 = (input, output, target) => {
               <span class="toolbar-text">${i18nString28(UIStrings28.inProgressCount, { PH1: toolStats.totals.get(void 0) ?? 0 })}</span>
             </devtools-toolbar>
           </div>
-        ` : html12`
+        ` : html13`
         ${UI26.Widget.widget(UI26.EmptyWidget.EmptyWidget, {
     header: i18nString28(UIStrings28.noCallsPlaceholderTitle),
     text: i18nString28(UIStrings28.noCallsPlaceholder)
@@ -12627,21 +12641,21 @@ var DEFAULT_VIEW8 = (input, output, target) => {
                            sidebar-visibility=${input.selectedTool ? "show" : "hidden"}>
         <div slot="main" class="tool-list">
           <div class="section-title">${i18nString28(UIStrings28.toolRegistry)}</div>
-          ${tools.length === 0 ? html12`
+          ${tools.length === 0 ? html13`
           ${UI26.Widget.widget(UI26.EmptyWidget.EmptyWidget, {
     header: i18nString28(UIStrings28.noToolsPlaceholderTitle),
     text: i18nString28(UIStrings28.noToolsPlaceholder)
   })}
-          ` : html12`
+          ` : html13`
             <devtools-list class="square-corners">
-              ${tools.map((tool) => html12`
+              ${tools.map((tool) => html13`
                     <div class=${Directives6.classMap({ "tool-item": true, selected: tool === input.selectedTool?.tool })}
                          @click=${() => input.onToolSelect(tool)}
                          @contextmenu=${(e) => onToolContextMenu(e, tool)}>
                     <div class="tool-name-container">
                       <div class="tool-name source-code">${tool.name}</div>
                     <div class="tool-icons">
-                      ${getIconGroupsFromStats(toolStats.stats.get(tool)).map((group) => html12`
+                      ${getIconGroupsFromStats(toolStats.stats.get(tool)).map((group) => html13`
                         <icon-button
                           .data=${{
     groups: [group],
@@ -12667,7 +12681,7 @@ var DEFAULT_VIEW8 = (input, output, target) => {
             ></devtools-button>
             <span>${i18nString28(UIStrings28.toolDetails)}</span>
           </div>
-          ${input.selectedTool ? html12`
+          ${input.selectedTool ? html13`
             <div class="sidebar-tool-details">
               ${widget9(ToolDetailsWidget, { tool: input.selectedTool.tool })}
             </div>
@@ -12918,7 +12932,7 @@ var WebMCPView = class _WebMCPView extends UI26.Widget.VBox {
 };
 var PAYLOAD_DEFAULT_VIEW = (input, output, target) => {
   if (!input.valueObject && !input.valueString && !input.errorText && !input.symbolizedError) {
-    render12(nothing7, target);
+    render13(nothing7, target);
     return;
   }
   const isParsable = input.valueObject !== void 0;
@@ -12928,7 +12942,7 @@ var PAYLOAD_DEFAULT_VIEW = (input, output, target) => {
       readOnly: true,
       propertiesMode: 1
     });
-    return html12`<devtools-tree .template=${html12`
+    return html13`<devtools-tree .template=${html13`
           <style>${ObjectUI2.ObjectPropertiesSection.objectValueStyles}</style>
           <style>${ObjectUI2.ObjectPropertiesSection.objectPropertiesSectionStyles}</style>
           <ul role="tree">
@@ -12939,13 +12953,13 @@ var PAYLOAD_DEFAULT_VIEW = (input, output, target) => {
           </ul>
         `}></devtools-tree>`;
   };
-  const createSourceText = (text) => html12`<div class="payload-value source-code">${text}</div>`;
-  const createErrorText = (text) => html12`<div class="payload-value source-code error-text">${text}</div>`;
+  const createSourceText = (text) => html13`<div class="payload-value source-code">${text}</div>`;
+  const createErrorText = (text) => html13`<div class="payload-value source-code error-text">${text}</div>`;
   const createException = (error) => {
     if (!error) {
       return nothing7;
     }
-    return html12`
+    return html13`
       <div class="payload-value source-code error-text">
         <devtools-widget
           ${UI26.Widget.widget(Console2.SymbolizedErrorWidget.SymbolizedErrorWidget, { error })}
@@ -12953,7 +12967,7 @@ var PAYLOAD_DEFAULT_VIEW = (input, output, target) => {
       </div>
     `;
   };
-  render12(html12`
+  render13(html13`
     <style>${webMCPView_css_default}</style>
     <style>${symbolizedErrorWidget_css_default}</style>
     <div class="call-payload-view">
@@ -13030,7 +13044,7 @@ var PayloadWidget = class extends UI26.Widget.Widget {
 };
 var TOOL_DETAILS_VIEW = (input, output, target) => {
   if (!input.tool) {
-    render12(nothing7, target);
+    render13(nothing7, target);
     return;
   }
   const tool = input.tool;
@@ -13041,22 +13055,22 @@ var TOOL_DETAILS_VIEW = (input, output, target) => {
     type: "unit"
   });
   const formattedFlags = formatter.format(flags);
-  render12(html12`
+  render13(html13`
     <style>${webMCPView_css_default}</style>
     <div class="tool-details-grid">
       <div class="label">Name</div>
       <div class="value source-code">${tool.name}</div>
       <div class="label">Description</div>
       <div class="value">${tool.description}</div>
-      ${flags.length > 0 ? html12`
+      ${flags.length > 0 ? html13`
       <div class="label">${i18nString28(UIStrings28.flags)}</div>
       <div class="value">${formattedFlags}</div>
       ` : nothing7}
-      ${tool.frame ? html12`
+      ${tool.frame ? html13`
       <div class="label">${i18nString28(UIStrings28.frame)}</div>
       <div class="value">${Components4.Linkifier.Linkifier.linkifyRevealable(tool.frame, tool.frame.displayName())}</div>
       ` : nothing7}
-      ${origin instanceof SDK22.DOMModel.DOMNode ? html12`
+      ${origin instanceof SDK22.DOMModel.DOMNode ? html13`
       <div class="label">Origin</div>
       <div class="value tool-origin-container">
         <span
@@ -13080,13 +13094,13 @@ var TOOL_DETAILS_VIEW = (input, output, target) => {
            .variant=${"icon"}
            @click=${() => input.revealNode(origin)}
            ></devtools-button>
-      </div>` : origin ? html12`
+      </div>` : origin ? html13`
       <div class="label">Origin</div>
       <div class="value stack-trace">
         ${widget9(Components4.JSPresentationUtils.StackTracePreviewContent, { stackTrace: origin, options: { expandable: true } })}
       </div>` : nothing7}
     </div>
-    ${input.isUnregistered ? html12`
+    ${input.isUnregistered ? html13`
       <div class="call-to-action">
         <div class="call-to-action-body">
           <div class="explanation">
@@ -13378,7 +13392,7 @@ var WebMCPTreeElement = class extends ApplicationPanelTreeElement {
     const newBadge = UI27.UIUtils.maybeCreateNewBadge("web-mcp");
     if (newBadge) {
       const fragment = document.createDocumentFragment();
-      render13(html13`<div class="trailing-icons icons-container">${newBadge}</div>`, fragment);
+      render14(html14`<div class="trailing-icons icons-container">${newBadge}</div>`, fragment);
       this.listItemElement.appendChild(fragment);
     }
   }
@@ -13885,7 +13899,6 @@ var ApplicationPanelSidebar = class extends UI28.Widget.VBox {
     for (const frame of SDK23.ResourceTreeModel.ResourceTreeModel.frames(this.target?.targetManager() ?? SDK23.TargetManager.TargetManager.instance())) {
       this.addCookieDocument(frame);
     }
-    this.cacheStorageListTreeElement.initialize();
     const backgroundServiceModel = this.target?.model(BackgroundServiceModel) || null;
     this.backgroundFetchTreeElement.initialize(backgroundServiceModel);
     this.backgroundSyncTreeElement.initialize(backgroundServiceModel);
@@ -15462,7 +15475,7 @@ import * as Geometry2 from "./../../models/geometry/geometry.js";
 import * as IssuesManager from "./../../models/issues_manager/issues_manager.js";
 import * as CookieTable from "./../../ui/legacy/components/cookie_table/cookie_table.js";
 import * as UI29 from "./../../ui/legacy/legacy.js";
-import { html as html14, render as render14 } from "./../../ui/lit/lit.js";
+import { html as html15, render as render15 } from "./../../ui/lit/lit.js";
 import * as VisualLogging17 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/cookieItemsView.css.js
@@ -15569,8 +15582,8 @@ var DEFAULT_COOKIE_PREVIEW_WIDGET_VIEW = (input, output, target) => {
     selection.removeAllRanges();
     selection.addRange(range);
   }
-  render14(
-    html14`<style>${cookieItemsView_css_default}</style>
+  render15(
+    html15`<style>${cookieItemsView_css_default}</style>
     <div class="cookie-preview-widget">
       <div class="cookie-preview-widget-header">
         <span class="cookie-preview-widget-header-label">Cookie Value</span>
@@ -15622,8 +15635,8 @@ var CookiePreviewWidget = class extends UI29.Widget.VBox {
   }
 };
 var DEFAULT_VIEW9 = (input, output, target) => {
-  render14(
-    html14`<style>${cookieItemsView_css_default}</style>
+  render15(
+    html15`<style>${cookieItemsView_css_default}</style>
     <devtools-widget class="storage-view" ${widget10(UI29.Widget.VBox, { minimumSize: new Size2(0, 50) })}>
       <devtools-widget ${widget10(StorageItemsToolbar, { filterRegex: null })}
         class=flex-none
@@ -15653,8 +15666,8 @@ var DEFAULT_VIEW9 = (input, output, target) => {
         </devtools-widget>
         <devtools-widget slot="sidebar" ${widget10(UI29.Widget.VBox, { minimumSize: new Size2(0, 50) })}
           jslog=${VisualLogging17.pane("preview").track({ resize: true })}>
-          ${input.selectedCookie ? html14`<devtools-widget ${widget10(CookiePreviewWidget, { cookie: input.selectedCookie })}>
-                 </devtools-widget>` : html14`<devtools-widget ${widget10(UI29.EmptyWidget.EmptyWidget, {
+          ${input.selectedCookie ? html15`<devtools-widget ${widget10(CookiePreviewWidget, { cookie: input.selectedCookie })}>
+                 </devtools-widget>` : html15`<devtools-widget ${widget10(UI29.EmptyWidget.EmptyWidget, {
       header: i18nString30(UIStrings30.noCookieSelected),
       text: i18nString30(UIStrings30.selectACookieToPreviewItsValue)
     })}></devtools-widget>`}
@@ -15863,7 +15876,7 @@ import "./../../ui/legacy/components/data_grid/data_grid.js";
 import * as i18n61 from "./../../core/i18n/i18n.js";
 import * as SourceFrame5 from "./../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI30 from "./../../ui/legacy/legacy.js";
-import { Directives as Directives7, html as html15, nothing as nothing8, render as render15 } from "./../../ui/lit/lit.js";
+import { Directives as Directives7, html as html16, nothing as nothing8, render as render16 } from "./../../ui/lit/lit.js";
 import * as VisualLogging18 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/deviceBoundSessionsView.css.js
@@ -16037,13 +16050,13 @@ var UIStrings31 = {
    */
   noEvents: "No events have been logged yet.",
   /**
-   *@description Text to preserve the log of events after refreshing.
+   *@description Text to keep the log of events after refreshing.
    */
-  preserveLog: "Preserve log",
+  preserveLog: "Keep log",
   /**
-   *@description Tooltip text that appears on the preserve log setting when hovering over it.
+   *@description Tooltip text that appears on the keep log setting when hovering over it.
    */
-  doNotClearLogOnPageReload: "Do not clear log on page reload/navigation.",
+  doNotClearLogOnPageReload: "Don\u2019t clear log on page reload/navigation",
   /**
    *@description Label for the ID of a session.
    */
@@ -16430,17 +16443,17 @@ var str_31 = i18n61.i18n.registerUIStrings("panels/application/DeviceBoundSessio
 var i18nString31 = i18n61.i18n.getLocalizedString.bind(void 0, str_31);
 var DEFAULT_VIEW10 = (input, _output, target) => {
   const { sessionAndEvents, preserveLogSetting, defaultTitle, defaultDescription, selectedEvent, onEventRowSelected } = input;
-  const toolbarHtml = preserveLogSetting ? html15`
+  const toolbarHtml = preserveLogSetting ? html16`
         <devtools-toolbar class="device-bound-sessions-toolbar">
         <devtools-checkbox title=${i18nString31(UIStrings31.doNotClearLogOnPageReload)} ${UI30.UIUtils.bindToSetting(preserveLogSetting)}>${i18nString31(UIStrings31.preserveLog)}</devtools-checkbox>
         </devtools-toolbar>
   ` : nothing8;
   if (!sessionAndEvents) {
     if (!defaultTitle || !defaultDescription) {
-      render15(nothing8, target);
+      render16(nothing8, target);
       return;
     }
-    render15(html15`
+    render16(html16`
       <style>${UI30.inspectorCommonStyles}</style>
       <style>${deviceBoundSessionsView_css_default}</style>
       ${toolbarHtml}
@@ -16451,7 +16464,7 @@ var DEFAULT_VIEW10 = (input, _output, target) => {
   let sessionDetailsHtml;
   if (sessionAndEvents.session) {
     const { key, inclusionRules, cookieCravings } = sessionAndEvents.session;
-    sessionDetailsHtml = html15`
+    sessionDetailsHtml = html16`
         <devtools-report>
           <devtools-report-section-header role="heading" aria-level="2">${i18nString31(UIStrings31.sessionConfig)}</devtools-report-section-header>
           <devtools-report-key>${i18nString31(UIStrings31.keySite)}</devtools-report-key>
@@ -16472,7 +16485,7 @@ var DEFAULT_VIEW10 = (input, _output, target) => {
           <devtools-report-key>${i18nString31(UIStrings31.includeSite)}</devtools-report-key>
           <devtools-report-value>${boolToString(inclusionRules.includeSite)}</devtools-report-value>
         </devtools-report>
-        ${inclusionRules.urlRules.length > 0 ? html15`
+        ${inclusionRules.urlRules.length > 0 ? html16`
           <div class="device-bound-session-grid-wrapper">
             <devtools-data-grid class="device-bound-session-url-rules-grid" striped inline name=${i18nString31(UIStrings31.scope)}>
               <table>
@@ -16484,7 +16497,7 @@ var DEFAULT_VIEW10 = (input, _output, target) => {
                   </tr>
                 </thead>
                 <tbody>
-                  ${inclusionRules.urlRules.map((rule) => html15`
+                  ${inclusionRules.urlRules.map((rule) => html16`
                     <tr>
                       <td>${ruleTypeToString(rule.ruleType)}</td>
                       <td>${rule.hostPattern}</td>
@@ -16497,7 +16510,7 @@ var DEFAULT_VIEW10 = (input, _output, target) => {
           </div>
         ` : nothing8}
         <devtools-report-section-header role="heading" aria-level="2">${i18nString31(UIStrings31.cookieCravings)}</devtools-report-section-header>
-        ${cookieCravings.length > 0 ? html15`
+        ${cookieCravings.length > 0 ? html16`
           <div class="device-bound-session-grid-wrapper">
             <devtools-data-grid class="device-bound-session-cookie-cravings-grid" striped inline name=${i18nString31(UIStrings31.cookieCravings)}>
               <table>
@@ -16512,7 +16525,7 @@ var DEFAULT_VIEW10 = (input, _output, target) => {
                   </tr>
                 </thead>
                 <tbody>
-                  ${cookieCravings.map((craving) => html15`
+                  ${cookieCravings.map((craving) => html16`
                     <tr>
                       <td>${craving.name}</td>
                       <td>${craving.domain}</td>
@@ -16529,9 +16542,9 @@ var DEFAULT_VIEW10 = (input, _output, target) => {
         ` : nothing8}`;
   }
   const events = [...sessionAndEvents.eventsById.values()];
-  const eventsHtml = html15`
+  const eventsHtml = html16`
       <devtools-report-section-header role="heading" aria-level="2">${i18nString31(UIStrings31.events)}</devtools-report-section-header>
-          ${events.length > 0 && onEventRowSelected ? html15`
+          ${events.length > 0 && onEventRowSelected ? html16`
             <div class="device-bound-session-grid-wrapper">
                 <devtools-data-grid class="device-bound-session-events-grid" striped inline name=${i18nString31(UIStrings31.events)} ${Directives7.ref((el) => {
     if (!el || !(el instanceof HTMLElement)) {
@@ -16550,7 +16563,7 @@ var DEFAULT_VIEW10 = (input, _output, target) => {
                       <th id="details" sortable>${i18nString31(UIStrings31.result)}</th>
                     </tr>
                   </thead>
-                  <tbody>${events.map(({ event, timestamp }) => html15`
+                  <tbody>${events.map(({ event, timestamp }) => html16`
                       <tr @select=${() => onEventRowSelected(event)}>
                         <td>${getEventTypeString(event)}</td>
                         <td>${timestamp.toLocaleString()}</td>
@@ -16561,21 +16574,21 @@ var DEFAULT_VIEW10 = (input, _output, target) => {
                 </table>
               </devtools-data-grid>
             </div>
-          ` : html15`<div class="device-bound-session-no-events-wrapper">${i18nString31(UIStrings31.noEvents)}</div>`}`;
+          ` : html16`<div class="device-bound-session-no-events-wrapper">${i18nString31(UIStrings31.noEvents)}</div>`}`;
   const failedRequestDetailsGetter = (failedRequest) => {
     if (!failedRequest) {
       return nothing8;
     }
-    return html15`${failedRequest.requestUrl && html15`
+    return html16`${failedRequest.requestUrl && html16`
           <devtools-report-key>${i18nString31(UIStrings31.failedRequestUrl)}</devtools-report-key>
           <devtools-report-value>${failedRequest.requestUrl}</devtools-report-value>`}
-        ${failedRequest.netError && html15`
+        ${failedRequest.netError && html16`
           <devtools-report-key>${i18nString31(UIStrings31.failedRequestNetError)}</devtools-report-key>
           <devtools-report-value>${failedRequest.netError}</devtools-report-value>`}
-        ${failedRequest.responseError !== void 0 ? html15`
+        ${failedRequest.responseError !== void 0 ? html16`
           <devtools-report-key>${i18nString31(UIStrings31.failedRequestResponseCode)}</devtools-report-key>
           <devtools-report-value>${failedRequest.responseError}</devtools-report-value>` : nothing8}
-        ${failedRequest.responseErrorBody && html15`
+        ${failedRequest.responseErrorBody && html16`
           <devtools-report-key>${i18nString31(UIStrings31.failedRequestResponseBody)}</devtools-report-key>
           <devtools-report-value>
             ${widget11(SourceFrame5.JSONView.SearchableJsonView, {
@@ -16583,41 +16596,41 @@ var DEFAULT_VIEW10 = (input, _output, target) => {
     })}
           </devtools-report-value>`}`;
   };
-  const creationEventDetails = selectedEvent?.creationEventDetails && html15`
+  const creationEventDetails = selectedEvent?.creationEventDetails && html16`
           <devtools-report-key>${i18nString31(UIStrings31.fetchResult)}</devtools-report-key>
           <devtools-report-value>${fetchResultToString(selectedEvent.creationEventDetails.fetchResult)}</devtools-report-value>
-            ${selectedEvent.creationEventDetails.newSession && html15`
+            ${selectedEvent.creationEventDetails.newSession && html16`
               <devtools-report-key>${i18nString31(UIStrings31.updatedSessionConfig)}</devtools-report-key>
               <devtools-report-value>${i18nString31(UIStrings31.yes)}</devtools-report-value>
             `}
           ${failedRequestDetailsGetter(selectedEvent.creationEventDetails.failedRequest)}
       `;
-  const refreshEventDetails = selectedEvent?.refreshEventDetails && html15`
+  const refreshEventDetails = selectedEvent?.refreshEventDetails && html16`
           <devtools-report-key>${i18nString31(UIStrings31.refreshResult)}</devtools-report-key>
           <devtools-report-value>${refreshResultToString(selectedEvent.refreshEventDetails.refreshResult)}</devtools-report-value>
           <devtools-report-key>${i18nString31(UIStrings31.causedAnyRequestDeferrals)}</devtools-report-key>
           <devtools-report-value>${boolToString(!selectedEvent.refreshEventDetails.wasFullyProactiveRefresh)}</devtools-report-value>
-            ${selectedEvent.refreshEventDetails.fetchResult && html15`
+            ${selectedEvent.refreshEventDetails.fetchResult && html16`
               <devtools-report-key>${i18nString31(UIStrings31.fetchResult)}</devtools-report-key>
               <devtools-report-value>${fetchResultToString(selectedEvent.refreshEventDetails.fetchResult)}</devtools-report-value>
             `}
-            ${selectedEvent.refreshEventDetails.newSession && html15`
+            ${selectedEvent.refreshEventDetails.newSession && html16`
               <devtools-report-key>${i18nString31(UIStrings31.updatedSessionConfig)}</devtools-report-key>
               <devtools-report-value>${i18nString31(UIStrings31.yes)}</devtools-report-value>
             `}
           ${failedRequestDetailsGetter(selectedEvent.refreshEventDetails.failedRequest)}
       `;
-  const challengeEventDetails = selectedEvent?.challengeEventDetails && html15`
+  const challengeEventDetails = selectedEvent?.challengeEventDetails && html16`
           <devtools-report-key>${i18nString31(UIStrings31.challengeResult)}</devtools-report-key>
           <devtools-report-value>${challengeResultToString(selectedEvent.challengeEventDetails.challengeResult)}</devtools-report-value>
           <devtools-report-key>${i18nString31(UIStrings31.challenge)}</devtools-report-key>
           <devtools-report-value>${selectedEvent.challengeEventDetails.challenge}</devtools-report-value>
           `;
-  const terminationEventDetails = selectedEvent?.terminationEventDetails && html15`
+  const terminationEventDetails = selectedEvent?.terminationEventDetails && html16`
           <devtools-report-key>${i18nString31(UIStrings31.deletionReason)}</devtools-report-key>
           <devtools-report-value>${deletionReasonToString(selectedEvent.terminationEventDetails.deletionReason)}</devtools-report-value>
           `;
-  const eventDetailsContentHtml = selectedEvent ? html15`
+  const eventDetailsContentHtml = selectedEvent ? html16`
         <devtools-report>
           <devtools-report-key>${i18nString31(UIStrings31.keySite)}</devtools-report-key>
           <devtools-report-value>${selectedEvent.site}</devtools-report-value>
@@ -16632,12 +16645,12 @@ var DEFAULT_VIEW10 = (input, _output, target) => {
           ${challengeEventDetails}
           ${terminationEventDetails}
         </devtools-report>
-    ` : html15`<div class="device-bound-session-no-event-details">${i18nString31(UIStrings31.selectEventToViewDetails)}</div>`;
-  const eventDetailsHtml = html15`
+    ` : html16`<div class="device-bound-session-no-event-details">${i18nString31(UIStrings31.selectEventToViewDetails)}</div>`;
+  const eventDetailsHtml = html16`
       <devtools-report-section-header role="heading" aria-level="2">${i18nString31(UIStrings31.eventDetails)}</devtools-report-section-header>
       ${eventDetailsContentHtml}
   `;
-  render15(html15`
+  render16(html16`
         <style>${UI30.inspectorCommonStyles}</style>
         <style>${deviceBoundSessionsView_css_default}</style>
         ${toolbarHtml}
@@ -16966,8 +16979,8 @@ __export(DOMStorageItemsView_exports, {
 import * as Common19 from "./../../core/common/common.js";
 import * as i18n63 from "./../../core/i18n/i18n.js";
 import * as SDK25 from "./../../core/sdk/sdk.js";
+import * as TextUtils4 from "./../../core/text_utils/text_utils.js";
 import * as AiAssistanceModel2 from "./../../models/ai_assistance/ai_assistance.js";
-import * as TextUtils4 from "./../../models/text_utils/text_utils.js";
 import * as SourceFrame6 from "./../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI31 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging19 from "./../../ui/visual_logging/visual_logging.js";
@@ -17030,7 +17043,7 @@ var DOMStorageItemsView = class extends KeyValueStorageItemsView {
     Common19.EventTarget.removeEventListeners(this.eventListeners);
     this.domStorage = domStorage;
     const storageKind = domStorage.isLocalStorage ? "local-storage-data" : "session-storage-data";
-    this.element.setAttribute("jslog", `${VisualLogging19.pane().context(storageKind)}`);
+    this.jslog = `${VisualLogging19.pane().context(storageKind)}`;
     if (domStorage.storageKey) {
       this.toolbar?.setStorageKey(domStorage.storageKey);
     }
@@ -17147,7 +17160,7 @@ __export(ExtensionStorageItemsView_exports, {
 });
 import * as Common20 from "./../../core/common/common.js";
 import * as i18n65 from "./../../core/i18n/i18n.js";
-import * as TextUtils5 from "./../../models/text_utils/text_utils.js";
+import * as TextUtils5 from "./../../core/text_utils/text_utils.js";
 import * as JSON5 from "./../../third_party/json5/json5.js";
 import * as SourceFrame7 from "./../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI32 from "./../../ui/legacy/legacy.js";
@@ -17267,7 +17280,7 @@ import * as Platform11 from "./../../core/platform/platform.js";
 import * as SDK26 from "./../../core/sdk/sdk.js";
 import * as SourceFrame8 from "./../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI33 from "./../../ui/legacy/legacy.js";
-import { render as render16 } from "./../../ui/lit/lit.js";
+import { render as render17 } from "./../../ui/lit/lit.js";
 import * as VisualLogging21 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/resourcesPanel.css.js
@@ -17510,7 +17523,7 @@ var ResourcesPanel = class _ResourcesPanel extends UI33.Panel.PanelWithSidebar {
           items.map((item2) => this.storageViewToolbar.appendToolbarItem(item2));
           this.storageViewToolbar.classList.toggle("hidden", !items.length);
         } else {
-          render16(items, this.storageViewToolbar);
+          render17(items, this.storageViewToolbar);
           this.storageViewToolbar.classList.toggle("hidden", false);
         }
       });
@@ -17654,6 +17667,7 @@ export {
   ReportingApiTreeElement_exports as ReportingApiTreeElement,
   ReportingApiView_exports as ReportingApiView,
   ResourcesPanel_exports as ResourcesPanel,
+  ServiceWorkerCacheTreeElement_exports as ServiceWorkerCacheTreeElement,
   ServiceWorkerCacheViews_exports as ServiceWorkerCacheViews,
   ServiceWorkerUpdateCycleView_exports as ServiceWorkerUpdateCycleView,
   ServiceWorkersView_exports as ServiceWorkersView,

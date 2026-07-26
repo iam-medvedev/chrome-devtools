@@ -47,12 +47,18 @@ describeWithEnvironment('LayoutPane', () => {
         });
     }
     it('renders settings', async () => {
-        Common.Settings.Settings.instance()
-            .moduleSetting('show-grid-line-labels')
-            .setTitle('Enum setting title');
-        Common.Settings.Settings.instance()
-            .moduleSetting('show-grid-track-sizes')
-            .setTitle('Boolean setting title');
+        Common.Settings.Settings.instance().moduleSetting('show-grid-line-labels').setRegistration({
+            settingName: 'show-grid-line-labels',
+            settingType: "enum" /* Common.Settings.SettingType.ENUM */,
+            defaultValue: 'none',
+            title: () => 'Enum setting title',
+        });
+        Common.Settings.Settings.instance().moduleSetting('show-grid-track-sizes').setRegistration({
+            settingName: 'show-grid-track-sizes',
+            settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+            defaultValue: true,
+            title: () => 'Boolean setting title',
+        });
         const component = await renderComponent();
         assert.deepEqual(queryLabels(component.contentElement, '[data-enum-setting]'), [{ label: 'Enum setting title', input: 'SELECT' }]);
         const checkboxesTitles = Array.from(component.contentElement.querySelectorAll('[data-boolean-setting]')).map(checkbox => {
@@ -88,8 +94,10 @@ describeWithEnvironment('LayoutPane', () => {
     it('renders grid elements', async () => {
         getNodesByStyle
             .withArgs([
-            { name: 'display', value: 'grid' }, { name: 'display', value: 'inline-grid' },
-            { name: 'display', value: 'grid-lanes' }, { name: 'display', value: 'inline-grid-lanes' }
+            { name: 'display', value: 'grid' },
+            { name: 'display', value: 'inline-grid' },
+            { name: 'display', value: 'grid-lanes' },
+            { name: 'display', value: 'inline-grid-lanes' },
         ])
             .resolves([
             ID_1,
@@ -125,8 +133,10 @@ describeWithEnvironment('LayoutPane', () => {
     it('send an event when an element overlay is toggled', async () => {
         getNodesByStyle
             .withArgs([
-            { name: 'display', value: 'grid' }, { name: 'display', value: 'inline-grid' },
-            { name: 'display', value: 'grid-lanes' }, { name: 'display', value: 'inline-grid-lanes' }
+            { name: 'display', value: 'grid' },
+            { name: 'display', value: 'inline-grid' },
+            { name: 'display', value: 'grid-lanes' },
+            { name: 'display', value: 'inline-grid-lanes' },
         ])
             .resolves([
             ID_1,
@@ -142,8 +152,10 @@ describeWithEnvironment('LayoutPane', () => {
     it('send an event when an element’s Show element button is pressed', async () => {
         getNodesByStyle
             .withArgs([
-            { name: 'display', value: 'grid' }, { name: 'display', value: 'inline-grid' },
-            { name: 'display', value: 'grid-lanes' }, { name: 'display', value: 'inline-grid-lanes' }
+            { name: 'display', value: 'grid' },
+            { name: 'display', value: 'inline-grid' },
+            { name: 'display', value: 'grid-lanes' },
+            { name: 'display', value: 'inline-grid-lanes' },
         ])
             .resolves([
             ID_1,

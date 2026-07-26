@@ -6197,7 +6197,6 @@ var Settings = class _Settings {
       const isRegex = registration.settingType === "regex";
       const evaluatedDefaultValue = typeof defaultValue === "function" ? defaultValue(Root4.Runtime.hostConfig) : defaultValue;
       const setting = isRegex && typeof evaluatedDefaultValue === "string" ? this.createRegExpSetting(settingName, evaluatedDefaultValue, void 0, storageType) : this.createSetting(settingName, evaluatedDefaultValue, storageType);
-      setting.setTitleFunction(registration.title);
       setting.setRegistration(registration);
       this.registerModuleSetting(setting);
     }
@@ -6490,8 +6489,6 @@ var Setting = class {
   defaultValue;
   eventSupport;
   storage;
-  #titleFunction;
-  #title;
   #registration = null;
   #requiresUserAction;
   #value;
@@ -6515,6 +6512,14 @@ var Setting = class {
   setSerializer(serializer) {
     this.#serializer = serializer;
   }
+  descriptor() {
+    return {
+      name: this.name,
+      type: this.type() ?? "boolean",
+      defaultValue: this.defaultValue,
+      storageType: this.#registration?.storageType
+    };
+  }
   addChangeListener(listener, thisObject) {
     return this.eventSupport.addEventListener(this.name, listener, thisObject);
   }
@@ -6522,21 +6527,10 @@ var Setting = class {
     this.eventSupport.removeEventListener(this.name, listener, thisObject);
   }
   title() {
-    if (this.#title) {
-      return this.#title;
-    }
-    if (this.#titleFunction) {
-      return this.#titleFunction();
+    if (this.#registration?.title) {
+      return this.#registration.title();
     }
     return "";
-  }
-  setTitleFunction(titleFunction) {
-    if (titleFunction) {
-      this.#titleFunction = titleFunction;
-    }
-  }
-  setTitle(title) {
-    this.#title = title;
   }
   setRequiresUserAction(requiresUserAction) {
     this.#requiresUserAction = requiresUserAction;

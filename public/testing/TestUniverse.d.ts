@@ -10,6 +10,7 @@ import * as Bindings from '../models/bindings/bindings.js';
 import * as Breakpoints from '../models/breakpoints/breakpoints.js';
 import * as CrUXManager from '../models/crux-manager/crux-manager.js';
 import * as Emulation from '../models/emulation/emulation.js';
+import * as IssuesManager from '../models/issues_manager/issues_manager.js';
 import * as JavaScriptMetadata from '../models/javascript_metadata/javascript_metadata.js';
 import * as LiveMetrics from '../models/live-metrics/live-metrics.js';
 import * as Logs from '../models/logs/logs.js';
@@ -42,6 +43,7 @@ export declare class TestUniverse implements Foundation.Universe.Universe {
     #private;
     readonly supportsEmulation = true;
     constructor(options?: CreationOptions);
+    get<T>(ctor: Root.DevToolsContext.ConstructorT<T>): T;
     /**
      * Convenience shortcut for `createTarget({targetManager: testUniverse.targetManager})`
      */
@@ -69,6 +71,7 @@ export declare class TestUniverse implements Foundation.Universe.Universe {
     get hostConfigTracker(): Host.AidaClient.HostConfigTracker;
     get ignoreListManager(): Workspace.IgnoreListManager.IgnoreListManager;
     get isolateManager(): SDK.IsolateManager.IsolateManager;
+    get issuesManager(): IssuesManager.IssuesManager.IssuesManager;
     get logManager(): Logs.LogManager.LogManager;
     get isolatedFileSystemManager(): Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager;
     get javaScriptMetadata(): JavaScriptMetadata.JavaScriptMetadata.JavaScriptMetadataImpl;
@@ -79,6 +82,7 @@ export declare class TestUniverse implements Foundation.Universe.Universe {
     get networkProjectManager(): Bindings.NetworkProject.NetworkProjectManager;
     get pageResourceLoader(): SDK.PageResourceLoader.PageResourceLoader;
     get persistence(): Persistence.Persistence.PersistenceImpl;
+    get presentationConsoleMessageManager(): Bindings.PresentationConsoleMessageHelper.PresentationConsoleMessageManager;
     get projectSettingsModel(): ProjectSettings.ProjectSettingsModel.ProjectSettingsModel;
     get targetManager(): SDK.TargetManager.TargetManager;
     get userBadges(): Badges.UserBadges;

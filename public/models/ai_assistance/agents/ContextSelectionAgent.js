@@ -84,8 +84,12 @@ export class ContextSelectionAgent extends AiAgent {
     #networkTimeCalculator;
     #lighthouseRecording;
     #allowedOrigin;
+    #networkLog;
+    #workspace;
     constructor(opts) {
         super(opts);
+        this.#networkLog = opts.networkLog ?? Logs.NetworkLog.NetworkLog.instance();
+        this.#workspace = opts.workspace ?? Workspace.Workspace.WorkspaceImpl.instance();
         this.#performanceRecordAndReload = opts.performanceRecordAndReload;
         this.#lighthouseRecording = opts.lighthouseRecording;
         this.#onInspectElement = opts.onInspectElement;
@@ -122,7 +126,7 @@ export class ContextSelectionAgent extends AiAgent {
                 }
                 let hasCrossOriginRequest = false;
                 const requestsToShow = [];
-                for (const request of Logs.NetworkLog.NetworkLog.instance().requests()) {
+                for (const request of this.#networkLog.requests()) {
                     const requestOrigin = getRequestContextOrigin(request);
                     /**
                      * NOTE: this origin check does not ensure that all the requests are
@@ -197,7 +201,7 @@ export class ContextSelectionAgent extends AiAgent {
                         error: 'No request found',
                     };
                 }
-                const request = Logs.NetworkLog.NetworkLog.instance().requests().find(req => {
+                const request = this.#networkLog.requests().find(req => {
                     if (req.requestId() !== id) {
                         return false;
                     }
@@ -247,7 +251,7 @@ export class ContextSelectionAgent extends AiAgent {
                 const origin = allowedOriginResult.origin;
                 const files = [];
                 const uiSourceCodes = [];
-                for (const file of ContextSelectionAgent.getUISourceCodes()) {
+                for (const file of ContextSelectionAgent.getUISourceCodes(this.#workspace)) {
                     const fileUrl = file.url();
                     const fileOrigin = Common.ParsedURL.ParsedURL.extractOrigin(fileUrl);
                     if (origin && fileOrigin !== origin) {
@@ -299,7 +303,7 @@ export class ContextSelectionAgent extends AiAgent {
                     };
                 }
                 const origin = allowedOriginResult.origin;
-                const file = ContextSelectionAgent.getUISourceCodes().find(file => {
+                const file = ContextSelectionAgent.getUISourceCodes(this.#workspace).find(file => {
                     if (ContextSelectionAgent.uiSourceCodeId.get(file) !== params.id) {
                         return false;
                     }
@@ -349,9 +353,9 @@ export class ContextSelectionAgent extends AiAgent {
                 return {
                     context: PerformanceTraceContext.fromParsedTrace(result),
                     description: 'User recorded a performance trace',
-                    widgets: [{ name: 'PERFORMANCE_TRACE', data: { parsedTrace: result } }]
+                    widgets: [{ name: 'PERFORMANCE_TRACE', data: { parsedTrace: result } }],
                 };
-            }
+            },
         });
         const parseLighthouseMode = (mode) => {
             return mode === 'snapshot' ? 'snapshot' : 'navigation';
@@ -368,7 +372,7 @@ export class ContextSelectionAgent extends AiAgent {
                         type: 1 /* Host.AidaClient.ParametersTypes.STRING */,
                         description: 'The mode to run Lighthouse in. Your ONLY options are "navigation" or "snapshot". You should determine this based on the user\'s question. If the user is asking specifically about accessibility, you can run in "snapshot" mode which avoids reloading the page. If the user asks for a full Lighthouse report, you should run in "navigation" mode which is the default. These are the only options you can pass.',
                         nullable: false,
-                    }
+                    },
                 },
             },
             displayInfoFromArgs: args => {
@@ -395,7 +399,7 @@ export class ContextSelectionAgent extends AiAgent {
                     description: 'User has selected a Lighthouse report',
                     widgets: [{ name: 'LIGHTHOUSE_REPORT', data: { report: result } }],
                 };
-            }
+            },
         });
         this.declareFunction('inspectDom', {
             description: `Prompts user to select a DOM element from the page. Use this when you don't know which element is selected.`,
@@ -493,8 +497,7 @@ export class ContextSelectionAgent extends AiAgent {
      * coming from SourceMaps (usually only one) as that has simple code and
      * usually is what the user authored.
      */
-    static getUISourceCodes() {
-        const workspace = Workspace.Workspace.WorkspaceImpl.instance();
+    static getUISourceCodes(workspace = Workspace.Workspace.WorkspaceImpl.instance()) {
         const projects = workspace.projects().filter(project => project.type() === Workspace.Workspace.projectTypes.Network);
         const uiSourceCodes = new Map();
         for (const project of projects) {

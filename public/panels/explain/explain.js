@@ -466,9 +466,9 @@ var UIStrings = {
    */
   consoleMessage: "Console message",
   /**
-   * @description The title of the insight source "Stacktrace".
+   * @description Title of the insight source 'Stack trace'.
    */
-  stackTrace: "Stacktrace",
+  stackTrace: "Stack trace",
   /**
    * @description The title of the insight source "Network request".
    */
@@ -487,7 +487,7 @@ var UIStrings = {
    */
   insight: "Explanation",
   /**
-   * @description The title of the a button that closes the insight pane.
+   * @description Title of a button that closes the explanation.
    */
   closeInsight: "Close explanation",
   /**
@@ -510,9 +510,9 @@ var UIStrings = {
    */
   report: "Report legal issue",
   /**
-   * @description The text of the header inside the console insight pane when there was an error generating an insight.
+   * @description Header text shown when there was an error generating an insight.
    */
-  error: "DevTools has encountered an error",
+  error: "DevTools encountered an error",
   /**
    * @description The message shown when an error has been encountered.
    */
@@ -532,7 +532,7 @@ var UIStrings = {
    */
   notLoggedIn: "This feature is only available when you sign in to Chrome with your Google account.",
   /**
-   * @description The title of a button which opens the Chrome SignIn page.
+   * @description Title of a button which opens the Chrome sign-in page.
    */
   signIn: "Sign in",
   /**
@@ -557,12 +557,12 @@ var UIStrings = {
    * @description Shown to the user when the network request data is not
    * available and a page reload might populate it.
    */
-  reloadRecommendation: "Reload the page to capture related network request data for this message in order to create a better insight.",
+  reloadRecommendation: "Reload the page to capture related network request data for this message to get a better insight.",
   /**
    * @description Shown to the user when they need to enable the console insights feature in settings in order to use it.
    * @example {Console insights in Settings} PH1
    */
-  turnOnInSettings: "Turn on {PH1} to receive AI assistance for understanding and addressing console warnings and errors.",
+  turnOnInSettings: "Turn on {PH1} to use AI assistance for understanding and addressing console warnings and errors.",
   /**
    * @description Text for a link to Chrome DevTools Settings.
    */
@@ -1014,7 +1014,7 @@ var DEFAULT_VIEW = (input, output, target) => {
 };
 var ConsoleInsight = class _ConsoleInsight extends UI.Widget.Widget {
   static async create(promptBuilder, aidaClient) {
-    const aidaPreconditions = await Host.AidaClient.AidaClient.checkAccessPreconditions();
+    const aidaPreconditions = Host.AidaClient.HostConfigTracker.instance().aidaAvailability ?? await Host.AidaClient.AidaClient.checkAccessPreconditions();
     return html`<devtools-widget class="devtools-console-insight" ${widget((element) => new _ConsoleInsight(promptBuilder, aidaClient, aidaPreconditions, element))}>
     </devtools-widget>`;
   }
@@ -1121,7 +1121,10 @@ var ConsoleInsight = class _ConsoleInsight extends UI.Widget.Widget {
       Host.userMetrics.actionTaken(Host.UserMetrics.Action.GeneratingInsightWithoutDisclaimer);
     }
     Host.AidaClient.HostConfigTracker.instance().addEventListener("aidaAvailabilityChanged", this.#boundOnAidaAvailabilityChange);
-    void this.#onAidaAvailabilityChange();
+    const initialAvailability = Host.AidaClient.HostConfigTracker.instance().aidaAvailability;
+    if (initialAvailability !== void 0) {
+      this.#updateAidaAvailability(initialAvailability);
+    }
     if (this.#state.type !== "insight" && this.#state.type !== "error") {
       this.#state = this.#getStateFromAidaAvailability();
     }
@@ -1132,13 +1135,15 @@ var ConsoleInsight = class _ConsoleInsight extends UI.Widget.Widget {
     this.#consoleInsightsEnabledSetting?.removeChangeListener(this.#onConsoleInsightsSettingChanged, this);
     Host.AidaClient.HostConfigTracker.instance().removeEventListener("aidaAvailabilityChanged", this.#boundOnAidaAvailabilityChange);
   }
-  async #onAidaAvailabilityChange() {
-    const currentAidaAvailability = await Host.AidaClient.AidaClient.checkAccessPreconditions();
-    if (currentAidaAvailability !== this.#aidaPreconditions) {
-      this.#aidaPreconditions = currentAidaAvailability;
+  #updateAidaAvailability(aidaAvailability) {
+    if (aidaAvailability !== this.#aidaPreconditions) {
+      this.#aidaPreconditions = aidaAvailability;
       this.#state = this.#getStateFromAidaAvailability();
       void this.#generateInsightIfNeeded();
     }
+  }
+  #onAidaAvailabilityChange(ev) {
+    this.#updateAidaAvailability(ev.data);
   }
   #onConsoleInsightsSettingChanged() {
     if (this.#consoleInsightsEnabledSetting?.getIfNotDisabled() === true) {

@@ -14,20 +14,20 @@ import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 const { html, nothing, render } = Lit;
 const UIStrings = {
     /**
-     * @description The console error count in the Warning Error Counter shown in the main toolbar (top-left in DevTools). The error count refers to the number of errors currently present in the JavaScript console.
+     * @description The console error count in the Warning Error Counter shown in the main toolbar (top-left in DevTools). The error count refers to the number of errors currently present in the Console.
      */
     sErrors: '{n, plural, =1 {# error} other {# errors}}',
     /**
-     * @description The console warning count in the Warning Error Counter shown in the main toolbar (top-left in DevTools). The warning count refers to the number of warnings currently present in the JavaScript console.
+     * @description The console warning count in the Warning Error Counter shown in the main toolbar (top-left in DevTools). The warning count refers to the number of warnings currently present in the Console.
      */
     sWarnings: '{n, plural, =1 {# warning} other {# warnings}}',
     /**
-     * @description Tooltip shown for a main toolbar button that opens the Console panel
+     * @description Tooltip shown for a main toolbar button that opens the Console panel.
      * @example {2 errors, 1 warning} PH1
      */
     openConsoleToViewS: 'Open Console to view {PH1}',
     /**
-     * @description Title for the issues count in the Issues Error Counter shown in the main toolbar (top-left in DevTools). The issues count refers to the number of issues in the issues tab.
+     * @description Title for the issues count in the Issues Error Counter shown in the main toolbar (top-left in DevTools). The issues count refers to the number of issues in the Issues tab.
      */
     openIssuesToView: '{n, plural, =1 {Open Issues to view # issue:} other {Open Issues to view # issues:}}',
 };
@@ -77,7 +77,7 @@ const DEFAULT_VIEW = (input, _output, target) => {
             title=${consoleTitle}
             class=${'small'}
             jslog=${VisualLogging.counter('console').track({
-        click: true
+        click: true,
     })}
          ></icon-button>` :
         nothing}${issues ? html `<devtools-issue-counter
@@ -85,7 +85,7 @@ const DEFAULT_VIEW = (input, _output, target) => {
             title=${issuesTitle}
             .data=${issueCounterData}
             jslog=${VisualLogging.counter('issue').track({
-        click: true
+        click: true,
     })}
          ></devtools-issue-counter>` :
         nothing}</div>`, target);

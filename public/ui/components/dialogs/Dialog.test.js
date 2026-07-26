@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import * as Platform from '../../../core/platform/platform.js';
-import { assertScreenshot, dispatchClickEvent, dispatchKeyDownEvent, raf, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
+import { assertScreenshot, dispatchClickEvent, dispatchKeyDownEvent, raf, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import * as RenderCoordinator from '../render_coordinator/render_coordinator.js';
 import * as Dialogs from './dialogs.js';

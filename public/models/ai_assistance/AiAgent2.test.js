@@ -155,7 +155,7 @@ describeWithEnvironment('AiAgent2', () => {
                 }],
             [{
                     explanation: 'Styling analyzed.',
-                }]
+                }],
         ]);
         const agent = new AiAssistance.AiAgent2.AiAgent2({ aidaClient });
         const getStylesTool = AiAssistance.ToolRegistry.ToolRegistry.get('getStyles');
@@ -266,12 +266,12 @@ describeWithEnvironment('AiAgent2', () => {
                     explanation: 'I will run JS code',
                     functionCalls: [{
                             name: 'executeJavaScript',
-                            args: { code: '$0.style.color = "red"', explanation: 'changing color', title: 'change color' }
+                            args: { code: '$0.style.color = "red"', explanation: 'changing color', title: 'change color' },
                         }],
                 }],
             [{
                     explanation: 'Style changed successfully.',
-                }]
+                }],
         ]);
         const agent = new AiAssistance.AiAgent2.AiAgent2({ aidaClient });
         const executeJsTool = AiAssistance.ToolRegistry.ToolRegistry.get('executeJavaScript');

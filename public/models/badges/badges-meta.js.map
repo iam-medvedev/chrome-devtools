@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["badges-meta.prebundle.ts"],
+  "sourcesContent": ["// Copyright 2026 The Chromium Authors\n// Use of this source code is governed by a BSD-style license that can be\n// found in the LICENSE file.\n\nimport * as Common from '../../core/common/common.js';\nimport * as i18n from '../../core/i18n/i18n.js';\n\nconst UIStrings = {\n  /**\n   * @description Label for a checkbox in the settings UI. Allows developers to opt-in/opt-out\n   * of receiving Google Developer Program (GDP) badges based on their activity in Chrome DevTools.\n   */\n  earnBadges: 'Earn badges',\n} as const;\n\nconst str_ = i18n.i18n.registerUIStrings('models/badges/badges-meta.ts', UIStrings);\nconst i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);\n\nCommon.Settings.registerSettingExtension({\n  category: Common.Settings.SettingCategory.ACCOUNT,\n  settingName: 'receive-gdp-badges',\n  settingType: Common.Settings.SettingType.BOOLEAN,\n  storageType: Common.Settings.SettingStorageType.SYNCED,\n  title: i18nLazyString(UIStrings.earnBadges),\n  defaultValue: false,\n  reloadRequired: true,\n});\n"],
+  "mappings": ";AAIA,YAAY,YAAY;AACxB,YAAY,UAAU;AAEtB,IAAM,YAAY;;;;;EAKhB,YAAY;;AAGd,IAAM,OAAY,UAAK,kBAAkB,gCAAgC,SAAS;AAClF,IAAM,iBAAsB,UAAK,iCAAiC,KAAK,QAAW,IAAI;AAE/E,gBAAS,yBAAyB;EACvC,UAAQ;EACR,aAAa;EACb,aAAW;EACX,aAAW;EACX,OAAO,eAAe,UAAU,UAAU;EAC1C,cAAc;EACd,gBAAgB;CACjB;",
+  "names": []
+}

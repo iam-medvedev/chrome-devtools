@@ -143,7 +143,7 @@ describeWithEnvironment('TraceModel', function () {
                 milli() {
                     return 'FAKE-MILLI-TIME-FORMATTER';
                 },
-            }
+            },
         });
         const result = model.parsedTrace();
         assert.isOk(result);

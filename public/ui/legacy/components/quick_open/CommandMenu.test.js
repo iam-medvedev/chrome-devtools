@@ -5,7 +5,7 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as Common from '../../../../core/common/common.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
-import { createFakeSetting, deinitializeGlobalVars, initializeGlobalVars } from '../../../../testing/EnvironmentHelpers.js';
+import { createFakeSetting, deinitializeGlobalVars, initializeGlobalVars, } from '../../../../testing/EnvironmentHelpers.js';
 import { setupLocaleHooks } from '../../../../testing/LocaleHelpers.js';
 import { render } from '../../../../ui/lit/lit.js';
 import * as UI from '../../legacy.js';
@@ -130,9 +130,9 @@ describe('CommandMenu Views', () => {
                 return {
                     resolveLocation() {
                         return null;
-                    }
+                    },
                 };
-            }
+            },
         });
         UI.ViewManager.registerViewExtension({
             location: "panel" /* UI.ViewManager.ViewLocationValues.PANEL */,

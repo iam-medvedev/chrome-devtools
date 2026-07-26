@@ -86,7 +86,6 @@ export declare class SecurityMainView extends UI.Widget.VBox {
 export declare class SecurityOriginView extends UI.Widget.VBox {
     #private;
     constructor(origin: Platform.DevToolsPath.UrlString, originState: OriginState);
-    private createSanDiv;
     setSecurityState(newSecurityState: Protocol.Security.SecurityState): void;
 }
 export declare class SecurityDetailsTable {

@@ -116,7 +116,8 @@ describeWithEnvironment('BackForwardCacheView', () => {
             },
         };
         const view = createViewFunctionStub(ApplicationComponents.BackForwardCacheView.BackForwardCacheView);
-        new ApplicationComponents.BackForwardCacheView.BackForwardCacheView(view);
+        const component = new ApplicationComponents.BackForwardCacheView.BackForwardCacheView(view);
+        renderElementIntoDOM(component);
         const treeData = (await view.nextInput).frameTreeData;
         const expected = {
             frameCount: 2,
@@ -233,6 +234,21 @@ describeWithEnvironment('BackForwardCacheView', () => {
             });
         });
         sinon.assert.calledOnceWithExactly(navigateToHistoryEntrySpy, entries[0]);
+    });
+    describe('without target initially', () => {
+        it('updates BFCacheView when target is created later', async () => {
+            const performUpdateSpy = sinon.spy(ApplicationComponents.BackForwardCacheView.BackForwardCacheView.prototype, 'performUpdate');
+            const component = new ApplicationComponents.BackForwardCacheView.BackForwardCacheView();
+            renderElementIntoDOM(component);
+            const tabTarget = createTarget({ type: SDK.Target.Type.TAB });
+            const childTarget = createTarget({ parentTarget: tabTarget });
+            const model = childTarget.model(SDK.ResourceTreeModel.ResourceTreeModel);
+            await component.updateComplete;
+            sinon.assert.callCount(performUpdateSpy, 1);
+            model.dispatchEventToListeners(SDK.ResourceTreeModel.Events.BackForwardCacheDetailsUpdated, getMainFrame(childTarget));
+            await component.updateComplete;
+            sinon.assert.callCount(performUpdateSpy, 2);
+        });
     });
 });
 //# sourceMappingURL=BackForwardCacheView.test.js.map

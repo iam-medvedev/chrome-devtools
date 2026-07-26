@@ -264,9 +264,9 @@ export const DEFAULT_VIEW = (input, _output, target) => {
         container: {
             classes: [
                 'service-worker-list',
-                (input.sections.length > 0 ? 'service-worker-has-current' : 'service-worker-list-empty')
-            ]
-        }
+                (input.sections.length > 0 ? 'service-worker-has-current' : 'service-worker-list-empty'),
+            ],
+        },
     });
     // clang-format on
 };
@@ -418,7 +418,7 @@ function renderHeaderButtons(input) {
     <devtools-button .data=${{
         variant: "text" /* Buttons.Button.Variant.TEXT */,
         title: i18nString(UIStrings.networkRequests),
-        jslogContext: 'show-network-requests'
+        jslogContext: 'show-network-requests',
     }}
         .disabled=${input.isDeleted}
         @click=${input.onNetworkRequests}>
@@ -427,7 +427,7 @@ function renderHeaderButtons(input) {
     <devtools-button .data=${{
         variant: "text" /* Buttons.Button.Variant.TEXT */,
         title: i18nString(UIStrings.update),
-        jslogContext: 'update'
+        jslogContext: 'update',
     }}
         .disabled=${input.isDeleted}
         @click=${input.onUpdate}>
@@ -436,7 +436,7 @@ function renderHeaderButtons(input) {
     <devtools-button .data=${{
         variant: "text" /* Buttons.Button.Variant.TEXT */,
         title: i18nString(UIStrings.unregisterServiceWorker),
-        jslogContext: 'unregister'
+        jslogContext: 'unregister',
     }}
         .disabled=${input.isDeleted}
         @click=${input.onUnregister}>

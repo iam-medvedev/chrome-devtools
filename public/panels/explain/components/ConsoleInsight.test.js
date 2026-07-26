@@ -50,13 +50,12 @@ describeWithEnvironment('ConsoleInsight', () => {
         assert.strictEqual(nextInput.state.type, "setting-is-not-true" /* Explain.State.SETTING_IS_NOT_TRUE */);
     });
     it('generates an explanation when the user logs in', async () => {
-        const { view, component, stubAidaCheckAccessPreconditions } = await createConsoleInsightWidget({
+        const { view, component } = await createConsoleInsightWidget({
             aidaAvailability: "no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */,
         });
         assert.strictEqual(view.input.state.type, "not-logged-in" /* Explain.State.NOT_LOGGED_IN */);
         component.wasShown();
-        stubAidaCheckAccessPreconditions("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
-        Host.AidaClient.HostConfigTracker.instance().dispatchEventToListeners("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */);
+        Host.AidaClient.HostConfigTracker.instance().dispatchEventToListeners("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */, "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
         const nextInput = await view.nextInput;
         assert.strictEqual(nextInput.state.type, "insight" /* Explain.State.INSIGHT */);
     });
@@ -442,7 +441,7 @@ after
             onReminderSettingsLink: () => { },
             onEnableInsightsInSettingsLink: () => { },
             onReferencesOpen: () => { },
-        }
+        },
     };
     const createViewOutput = () => ({
         headerRef: Lit.Directives.createRef(),
@@ -464,6 +463,9 @@ after
             ...DEFAULT_INPUT,
             state: { type: "setting-is-not-true" /* Explain.State.SETTING_IS_NOT_TRUE */ },
         }, createViewOutput(), target);
+        if (document.activeElement instanceof HTMLElement) {
+            document.activeElement.blur();
+        }
         await assertScreenshot('explain/console_insight_optin.png');
     });
     it('renders the consent reminder', async () => {
@@ -472,6 +474,9 @@ after
             ...DEFAULT_INPUT,
             state: { type: "consent-reminder" /* Explain.State.CONSENT_REMINDER */ },
         }, createViewOutput(), target);
+        if (document.activeElement instanceof HTMLElement) {
+            document.activeElement.blur();
+        }
         await assertScreenshot('explain/console_insight_reminder.png');
     });
     const rendersInsight = (noLogging, golden) => async () => {
@@ -487,7 +492,7 @@ after
                         raw: '## Result\n\n',
                         depth: 2,
                         text: 'Result',
-                        tokens: [{ type: 'text', raw: 'Result', text: 'Result' }]
+                        tokens: [{ type: 'text', raw: 'Result', text: 'Result' }],
                     },
                     {
                         type: 'paragraph',
@@ -496,64 +501,72 @@ after
                         tokens: [
                             { type: 'text', raw: 'Some text with ', text: 'Some text with ' },
                             { type: 'codespan', raw: '`code`', text: 'code' },
-                            { type: 'text', raw: '. Some code:', text: '. Some code:' }
-                        ]
+                            { type: 'text', raw: '. Some code:', text: '. Some code:' },
+                        ],
                     },
                     {
                         type: 'code',
                         raw: '```ts\nconsole.log(\'test\');\ndocument.querySelector(\'test\').style = \'black\';\n```',
                         lang: 'ts',
-                        text: 'console.log(\'test\');\ndocument.querySelector(\'test\').style = \'black\';'
+                        text: 'console.log(\'test\');\ndocument.querySelector(\'test\').style = \'black\';',
                     },
-                    { type: 'space', raw: '\n\n' }, {
+                    { type: 'space', raw: '\n\n' },
+                    {
                         type: 'code',
                         raw: '```\n<!DOCTYPE html>\n<div>Hello world</div>\n<script>\n  console.log(\'Hello World\');\n</script>\n```',
                         lang: '',
-                        text: '<!DOCTYPE html>\n<div>Hello world</div>\n<script>\n  console.log(\'Hello World\');\n</script>'
+                        text: '<!DOCTYPE html>\n<div>Hello world</div>\n<script>\n  console.log(\'Hello World\');\n</script>',
                     },
-                    { type: 'space', raw: '\n\n' }, {
+                    { type: 'space', raw: '\n\n' },
+                    {
                         type: 'paragraph',
                         raw: 'Links: [https://example.com](https://example.com)\nImages: ![https://example.com](https://example.com)\n',
                         text: 'Links: [https://example.com](https://example.com)\nImages: ![https://example.com](https://example.com)',
                         tokens: [
-                            { type: 'text', raw: 'Links: ', text: 'Links: ' }, {
+                            { type: 'text', raw: 'Links: ', text: 'Links: ' },
+                            {
                                 type: 'link',
                                 raw: '[https://example.com](https://example.com)',
                                 href: 'https://example.com',
                                 title: null,
                                 text: 'https://example.com',
-                                tokens: [{ type: 'text', raw: 'https://example.com', text: 'https://example.com' }]
+                                tokens: [{ type: 'text', raw: 'https://example.com', text: 'https://example.com' }],
                             },
-                            { type: 'text', raw: '\nImages: ', text: '\nImages: ' }, {
+                            { type: 'text', raw: '\nImages: ', text: '\nImages: ' },
+                            {
                                 type: 'image',
                                 raw: '![https://example.com](https://example.com)',
                                 href: 'https://example.com',
                                 title: null,
-                                text: 'https://example.com'
-                            }
-                        ]
-                    }
+                                text: 'https://example.com',
+                            },
+                        ],
+                    },
                 ],
                 validMarkdown: true,
                 explanation: '## Result\n\nSome text with `code`. Some code:\n```ts\nconsole.log(\'test\');\ndocument.querySelector(\'test\').style = \'black\';\n```\n\n```\n<!DOCTYPE html>\n<div>Hello world</div>\n<script>\n  console.log(\'Hello World\');\n</script>\n```\n\nLinks: [https://example.com](https://example.com)\nImages: ![https://example.com](https://example.com)\n',
                 sources: [
                     {
                         type: Console.PromptBuilder.SourceType.MESSAGE,
-                        value: 'Something went wrong\n\nSomething went wrong'
+                        value: 'Something went wrong\n\nSomething went wrong',
                     },
                     { type: Console.PromptBuilder.SourceType.STACKTRACE, value: 'Stacktrace line1\nStacketrace line2' },
-                    { type: Console.PromptBuilder.SourceType.RELATED_CODE, value: 'RelatedCode' }, {
+                    { type: Console.PromptBuilder.SourceType.RELATED_CODE, value: 'RelatedCode' },
+                    {
                         type: Console.PromptBuilder.SourceType.NETWORK_REQUEST,
-                        value: 'Request: https://example.com/data.html\n\nRequest headers:\n:authority: example.com\nuser-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36\n\nResponse headers:\nResponse status: 404'
-                    }
+                        value: 'Request: https://example.com/data.html\n\nRequest headers:\n:authority: example.com\nuser-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36\n\nResponse headers:\nResponse status: 404',
+                    },
                 ],
                 metadata: {},
                 isPageReloadRecommended: false,
                 completed: true,
                 directCitationUrls: [],
-                relatedUrls: []
-            }
+                relatedUrls: [],
+            },
         }, createViewOutput(), target);
+        if (document.activeElement instanceof HTMLElement) {
+            document.activeElement.blur();
+        }
         await assertScreenshot(golden);
     };
     describe('without logging', () => {
@@ -580,7 +593,7 @@ after
                         raw: '## Result\n\n',
                         depth: 2,
                         text: 'Result',
-                        tokens: [{ type: 'text', raw: 'Result', text: 'Result' }]
+                        tokens: [{ type: 'text', raw: 'Result', text: 'Result' }],
                     },
                     {
                         type: 'paragraph',
@@ -590,45 +603,49 @@ after
                             {
                                 type: 'text',
                                 raw: 'Here is a text which contains both direct',
-                                text: 'Here is a text which contains both direct'
+                                text: 'Here is a text which contains both direct',
                             },
                             { type: 'citation', raw: '[^1]', linkText: 1 },
-                            { type: 'text', raw: ' and indirect citations.', text: ' and indirect citations.' }
-                        ]
+                            { type: 'text', raw: ' and indirect citations.', text: ' and indirect citations.' },
+                        ],
                     },
-                    { type: 'space', raw: '\n\n' }, {
+                    { type: 'space', raw: '\n\n' },
+                    {
                         type: 'paragraph',
                         raw: 'An indirect citation is a link to a reference which applies to the whole response.',
                         text: 'An indirect citation is a link to a reference which applies to the whole response.',
                         tokens: [{
                                 type: 'text',
                                 raw: 'An indirect citation is a link to a reference which applies to the whole response.',
-                                text: 'An indirect citation is a link to a reference which applies to the whole response.'
-                            }]
+                                text: 'An indirect citation is a link to a reference which applies to the whole response.',
+                            }],
                     },
-                    { type: 'space', raw: '\n\n' }, {
+                    { type: 'space', raw: '\n\n' },
+                    {
                         type: 'paragraph',
                         raw: 'A direct citation[^2] is a link to a reference, but it only applies to a specific part of the response. Direct citations are numbered and are shown as a number within square brackets in the response text.\n',
                         text: 'A direct citation[^2] is a link to a reference, but it only applies to a specific part of the response. Direct citations are numbered and are shown as a number within square brackets in the response text.',
                         tokens: [
                             { type: 'text', raw: 'A direct citation', text: 'A direct citation' },
-                            { type: 'citation', raw: '[^2]', linkText: 2 }, {
+                            { type: 'citation', raw: '[^2]', linkText: 2 },
+                            {
                                 type: 'text',
                                 raw: ' is a link to a reference, but it only applies to a specific part of the response. Direct citations are numbered and are shown as a number within square brackets in the response text.',
-                                text: ' is a link to a reference, but it only applies to a specific part of the response. Direct citations are numbered and are shown as a number within square brackets in the response text.'
-                            }
-                        ]
-                    }
+                                text: ' is a link to a reference, but it only applies to a specific part of the response. Direct citations are numbered and are shown as a number within square brackets in the response text.',
+                            },
+                        ],
+                    },
                 ],
                 validMarkdown: true,
                 explanation: '## Result\n\nHere is a text which contains both direct and indirect citations.\n\nAn indirect citation is a link to a reference which applies to the whole response.\n\nA direct citation is a link to a reference, but it only applies to a specific part of the response. Direct citations are numbered and are shown as a number within square brackets in the response text.\n',
                 sources: [
                     { type: Console.PromptBuilder.SourceType.MESSAGE, value: 'Something went wrong\n\nSomething went wrong' },
                     { type: Console.PromptBuilder.SourceType.STACKTRACE, value: 'Stacktrace line1\nStacketrace line2' },
-                    { type: Console.PromptBuilder.SourceType.RELATED_CODE, value: 'RelatedCode' }, {
+                    { type: Console.PromptBuilder.SourceType.RELATED_CODE, value: 'RelatedCode' },
+                    {
                         type: Console.PromptBuilder.SourceType.NETWORK_REQUEST,
-                        value: 'Request: https://example.com/data.html\n\nRequest headers:\n:authority: example.com\nuser-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36\n\nResponse headers:\nResponse status: 404'
-                    }
+                        value: 'Request: https://example.com/data.html\n\nRequest headers:\n:authority: example.com\nuser-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36\n\nResponse headers:\nResponse status: 404',
+                    },
                 ],
                 metadata: {
                     attributionMetadata: {
@@ -645,25 +662,30 @@ after
                                 endIndex: 176,
                                 uri: 'https://www.another-direct-citation.dev',
                                 sourceType: Host.AidaClient.CitationSourceType.WORLD_FACTS,
-                            }
-                        ]
+                            },
+                        ],
                     },
                     factualityMetadata: {
                         facts: [
-                            { sourceUri: 'https://www.indirect-citation.dev' }, { sourceUri: 'https://www.the-whole-world.dev' },
-                            { sourceUri: 'https://www.even-more-content.dev' }
-                        ]
-                    }
+                            { sourceUri: 'https://www.indirect-citation.dev' },
+                            { sourceUri: 'https://www.the-whole-world.dev' },
+                            { sourceUri: 'https://www.even-more-content.dev' },
+                        ],
+                    },
                 },
                 isPageReloadRecommended: false,
                 completed: true,
                 directCitationUrls: ['https://www.direct-citation.dev', 'https://www.another-direct-citation.dev'],
                 relatedUrls: [
-                    'https://www.indirect-citation.dev', 'https://www.the-whole-world.dev',
-                    'https://www.even-more-content.dev'
-                ]
-            }
+                    'https://www.indirect-citation.dev',
+                    'https://www.the-whole-world.dev',
+                    'https://www.even-more-content.dev',
+                ],
+            },
         }, createViewOutput(), target);
+        if (document.activeElement instanceof HTMLElement) {
+            document.activeElement.blur();
+        }
         await assertScreenshot('explain/console_insight_references.png');
     });
 });

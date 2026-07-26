@@ -21,7 +21,7 @@ describeWithEnvironment('ChatView', () => {
         renderViewForScreenshots("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */, {
             devToolsAiAssistancePerformanceAgent: {
                 enabled: true,
-            }
+            },
         });
         await assertScreenshot('ai_assistance/components/consent-view.png');
     });
@@ -29,7 +29,7 @@ describeWithEnvironment('ChatView', () => {
         renderViewForScreenshots("no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */, {
             devToolsAiAssistancePerformanceAgent: {
                 enabled: true,
-            }
+            },
         });
         await assertScreenshot('ai_assistance/components/disable-view.png');
     });

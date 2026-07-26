@@ -392,6 +392,14 @@ var ScreencastView = class extends UI.Widget.VBox {
     super.willHide();
     this.stopCasting();
   }
+  onDetach() {
+    this.navigationProgressBar?.dispose();
+    SDK2.TargetManager.TargetManager.instance().removeEventListener("SuspendStateChanged", this.onSuspendStateChange, this);
+    if (this.resourceTreeModel) {
+      this.resourceTreeModel.removeEventListener(SDK2.ResourceTreeModel.Events.PrimaryPageChanged, this.requestNavigationHistoryEvent, this);
+      this.resourceTreeModel.removeEventListener(SDK2.ResourceTreeModel.Events.CachedResourcesLoaded, this.requestNavigationHistoryEvent, this);
+    }
+  }
   async startCasting() {
     if (SDK2.TargetManager.TargetManager.instance().allTargetsSuspended()) {
       return;
@@ -769,10 +777,8 @@ var ScreencastView = class extends UI.Widget.VBox {
   highlightFrame(_frameId) {
   }
   createCheckerboardPattern(context) {
-    const pattern = document.createElement("canvas");
     const size = 32;
-    pattern.width = size * 2;
-    pattern.height = size * 2;
+    const pattern = new OffscreenCanvas(size * 2, size * 2);
     const pctx = pattern.getContext("2d", { willReadFrequently: true });
     pctx.fillStyle = "var(--sys-color-neutral-outline)";
     pctx.fillRect(0, 0, size * 2, size * 2);
@@ -899,6 +905,8 @@ var NAVBAR_HEIGHT = 29;
 var HTTP_REGEX = /^http:\/\/(.+)/;
 var SCHEME_REGEX = /^(https?|about|chrome):/;
 var ProgressTracker = class {
+  resourceTreeModel;
+  networkManager;
   element;
   requestIds;
   startedRequests;
@@ -906,18 +914,30 @@ var ProgressTracker = class {
   maxDisplayedProgress;
   constructor(resourceTreeModel, networkManager, element) {
     this.element = element;
-    if (resourceTreeModel) {
-      resourceTreeModel.addEventListener(SDK2.ResourceTreeModel.Events.PrimaryPageChanged, this.onPrimaryPageChanged, this);
-      resourceTreeModel.addEventListener(SDK2.ResourceTreeModel.Events.Load, this.onLoad, this);
+    this.resourceTreeModel = resourceTreeModel;
+    this.networkManager = networkManager;
+    if (this.resourceTreeModel) {
+      this.resourceTreeModel.addEventListener(SDK2.ResourceTreeModel.Events.PrimaryPageChanged, this.onPrimaryPageChanged, this);
+      this.resourceTreeModel.addEventListener(SDK2.ResourceTreeModel.Events.Load, this.onLoad, this);
     }
-    if (networkManager) {
-      networkManager.addEventListener(SDK2.NetworkManager.Events.RequestStarted, this.onRequestStarted, this);
-      networkManager.addEventListener(SDK2.NetworkManager.Events.RequestFinished, this.onRequestFinished, this);
+    if (this.networkManager) {
+      this.networkManager.addEventListener(SDK2.NetworkManager.Events.RequestStarted, this.onRequestStarted, this);
+      this.networkManager.addEventListener(SDK2.NetworkManager.Events.RequestFinished, this.onRequestFinished, this);
     }
     this.requestIds = null;
     this.startedRequests = 0;
     this.finishedRequests = 0;
     this.maxDisplayedProgress = 0;
+  }
+  dispose() {
+    if (this.resourceTreeModel) {
+      this.resourceTreeModel.removeEventListener(SDK2.ResourceTreeModel.Events.PrimaryPageChanged, this.onPrimaryPageChanged, this);
+      this.resourceTreeModel.removeEventListener(SDK2.ResourceTreeModel.Events.Load, this.onLoad, this);
+    }
+    if (this.networkManager) {
+      this.networkManager.removeEventListener(SDK2.NetworkManager.Events.RequestStarted, this.onRequestStarted, this);
+      this.networkManager.removeEventListener(SDK2.NetworkManager.Events.RequestFinished, this.onRequestFinished, this);
+    }
   }
   onPrimaryPageChanged() {
     this.requestIds = /* @__PURE__ */ new Map();
@@ -1008,7 +1028,9 @@ var ScreencastApp = class _ScreencastApp {
   screenCaptureModel;
   screencastView;
   rootView;
-  constructor() {
+  #universe;
+  constructor(universe) {
+    this.#universe = universe;
     this.enabledSetting = Common2.Settings.Settings.instance().createSetting("screencast-enabled", true);
     this.toggleButton = new UI2.Toolbar.ToolbarToggle(i18nString2(UIStrings2.toggleScreencast), "devices");
     this.toggleButton.setToggled(this.enabledSetting.get());
@@ -1016,14 +1038,17 @@ var ScreencastApp = class _ScreencastApp {
     this.toggleButton.addEventListener("Click", this.toggleButtonClicked, this);
     SDK3.TargetManager.TargetManager.instance().observeModels(SDK3.ScreenCaptureModel.ScreenCaptureModel, this);
   }
-  static instance() {
+  static instance(universe) {
     if (!appInstance) {
-      appInstance = new _ScreencastApp();
+      if (!universe) {
+        throw new Error("ScreencastApp.instance() requires a Universe on initial instantiation");
+      }
+      appInstance = new _ScreencastApp(universe);
     }
     return appInstance;
   }
-  presentUI(document2) {
-    this.rootView = new UI2.RootView.RootView();
+  presentUI(document) {
+    this.rootView = new UI2.RootView.RootView(this.#universe);
     this.rootView.registerRequiredCSS(UI2.inspectorCommonStyles);
     this.rootSplitWidget = new UI2.SplitWidget.SplitWidget(false, true, "inspector-view.screencast-split-view-state", 300, 300);
     this.rootSplitWidget.setVertical(true);
@@ -1032,7 +1057,7 @@ var ScreencastApp = class _ScreencastApp {
     this.rootSplitWidget.hideMain();
     this.rootSplitWidget.setSidebarWidget(UI2.InspectorView.InspectorView.instance());
     UI2.InspectorView.InspectorView.instance().setOwnerSplit(this.rootSplitWidget);
-    this.rootView.attachToDocument(document2);
+    this.rootView.attachToDocument(document);
     this.rootView.focus();
   }
   modelAdded(screenCaptureModel) {
@@ -1100,8 +1125,8 @@ var ScreencastAppProvider = class _ScreencastAppProvider {
     }
     return screencastAppProviderInstance;
   }
-  createApp() {
-    return ScreencastApp.instance();
+  createApp(universe) {
+    return ScreencastApp.instance(universe);
   }
 };
 export {

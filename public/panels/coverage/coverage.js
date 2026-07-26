@@ -17,7 +17,7 @@ __export(CoverageModel_exports, {
 import * as Common from "./../../core/common/common.js";
 import * as Platform from "./../../core/platform/platform.js";
 import * as SDK from "./../../core/sdk/sdk.js";
-import * as TextUtils from "./../../models/text_utils/text_utils.js";
+import * as TextUtils from "./../../core/text_utils/text_utils.js";
 import * as Workspace from "./../../models/workspace/workspace.js";
 var Events;
 (function(Events2) {
@@ -44,6 +44,7 @@ var CoverageModel = class _CoverageModel extends SDK.SDKModel.SDKModel {
   sourceMapManager;
   willResolveSourceMaps;
   processSourceMapBacklog;
+  isPolling;
   constructor(target) {
     super(target);
     this.cpuProfilerModel = target.model(SDK.CPUProfilerModel.CPUProfilerModel);
@@ -63,6 +64,7 @@ var CoverageModel = class _CoverageModel extends SDK.SDKModel.SDKModel {
     this.performanceTraceRecording = false;
     this.willResolveSourceMaps = false;
     this.processSourceMapBacklog = [];
+    this.isPolling = false;
   }
   async start(jsCoveragePerBlock) {
     if (this.suspensionState !== "Active") {
@@ -137,20 +139,28 @@ var CoverageModel = class _CoverageModel extends SDK.SDKModel.SDKModel {
     this.dispatchEventToListeners(Events.CoverageReset);
   }
   async startPolling() {
-    if (this.currentPollPromise || this.suspensionState !== "Active") {
+    if (this.isPolling || this.suspensionState !== "Active") {
       return;
     }
+    this.isPolling = true;
     await this.pollLoop();
   }
   async pollLoop() {
     this.clearTimer();
+    if (!this.isPolling) {
+      return;
+    }
     this.currentPollPromise = this.pollAndCallback();
     await this.currentPollPromise;
+    if (!this.isPolling) {
+      return;
+    }
     if (this.suspensionState === "Active" || this.performanceTraceRecording) {
       this.pollTimer = window.setTimeout(() => this.pollLoop(), COVERAGE_POLLING_PERIOD_MS);
     }
   }
   async stopPolling() {
+    this.isPolling = false;
     this.clearTimer();
     await this.currentPollPromise;
     this.currentPollPromise = null;
@@ -1265,7 +1275,7 @@ __export(CoverageDecorationManager_exports, {
   decoratorType: () => decoratorType
 });
 import * as Platform2 from "./../../core/platform/platform.js";
-import * as TextUtils2 from "./../../models/text_utils/text_utils.js";
+import * as TextUtils2 from "./../../core/text_utils/text_utils.js";
 import * as Workspace5 from "./../../models/workspace/workspace.js";
 var decoratorType = "coverage";
 var CoverageDecorationManager = class _CoverageDecorationManager {
@@ -1566,12 +1576,12 @@ var UIStrings2 = {
    * @description Message in Coverage View of the Coverage tab.
    * @example {Reload page} PH1
    */
-  clickTheReloadButtonSToReloadAnd: "Click the \u201C{PH1}\u201D button to reload and start capturing coverage.",
+  clickTheReloadButtonSToReloadAnd: 'Click the "{PH1}" button to reload and start capturing coverage.',
   /**
    * @description Message in Coverage View of the Coverage tab.
    * @example {Start recording} PH1
    */
-  clickTheRecordButtonSToStart: "Click the \u201C{PH1}\u201D button to start capturing coverage.",
+  clickTheRecordButtonSToStart: 'Click the "{PH1}" button to start capturing coverage.',
   /**
    * @description Message in the Coverage View explaining that DevTools could not capture coverage.
    */

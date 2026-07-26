@@ -7,7 +7,7 @@ import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as ProtocolClient from '../../core/protocol_client/protocol_client.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import * as TextUtils from '../../models/text_utils/text_utils.js';
+import * as TextUtils from '../../core/text_utils/text_utils.js';
 import { findMenuItemWithLabel } from '../../testing/ContextMenuHelpers.js';
 import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { deinitializeGlobalVars, initializeGlobalVars } from '../../testing/EnvironmentHelpers.js';
@@ -402,7 +402,7 @@ describe('ProtocolMonitor', () => {
                         result: { test: 'Test' },
                         requestTime: 1,
                         elapsedTime: 2,
-                    }
+                    },
                 ],
                 selectedMessage: undefined,
                 sidebarVisible: false,
@@ -452,7 +452,7 @@ describe('ProtocolMonitor', () => {
                     result: { test: 'Test' },
                     requestTime: 1,
                     elapsedTime: 2,
-                }
+                },
             ];
             const viewInput = {
                 messages,
@@ -477,7 +477,7 @@ describe('ProtocolMonitor', () => {
                 onEditorSubmit: () => { },
                 targets: [
                     { id: () => 'main', name: () => 'Main', inspectedURL: () => 'www.example.com' },
-                    { id: () => 'prerender', name: () => 'Prerender', inspectedURL: () => 'www.example.com/prerender' }
+                    { id: () => 'prerender', name: () => 'Prerender', inspectedURL: () => 'www.example.com/prerender' },
                 ],
                 selectedTargetId: 'prerender',
             };

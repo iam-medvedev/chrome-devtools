@@ -42,9 +42,7 @@ import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Foundation from '../../foundation/foundation.js';
 import * as AiAssistanceModel from '../../models/ai_assistance/ai_assistance.js';
-import * as Bindings from '../../models/bindings/bindings.js';
 import * as CrUXManager from '../../models/crux-manager/crux-manager.js';
-import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import * as Persistence from '../../models/persistence/persistence.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as PanelCommon from '../../panels/common/common.js';
@@ -119,7 +117,7 @@ const UIStrings = {
     /**
      * @description Title of the menu item in the customize and control menu leading to the DevTools MCP repository.
      */
-    getDevToolsMcp: 'Get `DevTools MCP`'
+    getDevToolsMcp: 'Get `DevTools MCP`',
 };
 const str_ = i18n.i18n.registerUIStrings('entrypoints/main/MainImpl.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -387,17 +385,9 @@ export class MainImpl {
         UI.ContextMenu.ContextMenu.initialize();
         UI.ContextMenu.ContextMenu.installHandler(document);
         UI.ViewManager.ViewManager.instance({ forceNew: true, universe: this.#universe });
-        // These instances need to be created early so they don't miss any events about requests/issues/etc.
-        IssuesManager.IssuesManager.IssuesManager.instance({
-            forceNew: true,
-            ensureFirst: true,
-            showThirdPartyIssuesSetting: IssuesManager.Issue.getShowThirdPartyIssuesSetting(Common.Settings.Settings.instance()),
-            hideIssueSetting: IssuesManager.IssuesManager.getHideIssueByCodeSetting(),
-        });
         UI.DockController.DockController.instance({ forceNew: true, canDock });
         const targetManager = SDK.TargetManager.TargetManager.instance();
         targetManager.addEventListener("SuspendStateChanged" /* SDK.TargetManager.Events.SUSPEND_STATE_CHANGED */, this.#onSuspendStateChanged.bind(this));
-        new Bindings.PresentationConsoleMessageHelper.PresentationConsoleMessageManager();
         targetManager.setScopeTarget(targetManager.primaryPageTarget());
         UI.Context.Context.instance().addFlavorChangeListener(SDK.Target.Target, ({ data }) => {
             const outermostTarget = data?.outermostTarget();
@@ -411,11 +401,13 @@ export class MainImpl {
         new ExecutionContextSelector(targetManager, UI.Context.Context.instance());
         this.#universe.domDebuggerManager.initialize();
         this.#universe.cpuThrottlingManager.initialize();
+        this.#universe.presentationConsoleMessageManager.enable();
         void this.#universe.liveMetrics.enable();
         CrUXManager.CrUXManager.instance();
         const builtInAi = AiAssistanceModel.BuiltInAi.BuiltInAi.instance();
         builtInAi.addEventListener("downloadedAndSessionCreated" /* AiAssistanceModel.BuiltInAi.Events.DOWNLOADED_AND_SESSION_CREATED */, () => Snackbar.Snackbar.Snackbar.show({ message: i18nString(UIStrings.aiModelDownloaded) }));
         new PauseListener();
+        new ConsoleProfileFinishedListener();
         const actionRegistryInstance = UI.ActionRegistry.ActionRegistry.instance({ forceNew: true });
         // Required for legacy a11y layout tests
         UI.ShortcutRegistry.ShortcutRegistry.instance({ forceNew: true, actionRegistry: actionRegistryInstance });
@@ -453,7 +445,7 @@ export class MainImpl {
     }
     async #showAppUI(appProvider) {
         _a.time('Main._showAppUI');
-        const app = appProvider.createApp();
+        const app = appProvider.createApp(this.#universe);
         // It is important to kick controller lifetime after apps are instantiated.
         UI.DockController.DockController.instance().initialize();
         ThemeSupport.ThemeSupport.instance().fetchColorsAndApplyHostTheme();
@@ -745,7 +737,10 @@ export class MainMenuItem {
         }
         const button = this.#item.element;
         function setDockSide(side) {
-            void dockController.once("AfterDockSideChanged" /* UI.DockController.Events.AFTER_DOCK_SIDE_CHANGED */).then(() => button.focus());
+            if (dockController.dockSide() !== "undocked" /* UI.DockController.DockState.UNDOCKED */ &&
+                side !== "undocked" /* UI.DockController.DockState.UNDOCKED */) {
+                void dockController.once("AfterDockSideChanged" /* UI.DockController.Events.AFTER_DOCK_SIDE_CHANGED */).then(() => button.focus());
+            }
             dockController.setDockSide(side);
             contextMenu.discard();
         }
@@ -818,6 +813,14 @@ export class PauseListener {
         const debuggerPausedDetails = debuggerModel.debuggerPausedDetails();
         UI.Context.Context.instance().setFlavor(SDK.Target.Target, debuggerModel.target());
         void Common.Revealer.reveal(debuggerPausedDetails);
+    }
+}
+export class ConsoleProfileFinishedListener {
+    constructor() {
+        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.CPUProfilerModel.CPUProfilerModel, "ConsoleProfileFinished" /* SDK.CPUProfilerModel.Events.CONSOLE_PROFILE_FINISHED */, this.#consoleProfileFinished, this);
+    }
+    #consoleProfileFinished(event) {
+        void Common.Revealer.reveal(event.data);
     }
 }
 /** Unused but mentioned at https://chromedevtools.github.io/devtools-protocol/#:~:text=use%20Main.MainImpl.-,sendOverProtocol,-()%20in%20the **/

@@ -1,7 +1,6 @@
 // Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable @devtools/no-imperative-dom-api */
 /*
  * Copyright (C) 2009 280 North Inc. All Rights Reserved.
  *
@@ -26,30 +25,9 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
-import { Icon } from '../../ui/kit/kit.js';
-import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as UI from '../../ui/legacy/legacy.js';
-const UIStrings = {
-    /**
-     * @description This message is presented as a tooltip when developers investigate the performance
-     * of a page. The tooltip alerts developers that some parts of code in execution were not optimized
-     * (made to run faster) and that associated timing information must be considered with this in
-     * mind. The placeholder text is the reason the code was not optimized.
-     * @example {Optimized too many times} PH1
-     */
-    notOptimizedS: 'Not optimized: {PH1}',
-    /**
-     * @description Generic text with two placeholders separated by a comma
-     * @example {1 613 680} PH1
-     * @example {44 %} PH2
-     */
-    genericTextTwoPlaceholders: '{PH1}, {PH2}',
-};
-const str_ = i18n.i18n.registerUIStrings('panels/profiler/ProfileDataGrid.ts', UIStrings);
-const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export class ProfileDataGridNode extends DataGrid.DataGrid.DataGridNode {
+export class ProfileEntry {
     searchMatchedSelfColumn;
     searchMatchedTotalColumn;
     searchMatchedFunctionColumn;
@@ -63,13 +41,16 @@ export class ProfileDataGridNode extends DataGrid.DataGrid.DataGridNode {
     functionName;
     deoptReason;
     url;
-    linkElement;
     populated;
     savedSelf;
     savedTotal;
     savedChildren;
+    children = [];
+    parent = null;
+    expanded = false;
+    hasChildrenInternal;
+    savedPosition = null;
     constructor(profileNode, owningTree, hasChildren) {
-        super(null, hasChildren);
         this.searchMatchedSelfColumn = false;
         this.searchMatchedTotalColumn = false;
         this.searchMatchedFunctionColumn = false;
@@ -83,8 +64,8 @@ export class ProfileDataGridNode extends DataGrid.DataGrid.DataGridNode {
         this.functionName = UI.UIUtils.beautifyFunctionName(profileNode.functionName);
         this.deoptReason = profileNode.deoptReason || '';
         this.url = profileNode.url;
-        this.linkElement = null;
         this.populated = false;
+        this.hasChildrenInternal = hasChildren;
     }
     static sort(gridNodeGroups, comparator, force) {
         for (let gridNodeGroupIndex = 0; gridNodeGroupIndex < gridNodeGroups.length; ++gridNodeGroupIndex) {
@@ -92,12 +73,7 @@ export class ProfileDataGridNode extends DataGrid.DataGrid.DataGridNode {
             const count = gridNodes.length;
             for (let index = 0; index < count; ++index) {
                 const gridNode = gridNodes[index];
-                // If the grid node is collapsed, then don't sort children (save operation for later).
-                // If the grid node has the same sorting as previously, then there is no point in sorting it again.
                 if (!force && (!gridNode.expanded || gridNode.lastComparator === comparator)) {
-                    if (gridNode.children.length) {
-                        gridNode.shouldRefreshChildren = true;
-                    }
                     continue;
                 }
                 gridNode.lastComparator = comparator;
@@ -107,9 +83,6 @@ export class ProfileDataGridNode extends DataGrid.DataGrid.DataGridNode {
                     // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
                     // @ts-expect-error
                     children.sort(comparator);
-                    for (let childIndex = 0; childIndex < childCount; ++childIndex) {
-                        children[childIndex].recalculateSiblings(childIndex);
-                    }
                     gridNodeGroups.push(children);
                 }
             }
@@ -152,74 +125,40 @@ export class ProfileDataGridNode extends DataGrid.DataGrid.DataGridNode {
             container.sort(currentComparator, true);
         }
     }
-    createCell(columnId) {
-        switch (columnId) {
-            case 'self': {
-                const cell = this.createValueCell(this.self, this.selfPercent, columnId);
-                cell.classList.toggle('highlight', this.searchMatchedSelfColumn);
-                return cell;
-            }
-            case 'total': {
-                const cell = this.createValueCell(this.total, this.totalPercent, columnId);
-                cell.classList.toggle('highlight', this.searchMatchedTotalColumn);
-                return cell;
-            }
-            case 'function': {
-                const cell = this.createTD(columnId);
-                cell.classList.toggle('highlight', this.searchMatchedFunctionColumn);
-                if (this.deoptReason) {
-                    cell.classList.add('not-optimized');
-                    const warningIcon = new Icon();
-                    warningIcon.name = 'warning-filled';
-                    warningIcon.classList.add('profile-warn-marker', 'small');
-                    UI.Tooltip.Tooltip.install(warningIcon, i18nString(UIStrings.notOptimizedS, { PH1: this.deoptReason }));
-                    cell.appendChild(warningIcon);
-                }
-                UI.UIUtils.createTextChild(cell, this.functionName);
-                if (this.profileNode.scriptId === '0') {
-                    return cell;
-                }
-                const urlElement = this.tree.formatter.linkifyNode(this);
-                if (!urlElement) {
-                    return cell;
-                }
-                urlElement.style.maxWidth = '75%';
-                cell.appendChild(urlElement);
-                this.linkElement = urlElement;
-                return cell;
-            }
-        }
-        return super.createCell(columnId);
+    hasChildren() {
+        return this.hasChildrenInternal || this.children.length > 0;
     }
-    createValueCell(value, percent, columnId) {
-        const cell = document.createElement('td');
-        cell.classList.add('numeric-column');
-        const div = cell.createChild('div', 'profile-multiple-values');
-        const valueSpan = div.createChild('span');
-        const valueText = this.tree.formatter.formatValue(value, this);
-        valueSpan.textContent = valueText;
-        const percentSpan = div.createChild('span', 'percent-column');
-        const percentText = this.tree.formatter.formatPercent(percent, this);
-        percentSpan.textContent = percentText;
-        const valueAccessibleText = this.tree.formatter.formatValueAccessibleText(value, this);
-        this.setCellAccessibleName(i18nString(UIStrings.genericTextTwoPlaceholders, { PH1: valueAccessibleText, PH2: percentText }), cell, columnId);
-        return cell;
+    setHasChildren(hasChildren) {
+        this.hasChildrenInternal = hasChildren;
     }
-    sort(comparator, force) {
-        const sortComparator = comparator;
-        return ProfileDataGridNode.sort([[this]], sortComparator, force);
+    appendChild(child) {
+        this.insertChild(child, this.children.length);
     }
     insertChild(child, index) {
-        const profileDataGridNode = child;
-        super.insertChild(profileDataGridNode, index);
-        this.childrenByCallUID.set(profileDataGridNode.callUID, (profileDataGridNode));
+        const oldIndex = child.parent?.children.indexOf(child) ?? -1;
+        if (child.parent === this && oldIndex !== -1 && oldIndex < index) {
+            index--;
+        }
+        if (child.parent) {
+            child.parent.removeChild(child);
+        }
+        this.children.splice(index, 0, child);
+        child.parent = this;
+        this.childrenByCallUID.set(child.callUID, child);
     }
-    removeChild(profileDataGridNode) {
-        super.removeChild(profileDataGridNode);
-        this.childrenByCallUID.delete(profileDataGridNode.callUID);
+    removeChild(child) {
+        const index = this.children.indexOf(child);
+        if (index !== -1) {
+            this.children.splice(index, 1);
+            child.parent = null;
+            this.childrenByCallUID.delete(child.callUID);
+        }
     }
     removeChildren() {
-        super.removeChildren();
+        for (const child of this.children) {
+            child.parent = null;
+        }
+        this.children = [];
         this.childrenByCallUID.clear();
     }
     findChild(node) {
@@ -235,13 +174,11 @@ export class ProfileDataGridNode extends DataGrid.DataGrid.DataGridNode {
         return this.total / this.tree.total * 100.0;
     }
     populate() {
-        ProfileDataGridNode.populate(this);
+        ProfileEntry.populate(this);
     }
     populateChildren() {
         // Not implemented.
     }
-    // When focusing and collapsing we modify lots of nodes in the tree.
-    // This allows us to restore them all to their original state when we revert.
     save() {
         if (this.savedChildren) {
             return;
@@ -250,10 +187,6 @@ export class ProfileDataGridNode extends DataGrid.DataGrid.DataGridNode {
         this.savedTotal = this.total;
         this.savedChildren = this.children.slice();
     }
-    /**
-     * When focusing and collapsing we modify lots of nodes in the tree.
-     * This allows us to restore them all to their original state when we revert.
-     */
     restore() {
         if (!this.savedChildren) {
             return;
@@ -271,7 +204,28 @@ export class ProfileDataGridNode extends DataGrid.DataGrid.DataGridNode {
         }
     }
     merge(child, shouldAbsorb) {
-        ProfileDataGridNode.merge(this, child, shouldAbsorb);
+        ProfileEntry.merge(this, child, shouldAbsorb);
+    }
+    savePosition() {
+        if (this.savedPosition) {
+            return;
+        }
+        if (!this.parent) {
+            throw new Error('savePosition: Node must have a parent.');
+        }
+        this.savedPosition = { parent: this.parent, index: this.parent.children.indexOf(this) };
+    }
+    restorePosition() {
+        if (!this.savedPosition) {
+            return;
+        }
+        if (this.parent !== this.savedPosition.parent) {
+            this.savedPosition.parent.insertChild(this, this.savedPosition.index);
+        }
+        this.savedPosition = null;
+    }
+    sort(comparator, force) {
+        return ProfileEntry.sort([[this]], comparator, force);
     }
 }
 export class ProfileDataGridTree {
@@ -345,11 +299,29 @@ export class ProfileDataGridTree {
     exclude(_profileDataGridNode) {
     }
     insertChild(child, index) {
-        const childToInsert = (child);
-        this.children.splice(index, 0, childToInsert);
-        this.childrenByCallUID.set(childToInsert.callUID, child);
+        const oldIndex = child.parent?.children.indexOf(child) ?? -1;
+        if (child.parent === this && oldIndex !== -1 && oldIndex < index) {
+            index--;
+        }
+        if (child.parent) {
+            child.parent.removeChild(child);
+        }
+        this.children.splice(index, 0, child);
+        child.parent = this;
+        this.childrenByCallUID.set(child.callUID, child);
+    }
+    removeChild(child) {
+        const index = this.children.indexOf(child);
+        if (index !== -1) {
+            this.children.splice(index, 1);
+            child.parent = null;
+            this.childrenByCallUID.delete(child.callUID);
+        }
     }
     removeChildren() {
+        for (const child of this.children) {
+            child.parent = null;
+        }
         this.children = [];
         this.childrenByCallUID.clear();
     }
@@ -365,7 +337,7 @@ export class ProfileDataGridTree {
     sort(comparator, force) {
         // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
         // @ts-expect-error
-        return ProfileDataGridNode.sort([[this]], comparator, force);
+        return ProfileEntry.sort([[this]], comparator, force);
     }
     save() {
         if (this.savedChildren) {
@@ -378,14 +350,15 @@ export class ProfileDataGridTree {
         if (!this.savedChildren) {
             return;
         }
-        this.children = this.savedChildren;
+        this.removeChildren();
         if (this.savedTotal) {
             this.total = this.savedTotal;
         }
-        const children = this.children;
+        const children = this.savedChildren;
         const count = children.length;
         for (let index = 0; index < count; ++index) {
             (children[index]).restore();
+            this.appendChild(children[index]);
         }
         this.savedChildren = null;
     }
@@ -477,7 +450,6 @@ export class ProfileDataGridTree {
             }
             if (profileDataGridNode.searchMatchedSelfColumn || profileDataGridNode.searchMatchedTotalColumn ||
                 profileDataGridNode.searchMatchedFunctionColumn) {
-                profileDataGridNode.refresh();
                 return true;
             }
             return false;
@@ -492,15 +464,18 @@ export class ProfileDataGridTree {
         }
         this.searchResults = [];
         const deepSearch = this.deepSearch;
-        let current;
-        for (current = this.children[0]; current; current = current.traverseNextNode(!deepSearch, null, !deepSearch)) {
-            const item = current;
-            if (!item) {
-                break;
+        const walk = (node) => {
+            if (matchesQuery(node)) {
+                this.searchResults.push({ profileNode: node });
             }
-            if (matchesQuery(item)) {
-                this.searchResults.push({ profileNode: item });
+            if (deepSearch || node.expanded) {
+                for (const child of node.children) {
+                    walk(child);
+                }
             }
+        };
+        for (const child of this.children) {
+            walk(child);
         }
         this.searchResultIndex = jumpBackwards ? 0 : this.searchResults.length - 1;
         this.searchableView.updateSearchMatchesCount(this.searchResults.length);
@@ -513,7 +488,6 @@ export class ProfileDataGridTree {
                 profileNode.searchMatchedSelfColumn = false;
                 profileNode.searchMatchedTotalColumn = false;
                 profileNode.searchMatchedFunctionColumn = false;
-                profileNode.refresh();
             }
         }
         this.searchResults = [];
@@ -547,8 +521,6 @@ export class ProfileDataGridTree {
         if (!searchResult) {
             return;
         }
-        const profileNode = searchResult.profileNode;
-        profileNode.revealAndSelect();
         this.searchableView.updateCurrentMatchIndex(index);
     }
 }

@@ -4,7 +4,7 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import * as Host from '../../core/host/host.js';
-import { dispatchClickEvent, dispatchKeyDownEvent, dispatchMouseMoveEvent, raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { dispatchClickEvent, dispatchKeyDownEvent, dispatchMouseMoveEvent, raf, renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { expectCall } from '../../testing/ExpectStubCall.js';
 import * as ProtocolMonitor from './protocol_monitor.js';
@@ -1124,7 +1124,8 @@ describeWithEnvironment('JSONEditor', () => {
             const jsonEditor = renderJSONEditor();
             jsonEditor.metadataByCommand = new Map([
                 [
-                    'Test.test', {
+                    'Test.test',
+                    {
                         parameters: [{
                                 name: 'test',
                                 type: "unknown" /* ProtocolMonitor.JSONEditor.ParameterType.UNKNOWN */,
@@ -1134,7 +1135,7 @@ describeWithEnvironment('JSONEditor', () => {
                             }],
                         description: 'Description',
                         replyArgs: [],
-                    }
+                    },
                 ],
             ]);
             jsonEditor.commandToDisplay = { command: 'Test.test' };
@@ -1148,7 +1149,8 @@ describeWithEnvironment('JSONEditor', () => {
             const jsonEditor = renderJSONEditor();
             jsonEditor.metadataByCommand = new Map([
                 [
-                    'Test.test', {
+                    'Test.test',
+                    {
                         parameters: [{
                                 name: 'test',
                                 type: "string" /* ProtocolMonitor.JSONEditor.ParameterType.STRING */,
@@ -1158,7 +1160,7 @@ describeWithEnvironment('JSONEditor', () => {
                             }],
                         description: 'Description',
                         replyArgs: [],
-                    }
+                    },
                 ],
             ]);
             jsonEditor.commandToDisplay = { command: 'Test.test' };
@@ -1173,7 +1175,8 @@ describeWithEnvironment('JSONEditor', () => {
             const jsonEditor = renderJSONEditor();
             jsonEditor.metadataByCommand = new Map([
                 [
-                    'Test.test', {
+                    'Test.test',
+                    {
                         parameters: [{
                                 name: 'test',
                                 type: "string" /* ProtocolMonitor.JSONEditor.ParameterType.STRING */,
@@ -1183,7 +1186,7 @@ describeWithEnvironment('JSONEditor', () => {
                             }],
                         description: 'Description',
                         replyArgs: [],
-                    }
+                    },
                 ],
             ]);
             jsonEditor.commandToDisplay = { command: 'Test.test' };

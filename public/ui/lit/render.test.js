@@ -87,7 +87,7 @@ describe('render', () => {
                 attributes: { 'data-test': 'value1' },
                 classes: ['class1'],
                 listeners: { click: listener },
-            }
+            },
         });
         assert.strictEqual(container.getAttribute('data-test'), 'value1');
         assert.isTrue(container.classList.contains('class1'));
@@ -99,7 +99,7 @@ describe('render', () => {
                 attributes: { 'data-test2': 'value2' },
                 classes: ['class2'],
                 listeners: {},
-            }
+            },
         });
         assert.isFalse(container.hasAttribute('data-test'));
         assert.strictEqual(container.getAttribute('data-test2'), 'value2');

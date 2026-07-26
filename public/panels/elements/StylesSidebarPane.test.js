@@ -6,15 +6,19 @@ import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as TextUtils from '../../core/text_utils/text_utils.js';
+import * as Bindings from '../../models/bindings/bindings.js';
 import * as ComputedStyle from '../../models/computed_style/computed_style.js';
+import * as Workspace from '../../models/workspace/workspace.js';
 import { raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment, updateHostConfig, } from '../../testing/EnvironmentHelpers.js';
 import { expectCall } from '../../testing/ExpectStubCall.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
-import { createStubbedDomNodeWithModels, getMatchedStyles } from '../../testing/StyleHelpers.js';
+import { createStubbedDomNodeWithModels, getMatchedStyles, ruleMatch } from '../../testing/StyleHelpers.js';
 import * as TextEditor from '../../ui/components/text_editor/text_editor.js';
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
+import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { html } from '../../ui/lit/lit.js';
 import * as PanelsCommon from '../common/common.js';
@@ -51,6 +55,95 @@ describe('StylesSidebarPane', () => {
             assert.strictEqual(Elements.StylesSidebarPane.escapeUrlAsCssComment('https://abc.com/*/?q=*'), 'https://abc.com/*/?q=*');
             assert.strictEqual(Elements.StylesSidebarPane.escapeUrlAsCssComment('https://abc.com/*/?q=*/'), 'https://abc.com/*/?q=*%2F');
             assert.strictEqual(Elements.StylesSidebarPane.escapeUrlAsCssComment('https://abc.com/*/?q=*/#hash'), 'https://abc.com/*/?q=*%2F#hash');
+        });
+        describe('update', () => {
+            it('does not update when a selector is being edited', () => {
+                const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(new ComputedStyle.ComputedStyleModel.ComputedStyleModel());
+                const requestUpdateSpy = sinon.spy(stylesSidebarPane, 'requestUpdate');
+                const event = { data: null };
+                // The pane should update when a selector is not being edited.
+                stylesSidebarPane.onCSSModelChanged(event);
+                sinon.assert.calledOnce(requestUpdateSpy);
+                requestUpdateSpy.resetHistory();
+                // The pane shouldn't update when a selector is being edited.
+                stylesSidebarPane.setEditingStyle(true);
+                stylesSidebarPane.onCSSModelChanged(event);
+                sinon.assert.notCalled(requestUpdateSpy);
+            });
+            it('maintains focus if changes occur while editing', async () => {
+                const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(new ComputedStyle.ComputedStyleModel.ComputedStyleModel());
+                // @ts-expect-error
+                sinon.stub(stylesSidebarPane, 'fetchMatchedCascade').resolves(null);
+                // @ts-expect-error
+                sinon.stub(stylesSidebarPane, 'fetchComputedStylesFor').resolves(new Map());
+                // @ts-expect-error
+                sinon.stub(stylesSidebarPane, 'fetchComputedStyleExtraFieldsFor').resolves(null);
+                const resetFocusSpy = sinon.spy(stylesSidebarPane, 'resetFocus');
+                // Verify that innerRebuildUpdate is not called to reset focus
+                // if an update was already scheduled before editing started.
+                stylesSidebarPane.setEditingStyle(true);
+                await stylesSidebarPane.performUpdate();
+                sinon.assert.notCalled(resetFocusSpy);
+            });
+        });
+        describe('createNewRuleInViaInspectorStyleSheet', () => {
+            it('creates a new rule in the via inspector stylesheet and starts editing the selector', async () => {
+                node.frameId.returns('frame-id');
+                node.nodeType.returns(Node.ELEMENT_NODE);
+                node.nodeName.returns('div');
+                node.simpleSelector.returns('div');
+                sinon.stub(Components.Linkifier.Linkifier.prototype, 'linkifyCSSLocation')
+                    .returns(document.createElement('div'));
+                const inlineStyle = {
+                    styleSheetId: '0',
+                    cssProperties: [{ name: 'color', value: 'blue' }],
+                    shorthandEntries: [],
+                };
+                const computedStyleModel = new ComputedStyle.ComputedStyleModel.ComputedStyleModel();
+                computedStyleModel.node = node;
+                const cssModel = computedStyleModel.cssModel();
+                const matchedStyles = await SDK.CSSMatchedStyles.CSSMatchedStyles.create({
+                    cssModel,
+                    node,
+                    inlinePayload: inlineStyle,
+                    attributesPayload: null,
+                    matchedPayload: [],
+                    pseudoPayload: [],
+                    inheritedPayload: [],
+                    inheritedPseudoPayload: [],
+                    animationsPayload: [],
+                    parentLayoutNodeId: undefined,
+                    positionTryRules: [],
+                    propertyRules: [],
+                    functionRules: [],
+                    cssPropertyRegistrations: [],
+                    atRules: [],
+                    activePositionFallbackIndex: -1,
+                    animationStylesPayload: [],
+                    inheritedAnimatedPayload: [],
+                    transitionsStylePayload: null,
+                });
+                sinon.stub(cssModel, 'getMatchedStyles').resolves(matchedStyles);
+                const styleSheetHeader = sinon.createStubInstance(SDK.CSSStyleSheetHeader.CSSStyleSheetHeader);
+                styleSheetHeader.cssModel.returns(cssModel);
+                styleSheetHeader.lineNumberInSource.callsFake(line => line);
+                styleSheetHeader.columnNumberInSource.callsFake((line, column) => column);
+                styleSheetHeader.id = '0';
+                sinon.stub(cssModel, 'requestViaInspectorStylesheet').resolves(styleSheetHeader);
+                styleSheetHeader.requestContentData.resolves(new TextUtils.ContentData.ContentData('', false, 'text/css'));
+                const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(computedStyleModel);
+                renderElementIntoDOM(stylesSidebarPane);
+                stylesSidebarPane.forceUpdate();
+                await new Promise(resolve => {
+                    stylesSidebarPane.addEventListener("InitialUpdateCompleted" /* Elements.StylesSidebarPane.Events.INITIAL_UPDATE_COMPLETED */, () => resolve(), { once: true });
+                });
+                assert.isFalse(UI.UIUtils.isEditing());
+                await stylesSidebarPane.createNewRuleInViaInspectorStyleSheet();
+                assert.isTrue(UI.UIUtils.isEditing());
+                const allSections = stylesSidebarPane.allSections();
+                assert.instanceOf(allSections[1], Elements.StylePropertiesSection.BlankStylePropertiesSection);
+                stylesSidebarPane.detach();
+            });
         });
         describe('rebuildSectionsForMatchedStyleRulesForTest', () => {
             it('should add @position-try section', async () => {
@@ -144,6 +237,205 @@ describe('StylesSidebarPane', () => {
                 assert.isFalse(inheritedBlock.titleElement()?.classList.contains('hidden'));
                 assert.isFalse(layerBlock.titleElement()?.classList.contains('hidden'));
             });
+            it('hides sidebar separators when filtering results', async () => {
+                const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(new ComputedStyle.ComputedStyleModel.ComputedStyleModel());
+                sinon.stub(stylesSidebarPane, 'performUpdate').resolves();
+                const firstNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+                firstNode.nodeName.returns('div');
+                firstNode.nodeNameInCorrectCase.returns('div');
+                firstNode.id = 101;
+                firstNode.nodeType.returns(Node.ELEMENT_NODE);
+                firstNode.pseudoType.returns(undefined);
+                firstNode.pseudoElements.returns(new Map());
+                firstNode.getAttribute.withArgs('id').returns('first');
+                const secondNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+                secondNode.nodeName.returns('div');
+                secondNode.nodeNameInCorrectCase.returns('div');
+                secondNode.id = 102;
+                secondNode.nodeType.returns(Node.ELEMENT_NODE);
+                secondNode.pseudoType.returns(undefined);
+                secondNode.pseudoElements.returns(new Map());
+                secondNode.parentNode = firstNode;
+                secondNode.getAttribute.withArgs('id').returns('second');
+                const thirdNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+                thirdNode.nodeName.returns('div');
+                thirdNode.nodeNameInCorrectCase.returns('div');
+                thirdNode.id = 103;
+                thirdNode.nodeType.returns(Node.ELEMENT_NODE);
+                thirdNode.pseudoType.returns(undefined);
+                thirdNode.pseudoElements.returns(new Map());
+                thirdNode.parentNode = secondNode;
+                thirdNode.getAttribute.withArgs('id').returns('third');
+                const matchedPayload = [
+                    ruleMatch('#third', { 'font-family': 'times', display: 'block' }),
+                ];
+                const inheritedPayload = [
+                    {
+                        matchedCSSRules: [
+                            ruleMatch('#second', { 'font-family': 'helvetica' }),
+                        ],
+                    },
+                    {
+                        matchedCSSRules: [
+                            ruleMatch('#first', { 'font-family': 'arial', display: 'block' }),
+                        ],
+                    },
+                ];
+                const pseudoPayload = [
+                    {
+                        pseudoType: "before" /* Protocol.DOM.PseudoType.Before */,
+                        matches: [
+                            ruleMatch('#third::before', { content: '"uno-1"' }),
+                        ],
+                    },
+                    {
+                        pseudoType: "after" /* Protocol.DOM.PseudoType.After */,
+                        matches: [
+                            ruleMatch('#third::after', { content: '"dos-2"', display: 'block' }),
+                        ],
+                    },
+                ];
+                const matchedStyles = await getMatchedStyles({
+                    connection,
+                    cssModel: stylesSidebarPane.cssModel(),
+                    node: thirdNode,
+                    matchedPayload,
+                    inheritedPayload,
+                    pseudoPayload,
+                });
+                const sectionBlocks = await stylesSidebarPane.rebuildSectionsForMatchedStyleRulesForTest(matchedStyles, new Map(), new Map(), null);
+                // Define the expected blocks and their indices.
+                // Block 0 represents active node styles (#third) and has no title element.
+                // Block 1 represents styles inherited from div#second.
+                // Block 2 represents styles inherited from div#first.
+                // Block 3 represents the pseudo ::before element.
+                // Block 4 represents the pseudo ::after element.
+                assert.lengthOf(sectionBlocks, 5);
+                assert.isNull(sectionBlocks[0].titleElement());
+                assert.exists(sectionBlocks[1].titleElement());
+                assert.exists(sectionBlocks[2].titleElement());
+                assert.exists(sectionBlocks[3].titleElement());
+                assert.exists(sectionBlocks[4].titleElement());
+                // Define a helper function to assert the visibility of block title elements.
+                const assertBlockVisibility = (expectedVisibilities) => {
+                    for (let i = 1; i < sectionBlocks.length; i++) {
+                        const titleEl = sectionBlocks[i].titleElement();
+                        if (titleEl) {
+                            const isHidden = titleEl.classList.contains('hidden');
+                            assert.strictEqual(!isHidden, expectedVisibilities[i - 1], `Block ${i} visibility mismatch`);
+                        }
+                    }
+                };
+                // Initially, all blocks should be visible when the filter is null.
+                stylesSidebarPane.setFilter(null);
+                sectionBlocks.forEach(block => block.updateFilter());
+                assertBlockVisibility([true, true, true, true]);
+                // Filter by 'font-family'.
+                // The secondNode has 'font-family: helvetica' and should be visible.
+                // The firstNode has 'font-family: arial' and should be visible.
+                // The ::before element has only 'content' and should be hidden.
+                // The ::after element has 'content' and 'display' and should be hidden.
+                stylesSidebarPane.setFilter(/font-family/i);
+                sectionBlocks.forEach(block => block.updateFilter());
+                assertBlockVisibility([true, true, false, false]);
+                // Filter by 'content'.
+                // The secondNode should be hidden.
+                // The firstNode should be hidden.
+                // The ::before element has 'content' and should be visible.
+                // The ::after element has 'content' and should be visible.
+                stylesSidebarPane.setFilter(/content/i);
+                sectionBlocks.forEach(block => block.updateFilter());
+                assertBlockVisibility([false, false, true, true]);
+                // Filter by 'display'.
+                // The secondNode should be hidden.
+                // The firstNode has 'display' and should be visible.
+                // The ::before element should be hidden.
+                // The ::after element has 'display' and should be visible.
+                stylesSidebarPane.setFilter(/display/i);
+                sectionBlocks.forEach(block => block.updateFilter());
+                assertBlockVisibility([false, true, false, true]);
+            });
+            it('renders media queries', async () => {
+                const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(new ComputedStyle.ComputedStyleModel.ComputedStyleModel());
+                const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+                node.id = 1;
+                const matchedStyles = await getMatchedStyles({
+                    connection,
+                    cssModel: stylesSidebarPane.cssModel(),
+                    node,
+                    matchedPayload: [{
+                            rule: {
+                                selectorList: { selectors: [{ text: '#main' }], text: '#main' },
+                                origin: "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */,
+                                style: {
+                                    cssProperties: [{ name: 'background', value: 'blue' }],
+                                    shorthandEntries: [],
+                                },
+                                media: [{
+                                        text: '(max-width: 100px)',
+                                        source: "mediaRule" /* Protocol.CSS.CSSMediaSource.MediaRule */,
+                                    }],
+                                ruleTypes: ["MediaRule" /* Protocol.CSS.CSSRuleType.MediaRule */],
+                            },
+                            matchingSelectors: [0],
+                        }],
+                });
+                const sectionBlocks = await stylesSidebarPane.rebuildSectionsForMatchedStyleRulesForTest(matchedStyles, new Map(), new Map(), null);
+                assert.lengthOf(sectionBlocks, 1);
+                const sections = sectionBlocks[0].sections;
+                assert.lengthOf(sections, 1);
+                const section = sections[0];
+                const mediaQueryElements = section.element.querySelectorAll('devtools-css-query');
+                assert.lengthOf(mediaQueryElements, 1);
+                const mediaQueryElement = mediaQueryElements[0];
+                const queryDiv = mediaQueryElement.shadowRoot?.querySelector('.query');
+                assert.exists(queryDiv);
+                assert.strictEqual(queryDiv?.textContent?.trim().replace(/\s+/g, ' '), '@media (max-width: 100px) {');
+            });
+            it('renders multiple media queries (imported stylesheet)', async () => {
+                const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(new ComputedStyle.ComputedStyleModel.ComputedStyleModel());
+                const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+                node.id = 1;
+                const matchedStyles = await getMatchedStyles({
+                    connection,
+                    cssModel: stylesSidebarPane.cssModel(),
+                    node,
+                    matchedPayload: [{
+                            rule: {
+                                selectorList: { selectors: [{ text: '#main' }], text: '#main' },
+                                origin: "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */,
+                                style: {
+                                    cssProperties: [{ name: 'border', value: '1px solid black' }],
+                                    shorthandEntries: [],
+                                },
+                                media: [
+                                    {
+                                        text: '(min-width: 200px)',
+                                        source: "mediaRule" /* Protocol.CSS.CSSMediaSource.MediaRule */,
+                                    },
+                                    {
+                                        text: '(orientation: landscape)',
+                                        source: "importRule" /* Protocol.CSS.CSSMediaSource.ImportRule */,
+                                    },
+                                ],
+                                ruleTypes: ["MediaRule" /* Protocol.CSS.CSSRuleType.MediaRule */, "MediaRule" /* Protocol.CSS.CSSRuleType.MediaRule */],
+                            },
+                            matchingSelectors: [0],
+                        }],
+                });
+                const sectionBlocks = await stylesSidebarPane.rebuildSectionsForMatchedStyleRulesForTest(matchedStyles, new Map(), new Map(), null);
+                assert.lengthOf(sectionBlocks, 1);
+                const sections = sectionBlocks[0].sections;
+                assert.lengthOf(sections, 1);
+                const section = sections[0];
+                const mediaQueryElements = section.element.querySelectorAll('devtools-css-query');
+                assert.lengthOf(mediaQueryElements, 2);
+                const queryTexts = Array.from(mediaQueryElements).map(el => {
+                    const queryDiv = el.shadowRoot?.querySelector('.query');
+                    return queryDiv?.textContent?.trim().replace(/\s+/g, ' ');
+                });
+                assert.deepEqual(queryTexts, ['@import (orientation: landscape) {', '@media (min-width: 200px) {']);
+            });
         });
         describe('collapsing non-contributing sections', () => {
             const enableCollapse = () => Common.Settings.Settings.instance().moduleSetting('collapse-non-contributing-css-rules').set(true);
@@ -199,6 +491,53 @@ describe('StylesSidebarPane', () => {
                 assert.isTrue(overloadedSection.element.classList.contains('collapsed'), 'Section with all overloaded properties should have collapsed class');
                 // The section with active properties should NOT be collapsed.
                 assert.isFalse(activeSection.element.classList.contains('collapsed'), 'Section with active properties should not be collapsed');
+            });
+            it('does not leak LiveLocations when rebuilding styles multiple times', async () => {
+                const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(new ComputedStyle.ComputedStyleModel.ComputedStyleModel());
+                const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+                node.id = 1;
+                const styleSheetId = '0';
+                const origin = "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */;
+                const matchedPayload = [{
+                        rule: {
+                            selectorList: { selectors: [{ text: 'div' }], text: 'div' },
+                            origin,
+                            style: {
+                                cssProperties: [{ name: 'color', value: 'red' }],
+                                shorthandEntries: [],
+                                styleSheetId,
+                                range: { startLine: 0, startColumn: 0, endLine: 0, endColumn: 15 },
+                            },
+                        },
+                        matchingSelectors: [0],
+                    }];
+                const matchedStyles = await getMatchedStyles({
+                    connection,
+                    cssModel: stylesSidebarPane.cssModel(),
+                    node,
+                    matchedPayload,
+                });
+                const workspace = Workspace.Workspace.WorkspaceImpl.instance();
+                const targetManager = SDK.TargetManager.TargetManager.instance();
+                const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);
+                Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.instance({ forceNew: true, resourceMapping, targetManager });
+                // Initialize the LiveLocation objects for the test.
+                await stylesSidebarPane.rebuildSectionsForMatchedStyleRulesForTest(matchedStyles, new Map(), new Map(), null);
+                function countLiveLocations() {
+                    let locationsCount = 0;
+                    const modelInfos = Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.instance().modelToInfo.values();
+                    for (const modelInfo of modelInfos) {
+                        locationsCount += modelInfo.locations.valuesArray().length;
+                    }
+                    return locationsCount;
+                }
+                const initialCount = countLiveLocations();
+                for (let i = 0; i < 5; i++) {
+                    stylesSidebarPane.linkifier.reset();
+                    await stylesSidebarPane.rebuildSectionsForMatchedStyleRulesForTest(matchedStyles, new Map(), new Map(), null);
+                }
+                const finalCount = countLiveLocations();
+                assert.strictEqual(finalCount, initialCount, 'LiveLocations count is growing');
             });
             it('does not collapse non-contributing sections when the setting is disabled', async () => {
                 Common.Settings.Settings.instance().moduleSetting('collapse-non-contributing-css-rules').set(false);
@@ -637,6 +976,113 @@ describe('StylesSidebarPane', () => {
                 assert.isTrue(inheritedSection.element.classList.contains('collapsed'), 'Inherited section with all overloaded properties should be collapsed');
             });
         });
+        describe('overloaded properties', () => {
+            it('correctly identifies overloaded properties', async () => {
+                const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(new ComputedStyle.ComputedStyleModel.ComputedStyleModel());
+                const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+                node.nodeName.returns('DIV');
+                node.id = 1;
+                const parentNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+                parentNode.nodeName.returns('DIV');
+                parentNode.id = 2;
+                node.parentNode = parentNode;
+                // Mock the CSS rules and properties.
+                const inspectProperties = [
+                    { name: 'margin-top', value: '1px', text: 'margin-top: 1px;' },
+                    { name: 'margin-left', value: '1px', text: 'margin-left: 1px;' },
+                    { name: 'margin-right', value: '1px', text: 'margin-right: 1px;' },
+                    { name: 'margin-bottom', value: '1px', text: 'margin-bottom: 1px;' },
+                    { name: 'font', value: '10px Arial', text: 'font: 10px Arial;' },
+                    { name: 'font-size', value: '10px', implicit: true },
+                    { name: 'font-family', value: 'Arial', implicit: true },
+                ];
+                const inspectRuleMatch = ruleMatch('#inspect', inspectProperties, {
+                    styleSheetId: '1',
+                });
+                const divProperties = [
+                    { name: 'margin', value: '1px', text: 'margin: 1px;' },
+                    { name: 'margin-top', value: '1px', implicit: true },
+                    { name: 'margin-left', value: '1px', implicit: true },
+                    { name: 'margin-right', value: '1px', implicit: true },
+                    { name: 'margin-bottom', value: '1px', implicit: true },
+                    { name: 'border', value: '1px solid black', text: 'border: 1px solid black;' },
+                    { name: 'border-top-width', value: '1px', implicit: true },
+                    { name: 'border-right-width', value: '1px', implicit: true },
+                    { name: 'border-bottom-width', value: '1px', implicit: true },
+                    { name: 'border-left-width', value: '1px', implicit: true },
+                    { name: 'border-top-style', value: 'solid', implicit: true },
+                    { name: 'border-right-style', value: 'solid', implicit: true },
+                    { name: 'border-bottom-style', value: 'solid', implicit: true },
+                    { name: 'border-left-style', value: 'solid', implicit: true },
+                    { name: 'border-top-color', value: 'black', implicit: true },
+                    { name: 'border-right-color', value: 'black', implicit: true },
+                    { name: 'border-bottom-color', value: 'black', implicit: true },
+                    { name: 'border-left-color', value: 'black', implicit: true },
+                ];
+                const divRuleMatch = ruleMatch('div', divProperties, {
+                    styleSheetId: '1',
+                });
+                const containerProperties = [
+                    { name: 'font-size', value: '10px', text: 'font-size: 10px;' },
+                    { name: 'border', value: '0', text: 'border: 0;' },
+                ];
+                const containerRuleMatch = ruleMatch('.container', containerProperties, {
+                    styleSheetId: '1',
+                });
+                const matchedStyles = await getMatchedStyles({
+                    connection,
+                    cssModel: stylesSidebarPane.cssModel(),
+                    node,
+                    matchedPayload: [divRuleMatch, inspectRuleMatch],
+                    inheritedPayload: [{
+                            matchedCSSRules: [divRuleMatch, containerRuleMatch],
+                        }],
+                });
+                const sectionBlocks = await stylesSidebarPane.rebuildSectionsForMatchedStyleRulesForTest(matchedStyles, new Map(), new Map(), null);
+                assert.lengthOf(sectionBlocks, 2);
+                const elementBlock = sectionBlocks[0];
+                const inheritedBlock = sectionBlocks[1];
+                assert.lengthOf(elementBlock.sections, 2);
+                const inspectSection = elementBlock.sections.find(s => s.headerText() === '#inspect');
+                const divSection = elementBlock.sections.find(s => s.headerText() === 'div');
+                assert.exists(inspectSection);
+                assert.exists(divSection);
+                const containerSection = inheritedBlock.sections.find(s => s.headerText() === '.container');
+                assert.exists(containerSection);
+                // Verify overloaded properties in the div section of the element block.
+                const divMargin = divSection.style().leadingProperties().find(p => p.name === 'margin');
+                assert.exists(divMargin);
+                assert.strictEqual(matchedStyles.propertyState(divMargin), "Overloaded" /* SDK.CSSMatchedStyles.PropertyState.OVERLOADED */);
+                const divBorder = divSection.style().leadingProperties().find(p => p.name === 'border');
+                assert.exists(divBorder);
+                assert.strictEqual(matchedStyles.propertyState(divBorder), "Active" /* SDK.CSSMatchedStyles.PropertyState.ACTIVE */);
+                // Verify overloaded properties in the container section of the inherited block.
+                const containerFontSize = containerSection.style().leadingProperties().find(p => p.name === 'font-size');
+                assert.exists(containerFontSize);
+                assert.strictEqual(matchedStyles.propertyState(containerFontSize), "Overloaded" /* SDK.CSSMatchedStyles.PropertyState.OVERLOADED */);
+                // Verify the inheritance status in the UI using StylePropertyTreeElement.
+                inspectSection.onpopulate();
+                divSection.onpopulate();
+                containerSection.onpopulate();
+                const containerTreeElements = containerSection.propertiesTreeOutline.rootElement().children();
+                const fontSizeTreeElement = containerTreeElements.find((el) => el instanceof Elements.StylePropertyTreeElement.StylePropertyTreeElement &&
+                    el.property.name === 'font-size');
+                assert.exists(fontSizeTreeElement);
+                // `font-size` is truly inherited. In the UI, truly inherited properties
+                // in inherited sections are rendered as active (not dimmed). This
+                // corresponds to `inherited() === false` due to the reversed meaning
+                // used for styling.
+                assert.isFalse(fontSizeTreeElement.inherited());
+                const borderTreeElement = containerTreeElements.find((el) => el instanceof Elements.StylePropertyTreeElement.StylePropertyTreeElement &&
+                    el.property.name === 'border');
+                assert.exists(borderTreeElement);
+                // `border` is not truly inherited. In the UI, non-inherited properties
+                // in inherited sections are rendered as dimmed. This corresponds to
+                // `inherited() === true` (which adds the `.inherited` class for dimming)
+                // due to the reversed meaning used for styling.
+                assert.isTrue(borderTreeElement.inherited());
+            });
+        });
         it('should add "Other @rules" section to the end', async () => {
             const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(new ComputedStyle.ComputedStyleModel.ComputedStyleModel());
             const matchedStyles = await getMatchedStyles({
@@ -727,7 +1173,7 @@ describe('StylesSidebarPane', () => {
                                                                     style: {
                                                                         cssProperties: [{ name: 'result', value: 'var(--y)' }],
                                                                         shorthandEntries: [],
-                                                                    }
+                                                                    },
                                                                 },
                                                             ],
                                                         },
@@ -742,7 +1188,7 @@ describe('StylesSidebarPane', () => {
                                 style: {
                                     cssProperties: [{ name: 'result', value: 'var(--x)' }],
                                     shorthandEntries: [],
-                                }
+                                },
                             },
                         ],
                     }],
@@ -781,7 +1227,7 @@ describe('StylesSidebarPane', () => {
                                 style: {
                                     cssProperties: [{ name: 'result', value: 'red' }],
                                     shorthandEntries: [],
-                                }
+                                },
                             }],
                         originTreeScopeNodeId: 2,
                     },
@@ -793,10 +1239,10 @@ describe('StylesSidebarPane', () => {
                                 style: {
                                     cssProperties: [{ name: 'result', value: 'blue' }],
                                     shorthandEntries: [],
-                                }
+                                },
                             }],
                         originTreeScopeNodeId: 3,
-                    }
+                    },
                 ],
             });
             const sectionBlocks = await stylesSidebarPane.rebuildSectionsForMatchedStyleRulesForTest(matchedStyles, new Map(), new Map(), null);
@@ -809,6 +1255,68 @@ describe('StylesSidebarPane', () => {
             assert.strictEqual(sectionBlocks[1].sections[1].element.deepTextContent().replaceAll(/\s+/g, ' ').trim(), '--f() { result: blue;}');
             assert.strictEqual(sectionBlocks[1].sections[0].treeScopeDistance(), 1);
             assert.strictEqual(sectionBlocks[1].sections[1].treeScopeDistance(), 2);
+        });
+        describe('Adding a new rule', () => {
+            it('fails silently when adding a new rule with an invalid selector', async () => {
+                const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(new ComputedStyle.ComputedStyleModel.ComputedStyleModel());
+                const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+                node.id = 1;
+                node.simpleSelector.returns('div');
+                sinon.stub(stylesSidebarPane, 'node').returns(node);
+                const cssModel = stylesSidebarPane.cssModel();
+                const addRuleStub = sinon.stub(cssModel, 'addRule').resolves(null);
+                const styleSheetHeader = sinon.createStubInstance(SDK.CSSStyleSheetHeader.CSSStyleSheetHeader);
+                styleSheetHeader.id = '1';
+                styleSheetHeader.cssModel.returns(cssModel);
+                styleSheetHeader.lineNumberInSource.returns(0);
+                styleSheetHeader.columnNumberInSource.returns(0);
+                sinon.stub(stylesSidebarPane.linkifier, 'linkifyCSSLocation').returns(document.createElement('div'));
+                const matchedStyles = await getMatchedStyles({
+                    connection,
+                    cssModel,
+                    node,
+                    matchedPayload: [
+                        {
+                            rule: {
+                                selectorList: { selectors: [{ text: 'div' }], text: 'div' },
+                                origin: "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */,
+                                style: {
+                                    cssProperties: [{ name: 'color', value: 'blue' }],
+                                    shorthandEntries: [],
+                                },
+                            },
+                            matchingSelectors: [0],
+                        },
+                    ],
+                });
+                const sectionBlocks = await stylesSidebarPane.rebuildSectionsForMatchedStyleRulesForTest(matchedStyles, new Map(), new Map(), null);
+                stylesSidebarPane.sectionBlocks =
+                    sectionBlocks;
+                const insertAfterSection = sectionBlocks[0].sections[0];
+                assert.exists(insertAfterSection);
+                sinon.stub(stylesSidebarPane, 'performUpdate').resolves();
+                // Add a blank section.
+                const range = {
+                    startLine: 0,
+                    startColumn: 0,
+                    endLine: 0,
+                    endColumn: 0,
+                    rebaseAfterTextEdit: () => range,
+                };
+                stylesSidebarPane.addBlankSection(insertAfterSection, styleSheetHeader, range);
+                const blankSection = sectionBlocks[0].sections[1];
+                assert.exists(blankSection);
+                assert.isTrue(blankSection.isBlank);
+                // Commit with an invalid selector.
+                blankSection.editingSelectorCommitted(blankSection.element, '@keyframes shake', '@keyframes shake', undefined, 'forward');
+                // Wait for the async addRule to complete and microtasks to process.
+                await new Promise(resolve => setTimeout(resolve, 0));
+                // The addRule should have been called.
+                sinon.assert.calledOnce(addRuleStub);
+                // Since it returned null (invalid selector), the blank section should have been removed.
+                assert.lengthOf(sectionBlocks[0].sections, 1);
+                assert.strictEqual(sectionBlocks[0].sections[0], insertAfterSection);
+            });
         });
         describe('Animation styles', () => {
             function mockGetAnimatedComputedStyles(response) {
@@ -1378,7 +1886,7 @@ describe('StylesSidebarPane', () => {
                         sinon.createStubInstance(Elements.StylesAiCodeCompletionProvider.StylesAiCodeCompletionProvider);
                     pane.aiCodeCompletionProvider = aiCodeCompletionProvider;
                     return pane;
-                }
+                },
             };
         });
         describeWithEnvironment('value autocompletion', () => {
@@ -1456,7 +1964,7 @@ describe('StylesSidebarPane', () => {
                         enabled: true,
                         blockedByAge: false,
                         blockedByGeo: false,
-                    }
+                    },
                 });
                 attachedElement = document.createElement('div');
                 renderElementIntoDOM(attachedElement);
@@ -1553,7 +2061,8 @@ color: pink !important;`;
                     { name: 'background-image', value: 'url("https://example.com/image;v=1?query:part=true")' },
                     { name: 'content', value: '"This is a semicolon; and this is a colon: inside a string"' },
                     { name: '--custom-property', value: 'var(--other, "fallback;value")' },
-                    { name: 'width', value: 'calc(100% - 20px)' }, { name: 'color', value: 'pink !important' }
+                    { name: 'width', value: 'calc(100% - 20px)' },
+                    { name: 'color', value: 'pink !important' },
                 ]);
             });
             it('only hides suggest box on Escape when suggest box is visible but does not clear AI suggestion', async () => {
@@ -1742,6 +2251,464 @@ color: pink !important;`;
                     assert.exists(section.activeAiSuggestion);
                     assert.deepEqual(section.activeAiSuggestion.properties, [{ name: 'color', value: 'pink' }]);
                 });
+            });
+        });
+    });
+    describeWithEnvironment('UpdatesFromJS', () => {
+        let connection;
+        let domModel;
+        let cssModel;
+        let stylesSidebarPane;
+        beforeEach(() => {
+            connection = new MockCDPConnection();
+            const target = createTarget({ connection });
+            domModel = target.model(SDK.DOMModel.DOMModel);
+            cssModel = target.model(SDK.CSSModel.CSSModel);
+            sinon.stub(ComputedStyle.ComputedStyleModel.ComputedStyleModel.prototype, 'cssModel').returns(cssModel);
+        });
+        it('updates inline styles when style attribute is modified', async () => {
+            const CONTAINER_NODE_ID = 1;
+            domModel.setDocumentForTest({
+                nodeId: 0,
+                backendNodeId: 0,
+                nodeType: Node.DOCUMENT_NODE,
+                nodeName: '#document',
+                localName: '',
+                nodeValue: '',
+                childNodeCount: 1,
+                children: [
+                    {
+                        nodeId: CONTAINER_NODE_ID,
+                        backendNodeId: 2,
+                        nodeType: Node.ELEMENT_NODE,
+                        nodeName: 'div',
+                        localName: 'div',
+                        attributes: ['id', 'container', 'style', 'font-weight:bold'],
+                        nodeValue: '',
+                    },
+                ],
+            });
+            const containerNode = domModel.nodeForId(CONTAINER_NODE_ID);
+            assert.exists(containerNode);
+            UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, containerNode);
+            const inlineStyle = {
+                styleSheetId: '0',
+                cssProperties: [{ name: 'font-weight', value: 'bold' }],
+                shorthandEntries: [],
+            };
+            const matchedStylesPayload = {
+                inlineStyle,
+                matchedCSSRules: [],
+                pseudoElements: [],
+                inherited: [],
+                inheritedPseudoElements: [],
+                cssKeyframesRules: [],
+                cssPositionTryRules: [],
+                cssPropertyRules: [],
+                cssPropertyRegistrations: [],
+                cssAtRules: [],
+                activePositionFallbackIndex: -1,
+                cssFunctionRules: [],
+                getError: () => undefined,
+            };
+            connection.setSuccessHandler('CSS.getMatchedStylesForNode', () => matchedStylesPayload);
+            const computedStyleModel = new ComputedStyle.ComputedStyleModel.ComputedStyleModel();
+            computedStyleModel.node = containerNode;
+            stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(computedStyleModel);
+            renderElementIntoDOM(stylesSidebarPane);
+            stylesSidebarPane.forceUpdate();
+            await new Promise(resolve => {
+                stylesSidebarPane.addEventListener("InitialUpdateCompleted" /* Elements.StylesSidebarPane.Events.INITIAL_UPDATE_COMPLETED */, () => resolve(), { once: true });
+            });
+            let sections = stylesSidebarPane.allSections();
+            assert.lengthOf(sections, 1);
+            assert.strictEqual(sections[0].headerText(), 'element.style');
+            assert.lengthOf(sections[0].style().leadingProperties(), 1);
+            assert.strictEqual(sections[0].style().leadingProperties()[0].name, 'font-weight');
+            assert.strictEqual(sections[0].style().leadingProperties()[0].value, 'bold');
+            matchedStylesPayload.inlineStyle = {
+                styleSheetId: '0',
+                cssProperties: [
+                    { name: 'color', value: 'rgb(218, 192, 222)' },
+                    { name: 'border', value: '1px solid black' },
+                ],
+                shorthandEntries: [],
+            };
+            connection.dispatchEvent('DOM.attributeModified', {
+                nodeId: CONTAINER_NODE_ID,
+                name: 'style',
+                value: 'color: #daC0DE; border: 1px solid black;',
+            }, undefined);
+            await new Promise(resolve => {
+                stylesSidebarPane.addEventListener("StylesUpdateCompleted" /* Elements.StylesSidebarPane.Events.STYLES_UPDATE_COMPLETED */, () => resolve(), { once: true });
+            });
+            sections = stylesSidebarPane.allSections();
+            assert.lengthOf(sections, 1);
+            const properties = sections[0].style().leadingProperties();
+            assert.lengthOf(properties, 2);
+            assert.strictEqual(properties[0].name, 'color');
+            assert.strictEqual(properties[0].value, 'rgb(218, 192, 222)');
+            assert.strictEqual(properties[1].name, 'border');
+            assert.strictEqual(properties[1].value, '1px solid black');
+        });
+        it('updates styles when ancestor class is modified', async () => {
+            const CONTAINER_NODE_ID = 1;
+            const CHILD_NODE_ID = 2;
+            domModel.setDocumentForTest({
+                nodeId: 0,
+                backendNodeId: 0,
+                nodeType: Node.DOCUMENT_NODE,
+                nodeName: '#document',
+                localName: '',
+                nodeValue: '',
+                childNodeCount: 1,
+                children: [
+                    {
+                        nodeId: CONTAINER_NODE_ID,
+                        backendNodeId: 2,
+                        nodeType: Node.ELEMENT_NODE,
+                        nodeName: 'div',
+                        localName: 'div',
+                        attributes: ['id', 'container'],
+                        nodeValue: '',
+                        childNodeCount: 1,
+                        children: [
+                            {
+                                nodeId: CHILD_NODE_ID,
+                                backendNodeId: 3,
+                                nodeType: Node.ELEMENT_NODE,
+                                nodeName: 'div',
+                                localName: 'div',
+                                attributes: ['id', 'child'],
+                                nodeValue: '',
+                            },
+                        ],
+                    },
+                ],
+            });
+            const childNode = domModel.nodeForId(CHILD_NODE_ID);
+            assert.exists(childNode);
+            UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, childNode);
+            const matchedStylesPayload = {
+                inlineStyle: undefined,
+                matchedCSSRules: [],
+                pseudoElements: [],
+                inherited: [],
+                inheritedPseudoElements: [],
+                cssKeyframesRules: [],
+                cssPositionTryRules: [],
+                cssPropertyRules: [],
+                cssPropertyRegistrations: [],
+                cssAtRules: [],
+                activePositionFallbackIndex: -1,
+                cssFunctionRules: [],
+                getError: () => undefined,
+            };
+            connection.setSuccessHandler('CSS.getMatchedStylesForNode', () => matchedStylesPayload);
+            const computedStyleModel = new ComputedStyle.ComputedStyleModel.ComputedStyleModel();
+            computedStyleModel.node = childNode;
+            stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(computedStyleModel);
+            renderElementIntoDOM(stylesSidebarPane);
+            stylesSidebarPane.forceUpdate();
+            await new Promise(resolve => {
+                stylesSidebarPane.addEventListener("InitialUpdateCompleted" /* Elements.StylesSidebarPane.Events.INITIAL_UPDATE_COMPLETED */, () => resolve(), { once: true });
+            });
+            let sections = stylesSidebarPane.allSections();
+            assert.isUndefined(sections.find(s => s.headerText() === '.red div:first-child'));
+            matchedStylesPayload.matchedCSSRules = [
+                ruleMatch('.red div:first-child', { 'background-color': 'red' }),
+            ];
+            connection.dispatchEvent('DOM.attributeModified', {
+                nodeId: CONTAINER_NODE_ID,
+                name: 'class',
+                value: 'red',
+            }, undefined);
+            await new Promise(resolve => {
+                stylesSidebarPane.addEventListener("StylesUpdateCompleted" /* Elements.StylesSidebarPane.Events.STYLES_UPDATE_COMPLETED */, () => resolve(), { once: true });
+            });
+            sections = stylesSidebarPane.allSections();
+            const redSection = sections.find(s => s.headerText() === '.red div:first-child');
+            assert.exists(redSection);
+            assert.strictEqual(redSection.style().leadingProperties()[0].name, 'background-color');
+            assert.strictEqual(redSection.style().leadingProperties()[0].value, 'red');
+        });
+        it('updates styles when sibling attribute is modified', async () => {
+            const CONTAINER_NODE_ID = 1;
+            const CHILD_NODE_ID = 2;
+            const SIBLING_NODE_ID = 3;
+            domModel.setDocumentForTest({
+                nodeId: 0,
+                backendNodeId: 0,
+                nodeType: Node.DOCUMENT_NODE,
+                nodeName: '#document',
+                localName: '',
+                nodeValue: '',
+                childNodeCount: 1,
+                children: [
+                    {
+                        nodeId: CONTAINER_NODE_ID,
+                        backendNodeId: 2,
+                        nodeType: Node.ELEMENT_NODE,
+                        nodeName: 'div',
+                        localName: 'div',
+                        attributes: ['id', 'container'],
+                        nodeValue: '',
+                        childNodeCount: 2,
+                        children: [
+                            {
+                                nodeId: CHILD_NODE_ID,
+                                backendNodeId: 3,
+                                nodeType: Node.ELEMENT_NODE,
+                                nodeName: 'div',
+                                localName: 'div',
+                                attributes: ['id', 'child'],
+                                nodeValue: '',
+                            },
+                            {
+                                nodeId: SIBLING_NODE_ID,
+                                backendNodeId: 4,
+                                nodeType: Node.ELEMENT_NODE,
+                                nodeName: 'div',
+                                localName: 'div',
+                                attributes: ['id', 'childSibling'],
+                                nodeValue: '',
+                            },
+                        ],
+                    },
+                ],
+            });
+            const siblingNode = domModel.nodeForId(SIBLING_NODE_ID);
+            assert.exists(siblingNode);
+            UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, siblingNode);
+            const matchedStylesPayload = {
+                inlineStyle: undefined,
+                matchedCSSRules: [],
+                pseudoElements: [],
+                inherited: [],
+                inheritedPseudoElements: [],
+                cssKeyframesRules: [],
+                cssPositionTryRules: [],
+                cssPropertyRules: [],
+                cssPropertyRegistrations: [],
+                cssAtRules: [],
+                activePositionFallbackIndex: -1,
+                cssFunctionRules: [],
+                getError: () => undefined,
+            };
+            connection.setSuccessHandler('CSS.getMatchedStylesForNode', () => matchedStylesPayload);
+            const computedStyleModel = new ComputedStyle.ComputedStyleModel.ComputedStyleModel();
+            computedStyleModel.node = siblingNode;
+            stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(computedStyleModel);
+            renderElementIntoDOM(stylesSidebarPane);
+            stylesSidebarPane.forceUpdate();
+            await new Promise(resolve => {
+                stylesSidebarPane.addEventListener("InitialUpdateCompleted" /* Elements.StylesSidebarPane.Events.INITIAL_UPDATE_COMPLETED */, () => resolve(), { once: true });
+            });
+            let sections = stylesSidebarPane.allSections();
+            assert.isUndefined(sections.find(s => s.headerText() === 'div[foo="bar"] + div'));
+            matchedStylesPayload.matchedCSSRules = [
+                ruleMatch('div[foo="bar"] + div', { 'background-color': 'blue' }),
+            ];
+            connection.dispatchEvent('DOM.attributeModified', {
+                nodeId: CHILD_NODE_ID,
+                name: 'foo',
+                value: 'bar',
+            }, undefined);
+            await new Promise(resolve => {
+                stylesSidebarPane.addEventListener("StylesUpdateCompleted" /* Elements.StylesSidebarPane.Events.STYLES_UPDATE_COMPLETED */, () => resolve(), { once: true });
+            });
+            sections = stylesSidebarPane.allSections();
+            const siblingSection = sections.find(s => s.headerText() === 'div[foo="bar"] + div');
+            assert.exists(siblingSection);
+            assert.strictEqual(siblingSection.style().leadingProperties()[0].name, 'background-color');
+            assert.strictEqual(siblingSection.style().leadingProperties()[0].value, 'blue');
+        });
+        describe('Mouse interaction', () => {
+            let stylesSidebarPane;
+            let matchedStyles;
+            let cssModel;
+            beforeEach(async () => {
+                node.frameId.returns('frame-id');
+                node.nodeType.returns(Node.ELEMENT_NODE);
+                node.nodeName.returns('DIV');
+                node.simpleSelector.returns('#inspected');
+                sinon.stub(Components.Linkifier.Linkifier.prototype, 'linkifyCSSLocation')
+                    .returns(document.createElement('div'));
+                const inlineStyle = {
+                    styleSheetId: '0',
+                    cssProperties: [],
+                    shorthandEntries: [],
+                    range: { startLine: 0, startColumn: 0, endLine: 0, endColumn: 0 },
+                };
+                const cssText = '\n  color: blue;\n  background-color: red;\n';
+                const matchedPayload = [
+                    ruleMatch('#inspected', [
+                        {
+                            name: 'color',
+                            value: 'blue',
+                            range: { startLine: 1, startColumn: 2, endLine: 1, endColumn: 14 },
+                            text: 'color: blue;',
+                        },
+                        {
+                            name: 'background-color',
+                            value: 'red',
+                            range: { startLine: 2, startColumn: 2, endLine: 2, endColumn: 24 },
+                            text: 'background-color: red;',
+                        },
+                    ], {
+                        styleSheetId: '0',
+                        range: { startLine: 0, startColumn: 12, endLine: 3, endColumn: 0 },
+                    }),
+                ];
+                matchedPayload[0].rule.style.cssText = cssText;
+                const computedStyleModel = new ComputedStyle.ComputedStyleModel.ComputedStyleModel();
+                computedStyleModel.node = node;
+                cssModel = computedStyleModel.cssModel();
+                matchedStyles = await SDK.CSSMatchedStyles.CSSMatchedStyles.create({
+                    cssModel,
+                    node,
+                    inlinePayload: inlineStyle,
+                    attributesPayload: null,
+                    matchedPayload,
+                    pseudoPayload: [],
+                    inheritedPayload: [],
+                    inheritedPseudoPayload: [],
+                    animationsPayload: [],
+                    parentLayoutNodeId: undefined,
+                    positionTryRules: [],
+                    propertyRules: [],
+                    functionRules: [],
+                    cssPropertyRegistrations: [],
+                    atRules: [],
+                    activePositionFallbackIndex: -1,
+                    animationStylesPayload: [],
+                    inheritedAnimatedPayload: [],
+                    transitionsStylePayload: null,
+                });
+                sinon.stub(cssModel, 'getMatchedStyles').resolves(matchedStyles);
+                stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(computedStyleModel);
+                renderElementIntoDOM(stylesSidebarPane);
+                stylesSidebarPane.forceUpdate();
+                await new Promise(resolve => {
+                    stylesSidebarPane.addEventListener("InitialUpdateCompleted" /* Elements.StylesSidebarPane.Events.INITIAL_UPDATE_COMPLETED */, () => resolve(), { once: true });
+                });
+            });
+            afterEach(() => {
+                stylesSidebarPane.detach();
+            });
+            it('starts editing value on click', () => {
+                const mySection = stylesSidebarPane.allSections()[1];
+                assert.exists(mySection);
+                const colorTreeElement = mySection.propertiesTreeOutline.rootElement().childAt(0);
+                assert.exists(colorTreeElement);
+                const valueElement = colorTreeElement.valueElement;
+                assert.exists(valueElement);
+                assert.isFalse(stylesSidebarPane.isEditingStyle);
+                // Click on the value.
+                valueElement.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, button: 0 }));
+                valueElement.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+                assert.isTrue(stylesSidebarPane.isEditingStyle);
+                assert.isTrue(UI.UIUtils.isBeingEdited(valueElement));
+            });
+            it('starts editing name on click', () => {
+                const mySection = stylesSidebarPane.allSections()[1];
+                assert.exists(mySection);
+                const colorTreeElement = mySection.propertiesTreeOutline.rootElement().childAt(0);
+                assert.exists(colorTreeElement);
+                const nameElement = colorTreeElement.nameElement;
+                assert.exists(nameElement);
+                assert.isFalse(stylesSidebarPane.isEditingStyle);
+                // Click on the name.
+                nameElement.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, button: 0 }));
+                nameElement.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+                assert.isTrue(stylesSidebarPane.isEditingStyle);
+                assert.isTrue(UI.UIUtils.isBeingEdited(nameElement));
+            });
+            it('toggles property enabled state on checkbox click', async () => {
+                const mySection = stylesSidebarPane.allSections()[1];
+                assert.exists(mySection);
+                const colorTreeElement = mySection.propertiesTreeOutline.rootElement().childAt(0);
+                assert.exists(colorTreeElement);
+                const checkbox = colorTreeElement.listItemElement.querySelector('.enabled-button');
+                assert.exists(checkbox);
+                assert.isTrue(checkbox.checked);
+                // Mock CDP calls for disabling.
+                connection.setSuccessHandler('CSS.getStyleSheetText', () => ({ text: '#inspected {\n  color: blue;\n  background-color: red;\n}' }));
+                connection.setSuccessHandler('CSS.setStyleTexts', () => {
+                    return {
+                        styles: [{
+                                styleSheetId: '0',
+                                cssProperties: [
+                                    {
+                                        name: 'color',
+                                        value: 'blue',
+                                        disabled: true,
+                                        range: { startLine: 1, startColumn: 2, endLine: 1, endColumn: 20 },
+                                        text: '/* color: blue; */',
+                                    },
+                                    {
+                                        name: 'background-color',
+                                        value: 'red',
+                                        range: { startLine: 2, startColumn: 2, endLine: 2, endColumn: 24 },
+                                        text: 'background-color: red;',
+                                    },
+                                ],
+                                shorthandEntries: [],
+                                range: { startLine: 0, startColumn: 12, endLine: 3, endColumn: 0 },
+                            }],
+                    };
+                });
+                const sendSpy = sinon.spy(connection, 'send');
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const toggleSpy = sinon.spy(colorTreeElement, 'toggleDisabled');
+                checkbox.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+                // We need to wait for the async toggleDisabled to complete.
+                await new Promise(resolve => {
+                    sinon.stub(colorTreeElement, 'styleTextAppliedForTest').callsFake(() => {
+                        resolve();
+                    });
+                });
+                sinon.assert.calledOnceWithExactly(toggleSpy, true);
+                const setStyleTextsCall = sendSpy.getCalls().find(call => call.args[0] === 'CSS.setStyleTexts');
+                assert.exists(setStyleTextsCall);
+                const args = setStyleTextsCall.args[1];
+                assert.deepEqual(args.edits[0].text, '\n  /* color: blue; */\n  background-color: red;\n');
+            });
+            it('cancels editing on clicking empty space when editing', async () => {
+                const mySection = stylesSidebarPane.allSections()[1];
+                const colorTreeElement = mySection.propertiesTreeOutline.rootElement().childAt(0);
+                const valueElement = colorTreeElement.valueElement;
+                assert.exists(valueElement);
+                // Start editing.
+                valueElement.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, button: 0 }));
+                valueElement.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+                assert.isTrue(stylesSidebarPane.isEditingStyle);
+                const sectionElement = mySection.element;
+                // Simulate a click on the empty space.
+                sectionElement.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, button: 0 }));
+                // Manually trigger blur to simulate a focus change.
+                if (document.activeElement instanceof HTMLElement) {
+                    document.activeElement.blur();
+                }
+                sectionElement.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+                assert.isFalse(stylesSidebarPane.isEditingStyle);
+                assert.strictEqual(mySection.propertiesTreeOutline.rootElement().childCount(), 2);
+            });
+            it('creates new property on clicking empty space when not editing', () => {
+                const mySection = stylesSidebarPane.allSections()[1];
+                const sectionElement = mySection.element;
+                assert.isFalse(stylesSidebarPane.isEditingStyle);
+                assert.strictEqual(mySection.propertiesTreeOutline.rootElement().childCount(), 2);
+                // Click on the empty space.
+                sectionElement.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, button: 0 }));
+                sectionElement.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+                assert.isTrue(stylesSidebarPane.isEditingStyle);
+                assert.strictEqual(mySection.propertiesTreeOutline.rootElement().childCount(), 3);
+                const newProperty = mySection.propertiesTreeOutline.rootElement().childAt(2);
+                assert.exists(newProperty);
+                assert.strictEqual(newProperty.name, '');
+                assert.strictEqual(newProperty.value, '');
+                assert.isTrue(UI.UIUtils.isBeingEdited(newProperty.nameElement));
             });
         });
     });

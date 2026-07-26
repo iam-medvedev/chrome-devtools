@@ -18,7 +18,7 @@ describeWithEnvironment('INP breakdown component', () => {
             },
             devToolsAiAssistancePerformanceAgent: {
                 enabled: true,
-            }
+            },
         });
     });
     it('enables "Ask AI" if the page has an interaction', async function () {

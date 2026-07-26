@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { getEventPromise, } from '../../testing/DOMHelpers.js';
+import sinon from 'sinon';
 import { describeWithEnvironment, } from '../../testing/EnvironmentHelpers.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as Menus from '../../ui/components/menus/menus.js';
@@ -59,81 +59,90 @@ describeWithEnvironment('StepView', () => {
                 { id: 'add-step-after', label: 'Add step after', group: 'stepManagement', groupTitle: 'Manage steps' },
             ]);
         });
-        it('should dispatch "AddStep before" events on steps', async () => {
+        it('should call onAddStep before on steps', async () => {
             const viewFunction = createViewFunctionStub(StepView.StepView);
             const component = await createStepView(viewFunction, { step });
-            const eventPromise = getEventPromise(component.contentElement, 'addstep');
+            const onAddStepSpy = sinon.spy();
+            component.onAddStep = onAddStepSpy;
             viewFunction.input.handleStepAction(new Menus.Menu.MenuItemSelectedEvent('add-step-before'));
-            const event = await eventPromise;
-            assert.strictEqual(event.position, 'before');
-            assert.deepEqual(event.stepOrSection, step);
+            sinon.assert.calledOnce(onAddStepSpy);
+            assert.strictEqual(onAddStepSpy.firstCall.args[0], step);
+            assert.strictEqual(onAddStepSpy.firstCall.args[1], 'before');
         });
-        it('should dispatch "AddStep before" events on sections', async () => {
+        it('should call onAddStep before on sections', async () => {
             const viewFunction = createViewFunctionStub(StepView.StepView);
             const component = await createStepView(viewFunction, { section });
-            const eventPromise = getEventPromise(component.contentElement, 'addstep');
+            const onAddStepSpy = sinon.spy();
+            component.onAddStep = onAddStepSpy;
             viewFunction.input.handleStepAction(new Menus.Menu.MenuItemSelectedEvent('add-step-before'));
-            const event = await eventPromise;
-            assert.strictEqual(event.position, 'before');
-            assert.deepEqual(event.stepOrSection, section);
+            sinon.assert.calledOnce(onAddStepSpy);
+            assert.strictEqual(onAddStepSpy.firstCall.args[0], section);
+            assert.strictEqual(onAddStepSpy.firstCall.args[1], 'before');
         });
-        it('should dispatch "AddStep after" events on steps', async () => {
+        it('should call onAddStep after on steps', async () => {
             const viewFunction = createViewFunctionStub(StepView.StepView);
             const component = await createStepView(viewFunction, { step });
-            const eventPromise = getEventPromise(component.contentElement, 'addstep');
+            const onAddStepSpy = sinon.spy();
+            component.onAddStep = onAddStepSpy;
             viewFunction.input.handleStepAction(new Menus.Menu.MenuItemSelectedEvent('add-step-after'));
-            const event = await eventPromise;
-            assert.strictEqual(event.position, 'after');
-            assert.deepEqual(event.stepOrSection, step);
+            sinon.assert.calledOnce(onAddStepSpy);
+            assert.strictEqual(onAddStepSpy.firstCall.args[0], step);
+            assert.strictEqual(onAddStepSpy.firstCall.args[1], 'after');
         });
-        it('should dispatch "Remove steps" events on steps', async () => {
+        it('should call onRemoveStep on steps', async () => {
             const viewFunction = createViewFunctionStub(StepView.StepView);
             const component = await createStepView(viewFunction, { step });
-            const eventPromise = getEventPromise(component.contentElement, 'removestep');
+            const onRemoveStepSpy = sinon.spy();
+            component.onRemoveStep = onRemoveStepSpy;
             viewFunction.input.handleStepAction(new Menus.Menu.MenuItemSelectedEvent('remove-step'));
-            const event = await eventPromise;
-            assert.deepEqual(event.step, step);
+            sinon.assert.calledOnce(onRemoveStepSpy);
+            assert.strictEqual(onRemoveStepSpy.firstCall.args[0], step);
         });
-        it('should dispatch "Add breakpoint" event on steps', async () => {
+        it('should call onAddBreakpoint on steps', async () => {
             const viewFunction = createViewFunctionStub(StepView.StepView);
             const component = await createStepView(viewFunction, { step });
-            const eventPromise = getEventPromise(component.contentElement, 'addbreakpoint');
+            const onAddBreakpointSpy = sinon.spy();
+            component.onAddBreakpoint = onAddBreakpointSpy;
             viewFunction.input.handleStepAction(new Menus.Menu.MenuItemSelectedEvent('add-breakpoint'));
-            const event = await eventPromise;
-            assert.deepEqual(event.index, 0);
+            sinon.assert.calledOnce(onAddBreakpointSpy);
+            assert.strictEqual(onAddBreakpointSpy.firstCall.args[0], 0);
         });
-        it('should dispatch "Remove breakpoint" event on steps', async () => {
+        it('should call onRemoveBreakpoint on steps', async () => {
             const viewFunction = createViewFunctionStub(StepView.StepView);
             const component = await createStepView(viewFunction, { step });
-            const eventPromise = getEventPromise(component.contentElement, 'removebreakpoint');
+            const onRemoveBreakpointSpy = sinon.spy();
+            component.onRemoveBreakpoint = onRemoveBreakpointSpy;
             viewFunction.input.handleStepAction(new Menus.Menu.MenuItemSelectedEvent('remove-breakpoint'));
-            const event = await eventPromise;
-            assert.deepEqual(event.index, 0);
+            sinon.assert.calledOnce(onRemoveBreakpointSpy);
+            assert.strictEqual(onRemoveBreakpointSpy.firstCall.args[0], 0);
         });
-        it('should dispatch copy step as JSON events', async () => {
+        it('should call onCopyStep as JSON', async () => {
             const viewFunction = createViewFunctionStub(StepView.StepView);
             const component = await createStepView(viewFunction, { step });
-            const eventPromise = getEventPromise(component.contentElement, 'copystep');
+            const onCopyStepSpy = sinon.spy();
+            component.onCopyStep = onCopyStepSpy;
             viewFunction.input.handleStepAction(new Menus.Menu.MenuItemSelectedEvent('copy-step-as-json'));
-            await eventPromise;
+            sinon.assert.calledOnce(onCopyStepSpy);
         });
     });
     describe('Breakpoint events', () => {
-        it('should dispatch "Add breakpoint" event on breakpoint icon click if there is not a breakpoint on the step', async () => {
+        it('should call onAddBreakpoint on breakpoint icon click if there is not a breakpoint on the step', async () => {
             const viewFunction = createViewFunctionStub(StepView.StepView);
             const component = await createStepView(viewFunction, { step });
-            const eventPromise = getEventPromise(component.contentElement, 'addbreakpoint');
+            const onAddBreakpointSpy = sinon.spy();
+            component.onAddBreakpoint = onAddBreakpointSpy;
             viewFunction.input.onBreakpointClick();
-            const event = await eventPromise;
-            assert.deepEqual(event.index, 0);
+            sinon.assert.calledOnce(onAddBreakpointSpy);
+            assert.strictEqual(onAddBreakpointSpy.firstCall.args[0], 0);
         });
-        it('should dispatch "Remove breakpoint" event on breakpoint icon click if there already is a breakpoint on the step', async () => {
+        it('should call onRemoveBreakpoint on breakpoint icon click if there already is a breakpoint on the step', async () => {
             const viewFunction = createViewFunctionStub(StepView.StepView);
             const component = await createStepView(viewFunction, { hasBreakpoint: true, step });
-            const eventPromise = getEventPromise(component.contentElement, 'removebreakpoint');
+            const onRemoveBreakpointSpy = sinon.spy();
+            component.onRemoveBreakpoint = onRemoveBreakpointSpy;
             viewFunction.input.onBreakpointClick();
-            const event = await eventPromise;
-            assert.deepEqual(event.index, 0);
+            sinon.assert.calledOnce(onRemoveBreakpointSpy);
+            assert.strictEqual(onRemoveBreakpointSpy.firstCall.args[0], 0);
         });
     });
 });

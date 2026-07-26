@@ -7,10 +7,12 @@ import * as Common from '../../../core/common/common.js';
 import * as Host from '../../../core/host/host.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
+import * as Bindings from '../../../models/bindings/bindings.js';
 import * as Workspace from '../../../models/workspace/workspace.js';
 import { dispatchInputEvent, getCleanTextContentFromElements, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { createWorkspaceProject, setUpEnvironment, } from '../../../testing/OverridesHelpers.js';
+import { TestUniverse } from '../../../testing/TestUniverse.js';
 import { recordedMetricsContain, resetRecordedMetrics, } from '../../../testing/UserMetricsHelpers.js';
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as NetworkForward from '../forward/forward.js';
@@ -130,6 +132,10 @@ function isRowFocused(component, rowIndex) {
 }
 describeWithEnvironment('ResponseHeaderSection', () => {
     beforeEach(async () => {
+        const universe = new TestUniverse();
+        sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, 'instance')
+            .returns(universe.debuggerWorkspaceBinding);
+        sinon.stub(Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding, 'instance').returns(universe.cssWorkspaceBinding);
         await setUpEnvironment();
         resetRecordedMetrics();
     });
@@ -184,10 +190,10 @@ Learn more`);
         assert.strictEqual(row.shadowRoot.querySelector('.header-value')?.textContent?.trim(), 'secure=only; Secure');
         const icon = row.shadowRoot.querySelector('devtools-icon');
         assert.instanceOf(icon, HTMLElement);
-        assert.strictEqual(icon.title, 'This attempt to set a cookie via a Set-Cookie header was blocked because it had the ' +
+        assert.strictEqual(icon.title, 'This attempt to set a cookie via a "Set-Cookie" header was blocked because it had the ' +
             '"Secure" attribute but was not received over a secure connection.\nThis attempt to ' +
-            'set a cookie via a Set-Cookie header was blocked because it was not sent over a ' +
-            'secure connection and would have overwritten a cookie with the Secure attribute.');
+            'set a cookie via a "Set-Cookie" header was blocked because it was not sent over a ' +
+            'secure connection and would have overwritten a cookie with the "Secure" attribute.');
     });
     it('marks overridden headers', async () => {
         const request = {

@@ -3,22 +3,27 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import * as SDK from '../../core/sdk/sdk.js';
-import { createFakeSetting, createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { createFakeSetting } from '../../testing/EnvironmentHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { dispatchEvent } from '../../testing/MockConnection.js';
 import { activate, getMainFrame, navigate } from '../../testing/ResourceTreeHelpers.js';
 import { mkInspectorCspIssue, StubIssue, ThirdPartyStubIssue, } from '../../testing/StubIssue.js';
+import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as IssuesManager from '../issues_manager/issues_manager.js';
-describeWithEnvironment('IssuesManager', () => {
+describe('IssuesManager', () => {
+    setupLocaleHooks();
+    let universe;
     let target;
     let model;
     beforeEach(() => {
-        target = createTarget();
+        universe = new TestUniverse();
+        target = universe.createTarget();
         const maybeModel = target.model(SDK.IssuesModel.IssuesModel);
         assert.exists(maybeModel);
         model = maybeModel;
     });
     it('collects issues from an issues model', () => {
-        const issuesManager = new IssuesManager.IssuesManager.IssuesManager();
+        const issuesManager = universe.issuesManager;
         const dispatchedIssues = [];
         issuesManager.addEventListener("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, event => dispatchedIssues.push(event.data.issue));
         model.dispatchEventToListeners("IssueAdded" /* SDK.IssuesModel.Events.ISSUE_ADDED */, { issuesModel: model, inspectorIssue: mkInspectorCspIssue('url1') });
@@ -33,11 +38,11 @@ describeWithEnvironment('IssuesManager', () => {
         return cspIssue.details().blockedURL;
     }
     function assertOutOfScopeIssuesAreFiltered() {
-        const issuesManager = new IssuesManager.IssuesManager.IssuesManager();
+        const issuesManager = universe.issuesManager;
         const dispatchedIssues = [];
         issuesManager.addEventListener("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, event => dispatchedIssues.push(event.data.issue));
         model.dispatchEventToListeners("IssueAdded" /* SDK.IssuesModel.Events.ISSUE_ADDED */, { issuesModel: model, inspectorIssue: mkInspectorCspIssue('url1') });
-        const prerenderTarget = createTarget({ subtype: 'prerender' });
+        const prerenderTarget = universe.createTarget({ subtype: 'prerender' });
         const prerenderModel = prerenderTarget.model(SDK.IssuesModel.IssuesModel);
         assert.exists(prerenderModel);
         prerenderModel.dispatchEventToListeners("IssueAdded" /* SDK.IssuesModel.Events.ISSUE_ADDED */, { issuesModel: prerenderModel, inspectorIssue: mkInspectorCspIssue('url2') });
@@ -48,20 +53,20 @@ describeWithEnvironment('IssuesManager', () => {
     }
     it('updates filtered issues when switching scope', () => {
         const { issuesManager, prerenderTarget } = assertOutOfScopeIssuesAreFiltered();
-        SDK.TargetManager.TargetManager.instance().setScopeTarget(prerenderTarget);
+        universe.targetManager.setScopeTarget(prerenderTarget);
         assert.deepEqual(Array.from(issuesManager.issues()).map(getBlockedUrl), ['url2']);
     });
     it('keeps issues of prerendered page upon activation', () => {
         const { issuesManager, prerenderTarget } = assertOutOfScopeIssuesAreFiltered();
-        SDK.TargetManager.TargetManager.instance().setScopeTarget(prerenderTarget);
+        universe.targetManager.setScopeTarget(prerenderTarget);
         activate(prerenderTarget);
         assert.deepEqual(Array.from(issuesManager.issues()).map(getBlockedUrl), ['url2']);
     });
     const updatesOnPrimaryPageChange = (primary) => () => {
-        const issuesManager = new IssuesManager.IssuesManager.IssuesManager();
+        const issuesManager = universe.issuesManager;
         model.dispatchEventToListeners("IssueAdded" /* SDK.IssuesModel.Events.ISSUE_ADDED */, { issuesModel: model, inspectorIssue: mkInspectorCspIssue('url1') });
         assert.strictEqual(issuesManager.numberOfIssues(), 1);
-        navigate(getMainFrame(primary ? target : createTarget({ subtype: 'prerender' })));
+        navigate(getMainFrame(primary ? target : universe.createTarget({ subtype: 'prerender' })));
         assert.strictEqual(issuesManager.numberOfIssues(), primary ? 0 : 1);
     };
     it('clears issues after primary page navigation', updatesOnPrimaryPageChange(true));
@@ -74,7 +79,7 @@ describeWithEnvironment('IssuesManager', () => {
             new ThirdPartyStubIssue('StubIssue4', true),
         ];
         const showThirdPartyIssuesSetting = createFakeSetting('third party flag', false);
-        const issuesManager = new IssuesManager.IssuesManager.IssuesManager(showThirdPartyIssuesSetting);
+        const issuesManager = new IssuesManager.IssuesManager.IssuesManager(showThirdPartyIssuesSetting, undefined, universe.frameManager, universe.targetManager, universe.workspace, universe.debuggerWorkspaceBinding, universe.cssWorkspaceBinding);
         const firedIssueAddedEventCodes = [];
         issuesManager.addEventListener("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, event => firedIssueAddedEventCodes.push(event.data.issue.code()));
         for (const issue of issues) {
@@ -91,7 +96,7 @@ describeWithEnvironment('IssuesManager', () => {
         const issue1 = new StubIssue('StubIssue1', ['id1'], [], "Improvement" /* IssuesManager.Issue.IssueKind.IMPROVEMENT */);
         const issue2 = new StubIssue('StubIssue1', ['id2'], [], "Improvement" /* IssuesManager.Issue.IssueKind.IMPROVEMENT */);
         const issue3 = new StubIssue('StubIssue1', ['id3'], [], "BreakingChange" /* IssuesManager.Issue.IssueKind.BREAKING_CHANGE */);
-        const issuesManager = new IssuesManager.IssuesManager.IssuesManager();
+        const issuesManager = universe.issuesManager;
         issuesManager.addIssue(model, issue1);
         issuesManager.addIssue(model, issue2);
         issuesManager.addIssue(model, issue3);
@@ -102,7 +107,7 @@ describeWithEnvironment('IssuesManager', () => {
     });
     describe('instance', () => {
         it('throws an Error if its not the first instance created with "ensureFirst" set', () => {
-            IssuesManager.IssuesManager.IssuesManager.instance();
+            universe.issuesManager;
             assert.throws(() => IssuesManager.IssuesManager.IssuesManager.instance({ forceNew: true, ensureFirst: true }));
             assert.throws(() => IssuesManager.IssuesManager.IssuesManager.instance({ forceNew: false, ensureFirst: true }));
         });
@@ -116,7 +121,7 @@ describeWithEnvironment('IssuesManager', () => {
         ];
         const hideIssueByCodeSetting = createFakeSetting('hide by code', {});
         const showThirdPartyIssuesSetting = createFakeSetting('third party flag', true);
-        const issuesManager = new IssuesManager.IssuesManager.IssuesManager(showThirdPartyIssuesSetting, hideIssueByCodeSetting);
+        const issuesManager = new IssuesManager.IssuesManager.IssuesManager(showThirdPartyIssuesSetting, hideIssueByCodeSetting, universe.frameManager, universe.targetManager, universe.workspace, universe.debuggerWorkspaceBinding, universe.cssWorkspaceBinding);
         const hiddenIssues = [];
         issuesManager.addEventListener("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, event => {
             if (event.data.issue.isHidden()) {
@@ -146,7 +151,7 @@ describeWithEnvironment('IssuesManager', () => {
         ];
         const hideIssueByCodeSetting = createFakeSetting('hide by code', {});
         const showThirdPartyIssuesSetting = createFakeSetting('third party flag', true);
-        const issuesManager = new IssuesManager.IssuesManager.IssuesManager(showThirdPartyIssuesSetting, hideIssueByCodeSetting);
+        const issuesManager = new IssuesManager.IssuesManager.IssuesManager(showThirdPartyIssuesSetting, hideIssueByCodeSetting, universe.frameManager, universe.targetManager, universe.workspace, universe.debuggerWorkspaceBinding, universe.cssWorkspaceBinding);
         let hiddenIssues = [];
         issuesManager.addEventListener("FullUpdateRequired" /* IssuesManager.IssuesManager.Events.FULL_UPDATE_REQUIRED */, () => {
             hiddenIssues = [];
@@ -179,7 +184,7 @@ describeWithEnvironment('IssuesManager', () => {
         ];
         const hideIssueByCodeSetting = createFakeSetting('hide by code', {});
         const showThirdPartyIssuesSetting = createFakeSetting('third party flag', true);
-        const issuesManager = new IssuesManager.IssuesManager.IssuesManager(showThirdPartyIssuesSetting, hideIssueByCodeSetting);
+        const issuesManager = new IssuesManager.IssuesManager.IssuesManager(showThirdPartyIssuesSetting, hideIssueByCodeSetting, universe.frameManager, universe.targetManager, universe.workspace, universe.debuggerWorkspaceBinding, universe.cssWorkspaceBinding);
         for (const issue of issues) {
             issuesManager.addIssue(model, issue);
         }
@@ -223,7 +228,7 @@ describeWithEnvironment('IssuesManager', () => {
         ];
         const hideIssueByCodeSetting = createFakeSetting('hide by code', {});
         const showThirdPartyIssuesSetting = createFakeSetting('third party flag', true);
-        const issuesManager = new IssuesManager.IssuesManager.IssuesManager(showThirdPartyIssuesSetting, hideIssueByCodeSetting);
+        const issuesManager = new IssuesManager.IssuesManager.IssuesManager(showThirdPartyIssuesSetting, hideIssueByCodeSetting, universe.frameManager, universe.targetManager, universe.workspace, universe.debuggerWorkspaceBinding, universe.cssWorkspaceBinding);
         for (const issue of issues) {
             issuesManager.addIssue(model, issue);
         }
@@ -246,14 +251,14 @@ describeWithEnvironment('IssuesManager', () => {
         assert.deepEqual(unhiddenIssues, ['HiddenStubIssue1', 'HiddenStubIssue2', 'UnhiddenStubIssue1', 'UnhiddenStubIssue2']);
     });
     it('send update event on scope change', async () => {
-        const issuesManager = new IssuesManager.IssuesManager.IssuesManager();
+        const issuesManager = universe.issuesManager;
         const updateRequired = issuesManager.once("FullUpdateRequired" /* IssuesManager.IssuesManager.Events.FULL_UPDATE_REQUIRED */);
-        const anotherTarget = createTarget();
-        SDK.TargetManager.TargetManager.instance().setScopeTarget(anotherTarget);
+        const anotherTarget = universe.createTarget();
+        universe.targetManager.setScopeTarget(anotherTarget);
         await updateRequired;
     });
     it('clears BounceTrackingIssue only on user-initiated navigation', () => {
-        const issuesManager = new IssuesManager.IssuesManager.IssuesManager();
+        const issuesManager = universe.issuesManager;
         const issue = {
             code: "BounceTrackingIssue" /* Protocol.Audits.InspectorIssueCode.BounceTrackingIssue */,
             details: {

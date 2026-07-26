@@ -5,7 +5,7 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
-import { render } from '../../ui/lit/lit.js';
+import { html, render } from '../../ui/lit/lit.js';
 import * as Profiler from './profiler.js';
 describeWithEnvironment('HeapFlameChartDataProvider', () => {
     it('prepares popover element', () => {
@@ -43,7 +43,9 @@ describeWithEnvironment('HeapFlameChartDataProvider', () => {
         dataProvider.calculateTimelineData();
         const popover = dataProvider.preparePopoverElement(1);
         assert.isNotNull(popover);
-        const text = popover.deepInnerText();
+        const container = document.createElement('div');
+        render(html `${popover}`, container);
+        const text = container.deepInnerText();
         assert.include(text, 'Name');
         assert.include(text, 'child1');
         assert.include(text, 'Self size');
@@ -70,7 +72,7 @@ describeWithEnvironment('HeapProfileView', () => {
                         scriptId: '0',
                         url: '',
                         lineNumber: 0,
-                        columnNumber: 0
+                        columnNumber: 0,
                     },
                     children: [],
                     selfSize: 0,
@@ -124,11 +126,10 @@ describeWithEnvironment('HeapProfileView', () => {
         // Change to TREE
         view.viewType.set("Tree" /* Profiler.HeapProfileView.ViewTypes.TREE */);
         view.changeView();
-        assert.strictEqual(view.visibleView, view.dataGrid);
+        assert.isDefined(view.profileDataGridTree);
         // Change to FLAME
         view.viewType.set("Flame" /* Profiler.HeapProfileView.ViewTypes.FLAME */);
         view.changeView();
-        assert.strictEqual(view.visibleView, view.flameChart);
     });
     it('displays pageFunction and anonymous functions in the tree', async () => {
         const mockHeader = {
@@ -145,7 +146,7 @@ describeWithEnvironment('HeapProfileView', () => {
                         scriptId: '0',
                         url: '',
                         lineNumber: 0,
-                        columnNumber: 0
+                        columnNumber: 0,
                     },
                     selfSize: 0,
                     id: 0,
@@ -155,7 +156,7 @@ describeWithEnvironment('HeapProfileView', () => {
                                 scriptId: '1',
                                 url: 'test.js',
                                 lineNumber: 1,
-                                columnNumber: 1
+                                columnNumber: 1,
                             },
                             selfSize: 0,
                             id: 1,
@@ -165,13 +166,13 @@ describeWithEnvironment('HeapProfileView', () => {
                                         scriptId: '1',
                                         url: 'test.js',
                                         lineNumber: 2,
-                                        columnNumber: 1
+                                        columnNumber: 1,
                                     },
                                     selfSize: 1000000,
                                     id: 2,
-                                    children: []
-                                }]
-                        }]
+                                    children: [],
+                                }],
+                        }],
                 },
                 samples: [],
                 startTime: 0,

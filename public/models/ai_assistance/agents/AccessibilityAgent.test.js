@@ -316,7 +316,7 @@ describeWithEnvironment('AccessibilityAgent', () => {
                 }],
             [{
                     explanation: 'answer',
-                }]
+                }],
         ]);
         const execJs = sinon.stub().resolves('test data');
         const agent = new AiAssistance.AccessibilityAgent.AccessibilityAgent({

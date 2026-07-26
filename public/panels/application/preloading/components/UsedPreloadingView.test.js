@@ -689,9 +689,9 @@ describeWithEnvironment('UsedPreloadingView', () => {
                     mismatchedHeaders: null,
                     ruleSetIds: ['ruleSetId:1'],
                     nodeIds: [1],
-                }
+                },
             ],
-            currentAttempts: []
+            currentAttempts: [],
         };
         const component = await renderUsedPreloadingView(data);
         assert.isNotNull(component.shadowRoot);

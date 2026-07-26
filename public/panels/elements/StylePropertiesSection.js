@@ -37,9 +37,9 @@ import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as TextUtils from '../../core/text_utils/text_utils.js';
 import * as Badges from '../../models/badges/badges.js';
 import * as Bindings from '../../models/bindings/bindings.js';
-import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as Tooltips from '../../ui/components/tooltips/tooltips.js';
 import { createIcon } from '../../ui/kit/kit.js';
@@ -229,7 +229,11 @@ export class StylePropertiesSection {
         this.selectorElement.classList.add('selector');
         this.selectorElement.textContent = headerText;
         selectorContainer.appendChild(this.selectorElement);
-        this.selectorElement.addEventListener('mouseenter', this.onMouseEnterSelector.bind(this), false);
+        this.selectorElement.addEventListener('mouseenter', () => {
+            if (this.styleInternal.parentRule instanceof SDK.CSSRule.CSSStyleRule) {
+                this.onMouseEnterSelector(this.styleInternal.parentRule);
+            }
+        }, false);
         this.selectorElement.addEventListener('mouseleave', this.onMouseOutSelector.bind(this), false);
         this.#specificityTooltips = selectorContainer.createChild('span');
         // We only add braces for style rules with selectors and non-style rules, which create their own sections.
@@ -569,21 +573,30 @@ export class StylePropertiesSection {
         }
         SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight(SDK.TargetManager.TargetManager.instance());
     }
-    onMouseEnterSelector() {
+    onMouseEnterSelector(rule, nestingIndex) {
         if (this.hoverTimer) {
             clearTimeout(this.hoverTimer);
         }
-        this.hoverTimer = window.setTimeout(this.highlight.bind(this), 300);
+        const selectorList = constructResolvedSelector(rule, nestingIndex);
+        if (!selectorList) {
+            return;
+        }
+        this.hoverTimer = setTimeout(this.highlight.bind(this, undefined, selectorList), 300);
     }
-    highlight(mode = 'all') {
+    /**
+     * Highlights the DOM node associated with this style section in the page overlay.
+     * Use `selectorList` to highlight elements matching a specific parent/ancestor
+     * rule or selector.
+     *
+     * @param mode Highlight mode (defaults to `'all'`).
+     * @param selectorList Parent selector string to highlight.
+     */
+    highlight(mode = 'all', selectorList) {
         SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight(SDK.TargetManager.TargetManager.instance());
         const node = this.stylesContainer.node();
         if (!node) {
             return;
         }
-        const selectorList = this.styleInternal.parentRule && this.styleInternal.parentRule instanceof SDK.CSSRule.CSSStyleRule ?
-            this.styleInternal.parentRule.selectorText() :
-            undefined;
         node.domModel().overlayModel().highlightInOverlay({ node, selectorList }, mode);
     }
     firstSibling() {
@@ -762,7 +775,7 @@ export class StylePropertiesSection {
                     ancestorRuleElement = this.createSupportsElement(rule.supports[supportsIndex++]);
                     break;
                 case "StyleRule" /* Protocol.CSS.CSSRuleType.StyleRule */:
-                    ancestorRuleElement = this.createNestingElement(rule.nestingSelectors?.[nestingIndex++]);
+                    ancestorRuleElement = this.createNestingElement(rule, nestingIndex++);
                     break;
                 case "StartingStyleRule" /* Protocol.CSS.CSSRuleType.StartingStyleRule */:
                     ancestorRuleElement = this.createStartingStyleElement();
@@ -951,11 +964,31 @@ export class StylePropertiesSection {
         };
         return navigationElement;
     }
-    createNestingElement(nestingSelector) {
+    createNestingElement(rule, nestingIndex) {
+        const nestingSelector = rule.nestingSelectors?.[nestingIndex];
         if (!nestingSelector) {
             return;
         }
+        const parentRule = this.matchedStyles.findParentRule(rule, nestingIndex);
+        if (parentRule) {
+            const container = document.createElement('div');
+            const matchingSelectorIndexes = this.matchedStyles.getMatchingSelectors(parentRule);
+            const matchingSelectors = new Array(parentRule.selectors.length).fill(false);
+            for (const matchingIndex of matchingSelectorIndexes) {
+                matchingSelectors[matchingIndex] = true;
+            }
+            const selectorElement = container.createChild('span', 'selector');
+            selectorElement.addEventListener('mouseenter', () => this.onMouseEnterSelector(parentRule), false);
+            selectorElement.addEventListener('mouseleave', this.onMouseOutSelector.bind(this), false);
+            const specificityContainer = container.createChild('span');
+            this.renderSelectorsToElement(parentRule.selectors, matchingSelectors, this.elementToSelectorIndex, selectorElement, specificityContainer);
+            const openBrace = container.createChild('span', 'sidebar-pane-open-brace');
+            openBrace.textContent = ' {';
+            return container;
+        }
         const nestingElement = document.createElement('div');
+        nestingElement.addEventListener('mouseenter', () => this.onMouseEnterSelector(rule, nestingIndex), false);
+        nestingElement.addEventListener('mouseleave', this.onMouseOutSelector.bind(this), false);
         nestingElement.textContent = `${nestingSelector} {`;
         return nestingElement;
     }
@@ -1220,18 +1253,21 @@ export class StylePropertiesSection {
     renderSelectors(selectors, matchingSelectors, elementToSelectorIndex) {
         this.selectorElement.removeChildren();
         this.#specificityTooltips.removeChildren();
+        this.renderSelectorsToElement(selectors, matchingSelectors, elementToSelectorIndex, this.selectorElement, this.#specificityTooltips);
+    }
+    renderSelectorsToElement(selectors, matchingSelectors, elementToSelectorIndex, targetElement, tooltipContainer) {
         for (const [i, selector] of selectors.entries()) {
             if (i > 0) {
-                this.selectorElement.append(', ');
+                targetElement.append(', ');
             }
             const specificityTooltipId = selector.specificity ? StylePropertiesSection.getNextSpecificityTooltipId() : null;
-            const span = this.selectorElement.createChild('span', 'simple-selector');
+            const span = targetElement.createChild('span', 'simple-selector');
             span.classList.toggle('selector-matches', matchingSelectors[i]);
             elementToSelectorIndex.set(span, i);
             span.textContent = selectors[i].text;
             if (specificityTooltipId && selector.specificity) {
                 span.setAttribute('aria-details', specificityTooltipId);
-                const tooltip = this.#specificityTooltips.appendChild(new Tooltips.Tooltip.Tooltip({
+                const tooltip = tooltipContainer.appendChild(new Tooltips.Tooltip.Tooltip({
                     id: specificityTooltipId,
                     anchor: span,
                     variant: 'rich',
@@ -1254,7 +1290,7 @@ export class StylePropertiesSection {
         }
     }
     markSelectorHighlights() {
-        const selectors = this.selectorElement.getElementsByClassName('simple-selector');
+        const selectors = this.element.getElementsByClassName('simple-selector');
         const regex = this.stylesContainer.filterRegex();
         for (let i = 0; i < selectors.length; ++i) {
             const selectorMatchesFilter = regex?.test(selectors[i].textContent || '');
@@ -1876,5 +1912,29 @@ export class HighlightPseudoStylePropertiesSection extends StylePropertiesSectio
         // be shown in the darker style of non-inherited properties.
         return false;
     }
+}
+export function constructResolvedSelector(rule, nestingIndex) {
+    if (!(rule instanceof SDK.CSSRule.CSSStyleRule)) {
+        return undefined;
+    }
+    const nestingSelectors = rule.nestingSelectors;
+    if (!nestingSelectors) {
+        return nestingIndex === undefined ? rule.selectorText() : undefined;
+    }
+    if (nestingIndex !== undefined && (nestingIndex < 0 || nestingIndex >= nestingSelectors.length)) {
+        return undefined;
+    }
+    const selectorText = nestingIndex !== undefined ? nestingSelectors[nestingIndex] : rule.selectorText();
+    const parentIndex = nestingIndex !== undefined ? nestingIndex + 1 : 0;
+    const parentSelector = constructResolvedSelector(rule, parentIndex);
+    if (!parentSelector) {
+        return selectorText;
+    }
+    // Strip pseudo-elements (e.g. ::before) because pseudo-elements are invalid inside CSS :is(...).
+    const sanitizedParent = parentSelector.replace(/::[a-zA-Z-]+/g, '').trim();
+    if (selectorText.includes('&')) {
+        return selectorText.replaceAll('&', `:is(${sanitizedParent})`);
+    }
+    return `:is(${sanitizedParent}) ${selectorText.trim()}`;
 }
 //# sourceMappingURL=StylePropertiesSection.js.map

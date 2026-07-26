@@ -9,7 +9,7 @@ import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as Input from '../../../ui/components/input/input.js';
 import * as uiI18n from '../../../ui/i18n/i18n.js';
 import * as UI from '../../../ui/legacy/legacy.js';
-import { html, i18nTemplate as unboundI18nTemplate, nothing, render } from '../../../ui/lit/lit.js';
+import { html, i18nTemplate as unboundI18nTemplate, nothing, render, } from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import protocolHandlersViewStyles from './protocolHandlersView.css.js';
 const PROTOCOL_DOCUMENT_URL = 'https://web.dev/url-protocol-handler/';

@@ -100,7 +100,7 @@ describe('ComputedStyleWidget', () => {
                 propertyState: "Active" /* SDK.CSSMatchedStyles.PropertyState.ACTIVE */,
                 nodeStyles: [
                     new SDK.CSSStyleDeclaration.CSSStyleDeclaration({}, parentRule ?? null, stubCSSStyle, cssStyleDeclarationType, cssStyleDeclarationName),
-                ]
+                ],
             });
             const computedStyleModel = new ComputedStyle.ComputedStyleModel.ComputedStyleModel(node);
             sinon.stub(computedStyleModel, 'fetchComputedStyle').callsFake(() => {

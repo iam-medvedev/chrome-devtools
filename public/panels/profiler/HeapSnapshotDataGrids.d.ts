@@ -64,12 +64,17 @@ export declare class HeapSnapshotSortableDataGrid extends HeapSnapshotSortableDa
 export declare enum HeapSnapshotSortableDataGridEvents {
     ContentShown = "ContentShown",
     SortingComplete = "SortingComplete",
-    ExpandRetainersComplete = "ExpandRetainersComplete"
+    ExpandRetainersComplete = "ExpandRetainersComplete",
+    AggregatesReceived = "AggregatesReceived"
 }
 export interface EventTypes {
     [HeapSnapshotSortableDataGridEvents.ContentShown]: HeapSnapshotSortableDataGrid;
     [HeapSnapshotSortableDataGridEvents.SortingComplete]: void;
     [HeapSnapshotSortableDataGridEvents.ExpandRetainersComplete]: void;
+    [HeapSnapshotSortableDataGridEvents.AggregatesReceived]: {
+        count: number;
+        size: number;
+    };
 }
 export declare class HeapSnapshotViewportDataGrid extends HeapSnapshotSortableDataGrid {
     topPaddingHeight: number;
@@ -119,6 +124,8 @@ export declare class HeapSnapshotConstructorsDataGrid extends HeapSnapshotViewpo
     nextRequestedFilter: HeapSnapshotModel.HeapSnapshotModel.NodeFilter | null;
     lastFilter?: HeapSnapshotModel.HeapSnapshotModel.NodeFilter | null;
     filterInProgress?: HeapSnapshotModel.HeapSnapshotModel.NodeFilter | null;
+    filterTotalCount?: number;
+    filterTotalSize?: number;
     constructor(heapProfilerModel: SDK.HeapProfilerModel.HeapProfilerModel | null, dataDisplayDelegate: DataDisplayDelegate);
     sortFields(sortColumn: string, sortAscending: boolean): HeapSnapshotModel.HeapSnapshotModel.ComparatorConfig;
     revealObjectByHeapSnapshotId(id: string): Promise<HeapSnapshotGridNode | null>;

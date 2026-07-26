@@ -340,7 +340,8 @@ describe('UserTimingsHandler', function () {
             };
         }
         function sortAll(events) {
-            events.sort((a, b) => Trace.Handlers.ModelHandlers.UserTimings.userTimingComparator(a, b, [...events]));
+            const indexMap = new Map(events.map((e, i) => [e, i]));
+            events.sort((a, b) => Trace.Handlers.ModelHandlers.UserTimings.userTimingComparator(a, b, indexMap));
         }
         it('sorts synthetic events by start time in ASC order', () => {
             const event1 = makeFakeSyntheticEvent(1, 1, 'E1', 'Track A');

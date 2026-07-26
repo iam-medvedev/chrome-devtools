@@ -61,7 +61,7 @@ describe('UISourceCodeFrame', () => {
             const scriptInfo = { url: `${sourceRoot}/bundle.js`, content: '1;\n' };
             const sourceMapInfo = {
                 url: `${scriptInfo.url}.map`,
-                content: { version: 3, mappings: '', sourceRoot, sources, sourcesContent: ['1;'] }
+                content: { version: 3, mappings: '', sourceRoot, sources, sourcesContent: ['1;'] },
             };
             const uiSourceCodePromise = debuggerWorkspaceBinding.waitForUISourceCodeAdded(urlString `http://example.com/foo.ts`, target);
             await backend.addScript(target, scriptInfo, sourceMapInfo);
@@ -77,7 +77,7 @@ describe('UISourceCodeFrame', () => {
             const scriptInfo = { url: `${sourceRoot}/bundle.js`, content: '1;\n' };
             const sourceMapInfo = {
                 url: `${scriptInfo.url}.map`,
-                content: { version: 3, mappings: '', sourceRoot, sources, sourcesContent: ['1;'] }
+                content: { version: 3, mappings: '', sourceRoot, sources, sourcesContent: ['1;'] },
             };
             const uiSourceCodePromise = debuggerWorkspaceBinding.waitForUISourceCodeAdded(urlString `http://example.com/foo.ts`, target);
             await backend.addScript(target, scriptInfo, sourceMapInfo);

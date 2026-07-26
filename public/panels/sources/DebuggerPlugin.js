@@ -7,13 +7,13 @@ import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as TextUtils from '../../core/text_utils/text_utils.js';
 import * as Badges from '../../models/badges/badges.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Breakpoints from '../../models/breakpoints/breakpoints.js';
 import * as Formatter from '../../models/formatter/formatter.js';
 import * as SourceMapScopes from '../../models/source_map_scopes/source_map_scopes.js';
 import * as StackTrace from '../../models/stack_trace/stack_trace.js';
-import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
@@ -126,7 +126,7 @@ const UIStrings = {
      * @example {http://site.com/lib.js.map} PH1
      * @example {HTTP error: status code 404, net::ERR_UNKNOWN_URL_SCHEME} PH2
      */
-    errorLoading: 'Error loading url {PH1}: {PH2}',
+    errorLoading: 'Error loading URL {PH1}: {PH2}',
     /**
      * @description Error message that is displayed in UI when a file needed for debugging information for a call frame is missing
      * @example {src/myapp.debug.wasm.dwp} PH1
@@ -359,7 +359,7 @@ export class DebuggerPlugin extends Plugin {
                 buttonVariant: "tonal" /* Buttons.Button.Variant.TONAL */,
                 dismiss: true,
                 jslogContext: 'remove-from-ignore-list',
-            }
+            },
         ], undefined, 'script-on-ignore-list');
         this.ignoreListInfobar = infobar;
         infobar.setCloseCallback(() => this.removeInfobar(this.ignoreListInfobar));
@@ -580,7 +580,7 @@ export class DebuggerPlugin extends Plugin {
             show: async (popover) => {
                 let resolvedText = '';
                 if (selectedCallFrame.script.isJavaScript()) {
-                    const nameMap = await SourceMapScopes.NamesResolver.allVariablesInCallFrame(selectedCallFrame);
+                    const nameMap = await SourceMapScopes.NamesResolver.allVariablesInCallFrame(selectedCallFrame, Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance());
                     try {
                         resolvedText =
                             await Formatter.FormatterWorkerPool.formatterWorkerPool().javaScriptSubstitute(evaluationText, nameMap);
@@ -1844,7 +1844,9 @@ export async function computeScopeMappings(callFrame, rawLocationToEditorOffset)
         if (!scopeEnd) {
             break;
         }
-        const { properties } = await SourceMapScopes.NamesResolver.resolveScopeInObject(scope).getAllProperties(false, false);
+        const debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance();
+        const { properties } = await SourceMapScopes.NamesResolver.resolveScopeInObject(scope, debuggerWorkspaceBinding)
+            .getAllProperties(false, false);
         if (!properties || properties.length > MAX_PROPERTIES_IN_SCOPE_FOR_VALUE_DECORATIONS) {
             break;
         }
@@ -1955,15 +1957,26 @@ export function computePopoverHighlightRange(state, mimeType, cursorPos) {
         }
     }
 }
-function containsSideEffects(doc, root) {
+export function containsSideEffects(doc, root) {
     let containsSideEffects = false;
     root.toTree().iterate({
         enter(node) {
             switch (node.name) {
                 case 'AssignmentExpression':
-                case 'CallExpression': {
+                case 'CallExpression':
+                case 'NewExpression':
+                case 'TaggedTemplateExpression':
+                case 'DynamicImport': {
                     containsSideEffects = true;
                     return false;
+                }
+                case 'UnaryExpression': {
+                    const text = doc.sliceString(root.from + node.from, root.from + node.to).trim();
+                    if (text.startsWith('delete')) {
+                        containsSideEffects = true;
+                        return false;
+                    }
+                    break;
                 }
                 case 'ArithOp': {
                     const op = doc.sliceString(root.from + node.from, root.from + node.to);

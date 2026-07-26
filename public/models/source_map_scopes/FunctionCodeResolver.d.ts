@@ -1,7 +1,7 @@
 import type * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as TextUtils from '../../core/text_utils/text_utils.js';
 import * as Bindings from '../bindings/bindings.js';
-import * as TextUtils from '../text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
 /** Represents the source code for a given function, including additional context of surrounding lines. */
 export interface FunctionCode {
@@ -35,8 +35,8 @@ export interface CreateFunctionCodeOptions {
  *
  * We filter projects by `target` to prevent cross-origin leaks.
  */
-export declare function getFunctionCodeFromLocation(target: SDK.Target.Target, url: Platform.DevToolsPath.UrlString, line: number, column: number, options?: CreateFunctionCodeOptions, debuggerWorkspaceBinding?: Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding): Promise<FunctionCode | null>;
+export declare function getFunctionCodeFromLocation(target: SDK.Target.Target, url: Platform.DevToolsPath.UrlString, line: number, column: number, debuggerWorkspaceBinding: Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, options?: CreateFunctionCodeOptions): Promise<FunctionCode | null>;
 /**
  * Returns a {@link FunctionCode} for the given raw location.
  */
-export declare function getFunctionCodeFromRawLocation(rawLocation: SDK.DebuggerModel.Location, options?: CreateFunctionCodeOptions, debuggerWorkspaceBinding?: Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding): Promise<FunctionCode | null>;
+export declare function getFunctionCodeFromRawLocation(rawLocation: SDK.DebuggerModel.Location, debuggerWorkspaceBinding: Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, options?: CreateFunctionCodeOptions): Promise<FunctionCode | null>;

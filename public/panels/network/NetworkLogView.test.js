@@ -109,6 +109,27 @@ describeWithEnvironment('NetworkLogView', () => {
         const rootNode = networkLogView.columns().dataGrid().rootNode();
         return { rootNode, filterBar, networkLogView };
     }
+    it('places the request-number column first when it is visible', () => {
+        Common.Settings.Settings.instance().createSetting('network-log-columns', {}).set({
+            'request-number': { visible: true },
+        });
+        networkLogView = createNetworkLogView();
+        networkLogView.columns().switchViewMode(true);
+        const visibleColumns = networkLogView.columns().dataGrid().visibleColumnsArray;
+        assert.strictEqual(visibleColumns[0].id, 'request-number');
+    });
+    it('keeps the request icon on the name cell when request-number is pinned first', () => {
+        Common.Settings.Settings.instance().createSetting('network-log-columns', {}).set({
+            'request-number': { visible: true },
+        });
+        createNetworkRequest('http://localhost/foo.js', {});
+        networkLogView = createNetworkLogView();
+        networkLogView.columns().switchViewMode(true);
+        renderElementIntoDOM(networkLogView);
+        const node = networkLogView.columns().dataGrid().rootNode().children[0];
+        assert.exists(node.createCell('name').querySelector('devtools-icon'));
+        assert.isNull(node.createCell('request-number').querySelector('devtools-icon'));
+    });
     it('generates a valid curl command when some headers don\'t have values', async () => {
         const request = createNetworkRequest(urlString `http://localhost`, {
             requestHeaders: [
@@ -402,9 +423,9 @@ describeWithEnvironment('NetworkLogView', () => {
         await RenderCoordinator.done();
         assert.deepEqual(rootNode.children.map(n => n.request()), preserveLog ? [request1, request2, request3] : [request3]);
     };
-    it('replaces requests when switching scope with preserve log off', handlesSwitchingScope(false));
-    it('appends requests when switching scope with preserve log on', handlesSwitchingScope(true));
-    it('appends requests on prerender activation with preserve log on', async () => {
+    it('replaces requests when switching scope with keep log off', handlesSwitchingScope(false));
+    it('appends requests when switching scope with keep log on', handlesSwitchingScope(true));
+    it('appends requests on prerender activation with keep log on', async () => {
         Common.Settings.Settings.instance().moduleSetting('network-log.preserve-log').set(true);
         SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
         const anotherTarget = createTarget();
@@ -728,6 +749,19 @@ describeWithEnvironment('NetworkLogView', () => {
         setting.set({ [Common.ResourceType.resourceCategories.XHR.name]: true });
         assert.deepEqual(shownRequestUrls(), ['urlFetch']);
     });
+    it('can apply substring filter on same-site domain', async () => {
+        target.setInspectedURL(urlString `http://example.com`);
+        const sameSiteRequest = createNetworkRequest(urlString `http://example.com/api/data`, {});
+        const crossSiteRequest = createNetworkRequest(urlString `http://cross-site.com/api/data`, {});
+        const filterBar = new UI.FilterBar.FilterBar('network-panel', true);
+        networkLogView = createNetworkLogView(filterBar);
+        networkLogView.setTextFilterValue('example.com');
+        renderElementIntoDOM(networkLogView);
+        const rootNode = networkLogView.columns().dataGrid().rootNode();
+        const visibleUrls = rootNode.children.map(n => n.request()?.url());
+        assert.deepEqual(visibleUrls, [sameSiteRequest.url()]);
+        assert.notInclude(visibleUrls, crossSiteRequest.url());
+    });
     it('"Copy all" commands respects filters', async () => {
         createOverrideRequests();
         const filterBar = new UI.FilterBar.FilterBar('network-panel', true);
@@ -1020,7 +1054,7 @@ Invoke-WebRequest -UseBasicParsing -Uri "https://url-header-and-content-overridd
             pushStart: 0,
             pushEnd: 0,
             receiveHeadersStart: 0,
-            receiveHeadersEnd: 0
+            receiveHeadersEnd: 0,
         };
         request.endTime = 100;
         request.addExtraRequestInfo({
@@ -1086,7 +1120,7 @@ describeWithEnvironment('NetworkLogView placeholder', () => {
                 category: "NETWORK" /* UI.ActionRegistration.ActionCategory.NETWORK */,
                 title: () => 'mock',
                 toggleable: true,
-            }
+            },
         ]);
         sinon.stub(UI.ShortcutRegistry.ShortcutRegistry, 'instance').returns({
             shortcutTitleForAction: () => 'Ctrl',

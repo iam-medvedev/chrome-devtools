@@ -10,7 +10,13 @@ __export(AidaClient_exports, {
   AidaAbortError: () => AidaAbortError,
   AidaBlockError: () => AidaBlockError,
   AidaClient: () => AidaClient,
+  AidaClientError: () => AidaClientError,
+  AidaInvalidJsonResponseError: () => AidaInvalidJsonResponseError,
+  AidaPayloadTooLargeError: () => AidaPayloadTooLargeError,
+  AidaPermissionDeniedError: () => AidaPermissionDeniedError,
   AidaQuotaError: () => AidaQuotaError,
+  AidaTimeoutError: () => AidaTimeoutError,
+  AidaUnknownError: () => AidaUnknownError,
   CLIENT_NAME: () => CLIENT_NAME,
   CitationSourceType: () => CitationSourceType,
   ClientFeature: () => ClientFeature,
@@ -25,7 +31,10 @@ __export(AidaClient_exports, {
   UserTier: () => UserTier,
   convertToUserTierEnum: () => convertToUserTierEnum,
   debugLog: () => debugLog,
-  getClientFeatureName: () => getClientFeatureName
+  getClientFeatureName: () => getClientFeatureName,
+  isPayloadTooLargeError: () => isPayloadTooLargeError,
+  isQuotaError: () => isQuotaError,
+  mapError: () => mapError
 });
 import * as Common4 from "./../common/common.js";
 import * as Platform4 from "./../platform/platform.js";
@@ -834,59 +843,59 @@ import * as Common from "./../common/common.js";
 import * as i18n from "./../i18n/i18n.js";
 var UIStrings = {
   /**
-   * @description Name of an error category used in error messages
+   * @description Name of an error category used in error messages.
    */
   systemError: "System error",
   /**
-   * @description Name of an error category used in error messages
+   * @description Name of an error category used in error messages.
    */
   connectionError: "Connection error",
   /**
-   * @description Name of an error category used in error messages
+   * @description Name of an error category used in error messages.
    */
   certificateError: "Certificate error",
   /**
-   * @description Name of an error category used in error messages
+   * @description Name of an error category used in error messages.
    */
   httpError: "HTTP error",
   /**
-   * @description Name of an error category used in error messages
+   * @description Name of an error category used in error messages.
    */
   cacheError: "Cache error",
   /**
-   * @description Name of an error category used in error messages
+   * @description Name of an error category used in error messages.
    */
-  signedExchangeError: "Signed Exchange error",
+  signedExchangeError: "`Signed Exchange` error",
   /**
-   * @description Name of an error category used in error messages
+   * @description Name of an error category used in error messages.
    */
   ftpError: "FTP error",
   /**
-   * @description Name of an error category used in error messages
+   * @description Name of an error category used in error messages.
    */
   certificateManagerError: "Certificate manager error",
   /**
-   * @description Name of an error category used in error messages
+   * @description Name of an error category used in error messages.
    */
   dnsResolverError: "DNS resolver error",
   /**
-   * @description Name of an error category used in error messages
+   * @description Name of an error category used in error messages.
    */
   unknownError: "Unknown error",
   /**
-   * @description Phrase used in error messages that carry a network error name
+   * @description Phrase used in error messages that carry a network error name.
    * @example {404} PH1
    * @example {net::ERR_INSUFFICIENT_RESOURCES} PH2
    */
   httpErrorStatusCodeSS: "HTTP error: status code {PH1}, {PH2}",
   /**
-   * @description Name of an error category used in error messages
+   * @description Name of an error category used in error messages.
    */
   invalidUrl: "Invalid URL",
   /**
-   * @description Name of an error category used in error messages
+   * @description Name of an error category used in error messages.
    */
-  decodingDataUrlFailed: "Decoding Data URL failed"
+  decodingDataUrlFailed: "Decoding data URL failed"
 };
 var str_ = i18n.i18n.registerUIStrings("core/host/ResourceLoader.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
@@ -1049,7 +1058,7 @@ var loadAsStream = function(url, headers, stream, callback, allowRemoteFilePaths
 // gen/front_end/core/host/InspectorFrontendHostStub.js
 var UIStrings2 = {
   /**
-   * @description Document title in Inspector Frontend Host of the DevTools window
+   * @description Document title in Inspector Frontend Host of the DevTools window.
    * @example {example.com} PH1
    */
   devtoolsS: "DevTools - {PH1}"
@@ -1095,13 +1104,13 @@ var InspectorFrontendHostStub = class {
   closeWindow() {
   }
   setIsDocked(_isDocked, callback) {
-    window.setTimeout(callback, 0);
+    globalThis.setTimeout(callback, 0);
   }
   showSurvey(_trigger, callback) {
-    window.setTimeout(() => callback({ surveyShown: false }), 0);
+    globalThis.setTimeout(() => callback({ surveyShown: false }), 0);
   }
   canShowSurvey(_trigger, callback) {
-    window.setTimeout(() => callback({ canShowSurvey: false }), 0);
+    globalThis.setTimeout(() => callback({ canShowSurvey: false }), 0);
   }
   /**
    * Requests inspected page to be placed atop of the inspector frontend with specified bounds.
@@ -1632,7 +1641,7 @@ var GcaClient = class {
       return response;
     } catch (err) {
       debugLog("GCA request failed:", JSON.stringify(request), err);
-      return null;
+      throw err;
     }
   }
 };
@@ -1707,11 +1716,32 @@ var AidaLanguageToMarkdown = {
     /* AidaInferenceLanguage.UNKNOWN */
   ]: "unknown"
 };
-var AidaAbortError = class extends Error {
+var AidaClientError = class extends Error {
+  name = "AidaClientError";
 };
-var AidaBlockError = class extends Error {
+var AidaUnknownError = class extends AidaClientError {
+  name = "AidaUnknownError";
 };
-var AidaQuotaError = class extends Error {
+var AidaAbortError = class extends AidaClientError {
+  name = "AidaAbortError";
+};
+var AidaBlockError = class extends AidaClientError {
+  name = "AidaBlockError";
+};
+var AidaQuotaError = class extends AidaClientError {
+  name = "AidaQuotaError";
+};
+var AidaPayloadTooLargeError = class extends AidaClientError {
+  name = "AidaPayloadTooLargeError";
+};
+var AidaPermissionDeniedError = class extends AidaClientError {
+  name = "AidaPermissionDeniedError";
+};
+var AidaTimeoutError = class extends AidaClientError {
+  name = "AidaTimeoutError";
+};
+var AidaInvalidJsonResponseError = class extends AidaClientError {
+  name = "AidaInvalidJsonResponseError";
 };
 var AidaClient = class {
   // Delegate client
@@ -1804,36 +1834,7 @@ var AidaClient = class {
       void stream.close();
     }, (err) => {
       debugLog("doConversation failed with error:", JSON.stringify(err));
-      if (err instanceof DispatchHttpRequestError && err.response) {
-        const result = err.response;
-        if (result.statusCode === 429) {
-          stream.fail(new AidaQuotaError("Server responded: quota exceeded"));
-          return;
-        }
-        if (result.statusCode === 403) {
-          stream.fail(new Error("Server responded: permission denied"));
-          return;
-        }
-        if ("error" in result && result.error) {
-          const errorStr = typeof result.error === "string" ? result.error : "";
-          const detailStr = typeof result.detail === "string" ? result.detail : "";
-          if (errorStr.toLowerCase().includes("quota") || detailStr.toLowerCase().includes("quota")) {
-            stream.fail(new AidaQuotaError(`Cannot send request: ${result.error}${result.detail ? ` ${result.detail}` : ""}`));
-            return;
-          }
-          stream.fail(new Error(`Cannot send request: ${result.error}${result.detail ? ` ${result.detail}` : ""}`));
-          return;
-        }
-        if ("netErrorName" in result && result.netErrorName === "net::ERR_TIMED_OUT") {
-          stream.fail(new Error("doAidaConversation timed out"));
-          return;
-        }
-        if (result.statusCode !== 200) {
-          stream.fail(new Error(`Request failed: ${JSON.stringify(result)}`));
-          return;
-        }
-      }
-      stream.fail(err);
+      stream.fail(mapError(err));
     });
     await (yield* this.#handleResponseStream(stream));
   }
@@ -1876,10 +1877,7 @@ var AidaClient = class {
             thoughtSignature: result.functionCallChunk.functionCall.thoughtSignature
           });
         } else if ("error" in result) {
-          if (typeof result.error === "string" && result.error.toLowerCase().includes("quota")) {
-            throw new AidaQuotaError(`Server responded: ${JSON.stringify(result)}`);
-          }
-          throw new Error(`Server responded: ${JSON.stringify(result)}`);
+          throw mapError(result.error);
         } else {
           throw new Error(`Unknown chunk result ${JSON.stringify(result)}`);
         }
@@ -1949,13 +1947,17 @@ var AidaClient = class {
       request.metadata.disable_user_content_logging = true;
     }
     if (this.#gcaClient.enabled()) {
-      return await this.#gcaClient.completeCode(request);
+      try {
+        return await this.#gcaClient.completeCode(request);
+      } catch (err) {
+        throw mapError(err);
+      }
     }
     const { promise, resolve } = Promise.withResolvers();
     InspectorFrontendHostInstance.aidaCodeComplete(JSON.stringify(request), resolve);
     const completeCodeResult = await promise;
     if (completeCodeResult.error) {
-      throw new Error(`Cannot send request: ${completeCodeResult.error} ${completeCodeResult.detail || ""}`);
+      throw mapError(completeCodeResult.error, completeCodeResult.detail);
     }
     const response = completeCodeResult.response;
     if (!response?.length) {
@@ -1994,15 +1996,23 @@ var AidaClient = class {
       request.metadata.disable_user_content_logging = true;
     }
     if (this.#gcaClient.enabled()) {
-      return await this.#gcaClient.generateCode(request, options);
+      try {
+        return await this.#gcaClient.generateCode(request, options);
+      } catch (err) {
+        throw mapError(err);
+      }
     }
-    const response = await makeHttpRequest({
-      service: SERVICE_NAME2,
-      path: "/v1/aida:generateCode",
-      method: "POST",
-      body: JSON.stringify(request)
-    }, options);
-    return response;
+    try {
+      const response = await makeHttpRequest({
+        service: SERVICE_NAME2,
+        path: "/v1/aida:generateCode",
+        method: "POST",
+        body: JSON.stringify(request)
+      }, options);
+      return response;
+    } catch (err) {
+      throw mapError(err);
+    }
   }
 };
 function convertToUserTierEnum(userTier) {
@@ -2028,6 +2038,9 @@ function getClientFeatureName(feature) {
 var HostConfigTracker = class _HostConfigTracker extends Common4.ObjectWrapper.ObjectWrapper {
   #pollTimer;
   #aidaAvailability;
+  get aidaAvailability() {
+    return this.#aidaAvailability;
+  }
   static instance({ forceNew } = { forceNew: false }) {
     if (!Root3.DevToolsContext.globalInstance().has(_HostConfigTracker) || forceNew) {
       Root3.DevToolsContext.globalInstance().set(_HostConfigTracker, new _HostConfigTracker());
@@ -2066,13 +2079,60 @@ var HostConfigTracker = class _HostConfigTracker extends Common4.ObjectWrapper.O
       this.#aidaAvailability = currentAidaAvailability;
       const config = await new Promise((resolve) => InspectorFrontendHostInstance.getHostConfig(resolve));
       Object.assign(Root3.Runtime.hostConfig, config);
-      this.dispatchEventToListeners(
-        "aidaAvailabilityChanged"
-        /* Events.AIDA_AVAILABILITY_CHANGED */
-      );
+      this.dispatchEventToListeners("aidaAvailabilityChanged", currentAidaAvailability);
     }
   }
 };
+function isQuotaError(...inputs) {
+  return inputs.some((input) => input?.toLowerCase().includes("quota"));
+}
+function isPayloadTooLargeError(...inputs) {
+  return inputs.some((input) => input?.toLowerCase().includes("payload size exceeds the limit"));
+}
+function mapError(err, detail) {
+  if (err instanceof AidaClientError) {
+    return err;
+  }
+  if (err instanceof DispatchHttpRequestError) {
+    if (err.type === ErrorType.ABORT) {
+      return new AidaAbortError();
+    }
+    const response = err.response;
+    if (response) {
+      if (response.statusCode === 429) {
+        return new AidaQuotaError("Server responded: quota exceeded");
+      }
+      if (response.statusCode === 403) {
+        return new AidaPermissionDeniedError("Server responded: permission denied");
+      }
+      if ("netErrorName" in response && response.netErrorName === "net::ERR_TIMED_OUT") {
+        return new AidaTimeoutError("AIDA request timed out");
+      }
+      if ("error" in response && response.error) {
+        return mapError(response.error, response.detail);
+      }
+      if (response.statusCode === 200 && err.type === ErrorType.HTTP_RESPONSE_UNAVAILABLE) {
+        return new AidaInvalidJsonResponseError("Server responded with invalid JSON", { cause: err });
+      }
+      if (response.statusCode !== 200) {
+        return new AidaUnknownError(`Request failed: ${JSON.stringify(response)}`);
+      }
+    }
+  }
+  if (typeof err === "string") {
+    if (isQuotaError(err, detail)) {
+      return new AidaQuotaError(`Cannot send request: ${err}${detail ? ` ${detail}` : ""}`);
+    }
+    if (isPayloadTooLargeError(err, detail)) {
+      return new AidaPayloadTooLargeError(`Cannot send request: ${err}${detail ? ` ${detail}` : ""}`);
+    }
+    return new AidaUnknownError(`Cannot send request: ${err}${detail ? ` ${detail}` : ""}`);
+  }
+  if (err instanceof Error) {
+    return new AidaUnknownError(err.message, { cause: err });
+  }
+  return new AidaUnknownError(String(err));
+}
 
 // gen/front_end/core/host/GdpClient.js
 var GdpClient_exports = {};
@@ -2344,8 +2404,10 @@ __export(UserMetrics_exports, {
   ManifestSectionCodes: () => ManifestSectionCodes,
   MediaTypes: () => MediaTypes,
   PanelCodes: () => PanelCodes,
-  UserMetrics: () => UserMetrics
+  UserMetrics: () => UserMetrics,
+  resendRequestType: () => resendRequestType
 });
+import * as Common5 from "./../common/common.js";
 var UserMetrics = class {
   sourcesPanelFileDebugged(mediaType) {
     const code = mediaType && MediaTypes[mediaType] || MediaTypes.Unknown;
@@ -2361,6 +2423,14 @@ var UserMetrics = class {
   }
   actionTaken(action) {
     InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.ActionTaken", action, Action.MAX_VALUE);
+  }
+  resendRequest(resourceType) {
+    InspectorFrontendHostInstance.recordEnumeratedHistogram(
+      "DevTools.ResendRequest",
+      resourceType,
+      16
+      /* ResendRequestType.MAX_VALUE */
+    );
   }
   keybindSetSettingChanged(keybindSet) {
     const value = KeybindSetSettings[keybindSet] || 0;
@@ -3074,18 +3144,6 @@ var IssueCreated;
   IssueCreated2[IssueCreated2["CookieIssue::ExcludeSameSiteNoneInsecure::SetCookie"] = 15] = "CookieIssue::ExcludeSameSiteNoneInsecure::SetCookie";
   IssueCreated2[IssueCreated2["CookieIssue::WarnSameSiteNoneInsecure::ReadCookie"] = 16] = "CookieIssue::WarnSameSiteNoneInsecure::ReadCookie";
   IssueCreated2[IssueCreated2["CookieIssue::WarnSameSiteNoneInsecure::SetCookie"] = 17] = "CookieIssue::WarnSameSiteNoneInsecure::SetCookie";
-  IssueCreated2[IssueCreated2["CookieIssue::WarnSameSiteStrictLaxDowngradeStrict::Secure"] = 18] = "CookieIssue::WarnSameSiteStrictLaxDowngradeStrict::Secure";
-  IssueCreated2[IssueCreated2["CookieIssue::WarnSameSiteStrictLaxDowngradeStrict::Insecure"] = 19] = "CookieIssue::WarnSameSiteStrictLaxDowngradeStrict::Insecure";
-  IssueCreated2[IssueCreated2["CookieIssue::WarnCrossDowngrade::ReadCookie::Secure"] = 20] = "CookieIssue::WarnCrossDowngrade::ReadCookie::Secure";
-  IssueCreated2[IssueCreated2["CookieIssue::WarnCrossDowngrade::ReadCookie::Insecure"] = 21] = "CookieIssue::WarnCrossDowngrade::ReadCookie::Insecure";
-  IssueCreated2[IssueCreated2["CookieIssue::WarnCrossDowngrade::SetCookie::Secure"] = 22] = "CookieIssue::WarnCrossDowngrade::SetCookie::Secure";
-  IssueCreated2[IssueCreated2["CookieIssue::WarnCrossDowngrade::SetCookie::Insecure"] = 23] = "CookieIssue::WarnCrossDowngrade::SetCookie::Insecure";
-  IssueCreated2[IssueCreated2["CookieIssue::ExcludeNavigationContextDowngrade::Secure"] = 24] = "CookieIssue::ExcludeNavigationContextDowngrade::Secure";
-  IssueCreated2[IssueCreated2["CookieIssue::ExcludeNavigationContextDowngrade::Insecure"] = 25] = "CookieIssue::ExcludeNavigationContextDowngrade::Insecure";
-  IssueCreated2[IssueCreated2["CookieIssue::ExcludeContextDowngrade::ReadCookie::Secure"] = 26] = "CookieIssue::ExcludeContextDowngrade::ReadCookie::Secure";
-  IssueCreated2[IssueCreated2["CookieIssue::ExcludeContextDowngrade::ReadCookie::Insecure"] = 27] = "CookieIssue::ExcludeContextDowngrade::ReadCookie::Insecure";
-  IssueCreated2[IssueCreated2["CookieIssue::ExcludeContextDowngrade::SetCookie::Secure"] = 28] = "CookieIssue::ExcludeContextDowngrade::SetCookie::Secure";
-  IssueCreated2[IssueCreated2["CookieIssue::ExcludeContextDowngrade::SetCookie::Insecure"] = 29] = "CookieIssue::ExcludeContextDowngrade::SetCookie::Insecure";
   IssueCreated2[IssueCreated2["CookieIssue::ExcludeSameSiteUnspecifiedTreatedAsLax::ReadCookie"] = 30] = "CookieIssue::ExcludeSameSiteUnspecifiedTreatedAsLax::ReadCookie";
   IssueCreated2[IssueCreated2["CookieIssue::ExcludeSameSiteUnspecifiedTreatedAsLax::SetCookie"] = 31] = "CookieIssue::ExcludeSameSiteUnspecifiedTreatedAsLax::SetCookie";
   IssueCreated2[IssueCreated2["CookieIssue::WarnSameSiteUnspecifiedLaxAllowUnsafe::ReadCookie"] = 32] = "CookieIssue::WarnSameSiteUnspecifiedLaxAllowUnsafe::ReadCookie";
@@ -3258,6 +3316,86 @@ var ManifestSectionCodes;
   ManifestSectionCodes2[ManifestSectionCodes2["Window Controls Overlay"] = 5] = "Window Controls Overlay";
   ManifestSectionCodes2[ManifestSectionCodes2["MAX_VALUE"] = 6] = "MAX_VALUE";
 })(ManifestSectionCodes || (ManifestSectionCodes = {}));
+var resendRequestTypeMap = /* @__PURE__ */ new Map([
+  [
+    Common5.ResourceType.resourceTypes.XHR,
+    0
+    /* ResendRequestType.XHR */
+  ],
+  [
+    Common5.ResourceType.resourceTypes.Fetch,
+    1
+    /* ResendRequestType.FETCH */
+  ],
+  [
+    Common5.ResourceType.resourceTypes.Script,
+    2
+    /* ResendRequestType.SCRIPT */
+  ],
+  [
+    Common5.ResourceType.resourceTypes.Stylesheet,
+    3
+    /* ResendRequestType.STYLESHEET */
+  ],
+  [
+    Common5.ResourceType.resourceTypes.Image,
+    4
+    /* ResendRequestType.IMAGE */
+  ],
+  [
+    Common5.ResourceType.resourceTypes.Media,
+    5
+    /* ResendRequestType.MEDIA */
+  ],
+  [
+    Common5.ResourceType.resourceTypes.Font,
+    6
+    /* ResendRequestType.FONT */
+  ],
+  [
+    Common5.ResourceType.resourceTypes.Wasm,
+    7
+    /* ResendRequestType.WASM */
+  ],
+  [
+    Common5.ResourceType.resourceTypes.Manifest,
+    8
+    /* ResendRequestType.MANIFEST */
+  ],
+  [
+    Common5.ResourceType.resourceTypes.TextTrack,
+    9
+    /* ResendRequestType.TEXT_TRACK */
+  ],
+  [
+    Common5.ResourceType.resourceTypes.SourceMapScript,
+    10
+    /* ResendRequestType.SOURCE_MAP_SCRIPT */
+  ],
+  [
+    Common5.ResourceType.resourceTypes.SourceMapStyleSheet,
+    11
+    /* ResendRequestType.SOURCE_MAP_STYLE_SHEET */
+  ],
+  [
+    Common5.ResourceType.resourceTypes.Document,
+    12
+    /* ResendRequestType.DOCUMENT */
+  ],
+  [
+    Common5.ResourceType.resourceTypes.Prefetch,
+    13
+    /* ResendRequestType.PREFETCH */
+  ],
+  [
+    Common5.ResourceType.resourceTypes.Ping,
+    14
+    /* ResendRequestType.PING */
+  ]
+]);
+function resendRequestType(resourceType) {
+  return resendRequestTypeMap.get(resourceType) ?? 15;
+}
 
 // gen/front_end/core/host/host.prebundle.js
 var userMetrics = new UserMetrics();

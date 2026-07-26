@@ -24,7 +24,7 @@ describeWithEnvironment('NetworkThrottlingSelector', () => {
             {
                 Disabled: [
                     'No throttling',
-                ]
+                ],
             },
             {
                 Presets: [
@@ -32,12 +32,12 @@ describeWithEnvironment('NetworkThrottlingSelector', () => {
                     'Slow 4G',
                     '3G',
                     'Offline',
-                ]
+                ],
             },
             {
                 Custom: [
                     'Add…',
-                ]
+                ],
             },
         ]);
     });
@@ -52,19 +52,19 @@ describeWithEnvironment('NetworkThrottlingSelector', () => {
             {
                 Blocking: [
                     'Block',
-                ]
+                ],
             },
             {
                 Presets: [
                     'Fast 4G',
                     'Slow 4G',
                     '3G',
-                ]
+                ],
             },
             {
                 Custom: [
                     'Add…',
-                ]
+                ],
             },
         ]);
     });

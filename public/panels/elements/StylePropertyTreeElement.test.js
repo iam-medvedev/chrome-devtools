@@ -5,9 +5,9 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as TextUtils from '../../core/text_utils/text_utils.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as ComputedStyle from '../../models/computed_style/computed_style.js';
-import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
@@ -89,7 +89,7 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
     async function getTreeElementForFunctionRule(functionName, result, propertyName = 'result') {
         const matchedStyles = await getMatchedStyles({
             connection,
-            functionRules: [{ name: { text: functionName }, origin: "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */, parameters: [], children: [] }]
+            functionRules: [{ name: { text: functionName }, origin: "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */, parameters: [], children: [] }],
         });
         const property = new SDK.CSSProperty.CSSProperty(matchedStyles.functionRules()[0].style, matchedStyles.functionRules()[0].style.pastLastSourcePropertyIndex(), propertyName, result, true, false, true, false, '', undefined, []);
         matchedStyles.functionRules()[0].style.allProperties().push(property);
@@ -166,6 +166,12 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
             stylePropertyTreeElement.expand();
             const children = stylePropertyTreeElement.children().map(child => child.valueElement?.innerText);
             assert.deepEqual(children, ['red', 'shorter', 'hue']);
+        });
+        it('does not break inspector for empty URL', () => {
+            const stylePropertyTreeElement = getTreeElement('background-image', 'url()');
+            stylePropertyTreeElement.updateTitle();
+            assert.exists(stylePropertyTreeElement.valueElement);
+            assert.strictEqual(stylePropertyTreeElement.valueElement.textContent, 'url()');
         });
         describe('color-mix swatch', () => {
             it('should show color mix swatch when color-mix is used with a color', () => {
@@ -826,7 +832,12 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
             await promise;
             const { evaluations } = view.args[0][0];
             assert.deepEqual(evaluations.flat().map(args => args?.textContent).flat(), [
-                '', 'rgb(from #ff0c0c calc(1.000 / 2) 0.047 0.047)', '', 'rgb(from #ff0c0c 0.5 0.047 0.047)', '', '#800c0c'
+                '',
+                'rgb(from #ff0c0c calc(1.000 / 2) 0.047 0.047)',
+                '',
+                'rgb(from #ff0c0c 0.5 0.047 0.047)',
+                '',
+                '#800c0c',
             ]);
         });
     });
@@ -1663,7 +1674,7 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
                     fakeFn: (name, nodeIds, ...values) => {
                         resolvedValues.push(name);
                         return Promise.resolve(values.slice(0));
-                    }
+                    },
                 });
                 const tooltips = stylePropertyTreeElement.valueElement?.querySelectorAll('devtools-tooltip');
                 assert.exists(tooltips);
@@ -1718,7 +1729,7 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
                         // We strip calc() to simulate the mock browser resolving the inner unit values to px.
                         const innerValue = stripCalc(value.trim());
                         return innerValue.replaceAll(/(em|pt)$/g, 'px');
-                    })
+                    }),
                 };
             });
             const strikeOutSpy = sinon.spy(Elements.StylePropertyTreeElement.MathFunctionRenderer.prototype, 'applyMathFunction');
@@ -1754,7 +1765,7 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
                             return '0px';
                         }
                         return '';
-                    })
+                    }),
                 };
             });
             const strikeOutSpy = sinon.spy(Elements.StylePropertyTreeElement.MathFunctionRenderer.prototype, 'applyMathFunction');
@@ -1872,7 +1883,16 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
             stylePropertyTreeElement.startEditingValue();
             const autocompletions = await suggestions();
             assert.deepEqual(autocompletions.map(({ text }) => text), [
-                'row-name', 'row-name-2', 'auto', 'none', 'inherit', 'initial', 'revert', 'revert-layer', 'revert-rule', 'unset'
+                'row-name',
+                'row-name-2',
+                'auto',
+                'none',
+                'inherit',
+                'initial',
+                'revert',
+                'revert-layer',
+                'revert-rule',
+                'unset',
             ]);
         });
         it('includes grid column names', async () => {
@@ -1883,7 +1903,16 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
             stylePropertyTreeElement.startEditingValue();
             const autocompletions = await suggestions();
             assert.deepEqual(autocompletions.map(({ text }) => text), [
-                'col-name', 'col-name-2', 'auto', 'none', 'inherit', 'initial', 'revert', 'revert-layer', 'revert-rule', 'unset'
+                'col-name',
+                'col-name-2',
+                'auto',
+                'none',
+                'inherit',
+                'initial',
+                'revert',
+                'revert-layer',
+                'revert-rule',
+                'unset',
             ]);
         });
         it('includes grid area names', async () => {
@@ -2113,6 +2142,24 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
             sinon.assert.calledOnceWithExactly(applyStyleTextStub, 'color: blue;', true);
             sinon.assert.calledOnce(editingEndedSpy);
         });
+        it('formats grid area defining property value into multiline text when editing value', () => {
+            const stylePropertyTreeElement = getTreeElement('grid-template-areas', '\'a a\' \'b b\'');
+            stylePropertyTreeElement.updateTitle();
+            stylePropertyTreeElement.startEditingValue();
+            assert.strictEqual(stylePropertyTreeElement.valueElement?.textContent, '\'a a\'\n\'b b\'');
+        });
+    });
+    describe('Editing value', () => {
+        it('editing property value triggers style update', async () => {
+            const stylePropertyTreeElement = getTreeElement('font-size', '19px');
+            const applyStyleTextStub = sinon.stub(stylePropertyTreeElement, 'applyStyleText').resolves();
+            stylePropertyTreeElement.updateTitle();
+            stylePropertyTreeElement.startEditingValue();
+            assert.exists(stylePropertyTreeElement.valueElement);
+            stylePropertyTreeElement.valueElement.textContent = '119px';
+            await stylePropertyTreeElement.kickFreeFlowStyleEditForTest();
+            sinon.assert.calledOnceWithExactly(applyStyleTextStub, 'font-size: 119px', false);
+        });
     });
     it('re-enables a disabled property when edited', async () => {
         const treeElement = getTreeElement('font-weight', 'bold');
@@ -2138,7 +2185,7 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
                     name: 'font-weight',
                     value: 'normal',
                     disabled: false,
-                    range: { startLine: 0, startColumn: 0, endLine: 0, endColumn: 21 }
+                    range: { startLine: 0, startColumn: 0, endLine: 0, endColumn: 21 },
                 }],
             shorthandEntries: [],
             range: { startLine: 0, startColumn: 0, endLine: 0, endColumn: 21 },

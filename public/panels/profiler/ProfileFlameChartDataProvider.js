@@ -107,8 +107,8 @@ export class ProfileFlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget
     dataProvider;
     searchResults;
     searchResultIndex = -1;
-    constructor(searchableView, dataProvider) {
-        super();
+    constructor(searchableView, dataProvider, element) {
+        super(element);
         this.element.id = 'cpu-flame-chart';
         this.searchableView = searchableView;
         this.overviewPane = new OverviewPane(dataProvider);
@@ -133,8 +133,17 @@ export class ProfileFlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget
         const { windowTimeLeft: windowLeft, windowTimeRight: windowRight } = event.data;
         this.mainPane.setWindowTimes(windowLeft, windowRight, /* animate */ true);
     }
-    selectRange(timeLeft, timeRight) {
-        this.overviewPane.selectRange(timeLeft, timeRight);
+    get range() {
+        return {
+            left: this.overviewPane.windowTimeLeft ?? 0,
+            right: this.overviewPane.windowTimeRight ?? 0,
+        };
+    }
+    set range(limits) {
+        if (!limits) {
+            return;
+        }
+        this.overviewPane.selectRange(limits.left, limits.right);
     }
     onEntrySelected(event) {
         if (event.data) {

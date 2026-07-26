@@ -491,12 +491,14 @@ var AiCodeCompletionTeaser = class extends UI2.Widget.Widget {
       closable: true
     });
   }
-  async #onAidaAvailabilityChange() {
-    const currentAidaAvailability = await Host.AidaClient.AidaClient.checkAccessPreconditions();
-    if (currentAidaAvailability !== this.#aidaAvailability) {
-      this.#aidaAvailability = currentAidaAvailability;
+  #updateAidaAvailability(aidaAvailability) {
+    if (aidaAvailability !== this.#aidaAvailability) {
+      this.#aidaAvailability = aidaAvailability;
       this.requestUpdate();
     }
+  }
+  #onAidaAvailabilityChange(ev) {
+    this.#updateAidaAvailability(ev.data);
   }
   #onAiCodeCompletionSettingChanged() {
     if (this.#aiCodeCompletionFreCompletedSetting.get() || this.#aiCodeCompletionTeaserDismissedSetting.get()) {
@@ -576,7 +578,10 @@ var AiCodeCompletionTeaser = class extends UI2.Widget.Widget {
     Host.AidaClient.HostConfigTracker.instance().addEventListener("aidaAvailabilityChanged", this.#boundOnAidaAvailabilityChange);
     this.#aiCodeCompletionFreCompletedSetting.addChangeListener(this.#boundOnAiCodeCompletionSettingChanged);
     this.#aiCodeCompletionTeaserDismissedSetting.addChangeListener(this.#boundOnAiCodeCompletionSettingChanged);
-    void this.#onAidaAvailabilityChange();
+    const initialAvailability = Host.AidaClient.HostConfigTracker.instance().aidaAvailability;
+    if (initialAvailability !== void 0) {
+      this.#updateAidaAvailability(initialAvailability);
+    }
   }
   willHide() {
     super.willHide();
@@ -737,11 +742,11 @@ var UIStringsNotTranslate2 = {
   /**
    * @description Aria label for teaser to generate code.
    */
-  pressCtrlPeriodToLearnHowYourDataIsBeingUsed: "Press ctrl . (\u201Cperiod\u201D) to learn how your data is being used.",
+  pressCtrlPeriodToLearnHowYourDataIsBeingUsed: "Press ctrl . (period) to learn how your data is being used.",
   /**
    * @description Aria label for teaser to generate code in Mac.
    */
-  pressCmdPeriodToLearnHowYourDataIsBeingUsed: "Press cmd . (\u201Cperiod\u201D) to learn how your data is being used.",
+  pressCmdPeriodToLearnHowYourDataIsBeingUsed: "Press cmd . (period) to learn how your data is being used.",
   /**
    * @description Text for teaser when generating suggestion.
    */
@@ -1789,7 +1794,7 @@ var GeminiRebrandPromoDialog = class _GeminiRebrandPromoDialog extends UI6.Widge
     if (!Root3.Runtime.hostConfig.aidaAvailability?.enabled) {
       return;
     }
-    const currentAidaAvailability = await Host5.AidaClient.AidaClient.checkAccessPreconditions();
+    const currentAidaAvailability = Host5.AidaClient.HostConfigTracker.instance().aidaAvailability;
     if (currentAidaAvailability !== "available") {
       return;
     }
@@ -1826,7 +1831,6 @@ var aiCodeCompletionDisclaimer_css_default = `/*
  */
 
 @scope to (devtools-widget > *) {
-    /* stylelint-disable-next-line no-invalid-position-declaration */
     display: flex;
 
     .ai-code-completion-disclaimer {
@@ -2067,12 +2071,14 @@ var AiCodeCompletionDisclaimer = class extends UI7.Widget.Widget {
     this.#panel = panel;
     this.requestUpdate();
   }
-  async #onAidaAvailabilityChange() {
-    const currentAidaAvailability = await Host6.AidaClient.AidaClient.checkAccessPreconditions();
-    if (currentAidaAvailability !== this.#aidaAvailability) {
-      this.#aidaAvailability = currentAidaAvailability;
+  #updateAidaAvailability(aidaAvailability) {
+    if (aidaAvailability !== this.#aidaAvailability) {
+      this.#aidaAvailability = aidaAvailability;
       this.requestUpdate();
     }
+  }
+  #onAidaAvailabilityChange(ev) {
+    this.#updateAidaAvailability(ev.data);
   }
   #onManageInSettingsTooltipClick() {
     this.#viewOutput.hideTooltip?.();
@@ -2091,7 +2097,10 @@ var AiCodeCompletionDisclaimer = class extends UI7.Widget.Widget {
   wasShown() {
     super.wasShown();
     Host6.AidaClient.HostConfigTracker.instance().addEventListener("aidaAvailabilityChanged", this.#boundOnAidaAvailabilityChange);
-    void this.#onAidaAvailabilityChange();
+    const initialAvailability = Host6.AidaClient.HostConfigTracker.instance().aidaAvailability;
+    if (initialAvailability !== void 0) {
+      this.#updateAidaAvailability(initialAvailability);
+    }
   }
   willHide() {
     super.willHide();
@@ -2298,12 +2307,14 @@ var AiCodeCompletionSummaryToolbar = class extends UI8.Widget.Widget {
     this.#view = view ?? DEFAULT_SUMMARY_TOOLBAR_VIEW2;
     this.requestUpdate();
   }
-  async #onAidaAvailabilityChange() {
-    const currentAidaAvailability = await Host7.AidaClient.AidaClient.checkAccessPreconditions();
-    if (currentAidaAvailability !== this.#aidaAvailability) {
-      this.#aidaAvailability = currentAidaAvailability;
+  #updateAidaAvailability(aidaAvailability) {
+    if (aidaAvailability !== this.#aidaAvailability) {
+      this.#aidaAvailability = aidaAvailability;
       this.requestUpdate();
     }
+  }
+  #onAidaAvailabilityChange(ev) {
+    this.#updateAidaAvailability(ev.data);
   }
   setLoading(loading) {
     this.#loading = loading;
@@ -2332,7 +2343,10 @@ var AiCodeCompletionSummaryToolbar = class extends UI8.Widget.Widget {
   wasShown() {
     super.wasShown();
     Host7.AidaClient.HostConfigTracker.instance().addEventListener("aidaAvailabilityChanged", this.#boundOnAidaAvailabilityChange);
-    void this.#onAidaAvailabilityChange();
+    const initialAvailability = Host7.AidaClient.HostConfigTracker.instance().aidaAvailability;
+    if (initialAvailability !== void 0) {
+      this.#updateAidaAvailability(initialAvailability);
+    }
   }
   willHide() {
     super.willHide();
@@ -3158,11 +3172,11 @@ import * as i18n21 from "./../../core/i18n/i18n.js";
 import * as Platform5 from "./../../core/platform/platform.js";
 import * as Root5 from "./../../core/root/root.js";
 import * as SDK2 from "./../../core/sdk/sdk.js";
+import * as TextUtils from "./../../core/text_utils/text_utils.js";
 import * as Bindings from "./../../models/bindings/bindings.js";
 import * as Extensions2 from "./../../models/extensions/extensions.js";
 import * as HAR from "./../../models/har/har.js";
 import * as Logs from "./../../models/logs/logs.js";
-import * as TextUtils from "./../../models/text_utils/text_utils.js";
 import * as Workspace from "./../../models/workspace/workspace.js";
 import * as Components from "./../../ui/legacy/components/utils/utils.js";
 import * as UI12 from "./../../ui/legacy/legacy.js";

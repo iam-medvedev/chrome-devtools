@@ -147,5 +147,49 @@ describeWithEnvironment('ServiceWorkerCacheModel', () => {
         cacheStorageModel.enable();
         sinon.assert.calledOnceWithExactly(trackCacheSpy, { storageKey: testKey });
     });
+    describe('deleteCache', () => {
+        it('calls invoke_deleteCache on the cache agent', async () => {
+            const deleteCacheSpy = sinon.spy(cacheAgent, 'invoke_deleteCache');
+            connection.setSuccessHandler('CacheStorage.deleteCache', () => ({}));
+            await cacheStorageModel.deleteCache(cache);
+            sinon.assert.calledOnceWithExactly(deleteCacheSpy, { cacheId: cache.cacheId });
+        });
+        it('removes the cache from the model and dispatches event', async () => {
+            connection.setSuccessHandler('CacheStorage.requestCacheNames', () => ({
+                caches: [{
+                        cacheId: cache.cacheId,
+                        storageKey: testKey,
+                        storageBucket: testStorageBucket,
+                        cacheName: cache.cacheName,
+                    }],
+            }));
+            cacheStorageModel.enable();
+            manager?.storageBucketCreatedOrUpdated({ bucketInfo: testStorageBucketInfo });
+            // Wait for cache to be added
+            await new Promise(resolve => {
+                cacheStorageModel.addEventListener("CacheAdded" /* SDK.ServiceWorkerCacheModel.Events.CACHE_ADDED */, () => resolve());
+            });
+            const cacheRemovedPromise = new Promise(resolve => {
+                cacheStorageModel.addEventListener("CacheRemoved" /* SDK.ServiceWorkerCacheModel.Events.CACHE_REMOVED */, event => {
+                    if (event.data.cache.cacheId === cache.cacheId) {
+                        resolve();
+                    }
+                });
+            });
+            connection.setSuccessHandler('CacheStorage.deleteCache', () => ({}));
+            await cacheStorageModel.deleteCache(cache);
+            await cacheRemovedPromise;
+            assert.isEmpty(cacheStorageModel.caches());
+        });
+    });
+    describe('deleteCacheEntry', () => {
+        it('calls invoke_deleteEntry on the cache agent', async () => {
+            const deleteEntrySpy = sinon.spy(cacheAgent, 'invoke_deleteEntry');
+            connection.setSuccessHandler('CacheStorage.deleteEntry', () => ({}));
+            const request = 'http://fake.request.com/1';
+            await cacheStorageModel.deleteCacheEntry(cache, request);
+            sinon.assert.calledOnceWithExactly(deleteEntrySpy, { cacheId: cache.cacheId, request });
+        });
+    });
 });
 //# sourceMappingURL=ServiceWorkerCacheModel.test.js.map

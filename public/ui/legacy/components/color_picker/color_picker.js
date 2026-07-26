@@ -1073,7 +1073,7 @@ import * as Host2 from "./../../../../core/host/host.js";
 import * as i18n5 from "./../../../../core/i18n/i18n.js";
 import * as Platform3 from "./../../../../core/platform/platform.js";
 import * as SDK from "./../../../../core/sdk/sdk.js";
-import * as TextUtils from "./../../../../models/text_utils/text_utils.js";
+import * as TextUtils from "./../../../../core/text_utils/text_utils.js";
 import * as SrgbOverlay from "./../../../components/srgb_overlay/srgb_overlay.js";
 import { createIcon as createIcon2, Icon as Icon2 } from "./../../../kit/kit.js";
 import * as VisualLogging from "./../../../visual_logging/visual_logging.js";
@@ -1154,12 +1154,11 @@ var spectrum_css_default = `/*
 
 .spectrum-hue {
   top: 16px;
-  /* stylelint-disable-next-line plugin/use_theme_colors, declaration-property-value-no-unknown */
+  /* stylelint-disable-next-line plugin/use_theme_colors */
   background: linear-gradient(to left in hsl longer hue, #f00 0 100%);
 }
 
 .spectrum-hue.display-p3 {
-  /* stylelint-disable-next-line declaration-property-value-no-unknown */
   background: linear-gradient(
     to left in hsl longer hue,
     color(display-p3 1 0 0) 0 100%

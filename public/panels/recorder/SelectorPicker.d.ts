@@ -1,11 +1,6 @@
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Models from './models/models.js';
-export declare class RequestSelectorAttributeEvent extends Event {
-    static readonly eventName = "requestselectorattribute";
-    send: (attribute?: string) => void;
-    constructor(send: (attribute?: string) => void);
-}
 export interface ViewInput {
     active: boolean;
     disabled: boolean;

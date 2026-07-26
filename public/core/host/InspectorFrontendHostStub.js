@@ -8,7 +8,7 @@ import { Events, } from './InspectorFrontendHostAPI.js';
 import { streamWrite as resourceLoaderStreamWrite } from './ResourceLoader.js';
 const UIStrings = {
     /**
-     * @description Document title in Inspector Frontend Host of the DevTools window
+     * @description Document title in Inspector Frontend Host of the DevTools window.
      * @example {example.com} PH1
      */
     devtoolsS: 'DevTools - {PH1}',
@@ -69,13 +69,13 @@ export class InspectorFrontendHostStub {
     closeWindow() {
     }
     setIsDocked(_isDocked, callback) {
-        window.setTimeout(callback, 0);
+        globalThis.setTimeout(callback, 0);
     }
     showSurvey(_trigger, callback) {
-        window.setTimeout(() => callback({ surveyShown: false }), 0);
+        globalThis.setTimeout(() => callback({ surveyShown: false }), 0);
     }
     canShowSurvey(_trigger, callback) {
-        window.setTimeout(() => callback({ canShowSurvey: false }), 0);
+        globalThis.setTimeout(() => callback({ canShowSurvey: false }), 0);
     }
     /**
      * Requests inspected page to be placed atop of the inspector frontend with specified bounds.

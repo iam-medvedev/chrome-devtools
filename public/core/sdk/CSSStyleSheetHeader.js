@@ -1,21 +1,21 @@
 // Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Common from '../common/common.js';
 import * as i18n from '../i18n/i18n.js';
 import * as Platform from '../platform/platform.js';
+import * as TextUtils from '../text_utils/text_utils.js';
 import { DeferredDOMNode } from './DOMModel.js';
 import { ResourceTreeModel } from './ResourceTreeModel.js';
 const UIStrings = {
     /**
-     * @description Error message for when a CSS file can't be loaded
+     * @description Error message for when a CSS file can't be loaded.
      */
     couldNotFindTheOriginalStyle: 'Could not find the original style sheet.',
     /**
      * @description Error message to display when a source CSS file could not be retrieved.
      */
-    thereWasAnErrorRetrievingThe: 'There was an error retrieving the source styles.',
+    couldNotRetrieveSourceStyles: 'Could not retrieve source styles.',
 };
 const str_ = i18n.i18n.registerUIStrings('core/sdk/CSSStyleSheetHeader.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -142,7 +142,7 @@ export class CSSStyleSheetHeader {
     async requestContentData() {
         const cssText = await this.#cssModel.getStyleSheetText(this.id);
         if (cssText === null) {
-            return { error: i18nString(UIStrings.thereWasAnErrorRetrievingThe) };
+            return { error: i18nString(UIStrings.couldNotRetrieveSourceStyles) };
         }
         return new TextUtils.ContentData.ContentData(cssText, /* isBase64=*/ false, 'text/css');
     }

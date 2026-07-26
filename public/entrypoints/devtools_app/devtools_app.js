@@ -193,7 +193,11 @@ var UIStrings2 = {
   /**
    * @description Whether CSS rules that do not apply active styles in the Styles pane are collapsed by default.
    */
-  collapseNonContributingCSSRules: "Collapse non-contributing CSS rules"
+  collapseNonContributingCSSRules: "Collapse non-contributing CSS rules",
+  /**
+   * @description Title of a setting in the Event Listeners widget.
+   */
+  frameworkListeners: "Framework listeners"
 };
 var str_2 = i18n3.i18n.registerUIStrings("panels/elements/elements-meta.ts", UIStrings2);
 var i18nLazyString2 = i18n3.i18n.getLazilyComputedLocalizedString.bind(void 0, str_2);
@@ -698,6 +702,14 @@ UI2.UIUtils.registerRenderer({
     return Elements2.ElementsTreeOutlineRenderer.Renderer.instance();
   }
 });
+Common.Settings.registerSettingExtension({
+  category: "",
+  storageType: "Global",
+  title: i18nLazyString2(UIStrings2.frameworkListeners),
+  settingName: "show-frameowkr-listeners",
+  settingType: "boolean",
+  defaultValue: true
+});
 
 // gen/front_end/panels/browser_debugger/browser_debugger-meta.js
 import * as i18n5 from "./../../core/i18n/i18n.js";
@@ -706,71 +718,71 @@ import * as SDK2 from "./../../core/sdk/sdk.js";
 import * as UI3 from "./../../ui/legacy/legacy.js";
 var UIStrings3 = {
   /**
-   * @description Command for showing the 'Event Listener Breakpoints' tool
+   * @description Command for showing the Event listener breakpoints sidebar in the Sources panel.
    */
-  showEventListenerBreakpoints: "Show Event Listener Breakpoints",
+  showEventListenerBreakpoints: "Show Event listener breakpoints",
   /**
-   * @description Title of the 'Event Listener Breakpoints' tool in the bottom sidebar of the Sources tool
+   * @description Title of the Event listener breakpoints sidebar in the Sources panel.
    */
-  eventListenerBreakpoints: "Event Listener Breakpoints",
+  eventListenerBreakpoints: "Event listener breakpoints",
   /**
-   * @description Title for showing the 'CSP Violation Breakpoints' tool in the Sources panel
+   * @description Command for showing the CSP violation breakpoints sidebar in the Sources panel.
    */
-  showCspViolationBreakpoints: "Show CSP Violation Breakpoints",
+  showCspViolationBreakpoints: "Show CSP violation breakpoints",
   /**
-   * @description Title of the 'CSP Violation Breakpoints' tool in the bottom sidebar of the Sources tool
+   * @description Title of the CSP violation breakpoints sidebar in the Sources panel.
    */
-  cspViolationBreakpoints: "CSP Violation Breakpoints",
+  cspViolationBreakpoints: "CSP violation breakpoints",
   /**
-   * @description Command for showing the 'XHR/fetch Breakpoints' in the sources panel
+   * @description Command for showing the XHR/fetch breakpoints sidebar in the Sources panel.
    */
-  showXhrfetchBreakpoints: "Show XHR/fetch Breakpoints",
+  showXhrfetchBreakpoints: "Show XHR/fetch breakpoints",
   /**
-   * @description Title of the 'XHR/fetch Breakpoints' tool in the bottom sidebar of the Sources tool
+   * @description Title of the XHR/fetch breakpoints sidebar in the Sources panel.
    */
-  xhrfetchBreakpoints: "XHR/fetch Breakpoints",
+  xhrfetchBreakpoints: "XHR/fetch breakpoints",
   /**
-   * @description Command for showing the 'DOM Breakpoints' tool in the Elements panel
+   * @description Command for showing the DOM breakpoints sidebar.
    */
-  showDomBreakpoints: "Show DOM Breakpoints",
+  showDomBreakpoints: "Show DOM breakpoints",
   /**
-   * @description Title of the 'DOM Breakpoints' tool in the bottom sidebar of the Sources tool
+   * @description Title of the DOM breakpoints sidebar.
    */
-  domBreakpoints: "DOM Breakpoints",
+  domBreakpoints: "DOM breakpoints",
   /**
-   * @description Command for showing the 'Global Listeners' tool in the sources panel
+   * @description Command for showing the Global listeners sidebar in the Sources panel.
    */
-  showGlobalListeners: "Show Global Listeners",
+  showGlobalListeners: "Show Global listeners",
   /**
-   * @description Title of the 'Global Listeners' tool in the bottom sidebar of the Sources tool
+   * @description Title of the Global listeners sidebar in the Sources panel.
    */
-  globalListeners: "Global Listeners",
+  globalListeners: "Global listeners",
   /**
-   * @description Text that refers to one or a group of webpages
+   * @description Title of the Page tab in the Sources panel.
    */
   page: "Page",
   /**
-   * @description Command for showing the 'Page' tab in the Sources panel
+   * @description Command for showing the Page tab in the Sources panel.
    */
   showPage: "Show Page",
   /**
-   * @description Title as part of a tool to override existing configurations
+   * @description Title of the Overrides tab in the Sources panel.
    */
   overrides: "Overrides",
   /**
-   * @description Command for showing the 'Overrides' tool in the Sources panel
+   * @description Command for showing the Overrides tab in the Sources panel.
    */
   showOverrides: "Show Overrides",
   /**
-   * @description Title for a type of source files
+   * @description Title of the Content scripts tab in the Sources panel.
    */
   contentScripts: "Content scripts",
   /**
-   * @description Command for showing the 'Content scripts' tool in the sources panel
+   * @description Command for showing the Content scripts tab in the Sources panel.
    */
   showContentScripts: "Show Content scripts",
   /**
-   * @description Label for a button in the sources panel that refreshes the list of global event listeners.
+   * @description Label for a button in the Sources panel that refreshes the list of global event listeners.
    */
   refreshGlobalListeners: "Refresh global listeners"
 };
@@ -2505,9 +2517,49 @@ import * as UI16 from "./../../ui/legacy/legacy.js";
 import * as Lighthouse from "./../../panels/lighthouse/lighthouse.js";
 var UIStrings16 = {
   /**
-   * @description Command for showing the 'Lighthouse' tool
+   * @description Command for showing the Lighthouse panel.
    */
-  showLighthouse: "Show `Lighthouse`"
+  showLighthouse: "Show `Lighthouse`",
+  /**
+   * @description Title of Lighthouse performance category setting.
+   */
+  performance: "Performance",
+  /**
+   * @description Title of Lighthouse accessibility category setting.
+   */
+  accessibility: "Accessibility",
+  /**
+   * @description Title of Lighthouse best practices category setting.
+   */
+  bestPractices: "Best practices",
+  /**
+   * @description Title of Lighthouse SEO category setting.
+   */
+  seo: "SEO",
+  /**
+   * @description Title of Lighthouse agentic browsing category setting.
+   */
+  agenticBrowsing: "Agentic browsing",
+  /**
+   * @description Title of Lighthouse device type setting.
+   */
+  device: "Apply mobile emulation",
+  /**
+   * @description Title of Lighthouse mode setting.
+   */
+  mode: "Lighthouse mode",
+  /**
+   * @description Title of Lighthouse throttling setting.
+   */
+  throttling: "Throttling method",
+  /**
+   * @description Title of Lighthouse clear storage setting.
+   */
+  clearStorage: "Clear storage",
+  /**
+   * @description Title of Lighthouse JavaScript sampling setting.
+   */
+  enableSampling: "Enable JS sampling"
 };
 var str_16 = i18n31.i18n.registerUIStrings("panels/lighthouse/lighthouse-meta.ts", UIStrings16);
 var i18nLazyString16 = i18n31.i18n.getLazilyComputedLocalizedString.bind(void 0, str_16);
@@ -2544,6 +2596,86 @@ Common10.Revealer.registerRevealer({
     const Lighthouse2 = await loadLighthouseModule();
     return new Lighthouse2.LighthousePanel.ReportRevealer();
   }
+});
+Common10.Settings.registerSettingExtension({
+  category: "",
+  storageType: "Synced",
+  title: i18nLazyString16(UIStrings16.performance),
+  settingName: "lighthouse.cat-perf",
+  settingType: "boolean",
+  defaultValue: true
+});
+Common10.Settings.registerSettingExtension({
+  category: "",
+  storageType: "Synced",
+  title: i18nLazyString16(UIStrings16.accessibility),
+  settingName: "lighthouse.cat-a11y",
+  settingType: "boolean",
+  defaultValue: true
+});
+Common10.Settings.registerSettingExtension({
+  category: "",
+  storageType: "Synced",
+  title: i18nLazyString16(UIStrings16.bestPractices),
+  settingName: "lighthouse.cat-best-practices",
+  settingType: "boolean",
+  defaultValue: true
+});
+Common10.Settings.registerSettingExtension({
+  category: "",
+  storageType: "Synced",
+  title: i18nLazyString16(UIStrings16.seo),
+  settingName: "lighthouse.cat-seo",
+  settingType: "boolean",
+  defaultValue: true
+});
+Common10.Settings.registerSettingExtension({
+  category: "",
+  storageType: "Synced",
+  title: i18nLazyString16(UIStrings16.agenticBrowsing),
+  settingName: "lighthouse.cat-agentic-browsing",
+  settingType: "boolean",
+  defaultValue: false
+});
+Common10.Settings.registerSettingExtension({
+  category: "",
+  storageType: "Synced",
+  title: i18nLazyString16(UIStrings16.device),
+  settingName: "lighthouse.device-type",
+  settingType: "enum",
+  defaultValue: "mobile"
+});
+Common10.Settings.registerSettingExtension({
+  category: "",
+  storageType: "Synced",
+  title: i18nLazyString16(UIStrings16.mode),
+  settingName: "lighthouse.mode",
+  settingType: "enum",
+  defaultValue: "navigation"
+});
+Common10.Settings.registerSettingExtension({
+  category: "",
+  storageType: "Synced",
+  title: i18nLazyString16(UIStrings16.throttling),
+  settingName: "lighthouse.throttling",
+  settingType: "enum",
+  defaultValue: "simulate"
+});
+Common10.Settings.registerSettingExtension({
+  category: "",
+  storageType: "Synced",
+  title: i18nLazyString16(UIStrings16.clearStorage),
+  settingName: "lighthouse.clear-storage",
+  settingType: "boolean",
+  defaultValue: true
+});
+Common10.Settings.registerSettingExtension({
+  category: "",
+  storageType: "Synced",
+  title: i18nLazyString16(UIStrings16.enableSampling),
+  settingName: "lighthouse.enable-sampling",
+  settingType: "boolean",
+  defaultValue: false
 });
 
 // gen/front_end/panels/media/media-meta.js
@@ -2841,11 +2973,67 @@ var UIStrings20 = {
   /**
    * @description Title of a setting under the Performance category in Settings
    */
+  enableSoftNavigations: "Enable soft navigation performance monitoring",
+  /**
+   * @description Title of a setting under the Performance category in Settings
+   */
   timelineDebugMode: "Timeline debug mode (trace event details, etc.)",
   /**
    * @description Title of a setting under the Performance category in Settings
    */
-  timelineInvalidationTracking: "Invalidation tracking"
+  timelineInvalidationTracking: "Invalidation tracking",
+  /**
+   * @description Title of a setting in Performance panel.
+   */
+  disableJavascriptSamples: "Disable JavaScript samples",
+  /**
+   * @description Title of a setting in Performance panel.
+   */
+  enableAdvancedPaint: "Enable advanced paint instrumentation (slow)",
+  /**
+   * @description Title of a setting in Performance panel.
+   */
+  enableSelectorStats: "Enable CSS selector stats (slow)",
+  /**
+   * @description Title of a setting in Performance panel.
+   */
+  screenshotCapture: "Screenshot capture",
+  /**
+   * @description Title of a setting in Performance panel.
+   */
+  screenshots: "Screenshots",
+  /**
+   * @description Title of a setting in Performance panel.
+   */
+  memory: "Memory",
+  /**
+   * @description Title of a setting in Performance panel.
+   */
+  dimThirdParties: "Dim 3rd parties",
+  /**
+   * @description Title of a setting in Performance panel.
+   */
+  showCustomtracks: "Show custom tracks",
+  /**
+   * @description Title of a setting in Performance panel counters graph.
+   */
+  jsHeap: "JS heap",
+  /**
+   * @description Title of a setting in Performance panel counters graph.
+   */
+  documents: "Documents",
+  /**
+   * @description Title of a setting in Performance panel counters graph.
+   */
+  nodes: "Nodes",
+  /**
+   * @description Title of a setting in Performance panel counters graph.
+   */
+  listeners: "Listeners",
+  /**
+   * @description Title of a setting in Performance panel counters graph.
+   */
+  gpuMemory: "GPU memory"
 };
 var str_20 = i18n39.i18n.registerUIStrings("panels/timeline/timeline-meta.ts", UIStrings20);
 var i18nLazyString20 = i18n39.i18n.getLazilyComputedLocalizedString.bind(void 0, str_20);
@@ -3103,6 +3291,14 @@ Common12.Settings.registerSettingExtension({
 Common12.Settings.registerSettingExtension({
   category: "PERFORMANCE",
   storageType: "Synced",
+  title: i18nLazyString20(UIStrings20.enableSoftNavigations),
+  settingName: "timeline-enable-soft-navigations",
+  settingType: "boolean",
+  defaultValue: true
+});
+Common12.Settings.registerSettingExtension({
+  category: "PERFORMANCE",
+  storageType: "Synced",
   title: i18nLazyString20(UIStrings20.timelineDebugMode),
   settingName: "timeline-debug-mode",
   settingType: "boolean",
@@ -3195,6 +3391,122 @@ Common12.Revealer.registerRevealer({
     return new Timeline.TimelinePanel.BottomUpProfileRevealer();
   }
 });
+Common12.Revealer.registerRevealer({
+  contextTypes() {
+    return [
+      SDK7.CPUProfilerModel.ProfileFinishedData
+    ];
+  },
+  destination: Common12.Revealer.RevealerDestination.TIMELINE_PANEL,
+  async loadRevealer() {
+    const Timeline = await loadTimelineModule();
+    return new Timeline.TimelinePanel.ProfileFinishedRevealer();
+  }
+});
+Common12.Settings.registerSettingExtension({
+  category: "",
+  storageType: "Session",
+  title: i18nLazyString20(UIStrings20.disableJavascriptSamples),
+  settingName: "timeline-disable-js-sampling",
+  settingType: "boolean",
+  defaultValue: false
+});
+Common12.Settings.registerSettingExtension({
+  category: "",
+  storageType: "Session",
+  title: i18nLazyString20(UIStrings20.enableAdvancedPaint),
+  settingName: "timeline-capture-layers-and-pictures",
+  settingType: "boolean",
+  defaultValue: false
+});
+Common12.Settings.registerSettingExtension({
+  category: "",
+  storageType: "Session",
+  title: i18nLazyString20(UIStrings20.enableSelectorStats),
+  settingName: "timeline-capture-selector-stats",
+  settingType: "boolean",
+  defaultValue: false
+});
+Common12.Settings.registerSettingExtension({
+  category: "",
+  storageType: "Session",
+  title: i18nLazyString20(UIStrings20.screenshotCapture),
+  settingName: "timeline-screenshot-capture-mode",
+  settingType: "enum",
+  defaultValue: "auto"
+});
+Common12.Settings.registerSettingExtension({
+  category: "",
+  storageType: "Global",
+  title: i18nLazyString20(UIStrings20.screenshots),
+  settingName: "timeline-show-screenshots",
+  settingType: "boolean",
+  defaultValue: true
+});
+Common12.Settings.registerSettingExtension({
+  category: "",
+  storageType: "Session",
+  title: i18nLazyString20(UIStrings20.memory),
+  settingName: "timeline-show-memory",
+  settingType: "boolean",
+  defaultValue: false
+});
+Common12.Settings.registerSettingExtension({
+  category: "",
+  storageType: "Session",
+  title: i18nLazyString20(UIStrings20.dimThirdParties),
+  settingName: "timeline-dim-third-parties",
+  settingType: "boolean",
+  defaultValue: false
+});
+Common12.Settings.registerSettingExtension({
+  category: "",
+  storageType: "Global",
+  title: i18nLazyString20(UIStrings20.showCustomtracks),
+  settingName: "timeline-show-extension-data",
+  settingType: "boolean",
+  defaultValue: true
+});
+Common12.Settings.registerSettingExtension({
+  category: "",
+  storageType: "Global",
+  title: i18nLazyString20(UIStrings20.jsHeap),
+  settingName: "timeline-counters-graph-js-heap-size-used",
+  settingType: "boolean",
+  defaultValue: true
+});
+Common12.Settings.registerSettingExtension({
+  category: "",
+  storageType: "Global",
+  title: i18nLazyString20(UIStrings20.documents),
+  settingName: "timeline-counters-graph-documents",
+  settingType: "boolean",
+  defaultValue: true
+});
+Common12.Settings.registerSettingExtension({
+  category: "",
+  storageType: "Global",
+  title: i18nLazyString20(UIStrings20.nodes),
+  settingName: "timeline-counters-graph-nodes",
+  settingType: "boolean",
+  defaultValue: true
+});
+Common12.Settings.registerSettingExtension({
+  category: "",
+  storageType: "Global",
+  title: i18nLazyString20(UIStrings20.listeners),
+  settingName: "timeline-counters-graph-js-event-listeners",
+  settingType: "boolean",
+  defaultValue: true
+});
+Common12.Settings.registerSettingExtension({
+  category: "",
+  storageType: "Global",
+  title: i18nLazyString20(UIStrings20.gpuMemory),
+  settingName: "timeline-counters-graph-gpu-memory-used-kb",
+  settingType: "boolean",
+  defaultValue: true
+});
 
 // gen/front_end/panels/web_audio/web_audio-meta.js
 import * as i18n41 from "./../../core/i18n/i18n.js";
@@ -3272,9 +3584,18 @@ UI22.ViewManager.registerViewExtension({
 });
 
 // gen/front_end/panels/layer_viewer/layer_viewer-meta.js
+import * as Common13 from "./../../core/common/common.js";
 import * as i18n45 from "./../../core/i18n/i18n.js";
 import * as UI23 from "./../../ui/legacy/legacy.js";
 var UIStrings23 = {
+  /**
+   * @description Title of a setting in Layer Viewer.
+   */
+  paints: "Paints",
+  /**
+   * @description Title of a setting in Layer Viewer.
+   */
+  slowScrollRects: "Slow scroll rects",
   /**
    * @description Text in the Shortcuts page to explain a keyboard shortcut (reset view in Layers Panel)
    */
@@ -3421,6 +3742,22 @@ UI23.ActionRegistration.registerActionExtension({
       shortcut: "d"
     }
   ]
+});
+Common13.Settings.registerSettingExtension({
+  category: "",
+  storageType: "Global",
+  title: i18nLazyString23(UIStrings23.paints),
+  settingName: "frame-viewer-show-paints",
+  settingType: "boolean",
+  defaultValue: false
+});
+Common13.Settings.registerSettingExtension({
+  category: "",
+  storageType: "Global",
+  title: i18nLazyString23(UIStrings23.slowScrollRects),
+  settingName: "frame-viewer-show-slow-scroll-rects",
+  settingType: "boolean",
+  defaultValue: true
 });
 
 // gen/front_end/panels/recorder/recorder-meta.js
@@ -3576,7 +3913,7 @@ UI24.ActionRegistration.registerActionExtension({
 });
 
 // gen/front_end/panels/whats_new/whats_new-meta.js
-import * as Common13 from "./../../core/common/common.js";
+import * as Common14 from "./../../core/common/common.js";
 import * as i18n49 from "./../../core/i18n/i18n.js";
 import * as UI25 from "./../../ui/legacy/legacy.js";
 var UIStrings25 = {
@@ -3621,7 +3958,7 @@ async function loadWhatsNewModule() {
 UI25.ViewManager.maybeRemoveViewExtension("release-note");
 UI25.ActionRegistration.maybeRemoveActionExtension("help.release-notes");
 UI25.ActionRegistration.maybeRemoveActionExtension("help.report-issue");
-Common13.Settings.maybeRemoveSettingExtension("help.show-release-note");
+Common14.Settings.maybeRemoveSettingExtension("help.show-release-note");
 UI25.ContextMenu.maybeRemoveItem({
   location: "mainMenuHelp/default",
   actionId: "help.release-notes"
@@ -3630,7 +3967,7 @@ UI25.ContextMenu.maybeRemoveItem({
   location: "mainMenuHelp/default",
   actionId: "help.report-issue"
 });
-Common13.Runnable.maybeRemoveLateInitializationRunnable("whats-new");
+Common14.Runnable.maybeRemoveLateInitializationRunnable("whats-new");
 UI25.ViewManager.registerViewExtension({
   location: "drawer-view",
   id: "release-note",
@@ -3662,7 +3999,7 @@ UI25.ActionRegistration.registerActionExtension({
   },
   tags: [i18nLazyString25(UIStrings25.bug)]
 });
-Common13.Settings.registerSettingExtension({
+Common14.Settings.registerSettingExtension({
   category: "APPEARANCE",
   title: i18nLazyString25(UIStrings25.showWhatsNewAfterEachUpdate),
   settingName: "help.show-release-note",
@@ -3689,7 +4026,7 @@ UI25.ContextMenu.registerItem({
   actionId: "help.report-issue",
   order: 11
 });
-Common13.Runnable.registerLateInitializationRunnable({
+Common14.Runnable.registerLateInitializationRunnable({
   id: "whats-new",
   async loadRunnable() {
     const WhatsNew = await loadWhatsNewModule();

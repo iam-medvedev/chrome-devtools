@@ -24,6 +24,8 @@ type View = (input: ViewInput, output: undefined, target: HTMLElement) => void;
 export declare class BackForwardCacheView extends UI.Widget.Widget {
     #private;
     constructor(view?: View);
+    wasShown(): void;
+    willHide(): void;
     performUpdate(): Promise<void>;
 }
 interface FrameTreeNodeData {

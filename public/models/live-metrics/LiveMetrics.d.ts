@@ -9,6 +9,7 @@ export declare class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper<Even
     static instance(opts?: {
         forceNew?: boolean;
     }): LiveMetrics;
+    get navigationType(): Spec.NavigationType | undefined;
     get lcpValue(): LcpValue | undefined;
     get clsValue(): ClsValue | undefined;
     get inpValue(): InpValue | undefined;
@@ -53,11 +54,11 @@ export interface LayoutShift {
 }
 export interface Interaction {
     interactionId: InteractionId;
-    interactionType: Spec.InteractionEntryEvent['interactionType'];
+    interactionType?: Spec.InteractionEntryEvent['interactionType'];
     eventNames: string[];
     duration: number;
     startTime: number;
-    nextPaintTime: number;
+    nextPaintTime?: number;
     subparts: Spec.InpSubparts;
     longAnimationFrameTimings: Spec.PerformanceLongAnimationFrameTimingJSON[];
     nodeRef?: SDK.DOMModel.DOMNode;
@@ -68,6 +69,7 @@ export interface StatusEvent {
     inp?: InpValue;
     interactions: InteractionMap;
     layoutShifts: LayoutShift[];
+    navigationType?: Spec.NavigationType;
 }
 interface EventTypes {
     [Events.STATUS]: StatusEvent;

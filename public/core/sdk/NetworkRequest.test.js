@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import sinon from 'sinon';
-import * as TextUtils from '../../models/text_utils/text_utils.js';
 import { expectCookie } from '../../testing/Cookies.js';
 import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import { mockResourceTree } from '../../testing/ResourceTreeHelpers.js';
 import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as Platform from '../platform/platform.js';
+import * as TextUtils from '../text_utils/text_utils.js';
 import * as SDK from './sdk.js';
 const { urlString } = Platform.DevToolsPath;
 describe('NetworkRequest', () => {

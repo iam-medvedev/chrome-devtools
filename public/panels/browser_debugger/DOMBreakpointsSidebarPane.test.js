@@ -102,7 +102,7 @@ describe('DOMBreakpointsSidebarPane', () => {
                     label: 'Attribute Modified',
                     isHighlighted: false,
                     isFocused: false,
-                }
+                },
             ],
             onBreakpointClick: () => { },
             onBreakpointCheckboxClick: () => { },

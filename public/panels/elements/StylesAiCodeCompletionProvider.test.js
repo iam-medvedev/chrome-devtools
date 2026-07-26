@@ -6,8 +6,8 @@ import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as TextUtils from '../../core/text_utils/text_utils.js';
 import * as AiCodeCompletion from '../../models/ai_code_completion/ai_code_completion.js';
-import * as TextUtils from '../../models/text_utils/text_utils.js';
 import { createTarget, describeWithEnvironment, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
 import * as TextEditor from '../../ui/components/text_editor/text_editor.js';
 import * as Elements from './elements.js';
@@ -39,7 +39,6 @@ function createCssModelAndProperty() {
 }
 describeWithEnvironment('StylesAiCodeCompletionProvider', () => {
     let clock;
-    let checkAccessPreconditionsStub;
     beforeEach(() => {
         clock = sinon.useFakeTimers();
         updateHostConfig({
@@ -51,11 +50,11 @@ describeWithEnvironment('StylesAiCodeCompletionProvider', () => {
                 blockedByAge: false,
                 blockedByGeo: false,
                 blockedByEnterprisePolicy: false,
-            }
+            },
         });
         sinon.stub(Host.AidaClient.HostConfigTracker.instance(), 'pollAidaAvailability').resolves();
-        checkAccessPreconditionsStub = sinon.stub(Host.AidaClient.AidaClient, 'checkAccessPreconditions');
-        checkAccessPreconditionsStub.resolves("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
+        sinon.stub(Host.AidaClient.HostConfigTracker.instance(), 'aidaAvailability')
+            .get(() => "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
         Common.Settings.Settings.instance().settingForTest('ai-code-completion-enabled').set(true);
     });
     afterEach(() => {

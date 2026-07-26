@@ -10,7 +10,7 @@ import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as Menus from '../../ui/components/menus/menus.js';
 import * as Converters from './converters/converters.js';
 import * as Models from './models/models.js';
-import { RecordingView, StepView } from './recorder.js';
+import { RecordingView } from './recorder.js';
 describeWithEnvironment('RecordingView', () => {
     setupActionRegistry();
     const step = { type: Models.Schema.StepType.Scroll };
@@ -109,7 +109,7 @@ describeWithEnvironment('RecordingView', () => {
         await isCalled;
         sinon.assert.calledWith(copyText, JSON.stringify(step, null, 2) + '\n');
     });
-    it('should copy a step to clipboard via custom event', async () => {
+    it('should copy a step to clipboard via callback', async () => {
         const [view] = await createView();
         const isCalled = sinon.promise();
         const copyText = sinon
@@ -117,8 +117,7 @@ describeWithEnvironment('RecordingView', () => {
             .callsFake(() => {
             void isCalled.resolve(true);
         });
-        const event = new StepView.CopyStepEvent(step);
-        view.input.onCopyStep(event);
+        view.input.onCopyStep(step);
         await isCalled;
         sinon.assert.calledWith(copyText, JSON.stringify(step, null, 2) + '\n');
     });

@@ -1,7 +1,7 @@
 import '../../ui/legacy/legacy.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as TextUtils from '../../core/text_utils/text_utils.js';
 import * as Protocol from '../../generated/protocol.js';
-import * as TextUtils from '../../models/text_utils/text_utils.js';
 import type * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type LitTemplate } from '../../ui/lit/lit.js';
@@ -74,7 +74,15 @@ export declare class StylePropertiesSection {
     headerText(): string;
     private onMouseOutSelector;
     private onMouseEnterSelector;
-    highlight(mode?: string | undefined): void;
+    /**
+     * Highlights the DOM node associated with this style section in the page overlay.
+     * Use `selectorList` to highlight elements matching a specific parent/ancestor
+     * rule or selector.
+     *
+     * @param mode Highlight mode (defaults to `'all'`).
+     * @param selectorList Parent selector string to highlight.
+     */
+    highlight(mode: string | undefined, selectorList: string): void;
     firstSibling(): StylePropertiesSection | null;
     findCurrentOrNextVisible(willIterateForward: boolean, originalSection?: StylePropertiesSection): StylePropertiesSection | null;
     lastSibling(): StylePropertiesSection | null;
@@ -96,7 +104,7 @@ export declare class StylePropertiesSection {
     protected createStartingStyleElement(): ElementsComponents.CSSQuery.CSSQuery | undefined;
     protected createSupportsElement(supports: SDK.CSSSupports.CSSSupports): ElementsComponents.CSSQuery.CSSQuery | undefined;
     protected createNavigationElement(navigation: SDK.CSSNavigation.CSSNavigation): ElementsComponents.CSSQuery.CSSQuery | undefined;
-    protected createNestingElement(nestingSelector?: string): HTMLElement | undefined;
+    protected createNestingElement(rule: SDK.CSSRule.CSSStyleRule, nestingIndex: number): HTMLElement | undefined;
     private addContainerForContainerQuery;
     private updateAncestorRuleList;
     isPropertyInherited(propertyName: string): boolean;
@@ -124,6 +132,7 @@ export declare class StylePropertiesSection {
         text: string;
         specificity?: Protocol.CSS.Specificity;
     }>, matchingSelectors: boolean[], elementToSelectorIndex: WeakMap<Element, number>): void;
+    private renderSelectorsToElement;
     markSelectorHighlights(): void;
     addNewBlankProperty(index?: number | undefined): StylePropertyTreeElement;
     private handleEmptySpaceMouseDown;
@@ -204,4 +213,5 @@ export declare class HighlightPseudoStylePropertiesSection extends StyleProperti
 interface TreeElementParent {
     appendChild(child: UI.TreeOutline.TreeElement): void;
 }
+export declare function constructResolvedSelector(rule: SDK.CSSRule.CSSRule | null, nestingIndex?: number): string | undefined;
 export {};

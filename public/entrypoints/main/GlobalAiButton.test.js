@@ -140,7 +140,7 @@ describe('GlobalAiButton', () => {
             });
             clock = sinon.useFakeTimers({
                 now: new Date('2026-10-01'), // After 2026-09-30
-                toFake: ['setTimeout', 'Date']
+                toFake: ['setTimeout', 'Date'],
             });
             Common.Settings.Settings.instance().settingForTest('global-ai-button-click-count').set(CLICK_COUNT_LIMIT - 1);
             const { view } = await createWidget();

@@ -5,7 +5,7 @@ import { assert } from 'chai';
 import * as Common from '../../../core/common/common.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
-import * as TextUtils from '../../text_utils/text_utils.js';
+import * as TextUtils from '../../../core/text_utils/text_utils.js';
 import { NetworkRequestFormatter } from '../ai_assistance.js';
 const { urlString } = Platform.DevToolsPath;
 describe('NetworkRequestFormatter', () => {

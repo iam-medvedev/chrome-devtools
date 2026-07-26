@@ -43,7 +43,7 @@ describe('StackTraceModel', () => {
                     'foo.js:1:foo:1:10',
                     'bar.js:2:bar:2:20',
                     'baz.js:3:baz:3:30',
-                ].map(protocolCallFrame)
+                ].map(protocolCallFrame),
             }, identityTranslateFn);
             assert.strictEqual(stringifyStackTrace(stackTrace), [
                 'at foo (foo.js:1:10)',
@@ -70,8 +70,8 @@ describe('StackTraceModel', () => {
                             'baz.js:3:bazFnY:1:10',
                             'baz.js:3:bazFnY:2:20',
                         ].map(protocolCallFrame),
-                    }
-                }
+                    },
+                },
             }, identityTranslateFn);
             assert.strictEqual(stringifyStackTrace(stackTrace), [
                 'at foo (foo.js:1:10)',
@@ -93,11 +93,11 @@ describe('StackTraceModel', () => {
             }
             const [model1, model2] = [
                 createTarget({ connection }).model(SDK.DebuggerModel.DebuggerModel),
-                createTarget({ connection }).model(SDK.DebuggerModel.DebuggerModel)
+                createTarget({ connection }).model(SDK.DebuggerModel.DebuggerModel),
             ];
             await Promise.all([
                 model1.once(SDK.DebuggerModel.Events.DebuggerIsReadyToPause),
-                model2.once(SDK.DebuggerModel.Events.DebuggerIsReadyToPause)
+                model2.once(SDK.DebuggerModel.Events.DebuggerIsReadyToPause),
             ]);
             sinon.stub(model1, 'fetchAsyncStackTrace').returns(Promise.resolve({
                 description: 'setTimeout',
@@ -148,8 +148,8 @@ describe('StackTraceModel', () => {
                             'baz.js:3:bazFnY:1:10',
                             'baz.js:3:bazFnY:2:20',
                         ].map(protocolCallFrame),
-                    }
-                }
+                    },
+                },
             }, identityTranslateFn);
             assert.strictEqual(stringifyStackTrace(stackTrace), [
                 'at foo (foo.js:1:10)',
@@ -286,7 +286,7 @@ describe('StackTraceModel', () => {
                         'foo.js:id1:someFn:3:30',
                         'baz.js:id3:bar:4:40',
                     ].map(protocolCallFrame),
-                }
+                },
             }, identityTranslateFn);
             const updatedSpy = createUpdatedSpy(stackTrace);
             const script = { scriptId: 'id1', sourceURL: 'foo.js' };

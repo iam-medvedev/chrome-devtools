@@ -256,8 +256,10 @@ function toolStatsIcon(status) {
 }
 function getIconGroupsFromStats(toolStats) {
     const status = [
-        "Completed" /* Protocol.WebMCP.InvocationStatus.Completed */, "Error" /* Protocol.WebMCP.InvocationStatus.Error */,
-        "Canceled" /* Protocol.WebMCP.InvocationStatus.Canceled */, undefined
+        "Completed" /* Protocol.WebMCP.InvocationStatus.Completed */,
+        "Error" /* Protocol.WebMCP.InvocationStatus.Error */,
+        "Canceled" /* Protocol.WebMCP.InvocationStatus.Canceled */,
+        undefined,
     ];
     return status
         .map(status => ({
@@ -591,7 +593,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
         ...getJSONEditorParameters(input.selectedTool.tool),
         commandToDisplay: {
             command: input.selectedTool.tool.name,
-            parameters: input.selectedTool.parameters || {}
+            parameters: input.selectedTool.parameters || {},
         },
     })}
               ${UI.Widget.widgetRef(ProtocolMonitor.JSONEditor.JSONEditor, e => { editorWidget = e; })}
@@ -609,7 +611,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
                 data: {
                     command: input.selectedTool.tool.name,
                     parameters: params,
-                }
+                },
             });
         }
     }}>Run tool</devtools-button>
@@ -968,7 +970,7 @@ const TOOL_DETAILS_VIEW = (input, output, target) => {
           <devtools-node-text .data=${{
         nodeId: origin.getAttribute('id') || undefined,
         nodeTitle: origin.nodeNameInCorrectCase(),
-        nodeClasses: origin.getAttribute('class')?.split(/\s+/).filter(s => Boolean(s))
+        nodeClasses: origin.getAttribute('class')?.split(/\s+/).filter(s => Boolean(s)),
     }}>
           </devtools-node-text>
         </span>

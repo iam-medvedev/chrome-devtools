@@ -5,8 +5,8 @@ import { assert } from 'chai';
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as TextUtils from '../../core/text_utils/text_utils.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
-import * as TextUtils from '../text_utils/text_utils.js';
 import * as HAR from './har.js';
 const { urlString } = Platform.DevToolsPath;
 const simulateRequestWithStartTime = (startTime) => {

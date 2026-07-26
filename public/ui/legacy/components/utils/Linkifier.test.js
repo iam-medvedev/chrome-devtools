@@ -431,7 +431,7 @@ describeWithEnvironment('Linkifier', () => {
                 lineNumber: null,
                 columnNumber: null,
                 revealable: null,
-                fallback: null
+                fallback: null,
             });
             const openUsingActions = actions.filter(action => action.title.startsWith('Open using'));
             assert.isEmpty(openUsingActions);
@@ -455,7 +455,7 @@ describeWithEnvironment('Linkifier', () => {
                 lineNumber: null,
                 columnNumber: null,
                 revealable: null,
-                fallback: null
+                fallback: null,
             });
             const openUsingAction = actions.find(action => action.title === 'Open using Handler for foo-extension');
             assert.exists(openUsingAction);
@@ -492,7 +492,7 @@ describeWithEnvironment('Linkifier', () => {
                     lineNumber: null,
                     columnNumber: null,
                     revealable: null,
-                    fallback: null
+                    fallback: null,
                 });
                 assert.lengthOf(actions, 3); // Two fallback actions are always added.
                 const openUsingAction = actions.find(action => action.title === 'Open using Handler for foo-extension');
@@ -510,7 +510,7 @@ describeWithEnvironment('Linkifier', () => {
                     lineNumber: null,
                     columnNumber: null,
                     revealable: null,
-                    fallback: null
+                    fallback: null,
                 });
                 assert.lengthOf(actions, 3); // One for our handler + 'Open in New Tab' and 'Copy link'.
                 const openUsingAction = actions.find(action => action.title === 'Open using Global Handler');
@@ -528,7 +528,7 @@ describeWithEnvironment('Linkifier', () => {
                     lineNumber: null,
                     columnNumber: null,
                     revealable: null,
-                    fallback: null
+                    fallback: null,
                 });
                 assert.lengthOf(actions, 3); // One for our handler + 'Open in New Tab' and 'Copy link'.
                 const openUsingAction = actions.find(action => action.title === 'Open using Global Handler');
@@ -554,6 +554,54 @@ describeWithEnvironment('ContentProviderContextMenuProvider', () => {
         provider.appendApplicableItems({}, contextMenu, uiSourceCode);
         openInNewTabItem = findMenuItemWithLabel(contextMenu.revealSection(), 'Open in new tab');
         assert.isUndefined(openInNewTabItem);
+    });
+});
+describeWithEnvironment('isRegisteredLinkHandlerScheme', () => {
+    const registrations = [];
+    afterEach(() => {
+        for (const registration of registrations) {
+            Components.Linkifier.Linkifier.unregisterLinkHandler(registration);
+        }
+        registrations.length = 0;
+    });
+    function registerHandler(registration) {
+        Components.Linkifier.Linkifier.registerLinkHandler(registration);
+        registrations.push(registration);
+    }
+    it('returns false when no handlers are registered', () => {
+        assert.isFalse(Components.Linkifier.Linkifier.isRegisteredLinkHandlerScheme('ext:'));
+    });
+    it('returns true for a registered scheme', () => {
+        registerHandler({
+            title: 'Ext A',
+            origin: urlString `ext-a:origin`,
+            scheme: 'ext-a:',
+            handler: () => { },
+            shouldHandleOpenResource: () => true,
+        });
+        assert.isTrue(Components.Linkifier.Linkifier.isRegisteredLinkHandlerScheme('ext-a:'));
+        assert.isFalse(Components.Linkifier.Linkifier.isRegisteredLinkHandlerScheme('ext-b:'));
+    });
+    it('returns false for handlers registered without a scheme', () => {
+        registerHandler({
+            title: 'Global Handler',
+            origin: urlString `global:origin`,
+            handler: () => { },
+            shouldHandleOpenResource: () => true,
+        });
+        assert.isFalse(Components.Linkifier.Linkifier.isRegisteredLinkHandlerScheme('global:'));
+    });
+    it('returns false after unregistration', () => {
+        const registration = {
+            title: 'Ext',
+            origin: urlString `ext:origin`,
+            scheme: 'ext:',
+            handler: () => { },
+            shouldHandleOpenResource: () => true,
+        };
+        Components.Linkifier.Linkifier.registerLinkHandler(registration);
+        Components.Linkifier.Linkifier.unregisterLinkHandler(registration);
+        assert.isFalse(Components.Linkifier.Linkifier.isRegisteredLinkHandlerScheme('ext:'));
     });
 });
 describeWithEnvironment('LinkHandlerSettingUI', () => {

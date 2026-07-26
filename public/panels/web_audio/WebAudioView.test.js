@@ -48,7 +48,7 @@ describeWithEnvironment('WebAudioView', () => {
             contexts: [],
             selectedContextIndex: -1,
             onContextSelectorSelectionChanged: () => { },
-            contextRealtimeData: null
+            contextRealtimeData: null,
         }, {}, container);
         await assertScreenshot('web_audio/web-audio-view-placeholder.png');
         container.remove();
@@ -61,7 +61,7 @@ describeWithEnvironment('WebAudioView', () => {
             contexts: [context1, context2],
             selectedContextIndex: 0,
             onContextSelectorSelectionChanged: () => { },
-            contextRealtimeData: null
+            contextRealtimeData: null,
         }, {}, container);
         await assertScreenshot('web_audio/web-audio-view-contexts.png');
         container.remove();

@@ -5,11 +5,11 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
+import * as TextUtils from '../../core/text_utils/text_utils.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { MockDebuggerBackend } from '../../testing/MockScopeChain.js';
 import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
 import { createContentProviderUISourceCode, createContentProviderUISourceCodes, createFileSystemUISourceCode, } from '../../testing/UISourceCodeHelpers.js';
-import * as TextUtils from '../text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
 import * as Persistence from './persistence.js';
 const { urlString } = Platform.DevToolsPath;
@@ -37,14 +37,16 @@ describe('Automapping', () => {
             universe: backend.universe,
         });
         // 2. Create network UISourceCode for clashing source (SourceMapScript)
-        const { uiSourceCodes: [networkSource] } = createContentProviderUISourceCodes({
-            items: [{
+        const { uiSourceCodes: [networkSource], } = createContentProviderUISourceCodes({
+            items: [
+                {
                     url,
                     mimeType: 'text/javascript',
                     content: sourceContent,
                     resourceType: Common.ResourceType.resourceTypes.SourceMapScript,
                     metadata: new Workspace.UISourceCode.UISourceCodeMetadata(null, sourceContent.length),
-                }],
+                },
+            ],
             projectType: Workspace.Workspace.projectTypes.Network,
             projectId: 'sourcemap-project',
             universe: backend.universe,
@@ -101,19 +103,19 @@ describe('Automapping', () => {
                     url: urlString `http://example.com/reset.css`,
                     mimeType: 'text/css',
                     content: resetCssContent,
-                    metadata: new Workspace.UISourceCode.UISourceCodeMetadata(null, resetCssContent.length)
+                    metadata: new Workspace.UISourceCode.UISourceCodeMetadata(null, resetCssContent.length),
                 },
                 {
                     url: urlString `http://example.com/jquery.js`,
                     mimeType: 'text/javascript',
                     content: jqueryJsContent,
-                    metadata: new Workspace.UISourceCode.UISourceCodeMetadata(null, jqueryJsContent.length)
+                    metadata: new Workspace.UISourceCode.UISourceCodeMetadata(null, jqueryJsContent.length),
                 },
                 {
                     url: urlString `http://example.com/logo.png`,
                     mimeType: 'image/png',
                     content: logo2Content,
-                    metadata: new Workspace.UISourceCode.UISourceCodeMetadata(null, logo2Content.length)
+                    metadata: new Workspace.UISourceCode.UISourceCodeMetadata(null, logo2Content.length),
                 },
             ],
             projectType: Workspace.Workspace.projectTypes.Network,
@@ -678,6 +680,110 @@ describe('Automapping', () => {
         assert.strictEqual(fileSystemSourceCode.url(), fileURL);
         renameStub.restore();
         contentTypeStub.restore();
+    });
+    it('correctly maps sourcemap sources with non-exact match', async () => {
+        const cssContent = 'body { color: red; }';
+        const scssContent = '$color: red; body { color: $color; }';
+        class MultiFileTestPlatformFileSystem extends Persistence.PlatformFileSystem.PlatformFileSystem {
+            #autoMapping;
+            #files = new Set();
+            constructor(path, autoMapping) {
+                super(path, Persistence.PlatformFileSystem.PlatformFileSystemType.WORKSPACE_PROJECT, false);
+                this.#autoMapping = autoMapping;
+            }
+            addFile(url) {
+                this.#files.add(url);
+            }
+            supportsAutomapping() {
+                return this.#autoMapping;
+            }
+            mimeFromPath(path) {
+                const ext = Common.ParsedURL.ParsedURL.extractExtension(path);
+                return Common.ResourceType.mimeTypeByExtension.get(ext) || 'text/plain';
+            }
+            searchInPath(_query, _progress) {
+                return Promise.resolve([...this.#files]);
+            }
+        }
+        class MultiFileTestFileSystem extends Persistence.FileSystemWorkspaceBinding.FileSystem {
+            #files = new Map();
+            addMockFile(url, content, metadata) {
+                this.#files.set(url, { content, metadata });
+            }
+            requestFileContent(uiSourceCode) {
+                const file = this.#files.get(uiSourceCode.url());
+                if (!file) {
+                    return Promise.resolve({ error: 'File not found' });
+                }
+                return Promise.resolve(new TextUtils.ContentData.ContentData(file.content, 
+                /* isBase64 */ false, 'text/plain'));
+            }
+            requestMetadata(uiSourceCode) {
+                const file = this.#files.get(uiSourceCode.url());
+                return Promise.resolve(file ? file.metadata : null);
+            }
+        }
+        // 1. Create network project with both CSS and SCSS files
+        const { uiSourceCodes: [networkCSS, networkSCSS], } = createContentProviderUISourceCodes({
+            items: [
+                {
+                    url: urlString `http://example.com/assets/s.css`,
+                    mimeType: 'text/css',
+                    content: cssContent,
+                    metadata: new Workspace.UISourceCode.UISourceCodeMetadata(null, cssContent.length),
+                },
+                {
+                    url: urlString `http://example.com/assets/s.scss`,
+                    mimeType: 'text/x-scss',
+                    content: scssContent,
+                    resourceType: Common.ResourceType.resourceTypes.SourceMapStyleSheet,
+                    metadata: new Workspace.UISourceCode.UISourceCodeMetadata(null, null),
+                },
+            ],
+            projectType: Workspace.Workspace.projectTypes.Network,
+            projectId: 'network-project',
+            universe: backend.universe,
+        });
+        const bindings = [];
+        const persistence = backend.universe.persistence;
+        const bindingCreatedPromise = new Promise(resolve => {
+            persistence.addEventListener(Persistence.Persistence.Events.BindingCreated, event => {
+                bindings.push(event.data);
+                if (bindings.length === 2) {
+                    resolve();
+                }
+            });
+        });
+        const timestamp = new Date('December 1, 1989');
+        // 2. Create filesystem project with both CSS and SCSS files
+        const workspace = backend.universe.workspace;
+        const isolatedFileSystemManager = backend.universe.isolatedFileSystemManager;
+        const fileSystemWorkspaceBinding = new Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding(isolatedFileSystemManager, workspace);
+        const fileSystemPath = urlString `file:///var/www`;
+        const platformFileSystem = new MultiFileTestPlatformFileSystem(fileSystemPath, true);
+        const project = new MultiFileTestFileSystem(fileSystemWorkspaceBinding, platformFileSystem, workspace);
+        // Add dist/s.css
+        const cssUrl = urlString `file:///var/www/dist/s.css`;
+        platformFileSystem.addFile(cssUrl);
+        const cssMetadata = new Workspace.UISourceCode.UISourceCodeMetadata(timestamp, cssContent.length);
+        project.addMockFile(cssUrl, cssContent, cssMetadata);
+        const fileSystemCSS = project.createUISourceCode(cssUrl, Common.ResourceType.ResourceType.fromMimeType('text/css'));
+        project.addUISourceCode(fileSystemCSS);
+        // Add src/s.scss
+        const scssUrl = urlString `file:///var/www/src/s.scss`;
+        platformFileSystem.addFile(scssUrl);
+        const scssMetadata = new Workspace.UISourceCode.UISourceCodeMetadata(timestamp, scssContent.length);
+        project.addMockFile(scssUrl, scssContent, scssMetadata);
+        const fileSystemSCSS = project.createUISourceCode(scssUrl, Common.ResourceType.ResourceType.fromMimeType('text/x-scss'));
+        project.addUISourceCode(fileSystemSCSS);
+        await bindingCreatedPromise;
+        assert.lengthOf(bindings, 2);
+        const cssBinding = bindings.find(b => b.network === networkCSS);
+        assert.exists(cssBinding);
+        assert.strictEqual(cssBinding?.fileSystem, fileSystemCSS);
+        const scssBinding = bindings.find(b => b.network === networkSCSS);
+        assert.exists(scssBinding);
+        assert.strictEqual(scssBinding?.fileSystem, fileSystemSCSS);
     });
 });
 //# sourceMappingURL=Automapping.test.js.map

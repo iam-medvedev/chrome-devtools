@@ -38,7 +38,7 @@ describe('HeapSnapshot', () => {
             firstEdgeIndexes: new MockArray([0, 6, 12, 18, 21, 21, 21]),
             createNode: HeapSnapshotWorker.HeapSnapshot.JSHeapSnapshot.prototype.createNode,
             createEdge: HeapSnapshotWorker.HeapSnapshot.JSHeapSnapshot.prototype.createEdge,
-            createRetainingEdge: HeapSnapshotWorker.HeapSnapshot.JSHeapSnapshot.prototype.createRetainingEdge
+            createRetainingEdge: HeapSnapshotWorker.HeapSnapshot.JSHeapSnapshot.prototype.createRetainingEdge,
         };
         return result;
     }
@@ -52,21 +52,21 @@ describe('HeapSnapshot', () => {
                     edge_types: [['element', 'property', 'shortcut'], '', ''],
                     location_fields: ['object_index', 'script_id', 'line', 'column'],
                     trace_function_info_fields: ['function_id', 'name', 'script_name', 'script_id', 'line', 'column'],
-                    trace_node_fields: ['id', 'function_info_index', 'count', 'size', 'children']
+                    trace_node_fields: ['id', 'function_info_index', 'count', 'size', 'children'],
                 },
                 node_count: 6,
                 edge_count: 7,
-                trace_function_count: 1
+                trace_function_count: 1,
             },
             nodes: [
                 0, 0, 1, 0, 20, 0, 2, 1, 1, 2, 2, 2, 0, 2, 1, 2, 3, 3, 8, 0, 2,
-                1, 3, 4, 4, 10, 0, 1, 1, 4, 5, 5, 5, 14, 0, 1, 5, 6, 6, 6, 21, 0
+                1, 3, 4, 4, 10, 0, 1, 1, 4, 5, 5, 5, 14, 0, 1, 5, 6, 6, 6, 21, 0,
             ],
             edges: [1, 6, 7, 1, 7, 14, 0, 1, 14, 1, 8, 21, 1, 9, 21, 1, 10, 28, 1, 11, 35],
             trace_function_infos: [0, 2, 1, 0, 0, 0],
             trace_tree: [1, 0, 0, 0, []],
             locations: [0, 1, 2, 3, 18, 2, 3, 4],
-            strings: ['', 'A', 'B', 'C', 'D', 'E', 'a', 'b', 'ac', 'bc', 'bd', 'ce']
+            strings: ['', 'A', 'B', 'C', 'D', 'E', 'a', 'b', 'ac', 'bc', 'bd', 'ce'],
         };
     }
     function postprocessHeapSnapshotMock(mock) {
@@ -90,26 +90,42 @@ describe('HeapSnapshot', () => {
                     edge_types: [['element', 'property', 'shortcut'], '', ''],
                     location_fields: ['object_index', 'script_id', 'line', 'column'],
                     trace_function_info_fields: ['function_id', 'name', 'script_name', 'script_id', 'line', 'column'],
-                    trace_node_fields: ['id', 'function_info_index', 'count', 'size', 'children']
+                    trace_node_fields: ['id', 'function_info_index', 'count', 'size', 'children'],
                 },
                 node_count: 2,
                 edge_count: 1,
-                trace_function_count: 0
+                trace_function_count: 0,
             },
             nodes: [
                 // Root node: type=hidden (0), name="" (0), id=1, self_size=0, retained_size=0, dominator=0, edge_count=1, detachedness=unknown (0)
-                0, 0, 1, 0, 0, 0, 1, 0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                1,
+                0,
                 // Window node: type=object (1), name="Window" (1), id=2, self_size=8, retained_size=8, dominator=0, edge_count=0, detachedness=detached (2)
-                1, 1, 2, 8, 8, 0, 0, 2
+                1,
+                1,
+                2,
+                8,
+                8,
+                0,
+                0,
+                2,
             ],
             edges: [
                 // Property edge from Root to Window: type=property (1), name="window" (2), to_node=8 (Window)
-                1, 2, 8
+                1,
+                2,
+                8,
             ],
             trace_function_infos: [],
             trace_tree: [],
             locations: [],
-            strings: ['', 'Window', 'window']
+            strings: ['', 'Window', 'window'],
         });
     }
     function createHeapSnapshotMockWithDOM() {
@@ -120,21 +136,21 @@ describe('HeapSnapshot', () => {
                     node_types: [['hidden', 'object', 'synthetic'], '', '', ''],
                     edge_fields: ['type', 'name_or_index', 'to_node'],
                     edge_types: [['element', 'hidden', 'internal'], '', ''],
-                    location_fields: ['object_index', 'script_id', 'line', 'column']
+                    location_fields: ['object_index', 'script_id', 'line', 'column'],
                 },
                 node_count: 13,
-                edge_count: 13
+                edge_count: 13,
             },
             nodes: [
                 2, 0, 1, 4, 1, 11, 2, 2, 1, 11, 3, 3, 2, 5, 4, 0, 2, 6, 5, 1, 1, 1, 6, 0, 1, 2,
-                7, 1, 1, 4, 8, 2, 1, 8, 9, 0, 1, 7, 10, 0, 1, 3, 11, 0, 1, 10, 12, 0, 1, 9, 13, 0
+                7, 1, 1, 4, 8, 2, 1, 8, 9, 0, 1, 7, 10, 0, 1, 3, 11, 0, 1, 10, 12, 0, 1, 9, 13, 0,
             ],
             edges: [
                 0, 1, 4, 0, 2, 8, 0, 3, 12, 0, 4, 16, 0, 1, 20, 0, 2, 24, 0, 1,
-                24, 0, 2, 28, 1, 3, 32, 0, 1, 36, 0, 1, 40, 2, 12, 44, 2, 1, 48
+                24, 0, 2, 28, 1, 3, 32, 0, 1, 36, 0, 1, 40, 2, 12, 44, 2, 1, 48,
             ],
             locations: [0, 2, 1, 1, 6, 2, 2, 2],
-            strings: ['', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'M', 'N', 'Window', 'native']
+            strings: ['', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'M', 'N', 'Window', 'native'],
         });
     }
     class HeapNode {
@@ -237,7 +253,17 @@ describe('HeapSnapshot', () => {
             this.edgeTypesArray = [];
             this.extraNativeBytes = 0;
             const nodeTypes = [
-                'hidden', 'array', 'string', 'object', 'code', 'closure', 'regexp', 'number', 'native', 'synthetic', 'bigint'
+                'hidden',
+                'array',
+                'string',
+                'object',
+                'code',
+                'closure',
+                'regexp',
+                'number',
+                'native',
+                'synthetic',
+                'bigint',
             ];
             for (let i = 0; i < nodeTypes.length; i++) {
                 this.nodeTypesMap[nodeTypes[i]] = i;
@@ -258,14 +284,14 @@ describe('HeapSnapshot', () => {
                         node_fields: ['type', 'name', 'id', 'self_size', 'retained_size', 'dominator', 'edge_count'],
                         node_types: [this.nodeTypesArray, 'string', 'number', 'number', 'number', 'number', 'number'],
                         edge_fields: ['type', 'name_or_index', 'to_node'],
-                        edge_types: [this.edgeTypesArray, 'string_or_number', 'node']
+                        edge_types: [this.edgeTypesArray, 'string_or_number', 'node'],
                     },
-                    extra_native_bytes: this.extraNativeBytes
+                    extra_native_bytes: this.extraNativeBytes,
                 },
                 nodes: [],
                 edges: [],
                 locations: [],
-                strings: []
+                strings: [],
             };
             for (let i = 0; i < this.nodes.length; ++i) {
                 this.nodes[i].serialize(rawSnapshot);
@@ -758,7 +784,7 @@ describe('HeapSnapshot', () => {
             B: { count: 1, self: 3, maxRet: 8, name: 'B' },
             C: { count: 1, self: 4, maxRet: 10, name: 'C' },
             D: { count: 1, self: 5, maxRet: 5, name: 'D' },
-            E: { count: 1, self: 6, maxRet: 6, name: 'E' }
+            E: { count: 1, self: 6, maxRet: 6, name: 'E' },
         };
         const aggregates = snapshot.getAggregatesByClassKey(false);
         for (const key in aggregates) {
@@ -790,7 +816,7 @@ describe('HeapSnapshot', () => {
             H: false,
             M: false,
             N: false,
-            Window: true
+            Window: true,
         };
         const nodeIterator = new HeapSnapshotWorker.HeapSnapshot.HeapSnapshotNodeIterator(snapshot.createNode(0));
         for (; nodeIterator.hasNext(); nodeIterator.next()) {

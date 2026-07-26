@@ -6,7 +6,7 @@ import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import * as TextUtils from '../../models/text_utils/text_utils.js';
+import * as TextUtils from '../../core/text_utils/text_utils.js';
 import { createNetworkRequest, mockAidaClient } from '../../testing/AiAssistanceHelpers.js';
 import { deinitializeGlobalVars, updateHostConfig, } from '../../testing/EnvironmentHelpers.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
@@ -142,7 +142,7 @@ describe('AiConversation', () => {
         });
         const networkRequest = createNetworkRequest({
             url: Platform.DevToolsPath.urlString `https://example.com/test`,
-            documentURL: Platform.DevToolsPath.urlString `https://example.com`
+            documentURL: Platform.DevToolsPath.urlString `https://example.com`,
         });
         const contentData = new TextUtils.ContentData.ContentData('test content', false, 'text/plain');
         sinon.stub(networkRequest, 'requestContentData').resolves(contentData);
@@ -183,7 +183,7 @@ describe('AiConversation', () => {
                 {
                     explanation: 'Works 3',
                 },
-            ]
+            ],
         ]);
         const conversation = new AiAssistance.AiConversation.AiConversation({
             type: "none" /* AiAssistance.AiHistoryStorage.ConversationType.NONE */,
@@ -194,7 +194,7 @@ describe('AiConversation', () => {
         });
         const networkRequest = createNetworkRequest({
             url: Platform.DevToolsPath.urlString `https://example.com`,
-            documentURL: Platform.DevToolsPath.urlString `https://example.com`
+            documentURL: Platform.DevToolsPath.urlString `https://example.com`,
         });
         sinon.stub(networkRequest, 'requestContentData')
             .resolves(new TextUtils.ContentData.ContentData('test content', false, 'text/plain'));
@@ -337,8 +337,8 @@ describe('AiConversation', () => {
                     data: {
                         root: {},
                         title: 'Title',
-                        accessibleRevealLabel: 'Label'
-                    }
+                        accessibleRevealLabel: 'Label',
+                    },
                 }],
         };
         const actionResponse = {
@@ -417,7 +417,7 @@ describe('AiConversation', () => {
                 resourceTreeModel: () => resourceTreeModel,
                 unreachableUrl: () => '',
             },
-            type: "Navigation" /* SDK.ResourceTreeModel.PrimaryPageChangeType.NAVIGATION */
+            type: "Navigation" /* SDK.ResourceTreeModel.PrimaryPageChangeType.NAVIGATION */,
         });
         // Continue running the generator to completion
         const results = [];
@@ -496,7 +496,7 @@ describe('AiConversation', () => {
         assert.lengthOf(aidaClient.doConversation.getCalls(), 1);
         const networkRequest = createNetworkRequest({
             url: Platform.DevToolsPath.urlString `https://example.com`,
-            documentURL: Platform.DevToolsPath.urlString `https://example.com`
+            documentURL: Platform.DevToolsPath.urlString `https://example.com`,
         });
         sinon.stub(networkRequest, 'requestContentData')
             .resolves(new TextUtils.ContentData.ContentData('test content', false, 'text/plain'));

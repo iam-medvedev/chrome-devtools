@@ -171,7 +171,7 @@ describe('Injected', () => {
             ],
             [
                 'pierce/#buttonNoARIA',
-            ]
+            ],
         ]);
     });
     it('should get selectors for elements with custom selector attributes', async () => {
@@ -191,16 +191,19 @@ describe('Injected', () => {
                 ],
                 [
                     'pierce/[data-testid=\'unique\']',
-                ]
+                ],
             ],
             [
-                ['[data-testid=\'\\31 23456789\']'], ['xpath///*[@data-testid="123456789"]'],
-                ['pierce/[data-testid=\'\\31 23456789\']'], ['text/Custom selector (invalid']
+                ['[data-testid=\'\\31 23456789\']'],
+                ['xpath///*[@data-testid="123456789"]'],
+                ['pierce/[data-testid=\'\\31 23456789\']'],
+                ['text/Custom selector (invalid'],
             ],
             [
-                ['[data-qa=\'custom-id\']', '[data-testid=\'shadow\\ button\']'], ['pierce/[data-testid=\'shadow\\ button\']'],
-                ['text/Shadow button']
-            ]
+                ['[data-qa=\'custom-id\']', '[data-testid=\'shadow\\ button\']'],
+                ['pierce/[data-testid=\'shadow\\ button\']'],
+                ['text/Shadow button'],
+            ],
         ]);
     });
     it('should get selectors for shadow root elements', async () => {
@@ -210,7 +213,7 @@ describe('Injected', () => {
             ?.shadowRoot?.querySelector('#insideShadowRoot'));
         assert.deepEqual(selectors, [
             ['main > shadow-css-selector-element', '#insideShadowRoot'],
-            ['pierce/main > shadow-css-selector-element', 'pierce/#insideShadowRoot']
+            ['pierce/main > shadow-css-selector-element', 'pierce/#insideShadowRoot'],
         ]);
     });
     it('should get an ARIA selector for shadow root elements', async () => {
@@ -219,8 +222,9 @@ describe('Injected', () => {
             ?.querySelector('shadow-aria-selector-element')
             ?.shadowRoot?.querySelector('button'));
         assert.deepEqual(selectors, [
-            ['aria/[role="main"]', 'aria/login'], ['div:nth-of-type(2) > shadow-aria-selector-element', 'button'],
-            ['pierce/div:nth-of-type(2) > shadow-aria-selector-element', 'pierce/button']
+            ['aria/[role="main"]', 'aria/login'],
+            ['div:nth-of-type(2) > shadow-aria-selector-element', 'button'],
+            ['pierce/div:nth-of-type(2) > shadow-aria-selector-element', 'pierce/button'],
         ]);
     });
     it('should not get an ARIA selector if the target element has no name or role', async () => {
@@ -257,8 +261,9 @@ describe('Injected', () => {
             const window = await createSandbox();
             const selectors = window.DevToolsRecorder.recordingClientForTesting.getSelectors(window.document.querySelector('#notunique'));
             assert.deepEqual(selectors, [
-                ['div:nth-of-type(3) > div:nth-of-type(2)'], ['xpath///*[@id="notunique"]'],
-                ['pierce/div:nth-of-type(3) > div:nth-of-type(2)']
+                ['div:nth-of-type(3) > div:nth-of-type(2)'],
+                ['xpath///*[@id="notunique"]'],
+                ['pierce/div:nth-of-type(3) > div:nth-of-type(2)'],
             ]);
         });
     });

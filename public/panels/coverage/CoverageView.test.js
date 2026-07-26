@@ -83,6 +83,9 @@ describeWithEnvironment('CoverageView', () => {
             'inspector-main.reload',
         ]);
     });
+    afterEach(() => {
+        Coverage.CoverageView.CoverageView.removeInstance();
+    });
     it('dispatches a record/reload action when the button is clicked', async () => {
         const view = Coverage.CoverageView.CoverageView.instance();
         renderElementIntoDOM(view);
@@ -99,6 +102,7 @@ describeWithEnvironment('CoverageView', () => {
         const { startSpy, stopSpy, target } = setupTargetAndModels();
         const view = Coverage.CoverageView.CoverageView.instance();
         renderElementIntoDOM(view);
+        await view.updateComplete;
         assert.isTrue(isShowingLandingPage(view));
         assert.isFalse(isShowingResults(view));
         assert.isFalse(isShowingPrerenderPage(view));
@@ -237,6 +241,134 @@ describeWithEnvironment('CoverageView', () => {
         await view.stopRecording();
         view.willHide();
         view.wasShown();
+        view.detach();
+        Coverage.CoverageView.CoverageView.removeInstance();
+    });
+    it('migrates coverage-repeated-per-function legacy test', async () => {
+        const { target } = setupTargetAndModels();
+        const coverageModel = target.model(Coverage.CoverageModel.CoverageModel);
+        assert.exists(coverageModel);
+        const cssModel = target.model(SDK.CSSModel.CSSModel);
+        assert.exists(cssModel);
+        const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
+        assert.exists(debuggerModel);
+        const jsUrl = urlString `http://example.com/devtools/coverage/resources/coverage.js`;
+        const cssUrl = urlString `http://example.com/devtools/coverage/resources/highlight-in-source.css`;
+        const jsScriptId = '1';
+        const cssStyleSheetId = '2';
+        const mockScript = {
+            scriptId: jsScriptId,
+            sourceURL: jsUrl,
+            contentLength: 568,
+            lineOffset: 0,
+            columnOffset: 0,
+            isContentScript: () => false,
+            contentURL: () => jsUrl,
+        };
+        const mockHeader = {
+            styleSheetId: cssStyleSheetId,
+            resourceURL: cssUrl,
+            contentLength: 209,
+            startLine: 0,
+            startColumn: 0,
+            contentURL: () => cssUrl,
+        };
+        sinon.stub(debuggerModel, 'scriptForId').withArgs(jsScriptId).returns(mockScript);
+        sinon.stub(cssModel, 'styleSheetHeaderForId').withArgs(cssStyleSheetId).returns(mockHeader);
+        sinon.stub(cssModel, 'getAllStyleSheetHeaders').returns([mockHeader]);
+        const takeCoverageDeltaStub = cssModel.agent.invoke_takeCoverageDelta;
+        const profilerAgent = target.profilerAgent();
+        const takePreciseCoverageStub = profilerAgent.invoke_takePreciseCoverage;
+        const jsCoverageData1 = {
+            scriptId: jsScriptId,
+            url: jsUrl,
+            functions: [{
+                    functionName: 'performActions',
+                    ranges: [{ startOffset: 0, endOffset: 411, count: 1 }],
+                    isBlockCoverage: false,
+                }],
+        };
+        const cssCoverageData1 = {
+            styleSheetId: cssStyleSheetId,
+            startOffset: 0,
+            endOffset: 67,
+            used: true,
+        };
+        // In Session 1, both JS and CSS have coverage.
+        takePreciseCoverageStub.resolves({
+            result: [jsCoverageData1],
+            timestamp: 100,
+            getError: () => undefined,
+        });
+        takeCoverageDeltaStub.resolves({
+            coverage: [cssCoverageData1],
+            timestamp: 100,
+            getError: () => undefined,
+        });
+        const view = Coverage.CoverageView.CoverageView.instance();
+        renderElementIntoDOM(view);
+        const getItemDetails = (item) => ({
+            url: item.url,
+            size: item.size,
+            usedSize: item.usedSize,
+            unusedSize: item.unusedSize,
+        });
+        // Record and verify Session 1.
+        await view.startRecording({ reload: false, jsCoveragePerBlock: false });
+        await view.stopRecording();
+        await RenderCoordinator.done();
+        const resultsWidget1 = view.contentElement.querySelector('.results');
+        assert.exists(resultsWidget1);
+        const coverageListView1 = UI.Widget.Widget.get(resultsWidget1);
+        assert.exists(coverageListView1);
+        const sortByUrl = (a, b) => a.url.localeCompare(b.url);
+        const actual1 = coverageListView1.coverageInfo.map(getItemDetails).sort(sortByUrl);
+        const expected1 = [
+            { url: jsUrl, size: 568, usedSize: 411, unusedSize: 157 },
+            { url: cssUrl, size: 209, usedSize: 67, unusedSize: 142 },
+        ].sort(sortByUrl);
+        assert.deepEqual(actual1, expected1);
+        // Set up Session 2: JS coverage is now empty, CSS remains the same.
+        takePreciseCoverageStub.resolves({
+            result: [],
+            timestamp: 200,
+            getError: () => undefined,
+        });
+        takeCoverageDeltaStub.resolves({
+            coverage: [cssCoverageData1],
+            timestamp: 200,
+            getError: () => undefined,
+        });
+        await view.startRecording({ reload: false, jsCoveragePerBlock: false });
+        await view.stopRecording();
+        await RenderCoordinator.done();
+        const resultsWidget2 = view.contentElement.querySelector('.results');
+        assert.exists(resultsWidget2);
+        const coverageListView2 = UI.Widget.Widget.get(resultsWidget2);
+        assert.exists(coverageListView2);
+        // JS coverage should still be present because it was not reset.
+        const actual2 = coverageListView2.coverageInfo.map(getItemDetails).sort(sortByUrl);
+        const expected2 = [
+            { url: jsUrl, size: 568, usedSize: 411, unusedSize: 157 },
+            { url: cssUrl, size: 209, usedSize: 67, unusedSize: 142 },
+        ].sort(sortByUrl);
+        assert.deepEqual(actual2, expected2);
+        // Clear the coverage and record Session 3.
+        view.clear();
+        await RenderCoordinator.done();
+        await view.startRecording({ reload: false, jsCoveragePerBlock: false });
+        await view.stopRecording();
+        await RenderCoordinator.done();
+        const resultsWidget3 = view.contentElement.querySelector('.results');
+        assert.exists(resultsWidget3);
+        const coverageListView3 = UI.Widget.Widget.get(resultsWidget3);
+        assert.exists(coverageListView3);
+        // JS coverage should be gone, only CSS coverage remains.
+        const actual3 = coverageListView3.coverageInfo.map(getItemDetails).sort(sortByUrl);
+        const expected3 = [
+            { url: cssUrl, size: 209, usedSize: 67, unusedSize: 142 },
+        ].sort(sortByUrl);
+        assert.deepEqual(actual3, expected3);
         view.detach();
         Coverage.CoverageView.CoverageView.removeInstance();
     });

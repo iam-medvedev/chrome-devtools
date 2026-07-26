@@ -37,12 +37,12 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as TextUtils from '../../core/text_utils/text_utils.js';
 import * as AiCodeCompletion from '../../models/ai_code_completion/ai_code_completion.js';
 import * as AiCodeGeneration from '../../models/ai_code_generation/ai_code_generation.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import * as Logs from '../../models/logs/logs.js';
-import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as CodeHighlighter from '../../ui/components/code_highlighter/code_highlighter.js';
 import * as Highlighting from '../../ui/components/highlighting/highlighting.js';
@@ -181,9 +181,9 @@ const UIStrings = {
      */
     copyVisibleStyledSelection: 'Copy visible styled selection',
     /**
-     * @description Text to replay an XHR request.
+     * @description Text to resend a network request.
      */
-    replayXhr: 'Replay XHR',
+    resend: 'Resend',
     /**
      * @description Text to indicate DevTools is writing to a file.
      */
@@ -1136,8 +1136,8 @@ export class ConsoleView extends UI.Widget.VBox {
         }
         if (consoleMessage) {
             const request = Logs.NetworkLog.NetworkLog.requestForConsoleMessage(consoleMessage);
-            if (request && SDK.NetworkManager.NetworkManager.canReplayRequest(request)) {
-                contextMenu.debugSection().appendItem(i18nString(UIStrings.replayXhr), SDK.NetworkManager.NetworkManager.replayRequest.bind(null, request), { jslogContext: 'replay-xhr' });
+            if (request && SDK.NetworkManager.NetworkManager.canResendRequest(request)) {
+                contextMenu.debugSection().appendItem(i18nString(UIStrings.resend), SDK.NetworkManager.NetworkManager.replayRequest.bind(null, request), { jslogContext: 'resend' });
             }
         }
         void contextMenu.show();

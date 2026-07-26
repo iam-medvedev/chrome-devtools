@@ -8,71 +8,71 @@ import * as SDK from "./../../core/sdk/sdk.js";
 import * as UI from "./../../ui/legacy/legacy.js";
 var UIStrings = {
   /**
-   * @description Command for showing the 'Event Listener Breakpoints' tool
+   * @description Command for showing the Event listener breakpoints sidebar in the Sources panel.
    */
-  showEventListenerBreakpoints: "Show Event Listener Breakpoints",
+  showEventListenerBreakpoints: "Show Event listener breakpoints",
   /**
-   * @description Title of the 'Event Listener Breakpoints' tool in the bottom sidebar of the Sources tool
+   * @description Title of the Event listener breakpoints sidebar in the Sources panel.
    */
-  eventListenerBreakpoints: "Event Listener Breakpoints",
+  eventListenerBreakpoints: "Event listener breakpoints",
   /**
-   * @description Title for showing the 'CSP Violation Breakpoints' tool in the Sources panel
+   * @description Command for showing the CSP violation breakpoints sidebar in the Sources panel.
    */
-  showCspViolationBreakpoints: "Show CSP Violation Breakpoints",
+  showCspViolationBreakpoints: "Show CSP violation breakpoints",
   /**
-   * @description Title of the 'CSP Violation Breakpoints' tool in the bottom sidebar of the Sources tool
+   * @description Title of the CSP violation breakpoints sidebar in the Sources panel.
    */
-  cspViolationBreakpoints: "CSP Violation Breakpoints",
+  cspViolationBreakpoints: "CSP violation breakpoints",
   /**
-   * @description Command for showing the 'XHR/fetch Breakpoints' in the sources panel
+   * @description Command for showing the XHR/fetch breakpoints sidebar in the Sources panel.
    */
-  showXhrfetchBreakpoints: "Show XHR/fetch Breakpoints",
+  showXhrfetchBreakpoints: "Show XHR/fetch breakpoints",
   /**
-   * @description Title of the 'XHR/fetch Breakpoints' tool in the bottom sidebar of the Sources tool
+   * @description Title of the XHR/fetch breakpoints sidebar in the Sources panel.
    */
-  xhrfetchBreakpoints: "XHR/fetch Breakpoints",
+  xhrfetchBreakpoints: "XHR/fetch breakpoints",
   /**
-   * @description Command for showing the 'DOM Breakpoints' tool in the Elements panel
+   * @description Command for showing the DOM breakpoints sidebar.
    */
-  showDomBreakpoints: "Show DOM Breakpoints",
+  showDomBreakpoints: "Show DOM breakpoints",
   /**
-   * @description Title of the 'DOM Breakpoints' tool in the bottom sidebar of the Sources tool
+   * @description Title of the DOM breakpoints sidebar.
    */
-  domBreakpoints: "DOM Breakpoints",
+  domBreakpoints: "DOM breakpoints",
   /**
-   * @description Command for showing the 'Global Listeners' tool in the sources panel
+   * @description Command for showing the Global listeners sidebar in the Sources panel.
    */
-  showGlobalListeners: "Show Global Listeners",
+  showGlobalListeners: "Show Global listeners",
   /**
-   * @description Title of the 'Global Listeners' tool in the bottom sidebar of the Sources tool
+   * @description Title of the Global listeners sidebar in the Sources panel.
    */
-  globalListeners: "Global Listeners",
+  globalListeners: "Global listeners",
   /**
-   * @description Text that refers to one or a group of webpages
+   * @description Title of the Page tab in the Sources panel.
    */
   page: "Page",
   /**
-   * @description Command for showing the 'Page' tab in the Sources panel
+   * @description Command for showing the Page tab in the Sources panel.
    */
   showPage: "Show Page",
   /**
-   * @description Title as part of a tool to override existing configurations
+   * @description Title of the Overrides tab in the Sources panel.
    */
   overrides: "Overrides",
   /**
-   * @description Command for showing the 'Overrides' tool in the Sources panel
+   * @description Command for showing the Overrides tab in the Sources panel.
    */
   showOverrides: "Show Overrides",
   /**
-   * @description Title for a type of source files
+   * @description Title of the Content scripts tab in the Sources panel.
    */
   contentScripts: "Content scripts",
   /**
-   * @description Command for showing the 'Content scripts' tool in the sources panel
+   * @description Command for showing the Content scripts tab in the Sources panel.
    */
   showContentScripts: "Show Content scripts",
   /**
-   * @description Label for a button in the sources panel that refreshes the list of global event listeners.
+   * @description Label for a button in the Sources panel that refreshes the list of global event listeners.
    */
   refreshGlobalListeners: "Refresh global listeners"
 };
@@ -353,9 +353,18 @@ Common2.Revealer.registerRevealer({
 });
 
 // gen/front_end/panels/layer_viewer/layer_viewer-meta.js
+import * as Common3 from "./../../core/common/common.js";
 import * as i18n7 from "./../../core/i18n/i18n.js";
 import * as UI4 from "./../../ui/legacy/legacy.js";
 var UIStrings4 = {
+  /**
+   * @description Title of a setting in Layer Viewer.
+   */
+  paints: "Paints",
+  /**
+   * @description Title of a setting in Layer Viewer.
+   */
+  slowScrollRects: "Slow scroll rects",
   /**
    * @description Text in the Shortcuts page to explain a keyboard shortcut (reset view in Layers Panel)
    */
@@ -503,9 +512,25 @@ UI4.ActionRegistration.registerActionExtension({
     }
   ]
 });
+Common3.Settings.registerSettingExtension({
+  category: "",
+  storageType: "Global",
+  title: i18nLazyString4(UIStrings4.paints),
+  settingName: "frame-viewer-show-paints",
+  settingType: "boolean",
+  defaultValue: false
+});
+Common3.Settings.registerSettingExtension({
+  category: "",
+  storageType: "Global",
+  title: i18nLazyString4(UIStrings4.slowScrollRects),
+  settingName: "frame-viewer-show-slow-scroll-rects",
+  settingType: "boolean",
+  defaultValue: true
+});
 
 // gen/front_end/panels/mobile_throttling/mobile_throttling-meta.js
-import * as Common3 from "./../../core/common/common.js";
+import * as Common4 from "./../../core/common/common.js";
 import * as i18n9 from "./../../core/i18n/i18n.js";
 import * as UI5 from "./../../ui/legacy/legacy.js";
 var UIStrings5 = {
@@ -622,7 +647,7 @@ UI5.ActionRegistration.registerActionExtension({
     i18nLazyString5(UIStrings5.throttlingTag)
   ]
 });
-Common3.Settings.registerSettingExtension({
+Common4.Settings.registerSettingExtension({
   storageType: "Synced",
   settingName: "custom-network-conditions",
   settingType: "array",
@@ -630,7 +655,7 @@ Common3.Settings.registerSettingExtension({
 });
 
 // gen/front_end/panels/network/network-meta.js
-import * as Common4 from "./../../core/common/common.js";
+import * as Common5 from "./../../core/common/common.js";
 import * as i18n11 from "./../../core/i18n/i18n.js";
 import * as Root2 from "./../../core/root/root.js";
 import * as SDK3 from "./../../core/sdk/sdk.js";
@@ -964,7 +989,7 @@ UI6.ActionRegistration.registerActionExtension({
     return new Network.RequestConditionsDrawer.ActionDelegate();
   }
 });
-Common4.Settings.registerSettingExtension({
+Common5.Settings.registerSettingExtension({
   category: "NETWORK",
   storageType: "Synced",
   title: i18nLazyString6(UIStrings6.allowToGenerateHarWithSensitiveData),
@@ -989,7 +1014,7 @@ Common4.Settings.registerSettingExtension({
     tooltip: i18nLazyString6(UIStrings6.allowToGenerateHarWithSensitiveDataDocumentation)
   }
 });
-Common4.Settings.registerSettingExtension({
+Common5.Settings.registerSettingExtension({
   category: "NETWORK",
   storageType: "Synced",
   title: i18nLazyString6(UIStrings6.colorcodeResourceTypes),
@@ -1011,7 +1036,7 @@ Common4.Settings.registerSettingExtension({
     }
   ]
 });
-Common4.Settings.registerSettingExtension({
+Common5.Settings.registerSettingExtension({
   category: "NETWORK",
   storageType: "Synced",
   title: i18nLazyString6(UIStrings6.groupNetworkLogByFrame),
@@ -1056,19 +1081,19 @@ UI6.ContextMenu.registerProvider({
     return Network.NetworkPanel.NetworkPanel.instance();
   }
 });
-Common4.Revealer.registerRevealer({
+Common5.Revealer.registerRevealer({
   contextTypes() {
     return [
       SDK3.NetworkRequest.NetworkRequest
     ];
   },
-  destination: Common4.Revealer.RevealerDestination.NETWORK_PANEL,
+  destination: Common5.Revealer.RevealerDestination.NETWORK_PANEL,
   async loadRevealer() {
     const Network = await loadNetworkModule();
     return new Network.NetworkPanel.RequestRevealer();
   }
 });
-Common4.Revealer.registerRevealer({
+Common5.Revealer.registerRevealer({
   contextTypes() {
     return [NetworkForward.UIRequestLocation.UIRequestLocation];
   },
@@ -1077,31 +1102,31 @@ Common4.Revealer.registerRevealer({
     return new Network.NetworkPanel.RequestLocationRevealer();
   }
 });
-Common4.Revealer.registerRevealer({
+Common5.Revealer.registerRevealer({
   contextTypes() {
     return [NetworkForward.NetworkRequestId.NetworkRequestId];
   },
-  destination: Common4.Revealer.RevealerDestination.NETWORK_PANEL,
+  destination: Common5.Revealer.RevealerDestination.NETWORK_PANEL,
   async loadRevealer() {
     const Network = await loadNetworkModule();
     return new Network.NetworkPanel.RequestIdRevealer();
   }
 });
-Common4.Revealer.registerRevealer({
+Common5.Revealer.registerRevealer({
   contextTypes() {
     return [NetworkForward.UIFilter.UIRequestFilter, PanelCommon.ExtensionServer.RevealableNetworkRequestFilter];
   },
-  destination: Common4.Revealer.RevealerDestination.NETWORK_PANEL,
+  destination: Common5.Revealer.RevealerDestination.NETWORK_PANEL,
   async loadRevealer() {
     const Network = await loadNetworkModule();
     return new Network.NetworkPanel.NetworkLogWithFilterRevealer();
   }
 });
-Common4.Revealer.registerRevealer({
+Common5.Revealer.registerRevealer({
   contextTypes() {
     return [SDK3.NetworkManager.AppliedNetworkConditions];
   },
-  destination: Common4.Revealer.RevealerDestination.NETWORK_PANEL,
+  destination: Common5.Revealer.RevealerDestination.NETWORK_PANEL,
   async loadRevealer() {
     const Network = await loadNetworkModule();
     return new Network.RequestConditionsDrawer.AppliedConditionsRevealer();
@@ -1109,7 +1134,7 @@ Common4.Revealer.registerRevealer({
 });
 
 // gen/front_end/panels/application/application-meta.js
-import * as Common5 from "./../../core/common/common.js";
+import * as Common6 from "./../../core/common/common.js";
 import * as i18n13 from "./../../core/i18n/i18n.js";
 import * as SDK4 from "./../../core/sdk/sdk.js";
 import * as UI7 from "./../../ui/legacy/legacy.js";
@@ -1224,55 +1249,55 @@ UI7.ActionRegistration.registerActionExtension({
     }
   ]
 });
-Common5.Revealer.registerRevealer({
+Common6.Revealer.registerRevealer({
   contextTypes() {
     return [
       SDK4.Resource.Resource
     ];
   },
-  destination: Common5.Revealer.RevealerDestination.APPLICATION_PANEL,
+  destination: Common6.Revealer.RevealerDestination.APPLICATION_PANEL,
   async loadRevealer() {
     const Resources = await loadResourcesModule();
     return new Resources.ResourcesPanel.ResourceRevealer();
   }
 });
-Common5.Revealer.registerRevealer({
+Common6.Revealer.registerRevealer({
   contextTypes() {
     return [
       SDK4.ResourceTreeModel.ResourceTreeFrame
     ];
   },
-  destination: Common5.Revealer.RevealerDestination.APPLICATION_PANEL,
+  destination: Common6.Revealer.RevealerDestination.APPLICATION_PANEL,
   async loadRevealer() {
     const Resources = await loadResourcesModule();
     return new Resources.ResourcesPanel.FrameDetailsRevealer();
   }
 });
-Common5.Revealer.registerRevealer({
+Common6.Revealer.registerRevealer({
   contextTypes() {
     return [PreloadingHelper.PreloadingForward.RuleSetView];
   },
-  destination: Common5.Revealer.RevealerDestination.APPLICATION_PANEL,
+  destination: Common6.Revealer.RevealerDestination.APPLICATION_PANEL,
   async loadRevealer() {
     const Resources = await loadResourcesModule();
     return new Resources.ResourcesPanel.RuleSetViewRevealer();
   }
 });
-Common5.Revealer.registerRevealer({
+Common6.Revealer.registerRevealer({
   contextTypes() {
     return [PreloadingHelper.PreloadingForward.AttemptViewWithFilter];
   },
-  destination: Common5.Revealer.RevealerDestination.APPLICATION_PANEL,
+  destination: Common6.Revealer.RevealerDestination.APPLICATION_PANEL,
   async loadRevealer() {
     const Resources = await loadResourcesModule();
     return new Resources.ResourcesPanel.AttemptViewWithFilterRevealer();
   }
 });
-Common5.Revealer.registerRevealer({
+Common6.Revealer.registerRevealer({
   contextTypes() {
     return maybeRetrieveContextTypes3((Resources) => [Resources.Components.StorageMetadataView.StorageBucketRevealInfo]);
   },
-  destination: Common5.Revealer.RevealerDestination.APPLICATION_PANEL,
+  destination: Common6.Revealer.RevealerDestination.APPLICATION_PANEL,
   async loadRevealer() {
     const Resources = await loadResourcesModule();
     return new Resources.ResourcesPanel.StorageBucketRevealer();
@@ -1280,7 +1305,7 @@ Common5.Revealer.registerRevealer({
 });
 
 // gen/front_end/panels/timeline/timeline-meta.js
-import * as Common6 from "./../../core/common/common.js";
+import * as Common7 from "./../../core/common/common.js";
 import * as i18n15 from "./../../core/i18n/i18n.js";
 import * as SDK5 from "./../../core/sdk/sdk.js";
 import * as UI8 from "./../../ui/legacy/legacy.js";
@@ -1344,11 +1369,67 @@ var UIStrings8 = {
   /**
    * @description Title of a setting under the Performance category in Settings
    */
+  enableSoftNavigations: "Enable soft navigation performance monitoring",
+  /**
+   * @description Title of a setting under the Performance category in Settings
+   */
   timelineDebugMode: "Timeline debug mode (trace event details, etc.)",
   /**
    * @description Title of a setting under the Performance category in Settings
    */
-  timelineInvalidationTracking: "Invalidation tracking"
+  timelineInvalidationTracking: "Invalidation tracking",
+  /**
+   * @description Title of a setting in Performance panel.
+   */
+  disableJavascriptSamples: "Disable JavaScript samples",
+  /**
+   * @description Title of a setting in Performance panel.
+   */
+  enableAdvancedPaint: "Enable advanced paint instrumentation (slow)",
+  /**
+   * @description Title of a setting in Performance panel.
+   */
+  enableSelectorStats: "Enable CSS selector stats (slow)",
+  /**
+   * @description Title of a setting in Performance panel.
+   */
+  screenshotCapture: "Screenshot capture",
+  /**
+   * @description Title of a setting in Performance panel.
+   */
+  screenshots: "Screenshots",
+  /**
+   * @description Title of a setting in Performance panel.
+   */
+  memory: "Memory",
+  /**
+   * @description Title of a setting in Performance panel.
+   */
+  dimThirdParties: "Dim 3rd parties",
+  /**
+   * @description Title of a setting in Performance panel.
+   */
+  showCustomtracks: "Show custom tracks",
+  /**
+   * @description Title of a setting in Performance panel counters graph.
+   */
+  jsHeap: "JS heap",
+  /**
+   * @description Title of a setting in Performance panel counters graph.
+   */
+  documents: "Documents",
+  /**
+   * @description Title of a setting in Performance panel counters graph.
+   */
+  nodes: "Nodes",
+  /**
+   * @description Title of a setting in Performance panel counters graph.
+   */
+  listeners: "Listeners",
+  /**
+   * @description Title of a setting in Performance panel counters graph.
+   */
+  gpuMemory: "GPU memory"
 };
 var str_8 = i18n15.i18n.registerUIStrings("panels/timeline/timeline-meta.ts", UIStrings8);
 var i18nLazyString8 = i18n15.i18n.getLazilyComputedLocalizedString.bind(void 0, str_8);
@@ -1579,7 +1660,7 @@ UI8.ActionRegistration.registerActionExtension({
     }
   ]
 });
-Common6.Settings.registerSettingExtension({
+Common7.Settings.registerSettingExtension({
   category: "PERFORMANCE",
   storageType: "Synced",
   title: i18nLazyString8(UIStrings8.chromeFrameInLayersView),
@@ -1587,7 +1668,7 @@ Common6.Settings.registerSettingExtension({
   settingType: "boolean",
   defaultValue: true
 });
-Common6.Settings.registerSettingExtension({
+Common7.Settings.registerSettingExtension({
   category: "PERFORMANCE",
   storageType: "Synced",
   title: i18nLazyString8(UIStrings8.timelineInvalidationTracking),
@@ -1595,7 +1676,7 @@ Common6.Settings.registerSettingExtension({
   settingType: "boolean",
   defaultValue: false
 });
-Common6.Settings.registerSettingExtension({
+Common7.Settings.registerSettingExtension({
   category: "PERFORMANCE",
   storageType: "Synced",
   title: i18nLazyString8(UIStrings8.timelineShowAllEvents),
@@ -1603,7 +1684,15 @@ Common6.Settings.registerSettingExtension({
   settingType: "boolean",
   defaultValue: false
 });
-Common6.Settings.registerSettingExtension({
+Common7.Settings.registerSettingExtension({
+  category: "PERFORMANCE",
+  storageType: "Synced",
+  title: i18nLazyString8(UIStrings8.enableSoftNavigations),
+  settingName: "timeline-enable-soft-navigations",
+  settingType: "boolean",
+  defaultValue: true
+});
+Common7.Settings.registerSettingExtension({
   category: "PERFORMANCE",
   storageType: "Synced",
   title: i18nLazyString8(UIStrings8.timelineDebugMode),
@@ -1611,7 +1700,7 @@ Common6.Settings.registerSettingExtension({
   settingType: "boolean",
   defaultValue: false
 });
-Common6.Settings.registerSettingExtension({
+Common7.Settings.registerSettingExtension({
   category: "PERFORMANCE",
   storageType: "Synced",
   settingName: "annotations-hidden",
@@ -1628,79 +1717,195 @@ UI8.ContextMenu.registerItem({
   actionId: "timeline.save-to-file",
   order: 15
 });
-Common6.Revealer.registerRevealer({
+Common7.Revealer.registerRevealer({
   contextTypes() {
     return [SDK5.TraceObject.TraceObject];
   },
-  destination: Common6.Revealer.RevealerDestination.TIMELINE_PANEL,
+  destination: Common7.Revealer.RevealerDestination.TIMELINE_PANEL,
   async loadRevealer() {
     const Timeline = await loadTimelineModule();
     return new Timeline.TimelinePanel.TraceRevealer();
   }
 });
-Common6.Revealer.registerRevealer({
+Common7.Revealer.registerRevealer({
   contextTypes() {
     return maybeRetrieveContextTypes4((Timeline) => [Timeline.TimelinePanel.ParsedTraceRevealable]);
   },
-  destination: Common6.Revealer.RevealerDestination.TIMELINE_PANEL,
+  destination: Common7.Revealer.RevealerDestination.TIMELINE_PANEL,
   async loadRevealer() {
     const Timeline = await loadTimelineModule();
     return new Timeline.TimelinePanel.ParsedTraceRevealer();
   }
 });
-Common6.Revealer.registerRevealer({
+Common7.Revealer.registerRevealer({
   contextTypes() {
     return [SDK5.TraceObject.RevealableEvent];
   },
-  destination: Common6.Revealer.RevealerDestination.TIMELINE_PANEL,
+  destination: Common7.Revealer.RevealerDestination.TIMELINE_PANEL,
   async loadRevealer() {
     const Timeline = await loadTimelineModule();
     return new Timeline.TimelinePanel.EventRevealer();
   }
 });
-Common6.Revealer.registerRevealer({
+Common7.Revealer.registerRevealer({
   contextTypes() {
     return maybeRetrieveContextTypes4((Timeline) => [Timeline.Utils.Helpers.RevealableInsight]);
   },
-  destination: Common6.Revealer.RevealerDestination.TIMELINE_PANEL,
+  destination: Common7.Revealer.RevealerDestination.TIMELINE_PANEL,
   async loadRevealer() {
     const Timeline = await loadTimelineModule();
     return new Timeline.TimelinePanel.InsightRevealer();
   }
 });
-Common6.Revealer.registerRevealer({
+Common7.Revealer.registerRevealer({
   contextTypes() {
     return maybeRetrieveContextTypes4((Timeline) => [Timeline.Utils.Helpers.RevealableCoreVitals]);
   },
-  destination: Common6.Revealer.RevealerDestination.TIMELINE_PANEL,
+  destination: Common7.Revealer.RevealerDestination.TIMELINE_PANEL,
   async loadRevealer() {
     const Timeline = await loadTimelineModule();
     return new Timeline.TimelinePanel.CoreVitalsRevealer();
   }
 });
-Common6.Revealer.registerRevealer({
+Common7.Revealer.registerRevealer({
   contextTypes() {
     return maybeRetrieveContextTypes4((Timeline) => [Timeline.Utils.Helpers.RevealableTimeRange]);
   },
-  destination: Common6.Revealer.RevealerDestination.TIMELINE_PANEL,
+  destination: Common7.Revealer.RevealerDestination.TIMELINE_PANEL,
   async loadRevealer() {
     const Timeline = await loadTimelineModule();
     return new Timeline.TimelinePanel.TimeRangeRevealer();
   }
 });
-Common6.Revealer.registerRevealer({
+Common7.Revealer.registerRevealer({
   contextTypes() {
     return maybeRetrieveContextTypes4((Timeline) => [Timeline.Utils.Helpers.RevealableBottomUpProfile]);
   },
-  destination: Common6.Revealer.RevealerDestination.TIMELINE_PANEL,
+  destination: Common7.Revealer.RevealerDestination.TIMELINE_PANEL,
   async loadRevealer() {
     const Timeline = await loadTimelineModule();
     return new Timeline.TimelinePanel.BottomUpProfileRevealer();
   }
 });
+Common7.Revealer.registerRevealer({
+  contextTypes() {
+    return [
+      SDK5.CPUProfilerModel.ProfileFinishedData
+    ];
+  },
+  destination: Common7.Revealer.RevealerDestination.TIMELINE_PANEL,
+  async loadRevealer() {
+    const Timeline = await loadTimelineModule();
+    return new Timeline.TimelinePanel.ProfileFinishedRevealer();
+  }
+});
+Common7.Settings.registerSettingExtension({
+  category: "",
+  storageType: "Session",
+  title: i18nLazyString8(UIStrings8.disableJavascriptSamples),
+  settingName: "timeline-disable-js-sampling",
+  settingType: "boolean",
+  defaultValue: false
+});
+Common7.Settings.registerSettingExtension({
+  category: "",
+  storageType: "Session",
+  title: i18nLazyString8(UIStrings8.enableAdvancedPaint),
+  settingName: "timeline-capture-layers-and-pictures",
+  settingType: "boolean",
+  defaultValue: false
+});
+Common7.Settings.registerSettingExtension({
+  category: "",
+  storageType: "Session",
+  title: i18nLazyString8(UIStrings8.enableSelectorStats),
+  settingName: "timeline-capture-selector-stats",
+  settingType: "boolean",
+  defaultValue: false
+});
+Common7.Settings.registerSettingExtension({
+  category: "",
+  storageType: "Session",
+  title: i18nLazyString8(UIStrings8.screenshotCapture),
+  settingName: "timeline-screenshot-capture-mode",
+  settingType: "enum",
+  defaultValue: "auto"
+});
+Common7.Settings.registerSettingExtension({
+  category: "",
+  storageType: "Global",
+  title: i18nLazyString8(UIStrings8.screenshots),
+  settingName: "timeline-show-screenshots",
+  settingType: "boolean",
+  defaultValue: true
+});
+Common7.Settings.registerSettingExtension({
+  category: "",
+  storageType: "Session",
+  title: i18nLazyString8(UIStrings8.memory),
+  settingName: "timeline-show-memory",
+  settingType: "boolean",
+  defaultValue: false
+});
+Common7.Settings.registerSettingExtension({
+  category: "",
+  storageType: "Session",
+  title: i18nLazyString8(UIStrings8.dimThirdParties),
+  settingName: "timeline-dim-third-parties",
+  settingType: "boolean",
+  defaultValue: false
+});
+Common7.Settings.registerSettingExtension({
+  category: "",
+  storageType: "Global",
+  title: i18nLazyString8(UIStrings8.showCustomtracks),
+  settingName: "timeline-show-extension-data",
+  settingType: "boolean",
+  defaultValue: true
+});
+Common7.Settings.registerSettingExtension({
+  category: "",
+  storageType: "Global",
+  title: i18nLazyString8(UIStrings8.jsHeap),
+  settingName: "timeline-counters-graph-js-heap-size-used",
+  settingType: "boolean",
+  defaultValue: true
+});
+Common7.Settings.registerSettingExtension({
+  category: "",
+  storageType: "Global",
+  title: i18nLazyString8(UIStrings8.documents),
+  settingName: "timeline-counters-graph-documents",
+  settingType: "boolean",
+  defaultValue: true
+});
+Common7.Settings.registerSettingExtension({
+  category: "",
+  storageType: "Global",
+  title: i18nLazyString8(UIStrings8.nodes),
+  settingName: "timeline-counters-graph-nodes",
+  settingType: "boolean",
+  defaultValue: true
+});
+Common7.Settings.registerSettingExtension({
+  category: "",
+  storageType: "Global",
+  title: i18nLazyString8(UIStrings8.listeners),
+  settingName: "timeline-counters-graph-js-event-listeners",
+  settingType: "boolean",
+  defaultValue: true
+});
+Common7.Settings.registerSettingExtension({
+  category: "",
+  storageType: "Global",
+  title: i18nLazyString8(UIStrings8.gpuMemory),
+  settingName: "timeline-counters-graph-gpu-memory-used-kb",
+  settingType: "boolean",
+  defaultValue: true
+});
 
 // gen/front_end/entrypoints/worker_app/WorkerMain.js
-import * as Common7 from "./../../core/common/common.js";
+import * as Common8 from "./../../core/common/common.js";
 import * as i18n17 from "./../../core/i18n/i18n.js";
 import * as SDK6 from "./../../core/sdk/sdk.js";
 import * as MobileThrottling from "./../../panels/mobile_throttling/mobile_throttling.js";
@@ -1732,7 +1937,7 @@ var WorkerMainImpl = class _WorkerMainImpl {
     new MobileThrottling.NetworkPanelIndicator.NetworkPanelIndicator();
   }
 };
-Common7.Runnable.registerEarlyInitializationRunnable(WorkerMainImpl.instance);
+Common8.Runnable.registerEarlyInitializationRunnable(WorkerMainImpl.instance);
 SDK6.ChildTargetManager.ChildTargetManager.install(async ({ target, waitingForDebugger }) => {
   if (target.parentTarget() || target.type() !== SDK6.Target.Type.ServiceWorker || !waitingForDebugger) {
     return;

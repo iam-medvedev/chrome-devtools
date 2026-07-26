@@ -4,29 +4,6 @@ declare global {
     interface HTMLElementTagNameMap {
         'devtools-recording-list-view': RecordingListView;
     }
-    interface HTMLElementEventMap {
-        openrecording: OpenRecordingEvent;
-        deleterecording: DeleteRecordingEvent;
-    }
-}
-export declare class CreateRecordingEvent extends Event {
-    static readonly eventName = "createrecording";
-    constructor();
-}
-export declare class DeleteRecordingEvent extends Event {
-    storageName: string;
-    static readonly eventName = "deleterecording";
-    constructor(storageName: string);
-}
-export declare class OpenRecordingEvent extends Event {
-    storageName: string;
-    static readonly eventName = "openrecording";
-    constructor(storageName: string);
-}
-export declare class PlayRecordingEvent extends Event {
-    storageName: string;
-    static readonly eventName = "playrecording";
-    constructor(storageName: string);
 }
 interface Recording {
     storageName: string;
@@ -45,6 +22,10 @@ export type ViewOutput = object;
 export declare const DEFAULT_VIEW: (input: ViewInput, _output: ViewOutput, target: HTMLElement) => void;
 export declare class RecordingListView extends UI.Widget.Widget {
     #private;
+    onCreateRecording?: () => void;
+    onDeleteRecording?: (storageName: string) => void;
+    onOpenRecording?: (storageName: string) => void;
+    onPlayRecording?: (storageName: string) => void;
     constructor(element?: HTMLElement, view?: typeof DEFAULT_VIEW);
     set recordings(recordings: readonly Recording[]);
     set replayAllowed(value: boolean);

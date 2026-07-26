@@ -6,16 +6,17 @@ import * as Platform from "./../../core/platform/platform.js";
 import * as Root from "./../../core/root/root.js";
 import * as SDK from "./../../core/sdk/sdk.js";
 import * as EmulationModel from "./../emulation/emulation.js";
+import * as CrUXManager from "./../crux-manager/crux-manager.js";
 import * as Spec from "./web-vitals-injected/spec/spec.js";
 var UIStrings = {
   /**
    * @description Warning text indicating that the Largest Contentful Paint (LCP) performance metric was affected by the user changing the simulated device.
    */
-  lcpEmulationWarning: "Simulating a new device after the page loads can affect LCP. Reload the page after simulating a new device for accurate LCP data.",
+  lcpEmulationWarning: "Simulating a device after the page loads can affect LCP. Reload the page for accurate LCP.",
   /**
    * @description Warning text indicating that the Largest Contentful Paint (LCP) performance metric was affected by the page loading in the background.
    */
-  lcpVisibilityWarning: "LCP value may be inflated because the page started loading in the background."
+  lcpVisibilityWarning: "LCP may be inflated because the page started loading in the background."
 };
 var str_ = i18n.i18n.registerUIStrings("models/live-metrics/LiveMetrics.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
@@ -43,6 +44,7 @@ var LiveMetrics = class _LiveMetrics extends Common.ObjectWrapper.ObjectWrapper 
   #interactions = /* @__PURE__ */ new Map();
   #interactionsByGroupId = /* @__PURE__ */ new Map();
   #layoutShifts = [];
+  #navigationType;
   #lastEmulationChangeTime;
   #mutex = new Common.Mutex.Mutex();
   #targetManager;
@@ -53,6 +55,7 @@ var LiveMetrics = class _LiveMetrics extends Common.ObjectWrapper.ObjectWrapper 
     this.#deviceModeModel = deviceModeModel;
     this.#targetManager.observeTargets(this, { scoped: true });
     this.#targetManager.addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
+    Common.Settings.Settings.instance().moduleSetting("timeline-enable-soft-navigations").addChangeListener(this.#onSettingChanged, this);
   }
   #onPrimaryPageChanged(event) {
     const primaryTarget = this.#targetManager.primaryPageTarget();
@@ -78,6 +81,9 @@ var LiveMetrics = class _LiveMetrics extends Common.ObjectWrapper.ObjectWrapper 
       Root.DevToolsContext.globalInstance().set(_LiveMetrics, new _LiveMetrics(SDK.TargetManager.TargetManager.instance(), EmulationModel.DeviceModeModel.DeviceModeModel.tryInstance()));
     }
     return Root.DevToolsContext.globalInstance().get(_LiveMetrics);
+  }
+  get navigationType() {
+    return this.#navigationType;
   }
   get lcpValue() {
     return this.#lcpValue;
@@ -189,7 +195,8 @@ var LiveMetrics = class _LiveMetrics extends Common.ObjectWrapper.ObjectWrapper 
       cls: this.#clsValue,
       inp: this.#inpValue,
       interactions: this.#interactions,
-      layoutShifts: this.#layoutShifts
+      layoutShifts: this.#layoutShifts,
+      navigationType: this.#navigationType
     });
   }
   setStatusForTesting(status) {
@@ -198,6 +205,7 @@ var LiveMetrics = class _LiveMetrics extends Common.ObjectWrapper.ObjectWrapper 
     this.#inpValue = status.inp;
     this.#interactions = status.interactions;
     this.#layoutShifts = status.layoutShifts;
+    this.#navigationType = status.navigationType;
     this.#sendStatusUpdate();
   }
   /**
@@ -261,6 +269,9 @@ var LiveMetrics = class _LiveMetrics extends Common.ObjectWrapper.ObjectWrapper 
         const inpEvent = {
           value: webVitalsEvent.value,
           subparts: webVitalsEvent.subparts,
+          // Use our own "interactionId" rather than the Chrome/web-vitals
+          // provided one, so we can group events with same start time
+          // (e.g. `pointerup` and `click` are one interaction log entry)
           interactionId: `interaction-${webVitalsEvent.entryGroupId}-${webVitalsEvent.startTime}`
         };
         this.#inpValue = inpEvent;
@@ -268,9 +279,12 @@ var LiveMetrics = class _LiveMetrics extends Common.ObjectWrapper.ObjectWrapper 
       }
       case "InteractionEntry": {
         const groupInteractions = Platform.MapUtilities.getWithDefault(this.#interactionsByGroupId, webVitalsEvent.entryGroupId, () => []);
-        let interaction = groupInteractions.find((interaction2) => Math.abs(interaction2.nextPaintTime - webVitalsEvent.nextPaintTime) < 8);
+        let interaction = groupInteractions.find((interaction2) => interaction2.nextPaintTime && webVitalsEvent.nextPaintTime && Math.abs(interaction2.nextPaintTime - webVitalsEvent.nextPaintTime) < 8);
         if (!interaction) {
           interaction = {
+            // Use our own "interactionId" rather than the Chrome/web-vitals
+            // provided one, so we can group events with same start time
+            // (e.g. `pointerup` and `click` are one interaction log entry)
             interactionId: `interaction-${webVitalsEvent.entryGroupId}-${webVitalsEvent.startTime}`,
             interactionType: webVitalsEvent.interactionType,
             duration: webVitalsEvent.duration,
@@ -309,6 +323,11 @@ var LiveMetrics = class _LiveMetrics extends Common.ObjectWrapper.ObjectWrapper 
       }
       case "reset": {
         this.#clearMetrics();
+        this.#navigationType = webVitalsEvent.navigationType;
+        if (webVitalsEvent.url) {
+          CrUXManager.CrUXManager.instance().setMainDocumentURL(webVitalsEvent.url);
+          void CrUXManager.CrUXManager.instance().refresh();
+        }
         break;
       }
     }
@@ -321,6 +340,7 @@ var LiveMetrics = class _LiveMetrics extends Common.ObjectWrapper.ObjectWrapper 
     this.#interactions.clear();
     this.#interactionsByGroupId.clear();
     this.#layoutShifts = [];
+    this.#navigationType = void 0;
   }
   #isPrimaryFrameExecutionContext(executionContextId) {
     if (!this.#target) {
@@ -394,6 +414,32 @@ var LiveMetrics = class _LiveMetrics extends Common.ObjectWrapper.ObjectWrapper 
     await this.#stopCollectingMetrics();
     this.#target = void 0;
   }
+  async #injectScript() {
+    if (!this.#target) {
+      return;
+    }
+    await this.#killAllLiveMetricContexts();
+    if (this.#scriptIdentifier) {
+      await this.#target.pageAgent().invoke_removeScriptToEvaluateOnNewDocument({
+        identifier: this.#scriptIdentifier
+      });
+    }
+    const softNavsSettingValue = Common.Settings.Settings.instance().moduleSetting("timeline-enable-soft-navigations").get();
+    const source = `window.devToolsReportSoftNavs = ${softNavsSettingValue};
+` + await InjectedScript.get();
+    const { identifier } = await this.#target.pageAgent().invoke_addScriptToEvaluateOnNewDocument({
+      source,
+      worldName: LIVE_METRICS_WORLD_NAME,
+      runImmediately: true
+    });
+    this.#scriptIdentifier = identifier;
+  }
+  async #onSettingChanged() {
+    if (!this.#target || !this.#enabled) {
+      return;
+    }
+    await this.#injectScript();
+  }
   async enable() {
     if (this.#enabled) {
       return;
@@ -434,17 +480,7 @@ var LiveMetrics = class _LiveMetrics extends Common.ObjectWrapper.ObjectWrapper 
       name: Spec.EVENT_BINDING_NAME,
       executionContextName: LIVE_METRICS_WORLD_NAME
     });
-    await this.#killAllLiveMetricContexts();
-    const source = await InjectedScript.get();
-    if (!this.#target) {
-      return;
-    }
-    const { identifier } = await this.#target?.pageAgent().invoke_addScriptToEvaluateOnNewDocument({
-      source,
-      worldName: LIVE_METRICS_WORLD_NAME,
-      runImmediately: true
-    });
-    this.#scriptIdentifier = identifier;
+    await this.#injectScript();
     this.#deviceModeModel?.addEventListener("Updated", this.#onEmulationChanged, this);
     this.#isCollectingMetrics = true;
   }

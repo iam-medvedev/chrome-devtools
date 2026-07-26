@@ -4,13 +4,13 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import * as Formatter from '../../entrypoints/formatter_worker/formatter_worker.js';
-import * as TextUtils from '../../models/text_utils/text_utils.js';
 import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { encodeSourceMap } from '../../testing/SourceMapEncoder.js';
 import { stringifyFrame } from '../../testing/StackTraceHelpers.js';
 import * as ScopesCodec from '../../third_party/source-map-scopes-codec/source-map-scopes-codec.js';
 import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
+import * as TextUtils from '../text_utils/text_utils.js';
 import * as SDK from './sdk.js';
 const { urlString } = Platform.DevToolsPath;
 const { SourceMapScopesInfo } = SDK.SourceMapScopesInfo;

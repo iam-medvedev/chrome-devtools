@@ -9,6 +9,10 @@ export default `/*
  * found in the LICENSE file.
  */
 
+* {
+  font-family: var(--default-font-family);
+}
+
 .add-locations-button {
   margin-bottom: var(--sys-size-5);
   border: none;

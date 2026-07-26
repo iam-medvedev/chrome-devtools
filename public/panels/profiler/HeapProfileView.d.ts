@@ -1,19 +1,19 @@
 import '../../ui/components/icon_button/icon_button.js';
+import '../../ui/legacy/components/data_grid/data_grid.js';
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import type * as Protocol from '../../generated/protocol.js';
 import * as CPUProfile from '../../models/cpu_profile/cpu_profile.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
-import type * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type TemplateResult } from '../../ui/lit/lit.js';
 import { BottomUpProfileDataGridTree } from './BottomUpProfileDataGrid.js';
 import { HeapTimelineOverview, type IdsRangeChangedEvent } from './HeapTimelineOverview.js';
-import { type Formatter, type ProfileDataGridNode, ProfileDataGridTree } from './ProfileDataGrid.js';
-import { ProfileFlameChart, ProfileFlameChartDataProvider } from './ProfileFlameChartDataProvider.js';
+import { type Formatter, ProfileDataGridTree, type ProfileEntry } from './ProfileDataGrid.js';
+import { ProfileFlameChartDataProvider } from './ProfileFlameChartDataProvider.js';
 import { type ProfileHeader, ProfileType } from './ProfileHeader.js';
 import { TopDownProfileDataGridTree } from './TopDownProfileDataGrid.js';
 import { WritableProfileHeader } from './WritableProfileHeader.js';
@@ -23,6 +23,38 @@ export declare const enum ViewTypes {
     TREE = "Tree",
     HEAVY = "Heavy"
 }
+export interface ViewInput {
+    timelineOverview: HeapTimelineOverview;
+    searchable: UI.SearchableView.Searchable;
+    hasTemporaryView: boolean;
+    viewType: ViewTypes | null;
+    profileDataGridTree: ProfileDataGridTree | undefined;
+    selectedNode: ProfileEntry | null;
+    nodeFormatter: Formatter;
+    columnHeader: (columnId: string) => Common.UIString.LocalizedString;
+    searchableView: UI.SearchableView.SearchableView | undefined;
+    dataProvider: ProfileFlameChartDataProvider | undefined;
+    target: SDK.Target.Target | null;
+    onExpand: (node: ProfileEntry) => void;
+    onCollapse: (node: ProfileEntry) => void;
+    onSelect: (node: ProfileEntry) => void;
+    onDeselect: () => void;
+    onContextMenu: (event: CustomEvent<UI.ContextMenu.ContextMenu>, node: ProfileEntry) => void;
+    onSearchableViewMount: (widget: UI.SearchableView.SearchableView) => void;
+    onFlameChartEntryInvoked: (entryIndex: number) => void;
+    range?: {
+        left: number;
+        right: number;
+    };
+}
+export interface ViewOutput {
+    performSearch?: (searchConfig: UI.SearchableView.SearchConfig, shouldJump: boolean, jumpBackwards?: boolean) => void;
+    jumpToNextSearchResult?: () => void;
+    jumpToPreviousSearchResult?: () => void;
+    onSearchCanceled?: () => void;
+}
+export type View = (input: ViewInput, output: ViewOutput, target: HTMLElement | DocumentFragment) => void;
+export declare const DEFAULT_VIEW: View;
 export declare class HeapProfileView extends UI.View.SimpleView implements UI.SearchableView.Searchable {
     #private;
     profileHeader: SamplingHeapProfileHeader;
@@ -38,23 +70,18 @@ export declare class HeapProfileView extends UI.View.SimpleView implements UI.Se
     readonly timelineOverview: HeapTimelineOverview;
     profileInternal: CPUProfile.ProfileTreeModel.ProfileTreeModel | null;
     searchableViewInternal: UI.SearchableView.SearchableView;
-    dataGrid: UI.Widget.Widget;
     viewSelectComboBox: HTMLSelectElement | undefined;
     focusButton: Buttons.Button.Button | undefined;
     excludeButton: Buttons.Button.Button | undefined;
     resetButton: Buttons.Button.Button | undefined;
     readonly linkifierInternal: Components.Linkifier.Linkifier;
-    nodeFormatter: Formatter;
     viewType: Common.Settings.Setting<ViewTypes>;
     bottomUpProfileDataGridTree?: BottomUpProfileDataGridTree | null;
     topDownProfileDataGridTree?: TopDownProfileDataGridTree | null;
     currentSearchResultIndex?: number;
     dataProvider?: ProfileFlameChartDataProvider;
-    flameChart?: ProfileFlameChart;
-    visibleView?: UI.Widget.Widget;
-    searchableElement?: ProfileDataGridTree | ProfileFlameChart;
     profileDataGridTree?: ProfileDataGridTree;
-    constructor(profileHeader: SamplingHeapProfileHeader);
+    constructor(profileHeader: SamplingHeapProfileHeader, view?: View);
     toolbarItems(): Promise<TemplateResult>;
     onIdsRangeChanged(event: Common.EventTarget.EventTargetEvent<IdsRangeChangedEvent>): void;
     setSelectionRange(minId: number, maxId: number): void;
@@ -64,19 +91,18 @@ export declare class HeapProfileView extends UI.View.SimpleView implements UI.Se
     static buildPopoverTable(popoverInfo: Array<{
         title: string;
         value: string;
-    }>): Element;
+    }>): TemplateResult;
     setProfile(profile: CPUProfile.ProfileTreeModel.ProfileTreeModel): void;
     profile(): CPUProfile.ProfileTreeModel.ProfileTreeModel | null;
-    initialize(nodeFormatter: Formatter): void;
-    focus(): void;
+    initialize(): void;
     selectRange(timeLeft: number, timeRight: number): void;
-    getBottomUpProfileDataGridTree(): ProfileDataGridTree;
-    getTopDownProfileDataGridTree(): ProfileDataGridTree;
-    populateContextMenu(contextMenu: UI.ContextMenu.ContextMenu, gridNode: DataGrid.DataGrid.DataGridNode<unknown>): void;
+    getBottomUpProfileDataGridTree(): ProfileDataGridTree | undefined;
+    getTopDownProfileDataGridTree(): ProfileDataGridTree | undefined;
+    populateContextMenu(contextMenu: UI.ContextMenu.ContextMenu, node: ProfileEntry): void;
     willHide(): void;
     refresh(): void;
     refreshVisibleData(): void;
-    searchableView(): UI.SearchableView.SearchableView;
+    searchableView(): UI.SearchableView.SearchableView | null;
     supportsCaseSensitiveSearch(): boolean;
     supportsWholeWordSearch(): boolean;
     supportsRegexSearch(): boolean;
@@ -86,13 +112,12 @@ export declare class HeapProfileView extends UI.View.SimpleView implements UI.Se
     jumpToPreviousSearchResult(): void;
     linkifier(): Components.Linkifier.Linkifier;
     ensureFlameChartCreated(): void;
-    onEntryInvoked(event: Common.EventTarget.EventTargetEvent<number>): Promise<void>;
+    onEntryInvoked(entryIndex: number): Promise<void>;
     changeView(e?: Event): void;
     nodeSelected(selected: boolean): void;
     focusClicked(): void;
     excludeClicked(): void;
     resetClicked(): void;
-    sortProfile(): void;
     performUpdate(): void;
 }
 declare const SamplingHeapProfileTypeBase_base: (new (...args: any[]) => {
@@ -183,13 +208,11 @@ export declare class SamplingHeapProfileModel extends CPUProfile.ProfileTreeMode
 }
 export declare class NodeFormatter implements Formatter {
     #private;
-    readonly profileView: HeapProfileView;
-    constructor(profileView: HeapProfileView);
     formatValue(value: number): string;
     formatValueAccessibleText(value: number): string;
-    formatPercent(value: number, _node: ProfileDataGridNode): string;
-    linkifyNode(node: ProfileDataGridNode): Element | null;
+    formatPercent(value: number, _node: ProfileEntry): string;
 }
+export declare const nodeFormatter: NodeFormatter;
 export declare class HeapFlameChartDataProvider extends ProfileFlameChartDataProvider {
     readonly profile: CPUProfile.ProfileTreeModel.ProfileTreeModel;
     readonly heapProfilerModel: SDK.HeapProfilerModel.HeapProfilerModel | null;
@@ -199,6 +222,6 @@ export declare class HeapFlameChartDataProvider extends ProfileFlameChartDataPro
     entryHasDeoptReason(_entryIndex: number): boolean;
     formatValue(value: number, _precision?: number): string;
     calculateTimelineData(): PerfUI.FlameChart.FlameChartTimelineData;
-    preparePopoverElement(entryIndex: number): Element | null;
+    preparePopoverElement(entryIndex: number): TemplateResult | null;
 }
 export {};

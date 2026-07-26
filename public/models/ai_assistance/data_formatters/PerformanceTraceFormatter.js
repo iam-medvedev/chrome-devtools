@@ -15,12 +15,26 @@ export class PerformanceTraceFormatter {
     #formattedFunctionCodes = new Set();
     #deviceScope;
     resolveFunctionCode;
-    constructor(focus, deviceScope = null) {
+    #cruxManager;
+    constructor(focus, deviceScope = null, cruxManager) {
         this.#focus = focus;
         this.#parsedTrace = focus.parsedTrace;
         this.#insightSet = focus.primaryInsightSet;
         this.#eventsSerializer = focus.eventsSerializer;
         this.#deviceScope = deviceScope;
+        if (cruxManager) {
+            this.#cruxManager = cruxManager;
+        }
+        else {
+            // In environments outside DevTools (like the MCP server or some tests),
+            // CrUXManager.instance() can fail due to uninitialized global settings/storage.
+            try {
+                this.#cruxManager = CrUXManager.CrUXManager.instance();
+            }
+            catch {
+                this.#cruxManager = null;
+            }
+        }
     }
     serializeEvent(event) {
         const key = this.#eventsSerializer.keyForEvent(event);
@@ -38,8 +52,16 @@ export class PerformanceTraceFormatter {
             return [];
         }
         try {
-            const cruxScope = this.#deviceScope ? { pageScope: 'url', deviceScope: this.#deviceScope } :
-                CrUXManager.CrUXManager.instance().getSelectedScope();
+            let cruxScope;
+            if (this.#deviceScope) {
+                cruxScope = { pageScope: 'url', deviceScope: this.#deviceScope };
+            }
+            else if (this.#cruxManager) {
+                cruxScope = this.#cruxManager.getSelectedScope();
+            }
+            else {
+                return [];
+            }
             const parts = [];
             const fieldMetrics = Trace.Insights.Common.getFieldMetricsForInsightSet(insightSet, this.#parsedTrace.metadata, cruxScope);
             const fieldLcp = fieldMetrics?.lcp;
@@ -179,6 +201,22 @@ export class PerformanceTraceFormatter {
                 }
                 const insightPartsText = insightParts.join('\n    ');
                 parts.push(`  - ${insightPartsText}`);
+            }
+        }
+        const extensionTrackData = parsedTrace.data.ExtensionTraceData?.extensionTrackData;
+        if (extensionTrackData && extensionTrackData.length > 0) {
+            parts.push('\n# Custom tracks\n');
+            parts.push('The following is a list of custom tracks or track groups from the extensibility API.');
+            for (const trackData of extensionTrackData) {
+                if (trackData.isTrackGroup) {
+                    parts.push(`\n## Group: ${trackData.name}\n`);
+                    for (const trackName of Object.keys(trackData.entriesByTrack)) {
+                        parts.push(`  - Track: ${trackName}`);
+                    }
+                }
+                else {
+                    parts.push(`\n## Track: ${trackData.name}\n`);
+                }
             }
         }
         return parts.join('\n');
@@ -401,6 +439,50 @@ export class PerformanceTraceFormatter {
         }
         return results.join('\n\n');
     }
+    formatExtensionTrackSummary(bounds) {
+        const extensionTrackData = this.#parsedTrace.data.ExtensionTraceData?.extensionTrackData;
+        if (!extensionTrackData || extensionTrackData.length === 0) {
+            return 'No custom track activity found';
+        }
+        const results = [];
+        for (const trackData of extensionTrackData) {
+            const trackLines = [];
+            const header = trackData.isTrackGroup ? `# Track Group: ${trackData.name}` : `# Track: ${trackData.name}`;
+            trackLines.push(header);
+            let hasEntriesInBounds = false;
+            for (const trackName of Object.keys(trackData.entriesByTrack)) {
+                const entries = trackData.entriesByTrack[trackName];
+                const filteredEntries = entries.filter(entry => Trace.Helpers.Timing.eventIsInBounds(entry, bounds));
+                if (filteredEntries.length === 0) {
+                    continue;
+                }
+                hasEntriesInBounds = true;
+                if (trackData.isTrackGroup) {
+                    trackLines.push(`## Track: ${trackName}`);
+                }
+                for (const entry of filteredEntries) {
+                    const entryKey = this.serializeEvent(entry);
+                    const parts = [
+                        `Name: ${entry.name}`,
+                        `eventKey: ${entryKey}`,
+                        `duration: ${micros(entry.dur ?? Trace.Types.Timing.Micro(0))}`,
+                    ];
+                    if (entry.devtoolsObj.properties) {
+                        const props = entry.devtoolsObj.properties.map(prop => `${prop[0]}: ${JSON.stringify(prop[1])}`).join(', ');
+                        parts.push(`properties: {${props}}`);
+                    }
+                    trackLines.push(`- ${parts.join(', ')}`);
+                }
+            }
+            if (hasEntriesInBounds) {
+                results.push(trackLines.join('\n'));
+            }
+        }
+        if (results.length === 0) {
+            return 'No custom track activity found in the given bounds';
+        }
+        return results.join('\n\n');
+    }
     async formatCallTree(tree, headerLevel = 1) {
         let result = `${tree.serialize(headerLevel)}\n\nIMPORTANT: Never show eventKey to the user.\n`;
         const relevantCallFrames = [];
@@ -467,7 +549,7 @@ export class PerformanceTraceFormatter {
      * talk to jacktfranklin@.
      */
     #networkRequestVerbosely(request, options) {
-        const { url, statusCode, initialPriority, priority, fromServiceWorker, mimeType, responseHeaders, syntheticData, protocol } = request.args.data;
+        const { url, statusCode, initialPriority, priority, fromServiceWorker, mimeType, responseHeaders, syntheticData, protocol, } = request.args.data;
         const parsedTrace = this.#parsedTrace;
         const titlePrefix = `## ${options?.customTitle ?? 'Network request'}`;
         // Note: unlike other agents, we do have the ability to include
@@ -691,7 +773,7 @@ The order of headers corresponds to an internal fixed list. If a header is not p
     #formatFunctionCode(code) {
         this.#formattedFunctionCodes.add(this.#functionCodeToKey(code));
         const { startLine, startColumn } = code.range;
-        const { startLine: contextStartLine, startColumn: contextStartColumn, endLine: contextEndLine, endColumn: contextEndColumn } = code.rangeWithContext;
+        const { startLine: contextStartLine, startColumn: contextStartColumn, endLine: contextEndLine, endColumn: contextEndColumn, } = code.rangeWithContext;
         const name = code.functionBounds.name || '(anonymous)';
         const url = code.functionBounds.uiSourceCode.url();
         const parts = [];

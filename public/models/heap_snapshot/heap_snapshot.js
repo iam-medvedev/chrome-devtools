@@ -337,7 +337,7 @@ var HeapSnapshotWorkerProxy = class extends Common.ObjectWrapper.ObjectWrapper {
       return;
     }
     this.checkLongRunningCalls();
-    this.interval = window.setInterval(this.checkLongRunningCalls.bind(this), 300);
+    this.interval = globalThis.setInterval(this.checkLongRunningCalls.bind(this), 300);
   }
   checkLongRunningCalls() {
     for (const callId of this.previousCallbacks) {

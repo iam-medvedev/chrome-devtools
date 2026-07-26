@@ -7,8 +7,8 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as ProtocolClient from '../../core/protocol_client/protocol_client.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as TextUtils from '../../core/text_utils/text_utils.js';
 import * as Bindings from '../../models/bindings/bindings.js';
-import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as UIHelpers from '../../ui/helpers/helpers.js';
@@ -401,7 +401,7 @@ export class ProtocolMonitorImpl extends UI.Panel.Panel {
         const viewOutput = {
             set editorWidget(value) {
                 that.#editorWidget = value;
-            }
+            },
         };
         this.#view(viewInput, viewOutput, this.contentElement);
     }

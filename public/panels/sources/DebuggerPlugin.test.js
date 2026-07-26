@@ -4,8 +4,8 @@
 import { assert } from 'chai';
 import * as sinon from 'sinon';
 import * as Platform from '../../core/platform/platform.js';
+import * as TextUtils from '../../core/text_utils/text_utils.js';
 import * as Bindings from '../../models/bindings/bindings.js';
-import * as TextUtils from '../../models/text_utils/text_utils.js';
 import { deinitializeGlobalVars, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { MockDebuggerBackend, parseScopeChain } from '../../testing/MockScopeChain.js';
 import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
@@ -488,6 +488,38 @@ a[foo()];`;
                 for (let offset = 0; (offset = doc.indexOf('a[', offset) + 1) !== 0;) {
                     assert.deepInclude(computePopoverHighlightRange(state, 'text/javascript', offset), { containsSideEffects: true });
                 }
+            });
+            it('correctly identifies side-effecting constructs (new, tagged template, import, delete)', () => {
+                const { containsSideEffects } = Sources.DebuggerPlugin;
+                const checkCode = (code) => {
+                    const state = CodeMirror.EditorState.create({ doc: code, extensions });
+                    const tree = CodeMirror.ensureSyntaxTree(state, code.length, 5000);
+                    assert.exists(tree);
+                    return containsSideEffects(state.doc, tree.topNode);
+                };
+                assert.isTrue(checkCode('new Trap()'));
+                assert.isTrue(checkCode('myTag`hello`'));
+                assert.isTrue(checkCode('import("./mod.js")'));
+                assert.isTrue(checkCode('delete obj.prop'));
+                assert.isTrue(checkCode('x = 1'));
+                assert.isTrue(checkCode('fn()'));
+                assert.isFalse(checkCode('obj.prop'));
+                assert.isFalse(checkCode('x'));
+            });
+            it('correctly reports new expressions, tagged templates, dynamic imports, and delete operators as side-effecting in popover range', () => {
+                const checkHoverSideEffects = (doc, cursorOffset) => {
+                    const state = CodeMirror.EditorState.create({ doc, extensions });
+                    const result = computePopoverHighlightRange(state, 'text/javascript', cursorOffset);
+                    return result?.containsSideEffects;
+                };
+                const code1 = 'let v = new Trap().status;';
+                assert.isTrue(checkHoverSideEffects(code1, code1.indexOf('status')));
+                const code2 = 'let v = myTag`test`.status;';
+                assert.isTrue(checkHoverSideEffects(code2, code2.indexOf('status')));
+                const code3 = 'let v = (import("./mod.js")).status;';
+                assert.isTrue(checkHoverSideEffects(code3, code3.indexOf('status')));
+                const code4 = 'let v = a[delete obj.prop];';
+                assert.isTrue(checkHoverSideEffects(code4, code4.indexOf('[')));
             });
         });
         describe('in HTML files', () => {

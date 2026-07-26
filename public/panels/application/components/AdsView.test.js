@@ -42,29 +42,26 @@ describeWithEnvironment('AdsView', () => {
                 totalAdNetworkBytes: 2048,
                 updateAdFrames: [],
                 removeAdFrames: [],
-            }
+            },
         }));
         const tabTarget = createTarget({ type: SDK.Target.Type.TAB, connection });
         createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
         target = createTarget({ parentTarget: tabTarget });
-        const domModel = target.model(SDK.DOMModel.DOMModel);
-        if (domModel) {
-            // Mock `getOwnerNodeForFrame` to return a resolved promise with a fake DOMNode containing the frame's ID.
-            sinon.stub(domModel, 'getOwnerNodeForFrame').callsFake(async (frameId) => {
-                return {
-                    resolvePromise: async () => {
-                        return {
-                            getAttribute: (attr) => attr === 'id' ? `ad-iframe-${frameId}` : null,
-                        };
-                    },
-                };
-            });
-        }
-        sinon.stub(SDK.FrameManager.FrameManager.instance(), 'getFrame').callsFake((_frameId) => {
+        sinon.stub(SDK.FrameManager.FrameManager.instance(), 'getFrame').callsFake((frameId) => {
             return {
+                id: frameId,
                 resourceTreeModel: () => ({
                     target: () => target,
                 }),
+                getOwnerDeferredDOMNode: async () => {
+                    return {
+                        resolvePromise: async () => {
+                            return {
+                                getAttribute: (attr) => attr === 'id' ? `ad-iframe-${frameId}` : null,
+                            };
+                        },
+                    };
+                },
             };
         });
     });
@@ -129,7 +126,7 @@ describeWithEnvironment('AdsView', () => {
                 totalAdNetworkBytes: 0,
                 updateAdFrames: [],
                 removeAdFrames: [],
-            }
+            },
         }));
         resourceTreeModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.PrimaryPageChanged, {
             frame: {},
@@ -173,10 +170,10 @@ describeWithEnvironment('AdsView', () => {
                                 initialOrigin: 'https://example2.com',
                                 cpuTime: 50,
                                 networkBytes: 1024,
-                            }
+                            },
                         ],
                         removeAdFrames: [],
-                    }
+                    },
                 };
             }
             return {
@@ -189,7 +186,7 @@ describeWithEnvironment('AdsView', () => {
                     totalAdNetworkBytes: 0,
                     updateAdFrames: [],
                     removeAdFrames: ['frame-1'],
-                }
+                },
             };
         });
         const panel = new ApplicationComponents.AdsView.AdsView();
@@ -233,6 +230,60 @@ describeWithEnvironment('AdsView', () => {
         await RenderCoordinator.done();
         assert.isTrue(setting.get(), 'Setting should be true after checking the box');
         assert.isTrue(devtoolsCheckbox.checked, 'Checkbox should be checked after click');
+        panel.detach();
+    });
+    it('reveals the frame when the element ID button is clicked', async () => {
+        let callCount = 0;
+        connection.setHandler('Ads.getAdMetrics', null);
+        connection.setSuccessHandler('Ads.getAdMetrics', () => {
+            callCount++;
+            if (callCount === 1) {
+                return {
+                    metrics: {
+                        viewportAdDensityByArea: 0,
+                        averageViewportAdDensityByArea: 0,
+                        viewportAdCount: 0,
+                        averageViewportAdCount: 0,
+                        totalAdCpuTime: 0,
+                        totalAdNetworkBytes: 0,
+                        updateAdFrames: [
+                            {
+                                frameId: 'frame-1',
+                                initialOrigin: 'https://example.com',
+                                cpuTime: 100,
+                                networkBytes: 1024,
+                            },
+                        ],
+                        removeAdFrames: [],
+                    },
+                };
+            }
+            return {
+                metrics: {
+                    viewportAdDensityByArea: 0,
+                    averageViewportAdDensityByArea: 0,
+                    viewportAdCount: 0,
+                    averageViewportAdCount: 0,
+                    totalAdCpuTime: 0,
+                    totalAdNetworkBytes: 0,
+                    updateAdFrames: [],
+                    removeAdFrames: [],
+                },
+            };
+        });
+        const panel = new ApplicationComponents.AdsView.AdsView();
+        renderElementIntoDOM(panel);
+        // Wait for the initial poll and subsequent async element ID fetches to resolve
+        await clock.tickAsync(0);
+        await panel.updateComplete;
+        await RenderCoordinator.done();
+        const revealStub = sinon.stub(Common.Revealer.RevealerRegistry.instance(), 'reveal').resolves();
+        const linkButton = panel.contentElement.querySelector('.devtools-link');
+        assert.isNotNull(linkButton);
+        linkButton.click();
+        sinon.assert.calledOnce(revealStub);
+        const revealable = revealStub.firstCall.args[0];
+        assert.strictEqual(revealable.id, 'frame-1');
         panel.detach();
     });
 });

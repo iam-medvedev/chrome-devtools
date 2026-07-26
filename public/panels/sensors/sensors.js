@@ -7,7 +7,14 @@ var __export = (target, all) => {
 // gen/front_end/panels/sensors/LocationsSettingsTab.js
 var LocationsSettingsTab_exports = {};
 __export(LocationsSettingsTab_exports, {
-  LocationsSettingsTab: () => LocationsSettingsTab
+  DEFAULT_VIEW: () => DEFAULT_VIEW,
+  LocationsSettingsTab: () => LocationsSettingsTab,
+  validateAccuracy: () => validateAccuracy,
+  validateLatitude: () => validateLatitude,
+  validateLocale: () => validateLocale,
+  validateLongitude: () => validateLongitude,
+  validateTimezoneId: () => validateTimezoneId,
+  validateTitle: () => validateTitle
 });
 import "./../../ui/kit/kit.js";
 import * as Common from "./../../core/common/common.js";
@@ -15,6 +22,7 @@ import * as i18n from "./../../core/i18n/i18n.js";
 import * as SDK from "./../../core/sdk/sdk.js";
 import * as Buttons from "./../../ui/components/buttons/buttons.js";
 import * as UI from "./../../ui/legacy/legacy.js";
+import { html, render } from "./../../ui/lit/lit.js";
 import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/sensors/locationsSettingsTab.css.js
@@ -23,6 +31,10 @@ var locationsSettingsTab_css_default = `/*
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
+* {
+  font-family: var(--default-font-family);
+}
 
 .add-locations-button {
   margin-bottom: var(--sys-size-5);
@@ -208,25 +220,86 @@ var UIStrings = {
 };
 var str_ = i18n.i18n.registerUIStrings("panels/sensors/LocationsSettingsTab.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
+function renderItemView(location) {
+  return html`
+    <div class="locations-list-item" role="row">
+      <div class="locations-list-text locations-list-title" role="cell">
+        <div class="locations-list-title-text" title=${location.title}>${location.title}</div>
+      </div>
+      <div class="locations-list-separator"></div>
+      <div class="locations-list-text" role="cell">${location.lat}</div>
+      <div class="locations-list-separator"></div>
+      <div class="locations-list-text" role="cell">${location.long}</div>
+      <div class="locations-list-separator"></div>
+      <div class="locations-list-text" role="cell">${location.timezoneId}</div>
+      <div class="locations-list-separator"></div>
+      <div class="locations-list-text" role="cell">${location.locale}</div>
+      <div class="locations-list-separator"></div>
+      <div class="locations-list-text" role="cell">${location.accuracy ?? SDK.EmulationModel.Location.DEFAULT_ACCURACY}</div>
+    </div>`;
+}
+function renderEditorView(controls) {
+  return html`
+    <div class="locations-edit-row">
+      <div class="locations-list-text locations-list-title">${i18nString(UIStrings.locationName)}</div>
+      <div class="locations-list-separator locations-list-separator-invisible"></div>
+      <div class="locations-list-text">${i18nString(UIStrings.lat)}</div>
+      <div class="locations-list-separator locations-list-separator-invisible"></div>
+      <div class="locations-list-text">${i18nString(UIStrings.long)}</div>
+      <div class="locations-list-separator locations-list-separator-invisible"></div>
+      <div class="locations-list-text">${i18nString(UIStrings.timezoneId)}</div>
+      <div class="locations-list-separator locations-list-separator-invisible"></div>
+      <div class="locations-list-text">${i18nString(UIStrings.locale)}</div>
+      <div class="locations-list-separator locations-list-separator-invisible"></div>
+      <div class="locations-list-text">${i18nString(UIStrings.accuracy)}</div>
+    </div>
+    <div class="locations-edit-row">
+      <div class="locations-list-text locations-list-title locations-input-container">${controls.titleInput}</div>
+      <div class="locations-list-separator locations-list-separator-invisible"></div>
+      <div class="locations-list-text locations-input-container">${controls.latInput}</div>
+      <div class="locations-list-separator locations-list-separator-invisible"></div>
+      <div class="locations-list-text locations-list-text-longitude locations-input-container">${controls.longInput}</div>
+      <div class="locations-list-separator locations-list-separator-invisible"></div>
+      <div class="locations-list-text locations-input-container">${controls.timezoneIdInput}</div>
+      <div class="locations-list-separator locations-list-separator-invisible"></div>
+      <div class="locations-list-text locations-input-container">${controls.localeInput}</div>
+      <div class="locations-list-separator locations-list-separator-invisible"></div>
+      <div class="locations-list-text locations-input-container">${controls.accuracyInput}</div>
+    </div>`;
+}
+var DEFAULT_VIEW = (input, _output, target) => {
+  render(html`
+    <style>${locationsSettingsTab_css_default}</style>
+    <div class="settings-card-container-wrapper">
+      <div class="settings-card-container">
+        <devtools-card .heading=${i18nString(UIStrings.locations)}>
+          <div class="list-container"></div>
+          <devtools-button
+            class="add-locations-button"
+            .variant=${"outlined"}
+            .iconName=${"plus"}
+            .jslogContext=${"emulation.add-location"}
+            @click=${input.onAddLocation}>
+            ${i18nString(UIStrings.addLocation)}
+          </devtools-button>
+        </devtools-card>
+      </div>
+    </div>`, target);
+};
 var LocationsSettingsTab = class extends UI.Widget.VBox {
   list;
   customSetting;
   editor;
-  constructor() {
-    super({
+  #view;
+  constructor(element, view = DEFAULT_VIEW) {
+    super(element, {
       jslog: `${VisualLogging.pane("emulation-locations")}`,
       useShadowDom: true
     });
-    this.registerRequiredCSS(locationsSettingsTab_css_default);
-    const settingsContent = this.contentElement.createChild("div", "settings-card-container-wrapper").createChild("div");
-    settingsContent.classList.add("settings-card-container");
-    const locationsCard = settingsContent.createChild("devtools-card");
-    locationsCard.heading = i18nString(UIStrings.locations);
-    const listContainer = locationsCard.createChild("div");
+    this.#view = view;
     this.list = new UI.ListWidget.ListWidget(this, void 0, true);
     this.list.element.classList.add("locations-list");
     this.list.registerRequiredCSS(locationsSettingsTab_css_default);
-    this.list.show(listContainer);
     this.customSetting = Common.Settings.Settings.instance().moduleSetting("emulation.locations");
     const list = this.customSetting.get().map((location) => replaceLocationTitles(location, this.customSetting.defaultValue));
     function replaceLocationTitles(location, defaultValues) {
@@ -240,22 +313,22 @@ var LocationsSettingsTab = class extends UI.Widget.VBox {
       }
       return location;
     }
-    const addButton = new Buttons.Button.Button();
-    addButton.classList.add("add-locations-button");
-    addButton.data = {
-      variant: "outlined",
-      iconName: "plus",
-      jslogContext: "emulation.add-location"
-    };
-    addButton.textContent = i18nString(UIStrings.addLocation);
-    addButton.addEventListener("click", () => this.addButtonClicked());
-    locationsCard.append(addButton);
     this.customSetting.set(list);
     this.customSetting.addChangeListener(this.locationsUpdated, this);
   }
   wasShown() {
     super.wasShown();
     this.locationsUpdated();
+  }
+  performUpdate() {
+    const viewInput = {
+      onAddLocation: () => this.addButtonClicked()
+    };
+    this.#view(viewInput, void 0, this.contentElement);
+    const listContainer = this.contentElement.querySelector(".list-container");
+    if (listContainer) {
+      this.list.show(listContainer);
+    }
   }
   locationsUpdated() {
     this.list.clear();
@@ -264,6 +337,7 @@ var LocationsSettingsTab = class extends UI.Widget.VBox {
       this.list.appendItem(condition, true);
     }
     this.list.appendSeparator();
+    this.requestUpdate();
   }
   addButtonClicked() {
     this.list.addNewItem(this.customSetting.get().length, {
@@ -276,33 +350,9 @@ var LocationsSettingsTab = class extends UI.Widget.VBox {
     });
   }
   renderItem(location, _editable) {
-    const element = document.createElement("div");
-    element.role = "row";
-    element.classList.add("locations-list-item");
-    const title = element.createChild("div", "locations-list-text locations-list-title");
-    title.role = "cell";
-    const titleText = title.createChild("div", "locations-list-title-text");
-    titleText.textContent = location.title;
-    UI.Tooltip.Tooltip.install(titleText, location.title);
-    element.createChild("div", "locations-list-separator");
-    const lat = element.createChild("div", "locations-list-text");
-    lat.textContent = String(location.lat);
-    lat.role = "cell";
-    element.createChild("div", "locations-list-separator");
-    const long = element.createChild("div", "locations-list-text");
-    long.textContent = String(location.long);
-    long.role = "cell";
-    element.createChild("div", "locations-list-separator");
-    const timezoneId = element.createChild("div", "locations-list-text");
-    timezoneId.textContent = location.timezoneId;
-    timezoneId.role = "cell";
-    element.createChild("div", "locations-list-separator");
-    const locale = element.createChild("div", "locations-list-text");
-    locale.textContent = location.locale;
-    locale.role = "cell";
-    element.createChild("div", "locations-list-separator");
-    element.createChild("div", "locations-list-text").textContent = String(location.accuracy || SDK.EmulationModel.Location.DEFAULT_ACCURACY);
-    return element;
+    const fragment = document.createDocumentFragment();
+    render(renderItemView(location), fragment);
+    return fragment.firstElementChild;
   }
   removeItemRequested(_item, index) {
     const list = this.customSetting.get();
@@ -334,7 +384,7 @@ var LocationsSettingsTab = class extends UI.Widget.VBox {
     editor.control("long").value = String(location.long);
     editor.control("timezone-id").value = location.timezoneId;
     editor.control("locale").value = location.locale;
-    editor.control("accuracy").value = String(location.accuracy || SDK.EmulationModel.Location.DEFAULT_ACCURACY);
+    editor.control("accuracy").value = String(location.accuracy ?? SDK.EmulationModel.Location.DEFAULT_ACCURACY);
     return editor;
   }
   createEditor() {
@@ -344,146 +394,108 @@ var LocationsSettingsTab = class extends UI.Widget.VBox {
     const editor = new UI.ListWidget.Editor();
     this.editor = editor;
     const content = editor.contentElement();
-    const titles = content.createChild("div", "locations-edit-row");
-    titles.createChild("div", "locations-list-text locations-list-title").textContent = i18nString(UIStrings.locationName);
-    titles.createChild("div", "locations-list-separator locations-list-separator-invisible");
-    titles.createChild("div", "locations-list-text").textContent = i18nString(UIStrings.lat);
-    titles.createChild("div", "locations-list-separator locations-list-separator-invisible");
-    titles.createChild("div", "locations-list-text").textContent = i18nString(UIStrings.long);
-    titles.createChild("div", "locations-list-separator locations-list-separator-invisible");
-    titles.createChild("div", "locations-list-text").textContent = i18nString(UIStrings.timezoneId);
-    titles.createChild("div", "locations-list-separator locations-list-separator-invisible");
-    titles.createChild("div", "locations-list-text").textContent = i18nString(UIStrings.locale);
-    titles.createChild("div", "locations-list-separator locations-list-separator-invisible");
-    titles.createChild("div", "locations-list-text").textContent = i18nString(UIStrings.accuracy);
-    const fields = content.createChild("div", "locations-edit-row");
-    fields.createChild("div", "locations-list-text locations-list-title locations-input-container").appendChild(editor.createInput("title", "text", i18nString(UIStrings.locationName), titleValidator));
-    fields.createChild("div", "locations-list-separator locations-list-separator-invisible");
-    let cell = fields.createChild("div", "locations-list-text locations-input-container");
-    cell.appendChild(editor.createInput("lat", "text", i18nString(UIStrings.latitude), latValidator));
-    fields.createChild("div", "locations-list-separator locations-list-separator-invisible");
-    cell = fields.createChild("div", "locations-list-text locations-list-text-longitude locations-input-container");
-    cell.appendChild(editor.createInput("long", "text", i18nString(UIStrings.longitude), longValidator));
-    fields.createChild("div", "locations-list-separator locations-list-separator-invisible");
-    cell = fields.createChild("div", "locations-list-text locations-input-container");
-    cell.appendChild(editor.createInput("timezone-id", "text", i18nString(UIStrings.timezoneId), timezoneIdValidator));
-    fields.createChild("div", "locations-list-separator locations-list-separator-invisible");
-    cell = fields.createChild("div", "locations-list-text locations-input-container");
-    cell.appendChild(editor.createInput("locale", "text", i18nString(UIStrings.locale), localeValidator));
-    fields.createChild("div", "locations-list-separator locations-list-separator-invisible");
-    cell = fields.createChild("div", "locations-list-text locations-input-container");
-    cell.appendChild(editor.createInput("accuracy", "text", i18nString(UIStrings.accuracy), accuracyValidator));
+    const createValidator = (validator) => (_item, _index, input) => {
+      const errorMessage = validator(input.value);
+      if (errorMessage) {
+        return { valid: false, errorMessage };
+      }
+      return { valid: true };
+    };
+    const titleInput = editor.createInput("title", "text", i18nString(UIStrings.locationName), createValidator(validateTitle));
+    const latInput = editor.createInput("lat", "text", i18nString(UIStrings.latitude), createValidator(validateLatitude));
+    const longInput = editor.createInput("long", "text", i18nString(UIStrings.longitude), createValidator(validateLongitude));
+    const timezoneIdInput = editor.createInput("timezone-id", "text", i18nString(UIStrings.timezoneId), createValidator(validateTimezoneId));
+    const localeInput = editor.createInput("locale", "text", i18nString(UIStrings.locale), createValidator(validateLocale));
+    const accuracyInput = editor.createInput("accuracy", "text", i18nString(UIStrings.accuracy), createValidator(validateAccuracy));
+    render(renderEditorView({
+      titleInput,
+      latInput,
+      longInput,
+      timezoneIdInput,
+      localeInput,
+      accuracyInput
+    }), content);
     return editor;
-    function titleValidator(_item, _index, input) {
-      const maxLength = 50;
-      const value = input.value.trim();
-      let errorMessage;
-      if (!value.length) {
-        errorMessage = i18nString(UIStrings.locationNameCannotBeEmpty);
-      } else if (value.length > maxLength) {
-        errorMessage = i18nString(UIStrings.locationNameMustBeLessThanS, { PH1: maxLength });
-      }
-      if (errorMessage) {
-        return { valid: false, errorMessage };
-      }
-      return {
-        valid: true
-      };
-    }
-    function latValidator(_item, _index, input) {
-      const minLat = -90;
-      const maxLat = 90;
-      const value = input.value.trim();
-      const parsedValue = Number(value);
-      if (!value) {
-        return {
-          valid: true
-        };
-      }
-      let errorMessage;
-      if (Number.isNaN(parsedValue)) {
-        errorMessage = i18nString(UIStrings.latitudeMustBeANumber);
-      } else if (parseFloat(value) < minLat) {
-        errorMessage = i18nString(UIStrings.latitudeMustBeGreaterThanOrEqual, { PH1: minLat });
-      } else if (parseFloat(value) > maxLat) {
-        errorMessage = i18nString(UIStrings.latitudeMustBeLessThanOrEqualToS, { PH1: maxLat });
-      }
-      if (errorMessage) {
-        return { valid: false, errorMessage };
-      }
-      return {
-        valid: true
-      };
-    }
-    function longValidator(_item, _index, input) {
-      const minLong = -180;
-      const maxLong = 180;
-      const value = input.value.trim();
-      const parsedValue = Number(value);
-      if (!value) {
-        return {
-          valid: true
-        };
-      }
-      let errorMessage;
-      if (Number.isNaN(parsedValue)) {
-        errorMessage = i18nString(UIStrings.longitudeMustBeANumber);
-      } else if (parseFloat(value) < minLong) {
-        errorMessage = i18nString(UIStrings.longitudeMustBeGreaterThanOr, { PH1: minLong });
-      } else if (parseFloat(value) > maxLong) {
-        errorMessage = i18nString(UIStrings.longitudeMustBeLessThanOrEqualTo, { PH1: maxLong });
-      }
-      if (errorMessage) {
-        return { valid: false, errorMessage };
-      }
-      return {
-        valid: true
-      };
-    }
-    function timezoneIdValidator(_item, _index, input) {
-      const value = input.value.trim();
-      if (value === "" || /[a-zA-Z]/.test(value)) {
-        return {
-          valid: true
-        };
-      }
-      const errorMessage = i18nString(UIStrings.timezoneIdMustContainAlphabetic);
-      return { valid: false, errorMessage };
-    }
-    function localeValidator(_item, _index, input) {
-      const value = input.value.trim();
-      if (value === "" || /[a-zA-Z]{2}/.test(value)) {
-        return {
-          valid: true
-        };
-      }
-      const errorMessage = i18nString(UIStrings.localeMustContainAlphabetic);
-      return { valid: false, errorMessage };
-    }
-    function accuracyValidator(_item, _index, input) {
-      const minAccuracy = 0;
-      const value = input.value.trim();
-      const parsedValue = Number(value);
-      if (!value) {
-        return {
-          valid: true
-        };
-      }
-      let errorMessage;
-      if (Number.isNaN(parsedValue)) {
-        errorMessage = i18nString(UIStrings.accuracyMustBeANumber);
-      } else if (parseFloat(value) < minAccuracy) {
-        errorMessage = i18nString(UIStrings.accuracyMustBeGreaterThanOrEqual, { PH1: minAccuracy });
-      }
-      if (errorMessage) {
-        return { valid: false, errorMessage };
-      }
-      return {
-        valid: true
-      };
-    }
   }
 };
+function validateTitle(value) {
+  const maxLength = 50;
+  const trimmedValue = value.trim();
+  if (!trimmedValue.length) {
+    return i18nString(UIStrings.locationNameCannotBeEmpty);
+  }
+  if (trimmedValue.length > maxLength) {
+    return i18nString(UIStrings.locationNameMustBeLessThanS, { PH1: maxLength });
+  }
+  return null;
+}
+function validateLatitude(value) {
+  const minLat = -90;
+  const maxLat = 90;
+  const trimmedValue = value.trim();
+  const parsedValue = Number(trimmedValue);
+  if (!trimmedValue) {
+    return null;
+  }
+  if (Number.isNaN(parsedValue)) {
+    return i18nString(UIStrings.latitudeMustBeANumber);
+  }
+  if (parsedValue < minLat) {
+    return i18nString(UIStrings.latitudeMustBeGreaterThanOrEqual, { PH1: minLat });
+  }
+  if (parsedValue > maxLat) {
+    return i18nString(UIStrings.latitudeMustBeLessThanOrEqualToS, { PH1: maxLat });
+  }
+  return null;
+}
+function validateLongitude(value) {
+  const minLong = -180;
+  const maxLong = 180;
+  const trimmedValue = value.trim();
+  const parsedValue = Number(trimmedValue);
+  if (!trimmedValue) {
+    return null;
+  }
+  if (Number.isNaN(parsedValue)) {
+    return i18nString(UIStrings.longitudeMustBeANumber);
+  }
+  if (parsedValue < minLong) {
+    return i18nString(UIStrings.longitudeMustBeGreaterThanOr, { PH1: minLong });
+  }
+  if (parsedValue > maxLong) {
+    return i18nString(UIStrings.longitudeMustBeLessThanOrEqualTo, { PH1: maxLong });
+  }
+  return null;
+}
+function validateTimezoneId(value) {
+  const trimmedValue = value.trim();
+  if (trimmedValue === "" || /[a-zA-Z]/.test(trimmedValue)) {
+    return null;
+  }
+  return i18nString(UIStrings.timezoneIdMustContainAlphabetic);
+}
+function validateLocale(value) {
+  const trimmedValue = value.trim();
+  if (trimmedValue === "" || /[a-zA-Z]{2}/.test(trimmedValue)) {
+    return null;
+  }
+  return i18nString(UIStrings.localeMustContainAlphabetic);
+}
+function validateAccuracy(value) {
+  const minAccuracy = 0;
+  const trimmedValue = value.trim();
+  const parsedValue = Number(trimmedValue);
+  if (!trimmedValue) {
+    return null;
+  }
+  if (Number.isNaN(parsedValue)) {
+    return i18nString(UIStrings.accuracyMustBeANumber);
+  }
+  if (parsedValue < minAccuracy) {
+    return i18nString(UIStrings.accuracyMustBeGreaterThanOrEqual, { PH1: minAccuracy });
+  }
+  return null;
+}
 
 // gen/front_end/panels/sensors/SensorsView.js
 var SensorsView_exports = {};
@@ -502,7 +514,7 @@ import * as Geometry from "./../../models/geometry/geometry.js";
 import * as Buttons2 from "./../../ui/components/buttons/buttons.js";
 import * as SettingsUI from "./../../ui/legacy/components/settings_ui/settings_ui.js";
 import * as UI2 from "./../../ui/legacy/legacy.js";
-import { Directives, html, render } from "./../../ui/lit/lit.js";
+import { Directives, html as html2, render as render2 } from "./../../ui/lit/lit.js";
 import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
 import * as MobileThrottling from "./../mobile_throttling/mobile_throttling.js";
 
@@ -1074,7 +1086,7 @@ var SensorsView = class extends UI2.Widget.VBox {
     const cmdOrCtrl = Host.Platform.isMac() ? "\u2318" : "Ctrl";
     const modifierKeyMessage = i18nString2(UIStrings2.adjustWithMousewheelOrUpdownKeys, { PH1: cmdOrCtrl });
     this.#locationSectionElement.setAttribute("jslog", `${VisualLogging2.section("location")}`);
-    render(html`
+    render2(html2`
       <label class="sensors-group-title" id="location-select-label" for="location-select">${i18nString2(UIStrings2.location)}</label>
       <div class="geo-fields">
         <select
@@ -1090,7 +1102,7 @@ var SensorsView = class extends UI2.Widget.VBox {
         >
           <option value=${NonPresetOptions.NoOverride} jslog=${VisualLogging2.item("no-override")}>${i18nString2(UIStrings2.noOverride)}</option>
           <optgroup label=${i18nString2(UIStrings2.overrides)}>
-            ${customLocations.map((customLocation) => html`
+            ${customLocations.map((customLocation) => html2`
               <option value=${JSON.stringify(customLocation)} jslog=${VisualLogging2.item("custom")}>${customLocation.title}</option>
             `)}
           </optgroup>
@@ -1384,7 +1396,7 @@ var SensorsView = class extends UI2.Widget.VBox {
         { title: i18nString2(UIStrings2.displayDown), orientation: "[0, -180, 0]", jslogContext: "displayUp-down" }
       ]
     }];
-    render(html`
+    render2(html2`
         <label class="sensors-group-title" for="orientation-select">${i18nString2(UIStrings2.orientation)}</label>
         <div class="orientation-content">
           <div class="orientation-fields">
@@ -1400,9 +1412,9 @@ var SensorsView = class extends UI2.Widget.VBox {
             >
               <option value=${orientationOffOption.orientation} jslog=${VisualLogging2.item(orientationOffOption.jslogContext)}>${orientationOffOption.title}</option>
               <option value=${customOrientationOption.orientation} jslog=${VisualLogging2.item("custom")}>${customOrientationOption.title}</option>
-              ${orientationGroups.map((group) => html`
+              ${orientationGroups.map((group) => html2`
                 <optgroup label=${group.title}>
-                  ${group.value.map((preset) => html`
+                  ${group.value.map((preset) => html2`
                     <option value=${preset.orientation} jslog=${VisualLogging2.item(preset.jslogContext)}>${preset.title}</option>
                   `)}
                 </optgroup>

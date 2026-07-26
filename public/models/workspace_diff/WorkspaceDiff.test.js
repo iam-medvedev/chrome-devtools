@@ -20,7 +20,7 @@ describe('UISourceCodeDiff', () => {
         const URL = urlString `file:///tmp/example.html`;
         const { uiSourceCode, project } = createFileSystemUISourceCode({ url: URL, content: 'const data={original:true}', mimeType: 'text/javascript', universe });
         uiSourceCode.setWorkingCopyGetter(() => 'const data={modified:true,original:false}');
-        const uiSourceCodeDiff = new WorkspaceDiff.WorkspaceDiff.UISourceCodeDiff(uiSourceCode, universe.networkPersistenceManager);
+        const uiSourceCodeDiff = new WorkspaceDiff.WorkspaceDiff.UISourceCodeDiff(uiSourceCode, universe.networkPersistenceManager, universe.settings);
         const { diff, formattedCurrentMapping } = (await uiSourceCodeDiff.requestDiff());
         assert.deepEqual(diff, [
             { 0: 0, 1: ['const data = {'] },

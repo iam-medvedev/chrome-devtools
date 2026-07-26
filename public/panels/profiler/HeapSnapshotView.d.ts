@@ -69,6 +69,10 @@ export declare class HeapSnapshotView extends UI.View.SimpleView implements Data
     retrieveStatistics(heapSnapshotProxy: HeapSnapshotModel.HeapSnapshotProxy.HeapSnapshotProxy): Promise<HeapSnapshotModel.HeapSnapshotModel.Statistics>;
     updateNativeContextFilters(heapSnapshotProxy: HeapSnapshotModel.HeapSnapshotProxy.HeapSnapshotProxy): Promise<void>;
     onIdsRangeChanged(event: Common.EventTarget.EventTargetEvent<IdsRangeChangedEvent>): void;
+    updateFilterSummaryText(totals?: {
+        count: number;
+        size: number;
+    }): void;
     toolbarItems(): Promise<UI.Toolbar.ToolbarItem[]>;
     willHide(): void;
     supportsCaseSensitiveSearch(): boolean;

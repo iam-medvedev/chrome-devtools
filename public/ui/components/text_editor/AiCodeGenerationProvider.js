@@ -40,7 +40,15 @@ export class AiCodeGenerationProvider {
     #aiCodeGeneration;
     #aiCodeGenerationCitations = [];
     #aidaClient = new Host.AidaClient.AidaClient();
-    #boundOnUpdateAiCodeGenerationState = this.#updateAiCodeGenerationState.bind(this);
+    #boundOnAidaAvailabilityChange = (ev) => {
+        void this.#updateAiCodeGenerationStateWithAvailability(ev.data);
+    };
+    #boundOnSettingChange = () => {
+        const aidaAvailability = Host.AidaClient.HostConfigTracker.instance().aidaAvailability;
+        if (aidaAvailability !== undefined) {
+            void this.#updateAiCodeGenerationStateWithAvailability(aidaAvailability);
+        }
+    };
     #controller = new AbortController();
     constructor(aiCodeGenerationConfig) {
         if (!AiCodeGeneration.AiCodeGeneration.AiCodeGeneration.isAiCodeGenerationAvailable()) {
@@ -69,14 +77,17 @@ export class AiCodeGenerationProvider {
     dispose() {
         this.#controller.abort();
         this.#cleanupAiCodeGeneration();
-        this.#aiCodeGenerationEnabledSetting.removeChangeListener(this.#boundOnUpdateAiCodeGenerationState);
-        Host.AidaClient.HostConfigTracker.instance().removeEventListener("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */, this.#boundOnUpdateAiCodeGenerationState);
+        this.#aiCodeGenerationEnabledSetting.removeChangeListener(this.#boundOnSettingChange);
+        Host.AidaClient.HostConfigTracker.instance().removeEventListener("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */, this.#boundOnAidaAvailabilityChange);
     }
     editorInitialized(editor) {
         this.#editor = editor;
-        Host.AidaClient.HostConfigTracker.instance().addEventListener("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */, this.#boundOnUpdateAiCodeGenerationState);
-        this.#aiCodeGenerationEnabledSetting.addChangeListener(this.#boundOnUpdateAiCodeGenerationState);
-        void this.#updateAiCodeGenerationState();
+        Host.AidaClient.HostConfigTracker.instance().addEventListener("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */, this.#boundOnAidaAvailabilityChange);
+        this.#aiCodeGenerationEnabledSetting.addChangeListener(this.#boundOnSettingChange);
+        const initialAvailability = Host.AidaClient.HostConfigTracker.instance().aidaAvailability;
+        if (initialAvailability !== undefined) {
+            void this.#updateAiCodeGenerationStateWithAvailability(initialAvailability);
+        }
     }
     async #setupAiCodeGeneration() {
         if (this.#aiCodeGeneration) {
@@ -99,8 +110,7 @@ export class AiCodeGenerationProvider {
             effects: [this.#generationTeaserCompartment.reconfigure([])],
         });
     }
-    async #updateAiCodeGenerationState() {
-        const aidaAvailability = await Host.AidaClient.AidaClient.checkAccessPreconditions();
+    async #updateAiCodeGenerationStateWithAvailability(aidaAvailability) {
         const isAvailable = aidaAvailability === "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */;
         const devtoolsLocale = i18n.DevToolsLocale.DevToolsLocale.instance().locale;
         const aiCodeGenerationEnabled = AiCodeGeneration.AiCodeGeneration.AiCodeGeneration.isAiCodeGenerationEnabled(devtoolsLocale);
@@ -167,8 +177,8 @@ export class AiCodeGenerationProvider {
                         }
                     }
                     return false;
-                }
-            }
+                },
+            },
         ];
     }
     async #triggerAiCodeGenerationFlow(event) {
@@ -204,7 +214,7 @@ export class AiCodeGenerationProvider {
             effects: [
                 setAiCodeGenerationTeaserMode.of(AiCodeGenerationTeaserMode.DISMISSED),
                 setAiAutoCompleteSuggestion.of(null),
-            ]
+            ],
         });
     }
     #acceptAiSuggestion() {
@@ -313,8 +323,8 @@ export class AiCodeGenerationProvider {
                         onImpression: this.#aiCodeGeneration?.registerUserImpression.bind(this.#aiCodeGeneration),
                         source: "generation" /* AiSuggestionSource.GENERATION */,
                     }),
-                    setAiCodeGenerationTeaserMode.of(AiCodeGenerationTeaserMode.ACTIVE)
-                ]
+                    setAiCodeGenerationTeaserMode.of(AiCodeGenerationTeaserMode.ACTIVE),
+                ],
             });
             this.#generationTeaser.displayState =
                 PanelCommon.AiCodeGenerationTeaser.AiCodeGenerationTeaserDisplayState.GENERATED;
@@ -325,8 +335,7 @@ export class AiCodeGenerationProvider {
             return;
         }
         catch (e) {
-            if (e instanceof Host.DispatchHttpRequestClient.DispatchHttpRequestError &&
-                e.type === Host.DispatchHttpRequestClient.ErrorType.ABORT) {
+            if (e instanceof Host.AidaClient.AidaAbortError) {
                 return;
             }
             AiCodeGeneration.debugLog('Error while fetching code generation suggestions from AIDA', e);
@@ -426,7 +435,7 @@ function aiCodeGenerationTeaserExtension(teaser) {
                     return true;
                 }
                 return false;
-            }
+            },
         },
     });
 }

@@ -16,7 +16,7 @@ describeWithEnvironment('DataGrid', () => {
     it('tests long text in datagrid', () => {
         const columns = [
             { id: 'key', title: 'Key column', editable: true, longText: false, sortable: false },
-            { id: 'value', title: 'Value column', editable: true, longText: true, sortable: false }
+            { id: 'value', title: 'Value column', editable: true, longText: true, sortable: false },
         ];
         const dataGrid = new DataGrid.DataGrid.DataGridImpl({ displayName: 'Test', columns });
         const token = { token: 'DataGridInternalToken' };

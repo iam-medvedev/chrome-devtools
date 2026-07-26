@@ -5,7 +5,7 @@ var __export = (target, all) => {
 };
 
 // gen/front_end/ui/components/highlighting/HighlightElement.js
-import * as TextUtils2 from "./../../../models/text_utils/text_utils.js";
+import * as TextUtils2 from "./../../../core/text_utils/text_utils.js";
 
 // gen/front_end/ui/components/highlighting/HighlightManager.js
 var HighlightManager_exports = {};
@@ -97,6 +97,9 @@ var HighlightManager = class _HighlightManager {
     }
     return highlightManagerInstance;
   }
+  static removeInstance() {
+    highlightManagerInstance = null;
+  }
   addHighlights(ranges) {
     ranges.forEach(this.addHighlight.bind(this));
   }
@@ -159,7 +162,7 @@ var HighlightManager = class _HighlightManager {
 };
 
 // gen/front_end/ui/components/highlighting/MarkupHighlight.js
-import * as TextUtils from "./../../../models/text_utils/text_utils.js";
+import * as TextUtils from "./../../../core/text_utils/text_utils.js";
 var highlightedSearchResultClassName = "highlighted-search-result";
 var highlightedCurrentSearchResultClassName = "current-search-result";
 function highlightRangesWithStyleClass(element, resultRanges, styleClass, changes) {

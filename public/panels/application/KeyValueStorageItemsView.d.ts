@@ -72,6 +72,8 @@ export declare abstract class KeyValueStorageItemsView extends UI.Widget.VBox {
     deleteSelectedItem(): void;
     protected isEditAllowed(_columnIdentifier: string, _oldText: string, _newText: string): boolean;
     showPreview(preview: Widget | null, value: string | null): void;
+    protected set jslog(jslog: string | undefined);
+    protected get jslog(): string | undefined;
     set editable(editable: boolean);
     protected keys(): string[];
     protected selectedItemChanged(_item: {

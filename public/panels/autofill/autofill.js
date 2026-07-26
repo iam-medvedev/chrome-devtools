@@ -32,10 +32,12 @@ var autofillView_css_default = `/*
 @scope to (devtools-widget > *) {
   main {
     height: 100%;
+    overflow: auto;
   }
 
   .header {
     display: flex;
+    flex-wrap: wrap;
     border-bottom: 1px solid var(--sys-color-divider);
     width: 100%;
   }
@@ -45,11 +47,12 @@ var autofillView_css_default = `/*
     display: flex;
     justify-content: center;
     align-items: center;
+    overflow: auto;
   }
 
   .address {
     padding: 10px;
-    margin-right: auto;
+    border-bottom: 1px solid var(--sys-color-divider);
   }
 
   .filled-fields-grid {
@@ -61,10 +64,12 @@ var autofillView_css_default = `/*
     display: flex;
     flex-flow: column;
     height: 100%;
+    overflow: auto;
   }
 
   .grid-wrapper {
     flex-grow: 1;
+    min-height: 0;
   }
 
   devtools-data-grid {
@@ -77,13 +82,6 @@ var autofillView_css_default = `/*
     align-items: center;
   }
 
-  .right-to-left {
-    border-bottom: 1px solid var(--sys-color-divider);
-    display: flex;
-    flex-flow: row-reverse wrap;
-    justify-content: flex-end;
-  }
-
   .label-container {
     padding: 5px;
     display: flex;
@@ -93,6 +91,7 @@ var autofillView_css_default = `/*
   .top-left-corner {
     border-bottom: 1px solid var(--sys-color-divider);
     display: flex;
+    flex-wrap: wrap;
     padding: 5px;
     gap: 10px;
   }
@@ -310,24 +309,24 @@ var DEFAULT_VIEW = (input, _output, target) => {
       <style>${UI.inspectorCommonStyles}</style>
       <main>
         <div class="content-container" jslog=${VisualLogging.pane("autofill")}>
-          <div class="right-to-left" role="region" aria-label=${i18nString(UIStrings.addressPreview)}>
-            <div class="header">
-              <div class="label-container">
-                <devtools-checkbox
-                    ${bindToSetting(input.showTestAddressesInAutofillMenuSetting)}
-                    title=${i18nString(UIStrings.showTestAddressesInAutofillMenu)}>
-                  ${i18nString(UIStrings.showTestAddressesInAutofillMenu)}
-                </devtools-checkbox>
-              </div>
-              <div class="label-container">
-                <devtools-checkbox
-                    ${bindToSetting(input.autoOpenViewSetting)}
-                    title=${i18nString(UIStrings.autoShowTooltip)}>
-                  ${i18nString(UIStrings.autoShow)}
-                </devtools-checkbox>
-              </div>
-              <devtools-link href=${AUTOFILL_FEEDBACK_URL} class="feedback link" jslogcontext="feedback">${i18nString(UIStrings.sendFeedback)}</devtools-link>
+          <div class="header">
+            <div class="label-container">
+              <devtools-checkbox
+                  ${bindToSetting(input.showTestAddressesInAutofillMenuSetting)}
+                  title=${i18nString(UIStrings.showTestAddressesInAutofillMenu)}>
+                ${i18nString(UIStrings.showTestAddressesInAutofillMenu)}
+              </devtools-checkbox>
             </div>
+            <div class="label-container">
+              <devtools-checkbox
+                  ${bindToSetting(input.autoOpenViewSetting)}
+                  title=${i18nString(UIStrings.autoShowTooltip)}>
+                ${i18nString(UIStrings.autoShow)}
+              </devtools-checkbox>
+            </div>
+            <devtools-link href=${AUTOFILL_FEEDBACK_URL} class="feedback link" jslogcontext="feedback">${i18nString(UIStrings.sendFeedback)}</devtools-link>
+          </div>
+          <div role="region" aria-label=${i18nString(UIStrings.addressPreview)}>
             ${renderAddress()}
           </div>
           ${renderFilledFields()}

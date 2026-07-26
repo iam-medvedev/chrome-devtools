@@ -35,6 +35,9 @@ export const MockAidaFetchError = {
 export const MockAidaQuotaError = {
     quotaError: true,
 };
+export const MockAidaPayloadLimitError = {
+    payloadLimitError: true,
+};
 /**
  * Creates a mock AIDA client that responds using `data`.
  *
@@ -57,6 +60,9 @@ export function mockAidaClient(data = []) {
             }
             if ('quotaError' in chunk) {
                 throw new Host.AidaClient.AidaQuotaError();
+            }
+            if ('payloadLimitError' in chunk) {
+                throw new Host.AidaClient.AidaPayloadTooLargeError('payload size exceeds the limit');
             }
             const metadata = chunk.metadata ?? {};
             if (metadata?.attributionMetadata?.attributionAction === Host.AidaClient.RecitationAction.BLOCK) {
@@ -174,7 +180,7 @@ export async function createAiAssistancePanel(options) {
     };
 }
 export const setupAutomaticFileSystem = (options = {
-    hasFileSystem: false
+    hasFileSystem: false,
 }) => {
     const root = '/path/to/my-automatic-file-system';
     const uuid = '549bbf9b-48b2-4af7-aebd-d3ba68993094';
@@ -190,35 +196,6 @@ export const setupAutomaticFileSystem = (options = {
     });
     sinon.stub(manager, 'connectAutomaticFileSystem').resolves(true);
 };
-let patchWidgets = [];
-/**
- * Creates and shows an AiAssistancePanel instance returning the view
- * stubs and the initial view input caused by Widget.show().
- */
-export async function createPatchWidget(options) {
-    const view = createViewFunctionStub(AiAssistancePanel.PatchWidget.PatchWidget);
-    const aidaClient = options?.aidaClient ?? mockAidaClient();
-    const widget = new AiAssistancePanel.PatchWidget.PatchWidget(undefined, view, {
-        aidaClient,
-    });
-    patchWidgets.push(widget);
-    widget.markAsRoot();
-    renderElementIntoDOM(widget);
-    await view.nextInput;
-    return {
-        widget,
-        view,
-        aidaClient,
-    };
-}
-export async function createPatchWidgetWithDiffView(options) {
-    const aidaClient = options?.aidaClient ?? mockAidaClient([[{ explanation: 'patch applied' }]]);
-    const { view, widget } = await createPatchWidget({ aidaClient });
-    widget.changeSummary = 'body { background-color: red; }';
-    view.input.onApplyToWorkspace();
-    assert.strictEqual((await view.nextInput).patchSuggestionState, AiAssistancePanel.PatchWidget.PatchSuggestionState.SUCCESS);
-    return { widget, view, aidaClient };
-}
 export function initializePersistenceImplForTests() {
     const workspace = Workspace.Workspace.WorkspaceImpl.instance({ forceNew: true });
     const debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
@@ -244,10 +221,6 @@ export function cleanup() {
         panel.detach();
     }
     panels = [];
-    for (const widget of patchWidgets) {
-        widget.detach();
-    }
-    patchWidgets = [];
 }
 /**
  * Removes the 'id' field from a message.
@@ -301,5 +274,26 @@ export function assertRequiresApproval(response) {
     if (!('requiresApproval' in response)) {
         assert.fail(`Expected response requiring approval, but got: ${JSON.stringify(response)}`);
     }
+}
+/**
+ * Creates a dummy File object containing a solid red image with the given dimensions.
+ *
+ * @param width Width of the dummy image in pixels (px).
+ * @param height Height of the dummy image in pixels (px).
+ */
+export async function createDummyImageFile(width, height) {
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+        ctx.fillStyle = 'red';
+        ctx.fillRect(0, 0, width, height);
+    }
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg'));
+    if (!blob) {
+        throw new Error('Failed to create blob');
+    }
+    return new File([blob], 'dummy.jpg', { type: 'image/jpeg' });
 }
 //# sourceMappingURL=AiAssistanceHelpers.js.map

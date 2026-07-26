@@ -26,21 +26,19 @@ describeWithEnvironment('RecordingListView', () => {
     }
     it('should open a recording on Enter', async () => {
         const [view, component] = await createView();
-        const dispatchEventSpy = sinon.spy(component.contentElement, 'dispatchEvent');
+        const onOpenRecordingSpy = sinon.spy();
+        component.onOpenRecording = onOpenRecordingSpy;
         view.input.onKeyDown('storage-test', new KeyboardEvent('keydown', { key: 'Enter' }));
-        sinon.assert.calledOnce(dispatchEventSpy);
-        const event = dispatchEventSpy.firstCall.args[0];
-        assert.instanceOf(event, RecordingListView.OpenRecordingEvent);
-        assert.strictEqual(event.storageName, 'storage-test');
+        sinon.assert.calledOnce(onOpenRecordingSpy);
+        assert.strictEqual(onOpenRecordingSpy.firstCall.args[0], 'storage-test');
     });
     it('should delete a recording', async () => {
         const [view, component] = await createView();
-        const dispatchEventSpy = sinon.spy(component.contentElement, 'dispatchEvent');
+        const onDeleteRecordingSpy = sinon.spy();
+        component.onDeleteRecording = onDeleteRecordingSpy;
         view.input.onDeleteClick('storage-test', new MouseEvent('click'));
-        sinon.assert.calledOnce(dispatchEventSpy);
-        const event = dispatchEventSpy.firstCall.args[0];
-        assert.instanceOf(event, RecordingListView.DeleteRecordingEvent);
-        assert.strictEqual(event.storageName, 'storage-test');
+        sinon.assert.calledOnce(onDeleteRecordingSpy);
+        assert.strictEqual(onDeleteRecordingSpy.firstCall.args[0], 'storage-test');
     });
 });
 //# sourceMappingURL=RecordingListView.test.js.map

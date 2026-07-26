@@ -245,7 +245,7 @@ export function createKeyEvent(key, ctrlKey, altKey, shiftKey, metaKey) {
         ctrlKey: Boolean(ctrlKey),
         altKey: Boolean(altKey),
         shiftKey: Boolean(shiftKey),
-        metaKey: Boolean(metaKey)
+        metaKey: Boolean(metaKey),
     });
 }
 /**
@@ -507,7 +507,7 @@ export function evaluateFunctionInOverlay(func, callback) {
         includeCommandLineAPI: false,
         silent: false,
         returnByValue: true,
-        generatePreview: false
+        generatePreview: false,
     }, 
     /* userGesture */ false, /* awaitPromise*/ false)
         .then(result => void callback(result.object.value));
@@ -648,7 +648,7 @@ export function addScriptForFrame(url, content, frame) {
         objectGroup: 'console',
         includeCommandLineAPI: false,
         silent: false,
-        contextId: executionContext.id
+        contextId: executionContext.id,
     });
 }
 export const formatters = {

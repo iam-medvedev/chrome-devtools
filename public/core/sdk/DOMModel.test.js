@@ -4,7 +4,9 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import * as Platform from '../platform/platform.js';
 import * as SDK from './sdk.js';
+const { urlString } = Platform.DevToolsPath;
 describeWithEnvironment('DOMModel', () => {
     it('updates the document on an documentUpdate event if there already is a previous document', async () => {
         const parentTarget = createTarget();
@@ -1122,7 +1124,7 @@ describeWithEnvironment('DOMModel', () => {
                                         nodeName: 'span',
                                         localName: 'span',
                                         nodeValue: '',
-                                    }]
+                                    }],
                             },
                         ],
                     },
@@ -1200,7 +1202,7 @@ describeWithEnvironment('DOMModel', () => {
                                         nodeName: 'span',
                                         localName: 'span',
                                         nodeValue: '',
-                                    }]
+                                    }],
                             },
                         ],
                     },
@@ -1237,6 +1239,87 @@ describeWithEnvironment('DOMModel', () => {
             assert.exists(elementNode);
             const snapshot = await elementNode.takeSnapshot();
             assert.isFalse(snapshot.canInspectNode());
+        });
+    });
+    it('correctly parses baseURL and documentURL for main document and iframes', () => {
+        const parentTarget = createTarget();
+        const target = createTarget({ parentTarget });
+        const domModel = target.model(SDK.DOMModel.DOMModel);
+        assert.exists(domModel);
+        const DOCUMENT_NODE_ID = 1;
+        const IFRAME_NODE_ID = 2;
+        const CONTENT_DOCUMENT_NODE_ID = 3;
+        const mainBaseURL = urlString `http://127.0.0.1:8000/devtools/elements/`;
+        const mainDocumentURL = urlString `http://127.0.0.1:8000/devtools/resources/inspected-page.html`;
+        const iframeBaseURL = urlString `http://127.0.0.1:8000/devtools/elements/resources/elements-empty-iframe.html`;
+        const iframeDocumentURL = urlString `http://127.0.0.1:8000/devtools/elements/resources/elements-empty-iframe.html`;
+        domModel.setDocumentForTest({
+            nodeId: DOCUMENT_NODE_ID,
+            backendNodeId: 1,
+            nodeType: Node.DOCUMENT_NODE,
+            nodeName: '#document',
+            localName: '',
+            nodeValue: '',
+            baseURL: mainBaseURL,
+            documentURL: mainDocumentURL,
+            childNodeCount: 1,
+            children: [
+                {
+                    nodeId: IFRAME_NODE_ID,
+                    backendNodeId: 2,
+                    nodeType: Node.ELEMENT_NODE,
+                    nodeName: 'iframe',
+                    localName: 'iframe',
+                    nodeValue: '',
+                    contentDocument: {
+                        nodeId: CONTENT_DOCUMENT_NODE_ID,
+                        backendNodeId: 3,
+                        nodeType: Node.DOCUMENT_NODE,
+                        nodeName: '#document',
+                        localName: '',
+                        nodeValue: '',
+                        baseURL: iframeBaseURL,
+                        documentURL: iframeDocumentURL,
+                        childNodeCount: 0,
+                        children: [],
+                    },
+                },
+            ],
+        });
+        const mainDocument = domModel.existingDocument();
+        assert.exists(mainDocument);
+        assert.strictEqual(mainDocument.baseURL, mainBaseURL);
+        assert.strictEqual(mainDocument.documentURL, mainDocumentURL);
+        assert.isNull(mainDocument.parentNode);
+        const iframeNode = domModel.nodeForId(IFRAME_NODE_ID);
+        assert.exists(iframeNode);
+        const iframeDocument = iframeNode.contentDocument();
+        assert.exists(iframeDocument);
+        assert.strictEqual(iframeDocument.baseURL, iframeBaseURL);
+        assert.strictEqual(iframeDocument.documentURL, iframeDocumentURL);
+        assert.strictEqual(iframeDocument.parentNode, iframeNode);
+    });
+    describe('DOMModelUndoStack', () => {
+        it('allows calling undo multiple times with non-empty history', async () => {
+            const parentTarget = createTarget();
+            const target = createTarget({ parentTarget });
+            const domModel = target.model(SDK.DOMModel.DOMModel);
+            assert.exists(domModel);
+            const markUndoableSpy = sinon.stub(domModel.agent, 'invoke_markUndoableState').resolves({
+                getError: () => undefined,
+            });
+            const undoSpy = sinon.stub(domModel.agent, 'invoke_undo').resolves({
+                getError: () => undefined,
+            });
+            const undoStack = new SDK.DOMModel.DOMModelUndoStack();
+            await undoStack.markUndoableState(domModel, false);
+            sinon.assert.calledOnce(markUndoableSpy);
+            await undoStack.undo();
+            sinon.assert.calledOnce(undoSpy);
+            // Perform second undo when history stack is empty.
+            await undoStack.undo();
+            // Should not call invoke_undo again because stack index is 0.
+            sinon.assert.calledOnce(undoSpy);
         });
     });
 });

@@ -39,7 +39,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
                         jslog=${VisualLogging.toolbar()}>
         <devtools-button title=${i18nString(UIStrings.refresh)}
                          jslog=${VisualLogging.action('storage-items-view.refresh').track({
-        click: true
+        click: true,
     })}
                          @click=${input.onRefresh}
                          .iconName=${'refresh'}
@@ -54,7 +54,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
                          id=storage-items-delete-all
                          ?disabled=${!input.deleteAllButtonEnabled}
                          jslog=${VisualLogging.action('storage-items-view.clear-all').track({
-        click: true
+        click: true,
     })}
                          .iconName=${input.deleteAllButtonIconName}
                          .variant=${"toolbar" /* Buttons.Button.Variant.TOOLBAR */}></devtools-button>
@@ -62,7 +62,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
                          @click=${input.onDeleteSelected}
                          ?disabled=${!input.deleteSelectedButtonDisabled}
                          jslog=${VisualLogging.action('storage-items-view.delete-selected').track({
-        click: true
+        click: true,
     })}
                          .iconName=${'cross'}
                          .variant=${"toolbar" /* Buttons.Button.Variant.TOOLBAR */}></devtools-button>

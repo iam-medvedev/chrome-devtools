@@ -4,7 +4,7 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import * as Host from '../../../core/host/host.js';
-import { mockAidaClient, MockAidaQuotaError } from '../../../testing/AiAssistanceHelpers.js';
+import { mockAidaClient, MockAidaPayloadLimitError, MockAidaQuotaError } from '../../../testing/AiAssistanceHelpers.js';
 import { describeWithEnvironment, } from '../../../testing/EnvironmentHelpers.js';
 import * as AiAssistance from '../ai_assistance.js';
 function mockConversationContext() {
@@ -230,7 +230,7 @@ describeWithEnvironment('AiAgent', () => {
                             },
                             {
                                 explanation: 'Partial answer is now completed',
-                            }
+                            },
                         ]]),
                 });
                 const responses = await Array.fromAsync(agent.run('query', { selected: mockConversationContext() }));
@@ -260,7 +260,7 @@ describeWithEnvironment('AiAgent', () => {
                             },
                             {
                                 explanation: 'Partial answer is now completed',
-                            }
+                            },
                         ]]),
                 });
                 await Array.fromAsync(agent.run('query', { selected: mockConversationContext() }));
@@ -303,6 +303,21 @@ describeWithEnvironment('AiAgent', () => {
                 {
                     type: "error" /* AiAssistance.AiAgent.ResponseType.ERROR */,
                     error: "quota" /* AiAssistance.AiAgent.ErrorType.QUOTA */,
+                },
+            ]);
+        });
+        it('should yield payload too large error when aida throws payload size limit error', async () => {
+            const agent = new AiAgentMock({
+                aidaClient: mockAidaClient([[MockAidaPayloadLimitError]]),
+            });
+            const responses = await Array.fromAsync(agent.run('query', { selected: mockConversationContext() }));
+            assert.deepEqual(responses, [
+                {
+                    type: "querying" /* AiAssistance.AiAgent.ResponseType.QUERYING */,
+                },
+                {
+                    type: "error" /* AiAssistance.AiAgent.ResponseType.ERROR */,
+                    error: "payload-too-large" /* AiAssistance.AiAgent.ErrorType.PAYLOAD_TOO_LARGE */,
                 },
             ]);
         });
@@ -412,7 +427,7 @@ describeWithEnvironment('AiAgent', () => {
                         type: 6 /* Host.AidaClient.ParametersTypes.OBJECT */,
                         properties: {},
                         description: 'arg description',
-                        required: []
+                        required: [],
                     },
                     handler: this.#test.bind(this),
                 });
@@ -464,7 +479,7 @@ describeWithEnvironment('AiAgent', () => {
                     ],
                     [{
                             explanation: 'Final answer',
-                        }]
+                        }],
                 ]),
             });
             await Array.fromAsync(agent.run('query', { selected: mockConversationContext() }));
@@ -502,7 +517,7 @@ describeWithEnvironment('AiAgent', () => {
                     ],
                     [{
                             explanation: 'Final answer',
-                        }]
+                        }],
                 ]),
                 // Mock allowedOrigin to return blocked if our flag is set.
                 allowedOrigin: () => originBlocked ? { blocked: true } : { origin: 'https://google.com' },
@@ -523,7 +538,7 @@ describeWithEnvironment('AiAgent', () => {
                     type: 6 /* Host.AidaClient.ParametersTypes.OBJECT */,
                     description: 'test parameters',
                     properties: {},
-                    required: []
+                    required: [],
                 },
                 handler: async (args, options) => {
                     called++;
@@ -552,7 +567,7 @@ describeWithEnvironment('AiAgent', () => {
                     ],
                     [{
                             explanation: 'Final answer',
-                        }]
+                        }],
                 ]),
                 allowedOrigin: () => originBlocked ? { blocked: true } : { origin: 'https://google.com' },
             });
@@ -562,7 +577,7 @@ describeWithEnvironment('AiAgent', () => {
                     type: 6 /* Host.AidaClient.ParametersTypes.OBJECT */,
                     description: 'test parameters',
                     properties: {},
-                    required: []
+                    required: [],
                 },
                 handler: async (_args, _options) => {
                     called++;

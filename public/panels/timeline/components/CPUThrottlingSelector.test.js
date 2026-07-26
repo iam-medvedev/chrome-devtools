@@ -17,9 +17,10 @@ const DEFAULT_INPUT = {
         {
             name: 'first group',
             items: [
-                PanelsCommon.CPUThrottlingOption.NoThrottlingOption, PanelsCommon.CPUThrottlingOption.MidTierThrottlingOption,
+                PanelsCommon.CPUThrottlingOption.NoThrottlingOption,
+                PanelsCommon.CPUThrottlingOption.MidTierThrottlingOption,
                 PanelsCommon.CPUThrottlingOption.LowTierThrottlingOption,
-                PanelsCommon.CPUThrottlingOption.ExtraSlowThrottlingOption
+                PanelsCommon.CPUThrottlingOption.ExtraSlowThrottlingOption,
             ],
         },
         {
@@ -28,7 +29,7 @@ const DEFAULT_INPUT = {
                 PanelsCommon.CPUThrottlingOption.CalibratedLowTierMobileThrottlingOption,
                 PanelsCommon.CPUThrottlingOption.CalibratedMidTierMobileThrottlingOption,
             ],
-        }
+        },
     ],
     currentOption: PanelsCommon.CPUThrottlingOption.NoThrottlingOption,
     recommendedOption: null,
@@ -114,11 +115,11 @@ describeWithEnvironment('CPUThrottlingSelector view', () => {
                 {
                     name: 'last group',
                     items: [PanelsCommon.CPUThrottlingOption.MidTierThrottlingOption],
-                }
+                },
             ],
             throttling,
             onMenuItemSelected: () => { },
-            onCalibrateClick
+            onCalibrateClick,
         }, undefined, element);
         const menuItems = element.querySelectorAll('devtools-menu-item');
         assert.lengthOf(menuItems, 5);

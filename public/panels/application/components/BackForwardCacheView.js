@@ -318,7 +318,7 @@ function renderFramesPerReason(frames) {
         title: i18nString(UIStrings.framesPerIssue, { n: frames.length }),
     }}
         jslog=${VisualLogging.treeItem().track({
-        resize: true
+        resize: true,
     })}></devtools-expandable-list>
       </div>
     `;
@@ -348,7 +348,7 @@ function maybeRenderJavaScriptDetails(details) {
             columnNumber: detail.columnNumber,
             showColumnNumber: true,
             maxLength: maxLengthForDisplayedURLs,
-        }
+        },
     })}`));
     return html `
       <div class="details-list">
@@ -399,9 +399,17 @@ export class BackForwardCacheView extends UI.Widget.Widget {
     constructor(view = DEFAULT_VIEW) {
         super({ useShadowDom: true, delegatesFocus: true });
         this.#view = view;
-        this.#getMainResourceTreeModel()?.addEventListener(SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.requestUpdate, this);
-        this.#getMainResourceTreeModel()?.addEventListener(SDK.ResourceTreeModel.Events.BackForwardCacheDetailsUpdated, this.requestUpdate, this);
+    }
+    wasShown() {
+        super.wasShown();
+        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.requestUpdate, this);
+        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.BackForwardCacheDetailsUpdated, this.requestUpdate, this);
         this.requestUpdate();
+    }
+    willHide() {
+        SDK.TargetManager.TargetManager.instance().removeModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.requestUpdate, this);
+        SDK.TargetManager.TargetManager.instance().removeModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.BackForwardCacheDetailsUpdated, this.requestUpdate, this);
+        super.willHide();
     }
     #getMainResourceTreeModel() {
         const mainTarget = SDK.TargetManager.TargetManager.instance().primaryPageTarget();

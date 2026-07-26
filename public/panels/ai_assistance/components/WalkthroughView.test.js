@@ -59,7 +59,7 @@ describeWithEnvironment('WalkthroughView', () => {
                     step: {
                         isLoading: false,
                         title: 'Test step 1',
-                    }
+                    },
                 }],
         };
         const view = await makeWalkthrough({
@@ -84,7 +84,7 @@ describeWithEnvironment('WalkthroughView', () => {
                     step: {
                         isLoading: false,
                         title: 'Normal step',
-                    }
+                    },
                 },
                 {
                     type: 'step',
@@ -95,8 +95,8 @@ describeWithEnvironment('WalkthroughView', () => {
                             description: 'Confirm this action',
                             onAnswer: () => { },
                         },
-                    }
-                }
+                    },
+                },
             ],
         };
         const view = await makeWalkthrough({
@@ -120,7 +120,7 @@ describeWithEnvironment('WalkthroughView', () => {
                     step: {
                         isLoading: false,
                         title: 'Analyzing data',
-                    }
+                    },
                 },
                 {
                     type: 'step',
@@ -131,8 +131,8 @@ describeWithEnvironment('WalkthroughView', () => {
                             description: 'Confirm this action',
                             onAnswer: () => { },
                         },
-                    }
-                }
+                    },
+                },
             ],
         };
         const view = await makeWalkthrough({
@@ -153,7 +153,7 @@ describeWithEnvironment('WalkthroughView', () => {
                     step: {
                         isLoading: false,
                         title: 'Test step 1',
-                    }
+                    },
                 }],
         };
         const view = await makeWalkthrough({
@@ -177,7 +177,7 @@ describeWithEnvironment('WalkthroughView', () => {
                     step: {
                         isLoading: true,
                         title: 'Test step 1',
-                    }
+                    },
                 }],
         };
         const view = await makeWalkthrough({
@@ -202,7 +202,7 @@ describeWithEnvironment('WalkthroughView', () => {
                     step: {
                         isLoading: false,
                         title: 'Test step 1',
-                    }
+                    },
                 }],
         };
         const view = await makeWalkthrough({
@@ -232,10 +232,10 @@ describeWithEnvironment('WalkthroughView', () => {
                                     parsedTrace: makeFakeParsedTrace(),
                                 },
                             },
-                        ]
-                    }
+                        ],
+                    },
                 },
-                { type: 'step', step: { isLoading: false, title: 'Step 2', widgets: [] } }
+                { type: 'step', step: { isLoading: false, title: 'Step 2', widgets: [] } },
             ],
         };
         const view = new WalkthroughView();

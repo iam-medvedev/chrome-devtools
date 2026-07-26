@@ -444,7 +444,10 @@ export class AISettingsTab extends UI.Widget.VBox {
     wasShown() {
         super.wasShown();
         Host.AidaClient.HostConfigTracker.instance().addEventListener("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */, this.#boundOnAidaAvailabilityChange);
-        void this.#onAidaAvailabilityChange();
+        const initialAvailability = Host.AidaClient.HostConfigTracker.instance().aidaAvailability;
+        if (initialAvailability !== undefined) {
+            this.#updateAidaAvailability(initialAvailability);
+        }
         this.requestUpdate();
     }
     willHide() {
@@ -463,12 +466,12 @@ export class AISettingsTab extends UI.Widget.VBox {
                 enableSettingText: i18nString(UIStrings.enableConsoleInsights),
                 settingItems: [
                     { iconName: 'lightbulb', text: i18nString(UIStrings.explainConsole) },
-                    { iconName: 'code', text: i18nString(UIStrings.receiveSuggestions) }
+                    { iconName: 'code', text: i18nString(UIStrings.receiveSuggestions) },
                 ],
                 toConsiderSettingItems: [{
                         iconName: 'google',
                         text: noLogging ? i18nString(UIStrings.consoleInsightsSendsDataNoLogging) :
-                            i18nString(UIStrings.consoleInsightsSendsData)
+                            i18nString(UIStrings.consoleInsightsSendsData),
                     }],
                 learnMoreLink: {
                     url: 'https://developer.chrome.com/docs/devtools/console/understand-messages',
@@ -526,11 +529,11 @@ export class AISettingsTab extends UI.Widget.VBox {
                 toConsiderSettingItems: [{
                         iconName: 'google',
                         text: noLogging ? i18nString(UIStrings.generatedAiAnnotationsSendDataNoLogging) :
-                            i18nString(UIStrings.generatedAiAnnotationsSendData)
+                            i18nString(UIStrings.generatedAiAnnotationsSendData),
                     }],
                 learnMoreLink: {
                     url: 'https://developer.chrome.com/docs/devtools/performance/annotations#auto-annotations',
-                    linkJSLogContext: 'learn-more.auto-annotations'
+                    linkJSLogContext: 'learn-more.auto-annotations',
                 },
                 settingExpandState: {
                     isSettingExpanded: false,
@@ -542,11 +545,12 @@ export class AISettingsTab extends UI.Widget.VBox {
         if (this.#aiCodeCompletionSetting) {
             const settingItems = Root.Runtime.hostConfig.devToolsAiCodeGeneration?.enabled ?
                 [
-                    { iconName: 'code', text: i18nString(UIStrings.asYouTypeRelevantDataIsBeingSentToGoogle) }, {
+                    { iconName: 'code', text: i18nString(UIStrings.asYouTypeRelevantDataIsBeingSentToGoogle) },
+                    {
                         iconName: 'text-analysis',
                         text: Host.Platform.isMac() ? i18nString(UIStrings.describeCodeInCommentForMacOs) :
-                            i18nString(UIStrings.describeCodeInComment)
-                    }
+                            i18nString(UIStrings.describeCodeInComment),
+                    },
                 ] :
                 [{ iconName: 'code', text: i18nString(UIStrings.asYouTypeCodeSuggestions) }];
             const aiCodeCompletionData = {
@@ -558,11 +562,11 @@ export class AISettingsTab extends UI.Widget.VBox {
                 toConsiderSettingItems: [{
                         iconName: 'google',
                         text: noLogging ? i18nString(UIStrings.codeSuggestionsSendDataNoLogging) :
-                            i18nString(UIStrings.codeSuggestionsSendData)
+                            i18nString(UIStrings.codeSuggestionsSendData),
                     }],
                 learnMoreLink: {
                     url: ' https://developers.chrome.com/docs/devtools/ai-assistance/code-completion',
-                    linkJSLogContext: 'learn-more.code-completion'
+                    linkJSLogContext: 'learn-more.code-completion',
                 },
                 settingExpandState: {
                     isSettingExpanded: false,
@@ -572,12 +576,14 @@ export class AISettingsTab extends UI.Widget.VBox {
             this.#settingToParams.set(this.#aiCodeCompletionSetting, aiCodeCompletionData);
         }
     }
-    async #onAidaAvailabilityChange() {
-        const currentAidaAvailability = await Host.AidaClient.AidaClient.checkAccessPreconditions();
-        if (currentAidaAvailability !== this.#aidaAvailability) {
-            this.#aidaAvailability = currentAidaAvailability;
+    #updateAidaAvailability(aidaAvailability) {
+        if (aidaAvailability !== this.#aidaAvailability) {
+            this.#aidaAvailability = aidaAvailability;
             this.requestUpdate();
         }
+    }
+    #onAidaAvailabilityChange(ev) {
+        this.#updateAidaAvailability(ev.data);
     }
     #getAiAssistanceSettingDescription() {
         const { hostConfig } = Root.Runtime;

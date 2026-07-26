@@ -4,6 +4,7 @@ import type * as CPUProfile from '../../models/cpu_profile/cpu_profile.js';
 import type * as NetworkTimeCalculator from '../../models/network_time_calculator/network_time_calculator.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import type { TemplateResult } from '../../ui/lit/lit.js';
 export declare class ProfileFlameChartDataProvider implements PerfUI.FlameChart.FlameChartDataProvider {
     #private;
     maxStackDepthInternal: number;
@@ -19,7 +20,7 @@ export declare class ProfileFlameChartDataProvider implements PerfUI.FlameChart.
     hasTrackConfigurationMode(): boolean;
     timelineData(): PerfUI.FlameChart.FlameChartTimelineData | null;
     calculateTimelineData(): PerfUI.FlameChart.FlameChartTimelineData;
-    preparePopoverElement(_entryIndex: number): Element | null;
+    preparePopoverElement(_entryIndex: number): Element | TemplateResult | null;
     canJumpToEntry(entryIndex: number): boolean;
     entryTitle(entryIndex: number): string;
     entryFont(entryIndex: number): string | null;
@@ -47,10 +48,17 @@ export declare class ProfileFlameChart extends ProfileFlameChart_base implements
     readonly dataProvider: ProfileFlameChartDataProvider;
     searchResults: number[];
     searchResultIndex: number;
-    constructor(searchableView: UI.SearchableView.SearchableView, dataProvider: ProfileFlameChartDataProvider);
+    constructor(searchableView: UI.SearchableView.SearchableView, dataProvider: ProfileFlameChartDataProvider, element?: HTMLElement);
     focus(): void;
     onWindowChanged(event: Common.EventTarget.EventTargetEvent<OverviewPaneWindowChangedEvent>): void;
-    selectRange(timeLeft: number, timeRight: number): void;
+    get range(): {
+        left: number;
+        right: number;
+    } | undefined;
+    set range(limits: {
+        left: number;
+        right: number;
+    } | undefined);
     onEntrySelected(event: Common.EventTarget.EventTargetEvent<void | number>): void;
     onEntryInvoked(event: Common.EventTarget.EventTargetEvent<number>): void;
     update(): void;

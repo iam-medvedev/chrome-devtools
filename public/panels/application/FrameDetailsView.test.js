@@ -131,7 +131,7 @@ describeWithEnvironment('FrameDetailsView', () => {
                     {
                         scriptId: '456',
                         debuggerId: '',
-                    }
+                    },
                 ],
                 rootScriptFilterlistRule: '/ad-script2.$script',
             }),

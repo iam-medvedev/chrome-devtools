@@ -108,5 +108,15 @@ describe('InspectorView', () => {
             assert.isFalse(inspectorView.isDrawerMinimized());
         });
     });
+    describe('window layout CSS variables', () => {
+        it('sets --devtools-window-* custom properties on documentElement root', () => {
+            const { inspectorView } = createInspectorViewWithDockState("bottom" /* DockState.BOTTOM */);
+            const rootStyle = inspectorView.element.ownerDocument.documentElement.style;
+            assert.isNotEmpty(rootStyle.getPropertyValue('--devtools-window-width'));
+            assert.isNotEmpty(rootStyle.getPropertyValue('--devtools-window-height'));
+            assert.isNotEmpty(rootStyle.getPropertyValue('--devtools-window-left'));
+            assert.isNotEmpty(rootStyle.getPropertyValue('--devtools-window-top'));
+        });
+    });
 });
 //# sourceMappingURL=InspectorView.test.js.map

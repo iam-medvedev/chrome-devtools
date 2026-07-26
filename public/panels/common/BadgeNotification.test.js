@@ -7,6 +7,7 @@ import * as Common from '../../core/common/common.js';
 import * as Badges from '../../models/badges/badges.js';
 import { renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { createSettingsForTest } from '../../testing/SettingsHelpers.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import { html, render } from '../../ui/lit/lit.js';
 import * as PanelCommon from './common.js';
@@ -35,6 +36,7 @@ function createMockBadge(badgeCtor) {
     return new badgeCtor({
         onTriggerBadge: () => { },
         badgeActionEventTarget: new Common.ObjectWrapper.ObjectWrapper(),
+        settings: createSettingsForTest(),
     });
 }
 function assertMessageIncludes(messageInput, textToInclude) {

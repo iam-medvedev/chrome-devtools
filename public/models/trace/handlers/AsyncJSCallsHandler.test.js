@@ -127,10 +127,16 @@ describe('AsyncJSCallsHandler', function () {
             // Create flow events in the same way perfetto does for traces (as separate pairs).
             // schedule -> run 1, run 1 -> run 2.
             const flowEvents = [
-                ...makeFlowEvents([asyncTaskScheduled, asyncTaskRun1], 0), ...makeFlowEvents([asyncTaskRun1, asyncTaskRun2], 1)
+                ...makeFlowEvents([asyncTaskScheduled, asyncTaskRun1], 0),
+                ...makeFlowEvents([asyncTaskRun1, asyncTaskRun2], 1),
             ];
             const rendererEvents = [
-                jsTaskScheduler, asyncTaskScheduled, asyncTaskRun1, jsTaskRunEntryPoint1, asyncTaskRun2, jsTaskRunEntryPoint2
+                jsTaskScheduler,
+                asyncTaskScheduled,
+                asyncTaskRun1,
+                jsTaskRunEntryPoint1,
+                asyncTaskRun2,
+                jsTaskRunEntryPoint2,
             ];
             const allEvents = [...rendererEvents, ...flowEvents];
             const asyncCallStacksData = await buildAsyncJSCallsHandlerData(allEvents);
@@ -191,11 +197,18 @@ describe('AsyncJSCallsHandler', function () {
             // Create flow events in the same way perfetto does for traces (as separate pairs).
             // schedule -> run 1, run 1 -> run 2.
             const flowEvents = [
-                ...makeFlowEvents([asyncTaskScheduled, asyncTaskRun1], 0), ...makeFlowEvents([asyncTaskRun1, asyncTaskRun2], 1)
+                ...makeFlowEvents([asyncTaskScheduled, asyncTaskRun1], 0),
+                ...makeFlowEvents([asyncTaskRun1, asyncTaskRun2], 1),
             ];
             const rendererEvents = [
-                jsTaskScheduler, asyncTaskScheduled, asyncTaskRun1, jsTaskRunEntryPoint1, asyncJSTask1, asyncTaskRun2,
-                jsTaskRunEntryPoint2, asyncJSTask2
+                jsTaskScheduler,
+                asyncTaskScheduled,
+                asyncTaskRun1,
+                jsTaskRunEntryPoint1,
+                asyncJSTask1,
+                asyncTaskRun2,
+                jsTaskRunEntryPoint2,
+                asyncJSTask2,
             ];
             const allEvents = [...rendererEvents, ...flowEvents];
             const asyncCallStacksData = await buildAsyncJSCallsHandlerData(allEvents);

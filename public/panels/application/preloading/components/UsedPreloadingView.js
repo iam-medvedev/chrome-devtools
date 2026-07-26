@@ -371,7 +371,8 @@ export class UsedPreloadingView extends UI.Widget.VBox {
     }
     #isPrerenderLike(speculationAction) {
         return [
-            "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */, "PrerenderUntilScript" /* Protocol.Preload.SpeculationAction.PrerenderUntilScript */
+            "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
+            "PrerenderUntilScript" /* Protocol.Preload.SpeculationAction.PrerenderUntilScript */,
         ].includes(speculationAction);
     }
     #isPrerenderAttempt(attempt) {

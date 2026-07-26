@@ -8,7 +8,7 @@ import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as AiAssistance from '../../models/ai_assistance/ai_assistance.js';
 import { getContextMenuForElement } from '../../testing/ContextMenuHelpers.js';
-import { createTarget, describeWithEnvironment, expectConsoleLogs, stubNoopSettings, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, describeWithEnvironment, expectConsoleLogs, stubNoopSettings, updateHostConfig, } from '../../testing/EnvironmentHelpers.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import { createResource, getMainFrame, mockResourceTree } from '../../testing/ResourceTreeHelpers.js';
@@ -507,6 +507,46 @@ describeWithEnvironment('IndexedDBTreeElement live update', () => {
         model.dispatchEventToListeners(Application.IndexedDBModel.Events.DatabaseRemoved, { databaseId: db2Id, model });
         await new Promise(resolve => setTimeout(resolve, 0));
         assert.strictEqual(indexedDBTreeElement.childCount(), 0);
+    });
+    it('marks object store and index views as needing refresh on indexedDBContentUpdated', async () => {
+        const MAIN_FRAME_ID = 'main';
+        const storageKey = `test-storage-key|${MAIN_FRAME_ID}|http://www.example.com`;
+        sinon.stub(model, 'loadObjectStoreData')
+            .callsFake((_dbId, _storeName, _keyRange, _skipCount, _pageSize, callback) => {
+            callback([], false);
+        });
+        sinon.stub(model, 'loadIndexData')
+            .callsFake((_dbId, _storeName, _indexName, _keyRange, _skipCount, _pageSize, callback) => {
+            callback([], false);
+        });
+        sinon.stub(model, 'getMetadata').resolves({ entriesCount: 0, keyGeneratorValue: 0 });
+        const db1Id = new Application.IndexedDBModel.DatabaseId({ storageKey }, 'database1');
+        model.dispatchEventToListeners(Application.IndexedDBModel.Events.DatabaseAdded, { databaseId: db1Id, model });
+        const db1 = new Application.IndexedDBModel.Database(db1Id, 1);
+        const os1 = new Application.IndexedDBModel.ObjectStore('objectStore1', 'test', false);
+        os1.indexes.set('index1', new Application.IndexedDBModel.Index('index1', 'test', false, false));
+        db1.objectStores.set('objectStore1', os1);
+        model.dispatchEventToListeners(Application.IndexedDBModel.Events.DatabaseLoaded, { database: db1, model, entriesUpdated: true });
+        await new Promise(resolve => setTimeout(resolve, 0));
+        const db1TreeElement = indexedDBTreeElement.children()[0];
+        const os1TreeElement = db1TreeElement.children()[0];
+        const index1TreeElement = os1TreeElement.children()[0];
+        os1TreeElement.onselect(false);
+        index1TreeElement.onselect(false);
+        const os1View = os1TreeElement.view;
+        const index1View = index1TreeElement.view;
+        assert.exists(os1View);
+        assert.exists(index1View);
+        assert.isNull(os1View.element.querySelector('.stale-data-warning'));
+        assert.isNull(index1View.element.querySelector('.stale-data-warning'));
+        model.dispatchEventToListeners(Application.IndexedDBModel.Events.IndexedDBContentUpdated, { databaseId: db1Id, objectStoreName: 'objectStore1', model });
+        assert.isNotNull(os1View.element.querySelector('.stale-data-warning'));
+        assert.isNotNull(index1View.element.querySelector('.stale-data-warning'));
+        os1View.refreshData();
+        index1View.refreshData();
+        await new Promise(resolve => setTimeout(resolve, 0));
+        assert.isNull(os1View.element.querySelector('.stale-data-warning'));
+        assert.isNull(index1View.element.querySelector('.stale-data-warning'));
     });
 });
 describe('Ask-AI Hover Floating Button', () => {

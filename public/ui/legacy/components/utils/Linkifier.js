@@ -7,9 +7,9 @@ import * as Host from '../../../../core/host/host.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Platform from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
+import * as TextUtils from '../../../../core/text_utils/text_utils.js';
 import * as Bindings from '../../../../models/bindings/bindings.js';
 import * as Breakpoints from '../../../../models/breakpoints/breakpoints.js';
-import * as TextUtils from '../../../../models/text_utils/text_utils.js';
 import * as Workspace from '../../../../models/workspace/workspace.js';
 import * as UIHelpers from '../../../helpers/helpers.js';
 import { Directives, html, render } from '../../../lit/lit.js';
@@ -72,7 +72,7 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
         Workspace.Workspace.WorkspaceImpl.instance().addEventListener(Workspace.Workspace.Events.WorkingCopyChanged, this.#onWorkingCopyChangedOrCommitted, this);
         Workspace.Workspace.WorkspaceImpl.instance().addEventListener(Workspace.Workspace.Events.WorkingCopyCommitted, this.#onWorkingCopyChangedOrCommitted, this);
     }
-    #onWorkingCopyChangedOrCommitted({ data: { uiSourceCode } }) {
+    #onWorkingCopyChangedOrCommitted({ data: { uiSourceCode }, }) {
         const anchors = anchorsByUISourceCode.get(uiSourceCode);
         if (!anchors) {
             return;
@@ -752,6 +752,9 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
         const { origin } = registration;
         linkHandlers.delete(origin);
         LinkHandlerSettingUI.instance().update();
+    }
+    static isRegisteredLinkHandlerScheme(scheme) {
+        return linkHandlers.values().some(r => r.scheme === scheme);
     }
     // The primary filter implementation for the openResourceHandlers. Returns false
     // if the handler is NOT supposed to handle the `url`. Usually, this happens if

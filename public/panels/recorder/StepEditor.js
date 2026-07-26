@@ -9,7 +9,7 @@ import * as UI from '../../ui/legacy/legacy.js';
 import * as Lit from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as Models from './models/models.js';
-import { RequestSelectorAttributeEvent, SelectorPicker } from './SelectorPicker.js';
+import { SelectorPicker } from './SelectorPicker.js';
 import stepEditorStyles from './stepEditor.css.js';
 import { ArrayAssignments, assert, deepFreeze, immutableDeepAssign, InsertAssignment, SharedObject, } from './util/util.js';
 const { html, render, Directives } = Lit;
@@ -239,14 +239,6 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/recorder/StepEditor.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export class StepEditedEvent extends Event {
-    static eventName = 'stepedited';
-    data;
-    constructor(step) {
-        super(StepEditedEvent.eventName, { bubbles: true, composed: true });
-        this.data = step;
-    }
-}
 // Makes use of the fact that JSON values get their undefined values cleaned
 // after stringification.
 const cleanUndefineds = (value) => {
@@ -825,6 +817,8 @@ export class StepEditor extends UI.Widget.Widget {
     #isTypeEditable = true;
     #disabled = false;
     #view;
+    onStepEdited;
+    onAttributeRequested;
     constructor(element, view = DEFAULT_VIEW) {
         super(element, { useShadowDom: true });
         this.#state = { type: Models.Schema.StepType.WaitForElement };
@@ -862,7 +856,7 @@ export class StepEditor extends UI.Widget.Widget {
     }
     #commit(updatedState) {
         try {
-            this.element.dispatchEvent(new StepEditedEvent(EditorState.toStep(updatedState)));
+            this.onStepEdited?.(EditorState.toStep(updatedState));
             // Note we don't need to update this variable since it will come from up
             // the tree, but processing up the tree is asynchronous implying we cannot
             // reliably know when the state will come back down. Since we need to
@@ -885,7 +879,7 @@ export class StepEditor extends UI.Widget.Widget {
         }));
     };
     #handleAttributeRequested = (send) => {
-        this.element.dispatchEvent(new RequestSelectorAttributeEvent(send));
+        this.onAttributeRequested?.(send);
     };
     #handleAddOrRemoveClick = (assignments, query) => event => {
         event.preventDefault();

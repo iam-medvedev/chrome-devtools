@@ -34,6 +34,7 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class ServiceWorkerCacheTreeElement extends ExpandableApplicationPanelTreeElement {
     swCacheModels;
     swCacheTreeElements;
+    swCacheModelObserver;
     storageBucket;
     constructor(resourcesPanel, storageBucket) {
         super(resourcesPanel, i18nString(UIStrings.cacheStorage), i18nString(UIStrings.noCacheStorage), i18nString(UIStrings.cacheStorageDescription), 'cache-storage');
@@ -43,14 +44,20 @@ export class ServiceWorkerCacheTreeElement extends ExpandableApplicationPanelTre
         this.swCacheModels = new Set();
         this.swCacheTreeElements = new Set();
         this.storageBucket = storageBucket;
+        this.initialize();
     }
     initialize() {
+        this.removeChildren();
         this.swCacheModels.clear();
         this.swCacheTreeElements.clear();
-        SDK.TargetManager.TargetManager.instance().observeModels(SDK.ServiceWorkerCacheModel.ServiceWorkerCacheModel, {
+        if (this.swCacheModelObserver) {
+            SDK.TargetManager.TargetManager.instance().unobserveModels(SDK.ServiceWorkerCacheModel.ServiceWorkerCacheModel, this.swCacheModelObserver);
+        }
+        this.swCacheModelObserver = {
             modelAdded: (model) => this.serviceWorkerCacheModelAdded(model),
             modelRemoved: (model) => this.serviceWorkerCacheModelRemoved(model),
-        });
+        };
+        SDK.TargetManager.TargetManager.instance().observeModels(SDK.ServiceWorkerCacheModel.ServiceWorkerCacheModel, this.swCacheModelObserver, { scoped: true });
     }
     onattach() {
         super.onattach();

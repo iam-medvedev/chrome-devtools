@@ -265,7 +265,6 @@ var AiCodeCompletionPlugin = class extends Plugin {
       citationsTooltipId: CITATIONS_TOOLTIP_ID,
       hasTopBorder: true,
       panel: "sources"
-      /* AiCodeCompletion.AiCodeCompletion.ContextFlavor.SOURCES */
     });
     this.#aiCodeCompletionCitationsToolbar.show(this.#aiCodeCompletionCitationsToolbarContainer, void 0, true);
   }
@@ -491,13 +490,13 @@ var breakpointEditDialog_css_default = `/*
 }
 
 :host-context(.sources-edit-breakpoint-dialog) .source-frame-breakpoint-toolbar {
-  font-family: sans-serif;
+  font-family: var(--default-font-family);
   font-size: 12px;
 }
 
 :host-context(.sources-edit-breakpoint-dialog) .link,
 .devtools-link {
-  font-family: sans-serif;
+  font-family: var(--default-font-family);
   font-size: 12px;
   margin: 0 3px;
 }
@@ -814,9 +813,9 @@ import * as i18n7 from "./../../core/i18n/i18n.js";
 import * as Platform2 from "./../../core/platform/platform.js";
 import { assertNotNullOrUndefined as assertNotNullOrUndefined2 } from "./../../core/platform/platform.js";
 import * as SDK2 from "./../../core/sdk/sdk.js";
+import * as TextUtils from "./../../core/text_utils/text_utils.js";
 import * as Bindings from "./../../models/bindings/bindings.js";
 import * as Breakpoints from "./../../models/breakpoints/breakpoints.js";
-import * as TextUtils from "./../../models/text_utils/text_utils.js";
 import * as Workspace2 from "./../../models/workspace/workspace.js";
 import * as Input from "./../../ui/components/input/input.js";
 import * as RenderCoordinator from "./../../ui/components/render_coordinator/render_coordinator.js";
@@ -2934,10 +2933,10 @@ import * as Host3 from "./../../core/host/host.js";
 import * as i18n13 from "./../../core/i18n/i18n.js";
 import * as Platform5 from "./../../core/platform/platform.js";
 import * as SDK5 from "./../../core/sdk/sdk.js";
+import * as TextUtils4 from "./../../core/text_utils/text_utils.js";
 import * as AiAssistance from "./../../models/ai_assistance/ai_assistance.js";
 import * as Bindings3 from "./../../models/bindings/bindings.js";
 import * as Persistence3 from "./../../models/persistence/persistence.js";
-import * as TextUtils4 from "./../../models/text_utils/text_utils.js";
 import * as Workspace6 from "./../../models/workspace/workspace.js";
 import * as Buttons2 from "./../../ui/components/buttons/buttons.js";
 import * as Spinners from "./../../ui/components/spinners/spinners.js";
@@ -3146,9 +3145,9 @@ __export(SourcesSearchScope_exports, {
 });
 import * as Common4 from "./../../core/common/common.js";
 import * as Platform3 from "./../../core/platform/platform.js";
+import * as TextUtils2 from "./../../core/text_utils/text_utils.js";
 import * as Bindings2 from "./../../models/bindings/bindings.js";
 import * as Persistence from "./../../models/persistence/persistence.js";
-import * as TextUtils2 from "./../../models/text_utils/text_utils.js";
 import * as Workspace4 from "./../../models/workspace/workspace.js";
 var SourcesSearchScope = class _SourcesSearchScope {
   searchId;
@@ -5390,8 +5389,8 @@ __export(TabbedEditorContainer_exports, {
 import * as Common10 from "./../../core/common/common.js";
 import * as i18n29 from "./../../core/i18n/i18n.js";
 import * as Platform9 from "./../../core/platform/platform.js";
+import * as TextUtils10 from "./../../core/text_utils/text_utils.js";
 import * as Persistence7 from "./../../models/persistence/persistence.js";
-import * as TextUtils10 from "./../../models/text_utils/text_utils.js";
 import * as Workspace18 from "./../../models/workspace/workspace.js";
 import * as Tooltips2 from "./../../ui/components/tooltips/tooltips.js";
 import * as uiI18n2 from "./../../ui/i18n/i18n.js";
@@ -5411,6 +5410,7 @@ __export(UISourceCodeFrame_exports, {
 import * as Common9 from "./../../core/common/common.js";
 import * as Host6 from "./../../core/host/host.js";
 import * as i18n27 from "./../../core/i18n/i18n.js";
+import * as TextUtils8 from "./../../core/text_utils/text_utils.js";
 
 // gen/front_end/entrypoints/formatter_worker/FormatterActions.js
 var FORMATTABLE_MEDIA_TYPES = [
@@ -5427,7 +5427,6 @@ import * as AiCodeCompletion3 from "./../../models/ai_code_completion/ai_code_co
 import * as Formatter2 from "./../../models/formatter/formatter.js";
 import * as IssuesManager from "./../../models/issues_manager/issues_manager.js";
 import * as Persistence5 from "./../../models/persistence/persistence.js";
-import * as TextUtils8 from "./../../models/text_utils/text_utils.js";
 import * as Workspace16 from "./../../models/workspace/workspace.js";
 import * as CodeMirror6 from "./../../third_party/codemirror.next/codemirror.next.js";
 import * as IssueCounter from "./../../ui/components/issue_counter/issue_counter.js";
@@ -5443,7 +5442,7 @@ __export(CoveragePlugin_exports, {
 });
 import * as i18n15 from "./../../core/i18n/i18n.js";
 import * as SDK6 from "./../../core/sdk/sdk.js";
-import * as TextUtils5 from "./../../models/text_utils/text_utils.js";
+import * as TextUtils5 from "./../../core/text_utils/text_utils.js";
 import * as Workspace10 from "./../../models/workspace/workspace.js";
 import * as CodeMirror2 from "./../../third_party/codemirror.next/codemirror.next.js";
 import * as UI9 from "./../../ui/legacy/legacy.js";
@@ -6067,6 +6066,7 @@ __export(DebuggerPlugin_exports, {
   DebuggerPlugin: () => DebuggerPlugin,
   computePopoverHighlightRange: () => computePopoverHighlightRange,
   computeScopeMappings: () => computeScopeMappings,
+  containsSideEffects: () => containsSideEffects,
   getVariableNamesByLine: () => getVariableNamesByLine,
   getVariableValuesByLine: () => getVariableValuesByLine
 });
@@ -6075,13 +6075,13 @@ import * as Host4 from "./../../core/host/host.js";
 import * as i18n19 from "./../../core/i18n/i18n.js";
 import * as Platform6 from "./../../core/platform/platform.js";
 import * as SDK8 from "./../../core/sdk/sdk.js";
+import * as TextUtils6 from "./../../core/text_utils/text_utils.js";
 import * as Badges from "./../../models/badges/badges.js";
 import * as Bindings5 from "./../../models/bindings/bindings.js";
 import * as Breakpoints2 from "./../../models/breakpoints/breakpoints.js";
 import * as Formatter from "./../../models/formatter/formatter.js";
 import * as SourceMapScopes from "./../../models/source_map_scopes/source_map_scopes.js";
 import * as StackTrace from "./../../models/stack_trace/stack_trace.js";
-import * as TextUtils6 from "./../../models/text_utils/text_utils.js";
 import * as Workspace13 from "./../../models/workspace/workspace.js";
 import * as CodeMirror4 from "./../../third_party/codemirror.next/codemirror.next.js";
 import * as Buttons3 from "./../../ui/components/buttons/buttons.js";
@@ -6188,7 +6188,7 @@ var UIStrings10 = {
    * @example {http://site.com/lib.js.map} PH1
    * @example {HTTP error: status code 404, net::ERR_UNKNOWN_URL_SCHEME} PH2
    */
-  errorLoading: "Error loading url {PH1}: {PH2}",
+  errorLoading: "Error loading URL {PH1}: {PH2}",
   /**
    * @description Error message that is displayed in UI when a file needed for debugging information for a call frame is missing
    * @example {src/myapp.debug.wasm.dwp} PH1
@@ -6635,7 +6635,7 @@ var DebuggerPlugin = class extends Plugin {
       show: async (popover) => {
         let resolvedText = "";
         if (selectedCallFrame.script.isJavaScript()) {
-          const nameMap = await SourceMapScopes.NamesResolver.allVariablesInCallFrame(selectedCallFrame);
+          const nameMap = await SourceMapScopes.NamesResolver.allVariablesInCallFrame(selectedCallFrame, Bindings5.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance());
           try {
             resolvedText = await Formatter.FormatterWorkerPool.formatterWorkerPool().javaScriptSubstitute(evaluationText, nameMap);
           } catch {
@@ -7848,7 +7848,8 @@ async function computeScopeMappings(callFrame, rawLocationToEditorOffset) {
     if (!scopeEnd) {
       break;
     }
-    const { properties } = await SourceMapScopes.NamesResolver.resolveScopeInObject(scope).getAllProperties(false, false);
+    const debuggerWorkspaceBinding = Bindings5.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance();
+    const { properties } = await SourceMapScopes.NamesResolver.resolveScopeInObject(scope, debuggerWorkspaceBinding).getAllProperties(false, false);
     if (!properties || properties.length > MAX_PROPERTIES_IN_SCOPE_FOR_VALUE_DECORATIONS) {
       break;
     }
@@ -7949,9 +7950,20 @@ function containsSideEffects(doc, root) {
     enter(node) {
       switch (node.name) {
         case "AssignmentExpression":
-        case "CallExpression": {
+        case "CallExpression":
+        case "NewExpression":
+        case "TaggedTemplateExpression":
+        case "DynamicImport": {
           containsSideEffects2 = true;
           return false;
+        }
+        case "UnaryExpression": {
+          const text = doc.sliceString(root.from + node.from, root.from + node.to).trim();
+          if (text.startsWith("delete")) {
+            containsSideEffects2 = true;
+            return false;
+          }
+          break;
         }
         case "ArithOp": {
           const op = doc.sliceString(root.from + node.from, root.from + node.to);
@@ -12274,7 +12286,7 @@ import * as i18n39 from "./../../core/i18n/i18n.js";
 import * as Persistence12 from "./../../models/persistence/persistence.js";
 import * as Workspace25 from "./../../models/workspace/workspace.js";
 import * as QuickOpen3 from "./../../ui/legacy/components/quick_open/quick_open.js";
-import { Directives as Directives3, html as html8 } from "./../../ui/lit/lit.js";
+import { Directives as Directives3, html as html8, nothing as nothing5 } from "./../../ui/lit/lit.js";
 
 // gen/front_end/panels/sources/filteredUISourceCodeListProvider.css.js
 var filteredUISourceCodeListProvider_css_default = `/*
@@ -12286,6 +12298,7 @@ var filteredUISourceCodeListProvider_css_default = `/*
 .filtered-list-widget-item > .filtered-ui-source-code-list-item {
   align-content: center;
   display: grid;
+  grid-template-columns: 1fr auto;
   gap: var(--sys-size-2);
   line-height: initial;
 }
@@ -12295,6 +12308,8 @@ var filteredUISourceCodeListProvider_css_default = `/*
 }
 
 .filtered-ui-source-code-title {
+  grid-column: 1;
+  grid-row: 1;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -12304,11 +12319,12 @@ var filteredUISourceCodeListProvider_css_default = `/*
 }
 
 .filtered-ui-source-code-subtitle {
+  grid-column: 1;
+  grid-row: 2;
   flex: none;
   overflow: hidden;
   text-overflow: ellipsis;
   color: var(--sys-color-on-surface-subtle);
-  padding-left: var(--sys-size-3);
   display: flex;
   white-space: pre;
 }
@@ -12317,6 +12333,13 @@ var filteredUISourceCodeListProvider_css_default = `/*
   flex-shrink: 1000;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.filtered-ui-source-code-list-item > .tag {
+  grid-column: 2;
+  grid-row: 1 / 3;
+  align-self: center;
+  white-space: nowrap;
 }
 
 /*# sourceURL=${import.meta.resolve("./filteredUISourceCodeListProvider.css")} */`;
@@ -12331,11 +12354,16 @@ var UIStrings20 = {
    * @description Name of an item that is on the ignore list
    * @example {compile.html} PH1
    */
-  sIgnoreListed: "{PH1} (ignore listed)"
+  sIgnoreListed: "{PH1} (ignore listed)",
+  /**
+   * @description Tag indicating a file is from the local workspace
+   */
+  workspace: "Workspace"
 };
 var str_20 = i18n39.i18n.registerUIStrings("panels/sources/FilteredUISourceCodeListProvider.ts", UIStrings20);
 var i18nString19 = i18n39.i18n.getLocalizedString.bind(void 0, str_20);
 var { classMap: classMap2 } = Directives3;
+var FILE_SYSTEM_SCORE_BONUS = 1e6;
 var FilteredUISourceCodeListProvider = class extends QuickOpen3.FilteredListWidget.Provider {
   queryLineNumberAndColumnNumber;
   defaultScores;
@@ -12350,6 +12378,16 @@ var FilteredUISourceCodeListProvider = class extends QuickOpen3.FilteredListWidg
     this.scorer = new FilePathScoreFunction("");
     this.uiSourceCodes = [];
     this.uiSourceCodeIds = /* @__PURE__ */ new Set();
+  }
+  /**
+   * Checks if the given UISourceCode belongs to a file system project.
+   * This includes:
+   * - Workspace.Workspace.projectTypes.FileSystem: Standard workspace folders added by the user.
+   * - Workspace.Workspace.projectTypes.ConnectableFileSystem: Workspace folders connected via custom protocols.
+   */
+  isFileSystemFile(uiSourceCode) {
+    const projectType = uiSourceCode.project().type();
+    return projectType === Workspace25.Workspace.projectTypes.FileSystem || projectType === Workspace25.Workspace.projectTypes.ConnectableFileSystem;
   }
   projectRemoved(event) {
     const project = event.data;
@@ -12403,8 +12441,9 @@ var FilteredUISourceCodeListProvider = class extends QuickOpen3.FilteredListWidg
   itemScoreAt(itemIndex, query) {
     const uiSourceCode = this.uiSourceCodes[itemIndex];
     const score = this.defaultScores ? this.defaultScores.get(uiSourceCode) || 0 : 0;
+    const fileSystemBonus = this.isFileSystemFile(uiSourceCode) ? FILE_SYSTEM_SCORE_BONUS : 0;
     if (!query || query.length < 2) {
-      return score;
+      return score + fileSystemBonus;
     }
     if (this.query !== query) {
       this.query = query;
@@ -12426,7 +12465,7 @@ var FilteredUISourceCodeListProvider = class extends QuickOpen3.FilteredListWidg
       }
     }
     const fullDisplayName = uiSourceCode.fullDisplayName();
-    return score + multiplier * (contentTypeBonus + this.scorer.calculateScore(fullDisplayName, null));
+    return score + multiplier * (contentTypeBonus + this.scorer.calculateScore(fullDisplayName, null)) + fileSystemBonus;
   }
   renderItem(itemIndex, query) {
     query = this.rewriteQuery(query);
@@ -12451,6 +12490,7 @@ var FilteredUISourceCodeListProvider = class extends QuickOpen3.FilteredListWidg
         subtitleRanges.push({ offset: indexes[i], length: 1 });
       }
     }
+    const isFileSystem = this.isFileSystemFile(uiSourceCode);
     return html8`
       <style>${filteredUISourceCodeListProvider_css_default}</style>
       <div class="filtered-ui-source-code-list-item
@@ -12467,6 +12507,7 @@ var FilteredUISourceCodeListProvider = class extends QuickOpen3.FilteredListWidg
             class="filtered-ui-source-code-subtitle" title=${tooltipText}>
           ${this.renderSubtitleElement(fullDisplayName.substring(0, fileNameIndex + 1))}
         </devtools-highlight>
+        ${isFileSystem ? html8`<span class="tag">${i18nString19(UIStrings20.workspace)}</span>` : nothing5}
       </div>`;
   }
   renderSubtitleElement(text) {
@@ -12731,7 +12772,7 @@ import * as i18n43 from "./../../core/i18n/i18n.js";
 import * as CodeMirror7 from "./../../third_party/codemirror.next/codemirror.next.js";
 import * as QuickOpen5 from "./../../ui/legacy/components/quick_open/quick_open.js";
 import * as UI21 from "./../../ui/legacy/legacy.js";
-import { html as html11, nothing as nothing5 } from "./../../ui/lit/lit.js";
+import { html as html11, nothing as nothing6 } from "./../../ui/lit/lit.js";
 var UIStrings22 = {
   /**
    * @description Text in Go To Line Quick Open of the Sources panel
@@ -13051,7 +13092,7 @@ var OutlineQuickOpen = class extends QuickOpen5.FilteredListWidget.Provider {
     return html11`
       <devtools-icon name="deployed"></devtools-icon>
       <div><devtools-highlight type="markup" ranges=${highlightRanges}>${title}</devtools-highlight></div>
-      ${location ? html11`<span class="tag">${location}</span>` : nothing5}`;
+      ${location ? html11`<span class="tag">${location}</span>` : nothing6}`;
   }
   selectItem(itemIndex, _promptValue) {
     if (itemIndex === null) {
@@ -13088,9 +13129,9 @@ import * as Common16 from "./../../core/common/common.js";
 import * as Host11 from "./../../core/host/host.js";
 import * as i18n45 from "./../../core/i18n/i18n.js";
 import * as SDK12 from "./../../core/sdk/sdk.js";
+import * as TextUtils11 from "./../../core/text_utils/text_utils.js";
 import * as Bindings10 from "./../../models/bindings/bindings.js";
 import * as Persistence14 from "./../../models/persistence/persistence.js";
-import * as TextUtils11 from "./../../models/text_utils/text_utils.js";
 import * as Workspace27 from "./../../models/workspace/workspace.js";
 import * as UI22 from "./../../ui/legacy/legacy.js";
 var UIStrings23 = {
@@ -13311,12 +13352,13 @@ __export(ScopeChainSidebarPane_exports, {
   ScopeChainSidebarPane: () => ScopeChainSidebarPane
 });
 import * as i18n47 from "./../../core/i18n/i18n.js";
+import * as Bindings11 from "./../../models/bindings/bindings.js";
 import * as SourceMapScopes2 from "./../../models/source_map_scopes/source_map_scopes.js";
 import * as StackTrace7 from "./../../models/stack_trace/stack_trace.js";
 import * as ObjectUI3 from "./../../ui/legacy/components/object_ui/object_ui.js";
 import * as Components3 from "./../../ui/legacy/components/utils/utils.js";
 import * as UI23 from "./../../ui/legacy/legacy.js";
-import { html as html12, nothing as nothing6, render as render9 } from "./../../ui/lit/lit.js";
+import { html as html12, nothing as nothing7, render as render9 } from "./../../ui/lit/lit.js";
 import * as VisualLogging13 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/sources/scopeChainSidebarPane.css.js
@@ -13417,7 +13459,7 @@ var DEFAULT_VIEW6 = (input, output, target) => {
                  @click=${() => {
       input.onToggle(objectTree, !objectTree.expanded);
     }}>
-              ${icon ? html12`<img class="scope-chain-sidebar-pane-section-icon" src=${icon}>` : nothing6}
+              ${icon ? html12`<img class="scope-chain-sidebar-pane-section-icon" src=${icon}>` : nothing7}
               <div class="scope-chain-sidebar-pane-section-title">${title}</div>
               <div class="scope-chain-sidebar-pane-section-subtitle">${subtitle}</div>
             </div>
@@ -13434,7 +13476,7 @@ var DEFAULT_VIEW6 = (input, output, target) => {
           <style>${ObjectUI3.ObjectPropertiesSection.objectValueStyles}</style>
           <style>${ObjectUI3.ObjectPropertiesSection.objectPropertiesSectionStyles}</style>
           <style>${scopeChainSidebarPane_css_default}</style>
-          ${input.scopeChain?.map((item) => createScopeSection(item)) ?? nothing6}
+          ${input.scopeChain?.map((item) => createScopeSection(item)) ?? nothing7}
         </ul>`}>
       </devtools-tree>` : html12`
       <div class=gray-info-message tabindex=-1>${input.isPaused ? i18nString23(UIStrings24.loading) : i18nString23(UIStrings24.notPaused)}</div>`}
@@ -13502,7 +13544,7 @@ var ScopeChainSidebarPane = class _ScopeChainSidebarPane extends UI23.Widget.VBo
     this.#scopeChain = null;
     this.#linkifier.reset();
     if (callFrame) {
-      const scopeChainModel = new SourceMapScopes2.ScopeChainModel.ScopeChainModel(callFrame.sdkFrame);
+      const scopeChainModel = new SourceMapScopes2.ScopeChainModel.ScopeChainModel(callFrame.sdkFrame, Bindings11.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance());
       this.#scopeChainModel = scopeChainModel;
       this.#scopeChainModel.addEventListener("ScopeChainUpdated", (event) => {
         if (this.#scopeChainModel === scopeChainModel) {
@@ -13598,9 +13640,9 @@ import * as Host12 from "./../../core/host/host.js";
 import * as i18n49 from "./../../core/i18n/i18n.js";
 import * as Platform15 from "./../../core/platform/platform.js";
 import * as SDK13 from "./../../core/sdk/sdk.js";
-import * as Bindings11 from "./../../models/bindings/bindings.js";
+import * as TextUtils12 from "./../../core/text_utils/text_utils.js";
+import * as Bindings12 from "./../../models/bindings/bindings.js";
 import * as Persistence16 from "./../../models/persistence/persistence.js";
-import * as TextUtils12 from "./../../models/text_utils/text_utils.js";
 import * as Workspace29 from "./../../models/workspace/workspace.js";
 import * as uiI18n3 from "./../../ui/i18n/i18n.js";
 import { Link as Link2 } from "./../../ui/kit/kit.js";
@@ -13736,7 +13778,7 @@ var NetworkNavigatorView = class _NetworkNavigatorView extends NavigatorView {
     return networkNavigatorViewInstance;
   }
   acceptProject(project) {
-    return project.type() === Workspace29.Workspace.projectTypes.Network && SDK13.TargetManager.TargetManager.instance().isInScope(Bindings11.NetworkProject.NetworkProject.getTargetForProject(project));
+    return project.type() === Workspace29.Workspace.projectTypes.Network && SDK13.TargetManager.TargetManager.instance().isInScope(Bindings12.NetworkProject.NetworkProject.getTargetForProject(project));
   }
   onScopeChange() {
     for (const project of Workspace29.Workspace.WorkspaceImpl.instance().projects()) {
@@ -14000,6 +14042,7 @@ import * as Host13 from "./../../core/host/host.js";
 import * as i18n51 from "./../../core/i18n/i18n.js";
 import * as Platform16 from "./../../core/platform/platform.js";
 import * as SDK14 from "./../../core/sdk/sdk.js";
+import * as Bindings13 from "./../../models/bindings/bindings.js";
 import * as Formatter3 from "./../../models/formatter/formatter.js";
 import * as SourceMapScopes3 from "./../../models/source_map_scopes/source_map_scopes.js";
 import * as StackTrace9 from "./../../models/stack_trace/stack_trace.js";
@@ -14118,7 +14161,7 @@ var objectValue_css_default = `/*
 // gen/front_end/panels/sources/WatchExpressionsSidebarPane.js
 import * as Components4 from "./../../ui/legacy/components/utils/utils.js";
 import * as UI25 from "./../../ui/legacy/legacy.js";
-import { Directives as Directives5, html as html13, nothing as nothing7, render as render10 } from "./../../ui/lit/lit.js";
+import { Directives as Directives5, html as html13, nothing as nothing8, render as render10 } from "./../../ui/lit/lit.js";
 import * as VisualLogging14 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/sources/watchExpressionsSidebarPane.css.js
@@ -14416,7 +14459,7 @@ var DEFAULT_VIEW7 = (input, output, target) => {
             </div>
           </div>
         </devtools-prompt>
-        ${e.editing || !e.result || e.exceptionDetails || !e.result.hasChildren || e.result.object.customPreview() ? nothing7 : html13`
+        ${e.editing || !e.result || e.exceptionDetails || !e.result.hasChildren || e.result.object.customPreview() ? nothing8 : html13`
           <ul role=group>
             ${ObjectUI4.ObjectPropertiesSection.ObjectPropertyTreeElement.createPropertyNodes(
       e.result.children ?? {},
@@ -14661,7 +14704,7 @@ var WatchExpression = class _WatchExpression {
     }
     const callFrame = executionContext.debuggerModel.selectedCallFrame();
     if (callFrame?.script.isJavaScript()) {
-      const nameMap = await SourceMapScopes3.NamesResolver.allVariablesInCallFrame(callFrame);
+      const nameMap = await SourceMapScopes3.NamesResolver.allVariablesInCallFrame(callFrame, Bindings13.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance());
       try {
         expression = await Formatter3.FormatterWorkerPool.formatterWorkerPool().javaScriptSubstitute(expression, nameMap);
       } catch {

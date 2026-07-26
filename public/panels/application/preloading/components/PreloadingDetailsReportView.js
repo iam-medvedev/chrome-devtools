@@ -244,7 +244,8 @@ export class PreloadingDetailsReportView extends LegacyWrapper.LegacyWrapper.Wra
     }
     #isPrerenderLike(speculationAction) {
         return [
-            "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */, "PrerenderUntilScript" /* Protocol.Preload.SpeculationAction.PrerenderUntilScript */
+            "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
+            "PrerenderUntilScript" /* Protocol.Preload.SpeculationAction.PrerenderUntilScript */,
         ].includes(speculationAction);
     }
     #action(isFallbackToPrefetch) {

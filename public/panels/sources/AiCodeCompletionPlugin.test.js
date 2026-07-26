@@ -54,7 +54,7 @@ describeWithEnvironment('AiCodeCompletionPlugin', () => {
                     enabled: true,
                     blockedByAge: false,
                     blockedByGeo: false,
-                }
+                },
             });
             sinon.stub(TextEditor.AiCodeCompletionProvider.AiCodeCompletionProvider, 'createInstance')
                 .returns(sinon.createStubInstance(TextEditor.AiCodeCompletionProvider.AiCodeCompletionProvider));

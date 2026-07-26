@@ -1,8 +1,8 @@
 // Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable @devtools/no-imperative-dom-api */
 import '../../ui/components/icon_button/icon_button.js';
+import '../../ui/legacy/components/data_grid/data_grid.js';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
@@ -22,9 +22,11 @@ import { HeapTimelineOverview } from './HeapTimelineOverview.js';
 import { ProfileDataGridTree } from './ProfileDataGrid.js';
 import { ProfileFlameChart, ProfileFlameChartDataProvider } from './ProfileFlameChartDataProvider.js';
 import { ProfileType } from './ProfileHeader.js';
+import profilesPanelStyles from './profilesPanel.css.js';
 import { TopDownProfileDataGridTree } from './TopDownProfileDataGrid.js';
 import { WritableProfileHeader } from './WritableProfileHeader.js';
 const { repeat, ref } = Directives;
+const { widget, widgetRef } = UI.Widget;
 const UIStrings = {
     /**
      * @description The reported total size used in the selected time frame of the allocation sampling profile
@@ -168,6 +170,127 @@ function convertToSamplingHeapProfile(profileHeader) {
     return (profileHeader.profile || profileHeader.protocolProfile());
 }
 export const maxLinkLength = 30;
+export const DEFAULT_VIEW = (input, output, target) => {
+    const { searchableView, dataProvider } = input;
+    // clang-format off
+    render(html `
+    ${input.hasTemporaryView ? html `
+      <devtools-widget ${widget(() => input.timelineOverview)}></devtools-widget>` : nothing}
+    <devtools-widget ${widget(element => {
+        const searchableViewWidget = new UI.SearchableView.SearchableView(input.searchable, null, undefined, element);
+        searchableViewWidget.setPlaceholder(i18nString(UIStrings.findByCostMsNameOrFile));
+        return searchableViewWidget;
+    })}
+      ${widgetRef(UI.SearchableView.SearchableView, input.onSearchableViewMount)}>
+      ${input.viewType === "Flame" /* ViewTypes.FLAME */ && searchableView && dataProvider ? html `
+          <devtools-widget
+            autofocus
+            ${widget((e) => new ProfileFlameChart(searchableView, dataProvider, e), { range: input.range })}
+            @EntryInvoked=${(e) => input.onFlameChartEntryInvoked(e.detail)}
+            ${widgetRef(ProfileFlameChart, widget => {
+        output.performSearch = widget.performSearch.bind(widget);
+        output.jumpToNextSearchResult = widget.jumpToNextSearchResult.bind(widget);
+        output.jumpToPreviousSearchResult = widget.jumpToPreviousSearchResult.bind(widget);
+        output.onSearchCanceled = widget.onSearchCanceled.bind(widget);
+    })}>
+          </devtools-widget>`
+        : input.profileDataGridTree ? html `
+          <div class="data-grid-target vbox flex-auto">${renderDataGrid(input)}</div>`
+            : nothing}
+    </devtools-widget>`, target);
+    // clang-format on
+};
+function renderDataGrid(input) {
+    if (!input.profileDataGridTree) {
+        return nothing;
+    }
+    let highlightIndex = -1;
+    if (input.profileDataGridTree && input.profileDataGridTree.searchResults) {
+        highlightIndex = input.profileDataGridTree.searchResultIndex + 1;
+    }
+    // clang-format off
+    return html `
+    <style>${profilesPanelStyles}</style>
+    <devtools-data-grid class="flex-auto" name=${i18nString(UIStrings.profiler)} striped autofocus resize="last"
+                        highlight=${highlightIndex >= 1 ? highlightIndex : nothing}
+                        @deselect=${input.onDeselect} .template=${html `
+      <style>${profilesPanelStyles}</style>
+      <table>
+        <tr>
+          <th id="self" width="120px" fixed weight="1" sortable sort="descending">
+            ${input.columnHeader('self')}
+          </th>
+          <th id="total" width="120px" fixed weight="1" sortable>
+            ${input.columnHeader('total')}
+          </th>
+          <th id="function" weight="3" sortable disclosure>
+            ${i18nString(UIStrings.function)}
+          </th>
+        </tr>
+        ${repeat(input.profileDataGridTree.children, (node) => node.callUID, (node) => renderNode(node, input))}
+      </table>`}>
+    </devtools-data-grid>`;
+    // clang-format on
+}
+function renderNode(node, input) {
+    const onSelect = () => {
+        input.onSelect(node);
+    };
+    const onContextMenu = (event) => {
+        input.onContextMenu(event, node);
+    };
+    const onExpand = () => {
+        input.onExpand(node);
+    };
+    const onCollapse = () => {
+        input.onCollapse(node);
+    };
+    // clang-format off
+    return html `
+  <tr data-uid=${node.callUID} ?selected=${input.selectedNode === node} ?expanded=${node.expanded}
+      ?highlighted=${node.searchMatchedSelfColumn || node.searchMatchedTotalColumn || node.searchMatchedFunctionColumn}
+      @select=${onSelect}
+      @contextmenu=${onContextMenu}
+      @expand=${onExpand} @collapse=${onCollapse}>
+    <td data-value=${node.self} class="numeric-column ${node.searchMatchedSelfColumn ? 'highlight' : ''}"
+        aria-label=${`${input.nodeFormatter.formatValueAccessibleText(node.self, node)}, ${input.nodeFormatter.formatPercent(node.selfPercent, node)}`}>
+      <div class="profile-multiple-values">
+        <span>${input.nodeFormatter.formatValue(node.self, node)}</span>
+        <span class="percent-column">${input.nodeFormatter.formatPercent(node.selfPercent, node)}</span>
+      </div>
+    </td>
+    <td data-value=${node.total} class="numeric-column ${node.searchMatchedTotalColumn ? 'highlight' : ''}"
+        aria-label=${`${input.nodeFormatter.formatValueAccessibleText(node.total, node)}, ${input.nodeFormatter.formatPercent(node.totalPercent, node)}`}>
+      <div class="profile-multiple-values">
+        <span>${input.nodeFormatter.formatValue(node.total, node)}</span>
+        <span class="percent-column">${input.nodeFormatter.formatPercent(node.totalPercent, node)}</span>
+      </div>
+    </td>
+    <td data-value=${node.functionName} class="${node.searchMatchedFunctionColumn ? 'highlight' : ''} ${node.deoptReason ? 'not-optimized' : ''}">
+      ${node.deoptReason ? html `
+        <devtools-icon name="warning-filled" class="profile-warn-marker small"
+                        title=${i18nString(UIStrings.notOptimizedS, { PH1: node.deoptReason })}>
+        </devtools-icon>` : nothing}
+      ${node.functionName}
+      ${node.profileNode.scriptId !== '0' && node.profileNode.callFrame ? widget(Components.Linkifier.ScriptLocationLink, {
+        target: input.target ?? undefined,
+        scriptId: node.profileNode.callFrame.scriptId,
+        sourceURL: node.profileNode.callFrame.url,
+        lineNumber: node.profileNode.callFrame.lineNumber,
+        options: {
+            columnNumber: node.profileNode.callFrame.columnNumber,
+            maxLength: maxLinkLength,
+            className: 'profile-node-file',
+        },
+    }) : nothing}
+    </td>
+    ${node.hasChildren() ? html `
+      <td><table>
+        ${node.expanded ? html `${repeat(node.children, child => child.callUID, child => renderNode(child, input))}` : nothing}
+      </table></td>` : nothing}
+  </tr>`;
+    // clang-format on
+}
 export class HeapProfileView extends UI.View.SimpleView {
     profileHeader;
     profileType;
@@ -182,42 +305,37 @@ export class HeapProfileView extends UI.View.SimpleView {
     timelineOverview = new HeapTimelineOverview();
     profileInternal = null;
     searchableViewInternal;
-    dataGrid;
     viewSelectComboBox;
     focusButton;
     excludeButton;
     resetButton;
-    #sortColumnId = 'self';
-    #sortAscending = false;
     #selectedNode = null;
     linkifierInternal = new Components.Linkifier.Linkifier(maxLinkLength);
-    nodeFormatter;
     viewType;
     bottomUpProfileDataGridTree;
     topDownProfileDataGridTree;
     currentSearchResultIndex;
     dataProvider;
-    flameChart;
-    visibleView;
-    searchableElement;
     profileDataGridTree;
     #isNodeSelected = false;
+    #view;
+    #viewOutput = {};
     #isResetEnabled = false;
     #selectedSize = null;
     #minId = null;
     #maxId = null;
+    #range;
     #lastAppliedRange = null;
     #lastAppliedViewType = null;
-    constructor(profileHeader) {
+    constructor(profileHeader, view = DEFAULT_VIEW) {
         super({
             title: i18nString(UIStrings.profile),
             viewId: 'profile',
         });
-        this.#setupSearchableView();
-        this.dataGrid = new UI.Widget.VBox();
+        this.#view = view;
         this.profileHeader = profileHeader;
         this.profileType = profileHeader.profileType();
-        this.initialize(new NodeFormatter(this));
+        this.initialize();
         const profile = new SamplingHeapProfileModel(convertToSamplingHeapProfile(profileHeader));
         this.adjustedTotal = profile.total;
         this.setProfile(profile);
@@ -226,7 +344,6 @@ export class HeapProfileView extends UI.View.SimpleView {
     #setupTimelineOverview() {
         if (this.profileType.hasTemporaryView()) {
             this.timelineOverview.addEventListener("IdsRangeChanged" /* Events.IDS_RANGE_CHANGED */, this.onIdsRangeChanged.bind(this));
-            this.timelineOverview.show(this.element, this.element.firstChild);
             this.timelineOverview.start();
             this.profileType.addEventListener("StatsUpdate" /* SamplingHeapProfileType.Events.STATS_UPDATE */, this.onStatsUpdate, this);
             void this.profileType.once("profile-complete" /* ProfileEvents.PROFILE_COMPLETE */).then(() => {
@@ -235,106 +352,6 @@ export class HeapProfileView extends UI.View.SimpleView {
                 this.timelineOverview.updateGrid();
             });
         }
-    }
-    #setupSearchableView() {
-        this.searchableViewInternal = new UI.SearchableView.SearchableView(this, null);
-        this.searchableViewInternal.setPlaceholder(i18nString(UIStrings.findByCostMsNameOrFile));
-        this.searchableViewInternal.show(this.element);
-    }
-    #renderDataGrid() {
-        if (!this.profileDataGridTree) {
-            return;
-        }
-        const onSort = (e) => {
-            this.#sortColumnId = e.detail.columnId;
-            this.#sortAscending = e.detail.ascending;
-            this.sortProfile();
-        };
-        const onDeselect = () => {
-            this.#selectedNode = null;
-            this.nodeSelected(false);
-        };
-        // clang-format off
-        // eslint-disable-next-line @devtools/no-lit-render-outside-of-view
-        render(html `
-      <devtools-data-grid class="flex-auto" name=${i18nString(UIStrings.profiler)} striped autofocus resize="last"
-                          @sort=${onSort} @deselect=${onDeselect} .template=${html `
-        <table>
-          <tr>
-            <th id="self" width="120px" fixed weight="1" sortable
-                sort=${this.#sortColumnId === 'self' ? (this.#sortAscending ? 'ascending' : 'descending') : 'none'}>
-              ${this.columnHeader('self')}
-            </th>
-            <th id="total" width="120px" fixed weight="1" sortable
-                sort=${this.#sortColumnId === 'total' ? (this.#sortAscending ? 'ascending' : 'descending') : 'none'}>
-              ${this.columnHeader('total')}
-            </th>
-            <th id="function" weight="3" sortable disclosure
-                sort=${this.#sortColumnId === 'function' ? (this.#sortAscending ? 'ascending' : 'descending') : 'none'}>
-              ${i18nString(UIStrings.function)}
-            </th>
-          </tr>
-          ${repeat(this.profileDataGridTree.children, (node) => node.callUID, (node) => this.#renderNode(node))}
-        </table>`}>
-      </devtools-data-grid>
-    `, this.dataGrid.element);
-        // clang-format on
-    }
-    #renderNode(node) {
-        const onSelect = () => {
-            this.#selectedNode = node;
-            this.nodeSelected(true);
-        };
-        const onContextMenu = (event) => {
-            this.populateContextMenu(event.detail, node);
-        };
-        const onExpand = () => {
-            node.expanded = true;
-            node.populate();
-            this.refresh();
-        };
-        const onCollapse = () => {
-            node.expanded = false;
-            this.refresh();
-        };
-        if (node.profileNode.scriptId !== '0' && !node.linkElement) {
-            node.linkElement = this.nodeFormatter.linkifyNode(node);
-            if (node.linkElement) {
-                node.linkElement.style.maxWidth = '75%';
-            }
-        }
-        // clang-format off
-        return html `
-      <tr data-uid=${node.callUID} ?selected=${this.#selectedNode === node} ?expanded=${node.expanded} @select=${onSelect}
-          @contextmenu=${onContextMenu} @expand=${onExpand} @collapse=${onCollapse}>
-        <td data-value=${node.self} class="numeric-column ${node.searchMatchedSelfColumn ? 'highlight' : ''}"
-            aria-label=${`${this.nodeFormatter.formatValueAccessibleText(node.self, node)}, ${this.nodeFormatter.formatPercent(node.selfPercent, node)}`}>
-          <div class="profile-multiple-values">
-            <span>${this.nodeFormatter.formatValue(node.self, node)}</span>
-            <span class="percent-column">${this.nodeFormatter.formatPercent(node.selfPercent, node)}</span>
-          </div>
-        </td>
-        <td data-value=${node.total} class="numeric-column ${node.searchMatchedTotalColumn ? 'highlight' : ''}"
-            aria-label=${`${this.nodeFormatter.formatValueAccessibleText(node.total, node)}, ${this.nodeFormatter.formatPercent(node.totalPercent, node)}`}>
-          <div class="profile-multiple-values">
-            <span>${this.nodeFormatter.formatValue(node.total, node)}</span>
-            <span class="percent-column">${this.nodeFormatter.formatPercent(node.totalPercent, node)}</span>
-          </div>
-        </td>
-        <td data-value=${node.functionName} class="${node.searchMatchedFunctionColumn ? 'highlight' : ''} ${node.deoptReason ? 'not-optimized' : ''}">
-          ${node.deoptReason ? html `
-            <devtools-icon name="warning-filled" class="profile-warn-marker small"
-                           title=${i18nString(UIStrings.notOptimizedS, { PH1: node.deoptReason })}>
-            </devtools-icon>` : nothing}
-          ${node.functionName}
-          ${node.linkElement ? node.linkElement : nothing}
-        </td>
-        ${node.hasChildren() ? html `
-          <td><table>
-            ${node.expanded ? html `${repeat(node.children, child => child.callUID, child => this.#renderNode(child))}` : nothing}
-          </table></td>` : nothing}
-      </tr>`;
-        // clang-format on
     }
     async toolbarItems() {
         const currentViewType = this.viewType.get();
@@ -448,13 +465,14 @@ export class HeapProfileView extends UI.View.SimpleView {
         return new HeapFlameChartDataProvider(this.profile(), this.profileHeader.heapProfilerModel());
     }
     static buildPopoverTable(popoverInfo) {
-        const table = document.createElement('table');
-        for (const entry of popoverInfo) {
-            const row = table.createChild('tr');
-            row.createChild('td').textContent = entry.title;
-            row.createChild('td').textContent = entry.value;
-        }
-        return table;
+        return html `<table>
+      ${popoverInfo.map(entry => html `
+        <tr>
+          <td>${entry.title}</td>
+          <td>${entry.value}</td>
+        </tr>
+      `)}
+    </table>`;
     }
     setProfile(profile) {
         this.profileInternal = profile;
@@ -466,45 +484,41 @@ export class HeapProfileView extends UI.View.SimpleView {
     profile() {
         return this.profileInternal;
     }
-    initialize(nodeFormatter) {
-        this.nodeFormatter = nodeFormatter;
+    initialize() {
         this.viewType = Common.Settings.Settings.instance().createSetting('profile-view', "Heavy" /* ViewTypes.HEAVY */);
         this.changeView();
-        if (this.flameChart) {
-            this.flameChart.update();
-        }
-    }
-    focus() {
-        if (this.flameChart) {
-            this.flameChart.focus();
-        }
-        else {
-            super.focus();
-        }
     }
     selectRange(timeLeft, timeRight) {
-        if (!this.flameChart) {
-            return;
-        }
-        this.flameChart.selectRange(timeLeft, timeRight);
+        this.#range = { left: timeLeft, right: timeRight };
+        this.performUpdate();
     }
     getBottomUpProfileDataGridTree() {
+        if (!this.searchableViewInternal) {
+            return undefined;
+        }
         if (!this.bottomUpProfileDataGridTree) {
-            this.bottomUpProfileDataGridTree = new BottomUpProfileDataGridTree(this.nodeFormatter, this.searchableViewInternal, this.profileInternal.root, this.adjustedTotal);
+            this.bottomUpProfileDataGridTree = new BottomUpProfileDataGridTree(nodeFormatter, this.searchableViewInternal, this.profileInternal.root, this.adjustedTotal);
         }
         return this.bottomUpProfileDataGridTree;
     }
     getTopDownProfileDataGridTree() {
+        if (!this.searchableViewInternal) {
+            return undefined;
+        }
         if (!this.topDownProfileDataGridTree) {
-            this.topDownProfileDataGridTree = new TopDownProfileDataGridTree(this.nodeFormatter, this.searchableViewInternal, this.profileInternal.root, this.adjustedTotal);
+            this.topDownProfileDataGridTree = new TopDownProfileDataGridTree(nodeFormatter, this.searchableViewInternal, this.profileInternal.root, this.adjustedTotal);
         }
         return this.topDownProfileDataGridTree;
     }
-    populateContextMenu(contextMenu, gridNode) {
-        const node = gridNode;
-        if (node.linkElement) {
-            contextMenu.appendApplicableItems(node.linkElement);
+    populateContextMenu(contextMenu, node) {
+        const heapProfilerModel = this.profileHeader.heapProfilerModel();
+        const target = heapProfilerModel ? heapProfilerModel.target() : null;
+        const tempLinkifier = new Components.Linkifier.Linkifier();
+        const linkElement = tempLinkifier.maybeLinkifyConsoleCallFrame(target, node.profileNode.callFrame);
+        if (linkElement) {
+            contextMenu.appendApplicableItems(linkElement);
         }
+        tempLinkifier.dispose();
     }
     willHide() {
         super.willHide();
@@ -514,13 +528,13 @@ export class HeapProfileView extends UI.View.SimpleView {
         if (!this.profileDataGridTree) {
             return;
         }
-        this.#renderDataGrid();
+        this.performUpdate();
     }
     refreshVisibleData() {
-        this.#renderDataGrid();
+        this.performUpdate();
     }
     searchableView() {
-        return this.searchableViewInternal;
+        return this.searchableViewInternal || null;
     }
     supportsCaseSensitiveSearch() {
         return true;
@@ -532,60 +546,77 @@ export class HeapProfileView extends UI.View.SimpleView {
         return false;
     }
     onSearchCanceled() {
-        if (this.searchableElement) {
-            this.searchableElement.onSearchCanceled();
-            this.refresh();
+        if (this.viewType.get() === "Flame" /* ViewTypes.FLAME */) {
+            this.#viewOutput.onSearchCanceled?.();
         }
+        else if (this.profileDataGridTree) {
+            this.profileDataGridTree.onSearchCanceled();
+        }
+        this.refresh();
     }
     performSearch(searchConfig, shouldJump, jumpBackwards) {
-        if (this.searchableElement) {
-            this.searchableElement.performSearch(searchConfig, shouldJump, jumpBackwards);
+        if (this.viewType.get() !== "Flame" /* ViewTypes.FLAME */ && this.profileDataGridTree) {
+            // 1. Delegate to model to find ALL matches (including virtualized ones) using complex query logic
+            this.profileDataGridTree.performSearch(searchConfig, shouldJump, jumpBackwards);
+            // 2. Guarantee Deep Matches: Expand ancestors of matching nodes if deep search is on
+            if (this.profileDataGridTree.deepSearch) {
+                for (const match of this.profileDataGridTree.searchResults) {
+                    let parent = match.profileNode.parent;
+                    while (parent && !(parent instanceof ProfileDataGridTree)) {
+                        parent.expanded = true;
+                        parent = parent.parent;
+                    }
+                }
+            }
+            this.refresh();
+        }
+        else if (this.viewType.get() === "Flame" /* ViewTypes.FLAME */) {
+            this.#viewOutput.performSearch?.(searchConfig, shouldJump, jumpBackwards);
             this.refresh();
         }
     }
     jumpToNextSearchResult() {
-        if (this.searchableElement) {
-            this.searchableElement.jumpToNextSearchResult();
-            this.#syncSearchSelection();
+        if (this.viewType.get() !== "Flame" /* ViewTypes.FLAME */ && this.profileDataGridTree) {
+            if (!this.profileDataGridTree.searchResults?.length) {
+                return;
+            }
+            this.profileDataGridTree.searchResultIndex =
+                (this.profileDataGridTree.searchResultIndex + 1) % this.profileDataGridTree.searchResults.length;
+            this.searchableViewInternal.updateCurrentMatchIndex(this.profileDataGridTree.searchResultIndex);
+            this.refresh();
+        }
+        else if (this.viewType.get() === "Flame" /* ViewTypes.FLAME */) {
+            this.#viewOutput.jumpToNextSearchResult?.();
         }
     }
     jumpToPreviousSearchResult() {
-        if (this.searchableElement) {
-            this.searchableElement.jumpToPreviousSearchResult();
-            this.#syncSearchSelection();
-        }
-    }
-    #syncSearchSelection() {
-        if (this.searchableElement === this.profileDataGridTree && this.profileDataGridTree) {
-            const searchResult = this.profileDataGridTree.searchResults[this.profileDataGridTree.searchResultIndex];
-            this.#selectedNode = searchResult?.profileNode || null;
-            let node = this.#selectedNode;
-            while (node?.parent) {
-                node.parent.expanded = true;
-                node = node.parent;
+        if (this.viewType.get() !== "Flame" /* ViewTypes.FLAME */ && this.profileDataGridTree) {
+            if (!this.profileDataGridTree.searchResults?.length) {
+                return;
             }
-            this.nodeSelected(!!this.#selectedNode);
+            this.profileDataGridTree.searchResultIndex =
+                (this.profileDataGridTree.searchResultIndex - 1 + this.profileDataGridTree.searchResults.length) %
+                    this.profileDataGridTree.searchResults.length;
+            this.searchableViewInternal.updateCurrentMatchIndex(this.profileDataGridTree.searchResultIndex);
             this.refresh();
+        }
+        else if (this.viewType.get() === "Flame" /* ViewTypes.FLAME */) {
+            this.#viewOutput.jumpToPreviousSearchResult?.();
         }
     }
     linkifier() {
         return this.linkifierInternal;
     }
     ensureFlameChartCreated() {
-        if (this.flameChart) {
+        if (this.dataProvider || !this.searchableViewInternal) {
             return;
         }
         this.dataProvider = this.createFlameChartDataProvider();
-        this.flameChart = new ProfileFlameChart(this.searchableViewInternal, this.dataProvider);
-        this.flameChart.addEventListener("EntryInvoked" /* PerfUI.FlameChart.Events.ENTRY_INVOKED */, event => {
-            void this.onEntryInvoked(event);
-        });
     }
-    async onEntryInvoked(event) {
+    async onEntryInvoked(entryIndex) {
         if (!this.dataProvider) {
             return;
         }
-        const entryIndex = event.data;
         const node = this.dataProvider.entryNodes[entryIndex];
         const debuggerModel = this.profileHeader.debuggerModel;
         if (!node || !node.scriptId || !debuggerModel) {
@@ -659,46 +690,25 @@ export class HeapProfileView extends UI.View.SimpleView {
         this.refresh();
         this.refreshVisibleData();
     }
-    sortProfile() {
-        if (!this.profileDataGridTree) {
-            return;
-        }
-        const sortAscending = this.#sortAscending;
-        const sortColumnId = this.#sortColumnId;
-        const sortProperty = sortColumnId === 'function' ? 'functionName' : sortColumnId || '';
-        this.profileDataGridTree.sort(ProfileDataGridTree.propertyComparator(sortProperty, sortAscending), false);
-        this.refresh();
-    }
     performUpdate() {
         const currentViewType = this.viewType ? this.viewType.get() : null;
         if (currentViewType && currentViewType !== this.#lastAppliedViewType) {
-            this.searchableViewInternal.closeSearch();
-            if (this.visibleView) {
-                this.visibleView.detach();
-            }
+            this.searchableViewInternal?.closeSearch();
             switch (currentViewType) {
                 case "Flame" /* ViewTypes.FLAME */:
                     this.ensureFlameChartCreated();
-                    this.visibleView = this.flameChart;
-                    this.searchableElement = this.flameChart;
                     break;
                 case "Tree" /* ViewTypes.TREE */:
                     this.profileDataGridTree = this.getTopDownProfileDataGridTree();
-                    this.sortProfile();
-                    this.visibleView = this.dataGrid;
-                    this.searchableElement = this.profileDataGridTree;
                     break;
                 case "Heavy" /* ViewTypes.HEAVY */:
                     this.profileDataGridTree = this.getBottomUpProfileDataGridTree();
-                    this.sortProfile();
-                    this.visibleView = this.dataGrid;
-                    this.searchableElement = this.profileDataGridTree;
                     break;
             }
-            if (this.visibleView) {
-                this.visibleView.show(this.searchableViewInternal.element);
+            const initialized = currentViewType === "Flame" /* ViewTypes.FLAME */ ? !!this.dataProvider : !!this.profileDataGridTree;
+            if (initialized) {
+                this.#lastAppliedViewType = currentViewType;
             }
-            this.#lastAppliedViewType = currentViewType;
         }
         const isFlame = currentViewType === "Flame" /* ViewTypes.FLAME */;
         if (this.focusButton) {
@@ -735,6 +745,50 @@ export class HeapProfileView extends UI.View.SimpleView {
             };
             this.timelineOverview.setSamples(samples);
         }
+        const input = {
+            timelineOverview: this.timelineOverview,
+            searchable: this,
+            hasTemporaryView: this.profileType.hasTemporaryView(),
+            viewType: currentViewType,
+            range: this.#range,
+            profileDataGridTree: this.profileDataGridTree,
+            selectedNode: this.#selectedNode,
+            nodeFormatter,
+            columnHeader: this.columnHeader.bind(this),
+            searchableView: this.searchableViewInternal,
+            dataProvider: this.dataProvider,
+            target: this.profileHeader.heapProfilerModel()?.target() ?? null,
+            onExpand: (node) => {
+                node.expanded = true;
+                node.populate();
+                this.refresh();
+            },
+            onCollapse: (node) => {
+                node.expanded = false;
+                this.refresh();
+            },
+            onSelect: (node) => {
+                this.#selectedNode = node;
+                this.nodeSelected(true);
+            },
+            onDeselect: () => {
+                this.#selectedNode = null;
+                this.nodeSelected(false);
+            },
+            onContextMenu: (event, node) => {
+                this.populateContextMenu(event.detail, node);
+            },
+            onSearchableViewMount: (widget) => {
+                if (this.searchableViewInternal !== widget) {
+                    this.searchableViewInternal = widget;
+                    this.requestUpdate();
+                }
+            },
+            onFlameChartEntryInvoked: (entryIndex) => {
+                void this.onEntryInvoked(entryIndex);
+            },
+        };
+        this.#view(input, this.#viewOutput, this.contentElement);
     }
 }
 export class SamplingHeapProfileTypeBase extends Common.ObjectWrapper.eventMixin(ProfileType) {
@@ -1020,13 +1074,9 @@ export class SamplingHeapProfileModel extends CPUProfile.ProfileTreeModel.Profil
     }
 }
 export class NodeFormatter {
-    profileView;
     #formattedValueCache = new Map();
     #formattedValueAccessibleTextCache = new Map();
     #formattedPercentCache = new Map();
-    constructor(profileView) {
-        this.profileView = profileView;
-    }
     formatValue(value) {
         let result = this.#formattedValueCache.get(value);
         if (!result) {
@@ -1051,15 +1101,8 @@ export class NodeFormatter {
         }
         return result;
     }
-    linkifyNode(node) {
-        const heapProfilerModel = this.profileView.profileHeader.heapProfilerModel();
-        const target = heapProfilerModel ? heapProfilerModel.target() : null;
-        const options = {
-            className: 'profile-node-file',
-        };
-        return this.profileView.linkifier().maybeLinkifyConsoleCallFrame(target, node.profileNode.callFrame, options);
-    }
 }
+export const nodeFormatter = new NodeFormatter();
 export class HeapFlameChartDataProvider extends ProfileFlameChartDataProvider {
     profile;
     heapProfilerModel;

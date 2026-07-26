@@ -39,10 +39,10 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as TextUtils from '../../core/text_utils/text_utils.js';
 import * as AIAssistance from '../../models/ai_assistance/ai_assistance.js';
 import * as Badges from '../../models/badges/badges.js';
 import * as Bindings from '../../models/bindings/bindings.js';
-import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
 import * as CodeHighlighter from '../../ui/components/code_highlighter/code_highlighter.js';
@@ -110,6 +110,10 @@ const UIStrings = {
      * @description Text to scroll the displayed content into view
      */
     scrollIntoView: 'Scroll into view',
+    /**
+     * @description A context menu item in the Elements panel to switch to Accessibility tree
+     */
+    switchToAccessibilityTree: 'Switch to accessibility tree',
     /**
      * @description A context menu item in the Elements Tree Element of the Elements panel
      */
@@ -484,7 +488,7 @@ function renderTitle(node, isClosingTag, expanded, isExpandable, isXMLMimeType, 
             });
             return html `"<span class="webkit-html-text-node" jslog=${VisualLogging.value('text-node').track({
                 change: true,
-                dblclick: true
+                dblclick: true,
             })} ${animateOn(Boolean(updateRecord?.isCharDataModified()), DOM_UPDATE_ANIMATION_CLASS_NAME)} ${renderTextNode}></span>"`;
         }
         case Node.COMMENT_NODE: {
@@ -595,7 +599,7 @@ function renderLinkifiedValue(value, node) {
         showColumnNumber: false,
         onRef: link => {
             ImagePreviewPopover.setImageUrl(link, rewrittenHref);
-        }
+        },
     });
 }
 const relationPromisesCache = new WeakMap();
@@ -1078,7 +1082,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         this.performUpdate();
         if (this.nodeInternal.retained && !this.isClosingTag()) {
             this.setLeadingIcons([
-                html `<devtools-icon class="extra-small" name="small-status-dot" style="color:var(--icon-error); vertical-align:middle"></devtools-icon>`
+                html `<devtools-icon class="extra-small" name="small-status-dot" style="color:var(--icon-error); vertical-align:middle"></devtools-icon>`,
             ]);
             this.listItemNode.classList.add('detached-elements-detached-node');
             this.listItemNode.style.setProperty('display', '-webkit-box');
@@ -1989,6 +1993,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         }
         this.populateExpandRecursively(contextMenu);
         contextMenu.viewSection().appendItem(i18nString(UIStrings.collapseChildren), this.collapseChildren.bind(this), { jslogContext: 'collapse-children' });
+        contextMenu.viewSection().appendItem(i18nString(UIStrings.switchToAccessibilityTree), () => ElementsPanel.instance().toggleAccessibilityTree(), { jslogContext: 'switch-to-accessibility-tree' });
         const deviceModeWrapperAction = new Emulation.DeviceModeWrapper.ActionDelegate();
         contextMenu.viewSection().appendItem(i18nString(UIStrings.captureNodeScreenshot), deviceModeWrapperAction.handleAction.bind(null, UI.Context.Context.instance(), 'emulation.capture-node-screenshot'), { jslogContext: 'emulation.capture-node-screenshot' });
         if (this.nodeInternal.frameOwnerFrameId()) {

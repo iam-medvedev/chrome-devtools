@@ -428,6 +428,7 @@ var GlobalAiButtonToolbarProvider = class {
 // gen/front_end/entrypoints/main/MainImpl.js
 var MainImpl_exports = {};
 __export(MainImpl_exports, {
+  ConsoleProfileFinishedListener: () => ConsoleProfileFinishedListener,
   MainImpl: () => MainImpl,
   MainMenuItem: () => MainMenuItem,
   PauseListener: () => PauseListener,
@@ -446,9 +447,7 @@ import * as Root2 from "./../../core/root/root.js";
 import * as SDK2 from "./../../core/sdk/sdk.js";
 import * as Foundation from "./../../foundation/foundation.js";
 import * as AiAssistanceModel from "./../../models/ai_assistance/ai_assistance.js";
-import * as Bindings from "./../../models/bindings/bindings.js";
 import * as CrUXManager from "./../../models/crux-manager/crux-manager.js";
-import * as IssuesManager from "./../../models/issues_manager/issues_manager.js";
 import * as Persistence from "./../../models/persistence/persistence.js";
 import * as Workspace from "./../../models/workspace/workspace.js";
 import * as PanelCommon from "./../../panels/common/common.js";
@@ -764,16 +763,9 @@ var MainImpl = class {
     UI2.ContextMenu.ContextMenu.initialize();
     UI2.ContextMenu.ContextMenu.installHandler(document);
     UI2.ViewManager.ViewManager.instance({ forceNew: true, universe: this.#universe });
-    IssuesManager.IssuesManager.IssuesManager.instance({
-      forceNew: true,
-      ensureFirst: true,
-      showThirdPartyIssuesSetting: IssuesManager.Issue.getShowThirdPartyIssuesSetting(Common2.Settings.Settings.instance()),
-      hideIssueSetting: IssuesManager.IssuesManager.getHideIssueByCodeSetting()
-    });
     UI2.DockController.DockController.instance({ forceNew: true, canDock });
     const targetManager = SDK2.TargetManager.TargetManager.instance();
     targetManager.addEventListener("SuspendStateChanged", this.#onSuspendStateChanged.bind(this));
-    new Bindings.PresentationConsoleMessageHelper.PresentationConsoleMessageManager();
     targetManager.setScopeTarget(targetManager.primaryPageTarget());
     UI2.Context.Context.instance().addFlavorChangeListener(SDK2.Target.Target, ({ data }) => {
       const outermostTarget = data?.outermostTarget();
@@ -786,11 +778,13 @@ var MainImpl = class {
     new ExecutionContextSelector(targetManager, UI2.Context.Context.instance());
     this.#universe.domDebuggerManager.initialize();
     this.#universe.cpuThrottlingManager.initialize();
+    this.#universe.presentationConsoleMessageManager.enable();
     void this.#universe.liveMetrics.enable();
     CrUXManager.CrUXManager.instance();
     const builtInAi = AiAssistanceModel.BuiltInAi.BuiltInAi.instance();
     builtInAi.addEventListener("downloadedAndSessionCreated", () => Snackbar.Snackbar.Snackbar.show({ message: i18nString2(UIStrings2.aiModelDownloaded) }));
     new PauseListener();
+    new ConsoleProfileFinishedListener();
     const actionRegistryInstance = UI2.ActionRegistry.ActionRegistry.instance({ forceNew: true });
     UI2.ShortcutRegistry.ShortcutRegistry.instance({ forceNew: true, actionRegistry: actionRegistryInstance });
     this.#registerMessageSinkListener();
@@ -824,7 +818,7 @@ var MainImpl = class {
   }
   async #showAppUI(appProvider) {
     _a.time("Main._showAppUI");
-    const app = appProvider.createApp();
+    const app = appProvider.createApp(this.#universe);
     UI2.DockController.DockController.instance().initialize();
     ThemeSupport.ThemeSupport.instance().fetchColorsAndApplyHostTheme();
     app.presentUI(document);
@@ -1125,10 +1119,12 @@ var MainMenuItem = class {
     }
     const button = this.#item.element;
     function setDockSide(side) {
-      void dockController.once(
-        "AfterDockSideChanged"
-        /* UI.DockController.Events.AFTER_DOCK_SIDE_CHANGED */
-      ).then(() => button.focus());
+      if (dockController.dockSide() !== "undocked" && side !== "undocked") {
+        void dockController.once(
+          "AfterDockSideChanged"
+          /* UI.DockController.Events.AFTER_DOCK_SIDE_CHANGED */
+        ).then(() => button.focus());
+      }
       dockController.setDockSide(side);
       contextMenu.discard();
     }
@@ -1214,6 +1210,14 @@ var PauseListener = class {
     void Common2.Revealer.reveal(debuggerPausedDetails);
   }
 };
+var ConsoleProfileFinishedListener = class {
+  constructor() {
+    SDK2.TargetManager.TargetManager.instance().addModelListener(SDK2.CPUProfilerModel.CPUProfilerModel, "ConsoleProfileFinished", this.#consoleProfileFinished, this);
+  }
+  #consoleProfileFinished(event) {
+    void Common2.Revealer.reveal(event.data);
+  }
+};
 function sendOverProtocol(method, params) {
   return new Promise((resolve, reject) => {
     const sendRawMessage = ProtocolClient.InspectorBackend.test.sendRawMessage;
@@ -1247,16 +1251,20 @@ __export(SimpleApp_exports, {
 });
 import * as UI3 from "./../../ui/legacy/legacy.js";
 var SimpleApp = class {
+  #universe;
+  constructor(universe) {
+    this.#universe = universe;
+  }
   presentUI(document2) {
-    const rootView = new UI3.RootView.RootView();
+    const rootView = new UI3.RootView.RootView(this.#universe);
     UI3.InspectorView.InspectorView.instance().show(rootView.element);
     rootView.attachToDocument(document2);
     rootView.focus();
   }
 };
 var SimpleAppProvider = class {
-  createApp() {
-    return new SimpleApp();
+  createApp(universe) {
+    return new SimpleApp(universe);
   }
 };
 export {

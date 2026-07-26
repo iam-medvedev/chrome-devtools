@@ -5,8 +5,8 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
+import * as TextUtils from '../../core/text_utils/text_utils.js';
 import * as Bindings from '../../models/bindings/bindings.js';
-import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
@@ -441,7 +441,7 @@ Caused by: Error: cause error
                     name: 'window.triggerIgnoredError',
                     url: 'http://example.com/node_modules/my-lib/index.js',
                     line: 8,
-                    column: 6
+                    column: 6,
                 },
                 { name: '', url: 'http://example.com/error-demo.html', line: 59, column: 11 },
                 { name: '', url: 'http://example.com/error-demo.html', line: 221, column: 2 },
@@ -737,7 +737,7 @@ Caused by: Error: Root cause inside eval in third-party
                     name: 'StackTest.staticPublicMethod',
                     url: 'http://example.com/class_method_source_map.js',
                     line: 11,
-                    column: 21
+                    column: 21,
                 },
                 { name: 'get #c', url: 'http://example.com/class_method_source_map.js', line: 15, column: 21 },
                 { name: 'get publicAccessor', url: 'http://example.com/class_method_source_map.js', line: 18, column: 16 },

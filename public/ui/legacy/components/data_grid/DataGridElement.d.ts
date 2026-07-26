@@ -1,4 +1,4 @@
-import type * as TextUtils from '../../../../models/text_utils/text_utils.js';
+import type * as TextUtils from '../../../../core/text_utils/text_utils.js';
 import * as Lit from '../../../lit/lit.js';
 import * as UI from '../../legacy.js';
 import { type ColumnDescriptor, type ResizeMethod } from './DataGrid.js';
@@ -6,6 +6,8 @@ export declare class DataGridElement extends UI.UIUtils.HTMLElementWithLightDOMT
     #private;
     static readonly observedAttributes: string[];
     constructor();
+    connectedCallback(): void;
+    disconnectedCallback(): void;
     attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null): void;
     set striped(striped: boolean);
     get striped(): boolean;

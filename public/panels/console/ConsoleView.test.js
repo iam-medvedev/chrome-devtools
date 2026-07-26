@@ -8,16 +8,17 @@ import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as TextUtils from '../../core/text_utils/text_utils.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
-import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import { findMenuItemWithLabel, getContextMenuForElement } from '../../testing/ContextMenuHelpers.js';
 import { dispatchPasteEvent, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget, describeWithEnvironment, registerNoopActions, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, describeWithEnvironment, registerNoopActions, updateHostConfig, } from '../../testing/EnvironmentHelpers.js';
 import { expectCall, expectCalled } from '../../testing/ExpectStubCall.js';
 import { stubFileManager } from '../../testing/FileManagerHelpers.js';
 import { dispatchEvent } from '../../testing/MockConnection.js';
+import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as TextEditor from '../../ui/components/text_editor/text_editor.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { AiCodeCompletionSummaryToolbar } from '../common/common.js';
@@ -26,6 +27,10 @@ const { urlString } = Platform.DevToolsPath;
 describeWithEnvironment('ConsoleView', () => {
     let consoleView;
     beforeEach(() => {
+        const universe = new TestUniverse();
+        sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, 'instance')
+            .returns(universe.debuggerWorkspaceBinding);
+        sinon.stub(Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding, 'instance').returns(universe.cssWorkspaceBinding);
         registerNoopActions(['console.clear', 'console.clear.history', 'console.create-pin']);
         consoleView = Console.ConsoleView.ConsoleView.instance({ forceNew: true, viewportThrottlerTimeout: 0 });
     });
@@ -265,8 +270,8 @@ describeWithEnvironment('ConsoleView', () => {
         assert.deepEqual(await getConsoleMessages(), preserveLog ? ['message 1', 'message 2', 'message 3'] : ['message 3']);
         Common.Settings.Settings.instance().moduleSetting('preserve-console-log').set(false);
     };
-    it('replaces messages when switching scope with preserve log off', handlesSwitchingScope(false));
-    it('appends messages when switching scope with preserve log on', handlesSwitchingScope(true));
+    it('replaces messages when switching scope with keep log off', handlesSwitchingScope(false));
+    it('appends messages when switching scope with keep log on', handlesSwitchingScope(true));
     describe('self-XSS warning', () => {
         let target;
         beforeEach(() => {
@@ -281,7 +286,7 @@ describeWithEnvironment('ConsoleView', () => {
             const messagesElement = consoleView.element.querySelector('#console-messages');
             assert.instanceOf(messagesElement, HTMLElement);
             dispatchPasteEvent(messagesElement, { clipboardData: dt, bubbles: true });
-            assert.strictEqual(Common.Console.Console.instance().messages()[0].text, 'Warning: Don’t paste code into the DevTools Console that you don’t understand or haven’t reviewed yourself. This could allow attackers to steal your identity or take control of your computer. Type “allow pasting” below and press Enter to allow pasting.');
+            assert.strictEqual(Common.Console.Console.instance().messages()[0].text, 'Warning: Don’t paste code into the DevTools Console that you don’t understand or haven’t reviewed yourself. This could allow attackers to steal your identity or take control of your computer. Type "allow pasting" below and press Enter to allow pasting.');
         });
         it('is turned off when console history reaches a length of 5', async () => {
             const consoleModel = target.model(SDK.ConsoleModel.ConsoleModel);
@@ -801,6 +806,54 @@ describeWithEnvironment('ConsoleView', () => {
         assert.strictEqual(functionName, '(anonymous)');
         const link = row.querySelector('.link')?.textContent?.trim();
         assert.strictEqual(link, '(unknown)');
+    });
+    it('shows timestamps when console-timestamps-enabled setting is toggled', async () => {
+        const target = createTarget();
+        SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
+        consoleView.markAsRoot();
+        renderElementIntoDOM(consoleView);
+        const consoleModel = target.model(SDK.ConsoleModel.ConsoleModel);
+        assert.exists(consoleModel);
+        const timestampsSetting = Common.Settings.Settings.instance().moduleSetting('console-timestamps-enabled');
+        timestampsSetting.set(false);
+        const timestamp = 1400000000789;
+        const message = new SDK.ConsoleModel.ConsoleMessage(target.model(SDK.RuntimeModel.RuntimeModel), "other" /* Protocol.Log.LogEntrySource.Other */, "info" /* Protocol.Log.LogEntryLevel.Info */, 'Message with timestamp', {
+            type: "log" /* Protocol.Runtime.ConsoleAPICalledEventType.Log */,
+            timestamp,
+        });
+        consoleModel.addMessage(message);
+        await consoleView.getScheduledRefreshPromiseForTest();
+        await UI.Widget.Widget.allUpdatesComplete;
+        assert.strictEqual(consoleView.itemCount(), 1);
+        let itemElement = consoleView.itemElement(0);
+        assert.exists(itemElement);
+        assert.isNull(itemElement.contentElement().querySelector('.console-timestamp'));
+        timestampsSetting.set(true);
+        itemElement = consoleView.itemElement(0);
+        let timestampElement = itemElement.contentElement().querySelector('.console-timestamp');
+        assert.exists(timestampElement);
+        const expectedFormattedTimestamp = UI.UIUtils.formatTimestamp(timestamp, false) + ' ';
+        assert.strictEqual(timestampElement.textContent, expectedFormattedTimestamp);
+        timestampsSetting.set(false);
+        itemElement = consoleView.itemElement(0);
+        timestampElement = itemElement.contentElement().querySelector('.console-timestamp');
+        assert.isNull(timestampElement);
+    });
+    it('verifies viewport stick-to-bottom behavior when Console is opened', async () => {
+        const tabTarget = createTarget({ type: SDK.Target.Type.TAB });
+        const target = createTarget({ parentTarget: tabTarget });
+        const consoleModel = target.model(SDK.ConsoleModel.ConsoleModel);
+        assert.exists(consoleModel);
+        for (let i = 0; i < 150; ++i) {
+            consoleModel.addMessage(createConsoleMessage(target, `Message #${i}`));
+        }
+        consoleView.markAsRoot();
+        renderElementIntoDOM(consoleView, { height: 200 });
+        await consoleView.getScheduledRefreshPromiseForTest();
+        const viewport = consoleView.viewport;
+        assert.exists(viewport);
+        assert.isTrue(UI.UIUtils.isScrolledToBottom(viewport.element));
+        assert.isTrue(viewport.stickToBottom());
     });
 });
 //# sourceMappingURL=ConsoleView.test.js.map

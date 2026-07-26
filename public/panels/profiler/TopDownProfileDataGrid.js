@@ -1,8 +1,8 @@
 // Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { ProfileDataGridNode, ProfileDataGridTree } from './ProfileDataGrid.js';
-export class TopDownProfileDataGridNode extends ProfileDataGridNode {
+import { ProfileDataGridTree, ProfileEntry } from './ProfileDataGrid.js';
+export class TopDownProfileEntry extends ProfileEntry {
     remainingChildren;
     constructor(profileNode, owningTree) {
         const hasChildren = Boolean(profileNode.children?.length);
@@ -13,7 +13,7 @@ export class TopDownProfileDataGridNode extends ProfileDataGridNode {
         const children = container.remainingChildren;
         const childrenLength = children.length;
         for (let i = 0; i < childrenLength; ++i) {
-            container.appendChild(new TopDownProfileDataGridNode(children[i], container.tree));
+            container.appendChild(new TopDownProfileEntry(children[i], container.tree));
         }
         container.remainingChildren = [];
     }
@@ -25,15 +25,15 @@ export class TopDownProfileDataGridNode extends ProfileDataGridNode {
         const children = container.children;
         let index = container.children.length;
         while (index--) {
-            TopDownProfileDataGridNode.excludeRecursively(children[index], aCallUID);
+            TopDownProfileEntry.excludeRecursively(children[index], aCallUID);
         }
         const child = container.childrenByCallUID.get(aCallUID);
         if (child) {
-            ProfileDataGridNode.merge(container, child, true);
+            ProfileEntry.merge(container, child, true);
         }
     }
     populateChildren() {
-        TopDownProfileDataGridNode.sharedPopulate(this);
+        TopDownProfileEntry.sharedPopulate(this);
     }
 }
 export class TopDownProfileDataGridTree extends ProfileDataGridTree {
@@ -41,7 +41,7 @@ export class TopDownProfileDataGridTree extends ProfileDataGridTree {
     constructor(formatter, searchableView, rootProfileNode, total) {
         super(formatter, searchableView, total);
         this.remainingChildren = rootProfileNode.children;
-        ProfileDataGridNode.populate(this);
+        ProfileEntry.populate(this);
     }
     focus(profileDataGridNode) {
         if (!profileDataGridNode) {
@@ -49,7 +49,8 @@ export class TopDownProfileDataGridTree extends ProfileDataGridTree {
         }
         this.save();
         profileDataGridNode.savePosition();
-        this.children = [profileDataGridNode];
+        this.removeChildren();
+        this.appendChild(profileDataGridNode);
         this.total = profileDataGridNode.total;
     }
     exclude(profileDataGridNode) {
@@ -57,20 +58,17 @@ export class TopDownProfileDataGridTree extends ProfileDataGridTree {
             return;
         }
         this.save();
-        TopDownProfileDataGridNode.excludeRecursively(this, profileDataGridNode.callUID);
-        if (this.lastComparator) {
-            this.sort(this.lastComparator, true);
-        }
+        TopDownProfileEntry.excludeRecursively(this, profileDataGridNode.callUID);
     }
     restore() {
         if (!this.savedChildren) {
             return;
         }
-        this.children[0].restorePosition();
+        this.children[0]?.restorePosition();
         super.restore();
     }
     populateChildren() {
-        TopDownProfileDataGridNode.sharedPopulate(this);
+        TopDownProfileEntry.sharedPopulate(this);
     }
 }
 //# sourceMappingURL=TopDownProfileDataGrid.js.map

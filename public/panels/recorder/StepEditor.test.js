@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { assertScreenshot, dispatchKeyDownEvent, getEventPromise, renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
+import { assertScreenshot, dispatchKeyDownEvent, renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import * as Models from './models/models.js';
 import { StepEditor } from './recorder.js';
 import { installMocksForRecordingPlayer } from './testing/RecorderHelpers.js';
 function getStepEditedPromise(editor) {
-    return getEventPromise(editor.element, 'stepedited')
-        .then(({ data }) => data);
+    return new Promise(resolve => {
+        editor.onStepEdited = resolve;
+    });
 }
 const triggerMicroTaskQueue = async (n = 1) => {
     while (n > 0) {

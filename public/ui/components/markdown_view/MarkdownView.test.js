@@ -76,9 +76,35 @@ describeWithEnvironment('MarkdownView', () => {
             const container = renderTemplateResult(renderer.renderToken(getFakeToken({ type: 'list', items: [] })));
             assert.exists(container.querySelector('ul'));
         });
-        it('wraps list items in <li> tags', () => {
-            const container = renderTemplateResult(renderer.renderToken(getFakeToken({ type: 'list_item', tokens: [] })));
-            assert.exists(container.querySelector('li'));
+        it('wraps list items in <li> tags with content in a span', () => {
+            const container = renderTemplateResult(renderer.renderToken(getFakeToken({
+                type: 'list_item',
+                tokens: [getFakeToken({ type: 'text', text: 'item text' })],
+            })));
+            assert.exists(container.querySelector('li > span.markdown-list-item-content'));
+        });
+        it('wraps list items with nested block tokens correctly', () => {
+            const container = renderTemplateResult(renderer.renderToken(getFakeToken({
+                type: 'list_item',
+                tokens: [
+                    getFakeToken({ type: 'text', text: 'item text' }),
+                    getFakeToken({
+                        type: 'list',
+                        items: [getFakeToken({ type: 'list_item', tokens: [getFakeToken({ type: 'text', text: 'nested text' })] })],
+                    }),
+                ],
+            })));
+            const li = container.querySelector('li');
+            assert.exists(li);
+            // First child should be a span wrapping the inline text
+            const span = li.firstElementChild;
+            assert.exists(span);
+            assert.isTrue(span.classList.contains('markdown-list-item-content'));
+            assert.strictEqual(span.textContent, 'item text');
+            // Second child should be the nested list (ul) outside of the span
+            const ul = span.nextElementSibling;
+            assert.exists(ul);
+            assert.strictEqual(ul.tagName.toLowerCase(), 'ul');
         });
         it('wraps a codespan token in <code> tags', () => {
             const container = renderTemplateResult(renderer.renderToken(getFakeToken({ type: 'codespan', text: 'const foo = 42;' })));
@@ -384,8 +410,10 @@ describeWithEnvironment('Issue description smoke test', () => {
     Object.keys(Deprecation.DEPRECATIONS_METADATA).forEach(deprecation => {
         // TODO(crbug.com/430801230): Re-enable these tests once the descriptions are fixed on the chromium side.
         if ([
-            'CanRequestURLHTTPContainingNewline', 'CookieWithTruncatingChar', 'H1UserAgentFontSizeInSection',
-            'RequestedSubresourceWithEmbeddedCredentials'
+            'CanRequestURLHTTPContainingNewline',
+            'CookieWithTruncatingChar',
+            'H1UserAgentFontSizeInSection',
+            'RequestedSubresourceWithEmbeddedCredentials',
         ].includes(deprecation)) {
             return;
         }

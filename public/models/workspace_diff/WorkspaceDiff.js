@@ -4,10 +4,10 @@
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as Root from '../../core/root/root.js';
+import * as TextUtils from '../../core/text_utils/text_utils.js';
 import * as Diff from '../../third_party/diff/diff.js';
 import * as FormatterModule from '../formatter/formatter.js';
 import * as Persistence from '../persistence/persistence.js';
-import * as TextUtils from '../text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
 export class WorkspaceDiffImpl extends Common.ObjectWrapper.ObjectWrapper {
     #persistence;
@@ -17,7 +17,7 @@ export class WorkspaceDiffImpl extends Common.ObjectWrapper.ObjectWrapper {
     /** used in web tests */
     loadingUISourceCodes = new Map();
     #modified = new Set();
-    constructor(workspace, persistence = Persistence.Persistence.PersistenceImpl.instance(), networkPersistenceManager = Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance(), settings = Common.Settings.Settings.instance()) {
+    constructor(workspace, persistence, networkPersistenceManager, settings) {
         super();
         this.#persistence = persistence;
         this.#networkPersistenceManager = networkPersistenceManager;
@@ -119,7 +119,7 @@ export class WorkspaceDiffImpl extends Common.ObjectWrapper.ObjectWrapper {
         }
         const contentsPromise = Promise.all([
             this.requestOriginalContentForUISourceCode(uiSourceCode),
-            uiSourceCode.requestContentData().then(contentDataOrError => TextUtils.ContentData.ContentData.textOr(contentDataOrError, null))
+            uiSourceCode.requestContentData().then(contentDataOrError => TextUtils.ContentData.ContentData.textOr(contentDataOrError, null)),
         ]);
         this.loadingUISourceCodes.set(uiSourceCode, contentsPromise);
         const contents = await contentsPromise;
@@ -153,9 +153,9 @@ export class UISourceCodeDiff extends Common.ObjectWrapper.ObjectWrapper {
     #networkPersistenceManager;
     #settings;
     #requestDiffPromise = null;
-    #pendingChanges = null;
+    #pendingChanges;
     dispose = false;
-    constructor(uiSourceCode, networkPersistenceManager, settings = Common.Settings.Settings.instance()) {
+    constructor(uiSourceCode, networkPersistenceManager, settings) {
         super();
         this.#uiSourceCode = uiSourceCode;
         this.#networkPersistenceManager = networkPersistenceManager;
@@ -164,20 +164,18 @@ export class UISourceCodeDiff extends Common.ObjectWrapper.ObjectWrapper {
         uiSourceCode.addEventListener(Workspace.UISourceCode.Events.WorkingCopyCommitted, this.#uiSourceCodeChanged, this);
     }
     #uiSourceCodeChanged() {
-        if (this.#pendingChanges) {
-            clearTimeout(this.#pendingChanges);
-            this.#pendingChanges = null;
-        }
+        clearTimeout(this.#pendingChanges);
+        this.#pendingChanges = undefined;
         this.#requestDiffPromise = null;
         const content = this.#uiSourceCode.content();
         const delay = (!content || content.length < 65536) ? 0 : 200;
-        this.#pendingChanges = window.setTimeout(emitDiffChanged.bind(this), delay);
+        this.#pendingChanges = globalThis.setTimeout(emitDiffChanged.bind(this), delay);
         function emitDiffChanged() {
             if (this.dispose) {
                 return;
             }
             this.dispatchEventToListeners("DiffChanged" /* UISourceCodeDiffEvents.DIFF_CHANGED */);
-            this.#pendingChanges = null;
+            this.#pendingChanges = undefined;
         }
     }
     requestDiff() {
@@ -241,7 +239,7 @@ export class UISourceCodeDiff extends Common.ObjectWrapper.ObjectWrapper {
 }
 export function workspaceDiff({ forceNew } = {}) {
     if (!Root.DevToolsContext.globalInstance().has(WorkspaceDiffImpl) || forceNew) {
-        Root.DevToolsContext.globalInstance().set(WorkspaceDiffImpl, new WorkspaceDiffImpl(Workspace.Workspace.WorkspaceImpl.instance()));
+        Root.DevToolsContext.globalInstance().set(WorkspaceDiffImpl, new WorkspaceDiffImpl(Workspace.Workspace.WorkspaceImpl.instance(), Persistence.Persistence.PersistenceImpl.instance(), Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance(), Common.Settings.Settings.instance()));
     }
     return Root.DevToolsContext.globalInstance().get(WorkspaceDiffImpl);
 }

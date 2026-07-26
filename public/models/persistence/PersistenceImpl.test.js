@@ -90,7 +90,7 @@ describe('PersistenceImpl', () => {
         const { uiSourceCode: fileSystemUiSourceCode, project } = createFileSystemFileForPersistenceTests({
             fileSystemPath,
             fileSystemFileUrl,
-            type: Persistence.PlatformFileSystem.PlatformFileSystemType.WORKSPACE_PROJECT
+            type: Persistence.PlatformFileSystem.PlatformFileSystemType.WORKSPACE_PROJECT,
         }, SCRIPT_DESCRIPTION.url, SCRIPT_DESCRIPTION.content, target, backend.universe);
         const breakpointLine = 0;
         // Set the breakpoint response for our upcoming request.
@@ -110,7 +110,7 @@ describe('PersistenceImpl', () => {
         const { uiSourceCode: fileSystemUiSourceCode, project } = createFileSystemFileForPersistenceTests({
             fileSystemPath,
             fileSystemFileUrl,
-            type: Persistence.PlatformFileSystem.PlatformFileSystemType.WORKSPACE_PROJECT
+            type: Persistence.PlatformFileSystem.PlatformFileSystemType.WORKSPACE_PROJECT,
         }, SCRIPT_DESCRIPTION.url, SCRIPT_DESCRIPTION.content, target, backend.universe);
         const breakpointLine = 0;
         // Set the breakpoint response for our upcoming request.

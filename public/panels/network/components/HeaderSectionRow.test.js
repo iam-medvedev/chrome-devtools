@@ -125,10 +125,10 @@ Learn more`);
         assert.strictEqual(headerValue.textContent?.trim(), 'secure=only; Secure');
         const icon = component.shadowRoot.querySelector('devtools-icon');
         assert.instanceOf(icon, HTMLElement);
-        assert.strictEqual(icon.title, 'This attempt to set a cookie via a Set-Cookie header was blocked because it had the ' +
+        assert.strictEqual(icon.title, 'This attempt to set a cookie via a "Set-Cookie" header was blocked because it had the ' +
             '"Secure" attribute but was not received over a secure connection.\nThis attempt to ' +
-            'set a cookie via a Set-Cookie header was blocked because it was not sent over a ' +
-            'secure connection and would have overwritten a cookie with the Secure attribute.');
+            'set a cookie via a "Set-Cookie" header was blocked because it was not sent over a ' +
+            'secure connection and would have overwritten a cookie with the "Secure" attribute.');
     });
     it('can be highlighted', async () => {
         const headerData = {

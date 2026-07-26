@@ -4,6 +4,7 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import * as Platform from '../../core/platform/platform.js';
+import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Trace from '../../models/trace/trace.js';
@@ -516,7 +517,7 @@ describeWithEnvironment('TimelineUIUtils', function () {
                     value: '1,058.3\xA0ms',
                 },
                 { title: 'Details', value: '{   "hello": "world"\n}' },
-                { title: undefined, value: '(anonymous) @ localhost:8787/perf-details/app.js:1:12' }
+                { title: undefined, value: '(anonymous) @ localhost:8787/perf-details/app.js:1:12' },
             ]);
         });
         it('renders details for SoftNavigationStart with an adjusted timestamp', async function () {
@@ -528,7 +529,7 @@ describeWithEnvironment('TimelineUIUtils', function () {
             const timestampRow = rowData.find(row => row.title === 'Timestamp');
             assert.exists(timestampRow);
             assert.isNotEmpty(timestampRow.value);
-            const urlRow = rowData.find(row => row.title === 'Url');
+            const urlRow = rowData.find(row => row.title === 'URL');
             assert.exists(urlRow);
         });
         it('renders details for performance.measure', async function () {
@@ -573,6 +574,95 @@ describeWithEnvironment('TimelineUIUtils', function () {
                 { title: 'Compilation cache status', value: 'script not eligible' },
             ]);
         });
+        it('only linkifies http(s) URLs in extension properties', async function () {
+            const parsedTrace = await TraceLoader.traceEngine(this, 'extension-tracks-and-marks.json.gz');
+            const extensionEntry = parsedTrace.data.ExtensionTraceData.extensionTrackData[1].entriesByTrack['An Extension Track'][0];
+            assert.isOk(extensionEntry);
+            const mutableEntry = {
+                ...extensionEntry,
+                devtoolsObj: {
+                    ...extensionEntry.devtoolsObj,
+                    properties: [
+                        ['HTTP URL', 'http://example.com'],
+                        ['HTTPS URL', 'https://example.com/path'],
+                        ['Chrome URL', 'chrome://version'],
+                        ['Edge URL', 'edge://settings'],
+                        ['File URL', 'file:///C:/Windows/win.ini'],
+                        ['DevTools URL', 'devtools://devtools/bundled/devtools_app.html?ws=127.0.0.1:1234'],
+                    ],
+                },
+            };
+            const details = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(parsedTrace, mutableEntry, new Components.Linkifier.Linkifier(), false, null);
+            const container = document.createElement('div');
+            renderElementIntoDOM(container);
+            container.appendChild(details);
+            const propertyRows = Array.from(container.querySelectorAll('.timeline-details-view-row'));
+            const rowByTitle = new Map(propertyRows.map(row => {
+                const title = row.querySelector('.timeline-details-view-row-title')?.innerText;
+                return [title || '', row];
+            }));
+            const httpRow = rowByTitle.get('HTTP URL');
+            assert.exists(httpRow);
+            assert.exists(httpRow?.querySelector('button.devtools-link'));
+            const httpsRow = rowByTitle.get('HTTPS URL');
+            assert.exists(httpsRow);
+            assert.exists(httpsRow?.querySelector('button.devtools-link'));
+            const disallowedRows = ['Chrome URL', 'Edge URL', 'File URL', 'DevTools URL'];
+            for (const title of disallowedRows) {
+                const row = rowByTitle.get(title);
+                assert.exists(row);
+                assert.notExists(row?.querySelector('button.devtools-link'));
+            }
+        });
+        it('only linkifies http(s) URLs from userDetail.url', async function () {
+            const parsedTrace = await TraceLoader.traceEngine(this, 'extension-tracks-and-marks.json.gz');
+            const extensionEntry = parsedTrace.data.ExtensionTraceData.extensionTrackData[1].entriesByTrack['An Extension Track'][0];
+            if (!extensionEntry) {
+                throw new Error('Could not find extension entry.');
+            }
+            const originalDevToolsDeepLinksConfig = Root.Runtime.hostConfig.devToolsDeepLinksViaExtensibilityApi;
+            Root.Runtime.hostConfig.devToolsDeepLinksViaExtensibilityApi = { enabled: true };
+            try {
+                const cases = [
+                    { url: 'https://example.com/node/1', description: 'External docs', expectLink: true },
+                    { url: 'foo-extension://node/1', description: 'Node', expectLink: false },
+                    { url: 'chrome://version', description: 'Chrome URL', expectLink: false },
+                ];
+                for (const { url, description, expectLink } of cases) {
+                    const entry = {
+                        ...extensionEntry,
+                        userDetail: {
+                            url,
+                            description,
+                        },
+                    };
+                    const details = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(parsedTrace, entry, new Components.Linkifier.Linkifier(), false, null);
+                    const container = document.createElement('div');
+                    renderElementIntoDOM(container);
+                    try {
+                        container.appendChild(details);
+                        const row = Array.from(container.querySelectorAll('.timeline-details-view-row'))
+                            .find(r => r.querySelector('.timeline-details-view-row-title')?.innerText ===
+                            description);
+                        if (expectLink) {
+                            assert.exists(row);
+                            assert.exists(row?.querySelector('button.devtools-link'));
+                            assert.exists(container.querySelector(`button[title="${url}"]`));
+                        }
+                        else {
+                            assert.notExists(row);
+                            assert.notExists(container.querySelector(`button[title="${url}"]`));
+                        }
+                    }
+                    finally {
+                        container.remove();
+                    }
+                }
+            }
+            finally {
+                Root.Runtime.hostConfig.devToolsDeepLinksViaExtensibilityApi = originalDevToolsDeepLinksConfig;
+            }
+        });
         it('renders the details for an extension entry properly', async function () {
             const parsedTrace = await TraceLoader.traceEngine(this, 'extension-tracks-and-marks.json.gz');
             const extensionEntry = parsedTrace.data.ExtensionTraceData.extensionTrackData[1].entriesByTrack['An Extension Track'][0];
@@ -602,8 +692,8 @@ describeWithEnvironment('TimelineUIUtils', function () {
                 devtoolsObj: {
                     ...extensionEntry.devtoolsObj,
                     // Note: we do not support this, but bad values can come in via mistakes in user code.
-                    properties: [['key', null]]
-                }
+                    properties: [['key', null]],
+                },
             };
             const details = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(parsedTrace, mutableEntry, new Components.Linkifier.Linkifier(), false, null);
             const rowData = getRowDataForDetailsElement(details).slice(0, 3);
@@ -629,7 +719,7 @@ describeWithEnvironment('TimelineUIUtils', function () {
                 {
                     title: 'Description',
                     value: 'This marks the start of a task',
-                }
+                },
             ]);
         });
         it('renders the details for a profile call properly', async function () {
@@ -829,7 +919,7 @@ describeWithEnvironment('TimelineUIUtils', function () {
                 // The initiator stack trace
                 {
                     title: undefined,
-                    value: 'connect @ socketsbay.com/test-websockets:314:25\n(anonymous) @ socketsbay.com/test-websockets:130:129'
+                    value: 'connect @ socketsbay.com/test-websockets:314:25\n(anonymous) @ socketsbay.com/test-websockets:130:129',
                 },
                 // The 2 entries under "Initiator for" are displayed as separate links and in the UI it is obvious they are separate
                 { title: 'Initiator for', value: 'Send WebSocket handshake Receive WebSocket handshake' },
@@ -1212,12 +1302,12 @@ describeWithEnvironment('TimelineUIUtils', function () {
             assert.strictEqual(container.innerHTML, `<button role="link" class=" devtools-link text-button link-style " title="http://example.com" jslog="Link; context: url; track: click" tabindex="-1"></button> at the beginning. <button role="link" class=" devtools-link text-button link-style " title="http://example.com" jslog="Link; context: url; track: click" tabindex="-1"></button> in the middle or at the end: <button role="link" class=" devtools-link text-button link-style " title="http://example.com" jslog="Link; context: url; track: click" tabindex="-1"></button>`
                 .replace(/\n/g, ' '));
         });
-        it('should parse a string with multiple links and create link elements for them', () => {
+        it('does not linkify custom scheme URLs', () => {
             const rawString = 'Node: ext://node/123   Root Cause: ext://node/13566';
             const fragment = Timeline.TimelineUIUtils.TimelineUIUtils.parseStringForLinks(rawString);
             const container = document.createElement('div');
             container.appendChild(fragment);
-            assert.strictEqual(container.innerHTML, 'Node: <button role="link" class=" devtools-link text-button link-style " jslog="Link; context: url; track: click" tabindex="-1">ext://node/123</button>   Root Cause: <button role="link" class=" devtools-link text-button link-style " jslog="Link; context: url; track: click" tabindex="-1">ext://node/13566</button>');
+            assert.strictEqual(container.innerHTML, 'Node: ext://node/123   Root Cause: ext://node/13566');
         });
         it('does not linkify data URI or www. prefixed text handle a data URI', () => {
             const rawString = 'so data:text/html,%3Cscript%3Ealert%28%27hi%27%29%3B%3C%2Fscript%3E and www.site.com remain plain';
@@ -1225,6 +1315,42 @@ describeWithEnvironment('TimelineUIUtils', function () {
             const container = document.createElement('div');
             container.appendChild(fragment);
             assert.strictEqual(container.innerHTML, 'so data:text/html,%3Cscript%3Ealert%28%27hi%27%29%3B%3C%2Fscript%3E and www.site.com remain plain');
+        });
+    });
+    describe('isLinkifiableScheme', () => {
+        const registrations = [];
+        afterEach(() => {
+            for (const registration of registrations) {
+                Components.Linkifier.Linkifier.unregisterLinkHandler(registration);
+            }
+            registrations.length = 0;
+        });
+        function registerHandler(registration) {
+            Components.Linkifier.Linkifier.registerLinkHandler(registration);
+            registrations.push(registration);
+        }
+        it('allows http and https', () => {
+            assert.isTrue(Timeline.TimelineUIUtils.TimelineUIUtils.isLinkifiableScheme('http'));
+            assert.isTrue(Timeline.TimelineUIUtils.TimelineUIUtils.isLinkifiableScheme('https'));
+        });
+        it('rejects forbidden schemes', () => {
+            assert.isFalse(Timeline.TimelineUIUtils.TimelineUIUtils.isLinkifiableScheme('chrome'));
+            assert.isFalse(Timeline.TimelineUIUtils.TimelineUIUtils.isLinkifiableScheme('devtools'));
+            assert.isFalse(Timeline.TimelineUIUtils.TimelineUIUtils.isLinkifiableScheme('chrome-error'));
+        });
+        it('rejects unknown schemes by default', () => {
+            assert.isFalse(Timeline.TimelineUIUtils.TimelineUIUtils.isLinkifiableScheme('foo-extension'));
+        });
+        it('allows valid scheme registered by a DevTools extension', () => {
+            const goodRegistration = {
+                title: 'Good Extension',
+                origin: urlString `good-extension:abcdefghijklmnop`,
+                scheme: 'good-extension:',
+                handler: () => { },
+                shouldHandleOpenResource: () => true,
+            };
+            registerHandler(goodRegistration);
+            assert.isTrue(Timeline.TimelineUIUtils.TimelineUIUtils.isLinkifiableScheme('good-extension'));
         });
     });
     describe('URL regex in parseStringForLinks', () => {

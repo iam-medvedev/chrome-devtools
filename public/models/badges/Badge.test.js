@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
+import { createSettingsForTest } from '../../testing/SettingsHelpers.js';
 import * as Badges from './badges.js';
 class TestBadge extends Badges.Badge {
     name = 'badges/test-badge';
@@ -28,6 +29,7 @@ describe('Badge', () => {
         testBadge = new TestBadge({
             onTriggerBadge: onTriggerBadgeStub,
             badgeActionEventTarget,
+            settings: createSettingsForTest(),
         });
     });
     it('events received for interestedActions trigger `handleAction`', () => {

@@ -39,8 +39,8 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as TextUtils from '../../core/text_utils/text_utils.js';
 import * as Bindings from '../../models/bindings/bindings.js';
-import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as SourceMapsResolver from '../../models/trace_source_maps_resolver/trace_source_maps_resolver.js';
 import * as Workspace from '../../models/workspace/workspace.js';
@@ -71,7 +71,7 @@ const UIStrings = {
      * @description Text that only contain a placeholder
      * @example {100ms (at 200ms)} PH1
      */
-    emptyPlaceholder: '{PH1}', // eslint-disable-line @devtools/l10n-no-locked-or-placeholder-only-phrase
+    emptyPlaceholder: '{PH1}', // eslint-disable-line @devtools/l10n-uistrings-text-style
     /**
      * @description Text for timestamps of items
      */
@@ -187,7 +187,7 @@ const UIStrings = {
     /**
      * @description Text to refer to the URL associated with a given event.
      */
-    url: 'Url',
+    url: 'URL',
     /**
      * @description Text to indicate to the user the size of the cache (as a filesize - e.g. 5mb).
      */
@@ -468,6 +468,7 @@ const str_ = i18n.i18n.registerUIStrings('panels/timeline/TimelineUIUtils.ts', U
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 /** Look for scheme:// plus text and exclude any punctuation at the end. **/
 export const URL_REGEX = /(?:[a-zA-Z][a-zA-Z0-9+.-]{2,}:\/\/)[^\s"]{2,}[^\s"'\)\}\],:;.!?]/u;
+const ALWAYS_LINKIFIED_SCHEMES = new Set(['http', 'https']);
 let eventDispatchDesciptors;
 let colorGenerator;
 const { SamplesIntegrator } = Trace.Helpers.SamplesIntegrator;
@@ -795,7 +796,7 @@ export class TimelineUIUtils {
     }
     static maybeCreateLinkElement(url) {
         const parsedURL = new Common.ParsedURL.ParsedURL(url);
-        if (!parsedURL.scheme) {
+        if (!TimelineUIUtils.isLinkifiableScheme(parsedURL.scheme)) {
             return null;
         }
         const splitResult = Common.ParsedURL.ParsedURL.splitLineAndColumn(url);
@@ -810,6 +811,18 @@ export class TimelineUIUtils {
             omitOrigin: true,
         };
         return LegacyComponents.Linkifier.Linkifier.linkifyURL(rawURL, options);
+    }
+    /**
+     * Don't linkify URLs to privileged schemes. See https://crbug.com/530450502.
+     */
+    static isLinkifiableScheme(scheme) {
+        if (ALWAYS_LINKIFIED_SCHEMES.has(scheme)) {
+            return true;
+        }
+        if (LegacyComponents.Linkifier.Linkifier.isRegisteredLinkHandlerScheme(scheme + ':')) {
+            return true;
+        }
+        return false;
     }
     /**
      * Takes an input string and parses it to look for links. It does this by
@@ -941,7 +954,7 @@ export class TimelineUIUtils {
                 const hasExclusiveLink = typeof userDetail === 'object' && typeof userDetail.url === 'string' &&
                     typeof userDetail.description === 'string';
                 if (hasExclusiveLink && Boolean(Root.Runtime.hostConfig.devToolsDeepLinksViaExtensibilityApi?.enabled)) {
-                    const linkElement = this.maybeCreateLinkElement(String(userDetail.url));
+                    const linkElement = TimelineUIUtils.maybeCreateLinkElement(String(userDetail.url));
                     if (linkElement) {
                         contentHelper.appendElementRow(String(userDetail.description), linkElement);
                         // Now remove so we don't render them in renderObjectJson.

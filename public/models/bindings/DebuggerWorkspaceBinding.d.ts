@@ -1,15 +1,15 @@
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import type * as TextUtils from '../../core/text_utils/text_utils.js';
 import * as Protocol from '../../generated/protocol.js';
 import type * as StackTrace from '../stack_trace/stack_trace.js';
-import type * as TextUtils from '../text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
 import { DebuggerLanguagePluginManager } from './DebuggerLanguagePlugins.js';
 import { type LiveLocation, type LiveLocationPool, LiveLocationWithPool } from './LiveLocation.js';
-import type { ResourceMapping } from './ResourceMapping.js';
+import type { DebuggerLocationUpdater, ResourceMapping } from './ResourceMapping.js';
 import { type ResourceScriptFile } from './ResourceScriptMapping.js';
 import { type SymbolizedError } from './SymbolizedError.js';
-export declare class DebuggerWorkspaceBinding implements SDK.TargetManager.SDKModelObserver<SDK.DebuggerModel.DebuggerModel> {
+export declare class DebuggerWorkspaceBinding implements SDK.TargetManager.SDKModelObserver<SDK.DebuggerModel.DebuggerModel>, DebuggerLocationUpdater {
     #private;
     readonly resourceMapping: ResourceMapping;
     readonly pluginManager: DebuggerLanguagePluginManager;

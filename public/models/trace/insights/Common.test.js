@@ -50,7 +50,7 @@ describeWithEnvironment('Common', function () {
                         decodedBodyLength: partial.resourceSize ?? 0,
                         resourceType: partial.resourceType,
                         responseHeaders: partial.responseHeaders ?? [],
-                    }
+                    },
                 },
             };
             return request;
@@ -104,7 +104,7 @@ describeWithEnvironment('Common', function () {
                             label: 'test',
                             showDuration: true,
                         }];
-                }
+                },
             };
             const bounds = Insights.Common.insightBounds(fakeInsight, INSIGHT_SET_BOUNDS);
             assert.deepEqual(bounds, microsecondsTraceWindow(100, 500));
@@ -124,9 +124,9 @@ describeWithEnvironment('Common', function () {
                             bounds: microsecondsTraceWindow(50, 400),
                             label: 'test',
                             showDuration: true,
-                        }
+                        },
                     ];
-                }
+                },
             };
             const bounds = Insights.Common.insightBounds(fakeInsight, INSIGHT_SET_BOUNDS);
             assert.deepEqual(bounds, microsecondsTraceWindow(50, 500));
@@ -135,7 +135,7 @@ describeWithEnvironment('Common', function () {
             const fakeInsight = {
                 createOverlays() {
                     return [];
-                }
+                },
             };
             const bounds = Insights.Common.insightBounds(fakeInsight, INSIGHT_SET_BOUNDS);
             assert.deepEqual(bounds, INSIGHT_SET_BOUNDS);

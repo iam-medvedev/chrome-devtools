@@ -6,7 +6,7 @@ import * as Common from '../../../core/common/common.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as Workspace from '../../../models/workspace/workspace.js';
 import { dispatchBlurEvent, dispatchFocusEvent, dispatchInputEvent, dispatchKeyDownEvent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
-import { deinitializeGlobalVars, describeWithEnvironment, initializeGlobalVars } from '../../../testing/EnvironmentHelpers.js';
+import { deinitializeGlobalVars, describeWithEnvironment, initializeGlobalVars, } from '../../../testing/EnvironmentHelpers.js';
 import * as TimelineComponents from './components.js';
 describe('Ignore List Setting', () => {
     before(async () => await initializeGlobalVars());

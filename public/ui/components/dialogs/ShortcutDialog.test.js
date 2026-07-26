@@ -26,14 +26,14 @@ describe('ShortcutDialog', () => {
                     rows: [
                         [{ key: 'Cmd' }, { joinText: '+' }, { key: 'W' }],
                         { footnote: 'close the window' },
-                    ]
+                    ],
                 },
                 {
                     title: 'Second Shortcut Title',
                     rows: [[{ key: 'F8' }]],
-                }
+                },
             ],
-            open
+            open,
         };
         container.append(shortcutDialog);
         renderElementIntoDOM(container, { includeCommonStyles: true });

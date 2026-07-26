@@ -7,6 +7,7 @@ import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as TextUtils from '../../core/text_utils/text_utils.js';
 import { describeWithEnvironment, expectConsoleLogs } from '../../testing/EnvironmentHelpers.js';
 import { TestPlugin } from '../../testing/LanguagePluginHelpers.js';
 import { MockDebuggerBackend } from '../../testing/MockScopeChain.js';
@@ -17,7 +18,6 @@ import { setupPageResourceLoaderForSourceMap } from '../../testing/SourceMapHelp
 import { createContentProviderUISourceCode, } from '../../testing/UISourceCodeHelpers.js';
 import * as Breakpoints from '../breakpoints/breakpoints.js';
 import * as Persistence from '../persistence/persistence.js';
-import * as TextUtils from '../text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
 const { urlString } = Platform.DevToolsPath;
 describeWithEnvironment('BreakpointManager', () => {

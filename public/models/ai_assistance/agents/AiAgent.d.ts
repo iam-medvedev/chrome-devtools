@@ -2,9 +2,9 @@ import * as Host from '../../../core/host/host.js';
 import type { UrlString } from '../../../core/platform/DevToolsPath.js';
 import type * as Platform from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
+import type * as TextUtils from '../../../core/text_utils/text_utils.js';
 import type * as Protocol from '../../../generated/protocol.js';
 import type * as LHModel from '../../lighthouse/lighthouse.js';
-import type * as TextUtils from '../../text_utils/text_utils.js';
 import type * as Trace from '../../trace/trace.js';
 import type * as Workspace from '../../workspace/workspace.js';
 export declare const enum ResponseType {
@@ -26,7 +26,8 @@ export declare const enum ErrorType {
     MAX_STEPS = "max-steps",
     BLOCK = "block",
     CROSS_ORIGIN = "cross-origin",
-    QUOTA = "quota"
+    QUOTA = "quota",
+    PAYLOAD_TOO_LARGE = "payload-too-large"
 }
 export declare const enum MultimodalInputType {
     SCREENSHOT = "screenshot",
@@ -452,4 +453,10 @@ export declare abstract class AiAgent<T> {
         signal?: AbortSignal;
     }, multimodalInput?: MultimodalInput): AsyncGenerator<ResponseData, void, void>;
 }
+/**
+ * Maps AIDA-specific client error instances to user-facing ErrorType enums.
+ * This handles AIDA API failure modes such as quota exhaustion or blockages.
+ * Other application-level errors (like CROSS_ORIGIN or MAX_STEPS) are handled separately.
+ */
+export declare function aidaErrorToErrorType(err: unknown): ErrorType;
 export {};

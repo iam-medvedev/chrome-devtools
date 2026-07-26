@@ -4,7 +4,7 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
-import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -70,5 +70,10 @@ describeWithEnvironment('AccessibilitySidebarView', () => {
     it('does not update UI on out of scope charachter data modified event', updatesUiOnEvent(SDK.DOMModel.Events.CharacterDataModified, false));
     it('updates UI on in scope child node count updated event', updatesUiOnEvent(SDK.DOMModel.Events.ChildNodeCountUpdated, true));
     it('does not update UI on out of scope child node count updated event', updatesUiOnEvent(SDK.DOMModel.Events.ChildNodeCountUpdated, false));
+    it('renders the view', async () => {
+        view = Accessibility.AccessibilitySidebarView.AccessibilitySidebarView.instance({ forceNew: true });
+        renderElementIntoDOM(view, { includeCommonStyles: true });
+        await assertScreenshot('accessibility/accessibility_sidebar_view.png');
+    });
 });
 //# sourceMappingURL=AccessibilitySidebarView.test.js.map

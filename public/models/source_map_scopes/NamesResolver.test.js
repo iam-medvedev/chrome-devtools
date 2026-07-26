@@ -195,7 +195,7 @@ describe('NameResolver', () => {
         const scopes = '          {                     }';
         const scopeObject = backend.createSimpleRemoteObject([{ name: 'o', value: 1 }, { name: 'n', value: 2 }]);
         const callFrame = await backend.createCallFrame(target, { url: URL, content: source }, scopes, { url: sourceMapUrl, content: sourceMapContent }, [scopeObject]);
-        const resolvedScopeObject = await SourceMapScopes.NamesResolver.resolveScopeInObject(callFrame.scopeChain()[0]);
+        const resolvedScopeObject = await SourceMapScopes.NamesResolver.resolveScopeInObject(callFrame.scopeChain()[0], backend.universe.debuggerWorkspaceBinding);
         const properties = await resolvedScopeObject.getAllProperties(false, false);
         const namesAndValues = properties.properties?.map(p => ({ name: p.name, value: p.value?.value })) ?? [];
         assert.sameDeepMembers(namesAndValues, [{ name: 'par1', value: 1 }, { name: 'par2', value: 2 }]);
@@ -214,7 +214,7 @@ describe('NameResolver', () => {
         const scopes = '          {      <                                >}';
         const scopeObject = backend.createSimpleRemoteObject([{ name: 'o', value: 4 }]);
         const callFrame = await backend.createCallFrame(target, { url: URL, content: source }, scopes, { url: sourceMapUrl, content: sourceMapContent }, [scopeObject]);
-        const resolvedScopeObject = await SourceMapScopes.NamesResolver.resolveScopeInObject(callFrame.scopeChain()[0]);
+        const resolvedScopeObject = await SourceMapScopes.NamesResolver.resolveScopeInObject(callFrame.scopeChain()[0], backend.universe.debuggerWorkspaceBinding);
         const properties = await resolvedScopeObject.getAllProperties(false, false);
         const namesAndValues = properties.properties?.map(p => ({ name: p.name, value: p.value?.value })) ?? [];
         assert.sameDeepMembers(namesAndValues, [{ name: 'i', value: 4 }]);
@@ -233,7 +233,7 @@ describe('NameResolver', () => {
         const scopes = '          {                     }';
         const scopeObject = backend.createSimpleRemoteObject([{ name: 'o', value: 1 }, { name: 'n', value: 2 }]);
         const callFrame = await backend.createCallFrame(target, { url: URL, content: source }, scopes, { url: sourceMapUrl, content: sourceMapContent }, [scopeObject]);
-        const resolvedScopeObject = await SourceMapScopes.NamesResolver.resolveScopeInObject(callFrame.scopeChain()[0]);
+        const resolvedScopeObject = await SourceMapScopes.NamesResolver.resolveScopeInObject(callFrame.scopeChain()[0], backend.universe.debuggerWorkspaceBinding);
         const properties = await resolvedScopeObject.getAllProperties(false, false);
         const namesAndValues = properties.properties?.map(p => ({ name: p.name, value: p.value?.value })) ?? [];
         assert.sameDeepMembers(namesAndValues, [{ name: 'par1', value: 1 }, { name: 'par2', value: 2 }]);
@@ -251,7 +251,7 @@ describe('NameResolver', () => {
         const scopes = '                             {                          }';
         const scopeObject = backend.createSimpleRemoteObject([{ name: 's', value: 42 }]);
         const callFrame = await backend.createCallFrame(target, { url: URL, content: source }, scopes, { url: sourceMapUrl, content: sourceMapContent }, [scopeObject]);
-        const resolvedScopeObject = await SourceMapScopes.NamesResolver.resolveScopeInObject(callFrame.scopeChain()[0]);
+        const resolvedScopeObject = await SourceMapScopes.NamesResolver.resolveScopeInObject(callFrame.scopeChain()[0], backend.universe.debuggerWorkspaceBinding);
         const properties = await resolvedScopeObject.getAllProperties(false, false);
         const namesAndValues = properties.properties?.map(p => ({ name: p.name, value: p.value?.value })) ?? [];
         assert.sameDeepMembers(namesAndValues, [{ name: 'par1', value: 42 }]);
@@ -272,7 +272,7 @@ describe('NameResolver', () => {
         const scopes = '              {                                          }';
         const scopeObject = backend.createSimpleRemoteObject([{ name: 'n', value: 42 }, { name: 'o', value: 5 }, { name: 'c' }]);
         const callFrame = await backend.createCallFrame(target, { url: URL, content: source }, scopes, { url: sourceMapUrl, content: sourceMapContent }, [scopeObject]);
-        const resolvedScopeObject = await SourceMapScopes.NamesResolver.resolveScopeInObject(callFrame.scopeChain()[0]);
+        const resolvedScopeObject = await SourceMapScopes.NamesResolver.resolveScopeInObject(callFrame.scopeChain()[0], backend.universe.debuggerWorkspaceBinding);
         const properties = await resolvedScopeObject.getAllProperties(false, false);
         const namesAndValues = properties.properties?.map(p => ({ name: p.name, value: p.value?.value })) ?? [];
         assert.sameDeepMembers(namesAndValues, [{ name: 'arg1', value: 42 }, { name: 'arg2', value: 5 }, { name: 'result', value: undefined }]);
@@ -316,7 +316,7 @@ describe('NameResolver', () => {
         }
         const scopeObject = backend.createSimpleRemoteObject([{ name: 'pos', value: 10 }, { name: 'pos_1', value: 4 }]);
         const callFrame = await backend.createCallFrame(target, { url: URL, content: source.join('\n') }, scopes.join('\n'), { url: sourceMapUrl, content: sourceMapContent }, [scopeObject]);
-        const resolvedScopeObject = await SourceMapScopes.NamesResolver.resolveScopeInObject(callFrame.scopeChain()[0]);
+        const resolvedScopeObject = await SourceMapScopes.NamesResolver.resolveScopeInObject(callFrame.scopeChain()[0], backend.universe.debuggerWorkspaceBinding);
         const properties = await resolvedScopeObject.getAllProperties(false, false);
         const namesAndValues = properties.properties?.map(p => ({ name: p.name, value: p.value?.value })) ?? [];
         assert.deepEqual(namesAndValues, [{ name: 'pos', value: 10 }, { name: 'pos', value: 4 }]);
@@ -350,7 +350,7 @@ describe('NameResolver', () => {
             assert.exists(scriptId, 'Script id not found');
             const { lineNumber, columnNumber } = scopeLocation;
             await script?.requestContentData();
-            const functionName = await SourceMapScopes.NamesResolver.resolveProfileFrameFunctionName({ scriptId, columnNumber, lineNumber }, target);
+            const functionName = await SourceMapScopes.NamesResolver.resolveProfileFrameFunctionName({ scriptId, columnNumber, lineNumber }, target, backend.universe.debuggerWorkspaceBinding);
             assert.strictEqual(functionName, 'unminified');
         });
     });
@@ -429,7 +429,7 @@ function mulWithOffset(param1, param2, offset) {
         it('has the right mapping on a function scope without shadowing', async () => {
             const location = script.rawLocation(0, 30); // Beginning of function scope.
             assert.exists(location);
-            const mapping = await SourceMapScopes.NamesResolver.allVariablesAtPosition(location);
+            const mapping = await SourceMapScopes.NamesResolver.allVariablesAtPosition(location, backend.universe.debuggerWorkspaceBinding);
             assert.strictEqual(mapping.get('param1'), 'n');
             assert.strictEqual(mapping.get('param2'), 't');
             assert.strictEqual(mapping.get('offset'), 'e');
@@ -439,14 +439,14 @@ function mulWithOffset(param1, param2, offset) {
         it('has the right mapping in a block scope with shadowing in the authored code', async () => {
             const location = script.rawLocation(0, 70); // Beginning of block scope.
             assert.exists(location);
-            const mapping = await SourceMapScopes.NamesResolver.allVariablesAtPosition(location);
+            const mapping = await SourceMapScopes.NamesResolver.allVariablesAtPosition(location, backend.universe.debuggerWorkspaceBinding);
             // Block scope {intermediate} shadows function scope {intermediate}.
             assert.strictEqual(mapping.get('intermediate'), 'n');
         });
         it('has the right mapping in a block scope with shadowing in the compiled code', async () => {
             const location = script.rawLocation(0, 70); // Beginning of block scope.
             assert.exists(location);
-            const mapping = await SourceMapScopes.NamesResolver.allVariablesAtPosition(location);
+            const mapping = await SourceMapScopes.NamesResolver.allVariablesAtPosition(location, backend.universe.debuggerWorkspaceBinding);
             assert.isNull(mapping.get('param1'));
         });
     });

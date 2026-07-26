@@ -100,7 +100,7 @@ describeWithEnvironment('AppManifestView', () => {
                     success: true,
                     errorDescription: { message: '', statusCode: 0, netError: 0, netErrorName: '', urlValid: true },
                 };
-            }
+            },
         });
         view = new Application.AppManifestView.AppManifestView(viewFunction);
         renderElementIntoDOM(view);
@@ -268,7 +268,7 @@ describeWithEnvironment('AppManifestView', () => {
                             sizes: '320x320',
                             form_factor: 'wide',
                             label: 'Dummy Screenshot',
-                            platform: 'windows'
+                            platform: 'windows',
                         },
                         processedImage: {
                             imageResourceErrors: [],
@@ -278,11 +278,11 @@ describeWithEnvironment('AppManifestView', () => {
                             title: '320×320px\nimage/png',
                             imageSrc: 'data:application/octet-stream;base64,iVBORw0KGgoAAAANSUhEUgAAAUAAAAFABAMAAAA/vriZAAAAG1BMVEUAAAD///+fn59fX19/f3/f39+/v78/Pz8fHx82YA2fAAAACXBIWXMAAA7EAAAOxAGVKw4bAAADR0lEQVR4nO3Yy1PaUBTHcQSRLHvABJbio3YJ04fbMsW2S9OnS2JH6hJqHV3GqpU/u3lCwJuQEByczvezgOTknvCbQJIbCgUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJbv0l51gmQVebvqCMkImNckYLOh2KwsqqQemNWTD6i9HCR9xOoDzvkIAmZAwLyeVMCRnfIjZoujuL3kCLjdChbWd5yX0q5z7dsT+RRcXbTt9JcZ7b2Ivh+uvTGdtd3E7nRkK1goG87Lhl7QLHEYtlcMLtTdbtfa7LoinTNFren2yU9/42tvRfRWXPfiAduyM7rvyHEkoCYhfdI4W7yQL1fajSXeQVuX6oE9Ot9z25XdiwcsecdAs6qRgIV+v28azkv/JNI5XSzJZ6/BrLtvbd32xty04roXDjj0k5XFjgQszP8NDoNId95hMo9jB+YMKKa/XvKTpQ9o1QtBY8tta8UOzBvQCOu9TAEr4/2YPfcnaD9awHBP1lGmgEUJryidxuMGDAN1GpkClsdn6HXN/Z4HcQNzBwz33M4W8Lo6jlqNfuHLDxjW2/VMAdu1cGnD3Y9Vixu4qoCderhUdL/sobx47IDDbAEjp4sbsGLKD/tpBdS/BkxvF3+cG9uOrRi4soAy4RVunTmH0Xo4cGUBa5djQem3Jfryp1uLBuwoNmuHUnswcGUB64rNhU54WV1GwLVcAds1xWbnjtLLHdBcTsDJnWSK1cgfsBcmyhWwbCg2Tw5sjoD+rMXdR66Axdn5S7CX/AGbz/z3iiQHVJ2mkeKD6cF0QGV3OuGXcDcnYFt1mkaKlvo0rid0p3Pt/3g0cy854HBT0Rwphs8kUzTzKKE7naIf4UKfcx1cUz0zRorr8j0I5QStfPSX/4bPJsrudDQxnIvpLzmbE7AoZ87r1XRztNjxn9lvmt5DkzeXuTWrSd0pXYh+cirVeXcSzZRvz2d/aNGiM8MyTrZPxT1oTl367vJWUndK3l8W1YE/E44P6E6gRGY/Ilosef+Z+P/OVA69ec2+cmBm590Pdoph993uQXLxPLJy/6r7bhA3EAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACA/9E/taiqMl6Q6aMAAAAASUVORK5CYII=',
                             imageUrl: FIXTURES_320X320_URL,
-                        }
+                        },
                     }],
                 imageResourceErrors: [],
                 warnings: [],
-            }
+            },
         };
         const viewOutput = { scrollToSection: new Map(), focusOnSection: new Map() };
         Application.AppManifestView.DEFAULT_VIEW(viewInput, viewOutput, container);
@@ -294,7 +294,8 @@ describeWithEnvironment('AppManifestView', () => {
         const viewInput = {
             iconsData: {
                 icons: new Map([[
-                        '320x320\nimage/png', [{
+                        '320x320\nimage/png',
+                        [{
                                 imageResourceErrors: [],
                                 squareSizedIconAvailable: true,
                                 naturalWidth: 320,
@@ -302,7 +303,7 @@ describeWithEnvironment('AppManifestView', () => {
                                 title: '320x320\nimage/png',
                                 imageSrc: 'data:application/octet-stream;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
                                 imageUrl: 'http://example.com/icon.png',
-                            }]
+                            }],
                     ]]),
                 imageResourceErrors: [],
             },

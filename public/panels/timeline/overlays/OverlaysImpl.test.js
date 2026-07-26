@@ -505,8 +505,8 @@ describeWithEnvironment('Overlays', () => {
                             explanation: 'This is an interesting entry',
                             metadata: {
                                 rpcGlobalId: 123,
-                            }
-                        }]])
+                            },
+                        }]]),
             });
             component.overridePerformanceAnnotationsForTest(performanceAnnotations);
             // The Agent call is async, so wait for the change event on the label to ensure the UI is updated.

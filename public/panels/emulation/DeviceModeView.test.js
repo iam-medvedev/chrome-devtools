@@ -9,6 +9,7 @@ import * as EmulationModel from '../../models/emulation/emulation.js';
 import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment, } from '../../testing/EnvironmentHelpers.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
+import * as UI from '../../ui/legacy/legacy.js';
 import * as MobileThrottling from '../mobile_throttling/mobile_throttling.js';
 import * as Emulation from './emulation.js';
 describeWithEnvironment('DeviceModeView', () => {
@@ -27,13 +28,14 @@ describeWithEnvironment('DeviceModeView', () => {
         });
         it('renders the view', async () => {
             renderElementIntoDOM(view, { includeCommonStyles: true });
+            await UI.Widget.Widget.allUpdatesComplete;
             await assertScreenshot('device_mode_view/base.png');
         });
         it('renders the view with rulers', async () => {
             showRulersSetting.set(true);
             renderElementIntoDOM(view, { includeCommonStyles: true, width: 800, height: 600 });
             deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.Responsive, null, null);
-            await new Promise(resolve => setTimeout(resolve, 100));
+            await UI.Widget.Widget.allUpdatesComplete;
             await assertScreenshot('device_mode_view/rulers.png');
         });
         describe('Logic Tests', () => {
@@ -49,13 +51,15 @@ describeWithEnvironment('DeviceModeView', () => {
                 const contentClip = view.contentElement.querySelector('.device-mode-content-clip');
                 assert.isFalse(contentClip?.classList.contains('device-mode-rulers-visible'));
                 showRulersSetting.set(true);
+                await view.updateComplete;
                 assert.isTrue(contentClip?.classList.contains('device-mode-rulers-visible'));
             });
-            it('sets correct dimensions on screenArea upon model updates', () => {
+            it('sets correct dimensions on screenArea upon model updates', async () => {
                 renderElementIntoDOM(view);
                 deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.Responsive, null, null);
                 sinon.stub(deviceModeModel, 'screenRect').returns(new EmulationModel.DeviceModeModel.Rect(0, 0, 800, 600));
                 deviceModeModel.dispatchEventToListeners("Updated" /* EmulationModel.DeviceModeModel.Events.UPDATED */);
+                await view.updateComplete;
                 const screenArea = view.contentElement.querySelector('.device-mode-screen-area');
                 assert.instanceOf(screenArea, HTMLElement);
                 assert.strictEqual(screenArea.style.width, '800px');

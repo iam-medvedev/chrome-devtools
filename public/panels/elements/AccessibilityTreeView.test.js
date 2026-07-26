@@ -117,6 +117,23 @@ describeWithEnvironment('AccessibilityTreeView', () => {
             copyStub.restore();
             view.detach();
         });
+        it('highlights DOM node on itemmouseover event', async () => {
+            const view = new Elements.AccessibilityTreeView.AccessibilityTreeView();
+            renderElementIntoDOM(view);
+            await view.updateComplete;
+            const highlightStub = sinon.stub();
+            const axNode = {
+                highlightDOMNode: highlightStub,
+            };
+            const treeOutline = view.contentElement.querySelector('devtools-tree-outline');
+            assert.exists(treeOutline);
+            treeOutline.dispatchEvent(new TreeOutline.TreeOutline.ItemMouseOverEvent({
+                treeNodeData: axNode,
+                id: '1',
+            }));
+            sinon.assert.calledOnce(highlightStub);
+            view.detach();
+        });
     });
     it('renders the accessibility tree screenshot', async () => {
         SDK.TargetManager.TargetManager.instance().setScopeTarget(target);

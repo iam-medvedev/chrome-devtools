@@ -78,7 +78,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
         items: input.items,
         selectedItem: input.selectedItem,
         onSelect: input.onSelect,
-        filters: input.filters
+        filters: input.filters,
     })}
       </div>
       <div class="developer-resource-view-toolbar-summary">

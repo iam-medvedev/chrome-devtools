@@ -85,11 +85,6 @@ declare const defaultValuesByAttribute: DeepImmutable<{
     }[];
     visible: boolean;
 }>;
-export declare class StepEditedEvent extends Event {
-    static readonly eventName = "stepedited";
-    data: Models.Schema.Step;
-    constructor(step: Models.Schema.Step);
-}
 export interface EditorState {
     type: Models.Schema.StepType;
     target?: string;
@@ -159,6 +154,8 @@ export interface ViewInput {
 type View = (input: ViewInput, _output: undefined, target: HTMLElement) => void;
 export declare class StepEditor extends UI.Widget.Widget {
     #private;
+    onStepEdited?: (step: Models.Schema.Step) => void;
+    onAttributeRequested?: (send: (attribute?: string) => void) => void;
     constructor(element?: HTMLElement, view?: View);
     set isTypeEditable(value: boolean);
     set disabled(value: boolean);

@@ -112,7 +112,7 @@ describeWithEnvironment('RequestHeaderSection', () => {
                     name: Platform.StringUtilities.toLowerCaseString('User-agent'),
                     value: 'Chrome',
                     valueEditable: 1 /* NetworkComponents.HeaderSectionRow.EditingAllowedStatus.ENABLED */,
-                }
+                },
             ],
             isProvisionalHeaders: true,
             isRequestCached: true,

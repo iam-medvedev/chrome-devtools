@@ -26,18 +26,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 import * as Platform from '../../core/platform/platform.js';
-import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Common from '../common/common.js';
 import * as i18n from '../i18n/i18n.js';
+import * as TextUtils from '../text_utils/text_utils.js';
 import { COND_BREAKPOINT_SOURCE_URL, Events, Location, LOGPOINT_SOURCE_URL, } from './DebuggerModel.js';
 import { ResourceTreeModel } from './ResourceTreeModel.js';
 const UIStrings = {
     /**
-     * @description Error message for when a script can't be loaded which had been previously
+     * @description Error message for when a script can't be loaded because it was removed or deleted.
      */
     scriptRemovedOrDeleted: 'Script removed or deleted.',
     /**
-     * @description Error message when failing to load a script source text
+     * @description Error message when failing to load a script source text.
      */
     unableToFetchScriptSource: 'Unable to fetch script source.',
 };

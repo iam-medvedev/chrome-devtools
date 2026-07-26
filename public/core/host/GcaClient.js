@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Root from '../root/root.js';
-import { debugLog } from './AidaClientTypes.js';
-import { aidaCompletionRequestToGcaRequest, aidaDoConversationRequestToGcaRequest, aidaEventToGcaTelemetryRequest, aidaGenerateCodeRequestToGcaRequest, gcaResponseToAidaCompletionResponse, gcaResponseToAidaGenerateCodeResponse } from './AidaGcaTranslation.js';
+import { debugLog, } from './AidaClientTypes.js';
+import { aidaCompletionRequestToGcaRequest, aidaDoConversationRequestToGcaRequest, aidaEventToGcaTelemetryRequest, aidaGenerateCodeRequestToGcaRequest, gcaResponseToAidaCompletionResponse, gcaResponseToAidaGenerateCodeResponse, } from './AidaGcaTranslation.js';
 import * as DispatchHttpRequestClient from './DispatchHttpRequestClient.js';
 const SERVICE_NAME = 'gcaService';
 const ENDPOINTS = {
@@ -72,7 +72,7 @@ export class GcaClient {
         }
         catch (err) {
             debugLog('GCA request failed:', JSON.stringify(request), err);
-            return null;
+            throw err;
         }
     }
 }

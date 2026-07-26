@@ -1,4 +1,5 @@
 {
+  "checkJs": true,
   "compilerOptions": {
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
@@ -41,7 +42,6 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
-    "../../../../../../front_end/models/ai_assistance/AgentProject.test.ts",
     "../../../../../../front_end/models/ai_assistance/AiAgent2.test.ts",
     "../../../../../../front_end/models/ai_assistance/AiConversation.test.ts",
     "../../../../../../front_end/models/ai_assistance/AiHistoryStorage.test.ts",
@@ -58,7 +58,6 @@
     "../../../../../../front_end/models/ai_assistance/agents/ContextSelectionAgent.test.ts",
     "../../../../../../front_end/models/ai_assistance/agents/FileAgent.test.ts",
     "../../../../../../front_end/models/ai_assistance/agents/NetworkAgent.test.ts",
-    "../../../../../../front_end/models/ai_assistance/agents/PatchAgent.test.ts",
     "../../../../../../front_end/models/ai_assistance/agents/PerformanceAgent.test.ts",
     "../../../../../../front_end/models/ai_assistance/agents/StorageAgent.test.ts",
     "../../../../../../front_end/models/ai_assistance/agents/StylingAgent.test.ts",
@@ -105,6 +104,9 @@
       "path": "../../core/sdk/bundle-tsconfig.json"
     },
     {
+      "path": "../../core/text_utils/bundle-tsconfig.json"
+    },
+    {
       "path": "../../generated/generated-tsconfig.json"
     },
     {
@@ -130,9 +132,6 @@
     },
     {
       "path": "../source_map_scopes/bundle-tsconfig.json"
-    },
-    {
-      "path": "../text_utils/bundle-tsconfig.json"
     },
     {
       "path": "../trace/bundle-tsconfig.json"

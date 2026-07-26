@@ -1058,17 +1058,17 @@ function getDeferralDecision(usage) {
 // gen/front_end/panels/network/EventSourceMessagesView.js
 var EventSourceMessagesView_exports = {};
 __export(EventSourceMessagesView_exports, {
-  Comparators: () => Comparators,
-  EventSourceMessageNode: () => EventSourceMessageNode,
+  DEFAULT_VIEW: () => DEFAULT_VIEW3,
   EventSourceMessagesView: () => EventSourceMessagesView
 });
-import "./../../ui/legacy/legacy.js";
+import "./../../ui/legacy/components/data_grid/data_grid.js";
 import * as Common3 from "./../../core/common/common.js";
 import * as Host2 from "./../../core/host/host.js";
 import * as i18n7 from "./../../core/i18n/i18n.js";
 import * as SDK3 from "./../../core/sdk/sdk.js";
-import * as DataGrid from "./../../ui/legacy/components/data_grid/data_grid.js";
+import * as Buttons2 from "./../../ui/components/buttons/buttons.js";
 import * as UI4 from "./../../ui/legacy/legacy.js";
+import { Directives as Directives2, html as html3, render as render3 } from "./../../ui/lit/lit.js";
 import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/network/eventSourceMessagesView.css.js
@@ -1078,14 +1078,24 @@ var eventSourceMessagesView_css_default = `/*
  * found in the LICENSE file.
  */
 
-.event-source-messages-view .data-grid {
-  flex: auto;
-  border: none;
+@scope to (devtools-widget > *) {
+  .event-source-messages-view {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .event-source-messages-view devtools-data-grid {
+    flex: auto;
+    border: none;
+  }
 }
 
 /*# sourceURL=${import.meta.resolve("./eventSourceMessagesView.css")} */`;
 
 // gen/front_end/panels/network/EventSourceMessagesView.js
+var { repeat } = Directives2;
 var UIStrings4 = {
   /**
    * @description Text in Event Source Messages View of the Network panel
@@ -1122,56 +1132,71 @@ var UIStrings4 = {
 };
 var str_4 = i18n7.i18n.registerUIStrings("panels/network/EventSourceMessagesView.ts", UIStrings4);
 var i18nString4 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
+var DEFAULT_VIEW3 = (input, _output, target) => {
+  render3(html3`
+    <style>
+      ${eventSourceMessagesView_css_default}
+    </style>
+    <div class="event-source-messages-view">
+      <devtools-toolbar>
+        <devtools-button title=${i18nString4(UIStrings4.clearAll)} .iconName=${"clear"}
+            @click=${input.onClear}
+            .variant=${"toolbar"}
+            .jslogContext=${"clear"}></devtools-button>
+        <devtools-toolbar-input
+            type="filter"
+            placeholder=${i18nString4(UIStrings4.filterByRegex)}
+            @change=${input.onFilterChanged}
+            .value=${input.filterSetting.get()}
+            style="flex-grow: 0.4"></devtools-toolbar-input>
+      </devtools-toolbar>
+      <devtools-data-grid name=${i18nString4(UIStrings4.eventSource)} autoscroll striped
+        .template=${html3`
+          <table>
+            <thead>
+              <tr>
+                <th id="id" weight="8" sortable>${i18nString4(UIStrings4.id)}</th>
+                <th id="type" weight="8" sortable>${i18nString4(UIStrings4.type)}</th>
+                <th id="data" weight="88">${i18nString4(UIStrings4.data)}</th>
+                <th id="time" weight="8" sortable sort="ascending">${i18nString4(UIStrings4.time)}</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${repeat(input.messages, (message) => message, (message) => {
+    const date = new Date(message.time * 1e3);
+    return html3`<tr @contextmenu=${(e) => {
+      e.preventDefault();
+      input.onRowContextMenu(message, e);
+    }}>
+                                <td>${message.eventId}</td>
+                                <td>${message.eventName}</td>
+                                <td>${message.data}</td>
+                                <td title=${date.toLocaleString()} data-value=${message.time}>${formatTime(date)}</td></tr>`;
+  })}
+            </tbody>
+          </table>
+        `}>
+      </devtools-data-grid>
+    </div>
+  `, target);
+};
 var EventSourceMessagesView = class extends UI4.Widget.VBox {
   request;
-  dataGrid;
-  mainToolbar;
-  clearAllButton;
-  filterTextInput;
-  filterRegex;
-  messageFilterSetting = Common3.Settings.Settings.instance().createSetting("network-event-source-message-filter", "");
-  constructor(request) {
+  messageFilterSetting;
+  filterRegex = null;
+  #view;
+  constructor(request, view = DEFAULT_VIEW3) {
     super({ jslog: `${VisualLogging3.pane("event-stream").track({ resize: true })}` });
-    this.registerRequiredCSS(eventSourceMessagesView_css_default);
-    this.element.classList.add("event-source-messages-view");
+    this.#view = view;
     this.request = request;
-    this.mainToolbar = this.element.createChild("devtools-toolbar");
-    this.clearAllButton = new UI4.Toolbar.ToolbarButton(i18nString4(UIStrings4.clearAll), "clear");
-    this.clearAllButton.addEventListener("Click", this.clearMessages, this);
-    this.mainToolbar.appendToolbarItem(this.clearAllButton);
-    const placeholder = i18nString4(UIStrings4.filterByRegex);
-    this.filterTextInput = new UI4.Toolbar.ToolbarFilter(placeholder, 0.4);
-    this.filterTextInput.addEventListener("TextChanged", this.updateFilterSetting, this);
+    this.messageFilterSetting = Common3.Settings.Settings.instance().createSetting("network-event-source-message-filter", "");
     const filter = this.messageFilterSetting.get();
-    this.filterRegex = null;
     this.setFilter(filter);
-    if (filter) {
-      this.filterTextInput.setValue(filter);
-    }
-    this.mainToolbar.appendToolbarItem(this.filterTextInput);
-    const columns = [
-      { id: "id", title: i18nString4(UIStrings4.id), sortable: true, weight: 8 },
-      { id: "type", title: i18nString4(UIStrings4.type), sortable: true, weight: 8 },
-      { id: "data", title: i18nString4(UIStrings4.data), sortable: false, weight: 88 },
-      { id: "time", title: i18nString4(UIStrings4.time), sortable: true, weight: 8 }
-    ];
-    this.dataGrid = new DataGrid.SortableDataGrid.SortableDataGrid({
-      displayName: i18nString4(UIStrings4.eventSource),
-      columns
-    });
-    this.dataGrid.setStriped(true);
-    this.dataGrid.setEnableAutoScrollToBottom(true);
-    this.dataGrid.setRowContextMenuCallback(this.onRowContextMenu.bind(this));
-    this.dataGrid.markColumnAsSortedBy("time", DataGrid.DataGrid.Order.Ascending);
-    this.sortItems();
-    this.dataGrid.addEventListener("SortingChanged", this.sortItems, this);
-    this.dataGrid.setName("event-source-messages-view");
-    this.dataGrid.asWidget().show(this.element);
   }
   wasShown() {
     super.wasShown();
-    this.refresh();
     this.request.addEventListener(SDK3.NetworkRequest.Events.EVENT_SOURCE_MESSAGE_ADDED, this.messageAdded, this);
+    this.requestUpdate();
   }
   willHide() {
     super.willHide();
@@ -1182,20 +1207,21 @@ var EventSourceMessagesView = class extends UI4.Widget.VBox {
     if (!this.messageFilter(message)) {
       return;
     }
-    this.dataGrid.insertChild(new EventSourceMessageNode(message));
+    this.requestUpdate();
   }
   messageFilter(message) {
     return !this.filterRegex || this.filterRegex.test(message.eventName) || this.filterRegex.test(message.eventId) || this.filterRegex.test(message.data);
   }
   clearMessages() {
     clearMessageOffsets.set(this.request, this.request.eventSourceMessages().length);
-    this.refresh();
+    this.requestUpdate();
   }
-  updateFilterSetting() {
-    const text = this.filterTextInput.value();
+  onFilterChanged(event) {
+    const inputElement = event.target;
+    const text = inputElement.value;
     this.messageFilterSetting.set(text);
     this.setFilter(text);
-    this.refresh();
+    this.requestUpdate();
   }
   setFilter(text) {
     this.filterRegex = null;
@@ -1207,51 +1233,29 @@ var EventSourceMessagesView = class extends UI4.Widget.VBox {
       }
     }
   }
-  sortItems() {
-    const sortColumnId = this.dataGrid.sortColumnId();
-    if (!sortColumnId) {
-      return;
-    }
-    const comparator = Comparators[sortColumnId];
-    if (!comparator) {
-      return;
-    }
-    this.dataGrid.sortNodes(comparator, !this.dataGrid.isSortOrderAscending());
+  onRowContextMenu(message, event) {
+    const contextMenu = new UI4.ContextMenu.ContextMenu(event);
+    contextMenu.clipboardSection().appendItem(i18nString4(UIStrings4.copyMessage), Host2.InspectorFrontendHost.InspectorFrontendHostInstance.copyText.bind(Host2.InspectorFrontendHost.InspectorFrontendHostInstance, message.data), { jslogContext: "copy" });
+    void contextMenu.show();
   }
-  onRowContextMenu(contextMenu, node) {
-    contextMenu.clipboardSection().appendItem(i18nString4(UIStrings4.copyMessage), Host2.InspectorFrontendHost.InspectorFrontendHostInstance.copyText.bind(Host2.InspectorFrontendHost.InspectorFrontendHostInstance, node.data.data), { jslogContext: "copy" });
-  }
-  refresh() {
-    this.dataGrid.rootNode().removeChildren();
+  performUpdate() {
     let messages = this.request.eventSourceMessages();
     const offset = clearMessageOffsets.get(this.request) || 0;
     messages = messages.slice(offset);
     messages = messages.filter(this.messageFilter.bind(this));
-    messages.forEach((message) => this.dataGrid.insertChild(new EventSourceMessageNode(message)));
+    const input = {
+      messages,
+      filterSetting: this.messageFilterSetting,
+      onClear: this.clearMessages.bind(this),
+      onFilterChanged: this.onFilterChanged.bind(this),
+      onRowContextMenu: this.onRowContextMenu.bind(this)
+    };
+    this.#view(input, {}, this.contentElement);
   }
 };
-var EventSourceMessageNode = class extends DataGrid.SortableDataGrid.SortableDataGridNode {
-  message;
-  constructor(message) {
-    const time = new Date(message.time * 1e3);
-    const timeText = ("0" + time.getHours()).substr(-2) + ":" + ("0" + time.getMinutes()).substr(-2) + ":" + ("0" + time.getSeconds()).substr(-2) + "." + ("00" + time.getMilliseconds()).substr(-3);
-    const timeNode = document.createElement("div");
-    UI4.UIUtils.createTextChild(timeNode, timeText);
-    UI4.Tooltip.Tooltip.install(timeNode, time.toLocaleString());
-    super({ id: message.eventId, type: message.eventName, data: message.data, time: timeNode });
-    this.message = message;
-  }
-};
-function eventSourceMessageNodeComparator(fieldGetter, a, b) {
-  const aValue = fieldGetter(a.message);
-  const bValue = fieldGetter(b.message);
-  return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+function formatTime(d) {
+  return ("0" + d.getHours()).substr(-2) + ":" + ("0" + d.getMinutes()).substr(-2) + ":" + ("0" + d.getSeconds()).substr(-2) + "." + ("00" + d.getMilliseconds()).substr(-3);
 }
-var Comparators = {
-  id: eventSourceMessageNodeComparator.bind(null, (message) => message.eventId),
-  type: eventSourceMessageNodeComparator.bind(null, (message) => message.eventName),
-  time: eventSourceMessageNodeComparator.bind(null, (message) => message.time)
-};
 var clearMessageOffsets = /* @__PURE__ */ new WeakMap();
 
 // gen/front_end/panels/network/NetworkConfigView.js
@@ -2144,13 +2148,13 @@ import * as Bindings from "./../../models/bindings/bindings.js";
 import * as Logs2 from "./../../models/logs/logs.js";
 import * as StackTrace from "./../../models/stack_trace/stack_trace.js";
 import * as NetworkForward from "./forward/forward.js";
-import * as Buttons2 from "./../../ui/components/buttons/buttons.js";
+import * as Buttons3 from "./../../ui/components/buttons/buttons.js";
 import { createIcon } from "./../../ui/kit/kit.js";
-import * as DataGrid3 from "./../../ui/legacy/components/data_grid/data_grid.js";
+import * as DataGrid from "./../../ui/legacy/components/data_grid/data_grid.js";
 import * as PerfUI from "./../../ui/legacy/components/perf_ui/perf_ui.js";
 import * as Components from "./../../ui/legacy/components/utils/utils.js";
 import * as UI6 from "./../../ui/legacy/legacy.js";
-import { render as render3 } from "./../../ui/lit/lit.js";
+import { render as render4 } from "./../../ui/lit/lit.js";
 import { PanelUtils as PanelUtils3 } from "./../utils/utils.js";
 var UIStrings6 = {
   /**
@@ -2442,7 +2446,7 @@ var UIStrings6 = {
 };
 var str_6 = i18n11.i18n.registerUIStrings("panels/network/NetworkDataGridNode.ts", UIStrings6);
 var i18nString6 = i18n11.i18n.getLocalizedString.bind(void 0, str_6);
-var NetworkNode = class extends DataGrid3.SortableDataGrid.SortableDataGridNode {
+var NetworkNode = class extends DataGrid.SortableDataGrid.SortableDataGridNode {
   parentViewInternal;
   isHovered;
   showingInitiatorChainInternal;
@@ -2614,6 +2618,17 @@ var _backgroundColors = {
   FocusSelectedHasWarning: "--network-grid-focus-selected-color-has-warning",
   FromFrame: "--network-grid-from-frame-color"
 };
+var PRIMARY_COLUMNS = /* @__PURE__ */ new Set(["name", "path", "url"]);
+function firstPrimaryColumn(dataGrid) {
+  return dataGrid?.visibleColumnsArray.find((column) => PRIMARY_COLUMNS.has(column.id));
+}
+function isFirstPrimaryColumn(dataGrid, columnId) {
+  const firstPrimary = firstPrimaryColumn(dataGrid);
+  if (!firstPrimary) {
+    return PRIMARY_COLUMNS.has(columnId);
+  }
+  return firstPrimary.id === columnId;
+}
 var NetworkRequestNode = class _NetworkRequestNode extends NetworkNode {
   initiatorCell;
   requestInternal;
@@ -3242,9 +3257,8 @@ var NetworkRequestNode = class _NetworkRequestNode extends NetworkNode {
     return PanelUtils3.isFailedNetworkRequest(this.requestInternal);
   }
   renderPrimaryCell(cell, columnId, text) {
-    const columnIndex = this.dataGrid?.indexOfVisibleColumn(columnId) | 0;
-    const isFirstCell = columnIndex === 0;
-    if (isFirstCell) {
+    const dataGrid = this.dataGrid;
+    if (isFirstPrimaryColumn(dataGrid, columnId)) {
       const leftPadding = this.leftPadding ? this.leftPadding + "px" : "";
       cell.style.setProperty("padding-left", leftPadding);
       cell.tabIndex = -1;
@@ -3256,7 +3270,7 @@ var NetworkRequestNode = class _NetworkRequestNode extends NetworkNode {
       });
       cell.addEventListener("focus", () => this.parentView().resetFocus());
       const iconElement = PanelUtils3.getIconForNetworkRequest(this.requestInternal);
-      render3(iconElement, cell);
+      render4(iconElement, cell);
       if (this.isConsoleOriginated()) {
         const consoleIcon = createIcon("terminal", "network-console-icon");
         UI6.Tooltip.Tooltip.install(consoleIcon, i18nString6(UIStrings6.requestOriginatedFromConsole));
@@ -3607,7 +3621,7 @@ var NetworkRequestNode = class _NetworkRequestNode extends NetworkNode {
       const aiButtonContainer = document.createElement("span");
       aiButtonContainer.classList.add("ai-button-container");
       const icon = AiAssistance.AiUtils.getIconName();
-      const floatingButton = Buttons2.FloatingButton.create(icon, action2.title(), "ask-ai");
+      const floatingButton = Buttons3.FloatingButton.create(icon, action2.title(), "ask-ai");
       floatingButton.addEventListener("click", (ev) => {
         ev.stopPropagation();
         this.select();
@@ -3627,14 +3641,16 @@ var NetworkRequestNode = class _NetworkRequestNode extends NetworkNode {
 var NetworkGroupNode = class extends NetworkNode {
   createCells(element) {
     super.createCells(element);
-    const primaryColumn = this.dataGrid.visibleColumnsArray[0];
+    const dataGrid = this.dataGrid;
+    const primaryColumn = firstPrimaryColumn(dataGrid) ?? dataGrid.visibleColumnsArray[0];
     const localizedTitle = `${primaryColumn.title}`;
     const localizedLevel = i18nString6(UIStrings6.level);
     this.nodeAccessibleText = `${localizedLevel} ${localizedTitle}: ${this.cellAccessibleTextMap.get(primaryColumn.id)}`;
   }
   renderCell(c, columnId) {
-    const columnIndex = this.dataGrid.indexOfVisibleColumn(columnId);
-    if (columnIndex === 0) {
+    const dataGrid = this.dataGrid;
+    const primaryColumn = firstPrimaryColumn(dataGrid) ?? dataGrid.visibleColumnsArray[0];
+    if (primaryColumn.id === columnId) {
       const cell = c;
       const leftPadding = this.leftPadding ? this.leftPadding + "px" : "";
       cell.style.setProperty("padding-left", leftPadding);
@@ -3670,7 +3686,7 @@ import * as NetworkComponents2 from "./components/components.js";
 // gen/front_end/panels/network/RequestCookiesView.js
 var RequestCookiesView_exports = {};
 __export(RequestCookiesView_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW3,
+  DEFAULT_VIEW: () => DEFAULT_VIEW4,
   RequestCookiesView: () => RequestCookiesView
 });
 import * as Common6 from "./../../core/common/common.js";
@@ -3719,7 +3735,7 @@ var requestCookiesView_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./requestCookiesView.css")} */`;
 
 // gen/front_end/panels/network/RequestCookiesView.js
-var { render: render4, html: html3 } = Lit;
+var { render: render5, html: html4 } = Lit;
 var { widget: widget2 } = UI7.Widget;
 var UIStrings7 = {
   /**
@@ -3774,8 +3790,8 @@ var UIStrings7 = {
 };
 var str_7 = i18n13.i18n.registerUIStrings("panels/network/RequestCookiesView.ts", UIStrings7);
 var i18nString7 = i18n13.i18n.getLocalizedString.bind(void 0, str_7);
-var DEFAULT_VIEW3 = (input, _output, target) => {
-  render4(html3`
+var DEFAULT_VIEW4 = (input, _output, target) => {
+  render5(html4`
     <style>${requestCookiesView_css_default}</style>
     <style>${UI7.inspectorCommonStyles}</style>
     <div class="request-cookies-view">
@@ -3798,7 +3814,7 @@ var DEFAULT_VIEW3 = (input, _output, target) => {
         ${i18nString7(UIStrings7.noRequestCookiesWereSent)}
       </div>
 
-      ${input.requestCookies.cookies.length > 0 ? html3`
+      ${input.requestCookies.cookies.length > 0 ? html4`
         <devtools-widget ${widget2(CookieTable.CookiesTable.CookiesTable, {
     cookiesData: input.requestCookies,
     inline: true
@@ -3807,7 +3823,7 @@ var DEFAULT_VIEW3 = (input, _output, target) => {
 
       <div class="cookies-panel-item site-has-cookies-in-other-partition ${input.siteHasCookieInOtherPartition ? "" : "hidden"}">
         ${uiI18n2.getFormatLocalizedStringTemplate(str_7, UIStrings7.siteHasCookieInOtherPartition, {
-    PH1: html3`<devtools-link href="https://developer.chrome.com/en/docs/privacy-sandbox/chips/" .jslogContext=${"learn-more"}>${i18nString7(UIStrings7.learnMore)}</devtools-link>`
+    PH1: html4`<devtools-link href="https://developer.chrome.com/en/docs/privacy-sandbox/chips/" .jslogContext=${"learn-more"}>${i18nString7(UIStrings7.learnMore)}</devtools-link>`
   })}
       </div>
 
@@ -3816,7 +3832,7 @@ var DEFAULT_VIEW3 = (input, _output, target) => {
           ${i18nString7(UIStrings7.responseCookies)}
       </div>
 
-      ${input.responseCookies.cookies.length ? html3`
+      ${input.responseCookies.cookies.length ? html4`
         <devtools-widget ${widget2(CookieTable.CookiesTable.CookiesTable, {
     cookiesData: input.responseCookies,
     inline: true
@@ -3828,7 +3844,7 @@ var DEFAULT_VIEW3 = (input, _output, target) => {
       </div>
 
       <div class=${input.malformedResponseCookies.length ? "" : "hidden"}>
-        ${input.malformedResponseCookies.map((malformedCookie) => html3`
+        ${input.malformedResponseCookies.map((malformedCookie) => html4`
           <span class="cookie-line source-code" title=${getMalformedCookieTooltip(malformedCookie)}>
             <devtools-icon class="cookie-warning-icon small" .name=${"cross-circle-filled"}></devtools-icon>
             ${malformedCookie.cookieLine}
@@ -3857,7 +3873,7 @@ var RequestCookiesView = class extends UI7.Widget.Widget {
   request;
   showFilteredOutCookiesSetting;
   view;
-  constructor(request, view = DEFAULT_VIEW3) {
+  constructor(request, view = DEFAULT_VIEW4) {
     super();
     this.request = request;
     this.showFilteredOutCookiesSetting = Common6.Settings.Settings.instance().createSetting(
@@ -3980,7 +3996,7 @@ var RequestCookiesView = class extends UI7.Widget.Widget {
 // gen/front_end/panels/network/RequestHeadersView.js
 var RequestHeadersView_exports = {};
 __export(RequestHeadersView_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW5,
+  DEFAULT_VIEW: () => DEFAULT_VIEW6,
   GENERAL_HEADERS_ONLY_VIEW: () => GENERAL_HEADERS_ONLY_VIEW,
   RequestHeadersView: () => RequestHeadersView,
   renderCategory: () => renderCategory,
@@ -4006,11 +4022,11 @@ import * as NetworkComponents from "./components/components.js";
 // gen/front_end/panels/network/ShowMoreDetailsWidget.js
 var ShowMoreDetailsWidget_exports = {};
 __export(ShowMoreDetailsWidget_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW4,
+  DEFAULT_VIEW: () => DEFAULT_VIEW5,
   ShowMoreDetailsWidget: () => ShowMoreDetailsWidget
 });
 import * as i18n15 from "./../../core/i18n/i18n.js";
-import * as Buttons3 from "./../../ui/components/buttons/buttons.js";
+import * as Buttons4 from "./../../ui/components/buttons/buttons.js";
 import * as UI8 from "./../../ui/legacy/legacy.js";
 import * as Lit2 from "./../../ui/lit/lit.js";
 var UIStrings8 = {
@@ -4021,9 +4037,9 @@ var UIStrings8 = {
 };
 var str_8 = i18n15.i18n.registerUIStrings("panels/network/ShowMoreDetailsWidget.ts", UIStrings8);
 var i18nString8 = i18n15.i18n.getLocalizedString.bind(void 0, str_8);
-var { render: render5, html: html4 } = Lit2;
+var { render: render6, html: html5 } = Lit2;
 var MAX_LENGTH = 3e3;
-var DEFAULT_VIEW4 = (input, output, target) => {
+var DEFAULT_VIEW5 = (input, output, target) => {
   const onContextMenuShowMore = (event) => {
     const contextMenu = new UI8.ContextMenu.ContextMenu(event);
     if (input.copy) {
@@ -4034,10 +4050,10 @@ var DEFAULT_VIEW4 = (input, output, target) => {
     }
     void contextMenu.show();
   };
-  render5(html4`<span
+  render6(html5`<span
             @contextmenu=${onContextMenuShowMore}
             >${input.showMore ? input.text : input.text.substr(0, MAX_LENGTH)}</span>
-          ${!input.showMore && input.text.length > MAX_LENGTH ? html4`<devtools-button
+          ${!input.showMore && input.text.length > MAX_LENGTH ? html5`<devtools-button
             .variant=${"outlined"}
             .jslogContext=${"show-more"}
             @click=${input.onToggle}>
@@ -4049,7 +4065,7 @@ var ShowMoreDetailsWidget = class extends UI8.Widget.Widget {
   #text = "";
   #showMore = false;
   #copy = null;
-  constructor(target, view = DEFAULT_VIEW4) {
+  constructor(target, view = DEFAULT_VIEW5) {
     super(target);
     this.#view = view;
   }
@@ -4078,7 +4094,7 @@ var ShowMoreDetailsWidget = class extends UI8.Widget.Widget {
 };
 
 // gen/front_end/panels/network/RequestHeadersView.js
-var { render: render6, html: html5 } = Lit3;
+var { render: render7, html: html6 } = Lit3;
 var { widget: widget3 } = UI9.Widget;
 var UIStrings9 = {
   /**
@@ -4179,7 +4195,7 @@ function renderGeneralRows(input) {
     statusClasses.push("status-with-comment");
   }
   const statusText = [input.request.statusCode, input.request.getInferredStatusText(), comment].join(" ");
-  return html5`<div jslog=${VisualLogging6.section("general")}>
+  return html6`<div jslog=${VisualLogging6.section("general")}>
     ${renderGeneralRow(input, i18nString9(UIStrings9.requestUrl), input.request.url(), "request-url")}
     ${input.request.statusCode ? renderGeneralRow(input, i18nString9(UIStrings9.requestMethod), input.request.requestMethod, "request-method") : Lit3.nothing}
     ${input.request.statusCode ? renderGeneralRow(input, i18nString9(UIStrings9.statusCode), statusText, "status-code", statusClasses) : Lit3.nothing}
@@ -4196,10 +4212,10 @@ function renderGeneralSection(input, forceOpen) {
     contents: renderGeneralRows(input)
   });
 }
-var DEFAULT_VIEW5 = (input, _output, target) => {
+var DEFAULT_VIEW6 = (input, _output, target) => {
   const requestHeadersText = input.request.requestHeadersText();
-  render6(
-    html5`
+  render7(
+    html6`
         <style>${NetworkComponents.RequestHeaderSection.requestHeadersViewStyles}</style>
         <style>${Input.checkboxStyles}</style>
         ${renderGeneralSection(
@@ -4216,7 +4232,7 @@ var DEFAULT_VIEW5 = (input, _output, target) => {
       additionalContent: void 0,
       forceOpen: input.toReveal?.section === "EarlyHints",
       loggingContext: "early-hints-headers",
-      contents: input.showResponseHeadersText ? renderRawHeaders(input.request.responseHeadersText) : html5`
+      contents: input.showResponseHeadersText ? renderRawHeaders(input.request.responseHeadersText) : html6`
             <devtools-early-hints-header-section .data=${{
         request: input.request,
         toReveal: input.toReveal
@@ -4232,7 +4248,7 @@ var DEFAULT_VIEW5 = (input, _output, target) => {
       additionalContent: renderHeaderOverridesLink(input),
       forceOpen: input.toReveal?.section === "Response",
       loggingContext: "response-headers",
-      contents: input.showResponseHeadersText ? renderRawHeaders(input.request.responseHeadersText) : html5`
+      contents: input.showResponseHeadersText ? renderRawHeaders(input.request.responseHeadersText) : html6`
           <devtools-response-header-section .data=${{
         request: input.request,
         toReveal: input.toReveal
@@ -4247,7 +4263,7 @@ var DEFAULT_VIEW5 = (input, _output, target) => {
       checked: requestHeadersText ? input.showRequestHeadersText : void 0,
       forceOpen: input.toReveal?.section === "Request",
       loggingContext: "request-headers",
-      contents: input.showRequestHeadersText && requestHeadersText ? renderRawHeaders(requestHeadersText) : html5`
+      contents: input.showRequestHeadersText && requestHeadersText ? renderRawHeaders(requestHeadersText) : html6`
           <devtools-widget ${widget3(NetworkComponents.RequestHeaderSection.RequestHeaderSection, {
         request: input.request,
         toReveal: input.toReveal
@@ -4260,7 +4276,7 @@ var DEFAULT_VIEW5 = (input, _output, target) => {
   );
 };
 var GENERAL_HEADERS_ONLY_VIEW = (input, _output, target) => {
-  render6(html5`
+  render7(html6`
         <style>${NetworkComponents.RequestHeaderSection.requestHeadersViewStyles}</style>
         <style>${Input.checkboxStyles}</style>
         ${renderGeneralRows(input)}
@@ -4281,7 +4297,7 @@ var RequestHeadersView = class _RequestHeadersView extends UI9.Widget.Widget {
     this.#request = val;
     this.#addEventListeners();
   }
-  constructor(target, view = DEFAULT_VIEW5) {
+  constructor(target, view = DEFAULT_VIEW6) {
     super();
     this.#view = view;
   }
@@ -4384,10 +4400,10 @@ function renderHeaderOverridesLink(input) {
     input.revealHeadersFile?.();
   };
   const overridesSetting = Common7.Settings.Settings.instance().moduleSetting("persistence-network-overrides-enabled");
-  const fileIcon = html5`
+  const fileIcon = html6`
       <devtools-icon name="document" class=${"medium" + overridesSetting.get() ? "inline-icon dot purple" : "inline-icon"}>
       </devtools-icon>`;
-  return html5`
+  return html6`
       <devtools-link
           href="https://goo.gle/devtools-override"
           class="link devtools-link"
@@ -4407,12 +4423,12 @@ function renderHeaderOverridesLink(input) {
     `;
 }
 function renderRawHeaders(text) {
-  return html5`<div class="row raw-headers-row"><devtools-widget  class=raw-headers
+  return html6`<div class="row raw-headers-row"><devtools-widget  class=raw-headers
       ${widget3(ShowMoreDetailsWidget, { text })}></devtools-widget></div>`;
 }
 function renderGeneralRow(input, name, value, id, classNames) {
   const isHighlighted = input.toReveal?.section === "General" && name.toLowerCase() === input.toReveal?.header?.toLowerCase();
-  return html5`
+  return html6`
       <div class="row ${isHighlighted ? "header-highlight" : ""}">
         <div class="header-name">${name}</div>
         <div
@@ -4426,7 +4442,7 @@ function renderGeneralRow(input, name, value, id, classNames) {
 function renderCategory(data) {
   const expandedSetting = Common7.Settings.Settings.instance().createSetting("request-info-" + data.name + "-category-expanded", true);
   const isOpen = (expandedSetting ? expandedSetting.get() : true) || data.forceOpen;
-  return html5`
+  return html6`
       <details ?open=${isOpen} @toggle=${onToggle} aria-label=${data.title}>
         <summary
           class="header"
@@ -4435,10 +4451,10 @@ function renderCategory(data) {
         >
           <div class="header-grid-container">
             <div>
-              ${data.title}${data.headerCount !== void 0 ? html5`<span class="header-count"> (${data.headerCount})</span>` : Lit3.nothing}
+              ${data.title}${data.headerCount !== void 0 ? html6`<span class="header-count"> (${data.headerCount})</span>` : Lit3.nothing}
             </div>
             <div class="hide-when-closed">
-              ${data.checked !== void 0 ? html5`
+              ${data.checked !== void 0 ? html6`
                 <devtools-checkbox .checked=${data.checked} @change=${data.onToggleRawHeaders}
                          jslog=${VisualLogging6.toggle("raw-headers").track({ change: true })}>
                   ${i18nString9(UIStrings9.raw)}
@@ -4476,7 +4492,7 @@ function renderCategory(data) {
 // gen/front_end/panels/network/RequestInitiatorView.js
 var RequestInitiatorView_exports = {};
 __export(RequestInitiatorView_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW6,
+  DEFAULT_VIEW: () => DEFAULT_VIEW7,
   RequestInitiatorView: () => RequestInitiatorView
 });
 import * as i18n19 from "./../../core/i18n/i18n.js";
@@ -4485,7 +4501,7 @@ import * as Bindings2 from "./../../models/bindings/bindings.js";
 import * as Logs3 from "./../../models/logs/logs.js";
 import * as Components2 from "./../../ui/legacy/components/utils/utils.js";
 import * as UI10 from "./../../ui/legacy/legacy.js";
-import { Directives as Directives2, html as html6, nothing as nothing6, render as render7 } from "./../../ui/lit/lit.js";
+import { Directives as Directives3, html as html7, nothing as nothing6, render as render8 } from "./../../ui/lit/lit.js";
 import * as VisualLogging7 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/network/requestInitiatorView.css.js
@@ -4571,10 +4587,10 @@ function trimUrl(url) {
   const halfMaxLength = Math.floor(MAX_URL_LENGTH / 2);
   return url.substring(0, halfMaxLength) + "\u2026" + url.substring(url.length - halfMaxLength);
 }
-var DEFAULT_VIEW6 = (input, _output, target) => {
+var DEFAULT_VIEW7 = (input, _output, target) => {
   const hasInitiatorData = input.initiatorGraph.initiators.size > 1 || input.initiatorGraph.initiated.size > 1 || input.stackTrace;
   if (!hasInitiatorData) {
-    render7(html6`
+    render8(html7`
       <div class="empty-view" style="display: flex; justify-content: center; align-items: center; height: 100%; color: var(--sys-color-token-subtle);">
         ${i18nString10(UIStrings10.noInitiator)}
       </div>
@@ -4583,9 +4599,9 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
   }
   const renderStackTraceSection = () => {
     if (!input.stackTrace) {
-      return html6`${nothing6}`;
+      return html7`${nothing6}`;
     }
-    return html6`
+    return html7`
       <li role="treeitem" class="request-initiator-view-section-title" aria-expanded="true" open>
         ${i18nString10(UIStrings10.requestCallStack)}
         <ul role="group">
@@ -4595,7 +4611,7 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
       stackTrace: input.stackTrace
     })}
           </li>
-          ${input.isConsoleOriginated ? html6`
+          ${input.isConsoleOriginated ? html7`
             <li role="treeitem" class="console-origin-label">
               ${i18nString10(UIStrings10.console)}
             </li>
@@ -4606,7 +4622,7 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
   };
   const renderInitiatorNodes = (initiators, index, initiated, visited) => {
     if (index >= initiators.length) {
-      return html6`${nothing6}`;
+      return html7`${nothing6}`;
     }
     const request = initiators[index];
     const isCurrentRequest = index === initiators.length - 1;
@@ -4614,12 +4630,12 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
     const renderedChildren = isCurrentRequest ? renderInitiatedNodes(initiated, request, visited) : nothing6;
     const url = request.url();
     const title = url.length < 2e3 ? url : void 0;
-    return html6`
+    return html7`
           <li role="treeitem" ?selected=${isCurrentRequest} aria-expanded="true" open>
-            <span style=${isCurrentRequest ? "font-weight: bold" : ""} title=${Directives2.ifDefined(title)}>
+            <span style=${isCurrentRequest ? "font-weight: bold" : ""} title=${Directives3.ifDefined(title)}>
               ${trimUrl(url)}
             </span>
-            ${hasFurtherInitiatedNodes || renderedChildren !== nothing6 ? html6`
+            ${hasFurtherInitiatedNodes || renderedChildren !== nothing6 ? html7`
               <ul role="group">
                 ${renderInitiatorNodes(initiators, index + 1, initiated, visited)}
                 ${renderedChildren}
@@ -4636,7 +4652,7 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
     if (children.length === 0) {
       return nothing6;
     }
-    return html6`
+    return html7`
       ${children.map((child) => {
       const shouldRecurse = !visited.has(child);
       if (shouldRecurse) {
@@ -4645,12 +4661,12 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
       const renderedChildren = shouldRecurse ? renderInitiatedNodes(initiated, child, visited) : nothing6;
       const url = child.url();
       const title = url.length < 2e3 ? url : void 0;
-      return html6`
+      return html7`
         <li role="treeitem" aria-expanded="true" open>
-          <span title=${Directives2.ifDefined(title)}>
+          <span title=${Directives3.ifDefined(title)}>
             ${trimUrl(url)}
           </span>
-          ${renderedChildren !== nothing6 ? html6`<ul role="group">${renderedChildren}</ul>` : nothing6}
+          ${renderedChildren !== nothing6 ? html7`<ul role="group">${renderedChildren}</ul>` : nothing6}
         </li>
       `;
     })}
@@ -4661,12 +4677,12 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
     const visited = /* @__PURE__ */ new Set();
     visited.add(input.request);
     const hasInitiatorChain2 = initiators.length > 0;
-    return html6`
+    return html7`
       <li role="treeitem" class="request-initiator-view-section-title" aria-expanded="true" open>
         ${i18nString10(UIStrings10.requestInitiatorChain)}
-        ${hasInitiatorChain2 ? html6`
+        ${hasInitiatorChain2 ? html7`
           <ul role="group">
-            ${input.isConsoleOriginated ? html6`
+            ${input.isConsoleOriginated ? html7`
               <li role="treeitem" aria-expanded="true" open>
                 <span>${i18nString10(UIStrings10.console)}</span>
                 <ul role="group">
@@ -4677,11 +4693,11 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
       </li>`;
   };
   const hasInitiatorChain = input.initiatorGraph.initiators.size > 1 || input.initiatorGraph.initiated.size > 1 || input.isConsoleOriginated;
-  render7(html6`
+  render8(html7`
     <div class="request-initiator-view-tree" jslog=${VisualLogging7.tree("initiator-tree")}>
-      <devtools-tree .template=${html6`
+      <devtools-tree .template=${html7`
         <style>${requestInitiatorViewTree_css_default}</style>
-        ${input.stackTrace || hasInitiatorChain ? html6`
+        ${input.stackTrace || hasInitiatorChain ? html7`
           <ul role="tree">
             ${renderStackTraceSection()}
             ${hasInitiatorChain ? renderInitiatorChain(input.initiatorGraph) : nothing6}
@@ -4693,7 +4709,7 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
 var RequestInitiatorView = class extends UI10.Widget.VBox {
   request;
   #view;
-  constructor(request, view = DEFAULT_VIEW6) {
+  constructor(request, view = DEFAULT_VIEW7) {
     super({ jslog: `${VisualLogging7.pane("initiator").track({ resize: true })}` });
     this.element.classList.add("request-initiator-view");
     this.request = request;
@@ -4745,7 +4761,7 @@ var RequestInitiatorView = class extends UI10.Widget.VBox {
 // gen/front_end/panels/network/RequestPayloadView.js
 var RequestPayloadView_exports = {};
 __export(RequestPayloadView_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW7,
+  DEFAULT_VIEW: () => DEFAULT_VIEW8,
   RequestPayloadView: () => RequestPayloadView
 });
 import * as Common8 from "./../../core/common/common.js";
@@ -4753,8 +4769,8 @@ import * as Host5 from "./../../core/host/host.js";
 import * as i18n21 from "./../../core/i18n/i18n.js";
 import * as Platform5 from "./../../core/platform/platform.js";
 import * as SDK9 from "./../../core/sdk/sdk.js";
-import * as TextUtils from "./../../models/text_utils/text_utils.js";
-import * as Buttons4 from "./../../ui/components/buttons/buttons.js";
+import * as TextUtils from "./../../core/text_utils/text_utils.js";
+import * as Buttons5 from "./../../ui/components/buttons/buttons.js";
 import * as ObjectUI from "./../../ui/legacy/components/object_ui/object_ui.js";
 
 // gen/front_end/ui/legacy/components/object_ui/objectPropertiesSection.css.js
@@ -4998,7 +5014,7 @@ var objectValue_css_default = `/*
 
 // gen/front_end/panels/network/RequestPayloadView.js
 import * as UI11 from "./../../ui/legacy/legacy.js";
-import { Directives as Directives3, html as html7, nothing as nothing7, render as render8 } from "./../../ui/lit/lit.js";
+import { Directives as Directives4, html as html8, nothing as nothing7, render as render9 } from "./../../ui/lit/lit.js";
 import * as VisualLogging8 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/network/requestPayloadTree.css.js
@@ -5157,7 +5173,7 @@ var requestPayloadView_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./requestPayloadView.css")} */`;
 
 // gen/front_end/panels/network/RequestPayloadView.js
-var { classMap } = Directives3;
+var { classMap } = Directives4;
 var { widget: widget5 } = UI11.Widget;
 var { ifExpanded } = UI11.TreeOutline;
 var UIStrings11 = {
@@ -5211,8 +5227,8 @@ var UIStrings11 = {
 };
 var str_11 = i18n21.i18n.registerUIStrings("panels/network/RequestPayloadView.ts", UIStrings11);
 var i18nString11 = i18n21.i18n.getLocalizedString.bind(void 0, str_11);
-var DEFAULT_VIEW7 = (input, output, target) => {
-  const createViewSourceToggle = (viewSource, callback) => html7`<devtools-button
+var DEFAULT_VIEW8 = (input, output, target) => {
+  const createViewSourceToggle = (viewSource, callback) => html8`<devtools-button
       class="payload-toggle"
       jslog=${VisualLogging8.action().track({ click: true }).context("source-parse")}
       .variant=${"outlined"}
@@ -5229,16 +5245,16 @@ var DEFAULT_VIEW7 = (input, output, target) => {
     contextMenu.clipboardSection().appendItem(title, copyValueHandler, { jslogContext });
     void contextMenu.show();
   };
-  const createSourceText = (text) => html7`<li role=treeitem
+  const createSourceText = (text) => html8`<li role=treeitem
       @contextmenu=${copyValueContextmenu(i18nString11(UIStrings11.copyPayload), () => text, "copy-payload")}>
         <devtools-widget class='payload-value source-code' ${widget5(ShowMoreDetailsWidget, { text })}>
         </devtools-widget>
       </li>`;
   const createParsedParams = (params, decodeParameters) => params.map((param) => {
-    return html7`
+    return html8`
         <li role=treeitem
             @contextmenu=${copyValueContextmenu(i18nString11(UIStrings11.copyValue), () => decodeURIComponent(param.value), "copy-value")}>
-          ${param.name !== "" ? html7`
+          ${param.name !== "" ? html8`
             ${RequestPayloadView.formatParameter(param.name, "payload-name", decodeParameters)}
             ${RequestPayloadView.formatParameter(param.value, "payload-value source-code", decodeParameters)}
           ` : RequestPayloadView.formatParameter(i18nString11(UIStrings11.empty), "empty-request-payload", decodeParameters)}
@@ -5263,7 +5279,7 @@ var DEFAULT_VIEW7 = (input, output, target) => {
       readOnly: true,
       propertiesMode: 1
     });
-    return html7`
+    return html8`
       <li role=treeitem class="source-code object-properties-section-root-element object-properties-section" open>
         ${object.description}
         ${object.hasChildren ? ObjectUI.ObjectPropertiesSection.renderObjectTree(objectTree) : nothing7}
@@ -5287,8 +5303,8 @@ var DEFAULT_VIEW7 = (input, output, target) => {
     }
     void contextMenu.show();
   };
-  render8(html7`<style>${requestPayloadView_css_default}</style>
-   <devtools-tree dense class=request-payload-tree .template=${html7`
+  render9(html8`<style>${requestPayloadView_css_default}</style>
+   <devtools-tree dense class=request-payload-tree .template=${html8`
      <style>${objectValue_css_default}</style>
      <style>${objectPropertiesSection_css_default}</style>
      <style>${requestPayloadTree_css_default}</style>
@@ -5364,7 +5380,7 @@ var DEFAULT_VIEW7 = (input, output, target) => {
       </li>
      </ul>
      `}></devtools-tree>
-   ${input.binaryPayloadContentData ? html7`
+   ${input.binaryPayloadContentData ? html8`
      <div class="raw-payload-section"
           jslog=${VisualLogging8.section().context("binary-request-payload")}>
        ${widget5((element) => {
@@ -5393,7 +5409,7 @@ var RequestPayloadView = class extends UI11.Widget.VBox {
   #viewFormParamSource = false;
   #viewQueryParamSource = false;
   #refreshFormDataPromiseForTest = Promise.resolve();
-  constructor(target, view = DEFAULT_VIEW7) {
+  constructor(target, view = DEFAULT_VIEW8) {
     super();
     this.#view = view;
   }
@@ -5514,8 +5530,8 @@ var RequestPayloadView = class extends UI11.Widget.VBox {
       }
     }
     const classes = classMap({ [className]: !!className, "empty-value": value === "" });
-    return html7`<div class=${classes}>
-      ${errorDecoding ? html7`<span class=payload-decode-error>${i18nString11(UIStrings11.unableToDecodeValue)}</span>` : value}
+    return html8`<div class=${classes}>
+      ${errorDecoding ? html8`<span class=payload-decode-error>${i18nString11(UIStrings11.unableToDecodeValue)}</span>` : value}
     </div>`;
   }
 };
@@ -5527,20 +5543,20 @@ __export(RequestPreviewView_exports, {
 });
 import "./../../ui/legacy/legacy.js";
 import * as i18n25 from "./../../core/i18n/i18n.js";
-import * as TextUtils2 from "./../../models/text_utils/text_utils.js";
+import * as TextUtils2 from "./../../core/text_utils/text_utils.js";
 import * as SourceFrame2 from "./../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI14 from "./../../ui/legacy/legacy.js";
-import { render as render10 } from "./../../ui/lit/lit.js";
+import { render as render11 } from "./../../ui/lit/lit.js";
 import * as VisualLogging9 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/network/RequestHTMLView.js
 var RequestHTMLView_exports = {};
 __export(RequestHTMLView_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW8,
+  DEFAULT_VIEW: () => DEFAULT_VIEW9,
   RequestHTMLView: () => RequestHTMLView
 });
 import * as UI12 from "./../../ui/legacy/legacy.js";
-import { html as html8, nothing as nothing8, render as render9 } from "./../../ui/lit/lit.js";
+import { html as html9, nothing as nothing8, render as render10 } from "./../../ui/lit/lit.js";
 
 // gen/front_end/panels/network/requestHTMLView.css.js
 var requestHTMLView_css_default = `/*
@@ -5562,11 +5578,11 @@ var requestHTMLView_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./requestHTMLView.css")} */`;
 
 // gen/front_end/panels/network/RequestHTMLView.js
-var DEFAULT_VIEW8 = (input, _output, target) => {
-  render9(html8`
+var DEFAULT_VIEW9 = (input, _output, target) => {
+  render10(html9`
     <style>${requestHTMLView_css_default}</style>
     <div class="html request-view widget vbox">
-      ${input.dataURL ? html8`
+      ${input.dataURL ? html9`
         <!-- @ts-ignore -->
         <iframe class="html-preview-frame" sandbox
           csp="default-src 'none';img-src data:;style-src 'unsafe-inline'" src=${input.dataURL}
@@ -5576,7 +5592,7 @@ var DEFAULT_VIEW8 = (input, _output, target) => {
 var RequestHTMLView = class _RequestHTMLView extends UI12.Widget.VBox {
   #dataURL;
   #view;
-  constructor(dataURL, view = DEFAULT_VIEW8) {
+  constructor(dataURL, view = DEFAULT_VIEW9) {
     super({ useShadowDom: true });
     this.#dataURL = dataURL;
     this.#view = view;
@@ -6012,7 +6028,7 @@ var RequestPreviewView = class extends UI14.Widget.VBox {
       if (Array.isArray(items)) {
         items.map((item) => toolbar4.appendToolbarItem(item));
       } else {
-        render10(items, toolbar4);
+        render11(items, toolbar4);
       }
     });
     return view;
@@ -6061,17 +6077,17 @@ var RequestPreviewView = class extends UI14.Widget.VBox {
 // gen/front_end/panels/network/RequestResponseView.js
 var RequestResponseView_exports = {};
 __export(RequestResponseView_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW9,
+  DEFAULT_VIEW: () => DEFAULT_VIEW10,
   RequestResponseView: () => RequestResponseView
 });
 import * as Common9 from "./../../core/common/common.js";
 import * as Host7 from "./../../core/host/host.js";
 import * as i18n27 from "./../../core/i18n/i18n.js";
-import * as TextUtils3 from "./../../models/text_utils/text_utils.js";
+import * as TextUtils3 from "./../../core/text_utils/text_utils.js";
 import * as SourceFrame3 from "./../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI15 from "./../../ui/legacy/legacy.js";
 import * as Lit4 from "./../../ui/lit/lit.js";
-var { html: html9, render: render11 } = Lit4;
+var { html: html10, render: render12 } = Lit4;
 var UIStrings14 = {
   /**
    * @description Text in Request Response View of the Network panel if no preview can be shown
@@ -6089,27 +6105,27 @@ var UIStrings14 = {
 var str_14 = i18n27.i18n.registerUIStrings("panels/network/RequestResponseView.ts", UIStrings14);
 var i18nString14 = i18n27.i18n.getLocalizedString.bind(void 0, str_14);
 var { widgetRef, widget: widget6 } = UI15.Widget;
-var DEFAULT_VIEW9 = (input, output, target) => {
+var DEFAULT_VIEW10 = (input, output, target) => {
   let widgetTemplate;
   if (TextUtils3.StreamingContentData.isError(input.contentData)) {
-    widgetTemplate = html9`${widget6((element) => new UI15.EmptyWidget.EmptyWidget(i18nString14(UIStrings14.failedToLoadResponseData), input.contentData.error, element))}`;
+    widgetTemplate = html10`${widget6((element) => new UI15.EmptyWidget.EmptyWidget(i18nString14(UIStrings14.failedToLoadResponseData), input.contentData.error, element))}`;
   } else if (input.request.statusCode === 204 || input.request.failed) {
-    widgetTemplate = html9`${widget6((element) => new UI15.EmptyWidget.EmptyWidget(i18nString14(UIStrings14.noPreview), i18nString14(UIStrings14.thisRequestHasNoResponseData), element))}`;
+    widgetTemplate = html10`${widget6((element) => new UI15.EmptyWidget.EmptyWidget(i18nString14(UIStrings14.noPreview), i18nString14(UIStrings14.thisRequestHasNoResponseData), element))}`;
   } else if (input.renderAsText) {
-    widgetTemplate = html9`<devtools-widget ${widget6((element) => new SourceFrame3.ResourceSourceFrame.SearchableContainer(input.request, input.mimeType, element))}
+    widgetTemplate = html10`<devtools-widget ${widget6((element) => new SourceFrame3.ResourceSourceFrame.SearchableContainer(input.request, input.mimeType, element))}
                     ${widgetRef(SourceFrame3.ResourceSourceFrame.SearchableContainer, (widget7) => {
       output.revealPosition = widget7.revealPosition.bind(widget7);
     })}></devtools-widget>`;
   } else {
-    widgetTemplate = html9`${widget6((element) => new BinaryResourceView(input.contentData, input.request.url(), input.request.resourceType(), element))}`;
+    widgetTemplate = html10`${widget6((element) => new BinaryResourceView(input.contentData, input.request.url(), input.request.resourceType(), element))}`;
   }
-  render11(widgetTemplate, target);
+  render12(widgetTemplate, target);
 };
 var RequestResponseView = class extends UI15.Widget.VBox {
   request;
   #view;
   #revealPosition;
-  constructor(request, view = DEFAULT_VIEW9) {
+  constructor(request, view = DEFAULT_VIEW10) {
     super();
     this.request = request;
     this.#view = view;
@@ -6154,7 +6170,7 @@ var RequestResponseView = class extends UI15.Widget.VBox {
 // gen/front_end/panels/network/RequestTimingView.js
 var RequestTimingView_exports = {};
 __export(RequestTimingView_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW10,
+  DEFAULT_VIEW: () => DEFAULT_VIEW11,
   RequestTimingView: () => RequestTimingView
 });
 import "./../../ui/kit/kit.js";
@@ -6168,7 +6184,7 @@ import * as NetworkTimeCalculator from "./../../models/network_time_calculator/n
 import * as uiI18n3 from "./../../ui/i18n/i18n.js";
 import * as ObjectUI2 from "./../../ui/legacy/components/object_ui/object_ui.js";
 import * as UI16 from "./../../ui/legacy/legacy.js";
-import { Directives as Directives4, html as html10, nothing as nothing9, render as render12 } from "./../../ui/lit/lit.js";
+import { Directives as Directives5, html as html11, nothing as nothing9, render as render13 } from "./../../ui/lit/lit.js";
 import * as VisualLogging10 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/network/networkTimingTable.css.js
@@ -6252,7 +6268,7 @@ table.network-timing-table > tr:not(.network-timing-table-header, .network-timin
 .network-timing-bar {
   position: absolute;
   min-width: 1px;
-  inset: 0 attr(data-right %) 0 attr(data-left %); /* stylelint-disable-line declaration-property-value-no-unknown */
+  inset: 0 attr(data-right %) 0 attr(data-left %);
 }
 
 .network-timing-bar-title {
@@ -6392,7 +6408,7 @@ td.throttled {
 }
 
 .network-timing-bar.server-timing {
-  background-color: attr(data-background type(<color>), var(--sys-color-neutral-container)); /* stylelint-disable-line declaration-property-value-no-unknown */
+  background-color: attr(data-background type(<color>), var(--sys-color-neutral-container));
 }
 
 tr.synthetic {
@@ -6443,7 +6459,7 @@ tr.synthetic {
 /*# sourceURL=${import.meta.resolve("./networkTimingTable.css")} */`;
 
 // gen/front_end/panels/network/RequestTimingView.js
-var { repeat, classMap: classMap2, ifDefined: ifDefined2 } = Directives4;
+var { repeat: repeat2, classMap: classMap2, ifDefined: ifDefined2 } = Directives5;
 var UIStrings15 = {
   /**
    * @description Text used to label the time taken to receive an HTTP/2 Push message.
@@ -6712,7 +6728,7 @@ function getLocalizedResponseSourceForCode(swResponseSource) {
       return i18nString15(UIStrings15.fallbackCode);
   }
 }
-var DEFAULT_VIEW10 = (input, output, target) => {
+var DEFAULT_VIEW11 = (input, output, target) => {
   const serverTimings = input.request.serverTimings ?? [];
   const requestStartTime = input.request.startTime;
   const requestIssueTime = input.request.issueTime();
@@ -6741,15 +6757,15 @@ var DEFAULT_VIEW10 = (input, output, target) => {
       // Mark entries from a bespoke format
       ["synthetic"]: serverTiming.metric.startsWith("(c")
     });
-    return html10`
+    return html11`
       <tr class=${classes2}>
         <td title=${metricDesc} class=network-timing-metric>
           ${metricDesc}
         </td>
-        ${serverTiming.value === null ? nothing9 : html10`
+        ${serverTiming.value === null ? nothing9 : html11`
           <td class=server-timing-cell--value-bar>
             <div class=network-timing-row>
-              ${left < 0 ? nothing9 : html10`<span
+              ${left < 0 ? nothing9 : html11`<span
                     class="network-timing-bar server-timing"
                     data-background=${ifDefined2(isTotal ? void 0 : colorGenerator.colorForID(serverTiming.metric))}
                     data-left=${left}
@@ -6769,7 +6785,7 @@ var DEFAULT_VIEW10 = (input, output, target) => {
     const matchedSourceTypeString = String(matchedSourceType) || i18nString15(UIStrings15.unknown);
     const actualSourceType = serviceWorkerRouterInfo.actualSourceType;
     const actualSourceTypeString = String(actualSourceType) || i18nString15(UIStrings15.unknown);
-    return html10`<devtools-tree>
+    return html11`<devtools-tree>
       <ul role=tree>
         <li role=treeitem>
           <div class=network-fetch-details-treeitem>
@@ -6798,13 +6814,13 @@ var DEFAULT_VIEW10 = (input, output, target) => {
     const swResponseSource = input.request.serviceWorkerResponseSource();
     const responseCacheStorageName = input.request.getResponseCacheStorageCacheName();
     const retrievalTime = input.request.getResponseRetrievalTime();
-    return html10`<devtools-tree>
+    return html11`<devtools-tree>
       <ul role=tree>
-        ${origRequestTree ? html10`<li role=treeitem class="object-properties-section-root-element object-properties-section" open>
+        ${origRequestTree ? html11`<li role=treeitem class="object-properties-section-root-element object-properties-section" open>
             ${i18nString15(UIStrings15.originalRequest)}
             ${ObjectUI2.ObjectPropertiesSection.renderObjectTree(origRequestTree)}
           </li>` : nothing9}
-        ${responseTree ? html10`<li role=treeitem class="object-properties-section-root-element object-properties-section" open>
+        ${responseTree ? html11`<li role=treeitem class="object-properties-section-root-element object-properties-section" open>
             ${i18nString15(UIStrings15.responseReceived)}
             ${ObjectUI2.ObjectPropertiesSection.renderObjectTree(responseTree)}
           </li>` : nothing9}
@@ -6818,7 +6834,7 @@ var DEFAULT_VIEW10 = (input, output, target) => {
             ${responseCacheStorageName ? i18nString15(UIStrings15.cacheStorageCacheNameS, { PH1: responseCacheStorageName }) : i18nString15(UIStrings15.cacheStorageCacheNameUnknown)}
           </div>
         </li>
-        ${retrievalTime ? html10`<li role=treeitem>
+        ${retrievalTime ? html11`<li role=treeitem>
             <div class=network-fetch-details-treeitem>
               ${i18nString15(UIStrings15.retrievalTimeS, { PH1: retrievalTime.toString() })}
             </div>
@@ -6860,7 +6876,7 @@ var DEFAULT_VIEW10 = (input, output, target) => {
       tail.ranges.push(range);
     }
   }
-  render12(html10`
+  render13(html11`
     <style>${networkTimingTable_css_default}</style>
     <table
       class=${classes}
@@ -6895,7 +6911,7 @@ var DEFAULT_VIEW10 = (input, output, target) => {
             </td>
           </tr>
         </thead>
-        ${timeRangeGroups.map((group) => html10`
+        ${timeRangeGroups.map((group) => html11`
           <tr class=network-timing-table-header>
             <td role=heading aria-level=2>
               ${group.name}
@@ -6903,9 +6919,9 @@ var DEFAULT_VIEW10 = (input, output, target) => {
             <td></td>
             <td>${i18nString15(UIStrings15.durationC)}</td>
           </tr>
-          ${repeat(group.ranges, (range) => html10`
+          ${repeat2(group.ranges, (range) => html11`
             <tr>
-              ${isClickable(range) ? html10`<td
+              ${isClickable(range) ? html11`<td
                   tabindex=0
                   role=button
                   aria-expanded=false
@@ -6913,7 +6929,7 @@ var DEFAULT_VIEW10 = (input, output, target) => {
                   @keydown=${onActivate}
                   class=network-fetch-timing-bar-clickable>
                     ${timeRangeTitle(range.name)}
-                </td>` : html10`<td>
+                </td>` : html11`<td>
                     ${timeRangeTitle(range.name)}
                 </td>`}
               <td>
@@ -6932,17 +6948,17 @@ var DEFAULT_VIEW10 = (input, output, target) => {
                 </div>
               </td>
             </tr>
-            ${range.name === "serviceworker-respondwith" && input.request.fetchedViaServiceWorker ? html10`
+            ${range.name === "serviceworker-respondwith" && input.request.fetchedViaServiceWorker ? html11`
               <tr class="network-fetch-timing-bar-details network-fetch-timing-bar-details-collapsed">
                 ${fetchDetailsTree()}
               </tr>` : nothing9}
-            ${range.name === "serviceworker-routerevaluation" && routerDetails ? html10`
+            ${range.name === "serviceworker-routerevaluation" && routerDetails ? html11`
               <tr class="router-evaluation-timing-bar-details network-fetch-timing-bar-details-collapsed">
                 ${routerDetailsTree(routerDetails)}
               </tr>` : nothing9}
           `)}
         `)}
-        ${requestUnfinished ? html10`
+        ${requestUnfinished ? html11`
           <tr>
             <td class=caution colspan=3>
               ${i18nString15(UIStrings15.cautionRequestIsNotFinishedYet)}
@@ -6958,7 +6974,7 @@ var DEFAULT_VIEW10 = (input, output, target) => {
            </devtools-link>
          <td></td>
          <td class=${input.wasThrottled ? "throttled" : ""} title=${ifDefined2(throttledRequestTitle)}>
-           ${input.wasThrottled ? html10` <devtools-icon name=watch @click=${revealThrottled}></devtools-icon>` : nothing9}
+           ${input.wasThrottled ? html11` <devtools-icon name=watch @click=${revealThrottled}></devtools-icon>` : nothing9}
            ${i18n29.TimeUtilities.secondsToString(input.totalDuration, true)}
          </td>
        </tr>
@@ -6972,12 +6988,12 @@ var DEFAULT_VIEW10 = (input, output, target) => {
          <td></td>
          <td>${i18nString15(UIStrings15.time)}</td>
        </tr>
-       ${repeat(serverTimings.filter((item) => item.metric.toLowerCase() !== "total"), addServerTiming)}
-       ${repeat(serverTimings.filter((item) => item.metric.toLowerCase() === "total"), addServerTiming)}
-       ${serverTimings.length === 0 ? html10`
+       ${repeat2(serverTimings.filter((item) => item.metric.toLowerCase() !== "total"), addServerTiming)}
+       ${repeat2(serverTimings.filter((item) => item.metric.toLowerCase() === "total"), addServerTiming)}
+       ${serverTimings.length === 0 ? html11`
          <tr>
            <td colspan=3>
-${uiI18n3.getFormatLocalizedStringTemplate(str_15, UIStrings15.duringDevelopmentYouCanUseSToAdd, { PH1: html10`<devtools-link href="https://web.dev/custom-metrics/#server-timing-api" .jslogContext=${"server-timing-api"}>${i18nString15(UIStrings15.theServerTimingApi)}</devtools-link>` })}
+${uiI18n3.getFormatLocalizedStringTemplate(str_15, UIStrings15.duringDevelopmentYouCanUseSToAdd, { PH1: html11`<devtools-link href="https://web.dev/custom-metrics/#server-timing-api" .jslogContext=${"server-timing-api"}>${i18nString15(UIStrings15.theServerTimingApi)}</devtools-link>` })}
            </td>
          </tr>` : nothing9}
       </table>`, target, { container: { classes: ["resource-timing-view"] } });
@@ -6987,7 +7003,7 @@ var RequestTimingView = class _RequestTimingView extends UI16.Widget.VBox {
   #calculator;
   #lastMinimumBoundary = -1;
   #view;
-  constructor(target, view = DEFAULT_VIEW10) {
+  constructor(target, view = DEFAULT_VIEW11) {
     super(target);
     this.#view = view;
   }
@@ -7068,8 +7084,8 @@ import * as Common12 from "./../../core/common/common.js";
 import * as i18n33 from "./../../core/i18n/i18n.js";
 import * as Platform8 from "./../../core/platform/platform.js";
 import * as SDK11 from "./../../core/sdk/sdk.js";
-import * as TextUtils6 from "./../../models/text_utils/text_utils.js";
-import * as DataGrid6 from "./../../ui/legacy/components/data_grid/data_grid.js";
+import * as TextUtils6 from "./../../core/text_utils/text_utils.js";
+import * as DataGrid4 from "./../../ui/legacy/components/data_grid/data_grid.js";
 import * as UI18 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging11 from "./../../ui/visual_logging/visual_logging.js";
 
@@ -7078,8 +7094,8 @@ import * as Common11 from "./../../core/common/common.js";
 import * as Host9 from "./../../core/host/host.js";
 import * as i18n31 from "./../../core/i18n/i18n.js";
 import * as Platform7 from "./../../core/platform/platform.js";
-import * as TextUtils5 from "./../../models/text_utils/text_utils.js";
-import * as DataGrid4 from "./../../ui/legacy/components/data_grid/data_grid.js";
+import * as TextUtils5 from "./../../core/text_utils/text_utils.js";
+import * as DataGrid2 from "./../../ui/legacy/components/data_grid/data_grid.js";
 import * as SourceFrame4 from "./../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI17 from "./../../ui/legacy/legacy.js";
 
@@ -7217,7 +7233,7 @@ var ResourceChunkView = class extends UI17.Widget.VBox {
     this.splitWidget = new UI17.SplitWidget.SplitWidget(false, true, splitWidgetSettingKey);
     this.splitWidget.show(this.element);
     const columns = this.getColumns();
-    this.dataGrid = new DataGrid4.SortableDataGrid.SortableDataGrid({
+    this.dataGrid = new DataGrid2.SortableDataGrid.SortableDataGrid({
       displayName: dataGridDisplayName,
       columns
     });
@@ -7226,7 +7242,7 @@ var ResourceChunkView = class extends UI17.Widget.VBox {
     this.dataGrid.setCellClass("resource-chunk-view-td");
     this.timeComparator = resourceChunkNodeTimeComparator;
     this.dataGrid.sortNodes(this.timeComparator, false);
-    this.dataGrid.markColumnAsSortedBy("time", DataGrid4.DataGrid.Order.Ascending);
+    this.dataGrid.markColumnAsSortedBy("time", DataGrid2.DataGrid.Order.Ascending);
     this.dataGrid.addEventListener("SortingChanged", this.sortItems, this);
     this.dataGrid.setName(splitWidgetSettingKey + "_datagrid");
     this.dataGrid.addEventListener("SelectedNode", (event) => {
@@ -7366,7 +7382,7 @@ var FILTER_TYPES = [
   { name: "send", label: i18nLazyString(UIStrings16.send), jslogContext: "send" },
   { name: "receive", label: i18nLazyString(UIStrings16.receive), jslogContext: "receive" }
 ];
-var DataGridItem = class extends DataGrid4.SortableDataGrid.SortableDataGridNode {
+var DataGridItem = class extends DataGrid2.SortableDataGrid.SortableDataGridNode {
 };
 function resourceChunkNodeTimeComparator(a, b) {
   return a.getTime() - b.getTime();
@@ -7533,7 +7549,7 @@ import * as Common13 from "./../../core/common/common.js";
 import * as i18n35 from "./../../core/i18n/i18n.js";
 import * as Platform9 from "./../../core/platform/platform.js";
 import * as SDK12 from "./../../core/sdk/sdk.js";
-import * as TextUtils7 from "./../../models/text_utils/text_utils.js";
+import * as TextUtils7 from "./../../core/text_utils/text_utils.js";
 import * as UI19 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging12 from "./../../ui/visual_logging/visual_logging.js";
 var UIStrings18 = {
@@ -8046,19 +8062,19 @@ import * as Host10 from "./../../core/host/host.js";
 import * as i18n43 from "./../../core/i18n/i18n.js";
 import * as Platform12 from "./../../core/platform/platform.js";
 import * as SDK16 from "./../../core/sdk/sdk.js";
+import * as TextUtils8 from "./../../core/text_utils/text_utils.js";
 import * as Bindings3 from "./../../models/bindings/bindings.js";
 import * as HAR from "./../../models/har/har.js";
 import * as Logs5 from "./../../models/logs/logs.js";
 import * as NetworkTimeCalculator4 from "./../../models/network_time_calculator/network_time_calculator.js";
 import * as Persistence2 from "./../../models/persistence/persistence.js";
-import * as TextUtils8 from "./../../models/text_utils/text_utils.js";
 import * as Workspace3 from "./../../models/workspace/workspace.js";
 import * as NetworkForward4 from "./forward/forward.js";
 import * as Sources2 from "./../sources/sources.js";
 import * as Adorners from "./../../ui/components/adorners/adorners.js";
-import * as Buttons5 from "./../../ui/components/buttons/buttons.js";
+import * as Buttons6 from "./../../ui/components/buttons/buttons.js";
 import * as RenderCoordinator3 from "./../../ui/components/render_coordinator/render_coordinator.js";
-import * as DataGrid9 from "./../../ui/legacy/components/data_grid/data_grid.js";
+import * as DataGrid7 from "./../../ui/legacy/components/data_grid/data_grid.js";
 
 // gen/front_end/ui/legacy/components/data_grid/dataGridAiButton.css.js
 var dataGridAiButton_css_default = `/*
@@ -8696,7 +8712,7 @@ import * as Common18 from "./../../core/common/common.js";
 import * as i18n41 from "./../../core/i18n/i18n.js";
 import * as StackTrace3 from "./../../models/stack_trace/stack_trace.js";
 import { Icon as Icon3 } from "./../../ui/kit/kit.js";
-import * as DataGrid7 from "./../../ui/legacy/components/data_grid/data_grid.js";
+import * as DataGrid5 from "./../../ui/legacy/components/data_grid/data_grid.js";
 import * as Components4 from "./../../ui/legacy/components/utils/utils.js";
 import * as UI24 from "./../../ui/legacy/legacy.js";
 import * as ThemeSupport5 from "./../../ui/legacy/theme_support/theme_support.js";
@@ -9880,7 +9896,7 @@ var UIStrings21 = {
   /**
    * @description Text in Timeline UIUtils of the Performance panel
    */
-  url: "Url",
+  url: "URL",
   /**
    * @description Column header in the Network log view of the Network panel
    */
@@ -10073,7 +10089,7 @@ var NetworkLogViewColumns = class _NetworkLogViewColumns {
     this.loadCustomColumnsAndSettings();
     this.popoverHelper = new UI24.PopoverHelper.PopoverHelper(this.networkLogView.element, this.getPopoverRequest.bind(this), "network.initiator-stacktrace");
     this.popoverHelper.setTimeout(300, 300);
-    this.#dataGrid = new DataGrid7.SortableDataGrid.SortableDataGrid({
+    this.#dataGrid = new DataGrid5.SortableDataGrid.SortableDataGrid({
       displayName: i18nString21(UIStrings21.networkLog),
       columns: this.columns.map(_NetworkLogViewColumns.convertToDataGridDescriptor)
     });
@@ -10082,7 +10098,7 @@ var NetworkLogViewColumns = class _NetworkLogViewColumns {
     this.#dataGrid.addEventListener("SortingChanged", this.sortHandler, this);
     this.#dataGrid.setHeaderContextMenuCallback(this.#headerContextMenu.bind(this));
     this.activeWaterfallSortId = WaterfallSortIds.StartTime;
-    this.#dataGrid.markColumnAsSortedBy(INITIAL_SORT_COLUMN, DataGrid7.DataGrid.Order.Ascending);
+    this.#dataGrid.markColumnAsSortedBy(INITIAL_SORT_COLUMN, DataGrid5.DataGrid.Order.Ascending);
     this.splitWidget = new UI24.SplitWidget.SplitWidget(true, true, "network-panel-split-view-waterfall", 200);
     const widget7 = this.#dataGrid.asWidget();
     widget7.setMinimumSize(150, 0);
@@ -10191,7 +10207,7 @@ var NetworkLogViewColumns = class _NetworkLogViewColumns {
     this.waterfallColumnSortIcon.className = "sort-order-icon";
     this.waterfallHeaderElement.createChild("div", "sort-order-icon-container").appendChild(this.waterfallColumnSortIcon);
     function waterfallHeaderClicked() {
-      const sortOrders = DataGrid7.DataGrid.Order;
+      const sortOrders = DataGrid5.DataGrid.Order;
       const wasSortedByWaterfall = this.#dataGrid.sortColumnId() === "waterfall";
       const wasSortedAscending = this.#dataGrid.isSortOrderAscending();
       const sortOrder = wasSortedByWaterfall && wasSortedAscending ? sortOrders.Descending : sortOrders.Ascending;
@@ -10240,7 +10256,7 @@ var NetworkLogViewColumns = class _NetworkLogViewColumns {
     this.networkLogView.removeAllNodeHighlights();
     this.waterfallRequestsAreStale = true;
     if (columnId === "waterfall") {
-      if (this.#dataGrid.sortOrder() === DataGrid7.DataGrid.Order.Ascending) {
+      if (this.#dataGrid.sortOrder() === DataGrid5.DataGrid.Order.Ascending) {
         this.waterfallColumnSortIcon.name = "triangle-up";
       } else {
         this.waterfallColumnSortIcon.name = "triangle-down";
@@ -10424,7 +10440,7 @@ var NetworkLogViewColumns = class _NetworkLogViewColumns {
       }
       this.networkLogView.setCalculator(calculator);
       this.activeWaterfallSortId = sortId;
-      this.#dataGrid.markColumnAsSortedBy("waterfall", DataGrid7.DataGrid.Order.Ascending);
+      this.#dataGrid.markColumnAsSortedBy("waterfall", DataGrid5.DataGrid.Order.Ascending);
       this.sortHandler();
     }
   }
@@ -10619,6 +10635,12 @@ var DEFAULT_COLUMN_CONFIG = {
 };
 var DEFAULT_COLUMNS = [
   {
+    id: "request-number",
+    title: i18nLazyString3(UIStrings21.requestNumber),
+    align: "right",
+    sortingFunction: NetworkRequestNode.RequestNumberComparator
+  },
+  {
     id: "name",
     title: i18nLazyString3(UIStrings21.name),
     subtitle: i18nLazyString3(UIStrings21.path),
@@ -10641,12 +10663,6 @@ var DEFAULT_COLUMNS = [
     hideable: true,
     hideableGroup: "path",
     sortingFunction: NetworkRequestNode.RequestURLComparator
-  },
-  {
-    id: "request-number",
-    title: i18nLazyString3(UIStrings21.requestNumber),
-    align: "right",
-    sortingFunction: NetworkRequestNode.RequestNumberComparator
   },
   {
     id: "method",
@@ -11285,9 +11301,9 @@ var UIStrings22 = {
    */
   blockRequestDomain: "Block request domain",
   /**
-   * @description Text to replay an XHR request
+   * @description Text to resend a network request
    */
-  replayXhr: "Replay XHR",
+  resend: "Resend",
   /**
    * @description Text in Network Log View of the Network panel
    */
@@ -11490,11 +11506,11 @@ var NetworkLogView = class _NetworkLogView extends Common19.ObjectWrapper.eventM
   static negativeFilter(filter, request) {
     return !filter(request);
   }
-  static requestPathFilter(regex, request) {
+  static requestHostAndPathFilter(regex, request) {
     if (!regex) {
       return false;
     }
-    return regex.test(request.path() + "/" + request.name());
+    return regex.test(request.parsedURL.urlWithoutScheme());
   }
   static subdomains(domain) {
     const result = [domain];
@@ -11883,9 +11899,9 @@ var NetworkLogView = class _NetworkLogView extends Common19.ObjectWrapper.eventM
         if (!request) {
           return;
         }
-        if (SDK16.NetworkManager.NetworkManager.canReplayRequest(request)) {
+        if (SDK16.NetworkManager.NetworkManager.canResendRequest(request)) {
           SDK16.NetworkManager.NetworkManager.replayRequest(request);
-          void VisualLogging15.logKeyDown(this.dataGrid.selectedNode.element(), event, "replay-xhr");
+          void VisualLogging15.logKeyDown(this.dataGrid.selectedNode.element(), event, "resend");
         }
       }
     });
@@ -12480,8 +12496,8 @@ var NetworkLogView = class _NetworkLogView extends Common19.ObjectWrapper.eventM
         blockingMenu.debugSection().appendItem(isBlocking ? i18nString22(UIStrings22.unblockS, { PH1: croppedURL }) : i18nString22(UIStrings22.blockRequestDomain), () => isBlocking ? removeRequestCondition(domainPattern) : addRequestCondition(domainPattern, SDK16.NetworkManager.BlockingConditions), { jslogContext: "block-request-domain" });
         throttlingMenu.debugSection().appendItem(isThrottling ? i18nString22(UIStrings22.unthrottleS, { PH1: croppedURL }) : i18nString22(UIStrings22.throttleRequestDomain), () => isThrottling ? removeRequestCondition(domainPattern) : addRequestCondition(domainPattern, SDK16.NetworkManager.Slow3GConditions), { jslogContext: "throttle-request-domain" });
       }
-      if (SDK16.NetworkManager.NetworkManager.canReplayRequest(request)) {
-        contextMenu.debugSection().appendItem(i18nString22(UIStrings22.replayXhr), SDK16.NetworkManager.NetworkManager.replayRequest.bind(null, request), { jslogContext: "replay-xhr" });
+      if (SDK16.NetworkManager.NetworkManager.canResendRequest(request)) {
+        contextMenu.debugSection().appendItem(i18nString22(UIStrings22.resend), SDK16.NetworkManager.NetworkManager.replayRequest.bind(null, request), { jslogContext: "resend" });
       }
     }
   }
@@ -12637,13 +12653,13 @@ var NetworkLogView = class _NetworkLogView extends Common19.ObjectWrapper.eventM
       let filter;
       if (key) {
         const defaultText = Platform12.StringUtilities.escapeForRegExp(key + ":" + text);
-        filter = this.createSpecialFilter(key, text) || _NetworkLogView.requestPathFilter.bind(null, new RegExp(defaultText, "i"));
+        filter = this.createSpecialFilter(key, text) || _NetworkLogView.requestHostAndPathFilter.bind(null, new RegExp(defaultText, "i"));
       } else if (descriptor.regex) {
-        filter = _NetworkLogView.requestPathFilter.bind(null, regex);
+        filter = _NetworkLogView.requestHostAndPathFilter.bind(null, regex);
       } else if (this.isValidUrl(text)) {
         filter = _NetworkLogView.requestUrlFilter.bind(null, text);
       } else {
-        filter = _NetworkLogView.requestPathFilter.bind(null, new RegExp(Platform12.StringUtilities.escapeForRegExp(text), "i"));
+        filter = _NetworkLogView.requestHostAndPathFilter.bind(null, new RegExp(Platform12.StringUtilities.escapeForRegExp(text), "i"));
       }
       if (descriptor.negative && !invert || !descriptor.negative && invert) {
         return _NetworkLogView.negativeFilter.bind(null, filter);
@@ -13189,7 +13205,7 @@ __export(NetworkSearchScope_exports, {
 });
 import * as i18n45 from "./../../core/i18n/i18n.js";
 import * as Platform13 from "./../../core/platform/platform.js";
-import * as TextUtils10 from "./../../models/text_utils/text_utils.js";
+import * as TextUtils10 from "./../../core/text_utils/text_utils.js";
 import * as NetworkForward5 from "./forward/forward.js";
 var UIStrings23 = {
   /**
@@ -13569,13 +13585,13 @@ var UIStrings24 = {
    */
   search: "Search",
   /**
-   * @description Tooltip text that appears on the setting to preserve log when hovering over the item
+   * @description Tooltip text that appears on the setting to keep log when hovering over the item.
    */
-  doNotClearLogOnPageReload: "Do not clear log on page reload / navigation",
+  doNotClearLogOnPageReload: "Don\u2019t clear log on page reload / navigation",
   /**
-   * @description Text to preserve the log after refreshing
+   * @description Text to keep the log after refreshing.
    */
-  preserveLog: "Preserve log",
+  preserveLog: "Keep log",
   /**
    * @description Text to disable cache while DevTools is open
    */

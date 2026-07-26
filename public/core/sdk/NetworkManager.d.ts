@@ -1,8 +1,8 @@
 import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
 import * as Protocol from '../../generated/protocol.js';
-import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
+import * as TextUtils from '../text_utils/text_utils.js';
 import { NetworkRequest } from './NetworkRequest.js';
 import { SDKModel } from './SDKModel.js';
 import { type Target } from './Target.js';
@@ -24,8 +24,9 @@ export declare class NetworkManager extends SDKModel<EventTypes> {
     readonly activeNetworkThrottlingKey: Common.Settings.Setting<ThrottlingConditionKey>;
     constructor(target: Target);
     static forRequest(request: NetworkRequest): NetworkManager | null;
-    static canReplayRequest(request: NetworkRequest): boolean;
+    static canResendRequest(request: NetworkRequest): boolean;
     static replayRequest(request: NetworkRequest): void;
+    static resendRequest(request: NetworkRequest): Promise<void>;
     static searchInRequest(request: NetworkRequest, query: string, caseSensitive: boolean, isRegex: boolean): Promise<TextUtils.ContentProvider.SearchMatch[]>;
     static requestContentData(request: NetworkRequest): Promise<TextUtils.ContentData.ContentDataOrError>;
     /**
@@ -145,7 +146,7 @@ export declare class NetworkDispatcher implements ProtocolProxyApi.NetworkDispat
     webSocketClosed({ requestId, timestamp: time }: Protocol.Network.WebSocketClosedEvent): void;
     eventSourceMessageReceived({ requestId, timestamp: time, eventName, eventId, data }: Protocol.Network.EventSourceMessageReceivedEvent): void;
     requestIntercepted({}: Protocol.Network.RequestInterceptedEvent): void;
-    requestWillBeSentExtraInfo({ requestId, associatedCookies, headers, deviceBoundSessionUsages, clientSecurityState, connectTiming, siteHasCookieInOtherPartition, appliedNetworkConditionsId }: Protocol.Network.RequestWillBeSentExtraInfoEvent): void;
+    requestWillBeSentExtraInfo({ requestId, associatedCookies, headers, deviceBoundSessionUsages, clientSecurityState, connectTiming, siteHasCookieInOtherPartition, appliedNetworkConditionsId, }: Protocol.Network.RequestWillBeSentExtraInfoEvent): void;
     responseReceivedEarlyHints({ requestId, headers, }: Protocol.Network.ResponseReceivedEarlyHintsEvent): void;
     responseReceivedExtraInfo({ requestId, blockedCookies, headers, headersText, resourceIPAddressSpace, statusCode, cookiePartitionKey, cookiePartitionKeyOpaque, exemptedCookies, }: Protocol.Network.ResponseReceivedExtraInfoEvent): void;
     private getExtraInfoBuilder;

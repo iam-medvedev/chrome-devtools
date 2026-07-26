@@ -4,12 +4,12 @@
 import { assert } from 'chai';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as TextUtils from '../../core/text_utils/text_utils.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
 import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import { encodeSourceMap } from '../../testing/SourceMapEncoder.js';
 import { TestUniverse } from '../../testing/TestUniverse.js';
-import * as TextUtils from '../text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
 const { urlString } = Platform.DevToolsPath;
 describe('CSSWorkspaceBinding', () => {
@@ -130,6 +130,59 @@ describe('CSSWorkspaceBinding', () => {
         const contentData = await scssUISourceCode.requestContentData();
         assert.instanceOf(contentData, TextUtils.ContentData.ContentData);
         assert.isTrue(contentData.text.startsWith('/* Comment */'));
+    });
+    it('correctly maps property UI locations', async () => {
+        const target = universe.createTarget();
+        const cssModel = target.model(SDK.CSSModel.CSSModel);
+        assert.exists(cssModel);
+        const headerPayload = {
+            styleSheetId: 'stylesheet',
+            frameId: 'frame',
+            sourceURL: styleSheetURL,
+            origin: 'regular',
+            title: 'example.css',
+            disabled: false,
+            isInline: false,
+            isMutable: false,
+            isConstructed: false,
+            loadingFailed: false,
+            startLine: 0,
+            startColumn: 0,
+            length: 100,
+            endLine: 10,
+            endColumn: 10,
+            sourceMapURL: 'http://example.com/example.css.map',
+        };
+        const scssUISourceCodePromise = waitForUISourceCodeAdded(sourceURLString);
+        cssModel.styleSheetAdded(headerPayload);
+        const scssUISourceCode = await scssUISourceCodePromise;
+        assert.exists(scssUISourceCode);
+        await cssWorkspaceBinding.pendingLiveLocationChangesPromise();
+        const header = cssModel.styleSheetHeaderForId(headerPayload.styleSheetId);
+        assert.exists(header);
+        const mockOwnerStyle = {
+            type: SDK.CSSStyleDeclaration.Type.Regular,
+            styleSheetId: header.id,
+            cssModel: () => cssModel,
+        };
+        const mockProperty = (forName, line, column) => {
+            const range = new TextUtils.TextRange.TextRange(line, column, line, column + 5);
+            return {
+                ownerStyle: mockOwnerStyle,
+                nameRange: () => forName ? range : null,
+                valueRange: () => !forName ? range : null,
+            };
+        };
+        const testPropertyUILocation = (forName, line, column, expectedUISourceCode, expectedLine, expectedColumn) => {
+            const uiLocation = cssWorkspaceBinding.propertyUILocation(mockProperty(forName, line, column), forName);
+            assert.exists(uiLocation, `Could not map property UI location ${line}:${column}`);
+            assert.strictEqual(uiLocation.uiSourceCode, expectedUISourceCode, `Mismatched UISourceCode for ${line}:${column}`);
+            assert.strictEqual(uiLocation.lineNumber, expectedLine, `Mismatched line number for ${line}:${column}`);
+            assert.strictEqual(uiLocation.columnNumber, expectedColumn, `Mismatched column number for ${line}:${column}`);
+        };
+        // Value mapping (tests nameRange/valueRange extraction combined with rawLocationToUILocation)
+        testPropertyUILocation(true, 2, 4, scssUISourceCode, 2, 2);
+        testPropertyUILocation(false, 2, 6, scssUISourceCode, 2, 5);
     });
 });
 //# sourceMappingURL=CSSWorkspaceBinding.test.js.map

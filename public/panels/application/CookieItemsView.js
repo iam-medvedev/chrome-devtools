@@ -186,7 +186,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
                  </devtools-widget>` :
         html `<devtools-widget ${widget(UI.EmptyWidget.EmptyWidget, {
             header: i18nString(UIStrings.noCookieSelected),
-            text: i18nString(UIStrings.selectACookieToPreviewItsValue)
+            text: i18nString(UIStrings.selectACookieToPreviewItsValue),
         })}></devtools-widget>`}
         </devtools-widget>
       </devtools-split-view>

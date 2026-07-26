@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 var _a;
-import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Common from '../common/common.js';
+import * as Host from '../host/host.js';
 import * as i18n from '../i18n/i18n.js';
 import * as Platform from '../platform/platform.js';
 import * as Root from '../root/root.js';
+import * as TextUtils from '../text_utils/text_utils.js';
 import { Cookie } from './Cookie.js';
 import { DirectSocketChunkType, DirectSocketStatus, DirectSocketType, Events as NetworkRequestEvents, NetworkRequest, } from './NetworkRequest.js';
+import { RuntimeModel } from './RuntimeModel.js';
 import { SDKModel } from './SDKModel.js';
 import { TargetManager } from './TargetManager.js';
 const UIStrings = {
@@ -29,11 +31,11 @@ const UIStrings = {
      */
     noContentForPreflight: 'No content available for preflight request',
     /**
-     * @description Text to indicate that network throttling is disabled
+     * @description Text to indicate that network throttling is disabled.
      */
     noThrottling: 'No throttling',
     /**
-     * @description Text to indicate the network connectivity is offline
+     * @description Text to indicate the network connectivity is offline.
      */
     offline: 'Offline',
     /**
@@ -44,53 +46,53 @@ const UIStrings = {
     // change it we break their stored throttling settings.
     // (See crrev.com/c/2947255)
     /**
-     * @description Text in Network Manager representing the "Slow 4G" throttling preset
+     * @description Text in Network Manager representing the "Slow 4G" throttling preset.
      */
     fastG: 'Slow 4G', // Named `fastG` for legacy reasons and because this value
     // is serialized locally on the user's machine: if we
     // change it we break their stored throttling settings.
     // (See crrev.com/c/2947255)
     /**
-     * @description Text in Network Manager representing the "Fast 4G" throttling preset
+     * @description Text in Network Manager representing the "Fast 4G" throttling preset.
      */
     fast4G: 'Fast 4G',
     /**
-     * @description Text in Network Manager representing the "Blocking" throttling preset
+     * @description Text in Network Manager representing the "Blocking" throttling preset.
      */
     block: 'Block',
     /**
-     * @description Text in Network Manager
+     * @description Message in Network Manager indicating that a request was blocked by DevTools.
      * @example {https://example.com} PH1
      */
     requestWasBlockedByDevtoolsS: 'Request was blocked by DevTools: "{PH1}"',
     /**
-     * @description Message in Network Manager
+     * @description Console message when a request failed loading.
      * @example {XHR} PH1
      * @example {GET} PH2
      * @example {https://example.com} PH3
      */
     sFailedLoadingSS: '{PH1} failed loading: {PH2} "{PH3}".',
     /**
-     * @description Message in Network Manager
+     * @description Console message when a request finished loading.
      * @example {XHR} PH1
      * @example {GET} PH2
      * @example {https://example.com} PH3
      */
     sFinishedLoadingSS: '{PH1} finished loading: {PH2} "{PH3}".',
     /**
-     * @description One of direct socket connection statuses
+     * @description One of direct socket connection statuses.
      */
     directSocketStatusOpening: 'Opening',
     /**
-     * @description One of direct socket connection statuses
+     * @description One of direct socket connection statuses.
      */
     directSocketStatusOpen: 'Open',
     /**
-     * @description One of direct socket connection statuses
+     * @description One of direct socket connection statuses.
      */
     directSocketStatusClosed: 'Closed',
     /**
-     * @description One of direct socket connection statuses
+     * @description One of direct socket connection statuses.
      */
     directSocketStatusAborted: 'Aborted',
 };
@@ -98,6 +100,21 @@ const str_ = i18n.i18n.registerUIStrings('core/sdk/NetworkManager.ts', UIStrings
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
 const requestToManagerMap = new WeakMap();
+/** Resource types eligible for resend with full fidelity. */
+const FULL_FIDELITY_RESEND_TYPES = new Set([
+    Common.ResourceType.resourceTypes.XHR,
+    Common.ResourceType.resourceTypes.Fetch,
+    Common.ResourceType.resourceTypes.Script,
+    Common.ResourceType.resourceTypes.Stylesheet,
+    Common.ResourceType.resourceTypes.Image,
+    Common.ResourceType.resourceTypes.Media,
+    Common.ResourceType.resourceTypes.Font,
+    Common.ResourceType.resourceTypes.Wasm,
+    Common.ResourceType.resourceTypes.Manifest,
+    Common.ResourceType.resourceTypes.TextTrack,
+    Common.ResourceType.resourceTypes.SourceMapScript,
+    Common.ResourceType.resourceTypes.SourceMapStyleSheet,
+]);
 const CONNECTION_TYPES = new Map([
     ['2g', "cellular2g" /* Protocol.Network.ConnectionType.Cellular2g */],
     ['3g', "cellular3g" /* Protocol.Network.ConnectionType.Cellular3g */],
@@ -159,17 +176,89 @@ export class NetworkManager extends SDKModel {
     static forRequest(request) {
         return requestToManagerMap.get(request) || null;
     }
-    static canReplayRequest(request) {
-        return Boolean(requestToManagerMap.get(request)) && Boolean(request.backendRequestId()) && !request.isRedirect() &&
-            request.resourceType() === Common.ResourceType.resourceTypes.XHR;
+    static canResendRequest(request) {
+        if (!requestToManagerMap.get(request) || !request.backendRequestId() || request.isRedirect()) {
+            return false;
+        }
+        return FULL_FIDELITY_RESEND_TYPES.has(request.resourceType());
     }
     static replayRequest(request) {
+        void NetworkManager.resendRequest(request);
+    }
+    static async resendRequest(request) {
         const manager = requestToManagerMap.get(request);
         const requestId = request.backendRequestId();
         if (!manager || !requestId || request.isRedirect()) {
             return;
         }
-        void manager.#networkAgent.invoke_replayXHR({ requestId });
+        Host.userMetrics.resendRequest(Host.UserMetrics.resendRequestType(request.resourceType()));
+        // XHR requests use the existing CDP replay mechanism.
+        if (request.resourceType() === Common.ResourceType.resourceTypes.XHR) {
+            void manager.#networkAgent.invoke_replayXHR({ requestId });
+            return;
+        }
+        // All other eligible types use fetch via Runtime.evaluate.
+        const target = manager.target();
+        const runtimeModel = target.model(RuntimeModel);
+        if (!runtimeModel) {
+            return;
+        }
+        // Resolve execution context: prefer the frame's default context.
+        let executionContext = null;
+        const frameId = request.frameId;
+        if (frameId) {
+            executionContext = runtimeModel.executionContexts().find(ctx => ctx.frameId === frameId && ctx.isDefault) ?? null;
+        }
+        const usesFallbackContext = !executionContext;
+        if (!executionContext) {
+            executionContext = runtimeModel.defaultExecutionContext();
+        }
+        if (!executionContext) {
+            return;
+        }
+        if (usesFallbackContext) {
+            runtimeModel.target().targetManager().getConsole().warn('Resend: original execution context unavailable, using top-level context.');
+        }
+        // Build the fetch expression.
+        const method = request.requestMethod;
+        const url = request.url();
+        const headers = [];
+        for (const { name, value } of request.requestHeaders()) {
+            // Skip HTTP/2+ pseudo-headers (e.g. :authority, :method, :path, :scheme).
+            if (name.startsWith(':')) {
+                continue;
+            }
+            // Skip headers the browser sets automatically for fetch.
+            const lower = name.toLowerCase();
+            if (lower === 'host' || lower === 'connection' || lower === 'content-length' || lower === 'cookie' ||
+                lower === 'origin' || lower === 'referer') {
+                continue;
+            }
+            headers.push([name, value]);
+        }
+        const body = await request.requestFormData();
+        const fetchOptions = {
+            method,
+            headers,
+            credentials: 'include',
+        };
+        const isGetOrHead = method === 'GET' || method === 'HEAD';
+        if (body && !isGetOrHead) {
+            fetchOptions.body = body;
+        }
+        const expression = `fetch(${JSON.stringify(url)}, ${JSON.stringify(fetchOptions)})`;
+        const response = await target.runtimeAgent().invoke_evaluate({
+            expression,
+            // Use uniqueContextId if available, otherwise fall back to contextId.
+            ...(executionContext.uniqueId ? { uniqueContextId: executionContext.uniqueId } : { contextId: executionContext.id }),
+            silent: false,
+            awaitPromise: true,
+        });
+        if (response.getError() || response.exceptionDetails) {
+            const errorText = response.getError() || response.exceptionDetails?.exception?.description ||
+                response.exceptionDetails?.text || 'Unknown error';
+            runtimeModel.target().targetManager().getConsole().error(`Resend failed for ${url}: ${errorText}`);
+        }
     }
     static async searchInRequest(request, query, caseSensitive, isRegex) {
         const manager = NetworkManager.forRequest(request);
@@ -899,7 +988,7 @@ export class NetworkDispatcher {
     }
     requestIntercepted({}) {
     }
-    requestWillBeSentExtraInfo({ requestId, associatedCookies, headers, deviceBoundSessionUsages, clientSecurityState, connectTiming, siteHasCookieInOtherPartition, appliedNetworkConditionsId }) {
+    requestWillBeSentExtraInfo({ requestId, associatedCookies, headers, deviceBoundSessionUsages, clientSecurityState, connectTiming, siteHasCookieInOtherPartition, appliedNetworkConditionsId, }) {
         const blockedRequestCookies = [];
         const includedRequestCookies = [];
         for (const { blockedReasons, exemptionReason, cookie } of associatedCookies) {
@@ -1124,7 +1213,7 @@ export class NetworkDispatcher {
                 sendBufferSize: event.options.sendBufferSize,
                 receiveBufferSize: event.options.receiveBufferSize,
                 dnsQueryType: event.options.dnsQueryType,
-            }
+            },
         };
         networkRequest.setResourceType(Common.ResourceType.resourceTypes.DirectSocket);
         networkRequest.setIssueTime(event.timestamp, event.timestamp);
@@ -1300,7 +1389,7 @@ export class NetworkDispatcher {
             type: DirectSocketChunkType.SEND,
             timestamp: event.timestamp,
             remoteAddress: event.message.remoteAddr,
-            remotePort: event.message.remotePort
+            remotePort: event.message.remotePort,
         });
         networkRequest.responseReceivedTime = event.timestamp;
         this.updateNetworkRequest(networkRequest);
@@ -1315,7 +1404,7 @@ export class NetworkDispatcher {
             type: DirectSocketChunkType.RECEIVE,
             timestamp: event.timestamp,
             remoteAddress: event.message.remoteAddr,
-            remotePort: event.message.remotePort
+            remotePort: event.message.remotePort,
         });
         networkRequest.responseReceivedTime = event.timestamp;
         this.updateNetworkRequest(networkRequest);
@@ -1447,7 +1536,7 @@ export class RequestCondition extends Common.ObjectWrapper.ObjectWrapper {
         }
         const pattern = {
             wildcardURL: setting.url,
-            upgradedPattern: RequestURLPattern.upgradeFromWildcard(setting.url) ?? undefined
+            upgradedPattern: RequestURLPattern.upgradeFromWildcard(setting.url) ?? undefined,
         };
         return new this(pattern, setting.enabled, BlockingConditions);
     }
@@ -1640,7 +1729,7 @@ export class RequestConditions extends Common.ObjectWrapper.ObjectWrapper {
                     packetReordering: conditions.packetReordering,
                     connectionType: NetworkManager.connectionType(conditions),
                     offline,
-                }))
+                })),
             })
                 .then(response => {
                 if (!response.getError()) {
@@ -2224,7 +2313,7 @@ export const THROTTLING_CONDITIONS_LOOKUP = new Map([
     ["OFFLINE" /* PredefinedThrottlingConditionKey.OFFLINE */, OfflineConditions],
     ["SPEED_3G" /* PredefinedThrottlingConditionKey.SPEED_3G */, Slow3GConditions],
     ["SPEED_SLOW_4G" /* PredefinedThrottlingConditionKey.SPEED_SLOW_4G */, Slow4GConditions],
-    ["SPEED_FAST_4G" /* PredefinedThrottlingConditionKey.SPEED_FAST_4G */, Fast4GConditions]
+    ["SPEED_FAST_4G" /* PredefinedThrottlingConditionKey.SPEED_FAST_4G */, Fast4GConditions],
 ]);
 function keyIsPredefined(key) {
     return !key.startsWith('USER_CUSTOM_SETTING_');

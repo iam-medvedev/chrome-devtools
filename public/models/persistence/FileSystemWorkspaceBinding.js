@@ -4,7 +4,7 @@
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
-import * as TextUtils from '../text_utils/text_utils.js';
+import * as TextUtils from '../../core/text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
 import { Events } from './IsolatedFileSystemManager.js';
 export class FileSystemWorkspaceBinding {
@@ -248,7 +248,7 @@ export class FileSystem extends Workspace.Workspace.ProjectStore {
                 this.addFile(filePaths[i]);
             }
             if (to < filePaths.length) {
-                window.setTimeout(reportFileChunk.bind(this, to), 100);
+                globalThis.setTimeout(reportFileChunk.bind(this, to), 100);
             }
             else if (this.type() === 'filesystem') {
                 Host.userMetrics.workspacesPopulated(performance.now() - startTime);

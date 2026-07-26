@@ -255,6 +255,31 @@ describe('HAR', function () {
                         data: 'last message',
                     });
                 });
+                it('exports form data parameters, query parameters, and IPv6 address', async () => {
+                    const requestUrl = urlString `http://[::1]:8000/devtools/resources/post-target.cgi?queryParam1=queryValue1&queryParam2=#fragmentParam1=fragmentValue1&fragmentParam2=`;
+                    const request = SDK.NetworkRequest.NetworkRequest.create(requestId, requestUrl, Platform.DevToolsPath.EmptyUrlString, null, null, null);
+                    request.requestMethod = 'POST';
+                    request.setRemoteAddress('[::1]', 8000);
+                    request.setRequestHeaders([{ name: 'Content-Type', value: 'application/x-www-form-urlencoded' }]);
+                    request.setRequestFormData(true, 'formParam1=formValue1&formParam2=');
+                    const entry = await build(request, { sanitize: false });
+                    assert.strictEqual(entry.request.url, 'http://[::1]:8000/devtools/resources/post-target.cgi?queryParam1=queryValue1&queryParam2=');
+                    assert.strictEqual(entry.request.method, 'POST');
+                    assert.deepEqual(entry.request.queryString, [
+                        { name: 'queryParam1', value: 'queryValue1' },
+                        { name: 'queryParam2', value: '' },
+                    ]);
+                    assert.deepEqual(entry.request.postData, {
+                        mimeType: 'application/x-www-form-urlencoded',
+                        text: 'formParam1=formValue1&formParam2=',
+                        params: [
+                            { name: 'formParam1', value: 'formValue1' },
+                            { name: 'formParam2', value: '' },
+                        ],
+                    });
+                    assert.strictEqual(entry.serverIPAddress, '[::1]');
+                    assert.strictEqual(entry.connection, '8000');
+                });
             });
         });
     });

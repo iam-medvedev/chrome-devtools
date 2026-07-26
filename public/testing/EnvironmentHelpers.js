@@ -100,6 +100,14 @@ export async function deinitializeGlobalVars() {
         UI.InspectorView.InspectorView.removeInstance();
         UI.ActionRegistry.ActionRegistry.reset();
     }
+    // We must dynamically import the highlighting module because evaluating
+    // `HighlightElement.ts` requires `HTMLElement` to be available. When running
+    // unit tests in the Node.js environment, `HTMLElement` is missing, so a
+    // static import at the top of this file would break Node unit tests.
+    if (typeof HTMLElement !== 'undefined') {
+        const Highlighting = await import('../ui/components/highlighting/highlighting.js');
+        Highlighting.HighlightManager.HighlightManager.removeInstance();
+    }
     cleanupRuntime();
 }
 export function describeWithEnvironment(title, fn, opts = {
@@ -119,14 +127,6 @@ describeWithEnvironment.only = function (title, fn, opts = {
         beforeEach(async () => await initializeGlobalVars(opts));
         fn.call(this);
         afterEach(async () => await deinitializeGlobalVars());
-    });
-};
-describeWithEnvironment.skip = function (title, fn, _opts = {
-    reset: true,
-}) {
-    // eslint-disable-next-line @devtools/check-test-definitions
-    return describe.skip(title, function () {
-        fn.call(this);
     });
 };
 export function createFakeSetting(name, defaultValue) {

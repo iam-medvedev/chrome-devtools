@@ -235,7 +235,8 @@ describe('Treemap', () => {
             const data = Utils.Treemap.createTreemapData(parsedTrace.data.Scripts, new Map())
                 .map(d => [d.name, d.resourceBytes, d.encodedBytes, !!d.children?.length]);
             assert.deepEqual(data, [
-                ['extensions::SafeBuiltins', 3204, 3204, false], ['v8/LoadTimes', 198, 198, false],
+                ['extensions::SafeBuiltins', 3204, 3204, false],
+                ['v8/LoadTimes', 198, 198, false],
                 ['https://dupe-modules-lh-2.surge.sh/bundle.js?v1', 921607, 251055, true],
                 ['https://dupe-modules-lh-2.surge.sh/bundle.js?v2', 921607, 251053, true],
                 ['https://dupe-modules-lh-2.surge.sh/bundle.js?v3', 921607, 251055, true],
@@ -244,7 +245,7 @@ describe('Treemap', () => {
                 ['chrome-extension://cgaocdmhkmfnkdkbnckgmpopcbpaaejo/content_scripts/detect.js', 1426, 1426, false],
                 ['chrome-extension://cgaocdmhkmfnkdkbnckgmpopcbpaaejo/content_scripts/run.js', 259, 259, false],
                 ['chrome-extension://pmhkaepabdniocnppdkfgifgonahhpdi/polyfills/webcomponents-ce.js', 19548, 19548, false],
-                ['chrome-extension://pmhkaepabdniocnppdkfgifgonahhpdi/incognito_content_script.js', 991691, 991691, false]
+                ['chrome-extension://pmhkaepabdniocnppdkfgifgonahhpdi/incognito_content_script.js', 991691, 991691, false],
             ]);
         });
         it('works (no source maps; inline scripts)', async function () {
@@ -269,7 +270,7 @@ describe('Treemap', () => {
                 ['https://u.openx.net/w/1.0/cm?cc=1&id=4241c706-9fd2-4ae4-b2d7-c9f8d34e7', 113, 123, true],
                 ['https://c841865208bc99b5e2ae14cac96331fd.safeframe.googlesyndication.c', 696, 696, true],
                 ['https://s0.2mdn.net/sadbundle/16824365171377590673/index.html?ev=01_25', 8181, 2709, true],
-                ['https://onetag-sys.com/usync/?pubId=765b4e6bb9c8438', 2356, 942, true]
+                ['https://onetag-sys.com/usync/?pubId=765b4e6bb9c8438', 2356, 942, true],
             ]);
         });
     });

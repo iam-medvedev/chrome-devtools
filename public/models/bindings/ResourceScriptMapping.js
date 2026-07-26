@@ -6,8 +6,8 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as TextUtils from '../../core/text_utils/text_utils.js';
 import * as Formatter from '../formatter/formatter.js';
-import * as TextUtils from '../text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
 import { ContentProviderBasedProject } from './ContentProviderBasedProject.js';
 import { DebuggerWorkspaceBinding } from './DebuggerWorkspaceBinding.js';
@@ -15,14 +15,12 @@ import { NetworkProject } from './NetworkProject.js';
 import { metadataForURL } from './ResourceUtils.js';
 const UIStrings = {
     /**
-     * @description Error text displayed in the console when editing a live script fails. LiveEdit is
-     *the name of the feature for editing code that is already running.
+     * @description Error text displayed in the Console panel when editing a live script fails. LiveEdit is the name of the feature for editing code that is already running.
      * @example {warning} PH1
      */
     liveEditFailed: '`LiveEdit` failed: {PH1}',
     /**
-     * @description Error text displayed in the console when compiling a live-edited script fails. LiveEdit is
-     *the name of the feature for editing code that is already running.
+     * @description Error text displayed in the Console panel when compiling a live-edited script fails. LiveEdit is the name of the feature for editing code that is already running.
      * @example {connection lost} PH1
      */
     liveEditCompileFailed: '`LiveEdit` compile failed: {PH1}',
@@ -344,11 +342,11 @@ export class ResourceScriptFile extends Common.ObjectWrapper.ObjectWrapper {
         function getErrorText(status) {
             switch (status) {
                 case "BlockedByActiveFunction" /* Protocol.Debugger.SetScriptSourceResponseStatus.BlockedByActiveFunction */:
-                    return 'Functions that are on the stack (currently being executed) can not be edited';
+                    return 'Functions that are on the stack (currently being executed) can’t be edited';
                 case "BlockedByActiveGenerator" /* Protocol.Debugger.SetScriptSourceResponseStatus.BlockedByActiveGenerator */:
-                    return 'Async functions/generators that are active can not be edited';
+                    return 'Async functions/generators that are active can’t be edited';
                 case "BlockedByTopLevelEsModuleChange" /* Protocol.Debugger.SetScriptSourceResponseStatus.BlockedByTopLevelEsModuleChange */:
-                    return 'The top-level of ES modules can not be edited';
+                    return 'The top level of JavaScript modules can’t be edited';
                 case "CompileError" /* Protocol.Debugger.SetScriptSourceResponseStatus.CompileError */:
                 case "Ok" /* Protocol.Debugger.SetScriptSourceResponseStatus.Ok */:
                     throw new Error('Compile errors and Ok status must not be reported on the console');

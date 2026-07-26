@@ -1812,7 +1812,7 @@ Common.Settings.registerSettingExtension({
   ],
   learnMore: {
     tooltip: i18nLazyString(UIStrings.wasmAutoSteppingInfo),
-  }
+  },
 });
 
 UI.ViewManager.registerLocationResolver({

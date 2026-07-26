@@ -10,7 +10,7 @@ const UIStrings = {
     /**
      * @description Warning message indicating that the user will see real user data for a URL which is different from the URL they are currently looking at.
      */
-    fieldOverrideWarning: 'Field metrics are configured for a different URL than the current page.',
+    fieldOverrideWarning: 'Field metrics are for a different URL than the current page.',
 };
 const str_ = i18n.i18n.registerUIStrings('models/crux-manager/CrUXManager.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -192,6 +192,9 @@ export class CrUXManager extends Common.ObjectWrapper.ObjectWrapper {
         }
         this.#pageResult = await this.#getFieldDataForCurrentPage();
         this.dispatchEventToListeners("field-data-changed" /* Events.FIELD_DATA_CHANGED */, this.#pageResult);
+    }
+    setMainDocumentURL(url) {
+        this.#mainDocumentUrl = url;
     }
     #normalizeUrl(inputUrl) {
         const normalizedUrl = new URL(inputUrl);
