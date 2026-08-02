@@ -9,9 +9,9 @@ import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
+import * as EmulationModel from '../../models/emulation/emulation.js';
 import * as PublicExtensions from '../../models/extensions/extensions.js';
 import * as PanelCommon from '../../panels/common/common.js';
-import * as Emulation from '../../panels/emulation/emulation.js';
 import * as Tracing from '../../services/tracing/tracing.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -988,9 +988,9 @@ export class RecorderPanel extends UI.Widget.VBox {
     }
     async #disableDeviceModeIfEnabled() {
         try {
-            const deviceModeWrapper = Emulation.DeviceModeWrapper.DeviceModeWrapper.instance();
-            if (deviceModeWrapper.isDeviceModeOn()) {
-                deviceModeWrapper.toggleDeviceMode();
+            const model = EmulationModel.DeviceModeModel.DeviceModeModel.instance();
+            if (model.isDeviceModeOn()) {
+                model.toggleDeviceMode();
                 const emulationModel = this.#getMainTarget().model(SDK.EmulationModel.EmulationModel);
                 await emulationModel?.emulateDevice(null);
             }

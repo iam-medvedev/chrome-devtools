@@ -1,4 +1,5 @@
 // gen/front_end/panels/browser_debugger/browser_debugger-meta.prebundle.js
+import * as Common from "./../../core/common/common.js";
 import * as i18n from "./../../core/i18n/i18n.js";
 import * as Root from "./../../core/root/root.js";
 import * as SDK from "./../../core/sdk/sdk.js";
@@ -96,10 +97,10 @@ async function loadSourcesModule() {
   return loadedSourcesModule;
 }
 UI.ViewManager.registerViewExtension({
-  async loadView() {
+  loadView: Common.Lazy.lazy(async (universe) => {
     const BrowserDebugger = await loadBrowserDebuggerModule();
-    return BrowserDebugger.EventListenerBreakpointsSidebarPane.EventListenerBreakpointsSidebarPane.instance();
-  },
+    return new BrowserDebugger.EventListenerBreakpointsSidebarPane.EventListenerBreakpointsSidebarPane(universe.eventBreakpointsManager);
+  }),
   id: "sources.event-listener-breakpoints",
   location: "sources.sidebar-bottom",
   commandPrompt: i18nLazyString(UIStrings.showEventListenerBreakpoints),

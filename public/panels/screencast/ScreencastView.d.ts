@@ -1,7 +1,51 @@
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Protocol from '../../generated/protocol.js';
 import * as UI from '../../ui/legacy/legacy.js';
-export declare class ScreencastView extends UI.Widget.VBox implements SDK.OverlayModel.Highlighter {
+export interface CanvasRenderingInput {
+    screencastImage?: HTMLImageElement;
+    screenOffsetTop: number;
+    screenZoom: number;
+    imageZoom: number;
+    highlightModel?: Protocol.DOM.BoxModel | null;
+    highlightConfig?: Protocol.Overlay.HighlightConfig | null;
+}
+export interface ViewInput extends CanvasRenderingInput {
+    navigationUrl: string;
+    canGoBack: boolean;
+    canGoForward: boolean;
+    isTouchEmulated: boolean;
+    glassPaneText: string;
+    glassPaneHidden: boolean;
+    isViewportHidden: boolean;
+    viewportWidth?: string;
+    viewportHeight?: string;
+    progressPercent: number;
+    elementTitleData?: ElementTitleData;
+    onBackClick: () => void;
+    onForwardClick: () => void;
+    onReloadClick: () => void;
+    onUrlInputKeyUp: (event: KeyboardEvent) => void;
+    onToggleTouch: (emulateTouch: boolean) => void;
+    onCanvasMouseEvent: (event: MouseEvent) => void;
+    onCanvasWheel: (event: WheelEvent) => void;
+    onCanvasKeyEvent: (event: KeyboardEvent) => void;
+    onCanvasContextMenu: (event: Event) => void;
+    onCanvasBlur: () => void;
+}
+export interface ElementTitleData {
+    visible: boolean;
+    tagName?: string;
+    attribute?: string;
+    width?: string;
+    height?: string;
+}
+export interface ViewOutput {
+    focusUrlInput?: () => void;
+    focusCanvas?: () => void;
+}
+export type View = (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
+export declare const DEFAULT_VIEW: (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
+export declare class ScreencastView extends UI.Widget.Widget implements SDK.OverlayModel.Highlighter {
     #private;
     private readonly screenCaptureModel;
     private domModel;
@@ -16,42 +60,24 @@ export declare class ScreencastView extends UI.Widget.VBox implements SDK.Overla
     private screenOffsetTop;
     private pageScaleFactor;
     private imageElement;
-    private viewportElement;
-    private glassPaneElement;
-    private canvasElement;
-    private titleElement;
-    private context;
     private imageZoom;
-    private tagNameElement;
-    private attributeElement;
-    private nodeWidthElement;
-    private nodeHeightElement;
     private model;
     private highlightConfig;
-    private navigationUrl;
-    private navigationBack;
-    private navigationForward;
-    private canvasContainerElement?;
-    private checkerboardPattern?;
     private targetInactive?;
     private deferredCasting?;
     private highlightNode?;
     private config?;
     private node?;
     private inspectModeConfig?;
-    private navigationBar?;
-    private navigationReload?;
     private navigationProgressBar?;
-    private touchInputToggle?;
-    private mouseInputToggle?;
-    private touchInputToggleIcon?;
-    private mouseInputToggleIcon?;
     private historyIndex?;
     private historyEntries?;
     private isCasting;
     private screencastOperationId?;
-    constructor(screenCaptureModel: SDK.ScreenCaptureModel.ScreenCaptureModel);
+    constructor(screenCaptureModel: SDK.ScreenCaptureModel.ScreenCaptureModel, element?: HTMLElement, view?: View);
     initialize(): void;
+    wasShown(): void;
+    performUpdate(): void;
     willHide(): void;
     onDetach(): void;
     private startCasting;
@@ -71,16 +97,16 @@ export declare class ScreencastView extends UI.Widget.VBox implements SDK.Overla
     highlightInOverlay(data: SDK.OverlayModel.HighlightData, config: Protocol.Overlay.HighlightConfig | null): void;
     private updateHighlightInOverlayAndRepaint;
     private scaleModel;
-    private repaint;
-    private cssColor;
-    private quadToPath;
-    private drawOutlinedQuad;
-    private drawOutlinedQuadWithClip;
+    static repaintScreencastCanvas(el: HTMLCanvasElement, input: CanvasRenderingInput): void;
+    private static cssColor;
+    private static quadToPath;
+    private static drawOutlinedQuad;
+    private static drawOutlinedQuadWithClip;
     private drawElementTitle;
+    static clampTooltipPosition(canvas: HTMLCanvasElement, titleElement: HTMLElement, model?: Protocol.DOM.BoxModel | null): void;
     private viewportDimensions;
     setInspectMode(mode: Protocol.Overlay.InspectMode, config: Protocol.Overlay.HighlightConfig): Promise<void>;
     highlightFrame(_frameId: string): void;
-    private createCheckerboardPattern;
     private createNavigationBar;
     private navigateToHistoryEntry;
     private navigateReload;
@@ -96,12 +122,12 @@ export declare const SCHEME_REGEX: RegExp;
 export declare class ProgressTracker {
     private readonly resourceTreeModel;
     private readonly networkManager;
-    private element;
     private requestIds;
     private startedRequests;
     private finishedRequests;
     private maxDisplayedProgress;
-    constructor(resourceTreeModel: SDK.ResourceTreeModel.ResourceTreeModel | null, networkManager: SDK.NetworkManager.NetworkManager | null, element: HTMLElement);
+    private readonly onProgressUpdate?;
+    constructor(resourceTreeModel: SDK.ResourceTreeModel.ResourceTreeModel | null, networkManager: SDK.NetworkManager.NetworkManager | null, onProgressUpdate?: (progress: number) => void);
     dispose(): void;
     private onPrimaryPageChanged;
     private onLoad;

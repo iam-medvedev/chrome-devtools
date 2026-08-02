@@ -1,26 +1,58 @@
 import '../../ui/kit/kit.js';
+import '../../ui/components/lists/lists.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import { type LitTemplate } from '../../ui/lit/lit.js';
+import locationsSettingsTabStyles from './locationsSettingsTab.css.js';
+export { locationsSettingsTabStyles };
+export interface EditorInputControls {
+    titleInput: LitTemplate | Element;
+    latInput: LitTemplate | Element;
+    longInput: LitTemplate | Element;
+    timezoneIdInput: LitTemplate | Element;
+    localeInput: LitTemplate | Element;
+    accuracyInput: LitTemplate | Element;
+}
+export interface LocationValidationErrors {
+    title?: string | null;
+    lat?: string | null;
+    long?: string | null;
+    timezoneId?: string | null;
+    locale?: string | null;
+    accuracy?: string | null;
+}
+export interface LocationDialogInput {
+    location: LocationDescription;
+    isNew: boolean;
+    errors?: LocationValidationErrors;
+    onSave: (location: LocationDescription) => void;
+    onCancel: () => void;
+    onValidateErrors: (errors: LocationValidationErrors) => void;
+}
+export declare function renderEditorView(controls: EditorInputControls, errors?: LocationDialogInput['errors'], isDialog?: boolean): LitTemplate;
+export declare function renderLocationDialog(input: LocationDialogInput): LitTemplate;
 interface LocationsViewInput {
+    locations: LocationDescription[];
     onAddLocation: () => void;
+    onEditLocation: (index: number) => void;
+    onRemoveLocation: (index: number) => void;
+    activeDialog?: LocationDialogInput;
 }
 export type ViewOutput = undefined;
 export declare const DEFAULT_VIEW: (input: LocationsViewInput, _output: ViewOutput, target: HTMLElement) => void;
 export type View = typeof DEFAULT_VIEW;
-export declare class LocationsSettingsTab extends UI.Widget.VBox implements UI.ListWidget.Delegate<LocationDescription> {
+export declare class LocationsSettingsTab extends UI.Widget.VBox {
     #private;
-    private readonly list;
     private readonly customSetting;
-    private editor?;
     constructor(element?: HTMLElement, view?: View);
     wasShown(): void;
     performUpdate(): void;
     private locationsUpdated;
     private addButtonClicked;
-    renderItem(location: LocationDescription, _editable: boolean): Element;
-    removeItemRequested(_item: LocationDescription, index: number): void;
-    commitEdit(location: LocationDescription, editor: UI.ListWidget.Editor<LocationDescription>, isNew: boolean): void;
-    beginEdit(location: LocationDescription): UI.ListWidget.Editor<LocationDescription>;
-    private createEditor;
+    private editLocationClicked;
+    private removeLocationClicked;
+    private saveDialog;
+    private closeDialog;
+    private updateDialogErrors;
 }
 export interface LocationDescription {
     title: string;
@@ -36,4 +68,3 @@ export declare function validateLongitude(value: string): string | null;
 export declare function validateTimezoneId(value: string): string | null;
 export declare function validateLocale(value: string): string | null;
 export declare function validateAccuracy(value: string): string | null;
-export {};

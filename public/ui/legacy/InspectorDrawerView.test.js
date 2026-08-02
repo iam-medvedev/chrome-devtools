@@ -465,14 +465,14 @@ describe('InspectorDrawerView', () => {
                     await waitForFifthDockSideChangeHandled;
                     assert.isFalse(inspectorView.isDrawerOrientationVertical());
                 });
-                it('does not change orientation when drawer is closed during dock switch', async () => {
+                it('updates orientation when drawer is closed during dock switch', async () => {
                     const { inspectorView, dockController } = createInspectorViewWithDockState("bottom" /* DockState.BOTTOM */);
                     const waitForDockSideChangeHandled = expectCall(sinon.stub(LegacyUI.InspectorView.InspectorView.instance(), 'applyDrawerOrientationForDockSideForTest'));
                     assert.isFalse(inspectorView.drawerVisible());
-                    const initialOrientation = inspectorView.isDrawerOrientationVertical();
+                    assert.isTrue(inspectorView.isDrawerOrientationVertical());
                     dockController.setDockSide("right" /* DockState.RIGHT */);
                     await waitForDockSideChangeHandled;
-                    assert.strictEqual(inspectorView.isDrawerOrientationVertical(), initialOrientation);
+                    assert.isFalse(inspectorView.isDrawerOrientationVertical());
                 });
                 it('updates orientation correctly when showing the drawer for the first time after a dock switch', async () => {
                     const { inspectorView, dockController } = createInspectorViewWithDockState("bottom" /* DockState.BOTTOM */);
@@ -727,6 +727,13 @@ describe('InspectorDrawerView', () => {
             assert.strictEqual(inspectorView.constraints().minimum.width, 530);
             inspectorView.closeDrawer();
             // 250px corresponds to MIN_INSPECTOR_WIDTH_HORIZONTAL_DRAWER
+            assert.strictEqual(inspectorView.constraints().minimum.width, 250);
+        });
+        it('uses horizontal minimum width when switched from bottom dock to side dock', async () => {
+            const { inspectorView, dockController } = createInspectorViewWithDockState("bottom" /* DockState.BOTTOM */);
+            const waitForDockSideChangeHandled = expectCall(sinon.stub(LegacyUI.InspectorView.InspectorView.instance(), 'applyDrawerOrientationForDockSideForTest'));
+            dockController.setDockSide("right" /* DockState.RIGHT */);
+            await waitForDockSideChangeHandled;
             assert.strictEqual(inspectorView.constraints().minimum.width, 250);
         });
     });

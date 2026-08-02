@@ -7,7 +7,7 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as AiAssistanceModel from '../../../models/ai_assistance/ai_assistance.js';
 import { cleanup, initializePersistenceImplForTests, setupAutomaticFileSystem, } from '../../../testing/AiAssistanceHelpers.js';
-import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
+import { raf, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import * as AiAssistancePanel from '../ai_assistance.js';
 describeWithEnvironment('ChatView', () => {
@@ -51,6 +51,8 @@ describeWithEnvironment('ChatView', () => {
             isTextInputDisabled: false,
             emptyStateSuggestions: [],
             inputPlaceholder: i18n.i18n.lockedString('input placeholder'),
+            textInputValue: '',
+            onTextChange: noop,
             disclaimerText: i18n.i18n.lockedString('disclaimer text'),
             markdownRenderer: new AiAssistancePanel.MarkdownRendererWithCodeBlock(),
             walkthrough: {
@@ -75,14 +77,16 @@ describeWithEnvironment('ChatView', () => {
                             {
                                 type: 'step',
                                 step: {
-                                    isLoading: false,
+                                    state: {
+                                        type: 'needs_approval',
+                                        sideEffectDialog: {
+                                            description: null,
+                                            onAnswer: () => { },
+                                        },
+                                    },
                                     title: 'Updating element styles',
                                     thought: 'Updating element styles',
                                     code: '$0.style.background = "blue";',
-                                    requestApproval: {
-                                        description: null,
-                                        onAnswer: () => { },
-                                    },
                                 },
                             },
                         ],
@@ -121,6 +125,22 @@ describeWithEnvironment('ChatView', () => {
             await capturedExportClick();
             // Should still be 1 because of cache
             sinon.assert.callCount(generateSummaryStub, 1);
+        });
+    });
+    describe('Interaction', () => {
+        it('should call onTextChange when the textarea text is changed', async () => {
+            const onTextChangeStub = sinon.stub();
+            const props = getProp({
+                onTextChange: onTextChangeStub,
+            });
+            const chat = new AiAssistancePanel.ChatView(props);
+            renderElementIntoDOM(chat);
+            await raf();
+            const textArea = chat.shadowRoot.querySelector('.chat-input');
+            assert.exists(textArea);
+            textArea.value = 'test text';
+            textArea.dispatchEvent(new Event('input'));
+            sinon.assert.calledWith(onTextChangeStub, 'test text');
         });
     });
 });

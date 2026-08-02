@@ -1969,7 +1969,7 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
             stylePropertyTreeElement.startEditingValue();
             const autocompletions = await suggestions();
             assert.includeMembers(autocompletions.map(({ text }) => text), [
-                'fill',
+                'fill 10%',
             ]);
         });
         it('includes border-image keyword suggestions', async () => {
@@ -1980,8 +1980,7 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
             stylePropertyTreeElement.startEditingValue();
             const autocompletions = await suggestions();
             assert.includeMembers(autocompletions.map(({ text }) => text), [
-                'auto',
-                'fill',
+                'fill 10%',
                 'image-set(url("") 1x, url("") 2x)',
                 'cross-fade(url("") 50%, url("") 50%)',
             ]);

@@ -245,7 +245,7 @@ var DEFAULT_VIEW = (input, output, target) => {
     return html`
       <div class="setting-checkbox-container">
         <setting-checkbox class="setting-checkbox"
-          .data=${{ setting: input.syncSetting }}>
+          .data=${{ setting: input.syncSetting, disabled: input.checkboxDisabled }}>
         </setting-checkbox>
         ${input.warningType ? html`
           <devtools-button
@@ -384,7 +384,6 @@ var SyncSection = class extends UI.Widget.Widget {
   }
   performUpdate() {
     const checkboxDisabled = !this.#syncInfo.isSyncActive || !this.#syncInfo.arePreferencesSynced;
-    this.#syncSetting?.setDisabled(checkboxDisabled);
     let warningType;
     if (!this.#syncInfo.isSyncActive) {
       warningType = "SYNC_DISABLED";
@@ -394,6 +393,7 @@ var SyncSection = class extends UI.Widget.Widget {
     const viewInput = {
       syncInfo: this.#syncInfo,
       syncSetting: this.#syncSetting,
+      checkboxDisabled,
       receiveBadgesSetting: this.#receiveBadgesSetting,
       gdpProfile: this.#gdpProfile,
       isEligibleToCreateGdpProfile: Host.GdpClient.isGdpProfilesAvailable() && this.#isEligibleToCreateGdpProfile,

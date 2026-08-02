@@ -1,7 +1,6 @@
 // Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable @devtools/no-lit-render-outside-of-view */
 import '../../../../ui/components/report_view/report_view.js';
 import '../../../../ui/components/request_link_icon/request_link_icon.js';
 import * as Common from '../../../../core/common/common.js';
@@ -10,8 +9,6 @@ import { assertNotNullOrUndefined } from '../../../../core/platform/platform.js'
 import * as SDK from '../../../../core/sdk/sdk.js';
 import * as Logs from '../../../../models/logs/logs.js';
 import * as Buttons from '../../../../ui/components/buttons/buttons.js';
-import * as LegacyWrapper from '../../../../ui/components/legacy_wrapper/legacy_wrapper.js';
-import * as RenderCoordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
 import * as UI from '../../../../ui/legacy/legacy.js';
 import * as Lit from '../../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../../ui/visual_logging/visual_logging.js';
@@ -149,108 +146,69 @@ class PreloadingUIUtils {
         }
     }
 }
-export class PreloadingDetailsReportView extends LegacyWrapper.LegacyWrapper.WrappableComponent {
-    #shadow = this.attachShadow({ mode: 'open' });
-    #data = null;
-    set data(data) {
-        this.#data = data;
-        void this.#render();
+const DEFAULT_VIEW = (input, _output, target) => {
+    if (input.data === null) {
+        // clang-format off
+        Lit.render(html `
+      <style>${preloadingDetailsReportViewStyles}</style>
+      <style>${UI.inspectorCommonStyles}</style>
+      <div class="empty-state">
+        <span class="empty-state-header">${i18nString(UIStrings.noElementSelected)}</span>
+        <span class="empty-state-description">${i18nString(UIStrings.selectAnElementForMoreDetails)}</span>
+      </div>
+    `, target);
+        // clang-format on
+        return;
     }
-    async #render() {
-        await RenderCoordinator.write('PreloadingDetailsReportView render', () => {
-            if (this.#data === null) {
-                // Disabled until https://crbug.com/1079231 is fixed.
-                // clang-format off
-                Lit.render(html `
-          <style>${preloadingDetailsReportViewStyles}</style>
-          <style>${UI.inspectorCommonStyles}</style>
-          <div class="empty-state">
-            <span class="empty-state-header">${i18nString(UIStrings.noElementSelected)}</span>
-            <span class="empty-state-description">${i18nString(UIStrings.selectAnElementForMoreDetails)}</span>
-          </div>
-        `, this.#shadow, { host: this });
-                // clang-format on
-                return;
-            }
-            const pipeline = this.#data.pipeline;
-            const pageURL = this.#data.pageURL;
-            const isFallbackToPrefetch = pipeline.getPrerender()?.status === "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */ &&
-                (pipeline.getPrefetch()?.status === "Ready" /* SDK.PreloadingModel.PreloadingStatus.READY */ ||
-                    pipeline.getPrefetch()?.status === "Success" /* SDK.PreloadingModel.PreloadingStatus.SUCCESS */);
-            // Disabled until https://crbug.com/1079231 is fixed.
-            // clang-format off
-            Lit.render(html `
-        <style>${preloadingDetailsReportViewStyles}</style>
-        <style>${UI.inspectorCommonStyles}</style>
-        <devtools-report
-          .data=${{ reportTitle: 'Speculative Loading Attempt' }}
-          jslog=${VisualLogging.section('preloading-details')}>
-          <devtools-report-section-header>${i18nString(UIStrings.detailsDetailedInformation)}</devtools-report-section-header>
-
-          ${this.#url()}
-          ${this.#action(isFallbackToPrefetch)}
-          ${this.#status(isFallbackToPrefetch)}
-          ${this.#targetHint()}
-          ${this.#formSubmission()}
-          ${this.#maybePrefetchFailureReason()}
-          ${this.#maybePrerenderFailureReason()}
-
-          ${this.#data.ruleSets.map(ruleSet => this.#renderRuleSet(ruleSet, pageURL))}
-        </devtools-report>
-      `, this.#shadow, { host: this });
-            // clang-format on
-        });
-    }
-    #url() {
-        assertNotNullOrUndefined(this.#data);
-        const attempt = this.#data.pipeline.getOriginallyTriggered();
-        const prefetchStatus = this.#data.pipeline.getPrefetch()?.status;
+    const pipeline = input.data.pipeline;
+    const pageURL = input.data.pageURL;
+    const isFallbackToPrefetch = pipeline.getPrerender()?.status === "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */ &&
+        (pipeline.getPrefetch()?.status === "Ready" /* SDK.PreloadingModel.PreloadingStatus.READY */ ||
+            pipeline.getPrefetch()?.status === "Success" /* SDK.PreloadingModel.PreloadingStatus.SUCCESS */);
+    const isPrerenderLike = (speculationAction) => {
+        return [
+            "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
+            "PrerenderUntilScript" /* Protocol.Preload.SpeculationAction.PrerenderUntilScript */,
+        ].includes(speculationAction);
+    };
+    const url = () => {
+        assertNotNullOrUndefined(input.data);
+        const attempt = input.data.pipeline.getOriginallyTriggered();
+        const prefetchStatus = input.data.pipeline.getPrefetch()?.status;
         let value;
         if (attempt.action === "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */ && attempt.requestId !== undefined &&
             prefetchStatus !== "NotTriggered" /* SDK.PreloadingModel.PreloadingStatus.NOT_TRIGGERED */) {
-            // Disabled until https://crbug.com/1079231 is fixed.
-            // clang-format off
             const { requestId, key: { url } } = attempt;
             const affectedRequest = { requestId, url };
+            // clang-format off
             value = html `
           <devtools-request-link-icon
             .data=${{
                 affectedRequest,
-                requestResolver: this.#data.requestResolver || new Logs.RequestResolver.RequestResolver(Logs.NetworkLog.NetworkLog.instance()),
+                requestResolver: input.data.requestResolver || new Logs.RequestResolver.RequestResolver(Logs.NetworkLog.NetworkLog.instance()),
                 displayURL: true,
                 urlToDisplay: url,
             }}
           >
           </devtools-request-link-icon>
       `;
+            // clang-format on
         }
         else {
-            // Disabled until https://crbug.com/1079231 is fixed.
-            // clang-format off
             value = html `
           <div class="text-ellipsis" title=${attempt.key.url}>${attempt.key.url}</div>
       `;
-            // clang-format on
         }
-        // Disabled until https://crbug.com/1079231 is fixed.
-        // clang-format off
         return html `
         <devtools-report-key>${i18n.i18n.lockedString('URL')}</devtools-report-key>
         <devtools-report-value>
           ${value}
         </devtools-report-value>
     `;
-        // clang-format on
-    }
-    #isPrerenderLike(speculationAction) {
-        return [
-            "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
-            "PrerenderUntilScript" /* Protocol.Preload.SpeculationAction.PrerenderUntilScript */,
-        ].includes(speculationAction);
-    }
-    #action(isFallbackToPrefetch) {
-        assertNotNullOrUndefined(this.#data);
-        const attempt = this.#data.pipeline.getOriginallyTriggered();
+    };
+    const action = (isFallbackToPrefetch) => {
+        assertNotNullOrUndefined(input.data);
+        const attempt = input.data.pipeline.getOriginallyTriggered();
         const action = PreloadingString.capitalizedAction(attempt.action);
         let maybeFallback = Lit.nothing;
         if (isFallbackToPrefetch) {
@@ -258,7 +216,7 @@ export class PreloadingDetailsReportView extends LegacyWrapper.LegacyWrapper.Wra
         }
         let maybeInspectButton = Lit.nothing;
         (() => {
-            if (!this.#isPrerenderLike(attempt.action)) {
+            if (!isPrerenderLike(attempt.action)) {
                 return;
             }
             const target = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
@@ -273,8 +231,6 @@ export class PreloadingDetailsReportView extends LegacyWrapper.LegacyWrapper.Wra
                 }
                 UI.Context.Context.instance().setFlavor(SDK.Target.Target, prerenderTarget);
             };
-            // Disabled until https://crbug.com/1079231 is fixed.
-            // clang-format off
             maybeInspectButton = html `
           <devtools-button
             @click=${inspect}
@@ -287,10 +243,7 @@ export class PreloadingDetailsReportView extends LegacyWrapper.LegacyWrapper.Wra
             ${i18nString(UIStrings.buttonInspect)}
           </devtools-button>
       `;
-            // clang-format on
         })();
-        // Disabled until https://crbug.com/1079231 is fixed.
-        // clang-format off
         return html `
         <devtools-report-key>${i18nString(UIStrings.detailsAction)}</devtools-report-key>
         <devtools-report-value>
@@ -299,11 +252,10 @@ export class PreloadingDetailsReportView extends LegacyWrapper.LegacyWrapper.Wra
           </div>
         </devtools-report-value>
     `;
-        // clang-format on
-    }
-    #status(isFallbackToPrefetch) {
-        assertNotNullOrUndefined(this.#data);
-        const attempt = this.#data.pipeline.getOriginallyTriggered();
+    };
+    const status = (isFallbackToPrefetch) => {
+        assertNotNullOrUndefined(input.data);
+        const attempt = input.data.pipeline.getOriginallyTriggered();
         const detailedStatus = isFallbackToPrefetch ? i18nString(UIStrings.detailedStatusFallbackToPrefetch) :
             PreloadingUIUtils.detailedStatus(attempt);
         return html `
@@ -312,10 +264,10 @@ export class PreloadingDetailsReportView extends LegacyWrapper.LegacyWrapper.Wra
           ${detailedStatus}
         </devtools-report-value>
     `;
-    }
-    #maybePrefetchFailureReason() {
-        assertNotNullOrUndefined(this.#data);
-        const attempt = this.#data.pipeline.getOriginallyTriggered();
+    };
+    const maybePrefetchFailureReason = () => {
+        assertNotNullOrUndefined(input.data);
+        const attempt = input.data.pipeline.getOriginallyTriggered();
         if (attempt.action !== "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */) {
             return Lit.nothing;
         }
@@ -331,11 +283,11 @@ export class PreloadingDetailsReportView extends LegacyWrapper.LegacyWrapper.Wra
           ${failureDescription}
         </devtools-report-value>
     `;
-    }
-    #targetHint() {
-        assertNotNullOrUndefined(this.#data);
-        const attempt = this.#data.pipeline.getOriginallyTriggered();
-        const hasTargetHint = this.#isPrerenderLike(attempt.action) && attempt.key.targetHint !== undefined;
+    };
+    const targetHint = () => {
+        assertNotNullOrUndefined(input.data);
+        const attempt = input.data.pipeline.getOriginallyTriggered();
+        const hasTargetHint = isPrerenderLike(attempt.action) && attempt.key.targetHint !== undefined;
         if (!hasTargetHint) {
             return Lit.nothing;
         }
@@ -345,12 +297,12 @@ export class PreloadingDetailsReportView extends LegacyWrapper.LegacyWrapper.Wra
           ${PreloadingUIUtils.detailedTargetHint(attempt.key)}
         </devtools-report-value>
     `;
-    }
-    #formSubmission() {
-        assertNotNullOrUndefined(this.#data);
-        const attempt = this.#data.pipeline.getOriginallyTriggered();
+    };
+    const formSubmission = () => {
+        assertNotNullOrUndefined(input.data);
+        const attempt = input.data.pipeline.getOriginallyTriggered();
         const hasFormSubmission = attempt.key.formSubmission !== undefined;
-        if (!hasFormSubmission || !this.#isPrerenderLike(attempt.action)) {
+        if (!hasFormSubmission || !isPrerenderLike(attempt.action)) {
             return Lit.nothing;
         }
         return html `
@@ -359,11 +311,11 @@ export class PreloadingDetailsReportView extends LegacyWrapper.LegacyWrapper.Wra
           ${attempt.key.formSubmission ? i18nString(UIStrings.yes) : i18nString(UIStrings.no)}
         </devtools-report-value>
     `;
-    }
-    #maybePrerenderFailureReason() {
-        assertNotNullOrUndefined(this.#data);
-        const attempt = this.#data.pipeline.getOriginallyTriggered();
-        if (!this.#isPrerenderLike(attempt.action)) {
+    };
+    const maybePrerenderFailureReason = () => {
+        assertNotNullOrUndefined(input.data);
+        const attempt = input.data.pipeline.getOriginallyTriggered();
+        if (!isPrerenderLike(attempt.action)) {
             return Lit.nothing;
         }
         // Lookup status code from the network log for NavigationBadHttpStatus.
@@ -378,14 +330,12 @@ export class PreloadingDetailsReportView extends LegacyWrapper.LegacyWrapper.Wra
           ${failureReason}
         </devtools-report-value>
     `;
-    }
-    #renderRuleSet(ruleSet, pageURL) {
+    };
+    const renderRuleSet = (ruleSet, pageURL) => {
         const revealRuleSetView = () => {
             void Common.Revealer.reveal(new PreloadingHelper.PreloadingForward.RuleSetView(ruleSet.id));
         };
         const location = ruleSetLocationShort(ruleSet, pageURL);
-        // Disabled until https://crbug.com/1079231 is fixed.
-        // clang-format off
         return html `
       <devtools-report-key>${i18nString(UIStrings.detailsRuleSet)}</devtools-report-key>
       <devtools-report-value>
@@ -404,8 +354,49 @@ export class PreloadingDetailsReportView extends LegacyWrapper.LegacyWrapper.Wra
         </div>
       </devtools-report-value>
     `;
-        // clang-format on
+    };
+    // clang-format off
+    Lit.render(html `
+    <style>${preloadingDetailsReportViewStyles}</style>
+    <style>${UI.inspectorCommonStyles}</style>
+    <devtools-report
+      .data=${{ reportTitle: 'Speculative Loading Attempt' }}
+      jslog=${VisualLogging.section('preloading-details')}>
+      <devtools-report-section-header>${i18nString(UIStrings.detailsDetailedInformation)}</devtools-report-section-header>
+
+      ${url()}
+      ${action(isFallbackToPrefetch)}
+      ${status(isFallbackToPrefetch)}
+      ${targetHint()}
+      ${formSubmission()}
+      ${maybePrefetchFailureReason()}
+      ${maybePrerenderFailureReason()}
+
+      ${input.data.ruleSets.map(ruleSet => renderRuleSet(ruleSet, pageURL))}
+    </devtools-report>
+  `, target);
+    // clang-format on
+};
+export class PreloadingDetailsReportView extends UI.Widget.VBox {
+    #data = null;
+    #view;
+    constructor(element, view = DEFAULT_VIEW) {
+        super(element);
+        this.#view = view;
+    }
+    set data(data) {
+        this.#data = data;
+        this.requestUpdate();
+    }
+    wasShown() {
+        super.wasShown();
+        this.requestUpdate();
+    }
+    performUpdate() {
+        const viewInput = {
+            data: this.#data,
+        };
+        this.#view(viewInput, undefined, this.contentElement);
     }
 }
-customElements.define('devtools-resources-preloading-details-report-view', PreloadingDetailsReportView);
 //# sourceMappingURL=PreloadingDetailsReportView.js.map

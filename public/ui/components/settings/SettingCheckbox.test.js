@@ -95,69 +95,11 @@ describe('SettingCheckbox', () => {
         const { component } = renderSettingCheckbox({ setting });
         assert.strictEqual(component.shadowRoot.querySelector('.disabled-reason').getAttribute('title'), 'reason');
     });
-    it('is disabled for a disabled deprecated settings', () => {
+    it('disables checkbox when disabled property is true', () => {
+        stubNoopSettings();
         const setting = createFakeSetting('setting', false);
-        setting.setRegistration({
-            settingName: 'setting',
-            settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
-            defaultValue: false,
-            deprecationNotice: {
-                warning: () => 'Setting deprecated',
-                disabled: true,
-            },
-        });
-        const { checkbox } = renderSettingCheckbox({ setting });
+        const { checkbox } = renderSettingCheckbox({ setting, disabled: true });
         assert.isTrue(checkbox.disabled);
-    });
-    it('is enabled for a disabled deprecated settings with enabled experiment', () => {
-        const experiment = 'test-experiment';
-        Root.Runtime.experiments.register(experiment, experiment);
-        Root.Runtime.experiments.setEnabled(experiment, true);
-        const setting = createFakeSetting('setting', false);
-        setting.setRegistration({
-            settingName: 'setting',
-            settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
-            defaultValue: false,
-            deprecationNotice: {
-                warning: () => 'Setting deprecated',
-                disabled: true,
-                experiment,
-            },
-        });
-        const { checkbox } = renderSettingCheckbox({ setting });
-        assert.isTrue(checkbox.disabled);
-    });
-    it('is enabled for a disabled deprecated settings with disabled experiment', () => {
-        const experiment = 'test-experiment';
-        Root.Runtime.experiments.register(experiment, experiment);
-        Root.Runtime.experiments.setEnabled(experiment, false);
-        const setting = createFakeSetting('setting', false);
-        setting.setRegistration({
-            settingName: 'setting',
-            settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
-            defaultValue: false,
-            deprecationNotice: {
-                warning: () => 'Setting deprecated',
-                disabled: true,
-                experiment,
-            },
-        });
-        const { checkbox } = renderSettingCheckbox({ setting });
-        assert.isFalse(checkbox.disabled);
-    });
-    it('is disabled for an enabled deprecated settings', () => {
-        const setting = createFakeSetting('setting', false);
-        setting.setRegistration({
-            settingName: 'setting',
-            settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
-            defaultValue: false,
-            deprecationNotice: {
-                warning: () => 'Setting deprecated',
-                disabled: false,
-            },
-        });
-        const { checkbox } = renderSettingCheckbox({ setting });
-        assert.isFalse(checkbox.disabled);
     });
 });
 //# sourceMappingURL=SettingCheckbox.test.js.map

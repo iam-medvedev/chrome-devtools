@@ -16,7 +16,6 @@ import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as MobileThrottling from '../mobile_throttling/mobile_throttling.js';
 import * as ApplicationComponents from './components/components.js';
 import serviceWorkersViewStyles from './serviceWorkersView.css.js';
-import serviceWorkerUpdateCycleViewStyles from './serviceWorkerUpdateCycleView.css.js';
 import { ServiceWorkerUpdateCycleView } from './ServiceWorkerUpdateCycleView.js';
 const UIStrings = {
     /**
@@ -589,13 +588,18 @@ function renderStatusField(input, active, waiting, installing, redundant) {
     // clang-format on
 }
 function renderUpdateCycleField(input) {
+    // clang-format off
     return html `
     <div class="report-field">
       <div class="report-field-name">${i18nString(UIStrings.updateCycle)}</div>
       <div class="report-field-value">
-        ${input.updateCycleTable}
+        ${widget(ServiceWorkerUpdateCycleView, {
+        registration: input.registration,
+        registrationFingerprint: input.registration.fingerprint(),
+    })}
       </div>
     </div>`;
+    // clang-format on
 }
 function renderRouterField(input) {
     const active = input.activeVersion;
@@ -618,7 +622,6 @@ export const DEFAULT_SECTION_VIEW = (input, _output, target) => {
     // clang-format off
     render(html `
       <style>${serviceWorkersViewStyles}</style>
-      <style>${serviceWorkerUpdateCycleViewStyles}</style>
       <devtools-report-section-header role="heading" aria-level="2"
               aria-label=${i18nString(UIStrings.serviceWorkerForS, { PH1: input.title })}>
         <span style="flex: 1 1 auto">${input.title}</span>
@@ -645,7 +648,6 @@ export class Section extends UI.Widget.VBox {
     pushNotificationDataSetting;
     syncTagNameSetting;
     periodicSyncTagNameSetting;
-    updateCycleView;
     clientInfoCache;
     throttler;
     #view;
@@ -669,7 +671,6 @@ export class Section extends UI.Widget.VBox {
                 Common.Settings.Settings.instance().createLocalSetting('periodic-sync-tag-name', 'test-tag-from-devtools');
         }
         if (registrationChanged) {
-            this.updateCycleView = new ServiceWorkerUpdateCycleView(this.registration);
             this.clientInfoCache.clear();
         }
     }
@@ -709,7 +710,7 @@ export class Section extends UI.Widget.VBox {
             pushData: this.pushNotificationDataSetting.get(),
             syncTag: this.syncTagNameSetting.get(),
             periodicSyncTag: this.periodicSyncTagNameSetting.get(),
-            updateCycleTable: this.updateCycleView.tableElement,
+            registration: this.registration,
             activeVersion: active,
             waitingVersion: waiting,
             installingVersion: installing,
@@ -726,7 +727,6 @@ export class Section extends UI.Widget.VBox {
             onSkipWaiting: this.skipButtonClicked.bind(this),
         };
         this.#view(input, undefined, this.contentElement);
-        this.updateCycleView.refresh();
         return Promise.resolve();
     }
     unregisterButtonClicked() {

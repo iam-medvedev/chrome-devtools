@@ -202,6 +202,7 @@ models/ai_assistance/tools/GetLighthouseAudits.test.js
 models/ai_assistance/tools/GetNetworkRequestDetails.test.js
 models/ai_assistance/tools/GetStyles.test.js
 models/ai_assistance/tools/ListNetworkRequests.test.js
+models/ai_assistance/tools/RecordPerformanceTrace.test.js
 models/ai_assistance/tools/ResolveDevtoolsNodePath.test.js
 models/ai_assistance/tools/ToolRegistry.test.js
 models/ai_code_completion/AiCodeCompletion.test.js
@@ -379,11 +380,6 @@ panels/application/ServiceWorkerCacheTreeElement.test.js
 panels/application/ServiceWorkerCacheViews.test.js
 panels/application/ServiceWorkerUpdateCycleView.test.js
 panels/application/ServiceWorkersView.test.js
-panels/application/SharedStorageEventsView.test.js
-panels/application/SharedStorageItemsView.test.js
-panels/application/SharedStorageListTreeElement.test.js
-panels/application/SharedStorageModel.test.js
-panels/application/SharedStorageTreeElement.test.js
 panels/application/StorageBucketsTreeElement.test.js
 panels/application/StorageView.test.js
 panels/application/WebMCPView.test.js
@@ -396,8 +392,6 @@ panels/application/components/EndpointsGrid.test.js
 panels/application/components/ProtocolHandlersView.test.js
 panels/application/components/ReportsGrid.test.js
 panels/application/components/ServiceWorkerRouterView.test.js
-panels/application/components/SharedStorageAccessGrid.test.js
-panels/application/components/SharedStorageMetadataView.test.js
 panels/application/components/StorageMetadataView.test.js
 panels/application/components/TrustTokensView.test.js
 panels/application/preloading/components/MismatchedPreloadingGrid.test.js
@@ -477,6 +471,7 @@ panels/elements/WebCustomData.test.js
 panels/emulation/AdvancedApp.test.js
 panels/emulation/DeviceModeToolbar.test.js
 panels/emulation/DeviceModeView.test.js
+panels/emulation/DeviceModeWrapper.test.js
 panels/emulation/MediaQueryInspector.test.js
 panels/event_listeners/EventListenersView.test.js
 panels/explain/components/ConsoleInsight.test.js
@@ -537,6 +532,7 @@ panels/network/components/RequestHeaderSection.test.js
 panels/network/components/RequestTrustTokensView.test.js
 panels/network/components/ResponseHeaderSection.test.js
 panels/performance_monitor/PerformanceMonitor.test.js
+panels/profiler/HeapDetachedElementsDataGrid.test.js
 panels/profiler/HeapProfileView.test.js
 panels/protocol_monitor/JSONEditor.test.js
 panels/protocol_monitor/ProtocolMonitor.test.js
@@ -568,8 +564,10 @@ panels/security/SecurityModel.test.js
 panels/security/SecurityPanel.test.js
 panels/sensors/LocationsSettingsTab.test.js
 panels/sensors/SensorsView.test.js
+panels/settings/emulation/DevicesSettingsTab.test.js
 panels/settings/AISettingsTab.test.js
 panels/settings/EditFileSystemView.test.js
+panels/settings/FrameworkIgnoreListSettingsTab.test.js
 panels/settings/WorkspaceSettingsTab.test.js
 panels/settings/components/SyncSection.test.js
 panels/settings/emulation/components/UserAgentClientHintsForm.test.js
@@ -717,7 +715,6 @@ ui/components/render_coordinator/render_coordinator.test.js
 ui/components/report_view/ReportView.test.js
 ui/components/request_link_icon/RequestLinkIcon.test.js
 ui/components/settings/SettingCheckbox.test.js
-ui/components/settings/SettingDeprecationWarning.test.js
 ui/components/snackbars/Snackbar.test.js
 ui/components/survey_link/SurveyLink.test.js
 ui/components/switch/SwitchImpl.test.js
@@ -787,6 +784,7 @@ ui/legacy/components/inline_editor/CSSShadowEditor.test.js
 ui/legacy/components/inline_editor/ColorMixSwatch.test.js
 ui/legacy/components/inline_editor/ColorSwatch.test.js
 ui/legacy/components/inline_editor/LinkSwatch.test.js
+ui/legacy/components/object_ui/CSSStyleSanitizer.test.js
 ui/legacy/components/object_ui/CustomPreviewComponent.test.js
 ui/legacy/components/object_ui/JavaScriptREPL.test.js
 ui/legacy/components/object_ui/ObjectPopoverHelper.test.js

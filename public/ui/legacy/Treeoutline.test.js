@@ -3,10 +3,13 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import sinon from 'sinon';
+import * as Host from '../../core/host/host.js';
 import { dispatchKeyDownEvent, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import * as Lit from '../../ui/lit/lit.js';
 import * as UI from './legacy.js';
 describe('TreeOutline', () => {
+    setupLocaleHooks();
     describe('correctly reacts to Enter key', () => {
         it('by expanding collapsed parent nodes', () => {
             const tree = new UI.TreeOutline.TreeOutlineInShadow();
@@ -83,6 +86,65 @@ describe('TreeOutline', () => {
             const deepActiveElement = UI.DOMUtilities.deepActiveElement(document);
             deepActiveElement.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, cancelable: true, key }));
         }
+    });
+    describe('announces expand/collapse state to screen readers', () => {
+        let alertStub;
+        let statusStub;
+        beforeEach(() => {
+            Host.Platform.setPlatformForTests('mac');
+            alertStub = sinon.stub(UI.ARIAUtils.LiveAnnouncer, 'alert').returns();
+            statusStub = sinon.stub(UI.ARIAUtils.LiveAnnouncer, 'status').returns();
+        });
+        afterEach(() => {
+            Host.Platform.setPlatformForTests('');
+        });
+        function makeFocusedParent() {
+            const tree = new UI.TreeOutline.TreeOutlineInShadow();
+            renderElementIntoDOM(tree.element);
+            const parent = new UI.TreeOutline.TreeElement('parent', true);
+            parent.appendChild(new UI.TreeOutline.TreeElement('child', false));
+            tree.appendChild(parent);
+            parent.select();
+            assert.isTrue(parent.listItemElement.hasFocus(), 'precondition: the tree item should be focused');
+            return parent;
+        }
+        it('announces when the focused tree item is expanded', () => {
+            const parent = makeFocusedParent();
+            dispatchKeyDownEvent(parent.listItemNode, { bubbles: true, key: 'ArrowRight' });
+            sinon.assert.calledOnceWithExactly(statusStub, 'expanded');
+            sinon.assert.notCalled(alertStub);
+        });
+        it('announces when the focused tree item is collapsed', () => {
+            const parent = makeFocusedParent();
+            parent.expand();
+            statusStub.resetHistory();
+            dispatchKeyDownEvent(parent.listItemNode, { bubbles: true, key: 'ArrowLeft' });
+            sinon.assert.calledOnceWithExactly(statusStub, 'collapsed');
+        });
+        it('announces a keyboard state change when the tree owner has focus', () => {
+            const tree = new UI.TreeOutline.TreeOutlineInShadow();
+            renderElementIntoDOM(tree.element);
+            const parent = new UI.TreeOutline.TreeElement('parent', true);
+            parent.appendChild(new UI.TreeOutline.TreeElement('child', false));
+            tree.appendChild(parent);
+            parent.select(/* omitFocus */ true, /* selectedByUser */ true);
+            tree.contentElement.focus();
+            assert.isFalse(parent.listItemElement.hasFocus(), 'precondition: the tree item should not own DOM focus');
+            dispatchKeyDownEvent(tree.contentElement, { bubbles: true, key: 'ArrowRight' });
+            sinon.assert.calledOnceWithExactly(statusStub, 'expanded');
+        });
+        it('does not announce when a focused tree item is expanded programmatically', () => {
+            const parent = makeFocusedParent();
+            parent.expand();
+            sinon.assert.notCalled(statusStub);
+        });
+        it('does not announce on non-macOS platforms', () => {
+            Host.Platform.setPlatformForTests('windows');
+            const parent = makeFocusedParent();
+            dispatchKeyDownEvent(parent.listItemNode, { bubbles: true, key: 'ArrowRight' });
+            assert.isTrue(parent.expanded, 'precondition: the tree item should be expanded');
+            sinon.assert.notCalled(statusStub);
+        });
     });
 });
 describe('TreeViewElement', () => {

@@ -106,7 +106,6 @@ var ExecutionContextSelector = class {
     }
     switch (event.data.target().type()) {
       case SDK.Target.Type.AUCTION_WORKLET:
-      case SDK.Target.Type.SHARED_STORAGE_WORKLET:
       case SDK.Target.Type.SHARED_WORKER:
       case SDK.Target.Type.ServiceWorker:
       case SDK.Target.Type.WORKLET:
@@ -604,7 +603,7 @@ var MainImpl = class {
     if (Root2.Runtime.Runtime.queryParam("hasOtherClients")) {
       this.#universe.settings.moduleSetting("cache-disabled").setRequiresUserAction(true);
     }
-    Root2.Runtime.experiments.cleanUpStaleExperiments();
+    Root2.Runtime.experiments.removeAllExperimentsFromLocalStorage();
     await this.requestAndRegisterLocaleData();
     Host.userMetrics.syncSetting(Common2.Settings.Settings.instance().moduleSetting("sync-preferences").get());
     const veLogging = config.devToolsVeLogging;
@@ -693,16 +692,17 @@ var MainImpl = class {
     const globalStorage = new Common2.Settings.SettingsStorage(prefs, hostUnsyncedStorage, storagePrefix);
     return { syncedStorage, globalStorage, localStorage };
   }
-  #migrateValueFromLegacyToHostExperiment(legacyExperimentName, hostExperiment) {
+  // TODO(crbug.com/464173054) remove after M156
+  #migrateValueFromLegacyExperiment(legacyExperimentName, experiment) {
     const value = Root2.Runtime.experiments.getValueFromStorage(legacyExperimentName);
-    if (value !== void 0 && hostExperiment.aboutFlag) {
-      hostExperiment.setEnabled(value);
-      Host.InspectorFrontendHost.InspectorFrontendHostInstance.setChromeFlag(hostExperiment.aboutFlag, value);
+    if (value !== void 0 && experiment.aboutFlag) {
+      experiment.setEnabled(value);
+      Host.InspectorFrontendHost.InspectorFrontendHostInstance.setChromeFlag(experiment.aboutFlag, value);
     }
   }
   #initializeExperiments() {
     const enableProtocolMonitor = (Root2.Runtime.hostConfig.devToolsProtocolMonitor?.enabled ?? false) || Boolean(Root2.Runtime.Runtime.queryParam("isChromeForTesting"));
-    const protocolMonitorExperiment = Root2.Runtime.experiments.registerHostExperiment({
+    const protocolMonitorExperiment = Root2.Runtime.experiments.register({
       name: Root2.ExperimentNames.ExperimentName.PROTOCOL_MONITOR,
       title: "Protocol Monitor",
       aboutFlag: "devtools-protocol-monitor",
@@ -710,33 +710,36 @@ var MainImpl = class {
       requiresChromeRestart: false,
       docLink: "https://developer.chrome.com/blog/new-in-devtools-92/#protocol-monitor"
     });
-    this.#migrateValueFromLegacyToHostExperiment(Root2.ExperimentNames.ExperimentName.PROTOCOL_MONITOR, protocolMonitorExperiment);
-    Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.INSTRUMENTATION_BREAKPOINTS, "Instrumentation breakpoints");
-    Root2.Runtime.experiments.registerHostExperiment({
+    this.#migrateValueFromLegacyExperiment(Root2.ExperimentNames.ExperimentName.PROTOCOL_MONITOR, protocolMonitorExperiment);
+    const instrumentationBreakpointsExperiment = Root2.Runtime.experiments.register({
+      name: Root2.ExperimentNames.ExperimentName.INSTRUMENTATION_BREAKPOINTS,
+      title: "Instrumentation breakpoints",
+      aboutFlag: "devtools-instrumentation-breakpoints",
+      isEnabled: Root2.Runtime.hostConfig.devToolsInstrumentationBreakpoints?.enabled ?? false,
+      requiresChromeRestart: false
+    });
+    this.#migrateValueFromLegacyExperiment(Root2.ExperimentNames.ExperimentName.INSTRUMENTATION_BREAKPOINTS, instrumentationBreakpointsExperiment);
+    Root2.Runtime.experiments.register({
       name: Root2.ExperimentNames.ExperimentName.DURABLE_MESSAGES,
       title: "Durable Messages",
       aboutFlag: "devtools-enable-durable-messages",
       isEnabled: Root2.Runtime.hostConfig.devToolsEnableDurableMessages?.enabled ?? false,
       requiresChromeRestart: false
     });
-    Root2.Runtime.experiments.registerHostExperiment({
+    Root2.Runtime.experiments.register({
       name: Root2.ExperimentNames.ExperimentName.JPEG_XL,
       title: "JPEG XL support",
       aboutFlag: "enable-jxl-image-format",
       isEnabled: Root2.Runtime.hostConfig.devToolsJpegXlImageFormat?.enabled ?? false,
       requiresChromeRestart: true
     });
-    Root2.Runtime.experiments.registerHostExperiment({
+    Root2.Runtime.experiments.register({
       name: Root2.ExperimentNames.ExperimentName.PLUS_BUTTON,
       title: 'Show "+" button on the tab strip for adding tools',
       aboutFlag: "devtools-plus-button",
       isEnabled: Root2.Runtime.hostConfig.devToolsPlusButton?.enabled ?? false,
       requiresChromeRestart: false
     });
-    const enabledExperiments = Root2.Runtime.Runtime.queryParam("enabledExperiments");
-    if (enabledExperiments) {
-      Root2.Runtime.experiments.setServerEnabledExperiments(enabledExperiments.split(";"));
-    }
     for (const experiment of Root2.Runtime.experiments.allConfigurableExperiments()) {
       if (experiment.isEnabled()) {
         Host.userMetrics.experimentEnabledAtLaunch(experiment.name);
@@ -781,7 +784,7 @@ var MainImpl = class {
     this.#universe.presentationConsoleMessageManager.enable();
     void this.#universe.liveMetrics.enable();
     CrUXManager.CrUXManager.instance();
-    const builtInAi = AiAssistanceModel.BuiltInAi.BuiltInAi.instance();
+    const builtInAi = this.#universe.builtInAi;
     builtInAi.addEventListener("downloadedAndSessionCreated", () => Snackbar.Snackbar.Snackbar.show({ message: i18nString2(UIStrings2.aiModelDownloaded) }));
     new PauseListener();
     new ConsoleProfileFinishedListener();

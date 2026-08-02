@@ -3,8 +3,18 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as SettingsUI from '../../ui/settings/settings.js';
 const UIStrings = {
+    /**
+     * @description Title of a setting under the Console category that can be invoked through the Command Menu.
+     */
+    preserveLogUponNavigation: 'Keep log on navigation',
+    /**
+     * @description Title of a setting under the Console category that can be invoked through the Command Menu.
+     */
+    doNotPreserveLogUponNavigation: 'Don’t keep log on navigation',
     /**
      * @description Title of the Console tool.
      */
@@ -192,6 +202,9 @@ UI.ActionRegistration.registerActionExtension({
                 "devToolsDefault" /* UI.ActionRegistration.KeybindSet.DEVTOOLS_DEFAULT */,
                 "vsCode" /* UI.ActionRegistration.KeybindSet.VS_CODE */,
             ],
+            // The Cmd+` combination is used in macOS to activate the next
+            // open window in the front app. Therefore it was not implemented
+            // below.
         },
     ],
 });
@@ -421,6 +434,20 @@ Common.Settings.registerSettingExtension({
     settingName: 'console-insight-teasers-enabled',
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: true,
+});
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.preserveConsoleLogSettingDescriptor, {
+    category: "CONSOLE" /* Common.Settings.SettingCategory.CONSOLE */,
+    title: i18nLazyString(UIStrings.preserveLogUponNavigation),
+    options: [
+        {
+            value: true,
+            title: i18nLazyString(UIStrings.preserveLogUponNavigation),
+        },
+        {
+            value: false,
+            title: i18nLazyString(UIStrings.doNotPreserveLogUponNavigation),
+        },
+    ],
 });
 Common.Revealer.registerRevealer({
     contextTypes() {

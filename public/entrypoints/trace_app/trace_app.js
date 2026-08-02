@@ -1127,22 +1127,6 @@ import * as Common3 from "./../../core/common/common.js";
 import * as i18n5 from "./../../core/i18n/i18n.js";
 var UIStrings3 = {
   /**
-   * @description Title of a setting under the Console category that can be invoked through the Command Menu.
-   */
-  preserveLogUponNavigation: "Keep log on navigation",
-  /**
-   * @description Title of a setting under the Console category that can be invoked through the Command Menu.
-   */
-  doNotPreserveLogUponNavigation: "Don\u2019t keep log on navigation",
-  /**
-   * @description Text for pausing the debugger on exceptions.
-   */
-  pauseOnExceptions: "Pause on exceptions",
-  /**
-   * @description Title of a setting under the Debugger category that can be invoked through the Command Menu.
-   */
-  doNotPauseOnExceptions: "Do not pause on exceptions",
-  /**
    * @description Title of a setting under the Debugger category that can be invoked through the Command Menu.
    */
   disableJavascript: "Disable JavaScript",
@@ -1572,30 +1556,6 @@ var UIStrings3 = {
    */
   networkCacheExplanation: "Disabling the network cache will simulate a network experience similar to a first time visitor.",
   /**
-   * @description Setting under the Sources category to toggle usage of JavaScript source maps.
-   */
-  javaScriptSourceMaps: "JavaScript source maps",
-  /**
-   * @description Title of an option under the Sources category that can be invoked through the Command Menu.
-   */
-  enableJavaScriptSourceMaps: "Enable JavaScript source maps",
-  /**
-   * @description Title of an option under the Sources category that can be invoked through the Command Menu.
-   */
-  disableJavaScriptSourceMaps: "Disable JavaScript source maps",
-  /**
-   * @description Title of a setting under the Sources category.
-   */
-  cssSourceMaps: "CSS source maps",
-  /**
-   * @description Title of an option under the Sources category that can be invoked through the Command Menu.
-   */
-  enableCssSourceMaps: "Enable CSS source maps",
-  /**
-   * @description Title of an option under the Sources category that can be invoked through the Command Menu.
-   */
-  disableCssSourceMaps: "Disable CSS source maps",
-  /**
    * @description Title of a setting under the Console category in Settings.
    */
   logXmlhttprequests: "Log XMLHttpRequests",
@@ -1613,45 +1573,6 @@ var UIStrings3 = {
 };
 var str_3 = i18n5.i18n.registerUIStrings("core/sdk/sdk-meta.ts", UIStrings3);
 var i18nLazyString3 = i18n5.i18n.getLazilyComputedLocalizedString.bind(void 0, str_3);
-Common3.Settings.registerSettingExtension({
-  category: "CONSOLE",
-  storageType: "Synced",
-  title: i18nLazyString3(UIStrings3.preserveLogUponNavigation),
-  settingName: "preserve-console-log",
-  settingType: "boolean",
-  defaultValue: false,
-  options: [
-    {
-      value: true,
-      title: i18nLazyString3(UIStrings3.preserveLogUponNavigation)
-    },
-    {
-      value: false,
-      title: i18nLazyString3(UIStrings3.doNotPreserveLogUponNavigation)
-    }
-  ]
-});
-Common3.Settings.registerSettingExtension({
-  category: "DEBUGGER",
-  settingName: "pause-on-exception-enabled",
-  settingType: "boolean",
-  defaultValue: false,
-  options: [
-    {
-      value: true,
-      title: i18nLazyString3(UIStrings3.pauseOnExceptions)
-    },
-    {
-      value: false,
-      title: i18nLazyString3(UIStrings3.doNotPauseOnExceptions)
-    }
-  ]
-});
-Common3.Settings.registerSettingExtension({
-  settingName: "pause-on-caught-exception",
-  settingType: "boolean",
-  defaultValue: false
-});
 Common3.Settings.registerSettingExtension({
   settingName: "pause-on-uncaught-exception",
   settingType: "boolean",
@@ -2468,42 +2389,6 @@ Common3.Settings.registerSettingExtension({
   }
 });
 Common3.Settings.registerSettingExtension({
-  category: "SOURCES",
-  storageType: "Synced",
-  title: i18nLazyString3(UIStrings3.javaScriptSourceMaps),
-  settingName: "js-source-maps-enabled",
-  settingType: "boolean",
-  defaultValue: true,
-  options: [
-    {
-      value: true,
-      title: i18nLazyString3(UIStrings3.enableJavaScriptSourceMaps)
-    },
-    {
-      value: false,
-      title: i18nLazyString3(UIStrings3.disableJavaScriptSourceMaps)
-    }
-  ]
-});
-Common3.Settings.registerSettingExtension({
-  category: "SOURCES",
-  storageType: "Synced",
-  title: i18nLazyString3(UIStrings3.cssSourceMaps),
-  settingName: "css-source-maps-enabled",
-  settingType: "boolean",
-  defaultValue: true,
-  options: [
-    {
-      value: true,
-      title: i18nLazyString3(UIStrings3.enableCssSourceMaps)
-    },
-    {
-      value: false,
-      title: i18nLazyString3(UIStrings3.disableCssSourceMaps)
-    }
-  ]
-});
-Common3.Settings.registerSettingExtension({
   category: "CONSOLE",
   storageType: "Synced",
   title: i18nLazyString3(UIStrings3.logXmlhttprequests),
@@ -2723,6 +2608,7 @@ Common7.Settings.registerSettingExtension({
 });
 
 // gen/front_end/panels/browser_debugger/browser_debugger-meta.js
+import * as Common8 from "./../../core/common/common.js";
 import * as i18n13 from "./../../core/i18n/i18n.js";
 import * as Root2 from "./../../core/root/root.js";
 import * as SDK2 from "./../../core/sdk/sdk.js";
@@ -2820,10 +2706,10 @@ async function loadSourcesModule() {
   return loadedSourcesModule;
 }
 UI3.ViewManager.registerViewExtension({
-  async loadView() {
+  loadView: Common8.Lazy.lazy(async (universe) => {
     const BrowserDebugger = await loadBrowserDebuggerModule();
-    return BrowserDebugger.EventListenerBreakpointsSidebarPane.EventListenerBreakpointsSidebarPane.instance();
-  },
+    return new BrowserDebugger.EventListenerBreakpointsSidebarPane.EventListenerBreakpointsSidebarPane(universe.eventBreakpointsManager);
+  }),
   id: "sources.event-listener-breakpoints",
   location: "sources.sidebar-bottom",
   commandPrompt: i18nLazyString7(UIStrings7.showEventListenerBreakpoints),
@@ -2978,7 +2864,7 @@ UI3.Context.registerListener({
 });
 
 // gen/front_end/panels/developer_resources/developer_resources-meta.js
-import * as Common8 from "./../../core/common/common.js";
+import * as Common9 from "./../../core/common/common.js";
 import * as i18n15 from "./../../core/i18n/i18n.js";
 import * as SDK3 from "./../../core/sdk/sdk.js";
 import * as UI4 from "./../../ui/legacy/legacy.js";
@@ -3013,11 +2899,11 @@ UI4.ViewManager.registerViewExtension({
     return new DeveloperResources.DeveloperResourcesView.DeveloperResourcesView();
   }
 });
-Common8.Revealer.registerRevealer({
+Common9.Revealer.registerRevealer({
   contextTypes() {
     return [SDK3.PageResourceLoader.ResourceKey];
   },
-  destination: Common8.Revealer.RevealerDestination.DEVELOPER_RESOURCES_PANEL,
+  destination: Common9.Revealer.RevealerDestination.DEVELOPER_RESOURCES_PANEL,
   async loadRevealer() {
     const DeveloperResources = await loadDeveloperResourcesModule();
     return new DeveloperResources.DeveloperResourcesView.DeveloperResourcesRevealer();
@@ -3025,28 +2911,28 @@ Common8.Revealer.registerRevealer({
 });
 
 // gen/front_end/panels/mobile_throttling/mobile_throttling-meta.js
-import * as Common9 from "./../../core/common/common.js";
+import * as Common10 from "./../../core/common/common.js";
 import * as i18n17 from "./../../core/i18n/i18n.js";
 import * as UI5 from "./../../ui/legacy/legacy.js";
 var UIStrings9 = {
   /**
-   * @description Text for throttling the network
+   * @description Text for throttling the network.
    */
   throttling: "Throttling",
   /**
-   * @description Command for showing the Mobile Throttling tool.
+   * @description Command for showing the mobile throttling tool.
    */
   showThrottling: "Show Throttling",
   /**
-   * @description Title of an action in the network conditions tool to network offline
+   * @description Title of an action in the network conditions tool to network offline.
    */
   goOffline: "Go offline",
   /**
-   * @description A tag of Mobile related settings that can be searched in the command menu
+   * @description A tag of mobile-related settings that can be searched in the command menu.
    */
   device: "device",
   /**
-   * @description A tag of Network related actions that can be searched in the command menu
+   * @description A tag of network-related actions that can be searched in the command menu.
    */
   throttlingTag: "throttling",
   /**
@@ -3060,7 +2946,7 @@ var UIStrings9 = {
    */
   enableFastGThrottling: "Enable fast `3G` throttling",
   /**
-   * @description Title of an action in the network conditions tool to network online
+   * @description Title of an action in the network conditions tool to network online.
    */
   goOnline: "Go online"
 };
@@ -3142,7 +3028,7 @@ UI5.ActionRegistration.registerActionExtension({
     i18nLazyString9(UIStrings9.throttlingTag)
   ]
 });
-Common9.Settings.registerSettingExtension({
+Common10.Settings.registerSettingExtension({
   storageType: "Synced",
   settingName: "custom-network-conditions",
   settingType: "array",
@@ -3192,7 +3078,7 @@ UI6.ViewManager.registerViewExtension({
 // gen/front_end/panels/settings/settings-meta.js
 import * as i18n21 from "./../../core/i18n/i18n.js";
 import * as UI7 from "./../../ui/legacy/legacy.js";
-import * as Common10 from "./../../core/common/common.js";
+import * as Common11 from "./../../core/common/common.js";
 import * as i18n32 from "./../../core/i18n/i18n.js";
 import * as Root4 from "./../../core/root/root.js";
 import * as UI22 from "./../../ui/legacy/legacy.js";
@@ -3452,12 +3338,11 @@ UI22.ViewManager.registerLocationResolver({
     return Settings22.SettingsScreen.SettingsScreen.instance();
   }
 });
-Common10.Revealer.registerRevealer({
+Common11.Revealer.registerRevealer({
   contextTypes() {
     return [
-      Common10.Settings.Setting,
-      Root4.Runtime.Experiment,
-      Root4.Runtime.HostExperiment
+      Common11.Settings.Setting,
+      Root4.Runtime.Experiment
     ];
   },
   async loadRevealer() {
@@ -3475,7 +3360,7 @@ UI22.ContextMenu.registerItem({
 });
 
 // gen/front_end/panels/sources/sources-meta.js
-import * as Common11 from "./../../core/common/common.js";
+import * as Common12 from "./../../core/common/common.js";
 import * as Host2 from "./../../core/host/host.js";
 import * as i18n24 from "./../../core/i18n/i18n.js";
 import * as Root5 from "./../../core/root/root.js";
@@ -3486,7 +3371,16 @@ import * as Workspace2 from "./../../models/workspace/workspace.js";
 import * as ObjectUI from "./../../ui/legacy/components/object_ui/object_ui.js";
 import * as QuickOpen from "./../../ui/legacy/components/quick_open/quick_open.js";
 import * as UI8 from "./../../ui/legacy/legacy.js";
+import * as SettingsUI from "./../../ui/settings/settings.js";
 var UIStrings12 = {
+  /**
+   * @description Text for pausing the debugger on exceptions.
+   */
+  pauseOnExceptions: "Pause on exceptions",
+  /**
+   * @description Title of a setting under the Debugger category that can be invoked through the Command Menu.
+   */
+  doNotPauseOnExceptions: "Do not pause on exceptions",
   /**
    * @description Command for showing the 'Sources' tool
    */
@@ -3560,11 +3454,11 @@ var UIStrings12 = {
    */
   breakpoints: "Breakpoints",
   /**
-   * @description Title of an action under the Debugger category that can be invoked through the Command Menu
+   * @description Title of an action under the Debugger category that can be invoked through the command menu
    */
   pauseScriptExecution: "Pause script execution",
   /**
-   * @description Title of an action under the Debugger category that can be invoked through the Command Menu
+   * @description Title of an action under the Debugger category that can be invoked through the command menu
    */
   resumeScriptExecution: "Resume script execution",
   /**
@@ -3588,75 +3482,75 @@ var UIStrings12 = {
    */
   runSnippet: "Run snippet",
   /**
-   * @description Text in Java Script Breakpoints Sidebar Pane of the Sources panel
+   * @description Text in JavaScript breakpoint sidebar of the Sources panel.
    */
   deactivateBreakpoints: "Deactivate breakpoints",
   /**
-   * @description Text in Java Script Breakpoints Sidebar Pane of the Sources panel
+   * @description Text in JavaScript breakpoint sidebar of the Sources panel.
    */
   activateBreakpoints: "Activate breakpoints",
   /**
-   * @description Title of an action in the sources tool to add to watch
+   * @description Title of an action in the sources tool to add to watch.
    */
   addSelectedTextToWatches: "Add selected text to watches",
   /**
-   * @description Title of an action in the debugger tool to evaluate selection
+   * @description Title of an action in the debugger tool to evaluate selection.
    */
   evaluateSelectedTextInConsole: "Evaluate selected text in console",
   /**
-   * @description Title of an action that switches files in the Sources panel
+   * @description Title of an action that switches files in the Sources panel.
    */
   switchFile: "Switch file",
   /**
-   * @description Title of a sources panel action that renames a file
+   * @description Title of a sources panel action that renames a file.
    */
   rename: "Rename",
   /**
-   * @description Title of an action in the sources tool to close all
+   * @description Title of an action in the sources tool to close all.
    */
   closeAll: "Close all",
   /**
-   * @description Text in the Shortcuts page to explain a keyboard shortcut (jump to previous editing location in text editor)
+   * @description Text in the Shortcuts page to explain a keyboard shortcut (jump to previous editing location in text editor).
    */
   jumpToPreviousEditingLocation: "Jump to previous editing location",
   /**
-   * @description Text in the Shortcuts page to explain a keyboard shortcut (jump to next editing location in text editor)
+   * @description Text in the Shortcuts page to explain a keyboard shortcut (jump to next editing location in text editor).
    */
   jumpToNextEditingLocation: "Jump to next editing location",
   /**
-   * @description Title of an action that closes the active editor tab in the Sources panel
+   * @description Title of an action that closes the active editor tab in the Sources panel.
    */
   closeTheActiveTab: "Close the active tab",
   /**
-   * @description Text to go to a given line
+   * @description Text to go to a given line.
    */
   goToLine: "Go to line",
   /**
-   * @description Title of an action that opens the go to member menu
+   * @description Title of an action that opens the go to member menu.
    */
   goToAFunctionDeclarationruleSet: "Go to a function declaration/rule set",
   /**
-   * @description Text in the Shortcuts page to explain a keyboard shortcut (toggle breakpoint in debugger)
+   * @description Text in the Shortcuts page to explain a keyboard shortcut (toggle breakpoint in debugger).
    */
   toggleBreakpoint: "Toggle breakpoint",
   /**
-   * @description Text in the Shortcuts page to explain a keyboard shortcut (enable toggle breakpoint shortcut in debugger)
+   * @description Text in the Shortcuts page to explain a keyboard shortcut (enable toggle breakpoint shortcut in debugger).
    */
   toggleBreakpointEnabled: "Toggle breakpoint enabled",
   /**
-   * @description Title of a sources panel action that opens the breakpoint input window
+   * @description Title of a sources panel action that opens the breakpoint input window.
    */
   toggleBreakpointInputWindow: "Toggle breakpoint input window",
   /**
-   * @description Text to save something
+   * @description Text to save something.
    */
   save: "Save",
   /**
-   * @description Title of an action to save all files in the Sources panel
+   * @description Title of an action to save all files in the Sources panel.
    */
   saveAll: "Save all",
   /**
-   * @description Title of an action in the sources tool to create snippet
+   * @description Title of an action in the sources tool to create a snippet.
    */
   createNewSnippet: "Create new snippet",
   /**
@@ -3670,37 +3564,37 @@ var UIStrings12 = {
    */
   addFolderToWorkspace: "Add folder to workspace",
   /**
-   * @description Title of an action in the debugger tool to previous call frame
+   * @description Title of an action in the debugger tool to previous call frame.
    */
   previousCallFrame: "Previous call frame",
   /**
-   * @description Title of an action in the debugger tool to next call frame
+   * @description Title of an action in the debugger tool to next call frame.
    */
   nextCallFrame: "Next call frame",
   /**
-   * @description Text in the Shortcuts page to explain a keyboard shortcut (increment CSS unit by the amount passed in the placeholder in Styles pane)
+   * @description Text in the Shortcuts page to explain a keyboard shortcut (increment CSS unit by the amount passed in the placeholder in Styles pane).
    * @example {10} PH1
    */
   incrementCssUnitBy: "Increment CSS unit by {PH1}",
   /**
-   * @description Text in the Shortcuts page to explain a keyboard shortcut (decrement CSS unit by the amount passed in the placeholder in Styles pane)
+   * @description Text in the Shortcuts page to explain a keyboard shortcut (decrement CSS unit by the amount passed in the placeholder in Styles pane).
    * @example {10} PH1
    */
   decrementCssUnitBy: "Decrement CSS unit by {PH1}",
   /**
-   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of a setting under the Sources category that can be invoked through the command menu.
    */
   searchInAnonymousAndContent: "Search in anonymous and content scripts",
   /**
-   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of a setting under the Sources category that can be invoked through the command menu.
    */
   doNotSearchInAnonymousAndContent: "Do not search in anonymous and content scripts",
   /**
-   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of a setting under the Sources category that can be invoked through the command menu.
    */
   automaticallyRevealFilesIn: "Automatically reveal files in sidebar",
   /**
-   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of a setting under the Sources category that can be invoked through the command menu.
    */
   doNotAutomaticallyRevealFilesIn: "Do not automatically reveal files in sidebar",
   /**
@@ -3712,7 +3606,7 @@ var UIStrings12 = {
    */
   tabMovesFocus: "Tab moves focus",
   /**
-   * @description Title of a setting that can be invoked through the Command Menu.
+   * @description Title of a setting that can be invoked through the command menu.
    *'tab moves focus' is the name of the setting, which means that when the user
    *hits the tab key, the focus in the UI will be moved to the next part of the
    *text editor, as opposed to inserting a tab character into the text in the
@@ -3720,7 +3614,7 @@ var UIStrings12 = {
    */
   enableTabMovesFocus: "Enable tab moves focus",
   /**
-   * @description Title of a setting that can be invoked through the Command Menu.
+   * @description Title of a setting that can be invoked through the command menu.
    *'tab moves focus' is the name of the setting, which means that when the user
    *hits the tab key, the focus in the UI will be moved to the next part of the
    *text editor, as opposed to inserting a tab character into the text in the
@@ -3728,79 +3622,79 @@ var UIStrings12 = {
    */
   disableTabMovesFocus: "Disable tab moves focus",
   /**
-   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of a setting under the Sources category that can be invoked through the command menu.
    */
   detectIndentation: "Detect indentation",
   /**
-   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of a setting under the Sources category that can be invoked through the command menu.
    */
   doNotDetectIndentation: "Do not detect indentation",
   /**
-   * @description Title of a setting under Sources category that can be invoked through the Command Menu.
+   * @description Title of a setting under Sources category that can be invoked through the command menu.
    *This setting turns on the automatic formatting of source files in the Sources panel that are detected
    *to be minified.
    */
   automaticallyPrettyPrintMinifiedSources: "Automatically pretty print minified sources",
   /**
-   * @description Title of a setting under Sources category that can be invoked through the Command Menu.
+   * @description Title of a setting under Sources category that can be invoked through the command menu.
    *This setting turns off the automatic formatting of source files in the Sources panel that are detected
    *to be minified.
    */
   doNotAutomaticallyPrettyPrintMinifiedSources: "Do not automatically pretty print minified sources",
   /**
-   * @description Text for autocompletion
+   * @description Text for autocompletion.
    */
   autocompletion: "Autocompletion",
   /**
-   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of a setting under the Sources category that can be invoked through the command menu.
    */
   enableAutocompletion: "Enable autocompletion",
   /**
-   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of a setting under the Sources category that can be invoked through the command menu.
    */
   disableAutocompletion: "Disable autocompletion",
   /**
-   * @description Title of a setting under the Sources category in Settings
+   * @description Title of a setting under the Sources category in Settings.
    */
   bracketClosing: "Auto closing brackets",
   /**
-   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of a setting under the Sources category that can be invoked through the command menu.
    */
   enableBracketClosing: "Enable auto closing brackets",
   /**
-   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of a setting under the Sources category that can be invoked through the command menu.
    */
   disableBracketClosing: "Disable auto closing brackets",
   /**
-   * @description Title of a setting under the Sources category in Settings
+   * @description Title of a setting under the Sources category in Settings.
    */
   bracketMatching: "Bracket matching",
   /**
-   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of a setting under the Sources category that can be invoked through the command menu.
    */
   enableBracketMatching: "Enable bracket matching",
   /**
-   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of a setting under the Sources category that can be invoked through the command menu.
    */
   disableBracketMatching: "Disable bracket matching",
   /**
-   * @description Title of a setting under the Sources category in Settings
+   * @description Title of a setting under the Sources category in Settings.
    */
   codeFolding: "Code folding",
   /**
-   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of a setting under the Sources category that can be invoked through the command menu.
    */
   enableCodeFolding: "Enable code folding",
   /**
-   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of a setting under the Sources category that can be invoked through the command menu.
    */
   disableCodeFolding: "Disable code folding",
   /**
-   * @description Title of a setting under the Sources category in Settings
+   * @description Title of a setting under the Sources category in Settings.
    */
   showWhitespaceCharacters: "Show whitespace characters:",
   /**
-   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of a setting under the Sources category that can be invoked through the command menu.
    */
   doNotShowWhitespaceCharacters: "Do not show whitespace characters",
   /**
@@ -3809,83 +3703,83 @@ var UIStrings12 = {
    */
   none: "None",
   /**
-   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of a setting under the Sources category that can be invoked through the command menu.
    */
   showAllWhitespaceCharacters: "Show all whitespace characters",
   /**
-   * @description Text for everything
+   * @description Text for everything.
    */
   all: "All",
   /**
-   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of a setting under the Sources category that can be invoked through the command menu.
    */
   showTrailingWhitespaceCharacters: "Show trailing whitespace characters",
   /**
-   * @description A drop-down menu option to show trailing whitespace characters
+   * @description A drop-down menu option to show trailing whitespace characters.
    */
   trailing: "Trailing",
   /**
-   * @description Title of a setting under the Sources category
+   * @description Title of a setting under the Sources category.
    */
   variableValuesInlineWhile: "Variable values inline",
   /**
-   * @description Title of an option under the Sources category that can be invoked through the Command Menu
+   * @description Title of an option under the Sources category that can be invoked through the command menu.
    */
   displayVariableValuesInlineWhile: "Display variable values inline while debugging",
   /**
-   * @description Title of an option under the Sources category that can be invoked through the Command Menu
+   * @description Title of an option under the Sources category that can be invoked through the command menu.
    */
   doNotDisplayVariableValuesInline: "Don\u2019t show variable values inline",
   /**
-   * @description Title of a setting under the Sources category in Settings
+   * @description Title of a setting under the Sources category in Settings.
    */
   allowScrollingPastEndOfFile: "Allow scrolling past end of file",
   /**
-   * @description Title of a setting under the Sources category in Settings
+   * @description Title of a setting under the Sources category in Settings.
    */
   disallowScrollingPastEndOfFile: "Disallow scrolling past end of file",
   /**
-   * @description Title of a setting under the Sources category in Settings
+   * @description Title of a setting under the Sources category in Settings.
    */
   wasmAutoStepping: "Wasm auto-stepping bytecode",
   /**
-   * @description Tooltip text for a setting that controls Wasm will try to skip wasm bytecode
+   * @description Tooltip text for a setting that controls Wasm will try to skip wasm bytecode.
    */
   wasmAutoSteppingInfo: "When debugging Wasm with debug information, try to skip wasm bytecode",
   /**
-   * @description Title of a setting under the Sources category in Settings
+   * @description Title of a setting under the Sources category in Settings.
    */
   enableWasmAutoStepping: "Enable Wasm auto-stepping",
   /**
-   * @description Title of a setting under the Sources category in Settings
+   * @description Title of a setting under the Sources category in Settings.
    */
   disableWasmAutoStepping: "Disable Wasm auto-stepping",
   /**
-   * @description Text for command prefix of go to a given line or symbol
+   * @description Text for command prefix of go to a given line or symbol.
    */
   goTo: "Go to",
   /**
-   * @description Text for command suggestion of go to a given line
+   * @description Text for command suggestion of go to a given line.
    */
   line: "Line",
   /**
-   * @description Text for command suggestion of go to a given symbol
+   * @description Text for command suggestion of go to a given symbol.
    */
   symbol: "Symbol",
   /**
-   * @description Text for help title of go to symbol menu
+   * @description Text for help title of go to symbol menu.
    */
   goToSymbol: "Go to symbol",
   /**
-   * @description Text for command prefix of open a file
+   * @description Text for command prefix of open a file.
    */
   open: "Open",
   /**
-   * @description Text for command suggestion of open a file
+   * @description Text for command suggestion of open a file.
    */
   file: "File",
   /**
-   * @description Text for help title of open file menu
+   * @description Text for help title of open file menu.
    */
   openFile: "Open file",
   /**
@@ -3901,15 +3795,15 @@ var UIStrings12 = {
    */
   enableAutoFocusOnDebuggerPaused: "Focus Sources panel when triggering a breakpoint",
   /**
-   * @description Title of an action to reveal the active file in the navigator sidebar of the Sources panel
+   * @description Title of an action to reveal the active file in the navigator sidebar of the Sources panel.
    */
   revealActiveFileInSidebar: "Reveal active file in navigator sidebar",
   /**
-   * @description Text for command of toggling navigator sidebar in Sources panel
+   * @description Text for command of toggling navigator sidebar in Sources panel.
    */
   toggleNavigatorSidebar: "Toggle navigator sidebar",
   /**
-   * @description Text for command of toggling debugger sidebar in Sources panel
+   * @description Text for command of toggling debugger sidebar in Sources panel.
    */
   toggleDebuggerSidebar: "Toggle debugger sidebar",
   /**
@@ -3931,7 +3825,31 @@ var UIStrings12 = {
    * @description Title of an action in the Sources panel that toggles the 'Word
    *              wrap' setting.
    */
-  toggleWordWrap: "Toggle word wrap"
+  toggleWordWrap: "Toggle word wrap",
+  /**
+   * @description Setting under the Sources category to toggle usage of JavaScript source maps.
+   */
+  javaScriptSourceMaps: "JavaScript source maps",
+  /**
+   * @description Title of an option under the Sources category that can be invoked through the Command Menu.
+   */
+  enableJavaScriptSourceMaps: "Enable JavaScript source maps",
+  /**
+   * @description Title of an option under the Sources category that can be invoked through the Command Menu.
+   */
+  disableJavaScriptSourceMaps: "Disable JavaScript source maps",
+  /**
+   * @description Setting under the Sources category to toggle usage of CSS source maps.
+   */
+  cssSourceMaps: "CSS source maps",
+  /**
+   * @description Title of an option under the Sources category that can be invoked through the Command Menu.
+   */
+  enableCssSourceMaps: "Enable CSS source maps",
+  /**
+   * @description Title of an option under the Sources category that can be invoked through the Command Menu.
+   */
+  disableCssSourceMaps: "Disable CSS source maps"
 };
 var str_12 = i18n24.i18n.registerUIStrings("panels/sources/sources-meta.ts", UIStrings12);
 var i18nLazyString12 = i18n24.i18n.getLazilyComputedLocalizedString.bind(void 0, str_12);
@@ -4520,6 +4438,14 @@ UI8.ActionRegistration.registerActionExtension({
         "devToolsDefault",
         "vsCode"
       ]
+    },
+    {
+      platform: "mac",
+      shortcut: "Meta+g",
+      keybindSets: [
+        "devToolsDefault",
+        "vsCode"
+      ]
     }
   ]
 });
@@ -4730,6 +4656,10 @@ UI8.ActionRegistration.registerActionExtension({
   bindings: [
     {
       shortcut: "Ctrl+,"
+    },
+    {
+      platform: "mac",
+      shortcut: "Meta+,"
     }
   ]
 });
@@ -4747,6 +4677,10 @@ UI8.ActionRegistration.registerActionExtension({
   bindings: [
     {
       shortcut: "Ctrl+."
+    },
+    {
+      platform: "mac",
+      shortcut: "Meta+."
     }
   ]
 });
@@ -4913,22 +4847,63 @@ UI8.ActionRegistration.registerActionExtension({
     }
   ]
 });
-Common11.Settings.registerSettingExtension({
+Common12.Settings.registerSettingExtension({
   settingName: "navigator-group-by-folder",
   settingType: "boolean",
   defaultValue: true
 });
-Common11.Settings.registerSettingExtension({
+Common12.Settings.registerSettingExtension({
   settingName: "navigator-group-by-authored",
   settingType: "boolean",
   defaultValue: false
 });
-Common11.Settings.registerSettingExtension({
+Common12.Settings.registerSettingExtension({
   settingName: "navigator-just-my-code",
   settingType: "boolean",
   defaultValue: false
 });
-Common11.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SDK4.SDKSettings.jsSourceMapsEnabledSettingDescriptor, {
+  category: "SOURCES",
+  title: i18nLazyString12(UIStrings12.javaScriptSourceMaps),
+  options: [
+    {
+      value: true,
+      title: i18nLazyString12(UIStrings12.enableJavaScriptSourceMaps)
+    },
+    {
+      value: false,
+      title: i18nLazyString12(UIStrings12.disableJavaScriptSourceMaps)
+    }
+  ]
+});
+SettingsUI.SettingUIRegistration.register(SDK4.SDKSettings.cssSourceMapsEnabledSettingDescriptor, {
+  category: "SOURCES",
+  title: i18nLazyString12(UIStrings12.cssSourceMaps),
+  options: [
+    {
+      value: true,
+      title: i18nLazyString12(UIStrings12.enableCssSourceMaps)
+    },
+    {
+      value: false,
+      title: i18nLazyString12(UIStrings12.disableCssSourceMaps)
+    }
+  ]
+});
+SettingsUI.SettingUIRegistration.register(SDK4.SDKSettings.pauseOnExceptionEnabledSettingDescriptor, {
+  category: "DEBUGGER",
+  options: [
+    {
+      value: true,
+      title: i18nLazyString12(UIStrings12.pauseOnExceptions)
+    },
+    {
+      value: false,
+      title: i18nLazyString12(UIStrings12.doNotPauseOnExceptions)
+    }
+  ]
+});
+Common12.Settings.registerSettingExtension({
   category: "SOURCES",
   storageType: "Synced",
   title: i18nLazyString12(UIStrings12.searchInAnonymousAndContent),
@@ -4946,7 +4921,7 @@ Common11.Settings.registerSettingExtension({
     }
   ]
 });
-Common11.Settings.registerSettingExtension({
+Common12.Settings.registerSettingExtension({
   category: "SOURCES",
   storageType: "Synced",
   title: i18nLazyString12(UIStrings12.automaticallyRevealFilesIn),
@@ -4964,7 +4939,7 @@ Common11.Settings.registerSettingExtension({
     }
   ]
 });
-Common11.Settings.registerSettingExtension({
+Common12.Settings.registerSettingExtension({
   category: "SOURCES",
   storageType: "Synced",
   title: i18nLazyString12(UIStrings12.tabMovesFocus),
@@ -4982,7 +4957,7 @@ Common11.Settings.registerSettingExtension({
     }
   ]
 });
-Common11.Settings.registerSettingExtension({
+Common12.Settings.registerSettingExtension({
   category: "SOURCES",
   storageType: "Synced",
   title: i18nLazyString12(UIStrings12.detectIndentation),
@@ -5000,7 +4975,7 @@ Common11.Settings.registerSettingExtension({
     }
   ]
 });
-Common11.Settings.registerSettingExtension({
+Common12.Settings.registerSettingExtension({
   category: "SOURCES",
   storageType: "Synced",
   title: i18nLazyString12(UIStrings12.autocompletion),
@@ -5018,7 +4993,7 @@ Common11.Settings.registerSettingExtension({
     }
   ]
 });
-Common11.Settings.registerSettingExtension({
+Common12.Settings.registerSettingExtension({
   category: "SOURCES",
   storageType: "Synced",
   title: i18nLazyString12(UIStrings12.bracketClosing),
@@ -5036,7 +5011,7 @@ Common11.Settings.registerSettingExtension({
     }
   ]
 });
-Common11.Settings.registerSettingExtension({
+Common12.Settings.registerSettingExtension({
   category: "SOURCES",
   title: i18nLazyString12(UIStrings12.bracketMatching),
   settingName: "text-editor-bracket-matching",
@@ -5053,7 +5028,7 @@ Common11.Settings.registerSettingExtension({
     }
   ]
 });
-Common11.Settings.registerSettingExtension({
+Common12.Settings.registerSettingExtension({
   category: "SOURCES",
   storageType: "Synced",
   title: i18nLazyString12(UIStrings12.codeFolding),
@@ -5071,7 +5046,7 @@ Common11.Settings.registerSettingExtension({
     }
   ]
 });
-Common11.Settings.registerSettingExtension({
+Common12.Settings.registerSettingExtension({
   category: "SOURCES",
   storageType: "Synced",
   title: i18nLazyString12(UIStrings12.showWhitespaceCharacters),
@@ -5096,7 +5071,7 @@ Common11.Settings.registerSettingExtension({
     }
   ]
 });
-Common11.Settings.registerSettingExtension({
+Common12.Settings.registerSettingExtension({
   category: "SOURCES",
   storageType: "Synced",
   title: i18nLazyString12(UIStrings12.wordWrap),
@@ -5125,7 +5100,7 @@ UI8.ActionRegistration.registerActionExtension({
     }
   ]
 });
-Common11.Settings.registerSettingExtension({
+Common12.Settings.registerSettingExtension({
   category: "SOURCES",
   storageType: "Synced",
   title: i18nLazyString12(UIStrings12.variableValuesInlineWhile),
@@ -5143,7 +5118,7 @@ Common11.Settings.registerSettingExtension({
     }
   ]
 });
-Common11.Settings.registerSettingExtension({
+Common12.Settings.registerSettingExtension({
   category: "SOURCES",
   storageType: "Synced",
   title: i18nLazyString12(UIStrings12.enableAutoFocusOnDebuggerPaused),
@@ -5161,7 +5136,7 @@ Common11.Settings.registerSettingExtension({
     }
   ]
 });
-Common11.Settings.registerSettingExtension({
+Common12.Settings.registerSettingExtension({
   category: "SOURCES",
   storageType: "Synced",
   title: i18nLazyString12(UIStrings12.automaticallyPrettyPrintMinifiedSources),
@@ -5179,7 +5154,7 @@ Common11.Settings.registerSettingExtension({
     }
   ]
 });
-Common11.Settings.registerSettingExtension({
+Common12.Settings.registerSettingExtension({
   category: "SOURCES",
   storageType: "Synced",
   title: i18nLazyString12(UIStrings12.allowScrollingPastEndOfFile),
@@ -5197,7 +5172,7 @@ Common11.Settings.registerSettingExtension({
     }
   ]
 });
-Common11.Settings.registerSettingExtension({
+Common12.Settings.registerSettingExtension({
   category: "SOURCES",
   storageType: "Local",
   title: i18nLazyString12(UIStrings12.wasmAutoStepping),
@@ -5277,79 +5252,79 @@ UI8.ContextMenu.registerProvider({
     ];
   }
 });
-Common11.Revealer.registerRevealer({
+Common12.Revealer.registerRevealer({
   contextTypes() {
     return [
       Workspace2.UISourceCode.UILocation
     ];
   },
-  destination: Common11.Revealer.RevealerDestination.SOURCES_PANEL,
+  destination: Common12.Revealer.RevealerDestination.SOURCES_PANEL,
   async loadRevealer() {
     const Sources = await loadSourcesModule2();
     return new Sources.SourcesPanel.UILocationRevealer();
   }
 });
-Common11.Revealer.registerRevealer({
+Common12.Revealer.registerRevealer({
   contextTypes() {
     return [
       Workspace2.UISourceCode.UILocationRange
     ];
   },
-  destination: Common11.Revealer.RevealerDestination.SOURCES_PANEL,
+  destination: Common12.Revealer.RevealerDestination.SOURCES_PANEL,
   async loadRevealer() {
     const Sources = await loadSourcesModule2();
     return new Sources.SourcesPanel.UILocationRangeRevealer();
   }
 });
-Common11.Revealer.registerRevealer({
+Common12.Revealer.registerRevealer({
   contextTypes() {
     return [
       SDK4.DebuggerModel.Location
     ];
   },
-  destination: Common11.Revealer.RevealerDestination.SOURCES_PANEL,
+  destination: Common12.Revealer.RevealerDestination.SOURCES_PANEL,
   async loadRevealer() {
     const Sources = await loadSourcesModule2();
     return new Sources.SourcesPanel.DebuggerLocationRevealer();
   }
 });
-Common11.Revealer.registerRevealer({
+Common12.Revealer.registerRevealer({
   contextTypes() {
     return [
       Workspace2.UISourceCode.UISourceCode
     ];
   },
-  destination: Common11.Revealer.RevealerDestination.SOURCES_PANEL,
+  destination: Common12.Revealer.RevealerDestination.SOURCES_PANEL,
   async loadRevealer() {
     const Sources = await loadSourcesModule2();
     return new Sources.SourcesPanel.UISourceCodeRevealer();
   }
 });
-Common11.Revealer.registerRevealer({
+Common12.Revealer.registerRevealer({
   contextTypes() {
     return [
       SDK4.DebuggerModel.DebuggerPausedDetails
     ];
   },
-  destination: Common11.Revealer.RevealerDestination.SOURCES_PANEL,
+  destination: Common12.Revealer.RevealerDestination.SOURCES_PANEL,
   async loadRevealer() {
     const Sources = await loadSourcesModule2();
     return new Sources.SourcesPanel.DebuggerPausedDetailsRevealer();
   }
 });
-Common11.Revealer.registerRevealer({
+Common12.Revealer.registerRevealer({
   contextTypes() {
     return [
       Breakpoints.BreakpointManager.BreakpointLocation
     ];
   },
-  destination: Common11.Revealer.RevealerDestination.SOURCES_PANEL,
+  destination: Common12.Revealer.RevealerDestination.SOURCES_PANEL,
   async loadRevealer() {
     const Sources = await loadSourcesModule2();
     return new Sources.DebuggerPlugin.BreakpointLocationRevealer();
   }
 });
-Common11.Revealer.registerRevealer({
+Common12.Revealer.registerRevealer({
   contextTypes() {
     return maybeRetrieveContextTypes2((Sources) => [Sources.SearchSourcesView.SearchSources]);
   },
@@ -5449,7 +5424,7 @@ UI8.ContextMenu.registerProvider({
 });
 
 // gen/front_end/panels/sensors/sensors-meta.js
-import * as Common12 from "./../../core/common/common.js";
+import * as Common13 from "./../../core/common/common.js";
 import * as i18n26 from "./../../core/i18n/i18n.js";
 import * as UI9 from "./../../ui/legacy/legacy.js";
 var UIStrings13 = {
@@ -5541,7 +5516,7 @@ UI9.ViewManager.registerViewExtension({
   ],
   iconName: "location-on"
 });
-Common12.Settings.registerSettingExtension({
+Common13.Settings.registerSettingExtension({
   storageType: "Synced",
   settingName: "emulation.locations",
   settingType: "array",
@@ -5624,10 +5599,12 @@ Common12.Settings.registerSettingExtension({
 });
 
 // gen/front_end/panels/timeline/timeline-meta.js
-import * as Common13 from "./../../core/common/common.js";
+import * as Common14 from "./../../core/common/common.js";
 import * as i18n28 from "./../../core/i18n/i18n.js";
 import * as SDK5 from "./../../core/sdk/sdk.js";
+import * as LiveMetrics from "./../../models/live-metrics/live-metrics.js";
 import * as UI10 from "./../../ui/legacy/legacy.js";
+import * as SettingsUI2 from "./../../ui/settings/settings.js";
 var UIStrings14 = {
   /**
    * @description Text for the performance of something
@@ -5979,7 +5956,7 @@ UI10.ActionRegistration.registerActionExtension({
     }
   ]
 });
-Common13.Settings.registerSettingExtension({
+Common14.Settings.registerSettingExtension({
   category: "PERFORMANCE",
   storageType: "Synced",
   title: i18nLazyString14(UIStrings14.chromeFrameInLayersView),
@@ -5987,7 +5964,7 @@ Common13.Settings.registerSettingExtension({
   settingType: "boolean",
   defaultValue: true
 });
-Common13.Settings.registerSettingExtension({
+Common14.Settings.registerSettingExtension({
   category: "PERFORMANCE",
   storageType: "Synced",
   title: i18nLazyString14(UIStrings14.timelineInvalidationTracking),
@@ -5995,7 +5972,7 @@ Common13.Settings.registerSettingExtension({
   settingType: "boolean",
   defaultValue: false
 });
-Common13.Settings.registerSettingExtension({
+Common14.Settings.registerSettingExtension({
   category: "PERFORMANCE",
   storageType: "Synced",
   title: i18nLazyString14(UIStrings14.timelineShowAllEvents),
@@ -6003,15 +5980,11 @@ Common13.Settings.registerSettingExtension({
   settingType: "boolean",
   defaultValue: false
 });
-Common13.Settings.registerSettingExtension({
+SettingsUI2.SettingUIRegistration.register(LiveMetrics.timelineEnableSoftNavigationsSettingDescriptor, {
   category: "PERFORMANCE",
-  storageType: "Synced",
-  title: i18nLazyString14(UIStrings14.enableSoftNavigations),
-  settingName: "timeline-enable-soft-navigations",
-  settingType: "boolean",
-  defaultValue: true
+  title: i18nLazyString14(UIStrings14.enableSoftNavigations)
 });
-Common13.Settings.registerSettingExtension({
+Common14.Settings.registerSettingExtension({
   category: "PERFORMANCE",
   storageType: "Synced",
   title: i18nLazyString14(UIStrings14.timelineDebugMode),
@@ -6019,7 +5992,7 @@ Common13.Settings.registerSettingExtension({
   settingType: "boolean",
   defaultValue: false
 });
-Common13.Settings.registerSettingExtension({
+Common14.Settings.registerSettingExtension({
   category: "PERFORMANCE",
   storageType: "Synced",
   settingName: "annotations-hidden",
@@ -6036,89 +6009,89 @@ UI10.ContextMenu.registerItem({
   actionId: "timeline.save-to-file",
   order: 15
 });
-Common13.Revealer.registerRevealer({
+Common14.Revealer.registerRevealer({
   contextTypes() {
     return [SDK5.TraceObject.TraceObject];
   },
-  destination: Common13.Revealer.RevealerDestination.TIMELINE_PANEL,
+  destination: Common14.Revealer.RevealerDestination.TIMELINE_PANEL,
   async loadRevealer() {
     const Timeline = await loadTimelineModule();
     return new Timeline.TimelinePanel.TraceRevealer();
   }
 });
-Common13.Revealer.registerRevealer({
+Common14.Revealer.registerRevealer({
   contextTypes() {
     return maybeRetrieveContextTypes3((Timeline) => [Timeline.TimelinePanel.ParsedTraceRevealable]);
   },
-  destination: Common13.Revealer.RevealerDestination.TIMELINE_PANEL,
+  destination: Common14.Revealer.RevealerDestination.TIMELINE_PANEL,
   async loadRevealer() {
     const Timeline = await loadTimelineModule();
     return new Timeline.TimelinePanel.ParsedTraceRevealer();
   }
 });
-Common13.Revealer.registerRevealer({
+Common14.Revealer.registerRevealer({
   contextTypes() {
     return [SDK5.TraceObject.RevealableEvent];
   },
-  destination: Common13.Revealer.RevealerDestination.TIMELINE_PANEL,
+  destination: Common14.Revealer.RevealerDestination.TIMELINE_PANEL,
   async loadRevealer() {
     const Timeline = await loadTimelineModule();
     return new Timeline.TimelinePanel.EventRevealer();
   }
 });
-Common13.Revealer.registerRevealer({
+Common14.Revealer.registerRevealer({
   contextTypes() {
     return maybeRetrieveContextTypes3((Timeline) => [Timeline.Utils.Helpers.RevealableInsight]);
   },
-  destination: Common13.Revealer.RevealerDestination.TIMELINE_PANEL,
+  destination: Common14.Revealer.RevealerDestination.TIMELINE_PANEL,
   async loadRevealer() {
     const Timeline = await loadTimelineModule();
     return new Timeline.TimelinePanel.InsightRevealer();
   }
 });
-Common13.Revealer.registerRevealer({
+Common14.Revealer.registerRevealer({
   contextTypes() {
     return maybeRetrieveContextTypes3((Timeline) => [Timeline.Utils.Helpers.RevealableCoreVitals]);
   },
-  destination: Common13.Revealer.RevealerDestination.TIMELINE_PANEL,
+  destination: Common14.Revealer.RevealerDestination.TIMELINE_PANEL,
   async loadRevealer() {
     const Timeline = await loadTimelineModule();
     return new Timeline.TimelinePanel.CoreVitalsRevealer();
   }
 });
-Common13.Revealer.registerRevealer({
+Common14.Revealer.registerRevealer({
   contextTypes() {
     return maybeRetrieveContextTypes3((Timeline) => [Timeline.Utils.Helpers.RevealableTimeRange]);
   },
-  destination: Common13.Revealer.RevealerDestination.TIMELINE_PANEL,
+  destination: Common14.Revealer.RevealerDestination.TIMELINE_PANEL,
   async loadRevealer() {
     const Timeline = await loadTimelineModule();
     return new Timeline.TimelinePanel.TimeRangeRevealer();
   }
 });
-Common13.Revealer.registerRevealer({
+Common14.Revealer.registerRevealer({
   contextTypes() {
     return maybeRetrieveContextTypes3((Timeline) => [Timeline.Utils.Helpers.RevealableBottomUpProfile]);
   },
-  destination: Common13.Revealer.RevealerDestination.TIMELINE_PANEL,
+  destination: Common14.Revealer.RevealerDestination.TIMELINE_PANEL,
   async loadRevealer() {
     const Timeline = await loadTimelineModule();
     return new Timeline.TimelinePanel.BottomUpProfileRevealer();
   }
 });
-Common13.Revealer.registerRevealer({
+Common14.Revealer.registerRevealer({
   contextTypes() {
     return [
       SDK5.CPUProfilerModel.ProfileFinishedData
     ];
   },
-  destination: Common13.Revealer.RevealerDestination.TIMELINE_PANEL,
+  destination: Common14.Revealer.RevealerDestination.TIMELINE_PANEL,
   async loadRevealer() {
     const Timeline = await loadTimelineModule();
     return new Timeline.TimelinePanel.ProfileFinishedRevealer();
   }
 });
-Common13.Settings.registerSettingExtension({
+Common14.Settings.registerSettingExtension({
   category: "",
   storageType: "Session",
   title: i18nLazyString14(UIStrings14.disableJavascriptSamples),
@@ -6126,7 +6099,7 @@ Common13.Settings.registerSettingExtension({
   settingType: "boolean",
   defaultValue: false
 });
-Common13.Settings.registerSettingExtension({
+Common14.Settings.registerSettingExtension({
   category: "",
   storageType: "Session",
   title: i18nLazyString14(UIStrings14.enableAdvancedPaint),
@@ -6134,7 +6107,7 @@ Common13.Settings.registerSettingExtension({
   settingType: "boolean",
   defaultValue: false
 });
-Common13.Settings.registerSettingExtension({
+Common14.Settings.registerSettingExtension({
   category: "",
   storageType: "Session",
   title: i18nLazyString14(UIStrings14.enableSelectorStats),
@@ -6142,7 +6115,7 @@ Common13.Settings.registerSettingExtension({
   settingType: "boolean",
   defaultValue: false
 });
-Common13.Settings.registerSettingExtension({
+Common14.Settings.registerSettingExtension({
   category: "",
   storageType: "Session",
   title: i18nLazyString14(UIStrings14.screenshotCapture),
@@ -6150,7 +6123,7 @@ Common13.Settings.registerSettingExtension({
   settingType: "enum",
   defaultValue: "auto"
 });
-Common13.Settings.registerSettingExtension({
+Common14.Settings.registerSettingExtension({
   category: "",
   storageType: "Global",
   title: i18nLazyString14(UIStrings14.screenshots),
@@ -6158,7 +6131,7 @@ Common13.Settings.registerSettingExtension({
   settingType: "boolean",
   defaultValue: true
 });
-Common13.Settings.registerSettingExtension({
+Common14.Settings.registerSettingExtension({
   category: "",
   storageType: "Session",
   title: i18nLazyString14(UIStrings14.memory),
@@ -6166,7 +6139,7 @@ Common13.Settings.registerSettingExtension({
   settingType: "boolean",
   defaultValue: false
 });
-Common13.Settings.registerSettingExtension({
+Common14.Settings.registerSettingExtension({
   category: "",
   storageType: "Session",
   title: i18nLazyString14(UIStrings14.dimThirdParties),
@@ -6174,7 +6147,7 @@ Common13.Settings.registerSettingExtension({
   settingType: "boolean",
   defaultValue: false
 });
-Common13.Settings.registerSettingExtension({
+Common14.Settings.registerSettingExtension({
   category: "",
   storageType: "Global",
   title: i18nLazyString14(UIStrings14.showCustomtracks),
@@ -6182,7 +6155,7 @@ Common13.Settings.registerSettingExtension({
   settingType: "boolean",
   defaultValue: true
 });
-Common13.Settings.registerSettingExtension({
+Common14.Settings.registerSettingExtension({
   category: "",
   storageType: "Global",
   title: i18nLazyString14(UIStrings14.jsHeap),
@@ -6190,7 +6163,7 @@ Common13.Settings.registerSettingExtension({
   settingType: "boolean",
   defaultValue: true
 });
-Common13.Settings.registerSettingExtension({
+Common14.Settings.registerSettingExtension({
   category: "",
   storageType: "Global",
   title: i18nLazyString14(UIStrings14.documents),
@@ -6198,7 +6171,7 @@ Common13.Settings.registerSettingExtension({
   settingType: "boolean",
   defaultValue: true
 });
-Common13.Settings.registerSettingExtension({
+Common14.Settings.registerSettingExtension({
   category: "",
   storageType: "Global",
   title: i18nLazyString14(UIStrings14.nodes),
@@ -6206,7 +6179,7 @@ Common13.Settings.registerSettingExtension({
   settingType: "boolean",
   defaultValue: true
 });
-Common13.Settings.registerSettingExtension({
+Common14.Settings.registerSettingExtension({
   category: "",
   storageType: "Global",
   title: i18nLazyString14(UIStrings14.listeners),
@@ -6214,7 +6187,7 @@ Common13.Settings.registerSettingExtension({
   settingType: "boolean",
   defaultValue: true
 });
-Common13.Settings.registerSettingExtension({
+Common14.Settings.registerSettingExtension({
   category: "",
   storageType: "Global",
   title: i18nLazyString14(UIStrings14.gpuMemory),
@@ -6224,7 +6197,7 @@ Common13.Settings.registerSettingExtension({
 });
 
 // gen/front_end/panels/ai_assistance/ai_assistance-meta.js
-import * as Common14 from "./../../core/common/common.js";
+import * as Common15 from "./../../core/common/common.js";
 import * as i18n30 from "./../../core/i18n/i18n.js";
 import * as Root6 from "./../../core/root/root.js";
 import * as UI11 from "./../../ui/legacy/legacy.js";
@@ -6334,7 +6307,7 @@ UI11.ViewManager.registerViewExtension({
     return await AiAssistance.AiAssistancePanel.instance();
   }
 });
-Common14.Settings.registerSettingExtension({
+Common15.Settings.registerSettingExtension({
   category: "AI",
   settingName: setting,
   settingType: "boolean",
@@ -6358,12 +6331,6 @@ Common14.Settings.registerSettingExtension({
     }
     return { disabled: false };
   }
-});
-Common14.Settings.registerSettingExtension({
-  category: "AI",
-  settingName: "ai-assistance-v2-opt-in-change-dialog-seen",
-  settingType: "boolean",
-  defaultValue: false
 });
 UI11.ActionRegistration.registerActionExtension({
   actionId: "freestyler.main-menu",
@@ -6507,7 +6474,7 @@ UI11.ActionRegistration.registerActionExtension({
 });
 
 // gen/front_end/ui/legacy/components/perf_ui/perf_ui-meta.js
-import * as Common15 from "./../../core/common/common.js";
+import * as Common16 from "./../../core/common/common.js";
 import * as i18n33 from "./../../core/i18n/i18n.js";
 import * as UI12 from "./../../ui/legacy/legacy.js";
 var UIStrings16 = {
@@ -6549,7 +6516,7 @@ UI12.ActionRegistration.registerActionExtension({
     return new PerfUI.GCActionDelegate.GCActionDelegate();
   }
 });
-Common15.Settings.registerSettingExtension({
+Common16.Settings.registerSettingExtension({
   category: "PERFORMANCE",
   storageType: "Synced",
   title: i18nLazyString15(UIStrings16.flamechartSelectedNavigation),
@@ -6679,7 +6646,7 @@ UI13.ContextMenu.registerItem({
 });
 
 // gen/front_end/ui/legacy/components/source_frame/source_frame-meta.js
-import * as Common16 from "./../../core/common/common.js";
+import * as Common17 from "./../../core/common/common.js";
 import * as i18n37 from "./../../core/i18n/i18n.js";
 var UIStrings18 = {
   /**
@@ -6721,7 +6688,7 @@ var UIStrings18 = {
 };
 var str_18 = i18n37.i18n.registerUIStrings("ui/legacy/components/source_frame/source_frame-meta.ts", UIStrings18);
 var i18nLazyString17 = i18n37.i18n.getLazilyComputedLocalizedString.bind(void 0, str_18);
-Common16.Settings.registerSettingExtension({
+Common17.Settings.registerSettingExtension({
   category: "SOURCES",
   storageType: "Synced",
   title: i18nLazyString17(UIStrings18.defaultIndentation),

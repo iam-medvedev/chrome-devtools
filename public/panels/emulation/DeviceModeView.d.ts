@@ -1,18 +1,6 @@
 import * as Common from '../../core/common/common.js';
-import * as Platform from '../../core/platform/platform.js';
-import type * as Protocol from '../../generated/protocol.js';
 import * as EmulationModel from '../../models/emulation/emulation.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { DeviceModeToolbar } from './DeviceModeToolbar.js';
-export interface DeviceModeViewRefs {
-    toolbar: DeviceModeToolbar;
-    bottomRightResizerElement: HTMLElement;
-    bottomLeftResizerElement: HTMLElement;
-    rightResizerElement: HTMLElement;
-    leftResizerElement: HTMLElement;
-    bottomResizerElement: HTMLElement;
-    pageArea: HTMLElement;
-}
 export interface DeviceModeViewInput {
     model: EmulationModel.DeviceModeModel.DeviceModeModel;
     showMediaInspectorSetting: Common.Settings.Setting<boolean>;
@@ -21,10 +9,12 @@ export interface DeviceModeViewInput {
     outlineImageLoaded: boolean;
     screenImage: string;
     screenImageLoaded: boolean;
+    resizable: boolean;
     showRulers: boolean;
     showMediaInspector: boolean;
     scale: number;
     cachedCssScreenRect?: EmulationModel.DeviceModeModel.Rect;
+    cachedCssVisiblePageRect?: EmulationModel.DeviceModeModel.Rect;
     cachedOutlineRect?: EmulationModel.DeviceModeModel.Rect;
     onApplyPresetSize: (size: number, e: Event) => void;
     bottomRightResizer: UI.ResizerWidget.ResizerWidget;
@@ -41,7 +31,7 @@ export interface DeviceModeViewInput {
     onOutlineImageLoaded: (success: boolean) => void;
     onScreenImageLoaded: (success: boolean) => void;
 }
-export type DeviceModeViewView = (input: DeviceModeViewInput, output: DeviceModeViewRefs, target: HTMLElement) => void;
+export type DeviceModeViewView = (input: DeviceModeViewInput, output: undefined, target: HTMLElement) => void;
 export declare const DEFAULT_DEVICE_MODE_VIEW: DeviceModeViewView;
 export declare class DeviceModeView extends UI.Widget.VBox {
     #private;
@@ -49,12 +39,6 @@ export declare class DeviceModeView extends UI.Widget.VBox {
     private model;
     private showMediaInspectorSetting;
     private showRulersSetting;
-    pageArea: HTMLElement;
-    rightResizerElement: HTMLElement;
-    leftResizerElement: HTMLElement;
-    bottomResizerElement: HTMLElement;
-    bottomRightResizerElement: HTMLElement;
-    bottomLeftResizerElement: HTMLElement;
     private readonly bottomRightResizer;
     private readonly bottomLeftResizer;
     private readonly rightResizer;
@@ -65,8 +49,6 @@ export declare class DeviceModeView extends UI.Widget.VBox {
     private readonly rightResizerRef;
     private readonly leftResizerRef;
     private readonly bottomResizerRef;
-    private cachedResizable;
-    toolbar: DeviceModeToolbar;
     private slowPositionStart?;
     private resizeStart?;
     private cachedCssScreenRect?;
@@ -75,8 +57,6 @@ export declare class DeviceModeView extends UI.Widget.VBox {
     private cachedMediaInspectorVisible?;
     private cachedShowRulers?;
     private cachedScale?;
-    private handleWidth?;
-    private handleHeight?;
     constructor(view?: DeviceModeViewView);
     performUpdate(): void;
     private onOutlineImageLoaded;
@@ -87,19 +67,11 @@ export declare class DeviceModeView extends UI.Widget.VBox {
     exitHingeMode(): void;
     private onResizeEnd;
     private updateUI;
-    setNonEmulatedAvailableSize(element: Element): void;
     private contentAreaResized;
-    private measureHandles;
     private zoomChanged;
     onResize(): void;
     wasShown(): void;
     willHide(): void;
-    captureScreenshot(): Promise<void>;
-    captureFullSizeScreenshot(): Promise<void>;
-    captureAreaScreenshot(clip?: Protocol.Page.Viewport): Promise<void>;
-    private saveScreenshotBase64;
-    private paintImage;
-    private saveScreenshot;
 }
 export interface RulerViewInput {
     horizontal: boolean;
@@ -120,7 +92,7 @@ declare const Ruler_base: (new (...args: any[]) => {
     once<T extends RulerEvents.MARKER_SELECTED>(eventType: T): Promise<RulerEventTypes[T]>;
     removeEventListener<T extends RulerEvents.MARKER_SELECTED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<RulerEventTypes[T], any>) => void, thisObject?: Object): void;
     hasEventListeners(eventType: RulerEvents.MARKER_SELECTED): boolean;
-    dispatchEventToListeners<T extends RulerEvents.MARKER_SELECTED>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<RulerEventTypes, T>): void;
+    dispatchEventToListeners<T extends RulerEvents.MARKER_SELECTED>(eventType: import("../../core/platform/TypescriptUtilities.js").NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<RulerEventTypes, T>): void;
     dispatchDOMEvent?(event: Event): void;
 }) & typeof UI.Widget.Widget;
 export declare class Ruler extends Ruler_base {

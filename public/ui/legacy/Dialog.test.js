@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { html } from '../../ui/lit/lit.js';
 import * as UI from './legacy.js';
 describeWithEnvironment('Dialog', () => {
     describe('Dialog stacking', () => {
@@ -49,6 +51,50 @@ describeWithEnvironment('Dialog', () => {
             assert.isFalse(dialog2.isShowing(), 'dialog2 should be hidden after Escape key');
             assert.isTrue(dialog1.isShowing(), 'dialog1 should still be showing');
             assert.strictEqual(UI.Dialog.Dialog.getInstance(), dialog1, 'dialog1 should now be the current instance');
+        });
+    });
+    describe('DialogWidget', () => {
+        it('shows and hides the underlying dialog when open property changes', async () => {
+            const widget = new UI.Dialog.DialogWidget();
+            renderElementIntoDOM(widget);
+            await widget.updateComplete;
+            assert.isFalse(UI.Dialog.Dialog.hasInstance(), 'Underlying dialog should not be shown initially');
+            widget.open = true;
+            await widget.updateComplete;
+            assert.isTrue(UI.Dialog.Dialog.hasInstance(), 'Underlying dialog should be shown when open is true');
+            widget.open = false;
+            await widget.updateComplete;
+            assert.isFalse(UI.Dialog.Dialog.hasInstance(), 'Underlying dialog should be hidden when open is false');
+        });
+        it('updates open property and dispatches HIDDEN event via ObjectWrapper when dialog is closed', async () => {
+            let hiddenDispatched = false;
+            const widget = new UI.Dialog.DialogWidget();
+            widget.addEventListener("hidden" /* UI.Dialog.Events.HIDDEN */, () => {
+                hiddenDispatched = true;
+            });
+            renderElementIntoDOM(widget);
+            await widget.updateComplete;
+            widget.open = true;
+            await widget.updateComplete;
+            assert.isTrue(UI.Dialog.Dialog.hasInstance());
+            const dialogInstance = UI.Dialog.Dialog.getInstance();
+            assert.exists(dialogInstance);
+            dialogInstance.hide();
+            await widget.updateComplete;
+            assert.isFalse(widget.open, 'open property should be false when dialog is hidden');
+            assert.isTrue(hiddenDispatched, 'HIDDEN event should be dispatched via ObjectWrapper on widget');
+        });
+        it('renders content directly into the dialog contentElement when shown', async () => {
+            const widget = new UI.Dialog.DialogWidget();
+            renderElementIntoDOM(widget);
+            widget.content = html `<div id="test-div">hello world</div>`;
+            widget.open = true;
+            await widget.updateComplete;
+            const dialogInstance = UI.Dialog.Dialog.getInstance();
+            assert.exists(dialogInstance);
+            const renderedElement = dialogInstance.contentElement.querySelector('#test-div');
+            assert.exists(renderedElement);
+            assert.strictEqual(renderedElement.textContent, 'hello world');
         });
     });
 });

@@ -6,22 +6,20 @@ import sinon from 'sinon';
 import * as Platform from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
 import * as Logs from '../../../../models/logs/logs.js';
-import { getCleanTextContentFromElements, getElementWithinComponent, renderElementIntoDOM, } from '../../../../testing/DOMHelpers.js';
+import { assertScreenshot, getCleanTextContentFromElements, renderElementIntoDOM, } from '../../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
-import * as RenderCoordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
-import * as ReportView from '../../../../ui/components/report_view/report_view.js';
 import * as PreloadingComponents from './components.js';
 const { urlString } = Platform.DevToolsPath;
 const zip2 = (xs, ys) => {
     assert.strictEqual(xs.length, ys.length);
     return Array.from(xs.map((_, i) => [xs[i], ys[i]]));
 };
-const renderPreloadingDetailsReportView = async (data) => {
+const renderPreloadingDetailsReportView = async (data, renderOptions) => {
     const component = new PreloadingComponents.PreloadingDetailsReportView.PreloadingDetailsReportView();
     component.data = data;
-    renderElementIntoDOM(component);
-    assert.isNotNull(component.shadowRoot);
-    await RenderCoordinator.done();
+    renderElementIntoDOM(component, renderOptions);
+    await component.updateComplete;
+    assert.isNotNull(component.contentElement);
     return component;
 };
 // Note that testing Inspect/Activate buttons requires setup for targets.
@@ -30,8 +28,8 @@ describeWithEnvironment('PreloadingDetailsReportView', () => {
     it('renders place holder if not selected', async () => {
         const data = null;
         const component = await renderPreloadingDetailsReportView(data);
-        assert.isNotNull(component.shadowRoot);
-        const placeholder = component.shadowRoot.querySelector('.empty-state');
+        assert.isNotNull(component.contentElement);
+        const placeholder = component.contentElement.querySelector('.empty-state');
         assert.include(placeholder?.textContent, 'Select an element for more details');
     });
     it('renders prerendering details', async () => {
@@ -89,7 +87,7 @@ describeWithEnvironment('PreloadingDetailsReportView', () => {
             pageURL: urlString `https://example.com/`,
         };
         const component = await renderPreloadingDetailsReportView(data);
-        const report = getElementWithinComponent(component, 'devtools-report', ReportView.ReportView.Report);
+        const report = component.contentElement.querySelector('devtools-report');
         const keys = getCleanTextContentFromElements(report, 'devtools-report-key');
         const values = getCleanTextContentFromElements(report, 'devtools-report-value');
         assert.deepEqual(zip2(keys, values), [
@@ -124,7 +122,7 @@ describeWithEnvironment('PreloadingDetailsReportView', () => {
             pageURL: urlString `https://example.com/`,
         };
         const report = await renderPreloadingDetailsReportView(data);
-        assert.isTrue(report.shadowRoot?.textContent?.includes('Form submissionYes'));
+        assert.isTrue(report.contentElement.textContent?.includes('Form submissionYes'));
     });
     it('renders prerendering details with target hint blank', async () => {
         const url = urlString `https://example.com/prerendered.html`;
@@ -166,7 +164,7 @@ describeWithEnvironment('PreloadingDetailsReportView', () => {
             pageURL: urlString `https://example.com/`,
         };
         const component = await renderPreloadingDetailsReportView(data);
-        const report = getElementWithinComponent(component, 'devtools-report', ReportView.ReportView.Report);
+        const report = component.contentElement.querySelector('devtools-report');
         const keys = getCleanTextContentFromElements(report, 'devtools-report-key');
         const values = getCleanTextContentFromElements(report, 'devtools-report-value');
         assert.deepEqual(zip2(keys, values), [
@@ -217,7 +215,7 @@ describeWithEnvironment('PreloadingDetailsReportView', () => {
             pageURL: urlString `https://example.com/`,
         };
         const component = await renderPreloadingDetailsReportView(data);
-        const report = getElementWithinComponent(component, 'devtools-report', ReportView.ReportView.Report);
+        const report = component.contentElement.querySelector('devtools-report');
         const keys = getCleanTextContentFromElements(report, 'devtools-report-key');
         const values = getCleanTextContentFromElements(report, 'devtools-report-value');
         assert.deepEqual(zip2(keys, values), [
@@ -267,7 +265,7 @@ describeWithEnvironment('PreloadingDetailsReportView', () => {
             pageURL: urlString `https://example.com/`,
         };
         const component = await renderPreloadingDetailsReportView(data);
-        const report = getElementWithinComponent(component, 'devtools-report', ReportView.ReportView.Report);
+        const report = component.contentElement.querySelector('devtools-report');
         const keys = getCleanTextContentFromElements(report, 'devtools-report-key');
         const values = getCleanTextContentFromElements(report, 'devtools-report-value');
         assert.deepEqual(zip2(keys, values), [
@@ -334,7 +332,7 @@ describeWithEnvironment('PreloadingDetailsReportView', () => {
             pageURL: urlString `https://example.com/`,
         };
         const component = await renderPreloadingDetailsReportView(data);
-        const report = getElementWithinComponent(component, 'devtools-report', ReportView.ReportView.Report);
+        const report = component.contentElement.querySelector('devtools-report');
         const keys = getCleanTextContentFromElements(report, 'devtools-report-key');
         const values = getCleanTextContentFromElements(report, 'devtools-report-value');
         assert.deepEqual(zip2(keys, values), [
@@ -391,7 +389,7 @@ describeWithEnvironment('PreloadingDetailsReportView', () => {
             requestResolver: fakeRequestResolver,
         };
         const component = await renderPreloadingDetailsReportView(data);
-        const report = getElementWithinComponent(component, 'devtools-report', ReportView.ReportView.Report);
+        const report = component.contentElement.querySelector('devtools-report');
         const keys = getCleanTextContentFromElements(report, 'devtools-report-key');
         const values = getCleanTextContentFromElements(report, 'devtools-report-value');
         assert.deepEqual(zip2(keys, values), [
@@ -449,7 +447,7 @@ describeWithEnvironment('PreloadingDetailsReportView', () => {
             requestResolver: fakeRequestResolver,
         };
         const component = await renderPreloadingDetailsReportView(data);
-        const report = getElementWithinComponent(component, 'devtools-report', ReportView.ReportView.Report);
+        const report = component.contentElement.querySelector('devtools-report');
         const keys = getCleanTextContentFromElements(report, 'devtools-report-key');
         const values = getCleanTextContentFromElements(report, 'devtools-report-value');
         assert.deepEqual(zip2(keys, values), [
@@ -509,7 +507,7 @@ describeWithEnvironment('PreloadingDetailsReportView', () => {
             pageURL: urlString `https://example.com/`,
         };
         const component = await renderPreloadingDetailsReportView(data);
-        const report = getElementWithinComponent(component, 'devtools-report', ReportView.ReportView.Report);
+        const report = component.contentElement.querySelector('devtools-report');
         const keys = getCleanTextContentFromElements(report, 'devtools-report-key');
         const values = getCleanTextContentFromElements(report, 'devtools-report-value');
         assert.deepEqual(zip2(keys, values), [
@@ -564,7 +562,7 @@ describeWithEnvironment('PreloadingDetailsReportView', () => {
             requestResolver: fakeRequestResolver,
         };
         const component = await renderPreloadingDetailsReportView(data);
-        const report = getElementWithinComponent(component, 'devtools-report', ReportView.ReportView.Report);
+        const report = component.contentElement.querySelector('devtools-report');
         const keys = getCleanTextContentFromElements(report, 'devtools-report-key');
         const values = getCleanTextContentFromElements(report, 'devtools-report-value');
         assert.deepEqual(zip2(keys, values), [
@@ -617,7 +615,7 @@ describeWithEnvironment('PreloadingDetailsReportView', () => {
             requestResolver: fakeRequestResolver,
         };
         const component = await renderPreloadingDetailsReportView(data);
-        const report = getElementWithinComponent(component, 'devtools-report', ReportView.ReportView.Report);
+        const report = component.contentElement.querySelector('devtools-report');
         const keys = getCleanTextContentFromElements(report, 'devtools-report-key');
         const values = getCleanTextContentFromElements(report, 'devtools-report-value');
         const requestLinkIcon = report.querySelector('devtools-request-link-icon');
@@ -670,7 +668,7 @@ describeWithEnvironment('PreloadingDetailsReportView', () => {
             pageURL: urlString `https://example.com/`,
         };
         const component = await renderPreloadingDetailsReportView(data);
-        const report = getElementWithinComponent(component, 'devtools-report', ReportView.ReportView.Report);
+        const report = component.contentElement.querySelector('devtools-report');
         const keys = getCleanTextContentFromElements(report, 'devtools-report-key');
         const values = getCleanTextContentFromElements(report, 'devtools-report-value');
         assert.deepEqual(zip2(keys, values), [
@@ -680,6 +678,47 @@ describeWithEnvironment('PreloadingDetailsReportView', () => {
             ['Rule set', 'example.com/'],
         ]);
     });
-    // TODO: Add test for pipeline
+    it('renders a screenshot of prerendering details', async () => {
+        const url = urlString `https://example.com/prerendered.html`;
+        const data = {
+            pipeline: SDK.PreloadingModel.PreloadPipeline.newFromAttemptsForTesting([
+                {
+                    action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
+                    key: {
+                        loaderId: 'loaderId',
+                        action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
+                        url,
+                        targetHint: undefined,
+                    },
+                    pipelineId: 'pipelineId:1',
+                    status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
+                    prerenderStatus: null,
+                    disallowedMojoInterface: null,
+                    mismatchedHeaders: null,
+                    ruleSetIds: ['ruleSetId'],
+                    nodeIds: [1],
+                },
+            ]),
+            ruleSets: [
+                {
+                    id: 'ruleSetId',
+                    loaderId: 'loaderId',
+                    sourceText: `
+{
+  "prerender": [
+    {
+      "source": "list",
+      "urls": ["prerendered.html"]
+    }
+  ]
+}
+`,
+                },
+            ],
+            pageURL: urlString `https://example.com/`,
+        };
+        await renderPreloadingDetailsReportView(data, { includeCommonStyles: true });
+        await assertScreenshot('preloading/details_report.png');
+    });
 });
 //# sourceMappingURL=PreloadingDetailsReportView.test.js.map

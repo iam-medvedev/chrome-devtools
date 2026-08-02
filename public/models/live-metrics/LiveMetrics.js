@@ -10,6 +10,12 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as EmulationModel from '../../models/emulation/emulation.js';
 import * as CrUXManager from '../crux-manager/crux-manager.js';
 import * as Spec from './web-vitals-injected/spec/spec.js';
+export const timelineEnableSoftNavigationsSettingDescriptor = {
+    name: 'timeline-enable-soft-navigations',
+    type: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
+    defaultValue: true,
+};
 const UIStrings = {
     /**
      * @description Warning text indicating that the Largest Contentful Paint (LCP) performance metric was affected by the user changing the simulated device.
@@ -51,14 +57,15 @@ export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
     #mutex = new Common.Mutex.Mutex();
     #targetManager;
     #deviceModeModel;
-    constructor(targetManager, deviceModeModel) {
+    #settings;
+    constructor(targetManager, settings, deviceModeModel) {
         super();
         this.#targetManager = targetManager;
+        this.#settings = settings;
         this.#deviceModeModel = deviceModeModel;
         this.#targetManager.observeTargets(this, { scoped: true });
         this.#targetManager.addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
-        Common.Settings.Settings.instance()
-            .moduleSetting('timeline-enable-soft-navigations')
+        this.#settings.resolve(timelineEnableSoftNavigationsSettingDescriptor)
             .addChangeListener(this.#onSettingChanged, this);
     }
     #onPrimaryPageChanged(event) {
@@ -83,7 +90,9 @@ export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
     static instance(opts = { forceNew: false }) {
         const { forceNew } = opts;
         if (!Root.DevToolsContext.globalInstance().has(LiveMetrics) || forceNew) {
-            Root.DevToolsContext.globalInstance().set(LiveMetrics, new LiveMetrics(SDK.TargetManager.TargetManager.instance(), EmulationModel.DeviceModeModel.DeviceModeModel.tryInstance()));
+            Root.DevToolsContext.globalInstance().set(LiveMetrics, 
+            // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
+            new LiveMetrics(SDK.TargetManager.TargetManager.instance(), Common.Settings.Settings.instance(), EmulationModel.DeviceModeModel.DeviceModeModel.tryInstance()));
         }
         return Root.DevToolsContext.globalInstance().get(LiveMetrics);
     }
@@ -117,6 +126,17 @@ export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
         if (!executionContextId) {
             return false;
         }
+        // Validate duration at runtime to prevent code injection via interpolation.
+        const duration = Number(interaction.duration);
+        if (!Number.isFinite(duration)) {
+            return false;
+        }
+        // JSON.stringify escapes quotes. We concatenate safeInteractionType (which is
+        // wrapped in double quotes) instead of interpolating it directly inside the
+        // single-quoted template below. This avoids syntax errors if the value contains
+        // single quotes (e.g. "pointer'"), which would otherwise terminate the
+        // single-quoted template string.
+        const safeInteractionType = JSON.stringify(interaction.interactionType ?? 'unknown');
         const scriptsTable = [];
         for (const loaf of interaction.longAnimationFrameTimings) {
             for (const script of loaf.scripts) {
@@ -144,7 +164,7 @@ export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
                 '';
             await this.#target.runtimeAgent().invoke_evaluate({
                 expression: `
-          console.group('[DevTools] Long animation frames for ${interaction.duration}ms ${interaction.interactionType} interaction');
+          console.group('[DevTools] Long animation frames for ${duration}ms ' + ${safeInteractionType} + ' interaction');
           console.log('Scripts${scriptLimitText}:');
           console.table(${JSON.stringify(scriptsTable)});
           console.log('Intersecting long animation frame events${loafLimitText}:', ${JSON.stringify(interaction.longAnimationFrameTimings)});
@@ -166,6 +186,11 @@ export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
      * them separately.
      */
     async #resolveNodeRef(index, executionContextId) {
+        // Validate index at runtime because the payload comes from an untrusted binding
+        // and could contain malicious strings if type casted.
+        if (!Number.isInteger(index)) {
+            return null;
+        }
         if (!this.#target) {
             return null;
         }
@@ -345,7 +370,9 @@ export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
                 this.#clearMetrics();
                 this.#navigationType = webVitalsEvent.navigationType;
                 if (webVitalsEvent.url) {
+                    // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
                     CrUXManager.CrUXManager.instance().setMainDocumentURL(webVitalsEvent.url);
+                    // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
                     void CrUXManager.CrUXManager.instance().refresh();
                 }
                 break;
@@ -373,7 +400,10 @@ export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
         }
         const resourceTreeModel = this.#target.model(SDK.ResourceTreeModel.ResourceTreeModel);
         const primaryFrameId = resourceTreeModel?.mainFrame?.id;
-        return Boolean(primaryFrameId && executionContext.frameId === primaryFrameId);
+        // Ensure the context belongs to our isolated world and is not the default
+        // page context, to prevent the page from spoofing events.
+        return Boolean(primaryFrameId && executionContext.frameId === primaryFrameId &&
+            executionContext.name === LIVE_METRICS_WORLD_NAME && !executionContext.isDefault);
     }
     async #onBindingCalled(event) {
         const { data } = event;
@@ -457,7 +487,7 @@ export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
                 identifier: this.#scriptIdentifier,
             });
         }
-        const softNavsSettingValue = Common.Settings.Settings.instance().moduleSetting('timeline-enable-soft-navigations').get();
+        const softNavsSettingValue = this.#settings.resolve(timelineEnableSoftNavigationsSettingDescriptor).get();
         const source = `window.devToolsReportSoftNavs = ${softNavsSettingValue};\n` + await InjectedScript.get();
         // Inject the script
         const { identifier } = await this.#target.pageAgent().invoke_addScriptToEvaluateOnNewDocument({

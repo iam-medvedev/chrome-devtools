@@ -62,6 +62,7 @@ describe('Persistence', () => {
                 sinon.stub(automaticFileSystemManager, 'automaticFileSystem').value(null);
                 const isolatedFileSystemManager = sinon.createStubInstance(IsolatedFileSystemManager);
                 const workspace = sinon.createStubInstance(Workspace.Workspace.WorkspaceImpl);
+                // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
                 const automaticFileSystemWorkspaceBinding = AutomaticFileSystemWorkspaceBinding.instance({
                     forceNew: true,
                     automaticFileSystemManager,
@@ -75,6 +76,7 @@ describe('Persistence', () => {
                 sinon.stub(automaticFileSystemManager, 'automaticFileSystem').value(null);
                 const isolatedFileSystemManager = sinon.createStubInstance(IsolatedFileSystemManager);
                 const workspace = sinon.createStubInstance(Workspace.Workspace.WorkspaceImpl);
+                // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
                 AutomaticFileSystemWorkspaceBinding.instance({
                     forceNew: true,
                     automaticFileSystemManager,
@@ -88,6 +90,7 @@ describe('Persistence', () => {
                 sinon.stub(automaticFileSystemManager, 'automaticFileSystem').value({ root, uuid, state: 'connected' });
                 const isolatedFileSystemManager = sinon.createStubInstance(IsolatedFileSystemManager);
                 const workspace = sinon.createStubInstance(Workspace.Workspace.WorkspaceImpl);
+                // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
                 AutomaticFileSystemWorkspaceBinding.instance({
                     forceNew: true,
                     automaticFileSystemManager,
@@ -102,6 +105,7 @@ describe('Persistence', () => {
                 const isolatedFileSystemManager = sinon.createStubInstance(IsolatedFileSystemManager);
                 isolatedFileSystemManager.fileSystem.returns(sinon.createStubInstance(PlatformFileSystem));
                 const workspace = sinon.createStubInstance(Workspace.Workspace.WorkspaceImpl);
+                // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
                 AutomaticFileSystemWorkspaceBinding.instance({
                     forceNew: true,
                     automaticFileSystemManager,
@@ -118,6 +122,7 @@ describe('Persistence', () => {
                 const isolatedFileSystemManager = sinon.createStubInstance(IsolatedFileSystemManager);
                 isolatedFileSystemManager.fileSystem.returns(null);
                 const workspace = sinon.createStubInstance(Workspace.Workspace.WorkspaceImpl);
+                // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
                 AutomaticFileSystemWorkspaceBinding.instance({
                     forceNew: true,
                     automaticFileSystemManager,
@@ -134,6 +139,7 @@ describe('Persistence', () => {
                 const isolatedFileSystemManager = sinon.createStubInstance(IsolatedFileSystemManager);
                 isolatedFileSystemManager.fileSystem.returns(null);
                 const workspace = sinon.createStubInstance(Workspace.Workspace.WorkspaceImpl);
+                // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
                 AutomaticFileSystemWorkspaceBinding.instance({
                     forceNew: true,
                     automaticFileSystemManager,
@@ -148,6 +154,7 @@ describe('Persistence', () => {
                 const isolatedFileSystemManager = sinon.createStubInstance(IsolatedFileSystemManager);
                 isolatedFileSystemManager.fileSystem.returns(null);
                 const workspace = sinon.createStubInstance(Workspace.Workspace.WorkspaceImpl);
+                // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
                 const automaticFileSystemWorkspaceBinding = AutomaticFileSystemWorkspaceBinding.instance({
                     forceNew: true,
                     automaticFileSystemManager,
@@ -166,6 +173,7 @@ describe('Persistence', () => {
                 const isolatedFileSystemManager = sinon.createStubInstance(IsolatedFileSystemManager);
                 isolatedFileSystemManager.fileSystem.returns(null);
                 const workspace = sinon.createStubInstance(Workspace.Workspace.WorkspaceImpl);
+                // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
                 const automaticFileSystemWorkspaceBinding = AutomaticFileSystemWorkspaceBinding.instance({
                     forceNew: true,
                     automaticFileSystemManager,
@@ -187,6 +195,7 @@ describe('Persistence', () => {
                 const isolatedFileSystemManager = sinon.createStubInstance(IsolatedFileSystemManager);
                 isolatedFileSystemManager.fileSystem.returns(null);
                 const workspace = sinon.createStubInstance(Workspace.Workspace.WorkspaceImpl);
+                // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
                 const automaticFileSystemWorkspaceBinding = AutomaticFileSystemWorkspaceBinding.instance({
                     forceNew: true,
                     automaticFileSystemManager,

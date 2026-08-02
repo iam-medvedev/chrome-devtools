@@ -41,7 +41,7 @@ export interface SectionViewInput {
     pushData: string;
     syncTag: string;
     periodicSyncTag: string;
-    updateCycleTable: HTMLElement;
+    registration: SDK.ServiceWorkerManager.ServiceWorkerRegistration;
     activeVersion?: SDK.ServiceWorkerManager.ServiceWorkerVersion;
     waitingVersion?: SDK.ServiceWorkerManager.ServiceWorkerVersion;
     installingVersion?: SDK.ServiceWorkerManager.ServiceWorkerVersion;
@@ -68,7 +68,6 @@ export declare class Section extends UI.Widget.VBox {
     private pushNotificationDataSetting;
     private syncTagNameSetting;
     private periodicSyncTagNameSetting;
-    private updateCycleView;
     private readonly clientInfoCache;
     private readonly throttler;
     constructor(element: HTMLElement, view?: SectionView);

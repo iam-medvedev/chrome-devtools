@@ -602,12 +602,10 @@ var ExperimentsSettingsTab = class _ExperimentsSettingsTab extends UI.Widget.VBo
     checkbox.classList.add("experiment-label");
     checkbox.name = experiment.name;
     function listener() {
-      if (experiment instanceof Root.Runtime.HostExperiment) {
-        Host.InspectorFrontendHost.InspectorFrontendHostInstance.setChromeFlag(experiment.aboutFlag, checkbox.checked);
-      }
+      Host.InspectorFrontendHost.InspectorFrontendHostInstance.setChromeFlag(experiment.aboutFlag, checkbox.checked);
       experiment.setEnabled(checkbox.checked);
       Host.userMetrics.experimentChanged(experiment.name, experiment.isEnabled());
-      if (experiment instanceof Root.Runtime.HostExperiment && experiment.requiresChromeRestart) {
+      if (experiment.requiresChromeRestart) {
         UI.InspectorView.InspectorView.instance().displayChromeRestartRequiredWarning(i18nString(UIStrings.settingsChangedRestartChrome));
       } else {
         UI.InspectorView.InspectorView.instance().displayReloadRequiredWarning(i18nString(UIStrings.settingsChangedReloadDevTools));
@@ -641,7 +639,7 @@ var ExperimentsSettingsTab = class _ExperimentsSettingsTab extends UI.Widget.VBo
     return p;
   }
   highlightObject(experiment) {
-    if (experiment instanceof Root.Runtime.Experiment || experiment instanceof Root.Runtime.HostExperiment) {
+    if (experiment instanceof Root.Runtime.Experiment) {
       const element = this.experimentToControl.get(experiment);
       if (element) {
         PanelUtils.highlightElement(element);
@@ -676,7 +674,7 @@ var ActionDelegate = class {
 var Revealer = class {
   async reveal(object) {
     const context = UI.Context.Context.instance();
-    if (object instanceof Root.Runtime.Experiment || object instanceof Root.Runtime.HostExperiment) {
+    if (object instanceof Root.Runtime.Experiment) {
       Host.InspectorFrontendHost.InspectorFrontendHostInstance.bringToFront();
       await SettingsScreen.showSettingsScreen({ name: "experiments" });
       const experimentsSettingsTab = context.flavor(ExperimentsSettingsTab);
@@ -1025,39 +1023,23 @@ var UIStrings2 = {
   /**
    * @description Text describing the AI assistance feature.
    */
-  helpUnderstandStyling: "Get help with understanding CSS styles",
+  aiAssistanceDescription: "Get context-aware help on the inspected page",
   /**
-   * @description Text describing the AI assistance feature.
+   * @description First item in the description of the AI assistance feature.
    */
-  helpUnderstandStylingAndNetworkRequest: "Get help with understanding CSS styles and network requests",
+  aiAssistanceWhenOnItem1: "Debug styling, network, performance, source code, accessibility and storage issues with DevTools AI assistance",
   /**
-   * @description Text describing the AI assistance feature.
+   * @description Second item in the description of the AI assistance feature.
    */
-  helpUnderstandStylingNetworkAndFile: "Get help with understanding CSS styles, network requests, and files",
+  aiAssistanceWhenOnItem2: "Follow the agent\u2019s reasoning step-by-step and quickly jump to the relevant source data",
   /**
-   * @description Text describing the AI assistance feature.
+   * @description Explainer for which data is being sent by the AI assistance feature.
    */
-  helpUnderstandStylingNetworkPerformanceAndFile: "Get help with understanding CSS styles, network requests, performance, and files",
+  aiAssistanceThingsToConsider: "To generate explanations, chat messages, data accessible for this site via DevTools panels and Web APIs, and items you select such as network requests, files, and performance traces are sent to Google and may be seen by human reviewers to improve this feature. This is an experimental AI feature and won\u2019t always get it right.",
   /**
-   * @description Text describing the AI assistance feature when V2 is enabled.
+   * @description Explainer for which data is being sent by the AI assistance feature when logging is disabled.
    */
-  aiAssistanceDescriptionV2: "Get context-aware help on the inspected page",
-  /**
-   * @description First item in the description of the AI assistance feature when V2 is enabled.
-   */
-  aiAssistanceWhenOnItem1V2: "Debug styling, network, performance, source code, accessibility and storage issues with DevTools AI assistance",
-  /**
-   * @description Second item in the description of the AI assistance feature when V2 is enabled.
-   */
-  aiAssistanceWhenOnItem2V2: "Follow the agent\u2019s reasoning step-by-step and quickly jump to the relevant source data",
-  /**
-   * @description Explainer for which data is being sent by the AI assistance feature when V2 is enabled.
-   */
-  aiAssistanceThingsToConsiderV2: "To generate explanations, chat messages, data accessible for this site via DevTools panels and Web APIs, and items you select such as network requests, files, and performance traces are sent to Google and may be seen by human reviewers to improve this feature. This is an experimental AI feature and won\u2019t always get it right.",
-  /**
-   * @description Explainer for which data is being sent by the AI assistance feature when V2 is enabled and logging is disabled.
-   */
-  aiAssistanceThingsToConsiderNoLoggingV2: "To generate explanations, chat messages, data accessible for this site via DevTools panels and Web APIs, and items you select such as network requests, files, and performance traces are sent to Google. The content you submit and that is generated by this feature will not be used to improve Google\u2019s AI models. This is an experimental AI feature and won\u2019t always get it right.",
+  aiAssistanceThingsToConsiderNoLogging: "To generate explanations, chat messages, data accessible for this site via DevTools panels and Web APIs, and items you select such as network requests, files, and performance traces are sent to Google. The content you submit and that is generated by this feature will not be used to improve Google\u2019s AI models. This is an experimental AI feature and won\u2019t always get it right.",
   /**
    * @description Text describing the code suggestions feature.
    */
@@ -1066,34 +1048,6 @@ var UIStrings2 = {
    * @description Text which is a hyperlink to more documentation.
    */
   learnMore: "Learn more",
-  /**
-   * @description Description of the AI assistance feature.
-   */
-  explainStyling: "Understand CSS styles with AI-powered insights",
-  /**
-   * @description Description of the AI assistance feature.
-   */
-  explainStylingAndNetworkRequest: "Understand CSS styles and network activity with AI-powered insights",
-  /**
-   * @description Description of the AI assistance feature.
-   */
-  explainStylingNetworkAndFile: "Understand CSS styles, network activity, and file origins with AI-powered insights",
-  /**
-   * @description Description of the AI assistance feature.
-   */
-  explainStylingNetworkPerformanceAndFile: "Understand CSS styles, network activity, performance bottlenecks, and file origins with AI-powered insights",
-  /**
-   * @description Description of the AI assistance feature.
-   */
-  receiveStylingSuggestions: "Improve your development workflow with contextual explanations and suggestions",
-  /**
-   * @description Explainer for which data is being sent by the AI assistance feature.
-   */
-  freestylerSendsData: "To generate explanations, your chat messages, any data the inspected page can see using Web APIs, and the items you select such as files, network requests, and performance traces are sent to Google. This data may be seen by human reviewers to improve this feature. Don\u2019t use on pages with personal or sensitive information.",
-  /**
-   * @description Explainer for which data is being sent by the AI assistance feature without logging.
-   */
-  freestylerSendsDataNoLogging: "To generate explanations, your chat messages, any data the inspected page can see using Web APIs, and the items you select such as files, network requests, and performance traces are sent to Google. This data will not be used to improve Google\u2019s AI models. Your organization may change these settings at any time.",
   /**
    * @description Explainer for which data is being sent by the AI-generated annotations feature.
    */
@@ -1165,7 +1119,22 @@ var UIStrings2 = {
   /**
    * @description Text informing the user that AI assistance isn't available in Incognito mode or Guest mode.
    */
-  notAvailableInIncognitoMode: "AI assistance isn\u2019t available in Incognito mode or Guest mode."
+  notAvailableInIncognitoMode: "AI assistance isn\u2019t available in Incognito mode or Guest mode.",
+  /**
+   * @description Message shown to the user if the DevTools locale is not
+   * supported.
+   */
+  wrongLocale: "To use this feature, set your language preference to English in DevTools settings.",
+  /**
+   * @description Message shown to the user if the user's region is not
+   * supported.
+   */
+  geoRestricted: "This feature is unavailable in your region.",
+  /**
+   * @description Message shown to the user if the enterprise policy does
+   * not allow this feature.
+   */
+  policyRestricted: "This setting is managed by your administrator."
 };
 var str_2 = i18n3.i18n.registerUIStrings("panels/settings/AISettingsTab.ts", UIStrings2);
 var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
@@ -1202,18 +1171,15 @@ var AI_SETTINGS_TAB_DEFAULT_VIEW = (input, _output, target) => {
   };
   const isDisabled = input.disabledReasons.length > 0;
   const disabledReasonsJoined = input.disabledReasons.join("\n") || void 0;
-  const settings = Array.from(input.settingToParams.keys()).map((setting) => {
-    const settingData = input.settingToParams.get(setting);
-    if (!settingData) {
-      return nothing;
-    }
+  const settings = Array.from(input.settingToParams.entries()).map(([settingName, settingData]) => {
+    const isChecked = settingData.setting ? Boolean(settingData.setting.get()) : false;
     const detailsClasses = {
       "whole-row": true,
       open: settingData.settingExpandState.isSettingExpanded
     };
     const tabindex = settingData.settingExpandState.isSettingExpanded ? "0" : "-1";
     return html2`
-      <div class="accordion-header" @click=${input.expandSetting.bind(void 0, setting)}>
+      <div class="accordion-header" @click=${input.expandSetting.bind(void 0, settingName)}>
         <div class="icon-container centered">
           <devtools-icon name=${settingData.iconName}></devtools-icon>
         </div>
@@ -1237,15 +1203,15 @@ var AI_SETTINGS_TAB_DEFAULT_VIEW = (input, _output, target) => {
       <div class="divider"></div>
       <div class="toggle-container centered"
         title=${ifDefined(disabledReasonsJoined)}
-        @click=${input.toggleSetting.bind(void 0, setting)}
+        @click=${settingData.setting ? input.toggleSetting.bind(void 0, settingName) : nothing}
       >
         <devtools-switch
-          .checked=${Boolean(setting.get()) && !isDisabled}
-          .jslogContext=${setting.name || ""}
-          .disabled=${isDisabled}
+          .checked=${isChecked && !isDisabled}
+          .jslogContext=${settingName}
+          .disabled=${isDisabled || !settingData.setting}
           .label=${disabledReasonsJoined || settingData.enableSettingText}
           data-testid=${settingData.enableSettingText}
-          @switchchange=${input.toggleSetting.bind(void 0, setting)}
+          @switchchange=${settingData.setting ? input.toggleSetting.bind(void 0, settingName) : nothing}
         ></devtools-switch>
       </div>
       <div class=${classMap(detailsClasses)}>
@@ -1316,6 +1282,25 @@ var AISettingsTab = class extends UI2.Widget.VBox {
     this.#initSettings();
     this.#view = view ?? AI_SETTINGS_TAB_DEFAULT_VIEW;
   }
+  #mapSettingDisabledReasons(reasons) {
+    const mappedReasons = [];
+    for (const reason of reasons) {
+      switch (reason) {
+        case "geo-restricted":
+          mappedReasons.push(i18nString2(UIStrings2.geoRestricted));
+          break;
+        case "policy-restricted":
+          mappedReasons.push(i18nString2(UIStrings2.policyRestricted));
+          break;
+        case "wrong-locale":
+          mappedReasons.push(i18nString2(UIStrings2.wrongLocale));
+          break;
+        case "not-supported":
+          break;
+      }
+    }
+    return mappedReasons;
+  }
   #getDisabledReasons() {
     const preconditions = AiAssistanceModel.AiUtils.getDisabledReasons(this.#aidaAvailability);
     const mappedReasons = [];
@@ -1338,7 +1323,8 @@ var AISettingsTab = class extends UI2.Widget.VBox {
           Platform2.assertNever(precondition, `Unknown precondition: ${precondition}`);
       }
     }
-    const settingDisabledReasons = Common2.Settings.Settings.instance().moduleSetting("ai-assistance-enabled").disabledReasons();
+    const availability = AiAssistanceModel.AiUtils.aiAssistanceEnabledSettingDescriptor.isAvailable(Root2.Runtime.hostConfig);
+    const settingDisabledReasons = availability.status === 3 ? this.#mapSettingDisabledReasons(availability.reason) : [];
     return [...mappedReasons, ...settingDisabledReasons];
   }
   performUpdate() {
@@ -1370,6 +1356,7 @@ var AISettingsTab = class extends UI2.Widget.VBox {
     if (this.#consoleInsightsSetting) {
       const consoleInsightsData = {
         settingName: i18n3.i18n.lockedString("Console Insights"),
+        setting: this.#consoleInsightsSetting,
         iconName: "lightbulb-spark",
         settingDescription: i18nString2(UIStrings2.helpUnderstandConsole),
         enableSettingText: i18nString2(UIStrings2.enableConsoleInsights),
@@ -1390,12 +1377,12 @@ var AISettingsTab = class extends UI2.Widget.VBox {
           expandSettingJSLogContext: "console-insights.accordion"
         }
       };
-      this.#settingToParams.set(this.#consoleInsightsSetting, consoleInsightsData);
+      this.#settingToParams.set("console-insights-enabled", consoleInsightsData);
     }
     if (this.#aiAssistanceSetting) {
-      const isV2 = Root2.Runtime.hostConfig.devToolsAiAssistanceV2?.enabled;
       const aiAssistanceData = {
         settingName: i18n3.i18n.lockedString(AiAssistanceModel.AiUtils.isGeminiBranding() ? "Gemini in Chrome DevTools" : "AI assistance"),
+        setting: this.#aiAssistanceSetting,
         iconName: AiAssistanceModel.AiUtils.getIconName(),
         settingDescription: this.#getAiAssistanceSettingDescription(),
         enableSettingText: i18nString2(UIStrings2.enableAiAssistance),
@@ -1403,12 +1390,12 @@ var AISettingsTab = class extends UI2.Widget.VBox {
           { iconName: "info", text: this.#getAiAssistanceSettingInfo() },
           {
             iconName: "pen-spark",
-            text: isV2 ? i18nString2(UIStrings2.aiAssistanceWhenOnItem2V2) : i18nString2(UIStrings2.receiveStylingSuggestions)
+            text: i18nString2(UIStrings2.aiAssistanceWhenOnItem2)
           }
         ],
         toConsiderSettingItems: [{
           iconName: "google",
-          text: isV2 ? noLogging ? i18nString2(UIStrings2.aiAssistanceThingsToConsiderNoLoggingV2) : i18nString2(UIStrings2.aiAssistanceThingsToConsiderV2) : noLogging ? i18nString2(UIStrings2.freestylerSendsDataNoLogging) : i18nString2(UIStrings2.freestylerSendsData)
+          text: noLogging ? i18nString2(UIStrings2.aiAssistanceThingsToConsiderNoLogging) : i18nString2(UIStrings2.aiAssistanceThingsToConsider)
         }],
         learnMoreLink: {
           url: "https://developer.chrome.com/docs/devtools/ai-assistance",
@@ -1419,11 +1406,12 @@ var AISettingsTab = class extends UI2.Widget.VBox {
           expandSettingJSLogContext: "freestyler.accordion"
         }
       };
-      this.#settingToParams.set(this.#aiAssistanceSetting, aiAssistanceData);
+      this.#settingToParams.set("ai-assistance-enabled", aiAssistanceData);
     }
     if (this.#aiAnnotationsSetting) {
       const aiAnnotationsData = {
         settingName: i18n3.i18n.lockedString("Auto annotations"),
+        setting: this.#aiAnnotationsSetting,
         iconName: "pen-spark",
         settingDescription: i18nString2(UIStrings2.aIAnnotationsFeatureDescription),
         enableSettingText: i18nString2(UIStrings2.enableAiSuggestedAnnotations),
@@ -1443,7 +1431,7 @@ var AISettingsTab = class extends UI2.Widget.VBox {
           expandSettingJSLogContext: "auto-annotations.accordion"
         }
       };
-      this.#settingToParams.set(this.#aiAnnotationsSetting, aiAnnotationsData);
+      this.#settingToParams.set("ai-annotations-enabled", aiAnnotationsData);
     }
     if (this.#aiCodeCompletionSetting) {
       const settingItems = Root2.Runtime.hostConfig.devToolsAiCodeGeneration?.enabled ? [
@@ -1455,6 +1443,7 @@ var AISettingsTab = class extends UI2.Widget.VBox {
       ] : [{ iconName: "code", text: i18nString2(UIStrings2.asYouTypeCodeSuggestions) }];
       const aiCodeCompletionData = {
         settingName: i18n3.i18n.lockedString("Code suggestions"),
+        setting: this.#aiCodeCompletionSetting,
         iconName: "text-analysis",
         settingDescription: i18nString2(UIStrings2.helpUnderstandCodeSuggestions),
         enableSettingText: i18nString2(UIStrings2.enableAiCodeSuggestions),
@@ -1472,7 +1461,7 @@ var AISettingsTab = class extends UI2.Widget.VBox {
           expandSettingJSLogContext: "code-completion.accordion"
         }
       };
-      this.#settingToParams.set(this.#aiCodeCompletionSetting, aiCodeCompletionData);
+      this.#settingToParams.set("ai-code-completion-enabled", aiCodeCompletionData);
     }
   }
   #updateAidaAvailability(aidaAvailability) {
@@ -1485,59 +1474,34 @@ var AISettingsTab = class extends UI2.Widget.VBox {
     this.#updateAidaAvailability(ev.data);
   }
   #getAiAssistanceSettingDescription() {
-    const { hostConfig } = Root2.Runtime;
-    if (hostConfig.devToolsAiAssistanceV2?.enabled) {
-      return i18nString2(UIStrings2.aiAssistanceDescriptionV2);
-    }
-    if (hostConfig.devToolsAiAssistancePerformanceAgent?.enabled) {
-      return i18nString2(UIStrings2.helpUnderstandStylingNetworkPerformanceAndFile);
-    }
-    if (hostConfig.devToolsAiAssistanceFileAgent?.enabled) {
-      return i18nString2(UIStrings2.helpUnderstandStylingNetworkAndFile);
-    }
-    if (hostConfig.devToolsAiAssistanceNetworkAgent?.enabled) {
-      return i18nString2(UIStrings2.helpUnderstandStylingAndNetworkRequest);
-    }
-    return i18nString2(UIStrings2.helpUnderstandStyling);
+    return i18nString2(UIStrings2.aiAssistanceDescription);
   }
   #getAiAssistanceSettingInfo() {
-    const { hostConfig } = Root2.Runtime;
-    if (hostConfig.devToolsAiAssistanceV2?.enabled) {
-      return i18nString2(UIStrings2.aiAssistanceWhenOnItem1V2);
-    }
-    if (hostConfig.devToolsAiAssistancePerformanceAgent?.enabled) {
-      return i18nString2(UIStrings2.explainStylingNetworkPerformanceAndFile);
-    }
-    if (hostConfig.devToolsAiAssistanceFileAgent?.enabled) {
-      return i18nString2(UIStrings2.explainStylingNetworkAndFile);
-    }
-    if (hostConfig.devToolsAiAssistanceNetworkAgent?.enabled) {
-      return i18nString2(UIStrings2.explainStylingAndNetworkRequest);
-    }
-    return i18nString2(UIStrings2.explainStyling);
+    return i18nString2(UIStrings2.aiAssistanceWhenOnItem1);
   }
-  #expandSetting(setting) {
-    const settingData = this.#settingToParams.get(setting);
+  #expandSetting(settingName) {
+    const settingData = this.#settingToParams.get(settingName);
     if (!settingData) {
       return;
     }
     settingData.settingExpandState.isSettingExpanded = !settingData.settingExpandState.isSettingExpanded;
     this.requestUpdate();
   }
-  #toggleSetting(setting, ev) {
+  #toggleSetting(settingName, ev) {
     if (ev.target instanceof Switch.Switch.Switch && ev.type !== Switch.Switch.SwitchChangeEvent.eventName) {
       return;
     }
-    const settingData = this.#settingToParams.get(setting);
-    if (!settingData) {
+    const settingData = this.#settingToParams.get(settingName);
+    if (!settingData || !settingData.setting) {
       return;
     }
+    const setting = settingData.setting;
     const oldSettingValue = setting.get();
     setting.set(!oldSettingValue);
     if (!oldSettingValue && !settingData.settingExpandState.isSettingExpanded) {
       settingData.settingExpandState.isSettingExpanded = true;
     }
-    if (setting.name === "console-insights-enabled") {
+    if (settingName === "console-insights-enabled") {
       if (oldSettingValue) {
         Common2.Settings.Settings.instance().createLocalSetting("console-insights-onboarding-finished", false).set(false);
       } else {
@@ -1548,12 +1512,12 @@ var AISettingsTab = class extends UI2.Widget.VBox {
           /* Common.Settings.SettingStorageType.SESSION */
         ).set(true);
       }
-    } else if (setting.name === "ai-assistance-enabled") {
+    } else if (settingName === "ai-assistance-enabled") {
       if (!setting.get()) {
         void AiAssistanceModel.AiHistoryStorage.AiHistoryStorage.instance().deleteAll();
       }
-      if (Root2.Runtime.hostConfig.devToolsAiAssistanceV2?.enabled && setting.get()) {
-        Common2.Settings.Settings.instance().moduleSetting("ai-assistance-v2-opt-in-change-dialog-seen").set(true);
+      if (setting.get()) {
+        Common2.Settings.Settings.instance().resolve(AiAssistanceModel.AiUtils.aiAssistanceV2OptInChangeDialogSeenSettingDescriptor).set(true);
       }
     }
     this.requestUpdate();

@@ -12,7 +12,16 @@ import * as Workspace from '../../models/workspace/workspace.js';
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
 import * as QuickOpen from '../../ui/legacy/components/quick_open/quick_open.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as SettingsUI from '../../ui/settings/settings.js';
 const UIStrings = {
+    /**
+     * @description Text for pausing the debugger on exceptions.
+     */
+    pauseOnExceptions: 'Pause on exceptions',
+    /**
+     * @description Title of a setting under the Debugger category that can be invoked through the Command Menu.
+     */
+    doNotPauseOnExceptions: 'Do not pause on exceptions',
     /**
      * @description Command for showing the 'Sources' tool
      */
@@ -86,11 +95,11 @@ const UIStrings = {
      */
     breakpoints: 'Breakpoints',
     /**
-     * @description Title of an action under the Debugger category that can be invoked through the Command Menu
+     * @description Title of an action under the Debugger category that can be invoked through the command menu
      */
     pauseScriptExecution: 'Pause script execution',
     /**
-     * @description Title of an action under the Debugger category that can be invoked through the Command Menu
+     * @description Title of an action under the Debugger category that can be invoked through the command menu
      */
     resumeScriptExecution: 'Resume script execution',
     /**
@@ -114,75 +123,75 @@ const UIStrings = {
      */
     runSnippet: 'Run snippet',
     /**
-     * @description Text in Java Script Breakpoints Sidebar Pane of the Sources panel
+     * @description Text in JavaScript breakpoint sidebar of the Sources panel.
      */
     deactivateBreakpoints: 'Deactivate breakpoints',
     /**
-     * @description Text in Java Script Breakpoints Sidebar Pane of the Sources panel
+     * @description Text in JavaScript breakpoint sidebar of the Sources panel.
      */
     activateBreakpoints: 'Activate breakpoints',
     /**
-     * @description Title of an action in the sources tool to add to watch
+     * @description Title of an action in the sources tool to add to watch.
      */
     addSelectedTextToWatches: 'Add selected text to watches',
     /**
-     * @description Title of an action in the debugger tool to evaluate selection
+     * @description Title of an action in the debugger tool to evaluate selection.
      */
     evaluateSelectedTextInConsole: 'Evaluate selected text in console',
     /**
-     * @description Title of an action that switches files in the Sources panel
+     * @description Title of an action that switches files in the Sources panel.
      */
     switchFile: 'Switch file',
     /**
-     * @description Title of a sources panel action that renames a file
+     * @description Title of a sources panel action that renames a file.
      */
     rename: 'Rename',
     /**
-     * @description Title of an action in the sources tool to close all
+     * @description Title of an action in the sources tool to close all.
      */
     closeAll: 'Close all',
     /**
-     * @description Text in the Shortcuts page to explain a keyboard shortcut (jump to previous editing location in text editor)
+     * @description Text in the Shortcuts page to explain a keyboard shortcut (jump to previous editing location in text editor).
      */
     jumpToPreviousEditingLocation: 'Jump to previous editing location',
     /**
-     * @description Text in the Shortcuts page to explain a keyboard shortcut (jump to next editing location in text editor)
+     * @description Text in the Shortcuts page to explain a keyboard shortcut (jump to next editing location in text editor).
      */
     jumpToNextEditingLocation: 'Jump to next editing location',
     /**
-     * @description Title of an action that closes the active editor tab in the Sources panel
+     * @description Title of an action that closes the active editor tab in the Sources panel.
      */
     closeTheActiveTab: 'Close the active tab',
     /**
-     * @description Text to go to a given line
+     * @description Text to go to a given line.
      */
     goToLine: 'Go to line',
     /**
-     * @description Title of an action that opens the go to member menu
+     * @description Title of an action that opens the go to member menu.
      */
     goToAFunctionDeclarationruleSet: 'Go to a function declaration/rule set',
     /**
-     * @description Text in the Shortcuts page to explain a keyboard shortcut (toggle breakpoint in debugger)
+     * @description Text in the Shortcuts page to explain a keyboard shortcut (toggle breakpoint in debugger).
      */
     toggleBreakpoint: 'Toggle breakpoint',
     /**
-     * @description Text in the Shortcuts page to explain a keyboard shortcut (enable toggle breakpoint shortcut in debugger)
+     * @description Text in the Shortcuts page to explain a keyboard shortcut (enable toggle breakpoint shortcut in debugger).
      */
     toggleBreakpointEnabled: 'Toggle breakpoint enabled',
     /**
-     * @description Title of a sources panel action that opens the breakpoint input window
+     * @description Title of a sources panel action that opens the breakpoint input window.
      */
     toggleBreakpointInputWindow: 'Toggle breakpoint input window',
     /**
-     * @description Text to save something
+     * @description Text to save something.
      */
     save: 'Save',
     /**
-     * @description Title of an action to save all files in the Sources panel
+     * @description Title of an action to save all files in the Sources panel.
      */
     saveAll: 'Save all',
     /**
-     * @description Title of an action in the sources tool to create snippet
+     * @description Title of an action in the sources tool to create a snippet.
      */
     createNewSnippet: 'Create new snippet',
     /**
@@ -196,37 +205,37 @@ const UIStrings = {
      */
     addFolderToWorkspace: 'Add folder to workspace',
     /**
-     * @description Title of an action in the debugger tool to previous call frame
+     * @description Title of an action in the debugger tool to previous call frame.
      */
     previousCallFrame: 'Previous call frame',
     /**
-     * @description Title of an action in the debugger tool to next call frame
+     * @description Title of an action in the debugger tool to next call frame.
      */
     nextCallFrame: 'Next call frame',
     /**
-     * @description Text in the Shortcuts page to explain a keyboard shortcut (increment CSS unit by the amount passed in the placeholder in Styles pane)
+     * @description Text in the Shortcuts page to explain a keyboard shortcut (increment CSS unit by the amount passed in the placeholder in Styles pane).
      * @example {10} PH1
      */
     incrementCssUnitBy: 'Increment CSS unit by {PH1}',
     /**
-     * @description Text in the Shortcuts page to explain a keyboard shortcut (decrement CSS unit by the amount passed in the placeholder in Styles pane)
+     * @description Text in the Shortcuts page to explain a keyboard shortcut (decrement CSS unit by the amount passed in the placeholder in Styles pane).
      * @example {10} PH1
      */
     decrementCssUnitBy: 'Decrement CSS unit by {PH1}',
     /**
-     * @description Title of a setting under the Sources category that can be invoked through the Command Menu
+     * @description Title of a setting under the Sources category that can be invoked through the command menu.
      */
     searchInAnonymousAndContent: 'Search in anonymous and content scripts',
     /**
-     * @description Title of a setting under the Sources category that can be invoked through the Command Menu
+     * @description Title of a setting under the Sources category that can be invoked through the command menu.
      */
     doNotSearchInAnonymousAndContent: 'Do not search in anonymous and content scripts',
     /**
-     * @description Title of a setting under the Sources category that can be invoked through the Command Menu
+     * @description Title of a setting under the Sources category that can be invoked through the command menu.
      */
     automaticallyRevealFilesIn: 'Automatically reveal files in sidebar',
     /**
-     * @description Title of a setting under the Sources category that can be invoked through the Command Menu
+     * @description Title of a setting under the Sources category that can be invoked through the command menu.
      */
     doNotAutomaticallyRevealFilesIn: 'Do not automatically reveal files in sidebar',
     /**
@@ -238,7 +247,7 @@ const UIStrings = {
      */
     tabMovesFocus: 'Tab moves focus',
     /**
-     * @description Title of a setting that can be invoked through the Command Menu.
+     * @description Title of a setting that can be invoked through the command menu.
      *'tab moves focus' is the name of the setting, which means that when the user
      *hits the tab key, the focus in the UI will be moved to the next part of the
      *text editor, as opposed to inserting a tab character into the text in the
@@ -246,7 +255,7 @@ const UIStrings = {
      */
     enableTabMovesFocus: 'Enable tab moves focus',
     /**
-     * @description Title of a setting that can be invoked through the Command Menu.
+     * @description Title of a setting that can be invoked through the command menu.
      *'tab moves focus' is the name of the setting, which means that when the user
      *hits the tab key, the focus in the UI will be moved to the next part of the
      *text editor, as opposed to inserting a tab character into the text in the
@@ -254,79 +263,79 @@ const UIStrings = {
      */
     disableTabMovesFocus: 'Disable tab moves focus',
     /**
-     * @description Title of a setting under the Sources category that can be invoked through the Command Menu
+     * @description Title of a setting under the Sources category that can be invoked through the command menu.
      */
     detectIndentation: 'Detect indentation',
     /**
-     * @description Title of a setting under the Sources category that can be invoked through the Command Menu
+     * @description Title of a setting under the Sources category that can be invoked through the command menu.
      */
     doNotDetectIndentation: 'Do not detect indentation',
     /**
-     * @description Title of a setting under Sources category that can be invoked through the Command Menu.
+     * @description Title of a setting under Sources category that can be invoked through the command menu.
      *This setting turns on the automatic formatting of source files in the Sources panel that are detected
      *to be minified.
      */
     automaticallyPrettyPrintMinifiedSources: 'Automatically pretty print minified sources',
     /**
-     * @description Title of a setting under Sources category that can be invoked through the Command Menu.
+     * @description Title of a setting under Sources category that can be invoked through the command menu.
      *This setting turns off the automatic formatting of source files in the Sources panel that are detected
      *to be minified.
      */
     doNotAutomaticallyPrettyPrintMinifiedSources: 'Do not automatically pretty print minified sources',
     /**
-     * @description Text for autocompletion
+     * @description Text for autocompletion.
      */
     autocompletion: 'Autocompletion',
     /**
-     * @description Title of a setting under the Sources category that can be invoked through the Command Menu
+     * @description Title of a setting under the Sources category that can be invoked through the command menu.
      */
     enableAutocompletion: 'Enable autocompletion',
     /**
-     * @description Title of a setting under the Sources category that can be invoked through the Command Menu
+     * @description Title of a setting under the Sources category that can be invoked through the command menu.
      */
     disableAutocompletion: 'Disable autocompletion',
     /**
-     * @description Title of a setting under the Sources category in Settings
+     * @description Title of a setting under the Sources category in Settings.
      */
     bracketClosing: 'Auto closing brackets',
     /**
-     * @description Title of a setting under the Sources category that can be invoked through the Command Menu
+     * @description Title of a setting under the Sources category that can be invoked through the command menu.
      */
     enableBracketClosing: 'Enable auto closing brackets',
     /**
-     * @description Title of a setting under the Sources category that can be invoked through the Command Menu
+     * @description Title of a setting under the Sources category that can be invoked through the command menu.
      */
     disableBracketClosing: 'Disable auto closing brackets',
     /**
-     * @description Title of a setting under the Sources category in Settings
+     * @description Title of a setting under the Sources category in Settings.
      */
     bracketMatching: 'Bracket matching',
     /**
-     * @description Title of a setting under the Sources category that can be invoked through the Command Menu
+     * @description Title of a setting under the Sources category that can be invoked through the command menu.
      */
     enableBracketMatching: 'Enable bracket matching',
     /**
-     * @description Title of a setting under the Sources category that can be invoked through the Command Menu
+     * @description Title of a setting under the Sources category that can be invoked through the command menu.
      */
     disableBracketMatching: 'Disable bracket matching',
     /**
-     * @description Title of a setting under the Sources category in Settings
+     * @description Title of a setting under the Sources category in Settings.
      */
     codeFolding: 'Code folding',
     /**
-     * @description Title of a setting under the Sources category that can be invoked through the Command Menu
+     * @description Title of a setting under the Sources category that can be invoked through the command menu.
      */
     enableCodeFolding: 'Enable code folding',
     /**
-     * @description Title of a setting under the Sources category that can be invoked through the Command Menu
+     * @description Title of a setting under the Sources category that can be invoked through the command menu.
      */
     disableCodeFolding: 'Disable code folding',
     /**
-     * @description Title of a setting under the Sources category in Settings
+     * @description Title of a setting under the Sources category in Settings.
      */
     showWhitespaceCharacters: 'Show whitespace characters:',
     /**
-     * @description Title of a setting under the Sources category that can be invoked through the Command Menu
+     * @description Title of a setting under the Sources category that can be invoked through the command menu.
      */
     doNotShowWhitespaceCharacters: 'Do not show whitespace characters',
     /**
@@ -335,83 +344,83 @@ const UIStrings = {
      */
     none: 'None',
     /**
-     * @description Title of a setting under the Sources category that can be invoked through the Command Menu
+     * @description Title of a setting under the Sources category that can be invoked through the command menu.
      */
     showAllWhitespaceCharacters: 'Show all whitespace characters',
     /**
-     * @description Text for everything
+     * @description Text for everything.
      */
     all: 'All',
     /**
-     * @description Title of a setting under the Sources category that can be invoked through the Command Menu
+     * @description Title of a setting under the Sources category that can be invoked through the command menu.
      */
     showTrailingWhitespaceCharacters: 'Show trailing whitespace characters',
     /**
-     * @description A drop-down menu option to show trailing whitespace characters
+     * @description A drop-down menu option to show trailing whitespace characters.
      */
     trailing: 'Trailing',
     /**
-     * @description Title of a setting under the Sources category
+     * @description Title of a setting under the Sources category.
      */
     variableValuesInlineWhile: 'Variable values inline',
     /**
-     * @description Title of an option under the Sources category that can be invoked through the Command Menu
+     * @description Title of an option under the Sources category that can be invoked through the command menu.
      */
     displayVariableValuesInlineWhile: 'Display variable values inline while debugging',
     /**
-     * @description Title of an option under the Sources category that can be invoked through the Command Menu
+     * @description Title of an option under the Sources category that can be invoked through the command menu.
      */
     doNotDisplayVariableValuesInline: 'Don’t show variable values inline',
     /**
-     * @description Title of a setting under the Sources category in Settings
+     * @description Title of a setting under the Sources category in Settings.
      */
     allowScrollingPastEndOfFile: 'Allow scrolling past end of file',
     /**
-     * @description Title of a setting under the Sources category in Settings
+     * @description Title of a setting under the Sources category in Settings.
      */
     disallowScrollingPastEndOfFile: 'Disallow scrolling past end of file',
     /**
-     * @description Title of a setting under the Sources category in Settings
+     * @description Title of a setting under the Sources category in Settings.
      */
     wasmAutoStepping: 'Wasm auto-stepping bytecode',
     /**
-     * @description Tooltip text for a setting that controls Wasm will try to skip wasm bytecode
+     * @description Tooltip text for a setting that controls Wasm will try to skip wasm bytecode.
      */
     wasmAutoSteppingInfo: 'When debugging Wasm with debug information, try to skip wasm bytecode',
     /**
-     * @description Title of a setting under the Sources category in Settings
+     * @description Title of a setting under the Sources category in Settings.
      */
     enableWasmAutoStepping: 'Enable Wasm auto-stepping',
     /**
-     * @description Title of a setting under the Sources category in Settings
+     * @description Title of a setting under the Sources category in Settings.
      */
     disableWasmAutoStepping: 'Disable Wasm auto-stepping',
     /**
-     * @description Text for command prefix of go to a given line or symbol
+     * @description Text for command prefix of go to a given line or symbol.
      */
     goTo: 'Go to',
     /**
-     * @description Text for command suggestion of go to a given line
+     * @description Text for command suggestion of go to a given line.
      */
     line: 'Line',
     /**
-     * @description Text for command suggestion of go to a given symbol
+     * @description Text for command suggestion of go to a given symbol.
      */
     symbol: 'Symbol',
     /**
-     * @description Text for help title of go to symbol menu
+     * @description Text for help title of go to symbol menu.
      */
     goToSymbol: 'Go to symbol',
     /**
-     * @description Text for command prefix of open a file
+     * @description Text for command prefix of open a file.
      */
     open: 'Open',
     /**
-     * @description Text for command suggestion of open a file
+     * @description Text for command suggestion of open a file.
      */
     file: 'File',
     /**
-     * @description Text for help title of open file menu
+     * @description Text for help title of open file menu.
      */
     openFile: 'Open file',
     /**
@@ -427,15 +436,15 @@ const UIStrings = {
      */
     enableAutoFocusOnDebuggerPaused: 'Focus Sources panel when triggering a breakpoint',
     /**
-     * @description Title of an action to reveal the active file in the navigator sidebar of the Sources panel
+     * @description Title of an action to reveal the active file in the navigator sidebar of the Sources panel.
      */
     revealActiveFileInSidebar: 'Reveal active file in navigator sidebar',
     /**
-     * @description Text for command of toggling navigator sidebar in Sources panel
+     * @description Text for command of toggling navigator sidebar in Sources panel.
      */
     toggleNavigatorSidebar: 'Toggle navigator sidebar',
     /**
-     * @description Text for command of toggling debugger sidebar in Sources panel
+     * @description Text for command of toggling debugger sidebar in Sources panel.
      */
     toggleDebuggerSidebar: 'Toggle debugger sidebar',
     /**
@@ -458,6 +467,30 @@ const UIStrings = {
      *              wrap' setting.
      */
     toggleWordWrap: 'Toggle word wrap',
+    /**
+     * @description Setting under the Sources category to toggle usage of JavaScript source maps.
+     */
+    javaScriptSourceMaps: 'JavaScript source maps',
+    /**
+     * @description Title of an option under the Sources category that can be invoked through the Command Menu.
+     */
+    enableJavaScriptSourceMaps: 'Enable JavaScript source maps',
+    /**
+     * @description Title of an option under the Sources category that can be invoked through the Command Menu.
+     */
+    disableJavaScriptSourceMaps: 'Disable JavaScript source maps',
+    /**
+     * @description Setting under the Sources category to toggle usage of CSS source maps.
+     */
+    cssSourceMaps: 'CSS source maps',
+    /**
+     * @description Title of an option under the Sources category that can be invoked through the Command Menu.
+     */
+    enableCssSourceMaps: 'Enable CSS source maps',
+    /**
+     * @description Title of an option under the Sources category that can be invoked through the Command Menu.
+     */
+    disableCssSourceMaps: 'Disable CSS source maps',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/sources/sources-meta.ts', UIStrings);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
@@ -1047,6 +1080,14 @@ UI.ActionRegistration.registerActionExtension({
                 "vsCode" /* UI.ActionRegistration.KeybindSet.VS_CODE */,
             ],
         },
+        {
+            platform: "mac" /* UI.ActionRegistration.Platforms.MAC */,
+            shortcut: 'Meta+g',
+            keybindSets: [
+                "devToolsDefault" /* UI.ActionRegistration.KeybindSet.DEVTOOLS_DEFAULT */,
+                "vsCode" /* UI.ActionRegistration.KeybindSet.VS_CODE */,
+            ],
+        },
     ],
 });
 UI.ActionRegistration.registerActionExtension({
@@ -1257,6 +1298,10 @@ UI.ActionRegistration.registerActionExtension({
         {
             shortcut: 'Ctrl+,',
         },
+        {
+            platform: "mac" /* UI.ActionRegistration.Platforms.MAC */,
+            shortcut: 'Meta+,',
+        },
     ],
 });
 UI.ActionRegistration.registerActionExtension({
@@ -1273,6 +1318,10 @@ UI.ActionRegistration.registerActionExtension({
     bindings: [
         {
             shortcut: 'Ctrl+.',
+        },
+        {
+            platform: "mac" /* UI.ActionRegistration.Platforms.MAC */,
+            shortcut: 'Meta+.',
         },
     ],
 });
@@ -1453,6 +1502,47 @@ Common.Settings.registerSettingExtension({
     settingName: 'navigator-just-my-code',
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: false,
+});
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.jsSourceMapsEnabledSettingDescriptor, {
+    category: "SOURCES" /* Common.Settings.SettingCategory.SOURCES */,
+    title: i18nLazyString(UIStrings.javaScriptSourceMaps),
+    options: [
+        {
+            value: true,
+            title: i18nLazyString(UIStrings.enableJavaScriptSourceMaps),
+        },
+        {
+            value: false,
+            title: i18nLazyString(UIStrings.disableJavaScriptSourceMaps),
+        },
+    ],
+});
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.cssSourceMapsEnabledSettingDescriptor, {
+    category: "SOURCES" /* Common.Settings.SettingCategory.SOURCES */,
+    title: i18nLazyString(UIStrings.cssSourceMaps),
+    options: [
+        {
+            value: true,
+            title: i18nLazyString(UIStrings.enableCssSourceMaps),
+        },
+        {
+            value: false,
+            title: i18nLazyString(UIStrings.disableCssSourceMaps),
+        },
+    ],
+});
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.pauseOnExceptionEnabledSettingDescriptor, {
+    category: "DEBUGGER" /* Common.Settings.SettingCategory.DEBUGGER */,
+    options: [
+        {
+            value: true,
+            title: i18nLazyString(UIStrings.pauseOnExceptions),
+        },
+        {
+            value: false,
+            title: i18nLazyString(UIStrings.doNotPauseOnExceptions),
+        },
+    ],
 });
 Common.Settings.registerSettingExtension({
     category: "SOURCES" /* Common.Settings.SettingCategory.SOURCES */,

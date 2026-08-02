@@ -61,9 +61,6 @@ import { ReportingApiTreeElement } from './ReportingApiTreeElement.js';
 import resourcesSidebarStyles from './resourcesSidebar.css.js';
 import { ServiceWorkerCacheTreeElement } from './ServiceWorkerCacheTreeElement.js';
 import { ServiceWorkersView } from './ServiceWorkersView.js';
-import { SharedStorageListTreeElement } from './SharedStorageListTreeElement.js';
-import { SharedStorageModel, } from './SharedStorageModel.js';
-import { SharedStorageTreeElement } from './SharedStorageTreeElement.js';
 import { StorageBucketsTreeParentElement } from './StorageBucketsTreeElement.js';
 import { StorageView } from './StorageView.js';
 import { TrustTokensTreeElement } from './TrustTokensTreeElement.js';
@@ -306,7 +303,6 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
     cookieListTreeElement;
     trustTokensTreeElement;
     cacheStorageListTreeElement;
-    sharedStorageListTreeElement;
     storageBucketsTreeElement;
     backForwardCacheListTreeElement;
     backgroundFetchTreeElement;
@@ -327,12 +323,10 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
     extensionIdToStorageTreeParentElement;
     extensionStorageModels;
     extensionStorageTreeElements;
-    sharedStorageTreeElements;
     domains;
     // Holds main frame target.
     target;
     previousHoveredElement;
-    sharedStorageTreeElementDispatcher;
     constructor(panel) {
         super();
         this.panel = panel;
@@ -410,8 +404,6 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
         storageTreeElement.appendChild(this.cookieListTreeElement);
         this.trustTokensTreeElement = new TrustTokensTreeElement(panel);
         storageTreeElement.appendChild(this.trustTokensTreeElement);
-        this.sharedStorageListTreeElement = new SharedStorageListTreeElement(panel);
-        storageTreeElement.appendChild(this.sharedStorageListTreeElement);
         this.cacheStorageListTreeElement = new ServiceWorkerCacheTreeElement(panel);
         storageTreeElement.appendChild(this.cacheStorageListTreeElement);
         this.storageBucketsTreeElement = new StorageBucketsTreeParentElement(panel);
@@ -458,7 +450,6 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
         this.extensionIdToStorageTreeParentElement = new Map();
         this.extensionStorageTreeElements = new Map();
         this.extensionStorageModels = [];
-        this.sharedStorageTreeElements = new Map();
         this.domains = {};
         this.sidebarTree.contentElement.addEventListener('mousemove', this.onmousemove.bind(this), false);
         this.sidebarTree.contentElement.addEventListener('mouseleave', this.onmouseleave.bind(this), false);
@@ -480,18 +471,10 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
             modelAdded: (model) => this.indexedDBModelAdded(model),
             modelRemoved: (model) => this.indexedDBModelRemoved(model),
         }, { scoped: true });
-        SDK.TargetManager.TargetManager.instance().observeModels(SharedStorageModel, {
-            modelAdded: (model) => this.sharedStorageModelAdded(model).catch(err => {
-                console.error(err);
-            }),
-            modelRemoved: (model) => this.sharedStorageModelRemoved(model),
-        }, { scoped: true });
         SDK.TargetManager.TargetManager.instance().observeModels(SDK.StorageBucketsModel.StorageBucketsModel, {
             modelAdded: (model) => this.storageBucketsModelAdded(model),
             modelRemoved: (model) => this.storageBucketsModelRemoved(model),
         }, { scoped: true });
-        this.sharedStorageTreeElementDispatcher =
-            new Common.ObjectWrapper.ObjectWrapper();
         this.contentElement.style.contain = 'layout style';
     }
     addSidebarSection(title, jslogContext) {
@@ -584,24 +567,6 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
     indexedDBModelRemoved(model) {
         this.indexedDBListTreeElement.removeIndexedDBForModel(model);
     }
-    async sharedStorageModelAdded(model) {
-        await model.enable();
-        for (const storage of model.storages()) {
-            await this.addSharedStorage(storage);
-        }
-        model.addEventListener("SharedStorageAdded" /* SharedStorageModelEvents.SHARED_STORAGE_ADDED */, this.sharedStorageAdded, this);
-        model.addEventListener("SharedStorageRemoved" /* SharedStorageModelEvents.SHARED_STORAGE_REMOVED */, this.sharedStorageRemoved, this);
-        model.addEventListener("SharedStorageAccess" /* SharedStorageModelEvents.SHARED_STORAGE_ACCESS */, this.sharedStorageAccess, this);
-    }
-    sharedStorageModelRemoved(model) {
-        model.disable();
-        for (const storage of model.storages()) {
-            this.removeSharedStorage(storage);
-        }
-        model.removeEventListener("SharedStorageAdded" /* SharedStorageModelEvents.SHARED_STORAGE_ADDED */, this.sharedStorageAdded, this);
-        model.removeEventListener("SharedStorageRemoved" /* SharedStorageModelEvents.SHARED_STORAGE_REMOVED */, this.sharedStorageRemoved, this);
-        model.removeEventListener("SharedStorageAccess" /* SharedStorageModelEvents.SHARED_STORAGE_ACCESS */, this.sharedStorageAccess, this);
-    }
     storageBucketsModelAdded(model) {
         model.enable();
     }
@@ -652,6 +617,15 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
         const frame = event.data;
         if (frame.isOutermostFrame()) {
             this.reset();
+            const selectedElement = this.sidebarTree.selectedTreeElement;
+            if (selectedElement instanceof ExpandableApplicationPanelTreeElement) {
+                // Only update AI Assistance storage context for expandable category headers,
+                // as all other tree elements are re-rendered on reset.
+                const item = selectedElement.createGenericStorageAiContext();
+                if (item) {
+                    UI.Context.Context.instance().setFlavor(AiAssistance.StorageItem.StorageItem, item);
+                }
+            }
         }
         this.addCookieDocument(frame);
     }
@@ -802,41 +776,6 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
             }
         }
         this.extensionStorageTreeElements.delete(extensionStorage.key);
-    }
-    async sharedStorageAdded(event) {
-        await this.addSharedStorage(event.data);
-    }
-    async addSharedStorage(sharedStorage) {
-        const sharedStorageTreeElement = await SharedStorageTreeElement.createElement(this.panel, sharedStorage);
-        // A tree element for `sharedStorage.securityOrigin` may have been added while we were waiting for `sharedStorageTreeElement` to be created.
-        if (this.sharedStorageTreeElements.has(sharedStorage.securityOrigin)) {
-            return;
-        }
-        this.sharedStorageTreeElements.set(sharedStorage.securityOrigin, sharedStorageTreeElement);
-        this.sharedStorageListTreeElement.appendChild(sharedStorageTreeElement);
-        this.sharedStorageTreeElementDispatcher.dispatchEventToListeners("SharedStorageTreeElementAdded" /* SharedStorageTreeElementDispatcher.Events.SHARED_STORAGE_TREE_ELEMENT_ADDED */, { origin: sharedStorage.securityOrigin });
-    }
-    sharedStorageRemoved(event) {
-        this.removeSharedStorage(event.data);
-    }
-    removeSharedStorage(sharedStorage) {
-        const treeElement = this.sharedStorageTreeElements.get(sharedStorage.securityOrigin);
-        if (!treeElement) {
-            return;
-        }
-        const wasSelected = treeElement.selected;
-        const parentListTreeElement = treeElement.parent;
-        if (parentListTreeElement) {
-            parentListTreeElement.removeChild(treeElement);
-            parentListTreeElement.setExpandable(parentListTreeElement.childCount() > 0);
-            if (wasSelected) {
-                parentListTreeElement.select();
-            }
-        }
-        this.sharedStorageTreeElements.delete(sharedStorage.securityOrigin);
-    }
-    sharedStorageAccess(event) {
-        this.sharedStorageListTreeElement.addEvent(event.data);
     }
     async showResource(resource, line, column) {
         await this.resourcesSection.revealResource(resource, line, column);
@@ -1479,7 +1418,7 @@ export class DOMStorageTreeElement extends ApplicationPanelTreeElement {
         this.listItemElement.addEventListener('contextmenu', this.handleContextMenuEvent.bind(this), true);
         const storageItem = this.#getStorageItem();
         if (storageItem) {
-            this.createAiButton(storageItem);
+            this.createAiButton(() => this.#getStorageItem());
         }
     }
     handleContextMenuEvent(event) {
@@ -1575,7 +1514,7 @@ export class CookieTreeElement extends ApplicationPanelTreeElement {
         this.listItemElement.addEventListener('contextmenu', this.handleContextMenuEvent.bind(this), true);
         const storageItem = this.#getStorageItem();
         if (storageItem) {
-            this.createAiButton(storageItem);
+            this.createAiButton(() => this.#getStorageItem());
         }
     }
     handleContextMenuEvent(event) {

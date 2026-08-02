@@ -43,6 +43,10 @@ export class TestUniverse {
             () => new AiAssistance.AiHistoryStorage.AiHistoryStorage(this.settings),
         ],
         [
+            AiAssistance.BuiltInAi.BuiltInAi,
+            () => new AiAssistance.BuiltInAi.BuiltInAi(),
+        ],
+        [
             AutofillManager.AutofillManager.AutofillManager,
             () => new AutofillManager.AutofillManager.AutofillManager(this.targetManager, this.frameManager),
         ],
@@ -123,7 +127,7 @@ export class TestUniverse {
         ],
         [
             LiveMetrics.LiveMetrics,
-            () => new LiveMetrics.LiveMetrics(this.targetManager, this.deviceModeModel),
+            () => new LiveMetrics.LiveMetrics(this.targetManager, this.settings, this.deviceModeModel),
         ],
         [
             Logs.LogManager.LogManager,
@@ -159,7 +163,7 @@ export class TestUniverse {
         ],
         [
             ProjectSettings.ProjectSettingsModel.ProjectSettingsModel,
-            () => new ProjectSettings.ProjectSettingsModel.ProjectSettingsModel(this.#creationOptions?.hostConfig ?? {}, this.pageResourceLoader, this.targetManager),
+            () => new ProjectSettings.ProjectSettingsModel.ProjectSettingsModel(this.pageResourceLoader, this.targetManager),
         ],
         [
             SDK.CPUThrottlingManager.CPUThrottlingManager,
@@ -256,6 +260,9 @@ export class TestUniverse {
     }
     get aiHistoryStorage() {
         return this.get(AiAssistance.AiHistoryStorage.AiHistoryStorage);
+    }
+    get builtInAi() {
+        return this.get(AiAssistance.BuiltInAi.BuiltInAi);
     }
     get autofillManager() {
         return this.get(AutofillManager.AutofillManager.AutofillManager);

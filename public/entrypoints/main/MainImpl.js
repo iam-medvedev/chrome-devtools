@@ -199,7 +199,7 @@ export class MainImpl {
         if (Root.Runtime.Runtime.queryParam('hasOtherClients')) {
             this.#universe.settings.moduleSetting('cache-disabled').setRequiresUserAction(true);
         }
-        Root.Runtime.experiments.cleanUpStaleExperiments();
+        Root.Runtime.experiments.removeAllExperimentsFromLocalStorage();
         await this.requestAndRegisterLocaleData();
         Host.userMetrics.syncSetting(Common.Settings.Settings.instance().moduleSetting('sync-preferences').get());
         const veLogging = config.devToolsVeLogging;
@@ -307,20 +307,21 @@ export class MainImpl {
         const globalStorage = new Common.Settings.SettingsStorage(prefs, hostUnsyncedStorage, storagePrefix);
         return { syncedStorage, globalStorage, localStorage };
     }
-    #migrateValueFromLegacyToHostExperiment(legacyExperimentName, hostExperiment) {
+    // TODO(crbug.com/464173054) remove after M156
+    #migrateValueFromLegacyExperiment(legacyExperimentName, experiment) {
         const value = Root.Runtime.experiments.getValueFromStorage(legacyExperimentName);
-        if (value !== undefined && hostExperiment.aboutFlag) {
-            // Set the host experiment to the same value as the legacy experiment.
-            hostExperiment.setEnabled(value);
+        if (value !== undefined && experiment.aboutFlag) {
+            // Set the experiment to the same value as the legacy experiment.
+            experiment.setEnabled(value);
             // Set the chrome flag to the same value as the legacy experiment.
-            Host.InspectorFrontendHost.InspectorFrontendHostInstance.setChromeFlag(hostExperiment.aboutFlag, value);
-            // The legacy experiment will be cleaned up by `cleanUpStaleExperiments`.
+            Host.InspectorFrontendHost.InspectorFrontendHostInstance.setChromeFlag(experiment.aboutFlag, value);
+            // The legacy experiment will be cleaned up by `removeAllExperimentsFromLocalStorage`.
         }
     }
     #initializeExperiments() {
         const enableProtocolMonitor = (Root.Runtime.hostConfig.devToolsProtocolMonitor?.enabled ?? false) ||
             Boolean(Root.Runtime.Runtime.queryParam('isChromeForTesting'));
-        const protocolMonitorExperiment = Root.Runtime.experiments.registerHostExperiment({
+        const protocolMonitorExperiment = Root.Runtime.experiments.register({
             name: Root.ExperimentNames.ExperimentName.PROTOCOL_MONITOR,
             title: 'Protocol Monitor',
             aboutFlag: 'devtools-protocol-monitor',
@@ -328,34 +329,37 @@ export class MainImpl {
             requiresChromeRestart: false,
             docLink: 'https://developer.chrome.com/blog/new-in-devtools-92/#protocol-monitor',
         });
-        this.#migrateValueFromLegacyToHostExperiment(Root.ExperimentNames.ExperimentName.PROTOCOL_MONITOR, protocolMonitorExperiment);
+        this.#migrateValueFromLegacyExperiment(Root.ExperimentNames.ExperimentName.PROTOCOL_MONITOR, protocolMonitorExperiment);
         // Debugging
-        Root.Runtime.experiments.register(Root.ExperimentNames.ExperimentName.INSTRUMENTATION_BREAKPOINTS, 'Instrumentation breakpoints');
-        Root.Runtime.experiments.registerHostExperiment({
+        const instrumentationBreakpointsExperiment = Root.Runtime.experiments.register({
+            name: Root.ExperimentNames.ExperimentName.INSTRUMENTATION_BREAKPOINTS,
+            title: 'Instrumentation breakpoints',
+            aboutFlag: 'devtools-instrumentation-breakpoints',
+            isEnabled: Root.Runtime.hostConfig.devToolsInstrumentationBreakpoints?.enabled ?? false,
+            requiresChromeRestart: false,
+        });
+        this.#migrateValueFromLegacyExperiment(Root.ExperimentNames.ExperimentName.INSTRUMENTATION_BREAKPOINTS, instrumentationBreakpointsExperiment);
+        Root.Runtime.experiments.register({
             name: Root.ExperimentNames.ExperimentName.DURABLE_MESSAGES,
             title: 'Durable Messages',
             aboutFlag: 'devtools-enable-durable-messages',
             isEnabled: Root.Runtime.hostConfig.devToolsEnableDurableMessages?.enabled ?? false,
             requiresChromeRestart: false,
         });
-        Root.Runtime.experiments.registerHostExperiment({
+        Root.Runtime.experiments.register({
             name: Root.ExperimentNames.ExperimentName.JPEG_XL,
             title: 'JPEG XL support',
             aboutFlag: 'enable-jxl-image-format',
             isEnabled: Root.Runtime.hostConfig.devToolsJpegXlImageFormat?.enabled ?? false,
             requiresChromeRestart: true,
         });
-        Root.Runtime.experiments.registerHostExperiment({
+        Root.Runtime.experiments.register({
             name: Root.ExperimentNames.ExperimentName.PLUS_BUTTON,
             title: 'Show "+" button on the tab strip for adding tools',
             aboutFlag: 'devtools-plus-button',
             isEnabled: Root.Runtime.hostConfig.devToolsPlusButton?.enabled ?? false,
             requiresChromeRestart: false,
         });
-        const enabledExperiments = Root.Runtime.Runtime.queryParam('enabledExperiments');
-        if (enabledExperiments) {
-            Root.Runtime.experiments.setServerEnabledExperiments(enabledExperiments.split(';'));
-        }
         for (const experiment of Root.Runtime.experiments.allConfigurableExperiments()) {
             if (experiment.isEnabled()) {
                 Host.userMetrics.experimentEnabledAtLaunch(experiment.name);
@@ -404,7 +408,7 @@ export class MainImpl {
         this.#universe.presentationConsoleMessageManager.enable();
         void this.#universe.liveMetrics.enable();
         CrUXManager.CrUXManager.instance();
-        const builtInAi = AiAssistanceModel.BuiltInAi.BuiltInAi.instance();
+        const builtInAi = this.#universe.builtInAi;
         builtInAi.addEventListener("downloadedAndSessionCreated" /* AiAssistanceModel.BuiltInAi.Events.DOWNLOADED_AND_SESSION_CREATED */, () => Snackbar.Snackbar.Snackbar.show({ message: i18nString(UIStrings.aiModelDownloaded) }));
         new PauseListener();
         new ConsoleProfileFinishedListener();

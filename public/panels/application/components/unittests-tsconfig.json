@@ -50,8 +50,6 @@
     "../../../../../../../front_end/panels/application/components/ProtocolHandlersView.test.ts",
     "../../../../../../../front_end/panels/application/components/ReportsGrid.test.ts",
     "../../../../../../../front_end/panels/application/components/ServiceWorkerRouterView.test.ts",
-    "../../../../../../../front_end/panels/application/components/SharedStorageAccessGrid.test.ts",
-    "../../../../../../../front_end/panels/application/components/SharedStorageMetadataView.test.ts",
     "../../../../../../../front_end/panels/application/components/StorageMetadataView.test.ts",
     "../../../../../../../front_end/panels/application/components/TrustTokensView.test.ts",
     "../../../../../../../front_end/legacy/legacy-defs.d.ts",

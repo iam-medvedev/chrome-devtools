@@ -4,13 +4,55 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
+// gen/front_end/ui/legacy/components/object_ui/CSSStyleSanitizer.js
+var CSSStyleSanitizer_exports = {};
+__export(CSSStyleSanitizer_exports, {
+  cssEscapeRegex: () => cssEscapeRegex,
+  sanitizeStyle: () => sanitizeStyle
+});
+import * as Common from "./../../../../core/common/common.js";
+function cssEscapeRegex(cssString) {
+  return [...cssString].map((char) => {
+    const charCodes = new Set([char.toLowerCase(), char.toUpperCase()].map((c) => c.charCodeAt(0).toString(16)));
+    const charCodeRegex = [...charCodes].map((charCode) => `\\\\0{0,${6 - charCode.length}}${charCode}[ \\n\\t]?`).join("|");
+    return `\\\\?(?:${charCodeRegex}|${char})`;
+  }).join("");
+}
+var ALLOWED_PROPERTY_PREFIXES = ["background", "border", "color", "font", "line", "margin", "padding", "text"];
+var URL_REGEX = new RegExp(`(?=${cssEscapeRegex("url")}\\(['"]?([^\\)]*))`, "gi");
+var IMAGESET_REGEX = new RegExp(`(?=(${cssEscapeRegex("image-set")}\\(.*))`, "gi");
+var GOOD_IMAGESET_REGEX = /^image-set\((?:(?:(?:url|type)\("[^\\"]*"\)|[\d.]+(?:x|dpi|dpcm|dppx)),?\s*)+\)/i;
+function sanitizeStyle(currentStyle, styleToAdd) {
+  currentStyle.clear();
+  const buffer = document.createElement("span");
+  buffer.setAttribute("style", styleToAdd);
+  for (const property of buffer.style) {
+    if (!ALLOWED_PROPERTY_PREFIXES.some((prefix) => property.startsWith(prefix) || property.startsWith(`-webkit-${prefix}`))) {
+      continue;
+    }
+    const value = buffer.style.getPropertyValue(property);
+    const imageSets = [...value.matchAll(IMAGESET_REGEX)];
+    if (imageSets.some((match) => !GOOD_IMAGESET_REGEX.test(match[1]))) {
+      continue;
+    }
+    const potentialUrls = [...value.matchAll(URL_REGEX)].map((match) => match[1]);
+    if (potentialUrls.some((potentialUrl) => !Common.ParsedURL.schemeIs(potentialUrl, "data:"))) {
+      continue;
+    }
+    currentStyle.set(property, {
+      value,
+      priority: buffer.style.getPropertyPriority(property)
+    });
+  }
+}
+
 // gen/front_end/ui/legacy/components/object_ui/CustomPreviewComponent.js
 var CustomPreviewComponent_exports = {};
 __export(CustomPreviewComponent_exports, {
   CustomPreviewComponent: () => CustomPreviewComponent,
   CustomPreviewSection: () => CustomPreviewSection
 });
-import * as Common2 from "./../../../../core/common/common.js";
+import * as Common3 from "./../../../../core/common/common.js";
 import * as i18n5 from "./../../../../core/i18n/i18n.js";
 import { createIcon } from "./../../../kit/kit.js";
 import * as UI3 from "./../../legacy.js";
@@ -62,15 +104,17 @@ __export(ObjectPropertiesSection_exports, {
   ObjectTreeNode: () => ObjectTreeNode,
   ObjectTreeNodeBase: () => ObjectTreeNodeBase,
   Renderer: () => Renderer,
+  formatObjectAsFunction: () => formatObjectAsFunction,
   getObjectPropertiesSectionFrom: () => getObjectPropertiesSectionFrom,
   isWasmObject: () => isWasmObject,
   objectPropertiesSectionStyles: () => objectPropertiesSection_css_default,
   objectValueStyles: () => objectValue_css_default,
   populateObjectTreeContextMenu: () => populateObjectTreeContextMenu,
   renderObjectPropertiesSection: () => renderObjectPropertiesSection,
-  renderObjectTree: () => renderObjectTree
+  renderObjectTree: () => renderObjectTree,
+  renderPropertyName: () => renderPropertyName
 });
-import * as Common from "./../../../../core/common/common.js";
+import * as Common2 from "./../../../../core/common/common.js";
 import * as Host from "./../../../../core/host/host.js";
 import * as i18n3 from "./../../../../core/i18n/i18n.js";
 import * as Platform2 from "./../../../../core/platform/platform.js";
@@ -898,7 +942,7 @@ var ObjectTreeExpansionTracker = class _ObjectTreeExpansionTracker {
     }
   }
 };
-var ObjectTreeNodeBase = class _ObjectTreeNodeBase extends Common.ObjectWrapper.ObjectWrapper {
+var ObjectTreeNodeBase = class _ObjectTreeNodeBase extends Common2.ObjectWrapper.ObjectWrapper {
   parent;
   #children;
   options;
@@ -911,7 +955,7 @@ var ObjectTreeNodeBase = class _ObjectTreeNodeBase extends Common.ObjectWrapper.
     this.parent = parent;
     this.filter = parent?.filter ?? null;
     this.options = { ...options };
-    this.#sortPropertiesAlphabeticallySetting = parent ? parent.#sortPropertiesAlphabeticallySetting : Common.Settings.Settings.instance().createSetting("object-properties-sort-alphabetically", true);
+    this.#sortPropertiesAlphabeticallySetting = parent ? parent.#sortPropertiesAlphabeticallySetting : Common2.Settings.Settings.instance().createSetting("object-properties-sort-alphabetically", true);
   }
   get isWasm() {
     return isWasmObject(this.object);
@@ -1469,29 +1513,7 @@ var ObjectPropertiesSection = class _ObjectPropertiesSection extends UI2.TreeOut
     }
     return 0;
   }
-  static createNameElement(name, isPrivate) {
-    const element = document.createElement("span");
-    element.classList.add("name");
-    if (name === null) {
-      return element;
-    }
-    const escapedName = Platform2.StringUtilities.escapeUnicodeAsText(name);
-    if (/^\s|\s$|^$|\n/.test(escapedName)) {
-      element.textContent = `"${escapedName.replace(/\n/g, "\u21B5")}"`;
-      return element;
-    }
-    if (isPrivate) {
-      const privatePropertyHash = document.createElement("span");
-      privatePropertyHash.classList.add("private-property-hash");
-      privatePropertyHash.textContent = escapedName[0];
-      element.appendChild(privatePropertyHash);
-      element.appendChild(document.createTextNode(escapedName.substring(1)));
-      return element;
-    }
-    element.textContent = escapedName;
-    return element;
-  }
-  static valueElementForFunctionDescription(description, includePreview, defaultName, className) {
+  static valueElementForFunctionDescription(description, includePreview, defaultName, details, linkify) {
     const contents = (description2, defaultName2) => {
       const text = description2.replace(/^function [gs]et /, "function ").replace(/^function [gs]et\(/, "function(").replace(/^[gs]et /, "");
       const asyncMatch = text.match(/^(async\s+function)/);
@@ -1504,11 +1526,11 @@ var ObjectPropertiesSection = class _ObjectPropertiesSection extends UI2.TreeOut
       if (isClass) {
         const body2 = text.substring("class".length);
         const classNameMatch = /^[^{\s]+/.exec(body2.trim());
-        let className2 = defaultName2;
+        let className = defaultName2;
         if (classNameMatch) {
-          className2 = classNameMatch[0].trim() || defaultName2;
+          className = classNameMatch[0].trim() || defaultName2;
         }
-        return { prefix: "class", body: body2, abbreviation: className2 };
+        return { prefix: "class", body: body2, abbreviation: className };
       }
       if (asyncMatch) {
         const body2 = text.substring(asyncMatch[1].length);
@@ -1540,9 +1562,20 @@ var ObjectPropertiesSection = class _ObjectPropertiesSection extends UI2.TreeOut
     };
     const { prefix, body, abbreviation } = contents(description ?? "", defaultName ?? "");
     const maxFunctionBodyLength = 200;
+    const location = details?.location;
+    const clickHandler = linkify && location ? (event) => {
+      void Common2.Revealer.reveal(location);
+      event.consume(true);
+    } : void 0;
+    const classes = classMap({
+      "object-value-function": true,
+      linkified: Boolean(linkify && location)
+    });
+    const title = description ? Platform2.StringUtilities.trimEndWithMaxLength(description, 500) : void 0;
     return html2`<span
-      class="object-value-function ${className ?? ""}"
-      title=${Platform2.StringUtilities.trimEndWithMaxLength(description ?? "", 500)}>${prefix && html2`<span class=object-value-function-prefix>${prefix} </span>`}${includePreview ? Platform2.StringUtilities.trimEndWithMaxLength(body.trim(), maxFunctionBodyLength) : abbreviation.replace(/\n/g, " ")}</span>`;
+      class=${classes}
+      @click=${clickHandler || nothing2}
+      title=${ifDefined2(title)}>${prefix && html2`<span class=object-value-function-prefix>${prefix} </span>`}${includePreview ? Platform2.StringUtilities.trimEndWithMaxLength(body.trim(), maxFunctionBodyLength) : abbreviation.replace(/\n/g, " ")}</span>`;
     function nameAndArguments(contents2) {
       const startOfArgumentsIndex = contents2.indexOf("(");
       const endOfArgumentsMatch = contents2.match(/\)\s*{/);
@@ -1568,7 +1601,7 @@ var ObjectPropertiesSection = class _ObjectPropertiesSection extends UI2.TreeOut
       style="width: var(--sys-size-8); height: 13px; vertical-align: sub; cursor: pointer;"
       @click=${(event) => {
       event.consume();
-      void Common.Revealer.reveal(new SDK3.RemoteObject.LinearMemoryInspectable(object, expression));
+      void Common2.Revealer.reveal(new SDK3.RemoteObject.LinearMemoryInspectable(object, expression));
     }}
       jslog=${VisualLogging.action("open-memory-inspector").track({ click: true })}
       title=${i18nString2(UIStrings2.openInMemoryInpector)}
@@ -1605,12 +1638,12 @@ var ObjectPropertiesSection = class _ObjectPropertiesSection extends UI2.TreeOut
         return html2`<span class="value object-value-trustedtype" title=${ifDefined2(tooLong ? void 0 : text)}>${tooLong ? widget(ExpandableTextPropertyValue, { text }) : renderTrustedType(description, className)}</span>`;
       }
       if (type === "function") {
-        return _ObjectPropertiesSection.valueElementForFunctionDescription(description, void 0, void 0, "value");
+        return html2`<span class="value">${_ObjectPropertiesSection.valueElementForFunctionDescription(description)}</span>`;
       }
       if (type === "object" && subtype === "node" && description) {
         return html2`<span class="value object-value-node"
             @click=${(event) => {
-          void Common.Revealer.reveal(value);
+          void Common2.Revealer.reveal(value);
           event.consume(true);
         }}
             @mousemove=${() => SDK3.OverlayModel.OverlayModel.highlightObjectAsDOMNode(value)}
@@ -1635,25 +1668,6 @@ var ObjectPropertiesSection = class _ObjectPropertiesSection extends UI2.TreeOut
       throw new Error("Expected an HTML element");
     }
     return child;
-  }
-  static formatObjectAsFunction(func, element, linkify, includePreview) {
-    return func.debuggerModel().functionDetailsPromise(func).then(didGetDetails);
-    function didGetDetails(response) {
-      if (linkify && response?.location) {
-        element.classList.add("linkified");
-        element.addEventListener("click", () => {
-          void Common.Revealer.reveal(response.location);
-          return false;
-        });
-      }
-      let defaultName = includePreview ? "" : "anonymous";
-      if (response?.functionName) {
-        defaultName = response.functionName;
-      }
-      const valueElement = document.createDocumentFragment();
-      render2(_ObjectPropertiesSection.valueElementForFunctionDescription(func.description, includePreview, defaultName), valueElement);
-      element.appendChild(valueElement);
-    }
   }
   static isDisplayableProperty(property, parentProperty) {
     if (!parentProperty?.synthetic) {
@@ -1826,6 +1840,24 @@ var RootElement = class extends UI2.TreeOutline.TreeElement {
     return await ObjectPropertyTreeElement.populate(this, this.object, skipProto, false, this.linkifier, this.emptyPlaceholder);
   }
 };
+function renderPropertyName(name, isPrivate, title) {
+  if (name === null) {
+    return html2`<span class="name" title=${ifDefined2(title)}></span>`;
+  }
+  const escapedName = Platform2.StringUtilities.escapeUnicodeAsText(name);
+  if (/^\s|\s$|^$|\n/.test(escapedName)) {
+    return html2`<span class="name" title=${ifDefined2(title)}>"${escapedName.replace(/\n/g, "\u21B5")}"</span>`;
+  }
+  if (isPrivate) {
+    return html2`<span class="name" title=${ifDefined2(title)}><span class="private-property-hash">${escapedName[0]}</span>${escapedName.substring(1)}</span>`;
+  }
+  return html2`<span class="name" title=${ifDefined2(title)}>${escapedName}</span>`;
+}
+async function formatObjectAsFunction(func, linkify, includePreview) {
+  const details = await func.debuggerModel().functionDetailsPromise(func);
+  const defaultName = details?.functionName ?? (includePreview ? "" : "anonymous");
+  return ObjectPropertiesSection.valueElementForFunctionDescription(func.description, includePreview, defaultName, details, linkify);
+}
 var InitialVisibleChildrenLimit = 200;
 var OBJECT_PROPERTY_DEFAULT_VIEW = (input, output, target) => {
   const { property } = input.node;
@@ -2626,12 +2658,12 @@ var CustomPreviewSection = class _CustomPreviewSection {
     try {
       headerJSON = JSON.parse(customPreview.header);
     } catch (e) {
-      Common2.Console.Console.instance().error("Broken formatter: header is invalid json " + e);
+      Common3.Console.Console.instance().error("Broken formatter: header is invalid json " + e);
       return;
     }
     this.header = this.renderJSONMLTag(headerJSON);
     if (this.header.nodeType === Node.TEXT_NODE) {
-      Common2.Console.Console.instance().error("Broken formatter: header should be an element node.");
+      Common3.Console.Console.instance().error("Broken formatter: header should be an element node.");
       return;
     }
     if (customPreview.bodyGetterId) {
@@ -2655,7 +2687,7 @@ var CustomPreviewSection = class _CustomPreviewSection {
       return this.renderElement(jsonML);
     }
     if (jsonML.length !== 2) {
-      Common2.Console.Console.instance().error("Broken formatter: object reference must contain exactly two elements");
+      Common3.Console.Console.instance().error("Broken formatter: object reference must contain exactly two elements");
       return document.createElement("span");
     }
     return this.layoutObjectTag(jsonML);
@@ -2665,7 +2697,7 @@ var CustomPreviewSection = class _CustomPreviewSection {
   renderElement(object) {
     const tagName = object.shift();
     if (!ALLOWED_TAGS.includes(tagName)) {
-      Common2.Console.Console.instance().error("Broken formatter: element " + tagName + " is not allowed!");
+      Common3.Console.Console.instance().error("Broken formatter: element " + tagName + " is not allowed!");
       return document.createElement("span");
     }
     const element = document.createElement(tagName);
@@ -2676,7 +2708,11 @@ var CustomPreviewSection = class _CustomPreviewSection {
         if (key !== "style" || typeof value !== "string") {
           continue;
         }
-        element.setAttribute(key, value);
+        const sanitizedStyle = /* @__PURE__ */ new Map();
+        sanitizeStyle(sanitizedStyle, value);
+        for (const [property, { value: propertyValue, priority }] of sanitizedStyle) {
+          element.style.setProperty(property, propertyValue, priority);
+        }
       }
     }
     this.appendJsonMLTags(element, object);
@@ -2960,6 +2996,7 @@ var ObjectPopoverHelper = class _ObjectPopoverHelper {
 };
 var MaxPopoverTextLength = 1e4;
 export {
+  CSSStyleSanitizer_exports as CSSStyleSanitizer,
   CustomPreviewComponent_exports as CustomPreviewComponent,
   JavaScriptREPL_exports as JavaScriptREPL,
   ObjectPopoverHelper_exports as ObjectPopoverHelper,

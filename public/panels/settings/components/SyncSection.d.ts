@@ -18,6 +18,7 @@ export interface SyncSectionData {
 export interface ViewInput {
     syncInfo: Host.InspectorFrontendHostAPI.SyncInformation;
     syncSetting: Common.Settings.Setting<boolean>;
+    checkboxDisabled: boolean;
     receiveBadgesSetting?: Common.Settings.Setting<boolean>;
     isEligibleToCreateGdpProfile: boolean;
     gdpProfile?: Host.GdpClient.Profile;

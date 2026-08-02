@@ -380,6 +380,18 @@ describeWithEnvironment('TimelineUIUtils', function () {
             }
             assert.isTrue(Timeline.TimelineUIUtils.TimelineUIUtils.testContentMatching(performConcurrentWorkEvent, /perfo/, parsedTrace.data));
         });
+        it('matches extension track entries on their tooltip text and properties', async function () {
+            const parsedTrace = await TraceLoader.traceEngine(this, 'extension-tracks-and-marks.json.gz');
+            const extensionEntry = parsedTrace.data.ExtensionTraceData.extensionTrackData[1].entriesByTrack['An Extension Track'][0];
+            assert.isOk(extensionEntry);
+            assert.strictEqual(extensionEntry.devtoolsObj.tooltipText, 'This is a rendering task');
+            // The tooltip text is what the user sees when hovering the entry, so it
+            // has to be searchable.
+            assert.isTrue(Timeline.TimelineUIUtils.TimelineUIUtils.testContentMatching(extensionEntry, /rendering task/, parsedTrace.data));
+            // Same for the properties shown in the details drawer.
+            assert.isTrue(Timeline.TimelineUIUtils.TimelineUIUtils.testContentMatching(extensionEntry, /Do something about it/, parsedTrace.data));
+            assert.isFalse(Timeline.TimelineUIUtils.TimelineUIUtils.testContentMatching(extensionEntry, /not in this entry/, parsedTrace.data));
+        });
     });
     describe('traceEventDetails', function () {
         it('shows the interaction ID and INP breakdown metrics for a given interaction', async function () {
@@ -1525,6 +1537,18 @@ describeWithEnvironment('TimelineUIUtils - mapping to authored function name whe
         const stackTraceData = getStackTraceForDetailsElement(details);
         assert.exists(stackTraceData);
         assert.strictEqual(stackTraceData[0], 'minified @ gen.js:1:52');
+    });
+    it('renders execution duration details for a WASM profile call', async function () {
+        const parsedTrace = await TraceLoader.traceEngine(this, 'mainWasm_profile.json.gz');
+        const wasmCall = allThreadEntriesInTrace(parsedTrace)
+            .find(e => Trace.Types.Events.isProfileCall(e) && e.callFrame.functionName === 'mainWasm');
+        assert.exists(wasmCall);
+        const details = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(parsedTrace, wasmCall, new Components.Linkifier.Linkifier(), 
+        /* canShowPieChart= */ true, null);
+        const rowData = getRowDataForDetailsElement(details);
+        const durationRow = rowData.find(row => row.title === 'Duration');
+        assert.exists(durationRow);
+        assert.strictEqual(durationRow.value.replace(/\u00a0/g, ' '), '452.20 ms (self 27.18 ms)');
     });
 });
 //# sourceMappingURL=TimelineUIUtils.test.js.map

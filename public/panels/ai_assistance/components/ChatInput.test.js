@@ -195,6 +195,7 @@ describeWithEnvironment('ChatInput', () => {
             AiAssistance.ImageResize.setCompressImplementationForTest(async () => {
                 throw new Error('Failed to compress image');
             });
+            const consoleErrorStub = sinon.stub(console, 'error');
             const [view] = createComponent();
             const file = new File(['test'], 'image.png', { type: 'image/png' });
             const snackbarSpy = sinon.spy(Snackbars.Snackbar.Snackbar, 'show');
@@ -202,6 +203,7 @@ describeWithEnvironment('ChatInput', () => {
             assert.isUndefined(view.input.imageInput);
             sinon.assert.calledOnce(snackbarSpy);
             assert.include(snackbarSpy.firstCall.args[0].message, 'Failed to upload image');
+            sinon.assert.calledOnce(consoleErrorStub);
         });
     });
     describe('history navigation', () => {
@@ -295,6 +297,7 @@ describeWithEnvironment('ChatInput', () => {
                 blockedByCrossOrigin: false,
                 isTextInputDisabled: false,
                 inputPlaceholder: 'Type a message...',
+                textInputValue: '',
                 context: null,
                 isContextSelected: false,
                 inspectElementToggled: false,
@@ -386,6 +389,14 @@ describeWithEnvironment('ChatInput', () => {
             assert.isNotNull(addButton);
             addButton.click();
             sinon.assert.calledOnce(onContextAdd);
+        });
+        it('does not trigger onTextSubmit on submit event when input is empty', async () => {
+            const [, component] = createComponent();
+            const onTextSubmit = sinon.stub();
+            component.onTextSubmit = onTextSubmit;
+            const event = new SubmitEvent('submit', { cancelable: true });
+            component.onSubmit(event);
+            sinon.assert.notCalled(onTextSubmit);
         });
     });
 });

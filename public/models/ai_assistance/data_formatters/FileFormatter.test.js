@@ -14,10 +14,14 @@ import * as Workspace from '../../workspace/workspace.js';
 import { FileFormatter } from '../ai_assistance.js';
 describeWithEnvironment('FileFormatter', () => {
     beforeEach(() => {
+        // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
         const workspace = Workspace.Workspace.WorkspaceImpl.instance();
+        // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
         const targetManager = SDK.TargetManager.TargetManager.instance();
         const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);
+        // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
         const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
+        // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
         Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
             forceNew: true,
             resourceMapping,
@@ -31,6 +35,7 @@ describeWithEnvironment('FileFormatter', () => {
             // TODO: source map needs to be tested as part of the
             // formatFile.
             const target = createTarget();
+            // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
             const debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance();
             const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
             assert.exists(debuggerModel);

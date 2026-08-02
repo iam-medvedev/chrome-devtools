@@ -13,7 +13,6 @@ import * as Persistence from '../../models/persistence/persistence.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
-import { checkForPendingActivity } from '../../testing/TrackAsyncOperations.js';
 import { createContentProviderUISourceCodes, createFileSystemUISourceCode, } from '../../testing/UISourceCodeHelpers.js';
 import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -57,7 +56,7 @@ describeWithEnvironment('SourcesView', () => {
         const addFileSystemStub = sinon.stub(Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance(), 'addFileSystem')
             .resolves(null);
         // Wait for widget rendering/updates
-        await checkForPendingActivity();
+        await sourcesView.editorContainer?.view.updateComplete;
         // Find the TabbedPane element
         const tabbedPane = sourcesView.element.querySelector('.tabbed-pane');
         assert.isNotNull(tabbedPane, 'TabbedPane element not found');
@@ -98,9 +97,11 @@ describeWithEnvironment('SourcesView', () => {
         assert.instanceOf(sourcesView.getSourceView(uiSourceCode), Sources.UISourceCodeFrame.UISourceCodeFrame);
         // Rename which changes contentType
         await uiSourceCode.rename('image.jpg');
+        await sourcesView.updateComplete;
         assert.instanceOf(sourcesView.getSourceView(uiSourceCode), SourceFrame.ImageView.ImageView);
         // Rename which changes contentType
         await uiSourceCode.rename('font.woff');
+        await sourcesView.updateComplete;
         assert.instanceOf(sourcesView.getSourceView(uiSourceCode), SourceFrame.FontView.FontView);
         workspace.removeProject(project);
         sourcesView.detach();
@@ -111,33 +112,6 @@ describeWithEnvironment('SourcesView', () => {
         sinon.stub(uiSourceCode, 'mimeType').returns('text/plain');
         sourcesView.viewForFile(uiSourceCode);
         assert.instanceOf(sourcesView.getSourceView(uiSourceCode), SourcesComponents.HeadersView.HeadersView);
-    });
-    it('shows and hides an infobar which warns about AI-generated changes', async () => {
-        const attachSpy = sinon.spy(Sources.AiWarningInfobarPlugin.AiWarningInfobarPlugin.prototype, 'attachInfobar');
-        const removeSpy = sinon.spy(Sources.AiWarningInfobarPlugin.AiWarningInfobarPlugin.prototype, 'removeInfobar');
-        const sourcesView = new Sources.SourcesView.SourcesView();
-        const { uiSourceCode } = createFileSystemUISourceCode({
-            url: urlString `file:///path/to/project/example.ts`,
-            mimeType: 'text/typescript',
-            content: 'export class Foo {}',
-        });
-        // Mock an AI-generated edit
-        uiSourceCode.setWorkingCopy('export class Bar {}');
-        uiSourceCode.setContainsAiChanges(true);
-        const contentLoadedPromise = new Promise(res => window.addEventListener('source-file-loaded', res));
-        const widget = sourcesView.viewForFile(uiSourceCode);
-        assert.instanceOf(widget, Sources.UISourceCodeFrame.UISourceCodeFrame);
-        const uiSourceCodeFrame = widget;
-        // Only load the AiWarningInfobarPlugin
-        sinon.stub(Sources.UISourceCodeFrame.UISourceCodeFrame, 'sourceFramePlugins').returns([
-            Sources.AiWarningInfobarPlugin.AiWarningInfobarPlugin,
-        ]);
-        uiSourceCodeFrame.wasShown();
-        await contentLoadedPromise;
-        sinon.assert.called(attachSpy);
-        sinon.assert.notCalled(removeSpy);
-        uiSourceCode.commitWorkingCopy();
-        sinon.assert.called(removeSpy);
     });
     describe('viewForFile', () => {
         it('records the correct media type in the DevTools.SourcesPanelFileOpened metric', async () => {
@@ -191,7 +165,7 @@ describeWithEnvironment('SourcesView', () => {
         Persistence.Persistence.PersistenceImpl.instance({ forceNew: true, workspace, breakpointManager });
         Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance({ forceNew: true, workspace });
     });
-    it('creates editor tabs only for in-scope uiSourceCodes', () => {
+    it('creates editor tabs only for in-scope uiSourceCodes', async () => {
         const addUISourceCodeSpy = sinon.spy(Sources.TabbedEditorContainer.TabbedEditorContainer.prototype, 'addUISourceCode');
         const removeUISourceCodesSpy = sinon.spy(Sources.TabbedEditorContainer.TabbedEditorContainer.prototype, 'removeUISourceCodes');
         createContentProviderUISourceCodes({
@@ -211,7 +185,10 @@ describeWithEnvironment('SourcesView', () => {
             projectType: Workspace.Workspace.projectTypes.Network,
             target: target2,
         });
-        new Sources.SourcesView.SourcesView();
+        const sourcesView = new Sources.SourcesView.SourcesView();
+        renderElementIntoDOM(sourcesView);
+        await sourcesView.updateComplete;
+        await new Promise(resolve => setTimeout(resolve, 0));
         let addedURLs = addUISourceCodeSpy.args.map(args => args[0].url());
         assert.deepEqual(addedURLs, ['http://example.com/a.js', 'http://example.com/b.js']);
         sinon.assert.notCalled(removeUISourceCodesSpy);
@@ -222,14 +199,16 @@ describeWithEnvironment('SourcesView', () => {
         const removedURLs = removeUISourceCodesSpy.args.map(args => args[0][0].url());
         assert.deepEqual(removedURLs, ['http://example.com/a.js', 'http://example.com/b.js']);
     });
-    it('doesn\'t remove non-network UISourceCodes when changing the scope target', () => {
+    it('doesn\'t remove non-network UISourceCodes when changing the scope target', async () => {
         createFileSystemUISourceCode({
             url: urlString `snippet:///foo.js`,
             mimeType: 'application/javascript',
             type: Persistence.PlatformFileSystem.PlatformFileSystemType.SNIPPETS,
         });
         const sourcesView = new Sources.SourcesView.SourcesView();
-        const removeUISourceCodesSpy = sinon.spy(sourcesView.editorContainer, 'removeUISourceCodes');
+        renderElementIntoDOM(sourcesView);
+        await sourcesView.updateComplete;
+        const removeUISourceCodesSpy = sinon.spy(Sources.TabbedEditorContainer.TabbedEditorContainer.prototype, 'removeUISourceCodes');
         target2.targetManager().setScopeTarget(target2);
         sinon.assert.notCalled(removeUISourceCodesSpy);
     });

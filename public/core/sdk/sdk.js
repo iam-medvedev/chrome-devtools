@@ -10080,16 +10080,16 @@ function cssMetadata() {
   return cssMetadataInstance;
 }
 var imageValuePresetMap = /* @__PURE__ */ new Map([
-  ["linear-gradient()", "linear-gradient(|45deg, black, transparent|)"],
-  ["radial-gradient()", "radial-gradient(|black, transparent|)"],
-  ["conic-gradient()", "conic-gradient(|from 45deg, red, orange, yellow, green, teal, blue, purple|)"],
-  ["repeating-linear-gradient()", "repeating-linear-gradient(|45deg, black, transparent 100px|)"],
-  ["repeating-radial-gradient()", "repeating-radial-gradient(|black, transparent 100px|)"],
-  ["repeating-conic-gradient()", "repeating-conic-gradient(|black 0deg 25%, white 0deg 50%|)"],
+  ["linear-gradient", "linear-gradient(|45deg, black, transparent|)"],
+  ["radial-gradient", "radial-gradient(|black, transparent|)"],
+  ["conic-gradient", "conic-gradient(|from 45deg, red, orange, yellow, green, teal, blue, purple|)"],
+  ["repeating-linear-gradient", "repeating-linear-gradient(|45deg, black, transparent 100px|)"],
+  ["repeating-radial-gradient", "repeating-radial-gradient(|black, transparent 100px|)"],
+  ["repeating-conic-gradient", "repeating-conic-gradient(|black 0deg 25%, white 0deg 50%|)"],
   // Checkerboard
-  ["url()", "url(||)"],
-  ["image-set()", 'image-set(|url("") 1x, url("") 2x|)'],
-  ["cross-fade()", 'cross-fade(|url("") 50%, url("") 50%|)']
+  ["url", "url(||)"],
+  ["image-set", 'image-set(|url("") 1x, url("") 2x|)'],
+  ["cross-fade", 'cross-fade(|url("") 50%, url("") 50%|)']
 ]);
 var filterValuePresetMap = /* @__PURE__ */ new Map([
   ["blur", "blur(|1px|)"],
@@ -10117,7 +10117,7 @@ var valuePresets = /* @__PURE__ */ new Map([
   ["-webkit-mask-image", imageValuePresetMap],
   ["list-style", imageValuePresetMap],
   ["list-style-image", imageValuePresetMap],
-  ["border-image", imageValuePresetMap],
+  ["border-image", new Map([...imageValuePresetMap, ["fill", "fill 10%"]])],
   ["border-image-source", imageValuePresetMap],
   [
     "transform",
@@ -10208,6 +10208,12 @@ var valuePresets = /* @__PURE__ */ new Map([
     /* @__PURE__ */ new Map([
       ["cap", "cap alphabetic"],
       ["ex", "ex alphabetic"]
+    ])
+  ],
+  [
+    "border-image-slice",
+    /* @__PURE__ */ new Map([
+      ["fill", "fill 10%"]
     ])
   ]
 ]);
@@ -10493,19 +10499,17 @@ var extraPropertyValues = /* @__PURE__ */ new Map([
       "stretch",
       "space",
       "round",
-      "auto",
-      // border-image-width
       "fill",
       // border-image-slice
-      "linear-gradient()",
-      "radial-gradient()",
-      "conic-gradient()",
-      "repeating-linear-gradient()",
-      "repeating-radial-gradient()",
-      "repeating-conic-gradient()",
-      "image-set()",
-      "cross-fade()",
-      "url()"
+      "linear-gradient",
+      "radial-gradient",
+      "conic-gradient",
+      "repeating-linear-gradient",
+      "repeating-radial-gradient",
+      "repeating-conic-gradient",
+      "image-set",
+      "cross-fade",
+      "url"
     ])
   ],
   ["border-image-width", /* @__PURE__ */ new Set(["auto"])],
@@ -10514,15 +10518,15 @@ var extraPropertyValues = /* @__PURE__ */ new Map([
     "border-image-source",
     /* @__PURE__ */ new Set([
       "none",
-      "linear-gradient()",
-      "radial-gradient()",
-      "conic-gradient()",
-      "repeating-linear-gradient()",
-      "repeating-radial-gradient()",
-      "repeating-conic-gradient()",
-      "image-set()",
-      "cross-fade()",
-      "url()"
+      "linear-gradient",
+      "radial-gradient",
+      "conic-gradient",
+      "repeating-linear-gradient",
+      "repeating-radial-gradient",
+      "repeating-conic-gradient",
+      "image-set",
+      "cross-fade",
+      "url"
     ])
   ],
   [
@@ -10856,29 +10860,29 @@ var extraPropertyValues = /* @__PURE__ */ new Map([
       "padding-box",
       "text",
       // background-clip
-      "linear-gradient()",
-      "radial-gradient()",
-      "conic-gradient()",
-      "repeating-linear-gradient()",
-      "repeating-radial-gradient()",
-      "repeating-conic-gradient()",
-      "image-set()",
-      "cross-fade()",
-      "url()"
+      "linear-gradient",
+      "radial-gradient",
+      "conic-gradient",
+      "repeating-linear-gradient",
+      "repeating-radial-gradient",
+      "repeating-conic-gradient",
+      "image-set",
+      "cross-fade",
+      "url"
     ])
   ],
   [
     "background-image",
     /* @__PURE__ */ new Set([
-      "linear-gradient()",
-      "radial-gradient()",
-      "conic-gradient()",
-      "repeating-linear-gradient()",
-      "repeating-radial-gradient()",
-      "repeating-conic-gradient()",
-      "image-set()",
-      "cross-fade()",
-      "url()"
+      "linear-gradient",
+      "radial-gradient",
+      "conic-gradient",
+      "repeating-linear-gradient",
+      "repeating-radial-gradient",
+      "repeating-conic-gradient",
+      "image-set",
+      "cross-fade",
+      "url"
     ])
   ],
   ["background-position", /* @__PURE__ */ new Set(["top", "bottom", "left", "right", "center"])],
@@ -11134,29 +11138,29 @@ var extraPropertyValues = /* @__PURE__ */ new Map([
   [
     "mask-image",
     /* @__PURE__ */ new Set([
-      "linear-gradient()",
-      "radial-gradient()",
-      "conic-gradient()",
-      "repeating-linear-gradient()",
-      "repeating-radial-gradient()",
-      "repeating-conic-gradient()",
-      "image-set()",
-      "cross-fade()",
-      "url()"
+      "linear-gradient",
+      "radial-gradient",
+      "conic-gradient",
+      "repeating-linear-gradient",
+      "repeating-radial-gradient",
+      "repeating-conic-gradient",
+      "image-set",
+      "cross-fade",
+      "url"
     ])
   ],
   [
     "-webkit-mask-image",
     /* @__PURE__ */ new Set([
-      "linear-gradient()",
-      "radial-gradient()",
-      "conic-gradient()",
-      "repeating-linear-gradient()",
-      "repeating-radial-gradient()",
-      "repeating-conic-gradient()",
-      "image-set()",
-      "cross-fade()",
-      "url()"
+      "linear-gradient",
+      "radial-gradient",
+      "conic-gradient",
+      "repeating-linear-gradient",
+      "repeating-radial-gradient",
+      "repeating-conic-gradient",
+      "image-set",
+      "cross-fade",
+      "url"
     ])
   ],
   ["-webkit-mask-origin", /* @__PURE__ */ new Set(["border", "border-box", "content", "content-box", "padding", "padding-box"])],
@@ -11537,7 +11541,7 @@ __export(NetworkRequest_exports, {
   setCookieBlockedReasonToAttribute: () => setCookieBlockedReasonToAttribute,
   setCookieBlockedReasonToUiString: () => setCookieBlockedReasonToUiString
 });
-import * as Common27 from "./../common/common.js";
+import * as Common28 from "./../common/common.js";
 import * as i18n21 from "./../i18n/i18n.js";
 import * as Platform17 from "./../platform/platform.js";
 import * as TextUtils24 from "./../text_utils/text_utils.js";
@@ -11547,7 +11551,7 @@ var CookieModel_exports = {};
 __export(CookieModel_exports, {
   CookieModel: () => CookieModel
 });
-import * as Common25 from "./../common/common.js";
+import * as Common26 from "./../common/common.js";
 import * as Platform16 from "./../platform/platform.js";
 import * as Root9 from "./../root/root.js";
 
@@ -11841,7 +11845,7 @@ __export(NetworkManager_exports, {
   keyIsCustomUser: () => keyIsCustomUser,
   networkConditionsEqual: () => networkConditionsEqual
 });
-import * as Common24 from "./../common/common.js";
+import * as Common25 from "./../common/common.js";
 import * as Host5 from "./../host/host.js";
 import * as i18n15 from "./../i18n/i18n.js";
 import * as Platform15 from "./../platform/platform.js";
@@ -11855,7 +11859,7 @@ __export(RuntimeModel_exports, {
   ExecutionContext: () => ExecutionContext,
   RuntimeModel: () => RuntimeModel
 });
-import * as Common23 from "./../common/common.js";
+import * as Common24 from "./../common/common.js";
 import * as Host4 from "./../host/host.js";
 
 // gen/front_end/core/sdk/DebuggerModel.js
@@ -11874,7 +11878,7 @@ __export(DebuggerModel_exports, {
   WASM_SYMBOLS_PRIORITY: () => WASM_SYMBOLS_PRIORITY,
   sortAndMergeRanges: () => sortAndMergeRanges
 });
-import * as Common22 from "./../common/common.js";
+import * as Common23 from "./../common/common.js";
 import * as i18n13 from "./../i18n/i18n.js";
 import * as Root7 from "./../root/root.js";
 
@@ -12781,7 +12785,7 @@ __export(ResourceTreeModel_exports, {
   ResourceTreeFrame: () => ResourceTreeFrame,
   ResourceTreeModel: () => ResourceTreeModel
 });
-import * as Common20 from "./../common/common.js";
+import * as Common21 from "./../common/common.js";
 import * as i18n9 from "./../i18n/i18n.js";
 import * as Platform13 from "./../platform/platform.js";
 
@@ -12801,7 +12805,7 @@ __export(DOMModel_exports, {
   DeferredDOMNode: () => DeferredDOMNode,
   Events: () => Events5
 });
-import * as Common17 from "./../common/common.js";
+import * as Common18 from "./../common/common.js";
 import * as Platform11 from "./../platform/platform.js";
 import * as Root6 from "./../root/root.js";
 
@@ -12815,7 +12819,7 @@ __export(CSSModel_exports, {
   Events: () => Events3,
   InlineStyleResult: () => InlineStyleResult
 });
-import * as Common13 from "./../common/common.js";
+import * as Common14 from "./../common/common.js";
 import * as Host3 from "./../host/host.js";
 import * as Platform9 from "./../platform/platform.js";
 import * as Root5 from "./../root/root.js";
@@ -17887,6 +17891,45 @@ var CSSStyleSheetHeader = class {
   }
 };
 
+// gen/front_end/core/sdk/SDKSettings.js
+var SDKSettings_exports = {};
+__export(SDKSettings_exports, {
+  cssSourceMapsEnabledSettingDescriptor: () => cssSourceMapsEnabledSettingDescriptor,
+  jsSourceMapsEnabledSettingDescriptor: () => jsSourceMapsEnabledSettingDescriptor,
+  pauseOnCaughtExceptionSettingDescriptor: () => pauseOnCaughtExceptionSettingDescriptor,
+  pauseOnExceptionEnabledSettingDescriptor: () => pauseOnExceptionEnabledSettingDescriptor,
+  preserveConsoleLogSettingDescriptor: () => preserveConsoleLogSettingDescriptor
+});
+import * as Common6 from "./../common/common.js";
+var jsSourceMapsEnabledSettingDescriptor = {
+  name: "js-source-maps-enabled",
+  type: "boolean",
+  defaultValue: true,
+  storageType: "Synced"
+};
+var cssSourceMapsEnabledSettingDescriptor = {
+  name: "css-source-maps-enabled",
+  type: "boolean",
+  defaultValue: true,
+  storageType: "Synced"
+};
+var preserveConsoleLogSettingDescriptor = {
+  name: "preserve-console-log",
+  type: "boolean",
+  defaultValue: false,
+  storageType: "Synced"
+};
+var pauseOnExceptionEnabledSettingDescriptor = {
+  name: "pause-on-exception-enabled",
+  type: "boolean",
+  defaultValue: false
+};
+var pauseOnCaughtExceptionSettingDescriptor = {
+  name: "pause-on-caught-exception",
+  type: "boolean",
+  defaultValue: false
+};
+
 // gen/front_end/core/sdk/SourceMapManager.js
 var SourceMapManager_exports = {};
 __export(SourceMapManager_exports, {
@@ -17894,7 +17937,7 @@ __export(SourceMapManager_exports, {
   SourceMapManager: () => SourceMapManager,
   tryLoadSourceMap: () => tryLoadSourceMap
 });
-import * as Common12 from "./../common/common.js";
+import * as Common13 from "./../common/common.js";
 import * as Platform8 from "./../platform/platform.js";
 
 // gen/front_end/core/sdk/PageResourceLoader.js
@@ -17903,7 +17946,7 @@ __export(PageResourceLoader_exports, {
   PageResourceLoader: () => PageResourceLoader,
   ResourceKey: () => ResourceKey
 });
-import * as Common10 from "./../common/common.js";
+import * as Common11 from "./../common/common.js";
 import * as Host2 from "./../host/host.js";
 import * as i18n3 from "./../i18n/i18n.js";
 import * as Root4 from "./../root/root.js";
@@ -17913,7 +17956,7 @@ var IOModel_exports = {};
 __export(IOModel_exports, {
   IOModel: () => IOModel
 });
-import * as Common6 from "./../common/common.js";
+import * as Common7 from "./../common/common.js";
 var IOModel = class extends SDKModel {
   async read(handle, size, offset) {
     const result = await this.target().ioAgent().invoke_read({ handle, offset, size });
@@ -17924,7 +17967,7 @@ var IOModel = class extends SDKModel {
       return null;
     }
     if (result.base64Encoded) {
-      return Common6.Base64.decode(result.data);
+      return Common7.Base64.decode(result.data);
     }
     return result.data;
   }
@@ -17994,7 +18037,7 @@ __export(TargetManager_exports, {
   SDKModelObserver: () => SDKModelObserver,
   TargetManager: () => TargetManager
 });
-import * as Common9 from "./../common/common.js";
+import * as Common10 from "./../common/common.js";
 import * as Host from "./../host/host.js";
 import * as Platform6 from "./../platform/platform.js";
 import { assertNotNullOrUndefined as assertNotNullOrUndefined2 } from "./../platform/platform.js";
@@ -18005,9 +18048,9 @@ var FrameManager_exports = {};
 __export(FrameManager_exports, {
   FrameManager: () => FrameManager
 });
-import * as Common7 from "./../common/common.js";
+import * as Common8 from "./../common/common.js";
 import * as Root from "./../root/root.js";
-var FrameManager = class _FrameManager extends Common7.ObjectWrapper.ObjectWrapper {
+var FrameManager = class _FrameManager extends Common8.ObjectWrapper.ObjectWrapper {
   #eventListeners = /* @__PURE__ */ new WeakMap();
   // Maps frameIds to #frames and a count of how many ResourceTreeModels contain this frame.
   // (OOPIFs are usually first attached to a new target and then detached from their old target,
@@ -18041,7 +18084,7 @@ var FrameManager = class _FrameManager extends Common7.ObjectWrapper.ObjectWrapp
   modelRemoved(resourceTreeModel) {
     const listeners = this.#eventListeners.get(resourceTreeModel);
     if (listeners) {
-      Common7.EventTarget.removeEventListeners(listeners);
+      Common8.EventTarget.removeEventListeners(listeners);
     }
     const frameSet = this.#framesForTarget.get(resourceTreeModel.target().id());
     if (frameSet) {
@@ -18183,7 +18226,7 @@ __export(Target_exports, {
   Target: () => Target,
   Type: () => Type2
 });
-import * as Common8 from "./../common/common.js";
+import * as Common9 from "./../common/common.js";
 import * as Platform5 from "./../platform/platform.js";
 import * as ProtocolClient from "./../protocol_client/protocol_client.js";
 import * as Root2 from "./../root/root.js";
@@ -18225,7 +18268,7 @@ var Target = class extends ProtocolClient.InspectorBackend.TargetBase {
         }
         if (parentTarget?.type() !== Type2.FRAME) {
           this.#capabilitiesMask |= 4096 | 64 | 512 | 16384;
-          if (Common8.ParsedURL.schemeIs(targetInfo?.url, "chrome-extension:")) {
+          if (Common9.ParsedURL.schemeIs(targetInfo?.url, "chrome-extension:")) {
             this.#capabilitiesMask &= ~512;
           }
         }
@@ -18241,9 +18284,6 @@ var Target = class extends ProtocolClient.InspectorBackend.TargetBase {
         if (parentTarget?.type() !== Type2.FRAME) {
           this.#capabilitiesMask |= 8192;
         }
-        break;
-      case Type2.SHARED_STORAGE_WORKLET:
-        this.#capabilitiesMask = 4 | 8 | 2048 | 524288;
         break;
       case Type2.Worker:
         this.#capabilitiesMask = 4 | 8 | 16 | 32 | 131072 | 262144 | 256 | 524288;
@@ -18356,7 +18396,7 @@ var Target = class extends ProtocolClient.InspectorBackend.TargetBase {
   }
   setInspectedURL(inspectedURL) {
     this.#inspectedURL = inspectedURL;
-    const parsedURL = Common8.ParsedURL.ParsedURL.fromString(inspectedURL);
+    const parsedURL = Common9.ParsedURL.ParsedURL.fromString(inspectedURL);
     this.#inspectedURLName = parsedURL ? parsedURL.lastPathComponentWithFragment() : "#" + this.#id;
     this.#targetManager.onInspectedURLChange(this);
     if (!this.#name) {
@@ -18411,7 +18451,6 @@ var Type2;
   Type3["ServiceWorker"] = "service-worker";
   Type3["Worker"] = "worker";
   Type3["SHARED_WORKER"] = "shared-worker";
-  Type3["SHARED_STORAGE_WORKLET"] = "shared-storage-worklet";
   Type3["NODE"] = "node";
   Type3["BROWSER"] = "browser";
   Type3["AUCTION_WORKLET"] = "auction-worklet";
@@ -18421,7 +18460,7 @@ var Type2;
 })(Type2 || (Type2 = {}));
 
 // gen/front_end/core/sdk/TargetManager.js
-var TargetManager = class _TargetManager extends Common9.ObjectWrapper.ObjectWrapper {
+var TargetManager = class _TargetManager extends Common10.ObjectWrapper.ObjectWrapper {
   /**
    * @deprecated
    *
@@ -18435,14 +18474,14 @@ var TargetManager = class _TargetManager extends Common9.ObjectWrapper.ObjectWra
   #targets;
   #observers;
   get settings() {
-    return this.context.get(Common9.Settings.Settings);
+    return this.context.get(Common10.Settings.Settings);
   }
   // TODO(crbug.com/493763857): Remove fallback once all unit tests use TestUniverse.
   getConsole() {
-    if ("has" in this.context && typeof this.context.has === "function" && !this.context.has(Common9.Console.Console)) {
-      return Common9.Console.Console.instance();
+    if ("has" in this.context && typeof this.context.has === "function" && !this.context.has(Common10.Console.Console)) {
+      return Common10.Console.Console.instance();
     }
-    return this.context.get(Common9.Console.Console);
+    return this.context.get(Common10.Console.Console);
   }
   // TODO(crbug.com/493763857): Remove fallback once all unit tests use TestUniverse.
   getFrameManager() {
@@ -18877,7 +18916,7 @@ var ResourceKey = class {
     this.key = key;
   }
 };
-var PageResourceLoader = class _PageResourceLoader extends Common10.ObjectWrapper.ObjectWrapper {
+var PageResourceLoader = class _PageResourceLoader extends Common11.ObjectWrapper.ObjectWrapper {
   #targetManager;
   #settings;
   #userAgentProvider;
@@ -18901,7 +18940,7 @@ var PageResourceLoader = class _PageResourceLoader extends Common10.ObjectWrappe
     loadOverride: null
   }) {
     if (forceNew) {
-      Root4.DevToolsContext.globalInstance().set(_PageResourceLoader, new _PageResourceLoader(targetManager ?? TargetManager.instance(), settings ?? Common10.Settings.Settings.instance(), userAgentProvider ?? MultitargetNetworkManager.instance(), loadOverride, maxConcurrentLoads));
+      Root4.DevToolsContext.globalInstance().set(_PageResourceLoader, new _PageResourceLoader(targetManager ?? TargetManager.instance(), settings ?? Common11.Settings.Settings.instance(), userAgentProvider ?? MultitargetNetworkManager.instance(), loadOverride, maxConcurrentLoads));
     }
     return Root4.DevToolsContext.globalInstance().get(_PageResourceLoader);
   }
@@ -19056,12 +19095,12 @@ var PageResourceLoader = class _PageResourceLoader extends Common10.ObjectWrappe
     if (this.#loadOverride) {
       return await this.#loadOverride(url);
     }
-    const parsedURL = new Common10.ParsedURL.ParsedURL(url);
+    const parsedURL = new Common11.ParsedURL.ParsedURL(url);
     const eligibleForLoadFromTarget = this.getLoadThroughTargetSetting().get() && parsedURL && parsedURL.scheme !== "file" && parsedURL.scheme !== "data" && parsedURL.scheme !== "devtools" && initiator.target;
     Host2.userMetrics.developerResourceScheme(this.getDeveloperResourceScheme(parsedURL));
     if (eligibleForLoadFromTarget) {
-      let mustEnforceCSP = false;
       const isHttp = parsedURL.scheme === "http" || parsedURL.scheme === "https";
+      let mustEnforceCSP = isHttp;
       if (isHttp && initiator.target) {
         const networkManager = initiator.target.model(NetworkManager);
         if (networkManager) {
@@ -19069,14 +19108,9 @@ var PageResourceLoader = class _PageResourceLoader extends Common10.ObjectWrappe
           if (!status && initiator.frameId) {
             status = await networkManager.getSecurityIsolationStatus(null);
           }
-          if (status?.csp) {
-            for (const csp of status.csp) {
-              const directives = csp.effectiveDirectives;
-              if (directives.includes("connect-src") || directives.includes("default-src")) {
-                mustEnforceCSP = true;
-                break;
-              }
-            }
+          if (status) {
+            const csps = status.csp ?? [];
+            mustEnforceCSP = csps.some((csp) => csp.effectiveDirectives.includes("connect-src") || csp.effectiveDirectives.includes("default-src"));
           }
         }
       }
@@ -19195,7 +19229,7 @@ __export(SourceMap_exports, {
   parseSourceMap: () => parseSourceMap
 });
 import * as ScopesCodec from "./../../third_party/source-map-scopes-codec/source-map-scopes-codec.js";
-import * as Common11 from "./../common/common.js";
+import * as Common12 from "./../common/common.js";
 import * as Platform7 from "./../platform/platform.js";
 import * as TextUtils15 from "./../text_utils/text_utils.js";
 
@@ -20030,7 +20064,7 @@ var SourceMap = class {
     this.#script = script;
     this.#compiledURL = compiledURL;
     this.#sourceMappingURL = sourceMappingURL;
-    this.#baseURL = Common11.ParsedURL.schemeIs(sourceMappingURL, "data:") ? compiledURL : sourceMappingURL;
+    this.#baseURL = Common12.ParsedURL.schemeIs(sourceMappingURL, "data:") ? compiledURL : sourceMappingURL;
     this.#debugId = "debugId" in payload ? payload.debugId : void 0;
     this.#console = console2;
     if ("sections" in this.#json) {
@@ -20297,14 +20331,14 @@ var SourceMap = class {
     const ignoreList = new Set(sourceMap.ignoreList ?? sourceMap.x_google_ignoreList);
     for (let i = 0; i < sourceMap.sources.length; ++i) {
       let href = sourceMap.sources[i];
-      if (Common11.ParsedURL.ParsedURL.isRelativeURL(href)) {
+      if (Common12.ParsedURL.ParsedURL.isRelativeURL(href)) {
         if (sourceRoot && !sourceRoot.endsWith("/") && href && !href.startsWith("/")) {
           href = sourceRoot.concat("/", href);
         } else {
           href = sourceRoot.concat(href);
         }
       }
-      const url = Common11.ParsedURL.ParsedURL.completeURL(this.#baseURL, href) || href;
+      const url = Common12.ParsedURL.ParsedURL.completeURL(this.#baseURL, href) || href;
       const source = sourceMap.sourcesContent?.[i];
       const sourceInfo = {
         sourceURL: url,
@@ -20566,7 +20600,7 @@ var TokenIterator = class {
         throw new Error("Unexpected end of input while decodling VLQ number!");
       }
       const charCode = this.nextCharCode();
-      digit = Common11.Base64.BASE64_CODES[charCode];
+      digit = Common12.Base64.BASE64_CODES[charCode];
       if (charCode !== 65 && digit === 0) {
         throw new Error(`Unexpected char '${String.fromCharCode(charCode)}' encountered while decoding`);
       }
@@ -20650,7 +20684,7 @@ var IN_MEMORY_INSTANCE = new class {
 }();
 
 // gen/front_end/core/sdk/SourceMapManager.js
-var SourceMapManager = class _SourceMapManager extends Common12.ObjectWrapper.ObjectWrapper {
+var SourceMapManager = class _SourceMapManager extends Common13.ObjectWrapper.ObjectWrapper {
   #target;
   #factory;
   #isEnabled = true;
@@ -20683,7 +20717,7 @@ var SourceMapManager = class _SourceMapManager extends Common12.ObjectWrapper.Ob
     return target?.inspectedURL() ?? Platform8.DevToolsPath.EmptyUrlString;
   }
   static resolveRelativeSourceURL(target, url) {
-    url = Common12.ParsedURL.ParsedURL.completeURL(_SourceMapManager.getBaseUrl(target), url) ?? url;
+    url = Common13.ParsedURL.ParsedURL.completeURL(_SourceMapManager.getBaseUrl(target), url) ?? url;
     return url;
   }
   sourceMapForClient(client) {
@@ -20715,7 +20749,7 @@ var SourceMapManager = class _SourceMapManager extends Common12.ObjectWrapper.Ob
     };
     if (this.#isEnabled) {
       const sourceURL = _SourceMapManager.resolveRelativeSourceURL(this.#target, relativeSourceURL);
-      const sourceMapURL = Common12.ParsedURL.ParsedURL.completeURL(sourceURL, relativeSourceMapURL);
+      const sourceMapURL = Common13.ParsedURL.ParsedURL.completeURL(sourceURL, relativeSourceMapURL);
       if (sourceMapURL) {
         if (this.#attachingClient) {
           console.error("Attaching source map may cancel previously attaching source map");
@@ -20786,7 +20820,7 @@ var SourceMapManager = class _SourceMapManager extends Common12.ObjectWrapper.Ob
 async function loadSourceMap(resourceLoader, sourceMapCache, url, debugId, initiator) {
   try {
     if (debugId) {
-      const securityOrigin = initiator.initiatorUrl ? Common12.ParsedURL.ParsedURL.extractOrigin(initiator.initiatorUrl) : Platform8.DevToolsPath.EmptyUrlString;
+      const securityOrigin = initiator.initiatorUrl ? Common13.ParsedURL.ParsedURL.extractOrigin(initiator.initiatorUrl) : Platform8.DevToolsPath.EmptyUrlString;
       const cachedSourceMap = await sourceMapCache.get(debugId, securityOrigin);
       if (cachedSourceMap) {
         return cachedSourceMap;
@@ -20795,7 +20829,7 @@ async function loadSourceMap(resourceLoader, sourceMapCache, url, debugId, initi
     const { content } = await resourceLoader.loadResource(url, initiator);
     const sourceMap = parseSourceMap(content);
     if (debugId && "debugId" in sourceMap && sourceMap.debugId === debugId) {
-      const securityOrigin = initiator.initiatorUrl ? Common12.ParsedURL.ParsedURL.extractOrigin(initiator.initiatorUrl) : Platform8.DevToolsPath.EmptyUrlString;
+      const securityOrigin = initiator.initiatorUrl ? Common13.ParsedURL.ParsedURL.extractOrigin(initiator.initiatorUrl) : Platform8.DevToolsPath.EmptyUrlString;
       await sourceMapCache.set(sourceMap.debugId, securityOrigin, sourceMap).catch();
     }
     return sourceMap;
@@ -20828,7 +20862,7 @@ var CSSModel = class _CSSModel extends SDKModel {
   #resourceTreeModel;
   #sourceMapManager;
   #styleLoader;
-  #stylePollingThrottler = new Common13.Throttler.Throttler(StylePollingInterval);
+  #stylePollingThrottler = new Common14.Throttler.Throttler(StylePollingInterval);
   #styleSheetIdsForURL = /* @__PURE__ */ new Map();
   #styleSheetIdToHeader = /* @__PURE__ */ new Map();
   #cachedMatchedCascadeNode = null;
@@ -20854,8 +20888,8 @@ var CSSModel = class _CSSModel extends SDKModel {
       void this.enable();
     }
     const settings = this.target().targetManager().settings;
-    this.#sourceMapManager.setEnabled(settings.moduleSetting("css-source-maps-enabled").get());
-    settings.moduleSetting("css-source-maps-enabled").addChangeListener((event) => this.#sourceMapManager.setEnabled(event.data));
+    this.#sourceMapManager.setEnabled(settings.resolve(cssSourceMapsEnabledSettingDescriptor).get());
+    settings.resolve(cssSourceMapsEnabledSettingDescriptor).addChangeListener((event) => this.#sourceMapManager.setEnabled(event.data));
   }
   async colorScheme() {
     if (!this.#colorScheme) {
@@ -21705,7 +21739,7 @@ var InlineStyleResult = class {
     this.attributesStyle = attributesStyle;
   }
 };
-var CSSPropertyTracker = class extends Common13.ObjectWrapper.ObjectWrapper {
+var CSSPropertyTracker = class extends Common14.ObjectWrapper.ObjectWrapper {
   #cssModel;
   #properties;
   constructor(cssModel, propertiesToTrack) {
@@ -21733,7 +21767,7 @@ __export(OverlayModel_exports, {
   SourceOrderHighlighter: () => SourceOrderHighlighter,
   WindowControls: () => WindowControls
 });
-import * as Common16 from "./../common/common.js";
+import * as Common17 from "./../common/common.js";
 import * as i18n7 from "./../i18n/i18n.js";
 
 // gen/front_end/core/sdk/OverlayPersistentHighlighter.js
@@ -21741,7 +21775,7 @@ var OverlayPersistentHighlighter_exports = {};
 __export(OverlayPersistentHighlighter_exports, {
   OverlayPersistentHighlighter: () => OverlayPersistentHighlighter
 });
-import * as Common15 from "./../common/common.js";
+import * as Common16 from "./../common/common.js";
 import * as Platform10 from "./../platform/platform.js";
 
 // gen/front_end/core/sdk/OverlayColorGenerator.js
@@ -21749,7 +21783,7 @@ var OverlayColorGenerator_exports = {};
 __export(OverlayColorGenerator_exports, {
   OverlayColorGenerator: () => OverlayColorGenerator
 });
-import * as Common14 from "./../common/common.js";
+import * as Common15 from "./../common/common.js";
 var OverlayColorGenerator = class {
   #colors;
   #index;
@@ -21757,23 +21791,23 @@ var OverlayColorGenerator = class {
     const format = "rgba";
     this.#colors = [
       // F59794
-      new Common14.Color.Legacy([0.9607843137254902, 0.592156862745098, 0.5803921568627451, 1], format),
+      new Common15.Color.Legacy([0.9607843137254902, 0.592156862745098, 0.5803921568627451, 1], format),
       // F0BF4C
-      new Common14.Color.Legacy([0.9411764705882353, 0.7490196078431373, 0.2980392156862745, 1], format),
+      new Common15.Color.Legacy([0.9411764705882353, 0.7490196078431373, 0.2980392156862745, 1], format),
       // D4ED31
-      new Common14.Color.Legacy([0.8313725490196079, 0.9294117647058824, 0.19215686274509805, 1], format),
+      new Common15.Color.Legacy([0.8313725490196079, 0.9294117647058824, 0.19215686274509805, 1], format),
       // 9EEB47
-      new Common14.Color.Legacy([0.6196078431372549, 0.9215686274509803, 0.2784313725490196, 1], format),
+      new Common15.Color.Legacy([0.6196078431372549, 0.9215686274509803, 0.2784313725490196, 1], format),
       // 5BD1D7
-      new Common14.Color.Legacy([0.3568627450980392, 0.8196078431372549, 0.8431372549019608, 1], format),
+      new Common15.Color.Legacy([0.3568627450980392, 0.8196078431372549, 0.8431372549019608, 1], format),
       // BCCEFB
-      new Common14.Color.Legacy([0.7372549019607844, 0.807843137254902, 0.984313725490196, 1], format),
+      new Common15.Color.Legacy([0.7372549019607844, 0.807843137254902, 0.984313725490196, 1], format),
       // C6BEEE
-      new Common14.Color.Legacy([0.7764705882352941, 0.7450980392156863, 0.9333333333333333, 1], format),
+      new Common15.Color.Legacy([0.7764705882352941, 0.7450980392156863, 0.9333333333333333, 1], format),
       // D094EA
-      new Common14.Color.Legacy([0.8156862745098039, 0.5803921568627451, 0.9176470588235294, 1], format),
+      new Common15.Color.Legacy([0.8156862745098039, 0.5803921568627451, 0.9176470588235294, 1], format),
       // EB94CF
-      new Common14.Color.Legacy([0.9215686274509803, 0.5803921568627451, 0.8117647058823529, 1], format)
+      new Common15.Color.Legacy([0.9215686274509803, 0.5803921568627451, 0.8117647058823529, 1], format)
     ];
     this.#index = 0;
   }
@@ -21881,12 +21915,12 @@ var OverlayPersistentHighlighter = class {
   buildScrollSnapContainerHighlightConfig(_nodeId) {
     return {
       snapAreaBorder: {
-        color: Common15.Color.PageHighlight.GridBorder.toProtocolRGBA(),
+        color: Common16.Color.PageHighlight.GridBorder.toProtocolRGBA(),
         pattern: "dashed"
       },
-      snapportBorder: { color: Common15.Color.PageHighlight.GridBorder.toProtocolRGBA() },
-      scrollMarginColor: Common15.Color.PageHighlight.Margin.toProtocolRGBA(),
-      scrollPaddingColor: Common15.Color.PageHighlight.Padding.toProtocolRGBA()
+      snapportBorder: { color: Common16.Color.PageHighlight.GridBorder.toProtocolRGBA() },
+      scrollMarginColor: Common16.Color.PageHighlight.Margin.toProtocolRGBA(),
+      scrollPaddingColor: Common16.Color.PageHighlight.Padding.toProtocolRGBA()
     };
   }
   highlightGridInOverlay(nodeId) {
@@ -21982,11 +22016,11 @@ var OverlayPersistentHighlighter = class {
   buildContainerQueryContainerHighlightConfig() {
     return {
       containerBorder: {
-        color: Common15.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+        color: Common16.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
         pattern: "dashed"
       },
       descendantBorder: {
-        color: Common15.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+        color: Common16.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
         pattern: "dashed"
       }
     };
@@ -22008,9 +22042,9 @@ var OverlayPersistentHighlighter = class {
   }
   buildIsolationModeHighlightConfig() {
     return {
-      resizerColor: Common15.Color.IsolationModeHighlight.Resizer.toProtocolRGBA(),
-      resizerHandleColor: Common15.Color.IsolationModeHighlight.ResizerHandle.toProtocolRGBA(),
-      maskColor: Common15.Color.IsolationModeHighlight.Mask.toProtocolRGBA()
+      resizerColor: Common16.Color.IsolationModeHighlight.Resizer.toProtocolRGBA(),
+      resizerHandleColor: Common16.Color.IsolationModeHighlight.ResizerHandle.toProtocolRGBA(),
+      maskColor: Common16.Color.IsolationModeHighlight.Mask.toProtocolRGBA()
     };
   }
   hideAllInOverlayWithoutSave() {
@@ -22366,7 +22400,7 @@ var OverlayModel = class _OverlayModel extends SDKModel {
     this.#persistentHighlighter?.resetOverlay();
   }
   async suspendModel() {
-    Common16.EventTarget.removeEventListeners(this.#registeredListeners);
+    Common17.EventTarget.removeEventListeners(this.#registeredListeners);
     await this.overlayAgent.invoke_disable();
   }
   async resumeModel() {
@@ -22492,8 +22526,8 @@ var OverlayModel = class _OverlayModel extends SDKModel {
   }
   highlightSourceOrderInOverlay(node) {
     const sourceOrderConfig = {
-      parentOutlineColor: Common16.Color.SourceOrderHighlight.ParentOutline.toProtocolRGBA(),
-      childOutlineColor: Common16.Color.SourceOrderHighlight.ChildOutline.toProtocolRGBA()
+      parentOutlineColor: Common17.Color.SourceOrderHighlight.ParentOutline.toProtocolRGBA(),
+      childOutlineColor: Common17.Color.SourceOrderHighlight.ChildOutline.toProtocolRGBA()
     };
     this.#sourceOrderHighlighter.highlightSourceOrderInOverlay(node, sourceOrderConfig);
   }
@@ -22510,7 +22544,7 @@ var OverlayModel = class _OverlayModel extends SDKModel {
     if (!this.#persistentHighlighter) {
       return;
     }
-    const color = Common16.Color.parse(colorStr);
+    const color = Common17.Color.parse(colorStr);
     if (!color) {
       return;
     }
@@ -22530,7 +22564,7 @@ var OverlayModel = class _OverlayModel extends SDKModel {
     if (!this.#persistentHighlighter) {
       return;
     }
-    const color = Common16.Color.parse(colorStr);
+    const color = Common17.Color.parse(colorStr);
     if (!color) {
       return;
     }
@@ -22619,187 +22653,187 @@ var OverlayModel = class _OverlayModel extends SDKModel {
       contrastAlgorithm: settings.moduleSetting("apca").get() ? "apca" : "aa"
     };
     if (mode === "all" || mode === "content") {
-      highlightConfig.contentColor = Common16.Color.PageHighlight.Content.toProtocolRGBA();
+      highlightConfig.contentColor = Common17.Color.PageHighlight.Content.toProtocolRGBA();
     }
     if (mode === "all" || mode === "padding") {
-      highlightConfig.paddingColor = Common16.Color.PageHighlight.Padding.toProtocolRGBA();
+      highlightConfig.paddingColor = Common17.Color.PageHighlight.Padding.toProtocolRGBA();
     }
     if (mode === "all" || mode === "border") {
-      highlightConfig.borderColor = Common16.Color.PageHighlight.Border.toProtocolRGBA();
+      highlightConfig.borderColor = Common17.Color.PageHighlight.Border.toProtocolRGBA();
     }
     if (mode === "all" || mode === "margin") {
-      highlightConfig.marginColor = Common16.Color.PageHighlight.Margin.toProtocolRGBA();
+      highlightConfig.marginColor = Common17.Color.PageHighlight.Margin.toProtocolRGBA();
     }
     if (mode === "all") {
-      highlightConfig.eventTargetColor = Common16.Color.PageHighlight.EventTarget.toProtocolRGBA();
-      highlightConfig.shapeColor = Common16.Color.PageHighlight.Shape.toProtocolRGBA();
-      highlightConfig.shapeMarginColor = Common16.Color.PageHighlight.ShapeMargin.toProtocolRGBA();
+      highlightConfig.eventTargetColor = Common17.Color.PageHighlight.EventTarget.toProtocolRGBA();
+      highlightConfig.shapeColor = Common17.Color.PageHighlight.Shape.toProtocolRGBA();
+      highlightConfig.shapeMarginColor = Common17.Color.PageHighlight.ShapeMargin.toProtocolRGBA();
       highlightConfig.gridHighlightConfig = {
-        rowGapColor: Common16.Color.PageHighlight.GapBackground.toProtocolRGBA(),
-        rowHatchColor: Common16.Color.PageHighlight.GapHatch.toProtocolRGBA(),
-        columnGapColor: Common16.Color.PageHighlight.GapBackground.toProtocolRGBA(),
-        columnHatchColor: Common16.Color.PageHighlight.GapHatch.toProtocolRGBA(),
-        rowLineColor: Common16.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
-        columnLineColor: Common16.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+        rowGapColor: Common17.Color.PageHighlight.GapBackground.toProtocolRGBA(),
+        rowHatchColor: Common17.Color.PageHighlight.GapHatch.toProtocolRGBA(),
+        columnGapColor: Common17.Color.PageHighlight.GapBackground.toProtocolRGBA(),
+        columnHatchColor: Common17.Color.PageHighlight.GapHatch.toProtocolRGBA(),
+        rowLineColor: Common17.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+        columnLineColor: Common17.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
         rowLineDash: true,
         columnLineDash: true
       };
       highlightConfig.flexContainerHighlightConfig = {
         containerBorder: {
-          color: Common16.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+          color: Common17.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
           pattern: "dashed"
         },
         itemSeparator: {
-          color: Common16.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+          color: Common17.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
           pattern: "dotted"
         },
         lineSeparator: {
-          color: Common16.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+          color: Common17.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
           pattern: "dashed"
         },
         mainDistributedSpace: {
-          hatchColor: Common16.Color.PageHighlight.GapHatch.toProtocolRGBA(),
-          fillColor: Common16.Color.PageHighlight.GapBackground.toProtocolRGBA()
+          hatchColor: Common17.Color.PageHighlight.GapHatch.toProtocolRGBA(),
+          fillColor: Common17.Color.PageHighlight.GapBackground.toProtocolRGBA()
         },
         crossDistributedSpace: {
-          hatchColor: Common16.Color.PageHighlight.GapHatch.toProtocolRGBA(),
-          fillColor: Common16.Color.PageHighlight.GapBackground.toProtocolRGBA()
+          hatchColor: Common17.Color.PageHighlight.GapHatch.toProtocolRGBA(),
+          fillColor: Common17.Color.PageHighlight.GapBackground.toProtocolRGBA()
         },
         rowGapSpace: {
-          hatchColor: Common16.Color.PageHighlight.GapHatch.toProtocolRGBA(),
-          fillColor: Common16.Color.PageHighlight.GapBackground.toProtocolRGBA()
+          hatchColor: Common17.Color.PageHighlight.GapHatch.toProtocolRGBA(),
+          fillColor: Common17.Color.PageHighlight.GapBackground.toProtocolRGBA()
         },
         columnGapSpace: {
-          hatchColor: Common16.Color.PageHighlight.GapHatch.toProtocolRGBA(),
-          fillColor: Common16.Color.PageHighlight.GapBackground.toProtocolRGBA()
+          hatchColor: Common17.Color.PageHighlight.GapHatch.toProtocolRGBA(),
+          fillColor: Common17.Color.PageHighlight.GapBackground.toProtocolRGBA()
         }
       };
       highlightConfig.flexItemHighlightConfig = {
         baseSizeBox: {
-          hatchColor: Common16.Color.PageHighlight.GapHatch.toProtocolRGBA()
+          hatchColor: Common17.Color.PageHighlight.GapHatch.toProtocolRGBA()
         },
         baseSizeBorder: {
-          color: Common16.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+          color: Common17.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
           pattern: "dotted"
         },
         flexibilityArrow: {
-          color: Common16.Color.PageHighlight.LayoutLine.toProtocolRGBA()
+          color: Common17.Color.PageHighlight.LayoutLine.toProtocolRGBA()
         }
       };
     }
     if (mode.endsWith("gap")) {
       highlightConfig.gridHighlightConfig = {
-        gridBorderColor: Common16.Color.PageHighlight.GridBorder.toProtocolRGBA(),
+        gridBorderColor: Common17.Color.PageHighlight.GridBorder.toProtocolRGBA(),
         gridBorderDash: true
       };
       if (mode === "gap" || mode === "row-gap") {
-        highlightConfig.gridHighlightConfig.rowGapColor = Common16.Color.PageHighlight.GapBackground.toProtocolRGBA();
-        highlightConfig.gridHighlightConfig.rowHatchColor = Common16.Color.PageHighlight.GapHatch.toProtocolRGBA();
+        highlightConfig.gridHighlightConfig.rowGapColor = Common17.Color.PageHighlight.GapBackground.toProtocolRGBA();
+        highlightConfig.gridHighlightConfig.rowHatchColor = Common17.Color.PageHighlight.GapHatch.toProtocolRGBA();
       }
       if (mode === "gap" || mode === "column-gap") {
-        highlightConfig.gridHighlightConfig.columnGapColor = Common16.Color.PageHighlight.GapBackground.toProtocolRGBA();
-        highlightConfig.gridHighlightConfig.columnHatchColor = Common16.Color.PageHighlight.GapHatch.toProtocolRGBA();
+        highlightConfig.gridHighlightConfig.columnGapColor = Common17.Color.PageHighlight.GapBackground.toProtocolRGBA();
+        highlightConfig.gridHighlightConfig.columnHatchColor = Common17.Color.PageHighlight.GapHatch.toProtocolRGBA();
       }
     }
     if (mode.endsWith("gap")) {
       highlightConfig.flexContainerHighlightConfig = {
         containerBorder: {
-          color: Common16.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+          color: Common17.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
           pattern: "dashed"
         }
       };
       if (mode === "gap" || mode === "row-gap") {
         highlightConfig.flexContainerHighlightConfig.rowGapSpace = {
-          hatchColor: Common16.Color.PageHighlight.GapHatch.toProtocolRGBA(),
-          fillColor: Common16.Color.PageHighlight.GapBackground.toProtocolRGBA()
+          hatchColor: Common17.Color.PageHighlight.GapHatch.toProtocolRGBA(),
+          fillColor: Common17.Color.PageHighlight.GapBackground.toProtocolRGBA()
         };
       }
       if (mode === "gap" || mode === "column-gap") {
         highlightConfig.flexContainerHighlightConfig.columnGapSpace = {
-          hatchColor: Common16.Color.PageHighlight.GapHatch.toProtocolRGBA(),
-          fillColor: Common16.Color.PageHighlight.GapBackground.toProtocolRGBA()
+          hatchColor: Common17.Color.PageHighlight.GapHatch.toProtocolRGBA(),
+          fillColor: Common17.Color.PageHighlight.GapBackground.toProtocolRGBA()
         };
       }
     }
     if (mode === "grid-areas") {
       highlightConfig.gridHighlightConfig = {
-        rowLineColor: Common16.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
-        columnLineColor: Common16.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+        rowLineColor: Common17.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+        columnLineColor: Common17.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
         rowLineDash: true,
         columnLineDash: true,
         showAreaNames: true,
-        areaBorderColor: Common16.Color.PageHighlight.GridAreaBorder.toProtocolRGBA()
+        areaBorderColor: Common17.Color.PageHighlight.GridAreaBorder.toProtocolRGBA()
       };
     }
     if (mode === "grid-template-columns") {
-      highlightConfig.contentColor = Common16.Color.PageHighlight.Content.toProtocolRGBA();
+      highlightConfig.contentColor = Common17.Color.PageHighlight.Content.toProtocolRGBA();
       highlightConfig.gridHighlightConfig = {
-        columnLineColor: Common16.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+        columnLineColor: Common17.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
         columnLineDash: true
       };
     }
     if (mode === "grid-template-rows") {
-      highlightConfig.contentColor = Common16.Color.PageHighlight.Content.toProtocolRGBA();
+      highlightConfig.contentColor = Common17.Color.PageHighlight.Content.toProtocolRGBA();
       highlightConfig.gridHighlightConfig = {
-        rowLineColor: Common16.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+        rowLineColor: Common17.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
         rowLineDash: true
       };
     }
     if (mode === "justify-content") {
       highlightConfig.flexContainerHighlightConfig = {
         containerBorder: {
-          color: Common16.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+          color: Common17.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
           pattern: "dashed"
         },
         mainDistributedSpace: {
-          hatchColor: Common16.Color.PageHighlight.GapHatch.toProtocolRGBA(),
-          fillColor: Common16.Color.PageHighlight.GapBackground.toProtocolRGBA()
+          hatchColor: Common17.Color.PageHighlight.GapHatch.toProtocolRGBA(),
+          fillColor: Common17.Color.PageHighlight.GapBackground.toProtocolRGBA()
         }
       };
     }
     if (mode === "align-content") {
       highlightConfig.flexContainerHighlightConfig = {
         containerBorder: {
-          color: Common16.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+          color: Common17.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
           pattern: "dashed"
         },
         crossDistributedSpace: {
-          hatchColor: Common16.Color.PageHighlight.GapHatch.toProtocolRGBA(),
-          fillColor: Common16.Color.PageHighlight.GapBackground.toProtocolRGBA()
+          hatchColor: Common17.Color.PageHighlight.GapHatch.toProtocolRGBA(),
+          fillColor: Common17.Color.PageHighlight.GapBackground.toProtocolRGBA()
         }
       };
     }
     if (mode === "align-items") {
       highlightConfig.flexContainerHighlightConfig = {
         containerBorder: {
-          color: Common16.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+          color: Common17.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
           pattern: "dashed"
         },
         lineSeparator: {
-          color: Common16.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+          color: Common17.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
           pattern: "dashed"
         },
-        crossAlignment: { color: Common16.Color.PageHighlight.LayoutLine.toProtocolRGBA() }
+        crossAlignment: { color: Common17.Color.PageHighlight.LayoutLine.toProtocolRGBA() }
       };
     }
     if (mode === "flexibility") {
       highlightConfig.flexItemHighlightConfig = {
         baseSizeBox: {
-          hatchColor: Common16.Color.PageHighlight.GapHatch.toProtocolRGBA()
+          hatchColor: Common17.Color.PageHighlight.GapHatch.toProtocolRGBA()
         },
         baseSizeBorder: {
-          color: Common16.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+          color: Common17.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
           pattern: "dotted"
         },
         flexibilityArrow: {
-          color: Common16.Color.PageHighlight.LayoutLine.toProtocolRGBA()
+          color: Common17.Color.PageHighlight.LayoutLine.toProtocolRGBA()
         }
       };
     }
     if (mode === "container-outline") {
       highlightConfig.containerQueryContainerHighlightConfig = {
         containerBorder: {
-          color: Common16.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+          color: Common17.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
           pattern: "dashed"
         }
       };
@@ -22824,7 +22858,7 @@ var OverlayModel = class _OverlayModel extends SDKModel {
         }
       });
     } else {
-      void Common16.Revealer.reveal(deferredNode);
+      void Common17.Revealer.reveal(deferredNode);
     }
     this.dispatchEventToListeners(
       "InspectModeExited"
@@ -22924,7 +22958,7 @@ var WindowControls = class _WindowControls {
     return _WindowControls.#transformStyleSheet(overlayDimensions.x, overlayDimensions.y, overlayDimensions.width, overlayDimensions.height, originalStyleSheet);
   }
   #fetchCssSourceUrl(url) {
-    const parentURL = Common16.ParsedURL.ParsedURL.extractOrigin(url);
+    const parentURL = Common17.ParsedURL.ParsedURL.extractOrigin(url);
     const cssHeaders = this.#cssModel.styleSheetHeaders();
     const header = cssHeaders.find((header2) => header2.sourceURL && header2.sourceURL.includes(parentURL));
     return header?.sourceURL;
@@ -22969,8 +23003,8 @@ var DefaultHighlighter = class {
   highlightFrame(frameId) {
     void this.#model.target().overlayAgent().invoke_highlightFrame({
       frameId,
-      contentColor: Common16.Color.PageHighlight.Content.toProtocolRGBA(),
-      contentOutlineColor: Common16.Color.PageHighlight.ContentOutline.toProtocolRGBA()
+      contentColor: Common17.Color.PageHighlight.Content.toProtocolRGBA(),
+      contentOutlineColor: Common17.Color.PageHighlight.ContentOutline.toProtocolRGBA()
     });
   }
 };
@@ -23059,7 +23093,7 @@ var DOMNodeEvents;
   DOMNodeEvents2["SCROLL_SNAP_OVERLAY_STATE_CHANGED"] = "ScrollSnapOverlayStateChanged";
   DOMNodeEvents2["CONTAINER_QUERY_OVERLAY_STATE_CHANGED"] = "ContainerQueryOverlayStateChanged";
 })(DOMNodeEvents || (DOMNodeEvents = {}));
-var DOMNode = class _DOMNode extends Common17.ObjectWrapper.ObjectWrapper {
+var DOMNode = class _DOMNode extends Common18.ObjectWrapper.ObjectWrapper {
   #domModel;
   #frameManager;
   #agent;
@@ -23915,7 +23949,7 @@ var DOMNode = class _DOMNode extends Common17.ObjectWrapper.ObjectWrapper {
     }
     for (let frameOwnerCandidate = this; frameOwnerCandidate; frameOwnerCandidate = frameOwnerCandidate.parentNode) {
       if (frameOwnerCandidate instanceof DOMDocument && frameOwnerCandidate.baseURL) {
-        return Common17.ParsedURL.ParsedURL.completeURL(frameOwnerCandidate.baseURL, url);
+        return Common18.ParsedURL.ParsedURL.completeURL(frameOwnerCandidate.baseURL, url);
       }
     }
     return null;
@@ -24234,7 +24268,7 @@ var DOMModel = class _DOMModel extends SDKModel {
   #frameOwnerNode;
   #loadNodeAttributesTimeout;
   #searchId;
-  #topLayerThrottler = new Common17.Throttler.Throttler(100);
+  #topLayerThrottler = new Common18.Throttler.Throttler(100);
   #topLayerNodes = [];
   #resourceTreeModel = null;
   constructor(target) {
@@ -24992,7 +25026,7 @@ var Resource_exports = {};
 __export(Resource_exports, {
   Resource: () => Resource
 });
-import * as Common18 from "./../common/common.js";
+import * as Common19 from "./../common/common.js";
 import * as Platform12 from "./../platform/platform.js";
 import * as TextUtils17 from "./../text_utils/text_utils.js";
 var Resource = class {
@@ -25021,7 +25055,7 @@ var Resource = class {
     this.#documentURL = documentURL;
     this.#frameId = frameId;
     this.#loaderId = loaderId;
-    this.#type = type || Common18.ResourceType.resourceTypes.Other;
+    this.#type = type || Common19.ResourceType.resourceTypes.Other;
     this.#mimeType = mimeType;
     this.#isGenerated = false;
     this.#lastModified = lastModified && Platform12.DateUtilities.isValid(lastModified) ? lastModified : null;
@@ -25050,7 +25084,7 @@ var Resource = class {
   }
   set url(x) {
     this.#url = x;
-    this.#parsedURL = new Common18.ParsedURL.ParsedURL(x);
+    this.#parsedURL = new Common19.ParsedURL.ParsedURL(x);
   }
   get parsedURL() {
     return this.#parsedURL;
@@ -25089,8 +25123,8 @@ var Resource = class {
     return this.#url;
   }
   contentType() {
-    if (this.resourceType() === Common18.ResourceType.resourceTypes.Document && this.mimeType.indexOf("javascript") !== -1) {
-      return Common18.ResourceType.resourceTypes.Script;
+    if (this.resourceType() === Common19.ResourceType.resourceTypes.Document && this.mimeType.indexOf("javascript") !== -1) {
+      return Common19.ResourceType.resourceTypes.Script;
     }
     return this.resourceType();
   }
@@ -25210,7 +25244,7 @@ __export(StorageKeyManager_exports, {
   StorageKeyManager: () => StorageKeyManager,
   parseStorageKey: () => parseStorageKey
 });
-import * as Common19 from "./../common/common.js";
+import * as Common20 from "./../common/common.js";
 var StorageKeyManager = class extends SDKModel {
   #mainStorageKey;
   #storageKeys;
@@ -25248,7 +25282,7 @@ var StorageKeyManager = class extends SDKModel {
 };
 function parseStorageKey(storageKeyString) {
   const components = storageKeyString.split("^");
-  const origin = Common19.ParsedURL.ParsedURL.extractOrigin(components[0]);
+  const origin = Common20.ParsedURL.ParsedURL.extractOrigin(components[0]);
   const storageKey = {
     // For file:// URLs, extracting the origin collapses it to "file://".
     // Node.js uses the full file URL as the StorageKey, so keep the original URL here.
@@ -25444,7 +25478,7 @@ var ResourceTreeModel = class _ResourceTreeModel extends SDKModel {
     if (frame) {
       this.dispatchEventToListeners(Events.DocumentOpened, frame);
       if (!frame.getResourcesMap().get(framePayload.url)) {
-        const frameResource = this.createResourceFromFramePayload(framePayload, framePayload.url, Common20.ResourceType.resourceTypes.Document, framePayload.mimeType, null, null);
+        const frameResource = this.createResourceFromFramePayload(framePayload, framePayload.url, Common21.ResourceType.resourceTypes.Document, framePayload.mimeType, null, null);
         frameResource.isGenerated = true;
         frame.addResource(frameResource);
       }
@@ -25497,7 +25531,7 @@ var ResourceTreeModel = class _ResourceTreeModel extends SDKModel {
     if (frame.getResourcesMap().get(url)) {
       return;
     }
-    const resource = new Resource(this, null, url, frame.url, frameId, data.loaderId, Common20.ResourceType.resourceTypes[data.resourceType], data.mimeType, data.lastModified, null);
+    const resource = new Resource(this, null, url, frame.url, frameId, data.loaderId, Common21.ResourceType.resourceTypes[data.resourceType], data.mimeType, data.lastModified, null);
     frame.addResource(resource);
   }
   frameForId(frameId) {
@@ -25527,11 +25561,11 @@ var ResourceTreeModel = class _ResourceTreeModel extends SDKModel {
     }
     for (let i = 0; i < frameTreePayload.resources.length; ++i) {
       const subresource = frameTreePayload.resources[i];
-      const resource = this.createResourceFromFramePayload(framePayload, subresource.url, Common20.ResourceType.resourceTypes[subresource.type], subresource.mimeType, subresource.lastModified || null, subresource.contentSize || null);
+      const resource = this.createResourceFromFramePayload(framePayload, subresource.url, Common21.ResourceType.resourceTypes[subresource.type], subresource.mimeType, subresource.lastModified || null, subresource.contentSize || null);
       frame.addResource(resource);
     }
     if (!frame.getResourcesMap().get(framePayload.url)) {
-      const frameResource = this.createResourceFromFramePayload(framePayload, framePayload.url, Common20.ResourceType.resourceTypes.Document, framePayload.mimeType, null, null);
+      const frameResource = this.createResourceFromFramePayload(framePayload, framePayload.url, Common21.ResourceType.resourceTypes.Document, framePayload.mimeType, null, null);
       frame.addResource(frameResource);
     }
   }
@@ -25648,7 +25682,7 @@ var ResourceTreeModel = class _ResourceTreeModel extends SDKModel {
       if (frame.isMainFrame()) {
         mainSecurityOrigin = origin;
         if (frame.unreachableUrl()) {
-          const unreachableParsed = new Common20.ParsedURL.ParsedURL(frame.unreachableUrl());
+          const unreachableParsed = new Common21.ParsedURL.ParsedURL(frame.unreachableUrl());
           unreachableMainSecurityOrigin = unreachableParsed.securityOrigin();
         }
       }
@@ -25997,7 +26031,7 @@ var ResourceTreeFrame = class {
     if (this.isOutermostFrame()) {
       return i18n9.i18n.lockedString("top");
     }
-    const subtitle = new Common20.ParsedURL.ParsedURL(this.#url).displayName;
+    const subtitle = new Common21.ParsedURL.ParsedURL(this.#url).displayName;
     if (subtitle) {
       if (!this.#name) {
         return subtitle;
@@ -26166,7 +26200,7 @@ __export(Script_exports, {
   sourceURLRegex: () => sourceURLRegex
 });
 import * as Platform14 from "./../platform/platform.js";
-import * as Common21 from "./../common/common.js";
+import * as Common22 from "./../common/common.js";
 import * as i18n11 from "./../i18n/i18n.js";
 import * as TextUtils19 from "./../text_utils/text_utils.js";
 var UIStrings5 = {
@@ -26282,7 +26316,7 @@ var Script = class _Script {
     return this.sourceURL;
   }
   contentType() {
-    return Common21.ResourceType.resourceTypes.Script;
+    return Common22.ResourceType.resourceTypes.Script;
   }
   async loadTextContent() {
     const result = await this.debuggerModel.target().debuggerAgent().invoke_getScriptSource({ scriptId: this.scriptId });
@@ -26299,7 +26333,7 @@ var Script = class _Script {
       );
     }
     let content = scriptSource || "";
-    if (this.hasSourceURL && Common21.ParsedURL.schemeIs(this.sourceURL, "snippet:")) {
+    if (this.hasSourceURL && Common22.ParsedURL.schemeIs(this.sourceURL, "snippet:")) {
       content = _Script.trimSourceURLComment(content);
     }
     return new TextUtils19.ContentData.ContentData(
@@ -26671,7 +26705,7 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
   #synchronizeBreakpointsCallback = null;
   // We need to be able to register listeners for individual breakpoints. As such, we dispatch
   // on breakpoint ids, which are not statically known. The event #payload will always be a `Location`.
-  #breakpointResolvedEventTarget = new Common22.ObjectWrapper.ObjectWrapper();
+  #breakpointResolvedEventTarget = new Common23.ObjectWrapper.ObjectWrapper();
   // When stepping over with autostepping enabled, the context denotes the function to which autostepping is restricted
   // to by way of its functionLocation (as per Debugger.CallFrame).
   #autoSteppingContext = null;
@@ -26683,16 +26717,16 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
     this.#runtimeModel = target.model(RuntimeModel);
     this.#sourceMapManager = new SourceMapManager(target, (compiledURL, sourceMappingURL, payload, script) => new SourceMap(compiledURL, sourceMappingURL, payload, target.targetManager().getConsole(), script));
     const settings = this.target().targetManager().settings;
-    settings.moduleSetting("pause-on-exception-enabled").addChangeListener(this.pauseOnExceptionStateChanged, this);
-    settings.moduleSetting("pause-on-caught-exception").addChangeListener(this.pauseOnExceptionStateChanged, this);
+    settings.resolve(pauseOnExceptionEnabledSettingDescriptor).addChangeListener(this.pauseOnExceptionStateChanged, this);
+    settings.resolve(pauseOnCaughtExceptionSettingDescriptor).addChangeListener(this.pauseOnExceptionStateChanged, this);
     settings.moduleSetting("pause-on-uncaught-exception").addChangeListener(this.pauseOnExceptionStateChanged, this);
     settings.moduleSetting("disable-async-stack-traces").addChangeListener(this.asyncStackTracesStateChanged, this);
     settings.moduleSetting("breakpoints-active").addChangeListener(this.breakpointsActiveChanged, this);
     if (!target.suspended()) {
       void this.enableDebugger();
     }
-    this.#sourceMapManager.setEnabled(settings.moduleSetting("js-source-maps-enabled").get());
-    settings.moduleSetting("js-source-maps-enabled").addChangeListener((event) => this.#sourceMapManager.setEnabled(event.data));
+    this.#sourceMapManager.setEnabled(settings.resolve(jsSourceMapsEnabledSettingDescriptor).get());
+    settings.resolve(jsSourceMapsEnabledSettingDescriptor).addChangeListener((event) => this.#sourceMapManager.setEnabled(event.data));
     const resourceTreeModel = target.model(ResourceTreeModel);
     if (resourceTreeModel) {
       resourceTreeModel.addEventListener(Events.FrameNavigated, this.onFrameNavigated, this);
@@ -26825,7 +26859,7 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
   }
   pauseOnExceptionStateChanged() {
     const settings = this.target().targetManager().settings;
-    const pauseOnCaughtEnabled = settings.moduleSetting("pause-on-caught-exception").get();
+    const pauseOnCaughtEnabled = settings.resolve(pauseOnCaughtExceptionSettingDescriptor).get();
     let state;
     const pauseOnUncaughtEnabled = settings.moduleSetting("pause-on-uncaught-exception").get();
     if (pauseOnCaughtEnabled && pauseOnUncaughtEnabled) {
@@ -27063,7 +27097,7 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
         void this.stepInto();
       }
     } else {
-      Common22.EventTarget.fireEvent("DevTools.DebuggerPaused");
+      Common23.EventTarget.fireEvent("DevTools.DebuggerPaused");
     }
   }
   resumedScript() {
@@ -27243,8 +27277,8 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
       debuggerIdToModel.delete(this.#debuggerId);
     }
     const settings = this.target().targetManager().settings;
-    settings.moduleSetting("pause-on-exception-enabled").removeChangeListener(this.pauseOnExceptionStateChanged, this);
-    settings.moduleSetting("pause-on-caught-exception").removeChangeListener(this.pauseOnExceptionStateChanged, this);
+    settings.resolve(pauseOnExceptionEnabledSettingDescriptor).removeChangeListener(this.pauseOnExceptionStateChanged, this);
+    settings.resolve(pauseOnCaughtExceptionSettingDescriptor).removeChangeListener(this.pauseOnExceptionStateChanged, this);
     settings.moduleSetting("disable-async-stack-traces").removeChangeListener(this.asyncStackTracesStateChanged, this);
   }
   async suspendModel() {
@@ -27826,7 +27860,7 @@ var RuntimeModel = class extends SDKModel {
     this.agent = target.runtimeAgent();
     this.target().registerRuntimeDispatcher(new RuntimeDispatcher(this));
     void this.agent.invoke_enable();
-    const settings = this.target().targetManager().context.get(Common23.Settings.Settings);
+    const settings = this.target().targetManager().context.get(Common24.Settings.Settings);
     if (settings.moduleSetting("custom-formatters").get()) {
       void this.agent.invoke_setCustomObjectFormatterEnabled({ enabled: true });
     }
@@ -28003,7 +28037,7 @@ var RuntimeModel = class extends SDKModel {
     }
     if (object.isNode()) {
       const omitFocus = hints !== null && typeof hints === "object" && "omitFocus" in hints && Boolean(hints.omitFocus);
-      void Common23.Revealer.reveal(object, omitFocus).then(object.release.bind(object));
+      void Common24.Revealer.reveal(object, omitFocus).then(object.release.bind(object));
       return;
     }
     if (object.type === "function") {
@@ -28015,7 +28049,7 @@ var RuntimeModel = class extends SDKModel {
       if (!response?.location) {
         return;
       }
-      void Common23.Revealer.reveal(response.location);
+      void Common24.Revealer.reveal(response.location);
     }
     object.release();
   }
@@ -28033,7 +28067,7 @@ var RuntimeModel = class extends SDKModel {
       Host4.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(object.unserializableValue() || object.value);
       return;
     }
-    const indent = this.target().targetManager().context.get(Common23.Settings.Settings).moduleSetting("text-editor-indent").get();
+    const indent = this.target().targetManager().context.get(Common24.Settings.Settings).moduleSetting("text-editor-indent").get();
     void object.callFunctionJSON(toStringForClipboard, [{
       value: {
         subtype: object.subtype,
@@ -28327,7 +28361,7 @@ var ExecutionContext = class {
       this.#label = this.name;
       return;
     }
-    const parsedUrl = Common23.ParsedURL.ParsedURL.fromString(this.origin);
+    const parsedUrl = Common24.ParsedURL.ParsedURL.fromString(this.origin);
     this.#label = parsedUrl ? parsedUrl.lastPathComponentWithFragment() : "";
   }
 };
@@ -28425,18 +28459,18 @@ var i18nString7 = i18n15.i18n.getLocalizedString.bind(void 0, str_7);
 var i18nLazyString = i18n15.i18n.getLazilyComputedLocalizedString.bind(void 0, str_7);
 var requestToManagerMap = /* @__PURE__ */ new WeakMap();
 var FULL_FIDELITY_RESEND_TYPES = /* @__PURE__ */ new Set([
-  Common24.ResourceType.resourceTypes.XHR,
-  Common24.ResourceType.resourceTypes.Fetch,
-  Common24.ResourceType.resourceTypes.Script,
-  Common24.ResourceType.resourceTypes.Stylesheet,
-  Common24.ResourceType.resourceTypes.Image,
-  Common24.ResourceType.resourceTypes.Media,
-  Common24.ResourceType.resourceTypes.Font,
-  Common24.ResourceType.resourceTypes.Wasm,
-  Common24.ResourceType.resourceTypes.Manifest,
-  Common24.ResourceType.resourceTypes.TextTrack,
-  Common24.ResourceType.resourceTypes.SourceMapScript,
-  Common24.ResourceType.resourceTypes.SourceMapStyleSheet
+  Common25.ResourceType.resourceTypes.XHR,
+  Common25.ResourceType.resourceTypes.Fetch,
+  Common25.ResourceType.resourceTypes.Script,
+  Common25.ResourceType.resourceTypes.Stylesheet,
+  Common25.ResourceType.resourceTypes.Image,
+  Common25.ResourceType.resourceTypes.Media,
+  Common25.ResourceType.resourceTypes.Font,
+  Common25.ResourceType.resourceTypes.Wasm,
+  Common25.ResourceType.resourceTypes.Manifest,
+  Common25.ResourceType.resourceTypes.TextTrack,
+  Common25.ResourceType.resourceTypes.SourceMapScript,
+  Common25.ResourceType.resourceTypes.SourceMapStyleSheet
 ]);
 var CONNECTION_TYPES = /* @__PURE__ */ new Map([
   [
@@ -28535,7 +28569,7 @@ var NetworkManager = class _NetworkManager extends SDKModel {
       return;
     }
     Host5.userMetrics.resendRequest(Host5.UserMetrics.resendRequestType(request.resourceType()));
-    if (request.resourceType() === Common24.ResourceType.resourceTypes.XHR) {
+    if (request.resourceType() === Common25.ResourceType.resourceTypes.XHR) {
       void manager.#networkAgent.invoke_replayXHR({ requestId });
       return;
     }
@@ -28605,7 +28639,7 @@ var NetworkManager = class _NetworkManager extends SDKModel {
     return TextUtils21.TextUtils.performSearchInSearchMatches(response.result || [], query, caseSensitive, isRegex);
   }
   static async requestContentData(request) {
-    if (request.resourceType() === Common24.ResourceType.resourceTypes.WebSocket) {
+    if (request.resourceType() === Common25.ResourceType.resourceTypes.WebSocket) {
       return { error: i18nString7(UIStrings7.noContentForWebSocket) };
     }
     if (!request.finished) {
@@ -28742,11 +28776,11 @@ var NetworkManager = class _NetworkManager extends SDKModel {
    */
   static async #tryDecompressBody(buffer, encoding, charset) {
     try {
-      if (encoding.includes("gzip") && Common24.Gzip.isGzip(buffer)) {
-        return await Common24.Gzip.decompress(buffer, charset);
+      if (encoding.includes("gzip") && Common25.Gzip.isGzip(buffer)) {
+        return await Common25.Gzip.decompress(buffer, charset);
       }
       if (encoding.includes("deflate")) {
-        return await Common24.Gzip.decompressDeflate(buffer, charset);
+        return await Common25.Gzip.decompressDeflate(buffer, charset);
       }
     } catch (e) {
       console.warn("Failed to decompress request body:", e);
@@ -29039,7 +29073,7 @@ var NetworkDispatcher = class {
     if (response.securityDetails) {
       networkRequest.setSecurityDetails(response.securityDetails);
     }
-    const newResourceType = Common24.ResourceType.ResourceType.fromMimeTypeOverride(networkRequest.mimeType);
+    const newResourceType = Common25.ResourceType.ResourceType.fromMimeTypeOverride(networkRequest.mimeType);
     if (newResourceType) {
       networkRequest.setResourceType(newResourceType);
     }
@@ -29075,7 +29109,7 @@ var NetworkDispatcher = class {
       requestId = backendRequestId;
     }
     networkRequest.setSignedExchangeInfo(info);
-    networkRequest.setResourceType(Common24.ResourceType.resourceTypes.SignedExchange);
+    networkRequest.setResourceType(Common25.ResourceType.resourceTypes.SignedExchange);
     this.updateNetworkRequestWithResponse(networkRequest, info.outerResponse);
     this.updateNetworkRequest(networkRequest);
     this.getExtraInfoBuilder(requestId).addHasExtraInfo(info.hasExtraInfo);
@@ -29110,7 +29144,7 @@ var NetworkDispatcher = class {
     networkRequest.hasNetworkData = true;
     this.updateNetworkRequestWithRequest(networkRequest, request);
     networkRequest.setIssueTime(timestamp, wallTime);
-    networkRequest.setResourceType(type ? Common24.ResourceType.resourceTypes[type] : Common24.ResourceType.resourceTypes.Other);
+    networkRequest.setResourceType(type ? Common25.ResourceType.resourceTypes[type] : Common25.ResourceType.resourceTypes.Other);
     if (request.trustTokenParams) {
       networkRequest.setTrustTokenParams(request.trustTokenParams);
     }
@@ -29146,7 +29180,7 @@ var NetworkDispatcher = class {
       return;
     }
     networkRequest.responseReceivedTime = timestamp;
-    networkRequest.setResourceType(Common24.ResourceType.resourceTypes[type]);
+    networkRequest.setResourceType(Common25.ResourceType.resourceTypes[type]);
     this.updateNetworkRequestWithResponse(networkRequest, response);
     this.updateNetworkRequest(networkRequest);
     this.getExtraInfoBuilder(requestId).addHasExtraInfo(hasExtraInfo);
@@ -29181,7 +29215,7 @@ var NetworkDispatcher = class {
       return;
     }
     networkRequest.failed = true;
-    networkRequest.setResourceType(Common24.ResourceType.resourceTypes[resourceType]);
+    networkRequest.setResourceType(Common25.ResourceType.resourceTypes[resourceType]);
     networkRequest.canceled = Boolean(canceled);
     if (blockedReason) {
       networkRequest.setBlockedReason(blockedReason);
@@ -29200,7 +29234,7 @@ var NetworkDispatcher = class {
   webSocketCreated({ requestId, url: requestURL, initiator }) {
     const networkRequest = NetworkRequest.createForSocket(requestId, requestURL, initiator, this.#manager.target().targetManager().getConsole());
     requestToManagerMap.set(networkRequest, this.#manager);
-    networkRequest.setResourceType(Common24.ResourceType.resourceTypes.WebSocket);
+    networkRequest.setResourceType(Common25.ResourceType.resourceTypes.WebSocket);
     this.startNetworkRequest(networkRequest, null);
   }
   webSocketWillSendHandshakeRequest({ requestId, timestamp: time, wallTime, request }) {
@@ -29409,7 +29443,7 @@ var NetworkDispatcher = class {
     this.#manager.dispatchEventToListeners(Events7.RequestFinished, networkRequest);
     this.#multitargetNetworkManager.inflightMainResourceRequests.delete(networkRequest.requestId());
     const settings = this.#manager.target().targetManager().settings;
-    if (settings.moduleSetting("monitoring-xhr-enabled").get() && networkRequest.resourceType().category() === Common24.ResourceType.resourceCategories.XHR) {
+    if (settings.moduleSetting("monitoring-xhr-enabled").get() && networkRequest.resourceType().category() === Common25.ResourceType.resourceCategories.XHR) {
       let message;
       const failedToLoad = networkRequest.failed || networkRequest.hasErrorStatusCode();
       if (failedToLoad) {
@@ -29446,7 +29480,7 @@ var NetworkDispatcher = class {
     const networkRequest = NetworkRequest.createForSocket(transportId, requestURL, initiator, this.#manager.target().targetManager().getConsole());
     networkRequest.hasNetworkData = true;
     requestToManagerMap.set(networkRequest, this.#manager);
-    networkRequest.setResourceType(Common24.ResourceType.resourceTypes.WebTransport);
+    networkRequest.setResourceType(Common25.ResourceType.resourceTypes.WebTransport);
     networkRequest.setIssueTime(time, 0);
     this.startNetworkRequest(networkRequest, null);
   }
@@ -29487,7 +29521,7 @@ var NetworkDispatcher = class {
         dnsQueryType: event.options.dnsQueryType
       }
     };
-    networkRequest.setResourceType(Common24.ResourceType.resourceTypes.DirectSocket);
+    networkRequest.setResourceType(Common25.ResourceType.resourceTypes.DirectSocket);
     networkRequest.setIssueTime(event.timestamp, event.timestamp);
     requestToManagerMap.set(networkRequest, this.#manager);
     this.startNetworkRequest(networkRequest, null);
@@ -29593,7 +29627,7 @@ var NetworkDispatcher = class {
       },
       joinedMulticastGroups: /* @__PURE__ */ new Set()
     };
-    networkRequest.setResourceType(Common24.ResourceType.resourceTypes.DirectSocket);
+    networkRequest.setResourceType(Common25.ResourceType.resourceTypes.DirectSocket);
     networkRequest.setIssueTime(event.timestamp, event.timestamp);
     requestToManagerMap.set(networkRequest, this.#manager);
     this.startNetworkRequest(networkRequest, null);
@@ -29779,7 +29813,7 @@ var RequestURLPattern = class _RequestURLPattern {
     tryCreate(`*://${pattern}*`);
   }
 };
-var RequestCondition = class extends Common24.ObjectWrapper.ObjectWrapper {
+var RequestCondition = class extends Common25.ObjectWrapper.ObjectWrapper {
   #pattern;
   #enabled;
   #conditions;
@@ -29870,7 +29904,7 @@ var RequestCondition = class extends Common24.ObjectWrapper.ObjectWrapper {
     return this.#pattern instanceof RequestURLPattern ? this.#pattern.pattern : this.#pattern.upgradedPattern?.pattern;
   }
 };
-var RequestConditions = class extends Common24.ObjectWrapper.ObjectWrapper {
+var RequestConditions = class extends Common25.ObjectWrapper.ObjectWrapper {
   #setting;
   #conditionsEnabledSetting;
   #conditions = [];
@@ -30049,7 +30083,7 @@ var AppliedNetworkConditions = class {
     this.urlPattern = urlPattern;
   }
 };
-var MultitargetNetworkManager = class _MultitargetNetworkManager extends Common24.ObjectWrapper.ObjectWrapper {
+var MultitargetNetworkManager = class _MultitargetNetworkManager extends Common25.ObjectWrapper.ObjectWrapper {
   #targetManager;
   #userAgentOverride = "";
   #userAgentMetadataOverride = null;
@@ -30403,7 +30437,7 @@ var InterceptedRequest = class _InterceptedRequest {
   }
   async continueRequestWithContent(contentBlob, encoded, responseHeaders, isBodyOverridden) {
     this.#hasResponded = true;
-    const body = encoded ? await contentBlob.text() : await Common24.Base64.encode(contentBlob).catch((err) => {
+    const body = encoded ? await contentBlob.text() : await Common25.Base64.encode(contentBlob).catch((err) => {
       console.error(err);
       return "";
     });
@@ -30602,7 +30636,7 @@ function getRecommendedNetworkPreset(rtt) {
 var CookieModel = class extends SDKModel {
   #blockedCookies = /* @__PURE__ */ new Map();
   #cookieToBlockedReasons = /* @__PURE__ */ new Map();
-  #refreshThrottler = new Common25.Throttler.Throttler(300);
+  #refreshThrottler = new Common26.Throttler.Throttler(300);
   #cookies = /* @__PURE__ */ new Map();
   constructor(target) {
     super(target);
@@ -30752,7 +30786,7 @@ var CookieModel = class extends SDKModel {
   #refresh() {
     const resourceURLs = new Platform16.MapUtilities.Multimap();
     function populateResourceURLs(resource) {
-      const documentURL = Common25.ParsedURL.ParsedURL.fromString(resource.documentURL);
+      const documentURL = Common26.ParsedURL.ParsedURL.fromString(resource.documentURL);
       if (documentURL) {
         resourceURLs.set(documentURL.securityOrigin(), resource.url);
       }
@@ -30762,7 +30796,7 @@ var CookieModel = class extends SDKModel {
     if (resourceTreeModel) {
       const unreachableUrl = resourceTreeModel.mainFrame?.unreachableUrl();
       if (unreachableUrl) {
-        const documentURL = Common25.ParsedURL.ParsedURL.fromString(unreachableUrl);
+        const documentURL = Common26.ParsedURL.ParsedURL.fromString(unreachableUrl);
         if (documentURL) {
           resourceURLs.set(documentURL.securityOrigin(), unreachableUrl);
         }
@@ -31159,7 +31193,7 @@ __export(ServerTiming_exports, {
   cloudflarePrefix: () => cloudflarePrefix,
   cloudinaryPrefix: () => cloudinaryPrefix
 });
-import * as Common26 from "./../common/common.js";
+import * as Common27 from "./../common/common.js";
 import * as i18n19 from "./../i18n/i18n.js";
 var UIStrings8 = {
   /**
@@ -31220,7 +31254,7 @@ var ServerTiming = class _ServerTiming {
     }, []);
     return serverTimings;
   }
-  static createFromHeaderValue(valueString, devToolsConsole = new Common26.Console.Console()) {
+  static createFromHeaderValue(valueString, devToolsConsole = new Common27.Console.Console()) {
     function trimLeadingWhiteSpace() {
       valueString = valueString.replace(/^\s*/, "");
     }
@@ -31493,7 +31527,7 @@ var UIStrings9 = {
 };
 var str_9 = i18n21.i18n.registerUIStrings("core/sdk/NetworkRequest.ts", UIStrings9);
 var i18nString9 = i18n21.i18n.getLocalizedString.bind(void 0, str_9);
-var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.ObjectWrapper {
+var NetworkRequest = class _NetworkRequest extends Common28.ObjectWrapper.ObjectWrapper {
   #requestId;
   #backendRequestId;
   #documentURL;
@@ -31522,7 +31556,7 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
   #initialPriority = null;
   #currentPriority = null;
   #signedExchangeInfo = null;
-  #resourceType = Common27.ResourceType.resourceTypes.Other;
+  #resourceType = Common28.ResourceType.resourceTypes.Other;
   #contentData = null;
   #streamingContentData = null;
   #frames = [];
@@ -31610,7 +31644,7 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
   #isLinkPreload;
   #appliedNetworkConditionsId;
   #console;
-  constructor(requestId, backendRequestId, url, documentURL, frameId, loaderId, initiator, hasUserGesture, console2 = Common27.Console.Console.instance()) {
+  constructor(requestId, backendRequestId, url, documentURL, frameId, loaderId, initiator, hasUserGesture, console2 = Common28.Console.Console.instance()) {
     super();
     this.#requestId = requestId;
     this.#backendRequestId = backendRequestId;
@@ -31654,14 +31688,14 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
     return this.#url;
   }
   isBlobRequest() {
-    return Common27.ParsedURL.schemeIs(this.#url, "blob:");
+    return Common28.ParsedURL.schemeIs(this.#url, "blob:");
   }
   setUrl(x) {
     if (this.#url === x) {
       return;
     }
     this.#url = x;
-    this.#parsedURL = new Common27.ParsedURL.ParsedURL(x);
+    this.#parsedURL = new Common28.ParsedURL.ParsedURL(x);
     this.#queryString = void 0;
     this.#parsedQueryParameters = void 0;
     this.#name = void 0;
@@ -31940,7 +31974,7 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
   set mimeType(x) {
     this.#mimeType = x;
     if (x === "text/event-stream" && !this.#serverSentEvents) {
-      const parseFromStreamedData = this.resourceType() !== Common27.ResourceType.resourceTypes.EventSource;
+      const parseFromStreamedData = this.resourceType() !== Common28.ResourceType.resourceTypes.EventSource;
       this.#serverSentEvents = new ServerSentEvents(this, parseFromStreamedData);
     }
   }
@@ -31974,7 +32008,7 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
     } else {
       this.#path = this.#parsedURL.host + this.#parsedURL.folderPathComponents;
       const networkManager = NetworkManager.forRequest(this);
-      const inspectedURL = networkManager ? Common27.ParsedURL.ParsedURL.fromString(networkManager.target().inspectedURL()) : null;
+      const inspectedURL = networkManager ? Common28.ParsedURL.ParsedURL.fromString(networkManager.target().inspectedURL()) : null;
       this.#path = Platform17.StringUtilities.trimURL(this.#path, inspectedURL ? inspectedURL.host : "");
       if (this.#parsedURL.lastPathComponent || this.#parsedURL.queryParams) {
         this.#name = this.#parsedURL.lastPathComponent + (this.#parsedURL.queryParams ? "?" + this.#parsedURL.queryParams : "");
@@ -33339,7 +33373,7 @@ __export(AnimationModel_exports, {
   KeyframeStyle: () => KeyframeStyle,
   KeyframesRule: () => KeyframesRule
 });
-import * as Common28 from "./../common/common.js";
+import * as Common29 from "./../common/common.js";
 var DEVTOOLS_ANIMATIONS_WORLD_NAME = "devtools_animations";
 var REPORT_SCROLL_POSITION_BINDING_NAME = "__devtools_report_scroll_position__";
 var getScrollListenerNameInPage = (id) => `__devtools_scroll_listener_${id}__`;
@@ -33543,7 +33577,7 @@ var AnimationModel = class extends SDKModel {
     }
     const resourceTreeModel = target.model(ResourceTreeModel);
     resourceTreeModel.addEventListener(Events.PrimaryPageChanged, this.reset, this);
-    this.#flushPendingAnimations = Common28.Debouncer.debounce(() => {
+    this.#flushPendingAnimations = Common29.Debouncer.debounce(() => {
       while (this.#pendingAnimations.size) {
         this.matchExistingGroups(this.createGroupFromPendingAnimations());
       }
@@ -34301,7 +34335,7 @@ __export(ChildTargetManager_exports, {
   ChildTargetManager: () => ChildTargetManager
 });
 import * as i18n23 from "./../i18n/i18n.js";
-import * as Common29 from "./../common/common.js";
+import * as Common30 from "./../common/common.js";
 import * as Host7 from "./../host/host.js";
 var UIStrings10 = {
   /**
@@ -34432,7 +34466,7 @@ var ChildTargetManager = class _ChildTargetManager extends SDKModel {
       if (KNOWN_FRAME_PATTERNS.some((p) => targetInfo.url.match(p))) {
         type = Type2.FRAME;
       } else {
-        const parsedURL = Common29.ParsedURL.ParsedURL.fromString(targetInfo.url);
+        const parsedURL = Common30.ParsedURL.ParsedURL.fromString(targetInfo.url);
         targetName = parsedURL ? parsedURL.lastPathComponentWithFragment() : "#" + ++_ChildTargetManager.lastAnonymousTargetId;
       }
     }
@@ -34450,8 +34484,6 @@ var ChildTargetManager = class _ChildTargetManager extends SDKModel {
       type = Type2.WORKLET;
     } else if (targetInfo.type === "shared_worker") {
       type = Type2.SHARED_WORKER;
-    } else if (targetInfo.type === "shared_storage_worklet") {
-      type = Type2.SHARED_STORAGE_WORKLET;
     } else if (targetInfo.type === "service_worker") {
       type = Type2.ServiceWorker;
     } else if (targetInfo.type === "auction_worklet") {
@@ -34576,7 +34608,7 @@ __export(Connections_exports, {
   initMainConnection: () => initMainConnection
 });
 import * as i18n29 from "./../i18n/i18n.js";
-import * as Common33 from "./../common/common.js";
+import * as Common34 from "./../common/common.js";
 import * as Host8 from "./../host/host.js";
 import * as ProtocolClient3 from "./../protocol_client/protocol_client.js";
 import * as Root11 from "./../root/root.js";
@@ -34585,9 +34617,10 @@ import * as Root11 from "./../root/root.js";
 var RehydratingConnection_exports = {};
 __export(RehydratingConnection_exports, {
   RehydratingConnectionTransport: () => RehydratingConnectionTransport,
-  RehydratingSession: () => RehydratingSession
+  RehydratingSession: () => RehydratingSession,
+  isTraceUrlAllowed: () => isTraceUrlAllowed
 });
-import * as Common32 from "./../common/common.js";
+import * as Common33 from "./../common/common.js";
 import * as i18n27 from "./../i18n/i18n.js";
 import * as ProtocolClient2 from "./../protocol_client/protocol_client.js";
 import * as Root10 from "./../root/root.js";
@@ -34597,7 +34630,7 @@ var EnhancedTracesParser_exports = {};
 __export(EnhancedTracesParser_exports, {
   EnhancedTracesParser: () => EnhancedTracesParser
 });
-import * as Common30 from "./../common/common.js";
+import * as Common31 from "./../common/common.js";
 import { UserVisibleError } from "./../platform/platform.js";
 var EnhancedTracesParser = class {
   #trace;
@@ -34790,9 +34823,9 @@ var EnhancedTracesParser = class {
     let resolvedSourceUrl = url;
     if (hasSourceURL && sourceURL) {
       const targetUrl = target.url;
-      resolvedSourceUrl = Common30.ParsedURL.ParsedURL.completeURL(targetUrl, sourceURL) ?? sourceURL;
+      resolvedSourceUrl = Common31.ParsedURL.ParsedURL.completeURL(targetUrl, sourceURL) ?? sourceURL;
     }
-    const resolvedSourceMapUrl = Common30.ParsedURL.ParsedURL.completeURL(resolvedSourceUrl, sourceMapURL);
+    const resolvedSourceMapUrl = Common31.ParsedURL.ParsedURL.completeURL(resolvedSourceUrl, sourceMapURL);
     if (!resolvedSourceMapUrl) {
       return;
     }
@@ -34918,7 +34951,7 @@ __export(TraceObject_exports, {
   RevealableNetworkRequest: () => RevealableNetworkRequest,
   TraceObject: () => TraceObject
 });
-import * as Common31 from "./../common/common.js";
+import * as Common32 from "./../common/common.js";
 var TraceObject = class {
   traceEvents;
   metadata;
@@ -34949,7 +34982,7 @@ var RevealableNetworkRequest = class _RevealableNetworkRequest {
   static create(targetManager, event) {
     const syntheticNetworkRequest = event;
     const url = syntheticNetworkRequest.args.data.url;
-    const urlWithoutHash = Common31.ParsedURL.ParsedURL.urlWithoutHash(url);
+    const urlWithoutHash = Common32.ParsedURL.ParsedURL.urlWithoutHash(url);
     const resource = ResourceTreeModel.resourceForURL(targetManager, url) ?? ResourceTreeModel.resourceForURL(targetManager, urlWithoutHash);
     const sdkNetworkRequest = resource?.request;
     return sdkNetworkRequest ? new _RevealableNetworkRequest(sdkNetworkRequest) : null;
@@ -34973,12 +35006,37 @@ var UIStrings12 = {
 };
 var str_12 = i18n27.i18n.registerUIStrings("core/sdk/RehydratingConnection.ts", UIStrings12);
 var i18nString12 = i18n27.i18n.getLocalizedString.bind(void 0, str_12);
+function isTraceUrlAllowed(traceUrl) {
+  let url;
+  try {
+    url = new URL(traceUrl, window.location.href);
+  } catch {
+    return false;
+  }
+  if (url.protocol === "devtools:") {
+    return true;
+  }
+  if (url.origin === window.location.origin) {
+    return true;
+  }
+  if (url.protocol === "http:" || url.protocol === "https:") {
+    const host = url.hostname.toLowerCase();
+    return host === "localhost" || host === "127.0.0.1" || host === "[::1]";
+  }
+  return false;
+}
 var RehydratingConnectionTransport = class {
   rehydratingConnectionState = 1;
   onDisconnect = null;
   onMessage = null;
   trace = null;
   sessions = /* @__PURE__ */ new Map();
+  /**
+   * Set to the in-flight `traceURL` fetch (including its hydration/error handling) so tests can await
+   * the load deterministically. Stays `undefined` when loading via message passing, or when a
+   * disallowed URL is rejected without fetching.
+   */
+  fetchPromiseForTest;
   #onConnectionLost;
   #rehydratingWindow = window;
   #onReceiveHostWindowPayloadBound = this.onReceiveHostWindowPayload.bind(this);
@@ -34998,9 +35056,15 @@ var RehydratingConnectionTransport = class {
       }
     }
     if (traceUrl) {
-      void fetch(traceUrl).then((r) => r.arrayBuffer()).then((b) => Common32.Gzip.arrayBufferToString(b)).then((traceJson) => {
+      if (!isTraceUrlAllowed(traceUrl)) {
+        this.#onConnectionLost(i18nString12(UIStrings12.errorLoadingLog));
+        return true;
+      }
+      this.fetchPromiseForTest = fetch(traceUrl).then((r) => r.arrayBuffer()).then((b) => Common33.Gzip.arrayBufferToString(b)).then(async (traceJson) => {
         const trace = new TraceObject(JSON.parse(traceJson));
-        void this.startHydration(trace);
+        await this.startHydration(trace);
+      }).catch(() => {
+        this.#onConnectionLost(i18nString12(UIStrings12.errorLoadingLog));
       });
       return true;
     }
@@ -35078,7 +35142,7 @@ var RehydratingConnectionTransport = class {
       return;
     }
     this.rehydratingConnectionState = 3;
-    await Common32.Revealer.reveal(this.trace);
+    await Common33.Revealer.reveal(this.trace);
   }
   setOnMessage(onMessage) {
     this.onMessage = onMessage;
@@ -35398,7 +35462,7 @@ var MainConnection = class {
   }
   async disconnect() {
     const onDisconnect = this.#onDisconnect;
-    Common33.EventTarget.removeEventListeners(this.#eventListeners);
+    Common34.EventTarget.removeEventListeners(this.#eventListeners);
     this.#onDisconnect = null;
     this.onMessage = null;
     if (onDisconnect) {
@@ -35550,7 +35614,7 @@ __export(ConsoleModel_exports, {
   FrontendMessageType: () => FrontendMessageType,
   MessageSourceDisplayName: () => MessageSourceDisplayName
 });
-import * as Common34 from "./../common/common.js";
+import * as Common35 from "./../common/common.js";
 import * as Host10 from "./../host/host.js";
 import * as i18n33 from "./../i18n/i18n.js";
 import * as Platform18 from "./../platform/platform.js";
@@ -35759,7 +35823,7 @@ var ConsoleModel = class _ConsoleModel extends SDKModel {
       return;
     }
     const eventListener = resourceTreeModel.addEventListener(Events.CachedResourcesLoaded, () => {
-      Common34.EventTarget.removeEventListeners([eventListener]);
+      Common35.EventTarget.removeEventListeners([eventListener]);
       this.initTarget(target);
     });
   }
@@ -35791,7 +35855,7 @@ var ConsoleModel = class _ConsoleModel extends SDKModel {
     if (runtimeModel) {
       this.#messageByExceptionId.delete(runtimeModel);
     }
-    Common34.EventTarget.removeEventListeners(this.#targetListeners.get(target) || []);
+    Common35.EventTarget.removeEventListeners(this.#targetListeners.get(target) || []);
   }
   async evaluateCommandInConsole(executionContext, originatingMessage, expression, useCommandLineAPI) {
     const result = await executionContext.evaluate(
@@ -35824,7 +35888,7 @@ var ConsoleModel = class _ConsoleModel extends SDKModel {
   }
   addMessage(msg) {
     msg.setPageLoadSequenceNumber(this.#pageLoadSequenceNumber);
-    if (msg.source === Common34.Console.FrontendMessageSource.ConsoleAPI && msg.type === "clear") {
+    if (msg.source === Common35.Console.FrontendMessageSource.ConsoleAPI && msg.type === "clear") {
       this.clearIfNecessary();
     }
     this.#messages.push(msg);
@@ -35892,7 +35956,7 @@ var ConsoleModel = class _ConsoleModel extends SDKModel {
       executionContextId: call.executionContextId,
       context: call.context
     };
-    const consoleMessage = new ConsoleMessage(runtimeModel, Common34.Console.FrontendMessageSource.ConsoleAPI, level, message, details);
+    const consoleMessage = new ConsoleMessage(runtimeModel, Common35.Console.FrontendMessageSource.ConsoleAPI, level, message, details);
     for (const msg of this.#messagesByTimestamp.get(consoleMessage.timestamp).values()) {
       if (consoleMessage.isEqual(msg)) {
         return;
@@ -35907,19 +35971,19 @@ var ConsoleModel = class _ConsoleModel extends SDKModel {
       parameters: [objects],
       executionContextId
     };
-    const consoleMessage = new ConsoleMessage(runtimeModel, Common34.Console.FrontendMessageSource.ConsoleAPI, "info", "", details);
+    const consoleMessage = new ConsoleMessage(runtimeModel, Common35.Console.FrontendMessageSource.ConsoleAPI, "info", "", details);
     this.addMessage(consoleMessage);
   }
   clearIfNecessary() {
     const settings = this.target().targetManager().settings;
-    if (!settings.moduleSetting("preserve-console-log").get()) {
+    if (!settings.resolve(preserveConsoleLogSettingDescriptor).get()) {
       this.clear();
     }
     ++this.#pageLoadSequenceNumber;
   }
   primaryPageChanged(event) {
     const settings = this.target().targetManager().settings;
-    if (settings.moduleSetting("preserve-console-log").get()) {
+    if (settings.resolve(preserveConsoleLogSettingDescriptor).get()) {
       const { frame } = event.data;
       if (frame.backForwardCacheDetails.restoredFromCache) {
         this.#console.log(i18nString15(UIStrings15.bfcacheNavigation, { PH1: frame.url }));
@@ -35945,7 +36009,7 @@ var ConsoleModel = class _ConsoleModel extends SDKModel {
       lineNumber: scriptLocation.lineNumber,
       columnNumber: scriptLocation.columnNumber || 0
     }];
-    this.addMessage(new ConsoleMessage(cpuProfilerModel.runtimeModel(), Common34.Console.FrontendMessageSource.ConsoleAPI, "info", messageText, { type, stackTrace: { callFrames } }));
+    this.addMessage(new ConsoleMessage(cpuProfilerModel.runtimeModel(), Common35.Console.FrontendMessageSource.ConsoleAPI, "info", messageText, { type, stackTrace: { callFrames } }));
   }
   incrementErrorWarningCount(msg) {
     if (msg.source === "violation") {
@@ -36230,7 +36294,7 @@ var ConsoleMessage = class _ConsoleMessage {
   }
   isGroupable() {
     const isUngroupableError = this.level === "error" && (this.source === "javascript" || this.source === "network");
-    return this.source !== Common34.Console.FrontendMessageSource.ConsoleAPI && this.type !== FrontendMessageType.Command && this.type !== FrontendMessageType.Result && this.type !== FrontendMessageType.System && !isUngroupableError;
+    return this.source !== Common35.Console.FrontendMessageSource.ConsoleAPI && this.type !== FrontendMessageType.Command && this.type !== FrontendMessageType.Result && this.type !== FrontendMessageType.System && !isUngroupableError;
   }
   groupCategoryKey() {
     return [this.source, this.level, this.type, this.#pageLoadSequenceNumber].join(":");
@@ -36283,11 +36347,11 @@ var MessageSourceDisplayName = /* @__PURE__ */ new Map([
   ["xml", "xml"],
   ["javascript", "javascript"],
   ["network", "network"],
-  [Common34.Console.FrontendMessageSource.ConsoleAPI, "console-api"],
+  [Common35.Console.FrontendMessageSource.ConsoleAPI, "console-api"],
   ["storage", "storage"],
   ["appcache", "appcache"],
   ["rendering", "rendering"],
-  [Common34.Console.FrontendMessageSource.CSS, "css"],
+  [Common35.Console.FrontendMessageSource.CSS, "css"],
   ["security", "security"],
   ["deprecation", "deprecation"],
   ["worker", "worker"],
@@ -36295,7 +36359,7 @@ var MessageSourceDisplayName = /* @__PURE__ */ new Map([
   ["intervention", "intervention"],
   ["recommendation", "recommendation"],
   ["other", "other"],
-  [Common34.Console.FrontendMessageSource.ISSUE_PANEL, "issue-panel"]
+  [Common35.Console.FrontendMessageSource.ISSUE_PANEL, "issue-panel"]
 ]);
 
 // gen/front_end/core/sdk/CPUThrottlingManager.js
@@ -36303,7 +36367,7 @@ var CPUThrottlingManager_exports = {};
 __export(CPUThrottlingManager_exports, {
   CPUThrottlingManager: () => CPUThrottlingManager
 });
-import * as Common35 from "./../common/common.js";
+import * as Common36 from "./../common/common.js";
 import * as Root12 from "./../root/root.js";
 
 // gen/front_end/core/sdk/EmulationModel.js
@@ -36431,12 +36495,10 @@ var EmulationModel = class extends SDKModel {
     const autoDarkModeSetting = settings.moduleSetting("emulate-auto-dark-mode");
     autoDarkModeSetting.addChangeListener(() => {
       const enabled = autoDarkModeSetting.get();
-      mediaFeaturePrefersColorSchemeSetting.setDisabled(enabled);
       mediaFeaturePrefersColorSchemeSetting.set(enabled ? "dark" : "");
       void this.emulateAutoDarkMode(enabled);
     });
     if (autoDarkModeSetting.get()) {
-      mediaFeaturePrefersColorSchemeSetting.setDisabled(true);
       mediaFeaturePrefersColorSchemeSetting.set("dark");
       void this.emulateAutoDarkMode(true);
     }
@@ -36834,7 +36896,7 @@ var DeviceOrientation = class _DeviceOrientation {
 SDKModel.register(EmulationModel, { capabilities: 256, autostart: true });
 
 // gen/front_end/core/sdk/CPUThrottlingManager.js
-var CPUThrottlingManager = class _CPUThrottlingManager extends Common35.ObjectWrapper.ObjectWrapper {
+var CPUThrottlingManager = class _CPUThrottlingManager extends Common36.ObjectWrapper.ObjectWrapper {
   #targetManager;
   #cpuThrottlingRate;
   #hardwareConcurrency;
@@ -36850,7 +36912,7 @@ var CPUThrottlingManager = class _CPUThrottlingManager extends Common35.ObjectWr
   static instance(opts = { forceNew: null }) {
     const { forceNew } = opts;
     if (!Root12.DevToolsContext.globalInstance().has(_CPUThrottlingManager) || forceNew) {
-      const manager = new _CPUThrottlingManager(opts.settings ?? Common35.Settings.Settings.instance(), opts.targetManager ?? TargetManager.instance());
+      const manager = new _CPUThrottlingManager(opts.settings ?? Common36.Settings.Settings.instance(), opts.targetManager ?? TargetManager.instance());
       manager.initialize();
       Root12.DevToolsContext.globalInstance().set(_CPUThrottlingManager, manager);
     }
@@ -37572,8 +37634,8 @@ __export(DOMStorageModel_exports, {
   DOMStorageDispatcher: () => DOMStorageDispatcher,
   DOMStorageModel: () => DOMStorageModel
 });
-import * as Common36 from "./../common/common.js";
-var DOMStorage = class _DOMStorage extends Common36.ObjectWrapper.ObjectWrapper {
+import * as Common37 from "./../common/common.js";
+var DOMStorage = class _DOMStorage extends Common37.ObjectWrapper.ObjectWrapper {
   model;
   #storageKey;
   #isLocalStorage;
@@ -37819,9 +37881,6 @@ var EventBreakpointsManager = class _EventBreakpointsManager {
       "scriptFirstStatement",
       "scriptBlockedByCSP"
     ]);
-    this.createInstrumentationBreakpoints("shared-storage-worklet", [
-      "sharedStorageWorkletScriptFirstStatement"
-    ]);
     this.createInstrumentationBreakpoints("timer", [
       "setTimeout",
       "clearTimeout",
@@ -37893,9 +37952,9 @@ __export(IsolateManager_exports, {
   MemoryTrend: () => MemoryTrend,
   MemoryTrendWindowMs: () => MemoryTrendWindowMs
 });
-import * as Common37 from "./../common/common.js";
+import * as Common38 from "./../common/common.js";
 import * as Root15 from "./../root/root.js";
-var IsolateManager = class _IsolateManager extends Common37.ObjectWrapper.ObjectWrapper {
+var IsolateManager = class _IsolateManager extends Common38.ObjectWrapper.ObjectWrapper {
   #isolates = /* @__PURE__ */ new Map();
   /**
    * Contains null while the isolateId is being retrieved.
@@ -39213,7 +39272,7 @@ __export(ServiceWorkerCacheModel_exports, {
   Cache: () => Cache,
   ServiceWorkerCacheModel: () => ServiceWorkerCacheModel
 });
-import * as Common38 from "./../common/common.js";
+import * as Common39 from "./../common/common.js";
 import * as i18n35 from "./../i18n/i18n.js";
 
 // gen/front_end/core/sdk/StorageBucketsModel.js
@@ -39360,7 +39419,7 @@ var ServiceWorkerCacheModel = class extends SDKModel {
   #caches = /* @__PURE__ */ new Map();
   #storageKeysTracked = /* @__PURE__ */ new Set();
   #storageBucketsUpdated = /* @__PURE__ */ new Set();
-  #throttler = new Common38.Throttler.Throttler(2e3);
+  #throttler = new Common39.Throttler.Throttler(2e3);
   #enabled = false;
   // Used by tests to remove the Throttler timeout.
   #scheduleAsSoonAsPossible = false;
@@ -39606,7 +39665,7 @@ __export(ServiceWorkerManager_exports, {
   ServiceWorkerVersion: () => ServiceWorkerVersion,
   ServiceWorkerVersionState: () => ServiceWorkerVersionState
 });
-import * as Common39 from "./../common/common.js";
+import * as Common40 from "./../common/common.js";
 import * as i18n37 from "./../i18n/i18n.js";
 var UIStrings17 = {
   /**
@@ -39739,7 +39798,7 @@ var ServiceWorkerManager = class extends SDKModel {
     if (!registration) {
       return;
     }
-    const origin = Common39.ParsedURL.ParsedURL.extractOrigin(registration.scopeURL);
+    const origin = Common40.ParsedURL.ParsedURL.extractOrigin(registration.scopeURL);
     await this.#agent.invoke_deliverPushMessage({ origin, registrationId, data });
   }
   async dispatchSyncEvent(registrationId, tag, lastChance) {
@@ -39747,7 +39806,7 @@ var ServiceWorkerManager = class extends SDKModel {
     if (!registration) {
       return;
     }
-    const origin = Common39.ParsedURL.ParsedURL.extractOrigin(registration.scopeURL);
+    const origin = Common40.ParsedURL.ParsedURL.extractOrigin(registration.scopeURL);
     await this.#agent.invoke_dispatchSyncEvent({ origin, registrationId, tag, lastChance });
   }
   async dispatchPeriodicSyncEvent(registrationId, tag) {
@@ -39755,7 +39814,7 @@ var ServiceWorkerManager = class extends SDKModel {
     if (!registration) {
       return;
     }
-    const origin = Common39.ParsedURL.ParsedURL.extractOrigin(registration.scopeURL);
+    const origin = Common40.ParsedURL.ParsedURL.extractOrigin(registration.scopeURL);
     await this.#agent.invoke_dispatchPeriodicSyncEvent({ origin, registrationId, tag });
   }
   async unregister(scopeURL) {
@@ -39876,7 +39935,7 @@ var ServiceWorkerVersion = class {
   update(payload) {
     this.id = payload.versionId;
     this.scriptURL = payload.scriptURL;
-    const parsedURL = new Common39.ParsedURL.ParsedURL(payload.scriptURL);
+    const parsedURL = new Common40.ParsedURL.ParsedURL(payload.scriptURL);
     this.securityOrigin = parsedURL.securityOrigin();
     this.currentState = new ServiceWorkerVersionState(payload.runningStatus, payload.status, this.currentState, Date.now());
     this.scriptLastModified = payload.scriptLastModified;
@@ -40031,7 +40090,7 @@ var ServiceWorkerRegistration = class {
     this.#fingerprint = Symbol("fingerprint");
     this.id = payload.registrationId;
     this.scopeURL = payload.scopeURL;
-    const parsedURL = new Common39.ParsedURL.ParsedURL(payload.scopeURL);
+    const parsedURL = new Common40.ParsedURL.ParsedURL(payload.scopeURL);
     this.securityOrigin = parsedURL.securityOrigin();
     this.isDeleted = payload.isDeleted;
   }
@@ -40127,7 +40186,7 @@ var ServiceWorkerContextNamer = class {
       context.setLabel("");
       return;
     }
-    const parsedUrl = Common39.ParsedURL.ParsedURL.fromString(context.origin);
+    const parsedUrl = Common40.ParsedURL.ParsedURL.fromString(context.origin);
     const label = parsedUrl ? parsedUrl.lastPathComponentWithFragment() : context.name;
     const localizedStatus = ServiceWorkerVersion.Status[version.status];
     context.setLabel(i18nString17(UIStrings17.sSS, { PH1: label, PH2: version.id, PH3: localizedStatus() }));
@@ -40266,6 +40325,7 @@ export {
   ResourceTreeModel_exports as ResourceTreeModel,
   RuntimeModel_exports as RuntimeModel,
   SDKModel_exports as SDKModel,
+  SDKSettings_exports as SDKSettings,
   ScopeTreeCache_exports as ScopeTreeCache,
   ScreenCaptureModel_exports as ScreenCaptureModel,
   Script_exports as Script,

@@ -32,7 +32,7 @@ export function createSettingCheckbox(name, setting, tooltip) {
     }
     return label;
 }
-export function renderSettingSelect(setting, subtitle) {
+export function renderSettingSelect(setting, subtitle, disabled) {
     const uiDescriptor = SettingUIRegistration.SettingUIRegistration.maybeResolve(setting.descriptor());
     const name = uiDescriptor?.title?.() ?? setting.title();
     const options = uiDescriptor?.options?.map(opt => ({
@@ -43,7 +43,6 @@ export function renderSettingSelect(setting, subtitle) {
     })) ??
         setting.options();
     const requiresReload = Boolean(uiDescriptor?.reloadRequired ?? setting.reloadRequired());
-    const { deprecation } = setting;
     const controlId = UI.ARIAUtils.nextId('labelledControl');
     const reloadWarningRef = createRef();
     const onSelectChange = (e) => {
@@ -63,13 +62,11 @@ export function renderSettingSelect(setting, subtitle) {
         <label for=${controlId}>
           ${name}
           ${subtitle ? html `<p>${subtitle}</p>` : nothing}
-          ${deprecation ? html `<devtools-setting-deprecation-warning .data=${deprecation}></devtools-setting-deprecation-warning>` :
-        nothing}
         </label>
         <select
           id=${controlId}
           aria-label=${name}
-          .disabled=${setting.disabled()}
+          .disabled=${disabled ?? setting.disabled()}
           @change=${onSelectChange}
           jslog=${VisualLogging.dropDown().track({ change: true }).context(setting.name)}
         >
@@ -97,7 +94,7 @@ export function renderSettingSelect(setting, subtitle) {
   `;
     // clang-format on
 }
-export const renderControlForSetting = function (setting, subtitle) {
+export const renderControlForSetting = function (setting, subtitle, disabled) {
     switch (setting.type()) {
         case "boolean" /* Common.Settings.SettingType.BOOLEAN */: {
             const onchange = () => {
@@ -109,18 +106,19 @@ export const renderControlForSetting = function (setting, subtitle) {
             };
             return html `<setting-checkbox .data=${{
                 setting: setting,
+                disabled,
             }} @change=${onchange}></setting-checkbox>`;
         }
         case "enum" /* Common.Settings.SettingType.ENUM */: {
-            return renderSettingSelect(setting, subtitle);
+            return renderSettingSelect(setting, subtitle, disabled);
         }
         default:
             console.error('Invalid setting type: ' + setting.type());
             return nothing;
     }
 };
-export const createControlForSetting = function (setting, subtitle) {
-    const template = renderControlForSetting(setting, subtitle);
+export const createControlForSetting = function (setting, subtitle, disabled) {
+    const template = renderControlForSetting(setting, subtitle, disabled);
     if (template === nothing) {
         return null;
     }

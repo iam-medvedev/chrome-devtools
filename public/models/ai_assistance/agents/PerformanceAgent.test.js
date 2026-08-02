@@ -826,6 +826,7 @@ code
                     [{ explanation: 'done' }],
                 ]),
             });
+            // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
             const target = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
             assert.exists(target);
             const domModel = target.model(SDK.DOMModel.DOMModel);
@@ -881,6 +882,7 @@ code
                     [{ explanation: 'done' }],
                 ]),
             });
+            // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
             const target = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
             assert.exists(target);
             const domModel = target.model(SDK.DOMModel.DOMModel);
@@ -934,6 +936,7 @@ code
                     [{ explanation: 'done' }],
                 ]),
             });
+            // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
             const target = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
             assert.exists(target);
             const domModel = target.model(SDK.DOMModel.DOMModel);
@@ -948,6 +951,7 @@ code
             });
             sinon.stub(mockRequest, 'requestContentData')
                 .resolves(new TextUtils.ContentData.ContentData('base64', true, 'image/jpeg'));
+            // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
             sinon.stub(Logs.NetworkLog.NetworkLog.instance(), 'requestByManagerAndId').returns(mockRequest);
             const responses = await Array.fromAsync(agent.run('test', { selected: context }));
             const action = responses.find(r => r.type === "action" /* AiAgent.ResponseType.ACTION */);
@@ -2007,6 +2011,7 @@ code
             debuggerModel2.scripts.returns([]);
             const target2ModelStub = sinon.stub(target2, 'model').callThrough();
             target2ModelStub.withArgs(SDK.DebuggerModel.DebuggerModel).returns(debuggerModel2);
+            // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
             const primaryPageTargetStub = sinon.stub(SDK.TargetManager.TargetManager.instance(), 'primaryPageTarget');
             primaryPageTargetStub.returns(target1);
             const aidaClient = mockAidaClient([

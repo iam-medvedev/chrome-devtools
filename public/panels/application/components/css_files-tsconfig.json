@@ -12,8 +12,6 @@
         "protocolHandlersView.css.js",
         "reportsGrid.css.js",
         "serviceWorkerRouterView.css.js",
-        "sharedStorageAccessGrid.css.js",
-        "sharedStorageMetadataView.css.js",
         "storageMetadataView.css.js",
         "trustTokensView.css.js"
     ]

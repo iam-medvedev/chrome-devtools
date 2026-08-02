@@ -679,20 +679,26 @@ describeWithEnvironment('ObjectPropertyTreeElement', () => {
         assert.exists(valueElement);
         assert.strictEqual(valueElement.textContent, 'Object_with_\\u202Ebidi');
     });
-    it('escapes bidi characters in names created via createNameElement', () => {
+    it('escapes bidi characters in names created via renderPropertyName', () => {
         const name = '\u202Ereversed_name';
-        const element = ObjectUI.ObjectPropertiesSection.ObjectPropertiesSection.createNameElement(name);
-        assert.strictEqual(element.textContent, '\\u202Ereversed_name');
+        const result = ObjectUI.ObjectPropertiesSection.renderPropertyName(name);
+        const container = document.createElement('div');
+        render(result, container);
+        assert.strictEqual(container.textContent, '\\u202Ereversed_name');
     });
-    it('escapes bidi characters in names with whitespace created via createNameElement', () => {
+    it('escapes bidi characters in names with whitespace created via renderPropertyName', () => {
         const name = ' \u202Ereversed_name ';
-        const element = ObjectUI.ObjectPropertiesSection.ObjectPropertiesSection.createNameElement(name);
-        assert.strictEqual(element.textContent, '" \\u202Ereversed_name "');
+        const result = ObjectUI.ObjectPropertiesSection.renderPropertyName(name);
+        const container = document.createElement('div');
+        render(result, container);
+        assert.strictEqual(container.textContent, '" \\u202Ereversed_name "');
     });
-    it('escapes bidi characters in private names created via createNameElement', () => {
+    it('escapes bidi characters in private names created via renderPropertyName', () => {
         const name = '#\u202Ereversed_name';
-        const element = ObjectUI.ObjectPropertiesSection.ObjectPropertiesSection.createNameElement(name, true);
-        assert.strictEqual(element.textContent, '#\\u202Ereversed_name');
+        const result = ObjectUI.ObjectPropertiesSection.renderPropertyName(name, true);
+        const container = document.createElement('div');
+        render(result, container);
+        assert.strictEqual(container.textContent, '#\\u202Ereversed_name');
     });
     it('escapes unpaired surrogates in object property names and values', () => {
         const target = createTarget();

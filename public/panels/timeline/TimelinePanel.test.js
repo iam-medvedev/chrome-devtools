@@ -460,5 +460,96 @@ describe('TimelinePanel', function () {
         assert.isOk(parsedTrace);
         assert.isTrue(Tracing.FreshRecording.Tracker.instance().recordingIsFresh(parsedTrace));
     });
+    describe('console.profile confirmation dialog', () => {
+        it('loads CPU profile when user accepts confirmation dialog', async function () {
+            const showDialogStub = sinon.stub(UI.UIUtils.ConfirmDialog, 'show').resolves(true);
+            const loadFromCpuProfileStub = sinon.stub(timeline, 'loadFromCpuProfile');
+            const showViewStub = sinon.stub(UI.ViewManager.ViewManager.instance(), 'showView').resolves();
+            const fakeCpuProfile = {};
+            const revealer = new Timeline.TimelinePanel.ProfileFinishedRevealer();
+            await revealer.reveal({
+                title: 'Test Profile',
+                cpuProfile: fakeCpuProfile,
+            });
+            sinon.assert.calledOnce(showDialogStub);
+            assert.strictEqual(showDialogStub.getCall(0).args[0], 'Do you want to load the recorded CPU profile "Test Profile" into the Performance panel?');
+            assert.strictEqual(showDialogStub.getCall(0).args[1], 'Load CPU profile?');
+            assert.isUndefined(showDialogStub.getCall(0).args[2]);
+            assert.deepEqual(showDialogStub.getCall(0).args[3], { jslogContext: 'load-cpu-profile-confirmation' });
+            sinon.assert.calledOnceWithExactly(loadFromCpuProfileStub, fakeCpuProfile, 'Test Profile');
+            sinon.assert.calledOnceWithExactly(showViewStub, 'timeline');
+        });
+        it('does not load CPU profile when user rejects confirmation dialog', async function () {
+            const showDialogStub = sinon.stub(UI.UIUtils.ConfirmDialog, 'show').resolves(false);
+            const loadFromCpuProfileStub = sinon.stub(timeline, 'loadFromCpuProfile');
+            const fakeCpuProfile = {};
+            const revealer = new Timeline.TimelinePanel.ProfileFinishedRevealer();
+            await revealer.reveal({
+                title: 'Test Profile',
+                cpuProfile: fakeCpuProfile,
+            });
+            sinon.assert.calledOnce(showDialogStub);
+            sinon.assert.notCalled(loadFromCpuProfileStub);
+        });
+        it('falls back to "Untitled" when profile title is empty', async function () {
+            const showDialogStub = sinon.stub(UI.UIUtils.ConfirmDialog, 'show').resolves(true);
+            sinon.stub(timeline, 'loadFromCpuProfile');
+            sinon.stub(UI.ViewManager.ViewManager.instance(), 'showView').resolves();
+            const fakeCpuProfile = {};
+            const revealer = new Timeline.TimelinePanel.ProfileFinishedRevealer();
+            await revealer.reveal({
+                title: '',
+                cpuProfile: fakeCpuProfile,
+            });
+            sinon.assert.calledOnce(showDialogStub);
+            assert.strictEqual(showDialogStub.getCall(0).args[0], 'Do you want to load the recorded CPU profile "Untitled" into the Performance panel?');
+        });
+        it('queues confirmation dialogs sequentially', async function () {
+            let resolveFirstDialog;
+            const firstDialogPromise = new Promise(resolve => {
+                resolveFirstDialog = resolve;
+            });
+            const showDialogStub = sinon.stub(UI.UIUtils.ConfirmDialog, 'show');
+            showDialogStub.onFirstCall().returns(firstDialogPromise);
+            showDialogStub.onSecondCall().resolves(true);
+            sinon.stub(timeline, 'loadFromCpuProfile');
+            sinon.stub(UI.ViewManager.ViewManager.instance(), 'showView').resolves();
+            const fakeCpuProfile = {};
+            const revealer1 = new Timeline.TimelinePanel.ProfileFinishedRevealer();
+            const revealer2 = new Timeline.TimelinePanel.ProfileFinishedRevealer();
+            const p1 = revealer1.reveal({ title: 'Profile 1', cpuProfile: fakeCpuProfile });
+            const p2 = revealer2.reveal({ title: 'Profile 2', cpuProfile: fakeCpuProfile });
+            await new Promise(resolve => setTimeout(resolve, 0));
+            sinon.assert.calledOnce(showDialogStub);
+            resolveFirstDialog(true);
+            await p1;
+            await p2;
+            sinon.assert.calledTwice(showDialogStub);
+            assert.strictEqual(showDialogStub.getCall(1).args[0], 'Do you want to load the recorded CPU profile "Profile 2" into the Performance panel?');
+        });
+        it('continues processing subsequent profiles even if a previous profile load fails', async function () {
+            const showDialogStub = sinon.stub(UI.UIUtils.ConfirmDialog, 'show').resolves(true);
+            const showViewStub = sinon.stub(UI.ViewManager.ViewManager.instance(), 'showView');
+            showViewStub.onFirstCall().rejects(new Error('Failed to show view'));
+            showViewStub.onSecondCall().resolves();
+            sinon.stub(timeline, 'loadFromCpuProfile');
+            const fakeCpuProfile = {};
+            const revealer1 = new Timeline.TimelinePanel.ProfileFinishedRevealer();
+            const revealer2 = new Timeline.TimelinePanel.ProfileFinishedRevealer();
+            const p1 = revealer1.reveal({ title: 'Profile 1', cpuProfile: fakeCpuProfile });
+            const p2 = revealer2.reveal({ title: 'Profile 2', cpuProfile: fakeCpuProfile });
+            let p1Error = null;
+            try {
+                await p1;
+            }
+            catch (err) {
+                p1Error = err;
+            }
+            assert.isNotNull(p1Error);
+            assert.strictEqual(p1Error?.message, 'Failed to show view');
+            await p2;
+            sinon.assert.calledTwice(showDialogStub);
+        });
+    });
 });
 //# sourceMappingURL=TimelinePanel.test.js.map

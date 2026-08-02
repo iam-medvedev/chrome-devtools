@@ -2,18 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
+import { assertScreenshot, dispatchClickEvent, raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import * as Resources from './application.js';
+// eslint-disable-next-line @devtools/es-modules-import
+import serviceWorkerUpdateCycleViewStyles from './serviceWorkerUpdateCycleView.css.js';
 var View = Resources.ServiceWorkerUpdateCycleView;
 describe('ServiceWorkerUpdateCycleView', () => {
     setupLocaleHooks();
     let versionId = 0;
     const registrationId = 'fake-sw-id';
+    afterEach(() => {
+        sinon.restore();
+    });
     it('calculates update cycle ranges', () => {
         const payload = { registrationId, scopeURL: '', isDeleted: false };
         const registration = new SDK.ServiceWorkerManager.ServiceWorkerRegistration(payload);
-        let view = new View.ServiceWorkerUpdateCycleView(registration);
+        let view = new View.ServiceWorkerUpdateCycleView();
+        view.registration = registration;
         let ranges = view.calculateServiceWorkerUpdateRanges();
         assert.lengthOf(ranges, 0, 'A nascent registration has no ranges to display.');
         versionId++;
@@ -25,7 +33,8 @@ describe('ServiceWorkerUpdateCycleView', () => {
             runningStatus: "starting" /* Protocol.ServiceWorker.ServiceWorkerVersionRunningStatus.Starting */,
         };
         registration.updateVersion(versionPayload);
-        view = new View.ServiceWorkerUpdateCycleView(registration);
+        view = new View.ServiceWorkerUpdateCycleView();
+        view.registration = registration;
         ranges = view.calculateServiceWorkerUpdateRanges();
         assert.lengthOf(ranges, 0, 'A new registration has no ranges to display.');
         versionId++;
@@ -37,7 +46,8 @@ describe('ServiceWorkerUpdateCycleView', () => {
             runningStatus: "running" /* Protocol.ServiceWorker.ServiceWorkerVersionRunningStatus.Running */,
         };
         registration.updateVersion(versionPayload);
-        view = new View.ServiceWorkerUpdateCycleView(registration);
+        view = new View.ServiceWorkerUpdateCycleView();
+        view.registration = registration;
         ranges = view.calculateServiceWorkerUpdateRanges();
         assert.lengthOf(ranges, 1, 'An installing registration has a range to display.');
         versionId++;
@@ -49,7 +59,8 @@ describe('ServiceWorkerUpdateCycleView', () => {
             runningStatus: "running" /* Protocol.ServiceWorker.ServiceWorkerVersionRunningStatus.Running */,
         };
         registration.updateVersion(versionPayload);
-        view = new View.ServiceWorkerUpdateCycleView(registration);
+        view = new View.ServiceWorkerUpdateCycleView();
+        view.registration = registration;
         ranges = view.calculateServiceWorkerUpdateRanges();
         assert.lengthOf(ranges, 1, 'An installing registration (reported multiple times) has a range to display.');
         versionId++;
@@ -61,7 +72,8 @@ describe('ServiceWorkerUpdateCycleView', () => {
             runningStatus: "running" /* Protocol.ServiceWorker.ServiceWorkerVersionRunningStatus.Running */,
         };
         registration.updateVersion(versionPayload);
-        view = new View.ServiceWorkerUpdateCycleView(registration);
+        view = new View.ServiceWorkerUpdateCycleView();
+        view.registration = registration;
         ranges = view.calculateServiceWorkerUpdateRanges();
         assert.lengthOf(ranges, 1, 'An installed registration has a range to display. ');
         versionId++;
@@ -73,7 +85,8 @@ describe('ServiceWorkerUpdateCycleView', () => {
             runningStatus: "running" /* Protocol.ServiceWorker.ServiceWorkerVersionRunningStatus.Running */,
         };
         registration.updateVersion(versionPayload);
-        view = new View.ServiceWorkerUpdateCycleView(registration);
+        view = new View.ServiceWorkerUpdateCycleView();
+        view.registration = registration;
         ranges = view.calculateServiceWorkerUpdateRanges();
         assert.lengthOf(ranges, 3, 'An activating registration has ranges to display.');
         versionId++;
@@ -85,7 +98,8 @@ describe('ServiceWorkerUpdateCycleView', () => {
             runningStatus: "running" /* Protocol.ServiceWorker.ServiceWorkerVersionRunningStatus.Running */,
         };
         registration.updateVersion(versionPayload);
-        view = new View.ServiceWorkerUpdateCycleView(registration);
+        view = new View.ServiceWorkerUpdateCycleView();
+        view.registration = registration;
         ranges = view.calculateServiceWorkerUpdateRanges();
         assert.lengthOf(ranges, 3, 'An activating registration has ranges to display.');
         versionId++;
@@ -97,7 +111,8 @@ describe('ServiceWorkerUpdateCycleView', () => {
             runningStatus: "running" /* Protocol.ServiceWorker.ServiceWorkerVersionRunningStatus.Running */,
         };
         registration.updateVersion(versionPayload);
-        view = new View.ServiceWorkerUpdateCycleView(registration);
+        view = new View.ServiceWorkerUpdateCycleView();
+        view.registration = registration;
         ranges = view.calculateServiceWorkerUpdateRanges();
         assert.lengthOf(ranges, 3, 'An activated registration has ranges to display.');
         versionId++;
@@ -109,9 +124,63 @@ describe('ServiceWorkerUpdateCycleView', () => {
             runningStatus: "stopped" /* Protocol.ServiceWorker.ServiceWorkerVersionRunningStatus.Stopped */,
         };
         registration.updateVersion(versionPayload);
-        view = new View.ServiceWorkerUpdateCycleView(registration);
+        view = new View.ServiceWorkerUpdateCycleView();
+        view.registration = registration;
         ranges = view.calculateServiceWorkerUpdateRanges();
-        assert.lengthOf(ranges, 3, 'A redundent registration has ranges to display.');
+        assert.lengthOf(ranges, 3, 'A redundant registration has ranges to display.');
+    });
+    it('renders the view', async () => {
+        let dateNow = 1600000000000;
+        sinon.stub(Date, 'now').callsFake(() => {
+            dateNow += 2000;
+            return dateNow;
+        });
+        const payload = { registrationId, scopeURL: '', isDeleted: false };
+        const registration = new SDK.ServiceWorkerManager.ServiceWorkerRegistration(payload);
+        // Add multiple states to the same version to build the timeline history
+        registration.updateVersion({
+            registrationId,
+            versionId: '1',
+            scriptURL: '',
+            status: "installing" /* Protocol.ServiceWorker.ServiceWorkerVersionStatus.Installing */,
+            runningStatus: "stopped" /* Protocol.ServiceWorker.ServiceWorkerVersionRunningStatus.Stopped */,
+        });
+        registration.updateVersion({
+            registrationId,
+            versionId: '1',
+            scriptURL: '',
+            status: "installed" /* Protocol.ServiceWorker.ServiceWorkerVersionStatus.Installed */,
+            runningStatus: "stopped" /* Protocol.ServiceWorker.ServiceWorkerVersionRunningStatus.Stopped */,
+        });
+        registration.updateVersion({
+            registrationId,
+            versionId: '1',
+            scriptURL: '',
+            status: "activating" /* Protocol.ServiceWorker.ServiceWorkerVersionStatus.Activating */,
+            runningStatus: "running" /* Protocol.ServiceWorker.ServiceWorkerVersionRunningStatus.Running */,
+        });
+        registration.updateVersion({
+            registrationId,
+            versionId: '1',
+            scriptURL: '',
+            status: "activated" /* Protocol.ServiceWorker.ServiceWorkerVersionStatus.Activated */,
+            runningStatus: "running" /* Protocol.ServiceWorker.ServiceWorkerVersionRunningStatus.Running */,
+        });
+        const view = new View.ServiceWorkerUpdateCycleView();
+        view.registration = registration;
+        renderElementIntoDOM(view, {
+            includeCommonStyles: true,
+            extraStyles: [serviceWorkerUpdateCycleViewStyles],
+        });
+        // Wait for the initial render.
+        await raf();
+        const rows = view.contentElement.querySelectorAll('.service-worker-update-timing-bar-clickable');
+        for (const row of rows) {
+            dispatchClickEvent(row, { bubbles: true });
+        }
+        // Wait for the re-render after clicking.
+        await raf();
+        await assertScreenshot('application/service_worker_update_cycle_view.png');
     });
 });
 //# sourceMappingURL=ServiceWorkerUpdateCycleView.test.js.map

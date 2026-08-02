@@ -5,26 +5,22 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as Host from '../../../core/host/host.js';
 import { querySelectorErrorOnMissing, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
-import { deinitializeGlobalVars, initializeGlobalVars } from '../../../testing/EnvironmentHelpers.js';
+import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import * as Snackbars from '../../../ui/components/snackbars/snackbars.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as AiAssistance from '../ai_assistance.js';
-describe('ExportForAgentsDialog', () => {
+describeWithEnvironment('ExportForAgentsDialog', () => {
     const noop = () => { };
     let dialog;
     let inspectorFrontendHostStub;
     let promptText;
     let markdownText;
-    beforeEach(async () => {
-        await initializeGlobalVars();
+    beforeEach(() => {
         AiAssistance.ExportForAgentsDialog.ExportForAgentsDialog.clearPersistedViewState();
         dialog = new UI.Dialog.Dialog();
         inspectorFrontendHostStub = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance);
         promptText = 'This is prompt text.';
         markdownText = '# This is markdown text.\n\nWith some content.';
-    });
-    afterEach(async () => {
-        await deinitializeGlobalVars();
     });
     it('renders correctly in initial (prompt) state', async () => {
         const component = new AiAssistance.ExportForAgentsDialog.ExportForAgentsDialog({
@@ -126,6 +122,7 @@ describe('ExportForAgentsDialog', () => {
         // Clean up.
         resolvePrompt('Done');
         await promptTextPromise;
+        await component.updateComplete;
     });
     it('enables the "Save as..." button for Markdown when the summary prompt is generating', async () => {
         let resolvePrompt = () => { };

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import sinon from 'sinon';
+import * as Root from '../../../core/root/root.js';
 import { assertScreenshot, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { createViewFunctionStub } from '../../../testing/ViewFunctionHelpers.js';
@@ -27,6 +28,15 @@ const reports = [{
         status: "Queued" /* Protocol.Network.ReportStatus.Queued */,
     }];
 describeWithEnvironment('ReportsGrid', () => {
+    beforeEach(() => {
+        Root.Runtime.experiments.register({
+            name: Root.ExperimentNames.ExperimentName.PROTOCOL_MONITOR,
+            title: 'Protocol Monitor',
+            aboutFlag: 'devtools-protocol-monitor',
+            isEnabled: true,
+            requiresChromeRestart: false,
+        });
+    });
     describe('view', () => {
         let target;
         beforeEach(async () => {

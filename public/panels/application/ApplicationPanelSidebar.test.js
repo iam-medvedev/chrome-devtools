@@ -16,99 +16,15 @@ import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Application from './application.js';
 const { urlString } = Platform.DevToolsPath;
-class SharedStorageTreeElementListener {
-    #sidebar;
-    #originsAdded = [];
-    constructor(sidebar) {
-        this.#sidebar = sidebar;
-        this.#sidebar.sharedStorageTreeElementDispatcher.addEventListener("SharedStorageTreeElementAdded" /* Application.ApplicationPanelSidebar.SharedStorageTreeElementDispatcher.Events.SHARED_STORAGE_TREE_ELEMENT_ADDED */, this.#treeElementAdded, this);
-    }
-    dispose() {
-        this.#sidebar.sharedStorageTreeElementDispatcher.removeEventListener("SharedStorageTreeElementAdded" /* Application.ApplicationPanelSidebar.SharedStorageTreeElementDispatcher.Events.SHARED_STORAGE_TREE_ELEMENT_ADDED */, this.#treeElementAdded, this);
-    }
-    #treeElementAdded(event) {
-        this.#originsAdded.push(event.data.origin);
-    }
-    async waitForElementsAdded(expectedCount) {
-        while (this.#originsAdded.length < expectedCount) {
-            await this.#sidebar.sharedStorageTreeElementDispatcher.once("SharedStorageTreeElementAdded" /* Application.ApplicationPanelSidebar.SharedStorageTreeElementDispatcher.Events
-                          .SHARED_STORAGE_TREE_ELEMENT_ADDED */);
-        }
-    }
-}
 describeWithEnvironment('ApplicationPanelSidebar', () => {
     let target;
     let tabTarget;
-    const TEST_ORIGIN_A = 'http://www.example.com/';
-    const TEST_SITE_A = 'http://example.com';
-    const TEST_ORIGIN_B = 'http://www.example.org/';
-    const TEST_ORIGIN_C = 'http://www.example.net/';
-    const TEST_SITE_C = 'http://example.net';
     const TEST_EXTENSION_NAME = 'Test Extension';
-    const ID = 'main';
-    const EVENTS = [
-        {
-            accessTime: 0,
-            method: "append" /* Protocol.Storage.SharedStorageAccessMethod.Append */,
-            mainFrameId: ID,
-            ownerOrigin: TEST_ORIGIN_A,
-            ownerSite: TEST_SITE_A,
-            params: { key: 'key0', value: 'value0' },
-            scope: "window" /* Protocol.Storage.SharedStorageAccessScope.Window */,
-        },
-        {
-            accessTime: 10,
-            method: "get" /* Protocol.Storage.SharedStorageAccessMethod.Get */,
-            mainFrameId: ID,
-            ownerOrigin: TEST_ORIGIN_A,
-            ownerSite: TEST_SITE_A,
-            params: { key: 'key0' },
-            scope: "sharedStorageWorklet" /* Protocol.Storage.SharedStorageAccessScope.SharedStorageWorklet */,
-        },
-        {
-            accessTime: 15,
-            method: "length" /* Protocol.Storage.SharedStorageAccessMethod.Length */,
-            mainFrameId: ID,
-            ownerOrigin: TEST_ORIGIN_A,
-            ownerSite: TEST_SITE_A,
-            params: {},
-            scope: "sharedStorageWorklet" /* Protocol.Storage.SharedStorageAccessScope.SharedStorageWorklet */,
-        },
-        {
-            accessTime: 20,
-            method: "clear" /* Protocol.Storage.SharedStorageAccessMethod.Clear */,
-            mainFrameId: ID,
-            ownerOrigin: TEST_ORIGIN_C,
-            ownerSite: TEST_SITE_C,
-            params: {},
-            scope: "window" /* Protocol.Storage.SharedStorageAccessScope.Window */,
-        },
-        {
-            accessTime: 100,
-            method: "set" /* Protocol.Storage.SharedStorageAccessMethod.Set */,
-            mainFrameId: ID,
-            ownerOrigin: TEST_ORIGIN_C,
-            ownerSite: TEST_SITE_C,
-            params: { key: 'key0', value: 'value1', ignoreIfPresent: true },
-            scope: "sharedStorageWorklet" /* Protocol.Storage.SharedStorageAccessScope.SharedStorageWorklet */,
-        },
-        {
-            accessTime: 150,
-            method: "remainingBudget" /* Protocol.Storage.SharedStorageAccessMethod.RemainingBudget */,
-            mainFrameId: ID,
-            ownerOrigin: TEST_ORIGIN_C,
-            ownerSite: TEST_SITE_C,
-            params: {},
-            scope: "sharedStorageWorklet" /* Protocol.Storage.SharedStorageAccessScope.SharedStorageWorklet */,
-        },
-    ];
     beforeEach(() => {
         stubNoopSettings();
         SDK.ChildTargetManager.ChildTargetManager.install();
         const connection = new MockCDPConnection();
         mockResourceTree(connection);
-        connection.setSuccessHandler('Storage.getSharedStorageEntries', () => ({}));
-        connection.setSuccessHandler('Storage.setSharedStorageTracking', () => ({}));
         tabTarget = createTarget({ type: SDK.Target.Type.TAB, connection });
         createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
         target = createTarget({ parentTarget: tabTarget });
@@ -160,39 +76,6 @@ describeWithEnvironment('ApplicationPanelSidebar', () => {
         resourceTreeModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.CachedResourcesLoaded, resourceTreeModel);
         assert.strictEqual(sidebar.cookieListTreeElement.childCount(), 2);
         assert.deepEqual(sidebar.cookieListTreeElement.children().map(e => e.title), ['https://example.com', 'https://example.org']);
-    });
-    it('shows shared storages and events for origins using shared storage', async () => {
-        const securityOriginManager = target.model(SDK.SecurityOriginManager.SecurityOriginManager);
-        assert.exists(securityOriginManager);
-        sinon.stub(securityOriginManager, 'securityOrigins').returns([
-            TEST_ORIGIN_A,
-            TEST_ORIGIN_B,
-            TEST_ORIGIN_C,
-        ]);
-        const sharedStorageModel = target.model(Application.SharedStorageModel.SharedStorageModel);
-        assert.exists(sharedStorageModel);
-        const setTrackingSpy = sinon.stub(sharedStorageModel.storageAgent, 'invoke_setSharedStorageTracking').resolves({
-            getError: () => undefined,
-        });
-        Application.ResourcesPanel.ResourcesPanel.instance({ forceNew: true });
-        const sidebar = await Application.ResourcesPanel.ResourcesPanel.showAndGetSidebar();
-        const listener = new SharedStorageTreeElementListener(sidebar);
-        const addedPromise = listener.waitForElementsAdded(4);
-        const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
-        assert.exists(resourceTreeModel);
-        resourceTreeModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.CachedResourcesLoaded, resourceTreeModel);
-        await addedPromise;
-        sinon.assert.calledOnceWithExactly(setTrackingSpy, { enable: true });
-        assert.strictEqual(sidebar.sharedStorageListTreeElement.childCount(), 4);
-        assert.deepEqual(sidebar.sharedStorageListTreeElement.children().map(e => e.title), [
-            TEST_ORIGIN_A, TEST_ORIGIN_B, TEST_ORIGIN_C,
-            'https://example.com', // frame origin
-        ]);
-        sidebar.sharedStorageListTreeElement.view.setDefaultIdForTesting(ID);
-        for (const event of EVENTS) {
-            sharedStorageModel.dispatchEventToListeners("SharedStorageAccess" /* Application.SharedStorageModel.Events.SHARED_STORAGE_ACCESS */, event);
-        }
-        assert.deepEqual(sidebar.sharedStorageListTreeElement.view.getEventsForTesting(), EVENTS);
     });
     it('shows extension storage based on added models', async () => {
         for (const useTreeView of [false, true]) {
@@ -280,8 +163,6 @@ describeWithEnvironment('ApplicationPanelSidebar', () => {
     it('does not add DOM storage on out of scope event', testUiUpdate("DOMStorageAdded" /* SDK.DOMStorageModel.Events.DOM_STORAGE_ADDED */, SDK.DOMStorageModel.DOMStorageModel, 'sessionStorageListTreeElement.appendChild', false));
     it('adds indexed DB on in scope event', testUiUpdate(Application.IndexedDBModel.Events.DatabaseAdded, Application.IndexedDBModel.IndexedDBModel, 'indexedDBListTreeElement.appendChild', true));
     it('does not add indexed DB on out of scope event', testUiUpdate(Application.IndexedDBModel.Events.DatabaseAdded, Application.IndexedDBModel.IndexedDBModel, 'indexedDBListTreeElement.appendChild', false));
-    it('adds shared storage on in scope event', testUiUpdate("SharedStorageAdded" /* Application.SharedStorageModel.Events.SHARED_STORAGE_ADDED */, Application.SharedStorageModel.SharedStorageModel, 'sharedStorageListTreeElement.appendChild', true));
-    it('does not add shared storage on out of scope event', testUiUpdate("SharedStorageAdded" /* Application.SharedStorageModel.Events.SHARED_STORAGE_ADDED */, Application.SharedStorageModel.SharedStorageModel, 'sharedStorageListTreeElement.appendChild', false));
     const MOCK_GETTER_ITEM = {
         ...MOCK_EVENT_ITEM,
         ...MOCK_EVENT_ITEM.databaseId,
@@ -298,7 +179,6 @@ describeWithEnvironment('ApplicationPanelSidebar', () => {
         sinon.assert.called(expectedCall);
     };
     it('adds DOM storage element after scope change', testUiUpdateOnScopeChange(SDK.DOMStorageModel.DOMStorageModel, 'storages', 'sessionStorageListTreeElement.appendChild'));
-    it('adds shared storage after scope change', testUiUpdateOnScopeChange(Application.SharedStorageModel.SharedStorageModel, 'storages', 'sharedStorageListTreeElement.appendChild'));
     it('adds indexed db after scope change', testUiUpdateOnScopeChange(Application.IndexedDBModel.IndexedDBModel, 'databases', 'indexedDBListTreeElement.appendChild'));
     it('uses extension name when available for tree element title', () => {
         const panel = Application.ResourcesPanel.ResourcesPanel.instance({ forceNew: true });
@@ -595,6 +475,12 @@ describe('Ask-AI Hover Floating Button', () => {
             treeElement.listItemElement.querySelector('button');
         assert.exists(floatingButton, 'Expected Ask-AI floating button on tree element');
     });
+    it('adds hover Ask-AI button for general local storage', () => {
+        const expandableTreeElement = new Application.ApplicationPanelTreeElement.ExpandableApplicationPanelTreeElement(panel, 'Local Storage', 'No local storage', 'Local Storage Description', 'local-storage');
+        expandableTreeElement.onattach();
+        const floatingButton = expandableTreeElement.listItemElement.querySelector('devtools-floating-button');
+        assert.exists(floatingButton, 'Expected Ask-AI floating button on tree element');
+    });
 });
 describe('Storage Agent Context Menu', () => {
     setupLocaleHooks();
@@ -719,6 +605,22 @@ describe('Storage Agent Selection', () => {
         assert.exists(flavor);
         assert.instanceOf(flavor, AiAssistance.StorageItem.CookieItem);
         assert.strictEqual(flavor.origin, 'https://example.com');
+    });
+    it('sets active DOMStorageItem flavor on Local Storage category selection', () => {
+        const treeElement = new Application.ApplicationPanelTreeElement.ExpandableApplicationPanelTreeElement(panel, 'Local Storage', 'No local storage', 'Local Storage Description', 'local-storage');
+        const treeOutline = new UI.TreeOutline.TreeOutlineInShadow();
+        treeOutline.appendChild(treeElement);
+        // Clear flavor first
+        UI.Context.Context.instance().setFlavor(AiAssistance.StorageItem.StorageItem, null);
+        // Select the element
+        treeElement.select();
+        const flavor = UI.Context.Context.instance().flavor(AiAssistance.StorageItem.StorageItem);
+        assert.exists(flavor);
+        assert.instanceOf(flavor, AiAssistance.StorageItem.DOMStorageItem);
+        assert.strictEqual(flavor.origin, '');
+        assert.isTrue(flavor.isGenericContext);
+        assert.strictEqual(flavor.primaryTargetOrigin, 'http://example.com');
+        assert.strictEqual(flavor.type, 'localStorage');
     });
 });
 //# sourceMappingURL=ApplicationPanelSidebar.test.js.map

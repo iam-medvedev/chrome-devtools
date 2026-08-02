@@ -9,18 +9,18 @@ export default `/*
  * found in the LICENSE file.
  */
 
-* {
-  font-family: var(--default-font-family);
-}
-
+devtools-button.add-locations-button:not(:first-child),
 .add-locations-button {
   margin-bottom: var(--sys-size-5);
   border: none;
 }
 
+devtools-list.locations-list,
 .locations-list {
   margin-top: var(--sys-size-3);
   flex: auto;
+  display: flex;
+  border: 1px solid var(--sys-color-divider);
 }
 
 .locations-list-item {
@@ -93,6 +93,80 @@ export default `/*
   flex-direction: column;
   align-items: center;
   gap: var(--sys-size-9);
+}
+
+.location-dialog-content {
+  padding: var(--sys-size-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sys-size-6);
+  width: var(--sys-size-33);
+  min-width: var(--sys-size-33);
+}
+
+.editor-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sys-size-5) var(--sys-size-6);
+}
+
+.editor-field-full-width {
+  grid-column: 1 / -1;
+}
+
+.editor-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sys-size-2);
+}
+
+.editor-field-label {
+  color: var(--sys-color-on-surface);
+  font-size: var(--sys-size-6);
+  font-weight: var(--ref-typeface-weight-medium);
+}
+
+.editor-field input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--sys-size-3) var(--sys-size-4);
+  height: var(--sys-size-11);
+  border: var(--sys-size-1) solid var(--sys-color-neutral-outline);
+  border-radius: var(--sys-size-2);
+  outline: none;
+}
+
+.editor-field.has-error input {
+  border-color: var(--sys-color-error);
+}
+
+.editor-field-error {
+  color: var(--sys-color-error);
+  font-size: var(--sys-size-6);
+  overflow-wrap: break-word;
+}
+
+.dialog-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sys-size-3);
+  margin-top: var(--sys-size-3);
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dialog-title {
+  font-size: var(--sys-size-7);
+  font-weight: var(--ref-typeface-weight-medium);
+  color: var(--sys-color-on-surface);
+}
+
+.dialog-close-button {
+  flex-shrink: 0;
 }
 
 /*# sourceURL=${import.meta.resolve('./locationsSettingsTab.css')} */`;
