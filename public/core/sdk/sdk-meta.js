@@ -3,22 +3,6 @@ import * as Common from "./../common/common.js";
 import * as i18n from "./../i18n/i18n.js";
 var UIStrings = {
   /**
-   * @description Title of a setting under the Console category that can be invoked through the Command Menu.
-   */
-  preserveLogUponNavigation: "Keep log on navigation",
-  /**
-   * @description Title of a setting under the Console category that can be invoked through the Command Menu.
-   */
-  doNotPreserveLogUponNavigation: "Don\u2019t keep log on navigation",
-  /**
-   * @description Text for pausing the debugger on exceptions.
-   */
-  pauseOnExceptions: "Pause on exceptions",
-  /**
-   * @description Title of a setting under the Debugger category that can be invoked through the Command Menu.
-   */
-  doNotPauseOnExceptions: "Do not pause on exceptions",
-  /**
    * @description Title of a setting under the Debugger category that can be invoked through the Command Menu.
    */
   disableJavascript: "Disable JavaScript",
@@ -448,30 +432,6 @@ var UIStrings = {
    */
   networkCacheExplanation: "Disabling the network cache will simulate a network experience similar to a first time visitor.",
   /**
-   * @description Setting under the Sources category to toggle usage of JavaScript source maps.
-   */
-  javaScriptSourceMaps: "JavaScript source maps",
-  /**
-   * @description Title of an option under the Sources category that can be invoked through the Command Menu.
-   */
-  enableJavaScriptSourceMaps: "Enable JavaScript source maps",
-  /**
-   * @description Title of an option under the Sources category that can be invoked through the Command Menu.
-   */
-  disableJavaScriptSourceMaps: "Disable JavaScript source maps",
-  /**
-   * @description Title of a setting under the Sources category.
-   */
-  cssSourceMaps: "CSS source maps",
-  /**
-   * @description Title of an option under the Sources category that can be invoked through the Command Menu.
-   */
-  enableCssSourceMaps: "Enable CSS source maps",
-  /**
-   * @description Title of an option under the Sources category that can be invoked through the Command Menu.
-   */
-  disableCssSourceMaps: "Disable CSS source maps",
-  /**
    * @description Title of a setting under the Console category in Settings.
    */
   logXmlhttprequests: "Log XMLHttpRequests",
@@ -489,45 +449,6 @@ var UIStrings = {
 };
 var str_ = i18n.i18n.registerUIStrings("core/sdk/sdk-meta.ts", UIStrings);
 var i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(void 0, str_);
-Common.Settings.registerSettingExtension({
-  category: "CONSOLE",
-  storageType: "Synced",
-  title: i18nLazyString(UIStrings.preserveLogUponNavigation),
-  settingName: "preserve-console-log",
-  settingType: "boolean",
-  defaultValue: false,
-  options: [
-    {
-      value: true,
-      title: i18nLazyString(UIStrings.preserveLogUponNavigation)
-    },
-    {
-      value: false,
-      title: i18nLazyString(UIStrings.doNotPreserveLogUponNavigation)
-    }
-  ]
-});
-Common.Settings.registerSettingExtension({
-  category: "DEBUGGER",
-  settingName: "pause-on-exception-enabled",
-  settingType: "boolean",
-  defaultValue: false,
-  options: [
-    {
-      value: true,
-      title: i18nLazyString(UIStrings.pauseOnExceptions)
-    },
-    {
-      value: false,
-      title: i18nLazyString(UIStrings.doNotPauseOnExceptions)
-    }
-  ]
-});
-Common.Settings.registerSettingExtension({
-  settingName: "pause-on-caught-exception",
-  settingType: "boolean",
-  defaultValue: false
-});
 Common.Settings.registerSettingExtension({
   settingName: "pause-on-uncaught-exception",
   settingType: "boolean",
@@ -1342,42 +1263,6 @@ Common.Settings.registerSettingExtension({
   learnMore: {
     tooltip: i18nLazyString(UIStrings.remoteFileLoadingInfo)
   }
-});
-Common.Settings.registerSettingExtension({
-  category: "SOURCES",
-  storageType: "Synced",
-  title: i18nLazyString(UIStrings.javaScriptSourceMaps),
-  settingName: "js-source-maps-enabled",
-  settingType: "boolean",
-  defaultValue: true,
-  options: [
-    {
-      value: true,
-      title: i18nLazyString(UIStrings.enableJavaScriptSourceMaps)
-    },
-    {
-      value: false,
-      title: i18nLazyString(UIStrings.disableJavaScriptSourceMaps)
-    }
-  ]
-});
-Common.Settings.registerSettingExtension({
-  category: "SOURCES",
-  storageType: "Synced",
-  title: i18nLazyString(UIStrings.cssSourceMaps),
-  settingName: "css-source-maps-enabled",
-  settingType: "boolean",
-  defaultValue: true,
-  options: [
-    {
-      value: true,
-      title: i18nLazyString(UIStrings.enableCssSourceMaps)
-    },
-    {
-      value: false,
-      title: i18nLazyString(UIStrings.disableCssSourceMaps)
-    }
-  ]
 });
 Common.Settings.registerSettingExtension({
   category: "CONSOLE",

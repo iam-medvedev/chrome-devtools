@@ -24,6 +24,7 @@ class TestPlatformFileSystem extends Persistence.PlatformFileSystem.PlatformFile
 }
 describeWithEnvironment('IsolatedFileSystemManager', () => {
     it('does not propagate events for ignored files', () => {
+        // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
         const manager = Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance();
         manager.workspaceFolderExcludePatternSetting().set('[iI]gnored');
         const fileSystemPath = urlString `file:///var/www`;

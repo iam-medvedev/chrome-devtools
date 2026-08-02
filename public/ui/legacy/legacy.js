@@ -562,10 +562,12 @@ import * as Platform16 from "./../../core/platform/platform.js";
 // gen/front_end/ui/legacy/Dialog.js
 var Dialog_exports = {};
 __export(Dialog_exports, {
-  Dialog: () => Dialog
+  Dialog: () => Dialog,
+  DialogWidget: () => DialogWidget
 });
 import * as Common16 from "./../../core/common/common.js";
 import * as i18n27 from "./../../core/i18n/i18n.js";
+import { nothing as nothing4, render as render7 } from "./../lit/lit.js";
 import * as Buttons7 from "./../components/buttons/buttons.js";
 import * as VisualLogging17 from "./../visual_logging/visual_logging.js";
 
@@ -4391,6 +4393,7 @@ var TabbedPane = class extends Common6.ObjectWrapper.eventMixin(VBox) {
     }
   }
   clearMeasuredWidths() {
+    delete this.measuredDropDownButtonWidth;
     for (let i = 0; i < this.#tabs.length; ++i) {
       delete this.#tabs[i].measuredWidth;
     }
@@ -4686,7 +4689,7 @@ var TabbedPane = class extends Common6.ObjectWrapper.eventMixin(VBox) {
     this.#dispatchOverflowTabsChangedIfNeeded();
   }
   maybeShowDropDown(hasMoreTabs) {
-    const shouldShow = this.#trailingSlot.assignedElements().length === 0 && hasMoreTabs;
+    const shouldShow = this.#trailingSlot.assignedElements().length === 0 && hasMoreTabs && this.totalWidth() >= (this.measuredDropDownButtonWidth || 0);
     if (shouldShow && !this.dropDownButton.parentElement) {
       this.headerContentsElement.appendChild(this.dropDownButton);
     } else if (!shouldShow && this.dropDownButton.parentElement) {
@@ -4770,7 +4773,10 @@ var TabbedPane = class extends Common6.ObjectWrapper.eventMixin(VBox) {
     }
     this.dropDownButton.classList.add("measuring");
     this.headerContentsElement.appendChild(this.dropDownButton);
-    this.measuredDropDownButtonWidth = this.dropDownButton.getBoundingClientRect().width;
+    const width = this.dropDownButton.getBoundingClientRect().width;
+    if (width > 0) {
+      this.measuredDropDownButtonWidth = width;
+    }
     this.headerContentsElement.removeChild(this.dropDownButton);
     this.dropDownButton.classList.remove("measuring");
   }
@@ -8257,10 +8263,6 @@ var InspectorView = class _InspectorView extends VBox {
   applyDrawerOrientationForDockSideForTest() {
   }
   #applyDrawerOrientationForDockSide() {
-    if (!this.drawerVisible()) {
-      this.applyDrawerOrientationForDockSideForTest();
-      return;
-    }
     const newOrientation = this.#getOrientationForDockMode();
     this.#applyDrawerOrientation(newOrientation);
     this.applyDrawerOrientationForDockSideForTest();
@@ -8402,6 +8404,7 @@ var InspectorView = class _InspectorView extends VBox {
       }
       return;
     }
+    this.#applyDrawerOrientationForDockSide();
     this.#drawerView.show(hasTargetDrawer);
     if (focus) {
       this.focusRestorer = new WidgetFocusRestorer(this.drawerTabbedPane);
@@ -8410,7 +8413,6 @@ var InspectorView = class _InspectorView extends VBox {
       this.focusRestorer = null;
       this.#mainPanelAtDrawerFocus = null;
     }
-    this.#applyDrawerOrientationForDockSide();
     LiveAnnouncer.alert(i18nString9(UIStrings9.drawerShown));
   }
   drawerVisible() {
@@ -17307,7 +17309,7 @@ var Dialog = class _Dialog extends Common16.ObjectWrapper.eventMixin(GlassPane) 
     this.contentElement.tabIndex = 0;
     this.contentElement.addEventListener("focus", () => this.widget().focus(), false);
     if (jslogContext) {
-      this.contentElement.setAttribute("jslog", `${VisualLogging17.dialog(jslogContext).track({ resize: true, keydown: "Escape" })}`);
+      this.jslogContext = jslogContext;
     }
     this.setPointerEventsBehavior(
       "BlockedByGlassPane"
@@ -17322,6 +17324,13 @@ var Dialog = class _Dialog extends Common16.ObjectWrapper.eventMixin(GlassPane) 
     });
     markAsModalDialog(this.contentElement);
     this.targetDocumentKeyDownHandler = this.onKeyDown.bind(this);
+  }
+  set jslogContext(jslogContext) {
+    if (jslogContext) {
+      this.contentElement.setAttribute("jslog", `${VisualLogging17.dialog(jslogContext).track({ resize: true, keydown: "Escape" })}`);
+    } else {
+      this.contentElement.removeAttribute("jslog");
+    }
   }
   static hasInstance() {
     return _Dialog.dialogs.length > 0;
@@ -17471,6 +17480,88 @@ var Dialog = class _Dialog extends Common16.ObjectWrapper.eventMixin(GlassPane) 
     }
   }
   static dialogs = [];
+};
+var DialogWidget = class extends Common16.ObjectWrapper.eventMixin(Widget) {
+  #open = false;
+  #jslogContext = "";
+  #dialogStack = false;
+  #content = nothing4;
+  #dialog = new Dialog();
+  constructor(element) {
+    super(element);
+    this.#dialog.setSizeBehavior(
+      "MeasureContent"
+      /* SizeBehavior.MEASURE_CONTENT */
+    );
+    this.#dialog.contentElement.tabIndex = -1;
+    this.#dialog.addEventListener("hidden", () => {
+      this.#open = false;
+      this.dispatchEventToListeners(
+        "hidden"
+        /* Events.HIDDEN */
+      );
+    });
+  }
+  get open() {
+    return this.#open;
+  }
+  set open(open) {
+    if (this.#open !== open) {
+      this.#open = open;
+      this.requestUpdate();
+    }
+  }
+  get dialogStack() {
+    return this.#dialogStack;
+  }
+  set dialogStack(dialogStack) {
+    if (this.#dialogStack !== dialogStack) {
+      this.#dialogStack = dialogStack;
+      this.requestUpdate();
+    }
+  }
+  get content() {
+    return this.#content;
+  }
+  set content(content) {
+    this.#content = content;
+    this.requestUpdate();
+  }
+  get jslogContext() {
+    return this.#jslogContext;
+  }
+  set jslogContext(jslogContext) {
+    if (this.#jslogContext !== jslogContext) {
+      this.#jslogContext = jslogContext;
+      this.#dialog.jslogContext = jslogContext;
+      this.requestUpdate();
+    }
+  }
+  wasShown() {
+    super.wasShown();
+    this.requestUpdate();
+  }
+  willHide() {
+    super.willHide();
+    this.#dialog.hide();
+  }
+  onDetach() {
+    super.onDetach();
+    this.#dialog.hide();
+  }
+  performUpdate() {
+    if (this.open) {
+      render7(this.#content ?? nothing4, this.#dialog.contentElement);
+      if (!this.#dialog.isShowing()) {
+        this.#dialog.show(this.contentElement.ownerDocument, this.#dialogStack);
+        this.#dialog.contentElement.focus();
+      } else {
+        this.#dialog.positionContent();
+      }
+    } else if (this.#dialog.isShowing()) {
+      this.#dialog.hide();
+    }
+  }
 };
 
 // gen/front_end/ui/legacy/ARIAUtils.js
@@ -17946,7 +18037,7 @@ __export(EmptyWidget_exports, {
 });
 import "./../kit/kit.js";
 import * as i18n29 from "./../../core/i18n/i18n.js";
-import { Directives as Directives4, html as html4, render as render7 } from "./../lit/lit.js";
+import { Directives as Directives4, html as html4, render as render8 } from "./../lit/lit.js";
 import * as VisualLogging18 from "./../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/emptyWidget.css.js
@@ -17973,7 +18064,7 @@ var str_15 = i18n29.i18n.registerUIStrings("ui/legacy/EmptyWidget.ts", UIStrings
 var i18nString15 = i18n29.i18n.getLocalizedString.bind(void 0, str_15);
 var { ref } = Directives4;
 var DEFAULT_VIEW = (input, output, target) => {
-  render7(html4`
+  render8(html4`
     <style>${inspectorCommon_css_default}</style>
     <style>${emptyWidget_css_default}</style>
     <div class="empty-state" jslog=${VisualLogging18.section("empty-view")}
@@ -18953,7 +19044,7 @@ __export(ListWidget_exports, {
 import * as i18n33 from "./../../core/i18n/i18n.js";
 import * as Platform21 from "./../../core/platform/platform.js";
 import * as Buttons8 from "./../components/buttons/buttons.js";
-import { html as html5, nothing as nothing4, render as render8 } from "./../lit/lit.js";
+import { html as html5, nothing as nothing5, render as render9 } from "./../lit/lit.js";
 import * as VisualLogging20 from "./../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/listWidget.css.js
@@ -19300,11 +19391,11 @@ var ListWidget = class extends VBox {
     const controls = document.createElement("div");
     controls.classList.add("controls-container");
     controls.classList.add("fill");
-    render8(html5`
+    render9(html5`
       <div class="controls-gradient"></div>
       <div class="controls-buttons">
         <devtools-toolbar>
-          ${controlLabels?.hideEdit ? nothing4 : html5`<devtools-button class=toolbar-button
+          ${controlLabels?.hideEdit ? nothing5 : html5`<devtools-button class=toolbar-button
                            .iconName=${"edit"}
                            .jslogContext=${"edit-item"}
                            .title=${controlLabels?.edit ?? i18nString17(UIStrings17.editString)}
@@ -19688,7 +19779,7 @@ var PopoverHelper = class _PopoverHelper {
   boundMouseDown;
   boundMouseMove;
   boundMouseOut;
-  boundScrollEnd;
+  boundScroll;
   boundKeyUp;
   jslogContext;
   constructor(container, getRequest, jslogContext) {
@@ -19705,7 +19796,7 @@ var PopoverHelper = class _PopoverHelper {
     this.boundMouseDown = this.mouseDown.bind(this);
     this.boundMouseMove = this.mouseMove.bind(this);
     this.boundMouseOut = this.mouseOut.bind(this);
-    this.boundScrollEnd = this.scrollEnd.bind(this);
+    this.boundScroll = this.scroll.bind(this);
     this.boundKeyUp = this.keyUp.bind(this);
     this.container.addEventListener("mousedown", this.boundMouseDown, false);
     this.container.addEventListener("mousemove", this.boundMouseMove, false);
@@ -19723,7 +19814,7 @@ var PopoverHelper = class _PopoverHelper {
   eventInScheduledContent(event) {
     return this.scheduledRequest ? this.scheduledRequest.box.contains(event.clientX, event.clientY) : false;
   }
-  scrollEnd(_event) {
+  scroll(_event) {
     this.hidePopover();
   }
   mouseDown(event) {
@@ -19855,14 +19946,14 @@ var PopoverHelper = class _PopoverHelper {
       popover2.contentElement.addEventListener("mouseout", this.popoverMouseOut.bind(this, popover2), true);
       popover2.setContentAnchorBox(request.box);
       popover2.show(document2);
-      this.container.addEventListener("scrollend", this.boundScrollEnd, true);
+      this.container.addEventListener("scroll", this.boundScroll, true);
       this.hidePopoverCallback = () => {
         if (request.hide) {
           request.hide.call(null);
         }
         popover2.hide();
         popoverHelperInstance = null;
-        this.container.removeEventListener("scrollend", this.boundScrollEnd, true);
+        this.container.removeEventListener("scroll", this.boundScroll, true);
       };
     });
   }
@@ -20001,7 +20092,7 @@ __export(RemoteDebuggingTerminatedScreen_exports, {
 });
 import * as i18n35 from "./../../core/i18n/i18n.js";
 import * as Buttons9 from "./../components/buttons/buttons.js";
-import { html as html6, render as render9 } from "./../lit/lit.js";
+import { html as html6, render as render10 } from "./../lit/lit.js";
 
 // gen/front_end/ui/legacy/remoteDebuggingTerminatedScreen.css.js
 var remoteDebuggingTerminatedScreen_css_default = `/*
@@ -20066,7 +20157,7 @@ var UIStrings18 = {
 var str_18 = i18n35.i18n.registerUIStrings("ui/legacy/RemoteDebuggingTerminatedScreen.ts", UIStrings18);
 var i18nString18 = i18n35.i18n.getLocalizedString.bind(void 0, str_18);
 var DEFAULT_VIEW2 = (input, _output, target) => {
-  render9(html6`
+  render10(html6`
     <style>${remoteDebuggingTerminatedScreen_css_default}</style>
     <div class="header">${i18nString18(UIStrings18.debuggingConnectionWasClosed)}</div>
     <div class="content">
@@ -21657,7 +21748,7 @@ __export(TargetCrashedScreen_exports, {
   TargetCrashedScreen: () => TargetCrashedScreen
 });
 import * as i18n41 from "./../../core/i18n/i18n.js";
-import { html as html7, render as render10 } from "./../lit/lit.js";
+import { html as html7, render as render11 } from "./../lit/lit.js";
 
 // gen/front_end/ui/legacy/targetCrashedScreen.css.js
 var targetCrashedScreen_css_default = `/*
@@ -21693,7 +21784,7 @@ var UIStrings21 = {
 var str_21 = i18n41.i18n.registerUIStrings("ui/legacy/TargetCrashedScreen.ts", UIStrings21);
 var i18nString21 = i18n41.i18n.getLocalizedString.bind(void 0, str_21);
 var DEFAULT_VIEW3 = (input, _output, target) => {
-  render10(html7`
+  render11(html7`
     <style>${targetCrashedScreen_css_default}</style>
     <div class="message">${i18nString21(UIStrings21.devtoolsWasDisconnectedFromThe)}</div>
     <div class="message">${i18nString21(UIStrings21.oncePageIsReloadedDevtoolsWill)}</div>`, target);
@@ -21725,7 +21816,9 @@ __export(Treeoutline_exports, {
   treeElementBylistItemNode: () => treeElementBylistItemNode
 });
 import * as Common19 from "./../../core/common/common.js";
-import * as Platform23 from "./../../core/platform/platform.js";
+import * as Host13 from "./../../core/host/host.js";
+import * as i18n43 from "./../../core/i18n/i18n.js";
+import * as Platform24 from "./../../core/platform/platform.js";
 import * as SDK2 from "./../../core/sdk/sdk.js";
 import * as Highlighting from "./../components/highlighting/highlighting.js";
 import * as Lit3 from "./../lit/lit.js";
@@ -22055,8 +22148,24 @@ ol.tree-outline.tree-variant-navigation:not(.hide-selection-when-blurred) li.sel
 /*# sourceURL=${import.meta.resolve("./treeoutline.css")} */`;
 
 // gen/front_end/ui/legacy/Treeoutline.js
+var UIStrings22 = {
+  /**
+   * @description Screen reader announcement made when the user expands a tree item, such as a DOM
+   * node in the Elements panel. Uses a polite live region so the tree item's name, role, and
+   * position are announced before this state update.
+   */
+  expanded: "expanded",
+  /**
+   * @description Screen reader announcement made when the user collapses a tree item, such as a DOM
+   * node in the Elements panel. Uses a polite live region so the tree item's name, role, and
+   * position are announced before this state update.
+   */
+  collapsed: "collapsed"
+};
+var str_22 = i18n43.i18n.registerUIStrings("ui/legacy/Treeoutline.ts", UIStrings22);
+var i18nString22 = i18n43.i18n.getLocalizedString.bind(void 0, str_22);
 var nodeToParentTreeElementMap = /* @__PURE__ */ new WeakMap();
-var { render: render11 } = Lit3;
+var { render: render12 } = Lit3;
 var Events2;
 (function(Events3) {
   Events3["ElementAttached"] = "ElementAttached";
@@ -22302,7 +22411,7 @@ var TreeOutline = class extends Common19.ObjectWrapper.ObjectWrapper {
       let scrollParentElement = this.element;
       while (getComputedStyle(scrollParentElement).overflow === "visible" && scrollParentElement.parentElementOrShadowHost()) {
         const parent = scrollParentElement.parentElementOrShadowHost();
-        Platform23.assertNotNullOrUndefined(parent);
+        Platform24.assertNotNullOrUndefined(parent);
         scrollParentElement = parent;
       }
       const viewRect = scrollParentElement.getBoundingClientRect();
@@ -22502,9 +22611,9 @@ var TreeElement = class {
     }
     let insertionIndex;
     if (comparator) {
-      insertionIndex = Platform23.ArrayUtilities.lowerBound(this.childrenInternal, child, comparator);
+      insertionIndex = Platform24.ArrayUtilities.lowerBound(this.childrenInternal, child, comparator);
     } else if (this.treeOutline?.comparator) {
-      insertionIndex = Platform23.ArrayUtilities.lowerBound(this.childrenInternal, child, this.treeOutline.comparator);
+      insertionIndex = Platform24.ArrayUtilities.lowerBound(this.childrenInternal, child, this.treeOutline.comparator);
     } else {
       insertionIndex = this.childrenInternal.length;
     }
@@ -22692,7 +22801,7 @@ var TreeElement = class {
       this.listItemNode.insertBefore(this.leadingIconsElement, this.titleElement);
       this.ensureSelection();
     }
-    render11(icons, this.leadingIconsElement);
+    render12(icons, this.leadingIconsElement);
   }
   setTrailingIcons(icons) {
     if (!this.trailingIconsElement && !icons.length) {
@@ -22705,7 +22814,7 @@ var TreeElement = class {
       this.listItemNode.appendChild(this.trailingIconsElement);
       this.ensureSelection();
     }
-    render11(icons, this.trailingIconsElement);
+    render12(icons, this.trailingIconsElement);
   }
   get tooltip() {
     return this.tooltipInternal;
@@ -22801,17 +22910,7 @@ var TreeElement = class {
     if (!toggleOnClick && !isInTriangle) {
       return;
     }
-    if (this.expanded) {
-      if (event.altKey) {
-        this.collapseRecursively();
-      } else {
-        this.collapse();
-      }
-    } else if (event.altKey) {
-      void this.expandRecursively();
-    } else {
-      this.expand();
-    }
+    void this.#setExpandedFromUser(!this.expanded, event.altKey);
     void VisualLogging26.logClick(this.expandLoggable, event);
     event.consume();
   }
@@ -22841,7 +22940,24 @@ var TreeElement = class {
       return;
     }
     if (this.expandable && !this.expanded) {
-      this.expand();
+      void this.#setExpandedFromUser(true, false);
+    }
+  }
+  async #setExpandedFromUser(shouldExpand, recursively) {
+    const wasExpanded = this.expanded;
+    if (shouldExpand) {
+      if (recursively) {
+        await this.expandRecursively();
+      } else {
+        this.expand();
+      }
+    } else if (recursively) {
+      this.collapseRecursively();
+    } else {
+      this.collapse();
+    }
+    if (this.expanded !== wasExpanded && Host13.Platform.isMac()) {
+      LiveAnnouncer.status(this.expanded ? i18nString22(UIStrings22.expanded) : i18nString22(UIStrings22.collapsed));
     }
   }
   detach() {
@@ -22921,11 +23037,7 @@ var TreeElement = class {
   }
   collapseOrAscend(altKey) {
     if (this.expanded && this.collapsible) {
-      if (altKey) {
-        this.collapseRecursively();
-      } else {
-        this.collapse();
-      }
+      void this.#setExpandedFromUser(false, altKey);
       return true;
     }
     if (!this.parent || this.parent.root) {
@@ -22950,11 +23062,7 @@ var TreeElement = class {
       return false;
     }
     if (!this.expanded) {
-      if (altKey) {
-        void this.expandRecursively();
-      } else {
-        this.expand();
-      }
+      void this.#setExpandedFromUser(true, altKey);
       return true;
     }
     let nextSelectedElement = this.firstChild();
@@ -23085,15 +23193,12 @@ var TreeElement = class {
   async onpopulate() {
   }
   onenter() {
-    if (this.expandable && !this.expanded) {
-      this.expand();
-      return true;
+    const canToggle = this.expanded ? this.collapsible : this.expandable;
+    if (!canToggle) {
+      return false;
     }
-    if (this.collapsible && this.expanded) {
-      this.collapse();
-      return true;
-    }
-    return false;
+    void this.#setExpandedFromUser(!this.expanded, false);
+    return true;
   }
   ondelete() {
     return false;
@@ -23240,7 +23345,7 @@ var TreeSearch = class extends Common19.ObjectWrapper.ObjectWrapper {
     view.updateCurrentMatchIndex(this.#currentMatchIndex);
   }
   next() {
-    this.#currentMatchIndex = Platform23.NumberUtilities.mod(this.#currentMatchIndex + 1, this.#matches.length);
+    this.#currentMatchIndex = Platform24.NumberUtilities.mod(this.#currentMatchIndex + 1, this.#matches.length);
     this.dispatchEventToListeners(
       "SearchChanged"
       /* TreeSearch.Events.SEARCH_CHANGED */
@@ -23248,7 +23353,7 @@ var TreeSearch = class extends Common19.ObjectWrapper.ObjectWrapper {
     return this.currentMatch();
   }
   prev() {
-    this.#currentMatchIndex = Platform23.NumberUtilities.mod(this.#currentMatchIndex - 1, this.#matches.length);
+    this.#currentMatchIndex = Platform24.NumberUtilities.mod(this.#currentMatchIndex - 1, this.#matches.length);
     this.dispatchEventToListeners(
       "SearchChanged"
       /* TreeSearch.Events.SEARCH_CHANGED */
@@ -23297,7 +23402,7 @@ var TreeSearch = class extends Common19.ObjectWrapper.ObjectWrapper {
     this.#reset();
     for (const _ of this.#innerSearch(node, currentMatch, jumpBackwards, match)) {
     }
-    this.#currentMatchIndex = Platform23.NumberUtilities.mod(this.#currentMatchIndex, this.#matches.length);
+    this.#currentMatchIndex = Platform24.NumberUtilities.mod(this.#currentMatchIndex, this.#matches.length);
     this.dispatchEventToListeners(
       "SearchChanged"
       /* TreeSearch.Events.SEARCH_CHANGED */
@@ -23718,7 +23823,7 @@ var View_exports = {};
 __export(View_exports, {
   SimpleView: () => SimpleView
 });
-import * as Platform24 from "./../../core/platform/platform.js";
+import * as Platform25 from "./../../core/platform/platform.js";
 var SimpleView = class extends VBox {
   #title;
   #viewId;
@@ -23732,7 +23837,7 @@ var SimpleView = class extends VBox {
     super(options);
     this.#title = options.title;
     this.#viewId = options.viewId;
-    if (!Platform24.StringUtilities.isExtendedKebabCase(this.#viewId)) {
+    if (!Platform25.StringUtilities.isExtendedKebabCase(this.#viewId)) {
       throw new TypeError(`Invalid view ID '${this.#viewId}'`);
     }
   }

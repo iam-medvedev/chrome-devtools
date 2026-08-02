@@ -7,6 +7,7 @@ import { createContentProviderUISourceCodes } from '../../testing/UISourceCodeHe
 import * as Workspace from '../workspace/workspace.js';
 describe('ContentProviderBasedProject', () => {
     beforeEach(() => {
+        // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
         Workspace.Workspace.WorkspaceImpl.instance({ forceNew: true });
     });
     describe('findFilesMatchingSearchRequest', () => {

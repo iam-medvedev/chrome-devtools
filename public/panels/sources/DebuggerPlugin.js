@@ -33,118 +33,118 @@ import { SourcesPanel } from './SourcesPanel.js';
 const { EMPTY_BREAKPOINT_CONDITION, NEVER_PAUSE_HERE_CONDITION } = Breakpoints.BreakpointManager;
 const UIStrings = {
     /**
-     * @description Text in Debugger Plugin of the Sources panel
+     * @description Text in Debugger plugin of the Sources panel.
      */
     thisScriptIsOnTheDebuggersIgnore: 'This script is on the debugger’s ignore list',
     /**
-     * @description Text to stop preventing the debugger from stepping into library code
+     * @description Text to stop preventing the debugger from stepping into library code.
      */
     removeFromIgnoreList: 'Remove from ignore list',
     /**
-     * @description Text of a button in the Sources panel Debugger Plugin to configure ignore listing in Settings
+     * @description Text of a button in the Sources panel Debugger plugin to configure ignore listing in Settings.
      */
     configure: 'Configure',
     /**
-     * @description Text to add a breakpoint
+     * @description Text to add a breakpoint.
      */
     addBreakpoint: 'Add breakpoint',
     /**
-     * @description A context menu item in the Debugger Plugin of the Sources panel
+     * @description A context menu item in the Debugger plugin of the Sources panel.
      */
     addConditionalBreakpoint: 'Add conditional breakpoint…',
     /**
-     * @description A context menu item in the Debugger Plugin of the Sources panel
+     * @description A context menu item in the Debugger plugin of the Sources panel.
      */
     addLogpoint: 'Add logpoint…',
     /**
-     * @description A context menu item in the Debugger Plugin of the Sources panel
+     * @description A context menu item in the Debugger plugin of the Sources panel.
      */
     neverPauseHere: 'Never pause here',
     /**
      * @description Context menu command to delete/remove a breakpoint that the user
-     *has set. One line of code can have multiple breakpoints. Always >= 1 breakpoint.
+     * has set. One line of code can have multiple breakpoints. Always >= 1 breakpoint.
      */
     removeBreakpoint: '{n, plural, =1 {Remove breakpoint} other {Remove all breakpoints in line}}',
     /**
-     * @description A context menu item in the Debugger Plugin of the Sources panel
+     * @description A context menu item in the Debugger plugin of the Sources panel.
      */
     editBreakpoint: 'Edit breakpoint…',
     /**
      * @description Context menu command to disable (but not delete) a breakpoint
-     *that the user has set. One line of code can have multiple breakpoints. Always
-     *>= 1 breakpoint.
+     * that the user has set. One line of code can have multiple breakpoints. Always
+     * >= 1 breakpoint.
      */
     disableBreakpoint: '{n, plural, =1 {Disable breakpoint} other {Disable all breakpoints in line}}',
     /**
      * @description Context menu command to enable a breakpoint that the user has
-     *set. One line of code can have multiple breakpoints. Always >= 1 breakpoint.
+     * set. One line of code can have multiple breakpoints. Always >= 1 breakpoint.
      */
     enableBreakpoint: '{n, plural, =1 {Enable breakpoint} other {Enable all breakpoints in line}}',
     /**
-     * @description Text in Debugger Plugin of the Sources panel
+     * @description Text in Debugger plugin of the Sources panel.
      */
     addSourceMap: 'Add source map…',
     /**
-     * @description Text in Debugger Plugin of the Sources panel
+     * @description Text in Debugger plugin of the Sources panel.
      */
     addWasmDebugInfo: 'Add DWARF debug info…',
     /**
-     * @description Text in Debugger Plugin of the Sources panel
+     * @description Text in Debugger plugin of the Sources panel.
      */
     sourceMapLoaded: 'Source map loaded',
     /**
-     * @description Title of the Filtered List WidgetProvider of Quick Open
+     * @description Title of the filtered list widget provider of Quick Open.
      * @example {Ctrl+P Ctrl+O} PH1
      */
     associatedFilesAreAvailable: 'Associated files are available via file tree or {PH1}.',
     /**
-     * @description Text in Debugger Plugin of the Sources panel
+     * @description Text in Debugger plugin of the Sources panel.
      */
     associatedFilesShouldBeAdded: 'Associated files should be added to the file tree. You can debug these resolved source files as regular JavaScript files.',
     /**
-     * @description Text in Debugger Plugin of the Sources panel
+     * @description Text in Debugger plugin of the Sources panel.
      */
     theDebuggerWillSkipStepping: 'The debugger will skip stepping through this script, and will not stop on exceptions.',
     /**
-     * @description Text in Debugger Plugin of the Sources panel
+     * @description Text in Debugger plugin of the Sources panel.
      */
     sourceMapSkipped: 'Source map skipped for this file',
     /**
-     * @description Text in Debugger Plugin of the Sources panel
+     * @description Text in Debugger plugin of the Sources panel.
      */
     sourceMapFailed: 'Source map failed to load',
     /**
-     * @description Text in Debugger Plugin of the Sources panel
+     * @description Text in Debugger plugin of the Sources panel.
      */
     debuggingPowerReduced: 'DevTools can’t show authored sources, but you can debug the deployed code.',
     /**
-     * @description Text in Debugger Plugin of the Sources panel
+     * @description Text in Debugger plugin of the Sources panel.
      */
     reloadForSourceMap: 'To enable again, make sure the file isn’t on the ignore list and reload.',
     /**
-     * @description Text in Debugger Plugin of the Sources panel
-     * @example {http://site.com/lib.js.map} PH1
+     * @description Text in Debugger plugin of the Sources panel.
+     * @example {https://example.com/lib.js.map} PH1
      * @example {HTTP error: status code 404, net::ERR_UNKNOWN_URL_SCHEME} PH2
      */
     errorLoading: 'Error loading URL {PH1}: {PH2}',
     /**
-     * @description Error message that is displayed in UI when a file needed for debugging information for a call frame is missing
+     * @description Error message that is displayed in UI when a file needed for debugging information for a call frame is missing.
      * @example {src/myapp.debug.wasm.dwp} PH1
      */
     debugFileNotFound: 'Failed to load debug file "{PH1}".',
     /**
-     * @description Error message that is displayed when no debug info could be loaded
+     * @description Error message that is displayed when no debug info could be loaded.
      * @example {app.wasm} PH1
      */
     debugInfoNotFound: 'Failed to load any debug info for {PH1}',
     /**
-     * @description Text of a button to open up details on a request when no debug info could be loaded
+     * @description Text of a button to open up details on a request when no debug info could be loaded.
      */
     showRequest: 'Show request',
     /**
-     * @description Tooltip text that shows on hovering over a button to see more details on a request
+     * @description Tooltip text that shows on hovering over a button to see more details on a request.
      */
-    openDeveloperResources: 'Opens the request in the Developer resource panel',
+    openDeveloperResources: 'Opens the request in the Developer resources panel',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/sources/DebuggerPlugin.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -471,7 +471,7 @@ export class DebuggerPlugin extends Plugin {
             }
         }
         if (this.uiSourceCode.project().type() === Workspace.Workspace.projectTypes.Network &&
-            Common.Settings.Settings.instance().moduleSetting('js-source-maps-enabled').get() &&
+            Common.Settings.Settings.instance().resolve(SDK.SDKSettings.jsSourceMapsEnabledSettingDescriptor).get() &&
             !Workspace.IgnoreListManager.IgnoreListManager.instance().isUserIgnoreListedURL(this.uiSourceCode.url())) {
             if (this.scriptFileForDebuggerModel.size) {
                 const scriptFile = this.scriptFileForDebuggerModel.values().next().value;
@@ -1316,7 +1316,7 @@ export class DebuggerPlugin extends Plugin {
         if (this.sourceMapInfobar) {
             return;
         }
-        if (!Common.Settings.Settings.instance().moduleSetting('js-source-maps-enabled').get()) {
+        if (!Common.Settings.Settings.instance().resolve(SDK.SDKSettings.jsSourceMapsEnabledSettingDescriptor).get()) {
             return;
         }
         if (!this.scriptHasSourceMap()) {
@@ -1524,7 +1524,7 @@ export class DebuggerPlugin extends Plugin {
 export class BreakpointLocationRevealer {
     async reveal(breakpointLocation, omitFocus) {
         const { uiLocation } = breakpointLocation;
-        SourcesPanel.instance().showUILocation(uiLocation, omitFocus);
+        await SourcesPanel.instance().showUILocation(uiLocation, omitFocus);
         const debuggerPlugin = debuggerPluginForUISourceCode.get(uiLocation.uiSourceCode);
         if (debuggerPlugin) {
             debuggerPlugin.editBreakpointLocation(breakpointLocation);

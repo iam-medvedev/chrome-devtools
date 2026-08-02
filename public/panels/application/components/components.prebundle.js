@@ -10,9 +10,7 @@ import * as PermissionsPolicySection from './PermissionsPolicySection.js';
 import * as ProtocolHandlersView from './ProtocolHandlersView.js';
 import * as ReportsGrid from './ReportsGrid.js';
 import * as ServiceWorkerRouterView from './ServiceWorkerRouterView.js';
-import * as SharedStorageAccessGrid from './SharedStorageAccessGrid.js';
-import * as SharedStorageMetadataView from './SharedStorageMetadataView.js';
 import * as StorageMetadataView from './StorageMetadataView.js';
 import * as TrustTokensView from './TrustTokensView.js';
-export { AdsView, BackForwardCacheView, BounceTrackingMitigationsView, CrashReportContextGrid, EndpointsGrid, PermissionsPolicySection, ProtocolHandlersView, ReportsGrid, ServiceWorkerRouterView, SharedStorageAccessGrid, SharedStorageMetadataView, StorageMetadataView, TrustTokensView, };
+export { AdsView, BackForwardCacheView, BounceTrackingMitigationsView, CrashReportContextGrid, EndpointsGrid, PermissionsPolicySection, ProtocolHandlersView, ReportsGrid, ServiceWorkerRouterView, StorageMetadataView, TrustTokensView, };
 //# sourceMappingURL=components.prebundle.js.map

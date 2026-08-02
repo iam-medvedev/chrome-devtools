@@ -9,7 +9,7 @@ import * as SDK from '../../../core/sdk/sdk.js';
 import * as TextUtils from '../../../core/text_utils/text_utils.js';
 import * as AIAssistanceModel from '../../../models/ai_assistance/ai_assistance.js';
 import { assertScreenshot, querySelectorErrorOnMissing, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
-import { describeWithEnvironment, updateHostConfig, waitFor, } from '../../../testing/EnvironmentHelpers.js';
+import { describeWithEnvironment, waitFor, } from '../../../testing/EnvironmentHelpers.js';
 import { getBaseTraceHandlerData, makeFakeParsedTrace, microsecondsTraceWindow, } from '../../../testing/TraceHelpers.js';
 import { createViewFunctionStub, } from '../../../testing/ViewFunctionHelpers.js';
 import * as Snackbars from '../../../ui/components/snackbars/snackbars.js';
@@ -140,7 +140,7 @@ describeWithEnvironment('ChatMessage', () => {
                     {
                         type: 'step',
                         step: {
-                            isLoading: false,
+                            state: { type: 'completed' },
                             widgets: [widget],
                         },
                     },
@@ -465,16 +465,13 @@ describeWithEnvironment('ChatMessage', () => {
         assert.deepEqual(view.input.suggestions, ['suggestion']);
     });
     describe('Walkthrough Rendering', () => {
-        beforeEach(() => {
-            updateHostConfig({ devToolsAiAssistanceV2: { enabled: true } });
-        });
         const stepMessage = {
             entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
             parts: [
                 {
                     type: 'step',
                     step: {
-                        isLoading: false,
+                        state: { type: 'completed' },
                         title: 'Step 1',
                         code: 'console.log("test")',
                     },
@@ -527,7 +524,7 @@ describeWithEnvironment('ChatMessage', () => {
                     {
                         type: 'step',
                         step: {
-                            isLoading: false,
+                            state: { type: 'completed' },
                             title: 'Step with widget',
                             widgets: [
                                 {
@@ -559,7 +556,7 @@ describeWithEnvironment('ChatMessage', () => {
                     {
                         type: 'step',
                         step: {
-                            isLoading: true,
+                            state: { type: 'in_progress' },
                             title: 'Investigating XYZ',
                             code: 'console.log("test")',
                         },
@@ -586,7 +583,7 @@ describeWithEnvironment('ChatMessage', () => {
                     {
                         type: 'step',
                         step: {
-                            isLoading: true,
+                            state: { type: 'in_progress' },
                             title: 'Investigating XYZ',
                             code: 'console.log("test")',
                         },
@@ -639,7 +636,7 @@ describeWithEnvironment('ChatMessage', () => {
                     {
                         type: 'step',
                         step: {
-                            isLoading: true,
+                            state: { type: 'in_progress' },
                             title: 'Investigating XYZ',
                             code: 'console.log("test")',
                         },
@@ -678,7 +675,7 @@ describeWithEnvironment('ChatMessage', () => {
                     {
                         type: 'step',
                         step: {
-                            isLoading: false,
+                            state: { type: 'completed' },
                             title: 'Investigating XYZ',
                             code: 'console.log("test")',
                         },
@@ -705,7 +702,7 @@ describeWithEnvironment('ChatMessage', () => {
                     {
                         type: 'step',
                         step: {
-                            isLoading: false,
+                            state: { type: 'completed' },
                             title: 'Investigating XYZ',
                             code: 'console.log("test")',
                             // Don't need a proper widget for this test
@@ -759,13 +756,15 @@ describeWithEnvironment('ChatMessage', () => {
                     {
                         type: 'step',
                         step: {
-                            isLoading: false,
+                            state: {
+                                type: 'needs_approval',
+                                sideEffectDialog: {
+                                    description: sideEffectDescription,
+                                    onAnswer: () => { },
+                                },
+                            },
                             title: 'Side Effect Step',
                             code: 'doSomethingDangerous()',
-                            requestApproval: {
-                                description: sideEffectDescription,
-                                onAnswer: () => { },
-                            },
                         },
                     },
                 ],
@@ -804,13 +803,15 @@ describeWithEnvironment('ChatMessage', () => {
                     {
                         type: 'step',
                         step: {
-                            isLoading: false,
+                            state: {
+                                type: 'needs_approval',
+                                sideEffectDialog: {
+                                    description: sideEffectDescription,
+                                    onAnswer: () => { },
+                                },
+                            },
                             title: 'Side Effect Step',
                             code: 'doSomethingDangerous()',
-                            requestApproval: {
-                                description: sideEffectDescription,
-                                onAnswer: () => { },
-                            },
                         },
                     },
                 ],
@@ -854,13 +855,15 @@ describeWithEnvironment('ChatMessage', () => {
                     {
                         type: 'step',
                         step: {
-                            isLoading: false,
+                            state: {
+                                type: 'needs_approval',
+                                sideEffectDialog: {
+                                    description: sideEffectDescription,
+                                    onAnswer: () => { },
+                                },
+                            },
                             title: 'Side Effect Step',
                             code: 'doSomethingDangerous()',
-                            requestApproval: {
-                                description: sideEffectDescription,
-                                onAnswer: () => { },
-                            },
                         },
                     },
                 ],
@@ -890,13 +893,15 @@ describeWithEnvironment('ChatMessage', () => {
                     {
                         type: 'step',
                         step: {
-                            isLoading: false,
+                            state: {
+                                type: 'needs_approval',
+                                sideEffectDialog: {
+                                    description: 'Confirm!',
+                                    onAnswer: () => { },
+                                },
+                            },
                             title: 'Side Effect Step',
                             code: 'doSomethingDangerous()',
-                            requestApproval: {
-                                description: 'Confirm!',
-                                onAnswer: () => { },
-                            },
                         },
                     },
                 ],
@@ -915,6 +920,35 @@ describeWithEnvironment('ChatMessage', () => {
             if (walkthrough) {
                 assert.isFalse(walkthrough.hasAttribute('open'));
             }
+        });
+        it('renders side effect step with aborted indicator when canceled', () => {
+            const sideEffectMessage = {
+                entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
+                parts: [
+                    {
+                        type: 'step',
+                        step: {
+                            state: { type: 'canceled' },
+                            title: 'Side Effect Step',
+                            code: 'doSomethingDangerous()',
+                        },
+                    },
+                ],
+                rpcId: 99,
+                id: '1',
+            };
+            const target = renderView({
+                message: sideEffectMessage,
+                walkthrough: {
+                    ...DEFAULT_WALKTHROUGH,
+                    isInlined: true,
+                    isExpanded: false,
+                },
+            });
+            const indicator = target.querySelector('.side-effect-container devtools-icon.indicator');
+            assert.isNotNull(indicator);
+            assert.strictEqual(indicator?.getAttribute('aria-label'), 'Aborted');
+            assert.isNull(target.querySelector('.side-effect-confirmation'));
         });
         it('renders widget title and reveal button label from widget data', async () => {
             const root = sinon.createStubInstance(SDK.DOMModel.DOMNodeSnapshot);
@@ -999,8 +1033,7 @@ describeWithEnvironment('ChatMessage', () => {
             assert.strictEqual(img?.src, 'blob:http://localhost/123');
             sinon.assert.calledOnce(mockContentData.asImagePreviewUrl);
         });
-        it('renders the "Export for agents" button after action buttons and before suggestions when onExportClick is provided, it is the last message, and V2 is enabled', async () => {
-            updateHostConfig({ devToolsAiAssistanceV2: { enabled: true } });
+        it('renders the "Export for agents" button after action buttons and before suggestions when onExportClick is provided and it is the last message', async () => {
             const onExportClick = sinon.stub();
             const target = renderView({
                 onExportClick,
@@ -1026,17 +1059,6 @@ describeWithEnvironment('ChatMessage', () => {
             assert.strictEqual(exportButton.getAttribute('aria-label'), 'Copy to coding agent');
             exportButton.click();
             sinon.assert.calledOnce(onExportClick);
-        });
-        it('does not render the "Export for agents" button when V2 is disabled', async () => {
-            updateHostConfig({ devToolsAiAssistanceV2: { enabled: false } });
-            const onExportClick = sinon.stub();
-            const target = renderView({
-                onExportClick,
-                isLastMessage: true,
-                showActions: true,
-            });
-            const exportButton = target.querySelector('.export-for-agents-button');
-            assert.isNull(exportButton);
         });
     });
     describe('view', () => {
@@ -1180,7 +1202,6 @@ describeWithEnvironment('ChatMessage', () => {
             assert.isTrue(modelMessage.classList.contains('is-first-message'));
         });
         it('renders SOURCE_FILES_LIST widget with correct dynamic title', async () => {
-            updateHostConfig({ devToolsAiAssistanceV2: { enabled: true } });
             function createMockFile(name) {
                 return {
                     name: () => name,
@@ -1226,7 +1247,6 @@ describeWithEnvironment('ChatMessage', () => {
             assert.isNull(targetElement.querySelector('.source-files-details'));
         });
         it('renders SOURCE_FILES_LIST widget with more than 10 files, limiting to 10 and using details element for the rest', async () => {
-            updateHostConfig({ devToolsAiAssistanceV2: { enabled: true } });
             function createMockFile(name) {
                 return {
                     name: () => name,
@@ -1277,7 +1297,6 @@ describeWithEnvironment('ChatMessage', () => {
             assert.lengthOf(innerListItems ?? [], 2);
         });
         it('renders NETWORK_REQUESTS_LIST widget with less than 15 requests, not showing the expand button', async () => {
-            updateHostConfig({ devToolsAiAssistanceV2: { enabled: true } });
             function createMockRequest(id) {
                 return {
                     requestId: () => id,
@@ -1326,7 +1345,6 @@ describeWithEnvironment('ChatMessage', () => {
             assert.isNull(expandButton);
         });
         it('renders NETWORK_REQUESTS_LIST widget with more than 15 requests, showing the expand button', async () => {
-            updateHostConfig({ devToolsAiAssistanceV2: { enabled: true } });
             function createMockRequest(id) {
                 return {
                     requestId: () => id,
@@ -1375,7 +1393,6 @@ describeWithEnvironment('ChatMessage', () => {
             assert.strictEqual(expandButton.textContent?.trim(), 'Show all 17 network requests');
         });
         it('shows a snackbar with the error message when reveal fails', async () => {
-            updateHostConfig({ devToolsAiAssistanceV2: { enabled: true } });
             const root = sinon.createStubInstance(SDK.DOMModel.DOMNodeSnapshot);
             const domModel = sinon.createStubInstance(SDK.DOMModel.DOMModel);
             const target = sinon.createStubInstance(SDK.Target.Target);
@@ -1421,7 +1438,6 @@ describeWithEnvironment('ChatMessage', () => {
             snackbarShowStub.restore();
         });
         it('renders NETWORK_TRACK widget with correct header and widget element', async () => {
-            updateHostConfig({ devToolsAiAssistanceV2: { enabled: true } });
             const parsedTrace = getBaseTraceHandlerData();
             const bounds = microsecondsTraceWindow(100, 200);
             const message = {

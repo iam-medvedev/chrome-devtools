@@ -23,7 +23,8 @@ __export(DeviceModeWrapper_exports, {
 import * as Root from "./../../core/root/root.js";
 import * as SDK2 from "./../../core/sdk/sdk.js";
 import * as EmulationModel3 from "./../../models/emulation/emulation.js";
-import * as UI4 from "./../../ui/legacy/legacy.js";
+import * as Geometry2 from "./../../models/geometry/geometry.js";
+import * as UI5 from "./../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/emulation/DeviceModeView.js
 var DeviceModeView_exports = {};
@@ -36,7 +37,6 @@ __export(DeviceModeView_exports, {
 import * as Common3 from "./../../core/common/common.js";
 import * as Host2 from "./../../core/host/host.js";
 import * as i18n5 from "./../../core/i18n/i18n.js";
-import * as Platform3 from "./../../core/platform/platform.js";
 import * as EmulationModel2 from "./../../models/emulation/emulation.js";
 import * as Geometry from "./../../models/geometry/geometry.js";
 import * as UI3 from "./../../ui/legacy/legacy.js";
@@ -302,11 +302,11 @@ var DEFAULT_VIEW = (input, _output, target) => {
           <option value="Responsive" ?selected=${input.deviceModeOptions.responsive.selected} jslog=${VisualLogging.item(input.deviceModeOptions.responsive.jslogContext).track({ click: true })}>
             ${input.deviceModeOptions.responsive.title}
           </option>
-          ${input.deviceModeOptions.standard.length > 0 ? html`
-            <optgroup label="Standard">
-              ${input.deviceModeOptions.standard.map((o) => html`<option value=${o.title} ?selected=${o.selected} jslog=${VisualLogging.item(o.jslogContext).track({ click: true })}>${o.title}</option>`)}
+          ${input.deviceModeOptions.standard.map((group) => html`
+            <optgroup label=${EmulationModel.EmulatedDevices.getCategoryTitle(group.category)}>
+              ${group.options.map((o) => html`<option value=${o.title} ?selected=${o.selected} jslog=${VisualLogging.item(o.jslogContext).track({ click: true })}>${o.title}</option>`)}
             </optgroup>
-          ` : ""}
+          `)}
           ${input.deviceModeOptions.custom.length > 0 ? html`
             <optgroup label="Custom">
               ${input.deviceModeOptions.custom.map((o) => html`<option value=${o.title} ?selected=${o.selected} jslog=${VisualLogging.item(o.jslogContext).track({ click: true })}>${o.title}</option>`)}
@@ -470,6 +470,7 @@ var DeviceModeToolbar = class extends UI.Widget.Widget {
   wasShown() {
     super.wasShown();
     this.performUpdate();
+    this.restore();
   }
   performUpdate() {
     if (!this.model) {
@@ -521,9 +522,10 @@ var DeviceModeToolbar = class extends UI.Widget.Widget {
     const dprOptions = this.getDeviceScaleFactorOptions();
     const uaOptions = this.getUserAgentOptions();
     const postureOptions = this.getDevicePostureOptions();
+    const standardOptions = deviceModeOptions.standard.flatMap((g) => g.options);
     const selectedDeviceOption = [
       deviceModeOptions.responsive,
-      ...deviceModeOptions.standard,
+      ...standardOptions,
       ...deviceModeOptions.custom
     ].find((o) => o.selected);
     const deviceText = selectedDeviceOption ? selectedDeviceOption.title : deviceModeOptions.responsive.title;
@@ -781,18 +783,36 @@ var DeviceModeToolbar = class extends UI.Widget.Widget {
         edit: { title: i18nString(UIStrings.edit), jslogContext: "edit" }
       };
     }
+    const currentDevice = this.model.device();
+    const optionsByCategory = /* @__PURE__ */ new Map();
+    for (const device of this.standardDevices()) {
+      const cat = EmulationModel.EmulatedDevices.deviceCategory(device);
+      let list = optionsByCategory.get(cat);
+      if (!list) {
+        list = [];
+        optionsByCategory.set(cat, list);
+      }
+      list.push({
+        device,
+        title: device.title,
+        selected: currentDevice === device,
+        jslogContext: Platform.StringUtilities.toKebabCase(device.title)
+      });
+    }
+    const groupedStandard = [];
+    for (const category of EmulationModel.EmulatedDevices.CATEGORY_ORDER) {
+      const options = optionsByCategory.get(category);
+      if (options && options.length > 0) {
+        groupedStandard.push({ category, options });
+      }
+    }
     return {
       responsive: {
         title: i18nString(UIStrings.responsive),
         selected: this.model.type() === EmulationModel.DeviceModeModel.Type.Responsive,
         jslogContext: "responsive"
       },
-      standard: this.standardDevices().map((device) => ({
-        device,
-        title: device.title,
-        selected: this.model?.device() === device,
-        jslogContext: Platform.StringUtilities.toKebabCase(device.title)
-      })),
+      standard: groupedStandard,
       custom: this.customDevices().map((device) => ({
         device,
         title: device.title,
@@ -2001,7 +2021,7 @@ function resizerRef(resizer, onConnect) {
     }
   };
 }
-var DEFAULT_DEVICE_MODE_VIEW = (input, output, target) => {
+var DEFAULT_DEVICE_MODE_VIEW = (input, _output, target) => {
   const sizes = [320, 375, 425, 768, 1024, 1440, 2560];
   const titles = [
     i18nString3(UIStrings3.mobileS),
@@ -2013,10 +2033,7 @@ var DEFAULT_DEVICE_MODE_VIEW = (input, output, target) => {
     "4K"
   ];
   render3(html3`
-    <devtools-widget ${UI3.Widget.widget(DeviceModeToolbar, { model: input.model })}
-       ${UI3.Widget.widgetRef(DeviceModeToolbar, (t) => {
-    output.toolbar = t;
-  })}></devtools-widget>
+    ${UI3.Widget.widget(DeviceModeToolbar, { model: input.model })}
     <div class=${classMap2({
     "device-mode-content-clip": true,
     vbox: true,
@@ -2069,37 +2086,44 @@ var DEFAULT_DEVICE_MODE_VIEW = (input, output, target) => {
                @load=${() => input.onScreenImageLoaded(true)}
                @error=${() => input.onScreenImageLoaded(false)}>
           <div class="device-mode-resizer device-mode-bottom-right-resizer"
+               ?hidden=${!input.resizable}
                jslog=${VisualLogging3.slider("device-mode-resizer").track({ drag: true })}
                ${ref(input.bottomRightResizerRef)}>
             <div></div>
           </div>
           <div class="device-mode-resizer device-mode-bottom-left-resizer"
+               ?hidden=${!input.resizable}
                jslog=${VisualLogging3.slider("device-mode-resizer").track({ drag: true })}
                ${ref(input.bottomLeftResizerRef)}>
             <div></div>
           </div>
           <div class="device-mode-resizer device-mode-right-resizer"
+               ?hidden=${!input.resizable}
                jslog=${VisualLogging3.slider("device-mode-resizer").track({ drag: true })}
                ${ref(input.rightResizerRef)}>
             <div></div>
           </div>
           <div class="device-mode-resizer device-mode-left-resizer"
+               ?hidden=${!input.resizable}
                jslog=${VisualLogging3.slider("device-mode-resizer").track({ drag: true })}
                ${ref(input.leftResizerRef)}>
             <div></div>
           </div>
           <div class="device-mode-resizer device-mode-bottom-resizer"
+               ?hidden=${!input.resizable}
                jslog=${VisualLogging3.slider("device-mode-resizer").track({ drag: true })}
                title=${i18nString3(UIStrings3.doubleclickForFullHeight)}
                ${ref(input.bottomResizerRef)}
                @dblclick=${input.onDoubleclickBottomResizer}>
             <div></div>
           </div>
-          <div class="device-mode-page-area" ${ref((el) => {
-    if (el instanceof HTMLElement) {
-      output.pageArea = el;
-    }
-  })}><slot></slot></div>
+          <div class="device-mode-page-area"
+               style=${styleMap(input.cachedCssVisiblePageRect ? {
+    left: `${input.cachedCssVisiblePageRect.left}px`,
+    top: `${input.cachedCssVisiblePageRect.top}px`,
+    width: `${input.cachedCssVisiblePageRect.width}px`,
+    height: `${input.cachedCssVisiblePageRect.height}px`
+  } : {})}><slot></slot></div>
         </div>
         ${input.showRulers ? html3`
           <devtools-widget class="device-mode-ruler-top device-mode-ruler"
@@ -2121,41 +2145,27 @@ var DEFAULT_DEVICE_MODE_VIEW = (input, output, target) => {
         ` : nothing2}
       </div>
     </div>
-  `, target);
+  `, target, {
+    container: {
+      classes: ["device-mode-view"]
+    }
+  });
 };
 var DeviceModeView = class extends UI3.Widget.VBox {
   wrapperInstance;
   model;
   showMediaInspectorSetting;
   showRulersSetting;
-  pageArea;
-  rightResizerElement;
-  leftResizerElement;
-  bottomResizerElement;
-  bottomRightResizerElement;
-  bottomLeftResizerElement;
   bottomRightResizer = this.createResizer(2, 1);
   bottomLeftResizer = this.createResizer(-2, 1);
   rightResizer = this.createResizer(2, 0);
   leftResizer = this.createResizer(-2, 0);
   bottomResizer = this.createResizer(0, 1);
-  bottomRightResizerRef = resizerRef(this.bottomRightResizer, (el) => {
-    this.bottomRightResizerElement = el;
-  });
-  bottomLeftResizerRef = resizerRef(this.bottomLeftResizer, (el) => {
-    this.bottomLeftResizerElement = el;
-  });
-  rightResizerRef = resizerRef(this.rightResizer, (el) => {
-    this.rightResizerElement = el;
-  });
-  leftResizerRef = resizerRef(this.leftResizer, (el) => {
-    this.leftResizerElement = el;
-  });
-  bottomResizerRef = resizerRef(this.bottomResizer, (el) => {
-    this.bottomResizerElement = el;
-  });
-  cachedResizable;
-  toolbar;
+  bottomRightResizerRef = resizerRef(this.bottomRightResizer);
+  bottomLeftResizerRef = resizerRef(this.bottomLeftResizer);
+  rightResizerRef = resizerRef(this.rightResizer);
+  leftResizerRef = resizerRef(this.leftResizer);
+  bottomResizerRef = resizerRef(this.bottomResizer);
   slowPositionStart;
   resizeStart;
   cachedCssScreenRect;
@@ -2164,8 +2174,6 @@ var DeviceModeView = class extends UI3.Widget.VBox {
   cachedMediaInspectorVisible;
   cachedShowRulers;
   cachedScale;
-  handleWidth;
-  handleHeight;
   #outlineImageLoaded = false;
   #lastOutlineImageSrc;
   #screenImageLoaded = false;
@@ -2175,7 +2183,6 @@ var DeviceModeView = class extends UI3.Widget.VBox {
     super({ useShadowDom: true });
     this.#view = view;
     this.setMinimumSize(150, 150);
-    this.element.classList.add("device-mode-view");
     this.registerRequiredCSS(deviceModeView_css_default);
     this.model = EmulationModel2.DeviceModeModel.DeviceModeModel.instance();
     this.model.addEventListener("Updated", this.updateUI, this);
@@ -2203,10 +2210,12 @@ var DeviceModeView = class extends UI3.Widget.VBox {
       outlineImageLoaded: this.#outlineImageLoaded,
       screenImage: this.model.screenImage(),
       screenImageLoaded: this.#screenImageLoaded,
+      resizable: this.model.type() === EmulationModel2.DeviceModeModel.Type.Responsive,
       showRulers: this.showRulersSetting.get() && this.model.type() !== EmulationModel2.DeviceModeModel.Type.None,
       showMediaInspector: this.showMediaInspectorSetting.get() && this.model.type() !== EmulationModel2.DeviceModeModel.Type.None,
       scale: this.model.scale(),
       cachedCssScreenRect: this.cachedCssScreenRect,
+      cachedCssVisiblePageRect: this.cachedCssVisiblePageRect,
       cachedOutlineRect: this.cachedOutlineRect,
       onApplyPresetSize: (width, e) => {
         this.model.emulate(EmulationModel2.DeviceModeModel.Type.Responsive, null, null);
@@ -2227,7 +2236,7 @@ var DeviceModeView = class extends UI3.Widget.VBox {
       onOutlineImageLoaded: (success) => this.onOutlineImageLoaded(success),
       onScreenImageLoaded: (success) => this.onScreenImageLoaded(success)
     };
-    this.#view(input, this, this.contentElement);
+    this.#view(input, void 0, this.contentElement);
   }
   onOutlineImageLoaded(success) {
     if (this.#outlineImageLoaded !== success) {
@@ -2298,12 +2307,6 @@ var DeviceModeView = class extends UI3.Widget.VBox {
     Host2.userMetrics.actionTaken(Host2.UserMetrics.Action.ResizedViewInResponsiveMode);
   }
   updateUI() {
-    function applyRect(element, rect) {
-      element.style.left = rect.left + "px";
-      element.style.top = rect.top + "px";
-      element.style.width = rect.width + "px";
-      element.style.height = rect.height + "px";
-    }
     if (!this.isShowing()) {
       return;
     }
@@ -2318,7 +2321,6 @@ var DeviceModeView = class extends UI3.Widget.VBox {
     }
     const cssVisiblePageRect = this.model.visiblePageRect().scale(1 / zoomFactor);
     if (!this.cachedCssVisiblePageRect || !cssVisiblePageRect.isEqual(this.cachedCssVisiblePageRect)) {
-      applyRect(this.pageArea, cssVisiblePageRect);
       callDoResize = true;
       this.cachedCssVisiblePageRect = cssVisiblePageRect;
     }
@@ -2329,15 +2331,6 @@ var DeviceModeView = class extends UI3.Widget.VBox {
         callDoResize = true;
         this.cachedOutlineRect = outlineRect;
       }
-    }
-    const resizable = this.model.type() === EmulationModel2.DeviceModeModel.Type.Responsive;
-    if (resizable !== this.cachedResizable) {
-      this.rightResizerElement.classList.toggle("hidden", !resizable);
-      this.leftResizerElement.classList.toggle("hidden", !resizable);
-      this.bottomResizerElement.classList.toggle("hidden", !resizable);
-      this.bottomRightResizerElement.classList.toggle("hidden", !resizable);
-      this.bottomLeftResizerElement.classList.toggle("hidden", !resizable);
-      this.cachedResizable = resizable;
     }
     const mediaInspectorVisible = this.showMediaInspectorSetting.get() && this.model.type() !== EmulationModel2.DeviceModeModel.Type.None;
     if (mediaInspectorVisible !== this.cachedMediaInspectorVisible) {
@@ -2355,22 +2348,12 @@ var DeviceModeView = class extends UI3.Widget.VBox {
       this.cachedScale = this.model.scale();
     }
     this.requestUpdate();
-    this.toolbar.requestUpdate();
     if (callDoResize) {
       this.doResize();
     }
     if (contentAreaResized) {
       this.contentAreaResized();
     }
-  }
-  setNonEmulatedAvailableSize(element) {
-    if (this.model.type() !== EmulationModel2.DeviceModeModel.Type.None) {
-      return;
-    }
-    const zoomFactor = UI3.ZoomManager.ZoomManager.instance().zoomFactor();
-    const rect = element.getBoundingClientRect();
-    const availableSize = new Geometry.Size(Math.max(rect.width * zoomFactor, 1), Math.max(rect.height * zoomFactor, 1));
-    this.model.setAvailableSize(availableSize, availableSize);
   }
   contentAreaResized() {
     const contentArea = this.contentElement.querySelector(".device-mode-content-area");
@@ -2379,24 +2362,14 @@ var DeviceModeView = class extends UI3.Widget.VBox {
     }
     const zoomFactor = UI3.ZoomManager.ZoomManager.instance().zoomFactor();
     const rect = contentArea.getBoundingClientRect();
+    const handleWidth = this.contentElement.querySelector(".device-mode-right-resizer")?.offsetWidth || 20;
+    const handleHeight = this.contentElement.querySelector(".device-mode-bottom-resizer")?.offsetHeight || 20;
     const availableSize = new Geometry.Size(Math.max(rect.width * zoomFactor, 1), Math.max(rect.height * zoomFactor, 1));
-    const preferredSize = new Geometry.Size(Math.max((rect.width - 2 * (this.handleWidth || 0)) * zoomFactor, 1), Math.max((rect.height - (this.handleHeight || 0)) * zoomFactor, 1));
+    const preferredSize = new Geometry.Size(Math.max((rect.width - 2 * handleWidth) * zoomFactor, 1), Math.max((rect.height - handleHeight) * zoomFactor, 1));
     this.model.setAvailableSize(availableSize, preferredSize);
   }
-  measureHandles() {
-    const hidden = this.rightResizerElement.classList.contains("hidden");
-    this.rightResizerElement.classList.toggle("hidden", false);
-    this.bottomResizerElement.classList.toggle("hidden", false);
-    this.handleWidth = this.rightResizerElement.offsetWidth;
-    this.handleHeight = this.bottomResizerElement.offsetHeight;
-    this.rightResizerElement.classList.toggle("hidden", hidden);
-    this.bottomResizerElement.classList.toggle("hidden", hidden);
-  }
   zoomChanged() {
-    delete this.handleWidth;
-    delete this.handleHeight;
     if (this.isShowing()) {
-      this.measureHandles();
       this.contentAreaResized();
     }
   }
@@ -2407,111 +2380,11 @@ var DeviceModeView = class extends UI3.Widget.VBox {
   }
   wasShown() {
     super.wasShown();
-    this.measureHandles();
-    this.toolbar.restore();
   }
   willHide() {
     super.willHide();
     this.model.emulate(EmulationModel2.DeviceModeModel.Type.None, null, null);
-  }
-  async captureScreenshot() {
-    const screenshot = await this.model.captureScreenshot(false);
-    if (screenshot === null) {
-      return;
-    }
-    const pageImage = new Image();
-    pageImage.src = "data:image/png;base64," + screenshot;
-    pageImage.onload = async () => {
-      const scale = pageImage.naturalWidth / this.model.screenRect().width;
-      const outlineRectFromModel = this.model.outlineRect();
-      if (!outlineRectFromModel) {
-        throw new Error("Unable to take screenshot: no outlineRect available.");
-      }
-      const outlineRect = outlineRectFromModel.scale(scale);
-      const screenRect = this.model.screenRect().scale(scale);
-      const visiblePageRect = this.model.visiblePageRect().scale(scale);
-      const contentLeft = screenRect.left + visiblePageRect.left - outlineRect.left;
-      const contentTop = screenRect.top + visiblePageRect.top - outlineRect.top;
-      const canvas = document.createElement("canvas");
-      canvas.width = Math.floor(outlineRect.width);
-      canvas.height = Math.min(1 << 14, Math.floor(outlineRect.height));
-      const ctx = canvas.getContext("2d", { willReadFrequently: true });
-      if (!ctx) {
-        throw new Error("Could not get 2d context from canvas.");
-      }
-      ctx.imageSmoothingEnabled = false;
-      if (this.model.outlineImage()) {
-        await this.paintImage(ctx, this.model.outlineImage(), outlineRect.relativeTo(outlineRect));
-      }
-      if (this.model.screenImage()) {
-        await this.paintImage(ctx, this.model.screenImage(), screenRect.relativeTo(outlineRect));
-      }
-      ctx.drawImage(pageImage, Math.floor(contentLeft), Math.floor(contentTop));
-      this.saveScreenshot(canvas);
-    };
-  }
-  async captureFullSizeScreenshot() {
-    const screenshot = await this.model.captureScreenshot(true);
-    if (screenshot === null) {
-      return;
-    }
-    return this.saveScreenshotBase64(screenshot);
-  }
-  async captureAreaScreenshot(clip) {
-    const screenshot = await this.model.captureScreenshot(false, clip);
-    if (screenshot === null) {
-      return;
-    }
-    return this.saveScreenshotBase64(screenshot);
-  }
-  saveScreenshotBase64(screenshot) {
-    const pageImage = new Image();
-    pageImage.src = "data:image/png;base64," + screenshot;
-    pageImage.onload = () => {
-      const canvas = document.createElement("canvas");
-      canvas.width = pageImage.naturalWidth;
-      canvas.height = Math.min(1 << 14, Math.floor(pageImage.naturalHeight));
-      const ctx = canvas.getContext("2d", { willReadFrequently: true });
-      if (!ctx) {
-        throw new Error("Could not get 2d context for base64 screenshot.");
-      }
-      ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(pageImage, 0, 0);
-      this.saveScreenshot(canvas);
-    };
-  }
-  paintImage(ctx, src, rect) {
-    return new Promise((resolve) => {
-      const image = new Image();
-      image.crossOrigin = "Anonymous";
-      image.srcset = src;
-      image.onerror = () => resolve();
-      image.onload = () => {
-        ctx.drawImage(image, rect.left, rect.top, rect.width, rect.height);
-        resolve();
-      };
-    });
-  }
-  saveScreenshot(canvas) {
-    const url = this.model.inspectedURL();
-    let fileName = "";
-    if (url) {
-      const withoutFragment = Platform3.StringUtilities.removeURLFragment(url);
-      fileName = Platform3.StringUtilities.trimURL(withoutFragment);
-    }
-    const device = this.model.device();
-    if (device && this.model.type() === EmulationModel2.DeviceModeModel.Type.Device) {
-      fileName += `(${device.title})`;
-    }
-    const link = document.createElement("a");
-    link.download = fileName + ".png";
-    canvas.toBlob((blob) => {
-      if (blob === null) {
-        return;
-      }
-      link.href = URL.createObjectURL(blob);
-      link.click();
-    });
+    this.model.exitHingeMode();
   }
 };
 var DEFAULT_RULER_VIEW = (input, output, target) => {
@@ -2620,9 +2493,87 @@ var Ruler = class extends Common3.ObjectWrapper.eventMixin(UI3.Widget.Widget) {
   }
 };
 
+// gen/front_end/panels/emulation/InspectedPagePlaceholder.js
+var InspectedPagePlaceholder_exports = {};
+__export(InspectedPagePlaceholder_exports, {
+  InspectedPagePlaceholder: () => InspectedPagePlaceholder
+});
+import * as Common4 from "./../../core/common/common.js";
+import * as UI4 from "./../../ui/legacy/legacy.js";
+
+// gen/front_end/panels/emulation/inspectedPagePlaceholder.css.js
+var inspectedPagePlaceholder_css_default = `/*
+ * Copyright 2016 The Chromium Authors
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+:host {
+  background-color: var(--sys-color-cdt-base-container);
+}
+
+/*# sourceURL=${import.meta.resolve("./inspectedPagePlaceholder.css")} */`;
+
+// gen/front_end/panels/emulation/InspectedPagePlaceholder.js
+var inspectedPagePlaceholderInstance;
+var InspectedPagePlaceholder = class _InspectedPagePlaceholder extends Common4.ObjectWrapper.eventMixin(UI4.Widget.Widget) {
+  updateId;
+  constructor() {
+    super({ useShadowDom: true });
+    this.registerRequiredCSS(inspectedPagePlaceholder_css_default);
+    UI4.ZoomManager.ZoomManager.instance().addEventListener("ZoomChanged", this.onResize, this);
+    this.restoreMinimumSize();
+  }
+  static instance(opts = { forceNew: null }) {
+    const { forceNew } = opts;
+    if (!inspectedPagePlaceholderInstance || forceNew) {
+      inspectedPagePlaceholderInstance = new _InspectedPagePlaceholder();
+    }
+    return inspectedPagePlaceholderInstance;
+  }
+  onResize() {
+    if (this.updateId) {
+      this.element.window().cancelAnimationFrame(this.updateId);
+    }
+    this.updateId = this.element.window().requestAnimationFrame(this.update.bind(this, false));
+  }
+  restoreMinimumSize() {
+    this.setMinimumSize(150, 150);
+  }
+  clearMinimumSize() {
+    this.setMinimumSize(1, 1);
+  }
+  dipPageRect() {
+    const zoomFactor = UI4.ZoomManager.ZoomManager.instance().zoomFactor();
+    const rect = this.element.getBoundingClientRect();
+    const bodyRect = this.element.ownerDocument.body.getBoundingClientRect();
+    const left = Math.max(rect.left * zoomFactor, bodyRect.left * zoomFactor);
+    const top = Math.max(rect.top * zoomFactor, bodyRect.top * zoomFactor);
+    const bottom = Math.min(rect.bottom * zoomFactor, bodyRect.bottom * zoomFactor);
+    const right = Math.min(rect.right * zoomFactor, bodyRect.right * zoomFactor);
+    return { x: left, y: top, width: right - left, height: bottom - top };
+  }
+  update(force) {
+    delete this.updateId;
+    const rect = this.dipPageRect();
+    const bounds = {
+      x: Math.round(rect.x),
+      y: Math.round(rect.y),
+      height: Math.max(1, Math.round(rect.height)),
+      width: Math.max(1, Math.round(rect.width))
+    };
+    if (force) {
+      --bounds.height;
+      this.dispatchEventToListeners("Update", bounds);
+      ++bounds.height;
+    }
+    this.dispatchEventToListeners("Update", bounds);
+  }
+};
+
 // gen/front_end/panels/emulation/DeviceModeWrapper.js
 var deviceModeWrapperInstance;
-var DeviceModeWrapper = class _DeviceModeWrapper extends UI4.Widget.VBox {
+var DeviceModeWrapper = class _DeviceModeWrapper extends UI5.Widget.VBox {
   inspectedPagePlaceholder;
   deviceModeView;
   toggleDeviceModeAction;
@@ -2631,7 +2582,7 @@ var DeviceModeWrapper = class _DeviceModeWrapper extends UI4.Widget.VBox {
     super();
     this.inspectedPagePlaceholder = inspectedPagePlaceholder;
     this.deviceModeView = null;
-    this.toggleDeviceModeAction = UI4.ActionRegistry.ActionRegistry.instance().getAction("emulation.toggle-device-mode");
+    this.toggleDeviceModeAction = UI5.ActionRegistry.ActionRegistry.instance().getAction("emulation.toggle-device-mode");
     const model = EmulationModel3.DeviceModeModel.DeviceModeModel.instance();
     this.showDeviceModeSetting = model.enabledSetting();
     this.showDeviceModeSetting.setRequiresUserAction(Boolean(Root.Runtime.Runtime.queryParam("hasOtherClients")));
@@ -2655,23 +2606,31 @@ var DeviceModeWrapper = class _DeviceModeWrapper extends UI4.Widget.VBox {
   isDeviceModeOn() {
     return this.showDeviceModeSetting.get();
   }
-  captureScreenshot(fullSize, clip) {
-    if (!this.deviceModeView) {
-      this.deviceModeView = new DeviceModeView();
+  static #setNonEmulatedAvailableSize() {
+    const model = EmulationModel3.DeviceModeModel.DeviceModeModel.instance();
+    if (model.type() !== EmulationModel3.DeviceModeModel.Type.None) {
+      return;
     }
-    this.deviceModeView.setNonEmulatedAvailableSize(this.inspectedPagePlaceholder.element);
+    const zoomFactor = UI5.ZoomManager.ZoomManager.instance().zoomFactor();
+    const rect = InspectedPagePlaceholder.instance().element.getBoundingClientRect();
+    const availableSize = new Geometry2.Size(Math.max(rect.width * zoomFactor, 1), Math.max(rect.height * zoomFactor, 1));
+    model.setAvailableSize(availableSize, availableSize);
+  }
+  static captureScreenshot(fullSize, clip) {
+    const model = EmulationModel3.DeviceModeModel.DeviceModeModel.instance();
+    this.#setNonEmulatedAvailableSize();
     if (fullSize) {
-      void this.deviceModeView.captureFullSizeScreenshot();
+      void model.captureFullSizeScreenshot();
     } else if (clip) {
-      void this.deviceModeView.captureAreaScreenshot(clip);
+      void model.captureAreaScreenshot(clip);
     } else {
-      void this.deviceModeView.captureScreenshot();
+      void model.captureScreenshot();
     }
     return true;
   }
   screenshotRequestedFromOverlay(event) {
     const clip = event.data;
-    this.captureScreenshot(false, clip);
+    _DeviceModeWrapper.captureScreenshot(false, clip);
   }
   update(force) {
     this.toggleDeviceModeAction.setToggled(this.showDeviceModeSetting.get());
@@ -2700,7 +2659,7 @@ var ActionDelegate = class {
   handleAction(context, actionId) {
     switch (actionId) {
       case "emulation.capture-screenshot":
-        return DeviceModeWrapper.instance().captureScreenshot();
+        return DeviceModeWrapper.captureScreenshot();
       case "emulation.capture-node-screenshot": {
         const node = context.flavor(SDK2.DOMModel.DOMNode);
         if (!node) {
@@ -2719,6 +2678,7 @@ var ActionDelegate = class {
             throw new Error(`Unable to get box model of the node: ${new Error().stack}`);
           }
           const nodeBorderQuad = nodeBoxModel.border;
+          const { minX, maxX, minY, maxY } = getQuadBoundingBox(nodeBorderQuad);
           const metrics = await node.domModel().target().pageAgent().invoke_getLayoutMetrics();
           if (metrics.getError()) {
             throw new Error(`Unable to get metrics: ${new Error().stack}`);
@@ -2727,10 +2687,10 @@ var ActionDelegate = class {
           const scrollY = metrics.cssVisualViewport.pageY;
           const { x: oopifOffsetX, y: oopifOffsetY } = await getOopifOffset(node.domModel().target());
           const clip = {
-            x: oopifOffsetX + scrollX + nodeBorderQuad[0],
-            y: oopifOffsetY + scrollY + nodeBorderQuad[1],
-            width: nodeBoxModel.width,
-            height: nodeBoxModel.height,
+            x: oopifOffsetX + scrollX + minX,
+            y: oopifOffsetY + scrollY + minY,
+            width: maxX - minX,
+            height: maxY - minY,
             scale: 1
           };
           const zoom = metrics.cssVisualViewport.zoom ?? 1;
@@ -2738,13 +2698,13 @@ var ActionDelegate = class {
           clip.y *= zoom;
           clip.width *= zoom;
           clip.height *= zoom;
-          DeviceModeWrapper.instance().captureScreenshot(false, clip);
+          DeviceModeWrapper.captureScreenshot(false, clip);
         }
         void captureClip();
         return true;
       }
       case "emulation.capture-full-height-screenshot":
-        return DeviceModeWrapper.instance().captureScreenshot(true);
+        return DeviceModeWrapper.captureScreenshot(true);
       case "emulation.toggle-device-mode":
         DeviceModeWrapper.instance().toggleDeviceMode();
         return true;
@@ -2792,84 +2752,13 @@ async function getOopifOffset(target) {
     y: iframeContentY + scrollY + parentOffset.y
   };
 }
-
-// gen/front_end/panels/emulation/InspectedPagePlaceholder.js
-var InspectedPagePlaceholder_exports = {};
-__export(InspectedPagePlaceholder_exports, {
-  InspectedPagePlaceholder: () => InspectedPagePlaceholder
-});
-import * as Common4 from "./../../core/common/common.js";
-import * as UI5 from "./../../ui/legacy/legacy.js";
-
-// gen/front_end/panels/emulation/inspectedPagePlaceholder.css.js
-var inspectedPagePlaceholder_css_default = `/*
- * Copyright 2016 The Chromium Authors
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
-
-:host {
-  background-color: var(--sys-color-cdt-base-container);
+function getQuadBoundingBox(quad) {
+  const minX = Math.min(quad[0], quad[2], quad[4], quad[6]);
+  const maxX = Math.max(quad[0], quad[2], quad[4], quad[6]);
+  const minY = Math.min(quad[1], quad[3], quad[5], quad[7]);
+  const maxY = Math.max(quad[1], quad[3], quad[5], quad[7]);
+  return { minX, maxX, minY, maxY };
 }
-
-/*# sourceURL=${import.meta.resolve("./inspectedPagePlaceholder.css")} */`;
-
-// gen/front_end/panels/emulation/InspectedPagePlaceholder.js
-var inspectedPagePlaceholderInstance;
-var InspectedPagePlaceholder = class _InspectedPagePlaceholder extends Common4.ObjectWrapper.eventMixin(UI5.Widget.Widget) {
-  updateId;
-  constructor() {
-    super({ useShadowDom: true });
-    this.registerRequiredCSS(inspectedPagePlaceholder_css_default);
-    UI5.ZoomManager.ZoomManager.instance().addEventListener("ZoomChanged", this.onResize, this);
-    this.restoreMinimumSize();
-  }
-  static instance(opts = { forceNew: null }) {
-    const { forceNew } = opts;
-    if (!inspectedPagePlaceholderInstance || forceNew) {
-      inspectedPagePlaceholderInstance = new _InspectedPagePlaceholder();
-    }
-    return inspectedPagePlaceholderInstance;
-  }
-  onResize() {
-    if (this.updateId) {
-      this.element.window().cancelAnimationFrame(this.updateId);
-    }
-    this.updateId = this.element.window().requestAnimationFrame(this.update.bind(this, false));
-  }
-  restoreMinimumSize() {
-    this.setMinimumSize(150, 150);
-  }
-  clearMinimumSize() {
-    this.setMinimumSize(1, 1);
-  }
-  dipPageRect() {
-    const zoomFactor = UI5.ZoomManager.ZoomManager.instance().zoomFactor();
-    const rect = this.element.getBoundingClientRect();
-    const bodyRect = this.element.ownerDocument.body.getBoundingClientRect();
-    const left = Math.max(rect.left * zoomFactor, bodyRect.left * zoomFactor);
-    const top = Math.max(rect.top * zoomFactor, bodyRect.top * zoomFactor);
-    const bottom = Math.min(rect.bottom * zoomFactor, bodyRect.bottom * zoomFactor);
-    const right = Math.min(rect.right * zoomFactor, bodyRect.right * zoomFactor);
-    return { x: left, y: top, width: right - left, height: bottom - top };
-  }
-  update(force) {
-    delete this.updateId;
-    const rect = this.dipPageRect();
-    const bounds = {
-      x: Math.round(rect.x),
-      y: Math.round(rect.y),
-      height: Math.max(1, Math.round(rect.height)),
-      width: Math.max(1, Math.round(rect.width))
-    };
-    if (force) {
-      --bounds.height;
-      this.dispatchEventToListeners("Update", bounds);
-      ++bounds.height;
-    }
-    this.dispatchEventToListeners("Update", bounds);
-  }
-};
 
 // gen/front_end/panels/emulation/AdvancedApp.js
 var appInstance = null;

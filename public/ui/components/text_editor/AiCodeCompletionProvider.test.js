@@ -18,7 +18,8 @@ function createEditorWithProvider(doc, config = {
     onSuggestionAccepted: () => { },
     onRequestTriggered: () => { },
     onResponseReceived: () => { },
-    panel: "console" /* AiCodeCompletion.AiCodeCompletion.ContextFlavor.CONSOLE */,
+    disclaimerTooltipId: 'console-disclaimer-tooltip',
+    disclaimerTextVariant: 'console',
 }) {
     const provider = AiCodeCompletionProvider.AiCodeCompletionProvider.createInstance(config);
     const editor = new TextEditor.TextEditor(CodeMirror.EditorState.create({

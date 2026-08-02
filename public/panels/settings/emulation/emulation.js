@@ -28,6 +28,19 @@ var devicesSettingsTab_css_default = `/*
   padding-right: 0;
 }
 
+.device-group-container {
+  margin-bottom: 8px;
+}
+
+.device-group-title {
+  font-weight: 600;
+  color: var(--sys-color-on-surface-subtle);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 12px 0 4px;
+}
+
 .list {
   &:has(div) {
     border: none;
@@ -215,7 +228,7 @@ var DevicesSettingsTab = class extends UI.Widget.VBox {
   addCustomButton;
   ariaSuccessMessageElement;
   #customDeviceList;
-  #defaultDeviceList;
+  #defaultDeviceLists = /* @__PURE__ */ new Map();
   muteUpdate;
   emulatedDevicesList;
   editor;
@@ -224,13 +237,6 @@ var DevicesSettingsTab = class extends UI.Widget.VBox {
     this.registerRequiredCSS(devicesSettingsTab_css_default);
     this.containerElement = this.contentElement.createChild("div", "settings-card-container-wrapper").createChild("div");
     this.containerElement.classList.add("settings-card-container", "ignore-list-settings");
-    this.#defaultDeviceList = new UI.ListWidget.ListWidget(
-      this,
-      false
-      /* delegatesFocus */
-    );
-    this.#defaultDeviceList.registerRequiredCSS(devicesSettingsTab_css_default);
-    this.#defaultDeviceList.element.classList.add("devices-list", "device-card-content");
     this.muteUpdate = false;
     this.emulatedDevicesList = EmulationModel.EmulatedDevices.EmulatedDevicesList.instance();
     this.emulatedDevicesList.addEventListener("CustomDevicesUpdated", this.devicesUpdated, this);
@@ -257,7 +263,22 @@ var DevicesSettingsTab = class extends UI.Widget.VBox {
     this.#customDeviceList.show(deviceList);
     const defaultDevicesCard = this.containerElement.createChild("devtools-card");
     defaultDevicesCard.heading = i18nString(UIStrings.defaultDevices);
-    defaultDevicesCard.append(this.#defaultDeviceList.element);
+    for (const category of EmulationModel.EmulatedDevices.CATEGORY_ORDER) {
+      const groupContainer = document.createElement("div");
+      groupContainer.classList.add("device-group-container");
+      const groupTitle = groupContainer.createChild("div", "device-group-title");
+      groupTitle.textContent = EmulationModel.EmulatedDevices.getCategoryTitle(category);
+      defaultDevicesCard.append(groupContainer);
+      const listWidget = new UI.ListWidget.ListWidget(
+        this,
+        false
+        /* delegatesFocus */
+      );
+      listWidget.registerRequiredCSS(devicesSettingsTab_css_default);
+      listWidget.element.classList.add("devices-list", "device-card-content");
+      listWidget.show(groupContainer);
+      this.#defaultDeviceLists.set(category, { container: groupContainer, list: listWidget });
+    }
   }
   wasShown() {
     super.wasShown();
@@ -267,16 +288,28 @@ var DevicesSettingsTab = class extends UI.Widget.VBox {
     if (this.muteUpdate) {
       return;
     }
-    this.#defaultDeviceList.clear();
-    this.#customDeviceList.clear();
-    let devices = this.emulatedDevicesList.custom().slice();
-    for (let i = 0; i < devices.length; ++i) {
-      this.#customDeviceList.appendItem(devices[i], true);
+    for (const { list } of this.#defaultDeviceLists.values()) {
+      list.clear();
     }
-    devices = this.emulatedDevicesList.standard().slice();
-    devices.sort(EmulationModel.EmulatedDevices.EmulatedDevice.deviceComparator);
-    for (let i = 0; i < devices.length; ++i) {
-      this.#defaultDeviceList.appendItem(devices[i], false);
+    this.#customDeviceList.clear();
+    const customDevices = this.emulatedDevicesList.custom().slice();
+    for (let i = 0; i < customDevices.length; ++i) {
+      this.#customDeviceList.appendItem(customDevices[i], true);
+    }
+    const standardDevices = this.emulatedDevicesList.standard().slice();
+    standardDevices.sort(EmulationModel.EmulatedDevices.EmulatedDevice.deviceComparator);
+    const categoryItemCounts = /* @__PURE__ */ new Map();
+    for (const device of standardDevices) {
+      const cat = EmulationModel.EmulatedDevices.deviceCategory(device);
+      const group = this.#defaultDeviceLists.get(cat);
+      if (group) {
+        group.list.appendItem(device, false);
+        categoryItemCounts.set(cat, (categoryItemCounts.get(cat) || 0) + 1);
+      }
+    }
+    for (const [cat, group] of this.#defaultDeviceLists.entries()) {
+      const count = categoryItemCounts.get(cat) || 0;
+      group.container.style.display = count > 0 ? "" : "none";
     }
   }
   muteAndSaveDeviceList(custom) {

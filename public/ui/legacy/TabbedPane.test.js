@@ -436,5 +436,28 @@ describeWithEnvironment('TabbedPaneElement', () => {
         await doubleRaf();
         assert.strictEqual(count, 0, 'overflow-tabs-changed must not fire when hidden tab set is unchanged');
     });
+    it('clears measured dropDownButton width and updates layout when ZOOM_CHANGED fires', async () => {
+        const container = document.createElement('div');
+        container.style.width = '200px';
+        renderElementIntoDOM(container);
+        render(html `
+      <devtools-tabbed-pane>
+        <devtools-toolbar slot="left" id="left-toolbar" style="width: 40px; min-width: 40px;"></devtools-toolbar>
+        <devtools-toolbar slot="right" id="right-toolbar" style="width: 60px; min-width: 60px;"></devtools-toolbar>
+        <div id="tab1" title="Tab 1">1</div>
+        <div id="tab2" title="Tab 2">2</div>
+      </devtools-tabbed-pane>
+    `, container);
+        const tabbedPaneElement = container.querySelector('devtools-tabbed-pane');
+        const widget = UI.Widget.Widget.get(tabbedPaneElement);
+        await doubleRaf();
+        // Verify clearMeasuredWidths clears measuredDropDownButtonWidth on ZOOM_CHANGED
+        widget.measuredDropDownButtonWidth = 999;
+        UI.ZoomManager.ZoomManager.instance().dispatchEventToListeners("ZoomChanged" /* UI.ZoomManager.Events.ZOOM_CHANGED */, { from: 1.0, to: 1.5 });
+        await doubleRaf();
+        const measuredWidth = widget.measuredDropDownButtonWidth;
+        assert.isNumber(measuredWidth);
+        assert.notStrictEqual(measuredWidth, 999, 'measuredDropDownButtonWidth should be invalidated and re-measured after ZOOM_CHANGED');
+    });
 });
 //# sourceMappingURL=TabbedPane.test.js.map

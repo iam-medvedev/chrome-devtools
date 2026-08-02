@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 /* eslint-disable @devtools/no-lit-render-outside-of-view, @devtools/enforce-custom-element-definitions-location */
 import '../tooltips/tooltips.js';
-import './SettingDeprecationWarning.js';
 import '../../kit/kit.js';
 import * as Host from '../../../core/host/host.js';
 import * as i18n from '../../../core/i18n/i18n.js';
@@ -30,12 +29,14 @@ export class SettingCheckbox extends HTMLElement {
     #setting;
     #changeListenerDescriptor;
     #textOverride;
+    #disabled;
     set data(data) {
         if (this.#changeListenerDescriptor && this.#setting) {
             this.#setting.removeChangeListener(this.#changeListenerDescriptor.listener);
         }
         this.#setting = data.setting;
         this.#textOverride = data.textOverride;
+        this.#disabled = data.disabled;
         this.#changeListenerDescriptor = this.#setting.addChangeListener(() => {
             this.#render();
         });
@@ -44,9 +45,6 @@ export class SettingCheckbox extends HTMLElement {
     icon() {
         if (!this.#setting) {
             return undefined;
-        }
-        if (this.#setting.deprecation) {
-            return html `<devtools-setting-deprecation-warning .data=${this.#setting.deprecation}></devtools-setting-deprecation-warning>`;
         }
         const uiDescriptor = SettingUIRegistration.SettingUIRegistration.maybeResolve(this.#setting.descriptor());
         const learnMore = uiDescriptor?.learnMore ?? this.#setting.learnMore();
@@ -131,7 +129,7 @@ export class SettingCheckbox extends HTMLElement {
           <input
             type="checkbox"
             .checked=${this.checked}
-            ?disabled=${this.#setting.disabled()}
+            ?disabled=${this.#disabled || this.#setting.disabled()}
             @change=${this.#checkboxChanged}
             jslog=${VisualLogging.toggle().track({ change: true }).context(this.#setting.name)}
             aria-label=${titleText}

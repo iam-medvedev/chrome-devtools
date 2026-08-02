@@ -25,6 +25,14 @@ describeWithEnvironment('ConsoleInsightTeaser', () => {
     beforeEach(() => {
         // @ts-expect-error
         originalLanguageModel = window.LanguageModel;
+        updateHostConfig({
+            aidaAvailability: {
+                enabled: true,
+            },
+            devToolsConsoleInsights: {
+                enabled: true,
+            },
+        });
     });
     afterEach(() => {
         AiAssistanceModel.BuiltInAi.BuiltInAi.removeInstance();
@@ -85,11 +93,11 @@ describeWithEnvironment('ConsoleInsightTeaser', () => {
             yield 'This is the';
             yield ' explanation';
         });
-        const builtInAi = AiAssistanceModel.BuiltInAi.BuiltInAi.instance();
+        const builtInAi = new AiAssistanceModel.BuiltInAi.BuiltInAi();
         assert.isDefined(builtInAi);
         await builtInAi.initDoneForTesting;
         const view = createViewFunctionStub(Console.ConsoleInsightTeaser.ConsoleInsightTeaser);
-        const teaser = new Console.ConsoleInsightTeaser.ConsoleInsightTeaser('test-uuid', consoleViewMessage, undefined, view);
+        const teaser = new Console.ConsoleInsightTeaser.ConsoleInsightTeaser('test-uuid', consoleViewMessage, undefined, view, builtInAi);
         teaser.maybeGenerateTeaser();
         const input = await view.nextInput;
         assert.isFalse(input.isInactive);
@@ -113,9 +121,9 @@ describeWithEnvironment('ConsoleInsightTeaser', () => {
                 });
             },
         };
-        const builtInAi = AiAssistanceModel.BuiltInAi.BuiltInAi.instance();
+        const builtInAi = new AiAssistanceModel.BuiltInAi.BuiltInAi();
         const view = createViewFunctionStub(Console.ConsoleInsightTeaser.ConsoleInsightTeaser);
-        const teaser = new Console.ConsoleInsightTeaser.ConsoleInsightTeaser('test-uuid', consoleViewMessage, undefined, view);
+        const teaser = new Console.ConsoleInsightTeaser.ConsoleInsightTeaser('test-uuid', consoleViewMessage, undefined, view, builtInAi);
         teaser.maybeGenerateTeaser();
         let input = await view.nextInput;
         assert.strictEqual(input.state, 'no-model');

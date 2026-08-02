@@ -15,21 +15,9 @@ import { PreloadingSummaryTreeElement } from './PreloadingTreeElement.js';
 import { ReportingApiTreeElement } from './ReportingApiTreeElement.js';
 import type { ResourcesPanel } from './ResourcesPanel.js';
 import { ServiceWorkerCacheTreeElement } from './ServiceWorkerCacheTreeElement.js';
-import { SharedStorageListTreeElement } from './SharedStorageListTreeElement.js';
 import { StorageBucketsTreeParentElement } from './StorageBucketsTreeElement.js';
 import { TrustTokensTreeElement } from './TrustTokensTreeElement.js';
 import { WebMCPTreeElement } from './WebMCPTreeElement.js';
-export declare namespace SharedStorageTreeElementDispatcher {
-    const enum Events {
-        SHARED_STORAGE_TREE_ELEMENT_ADDED = "SharedStorageTreeElementAdded"
-    }
-    interface SharedStorageTreeElementAddedEvent {
-        origin: string;
-    }
-    interface EventTypes {
-        [Events.SHARED_STORAGE_TREE_ELEMENT_ADDED]: SharedStorageTreeElementAddedEvent;
-    }
-}
 export declare class ApplicationPanelSidebar extends UI.Widget.VBox implements SDK.TargetManager.Observer {
     panel: ResourcesPanel;
     private readonly sidebarTree;
@@ -42,7 +30,6 @@ export declare class ApplicationPanelSidebar extends UI.Widget.VBox implements S
     cookieListTreeElement: ExpandableApplicationPanelTreeElement;
     trustTokensTreeElement: TrustTokensTreeElement;
     cacheStorageListTreeElement: ServiceWorkerCacheTreeElement;
-    sharedStorageListTreeElement: SharedStorageListTreeElement;
     storageBucketsTreeElement: StorageBucketsTreeParentElement | undefined;
     private backForwardCacheListTreeElement?;
     backgroundFetchTreeElement: BackgroundServiceTreeElement;
@@ -63,11 +50,9 @@ export declare class ApplicationPanelSidebar extends UI.Widget.VBox implements S
     private extensionIdToStorageTreeParentElement;
     private extensionStorageModels;
     private extensionStorageTreeElements;
-    private sharedStorageTreeElements;
     private domains;
     private target?;
     private previousHoveredElement?;
-    readonly sharedStorageTreeElementDispatcher: Common.ObjectWrapper.ObjectWrapper<SharedStorageTreeElementDispatcher.EventTypes>;
     constructor(panel: ResourcesPanel);
     private addSidebarSection;
     targetAdded(target: SDK.Target.Target): void;
@@ -80,8 +65,6 @@ export declare class ApplicationPanelSidebar extends UI.Widget.VBox implements S
     private extensionStorageModelRemoved;
     private indexedDBModelAdded;
     private indexedDBModelRemoved;
-    private sharedStorageModelAdded;
-    private sharedStorageModelRemoved;
     private storageBucketsModelAdded;
     private storageBucketsModelRemoved;
     private resetWithFrames;
@@ -99,11 +82,6 @@ export declare class ApplicationPanelSidebar extends UI.Widget.VBox implements S
     private addExtensionStorage;
     private extensionStorageRemoved;
     private removeExtensionStorage;
-    private sharedStorageAdded;
-    private addSharedStorage;
-    private sharedStorageRemoved;
-    private removeSharedStorage;
-    private sharedStorageAccess;
     showResource(resource: SDK.Resource.Resource, line?: number, column?: number): Promise<void>;
     showFrame(frame: SDK.ResourceTreeModel.ResourceTreeFrame): void;
     showPreloadingRuleSetView(revealInfo: PreloadingHelper.PreloadingForward.RuleSetView): void;

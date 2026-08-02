@@ -76,7 +76,7 @@ describe('ConsoleMessage', () => {
         assert.isFalse(a.isEqual(b));
     });
     it('logs a message on main frame navigation', async () => {
-        universe.settings.moduleSetting('preserve-console-log').set(true);
+        universe.settings.resolve(SDK.SDKSettings.preserveConsoleLogSettingDescriptor).set(true);
         const consoleLog = sinon.spy(universe.console, 'log');
         const tabTarget = universe.createTarget({ type: SDK.Target.Type.TAB });
         const mainFrameTarget = universe.createTarget({ type: SDK.Target.Type.FRAME, parentTarget: tabTarget });
@@ -90,7 +90,7 @@ describe('ConsoleMessage', () => {
         assert.isTrue(consoleLog.calledOnceWith(`Navigated to ${FRAME_URL}`));
     });
     it('logs a message on main frame navigation via bfcache', async () => {
-        universe.settings.moduleSetting('preserve-console-log').set(true);
+        universe.settings.resolve(SDK.SDKSettings.preserveConsoleLogSettingDescriptor).set(true);
         const consoleLog = sinon.spy(universe.console, 'log');
         const tabTarget = universe.createTarget({ type: SDK.Target.Type.TAB });
         const mainFrameTarget = universe.createTarget({ type: SDK.Target.Type.FRAME, parentTarget: tabTarget });
@@ -129,7 +129,7 @@ describe('ConsoleMessage', () => {
         sinon.assert.calledWith(addMessage.secondCall, sinon.match({ messageText: 'log me' }));
     });
     it('clears when main frame global object cleared', async () => {
-        universe.settings.moduleSetting('preserve-console-log').set(false);
+        universe.settings.resolve(SDK.SDKSettings.preserveConsoleLogSettingDescriptor).set(false);
         const tabTarget = universe.createTarget({ type: SDK.Target.Type.TAB });
         const mainFrameTarget = universe.createTarget({ type: SDK.Target.Type.FRAME, parentTarget: tabTarget });
         const subframeTarget = universe.createTarget({ type: SDK.Target.Type.FRAME, parentTarget: mainFrameTarget });
@@ -160,7 +160,7 @@ describe('ConsoleMessage', () => {
         assert.strictEqual(consoleClearEventsSubframeTarget, 0);
     });
     it('does not clear when main frame global object cleared if preserve-console-log is true', async () => {
-        universe.settings.moduleSetting('preserve-console-log').set(true);
+        universe.settings.resolve(SDK.SDKSettings.preserveConsoleLogSettingDescriptor).set(true);
         const tabTarget = universe.createTarget({ type: SDK.Target.Type.TAB });
         const mainFrameTarget = universe.createTarget({ type: SDK.Target.Type.FRAME, parentTarget: tabTarget });
         const subframeTarget = universe.createTarget({ type: SDK.Target.Type.FRAME, parentTarget: mainFrameTarget });

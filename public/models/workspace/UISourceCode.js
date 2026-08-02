@@ -41,7 +41,6 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
     #contentEncoded;
     #isKnownThirdParty = false;
     #isUnconditionallyIgnoreListed = false;
-    #containsAiChanges = false;
     constructor(project, url, contentType) {
         super();
         this.#project = project;
@@ -283,18 +282,11 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
     #resetWorkingCopy() {
         this.#workingCopy = null;
         this.#workingCopyGetter = null;
-        this.setContainsAiChanges(false);
     }
     setWorkingCopy(newWorkingCopy) {
         this.#workingCopy = newWorkingCopy;
         this.#workingCopyGetter = null;
         this.#workingCopyChanged();
-    }
-    setContainsAiChanges(containsAiChanges) {
-        this.#containsAiChanges = containsAiChanges;
-    }
-    containsAiChanges() {
-        return this.#containsAiChanges;
     }
     setContent(content, isBase64) {
         this.#contentEncoded = isBase64;
@@ -418,6 +410,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
     editDisabled() {
         return this.#disableEdit;
     }
+    // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
     isIgnoreListed(ignoreListManager = IgnoreListManager.instance()) {
         return ignoreListManager.isUserOrSourceMapIgnoreListedUISourceCode(this);
     }
@@ -501,6 +494,7 @@ export class UILocation {
         }
         return this.columnNumber - other.columnNumber;
     }
+    // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
     isIgnoreListed(ignoreListManager = IgnoreListManager.instance()) {
         return this.uiSourceCode.isIgnoreListed(ignoreListManager);
     }

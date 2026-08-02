@@ -3913,14 +3913,14 @@ var ERROR_STATE = Symbol("error");
 function lazy(producer) {
   let value = UNINITIALIZED;
   let error = new Error("Initial");
-  return () => {
+  return (...args) => {
     if (value === ERROR_STATE) {
       throw error;
     } else if (value !== UNINITIALIZED) {
       return value;
     }
     try {
-      value = producer();
+      value = producer(...args);
       return value;
     } catch (err) {
       error = err instanceof Error ? err : new Error(err);
@@ -5393,7 +5393,6 @@ function getLocalizedSettingsCategory(category) {
 // gen/front_end/core/common/Settings.js
 var Settings_exports = {};
 __export(Settings_exports, {
-  Deprecation: () => Deprecation,
   InMemoryStorage: () => InMemoryStorage,
   RegExpSetting: () => RegExpSetting,
   Setting: () => Setting,
@@ -6368,6 +6367,7 @@ var Settings = class _Settings {
     const isGetter = (value) => typeof value === "function";
     const evaluatedDefaultValue = isGetter(defaultValue) ? defaultValue(Root4.Runtime.hostConfig) : defaultValue;
     setting = isRegex && typeof evaluatedDefaultValue === "string" ? this.createRegExpSetting(name, evaluatedDefaultValue, void 0, storageType) : this.createSetting(name, evaluatedDefaultValue, storageType);
+    setting.setSettingType(type);
     this.registerModuleSetting(setting);
     return setting;
   }
@@ -6471,32 +6471,19 @@ var SettingsStorage = class {
     }
   }
 };
-var Deprecation = class {
-  disabled;
-  warning;
-  experiment;
-  constructor({ deprecationNotice }) {
-    if (!deprecationNotice) {
-      throw new Error("Cannot create deprecation info for a non-deprecated setting");
-    }
-    this.disabled = deprecationNotice.disabled;
-    this.warning = deprecationNotice.warning();
-    this.experiment = deprecationNotice.experiment ? Root4.Runtime.experiments.allConfigurableExperiments().find((e) => e.name === deprecationNotice.experiment) : void 0;
-  }
-};
 var Setting = class {
   name;
   defaultValue;
   eventSupport;
   storage;
   #registration = null;
+  #type = null;
   #requiresUserAction;
   #value;
   // TODO(crbug.com/1172300) Type cannot be inferred without changes to consumers. See above.
   #serializer = JSON;
   #hadUserAction;
   #disabled;
-  #deprecation = null;
   #loggedInitialAccess = false;
   #logSettingAccess;
   #console;
@@ -6635,22 +6622,17 @@ var Setting = class {
     }
     this.eventSupport.dispatchEventToListeners(this.name, value);
   }
+  setSettingType(type) {
+    this.#type = type;
+  }
   setRegistration(registration) {
     this.#registration = registration;
-    const { deprecationNotice } = registration;
-    if (deprecationNotice?.disabled) {
-      const experiment = deprecationNotice.experiment ? Root4.Runtime.experiments.allConfigurableExperiments().find((e) => e.name === deprecationNotice.experiment) : void 0;
-      if (!experiment || experiment.isEnabled()) {
-        this.set(this.defaultValue);
-        this.setDisabled(true);
-      }
+    if (registration.settingType) {
+      this.#type = registration.settingType;
     }
   }
   type() {
-    if (this.#registration) {
-      return this.#registration.settingType;
-    }
-    return null;
+    return this.#type ?? this.#registration?.settingType ?? null;
   }
   options() {
     if (this.#registration && this.#registration.options) {
@@ -6695,15 +6677,6 @@ var Setting = class {
    */
   learnMore() {
     return this.#registration?.learnMore ?? null;
-  }
-  get deprecation() {
-    if (!this.#registration || !this.#registration.deprecationNotice) {
-      return null;
-    }
-    if (!this.#deprecation) {
-      this.#deprecation = new Deprecation(this.#registration);
-    }
-    return this.#deprecation;
   }
   printSettingsSavingError(message, value) {
     const errorMessage = "Error saving setting with name: " + this.name + ", value length: " + value.length + ". Error: " + message;

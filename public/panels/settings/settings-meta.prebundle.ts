@@ -253,7 +253,6 @@ Common.Revealer.registerRevealer({
     return [
       Common.Settings.Setting,
       Root.Runtime.Experiment,
-      Root.Runtime.HostExperiment,
     ];
   },
   async loadRevealer() {

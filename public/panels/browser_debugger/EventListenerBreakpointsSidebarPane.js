@@ -4,19 +4,14 @@
 import * as SDK from '../../core/sdk/sdk.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { CategorizedBreakpointsSidebarPane } from './CategorizedBreakpointsSidebarPane.js';
-let eventListenerBreakpointsSidebarPaneInstance;
 export class EventListenerBreakpointsSidebarPane extends CategorizedBreakpointsSidebarPane {
-    constructor() {
+    #eventBreakpointsManager;
+    constructor(eventBreakpointsManager) {
         let breakpoints = SDK.DOMDebuggerModel.DOMDebuggerManager.instance().eventListenerBreakpoints();
-        const nonDomBreakpoints = SDK.EventBreakpointsModel.EventBreakpointsManager.instance().eventListenerBreakpoints();
+        const nonDomBreakpoints = eventBreakpointsManager.eventListenerBreakpoints();
         breakpoints = breakpoints.concat(nonDomBreakpoints);
         super(breakpoints, `${VisualLogging.section('sources.event-listener-breakpoints')}`, 'sources.event-listener-breakpoints');
-    }
-    static instance() {
-        if (!eventListenerBreakpointsSidebarPaneInstance) {
-            eventListenerBreakpointsSidebarPaneInstance = new EventListenerBreakpointsSidebarPane();
-        }
-        return eventListenerBreakpointsSidebarPaneInstance;
+        this.#eventBreakpointsManager = eventBreakpointsManager;
     }
     getBreakpointFromPausedDetails(details) {
         const auxData = details.auxData;
@@ -27,7 +22,7 @@ export class EventListenerBreakpointsSidebarPane extends CategorizedBreakpointsS
         if (domBreakpoint) {
             return domBreakpoint;
         }
-        return SDK.EventBreakpointsModel.EventBreakpointsManager.instance().resolveEventListenerBreakpoint(auxData);
+        return this.#eventBreakpointsManager.resolveEventListenerBreakpoint(auxData);
     }
 }
 //# sourceMappingURL=EventListenerBreakpointsSidebarPane.js.map

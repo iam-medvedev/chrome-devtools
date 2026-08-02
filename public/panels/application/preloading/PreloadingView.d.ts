@@ -37,7 +37,8 @@ export declare class PreloadingAttemptView extends UI.Widget.VBox {
     private readonly warningsContainer;
     private readonly warningsView;
     private readonly preloadingGrid;
-    private readonly preloadingDetails;
+    private readonly preloadingGridContainer;
+    private readonly renderContainer;
     private readonly ruleSetSelector;
     private readonly textFilterUI;
     private hsplit?;
@@ -47,7 +48,7 @@ export declare class PreloadingAttemptView extends UI.Widget.VBox {
     onScopeChange(): void;
     setFilter(filter: PreloadingHelper.PreloadingForward.AttemptViewWithFilter): void;
     private onTextFilterChanged;
-    private updatePreloadingDetails;
+    private getPreloadingDetailsData;
     render(): void;
     private onPreloadingGridCellFocused;
     getRuleSetSelectorToolbarItemForTest(): UI.Toolbar.ToolbarItem;

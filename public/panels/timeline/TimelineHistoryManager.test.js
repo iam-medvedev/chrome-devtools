@@ -4,8 +4,14 @@
 import { assert } from 'chai';
 import { assertScreenshot, raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment, registerNoopActions, } from '../../testing/EnvironmentHelpers.js';
+import { getBaseTraceHandlerData } from '../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../testing/TraceLoader.js';
 import * as Timeline from './timeline.js';
+function getMenuItemsText(dropdown) {
+    return Array.from(dropdown.querySelectorAll('[role="menuitem"]'), elem => {
+        return elem.innerText.replaceAll('\n', '-');
+    });
+}
 describeWithEnvironment('TimelineHistoryManager', function () {
     let historyManager;
     beforeEach(() => {
@@ -28,10 +34,8 @@ describeWithEnvironment('TimelineHistoryManager', function () {
         const glassPane = document.querySelector('div[data-devtools-glass-pane]');
         const dropdown = glassPane?.shadowRoot?.querySelector('.widget')?.shadowRoot?.querySelector('.drop-down');
         assert.isOk(dropdown);
-        const menuItemText = Array.from(dropdown.querySelectorAll('[role="menuitem"]'), elem => {
-            return elem.innerText.replaceAll('\n', '');
-        });
-        assert.deepEqual(menuItemText, ['Live metrics', 'web.dev1× slowdown, No throttling']);
+        const menuItemText = getMenuItemsText(dropdown);
+        assert.deepEqual(menuItemText, ['Live metrics', 'web.dev #1-1× slowdown, No throttling']);
         // Cancel the dropdown, which also resolves the show() promise, meaning we
         // don't leak it into other tests.
         historyManager.cancelIfShowing();
@@ -79,10 +83,8 @@ describeWithEnvironment('TimelineHistoryManager', function () {
         const glassPane = document.querySelector('div[data-devtools-glass-pane]');
         const dropdown = glassPane?.shadowRoot?.querySelector('.widget')?.shadowRoot?.querySelector('.drop-down');
         assert.isOk(dropdown);
-        const menuItemText = Array.from(dropdown.querySelectorAll('[role="menuitem"]'), elem => {
-            return elem.innerText.replaceAll('\n', '');
-        });
-        assert.deepEqual(menuItemText, ['New recording', 'web.dev1× slowdown, No throttling']);
+        const menuItemText = getMenuItemsText(dropdown);
+        assert.deepEqual(menuItemText, ['New recording', 'web.dev #1-1× slowdown, No throttling']);
         // Cancel the dropdown, which also resolves the show() promise, meaning we
         // don't leak it into other tests.
         historyManager.cancelIfShowing();
@@ -114,6 +116,35 @@ describeWithEnvironment('TimelineHistoryManager', function () {
         assert.strictEqual(previousRecording?.parsedTraceIndex, 1);
         const nextRecording = historyManager.navigate(-1);
         assert.strictEqual(nextRecording?.parsedTraceIndex, 2);
+    });
+    it('uses custom metadata title when provided', async function () {
+        const baseTraceData = getBaseTraceHandlerData();
+        const parsedTrace = getBaseTraceHandlerData({
+            Meta: {
+                ...baseTraceData.data.Meta,
+                mainFrameURL: 'https://web.dev',
+            },
+        });
+        parsedTrace.metadata.title = 'Custom Benchmark Title';
+        parsedTrace.metadata.cpuThrottling = 1;
+        parsedTrace.metadata.networkThrottling = 'No throttling';
+        historyManager.addRecording({
+            data: {
+                parsedTraceIndex: 1,
+                type: 'TRACE_INDEX',
+            },
+            filmStripForPreview: null,
+            parsedTrace,
+        });
+        assert.strictEqual(historyManager.button().element.innerText, 'Custom Benchmark Title (web.dev #1)');
+        const showPromise = historyManager.showHistoryDropDown();
+        const glassPane = document.querySelector('div[data-devtools-glass-pane]');
+        const dropdown = glassPane?.shadowRoot?.querySelector('.widget')?.shadowRoot?.querySelector('.drop-down');
+        assert.isOk(dropdown);
+        const menuItemText = getMenuItemsText(dropdown);
+        assert.deepEqual(menuItemText, ['Live metrics', 'Custom Benchmark Title (web.dev #1)-1× slowdown, No throttling']);
+        historyManager.cancelIfShowing();
+        await showPromise;
     });
 });
 //# sourceMappingURL=TimelineHistoryManager.test.js.map

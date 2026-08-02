@@ -361,7 +361,7 @@ export class ConsoleInsightTeaser extends UI.Widget.Widget {
     #isForWarning;
     #callShowTooltip = false;
     #startTime = 0;
-    constructor(uuid, consoleViewMessage, element, view) {
+    constructor(uuid, consoleViewMessage, element, view, builtInAi = AiAssistanceModel.BuiltInAi.BuiltInAi.instance()) {
         super(element);
         this.#view = view ?? DEFAULT_VIEW;
         this.#uuid = uuid;
@@ -371,18 +371,14 @@ export class ConsoleInsightTeaser extends UI.Widget.Widget {
         this.#boundOnAidaAvailabilityChange = this.#onAidaAvailabilityChange.bind(this);
         this.#boundOnDownloadProgressChange = this.#onDownloadProgressChange.bind(this);
         this.#boundOnSessionCreation = this.#onSessionCreation.bind(this);
-        this.#builtInAi = AiAssistanceModel.BuiltInAi.BuiltInAi.instance();
+        this.#builtInAi = builtInAi;
         this.#state = this.#builtInAi.hasSession() ? "ready" /* State.READY */ : "no-model" /* State.NO_MODEL */;
         this.#callShowTooltip = true;
         this.requestUpdate();
     }
     #getConsoleInsightsEnabledSetting() {
-        try {
-            return Common.Settings.Settings.instance().moduleSetting('console-insights-enabled');
-        }
-        catch {
-            return;
-        }
+        const result = Common.Settings.Settings.instance().maybeResolve(AiAssistanceModel.AiUtils.consoleInsightsEnabledSettingDescriptor);
+        return 'setting' in result ? result.setting : undefined;
     }
     #getOnboardingCompletedSetting() {
         return Common.Settings.Settings.instance().createLocalSetting('console-insights-onboarding-finished', true);

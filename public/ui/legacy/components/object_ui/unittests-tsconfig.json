@@ -42,6 +42,7 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../../../front_end/ui/legacy/components/object_ui/CSSStyleSanitizer.test.ts",
     "../../../../../../../../front_end/ui/legacy/components/object_ui/CustomPreviewComponent.test.ts",
     "../../../../../../../../front_end/ui/legacy/components/object_ui/JavaScriptREPL.test.ts",
     "../../../../../../../../front_end/ui/legacy/components/object_ui/ObjectPopoverHelper.test.ts",

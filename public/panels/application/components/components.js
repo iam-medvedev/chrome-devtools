@@ -285,10 +285,10 @@ var DEFAULT_VIEW = (input, output, target) => {
         <devtools-data-grid striped resize="last" class="ad-frames-data-grid" name=${i18nString(UIStrings.adIframes)}>
           <table>
             <tr>
-              <th id="elementId" weight="1">${i18nString(UIStrings.elementId)}</th>
-              <th id="initialOrigin" weight="2">${i18nString(UIStrings.initialOrigin)}</th>
-              <th id="cpuTime" weight="1">${i18nString(UIStrings.cpu)}</th>
-              <th id="networkBytes" weight="1">${i18nString(UIStrings.network)}</th>
+              <th id="elementId" weight="1" sortable>${i18nString(UIStrings.elementId)}</th>
+              <th id="initialOrigin" weight="2" sortable>${i18nString(UIStrings.initialOrigin)}</th>
+              <th id="cpuTime" weight="1" sortable type="numeric">${i18nString(UIStrings.cpu)}</th>
+              <th id="networkBytes" weight="1" sortable type="numeric">${i18nString(UIStrings.network)}</th>
             </tr>
             ${input.adFrames.map((frame) => html`
               <tr>
@@ -300,8 +300,8 @@ var DEFAULT_VIEW = (input, output, target) => {
                       ` : Lit.nothing}
                 </td>
                 <td title=${frame.initialOrigin}>${frame.initialOrigin}</td>
-                <td title=${frame.cpuTime}>${frame.cpuTime}</td>
-                <td title=${frame.networkBytes}>${frame.networkBytes}</td>
+                <td title=${frame.cpuTime} data-value=${frame.rawCpuTime}>${frame.cpuTime}</td>
+                <td title=${frame.networkBytes} data-value=${frame.rawNetworkBytes}>${frame.networkBytes}</td>
               </tr>
             `)}
           </table>
@@ -460,7 +460,9 @@ var AdsView = class extends UI.Widget.Widget {
         elementId: elementIdText,
         initialOrigin: frame.initialOrigin || "",
         cpuTime: formatCpu(frame.cpuTime),
+        rawCpuTime: frame.cpuTime ?? -1,
         networkBytes: formatNetwork(frame.networkBytes),
+        rawNetworkBytes: frame.networkBytes ?? -1,
         revealFrame
       });
     }
@@ -2971,251 +2973,6 @@ var ServiceWorkerRouterView = class extends UI9.Widget.Widget {
   }
 };
 
-// gen/front_end/panels/application/components/SharedStorageAccessGrid.js
-var SharedStorageAccessGrid_exports = {};
-__export(SharedStorageAccessGrid_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW10,
-  SharedStorageAccessGrid: () => SharedStorageAccessGrid,
-  i18nString: () => i18nString9
-});
-import "./../../../ui/kit/kit.js";
-import "./../../../ui/legacy/components/data_grid/data_grid.js";
-import * as i18n19 from "./../../../core/i18n/i18n.js";
-import * as UI10 from "./../../../ui/legacy/legacy.js";
-import * as Lit5 from "./../../../ui/lit/lit.js";
-import * as VisualLogging8 from "./../../../ui/visual_logging/visual_logging.js";
-
-// gen/front_end/panels/application/components/sharedStorageAccessGrid.css.js
-var sharedStorageAccessGrid_css_default = `/*
- * Copyright 2022 The Chromium Authors
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
-@scope to (devtools-widget > *) {
-  :scope {
-    padding: 20px;
-    height: 100%;
-    display: flex;
-  }
-
-  .heading {
-    font-size: 15px;
-  }
-
-  devtools-data-grid {
-    margin-top: 20px;
-  }
-
-  .info-icon {
-    vertical-align: text-bottom;
-    height: 14px;
-  }
-
-  .no-events-message {
-    margin-top: 20px;
-  }
-}
-
-/*# sourceURL=${import.meta.resolve("./sharedStorageAccessGrid.css")} */`;
-
-// gen/front_end/panels/application/components/SharedStorageAccessGrid.js
-var SHARED_STORAGE_EXPLANATION_URL = "https://developers.google.com/privacy-sandbox/private-advertising/shared-storage";
-var { render: render10, html: html10 } = Lit5;
-var UIStrings10 = {
-  /**
-   * @description Text in Shared Storage Events View of the Application panel
-   */
-  sharedStorage: "Shared storage",
-  /**
-   * @description Hover text for an info icon in the Shared Storage Events panel
-   */
-  allSharedStorageEvents: "All shared storage events for this page.",
-  /**
-   * @description Text in Shared Storage Events View of the Application panel
-   * Date and time of an Shared Storage event in a locale-
-   * dependent format.
-   */
-  eventTime: "Event Time",
-  /**
-   * @description Text in Shared Storage Events View of the Application panel
-   * Scope of shared storage event such as 'window', 'sharedStorageWorklet',
-   * or 'header'.
-   */
-  eventScope: "Access Scope",
-  /**
-   * @description Text in Shared Storage Events View of the Application panel
-   * Method of shared storage event such as 'addModule', 'run', 'set', 'delete',
-   * or 'get'.
-   */
-  eventMethod: "Access Method",
-  /**
-   * @description Text in Shared Storage Events View of the Application panel
-   * Owner origin of the shared storage for this access event.
-   */
-  ownerOrigin: "Owner Origin",
-  /**
-   * @description Text in Shared Storage Events View of the Application panel
-   * Owner site of the shared storage for this access event.
-   */
-  ownerSite: "Owner Site",
-  /**
-   * @description Text in Shared Storage Events View of the Application panel
-   * Event parameters whose presence/absence depend on the access type.
-   */
-  eventParams: "Optional Event Params",
-  /**
-   * @description Text shown when no shared storage event is shown.
-   * Shared storage allows to store and access data that can be shared across different sites.
-   * A shared storage event is for example an access from a site to that storage.
-   */
-  noEvents: "No shared storage events detected",
-  /**
-   * @description Text shown when no shared storage event is shown. It explains the shared storage event page.
-   * Shared storage allows to store and access data that can be shared across different sites.
-   * A shared storage event is for example an access from a site to that storage.
-   */
-  sharedStorageDescription: "On this page you can view, add, edit and delete shared storage key-value pairs and view shared storage events.",
-  /**
-   * @description Text used in a link to learn more about the topic.
-   */
-  learnMore: "Learn more"
-};
-var str_10 = i18n19.i18n.registerUIStrings("panels/application/components/SharedStorageAccessGrid.ts", UIStrings10);
-var i18nString9 = i18n19.i18n.getLocalizedString.bind(void 0, str_10);
-var DEFAULT_VIEW10 = (input, _output, target) => {
-  render10(html10`
-    <style>${sharedStorageAccessGrid_css_default}</style>
-    ${input.events.length === 0 ? html10`
-        <div class="empty-state" jslog=${VisualLogging8.section().context("empty-view")}>
-          <div class="empty-state-header">${i18nString9(UIStrings10.noEvents)}</div>
-          <div class="empty-state-description">
-            <span>${i18nString9(UIStrings10.sharedStorageDescription)}</span>
-            <devtools-link
-              class="devtools-link"
-              href=${SHARED_STORAGE_EXPLANATION_URL}
-              .jslogContext=${"learn-more"}
-            >${i18nString9(UIStrings10.learnMore)}</devtools-link>
-          </div>
-        </div>` : html10`
-        <div jslog=${VisualLogging8.section("events-table")}>
-          <span class="heading">${i18nString9(UIStrings10.sharedStorage)}</span>
-          <devtools-icon class="info-icon medium" name="info"
-                          title=${i18nString9(UIStrings10.allSharedStorageEvents)}>
-          </devtools-icon>
-          <devtools-data-grid striped inline>
-            <table>
-              <thead>
-                <tr>
-                  <th id="event-time" weight="10" sortable>
-                    ${i18nString9(UIStrings10.eventTime)}
-                  </th>
-                  <th id="event-scope" weight="10" sortable>
-                    ${i18nString9(UIStrings10.eventScope)}
-                  </th>
-                  <th id="event-method" weight="10" sortable>
-                    ${i18nString9(UIStrings10.eventMethod)}
-                  </th>
-                  <th id="event-owner-origin" weight="10" sortable>
-                    ${i18nString9(UIStrings10.ownerOrigin)}
-                  </th>
-                  <th id="event-owner-site" weight="10" sortable>
-                    ${i18nString9(UIStrings10.ownerSite)}
-                  </th>
-                  <th id="event-params" weight="10" sortable>
-                    ${i18nString9(UIStrings10.eventParams)}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                ${input.events.map((event) => html10`
-                  <tr @select=${() => input.onSelect(event)}>
-                    <td data-value=${event.accessTime}>
-                      ${new Date(1e3 * event.accessTime).toLocaleString()}
-                    </td>
-                    <td>${event.scope}</td>
-                    <td>${event.method}</td>
-                    <td>${event.ownerOrigin}</td>
-                    <td>${event.ownerSite}</td>
-                    <td>${JSON.stringify(event.params)}</td>
-                  </tr>
-                `)}
-              </tbody>
-            </table>
-          </devtools-data-grid>
-        </div>`}`, target);
-};
-var SharedStorageAccessGrid = class extends UI10.Widget.Widget {
-  #view;
-  #events = [];
-  #onSelect = () => {
-  };
-  constructor(element, view = DEFAULT_VIEW10) {
-    super(element, { useShadowDom: true });
-    this.#view = view;
-    this.performUpdate();
-  }
-  set events(events) {
-    this.#events = events;
-    this.performUpdate();
-  }
-  set onSelect(onSelect) {
-    this.#onSelect = onSelect;
-    this.performUpdate();
-  }
-  get onSelect() {
-    return this.#onSelect;
-  }
-  performUpdate() {
-    this.#view({
-      events: this.#events,
-      onSelect: this.#onSelect.bind(this)
-    }, {}, this.contentElement);
-  }
-};
-
-// gen/front_end/panels/application/components/SharedStorageMetadataView.js
-var SharedStorageMetadataView_exports = {};
-__export(SharedStorageMetadataView_exports, {
-  SharedStorageMetadataView: () => SharedStorageMetadataView
-});
-import "./../../../ui/kit/kit.js";
-import * as i18n23 from "./../../../core/i18n/i18n.js";
-import * as Buttons6 from "./../../../ui/components/buttons/buttons.js";
-import * as Lit6 from "./../../../ui/lit/lit.js";
-
-// gen/front_end/panels/application/components/sharedStorageMetadataView.css.js
-var sharedStorageMetadataView_css_default = `/*
- * Copyright 2022 The Chromium Authors
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
-
-.text-ellipsis {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-devtools-icon {
-  vertical-align: text-bottom;
-  margin-left: var(--sys-size-3);
-  width: 16px;
-  height: 16px;
-}
-
-devtools-button {
-  vertical-align: sub;
-  margin-left: var(--sys-size-3);
-}
-
-.entropy-budget {
-  display: flex;
-  align-items: center;
-  height: 18px;
-}
-
-/*# sourceURL=${import.meta.resolve("./sharedStorageMetadataView.css")} */`;
-
 // gen/front_end/panels/application/components/StorageMetadataView.js
 var StorageMetadataView_exports = {};
 __export(StorageMetadataView_exports, {
@@ -3225,14 +2982,14 @@ __export(StorageMetadataView_exports, {
 import "./../../../ui/components/report_view/report_view.js";
 import "./../../../ui/kit/kit.js";
 import * as Common4 from "./../../../core/common/common.js";
-import * as i18n21 from "./../../../core/i18n/i18n.js";
+import * as i18n19 from "./../../../core/i18n/i18n.js";
 import * as SDK5 from "./../../../core/sdk/sdk.js";
 import * as Buttons5 from "./../../../ui/components/buttons/buttons.js";
 import * as LegacyWrapper from "./../../../ui/components/legacy_wrapper/legacy_wrapper.js";
 import * as RenderCoordinator from "./../../../ui/components/render_coordinator/render_coordinator.js";
-import * as UI11 from "./../../../ui/legacy/legacy.js";
-import { html as html11, nothing as nothing6, render as render11 } from "./../../../ui/lit/lit.js";
-import * as VisualLogging9 from "./../../../ui/visual_logging/visual_logging.js";
+import * as UI10 from "./../../../ui/legacy/legacy.js";
+import { html as html10, nothing as nothing6, render as render10 } from "./../../../ui/lit/lit.js";
+import * as VisualLogging8 from "./../../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/components/storageMetadataView.css.js
 var storageMetadataView_css_default = `/*
@@ -3248,7 +3005,7 @@ var storageMetadataView_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./storageMetadataView.css")} */`;
 
 // gen/front_end/panels/application/components/StorageMetadataView.js
-var UIStrings11 = {
+var UIStrings10 = {
   /**
    * @description The origin of a URL (https://web.dev/same-site-same-origin/#origin).
    *(for a lot of languages this does not need to be translated, please translate only where necessary)
@@ -3341,8 +3098,8 @@ var UIStrings11 = {
    */
   bucketWillBeRemoved: "The selected storage bucket and contained data will be removed."
 };
-var str_11 = i18n21.i18n.registerUIStrings("panels/application/components/StorageMetadataView.ts", UIStrings11);
-var i18nString10 = i18n21.i18n.getLocalizedString.bind(void 0, str_11);
+var str_10 = i18n19.i18n.registerUIStrings("panels/application/components/StorageMetadataView.ts", UIStrings10);
+var i18nString9 = i18n19.i18n.getLocalizedString.bind(void 0, str_10);
 var StorageBucketRevealInfo = class {
   bucketInfo;
   constructor(bucketInfo) {
@@ -3374,9 +3131,9 @@ var StorageMetadataView = class extends LegacyWrapper.LegacyWrapper.WrappableCom
   }
   render() {
     return RenderCoordinator.write("StorageMetadataView render", async () => {
-      render11(html11`
+      render10(html10`
         <style>${storageMetadataView_css_default}</style>
-        <devtools-report .data=${{ reportTitle: this.getTitle() ?? i18nString10(UIStrings11.loading) }}>
+        <devtools-report .data=${{ reportTitle: this.getTitle() ?? i18nString9(UIStrings10.loading) }}>
           ${await this.renderReportContent()}
         </devtools-report>`, this.#shadow, { host: this });
     });
@@ -3386,14 +3143,14 @@ var StorageMetadataView = class extends LegacyWrapper.LegacyWrapper.WrappableCom
       return;
     }
     const origin = this.#storageKey.origin;
-    const bucketName = this.#storageBucket?.bucket.name || i18nString10(UIStrings11.defaultBucket);
+    const bucketName = this.#storageBucket?.bucket.name || i18nString9(UIStrings10.defaultBucket);
     return this.#storageBucketsModel ? `${bucketName} - ${origin}` : origin;
   }
   key(content) {
-    return html11`<devtools-report-key>${content}</devtools-report-key>`;
+    return html10`<devtools-report-key>${content}</devtools-report-key>`;
   }
   value(content) {
-    return html11`<devtools-report-value>${content}</devtools-report-value>`;
+    return html10`<devtools-report-value>${content}</devtools-report-value>`;
   }
   async renderReportContent() {
     if (!this.#storageKey) {
@@ -3416,19 +3173,19 @@ var StorageMetadataView = class extends LegacyWrapper.LegacyWrapper.WrappableCom
       "0"
       /* SDK.StorageKeyManager.StorageKeyComponent.TOP_LEVEL_SITE */
     );
-    const thirdPartyReason = ancestorChainHasCrossSite ? i18nString10(UIStrings11.yesBecauseAncestorChainHasCrossSite) : hasNonce ? i18nString10(UIStrings11.yesBecauseKeyIsOpaque) : topLevelSiteIsOpaque ? i18nString10(UIStrings11.yesBecauseTopLevelIsOpaque) : topLevelSite && origin !== topLevelSite ? i18nString10(UIStrings11.yesBecauseOriginNotInTopLevelSite) : null;
+    const thirdPartyReason = ancestorChainHasCrossSite ? i18nString9(UIStrings10.yesBecauseAncestorChainHasCrossSite) : hasNonce ? i18nString9(UIStrings10.yesBecauseKeyIsOpaque) : topLevelSiteIsOpaque ? i18nString9(UIStrings10.yesBecauseTopLevelIsOpaque) : topLevelSite && origin !== topLevelSite ? i18nString9(UIStrings10.yesBecauseOriginNotInTopLevelSite) : null;
     const isIframeOrEmbedded = topLevelSite && origin !== topLevelSite;
-    return html11`
-        ${isIframeOrEmbedded ? html11`${this.key(i18nString10(UIStrings11.origin))}
-            ${this.value(html11`<div class="text-ellipsis" title=${origin}>${origin}</div>`)}` : nothing6}
-        ${topLevelSite || topLevelSiteIsOpaque ? this.key(i18nString10(UIStrings11.topLevelSite)) : nothing6}
+    return html10`
+        ${isIframeOrEmbedded ? html10`${this.key(i18nString9(UIStrings10.origin))}
+            ${this.value(html10`<div class="text-ellipsis" title=${origin}>${origin}</div>`)}` : nothing6}
+        ${topLevelSite || topLevelSiteIsOpaque ? this.key(i18nString9(UIStrings10.topLevelSite)) : nothing6}
         ${topLevelSite ? this.value(topLevelSite) : nothing6}
-        ${topLevelSiteIsOpaque ? this.value(i18nString10(UIStrings11.opaque)) : nothing6}
-        ${thirdPartyReason ? html11`
-          ${this.key(i18nString10(UIStrings11.isThirdParty))}${this.value(thirdPartyReason)}` : nothing6}
-        ${hasNonce || topLevelSiteIsOpaque ? this.key(i18nString10(UIStrings11.isOpaque)) : nothing6}
-        ${hasNonce ? this.value(i18nString10(UIStrings11.yes)) : nothing6}
-        ${topLevelSiteIsOpaque ? this.value(i18nString10(UIStrings11.yesBecauseTopLevelIsOpaque)) : nothing6}
+        ${topLevelSiteIsOpaque ? this.value(i18nString9(UIStrings10.opaque)) : nothing6}
+        ${thirdPartyReason ? html10`
+          ${this.key(i18nString9(UIStrings10.isThirdParty))}${this.value(thirdPartyReason)}` : nothing6}
+        ${hasNonce || topLevelSiteIsOpaque ? this.key(i18nString9(UIStrings10.isOpaque)) : nothing6}
+        ${hasNonce ? this.value(i18nString9(UIStrings10.yes)) : nothing6}
+        ${topLevelSiteIsOpaque ? this.value(i18nString9(UIStrings10.yesBecauseTopLevelIsOpaque)) : nothing6}
         ${this.#storageBucket ? this.#renderStorageBucketInfo() : nothing6}
         ${this.#storageBucketsModel ? this.#renderBucketControls() : nothing6}`;
   }
@@ -3440,40 +3197,40 @@ var StorageMetadataView = class extends LegacyWrapper.LegacyWrapper.WrappableCom
     const isDefault = !name;
     const renderBucketName = () => {
       if (isDefault) {
-        return html11`<span class="default-bucket">${i18nString10(UIStrings11.defaultBucket)}</span>`;
+        return html10`<span class="default-bucket">${i18nString9(UIStrings10.defaultBucket)}</span>`;
       }
       if (!this.#showOnlyBucket) {
-        return html11`${name}`;
+        return html10`${name}`;
       }
       const revealBucket = (e) => {
         e.preventDefault();
         void Common4.Revealer.reveal(new StorageBucketRevealInfo(this.#storageBucket));
       };
-      return html11`<devtools-link
+      return html10`<devtools-link
         @click=${revealBucket}
         title=${name}
-        jslog=${VisualLogging9.action("storage-bucket").track({
+        jslog=${VisualLogging8.action("storage-bucket").track({
         click: true
       })}
       >${name}</devtools-link>`;
     };
     if (this.#showOnlyBucket) {
-      return html11`
-        ${this.key(i18nString10(UIStrings11.bucketName))}
+      return html10`
+        ${this.key(i18nString9(UIStrings10.bucketName))}
         ${this.value(renderBucketName())}`;
     }
-    return html11`
-      ${this.key(i18nString10(UIStrings11.bucketName))}
+    return html10`
+      ${this.key(i18nString9(UIStrings10.bucketName))}
       ${this.value(renderBucketName())}
-      ${this.key(i18nString10(UIStrings11.persistent))}
-      ${this.value(persistent ? i18nString10(UIStrings11.yes) : i18nString10(UIStrings11.no))}
-      ${this.key(i18nString10(UIStrings11.durability))}
+      ${this.key(i18nString9(UIStrings10.persistent))}
+      ${this.value(persistent ? i18nString9(UIStrings10.yes) : i18nString9(UIStrings10.no))}
+      ${this.key(i18nString9(UIStrings10.durability))}
       ${this.value(durability)}
-      ${quota !== 0 ? html11`
-        ${this.key(i18nString10(UIStrings11.quota))}
-        ${this.value(i18n21.ByteUtilities.bytesToString(quota))}
+      ${quota !== 0 ? html10`
+        ${this.key(i18nString9(UIStrings10.quota))}
+        ${this.value(i18n19.ByteUtilities.bytesToString(quota))}
       ` : nothing6}
-      ${this.key(i18nString10(UIStrings11.expiration))}
+      ${this.key(i18nString9(UIStrings10.expiration))}
       ${this.value(this.#getExpirationString())}`;
   }
   #getExpirationString() {
@@ -3482,18 +3239,18 @@ var StorageMetadataView = class extends LegacyWrapper.LegacyWrapper.WrappableCom
     }
     const { expiration } = this.#storageBucket;
     if (expiration === 0) {
-      return i18nString10(UIStrings11.none);
+      return i18nString9(UIStrings10.none);
     }
     return new Date(expiration * 1e3).toLocaleString();
   }
   #renderBucketControls() {
-    return html11`
+    return html10`
     <devtools-report-divider></devtools-report-divider>
     <devtools-report-section>
-      <devtools-button aria-label=${i18nString10(UIStrings11.deleteBucket)}
+      <devtools-button aria-label=${i18nString9(UIStrings10.deleteBucket)}
                        .variant=${"outlined"}
                        @click=${this.#deleteBucket}>
-        ${i18nString10(UIStrings11.deleteBucket)}
+        ${i18nString9(UIStrings10.deleteBucket)}
       </devtools-button>
     </devtools-report-section>`;
   }
@@ -3501,7 +3258,7 @@ var StorageMetadataView = class extends LegacyWrapper.LegacyWrapper.WrappableCom
     if (!this.#storageBucketsModel || !this.#storageBucket) {
       throw new Error("Should not call #deleteBucket if #storageBucketsModel or #storageBucket is null.");
     }
-    const ok = await UI11.UIUtils.ConfirmDialog.show(i18nString10(UIStrings11.bucketWillBeRemoved), i18nString10(UIStrings11.confirmBucketDeletion, { PH1: this.#storageBucket.bucket.name || "" }), this, { jslogContext: "delete-bucket-confirmation" });
+    const ok = await UI10.UIUtils.ConfirmDialog.show(i18nString9(UIStrings10.bucketWillBeRemoved), i18nString9(UIStrings10.confirmBucketDeletion, { PH1: this.#storageBucket.bucket.name || "" }), this, { jslogContext: "delete-bucket-confirmation" });
     if (ok) {
       this.#storageBucketsModel.deleteBucket(this.#storageBucket.bucket);
     }
@@ -3509,115 +3266,20 @@ var StorageMetadataView = class extends LegacyWrapper.LegacyWrapper.WrappableCom
 };
 customElements.define("devtools-storage-metadata-view", StorageMetadataView);
 
-// gen/front_end/panels/application/components/SharedStorageMetadataView.js
-var { html: html12 } = Lit6;
-var UIStrings12 = {
-  /**
-   * @description Text in SharedStorage Metadata View of the Application panel
-   */
-  sharedStorage: "Shared storage",
-  /**
-   * @description The time when the origin most recently created its shared storage database
-   */
-  creation: "Creation Time",
-  /**
-   * @description The placeholder text if there is no creation time because the origin is not yet using shared storage.
-   */
-  notYetCreated: "Not yet created",
-  /**
-   * @description The number of entries currently in the origin's database
-   */
-  numEntries: "Number of Entries",
-  /**
-   * @description The number of bits remaining in the origin's shared storage privacy budget
-   */
-  entropyBudget: "Entropy Budget for Fenced Frames",
-  /**
-   * @description Hover text for `entropyBudget` giving a more detailed explanation
-   */
-  budgetExplanation: "Remaining data leakage allowed within a 24-hour period for this origin in bits of entropy",
-  /**
-   * @description Label for a button which when clicked causes the budget to be reset to the max.
-   */
-  resetBudget: "Reset Budget",
-  /**
-   * @description The number of bytes used by entries currently in the origin's database
-   */
-  numBytesUsed: "Number of Bytes Used"
-};
-var str_12 = i18n23.i18n.registerUIStrings("panels/application/components/SharedStorageMetadataView.ts", UIStrings12);
-var i18nString11 = i18n23.i18n.getLocalizedString.bind(void 0, str_12);
-var SharedStorageMetadataView = class extends StorageMetadataView {
-  #sharedStorageMetadataGetter;
-  #creationTime = null;
-  #length = 0;
-  #bytesUsed = 0;
-  #remainingBudget = 0;
-  constructor(sharedStorageMetadataGetter, owner) {
-    super();
-    this.#sharedStorageMetadataGetter = sharedStorageMetadataGetter;
-    this.classList.add("overflow-auto");
-    this.setStorageKey(owner);
-  }
-  async #resetBudget() {
-    await this.#sharedStorageMetadataGetter.resetBudget();
-    await this.render();
-  }
-  getTitle() {
-    return i18nString11(UIStrings12.sharedStorage);
-  }
-  async renderReportContent() {
-    const metadata = await this.#sharedStorageMetadataGetter.getMetadata();
-    this.#creationTime = metadata?.creationTime ?? null;
-    this.#length = metadata?.length ?? 0;
-    this.#bytesUsed = metadata?.bytesUsed ?? 0;
-    this.#remainingBudget = metadata?.remainingBudget ?? 0;
-    return html12`
-      <style>${sharedStorageMetadataView_css_default}</style>
-      ${await super.renderReportContent()}
-      ${this.key(i18nString11(UIStrings12.creation))}
-      ${this.value(this.#renderDateForCreationTime())}
-      ${this.key(i18nString11(UIStrings12.numEntries))}
-      ${this.value(String(this.#length))}
-      ${this.key(i18nString11(UIStrings12.numBytesUsed))}
-      ${this.value(String(this.#bytesUsed))}
-      ${this.key(html12`<span class="entropy-budget">${i18nString11(UIStrings12.entropyBudget)}<devtools-icon name="info" title=${i18nString11(UIStrings12.budgetExplanation)}></devtools-icon></span>`)}
-      ${this.value(html12`<span class="entropy-budget">${this.#remainingBudget}${this.#renderResetBudgetButton()}</span>`)}`;
-  }
-  #renderDateForCreationTime() {
-    if (!this.#creationTime) {
-      return html12`${i18nString11(UIStrings12.notYetCreated)}`;
-    }
-    const date = new Date(1e3 * this.#creationTime);
-    return html12`${date.toLocaleString()}`;
-  }
-  #renderResetBudgetButton() {
-    return html12`
-      <devtools-button .iconName=${"undo"}
-                       .jslogContext=${"reset-entropy-budget"}
-                       .size=${"SMALL"}
-                       .title=${i18nString11(UIStrings12.resetBudget)}
-                       .variant=${"icon"}
-                       @click=${this.#resetBudget.bind(this)}></devtools-button>
-    `;
-  }
-};
-customElements.define("devtools-shared-storage-metadata-view", SharedStorageMetadataView);
-
 // gen/front_end/panels/application/components/TrustTokensView.js
 var TrustTokensView_exports = {};
 __export(TrustTokensView_exports, {
   TrustTokensView: () => TrustTokensView,
-  i18nString: () => i18nString12
+  i18nString: () => i18nString10
 });
 import "./../../../ui/kit/kit.js";
 import "./../../../ui/legacy/components/data_grid/data_grid.js";
-import * as i18n25 from "./../../../core/i18n/i18n.js";
+import * as i18n21 from "./../../../core/i18n/i18n.js";
 import * as SDK6 from "./../../../core/sdk/sdk.js";
-import * as Buttons7 from "./../../../ui/components/buttons/buttons.js";
-import * as UI12 from "./../../../ui/legacy/legacy.js";
-import * as Lit7 from "./../../../ui/lit/lit.js";
-import * as VisualLogging10 from "./../../../ui/visual_logging/visual_logging.js";
+import * as Buttons6 from "./../../../ui/components/buttons/buttons.js";
+import * as UI11 from "./../../../ui/legacy/legacy.js";
+import * as Lit5 from "./../../../ui/lit/lit.js";
+import * as VisualLogging9 from "./../../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/components/trustTokensView.css.js
 var trustTokensView_css_default = `/*
@@ -3658,8 +3320,8 @@ devtools-icon {
 
 // gen/front_end/panels/application/components/TrustTokensView.js
 var PRIVATE_STATE_TOKENS_EXPLANATION_URL = "https://developers.google.com/privacy-sandbox/protections/private-state-tokens";
-var { html: html13 } = Lit7;
-var UIStrings13 = {
+var { html: html11 } = Lit5;
+var UIStrings11 = {
   /**
    * @description Text for the issuer of an item
    */
@@ -3696,39 +3358,39 @@ var UIStrings13 = {
    */
   learnMore: "Learn more"
 };
-var str_13 = i18n25.i18n.registerUIStrings("panels/application/components/TrustTokensView.ts", UIStrings13);
-var i18nString12 = i18n25.i18n.getLocalizedString.bind(void 0, str_13);
+var str_11 = i18n21.i18n.registerUIStrings("panels/application/components/TrustTokensView.ts", UIStrings11);
+var i18nString10 = i18n21.i18n.getLocalizedString.bind(void 0, str_11);
 var REFRESH_INTERVAL_MS = 1e3;
 function renderGridOrNoDataMessage(input) {
   if (input.tokens.length === 0) {
-    return html13`
-        <div jslog=${VisualLogging10.pane("trust-tokens")}>
-          <div class="empty-state" jslog=${VisualLogging10.section().context("empty-view")}>
-            <div class="empty-state-header">${i18nString12(UIStrings13.noTrustTokens)}</div>
+    return html11`
+        <div jslog=${VisualLogging9.pane("trust-tokens")}>
+          <div class="empty-state" jslog=${VisualLogging9.section().context("empty-view")}>
+            <div class="empty-state-header">${i18nString10(UIStrings11.noTrustTokens)}</div>
             <div class="empty-state-description">
-              <span>${i18nString12(UIStrings13.trustTokensDescription)}</span>
+              <span>${i18nString10(UIStrings11.trustTokensDescription)}</span>
               <devtools-link
                 class="devtools-link"
                 href=${PRIVATE_STATE_TOKENS_EXPLANATION_URL}
                 .jslogContext=${"learn-more"}
-              >${i18nString12(UIStrings13.learnMore)}</devtools-link>
+              >${i18nString10(UIStrings11.learnMore)}</devtools-link>
             </div>
           </div>
         </div>
       `;
   }
-  return html13`
-      <div jslog=${VisualLogging10.pane("trust-tokens")}>
-        <span class="heading">${i18nString12(UIStrings13.trustTokens)}</span>
-        <devtools-icon name="info" title=${i18nString12(UIStrings13.allStoredTrustTokensAvailableIn)}></devtools-icon>
+  return html11`
+      <div jslog=${VisualLogging9.pane("trust-tokens")}>
+        <span class="heading">${i18nString10(UIStrings11.trustTokens)}</span>
+        <devtools-icon name="info" title=${i18nString10(UIStrings11.allStoredTrustTokensAvailableIn)}></devtools-icon>
         <devtools-data-grid striped inline>
           <table>
             <tr>
-              <th id="issuer" weight="10" sortable>${i18nString12(UIStrings13.issuer)}</th>
-              <th id="count" weight="5" sortable>${i18nString12(UIStrings13.storedTokenCount)}</th>
+              <th id="issuer" weight="10" sortable>${i18nString10(UIStrings11.issuer)}</th>
+              <th id="count" weight="5" sortable>${i18nString10(UIStrings11.storedTokenCount)}</th>
               <th id="delete-button" weight="1" sortable></th>
             </tr>
-            ${input.tokens.filter((token) => token.count > 0).map((token) => html13`
+            ${input.tokens.filter((token) => token.count > 0).map((token) => html11`
                 <tr>
                   <td>${removeTrailingSlash(token.issuerOrigin)}</td>
                   <td>${token.count}</td>
@@ -3736,7 +3398,7 @@ function renderGridOrNoDataMessage(input) {
                     <devtools-button .iconName=${"bin"}
                                     .jslogContext=${"delete-all"}
                                     .size=${"SMALL"}
-                                    .title=${i18nString12(UIStrings13.deleteTrustTokens, { PH1: removeTrailingSlash(token.issuerOrigin) })}
+                                    .title=${i18nString10(UIStrings11.deleteTrustTokens, { PH1: removeTrailingSlash(token.issuerOrigin) })}
                                     .variant=${"icon"}
                                     @click=${() => input.deleteClickHandler(removeTrailingSlash(token.issuerOrigin))}></devtools-button>
                   </td>
@@ -3747,18 +3409,18 @@ function renderGridOrNoDataMessage(input) {
       </div>
     `;
 }
-var DEFAULT_VIEW11 = (input, output, target) => {
-  Lit7.render(html13`
+var DEFAULT_VIEW10 = (input, output, target) => {
+  Lit5.render(html11`
     <style>${trustTokensView_css_default}</style>
-    <style>${UI12.inspectorCommonStyles}</style>
+    <style>${UI11.inspectorCommonStyles}</style>
     ${renderGridOrNoDataMessage(input)}
   `, target);
 };
-var TrustTokensView = class extends UI12.Widget.VBox {
+var TrustTokensView = class extends UI11.Widget.VBox {
   #updateInterval = 0;
   #tokens = [];
   #view;
-  constructor(element, view = DEFAULT_VIEW11) {
+  constructor(element, view = DEFAULT_VIEW10) {
     super(element, { useShadowDom: true });
     this.#view = view;
   }
@@ -3800,8 +3462,6 @@ export {
   ProtocolHandlersView_exports as ProtocolHandlersView,
   ReportsGrid_exports as ReportsGrid,
   ServiceWorkerRouterView_exports as ServiceWorkerRouterView,
-  SharedStorageAccessGrid_exports as SharedStorageAccessGrid,
-  SharedStorageMetadataView_exports as SharedStorageMetadataView,
   StorageMetadataView_exports as StorageMetadataView,
   TrustTokensView_exports as TrustTokensView
 };

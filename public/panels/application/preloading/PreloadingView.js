@@ -385,7 +385,8 @@ export class PreloadingAttemptView extends UI.Widget.VBox {
     warningsContainer;
     warningsView = new PreloadingComponents.PreloadingDisabledInfobar.PreloadingDisabledInfobar();
     preloadingGrid = new PreloadingComponents.PreloadingGrid.PreloadingGrid();
-    preloadingDetails = new PreloadingComponents.PreloadingDetailsReportView.PreloadingDetailsReportView();
+    preloadingGridContainer;
+    renderContainer;
     ruleSetSelector;
     textFilterUI;
     hsplit;
@@ -447,32 +448,11 @@ export class PreloadingAttemptView extends UI.Widget.VBox {
         });
         toolbar.appendToolbarItem(this.clearButton);
         this.preloadingGrid.onSelect = this.onPreloadingGridCellFocused.bind(this);
-        const preloadingGridContainer = document.createElement('div');
-        preloadingGridContainer.className = 'preloading-grid-widget-container';
-        preloadingGridContainer.style = 'height: 100%';
-        this.preloadingGrid.show(preloadingGridContainer, null, true);
-        render(html `
-        <div class="empty-state">
-          <span class="empty-state-header">${i18nString(UIStrings.noPrefetchAttempts)}</span>
-          <div class="empty-state-description">
-            <span>${i18nString(UIStrings.prefetchDescription)}</span>
-            <devtools-link
-              class="devtools-link"
-              href=${SPECULATION_EXPLANATION_URL}
-              jslogcontext="learn-more"
-            >${i18nString(UIStrings.learnMore)}</devtools-link>
-          </div>
-        </div>
-        <devtools-split-view sidebar-position="second" ${UI.Widget.widgetRef(UI.SplitWidget.SplitWidget, w => {
-            this.hsplit = w;
-        })}>
-          <div slot="main" class="overflow-auto" style="height: 100%">
-            ${preloadingGridContainer}
-          </div>
-          <div slot="sidebar" class="overflow-auto" style="height: 100%">
-            ${this.preloadingDetails}
-          </div>
-        </devtools-split-view>`, vbox.contentElement, { host: this });
+        this.preloadingGridContainer = document.createElement('div');
+        this.preloadingGridContainer.className = 'preloading-grid-widget-container';
+        this.preloadingGridContainer.style.height = '100%';
+        this.preloadingGrid.show(this.preloadingGridContainer, null, true);
+        this.renderContainer = vbox.contentElement;
         vbox.show(this.contentElement);
     }
     wasShown() {
@@ -499,21 +479,19 @@ export class PreloadingAttemptView extends UI.Widget.VBox {
     onTextFilterChanged() {
         this.render();
     }
-    updatePreloadingDetails() {
+    getPreloadingDetailsData() {
         const id = this.focusedPreloadingAttemptId;
         const preloadingAttempt = id === null ? null : this.model.getPreloadingAttemptById(id);
         if (preloadingAttempt === null) {
-            this.preloadingDetails.data = null;
+            return null;
         }
-        else {
-            const pipeline = this.model.getPipeline(preloadingAttempt);
-            const ruleSets = preloadingAttempt.ruleSetIds.map(id => this.model.getRuleSetById(id)).filter(x => x !== null);
-            this.preloadingDetails.data = {
-                pipeline,
-                ruleSets,
-                pageURL: pageURL(),
-            };
-        }
+        const pipeline = this.model.getPipeline(preloadingAttempt);
+        const ruleSets = preloadingAttempt.ruleSetIds.map(id => this.model.getRuleSetById(id)).filter(x => x !== null);
+        return {
+            pipeline,
+            ruleSets,
+            pageURL: pageURL(),
+        };
     }
     render() {
         // Update preloading grid
@@ -547,7 +525,33 @@ export class PreloadingAttemptView extends UI.Widget.VBox {
         if (wasEmpty && !isEmpty) {
             this.hsplit?.doLayout();
         }
-        this.updatePreloadingDetails();
+        // clang-format off
+        render(html `
+      <div class="empty-state">
+        <span class="empty-state-header">${i18nString(UIStrings.noPrefetchAttempts)}</span>
+        <div class="empty-state-description">
+          <span>${i18nString(UIStrings.prefetchDescription)}</span>
+          <devtools-link
+            class="devtools-link"
+            href=${SPECULATION_EXPLANATION_URL}
+            jslogcontext="learn-more"
+          >${i18nString(UIStrings.learnMore)}</devtools-link>
+        </div>
+      </div>
+      <devtools-split-view sidebar-position="second" ${UI.Widget.widgetRef(UI.SplitWidget.SplitWidget, w => {
+            this.hsplit = w;
+        })}>
+        <div slot="main" class="overflow-auto" style="height: 100%">
+          ${this.preloadingGridContainer}
+        </div>
+        <div slot="sidebar" class="overflow-auto" style="height: 100%">
+          ${widget(PreloadingComponents.PreloadingDetailsReportView.PreloadingDetailsReportView, {
+            data: this.getPreloadingDetailsData(),
+        })}
+        </div>
+      </devtools-split-view>
+      `, this.renderContainer, { host: this });
+        // clang-format on
     }
     onPreloadingGridCellFocused({ rowId }) {
         this.focusedPreloadingAttemptId = rowId;
@@ -560,7 +564,10 @@ export class PreloadingAttemptView extends UI.Widget.VBox {
         return this.preloadingGrid;
     }
     getPreloadingDetailsForTest() {
-        return this.preloadingDetails;
+        const widgetElement = this.renderContainer.querySelector('div[slot="sidebar"] devtools-widget');
+        const widget = widgetElement?.getWidget();
+        assertNotNullOrUndefined(widget);
+        return widget;
     }
     selectRuleSetOnFilterForTest(id) {
         this.ruleSetSelector.select(id);

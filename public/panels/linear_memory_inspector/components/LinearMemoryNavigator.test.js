@@ -2,42 +2,45 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { assertElements, getElementsWithinComponent, getElementWithinComponent, getEventPromise, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import { assertScreenshot, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
-import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as LinearMemoryInspectorComponents from './components.js';
 export const NAVIGATOR_ADDRESS_SELECTOR = '[data-input]';
-export const NAVIGATOR_PAGE_BUTTON_SELECTOR = '[data-button=pagenavigation]';
-export const NAVIGATOR_HISTORY_BUTTON_SELECTOR = '[data-button=historynavigation]';
-export const NAVIGATOR_REFRESH_BUTTON_SELECTOR = '[data-button=refreshrequested]';
 describe('LinearMemoryNavigator', () => {
     setupLocaleHooks();
     let component;
-    beforeEach(renderNavigator);
+    beforeEach(async () => {
+        renderNavigator();
+        await component.updateComplete;
+    });
     function renderNavigator() {
         component = new LinearMemoryInspectorComponents.LinearMemoryNavigator.LinearMemoryNavigator();
         renderElementIntoDOM(component);
-        component.data = {
-            address: '20',
-            valid: true,
-            mode: "Submitted" /* LinearMemoryInspectorComponents.LinearMemoryNavigator.Mode.SUBMITTED */,
-            error: undefined,
-            canGoBackInHistory: true,
-            canGoForwardInHistory: true,
-        };
+        component.address = '20';
+        component.valid = true;
+        component.mode = "Submitted" /* LinearMemoryInspectorComponents.LinearMemoryNavigator.Mode.SUBMITTED */;
+        component.error = undefined;
+        component.canGoBackInHistory = true;
+        component.canGoForwardInHistory = true;
     }
     async function assertNavigationEvents(eventType) {
-        const shadowRoot = component.shadowRoot;
+        const shadowRoot = component.contentElement.shadowRoot;
         assert.isNotNull(shadowRoot);
-        const pageNavigationButtons = shadowRoot.querySelectorAll(`[data-button=${eventType}]`);
-        assertElements(pageNavigationButtons, Buttons.Button.Button);
-        assert.lengthOf(pageNavigationButtons, 2);
+        // Grab all buttons and rely on their predictable rendering order
+        const buttons = shadowRoot.querySelectorAll('devtools-button');
+        assert.lengthOf(buttons, 5);
         const navigation = [];
-        for (const button of pageNavigationButtons) {
-            const eventPromise = getEventPromise(component, eventType);
+        let buttonsToClick = [];
+        if (eventType === 'page') {
+            component.onNavigatePage = nav => navigation.push(nav);
+            buttonsToClick = [buttons[2], buttons[3]];
+        }
+        else {
+            component.onNavigateHistory = nav => navigation.push(nav);
+            buttonsToClick = [buttons[0], buttons[1]];
+        }
+        for (const button of buttonsToClick) {
             button.click();
-            const event = await eventPromise;
-            navigation.push(event.data);
         }
         assert.deepEqual(navigation, [
             "Backward" /* LinearMemoryInspectorComponents.LinearMemoryNavigator.Navigation.BACKWARD */,
@@ -45,74 +48,79 @@ describe('LinearMemoryNavigator', () => {
         ]);
     }
     it('renders navigator address', () => {
-        const shadowRoot = component.shadowRoot;
+        const shadowRoot = component.contentElement.shadowRoot;
         assert.isNotNull(shadowRoot);
         const input = shadowRoot.querySelector(NAVIGATOR_ADDRESS_SELECTOR);
         assert.instanceOf(input, HTMLInputElement);
         assert.strictEqual(input.value, '20');
     });
-    it('re-renders address on address change', () => {
-        component.data = {
-            address: '16',
-            valid: true,
-            mode: "Submitted" /* LinearMemoryInspectorComponents.LinearMemoryNavigator.Mode.SUBMITTED */,
-            error: undefined,
-            canGoBackInHistory: false,
-            canGoForwardInHistory: false,
-        };
-        const shadowRoot = component.shadowRoot;
+    it('re-renders address on address change', async () => {
+        component.address = '16';
+        component.valid = true;
+        component.mode = "Submitted" /* LinearMemoryInspectorComponents.LinearMemoryNavigator.Mode.SUBMITTED */;
+        component.error = undefined;
+        component.canGoBackInHistory = false;
+        component.canGoForwardInHistory = false;
+        await component.updateComplete;
+        const shadowRoot = component.contentElement.shadowRoot;
         assert.isNotNull(shadowRoot);
         const input = shadowRoot.querySelector(NAVIGATOR_ADDRESS_SELECTOR);
         assert.instanceOf(input, HTMLInputElement);
         assert.strictEqual(input.value, '16');
     });
     it('sends event when clicking on refresh', async () => {
-        const eventPromise = getEventPromise(component, 'refreshrequested');
-        const shadowRoot = component.shadowRoot;
+        let refreshRequested = false;
+        component.onRefreshRequest = () => {
+            refreshRequested = true;
+        };
+        const shadowRoot = component.contentElement.shadowRoot;
         assert.isNotNull(shadowRoot);
-        const refreshButton = shadowRoot.querySelector(NAVIGATOR_REFRESH_BUTTON_SELECTOR);
-        assert.instanceOf(refreshButton, Buttons.Button.Button);
+        const buttons = shadowRoot.querySelectorAll('devtools-button');
+        assert.lengthOf(buttons, 5);
+        const refreshButton = buttons[4];
         refreshButton.click();
-        assert.isNotNull(await eventPromise);
+        assert.isTrue(refreshRequested);
     });
     it('sends events when clicking previous and next page', async () => {
-        await assertNavigationEvents('historynavigation');
+        await assertNavigationEvents('page');
     });
     it('sends events when clicking undo and redo', async () => {
-        await assertNavigationEvents('pagenavigation');
+        await assertNavigationEvents('history');
     });
-    it('disables the previous and next page buttons if specified as not navigatable', () => {
-        component.data = {
-            address: '0',
-            valid: true,
-            mode: "Submitted" /* LinearMemoryInspectorComponents.LinearMemoryNavigator.Mode.SUBMITTED */,
-            error: undefined,
-            canGoBackInHistory: false,
-            canGoForwardInHistory: false,
-        };
-        const buttons = getElementsWithinComponent(component, NAVIGATOR_HISTORY_BUTTON_SELECTOR, Buttons.Button.Button);
-        assert.lengthOf(buttons, 2);
+    it('disables the previous and next page buttons if specified as not navigatable', async () => {
+        component.address = '0';
+        component.valid = true;
+        component.mode = "Submitted" /* LinearMemoryInspectorComponents.LinearMemoryNavigator.Mode.SUBMITTED */;
+        component.error = undefined;
+        component.canGoBackInHistory = false;
+        component.canGoForwardInHistory = false;
+        await component.updateComplete;
+        const shadowRoot = component.contentElement.shadowRoot;
+        assert.isNotNull(shadowRoot);
+        const buttons = shadowRoot.querySelectorAll('devtools-button');
+        assert.lengthOf(buttons, 5);
         const historyBack = buttons[0];
         const historyForward = buttons[1];
         assert.isTrue(historyBack.disabled);
         assert.isTrue(historyForward.disabled);
     });
     it('shows tooltip on hovering over address', () => {
-        const input = getElementWithinComponent(component, NAVIGATOR_ADDRESS_SELECTOR, HTMLInputElement);
+        const input = component.contentElement.shadowRoot.querySelector(NAVIGATOR_ADDRESS_SELECTOR);
+        assert.isNotNull(input);
         assert.strictEqual(input.title, 'Enter address');
     });
-    it('shows tooltip with error and selects all text on submitting invalid address input', () => {
+    it('shows tooltip with error and selects all text on submitting invalid address input', async () => {
         const error = 'Address is invalid';
         const invalidAddress = '60';
-        component.data = {
-            address: invalidAddress,
-            valid: false,
-            mode: "InvalidSubmit" /* LinearMemoryInspectorComponents.LinearMemoryNavigator.Mode.INVALID_SUBMIT */,
-            error,
-            canGoBackInHistory: false,
-            canGoForwardInHistory: false,
-        };
-        const input = getElementWithinComponent(component, NAVIGATOR_ADDRESS_SELECTOR, HTMLInputElement);
+        component.address = invalidAddress;
+        component.valid = false;
+        component.mode = "InvalidSubmit" /* LinearMemoryInspectorComponents.LinearMemoryNavigator.Mode.INVALID_SUBMIT */;
+        component.error = error;
+        component.canGoBackInHistory = false;
+        component.canGoForwardInHistory = false;
+        await component.updateComplete;
+        const input = component.contentElement.shadowRoot.querySelector(NAVIGATOR_ADDRESS_SELECTOR);
+        assert.isNotNull(input);
         assert.strictEqual(input.title, error);
         assert.isNotNull(input.selectionStart);
         assert.isNotNull(input.selectionEnd);
@@ -121,38 +129,69 @@ describe('LinearMemoryNavigator', () => {
             assert.strictEqual(selectionLength, invalidAddress.length);
         }
     });
-    it('shows tooltip with invalid address on hovering over address', () => {
+    it('shows tooltip with invalid address on hovering over address', async () => {
         const error = 'Address is invalid';
-        component.data = {
-            address: '60',
-            valid: false,
-            mode: "Edit" /* LinearMemoryInspectorComponents.LinearMemoryNavigator.Mode.EDIT */,
-            error,
-            canGoBackInHistory: false,
-            canGoForwardInHistory: false,
-        };
-        const input = getElementWithinComponent(component, NAVIGATOR_ADDRESS_SELECTOR, HTMLInputElement);
+        component.address = '60';
+        component.valid = false;
+        component.mode = "Edit" /* LinearMemoryInspectorComponents.LinearMemoryNavigator.Mode.EDIT */;
+        component.error = error;
+        component.canGoBackInHistory = false;
+        component.canGoForwardInHistory = false;
+        await component.updateComplete;
+        const input = component.contentElement.shadowRoot.querySelector(NAVIGATOR_ADDRESS_SELECTOR);
+        assert.isNotNull(input);
         assert.strictEqual(input.title, error);
     });
     it('shows tooltip on page navigation buttons', () => {
-        const buttons = getElementsWithinComponent(component, NAVIGATOR_PAGE_BUTTON_SELECTOR, Buttons.Button.Button);
-        assert.lengthOf(buttons, 2);
-        const pageBack = buttons[0];
-        const pageForward = buttons[1];
+        const shadowRoot = component.contentElement.shadowRoot;
+        assert.isNotNull(shadowRoot);
+        const buttons = shadowRoot.querySelectorAll('devtools-button');
+        assert.lengthOf(buttons, 5);
+        const pageBack = buttons[2];
+        const pageForward = buttons[3];
         assert.strictEqual(pageBack.getAttribute('title'), 'Previous page');
         assert.strictEqual(pageForward.getAttribute('title'), 'Next page');
     });
     it('shows tooltip on history navigation buttons', () => {
-        const buttons = getElementsWithinComponent(component, NAVIGATOR_HISTORY_BUTTON_SELECTOR, Buttons.Button.Button);
-        assert.lengthOf(buttons, 2);
+        const shadowRoot = component.contentElement.shadowRoot;
+        assert.isNotNull(shadowRoot);
+        const buttons = shadowRoot.querySelectorAll('devtools-button');
+        assert.lengthOf(buttons, 5);
         const historyBack = buttons[0];
         const historyForward = buttons[1];
         assert.strictEqual(historyBack.getAttribute('title'), 'Go back in address history');
         assert.strictEqual(historyForward.getAttribute('title'), 'Go forward in address history');
     });
     it('shows tooltip on refresh button', () => {
-        const refreshButton = getElementWithinComponent(component, NAVIGATOR_REFRESH_BUTTON_SELECTOR, Buttons.Button.Button);
+        const shadowRoot = component.contentElement.shadowRoot;
+        assert.isNotNull(shadowRoot);
+        const buttons = shadowRoot.querySelectorAll('devtools-button');
+        assert.lengthOf(buttons, 5);
+        const refreshButton = buttons[4];
         assert.strictEqual(refreshButton.getAttribute('title'), 'Refresh');
+    });
+});
+describe('LinearMemoryNavigator Screenshots', () => {
+    setupLocaleHooks();
+    let component;
+    it('renders correctly', async () => {
+        component = new LinearMemoryInspectorComponents.LinearMemoryNavigator.LinearMemoryNavigator();
+        renderElementIntoDOM(component, {
+            width: 400,
+            height: 'var(--sys-size-15)',
+            includeCommonStyles: true,
+        });
+        component.address = '20';
+        component.valid = true;
+        component.mode = "Submitted" /* LinearMemoryInspectorComponents.LinearMemoryNavigator.Mode.SUBMITTED */;
+        component.error = undefined;
+        component.canGoBackInHistory = true;
+        component.canGoForwardInHistory = true;
+        await component.updateComplete;
+        const style = document.createElement('style');
+        style.textContent = 'input { font-family: ahem !important; }';
+        component.element.shadowRoot.appendChild(style);
+        await assertScreenshot('linear_memory_inspector/navigator.png');
     });
 });
 //# sourceMappingURL=LinearMemoryNavigator.test.js.map

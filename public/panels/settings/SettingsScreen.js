@@ -389,12 +389,10 @@ export class ExperimentsSettingsTab extends UI.Widget.VBox {
         checkbox.classList.add('experiment-label');
         checkbox.name = experiment.name;
         function listener() {
-            if (experiment instanceof Root.Runtime.HostExperiment) {
-                Host.InspectorFrontendHost.InspectorFrontendHostInstance.setChromeFlag(experiment.aboutFlag, checkbox.checked);
-            }
+            Host.InspectorFrontendHost.InspectorFrontendHostInstance.setChromeFlag(experiment.aboutFlag, checkbox.checked);
             experiment.setEnabled(checkbox.checked);
             Host.userMetrics.experimentChanged(experiment.name, experiment.isEnabled());
-            if (experiment instanceof Root.Runtime.HostExperiment && experiment.requiresChromeRestart) {
+            if (experiment.requiresChromeRestart) {
                 UI.InspectorView.InspectorView.instance().displayChromeRestartRequiredWarning(i18nString(UIStrings.settingsChangedRestartChrome));
             }
             else {
@@ -429,7 +427,7 @@ export class ExperimentsSettingsTab extends UI.Widget.VBox {
         return p;
     }
     highlightObject(experiment) {
-        if (experiment instanceof Root.Runtime.Experiment || experiment instanceof Root.Runtime.HostExperiment) {
+        if (experiment instanceof Root.Runtime.Experiment) {
             const element = this.experimentToControl.get(experiment);
             if (element) {
                 PanelUtils.highlightElement(element);
@@ -464,7 +462,7 @@ export class ActionDelegate {
 export class Revealer {
     async reveal(object) {
         const context = UI.Context.Context.instance();
-        if (object instanceof Root.Runtime.Experiment || object instanceof Root.Runtime.HostExperiment) {
+        if (object instanceof Root.Runtime.Experiment) {
             Host.InspectorFrontendHost.InspectorFrontendHostInstance.bringToFront();
             await SettingsScreen.showSettingsScreen({ name: 'experiments' });
             const experimentsSettingsTab = context.flavor(ExperimentsSettingsTab);

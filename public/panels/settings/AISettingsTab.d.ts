@@ -9,6 +9,7 @@ interface SettingItem {
 }
 interface AiSettingParams {
     settingName: Platform.UIString.LocalizedString;
+    setting?: Common.Settings.Setting<boolean>;
     iconName: string;
     settingDescription: Platform.UIString.LocalizedString;
     enableSettingText: Common.UIString.LocalizedString;
@@ -29,9 +30,9 @@ interface ViewInput {
         icon: string;
         text: Common.UIString.LocalizedString | Lit.LitTemplate;
     }>;
-    settingToParams: Map<Common.Settings.Setting<boolean>, AiSettingParams>;
-    expandSetting(setting: Common.Settings.Setting<boolean>): void;
-    toggleSetting(setting: Common.Settings.Setting<boolean>, ev: Event): void;
+    settingToParams: Map<string, AiSettingParams>;
+    expandSetting(settingName: string): void;
+    toggleSetting(settingName: string, ev: Event): void;
 }
 type View = (input: ViewInput, output: undefined, target: HTMLElement) => void;
 export declare const AI_SETTINGS_TAB_DEFAULT_VIEW: View;

@@ -13,7 +13,8 @@ import * as TextEditor from '../../ui/components/text_editor/text_editor.js';
 import * as Elements from './elements.js';
 function createProvider() {
     const config = {
-        panel: "styles" /* AiCodeCompletion.AiCodeCompletion.ContextFlavor.STYLES */,
+        disclaimerTooltipId: 'styles-disclaimer-tooltip',
+        disclaimerTextVariant: 'styles',
         completionContext: {},
         generationContext: {},
         onFeatureEnabled: () => { },

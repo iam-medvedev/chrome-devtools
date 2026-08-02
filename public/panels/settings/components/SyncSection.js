@@ -109,7 +109,7 @@ const DEFAULT_VIEW = (input, output, target) => {
         return html `
       <div class="setting-checkbox-container">
         <setting-checkbox class="setting-checkbox"
-          .data=${{ setting: input.syncSetting }}>
+          .data=${{ setting: input.syncSetting, disabled: input.checkboxDisabled }}>
         </setting-checkbox>
         ${input.warningType ? html `
           <devtools-button
@@ -249,10 +249,7 @@ export class SyncSection extends UI.Widget.Widget {
         this.#viewOutput.highlightReceiveBadgesSetting?.();
     }
     performUpdate() {
-        // TODO: this should not probably happen in render, instead, the setting
-        // should be disabled.
         const checkboxDisabled = !this.#syncInfo.isSyncActive || !this.#syncInfo.arePreferencesSynced;
-        this.#syncSetting?.setDisabled(checkboxDisabled);
         let warningType;
         if (!this.#syncInfo.isSyncActive) {
             warningType = "SYNC_DISABLED" /* WarningType.SYNC_DISABLED */;
@@ -263,6 +260,7 @@ export class SyncSection extends UI.Widget.Widget {
         const viewInput = {
             syncInfo: this.#syncInfo,
             syncSetting: this.#syncSetting,
+            checkboxDisabled,
             receiveBadgesSetting: this.#receiveBadgesSetting,
             gdpProfile: this.#gdpProfile,
             isEligibleToCreateGdpProfile: Host.GdpClient.isGdpProfilesAvailable() && this.#isEligibleToCreateGdpProfile,

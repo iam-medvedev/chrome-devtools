@@ -181,12 +181,6 @@ export declare class SettingsStorage {
     keys(): string[];
     dumpSizes(commonConsole: Console): void;
 }
-export declare class Deprecation {
-    readonly disabled: boolean;
-    readonly warning: Platform.UIString.LocalizedString;
-    readonly experiment?: Root.Runtime.Experiment | Root.Runtime.HostExperiment;
-    constructor({ deprecationNotice }: SettingRegistration);
-}
 export declare class Setting<V> {
     #private;
     readonly name: string;
@@ -207,6 +201,7 @@ export declare class Setting<V> {
     getIfNotDisabled(): V | undefined;
     forceGet(): Promise<V>;
     set(value: V): void;
+    setSettingType(type: SettingType): void;
     setRegistration(registration: SettingRegistration): void;
     type(): SettingType | null;
     options(): SimpleSettingOption[];
@@ -218,7 +213,6 @@ export declare class Setting<V> {
      * See {@link LearnMore} for more info
      */
     learnMore(): LearnMore | null;
-    get deprecation(): Deprecation | null;
     private printSettingsSavingError;
 }
 export declare class RegExpSetting extends Setting<any> {

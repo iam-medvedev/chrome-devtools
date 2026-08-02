@@ -8,7 +8,9 @@ interface AdFrameNodeData {
     elementId: string;
     initialOrigin: string;
     networkBytes: string;
+    rawNetworkBytes: number;
     cpuTime: string;
+    rawCpuTime: number;
     revealFrame: (e: Event) => void;
 }
 export interface ViewInput {

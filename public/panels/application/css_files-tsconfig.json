@@ -20,7 +20,6 @@
         "serviceWorkerCacheViews.css.js",
         "serviceWorkerUpdateCycleView.css.js",
         "serviceWorkersView.css.js",
-        "sharedStorageEventsView.css.js",
         "storageView.css.js",
         "webMCPView.css.js"
     ]

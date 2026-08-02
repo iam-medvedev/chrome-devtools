@@ -51,9 +51,21 @@ describe('Runtime', () => {
     });
     it('allConfigurableExperiments returns all registered experiments', () => {
         const dummyExperiment1 = 'dummy-experiment-1';
-        Root.Runtime.experiments.register(dummyExperiment1, 'dummy experiment 1');
+        Root.Runtime.experiments.register({
+            name: dummyExperiment1,
+            title: 'dummy experiment 1',
+            aboutFlag: 'dummy-flag-1',
+            isEnabled: false,
+            requiresChromeRestart: false,
+        });
         const dummyExperiment2 = 'dummy-experiment-2';
-        Root.Runtime.experiments.register(dummyExperiment2, 'dummy experiment 2');
+        Root.Runtime.experiments.register({
+            name: dummyExperiment2,
+            title: 'dummy experiment 2',
+            aboutFlag: 'dummy-flag-2',
+            isEnabled: false,
+            requiresChromeRestart: false,
+        });
         const experiments = Root.Runtime.experiments.allConfigurableExperiments();
         assert.deepEqual(experiments.map(experiment => experiment.name), [dummyExperiment1, dummyExperiment2]);
     });
@@ -67,23 +79,9 @@ describe('Runtime', () => {
             const support = new Root.Runtime.ExperimentsSupport();
             assert.throws(() => support.isEnabled('test-experiment'));
         });
-        it('throws if registering the same experiment twice', () => {
-            const support = new Root.Runtime.ExperimentsSupport();
-            support.register('experiment', 'experiment title');
-            assert.throws(() => {
-                support.register('experiment', 'experiment title');
-            });
-        });
         it('registers an experiment', () => {
             const support = new Root.Runtime.ExperimentsSupport();
-            support.register('experiment', 'experiment title');
-            assert.isFalse(support.isEnabled('experiment'));
-            support.setEnabled('experiment', true);
-            assert.isTrue(support.isEnabled('experiment'));
-        });
-        it('registers a host experiment', () => {
-            const support = new Root.Runtime.ExperimentsSupport();
-            support.registerHostExperiment({
+            support.register({
                 name: 'experiment',
                 title: 'experiment title',
                 aboutFlag: 'about:flag',
@@ -92,9 +90,9 @@ describe('Runtime', () => {
             });
             assert.isFalse(support.isEnabled('experiment'));
         });
-        it('enables a host experiment', () => {
+        it('enables an experiment', () => {
             const support = new Root.Runtime.ExperimentsSupport();
-            support.registerHostExperiment({
+            support.register({
                 name: 'experiment',
                 title: 'experiment title',
                 aboutFlag: 'about:flag',
@@ -104,21 +102,9 @@ describe('Runtime', () => {
             support.setEnabled('experiment', true);
             assert.isTrue(support.isEnabled('experiment'));
         });
-        it('enables an experiment by default', () => {
+        it('enables an experiment via initialization', () => {
             const support = new Root.Runtime.ExperimentsSupport();
-            support.register('experiment', 'experiment title');
-            support.enableExperimentsByDefault(['experiment']);
-            assert.isTrue(support.isEnabled('experiment'));
-        });
-        it('enables an experiment via the server', () => {
-            const support = new Root.Runtime.ExperimentsSupport();
-            support.register('experiment', 'experiment title');
-            support.setServerEnabledExperiments(['experiment']);
-            assert.isTrue(support.isEnabled('experiment'));
-        });
-        it('enables a host experiment via initialization', () => {
-            const support = new Root.Runtime.ExperimentsSupport();
-            support.registerHostExperiment({
+            support.register({
                 name: 'experiment',
                 title: 'experiment title',
                 aboutFlag: 'about:flag',
@@ -129,14 +115,7 @@ describe('Runtime', () => {
         });
         it('enables an experiment for test', () => {
             const support = new Root.Runtime.ExperimentsSupport();
-            support.register('experiment', 'experiment title');
-            assert.isFalse(support.isEnabled('experiment'));
-            support.enableForTest('experiment');
-            assert.isTrue(support.isEnabled('experiment'));
-        });
-        it('enables a host experiment for test', () => {
-            const support = new Root.Runtime.ExperimentsSupport();
-            support.registerHostExperiment({
+            support.register({
                 name: 'experiment',
                 title: 'experiment title',
                 aboutFlag: 'about:flag',
@@ -147,22 +126,9 @@ describe('Runtime', () => {
             support.enableForTest('experiment');
             assert.isTrue(support.isEnabled('experiment'));
         });
-        it('throws if registering a host experiment with the same name as an existing experiment', () => {
+        it('throws if registering an experiment with the same name as an existing experiment', () => {
             const support = new Root.Runtime.ExperimentsSupport();
-            support.register('experiment', 'experiment title');
-            assert.throws(() => {
-                support.registerHostExperiment({
-                    name: 'experiment',
-                    title: 'experiment title',
-                    aboutFlag: 'about:flag',
-                    isEnabled: false,
-                    requiresChromeRestart: false,
-                });
-            });
-        });
-        it('throws if registering a host experiment with the same name as an existing host experiment', () => {
-            const support = new Root.Runtime.ExperimentsSupport();
-            support.registerHostExperiment({
+            support.register({
                 name: 'experiment',
                 title: 'experiment title',
                 aboutFlag: 'about:flag',
@@ -170,7 +136,7 @@ describe('Runtime', () => {
                 requiresChromeRestart: false,
             });
             assert.throws(() => {
-                support.registerHostExperiment({
+                support.register({
                     name: 'experiment',
                     title: 'experiment title',
                     aboutFlag: 'about:flag',

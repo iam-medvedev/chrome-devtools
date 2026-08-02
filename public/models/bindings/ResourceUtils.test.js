@@ -31,6 +31,7 @@ describeWithEnvironment('ResourceUtils', () => {
             target.setInspectedURL(INSPECTED_URL);
             resourceForURLStub = sinon.stub(SDK.ResourceTreeModel.ResourceTreeModel, 'resourceForURL').returns(null);
             uiSourceCodeForURLStub =
+                // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
                 sinon.stub(Workspace.Workspace.WorkspaceImpl.instance(), 'uiSourceCodeForURL').returns(null);
         });
         it('favors displayName from UISourceCode', () => {

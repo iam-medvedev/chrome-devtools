@@ -198,9 +198,10 @@ export class RenderingOptionsView extends UI.Widget.VBox {
         }
         this.#appendCheckbox(i18nString(UIStrings.disableLocalFonts), i18nString(UIStrings.disablesLocalSourcesInFontface), Common.Settings.Settings.instance().moduleSetting('local-fonts-disabled'));
         this.#appendCheckbox(i18nString(UIStrings.emulateAFocusedPage), i18nString(UIStrings.emulatesAFocusedPage), Common.Settings.Settings.instance().moduleSetting('emulate-page-focus'), { toggle: Host.UserMetrics.Action.ToggleEmulateFocusedPageFromRenderingTab });
-        this.#appendCheckbox(i18nString(UIStrings.emulateAutoDarkMode), i18nString(UIStrings.emulatesAutoDarkMode), Common.Settings.Settings.instance().moduleSetting('emulate-auto-dark-mode'));
+        const autoDarkModeSetting = Common.Settings.Settings.instance().moduleSetting('emulate-auto-dark-mode');
+        this.#appendCheckbox(i18nString(UIStrings.emulateAutoDarkMode), i18nString(UIStrings.emulatesAutoDarkMode), autoDarkModeSetting);
         this.contentElement.createChild('div').classList.add('panel-section-separator');
-        this.#appendSelect(i18nString(UIStrings.forcesCssPreferscolorschemeMedia), Common.Settings.Settings.instance().moduleSetting('emulated-css-media-feature-prefers-color-scheme'));
+        this.#appendSelect(i18nString(UIStrings.forcesCssPreferscolorschemeMedia), Common.Settings.Settings.instance().moduleSetting('emulated-css-media-feature-prefers-color-scheme'), autoDarkModeSetting.get());
         this.#appendSelect(i18nString(UIStrings.forcesMediaTypeForTestingPrint), Common.Settings.Settings.instance().moduleSetting('emulated-css-media'));
         this.#appendSelect(i18nString(UIStrings.forcesCssForcedColors), Common.Settings.Settings.instance().moduleSetting('emulated-css-media-feature-forced-colors'));
         if (supportsPrefersContrast()) {
@@ -240,8 +241,8 @@ export class RenderingOptionsView extends UI.Widget.VBox {
         this.#jpegXlCheckboxAdded = true;
         webpCheckbox.before(this.#appendCheckbox(i18nString(UIStrings.disableJpegXlImageFormat), i18nString(UIStrings.requiresAPageReloadToApplyAnd), jpegXlFormatDisabledSetting));
     }
-    #appendSelect(label, setting) {
-        const control = SettingsUI.SettingsUI.createControlForSetting(setting, label);
+    #appendSelect(label, setting, disabled) {
+        const control = SettingsUI.SettingsUI.createControlForSetting(setting, label, disabled);
         if (control) {
             this.contentElement.appendChild(control);
         }

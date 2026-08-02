@@ -49,5 +49,50 @@ describe('CookiesTable', () => {
         viewFunction.input.onContextMenu?.(cookieData, contextMenu);
         sinon.assert.calledOnceWithExactly(onPopulateAiContextMenuStub, cookie, contextMenu);
     });
+    it('unsetting httpOnly and secure flags persists in the saved cookie', () => {
+        const viewFunction = createViewFunctionStub(CookieTable.CookiesTable.CookiesTable);
+        const saveCookieStub = sinon.stub().resolves(true);
+        const cookiesTable = new CookieTable.CookiesTable.CookiesTable(undefined, undefined, saveCookieStub, undefined, undefined, undefined, viewFunction);
+        // Create a cookie with httpOnly and secure set to true
+        const cookie = new SDK.Cookie.Cookie('cookie-name', 'value');
+        cookie.addAttribute("http-only" /* SDK.Cookie.Attribute.HTTP_ONLY */);
+        cookie.addAttribute("secure" /* SDK.Cookie.Attribute.SECURE */);
+        cookiesTable.setCookies([cookie]);
+        cookiesTable.performUpdate();
+        const cookieData = viewFunction.input.data[0];
+        viewFunction.input.onEdit(cookieData, "http-only" /* SDK.Cookie.Attribute.HTTP_ONLY */, true, false);
+        // Assert saveCallback was called with a cookie that does NOT have httpOnly, but still has secure
+        sinon.assert.calledOnceWithExactly(saveCookieStub, sinon.match((c) => !c.httpOnly() && c.secure()), cookie);
+        saveCookieStub.resetHistory();
+        viewFunction.input.onEdit(cookieData, "secure" /* SDK.Cookie.Attribute.SECURE */, true, false);
+        // Assert saveCallback was called with a cookie that does NOT have secure, but still has httpOnly
+        // (since cookieData we passed still has http-only: 'true')
+        sinon.assert.calledOnceWithExactly(saveCookieStub, sinon.match((c) => c.httpOnly() && !c.secure()), cookie);
+    });
+    it('setting httpOnly and secure flags with boolean values persists in the saved cookie', () => {
+        const viewFunction = createViewFunctionStub(CookieTable.CookiesTable.CookiesTable);
+        const saveCookieStub = sinon.stub().resolves(true);
+        const cookiesTable = new CookieTable.CookiesTable.CookiesTable(undefined, undefined, saveCookieStub, undefined, undefined, undefined, viewFunction);
+        const cookie = new SDK.Cookie.Cookie('cookie-name', 'value');
+        cookiesTable.setCookies([cookie]);
+        cookiesTable.performUpdate();
+        const cookieData = viewFunction.input.data[0];
+        // Trigger edit for httpOnly with boolean true (simulating UI click)
+        viewFunction.input.onEdit(cookieData, "http-only" /* SDK.Cookie.Attribute.HTTP_ONLY */, false, true);
+        sinon.assert.calledOnceWithExactly(saveCookieStub, sinon.match((c) => c.httpOnly()), cookie);
+    });
+    it('setting hasCrossSiteAncestor flag with boolean values persists in the saved cookie', () => {
+        const viewFunction = createViewFunctionStub(CookieTable.CookiesTable.CookiesTable);
+        const saveCookieStub = sinon.stub().resolves(true);
+        const cookiesTable = new CookieTable.CookiesTable.CookiesTable(undefined, undefined, saveCookieStub, undefined, undefined, undefined, viewFunction);
+        const cookie = new SDK.Cookie.Cookie('cookie-name', 'value');
+        cookie.setPartitionKey('https://example.com', false);
+        cookiesTable.setCookies([cookie]);
+        cookiesTable.performUpdate();
+        const cookieData = viewFunction.input.data[0];
+        // Trigger edit for hasCrossSiteAncestor with boolean true
+        viewFunction.input.onEdit(cookieData, "has-cross-site-ancestor" /* SDK.Cookie.Attribute.HAS_CROSS_SITE_ANCESTOR */, false, true);
+        sinon.assert.calledOnceWithExactly(saveCookieStub, sinon.match((c) => c.hasCrossSiteAncestor()), cookie);
+    });
 });
 //# sourceMappingURL=CookiesTable.test.js.map

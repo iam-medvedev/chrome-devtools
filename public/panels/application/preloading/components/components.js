@@ -897,8 +897,6 @@ import { assertNotNullOrUndefined as assertNotNullOrUndefined2 } from "./../../.
 import * as SDK3 from "./../../../../core/sdk/sdk.js";
 import * as Logs from "./../../../../models/logs/logs.js";
 import * as Buttons from "./../../../../ui/components/buttons/buttons.js";
-import * as LegacyWrapper from "./../../../../ui/components/legacy_wrapper/legacy_wrapper.js";
-import * as RenderCoordinator from "./../../../../ui/components/render_coordinator/render_coordinator.js";
 import * as UI2 from "./../../../../ui/legacy/legacy.js";
 import * as Lit2 from "./../../../../ui/lit/lit.js";
 import * as VisualLogging from "./../../../../ui/visual_logging/visual_logging.js";
@@ -910,34 +908,32 @@ var preloadingDetailsReportView_css_default = `/*
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-:host {
-  display: flex;
-  height: 100%;
-}
 
-devtools-report {
-  flex-grow: 1;
-}
+@scope to (devtools-widget > *) {
+  devtools-report {
+    flex-grow: 1;
 
-button.link {
-  color: var(--sys-color-primary);
-  text-decoration: underline;
-  padding: 0;
-  border: none;
-  background: none;
-  font-family: inherit;
-  font-size: inherit;
-  height: 16px;
-}
+    button.link {
+      color: var(--sys-color-primary);
+      text-decoration: underline;
+      padding: 0;
+      border: none;
+      background: none;
+      font-family: inherit;
+      font-size: inherit;
+      height: 16px;
+    }
 
-button.link devtools-icon {
-  vertical-align: sub;
-}
+    button.link devtools-icon {
+      vertical-align: sub;
+    }
+  }
 
-.link {
-  color: var(--sys-color-primary);
-  text-decoration: underline;
-  cursor: pointer;
+  .link {
+    color: var(--sys-color-primary);
+    text-decoration: underline;
+    cursor: pointer;
+  }
 }
 
 /*# sourceURL=${import.meta.resolve("./preloadingDetailsReportView.css")} */`;
@@ -1072,65 +1068,42 @@ var PreloadingUIUtils2 = class {
     }
   }
 };
-var PreloadingDetailsReportView = class extends LegacyWrapper.LegacyWrapper.WrappableComponent {
-  #shadow = this.attachShadow({ mode: "open" });
-  #data = null;
-  set data(data) {
-    this.#data = data;
-    void this.#render();
+var DEFAULT_VIEW2 = (input, _output, target) => {
+  if (input.data === null) {
+    Lit2.render(html2`
+      <style>${preloadingDetailsReportView_css_default}</style>
+      <style>${UI2.inspectorCommonStyles}</style>
+      <div class="empty-state">
+        <span class="empty-state-header">${i18nString3(UIStrings3.noElementSelected)}</span>
+        <span class="empty-state-description">${i18nString3(UIStrings3.selectAnElementForMoreDetails)}</span>
+      </div>
+    `, target);
+    return;
   }
-  async #render() {
-    await RenderCoordinator.write("PreloadingDetailsReportView render", () => {
-      if (this.#data === null) {
-        Lit2.render(html2`
-          <style>${preloadingDetailsReportView_css_default}</style>
-          <style>${UI2.inspectorCommonStyles}</style>
-          <div class="empty-state">
-            <span class="empty-state-header">${i18nString3(UIStrings3.noElementSelected)}</span>
-            <span class="empty-state-description">${i18nString3(UIStrings3.selectAnElementForMoreDetails)}</span>
-          </div>
-        `, this.#shadow, { host: this });
-        return;
-      }
-      const pipeline = this.#data.pipeline;
-      const pageURL = this.#data.pageURL;
-      const isFallbackToPrefetch = pipeline.getPrerender()?.status === "Failure" && (pipeline.getPrefetch()?.status === "Ready" || pipeline.getPrefetch()?.status === "Success");
-      Lit2.render(html2`
-        <style>${preloadingDetailsReportView_css_default}</style>
-        <style>${UI2.inspectorCommonStyles}</style>
-        <devtools-report
-          .data=${{ reportTitle: "Speculative Loading Attempt" }}
-          jslog=${VisualLogging.section("preloading-details")}>
-          <devtools-report-section-header>${i18nString3(UIStrings3.detailsDetailedInformation)}</devtools-report-section-header>
-
-          ${this.#url()}
-          ${this.#action(isFallbackToPrefetch)}
-          ${this.#status(isFallbackToPrefetch)}
-          ${this.#targetHint()}
-          ${this.#formSubmission()}
-          ${this.#maybePrefetchFailureReason()}
-          ${this.#maybePrerenderFailureReason()}
-
-          ${this.#data.ruleSets.map((ruleSet) => this.#renderRuleSet(ruleSet, pageURL))}
-        </devtools-report>
-      `, this.#shadow, { host: this });
-    });
-  }
-  #url() {
-    assertNotNullOrUndefined2(this.#data);
-    const attempt = this.#data.pipeline.getOriginallyTriggered();
-    const prefetchStatus = this.#data.pipeline.getPrefetch()?.status;
+  const pipeline = input.data.pipeline;
+  const pageURL = input.data.pageURL;
+  const isFallbackToPrefetch = pipeline.getPrerender()?.status === "Failure" && (pipeline.getPrefetch()?.status === "Ready" || pipeline.getPrefetch()?.status === "Success");
+  const isPrerenderLike = (speculationAction) => {
+    return [
+      "Prerender",
+      "PrerenderUntilScript"
+    ].includes(speculationAction);
+  };
+  const url = () => {
+    assertNotNullOrUndefined2(input.data);
+    const attempt = input.data.pipeline.getOriginallyTriggered();
+    const prefetchStatus = input.data.pipeline.getPrefetch()?.status;
     let value;
     if (attempt.action === "Prefetch" && attempt.requestId !== void 0 && prefetchStatus !== "NotTriggered") {
-      const { requestId, key: { url } } = attempt;
-      const affectedRequest = { requestId, url };
+      const { requestId, key: { url: url2 } } = attempt;
+      const affectedRequest = { requestId, url: url2 };
       value = html2`
           <devtools-request-link-icon
             .data=${{
         affectedRequest,
-        requestResolver: this.#data.requestResolver || new Logs.RequestResolver.RequestResolver(Logs.NetworkLog.NetworkLog.instance()),
+        requestResolver: input.data.requestResolver || new Logs.RequestResolver.RequestResolver(Logs.NetworkLog.NetworkLog.instance()),
         displayURL: true,
-        urlToDisplay: url
+        urlToDisplay: url2
       }}
           >
           </devtools-request-link-icon>
@@ -1146,28 +1119,22 @@ var PreloadingDetailsReportView = class extends LegacyWrapper.LegacyWrapper.Wrap
           ${value}
         </devtools-report-value>
     `;
-  }
-  #isPrerenderLike(speculationAction) {
-    return [
-      "Prerender",
-      "PrerenderUntilScript"
-    ].includes(speculationAction);
-  }
-  #action(isFallbackToPrefetch) {
-    assertNotNullOrUndefined2(this.#data);
-    const attempt = this.#data.pipeline.getOriginallyTriggered();
-    const action4 = capitalizedAction(attempt.action);
+  };
+  const action4 = (isFallbackToPrefetch2) => {
+    assertNotNullOrUndefined2(input.data);
+    const attempt = input.data.pipeline.getOriginallyTriggered();
+    const action5 = capitalizedAction(attempt.action);
     let maybeFallback = Lit2.nothing;
-    if (isFallbackToPrefetch) {
+    if (isFallbackToPrefetch2) {
       maybeFallback = html2`${i18nString3(UIStrings3.automaticallyFellBackToPrefetch)}`;
     }
     let maybeInspectButton = Lit2.nothing;
     (() => {
-      if (!this.#isPrerenderLike(attempt.action)) {
+      if (!isPrerenderLike(attempt.action)) {
         return;
       }
-      const target = SDK3.TargetManager.TargetManager.instance().primaryPageTarget();
-      if (target === null) {
+      const target2 = SDK3.TargetManager.TargetManager.instance().primaryPageTarget();
+      if (target2 === null) {
         return;
       }
       const prerenderTarget = SDK3.TargetManager.TargetManager.instance().targets().find((child) => child.targetInfo()?.subtype === "prerender" && child.inspectedURL() === attempt.key.url);
@@ -1195,25 +1162,25 @@ var PreloadingDetailsReportView = class extends LegacyWrapper.LegacyWrapper.Wrap
         <devtools-report-key>${i18nString3(UIStrings3.detailsAction)}</devtools-report-key>
         <devtools-report-value>
           <div class="text-ellipsis" title="">
-            ${action4} ${maybeFallback} ${maybeInspectButton}
+            ${action5} ${maybeFallback} ${maybeInspectButton}
           </div>
         </devtools-report-value>
     `;
-  }
-  #status(isFallbackToPrefetch) {
-    assertNotNullOrUndefined2(this.#data);
-    const attempt = this.#data.pipeline.getOriginallyTriggered();
-    const detailedStatus = isFallbackToPrefetch ? i18nString3(UIStrings3.detailedStatusFallbackToPrefetch) : PreloadingUIUtils2.detailedStatus(attempt);
+  };
+  const status2 = (isFallbackToPrefetch2) => {
+    assertNotNullOrUndefined2(input.data);
+    const attempt = input.data.pipeline.getOriginallyTriggered();
+    const detailedStatus = isFallbackToPrefetch2 ? i18nString3(UIStrings3.detailedStatusFallbackToPrefetch) : PreloadingUIUtils2.detailedStatus(attempt);
     return html2`
         <devtools-report-key>${i18nString3(UIStrings3.detailsStatus)}</devtools-report-key>
         <devtools-report-value>
           ${detailedStatus}
         </devtools-report-value>
     `;
-  }
-  #maybePrefetchFailureReason() {
-    assertNotNullOrUndefined2(this.#data);
-    const attempt = this.#data.pipeline.getOriginallyTriggered();
+  };
+  const maybePrefetchFailureReason = () => {
+    assertNotNullOrUndefined2(input.data);
+    const attempt = input.data.pipeline.getOriginallyTriggered();
     if (attempt.action !== "Prefetch") {
       return Lit2.nothing;
     }
@@ -1228,11 +1195,11 @@ var PreloadingDetailsReportView = class extends LegacyWrapper.LegacyWrapper.Wrap
           ${failureDescription}
         </devtools-report-value>
     `;
-  }
-  #targetHint() {
-    assertNotNullOrUndefined2(this.#data);
-    const attempt = this.#data.pipeline.getOriginallyTriggered();
-    const hasTargetHint = this.#isPrerenderLike(attempt.action) && attempt.key.targetHint !== void 0;
+  };
+  const targetHint = () => {
+    assertNotNullOrUndefined2(input.data);
+    const attempt = input.data.pipeline.getOriginallyTriggered();
+    const hasTargetHint = isPrerenderLike(attempt.action) && attempt.key.targetHint !== void 0;
     if (!hasTargetHint) {
       return Lit2.nothing;
     }
@@ -1242,12 +1209,12 @@ var PreloadingDetailsReportView = class extends LegacyWrapper.LegacyWrapper.Wrap
           ${PreloadingUIUtils2.detailedTargetHint(attempt.key)}
         </devtools-report-value>
     `;
-  }
-  #formSubmission() {
-    assertNotNullOrUndefined2(this.#data);
-    const attempt = this.#data.pipeline.getOriginallyTriggered();
+  };
+  const formSubmission = () => {
+    assertNotNullOrUndefined2(input.data);
+    const attempt = input.data.pipeline.getOriginallyTriggered();
     const hasFormSubmission = attempt.key.formSubmission !== void 0;
-    if (!hasFormSubmission || !this.#isPrerenderLike(attempt.action)) {
+    if (!hasFormSubmission || !isPrerenderLike(attempt.action)) {
       return Lit2.nothing;
     }
     return html2`
@@ -1256,11 +1223,11 @@ var PreloadingDetailsReportView = class extends LegacyWrapper.LegacyWrapper.Wrap
           ${attempt.key.formSubmission ? i18nString3(UIStrings3.yes) : i18nString3(UIStrings3.no)}
         </devtools-report-value>
     `;
-  }
-  #maybePrerenderFailureReason() {
-    assertNotNullOrUndefined2(this.#data);
-    const attempt = this.#data.pipeline.getOriginallyTriggered();
-    if (!this.#isPrerenderLike(attempt.action)) {
+  };
+  const maybePrerenderFailureReason = () => {
+    assertNotNullOrUndefined2(input.data);
+    const attempt = input.data.pipeline.getOriginallyTriggered();
+    if (!isPrerenderLike(attempt.action)) {
       return Lit2.nothing;
     }
     const statusCode = PreloadingHelper.PreloadingForward.preloadStatusCode(attempt);
@@ -1274,12 +1241,12 @@ var PreloadingDetailsReportView = class extends LegacyWrapper.LegacyWrapper.Wrap
           ${failureReason}
         </devtools-report-value>
     `;
-  }
-  #renderRuleSet(ruleSet, pageURL) {
+  };
+  const renderRuleSet = (ruleSet, pageURL2) => {
     const revealRuleSetView = () => {
       void Common.Revealer.reveal(new PreloadingHelper.PreloadingForward.RuleSetView(ruleSet.id));
     };
-    const location = ruleSetLocationShort(ruleSet, pageURL);
+    const location = ruleSetLocationShort(ruleSet, pageURL2);
     return html2`
       <devtools-report-key>${i18nString3(UIStrings3.detailsRuleSet)}</devtools-report-key>
       <devtools-report-value>
@@ -1298,14 +1265,54 @@ var PreloadingDetailsReportView = class extends LegacyWrapper.LegacyWrapper.Wrap
         </div>
       </devtools-report-value>
     `;
+  };
+  Lit2.render(html2`
+    <style>${preloadingDetailsReportView_css_default}</style>
+    <style>${UI2.inspectorCommonStyles}</style>
+    <devtools-report
+      .data=${{ reportTitle: "Speculative Loading Attempt" }}
+      jslog=${VisualLogging.section("preloading-details")}>
+      <devtools-report-section-header>${i18nString3(UIStrings3.detailsDetailedInformation)}</devtools-report-section-header>
+
+      ${url()}
+      ${action4(isFallbackToPrefetch)}
+      ${status2(isFallbackToPrefetch)}
+      ${targetHint()}
+      ${formSubmission()}
+      ${maybePrefetchFailureReason()}
+      ${maybePrerenderFailureReason()}
+
+      ${input.data.ruleSets.map((ruleSet) => renderRuleSet(ruleSet, pageURL))}
+    </devtools-report>
+  `, target);
+};
+var PreloadingDetailsReportView = class extends UI2.Widget.VBox {
+  #data = null;
+  #view;
+  constructor(element, view = DEFAULT_VIEW2) {
+    super(element);
+    this.#view = view;
+  }
+  set data(data) {
+    this.#data = data;
+    this.requestUpdate();
+  }
+  wasShown() {
+    super.wasShown();
+    this.requestUpdate();
+  }
+  performUpdate() {
+    const viewInput = {
+      data: this.#data
+    };
+    this.#view(viewInput, void 0, this.contentElement);
   }
 };
-customElements.define("devtools-resources-preloading-details-report-view", PreloadingDetailsReportView);
 
 // gen/front_end/panels/application/preloading/components/PreloadingDisabledInfobar.js
 var PreloadingDisabledInfobar_exports = {};
 __export(PreloadingDisabledInfobar_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW2,
+  DEFAULT_VIEW: () => DEFAULT_VIEW3,
   PreloadingDisabledInfobar: () => PreloadingDisabledInfobar
 });
 import "./../../../../ui/components/report_view/report_view.js";
@@ -1431,7 +1438,7 @@ var UIStrings4 = {
 var str_4 = i18n7.i18n.registerUIStrings("panels/application/preloading/components/PreloadingDisabledInfobar.ts", UIStrings4);
 var i18nString4 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
 var LINK = "https://developer.chrome.com/blog/prerender-pages/";
-var DEFAULT_VIEW2 = (input, _output, target) => {
+var DEFAULT_VIEW3 = (input, _output, target) => {
   let template = nothing2;
   if (input.header !== null) {
     template = html3`
@@ -1477,7 +1484,7 @@ var PreloadingDisabledInfobar = class extends UI3.Widget.VBox {
   #disabledByBatterySaver = false;
   #disabledByHoldbackPrefetchSpeculationRules = false;
   #disabledByHoldbackPrerenderSpeculationRules = false;
-  constructor(view = DEFAULT_VIEW2) {
+  constructor(view = DEFAULT_VIEW3) {
     super({ useShadowDom: true });
     this.#view = view;
   }
@@ -1752,7 +1759,7 @@ var PreloadingGrid = class extends UI4.Widget.VBox {
 // gen/front_end/panels/application/preloading/components/RuleSetDetailsView.js
 var RuleSetDetailsView_exports = {};
 __export(RuleSetDetailsView_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW3,
+  DEFAULT_VIEW: () => DEFAULT_VIEW4,
   RuleSetDetailsView: () => RuleSetDetailsView
 });
 import * as i18n11 from "./../../../../core/i18n/i18n.js";
@@ -1820,7 +1827,7 @@ var UIStrings6 = {
 var str_6 = i18n11.i18n.registerUIStrings("panels/application/preloading/components/RuleSetDetailsView.ts", UIStrings6);
 var i18nString6 = i18n11.i18n.getLocalizedString.bind(void 0, str_6);
 var codeMirrorJsonType = await CodeHighlighter.CodeHighlighter.languageFromMIME("application/json");
-var DEFAULT_VIEW3 = (input, _output, target) => {
+var DEFAULT_VIEW4 = (input, _output, target) => {
   render5(html5`
     <style>${RuleSetDetailsView_css_default}</style>
     <style>${UI5.inspectorCommonStyles}</style>
@@ -1850,7 +1857,7 @@ var RuleSetDetailsView = class extends UI5.Widget.VBox {
   #view;
   #ruleSet = null;
   #shouldPrettyPrint = true;
-  constructor(element, view = DEFAULT_VIEW3) {
+  constructor(element, view = DEFAULT_VIEW4) {
     super(element, { useShadowDom: true });
     this.#view = view;
   }
@@ -1901,7 +1908,7 @@ var RuleSetDetailsView = class extends UI5.Widget.VBox {
 // gen/front_end/panels/application/preloading/components/RuleSetGrid.js
 var RuleSetGrid_exports = {};
 __export(RuleSetGrid_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW4,
+  DEFAULT_VIEW: () => DEFAULT_VIEW5,
   RuleSetGrid: () => RuleSetGrid,
   i18nString: () => i18nString7
 });
@@ -1975,7 +1982,7 @@ var UIStrings7 = {
 };
 var str_7 = i18n13.i18n.registerUIStrings("panels/application/preloading/components/RuleSetGrid.ts", UIStrings7);
 var i18nString7 = i18n13.i18n.getLocalizedString.bind(void 0, str_7);
-var DEFAULT_VIEW4 = (input, _output, target) => {
+var DEFAULT_VIEW5 = (input, _output, target) => {
   let template = nothing5;
   if (input.data !== null) {
     const { rows, pageURL } = input.data;
@@ -2062,7 +2069,7 @@ var DEFAULT_VIEW4 = (input, _output, target) => {
 var RuleSetGrid = class extends Common3.ObjectWrapper.eventMixin(UI6.Widget.VBox) {
   #view;
   #data = null;
-  constructor(view = DEFAULT_VIEW4) {
+  constructor(view = DEFAULT_VIEW5) {
     super({ useShadowDom: true });
     this.#view = view;
   }
@@ -2491,7 +2498,7 @@ function renderBadge(config) {
       return badge("status-badge status-badge-neutral", "clear", config.message);
   }
 }
-var DEFAULT_VIEW5 = (input, _output, target) => {
+var DEFAULT_VIEW6 = (input, _output, target) => {
   render7(html7`
     <style>${usedPreloadingView_css_default}</style>
     <devtools-report>
@@ -2514,7 +2521,7 @@ var DEFAULT_VIEW5 = (input, _output, target) => {
 };
 var UsedPreloadingView = class extends UI7.Widget.VBox {
   #view;
-  constructor(view = DEFAULT_VIEW5) {
+  constructor(view = DEFAULT_VIEW6) {
     super({ useShadowDom: true });
     this.#view = view;
   }

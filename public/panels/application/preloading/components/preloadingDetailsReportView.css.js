@@ -8,34 +8,32 @@ export default `/*
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-:host {
-  display: flex;
-  height: 100%;
-}
 
-devtools-report {
-  flex-grow: 1;
-}
+@scope to (devtools-widget > *) {
+  devtools-report {
+    flex-grow: 1;
 
-button.link {
-  color: var(--sys-color-primary);
-  text-decoration: underline;
-  padding: 0;
-  border: none;
-  background: none;
-  font-family: inherit;
-  font-size: inherit;
-  height: 16px;
-}
+    button.link {
+      color: var(--sys-color-primary);
+      text-decoration: underline;
+      padding: 0;
+      border: none;
+      background: none;
+      font-family: inherit;
+      font-size: inherit;
+      height: 16px;
+    }
 
-button.link devtools-icon {
-  vertical-align: sub;
-}
+    button.link devtools-icon {
+      vertical-align: sub;
+    }
+  }
 
-.link {
-  color: var(--sys-color-primary);
-  text-decoration: underline;
-  cursor: pointer;
+  .link {
+    color: var(--sys-color-primary);
+    text-decoration: underline;
+    cursor: pointer;
+  }
 }
 
 /*# sourceURL=${import.meta.resolve('./preloadingDetailsReportView.css')} */`;

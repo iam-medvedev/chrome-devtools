@@ -29,7 +29,31 @@ function mockSkills(agent, skills) {
 }
 describeWithEnvironment('AiAgent2', () => {
     it('registers all expected skills', () => {
-        assert.deepEqual(Object.keys(SKILLS).sort(), ['styling', 'network', 'accessibility'].sort());
+        assert.deepEqual(Object.keys(SKILLS).sort(), ['styling', 'network', 'accessibility', 'performance'].sort());
+    });
+    it('accepts changeManager in options and passes it to tools', async () => {
+        const aidaClient = mockAidaClient([
+            [{
+                    explanation: '',
+                    functionCalls: [{ name: 'learnSkills', args: { skills: ['styling'] } }],
+                }],
+            [{
+                    explanation: '',
+                    functionCalls: [{ name: 'executeJavaScript', args: { action: 'console.log(1)' } }],
+                }],
+            [{
+                    explanation: 'Done',
+                }],
+        ]);
+        const changeManager = new AiAssistance.ChangeManager.ChangeManager();
+        const agent = new AiAssistance.AiAgent2.AiAgent2({ aidaClient, changeManager });
+        const executeJsTool = AiAssistance.ToolRegistry.ToolRegistry.get('executeJavaScript');
+        assert.exists(executeJsTool);
+        const handlerStub = sinon.stub(executeJsTool, 'handler').resolves({ result: 'mocked result' });
+        await Array.fromAsync(agent.run('question', { selected: null }));
+        sinon.assert.calledOnce(handlerStub);
+        const [, context] = handlerStub.getCall(0).args;
+        assert.strictEqual(context.changeManager, changeManager);
     });
     it('can learn a skill', async () => {
         const aidaClient = mockAidaClient();
@@ -45,7 +69,7 @@ describeWithEnvironment('AiAgent2', () => {
         const agent = new AiAssistance.AiAgent2.AiAgent2({ aidaClient });
         await agent.learnSkill(['styling']);
         const result = await agent.learnSkill(['styling']);
-        assert.isTrue(result.includes('already loaded'));
+        assert.strictEqual(result, 'Error: Skill \'styling\' is already loaded. Call its tools directly instead of invoking learnSkills for \'styling\' again.');
     });
     it('handles invalid skill names gracefully', async () => {
         const aidaClient = mockAidaClient();

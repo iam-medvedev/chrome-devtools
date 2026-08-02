@@ -1,29 +1,8 @@
 import '../../../ui/kit/kit.js';
+import * as UI from '../../../ui/legacy/legacy.js';
 export declare const enum Navigation {
     BACKWARD = "Backward",
     FORWARD = "Forward"
-}
-export declare class AddressInputChangedEvent extends Event {
-    static readonly eventName = "addressinputchanged";
-    data: {
-        address: string;
-        mode: Mode;
-    };
-    constructor(address: string, mode: Mode);
-}
-export declare class PageNavigationEvent extends Event {
-    static readonly eventName = "pagenavigation";
-    data: Navigation;
-    constructor(navigation: Navigation);
-}
-export declare class HistoryNavigationEvent extends Event {
-    static readonly eventName = "historynavigation";
-    data: Navigation;
-    constructor(navigation: Navigation);
-}
-export declare class RefreshRequestedEvent extends Event {
-    static readonly eventName = "refreshrequested";
-    constructor();
 }
 export interface LinearMemoryNavigatorData {
     address: string;
@@ -38,12 +17,28 @@ export declare const enum Mode {
     SUBMITTED = "Submitted",
     INVALID_SUBMIT = "InvalidSubmit"
 }
-export declare class LinearMemoryNavigator extends HTMLElement {
+export declare class LinearMemoryNavigator extends UI.Widget.Widget {
     #private;
-    set data(data: LinearMemoryNavigatorData);
-}
-declare global {
-    interface HTMLElementTagNameMap {
-        'devtools-linear-memory-inspector-navigator': LinearMemoryNavigator;
-    }
+    get onRefreshRequest(): (() => void) | undefined;
+    set onRefreshRequest(callback: (() => void) | undefined);
+    get onAddressChange(): ((address: string, mode: Mode) => void) | undefined;
+    set onAddressChange(callback: ((address: string, mode: Mode) => void) | undefined);
+    get onNavigatePage(): ((navigation: Navigation) => void) | undefined;
+    set onNavigatePage(callback: ((navigation: Navigation) => void) | undefined);
+    get onNavigateHistory(): ((navigation: Navigation) => void) | undefined;
+    set onNavigateHistory(callback: ((navigation: Navigation) => void) | undefined);
+    constructor(element?: HTMLElement);
+    get address(): string;
+    set address(address: string);
+    get error(): string | undefined;
+    set error(error: string | undefined);
+    get valid(): boolean;
+    set valid(valid: boolean);
+    get canGoBackInHistory(): boolean;
+    set canGoBackInHistory(canGoBackInHistory: boolean);
+    get canGoForwardInHistory(): boolean;
+    set canGoForwardInHistory(canGoForwardInHistory: boolean);
+    get mode(): Mode;
+    set mode(mode: Mode);
+    performUpdate(): void;
 }

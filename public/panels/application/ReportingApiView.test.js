@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import sinon from 'sinon';
+import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { assertScreenshot, raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { cleanTestDOM } from '../../testing/DOMHooks.js';
@@ -184,6 +185,13 @@ describeWithEnvironment('ReportingApiView', () => {
         let target;
         let stub;
         beforeEach(async () => {
+            Root.Runtime.experiments.register({
+                name: Root.ExperimentNames.ExperimentName.PROTOCOL_MONITOR,
+                title: 'Protocol Monitor',
+                aboutFlag: 'devtools-protocol-monitor',
+                isEnabled: false,
+                requiresChromeRestart: false,
+            });
             const original = Date.prototype.toLocaleString;
             stub = sinon.stub(Date.prototype, 'toLocaleString').callsFake(function () {
                 return original.call(this, 'en-US', { timeZone: 'UTC' });

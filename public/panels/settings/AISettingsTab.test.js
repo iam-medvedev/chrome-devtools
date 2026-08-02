@@ -19,6 +19,12 @@ describeWithEnvironment('AISettingsTab', () => {
             sinon.stub(AiAssistanceModel.AiHistoryStorage.AiHistoryStorage.prototype, 'deleteAll');
         AiAssistanceModel.AiHistoryStorage.AiHistoryStorage.instance({ forceNew: true });
         updateHostConfig({
+            aidaAvailability: {
+                enabled: true,
+            },
+            devToolsFreestyler: {
+                enabled: true,
+            },
             devToolsAiGeneratedTimelineLabels: {
                 enabled: true,
             },
@@ -66,7 +72,7 @@ describeWithEnvironment('AISettingsTab', () => {
         const settingNames = settingParams.map(setting => setting.settingName);
         assert.deepEqual(settingNames, ['Console Insights', 'AI assistance', 'Auto annotations', 'Code suggestions']);
         assert.strictEqual(settingParams[0].settingDescription, 'Helps you understand and fix console warnings and errors');
-        assert.strictEqual(settingParams[1].settingDescription, 'Get help with understanding CSS styles');
+        assert.strictEqual(settingParams[1].settingDescription, 'Get context-aware help on the inspected page');
         assert.strictEqual(settingParams[2].settingDescription, 'Automatically generate titles for performance trace annotations');
         assert.strictEqual(settingParams[3].settingDescription, 'Write code faster with AI-powered suggestions');
     });
@@ -101,8 +107,8 @@ describeWithEnvironment('AISettingsTab', () => {
         settingToParams.next();
         const explainThisResource = settingToParams.next();
         assert.exists(explainThisResource.value);
-        assert.isFalse(explainThisResource.value[0].disabled());
-        assert.strictEqual(explainThisResource.value[1].settingDescription, 'Get help with understanding CSS styles and network requests');
+        assert.isFalse(explainThisResource.value[1].setting?.disabled());
+        assert.strictEqual(explainThisResource.value[1].settingDescription, 'Get context-aware help on the inspected page');
     });
     it('can turn feature on, which automatically expands it', async () => {
         Common.Settings.Settings.instance().moduleSetting('console-insights-enabled').set(false);
@@ -189,24 +195,15 @@ describeWithEnvironment('AISettingsTab', () => {
         assert.deepEqual(view.input.disabledReasons, [notLoggedInExplainer]);
     });
     it('updates disabled reason', async () => {
-        Common.Settings.Settings.instance().moduleSetting('console-insights-enabled').setRegistration({
-            settingName: 'console-insights-enabled',
-            settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
-            defaultValue: false,
-            disabledCondition: () => {
-                return { disabled: true, reasons: ['some reason'] };
-            },
-        });
-        Common.Settings.Settings.instance().moduleSetting('ai-assistance-enabled').setRegistration({
-            settingName: 'ai-assistance-enabled',
-            settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
-            defaultValue: true,
-            disabledCondition: () => {
-                return { disabled: true, reasons: ['some reason'] };
-            },
+        const isAvailableStub = sinon.stub(AiAssistanceModel.AiUtils.aiAssistanceEnabledSettingDescriptor, 'isAvailable').returns({
+            status: 3 /* Common.Settings.SettingAvailability.DISABLED */,
+            reason: ["wrong-locale" /* AiAssistanceModel.AiUtils.DisabledReason.WRONG_LOCALE */],
         });
         const { view } = await setupWidget();
-        assert.deepEqual(view.input.disabledReasons, ['some reason']);
+        assert.deepEqual(view.input.disabledReasons, [
+            'To use this feature, set your language preference to English in DevTools settings.',
+        ]);
+        isAvailableStub.restore();
     });
     it('can turn feature off and clear history', async () => {
         Common.Settings.Settings.instance().moduleSetting('ai-assistance-enabled').set(true);
@@ -220,12 +217,7 @@ describeWithEnvironment('AISettingsTab', () => {
         assert.isFalse(Common.Settings.Settings.instance().moduleSetting('ai-assistance-enabled').get());
         assert.isTrue(deleteAiAssistanceHistoryStub.called, 'Expected AiHistoryStorage deleteAll to be called but it is not called');
     });
-    it('shows simplified strings when V2 is enabled', async () => {
-        updateHostConfig({
-            devToolsAiAssistanceV2: {
-                enabled: true,
-            },
-        });
+    it('shows AI assistance setting strings', async () => {
         Common.Settings.Settings.instance().moduleSetting('ai-assistance-enabled').set(true);
         const { view } = await setupWidget();
         const settingToParams = Array.from(view.input.settingToParams.values());
@@ -236,12 +228,10 @@ describeWithEnvironment('AISettingsTab', () => {
         assert.strictEqual(aiAssistanceParams.settingItems[1].text, 'Follow the agent’s reasoning step-by-step and quickly jump to the relevant source data');
         assert.strictEqual(aiAssistanceParams.toConsiderSettingItems[0].text, 'To generate explanations, chat messages, data accessible for this site via DevTools panels and Web APIs, and items you select such as network requests, files, and performance traces are sent to Google and may be seen by human reviewers to improve this feature. This is an experimental AI feature and won’t always get it right.');
     });
-    it('shows simplified strings when V2 is enabled and logging is disabled', async () => {
+    it('shows AI assistance setting strings when logging is disabled', async () => {
         updateHostConfig({
-            devToolsAiAssistanceV2: {
-                enabled: true,
-            },
             aidaAvailability: {
+                enabled: true,
                 enterprisePolicyValue: 1, // ALLOW_WITHOUT_LOGGING
             },
         });
@@ -252,28 +242,10 @@ describeWithEnvironment('AISettingsTab', () => {
         assert.exists(aiAssistanceParams);
         assert.strictEqual(aiAssistanceParams.toConsiderSettingItems[0].text, 'To generate explanations, chat messages, data accessible for this site via DevTools panels and Web APIs, and items you select such as network requests, files, and performance traces are sent to Google. The content you submit and that is generated by this feature will not be used to improve Google’s AI models. This is an experimental AI feature and won’t always get it right.');
     });
-    it('shows original strings when V2 is disabled', async () => {
-        updateHostConfig({
-            devToolsAiAssistanceV2: {
-                enabled: false,
-            },
-        });
-        Common.Settings.Settings.instance().moduleSetting('ai-assistance-enabled').set(true);
-        const { view } = await setupWidget();
-        const settingToParams = Array.from(view.input.settingToParams.values());
-        const aiAssistanceParams = settingToParams.find(p => p.settingName === 'AI assistance');
-        assert.exists(aiAssistanceParams);
-        assert.strictEqual(aiAssistanceParams.settingDescription, 'Get help with understanding CSS styles');
-    });
-    it('marks the V2 opt-in dialog as seen when turning on AI assistance in V2', async () => {
-        updateHostConfig({
-            devToolsAiAssistanceV2: {
-                enabled: true,
-            },
-        });
+    it('marks the V2 opt-in dialog as seen when turning on AI assistance', async () => {
         const aiAssistanceEnabledSetting = Common.Settings.Settings.instance().moduleSetting('ai-assistance-enabled');
         aiAssistanceEnabledSetting.set(false);
-        const v2OptInSeenSetting = Common.Settings.Settings.instance().moduleSetting('ai-assistance-v2-opt-in-change-dialog-seen');
+        const v2OptInSeenSetting = Common.Settings.Settings.instance().resolve(AiAssistanceModel.AiUtils.aiAssistanceV2OptInChangeDialogSeenSettingDescriptor);
         v2OptInSeenSetting.set(false);
         const { view } = await setupWidget();
         const settingToParams = Array.from(view.input.settingToParams.entries());
@@ -283,23 +255,11 @@ describeWithEnvironment('AISettingsTab', () => {
         assert.isTrue(aiAssistanceEnabledSetting.get());
         assert.isTrue(v2OptInSeenSetting.get());
     });
-    it('does not mark the V2 opt-in dialog as seen when turning on AI assistance in V1', async () => {
-        updateHostConfig({
-            devToolsAiAssistanceV2: {
-                enabled: false,
-            },
-        });
-        const aiAssistanceEnabledSetting = Common.Settings.Settings.instance().moduleSetting('ai-assistance-enabled');
-        aiAssistanceEnabledSetting.set(false);
-        const v2OptInSeenSetting = Common.Settings.Settings.instance().moduleSetting('ai-assistance-v2-opt-in-change-dialog-seen');
-        v2OptInSeenSetting.set(false);
+    it('registers setting entries with string settingName keys', async () => {
         const { view } = await setupWidget();
-        const settingToParams = Array.from(view.input.settingToParams.entries());
-        const aiAssistanceEntry = settingToParams.find(entry => entry[1].settingName === 'AI assistance');
-        assert.exists(aiAssistanceEntry);
-        view.input.toggleSetting(aiAssistanceEntry[0], new Switch.Switch.SwitchChangeEvent(true));
-        assert.isTrue(aiAssistanceEnabledSetting.get());
-        assert.isFalse(v2OptInSeenSetting.get());
+        const settingNames = Array.from(view.input.settingToParams.keys());
+        assert.include(settingNames, 'console-insights-enabled');
+        assert.include(settingNames, 'ai-assistance-enabled');
     });
 });
 //# sourceMappingURL=AISettingsTab.test.js.map

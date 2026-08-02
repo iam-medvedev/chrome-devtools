@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import sinon from 'sinon';
+import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Workspace from '../../models/workspace/workspace.js';
@@ -72,6 +73,13 @@ const makeFrame = (target) => {
 };
 describeWithEnvironment('FrameDetailsView', () => {
     beforeEach(() => {
+        Root.Runtime.experiments.register({
+            name: Root.ExperimentNames.ExperimentName.PROTOCOL_MONITOR,
+            title: 'Protocol Monitor',
+            aboutFlag: 'devtools-protocol-monitor',
+            isEnabled: false,
+            requiresChromeRestart: false,
+        });
         const workspace = Workspace.Workspace.WorkspaceImpl.instance({ forceNew: true });
         const targetManager = SDK.TargetManager.TargetManager.instance();
         const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });

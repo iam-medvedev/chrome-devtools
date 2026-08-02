@@ -56,7 +56,8 @@ describeWithEnvironment('TimelineLoader', () => {
     it('can load a saved trace file', async () => {
         const url = getWebDevTraceUrl();
         const loader = await Timeline.TimelineLoader.TimelineLoader.loadFromURL(url, client);
-        await loader.traceFinalizedForTest();
+        const state = await loader.traceLoaded();
+        assert.strictEqual(state, "SUCCESS" /* Timeline.TimelineLoader.LoadingState.SUCCESS */);
         sinon.assert.calledOnce(loadingStartedSpy);
         // Not called for loadFromURL. Maybe it should be.
         sinon.assert.callCount(loadingProgressSpy, 0);
@@ -78,7 +79,8 @@ describeWithEnvironment('TimelineLoader', () => {
             // No metadata field at all.
         };
         const loader = Timeline.TimelineLoader.TimelineLoader.loadFromParsedJsonFile(trace, client);
-        await loader.traceFinalizedForTest();
+        const state = await loader.traceLoaded();
+        assert.strictEqual(state, "SUCCESS" /* Timeline.TimelineLoader.LoadingState.SUCCESS */);
         sinon.assert.calledOnce(loadingCompleteSpy);
         const [, , metadata] = loadingCompleteSpy.args[0];
         assert.deepEqual(metadata, {});
@@ -86,7 +88,8 @@ describeWithEnvironment('TimelineLoader', () => {
     it('can load a saved CPUProfile file', async () => {
         const url = getBasicCpuProfileUrl();
         const loader = await Timeline.TimelineLoader.TimelineLoader.loadFromURL(url, client);
-        await loader.traceFinalizedForTest();
+        const state = await loader.traceLoaded();
+        assert.strictEqual(state, "SUCCESS" /* Timeline.TimelineLoader.LoadingState.SUCCESS */);
         sinon.assert.calledOnce(loadingStartedSpy);
         // Not called for loadFromURL. Maybe it should be.
         sinon.assert.callCount(loadingProgressSpy, 0);
@@ -107,7 +110,8 @@ describeWithEnvironment('TimelineLoader', () => {
             makeInstantEvent('test-event-2', 2),
         ];
         const loader = Timeline.TimelineLoader.TimelineLoader.loadFromEvents(testTraceEvents, client);
-        await loader.traceFinalizedForTest();
+        const state = await loader.traceLoaded();
+        assert.strictEqual(state, "SUCCESS" /* Timeline.TimelineLoader.LoadingState.SUCCESS */);
         sinon.assert.calledOnce(loadingStartedSpy);
         // For the trace events we are testing, loadingProgress will be called only once, because the
         // fake trace events array is very short.
@@ -127,7 +131,8 @@ describeWithEnvironment('TimelineLoader', () => {
     it('can load recorded CPUProfile correctly', async () => {
         const testProfile = { nodes: [], startTime: 0, endTime: 0 };
         const loader = Timeline.TimelineLoader.TimelineLoader.loadFromCpuProfile(testProfile, client);
-        await loader.traceFinalizedForTest();
+        const state = await loader.traceLoaded();
+        assert.strictEqual(state, "SUCCESS" /* Timeline.TimelineLoader.LoadingState.SUCCESS */);
         sinon.assert.calledOnce(loadingStartedSpy);
         // For the CPU Profile we are testing, loadingProgress will be called only once, because the
         // fake Profile is basically empty.
@@ -142,6 +147,21 @@ describeWithEnvironment('TimelineLoader', () => {
         // We create one synthetic trace event for CPU profile
         assert.lengthOf(collectedEvents, 1);
         assert.strictEqual(metadata?.dataOrigin, "CPUProfile" /* Trace.Types.File.DataOrigin.CPU_PROFILE */);
+    });
+    it('resolves traceLoaded with CANCELLED state when cancelled', async () => {
+        const testTraceEvents = [
+            makeInstantEvent('test-event-1', 1),
+        ];
+        const loader = Timeline.TimelineLoader.TimelineLoader.loadFromEvents(testTraceEvents, client);
+        void loader.cancel();
+        const state = await loader.traceLoaded();
+        assert.strictEqual(state, "CANCELLED" /* Timeline.TimelineLoader.LoadingState.CANCELLED */);
+    });
+    it('resolves traceLoaded with ERROR state on malformed json', async () => {
+        const trace = { invalid: true };
+        const loader = Timeline.TimelineLoader.TimelineLoader.loadFromParsedJsonFile(trace, client);
+        const state = await loader.traceLoaded();
+        assert.strictEqual(state, "ERROR" /* Timeline.TimelineLoader.LoadingState.ERROR */);
     });
 });
 //# sourceMappingURL=TimelineLoader.test.js.map

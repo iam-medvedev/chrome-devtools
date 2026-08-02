@@ -57,7 +57,7 @@ describeWithEnvironment('WalkthroughView', () => {
             parts: [{
                     type: 'step',
                     step: {
-                        isLoading: false,
+                        state: { type: 'completed' },
                         title: 'Test step 1',
                     },
                 }],
@@ -82,19 +82,21 @@ describeWithEnvironment('WalkthroughView', () => {
                 {
                     type: 'step',
                     step: {
-                        isLoading: false,
+                        state: { type: 'completed' },
                         title: 'Normal step',
                     },
                 },
                 {
                     type: 'step',
                     step: {
-                        isLoading: false,
-                        title: 'Approval step',
-                        requestApproval: {
-                            description: 'Confirm this action',
-                            onAnswer: () => { },
+                        state: {
+                            type: 'needs_approval',
+                            sideEffectDialog: {
+                                description: 'Confirm this action',
+                                onAnswer: () => { },
+                            },
                         },
+                        title: 'Approval step',
                     },
                 },
             ],
@@ -118,19 +120,21 @@ describeWithEnvironment('WalkthroughView', () => {
                 {
                     type: 'step',
                     step: {
-                        isLoading: false,
+                        state: { type: 'completed' },
                         title: 'Analyzing data',
                     },
                 },
                 {
                     type: 'step',
                     step: {
-                        isLoading: false,
-                        title: 'Running JS',
-                        requestApproval: {
-                            description: 'Confirm this action',
-                            onAnswer: () => { },
+                        state: {
+                            type: 'needs_approval',
+                            sideEffectDialog: {
+                                description: 'Confirm this action',
+                                onAnswer: () => { },
+                            },
                         },
+                        title: 'Running JS',
                     },
                 },
             ],
@@ -151,7 +155,7 @@ describeWithEnvironment('WalkthroughView', () => {
             parts: [{
                     type: 'step',
                     step: {
-                        isLoading: false,
+                        state: { type: 'completed' },
                         title: 'Test step 1',
                     },
                 }],
@@ -175,7 +179,7 @@ describeWithEnvironment('WalkthroughView', () => {
             parts: [{
                     type: 'step',
                     step: {
-                        isLoading: true,
+                        state: { type: 'in_progress' },
                         title: 'Test step 1',
                     },
                 }],
@@ -200,7 +204,7 @@ describeWithEnvironment('WalkthroughView', () => {
             parts: [{
                     type: 'step',
                     step: {
-                        isLoading: false,
+                        state: { type: 'completed' },
                         title: 'Test step 1',
                     },
                 }],
@@ -222,7 +226,7 @@ describeWithEnvironment('WalkthroughView', () => {
                 {
                     type: 'step',
                     step: {
-                        isLoading: false,
+                        state: { type: 'completed' },
                         title: 'Step 1',
                         widgets: [
                             {
@@ -235,7 +239,7 @@ describeWithEnvironment('WalkthroughView', () => {
                         ],
                     },
                 },
-                { type: 'step', step: { isLoading: false, title: 'Step 2', widgets: [] } },
+                { type: 'step', step: { state: { type: 'completed' }, title: 'Step 2', widgets: [] } },
             ],
         };
         const view = new WalkthroughView();
@@ -261,7 +265,7 @@ describeWithEnvironment('WalkthroughView', () => {
             entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
             id: '1',
             parts: [
-                { type: 'step', step: { isLoading: false, title: 'Step 1', widgets: [] } },
+                { type: 'step', step: { state: { type: 'completed' }, title: 'Step 1', widgets: [] } },
             ],
         };
         const view = new WalkthroughView();
@@ -280,7 +284,7 @@ describeWithEnvironment('WalkthroughView', () => {
     });
     describe('walkthrough titles', () => {
         it('returns the correct walkthrough title when not loading', () => {
-            const lastStep = { isLoading: false, title: 'Step 1' };
+            const lastStep = { state: { type: 'completed' }, title: 'Step 1' };
             assert.strictEqual(AiAssistance.WalkthroughView.walkthroughTitle({
                 isLoading: false,
                 hasWidgets: false,
@@ -293,7 +297,7 @@ describeWithEnvironment('WalkthroughView', () => {
             }), 'Show agent walkthrough');
         });
         it('returns the step title when loading', () => {
-            const lastStep = { isLoading: true, title: 'Investigating...' };
+            const lastStep = { state: { type: 'in_progress' }, title: 'Investigating...' };
             assert.strictEqual(AiAssistance.WalkthroughView.walkthroughTitle({
                 isLoading: true,
                 hasWidgets: false,
@@ -323,7 +327,6 @@ describeWithEnvironment('WalkthroughView', () => {
             renderElementIntoDOM(container);
             Lit.render(AiAssistance.ChatMessage.renderStep({
                 step,
-                isLoading: false,
                 markdownRenderer: new AiAssistance.MarkdownRendererWithCodeBlock(),
                 isLast: true,
             }), container);
@@ -334,19 +337,20 @@ describeWithEnvironment('WalkthroughView', () => {
         }
         it('renders pause icon with Paused label', () => {
             testStepBadge({
-                isLoading: false,
-                requestApproval: { description: 'Confirm', onAnswer: () => { } },
+                state: {
+                    type: 'needs_approval',
+                    sideEffectDialog: { description: 'Confirm', onAnswer: () => { } },
+                },
             }, 'Paused', 'pause-circle');
         });
         it('renders cross icon with Aborted label when canceled', () => {
             testStepBadge({
-                isLoading: false,
-                canceled: true,
+                state: { type: 'canceled' },
             }, 'Aborted', 'cross');
         });
         it('renders checkmark icon with Completed label', () => {
             testStepBadge({
-                isLoading: false,
+                state: { type: 'completed' },
             }, 'Completed', 'checkmark');
         });
     });

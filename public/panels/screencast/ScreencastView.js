@@ -1,15 +1,16 @@
 // Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable @devtools/no-imperative-dom-api */
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import { createIcon, Icon } from '../../ui/kit/kit.js';
+import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import { Directives, html, nothing, render } from '../../ui/lit/lit.js';
 import { InputModel } from './InputModel.js';
 import screencastViewStyles from './screencastView.css.js';
+const { ref, styleMap, classMap } = Directives;
 const UIStrings = {
     /**
      * @description Accessible alt text for the Screencast canvas rendering of the debug target webpage.
@@ -50,7 +51,136 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/screencast/ScreencastView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export class ScreencastView extends UI.Widget.VBox {
+export const DEFAULT_VIEW = (input, output, target) => {
+    let canvasElement = null;
+    // clang-format off
+    render(html `
+    <style>${screencastViewStyles}</style>
+    <div class="screencast-navigation">
+      <devtools-button class="navigation"
+        .data=${{
+        variant: "toolbar" /* Buttons.Button.Variant.TOOLBAR */,
+        iconName: 'arrow-back',
+        disabled: !input.canGoBack,
+        title: i18nString(UIStrings.back),
+        accessibleLabel: i18nString(UIStrings.back),
+    }}
+        @click=${input.onBackClick}></devtools-button>
+      <devtools-button class="navigation"
+        .data=${{
+        variant: "toolbar" /* Buttons.Button.Variant.TOOLBAR */,
+        iconName: 'arrow-forward',
+        disabled: !input.canGoForward,
+        title: i18nString(UIStrings.forward),
+        accessibleLabel: i18nString(UIStrings.forward),
+    }}
+        @click=${input.onForwardClick}></devtools-button>
+      <devtools-button class="navigation"
+        .data=${{
+        variant: "toolbar" /* Buttons.Button.Variant.TOOLBAR */,
+        iconName: 'refresh',
+        title: i18nString(UIStrings.reload),
+        accessibleLabel: i18nString(UIStrings.reload),
+    }}
+        @click=${input.onReloadClick}></devtools-button>
+      <input type="text" class="harmony-input" aria-label=${i18nString(UIStrings.addressBar)}
+        .value=${input.navigationUrl}
+        @keyup=${input.onUrlInputKeyUp}
+        ${ref(el => {
+        if (el instanceof HTMLInputElement) {
+            output.focusUrlInput = () => {
+                el.focus();
+                el.select();
+            };
+        }
+    })}
+      />
+      <devtools-button
+        .data=${{
+        variant: "toolbar" /* Buttons.Button.Variant.TOOLBAR */,
+        iconName: 'mouse',
+        toggledIconName: 'mouse',
+        disabled: !input.isTouchEmulated,
+        toggled: !input.isTouchEmulated,
+        toggleType: "primary-toggle" /* Buttons.Button.ToggleType.PRIMARY */,
+        title: i18nString(UIStrings.mouseInput),
+        accessibleLabel: i18nString(UIStrings.mouseInput),
+    }}
+        @click=${() => input.onToggleTouch(false)}></devtools-button>
+      <devtools-button
+        .data=${{
+        variant: "toolbar" /* Buttons.Button.Variant.TOOLBAR */,
+        iconName: 'touch-app',
+        toggledIconName: 'touch-app',
+        disabled: input.isTouchEmulated,
+        toggled: input.isTouchEmulated,
+        toggleType: "primary-toggle" /* Buttons.Button.ToggleType.PRIMARY */,
+        title: i18nString(UIStrings.touchInput),
+        accessibleLabel: i18nString(UIStrings.touchInput),
+    }}
+        @click=${() => input.onToggleTouch(true)}></devtools-button>
+      <div class="progress" style=${styleMap({ width: `${(input.progressPercent ?? 0) * 100}%` })}></div>
+    </div>
+    <div
+      class=${classMap({
+        'screencast-viewport': true,
+        hidden: input.isViewportHidden,
+    })}
+      style=${styleMap({
+        width: input.viewportWidth,
+        height: input.viewportHeight,
+    })}>
+      <div class=${classMap({
+        'screencast-canvas-container': true,
+        touchable: input.isTouchEmulated,
+    })}>
+        <div class=${classMap({
+        'screencast-glasspane': true,
+        fill: true,
+        hidden: input.glassPaneHidden,
+    })}>${input.glassPaneText}</div>
+        <canvas aria-label=${i18nString(UIStrings.screencastViewOfDebugTarget)} tabindex="0"
+          @mousedown=${input.onCanvasMouseEvent}
+          @mouseup=${input.onCanvasMouseEvent}
+          @mousemove=${input.onCanvasMouseEvent}
+          @wheel=${input.onCanvasWheel}
+          @click=${input.onCanvasMouseEvent}
+          @contextmenu=${input.onCanvasContextMenu}
+          @keydown=${input.onCanvasKeyEvent}
+          @keyup=${input.onCanvasKeyEvent}
+          @keypress=${input.onCanvasKeyEvent}
+          @blur=${input.onCanvasBlur}
+          ${ref(el => {
+        if (el instanceof HTMLCanvasElement) {
+            output.focusCanvas = () => el.focus();
+            canvasElement = el;
+            ScreencastView.repaintScreencastCanvas(el, input);
+        }
+    })}></canvas>
+        <div
+          class=${classMap({
+        'screencast-element-title': true,
+        monospace: true,
+        hidden: !input.elementTitleData?.visible,
+    })}
+          ${ref(el => {
+        if (el instanceof HTMLElement && canvasElement && input.elementTitleData?.visible && !el.classList.contains('hidden')) {
+            ScreencastView.clampTooltipPosition(canvasElement, el, input.highlightModel);
+        }
+    })}>
+          <span class="screencast-tag-name">${input.elementTitleData?.tagName ?? nothing}</span>
+          <span class="screencast-attribute">${input.elementTitleData?.attribute ?? nothing}</span>
+          <span class="screencast-dimension"> <span>${input.elementTitleData?.width ?? nothing}</span> × <span>${input.elementTitleData?.height ?? nothing}</span>
+          </span>
+        </div>
+      </div>
+    </div>
+  `, target);
+    // clang-format on
+};
+export class ScreencastView extends UI.Widget.Widget {
+    #view;
+    #viewOutput;
     screenCaptureModel;
     domModel;
     overlayModel;
@@ -64,43 +194,35 @@ export class ScreencastView extends UI.Widget.VBox {
     screenOffsetTop;
     pageScaleFactor;
     imageElement;
-    viewportElement;
-    glassPaneElement;
-    canvasElement;
-    titleElement;
-    context;
     imageZoom;
-    tagNameElement;
-    attributeElement;
-    nodeWidthElement;
-    nodeHeightElement;
     model;
     highlightConfig;
-    navigationUrl;
-    navigationBack;
-    navigationForward;
-    canvasContainerElement;
-    checkerboardPattern;
     targetInactive;
     deferredCasting;
     highlightNode;
     config;
     node;
     inspectModeConfig;
-    navigationBar;
-    navigationReload;
     navigationProgressBar;
-    touchInputToggle;
-    mouseInputToggle;
-    touchInputToggleIcon;
-    mouseInputToggleIcon;
     historyIndex;
     historyEntries;
     isCasting = false;
     screencastOperationId;
-    constructor(screenCaptureModel) {
-        super();
-        this.registerRequiredCSS(screencastViewStyles);
+    #navigationUrlText = '';
+    #canGoBack = false;
+    #canGoForward = false;
+    #isTouchEmulated = false;
+    #glassPaneText = '';
+    #glassPaneHidden = true;
+    #isViewportHidden = true;
+    #viewportWidth = '';
+    #viewportHeight = '';
+    #progressPercent = 0;
+    #elementTitleData = { visible: false };
+    constructor(screenCaptureModel, element, view = DEFAULT_VIEW) {
+        super(element);
+        this.#view = view;
+        this.#viewOutput = {};
         this.screenCaptureModel = screenCaptureModel;
         this.domModel = screenCaptureModel.target().model(SDK.DOMModel.DOMModel);
         this.overlayModel = screenCaptureModel.target().model(SDK.OverlayModel.OverlayModel);
@@ -117,41 +239,53 @@ export class ScreencastView extends UI.Widget.VBox {
         this.imageZoom = 1;
     }
     initialize() {
-        this.element.classList.add('screencast');
         this.createNavigationBar();
-        this.viewportElement = this.element.createChild('div', 'screencast-viewport hidden');
-        this.canvasContainerElement = this.viewportElement.createChild('div', 'screencast-canvas-container');
-        this.glassPaneElement = this.canvasContainerElement.createChild('div', 'screencast-glasspane fill hidden');
-        this.canvasElement = this.canvasContainerElement.createChild('canvas');
-        UI.ARIAUtils.setLabel(this.canvasElement, i18nString(UIStrings.screencastViewOfDebugTarget));
-        this.canvasElement.tabIndex = 0;
-        this.canvasElement.addEventListener('mousedown', this.handleMouseEvent.bind(this), false);
-        this.canvasElement.addEventListener('mouseup', this.handleMouseEvent.bind(this), false);
-        this.canvasElement.addEventListener('mousemove', this.handleMouseEvent.bind(this), false);
-        this.canvasElement.addEventListener('wheel', this.handleWheelEvent.bind(this), false);
-        this.canvasElement.addEventListener('click', this.handleMouseEvent.bind(this), false);
-        this.canvasElement.addEventListener('contextmenu', this.handleContextMenuEvent.bind(this), false);
-        this.canvasElement.addEventListener('keydown', this.handleKeyEvent.bind(this), false);
-        this.canvasElement.addEventListener('keyup', this.handleKeyEvent.bind(this), false);
-        this.canvasElement.addEventListener('keypress', this.handleKeyEvent.bind(this), false);
-        this.canvasElement.addEventListener('blur', this.handleBlurEvent.bind(this), false);
-        this.titleElement = this.canvasContainerElement.createChild('div', 'screencast-element-title monospace hidden');
-        this.tagNameElement = this.titleElement.createChild('span', 'screencast-tag-name');
-        this.attributeElement = this.titleElement.createChild('span', 'screencast-attribute');
-        UI.UIUtils.createTextChild(this.titleElement, ' ');
-        const dimension = this.titleElement.createChild('span', 'screencast-dimension');
-        this.nodeWidthElement = dimension.createChild('span');
-        UI.UIUtils.createTextChild(dimension, ' × ');
-        this.nodeHeightElement = dimension.createChild('span');
-        this.titleElement.style.top = '0';
-        this.titleElement.style.left = '0';
         this.imageElement = new Image();
-        this.context = this.canvasElement.getContext('2d');
-        this.checkerboardPattern = this.createCheckerboardPattern(this.context);
         this.shortcuts[UI.KeyboardShortcut.KeyboardShortcut.makeKey('l', UI.KeyboardShortcut.Modifiers.Ctrl.value)] =
             this.focusNavigationBar.bind(this);
         SDK.TargetManager.TargetManager.instance().addEventListener("SuspendStateChanged" /* SDK.TargetManager.Events.SUSPEND_STATE_CHANGED */, this.onSuspendStateChange, this);
         this.updateGlasspane();
+    }
+    wasShown() {
+        super.wasShown();
+        if (this.deferredCasting) {
+            clearTimeout(this.deferredCasting);
+            delete this.deferredCasting;
+        }
+        this.deferredCasting = window.setTimeout(this.startCasting.bind(this), 100);
+        this.requestUpdate();
+    }
+    performUpdate() {
+        const input = {
+            navigationUrl: this.#navigationUrlText,
+            canGoBack: this.#canGoBack,
+            canGoForward: this.#canGoForward,
+            isTouchEmulated: this.#isTouchEmulated,
+            glassPaneText: this.#glassPaneText,
+            glassPaneHidden: this.#glassPaneHidden,
+            isViewportHidden: this.#isViewportHidden,
+            viewportWidth: this.#viewportWidth,
+            viewportHeight: this.#viewportHeight,
+            progressPercent: this.#progressPercent,
+            elementTitleData: this.#elementTitleData,
+            screencastImage: this.imageElement,
+            screenOffsetTop: this.screenOffsetTop,
+            screenZoom: this.screenZoom,
+            imageZoom: this.imageZoom,
+            highlightModel: this.model,
+            highlightConfig: this.config,
+            onBackClick: () => this.navigateToHistoryEntry(-1),
+            onForwardClick: () => this.navigateToHistoryEntry(1),
+            onReloadClick: () => this.navigateReload(),
+            onUrlInputKeyUp: (e) => this.navigationUrlKeyUp(e),
+            onToggleTouch: (emulateTouch) => this.#toggleTouchEmulation(emulateTouch),
+            onCanvasMouseEvent: (e) => void this.handleMouseEvent(e),
+            onCanvasWheel: (e) => void this.handleWheelEvent(e),
+            onCanvasKeyEvent: (e) => this.handleKeyEvent(e),
+            onCanvasContextMenu: (e) => this.handleContextMenuEvent(e),
+            onCanvasBlur: () => this.handleBlurEvent(),
+        };
+        this.#view(input, this.#viewOutput, this.contentElement);
     }
     willHide() {
         super.willHide();
@@ -197,6 +331,7 @@ export class ScreencastView extends UI.Widget.VBox {
         for (const emulationModel of SDK.TargetManager.TargetManager.instance().models(SDK.EmulationModel.EmulationModel)) {
             void emulationModel.overrideEmulateTouch(false);
         }
+        this.#isTouchEmulated = false;
         if (this.overlayModel) {
             this.overlayModel.setHighlighter(null);
         }
@@ -209,22 +344,30 @@ export class ScreencastView extends UI.Widget.VBox {
             this.scrollOffsetY = metadata.scrollOffsetY;
             const deviceSizeRatio = metadata.deviceHeight / metadata.deviceWidth;
             const dimensionsCSS = this.viewportDimensions();
+            if (dimensionsCSS.width <= 0 || dimensionsCSS.height <= 0) {
+                return;
+            }
             this.imageZoom = Math.min(dimensionsCSS.width / this.imageElement.naturalWidth, dimensionsCSS.height / (this.imageElement.naturalWidth * deviceSizeRatio));
-            this.viewportElement.classList.remove('hidden');
             const bordersSize = BORDERS_SIZE;
             if (this.imageZoom < 1.01 / window.devicePixelRatio) {
                 this.imageZoom = 1 / window.devicePixelRatio;
             }
             this.screenZoom = this.imageElement.naturalWidth * this.imageZoom / metadata.deviceWidth;
-            this.viewportElement.style.width = metadata.deviceWidth * this.screenZoom + bordersSize + 'px';
-            this.viewportElement.style.height = metadata.deviceHeight * this.screenZoom + bordersSize + 'px';
+            const newWidth = metadata.deviceWidth * this.screenZoom + bordersSize + 'px';
+            const newHeight = metadata.deviceHeight * this.screenZoom + bordersSize + 'px';
+            if (this.#viewportWidth !== newWidth || this.#viewportHeight !== newHeight || this.#isViewportHidden) {
+                this.#viewportWidth = newWidth;
+                this.#viewportHeight = newHeight;
+                this.#isViewportHidden = false;
+                this.requestUpdate();
+            }
             const data = this.highlightNode ? { node: this.highlightNode } : { clear: true };
             void this.updateHighlightInOverlayAndRepaint(data, this.highlightConfig);
         };
         this.imageElement.src = 'data:image/jpg;base64,' + base64Data;
     }
     isGlassPaneActive() {
-        return !this.glassPaneElement.classList.contains('hidden');
+        return !this.#glassPaneHidden;
     }
     screencastVisibilityChanged(visible) {
         this.targetInactive = !visible;
@@ -240,16 +383,20 @@ export class ScreencastView extends UI.Widget.VBox {
         this.updateGlasspane();
     }
     updateGlasspane() {
+        let newText = '';
+        let newHidden = true;
         if (this.targetInactive) {
-            this.glassPaneElement.textContent = i18nString(UIStrings.theTabIsInactive);
-            this.glassPaneElement.classList.remove('hidden');
+            newText = i18nString(UIStrings.theTabIsInactive);
+            newHidden = false;
         }
         else if (SDK.TargetManager.TargetManager.instance().allTargetsSuspended()) {
-            this.glassPaneElement.textContent = i18nString(UIStrings.profilingInProgress);
-            this.glassPaneElement.classList.remove('hidden');
+            newText = i18nString(UIStrings.profilingInProgress);
+            newHidden = false;
         }
-        else {
-            this.glassPaneElement.classList.add('hidden');
+        if (this.#glassPaneText !== newText || this.#glassPaneHidden !== newHidden) {
+            this.#glassPaneText = newText;
+            this.#glassPaneHidden = newHidden;
+            this.requestUpdate();
         }
     }
     async handleMouseEvent(event) {
@@ -266,7 +413,7 @@ export class ScreencastView extends UI.Widget.VBox {
             }
             event.preventDefault();
             if (event.type === 'mousedown') {
-                this.canvasElement.focus();
+                this.#viewOutput.focusCanvas?.();
             }
             return;
         }
@@ -311,10 +458,10 @@ export class ScreencastView extends UI.Widget.VBox {
             this.inputModel.emitKeyEvent(event);
         }
         event.consume();
-        this.canvasElement.focus();
+        this.#viewOutput.focusCanvas?.();
     }
     handleBlurEvent() {
-        if (this.inputModel && this.mouseInputToggle?.disabled) {
+        if (this.inputModel && !this.#isTouchEmulated) {
             const event = new MouseEvent('mouseup');
             this.inputModel.emitMouseEvent(event, this.screenOffsetTop, this.screenZoom);
         }
@@ -359,19 +506,24 @@ export class ScreencastView extends UI.Widget.VBox {
             this.model = null;
             this.config = null;
             this.node = null;
-            this.titleElement.classList.add('hidden');
-            this.repaint();
+            if (this.#elementTitleData.visible) {
+                this.#elementTitleData = { visible: false };
+            }
+            this.drawElementTitle();
+            this.requestUpdate();
             return;
         }
         this.node = node;
         void node.boxModel().then(model => {
             if (!model || !this.pageScaleFactor) {
-                this.repaint();
+                this.drawElementTitle();
+                this.requestUpdate();
                 return;
             }
             this.model = this.scaleModel(model);
             this.config = config;
-            this.repaint();
+            this.drawElementTitle();
+            this.requestUpdate();
         });
     }
     scaleModel(model) {
@@ -387,25 +539,21 @@ export class ScreencastView extends UI.Widget.VBox {
         scaleQuad.call(this, model.margin);
         return model;
     }
-    repaint() {
-        const model = this.model;
-        const config = this.config;
-        const canvasWidth = this.canvasElement.getBoundingClientRect().width;
-        const canvasHeight = this.canvasElement.getBoundingClientRect().height;
-        this.canvasElement.width = window.devicePixelRatio * canvasWidth;
-        this.canvasElement.height = window.devicePixelRatio * canvasHeight;
-        this.context.save();
-        this.context.scale(window.devicePixelRatio, window.devicePixelRatio);
-        // Paint top and bottom gutter.
-        this.context.save();
-        if (this.checkerboardPattern) {
-            this.context.fillStyle = this.checkerboardPattern;
+    static repaintScreencastCanvas(el, input) {
+        const context = el.getContext('2d');
+        if (!context) {
+            return;
         }
-        this.context.fillRect(0, 0, canvasWidth, this.screenOffsetTop * this.screenZoom);
-        this.context.fillRect(0, this.screenOffsetTop * this.screenZoom + this.imageElement.naturalHeight * this.imageZoom, canvasWidth, canvasHeight);
-        this.context.restore();
+        const model = input.highlightModel;
+        const config = input.highlightConfig;
+        const canvasWidth = el.getBoundingClientRect().width;
+        const canvasHeight = el.getBoundingClientRect().height;
+        el.width = window.devicePixelRatio * canvasWidth;
+        el.height = window.devicePixelRatio * canvasHeight;
+        context.save();
+        context.scale(window.devicePixelRatio, window.devicePixelRatio);
         if (model && config) {
-            this.context.save();
+            context.save();
             const quads = [];
             const isTransparent = (color) => Boolean(color.a && color.a === 0);
             if (model.content && config.contentColor && !isTransparent(config.contentColor)) {
@@ -421,19 +569,19 @@ export class ScreencastView extends UI.Widget.VBox {
                 quads.push({ quad: model.margin, color: config.marginColor });
             }
             for (let i = quads.length - 1; i > 0; --i) {
-                this.drawOutlinedQuadWithClip(quads[i].quad, quads[i - 1].quad, quads[i].color);
+                ScreencastView.drawOutlinedQuadWithClip(context, quads[i].quad, quads[i - 1].quad, quads[i].color);
             }
             if (quads.length > 0) {
-                this.drawOutlinedQuad(quads[0].quad, quads[0].color);
+                ScreencastView.drawOutlinedQuad(context, quads[0].quad, quads[0].color);
             }
-            this.context.restore();
-            this.drawElementTitle();
-            this.context.globalCompositeOperation = 'destination-over';
+            context.globalCompositeOperation = 'destination-over';
         }
-        this.context.drawImage(this.imageElement, 0, this.screenOffsetTop * this.screenZoom, this.imageElement.naturalWidth * this.imageZoom, this.imageElement.naturalHeight * this.imageZoom);
-        this.context.restore();
+        if (input.screencastImage) {
+            context.drawImage(input.screencastImage, 0, input.screenOffsetTop * input.screenZoom, input.screencastImage.naturalWidth * input.imageZoom, input.screencastImage.naturalHeight * input.imageZoom);
+        }
+        context.restore();
     }
-    cssColor(color) {
+    static cssColor(color) {
         if (!color) {
             return 'transparent';
         }
@@ -441,101 +589,98 @@ export class ScreencastView extends UI.Widget.VBox {
             .asString("rgba" /* Common.Color.Format.RGBA */) ||
             '';
     }
-    quadToPath(quad) {
-        this.context.beginPath();
-        this.context.moveTo(quad[0], quad[1]);
-        this.context.lineTo(quad[2], quad[3]);
-        this.context.lineTo(quad[4], quad[5]);
-        this.context.lineTo(quad[6], quad[7]);
-        this.context.closePath();
-        return this.context;
+    static quadToPath(context, quad) {
+        context.beginPath();
+        context.moveTo(quad[0], quad[1]);
+        context.lineTo(quad[2], quad[3]);
+        context.lineTo(quad[4], quad[5]);
+        context.lineTo(quad[6], quad[7]);
+        context.closePath();
+        return context;
     }
-    drawOutlinedQuad(quad, fillColor) {
-        this.context.save();
-        this.context.lineWidth = 2;
-        this.quadToPath(quad).clip();
-        this.context.fillStyle = this.cssColor(fillColor);
-        this.context.fill();
-        this.context.restore();
+    static drawOutlinedQuad(context, quad, fillColor) {
+        context.save();
+        context.lineWidth = 2;
+        ScreencastView.quadToPath(context, quad).clip();
+        context.fillStyle = ScreencastView.cssColor(fillColor);
+        context.fill();
+        context.restore();
     }
-    drawOutlinedQuadWithClip(quad, clipQuad, fillColor) {
-        this.context.fillStyle = this.cssColor(fillColor);
-        this.context.save();
-        this.context.lineWidth = 0;
-        this.quadToPath(quad).fill();
-        this.context.globalCompositeOperation = 'destination-out';
-        this.context.fillStyle = 'red';
-        this.quadToPath(clipQuad).fill();
-        this.context.restore();
+    static drawOutlinedQuadWithClip(context, quad, clipQuad, fillColor) {
+        context.fillStyle = ScreencastView.cssColor(fillColor);
+        context.save();
+        context.lineWidth = 0;
+        ScreencastView.quadToPath(context, quad).fill();
+        context.globalCompositeOperation = 'destination-out';
+        context.fillStyle = 'red';
+        ScreencastView.quadToPath(context, clipQuad).fill();
+        context.restore();
     }
     drawElementTitle() {
         if (!this.node) {
+            if (this.#elementTitleData.visible) {
+                this.#elementTitleData = { visible: false };
+                this.requestUpdate();
+            }
             return;
         }
-        const canvasWidth = this.canvasElement.getBoundingClientRect().width;
-        const canvasHeight = this.canvasElement.getBoundingClientRect().height;
         const lowerCaseName = this.node.localName() || this.node.nodeName().toLowerCase();
-        this.tagNameElement.textContent = lowerCaseName;
-        this.attributeElement.textContent = getAttributesForElementTitle(this.node);
-        this.nodeWidthElement.textContent = String(this.model ? this.model.width : 0);
-        this.nodeHeightElement.textContent = String(this.model ? this.model.height : 0);
-        this.titleElement.classList.remove('hidden');
-        const titleWidth = this.titleElement.offsetWidth + 6;
-        const titleHeight = this.titleElement.offsetHeight + 4;
-        const anchorTop = this.model ? this.model.margin[1] : 0;
-        const anchorBottom = this.model ? this.model.margin[7] : 0;
+        const attribute = getAttributesForElementTitle(this.node);
+        const width = String(this.model ? this.model.width : 0);
+        const height = String(this.model ? this.model.height : 0);
+        if (!this.#elementTitleData.visible || this.#elementTitleData.tagName !== lowerCaseName ||
+            this.#elementTitleData.attribute !== attribute || this.#elementTitleData.width !== width ||
+            this.#elementTitleData.height !== height) {
+            this.#elementTitleData = {
+                visible: true,
+                tagName: lowerCaseName,
+                attribute,
+                width,
+                height,
+            };
+            this.requestUpdate();
+        }
+    }
+    static clampTooltipPosition(canvas, titleElement, model) {
+        if (!model) {
+            return;
+        }
+        const canvasWidth = canvas.getBoundingClientRect().width;
+        const canvasHeight = canvas.getBoundingClientRect().height;
+        const titleWidth = titleElement.offsetWidth;
+        const titleHeight = titleElement.offsetHeight;
+        const anchorTop = model.margin[1];
+        const anchorBottom = model.margin[7];
         const arrowHeight = 7;
-        let renderArrowUp = false;
-        let renderArrowDown = false;
-        let boxX = Math.max(2, this.model ? this.model.margin[0] : 0);
+        let arrowDirection;
+        let boxX = Math.max(2, model.margin[0]);
         if (boxX + titleWidth > canvasWidth) {
             boxX = canvasWidth - titleWidth - 2;
         }
         let boxY;
         if (anchorTop > canvasHeight) {
             boxY = canvasHeight - titleHeight - arrowHeight;
-            renderArrowDown = true;
+            arrowDirection = 'down';
         }
         else if (anchorBottom < 0) {
             boxY = arrowHeight;
-            renderArrowUp = true;
+            arrowDirection = 'up';
         }
         else if (anchorBottom + titleHeight + arrowHeight < canvasHeight) {
             boxY = anchorBottom + arrowHeight - 4;
-            renderArrowUp = true;
+            arrowDirection = 'up';
         }
         else if (anchorTop - titleHeight - arrowHeight > 0) {
             boxY = anchorTop - titleHeight - arrowHeight + 3;
-            renderArrowDown = true;
+            arrowDirection = 'down';
         }
         else {
             boxY = arrowHeight;
         }
-        this.context.save();
-        this.context.translate(0.5, 0.5);
-        this.context.beginPath();
-        this.context.moveTo(boxX, boxY);
-        if (renderArrowUp) {
-            this.context.lineTo(boxX + 2 * arrowHeight, boxY);
-            this.context.lineTo(boxX + 3 * arrowHeight, boxY - arrowHeight);
-            this.context.lineTo(boxX + 4 * arrowHeight, boxY);
-        }
-        this.context.lineTo(boxX + titleWidth, boxY);
-        this.context.lineTo(boxX + titleWidth, boxY + titleHeight);
-        if (renderArrowDown) {
-            this.context.lineTo(boxX + 4 * arrowHeight, boxY + titleHeight);
-            this.context.lineTo(boxX + 3 * arrowHeight, boxY + titleHeight + arrowHeight);
-            this.context.lineTo(boxX + 2 * arrowHeight, boxY + titleHeight);
-        }
-        this.context.lineTo(boxX, boxY + titleHeight);
-        this.context.closePath();
-        this.context.fillStyle = 'var(--sys-color-yellow-container)';
-        this.context.fill();
-        this.context.strokeStyle = 'var(--sys-color-outline)';
-        this.context.stroke();
-        this.context.restore();
-        this.titleElement.style.top = (boxY + 3) + 'px';
-        this.titleElement.style.left = (boxX + 3) + 'px';
+        titleElement.style.top = `${boxY}px`;
+        titleElement.style.left = `${boxX}px`;
+        titleElement.classList.toggle('arrow-up', arrowDirection === 'up');
+        titleElement.classList.toggle('arrow-down', arrowDirection === 'down');
     }
     viewportDimensions() {
         const gutterSize = 30;
@@ -550,52 +695,15 @@ export class ScreencastView extends UI.Widget.VBox {
     }
     highlightFrame(_frameId) {
     }
-    createCheckerboardPattern(context) {
-        const size = 32;
-        const pattern = new OffscreenCanvas(size * 2, size * 2);
-        const pctx = pattern.getContext('2d', { willReadFrequently: true });
-        pctx.fillStyle = 'var(--sys-color-neutral-outline)';
-        pctx.fillRect(0, 0, size * 2, size * 2);
-        pctx.fillStyle = 'var(--sys-color-surface-variant)';
-        pctx.fillRect(0, 0, size, size);
-        pctx.fillRect(size, size, size, size);
-        return context.createPattern(pattern, 'repeat');
-    }
     createNavigationBar() {
-        this.navigationBar = this.element.createChild('div', 'screencast-navigation');
-        this.navigationBack = this.navigationBar.createChild('button', 'navigation');
-        this.navigationBack.appendChild(createIcon('arrow-back'));
-        this.navigationBack.disabled = true;
-        UI.ARIAUtils.setLabel(this.navigationBack, i18nString(UIStrings.back));
-        this.navigationForward = this.navigationBar.createChild('button', 'navigation');
-        this.navigationForward.appendChild(createIcon('arrow-forward'));
-        this.navigationForward.disabled = true;
-        UI.ARIAUtils.setLabel(this.navigationForward, i18nString(UIStrings.forward));
-        this.navigationReload = this.navigationBar.createChild('button', 'navigation');
-        this.navigationReload.appendChild(createIcon('refresh'));
-        UI.ARIAUtils.setLabel(this.navigationReload, i18nString(UIStrings.reload));
-        this.navigationUrl = this.navigationBar.appendChild(UI.UIUtils.createInput());
-        this.navigationUrl.type = 'text';
-        UI.ARIAUtils.setLabel(this.navigationUrl, i18nString(UIStrings.addressBar));
-        this.mouseInputToggle = this.navigationBar.createChild('button');
-        this.mouseInputToggle.disabled = true;
-        {
-            this.mouseInputToggleIcon = this.mouseInputToggle.appendChild(new Icon());
-            this.mouseInputToggleIcon.name = 'mouse';
-            this.mouseInputToggleIcon.classList.toggle('toggled', true);
-        }
-        UI.ARIAUtils.setLabel(this.mouseInputToggle, i18nString(UIStrings.mouseInput));
-        this.touchInputToggle = this.navigationBar.createChild('button');
-        this.touchInputToggleIcon = this.touchInputToggle.appendChild(createIcon('touch-app'));
-        UI.ARIAUtils.setLabel(this.touchInputToggle, i18nString(UIStrings.touchInput));
-        this.navigationProgressBar = new ProgressTracker(this.resourceTreeModel, this.networkManager, this.navigationBar.createChild('div', 'progress'));
+        this.navigationProgressBar =
+            new ProgressTracker(this.resourceTreeModel, this.networkManager, (progress) => {
+                if (this.#progressPercent !== progress) {
+                    this.#progressPercent = progress;
+                    this.requestUpdate();
+                }
+            });
         if (this.resourceTreeModel) {
-            this.navigationBack.addEventListener('click', this.navigateToHistoryEntry.bind(this, -1), false);
-            this.navigationForward.addEventListener('click', this.navigateToHistoryEntry.bind(this, 1), false);
-            this.navigationReload.addEventListener('click', this.navigateReload.bind(this), false);
-            this.navigationUrl.addEventListener('keyup', this.navigationUrlKeyUp.bind(this), true);
-            this.touchInputToggle.addEventListener('click', this.#toggleTouchEmulation.bind(this, true), false);
-            this.mouseInputToggle.addEventListener('click', this.#toggleTouchEmulation.bind(this, false), false);
             void this.requestNavigationHistory();
             this.resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.requestNavigationHistoryEvent, this);
             this.resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.CachedResourcesLoaded, this.requestNavigationHistoryEvent, this);
@@ -622,7 +730,8 @@ export class ScreencastView extends UI.Widget.VBox {
         if (event.key !== 'Enter') {
             return;
         }
-        let url = this.navigationUrl.value;
+        const inputElement = event.target;
+        let url = inputElement.value;
         if (!url) {
             return;
         }
@@ -632,22 +741,18 @@ export class ScreencastView extends UI.Widget.VBox {
         if (this.resourceTreeModel) {
             void this.resourceTreeModel.navigate(url);
         }
-        this.canvasElement.focus();
+        this.#viewOutput.focusCanvas?.();
     }
     #toggleTouchEmulation(value) {
-        if (!this.canvasContainerElement || !this.isCasting || !this.mouseInputToggle || !this.touchInputToggle ||
-            !this.mouseInputToggleIcon || !this.touchInputToggleIcon) {
+        if (!this.isCasting) {
             return;
         }
         const models = SDK.TargetManager.TargetManager.instance().models(SDK.EmulationModel.EmulationModel);
         for (const model of models) {
             void model.overrideEmulateTouch(value);
         }
-        this.mouseInputToggle.disabled = !value;
-        this.touchInputToggle.disabled = value;
-        this.mouseInputToggleIcon.classList.toggle('toggled', this.mouseInputToggle.disabled);
-        this.touchInputToggleIcon.classList.toggle('toggled', this.touchInputToggle.disabled);
-        this.canvasContainerElement.classList.toggle('touchable', value);
+        this.#isTouchEmulated = value;
+        this.requestUpdate();
     }
     requestNavigationHistoryEvent() {
         void this.requestNavigationHistory();
@@ -659,19 +764,19 @@ export class ScreencastView extends UI.Widget.VBox {
         }
         this.historyIndex = history.currentIndex;
         this.historyEntries = history.entries;
-        this.navigationBack.disabled = this.historyIndex === 0;
-        this.navigationForward.disabled = this.historyIndex === (this.historyEntries.length - 1);
+        this.#canGoBack = this.historyIndex > 0;
+        this.#canGoForward = this.historyIndex < (this.historyEntries.length - 1);
         let url = this.historyEntries[this.historyIndex].url;
         const match = url.match(HTTP_REGEX);
         if (match) {
             url = match[1];
         }
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.inspectedURLChanged(url);
-        this.navigationUrl.value = decodeURI(url);
+        this.#navigationUrlText = decodeURI(url);
+        this.requestUpdate();
     }
     focusNavigationBar() {
-        this.navigationUrl.focus();
-        this.navigationUrl.select();
+        this.#viewOutput.focusUrlInput?.();
         return true;
     }
 }
@@ -682,15 +787,15 @@ export const SCHEME_REGEX = /^(https?|about|chrome):/;
 export class ProgressTracker {
     resourceTreeModel;
     networkManager;
-    element;
     requestIds;
     startedRequests;
     finishedRequests;
     maxDisplayedProgress;
-    constructor(resourceTreeModel, networkManager, element) {
-        this.element = element;
+    onProgressUpdate;
+    constructor(resourceTreeModel, networkManager, onProgressUpdate) {
         this.resourceTreeModel = resourceTreeModel;
         this.networkManager = networkManager;
+        this.onProgressUpdate = onProgressUpdate;
         if (this.resourceTreeModel) {
             this.resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.onPrimaryPageChanged, this);
             this.resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.Load, this.onLoad, this);
@@ -771,7 +876,7 @@ export class ProgressTracker {
         this.displayProgress(progress);
     }
     displayProgress(progress) {
-        this.element.style.width = (100 * progress) + '%';
+        this.onProgressUpdate?.(progress);
     }
 }
 function getAttributesForElementTitle(node) {

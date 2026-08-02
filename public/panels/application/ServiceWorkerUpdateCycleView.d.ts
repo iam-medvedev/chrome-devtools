@@ -1,19 +1,25 @@
 import * as SDK from '../../core/sdk/sdk.js';
-export declare class ServiceWorkerUpdateCycleView {
-    private registration;
+import * as UI from '../../ui/legacy/legacy.js';
+export interface ViewInput {
+    timeRanges: ServiceWorkerUpdateRange[];
+    expandedRows: Set<string>;
+    onFocus: (event: Event) => void;
+    onKeydown: (event: Event, key: string) => void;
+    onClick: (event: Event, key: string) => void;
+}
+export type View = (input: ViewInput, output: unknown, target: HTMLElement) => void;
+export declare const DEFAULT_VIEW: View;
+export declare class ServiceWorkerUpdateCycleView extends UI.Widget.Widget {
+    #private;
     private rows;
     private selectedRowIndex;
-    tableElement: HTMLElement;
-    constructor(registration: SDK.ServiceWorkerManager.ServiceWorkerRegistration);
+    private expandedRows;
+    constructor(element?: HTMLElement, view?: View);
+    set registration(registration: SDK.ServiceWorkerManager.ServiceWorkerRegistration | undefined);
+    get registration(): SDK.ServiceWorkerManager.ServiceWorkerRegistration | undefined;
+    set registrationFingerprint(_fingerprint: symbol | undefined);
     calculateServiceWorkerUpdateRanges(): ServiceWorkerUpdateRange[];
-    private createTimingTable;
-    private createTimingTableHead;
-    private removeRows;
-    private updateTimingTable;
-    /**
-     * Detailed information about an update phase. Currently starting and ending time.
-     */
-    private constructUpdateDetails;
+    performUpdate(): void;
     private toggle;
     private onFocus;
     private onKeydown;
@@ -24,7 +30,6 @@ export declare class ServiceWorkerUpdateCycleView {
     private selectNextRow;
     private selectPreviousRow;
     private onClick;
-    refresh(): void;
 }
 export declare const enum ServiceWorkerUpdateNames {
     INSTALL = "Install",

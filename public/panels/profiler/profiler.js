@@ -683,155 +683,19 @@ var BottomUpProfileDataGridTree = class extends ProfileDataGridTree {
   }
 };
 
-// gen/front_end/panels/profiler/HeapProfilerPanel.js
-var HeapProfilerPanel_exports = {};
-__export(HeapProfilerPanel_exports, {
-  HeapProfilerPanel: () => HeapProfilerPanel
-});
-import * as i18n25 from "./../../core/i18n/i18n.js";
-import * as UI14 from "./../../ui/legacy/legacy.js";
-
-// gen/front_end/panels/profiler/ProfilesPanel.js
-var ProfilesPanel_exports = {};
-__export(ProfilesPanel_exports, {
-  ActionDelegate: () => ActionDelegate,
-  ProfileGroupSidebarTreeElement: () => ProfileGroupSidebarTreeElement,
-  ProfileTypeSidebarSection: () => ProfileTypeSidebarSection,
-  ProfilesPanel: () => ProfilesPanel,
-  ProfilesSidebarTreeElement: () => ProfilesSidebarTreeElement
-});
-import "./../../ui/legacy/legacy.js";
-import * as Common12 from "./../../core/common/common.js";
-import * as i18n23 from "./../../core/i18n/i18n.js";
-import * as SDK7 from "./../../core/sdk/sdk.js";
-import { createIcon as createIcon2 } from "./../../ui/kit/kit.js";
-
-// gen/front_end/ui/legacy/components/object_ui/objectValue.css.js
-var objectValue_css_default = `/*
- * Copyright 2015 The Chromium Authors
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
-
-.value.object-value-node:hover {
-  background-color: var(--sys-color-state-hover-on-subtle);
-}
-
-.object-value-function-prefix,
-.object-value-boolean {
-  color: var(--sys-color-token-attribute-value);
-}
-
-.object-value-function {
-  font-style: italic;
-}
-
-.object-value-function.linkified:hover {
-  --override-linkified-hover-background: rgb(0 0 0 / 10%);
-
-  background-color: var(--override-linkified-hover-background);
-  cursor: pointer;
-}
-
-.theme-with-dark-background .object-value-function.linkified:hover,
-:host-context(.theme-with-dark-background) .object-value-function.linkified:hover {
-  --override-linkified-hover-background: rgb(230 230 230 / 10%);
-}
-
-.object-value-number {
-  color: var(--sys-color-token-attribute-value);
-}
-
-.object-value-bigint {
-  color: var(--sys-color-token-comment);
-}
-
-.object-value-string,
-.object-value-regexp,
-.object-value-symbol {
-  white-space: pre;
-  unicode-bidi: isolate;
-  color: var(--sys-color-token-property-special);
-}
-
-.object-value-node {
-  position: relative;
-  vertical-align: baseline;
-  color: var(--sys-color-token-variable);
-  white-space: nowrap;
-}
-
-.object-value-null,
-.object-value-undefined {
-  color: var(--sys-color-state-disabled);
-}
-
-.object-value-unavailable {
-  color: var(--sys-color-token-tag);
-}
-
-.object-value-calculate-value-button:hover {
-  text-decoration: underline;
-}
-
-.object-properties-section-custom-section {
-  display: inline-flex;
-  flex-direction: column;
-}
-
-.theme-with-dark-background .object-value-number,
-:host-context(.theme-with-dark-background) .object-value-number,
-.theme-with-dark-background .object-value-boolean,
-:host-context(.theme-with-dark-background) .object-value-boolean {
-  --override-primitive-dark-mode-color: hsl(252deg 100% 75%);
-
-  color: var(--override-primitive-dark-mode-color);
-}
-
-.object-properties-section .object-description {
-  color: var(--sys-color-token-subtle);
-}
-
-.value .object-properties-preview {
-  white-space: nowrap;
-}
-
-.name {
-  color: var(--sys-color-token-tag);
-  flex-shrink: 0;
-  unicode-bidi: isolate;
-}
-
-.object-properties-preview .name {
-  color: var(--sys-color-token-subtle);
-}
-
-@media (forced-colors: active) {
-  .object-value-calculate-value-button:hover {
-    forced-color-adjust: none;
-    color: Highlight;
-  }
-}
-
-/*# sourceURL=${import.meta.resolve("./objectValue.css")} */`;
-
-// gen/front_end/panels/profiler/ProfilesPanel.js
-import * as UI13 from "./../../ui/legacy/legacy.js";
-import { render as render4 } from "./../../ui/lit/lit.js";
-import * as VisualLogging7 from "./../../ui/visual_logging/visual_logging.js";
-
-// gen/front_end/panels/profiler/HeapDetachedElementsView.js
-import * as Common3 from "./../../core/common/common.js";
-import * as i18n5 from "./../../core/i18n/i18n.js";
-import * as SDK2 from "./../../core/sdk/sdk.js";
-import * as UI3 from "./../../ui/legacy/legacy.js";
-
 // gen/front_end/panels/profiler/HeapDetachedElementsDataGrid.js
+var HeapDetachedElementsDataGrid_exports = {};
+__export(HeapDetachedElementsDataGrid_exports, {
+  HeapDetachedElementsDataGrid: () => HeapDetachedElementsDataGrid,
+  HeapDetachedElementsDataGridNode: () => HeapDetachedElementsDataGridNode
+});
 import * as i18n from "./../../core/i18n/i18n.js";
 import * as SDK from "./../../core/sdk/sdk.js";
 import * as DataGrid from "./../../ui/legacy/components/data_grid/data_grid.js";
 import * as UI2 from "./../../ui/legacy/legacy.js";
+import { html, render } from "./../../ui/lit/lit.js";
 import * as Elements from "./../elements/elements.js";
+var { widget } = UI2.Widget;
 var UIStrings = {
   /**
    * @description Text in Heap Snapshot View of a profiler tool
@@ -892,7 +756,7 @@ var HeapDetachedElementsDataGridNode = class extends DataGrid.DataGrid.DataGridN
       }
       case "detached-node-count": {
         const size = this.#getNodeSize(this.detachedElementInfo);
-        UI2.UIUtils.createTextChild(cell, size.toString());
+        render(html`${size}`, cell);
         return cell;
       }
     }
@@ -921,17 +785,33 @@ var HeapDetachedElementsDataGridNode = class extends DataGrid.DataGrid.DataGridN
   }
   // FIXME: is it a partial dupe of front_end/panels/elements/ElementsTreeOutlineRenderer.ts?
   #renderNode(node, target) {
-    const domTree = new Elements.ElementsTreeOutline.DOMTreeWidget();
-    domTree.omitRootDOMNode = false;
-    domTree.selectEnabled = true;
-    domTree.hideGutter = true;
-    domTree.rootDOMNode = node;
-    domTree.showSelectionOnKeyboardFocus = true;
-    domTree.preventTabOrder = true;
-    domTree.deindentSingleNode = true;
-    domTree.show(target, void 0, true);
+    render(html`
+          <devtools-widget
+            ${widget(Elements.ElementsTreeOutline.DOMTreeWidget, {
+      omitRootDOMNode: false,
+      selectEnabled: true,
+      hideGutter: true,
+      rootDOMNode: node,
+      showSelectionOnKeyboardFocus: true,
+      preventTabOrder: true,
+      deindentSingleNode: true
+    })}
+          ></devtools-widget>
+        `, target);
   }
 };
+
+// gen/front_end/panels/profiler/HeapDetachedElementsView.js
+var HeapDetachedElementsView_exports = {};
+__export(HeapDetachedElementsView_exports, {
+  DetachedElementsProfileHeader: () => DetachedElementsProfileHeader,
+  DetachedElementsProfileType: () => DetachedElementsProfileType,
+  DetachedElementsProfileView: () => DetachedElementsProfileView
+});
+import * as Common3 from "./../../core/common/common.js";
+import * as i18n5 from "./../../core/i18n/i18n.js";
+import * as SDK2 from "./../../core/sdk/sdk.js";
+import * as UI3 from "./../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/profiler/ProfileHeader.js
 var ProfileHeader_exports = {};
@@ -1369,6 +1249,143 @@ var DetachedElementsProfileHeader = class extends WritableProfileHeader {
   }
 };
 
+// gen/front_end/panels/profiler/HeapProfilerPanel.js
+var HeapProfilerPanel_exports = {};
+__export(HeapProfilerPanel_exports, {
+  HeapProfilerPanel: () => HeapProfilerPanel
+});
+import * as i18n25 from "./../../core/i18n/i18n.js";
+import * as UI14 from "./../../ui/legacy/legacy.js";
+
+// gen/front_end/panels/profiler/ProfilesPanel.js
+var ProfilesPanel_exports = {};
+__export(ProfilesPanel_exports, {
+  ActionDelegate: () => ActionDelegate,
+  ProfileGroupSidebarTreeElement: () => ProfileGroupSidebarTreeElement,
+  ProfileTypeSidebarSection: () => ProfileTypeSidebarSection,
+  ProfilesPanel: () => ProfilesPanel,
+  ProfilesSidebarTreeElement: () => ProfilesSidebarTreeElement
+});
+import "./../../ui/legacy/legacy.js";
+import * as Common12 from "./../../core/common/common.js";
+import * as i18n23 from "./../../core/i18n/i18n.js";
+import * as SDK7 from "./../../core/sdk/sdk.js";
+import { createIcon as createIcon2 } from "./../../ui/kit/kit.js";
+
+// gen/front_end/ui/legacy/components/object_ui/objectValue.css.js
+var objectValue_css_default = `/*
+ * Copyright 2015 The Chromium Authors
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+.value.object-value-node:hover {
+  background-color: var(--sys-color-state-hover-on-subtle);
+}
+
+.object-value-function-prefix,
+.object-value-boolean {
+  color: var(--sys-color-token-attribute-value);
+}
+
+.object-value-function {
+  font-style: italic;
+}
+
+.object-value-function.linkified:hover {
+  --override-linkified-hover-background: rgb(0 0 0 / 10%);
+
+  background-color: var(--override-linkified-hover-background);
+  cursor: pointer;
+}
+
+.theme-with-dark-background .object-value-function.linkified:hover,
+:host-context(.theme-with-dark-background) .object-value-function.linkified:hover {
+  --override-linkified-hover-background: rgb(230 230 230 / 10%);
+}
+
+.object-value-number {
+  color: var(--sys-color-token-attribute-value);
+}
+
+.object-value-bigint {
+  color: var(--sys-color-token-comment);
+}
+
+.object-value-string,
+.object-value-regexp,
+.object-value-symbol {
+  white-space: pre;
+  unicode-bidi: isolate;
+  color: var(--sys-color-token-property-special);
+}
+
+.object-value-node {
+  position: relative;
+  vertical-align: baseline;
+  color: var(--sys-color-token-variable);
+  white-space: nowrap;
+}
+
+.object-value-null,
+.object-value-undefined {
+  color: var(--sys-color-state-disabled);
+}
+
+.object-value-unavailable {
+  color: var(--sys-color-token-tag);
+}
+
+.object-value-calculate-value-button:hover {
+  text-decoration: underline;
+}
+
+.object-properties-section-custom-section {
+  display: inline-flex;
+  flex-direction: column;
+}
+
+.theme-with-dark-background .object-value-number,
+:host-context(.theme-with-dark-background) .object-value-number,
+.theme-with-dark-background .object-value-boolean,
+:host-context(.theme-with-dark-background) .object-value-boolean {
+  --override-primitive-dark-mode-color: hsl(252deg 100% 75%);
+
+  color: var(--override-primitive-dark-mode-color);
+}
+
+.object-properties-section .object-description {
+  color: var(--sys-color-token-subtle);
+}
+
+.value .object-properties-preview {
+  white-space: nowrap;
+}
+
+.name {
+  color: var(--sys-color-token-tag);
+  flex-shrink: 0;
+  unicode-bidi: isolate;
+}
+
+.object-properties-preview .name {
+  color: var(--sys-color-token-subtle);
+}
+
+@media (forced-colors: active) {
+  .object-value-calculate-value-button:hover {
+    forced-color-adjust: none;
+    color: Highlight;
+  }
+}
+
+/*# sourceURL=${import.meta.resolve("./objectValue.css")} */`;
+
+// gen/front_end/panels/profiler/ProfilesPanel.js
+import * as UI13 from "./../../ui/legacy/legacy.js";
+import { render as render5 } from "./../../ui/lit/lit.js";
+import * as VisualLogging7 from "./../../ui/visual_logging/visual_logging.js";
+
 // gen/front_end/panels/profiler/heapProfiler.css.js
 var heapProfiler_css_default = `/*
  * Copyright (C) 2009 Google Inc. All rights reserved.
@@ -1646,7 +1663,7 @@ import * as PerfUI3 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
 import * as SettingsUI from "./../../ui/legacy/components/settings_ui/settings_ui.js";
 import * as Components from "./../../ui/legacy/components/utils/utils.js";
 import * as UI6 from "./../../ui/legacy/legacy.js";
-import { Directives, html, nothing, render } from "./../../ui/lit/lit.js";
+import { Directives, html as html2, nothing, render as render2 } from "./../../ui/lit/lit.js";
 import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/profiler/HeapTimelineOverview.js
@@ -2561,7 +2578,7 @@ var TopDownProfileDataGridTree = class extends ProfileDataGridTree {
 
 // gen/front_end/panels/profiler/HeapProfileView.js
 var { repeat, ref } = Directives;
-var { widget, widgetRef } = UI6.Widget;
+var { widget: widget2, widgetRef } = UI6.Widget;
 var UIStrings4 = {
   /**
    * @description The reported total size used in the selected time frame of the allocation sampling profile
@@ -2707,27 +2724,27 @@ function convertToSamplingHeapProfile(profileHeader) {
 var maxLinkLength = 30;
 var DEFAULT_VIEW = (input, output, target) => {
   const { searchableView, dataProvider } = input;
-  render(html`
-    ${input.hasTemporaryView ? html`
-      <devtools-widget ${widget(() => input.timelineOverview)}></devtools-widget>` : nothing}
-    <devtools-widget ${widget((element) => {
+  render2(html2`
+    ${input.hasTemporaryView ? html2`
+      <devtools-widget ${widget2(() => input.timelineOverview)}></devtools-widget>` : nothing}
+    <devtools-widget ${widget2((element) => {
     const searchableViewWidget = new UI6.SearchableView.SearchableView(input.searchable, null, void 0, element);
     searchableViewWidget.setPlaceholder(i18nString4(UIStrings4.findByCostMsNameOrFile));
     return searchableViewWidget;
   })}
       ${widgetRef(UI6.SearchableView.SearchableView, input.onSearchableViewMount)}>
-      ${input.viewType === "Flame" && searchableView && dataProvider ? html`
+      ${input.viewType === "Flame" && searchableView && dataProvider ? html2`
           <devtools-widget
             autofocus
-            ${widget((e) => new ProfileFlameChart(searchableView, dataProvider, e), { range: input.range })}
+            ${widget2((e) => new ProfileFlameChart(searchableView, dataProvider, e), { range: input.range })}
             @EntryInvoked=${(e) => input.onFlameChartEntryInvoked(e.detail)}
-            ${widgetRef(ProfileFlameChart, (widget3) => {
-    output.performSearch = widget3.performSearch.bind(widget3);
-    output.jumpToNextSearchResult = widget3.jumpToNextSearchResult.bind(widget3);
-    output.jumpToPreviousSearchResult = widget3.jumpToPreviousSearchResult.bind(widget3);
-    output.onSearchCanceled = widget3.onSearchCanceled.bind(widget3);
+            ${widgetRef(ProfileFlameChart, (widget4) => {
+    output.performSearch = widget4.performSearch.bind(widget4);
+    output.jumpToNextSearchResult = widget4.jumpToNextSearchResult.bind(widget4);
+    output.jumpToPreviousSearchResult = widget4.jumpToPreviousSearchResult.bind(widget4);
+    output.onSearchCanceled = widget4.onSearchCanceled.bind(widget4);
   })}>
-          </devtools-widget>` : input.profileDataGridTree ? html`
+          </devtools-widget>` : input.profileDataGridTree ? html2`
           <div class="data-grid-target vbox flex-auto">${renderDataGrid(input)}</div>` : nothing}
     </devtools-widget>`, target);
 };
@@ -2739,11 +2756,11 @@ function renderDataGrid(input) {
   if (input.profileDataGridTree && input.profileDataGridTree.searchResults) {
     highlightIndex = input.profileDataGridTree.searchResultIndex + 1;
   }
-  return html`
+  return html2`
     <style>${profilesPanel_css_default}</style>
     <devtools-data-grid class="flex-auto" name=${i18nString4(UIStrings4.profiler)} striped autofocus resize="last"
                         highlight=${highlightIndex >= 1 ? highlightIndex : nothing}
-                        @deselect=${input.onDeselect} .template=${html`
+                        @deselect=${input.onDeselect} .template=${html2`
       <style>${profilesPanel_css_default}</style>
       <table>
         <tr>
@@ -2774,7 +2791,7 @@ function renderNode(node, input) {
   const onCollapse = () => {
     input.onCollapse(node);
   };
-  return html`
+  return html2`
   <tr data-uid=${node.callUID} ?selected=${input.selectedNode === node} ?expanded=${node.expanded}
       ?highlighted=${node.searchMatchedSelfColumn || node.searchMatchedTotalColumn || node.searchMatchedFunctionColumn}
       @select=${onSelect}
@@ -2795,12 +2812,12 @@ function renderNode(node, input) {
       </div>
     </td>
     <td data-value=${node.functionName} class="${node.searchMatchedFunctionColumn ? "highlight" : ""} ${node.deoptReason ? "not-optimized" : ""}">
-      ${node.deoptReason ? html`
+      ${node.deoptReason ? html2`
         <devtools-icon name="warning-filled" class="profile-warn-marker small"
                         title=${i18nString4(UIStrings4.notOptimizedS, { PH1: node.deoptReason })}>
         </devtools-icon>` : nothing}
       ${node.functionName}
-      ${node.profileNode.scriptId !== "0" && node.profileNode.callFrame ? widget(Components.Linkifier.ScriptLocationLink, {
+      ${node.profileNode.scriptId !== "0" && node.profileNode.callFrame ? widget2(Components.Linkifier.ScriptLocationLink, {
     target: input.target ?? void 0,
     scriptId: node.profileNode.callFrame.scriptId,
     sourceURL: node.profileNode.callFrame.url,
@@ -2812,9 +2829,9 @@ function renderNode(node, input) {
     }
   }) : nothing}
     </td>
-    ${node.hasChildren() ? html`
+    ${node.hasChildren() ? html2`
       <td><table>
-        ${node.expanded ? html`${repeat(node.children, (child) => child.callUID, (child) => renderNode(child, input))}` : nothing}
+        ${node.expanded ? html2`${repeat(node.children, (child) => child.callUID, (child) => renderNode(child, input))}` : nothing}
       </table></td>` : nothing}
   </tr>`;
 }
@@ -2886,7 +2903,7 @@ var HeapProfileView = class extends UI6.View.SimpleView {
   async toolbarItems() {
     const currentViewType = this.viewType.get();
     const isFlame = currentViewType === "Flame";
-    return html`
+    return html2`
       <select title=${i18nString4(UIStrings4.profileViewMode)} aria-label=${i18nString4(UIStrings4.profileViewMode)}
               @change=${this.changeView.bind(this)}
               jslog=${VisualLogging2.dropDown("profile-view.selected-view").track({ change: true })}
@@ -3000,8 +3017,8 @@ var HeapProfileView = class extends UI6.View.SimpleView {
     return new HeapFlameChartDataProvider(this.profile(), this.profileHeader.heapProfilerModel());
   }
   static buildPopoverTable(popoverInfo) {
-    return html`<table>
-      ${popoverInfo.map((entry) => html`
+    return html2`<table>
+      ${popoverInfo.map((entry) => html2`
         <tr>
           <td>${entry.title}</td>
           <td>${entry.value}</td>
@@ -3306,9 +3323,9 @@ var HeapProfileView = class extends UI6.View.SimpleView {
       onContextMenu: (event, node) => {
         this.populateContextMenu(event.detail, node);
       },
-      onSearchableViewMount: (widget3) => {
-        if (this.searchableViewInternal !== widget3) {
-          this.searchableViewInternal = widget3;
+      onSearchableViewMount: (widget4) => {
+        if (this.searchableViewInternal !== widget4) {
+          this.searchableViewInternal = widget4;
           this.requestUpdate();
         }
       },
@@ -3773,7 +3790,7 @@ import * as HeapSnapshotModel from "./../../models/heap_snapshot/heap_snapshot.j
 import { createIcon } from "./../../ui/kit/kit.js";
 import * as DataGrid3 from "./../../ui/legacy/components/data_grid/data_grid.js";
 import * as UI7 from "./../../ui/legacy/legacy.js";
-import { Directives as Directives2, html as html2, render as render2 } from "./../../ui/lit/lit.js";
+import { Directives as Directives2, html as html3, render as render3 } from "./../../ui/lit/lit.js";
 import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
 var UIStrings5 = {
   /**
@@ -3983,14 +4000,14 @@ var HeapSnapshotGridNode = class _HeapSnapshotGridNode extends Common7.ObjectWra
       const tooltipColumn = `${columnId}-tooltip`;
       const tooltip = this.data[tooltipColumn];
       if (percent) {
-        render2(html2`
+        render3(html3`
           <div class="profile-multiple-values">
             <span aria-hidden="true" title=${Directives2.ifDefined(tooltip)}>${value2}</span>
             <span class="percent-column" aria-hidden="true">${percent}</span>
           </div>`, cell);
         this.setCellAccessibleName(i18nString5(UIStrings5.genericStringsTwoPlaceholders, { PH1: value2, PH2: percent }), cell, columnId);
       } else {
-        render2(html2`
+        render3(html3`
           <div>
             <span title=${Directives2.ifDefined(tooltip)}>${value2}</span>
           </div>`, cell);
@@ -4265,7 +4282,7 @@ var HeapSnapshotGenericObjectNode = class extends HeapSnapshotGridNode {
     cell.className = "object-column disclosure";
     cell.setAttribute("jslog", jslog.toString());
     const output = {};
-    render2(html2`<div
+    render3(html3`<div
         class="source-code event-properties"
         style="overflow: visible;"
         ${Directives2.ref((el) => {
@@ -4699,8 +4716,8 @@ var HeapSnapshotConstructorNode = class extends HeapSnapshotGridNode {
   createCell(columnId) {
     const cell = columnId === "object" ? super.createCell(columnId) : this.createValueCell(columnId);
     if (columnId === "object" && this.count > 1) {
-      const template = html2`<span class="objects-count">×${this.data.count}</span>`;
-      render2(template, cell);
+      const template = html3`<span class="objects-count">×${this.data.count}</span>`;
+      render3(template, cell);
     }
     return cell;
   }
@@ -7631,7 +7648,7 @@ import * as Common11 from "./../../core/common/common.js";
 import * as i18n19 from "./../../core/i18n/i18n.js";
 import * as Buttons2 from "./../../ui/components/buttons/buttons.js";
 import * as UI11 from "./../../ui/legacy/legacy.js";
-import { html as html3, nothing as nothing2, render as render3 } from "./../../ui/lit/lit.js";
+import { html as html4, nothing as nothing2, render as render4 } from "./../../ui/lit/lit.js";
 import * as VisualLogging5 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/profiler/IsolateSelector.js
@@ -8083,9 +8100,9 @@ var UIStrings10 = {
 };
 var str_9 = i18n19.i18n.registerUIStrings("panels/profiler/ProfileLauncherView.ts", UIStrings10);
 var i18nString9 = i18n19.i18n.getLocalizedString.bind(void 0, str_9);
-var { widget: widget2, widgetRef: widgetRef2 } = UI11.Widget;
+var { widget: widget3, widgetRef: widgetRef2 } = UI11.Widget;
 var DEFAULT_VIEW2 = (input, output, target) => {
-  render3(html3`
+  render4(html4`
     <style>${profileLauncherView_css_default}</style>
     <div class="profile-launcher-view-content vbox">
       <div class="vbox">
@@ -8094,7 +8111,7 @@ var DEFAULT_VIEW2 = (input, output, target) => {
           ${input.profileTypes.map((entry) => {
     const radioId = `profile-type-${entry.profileType.id}`;
     const customContent = entry.customContent;
-    return html3`
+    return html4`
               <input id=${radioId} type="radio" name="profile-type"
                   .checked=${entry.selected}
                   ?disabled=${input.isProfiling}
@@ -8103,7 +8120,7 @@ var DEFAULT_VIEW2 = (input, output, target) => {
                 />
               <label for=${radioId}>${entry.profileType.name}</label>
               <p>${entry.profileType.description}</p>
-              ${customContent ? html3`
+              ${customContent ? html4`
                 <p>
                   <span role="group" aria-labelledby=${radioId}>
                     ${customContent}
@@ -8118,7 +8135,7 @@ var DEFAULT_VIEW2 = (input, output, target) => {
         <h1>${i18nString9(UIStrings10.selectJavascriptVmInstance)}</h1>
         <div class="vbox profile-launcher-target-list profile-launcher-target-list-container">
           <devtools-widget
-            ${widget2(IsolateSelector)}
+            ${widget3(IsolateSelector)}
             ${widgetRef2(IsolateSelector, (e) => {
     output.isolateSelector = e;
   })}
@@ -8983,7 +9000,7 @@ var ProfilesPanel = class _ProfilesPanel extends UI13.Panel.PanelWithSidebar {
       if (Array.isArray(items)) {
         items.map((item) => this.profileViewToolbar.appendToolbarItem(item));
       } else {
-        render4(items, this.profileViewToolbar);
+        render5(items, this.profileViewToolbar);
       }
     });
     return view;
@@ -9304,6 +9321,8 @@ var HeapProfilerPanel = class _HeapProfilerPanel extends ProfilesPanel {
 var ProfileTypeRegistry_exports = {};
 export {
   BottomUpProfileDataGrid_exports as BottomUpProfileDataGrid,
+  HeapDetachedElementsDataGrid_exports as HeapDetachedElementsDataGrid,
+  HeapDetachedElementsView_exports as HeapDetachedElementsView,
   HeapProfileView_exports as HeapProfileView,
   HeapProfilerPanel_exports as HeapProfilerPanel,
   HeapSnapshotDataGrids_exports as HeapSnapshotDataGrids,

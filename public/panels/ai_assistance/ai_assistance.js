@@ -10,7 +10,7 @@ import * as Common5 from "./../../core/common/common.js";
 import * as Host5 from "./../../core/host/host.js";
 import * as i18n17 from "./../../core/i18n/i18n.js";
 import * as Platform5 from "./../../core/platform/platform.js";
-import * as Root6 from "./../../core/root/root.js";
+import * as Root4 from "./../../core/root/root.js";
 import * as SDK6 from "./../../core/sdk/sdk.js";
 import * as AiAssistanceModel8 from "./../../models/ai_assistance/ai_assistance.js";
 import * as Badges from "./../../models/badges/badges.js";
@@ -411,7 +411,6 @@ var AIv2MarkdownRenderer = class extends MarkdownView3.MarkdownView.MarkdownInsi
 import "./../../ui/components/spinners/spinners.js";
 import * as Host3 from "./../../core/host/host.js";
 import * as i18n9 from "./../../core/i18n/i18n.js";
-import * as Root2 from "./../../core/root/root.js";
 import * as AiAssistanceModel7 from "./../../models/ai_assistance/ai_assistance.js";
 import * as Buttons5 from "./../../ui/components/buttons/buttons.js";
 import * as UI5 from "./../../ui/legacy/legacy.js";
@@ -1113,6 +1112,7 @@ var DEFAULT_VIEW = (input, _output, target) => {
               .disabled=${input.isTextInputDisabled}
               wrap="hard"
               maxlength="10000"
+              .value=${input.textInputValue}
               @keydown=${input.onTextAreaKeyDown}
               @paste=${input.onImagePaste}
               @dragover=${input.onImageDragOver}
@@ -1298,6 +1298,7 @@ var ChatInput = class extends UI.Widget.Widget {
   multimodalInputEnabled = false;
   uploadImageInputEnabled = false;
   isReadOnly = false;
+  textInputValue = "";
   #textAreaRef = createRef();
   #imageInput;
   /**
@@ -1317,13 +1318,18 @@ var ChatInput = class extends UI.Widget.Widget {
       const truncatedText = maxLength >= 0 ? text.substring(0, maxLength) : text;
       this.#textAreaRef.value.value = truncatedText;
       this.#textAreaRef.value.setSelectionRange(truncatedText.length, truncatedText.length);
+      this.textInputValue = truncatedText;
+      this.onTextChange(truncatedText);
     }
     this.performUpdate();
   }
   #isTextInputEmpty() {
-    return !this.#textAreaRef.value?.value?.trim();
+    const text = this.#textAreaRef?.value?.value ?? this.textInputValue;
+    return !text.trim();
   }
   onTextSubmit = () => {
+  };
+  onTextChange = () => {
   };
   onContextClick = () => {
   };
@@ -1496,12 +1502,15 @@ var ChatInput = class extends UI.Widget.Widget {
       imageInput: this.#imageInput,
       uploadImageInputEnabled: this.uploadImageInputEnabled,
       isReadOnly: this.isReadOnly,
+      textInputValue: this.textInputValue,
       textAreaRef: this.#textAreaRef,
       onContextClick: this.onContextClick,
       onInspectElementClick: this.onInspectElementClick,
       onImagePaste: this.#handleImagePaste,
       onNewConversation: this.onNewConversation,
-      onTextInputChange: () => {
+      onTextInputChange: (text) => {
+        this.textInputValue = text;
+        this.onTextChange(text);
         this.requestUpdate();
       },
       onTakeScreenshot: this.#handleTakeScreenshot.bind(this),
@@ -1525,6 +1534,10 @@ var ChatInput = class extends UI.Widget.Widget {
       return;
     }
     const imageInput = !this.#imageInput?.isLoading && this.#imageInput?.data ? { inlineData: { data: this.#imageInput.data, mimeType: this.#imageInput.mimeType } } : void 0;
+    const text = this.#textAreaRef.value?.value?.trim() ?? "";
+    if (!text && !imageInput) {
+      return;
+    }
     this.onTextSubmit(this.#textAreaRef.value?.value ?? "", imageInput, this.#imageInput?.inputType);
     this.#imageInput = void 0;
     this.#historyOffset = -1;
@@ -1594,7 +1607,6 @@ import * as Common3 from "./../../core/common/common.js";
 import * as Host from "./../../core/host/host.js";
 import * as i18n5 from "./../../core/i18n/i18n.js";
 import * as Platform3 from "./../../core/platform/platform.js";
-import * as Root from "./../../core/root/root.js";
 import * as SDK4 from "./../../core/sdk/sdk.js";
 import * as TextUtils from "./../../core/text_utils/text_utils.js";
 import * as AiAssistanceModel6 from "./../../models/ai_assistance/ai_assistance.js";
@@ -1640,11 +1652,6 @@ var chatMessage_css_default = `/*
     margin-top: var(--sys-size-5);
     overflow: hidden;
     mask-image: linear-gradient(to right, var(--ref-palette-neutral0) calc(100% - var(--sys-size-15)), transparent 100%);
-
-    &.not-v2 {
-      /* Can be removed when AIv2 ships */
-      gap: var(--sys-size-8);
-    }
 
     .action-buttons {
       display: flex;
@@ -1769,10 +1776,8 @@ var chatMessage_css_default = `/*
     font-size: 12px;
     word-break: normal;
     overflow-wrap: anywhere;
-    border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
 
-
-    &.query.ai-v2 {
+    &.query {
       width: fit-content;
       max-width: 80%;
       text-align: left;
@@ -1790,22 +1795,11 @@ var chatMessage_css_default = `/*
       }
     }
 
-    &.ai-v2 {
-      border-bottom: none;
-    }
-
     .ai-css-change {
       margin: var(--sys-size-6) 0;
     }
 
-    &:not(.ai-v2) .answer-body-wrapper {
-      display: flex;
-      flex-direction: column;
-      gap: var(--sys-size-5);
-      width: 100%;
-    }
-
-    &.ai-v2 .answer-body-wrapper {
+    .answer-body-wrapper {
       @container(min-width: 700px) {
         /* Purposefully not using design system variables, this is a
          * specific size to indent the content in and align it with the
@@ -2426,7 +2420,7 @@ var walkthroughView_css_default = `/*
 
   .inline-wrapper {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: var(--sys-size-2);
     justify-content: flex-start;
 
@@ -2677,7 +2671,7 @@ function renderSidebarWalkthrough(input, stepsOutput, stepsCount) {
 }
 var DEFAULT_VIEW2 = (input, output, target) => {
   const allSteps = input.message?.parts.filter((t) => t.type === "step")?.map((p) => p.step) ?? [];
-  const renderableSteps = allSteps.filter((s) => !s.requestApproval);
+  const renderableSteps = allSteps.filter((s) => s.state.type !== "needs_approval");
   const stepsOutput = renderableSteps.length > 0 ? html5`
     <div class="steps-container" @scroll=${input.handleScroll} ${ref2((el) => {
     output.scrollContainer = el;
@@ -2691,7 +2685,6 @@ var DEFAULT_VIEW2 = (input, output, target) => {
             <div class="step-wrapper">
               ${renderStep({
     step,
-    isLoading: input.isLoading,
     markdownRenderer: input.markdownRenderer,
     isLast: index === renderableSteps.length - 1
   })}
@@ -2905,10 +2898,6 @@ var UIStringsNotTranslate2 = {
    */
   scrollToPrevious: "Scroll to previous suggestions",
   /**
-   * @description The title of the button that copies the AI-generated response to the clipboard.
-   */
-  copyResponse: "Copy response",
-  /**
    * @description The error message when the request to the LLM failed for some reason.
    */
   systemError: "Something unforeseen happened and I can no longer continue. Try your request again and see if that resolves the issue. If this keeps happening, update Chrome to the latest version.",
@@ -2940,14 +2929,6 @@ var UIStringsNotTranslate2 = {
    * @description Button text that cancels code execution that may affect the page.
    */
   declineActionRequestApproval: "Cancel",
-  /**
-   * @description The generic name of the AI agent (do not translate)
-   */
-  ai: "AI",
-  /**
-   * @description Gemini (do not translate)
-   */
-  gemini: "Gemini",
   /**
    * @description The fallback text when a step has no title yet
    */
@@ -3234,7 +3215,6 @@ var UIStringsNotTranslate2 = {
   inspectedFileNames: "Inspected file names"
 };
 var DEFAULT_VIEW3 = (input, output, target) => {
-  const hasAiV2 = Boolean(Root.Runtime.hostConfig.devToolsAiAssistanceV2?.enabled);
   const message = input.message;
   if (message.entity === "user") {
     const imageInput = message.imageInput && "inlineData" in message.imageInput ? renderImageChatMessage(message.imageInput.inlineData) : Lit6.nothing;
@@ -3242,18 +3222,12 @@ var DEFAULT_VIEW3 = (input, output, target) => {
       "chat-message": true,
       query: true,
       "is-last-message": input.isLastMessage,
-      "is-first-message": input.isFirstMessage,
-      "ai-v2": hasAiV2
-    });
-    const userQueryWrapperClasses = Lit6.Directives.classMap({
-      // Don't need to style at all unless we are on the V2 flag.
-      // Once we ship this can be removed entirely.
-      "user-query-wrapper": hasAiV2
+      "is-first-message": input.isFirstMessage
     });
     Lit6.render(html6`
       <style>${Input3.textInputStyles}</style>
       <style>${chatMessage_css_default}</style>
-      <div class=${userQueryWrapperClasses}>
+      <div class="user-query-wrapper">
         <section class=${messageClasses2} jslog=${VisualLogging3.section("question")}>
           ${imageInput}
           <div class="message-content">${renderTextAsMarkdown(message.text, input.markdownRenderer)}</div>
@@ -3263,26 +3237,17 @@ var DEFAULT_VIEW3 = (input, output, target) => {
     return;
   }
   const steps = message.parts.filter((part) => part.type === "step").map((part) => part.step);
-  const icon = AiAssistanceModel6.AiUtils.getIconName();
   const messageClasses = Lit6.Directives.classMap({
     "chat-message": true,
     answer: true,
     "is-last-message": input.isLastMessage,
-    "is-first-message": input.isFirstMessage,
-    "ai-v2": hasAiV2
+    "is-first-message": input.isFirstMessage
   });
   Lit6.render(html6`
     <style>${Input3.textInputStyles}</style>
     <style>${chatMessage_css_default}</style>
     <section class=${messageClasses} jslog=${VisualLogging3.section("answer")}>
-      ${hasAiV2 ? Lit6.nothing : html6`
-        <div class="message-info">
-          <devtools-icon name=${icon}></devtools-icon>
-          <div class="message-name">
-            <h2>${AiAssistanceModel6.AiUtils.isGeminiBranding() ? lockedString3(UIStringsNotTranslate2.gemini) : lockedString3(UIStringsNotTranslate2.ai)}</h2>
-          </div>
-        </div>`}
-      ${hasAiV2 ? renderWalkthroughUI(input, steps) : Lit6.nothing}
+      ${renderWalkthroughUI(input, steps)}
       <div class="answer-body-wrapper">
         ${Lit6.Directives.repeat(message.parts, (_, index) => index, (part, index) => {
     const isLastPart = index === message.parts.length - 1;
@@ -3292,20 +3257,12 @@ var DEFAULT_VIEW3 = (input, output, target) => {
     if (part.type === "widget") {
       return html6`${Lit6.Directives.until(renderWidgets(part.widgets, { wrapperClass: "main-widgets-wrapper" }))}`;
     }
-    if (!hasAiV2 && part.type === "step") {
-      return renderStep({
-        step: part.step,
-        isLoading: input.isLoading,
-        markdownRenderer: input.markdownRenderer,
-        isLast: isLastPart
-      });
-    }
     return Lit6.nothing;
   })}
         ${renderError(message)}
         ${input.showActions ? renderActions(input, output) : Lit6.nothing}
       </div>
-      ${hasAiV2 ? renderSideEffectStepsUI(input, steps) : Lit6.nothing}
+      ${renderSideEffectStepsUI(input, steps)}
     </section>
   `, target);
 };
@@ -3328,14 +3285,14 @@ function titleForStep(step) {
   return step.title ?? `${lockedString3(UIStringsNotTranslate2.investigating)}\u2026`;
 }
 function renderTitle(step) {
-  const paused = step.requestApproval ? html6`<span class="paused">${lockedString3(UIStringsNotTranslate2.paused)}: </span>` : Lit6.nothing;
+  const paused = step.state.type === "needs_approval" ? html6`<span class="paused">${lockedString3(UIStringsNotTranslate2.paused)}: </span>` : Lit6.nothing;
   return html6`<h3 class="title" aria-label=${titleForStep(step)}>${paused}${titleForStep(step)}</h3>`;
 }
 function renderStepCode(step) {
   if (!step.code && !step.output) {
     return Lit6.nothing;
   }
-  const codeHeadingText = step.output && !step.canceled ? lockedString3(UIStringsNotTranslate2.codeExecuted) : lockedString3(UIStringsNotTranslate2.codeToExecute);
+  const codeHeadingText = step.output && step.state.type !== "canceled" ? lockedString3(UIStringsNotTranslate2.codeExecuted) : lockedString3(UIStringsNotTranslate2.codeToExecute);
   const code = step.code ? html6`<div class="action-result">
       <devtools-code-block
         .code=${step.code.trim()}
@@ -3357,7 +3314,7 @@ function renderStepCode(step) {
   return html6`<div class="step-code">${code}${output}</div>`;
 }
 function renderStepDetails({ step, markdownRenderer, isLast }) {
-  const sideEffects = isLast && step.requestApproval ? renderSideEffectConfirmationUi(step) : Lit6.nothing;
+  const sideEffects = isLast && step.state.type === "needs_approval" ? renderSideEffectConfirmationUi(step) : Lit6.nothing;
   const thought = step.thought ? html6`<p>${renderTextAsMarkdown(step.thought, markdownRenderer)}</p>` : Lit6.nothing;
   const contextDetails = step.contextDetails ? html6`${Lit6.Directives.repeat(step.contextDetails, (contextDetail) => {
     return html6`<div class="context-details">
@@ -3410,7 +3367,7 @@ function renderWalkthroughSidebarButton(input, steps) {
       <devtools-button
         .variant=${variant}
         .size=${"SMALL"}
-        .title=${lastStep.isLoading ? titleForStep(lastStep) : title}
+        .title=${lastStep.state.type === "in_progress" ? titleForStep(lastStep) : title}
         .accessibleLabel=${accessibleLabel}
         .jslogContext=${walkthrough.isExpanded ? "ai-hide-walkthrough-sidebar" : "ai-show-walkthrough-sidebar"}
         data-show-walkthrough
@@ -3452,7 +3409,7 @@ function renderWalkthroughUI(input, steps) {
   `;
 }
 function renderSideEffectStepsUI(input, steps) {
-  const sideEffectSteps = steps.filter((s) => s.requestApproval);
+  const sideEffectSteps = steps.filter((s) => s.state.type === "needs_approval" || s.state.type === "canceled");
   if (sideEffectSteps.length === 0) {
     return Lit6.nothing;
   }
@@ -3461,25 +3418,27 @@ function renderSideEffectStepsUI(input, steps) {
       <div class="side-effect-container">
         ${renderStep({
     step,
-    isLoading: input.isLoading,
     markdownRenderer: input.markdownRenderer,
     isLast: true
   })}
       </div> `)}
   `;
 }
-function renderStepBadge({ step, isLoading, isLast }) {
-  if (isLoading && isLast && !step.requestApproval) {
+function renderStepBadge({ step, isLast }) {
+  if (isLast && step.state.type === "in_progress") {
     return html6`<devtools-spinner aria-label=${lockedString3(UIStringsNotTranslate2.inProgress)}></devtools-spinner>`;
   }
   let iconName = "checkmark";
   let ariaLabel = lockedString3(UIStringsNotTranslate2.completed);
   let role = "button";
-  if (isLast && step.requestApproval) {
+  if (step.state.type === "needs_approval") {
+    if (!isLast) {
+      console.error("A step in needs_approval state must be the last step.");
+    }
     role = void 0;
     ariaLabel = lockedString3(UIStringsNotTranslate2.paused);
     iconName = "pause-circle";
-  } else if (step.canceled) {
+  } else if (step.state.type === "canceled") {
     ariaLabel = lockedString3(UIStringsNotTranslate2.aborted);
     iconName = "cross";
   }
@@ -3490,20 +3449,20 @@ function renderStepBadge({ step, isLoading, isLast }) {
       .name=${iconName}
     ></devtools-icon>`;
 }
-function renderStep({ step, isLoading, markdownRenderer, isLast }) {
+function renderStep({ step, markdownRenderer, isLast }) {
   const stepClasses = Lit6.Directives.classMap({
     step: true,
-    empty: !step.thought && !step.code && !step.contextDetails && !step.requestApproval,
-    paused: Boolean(step.requestApproval),
-    canceled: Boolean(step.canceled)
+    empty: !step.thought && !step.code && !step.contextDetails && step.state.type !== "needs_approval",
+    paused: step.state.type === "needs_approval",
+    canceled: step.state.type === "canceled"
   });
   return html6`
     <details class=${stepClasses}
       jslog=${VisualLogging3.expand("step").track({ click: true })}
-      .open=${Boolean(step.requestApproval)}>
+      .open=${step.state.type === "needs_approval"}>
       <summary>
         <div class="summary">
-          ${renderStepBadge({ step, isLoading, isLast })}
+          ${renderStepBadge({ step, isLast })}
           ${renderTitle(step)}
           <devtools-icon
             class="arrow"
@@ -4133,7 +4092,7 @@ function getDeduplicatedWidgetsMessage(message) {
   };
 }
 async function renderWidgets(widgets, options = {}) {
-  if (!Root.Runtime.hostConfig.devToolsAiAssistanceV2?.enabled || !widgets || widgets.length === 0) {
+  if (!widgets || widgets.length === 0) {
     return Lit6.nothing;
   }
   const ui = await Promise.all(widgets.map(async (widgetData) => {
@@ -4198,21 +4157,22 @@ async function renderWidgets(widgets, options = {}) {
   return html6`${ui}`;
 }
 function renderSideEffectConfirmationUi(step) {
-  if (!step.requestApproval) {
+  if (step.state.type !== "needs_approval") {
     return Lit6.nothing;
   }
+  const dialog3 = step.state.sideEffectDialog;
   return html6`<div
     class="side-effect-confirmation"
     jslog=${VisualLogging3.section("side-effect-confirmation")}
   >
-    ${step.requestApproval.description ? html6`<p>${step.requestApproval.description}</p>` : Lit6.nothing}
+    ${dialog3.description ? html6`<p>${dialog3.description}</p>` : Lit6.nothing}
     <div class="side-effect-buttons-container">
       <devtools-button
         .data=${{
     variant: "outlined",
     jslogContext: "decline-execute-code"
   }}
-        @click=${() => step.requestApproval?.onAnswer(false)}
+        @click=${() => dialog3.onAnswer(false)}
       >${lockedString3(UIStringsNotTranslate2.declineActionRequestApproval)}</devtools-button>
       <devtools-button
         .data=${{
@@ -4220,7 +4180,7 @@ function renderSideEffectConfirmationUi(step) {
     jslogContext: "accept-execute-code",
     iconName: "play"
   }}
-        @click=${() => step.requestApproval?.onAnswer(true)}
+        @click=${() => dialog3.onAnswer(true)}
       >${lockedString3(UIStringsNotTranslate2.confirmActionRequestApproval)}</devtools-button>
     </div>
   </div>`;
@@ -4267,13 +4227,8 @@ function renderImageChatMessage(inlineData) {
     </devtools-link>`;
 }
 function renderActions(input, output) {
-  const aiAssistanceV2 = Root.Runtime.hostConfig.devToolsAiAssistanceV2?.enabled;
-  const rowClasses = Lit6.Directives.classMap({
-    "ai-assistance-feedback-row": true,
-    "not-v2": !aiAssistanceV2
-  });
   return html6`
-    <div class=${rowClasses}>
+    <div class="ai-assistance-feedback-row">
       <div class="action-buttons">
         ${input.showRateButtons ? html6`
           <devtools-button
@@ -4308,7 +4263,6 @@ function renderActions(input, output) {
     /* Host.AidaClient.Rating.NEGATIVE */
   )}
           ></devtools-button>
-          ${aiAssistanceV2 ? Lit6.nothing : html6`<div class="vertical-separator"></div>`}
         ` : Lit6.nothing}
         <devtools-button
           .data=${{
@@ -4320,20 +4274,7 @@ function renderActions(input, output) {
   }}
           @click=${input.onReportClick}
         ></devtools-button>
-        ${aiAssistanceV2 ? Lit6.nothing : html6`
-          <div class="vertical-separator"></div>
-          <devtools-button
-            .data=${{
-    variant: "icon",
-    size: "SMALL",
-    title: lockedString3(UIStringsNotTranslate2.copyResponse),
-    iconName: "copy",
-    jslogContext: "copy-ai-response"
-  }}
-            aria-label=${lockedString3(UIStringsNotTranslate2.copyResponse)}
-            @click=${input.onCopyResponseClick}></devtools-button>
-        `}
-        ${input.onExportClick && aiAssistanceV2 && input.isLastMessage ? html6`
+        ${input.onExportClick && input.isLastMessage ? html6`
           <devtools-button
             class="export-for-agents-button"
             .jslogContext=${"ai-export-for-agents"}
@@ -5463,11 +5404,9 @@ var UIStringsNotTranslate3 = {
 var lockedString4 = i18n9.i18n.lockedString;
 var SCROLL_ROUNDING_OFFSET2 = 1;
 var DEFAULT_VIEW5 = (input, output, target) => {
-  const hasAiV2 = Boolean(Root2.Runtime.hostConfig.devToolsAiAssistanceV2?.enabled);
   const chatUiClasses = classMap({
     "chat-ui": true,
-    gemini: AiAssistanceModel7.AiUtils.isGeminiBranding(),
-    "ai-v2": hasAiV2
+    gemini: AiAssistanceModel7.AiUtils.isGeminiBranding()
   });
   const inputWidgetClasses = classMap({
     "chat-input-widget": true,
@@ -5546,6 +5485,8 @@ var DEFAULT_VIEW5 = (input, output, target) => {
     conversationType: input.conversationType,
     uploadImageInputEnabled: input.uploadImageInputEnabled ?? false,
     isReadOnly: input.isReadOnly,
+    textInputValue: input.textInputValue,
+    onTextChange: input.onTextChange,
     onContextClick: input.onContextClick,
     onInspectElementClick: input.onInspectElementClick,
     onTextSubmit: input.onTextSubmit,
@@ -5717,7 +5658,7 @@ __export(DisabledWidget_exports, {
 });
 import * as Host4 from "./../../core/host/host.js";
 import * as i18n11 from "./../../core/i18n/i18n.js";
-import * as Root3 from "./../../core/root/root.js";
+import * as Root from "./../../core/root/root.js";
 import * as uiI18n from "./../../ui/i18n/i18n.js";
 import * as UI6 from "./../../ui/legacy/legacy.js";
 import { html as html9, render as render6 } from "./../../ui/lit/lit.js";
@@ -5875,7 +5816,7 @@ var DisabledWidget = class extends UI6.Widget.Widget {
     void this.requestUpdate();
   }
   performUpdate() {
-    const hostConfig = Root3.Runtime.hostConfig;
+    const hostConfig = Root.Runtime.hostConfig;
     this.#view({
       aidaAvailability: this.aidaAvailability,
       hostConfig
@@ -5890,7 +5831,7 @@ __export(ExploreWidget_exports, {
   ExploreWidget: () => ExploreWidget
 });
 import * as i18n13 from "./../../core/i18n/i18n.js";
-import * as Root4 from "./../../core/root/root.js";
+import * as Root2 from "./../../core/root/root.js";
 import * as UI7 from "./../../ui/legacy/legacy.js";
 import { html as html10, render as render7 } from "./../../ui/lit/lit.js";
 import * as VisualLogging6 from "./../../ui/visual_logging/visual_logging.js";
@@ -6110,7 +6051,7 @@ var ExploreWidget = class extends UI7.Widget.Widget {
     void this.requestUpdate();
   }
   performUpdate() {
-    const config = Root4.Runtime.hostConfig;
+    const config = Root2.Runtime.hostConfig;
     const featureCards = [];
     if (config.devToolsFreestyler?.enabled && UI7.ViewManager.ViewManager.instance().hasView("elements")) {
       featureCards.push({
@@ -6173,7 +6114,7 @@ __export(OptInChangeDialog_exports, {
   OptInChangeDialog: () => OptInChangeDialog
 });
 import * as i18n15 from "./../../core/i18n/i18n.js";
-import * as Root5 from "./../../core/root/root.js";
+import * as Root3 from "./../../core/root/root.js";
 import * as Buttons6 from "./../../ui/components/buttons/buttons.js";
 import * as UI8 from "./../../ui/legacy/legacy.js";
 import * as Lit8 from "./../../ui/lit/lit.js";
@@ -6373,7 +6314,7 @@ var OptInChangeDialog = class _OptInChangeDialog extends UI8.Widget.VBox {
     this.requestUpdate();
   }
   performUpdate() {
-    const loggingEnabled = Root5.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue !== Root5.Runtime.GenAiEnterprisePolicyValue.ALLOW_WITHOUT_LOGGING;
+    const loggingEnabled = Root3.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue !== Root3.Runtime.GenAiEnterprisePolicyValue.ALLOW_WITHOUT_LOGGING;
     const viewInput = {
       onGotIt: this.#onGotIt,
       onManageSettings: this.#onManageSettings,
@@ -6544,10 +6485,6 @@ var UIStrings6 = {
    */
   clearChatHistory: "Clear local chats",
   /**
-   * @description AI assistance UI text for the export conversation button.
-   */
-  exportConversation: "Export conversation",
-  /**
    * @description AI assistance UI text explaining that the user has no past conversations.
    */
   noPastConversations: "No past conversations",
@@ -6630,46 +6567,6 @@ var UIStringsNotTranslate5 = {
    */
   inputPlaceholderForV2: "Ask a question (AIAgent2 enabled)",
   /**
-   * @description Disclaimer text right after the chat input.
-   */
-  inputDisclaimerForStyling: "Chat messages and any data the inspected page can access via Web APIs are sent to Google and may be seen by human reviewers to improve this feature. This is an experimental AI feature and won\u2019t always get it right.",
-  /**
-   * @description Disclaimer text right after the chat input.
-   */
-  inputDisclaimerForStylingEnterpriseNoLogging: "Chat messages and any data the inspected page can access via Web APIs are sent to Google. The content you submit and that is generated by this feature will not be used to improve Google\u2019s AI models. This is an experimental AI feature and won\u2019t always get it right.",
-  /**
-   * @description Disclaimer text right after the chat input.
-   */
-  inputDisclaimerForNetwork: "Chat messages and the selected network request are sent to Google and may be seen by human reviewers to improve this feature. This is an experimental AI feature and won\u2019t always get it right.",
-  /**
-   * @description Disclaimer text right after the chat input.
-   */
-  inputDisclaimerForNetworkEnterpriseNoLogging: "Chat messages and the selected network request are sent to Google. The content you submit and that is generated by this feature will not be used to improve Google\u2019s AI models. This is an experimental AI feature and won\u2019t always get it right.",
-  /**
-   * @description Disclaimer text right after the chat input.
-   */
-  inputDisclaimerForFile: "Chat messages and the selected file are sent to Google and may be seen by human reviewers to improve this feature. This is an experimental AI feature and won\u2019t always get it right.",
-  /**
-   * @description Disclaimer text right after the chat input.
-   */
-  inputDisclaimerForFileEnterpriseNoLogging: "Chat messages and the selected file are sent to Google. The content you submit and that is generated by this feature will not be used to improve Google\u2019s AI models. This is an experimental AI feature and won\u2019t always get it right.",
-  /**
-   * @description Disclaimer text right after the chat input.
-   */
-  inputDisclaimerForPerformance: "Chat messages and trace data from your performance trace are sent to Google and may be seen by human reviewers to improve this feature. This is an experimental AI feature and won\u2019t always get it right.",
-  /**
-   * @description Disclaimer text right after the chat input.
-   */
-  inputDisclaimerForPerformanceEnterpriseNoLogging: "Chat messages and data from your performance trace are sent to Google. The content you submit and that is generated by this feature will not be used to improve Google\u2019s AI models. This is an experimental AI feature and won\u2019t always get it right.",
-  /**
-   * @description Disclaimer text right after the chat input.
-   */
-  inputDisclaimerForNoContext: "Chat messages, any data the inspected page can see using Web APIs, and the items you select such as files, network requests, and performance traces are sent to Google and may be seen by human reviewers to improve this feature. This is an experimental AI feature and won\u2019t always get it right.",
-  /**
-   * @description Disclaimer text right after the chat input.
-   */
-  inputDisclaimerForNoContextEnterpriseNoLogging: "Chat messages, any data the inspected page can see using Web APIs, and the items you select such as files, network requests, and performance traces are sent to Google. This data will not be used to improve Google\u2019s AI models. This is an experimental AI feature and won\u2019t always get it right.",
-  /**
    * @description Placeholder text for the chat UI input.
    */
   inputPlaceholderForAccessibility: "Ask a question about the selected Lighthouse report",
@@ -6680,19 +6577,11 @@ var UIStringsNotTranslate5 = {
   /**
    * @description Disclaimer text right after the chat input.
    */
-  inputDisclaimerForAccessibility: "Chat messages and the selected Lighthouse report are sent to Google and may be seen by human reviewers to improve this feature. This is an experimental AI feature and won\u2019t always get it right.",
+  inputDisclaimer: "Chat messages, data accessible for this site via DevTools panels and Web APIs, and items you select such as network requests, files, and performance traces are sent to Google and may be seen by human reviewers to improve this feature. This is an experimental AI feature and won\u2019t always get it right.",
   /**
-   * @description Disclaimer text right after the chat input.
+   * @description Disclaimer text right after the chat input when enterprise logging is off.
    */
-  inputDisclaimerForAccessibilityEnterpriseNoLogging: "Chat messages and the selected Lighthouse report are sent to Google. The content you submit and that is generated by this feature will not be used to improve Google\u2019s AI models. This is an experimental AI feature and won\u2019t always get it right.",
-  /**
-   * @description Disclaimer text right after the chat input when V2 is enabled.
-   */
-  inputDisclaimerV2: "Chat messages, data accessible for this site via DevTools panels and Web APIs, and items you select such as network requests, files, and performance traces are sent to Google and may be seen by human reviewers to improve this feature. This is an experimental AI feature and won\u2019t always get it right.",
-  /**
-   * @description Disclaimer text right after the chat input when V2 is enabled and enterprise logging is off.
-   */
-  inputDisclaimerEnterpriseNoLoggingV2: "Chat messages, data accessible for this site via DevTools panels and Web APIs, and items you select such as network requests, files, and performance traces are sent to Google. The content submitted to and generated by this feature will not be used to improve Google\u2019s AI models. This is an experimental AI feature and won\u2019t always get it right."
+  inputDisclaimerEnterpriseNoLogging: "Chat messages, data accessible for this site via DevTools panels and Web APIs, and items you select such as network requests, files, and performance traces are sent to Google. The content submitted to and generated by this feature will not be used to improve Google\u2019s AI models. This is an experimental AI feature and won\u2019t always get it right."
 };
 var str_6 = i18n17.i18n.registerUIStrings("panels/ai_assistance/AiAssistancePanel.ts", UIStrings6);
 var i18nString6 = i18n17.i18n.getLocalizedString.bind(void 0, str_6);
@@ -6785,7 +6674,7 @@ function getMarkdownRenderer(conversation) {
   if (conversation?.type === "drjones-performance-full" && conversation.isReadOnly) {
     return new PerformanceAgentMarkdownRenderer();
   }
-  if (Root6.Runtime.hostConfig.devToolsAiV2Architecture?.enabled && conversation && !conversation.isReadOnly) {
+  if (Root4.Runtime.hostConfig.devToolsAiV2Architecture?.enabled && conversation && !conversation.isReadOnly) {
     return createV2MarkdownRenderer(conversation);
   }
   const context = conversation?.selectedContext;
@@ -6804,7 +6693,6 @@ function getMarkdownRenderer(conversation) {
   return new MarkdownRendererWithCodeBlock();
 }
 function toolbarView(input) {
-  const hasAiV2 = Boolean(Root6.Runtime.hostConfig.devToolsAiAssistanceV2?.enabled);
   return html13`
     <div class="toolbar-container" role="toolbar" jslog=${VisualLogging8.toolbar()}>
       <devtools-toolbar class="freestyler-left-toolbar" role="presentation">
@@ -6831,18 +6719,7 @@ function toolbarView(input) {
               .jslogContext=${"freestyler.delete"}
               .variant=${"toolbar"}
               @click=${input.onDeleteClick}>
-          </devtools-button>
-          ${hasAiV2 ? Lit10.nothing : html13`
-            <devtools-button
-              title=${i18nString6(UIStrings6.exportConversation)}
-              aria-label=${i18nString6(UIStrings6.exportConversation)}
-              .iconName=${"download"}
-              .disabled=${input.isLoading}
-              .jslogContext=${"export-ai-conversation"}
-              .variant=${"toolbar"}
-              @click=${input.onExportConversationClick}>
-            </devtools-button>
-            `}` : Lit10.nothing}
+          </devtools-button>` : Lit10.nothing}
       </devtools-toolbar>
       <devtools-toolbar class="freestyler-right-toolbar" role="presentation">
         <devtools-link
@@ -6892,44 +6769,37 @@ function defaultView(input, output, target) {
                     </devtools-widget>`;
     }
   }
-  if (Root6.Runtime.hostConfig.devToolsAiAssistanceV2?.enabled) {
-    const shouldShowWalkthrough = input.state === "chat-view" && input.props.walkthrough.isExpanded;
-    let walkthroughIsForLastMessage = false;
-    if (input.state === "chat-view") {
-      const lastMessage = input.props.messages.at(-1);
-      if (lastMessage && input.props.walkthrough.activeSidebarMessage?.id === lastMessage.id) {
-        walkthroughIsForLastMessage = true;
-      }
+  const shouldShowWalkthrough = input.state === "chat-view" && input.props.walkthrough.isExpanded;
+  let walkthroughIsForLastMessage = false;
+  if (input.state === "chat-view") {
+    const lastMessage = input.props.messages.at(-1);
+    if (lastMessage && input.props.walkthrough.activeSidebarMessage?.id === lastMessage.id) {
+      walkthroughIsForLastMessage = true;
     }
-    Lit10.render(html13`
-      ${toolbarView(input)}
-      <div class="ai-assistance-view-container">
-        <devtools-split-view
-          name="ai-assistance-split-view-state"
-          direction="column"
-          sidebar-position="second"
-          sidebar-visibility=${shouldShowWalkthrough && !input.props.walkthrough.isInlined ? "visible" : "hidden"}
-          sidebar-initial-size=${WALKTHROUGH_SIDEBAR_INITIAL_WIDTH}
-        >
-          <div slot="main" class="main-view">
-            ${renderState()}
-          </div>
-          ${shouldShowWalkthrough ? html13`
-            <devtools-widget slot="sidebar" ${widget4(WalkthroughView, {
-      message: input.props.walkthrough.activeSidebarMessage,
-      isLoading: input.props.isLoading && walkthroughIsForLastMessage,
-      markdownRenderer: input.props.markdownRenderer,
-      onToggle: input.props.walkthrough.onToggle
-    })}></devtools-widget>` : Lit10.nothing}
-        </devtools-split-view>
-      </div>
-    `, target);
-  } else {
-    Lit10.render(html13`
-      ${toolbarView(input)}
-      <div class="ai-assistance-view-container">${renderState()}</div>
-    `, target);
   }
+  Lit10.render(html13`
+    ${toolbarView(input)}
+    <div class="ai-assistance-view-container">
+      <devtools-split-view
+        name="ai-assistance-split-view-state"
+        direction="column"
+        sidebar-position="second"
+        sidebar-visibility=${shouldShowWalkthrough && !input.props.walkthrough.isInlined ? "visible" : "hidden"}
+        sidebar-initial-size=${WALKTHROUGH_SIDEBAR_INITIAL_WIDTH}
+      >
+        <div slot="main" class="main-view">
+          ${renderState()}
+        </div>
+        ${shouldShowWalkthrough ? html13`
+          <devtools-widget slot="sidebar" ${widget4(WalkthroughView, {
+    message: input.props.walkthrough.activeSidebarMessage,
+    isLoading: input.props.isLoading && walkthroughIsForLastMessage,
+    markdownRenderer: input.props.markdownRenderer,
+    onToggle: input.props.walkthrough.onToggle
+  })}></devtools-widget>` : Lit10.nothing}
+      </devtools-split-view>
+    </div>
+  `, target);
 }
 function createDOMNodeContext(node) {
   if (!node) {
@@ -7002,6 +6872,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
     activeSidebarMessage: null,
     inlineExpandedMessages: []
   };
+  #textInputValue = "";
   constructor(view = defaultView, { aidaClient, aidaAvailability }) {
     super(_AiAssistancePanel.panelName);
     this.view = view;
@@ -7012,7 +6883,6 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
     if (UI9.ActionRegistry.ActionRegistry.instance().hasAction("elements.toggle-element-search")) {
       this.#toggleSearchElementAction = UI9.ActionRegistry.ActionRegistry.instance().getAction("elements.toggle-element-search");
     }
-    AiAssistanceModel8.AiHistoryStorage.AiHistoryStorage.instance().addEventListener("AiHistoryDeleted", this.#onHistoryDeleted, this);
   }
   #getToolbarInput() {
     return {
@@ -7032,7 +6902,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
     };
   }
   async #getPanelViewInput() {
-    const blockedByAge = Root6.Runtime.hostConfig.aidaAvailability?.blockedByAge === true;
+    const blockedByAge = Root4.Runtime.hostConfig.aidaAvailability?.blockedByAge === true;
     if (this.#aidaAvailability !== "available" || !this.#aiAssistanceEnabledSetting?.getIfNotDisabled() || blockedByAge) {
       return {
         state: "disabled-view",
@@ -7072,6 +6942,10 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
           emptyStateSuggestions,
           inputPlaceholder: this.#getChatInputPlaceholder(),
           disclaimerText: this.#getDisclaimerText(),
+          textInputValue: this.#textInputValue,
+          onTextChange: (text) => {
+            this.#textInputValue = text;
+          },
           onExportConversation: this.#onExportConversationClick.bind(this),
           uploadImageInputEnabled: isAiAssistanceMultimodalUploadInputEnabled() && this.#conversation.type === "freestyler",
           markdownRenderer,
@@ -7090,9 +6964,8 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
               Host5.userMetrics.actionTaken(Host5.UserMetrics.Action.AiAssistanceQuerySubmitted);
               void this.#startConversation(text, imageInput, multimodalInputType);
             };
-            const isAIV2Enabled = Root6.Runtime.hostConfig.devToolsAiAssistanceV2?.enabled;
-            const seenSetting = Common5.Settings.Settings.instance().moduleSetting("ai-assistance-v2-opt-in-change-dialog-seen");
-            if (isAIV2Enabled && !seenSetting.get()) {
+            const seenSetting = Common5.Settings.Settings.instance().resolve(AiAssistanceModel8.AiUtils.aiAssistanceV2OptInChangeDialogSeenSettingDescriptor);
+            if (!seenSetting.get()) {
               OptInChangeDialog.show({
                 onGotIt: () => {
                   seenSetting.set(true);
@@ -7134,9 +7007,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
   // Responsive logic for Walkthrough
   onResize() {
     super.onResize();
-    if (Root6.Runtime.hostConfig.devToolsAiAssistanceV2?.enabled) {
-      this.#updateWalkthroughResponsiveness();
-    }
+    this.#updateWalkthroughResponsiveness();
   }
   #updateWalkthroughResponsiveness() {
     const isNarrow = this.contentElement.offsetWidth < WALKTHROUGH_SIDEBAR_BREAKPOINT;
@@ -7237,7 +7108,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
     });
   }
   #getDefaultConversationType() {
-    const { hostConfig } = Root6.Runtime;
+    const { hostConfig } = Root4.Runtime;
     const viewManager = UI9.ViewManager.ViewManager.instance();
     const isElementsPanelVisible = viewManager.isViewVisible("elements");
     const isNetworkPanelVisible = viewManager.isViewVisible("network");
@@ -7341,6 +7212,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
     this.#selectedAccessibility = createAccessibilityContext(UI9.Context.Context.instance().flavor(LighthousePanel2.LighthousePanel.ActiveLighthouseReport));
     this.#selectedStorage = createStorageContext(UI9.Context.Context.instance().flavor(AiAssistanceModel8.StorageItem.StorageItem));
     this.#updateConversationState(this.#conversation);
+    AiAssistanceModel8.AiHistoryStorage.AiHistoryStorage.instance().addEventListener("AiHistoryDeleted", this.#onHistoryDeleted, this);
     this.#aiAssistanceEnabledSetting?.addChangeListener(this.requestUpdate, this);
     Host5.AidaClient.HostConfigTracker.instance().addEventListener("aidaAvailabilityChanged", this.#handleAidaAvailabilityChange);
     const initialAvailability = Host5.AidaClient.HostConfigTracker.instance().aidaAvailability;
@@ -7364,6 +7236,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
   }
   willHide() {
     super.willHide();
+    AiAssistanceModel8.AiHistoryStorage.AiHistoryStorage.instance().removeEventListener("AiHistoryDeleted", this.#onHistoryDeleted, this);
     this.#aiAssistanceEnabledSetting?.removeChangeListener(this.requestUpdate, this);
     Host5.AidaClient.HostConfigTracker.instance().removeEventListener("aidaAvailabilityChanged", this.#handleAidaAvailabilityChange);
     this.#toggleSearchElementAction?.removeEventListener("Toggled", this.requestUpdate, this);
@@ -7416,7 +7289,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
     if (this.#selectedRequest?.getItem() === ev.data) {
       return;
     }
-    if (Boolean(ev.data)) {
+    if (ev.data) {
       const calculator = NetworkPanel.NetworkPanel.NetworkPanel.instance().networkLogView.timeCalculator();
       this.#selectedRequest = new AiAssistanceModel8.RequestContext.RequestContext(ev.data, calculator);
     } else {
@@ -7481,7 +7354,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
   }
   #shouldShowChatActions() {
     const aiAssistanceSetting = this.#aiAssistanceEnabledSetting?.getIfNotDisabled();
-    const isBlockedByAge = Root6.Runtime.hostConfig.aidaAvailability?.blockedByAge === true;
+    const isBlockedByAge = Root4.Runtime.hostConfig.aidaAvailability?.blockedByAge === true;
     if (!aiAssistanceSetting || isBlockedByAge) {
       return false;
     }
@@ -7494,11 +7367,11 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
     if (!this.#conversation) {
       return i18nString6(UIStrings6.followTheSteps);
     }
-    if (Root6.Runtime.hostConfig.devToolsAiV2Architecture?.enabled) {
-      return lockedString6(UIStringsNotTranslate5.inputPlaceholderForV2);
-    }
     if (this.#conversation && this.#conversation.isBlockedByOrigin) {
       return lockedString6(UIStringsNotTranslate5.crossOriginError);
+    }
+    if (Root4.Runtime.hostConfig.devToolsAiV2Architecture?.enabled) {
+      return lockedString6(UIStringsNotTranslate5.inputPlaceholderForV2);
     }
     switch (this.#conversation.type) {
       case "freestyler":
@@ -7529,48 +7402,11 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
     if (!this.#conversation || this.#conversation.isReadOnly) {
       return i18nString6(UIStrings6.inputDisclaimerForEmptyState);
     }
-    const loggingEnabled = Root6.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue !== Root6.Runtime.GenAiEnterprisePolicyValue.ALLOW_WITHOUT_LOGGING;
-    if (Root6.Runtime.hostConfig.devToolsAiAssistanceV2?.enabled) {
-      if (loggingEnabled) {
-        return lockedString6(UIStringsNotTranslate5.inputDisclaimerV2);
-      }
-      return lockedString6(UIStringsNotTranslate5.inputDisclaimerEnterpriseNoLoggingV2);
+    const loggingEnabled = Root4.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue !== Root4.Runtime.GenAiEnterprisePolicyValue.ALLOW_WITHOUT_LOGGING;
+    if (loggingEnabled) {
+      return lockedString6(UIStringsNotTranslate5.inputDisclaimer);
     }
-    switch (this.#conversation.type) {
-      case "freestyler":
-        if (loggingEnabled) {
-          return lockedString6(UIStringsNotTranslate5.inputDisclaimerForStyling);
-        }
-        return lockedString6(UIStringsNotTranslate5.inputDisclaimerForStylingEnterpriseNoLogging);
-      case "drjones-file":
-        if (loggingEnabled) {
-          return lockedString6(UIStringsNotTranslate5.inputDisclaimerForFile);
-        }
-        return lockedString6(UIStringsNotTranslate5.inputDisclaimerForFileEnterpriseNoLogging);
-      case "drjones-network-request":
-        if (loggingEnabled) {
-          return lockedString6(UIStringsNotTranslate5.inputDisclaimerForNetwork);
-        }
-        return lockedString6(UIStringsNotTranslate5.inputDisclaimerForNetworkEnterpriseNoLogging);
-      // It is deliberate that both Performance agents use the same disclaimer
-      // text and this has been approved by Privacy.
-      case "drjones-performance-full":
-        if (loggingEnabled) {
-          return lockedString6(UIStringsNotTranslate5.inputDisclaimerForPerformance);
-        }
-        return lockedString6(UIStringsNotTranslate5.inputDisclaimerForPerformanceEnterpriseNoLogging);
-      case "accessibility":
-        if (loggingEnabled) {
-          return lockedString6(UIStringsNotTranslate5.inputDisclaimerForAccessibility);
-        }
-        return lockedString6(UIStringsNotTranslate5.inputDisclaimerForAccessibilityEnterpriseNoLogging);
-      case "storage":
-      case "none":
-        if (loggingEnabled) {
-          return lockedString6(UIStringsNotTranslate5.inputDisclaimerForNoContext);
-        }
-        return lockedString6(UIStringsNotTranslate5.inputDisclaimerForNoContextEnterpriseNoLogging);
-    }
+    return lockedString6(UIStringsNotTranslate5.inputDisclaimerEnterpriseNoLogging);
   }
   #handleFeedbackSubmit(rpcId, rating, feedback) {
     void this.#aidaClient.registerClientEvent({
@@ -7623,8 +7459,8 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
     this.requestUpdate();
   }
   #canExecuteQuery() {
-    const isBrandedBuild = Boolean(Root6.Runtime.hostConfig.aidaAvailability?.enabled);
-    const isBlockedByAge = Boolean(Root6.Runtime.hostConfig.aidaAvailability?.blockedByAge);
+    const isBrandedBuild = Boolean(Root4.Runtime.hostConfig.aidaAvailability?.enabled);
+    const isBlockedByAge = Boolean(Root4.Runtime.hostConfig.aidaAvailability?.blockedByAge);
     const isAidaAvailable = Boolean(
       this.#aidaAvailability === "available"
       /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */
@@ -7778,6 +7614,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
     await this.#doConversation(conversation.history);
   }
   #handleNewChatRequest() {
+    this.#textInputValue = "";
     this.#updateConversationState();
     this.#resetWalkthrough();
     UI9.ARIAUtils.LiveAnnouncer.alert(i18nString6(UIStrings6.newChatCreated));
@@ -7903,12 +7740,11 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
         parts: [],
         id: crypto.randomUUID()
       };
-      let step = { isLoading: true };
+      let step = { state: { type: "in_progress" } };
       this.#isLoading = true;
       let announcedAnswerLoading = false;
       let announcedAnswerReady = false;
       for await (const data of items) {
-        step.requestApproval = void 0;
         switch (data.type) {
           case "user-query": {
             this.#messages.push({
@@ -7930,7 +7766,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
             break;
           }
           case "querying": {
-            step = { isLoading: true };
+            step = { state: { type: "in_progress" } };
             if (!systemMessage.parts.length) {
               commitStep();
             }
@@ -7940,7 +7776,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
             step.title = lockedString6(UIStringsNotTranslate5.analyzingData);
             step.contextDetails = data.details;
             step.widgets = data.widgets;
-            step.isLoading = false;
+            step.state = { type: "completed" };
             commitStep();
             break;
           }
@@ -7950,7 +7786,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
             break;
           }
           case "thought": {
-            step.isLoading = false;
+            step.state = { type: "completed" };
             step.thought = data.thought;
             commitStep();
             break;
@@ -7969,24 +7805,25 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
             break;
           }
           case "side-effect": {
-            step.isLoading = false;
             step.code ??= data.code;
-            step.requestApproval = {
-              description: data.description,
-              onAnswer: (result) => {
-                data.confirm(result);
-                step.requestApproval = void 0;
-                this.requestUpdate();
+            step.state = {
+              type: "needs_approval",
+              sideEffectDialog: {
+                description: data.description,
+                onAnswer: (result) => {
+                  data.confirm(result);
+                  step.state = { type: "completed" };
+                  this.requestUpdate();
+                }
               }
             };
             commitStep();
             break;
           }
           case "action": {
-            step.isLoading = false;
+            step.state = data.canceled ? { type: "canceled" } : { type: "completed" };
             step.code ??= data.code;
             step.output ??= data.output;
-            step.canceled = data.canceled;
             step.widgets ??= data.widgets;
             commitStep();
             break;
@@ -8009,7 +7846,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
               }
               systemMessage.parts.push(newPart);
             }
-            if (data.widgets && Root6.Runtime.hostConfig.devToolsAiAssistanceV2?.enabled) {
+            if (data.widgets) {
               systemMessage.parts.push({
                 type: "widget",
                 widgets: data.widgets
@@ -8017,11 +7854,11 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
             }
             if (systemMessage.parts.length > 1) {
               const firstPart = systemMessage.parts[0];
-              if (firstPart.type === "step" && firstPart.step.isLoading && !firstPart.step.thought && !firstPart.step.code && !firstPart.step.contextDetails) {
+              if (firstPart.type === "step" && firstPart.step.state.type === "in_progress" && !firstPart.step.thought && !firstPart.step.code && !firstPart.step.contextDetails) {
                 systemMessage.parts.shift();
               }
             }
-            step.isLoading = false;
+            step.state = { type: "completed" };
             break;
           }
           case "error": {
@@ -8030,8 +7867,8 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
             if (lastPart?.type === "step") {
               const lastStep = lastPart.step;
               if (data.error === "abort") {
-                lastStep.canceled = true;
-              } else if (lastStep.isLoading) {
+                lastStep.state = { type: "canceled" };
+              } else if (lastStep.state.type === "in_progress") {
                 systemMessage.parts.pop();
               }
             }
@@ -8045,10 +7882,10 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
           }
           case "context-change": {
             this.#handleConversationContextChange(data.context);
-            step.isLoading = false;
+            step.state = { type: "completed" };
             step.widgets = data.widgets;
             commitStep();
-            step = { isLoading: true };
+            step = { state: { type: "in_progress" } };
             break;
           }
         }
@@ -8147,16 +7984,16 @@ var ActionDelegate = class {
   }
 };
 function isAiAssistanceMultimodalUploadInputEnabled() {
-  return isAiAssistanceMultimodalInputEnabled() && Boolean(Root6.Runtime.hostConfig.devToolsFreestyler?.multimodalUploadInput);
+  return isAiAssistanceMultimodalInputEnabled() && Boolean(Root4.Runtime.hostConfig.devToolsFreestyler?.multimodalUploadInput);
 }
 function isAiAssistanceMultimodalInputEnabled() {
-  return Boolean(Root6.Runtime.hostConfig.devToolsFreestyler?.multimodal);
+  return Boolean(Root4.Runtime.hostConfig.devToolsFreestyler?.multimodal);
 }
 function isAiAssistanceContextSelectionAgentEnabled() {
-  return Boolean(Root6.Runtime.hostConfig.devToolsAiAssistanceContextSelectionAgent?.enabled);
+  return Boolean(Root4.Runtime.hostConfig.devToolsAiAssistanceContextSelectionAgent?.enabled);
 }
 function isAiAssistanceServerSideLoggingEnabled() {
-  return !Root6.Runtime.hostConfig.aidaAvailability?.disallowLogging;
+  return !Root4.Runtime.hostConfig.aidaAvailability?.disallowLogging;
 }
 export {
   AIv2MarkdownRenderer,

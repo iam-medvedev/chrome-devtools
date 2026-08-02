@@ -2,7 +2,9 @@
 import * as Common from "./../../core/common/common.js";
 import * as i18n from "./../../core/i18n/i18n.js";
 import * as SDK from "./../../core/sdk/sdk.js";
+import * as LiveMetrics from "./../../models/live-metrics/live-metrics.js";
 import * as UI from "./../../ui/legacy/legacy.js";
+import * as SettingsUI from "./../../ui/settings/settings.js";
 var UIStrings = {
   /**
    * @description Text for the performance of something
@@ -378,13 +380,9 @@ Common.Settings.registerSettingExtension({
   settingType: "boolean",
   defaultValue: false
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(LiveMetrics.timelineEnableSoftNavigationsSettingDescriptor, {
   category: "PERFORMANCE",
-  storageType: "Synced",
-  title: i18nLazyString(UIStrings.enableSoftNavigations),
-  settingName: "timeline-enable-soft-navigations",
-  settingType: "boolean",
-  defaultValue: true
+  title: i18nLazyString(UIStrings.enableSoftNavigations)
 });
 Common.Settings.registerSettingExtension({
   category: "PERFORMANCE",

@@ -14,7 +14,14 @@ export declare class ApplicationPanelTreeElement extends UI.TreeOutline.TreeElem
     set itemURL(value: Platform.DevToolsPath.UrlString);
     onselect(selectedByUser: boolean | undefined): boolean;
     showView(view: UI.Widget.AnyWidget | null): void;
-    protected createAiButton(storageItem: AiAssistance.StorageItem.StorageItem): void;
+    /**
+     * Creates the Ask-AI floating button on this tree element.
+     * @param storageItemProvider A provider function returning the StorageItem context.
+     * Using a function provider allows dynamic context resolution at click time
+     * (e.g. for category headers that aren't recreated (e.g. Local Storage) whose target origin may change), while supporting
+     * static contexts for individual leaf items under these general category headers.
+     */
+    protected createAiButton(storageItemProvider: () => AiAssistance.StorageItem.StorageItem | null): void;
 }
 export declare class ExpandableApplicationPanelTreeElement extends ApplicationPanelTreeElement {
     protected readonly expandedSetting: Common.Settings.Setting<boolean>;
@@ -22,7 +29,9 @@ export declare class ExpandableApplicationPanelTreeElement extends ApplicationPa
     protected categoryLink: Platform.DevToolsPath.UrlString | null;
     protected emptyCategoryHeadline: string;
     protected categoryDescription: string;
+    protected readonly settingsKey: string;
     constructor(resourcesPanel: ResourcesPanel, categoryName: string, emptyCategoryHeadline: string, categoryDescription: string, settingsKey: string, settingsDefault?: boolean);
+    createGenericStorageAiContext(): AiAssistance.StorageItem.StorageItem | null;
     get itemURL(): Platform.DevToolsPath.UrlString;
     set itemURL(value: Platform.DevToolsPath.UrlString);
     setLink(link: Platform.DevToolsPath.UrlString): void;

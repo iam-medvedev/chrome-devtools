@@ -4,7 +4,6 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import * as Host from '../../core/host/host.js';
-import * as AiCodeCompletion from '../../models/ai_code_completion/ai_code_completion.js';
 import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
@@ -26,7 +25,7 @@ describeWithEnvironment('AiCodeCompletionSummaryToolbar', () => {
             disclaimerTooltipId: 'disclaimer-tooltip',
             spinnerTooltipId: 'spinner-tooltip',
             hasTopBorder: false,
-            panel: "sources" /* AiCodeCompletion.AiCodeCompletion.ContextFlavor.SOURCES */,
+            disclaimerTextVariant: 'sources',
         }, view);
         widget.markAsRoot();
         renderElementIntoDOM(widget);
@@ -113,7 +112,7 @@ describeWithEnvironment('AiCodeCompletionSummaryToolbar', () => {
                 disclaimerTooltipId: 'disclaimer-tooltip',
                 spinnerTooltipId: 'spinner-tooltip',
                 hasTopBorder: false,
-                panel: "sources" /* AiCodeCompletion.AiCodeCompletion.ContextFlavor.SOURCES */,
+                disclaimerTextVariant: 'sources',
                 citations,
                 loading: false,
                 aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
@@ -128,7 +127,7 @@ describeWithEnvironment('AiCodeCompletionSummaryToolbar', () => {
                 disclaimerTooltipId: 'disclaimer-tooltip',
                 spinnerTooltipId: 'spinner-tooltip',
                 hasTopBorder: false,
-                panel: "sources" /* AiCodeCompletion.AiCodeCompletion.ContextFlavor.SOURCES */,
+                disclaimerTextVariant: 'sources',
                 citations,
                 loading: false,
                 aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,

@@ -150,10 +150,6 @@ var UIStrings = {
    */
   script: "Script",
   /**
-   * @description Category of event listener breakpoints for shared storage worklet events.
-   */
-  sharedStorageWorklet: "Shared storage worklet",
-  /**
    * @description Category of event listener breakpoints for timer events.
    */
   timer: "Timer",
@@ -438,10 +434,6 @@ var LOCALIZED_CATEGORIES = {
     "script"
     /* SDK.CategorizedBreakpoint.Category.SCRIPT */
   ]: i18nLazyString(UIStrings.script),
-  [
-    "shared-storage-worklet"
-    /* SDK.CategorizedBreakpoint.Category.SHARED_STORAGE_WORKLET */
-  ]: i18nLazyString(UIStrings.sharedStorageWorklet),
   [
     "timer"
     /* SDK.CategorizedBreakpoint.Category.TIMER */
@@ -952,19 +944,14 @@ __export(EventListenerBreakpointsSidebarPane_exports, {
 });
 import * as SDK4 from "./../../core/sdk/sdk.js";
 import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
-var eventListenerBreakpointsSidebarPaneInstance;
-var EventListenerBreakpointsSidebarPane = class _EventListenerBreakpointsSidebarPane extends CategorizedBreakpointsSidebarPane {
-  constructor() {
+var EventListenerBreakpointsSidebarPane = class extends CategorizedBreakpointsSidebarPane {
+  #eventBreakpointsManager;
+  constructor(eventBreakpointsManager) {
     let breakpoints = SDK4.DOMDebuggerModel.DOMDebuggerManager.instance().eventListenerBreakpoints();
-    const nonDomBreakpoints = SDK4.EventBreakpointsModel.EventBreakpointsManager.instance().eventListenerBreakpoints();
+    const nonDomBreakpoints = eventBreakpointsManager.eventListenerBreakpoints();
     breakpoints = breakpoints.concat(nonDomBreakpoints);
     super(breakpoints, `${VisualLogging4.section("sources.event-listener-breakpoints")}`, "sources.event-listener-breakpoints");
-  }
-  static instance() {
-    if (!eventListenerBreakpointsSidebarPaneInstance) {
-      eventListenerBreakpointsSidebarPaneInstance = new _EventListenerBreakpointsSidebarPane();
-    }
-    return eventListenerBreakpointsSidebarPaneInstance;
+    this.#eventBreakpointsManager = eventBreakpointsManager;
   }
   getBreakpointFromPausedDetails(details) {
     const auxData = details.auxData;
@@ -975,7 +962,7 @@ var EventListenerBreakpointsSidebarPane = class _EventListenerBreakpointsSidebar
     if (domBreakpoint2) {
       return domBreakpoint2;
     }
-    return SDK4.EventBreakpointsModel.EventBreakpointsManager.instance().resolveEventListenerBreakpoint(auxData);
+    return this.#eventBreakpointsManager.resolveEventListenerBreakpoint(auxData);
   }
 };
 

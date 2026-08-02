@@ -397,7 +397,7 @@ export class ConsoleViewMessage {
                 case "clear" /* Protocol.Runtime.ConsoleAPICalledEventType.Clear */:
                     messageElement = document.createElement('span');
                     messageElement.classList.add('console-info');
-                    if (Common.Settings.Settings.instance().moduleSetting('preserve-console-log').get()) {
+                    if (Common.Settings.Settings.instance().resolve(SDK.SDKSettings.preserveConsoleLogSettingDescriptor).get()) {
                         messageElement.textContent = i18nString(UIStrings.consoleclearWasPreventedDueTo);
                     }
                     else {
@@ -801,9 +801,12 @@ export class ConsoleViewMessage {
             renderPreview(true);
         }
         else if (obj.type === 'function') {
-            const functionElement = titleElement.createChild('span');
-            void ObjectUI.ObjectPropertiesSection.ObjectPropertiesSection.formatObjectAsFunction(obj, functionElement, false);
             titleElement.classList.add('object-value-function');
+            void ObjectUI.ObjectPropertiesSection.formatObjectAsFunction(obj, false).then(t => {
+                const fragment = document.createDocumentFragment();
+                render(t, fragment, { host: this });
+                titleElement.insertBefore(fragment, titleElement.firstChild);
+            });
         }
         else if (obj.subtype === 'trustedtype') {
             titleElement.appendChild(this.formatParameterAsTrustedType(obj));
@@ -839,15 +842,18 @@ export class ConsoleViewMessage {
             .then(formatTargetFunction.bind(this));
         return result;
         function formatTargetFunction(targetFunction) {
-            const functionElement = document.createElement('span');
-            const promise = ObjectUI.ObjectPropertiesSection.ObjectPropertiesSection.formatObjectAsFunction(targetFunction, functionElement, true, includePreview);
-            result.appendChild(functionElement);
+            const promise = ObjectUI.ObjectPropertiesSection.formatObjectAsFunction(targetFunction, true, includePreview);
             if (targetFunction !== originalFunction) {
                 const note = result.createChild('span', 'object-state-note info-note');
                 UI.Tooltip.Tooltip.install(note, i18nString(UIStrings.functionWasResolvedFromBound));
             }
             result.addEventListener('contextmenu', this.contextMenuEventFired.bind(this, originalFunction), false);
-            void promise.then(() => this.formattedParameterAsFunctionForTest());
+            void promise.then(t => {
+                const fragment = document.createDocumentFragment();
+                render(t, fragment, { host: this });
+                result.insertBefore(fragment, result.firstChild);
+                this.formattedParameterAsFunctionForTest();
+            });
         }
     }
     formattedParameterAsFunctionForTest() {

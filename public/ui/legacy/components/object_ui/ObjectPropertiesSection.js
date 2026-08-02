@@ -872,29 +872,7 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
         }
         return 0;
     }
-    static createNameElement(name, isPrivate) {
-        const element = document.createElement('span');
-        element.classList.add('name');
-        if (name === null) {
-            return element;
-        }
-        const escapedName = Platform.StringUtilities.escapeUnicodeAsText(name);
-        if (/^\s|\s$|^$|\n/.test(escapedName)) {
-            element.textContent = `"${escapedName.replace(/\n/g, '\u21B5')}"`;
-            return element;
-        }
-        if (isPrivate) {
-            const privatePropertyHash = document.createElement('span');
-            privatePropertyHash.classList.add('private-property-hash');
-            privatePropertyHash.textContent = escapedName[0];
-            element.appendChild(privatePropertyHash);
-            element.appendChild(document.createTextNode(escapedName.substring(1)));
-            return element;
-        }
-        element.textContent = escapedName;
-        return element;
-    }
-    static valueElementForFunctionDescription(description, includePreview, defaultName, className) {
+    static valueElementForFunctionDescription(description, includePreview, defaultName, details, linkify) {
         const contents = (description, defaultName) => {
             const text = description.replace(/^function [gs]et /, 'function ')
                 .replace(/^function [gs]et\(/, 'function\(')
@@ -948,9 +926,20 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
         };
         const { prefix, body, abbreviation } = contents(description ?? '', defaultName ?? '');
         const maxFunctionBodyLength = 200;
+        const location = details?.location;
+        const clickHandler = linkify && location ? (event) => {
+            void Common.Revealer.reveal(location);
+            event.consume(true);
+        } : undefined;
+        const classes = classMap({
+            'object-value-function': true,
+            linkified: Boolean(linkify && location),
+        });
+        const title = description ? Platform.StringUtilities.trimEndWithMaxLength(description, 500) : undefined;
         return html `<span
-      class="object-value-function ${className ?? ''}"
-      title=${Platform.StringUtilities.trimEndWithMaxLength(description ?? '', 500)}>${prefix && html `<span class=object-value-function-prefix>${prefix} </span>`}${includePreview ? Platform.StringUtilities.trimEndWithMaxLength(body.trim(), maxFunctionBodyLength) :
+      class=${classes}
+      @click=${clickHandler || nothing}
+      title=${ifDefined(title)}>${prefix && html `<span class=object-value-function-prefix>${prefix} </span>`}${includePreview ? Platform.StringUtilities.trimEndWithMaxLength(body.trim(), maxFunctionBodyLength) :
             abbreviation.replace(/\n/g, ' ')}</span>`;
         function nameAndArguments(contents) {
             const startOfArgumentsIndex = contents.indexOf('(');
@@ -1020,7 +1009,7 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
                 return html `<span class="value object-value-trustedtype" title=${ifDefined(tooLong ? undefined : text)}>${tooLong ? widget(ExpandableTextPropertyValue, { text }) : renderTrustedType(description, className)}</span>`;
             }
             if (type === 'function') {
-                return ObjectPropertiesSection.valueElementForFunctionDescription(description, undefined, undefined, 'value');
+                return html `<span class="value">${ObjectPropertiesSection.valueElementForFunctionDescription(description)}</span>`;
             }
             if (type === 'object' && subtype === 'node' && description) {
                 return html `<span class="value object-value-node"
@@ -1056,27 +1045,6 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
             throw new Error('Expected an HTML element');
         }
         return child;
-    }
-    static formatObjectAsFunction(func, element, linkify, includePreview) {
-        return func.debuggerModel().functionDetailsPromise(func).then(didGetDetails);
-        function didGetDetails(response) {
-            if (linkify && response?.location) {
-                element.classList.add('linkified');
-                element.addEventListener('click', () => {
-                    void Common.Revealer.reveal(response.location);
-                    return false;
-                });
-            }
-            // The includePreview flag is false for formats such as console.dir().
-            let defaultName = includePreview ? '' : 'anonymous';
-            if (response?.functionName) {
-                defaultName = response.functionName;
-            }
-            const valueElement = document.createDocumentFragment();
-            // eslint-disable-next-line @devtools/no-lit-render-outside-of-view
-            render(ObjectPropertiesSection.valueElementForFunctionDescription(func.description, includePreview, defaultName), valueElement);
-            element.appendChild(valueElement);
-        }
     }
     static isDisplayableProperty(property, parentProperty) {
         if (!parentProperty?.synthetic) {
@@ -1243,6 +1211,25 @@ class RootElement extends UI.TreeOutline.TreeElement {
         const skipProto = treeOutline ? Boolean(treeOutline.skipProtoInternal) : false;
         return await ObjectPropertyTreeElement.populate(this, this.object, skipProto, false, this.linkifier, this.emptyPlaceholder);
     }
+}
+export function renderPropertyName(name, isPrivate, title) {
+    if (name === null) {
+        return html `<span class="name" title=${ifDefined(title)}></span>`;
+    }
+    const escapedName = Platform.StringUtilities.escapeUnicodeAsText(name);
+    if (/^\s|\s$|^$|\n/.test(escapedName)) {
+        return html `<span class="name" title=${ifDefined(title)}>"${escapedName.replace(/\n/g, '\u21B5')}"</span>`;
+    }
+    if (isPrivate) {
+        return html `<span class="name" title=${ifDefined(title)}><span class="private-property-hash">${escapedName[0]}</span>${escapedName.substring(1)}</span>`;
+    }
+    return html `<span class="name" title=${ifDefined(title)}>${escapedName}</span>`;
+}
+export async function formatObjectAsFunction(func, linkify, includePreview) {
+    const details = await func.debuggerModel().functionDetailsPromise(func);
+    // The includePreview flag is false for formats such as console.dir().
+    const defaultName = details?.functionName ?? (includePreview ? '' : 'anonymous');
+    return ObjectPropertiesSection.valueElementForFunctionDescription(func.description, includePreview, defaultName, details, linkify);
 }
 /**
  * Number of initially visible children in an ObjectPropertyTreeElement.

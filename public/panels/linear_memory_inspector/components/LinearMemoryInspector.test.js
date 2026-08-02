@@ -96,7 +96,7 @@ describe('LinearMemoryInspector', () => {
         }
         for (const index of expectedHistory) {
             assert.strictEqual(view.input.address, index);
-            view.input.onNavigateHistory(new LinearMemoryInspectorComponents.LinearMemoryNavigator.HistoryNavigationEvent("Backward" /* LinearMemoryInspectorComponents.LinearMemoryNavigator.Navigation.BACKWARD */));
+            view.input.onNavigateHistory("Backward" /* LinearMemoryInspectorComponents.LinearMemoryNavigator.Navigation.BACKWARD */);
             await view.nextInput;
         }
     });
@@ -110,13 +110,13 @@ describe('LinearMemoryInspector', () => {
         }
         for (let i = historyLength - 1; i > 0; --i) {
             assert.strictEqual(view.input.address, visitedByteValue[i]);
-            view.input.onNavigateHistory(new LinearMemoryInspectorComponents.LinearMemoryNavigator.HistoryNavigationEvent("Backward" /* LinearMemoryInspectorComponents.LinearMemoryNavigator.Navigation.BACKWARD */));
+            view.input.onNavigateHistory("Backward" /* LinearMemoryInspectorComponents.LinearMemoryNavigator.Navigation.BACKWARD */);
             await view.nextInput;
         }
         assert.strictEqual(view.input.address, visitedByteValue[0]);
         for (let i = 0; i < historyLength - 1; ++i) {
             assert.strictEqual(view.input.address, visitedByteValue[i]);
-            view.input.onNavigateHistory(new LinearMemoryInspectorComponents.LinearMemoryNavigator.HistoryNavigationEvent("Forward" /* LinearMemoryInspectorComponents.LinearMemoryNavigator.Navigation.FORWARD */));
+            view.input.onNavigateHistory("Forward" /* LinearMemoryInspectorComponents.LinearMemoryNavigator.Navigation.FORWARD */);
             await view.nextInput;
         }
         assert.strictEqual(view.input.address, visitedByteValue[historyLength - 1]);
@@ -124,11 +124,11 @@ describe('LinearMemoryInspector', () => {
     it('can turn the page back and forth', async () => {
         const addressBefore = view.input.address;
         const numBytesPerPage = view.input.memorySlice.length;
-        view.input.onNavigatePage(new LinearMemoryInspectorComponents.LinearMemoryNavigator.PageNavigationEvent("Forward" /* LinearMemoryInspectorComponents.LinearMemoryNavigator.Navigation.FORWARD */));
+        view.input.onNavigatePage("Forward" /* LinearMemoryInspectorComponents.LinearMemoryNavigator.Navigation.FORWARD */);
         let addressAfter = (await view.nextInput).address;
         let expectedAddressAfter = addressBefore + numBytesPerPage;
         assert.strictEqual(addressAfter, expectedAddressAfter);
-        view.input.onNavigatePage(new LinearMemoryInspectorComponents.LinearMemoryNavigator.PageNavigationEvent("Backward" /* LinearMemoryInspectorComponents.LinearMemoryNavigator.Navigation.BACKWARD */));
+        view.input.onNavigatePage("Backward" /* LinearMemoryInspectorComponents.LinearMemoryNavigator.Navigation.BACKWARD */);
         addressAfter = (await view.nextInput).address;
         expectedAddressAfter -= numBytesPerPage;
         assert.strictEqual(addressAfter, Math.max(0, expectedAddressAfter));
@@ -158,22 +158,19 @@ describe('LinearMemoryInspector', () => {
         assert.strictEqual(newViewInput.address, expectedSelectedByte);
     });
     it('leaves the navigator address as inputted by user on edit event', async () => {
-        const event = new LinearMemoryInspectorComponents.LinearMemoryNavigator.AddressInputChangedEvent('2', "Edit" /* LinearMemoryInspectorComponents.LinearMemoryNavigator.Mode.EDIT */);
-        view.input.onAddressChange(event);
+        view.input.onAddressChange('2', "Edit" /* LinearMemoryInspectorComponents.LinearMemoryNavigator.Mode.EDIT */);
         const newViewInput = await view.nextInput;
         assert.strictEqual(newViewInput.currentNavigatorAddressLine, '2');
         assert.strictEqual(newViewInput.currentNavigatorMode, "Edit" /* LinearMemoryInspectorComponents.LinearMemoryNavigator.Mode.EDIT */);
     });
     it('leaves the navigator address as inputted by user on invalid edit event', async () => {
-        const event = new LinearMemoryInspectorComponents.LinearMemoryNavigator.AddressInputChangedEvent('-2', "Edit" /* LinearMemoryInspectorComponents.LinearMemoryNavigator.Mode.EDIT */);
-        view.input.onAddressChange(event);
+        view.input.onAddressChange('-2', "Edit" /* LinearMemoryInspectorComponents.LinearMemoryNavigator.Mode.EDIT */);
         const newViewInput = await view.nextInput;
         assert.strictEqual(newViewInput.currentNavigatorAddressLine, '-2');
         assert.strictEqual(newViewInput.currentNavigatorMode, "Edit" /* LinearMemoryInspectorComponents.LinearMemoryNavigator.Mode.EDIT */);
     });
     it('leaves the navigator address as inputted by user on invalid submit event', async () => {
-        const event = new LinearMemoryInspectorComponents.LinearMemoryNavigator.AddressInputChangedEvent('-2', "Submitted" /* LinearMemoryInspectorComponents.LinearMemoryNavigator.Mode.SUBMITTED */);
-        view.input.onAddressChange(event);
+        view.input.onAddressChange('-2', "Submitted" /* LinearMemoryInspectorComponents.LinearMemoryNavigator.Mode.SUBMITTED */);
         const newViewInput = await view.nextInput;
         assert.strictEqual(newViewInput.currentNavigatorAddressLine, '-2');
         assert.strictEqual(newViewInput.currentNavigatorMode, "InvalidSubmit" /* LinearMemoryInspectorComponents.LinearMemoryNavigator.Mode.INVALID_SUBMIT */);
