@@ -44,8 +44,7 @@ describeWithEnvironment('NetworkThrottlingSelector', () => {
     it('renders the individual request variant', async () => {
         const selectElement = document.createElement('select');
         const widget = new MobileThrottling.NetworkThrottlingSelector.NetworkThrottlingSelect(selectElement);
-        widget.variant =
-            "individual-request-conditions" /* MobileThrottling.NetworkThrottlingSelector.NetworkThrottlingSelect.Variant.INDIVIDUAL_REQUEST_CONDITIONS */;
+        widget.variant = "individual-request-conditions" /* MobileThrottling.NetworkThrottlingSelector.NetworkThrottlingSelect.Variant.INDIVIDUAL_REQUEST_CONDITIONS */;
         await doubleRaf();
         const optgroups = selectElement.querySelectorAll('optgroup');
         assert.deepEqual(optGroupsToObject(optgroups), [
@@ -139,6 +138,28 @@ describeWithEnvironment('createForGlobalConditions CrUX integration', () => {
         stub.returns(undefined);
         cruxManager.dispatchEventToListeners("field-data-changed" /* CrUXManager.Events.FIELD_DATA_CHANGED */, undefined);
         assert.isNull(select.recommendedConditions);
+    });
+});
+describe('NetworkThrottlingSelect getRecommendedNetworkConditions', () => {
+    it('returns null when RTT data is missing', () => {
+        const result = MobileThrottling.NetworkThrottlingSelector.getRecommendedNetworkConditions(undefined);
+        assert.isNull(result);
+    });
+    it('returns a matching preset when RTT data is available', () => {
+        const result = MobileThrottling.NetworkThrottlingSelector.getRecommendedNetworkConditions({
+            percentiles: { p75: '150' },
+        });
+        assert.strictEqual(result, SDK.NetworkManager.Slow4GConditions);
+    });
+    it('returns null when RTT data is invalid or too low', () => {
+        const invalidResult = MobileThrottling.NetworkThrottlingSelector.getRecommendedNetworkConditions({
+            percentiles: { p75: 'not-a-number' },
+        });
+        assert.isNull(invalidResult);
+        const tooLowResult = MobileThrottling.NetworkThrottlingSelector.getRecommendedNetworkConditions({
+            percentiles: { p75: '10' },
+        });
+        assert.isNull(tooLowResult);
     });
 });
 //# sourceMappingURL=NetworkThrottlingSelector.test.js.map

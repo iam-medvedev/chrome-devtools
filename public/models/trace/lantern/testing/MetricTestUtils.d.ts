@@ -7,8 +7,8 @@ declare function getComputationDataFromFixture(context: Mocha.Suite | Mocha.Cont
     settings?: Lantern.Types.Simulation.Settings;
     url?: Lantern.Types.Simulation.URL;
 }): Promise<{
-    simulator: Trace.Lantern.Simulation.Simulator<any>;
-    graph: Trace.Lantern.Graph.Node<Trace.Types.Events.SyntheticNetworkRequest>;
-    processedNavigation: Trace.Lantern.Types.Simulation.ProcessedNavigation;
+    simulator: Lantern.Simulation.Simulator<any>;
+    graph: Lantern.Graph.Node<Trace.Types.Events.SyntheticNetworkRequest>;
+    processedNavigation: Lantern.Types.Simulation.ProcessedNavigation;
 }>;
 export { getComputationDataFromFixture, runTraceProcessor as runTrace, toLanternTrace, };

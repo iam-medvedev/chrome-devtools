@@ -39,7 +39,6 @@
   "files": [
     "../../../../../../../front_end/panels/timeline/components/Breadcrumbs.ts",
     "../../../../../../../front_end/panels/timeline/components/BreadcrumbsUI.ts",
-    "../../../../../../../front_end/panels/timeline/components/CPUThrottlingSelector.ts",
     "../../../../../../../front_end/panels/timeline/components/CWVMetrics.ts",
     "../../../../../../../front_end/panels/timeline/components/DetailsView.ts",
     "../../../../../../../front_end/panels/timeline/components/ExportTraceOptions.ts",
@@ -52,7 +51,6 @@
     "../../../../../../../front_end/panels/timeline/components/MetricCompareStrings.ts",
     "../../../../../../../front_end/panels/timeline/components/NetworkRequestDetails.ts",
     "../../../../../../../front_end/panels/timeline/components/NetworkRequestTooltip.ts",
-    "../../../../../../../front_end/panels/timeline/components/NetworkThrottlingSelector.ts",
     "../../../../../../../front_end/panels/timeline/components/NetworkTrackWidget.ts",
     "../../../../../../../front_end/panels/timeline/components/OriginMap.ts",
     "../../../../../../../front_end/panels/timeline/components/RelatedInsightChips.ts",

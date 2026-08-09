@@ -2492,9 +2492,17 @@ function mergeUint8Arrays(items) {
 }
 
 // gen/front_end/third_party/puppeteer/package/lib/puppeteer/util/version.js
-var packageVersion = "25.4.0";
+var packageVersion = "25.5.0";
 
 // gen/front_end/third_party/puppeteer/package/lib/puppeteer/common/Debug.js
+var DEBUG_PREFIXES = {
+  cdpSend: "puppeteer:protocol:SEND \u25BA",
+  cdpReceive: "puppeteer:protocol:RECV \u25C0",
+  bidiSend: "puppeteer:webDriverBiDi:SEND \u25BA",
+  bidiReceive: "puppeteer:webDriverBiDi:RECV \u25C0",
+  error: "puppeteer:error",
+  ffmpeg: "puppeteer:ffmpeg"
+};
 var debug = (prefix) => {
   if (isNode) {
     const nodeDebug = environment.value.debuglog?.(prefix);
@@ -2629,7 +2637,7 @@ var paperFormats = {
 };
 
 // gen/front_end/third_party/puppeteer/package/lib/puppeteer/common/util.js
-var debugError = debug("puppeteer:error");
+var debugError = debug(DEBUG_PREFIXES.error);
 var debugCatchError = debugError ?? (() => {
 });
 var DEFAULT_VIEWPORT = Object.freeze({ width: 800, height: 600 });
@@ -6659,8 +6667,6 @@ function createIncrementalIdGenerator() {
 }
 
 // gen/front_end/third_party/puppeteer/package/lib/puppeteer/cdp/Connection.js
-var debugProtocolSend = debug("puppeteer:protocol:SEND \u25BA");
-var debugProtocolReceive = debug("puppeteer:protocol:RECV \u25C0");
 var Connection = class extends EventEmitter {
   #url;
   #transport;
@@ -6673,12 +6679,19 @@ var Connection = class extends EventEmitter {
   #callbacks;
   #rawErrors = false;
   #idGenerator;
-  constructor(url, transport, delay = 0, timeout2, rawErrors = false, idGenerator = createIncrementalIdGenerator()) {
+  #debugProtocolSend;
+  #debugProtocolReceive;
+  /**
+   * @internal
+   */
+  constructor(url, transport, delay = 0, timeout2, rawErrors = false, idGenerator = createIncrementalIdGenerator(), logger = debug) {
     super();
     this.#rawErrors = rawErrors;
     this.#idGenerator = idGenerator;
     this.#callbacks = new CallbackRegistry(idGenerator);
     this.#url = url;
+    this.#debugProtocolSend = logger(DEBUG_PREFIXES.cdpSend);
+    this.#debugProtocolReceive = logger(DEBUG_PREFIXES.cdpReceive);
     this.#delay = delay;
     this.#timeout = timeout2 ?? 18e4;
     this.#transport = transport;
@@ -6760,7 +6773,7 @@ var Connection = class extends EventEmitter {
         id,
         sessionId
       });
-      debugProtocolSend?.(stringifiedMessage);
+      this.#debugProtocolSend?.(stringifiedMessage);
       this.#transport.send(stringifiedMessage);
     });
   }
@@ -6779,7 +6792,7 @@ var Connection = class extends EventEmitter {
         return setTimeout(r, this.#delay);
       });
     }
-    debugProtocolReceive?.(message);
+    this.#debugProtocolReceive?.(message);
     const object = JSON.parse(message);
     if (object.method === "Target.attachedToTarget") {
       const sessionId = object.params.sessionId;
@@ -7271,13 +7284,18 @@ var CdpDialog = class extends Dialog {
   constructor(client, type, message, defaultValue = "") {
     super(type, message, defaultValue);
     this.#client = client;
+    client.once("Page.javascriptDialogClosed", this.#onDialogClosed);
   }
   async handle(options) {
     await this.#client.send("Page.handleJavaScriptDialog", {
       accept: options.accept,
       promptText: options.text
     });
+    this.#client.off("Page.javascriptDialogClosed", this.#onDialogClosed);
   }
+  #onDialogClosed = () => {
+    this.handled = true;
+  };
 };
 
 // gen/front_end/third_party/puppeteer/package/lib/puppeteer/cdp/EmulationManager.js
@@ -14459,6 +14477,7 @@ var NetworkManager = class extends EventEmitter {
   #userAgentMetadata;
   #platform;
   #acceptLanguage;
+  #userAgentOverrideApplied = false;
   #handlers = [
     ["Fetch.requestPaused", this.#onRequestPaused],
     ["Fetch.authRequired", this.#onAuthRequired],
@@ -14613,6 +14632,10 @@ var NetworkManager = class extends EventEmitter {
     await this.#applyToAllClients(this.#applyUserAgent.bind(this));
   }
   async #applyUserAgent(client) {
+    const nothingToEmulate = this.#userAgent === void 0 && this.#userAgentMetadata === void 0 && this.#acceptLanguage === void 0 && this.#platform === void 0;
+    if (nothingToEmulate && !this.#userAgentOverrideApplied) {
+      return;
+    }
     const userAgent = this.#userAgent ?? await this.#frameManager.page().browser().userAgent();
     if (userAgent === void 0) {
       return;
@@ -14624,6 +14647,7 @@ var NetworkManager = class extends EventEmitter {
         userAgentMetadata: this.#userAgentMetadata,
         platform: this.#platform
       });
+      this.#userAgentOverrideApplied = !nothingToEmulate;
     } catch (error) {
       if (this.#canIgnoreError(error)) {
         return;
@@ -19321,6 +19345,7 @@ var CdpBrowser = class _CdpBrowser extends Browser {
   #handleDevToolsAsPage = false;
   #extensions = /* @__PURE__ */ new Map();
   #version;
+  #hasNetworkRestrictions = false;
   constructor(connection, contextIds, defaultViewport, process3, closeCallback, targetFilterCallback, isPageTargetCallback, waitForInitiallyDiscoveredTargets = true, networkEnabled = true, issuesEnabled = true, handleDevToolsAsPage = false, blocklist, allowlist) {
     super();
     this.#networkEnabled = networkEnabled;
@@ -19335,7 +19360,8 @@ var CdpBrowser = class _CdpBrowser extends Browser {
     });
     this.#handleDevToolsAsPage = handleDevToolsAsPage;
     this.#setIsPageTargetCallback(isPageTargetCallback);
-    connection.rejectEmulateNetworkConditionsCalls = Boolean(blocklist && blocklist.length > 0 || allowlist && allowlist.length > 0);
+    this.#hasNetworkRestrictions = Boolean(blocklist && blocklist.length > 0 || allowlist && allowlist.length > 0);
+    connection.rejectEmulateNetworkConditionsCalls = this.#hasNetworkRestrictions;
     this.#targetManager = new TargetManager(connection, this.#createTarget, this.#targetFilterCallback, waitForInitiallyDiscoveredTargets, blocklist, allowlist);
     this.#defaultContext = new CdpBrowserContext(this.#connection, this);
     for (const contextId of contextIds) {
@@ -19543,6 +19569,9 @@ var CdpBrowser = class _CdpBrowser extends Browser {
     this.#extensions.delete(id);
   }
   async installPWA(options) {
+    if (this.#hasNetworkRestrictions) {
+      throw new Error("PWA APIs are not supported when network restrictions are configured.");
+    }
     await this.#connection.send("PWA.install", {
       manifestId: options.manifestId,
       installUrlOrBundleUrl: options.installUrlOrBundleUrl
@@ -19556,11 +19585,17 @@ var CdpBrowser = class _CdpBrowser extends Browser {
     return options.manifestId;
   }
   async uninstallPWA(options) {
+    if (this.#hasNetworkRestrictions) {
+      throw new Error("PWA APIs are not supported when network restrictions are configured.");
+    }
     await this.#connection.send("PWA.uninstall", {
       manifestId: options.manifestId
     });
   }
   async launchPWA(options) {
+    if (this.#hasNetworkRestrictions) {
+      throw new Error("PWA APIs are not supported when network restrictions are configured.");
+    }
     const { targetId: tabTargetId } = await this.#connection.send("PWA.launch", {
       manifestId: options.manifestId,
       url: options.url
@@ -19584,6 +19619,9 @@ var CdpBrowser = class _CdpBrowser extends Browser {
     return page;
   }
   async getPWAState(options) {
+    if (this.#hasNetworkRestrictions) {
+      throw new Error("PWA APIs are not supported when network restrictions are configured.");
+    }
     const { badgeCount, fileHandlers } = await this.#connection.send("PWA.getOsAppState", { manifestId: options.manifestId });
     return { badgeCount, fileHandlers };
   }

@@ -192,6 +192,7 @@ export class MainImpl {
             hostConfig: Root.Runtime.hostConfig,
             inspectorFrontendHost: Host.InspectorFrontendHost.InspectorFrontendHostInstance,
             supportsEmulation: this.#supportsEmulation,
+            initAutomaticFilesystem: true,
         };
         this.#universe = new Foundation.Universe.Universe(creationOptions);
         Root.DevToolsContext.setGlobalInstance(this.#universe.context);
@@ -779,7 +780,7 @@ export class MainMenuItem {
             const id = viewExtension.viewId();
             if (id === 'issues-pane') {
                 moreTools.defaultSection().appendItem(title, () => {
-                    Host.userMetrics.issuesPanelOpenedFrom(3 /* Host.UserMetrics.IssueOpener.HAMBURGER_MENU */);
+                    Host.userMetrics.issuesPanelOpenedFrom(Host.UserMetrics.IssueOpener.HAMBURGER_MENU);
                     void UI.ViewManager.ViewManager.instance().showView('issues-pane', /* userGesture */ true);
                 }, { jslogContext: id });
                 continue;

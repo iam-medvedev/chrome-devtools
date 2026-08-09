@@ -12,7 +12,7 @@ import * as VisualLogging from '../../visual_logging/visual_logging.js';
 import * as Buttons from '../buttons/buttons.js';
 import * as Input from '../input/input.js';
 import settingCheckboxStyles from './settingCheckbox.css.js';
-const { html, Directives: { ifDefined } } = Lit;
+const { html } = Lit;
 const UIStrings = {
     /**
      * @description Text that is usually a hyperlink to more documentation.
@@ -101,7 +101,7 @@ export class SettingCheckbox extends HTMLElement {
         return undefined;
     }
     get checked() {
-        if (!this.#setting || this.#setting.disabledReasons().length > 0) {
+        if (!this.#setting) {
             return false;
         }
         return this.#setting.get();
@@ -115,12 +115,6 @@ export class SettingCheckbox extends HTMLElement {
         const titleText = uiDescriptor?.title?.() ?? this.#setting.title();
         const icon = this.icon();
         const title = learnMore?.tooltip?.() ?? '';
-        const disabledReasons = this.#setting.disabledReasons();
-        const reason = disabledReasons.length ?
-            html `
-      <devtools-button class="disabled-reason" .iconName=${'info'} .variant=${"icon" /* Buttons.Button.Variant.ICON */} .size=${"SMALL" /* Buttons.Button.Size.SMALL */} title=${ifDefined(disabledReasons.join('\n'))} @click=${onclick}></devtools-button>
-    ` :
-            Lit.nothing;
         Lit.render(html `
       <style>${Input.checkboxStyles}</style>
       <style>${settingCheckboxStyles}</style>
@@ -129,12 +123,12 @@ export class SettingCheckbox extends HTMLElement {
           <input
             type="checkbox"
             .checked=${this.checked}
-            ?disabled=${this.#disabled || this.#setting.disabled()}
+            ?disabled=${this.#disabled}
             @change=${this.#checkboxChanged}
             jslog=${VisualLogging.toggle().track({ change: true }).context(this.#setting.name)}
             aria-label=${titleText}
           />
-          ${this.#textOverride || titleText}${reason}
+          ${this.#textOverride || titleText}
         </label>
         ${icon}
       </p>`, this.#shadow, { host: this });

@@ -42,7 +42,6 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../../core/text_utils/text_utils.js';
 import * as AiAssistanceModel from '../../models/ai_assistance/ai_assistance.js';
 import * as Badges from '../../models/badges/badges.js';
-import * as CrUXManager from '../../models/crux-manager/crux-manager.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as SourceMapsResolver from '../../models/trace_source_maps_resolver/trace_source_maps_resolver.js';
 import * as Workspace from '../../models/workspace/workspace.js';
@@ -56,7 +55,6 @@ import * as SettingsUI from '../../ui/legacy/components/settings_ui/settings_ui.
 import * as UI from '../../ui/legacy/legacy.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
-import * as PanelsCommon from '../common/common.js';
 import * as MobileThrottling from '../mobile_throttling/mobile_throttling.js';
 import { ActiveFilters } from './ActiveFilters.js';
 import * as AnnotationHelpers from './AnnotationHelpers.js';
@@ -149,10 +147,6 @@ const UIStrings = {
      * @description Text in Timeline Panel of the Performance panel
      */
     cpu: 'CPU:',
-    /**
-     * @description Title of the 'Network conditions' tool in the bottom drawer
-     */
-    networkConditions: 'Network conditions',
     /**
      * @description Text in Timeline Panel of the Performance panel
      */
@@ -392,7 +386,6 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
     loader;
     showScreenshotsToolbarCheckbox;
     showMemoryToolbarCheckbox;
-    networkThrottlingSelect;
     cpuThrottlingSelect;
     fileSelectorElement;
     selection = null;
@@ -481,6 +474,9 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         this.#dimThirdPartiesSetting.addChangeListener(this.onDimThirdPartiesChanged, this);
         this.#thirdPartyTracksSetting = TimelinePanel.extensionDataVisibilitySetting();
         this.#thirdPartyTracksSetting.addChangeListener(this.#extensionDataVisibilityChanged, this);
+        Common.Settings.Settings.instance()
+            .moduleSetting('timeline-enable-soft-navigations')
+            .addChangeListener(this.#onModelConfigurationChanged, this);
         const timelineToolbarContainer = this.element.createChild('div', 'timeline-toolbar-container');
         timelineToolbarContainer.setAttribute('jslog', `${VisualLogging.toolbar()}`);
         timelineToolbarContainer.role = 'toolbar';
@@ -648,11 +644,19 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         ActiveFilters.removeInstance();
         timelinePanelInstance = undefined;
     }
-    #instantiateNewModel() {
+    #getModelConfig() {
         const config = Trace.Types.Configuration.defaults();
         config.showAllEvents = Common.Settings.Settings.instance().moduleSetting('timeline-show-all-events').get();
         config.debugMode = Common.Settings.Settings.instance().moduleSetting('timeline-debug-mode').get();
-        const traceEngineModel = Trace.TraceModel.Model.createWithAllHandlers(config);
+        config.enableSoftNavigation =
+            Common.Settings.Settings.instance().moduleSetting('timeline-enable-soft-navigations').get();
+        return config;
+    }
+    #onModelConfigurationChanged() {
+        this.#traceEngineModel.updateConfiguration(this.#getModelConfig());
+    }
+    #instantiateNewModel() {
+        const traceEngineModel = Trace.TraceModel.Model.createWithAllHandlers(this.#getModelConfig());
         traceEngineModel.addEventListener(Trace.TraceModel.ModelUpdateEvent.eventName, e => {
             const updateEvent = e;
             const str = i18nString(UIStrings.processed);
@@ -682,23 +686,11 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         UI.Context.Context.instance().setFlavor(TimelinePanel, this);
         // Record the performance tool load time.
         UI.UIUserMetrics.UIUserMetrics.instance().panelLoaded('timeline', 'DevTools.Launch.Timeline');
-        const cruxManager = CrUXManager.CrUXManager.instance();
-        cruxManager.addEventListener("field-data-changed" /* CrUXManager.Events.FIELD_DATA_CHANGED */, this.#onFieldDataChanged, this);
-        this.#onFieldDataChanged();
     }
     willHide() {
         super.willHide();
         UI.Context.Context.instance().setFlavor(TimelinePanel, null);
         this.#historyManager.cancelIfShowing();
-        const cruxManager = CrUXManager.CrUXManager.instance();
-        cruxManager.removeEventListener("field-data-changed" /* CrUXManager.Events.FIELD_DATA_CHANGED */, this.#onFieldDataChanged, this);
-    }
-    #onFieldDataChanged() {
-        const recs = PanelsCommon.ThrottlingUtils.getThrottlingRecommendations();
-        this.cpuThrottlingSelect?.updateRecommendedOption(recs.cpuOption);
-        if (this.networkThrottlingSelect) {
-            this.networkThrottlingSelect.recommendedConditions = recs.networkConditions;
-        }
     }
     loadFromEvents(events) {
         if (this.state !== "Idle" /* State.IDLE */) {
@@ -1042,11 +1034,11 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         const currentNavSetting = Common.Settings.Settings.instance().moduleSetting('flamechart-selected-navigation').get();
         if (currentNavSetting === 'classic') {
             this.#classicNavRadioButton.radio.checked = true;
-            Host.userMetrics.navigationSettingAtFirstTimelineLoad(2 /* Host.UserMetrics.TimelineNavigationSetting.SWITCHED_TO_CLASSIC */);
+            Host.userMetrics.navigationSettingAtFirstTimelineLoad(Host.UserMetrics.TimelineNavigationSetting.SWITCHED_TO_CLASSIC);
         }
         else if (currentNavSetting === 'modern') {
             this.#modernNavRadioButton.radio.checked = true;
-            Host.userMetrics.navigationSettingAtFirstTimelineLoad(3 /* Host.UserMetrics.TimelineNavigationSetting.SWITCHED_TO_MODERN */);
+            Host.userMetrics.navigationSettingAtFirstTimelineLoad(Host.UserMetrics.TimelineNavigationSetting.SWITCHED_TO_MODERN);
         }
     }
     #getShortcutsInfo(isNavClassic) {
@@ -1132,12 +1124,12 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         this.settingsPane.setAttribute('jslog', `${VisualLogging.pane('timeline-settings-pane').track({ resize: true })}`);
         const cpuThrottlingPane = this.settingsPane.createChild('div');
         cpuThrottlingPane.append(i18nString(UIStrings.cpu));
-        this.cpuThrottlingSelect = MobileThrottling.ThrottlingManager.throttlingManager().createCPUThrottlingSelector();
-        cpuThrottlingPane.append(this.cpuThrottlingSelect.control.element);
+        this.cpuThrottlingSelect =
+            MobileThrottling.CPUThrottlingSelector.CPUThrottlingSelector.createForGlobalConditions(cpuThrottlingPane);
         this.settingsPane.append(SettingsUI.SettingsUI.createSettingCheckbox(this.captureSelectorStatsSetting.title(), this.captureSelectorStatsSetting, i18nString(UIStrings.capturesSelectorStats)));
         const networkThrottlingPane = this.settingsPane.createChild('div');
         networkThrottlingPane.append(i18nString(UIStrings.network));
-        networkThrottlingPane.append(this.createNetworkConditionsSelectToolbarItem().element);
+        MobileThrottling.NetworkThrottlingSelector.NetworkThrottlingSelect.createForGlobalConditions(networkThrottlingPane, i18nString(UIStrings.network));
         this.settingsPane.append(SettingsUI.SettingsUI.createSettingCheckbox(this.captureLayersAndPicturesSetting.title(), this.captureLayersAndPicturesSetting, i18nString(UIStrings.capturesAdvancedPaint)));
         this.settingsPane.append(SettingsUI.SettingsUI.createSettingCheckbox(this.disableCaptureJSProfileSetting.title(), this.disableCaptureJSProfileSetting, i18nString(UIStrings.disablesJavascriptSampling)));
         const screenshotPresetSelect = new UI.Toolbar.ToolbarComboBox(() => this.screenshotCaptureModeSetting.set(screenshotPresetSelect.selectedOption().value), this.screenshotCaptureModeSetting.title(), '', 'screenshot-capture-mode');
@@ -1170,12 +1162,6 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         this.settingsPane.append(thirdPartyCheckbox.element);
         this.showSettingsPaneSetting.addChangeListener(this.updateSettingsPaneVisibility.bind(this));
         this.updateSettingsPaneVisibility();
-    }
-    createNetworkConditionsSelectToolbarItem() {
-        const toolbarItem = new UI.Toolbar.ToolbarItem(document.createElement('div'));
-        this.networkThrottlingSelect =
-            MobileThrottling.NetworkThrottlingSelector.NetworkThrottlingSelect.createForGlobalConditions(toolbarItem.element, i18nString(UIStrings.networkConditions));
-        return toolbarItem;
     }
     prepareToLoadTimeline() {
         console.assert(this.state === "Idle" /* State.IDLE */);
@@ -1953,10 +1939,10 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         if (this.#traceEngineModel.size() === 1) {
             this.#setupNavigationSetting();
             if (Common.Settings.Settings.instance().moduleSetting('flamechart-selected-navigation').get() === 'classic') {
-                Host.userMetrics.navigationSettingAtFirstTimelineLoad(0 /* Host.UserMetrics.TimelineNavigationSetting.CLASSIC_AT_SESSION_FIRST_TRACE */);
+                Host.userMetrics.navigationSettingAtFirstTimelineLoad(Host.UserMetrics.TimelineNavigationSetting.CLASSIC_AT_SESSION_FIRST_TRACE);
             }
             else {
-                Host.userMetrics.navigationSettingAtFirstTimelineLoad(1 /* Host.UserMetrics.TimelineNavigationSetting.MODERN_AT_SESSION_FIRST_TRACE */);
+                Host.userMetrics.navigationSettingAtFirstTimelineLoad(Host.UserMetrics.TimelineNavigationSetting.MODERN_AT_SESSION_FIRST_TRACE);
             }
         }
         if (parsedTrace.metadata.dataOrigin !== "CPUProfile" /* Trace.Types.File.DataOrigin.CPU_PROFILE */) {
@@ -2456,6 +2442,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
                 },
             };
         }
+        this.#traceEngineModel.updateConfiguration(this.#getModelConfig());
         await this.#traceEngineModel.parse(collectedEvents, config);
         // Store all source maps on the trace metadata.
         // If not fresh, we can't validate the maps are still accurate.

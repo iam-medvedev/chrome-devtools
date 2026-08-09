@@ -1986,7 +1986,8 @@ var BackgroundServiceView = class _BackgroundServiceView extends UI4.Widget.VBox
   splitWidget;
   dataGrid;
   previewPanel;
-  selectedEventNode;
+  #isRecording = false;
+  #selectedEventNode = null;
   preview;
   static getUIString(serviceName) {
     switch (serviceName) {
@@ -2031,7 +2032,7 @@ var BackgroundServiceView = class _BackgroundServiceView extends UI4.Widget.VBox
     this.recordAction = UI4.ActionRegistry.ActionRegistry.instance().getAction("background-service.toggle-recording");
     this.toolbar = this.contentElement.createChild("devtools-toolbar", "background-service-toolbar");
     this.toolbar.setAttribute("jslog", `${VisualLogging2.toolbar()}`);
-    void this.setupToolbar();
+    this.setupToolbar();
     this.splitWidget = new UI4.SplitWidget.SplitWidget(
       /* isVertical= */
       false,
@@ -2042,12 +2043,11 @@ var BackgroundServiceView = class _BackgroundServiceView extends UI4.Widget.VBox
     this.dataGrid = this.createDataGrid();
     this.previewPanel = new UI4.Widget.VBox();
     this.previewPanel.element.setAttribute("jslog", `${VisualLogging2.pane("preview").track({ resize: true })}`);
-    this.selectedEventNode = null;
     this.preview = null;
     this.splitWidget.setMainWidget(this.dataGrid.asWidget());
     this.splitWidget.setSidebarWidget(this.previewPanel);
     this.splitWidget.hideMain();
-    this.showPreview(null);
+    this.performUpdate();
   }
   getDataGrid() {
     return this.dataGrid;
@@ -2055,7 +2055,7 @@ var BackgroundServiceView = class _BackgroundServiceView extends UI4.Widget.VBox
   /**
    * Creates the toolbar UI element.
    */
-  async setupToolbar() {
+  setupToolbar() {
     this.toolbar.wrappable = true;
     this.recordButton = UI4.Toolbar.Toolbar.createActionButton(this.recordAction);
     this.recordButton.toggleOnClick(false);
@@ -2068,7 +2068,6 @@ var BackgroundServiceView = class _BackgroundServiceView extends UI4.Widget.VBox
     this.saveButton.addEventListener("Click", (_event) => {
       void this.saveToFile();
     });
-    this.saveButton.setEnabled(false);
     this.toolbar.appendToolbarItem(this.saveButton);
     this.toolbar.appendSeparator();
     this.originCheckbox = new UI4.Toolbar.ToolbarCheckbox(i18nString3(UIStrings3.showEventsFromOtherDomains), i18nString3(UIStrings3.showEventsFromOtherDomains), () => this.refreshView(), "show-events-from-other-domains");
@@ -2090,17 +2089,16 @@ var BackgroundServiceView = class _BackgroundServiceView extends UI4.Widget.VBox
    * Clears the grid and panel.
    */
   clearView() {
-    this.selectedEventNode = null;
+    this.#selectedEventNode = null;
     this.dataGrid.rootNode().removeChildren();
     this.splitWidget.hideMain();
-    this.saveButton.setEnabled(false);
-    this.showPreview(null);
+    this.performUpdate();
   }
   /**
    * Called when the `Toggle Record` button is clicked.
    */
   toggleRecording() {
-    const isRecording = !this.recordButton.isToggled();
+    const isRecording = !this.#isRecording;
     this.model.setRecording(isRecording, this.serviceName);
     const featureName = _BackgroundServiceView.getUIString(this.serviceName).toLowerCase();
     if (isRecording) {
@@ -2119,16 +2117,11 @@ var BackgroundServiceView = class _BackgroundServiceView extends UI4.Widget.VBox
     if (state.serviceName !== this.serviceName) {
       return;
     }
-    if (state.isRecording === this.recordButton.isToggled()) {
+    if (state.isRecording === this.#isRecording) {
       return;
     }
-    this.recordButton.setToggled(state.isRecording);
-    this.updateRecordButtonTooltip();
-    this.showPreview(this.selectedEventNode);
-  }
-  updateRecordButtonTooltip() {
-    const buttonTooltip = this.recordButton.isToggled() ? i18nString3(UIStrings3.stopRecordingEvents) : i18nString3(UIStrings3.startRecordingEvents);
-    this.recordButton.setTitle(buttonTooltip, "background-service.toggle-recording");
+    this.#isRecording = state.isRecording;
+    this.performUpdate();
   }
   onEventReceived({ data: serviceEvent }) {
     if (!this.acceptEvent(serviceEvent)) {
@@ -2156,8 +2149,7 @@ var BackgroundServiceView = class _BackgroundServiceView extends UI4.Widget.VBox
       this.splitWidget.showBoth();
     }
     if (this.dataGrid.rootNode().children.length === 1) {
-      this.saveButton.setEnabled(true);
-      this.showPreview(this.selectedEventNode);
+      this.performUpdate();
     }
   }
   createDataGrid() {
@@ -2175,8 +2167,25 @@ var BackgroundServiceView = class _BackgroundServiceView extends UI4.Widget.VBox
       columns
     });
     dataGrid.setStriped(true);
-    dataGrid.addEventListener("SelectedNode", (event) => this.showPreview(event.data));
+    dataGrid.addEventListener("SelectedNode", (event) => {
+      this.#selectedEventNode = event.data;
+      this.performUpdate();
+    });
     return dataGrid;
+  }
+  performUpdate() {
+    this.#updateToolbar();
+    this.#updatePreview();
+  }
+  #updateToolbar() {
+    if (this.recordButton) {
+      this.recordButton.setToggled(this.#isRecording);
+      const buttonTooltip = this.#isRecording ? i18nString3(UIStrings3.stopRecordingEvents) : i18nString3(UIStrings3.startRecordingEvents);
+      this.recordButton.setTitle(buttonTooltip, "background-service.toggle-recording");
+    }
+    if (this.saveButton) {
+      this.saveButton.setEnabled(this.dataGrid.rootNode().children.length > 0);
+    }
   }
   /**
    * Creates the data object to pass to the DataGrid Node.
@@ -2235,30 +2244,26 @@ var BackgroundServiceView = class _BackgroundServiceView extends UI4.Widget.VBox
     }
     return url;
   }
-  showPreview(dataNode) {
-    if (this.selectedEventNode && this.selectedEventNode === dataNode) {
-      return;
-    }
-    this.selectedEventNode = dataNode;
+  #updatePreview() {
     if (this.preview) {
       this.preview.detach();
     }
-    if (this.selectedEventNode) {
-      this.preview = this.selectedEventNode.createPreview();
+    if (this.#selectedEventNode) {
+      this.preview = this.#selectedEventNode.createPreview();
       this.preview.show(this.previewPanel.contentElement);
       return;
     }
     let emptyWidget;
     if (this.dataGrid.rootNode().children.length) {
       emptyWidget = new UI4.EmptyWidget.EmptyWidget(i18nString3(UIStrings3.noEventSelected), i18nString3(UIStrings3.selectAnEventToViewMetadata));
-    } else if (this.recordButton.isToggled()) {
+    } else if (this.#isRecording) {
       const featureName = _BackgroundServiceView.getUIString(this.serviceName).toLowerCase();
       emptyWidget = new UI4.EmptyWidget.EmptyWidget(i18nString3(UIStrings3.recordingSActivity, { PH1: featureName }), i18nString3(UIStrings3.devtoolsWillRecordAllSActivity, { PH1: featureName }));
     } else {
       const recordShortcuts = UI4.ShortcutRegistry.ShortcutRegistry.instance().shortcutsForAction("background-service.toggle-recording")[0];
       emptyWidget = new UI4.EmptyWidget.EmptyWidget(i18nString3(UIStrings3.noRecording), i18nString3(UIStrings3.startRecordingToDebug, {
         PH1: i18nString3(UIStrings3.startRecordingEvents),
-        PH2: recordShortcuts.title()
+        PH2: recordShortcuts ? recordShortcuts.title() : ""
       }));
       emptyWidget.link = this.createLearnMoreLink();
       const button = UI4.UIUtils.createTextButton(i18nString3(UIStrings3.startRecordingEvents), () => this.toggleRecording(), {
@@ -11256,7 +11261,15 @@ var UIStrings23 = {
   /**
    * @description Label for a list of tool flags or attributes
    */
-  flags: "Flags"
+  flags: "Flags",
+  /**
+   * @description Text for the label of the tool description
+   */
+  description: "Description",
+  /**
+   * @description Text for the label of the tool origin
+   */
+  origin: "Origin"
 };
 var str_23 = i18n45.i18n.registerUIStrings("panels/application/WebMCPView.ts", UIStrings23);
 var i18nString23 = i18n45.i18n.getLocalizedString.bind(void 0, str_23);
@@ -11708,7 +11721,7 @@ var DEFAULT_VIEW8 = (input, output, target) => {
         }
       });
     }
-  }}>Run tool</devtools-button>
+  }}>${i18nString23(UIStrings23.runTool)}</devtools-button>
           ` : nothing7}
         </div>
       </devtools-split-view>
@@ -12038,9 +12051,9 @@ var TOOL_DETAILS_VIEW = (input, output, target) => {
   render12(html12`
     <style>${webMCPView_css_default}</style>
     <div class="tool-details-grid">
-      <div class="label">Name</div>
+      <div class="label">${i18nString23(UIStrings23.name)}</div>
       <div class="value source-code">${tool.name}</div>
-      <div class="label">Description</div>
+      <div class="label">${i18nString23(UIStrings23.description)}</div>
       <div class="value">${tool.description}</div>
       ${flags.length > 0 ? html12`
       <div class="label">${i18nString23(UIStrings23.flags)}</div>
@@ -12051,7 +12064,7 @@ var TOOL_DETAILS_VIEW = (input, output, target) => {
       <div class="value">${Components4.Linkifier.Linkifier.linkifyRevealable(tool.frame, tool.frame.displayName())}</div>
       ` : nothing7}
       ${origin instanceof SDK21.DOMModel.DOMNode ? html12`
-      <div class="label">Origin</div>
+      <div class="label">${i18nString23(UIStrings23.origin)}</div>
       <div class="value tool-origin-container">
         <span
             class="node-text-container source-code tool-origin-node"
@@ -12075,7 +12088,7 @@ var TOOL_DETAILS_VIEW = (input, output, target) => {
            @click=${() => input.revealNode(origin)}
            ></devtools-button>
       </div>` : origin ? html12`
-      <div class="label">Origin</div>
+      <div class="label">${i18nString23(UIStrings23.origin)}</div>
       <div class="value stack-trace">
         ${widget8(Components4.JSPresentationUtils.StackTracePreviewContent, { stackTrace: origin, options: { expandable: true } })}
       </div>` : nothing7}
@@ -16302,6 +16315,7 @@ var KeyValueStorageItemsView = class extends UI28.Widget.VBox {
       }
     };
     this.#view(viewInput, viewOutput, this.contentElement);
+    this.doResize();
   }
   isAiButtonEnabled() {
     return false;

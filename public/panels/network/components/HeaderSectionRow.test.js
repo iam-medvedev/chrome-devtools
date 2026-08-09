@@ -7,6 +7,7 @@ import * as Host from '../../../core/host/host.js';
 import * as Platform from '../../../core/platform/platform.js';
 import { dispatchCopyEvent, dispatchInputEvent, dispatchKeyDownEvent, dispatchPasteEvent, getCleanTextContentFromElements, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
+import { setupUserMetricHooks } from '../../../testing/UserMetricsHelpers.js';
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as NetworkComponents from './components.js';
@@ -40,6 +41,7 @@ const hasReloadPrompt = (shadowRoot) => {
     return Boolean(shadowRoot.querySelector('devtools-icon[title="Refresh the page/request for these changes to take effect"]'));
 };
 describeWithEnvironment('HeaderSectionRow', () => {
+    setupUserMetricHooks();
     it('emits UMA event when a header value is being copied', async () => {
         const headerData = {
             name: Platform.StringUtilities.toLowerCaseString('some-header-name'),

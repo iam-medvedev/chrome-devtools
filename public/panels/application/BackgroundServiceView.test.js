@@ -4,7 +4,7 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
-import { dispatchClickEvent } from '../../testing/DOMHelpers.js';
+import { assertScreenshot, dispatchClickEvent, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment, registerActions } from '../../testing/EnvironmentHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Resources from './application.js';
@@ -34,6 +34,11 @@ describeWithEnvironment('BackgroundServiceView', () => {
                 category: "BACKGROUND_SERVICES" /* UI.ActionRegistration.ActionCategory.BACKGROUND_SERVICES */,
                 title: () => 'mock',
                 toggleable: true,
+                iconClass: "record-start" /* UI.ActionRegistration.IconClass.START_RECORDING */,
+                toggledIconClass: "record-stop" /* UI.ActionRegistration.IconClass.STOP_RECORDING */,
+                async loadActionDelegate() {
+                    return new Resources.BackgroundServiceView.ActionDelegate();
+                },
             }]);
         sinon.stub(UI.ShortcutRegistry.ShortcutRegistry, 'instance').returns({
             shortcutTitleForAction: () => { },
@@ -110,7 +115,8 @@ describeWithEnvironment('BackgroundServiceView', () => {
         const header = view.contentElement.querySelector('.empty-state-header')?.textContent;
         assert.deepEqual(header, 'No recording yet');
     });
-    it('shows metadata in preview', async () => {
+    it('shows metadata in preview and renders a screenshot', async () => {
+        renderElementIntoDOM(view, { width: 800, height: 800, includeCommonStyles: true });
         backgroundServiceModel?.backgroundServiceEventReceived({ backgroundServiceEvent: BACKGROUND_SERVICE_EVENT });
         const eventWithMetadata = {
             ...BACKGROUND_SERVICE_EVENT,
@@ -128,6 +134,9 @@ describeWithEnvironment('BackgroundServiceView', () => {
         view.getDataGrid().asWidget().dataGrid.rootNode().children[1].select();
         metadata = view.contentElement.querySelector('.background-service-metadata-entry');
         assert.deepEqual(metadata?.textContent, 'key: value');
+        // Focus the datagrid to ensure consistent focused styling across test runs
+        view.getDataGrid().asWidget().dataGrid.element.focus();
+        await assertScreenshot('application/background_service_view.png');
     });
 });
 //# sourceMappingURL=BackgroundServiceView.test.js.map

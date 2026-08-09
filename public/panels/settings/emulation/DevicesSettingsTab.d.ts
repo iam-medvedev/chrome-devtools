@@ -15,9 +15,19 @@ export declare class DevicesSettingsTab extends UI.Widget.VBox implements UI.Lis
     private muteAndSaveDeviceList;
     private addCustomDevice;
     private toNumericInputValue;
+    private verticalMode;
+    private horizontalMode;
+    private editorIntegerValue;
     renderItem(device: EmulationModel.EmulatedDevices.EmulatedDevice, editable: boolean): Element;
     removeItemRequested(item: EmulationModel.EmulatedDevices.EmulatedDevice): void;
     commitEdit(device: EmulationModel.EmulatedDevices.EmulatedDevice, editor: UI.ListWidget.Editor<EmulationModel.EmulatedDevices.EmulatedDevice>, isNew: boolean): void;
     beginEdit(device: EmulationModel.EmulatedDevices.EmulatedDevice): UI.ListWidget.Editor<EmulationModel.EmulatedDevices.EmulatedDevice>;
+    private safeAreaInsetsFromEditor;
+    private cutoutFromEditor;
+    private populateSafeAreaEditor;
+    private populateCutoutEditor;
+    private updateCutoutFieldsVisibility;
     private createEditor;
+    private appendSafeAreaFields;
+    private appendCutoutFields;
 }

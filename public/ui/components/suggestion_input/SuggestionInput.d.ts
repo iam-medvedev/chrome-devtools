@@ -38,12 +38,12 @@ declare class SuggestionBox extends LitElement {
 export declare class SuggestionInput extends LitElement {
     #private;
     static shadowRootOptions: {
-        readonly delegatesFocus: true;
         readonly clonable?: boolean;
         readonly customElementRegistry?: CustomElementRegistry | null;
         readonly mode: ShadowRootMode;
         readonly serializable?: boolean;
         readonly slotAssignment?: SlotAssignmentMode;
+        readonly delegatesFocus: true;
     };
     /**
      * State passed to devtools-suggestion-box.

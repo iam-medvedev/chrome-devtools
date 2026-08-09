@@ -4,7 +4,10 @@
 import * as Platform from '../../../core/platform/platform.js';
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
-let config;
+let config = Types.Configuration.defaults();
+export function handleUserConfig(userConfig) {
+    config = userConfig;
+}
 // We track the renderer processes we see in each frame on the way through the trace.
 let rendererProcessesByFrameId = new Map();
 // We will often want to key data by Frame IDs, and commonly we'll care most
@@ -50,6 +53,7 @@ let navigationsByNavigationId = new Map();
 let softNavigationsById = new Map();
 let finalDisplayUrlByNavigationId = new Map();
 let mainFrameNavigations = [];
+let sameDocumentNavigations = [];
 // Represents all the threads in the trace, organized by process. This is mostly for internal
 // bookkeeping so that during the finalize pass we can obtain the main and browser thread IDs.
 let threadsInProcess = new Map();
@@ -81,6 +85,7 @@ export function reset() {
     finalDisplayUrlByNavigationId = new Map();
     processNames = new Map();
     mainFrameNavigations = [];
+    sameDocumentNavigations = [];
     browserProcessId = Types.Events.ProcessID(-1);
     browserThreadId = Types.Events.ThreadID(-1);
     gpuProcessId = Types.Events.ProcessID(-1);
@@ -278,7 +283,7 @@ export function handleEvent(event) {
         }
         return;
     }
-    if (Types.Events.isSoftNavigationStart(event)) {
+    if (config.enableSoftNavigation && Types.Events.isSoftNavigationStart(event)) {
         softNavigationsById.set(event.args.context.performanceTimelineNavigationId, event);
     }
     // Update `finalDisplayUrlByNavigationId` to reflect the latest redirect for each navigation.
@@ -294,19 +299,17 @@ export function handleEvent(event) {
         finalDisplayUrlByNavigationId.set(maybeNavigationId, event.args.data.url);
         return;
     }
-    // Update `finalDisplayUrlByNavigationId` to reflect history API navigations.
+    // Track history API navigations to compute final display URLs in finalize.
     if (Types.Events.isDidCommitSameDocumentNavigation(event)) {
         if (event.args.render_frame_host.frame_type !== 'PRIMARY_MAIN_FRAME') {
             return;
         }
-        const navigation = mainFrameNavigations.at(-1);
-        const key = navigation?.args.data?.navigationId ?? '';
-        finalDisplayUrlByNavigationId.set(key, event.args.url);
+        sameDocumentNavigations.push(event);
         return;
     }
 }
 export async function finalize(options) {
-    config = { showAllEvents: Boolean(options?.showAllEvents) };
+    config.showAllEvents = Boolean(options?.showAllEvents);
     // We try to set the minimum time by finding the event with the smallest
     // timestamp. However, if we also got a timestamp from the
     // TracingStartedInBrowser event, we should always use that.
@@ -380,6 +383,34 @@ export async function finalize(options) {
         if (firstMainFrameNav.args.data?.isOutermostMainFrame && firstMainFrameNav.args.data?.documentLoaderURL &&
             navigationIsWithinThreshold) {
             mainFrameURL = firstMainFrameNav.args.data.documentLoaderURL;
+        }
+    }
+    // Compute final display URLs for each hard navigation.
+    // A hard navigation's final URL is updated by history API navigations (e.g. pushState).
+    // However, if a soft navigation occurs, subsequent history API navigations belong to the
+    // soft navigation and should not update the hard navigation's URL.
+    const softNavs = Array.from(softNavigationsById.values()).sort((a, b) => a.ts - b.ts);
+    // Create an array of intervals for each hard navigation.
+    const hardNavs = [...mainFrameNavigations];
+    // Add a faux navigation to cover the time before the first hard navigation, or the whole trace if there are none.
+    const intervals = [
+        { minTs: 0, maxTs: hardNavs.length > 0 ? hardNavs[0].ts : Infinity, key: '' },
+        ...hardNavs.map((nav, i) => ({
+            minTs: nav.ts,
+            maxTs: i + 1 < hardNavs.length ? hardNavs[i + 1].ts : Infinity,
+            key: nav.args.data?.navigationId ?? '',
+        })),
+    ];
+    for (const { minTs, maxTs, key } of intervals) {
+        // Find the first soft navigation within this hard navigation's time window.
+        const firstSoftNav = softNavs.find(sn => sn.ts >= minTs && sn.ts < maxTs);
+        // If a soft navigation occurred, we only consider history events before it.
+        const effectiveMaxTs = firstSoftNav ? firstSoftNav.ts : maxTs;
+        // Find the last history API navigation in the effective window.
+        const historyEvents = sameDocumentNavigations.filter(hn => hn.ts >= minTs && hn.ts < effectiveMaxTs);
+        const lastHistoryEvent = historyEvents.at(-1);
+        if (lastHistoryEvent) {
+            finalDisplayUrlByNavigationId.set(key, lastHistoryEvent.args.url);
         }
     }
 }

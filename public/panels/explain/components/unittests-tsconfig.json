@@ -61,6 +61,9 @@
       "path": "../../../core/platform/bundle-tsconfig.json"
     },
     {
+      "path": "../../../models/ai_assistance/bundle-tsconfig.json"
+    },
+    {
       "path": "../../../testing/testing-tsconfig.json"
     },
     {

@@ -11,7 +11,7 @@ export type ViewOutput = unknown;
 export declare const DEFAULT_VIEW: (input: ViewInput, _output: ViewOutput, target: HTMLElement) => void;
 export declare class TimelineSection extends UI.Widget.Widget {
     #private;
-    constructor(element?: HTMLElement, view?: (input: ViewInput, _output: ViewOutput, target: HTMLElement) => void);
+    constructor(element?: HTMLElement, view?: typeof DEFAULT_VIEW);
     set isEndOfGroup(value: boolean);
     set isStartOfGroup(value: boolean);
     set isFirstSection(value: boolean);

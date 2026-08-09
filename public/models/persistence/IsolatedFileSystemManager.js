@@ -26,6 +26,7 @@ export class IsolatedFileSystemManager extends Common.ObjectWrapper.ObjectWrappe
     fileSystemsLoadedPromise;
     #settings;
     #console;
+    #eventDescriptors;
     constructor(settings, console) {
         super();
         this.#settings = settings;
@@ -33,15 +34,15 @@ export class IsolatedFileSystemManager extends Common.ObjectWrapper.ObjectWrappe
         this.#fileSystems = new Map();
         this.callbacks = new Map();
         this.progresses = new Map();
-        Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.FileSystemRemoved, this.onFileSystemRemoved, this);
-        Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.FileSystemAdded, event => {
-            this.onFileSystemAdded(event);
-        }, this);
-        Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.FileSystemFilesChangedAddedRemoved, this.onFileSystemFilesChanged, this);
-        Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.IndexingTotalWorkCalculated, this.onIndexingTotalWorkCalculated, this);
-        Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.IndexingWorked, this.onIndexingWorked, this);
-        Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.IndexingDone, this.onIndexingDone, this);
-        Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.SearchCompleted, this.onSearchCompleted, this);
+        this.#eventDescriptors = [
+            Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.FileSystemRemoved, this.onFileSystemRemoved, this),
+            Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.FileSystemAdded, this.onFileSystemAdded, this),
+            Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.FileSystemFilesChangedAddedRemoved, this.onFileSystemFilesChanged, this),
+            Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.IndexingTotalWorkCalculated, this.onIndexingTotalWorkCalculated, this),
+            Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.IndexingWorked, this.onIndexingWorked, this),
+            Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.IndexingDone, this.onIndexingDone, this),
+            Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.SearchCompleted, this.onSearchCompleted, this),
+        ];
         // Initialize exclude pattern settings
         const defaultCommonExcludedFolders = [
             '/node_modules/',
@@ -81,6 +82,10 @@ export class IsolatedFileSystemManager extends Common.ObjectWrapper.ObjectWrappe
         this.fileSystemRequestResolve = null;
         this.fileSystemsLoadedPromise = this.requestFileSystems();
     }
+    // TODO(crbug.com/542394587): Should be `Symbol.dispsoe`
+    dispose() {
+        Common.EventTarget.removeEventListeners(this.#eventDescriptors);
+    }
     static instance(opts = {}) {
         const forceNew = opts.forceNew ?? null;
         // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
@@ -98,7 +103,8 @@ export class IsolatedFileSystemManager extends Common.ObjectWrapper.ObjectWrappe
     }
     requestFileSystems() {
         const { resolve, promise } = Promise.withResolvers();
-        Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.FileSystemsLoaded, onFileSystemsLoaded, this);
+        const descriptor = Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.FileSystemsLoaded, onFileSystemsLoaded, this);
+        this.#eventDescriptors.push(descriptor);
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.requestFileSystems();
         return promise;
         function onFileSystemsLoaded(event) {

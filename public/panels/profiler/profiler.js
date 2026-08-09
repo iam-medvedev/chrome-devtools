@@ -698,15 +698,15 @@ import * as Elements from "./../elements/elements.js";
 var { widget } = UI2.Widget;
 var UIStrings = {
   /**
-   * @description Text in Heap Snapshot View of a profiler tool
+   * @description Column header in detached elements table displaying detached DOM nodes.
    */
   detachedNodes: "Detached nodes",
   /**
-   * @description Text in Heap Snapshot View of a profiler tool
+   * @description Column header in detached elements table displaying the number of detached DOM nodes.
    */
   nodeSize: "Node count",
   /**
-   * @description Label for the detached elements table
+   * @description Label for the detached elements table.
    */
   detachedElementsList: "Detached elements list"
 };
@@ -1006,31 +1006,31 @@ import * as Bindings from "./../../models/bindings/bindings.js";
 import * as Workspace from "./../../models/workspace/workspace.js";
 var UIStrings2 = {
   /**
-   * @description Name of a profile
+   * @description Name of a profile.
    * @example {2} PH1
    */
   profileD: "Profile {PH1}",
   /**
-   * @description Text in Profile View of a profiler tool
+   * @description Status update showing data loaded size while reading a profile file from disk.
    * @example {4 MB} PH1
    */
   loadingD: "Loading\u2026 {PH1}",
   /**
-   * @description Text in Profile View of a profiler tool
+   * @description Error message shown when reading a profile file from disk fails.
    * @example {example.file} PH1
    * @example {cannot open file} PH2
    */
   fileSReadErrorS: "File ''{PH1}'' read error: {PH2}",
   /**
-   * @description Text when something is loading
+   * @description Text when something is loading.
    */
   loading: "Loading\u2026",
   /**
-   * @description Text in Profile View of a profiler tool
+   * @description Error message when loading a profile file fails.
    */
   failedToReadFile: "Failed to read file",
   /**
-   * @description Text in Profile View of a profiler tool
+   * @description Status update message while parsing profile JSON content.
    */
   parsing: "Parsing\u2026",
   /**
@@ -1129,19 +1129,19 @@ var WritableProfileHeader = class extends ProfileHeader {
 // gen/front_end/panels/profiler/HeapDetachedElementsView.js
 var UIStrings3 = {
   /**
-   * @description Button text to obtain the detached elements retained by JS
+   * @description Button text to get the detached elements retained by JavaScript.
    */
-  startDetachedElements: "Obtain detached elements",
+  startDetachedElements: "Get detached elements",
   /**
    * @description The title for the collection of profiles that are gathered from various snapshots of the heap, using a sampling (e.g. every 1/100) technique.
    */
   detachedElementsTitle: "Detached elements",
   /**
-   * @description Description in Heap Profile View of a profiler tool
+   * @description Description for the detached elements profiling option in the Memory panel.
    */
-  detachedElementsDescription: "Detached elements shows objects that are retained by a JS reference.",
+  detachedElementsDescription: "Detached elements show objects retained by a JS reference.",
   /**
-   * @description Name of a profile
+   * @description Name of a profile.
    * @example {2} PH1
    */
   detachedElementProfile: "Detached elements {PH1}"
@@ -2581,40 +2581,40 @@ var { repeat, ref } = Directives;
 var { widget: widget2, widgetRef } = UI6.Widget;
 var UIStrings4 = {
   /**
-   * @description The reported total size used in the selected time frame of the allocation sampling profile
+   * @description The reported total size used in the selected time frame of the allocation sampling profile.
    * @example {3 MB} PH1
    */
   selectedSizeS: "Selected size: {PH1}",
   /**
-   * @description Name of column header that reports the size (in terms of bytes) used for a particular part of the heap, excluding the size of the children nodes of this part of the heap
+   * @description Column header that reports the size (in bytes) used for a particular part of the heap, excluding the size of child nodes.
    */
   selfSizeBytes: "Self size",
   /**
-   * @description Name of column header that reports the total size (in terms of bytes) used for a particular part of the heap
+   * @description Column header that reports the total size (in bytes) used for a particular part of the heap.
    */
   totalSizeBytes: "Total size",
   /**
-   * @description Button text to stop profiling the heap
+   * @description Button text to stop profiling the heap.
    */
   stopHeapProfiling: "Stop heap profiling",
   /**
-   * @description Button text to start profiling the heap
+   * @description Button text to start profiling the heap.
    */
   startHeapProfiling: "Start heap profiling",
   /**
-   * @description Progress update that the profiler is recording the contents of the heap
+   * @description Progress update that the profiler is recording the contents of the heap.
    */
   recording: "Recording\u2026",
   /**
-   * @description Icon title in Heap Profile View of a profiler tool
+   * @description Tooltip and status text for the recording icon when the heap profiler is actively recording.
    */
   heapProfilerIsRecording: "Heap profiler is recording",
   /**
-   * @description Progress update that the profiler is in the process of stopping its recording of the heap
+   * @description Progress update that the profiler is in the process of stopping its recording of the heap.
    */
   stopping: "Stopping\u2026",
   /**
-   * @description Sampling category to only profile allocations happening on the heap
+   * @description Sampling category to only profile allocations happening on the heap.
    */
   allocationSampling: "Allocation sampling",
   /**
@@ -2622,94 +2622,94 @@ var UIStrings4 = {
    */
   samplingProfiles: "Sampling profiles",
   /**
-   * @description Description in Heap Profile View of a profiler tool
+   * @description Description for the allocation sampling profiling option in the Memory panel.
    */
   recordMemoryAllocations: "Approximate memory allocations by sampling long operations with minimal overhead and get a breakdown by JavaScript execution stack",
   /**
-   * @description Name of a profile
+   * @description Name of a profile.
    * @example {2} PH1
    */
   profileD: "Profile {PH1}",
   /**
-   * @description Accessible text for the value in bytes in memory allocation or coverage view.
+   * @description Accessible text for the value in bytes in the allocation view or coverage view.
    * @example {12345} PH1
    */
   sBytes: "{PH1} bytes",
   /**
-   * @description Text in CPUProfile View of a profiler tool
+   * @description Formatting template for displaying a percentage value in heap and CPU profile views.
    * @example {21.33} PH1
    */
   formatPercent: "{PH1}\xA0%",
   /**
-   * @description The formatted size in kilobytes, abbreviated to kB
+   * @description The formatted size in kilobytes, abbreviated to kB.
    * @example {1,021} PH1
    */
   skb: "{PH1}\xA0kB",
   /**
-   * @description Text for the name of something
+   * @description Text for the name of something.
    */
   name: "Name",
   /**
-   * @description Tooltip of a cell that reports the size used for a particular part of the heap, excluding the size of the children nodes of this part of the heap
+   * @description Tooltip for a cell reporting the size used for a particular part of the heap, excluding the size of child nodes.
    */
   selfSize: "Self size",
   /**
-   * @description Tooltip of a cell that reports the total size used for a particular part of the heap
+   * @description Tooltip for a cell reporting the total size used for a particular part of the heap.
    */
   totalSize: "Total size",
   /**
-   * @description Text for web URLs
+   * @description Text for web URLs.
    */
   url: "URL",
   /**
-   * @description Label for a checkbox in the memory panel to enable sampling heap profiler timeline.
+   * @description Label for a checkbox in the Memory panel to enable sampling heap profiler timeline.
    */
   samplingHeapProfilerTimeline: "Sampling heap profiler timeline",
   /**
-   * @description Text in Profile View of a profiler tool
+   * @description Tab title for an individual heap profile view in the Memory panel.
    */
   profile: "Profile",
   /**
    * @description Placeholder text in the search box of the JavaScript profiler tool. Users can search
-   *the results by the cost in milliseconds, the name of the function, or the file name.
+   * the results by the cost in milliseconds, the name of the function, or the file name.
    */
   findByCostMsNameOrFile: "Find by cost (>50ms), name or file",
   /**
-   * @description Text for a programming function
+   * @description Text for a programming function.
    */
   function: "Function",
   /**
-   * @description Title of the Profiler tool
+   * @description Title of the Profiler tool.
    */
   profiler: "Profiler",
   /**
-   * @description Aria-label for profiles view combobox in memory tool
+   * @description Aria-label for profiles view combobox in Memory panel.
    */
   profileViewMode: "Profile view mode",
   /**
-   * @description Tooltip text that appears when hovering over the largeicon visibility button in the Profile View of a profiler tool
+   * @description Tooltip text that appears when hovering over the focus button in the heap profile view toolbar.
    */
   focusSelectedFunction: "Focus selected function",
   /**
-   * @description Tooltip text that appears when hovering over the largeicon delete button in the Profile View of a profiler tool
+   * @description Tooltip text that appears when hovering over the exclude button in the heap profile view toolbar.
    */
   excludeSelectedFunction: "Exclude selected function",
   /**
-   * @description Tooltip text that appears when hovering over the largeicon refresh button in the Profile View of a profiler tool
+   * @description Tooltip text that appears when hovering over the restore button in the heap profile view toolbar.
    */
   restoreAllFunctions: "Restore all functions",
   /**
-   * @description Text in Profile View of a profiler tool
+   * @description Option in the view mode dropdown to display the heap profile as a flame chart.
    */
   chart: "Chart",
   /**
-   * @description Text in Profile View of a profiler tool
+   * @description Option in the view mode dropdown to display the heap profile as a bottom-up call tree.
    */
-  heavyBottomUp: "Heavy (Bottom Up)",
+  heavyBottomUp: "Heavy (bottom up)",
   /**
-   * @description Text for selecting different profile views in the JS profiler tool. This option is a tree view.
+   * @description Option in the view mode dropdown to display the heap profile as a top-down call tree.
    */
-  treeTopDown: "Tree (Top Down)",
+  treeTopDown: "Tree (top down)",
   /**
    * @description Tooltip to alert developers that some parts of code in execution were not optimized.
    * @example {Optimized too many times} PH1
@@ -3794,100 +3794,99 @@ import { Directives as Directives2, html as html3, render as render3 } from "./.
 import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
 var UIStrings5 = {
   /**
-   * @description Generic text with two placeholders separated by a comma
+   * @description Accessible name template combining a numeric value and its percentage (e.g. "1,613,680, 44%").
    * @example {1 613 680} PH1
    * @example {44 %} PH2
    */
   genericStringsTwoPlaceholders: "{PH1}, {PH2}",
   /**
-   * @description Text in Heap Snapshot Grid Nodes of a profiler tool
+   * @description Display text for internal array objects without a constructor name in heap snapshot trees.
    */
   internalArray: "(internal array)[]",
   /**
-   * @description Text in Heap Snapshot Grid Nodes of a profiler tool
+   * @description Tooltip for an icon indicating that an object is reachable from the global window object.
    */
   userObjectReachableFromWindow: "User object reachable from window",
   /**
-   * @description Text in Heap Snapshot Grid Nodes of a profiler tool
+   * @description Tooltip for an icon indicating that a DOM node is detached from the DOM tree.
    */
   detachedFromDomTree: "Detached from DOM tree",
   /**
-   * @description Text in Heap Snapshot Grid Nodes of a profiler tool
+   * @description Text displayed when a preview for a heap snapshot object cannot be retrieved.
    */
-  previewIsNotAvailable: "Preview is not available",
+  previewIsNotAvailable: "Preview isn\u2019t available",
   /**
-   * @description A context menu item in the Heap Profiler Panel of a profiler tool
+   * @description Context menu item to reveal the selected object in the summary perspective.
    */
-  revealInSummaryView: "Reveal in Summary view",
+  revealInSummaryView: "Reveal in summary view",
   /**
-   * @description Text for the summary view
+   * @description Title of the perspective showing objects grouped by constructor.
    */
   summary: "Summary",
   /**
-   * @description A context menu item in the Heap Profiler Panel of a profiler tool
+   * @description Context menu item to reveal a specific object by name and snapshot ID in the summary perspective.
    * @example {SomeClassConstructor} PH1
    * @example {12345} PH2
    */
-  revealObjectSWithIdSInSummary: "Reveal object ''{PH1}'' with id @{PH2} in Summary view",
+  revealObjectSWithIdSInSummary: "Reveal object ''{PH1}'' with id @{PH2} in summary view",
   /**
-   * @description Text to store an HTML element or JavaScript variable or expression result as a global variable
+   * @description Text to store an HTML element or JavaScript variable or expression result as a global variable.
    */
   storeAsGlobalVariable: "Store as global variable",
   /**
-   * @description Text to ignore an object shown in the Retainers pane
+   * @description Context menu item to ignore a reference in the retainers view.
    */
   ignoreThisRetainer: "Ignore this retainer",
   /**
-   * @description Text to undo the "Ignore this retainer" action
+   * @description Text to undo the "Ignore this retainer" action.
    */
   stopIgnoringThisRetainer: "Stop ignoring this retainer",
   /**
-   * @description Text indicating that a node has been ignored with the "Ignore this retainer" action
+   * @description Text indicating that a node has been ignored with the "Ignore this retainer" action.
    */
   ignored: "ignored",
   /**
-   * @description Text in Heap Snapshot Grid Nodes of a profiler tool that indicates an element contained in another
-   * element.
+   * @description Preposition used in object retaining paths to show containment relationships (e.g. "myProp in Object" or "HTMLDivElement in HTMLBodyElement").
    */
   inElement: "in",
   /**
-   * @description A short summary of the text at https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots#compiled-code
+   * @description A short summary of the text at https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots#compiled-code.
    */
   compiledCodeSummary: "Internal data which V8 uses to run functions defined by JavaScript or WebAssembly.",
   /**
-   * @description A short summary of the text at https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots#concatenated-string
+   * @description A short summary of the text at https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots#concatenated-string.
    */
   concatenatedStringSummary: "A string which represents the contents of two other strings joined together.",
   /**
-   * @description A short summary of the text at https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots#system-context
+   * @description A short summary of the text at https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots#system-context.
    */
   contextSummary: "An internal object containing variables from a JavaScript scope which may be needed by a function created within that scope.",
   /**
-   * @description A short description of the data type internal type DescriptorArray, which is described more fully at https://v8.dev/blog/fast-properties
+   * @description A short description of the data type internal type DescriptorArray, which is described more fully at https://v8.dev/blog/fast-properties.
    */
   descriptorArraySummary: "A list of the property names used by a JavaScript Object.",
   /**
-   * @description A short summary of the text at https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots#array
+   * @description A short summary of the text at https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots#array.
    */
   internalArraySummary: "An internal array-like data structure (not a JavaScript Array).",
   /**
-   * @description A short summary of the text at https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots#internal-node
+   * @description A short summary of the text at https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots#internal-node.
    */
   internalNodeSummary: "An object allocated by a component other than V8, such as C++ objects defined by Blink.",
   /**
-   * @description A short description of the data type "system / Map" described at https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots#object-shape
+   * @description A short description of the data type "system / Map" described at https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots#object-shape.
    */
   mapSummary: "An internal object representing the shape of a JavaScript Object (not a JavaScript Map).",
   /**
-   * @description A short summary of the "(object elements)[]" described at https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots#array
+   * @description A short summary of the "(object elements)[]" described at https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots#array.
    */
   objectElementsSummary: "An internal object which stores the indexed properties in a JavaScript Object, such as the contents of an Array.",
   /**
-   * @description A short summary of the "(object properties)[]" described at https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots#array
+   * @description A short summary of the "(object properties)[]" described at https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots#array.
    */
   objectPropertiesSummary: "An internal object which stores the named properties in a JavaScript Object.",
   /**
-   * @description A short summary of the text at https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots#sliced-string
+   * @description A short summary of the text at https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots#sliced-string.
    */
   slicedStringSummary: "A string which represents some of the characters from another string."
 };
@@ -4972,101 +4971,97 @@ var AllocationGridNode = class _AllocationGridNode extends HeapSnapshotGridNode 
 // gen/front_end/panels/profiler/HeapSnapshotDataGrids.js
 var UIStrings6 = {
   /**
-   * @description Text in Heap Snapshot Data Grids of a profiler tool
+   * @description Tooltip for the distance column header in heap snapshot data grids.
    */
   distanceFromWindowObject: "Distance from window object",
   /**
-   * @description Text in Heap Snapshot Data Grids of a profiler tool
+   * @description Tooltip for the shallow size column header in heap snapshot data grids.
    */
   sizeOfTheObjectItselfInBytes: "Size of the object itself in bytes",
   /**
-   * @description Text in Heap Snapshot Data Grids of a profiler tool
+   * @description Tooltip for the retained size column header in heap snapshot data grids.
    */
   sizeOfTheObjectPlusTheGraphIt: "Size of the object plus the graph it retains in bytes",
   /**
-   * @description Text in Heap Snapshot Data Grids of a profiler tool
+   * @description Column header displaying JavaScript object names in heap snapshot data grids.
    */
   object: "Object",
   /**
-   * @description Text in Heap Snapshot Data Grids of a profiler tool
+   * @description Column header displaying distance from root window object in heap snapshot data grids.
    */
   distance: "Distance",
   /**
-   * @description Text in Heap Snapshot Data Grids of a profiler tool. Shallow size is the size of just this node, not including children/retained size.
+   * @description Column header displaying shallow size in heap snapshot data grids.
    */
-  shallowSize: "Shallow Size",
+  shallowSize: "Shallow size",
   /**
-   * @description Text in Heap Snapshot Data Grids of a profiler tool
+   * @description Column header displaying retained size in heap snapshot data grids.
    */
-  retainedSize: "Retained Size",
+  retainedSize: "Retained size",
   /**
-   * @description Title for a section in the Heap Snapshot view. This title is for a table which
+   * @description Title for a section in the heap snapshot view. This title is for a table which
    * shows retaining relationships between JavaScript objects. One object retains another if it holds
    * a reference to it, keeping it alive.
    */
-  heapSnapshotRetainment: "Heap Snapshot Retainment",
+  heapSnapshotRetainment: "Heap snapshot retainment",
   /**
-   * @description Text in Heap Snapshot Data Grids of a profiler tool
+   * @description Column header displaying JavaScript constructor names in heap snapshot data grids.
    */
   constructorString: "Constructor",
   /**
-   * @description Data grid name for Heap Snapshot Constructors data grids
+   * @description Data grid name for heap snapshot constructors data grids.
    */
-  heapSnapshotConstructors: "Heap Snapshot Constructors",
+  heapSnapshotConstructors: "Heap snapshot constructors",
   /**
-   * @description Column header in a table displaying the diff between two Heap Snapshots. This
-   * column is number of new objects in snapshot #2 compared to snapshot #1.
+   * @description Column header in heap snapshot diff table displaying the number of new objects.
    */
   New: "# New",
   /**
-   * @description Column header in a table displaying the diff between two Heap Snapshots. This
-   * column is number of deleted objects in snapshot #2 compared to snapshot #1.
+   * @description Column header in heap snapshot diff table displaying the number of deleted objects.
    */
   Deleted: "# Deleted",
   /**
-   * @description Column header in a table displaying the diff between two Heap Snapshots. This
-   * column is the difference (delta) between the # New and # Deleted objects in the snapshot.
+   * @description Column header in heap snapshot diff table displaying net object count change.
    */
   Delta: "# Delta",
   /**
-   * @description Text in Heap Snapshot Data Grids of a profiler tool
+   * @description Column header in heap snapshot diff table displaying total allocated size.
    */
-  allocSize: "Alloc. Size",
+  allocSize: "Alloc. size",
   /**
-   * @description Text in Heap Snapshot Data Grids of a profiler tool
+   * @description Column header in heap snapshot diff table displaying total freed size.
    */
-  freedSize: "Freed Size",
+  freedSize: "Freed size",
   /**
-   * @description Title of a column in a table in the Heap Snapshot tool. 'Delta' here means
-   * difference, so the whole string means 'difference in size'.
+   * @description Column header in heap snapshot diff table displaying difference in size between snapshots. 'Delta' means difference.
    */
-  sizeDelta: "Size Delta",
+  sizeDelta: "Size delta",
   /**
-   * @description Data grid name for Heap Snapshot Diff data grids
+   * @description Data grid name for heap snapshot diff data grids.
    */
-  heapSnapshotDiff: "Heap Snapshot Diff",
+  heapSnapshotDiff: "Heap snapshot diff",
   /**
-   * @description Text in Heap Snapshot Data Grids of a profiler tool
+   * @description Column header in allocation data grid displaying the number of live objects.
    */
-  liveCount: "Live Count",
+  liveCount: "Live count",
   /**
-   * @description Text in Heap Snapshot Data Grids of a profiler tool
+   * @description Column header in allocation data grid displaying total allocation count.
    */
   count: "Count",
   /**
-   * @description Text in Heap Snapshot Data Grids of a profiler tool
+   * @description Column header in allocation data grid displaying total live size.
    */
-  liveSize: "Live Size",
+  liveSize: "Live size",
   /**
-   * @description Text for the size of something
+   * @description Text for the size of something.
    */
   size: "Size",
   /**
-   * @description Text for a programming function
+   * @description Text for a programming function.
    */
   function: "Function",
   /**
-   * @description Text in Heap Snapshot View of a profiler tool
+   * @description Data grid name for allocation view in heap snapshots.
    */
   allocation: "Allocation"
 };
@@ -5844,108 +5839,108 @@ var AllocationDataGrid = class extends HeapSnapshotViewportDataGrid {
 // gen/front_end/panels/profiler/ModuleUIStrings.js
 var UIStrings7 = {
   /**
-   * @description Text to indicate the status of a heap snapshot in the Performance Pane
+   * @description Text to indicate the status of a heap snapshot in the Performance panel.
    */
   buildingEdgeIndexes: "Building edge indexes\u2026",
   /**
-   * @description Text to indicate the status of a heap snapshot in the Performance Pane
+   * @description Text to indicate the status of a heap snapshot in the Performance panel.
    */
   buildingRetainers: "Building retainers\u2026",
   /**
-   * @description Text to indicate the status of a heap snapshot in the Performance Pane
+   * @description Text to indicate the status of a heap snapshot in the Performance panel.
    */
   propagatingDomState: "Propagating DOM state\u2026",
   /**
-   * @description Text to indicate the status of a heap snapshot in the Performance Pane. Flag here
+   * @description Text to indicate the status of a heap snapshot in the Performance panel. Flag here
    * refers to the programming concept for a piece of binary data (yes/no).
    */
   calculatingNodeFlags: "Calculating node flags\u2026",
   /**
-   * @description Text to indicate the status of a heap snapshot in the Performance Pane
+   * @description Text to indicate the status of a heap snapshot in the Performance panel.
    */
   calculatingDistances: "Calculating distances\u2026",
   /**
-   * @description Text to indicate the status of a heap snapshot in the Performance Pane
+   * @description Text to indicate the status of a heap snapshot in the Performance panel.
    */
   calculatingShallowSizes: "Calculating shallow sizes\u2026",
   /**
-   * @description Text to indicate the status of a heap snapshot in the Performance Pane
+   * @description Text to indicate the status of a heap snapshot in the Performance panel.
    */
   calculatingRetainedSizes: "Calculating retained sizes\u2026",
   /**
-   * @description Text to indicate the status of a heap snapshot in the Performance Pane
+   * @description Text to indicate the status of a heap snapshot in the Performance panel.
    */
   buildingDominatedNodes: "Building dominated nodes\u2026",
   /**
-   * @description Text to indicate the status of a heap snapshot in the Performance Pane.
+   * @description Text to indicate the status of a heap snapshot in the Performance panel.
    * During this step, names are assigned to objects in the heap snapshot.
    */
   calculatingObjectNames: "Calculating object names\u2026",
   /**
-   * @description Text to indicate the status of a heap snapshot in the Performance Pane
+   * @description Text to indicate the status of a heap snapshot in the Performance panel.
    */
   calculatingStatistics: "Calculating statistics\u2026",
   /**
-   * @description Text to indicate the status of a heap snapshot in the Performance Pane
+   * @description Text to indicate the status of a heap snapshot in the Performance panel.
    */
   calculatingSamples: "Calculating samples\u2026",
   /**
-   * @description Text to indicate the status of a heap snapshot in the Performance Pane
+   * @description Text to indicate the status of a heap snapshot in the Performance panel.
    */
   buildingLocations: "Building locations\u2026",
   /**
-   * @description Text to indicate the status of a heap snapshot in the Performance Pane
+   * @description Text to indicate the status of a heap snapshot in the Performance panel.
    */
   calculatingNativeContextAttribution: "Calculating native context attribution\u2026",
   /**
-   * @description Text to indicate the status of a heap snapshot in the Performance Pane
+   * @description Text to indicate the status of a heap snapshot in the Performance panel.
    */
   finishedProcessing: "Finished processing.",
   /**
-   * @description Text to indicate the status of a heap snapshot in the Performance Pane
+   * @description Text to indicate the status of a heap snapshot in the Performance panel.
    */
   buildingAllocationStatistics: "Building allocation statistics\u2026",
   /**
-   * @description Text to indicate the status of a heap snapshot in the Performance Pane
+   * @description Text to indicate the status of a heap snapshot in the Performance panel.
    */
   done: "Done",
   /**
-   * @description Text in Heap Snapshot Loader of the Memory panel when taking a heap snapshot
+   * @description Text in heap snapshot loader of the Memory panel when taking a heap snapshot.
    */
   processingSnapshot: "Processing snapshot\u2026",
   /**
-   * @description Text to indicate the status of a heap snapshot in the Performance Pane
+   * @description Text to indicate the status of a heap snapshot in the Performance panel.
    */
   parsingStrings: "Parsing strings\u2026",
   /**
-   * @description Text in Heap Snapshot Loader of the Memory panel when taking a heap snapshot
+   * @description Text in heap snapshot loader of the Memory panel when taking a heap snapshot.
    */
   loadingSnapshotInfo: "Loading snapshot info\u2026",
   /**
-   * @description Text in Heap Snapshot Loader of the Memory panel when taking a heap snapshot
+   * @description Text in heap snapshot loader of the Memory panel when taking a heap snapshot.
    * @example {38} PH1
    */
   loadingNodesD: "Loading nodes\u2026 {PH1}%",
   /**
-   * @description Text in Heap Snapshot Loader of the Memory panel when taking a heap snapshot
+   * @description Text in heap snapshot loader of the Memory panel when taking a heap snapshot.
    * @example {30} PH1
    */
   loadingEdgesD: "Loading edges\u2026 {PH1}%",
   /**
-   * @description Text in Heap Snapshot Loader of the Memory panel when taking a heap snapshot
+   * @description Text in heap snapshot loader of the Memory panel when taking a heap snapshot.
    * @example {30} PH1
    */
   loadingAllocationTracesD: "Loading allocation traces\u2026 {PH1}%",
   /**
-   * @description Text in Heap Snapshot Loader of the Memory panel when taking a heap snapshot
+   * @description Text in heap snapshot loader of the Memory panel when taking a heap snapshot.
    */
   loadingSamples: "Loading samples\u2026",
   /**
-   * @description Text in Heap Snapshot Loader of the Memory panel when taking a heap snapshot
+   * @description Text in heap snapshot loader of the Memory panel when taking a heap snapshot.
    */
   loadingLocations: "Loading locations\u2026",
   /**
-   * @description Text in Heap Snapshot Loader of the Memory panel when taking a heap snapshot
+   * @description Text in heap snapshot loader of the Memory panel when taking a heap snapshot.
    */
   loadingStrings: "Loading strings\u2026"
 };
@@ -5953,105 +5948,105 @@ var UIStrings7 = {
 // gen/front_end/panels/profiler/HeapSnapshotView.js
 var UIStrings8 = {
   /**
-   * @description Text to find an item
+   * @description Text to find an item.
    */
   find: "Find",
   /**
-   * @description Text in Heap Snapshot View of a profiler tool
+   * @description Perspective dropdown option to view the heap by object containment hierarchy.
    */
   containment: "Containment",
   /**
-   * @description Retaining paths title text content in Heap Snapshot View of a profiler tool
+   * @description Pane title showing objects holding references to the selected object.
    */
   retainers: "Retainers",
   /**
-   * @description Text in Heap Snapshot View of a profiler tool
+   * @description Tab title for the allocation stack trace view in heap snapshots.
    */
   allocationStack: "Allocation stack",
   /**
-   * @description Screen reader label for a select box that chooses the perspective in the Memory panel when viewing a Heap Snapshot
+   * @description Screen reader label for a select box that chooses the perspective in the Memory panel when viewing a heap snapshot.
    */
   perspective: "Perspective",
   /**
-   * @description Screen reader label for a select box that chooses the snapshot to use as a base in the Memory panel when viewing a Heap Snapshot
+   * @description Screen reader label for a select box that chooses the snapshot to use as a base in the Memory panel when viewing a heap snapshot.
    */
   baseSnapshot: "Base snapshot",
   /**
-   * @description Text to filter result items
+   * @description Text to filter result items.
    */
   filter: "Filter",
   /**
-   * @description Placeholder text in the filter bar to filter by JavaScript class names for a heap
+   * @description Placeholder text in the filter bar to filter by JavaScript class names for a heap.
    */
   filterByClass: "Filter by class",
   /**
-   * @description Text in Heap Snapshot View of a profiler tool
+   * @description Label on the heap statistics pie chart representing V8 compiled code.
    */
   code: "Code",
   /**
-   * @description Text in Heap Snapshot View of a profiler tool
+   * @description Label on the heap statistics pie chart representing JavaScript strings.
    */
   strings: "Strings",
   /**
-   * @description Label on a pie chart in the statistics view for the Heap Snapshot tool
+   * @description Label on the heap statistics pie chart representing JavaScript arrays.
    */
   jsArrays: "JS arrays",
   /**
-   * @description Label on a pie chart in the statistics view for the Heap Snapshot tool
+   * @description Label on the heap statistics pie chart representing JavaScript typed arrays.
    */
   typedArrays: "Typed arrays",
   /**
-   * @description Label on a pie chart in the statistics view for the Heap Snapshot tool
+   * @description Label on the heap statistics pie chart representing V8 system objects.
    */
   systemObjects: "System objects",
   /**
-   * @description Label on a pie chart in the statistics view for the Heap Snapshot tool
+   * @description Label on the heap statistics pie chart representing other JavaScript objects.
    */
   otherJSObjects: "Other JS objects",
   /**
-   * @description Label on a pie chart in the statistics view for the Heap Snapshot tool
+   * @description Label on the heap statistics pie chart representing non-JavaScript objects (such as HTML and CSS).
    */
   otherNonJSObjects: "Other non-JS objects (such as HTML and CSS)",
   /**
-   * @description Text in Heap Snapshot View of a profiler tool
+   * @description Filter dropdown option in the summary view to show all objects without filtering.
    */
   allObjects: "All objects",
   /**
-   * @description Title in Heap Snapshot View of a profiler tool
+   * @description Filter dropdown option to show objects allocated before a previous heap snapshot.
    * @example {Profile 2} PH1
    */
   objectsAllocatedBeforeS: "Objects allocated before {PH1}",
   /**
-   * @description Title in Heap Snapshot View of a profiler tool
+   * @description Filter dropdown option to show objects allocated between two specific heap snapshots.
    * @example {Profile 1} PH1
    * @example {Profile 2} PH2
    */
   objectsAllocatedBetweenSAndS: "Objects allocated between {PH1} and {PH2}",
   /**
    * @description An option which will filter the heap snapshot to show only
-   * strings which exactly match at least one other string
+   * strings which exactly match at least one other string.
    */
   duplicatedStrings: "Duplicated strings",
   /**
    * @description An option which will filter the heap snapshot to show only
-   * detached DOM nodes and other objects kept alive by detached DOM nodes
+   * detached DOM nodes and other objects kept alive by detached DOM nodes.
    */
   objectsRetainedByDetachedDomNodes: "Objects retained by detached DOM nodes",
   /**
    * @description An option which will filter the heap snapshot to show only
-   * objects kept alive by contexts
+   * objects kept alive by contexts.
    */
   objectsRetainedByContexts: "Objects retained by contexts",
   /**
    * @description An option which will filter the heap snapshot to show only
-   * objects kept alive by the DevTools console
+   * objects kept alive by the DevTools console.
    */
   objectsRetainedByConsole: "Objects retained by DevTools Console",
   /**
    * @description An option which will filter the heap snapshot to show only
-   * objects retained by event handlers
+   * objects retained by event handlers.
    */
-  objectsRetainedByEventHandlers: "Objects retained by Event Handlers",
+  objectsRetainedByEventHandlers: "Objects retained by event handlers",
   /**
    * @description An option which will filter the heap snapshot to show only
    * objects attributed to a specific native context (roughly, a JavaScript
@@ -6079,80 +6074,80 @@ var UIStrings8 = {
    */
   objectsNotAttributedToNativeContextS: "Objects not attributed to a native context ({PH1})",
   /**
-   * @description Text for the summary view
+   * @description Perspective dropdown option to view heap snapshot objects grouped by constructor.
    */
   summary: "Summary",
   /**
-   * @description Text in Heap Snapshot View of a profiler tool
+   * @description Perspective dropdown option to compare differences between two heap snapshots.
    */
   comparison: "Comparison",
   /**
-   * @description Text in Heap Snapshot View of a profiler tool
+   * @description Perspective dropdown option to view memory allocations by function.
    */
   allocation: "Allocation",
   /**
-   * @description Title text content in Heap Snapshot View of a profiler tool
+   * @description Label for memory objects that are currently alive in the heap.
    */
   liveObjects: "Live objects",
   /**
-   * @description Text in Heap Snapshot View of a profiler tool
+   * @description Perspective dropdown option to view heap memory breakdown charts.
    */
   statistics: "Statistics",
   /**
-   * @description Text in Heap Snapshot View of a profiler tool
+   * @description Name for the heap snapshot profiling type in the Memory panel.
    */
   heapSnapshot: "Heap snapshot",
   /**
-   * @description Text in Heap Snapshot View of a profiler tool
+   * @description Button text to capture a new heap snapshot.
    */
   takeHeapSnapshot: "Take heap snapshot",
   /**
-   * @description Text in Heap Snapshot View of a profiler tool
+   * @description Header for the list of captured heap snapshot profiles.
    */
   heapSnapshots: "Heap snapshots",
   /**
-   * @description Text in Heap Snapshot View of a profiler tool
+   * @description Description for the heap snapshot profiling type option in the Memory panel.
    */
   heapSnapshotProfilesShowMemory: "See the memory distribution of JavaScript objects and related DOM nodes",
   /**
-   * @description Progress update that the profiler is capturing a snapshot of the heap
+   * @description Progress update that the profiler is capturing a snapshot of the heap.
    */
   snapshotting: "Snapshotting\u2026",
   /**
-   * @description Profile title in Heap Snapshot View of a profiler tool
+   * @description Default title for a captured heap snapshot profile.
    * @example {1} PH1
    */
   snapshotD: "Snapshot {PH1}",
   /**
-   * @description Text for a percentage value
+   * @description Text for a percentage value.
    * @example {13.0} PH1
    */
   percentagePlaceholder: "{PH1}%",
   /**
-   * @description Text in Heap Snapshot View of a profiler tool
+   * @description Name for the allocation timeline profiling option in the Memory panel.
    */
   allocationInstrumentationOn: "Allocations on timeline",
   /**
-   * @description Text in Heap Snapshot View of a profiler tool
+   * @description Button text to stop recording an allocation timeline or heap profile.
    */
   stopRecordingHeapProfile: "Stop recording heap profile",
   /**
-   * @description Text in Heap Snapshot View of a profiler tool
+   * @description Button text to start recording an allocation timeline or heap profile.
    */
   startRecordingHeapProfile: "Start recording heap profile",
   /**
-   * @description Text in Heap Snapshot View of a profiler tool.
+   * @description Checkbox label to enable recording stack traces for memory allocations.
    * A stack trace is a list of functions that were called.
    * This option turns on recording of a stack trace at each allocation.
    * The recording itself is a somewhat expensive operation, so turning this option on, the website's performance may be affected negatively (e.g. everything becomes slower).
    */
   recordAllocationStacksExtra: "Allocation stack traces (more overhead)",
   /**
-   * @description Text in CPUProfile View of a profiler tool
+   * @description Status message displayed while recording a memory profile.
    */
   recording: "Recording\u2026",
   /**
-   * @description Text in Heap Snapshot View of a profiler tool
+   * @description Header for the list of captured allocation timeline profiles.
    */
   allocationTimelines: "Allocation timelines",
   /**
@@ -6160,29 +6155,29 @@ var UIStrings8 = {
    */
   AllocationTimelinesShowInstrumented: "Record memory allocations over time and isolate memory leaks by selecting intervals with allocations that are still alive",
   /**
-   * @description Text when something is loading
+   * @description Text when something is loading.
    */
   loading: "Loading\u2026",
   /**
-   * @description Text in Heap Snapshot View of a profiler tool
+   * @description Status message showing progress percentage while saving a heap snapshot file.
    * @example {30} PH1
    */
   savingD: "Saving\u2026 {PH1}%",
   /**
-   * @description Text in Heap Snapshot View of a profiler tool
+   * @description Title for the heap memory usage chart in allocation timeline overview.
    */
   heapMemoryUsage: "Heap memory usage",
   /**
-   * @description Text of a DOM element in Heap Snapshot View of a profiler tool
+   * @description Text of a DOM element in heap snapshot view of a profiler tool.
    */
   stackWasNotRecordedForThisObject: "Stack wasn\u2019t recorded for this object because it had been allocated before this profile recording started.",
   /**
-   * @description Text in Heap Snapshot View of a profiler tool.
+   * @description Button label in the Retainers view to restore all ignored retainers.
    * This text is on a button to undo all previous "Ignore this retainer" actions.
    */
   restoreIgnoredRetainers: "Restore ignored retainers",
   /**
-   * @description Text in Heap Snapshot View showing summary stats (count of objects and total shallow size) for the selected filter
+   * @description Text in heap snapshot view showing summary stats (count of objects and total shallow size) for the selected filter.
    * @example {1,000} PH1
    * @example {1.5 MB} PH2
    */
@@ -7663,48 +7658,48 @@ import * as SDK6 from "./../../core/sdk/sdk.js";
 import * as UI10 from "./../../ui/legacy/legacy.js";
 var UIStrings9 = {
   /**
-   * @description aria label for javascript VM instances target list in heap profiler
+   * @description Aria label for JavaScript VM instances target list in heap profiler.
    */
   javascriptVmInstances: "JavaScript VM instances",
   /**
-   * @description Text in Isolate Selector of a profiler tool
+   * @description Label for total JavaScript heap size in the isolate selector.
    */
   totalJsHeapSize: "Total JS heap size",
   /**
-   * @description Total trend div title in Isolate Selector of a profiler tool
+   * @description Tooltip for the overall page JavaScript heap size change trend over the specified time window.
    * @example {3} PH1
    */
   totalPageJsHeapSizeChangeTrend: "Total page JS heap size change trend over the last {PH1} minutes.",
   /**
-   * @description Total value div title in Isolate Selector of a profiler tool
+   * @description Tooltip for total page JavaScript heap size across all VM instances.
    */
   totalPageJsHeapSizeAcrossAllVm: "Total page JS heap size across all VM instances.",
   /**
-   * @description Heap size change trend measured in kB/s
+   * @description Heap size change trend measured in kB/s.
    * @example {2 kB} PH1
    */
   changeRate: "{PH1}/s",
   /**
-   * @description Text for isolate selector list items with positive change rate
+   * @description Text for isolate selector list items with positive change rate.
    * @example {1.0 kB} PH1
    */
   increasingBySPerSecond: "increasing by {PH1} per second",
   /**
-   * @description Text for isolate selector list items with negative change rate
+   * @description Text for isolate selector list items with negative change rate.
    * @example {1.0 kB} PH1
    */
   decreasingBySPerSecond: "decreasing by {PH1} per second",
   /**
-   * @description Heap div title in Isolate Selector of a profiler tool
+   * @description Tooltip for individual VM instance heap size in use by live JavaScript objects.
    */
   heapSizeInUseByLiveJsObjects: "Heap size in use by live JS objects.",
   /**
-   * @description Trend div title in Isolate Selector of a profiler tool
+   * @description Tooltip for the heap size growth rate trend over the specified time window.
    * @example {3} PH1
    */
   heapSizeChangeTrendOverTheLastS: "Heap size change trend over the last {PH1} minutes.",
   /**
-   * @description Text to show an item is empty
+   * @description Text to show an item is empty.
    */
   empty: "(empty)"
 };
@@ -8074,27 +8069,27 @@ var profileLauncherView_css_default = `/*
 // gen/front_end/panels/profiler/ProfileLauncherView.js
 var UIStrings10 = {
   /**
-   * @description Text in Profile Launcher View of a profiler tool
+   * @description Header above the JavaScript VM instance selector in the Memory panel launcher.
    */
   selectJavascriptVmInstance: "Select JavaScript VM instance",
   /**
-   * @description Text to load something
+   * @description Text to load something.
    */
   load: "Load profile",
   /**
-   * @description Control button text content in Profile Launcher View of a profiler tool
+   * @description Primary button text to take an instant heap snapshot in the Memory panel.
    */
   takeSnapshot: "Take snapshot",
   /**
-   * @description Text of an item that stops the running task
+   * @description Text of an item that stops the running task.
    */
   stop: "Stop",
   /**
-   * @description Control button text content in Profile Launcher View of a profiler tool
+   * @description Primary button text to start recording a continuous profile in the Memory panel.
    */
   start: "Start",
   /**
-   * @description Profile type header element text content in Profile Launcher View of a profiler tool
+   * @description Header for the profile type selection group in the Memory panel launcher.
    */
   selectProfilingType: "Select profiling type"
 };
@@ -8673,30 +8668,30 @@ li.selected:hover devtools-button {
 // gen/front_end/panels/profiler/ProfilesPanel.js
 var UIStrings12 = {
   /**
-   * @description Text in Profiles Panel of a profiler tool
+   * @description Error message when attempting to load an unsupported profile file format.
    * @example {'.js', '.json'} PH1
    */
   cantLoadFileSupportedFile: "Can\u2019t load file. Supported file extensions: ''{PH1}''.",
   /**
-   * @description Text in Profiles Panel of a profiler tool
+   * @description Error message when trying to load a profile while a recording is currently active.
    */
   cantLoadProfileWhileAnother: "Can\u2019t load profile while another profile is being recorded.",
   /**
-   * @description Text in Profiles Panel of a profiler tool
+   * @description Error header when loading a profile file fails.
    */
   profileLoadingFailed: "Profile loading failed",
   /**
-   * @description Text in Profiles Panel of a profiler tool
+   * @description Detailed error reason string shown when profile loading fails.
    * @example {cannot open file} PH1
    */
   failReason: "Reason: {PH1}.",
   /**
-   * @description Text in Profiles Panel of a profiler tool
+   * @description Header for a profile run iteration in the Profiles sidebar.
    * @example {2} PH1
    */
   runD: "Run {PH1}",
   /**
-   * @description Text in Profiles Panel of a profiler tool
+   * @description Sidebar section header for collected profiles.
    */
   profiles: "Profiles"
 };
@@ -9244,9 +9239,9 @@ var ActionDelegate = class {
 // gen/front_end/panels/profiler/HeapProfilerPanel.js
 var UIStrings13 = {
   /**
-   * @description A context menu item in the Heap Profiler Panel of a profiler tool
+   * @description Context menu item to reveal the selected object in the summary perspective.
    */
-  revealInSummaryView: "Reveal in Summary view"
+  revealInSummaryView: "Reveal in summary view"
 };
 var str_12 = i18n25.i18n.registerUIStrings("panels/profiler/HeapProfilerPanel.ts", UIStrings13);
 var i18nString12 = i18n25.i18n.getLocalizedString.bind(void 0, str_12);

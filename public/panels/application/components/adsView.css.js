@@ -10,7 +10,7 @@ export default `/*
  */
 
 :host {
-  padding: 12px;
+  padding: var(--sys-size-6);
   display: flex;
   flex-direction: column;
   overflow: auto;
@@ -24,17 +24,17 @@ export default `/*
 
 .metrics-container {
   flex: 0 0 auto;
-  margin: 0 0 24px;
+  margin: 0;
   border: 1px solid var(--sys-color-divider);
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 1px;
+  gap: var(--sys-size-1);
   background-color: var(--sys-color-divider);
 }
 
 .metric-box {
   background-color: var(--sys-color-surface);
-  padding: 12px;
+  padding: var(--sys-size-6);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -42,24 +42,24 @@ export default `/*
 }
 
 .metric-title {
-  font-size: 12px;
+  font-size: var(--sys-typescale-body4-size);
   color: var(--sys-color-on-surface-subtle);
-  margin: 0 0 4px;
+  margin: 0 0 var(--sys-size-3);
 }
 
 .metric-value {
-  font-size: 18px;
+  font-size: var(--sys-typescale-headline3-size);
   font-weight: bold;
   color: var(--sys-color-on-surface);
   display: flex;
   flex-direction: column;
   align-items: center;
   margin: 0;
-  gap: 2px;
+  gap: var(--sys-size-2);
 }
 
 .metric-average {
-  font-size: 12px;
+  font-size: var(--sys-typescale-body4-size);
   font-weight: normal;
   color: var(--sys-color-on-surface-subtle);
 }
@@ -70,7 +70,7 @@ export default `/*
   color: var(--sys-color-on-surface);
   flex: 0 0 auto;
   font-weight: bold;
-  margin-bottom: 8px;
+  margin-bottom: var(--sys-size-5);
 }
 
 .ad-frames-data-grid {
@@ -80,22 +80,18 @@ export default `/*
 .ad-frames-container {
   border: 1px solid var(--sys-color-divider);
   display: flex;
-  flex: auto;
+  flex: 1; /* Takes up remaining space */
   flex-direction: column;
-  margin-bottom: 24px;
-  height: 300px;
-  min-height: 150px;
+  margin-bottom: 0;
+  min-height: var(--sys-size-22); /* 144px */
   position: relative;
-  resize: vertical;
   overflow: hidden;
 }
 
-devtools-checkbox.setting-container {
-  /*
-   * Apply negative margins here to offset the default devtools-checkbox style
-   * to align this component with the rest of the Ads panel layout.
-   */
-  margin: 0 0 -6px -6px;
+.divider {
+  border: none;
+  border-top: 1px solid var(--sys-color-divider);
+  margin: var(--sys-size-8) 0 var(--sys-size-6);
 }
 
 .setting-text-container {
@@ -107,6 +103,16 @@ devtools-checkbox.setting-container {
   color: var(--sys-color-token-subtle);
   white-space: break-spaces;
   margin-top: 0;
+}
+
+.footer-text {
+  margin-bottom: var(--sys-size-6);
+}
+
+.inline-icon {
+  width: var(--sys-size-8);
+  height: var(--sys-size-8);
+  vertical-align: text-bottom;
 }
 
 /*# sourceURL=${import.meta.resolve('./adsView.css')} */`;

@@ -277,7 +277,7 @@ describe('NetworkManager', () => {
                 });
                 networkDispatcher.directTCPSocketAborted({
                     identifier: 'mockId',
-                    errorMessage: 'mock error message',
+                    errorMessage: "Failed" /* Protocol.Network.ErrorReason.Failed */,
                     timestamp: 1000,
                 });
                 assert.lengthOf(finishedRequests, 0);
@@ -292,7 +292,7 @@ describe('NetworkManager', () => {
                 networkDispatcher.webTransportCreated({ transportId: 'mockId', url: 'example.com', timestamp: 1000 });
                 networkDispatcher.directTCPSocketAborted({
                     identifier: 'mockId',
-                    errorMessage: 'mock error message',
+                    errorMessage: "Failed" /* Protocol.Network.ErrorReason.Failed */,
                     timestamp: 1000,
                 });
                 assert.lengthOf(finishedRequests, 0);
@@ -321,7 +321,7 @@ describe('NetworkManager', () => {
                 // update the request and check all fields are filled as necessary
                 networkDispatcher.directTCPSocketAborted({
                     identifier: 'mockId',
-                    errorMessage: 'mock error message',
+                    errorMessage: "Failed" /* Protocol.Network.ErrorReason.Failed */,
                     timestamp: 1000,
                 });
                 assert.lengthOf(finishedRequests, 1);
@@ -332,7 +332,7 @@ describe('NetworkManager', () => {
                 assert.deepEqual(req.directSocketInfo, {
                     type: SDK.NetworkRequest.DirectSocketType.TCP,
                     status: SDK.NetworkRequest.DirectSocketStatus.ABORTED,
-                    errorMessage: 'mock error message',
+                    errorMessage: "Failed" /* Protocol.Network.ErrorReason.Failed */,
                     createOptions: {
                         remoteAddr: 'example.com',
                         remotePort: 1001,
@@ -793,7 +793,7 @@ describe('NetworkManager', () => {
                 });
                 networkDispatcher.directUDPSocketAborted({
                     identifier: 'mockUdpId',
-                    errorMessage: 'mock udp error',
+                    errorMessage: "Failed" /* Protocol.Network.ErrorReason.Failed */,
                     timestamp: 2000,
                 });
                 assert.lengthOf(finishedRequests, 0);
@@ -808,7 +808,7 @@ describe('NetworkManager', () => {
                 networkDispatcher.webTransportCreated({ transportId: 'mockUdpId', url: 'example.com', timestamp: 2000 });
                 networkDispatcher.directUDPSocketAborted({
                     identifier: 'mockUdpId',
-                    errorMessage: 'mock udp error',
+                    errorMessage: "Failed" /* Protocol.Network.ErrorReason.Failed */,
                     timestamp: 2000,
                 });
                 assert.lengthOf(finishedRequests, 0);
@@ -831,7 +831,7 @@ describe('NetworkManager', () => {
                 assert.lengthOf(finishedRequests, 0);
                 networkDispatcher.directUDPSocketAborted({
                     identifier: 'mockUdpId',
-                    errorMessage: 'UDP aborted by peer',
+                    errorMessage: "Failed" /* Protocol.Network.ErrorReason.Failed */,
                     timestamp: 2050,
                 });
                 assert.lengthOf(finishedRequests, 1);
@@ -841,7 +841,7 @@ describe('NetworkManager', () => {
                 assert.isTrue(req.finished);
                 assert.strictEqual(req.endTime, 2050);
                 assert.deepEqual(req.directSocketInfo?.status, SDK.NetworkRequest.DirectSocketStatus.ABORTED);
-                assert.strictEqual(req.directSocketInfo?.errorMessage, 'UDP aborted by peer');
+                assert.strictEqual(req.directSocketInfo?.errorMessage, "Failed" /* Protocol.Network.ErrorReason.Failed */);
             });
         });
         describe('on CDP event closed', () => {

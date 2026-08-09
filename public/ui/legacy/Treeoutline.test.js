@@ -321,6 +321,22 @@ describe('TreeViewElement', () => {
         assert.deepEqual(onExpand2.args[1][0].detail, { expanded: false });
         sinon.assert.notCalled(onExpand1);
     });
+    it('clones event handlers from the `ul` onto list item elements', async () => {
+        const onExpand = sinon.stub();
+        const component = await makeTree(html `
+     <devtools-tree
+       .template=${html `
+         <ul role="tree">
+           <li role="treeitem">first subtree
+             <ul role="group" @expand=${onExpand}>
+               <li role="treeitem">in first subtree</li>
+             </ul>
+           </li>
+         </ul>`}></devtools-tree>`);
+        component.getInternalTreeOutlineForTest().rootElement().firstChild()?.expand();
+        sinon.assert.calledOnce(onExpand);
+        assert.deepEqual(onExpand.args[0][0].detail, { expanded: true });
+    });
     it('applies jslog contexts to tree elements', async () => {
         const component = await makeTree(html `
       <devtools-tree

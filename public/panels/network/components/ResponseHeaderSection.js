@@ -111,9 +111,7 @@ export class ResponseHeaderSection extends ResponseHeaderSectionBase {
     set data(data) {
         this.#request = data.request;
         this.#isEditingAllowed =
-            Persistence.NetworkPersistenceManager.NetworkPersistenceManager.isForbiddenNetworkUrl(this.#request.url()) ?
-                2 /* EditingAllowedStatus.FORBIDDEN */ :
-                0 /* EditingAllowedStatus.DISABLED */;
+            Persistence.NetworkPersistenceManager.NetworkPersistenceManager.isForbiddenNetworkUrl(this.#request.url()) ? 2 /* EditingAllowedStatus.FORBIDDEN */ : 0 /* EditingAllowedStatus.DISABLED */;
         // If the request has been locally overridden, its 'sortedResponseHeaders'
         // contains no 'set-cookie' headers, because they have been filtered out by
         // the Chromium backend. DevTools therefore uses previously stored values.
@@ -125,7 +123,7 @@ export class ResponseHeaderSection extends ResponseHeaderSectionBase {
             if (headerWithIssues) {
                 if (IssuesManager.RelatedIssue.hasIssueOfCategory(this.#request, "CrossOriginEmbedderPolicy" /* IssuesManager.Issue.IssueCategory.CROSS_ORIGIN_EMBEDDER_POLICY */, IssuesManager.IssuesManager.IssuesManager.instance())) {
                     const followLink = () => {
-                        Host.userMetrics.issuesPanelOpenedFrom(1 /* Host.UserMetrics.IssueOpener.LEARN_MORE_LINK_COEP */);
+                        Host.userMetrics.issuesPanelOpenedFrom(Host.UserMetrics.IssueOpener.LEARN_MORE_LINK_COEP);
                         if (this.#request) {
                             void IssuesManager.RelatedIssue.reveal(this.#request, IssuesManager.IssuesManager.IssuesManager.instance(), "CrossOriginEmbedderPolicy" /* IssuesManager.Issue.IssueCategory.CROSS_ORIGIN_EMBEDDER_POLICY */);
                         }
@@ -193,9 +191,7 @@ export class ResponseHeaderSection extends ResponseHeaderSectionBase {
             return;
         }
         this.#isEditingAllowed =
-            Persistence.NetworkPersistenceManager.NetworkPersistenceManager.isForbiddenNetworkUrl(this.#request.url()) ?
-                2 /* EditingAllowedStatus.FORBIDDEN */ :
-                0 /* EditingAllowedStatus.DISABLED */;
+            Persistence.NetworkPersistenceManager.NetworkPersistenceManager.isForbiddenNetworkUrl(this.#request.url()) ? 2 /* EditingAllowedStatus.FORBIDDEN */ : 0 /* EditingAllowedStatus.DISABLED */;
         this.#headerEditors = this.headerDetails.map(header => ({
             name: header.name,
             value: header.value,

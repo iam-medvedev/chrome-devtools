@@ -1,6 +1,7 @@
 // Copyright 2026 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as CDPConnection from './CDPConnection.js';
 // Hardcoded string literals corresponding to Puppeteer's CDPSessionEvent.SessionAttached ('sessionattached')
 // and CDPSessionEvent.SessionDetached ('sessiondetached'). We redeclare these strings directly so we can use
 // `import type * as Puppeteer` and avoid importing Puppeteer runtime JavaScript.
@@ -18,14 +19,20 @@ export class PuppeteerDevToolsConnection {
     #connection;
     #observers = new Set();
     #sessionEventHandlers = new Map();
+    #rootSession;
+    #sessionAttachedHandler;
+    #sessionDetachedHandler;
     constructor(session) {
         const connection = session.connection();
         if (!connection) {
             throw new Error('CDPSession has no connection');
         }
         this.#connection = connection;
-        session.on(SESSION_ATTACHED, this.#startForwardingCdpEvents.bind(this));
-        session.on(SESSION_DETACHED, this.#stopForwardingCdpEvents.bind(this));
+        this.#rootSession = session;
+        this.#sessionAttachedHandler = this.#startForwardingCdpEvents.bind(this);
+        this.#sessionDetachedHandler = this.#stopForwardingCdpEvents.bind(this);
+        session.on(SESSION_ATTACHED, this.#sessionAttachedHandler);
+        session.on(SESSION_DETACHED, this.#sessionDetachedHandler);
         this.#startForwardingCdpEvents(session);
     }
     send(method, params, sessionId) {
@@ -34,7 +41,12 @@ export class PuppeteerDevToolsConnection {
         }
         const session = this.#connection.session(sessionId);
         if (!session) {
-            throw new Error('Unknown session ' + sessionId);
+            return Promise.resolve({
+                error: {
+                    code: CDPConnection.CDPErrorStatus.SESSION_NOT_FOUND,
+                    message: 'Unknown session ' + sessionId,
+                },
+            });
         }
         /* eslint-disable @typescript-eslint/no-explicit-any */
         return session.send(method, params).then(result => ({ result })).catch(error => ({
@@ -54,15 +66,27 @@ export class PuppeteerDevToolsConnection {
     }
     #startForwardingCdpEvents(session) {
         const handler = this.#handleEvent.bind(this, session.id());
-        this.#sessionEventHandlers.set(session.id(), handler);
+        this.#sessionEventHandlers.set(session.id(), { handler, session });
         session.on('*', handler);
     }
     #stopForwardingCdpEvents(session) {
-        const handler = this.#sessionEventHandlers.get(session.id());
-        if (handler) {
-            session.off('*', handler);
+        const entry = this.#sessionEventHandlers.get(session.id());
+        if (entry) {
+            session.off('*', entry.handler);
             this.#sessionEventHandlers.delete(session.id());
         }
+    }
+    dispose(reason) {
+        this.#rootSession.off(SESSION_ATTACHED, this.#sessionAttachedHandler);
+        this.#rootSession.off(SESSION_DETACHED, this.#sessionDetachedHandler);
+        for (const { handler, session } of this.#sessionEventHandlers.values()) {
+            session.off('*', handler);
+        }
+        this.#sessionEventHandlers.clear();
+        for (const observer of this.#observers) {
+            observer.onDisconnect(reason);
+        }
+        this.#observers.clear();
     }
     #handleEvent(sessionId, type, event) {
         if (typeof type === 'string' && type !== SESSION_ATTACHED && type !== SESSION_DETACHED) {

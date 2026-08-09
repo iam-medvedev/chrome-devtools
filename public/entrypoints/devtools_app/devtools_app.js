@@ -1488,11 +1488,11 @@ import * as Root4 from "./../../core/root/root.js";
 import * as UI6 from "./../../ui/legacy/legacy.js";
 var UIStrings6 = {
   /**
-   * @description Title of an action in the emulation tool to toggle device mode
+   * @description Title of an action in the emulation tool to toggle device mode.
    */
   toggleDeviceToolbar: "Toggle device toolbar",
   /**
-   * @description Title of an action in the emulation tool to capture screenshot
+   * @description Title of an action in the emulation tool to capture screenshot.
    */
   captureScreenshot: "Capture screenshot",
   /**
@@ -1502,40 +1502,32 @@ var UIStrings6 = {
   captureFullSizeScreenshot: "Capture full size screenshot",
   /**
    * @description Title of an action in the emulation tool to capture a screenshot of just this node.
-   * Node refers to a HTML element/node.
+   * Node refers to an HTML element/node.
    */
   captureNodeScreenshot: "Capture node screenshot",
   /**
-   * @description Command in the Device Mode Toolbar, to show media query boundaries in the UI.
-   * https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries
+   * @description Command in the device mode toolbar to show media query boundaries in the UI.
+   * https://web.dev/learn/design/media-queries
    */
   showMediaQueries: "Show media queries",
   /**
-   * @description A tag of Mobile related settings that can be searched in the command menu if the
+   * @description A tag of mobile-related settings that can be searched in the command menu if the
    * user doesn't know the exact name of the tool. Device refers to e.g. phone/tablet.
    */
   device: "device",
   /**
-   * @description Command in the Device Mode Toolbar, to hide media query boundaries in the UI.
-   * https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries
+   * @description Command in the device mode toolbar to hide media query boundaries in the UI.
+   * https://web.dev/learn/design/media-queries
    */
   hideMediaQueries: "Hide media queries",
   /**
    * @description Command that shows measuring rulers next to the emulated device.
    */
-  showRulers: "Show rulers in the Device Mode toolbar",
+  showRulers: "Show rulers in the device mode toolbar",
   /**
    * @description Command that hides measuring rulers next to the emulated device.
    */
-  hideRulers: "Hide rulers in the Device Mode toolbar",
-  /**
-   * @description Command that shows a frame (like a picture frame) around the emulated device.
-   */
-  showDeviceFrame: "Show device frame",
-  /**
-   * @description Command that hides a frame (like a picture frame) around the emulated device.
-   */
-  hideDeviceFrame: "Hide device frame"
+  hideRulers: "Hide rulers in the device mode toolbar"
 };
 var str_6 = i18n11.i18n.registerUIStrings("panels/emulation/emulation-meta.ts", UIStrings6);
 var i18nLazyString6 = i18n11.i18n.getLazilyComputedLocalizedString.bind(void 0, str_6);
@@ -1552,7 +1544,7 @@ UI6.ActionRegistration.registerActionExtension({
   toggleable: true,
   async loadActionDelegate() {
     const Emulation = await loadEmulationModule();
-    return new Emulation.DeviceModeWrapper.ActionDelegate();
+    return new Emulation.DeviceModeView.ActionDelegate();
   },
   condition: Root4.Runtime.conditions.canDock,
   title: i18nLazyString6(UIStrings6.toggleDeviceToolbar),
@@ -1573,7 +1565,7 @@ UI6.ActionRegistration.registerActionExtension({
   category: "SCREENSHOT",
   async loadActionDelegate() {
     const Emulation = await loadEmulationModule();
-    return new Emulation.DeviceModeWrapper.ActionDelegate();
+    return new Emulation.DeviceModeView.ActionDelegate();
   },
   condition: Root4.Runtime.conditions.canDock,
   title: i18nLazyString6(UIStrings6.captureScreenshot)
@@ -1583,7 +1575,7 @@ UI6.ActionRegistration.registerActionExtension({
   category: "SCREENSHOT",
   async loadActionDelegate() {
     const Emulation = await loadEmulationModule();
-    return new Emulation.DeviceModeWrapper.ActionDelegate();
+    return new Emulation.DeviceModeView.ActionDelegate();
   },
   condition: Root4.Runtime.conditions.canDock,
   title: i18nLazyString6(UIStrings6.captureFullSizeScreenshot)
@@ -1593,7 +1585,7 @@ UI6.ActionRegistration.registerActionExtension({
   category: "SCREENSHOT",
   async loadActionDelegate() {
     const Emulation = await loadEmulationModule();
-    return new Emulation.DeviceModeWrapper.ActionDelegate();
+    return new Emulation.DeviceModeView.ActionDelegate();
   },
   condition: Root4.Runtime.conditions.canDock,
   title: i18nLazyString6(UIStrings6.captureNodeScreenshot)
@@ -1628,23 +1620,6 @@ Common4.Settings.registerSettingExtension({
     {
       value: false,
       title: i18nLazyString6(UIStrings6.hideRulers)
-    }
-  ],
-  tags: [i18nLazyString6(UIStrings6.device)]
-});
-Common4.Settings.registerSettingExtension({
-  category: "MOBILE",
-  settingName: "emulation.show-device-outline",
-  settingType: "boolean",
-  defaultValue: false,
-  options: [
-    {
-      value: true,
-      title: i18nLazyString6(UIStrings6.showDeviceFrame)
-    },
-    {
-      value: false,
-      title: i18nLazyString6(UIStrings6.hideDeviceFrame)
     }
   ],
   tags: [i18nLazyString6(UIStrings6.device)]
@@ -1985,11 +1960,11 @@ import * as i18n21 from "./../../core/i18n/i18n.js";
 import * as UI11 from "./../../ui/legacy/legacy.js";
 var UIStrings11 = {
   /**
-   * @description Label for the autofill pane
+   * @description Label for the Autofill panel.
    */
   autofill: "Autofill",
   /**
-   * @description Command for showing the 'Autofill' pane
+   * @description Command for showing the Autofill panel.
    */
   showAutofill: "Show Autofill"
 };
@@ -2481,11 +2456,11 @@ import * as i18n29 from "./../../core/i18n/i18n.js";
 import * as UI15 from "./../../ui/legacy/legacy.js";
 var UIStrings15 = {
   /**
-   * @description Title of the Layers tool
+   * @description Title of the Layers panel.
    */
   layers: "Layers",
   /**
-   * @description Command for showing the Layers tool
+   * @description Command for showing the Layers panel.
    */
   showLayers: "Show Layers"
 };
@@ -3588,47 +3563,47 @@ import * as i18n45 from "./../../core/i18n/i18n.js";
 import * as UI23 from "./../../ui/legacy/legacy.js";
 var UIStrings23 = {
   /**
-   * @description Title of a setting in Layer Viewer.
+   * @description Title of a setting in layer viewer.
    */
   paints: "Paints",
   /**
-   * @description Title of a setting in Layer Viewer.
+   * @description Title of a setting in layer viewer.
    */
   slowScrollRects: "Slow scroll rects",
   /**
-   * @description Text in the Shortcuts page to explain a keyboard shortcut (reset view in Layers Panel)
+   * @description Text in the Shortcuts page to explain a keyboard shortcut (reset view in Layers panel).
    */
   resetView: "Reset view",
   /**
-   * @description Text in the Shortcuts page to explain a keyboard shortcut (switch to pan in Layers Panel)
+   * @description Text in the Shortcuts page to explain a keyboard shortcut (switch to pan in Layers panel).
    */
   switchToPanMode: "Switch to pan mode",
   /**
-   * @description Text in the Shortcuts page to explain a keyboard shortcut (switch to rotate mode in Layers Panel)
+   * @description Text in the Shortcuts page to explain a keyboard shortcut (switch to rotate mode in Layers panel).
    */
   switchToRotateMode: "Switch to rotate mode",
   /**
-   * @description Text in the Shortcuts page to explain a keyboard shortcut (zoom in)
+   * @description Text in the Shortcuts page to explain a keyboard shortcut (zoom in).
    */
   zoomIn: "Zoom in",
   /**
-   * @description Text in the Shortcuts page to explain a keyboard shortcut (zoom out)
+   * @description Text in the Shortcuts page to explain a keyboard shortcut (zoom out).
    */
   zoomOut: "Zoom out",
   /**
-   * @description Description of a shortcut that pans or rotates the layer viewer up
+   * @description Description of a shortcut that pans or rotates the layer viewer up.
    */
   panOrRotateUp: "Pan or rotate up",
   /**
-   * @description Description of a shortcut that pans or rotates the layer viewer down
+   * @description Description of a shortcut that pans or rotates the layer viewer down.
    */
   panOrRotateDown: "Pan or rotate down",
   /**
-   * @description Description of a shortcut that pans or rotates the layer viewer left
+   * @description Description of a shortcut that pans or rotates the layer viewer left.
    */
   panOrRotateLeft: "Pan or rotate left",
   /**
-   * @description Description of a shortcut that pans or rotates the layer viewer right
+   * @description Description of a shortcut that pans or rotates the layer viewer right.
    */
   panOrRotateRight: "Pan or rotate right"
 };

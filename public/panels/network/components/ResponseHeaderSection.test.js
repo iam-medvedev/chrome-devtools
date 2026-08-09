@@ -13,7 +13,7 @@ import { dispatchInputEvent, getCleanTextContentFromElements, renderElementIntoD
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { createWorkspaceProject, setUpEnvironment, } from '../../../testing/OverridesHelpers.js';
 import { TestUniverse } from '../../../testing/TestUniverse.js';
-import { recordedMetricsContain, resetRecordedMetrics, } from '../../../testing/UserMetricsHelpers.js';
+import { recordedMetricsContain, resetRecordedMetrics, setupUserMetricHooks, } from '../../../testing/UserMetricsHelpers.js';
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as NetworkForward from '../forward/forward.js';
 import * as NetworkComponents from './components.js';
@@ -131,6 +131,7 @@ function isRowFocused(component, rowIndex) {
     return Boolean(rows[rowIndex].shadowRoot?.activeElement);
 }
 describeWithEnvironment('ResponseHeaderSection', () => {
+    setupUserMetricHooks();
     beforeEach(async () => {
         const universe = new TestUniverse();
         sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, 'instance')

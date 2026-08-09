@@ -596,7 +596,8 @@ var MainImpl = class {
       },
       hostConfig: Root2.Runtime.hostConfig,
       inspectorFrontendHost: Host.InspectorFrontendHost.InspectorFrontendHostInstance,
-      supportsEmulation: this.#supportsEmulation
+      supportsEmulation: this.#supportsEmulation,
+      initAutomaticFilesystem: true
     };
     this.#universe = new Foundation.Universe.Universe(creationOptions);
     Root2.DevToolsContext.setGlobalInstance(this.#universe.context);
@@ -1166,10 +1167,7 @@ var MainMenuItem = class {
       const id = viewExtension.viewId();
       if (id === "issues-pane") {
         moreTools.defaultSection().appendItem(title, () => {
-          Host.userMetrics.issuesPanelOpenedFrom(
-            3
-            /* Host.UserMetrics.IssueOpener.HAMBURGER_MENU */
-          );
+          Host.userMetrics.issuesPanelOpenedFrom(Host.UserMetrics.IssueOpener.HAMBURGER_MENU);
           void UI2.ViewManager.ViewManager.instance().showView(
             "issues-pane",
             /* userGesture */

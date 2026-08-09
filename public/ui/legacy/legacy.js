@@ -650,7 +650,6 @@ __export(UIUtils_exports, {
   DevToolsSmallBubble: () => DevToolsSmallBubble,
   ElementFocusRestorer: () => ElementFocusRestorer,
   HTMLElementWithLightDOMTemplate: () => HTMLElementWithLightDOMTemplate,
-  InterceptBindingDirective: () => InterceptBindingDirective,
   LongClickController: () => LongClickController,
   MaxLengthForDisplayedURLs: () => MaxLengthForDisplayedURLs,
   MaxLengthForDisplayedURLsInConsole: () => MaxLengthForDisplayedURLsInConsole,
@@ -3748,14 +3747,22 @@ var Widget = class _Widget {
     return this.#cachedConstraints;
   }
   setMinimumAndPreferredSizes(width, height, preferredWidth, preferredHeight) {
-    this.#constraints = new Geometry.Constraints(new Geometry.Size(width, height), new Geometry.Size(preferredWidth, preferredHeight));
+    const newConstraints = new Geometry.Constraints(new Geometry.Size(width, height), new Geometry.Size(preferredWidth, preferredHeight));
+    if (this.#constraints?.isEqual(newConstraints)) {
+      return;
+    }
+    this.#constraints = newConstraints;
     this.invalidateConstraints();
   }
   setMinimumSize(width, height) {
     this.minimumSize = new Geometry.Size(width, height);
   }
   set minimumSize(size) {
-    this.#constraints = new Geometry.Constraints(size);
+    const newConstraints = new Geometry.Constraints(size);
+    if (this.#constraints?.isEqual(newConstraints)) {
+      return;
+    }
+    this.#constraints = newConstraints;
     this.invalidateConstraints();
   }
   hasNonZeroConstraints() {
@@ -5514,10 +5521,7 @@ var PlusButtonPresenter = class {
         isPreviewFeature: view.isPreviewFeature(),
         action: () => {
           if (isIssuesPane) {
-            Host4.userMetrics.issuesPanelOpenedFrom(
-              6
-              /* Host.UserMetrics.IssueOpener.MORE_TOOLS_MENU */
-            );
+            Host4.userMetrics.issuesPanelOpenedFrom(Host4.UserMetrics.IssueOpener.MORE_TOOLS_MENU);
           }
           this.#context.showView(view);
         }
@@ -6480,10 +6484,7 @@ var TabbedLocation = class _TabbedLocation extends Location {
       const title = view.title();
       if (view.viewId() === "issues-pane") {
         contextMenu.defaultSection().appendItem(title, () => {
-          Host5.userMetrics.issuesPanelOpenedFrom(
-            3
-            /* Host.UserMetrics.IssueOpener.HAMBURGER_MENU */
-          );
+          Host5.userMetrics.issuesPanelOpenedFrom(Host5.UserMetrics.IssueOpener.HAMBURGER_MENU);
           void this.showView(view, void 0, true);
         }, { jslogContext: "issues-pane" });
         continue;
@@ -16697,43 +16698,6 @@ function bindToAction(actionName) {
     e.onclick = () => action6.execute();
   });
 }
-var InterceptBindingDirective = class _InterceptBindingDirective extends Lit2.Directive.Directive {
-  static #interceptedBindings = /* @__PURE__ */ new WeakMap();
-  static #attachedBindings = /* @__PURE__ */ new WeakMap();
-  update(part, [listener]) {
-    if (part.type !== Lit2.Directive.PartType.EVENT) {
-      return listener;
-    }
-    let eventListeners = _InterceptBindingDirective.#interceptedBindings.get(part.element);
-    if (!eventListeners) {
-      eventListeners = /* @__PURE__ */ new Map();
-      _InterceptBindingDirective.#interceptedBindings.set(part.element, eventListeners);
-    }
-    eventListeners.set(part.name, listener);
-    return this.render(listener);
-  }
-  /* eslint-disable-next-line @typescript-eslint/no-unsafe-function-type */
-  render(listener) {
-    return listener;
-  }
-  static setEventListeners(templateElement, renderedElement) {
-    const attachedListeners = _InterceptBindingDirective.#attachedBindings.get(renderedElement);
-    if (attachedListeners) {
-      for (const [name, listener] of attachedListeners) {
-        renderedElement.removeEventListener(name, listener);
-      }
-    }
-    const newListeners = _InterceptBindingDirective.#interceptedBindings.get(templateElement);
-    if (newListeners?.size) {
-      for (const [name, listener] of newListeners) {
-        renderedElement.addEventListener(name, listener);
-      }
-      _InterceptBindingDirective.#attachedBindings.set(renderedElement, new Map(newListeners));
-    } else {
-      _InterceptBindingDirective.#attachedBindings.delete(renderedElement);
-    }
-  }
-};
 var cloneCustomElement = (element, deep) => {
   const clone = document.createElement(element.localName);
   for (const attribute of element.attributes) {
@@ -16759,12 +16723,12 @@ var HTMLElementWithLightDOMTemplate = class _HTMLElementWithLightDOMTemplate ext
       clone.appendChild(_HTMLElementWithLightDOMTemplate.cloneNode(child));
     }
     if (node instanceof Element && clone instanceof Element) {
-      InterceptBindingDirective.setEventListeners(node, clone);
+      Lit2.CustomDirectives.InterceptBindingDirective.setEventListeners(node, clone);
     }
     return clone;
   }
   static patchLitTemplate(template) {
-    const interceptingWrapper = Lit2.Directive.directive(InterceptBindingDirective);
+    const interceptingWrapper = Lit2.Directive.directive(Lit2.CustomDirectives.InterceptBindingDirective);
     const patchingWrapper = (fn) => {
       return function(...args) {
         const result = fn.apply(this, args);
@@ -23470,7 +23434,7 @@ var TreeViewTreeElement = class _TreeViewTreeElement extends TreeElement {
     });
   }
   refresh() {
-    const expandable = Boolean(this.configElement.querySelector('ul[role="group"]'));
+    const expandable = Boolean(this.configElement.querySelector(':scope > ul[role="group"]'));
     this.setExpandable(expandable);
     this.titleElement.textContent = "";
     this.#clonedAttributes.forEach((attr) => this.listItemElement.attributes.removeNamedItem(attr));
@@ -23488,7 +23452,9 @@ var TreeViewTreeElement = class _TreeViewTreeElement extends TreeElement {
       this.listItemElement.classList.add(className);
       this.#clonedClasses.add(className);
     }
-    InterceptBindingDirective.setEventListeners(this.configElement, this.listItemElement);
+    const childUl = this.configElement.querySelector(':scope > ul[role="group"]');
+    const templateElements = childUl ? [this.configElement, childUl] : [this.configElement];
+    Lit3.CustomDirectives.InterceptBindingDirective.setEventListeners(templateElements, this.listItemElement);
     for (const child of this.configElement.childNodes) {
       if (child instanceof HTMLUListElement && child.role === "group") {
         continue;
@@ -23503,7 +23469,7 @@ var TreeViewTreeElement = class _TreeViewTreeElement extends TreeElement {
     return configElement && _TreeViewTreeElement.#elementToTreeElement.get(configElement);
   }
   remove() {
-    removeNode(this, Boolean(this.parent && this.parent.configElement?.querySelector('ul[role="group"]')));
+    removeNode(this, Boolean(this.parent && this.parent.configElement?.querySelector(':scope > ul[role="group"]')));
     _TreeViewTreeElement.#elementToTreeElement.delete(this.configElement);
   }
 };
@@ -23657,7 +23623,7 @@ var TreeViewElement = class _TreeViewElement extends HTMLElementWithLightDOMTemp
       let treeElement;
       if (node instanceof HTMLLIElement) {
         treeElement = new TreeViewTreeElement(this.#treeOutline, node);
-        const expandable = Boolean(node.querySelector('ul[role="group"]'));
+        const expandable = Boolean(node.querySelector(':scope > ul[role="group"]'));
         treeElement.setExpandable(expandable);
         treeElement.updateExpansionFromAttribute();
       } else {
@@ -23688,7 +23654,7 @@ var TreeViewElement = class _TreeViewElement extends HTMLElementWithLightDOMTemp
       if (node instanceof HTMLLIElement) {
         TreeViewTreeElement.get(node)?.remove();
       } else if (node.treeElement) {
-        removeNode(node.treeElement, Boolean(node.treeElement.parent && node.treeElement.parent.configElement?.querySelector('ul[role="group"]')));
+        removeNode(node.treeElement, Boolean(node.treeElement.parent && node.treeElement.parent.configElement?.querySelector(':scope > ul[role="group"]')));
       }
     }
   }

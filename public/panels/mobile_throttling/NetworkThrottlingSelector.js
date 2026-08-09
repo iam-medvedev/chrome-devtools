@@ -9,7 +9,6 @@ import * as CrUXManager from '../../models/crux-manager/crux-manager.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Lit from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
-import * as PanelsCommon from '../common/common.js';
 import { ThrottlingManager } from './ThrottlingManager.js';
 const { render, html, Directives } = Lit;
 const UIStrings = {
@@ -53,13 +52,13 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/mobile_throttling/NetworkThrottlingSelector.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+const optionsMap = new WeakMap();
 export const DEFAULT_VIEW = (input, output, target) => {
     // The title is usually an i18nLazyString except for custom values that are stored in the local storage in the form of a string.
     const title = (conditions) => typeof conditions.title === 'function' ? conditions.title() : conditions.title;
     const jslog = (group, condition) => `${VisualLogging
         .item(Platform.StringUtilities.toKebabCase(('i18nTitleKey' in condition && condition.i18nTitleKey) || title(condition)))
         .track({ click: true })}`;
-    const optionsMap = new WeakMap();
     let selectedConditions = input.selectedConditions;
     function onSelect(event) {
         const element = event.target;
@@ -70,18 +69,16 @@ export const DEFAULT_VIEW = (input, output, target) => {
         if (!option) {
             return;
         }
-        if (option === element.options[element.options.length - 1]) {
+        const conditions = optionsMap.get(option);
+        if (conditions) {
+            selectedConditions = conditions;
+            input.onSelect(conditions);
+        }
+        else {
             input.onAddCustomConditions();
             event.consume(true);
             if (selectedConditions) {
                 element.value = title(selectedConditions);
-            }
-        }
-        else {
-            const conditions = optionsMap.get(option);
-            if (conditions) {
-                selectedConditions = conditions;
-                input.onSelect(conditions);
             }
         }
     }
@@ -131,6 +128,17 @@ export const DEFAULT_VIEW = (input, output, target) => {
         },
     });
 };
+/**
+ * Computes the recommended network throttling preset based on CrUX RTT field
+ * metric data. Returns null if no RTT data is available or no preset matches.
+ */
+export function getRecommendedNetworkConditions(roundTripTimeMetricData) {
+    if (roundTripTimeMetricData?.percentiles) {
+        const rtt = Number(roundTripTimeMetricData.percentiles.p75);
+        return SDK.NetworkManager.getRecommendedNetworkPreset(rtt);
+    }
+    return null;
+}
 export class NetworkThrottlingSelect extends Common.ObjectWrapper.eventMixin(UI.Widget.Widget) {
     #settings;
     #recommendedConditions = null;
@@ -198,7 +206,7 @@ export class NetworkThrottlingSelect extends Common.ObjectWrapper.eventMixin(UI.
     #updateRecommendation = () => {
         const cruxManager = CrUXManager.CrUXManager.instance();
         const roundTripTimeMetricData = cruxManager.getSelectedFieldMetricData('round_trip_time');
-        this.recommendedConditions = PanelsCommon.ThrottlingUtils.getRecommendedNetworkConditions(roundTripTimeMetricData);
+        this.recommendedConditions = getRecommendedNetworkConditions(roundTripTimeMetricData);
     };
     set bindToGlobalConditions(bind) {
         const cruxManager = CrUXManager.CrUXManager.instance();

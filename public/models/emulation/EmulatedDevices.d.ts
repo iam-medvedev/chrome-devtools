@@ -3,7 +3,6 @@ import type * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import type * as Protocol from '../../generated/protocol.js';
 import { Insets } from './DeviceModeModel.js';
-export declare function computeRelativeImageURL(cssURLValue: string): string;
 export declare class EmulatedDevice {
     #private;
     title: string;
@@ -28,8 +27,6 @@ export declare class EmulatedDevice {
     getRotationPartner(mode: Mode): Mode | null;
     toJSON(): any;
     private orientationToJSON;
-    modeImage(mode: Mode): string;
-    outlineImage(mode: Mode): string;
     orientationByName(name: string): Orientation;
     show(): boolean;
     setShow(show: boolean): void;
@@ -91,7 +88,6 @@ export interface Mode {
     title: string;
     orientation: string;
     insets: Insets;
-    image: string | null;
     safeAreaInsets?: Insets;
     cutout?: Cutout;
 }
@@ -125,14 +121,11 @@ export type Cutout = BaseCutout & ({
 export interface Orientation {
     width: number;
     height: number;
-    outlineInsets: Insets | null;
-    outlineImage: string | null;
     hinge: SDK.OverlayModel.Hinge | null;
 }
 export interface JSONMode {
     title: string;
     orientation: string;
-    image?: string;
     insets: {
         left: number;
         right: number;
@@ -167,13 +160,11 @@ declare const emulatedDevices: ({
         horizontal: {
             width: number;
             height: number;
-            outline?: undefined;
         };
         'device-pixel-ratio': number;
         vertical: {
             width: number;
             height: number;
-            outline?: undefined;
         };
         'vertical-spanned'?: undefined;
         'horizontal-spanned'?: undefined;
@@ -188,9 +179,9 @@ declare const emulatedDevices: ({
         mobile: boolean;
     };
     type: string;
-    modes?: undefined;
     'dual-screen'?: undefined;
     'foldable-screen'?: undefined;
+    modes?: undefined;
 } | {
     order: number;
     'show-by-default': boolean;
@@ -199,13 +190,11 @@ declare const emulatedDevices: ({
         horizontal: {
             width: number;
             height: number;
-            outline?: undefined;
         };
         'device-pixel-ratio': number;
         vertical: {
             width: number;
             height: number;
-            outline?: undefined;
         };
         'vertical-spanned'?: undefined;
         'horizontal-spanned'?: undefined;
@@ -245,6 +234,7 @@ declare const emulatedDevices: ({
             'lower-radius': number;
         };
     } | {
+        cutout?: undefined;
         title: string;
         orientation: string;
         insets: {
@@ -259,7 +249,6 @@ declare const emulatedDevices: ({
             right: number;
             bottom: number;
         };
-        cutout?: undefined;
     })[];
     'dual-screen'?: undefined;
     'foldable-screen'?: undefined;
@@ -271,13 +260,11 @@ declare const emulatedDevices: ({
         horizontal: {
             width: number;
             height: number;
-            outline?: undefined;
         };
         'device-pixel-ratio': number;
         vertical: {
             width: number;
             height: number;
-            outline?: undefined;
         };
         'vertical-spanned'?: undefined;
         'horizontal-spanned'?: undefined;
@@ -316,6 +303,7 @@ declare const emulatedDevices: ({
             'border-radius': number;
         };
     } | {
+        cutout?: undefined;
         title: string;
         orientation: string;
         insets: {
@@ -330,7 +318,6 @@ declare const emulatedDevices: ({
             right: number;
             bottom: number;
         };
-        cutout?: undefined;
     })[];
     'dual-screen'?: undefined;
     'foldable-screen'?: undefined;
@@ -342,13 +329,11 @@ declare const emulatedDevices: ({
         horizontal: {
             width: number;
             height: number;
-            outline?: undefined;
         };
         'device-pixel-ratio': number;
         vertical: {
             width: number;
             height: number;
-            outline?: undefined;
         };
         'vertical-spanned'?: undefined;
         'horizontal-spanned'?: undefined;
@@ -389,6 +374,7 @@ declare const emulatedDevices: ({
             radius: number;
         };
     } | {
+        cutout?: undefined;
         title: string;
         orientation: string;
         insets: {
@@ -403,7 +389,6 @@ declare const emulatedDevices: ({
             right: number;
             bottom: number;
         };
-        cutout?: undefined;
     })[];
     'dual-screen'?: undefined;
     'foldable-screen'?: undefined;
@@ -415,13 +400,11 @@ declare const emulatedDevices: ({
         horizontal: {
             width: number;
             height: number;
-            outline?: undefined;
         };
         'device-pixel-ratio': number;
         vertical: {
             width: number;
             height: number;
-            outline?: undefined;
         };
         'vertical-spanned'?: undefined;
         'horizontal-spanned'?: undefined;
@@ -429,10 +412,10 @@ declare const emulatedDevices: ({
     capabilities: string[];
     'user-agent': string;
     type: string;
-    'user-agent-metadata'?: undefined;
-    modes?: undefined;
     'dual-screen'?: undefined;
     'foldable-screen'?: undefined;
+    'user-agent-metadata'?: undefined;
+    modes?: undefined;
 } | {
     order: number;
     'show-by-default': boolean;
@@ -442,13 +425,11 @@ declare const emulatedDevices: ({
         horizontal: {
             width: number;
             height: number;
-            outline?: undefined;
         };
         'device-pixel-ratio': number;
         vertical: {
             width: number;
             height: number;
-            outline?: undefined;
         };
         'vertical-spanned': {
             width: number;
@@ -507,6 +488,7 @@ declare const emulatedDevices: ({
     }[];
     'foldable-screen'?: undefined;
 } | {
+    'dual-screen'?: undefined;
     order: number;
     'show-by-default': boolean;
     'foldable-screen': boolean;
@@ -515,13 +497,11 @@ declare const emulatedDevices: ({
         horizontal: {
             width: number;
             height: number;
-            outline?: undefined;
         };
         'device-pixel-ratio': number;
         vertical: {
             width: number;
             height: number;
-            outline?: undefined;
         };
         'vertical-spanned': {
             width: number;
@@ -588,22 +568,16 @@ declare const emulatedDevices: ({
             bottom: number;
         };
     }[];
-    'dual-screen'?: undefined;
 } | {
+    'dual-screen'?: undefined;
+    'foldable-screen'?: undefined;
     order: number;
     'show-by-default': boolean;
     title: string;
     screen: {
+        'vertical-spanned'?: undefined;
+        'horizontal-spanned'?: undefined;
         horizontal: {
-            outline: {
-                image: string;
-                insets: {
-                    left: number;
-                    top: number;
-                    right: number;
-                    bottom: number;
-                };
-            };
             width: number;
             height: number;
         };
@@ -611,10 +585,7 @@ declare const emulatedDevices: ({
         vertical: {
             width: number;
             height: number;
-            outline?: undefined;
         };
-        'vertical-spanned'?: undefined;
-        'horizontal-spanned'?: undefined;
     };
     capabilities: string[];
     'user-agent': string;
@@ -624,25 +595,24 @@ declare const emulatedDevices: ({
         orientation: string;
     }[];
     'user-agent-metadata'?: undefined;
+} | {
     'dual-screen'?: undefined;
     'foldable-screen'?: undefined;
-} | {
+    order?: undefined;
     'show-by-default': boolean;
     title: string;
     screen: {
+        'vertical-spanned'?: undefined;
+        'horizontal-spanned'?: undefined;
         horizontal: {
             width: number;
             height: number;
-            outline?: undefined;
         };
         'device-pixel-ratio': number;
         vertical: {
             width: number;
             height: number;
-            outline?: undefined;
         };
-        'vertical-spanned'?: undefined;
-        'horizontal-spanned'?: undefined;
     };
     capabilities: string[];
     'user-agent': string;
@@ -654,27 +624,26 @@ declare const emulatedDevices: ({
         mobile: boolean;
     };
     type: string;
-    order?: undefined;
     modes?: undefined;
+} | {
     'dual-screen'?: undefined;
     'foldable-screen'?: undefined;
-} | {
+    order?: undefined;
+    'user-agent-metadata'?: undefined;
     'show-by-default': boolean;
     title: () => Platform.UIString.LocalizedString;
     screen: {
+        'vertical-spanned'?: undefined;
+        'horizontal-spanned'?: undefined;
         horizontal: {
             width: number;
             height: number;
-            outline?: undefined;
         };
         'device-pixel-ratio': number;
         vertical: {
             width: number;
             height: number;
-            outline?: undefined;
         };
-        'vertical-spanned'?: undefined;
-        'horizontal-spanned'?: undefined;
     };
     capabilities: string[];
     'user-agent': string;
@@ -683,57 +652,5 @@ declare const emulatedDevices: ({
         title: string;
         orientation: string;
     }[];
-    order?: undefined;
-    'user-agent-metadata'?: undefined;
-    'dual-screen'?: undefined;
-    'foldable-screen'?: undefined;
-} | {
-    'show-by-default': boolean;
-    title: string;
-    screen: {
-        horizontal: {
-            outline: {
-                image: string;
-                insets: {
-                    left: number;
-                    top: number;
-                    right: number;
-                    bottom: number;
-                };
-            };
-            width: number;
-            height: number;
-        };
-        'device-pixel-ratio': number;
-        vertical: {
-            outline: {
-                image: string;
-                insets: {
-                    left: number;
-                    top: number;
-                    right: number;
-                    bottom: number;
-                };
-            };
-            width: number;
-            height: number;
-        };
-        'vertical-spanned'?: undefined;
-        'horizontal-spanned'?: undefined;
-    };
-    capabilities: string[];
-    'user-agent': string;
-    'user-agent-metadata': {
-        platform: string;
-        platformVersion: string;
-        architecture: string;
-        model: string;
-        mobile: boolean;
-    };
-    type: string;
-    order?: undefined;
-    modes?: undefined;
-    'dual-screen'?: undefined;
-    'foldable-screen'?: undefined;
 })[];
 export {};

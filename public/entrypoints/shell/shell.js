@@ -2073,31 +2073,31 @@ import * as UI2 from "./../../ui/legacy/legacy.js";
 var loadedProfilerModule;
 var UIStrings2 = {
   /**
-   * @description Title for the profiler tab
+   * @description Title for the profiler tab.
    */
   memory: "Memory",
   /**
-   * @description Text in the Shortcuts page to explain a keyboard shortcut (start/stop recording performance)
+   * @description Text in the shortcuts page to explain a keyboard shortcut (start/stop recording performance).
    */
   startStopRecording: "Start/stop recording",
   /**
-   * @description Command for showing the profiler tab
+   * @description Title of the action to show the Memory panel.
    */
   showMemory: "Show Memory",
   /**
-   * @description Tooltip text that appears when hovering over the largeicon clear button in the Profiles Panel of a profiler tool
+   * @description Title of the action to clear all recorded profiles in the Memory panel.
    */
   clearAllProfiles: "Clear all profiles",
   /**
-   * @description Tooltip text that appears when hovering over the largeicon download button
+   * @description Title of the action to save a recorded profile to a file.
    */
   saveProfile: "Save profile\u2026",
   /**
-   * @description Tooltip text that appears when hovering over the largeicon load button
+   * @description Title of the action to load a saved profile from a file.
    */
   loadProfile: "Load profile\u2026",
   /**
-   * @description Command for deleting a profile in the Profiler panel
+   * @description Title of the action to delete a profile in the Memory panel.
    */
   deleteProfile: "Delete profile"
 };
@@ -5995,7 +5995,9 @@ for (const action of actions) {
 import * as Common14 from "./../../core/common/common.js";
 import * as i18n37 from "./../../core/i18n/i18n.js";
 import * as Root5 from "./../../core/root/root.js";
+import * as AiAssistanceModel2 from "./../../models/ai_assistance/ai_assistance.js";
 import * as UI15 from "./../../ui/legacy/legacy.js";
+import * as SettingUIRegistration5 from "./../../ui/settings/settings.js";
 var UIStrings18 = {
   /**
    * @description The title of the AI assistance panel.
@@ -6030,32 +6032,12 @@ var UIStrings18 = {
   /**
    * @description Text of a context menu item to redirect to the Gemini panel with the current context.
    */
-  debugWithGemini: "Debug with Gemini",
-  /**
-   * @description Message shown to the user if the DevTools locale is not
-   * supported.
-   */
-  wrongLocale: "To use this feature, set your language preference to English in DevTools settings.",
-  /**
-   * @description Message shown to the user if the user's region is not
-   * supported.
-   */
-  geoRestricted: "This feature is unavailable in your region.",
-  /**
-   * @description Message shown to the user if the enterprise policy does
-   * not allow this feature.
-   */
-  policyRestricted: "This setting is managed by your administrator."
+  debugWithGemini: "Debug with Gemini"
 };
 var str_18 = i18n37.i18n.registerUIStrings("panels/ai_assistance/ai_assistance-meta.ts", UIStrings18);
 var i18nString = i18n37.i18n.getLocalizedString.bind(void 0, str_18);
 function i18nAiBrandedString(gemini, assistance) {
   return () => Root5.Runtime.hostConfig.devToolsGeminiRebranding?.enabled ? i18nString(gemini) : i18nString(assistance);
-}
-var setting = "ai-assistance-enabled";
-function isLocaleRestricted() {
-  const devtoolsLocale = i18n37.DevToolsLocale.DevToolsLocale.instance();
-  return !devtoolsLocale.locale.startsWith("en-");
 }
 function isGeoRestricted2(config) {
   return config?.aidaAvailability?.blockedByGeo === true;
@@ -6102,30 +6084,9 @@ UI15.ViewManager.registerViewExtension({
     return await AiAssistance.AiAssistancePanel.instance();
   }
 });
-Common14.Settings.registerSettingExtension({
+SettingUIRegistration5.SettingUIRegistration.register(AiAssistanceModel2.AiUtils.aiAssistanceEnabledSettingDescriptor, {
   category: "AI",
-  settingName: setting,
-  settingType: "boolean",
-  title: i18nAiBrandedString(UIStrings18.enableGemini, UIStrings18.enableAiAssistance),
-  defaultValue: false,
-  reloadRequired: false,
-  condition: isAnyFeatureAvailable,
-  disabledCondition: (config) => {
-    const reasons = [];
-    if (isGeoRestricted2(config)) {
-      reasons.push(i18nString(UIStrings18.geoRestricted));
-    }
-    if (isPolicyRestricted2(config)) {
-      reasons.push(i18nString(UIStrings18.policyRestricted));
-    }
-    if (isLocaleRestricted()) {
-      reasons.push(i18nString(UIStrings18.wrongLocale));
-    }
-    if (reasons.length > 0) {
-      return { disabled: true, reasons };
-    }
-    return { disabled: false };
-  }
+  title: i18nAiBrandedString(UIStrings18.enableGemini, UIStrings18.enableAiAssistance)
 });
 UI15.ActionRegistration.registerActionExtension({
   actionId: "freestyler.main-menu",

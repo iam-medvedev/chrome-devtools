@@ -292,8 +292,7 @@ function renderExplanations(category, explainerText, explanations, reasonToFrame
     // clang-format on
 }
 function maybeRenderReasonContext(explanation) {
-    if (explanation.reason ===
-        "EmbedderExtensionSentMessageToCachedFrame" /* Protocol.Page.BackForwardCacheNotRestoredReason.EmbedderExtensionSentMessageToCachedFrame */ &&
+    if (explanation.reason === "EmbedderExtensionSentMessageToCachedFrame" /* Protocol.Page.BackForwardCacheNotRestoredReason.EmbedderExtensionSentMessageToCachedFrame */ &&
         explanation.context) {
         const link = 'chrome://extensions/?id=' + explanation.context;
         // clang-format off

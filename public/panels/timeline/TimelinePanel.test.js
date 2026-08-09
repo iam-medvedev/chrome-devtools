@@ -11,7 +11,7 @@ import * as Trace from '../../models/trace/trace.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as TraceBounds from '../../services/trace_bounds/trace_bounds.js';
 import * as Tracing from '../../services/tracing/tracing.js';
-import { dispatchClickEvent, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { dispatchClickEvent, renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
 import { deinitializeGlobalVars, initializeGlobalVars, registerNoopActions, } from '../../testing/EnvironmentHelpers.js';
 import { stubFileManager } from '../../testing/FileManagerHelpers.js';
 import { makeCompleteEvent } from '../../testing/TraceHelpers.js';

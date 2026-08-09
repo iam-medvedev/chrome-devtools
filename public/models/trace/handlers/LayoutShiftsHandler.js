@@ -43,7 +43,6 @@ let paintImageEvents = [];
 let sessionMaxScore = 0;
 let clsWindowID = -1;
 let clusters = [];
-let clustersByNavigationId = new Map();
 // The complete timeline of LS score changes in a trace.
 // Includes drops to 0 when session windows end.
 let scoreRecords = [];
@@ -63,7 +62,10 @@ export function reset() {
     sessionMaxScore = 0;
     scoreRecords = [];
     clsWindowID = -1;
-    clustersByNavigationId = new Map();
+}
+let enableSoftNavigation = true;
+export function handleUserConfig(userConfig) {
+    enableSoftNavigation = userConfig.enableSoftNavigation;
 }
 export function handleEvent(event) {
     if (Types.Events.isLayoutShift(event) && !event.args.data?.had_recent_input) {
@@ -202,8 +204,9 @@ export async function finalize() {
     collectNodes();
 }
 async function buildLayoutShiftsClusters() {
-    const { navigationsByFrameId, mainFrameId, traceBounds } = metaHandlerData();
-    const navigations = navigationsByFrameId.get(mainFrameId) || [];
+    const { navigationsByFrameId, mainFrameId, traceBounds, softNavigationsById } = metaHandlerData();
+    const softNavigations = enableSoftNavigation ? Array.from(softNavigationsById.values()) : [];
+    const navigations = [...(navigationsByFrameId.get(mainFrameId) || []), ...softNavigations].sort((a, b) => a.ts - b.ts);
     if (layoutShiftEvents.length === 0) {
         return;
     }
@@ -250,13 +253,16 @@ async function buildLayoutShiftsClusters() {
             // If this cluster happened after a navigation, set the navigationId to
             // the current navigation. This lets us easily group clusters by
             // navigation.
-            const navigationId = currentShiftNavigation === null ?
-                Types.Events.NO_NAVIGATION :
-                navigations[currentShiftNavigation].args.data?.navigationId;
-            // TODO: `navigationId` is `string | undefined`, but the undefined portion
-            // comes from `data.navigationId`. I don't think that is possible for this
-            // event type. Can we make this typing stronger? In the meantime, we allow
-            // `navigationId` to include undefined values.
+            let navigationId = undefined;
+            if (currentShiftNavigation !== null) {
+                const nav = navigations[currentShiftNavigation];
+                if (Types.Events.isNavigationStart(nav)) {
+                    navigationId = nav.args.data?.navigationId;
+                }
+            }
+            else {
+                navigationId = Types.Events.NO_NAVIGATION;
+            }
             clusters.push(Helpers.SyntheticEvents.SyntheticEventsManager
                 .registerSyntheticEvent({
                 name: 'SyntheticLayoutShiftCluster',
@@ -407,12 +413,6 @@ async function buildLayoutShiftsClusters() {
             clsWindowID = windowID;
             sessionMaxScore = weightedScore;
         }
-        if (cluster.navigationId) {
-            const clustersForId = Platform.MapUtilities.getWithDefault(clustersByNavigationId, cluster.navigationId, () => {
-                return [];
-            });
-            clustersForId.push(cluster);
-        }
     }
 }
 export function data() {
@@ -430,7 +430,6 @@ export function data() {
         remoteFonts,
         scoreRecords,
         backendNodeIds,
-        clustersByNavigationId,
         paintImageEvents,
     };
 }

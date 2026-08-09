@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import '../../../ui/legacy/components/data_grid/data_grid.js';
+import '../../../ui/kit/kit.js';
 import * as Common from '../../../core/common/common.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as SDK from '../../../core/sdk/sdk.js';
@@ -83,6 +84,14 @@ const UIStrings = {
      * @description Explanation text for the 'Highlight ads' setting.
      */
     highlightsElementsRedDetectedToBe: 'Highlights elements (red) detected to be ads.',
+    /**
+     * @description Text explaining that ad detection is not perfect.
+     */
+    adDetectionMistakes: 'Chrome’s ad detection can make mistakes.',
+    /**
+     * @description Link text for learning more about ad detection in Chrome.
+     */
+    learnMore: 'Learn more',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/application/components/AdsView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -169,6 +178,7 @@ const DEFAULT_VIEW = (input, output, target) => {
           </dd>
         </div>
       </dl>
+      <hr class="divider">
       <div class="ad-frames-title">${i18nString(UIStrings.adIframesTitle, { PH1: input.adFrames.length })}</div>
       <div class="ad-frames-container">
         <devtools-data-grid striped resize="last" class="ad-frames-data-grid" name=${i18nString(UIStrings.adIframes)}>
@@ -198,14 +208,27 @@ const DEFAULT_VIEW = (input, output, target) => {
           </table>
         </devtools-data-grid>
       </div>
+      <hr class="divider">
       <div class="settings-title">${i18nString(UIStrings.settings)}</div>
-      <devtools-checkbox class="setting-container"
+      <devtools-checkbox class="setting-container small"
           ${bindToSetting(Common.Settings.Settings.instance().moduleSetting('show-ad-highlights'))}>
         <div class="setting-text-container">
           <div class="setting-label">${i18nString(UIStrings.highlightAds)}</div>
           <div class="setting-explanation">${i18nString(UIStrings.highlightsElementsRedDetectedToBe)}</div>
         </div>
       </devtools-checkbox>
+      <hr class="divider">
+      <div class="footer-text">
+        <devtools-icon class="inline-icon" name="info"></devtools-icon>
+        &#32;
+        <span>
+          ${i18nString(UIStrings.adDetectionMistakes)}
+          &#32;
+          <devtools-link class="link devtools-link" href="https://chromium.googlesource.com/chromium/src/+/main/docs/ad_tagging.md" jslogcontext="learn-more">
+            ${i18nString(UIStrings.learnMore)}
+          </devtools-link>
+        </span>
+      </div>
     </div>
   `, target);
     // clang-format on

@@ -87,6 +87,11 @@ export default `/*
   margin-bottom: 5px;
 }
 
+.devices-edit-safe-area-group {
+  display: flex;
+  flex-direction: column;
+}
+
 .devices-edit-fields b {
   margin-top: 8px;
   margin-bottom: 0;

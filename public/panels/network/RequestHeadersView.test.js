@@ -13,7 +13,7 @@ import { cleanTestDOM } from '../../testing/DOMHooks.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { createWorkspaceProject, setUpEnvironment } from '../../testing/OverridesHelpers.js';
 import { createFileSystemUISourceCode } from '../../testing/UISourceCodeHelpers.js';
-import { recordedMetricsContain, resetRecordedMetrics, } from '../../testing/UserMetricsHelpers.js';
+import { recordedMetricsContain, resetRecordedMetrics, setupUserMetricHooks, } from '../../testing/UserMetricsHelpers.js';
 import * as RenderCoordinator from '../../ui/components/render_coordinator/render_coordinator.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Lit from '../../ui/lit/lit.js';
@@ -89,6 +89,7 @@ const getRowHighlightStatus = (container) => {
     });
 };
 describeWithEnvironment('RequestHeadersView', () => {
+    setupUserMetricHooks();
     let component = null;
     beforeEach(() => {
         setUpEnvironment();

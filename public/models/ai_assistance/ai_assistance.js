@@ -4680,7 +4680,7 @@ function getLCPData(parsedTrace, frameId, navigation) {
   if (!lcpEvent || !Trace4.Types.Events.isAnyLargestContentfulPaintCandidate(lcpEvent)) {
     return null;
   }
-  const navigationId = navigation.args.data?.navigationId;
+  const navigationId = Trace4.Types.Events.isSoftNavigationStart(navigation) ? void 0 : navigation.args.data?.navigationId;
   return {
     lcpEvent,
     lcpRequest: navigationId ? parsedTrace.data.LargestImagePaint.lcpRequestByNavigationId.get(navigationId) : void 0,
@@ -8263,8 +8263,14 @@ var STATIC_LABEL_NAMES = {
   "trace-bounds": "the entire trace",
   NO_NAVIGATION: "the period before the first navigation"
 };
+function getInsightModel(model, key) {
+  if (Object.prototype.hasOwnProperty.call(model, key)) {
+    return model[key];
+  }
+  return void 0;
+}
 function getLabelName(label, focus) {
-  if (STATIC_LABEL_NAMES[label]) {
+  if (Object.prototype.hasOwnProperty.call(STATIC_LABEL_NAMES, label)) {
     return STATIC_LABEL_NAMES[label];
   }
   const { parsedTrace } = focus;
@@ -8273,7 +8279,7 @@ function getLabelName(label, focus) {
     return `navigation to ${insightSetById.url.href}`;
   }
   for (const insightSet of parsedTrace.insights?.values() ?? []) {
-    const model = insightSet.model[label];
+    const model = getInsightModel(insightSet.model, label);
     if (model) {
       return `${model.title} insight`;
     }
@@ -8742,7 +8748,7 @@ ${result}`,
           const valid = [...parsedTrace.insights?.values() ?? []].map((insightSet2) => `id: ${insightSet2.id}, url: ${insightSet2.url}, bounds: ${this.#formatter?.serializeBounds(insightSet2.bounds)}`).join("; ");
           return { error: `Invalid insight set id. Valid insight set ids are: ${valid}` };
         }
-        const insight = insightSet.model[params.insightName];
+        const insight = getInsightModel(insightSet.model, params.insightName);
         if (!insight) {
           const valid = Object.keys(insightSet.model).join(", ");
           return { error: `No insight available. Valid insight names are: ${valid}` };
@@ -9212,13 +9218,13 @@ ${result}`,
       return insightSetById.bounds;
     }
     if (insightSet) {
-      const model = insightSet.model[label];
+      const model = getInsightModel(insightSet.model, label);
       if (model) {
         return Trace7.Insights.Common.insightBounds(model, insightSet.bounds);
       }
     }
     for (const is of parsedTrace.insights?.values() ?? []) {
-      const model = is.model[label];
+      const model = getInsightModel(is.model, label);
       if (model) {
         return Trace7.Insights.Common.insightBounds(model, is.bounds);
       }
@@ -10367,15 +10373,138 @@ function getPrimaryPageOrigin(targetManager) {
   return inspectedURL ? new Common14.ParsedURL.ParsedURL(inspectedURL).securityOrigin() : void 0;
 }
 
+// gen/front_end/models/ai_assistance/AiSetting.js
+var AiSetting_exports = {};
+__export(AiSetting_exports, {
+  AiSetting: () => AiSetting
+});
+import * as Common15 from "./../../core/common/common.js";
+import * as Host21 from "./../../core/host/host.js";
+import * as Root14 from "./../../core/root/root.js";
+var AiSetting = class extends Common15.ObjectWrapper.ObjectWrapper {
+  #setting;
+  #descriptor;
+  #hostConfigTracker;
+  #settings;
+  #boundOnSettingChanged = this.#onSettingChanged.bind(this);
+  #boundOnAidaAvailabilityChanged = this.#onAidaAvailabilityChanged.bind(this);
+  #isSubscribed = false;
+  constructor(descriptor, hostConfigTracker, settings) {
+    super();
+    this.#descriptor = descriptor;
+    this.#hostConfigTracker = hostConfigTracker;
+    this.#settings = settings;
+    this.#tryResolveSetting();
+  }
+  addEventListener(eventType, listener, thisObject) {
+    const isFirst = !this.hasEventListeners(eventType);
+    const descriptor = super.addEventListener(eventType, listener, thisObject);
+    if (isFirst) {
+      this.#subscribe();
+    }
+    return descriptor;
+  }
+  removeEventListener(eventType, listener, thisObject) {
+    super.removeEventListener(eventType, listener, thisObject);
+    if (!this.hasEventListeners(eventType)) {
+      this.#unsubscribe();
+    }
+  }
+  #subscribe() {
+    if (this.#isSubscribed) {
+      return;
+    }
+    this.#tryResolveSetting();
+    this.#isSubscribed = true;
+    this.#hostConfigTracker.addEventListener("aidaAvailabilityChanged", this.#boundOnAidaAvailabilityChanged);
+    this.#setting?.addChangeListener(this.#boundOnSettingChanged);
+  }
+  #unsubscribe() {
+    if (!this.#isSubscribed) {
+      return;
+    }
+    this.#isSubscribed = false;
+    this.#hostConfigTracker.removeEventListener("aidaAvailabilityChanged", this.#boundOnAidaAvailabilityChanged);
+    this.#setting?.removeChangeListener(this.#boundOnSettingChanged);
+  }
+  #tryResolveSetting() {
+    const result = this.#settings.maybeResolve(this.#descriptor);
+    if ("setting" in result) {
+      if (this.#setting !== result.setting) {
+        if (this.#setting && this.#isSubscribed) {
+          this.#setting.removeChangeListener(this.#boundOnSettingChanged);
+        }
+        this.#setting = result.setting;
+        if (this.#isSubscribed) {
+          this.#setting.addChangeListener(this.#boundOnSettingChanged);
+        }
+      }
+    } else if (this.#setting) {
+      if (this.#isSubscribed) {
+        this.#setting.removeChangeListener(this.#boundOnSettingChanged);
+      }
+      this.#setting = void 0;
+    }
+  }
+  get unavailable() {
+    const availability = this.#descriptor.isAvailable(Root14.Runtime.hostConfig);
+    return availability.status === 2;
+  }
+  get disabled() {
+    const availability = this.#descriptor.isAvailable(Root14.Runtime.hostConfig);
+    return availability.status === 3;
+  }
+  get disabledReasons() {
+    const availability = this.#descriptor.isAvailable(Root14.Runtime.hostConfig);
+    if (availability.status === 3) {
+      return availability.reason;
+    }
+    return [];
+  }
+  getIfNotDisabled() {
+    if (this.disabled || this.unavailable) {
+      return void 0;
+    }
+    this.#tryResolveSetting();
+    return this.#setting?.get();
+  }
+  setIfNotDisabled(value) {
+    if (this.disabled || this.unavailable) {
+      return;
+    }
+    this.#tryResolveSetting();
+    this.#setting?.set(value);
+  }
+  get() {
+    return this.getIfNotDisabled();
+  }
+  set(value) {
+    this.setIfNotDisabled(value);
+  }
+  #onSettingChanged() {
+    this.dispatchEventToListeners(
+      "Changed"
+      /* Events.CHANGED */
+    );
+  }
+  #onAidaAvailabilityChanged() {
+    this.#tryResolveSetting();
+    this.dispatchEventToListeners(
+      "Changed"
+      /* Events.CHANGED */
+    );
+  }
+};
+
 // gen/front_end/models/ai_assistance/BuiltInAi.js
 var BuiltInAi_exports = {};
 __export(BuiltInAi_exports, {
   BuiltInAi: () => BuiltInAi
 });
-import * as Common15 from "./../../core/common/common.js";
-import * as Host21 from "./../../core/host/host.js";
-import * as Root14 from "./../../core/root/root.js";
-var BuiltInAi = class _BuiltInAi extends Common15.ObjectWrapper.ObjectWrapper {
+import * as Common16 from "./../../core/common/common.js";
+import * as Host22 from "./../../core/host/host.js";
+import * as Root15 from "./../../core/root/root.js";
+var BuiltInAi = class _BuiltInAi extends Common16.ObjectWrapper.ObjectWrapper {
   #availability = null;
   #hasGpu;
   #consoleInsightsSession;
@@ -10383,10 +10512,10 @@ var BuiltInAi = class _BuiltInAi extends Common15.ObjectWrapper.ObjectWrapper {
   #downloadProgress = null;
   #currentlyCreatingSession = false;
   static instance() {
-    if (!Root14.DevToolsContext.globalInstance().has(_BuiltInAi)) {
-      Root14.DevToolsContext.globalInstance().set(_BuiltInAi, new _BuiltInAi());
+    if (!Root15.DevToolsContext.globalInstance().has(_BuiltInAi)) {
+      Root15.DevToolsContext.globalInstance().set(_BuiltInAi, new _BuiltInAi());
     }
-    return Root14.DevToolsContext.globalInstance().get(_BuiltInAi);
+    return Root15.DevToolsContext.globalInstance().get(_BuiltInAi);
   }
   constructor() {
     super();
@@ -10394,7 +10523,7 @@ var BuiltInAi = class _BuiltInAi extends Common15.ObjectWrapper.ObjectWrapper {
     this.initDoneForTesting = this.getLanguageModelAvailability().then(() => this.#sendAvailabilityMetrics()).then(() => this.initialize());
   }
   async getLanguageModelAvailability() {
-    if (!Root14.Runtime.hostConfig.devToolsConsoleInsightsTeasers?.enabled) {
+    if (!Root15.Runtime.hostConfig.devToolsConsoleInsightsTeasers?.enabled) {
       this.#availability = "disabled";
       return this.#availability;
     }
@@ -10418,7 +10547,7 @@ var BuiltInAi = class _BuiltInAi extends Common15.ObjectWrapper.ObjectWrapper {
     return this.#availability === "downloading";
   }
   isEventuallyAvailable() {
-    if (!this.#hasGpu && !Boolean(Root14.Runtime.hostConfig.devToolsConsoleInsightsTeasers?.allowWithoutGpu)) {
+    if (!this.#hasGpu && !Boolean(Root15.Runtime.hostConfig.devToolsConsoleInsightsTeasers?.allowWithoutGpu)) {
       return false;
     }
     return this.#availability === "available" || this.#availability === "downloading" || this.#availability === "downloadable";
@@ -10431,7 +10560,7 @@ var BuiltInAi = class _BuiltInAi extends Common15.ObjectWrapper.ObjectWrapper {
     return this.#downloadProgress;
   }
   startDownloadingModel() {
-    if (!Root14.Runtime.hostConfig.devToolsConsoleInsightsTeasers?.allowWithoutGpu && !this.#hasGpu) {
+    if (!Root15.Runtime.hostConfig.devToolsConsoleInsightsTeasers?.allowWithoutGpu && !this.#hasGpu) {
       return;
     }
     if (this.#availability !== "downloadable") {
@@ -10469,7 +10598,7 @@ var BuiltInAi = class _BuiltInAi extends Common15.ObjectWrapper.ObjectWrapper {
     return Boolean(this.#consoleInsightsSession);
   }
   async initialize() {
-    if (!Root14.Runtime.hostConfig.devToolsConsoleInsightsTeasers?.allowWithoutGpu && !this.#hasGpu) {
+    if (!Root15.Runtime.hostConfig.devToolsConsoleInsightsTeasers?.allowWithoutGpu && !this.#hasGpu) {
       return;
     }
     if (this.#availability !== "available" && this.#availability !== "downloading") {
@@ -10531,7 +10660,7 @@ Your instructions are as follows:
     this.#currentlyCreatingSession = false;
   }
   static removeInstance() {
-    Root14.DevToolsContext.globalInstance().delete(_BuiltInAi);
+    Root15.DevToolsContext.globalInstance().delete(_BuiltInAi);
   }
   async *getConsoleInsight(prompt, abortController) {
     if (!this.#consoleInsightsSession) {
@@ -10556,67 +10685,37 @@ Your instructions are as follows:
     if (this.#hasGpu) {
       switch (this.#availability) {
         case "unavailable":
-          Host21.userMetrics.builtInAiAvailability(
-            0
-            /* Host.UserMetrics.BuiltInAiAvailability.UNAVAILABLE_HAS_GPU */
-          );
+          Host22.userMetrics.builtInAiAvailability(Host22.UserMetrics.BuiltInAiAvailability.UNAVAILABLE_HAS_GPU);
           break;
         case "downloadable":
-          Host21.userMetrics.builtInAiAvailability(
-            1
-            /* Host.UserMetrics.BuiltInAiAvailability.DOWNLOADABLE_HAS_GPU */
-          );
+          Host22.userMetrics.builtInAiAvailability(Host22.UserMetrics.BuiltInAiAvailability.DOWNLOADABLE_HAS_GPU);
           break;
         case "downloading":
-          Host21.userMetrics.builtInAiAvailability(
-            2
-            /* Host.UserMetrics.BuiltInAiAvailability.DOWNLOADING_HAS_GPU */
-          );
+          Host22.userMetrics.builtInAiAvailability(Host22.UserMetrics.BuiltInAiAvailability.DOWNLOADING_HAS_GPU);
           break;
         case "available":
-          Host21.userMetrics.builtInAiAvailability(
-            3
-            /* Host.UserMetrics.BuiltInAiAvailability.AVAILABLE_HAS_GPU */
-          );
+          Host22.userMetrics.builtInAiAvailability(Host22.UserMetrics.BuiltInAiAvailability.AVAILABLE_HAS_GPU);
           break;
         case "disabled":
-          Host21.userMetrics.builtInAiAvailability(
-            4
-            /* Host.UserMetrics.BuiltInAiAvailability.DISABLED_HAS_GPU */
-          );
+          Host22.userMetrics.builtInAiAvailability(Host22.UserMetrics.BuiltInAiAvailability.DISABLED_HAS_GPU);
           break;
       }
     } else {
       switch (this.#availability) {
         case "unavailable":
-          Host21.userMetrics.builtInAiAvailability(
-            5
-            /* Host.UserMetrics.BuiltInAiAvailability.UNAVAILABLE_NO_GPU */
-          );
+          Host22.userMetrics.builtInAiAvailability(Host22.UserMetrics.BuiltInAiAvailability.UNAVAILABLE_NO_GPU);
           break;
         case "downloadable":
-          Host21.userMetrics.builtInAiAvailability(
-            6
-            /* Host.UserMetrics.BuiltInAiAvailability.DOWNLOADABLE_NO_GPU */
-          );
+          Host22.userMetrics.builtInAiAvailability(Host22.UserMetrics.BuiltInAiAvailability.DOWNLOADABLE_NO_GPU);
           break;
         case "downloading":
-          Host21.userMetrics.builtInAiAvailability(
-            7
-            /* Host.UserMetrics.BuiltInAiAvailability.DOWNLOADING_NO_GPU */
-          );
+          Host22.userMetrics.builtInAiAvailability(Host22.UserMetrics.BuiltInAiAvailability.DOWNLOADING_NO_GPU);
           break;
         case "available":
-          Host21.userMetrics.builtInAiAvailability(
-            8
-            /* Host.UserMetrics.BuiltInAiAvailability.AVAILABLE_NO_GPU */
-          );
+          Host22.userMetrics.builtInAiAvailability(Host22.UserMetrics.BuiltInAiAvailability.AVAILABLE_NO_GPU);
           break;
         case "disabled":
-          Host21.userMetrics.builtInAiAvailability(
-            9
-            /* Host.UserMetrics.BuiltInAiAvailability.DISABLED_NO_GPU */
-          );
+          Host22.userMetrics.builtInAiAvailability(Host22.UserMetrics.BuiltInAiAvailability.DISABLED_NO_GPU);
           break;
       }
     }
@@ -10628,8 +10727,8 @@ var ConversationSummary_exports = {};
 __export(ConversationSummary_exports, {
   ConversationSummary: () => ConversationSummary
 });
-import * as Host22 from "./../../core/host/host.js";
-import * as Root15 from "./../../core/root/root.js";
+import * as Host23 from "./../../core/host/host.js";
+import * as Root16 from "./../../core/root/root.js";
 var preamble9 = `### Role
 You are a Conversation Summarizer. Your task is to take a transcript of a conversation between a user and a DevTools AI agent and produce a succinct, actionable Markdown summary. This summary will be used to help apply fixes in an IDE, so it must capture all relevant technical details, findings, and proposed code changes without any conversational fluff.
 
@@ -10731,14 +10830,14 @@ var ConversationSummary = class {
     const enhancedQuery = `Summarize the following conversation:
 
 ${conversation}`;
-    const temperature = Root15.Runtime.hostConfig.devToolsFreestyler?.temperature;
-    const modelId = Root15.Runtime.hostConfig.devToolsFreestyler?.modelId;
-    const userTier = Root15.Runtime.hostConfig.devToolsFreestyler?.userTier;
+    const temperature = Root16.Runtime.hostConfig.devToolsFreestyler?.temperature;
+    const modelId = Root16.Runtime.hostConfig.devToolsFreestyler?.modelId;
+    const userTier = Root16.Runtime.hostConfig.devToolsFreestyler?.userTier;
     const resultText = await runOneShotPrompt({
       aidaClient: this.#aidaClient,
       preamble: preamble9,
       query: enhancedQuery,
-      clientFeature: Host22.AidaClient.ClientFeature.CHROME_CONVERSATION_SUMMARY_AGENT,
+      clientFeature: Host23.AidaClient.ClientFeature.CHROME_CONVERSATION_SUMMARY_AGENT,
       temperature,
       modelId,
       userTier,
@@ -10759,8 +10858,8 @@ var PerformanceAnnotations_exports = {};
 __export(PerformanceAnnotations_exports, {
   PerformanceAnnotations: () => PerformanceAnnotations
 });
-import * as Host23 from "./../../core/host/host.js";
-import * as Root16 from "./../../core/root/root.js";
+import * as Host24 from "./../../core/host/host.js";
+import * as Root17 from "./../../core/root/root.js";
 var callTreePreamble = `You are an expert performance analyst embedded within Chrome DevTools.
 You meticulously examine web application behavior captured by the Chrome DevTools Performance Panel and Chrome tracing.
 You will receive a structured text representation of a call tree, derived from a user-selected call frame within a performance trace's flame chart.
@@ -10851,14 +10950,14 @@ var PerformanceAnnotations = class {
 # User request
 
 ${AI_LABEL_GENERATION_PROMPT}`;
-    const temperature = Root16.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.temperature;
-    const modelId = Root16.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.modelId;
-    const userTier = Root16.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.userTier;
+    const temperature = Root17.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.temperature;
+    const modelId = Root17.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.modelId;
+    const userTier = Root17.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.userTier;
     const resultText = await runOneShotPrompt({
       aidaClient: this.#aidaClient,
       preamble: callTreePreamble,
       query,
-      clientFeature: Host23.AidaClient.ClientFeature.CHROME_PERFORMANCE_ANNOTATIONS_AGENT,
+      clientFeature: Host24.AidaClient.ClientFeature.CHROME_PERFORMANCE_ANNOTATIONS_AGENT,
       temperature,
       modelId,
       userTier,
@@ -10884,6 +10983,7 @@ export {
   AiConversation_exports as AiConversation,
   AiHistoryStorage_exports as AiHistoryStorage,
   AiOrigins_exports as AiOrigins,
+  AiSetting_exports as AiSetting,
   AiUtils_exports as AiUtils,
   BuiltInAi_exports as BuiltInAi,
   ChangeManager_exports as ChangeManager,

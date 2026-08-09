@@ -147,13 +147,6 @@ const GET_EXTENSIONS_MENU_ITEM = 'get-extensions-link';
 const GET_EXTENSIONS_URL = 'https://goo.gle/recorder-extension-list';
 const RECORDER_EXPLANATION_URL = 'https://developer.chrome.com/docs/devtools/recorder';
 const FEEDBACK_URL = 'https://goo.gle/recorder-feedback';
-const CONVERTER_ID_TO_METRIC = {
-    ["json" /* Models.ConverterIds.ConverterIds.JSON */]: 2 /* Host.UserMetrics.RecordingExported.TO_JSON */,
-    ["@puppeteer/replay" /* Models.ConverterIds.ConverterIds.REPLAY */]: 3 /* Host.UserMetrics.RecordingExported.TO_PUPPETEER_REPLAY */,
-    ["puppeteer" /* Models.ConverterIds.ConverterIds.PUPPETEER */]: 1 /* Host.UserMetrics.RecordingExported.TO_PUPPETEER */,
-    ["puppeteer-firefox" /* Models.ConverterIds.ConverterIds.PUPPETEER_FIREFOX */]: 1 /* Host.UserMetrics.RecordingExported.TO_PUPPETEER */,
-    ["lighthouse" /* Models.ConverterIds.ConverterIds.LIGHTHOUSE */]: 5 /* Host.UserMetrics.RecordingExported.TO_LIGHTHOUSE */,
-};
 /** Provide some defaults to prevent OOM issues like crbug.com/491027421 */
 function verifyFlowSize(flow) {
     if (flow.steps.length > 4096) {
@@ -866,7 +859,7 @@ export class RecorderPanel extends UI.Widget.VBox {
         extension.replay(this.currentRecording.flow);
         const descriptor = await promise;
         this.viewDescriptor = descriptor;
-        Host.userMetrics.recordingReplayStarted(3 /* Host.UserMetrics.RecordingReplayStarted.REPLAY_VIA_EXTENSION */);
+        Host.userMetrics.recordingReplayStarted(Host.UserMetrics.RecordingReplayStarted.REPLAY_VIA_EXTENSION);
     }
     async #onPlayRecording(event) {
         if (!this.currentRecording || !this.#replayAllowed) {
@@ -883,8 +876,8 @@ export class RecorderPanel extends UI.Widget.VBox {
             return await this.#onPlayViaExtension(event.extension);
         }
         Host.userMetrics.recordingReplayStarted(event.targetPanel !== "chrome-recorder" /* TargetPanel.DEFAULT */ ?
-            2 /* Host.UserMetrics.RecordingReplayStarted.REPLAY_WITH_PERFORMANCE_TRACING */ :
-            1 /* Host.UserMetrics.RecordingReplayStarted.REPLAY_ONLY */);
+            Host.UserMetrics.RecordingReplayStarted.REPLAY_WITH_PERFORMANCE_TRACING :
+            Host.UserMetrics.RecordingReplayStarted.REPLAY_ONLY);
         this.#replayState.isPlaying = true;
         this.currentStep = undefined;
         this.recordingError = undefined;
@@ -924,13 +917,13 @@ export class RecorderPanel extends UI.Widget.VBox {
             this.lastReplayResult = "Failure" /* Models.RecordingPlayer.ReplayResult.FAILURE */;
             const errorMessage = error.message.toLowerCase();
             if (errorMessage.startsWith('could not find element')) {
-                Host.userMetrics.recordingReplayFinished(2 /* Host.UserMetrics.RecordingReplayFinished.TIMEOUT_ERROR_SELECTORS */);
+                Host.userMetrics.recordingReplayFinished(Host.UserMetrics.RecordingReplayFinished.TIMEOUT_ERROR_SELECTORS);
             }
             else if (errorMessage.startsWith('waiting for target failed')) {
-                Host.userMetrics.recordingReplayFinished(3 /* Host.UserMetrics.RecordingReplayFinished.TIMEOUT_ERROR_TARGET */);
+                Host.userMetrics.recordingReplayFinished(Host.UserMetrics.RecordingReplayFinished.TIMEOUT_ERROR_TARGET);
             }
             else {
-                Host.userMetrics.recordingReplayFinished(4 /* Host.UserMetrics.RecordingReplayFinished.OTHER_ERROR */);
+                Host.userMetrics.recordingReplayFinished(Host.UserMetrics.RecordingReplayFinished.OTHER_ERROR);
             }
             // Dispatch an event for e2e testing.
             this.element.dispatchEvent(new Events.ReplayFinishedEvent());
@@ -943,7 +936,7 @@ export class RecorderPanel extends UI.Widget.VBox {
             this.lastReplayResult = "Success" /* Models.RecordingPlayer.ReplayResult.SUCCESS */;
             // Dispatch an event for e2e testing.
             this.element.dispatchEvent(new Events.ReplayFinishedEvent());
-            Host.userMetrics.recordingReplayFinished(1 /* Host.UserMetrics.RecordingReplayFinished.SUCCESS */);
+            Host.userMetrics.recordingReplayFinished(Host.UserMetrics.RecordingReplayFinished.SUCCESS);
         });
         this.recordingPlayer.addEventListener("Abort" /* Models.RecordingPlayer.Events.ABORT */, () => {
             this.currentStep = undefined;
@@ -997,7 +990,7 @@ export class RecorderPanel extends UI.Widget.VBox {
         }
         catch {
             // in the hosted mode, when the DeviceMode toolbar is not supported,
-            // Emulation.DeviceModeWrapper.DeviceModeWrapper.instance throws an exception.
+            // Emulation.DeviceModeView.DeviceModeView.instance throws an exception.
         }
     }
     #setTouchEmulationAllowed(touchEmulationAllowed) {
@@ -1184,7 +1177,7 @@ export class RecorderPanel extends UI.Widget.VBox {
         this.isToggling = true;
         this.#clearError();
         // -- Recording logic starts here --
-        Host.userMetrics.recordingToggled(1 /* Host.UserMetrics.RecordingToggled.RECORDING_STARTED */);
+        Host.userMetrics.recordingToggled(Host.UserMetrics.RecordingToggled.RECORDING_STARTED);
         this.currentRecordingSession = new Models.RecordingSession.RecordingSession(this.#getMainTarget(), {
             title: data.name,
             selectorAttribute: data.selectorAttribute,
@@ -1244,7 +1237,7 @@ export class RecorderPanel extends UI.Widget.VBox {
         this.isToggling = true;
         this.#clearError();
         // -- Recording logic starts here --
-        Host.userMetrics.recordingToggled(2 /* Host.UserMetrics.RecordingToggled.RECORDING_FINISHED */);
+        Host.userMetrics.recordingToggled(Host.UserMetrics.RecordingToggled.RECORDING_FINISHED);
         await this.currentRecordingSession.stop();
         this.currentRecordingSession = undefined;
         // -- Recording logic ends here --
@@ -1291,14 +1284,14 @@ export class RecorderPanel extends UI.Widget.VBox {
         }
         const id = event.itemValue;
         const byId = (converter) => converter.getId() === id;
+        const isBuiltIn = this.#builtInConverters.some(byId);
         const converter = this.#builtInConverters.find(byId) || this.extensionConverters.find(byId);
         if (!converter) {
             throw new Error('No recording selected');
         }
         const [content] = await converter.stringify(this.currentRecording.flow);
         await this.#exportContent(converter.getFilename(this.currentRecording.flow), content);
-        const builtInMetric = CONVERTER_ID_TO_METRIC[converter.getId()];
-        if (builtInMetric) {
+        if (isBuiltIn) {
             UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.recordingExported));
         }
         else if (converter.getId().startsWith(Converters.ExtensionConverter.EXTENSION_PREFIX)) {

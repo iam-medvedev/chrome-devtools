@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import sinon from 'sinon';
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { getMainFrame, navigate } from '../../testing/ResourceTreeHelpers.js';
@@ -153,7 +154,7 @@ describe('DeviceModeModel', () => {
                 "touch" /* EmulationModel.EmulatedDevices.Capability.TOUCH */,
                 "mobile" /* EmulationModel.EmulatedDevices.Capability.MOBILE */,
             ];
-            mobileDevice.vertical = { width: 400, height: 800, outlineInsets: null, outlineImage: null, hinge: null };
+            mobileDevice.vertical = { width: 400, height: 800, hinge: null };
             // Custom desktop device with empty UA but non-null metadata (as
             // created through the DevTools UI when only filling in some CH fields).
             const desktopDevice = new EmulationModel.EmulatedDevices.EmulatedDevice();
@@ -168,12 +169,11 @@ describe('DeviceModeModel', () => {
                 mobile: false,
             };
             desktopDevice.capabilities = [];
-            desktopDevice.vertical = { width: 1920, height: 1080, outlineInsets: null, outlineImage: null, hinge: null };
+            desktopDevice.vertical = { width: 1920, height: 1080, hinge: null };
             const mode = {
                 title: 'default',
                 orientation: EmulationModel.EmulatedDevices.Vertical,
                 insets: new EmulationModel.DeviceModeModel.Insets(0, 0, 0, 0),
-                image: null,
             };
             deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.Device, mobileDevice, mode);
             deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.Device, desktopDevice, mode);
@@ -192,21 +192,19 @@ describe('DeviceModeModel', () => {
     function createSafeAreaDevice() {
         const device = new EmulationModel.EmulatedDevices.EmulatedDevice();
         device.userAgent = 'test-ua';
-        device.vertical = { width: 430, height: 932, outlineInsets: null, outlineImage: null, hinge: null };
-        device.horizontal = { width: 932, height: 430, outlineInsets: null, outlineImage: null, hinge: null };
+        device.vertical = { width: 430, height: 932, hinge: null };
+        device.horizontal = { width: 932, height: 430, hinge: null };
         device.modes = [
             {
                 title: 'default',
                 orientation: EmulationModel.EmulatedDevices.Vertical,
                 insets: new EmulationModel.DeviceModeModel.Insets(0, 0, 0, 0),
-                image: null,
                 safeAreaInsets: new EmulationModel.DeviceModeModel.Insets(0, 59, 0, 34),
             },
             {
                 title: 'default',
                 orientation: EmulationModel.EmulatedDevices.Horizontal,
                 insets: new EmulationModel.DeviceModeModel.Insets(0, 0, 0, 0),
-                image: null,
                 safeAreaInsets: new EmulationModel.DeviceModeModel.Insets(59, 0, 59, 21),
             },
         ];
@@ -250,12 +248,11 @@ describe('DeviceModeModel', () => {
         try {
             const device = new EmulationModel.EmulatedDevices.EmulatedDevice();
             device.userAgent = 'test-ua';
-            device.vertical = { width: 400, height: 800, outlineInsets: null, outlineImage: null, hinge: null };
+            device.vertical = { width: 400, height: 800, hinge: null };
             const mode = {
                 title: 'default',
                 orientation: EmulationModel.EmulatedDevices.Vertical,
                 insets: new EmulationModel.DeviceModeModel.Insets(0, 0, 0, 0),
-                image: null,
             };
             deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.Device, device, mode);
             sinon.assert.called(spy);
@@ -290,14 +287,13 @@ describe('DeviceModeModel', () => {
     function createCutoutDevice() {
         const device = new EmulationModel.EmulatedDevices.EmulatedDevice();
         device.userAgent = 'test-ua';
-        device.vertical = { width: 430, height: 932, outlineInsets: null, outlineImage: null, hinge: null };
-        device.horizontal = { width: 932, height: 430, outlineInsets: null, outlineImage: null, hinge: null };
+        device.vertical = { width: 430, height: 932, hinge: null };
+        device.horizontal = { width: 932, height: 430, hinge: null };
         device.modes = [
             {
                 title: 'default',
                 orientation: EmulationModel.EmulatedDevices.Vertical,
                 insets: new EmulationModel.DeviceModeModel.Insets(0, 0, 0, 0),
-                image: null,
                 cutout: {
                     shape: "pill" /* EmulationModel.EmulatedDevices.CutoutShape.PILL */,
                     x: 153,
@@ -311,7 +307,6 @@ describe('DeviceModeModel', () => {
                 title: 'default',
                 orientation: EmulationModel.EmulatedDevices.Horizontal,
                 insets: new EmulationModel.DeviceModeModel.Insets(0, 0, 0, 0),
-                image: null,
             },
         ];
         return device;
@@ -692,34 +687,12 @@ describe('DeviceModeModel', () => {
             clock.restore();
         }
     });
-    it('returns whether device frame can be shown for current mode', () => {
-        try {
-            assert.isFalse(deviceModeModel.canShowDeviceFrame(), 'Should be false initially');
-            const deviceWithFrame = new EmulationModel.EmulatedDevices.EmulatedDevice();
-            deviceWithFrame.vertical = { width: 400, height: 800, outlineInsets: null, outlineImage: 'test.png', hinge: null };
-            const mode = {
-                title: 'default',
-                orientation: EmulationModel.EmulatedDevices.Vertical,
-                insets: new EmulationModel.DeviceModeModel.Insets(0, 0, 0, 0),
-                image: null,
-            };
-            deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.Device, deviceWithFrame, mode);
-            assert.isTrue(deviceModeModel.canShowDeviceFrame(), 'Should be true when outlineImage is present');
-            const deviceWithoutFrame = new EmulationModel.EmulatedDevices.EmulatedDevice();
-            deviceWithoutFrame.vertical = { width: 400, height: 800, outlineInsets: null, outlineImage: null, hinge: null };
-            deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.Device, deviceWithoutFrame, mode);
-            assert.isFalse(deviceModeModel.canShowDeviceFrame(), 'Should be false when outlineImage is null');
-        }
-        finally {
-            deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.None, null, null);
-        }
-    });
     it('behaves correctly when adjusting inputs in responsive mode', () => {
         try {
             const viewportSize = new Geometry.Size(320, 480);
             deviceModeModel.setAvailableSize(viewportSize, viewportSize);
             deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.Responsive, null, null);
-            function assertState(expectedScale, expectedAppliedDeviceSize, expectedScreenRect, expectedVisiblePageRect, expectedOutlineRect) {
+            function assertState(expectedScale, expectedAppliedDeviceSize, expectedScreenRect, expectedVisiblePageRect) {
                 assert.strictEqual(deviceModeModel.scale(), expectedScale);
                 assert.strictEqual(deviceModeModel.appliedDeviceSize().width, expectedAppliedDeviceSize.width);
                 assert.strictEqual(deviceModeModel.appliedDeviceSize().height, expectedAppliedDeviceSize.height);
@@ -731,42 +704,133 @@ describe('DeviceModeModel', () => {
                 assert.strictEqual(deviceModeModel.visiblePageRect().top, expectedVisiblePageRect.top);
                 assert.strictEqual(deviceModeModel.visiblePageRect().width, expectedVisiblePageRect.width);
                 assert.strictEqual(deviceModeModel.visiblePageRect().height, expectedVisiblePageRect.height);
-                const outlineRect = deviceModeModel.outlineRect();
-                assert.isNotNull(outlineRect);
-                if (outlineRect) {
-                    assert.strictEqual(outlineRect.left, expectedOutlineRect.left);
-                    assert.strictEqual(outlineRect.top, expectedOutlineRect.top);
-                    assert.strictEqual(outlineRect.width, expectedOutlineRect.width);
-                    assert.strictEqual(outlineRect.height, expectedOutlineRect.height);
-                }
             }
-            assertState(1, { width: 320, height: 480 }, { left: 0, top: 0, width: 320, height: 480 }, { left: 0, top: 0, width: 320, height: 480 }, { left: 0, top: 0, width: 320, height: 480 });
+            assertState(1, { width: 320, height: 480 }, { left: 0, top: 0, width: 320, height: 480 }, { left: 0, top: 0, width: 320, height: 480 });
             let width = viewportSize.width - 1;
             deviceModeModel.setWidthAndScaleToFit(width);
-            assertState(1, { width: 319, height: 480 }, { left: 0.5, top: 0, width: 319, height: 480 }, { left: 0, top: 0, width: 319, height: 480 }, { left: 0.5, top: 0, width: 319, height: 480 });
+            assertState(1, { width: 319, height: 480 }, { left: 0.5, top: 0, width: 319, height: 480 }, { left: 0, top: 0, width: 319, height: 480 });
             width = viewportSize.width + 1;
             deviceModeModel.setWidthAndScaleToFit(width);
-            assertState(0.99, { width: 321, height: 484 }, { left: 1.1049999999999898, top: 0, width: 317.79, height: 479.15999999999997 }, { left: 0, top: 0, width: 317.79, height: 479.15999999999997 }, { left: 1.1049999999999898, top: 0, width: 317.79, height: 479.15999999999997 });
+            assertState(0.99, { width: 321, height: 484 }, { left: 1.1049999999999898, top: 0, width: 317.79, height: 479.15999999999997 }, { left: 0, top: 0, width: 317.79, height: 479.15999999999997 });
             deviceModeModel.setWidthAndScaleToFit(viewportSize.width);
-            assertState(1, { width: 320, height: 480 }, { left: 0, top: 0, width: 320, height: 480 }, { left: 0, top: 0, width: 320, height: 480 }, { left: 0, top: 0, width: 320, height: 480 });
+            assertState(1, { width: 320, height: 480 }, { left: 0, top: 0, width: 320, height: 480 }, { left: 0, top: 0, width: 320, height: 480 });
             let height = viewportSize.height - 1;
             deviceModeModel.setHeightAndScaleToFit(height);
-            assertState(1, { width: 320, height: 479 }, { left: 0, top: 0, width: 320, height: 479 }, { left: 0, top: 0, width: 320, height: 479 }, { left: 0, top: 0, width: 320, height: 479 });
+            assertState(1, { width: 320, height: 479 }, { left: 0, top: 0, width: 320, height: 479 }, { left: 0, top: 0, width: 320, height: 479 });
             height = viewportSize.height + 1;
             deviceModeModel.setHeightAndScaleToFit(height);
-            assertState(0.99, { width: 320, height: 481 }, { left: 1.5999999999999943, top: 0, width: 316.8, height: 476.19 }, { left: 0, top: 0, width: 316.8, height: 476.19 }, { left: 1.5999999999999943, top: 0, width: 316.8, height: 476.19 });
+            assertState(0.99, { width: 320, height: 481 }, { left: 1.5999999999999943, top: 0, width: 316.8, height: 476.19 }, { left: 0, top: 0, width: 316.8, height: 476.19 });
             deviceModeModel.setHeightAndScaleToFit(viewportSize.height);
-            assertState(1, { width: 320, height: 480 }, { left: 0, top: 0, width: 320, height: 480 }, { left: 0, top: 0, width: 320, height: 480 }, { left: 0, top: 0, width: 320, height: 480 });
+            assertState(1, { width: 320, height: 480 }, { left: 0, top: 0, width: 320, height: 480 }, { left: 0, top: 0, width: 320, height: 480 });
             deviceModeModel.scaleSetting().set(0.5);
-            assertState(0.5, { width: 320, height: 480 }, { left: 80, top: 0, width: 160, height: 240 }, { left: 0, top: 0, width: 160, height: 240 }, { left: 80, top: 0, width: 160, height: 240 });
+            assertState(0.5, { width: 320, height: 480 }, { left: 80, top: 0, width: 160, height: 240 }, { left: 0, top: 0, width: 160, height: 240 });
             deviceModeModel.scaleSetting().set(1);
-            assertState(1, { width: 320, height: 480 }, { left: 0, top: 0, width: 320, height: 480 }, { left: 0, top: 0, width: 320, height: 480 }, { left: 0, top: 0, width: 320, height: 480 });
+            assertState(1, { width: 320, height: 480 }, { left: 0, top: 0, width: 320, height: 480 }, { left: 0, top: 0, width: 320, height: 480 });
             deviceModeModel.scaleSetting().set(1.25);
-            assertState(1.25, { width: 256, height: 384 }, { left: 0, top: 0, width: 320, height: 480 }, { left: 0, top: 0, width: 320, height: 480 }, { left: 0, top: 0, width: 320, height: 480 });
+            assertState(1.25, { width: 256, height: 384 }, { left: 0, top: 0, width: 320, height: 480 }, { left: 0, top: 0, width: 320, height: 480 });
         }
         finally {
             deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.None, null, null);
         }
+    });
+    it('updates scale to fit when setAvailableSize is called after emulate with undefined scale', () => {
+        const em = target.model(SDK.EmulationModel.EmulationModel);
+        assert.exists(em);
+        deviceModeModel.modelAdded(em);
+        try {
+            const device = new EmulationModel.EmulatedDevices.EmulatedDevice();
+            device.userAgent = 'test-ua';
+            device.vertical = { width: 1000, height: 1000, hinge: null };
+            const mode = {
+                title: 'default',
+                orientation: EmulationModel.EmulatedDevices.Vertical,
+                insets: new EmulationModel.DeviceModeModel.Insets(0, 0, 0, 0),
+            };
+            // Stale scale from previous session.
+            deviceModeModel.scaleSetting().set(0.42);
+            // Emulate before setAvailableSize is called (simulating DevTools startup).
+            deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.Device, device, mode, undefined);
+            // setAvailableSize is called on layout with preferred size 500x500.
+            deviceModeModel.setAvailableSize(new Geometry.Size(500, 500), new Geometry.Size(500, 500));
+            // Fit scale for 1000x1000 in 500x500 is 0.5.
+            assert.strictEqual(deviceModeModel.scaleSetting().get(), 0.5);
+            assert.strictEqual(deviceModeModel.scale(), 0.5);
+        }
+        finally {
+            deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.None, null, null);
+        }
+    });
+    it('preserves explicitly specified scale when setAvailableSize is called after emulate', () => {
+        const em = target.model(SDK.EmulationModel.EmulationModel);
+        assert.exists(em);
+        deviceModeModel.modelAdded(em);
+        try {
+            const device = new EmulationModel.EmulatedDevices.EmulatedDevice();
+            device.userAgent = 'test-ua';
+            device.vertical = { width: 1000, height: 1000, hinge: null };
+            const mode = {
+                title: 'default',
+                orientation: EmulationModel.EmulatedDevices.Vertical,
+                insets: new EmulationModel.DeviceModeModel.Insets(0, 0, 0, 0),
+            };
+            // Emulate with an explicit scale of 0.75 before setAvailableSize.
+            deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.Device, device, mode, 0.75);
+            // setAvailableSize is called on layout with preferred size 500x500.
+            deviceModeModel.setAvailableSize(new Geometry.Size(500, 500), new Geometry.Size(500, 500));
+            // Explicit scale of 0.75 should be preserved, not overwritten with fit scale (0.5).
+            assert.strictEqual(deviceModeModel.scaleSetting().get(), 0.75);
+            assert.strictEqual(deviceModeModel.scale(), 0.75);
+        }
+        finally {
+            deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.None, null, null);
+        }
+    });
+    describe('saveScreenshot', () => {
+        const { urlString } = Platform.DevToolsPath;
+        it('generates a correct and safe screenshot filename under 63 characters', async () => {
+            const url = urlString `https://example.test/path/to/a/very/long/url/representing/some/products/coffee-machine-compact-espresso-maker-stainless-steel-model-77`;
+            sinon.stub(deviceModeModel, 'inspectedURL').returns(url);
+            sinon.stub(deviceModeModel, 'type').returns(EmulationModel.DeviceModeModel.Type.Device);
+            sinon.stub(deviceModeModel, 'device').returns({
+                title: 'Pixel 10',
+            });
+            const saveStub = sinon.stub(universe.fileManager, 'save').resolves({
+                fileSystemPath: 'foo',
+            });
+            sinon.stub(universe.fileManager, 'close');
+            const canvas = new OffscreenCanvas(1, 1);
+            canvas.getContext('2d');
+            await deviceModeModel.saveScreenshot(canvas);
+            sinon.assert.calledOnce(saveStub);
+            const filename = saveStub.firstCall.args[0];
+            assert.isAtMost(filename.length, 63);
+            assert.isTrue(filename.endsWith('(Pixel 10).png'));
+            assert.isFalse(filename.includes('/'));
+            assert.strictEqual(filename, 'example.test-path-to-a-very-long-url-representing(Pixel 10).png');
+        });
+        it('truncates the screenshot filename correctly when the device name is extremely long', async () => {
+            const url = urlString `https://example.test/path/to/a/very/long/url/representing/some/products/coffee-machine-compact-espresso-maker-stainless-steel-model-77`;
+            sinon.stub(deviceModeModel, 'inspectedURL').returns(url);
+            sinon.stub(deviceModeModel, 'type').returns(EmulationModel.DeviceModeModel.Type.Device);
+            const longDeviceName = 'A'.repeat(70);
+            sinon.stub(deviceModeModel, 'device').returns({
+                title: longDeviceName,
+            });
+            const saveStub = sinon.stub(universe.fileManager, 'save').resolves({
+                fileSystemPath: 'foo',
+            });
+            sinon.stub(universe.fileManager, 'close');
+            const canvas = new OffscreenCanvas(1, 1);
+            canvas.getContext('2d');
+            await deviceModeModel.saveScreenshot(canvas);
+            sinon.assert.calledOnce(saveStub);
+            const filename = saveStub.firstCall.args[0];
+            assert.isAtMost(filename.length, 63);
+            assert.isTrue(filename.endsWith('.png'));
+            assert.isFalse(filename.includes('/'));
+            const expectedName = `(${'A'.repeat(58)}.png`;
+            assert.strictEqual(filename, expectedName);
+        });
     });
 });
 //# sourceMappingURL=DeviceModeModel.test.js.map

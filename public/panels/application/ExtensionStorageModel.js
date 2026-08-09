@@ -106,8 +106,7 @@ export class ExtensionStorageModel extends SDK.SDKModel.SDKModel {
         return newStorages;
     }
     #addExtension(id, name) {
-        for (const storageArea of ["session" /* Protocol.Extensions.StorageArea.Session */, "local" /* Protocol.Extensions.StorageArea.Local */,
-            "sync" /* Protocol.Extensions.StorageArea.Sync */, "managed" /* Protocol.Extensions.StorageArea.Managed */]) {
+        for (const storageArea of ["session" /* Protocol.Extensions.StorageArea.Session */, "local" /* Protocol.Extensions.StorageArea.Local */, "sync" /* Protocol.Extensions.StorageArea.Sync */, "managed" /* Protocol.Extensions.StorageArea.Managed */]) {
             const storages = this.#getStoragesForExtension(id);
             const storage = new ExtensionStorage(this, id, name, storageArea);
             console.assert(!storages.get(storageArea));

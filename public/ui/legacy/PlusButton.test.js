@@ -6,6 +6,7 @@ import sinon from 'sinon';
 import * as Host from '../../core/host/host.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { setupUserMetricHooks } from '../../testing/UserMetricsHelpers.js';
 import * as UI from './legacy.js';
 /**
  * Builds a stub `PlusButtonTabbedPane`. `visible` is an array (not a
@@ -68,6 +69,7 @@ function makeContext(overrides) {
     };
 }
 describeWithEnvironment('PlusButton', () => {
+    setupUserMetricHooks();
     describe('populatePlusButtonMenu', () => {
         it('lists addable views (not currently shown as tabs) sorted alphabetically', () => {
             const tabbedPane = makeStubTabbedPane({ visible: ['shown'] });
@@ -279,7 +281,7 @@ describeWithEnvironment('PlusButton', () => {
                 UI.PlusButton.populatePlusButtonMenu(menu, makeContext({ tabbedPane, views: () => views, showView }));
                 const item = defaultSectionItems(menu)[0];
                 menu.invokeHandler(item.id());
-                sinon.assert.calledOnceWithExactly(recordOpened, 6 /* Host.UserMetrics.IssueOpener.MORE_TOOLS_MENU */);
+                sinon.assert.calledOnceWithExactly(recordOpened, Host.UserMetrics.IssueOpener.MORE_TOOLS_MENU);
                 sinon.assert.calledOnce(showView);
             }
             finally {

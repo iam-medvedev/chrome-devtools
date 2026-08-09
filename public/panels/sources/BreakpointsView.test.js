@@ -297,7 +297,7 @@ describeWithEnvironment('BreakpointsSidebarController', () => {
     it('correctly reveals source location', async () => {
         const { groups, location: { uiLocation } } = await setUpTestWithOneBreakpointLocation();
         const breakpointItem = groups[0].breakpointItems[0];
-        const revealer = sinon.createStubInstance((MockRevealer));
+        const revealer = sinon.createStubInstance(MockRevealer);
         Common.Revealer.registerRevealer({
             contextTypes() {
                 return [Workspace.UISourceCode.UILocation];
@@ -313,7 +313,7 @@ describeWithEnvironment('BreakpointsSidebarController', () => {
     it('correctly reveals breakpoint editor', async () => {
         const { groups, location } = await setUpTestWithOneBreakpointLocation();
         const breakpointItem = groups[0].breakpointItems[0];
-        const revealer = sinon.createStubInstance((MockRevealer));
+        const revealer = sinon.createStubInstance(MockRevealer);
         Common.Revealer.registerRevealer({
             contextTypes() {
                 return [Breakpoints.BreakpointManager.BreakpointLocation];
@@ -336,8 +336,7 @@ describeWithEnvironment('BreakpointsSidebarController', () => {
             const controller = Sources.BreakpointsView.BreakpointsSidebarController.instance({ forceNew: true, breakpointManager, settings });
             const actual = await controller.getUpdatedBreakpointViewData();
             const createExpectedBreakpointGroups = (testData) => {
-                const status = testData.enabled ? "ENABLED" /* Sources.BreakpointsView.BreakpointStatus.ENABLED */ :
-                    "DISABLED" /* Sources.BreakpointsView.BreakpointStatus.DISABLED */;
+                const status = testData.enabled ? "ENABLED" /* Sources.BreakpointsView.BreakpointStatus.ENABLED */ : "DISABLED" /* Sources.BreakpointsView.BreakpointStatus.DISABLED */;
                 let type = "REGULAR_BREAKPOINT" /* SDK.DebuggerModel.BreakpointType.REGULAR_BREAKPOINT */;
                 if (testData.condition) {
                     if (testData.isLogpoint) {
@@ -598,7 +597,7 @@ describe('BreakpointsSidebarController', () => {
     const DEFAULT_BREAKPOINT = [
         Breakpoints.BreakpointManager.EMPTY_BREAKPOINT_CONDITION,
         true, // enabled
-        false, // isLogpoint
+        false,
         "USER_ACTION" /* Breakpoints.BreakpointManager.BreakpointOrigin.USER_ACTION */,
     ];
     it('auto-expands if a user adds a new  breakpoint', async () => {

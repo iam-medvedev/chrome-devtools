@@ -47,6 +47,7 @@ core/platform/NumberUtilities.test.js
 core/platform/StringUtilities.test.js
 core/platform/TypedArrayUtilities.test.js
 core/protocol_client/InspectorBackend.test.js
+core/protocol_client/PuppeteerDevToolsConnection.test.js
 core/root/Runtime.test.js
 core/sdk/AccessibilityModel.test.js
 core/sdk/AnimationModel.test.js
@@ -173,6 +174,7 @@ models/ai_assistance/AiAgent2.test.js
 models/ai_assistance/AiConversation.test.js
 models/ai_assistance/AiHistoryStorage.test.js
 models/ai_assistance/AiOrigins.test.js
+models/ai_assistance/AiSetting.test.js
 models/ai_assistance/AiUtils.test.js
 models/ai_assistance/BuiltInAi.test.js
 models/ai_assistance/ChangeManager.test.js
@@ -418,7 +420,6 @@ panels/common/DOMLinkifier.test.js
 panels/common/ExtensionPanel.test.js
 panels/common/ExtensionServer.test.js
 panels/common/GdpSignUpDialog.test.js
-panels/common/ThrottlingUtils.test.js
 panels/console/ConsoleContextSelector.test.js
 panels/console/ConsoleFormat.test.js
 panels/console/ConsoleInsightTeaser.test.js
@@ -471,7 +472,6 @@ panels/elements/WebCustomData.test.js
 panels/emulation/AdvancedApp.test.js
 panels/emulation/DeviceModeToolbar.test.js
 panels/emulation/DeviceModeView.test.js
-panels/emulation/DeviceModeWrapper.test.js
 panels/emulation/MediaQueryInspector.test.js
 panels/event_listeners/EventListenersView.test.js
 panels/explain/components/ConsoleInsight.test.js
@@ -503,6 +503,7 @@ panels/media/MainView.test.js
 panels/media/PlayerListView.test.js
 panels/media/PlayerMessagesView.test.js
 panels/media/TickingFlameChartHelpers.test.js
+panels/mobile_throttling/CPUThrottlingSelector.test.js
 panels/mobile_throttling/NetworkThrottlingSelector.test.js
 panels/mobile_throttling/ThrottlingManager.test.js
 panels/mobile_throttling/ThrottlingSettingsTab.test.js
@@ -624,7 +625,7 @@ panels/timeline/TimelineUIUtils.test.js
 panels/timeline/TrackConfigBanner.test.js
 panels/timeline/TrackConfiguration.test.js
 panels/timeline/components/BreadcrumbsUI.test.js
-panels/timeline/components/CPUThrottlingSelector.test.js
+panels/timeline/components/CWVMetrics.test.js
 panels/timeline/components/ExportTraceOptions.test.js
 panels/timeline/components/FieldSettingsDialog.test.js
 panels/timeline/components/IgnoreListSetting.test.js
@@ -635,7 +636,6 @@ panels/timeline/components/LiveMetricsView.test.js
 panels/timeline/components/MetricCard.test.js
 panels/timeline/components/NetworkRequestDetails.test.js
 panels/timeline/components/NetworkRequestTooltip.test.js
-panels/timeline/components/NetworkThrottlingSelector.test.js
 panels/timeline/components/OriginMap.test.js
 panels/timeline/components/RelatedInsightChips.test.js
 panels/timeline/components/Sidebar.test.js
@@ -685,6 +685,7 @@ testing/SnapshotTester.test.js
 testing/SourceMapEncoder.test.js
 third_party/chromium/client-variations/ClientVariations.test.js
 third_party/i18n/i18n.test.js
+ui/comments/CommentAnchorResolver.test.js
 ui/components/adorners/Adorner.test.js
 ui/components/buttons/Button.test.js
 ui/components/code_highlighter/CodeHighlighter.test.js
@@ -810,6 +811,7 @@ ui/legacy/components/source_frame/StreamingContentHexView.test.js
 ui/legacy/components/utils/JSPresentationUtils.test.js
 ui/legacy/components/utils/Linkifier.test.js
 ui/legacy/theme_support/ThemeSupport.test.js
+ui/lit/Directives.test.js
 ui/lit/i18n-template.test.js
 ui/lit/render.test.js
 ui/lit/strip-whitespace.test.js

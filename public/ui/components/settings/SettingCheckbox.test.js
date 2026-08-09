@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import * as Common from '../../../core/common/common.js';
 import * as Root from '../../../core/root/root.js';
 import { renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { createFakeSetting, stubNoopSettings } from '../../../testing/EnvironmentHelpers.js';
@@ -60,40 +59,9 @@ describe('SettingCheckbox', () => {
     });
     it('ignores clicks when disabled', () => {
         const setting = createFakeSetting('setting', false);
-        setting.setDisabled(true);
-        const { checkbox } = renderSettingCheckbox({ setting });
+        const { checkbox } = renderSettingCheckbox({ setting, disabled: true });
         checkbox.click();
         assert.isFalse(setting.get());
-    });
-    it('can be disabled via registration', () => {
-        stubNoopSettings();
-        const setting = createFakeSetting('setting', false);
-        setting.setRegistration({
-            settingName: 'setting',
-            settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
-            defaultValue: false,
-            disabledCondition: () => {
-                return { disabled: true, reasons: ['reason'] };
-            },
-        });
-        const { checkbox } = renderSettingCheckbox({ setting });
-        checkbox.click();
-        assert.isFalse(setting.get());
-        assert.isTrue(checkbox.disabled);
-    });
-    it('shows disabled reason', () => {
-        stubNoopSettings();
-        const setting = createFakeSetting('setting', false);
-        setting.setRegistration({
-            settingName: 'setting',
-            settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
-            defaultValue: false,
-            disabledCondition: () => {
-                return { disabled: true, reasons: ['reason'] };
-            },
-        });
-        const { component } = renderSettingCheckbox({ setting });
-        assert.strictEqual(component.shadowRoot.querySelector('.disabled-reason').getAttribute('title'), 'reason');
     });
     it('disables checkbox when disabled property is true', () => {
         stubNoopSettings();

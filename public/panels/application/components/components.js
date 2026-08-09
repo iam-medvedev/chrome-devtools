@@ -10,6 +10,7 @@ __export(AdsView_exports, {
   AdsView: () => AdsView
 });
 import "./../../../ui/legacy/components/data_grid/data_grid.js";
+import "./../../../ui/kit/kit.js";
 import * as Common from "./../../../core/common/common.js";
 import * as i18n from "./../../../core/i18n/i18n.js";
 import * as SDK from "./../../../core/sdk/sdk.js";
@@ -25,7 +26,7 @@ var adsView_css_default = `/*
  */
 
 :host {
-  padding: 12px;
+  padding: var(--sys-size-6);
   display: flex;
   flex-direction: column;
   overflow: auto;
@@ -39,17 +40,17 @@ var adsView_css_default = `/*
 
 .metrics-container {
   flex: 0 0 auto;
-  margin: 0 0 24px;
+  margin: 0;
   border: 1px solid var(--sys-color-divider);
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 1px;
+  gap: var(--sys-size-1);
   background-color: var(--sys-color-divider);
 }
 
 .metric-box {
   background-color: var(--sys-color-surface);
-  padding: 12px;
+  padding: var(--sys-size-6);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -57,24 +58,24 @@ var adsView_css_default = `/*
 }
 
 .metric-title {
-  font-size: 12px;
+  font-size: var(--sys-typescale-body4-size);
   color: var(--sys-color-on-surface-subtle);
-  margin: 0 0 4px;
+  margin: 0 0 var(--sys-size-3);
 }
 
 .metric-value {
-  font-size: 18px;
+  font-size: var(--sys-typescale-headline3-size);
   font-weight: bold;
   color: var(--sys-color-on-surface);
   display: flex;
   flex-direction: column;
   align-items: center;
   margin: 0;
-  gap: 2px;
+  gap: var(--sys-size-2);
 }
 
 .metric-average {
-  font-size: 12px;
+  font-size: var(--sys-typescale-body4-size);
   font-weight: normal;
   color: var(--sys-color-on-surface-subtle);
 }
@@ -85,7 +86,7 @@ var adsView_css_default = `/*
   color: var(--sys-color-on-surface);
   flex: 0 0 auto;
   font-weight: bold;
-  margin-bottom: 8px;
+  margin-bottom: var(--sys-size-5);
 }
 
 .ad-frames-data-grid {
@@ -95,22 +96,18 @@ var adsView_css_default = `/*
 .ad-frames-container {
   border: 1px solid var(--sys-color-divider);
   display: flex;
-  flex: auto;
+  flex: 1; /* Takes up remaining space */
   flex-direction: column;
-  margin-bottom: 24px;
-  height: 300px;
-  min-height: 150px;
+  margin-bottom: 0;
+  min-height: var(--sys-size-22); /* 144px */
   position: relative;
-  resize: vertical;
   overflow: hidden;
 }
 
-devtools-checkbox.setting-container {
-  /*
-   * Apply negative margins here to offset the default devtools-checkbox style
-   * to align this component with the rest of the Ads panel layout.
-   */
-  margin: 0 0 -6px -6px;
+.divider {
+  border: none;
+  border-top: 1px solid var(--sys-color-divider);
+  margin: var(--sys-size-8) 0 var(--sys-size-6);
 }
 
 .setting-text-container {
@@ -122,6 +119,16 @@ devtools-checkbox.setting-container {
   color: var(--sys-color-token-subtle);
   white-space: break-spaces;
   margin-top: 0;
+}
+
+.footer-text {
+  margin-bottom: var(--sys-size-6);
+}
+
+.inline-icon {
+  width: var(--sys-size-8);
+  height: var(--sys-size-8);
+  vertical-align: text-bottom;
 }
 
 /*# sourceURL=${import.meta.resolve("./adsView.css")} */`;
@@ -200,7 +207,15 @@ var UIStrings = {
   /**
    * @description Explanation text for the 'Highlight ads' setting.
    */
-  highlightsElementsRedDetectedToBe: "Highlights elements (red) detected to be ads."
+  highlightsElementsRedDetectedToBe: "Highlights elements (red) detected to be ads.",
+  /**
+   * @description Text explaining that ad detection is not perfect.
+   */
+  adDetectionMistakes: "Chrome\u2019s ad detection can make mistakes.",
+  /**
+   * @description Link text for learning more about ad detection in Chrome.
+   */
+  learnMore: "Learn more"
 };
 var str_ = i18n.i18n.registerUIStrings("panels/application/components/AdsView.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
@@ -280,6 +295,7 @@ var DEFAULT_VIEW = (input, output, target) => {
           </dd>
         </div>
       </dl>
+      <hr class="divider">
       <div class="ad-frames-title">${i18nString(UIStrings.adIframesTitle, { PH1: input.adFrames.length })}</div>
       <div class="ad-frames-container">
         <devtools-data-grid striped resize="last" class="ad-frames-data-grid" name=${i18nString(UIStrings.adIframes)}>
@@ -307,14 +323,27 @@ var DEFAULT_VIEW = (input, output, target) => {
           </table>
         </devtools-data-grid>
       </div>
+      <hr class="divider">
       <div class="settings-title">${i18nString(UIStrings.settings)}</div>
-      <devtools-checkbox class="setting-container"
+      <devtools-checkbox class="setting-container small"
           ${bindToSetting(Common.Settings.Settings.instance().moduleSetting("show-ad-highlights"))}>
         <div class="setting-text-container">
           <div class="setting-label">${i18nString(UIStrings.highlightAds)}</div>
           <div class="setting-explanation">${i18nString(UIStrings.highlightsElementsRedDetectedToBe)}</div>
         </div>
       </devtools-checkbox>
+      <hr class="divider">
+      <div class="footer-text">
+        <devtools-icon class="inline-icon" name="info"></devtools-icon>
+        &#32;
+        <span>
+          ${i18nString(UIStrings.adDetectionMistakes)}
+          &#32;
+          <devtools-link class="link devtools-link" href="https://chromium.googlesource.com/chromium/src/+/main/docs/ad_tagging.md" jslogcontext="learn-more">
+            ${i18nString(UIStrings.learnMore)}
+          </devtools-link>
+        </span>
+      </div>
     </div>
   `, target);
 };

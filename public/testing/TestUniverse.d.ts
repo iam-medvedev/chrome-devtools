@@ -42,12 +42,14 @@ export interface CreationOptions extends Partial<Foundation.Universe.CreationOpt
 export declare class TestUniverse implements Foundation.Universe.Universe {
     #private;
     readonly supportsEmulation = true;
+    readonly initAutomaticFilesystem: boolean;
     constructor(options?: CreationOptions);
     get<T>(ctor: Root.DevToolsContext.ConstructorT<T>): T;
     /**
      * Convenience shortcut for `createTarget({targetManager: testUniverse.targetManager})`
      */
     createTarget(options?: Parameters<typeof createTarget>[0]): SDK.Target.Target;
+    dispose(): void;
     get aiHistoryStorage(): AiAssistance.AiHistoryStorage.AiHistoryStorage;
     get builtInAi(): AiAssistance.BuiltInAi.BuiltInAi;
     get autofillManager(): AutofillManager.AutofillManager.AutofillManager;

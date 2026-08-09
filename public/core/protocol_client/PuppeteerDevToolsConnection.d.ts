@@ -1,5 +1,5 @@
 import type * as Puppeteer from '../../third_party/puppeteer/puppeteer.js';
-import type * as CDPConnection from './CDPConnection.js';
+import * as CDPConnection from './CDPConnection.js';
 /**
  * This class makes a puppeteer connection look like DevTools CDPConnection.
  *
@@ -18,4 +18,5 @@ export declare class PuppeteerDevToolsConnection implements CDPConnection.CDPCon
     }>;
     observe(observer: CDPConnection.CDPConnectionObserver): void;
     unobserve(observer: CDPConnection.CDPConnectionObserver): void;
+    dispose(reason: string): void;
 }

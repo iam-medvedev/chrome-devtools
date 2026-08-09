@@ -4,7 +4,6 @@ import { ScoreClassification } from './PageLoadMetricsHandler.js';
 import type { HandlerName } from './types.js';
 interface LayoutShiftsData {
     clusters: readonly Types.Events.SyntheticLayoutShiftCluster[];
-    clustersByNavigationId: Map<Types.Events.NavigationId, Types.Events.SyntheticLayoutShiftCluster[]>;
     sessionMaxScore: number;
     clsWindowID: number;
     prePaintEvents: readonly Types.Events.PrePaint[];
@@ -44,6 +43,7 @@ interface ScoreRecord {
     score: number;
 }
 export declare function reset(): void;
+export declare function handleUserConfig(userConfig: Types.Configuration.Configuration): void;
 export declare function handleEvent(event: Types.Events.Event): void;
 export declare function finalize(): Promise<void>;
 export declare function data(): LayoutShiftsData;

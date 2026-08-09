@@ -145,7 +145,6 @@ export declare class NetworkDispatcher implements ProtocolProxyApi.NetworkDispat
     webSocketFrameError({ requestId, timestamp: time, errorMessage }: Protocol.Network.WebSocketFrameErrorEvent): void;
     webSocketClosed({ requestId, timestamp: time }: Protocol.Network.WebSocketClosedEvent): void;
     eventSourceMessageReceived({ requestId, timestamp: time, eventName, eventId, data }: Protocol.Network.EventSourceMessageReceivedEvent): void;
-    requestIntercepted({}: Protocol.Network.RequestInterceptedEvent): void;
     requestWillBeSentExtraInfo({ requestId, associatedCookies, headers, deviceBoundSessionUsages, clientSecurityState, connectTiming, siteHasCookieInOtherPartition, appliedNetworkConditionsId, }: Protocol.Network.RequestWillBeSentExtraInfoEvent): void;
     responseReceivedEarlyHints({ requestId, headers, }: Protocol.Network.ResponseReceivedEarlyHintsEvent): void;
     responseReceivedExtraInfo({ requestId, blockedCookies, headers, headersText, resourceIPAddressSpace, statusCode, cookiePartitionKey, cookiePartitionKeyOpaque, exemptedCookies, }: Protocol.Network.ResponseReceivedExtraInfoEvent): void;
@@ -290,10 +289,6 @@ export declare class MultitargetNetworkManager extends Common.ObjectWrapper.Obje
     private updateUserAgentOverride;
     setUserAgentOverride(userAgent: string, userAgentMetadataOverride: Protocol.Emulation.UserAgentMetadata | null): void;
     setCustomUserAgentOverride(userAgent: string, userAgentMetadataOverride?: Protocol.Emulation.UserAgentMetadata | null): void;
-    setCustomAcceptedEncodingsOverride(acceptedEncodings: Protocol.Network.ContentEncoding[]): void;
-    clearCustomAcceptedEncodingsOverride(): void;
-    isAcceptedEncodingOverrideSet(): boolean;
-    private updateAcceptedEncodingsOverride;
     get requestConditions(): RequestConditions;
     isBlocking(): boolean;
     private updateBlockedPatterns;
@@ -313,7 +308,6 @@ export declare namespace MultitargetNetworkManager {
         CONDITIONS_CHANGED = "ConditionsChanged",
         USER_AGENT_CHANGED = "UserAgentChanged",
         INTERCEPTORS_CHANGED = "InterceptorsChanged",
-        ACCEPTED_ENCODINGS_CHANGED = "AcceptedEncodingsChanged",
         REQUEST_INTERCEPTED = "RequestIntercepted",
         REQUEST_FULFILLED = "RequestFulfilled"
     }
@@ -322,7 +316,6 @@ export declare namespace MultitargetNetworkManager {
         [Events.CONDITIONS_CHANGED]: void;
         [Events.USER_AGENT_CHANGED]: void;
         [Events.INTERCEPTORS_CHANGED]: void;
-        [Events.ACCEPTED_ENCODINGS_CHANGED]: void;
         [Events.REQUEST_INTERCEPTED]: string;
         [Events.REQUEST_FULFILLED]: Platform.DevToolsPath.UrlString;
     }

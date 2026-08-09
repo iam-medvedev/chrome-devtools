@@ -26,7 +26,7 @@ describe('PersistenceImpl', () => {
     const DEFAULT_BREAKPOINT = [
         Breakpoints.BreakpointManager.EMPTY_BREAKPOINT_CONDITION,
         true, // enabled
-        false, // isLogpoint
+        false,
         "RESTORED" /* Breakpoints.BreakpointManager.BreakpointOrigin.OTHER */,
     ];
     const SCRIPT_DESCRIPTION = {
