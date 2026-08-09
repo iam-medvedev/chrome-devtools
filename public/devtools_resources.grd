@@ -848,6 +848,7 @@
       <include file="third_party/wasmparser/wasmparser.js" name="THIRD_PARTY_WASMPARSER_WASMPARSER_JS" resource_path="third_party/wasmparser/wasmparser.js" type="BINDATA" compress="false"/>
       <include file="third_party/web-vitals/web-vitals.js" name="THIRD_PARTY_WEB_VITALS_WEB_VITALS_JS" resource_path="third_party/web-vitals/web-vitals.js" type="BINDATA" compress="false"/>
       <include file="trace_app.html" name="TRACE_APP_HTML" resource_path="trace_app.html" type="BINDATA" compress="false"/>
+      <include file="ui/comments/comments.js" name="UI_COMMENTS_COMMENTS_JS" resource_path="ui/comments/comments.js" type="BINDATA" compress="false"/>
       <include file="ui/components/adorners/adorners.js" name="UI_COMPONENTS_ADORNERS_ADORNERS_JS" resource_path="ui/components/adorners/adorners.js" type="BINDATA" compress="false"/>
       <include file="ui/components/buttons/buttons.js" name="UI_COMPONENTS_BUTTONS_BUTTONS_JS" resource_path="ui/components/buttons/buttons.js" type="BINDATA" compress="false"/>
       <include file="ui/components/code_highlighter/code_highlighter.js" name="UI_COMPONENTS_CODE_HIGHLIGHTER_CODE_HIGHLIGHTER_JS" resource_path="ui/components/code_highlighter/code_highlighter.js" type="BINDATA" compress="false"/>

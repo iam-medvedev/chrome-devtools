@@ -37,8 +37,8 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../front_end/panels/mobile_throttling/CPUThrottlingSelector.ts",
     "../../../../../../front_end/panels/mobile_throttling/CalibrationController.ts",
-    "../../../../../../front_end/panels/mobile_throttling/MobileThrottlingSelector.ts",
     "../../../../../../front_end/panels/mobile_throttling/NetworkPanelIndicator.ts",
     "../../../../../../front_end/panels/mobile_throttling/NetworkThrottlingSelector.ts",
     "../../../../../../front_end/panels/mobile_throttling/ThrottlingManager.ts",

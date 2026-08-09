@@ -157,8 +157,7 @@ class AffectedMixedContentView extends AffectedResourcesView {
         const element = document.createElement('tr');
         element.classList.add('affected-resource-mixed-content');
         if (mixedContent.request) {
-            const networkTab = issueTypeToNetworkHeaderMap.get(this.issue.getCategory()) ||
-                "headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HEADERS_COMPONENT */;
+            const networkTab = issueTypeToNetworkHeaderMap.get(this.issue.getCategory()) || "headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HEADERS_COMPONENT */;
             element.appendChild(this.createRequestCell(mixedContent.request, {
                 networkTab,
                 additionalOnClickAction() {
@@ -356,8 +355,7 @@ export class IssueView extends UI.TreeOutline.TreeElement {
                 menuItemAction: () => {
                     const setting = IssuesManager.IssuesManager.getHideIssueByCodeSetting();
                     const values = setting.get();
-                    values[this.#issue.code()] = this.#issue.isHidden() ? "Unhidden" /* IssuesManager.IssuesManager.IssueStatus.UNHIDDEN */ :
-                        "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */;
+                    values[this.#issue.code()] = this.#issue.isHidden() ? "Unhidden" /* IssuesManager.IssuesManager.IssueStatus.UNHIDDEN */ : "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */;
                     setting.set(values);
                 },
             };

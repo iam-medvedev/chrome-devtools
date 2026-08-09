@@ -1173,9 +1173,7 @@ describe('TreeOutlineFiltering', () => {
     it('can flatten nodes', async () => {
         const { component, shadowRoot } = await renderTreeOutline({
             tree: [nodeAustralia],
-            filter: node => node === 'SA' || node === 'NSW' || node === 'Adelaide' ?
-                "FLATTEN" /* TreeOutline.TreeOutline.FilterOption.FLATTEN */ :
-                "SHOW" /* TreeOutline.TreeOutline.FilterOption.SHOW */,
+            filter: node => node === 'SA' || node === 'NSW' || node === 'Adelaide' ? "FLATTEN" /* TreeOutline.TreeOutline.FilterOption.FLATTEN */ : "SHOW" /* TreeOutline.TreeOutline.FilterOption.SHOW */,
         });
         await component.expandRecursively();
         await RenderCoordinator.done();
@@ -1224,8 +1222,7 @@ describe('TreeOutlineFiltering', () => {
             }]);
         component.data = {
             tree: [nodeAustralia],
-            filter: node => node === 'SA' || node === 'NSW' ? "FLATTEN" /* TreeOutline.TreeOutline.FilterOption.FLATTEN */ :
-                "SHOW" /* TreeOutline.TreeOutline.FilterOption.SHOW */,
+            filter: node => node === 'SA' || node === 'NSW' ? "FLATTEN" /* TreeOutline.TreeOutline.FilterOption.FLATTEN */ : "SHOW" /* TreeOutline.TreeOutline.FilterOption.SHOW */,
             defaultRenderer: (node => html `${node.treeNodeData}`),
         };
         await waitForRenderedTreeNodeCount(shadowRoot, 9);

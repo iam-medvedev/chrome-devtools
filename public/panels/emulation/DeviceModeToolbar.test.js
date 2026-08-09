@@ -36,7 +36,6 @@ function createFakeSetting(defaultValue) {
                 listeners.splice(index, 1);
             }
         },
-        setDisabled: () => { },
         setTitle: () => { },
         title: () => '',
         asRegExp: () => null,
@@ -75,10 +74,8 @@ describeWithEnvironment('DeviceModeToolbar', () => {
         target = createTarget({ parentTarget: tabTarget });
         deviceModeModel = EmulationModel.DeviceModeModel.DeviceModeModel.instance({ forceNew: true });
         // Stub ThrottlingManager to avoid dependency on network condition settings.
-        const fakeMenuButton = new UI.Toolbar.ToolbarMenuButton(() => { }, undefined, undefined, 'throttle-menu');
         const fakeSelectElement = document.createElement('select');
         sinon.stub(MobileThrottling.ThrottlingManager.ThrottlingManager, 'instance').returns({
-            createMobileThrottlingButton: () => fakeMenuButton,
             createSaveDataOverrideSelector: () => fakeSelectElement,
         });
         toolbar = new Emulation.DeviceModeToolbar.DeviceModeToolbar();
@@ -278,23 +275,6 @@ describeWithEnvironment('DeviceModeToolbar', () => {
         assert.exists(zoomSelect, 'Zoom select should exist');
         const options = [...zoomSelect.options].map(o => o.text);
         assert.strictEqual(options[0], 'Fit to window', 'First option should be "Fit to window" without percentage');
-    });
-    it('shows "Show device frame" disabled when setting is enabled but current device has no frame', async () => {
-        deviceModeModel.deviceOutlineSetting().set(true);
-        deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.Responsive, null, null);
-        toolbar.requestUpdate();
-        await toolbar.updateComplete;
-        const showStub = sinon.stub(UI.ContextMenu.ContextMenu.prototype, 'show').resolves();
-        const moreOptionsButton = toolbar.element.querySelector('devtools-button[jslog*="more-options"]');
-        assert.exists(moreOptionsButton);
-        moreOptionsButton.click();
-        sinon.assert.calledOnce(showStub);
-        const contextMenu = showStub.thisValues[0];
-        const item = contextMenu.headerSection().items.find(i => i.buildDescriptor().label === 'Show device frame' ||
-            i.buildDescriptor().label === 'Hide device frame');
-        assert.exists(item);
-        assert.strictEqual(item.buildDescriptor().label, 'Show device frame', 'Should display Show device frame when disabled');
-        assert.isFalse(item.buildDescriptor().enabled, 'Should be disabled when no frame available');
     });
     it('renders standard devices grouped into optgroups by form factor', async () => {
         deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.Responsive, null, null);

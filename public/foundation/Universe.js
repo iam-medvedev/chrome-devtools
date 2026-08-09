@@ -27,6 +27,7 @@ export class Universe {
     context;
     autofillManager;
     supportsEmulation;
+    initAutomaticFilesystem;
     fileSystemWorkspaceBinding;
     constructor(options) {
         const context = new Root.DevToolsContext.WritableDevToolsContext();
@@ -56,19 +57,27 @@ export class Universe {
         context.set(SDK.FrameManager.FrameManager, frameManager);
         const multitargetNetworkManager = new SDK.NetworkManager.MultitargetNetworkManager(targetManager);
         context.set(SDK.NetworkManager.MultitargetNetworkManager, multitargetNetworkManager);
+        const workspace = new Workspace.Workspace.WorkspaceImpl();
+        context.set(Workspace.Workspace.WorkspaceImpl, workspace);
+        const fileManager = new Workspace.FileManager.FileManager();
+        context.set(Workspace.FileManager.FileManager, fileManager);
         this.supportsEmulation = options.supportsEmulation;
         let deviceModeModel = null;
         if (options.supportsEmulation) {
-            deviceModeModel =
-                new Emulation.DeviceModeModel.DeviceModeModel(targetManager, settings, multitargetNetworkManager);
+            deviceModeModel = new Emulation.DeviceModeModel.DeviceModeModel(targetManager, settings, multitargetNetworkManager, fileManager);
             context.set(Emulation.DeviceModeModel.DeviceModeModel, deviceModeModel);
         }
         const pageResourceLoader = new SDK.PageResourceLoader.PageResourceLoader(targetManager, settings, multitargetNetworkManager, null);
         context.set(SDK.PageResourceLoader.PageResourceLoader, pageResourceLoader);
-        const projectSettingsModel = new ProjectSettings.ProjectSettingsModel.ProjectSettingsModel(pageResourceLoader, targetManager);
-        context.set(ProjectSettings.ProjectSettingsModel.ProjectSettingsModel, projectSettingsModel);
-        const automaticFileSystemManager = new Persistence.AutomaticFileSystemManager.AutomaticFileSystemManager(options.inspectorFrontendHost, projectSettingsModel);
-        context.set(Persistence.AutomaticFileSystemManager.AutomaticFileSystemManager, automaticFileSystemManager);
+        this.initAutomaticFilesystem = options.initAutomaticFilesystem ?? false;
+        let automaticFileSystemManager = null;
+        let projectSettingsModel = null;
+        if (this.initAutomaticFilesystem) {
+            projectSettingsModel = new ProjectSettings.ProjectSettingsModel.ProjectSettingsModel(pageResourceLoader, targetManager);
+            context.set(ProjectSettings.ProjectSettingsModel.ProjectSettingsModel, projectSettingsModel);
+            automaticFileSystemManager = new Persistence.AutomaticFileSystemManager.AutomaticFileSystemManager(options.inspectorFrontendHost, projectSettingsModel);
+            context.set(Persistence.AutomaticFileSystemManager.AutomaticFileSystemManager, automaticFileSystemManager);
+        }
         const cpuThrottlingManager = new SDK.CPUThrottlingManager.CPUThrottlingManager(settings, targetManager);
         context.set(SDK.CPUThrottlingManager.CPUThrottlingManager, cpuThrottlingManager);
         const domDebuggerManager = new SDK.DOMDebuggerModel.DOMDebuggerManager(targetManager);
@@ -81,12 +90,10 @@ export class Universe {
         context.set(SDK.EventBreakpointsModel.EventBreakpointsManager, eventBreakpointsManager);
         const domModelUndoStack = new SDK.DOMModel.DOMModelUndoStack();
         context.set(SDK.DOMModel.DOMModelUndoStack, domModelUndoStack);
-        const workspace = new Workspace.Workspace.WorkspaceImpl();
-        context.set(Workspace.Workspace.WorkspaceImpl, workspace);
-        const fileManager = new Workspace.FileManager.FileManager();
-        context.set(Workspace.FileManager.FileManager, fileManager);
-        const automaticFileSystemWorkspaceBinding = new Persistence.AutomaticFileSystemWorkspaceBinding.AutomaticFileSystemWorkspaceBinding(automaticFileSystemManager, isolatedFileSystemManager, workspace);
-        context.set(Persistence.AutomaticFileSystemWorkspaceBinding.AutomaticFileSystemWorkspaceBinding, automaticFileSystemWorkspaceBinding);
+        if (automaticFileSystemManager) {
+            const automaticFileSystemWorkspaceBinding = new Persistence.AutomaticFileSystemWorkspaceBinding.AutomaticFileSystemWorkspaceBinding(automaticFileSystemManager, isolatedFileSystemManager, workspace);
+            context.set(Persistence.AutomaticFileSystemWorkspaceBinding.AutomaticFileSystemWorkspaceBinding, automaticFileSystemWorkspaceBinding);
+        }
         this.fileSystemWorkspaceBinding =
             new Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding(isolatedFileSystemManager, workspace);
         context.set(Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding, this.fileSystemWorkspaceBinding);
@@ -127,6 +134,16 @@ export class Universe {
         context.set(AiAssistance.BuiltInAi.BuiltInAi, builtInAi);
         this.autofillManager = new AutofillManager.AutofillManager.AutofillManager(targetManager, frameManager);
         context.set(AutofillManager.AutofillManager.AutofillManager, this.autofillManager);
+    }
+    // TODO(crbug.com/542394587): Should be `Symbol.dispose`
+    dispose() {
+        // TODO(crbug.com/542394587): Track these in a DisposableStack.
+        this.context.get(Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager).dispose();
+        if (this.initAutomaticFilesystem) {
+            this.context.get(Persistence.AutomaticFileSystemManager.AutomaticFileSystemManager).dispose();
+        }
+        this.context.get(Workspace.FileManager.FileManager).dispose();
+        this.context.get(SDK.TargetManager.TargetManager).dispose();
     }
     get automaticFileSystemManager() {
         return this.context.get(Persistence.AutomaticFileSystemManager.AutomaticFileSystemManager);
@@ -211,7 +228,8 @@ export class Universe {
         return this.context.get(Bindings.PresentationConsoleMessageHelper.PresentationConsoleMessageManager);
     }
     get projectSettingsModel() {
-        return this.context.get(ProjectSettings.ProjectSettingsModel.ProjectSettingsModel);
+        return this.initAutomaticFilesystem ? this.context.get(ProjectSettings.ProjectSettingsModel.ProjectSettingsModel) :
+            null;
     }
     get settings() {
         return this.context.get(Common.Settings.Settings);

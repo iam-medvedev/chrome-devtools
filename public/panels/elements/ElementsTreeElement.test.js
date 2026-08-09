@@ -37,9 +37,11 @@ function getBaseViewInput() {
         showGridLanesAdorner: false,
         showMediaAdorner: false,
         showPopoverAdorner: false,
+        showInterestAdorner: false,
         showTopLayerAdorner: false,
         gridAdornerActive: false,
         popoverAdornerActive: false,
+        interestAdornerActive: false,
         isSubgrid: false,
         showViewSourceAdorner: false,
         showScrollAdorner: false,
@@ -60,6 +62,7 @@ function getBaseViewInput() {
         onGridAdornerClick: () => { },
         onMediaAdornerClick: () => { },
         onPopoverAdornerClick: () => { },
+        onInterestAdornerClick: () => { },
         onScrollSnapAdornerClick: () => { },
         onTopLayerAdornerClick: () => { },
         isHovered: false,
@@ -406,16 +409,16 @@ describeWithEnvironment('ElementsTreeElement', () => {
         treeElement.treeOutline = treeOutline;
         // Simulate binding to the tree
         treeElement.onbind();
-        const performUpdateSpy = sinon.spy(treeElement, 'performUpdate');
+        const requestUpdateSpy = sinon.spy(treeElement.widget, 'requestUpdate');
         // Trigger event
         node.dispatchEventToListeners(SDK.DOMModel.DOMNodeEvents.GRID_OVERLAY_STATE_CHANGED, { enabled: true });
-        sinon.assert.calledOnce(performUpdateSpy);
+        sinon.assert.calledOnce(requestUpdateSpy);
         // Simulate unbinding
         treeElement.onunbind();
-        performUpdateSpy.resetHistory();
+        requestUpdateSpy.resetHistory();
         // Trigger event again
         node.dispatchEventToListeners(SDK.DOMModel.DOMNodeEvents.GRID_OVERLAY_STATE_CHANGED, { enabled: false });
-        sinon.assert.notCalled(performUpdateSpy);
+        sinon.assert.notCalled(requestUpdateSpy);
     });
     it('updates when persistent scroll snap overlay state changes', async () => {
         const target = createTarget();
@@ -430,16 +433,16 @@ describeWithEnvironment('ElementsTreeElement', () => {
         treeElement.treeOutline = treeOutline;
         // Simulate binding to the tree
         treeElement.onbind();
-        const performUpdateSpy = sinon.spy(treeElement, 'performUpdate');
+        const requestUpdateSpy = sinon.spy(treeElement.widget, 'requestUpdate');
         // Trigger event
         node.dispatchEventToListeners(SDK.DOMModel.DOMNodeEvents.SCROLL_SNAP_OVERLAY_STATE_CHANGED, { enabled: true });
-        sinon.assert.calledOnce(performUpdateSpy);
+        sinon.assert.calledOnce(requestUpdateSpy);
         // Simulate unbinding
         treeElement.onunbind();
-        performUpdateSpy.resetHistory();
+        requestUpdateSpy.resetHistory();
         // Trigger event again
         node.dispatchEventToListeners(SDK.DOMModel.DOMNodeEvents.SCROLL_SNAP_OVERLAY_STATE_CHANGED, { enabled: false });
-        sinon.assert.notCalled(performUpdateSpy);
+        sinon.assert.notCalled(requestUpdateSpy);
     });
     it('initializes the slot adorner if the node has an assigned slot', async () => {
         const target = createTarget();
@@ -466,8 +469,9 @@ describeWithEnvironment('ElementsTreeElement', () => {
         treeElement.treeOutline = treeOutline;
         // Simulate binding to the tree
         treeElement.onbind();
-        treeElement.performUpdate();
-        const adorner = treeElement.listItemElement.querySelector('devtools-adorner');
+        treeElement.requestUpdate();
+        await treeElement.updateComplete;
+        const adorner = treeElement.widget.contentElement.querySelector('devtools-adorner');
         assert.exists(adorner);
         assert.strictEqual(adorner.name, 'slot');
     });
@@ -487,8 +491,9 @@ describeWithEnvironment('ElementsTreeElement', () => {
         const treeElement = new Elements.ElementsTreeElement.ElementsTreeElement(node);
         treeElement.treeOutline = treeOutline;
         treeElement.onbind();
-        treeElement.performUpdate();
-        const adorner = treeElement.listItemElement.querySelector('.starting-style');
+        treeElement.requestUpdate();
+        await treeElement.updateComplete;
+        const adorner = treeElement.widget.contentElement.querySelector('.starting-style');
         assert.exists(adorner);
         const forceSpy = sinon.spy(cssModel, 'forceStartingStyle');
         adorner.click();
@@ -516,9 +521,10 @@ describeWithEnvironment('ElementsTreeElement', () => {
         treeElement.treeOutline = treeOutline;
         treeElement.onbind();
         // Render the element initially
-        treeElement.performUpdate();
+        treeElement.requestUpdate();
+        await treeElement.updateComplete;
         // The attribute container DOM initially contains zero-width spaces (inserted for wrapping by rendering)
-        const attributeElement = treeElement.listItemElement.querySelector('.webkit-html-attribute');
+        const attributeElement = treeElement.widget.contentElement.querySelector('.webkit-html-attribute');
         assert.exists(attributeElement);
         // Count initial zero-width spaces
         const initialSpacesCount = (attributeElement.textContent).split('\u200B').length - 1;
@@ -529,13 +535,15 @@ describeWithEnvironment('ElementsTreeElement', () => {
         // Verify that starting edit stripped the zero-width spaces from the attribute element
         assert.notInclude(attributeElement.textContent, '\u200B');
         // While editing is active, call performUpdate (or hover, etc.) which would re-render
-        treeElement.performUpdate();
+        treeElement.requestUpdate();
+        await treeElement.updateComplete;
         // Verify that the attribute element STILL does not contain zero-width spaces.
         assert.notInclude(attributeElement.textContent, '\u200B');
         // Cancel the editing session and clean up
         treeElement.editingCancelled(attributeElement, 'autofill-information');
+        await treeElement.updateComplete;
         // Re-query the newly rendered attribute element from the DOM
-        const finalAttributeElement = treeElement.listItemElement.querySelector('.webkit-html-attribute');
+        const finalAttributeElement = treeElement.widget.contentElement.querySelector('.webkit-html-attribute');
         assert.exists(finalAttributeElement);
         // After cancelling, the element is restored, and the zero-width spaces should be restored back to initial count
         // (verifying no duplicate or redundant spaces are added/kept in the DOM)
@@ -565,7 +573,7 @@ describeWithEnvironment('ElementsTreeElement', () => {
         const treeElement = new Elements.ElementsTreeElement.ElementsTreeElement(node);
         treeElement.treeOutline = treeOutline;
         treeElement.performUpdate();
-        const attributeElement = treeElement.listItemElement.querySelector('.webkit-html-attribute');
+        const attributeElement = treeElement.widget.contentElement.querySelector('.webkit-html-attribute');
         assert.exists(attributeElement);
         const attributeValueElement = attributeElement.querySelector('.webkit-html-attribute-value');
         assert.exists(attributeValueElement);
@@ -585,7 +593,7 @@ describeWithEnvironment('ElementsTreeElement', () => {
         // Cancel editing.
         treeElement.editingCancelled(attributeElement, 'href');
         // The value should be trimmed again.
-        const attributeElementAfterCancel = treeElement.listItemElement.querySelector('.webkit-html-attribute');
+        const attributeElementAfterCancel = treeElement.widget.contentElement.querySelector('.webkit-html-attribute');
         assert.exists(attributeElementAfterCancel);
         const attributeValueElementAfterCancel = attributeElementAfterCancel.querySelector('.webkit-html-attribute-value');
         assert.exists(attributeValueElementAfterCancel);
@@ -608,7 +616,7 @@ describeWithEnvironment('ElementsTreeElement', () => {
             return treeElement;
         }
         function getLinkOutputs(treeElement) {
-            const attributeValueElement = treeElement.listItemElement.querySelector('.webkit-html-attribute-value');
+            const attributeValueElement = treeElement.widget.contentElement.querySelector('.webkit-html-attribute-value');
             assert.exists(attributeValueElement);
             const linkElements = Array.from(attributeValueElement.querySelectorAll('.devtools-link'));
             assert.isNotEmpty(linkElements, 'Expected to find .devtools-link elements');
@@ -678,7 +686,7 @@ describeWithEnvironment('ElementsTreeElement', () => {
             const links = getLinkOutputs(treeElement);
             assert.lengthOf(links, 1);
             assert.deepEqual(links[0], { text: 'http://example.com', href: 'http://example.com' });
-            const attributeValueElement = treeElement.listItemElement.querySelector('.webkit-html-attribute-value');
+            const attributeValueElement = treeElement.widget.contentElement.querySelector('.webkit-html-attribute-value');
             const linkElement = attributeValueElement?.querySelector('.devtools-link');
             assert.strictEqual(linkElement?.tagName.toLowerCase(), 'devtools-link');
         });
@@ -790,9 +798,10 @@ describeWithEnvironment('ElementsTreeElement highlighting', () => {
         stub?.restore();
         return await new Promise(resolve => {
             stub = sinon.stub(treeOutline, 'updateModifiedNodes');
-            stub.callsFake(() => {
+            stub.callsFake(async () => {
                 stub?.wrappedMethod.call(treeOutline);
-                resolve(element.listItemElement.querySelectorAll('.dom-update-highlight').length);
+                await element.updateComplete;
+                resolve(element.widget.contentElement.querySelectorAll('.dom-update-highlight').length);
             });
         });
     }
@@ -914,19 +923,20 @@ describeWithEnvironment('ElementsTreeElement highlighting', () => {
         textTestTreeElement.appendChild(piTreeElement);
         await textTestTreeElement.onpopulate();
         treeOutline.selectDOMNode(piNode, true);
-        const piElementDOM = piTreeElement.listItemElement.querySelector('.webkit-html-processing-instruction-value');
+        await piTreeElement.updateComplete;
+        const piElementDOM = piTreeElement.widget.contentElement.querySelector('.webkit-html-processing-instruction-value');
         assert.exists(piElementDOM);
         // Start editing by calling ondblclick
         const event = new MouseEvent('dblclick', { bubbles: true, cancelable: true });
         Object.defineProperty(event, 'target', { value: piElementDOM });
         assert.isFalse(piTreeElement.ondblclick(event));
-        assert.isTrue(piTreeElement.isEditing());
+        assert.isTrue(piTreeElement.isEditing);
         assert.strictEqual(piElementDOM.textContent, 'pi-data');
         // The inplace editor is now active on piElementDOM.
         piElementDOM.textContent = 'New Data';
         // The commit is triggered by blur or enter.
         piElementDOM.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
-        assert.isFalse(piTreeElement.isEditing());
+        assert.isFalse(piTreeElement.isEditing);
         sinon.assert.calledOnce(setNodeValueSpy);
         sinon.assert.calledWith(setNodeValueSpy, 'New Data');
     });
@@ -942,19 +952,20 @@ describeWithEnvironment('ElementsTreeElement highlighting', () => {
         textTestTreeElement.appendChild(piTreeElement);
         await textTestTreeElement.onpopulate();
         treeOutline.selectDOMNode(piNode, true);
-        const piElementDOM = piTreeElement.listItemElement.querySelector('.webkit-html-processing-instruction-value');
+        await piTreeElement.updateComplete;
+        const piElementDOM = piTreeElement.widget.contentElement.querySelector('.webkit-html-processing-instruction-value');
         assert.exists(piElementDOM);
         // Start editing by calling ondblclick
         const event = new MouseEvent('dblclick', { bubbles: true, cancelable: true });
         Object.defineProperty(event, 'target', { value: piElementDOM });
         assert.isFalse(piTreeElement.ondblclick(event));
-        assert.isTrue(piTreeElement.isEditing());
+        assert.isTrue(piTreeElement.isEditing);
         assert.strictEqual(piElementDOM.textContent, '');
         // The inplace editor is now active on piElementDOM.
         piElementDOM.textContent = 'New Data';
         // The commit is triggered by blur or enter.
         piElementDOM.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
-        assert.isFalse(piTreeElement.isEditing());
+        assert.isFalse(piTreeElement.isEditing);
         sinon.assert.calledOnce(setNodeValueSpy);
         sinon.assert.calledWith(setNodeValueSpy, 'New Data');
     });
@@ -984,19 +995,20 @@ describeWithEnvironment('ElementsTreeElement highlighting', () => {
         textTestTreeElement.appendChild(textNodeTreeElement);
         await textTestTreeElement.onpopulate();
         treeOutline.selectDOMNode(textNode, true);
-        const textElementDOM = textNodeTreeElement.listItemElement.querySelector('.webkit-html-text-node');
+        await textNodeTreeElement.updateComplete;
+        const textElementDOM = textNodeTreeElement.widget.contentElement.querySelector('.webkit-html-text-node');
         assert.exists(textElementDOM);
         // Start editing by calling ondblclick
         const event = new MouseEvent('dblclick', { bubbles: true, cancelable: true });
         Object.defineProperty(event, 'target', { value: textElementDOM });
         assert.isFalse(textNodeTreeElement.ondblclick(event));
-        assert.isTrue(textNodeTreeElement.isEditing());
+        assert.isTrue(textNodeTreeElement.isEditing);
         assert.strictEqual(textElementDOM.textContent, longText);
         // The inplace editor is now active on textElementDOM.
         textElementDOM.textContent = 'New Text';
         // The commit is triggered by blur or enter.
         textElementDOM.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
-        assert.isFalse(textNodeTreeElement.isEditing());
+        assert.isFalse(textNodeTreeElement.isEditing);
         sinon.assert.calledOnce(setNodeValueSpy);
         sinon.assert.calledWith(setNodeValueSpy, 'New Text');
     });
@@ -1073,8 +1085,9 @@ describeWithEnvironment('ElementsTreeElement in Snapshot Mode', () => {
             title: () => 'Ask AI',
             execute: () => { },
         });
-        treeElement.performUpdate();
-        const aiButton = treeElement.listItemElement.querySelector('devtools-floating-button');
+        treeElement.requestUpdate();
+        await treeElement.updateComplete;
+        const aiButton = treeElement.widget.contentElement.querySelector('devtools-floating-button');
         assert.isNull(aiButton, 'Ask AI button should not be present in snapshot mode');
     });
     describe('Adorners', () => {
@@ -1091,7 +1104,8 @@ describeWithEnvironment('ElementsTreeElement in Snapshot Mode', () => {
                 hasScroll: true,
                 isSubgrid: true,
             });
-            sinon.stub(node, 'attributes').returns([{ name: 'popover', value: '' }]);
+            sinon.stub(node, 'attributes').returns([{ name: 'popover', value: '' },
+                { name: 'interesttarget', value: '' }]);
             sinon.stub(node, 'topLayerIndex').returns(1);
             sinon.stub(node, 'affectedByStartingStyles').returns(true);
             const slot = {
@@ -1107,10 +1121,11 @@ describeWithEnvironment('ElementsTreeElement in Snapshot Mode', () => {
             sinon.stub(node, 'hasAssignedSlot').returns(true);
             sinon.stub(node, 'assignedSlot').value(slot);
         });
-        it('media adorner click is no-op', () => {
+        it('media adorner click is no-op', async () => {
             treeElement.updateAdorners();
-            treeElement.performUpdate();
-            const adorners = treeElement.listItemElement.querySelectorAll('devtools-adorner');
+            treeElement.requestUpdate();
+            await treeElement.updateComplete;
+            const adorners = treeElement.widget.contentElement.querySelectorAll('devtools-adorner');
             const mediaAdorner = Array.from(adorners).find(a => a.name === 'media');
             assert.exists(mediaAdorner);
             const viewManager = UI.ViewManager.ViewManager.instance();
@@ -1118,45 +1133,60 @@ describeWithEnvironment('ElementsTreeElement in Snapshot Mode', () => {
             mediaAdorner.dispatchEvent(new Event('click'));
             sinon.assert.notCalled(showViewSpy);
         });
-        it('popover adorner click is no-op', () => {
-            // Force allow popover for test
-            const originalDevToolsAllowPopoverForcing = Root.Runtime.hostConfig.devToolsAllowPopoverForcing;
-            Root.Runtime.hostConfig.devToolsAllowPopoverForcing = { enabled: true };
+        it('popover adorner click is no-op', async () => {
             treeElement.updateAdorners();
-            treeElement.performUpdate();
-            const adorners = treeElement.listItemElement.querySelectorAll('devtools-adorner');
+            treeElement.requestUpdate();
+            await treeElement.updateComplete;
+            const adorners = treeElement.widget.contentElement.querySelectorAll('devtools-adorner');
             const popoverAdorner = Array.from(adorners).find(a => a.name === 'popover');
             assert.exists(popoverAdorner);
             const agentSpy = sinon.spy(domModel.agent, 'invoke_forceShowPopover');
             popoverAdorner.dispatchEvent(new Event('click'));
             sinon.assert.notCalled(agentSpy);
-            // Restore
-            Root.Runtime.hostConfig.devToolsAllowPopoverForcing = originalDevToolsAllowPopoverForcing;
         });
-        it('top-layer adorner click is no-op', () => {
+        it('interest adorner click is no-op', async () => {
+            // Force allow interest for test
+            const originalDevToolsAllowInterestForcing = Root.Runtime.hostConfig.devToolsAllowInterestForcing;
+            Root.Runtime.hostConfig.devToolsAllowInterestForcing = { enabled: true };
             treeElement.updateAdorners();
-            treeElement.performUpdate();
-            const adorners = treeElement.listItemElement.querySelectorAll('devtools-adorner');
+            treeElement.requestUpdate();
+            await treeElement.updateComplete;
+            const adorners = treeElement.widget.contentElement.querySelectorAll('devtools-adorner');
+            const interestAdorner = Array.from(adorners).find(a => a.name === 'interest');
+            assert.exists(interestAdorner);
+            const agentSpy = sinon.spy(domModel.agent, 'invoke_forceShowInterest');
+            interestAdorner.dispatchEvent(new Event('click'));
+            sinon.assert.notCalled(agentSpy);
+            // Restore
+            Root.Runtime.hostConfig.devToolsAllowInterestForcing = originalDevToolsAllowInterestForcing;
+        });
+        it('top-layer adorner click is no-op', async () => {
+            treeElement.updateAdorners();
+            treeElement.requestUpdate();
+            await treeElement.updateComplete;
+            const adorners = treeElement.widget.contentElement.querySelectorAll('devtools-adorner');
             const topLayerAdorner = Array.from(adorners).find(a => a.name === 'top-layer');
             assert.exists(topLayerAdorner);
             const revealSpy = sinon.spy(treeElement.treeOutline, 'revealInTopLayer');
             topLayerAdorner.dispatchEvent(new Event('click'));
             sinon.assert.notCalled(revealSpy);
         });
-        it('starting-style adorner click is no-op', () => {
+        it('starting-style adorner click is no-op', async () => {
             treeElement.updateAdorners();
-            treeElement.performUpdate();
-            const adorners = treeElement.listItemElement.querySelectorAll('devtools-adorner');
+            treeElement.requestUpdate();
+            await treeElement.updateComplete;
+            const adorners = treeElement.widget.contentElement.querySelectorAll('devtools-adorner');
             const startingStyleAdorner = Array.from(adorners).find(a => a.name === 'starting-style');
             assert.exists(startingStyleAdorner);
             const forceStartingStyleSpy = sinon.spy(cssModel, 'forceStartingStyle');
             startingStyleAdorner.dispatchEvent(new Event('click'));
             sinon.assert.notCalled(forceStartingStyleSpy);
         });
-        it('slot adorner click works', () => {
+        it('slot adorner click works', async () => {
             treeElement.updateAdorners();
-            treeElement.performUpdate();
-            const adorners = treeElement.listItemElement.querySelectorAll('devtools-adorner');
+            treeElement.requestUpdate();
+            await treeElement.updateComplete;
+            const adorners = treeElement.widget.contentElement.querySelectorAll('devtools-adorner');
             const slotAdorner = Array.from(adorners).find(a => a.name === 'slot');
             assert.exists(slotAdorner);
             const revealSpy = sinon.spy(Common.Revealer.RevealerRegistry.instance(), 'reveal');
@@ -1198,6 +1228,29 @@ describeWithEnvironment('ElementsTreeElement in Snapshot Mode', () => {
             const hint = domTarget.querySelector('.selected-hint');
             assert.isNull(hint);
         });
+    });
+    it('triggers invoke_forceShowInterest on interest adorner click', async () => {
+        const originalDevToolsAllowInterestForcing = Root.Runtime.hostConfig.devToolsAllowInterestForcing;
+        Root.Runtime.hostConfig.devToolsAllowInterestForcing = { enabled: true };
+        sinon.stub(node, 'attributes').returns([{ name: 'interestfor', value: 'my-tooltip' }]);
+        treeOutline = new Elements.ElementsTreeOutline.ElementsTreeOutline(
+        /* omitRootDOMNode */ false, /* selectEnabled */ true, /* hideGutter */ false, /* maxTreeDepth */ 2, 
+        /* enableContextMenu */ false, /* showComments */ false, /* showAIButton */ false, /* disableEdits */ false);
+        treeOutline.wireToDOMModel(domModel);
+        treeElement = new Elements.ElementsTreeElement.ElementsTreeElement(node);
+        treeElement.treeOutline = treeOutline;
+        treeElement.onbind();
+        treeElement.updateAdorners();
+        treeElement.requestUpdate();
+        await treeElement.updateComplete;
+        const adorners = treeElement.widget.contentElement.querySelectorAll('devtools-adorner');
+        const interestAdorner = Array.from(adorners).find(a => a.name === 'interest');
+        assert.exists(interestAdorner);
+        const agentSpy = sinon.spy(domModel.agent, 'invoke_forceShowInterest');
+        interestAdorner.dispatchEvent(new Event('click'));
+        sinon.assert.calledWith(agentSpy, { nodeId: node.id, enable: true });
+        // Restore
+        Root.Runtime.hostConfig.devToolsAllowInterestForcing = originalDevToolsAllowInterestForcing;
     });
 });
 //# sourceMappingURL=ElementsTreeElement.test.js.map

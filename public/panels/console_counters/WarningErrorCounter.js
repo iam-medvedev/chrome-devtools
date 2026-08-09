@@ -129,7 +129,7 @@ export class WarningErrorCounterWidget extends UI.Widget.Widget {
         return button ? button.getAttribute('aria-label') : null;
     }
     showIssues() {
-        Host.userMetrics.issuesPanelOpenedFrom(2 /* Host.UserMetrics.IssueOpener.STATUS_BAR_ISSUES_COUNTER */);
+        Host.userMetrics.issuesPanelOpenedFrom(Host.UserMetrics.IssueOpener.STATUS_BAR_ISSUES_COUNTER);
         void UI.ViewManager.ViewManager.instance().showView('issues-pane');
     }
     async performUpdate() {

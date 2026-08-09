@@ -4,6 +4,7 @@ import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type BackgroundServiceModel } from './BackgroundServiceModel.js';
 export declare class BackgroundServiceView extends UI.Widget.VBox {
+    #private;
     private readonly serviceName;
     private readonly model;
     private readonly serviceWorkerManager;
@@ -18,7 +19,6 @@ export declare class BackgroundServiceView extends UI.Widget.VBox {
     private readonly splitWidget;
     private readonly dataGrid;
     private readonly previewPanel;
-    private selectedEventNode;
     private preview;
     static getUIString(serviceName: string): string;
     constructor(serviceName: Protocol.BackgroundService.ServiceName, model: BackgroundServiceModel);
@@ -44,12 +44,12 @@ export declare class BackgroundServiceView extends UI.Widget.VBox {
      */
     private clearEvents;
     private onRecordingStateChanged;
-    private updateRecordButtonTooltip;
     private onEventReceived;
     private onOriginChanged;
     private onStorageKeyChanged;
     private addEvent;
     private createDataGrid;
+    performUpdate(): void;
     /**
      * Creates the data object to pass to the DataGrid Node.
      */
@@ -59,7 +59,6 @@ export declare class BackgroundServiceView extends UI.Widget.VBox {
      */
     private acceptEvent;
     private createLearnMoreLink;
-    private showPreview;
     /**
      * Saves all currently displayed events in a file (JSON format).
      */

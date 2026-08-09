@@ -1184,6 +1184,7 @@ __export(ProtocolMonitor_exports, {
 });
 import "./../../ui/legacy/legacy.js";
 import "./../../ui/legacy/components/data_grid/data_grid.js";
+import * as Common2 from "./../../core/common/common.js";
 import * as i18n3 from "./../../core/i18n/i18n.js";
 import * as Platform2 from "./../../core/platform/platform.js";
 import * as ProtocolClient from "./../../core/protocol_client/protocol_client.js";
@@ -1381,6 +1382,7 @@ var DEFAULT_VIEW2 = (input, output, target) => {
               <devtools-data-grid
                   striped
                   slot="main"
+                  .columnsVisibilitySetting=${input.columnsVisibilitySetting}
                   .filters=${input.parseFilter(input.filter)}>
                 <table>
                     <tr>
@@ -1505,6 +1507,7 @@ var ProtocolMonitorImpl = class extends UI2.Panel.Panel {
   #filter = "";
   #editorWidget;
   #targetsBySessionId = /* @__PURE__ */ new Map();
+  #columnsVisibilitySetting = Common2.Settings.Settings.instance().createSetting("protocol-monitor-columns", {});
   constructor(view = DEFAULT_VIEW2) {
     super("protocol-monitor", true);
     this.#view = view;
@@ -1595,6 +1598,7 @@ var ProtocolMonitorImpl = class extends UI2.Panel.Panel {
       onEditorSubmit: (command, parameters, targetId) => {
         this.onCommandSend(command, parameters, targetId);
       },
+      columnsVisibilitySetting: this.#columnsVisibilitySetting,
       targets: SDK2.TargetManager.TargetManager.instance().targets(),
       selectedTargetId: this.#selectedTargetId
     };

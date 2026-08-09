@@ -9,6 +9,7 @@ import * as AiCodeGeneration from '../../../models/ai_code_generation/ai_code_ge
 import * as PanelCommon from '../../../panels/common/common.js';
 import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment, updateHostConfig } from '../../../testing/EnvironmentHelpers.js';
+import { setupUserMetricHooks } from '../../../testing/UserMetricsHelpers.js';
 import * as CodeMirror from '../../../third_party/codemirror.next/codemirror.next.js';
 import { AiCodeGenerationProvider, Config, TextEditor } from './text_editor.js';
 function createEditorWithProvider(doc, config = {
@@ -40,6 +41,7 @@ function dispatchCtrlI(editor) {
     editor.editor.contentDOM.dispatchEvent(event);
 }
 describeWithEnvironment('AiCodeGenerationProvider', () => {
+    setupUserMetricHooks();
     let clock;
     let generateCodeStub;
     beforeEach(() => {

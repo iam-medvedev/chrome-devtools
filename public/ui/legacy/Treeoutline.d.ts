@@ -271,10 +271,10 @@ export declare namespace TreeSearch {
  * This section is only relevant if NOT using the `template`.
  *
  * Since config elements are cloned into the shadow DOM, it's not possible to directly attach event listeners to the
- * children of config elements. Instead, the `UI.UIUtils.InterceptBindingDirective` directive needs to be used as a
+ * children of config elements. Instead, the `Lit.CustomDirectives.InterceptBindingDirective` directive needs to be used as a
  * wrapper:
  * ```
- * const on = Lit.Directive.directive(UI.UIUtils.InterceptBindingDirective);
+ * const on = Lit.Directive.directive(Lit.CustomDirectives.InterceptBindingDirective);
  *
  * html`<li role="treeitem">
  *   <button @click=${on(clickHandler)}>click me</button>
@@ -329,7 +329,7 @@ declare class IfExpandedDirective extends Lit.Directive.Directive {
     constructor(partInfo: Lit.Directive.PartInfo);
     render(content: Lit.LitTemplate | Iterable<Lit.LitTemplate>): Lit.LitTemplate | Iterable<Lit.LitTemplate>;
 }
-export declare const ifExpanded: (content: Lit.LitTemplate | Iterable<Lit.LitTemplate>) => Lit.DirectiveResult<typeof IfExpandedDirective>;
+export declare const ifExpanded: (content: Iterable<Lit.LitTemplate> | Lit.LitTemplate) => Lit.DirectiveResult<typeof IfExpandedDirective>;
 export declare class TreeElementWrapper extends HTMLElement {
     #private;
     set treeElement(treeElement: TreeElement);

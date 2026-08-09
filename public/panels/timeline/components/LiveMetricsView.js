@@ -4,7 +4,6 @@
 import '../../../ui/components/settings/settings.js';
 import '../../../ui/kit/kit.js';
 import './FieldSettingsDialog.js';
-import './NetworkThrottlingSelector.js';
 import '../../../ui/components/menus/menus.js';
 import './MetricCard.js';
 import * as Common from '../../../core/common/common.js';
@@ -21,7 +20,7 @@ import * as UI from '../../../ui/legacy/legacy.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as PanelsCommon from '../../common/common.js';
-import { CPUThrottlingSelector } from './CPUThrottlingSelector.js';
+import * as MobileThrottling from '../../mobile_throttling/mobile_throttling.js';
 import { md } from './insights/Helpers.js';
 import liveMetricsViewStyles from './liveMetricsView.css.js';
 import metricValueStyles from './metricValueStyles.css.js';
@@ -172,6 +171,10 @@ const UIStrings = {
      */
     disableNetworkCache: 'Disable network cache',
     /**
+     * @description Text label for a selection box showing which CPU throttling option is applied.
+     */
+    cpuThrottling: 'CPU:',
+    /**
      * @description Text label for a link to the Largest Contentful Paint (LCP) related page element. This element represents the largest content on the page. "LCP" should not be translated.
      */
     lcpElement: 'LCP element',
@@ -283,6 +286,14 @@ const UIStrings = {
      * @description Description of a view that can be used to analyze the performance of a Node process as a timeline. "Node" is a product name and should not be translated.
      */
     nodeClickToRecord: 'Record a performance timeline of the connected Node process.',
+    /**
+     * @description Text in Timeline Panel of the Performance panel for network throttling
+     */
+    networkThrottling: 'Network:',
+    /**
+     * @description Text for why user should change a throttling setting.
+     */
+    recommendedThrottlingReason: 'Consider changing setting to simulate real user environments',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/LiveMetricsView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -523,7 +534,6 @@ function renderRecordingSettings(input) {
     const fieldEnabled = input.cruxManager.getConfigSetting().get().enabled;
     const deviceRec = getDeviceRec(input.cruxManager) || i18nString(UIStrings.notEnoughData);
     const networkRec = getNetworkRecTitle(input.cruxManager) || i18nString(UIStrings.notEnoughData);
-    const recs = PanelsCommon.ThrottlingUtils.getThrottlingRecommendations();
     // clang-format off
     return html `
     <h3 class="card-title">${i18nString(UIStrings.environmentSettings)}</h3>
@@ -535,10 +545,22 @@ function renderRecordingSettings(input) {
       </ul>
     ` : nothing}
     <div class="environment-option">
-      ${widget(CPUThrottlingSelector, { recommendedOption: recs.cpuOption })}
+      <label class="environment-option-label">
+        ${i18nString(UIStrings.cpuThrottling)}
+        <select ${widget(MobileThrottling.CPUThrottlingSelector.CPUThrottlingSelector)}></select>
+      </label>
+      <devtools-icon title=${i18nString(UIStrings.recommendedThrottlingReason)} name="info"></devtools-icon>
     </div>
     <div class="environment-option">
-      <devtools-network-throttling-selector .recommendedConditions=${recs.networkConditions}></devtools-network-throttling-selector>
+      <label class="environment-option-label">
+        ${i18nString(UIStrings.networkThrottling)}
+        <select
+          ${widget(MobileThrottling.NetworkThrottlingSelector.NetworkThrottlingSelect, {
+        bindToGlobalConditions: true,
+    })}
+        ></select>
+      </label>
+      <devtools-icon title=${i18nString(UIStrings.recommendedThrottlingReason)} name="info"></devtools-icon>
     </div>
     <div class="environment-option">
       <setting-checkbox

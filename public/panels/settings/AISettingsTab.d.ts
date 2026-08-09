@@ -1,6 +1,7 @@
 import '../../ui/kit/kit.js';
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
+import * as AiAssistanceModel from '../../models/ai_assistance/ai_assistance.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Lit from '../../ui/lit/lit.js';
 interface SettingItem {
@@ -9,7 +10,8 @@ interface SettingItem {
 }
 interface AiSettingParams {
     settingName: Platform.UIString.LocalizedString;
-    setting?: Common.Settings.Setting<boolean>;
+    setting?: Common.Settings.Setting<boolean> | AiAssistanceModel.AiSetting.AiSetting<boolean>;
+    disabledReasons?: Platform.UIString.LocalizedString[];
     iconName: string;
     settingDescription: Platform.UIString.LocalizedString;
     enableSettingText: Common.UIString.LocalizedString;

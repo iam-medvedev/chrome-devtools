@@ -5396,28 +5396,6 @@ var GET_EXTENSIONS_MENU_ITEM = "get-extensions-link";
 var GET_EXTENSIONS_URL = "https://goo.gle/recorder-extension-list";
 var RECORDER_EXPLANATION_URL = "https://developer.chrome.com/docs/devtools/recorder";
 var FEEDBACK_URL = "https://goo.gle/recorder-feedback";
-var CONVERTER_ID_TO_METRIC = {
-  [
-    "json"
-    /* Models.ConverterIds.ConverterIds.JSON */
-  ]: 2,
-  [
-    "@puppeteer/replay"
-    /* Models.ConverterIds.ConverterIds.REPLAY */
-  ]: 3,
-  [
-    "puppeteer"
-    /* Models.ConverterIds.ConverterIds.PUPPETEER */
-  ]: 1,
-  [
-    "puppeteer-firefox"
-    /* Models.ConverterIds.ConverterIds.PUPPETEER_FIREFOX */
-  ]: 1,
-  [
-    "lighthouse"
-    /* Models.ConverterIds.ConverterIds.LIGHTHOUSE */
-  ]: 5
-};
 function verifyFlowSize(flow) {
   if (flow.steps.length > 4096) {
     throw new Error("Recording with steps over 4096 is not allowed");
@@ -6133,10 +6111,7 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
     extension.replay(this.currentRecording.flow);
     const descriptor = await promise;
     this.viewDescriptor = descriptor;
-    Host2.userMetrics.recordingReplayStarted(
-      3
-      /* Host.UserMetrics.RecordingReplayStarted.REPLAY_VIA_EXTENSION */
-    );
+    Host2.userMetrics.recordingReplayStarted(Host2.UserMetrics.RecordingReplayStarted.REPLAY_VIA_EXTENSION);
   }
   async #onPlayRecording(event) {
     if (!this.currentRecording || !this.#replayAllowed) {
@@ -6152,10 +6127,7 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
     if (event.extension) {
       return await this.#onPlayViaExtension(event.extension);
     }
-    Host2.userMetrics.recordingReplayStarted(
-      event.targetPanel !== "chrome-recorder" ? 2 : 1
-      /* Host.UserMetrics.RecordingReplayStarted.REPLAY_ONLY */
-    );
+    Host2.userMetrics.recordingReplayStarted(event.targetPanel !== "chrome-recorder" ? Host2.UserMetrics.RecordingReplayStarted.REPLAY_WITH_PERFORMANCE_TRACING : Host2.UserMetrics.RecordingReplayStarted.REPLAY_ONLY);
     this.#replayState.isPlaying = true;
     this.currentStep = void 0;
     this.recordingError = void 0;
@@ -6195,20 +6167,11 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
       this.lastReplayResult = "Failure";
       const errorMessage = error.message.toLowerCase();
       if (errorMessage.startsWith("could not find element")) {
-        Host2.userMetrics.recordingReplayFinished(
-          2
-          /* Host.UserMetrics.RecordingReplayFinished.TIMEOUT_ERROR_SELECTORS */
-        );
+        Host2.userMetrics.recordingReplayFinished(Host2.UserMetrics.RecordingReplayFinished.TIMEOUT_ERROR_SELECTORS);
       } else if (errorMessage.startsWith("waiting for target failed")) {
-        Host2.userMetrics.recordingReplayFinished(
-          3
-          /* Host.UserMetrics.RecordingReplayFinished.TIMEOUT_ERROR_TARGET */
-        );
+        Host2.userMetrics.recordingReplayFinished(Host2.UserMetrics.RecordingReplayFinished.TIMEOUT_ERROR_TARGET);
       } else {
-        Host2.userMetrics.recordingReplayFinished(
-          4
-          /* Host.UserMetrics.RecordingReplayFinished.OTHER_ERROR */
-        );
+        Host2.userMetrics.recordingReplayFinished(Host2.UserMetrics.RecordingReplayFinished.OTHER_ERROR);
       }
       this.element.dispatchEvent(new ReplayFinishedEvent());
     });
@@ -6219,10 +6182,7 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
       }
       this.lastReplayResult = "Success";
       this.element.dispatchEvent(new ReplayFinishedEvent());
-      Host2.userMetrics.recordingReplayFinished(
-        1
-        /* Host.UserMetrics.RecordingReplayFinished.SUCCESS */
-      );
+      Host2.userMetrics.recordingReplayFinished(Host2.UserMetrics.RecordingReplayFinished.SUCCESS);
     });
     this.recordingPlayer.addEventListener("Abort", () => {
       this.currentStep = void 0;
@@ -6457,10 +6417,7 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
     await this.#disableDeviceModeIfEnabled();
     this.isToggling = true;
     this.#clearError();
-    Host2.userMetrics.recordingToggled(
-      1
-      /* Host.UserMetrics.RecordingToggled.RECORDING_STARTED */
-    );
+    Host2.userMetrics.recordingToggled(Host2.UserMetrics.RecordingToggled.RECORDING_STARTED);
     this.currentRecordingSession = new Models8.RecordingSession.RecordingSession(this.#getMainTarget(), {
       title: data.name,
       selectorAttribute: data.selectorAttribute,
@@ -6520,10 +6477,7 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
     }
     this.isToggling = true;
     this.#clearError();
-    Host2.userMetrics.recordingToggled(
-      2
-      /* Host.UserMetrics.RecordingToggled.RECORDING_FINISHED */
-    );
+    Host2.userMetrics.recordingToggled(Host2.UserMetrics.RecordingToggled.RECORDING_FINISHED);
     await this.currentRecordingSession.stop();
     this.currentRecordingSession = void 0;
     this.isToggling = false;
@@ -6573,14 +6527,14 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
     }
     const id = event.itemValue;
     const byId = (converter2) => converter2.getId() === id;
+    const isBuiltIn = this.#builtInConverters.some(byId);
     const converter = this.#builtInConverters.find(byId) || this.extensionConverters.find(byId);
     if (!converter) {
       throw new Error("No recording selected");
     }
     const [content] = await converter.stringify(this.currentRecording.flow);
     await this.#exportContent(converter.getFilename(this.currentRecording.flow), content);
-    const builtInMetric = CONVERTER_ID_TO_METRIC[converter.getId()];
-    if (builtInMetric) {
+    if (isBuiltIn) {
       UI11.ARIAUtils.LiveAnnouncer.alert(i18nString9(UIStrings9.recordingExported));
     } else if (converter.getId().startsWith(Converters.ExtensionConverter.EXTENSION_PREFIX)) {
       UI11.ARIAUtils.LiveAnnouncer.alert(i18nString9(UIStrings9.recordingExported));

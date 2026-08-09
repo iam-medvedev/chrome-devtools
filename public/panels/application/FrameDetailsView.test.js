@@ -25,8 +25,7 @@ const makeFrame = (target) => {
         isCrossOriginIsolated: () => true,
         getCrossOriginIsolatedContextType: () => "NotIsolatedFeatureDisabled" /* Protocol.Page.CrossOriginIsolatedContextType.NotIsolatedFeatureDisabled */,
         getSecureContextType: () => "SecureLocalhost" /* Protocol.Page.SecureContextType.SecureLocalhost */,
-        getGatedAPIFeatures: () => ["SharedArrayBuffers" /* Protocol.Page.GatedAPIFeatures.SharedArrayBuffers */,
-            "SharedArrayBuffersTransferAllowed" /* Protocol.Page.GatedAPIFeatures.SharedArrayBuffersTransferAllowed */],
+        getGatedAPIFeatures: () => ["SharedArrayBuffers" /* Protocol.Page.GatedAPIFeatures.SharedArrayBuffers */, "SharedArrayBuffersTransferAllowed" /* Protocol.Page.GatedAPIFeatures.SharedArrayBuffersTransferAllowed */],
         getOwnerDOMNodeOrDocument: () => Promise.resolve({
             nodeName: () => 'iframe',
             nodeType: () => Node.ELEMENT_NODE,

@@ -57,6 +57,7 @@ describe('AiConversation', () => {
         };
         const file = new Workspace.UISourceCode.UISourceCode(project, Platform.DevToolsPath.urlString `https://example.com/script.js`, Common.ResourceType.resourceTypes.Script);
         sinon.stub(workspace, 'projects').returns([project]);
+        const nextId = AiAssistance.ContextSelectionAgent.ContextSelectionAgent.lastSourceId + 1;
         const conversation = new AiAssistance.AiConversation.AiConversation({
             type: "none" /* AiAssistance.AiHistoryStorage.ConversationType.NONE */,
             data: [],
@@ -67,7 +68,7 @@ describe('AiConversation', () => {
                         functionCalls: [{
                                 name: 'selectSourceFile',
                                 args: {
-                                    id: 1,
+                                    id: nextId,
                                 },
                             }],
                         explanation: '',

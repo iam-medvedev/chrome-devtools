@@ -45,7 +45,7 @@ describeWithEnvironment('BreakpointManager', () => {
     const DEFAULT_BREAKPOINT = [
         Breakpoints.BreakpointManager.EMPTY_BREAKPOINT_CONDITION,
         true, // enabled
-        false, // isLogpoint
+        false,
         "RESTORED" /* Breakpoints.BreakpointManager.BreakpointOrigin.OTHER */,
     ];
     // For tests with source maps.

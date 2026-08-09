@@ -4,7 +4,6 @@
 
 import * as Breadcrumbs from './Breadcrumbs.js';
 import * as BreadcrumbsUI from './BreadcrumbsUI.js';
-import * as CPUThrottlingSelector from './CPUThrottlingSelector.js';
 import * as CWVMetrics from './CWVMetrics.js';
 import * as DetailsView from './DetailsView.js';
 import * as ExportTraceOptions from './ExportTraceOptions.js';
@@ -16,7 +15,6 @@ import * as LiveMetricsView from './LiveMetricsView.js';
 import * as MetricCard from './MetricCard.js';
 import * as NetworkRequestDetails from './NetworkRequestDetails.js';
 import * as NetworkRequestTooltip from './NetworkRequestTooltip.js';
-import * as NetworkThrottlingSelector from './NetworkThrottlingSelector.js';
 import * as NetworkTrackWidget from './NetworkTrackWidget.js';
 import * as OriginMap from './OriginMap.js';
 import * as RelatedInsightChips from './RelatedInsightChips.js';
@@ -31,7 +29,6 @@ import * as Utils from './Utils.js';
 export {
   Breadcrumbs,
   BreadcrumbsUI,
-  CPUThrottlingSelector,
   CWVMetrics,
   DetailsView,
   ExportTraceOptions,
@@ -43,7 +40,6 @@ export {
   MetricCard,
   NetworkRequestDetails,
   NetworkRequestTooltip,
-  NetworkThrottlingSelector,
   NetworkTrackWidget,
   OriginMap,
   RelatedInsightChips,

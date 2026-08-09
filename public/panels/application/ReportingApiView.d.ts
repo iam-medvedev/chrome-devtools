@@ -14,7 +14,7 @@ interface ViewInput {
 export declare const DEFAULT_VIEW: (input: ViewInput, output: undefined, target: HTMLElement) => void;
 export declare class ReportingApiView extends UI.Widget.VBox implements SDK.TargetManager.SDKModelObserver<SDK.NetworkManager.NetworkManager> {
     #private;
-    constructor(view?: (input: ViewInput, output: undefined, target: HTMLElement) => void);
+    constructor(view?: typeof DEFAULT_VIEW);
     modelAdded(networkManager: SDK.NetworkManager.NetworkManager): void;
     modelRemoved(networkManager: SDK.NetworkManager.NetworkManager): void;
     performUpdate(): void;

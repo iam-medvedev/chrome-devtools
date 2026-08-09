@@ -11,11 +11,11 @@ import { LayerPaintProfilerView } from './LayerPaintProfilerView.js';
 import { Events, LayerTreeModel } from './LayerTreeModel.js';
 const UIStrings = {
     /**
-     * @description Text for the details of something
+     * @description Title of the details tab in the Layers panel.
      */
     details: 'Details',
     /**
-     * @description Title of the Profiler tool
+     * @description Title of the profiler tab in the Layers panel.
      */
     profiler: 'Profiler',
 };

@@ -42,6 +42,7 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../front_end/ui/lit/Directives.test.ts",
     "../../../../../../front_end/ui/lit/i18n-template.test.ts",
     "../../../../../../front_end/ui/lit/render.test.ts",
     "../../../../../../front_end/ui/lit/strip-whitespace.test.ts",
@@ -61,6 +62,9 @@
     },
     {
       "path": "../../third_party/i18n/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../third_party/lit/bundle-tsconfig.json"
     }
   ]
 }

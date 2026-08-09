@@ -1,3 +1,4 @@
+import type * as Common from '../../../../core/common/common.js';
 import type * as TextUtils from '../../../../core/text_utils/text_utils.js';
 import * as Lit from '../../../lit/lit.js';
 import * as UI from '../../legacy.js';
@@ -5,6 +6,12 @@ import { type ColumnDescriptor, type ResizeMethod } from './DataGrid.js';
 export declare class DataGridElement extends UI.UIUtils.HTMLElementWithLightDOMTemplate {
     #private;
     static readonly observedAttributes: string[];
+    set columnsVisibilitySetting(setting: Common.Settings.Setting<Record<string, {
+        visible: boolean;
+    }>>);
+    get columnsVisibilitySetting(): Common.Settings.Setting<Record<string, {
+        visible: boolean;
+    }>> | undefined;
     constructor();
     connectedCallback(): void;
     disconnectedCallback(): void;
@@ -40,5 +47,5 @@ declare class IfExpandedDirective extends Lit.Directive.Directive {
     constructor(partInfo: Lit.Directive.PartInfo);
     render(content: Lit.LitTemplate | Iterable<Lit.LitTemplate>): Lit.LitTemplate | Iterable<Lit.LitTemplate>;
 }
-export declare const ifExpanded: (content: Lit.LitTemplate | Iterable<Lit.LitTemplate>) => Lit.DirectiveResult<typeof IfExpandedDirective>;
+export declare const ifExpanded: (content: Iterable<Lit.LitTemplate> | Lit.LitTemplate) => Lit.DirectiveResult<typeof IfExpandedDirective>;
 export {};

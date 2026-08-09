@@ -667,6 +667,7 @@ export const generatedProperties = [
             "math-shift",
             "math-style",
             "max-block-size",
+            "max-content-sizing",
             "max-height",
             "max-inline-size",
             "max-lines",
@@ -825,6 +826,7 @@ export const generatedProperties = [
             "text-box-trim",
             "text-combine-upright",
             "text-decoration-color",
+            "text-decoration-inset",
             "text-decoration-line",
             "text-decoration-skip-ink",
             "text-decoration-skip-spaces",
@@ -3916,6 +3918,15 @@ export const generatedProperties = [
     },
     {
         "keywords": [
+            "auto",
+            "shrink-to-fit"
+        ],
+        "name": "max-content-sizing",
+        "runtime_flag": "CssMaxContentSizing",
+        "runtime_flag_status": "test"
+    },
+    {
+        "keywords": [
             "none"
         ],
         "name": "max-height"
@@ -4980,7 +4991,7 @@ export const generatedProperties = [
         ],
         "name": "scroll-axis-lock",
         "runtime_flag": "ScrollAxisLock",
-        "runtime_flag_status": "experimental"
+        "runtime_flag_status": "stable"
     },
     {
         "keywords": [
@@ -5477,6 +5488,15 @@ export const generatedProperties = [
             "currentcolor"
         ],
         "name": "text-decoration-color"
+    },
+    {
+        "inherited": false,
+        "keywords": [
+            "auto"
+        ],
+        "name": "text-decoration-inset",
+        "runtime_flag": "CSSTextDecorationInset",
+        "runtime_flag_status": "experimental"
     },
     {
         "keywords": [
@@ -8045,6 +8065,12 @@ export const generatedPropertyValues = {
             "none"
         ]
     },
+    "max-content-sizing": {
+        "values": [
+            "auto",
+            "shrink-to-fit"
+        ]
+    },
     "max-height": {
         "values": [
             "none"
@@ -8828,6 +8854,11 @@ export const generatedPropertyValues = {
     "text-decoration-color": {
         "values": [
             "currentcolor"
+        ]
+    },
+    "text-decoration-inset": {
+        "values": [
+            "auto"
         ]
     },
     "text-decoration-line": {

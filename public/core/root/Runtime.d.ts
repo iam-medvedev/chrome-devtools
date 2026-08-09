@@ -187,10 +187,13 @@ export interface HostConfigAnimationStylesInStylesTab {
 export interface HostConfigJpegXlImageFormat {
     enabled: boolean;
 }
+export interface HostConfigSourceMapScopesInSourcesPanel {
+    enabled: boolean;
+}
 interface AiGeneratedTimelineLabels {
     enabled: boolean;
 }
-interface AllowPopoverForcing {
+interface AllowInterestForcing {
     enabled: boolean;
 }
 interface GlobalAiButton {
@@ -254,6 +257,9 @@ interface DevToolsPlusButton {
 interface DevToolsInstrumentationBreakpoints {
     enabled: boolean;
 }
+interface HostConfigDevToolsComments {
+    enabled: boolean;
+}
 /**
  * The host configuration that we expect from the DevTools back-end.
  *
@@ -292,8 +298,9 @@ export type HostConfig = Platform.TypeScriptUtilities.RecursivePartial<{
     devToolsEnableOriginBoundCookies: HostConfigEnableOriginBoundCookies;
     devToolsAnimationStylesInStylesTab: HostConfigAnimationStylesInStylesTab;
     devToolsJpegXlImageFormat: HostConfigJpegXlImageFormat;
+    devToolsSourceMapScopesInSourcesPanel: HostConfigSourceMapScopesInSourcesPanel;
     devToolsAiGeneratedTimelineLabels: AiGeneratedTimelineLabels;
-    devToolsAllowPopoverForcing: AllowPopoverForcing;
+    devToolsAllowInterestForcing: AllowInterestForcing;
     devToolsGlobalAiButton: GlobalAiButton;
     devToolsGdpProfiles: GdpProfiles;
     devToolsGdpProfilesAvailability: GdpProfilesAvailability;
@@ -311,6 +318,7 @@ export type HostConfig = Platform.TypeScriptUtilities.RecursivePartial<{
     devToolsPlusButton: DevToolsPlusButton;
     devToolsInstrumentationBreakpoints: DevToolsInstrumentationBreakpoints;
     extensionsOnChromeUrls: ExtensionsOnChromeUrls;
+    devToolsComments: HostConfigDevToolsComments;
 }>;
 /**
  * The host configuration for this DevTools instance.

@@ -5,7 +5,6 @@
     },
     "files": [
         "breadcrumbsUI.css.js",
-        "cpuThrottlingSelector.css.js",
         "cwvMetrics.css.js",
         "exportTraceOptions.css.js",
         "fieldSettingsDialog.css.js",
@@ -17,7 +16,6 @@
         "metricValueStyles.css.js",
         "networkRequestDetails.css.js",
         "networkRequestTooltip.css.js",
-        "networkThrottlingSelector.css.js",
         "networkTrackWidget.css.js",
         "originMap.css.js",
         "relatedInsightChips.css.js",

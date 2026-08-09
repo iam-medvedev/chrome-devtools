@@ -10,7 +10,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../../core/text_utils/text_utils.js';
 import { findMenuItemWithLabel } from '../../testing/ContextMenuHelpers.js';
 import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { deinitializeGlobalVars, initializeGlobalVars } from '../../testing/EnvironmentHelpers.js';
+import { createFakeSetting, deinitializeGlobalVars, initializeGlobalVars } from '../../testing/EnvironmentHelpers.js';
 import { expectCall } from '../../testing/ExpectStubCall.js';
 import { stubFileManager } from '../../testing/FileManagerHelpers.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
@@ -423,6 +423,7 @@ describe('ProtocolMonitor', () => {
                 onTargetChange: (_) => { },
                 onToggleSidebar: () => { },
                 onEditorSubmit: () => { },
+                columnsVisibilitySetting: createFakeSetting('protocol-monitor-columns', {}),
                 targets: [],
                 selectedTargetId: 'main',
             };
@@ -475,6 +476,7 @@ describe('ProtocolMonitor', () => {
                 onTargetChange: (_) => { },
                 onToggleSidebar: () => { },
                 onEditorSubmit: () => { },
+                columnsVisibilitySetting: createFakeSetting('protocol-monitor-columns', {}),
                 targets: [
                     { id: () => 'main', name: () => 'Main', inspectedURL: () => 'www.example.com' },
                     { id: () => 'prerender', name: () => 'Prerender', inspectedURL: () => 'www.example.com/prerender' },

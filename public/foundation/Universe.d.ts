@@ -21,13 +21,16 @@ export interface CreationOptions {
     hostConfig: Root.Runtime.HostConfig;
     inspectorFrontendHost: Host.InspectorFrontendHostAPI.InspectorFrontendHostAPI;
     supportsEmulation: boolean;
+    initAutomaticFilesystem?: boolean;
 }
 export declare class Universe {
     readonly context: Root.DevToolsContext.DevToolsContext;
     readonly autofillManager: AutofillManager.AutofillManager.AutofillManager;
     readonly supportsEmulation: boolean;
+    readonly initAutomaticFilesystem: boolean;
     readonly fileSystemWorkspaceBinding: Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding;
     constructor(options: CreationOptions);
+    dispose(): void;
     get automaticFileSystemManager(): Persistence.AutomaticFileSystemManager.AutomaticFileSystemManager;
     get automaticFileSystemWorkspaceBinding(): Persistence.AutomaticFileSystemWorkspaceBinding.AutomaticFileSystemWorkspaceBinding;
     get aiHistoryStorage(): AiAssistance.AiHistoryStorage.AiHistoryStorage;
@@ -55,7 +58,7 @@ export declare class Universe {
     get pageResourceLoader(): SDK.PageResourceLoader.PageResourceLoader;
     get persistence(): Persistence.Persistence.PersistenceImpl;
     get presentationConsoleMessageManager(): Bindings.PresentationConsoleMessageHelper.PresentationConsoleMessageManager;
-    get projectSettingsModel(): ProjectSettings.ProjectSettingsModel.ProjectSettingsModel;
+    get projectSettingsModel(): ProjectSettings.ProjectSettingsModel.ProjectSettingsModel | null;
     get settings(): Common.Settings.Settings;
     get targetManager(): SDK.TargetManager.TargetManager;
     get userBadges(): Badges.UserBadges;

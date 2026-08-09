@@ -436,11 +436,7 @@ describeWithEnvironment('ConsoleView', () => {
             messageTimestamp = 0;
             Common.Settings.Settings.instance().createSetting('console-group-similar', true).set(true);
         });
-        for (const level of ["error" /* Protocol.Log.LogEntryLevel.Error */,
-            "warning" /* Protocol.Log.LogEntryLevel.Warning */,
-            "info" /* Protocol.Log.LogEntryLevel.Info */,
-            "verbose" /* Protocol.Log.LogEntryLevel.Verbose */,
-        ]) {
+        for (const level of ["error" /* Protocol.Log.LogEntryLevel.Error */, "warning" /* Protocol.Log.LogEntryLevel.Warning */, "info" /* Protocol.Log.LogEntryLevel.Info */, "verbose" /* Protocol.Log.LogEntryLevel.Verbose */,]) {
             it(`shows collapsed group but not message when filtering for ${level}`, async () => {
                 const levels = Console.ConsoleFilter.ConsoleFilter.singleLevelMask(level);
                 // Setting might exist, .set() is crucial

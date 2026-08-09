@@ -205,6 +205,17 @@ describeWithEnvironment('TimelineFlameChartNetworkDataProvider', function () {
             },
         ]);
     });
+    it('prepares popover element for network request events', async function () {
+        const dataProvider = new Timeline.TimelineFlameChartNetworkDataProvider.TimelineFlameChartNetworkDataProvider();
+        const parsedTrace = await TraceLoader.traceEngine(this, 'load-simple.json.gz');
+        const entityMapper = new Trace.EntityMapper.EntityMapper(parsedTrace);
+        dataProvider.setModel(parsedTrace, entityMapper);
+        const popover = dataProvider.preparePopoverElement(0);
+        assert.isNotNull(popover);
+        // Non-network request or invalid index returns null
+        const nonExistentPopover = dataProvider.preparePopoverElement(-1);
+        assert.isNull(nonExistentPopover);
+    });
 });
 function assertTimestampEqual(actual, expected) {
     assert.strictEqual(actual.toFixed(2), expected.toFixed(2));

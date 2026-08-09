@@ -1,21 +1,18 @@
 import * as Common from '../../core/common/common.js';
+import type * as Protocol from '../../generated/protocol.js';
 import * as EmulationModel from '../../models/emulation/emulation.js';
 import * as UI from '../../ui/legacy/legacy.js';
 export interface DeviceModeViewInput {
     model: EmulationModel.DeviceModeModel.DeviceModeModel;
+    showDeviceMode: boolean;
     showMediaInspectorSetting: Common.Settings.Setting<boolean>;
     showRulersSetting: Common.Settings.Setting<boolean>;
-    outlineImage: string;
-    outlineImageLoaded: boolean;
-    screenImage: string;
-    screenImageLoaded: boolean;
     resizable: boolean;
     showRulers: boolean;
     showMediaInspector: boolean;
     scale: number;
     cachedCssScreenRect?: EmulationModel.DeviceModeModel.Rect;
     cachedCssVisiblePageRect?: EmulationModel.DeviceModeModel.Rect;
-    cachedOutlineRect?: EmulationModel.DeviceModeModel.Rect;
     onApplyPresetSize: (size: number, e: Event) => void;
     bottomRightResizer: UI.ResizerWidget.ResizerWidget;
     bottomLeftResizer: UI.ResizerWidget.ResizerWidget;
@@ -28,8 +25,6 @@ export interface DeviceModeViewInput {
     leftResizerRef: (el?: Element) => void;
     bottomResizerRef: (el?: Element) => void;
     onDoubleclickBottomResizer: () => void;
-    onOutlineImageLoaded: (success: boolean) => void;
-    onScreenImageLoaded: (success: boolean) => void;
 }
 export type DeviceModeViewView = (input: DeviceModeViewInput, output: undefined, target: HTMLElement) => void;
 export declare const DEFAULT_DEVICE_MODE_VIEW: DeviceModeViewView;
@@ -53,14 +48,13 @@ export declare class DeviceModeView extends UI.Widget.VBox {
     private resizeStart?;
     private cachedCssScreenRect?;
     private cachedCssVisiblePageRect?;
-    private cachedOutlineRect?;
     private cachedMediaInspectorVisible?;
     private cachedShowRulers?;
     private cachedScale?;
-    constructor(view?: DeviceModeViewView);
+    constructor(element?: HTMLElement, view?: DeviceModeViewView);
     performUpdate(): void;
-    private onOutlineImageLoaded;
-    private onScreenImageLoaded;
+    static captureScreenshot(fullSize?: boolean, clip?: Protocol.Page.Viewport): boolean;
+    private screenshotRequestedFromOverlay;
     private createResizer;
     private onResizeStart;
     private onResizeUpdate;
@@ -105,5 +99,8 @@ export declare class Ruler extends Ruler_base {
     wasShown(): void;
     onResize(): void;
     performUpdate(): void;
+}
+export declare class ActionDelegate implements UI.ActionRegistration.ActionDelegate {
+    handleAction(context: UI.Context.Context, actionId: string): boolean;
 }
 export {};

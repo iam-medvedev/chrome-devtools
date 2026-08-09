@@ -133,10 +133,13 @@ describeWithEnvironment('AI Assistance Panel', () => {
         });
         it('should render the disabled view when the setting is disabled', async () => {
             Common.Settings.Settings.instance().moduleSetting('ai-assistance-enabled').set(true);
-            Common.Settings.Settings.instance().moduleSetting('ai-assistance-enabled').setDisabled(true);
+            const stub = sinon.stub(AiAssistanceModel.AiUtils.aiAssistanceEnabledSettingDescriptor, 'isAvailable').returns({
+                status: 3 /* Common.Settings.SettingAvailability.DISABLED */,
+                reason: ["policy-restricted" /* AiAssistanceModel.AiUtils.DisabledReason.POLICY_RESTRICTED */],
+            });
             const { view } = await createAiAssistancePanel();
             assert(view.input.state === "disabled-view" /* AiAssistancePanel.ViewState.DISABLED_VIEW */);
-            Common.Settings.Settings.instance().moduleSetting('ai-assistance-enabled').setDisabled(false);
+            stub.restore();
         });
         it('should render the disabled view when blocked by age', async () => {
             Common.Settings.Settings.instance().moduleSetting('ai-assistance-enabled').set(true);
@@ -498,10 +501,15 @@ describeWithEnvironment('AI Assistance Panel', () => {
             assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
             assert.strictEqual(nextInput.props.textInputValue, '');
             nextInput.props.onTextChange('test text');
-            Common.Settings.Settings.instance().moduleSetting('ai-assistance-enabled').setDisabled(true);
+            const stub = sinon.stub(AiAssistanceModel.AiUtils.aiAssistanceEnabledSettingDescriptor, 'isAvailable').returns({
+                status: 3 /* Common.Settings.SettingAvailability.DISABLED */,
+                reason: ["policy-restricted" /* AiAssistanceModel.AiUtils.DisabledReason.POLICY_RESTRICTED */],
+            });
+            Host.AidaClient.HostConfigTracker.instance().dispatchEventToListeners("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */, "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
             nextInput = await view.nextInput;
             assert(nextInput.state === "disabled-view" /* AiAssistancePanel.ViewState.DISABLED_VIEW */);
-            Common.Settings.Settings.instance().moduleSetting('ai-assistance-enabled').setDisabled(false);
+            stub.restore();
+            Host.AidaClient.HostConfigTracker.instance().dispatchEventToListeners("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */, "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
             nextInput = await view.nextInput;
             assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
             assert.strictEqual(nextInput.props.textInputValue, 'test text');
@@ -670,10 +678,14 @@ describeWithEnvironment('AI Assistance Panel', () => {
             sinon.assert.calledWith(stub, 'chrome-ai');
         });
         it('should not show chat, delete history and export conversation actions when ai assistance enabled setting is disabled', async () => {
-            Common.Settings.Settings.instance().moduleSetting('ai-assistance-enabled').setDisabled(true);
+            const stub = sinon.stub(AiAssistanceModel.AiUtils.aiAssistanceEnabledSettingDescriptor, 'isAvailable').returns({
+                status: 3 /* Common.Settings.SettingAvailability.DISABLED */,
+                reason: ["policy-restricted" /* AiAssistanceModel.AiUtils.DisabledReason.POLICY_RESTRICTED */],
+            });
             const { view } = await createAiAssistancePanel();
             assert.isFalse(view.input.showChatActions);
             assert.isFalse(view.input.showActiveConversationActions);
+            stub.restore();
         });
         it('should not show chat, delete history and export conversation actions when ai assistance setting is marked as false', async () => {
             Common.Settings.Settings.instance().moduleSetting('ai-assistance-enabled').set(false);

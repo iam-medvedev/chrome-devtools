@@ -1178,6 +1178,7 @@ var AI_SETTINGS_TAB_DEFAULT_VIEW = (input, _output, target) => {
       open: settingData.settingExpandState.isSettingExpanded
     };
     const tabindex = settingData.settingExpandState.isSettingExpanded ? "0" : "-1";
+    const isSettingDisabled = isDisabled || Boolean(settingData.disabledReasons?.length) || settingData.setting instanceof AiAssistanceModel.AiSetting.AiSetting && settingData.setting.disabled;
     return html2`
       <div class="accordion-header" @click=${input.expandSetting.bind(void 0, settingName)}>
         <div class="icon-container centered">
@@ -1206,9 +1207,9 @@ var AI_SETTINGS_TAB_DEFAULT_VIEW = (input, _output, target) => {
         @click=${settingData.setting ? input.toggleSetting.bind(void 0, settingName) : nothing}
       >
         <devtools-switch
-          .checked=${isChecked && !isDisabled}
+          .checked=${isChecked && !isSettingDisabled}
           .jslogContext=${settingName}
-          .disabled=${isDisabled || !settingData.setting}
+          .disabled=${isSettingDisabled || !settingData.setting}
           .label=${disabledReasonsJoined || settingData.enableSettingText}
           data-testid=${settingData.enableSettingText}
           @switchchange=${settingData.setting ? input.toggleSetting.bind(void 0, settingName) : nothing}
@@ -1262,16 +1263,8 @@ var AISettingsTab = class extends UI2.Widget.VBox {
   #settingToParams = /* @__PURE__ */ new Map();
   constructor(view) {
     super();
-    try {
-      this.#consoleInsightsSetting = Common2.Settings.Settings.instance().moduleSetting("console-insights-enabled");
-    } catch {
-      this.#consoleInsightsSetting = void 0;
-    }
-    try {
-      this.#aiAssistanceSetting = Common2.Settings.Settings.instance().moduleSetting("ai-assistance-enabled");
-    } catch {
-      this.#aiAssistanceSetting = void 0;
-    }
+    this.#consoleInsightsSetting = new AiAssistanceModel.AiSetting.AiSetting(AiAssistanceModel.AiUtils.consoleInsightsEnabledSettingDescriptor, Host2.AidaClient.HostConfigTracker.instance(), Common2.Settings.Settings.instance());
+    this.#aiAssistanceSetting = new AiAssistanceModel.AiSetting.AiSetting(AiAssistanceModel.AiUtils.aiAssistanceEnabledSettingDescriptor, Host2.AidaClient.HostConfigTracker.instance(), Common2.Settings.Settings.instance());
     if (Root2.Runtime.hostConfig.devToolsAiGeneratedTimelineLabels?.enabled) {
       this.#aiAnnotationsSetting = Common2.Settings.Settings.instance().createSetting("ai-annotations-enabled", false);
     }
@@ -1323,8 +1316,10 @@ var AISettingsTab = class extends UI2.Widget.VBox {
           Platform2.assertNever(precondition, `Unknown precondition: ${precondition}`);
       }
     }
-    const availability = AiAssistanceModel.AiUtils.aiAssistanceEnabledSettingDescriptor.isAvailable(Root2.Runtime.hostConfig);
-    const settingDisabledReasons = availability.status === 3 ? this.#mapSettingDisabledReasons(availability.reason) : [];
+    const settingDisabledReasons = Array.from(/* @__PURE__ */ new Set([
+      ...this.#mapSettingDisabledReasons(this.#consoleInsightsSetting.disabledReasons),
+      ...this.#mapSettingDisabledReasons(this.#aiAssistanceSetting.disabledReasons)
+    ]));
     return [...mappedReasons, ...settingDisabledReasons];
   }
   performUpdate() {
@@ -1353,10 +1348,11 @@ var AISettingsTab = class extends UI2.Widget.VBox {
   // Define all parameter needed to render a setting
   #initSettings() {
     const noLogging = Root2.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue === Root2.Runtime.GenAiEnterprisePolicyValue.ALLOW_WITHOUT_LOGGING;
-    if (this.#consoleInsightsSetting) {
+    if (!this.#consoleInsightsSetting.unavailable) {
       const consoleInsightsData = {
         settingName: i18n3.i18n.lockedString("Console Insights"),
         setting: this.#consoleInsightsSetting,
+        disabledReasons: this.#mapSettingDisabledReasons(this.#consoleInsightsSetting.disabledReasons),
         iconName: "lightbulb-spark",
         settingDescription: i18nString2(UIStrings2.helpUnderstandConsole),
         enableSettingText: i18nString2(UIStrings2.enableConsoleInsights),
@@ -1379,10 +1375,11 @@ var AISettingsTab = class extends UI2.Widget.VBox {
       };
       this.#settingToParams.set("console-insights-enabled", consoleInsightsData);
     }
-    if (this.#aiAssistanceSetting) {
+    if (!this.#aiAssistanceSetting.unavailable) {
       const aiAssistanceData = {
         settingName: i18n3.i18n.lockedString(AiAssistanceModel.AiUtils.isGeminiBranding() ? "Gemini in Chrome DevTools" : "AI assistance"),
         setting: this.#aiAssistanceSetting,
+        disabledReasons: this.#mapSettingDisabledReasons(this.#aiAssistanceSetting.disabledReasons),
         iconName: AiAssistanceModel.AiUtils.getIconName(),
         settingDescription: this.#getAiAssistanceSettingDescription(),
         enableSettingText: i18nString2(UIStrings2.enableAiAssistance),

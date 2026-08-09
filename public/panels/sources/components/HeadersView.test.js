@@ -10,11 +10,12 @@ import { getContextMenuForElement, } from '../../../testing/ContextMenuHelpers.j
 import { dispatchFocusEvent, dispatchFocusOutEvent, dispatchInputEvent, dispatchKeyDownEvent, dispatchPasteEvent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { deinitializeGlobalVars, initializeGlobalVars, } from '../../../testing/EnvironmentHelpers.js';
 import { createFileSystemUISourceCode } from '../../../testing/UISourceCodeHelpers.js';
-import { recordedMetricsContain, resetRecordedMetrics, } from '../../../testing/UserMetricsHelpers.js';
+import { recordedMetricsContain, resetRecordedMetrics, setupUserMetricHooks, } from '../../../testing/UserMetricsHelpers.js';
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as SourcesComponents from './components.js';
 const { urlString } = Platform.DevToolsPath;
 describe('HeadersView', () => {
+    setupUserMetricHooks();
     const commitWorkingCopySpy = sinon.spy();
     before(async () => {
         await initializeGlobalVars();

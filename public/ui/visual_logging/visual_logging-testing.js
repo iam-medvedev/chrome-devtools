@@ -26,7 +26,9 @@ import { assertNotNullOrUndefined } from "./../../core/platform/platform.js";
 var LoggingConfig_exports = {};
 __export(LoggingConfig_exports, {
   VisualElements: () => VisualElements,
+  elementKey: () => elementKey,
   getLoggingConfig: () => getLoggingConfig,
+  getVePath: () => getVePath,
   makeConfigStringBuilder: () => makeConfigStringBuilder,
   needsLogging: () => needsLogging,
   parseJsLog: () => parseJsLog
@@ -809,6 +811,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "chrome-theme-colors-documentation",
   "chrome-theme-colors-false",
   "chrome-windows",
+  "circle",
   "city",
   "classic",
   "clear",
@@ -1291,6 +1294,17 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "custom-user-agent-metadata",
   "customize-pwa-tittle-bar",
   "cut",
+  "cutout-border-radius",
+  "cutout-cx",
+  "cutout-cy",
+  "cutout-height",
+  "cutout-lower-radius",
+  "cutout-radius",
+  "cutout-shape",
+  "cutout-upper-radius",
+  "cutout-width",
+  "cutout-x",
+  "cutout-y",
   "cx",
   "cy",
   "d",
@@ -2136,6 +2150,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "integer-8-bit",
   "interactions",
   "interactivity",
+  "interest",
   "interest-delay",
   "interest-delay-end",
   "interest-delay-start",
@@ -2236,6 +2251,10 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "ky",
   "landscape-left",
   "landscape-right",
+  "landscape-safe-area-bottom",
+  "landscape-safe-area-left",
+  "landscape-safe-area-right",
+  "landscape-safe-area-top",
   "language",
   "language-af",
   "language-am",
@@ -2726,6 +2745,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "math-shift",
   "math-style",
   "max-block-size",
+  "max-content-sizing",
   "max-height",
   "max-inline-size",
   "max-lines",
@@ -2939,6 +2959,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "none",
   "normal",
   "not-logged-in",
+  "notch",
   "notification",
   "notification.request-permission",
   "notifications",
@@ -3118,6 +3139,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "perspective",
   "perspective-origin",
   "picture-in-picture",
+  "pill",
   "ping",
   "pixel-10",
   "pixel-7",
@@ -3240,6 +3262,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "protocol",
   "protocol-handlers",
   "protocol-monitor",
+  "protocol-monitor-columns",
   "protocol-monitor-documentation",
   "protocol-monitor.add-custom-property",
   "protocol-monitor.add-parameter",
@@ -3299,6 +3322,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "recorder_recordings",
   "recording",
   "recordings",
+  "rectangle",
   "redirect-source-request",
   "redirect-source-request-url",
   "reduce",
@@ -3501,6 +3525,10 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "safari-i-pad-i-os-13.2",
   "safari-i-phone-i-os-13.2",
   "safari-mac",
+  "safe-area-bottom",
+  "safe-area-left",
+  "safe-area-right",
+  "safe-area-top",
   "same-site",
   "sampling-heap-profiler-timeline",
   "samsung-galaxy-a24-4g",
@@ -4050,6 +4078,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "text-combine-upright",
   "text-decoration",
   "text-decoration-color",
+  "text-decoration-inset",
   "text-decoration-line",
   "text-decoration-skip-ink",
   "text-decoration-skip-spaces",
@@ -4593,6 +4622,24 @@ var knownContextValues = /* @__PURE__ */ new Set([
 
 // gen/front_end/ui/visual_logging/LoggingConfig.js
 var LOGGING_ATTRIBUTE = "jslog";
+function elementKey(config) {
+  return `${VisualElements[config.ve]}${config.context ? `: ${config.context}` : ""}`;
+}
+function getVePath(element) {
+  const parts = [];
+  let current = element;
+  while (current) {
+    if (needsLogging(current)) {
+      try {
+        const config = getLoggingConfig(current);
+        parts.unshift(elementKey(config));
+      } catch {
+      }
+    }
+    current = current.parentElementOrShadowHost();
+  }
+  return parts.join(" > ");
+}
 function needsLogging(element) {
   return element.hasAttribute(LOGGING_ATTRIBUTE);
 }
@@ -5095,9 +5142,6 @@ function processImpressionsForAdHocAnalysisDebugLog(states) {
     adHocAnalysisEntries.set(state2.veid, entry);
     maybeLogDebugEvent(entry);
   }
-}
-function elementKey(config) {
-  return `${VisualElements[config.ve]}${config.context ? `: ${config.context}` : ""}`;
 }
 function debugString(config) {
   const components = [VisualElements[config.ve]];

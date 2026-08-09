@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import '../../ui/legacy/legacy.js';
 import '../../ui/legacy/components/data_grid/data_grid.js';
+import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as ProtocolClient from '../../core/protocol_client/protocol_client.js';
@@ -174,6 +175,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
               <devtools-data-grid
                   striped
                   slot="main"
+                  .columnsVisibilitySetting=${input.columnsVisibilitySetting}
                   .filters=${input.parseFilter(input.filter)}>
                 <table>
                     <tr>
@@ -303,6 +305,7 @@ export class ProtocolMonitorImpl extends UI.Panel.Panel {
     #filter = '';
     #editorWidget;
     #targetsBySessionId = new Map();
+    #columnsVisibilitySetting = Common.Settings.Settings.instance().createSetting('protocol-monitor-columns', {});
     constructor(view = DEFAULT_VIEW) {
         super('protocol-monitor', true);
         this.#view = view;
@@ -394,6 +397,7 @@ export class ProtocolMonitorImpl extends UI.Panel.Panel {
             onEditorSubmit: (command, parameters, targetId) => {
                 this.onCommandSend(command, parameters, targetId);
             },
+            columnsVisibilitySetting: this.#columnsVisibilitySetting,
             targets: SDK.TargetManager.TargetManager.instance().targets(),
             selectedTargetId: this.#selectedTargetId,
         };

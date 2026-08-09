@@ -158,7 +158,7 @@ describeWithEnvironment('ElementsTreeOutline', () => {
             const issue = IssuesManager.GenericIssue.GenericIssue.fromInspectorIssue(mockModel, inspectorIssue)[0];
             issuesManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, { issuesModel: mockModel, issue });
             await deferredDOMNodeStub();
-            const tagElement = treeElement.listItemElement.getElementsByClassName('webkit-html-tag-name')[0];
+            const tagElement = treeElement.widget.contentElement.querySelectorAll('.webkit-html-tag-name')[0];
             assert.isTrue(tagElement.classList.contains('violating-element'));
             // Reset tag to prepare for subsequent tests.
             tagElement.classList.remove('violating-element');
@@ -178,7 +178,7 @@ describeWithEnvironment('ElementsTreeOutline', () => {
             const issue = IssuesManager.ElementAccessibilityIssue.ElementAccessibilityIssue.fromInspectorIssue(mockModel, inspectorIssue)[0];
             issuesManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, { issuesModel: mockModel, issue });
             await deferredDOMNodeStub();
-            const tagElement = treeElement.listItemElement.getElementsByClassName('webkit-html-tag-name')[0];
+            const tagElement = treeElement.widget.contentElement.querySelectorAll('.webkit-html-tag-name')[0];
             assert.isTrue(tagElement.classList.contains('violating-element'));
             // Reset tag to prepare for subsequent tests.
             tagElement.classList.remove('violating-element');
@@ -198,7 +198,7 @@ describeWithEnvironment('ElementsTreeOutline', () => {
             const issue = IssuesManager.GenericIssue.GenericIssue.fromInspectorIssue(mockModel, inspectorIssue)[0];
             issuesManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, { issuesModel: mockModel, issue });
             await deferredDOMNodeStub();
-            const tagElement = treeElement.listItemElement.getElementsByClassName('webkit-html-tag-name')[0];
+            const tagElement = treeElement.widget.contentElement.querySelectorAll('.webkit-html-tag-name')[0];
             assert.isTrue(tagElement.classList.contains('violating-element'));
             const issues = treeElement.issuesByNodeElement.get(tagElement);
             assert.strictEqual(issues?.length, 3);
@@ -214,7 +214,7 @@ describeWithEnvironment('ElementsTreeOutline', () => {
             const issue = IssuesManager.ContentSecurityPolicyIssue.ContentSecurityPolicyIssue.fromInspectorIssue(mockModel, inspectorIssue)[0];
             issuesManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, { issuesModel: mockModel, issue });
             await deferredDOMNodeStub();
-            const tagElement = treeElement.listItemElement.getElementsByClassName('webkit-html-tag-name')[0];
+            const tagElement = treeElement.widget.contentElement.querySelectorAll('.webkit-html-tag-name')[0];
             assert.isFalse(tagElement.classList.contains('violating-element'));
         }
         // Test that issue can be hidden from the tree element.
@@ -230,7 +230,7 @@ describeWithEnvironment('ElementsTreeOutline', () => {
                 },
             };
             // Remove the issues added in previous tests.
-            const tagElement = treeElement.listItemElement.getElementsByClassName('webkit-html-tag-name')[0];
+            const tagElement = treeElement.widget.contentElement.querySelectorAll('.webkit-html-tag-name')[0];
             const issues = treeElement.issuesByNodeElement.get(tagElement);
             for (const issue of issues ?? []) {
                 treeElement.removeIssue(issue);
@@ -262,7 +262,7 @@ describeWithEnvironment('ElementsTreeOutline', () => {
             const issue = IssuesManager.GenericIssue.GenericIssue.fromInspectorIssue(mockModel, inspectorIssue)[0];
             issuesManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, { issuesModel: mockModel, issue });
             await deferredDOMNodeStub();
-            const tagElement = treeElement.listItemElement.getElementsByClassName('webkit-html-tag-name')[0];
+            const tagElement = treeElement.widget.contentElement.querySelectorAll('.webkit-html-tag-name')[0];
             assert.isTrue(tagElement.classList.contains('violating-element'));
             // Hide the issue.
             issue.setHidden(true);
@@ -293,7 +293,7 @@ describeWithEnvironment('ElementsTreeOutline', () => {
             issue.setHidden(true);
             issuesManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, { issuesModel: mockModel, issue });
             await deferredDOMNodeStub();
-            const tagElement = treeElement.listItemElement.getElementsByClassName('webkit-html-tag-name')[0];
+            const tagElement = treeElement.widget.contentElement.querySelectorAll('.webkit-html-tag-name')[0];
             assert.isFalse(tagElement.classList.contains('violating-element'));
         }
     });
@@ -322,12 +322,12 @@ describeWithEnvironment('ElementsTreeOutline', () => {
         treeOutline.selectDOMNode(pNode);
         const treeElement = treeOutline.findTreeElement(pNode);
         assert.isNotNull(treeElement);
-        const textNodeContainer = treeElement.listItemElement.querySelector('.webkit-html-text-node');
+        const textNodeContainer = treeElement.widget.contentElement.querySelector('.webkit-html-text-node');
         assert.isNotNull(textNodeContainer);
         assert.isFalse(UI.UIUtils.isEditing());
-        textNodeContainer.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
+        textNodeContainer.dispatchEvent(new MouseEvent('dblclick', { bubbles: true, composed: true }));
         assert.isTrue(UI.UIUtils.isEditing());
-        const event = new MouseEvent('contextmenu', { bubbles: true });
+        const event = new MouseEvent('contextmenu', { bubbles: true, composed: true });
         const preventDefaultSpy = sinon.spy(event, 'preventDefault');
         await treeOutline.showContextMenu(treeElement, event);
         sinon.assert.notCalled(preventDefaultSpy);
@@ -359,10 +359,11 @@ describeWithEnvironment('ElementsTreeOutline', () => {
         const treeElement = treeOutline.findTreeElement(pNode);
         assert.isNotNull(treeElement);
         assert.isFalse(UI.UIUtils.isEditing());
-        const textNodeContainer = treeElement.listItemElement.querySelector('.webkit-html-text-node');
+        const textNodeContainer = treeElement.widget.contentElement.querySelector('.webkit-html-text-node');
         assert.isNotNull(textNodeContainer);
         const event = new MouseEvent('contextmenu', {
             bubbles: true,
+            composed: true,
         });
         // We need to stub the tree element here, since this method
         // determines the treeElement based on pageX and pageY coordinates which we can't directly
@@ -669,7 +670,7 @@ describeWithEnvironment('ElementsTreeOutline', () => {
         const treeElement = treeOutline.findTreeElement(aNode);
         assert.isNotNull(treeElement);
         const getAttributeValue = (name) => {
-            const attributes = treeElement.listItemElement.getElementsByClassName('webkit-html-attribute');
+            const attributes = treeElement.widget.contentElement.querySelectorAll('.webkit-html-attribute');
             for (const attribute of attributes) {
                 const nameElement = attribute.getElementsByClassName('webkit-html-attribute-name')[0];
                 if (nameElement?.textContent === name) {

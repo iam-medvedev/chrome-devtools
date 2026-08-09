@@ -167,9 +167,6 @@
   "core/common/SettingRegistration.ts | persistence": {
     "message": "Persistence"
   },
-  "core/common/SettingRegistration.ts | privacy": {
-    "message": "Privacy"
-  },
   "core/common/SettingRegistration.ts | rendering": {
     "message": "Rendering"
   },
@@ -3128,20 +3125,11 @@
   "panels/ai_assistance/ai_assistance-meta.ts | gemini": {
     "message": "Gemini"
   },
-  "panels/ai_assistance/ai_assistance-meta.ts | geoRestricted": {
-    "message": "This feature is unavailable in your region."
-  },
-  "panels/ai_assistance/ai_assistance-meta.ts | policyRestricted": {
-    "message": "This setting is managed by your administrator."
-  },
   "panels/ai_assistance/ai_assistance-meta.ts | showAiAssistance": {
     "message": "Show AI assistance"
   },
   "panels/ai_assistance/ai_assistance-meta.ts | showGemini": {
     "message": "Show Gemini"
-  },
-  "panels/ai_assistance/ai_assistance-meta.ts | wrongLocale": {
-    "message": "To use this feature, set your language preference to English in DevTools settings."
   },
   "panels/ai_assistance/AiAssistancePanel.ts | chatDeleted": {
     "message": "Chat deleted"
@@ -3866,6 +3854,9 @@
   "panels/application/BounceTrackingMitigationsTreeElement.ts | bounceTrackingMitigations": {
     "message": "Bounce tracking mitigations"
   },
+  "panels/application/components/AdsView.ts | adDetectionMistakes": {
+    "message": "Chrome’s ad detection can make mistakes."
+  },
   "panels/application/components/AdsView.ts | adIframes": {
     "message": "Ad iframes"
   },
@@ -3889,6 +3880,9 @@
   },
   "panels/application/components/AdsView.ts | initialOrigin": {
     "message": "Initial origin"
+  },
+  "panels/application/components/AdsView.ts | learnMore": {
+    "message": "Learn more"
   },
   "panels/application/components/AdsView.ts | metrics": {
     "message": "Metrics"
@@ -6269,6 +6263,9 @@
   "panels/application/WebMCPView.ts | declarative": {
     "message": "Declarative"
   },
+  "panels/application/WebMCPView.ts | description": {
+    "message": "Description"
+  },
   "panels/application/WebMCPView.ts | editAndRun": {
     "message": "Edit and run"
   },
@@ -6313,6 +6310,9 @@
   },
   "panels/application/WebMCPView.ts | noToolsPlaceholderTitle": {
     "message": "Available WebMCP Tools"
+  },
+  "panels/application/WebMCPView.ts | origin": {
+    "message": "Origin"
   },
   "panels/application/WebMCPView.ts | output": {
     "message": "Output"
@@ -6372,7 +6372,7 @@
     "message": "Automatically open this panel"
   },
   "panels/autofill/AutofillView.ts | autoShowTooltip": {
-    "message": "Open the autofill panel automatically when an autofill activity is detected."
+    "message": "Open the Autofill panel automatically when an autofill activity is detected"
   },
   "panels/autofill/AutofillView.ts | formField": {
     "message": "Form field"
@@ -6402,7 +6402,7 @@
     "message": "Show test addresses in autofill menu"
   },
   "panels/autofill/AutofillView.ts | toStartDebugging": {
-    "message": "To start debugging autofill, use Chrome’s autofill menu to fill an address form."
+    "message": "To start debugging autofill, use Chrome’s autofill menu to fill an address form"
   },
   "panels/autofill/AutofillView.ts | value": {
     "message": "Value"
@@ -8123,6 +8123,9 @@
   "panels/elements/ElementsTreeElement.ts | forceOpenPopover": {
     "message": "Keep this popover open"
   },
+  "panels/elements/ElementsTreeElement.ts | forceShowInterest": {
+    "message": "Trigger interest on this element"
+  },
   "panels/elements/ElementsTreeElement.ts | forceState": {
     "message": "Force state"
   },
@@ -8173,6 +8176,9 @@
   },
   "panels/elements/ElementsTreeElement.ts | stopForceOpenPopover": {
     "message": "Stop keeping this popover open"
+  },
+  "panels/elements/ElementsTreeElement.ts | stopForceShowInterest": {
+    "message": "Cancel interest on this element"
   },
   "panels/elements/ElementsTreeElement.ts | styleScrollbars": {
     "message": "Style scrollbars"
@@ -8501,9 +8507,6 @@
   "panels/emulation/DeviceModeToolbar.ts | heightLeaveEmptyForFull": {
     "message": "Height (leave empty for full)"
   },
-  "panels/emulation/DeviceModeToolbar.ts | hideDeviceFrame": {
-    "message": "Hide device frame"
-  },
   "panels/emulation/DeviceModeToolbar.ts | hideMediaQueries": {
     "message": "Hide media queries"
   },
@@ -8539,9 +8542,6 @@
   },
   "panels/emulation/DeviceModeToolbar.ts | screenOrientationOptions": {
     "message": "Screen orientation options"
-  },
-  "panels/emulation/DeviceModeToolbar.ts | showDeviceFrame": {
-    "message": "Show device frame"
   },
   "panels/emulation/DeviceModeToolbar.ts | showMediaQueries": {
     "message": "Show media queries"
@@ -8594,23 +8594,17 @@
   "panels/emulation/emulation-meta.ts | device": {
     "message": "device"
   },
-  "panels/emulation/emulation-meta.ts | hideDeviceFrame": {
-    "message": "Hide device frame"
-  },
   "panels/emulation/emulation-meta.ts | hideMediaQueries": {
     "message": "Hide media queries"
   },
   "panels/emulation/emulation-meta.ts | hideRulers": {
-    "message": "Hide rulers in the Device Mode toolbar"
-  },
-  "panels/emulation/emulation-meta.ts | showDeviceFrame": {
-    "message": "Show device frame"
+    "message": "Hide rulers in the device mode toolbar"
   },
   "panels/emulation/emulation-meta.ts | showMediaQueries": {
     "message": "Show media queries"
   },
   "panels/emulation/emulation-meta.ts | showRulers": {
-    "message": "Show rulers in the Device Mode toolbar"
+    "message": "Show rulers in the device mode toolbar"
   },
   "panels/emulation/emulation-meta.ts | toggleDeviceToolbar": {
     "message": "Toggle device toolbar"
@@ -9192,10 +9186,10 @@
     "message": "Zoom out"
   },
   "panels/layer_viewer/LayerDetailsView.ts | compositingReasons": {
-    "message": "Compositing Reasons"
+    "message": "Compositing reasons"
   },
   "panels/layer_viewer/LayerDetailsView.ts | containingBlocRectangleDimensions": {
-    "message": "Containing Block {PH1} × {PH2} (at {PH3}, {PH4})"
+    "message": "Containing block {PH1} × {PH2} (at {PH3}, {PH4})"
   },
   "panels/layer_viewer/LayerDetailsView.ts | mainThreadScrollingReason": {
     "message": "Main thread scrolling reason"
@@ -9204,10 +9198,10 @@
     "message": "Memory estimate"
   },
   "panels/layer_viewer/LayerDetailsView.ts | nearestLayerShiftingContaining": {
-    "message": "Nearest Layer Shifting Containing Block"
+    "message": "Nearest layer shifting containing block"
   },
   "panels/layer_viewer/LayerDetailsView.ts | nearestLayerShiftingStickyBox": {
-    "message": "Nearest Layer Shifting Sticky Box"
+    "message": "Nearest layer shifting sticky box"
   },
   "panels/layer_viewer/LayerDetailsView.ts | noLayerSelected": {
     "message": "No layer selected"
@@ -9219,7 +9213,7 @@
     "message": "Paint count"
   },
   "panels/layer_viewer/LayerDetailsView.ts | paintProfiler": {
-    "message": "Paint Profiler"
+    "message": "Paint profiler"
   },
   "panels/layer_viewer/LayerDetailsView.ts | repaintsOnScroll": {
     "message": "Repaints on scroll"
@@ -9240,7 +9234,7 @@
     "message": "{PH1}: {PH2} ({PH3})"
   },
   "panels/layer_viewer/LayerDetailsView.ts | stickyBoxRectangleDimensions": {
-    "message": "Sticky Box {PH1} × {PH2} (at {PH3}, {PH4})"
+    "message": "Sticky box {PH1} × {PH2} (at {PH3}, {PH4})"
   },
   "panels/layer_viewer/LayerDetailsView.ts | stickyPositionConstraint": {
     "message": "Sticky position constraint"
@@ -9264,7 +9258,7 @@
     "message": "Check {PH1} for possible reasons."
   },
   "panels/layer_viewer/Layers3DView.ts | dLayersView": {
-    "message": "3D Layers View"
+    "message": "3D layers view"
   },
   "panels/layer_viewer/Layers3DView.ts | layerExplanation": {
     "message": "On this page you will be able to view and inspect document layers."
@@ -9273,10 +9267,10 @@
     "message": "No layers detected yet"
   },
   "panels/layer_viewer/Layers3DView.ts | resetView": {
-    "message": "Reset View"
+    "message": "Reset view"
   },
   "panels/layer_viewer/Layers3DView.ts | showPaintProfiler": {
-    "message": "Show Paint Profiler"
+    "message": "Show paint profiler"
   },
   "panels/layer_viewer/Layers3DView.ts | webglSupportIsDisabledInYour": {
     "message": "WebGL support is disabled in your browser."
@@ -9285,10 +9279,10 @@
     "message": "{PH1} layers"
   },
   "panels/layer_viewer/LayerTreeOutline.ts | layersTreePane": {
-    "message": "Layers Tree Pane"
+    "message": "Layers tree"
   },
   "panels/layer_viewer/LayerTreeOutline.ts | showPaintProfiler": {
-    "message": "Show Paint Profiler"
+    "message": "Show paint profiler"
   },
   "panels/layer_viewer/LayerTreeOutline.ts | updateChildDimension": {
     "message": " ({PH1} × {PH2})"
@@ -9300,7 +9294,7 @@
     "message": "Bitmap"
   },
   "panels/layer_viewer/PaintProfilerView.ts | commandLog": {
-    "message": "Command Log"
+    "message": "Command log"
   },
   "panels/layer_viewer/PaintProfilerView.ts | misc": {
     "message": "Misc"
@@ -9929,6 +9923,27 @@
   "panels/mobile_throttling/CalibrationController.ts | runningCalibration": {
     "message": "Running CPU calibration, don’t leave this tab or close DevTools."
   },
+  "panels/mobile_throttling/CPUThrottlingSelector.ts | calibrate": {
+    "message": "Calibrate…"
+  },
+  "panels/mobile_throttling/CPUThrottlingSelector.ts | cpuThrottling": {
+    "message": "CPU throttling: {PH1}"
+  },
+  "panels/mobile_throttling/CPUThrottlingSelector.ts | defaultPresets": {
+    "message": "Presets"
+  },
+  "panels/mobile_throttling/CPUThrottlingSelector.ts | disabledThrottlingPreset": {
+    "message": "Disabled"
+  },
+  "panels/mobile_throttling/CPUThrottlingSelector.ts | labelCalibratedPresets": {
+    "message": "Calibrated presets"
+  },
+  "panels/mobile_throttling/CPUThrottlingSelector.ts | recalibrate": {
+    "message": "Recalibrate…"
+  },
+  "panels/mobile_throttling/CPUThrottlingSelector.ts | recommendedThrottling": {
+    "message": "{PH1} – recommended"
+  },
   "panels/mobile_throttling/mobile_throttling-meta.ts | device": {
     "message": "device"
   },
@@ -9952,18 +9967,6 @@
   },
   "panels/mobile_throttling/mobile_throttling-meta.ts | throttlingTag": {
     "message": "throttling"
-  },
-  "panels/mobile_throttling/MobileThrottlingSelector.ts | advanced": {
-    "message": "Advanced"
-  },
-  "panels/mobile_throttling/MobileThrottlingSelector.ts | disabled": {
-    "message": "Disabled"
-  },
-  "panels/mobile_throttling/MobileThrottlingSelector.ts | presets": {
-    "message": "Presets"
-  },
-  "panels/mobile_throttling/NetworkPanelIndicator.ts | acceptedEncodingOverrideSet": {
-    "message": "The set of accepted Content-Encoding headers has been changed by DevTools. See the Network conditions panel"
   },
   "panels/mobile_throttling/NetworkPanelIndicator.ts | networkThrottlingIsEnabled": {
     "message": "Network throttling is enabled"
@@ -10042,9 +10045,6 @@
   },
   "panels/mobile_throttling/ThrottlingManager.ts | saveDataSettingTooltip": {
     "message": "Override the value reported by navigator.connection.saveData on the page"
-  },
-  "panels/mobile_throttling/ThrottlingManager.ts | throttling": {
-    "message": "Throttling"
   },
   "panels/mobile_throttling/ThrottlingPresets.ts | checkNetworkAndPerformancePanels": {
     "message": "Check Network and Performance panels"
@@ -10486,9 +10486,6 @@
   },
   "panels/network/network-meta.ts | useDefaultColors": {
     "message": "Use default colors"
-  },
-  "panels/network/NetworkConfigView.ts | acceptedEncoding": {
-    "message": "Accepted Content-Encodings"
   },
   "panels/network/NetworkConfigView.ts | caching": {
     "message": "Caching"
@@ -11841,16 +11838,16 @@
     "message": "Detached elements {PH1}"
   },
   "panels/profiler/HeapDetachedElementsView.ts | detachedElementsDescription": {
-    "message": "Detached elements shows objects that are retained by a JS reference."
+    "message": "Detached elements show objects retained by a JS reference."
   },
   "panels/profiler/HeapDetachedElementsView.ts | detachedElementsTitle": {
     "message": "Detached elements"
   },
   "panels/profiler/HeapDetachedElementsView.ts | startDetachedElements": {
-    "message": "Obtain detached elements"
+    "message": "Get detached elements"
   },
   "panels/profiler/HeapProfilerPanel.ts | revealInSummaryView": {
-    "message": "Reveal in Summary view"
+    "message": "Reveal in summary view"
   },
   "panels/profiler/HeapProfileView.ts | allocationSampling": {
     "message": "Allocation sampling"
@@ -11877,7 +11874,7 @@
     "message": "Heap profiler is recording"
   },
   "panels/profiler/HeapProfileView.ts | heavyBottomUp": {
-    "message": "Heavy (Bottom Up)"
+    "message": "Heavy (bottom up)"
   },
   "panels/profiler/HeapProfileView.ts | name": {
     "message": "Name"
@@ -11943,7 +11940,7 @@
     "message": "Total size"
   },
   "panels/profiler/HeapProfileView.ts | treeTopDown": {
-    "message": "Tree (Top Down)"
+    "message": "Tree (top down)"
   },
   "panels/profiler/HeapProfileView.ts | url": {
     "message": "URL"
@@ -11952,7 +11949,7 @@
     "message": "Allocation"
   },
   "panels/profiler/HeapSnapshotDataGrids.ts | allocSize": {
-    "message": "Alloc. Size"
+    "message": "Alloc. size"
   },
   "panels/profiler/HeapSnapshotDataGrids.ts | constructorString": {
     "message": "Constructor"
@@ -11973,25 +11970,25 @@
     "message": "Distance from window object"
   },
   "panels/profiler/HeapSnapshotDataGrids.ts | freedSize": {
-    "message": "Freed Size"
+    "message": "Freed size"
   },
   "panels/profiler/HeapSnapshotDataGrids.ts | function": {
     "message": "Function"
   },
   "panels/profiler/HeapSnapshotDataGrids.ts | heapSnapshotConstructors": {
-    "message": "Heap Snapshot Constructors"
+    "message": "Heap snapshot constructors"
   },
   "panels/profiler/HeapSnapshotDataGrids.ts | heapSnapshotDiff": {
-    "message": "Heap Snapshot Diff"
+    "message": "Heap snapshot diff"
   },
   "panels/profiler/HeapSnapshotDataGrids.ts | heapSnapshotRetainment": {
-    "message": "Heap Snapshot Retainment"
+    "message": "Heap snapshot retainment"
   },
   "panels/profiler/HeapSnapshotDataGrids.ts | liveCount": {
-    "message": "Live Count"
+    "message": "Live count"
   },
   "panels/profiler/HeapSnapshotDataGrids.ts | liveSize": {
-    "message": "Live Size"
+    "message": "Live size"
   },
   "panels/profiler/HeapSnapshotDataGrids.ts | New": {
     "message": "# New"
@@ -12000,16 +11997,16 @@
     "message": "Object"
   },
   "panels/profiler/HeapSnapshotDataGrids.ts | retainedSize": {
-    "message": "Retained Size"
+    "message": "Retained size"
   },
   "panels/profiler/HeapSnapshotDataGrids.ts | shallowSize": {
-    "message": "Shallow Size"
+    "message": "Shallow size"
   },
   "panels/profiler/HeapSnapshotDataGrids.ts | size": {
     "message": "Size"
   },
   "panels/profiler/HeapSnapshotDataGrids.ts | sizeDelta": {
-    "message": "Size Delta"
+    "message": "Size delta"
   },
   "panels/profiler/HeapSnapshotDataGrids.ts | sizeOfTheObjectItselfInBytes": {
     "message": "Size of the object itself in bytes"
@@ -12063,13 +12060,13 @@
     "message": "An internal object which stores the named properties in a JavaScript Object."
   },
   "panels/profiler/HeapSnapshotGridNodes.ts | previewIsNotAvailable": {
-    "message": "Preview is not available"
+    "message": "Preview isn’t available"
   },
   "panels/profiler/HeapSnapshotGridNodes.ts | revealInSummaryView": {
-    "message": "Reveal in Summary view"
+    "message": "Reveal in summary view"
   },
   "panels/profiler/HeapSnapshotGridNodes.ts | revealObjectSWithIdSInSummary": {
-    "message": "Reveal object ''{PH1}'' with id @{PH2} in Summary view"
+    "message": "Reveal object ''{PH1}'' with id @{PH2} in summary view"
   },
   "panels/profiler/HeapSnapshotGridNodes.ts | slicedStringSummary": {
     "message": "A string which represents some of the characters from another string."
@@ -12174,7 +12171,7 @@
     "message": "Objects retained by detached DOM nodes"
   },
   "panels/profiler/HeapSnapshotView.ts | objectsRetainedByEventHandlers": {
-    "message": "Objects retained by Event Handlers"
+    "message": "Objects retained by event handlers"
   },
   "panels/profiler/HeapSnapshotView.ts | objectsSharedBetweenNativeContextsS": {
     "message": "Objects shared between native contexts ({PH1})"
@@ -13856,8 +13853,59 @@
   "panels/settings/emulation/DevicesSettingsTab.ts | addCustomDevice": {
     "message": "Add custom device"
   },
+  "panels/settings/emulation/DevicesSettingsTab.ts | circleDisplayCutout": {
+    "message": "Circle"
+  },
+  "panels/settings/emulation/DevicesSettingsTab.ts | circleMustFitCutoutBounds": {
+    "message": "Circle must fit within the cutout bounds."
+  },
   "panels/settings/emulation/DevicesSettingsTab.ts | customDevices": {
     "message": "Custom devices"
+  },
+  "panels/settings/emulation/DevicesSettingsTab.ts | cutoutBorderRadius": {
+    "message": "Pill radius"
+  },
+  "panels/settings/emulation/DevicesSettingsTab.ts | cutoutCenterX": {
+    "message": "Center x"
+  },
+  "panels/settings/emulation/DevicesSettingsTab.ts | cutoutCenterY": {
+    "message": "Center y"
+  },
+  "panels/settings/emulation/DevicesSettingsTab.ts | cutoutFieldRequired": {
+    "message": "{PH1} is required when display cutout is enabled."
+  },
+  "panels/settings/emulation/DevicesSettingsTab.ts | cutoutHeight": {
+    "message": "Cutout height"
+  },
+  "panels/settings/emulation/DevicesSettingsTab.ts | cutoutLowerRadius": {
+    "message": "Lower radius"
+  },
+  "panels/settings/emulation/DevicesSettingsTab.ts | cutoutRadius": {
+    "message": "Radius"
+  },
+  "panels/settings/emulation/DevicesSettingsTab.ts | cutoutUpperRadius": {
+    "message": "Upper radius"
+  },
+  "panels/settings/emulation/DevicesSettingsTab.ts | cutoutValueMustBeInRange": {
+    "message": "{PH1} must be an integer from 0 to {PH2}."
+  },
+  "panels/settings/emulation/DevicesSettingsTab.ts | cutoutValueMustBePositiveInteger": {
+    "message": "{PH1} must be a positive integer."
+  },
+  "panels/settings/emulation/DevicesSettingsTab.ts | cutoutWidth": {
+    "message": "Cutout width"
+  },
+  "panels/settings/emulation/DevicesSettingsTab.ts | cutoutX": {
+    "message": "Cutout x"
+  },
+  "panels/settings/emulation/DevicesSettingsTab.ts | cutoutXAndWidthExceedDeviceWidth": {
+    "message": "Cutout x plus width must not exceed the device width."
+  },
+  "panels/settings/emulation/DevicesSettingsTab.ts | cutoutY": {
+    "message": "Cutout y"
+  },
+  "panels/settings/emulation/DevicesSettingsTab.ts | cutoutYAndHeightExceedDeviceHeight": {
+    "message": "Cutout y plus height must not exceed the device height."
   },
   "panels/settings/emulation/DevicesSettingsTab.ts | defaultDevices": {
     "message": "Default devices"
@@ -13880,8 +13928,50 @@
   "panels/settings/emulation/DevicesSettingsTab.ts | devicePixelRatio": {
     "message": "Device pixel ratio"
   },
+  "panels/settings/emulation/DevicesSettingsTab.ts | displayCutout": {
+    "message": "Display cutout"
+  },
   "panels/settings/emulation/DevicesSettingsTab.ts | height": {
     "message": "Height"
+  },
+  "panels/settings/emulation/DevicesSettingsTab.ts | landscapeSafeArea": {
+    "message": "Landscape safe area"
+  },
+  "panels/settings/emulation/DevicesSettingsTab.ts | noDisplayCutout": {
+    "message": "No cutout"
+  },
+  "panels/settings/emulation/DevicesSettingsTab.ts | notchDisplayCutout": {
+    "message": "Notch"
+  },
+  "panels/settings/emulation/DevicesSettingsTab.ts | pillDisplayCutout": {
+    "message": "Pill"
+  },
+  "panels/settings/emulation/DevicesSettingsTab.ts | portraitSafeArea": {
+    "message": "Portrait safe area"
+  },
+  "panels/settings/emulation/DevicesSettingsTab.ts | rectangleDisplayCutout": {
+    "message": "Rectangle"
+  },
+  "panels/settings/emulation/DevicesSettingsTab.ts | safeAreaBottom": {
+    "message": "Bottom inset"
+  },
+  "panels/settings/emulation/DevicesSettingsTab.ts | safeAreaHorizontalInsetsExceedWidth": {
+    "message": "{PH1}: Left and right insets must not exceed the device width."
+  },
+  "panels/settings/emulation/DevicesSettingsTab.ts | safeAreaLeft": {
+    "message": "Left inset"
+  },
+  "panels/settings/emulation/DevicesSettingsTab.ts | safeAreaRight": {
+    "message": "Right inset"
+  },
+  "panels/settings/emulation/DevicesSettingsTab.ts | safeAreaTop": {
+    "message": "Top inset"
+  },
+  "panels/settings/emulation/DevicesSettingsTab.ts | safeAreaValueMustBeInRange": {
+    "message": "{PH1}: {PH2} must be an integer from 0 to {PH3}."
+  },
+  "panels/settings/emulation/DevicesSettingsTab.ts | safeAreaVerticalInsetsExceedHeight": {
+    "message": "{PH1}: Top and bottom insets must not exceed the device height."
   },
   "panels/settings/emulation/DevicesSettingsTab.ts | userAgentString": {
     "message": "User agent string"
@@ -15245,27 +15335,6 @@
   "panels/timeline/components/BreadcrumbsUI.ts | removeChildBreadcrumbs": {
     "message": "Remove child breadcrumbs"
   },
-  "panels/timeline/components/CPUThrottlingSelector.ts | calibrate": {
-    "message": "Calibrate…"
-  },
-  "panels/timeline/components/CPUThrottlingSelector.ts | cpu": {
-    "message": "CPU: {PH1}"
-  },
-  "panels/timeline/components/CPUThrottlingSelector.ts | cpuThrottling": {
-    "message": "CPU throttling: {PH1}"
-  },
-  "panels/timeline/components/CPUThrottlingSelector.ts | labelCalibratedPresets": {
-    "message": "Calibrated presets"
-  },
-  "panels/timeline/components/CPUThrottlingSelector.ts | recalibrate": {
-    "message": "Recalibrate…"
-  },
-  "panels/timeline/components/CPUThrottlingSelector.ts | recommendedThrottling": {
-    "message": "{PH1} – recommended"
-  },
-  "panels/timeline/components/CPUThrottlingSelector.ts | recommendedThrottlingReason": {
-    "message": "Consider changing setting to simulate real user environments"
-  },
   "panels/timeline/components/CWVMetrics.ts | dismissTitle": {
     "message": "Dismiss"
   },
@@ -15509,6 +15578,9 @@
   "panels/timeline/components/LiveMetricsView.ts | collectionPeriod": {
     "message": "Collection period: {PH1}"
   },
+  "panels/timeline/components/LiveMetricsView.ts | cpuThrottling": {
+    "message": "CPU:"
+  },
   "panels/timeline/components/LiveMetricsView.ts | dateRange": {
     "message": "{PH1} - {PH2}"
   },
@@ -15590,6 +15662,9 @@
   "panels/timeline/components/LiveMetricsView.ts | network": {
     "message": "Network: {PH1}"
   },
+  "panels/timeline/components/LiveMetricsView.ts | networkThrottling": {
+    "message": "Network:"
+  },
   "panels/timeline/components/LiveMetricsView.ts | nextSteps": {
     "message": "Next steps"
   },
@@ -15619,6 +15694,9 @@
   },
   "panels/timeline/components/LiveMetricsView.ts | processingDuration": {
     "message": "Processing duration"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | recommendedThrottlingReason": {
+    "message": "Consider changing setting to simulate real user environments"
   },
   "panels/timeline/components/LiveMetricsView.ts | resourceLoadDelay": {
     "message": "Resource load delay"
@@ -15901,30 +15979,6 @@
   },
   "panels/timeline/components/NetworkRequestTooltip.ts | wasThrottled": {
     "message": "Request was throttled ({PH1})"
-  },
-  "panels/timeline/components/NetworkThrottlingSelector.ts | add": {
-    "message": "Add…"
-  },
-  "panels/timeline/components/NetworkThrottlingSelector.ts | custom": {
-    "message": "Custom"
-  },
-  "panels/timeline/components/NetworkThrottlingSelector.ts | disabled": {
-    "message": "Disabled"
-  },
-  "panels/timeline/components/NetworkThrottlingSelector.ts | network": {
-    "message": "Network: {PH1}"
-  },
-  "panels/timeline/components/NetworkThrottlingSelector.ts | networkThrottling": {
-    "message": "Network throttling: {PH1}"
-  },
-  "panels/timeline/components/NetworkThrottlingSelector.ts | presets": {
-    "message": "Presets"
-  },
-  "panels/timeline/components/NetworkThrottlingSelector.ts | recommendedThrottling": {
-    "message": "{PH1} – recommended"
-  },
-  "panels/timeline/components/NetworkThrottlingSelector.ts | recommendedThrottlingReason": {
-    "message": "Consider changing setting to simulate real user environments"
   },
   "panels/timeline/components/OriginMap.ts | alreadyMapped": {
     "message": "\"{PH1}\" is already mapped to a production origin."
@@ -16456,9 +16510,6 @@
   },
   "panels/timeline/TimelinePanel.ts | network": {
     "message": "Network:"
-  },
-  "panels/timeline/TimelinePanel.ts | networkConditions": {
-    "message": "Network conditions"
   },
   "panels/timeline/TimelinePanel.ts | NetworkThrottlingIsEnabled": {
     "message": "- Network throttling is enabled"

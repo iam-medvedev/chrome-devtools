@@ -1,5 +1,6 @@
 import '../../ui/legacy/legacy.js';
 import '../../ui/legacy/components/data_grid/data_grid.js';
+import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../../core/text_utils/text_utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -56,6 +57,9 @@ export interface ViewInput {
     onTargetChange: (targetId: string) => void;
     onToggleSidebar: () => void;
     onEditorSubmit: (command: string, parameters: Record<string, unknown>, targetId?: string) => void;
+    columnsVisibilitySetting: Common.Settings.Setting<Record<string, {
+        visible: boolean;
+    }>>;
     targets: SDK.Target.Target[];
     selectedTargetId: string;
 }
