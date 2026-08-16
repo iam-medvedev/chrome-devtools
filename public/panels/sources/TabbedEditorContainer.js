@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
+import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as TextUtils from '../../core/text_utils/text_utils.js';
@@ -12,13 +13,33 @@ import * as uiI18n from '../../ui/i18n/i18n.js';
 import { Icon, Link } from '../../ui/kit/kit.js';
 import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { html } from '../../ui/lit/lit.js';
+import { html, render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as PanelCommon from '../common/common.js';
 import * as Snippets from '../snippets/snippets.js';
 import { SourcesView } from './SourcesView.js';
 import { UISourceCodeFrame } from './UISourceCodeFrame.js';
 const UIStrings = {
+    /**
+     * @description Text to open a file.
+     */
+    openFile: 'Open file',
+    /**
+     * @description Text to run commands.
+     */
+    runCommand: 'Run command',
+    /**
+     * @description Text in Sources view of the Sources panel.
+     */
+    workspaceDropInAFolderToSyncSources: 'To sync edits to the workspace, drop a folder with your sources here or',
+    /**
+     * @description Text in Sources view of the Sources panel.
+     */
+    selectFolder: 'Select folder',
+    /**
+     * @description Accessible label for Sources placeholder view actions list.
+     */
+    sourceViewActions: 'Source View Actions',
     /**
      * @description Text in Tabbed editor container of the Sources panel.
      * @example {file.js} PH1
@@ -47,24 +68,36 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/sources/TabbedEditorContainer.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 let tabId = 0;
-export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
+export class TabbedEditorContainer extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     delegate;
     tabbedPane;
     tabIds;
     files;
-    previouslyViewedFilesSetting;
+    #previouslyViewedFilesSetting;
     history;
+    set previouslyViewedFilesSetting(setting) {
+        this.#previouslyViewedFilesSetting = setting;
+        this.history = History.fromObject(this.#previouslyViewedFilesSetting.get());
+    }
+    get previouslyViewedFilesSetting() {
+        return this.#previouslyViewedFilesSetting;
+    }
     uriToUISourceCode;
     idToUISourceCode;
     #currentFile;
     currentView;
     scrollTimer;
     reentrantShow;
-    constructor(delegate, setting, placeholderElement, focusedPlaceholderElement, element) {
-        super();
-        this.delegate = delegate;
-        this.tabbedPane = new UI.TabbedPane.TabbedPane(element);
-        this.tabbedPane.setPlaceholderElement(placeholderElement, focusedPlaceholderElement);
+    constructor(element) {
+        super(element);
+        this.tabbedPane = new UI.TabbedPane.TabbedPane();
+        // eslint-disable-next-line @devtools/no-imperative-dom-api
+        this.tabbedPane.show(this.contentElement);
+        // eslint-disable-next-line @devtools/no-imperative-dom-api
+        const placeholderElement = document.createElement('div');
+        placeholderElement.classList.add('sources-placeholder');
+        this.tabbedPane.setPlaceholderElement(placeholderElement);
+        this.#renderPlaceholder(placeholderElement);
         this.tabbedPane.setTabDelegate(new EditorContainerTabDelegate(this));
         this.tabbedPane.setCloseableTabs(true);
         this.tabbedPane.setAllowTabReorder(true, true);
@@ -76,11 +109,12 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
         Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance().addEventListener("RequestsForHeaderOverridesFileChanged" /* Persistence.NetworkPersistenceManager.Events.REQUEST_FOR_HEADER_OVERRIDES_FILE_CHANGED */, this.#onRequestsForHeaderOverridesFileChanged, this);
         this.tabIds = new Map();
         this.files = new Map();
-        this.previouslyViewedFilesSetting = setting;
-        this.history = History.fromObject(this.previouslyViewedFilesSetting.get());
         this.uriToUISourceCode = new Map();
         this.idToUISourceCode = new Map();
         this.reentrantShow = false;
+    }
+    get tabbedPaneForTesting() {
+        return this.tabbedPane;
     }
     onBindingCreated(event) {
         const binding = event.data;
@@ -121,9 +155,6 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
         const binding = event.data;
         this.updateFileTitle(binding.fileSystem);
     }
-    get view() {
-        return this.tabbedPane;
-    }
     get visibleView() {
         return this.tabbedPane.visibleView;
     }
@@ -136,9 +167,6 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
     rightToolbar() {
         return this.tabbedPane.rightToolbar();
     }
-    show(parentElement) {
-        this.tabbedPane.show(parentElement);
-    }
     showFile(uiSourceCode) {
         const binding = Persistence.Persistence.PersistenceImpl.instance().binding(uiSourceCode);
         uiSourceCode = binding ? binding.fileSystem : uiSourceCode;
@@ -148,7 +176,7 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
         // Otherwise, this event will fire as soon as the content has been set.
         if (frame?.currentSourceFrame()?.contentSet && this.#currentFile === uiSourceCode &&
             frame?.currentUISourceCode() === uiSourceCode) {
-            Common.EventTarget.fireEvent('source-file-loaded', uiSourceCode.displayName(true));
+            window.dispatchEvent(new CustomEvent('source-file-loaded', { bubbles: true, cancelable: true, detail: uiSourceCode.displayName(true) }));
         }
         else {
             this.#showFile(uiSourceCode, true);
@@ -163,6 +191,9 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
     }
     closeAllFiles() {
         this.closeTabs(this.tabbedPane.tabIds());
+    }
+    detachEditors() {
+        this.tabbedPane.detachChildWidgets();
     }
     historyUISourceCodes() {
         const result = [];
@@ -577,6 +608,66 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
     }
     generateTabId() {
         return 'tab-' + (tabId++);
+    }
+    #renderPlaceholder(placeholderElement) {
+        const shortcuts = [
+            { actionId: 'quick-open.show', description: i18nString(UIStrings.openFile) },
+            { actionId: 'quick-open.show-command-menu', description: i18nString(UIStrings.runCommand) },
+        ];
+        const separator = Host.Platform.isMac() ? '\u2004' : ' + ';
+        const shortcutElements = shortcuts.map(shortcut => {
+            const shortcutKeys = UI.ShortcutRegistry.ShortcutRegistry.instance().shortcutsForAction(shortcut.actionId);
+            if (!shortcutKeys?.[0]) {
+                return {
+                    description: shortcut.description,
+                    onClick: () => { },
+                    keys: [],
+                };
+            }
+            const action = UI.ActionRegistry.ActionRegistry.instance().getAction(shortcut.actionId);
+            const keys = shortcutKeys[0].descriptors.flatMap(descriptor => descriptor.name.split(separator));
+            return {
+                description: shortcut.description,
+                onClick: () => {
+                    void action.execute();
+                },
+                keys,
+            };
+        });
+        // clang-format off
+        // eslint-disable-next-line @devtools/no-lit-render-outside-of-view
+        render(html `
+    <div class="tabbed-pane-placeholder-row workspace">
+      <span class="icon-container">
+        <devtools-icon name="sync" class="sync-icon"></devtools-icon>
+      </span>
+      <span>
+        ${i18nString(UIStrings.workspaceDropInAFolderToSyncSources)}
+        <button @click=${this.#addFileSystemClicked.bind(this)}>${i18nString(UIStrings.selectFolder)}</button>
+      </span>
+    </div>
+    <div class="shortcuts-list tabbed-pane-placeholder-row" role="list"
+         aria-label=${i18nString(UIStrings.sourceViewActions)}>
+      ${shortcutElements.map(shortcut => !shortcut.keys.length
+            ? html `<div class="shortcut-line" role="listitem"></div>`
+            : html `<div class="shortcut-line" role="listitem">
+            <button @click=${shortcut.onClick}>${shortcut.description}</button>
+            <span class="shortcuts">
+              ${shortcut.keys.map(key => html `
+                <span class="keybinds-key"><span>${key}</span></span>
+              `)}
+            </span>
+          </div>`)}
+    </div>`, placeholderElement);
+        // clang-format on
+    }
+    async #addFileSystemClicked() {
+        const result = await Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance().addFileSystem();
+        if (!result) {
+            return;
+        }
+        Host.userMetrics.actionTaken(Host.UserMetrics.Action.WorkspaceSelectFolder);
+        void UI.ViewManager.ViewManager.instance().showView('navigator-files');
     }
     currentFile() {
         return this.#currentFile || null;

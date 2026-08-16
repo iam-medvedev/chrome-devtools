@@ -4,11 +4,78 @@
 
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as SettingsUI from '../../ui/settings/settings.js';
 
 import type * as Sensors from './sensors.js';
 
 const UIStrings = {
+  /**
+   * @description Text for the CPU Pressure type to simulate on a device.
+   */
+  cpuPressure: 'CPU Pressure',
+  /**
+   * @description Title of an option in Sensors tab cpu pressure emulation drop-down. Turns off emulation of cpu pressure state.
+   */
+  noPressureEmulation: 'No override',
+  /**
+   * @description An option that appears in a drop-down that represents the nominal state.
+   */
+  nominal: 'Nominal',
+  /**
+   * @description An option that appears in a drop-down that represents the fair state.
+   */
+  fair: 'Fair',
+  /**
+   * @description An option that appears in a drop-down that represents the serious state.
+   */
+  serious: 'Serious',
+  /**
+   * @description An option that appears in a drop-down that represents the critical state.
+   */
+  critical: 'Critical',
+  /**
+   * @description Text for the touch type to simulate on a device. Refers to touch input as opposed to
+   * mouse input.
+   */
+  touch: 'Touch',
+  /**
+   * @description Text in Sensors View of the Device Toolbar. Means that touch input will be forced
+   *on, even if the device type e.g. desktop computer does not normally have touch input.
+   */
+  forceEnabled: 'Force enabled',
+  /**
+   * @description Text in Sensors View of the Device Toolbar. Refers to device-based touch input,
+   *which means the input type will be 'touch' only if the device normally has touch input e.g. a
+   *phone or tablet.
+   */
+  devicebased: 'Device-based',
+  /**
+   * @description Title of a section option in Sensors tab for idle emulation. This is a command, to
+   *emulate the state of the 'Idle Detector'.
+   */
+  emulateIdleDetectorState: 'Emulate Idle Detector state',
+  /**
+   * @description Title of an option in Sensors tab idle emulation drop-down. Turns off emulation of idle state.
+   */
+  noIdleEmulation: 'No idle emulation',
+  /**
+   * @description Title of an option in Sensors tab idle emulation drop-down.
+   */
+  userActiveScreenUnlocked: 'User active, screen unlocked',
+  /**
+   * @description Title of an option in Sensors tab idle emulation drop-down.
+   */
+  userActiveScreenLocked: 'User active, screen locked',
+  /**
+   * @description Title of an option in Sensors tab idle emulation drop-down.
+   */
+  userIdleScreenUnlocked: 'User idle, screen unlocked',
+  /**
+   * @description Title of an option in Sensors tab idle emulation drop-down.
+   */
+  userIdleScreenLocked: 'User idle, screen locked',
   /**
    * @description Title of the Sensors view. The Sensors view contains GPS, orientation sensors, touch
    * settings, and more.
@@ -180,6 +247,86 @@ Common.Settings.registerSettingExtension({
       timezoneId: 'Asia/Tokyo',
       locale: 'ja-JP',
       accuracy: 150,
+    },
+  ],
+});
+
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.cpuPressureSettingDescriptor, {
+  title: i18nLazyString(UIStrings.cpuPressure),
+  reloadRequired: true,
+  options: [
+    {
+      value: 'none',
+      title: i18nLazyString(UIStrings.noPressureEmulation),
+      text: i18nLazyString(UIStrings.noPressureEmulation),
+    },
+    {
+      value: 'nominal',
+      title: i18nLazyString(UIStrings.nominal),
+      text: i18nLazyString(UIStrings.nominal),
+    },
+    {
+      value: 'fair',
+      title: i18nLazyString(UIStrings.fair),
+      text: i18nLazyString(UIStrings.fair),
+    },
+    {
+      value: 'serious',
+      title: i18nLazyString(UIStrings.serious),
+      text: i18nLazyString(UIStrings.serious),
+    },
+    {
+      value: 'critical',
+      title: i18nLazyString(UIStrings.critical),
+      text: i18nLazyString(UIStrings.critical),
+    },
+  ],
+});
+
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.touchSettingDescriptor, {
+  title: i18nLazyString(UIStrings.touch),
+  reloadRequired: true,
+  options: [
+    {
+      value: 'none',
+      title: i18nLazyString(UIStrings.devicebased),
+      text: i18nLazyString(UIStrings.devicebased),
+    },
+    {
+      value: 'force',
+      title: i18nLazyString(UIStrings.forceEnabled),
+      text: i18nLazyString(UIStrings.forceEnabled),
+    },
+  ],
+});
+
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.idleDetectionSettingDescriptor, {
+  title: i18nLazyString(UIStrings.emulateIdleDetectorState),
+  options: [
+    {
+      value: 'none',
+      title: i18nLazyString(UIStrings.noIdleEmulation),
+      text: i18nLazyString(UIStrings.noIdleEmulation),
+    },
+    {
+      value: '{"isUserActive":true,"isScreenUnlocked":true}',
+      title: i18nLazyString(UIStrings.userActiveScreenUnlocked),
+      text: i18nLazyString(UIStrings.userActiveScreenUnlocked),
+    },
+    {
+      value: '{"isUserActive":true,"isScreenUnlocked":false}',
+      title: i18nLazyString(UIStrings.userActiveScreenLocked),
+      text: i18nLazyString(UIStrings.userActiveScreenLocked),
+    },
+    {
+      value: '{"isUserActive":false,"isScreenUnlocked":true}',
+      title: i18nLazyString(UIStrings.userIdleScreenUnlocked),
+      text: i18nLazyString(UIStrings.userIdleScreenUnlocked),
+    },
+    {
+      value: '{"isUserActive":false,"isScreenUnlocked":false}',
+      title: i18nLazyString(UIStrings.userIdleScreenLocked),
+      text: i18nLazyString(UIStrings.userIdleScreenLocked),
     },
   ],
 });

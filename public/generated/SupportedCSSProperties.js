@@ -1025,6 +1025,11 @@ export const generatedProperties = [
         "runtime_flag_status": "stable"
     },
     {
+        "devtools_keywords": [
+            "none",
+            "move",
+            "no-drag"
+        ],
         "name": "app-region"
     },
     {
@@ -1299,6 +1304,9 @@ export const generatedProperties = [
         "name": "border-block-end"
     },
     {
+        "keywords": [
+            "currentcolor"
+        ],
         "name": "border-block-end-color"
     },
     {
@@ -1333,6 +1341,9 @@ export const generatedProperties = [
         "name": "border-block-start"
     },
     {
+        "keywords": [
+            "currentcolor"
+        ],
         "name": "border-block-start-color"
     },
     {
@@ -1509,6 +1520,9 @@ export const generatedProperties = [
         "name": "border-inline-end"
     },
     {
+        "keywords": [
+            "currentcolor"
+        ],
         "name": "border-inline-end-color"
     },
     {
@@ -1543,6 +1557,9 @@ export const generatedProperties = [
         "name": "border-inline-start"
     },
     {
+        "keywords": [
+            "currentcolor"
+        ],
         "name": "border-inline-start-color"
     },
     {
@@ -5162,7 +5179,8 @@ export const generatedProperties = [
             "inline",
             "both",
             "mandatory",
-            "proximity"
+            "proximity",
+            "pair"
         ],
         "name": "scroll-snap-type"
     },
@@ -6077,6 +6095,10 @@ export const generatedProperties = [
         "name": "will-change"
     },
     {
+        "devtools_keywords": [
+            "none",
+            "move"
+        ],
         "inherited": true,
         "keywords": [
             "none",
@@ -6414,6 +6436,13 @@ export const generatedPropertyValues = {
             "none"
         ]
     },
+    "app-region": {
+        "values": [
+            "none",
+            "move",
+            "no-drag"
+        ]
+    },
     "appearance": {
         "values": [
             "auto",
@@ -6576,6 +6605,11 @@ export const generatedPropertyValues = {
             "currentcolor"
         ]
     },
+    "border-block-end-color": {
+        "values": [
+            "currentcolor"
+        ]
+    },
     "border-block-end-style": {
         "values": [
             "none",
@@ -6595,6 +6629,11 @@ export const generatedPropertyValues = {
             "medium",
             "thick",
             "thin"
+        ]
+    },
+    "border-block-start-color": {
+        "values": [
+            "currentcolor"
         ]
     },
     "border-block-start-style": {
@@ -6677,6 +6716,11 @@ export const generatedPropertyValues = {
             "auto"
         ]
     },
+    "border-inline-end-color": {
+        "values": [
+            "currentcolor"
+        ]
+    },
     "border-inline-end-style": {
         "values": [
             "none",
@@ -6696,6 +6740,11 @@ export const generatedPropertyValues = {
             "medium",
             "thick",
             "thin"
+        ]
+    },
+    "border-inline-start-color": {
+        "values": [
+            "currentcolor"
         ]
     },
     "border-inline-start-style": {
@@ -8693,7 +8742,8 @@ export const generatedPropertyValues = {
             "inline",
             "both",
             "mandatory",
-            "proximity"
+            "proximity",
+            "pair"
         ]
     },
     "scroll-target-group": {
@@ -9207,8 +9257,7 @@ export const generatedPropertyValues = {
     "window-drag": {
         "values": [
             "none",
-            "move",
-            "no-drag"
+            "move"
         ]
     },
     "word-break": {

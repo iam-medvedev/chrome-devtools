@@ -47,18 +47,6 @@ describeWithEnvironment('LayoutPane', () => {
         });
     }
     it('renders settings', async () => {
-        Common.Settings.Settings.instance().moduleSetting('show-grid-line-labels').setRegistration({
-            settingName: 'show-grid-line-labels',
-            settingType: "enum" /* Common.Settings.SettingType.ENUM */,
-            defaultValue: 'none',
-            title: () => 'Enum setting title',
-        });
-        Common.Settings.Settings.instance().moduleSetting('show-grid-track-sizes').setRegistration({
-            settingName: 'show-grid-track-sizes',
-            settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
-            defaultValue: true,
-            title: () => 'Boolean setting title',
-        });
         const component = await renderComponent();
         assert.deepEqual(queryLabels(component.contentElement, '[data-enum-setting]'), [{ label: 'Enum setting title', input: 'SELECT' }]);
         const checkboxesTitles = Array.from(component.contentElement.querySelectorAll('[data-boolean-setting]')).map(checkbox => {
@@ -69,11 +57,11 @@ describeWithEnvironment('LayoutPane', () => {
     });
     it('stores a setting when changed', async () => {
         const component = await renderComponent();
-        assert.isTrue(Common.Settings.Settings.instance().moduleSetting('show-grid-track-sizes').get());
+        assert.isTrue(Common.Settings.Settings.instance().resolve(SDK.SDKSettings.showGridTrackSizesSettingDescriptor).get());
         const input = component.contentElement.querySelector('[data-boolean-setting]');
         assert.instanceOf(input, UI.UIUtils.CheckboxLabel);
         input.click();
-        assert.isFalse(Common.Settings.Settings.instance().moduleSetting('show-grid-track-sizes').get());
+        assert.isFalse(Common.Settings.Settings.instance().resolve(SDK.SDKSettings.showGridTrackSizesSettingDescriptor).get());
     });
     function makeNode(id) {
         return {

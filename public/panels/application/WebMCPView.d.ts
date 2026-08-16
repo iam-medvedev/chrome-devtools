@@ -49,6 +49,7 @@ export interface ViewInput {
     selectedCall: WebMCP.WebMCPModel.Call | null;
     selectedTab?: TabId;
     onCallSelect: (call: WebMCP.WebMCPModel.Call | null, tabId?: TabId) => void;
+    onTabSelect: (tabId: TabId) => void;
     filters: FilterState;
     filterButtons: FilterMenuButtons;
     onClearLogClick: () => void;

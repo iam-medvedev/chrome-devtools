@@ -42,6 +42,9 @@ describeWithEnvironment('CLSCulprits', function () {
             assert.deepEqual(animationFailures, expected);
         });
         it('gets the correct non composited animations for shift', async function () {
+            if (this.timeout() > 0) {
+                this.timeout(45_000);
+            }
             const { data, insights } = await processTrace(this, 'non-composited-animation-shift.json.gz');
             const firstNav = getFirstOrError(data.Meta.navigationsByNavigationId.values());
             const insight = getInsightOrError('CLSCulprits', insights, firstNav);

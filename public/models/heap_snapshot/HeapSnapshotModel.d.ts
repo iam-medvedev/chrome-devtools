@@ -215,6 +215,14 @@ export interface NativeContextSizes {
     sharedSize: number;
     noAttributionSize: number;
 }
+export interface RetainedByContextSummary {
+    contextCount: number;
+    retainedByContextSize: number;
+    retainedByContextCount: number;
+    notRetainedByContextSize: number;
+    notRetainedByContextCount: number;
+    totalSize: number;
+}
 export declare const enum DOMLinkState {
     UNKNOWN = 0,
     ATTACHED = 1,
@@ -231,4 +239,20 @@ export interface ObjectInfo {
     distance: number;
     edgeCount: number;
     retainerCount: number;
+}
+export interface HeapQueryOptions {
+    className?: string;
+    propertyName?: string;
+    nodeType?: string;
+    minRetainedSize?: number;
+    maxRetainedSize?: number;
+    minSelfSize?: number;
+    maxSelfSize?: number;
+    isDetached?: boolean;
+    sortBy?: 'retainedSize' | 'selfSize' | 'id';
+}
+export interface HeapEdgesQueryOptions {
+    sortBy?: 'retainedSize' | 'selfSize' | 'name';
+    minRetainedSize?: number;
+    excludePrimitives?: boolean;
 }

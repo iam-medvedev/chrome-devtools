@@ -13,6 +13,7 @@ import { describeWithEnvironment, waitFor, } from '../../../testing/EnvironmentH
 import { getBaseTraceHandlerData, makeFakeParsedTrace, microsecondsTraceWindow, } from '../../../testing/TraceHelpers.js';
 import { createViewFunctionStub, } from '../../../testing/ViewFunctionHelpers.js';
 import * as Snackbars from '../../../ui/components/snackbars/snackbars.js';
+import * as Lighthouse from '../../lighthouse/lighthouse.js';
 import * as AiAssistance from '../ai_assistance.js';
 describeWithEnvironment('ChatMessage', () => {
     function createComponent(props = {}) {
@@ -345,6 +346,20 @@ describeWithEnvironment('ChatMessage', () => {
                     },
                 };
                 assert.strictEqual(AiAssistance.ChatMessage.getWidgetSignature(widget), 'SOURCE_FILES_LIST:https://example.com/script1.js,https://example.com/script2.js');
+            });
+            it('should correctly handle STORAGE_BREAKDOWN widget', () => {
+                const widget = {
+                    name: 'STORAGE_BREAKDOWN',
+                    data: {
+                        totalUsageBytes: 1000,
+                        totalQuotaBytes: 10000,
+                        usageBreakdown: [
+                            { storageType: 'indexeddb', bytes: 200 },
+                            { storageType: 'cookies', bytes: 15 },
+                        ],
+                    },
+                };
+                assert.strictEqual(AiAssistance.ChatMessage.getWidgetSignature(widget), 'STORAGE_BREAKDOWN:1000:indexeddb_200,cookies_15');
             });
         });
     });
@@ -1489,6 +1504,69 @@ describeWithEnvironment('ChatMessage', () => {
             const errorP = targetElement.querySelector('.error');
             assert.isNotNull(errorP);
             assert.strictEqual(errorP?.textContent, 'The request payload is too large. Please try a smaller image or a screenshot.');
+        });
+        it('renders LIGHTHOUSE_REPORT widget as revealer-only for snapshot reports without score gauges', async () => {
+            const mockReport = {
+                lighthouseVersion: '12.0.0',
+                fetchTime: '2026-08-13T09:00:00.000Z',
+                configSettings: {
+                    gatherMode: 'snapshot',
+                },
+            };
+            const message = {
+                entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
+                parts: [
+                    {
+                        type: 'widget',
+                        widgets: [
+                            {
+                                name: 'LIGHTHOUSE_REPORT',
+                                data: {
+                                    report: mockReport,
+                                    snapshotReport: true,
+                                },
+                            },
+                        ],
+                    },
+                ],
+                rpcId: 99,
+                id: '1',
+            };
+            const targetElement = renderView({ message });
+            const revealerContainer = await waitFor('.widget-and-revealer-container.revealer-only', targetElement);
+            assert.isNotNull(revealerContainer);
+            const revealBtn = querySelectorErrorOnMissing(revealerContainer, 'devtools-button.widget-reveal-button');
+            assert.strictEqual(revealBtn.textContent?.trim(), 'Reveal Lighthouse report');
+            assert.strictEqual(revealBtn.getAttribute('accessiblelabel'), 'Reveal Lighthouse report');
+            const revealStub = sinon.stub(Common.Revealer.RevealerRegistry.instance(), 'reveal').resolves();
+            revealBtn.click();
+            sinon.assert.calledOnce(revealStub);
+            const [revealedObject] = revealStub.getCall(0).args;
+            assert.instanceOf(revealedObject, Lighthouse.LighthousePanel.ActiveLighthouseReport);
+            assert.strictEqual(revealedObject.report, mockReport);
+            revealStub.restore();
+        });
+        it('does not render empty step-widgets-wrapper when step widgets return nothing', async () => {
+            const message = {
+                entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
+                parts: [
+                    {
+                        type: 'step',
+                        step: {
+                            title: 'Investigating',
+                            state: { type: 'completed' },
+                            output: 'result',
+                            widgets: [],
+                        },
+                    },
+                ],
+                rpcId: 99,
+                id: '1',
+            };
+            const targetElement = renderView({ message });
+            await new Promise(resolve => setTimeout(resolve, 0));
+            const wrapper = targetElement.querySelector('.step-widgets-wrapper');
+            assert.isNull(wrapper);
         });
     });
 });

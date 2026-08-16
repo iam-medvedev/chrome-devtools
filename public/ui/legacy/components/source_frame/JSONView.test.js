@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { assertScreenshot, raf, renderElementIntoDOM } from '../../../../testing/DOMHelpers.js';
+import { assertScreenshot, doubleRaf, raf, renderElementIntoDOM } from '../../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
 import * as UI from '../../legacy.js';
 import * as ObjectUI from '../object_ui/object_ui.js';
@@ -46,8 +46,8 @@ describeWithEnvironment('JSONView', () => {
         assert.exists(rootElement);
         await raf();
         const searchConfig = new UI.SearchableView.SearchConfig('ba', false, false, false);
-        jsonView.performSearch(searchConfig, true);
-        await raf();
+        await jsonView.performSearch(searchConfig, true);
+        await doubleRaf();
         const shadowRoot = treeView.shadowRoot;
         assert.exists(shadowRoot);
         let highlightedMatches = CSS.highlights.get('highlighted-search-result');
@@ -59,14 +59,14 @@ describeWithEnvironment('JSONView', () => {
         assert.strictEqual(currentRange?.toString(), 'ba');
         // Jump to next match
         jsonView.jumpToNextSearchResult();
-        await raf();
+        await doubleRaf();
         highlightedMatches = CSS.highlights.get('highlighted-search-result');
         currentMatches = CSS.highlights.get('current-search-result');
         assert.strictEqual((highlightedMatches?.size ?? 0) + (currentMatches?.size ?? 0), 2);
         assert.strictEqual(currentMatches?.size, 1);
         // Cancel search
         jsonView.onSearchCanceled();
-        await raf();
+        await doubleRaf();
         highlightedMatches = CSS.highlights.get('highlighted-search-result');
         assert.strictEqual(highlightedMatches?.size ?? 0, 0);
         currentMatches = CSS.highlights.get('current-search-result');
@@ -80,8 +80,8 @@ describeWithEnvironment('JSONView', () => {
         renderElementIntoDOM(jsonView);
         await raf();
         const searchConfig = new UI.SearchableView.SearchConfig('ba', false, false, false);
-        jsonView.performSearch(searchConfig, true);
-        await raf();
+        await jsonView.performSearch(searchConfig, true);
+        await doubleRaf();
         let currentMatches = CSS.highlights.get('current-search-result');
         assert.strictEqual(currentMatches?.size, 1);
         jsonView.parsedJSON = new SourceFrame.JSONView.ParsedJSON({ other: 'data' }, '', '');
@@ -133,8 +133,8 @@ describeWithEnvironment('JSONView', () => {
         rootElement.expand();
         await raf();
         const searchConfig = new UI.SearchableView.SearchConfig('ba', false, false, false);
-        jsonView.performSearch(searchConfig, true);
-        await raf();
+        await jsonView.performSearch(searchConfig, true);
+        await doubleRaf();
         await assertScreenshot('source_frame/json_view_search_highlights.png');
     });
 });

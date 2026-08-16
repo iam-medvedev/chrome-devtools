@@ -53,6 +53,7 @@ import objectValueStyles from '../../ui/legacy/components/object_ui/objectValue.
 import * as SettingsUI from '../../ui/legacy/components/settings_ui/settings_ui.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as SettingUIRegistration from '../../ui/settings/settings.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { AiCodeCompletionSummaryToolbar } from '../common/common.js';
 import { ConsoleContextSelector } from './ConsoleContextSelector.js';
@@ -450,7 +451,8 @@ export class ConsoleView extends UI.Widget.VBox {
         const consoleEagerEvalSetting = Common.Settings.Settings.instance().moduleSetting('console-eager-eval');
         const preserveConsoleLogSetting = Common.Settings.Settings.instance().resolve(SDK.SDKSettings.preserveConsoleLogSettingDescriptor);
         const userActivationEvalSetting = Common.Settings.Settings.instance().moduleSetting('console-user-activation-eval');
-        settingsPane.append(SettingsUI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.networkMessages), this.filter.networkMessagesSetting, this.filter.networkMessagesSetting.title()), SettingsUI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.logXMLHttpRequests), monitoringXHREnabledSetting), SettingsUI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.preserveLog), preserveConsoleLogSetting, i18nString(UIStrings.doNotClearLogOnPageReload)), SettingsUI.SettingsUI.createSettingCheckbox(consoleEagerEvalSetting.title(), consoleEagerEvalSetting, i18nString(UIStrings.eagerlyEvaluateTextInThePrompt)), SettingsUI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.selectedContextOnly), this.filter.filterByExecutionContextSetting, i18nString(UIStrings.onlyShowMessagesFromTheCurrentContext)), SettingsUI.SettingsUI.createSettingCheckbox(this.consoleHistoryAutocompleteSetting.title(), this.consoleHistoryAutocompleteSetting, i18nString(UIStrings.autocompleteFromHistory)), SettingsUI.SettingsUI.createSettingCheckbox(this.groupSimilarSetting.title(), this.groupSimilarSetting, i18nString(UIStrings.groupSimilarMessagesInConsole)), SettingsUI.SettingsUI.createSettingCheckbox(userActivationEvalSetting.title(), userActivationEvalSetting, i18nString(UIStrings.treatEvaluationAsUserActivation)), SettingsUI.SettingsUI.createSettingCheckbox(this.showCorsErrorsSetting.title(), this.showCorsErrorsSetting, i18nString(UIStrings.showCorsErrorsInConsole)));
+        settingsPane.append(SettingsUI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.networkMessages), this.filter.networkMessagesSetting, SettingUIRegistration.SettingUIRegistration.resolve(this.filter.networkMessagesSetting.descriptor()).title), SettingsUI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.logXMLHttpRequests), monitoringXHREnabledSetting), SettingsUI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.preserveLog), preserveConsoleLogSetting, i18nString(UIStrings.doNotClearLogOnPageReload)), SettingsUI.SettingsUI.createSettingCheckbox(SettingUIRegistration.SettingUIRegistration.resolve(consoleEagerEvalSetting.descriptor()).title, consoleEagerEvalSetting, i18nString(UIStrings.eagerlyEvaluateTextInThePrompt)), SettingsUI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.selectedContextOnly), this.filter.filterByExecutionContextSetting, i18nString(UIStrings.onlyShowMessagesFromTheCurrentContext)), SettingsUI.SettingsUI.createSettingCheckbox(SettingUIRegistration.SettingUIRegistration.resolve(this.consoleHistoryAutocompleteSetting.descriptor())
+            .title, this.consoleHistoryAutocompleteSetting, i18nString(UIStrings.autocompleteFromHistory)), SettingsUI.SettingsUI.createSettingCheckbox(SettingUIRegistration.SettingUIRegistration.resolve(this.groupSimilarSetting.descriptor()).title, this.groupSimilarSetting, i18nString(UIStrings.groupSimilarMessagesInConsole)), SettingsUI.SettingsUI.createSettingCheckbox(SettingUIRegistration.SettingUIRegistration.resolve(userActivationEvalSetting.descriptor()).title, userActivationEvalSetting, i18nString(UIStrings.treatEvaluationAsUserActivation)), SettingsUI.SettingsUI.createSettingCheckbox(SettingUIRegistration.SettingUIRegistration.resolve(this.showCorsErrorsSetting.descriptor()).title, this.showCorsErrorsSetting, i18nString(UIStrings.showCorsErrorsInConsole)));
         if (!this.showSettingsPaneSetting.get()) {
             settingsPane.classList.add('hidden');
         }
@@ -770,6 +772,15 @@ export class ConsoleView extends UI.Widget.VBox {
             this.viewport.setStickToBottom(oldStickToBottom);
             this.viewport.element.scrollTop = oldScrollTop;
         }
+    }
+    /**
+     * Inserts text into the console prompt (replacing any existing content)
+     * and focuses the prompt. Used by cross-panel features such as
+     * "Edit and resend as fetch".
+     */
+    insertIntoPrompt(text) {
+        this.prompt.insertText(text);
+        this.focusPrompt();
     }
     restoreScrollPositions() {
         if (this.viewport.stickToBottom()) {
@@ -1137,7 +1148,7 @@ export class ConsoleView extends UI.Widget.VBox {
         }
         if (consoleMessage) {
             const request = Logs.NetworkLog.NetworkLog.requestForConsoleMessage(consoleMessage);
-            if (request && SDK.NetworkManager.NetworkManager.canResendRequest(request)) {
+            if (request && SDK.NetworkManager.NetworkManager.canResendRequest(request, true)) {
                 contextMenu.debugSection().appendItem(i18nString(UIStrings.resend), SDK.NetworkManager.NetworkManager.replayRequest.bind(null, request), { jslogContext: 'resend' });
             }
         }

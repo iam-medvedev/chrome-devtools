@@ -183,13 +183,12 @@ export class NodeIndicatorProvider {
 }
 export class SourcesPanelIndicator {
     constructor() {
-        Common.Settings.Settings.instance()
-            .moduleSetting('java-script-disabled')
-            .addChangeListener(javaScriptDisabledChanged);
+        const disableJavascriptSetting = Common.Settings.Settings.instance().resolve(SDK.SDKSettings.javaScriptDisabledSettingDescriptor);
+        disableJavascriptSetting.addChangeListener(javaScriptDisabledChanged);
         javaScriptDisabledChanged();
         function javaScriptDisabledChanged() {
             const warnings = [];
-            if (Common.Settings.Settings.instance().moduleSetting('java-script-disabled').get()) {
+            if (disableJavascriptSetting.get()) {
                 warnings.push(i18nString(UIStrings.javascriptIsDisabled));
             }
             UI.InspectorView.InspectorView.instance().setPanelWarnings('sources', warnings);
@@ -206,7 +205,8 @@ export class BackendSettingsSync {
         this.#updateAutoAttach();
         this.#adBlockEnabledSetting = Common.Settings.Settings.instance().moduleSetting('network.ad-blocking-enabled');
         this.#adBlockEnabledSetting.addChangeListener(this.#update, this);
-        this.#emulatePageFocusSetting = Common.Settings.Settings.instance().moduleSetting('emulate-page-focus');
+        this.#emulatePageFocusSetting =
+            Common.Settings.Settings.instance().resolve(SDK.SDKSettings.emulatePageFocusSettingDescriptor);
         this.#emulatePageFocusSetting.addChangeListener(this.#update, this);
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ChildTargetManager.ChildTargetManager, "TargetInfoChanged" /* SDK.ChildTargetManager.Events.TARGET_INFO_CHANGED */, this.#targetInfoChanged, this);
         SDK.TargetManager.TargetManager.instance().observeTargets(this);

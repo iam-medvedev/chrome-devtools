@@ -68,9 +68,6 @@
       "path": "../../panels/ai_assistance/meta-tsconfig.json"
     },
     {
-      "path": "../../panels/application/meta-tsconfig.json"
-    },
-    {
       "path": "../../panels/changes/meta-tsconfig.json"
     },
     {
@@ -101,10 +98,10 @@
       "path": "../../panels/sources/meta-tsconfig.json"
     },
     {
-      "path": "../../ui/dom_extension/bundle-tsconfig.json"
+      "path": "../../ui/comments/meta-tsconfig.json"
     },
     {
-      "path": "../../ui/legacy/components/object_ui/meta-tsconfig.json"
+      "path": "../../ui/dom_extension/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/legacy/components/perf_ui/meta-tsconfig.json"
@@ -114,6 +111,9 @@
     },
     {
       "path": "../../ui/legacy/components/source_frame/meta-tsconfig.json"
+    },
+    {
+      "path": "../main/bundle-tsconfig.json"
     }
   ]
 }

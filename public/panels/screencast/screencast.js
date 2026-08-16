@@ -404,7 +404,7 @@ var DEFAULT_VIEW = (input, output, target) => {
     if (el instanceof HTMLCanvasElement) {
       output.focusCanvas = () => el.focus();
       canvasElement = el;
-      ScreencastView.repaintScreencastCanvas(el, input);
+      repaintScreencastCanvas(el, input);
     }
   })}></canvas>
         <div
@@ -415,7 +415,7 @@ var DEFAULT_VIEW = (input, output, target) => {
   })}
           ${ref((el) => {
     if (el instanceof HTMLElement && canvasElement && input.elementTitleData?.visible && !el.classList.contains("hidden")) {
-      ScreencastView.clampTooltipPosition(canvasElement, el, input.highlightModel);
+      clampTooltipPosition(canvasElement, el, input.highlightModel);
     }
   })}>
           <span class="screencast-tag-name">${input.elementTitleData?.tagName ?? nothing}</span>
@@ -427,7 +427,122 @@ var DEFAULT_VIEW = (input, output, target) => {
     </div>
   `, target);
 };
-var ScreencastView = class _ScreencastView extends UI.Widget.Widget {
+function repaintScreencastCanvas(el, input) {
+  const context = el.getContext("2d");
+  if (!context) {
+    return;
+  }
+  const model = input.highlightModel;
+  const config = input.highlightConfig;
+  const canvasWidth = el.getBoundingClientRect().width;
+  const canvasHeight = el.getBoundingClientRect().height;
+  el.width = window.devicePixelRatio * canvasWidth;
+  el.height = window.devicePixelRatio * canvasHeight;
+  context.save();
+  context.scale(window.devicePixelRatio, window.devicePixelRatio);
+  if (model && config) {
+    context.save();
+    const quads = [];
+    const isTransparent = (color) => Boolean(color.a && color.a === 0);
+    if (model.content && config.contentColor && !isTransparent(config.contentColor)) {
+      quads.push({ quad: model.content, color: config.contentColor });
+    }
+    if (model.padding && config.paddingColor && !isTransparent(config.paddingColor)) {
+      quads.push({ quad: model.padding, color: config.paddingColor });
+    }
+    if (model.border && config.borderColor && !isTransparent(config.borderColor)) {
+      quads.push({ quad: model.border, color: config.borderColor });
+    }
+    if (model.margin && config.marginColor && !isTransparent(config.marginColor)) {
+      quads.push({ quad: model.margin, color: config.marginColor });
+    }
+    for (let i = quads.length - 1; i > 0; --i) {
+      drawOutlinedQuadWithClip(context, quads[i].quad, quads[i - 1].quad, quads[i].color);
+    }
+    if (quads.length > 0) {
+      drawOutlinedQuad(context, quads[0].quad, quads[0].color);
+    }
+    context.globalCompositeOperation = "destination-over";
+  }
+  if (input.screencastImage) {
+    context.drawImage(input.screencastImage, 0, input.screenOffsetTop * input.screenZoom, input.screencastImage.naturalWidth * input.imageZoom, input.screencastImage.naturalHeight * input.imageZoom);
+  }
+  context.restore();
+}
+function cssColor(color) {
+  if (!color) {
+    return "transparent";
+  }
+  return Common.Color.Legacy.fromRGBA([color.r, color.g, color.b, color.a !== void 0 ? color.a : 1]).asString(
+    "rgba"
+    /* Common.Color.Format.RGBA */
+  ) || "";
+}
+function quadToPath(context, quad) {
+  context.beginPath();
+  context.moveTo(quad[0], quad[1]);
+  context.lineTo(quad[2], quad[3]);
+  context.lineTo(quad[4], quad[5]);
+  context.lineTo(quad[6], quad[7]);
+  context.closePath();
+  return context;
+}
+function drawOutlinedQuad(context, quad, fillColor) {
+  context.save();
+  context.lineWidth = 2;
+  quadToPath(context, quad).clip();
+  context.fillStyle = cssColor(fillColor);
+  context.fill();
+  context.restore();
+}
+function drawOutlinedQuadWithClip(context, quad, clipQuad, fillColor) {
+  context.fillStyle = cssColor(fillColor);
+  context.save();
+  context.lineWidth = 0;
+  quadToPath(context, quad).fill();
+  context.globalCompositeOperation = "destination-out";
+  context.fillStyle = "red";
+  quadToPath(context, clipQuad).fill();
+  context.restore();
+}
+function clampTooltipPosition(canvas, titleElement, model) {
+  if (!model) {
+    return;
+  }
+  const canvasWidth = canvas.getBoundingClientRect().width;
+  const canvasHeight = canvas.getBoundingClientRect().height;
+  const titleWidth = titleElement.offsetWidth;
+  const titleHeight = titleElement.offsetHeight;
+  const anchorTop = model.margin[1];
+  const anchorBottom = model.margin[7];
+  const arrowHeight = 7;
+  let arrowDirection;
+  let boxX = Math.max(2, model.margin[0]);
+  if (boxX + titleWidth > canvasWidth) {
+    boxX = canvasWidth - titleWidth - 2;
+  }
+  let boxY;
+  if (anchorTop > canvasHeight) {
+    boxY = canvasHeight - titleHeight - arrowHeight;
+    arrowDirection = "down";
+  } else if (anchorBottom < 0) {
+    boxY = arrowHeight;
+    arrowDirection = "up";
+  } else if (anchorBottom + titleHeight + arrowHeight < canvasHeight) {
+    boxY = anchorBottom + arrowHeight - 4;
+    arrowDirection = "up";
+  } else if (anchorTop - titleHeight - arrowHeight > 0) {
+    boxY = anchorTop - titleHeight - arrowHeight + 3;
+    arrowDirection = "down";
+  } else {
+    boxY = arrowHeight;
+  }
+  titleElement.style.top = `${boxY}px`;
+  titleElement.style.left = `${boxX}px`;
+  titleElement.classList.toggle("arrow-up", arrowDirection === "up");
+  titleElement.classList.toggle("arrow-down", arrowDirection === "down");
+}
+var ScreencastView = class extends UI.Widget.Widget {
   #view;
   #viewOutput;
   screenCaptureModel;
@@ -545,6 +660,7 @@ var ScreencastView = class _ScreencastView extends UI.Widget.Widget {
     if (this.resourceTreeModel) {
       this.resourceTreeModel.removeEventListener(SDK2.ResourceTreeModel.Events.PrimaryPageChanged, this.requestNavigationHistoryEvent, this);
       this.resourceTreeModel.removeEventListener(SDK2.ResourceTreeModel.Events.CachedResourcesLoaded, this.requestNavigationHistoryEvent, this);
+      this.resourceTreeModel.removeEventListener(SDK2.ResourceTreeModel.Events.FrameNavigatedWithinDocument, this.onFrameNavigated, this);
     }
   }
   async startCasting() {
@@ -783,84 +899,6 @@ var ScreencastView = class _ScreencastView extends UI.Widget.Widget {
     scaleQuad.call(this, model.margin);
     return model;
   }
-  static repaintScreencastCanvas(el, input) {
-    const context = el.getContext("2d");
-    if (!context) {
-      return;
-    }
-    const model = input.highlightModel;
-    const config = input.highlightConfig;
-    const canvasWidth = el.getBoundingClientRect().width;
-    const canvasHeight = el.getBoundingClientRect().height;
-    el.width = window.devicePixelRatio * canvasWidth;
-    el.height = window.devicePixelRatio * canvasHeight;
-    context.save();
-    context.scale(window.devicePixelRatio, window.devicePixelRatio);
-    if (model && config) {
-      context.save();
-      const quads = [];
-      const isTransparent = (color) => Boolean(color.a && color.a === 0);
-      if (model.content && config.contentColor && !isTransparent(config.contentColor)) {
-        quads.push({ quad: model.content, color: config.contentColor });
-      }
-      if (model.padding && config.paddingColor && !isTransparent(config.paddingColor)) {
-        quads.push({ quad: model.padding, color: config.paddingColor });
-      }
-      if (model.border && config.borderColor && !isTransparent(config.borderColor)) {
-        quads.push({ quad: model.border, color: config.borderColor });
-      }
-      if (model.margin && config.marginColor && !isTransparent(config.marginColor)) {
-        quads.push({ quad: model.margin, color: config.marginColor });
-      }
-      for (let i = quads.length - 1; i > 0; --i) {
-        _ScreencastView.drawOutlinedQuadWithClip(context, quads[i].quad, quads[i - 1].quad, quads[i].color);
-      }
-      if (quads.length > 0) {
-        _ScreencastView.drawOutlinedQuad(context, quads[0].quad, quads[0].color);
-      }
-      context.globalCompositeOperation = "destination-over";
-    }
-    if (input.screencastImage) {
-      context.drawImage(input.screencastImage, 0, input.screenOffsetTop * input.screenZoom, input.screencastImage.naturalWidth * input.imageZoom, input.screencastImage.naturalHeight * input.imageZoom);
-    }
-    context.restore();
-  }
-  static cssColor(color) {
-    if (!color) {
-      return "transparent";
-    }
-    return Common.Color.Legacy.fromRGBA([color.r, color.g, color.b, color.a !== void 0 ? color.a : 1]).asString(
-      "rgba"
-      /* Common.Color.Format.RGBA */
-    ) || "";
-  }
-  static quadToPath(context, quad) {
-    context.beginPath();
-    context.moveTo(quad[0], quad[1]);
-    context.lineTo(quad[2], quad[3]);
-    context.lineTo(quad[4], quad[5]);
-    context.lineTo(quad[6], quad[7]);
-    context.closePath();
-    return context;
-  }
-  static drawOutlinedQuad(context, quad, fillColor) {
-    context.save();
-    context.lineWidth = 2;
-    _ScreencastView.quadToPath(context, quad).clip();
-    context.fillStyle = _ScreencastView.cssColor(fillColor);
-    context.fill();
-    context.restore();
-  }
-  static drawOutlinedQuadWithClip(context, quad, clipQuad, fillColor) {
-    context.fillStyle = _ScreencastView.cssColor(fillColor);
-    context.save();
-    context.lineWidth = 0;
-    _ScreencastView.quadToPath(context, quad).fill();
-    context.globalCompositeOperation = "destination-out";
-    context.fillStyle = "red";
-    _ScreencastView.quadToPath(context, clipQuad).fill();
-    context.restore();
-  }
   drawElementTitle() {
     if (!this.node) {
       if (this.#elementTitleData.visible) {
@@ -883,43 +921,6 @@ var ScreencastView = class _ScreencastView extends UI.Widget.Widget {
       };
       this.requestUpdate();
     }
-  }
-  static clampTooltipPosition(canvas, titleElement, model) {
-    if (!model) {
-      return;
-    }
-    const canvasWidth = canvas.getBoundingClientRect().width;
-    const canvasHeight = canvas.getBoundingClientRect().height;
-    const titleWidth = titleElement.offsetWidth;
-    const titleHeight = titleElement.offsetHeight;
-    const anchorTop = model.margin[1];
-    const anchorBottom = model.margin[7];
-    const arrowHeight = 7;
-    let arrowDirection;
-    let boxX = Math.max(2, model.margin[0]);
-    if (boxX + titleWidth > canvasWidth) {
-      boxX = canvasWidth - titleWidth - 2;
-    }
-    let boxY;
-    if (anchorTop > canvasHeight) {
-      boxY = canvasHeight - titleHeight - arrowHeight;
-      arrowDirection = "down";
-    } else if (anchorBottom < 0) {
-      boxY = arrowHeight;
-      arrowDirection = "up";
-    } else if (anchorBottom + titleHeight + arrowHeight < canvasHeight) {
-      boxY = anchorBottom + arrowHeight - 4;
-      arrowDirection = "up";
-    } else if (anchorTop - titleHeight - arrowHeight > 0) {
-      boxY = anchorTop - titleHeight - arrowHeight + 3;
-      arrowDirection = "down";
-    } else {
-      boxY = arrowHeight;
-    }
-    titleElement.style.top = `${boxY}px`;
-    titleElement.style.left = `${boxX}px`;
-    titleElement.classList.toggle("arrow-up", arrowDirection === "up");
-    titleElement.classList.toggle("arrow-down", arrowDirection === "down");
   }
   viewportDimensions() {
     const gutterSize = 30;
@@ -945,6 +946,7 @@ var ScreencastView = class _ScreencastView extends UI.Widget.Widget {
       void this.requestNavigationHistory();
       this.resourceTreeModel.addEventListener(SDK2.ResourceTreeModel.Events.PrimaryPageChanged, this.requestNavigationHistoryEvent, this);
       this.resourceTreeModel.addEventListener(SDK2.ResourceTreeModel.Events.CachedResourcesLoaded, this.requestNavigationHistoryEvent, this);
+      this.resourceTreeModel.addEventListener(SDK2.ResourceTreeModel.Events.FrameNavigatedWithinDocument, this.onFrameNavigated, this);
     }
   }
   navigateToHistoryEntry(offset) {
@@ -994,6 +996,12 @@ var ScreencastView = class _ScreencastView extends UI.Widget.Widget {
   }
   requestNavigationHistoryEvent() {
     void this.requestNavigationHistory();
+  }
+  onFrameNavigated(event) {
+    const frame = event.data;
+    if (frame.isOutermostFrame()) {
+      this.requestNavigationHistoryEvent();
+    }
   }
   async requestNavigationHistory() {
     const history = this.resourceTreeModel ? await this.resourceTreeModel.navigationHistory() : null;

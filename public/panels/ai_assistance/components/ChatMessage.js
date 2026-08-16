@@ -24,6 +24,7 @@ import * as UIHelpers from '../../../ui/helpers/helpers.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
+import * as Application from '../../application/application.js';
 import * as Elements from '../../elements/elements.js';
 import * as Lighthouse from '../../lighthouse/lighthouse.js';
 import * as NetworkForward from '../../network/forward/forward.js';
@@ -405,6 +406,14 @@ const UIStringsNotTranslate = {
      * @description Title for the source files list widget.
      */
     inspectedFileNames: 'Inspected file names',
+    /**
+     * @description Title for the storage breakdown widget.
+     */
+    storageBreakdown: 'Storage breakdown',
+    /**
+     * @description Accessible label for the reveal button in the storage breakdown widget.
+     */
+    revealStorageBreakdown: 'Reveal storage breakdown in Application panel',
 };
 export const DEFAULT_VIEW = (input, output, target) => {
     const message = input.message;
@@ -746,6 +755,44 @@ async function resolveNode(backendNodeId) {
         nodeCache.set(backendNodeId, resolved);
     }
     return resolved;
+}
+async function makeStorageBreakdownWidget(widgetData) {
+    const target = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
+    if (!target) {
+        return null;
+    }
+    const breakdown = widgetData.data.usageBreakdown;
+    const total = breakdown.reduce((sum, item) => sum + item.bytes, 0);
+    const slices = breakdown.map(item => {
+        const color = Application.StorageView.storagePieColors.get(item.storageType) ||
+            'rgb(180, 180, 180)';
+        const title = Application.StorageView.StorageView.getStorageTypeNameForWidget(item.storageType);
+        return {
+            value: item.bytes,
+            color,
+            title,
+        };
+    });
+    const chartData = {
+        chartName: lockedString(UIStringsNotTranslate.storageBreakdown),
+        size: 110,
+        formatter: val => AiAssistanceModel.UnitFormatters.bytes(val),
+        showLegend: true,
+        total,
+        slices,
+    };
+    const renderedWidget = html `
+    <div class="storage-breakdown-widget">
+      <devtools-perf-piechart .data=${chartData}></devtools-perf-piechart>
+    </div>
+  `;
+    return {
+        renderedWidget,
+        title: lockedString(UIStringsNotTranslate.storageBreakdown),
+        revealable: new Application.StorageView.StorageRevealable(target),
+        accessibleRevealLabel: lockedString(UIStringsNotTranslate.revealStorageBreakdown),
+        jslogContext: 'storage-breakdown-widget',
+    };
 }
 async function makeComputedStyleWidget(widgetData) {
     const domNodeForId = await resolveNode(widgetData.data.backendNodeId);
@@ -1354,6 +1401,8 @@ export function getWidgetSignature(widget) {
             return `${widget.name}:${widget.data.url}:${widget.data.line ?? ''}:${widget.data.column ?? ''}`;
         case 'NETWORK_REQUESTS_LIST':
             return `${widget.name}:${widget.data.requests.map(r => r.requestId()).join(',')}`;
+        case 'STORAGE_BREAKDOWN':
+            return `${widget.name}:${widget.data.totalUsageBytes}:${widget.data.usageBreakdown.map(e => `${e.storageType}_${e.bytes}`).join(',')}`;
         default:
             Platform.assertNever(widget, 'Unknown AiWidget name');
     }
@@ -1453,15 +1502,24 @@ async function renderWidgets(widgets, options = {}) {
             case 'SOURCE_CODE':
                 response = await makeSourceCodeWidget(widgetData);
                 break;
+            case 'STORAGE_BREAKDOWN':
+                response = await makeStorageBreakdownWidget(widgetData);
+                break;
             default:
                 Platform.assertNever(widgetData, 'Unknown AiWidget name');
         }
         return renderWidgetResponse(response);
     }));
-    if (options.wrapperClass) {
-        return html `<div class=${options.wrapperClass}>${ui}</div>`;
+    // Omit the wrapper element entirely if every widget maker resolved to Lit.nothing
+    // so empty container elements do not occupy vertical layout space in the chat stream.
+    const renderedItems = ui.filter(item => item !== Lit.nothing);
+    if (renderedItems.length === 0) {
+        return Lit.nothing;
     }
-    return html `${ui}`;
+    if (options.wrapperClass) {
+        return html `<div class=${options.wrapperClass}>${renderedItems}</div>`;
+    }
+    return html `${renderedItems}`;
 }
 function renderSideEffectConfirmationUi(step) {
     if (step.state.type !== 'needs_approval') {
@@ -1933,16 +1991,29 @@ async function makeNetworkTrackWidget(widgetData) {
     };
 }
 async function makeLighthouseReportWidget(widgetData) {
-    const reportEl = Lighthouse.LighthouseReportRenderer.LighthouseReportRenderer.renderLighthouseScores(widgetData.data.report);
-    if (!reportEl) {
-        return null;
+    let reportEl = null;
+    try {
+        // Snapshot mode audits only collect individual audit results and do not generate
+        // top-level category score gauges.
+        reportEl =
+            Lighthouse.LighthouseReportRenderer.LighthouseReportRenderer.renderLighthouseScores(widgetData.data.report);
+    }
+    catch {
+        reportEl = null;
     }
     const snapshotReport = widgetData.data.snapshotReport;
+    const revealLighthouseLabel = lockedString(UIStringsNotTranslate.revealLighthouse);
+    // When score gauges are rendered, the widget header displays the title "Lighthouse report"
+    // and the header button defaults to "Reveal". When score gauges are absent (snapshot mode),
+    // no header is rendered, so customRevealTitle labels the standalone button ("Reveal Lighthouse report").
+    const title = reportEl ? lockedString(UIStringsNotTranslate.lighthouseReport) : null;
+    const customRevealTitle = reportEl ? undefined : revealLighthouseLabel;
     return {
-        renderedWidget: html `<div class="lighthouse-report-widget">${reportEl}</div>`,
+        renderedWidget: reportEl ? html `<div class="lighthouse-report-widget">${reportEl}</div>` : null,
         revealable: new Lighthouse.LighthousePanel.ActiveLighthouseReport(widgetData.data.report),
-        accessibleRevealLabel: lockedString(UIStringsNotTranslate.revealLighthouse),
-        title: lockedString(UIStringsNotTranslate.lighthouseReport),
+        accessibleRevealLabel: revealLighthouseLabel,
+        customRevealTitle,
+        title,
         jslogContext: snapshotReport ? 'lighthouse-snapshot-report-widget' : 'lighthouse-report-widget',
     };
 }

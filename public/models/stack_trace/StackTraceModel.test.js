@@ -590,7 +590,6 @@ describe('StackTraceModel', () => {
                 executionContextId: 1,
                 hash: '',
                 buildId: '',
-                isLiveEdit: false,
                 sourceMapURL: undefined,
                 hasSourceURL: false,
                 length: 100,

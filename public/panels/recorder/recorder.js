@@ -637,9 +637,9 @@ import * as SDK3 from "./../../core/sdk/sdk.js";
 import * as Bindings from "./../../models/bindings/bindings.js";
 import * as EmulationModel2 from "./../../models/emulation/emulation.js";
 import * as PublicExtensions from "./../../models/extensions/extensions.js";
-import * as PanelCommon from "./../common/common.js";
 import * as Tracing from "./../../services/tracing/tracing.js";
 import * as Buttons8 from "./../../ui/components/buttons/buttons.js";
+import * as Dialogs2 from "./../../ui/components/dialogs/dialogs.js";
 import * as UI11 from "./../../ui/legacy/legacy.js";
 import { Directives as Directives5, html as html11, render as render11 } from "./../../ui/lit/lit.js";
 import * as VisualLogging9 from "./../../ui/visual_logging/visual_logging.js";
@@ -6573,7 +6573,7 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
     if (Root.Runtime.Runtime.queryParam("isChromeForTesting") || Root.Runtime.Runtime.queryParam("disableSelfXssWarnings") || this.#selfXssWarningDisabledSetting.get()) {
       return true;
     }
-    const result = await PanelCommon.TypeToAllowDialog.show({
+    const result = await Dialogs2.TypeToAllowDialog.TypeToAllowDialog.show({
       jslogContext: {
         input: "confirm-import-recording-input",
         dialog: "confirm-import-recording-dialog"

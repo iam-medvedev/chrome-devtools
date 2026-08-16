@@ -16,6 +16,9 @@ describeWithEnvironment('LegacyJavaScript', function () {
         assert.deepEqual(insight.metricSavings, { FCP: 0, LCP: 0 });
     });
     it('has results when savings are big enough', async function () {
+        if (this.timeout() > 0) {
+            this.timeout(45_000);
+        }
         const { data, insights } = await processTrace(this, 'yahoo-news.json.gz');
         assert.strictEqual(insights.size, 1);
         const insight = getInsightOrError('LegacyJavaScript', insights, getFirstOrError(data.Meta.navigationsByNavigationId.values()));

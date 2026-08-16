@@ -2449,7 +2449,7 @@ var NativeFunctions = [
   },
   {
     name: "importNode",
-    signatures: [["node", "?options"], ["node", "?deep"]]
+    signatures: [["node", "?options"]]
   },
   {
     name: "queryCommandEnabled",
@@ -6660,7 +6660,7 @@ var NativeFunctions = [
   },
   {
     name: "WebSocket",
-    signatures: [["url", "?protocols"]]
+    signatures: [["url", "?protocolsOrOptions"]]
   },
   {
     name: "WebSocketError",
@@ -7105,10 +7105,6 @@ var NativeFunctions = [
   {
     name: "contributeToHistogram",
     signatures: [["contribution"]]
-  },
-  {
-    name: "contributeToHistogramOnEvent",
-    signatures: [["event", "contribution"]]
   },
   {
     name: "enableDebugMode",
@@ -8407,6 +8403,10 @@ var NativeFunctions = [
     signatures: [["markName"]]
   },
   {
+    name: "measureConditional",
+    signatures: [["measureName", "?startMark", "?endMark"]]
+  },
+  {
     name: "PerformanceMark",
     signatures: [["markName", "?markOptions"]]
   },
@@ -9113,6 +9113,10 @@ var NativeFunctions = [
   {
     name: "prependHTMLUnsafe",
     signatures: [["html", "?options"]]
+  },
+  {
+    name: "setCanvasTransform",
+    signatures: [["?matrix"]]
   },
   {
     name: "matchContainer",

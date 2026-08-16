@@ -65,7 +65,7 @@ const UIStrings = {
      * @description Text in Request Payload View of the Network panel. This is a noun-phrase meaning the
      * payload of a network request.
      */
-    requestPayload: 'Request Payload',
+    requestPayload: 'Request payload',
     /**
      * @description Text in Request Payload View of the Network panel
      */
@@ -73,11 +73,11 @@ const UIStrings = {
     /**
      * @description Text in Request Payload View of the Network panel
      */
-    queryStringParameters: 'Query String Parameters',
+    queryStringParameters: 'Query string parameters',
     /**
      * @description Text in Request Payload View of the Network panel
      */
-    formData: 'Form Data',
+    formData: 'Form data',
     /**
      * @description Text for toggling the view of payload data (e.g. query string parameters) from source to parsed in the payload tab
      */
@@ -158,6 +158,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
             readOnly: true,
             propertiesMode: 1 /* ObjectUI.ObjectPropertiesSection.ObjectPropertiesMode.OWN_AND_INTERNAL_AND_INHERITED */,
         });
+        objectTree.expanded = true;
         return html `
       <li role=treeitem class="source-code object-properties-section-root-element object-properties-section" open>
         ${object.description}

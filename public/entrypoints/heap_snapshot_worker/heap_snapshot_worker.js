@@ -656,18 +656,10 @@ var HeapSnapshotNode = class {
     return false;
   }
   #detachednessAndClassIndex() {
-    const { snapshot, nodeIndex } = this;
-    const nodeDetachednessAndClassIndexOffset = snapshot.nodeDetachednessAndClassIndexOffset;
-    return nodeDetachednessAndClassIndexOffset !== -1 ? snapshot.nodes.getValue(nodeIndex + nodeDetachednessAndClassIndexOffset) : snapshot.detachednessAndClassIndexArray[nodeIndex / snapshot.nodeFieldCount];
+    return this.snapshot.detachednessAndClassIndexArray[this.nodeIndex / this.snapshot.nodeFieldCount];
   }
   #setDetachednessAndClassIndex(value) {
-    const { snapshot, nodeIndex } = this;
-    const nodeDetachednessAndClassIndexOffset = snapshot.nodeDetachednessAndClassIndexOffset;
-    if (nodeDetachednessAndClassIndexOffset !== -1) {
-      snapshot.nodes.setValue(nodeIndex + nodeDetachednessAndClassIndexOffset, value);
-    } else {
-      snapshot.detachednessAndClassIndexArray[nodeIndex / snapshot.nodeFieldCount] = value;
-    }
+    this.snapshot.detachednessAndClassIndexArray[this.nodeIndex / this.snapshot.nodeFieldCount] = value;
   }
   detachedness() {
     return this.#detachednessAndClassIndex() & BITMASK_FOR_DOM_LINK_STATE;
@@ -1066,6 +1058,7 @@ var HeapSnapshot = class _HeapSnapshot {
     this.#progress.updateStatus("Building retainers\u2026");
     const resultsFromSecondWorker = this.startInitStep1InSecondThread(secondWorker);
     this.#progress.updateStatus("Propagating DOM state\u2026");
+    this.initDetachednessAndClassIndex();
     this.propagateDOMState();
     this.#progress.updateStatus("Calculating node flags\u2026");
     this.calculateFlags();
@@ -2093,9 +2086,6 @@ var HeapSnapshot = class _HeapSnapshot {
   }
   calculateObjectNames() {
     const { nodes, nodeCount, nodeNameOffset, nodeNativeType, nodeHiddenType, nodeObjectType, nodeCodeType, nodeClosureType, nodeRegExpType } = this;
-    if (this.nodeDetachednessAndClassIndexOffset === -1) {
-      this.detachednessAndClassIndexArray = new Uint32Array(nodeCount);
-    }
     const stringTable = /* @__PURE__ */ new Map();
     const getIndexForString = (s) => {
       let index = stringTable.get(s);
@@ -2313,6 +2303,42 @@ var HeapSnapshot = class _HeapSnapshot {
   getNativeContextSizes() {
     return this.#nativeContextSizes;
   }
+  getRetainedByContextSummary() {
+    const isRetainedByContext = this.createNamedFilter("objectsRetainedByContexts");
+    let contextCount = 0;
+    let retainedByContextSize = 0;
+    let retainedByContextCount = 0;
+    let notRetainedByContextSize = 0;
+    let notRetainedByContextCount = 0;
+    const node = this.rootNode();
+    const { nodes, nodeFieldCount, nodeSelfSizeOffset: selfSizeOffset } = this;
+    const nodesLength = nodes.length;
+    for (let nodeIndex = 0; nodeIndex < nodesLength; nodeIndex += nodeFieldCount) {
+      const selfSize = nodes.getValue(nodeIndex + selfSizeOffset);
+      if (!selfSize) {
+        continue;
+      }
+      node.nodeIndex = nodeIndex;
+      if (isRetainedByContext(node)) {
+        retainedByContextCount++;
+        retainedByContextSize += selfSize;
+      } else {
+        notRetainedByContextCount++;
+        notRetainedByContextSize += selfSize;
+      }
+      if (this.isContextObject(node)) {
+        contextCount++;
+      }
+    }
+    return {
+      contextCount,
+      retainedByContextSize,
+      retainedByContextCount,
+      notRetainedByContextSize,
+      notRetainedByContextCount,
+      totalSize: retainedByContextSize + notRetainedByContextSize
+    };
+  }
   nodeNativeContext(nodeIndex) {
     const ordinal = nodeIndex / this.nodeFieldCount;
     const nativeContextOrdinal = this.nodeNativeContextAttribution[ordinal];
@@ -2509,6 +2535,30 @@ var HeapSnapshot = class _HeapSnapshot {
       }
     }
     return null;
+  }
+  initDetachednessAndClassIndex() {
+    this.detachednessAndClassIndexArray = new Uint32Array(this.nodeCount);
+    if (this.nodeDetachednessAndClassIndexOffset !== -1) {
+      const { nodeFieldCount, nodeDetachednessAndClassIndexOffset: offset } = this;
+      for (let i = 0; i < this.nodeCount; ++i) {
+        this.detachednessAndClassIndexArray[i] = Number(this.nodes.getValue(i * nodeFieldCount + offset));
+      }
+    } else {
+      const node = this.rootNode();
+      const nodesLength = this.nodes.length;
+      const { nodeFieldCount, nodeNativeType, nodeTypeOffset } = this;
+      for (let nodeIndex = 0; nodeIndex < nodesLength; nodeIndex += nodeFieldCount) {
+        if (this.nodes.getValue(nodeIndex + nodeTypeOffset) === nodeNativeType) {
+          node.nodeIndex = nodeIndex;
+          if (node.name().startsWith("Detached ")) {
+            node.setDetachedness(
+              2
+              /* HeapSnapshotModel.HeapSnapshotModel.DOMLinkState.DETACHED */
+            );
+          }
+        }
+      }
+    }
   }
   /**
    * The phase propagates whether a node is attached or detached through the
@@ -2759,11 +2809,51 @@ var HeapSnapshot = class _HeapSnapshot {
     }
     return null;
   }
-  createEdgesProvider(nodeIndex) {
+  createEdgesProvider(nodeIndex, options) {
     const node = this.createNode(nodeIndex);
-    const filter = this.containmentEdgesFilter();
+    const defaultFilter = this.containmentEdgesFilter();
+    const minRetainedSize = options?.minRetainedSize;
+    const excludePrimitives = options?.excludePrimitives ?? false;
+    let filter = defaultFilter;
+    if (minRetainedSize !== void 0 || excludePrimitives) {
+      filter = (edge) => {
+        if (defaultFilter && !defaultFilter(edge)) {
+          return false;
+        }
+        const targetNode = edge.node();
+        if (minRetainedSize !== void 0 && targetNode.retainedSize() < minRetainedSize) {
+          return false;
+        }
+        if (excludePrimitives) {
+          const rawType = targetNode.rawType();
+          if (rawType === this.nodeNumberType) {
+            return false;
+          }
+          if (rawType === this.nodeNativeType) {
+            const targetName = targetNode.rawName();
+            if (targetName === "undefined" || targetName === "null" || targetName === "true" || targetName === "false") {
+              return false;
+            }
+          }
+        }
+        return true;
+      };
+    }
     const indexProvider = new HeapSnapshotEdgeIndexProvider(this);
-    return new HeapSnapshotEdgesProvider(this, filter, node.edges(), indexProvider);
+    const provider = new HeapSnapshotEdgesProvider(this, filter, node.edges(), indexProvider);
+    if (options?.sortBy) {
+      const sortBy = options.sortBy;
+      let comparator;
+      if (sortBy === "selfSize") {
+        comparator = new HeapSnapshotModel3.HeapSnapshotModel.ComparatorConfig("selfSize", false, "!edgeName", true);
+      } else if (sortBy === "name") {
+        comparator = new HeapSnapshotModel3.HeapSnapshotModel.ComparatorConfig("!edgeName", true, "retainedSize", false);
+      } else {
+        comparator = new HeapSnapshotModel3.HeapSnapshotModel.ComparatorConfig("retainedSize", false, "!edgeName", true);
+      }
+      provider.sortAndRewind(comparator);
+    }
+    return provider;
   }
   createEdgesProviderForTest(nodeIndex, filter) {
     const node = this.createNode(nodeIndex);
@@ -2917,6 +3007,83 @@ var HeapSnapshot = class _HeapSnapshot {
   }
   createNodesProviderForClass(classKey, nodeFilter) {
     return new HeapSnapshotNodesProvider(this, this.aggregatesWithFilter(nodeFilter)[classKey].idxs);
+  }
+  queryObjects(queryOptions) {
+    const { nodes, nodeFieldCount, retainedSizes } = this;
+    const nodesLength = nodes.length;
+    const matchingIndexes = [];
+    const classNamePattern = queryOptions.className ? new RegExp(queryOptions.className, "i") : null;
+    const propertyNamePattern = queryOptions.propertyName ? new RegExp(queryOptions.propertyName, "i") : null;
+    const targetNodeType = queryOptions.nodeType ? queryOptions.nodeType.toLowerCase() : null;
+    const node = this.rootNode();
+    for (let nodeIndex = 0, ordinal = 0; nodeIndex < nodesLength; nodeIndex += nodeFieldCount, ordinal++) {
+      node.nodeIndex = nodeIndex;
+      if (queryOptions.minSelfSize !== void 0 && node.selfSize() < queryOptions.minSelfSize) {
+        continue;
+      }
+      if (queryOptions.maxSelfSize !== void 0 && node.selfSize() > queryOptions.maxSelfSize) {
+        continue;
+      }
+      const retainedSize = retainedSizes[ordinal];
+      if (queryOptions.minRetainedSize !== void 0 && retainedSize < queryOptions.minRetainedSize) {
+        continue;
+      }
+      if (queryOptions.maxRetainedSize !== void 0 && retainedSize > queryOptions.maxRetainedSize) {
+        continue;
+      }
+      if (queryOptions.isDetached !== void 0) {
+        const isDetached = node.detachedness() === 2;
+        if (isDetached !== queryOptions.isDetached) {
+          continue;
+        }
+      }
+      if (classNamePattern) {
+        const name = node.name();
+        if (!classNamePattern.test(name)) {
+          continue;
+        }
+      }
+      if (targetNodeType) {
+        const typeStr = node.type();
+        if (typeStr.toLowerCase() !== targetNodeType) {
+          continue;
+        }
+      }
+      if (propertyNamePattern) {
+        let propMatch = false;
+        for (const iter = node.edges(); iter.hasNext(); iter.next()) {
+          if (propertyNamePattern.test(iter.edge.name())) {
+            propMatch = true;
+            break;
+          }
+        }
+        if (!propMatch) {
+          continue;
+        }
+      }
+      matchingIndexes.push(nodeIndex);
+    }
+    const sortBy = queryOptions.sortBy ?? "retainedSize";
+    if (sortBy === "retainedSize") {
+      matchingIndexes.sort((a, b) => retainedSizes[b / nodeFieldCount] - retainedSizes[a / nodeFieldCount]);
+    } else if (sortBy === "selfSize") {
+      matchingIndexes.sort((a, b) => {
+        node.nodeIndex = b;
+        const sizeB = node.selfSize();
+        node.nodeIndex = a;
+        const sizeA = node.selfSize();
+        return sizeB - sizeA;
+      });
+    } else if (sortBy === "id") {
+      matchingIndexes.sort((a, b) => {
+        node.nodeIndex = b;
+        const idB = node.id();
+        node.nodeIndex = a;
+        const idA = node.id();
+        return idA - idB;
+      });
+    }
+    return new HeapSnapshotNodesProvider(this, matchingIndexes);
   }
   maxJsNodeId() {
     const nodeFieldCount = this.nodeFieldCount;
@@ -3425,7 +3592,7 @@ var JSHeapSnapshot = class extends HeapSnapshot {
         continue;
       }
       node.nodeIndex = nodeIndex;
-      if (node.name().startsWith("Detached ")) {
+      if (node.detachedness() === 2) {
         this.flags[ordinal] |= flag;
       }
     }
@@ -3898,6 +4065,8 @@ var HeapSnapshotLoader = class {
     this.#dataCallback = null;
     this.#done = false;
     this.parsingComplete = this.#parseInput();
+    this.parsingComplete.catch(() => {
+    });
   }
   dispose() {
     this.#reset();
@@ -3910,6 +4079,7 @@ var HeapSnapshotLoader = class {
     this.#done = true;
     if (this.#dataCallback) {
       this.#dataCallback("");
+      this.#dataCallback = null;
     }
   }
   async buildSnapshot(secondWorker) {
@@ -3976,6 +4146,9 @@ var HeapSnapshotLoader = class {
     this.#snapshot.strings = JSON.parse(this.#json);
   }
   write(chunk) {
+    if (!chunk) {
+      return;
+    }
     this.#buffer.push(chunk);
     if (!this.#dataCallback) {
       return;
@@ -3986,6 +4159,9 @@ var HeapSnapshotLoader = class {
   #fetchChunk() {
     if (this.#buffer.length > 0) {
       return Promise.resolve(this.#buffer.shift());
+    }
+    if (this.#done) {
+      return Promise.resolve("");
     }
     const { promise, resolve } = Promise.withResolvers();
     this.#dataCallback = resolve;
@@ -3998,7 +4174,11 @@ var HeapSnapshotLoader = class {
         return pos;
       }
       startIndex = this.#json.length - token.length + 1;
-      this.#json += await this.#fetchChunk();
+      const chunk = await this.#fetchChunk();
+      if (!chunk) {
+        throw new Error(`Token ${token} not found (unexpected end of input)`);
+      }
+      this.#json += chunk;
     }
   }
   async #parseArray(name, title, length) {
@@ -4013,7 +4193,11 @@ var HeapSnapshotLoader = class {
       } else {
         this.#progress.updateStatus(title);
       }
-      this.#json += await this.#fetchChunk();
+      const chunk = await this.#fetchChunk();
+      if (!chunk) {
+        throw new Error(`Unexpected end of input while ${title}`);
+      }
+      this.#json += chunk;
     }
     const result = this.#array;
     this.#array = null;
@@ -4036,7 +4220,11 @@ var HeapSnapshotLoader = class {
     });
     jsonTokenizer.write(json);
     while (!jsonTokenizerDone) {
-      jsonTokenizer.write(await this.#fetchChunk());
+      const chunk = await this.#fetchChunk();
+      if (!chunk) {
+        throw new Error("Unexpected end of input while loading snapshot info");
+      }
+      jsonTokenizer.write(chunk);
     }
     this.#snapshot = this.#snapshot || {};
     const nodes = await this.#parseArray('"nodes"', "Loading nodes\u2026 {PH1}%", this.#snapshot.snapshot.meta.node_fields.length * this.#snapshot.snapshot.node_count);

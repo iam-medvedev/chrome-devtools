@@ -1107,7 +1107,10 @@ export declare namespace Audits {
         ItemNotInnerList = "ItemNotInnerList",
         InvalidAllowlistItemType = "InvalidAllowlistItemType",
         ReportingEndpointNotToken = "ReportingEndpointNotToken",
-        InvalidUrlPattern = "InvalidUrlPattern"
+        InvalidUrlPattern = "InvalidUrlPattern",
+        IFrameAttributeLoosensEmbeddingRequirement = "IFrameAttributeLoosensEmbeddingRequirement",
+        InvalidAllowConnectionAllowlistFrom = "InvalidAllowConnectionAllowlistFrom",
+        EmbeddingRequirementNotSatisfied = "EmbeddingRequirementNotSatisfied"
     }
     /**
      * Details for issues about documents in Quirks Mode
@@ -6820,6 +6823,9 @@ export declare namespace Emulation {
     interface SetSafeAreaInsetsOverrideRequest {
         insets: SafeAreaInsets;
     }
+    interface SetVirtualKeyboardGeometryOverrideRequest {
+        keyboardRect?: DOM.Rect;
+    }
     const enum SetDeviceMetricsOverrideRequestScrollbarType {
         Overlay = "overlay",
         Default = "default"
@@ -10682,15 +10688,6 @@ export declare namespace Network {
          */
         errors?: SignedExchangeError[];
     }
-    /**
-     * List of content encodings supported by the backend.
-     */
-    const enum ContentEncoding {
-        Deflate = "deflate",
-        Gzip = "gzip",
-        Br = "br",
-        Zstd = "zstd"
-    }
     interface NetworkConditions {
         /**
          * Only matching requests will be affected by these conditions. Patterns use the URLPattern constructor string
@@ -11197,7 +11194,9 @@ export declare namespace Network {
         CrossOriginRegistrationSiteNotIncluded = "CrossOriginRegistrationSiteNotIncluded",
         InvalidPreProvisionedKeyInitiatorMissing = "InvalidPreProvisionedKeyInitiatorMissing",
         PreProvisionedKeyAccessNotGranted = "PreProvisionedKeyAccessNotGranted",
-        PreProvisionedKeyNotFound = "PreProvisionedKeyNotFound"
+        PreProvisionedKeyNotFound = "PreProvisionedKeyNotFound",
+        AttestationCertificationError = "AttestationCertificationError",
+        AttestationSigningError = "AttestationSigningError"
     }
     /**
      * Details about a failed device bound session network request.
@@ -11347,12 +11346,6 @@ export declare namespace Network {
     interface LoadNetworkResourceOptions {
         disableCache: boolean;
         includeCredentials: boolean;
-    }
-    interface SetAcceptedEncodingsRequest {
-        /**
-         * List of accepted content encodings.
-         */
-        encodings: ContentEncoding[];
     }
     interface CanClearBrowserCacheResponse extends ProtocolResponseWithError {
         /**
@@ -13556,7 +13549,6 @@ export declare namespace Page {
         OtpCredentials = "otp-credentials",
         Payment = "payment",
         PictureInPicture = "picture-in-picture",
-        PrivateAggregation = "private-aggregation",
         PrivateStateTokenIssuance = "private-state-token-issuance",
         PrivateStateTokenRedemption = "private-state-token-redemption",
         PublickeyCredentialsCreate = "publickey-credentials-create",
@@ -14402,6 +14394,7 @@ export declare namespace Page {
         EmbedderExtensionMessagingForOpenPort = "EmbedderExtensionMessagingForOpenPort",
         EmbedderExtensionSentMessageToCachedFrame = "EmbedderExtensionSentMessageToCachedFrame",
         EmbedderExtensionFrame = "EmbedderExtensionFrame",
+        EmbedderPrivilegedWebContents = "EmbedderPrivilegedWebContents",
         RequestedByWebViewClient = "RequestedByWebViewClient",
         PostMessageByWebViewClient = "PostMessageByWebViewClient",
         CacheControlNoStoreDeviceBoundSessionTerminated = "CacheControlNoStoreDeviceBoundSessionTerminated",
@@ -15123,6 +15116,33 @@ export declare namespace Page {
          * Send every n-th frame.
          */
         everyNthFrame?: integer;
+    }
+    interface StartScreenRecordingRequest {
+        audio?: boolean;
+        /**
+         * Maximum frame width in pixels.
+         */
+        maxWidth?: integer;
+        /**
+         * Maximum frame height in pixels.
+         */
+        maxHeight?: integer;
+        /**
+         * Maximum frame rate in frames per second.
+         */
+        frameRate?: integer;
+    }
+    interface StartScreenRecordingResponse extends ProtocolResponseWithError {
+        /**
+         * A handle of the stream that holds resulting screencast data.
+         */
+        stream: IO.StreamHandle;
+    }
+    interface StopScreenRecordingResponse extends ProtocolResponseWithError {
+        /**
+         * A handle of the stream that holds resulting screencast data.
+         */
+        stream: IO.StreamHandle;
     }
     const enum SetWebLifecycleStateRequestState {
         Frozen = "frozen",
@@ -15983,6 +16003,7 @@ export declare namespace Preload {
         PrefetchIsStale = "PrefetchIsStale",
         PrefetchNotEligibleBlockedByConnectionAllowlist = "PrefetchNotEligibleBlockedByConnectionAllowlist",
         PrefetchNotEligibleBrowserContextOffTheRecord = "PrefetchNotEligibleBrowserContextOffTheRecord",
+        PrefetchNotEligibleCrossOrigin = "PrefetchNotEligibleCrossOrigin",
         PrefetchNotEligibleDataSaverEnabled = "PrefetchNotEligibleDataSaverEnabled",
         PrefetchNotEligibleExistingProxy = "PrefetchNotEligibleExistingProxy",
         PrefetchNotEligibleHostIsNonUnique = "PrefetchNotEligibleHostIsNonUnique",
@@ -18586,11 +18607,16 @@ export declare namespace WebAuthn {
         Ctap2_1 = "ctap2_1",
         Ctap2_2 = "ctap2_2"
     }
+    /**
+     * LINT_SKIP.IfChange(AuthenticatorTransport)
+     */
     const enum AuthenticatorTransport {
         Usb = "usb",
         Nfc = "nfc",
         Ble = "ble",
         Cable = "cable",
+        Hybrid = "hybrid",
+        SmartCard = "smart-card",
         Internal = "internal"
     }
     interface VirtualAuthenticatorOptions {

@@ -11,10 +11,10 @@ import { cleanTextContent, dispatchClickEvent, doubleRaf, renderElementIntoDOM }
 import { describeWithEnvironment, updateHostConfig } from '../../../testing/EnvironmentHelpers.js';
 import { makeInstantEvent, microsecondsTraceWindow, MockFlameChartDelegate, setupIgnoreListManagerEnvironment, } from '../../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
+import * as Dialogs from '../../../ui/components/dialogs/dialogs.js';
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as PerfUI from '../../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../../ui/legacy/legacy.js';
-import * as PanelCommon from '../../common/common.js';
 import * as Timeline from '../timeline.js';
 import * as Components from './components/components.js';
 import * as Overlays from './overlays.js';
@@ -63,7 +63,7 @@ function createCharts(parsedTrace) {
 describeWithEnvironment('Overlays', () => {
     let showFreDialogStub;
     beforeEach(() => {
-        showFreDialogStub = sinon.stub(PanelCommon.FreDialog, 'show');
+        showFreDialogStub = sinon.stub(Dialogs.FreDialog.FreDialog, 'show');
         setupIgnoreListManagerEnvironment();
     });
     it('can calculate the x position of an event based on the dimensions and its timestamp', async () => {

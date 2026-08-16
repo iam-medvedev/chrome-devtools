@@ -323,5 +323,149 @@ describe('PerformanceTraceFormatter', function () {
             assert.include(output, 'Name: Grouped measurement');
         });
     });
+    describe('formatEventForAI', () => {
+        it('sanitizes headers for network requests', () => {
+            const mockNetworkEvent = {
+                name: "SyntheticNetworkRequest" /* Trace.Types.Events.Name.SYNTHETIC_NETWORK_REQUEST */,
+                args: {
+                    data: {
+                        responseHeaders: [
+                            { name: 'x-csrf-token', value: 'secret' },
+                            { name: 'content-type', value: 'text/html' },
+                        ],
+                    },
+                },
+            };
+            const output = PerformanceTraceFormatter.formatEventForAI(mockNetworkEvent);
+            const parsed = JSON.parse(output);
+            assert.deepEqual(parsed.args.data.responseHeaders, [
+                { name: 'x-csrf-token', value: '<redacted>' },
+                { name: 'content-type', value: 'text/html' },
+            ]);
+        });
+        it('sanitizes headers for ResourceReceiveResponse events', () => {
+            const mockReceiveResponseEvent = {
+                name: "ResourceReceiveResponse" /* Trace.Types.Events.Name.RESOURCE_RECEIVE_RESPONSE */,
+                args: {
+                    data: {
+                        headers: [
+                            { name: 'cookie', value: 'secret' },
+                            { name: 'accept', value: '*/*' },
+                        ],
+                    },
+                },
+            };
+            const output = PerformanceTraceFormatter.formatEventForAI(mockReceiveResponseEvent);
+            const parsed = JSON.parse(output);
+            assert.deepEqual(parsed.args.data.headers, [
+                { name: 'cookie', value: '<redacted>' },
+                { name: 'accept', value: '*/*' },
+            ]);
+        });
+        it('redacts script source for RundownScriptSource events', () => {
+            const mockRundownEvent = {
+                name: 'ScriptCatchup',
+                cat: 'disabled-by-default-devtools.v8-source-rundown-sources',
+                args: {
+                    data: {
+                        isolate: 'isolate-1',
+                        scriptId: 'script-1',
+                        length: 100,
+                        sourceText: 'function secret() { return 42; }',
+                    },
+                },
+            };
+            const output = PerformanceTraceFormatter.formatEventForAI(mockRundownEvent);
+            const parsed = JSON.parse(output);
+            assert.isUndefined(parsed.args.data.sourceText);
+            assert.deepEqual(parsed.args.data, {
+                isolate: 'isolate-1',
+                scriptId: 'script-1',
+                length: 100,
+            });
+        });
+        it('redacts script source for RundownScriptSourceLarge events', () => {
+            const mockRundownLargeEvent = {
+                name: 'LargeScriptCatchup',
+                cat: 'disabled-by-default-devtools.v8-source-rundown-sources',
+                args: {
+                    data: {
+                        isolate: 'isolate-1',
+                        scriptId: 'script-1',
+                        splitIndex: 0,
+                        splitCount: 2,
+                        sourceText: 'function secret() { return 42; }',
+                    },
+                },
+            };
+            const output = PerformanceTraceFormatter.formatEventForAI(mockRundownLargeEvent);
+            const parsed = JSON.parse(output);
+            assert.isUndefined(parsed.args.data.sourceText);
+            assert.deepEqual(parsed.args.data, {
+                isolate: 'isolate-1',
+                scriptId: 'script-1',
+                splitIndex: 0,
+                splitCount: 2,
+            });
+        });
+        it('redacts snapshot data for modern Screenshot events', () => {
+            const mockScreenshotEvent = {
+                name: "Screenshot" /* Trace.Types.Events.Name.SCREENSHOT */,
+                ph: "I" /* Trace.Types.Events.Phase.INSTANT */,
+                args: {
+                    snapshot: 'base64rawimagedata...',
+                    source_id: 1,
+                    frame_sequence: 123,
+                    expected_display_time: 456,
+                },
+            };
+            const output = PerformanceTraceFormatter.formatEventForAI(mockScreenshotEvent);
+            const parsed = JSON.parse(output);
+            assert.strictEqual(parsed.args.snapshot, '<redacted base64 image data>');
+            assert.strictEqual(parsed.args.source_id, 1);
+            assert.strictEqual(parsed.args.frame_sequence, 123);
+            assert.strictEqual(parsed.args.expected_display_time, 456);
+        });
+        it('redacts snapshot data for legacy Screenshot events', () => {
+            const mockLegacyScreenshotEvent = {
+                name: "Screenshot" /* Trace.Types.Events.Name.SCREENSHOT */,
+                ph: "O" /* Trace.Types.Events.Phase.OBJECT_SNAPSHOT */,
+                id: '0x1',
+                args: {
+                    snapshot: 'legacybase64rawimagedata...',
+                },
+            };
+            const output = PerformanceTraceFormatter.formatEventForAI(mockLegacyScreenshotEvent);
+            const parsed = JSON.parse(output);
+            assert.strictEqual(parsed.args.snapshot, '<redacted base64 image data>');
+            assert.strictEqual(parsed.id, '0x1');
+        });
+        it('redacts dataUri data for legacy synthetic Screenshot events', () => {
+            const mockLegacySyntheticScreenshotEvent = {
+                name: "Screenshot" /* Trace.Types.Events.Name.SCREENSHOT */,
+                ph: "O" /* Trace.Types.Events.Phase.OBJECT_SNAPSHOT */,
+                args: {
+                    dataUri: 'data:image/jpg;base64,legacybase64rawimagedata...',
+                },
+            };
+            const output = PerformanceTraceFormatter.formatEventForAI(mockLegacySyntheticScreenshotEvent);
+            const parsed = JSON.parse(output);
+            assert.strictEqual(parsed.args.dataUri, '<redacted base64 image data>');
+        });
+        it('serializes other events as-is', () => {
+            const mockGenericEvent = {
+                name: 'generic-event',
+                ts: 1234,
+                args: {
+                    data: {
+                        someProp: 'value',
+                    },
+                },
+            };
+            const output = PerformanceTraceFormatter.formatEventForAI(mockGenericEvent);
+            const parsed = JSON.parse(output);
+            assert.deepEqual(parsed, mockGenericEvent);
+        });
+    });
 });
 //# sourceMappingURL=PerformanceTraceFormatter.test.js.map

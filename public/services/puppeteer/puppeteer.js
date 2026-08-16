@@ -25,7 +25,16 @@ var PuppeteerConnectionAdapter = class extends puppeteer.Connection {
   #connection;
   #sessionId;
   constructor(connection, sessionId) {
-    super("", { close: () => void 0 });
+    super(
+      "",
+      { close: () => void 0 },
+      void 0,
+      void 0,
+      void 0,
+      void 0,
+      () => void 0
+      /* logger */
+    );
     this.#connection = connection;
     this.#connection.observe(this);
     this.#sessionId = sessionId;
@@ -71,8 +80,14 @@ var PuppeteerConnectionHelper = class {
       void 0,
       void 0,
       (target) => isPageTargetCallback(target._getTargetInfo()),
-      false
-      /* waitForInitiallyDiscoveredTargets */
+      false,
+      void 0,
+      void 0,
+      void 0,
+      void 0,
+      void 0,
+      () => void 0
+      /* logger */
     );
     const [, browser] = await Promise.all([
       puppeteerConnection._createSession(

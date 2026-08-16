@@ -6,12 +6,12 @@ import sinon from 'sinon';
 import * as Common from '../../../core/common/common.js';
 import * as Host from '../../../core/host/host.js';
 import * as AiCodeGeneration from '../../../models/ai_code_generation/ai_code_generation.js';
-import * as PanelCommon from '../../../panels/common/common.js';
 import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment, updateHostConfig } from '../../../testing/EnvironmentHelpers.js';
 import { setupUserMetricHooks } from '../../../testing/UserMetricsHelpers.js';
 import * as CodeMirror from '../../../third_party/codemirror.next/codemirror.next.js';
-import { AiCodeGenerationProvider, Config, TextEditor } from './text_editor.js';
+import { AiCodeGenerationProvider, AiCodeGenerationTeaser, AiCodeGenerationUpgradeDialog, Config, TextEditor, } from './text_editor.js';
+const { AiCodeGenerationTeaserDisplayState } = AiCodeGenerationTeaser;
 function createEditorWithProvider(doc, config = {
     disclaimerTooltipId: 'console-ai-code-generation-disclaimer-tooltip',
     disclaimerTextVariant: 'console',
@@ -65,7 +65,7 @@ describeWithEnvironment('AiCodeGenerationProvider', () => {
         Common.Settings.Settings.instance().settingForTest('ai-code-completion-enabled').set(true);
         Common.Settings.Settings.instance().createSetting('ai-code-generation-onboarding-completed', true);
         generateCodeStub = sinon.stub(AiCodeGeneration.AiCodeGeneration.AiCodeGeneration.prototype, 'generateCode');
-        sinon.stub(PanelCommon.AiCodeGenerationTeaser.AiCodeGenerationTeaser.prototype, 'displayState').set(_ => { });
+        sinon.stub(AiCodeGenerationTeaser.AiCodeGenerationTeaser.prototype, 'displayState').set(_ => { });
     });
     afterEach(() => {
         clock.restore();
@@ -200,17 +200,16 @@ describeWithEnvironment('AiCodeGenerationProvider', () => {
         });
         it('dismisses teaser on Escape when loading', async () => {
             generateCodeStub.returns(new Promise(() => { }));
-            const generationTeaser = PanelCommon.AiCodeGenerationTeaser.AiCodeGenerationTeaser.prototype;
+            const generationTeaser = AiCodeGenerationTeaser.AiCodeGenerationTeaser.prototype;
             const loadingSetter = sinon.spy(generationTeaser, 'displayState', ['set']);
             const { editor, provider } = createEditorWithProvider('// Hello');
             editor.dispatch({ selection: { anchor: 8 } });
             await clock.tickAsync(0);
             dispatchCtrlI(editor);
             // Explicitly set display state to LOADING, so that loading state can be cancelled as expected
-            sinon.stub(generationTeaser, 'displayState')
-                .get(() => PanelCommon.AiCodeGenerationTeaser.AiCodeGenerationTeaserDisplayState.LOADING);
+            sinon.stub(generationTeaser, 'displayState').get(() => AiCodeGenerationTeaserDisplayState.LOADING);
             await clock.tickAsync(0);
-            assert.deepEqual(loadingSetter.set.lastCall.args[0], PanelCommon.AiCodeGenerationTeaser.AiCodeGenerationTeaserDisplayState.LOADING);
+            assert.deepEqual(loadingSetter.set.lastCall.args[0], AiCodeGenerationTeaserDisplayState.LOADING);
             sinon.assert.calledOnce(generateCodeStub);
             const dispatchSpy = sinon.spy(editor, 'dispatch');
             editor.editor.contentDOM.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
@@ -222,7 +221,7 @@ describeWithEnvironment('AiCodeGenerationProvider', () => {
                     Config.setAiAutoCompleteSuggestion.of(null),
                 ],
             });
-            assert.deepEqual(loadingSetter.set.lastCall.args[0], PanelCommon.AiCodeGenerationTeaser.AiCodeGenerationTeaserDisplayState.TRIGGER);
+            assert.deepEqual(loadingSetter.set.lastCall.args[0], AiCodeGenerationTeaserDisplayState.TRIGGER);
             provider.dispose();
         });
         describe('Triggers code generation on Ctrl+I', () => {
@@ -256,8 +255,8 @@ describeWithEnvironment('AiCodeGenerationProvider', () => {
         it('triggers loading state on Ctrl+I', async () => {
             generateCodeStub.returns(Promise.resolve({ samples: [], metadata: { rpcGlobalId: 1 } }));
             const { editor, provider } = createEditorWithProvider('// Hello');
-            const generationTeaser = PanelCommon.AiCodeGenerationTeaser.AiCodeGenerationTeaser.prototype;
-            sinon.stub(PanelCommon.AiCodeGenerationTeaser.AiCodeGenerationTeaser.prototype, 'isShowing').returns(true);
+            const generationTeaser = AiCodeGenerationTeaser.AiCodeGenerationTeaser.prototype;
+            sinon.stub(AiCodeGenerationTeaser.AiCodeGenerationTeaser.prototype, 'isShowing').returns(true);
             editor.dispatch({ selection: { anchor: 8 } });
             await clock.tickAsync(0);
             const event = new KeyboardEvent('keydown', {
@@ -268,20 +267,19 @@ describeWithEnvironment('AiCodeGenerationProvider', () => {
             const loadingSetter = sinon.spy(generationTeaser, 'displayState', ['set']);
             editor.editor.contentDOM.dispatchEvent(event);
             await clock.tickAsync(0);
-            assert.deepEqual(loadingSetter.set.firstCall.args[0], PanelCommon.AiCodeGenerationTeaser.AiCodeGenerationTeaserDisplayState.LOADING);
+            assert.deepEqual(loadingSetter.set.firstCall.args[0], AiCodeGenerationTeaserDisplayState.LOADING);
             provider.dispose();
         });
         it('aborts code generation request when Escape is pressed while loading', async () => {
             generateCodeStub.returns(new Promise(() => { }));
-            const generationTeaser = PanelCommon.AiCodeGenerationTeaser.AiCodeGenerationTeaser.prototype;
+            const generationTeaser = AiCodeGenerationTeaser.AiCodeGenerationTeaser.prototype;
             const abortSpy = sinon.spy(AbortController.prototype, 'abort');
             const { editor, provider } = createEditorWithProvider('// Hello');
             editor.dispatch({ selection: { anchor: 8 } });
             await clock.tickAsync(0);
             dispatchCtrlI(editor);
             // Explicitly set display state to LOADING, so that abort is called as expected
-            sinon.stub(generationTeaser, 'displayState')
-                .get(() => PanelCommon.AiCodeGenerationTeaser.AiCodeGenerationTeaserDisplayState.LOADING);
+            sinon.stub(generationTeaser, 'displayState').get(() => AiCodeGenerationTeaserDisplayState.LOADING);
             await clock.tickAsync(0);
             sinon.assert.calledOnce(generateCodeStub);
             editor.editor.contentDOM.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
@@ -294,15 +292,14 @@ describeWithEnvironment('AiCodeGenerationProvider', () => {
     });
     it('aborts code generation request when user starts typing again', async () => {
         generateCodeStub.returns(new Promise(() => { }));
-        const generationTeaser = PanelCommon.AiCodeGenerationTeaser.AiCodeGenerationTeaser.prototype;
+        const generationTeaser = AiCodeGenerationTeaser.AiCodeGenerationTeaser.prototype;
         const abortSpy = sinon.spy(AbortController.prototype, 'abort');
         const { editor, provider } = createEditorWithProvider('// Hello');
         editor.dispatch({ selection: { anchor: 8 } });
         await clock.tickAsync(0);
         dispatchCtrlI(editor);
         // Explicitly set display state to LOADING, so that abort is called as expected
-        sinon.stub(generationTeaser, 'displayState')
-            .get(() => PanelCommon.AiCodeGenerationTeaser.AiCodeGenerationTeaserDisplayState.LOADING);
+        sinon.stub(generationTeaser, 'displayState').get(() => AiCodeGenerationTeaserDisplayState.LOADING);
         await clock.tickAsync(0);
         sinon.assert.calledOnce(generateCodeStub);
         editor.dispatch({ changes: { from: 8, insert: '!' } });
@@ -314,7 +311,7 @@ describeWithEnvironment('AiCodeGenerationProvider', () => {
     });
     describe('Dispatches', () => {
         it('dispatches a suggestion to the editor and updates teaser state when AIDA returns suggestion', async () => {
-            const generationTeaser = PanelCommon.AiCodeGenerationTeaser.AiCodeGenerationTeaser.prototype;
+            const generationTeaser = AiCodeGenerationTeaser.AiCodeGenerationTeaser.prototype;
             const loadingSetter = sinon.spy(generationTeaser, 'displayState', ['set']);
             generateCodeStub.returns(Promise.resolve({
                 samples: [{
@@ -336,7 +333,7 @@ describeWithEnvironment('AiCodeGenerationProvider', () => {
             assert.strictEqual(suggestion.from, 8);
             assert.strictEqual(suggestion.sampleId, 1);
             assert.strictEqual(suggestion.rpcGlobalId, 1);
-            sinon.assert.calledWith(loadingSetter.set, PanelCommon.AiCodeGenerationTeaser.AiCodeGenerationTeaserDisplayState.GENERATED);
+            sinon.assert.calledWith(loadingSetter.set, AiCodeGenerationTeaserDisplayState.GENERATED);
             provider.dispose();
         });
         it('does not dispatch suggestion or citation if recitation action is BLOCK', async () => {
@@ -367,7 +364,7 @@ describeWithEnvironment('AiCodeGenerationProvider', () => {
         generateCodeStub.rejects(new Error('AIDA Error'));
         const actionTakenStub = sinon.stub(Host.userMetrics, 'actionTaken');
         const { editor, provider } = createEditorWithProvider('// Hello');
-        const generationTeaser = PanelCommon.AiCodeGenerationTeaser.AiCodeGenerationTeaser.prototype;
+        const generationTeaser = AiCodeGenerationTeaser.AiCodeGenerationTeaser.prototype;
         sinon.stub(generationTeaser, 'isShowing').returns(true);
         const loadingSetter = sinon.spy(generationTeaser, 'displayState', ['set']);
         editor.dispatch({ selection: { anchor: 8 } });
@@ -384,7 +381,7 @@ describeWithEnvironment('AiCodeGenerationProvider', () => {
         sinon.assert.calledWith(actionTakenStub, Host.UserMetrics.Action.AiCodeGenerationError);
         const suggestion = editor.editor.state.field(Config.aiAutoCompleteSuggestionState);
         assert.notExists(suggestion);
-        sinon.assert.calledWith(loadingSetter.set, PanelCommon.AiCodeGenerationTeaser.AiCodeGenerationTeaserDisplayState.TRIGGER);
+        sinon.assert.calledWith(loadingSetter.set, AiCodeGenerationTeaserDisplayState.TRIGGER);
         sinon.assert.calledWith(dispatchSpy, {
             effects: [
                 AiCodeGenerationProvider.setAiCodeGenerationTeaserMode.of(AiCodeGenerationProvider.AiCodeGenerationTeaserMode.DISMISSED),
@@ -396,7 +393,7 @@ describeWithEnvironment('AiCodeGenerationProvider', () => {
     it('shows the upgrade dialog if the user opts when code generation is not enabled', async () => {
         // To simulate this, `ai-code-completion-enabled` setting is already set to true and then we are creating provider.
         Common.Settings.Settings.instance().settingForTest('ai-code-generation-onboarding-completed').set(false);
-        const showDialogSpy = sinon.spy(PanelCommon.AiCodeGenerationUpgradeDialog, 'show');
+        const showDialogSpy = sinon.spy(AiCodeGenerationUpgradeDialog.AiCodeGenerationUpgradeDialog, 'show');
         const { editor, provider } = createEditorWithProvider('// Hello');
         editor.dispatch({ selection: { anchor: 8 } });
         await clock.tickAsync(0);
@@ -411,7 +408,7 @@ describeWithEnvironment('AiCodeGenerationProvider', () => {
         // After creating the provider, we set the `ai-code-completion-enabled` setting to true.
         Common.Settings.Settings.instance().settingForTest('ai-code-generation-onboarding-completed').set(false);
         Common.Settings.Settings.instance().settingForTest('ai-code-completion-enabled').set(false);
-        const showDialogSpy = sinon.spy(PanelCommon.AiCodeGenerationUpgradeDialog, 'show');
+        const showDialogSpy = sinon.spy(AiCodeGenerationUpgradeDialog.AiCodeGenerationUpgradeDialog, 'show');
         const { editor, provider } = createEditorWithProvider('// Hello');
         editor.dispatch({ selection: { anchor: 8 } });
         await clock.tickAsync(0);

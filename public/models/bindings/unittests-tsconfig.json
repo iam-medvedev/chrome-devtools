@@ -74,6 +74,9 @@
       "path": "../../core/platform/bundle-tsconfig.json"
     },
     {
+      "path": "../../core/protocol_client/bundle-tsconfig.json"
+    },
+    {
       "path": "../../core/sdk/bundle-tsconfig.json"
     },
     {
@@ -87,6 +90,9 @@
     },
     {
       "path": "../../third_party/source-map-scopes-codec/bundle-tsconfig.json"
+    },
+    {
+      "path": "../persistence/bundle-tsconfig.json"
     },
     {
       "path": "../stack_trace/bundle-tsconfig.json"

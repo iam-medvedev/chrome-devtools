@@ -1115,7 +1115,7 @@ import * as IssueCounter3 from "./../../ui/components/issue_counter/issue_counte
 import * as MarkdownView from "./../../ui/components/markdown_view/markdown_view.js";
 import { Icon as Icon3 } from "./../../ui/kit/kit.js";
 import * as UI5 from "./../../ui/legacy/legacy.js";
-import { html as html5, render as render6 } from "./../../ui/lit/lit.js";
+import { html as html6, render as render7 } from "./../../ui/lit/lit.js";
 
 // gen/front_end/panels/issues/AffectedBlockedByResponseView.js
 import * as Host2 from "./../../core/host/host.js";
@@ -2046,6 +2046,7 @@ var AffectedSourcesView = class extends AffectedResourcesView {
 
 // gen/front_end/panels/issues/AffectedTrackingSitesView.js
 import * as i18n35 from "./../../core/i18n/i18n.js";
+import { html as html5, render as render6 } from "./../../ui/lit/lit.js";
 var UIStrings18 = {
   /**
    * @description Label for the the number of affected `Potentially-tracking Sites` associated with a
@@ -2058,22 +2059,26 @@ var UIStrings18 = {
 };
 var str_18 = i18n35.i18n.registerUIStrings("panels/issues/AffectedTrackingSitesView.ts", UIStrings18);
 var i18nString18 = i18n35.i18n.getLocalizedString.bind(void 0, str_18);
+function defaultView(input, output, target) {
+  render6(html5`
+      <tbody>
+        ${input.trackingSites.map((site) => html5`
+          <tr class="affected-resource-directive">
+            <td class="affected-resource-cell" title=${site}>${site}</td>
+          </tr>
+        `)}
+      </tbody>
+    `, target);
+}
 var AffectedTrackingSitesView = class extends AffectedResourcesView {
+  #view = defaultView;
   getResourceNameWithCount(count) {
     return i18nString18(UIStrings18.nTrackingSites, { n: count });
   }
   update() {
-    this.clear();
-    const trackingSites = this.issue.getBounceTrackingSites();
-    let count = 0;
-    for (const site of trackingSites) {
-      const row = document.createElement("tr");
-      row.classList.add("affected-resource-directive");
-      this.appendIssueDetailCell(row, site);
-      this.affectedResources.appendChild(row);
-      count++;
-    }
-    this.updateAffectedResourceCount(count);
+    const trackingSites = Array.from(this.issue.getBounceTrackingSites());
+    this.#view({ trackingSites }, {}, this.affectedResources);
+    this.updateAffectedResourceCount(trackingSites.length);
   }
 };
 
@@ -2940,7 +2945,7 @@ var IssueView = class _IssueView extends UI5.TreeOutline.TreeElement {
     const linkList = linkWrapper.listItemElement.createChild("ul", "link-list");
     for (const description of this.#description.links) {
       const linkListItem = linkList.createChild("li");
-      render6(html5`<devtools-link class="link devtools-link" href=${description.link} jslogcontext="learn-more">${i18nString21(UIStrings21.learnMoreS, { PH1: description.linkTitle })}</devtools-link>`, linkListItem);
+      render7(html6`<devtools-link class="link devtools-link" href=${description.link} jslogcontext="learn-more">${i18nString21(UIStrings21.learnMoreS, { PH1: description.linkTitle })}</devtools-link>`, linkListItem);
     }
     this.appendChild(linkWrapper);
   }

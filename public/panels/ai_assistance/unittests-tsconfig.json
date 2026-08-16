@@ -96,6 +96,9 @@
       "path": "../../models/badges/bundle-tsconfig.json"
     },
     {
+      "path": "../../models/bindings/bundle-tsconfig.json"
+    },
+    {
       "path": "../../models/logs/bundle-tsconfig.json"
     },
     {
@@ -112,6 +115,9 @@
     },
     {
       "path": "../../models/workspace_diff/bundle-tsconfig.json"
+    },
+    {
+      "path": "../lighthouse/bundle-tsconfig.json"
     },
     {
       "path": "../network/bundle-tsconfig.json"

@@ -13,26 +13,31 @@ function createSettingValue(category, settingName, defaultValue, settingType = "
     };
 }
 export function stubNoopSettings() {
-    const createDummySetting = (name) => ({
-        name,
-        get: () => [],
-        set: () => { },
-        addChangeListener: () => { },
-        removeChangeListener: () => { },
-        title: () => { },
-        asRegExp: () => { },
-        type: () => "boolean" /* Common.Settings.SettingType.BOOLEAN */,
-        getAsArray: () => [],
-        descriptor: () => ({
-            name,
-            settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
-            defaultValue: false,
-        }),
-    });
+    const createDummySetting = (name) => {
+        const settingName = typeof name === 'string' ? name : name.name;
+        return {
+            name: settingName,
+            get: () => [],
+            set: () => { },
+            addChangeListener: () => { },
+            removeChangeListener: () => { },
+            title: () => { },
+            asRegExp: () => { },
+            type: () => "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+            getAsArray: () => [],
+            descriptor: () => ({
+                name: settingName,
+                settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+                defaultValue: false,
+            }),
+        };
+    };
     sinon.stub(Common.Settings.Settings, 'instance').returns({
         createSetting: createDummySetting,
         moduleSetting: createDummySetting,
         createLocalSetting: createDummySetting,
+        resolve: createDummySetting,
+        maybeResolve: createDummySetting,
     });
 }
 export const DEFAULT_SETTING_REGISTRATIONS_FOR_TEST = [
@@ -137,10 +142,10 @@ export const DEFAULT_SETTING_REGISTRATIONS_FOR_TEST = [
     createSettingValue("EMULATION" /* Common.Settings.SettingCategory.EMULATION */, 'emulation.locations', [], "array" /* Common.Settings.SettingType.ARRAY */),
     createSettingValue("MOBILE" /* Common.Settings.SettingCategory.MOBILE */, 'emulation.show-rulers', false),
     createSettingValue("MOBILE" /* Common.Settings.SettingCategory.MOBILE */, 'show-media-query-inspector', false),
-    createSettingValue("GRID" /* Common.Settings.SettingCategory.GRID */, 'show-grid-line-labels', 'none', "enum" /* Common.Settings.SettingType.ENUM */),
+    createSettingValue("GRID" /* Common.Settings.SettingCategory.GRID */, 'show-grid-line-labels', 'none', "enum" /* Common.Settings.SettingType.ENUM */, 'Enum setting title'),
     createSettingValue("GRID" /* Common.Settings.SettingCategory.GRID */, 'extend-grid-lines', true),
     createSettingValue("GRID" /* Common.Settings.SettingCategory.GRID */, 'show-grid-areas', true),
-    createSettingValue("GRID" /* Common.Settings.SettingCategory.GRID */, 'show-grid-track-sizes', true),
+    createSettingValue("GRID" /* Common.Settings.SettingCategory.GRID */, 'show-grid-track-sizes', true, "boolean" /* Common.Settings.SettingType.BOOLEAN */, 'Boolean setting title'),
     createSettingValue("" /* Common.Settings.SettingCategory.NONE */, 'active-keybind-set', '', "enum" /* Common.Settings.SettingType.ENUM */),
     createSettingValue("" /* Common.Settings.SettingCategory.NONE */, 'user-shortcuts', [], "array" /* Common.Settings.SettingType.ARRAY */),
     createSettingValue("APPEARANCE" /* Common.Settings.SettingCategory.APPEARANCE */, 'help.show-release-note', true, "boolean" /* Common.Settings.SettingType.BOOLEAN */),

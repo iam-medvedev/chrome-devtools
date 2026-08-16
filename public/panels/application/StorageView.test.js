@@ -180,5 +180,26 @@ describeWithEnvironment('StorageView', () => {
         Resources.StorageView.StorageView.clear(target, testKey, '', ["cache_storage" /* Protocol.Storage.StorageType.Cache_storage */], false);
         assert.isEmpty(cacheStorageModel.caches());
     });
+    describe('getStorageTypeName', () => {
+        it('returns correct titles for storage types', () => {
+            assert.strictEqual(Resources.StorageView.StorageView.getStorageTypeName("file_systems" /* Protocol.Storage.StorageType.File_systems */), 'File System');
+            assert.strictEqual(Resources.StorageView.StorageView.getStorageTypeName("indexeddb" /* Protocol.Storage.StorageType.Indexeddb */), 'IndexedDB');
+            assert.strictEqual(Resources.StorageView.StorageView.getStorageTypeName("cache_storage" /* Protocol.Storage.StorageType.Cache_storage */), 'Cache storage');
+            assert.strictEqual(Resources.StorageView.StorageView.getStorageTypeName("service_workers" /* Protocol.Storage.StorageType.Service_workers */), 'Service workers');
+            assert.strictEqual(Resources.StorageView.StorageView.getStorageTypeName("cookies" /* Protocol.Storage.StorageType.Cookies */), 'Other');
+        });
+    });
+    describe('getStorageTypeNameForWidget', () => {
+        it('returns correct titles for widget storage types', () => {
+            assert.strictEqual(Resources.StorageView.StorageView.getStorageTypeNameForWidget('session_storage'), 'Session storage');
+            assert.strictEqual(Resources.StorageView.StorageView.getStorageTypeNameForWidget('local_storage'), 'Local storage');
+            assert.strictEqual(Resources.StorageView.StorageView.getStorageTypeNameForWidget('cookies'), 'Cookies');
+            assert.strictEqual(Resources.StorageView.StorageView.getStorageTypeNameForWidget('indexeddb'), 'IndexedDB');
+            assert.strictEqual(Resources.StorageView.StorageView.getStorageTypeNameForWidget('cache_storage'), 'Cache storage');
+            assert.strictEqual(Resources.StorageView.StorageView.getStorageTypeNameForWidget('service_workers'), 'Service workers');
+            assert.strictEqual(Resources.StorageView.StorageView.getStorageTypeNameForWidget('file_systems'), 'File System');
+            assert.strictEqual(Resources.StorageView.StorageView.getStorageTypeNameForWidget('unknown'), 'Other');
+        });
+    });
 });
 //# sourceMappingURL=StorageView.test.js.map

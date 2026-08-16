@@ -54,6 +54,7 @@ import { InspectorView } from './InspectorView.js';
 import { KeyboardShortcut, Keys } from './KeyboardShortcut.js';
 import smallBubbleStyles from './smallBubble.css.js';
 import { Tooltip } from './Tooltip.js';
+import * as WidgetUtils from './Widget.js';
 import { Widget } from './Widget.js';
 const { Directives, render } = Lit;
 const UIStrings = {
@@ -1402,19 +1403,6 @@ export class ConfirmDialog {
         return result;
     }
 }
-export class Renderer {
-    static async render(object, options) {
-        if (!object) {
-            throw new Error('Can\'t render ' + object);
-        }
-        const extension = getApplicableRegisteredRenderers(object)[0];
-        if (!extension) {
-            return null;
-        }
-        const renderer = await extension.loadRenderer();
-        return await renderer.render(object, options);
-    }
-}
 export function formatTimestamp(timestamp, full) {
     const date = new Date(timestamp);
     const yymmdd = date.getFullYear() + '-' + leadZero(date.getMonth() + 1, 2) + '-' + leadZero(date.getDate(), 2);
@@ -1480,24 +1468,6 @@ export const deepElementFromEvent = (ev) => {
     const root = event.target && event.target.getComponentRoot();
     return root ? deepElementFromPoint(root, event.pageX, event.pageY) : null;
 };
-const registeredRenderers = [];
-export function registerRenderer(registration) {
-    registeredRenderers.push(registration);
-}
-export function getApplicableRegisteredRenderers(object) {
-    return registeredRenderers.filter(isRendererApplicableToContextTypes);
-    function isRendererApplicableToContextTypes(rendererRegistration) {
-        if (!rendererRegistration.contextTypes) {
-            return true;
-        }
-        for (const contextType of rendererRegistration.contextTypes()) {
-            if (object instanceof contextType) {
-                return true;
-            }
-        }
-        return false;
-    }
-}
 function updateWidgetfocusWidgetForNode(node) {
     while (node) {
         if (Widget.get(node)) {
@@ -1722,6 +1692,18 @@ export const cloneCustomElement = (element, deep) => {
     }
     return clone;
 };
+class UIUtilsWidgetDirective extends WidgetUtils.WidgetDirective {
+    update(part, args) {
+        const result = super.update(part, args);
+        if (part.type === Lit.Directive.PartType.ELEMENT) {
+            const lightNode = part.element;
+            for (const clone of HTMLElementWithLightDOMTemplate.getClones(lightNode)) {
+                super.update({ type: Lit.Directive.PartType.ELEMENT, element: clone }, args);
+            }
+        }
+        return result;
+    }
+}
 export class HTMLElementWithLightDOMTemplate extends HTMLElement {
     #mutationObserver = new MutationObserver(this.#onChange.bind(this));
     #contentTemplate = null;
@@ -1729,13 +1711,41 @@ export class HTMLElementWithLightDOMTemplate extends HTMLElement {
         super();
         this.#mutationObserver.observe(this, { childList: true, attributes: true, subtree: true, characterData: true });
     }
+    static #originalToClones = new WeakMap();
+    static getClones(node) {
+        const cloneSet = this.#originalToClones.get(node);
+        if (!cloneSet) {
+            return [];
+        }
+        const clones = [];
+        for (const cloneRef of cloneSet) {
+            const clone = cloneRef.deref();
+            if (clone) {
+                clones.push(clone);
+            }
+            else {
+                cloneSet.delete(cloneRef);
+            }
+        }
+        return clones;
+    }
     static cloneNode(node) {
         const clone = node.cloneNode(false);
+        let cloneSet = HTMLElementWithLightDOMTemplate.#originalToClones.get(node);
+        if (!cloneSet) {
+            cloneSet = new Set();
+            HTMLElementWithLightDOMTemplate.#originalToClones.set(node, cloneSet);
+        }
+        cloneSet.add(new WeakRef(clone));
         for (const child of node.childNodes) {
             clone.appendChild(HTMLElementWithLightDOMTemplate.cloneNode(child));
         }
         if (node instanceof Element && clone instanceof Element) {
             Lit.CustomDirectives.InterceptBindingDirective.setEventListeners(node, clone);
+            const currentConfig = WidgetUtils.widgetConfigs.get(node);
+            if (currentConfig) {
+                WidgetUtils.registerWidgetConfig(clone, currentConfig);
+            }
         }
         return clone;
     }
@@ -1777,6 +1787,10 @@ export class HTMLElementWithLightDOMTemplate extends HTMLElement {
                 return value;
             }
             if (Lit.isLitDirective(value)) {
+                const directiveValue = value;
+                if (directiveValue['_$litDirective$'] === WidgetUtils.WidgetDirective) {
+                    directiveValue['_$litDirective$'] = UIUtilsWidgetDirective;
+                }
                 for (let i = 0; i < value.values.length; i++) {
                     const subvalue = value.values[i];
                     if (isCallable(subvalue)) {

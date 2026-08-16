@@ -107,6 +107,9 @@
       "path": "../../ui/components/buttons/bundle-tsconfig.json"
     },
     {
+      "path": "../../ui/components/dialogs/bundle-tsconfig.json"
+    },
+    {
       "path": "../../ui/components/text_editor/bundle-tsconfig.json"
     },
     {

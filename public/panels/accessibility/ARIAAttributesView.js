@@ -12,11 +12,11 @@ import { AccessibilitySubPane } from './AccessibilitySubPane.js';
 import { ariaMetadata } from './ARIAMetadata.js';
 const UIStrings = {
     /**
-     * @description Text in ARIAAttributes View of the Accessibility panel
+     * @description Text in the ARIA attributes view under the Accessibility tab in the Elements panel.
      */
-    ariaAttributes: 'ARIA Attributes',
+    ariaAttributes: 'ARIA attributes',
     /**
-     * @description Text in ARIAAttributes View of the Accessibility panel
+     * @description Text in the ARIA attributes view under the Accessibility tab in the Elements panel.
      */
     noAriaAttributes: 'No ARIA attributes',
 };

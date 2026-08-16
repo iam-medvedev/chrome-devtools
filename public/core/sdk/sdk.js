@@ -1088,6 +1088,11 @@ var generatedProperties = [
     "runtime_flag_status": "stable"
   },
   {
+    "devtools_keywords": [
+      "none",
+      "move",
+      "no-drag"
+    ],
     "name": "app-region"
   },
   {
@@ -1362,6 +1367,9 @@ var generatedProperties = [
     "name": "border-block-end"
   },
   {
+    "keywords": [
+      "currentcolor"
+    ],
     "name": "border-block-end-color"
   },
   {
@@ -1396,6 +1404,9 @@ var generatedProperties = [
     "name": "border-block-start"
   },
   {
+    "keywords": [
+      "currentcolor"
+    ],
     "name": "border-block-start-color"
   },
   {
@@ -1572,6 +1583,9 @@ var generatedProperties = [
     "name": "border-inline-end"
   },
   {
+    "keywords": [
+      "currentcolor"
+    ],
     "name": "border-inline-end-color"
   },
   {
@@ -1606,6 +1620,9 @@ var generatedProperties = [
     "name": "border-inline-start"
   },
   {
+    "keywords": [
+      "currentcolor"
+    ],
     "name": "border-inline-start-color"
   },
   {
@@ -5225,7 +5242,8 @@ var generatedProperties = [
       "inline",
       "both",
       "mandatory",
-      "proximity"
+      "proximity",
+      "pair"
     ],
     "name": "scroll-snap-type"
   },
@@ -6140,6 +6158,10 @@ var generatedProperties = [
     "name": "will-change"
   },
   {
+    "devtools_keywords": [
+      "none",
+      "move"
+    ],
     "inherited": true,
     "keywords": [
       "none",
@@ -6477,6 +6499,13 @@ var generatedPropertyValues = {
       "none"
     ]
   },
+  "app-region": {
+    "values": [
+      "none",
+      "move",
+      "no-drag"
+    ]
+  },
   "appearance": {
     "values": [
       "auto",
@@ -6639,6 +6668,11 @@ var generatedPropertyValues = {
       "currentcolor"
     ]
   },
+  "border-block-end-color": {
+    "values": [
+      "currentcolor"
+    ]
+  },
   "border-block-end-style": {
     "values": [
       "none",
@@ -6658,6 +6692,11 @@ var generatedPropertyValues = {
       "medium",
       "thick",
       "thin"
+    ]
+  },
+  "border-block-start-color": {
+    "values": [
+      "currentcolor"
     ]
   },
   "border-block-start-style": {
@@ -6740,6 +6779,11 @@ var generatedPropertyValues = {
       "auto"
     ]
   },
+  "border-inline-end-color": {
+    "values": [
+      "currentcolor"
+    ]
+  },
   "border-inline-end-style": {
     "values": [
       "none",
@@ -6759,6 +6803,11 @@ var generatedPropertyValues = {
       "medium",
       "thick",
       "thin"
+    ]
+  },
+  "border-inline-start-color": {
+    "values": [
+      "currentcolor"
     ]
   },
   "border-inline-start-style": {
@@ -8756,7 +8805,8 @@ var generatedPropertyValues = {
       "inline",
       "both",
       "mandatory",
-      "proximity"
+      "proximity",
+      "pair"
     ]
   },
   "scroll-target-group": {
@@ -9270,8 +9320,7 @@ var generatedPropertyValues = {
   "window-drag": {
     "values": [
       "none",
-      "move",
-      "no-drag"
+      "move"
     ]
   },
   "word-break": {
@@ -9809,9 +9858,6 @@ var CSSMetadata = class _CSSMetadata {
       if (Boolean(runtimeFlagStatus) && runtimeFlagStatus !== "stable") {
         continue;
       }
-      if (!CSS.supports(propertyName, "initial")) {
-        continue;
-      }
       this.#values.push(propertyName);
       if (property.inherited) {
         this.#inherited.add(propertyName);
@@ -9849,7 +9895,7 @@ var CSSMetadata = class _CSSMetadata {
     }
     const commonKeywordSet = new Set(CommonKeywords);
     for (const propertyName of this.#longhands.keys()) {
-      if (propertyName === "all" || propertyValueSets.has(propertyName)) {
+      if (propertyName === "all" || propertyName in generatedPropertyValues) {
         continue;
       }
       const longhands = this.#longhands.get(propertyName);
@@ -9857,6 +9903,10 @@ var CSSMetadata = class _CSSMetadata {
         continue;
       }
       const values = new Array();
+      const propertyValueSet = propertyValueSets.get(propertyName);
+      if (propertyValueSet) {
+        values.push(...propertyValueSet);
+      }
       for (const longhand of longhands) {
         const longhandValues = propertyValueSets.get(longhand);
         if (!longhandValues) {
@@ -9875,11 +9925,6 @@ var CSSMetadata = class _CSSMetadata {
           for (const val of aliasForValues) {
             values.add(val);
           }
-        }
-      }
-      for (const commonKeyword of CommonKeywords) {
-        if (!values.has(commonKeyword) && CSS.supports(propertyName, commonKeyword)) {
-          values.add(commonKeyword);
         }
       }
       this.#propertyValues.set(propertyName, [...values]);
@@ -11907,6 +11952,7 @@ __export(DebuggerModel_exports, {
   PauseOnExceptionsState: () => PauseOnExceptionsState,
   Scope: () => Scope,
   WASM_SYMBOLS_PRIORITY: () => WASM_SYMBOLS_PRIORITY,
+  skipAllPausesSettingDescriptor: () => skipAllPausesSettingDescriptor,
   sortAndMergeRanges: () => sortAndMergeRanges
 });
 import * as Common23 from "./../common/common.js";
@@ -13114,34 +13160,20 @@ var VariableNameMatcher = class extends matcherBase(VariableNameMatch) {
     return true;
   }
   matches(node, matching) {
-    if (node.name !== "VariableName" && node.name !== "FeatureName" && node.name !== "KeywordQuery") {
+    if (!node.parent) {
+      return null;
+    }
+    if (node.name !== "FeatureName" && node.name !== "PropertyName" && node.name !== "ProperyName") {
+      return null;
+    }
+    if (node.parent.name !== "StyleFeature" && node.parent.name !== "StyleRange") {
       return null;
     }
     const rawText = matching.ast.text(node);
     if (!rawText.startsWith("--")) {
       return null;
     }
-    let cur = node.parent;
-    let foundStyleCall = null;
-    while (cur) {
-      if (cur.name === "CallExpression") {
-        return null;
-      }
-      if (cur.name === "CallQuery") {
-        const callee = cur.getChild("QueryCallee");
-        if (callee && matching.ast.text(callee) === "style") {
-          foundStyleCall = cur;
-          break;
-        }
-        return null;
-      }
-      cur = cur.parent;
-    }
-    if (!foundStyleCall) {
-      return null;
-    }
-    const text = node.name === "KeywordQuery" ? rawText.split(/\s|[>!=<:]/)[0] : rawText;
-    return new VariableNameMatch(node, text, this.matchedStyles, this.style);
+    return new VariableNameMatch(node, rawText, this.matchedStyles, this.style);
   }
 };
 var AttributeMatch = class extends BaseVariableMatch {
@@ -13379,11 +13411,11 @@ var ColorMixMatcher = class extends matcherBase(ColorMixMatch) {
       return null;
     }
     const computedValueArgs = ASTUtils.callArgs(value);
-    if (computedValueArgs.length !== 3) {
+    if (computedValueArgs.length !== 2 && computedValueArgs.length !== 3) {
       return null;
     }
-    const [space, color1, color2] = computedValueArgs;
-    if (space.length < 2 || computedValueTree.text(ASTUtils.stripComments(space).next().value) !== "in" || color1.length < 1 || color2.length < 1) {
+    const [space, color1, color2] = computedValueArgs.length === 3 ? computedValueArgs : [[], ...computedValueArgs];
+    if (space.length > 0 && (space.length < 2 || computedValueTree.text(ASTUtils.stripComments(space).next().value) !== "in") || color1.length < 1 || color2.length < 1) {
       return null;
     }
     const p1 = color1.filter((n) => n.type.name === "NumberLiteral" && computedValueTree.text(n.getChild("Unit")) === "%");
@@ -13395,10 +13427,11 @@ var ColorMixMatcher = class extends matcherBase(ColorMixMatch) {
       return null;
     }
     const args = ASTUtils.callArgs(node);
-    if (args.length !== 3) {
+    if (args.length !== computedValueArgs.length) {
       return null;
     }
-    return new ColorMixMatch(matching.ast.text(node), node, args[0], args[1], args[2]);
+    const [authoredSpace, authoredColor1, authoredColor2] = args.length === 3 ? args : [[], ...args];
+    return new ColorMixMatch(matching.ast.text(node), node, authoredSpace, authoredColor1, authoredColor2);
   }
 };
 var ContrastColorMatch = class {
@@ -17925,11 +17958,35 @@ var CSSStyleSheetHeader = class {
 // gen/front_end/core/sdk/SDKSettings.js
 var SDKSettings_exports = {};
 __export(SDKSettings_exports, {
+  apcaSettingDescriptor: () => apcaSettingDescriptor,
+  breakpointsActiveSettingDescriptor: () => breakpointsActiveSettingDescriptor,
+  cpuPressureSettingDescriptor: () => cpuPressureSettingDescriptor,
   cssSourceMapsEnabledSettingDescriptor: () => cssSourceMapsEnabledSettingDescriptor,
+  disableAsyncStackTracesSettingDescriptor: () => disableAsyncStackTracesSettingDescriptor,
+  emulatePageFocusSettingDescriptor: () => emulatePageFocusSettingDescriptor,
+  emulatedCSSMediaFeatureForcedColorsSettingDescriptor: () => emulatedCSSMediaFeatureForcedColorsSettingDescriptor,
+  emulatedCSSMediaFeaturePrefersColorSchemeSettingDescriptor: () => emulatedCSSMediaFeaturePrefersColorSchemeSettingDescriptor,
+  emulatedCSSMediaFeaturePrefersReducedMotionSettingDescriptor: () => emulatedCSSMediaFeaturePrefersReducedMotionSettingDescriptor,
+  emulatedCSSMediaSettingDescriptor: () => emulatedCSSMediaSettingDescriptor,
+  extendGridLinesSettingDescriptor: () => extendGridLinesSettingDescriptor,
+  idleDetectionSettingDescriptor: () => idleDetectionSettingDescriptor,
+  javaScriptDisabledSettingDescriptor: () => javaScriptDisabledSettingDescriptor,
   jsSourceMapsEnabledSettingDescriptor: () => jsSourceMapsEnabledSettingDescriptor,
   pauseOnCaughtExceptionSettingDescriptor: () => pauseOnCaughtExceptionSettingDescriptor,
   pauseOnExceptionEnabledSettingDescriptor: () => pauseOnExceptionEnabledSettingDescriptor,
-  preserveConsoleLogSettingDescriptor: () => preserveConsoleLogSettingDescriptor
+  pauseOnUncaughtExceptionSettingDescriptor: () => pauseOnUncaughtExceptionSettingDescriptor,
+  preserveConsoleLogSettingDescriptor: () => preserveConsoleLogSettingDescriptor,
+  showAdHighlightsSettingDescriptor: () => showAdHighlightsSettingDescriptor,
+  showDebugBordersSettingDescriptor: () => showDebugBordersSettingDescriptor,
+  showFPSCounterSettingDescriptor: () => showFPSCounterSettingDescriptor,
+  showGridAreasSettingDescriptor: () => showGridAreasSettingDescriptor,
+  showGridLineLabelsSettingDescriptor: () => showGridLineLabelsSettingDescriptor,
+  showGridTrackSizesSettingDescriptor: () => showGridTrackSizesSettingDescriptor,
+  showLayoutShiftRegionsSettingDescriptor: () => showLayoutShiftRegionsSettingDescriptor,
+  showMetricsRulersSettingDescriptor: () => showMetricsRulersSettingDescriptor,
+  showPaintRectsSettingDescriptor: () => showPaintRectsSettingDescriptor,
+  showScrollBottleneckRectsSettingDescriptor: () => showScrollBottleneckRectsSettingDescriptor,
+  touchSettingDescriptor: () => touchSettingDescriptor
 });
 import * as Common6 from "./../common/common.js";
 var jsSourceMapsEnabledSettingDescriptor = {
@@ -17959,6 +18016,145 @@ var pauseOnCaughtExceptionSettingDescriptor = {
   name: "pause-on-caught-exception",
   type: "boolean",
   defaultValue: false
+};
+var pauseOnUncaughtExceptionSettingDescriptor = {
+  name: "pause-on-uncaught-exception",
+  type: "boolean",
+  defaultValue: false
+};
+var javaScriptDisabledSettingDescriptor = {
+  name: "java-script-disabled",
+  type: "boolean",
+  defaultValue: false,
+  storageType: "Session"
+};
+var disableAsyncStackTracesSettingDescriptor = {
+  name: "disable-async-stack-traces",
+  type: "boolean",
+  defaultValue: false
+};
+var breakpointsActiveSettingDescriptor = {
+  name: "breakpoints-active",
+  type: "boolean",
+  defaultValue: true,
+  storageType: "Session"
+};
+var showMetricsRulersSettingDescriptor = {
+  name: "show-metrics-rulers",
+  type: "boolean",
+  defaultValue: false,
+  storageType: "Synced"
+};
+var apcaSettingDescriptor = {
+  name: "apca",
+  type: "boolean",
+  defaultValue: false,
+  storageType: "Synced"
+};
+var showGridAreasSettingDescriptor = {
+  name: "show-grid-areas",
+  type: "boolean",
+  defaultValue: false,
+  storageType: "Synced"
+};
+var showGridTrackSizesSettingDescriptor = {
+  name: "show-grid-track-sizes",
+  type: "boolean",
+  defaultValue: false,
+  storageType: "Synced"
+};
+var extendGridLinesSettingDescriptor = {
+  name: "extend-grid-lines",
+  type: "boolean",
+  defaultValue: false,
+  storageType: "Synced"
+};
+var showGridLineLabelsSettingDescriptor = {
+  name: "show-grid-line-labels",
+  type: "enum",
+  defaultValue: "lineNumbers",
+  storageType: "Synced"
+};
+var showPaintRectsSettingDescriptor = {
+  name: "show-paint-rects",
+  type: "boolean",
+  defaultValue: false,
+  storageType: "Session"
+};
+var showLayoutShiftRegionsSettingDescriptor = {
+  name: "show-layout-shift-regions",
+  type: "boolean",
+  defaultValue: false,
+  storageType: "Session"
+};
+var showAdHighlightsSettingDescriptor = {
+  name: "show-ad-highlights",
+  type: "boolean",
+  defaultValue: false,
+  storageType: "Session"
+};
+var showDebugBordersSettingDescriptor = {
+  name: "show-debug-borders",
+  type: "boolean",
+  defaultValue: false,
+  storageType: "Session"
+};
+var showFPSCounterSettingDescriptor = {
+  name: "show-fps-counter",
+  type: "boolean",
+  defaultValue: false,
+  storageType: "Session"
+};
+var showScrollBottleneckRectsSettingDescriptor = {
+  name: "show-scroll-bottleneck-rects",
+  type: "boolean",
+  defaultValue: false,
+  storageType: "Session"
+};
+var emulatePageFocusSettingDescriptor = {
+  name: "emulate-page-focus",
+  type: "boolean",
+  defaultValue: false,
+  storageType: "Local"
+};
+var emulatedCSSMediaSettingDescriptor = {
+  name: "emulated-css-media",
+  type: "enum",
+  defaultValue: "",
+  storageType: "Session"
+};
+var cpuPressureSettingDescriptor = {
+  name: "emulation.cpu-pressure",
+  type: "enum",
+  defaultValue: "none"
+};
+var touchSettingDescriptor = {
+  name: "emulation.touch",
+  type: "enum",
+  defaultValue: "none"
+};
+var idleDetectionSettingDescriptor = {
+  name: "emulation.idle-detection",
+  type: "enum",
+  defaultValue: "none"
+};
+var emulatedCSSMediaFeaturePrefersColorSchemeSettingDescriptor = {
+  name: "emulated-css-media-feature-prefers-color-scheme",
+  type: "enum",
+  defaultValue: "",
+  storageType: "Session"
+};
+var emulatedCSSMediaFeatureForcedColorsSettingDescriptor = {
+  name: "emulated-css-media-feature-forced-colors",
+  type: "enum",
+  defaultValue: "",
+  storageType: "Session"
+};
+var emulatedCSSMediaFeaturePrefersReducedMotionSettingDescriptor = {
+  name: "emulated-css-media-feature-prefers-reduced-motion",
+  type: "enum",
+  defaultValue: "",
+  storageType: "Session"
 };
 
 // gen/front_end/core/sdk/SourceMapManager.js
@@ -21863,10 +22059,10 @@ var OverlayPersistentHighlighter = class {
     this.#model = model;
     this.#callbacks = callbacks;
     this.#persistentHighlightSetting = settings.createLocalSetting("persistent-highlight-setting", []);
-    this.#showGridLineLabelsSetting = settings.moduleSetting("show-grid-line-labels");
-    this.#extendGridLinesSetting = settings.moduleSetting("extend-grid-lines");
-    this.#showGridAreasSetting = settings.moduleSetting("show-grid-areas");
-    this.#showGridTrackSizesSetting = settings.moduleSetting("show-grid-track-sizes");
+    this.#showGridLineLabelsSetting = settings.resolve(showGridLineLabelsSettingDescriptor);
+    this.#extendGridLinesSetting = settings.resolve(extendGridLinesSettingDescriptor);
+    this.#showGridAreasSetting = settings.resolve(showGridAreasSettingDescriptor);
+    this.#showGridTrackSizesSetting = settings.resolve(showGridTrackSizesSettingDescriptor);
     this.#showGridLineLabelsSetting.addChangeListener(this.onSettingChange, this);
     this.#extendGridLinesSetting.addChangeListener(this.onSettingChange, this);
     this.#showGridAreasSetting.addChangeListener(this.onSettingChange, this);
@@ -22297,12 +22493,12 @@ var OverlayModel = class _OverlayModel extends SDKModel {
     }
     this.#defaultHighlighter = new DefaultHighlighter(this);
     this.#highlighter = this.#defaultHighlighter;
-    this.#showPaintRectsSetting = settings.moduleSetting("show-paint-rects");
-    this.#showLayoutShiftRegionsSetting = settings.moduleSetting("show-layout-shift-regions");
-    this.#showAdHighlightsSetting = settings.moduleSetting("show-ad-highlights");
-    this.#showDebugBordersSetting = settings.moduleSetting("show-debug-borders");
-    this.#showFPSCounterSetting = settings.moduleSetting("show-fps-counter");
-    this.#showScrollBottleneckRectsSetting = settings.moduleSetting("show-scroll-bottleneck-rects");
+    this.#showPaintRectsSetting = settings.resolve(showPaintRectsSettingDescriptor);
+    this.#showLayoutShiftRegionsSetting = settings.resolve(showLayoutShiftRegionsSettingDescriptor);
+    this.#showAdHighlightsSetting = settings.resolve(showAdHighlightsSettingDescriptor);
+    this.#showDebugBordersSetting = settings.resolve(showDebugBordersSettingDescriptor);
+    this.#showFPSCounterSetting = settings.resolve(showFPSCounterSettingDescriptor);
+    this.#showScrollBottleneckRectsSetting = settings.resolve(showScrollBottleneckRectsSettingDescriptor);
     if (!target.suspended()) {
       void this.overlayAgent.invoke_enable();
       void this.wireAgentToSettings();
@@ -22655,7 +22851,7 @@ var OverlayModel = class _OverlayModel extends SDKModel {
   }
   buildHighlightConfig(mode = "all", showDetailedToolip = false) {
     const settings = this.target().targetManager().settings;
-    const showRulers = settings.moduleSetting("show-metrics-rulers").get();
+    const showRulers = settings.resolve(showMetricsRulersSettingDescriptor).get();
     const highlightConfig = {
       showInfo: mode === "all" || mode === "container-outline",
       showRulers,
@@ -22665,7 +22861,7 @@ var OverlayModel = class _OverlayModel extends SDKModel {
       gridHighlightConfig: {},
       flexContainerHighlightConfig: {},
       flexItemHighlightConfig: {},
-      contrastAlgorithm: settings.moduleSetting("apca").get() ? "apca" : "aa"
+      contrastAlgorithm: settings.resolve(apcaSettingDescriptor).get() ? "apca" : "aa"
     };
     if (mode === "all" || mode === "content") {
       highlightConfig.contentColor = Common17.Color.PageHighlight.Content.toProtocolRGBA();
@@ -25499,6 +25695,17 @@ var ResourceTreeModel = class _ResourceTreeModel extends SDKModel {
       }
     }
   }
+  navigatedWithinDocument(frameId, url) {
+    const frame = this.framesInternal.get(frameId);
+    if (!frame) {
+      return;
+    }
+    frame.navigatedWithinDocument(url);
+    if (frame.isMainFrame()) {
+      this.target().setInspectedURL(frame.url);
+    }
+    this.dispatchEventToListeners(Events.FrameNavigatedWithinDocument, frame);
+  }
   frameDetached(frameId, isSwap) {
     if (!this.#cachedResourcesProcessed) {
       return;
@@ -25772,6 +25979,7 @@ var Events;
 (function(Events12) {
   Events12["FrameAdded"] = "FrameAdded";
   Events12["FrameNavigated"] = "FrameNavigated";
+  Events12["FrameNavigatedWithinDocument"] = "FrameNavigatedWithinDocument";
   Events12["FrameDetached"] = "FrameDetached";
   Events12["FrameResized"] = "FrameResized";
   Events12["FrameWillNavigate"] = "FrameWillNavigate";
@@ -25880,6 +26088,9 @@ var ResourceTreeFrame = class {
     if (mainResource && mainResource.loaderId === this.#loaderId) {
       this.addResource(mainResource);
     }
+  }
+  navigatedWithinDocument(url) {
+    this.#url = url;
   }
   resourceTreeModel() {
     return this.#model;
@@ -26169,7 +26380,8 @@ var PageDispatcher = class {
   }
   frameStartedNavigating({}) {
   }
-  navigatedWithinDocument({}) {
+  navigatedWithinDocument({ frameId, url }) {
+    this.#resourceTreeModel.navigatedWithinDocument(frameId, url);
   }
   frameResized() {
     this.#resourceTreeModel.dispatchEventToListeners(Events.FrameResized);
@@ -26246,7 +26458,6 @@ var Script = class _Script {
   executionContextId;
   hash;
   #isContentScript;
-  #isLiveEdit;
   sourceMapURL;
   debugSymbols;
   hasSourceURL;
@@ -26258,7 +26469,7 @@ var Script = class _Script {
   #embedderName;
   isModule;
   buildId;
-  constructor(debuggerModel, scriptId, sourceURL, startLine, startColumn, endLine, endColumn, executionContextId, hash, isContentScript, isLiveEdit, sourceMapURL, hasSourceURL, length, isModule, originStackTrace, codeOffset, scriptLanguage, debugSymbols, embedderName, buildId) {
+  constructor(debuggerModel, scriptId, sourceURL, startLine, startColumn, endLine, endColumn, executionContextId, hash, isContentScript, sourceMapURL, hasSourceURL, length, isModule, originStackTrace, codeOffset, scriptLanguage, debugSymbols, embedderName, buildId) {
     this.debuggerModel = debuggerModel;
     this.scriptId = scriptId;
     this.sourceURL = sourceURL;
@@ -26271,7 +26482,6 @@ var Script = class _Script {
     this.executionContextId = executionContextId;
     this.hash = hash;
     this.#isContentScript = isContentScript;
-    this.#isLiveEdit = isLiveEdit;
     this.sourceMapURL = sourceMapURL;
     this.debugSymbols = debugSymbols;
     this.hasSourceURL = hasSourceURL;
@@ -26323,9 +26533,6 @@ var Script = class _Script {
   }
   executionContext() {
     return this.debuggerModel.runtimeModel().executionContext(this.executionContextId);
-  }
-  isLiveEdit() {
-    return this.#isLiveEdit;
   }
   contentURL() {
     return this.sourceURL;
@@ -26402,7 +26609,7 @@ var Script = class _Script {
   requestContentData() {
     if (!this.#contentPromise) {
       const fileSizeToCache = 65535;
-      if (this.hash && !this.#isLiveEdit && this.contentLength > fileSizeToCache) {
+      if (this.hash && this.contentLength > fileSizeToCache) {
         if (!scriptCacheInstance) {
           scriptCacheInstance = {
             cache: /* @__PURE__ */ new Map(),
@@ -26457,38 +26664,6 @@ var Script = class _Script {
     }
     const matches = await this.debuggerModel.target().debuggerAgent().invoke_searchInContent({ scriptId: this.scriptId, query, caseSensitive, isRegex });
     return TextUtils19.TextUtils.performSearchInSearchMatches(matches.result || [], query, caseSensitive, isRegex);
-  }
-  appendSourceURLCommentIfNeeded(source) {
-    if (!this.hasSourceURL) {
-      return source;
-    }
-    return source + "\n //# sourceURL=" + this.sourceURL;
-  }
-  async editSource(newSource) {
-    newSource = _Script.trimSourceURLComment(newSource);
-    newSource = this.appendSourceURLCommentIfNeeded(newSource);
-    const oldSource = TextUtils19.ContentData.ContentData.textOr(await this.requestContentData(), null);
-    if (oldSource === newSource) {
-      return {
-        changed: false,
-        status: "Ok"
-        /* Protocol.Debugger.SetScriptSourceResponseStatus.Ok */
-      };
-    }
-    const response = await this.debuggerModel.target().debuggerAgent().invoke_setScriptSource({ scriptId: this.scriptId, scriptSource: newSource, allowTopFrameEditing: true });
-    if (response.getError()) {
-      throw new Error(`Script#editSource failed for script with id ${this.scriptId}: ${response.getError()}`);
-    }
-    if (!response.getError() && response.status === "Ok") {
-      this.#contentPromise = Promise.resolve(new TextUtils19.ContentData.ContentData(
-        newSource,
-        /* isBase64 */
-        false,
-        "text/javascript"
-      ));
-    }
-    this.debuggerModel.dispatchEventToListeners(Events4.ScriptSourceWasEdited, { script: this, status: response.status });
-    return { changed: true, status: response.status, exceptionDetails: response.exceptionDetails };
   }
   rawLocation(lineNumber, columnNumber) {
     if (this.containsLocation(lineNumber, columnNumber)) {
@@ -26701,6 +26876,11 @@ var WASM_SYMBOLS_PRIORITY = [
   "EmbeddedDWARF",
   "SourceMap"
 ];
+var skipAllPausesSettingDescriptor = {
+  name: "skip-all-pauses",
+  type: "boolean",
+  defaultValue: false
+};
 var DebuggerModel = class _DebuggerModel extends SDKModel {
   agent;
   #runtimeModel;
@@ -26713,6 +26893,13 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
   #selectedCallFrame = null;
   #debuggerEnabled = false;
   #debuggerId = null;
+  #pauseOnExceptionEnabledSetting;
+  #pauseOnCaughtExceptionSetting;
+  #pauseOnUncaughtExceptionSetting;
+  #disableAsyncStackTracesSetting;
+  #breakpointsActiveSetting;
+  #jsSourceMapsEnabledSetting;
+  #skipAllPausesSetting;
   #skipAllPausesTimeout;
   #beforePausedCallback = null;
   #computeAutoStepRangesCallback = null;
@@ -26732,16 +26919,24 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
     this.#runtimeModel = target.model(RuntimeModel);
     this.#sourceMapManager = new SourceMapManager(target, (compiledURL, sourceMappingURL, payload, script) => new SourceMap(compiledURL, sourceMappingURL, payload, target.targetManager().getConsole(), script));
     const settings = this.target().targetManager().settings;
-    settings.resolve(pauseOnExceptionEnabledSettingDescriptor).addChangeListener(this.pauseOnExceptionStateChanged, this);
-    settings.resolve(pauseOnCaughtExceptionSettingDescriptor).addChangeListener(this.pauseOnExceptionStateChanged, this);
-    settings.moduleSetting("pause-on-uncaught-exception").addChangeListener(this.pauseOnExceptionStateChanged, this);
-    settings.moduleSetting("disable-async-stack-traces").addChangeListener(this.asyncStackTracesStateChanged, this);
-    settings.moduleSetting("breakpoints-active").addChangeListener(this.breakpointsActiveChanged, this);
+    this.#pauseOnExceptionEnabledSetting = settings.resolve(pauseOnExceptionEnabledSettingDescriptor);
+    this.#pauseOnExceptionEnabledSetting.addChangeListener(this.pauseOnExceptionStateChanged, this);
+    this.#pauseOnCaughtExceptionSetting = settings.resolve(pauseOnCaughtExceptionSettingDescriptor);
+    this.#pauseOnCaughtExceptionSetting.addChangeListener(this.pauseOnExceptionStateChanged, this);
+    this.#pauseOnUncaughtExceptionSetting = settings.resolve(pauseOnUncaughtExceptionSettingDescriptor);
+    this.#pauseOnUncaughtExceptionSetting.addChangeListener(this.pauseOnExceptionStateChanged, this);
+    this.#disableAsyncStackTracesSetting = settings.resolve(disableAsyncStackTracesSettingDescriptor);
+    this.#disableAsyncStackTracesSetting.addChangeListener(this.asyncStackTracesStateChanged, this);
+    this.#breakpointsActiveSetting = settings.resolve(breakpointsActiveSettingDescriptor);
+    this.#breakpointsActiveSetting.addChangeListener(this.breakpointsActiveChanged, this);
+    this.#skipAllPausesSetting = settings.resolve(skipAllPausesSettingDescriptor);
+    this.#skipAllPausesSetting.addChangeListener(this.skipAllPausesChanged, this);
+    this.#jsSourceMapsEnabledSetting = settings.resolve(jsSourceMapsEnabledSettingDescriptor);
+    this.#jsSourceMapsEnabledSetting.addChangeListener(this.jsSourceMapsStateChanged, this);
+    this.#sourceMapManager.setEnabled(this.#jsSourceMapsEnabledSetting.get());
     if (!target.suspended()) {
       void this.enableDebugger();
     }
-    this.#sourceMapManager.setEnabled(settings.resolve(jsSourceMapsEnabledSettingDescriptor).get());
-    settings.resolve(jsSourceMapsEnabledSettingDescriptor).addChangeListener((event) => this.#sourceMapManager.setEnabled(event.data));
     const resourceTreeModel = target.model(ResourceTreeModel);
     if (resourceTreeModel) {
       resourceTreeModel.addEventListener(Events.FrameNavigated, this.onFrameNavigated, this);
@@ -26788,6 +26983,10 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
       return;
     }
     this.#debuggerEnabled = true;
+    let skipAllPausesPromise;
+    if (this.#skipAllPausesSetting.get()) {
+      skipAllPausesPromise = this.agent.invoke_setSkipAllPauses({ skip: true });
+    }
     const isRemoteFrontend = Root7.Runtime.Runtime.queryParam("remoteFrontend") || Root7.Runtime.Runtime.queryParam("ws");
     const maxScriptsCacheSize = isRemoteFrontend ? 1e7 : 1e8;
     const enablePromise = this.agent.invoke_enable({ maxScriptsCacheSize });
@@ -26799,12 +26998,11 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
     }
     this.pauseOnExceptionStateChanged();
     void this.asyncStackTracesStateChanged();
-    const settings = this.target().targetManager().settings;
-    if (!settings.moduleSetting("breakpoints-active").get()) {
+    if (!this.#breakpointsActiveSetting.get()) {
       this.breakpointsActiveChanged();
     }
     this.dispatchEventToListeners(Events4.DebuggerWasEnabled, this);
-    const [enableResult] = await Promise.all([enablePromise, instrumentationPromise]);
+    const [enableResult] = await Promise.all([enablePromise, instrumentationPromise, skipAllPausesPromise]);
     this.registerDebugger(enableResult);
   }
   async syncDebuggerId() {
@@ -26864,19 +27062,32 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
     this.#debuggerId = null;
   }
   skipAllPauses(skip) {
+    if (this.#skipAllPausesSetting.get()) {
+      return;
+    }
+    clearTimeout(this.#skipAllPausesTimeout);
+    void this.agent.invoke_setSkipAllPauses({ skip });
+  }
+  skipAllPausesChanged() {
+    const skip = this.#skipAllPausesSetting.get();
     clearTimeout(this.#skipAllPausesTimeout);
     void this.agent.invoke_setSkipAllPauses({ skip });
   }
   skipAllPausesUntilReloadOrTimeout(timeout) {
+    if (this.#skipAllPausesSetting.get()) {
+      return;
+    }
     clearTimeout(this.#skipAllPausesTimeout);
     void this.agent.invoke_setSkipAllPauses({ skip: true });
     this.#skipAllPausesTimeout = globalThis.setTimeout(this.skipAllPauses.bind(this, false), timeout);
   }
+  jsSourceMapsStateChanged() {
+    this.#sourceMapManager.setEnabled(this.#jsSourceMapsEnabledSetting.get());
+  }
   pauseOnExceptionStateChanged() {
-    const settings = this.target().targetManager().settings;
-    const pauseOnCaughtEnabled = settings.resolve(pauseOnCaughtExceptionSettingDescriptor).get();
+    const pauseOnCaughtEnabled = this.#pauseOnCaughtExceptionSetting.get();
     let state;
-    const pauseOnUncaughtEnabled = settings.moduleSetting("pause-on-uncaught-exception").get();
+    const pauseOnUncaughtEnabled = this.#pauseOnUncaughtExceptionSetting.get();
     if (pauseOnCaughtEnabled && pauseOnUncaughtEnabled) {
       state = "all";
     } else if (pauseOnCaughtEnabled) {
@@ -26890,14 +27101,12 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
   }
   asyncStackTracesStateChanged() {
     const maxAsyncStackChainDepth = 32;
-    const settings = this.target().targetManager().settings;
-    const enabled = !settings.moduleSetting("disable-async-stack-traces").get() && this.#debuggerEnabled;
+    const enabled = !this.#disableAsyncStackTracesSetting.get() && this.#debuggerEnabled;
     const maxDepth = enabled ? maxAsyncStackChainDepth : 0;
     return this.agent.invoke_setAsyncCallStackDepth({ maxDepth });
   }
   breakpointsActiveChanged() {
-    const settings = this.target().targetManager().settings;
-    void this.agent.invoke_setBreakpointsActive({ active: settings.moduleSetting("breakpoints-active").get() });
+    void this.agent.invoke_setBreakpointsActive({ active: this.#breakpointsActiveSetting.get() });
   }
   setComputeAutoStepRangesCallback(callback) {
     this.#computeAutoStepRangesCallback = callback;
@@ -27097,6 +27306,10 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
       this.resume();
       return;
     }
+    if (this.#skipAllPausesSetting.get()) {
+      this.resume();
+      return;
+    }
     const pausedDetails = new DebuggerPausedDetails(this, callFrames, reason, auxData, breakpointIds, asyncStackTrace, asyncStackTraceId);
     if (this.continueToLocationCallback) {
       const callback = this.continueToLocationCallback;
@@ -27111,15 +27324,13 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
       } else {
         void this.stepInto();
       }
-    } else {
-      Common23.EventTarget.fireEvent("DevTools.DebuggerPaused");
     }
   }
   resumedScript() {
     this.resetDebuggerPausedDetails();
     this.dispatchEventToListeners(Events4.DebuggerResumed, this);
   }
-  parsedScriptSource(scriptId, sourceURL, startLine, startColumn, endLine, endColumn, executionContextId, hash, executionContextAuxData, isLiveEdit, sourceMapURL, hasSourceURLComment, hasSyntaxError, length, isModule, originStackTrace, codeOffset, scriptLanguage, debugSymbols, embedderName, buildId) {
+  parsedScriptSource(scriptId, sourceURL, startLine, startColumn, endLine, endColumn, executionContextId, hash, executionContextAuxData, sourceMapURL, hasSourceURLComment, hasSyntaxError, length, isModule, originStackTrace, codeOffset, scriptLanguage, debugSymbols, embedderName, buildId) {
     const knownScript = this.#scripts.get(scriptId);
     if (knownScript) {
       return knownScript;
@@ -27129,7 +27340,7 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
       isContentScript = !executionContextAuxData["isDefault"];
     }
     const selectedDebugSymbol = _DebuggerModel.selectSymbolSource(debugSymbols, this.target().targetManager().getConsole());
-    const script = new Script(this, scriptId, sourceURL, startLine, startColumn, endLine, endColumn, executionContextId, hash, isContentScript, isLiveEdit, sourceMapURL, hasSourceURLComment, length, isModule, originStackTrace, codeOffset, scriptLanguage, selectedDebugSymbol, embedderName, buildId);
+    const script = new Script(this, scriptId, sourceURL, startLine, startColumn, endLine, endColumn, executionContextId, hash, isContentScript, sourceMapURL, hasSourceURLComment, length, isModule, originStackTrace, codeOffset, scriptLanguage, selectedDebugSymbol, embedderName, buildId);
     this.registerScript(script);
     this.dispatchEventToListeners(Events4.ParsedScriptSource, script);
     if ((!selectedDebugSymbol || selectedDebugSymbol.type === "SourceMap") && script.sourceMapURL && !hasSyntaxError) {
@@ -27291,10 +27502,13 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
     if (this.#debuggerId) {
       debuggerIdToModel.delete(this.#debuggerId);
     }
-    const settings = this.target().targetManager().settings;
-    settings.resolve(pauseOnExceptionEnabledSettingDescriptor).removeChangeListener(this.pauseOnExceptionStateChanged, this);
-    settings.resolve(pauseOnCaughtExceptionSettingDescriptor).removeChangeListener(this.pauseOnExceptionStateChanged, this);
-    settings.moduleSetting("disable-async-stack-traces").removeChangeListener(this.asyncStackTracesStateChanged, this);
+    this.#pauseOnExceptionEnabledSetting.removeChangeListener(this.pauseOnExceptionStateChanged, this);
+    this.#pauseOnCaughtExceptionSetting.removeChangeListener(this.pauseOnExceptionStateChanged, this);
+    this.#skipAllPausesSetting.removeChangeListener(this.skipAllPausesChanged, this);
+    this.#pauseOnUncaughtExceptionSetting.removeChangeListener(this.pauseOnExceptionStateChanged, this);
+    this.#disableAsyncStackTracesSetting.removeChangeListener(this.asyncStackTracesStateChanged, this);
+    this.#breakpointsActiveSetting.removeChangeListener(this.breakpointsActiveChanged, this);
+    this.#jsSourceMapsEnabledSetting.removeChangeListener(this.jsSourceMapsStateChanged, this);
   }
   async suspendModel() {
     await this.disableDebugger();
@@ -27362,7 +27576,6 @@ var Events4;
   Events12["GlobalObjectCleared"] = "GlobalObjectCleared";
   Events12["CallFrameSelected"] = "CallFrameSelected";
   Events12["DebuggerIsReadyToPause"] = "DebuggerIsReadyToPause";
-  Events12["ScriptSourceWasEdited"] = "ScriptSourceWasEdited";
 })(Events4 || (Events4 = {}));
 var DebuggerDispatcher = class {
   #debuggerModel;
@@ -27381,17 +27594,17 @@ var DebuggerDispatcher = class {
     }
     this.#debuggerModel.resumedScript();
   }
-  scriptParsed({ scriptId, url, startLine, startColumn, endLine, endColumn, executionContextId, hash, executionContextAuxData, isLiveEdit, sourceMapURL, hasSourceURL, length, isModule, stackTrace, codeOffset, scriptLanguage, debugSymbols, embedderName, buildId }) {
+  scriptParsed({ scriptId, url, startLine, startColumn, endLine, endColumn, executionContextId, hash, executionContextAuxData, sourceMapURL, hasSourceURL, length, isModule, stackTrace, codeOffset, scriptLanguage, debugSymbols, embedderName, buildId }) {
     if (!this.#debuggerModel.debuggerEnabled()) {
       return;
     }
-    this.#debuggerModel.parsedScriptSource(scriptId, url, startLine, startColumn, endLine, endColumn, executionContextId, hash, executionContextAuxData, Boolean(isLiveEdit), sourceMapURL, Boolean(hasSourceURL), false, length || 0, isModule || null, stackTrace || null, codeOffset || null, scriptLanguage || null, debugSymbols || null, embedderName || null, buildId || null);
+    this.#debuggerModel.parsedScriptSource(scriptId, url, startLine, startColumn, endLine, endColumn, executionContextId, hash, executionContextAuxData, sourceMapURL, Boolean(hasSourceURL), false, length || 0, isModule || null, stackTrace || null, codeOffset || null, scriptLanguage || null, debugSymbols || null, embedderName || null, buildId || null);
   }
   scriptFailedToParse({ scriptId, url, startLine, startColumn, endLine, endColumn, executionContextId, hash, executionContextAuxData, sourceMapURL, hasSourceURL, length, isModule, stackTrace, codeOffset, scriptLanguage, embedderName, buildId }) {
     if (!this.#debuggerModel.debuggerEnabled()) {
       return;
     }
-    this.#debuggerModel.parsedScriptSource(scriptId, url, startLine, startColumn, endLine, endColumn, executionContextId, hash, executionContextAuxData, false, sourceMapURL, Boolean(hasSourceURL), true, length || 0, isModule || null, stackTrace || null, codeOffset || null, scriptLanguage || null, null, embedderName || null, buildId || null);
+    this.#debuggerModel.parsedScriptSource(scriptId, url, startLine, startColumn, endLine, endColumn, executionContextId, hash, executionContextAuxData, sourceMapURL, Boolean(hasSourceURL), true, length || 0, isModule || null, stackTrace || null, codeOffset || null, scriptLanguage || null, null, embedderName || null, buildId || null);
   }
   breakpointResolved({ breakpointId, location }) {
     if (!this.#debuggerModel.debuggerEnabled()) {
@@ -28487,6 +28700,11 @@ var FULL_FIDELITY_RESEND_TYPES = /* @__PURE__ */ new Set([
   Common25.ResourceType.resourceTypes.SourceMapScript,
   Common25.ResourceType.resourceTypes.SourceMapStyleSheet
 ]);
+var PARTIAL_FIDELITY_RESEND_TYPES = /* @__PURE__ */ new Set([
+  Common25.ResourceType.resourceTypes.Document,
+  Common25.ResourceType.resourceTypes.Prefetch,
+  Common25.ResourceType.resourceTypes.Ping
+]);
 var CONNECTION_TYPES = /* @__PURE__ */ new Map([
   [
     "2g",
@@ -28568,11 +28786,18 @@ var NetworkManager = class _NetworkManager extends SDKModel {
   static forRequest(request) {
     return requestToManagerMap.get(request) || null;
   }
-  static canResendRequest(request) {
+  static canResendRequest(request, fullFidelity) {
     if (!requestToManagerMap.get(request) || !request.backendRequestId() || request.isRedirect()) {
       return false;
     }
-    return FULL_FIDELITY_RESEND_TYPES.has(request.resourceType());
+    const type = request.resourceType();
+    if (FULL_FIDELITY_RESEND_TYPES.has(type)) {
+      return true;
+    }
+    if (!fullFidelity && PARTIAL_FIDELITY_RESEND_TYPES.has(type)) {
+      return true;
+    }
+    return false;
   }
   static replayRequest(request) {
     void _NetworkManager.resendRequest(request);
@@ -36385,17 +36610,17 @@ var EmulationModel = class extends SDKModel {
       }, this);
     }
     const settings = this.target().targetManager().settings;
-    const disableJavascriptSetting = settings.moduleSetting("java-script-disabled");
+    const disableJavascriptSetting = settings.resolve(javaScriptDisabledSettingDescriptor);
     disableJavascriptSetting.addChangeListener(async () => await this.#emulationAgent.invoke_setScriptExecutionDisabled({ value: disableJavascriptSetting.get() }));
     if (disableJavascriptSetting.get()) {
       void this.#emulationAgent.invoke_setScriptExecutionDisabled({ value: true });
     }
-    const touchSetting = settings.moduleSetting("emulation.touch");
+    const touchSetting = settings.resolve(touchSettingDescriptor);
     touchSetting.addChangeListener(() => {
       const settingValue = touchSetting.get();
       void this.overrideEmulateTouch(settingValue === "force");
     });
-    const idleDetectionSetting = settings.moduleSetting("emulation.idle-detection");
+    const idleDetectionSetting = settings.resolve(idleDetectionSettingDescriptor);
     idleDetectionSetting.addChangeListener(async () => {
       const settingValue = idleDetectionSetting.get();
       if (settingValue === "none") {
@@ -36405,7 +36630,7 @@ var EmulationModel = class extends SDKModel {
       const emulationParams = JSON.parse(settingValue);
       await this.setIdleOverride(emulationParams);
     });
-    const cpuPressureDetectionSetting = settings.moduleSetting("emulation.cpu-pressure");
+    const cpuPressureDetectionSetting = settings.resolve(cpuPressureSettingDescriptor);
     cpuPressureDetectionSetting.addChangeListener(async () => {
       const settingValue = cpuPressureDetectionSetting.get();
       if (settingValue === "none") {
@@ -36419,14 +36644,14 @@ var EmulationModel = class extends SDKModel {
       }
       await this.setPressureStateOverride(settingValue);
     });
-    const mediaTypeSetting = settings.moduleSetting("emulated-css-media");
+    const mediaTypeSetting = settings.resolve(emulatedCSSMediaSettingDescriptor);
     const mediaFeatureColorGamutSetting = settings.moduleSetting("emulated-css-media-feature-color-gamut");
-    const mediaFeaturePrefersColorSchemeSetting = settings.moduleSetting("emulated-css-media-feature-prefers-color-scheme");
-    const mediaFeatureForcedColorsSetting = settings.moduleSetting("emulated-css-media-feature-forced-colors");
+    const mediaFeaturePrefersColorSchemeSetting = settings.resolve(emulatedCSSMediaFeaturePrefersColorSchemeSettingDescriptor);
+    const mediaFeatureForcedColorsSetting = settings.resolve(emulatedCSSMediaFeatureForcedColorsSettingDescriptor);
     const mediaFeaturePrefersContrastSetting = settings.moduleSetting("emulated-css-media-feature-prefers-contrast");
     const mediaFeaturePrefersReducedDataSetting = settings.moduleSetting("emulated-css-media-feature-prefers-reduced-data");
     const mediaFeaturePrefersReducedTransparencySetting = settings.moduleSetting("emulated-css-media-feature-prefers-reduced-transparency");
-    const mediaFeaturePrefersReducedMotionSetting = settings.moduleSetting("emulated-css-media-feature-prefers-reduced-motion");
+    const mediaFeaturePrefersReducedMotionSetting = settings.resolve(emulatedCSSMediaFeaturePrefersReducedMotionSettingDescriptor);
     this.#mediaConfiguration = /* @__PURE__ */ new Map([
       ["type", mediaTypeSetting.get()],
       ["color-gamut", mediaFeatureColorGamutSetting.get()],

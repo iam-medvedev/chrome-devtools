@@ -84,6 +84,9 @@
       "path": "../../core/platform/bundle-tsconfig.json"
     },
     {
+      "path": "../../core/root/bundle-tsconfig.json"
+    },
+    {
       "path": "../../core/sdk/bundle-tsconfig.json"
     },
     {
@@ -136,6 +139,9 @@
     },
     {
       "path": "../coverage/bundle-tsconfig.json"
+    },
+    {
+      "path": "../search/bundle-tsconfig.json"
     },
     {
       "path": "components/bundle-tsconfig.json"

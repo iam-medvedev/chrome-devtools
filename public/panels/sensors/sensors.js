@@ -1773,7 +1773,7 @@ var SensorsView = class extends UI2.Widget.VBox {
   }
   createPressureSection() {
     const container = this.contentElement.createChild("div", "pressure-section");
-    const control = SettingsUI.SettingsUI.createControlForSetting(Common2.Settings.Settings.instance().moduleSetting("emulation.cpu-pressure"), i18nString2(UIStrings2.forcesSelectedPressureStateEmulation));
+    const control = SettingsUI.SettingsUI.createControlForSetting(Common2.Settings.Settings.instance().resolve(SDK2.SDKSettings.cpuPressureSettingDescriptor), i18nString2(UIStrings2.forcesSelectedPressureStateEmulation));
     if (control) {
       container.appendChild(control);
     }
@@ -1952,14 +1952,14 @@ var SensorsView = class extends UI2.Widget.VBox {
   }
   appendTouchControl() {
     const container = this.contentElement.createChild("div", "touch-section");
-    const control = SettingsUI.SettingsUI.createControlForSetting(Common2.Settings.Settings.instance().moduleSetting("emulation.touch"), i18nString2(UIStrings2.forcesTouchInsteadOfClick));
+    const control = SettingsUI.SettingsUI.createControlForSetting(Common2.Settings.Settings.instance().resolve(SDK2.SDKSettings.touchSettingDescriptor), i18nString2(UIStrings2.forcesTouchInsteadOfClick));
     if (control) {
       container.appendChild(control);
     }
   }
   appendIdleEmulator() {
     const container = this.contentElement.createChild("div", "idle-section");
-    const control = SettingsUI.SettingsUI.createControlForSetting(Common2.Settings.Settings.instance().moduleSetting("emulation.idle-detection"), i18nString2(UIStrings2.forcesSelectedIdleStateEmulation));
+    const control = SettingsUI.SettingsUI.createControlForSetting(Common2.Settings.Settings.instance().resolve(SDK2.SDKSettings.idleDetectionSettingDescriptor), i18nString2(UIStrings2.forcesSelectedIdleStateEmulation));
     if (control) {
       container.appendChild(control);
     }

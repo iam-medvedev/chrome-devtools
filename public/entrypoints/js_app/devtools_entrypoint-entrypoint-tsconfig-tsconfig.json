@@ -56,9 +56,6 @@
       "path": "../../core/sdk/bundle-tsconfig.json"
     },
     {
-      "path": "../../generated/protocol-tsconfig.json"
-    },
-    {
       "path": "../../panels/js_timeline/meta-tsconfig.json"
     },
     {
@@ -66,6 +63,12 @@
     },
     {
       "path": "../../panels/network/meta-tsconfig.json"
+    },
+    {
+      "path": "../../panels/sources/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../ui/legacy/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/legacy/components/utils/bundle-tsconfig.json"

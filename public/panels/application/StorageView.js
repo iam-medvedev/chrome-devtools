@@ -13,6 +13,7 @@ import * as SettingsUI from '../../ui/legacy/components/settings_ui/settings_ui.
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { IndexedDBModel } from './IndexedDBModel.js';
+import { ResourcesPanel } from './ResourcesPanel.js';
 import storageViewStyles from './storageView.css.js';
 const UIStrings = {
     /**
@@ -135,7 +136,22 @@ const UIStrings = {
      * Storage quota refers to the amount of disk available for the website or app.
      */
     simulateCustomStorage: 'Simulate custom storage quota',
+    /**
+     * @description Text in Application Panel Sidebar of the Application panel
+     */
+    localStorage: 'Local storage',
+    /**
+     * @description Text in Application Panel Sidebar of the Application panel
+     */
+    sessionStorage: 'Session storage',
 };
+export const storagePieColors = new Map([
+    ["cache_storage" /* Protocol.Storage.StorageType.Cache_storage */, 'rgb(229, 113, 113)'], // red
+    ["cookies" /* Protocol.Storage.StorageType.Cookies */, 'rgb(239, 196, 87)'], // yellow
+    ["indexeddb" /* Protocol.Storage.StorageType.Indexeddb */, 'rgb(155, 127, 230)'], // purple
+    ["local_storage" /* Protocol.Storage.StorageType.Local_storage */, 'rgb(116, 178, 102)'], // green
+    ["service_workers" /* Protocol.Storage.StorageType.Service_workers */, 'rgb(255, 167, 36)'], // orange
+]);
 const str_ = i18n.i18n.registerUIStrings('panels/application/StorageView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 /**
@@ -152,6 +168,8 @@ export class StorageView extends UI.Widget.VBox {
     includeThirdPartyCookiesCheckbox;
     quotaRow;
     quotaUsage;
+    quotaQuota;
+    quotaOverrideActive;
     pieChart;
     previousOverrideFieldValue;
     quotaOverrideCheckbox;
@@ -165,13 +183,7 @@ export class StorageView extends UI.Widget.VBox {
         this.registerRequiredCSS(storageViewStyles);
         this.contentElement.classList.add('clear-storage-container');
         this.contentElement.setAttribute('jslog', `${VisualLogging.pane('clear-storage')}`);
-        this.pieColors = new Map([
-            ["cache_storage" /* Protocol.Storage.StorageType.Cache_storage */, 'rgb(229, 113, 113)'], // red
-            ["cookies" /* Protocol.Storage.StorageType.Cookies */, 'rgb(239, 196, 87)'], // yellow
-            ["indexeddb" /* Protocol.Storage.StorageType.Indexeddb */, 'rgb(155, 127, 230)'], // purple
-            ["local_storage" /* Protocol.Storage.StorageType.Local_storage */, 'rgb(116, 178, 102)'], // green
-            ["service_workers" /* Protocol.Storage.StorageType.Service_workers */, 'rgb(255, 167, 36)'], // orange
-        ]);
+        this.pieColors = storagePieColors;
         // TODO(crbug.com/1156978): Replace UI.ReportView.ReportView with ReportView.ts web component.
         this.reportView = new UI.ReportView.ReportView(i18nString(UIStrings.storageTitle));
         this.reportView.registerRequiredCSS(storageViewStyles);
@@ -233,6 +245,8 @@ export class StorageView extends UI.Widget.VBox {
         const learnMore = Link.create('https://developer.chrome.com/docs/devtools/progressive-web-apps#opaque-responses', i18nString(UIStrings.learnMore), undefined, 'learn-more');
         learnMoreRow.appendChild(learnMore);
         this.quotaUsage = null;
+        this.quotaQuota = null;
+        this.quotaOverrideActive = null;
         this.pieChart = new PerfUI.PieChart.PieChart();
         this.populatePieChart(0, []);
         const usageBreakdownRow = quota.appendRow();
@@ -345,6 +359,9 @@ export class StorageView extends UI.Widget.VBox {
             this.quotaOverrideControlRow.classList.add('hidden');
             this.quotaOverrideCheckbox.checked = false;
             this.quotaOverrideErrorMessage.textContent = '';
+            this.quotaUsage = null;
+            this.quotaQuota = null;
+            this.quotaOverrideActive = null;
         }
         void this.performUpdate();
     }
@@ -475,50 +492,63 @@ export class StorageView extends UI.Widget.VBox {
     async performUpdate() {
         if (!this.securityOrigin || !this.target) {
             this.quotaRow.textContent = '';
+            this.quotaUsage = null;
+            this.quotaQuota = null;
+            this.quotaOverrideActive = null;
             this.populatePieChart(0, []);
             return;
         }
         const securityOrigin = this.securityOrigin;
         const response = await this.target.storageAgent().invoke_getUsageAndQuota({ origin: securityOrigin });
-        this.quotaRow.textContent = '';
         if (response.getError()) {
+            this.quotaRow.textContent = '';
+            this.quotaUsage = null;
+            this.quotaQuota = null;
+            this.quotaOverrideActive = null;
             this.populatePieChart(0, []);
             return;
         }
-        const quotaOverridden = response.overrideActive;
-        const quotaAsString = i18n.ByteUtilities.bytesToString(response.quota);
-        const usageAsString = i18n.ByteUtilities.bytesToString(response.usage);
-        const formattedQuotaAsString = i18nString(UIStrings.storageWithCustomMarker, { PH1: quotaAsString });
-        let quota = quotaAsString;
-        if (quotaOverridden) {
-            const element = document.createElement('b');
-            element.textContent = formattedQuotaAsString;
-            quota = element;
-        }
-        const element = uiI18n.getFormatLocalizedString(str_, UIStrings.storageQuotaUsed, { PH1: usageAsString, PH2: quota });
-        this.quotaRow.appendChild(element);
-        UI.Tooltip.Tooltip.install(this.quotaRow, i18nString(UIStrings.storageQuotaUsedWithBytes, { PH1: response.usage.toLocaleString(), PH2: response.quota.toLocaleString() }));
-        if (!response.overrideActive && response.quota < 125829120) { // 120 MB
-            const icon = new Icon();
-            icon.name = 'info';
-            icon.style.color = 'var(--icon-info)';
-            icon.classList.add('small');
-            UI.Tooltip.Tooltip.install(this.quotaRow, i18nString(UIStrings.storageQuotaIsLimitedIn));
-            this.quotaRow.appendChild(icon);
-        }
-        if (this.quotaUsage === null || this.quotaUsage !== response.usage) {
+        const usageChanged = this.quotaUsage !== response.usage;
+        const quotaChanged = this.quotaQuota !== response.quota;
+        const overrideChanged = this.quotaOverrideActive !== response.overrideActive;
+        if (usageChanged || quotaChanged || overrideChanged) {
             this.quotaUsage = response.usage;
-            const slices = [];
-            for (const usageForType of response.usageBreakdown.sort((a, b) => b.usage - a.usage)) {
-                const value = usageForType.usage;
-                if (!value) {
-                    continue;
-                }
-                const title = this.getStorageTypeName(usageForType.storageType);
-                const color = this.pieColors.get(usageForType.storageType) || '#ccc';
-                slices.push({ value, color, title });
+            this.quotaQuota = response.quota;
+            this.quotaOverrideActive = response.overrideActive;
+            this.quotaRow.textContent = '';
+            const quotaAsString = i18n.ByteUtilities.bytesToString(response.quota);
+            const usageAsString = i18n.ByteUtilities.bytesToString(response.usage);
+            const formattedQuotaAsString = i18nString(UIStrings.storageWithCustomMarker, { PH1: quotaAsString });
+            let quota = quotaAsString;
+            if (response.overrideActive) {
+                const element = document.createElement('b');
+                element.textContent = formattedQuotaAsString;
+                quota = element;
             }
-            this.populatePieChart(response.usage, slices);
+            const element = uiI18n.getFormatLocalizedString(str_, UIStrings.storageQuotaUsed, { PH1: usageAsString, PH2: quota });
+            this.quotaRow.appendChild(element);
+            UI.Tooltip.Tooltip.install(this.quotaRow, i18nString(UIStrings.storageQuotaUsedWithBytes, { PH1: response.usage.toLocaleString(), PH2: response.quota.toLocaleString() }));
+            if (!response.overrideActive && response.quota < 125829120) { // 120 MiB
+                const icon = new Icon();
+                icon.name = 'info';
+                icon.style.color = 'var(--icon-info)';
+                icon.classList.add('small');
+                UI.Tooltip.Tooltip.install(icon, i18nString(UIStrings.storageQuotaIsLimitedIn));
+                this.quotaRow.appendChild(icon);
+            }
+            if (usageChanged) {
+                const slices = [];
+                for (const usageForType of response.usageBreakdown.sort((a, b) => b.usage - a.usage)) {
+                    const value = usageForType.usage;
+                    if (!value) {
+                        continue;
+                    }
+                    const title = StorageView.getStorageTypeName(usageForType.storageType);
+                    const color = this.pieColors.get(usageForType.storageType) || '#ccc';
+                    slices.push({ value, color, title });
+                }
+                this.populatePieChart(response.usage, slices);
+            }
         }
         void this.throttler.schedule(this.requestUpdate.bind(this));
     }
@@ -532,7 +562,7 @@ export class StorageView extends UI.Widget.VBox {
             slices,
         };
     }
-    getStorageTypeName(type) {
+    static getStorageTypeName(type) {
         switch (type) {
             case "file_systems" /* Protocol.Storage.StorageType.File_systems */:
                 return i18nString(UIStrings.fileSystem);
@@ -544,6 +574,29 @@ export class StorageView extends UI.Widget.VBox {
                 return i18nString(UIStrings.serviceWorkers);
             default:
                 return i18nString(UIStrings.other);
+        }
+    }
+    /**
+     * Returns the user-facing title of a storage type for the storage breakdown widget in AI assistance.
+     * This method accepts arbitrary strings to accommodate custom storage types (like session_storage)
+     * that do not exist in the Protocol.Storage.StorageType enum.
+     */
+    static getStorageTypeNameForWidget(type) {
+        switch (type) {
+            case 'session_storage':
+                return i18nString(UIStrings.sessionStorage);
+            case 'local_storage':
+                return i18nString(UIStrings.localStorage);
+            case 'cookies':
+                return i18nString(UIStrings.cookies);
+            case 'indexeddb':
+                return i18nString(UIStrings.indexDB);
+            case 'cache_storage':
+                return i18nString(UIStrings.cacheStorage);
+            case 'service_workers':
+                return i18nString(UIStrings.serviceWorkers);
+            default:
+                return StorageView.getStorageTypeName(type);
         }
     }
 }
@@ -578,6 +631,18 @@ export class ActionDelegate {
             StorageView.clear(target, storageKey, securityOrigin, AllStorageTypes, includeThirdPartyCookies);
         }, _ => { });
         return true;
+    }
+}
+export class StorageRevealable {
+    target;
+    constructor(target) {
+        this.target = target;
+    }
+}
+export class StorageRevealer {
+    async reveal(_revealable) {
+        const sidebar = await ResourcesPanel.showAndGetSidebar();
+        sidebar.showStorage();
     }
 }
 //# sourceMappingURL=StorageView.js.map

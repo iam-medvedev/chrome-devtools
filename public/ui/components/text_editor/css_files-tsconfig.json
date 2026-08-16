@@ -4,6 +4,9 @@
         "outDir": "."
     },
     "files": [
-        "textEditor.css.js"
+        "aiCodeCompletionDisclaimer.css.js",
+        "aiCodeCompletionTeaser.css.js",
+        "aiCodeGenerationTeaser.css.js",
+        "aiCodeGenerationUpgradeDialog.css.js"
     ]
 }

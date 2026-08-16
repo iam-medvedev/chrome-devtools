@@ -6,6 +6,7 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Root from '../../core/root/root.js';
+import * as SDK from '../../core/sdk/sdk.js';
 import * as SettingsUI from '../../ui/legacy/components/settings_ui/settings_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
@@ -186,28 +187,28 @@ export class RenderingOptionsView extends UI.Widget.VBox {
         super({ useShadowDom: true });
         this.registerRequiredCSS(renderingOptionsStyles);
         this.element.setAttribute('jslog', `${VisualLogging.panel('rendering').track({ resize: true })}`);
-        this.#appendCheckbox(i18nString(UIStrings.paintFlashing), i18nString(UIStrings.highlightsAreasOfThePageGreen), Common.Settings.Settings.instance().moduleSetting('show-paint-rects'));
-        this.#appendCheckbox(i18nString(UIStrings.layoutShiftRegions), i18nString(UIStrings.highlightsAreasOfThePageBlueThat), Common.Settings.Settings.instance().moduleSetting('show-layout-shift-regions'));
-        this.#appendCheckbox(i18nString(UIStrings.layerBorders), i18nString(UIStrings.showsLayerBordersOrangeoliveAnd), Common.Settings.Settings.instance().moduleSetting('show-debug-borders'));
-        this.#appendCheckbox(i18nString(UIStrings.frameRenderingStats), i18nString(UIStrings.plotsFrameThroughputDropped), Common.Settings.Settings.instance().moduleSetting('show-fps-counter'));
-        this.#appendCheckbox(i18nString(UIStrings.scrollingPerformanceIssues), i18nString(UIStrings.highlightsElementsTealThatCan), Common.Settings.Settings.instance().moduleSetting('show-scroll-bottleneck-rects'));
+        this.#appendCheckbox(i18nString(UIStrings.paintFlashing), i18nString(UIStrings.highlightsAreasOfThePageGreen), Common.Settings.Settings.instance().resolve(SDK.SDKSettings.showPaintRectsSettingDescriptor));
+        this.#appendCheckbox(i18nString(UIStrings.layoutShiftRegions), i18nString(UIStrings.highlightsAreasOfThePageBlueThat), Common.Settings.Settings.instance().resolve(SDK.SDKSettings.showLayoutShiftRegionsSettingDescriptor));
+        this.#appendCheckbox(i18nString(UIStrings.layerBorders), i18nString(UIStrings.showsLayerBordersOrangeoliveAnd), Common.Settings.Settings.instance().resolve(SDK.SDKSettings.showDebugBordersSettingDescriptor));
+        this.#appendCheckbox(i18nString(UIStrings.frameRenderingStats), i18nString(UIStrings.plotsFrameThroughputDropped), Common.Settings.Settings.instance().resolve(SDK.SDKSettings.showFPSCounterSettingDescriptor));
+        this.#appendCheckbox(i18nString(UIStrings.scrollingPerformanceIssues), i18nString(UIStrings.highlightsElementsTealThatCan), Common.Settings.Settings.instance().resolve(SDK.SDKSettings.showScrollBottleneckRectsSettingDescriptor));
         // The 'Highlight ads' setting now lives in the Ads panel under Application.
         // We display this legacy setting only when the Ads panel isn't enabled.
         if (!Root.Runtime.hostConfig.devToolsAdsPanel?.enabled) {
-            this.#appendCheckbox(i18nString(UIStrings.highlightAds), i18nString(UIStrings.highlightsElementsRedDetectedToBe), Common.Settings.Settings.instance().moduleSetting('show-ad-highlights'));
+            this.#appendCheckbox(i18nString(UIStrings.highlightAds), i18nString(UIStrings.highlightsElementsRedDetectedToBe), Common.Settings.Settings.instance().resolve(SDK.SDKSettings.showAdHighlightsSettingDescriptor));
         }
         this.#appendCheckbox(i18nString(UIStrings.disableLocalFonts), i18nString(UIStrings.disablesLocalSourcesInFontface), Common.Settings.Settings.instance().moduleSetting('local-fonts-disabled'));
-        this.#appendCheckbox(i18nString(UIStrings.emulateAFocusedPage), i18nString(UIStrings.emulatesAFocusedPage), Common.Settings.Settings.instance().moduleSetting('emulate-page-focus'), { toggle: Host.UserMetrics.Action.ToggleEmulateFocusedPageFromRenderingTab });
+        this.#appendCheckbox(i18nString(UIStrings.emulateAFocusedPage), i18nString(UIStrings.emulatesAFocusedPage), Common.Settings.Settings.instance().resolve(SDK.SDKSettings.emulatePageFocusSettingDescriptor), { toggle: Host.UserMetrics.Action.ToggleEmulateFocusedPageFromRenderingTab });
         const autoDarkModeSetting = Common.Settings.Settings.instance().moduleSetting('emulate-auto-dark-mode');
         this.#appendCheckbox(i18nString(UIStrings.emulateAutoDarkMode), i18nString(UIStrings.emulatesAutoDarkMode), autoDarkModeSetting);
         this.contentElement.createChild('div').classList.add('panel-section-separator');
-        this.#appendSelect(i18nString(UIStrings.forcesCssPreferscolorschemeMedia), Common.Settings.Settings.instance().moduleSetting('emulated-css-media-feature-prefers-color-scheme'), autoDarkModeSetting.get());
-        this.#appendSelect(i18nString(UIStrings.forcesMediaTypeForTestingPrint), Common.Settings.Settings.instance().moduleSetting('emulated-css-media'));
-        this.#appendSelect(i18nString(UIStrings.forcesCssForcedColors), Common.Settings.Settings.instance().moduleSetting('emulated-css-media-feature-forced-colors'));
+        this.#appendSelect(i18nString(UIStrings.forcesCssPreferscolorschemeMedia), Common.Settings.Settings.instance().resolve(SDK.SDKSettings.emulatedCSSMediaFeaturePrefersColorSchemeSettingDescriptor), autoDarkModeSetting.get());
+        this.#appendSelect(i18nString(UIStrings.forcesMediaTypeForTestingPrint), Common.Settings.Settings.instance().resolve(SDK.SDKSettings.emulatedCSSMediaSettingDescriptor));
+        this.#appendSelect(i18nString(UIStrings.forcesCssForcedColors), Common.Settings.Settings.instance().resolve(SDK.SDKSettings.emulatedCSSMediaFeatureForcedColorsSettingDescriptor));
         if (supportsPrefersContrast()) {
             this.#appendSelect(i18nString(UIStrings.forcesCssPreferscontrastMedia), Common.Settings.Settings.instance().moduleSetting('emulated-css-media-feature-prefers-contrast'));
         }
-        this.#appendSelect(i18nString(UIStrings.forcesCssPrefersreducedmotion), Common.Settings.Settings.instance().moduleSetting('emulated-css-media-feature-prefers-reduced-motion'));
+        this.#appendSelect(i18nString(UIStrings.forcesCssPrefersreducedmotion), Common.Settings.Settings.instance().resolve(SDK.SDKSettings.emulatedCSSMediaFeaturePrefersReducedMotionSettingDescriptor));
         if (supportsPrefersReducedData()) {
             this.#appendSelect(i18nString(UIStrings.forcesCssPrefersreduceddataMedia), Common.Settings.Settings.instance().moduleSetting('emulated-css-media-feature-prefers-reduced-data'));
         }
@@ -250,7 +251,7 @@ export class RenderingOptionsView extends UI.Widget.VBox {
 }
 export class ReloadActionDelegate {
     handleAction(_context, actionId) {
-        const emulatedCSSMediaFeaturePrefersColorSchemeSetting = Common.Settings.Settings.instance().moduleSetting('emulated-css-media-feature-prefers-color-scheme');
+        const emulatedCSSMediaFeaturePrefersColorSchemeSetting = Common.Settings.Settings.instance().resolve(SDK.SDKSettings.emulatedCSSMediaFeaturePrefersColorSchemeSettingDescriptor);
         switch (actionId) {
             case 'rendering.toggle-prefers-color-scheme': {
                 // Cycle between no emulation, light, dark

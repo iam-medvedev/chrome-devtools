@@ -329,7 +329,7 @@ describeWithEnvironment('RequestPayloadView', () => {
         const getToggles = () => shadowRoot.querySelectorAll('.payload-toggle');
         assert.lengthOf(getToggles(), 5);
         // Toggle query parameters decoding (decoded -> encoded)
-        const viewUrlEncodedQueryBtn = getButton('Query String Parameters', 'View URL-encoded');
+        const viewUrlEncodedQueryBtn = getButton('Query string parameters', 'View URL-encoded');
         assert.exists(viewUrlEncodedQueryBtn);
         viewUrlEncodedQueryBtn?.click();
         await view.updateComplete;
@@ -337,13 +337,13 @@ describeWithEnvironment('RequestPayloadView', () => {
         assert.include(getPayloadValues(), 'qBar%20qBaz');
         assert.include(getPayloadValues(), 'fBar fBaz');
         // Toggle query parameters back (encoded -> decoded)
-        const viewDecodedQueryBtn = getButton('Query String Parameters', 'View decoded');
+        const viewDecodedQueryBtn = getButton('Query string parameters', 'View decoded');
         assert.exists(viewDecodedQueryBtn);
         viewDecodedQueryBtn?.click();
         await view.updateComplete;
         assert.include(getPayloadValues(), 'qBar qBaz');
         // Toggle form data decoding (decoded -> encoded)
-        const viewUrlEncodedFormBtn = getButton('Form Data', 'View URL-encoded');
+        const viewUrlEncodedFormBtn = getButton('Form data', 'View URL-encoded');
         assert.exists(viewUrlEncodedFormBtn);
         viewUrlEncodedFormBtn?.click();
         await view.updateComplete;

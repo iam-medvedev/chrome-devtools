@@ -44,6 +44,9 @@
   ],
   "references": [
     {
+      "path": "../../core/root/bundle-tsconfig.json"
+    },
+    {
       "path": "../inspector_main/meta-tsconfig.json"
     },
     {

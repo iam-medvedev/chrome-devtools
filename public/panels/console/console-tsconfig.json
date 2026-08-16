@@ -122,6 +122,9 @@
       "path": "../../ui/components/code_highlighter/bundle-tsconfig.json"
     },
     {
+      "path": "../../ui/components/dialogs/bundle-tsconfig.json"
+    },
+    {
       "path": "../../ui/components/highlighting/bundle-tsconfig.json"
     },
     {
@@ -161,10 +164,16 @@
       "path": "../../ui/lit/bundle-tsconfig.json"
     },
     {
+      "path": "../../ui/settings/bundle-tsconfig.json"
+    },
+    {
       "path": "../../ui/visual_logging/bundle-tsconfig.json"
     },
     {
       "path": "../common/bundle-tsconfig.json"
+    },
+    {
+      "path": "../elements/bundle-tsconfig.json"
     }
   ]
 }

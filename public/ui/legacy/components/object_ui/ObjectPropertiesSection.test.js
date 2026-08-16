@@ -582,9 +582,15 @@ describeWithEnvironment('ObjectPropertyTreeElement', () => {
         const [secondInput] = await secondExpectedCall;
         assert.isTrue(secondInput.editing);
     });
+    function createAndRenderPropertyValue(value, wasThrown, showPreview) {
+        const fragment = document.createDocumentFragment();
+        render(ObjectUI.ObjectPropertiesSection.renderPropertyValue(value, wasThrown, showPreview), fragment);
+        assert.exists(fragment.firstElementChild);
+        return fragment.firstElementChild;
+    }
     it('shows expandable text contents for lengthy strings', async () => {
         const longString = `l${'o'.repeat(15000)}ng`;
-        const value = ObjectUI.ObjectPropertiesSection.ObjectPropertiesSection.createPropertyValue(SDK.RemoteObject.RemoteObject.fromLocalObject(longString), false, true);
+        const value = createAndRenderPropertyValue(SDK.RemoteObject.RemoteObject.fromLocalObject(longString), false, true);
         renderElementIntoDOM(value, { includeCommonStyles: true });
         await assertScreenshot('object_ui/expandable_strings.png');
         const copyStub = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'copyText');
@@ -607,7 +613,7 @@ describeWithEnvironment('ObjectPropertyTreeElement', () => {
     });
     it('escapes bidi characters in standalone string values', () => {
         const object = SDK.RemoteObject.RemoteObject.fromLocalObject('\u202Ereversed_string');
-        const value = ObjectUI.ObjectPropertiesSection.ObjectPropertiesSection.createPropertyValue(object, false, false);
+        const value = createAndRenderPropertyValue(object, false, false);
         renderElementIntoDOM(value, {
             includeCommonStyles: true,
             extraStyles: [ObjectUI.ObjectPropertiesSection.objectValueStyles],
@@ -621,7 +627,7 @@ describeWithEnvironment('ObjectPropertyTreeElement', () => {
         sinon.stub(object, 'description').get(() => 'description_with_\u202Ebidi');
         // Ensure preview is undefined so hasPreview is false
         sinon.stub(object, 'preview').get(() => undefined);
-        const value = ObjectUI.ObjectPropertiesSection.ObjectPropertiesSection.createPropertyValue(object, false, true);
+        const value = createAndRenderPropertyValue(object, false, true);
         renderElementIntoDOM(value, {
             includeCommonStyles: true,
             extraStyles: [ObjectUI.ObjectPropertiesSection.objectValueStyles],
@@ -721,7 +727,7 @@ describeWithEnvironment('ObjectPropertyTreeElement', () => {
                 },
             ],
         }));
-        const value = ObjectUI.ObjectPropertiesSection.ObjectPropertiesSection.createPropertyValue(object, false, true);
+        const value = createAndRenderPropertyValue(object, false, true);
         renderElementIntoDOM(value, {
             includeCommonStyles: true,
             extraStyles: [ObjectUI.ObjectPropertiesSection.objectValueStyles],

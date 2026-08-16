@@ -4,28 +4,24 @@ import * as Platform from '../../core/platform/platform.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { TabbedEditorContainer, type TabbedEditorContainerDelegate } from './TabbedEditorContainer.js';
+import { type SerializedHistoryItem, TabbedEditorContainer, type TabbedEditorContainerDelegate } from './TabbedEditorContainer.js';
 import { UISourceCodeFrame } from './UISourceCodeFrame.js';
-export interface Shortcut {
-    description: string;
-    onClick: () => void;
-    keys: string[];
-}
 export interface ViewInput {
-    placeholderElement: HTMLElement;
-    scriptViewToolbar: UI.Toolbar.Toolbar;
-    bottomToolbar: UI.Toolbar.Toolbar;
-    leftToolbarItems: UI.Toolbar.ToolbarItem[];
-    rightToolbarItems: UI.Toolbar.ToolbarItem[];
-    searchableView: UI.SearchableView.SearchableView;
-    editorContainer: TabbedEditorContainer;
-    shortcuts: Shortcut[];
+    searchProvider: UI.SearchableView.Searchable;
+    replaceProvider: UI.SearchableView.Replaceable;
+    searchableViewId: string;
+    scriptViewToolbarItems: UI.Toolbar.ToolbarItem[];
+    bottomToolbarItems: UI.Toolbar.ToolbarItem[];
+    searchableViewFactory: () => UI.Widget.Widget;
+    delegate: TabbedEditorContainerDelegate;
+    previouslyViewedFilesSetting: Common.Settings.Setting<SerializedHistoryItem[]>;
 }
 export interface ViewOutput {
-    onSelectFolderClicked: () => void;
+    scriptViewToolbar?: UI.Toolbar.Toolbar;
+    editorContainer?: TabbedEditorContainer;
 }
 export type View = (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
-export declare const DEFAULT_VIEW: (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
+export declare const DEFAULT_VIEW: View;
 declare const SourcesView_base: (new (...args: any[]) => {
     __events: Common.ObjectWrapper.ObjectWrapper<EventTypes>;
     addEventListener<T extends keyof EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<EventTypes, T>;
@@ -41,20 +37,20 @@ export declare class SourcesView extends SourcesView_base implements TabbedEdito
     editorContainer?: TabbedEditorContainer;
     private readonly historyManager;
     private toolbarChangedListener;
-    private readonly focusedPlaceholderElement?;
     private searchView?;
     private searchConfig?;
+    readonly previouslyViewedFilesSetting: Common.Settings.Setting<SerializedHistoryItem[]>;
     constructor();
     performUpdate(): void;
     onDetach(): void;
-    private addFileSystemClicked;
+    setEditorContainer(editorContainer: TabbedEditorContainer): void;
     static defaultUISourceCodeScores(): Map<Workspace.UISourceCode.UISourceCode, number>;
-    set leftToolbarItems(items: UI.Toolbar.ToolbarItem[]);
-    get leftToolbarItems(): UI.Toolbar.ToolbarItem[];
-    set rightToolbarItems(items: UI.Toolbar.ToolbarItem[]);
-    get rightToolbarItems(): UI.Toolbar.ToolbarItem[];
-    bottomToolbar(): UI.Toolbar.Toolbar;
-    scriptViewToolbar(): UI.Toolbar.Toolbar;
+    set onToggleNavigatorSidebar(callback: () => void);
+    set onToggleDebuggerSidebar(callback: () => void);
+    set isNavigatorSidebarOpen(isOpen: boolean);
+    set isDebuggerSidebarOpen(isOpen: boolean);
+    toggleDebuggerSidebarButtonEnabled(enabled: boolean): void;
+    setLayoutMode(splitWidget: UI.SplitWidget.SplitWidget, isVertical: boolean, isInWrapper: boolean): void;
     wasShown(): void;
     willHide(): void;
     searchableView(): UI.SearchableView.SearchableView;

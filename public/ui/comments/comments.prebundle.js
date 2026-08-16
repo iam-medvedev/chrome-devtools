@@ -2,5 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as CommentAnchorResolver from './CommentAnchorResolver.js';
-export { CommentAnchorResolver, };
+import * as CommentOverlayManager from './CommentOverlayManager.js';
+import * as CommentsOverlayWidget from './CommentsOverlayWidget.js';
+export { CommentAnchorResolver, CommentOverlayManager, CommentsOverlayWidget, };
 //# sourceMappingURL=comments.prebundle.js.map

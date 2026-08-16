@@ -19,7 +19,7 @@ function getPausedDetails() {
     assert.exists(debuggerModel);
     const scriptId = 'scriptId';
     const url = Platform.DevToolsPath.urlString `http://example.com/script.js`;
-    const script = debuggerModel.parsedScriptSource(scriptId, url, 0, 0, 0, 0, 0, '', undefined, false, undefined, false, false, 0, null, null, null, null, null, null, null);
+    const script = debuggerModel.parsedScriptSource(scriptId, url, 0, 0, 0, 0, 0, '', undefined, undefined, false, false, 0, null, null, null, null, null, null, null);
     const syncCallFrame = debuggerCallFrame(`${url}:${scriptId}:testFunction:0:0`);
     const asyncCallFrame = protocolCallFrame(`${url}:${scriptId}:asyncParent:5:2`);
     const details = new SDK.DebuggerModel.DebuggerPausedDetails(debuggerModel, [syncCallFrame], "other" /* Protocol.Debugger.PausedEventReason.Other */, {}, [], { description: 'setTimeout', callFrames: [asyncCallFrame] });

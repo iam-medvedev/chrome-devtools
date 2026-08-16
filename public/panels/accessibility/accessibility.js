@@ -4,794 +4,12 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// gen/front_end/panels/accessibility/AccessibilityNodeView.js
-var AccessibilityNodeView_exports = {};
-__export(AccessibilityNodeView_exports, {
-  AXNodeIgnoredReasonTreeElement: () => AXNodeIgnoredReasonTreeElement,
-  AXNodePropertyTreeElement: () => AXNodePropertyTreeElement,
-  AXNodePropertyTreePropertyElement: () => AXNodePropertyTreePropertyElement,
-  AXNodeSubPane: () => AXNodeSubPane,
-  AXRelatedNodeElement: () => AXRelatedNodeElement,
-  AXRelatedNodeSourceTreeElement: () => AXRelatedNodeSourceTreeElement,
-  AXValueSourceTreeElement: () => AXValueSourceTreeElement,
-  StringProperties: () => StringProperties,
-  TypeStyles: () => TypeStyles
-});
-import * as Common from "./../../core/common/common.js";
-import * as i18n3 from "./../../core/i18n/i18n.js";
-import * as SDK from "./../../core/sdk/sdk.js";
-import * as uiI18n from "./../../ui/i18n/i18n.js";
-import * as UI2 from "./../../ui/legacy/legacy.js";
-import { render } from "./../../ui/lit/lit.js";
-import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
-import * as PanelsCommon from "./../common/common.js";
-
-// gen/front_end/panels/accessibility/accessibilityNode.css.js
-var accessibilityNode_css_default = `/*
- * Copyright 2017 The Chromium Authors
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
-
-.widget.ax-subpane {
-  overflow-x: hidden;
-  user-select: text;
-}
-
-.ax-ignored-info {
-  padding: 6px;
-}
-
-.ax-ignored-node-pane {
-  flex: none;
-}
-
-.invalid {
-  text-decoration: line-through;
-}
-
-span.ax-value-undefined {
-  font-style: italic;
-}
-
-.ax-value-source-unused {
-  opacity: 70%;
-}
-
-.ax-value-source-superseded,
-.ax-value-source-invalid {
-  text-decoration: line-through;
-}
-
-.tree-outline dt-icon-label {
-  position: relative;
-  left: -11px;
-}
-
-.tree-outline li {
-  display: block;
-  overflow-x: hidden;
-  align-items: baseline;
-}
-
-.tree-outline li::before {
-  content: "";
-  width: 14px;
-  display: inline-block;
-  margin-bottom: -2px;
-  margin-right: 3px;
-}
-
-.tree-outline li.property {
-  color: var(--sys-color-on-surface);
-}
-
-.tree-outline li.invalid {
-  position: relative;
-  left: -2px;
-}
-
-.tree-outline dt-icon-label + .ax-name {
-  margin-left: -11px;
-}
-
-.tree-outline li span {
-  flex-shrink: 0;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-@media (forced-colors: active) {
-  .ax-value-source-unused {
-    opacity: 100%;
-  }
-
-  .tree-outline-disclosure:hover li.parent::before {
-    background-color: ButtonText;
-  }
-}
-
-/*# sourceURL=${import.meta.resolve("./accessibilityNode.css")} */`;
-
-// gen/front_end/panels/accessibility/AccessibilityStrings.js
-var AccessibilityStrings_exports = {};
-__export(AccessibilityStrings_exports, {
-  AXAttributes: () => AXAttributes,
-  AXNativeSourceTypes: () => AXNativeSourceTypes,
-  AXSourceTypes: () => AXSourceTypes
+// gen/front_end/panels/accessibility/AccessibilityAnnouncementRecordingView.js
+var AccessibilityAnnouncementRecordingView_exports = {};
+__export(AccessibilityAnnouncementRecordingView_exports, {
+  AccessibilityAnnouncementRecordingView: () => AccessibilityAnnouncementRecordingView
 });
 import * as i18n from "./../../core/i18n/i18n.js";
-var UIStrings = {
-  /**
-   * @description Text to indicate something is not enabled
-   */
-  disabled: "Disabled",
-  /**
-   * @description Tooltip text that appears when hovering over the 'Disabled' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  ifTrueThisElementCurrentlyCannot: "If true, this element currently cannot be interacted with.",
-  /**
-   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  invalidUserEntry: "Invalid user entry",
-  /**
-   * @description Tooltip text that appears when hovering over the 'Invalid user entry' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  ifTrueThisElementsUserentered: "If true, this element\u2019s user-entered value does not conform to validation requirement.",
-  /**
-   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  editable: "Editable",
-  /**
-   * @description Tooltip text that appears when hovering over the 'Editable' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  ifAndHowThisElementCanBeEdited: "If and how this element can be edited.",
-  /**
-   * @description Adjective. Describes whether the currently selected HTML element of the page can receive focus at all (e.g. can the selected element receive user keyboard input).
-   *             Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  focusable: "Focusable",
-  /**
-   * @description Tooltip text that appears when hovering over the 'Focusable' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  ifTrueThisElementCanReceiveFocus: "If true, this element can receive focus.",
-  /**
-   * @description Adjective. Describes whether the currently selected HTML element of the page is focused (e.g. the selected element receives user keyboard input).
-   *             Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane.
-   */
-  focused: "Focused",
-  /**
-   * @description Tooltip text that appears when hovering over the 'Focused' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  ifTrueThisElementCurrentlyHas: "If `true`, this element currently has focus.",
-  /**
-   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  canSetValue: "Can set value",
-  /**
-   * @description Tooltip text that appears when hovering over the 'Can set value' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  whetherTheValueOfThisElementCan: "Whether the value of this element can be set.",
-  /**
-   * @description Accessibility attribute name that appears under the Computed Properties section in
-   * the Accessibility pane of the Elements panel. A live region is an area of the webpage which is
-   * dynamic and changes frequently.
-   */
-  liveRegion: "Live region",
-  /**
-   * @description Tooltip text that appears when hovering over the 'Live region' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  whetherAndWhatPriorityOfLive: "Whether and what priority of live updates may be expected for this element.",
-  /**
-   * @description Accessibility attribute name that appears under the Computed Properties section in
-   * the Accessibility pane of the Elements panel when inspecting an element with aria-relevant set.
-   */
-  atomicLiveRegions: "Atomic (live regions)",
-  /**
-   * @description Tooltip text that appears when hovering over the 'Atomic (live regions)' attribute
-   * name under the Computed Properties section in the Accessibility pane of the Elements panel. When
-   * a node within a live region changes, the entire live region can be presented to the user, or
-   * just the nodes within the region that actually changed.
-   */
-  ifThisElementMayReceiveLive: "If this element may receive live updates, whether the entire live region should be presented to the user on changes, or only changed nodes.",
-  /**
-   * @description Accessibility attribute name that appears under the Computed Properties section in
-   * the Accessibility pane of the Elements panel when inspecting an element with aria-relevant set.
-   */
-  relevantLiveRegions: "Relevant (live regions)",
-  /**
-   * @description Tooltip text that appears when hovering over the 'Relevant (live regions)' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  ifThisElementMayReceiveLiveUpdates: "If this element may receive live updates, what type of updates should trigger a notification.",
-  /**
-   * @description Accessibility attribute name that appears under the Computed Properties section in
-   * the Accessibility pane of the Elements pane. Indicates that the aria-busy attribute is set for
-   * the element, which means the element is being modified and assistive technologies like screen
-   * readers may want to wait until the area is no longer live/busy before exposing it to the user.
-   */
-  busyLiveRegions: "`Busy` (live regions)",
-  /**
-   * @description Tooltip text that appears when hovering over the 'Busy (live regions)' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  whetherThisElementOrItsSubtree: "Whether this element or its subtree are currently being updated (and thus may be in an inconsistent state).",
-  /**
-   * @description Accessibility attribute name that appears under the Computed Properties section in
-   * the Accessibility pane of the Elements panel. A live region is a section of the DOM graph which
-   * is dynamic in nature and will change regularly. The live region root is the node in the graph
-   * which is a parent of all nodes in the live region.
-   * https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/ARIA_Live_Regions
-   */
-  liveRegionRoot: "Live region root",
-  /**
-   * @description Tooltip text that appears when hovering over the 'Live region root' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  ifThisElementMayReceiveLiveUpdatesThe: "If this element may receive live updates, the root element of the containing live region.",
-  /**
-   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  hasAutocomplete: "Has autocomplete",
-  /**
-   * @description Tooltip text that appears when hovering over the 'Has autocomplete' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  whetherAndWhatTypeOfAutocomplete: "Whether and what type of autocomplete suggestions are currently provided by this element.",
-  /**
-   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  hasPopup: "Has popup",
-  /**
-   * @description Tooltip text that appears when hovering over the 'Has popup' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  whetherThisElementHasCausedSome: "Whether this element has caused some kind of pop-up (such as a menu) to appear.",
-  /**
-   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  level: "Level",
-  /**
-   * @description Tooltip text that appears when hovering over the 'Level' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  theHierarchicalLevelOfThis: "The hierarchical level of this element.",
-  /**
-   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  multiselectable: "Multi-selectable",
-  /**
-   * @description Tooltip text that appears when hovering over the 'Multi-selectable' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  whetherAUserMaySelectMoreThanOne: "Whether a user may select more than one option from this widget.",
-  /**
-   * @description Text for the orientation of something
-   */
-  orientation: "Orientation",
-  /**
-   * @description Tooltip text that appears when hovering over the 'Orientation' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  whetherThisLinearElements: "Whether this linear element\u2019s orientation is horizontal or vertical.",
-  /**
-   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  multiline: "Multi-line",
-  /**
-   * @description Tooltip text that appears when hovering over the 'Multi-line' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  whetherThisTextBoxMayHaveMore: "Whether this text box may have more than one line.",
-  /**
-   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  readonlyString: "Read-only",
-  /**
-   * @description Tooltip text that appears when hovering over the 'Read-only' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  ifTrueThisElementMayBeInteracted: "If true, this element may be interacted with, but its value cannot be changed.",
-  /**
-   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  requiredString: "Required",
-  /**
-   * @description Tooltip text that appears when hovering over the 'Required' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  whetherThisElementIsARequired: "Whether this element is a required field in a form.",
-  /**
-   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  minimumValue: "Minimum value",
-  /**
-   * @description Tooltip text that appears when hovering over the 'Minimum value' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  forARangeWidgetTheMinimumAllowed: "For a range widget, the minimum allowed value.",
-  /**
-   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  maximumValue: "Maximum value",
-  /**
-   * @description Tooltip text that appears when hovering over the 'Maximum value' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  forARangeWidgetTheMaximumAllowed: "For a range widget, the maximum allowed value.",
-  /**
-   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  valueDescription: "Value description",
-  /**
-   * @description Tooltip text that appears when hovering over the 'Value description' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  aHumanreadableVersionOfTheValue: "A human-readable version of the value of a range widget (where necessary).",
-  /**
-   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  checked: "Checked",
-  /**
-   * @description Tooltip text that appears when hovering over the 'Checked' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  whetherThisCheckboxRadioButtonOr: "Whether this checkbox, radio button or tree item is checked, unchecked, or mixed (e.g. has both checked and un-checked children).",
-  /**
-   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  expanded: "Expanded",
-  /**
-   * @description Tooltip text that appears when hovering over the 'Expanded' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  whetherThisElementOrAnother: "Whether this element, or another grouping element it controls, is expanded.",
-  /**
-   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  pressed: "Pressed",
-  /**
-   * @description Tooltip text that appears when hovering over the 'Pressed' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  whetherThisToggleButtonIs: "Whether this toggle button is currently in a pressed state.",
-  /**
-   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  selectedString: "Selected",
-  /**
-   * @description Tooltip text that appears when hovering over the 'Selected' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  whetherTheOptionRepresentedBy: "Whether the option represented by this element is currently selected.",
-  /**
-   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  activeDescendant: "Active descendant",
-  /**
-   * @description Tooltip text that appears when hovering over the 'Active descendant' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  theDescendantOfThisElementWhich: "The descendant of this element which is active; i.e. the element to which focus should be delegated.",
-  /**
-   * @description Tooltip text that appears when hovering over the 'Flows to' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  elementToWhichTheUserMayChooseTo: "Element to which the user may choose to navigate after this one, instead of the next element in the DOM order.",
-  /**
-   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  controls: "Controls",
-  /**
-   * @description Tooltip text that appears when hovering over the 'Controls' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  elementOrElementsWhoseContentOr: "Element or elements whose content or presence is/are controlled by this widget.",
-  /**
-   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  describedBy: "Described by",
-  /**
-   * @description Tooltip text that appears when hovering over the 'Described by' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  elementOrElementsWhichFormThe: "Element or elements which form the description of this element.",
-  /**
-   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  labeledBy: "Labeled by",
-  /**
-   * @description Tooltip text that appears when hovering over the 'Labeled by' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  elementOrElementsWhichMayFormThe: "Element or elements which may form the name of this element.",
-  /**
-   * @description Tooltip text that appears when hovering over the 'Owns' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  elementOrElementsWhichShouldBe: "Element or elements which should be considered descendants of this element, despite not being descendants in the DOM.",
-  /**
-   * @description Tooltip text that appears when hovering over the 'Name' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  theComputedNameOfThisElement: "The computed name of this element.",
-  /**
-   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  role: "Role",
-  /**
-   * @description Tooltip text that appears when hovering over the 'Role' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  indicatesThePurposeOfThisElement: "Indicates the purpose of this element, such as a user interface idiom for a widget, or structural role within a document.",
-  /**
-   * @description Text for the value of something
-   */
-  value: "Value",
-  /**
-   * @description Tooltip text that appears when hovering over the 'Value' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  theValueOfThisElementThisMayBe: "The value of this element; this may be user-provided or developer-provided, depending on the element.",
-  /**
-   * @description Text for the viewing the help options
-   */
-  help: "Help",
-  /**
-   * @description Tooltip text that appears when hovering over the 'Help' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  theComputedHelpTextForThis: "The computed help text for this element.",
-  /**
-   * @description Text for the description of something
-   */
-  description: "Description",
-  /**
-   * @description Tooltip text that appears when hovering over the 'Description' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  theAccessibleDescriptionForThis: "The accessible description for this element.",
-  /**
-   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  fromAttribute: "From attribute",
-  /**
-   * @description Tooltip text that appears when hovering over the 'From attribute' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  valueFromAttribute: "Value from attribute.",
-  /**
-   * @description The source of an accessibility attribute that appears under the Computed Properties
-   * section in the Accessibility pane of the Elements panel. If the source is implicit, that means
-   * it was never specified by the user but instead is present because it is the default value.
-   */
-  implicit: "Implicit",
-  /**
-   * @description Tooltip text that appears when hovering over the 'Implicit' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  implicitValue: "Implicit value.",
-  /**
-   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  fromStyle: "From style",
-  /**
-   * @description Tooltip text that appears when hovering over the 'From style' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  valueFromStyle: "Value from style.",
-  /**
-   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  contents: "Contents",
-  /**
-   * @description Tooltip text that appears when hovering over the 'Contents' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  valueFromElementContents: "Value from element contents.",
-  /**
-   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  fromPlaceholderAttribute: "From placeholder attribute",
-  /**
-   * @description Tooltip text that appears when hovering over the 'From placeholder attribute' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  valueFromPlaceholderAttribute: "Value from placeholder attribute.",
-  /**
-   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  relatedElement: "Related element",
-  /**
-   * @description Tooltip text that appears when hovering over the 'Related element' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  valueFromRelatedElement: "Value from related element.",
-  /**
-   * @description Accessibility attribute name that appears under the Computed Properties section in
-   * the Accessibility pane of the Elements pane. Indicates that this element got assigned this
-   * attribute because there is a related caption, hence it received it from the caption. 'caption'
-   * is part of the ARIA API and should not be translated.
-   */
-  fromCaption: "From `caption`",
-  /**
-   * @description Tooltip text that appears when hovering over the 'From caption' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  valueFromFigcaptionElement: "Value from `figcaption` element.",
-  /**
-   * @description Accessibility attribute name that appears under the Computed Properties section in
-   * the Accessibility pane of the Elements pane. Indicates that this element got assigned this
-   * attribute because there is a related description, hence it received it from the description.
-   * 'description' is part of the ARIA API and should not be translated.
-   */
-  fromDescription: "From `description`",
-  /**
-   * @description Tooltip text that appears when hovering over the 'From description' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  valueFromDescriptionElement: "Value from `description` element.",
-  /**
-   * @description Accessibility attribute name that appears under the Computed Properties section in
-   * the Accessibility pane of the Elements pane. Indicates that this element got assigned this
-   * attribute because there is a related label, hence it received it from the label. 'label'
-   * is part of the ARIA API and should not be translated.
-   */
-  fromLabel: "From `label`",
-  /**
-   * @description Tooltip text that appears when hovering over the 'From label' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  valueFromLabelElement: "Value from `label` element.",
-  /**
-   * @description Accessibility attribute name that appears under the Computed Properties section in
-   * the Accessibility pane of the Elements pane. Indicates that this element got assigned this
-   * attribute because there is a related label, hence it received it from the label. 'label (for)'
-   * is part of the ARIA API and should not be translated. label (for) is just a different type of
-   * label.
-   */
-  fromLabelFor: "From `label` (`for=` attribute)",
-  /**
-   * @description Tooltip text that appears when hovering over the 'From label (for)' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  valueFromLabelElementWithFor: "Value from `label` element with `for=` attribute.",
-  /**
-   * @description Accessibility attribute name that appears under the Computed Properties section in
-   * the Accessibility pane of the Elements pane. Indicates that this element got assigned this
-   * attribute because there is a related label which wraps (encompasses, surrounds) this element,
-   * hence it received it from the label. 'wrapped' is not part of the ARIA API, and should be
-   * translated.
-   */
-  fromLabelWrapped: "From `label` (wrapped)",
-  /**
-   * @description Tooltip text that appears when hovering over the 'From label (wrapped)' attribute
-   * name under the Computed Properties section in the Accessibility pane of the Elements pane.
-   * Indicates that there is a label element wrapping (surrounding) this element.
-   */
-  valueFromLabelElementWrapped: "Value from a wrapping `label` element.",
-  /**
-   * @description Accessibility attribute name that appears under the Computed Properties section in
-   * the Accessibility pane of the Elements pane. Indicates that this element got assigned this
-   * attribute because there is a related legend, hence it received it from the legend. 'legend' is
-   * part of the ARIA API and should not be translated.
-   */
-  fromLegend: "From `legend`",
-  /**
-   * @description Tooltip text that appears when hovering over the 'From legend' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  valueFromLegendElement: "Value from `legend` element.",
-  /**
-   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  fromRubyAnnotation: "From ruby annotation",
-  /**
-   * @description Tooltip text that appears when hovering over the 'From ruby annotation' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane. Indicates that the value was taken from a plain HTML ruby tag (https://developer.mozilla.org/en-US/docs/Web/HTML/Element/ruby).
-   */
-  valueFromNativeHtmlRuby: "Value from plain HTML ruby annotation.",
-  /**
-   * @description Tooltip text that appears when hovering over the 'From caption' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  valueFromTableCaption: "Value from `table` `caption`.",
-  /**
-   * @description Accessibility attribute name that appears under the Computed Properties section in
-   * the Accessibility pane of the Elements panel.
-   */
-  fromTitle: "From title",
-  /**
-   * @description Tooltip text that appears when hovering over the 'From title' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  valueFromTitleAttribute: "Value from title attribute.",
-  /**
-   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  fromNativeHtml: "From native HTML",
-  /**
-   * @description Tooltip text that appears when hovering over the 'From native HTML' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
-   */
-  valueFromNativeHtmlUnknownSource: "Value from native HTML (unknown source)."
-};
-var str_ = i18n.i18n.registerUIStrings("panels/accessibility/AccessibilityStrings.ts", UIStrings);
-var i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(void 0, str_);
-var AXAttributes = {
-  disabled: {
-    name: i18nLazyString(UIStrings.disabled),
-    description: i18nLazyString(UIStrings.ifTrueThisElementCurrentlyCannot),
-    group: "AXGlobalStates"
-  },
-  invalid: {
-    name: i18nLazyString(UIStrings.invalidUserEntry),
-    description: i18nLazyString(UIStrings.ifTrueThisElementsUserentered),
-    group: "AXGlobalStates"
-  },
-  editable: { name: i18nLazyString(UIStrings.editable), description: i18nLazyString(UIStrings.ifAndHowThisElementCanBeEdited) },
-  focusable: {
-    name: i18nLazyString(UIStrings.focusable),
-    description: i18nLazyString(UIStrings.ifTrueThisElementCanReceiveFocus)
-  },
-  focused: { name: i18nLazyString(UIStrings.focused), description: i18nLazyString(UIStrings.ifTrueThisElementCurrentlyHas) },
-  settable: {
-    name: i18nLazyString(UIStrings.canSetValue),
-    description: i18nLazyString(UIStrings.whetherTheValueOfThisElementCan)
-  },
-  live: {
-    name: i18nLazyString(UIStrings.liveRegion),
-    description: i18nLazyString(UIStrings.whetherAndWhatPriorityOfLive),
-    group: "AXLiveRegionAttributes"
-  },
-  atomic: {
-    name: i18nLazyString(UIStrings.atomicLiveRegions),
-    description: i18nLazyString(UIStrings.ifThisElementMayReceiveLive),
-    group: "AXLiveRegionAttributes"
-  },
-  relevant: {
-    name: i18nLazyString(UIStrings.relevantLiveRegions),
-    description: i18nLazyString(UIStrings.ifThisElementMayReceiveLiveUpdates),
-    group: "AXLiveRegionAttributes"
-  },
-  busy: {
-    name: i18nLazyString(UIStrings.busyLiveRegions),
-    description: i18nLazyString(UIStrings.whetherThisElementOrItsSubtree),
-    group: "AXLiveRegionAttributes"
-  },
-  root: {
-    name: i18nLazyString(UIStrings.liveRegionRoot),
-    description: i18nLazyString(UIStrings.ifThisElementMayReceiveLiveUpdatesThe),
-    group: "AXLiveRegionAttributes"
-  },
-  autocomplete: {
-    name: i18nLazyString(UIStrings.hasAutocomplete),
-    description: i18nLazyString(UIStrings.whetherAndWhatTypeOfAutocomplete),
-    group: "AXWidgetAttributes"
-  },
-  haspopup: {
-    name: i18nLazyString(UIStrings.hasPopup),
-    description: i18nLazyString(UIStrings.whetherThisElementHasCausedSome),
-    group: "AXWidgetAttributes"
-  },
-  level: {
-    name: i18nLazyString(UIStrings.level),
-    description: i18nLazyString(UIStrings.theHierarchicalLevelOfThis),
-    group: "AXWidgetAttributes"
-  },
-  multiselectable: {
-    name: i18nLazyString(UIStrings.multiselectable),
-    description: i18nLazyString(UIStrings.whetherAUserMaySelectMoreThanOne),
-    group: "AXWidgetAttributes"
-  },
-  orientation: {
-    name: i18nLazyString(UIStrings.orientation),
-    description: i18nLazyString(UIStrings.whetherThisLinearElements),
-    group: "AXWidgetAttributes"
-  },
-  multiline: {
-    name: i18nLazyString(UIStrings.multiline),
-    description: i18nLazyString(UIStrings.whetherThisTextBoxMayHaveMore),
-    group: "AXWidgetAttributes"
-  },
-  readonly: {
-    name: i18nLazyString(UIStrings.readonlyString),
-    description: i18nLazyString(UIStrings.ifTrueThisElementMayBeInteracted),
-    group: "AXWidgetAttributes"
-  },
-  required: {
-    name: i18nLazyString(UIStrings.requiredString),
-    description: i18nLazyString(UIStrings.whetherThisElementIsARequired),
-    group: "AXWidgetAttributes"
-  },
-  valuemin: {
-    name: i18nLazyString(UIStrings.minimumValue),
-    description: i18nLazyString(UIStrings.forARangeWidgetTheMinimumAllowed),
-    group: "AXWidgetAttributes"
-  },
-  valuemax: {
-    name: i18nLazyString(UIStrings.maximumValue),
-    description: i18nLazyString(UIStrings.forARangeWidgetTheMaximumAllowed),
-    group: "AXWidgetAttributes"
-  },
-  valuetext: {
-    name: i18nLazyString(UIStrings.valueDescription),
-    description: i18nLazyString(UIStrings.aHumanreadableVersionOfTheValue),
-    group: "AXWidgetAttributes"
-  },
-  checked: {
-    name: i18nLazyString(UIStrings.checked),
-    description: i18nLazyString(UIStrings.whetherThisCheckboxRadioButtonOr),
-    group: "AXWidgetStates"
-  },
-  expanded: {
-    name: i18nLazyString(UIStrings.expanded),
-    description: i18nLazyString(UIStrings.whetherThisElementOrAnother),
-    group: "AXWidgetStates"
-  },
-  pressed: {
-    name: i18nLazyString(UIStrings.pressed),
-    description: i18nLazyString(UIStrings.whetherThisToggleButtonIs),
-    group: "AXWidgetStates"
-  },
-  selected: {
-    name: i18nLazyString(UIStrings.selectedString),
-    description: i18nLazyString(UIStrings.whetherTheOptionRepresentedBy),
-    group: "AXWidgetStates"
-  },
-  activedescendant: {
-    name: i18nLazyString(UIStrings.activeDescendant),
-    description: i18nLazyString(UIStrings.theDescendantOfThisElementWhich),
-    group: "AXRelationshipAttributes"
-  },
-  flowto: {
-    name: i18n.i18n.lockedLazyString("Flows to"),
-    description: i18nLazyString(UIStrings.elementToWhichTheUserMayChooseTo),
-    group: "AXRelationshipAttributes"
-  },
-  controls: {
-    name: i18nLazyString(UIStrings.controls),
-    description: i18nLazyString(UIStrings.elementOrElementsWhoseContentOr),
-    group: "AXRelationshipAttributes"
-  },
-  describedby: {
-    name: i18nLazyString(UIStrings.describedBy),
-    description: i18nLazyString(UIStrings.elementOrElementsWhichFormThe),
-    group: "AXRelationshipAttributes"
-  },
-  labelledby: {
-    name: i18nLazyString(UIStrings.labeledBy),
-    description: i18nLazyString(UIStrings.elementOrElementsWhichMayFormThe),
-    group: "AXRelationshipAttributes"
-  },
-  owns: {
-    name: i18n.i18n.lockedLazyString("Owns"),
-    description: i18nLazyString(UIStrings.elementOrElementsWhichShouldBe),
-    group: "AXRelationshipAttributes"
-  },
-  name: {
-    name: i18n.i18n.lockedLazyString("Name"),
-    description: i18nLazyString(UIStrings.theComputedNameOfThisElement),
-    group: "Default"
-  },
-  role: {
-    name: i18nLazyString(UIStrings.role),
-    description: i18nLazyString(UIStrings.indicatesThePurposeOfThisElement),
-    group: "Default"
-  },
-  value: {
-    name: i18nLazyString(UIStrings.value),
-    description: i18nLazyString(UIStrings.theValueOfThisElementThisMayBe),
-    group: "Default"
-  },
-  help: {
-    name: i18nLazyString(UIStrings.help),
-    description: i18nLazyString(UIStrings.theComputedHelpTextForThis),
-    group: "Default"
-  },
-  description: {
-    name: i18nLazyString(UIStrings.description),
-    description: i18nLazyString(UIStrings.theAccessibleDescriptionForThis),
-    group: "Default"
-  }
-};
-var AXSourceTypes = {
-  attribute: { name: i18nLazyString(UIStrings.fromAttribute), description: i18nLazyString(UIStrings.valueFromAttribute) },
-  implicit: {
-    name: i18nLazyString(UIStrings.implicit),
-    description: i18nLazyString(UIStrings.implicitValue)
-  },
-  style: { name: i18nLazyString(UIStrings.fromStyle), description: i18nLazyString(UIStrings.valueFromStyle) },
-  contents: { name: i18nLazyString(UIStrings.contents), description: i18nLazyString(UIStrings.valueFromElementContents) },
-  placeholder: {
-    name: i18nLazyString(UIStrings.fromPlaceholderAttribute),
-    description: i18nLazyString(UIStrings.valueFromPlaceholderAttribute)
-  },
-  relatedElement: { name: i18nLazyString(UIStrings.relatedElement), description: i18nLazyString(UIStrings.valueFromRelatedElement) }
-};
-var AXNativeSourceTypes = {
-  description: {
-    name: i18nLazyString(UIStrings.fromDescription),
-    description: i18nLazyString(UIStrings.valueFromDescriptionElement)
-  },
-  figcaption: { name: i18nLazyString(UIStrings.fromCaption), description: i18nLazyString(UIStrings.valueFromFigcaptionElement) },
-  label: { name: i18nLazyString(UIStrings.fromLabel), description: i18nLazyString(UIStrings.valueFromLabelElement) },
-  labelfor: {
-    name: i18nLazyString(UIStrings.fromLabelFor),
-    description: i18nLazyString(UIStrings.valueFromLabelElementWithFor)
-  },
-  labelwrapped: {
-    name: i18nLazyString(UIStrings.fromLabelWrapped),
-    description: i18nLazyString(UIStrings.valueFromLabelElementWrapped)
-  },
-  legend: { name: i18nLazyString(UIStrings.fromLegend), description: i18nLazyString(UIStrings.valueFromLegendElement) },
-  rubyannotation: {
-    name: i18nLazyString(UIStrings.fromRubyAnnotation),
-    description: i18nLazyString(UIStrings.valueFromNativeHtmlRuby)
-  },
-  tablecaption: { name: i18nLazyString(UIStrings.fromCaption), description: i18nLazyString(UIStrings.valueFromTableCaption) },
-  title: { name: i18nLazyString(UIStrings.fromTitle), description: i18nLazyString(UIStrings.valueFromTitleAttribute) },
-  other: {
-    name: i18nLazyString(UIStrings.fromNativeHtml),
-    description: i18nLazyString(UIStrings.valueFromNativeHtmlUnknownSource)
-  }
-};
 
 // gen/front_end/panels/accessibility/AccessibilitySubPane.js
 var AccessibilitySubPane_exports = {};
@@ -911,6 +129,93 @@ var objectValue_css_default = `/*
 // gen/front_end/panels/accessibility/AccessibilitySubPane.js
 import * as UI from "./../../ui/legacy/legacy.js";
 
+// gen/front_end/panels/accessibility/accessibilityNode.css.js
+var accessibilityNode_css_default = `/*
+ * Copyright 2017 The Chromium Authors
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+.widget.ax-subpane {
+  overflow-x: hidden;
+  user-select: text;
+}
+
+.ax-ignored-info {
+  padding: 6px;
+}
+
+.ax-ignored-node-pane {
+  flex: none;
+}
+
+.invalid {
+  text-decoration: line-through;
+}
+
+span.ax-value-undefined {
+  font-style: italic;
+}
+
+.ax-value-source-unused {
+  opacity: 70%;
+}
+
+.ax-value-source-superseded,
+.ax-value-source-invalid {
+  text-decoration: line-through;
+}
+
+.tree-outline dt-icon-label {
+  position: relative;
+  left: -11px;
+}
+
+.tree-outline li {
+  display: block;
+  overflow-x: hidden;
+  align-items: baseline;
+}
+
+.tree-outline li::before {
+  content: "";
+  width: 14px;
+  display: inline-block;
+  margin-bottom: -2px;
+  margin-right: 3px;
+}
+
+.tree-outline li.property {
+  color: var(--sys-color-on-surface);
+}
+
+.tree-outline li.invalid {
+  position: relative;
+  left: -2px;
+}
+
+.tree-outline dt-icon-label + .ax-name {
+  margin-left: -11px;
+}
+
+.tree-outline li span {
+  flex-shrink: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (forced-colors: active) {
+  .ax-value-source-unused {
+    opacity: 100%;
+  }
+
+  .tree-outline-disclosure:hover li.parent::before {
+    background-color: ButtonText;
+  }
+}
+
+/*# sourceURL=${import.meta.resolve("./accessibilityNode.css")} */`;
+
 // gen/front_end/panels/accessibility/accessibilityProperties.css.js
 var accessibilityProperties_css_default = `/*
  * Copyright 2015 The Chromium Authors
@@ -992,111 +297,831 @@ var AccessibilitySubPane = class extends UI.View.SimpleView {
   }
 };
 
+// gen/front_end/panels/accessibility/AccessibilityAnnouncementRecordingView.js
+var UIStrings = {
+  /**
+   * @description Title for the ARIA-Live and JS announcements recording tool
+   */
+  ariaLiveRecording: "A11y Announcements recording"
+};
+var str_ = i18n.i18n.registerUIStrings("panels/accessibility/AccessibilityAnnouncementRecordingView.ts", UIStrings);
+var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
+var AccessibilityAnnouncementRecordingView = class extends AccessibilitySubPane {
+  constructor() {
+    super({
+      title: i18nString(UIStrings.ariaLiveRecording),
+      viewId: "aria-live-recording"
+    });
+  }
+};
+
 // gen/front_end/panels/accessibility/AccessibilityNodeView.js
+var AccessibilityNodeView_exports = {};
+__export(AccessibilityNodeView_exports, {
+  AXNodeIgnoredReasonTreeElement: () => AXNodeIgnoredReasonTreeElement,
+  AXNodePropertyTreeElement: () => AXNodePropertyTreeElement,
+  AXNodePropertyTreePropertyElement: () => AXNodePropertyTreePropertyElement,
+  AXNodeSubPane: () => AXNodeSubPane,
+  AXRelatedNodeElement: () => AXRelatedNodeElement,
+  AXRelatedNodeSourceTreeElement: () => AXRelatedNodeSourceTreeElement,
+  AXValueSourceTreeElement: () => AXValueSourceTreeElement,
+  StringProperties: () => StringProperties,
+  TypeStyles: () => TypeStyles
+});
+import * as Common from "./../../core/common/common.js";
+import * as i18n5 from "./../../core/i18n/i18n.js";
+import * as SDK from "./../../core/sdk/sdk.js";
+import * as uiI18n from "./../../ui/i18n/i18n.js";
+import * as UI2 from "./../../ui/legacy/legacy.js";
+import { render } from "./../../ui/lit/lit.js";
+import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
+import * as PanelsCommon from "./../common/common.js";
+
+// gen/front_end/panels/accessibility/AccessibilityStrings.js
+var AccessibilityStrings_exports = {};
+__export(AccessibilityStrings_exports, {
+  AXAttributes: () => AXAttributes,
+  AXNativeSourceTypes: () => AXNativeSourceTypes,
+  AXSourceTypes: () => AXSourceTypes
+});
+import * as i18n3 from "./../../core/i18n/i18n.js";
 var UIStrings2 = {
   /**
-   * @description Text in Accessibility Node View of the Accessibility panel
+   * @description Text to indicate something is not enabled.
    */
-  computedProperties: "Computed Properties",
+  disabled: "Disabled",
   /**
-   * @description Text in Accessibility Node View of the Accessibility panel
+   * @description Tooltip text that appears when hovering over the 'Disabled' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  ifTrueThisElementCurrentlyCannot: "If `true`, this element currently can\u2019t be interacted with",
+  /**
+   * @description Accessibility attribute name that appears under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  invalidUserEntry: "Invalid user entry",
+  /**
+   * @description Tooltip text that appears when hovering over the 'Invalid user entry' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  ifTrueThisElementsUserentered: "If `true`, this element\u2019s user-entered value doesn\u2019t conform to validation requirement",
+  /**
+   * @description Accessibility attribute name that appears under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  editable: "Editable",
+  /**
+   * @description Tooltip text that appears when hovering over the 'Editable' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  ifAndHowThisElementCanBeEdited: "If and how this element can be edited",
+  /**
+   * @description Adjective. Describes whether the currently selected HTML element of the page can receive focus at all (e.g. can the selected element receive user keyboard input).
+   *             Accessibility attribute name that appears under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  focusable: "Focusable",
+  /**
+   * @description Tooltip text that appears when hovering over the 'Focusable' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  ifTrueThisElementCanReceiveFocus: "If `true`, this element can receive focus",
+  /**
+   * @description Adjective. Describes whether the currently selected HTML element of the page is focused (e.g. the selected element receives user keyboard input).
+   *             Accessibility attribute name that appears under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  focused: "Focused",
+  /**
+   * @description Tooltip text that appears when hovering over the 'Focused' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  ifTrueThisElementCurrentlyHas: "If `true`, this element currently has focus",
+  /**
+   * @description Accessibility attribute name that appears under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  canSetValue: "Can set value",
+  /**
+   * @description Tooltip text that appears when hovering over the 'Can set value' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  whetherTheValueOfThisElementCan: "Whether the value of this element can be set",
+  /**
+   * @description Accessibility attribute name that appears under the computed properties section in
+   * the Accessibility tab of the Elements panel. A live region is an area of the webpage which is
+   * dynamic and changes frequently.
+   */
+  liveRegion: "Live region",
+  /**
+   * @description Tooltip text that appears when hovering over the 'Live region' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  whetherAndWhatPriorityOfLive: "Whether and what priority of live updates may be expected for this element",
+  /**
+   * @description Accessibility attribute name that appears under the computed properties section in
+   * the Accessibility tab of the Elements panel when inspecting an element with aria-relevant set.
+   */
+  atomicLiveRegions: "Atomic (live regions)",
+  /**
+   * @description Tooltip text that appears when hovering over the 'Atomic (live regions)' attribute
+   * name under the computed properties section in the Accessibility tab of the Elements panel. When
+   * a node within a live region changes, the entire live region can be presented to the user, or
+   * just the nodes within the region that actually changed.
+   */
+  ifThisElementMayReceiveLive: "If this element may receive live updates, whether the entire live region should be presented to the user on changes, or only changed nodes",
+  /**
+   * @description Accessibility attribute name that appears under the computed properties section in
+   * the Accessibility tab of the Elements panel when inspecting an element with aria-relevant set.
+   */
+  relevantLiveRegions: "Relevant (live regions)",
+  /**
+   * @description Tooltip text that appears when hovering over the 'Relevant (live regions)' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  ifThisElementMayReceiveLiveUpdates: "If this element may receive live updates, what type of updates should trigger a notification",
+  /**
+   * @description Accessibility attribute name that appears under the computed properties section in
+   * the Accessibility tab of the Elements panel. Indicates that the aria-busy attribute is set for
+   * the element, which means the element is being modified and assistive technologies like screen
+   * readers may want to wait until the area is no longer live/busy before exposing it to the user.
+   */
+  busyLiveRegions: "`Busy` (live regions)",
+  /**
+   * @description Tooltip text that appears when hovering over the 'Busy (live regions)' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  whetherThisElementOrItsSubtree: "Whether this element or its subtree are currently being updated (and thus may be in an inconsistent state)",
+  /**
+   * @description Accessibility attribute name that appears under the computed properties section in
+   * the Accessibility tab of the Elements panel. A live region is a section of the DOM graph which
+   * is dynamic in nature and will change regularly. The live region root is the node in the graph
+   * which is a parent of all nodes in the live region.
+   * https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/ARIA_Live_Regions
+   */
+  liveRegionRoot: "Live region root",
+  /**
+   * @description Tooltip text that appears when hovering over the 'Live region root' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  ifThisElementMayReceiveLiveUpdatesThe: "If this element may receive live updates, the root element of the containing live region",
+  /**
+   * @description Accessibility attribute name that appears under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  hasAutocomplete: "Has autocomplete",
+  /**
+   * @description Tooltip text that appears when hovering over the 'Has autocomplete' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  whetherAndWhatTypeOfAutocomplete: "Whether and what type of autocomplete suggestions are currently provided by this element",
+  /**
+   * @description Accessibility attribute name that appears under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  hasPopup: "Has popup",
+  /**
+   * @description Tooltip text that appears when hovering over the 'Has popup' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  whetherThisElementHasCausedSome: "Whether this element has caused some kind of pop-up (such as a menu) to appear",
+  /**
+   * @description Accessibility attribute name that appears under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  level: "Level",
+  /**
+   * @description Tooltip text that appears when hovering over the 'Level' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  theHierarchicalLevelOfThis: "The hierarchical level of this element",
+  /**
+   * @description Accessibility attribute name that appears under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  multiselectable: "Multi-selectable",
+  /**
+   * @description Tooltip text that appears when hovering over the 'Multi-selectable' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  whetherAUserMaySelectMoreThanOne: "Whether a user may select more than one option from this widget",
+  /**
+   * @description Text for the orientation of something.
+   */
+  orientation: "Orientation",
+  /**
+   * @description Tooltip text that appears when hovering over the 'Orientation' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  whetherThisLinearElements: "Whether this linear element\u2019s orientation is horizontal or vertical",
+  /**
+   * @description Accessibility attribute name that appears under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  multiline: "Multi-line",
+  /**
+   * @description Tooltip text that appears when hovering over the 'Multi-line' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  whetherThisTextBoxMayHaveMore: "Whether this text box may have more than one line",
+  /**
+   * @description Accessibility attribute name that appears under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  readonlyString: "Read-only",
+  /**
+   * @description Tooltip text that appears when hovering over the 'Read-only' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  ifTrueThisElementMayBeInteracted: "If `true`, this element may be interacted with, but its value can\u2019t be changed",
+  /**
+   * @description Accessibility attribute name that appears under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  requiredString: "Required",
+  /**
+   * @description Tooltip text that appears when hovering over the 'Required' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  whetherThisElementIsARequired: "Whether this element is a required field in a form",
+  /**
+   * @description Accessibility attribute name that appears under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  minimumValue: "Minimum value",
+  /**
+   * @description Tooltip text that appears when hovering over the 'Minimum value' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  forARangeWidgetTheMinimumAllowed: "For a range widget, the minimum allowed value",
+  /**
+   * @description Accessibility attribute name that appears under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  maximumValue: "Maximum value",
+  /**
+   * @description Tooltip text that appears when hovering over the 'Maximum value' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  forARangeWidgetTheMaximumAllowed: "For a range widget, the maximum allowed value",
+  /**
+   * @description Accessibility attribute name that appears under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  valueDescription: "Value description",
+  /**
+   * @description Tooltip text that appears when hovering over the 'Value description' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  aHumanreadableVersionOfTheValue: "A human-readable version of the value of a range widget (where necessary)",
+  /**
+   * @description Accessibility attribute name that appears under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  checked: "Checked",
+  /**
+   * @description Tooltip text that appears when hovering over the 'Checked' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  whetherThisCheckboxRadioButtonOr: "Whether this checkbox, radio button or tree item is checked, unchecked, or mixed (for example, has both checked and unchecked children)",
+  /**
+   * @description Accessibility attribute name that appears under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  expanded: "Expanded",
+  /**
+   * @description Tooltip text that appears when hovering over the 'Expanded' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  whetherThisElementOrAnother: "Whether this element, or another grouping element it controls, is expanded",
+  /**
+   * @description Accessibility attribute name that appears under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  pressed: "Pressed",
+  /**
+   * @description Tooltip text that appears when hovering over the 'Pressed' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  whetherThisToggleButtonIs: "Whether this toggle button is currently in a pressed state",
+  /**
+   * @description Accessibility attribute name that appears under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  selectedString: "Selected",
+  /**
+   * @description Tooltip text that appears when hovering over the 'Selected' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  whetherTheOptionRepresentedBy: "Whether the option represented by this element is currently selected",
+  /**
+   * @description Accessibility attribute name that appears under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  activeDescendant: "Active descendant",
+  /**
+   * @description Tooltip text that appears when hovering over the 'Active descendant' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  theDescendantOfThisElementWhich: "The descendant of this element that is active; that is, the element to which focus should be delegated",
+  /**
+   * @description Tooltip text that appears when hovering over the 'Flows to' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  elementToWhichTheUserMayChooseTo: "Element to which the user may choose to navigate after this one, instead of the next element in the DOM order",
+  /**
+   * @description Accessibility attribute name that appears under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  controls: "Controls",
+  /**
+   * @description Tooltip text that appears when hovering over the 'Controls' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  elementOrElementsWhoseContentOr: "Element or elements whose content or presence is controlled by this widget",
+  /**
+   * @description Accessibility attribute name that appears under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  describedBy: "Described by",
+  /**
+   * @description Tooltip text that appears when hovering over the 'Described by' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  elementOrElementsWhichFormThe: "Element or elements that form the description of this element",
+  /**
+   * @description Accessibility attribute name that appears under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  labeledBy: "Labeled by",
+  /**
+   * @description Tooltip text that appears when hovering over the 'Labeled by' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  elementOrElementsWhichMayFormThe: "Element or elements that may form the name of this element",
+  /**
+   * @description Tooltip text that appears when hovering over the 'Owns' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  elementOrElementsWhichShouldBe: "Element or elements that should be considered descendants of this element, despite not being descendants in the DOM",
+  /**
+   * @description Tooltip text that appears when hovering over the 'Name' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  theComputedNameOfThisElement: "The computed name of this element",
+  /**
+   * @description Accessibility attribute name that appears under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  role: "Role",
+  /**
+   * @description Tooltip text that appears when hovering over the 'Role' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  indicatesThePurposeOfThisElement: "Indicates the purpose of this element, such as a user interface idiom for a widget, or structural role within a document",
+  /**
+   * @description Text for the value of something.
+   */
+  value: "Value",
+  /**
+   * @description Tooltip text that appears when hovering over the 'Value' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  theValueOfThisElementThisMayBe: "The value of this element; this may be user-provided or developer-provided, depending on the element",
+  /**
+   * @description Text for viewing the help options.
+   */
+  help: "Help",
+  /**
+   * @description Tooltip text that appears when hovering over the 'Help' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  theComputedHelpTextForThis: "The computed help text for this element",
+  /**
+   * @description Text for the description of something.
+   */
+  description: "Description",
+  /**
+   * @description Tooltip text that appears when hovering over the 'Description' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  theAccessibleDescriptionForThis: "The accessible description for this element",
+  /**
+   * @description Accessibility attribute name that appears under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  fromAttribute: "From attribute",
+  /**
+   * @description Tooltip text that appears when hovering over the 'From attribute' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  valueFromAttribute: "Value from attribute",
+  /**
+   * @description The source of an accessibility attribute that appears under the computed properties
+   * section in the Accessibility tab of the Elements panel. If the source is implicit, that means
+   * it was never specified by the user but instead is present because it is the default value.
+   */
+  implicit: "Implicit",
+  /**
+   * @description Tooltip text that appears when hovering over the 'Implicit' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  implicitValue: "Implicit value",
+  /**
+   * @description Accessibility attribute name that appears under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  fromStyle: "From style",
+  /**
+   * @description Tooltip text that appears when hovering over the 'From style' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  valueFromStyle: "Value from style",
+  /**
+   * @description Accessibility attribute name that appears under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  contents: "Contents",
+  /**
+   * @description Tooltip text that appears when hovering over the 'Contents' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  valueFromElementContents: "Value from element contents",
+  /**
+   * @description Accessibility attribute name that appears under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  fromPlaceholderAttribute: "From placeholder attribute",
+  /**
+   * @description Tooltip text that appears when hovering over the 'From placeholder attribute' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  valueFromPlaceholderAttribute: "Value from placeholder attribute",
+  /**
+   * @description Accessibility attribute name that appears under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  relatedElement: "Related element",
+  /**
+   * @description Tooltip text that appears when hovering over the 'Related element' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  valueFromRelatedElement: "Value from related element",
+  /**
+   * @description Accessibility attribute name that appears under the computed properties section in
+   * the Accessibility tab of the Elements panel. Indicates that this element got assigned this
+   * attribute because there is a related caption, hence it received it from the caption. 'caption'
+   * is part of the ARIA API and should not be translated.
+   */
+  fromCaption: "From `caption`",
+  /**
+   * @description Tooltip text that appears when hovering over the 'From caption' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  valueFromFigcaptionElement: "Value from `figcaption` element",
+  /**
+   * @description Accessibility attribute name that appears under the computed properties section in
+   * the Accessibility tab of the Elements panel. Indicates that this element got assigned this
+   * attribute because there is a related description, hence it received it from the description.
+   * 'description' is part of the ARIA API and should not be translated.
+   */
+  fromDescription: "From `description`",
+  /**
+   * @description Tooltip text that appears when hovering over the 'From description' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  valueFromDescriptionElement: "Value from `description` element",
+  /**
+   * @description Accessibility attribute name that appears under the computed properties section in
+   * the Accessibility tab of the Elements panel. Indicates that this element got assigned this
+   * attribute because there is a related label, hence it received it from the label. 'label'
+   * is part of the ARIA API and should not be translated.
+   */
+  fromLabel: "From `label`",
+  /**
+   * @description Tooltip text that appears when hovering over the 'From label' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  valueFromLabelElement: "Value from `label` element",
+  /**
+   * @description Accessibility attribute name that appears under the computed properties section in
+   * the Accessibility tab of the Elements panel. Indicates that this element got assigned this
+   * attribute because there is a related label, hence it received it from the label. 'label (for)'
+   * is part of the ARIA API and should not be translated. label (for) is just a different type of
+   * label.
+   */
+  fromLabelFor: "From `label` (`for=` attribute)",
+  /**
+   * @description Tooltip text that appears when hovering over the 'From label (for)' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  valueFromLabelElementWithFor: "Value from `label` element with `for=` attribute",
+  /**
+   * @description Accessibility attribute name that appears under the computed properties section in
+   * the Accessibility tab of the Elements panel. Indicates that this element got assigned this
+   * attribute because there is a related label which wraps (encompasses, surrounds) this element,
+   * hence it received it from the label. 'wrapped' is not part of the ARIA API, and should be
+   * translated.
+   */
+  fromLabelWrapped: "From `label` (wrapped)",
+  /**
+   * @description Tooltip text that appears when hovering over the 'From label (wrapped)' attribute
+   * name under the computed properties section in the Accessibility tab of the Elements panel.
+   * Indicates that there is a label element wrapping (surrounding) this element.
+   */
+  valueFromLabelElementWrapped: "Value from a wrapping `label` element",
+  /**
+   * @description Accessibility attribute name that appears under the computed properties section in
+   * the Accessibility tab of the Elements panel. Indicates that this element got assigned this
+   * attribute because there is a related legend, hence it received it from the legend. 'legend' is
+   * part of the ARIA API and should not be translated.
+   */
+  fromLegend: "From `legend`",
+  /**
+   * @description Tooltip text that appears when hovering over the 'From legend' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  valueFromLegendElement: "Value from `legend` element",
+  /**
+   * @description Accessibility attribute name that appears under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  fromRubyAnnotation: "From ruby annotation",
+  /**
+   * @description Tooltip text that appears when hovering over the 'From ruby annotation' attribute name under the computed properties section in the Accessibility tab of the Elements panel. Indicates that the value was taken from a plain HTML ruby tag (https://developer.mozilla.org/en-US/docs/Web/HTML/Element/ruby).
+   */
+  valueFromNativeHtmlRuby: "Value from plain HTML ruby annotation",
+  /**
+   * @description Tooltip text that appears when hovering over the 'From caption' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  valueFromTableCaption: "Value from `table` `caption`",
+  /**
+   * @description Accessibility attribute name that appears under the computed properties section in
+   * the Accessibility tab of the Elements panel.
+   */
+  fromTitle: "From title",
+  /**
+   * @description Tooltip text that appears when hovering over the 'From title' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  valueFromTitleAttribute: "Value from title attribute",
+  /**
+   * @description Accessibility attribute name that appears under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  fromNativeHtml: "From native HTML",
+  /**
+   * @description Tooltip text that appears when hovering over the 'From native HTML' attribute name under the computed properties section in the Accessibility tab of the Elements panel.
+   */
+  valueFromNativeHtmlUnknownSource: "Value from native HTML (unknown source)"
+};
+var str_2 = i18n3.i18n.registerUIStrings("panels/accessibility/AccessibilityStrings.ts", UIStrings2);
+var i18nLazyString = i18n3.i18n.getLazilyComputedLocalizedString.bind(void 0, str_2);
+var AXAttributes = {
+  disabled: {
+    name: i18nLazyString(UIStrings2.disabled),
+    description: i18nLazyString(UIStrings2.ifTrueThisElementCurrentlyCannot),
+    group: "AXGlobalStates"
+  },
+  invalid: {
+    name: i18nLazyString(UIStrings2.invalidUserEntry),
+    description: i18nLazyString(UIStrings2.ifTrueThisElementsUserentered),
+    group: "AXGlobalStates"
+  },
+  editable: { name: i18nLazyString(UIStrings2.editable), description: i18nLazyString(UIStrings2.ifAndHowThisElementCanBeEdited) },
+  focusable: {
+    name: i18nLazyString(UIStrings2.focusable),
+    description: i18nLazyString(UIStrings2.ifTrueThisElementCanReceiveFocus)
+  },
+  focused: { name: i18nLazyString(UIStrings2.focused), description: i18nLazyString(UIStrings2.ifTrueThisElementCurrentlyHas) },
+  settable: {
+    name: i18nLazyString(UIStrings2.canSetValue),
+    description: i18nLazyString(UIStrings2.whetherTheValueOfThisElementCan)
+  },
+  live: {
+    name: i18nLazyString(UIStrings2.liveRegion),
+    description: i18nLazyString(UIStrings2.whetherAndWhatPriorityOfLive),
+    group: "AXLiveRegionAttributes"
+  },
+  atomic: {
+    name: i18nLazyString(UIStrings2.atomicLiveRegions),
+    description: i18nLazyString(UIStrings2.ifThisElementMayReceiveLive),
+    group: "AXLiveRegionAttributes"
+  },
+  relevant: {
+    name: i18nLazyString(UIStrings2.relevantLiveRegions),
+    description: i18nLazyString(UIStrings2.ifThisElementMayReceiveLiveUpdates),
+    group: "AXLiveRegionAttributes"
+  },
+  busy: {
+    name: i18nLazyString(UIStrings2.busyLiveRegions),
+    description: i18nLazyString(UIStrings2.whetherThisElementOrItsSubtree),
+    group: "AXLiveRegionAttributes"
+  },
+  root: {
+    name: i18nLazyString(UIStrings2.liveRegionRoot),
+    description: i18nLazyString(UIStrings2.ifThisElementMayReceiveLiveUpdatesThe),
+    group: "AXLiveRegionAttributes"
+  },
+  autocomplete: {
+    name: i18nLazyString(UIStrings2.hasAutocomplete),
+    description: i18nLazyString(UIStrings2.whetherAndWhatTypeOfAutocomplete),
+    group: "AXWidgetAttributes"
+  },
+  haspopup: {
+    name: i18nLazyString(UIStrings2.hasPopup),
+    description: i18nLazyString(UIStrings2.whetherThisElementHasCausedSome),
+    group: "AXWidgetAttributes"
+  },
+  level: {
+    name: i18nLazyString(UIStrings2.level),
+    description: i18nLazyString(UIStrings2.theHierarchicalLevelOfThis),
+    group: "AXWidgetAttributes"
+  },
+  multiselectable: {
+    name: i18nLazyString(UIStrings2.multiselectable),
+    description: i18nLazyString(UIStrings2.whetherAUserMaySelectMoreThanOne),
+    group: "AXWidgetAttributes"
+  },
+  orientation: {
+    name: i18nLazyString(UIStrings2.orientation),
+    description: i18nLazyString(UIStrings2.whetherThisLinearElements),
+    group: "AXWidgetAttributes"
+  },
+  multiline: {
+    name: i18nLazyString(UIStrings2.multiline),
+    description: i18nLazyString(UIStrings2.whetherThisTextBoxMayHaveMore),
+    group: "AXWidgetAttributes"
+  },
+  readonly: {
+    name: i18nLazyString(UIStrings2.readonlyString),
+    description: i18nLazyString(UIStrings2.ifTrueThisElementMayBeInteracted),
+    group: "AXWidgetAttributes"
+  },
+  required: {
+    name: i18nLazyString(UIStrings2.requiredString),
+    description: i18nLazyString(UIStrings2.whetherThisElementIsARequired),
+    group: "AXWidgetAttributes"
+  },
+  valuemin: {
+    name: i18nLazyString(UIStrings2.minimumValue),
+    description: i18nLazyString(UIStrings2.forARangeWidgetTheMinimumAllowed),
+    group: "AXWidgetAttributes"
+  },
+  valuemax: {
+    name: i18nLazyString(UIStrings2.maximumValue),
+    description: i18nLazyString(UIStrings2.forARangeWidgetTheMaximumAllowed),
+    group: "AXWidgetAttributes"
+  },
+  valuetext: {
+    name: i18nLazyString(UIStrings2.valueDescription),
+    description: i18nLazyString(UIStrings2.aHumanreadableVersionOfTheValue),
+    group: "AXWidgetAttributes"
+  },
+  checked: {
+    name: i18nLazyString(UIStrings2.checked),
+    description: i18nLazyString(UIStrings2.whetherThisCheckboxRadioButtonOr),
+    group: "AXWidgetStates"
+  },
+  expanded: {
+    name: i18nLazyString(UIStrings2.expanded),
+    description: i18nLazyString(UIStrings2.whetherThisElementOrAnother),
+    group: "AXWidgetStates"
+  },
+  pressed: {
+    name: i18nLazyString(UIStrings2.pressed),
+    description: i18nLazyString(UIStrings2.whetherThisToggleButtonIs),
+    group: "AXWidgetStates"
+  },
+  selected: {
+    name: i18nLazyString(UIStrings2.selectedString),
+    description: i18nLazyString(UIStrings2.whetherTheOptionRepresentedBy),
+    group: "AXWidgetStates"
+  },
+  activedescendant: {
+    name: i18nLazyString(UIStrings2.activeDescendant),
+    description: i18nLazyString(UIStrings2.theDescendantOfThisElementWhich),
+    group: "AXRelationshipAttributes"
+  },
+  flowto: {
+    name: i18n3.i18n.lockedLazyString("Flows to"),
+    description: i18nLazyString(UIStrings2.elementToWhichTheUserMayChooseTo),
+    group: "AXRelationshipAttributes"
+  },
+  controls: {
+    name: i18nLazyString(UIStrings2.controls),
+    description: i18nLazyString(UIStrings2.elementOrElementsWhoseContentOr),
+    group: "AXRelationshipAttributes"
+  },
+  describedby: {
+    name: i18nLazyString(UIStrings2.describedBy),
+    description: i18nLazyString(UIStrings2.elementOrElementsWhichFormThe),
+    group: "AXRelationshipAttributes"
+  },
+  labelledby: {
+    name: i18nLazyString(UIStrings2.labeledBy),
+    description: i18nLazyString(UIStrings2.elementOrElementsWhichMayFormThe),
+    group: "AXRelationshipAttributes"
+  },
+  owns: {
+    name: i18n3.i18n.lockedLazyString("Owns"),
+    description: i18nLazyString(UIStrings2.elementOrElementsWhichShouldBe),
+    group: "AXRelationshipAttributes"
+  },
+  name: {
+    name: i18n3.i18n.lockedLazyString("Name"),
+    description: i18nLazyString(UIStrings2.theComputedNameOfThisElement),
+    group: "Default"
+  },
+  role: {
+    name: i18nLazyString(UIStrings2.role),
+    description: i18nLazyString(UIStrings2.indicatesThePurposeOfThisElement),
+    group: "Default"
+  },
+  value: {
+    name: i18nLazyString(UIStrings2.value),
+    description: i18nLazyString(UIStrings2.theValueOfThisElementThisMayBe),
+    group: "Default"
+  },
+  help: {
+    name: i18nLazyString(UIStrings2.help),
+    description: i18nLazyString(UIStrings2.theComputedHelpTextForThis),
+    group: "Default"
+  },
+  description: {
+    name: i18nLazyString(UIStrings2.description),
+    description: i18nLazyString(UIStrings2.theAccessibleDescriptionForThis),
+    group: "Default"
+  }
+};
+var AXSourceTypes = {
+  attribute: { name: i18nLazyString(UIStrings2.fromAttribute), description: i18nLazyString(UIStrings2.valueFromAttribute) },
+  implicit: {
+    name: i18nLazyString(UIStrings2.implicit),
+    description: i18nLazyString(UIStrings2.implicitValue)
+  },
+  style: { name: i18nLazyString(UIStrings2.fromStyle), description: i18nLazyString(UIStrings2.valueFromStyle) },
+  contents: { name: i18nLazyString(UIStrings2.contents), description: i18nLazyString(UIStrings2.valueFromElementContents) },
+  placeholder: {
+    name: i18nLazyString(UIStrings2.fromPlaceholderAttribute),
+    description: i18nLazyString(UIStrings2.valueFromPlaceholderAttribute)
+  },
+  relatedElement: { name: i18nLazyString(UIStrings2.relatedElement), description: i18nLazyString(UIStrings2.valueFromRelatedElement) }
+};
+var AXNativeSourceTypes = {
+  description: {
+    name: i18nLazyString(UIStrings2.fromDescription),
+    description: i18nLazyString(UIStrings2.valueFromDescriptionElement)
+  },
+  figcaption: { name: i18nLazyString(UIStrings2.fromCaption), description: i18nLazyString(UIStrings2.valueFromFigcaptionElement) },
+  label: { name: i18nLazyString(UIStrings2.fromLabel), description: i18nLazyString(UIStrings2.valueFromLabelElement) },
+  labelfor: {
+    name: i18nLazyString(UIStrings2.fromLabelFor),
+    description: i18nLazyString(UIStrings2.valueFromLabelElementWithFor)
+  },
+  labelwrapped: {
+    name: i18nLazyString(UIStrings2.fromLabelWrapped),
+    description: i18nLazyString(UIStrings2.valueFromLabelElementWrapped)
+  },
+  legend: { name: i18nLazyString(UIStrings2.fromLegend), description: i18nLazyString(UIStrings2.valueFromLegendElement) },
+  rubyannotation: {
+    name: i18nLazyString(UIStrings2.fromRubyAnnotation),
+    description: i18nLazyString(UIStrings2.valueFromNativeHtmlRuby)
+  },
+  tablecaption: { name: i18nLazyString(UIStrings2.fromCaption), description: i18nLazyString(UIStrings2.valueFromTableCaption) },
+  title: { name: i18nLazyString(UIStrings2.fromTitle), description: i18nLazyString(UIStrings2.valueFromTitleAttribute) },
+  other: {
+    name: i18nLazyString(UIStrings2.fromNativeHtml),
+    description: i18nLazyString(UIStrings2.valueFromNativeHtmlUnknownSource)
+  }
+};
+
+// gen/front_end/panels/accessibility/AccessibilityNodeView.js
+var UIStrings3 = {
+  /**
+   * @description Text in the computed properties view under the Accessibility tab in the Elements panel.
+   */
+  computedProperties: "Computed properties",
+  /**
+   * @description Text in the Accessibility tab in the Elements panel.
    */
   noAccessibilityNode: "No accessibility node",
   /**
-   * @description Text in Accessibility Node View of the Accessibility panel
+   * @description Text in the Accessibility tab in the Elements panel.
    */
   accessibilityNodeNotExposed: "Accessibility node not exposed",
   /**
-   * @description Text in Accessibility Node View of the Accessibility panel
+   * @description Text in the Accessibility tab in the Elements panel.
    */
-  invalidSource: "Invalid source.",
+  invalidSource: "Invalid source",
   /**
-   * @description Text in Accessibility Node View of the Accessibility panel
+   * @description Text in the Accessibility tab in the Elements panel.
    */
   notSpecified: "Not specified",
   /**
-   * @description Text in Accessibility Node View of the Accessibility panel
+   * @description Text in the Accessibility tab in the Elements panel.
    */
-  noNodeWithThisId: "No node with this ID.",
+  noNodeWithThisId: "No node with this ID",
   /**
-   * @description Text which appears in the Accessibility Node View of the Accessibility panel when an element is covered by a modal/popup window
+   * @description Text that appears in the Accessibility tab in the Elements panel when an element is covered by a modal or pop-up window.
    */
   elementIsHiddenBy: "Element is hidden by active modal dialog:\xA0",
   /**
-   * @description Text which appears in the Accessibility Node View of the Accessibility panel when an element is hidden by another accessibility tree.
+   * @description Text that appears in the Accessibility tab in the Elements panel when an element is hidden by another accessibility tree.
    */
   elementIsHiddenByChildTree: "Element is hidden by child tree:\xA0",
   /**
-   * @description Reason element in Accessibility Node View of the Accessibility panel
+   * @description Reason in the Accessibility tab in the Elements panel.
    */
   ancestorChildrenAreAll: "Ancestor\u2019s children are all presentational:\xA0",
   /**
-   * @description Reason element in Accessibility Node View of the Accessibility panel
+   * @description Reason in the Accessibility tab in the Elements panel.
    * @example {aria-hidden} PH1
    */
   elementIsPlaceholder: "Element is {PH1}.",
   /**
-   * @description Reason element in Accessibility Node View of the Accessibility panel
+   * @description Reason in the Accessibility tab in the Elements panel.
    * @example {aria-hidden} PH1
    * @example {true} PH2
    */
   placeholderIsPlaceholderOnAncestor: "{PH1} is {PH2} on ancestor:\xA0",
   /**
-   * @description Text in Accessibility Node View of the Accessibility panel
+   * @description Text in the Accessibility tab in the Elements panel.
    */
-  elementHasEmptyAltText: "Element has empty alt text.",
+  elementHasEmptyAltText: "Element has empty alt text",
   /**
-   * @description Reason element in Accessibility Node View of the Accessibility panel
+   * @description Reason in the Accessibility tab in the Elements panel.
    */
-  noTextContent: "No text content.",
+  noTextContent: "No text content",
   /**
-   * @description Reason element in Accessibility Node View of the Accessibility panel
+   * @description Reason in the Accessibility tab in the Elements panel.
    */
-  elementIsInert: "Element is `inert`.",
+  elementIsInert: "Element is `inert`",
   /**
-   * @description Reason element in Accessibility Node View of the Accessibility panel
+   * @description Reason in the Accessibility tab in the Elements panel.
    */
   elementIsInAnInertSubTree: "Element is in an `inert` subtree from\xA0",
   /**
-   * @description Reason element in Accessibility Node View of the Accessibility panel
+   * @description Reason in the Accessibility tab in the Elements panel.
    */
   elementsInheritsPresentational: "Element inherits presentational role from\xA0",
   /**
-   * @description Reason element in Accessibility Node View of the Accessibility panel
+   * @description Reason in the Accessibility tab in the Elements panel.
    */
   partOfLabelElement: "Part of label element:\xA0",
   /**
-   * @description Reason element in Accessibility Node View of the Accessibility panel
+   * @description Reason in the Accessibility tab in the Elements panel.
    */
   labelFor: "Label for\xA0",
   /**
-   * @description Reason element in Accessibility Node View of the Accessibility panel
+   * @description Reason in the Accessibility tab in the Elements panel.
    */
-  elementIsNotRendered: "Element is not rendered.",
+  elementIsNotRendered: "Element is not rendered",
   /**
-   * @description Reason element in Accessibility Node View of the Accessibility panel
+   * @description Reason in the Accessibility tab in the Elements panel.
    */
-  elementIsNotVisible: "Element is not visible.",
+  elementIsNotVisible: "Element is not visible",
   /**
-   * @description Reason element in Accessibility Node View of the Accessibility panel. Indicates the
-   *ARIA role for this element, which will always have the format 'role=', but with different roles
-   *(which are not translated). https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles
+   * @description Reason in the Accessibility tab in the Elements panel. Indicates the
+   * ARIA role for this element, which will always have the format 'role=', but with different roles
+   * (which are not translated). https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles
    * @example {role=link} PH1
    */
   elementHasPlaceholder: "Element has {PH1}.",
   /**
-   * @description Reason element in Accessibility Node View of the Accessibility panel
+   * @description Reason in the Accessibility tab in the Elements panel.
    */
-  elementIsPresentational: "Element is presentational.",
+  elementIsPresentational: "Element is presentational",
   /**
-   * @description Reason element in Accessibility Node View of the Accessibility pane. Here
+   * @description Reason in the Accessibility tab in the Elements panel. Here
    * 'interesting' is from the perspective of the accessibility engine in Chrome. A non-interesting
-   * element doesn't have any special accessibility considerations
+   * element doesn't have any special accessibility considerations.
    */
-  elementNotInteresting: "Element not interesting for accessibility."
+  elementNotInteresting: "Element not interesting for accessibility"
 };
-var str_2 = i18n3.i18n.registerUIStrings("panels/accessibility/AccessibilityNodeView.ts", UIStrings2);
-var i18nString = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
+var str_3 = i18n5.i18n.registerUIStrings("panels/accessibility/AccessibilityNodeView.ts", UIStrings3);
+var i18nString2 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
 var AXNodeSubPane = class extends AccessibilitySubPane {
   axNode;
   noNodeInfo;
@@ -1105,15 +1130,15 @@ var AXNodeSubPane = class extends AccessibilitySubPane {
   ignoredReasonsTree;
   constructor() {
     super({
-      title: i18nString(UIStrings2.computedProperties),
+      title: i18nString2(UIStrings3.computedProperties),
       viewId: "computed-properties",
       jslog: `${VisualLogging.section("computed-properties")}`
     });
     this.registerRequiredCSS(accessibilityNode_css_default);
     this.axNode = null;
     this.contentElement.classList.add("ax-subpane");
-    this.noNodeInfo = this.createInfo(i18nString(UIStrings2.noAccessibilityNode));
-    this.ignoredInfo = this.createInfo(i18nString(UIStrings2.accessibilityNodeNotExposed), "ax-ignored-info", "hidden");
+    this.noNodeInfo = this.createInfo(i18nString2(UIStrings3.noAccessibilityNode));
+    this.ignoredInfo = this.createInfo(i18nString2(UIStrings3.accessibilityNodeNotExposed), "ax-ignored-info", "hidden");
     this.treeOutline = this.createTreeOutline();
     this.ignoredReasonsTree = this.createTreeOutline();
     this.element.classList.add("accessibility-computed");
@@ -1405,7 +1430,7 @@ var AXValueSourceTreeElement = class extends AXNodePropertyTreeElement {
   update() {
     this.listItemElement.removeChildren();
     if (this.source.invalid) {
-      const exclamationMark = AXNodePropertyTreeElement.createExclamationMark(i18nString(UIStrings2.invalidSource));
+      const exclamationMark = AXNodePropertyTreeElement.createExclamationMark(i18nString2(UIStrings3.invalidSource));
       this.listItemElement.appendChild(exclamationMark);
       this.listItemElement.classList.add("ax-value-source-invalid");
     } else if (this.source.superseded) {
@@ -1425,7 +1450,7 @@ var AXValueSourceTreeElement = class extends AXNodePropertyTreeElement {
     } else if (this.source.value) {
       this.appendValueElement(this.source.value);
     } else {
-      const valueElement = AXNodePropertyTreeElement.createSimpleValueElement("valueUndefined", i18nString(UIStrings2.notSpecified));
+      const valueElement = AXNodePropertyTreeElement.createSimpleValueElement("valueUndefined", i18nString2(UIStrings3.notSpecified));
       this.listItemElement.appendChild(valueElement);
       this.listItemElement.classList.add("ax-value-source-unused");
     }
@@ -1479,7 +1504,7 @@ var AXRelatedNodeElement = class {
       });
     } else if (this.idref) {
       element.classList.add("invalid");
-      const valueElement = AXNodePropertyTreeElement.createExclamationMark(i18nString(UIStrings2.noNodeWithThisId));
+      const valueElement = AXNodePropertyTreeElement.createExclamationMark(i18nString2(UIStrings3.noNodeWithThisId));
       UI2.UIUtils.createTextChild(valueElement, this.idref);
       element.appendChild(valueElement);
     }
@@ -1509,63 +1534,63 @@ var AXNodeIgnoredReasonTreeElement = class _AXNodeIgnoredReasonTreeElement exten
     let reasonElement = null;
     switch (reason) {
       case "activeModalDialog":
-        reasonElement = uiI18n.getFormatLocalizedString(str_2, UIStrings2.elementIsHiddenBy, {});
+        reasonElement = uiI18n.getFormatLocalizedString(str_3, UIStrings3.elementIsHiddenBy, {});
         break;
       case "hiddenByChildTree":
-        reasonElement = uiI18n.getFormatLocalizedString(str_2, UIStrings2.elementIsHiddenByChildTree, {});
+        reasonElement = uiI18n.getFormatLocalizedString(str_3, UIStrings3.elementIsHiddenByChildTree, {});
         break;
       case "ancestorIsLeafNode":
-        reasonElement = uiI18n.getFormatLocalizedString(str_2, UIStrings2.ancestorChildrenAreAll, {});
+        reasonElement = uiI18n.getFormatLocalizedString(str_3, UIStrings3.ancestorChildrenAreAll, {});
         break;
       case "ariaHiddenElement": {
         const ariaHiddenSpan = document.createElement("span", { is: "source-code" }).textContent = "aria-hidden";
-        reasonElement = uiI18n.getFormatLocalizedString(str_2, UIStrings2.elementIsPlaceholder, { PH1: ariaHiddenSpan });
+        reasonElement = uiI18n.getFormatLocalizedString(str_3, UIStrings3.elementIsPlaceholder, { PH1: ariaHiddenSpan });
         break;
       }
       case "ariaHiddenSubtree": {
         const ariaHiddenSpan = document.createElement("span", { is: "source-code" }).textContent = "aria-hidden";
         const trueSpan = document.createElement("span", { is: "source-code" }).textContent = "true";
-        reasonElement = uiI18n.getFormatLocalizedString(str_2, UIStrings2.placeholderIsPlaceholderOnAncestor, { PH1: ariaHiddenSpan, PH2: trueSpan });
+        reasonElement = uiI18n.getFormatLocalizedString(str_3, UIStrings3.placeholderIsPlaceholderOnAncestor, { PH1: ariaHiddenSpan, PH2: trueSpan });
         break;
       }
       case "emptyAlt":
-        reasonElement = uiI18n.getFormatLocalizedString(str_2, UIStrings2.elementHasEmptyAltText, {});
+        reasonElement = uiI18n.getFormatLocalizedString(str_3, UIStrings3.elementHasEmptyAltText, {});
         break;
       case "emptyText":
-        reasonElement = uiI18n.getFormatLocalizedString(str_2, UIStrings2.noTextContent, {});
+        reasonElement = uiI18n.getFormatLocalizedString(str_3, UIStrings3.noTextContent, {});
         break;
       case "inertElement":
-        reasonElement = uiI18n.getFormatLocalizedString(str_2, UIStrings2.elementIsInert, {});
+        reasonElement = uiI18n.getFormatLocalizedString(str_3, UIStrings3.elementIsInert, {});
         break;
       case "inertSubtree":
-        reasonElement = uiI18n.getFormatLocalizedString(str_2, UIStrings2.elementIsInAnInertSubTree, {});
+        reasonElement = uiI18n.getFormatLocalizedString(str_3, UIStrings3.elementIsInAnInertSubTree, {});
         break;
       case "inheritsPresentation":
-        reasonElement = uiI18n.getFormatLocalizedString(str_2, UIStrings2.elementsInheritsPresentational, {});
+        reasonElement = uiI18n.getFormatLocalizedString(str_3, UIStrings3.elementsInheritsPresentational, {});
         break;
       case "labelContainer":
-        reasonElement = uiI18n.getFormatLocalizedString(str_2, UIStrings2.partOfLabelElement, {});
+        reasonElement = uiI18n.getFormatLocalizedString(str_3, UIStrings3.partOfLabelElement, {});
         break;
       case "labelFor":
-        reasonElement = uiI18n.getFormatLocalizedString(str_2, UIStrings2.labelFor, {});
+        reasonElement = uiI18n.getFormatLocalizedString(str_3, UIStrings3.labelFor, {});
         break;
       case "notRendered":
-        reasonElement = uiI18n.getFormatLocalizedString(str_2, UIStrings2.elementIsNotRendered, {});
+        reasonElement = uiI18n.getFormatLocalizedString(str_3, UIStrings3.elementIsNotRendered, {});
         break;
       case "notVisible":
-        reasonElement = uiI18n.getFormatLocalizedString(str_2, UIStrings2.elementIsNotVisible, {});
+        reasonElement = uiI18n.getFormatLocalizedString(str_3, UIStrings3.elementIsNotVisible, {});
         break;
       case "presentationalRole": {
         const role = axNode?.role()?.value || "";
         const rolePresentationSpan = document.createElement("span", { is: "source-code" }).textContent = "role=" + role;
-        reasonElement = uiI18n.getFormatLocalizedString(str_2, UIStrings2.elementHasPlaceholder, { PH1: rolePresentationSpan });
+        reasonElement = uiI18n.getFormatLocalizedString(str_3, UIStrings3.elementHasPlaceholder, { PH1: rolePresentationSpan });
         break;
       }
       case "probablyPresentational":
-        reasonElement = uiI18n.getFormatLocalizedString(str_2, UIStrings2.elementIsPresentational, {});
+        reasonElement = uiI18n.getFormatLocalizedString(str_3, UIStrings3.elementIsPresentational, {});
         break;
       case "uninteresting":
-        reasonElement = uiI18n.getFormatLocalizedString(str_2, UIStrings2.elementNotInteresting, {});
+        reasonElement = uiI18n.getFormatLocalizedString(str_3, UIStrings3.elementNotInteresting, {});
         break;
     }
     if (reasonElement) {
@@ -1592,7 +1617,8 @@ __export(AccessibilitySidebarView_exports, {
   AccessibilitySidebarView: () => AccessibilitySidebarView
 });
 import "./../../ui/components/switch/switch.js";
-import * as i18n9 from "./../../core/i18n/i18n.js";
+import * as i18n11 from "./../../core/i18n/i18n.js";
+import * as Root from "./../../core/root/root.js";
 import * as SDK3 from "./../../core/sdk/sdk.js";
 import * as UI4 from "./../../ui/legacy/legacy.js";
 import * as Lit2 from "./../../ui/lit/lit.js";
@@ -1617,7 +1643,7 @@ __export(ARIAAttributesView_exports, {
   ARIAAttributesPane: () => ARIAAttributesPane,
   DEFAULT_VIEW: () => DEFAULT_VIEW
 });
-import * as i18n5 from "./../../core/i18n/i18n.js";
+import * as i18n7 from "./../../core/i18n/i18n.js";
 import * as Platform from "./../../core/platform/platform.js";
 import * as SDK2 from "./../../core/sdk/sdk.js";
 import * as UI3 from "./../../ui/legacy/legacy.js";
@@ -4332,18 +4358,18 @@ var Attribute = class {
 };
 
 // gen/front_end/panels/accessibility/ARIAAttributesView.js
-var UIStrings3 = {
+var UIStrings4 = {
   /**
-   * @description Text in ARIAAttributes View of the Accessibility panel
+   * @description Text in the ARIA attributes view under the Accessibility tab in the Elements panel.
    */
-  ariaAttributes: "ARIA Attributes",
+  ariaAttributes: "ARIA attributes",
   /**
-   * @description Text in ARIAAttributes View of the Accessibility panel
+   * @description Text in the ARIA attributes view under the Accessibility tab in the Elements panel.
    */
   noAriaAttributes: "No ARIA attributes"
 };
-var str_3 = i18n5.i18n.registerUIStrings("panels/accessibility/ARIAAttributesView.ts", UIStrings3);
-var i18nString2 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
+var str_4 = i18n7.i18n.registerUIStrings("panels/accessibility/ARIAAttributesView.ts", UIStrings4);
+var i18nString3 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
 var { render: render2, html } = Lit;
 var { widget } = UI3.Widget;
 var DEFAULT_VIEW = (input, output, target) => {
@@ -4366,7 +4392,7 @@ var DEFAULT_VIEW = (input, output, target) => {
     input.attributes.length === 0 ? html`
           <style>${accessibilityProperties_css_default}</style>
           <devtools-widget
-            ${widget(UI3.EmptyWidget.EmptyWidget, { text: i18nString2(UIStrings3.noAriaAttributes) })}
+            ${widget(UI3.EmptyWidget.EmptyWidget, { text: i18nString3(UIStrings4.noAriaAttributes) })}
             class="gray-info-message info-message-overflow"></devtools-widget>` : html`<devtools-tree
            hide-overflow
            .template=${html`
@@ -4403,7 +4429,7 @@ var ARIAAttributesPane = class extends AccessibilitySubPane {
   #attributeBeingEdited = null;
   constructor(view = DEFAULT_VIEW) {
     super({
-      title: i18nString2(UIStrings3.ariaAttributes),
+      title: i18nString3(UIStrings4.ariaAttributes),
       viewId: "aria-attributes",
       useShadowDom: "pure"
     });
@@ -4453,32 +4479,32 @@ var ARIAAttributesPane = class extends AccessibilitySubPane {
 
 // gen/front_end/panels/accessibility/SourceOrderView.js
 import "./../../ui/legacy/legacy.js";
-import * as i18n7 from "./../../core/i18n/i18n.js";
+import * as i18n9 from "./../../core/i18n/i18n.js";
 import { html as html2, nothing as nothing2, render as render3 } from "./../../ui/lit/lit.js";
 import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
-var UIStrings4 = {
+var UIStrings5 = {
   /**
-   * @description Name of a tool which allows the developer to view the contents of the page in the
-   * 'source order' (the order in which the HTML elements show up in the source code). In the
-   * Accessibility panel.
+   * @description Name of a feature that allows the developer to view the contents of the page in the
+   * 'source order' (the order in which the HTML elements show up in the source code) under the
+   * Accessibility tab in the Elements panel.
    */
-  sourceOrderViewer: "Source Order Viewer",
+  sourceOrderViewer: "Source order viewer",
   /**
-   * @description Text in Source Order Viewer of the Accessibility panel shown when the selected node has no child elements
+   * @description Text in the source order viewer under the Accessibility tab of the Elements panel shown when the selected node has no child elements.
    */
   noSourceOrderInformation: "No source order information available",
   /**
-   * @description Text in Source Order Viewer of the Accessibility panel shown when the selected node has many child elements
+   * @description Text in the source order viewer under the Accessibility tab of the Elements panel shown when the selected node has many child elements.
    */
   thereMayBeADelayInDisplaying: "There may be a delay in displaying source order for elements with many children",
   /**
-   * @description Checkbox label in Source Order Viewer of the Accessibility panel. Source order
+   * @description Checkbox label in the source order viewer under the Accessibility tab of the Elements panel. Source order
    * means the order in which the HTML elements show up in the source code.
    */
   showSourceOrder: "Show source order"
 };
-var str_4 = i18n7.i18n.registerUIStrings("panels/accessibility/SourceOrderView.ts", UIStrings4);
-var i18nString3 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
+var str_5 = i18n9.i18n.registerUIStrings("panels/accessibility/SourceOrderView.ts", UIStrings5);
+var i18nString4 = i18n9.i18n.getLocalizedString.bind(void 0, str_5);
 var MAX_CHILD_ELEMENTS_THRESHOLD = 300;
 var DEFAULT_VIEW2 = (input, _output, target) => {
   function onShowSourceOrderChanged(event) {
@@ -4489,20 +4515,20 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
   render3(html2`
     ${input.showSourceOrder === void 0 ? html2`
         <div class="gray-info-message info-message-overflow">
-          ${i18nString3(UIStrings4.noSourceOrderInformation)}
+          ${i18nString4(UIStrings5.noSourceOrderInformation)}
         </div>
       ` : html2`
       ${input.childCount >= MAX_CHILD_ELEMENTS_THRESHOLD ? html2`
           <div class="gray-info-message info-message-overflow"
                 id="source-order-warning">
-            ${i18nString3(UIStrings4.thereMayBeADelayInDisplaying)}
+            ${i18nString4(UIStrings5.thereMayBeADelayInDisplaying)}
           </div>
         ` : nothing2}
       <devtools-checkbox class="source-order-checkbox"
                           jslog=${VisualLogging3.toggle().track({ click: true })}
                           ?checked=${input.showSourceOrder}
                           @change=${onShowSourceOrderChanged}>
-        ${i18nString3(UIStrings4.showSourceOrder)}
+        ${i18nString4(UIStrings5.showSourceOrder)}
       </devtools-checkbox>
       `}
   `, target, { container: { attributes: { jslog: `${VisualLogging3.section("source-order-viewer")}` } } });
@@ -4513,7 +4539,7 @@ var SourceOrderPane = class extends AccessibilitySubPane {
   #view;
   constructor(view = DEFAULT_VIEW2) {
     super({
-      title: i18nString3(UIStrings4.sourceOrderViewer),
+      title: i18nString4(UIStrings5.sourceOrderViewer),
       viewId: "source-order-viewer",
       useShadowDom: "pure"
     });
@@ -4568,14 +4594,14 @@ var SourceOrderPane = class extends AccessibilitySubPane {
 
 // gen/front_end/panels/accessibility/AccessibilitySidebarView.js
 var { html: html3, render: render4 } = Lit2;
-var UIStrings5 = {
+var UIStrings6 = {
   /**
    * @description Text for a toggle to turn on the accessibility tree view.
    */
   showAccessibilityTree: "Show accessibility tree"
 };
-var str_5 = i18n9.i18n.registerUIStrings("panels/accessibility/AccessibilitySidebarView.ts", UIStrings5);
-var i18nString4 = i18n9.i18n.getLocalizedString.bind(void 0, str_5);
+var str_6 = i18n11.i18n.registerUIStrings("panels/accessibility/AccessibilitySidebarView.ts", UIStrings6);
+var i18nString5 = i18n11.i18n.getLocalizedString.bind(void 0, str_6);
 var accessibilitySidebarViewInstance;
 var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI4.Widget.VBox {
   #node;
@@ -4585,6 +4611,7 @@ var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI4.Widge
   ariaSubPane;
   axNodeSubPane;
   sourceOrderSubPane;
+  announcementsRecordingSubPane;
   toggleContainer;
   toggleAction;
   constructor() {
@@ -4607,6 +4634,10 @@ var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI4.Widge
     void this.sidebarPaneStack.showView(this.axNodeSubPane);
     this.sourceOrderSubPane = new SourceOrderPane();
     void this.sidebarPaneStack.showView(this.sourceOrderSubPane);
+    if (Boolean(Root.Runtime.hostConfig.devToolsAriaLiveRecording?.enabled)) {
+      this.announcementsRecordingSubPane = new AccessibilityAnnouncementRecordingView();
+      void this.sidebarPaneStack.showView(this.announcementsRecordingSubPane);
+    }
     this.sidebarPaneStack.widget().show(this.element);
     UI4.Context.Context.instance().addFlavorChangeListener(SDK3.DOMModel.DOMNode, this.pullNode, this);
     this.pullNode();
@@ -4684,13 +4715,13 @@ var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI4.Widge
       <div style="display: flex; align-items: center; gap: 8px;">
         <devtools-switch
           role="switch"
-          aria-label=${i18nString4(UIStrings5.showAccessibilityTree)}
+          aria-label=${i18nString5(UIStrings6.showAccessibilityTree)}
           .checked=${isToggled}
-          .label=${i18nString4(UIStrings5.showAccessibilityTree)}
+          .label=${i18nString5(UIStrings6.showAccessibilityTree)}
           .jslogContext=${"elements.toggle-a11y-tree"}
           @switchchange=${this.onToggleChange}
         ></devtools-switch>
-        <span style="color: var(--sys-color-on-surface);">${i18nString4(UIStrings5.showAccessibilityTree)}</span>
+        <span style="color: var(--sys-color-on-surface);">${i18nString5(UIStrings6.showAccessibilityTree)}</span>
       </div>
     `, this.toggleContainer, { host: this });
   }
@@ -4712,6 +4743,7 @@ var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI4.Widge
 export {
   ARIAAttributesView_exports as ARIAAttributesView,
   ARIAMetadata_exports as ARIAMetadata,
+  AccessibilityAnnouncementRecordingView_exports as AccessibilityAnnouncementRecordingView,
   AccessibilityNodeView_exports as AccessibilityNodeView,
   AccessibilitySidebarView_exports as AccessibilitySidebarView,
   AccessibilityStrings_exports as AccessibilityStrings,

@@ -201,7 +201,6 @@ describe('Settings instance', () => {
         });
         const setting = settings.moduleSetting('test-setting');
         assert.isFalse(setting.get());
-        assert.strictEqual(setting.category(), "CONSOLE" /* Common.Settings.SettingCategory.CONSOLE */);
         assert.deepEqual(setting.descriptor(), {
             name: 'test-setting',
             type: "boolean" /* Common.Settings.SettingType.BOOLEAN */,

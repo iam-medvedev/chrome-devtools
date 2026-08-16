@@ -7,17 +7,15 @@ import * as Common from '../../../../core/common/common.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import { createFakeSetting } from '../../../../testing/EnvironmentHelpers.js';
 import { setupLocaleHooks } from '../../../../testing/LocaleHelpers.js';
+import * as SettingsUI from '../../../settings/settings.js';
 import { ListModel } from '../../legacy.js';
 import * as QuickOpen from './quick_open.js';
 function createCommandMenuProvider(inputs) {
     const setting = createFakeSetting('test-setting', false);
-    setting.setRegistration({
-        settingName: 'test-setting',
-        settingType: "boolean" /* Common.SettingRegistration.SettingType.BOOLEAN */,
+    const settingUI = new SettingsUI.SettingUIRegistration.SettingUI({
         category: "APPEARANCE" /* Common.SettingRegistration.SettingCategory.APPEARANCE */,
-        defaultValue: false,
     });
-    const provider = new QuickOpen.CommandMenu.CommandMenuProvider(inputs.map(input => QuickOpen.CommandMenu.CommandMenu.createSettingCommand(setting, i18n.i18n.lockedString(input), true)));
+    const provider = new QuickOpen.CommandMenu.CommandMenuProvider(inputs.map(input => QuickOpen.CommandMenu.CommandMenu.createSettingCommand(setting, i18n.i18n.lockedString(input), true, settingUI)));
     return provider;
 }
 async function testMatch(inputs, query, expectedSelection, expectedMatches) {

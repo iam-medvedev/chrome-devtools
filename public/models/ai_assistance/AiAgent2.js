@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Host from '../../core/host/host.js';
+import * as SDK from '../../core/sdk/sdk.js';
 import { AiAgent, } from './agents/AiAgent.js';
 import { executeJsCode } from './agents/ExecuteJavascript.js';
 import { ChangeManager } from './ChangeManager.js';
@@ -15,6 +16,8 @@ const SKILL_DISPLAY_NAMES = {
     network: 'Network requests',
     accessibility: 'Accessibility',
     performance: 'Performance',
+    storage: 'Storage',
+    sources: 'Sources',
 };
 const preamble = `You are the most advanced unified AI assistant integrated into Chrome DevTools.
 Your role is to help web developers debug, analyze, and optimize web applications by learning specialized skills and utilizing tools.
@@ -54,6 +57,34 @@ export class AiAgent2 extends AiAgent {
     #performanceRecordAndReload;
     get options() {
         return {};
+    }
+    async preRun() {
+        if (this.context && !this.context.isLoggingEnabled()) {
+            this.setServerSideLoggingActive(false);
+        }
+        const target = this.targetManager.primaryPageTarget();
+        const domModel = target?.model(SDK.DOMModel.DOMModel);
+        // Ensure the DOM document is requested and cached in DOMModel so that
+        // subsequent synchronous lookups via domModel.existingDocument() (e.g.,
+        // in #getDocumentBodyNode()) resolve the document and body immediately.
+        if (domModel) {
+            if (!domModel.existingDocument()) {
+                try {
+                    await domModel.requestDocument();
+                }
+                catch (e) {
+                    debugLog('AiAgent2: Failed to request document', e);
+                }
+            }
+            if (!domModel.existingDocument()?.body) {
+                try {
+                    await domModel.pushNodeByPathToFrontend('1,HTML,1,BODY');
+                }
+                catch (e) {
+                    debugLog('AiAgent2: Failed to push body node to frontend', e);
+                }
+            }
+        }
     }
     #activeSkills = new Set();
     #declaredTools = new Set();
@@ -130,11 +161,15 @@ User query: ${enhancedQuery}`;
     }
     async *handleContextDetails(selected) {
         if (selected) {
-            const details = await selected.getUserFacingDetails();
+            const [details, widgets] = await Promise.all([
+                selected.getUserFacingDetails(),
+                selected.getWidgets(),
+            ]);
             if (details) {
                 yield {
                     type: "context" /* ResponseType.CONTEXT */,
                     details,
+                    ...(widgets.length > 0 ? { widgets } : {}),
                 };
             }
         }
@@ -146,16 +181,15 @@ User query: ${enhancedQuery}`;
         let response = '';
         const skills = this.getSkills();
         for (const name of names) {
-            debugLog(`AiAgent2: Attempting to load skill ${name}`);
             if (this.#activeSkills.has(name)) {
-                debugLog(`AiAgent2: Skill ${name} is already loaded`);
+                debugLog(`[AiAgent2] Skill '${name}' is already loaded`);
                 response += `Error: Skill '${name}' is already loaded. Call its tools directly instead of invoking learnSkills for '${name}' again.\n`;
                 continue;
             }
             const skillObj = skills[name];
             if (skillObj) {
                 this.#activeSkills.add(name);
-                debugLog(`AiAgent2: Skill ${name} loaded successfully`);
+                debugLog(`[AiAgent2] Loaded skill '${name}' with tools: [${skillObj.allowedTools.join(', ')}]`);
                 response += `Skill ${name} loaded. Instructions:\n${skillObj.instructions}\n`;
                 for (const toolName of skillObj.allowedTools) {
                     const tool = ToolRegistry.get(toolName);
@@ -165,14 +199,14 @@ User query: ${enhancedQuery}`;
                 }
             }
             else {
-                debugLog(`AiAgent2: Failed to load skill ${name}`);
+                debugLog(`[AiAgent2] Failed to load skill '${name}'`);
                 response += `Failed to load skill ${name}. Valid skills are: ${Object.keys(skills).join(', ')}.\n`;
             }
         }
         return response.trim();
     }
     #createExtensionScope(changes) {
-        const selectedNode = this.context && this.context instanceof DOMNodeContext ? this.context.getItem() : null;
+        const selectedNode = this.context && this.context instanceof DOMNodeContext ? this.context.getItem() : this.#getDocumentBodyNode();
         return new ExtensionScope(changes, this.sessionId, selectedNode);
     }
     /**
@@ -181,7 +215,6 @@ User query: ${enhancedQuery}`;
      */
     #declareTool(tool) {
         if (this.#declaredTools.has(tool.name)) {
-            debugLog(`AiAgent2: Tool ${tool.name} is already declared`);
             return;
         }
         this.#declaredTools.add(tool.name);
@@ -195,15 +228,27 @@ User query: ${enhancedQuery}`;
                     changeManager: this.#changes,
                     createExtensionScope: this.#createExtensionScope.bind(this),
                     execJs: this.#execJs,
-                    getExecutionContextNode: () => this.context instanceof DOMNodeContext ? this.context.getItem() : null,
+                    getExecutionContextNode: () => (this.context instanceof DOMNodeContext ? this.context.getItem() : this.#getDocumentBodyNode()),
                     getTarget: () => this.targetManager.primaryPageTarget(),
                     getEstablishedOrigin: () => this.#getConversationOrigin(),
                     lighthouseRecording: this.#lighthouseRecording,
                     performanceRecordAndReload: this.#performanceRecordAndReload,
+                    setLoggingEnabled: (enabled) => {
+                        this.setServerSideLoggingActive(enabled);
+                    },
                 };
                 return tool.handler(args, context, options);
             },
         });
+    }
+    /**
+     * For non-DOM contexts (e.g., Lighthouse accessibility reports or storage items),
+     * there is no user-selected DOM node. We fall back to the document body as the
+     * default execution context node so scripts have a valid `$0` target.
+     */
+    #getDocumentBodyNode() {
+        const document = this.targetManager.primaryPageTarget()?.model(SDK.DOMModel.DOMModel)?.existingDocument();
+        return document?.body ?? null;
     }
     #getConversationOrigin() {
         const allowed = this.#allowedOrigin?.();

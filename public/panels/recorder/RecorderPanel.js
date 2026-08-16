@@ -11,9 +11,9 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as EmulationModel from '../../models/emulation/emulation.js';
 import * as PublicExtensions from '../../models/extensions/extensions.js';
-import * as PanelCommon from '../../panels/common/common.js';
 import * as Tracing from '../../services/tracing/tracing.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
+import * as Dialogs from '../../ui/components/dialogs/dialogs.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { Directives, html, render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
@@ -1338,7 +1338,7 @@ export class RecorderPanel extends UI.Widget.VBox {
             Root.Runtime.Runtime.queryParam('disableSelfXssWarnings') || this.#selfXssWarningDisabledSetting.get()) {
             return true;
         }
-        const result = await PanelCommon.TypeToAllowDialog.show({
+        const result = await Dialogs.TypeToAllowDialog.TypeToAllowDialog.show({
             jslogContext: {
                 input: 'confirm-import-recording-input',
                 dialog: 'confirm-import-recording-dialog',

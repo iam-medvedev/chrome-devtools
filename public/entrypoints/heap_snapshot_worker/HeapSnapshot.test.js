@@ -853,6 +853,89 @@ describe('HeapSnapshot', () => {
         const names = range.items.map(item => item.name);
         assert.strictEqual(names.join(','), 'b', 'edges provider names');
     });
+    describe('heapSnapshotEdgesProvider query options', () => {
+        async function createTestSnapshotForEdgesProviderOptions() {
+            const mock = {
+                snapshot: {
+                    meta: {
+                        node_fields: ['type', 'name', 'id', 'self_size', 'retained_size', 'dominator', 'edge_count'],
+                        node_types: [['hidden', 'object', 'native', 'number'], '', '', '', '', '', ''],
+                        edge_fields: ['type', 'name_or_index', 'to_node'],
+                        edge_types: [['element', 'property', 'shortcut'], '', ''],
+                        location_fields: ['object_index', 'script_id', 'line', 'column'],
+                        trace_function_info_fields: ['function_id', 'name', 'script_name', 'script_id', 'line', 'column'],
+                        trace_node_fields: ['id', 'function_info_index', 'count', 'size', 'children'],
+                    },
+                    node_count: 7,
+                    edge_count: 6,
+                    trace_function_count: 1,
+                },
+                nodes: [
+                    1, 1, 1, 100, 100, 0, 6, // Node 0 (Root, self_size 100, edge_count 6)
+                    3, 6, 2, 4, 4, 0, 0, // Node 1 (number type, self_size 4, edge_count 0)
+                    2, 7, 3, 4, 4, 0, 0, // Node 2 (native type, name 'null', self_size 4, edge_count 0)
+                    2, 8, 4, 4, 4, 0, 0, // Node 3 (native type, name 'undefined', self_size 4, edge_count 0)
+                    2, 3, 5, 4, 4, 0, 0, // Node 4 (native type, name 'true', self_size 4, edge_count 0)
+                    1, 9, 6, 50, 50, 0, 0, // Node 5 (object type, name 'A', self_size 50, edge_count 0)
+                    1, 2, 7, 40, 40, 0, 0, // Node 6 (object type, name 'B', self_size 40, edge_count 0)
+                ],
+                edges: [
+                    1,
+                    6,
+                    7, // Edge to Node 1 (numEdge)
+                    1,
+                    7,
+                    14, // Edge to Node 2 (nullEdge)
+                    1,
+                    8,
+                    21, // Edge to Node 3 (undefinedEdge)
+                    1,
+                    3,
+                    28, // Edge to Node 4 (trueEdge)
+                    1,
+                    10,
+                    35, // Edge to Node 5 (objAEdge)
+                    1,
+                    11,
+                    42, // Edge to Node 6 (realObjEdge)
+                ],
+                trace_function_infos: [0, 2, 1, 0, 0, 0],
+                trace_tree: [1, 0, 0, 0, []],
+                locations: [],
+                strings: ['', 'Root', 'B', 'true', '', '', 'numEdge', 'null', 'undefined', 'A', 'objAEdge', 'realObjEdge'],
+            };
+            return await HeapSnapshotWorker.HeapSnapshot.createJSHeapSnapshotForTesting(postprocessHeapSnapshotMock(mock));
+        }
+        it('includes all edges by default when no options are provided', async () => {
+            const snapshot = await createTestSnapshotForEdgesProviderOptions();
+            const provider = snapshot.createEdgesProvider(0);
+            const range = provider.serializeItemsRange(0, 10);
+            assert.strictEqual(range.totalLength, 6, 'All edges included by default');
+        });
+        it('filters out primitive edges when excludePrimitives is true', async () => {
+            const snapshot = await createTestSnapshotForEdgesProviderOptions();
+            const provider = snapshot.createEdgesProvider(0, { excludePrimitives: true });
+            const range = provider.serializeItemsRange(0, 10);
+            assert.strictEqual(range.totalLength, 2, 'Primitives excluded');
+            const filteredEdgeNames = range.items.map(item => item.name);
+            assert.deepEqual(filteredEdgeNames, ['objAEdge', 'realObjEdge'], 'Excluded number, null, undefined, and true');
+        });
+        it('filters edges by minimum retained size when minRetainedSize is specified', async () => {
+            const snapshot = await createTestSnapshotForEdgesProviderOptions();
+            const provider = snapshot.createEdgesProvider(0, { minRetainedSize: 30 });
+            const range = provider.serializeItemsRange(0, 10);
+            assert.strictEqual(range.totalLength, 2, 'Edges with retained size < 30 excluded');
+            const minRetainedEdgeNames = range.items.map(item => item.name);
+            assert.deepEqual(minRetainedEdgeNames, ['objAEdge', 'realObjEdge']);
+        });
+        it('sorts edges when sortBy option is specified', async () => {
+            const snapshot = await createTestSnapshotForEdgesProviderOptions();
+            const provider = snapshot.createEdgesProvider(0, { sortBy: 'retainedSize' });
+            const range = provider.serializeItemsRange(0, 10);
+            const sortedEdgeNames = range.items.map(item => item.name);
+            assert.deepEqual(sortedEdgeNames, ['objAEdge', 'realObjEdge', 'null', 'numEdge', 'true', 'undefined'], 'Sorted by retainedSize descending');
+        });
+    });
     it('heapSnapshotLoader', async () => {
         const source = createHeapSnapshotMockRaw();
         const sourceStringified = JSON.stringify(source);
@@ -879,6 +962,59 @@ describe('HeapSnapshot', () => {
             containmentEdges: Array.from(reference.containmentEdges),
         };
         assert.strictEqual(JSON.stringify(referenceToCompare), JSON.stringify(resultToCompare));
+    });
+    it('heapSnapshotLoaderThrowsOnMalformedSnapshot', async () => {
+        const dispatcher = new HeapSnapshotWorker.HeapSnapshotWorkerDispatcher.HeapSnapshotWorkerDispatcher(() => { });
+        const loader = new HeapSnapshotWorker.HeapSnapshotLoader.HeapSnapshotLoader(dispatcher);
+        loader.write('{"invalid_snapshot": true}');
+        loader.close();
+        const channel = new MessageChannel();
+        new HeapSnapshotWorker.HeapSnapshot.SecondaryInitManager(channel.port2);
+        try {
+            await loader.buildSnapshot(channel.port1);
+            assert.fail('Expected buildSnapshot to throw on invalid input');
+        }
+        catch (error) {
+            assert.instanceOf(error, Error);
+            assert.include(error.message, 'Token "snapshot" not found');
+        }
+        finally {
+            channel.port1.close();
+            channel.port2.close();
+        }
+    });
+    it('heapSnapshotLoaderThrowsOnTruncatedData', async () => {
+        const dispatcher = new HeapSnapshotWorker.HeapSnapshotWorkerDispatcher.HeapSnapshotWorkerDispatcher(() => { });
+        const loader = new HeapSnapshotWorker.HeapSnapshotLoader.HeapSnapshotLoader(dispatcher);
+        const truncatedSnapshot = JSON.stringify({
+            snapshot: {
+                meta: {
+                    node_fields: ['type', 'name', 'id', 'self_size', 'retained_size', 'dominator', 'edge_count'],
+                    node_types: [['hidden', 'object'], '', '', '', '', '', ''],
+                    edge_fields: ['type', 'name_or_index', 'to_node'],
+                    edge_types: [['element', 'property'], '', ''],
+                },
+                node_count: 5,
+                edge_count: 5,
+            },
+            nodes: [0, 1, 2],
+        });
+        loader.write(truncatedSnapshot);
+        loader.close();
+        const channel = new MessageChannel();
+        new HeapSnapshotWorker.HeapSnapshot.SecondaryInitManager(channel.port2);
+        try {
+            await loader.buildSnapshot(channel.port1);
+            assert.fail('Expected buildSnapshot to throw on truncated input');
+        }
+        catch (error) {
+            assert.instanceOf(error, Error);
+            assert.include(error.message, 'unexpected end of input');
+        }
+        finally {
+            channel.port1.close();
+            channel.port2.close();
+        }
     });
     it('heapSnapshotNodeIndexForId', async () => {
         const builder = new HeapSnapshotBuilder();
@@ -1267,6 +1403,34 @@ describe('HeapSnapshot', () => {
             },
         ]);
     });
+    it('correctly calculates getRetainedByContextSummary', async () => {
+        const builder = new HeapSnapshotBuilder();
+        const root = builder.rootNode;
+        const context1 = new HeapNode('system / Context', 10, 'object', 10);
+        const context2 = new HeapNode('system / Context', 20, 'object', 20);
+        const nodeA = new HeapNode('NodeA', 30, 'object', 30);
+        const nodeB = new HeapNode('NodeB', 40, 'object', 40);
+        // Zero self-size nodes should be excluded from counts and sizes
+        const zeroSizeRetainedNode = new HeapNode('ZeroSizeRetained', 0, 'object', 0);
+        const zeroSizeNotRetainedNode = new HeapNode('ZeroSizeNotRetained', 0, 'object', 0);
+        const zeroSizeContext = new HeapNode('system / Context', 0, 'object', 0);
+        root.linkNode(context1, 'property', 'context1');
+        root.linkNode(context2, 'property', 'context2');
+        root.linkNode(nodeB, 'property', 'nodeB');
+        root.linkNode(zeroSizeNotRetainedNode, 'property', 'zeroNotRetained');
+        root.linkNode(zeroSizeContext, 'property', 'zeroContext');
+        context1.linkNode(nodeA, 'property', 'a');
+        context1.linkNode(zeroSizeRetainedNode, 'property', 'zeroRetained');
+        context2.linkNode(nodeB, 'property', 'b');
+        const snapshot = await builder.createJSHeapSnapshot();
+        const summary = snapshot.getRetainedByContextSummary();
+        assert.strictEqual(summary.contextCount, 2);
+        assert.strictEqual(summary.retainedByContextSize, 60); // context1 (10) + context2 (20) + nodeA (30)
+        assert.strictEqual(summary.retainedByContextCount, 3);
+        assert.strictEqual(summary.notRetainedByContextSize, 40); // nodeB (40)
+        assert.strictEqual(summary.notRetainedByContextCount, 1);
+        assert.strictEqual(summary.totalSize, 100);
+    });
     it('does not attribute objects to non-native contexts via meta-map links', async () => {
         const builder = new HeapSnapshotBuilder();
         const root = builder.rootNode;
@@ -1441,6 +1605,248 @@ describe('HeapSnapshot', () => {
             retainerCount: 1,
         });
         assert.throws(() => snapshot.getObjectInfo(5), 'Invalid nodeIndex 5');
+    });
+    describe('queryObjects', () => {
+        async function createTestSnapshotForQueryObjects() {
+            const parsedSnapshot = postprocessHeapSnapshotMock({
+                snapshot: {
+                    meta: {
+                        node_fields: ['type', 'name', 'id', 'self_size', 'retained_size', 'dominator', 'edge_count', 'detachedness'],
+                        node_types: [
+                            [
+                                'hidden',
+                                'array',
+                                'string',
+                                'object',
+                                'code',
+                                'closure',
+                                'regexp',
+                                'number',
+                                'native',
+                                'synthetic',
+                                'bigint',
+                            ],
+                            'string',
+                            'number',
+                            'number',
+                            'number',
+                            'number',
+                            'number',
+                            'number',
+                        ],
+                        edge_fields: ['type', 'name_or_index', 'to_node'],
+                        edge_types: [
+                            ['context', 'element', 'property', 'internal', 'hidden', 'shortcut', 'weak'],
+                            'string_or_number',
+                            'node',
+                        ],
+                        location_fields: ['object_index', 'script_id', 'line', 'column'],
+                        trace_function_info_fields: ['function_id', 'name', 'script_name', 'script_id', 'line', 'column'],
+                        trace_node_fields: ['id', 'function_info_index', 'count', 'size', 'children'],
+                    },
+                    node_count: 5,
+                    edge_count: 4,
+                    trace_function_count: 0,
+                },
+                nodes: [
+                    // root: type=object (3), name="root" (1), id=1, self_size=0, retained_size=0, dominator=0, edge_count=1, detachedness=unknown (0)
+                    3,
+                    1,
+                    1,
+                    0,
+                    0,
+                    0,
+                    1,
+                    0,
+                    // node1: type=native (8), name="HTMLDivElement" (2), id=10, self_size=10, retained_size=0, dominator=0, edge_count=1, detachedness=detached (2)
+                    8,
+                    2,
+                    10,
+                    10,
+                    0,
+                    0,
+                    1,
+                    2,
+                    // node2: type=object (3), name="MyClass" (3), id=20, self_size=50, retained_size=0, dominator=0, edge_count=1, detachedness=unknown (0)
+                    3,
+                    3,
+                    20,
+                    50,
+                    0,
+                    0,
+                    1,
+                    0,
+                    // node3: type=closure (5), name="OtherClass" (4), id=30, self_size=100, retained_size=0, dominator=0, edge_count=1, detachedness=unknown (0)
+                    5,
+                    4,
+                    30,
+                    100,
+                    0,
+                    0,
+                    1,
+                    0,
+                    // node4: type=native (8), name="AttachedNode" (5), id=40, self_size=5, retained_size=0, dominator=0, edge_count=0, detachedness=attached (1)
+                    8,
+                    5,
+                    40,
+                    5,
+                    0,
+                    0,
+                    0,
+                    1,
+                ],
+                edges: [
+                    // root -> node1: type=element (1), name="edge0" (6), to_node=8
+                    1,
+                    6,
+                    8,
+                    // node1 -> node2: type=property (2), name="divProp" (7), to_node=16
+                    2,
+                    7,
+                    16,
+                    // node2 -> node3: type=property (2), name="foo" (8), to_node=24
+                    2,
+                    8,
+                    24,
+                    // node3 -> node4: type=property (2), name="bar" (9), to_node=32
+                    2,
+                    9,
+                    32,
+                ],
+                trace_function_infos: [],
+                trace_tree: [],
+                locations: [],
+                strings: ['', 'root', 'HTMLDivElement', 'MyClass', 'OtherClass', 'AttachedNode', 'edge0', 'divProp', 'foo', 'bar'],
+            });
+            return await HeapSnapshotWorker.HeapSnapshot.createJSHeapSnapshotForTesting(parsedSnapshot);
+        }
+        it('filters by className', async () => {
+            const snapshot = await createTestSnapshotForQueryObjects();
+            const provider = snapshot.queryObjects({ className: 'Class' });
+            const items = provider.serializeItemsRange(0, 100).items;
+            assert.deepEqual(items.map(i => i.name), ['MyClass', 'OtherClass']);
+            const providerCi = snapshot.queryObjects({ className: 'myclass' });
+            const itemsCi = providerCi.serializeItemsRange(0, 100).items;
+            assert.deepEqual(itemsCi.map(i => i.name), ['MyClass']);
+            const providerRegex = snapshot.queryObjects({ className: '^Detached' });
+            const itemsRegex = providerRegex.serializeItemsRange(0, 100).items;
+            assert.deepEqual(itemsRegex.map(i => i.name), ['Detached HTMLDivElement']);
+        });
+        it('filters by propertyName', async () => {
+            const snapshot = await createTestSnapshotForQueryObjects();
+            const provider = snapshot.queryObjects({ propertyName: 'divProp' });
+            const items = provider.serializeItemsRange(0, 100).items;
+            assert.deepEqual(items.map(i => i.name), ['Detached HTMLDivElement']);
+            const providerCi = snapshot.queryObjects({ propertyName: 'FOO' });
+            const itemsCi = providerCi.serializeItemsRange(0, 100).items;
+            assert.deepEqual(itemsCi.map(i => i.name), ['MyClass']);
+            const providerEmpty = snapshot.queryObjects({ propertyName: 'nonExistent' });
+            const itemsEmpty = providerEmpty.serializeItemsRange(0, 100).items;
+            assert.lengthOf(itemsEmpty, 0);
+        });
+        it('filters by nodeType', async () => {
+            const snapshot = await createTestSnapshotForQueryObjects();
+            const providerClosure = snapshot.queryObjects({ nodeType: 'closure' });
+            const itemsClosure = providerClosure.serializeItemsRange(0, 100).items;
+            assert.deepEqual(itemsClosure.map(i => i.name), ['OtherClass']);
+            const providerNative = snapshot.queryObjects({ nodeType: 'NATIVE' });
+            const itemsNative = providerNative.serializeItemsRange(0, 100).items;
+            assert.deepEqual(itemsNative.map(i => i.name), ['Detached HTMLDivElement', 'AttachedNode']);
+        });
+        it('filters by minSelfSize and maxSelfSize', async () => {
+            const snapshot = await createTestSnapshotForQueryObjects();
+            const providerMin = snapshot.queryObjects({ minSelfSize: 50 });
+            const itemsMin = providerMin.serializeItemsRange(0, 100).items;
+            assert.deepEqual(itemsMin.map(i => i.name), ['MyClass', 'OtherClass']);
+            const providerMax = snapshot.queryObjects({ maxSelfSize: 10 });
+            const itemsMax = providerMax.serializeItemsRange(0, 100).items;
+            assert.deepEqual(itemsMax.map(i => i.name), ['root', 'Detached HTMLDivElement', 'AttachedNode']);
+            const providerRange = snapshot.queryObjects({ minSelfSize: 5, maxSelfSize: 50 });
+            const itemsRange = providerRange.serializeItemsRange(0, 100).items;
+            assert.deepEqual(itemsRange.map(i => i.name), ['Detached HTMLDivElement', 'MyClass', 'AttachedNode']);
+        });
+        it('filters by minRetainedSize and maxRetainedSize', async () => {
+            const snapshot = await createTestSnapshotForQueryObjects();
+            const providerMin = snapshot.queryObjects({ minRetainedSize: 150 });
+            const itemsMin = providerMin.serializeItemsRange(0, 100).items;
+            assert.deepEqual(itemsMin.map(i => i.name), ['root', 'Detached HTMLDivElement', 'MyClass']);
+            const providerMax = snapshot.queryObjects({ maxRetainedSize: 105 });
+            const itemsMax = providerMax.serializeItemsRange(0, 100).items;
+            assert.deepEqual(itemsMax.map(i => i.name), ['OtherClass', 'AttachedNode']);
+        });
+        it('filters by isDetached', async () => {
+            const snapshot = await createTestSnapshotForQueryObjects();
+            const providerDetached = snapshot.queryObjects({ isDetached: true });
+            const itemsDetached = providerDetached.serializeItemsRange(0, 100).items;
+            assert.deepEqual(itemsDetached.map(i => i.name), ['Detached HTMLDivElement']);
+            const providerAttached = snapshot.queryObjects({ isDetached: false });
+            const itemsAttached = providerAttached.serializeItemsRange(0, 100).items;
+            assert.deepEqual(itemsAttached.map(i => i.name), ['root', 'MyClass', 'OtherClass', 'AttachedNode']);
+        });
+        it('sorts by retainedSize, selfSize, and id', async () => {
+            const snapshot = await createTestSnapshotForQueryObjects();
+            const providerRetained = snapshot.queryObjects({ sortBy: 'retainedSize' });
+            const itemsRetained = providerRetained.serializeItemsRange(0, 100).items;
+            assert.deepEqual(itemsRetained.map(i => i.retainedSize), [165, 165, 155, 105, 5]);
+            const providerSelf = snapshot.queryObjects({ sortBy: 'selfSize' });
+            const itemsSelf = providerSelf.serializeItemsRange(0, 100).items;
+            assert.deepEqual(itemsSelf.map(i => i.selfSize), [100, 50, 10, 5, 0]);
+            const providerId = snapshot.queryObjects({ sortBy: 'id' });
+            const itemsId = providerId.serializeItemsRange(0, 100).items;
+            assert.deepEqual(itemsId.map(i => i.id), [1, 10, 20, 30, 40]);
+        });
+        it('supports complex regex patterns for className and propertyName', async () => {
+            const builder = new HeapSnapshotBuilder();
+            const root = builder.rootNode;
+            const nodeA = new HeapNode('FooBarService', 10, 'object', 10);
+            const nodeB = new HeapNode('FooBazController', 20, 'object', 20);
+            const nodeC = new HeapNode('CustomWidget_123', 30, 'object', 30);
+            const nodeD = new HeapNode('UnrelatedNode', 40, 'object', 40);
+            root.linkNode(nodeA, 'element', 'rootEdge');
+            nodeA.linkNode(nodeB, 'property', 'barProp');
+            nodeB.linkNode(nodeC, 'property', 'dataField_1');
+            nodeC.linkNode(nodeD, 'property', 'dataField_2');
+            const snapshot = await builder.createJSHeapSnapshot();
+            // Test className regex alternation & character classes: ^Foo(Bar|Baz)
+            const providerClass = snapshot.queryObjects({ className: '^Foo(Bar|Baz)' });
+            const itemsClass = providerClass.serializeItemsRange(0, 100).items;
+            assert.deepEqual(itemsClass.map(i => i.name), ['FooBarService', 'FooBazController']);
+            // Test className regex with digits & end anchor: _\d+$
+            const providerDigits = snapshot.queryObjects({ className: '_\\d+$' });
+            const itemsDigits = providerDigits.serializeItemsRange(0, 100).items;
+            assert.deepEqual(itemsDigits.map(i => i.name), ['CustomWidget_123']);
+            // Test propertyName regex: ^dataField_\d+$ (nodes having outgoing edges matching pattern)
+            const providerPropRegex = snapshot.queryObjects({ propertyName: '^dataField_\\d+$' });
+            const itemsPropRegex = providerPropRegex.serializeItemsRange(0, 100).items;
+            assert.deepEqual(itemsPropRegex.map(i => i.name), ['FooBazController', 'CustomWidget_123']);
+            // Test propertyName regex: barProp
+            const providerPropAlt = snapshot.queryObjects({ propertyName: 'barProp' });
+            const itemsPropAlt = providerPropAlt.serializeItemsRange(0, 100).items;
+            assert.deepEqual(itemsPropAlt.map(i => i.name), ['FooBarService']);
+        });
+        it('handles numeric element edge indices when filtering by propertyName', async () => {
+            const builder = new HeapSnapshotBuilder();
+            const root = builder.rootNode;
+            const arrayNode = new HeapNode('Array', 20, 'object', 10);
+            const element0 = new HeapNode('Element0', 10, 'object', 20);
+            const element42 = new HeapNode('Element42', 10, 'object', 30);
+            root.linkNode(arrayNode, 'property', 'myArray');
+            arrayNode.linkNode(element0, 'element', 0);
+            arrayNode.linkNode(element42, 'element', 42);
+            const snapshot = await builder.createJSHeapSnapshot();
+            // Filter propertyName by exact index string "0"
+            const providerIndex0 = snapshot.queryObjects({ propertyName: '^0$' });
+            const itemsIndex0 = providerIndex0.serializeItemsRange(0, 100).items;
+            assert.deepEqual(itemsIndex0.map(i => i.name), ['Array']);
+            // Filter propertyName by exact index string "42"
+            const providerIndex42 = snapshot.queryObjects({ propertyName: '^42$' });
+            const itemsIndex42 = providerIndex42.serializeItemsRange(0, 100).items;
+            assert.deepEqual(itemsIndex42.map(i => i.name), ['Array']);
+            // Filter propertyName by digit regex matching numeric element indices
+            const providerDigits = snapshot.queryObjects({ propertyName: '^\\d+$' });
+            const itemsDigits = providerDigits.serializeItemsRange(0, 100).items;
+            assert.deepEqual(itemsDigits.map(i => i.name), ['Array']);
+        });
     });
 });
 //# sourceMappingURL=HeapSnapshot.test.js.map

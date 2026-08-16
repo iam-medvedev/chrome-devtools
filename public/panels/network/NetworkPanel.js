@@ -80,7 +80,7 @@ const UIStrings = {
      */
     disableCache: 'Disable cache',
     /**
-     * @description Tooltip text that appears when hovering over the largeicon settings gear in show settings pane setting in network panel of the network panel
+     * @description Tooltip text for settings button in Network panel.
      */
     networkSettings: 'Network settings',
     /**
@@ -782,7 +782,7 @@ export class FilmStripRecorder {
         }
         this.#tracingManager = tracingManager;
         this.#resourceTreeModel = this.#tracingManager.target().model(SDK.ResourceTreeModel.ResourceTreeModel);
-        void this.#tracingManager.start(this, '-*,disabled-by-default-devtools.screenshot');
+        void this.#tracingManager.start(this, ['-*', ...Trace.Types.Events.OptionalCategories.Screenshot].join(','));
         Host.userMetrics.actionTaken(Host.UserMetrics.Action.FilmStripStartedRecording);
     }
     isRecording() {
