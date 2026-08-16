@@ -5,13 +5,14 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget, describeWithEnvironment, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
-import { TraceLoader } from '../../testing/TraceLoader.js';
 describeWithEnvironment('LighthouseController', () => {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     let Lighthouse;
     let target;
     beforeEach(async function () {
-        TraceLoader.setTestTimeout(this);
+        if (this.timeout() > 0) {
+            this.timeout(45_000);
+        }
         stubNoopSettings();
         Lighthouse = await import('./lighthouse.js');
         const tabTarget = createTarget({ type: SDK.Target.Type.TAB });

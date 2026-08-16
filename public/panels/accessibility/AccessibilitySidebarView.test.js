@@ -5,7 +5,7 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
 import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget, describeWithEnvironment, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, describeWithEnvironment, stubNoopSettings, updateHostConfig, } from '../../testing/EnvironmentHelpers.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Accessibility from './accessibility.js';
@@ -29,7 +29,7 @@ describeWithEnvironment('AccessibilitySidebarView', () => {
     });
     afterEach(() => {
         UI.ActionRegistration.maybeRemoveActionExtension('elements.toggle-a11y-tree');
-        view.detach();
+        view?.detach();
     });
     it('notifies ViewManager when visibility is toggled', async () => {
         view = Accessibility.AccessibilitySidebarView.AccessibilitySidebarView.instance({ forceNew: true });
@@ -74,6 +74,18 @@ describeWithEnvironment('AccessibilitySidebarView', () => {
         view = Accessibility.AccessibilitySidebarView.AccessibilitySidebarView.instance({ forceNew: true });
         renderElementIntoDOM(view, { includeCommonStyles: true });
         await assertScreenshot('accessibility/accessibility_sidebar_view.png');
+    });
+    it('shows announcement recording subpane when enabled in hostConfig', async () => {
+        updateHostConfig({ devToolsAriaLiveRecording: { enabled: true } });
+        view = Accessibility.AccessibilitySidebarView.AccessibilitySidebarView.instance({ forceNew: true });
+        renderElementIntoDOM(view);
+        assert.isTrue(UI.ViewManager.ViewManager.instance().hasView('aria-live-recording'));
+    });
+    it('does not show announcement recording subpane when disabled in hostConfig', async () => {
+        updateHostConfig({ devToolsAriaLiveRecording: { enabled: false } });
+        view = Accessibility.AccessibilitySidebarView.AccessibilitySidebarView.instance({ forceNew: true });
+        renderElementIntoDOM(view);
+        assert.isFalse(UI.ViewManager.ViewManager.instance().hasView('aria-live-recording'));
     });
 });
 //# sourceMappingURL=AccessibilitySidebarView.test.js.map

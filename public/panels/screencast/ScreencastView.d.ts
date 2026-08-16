@@ -97,13 +97,7 @@ export declare class ScreencastView extends UI.Widget.Widget implements SDK.Over
     highlightInOverlay(data: SDK.OverlayModel.HighlightData, config: Protocol.Overlay.HighlightConfig | null): void;
     private updateHighlightInOverlayAndRepaint;
     private scaleModel;
-    static repaintScreencastCanvas(el: HTMLCanvasElement, input: CanvasRenderingInput): void;
-    private static cssColor;
-    private static quadToPath;
-    private static drawOutlinedQuad;
-    private static drawOutlinedQuadWithClip;
     private drawElementTitle;
-    static clampTooltipPosition(canvas: HTMLCanvasElement, titleElement: HTMLElement, model?: Protocol.DOM.BoxModel | null): void;
     private viewportDimensions;
     setInspectMode(mode: Protocol.Overlay.InspectMode, config: Protocol.Overlay.HighlightConfig): Promise<void>;
     highlightFrame(_frameId: string): void;
@@ -112,6 +106,7 @@ export declare class ScreencastView extends UI.Widget.Widget implements SDK.Over
     private navigateReload;
     private navigationUrlKeyUp;
     private requestNavigationHistoryEvent;
+    private onFrameNavigated;
     private requestNavigationHistory;
     private focusNavigationBar;
 }

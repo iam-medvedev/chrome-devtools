@@ -322,7 +322,9 @@ describe('DependencyGraph/Simulator', () => {
             assert.throws(() => simulator.simulate(rootNode), /cycle/);
         });
         describe('on a real trace', function () {
-            TraceLoader.setTestTimeout(this);
+            if (this.timeout() > 0) {
+                this.timeout(45_000);
+            }
             it('should compute a timeInMs', async function () {
                 const graph = await createGraph(this, trace);
                 const simulator = new Simulator({ serverResponseTimeByOrigin, observedThroughput });

@@ -31,7 +31,7 @@ describe('DebuggerModel', () => {
                 }
                 return {};
             });
-            universe.settings.moduleSetting('breakpoints-active').set(false);
+            universe.settings.resolve(SDK.SDKSettings.breakpointsActiveSettingDescriptor).set(false);
             universe.createTarget({ connection });
             assert.isTrue(breakpointsDeactivated);
         });
@@ -47,7 +47,7 @@ describe('DebuggerModel', () => {
             const target = universe.createTarget({ connection });
             await target.suspend();
             // Deactivate breakpoints while suspended.
-            universe.settings.moduleSetting('breakpoints-active').set(false);
+            universe.settings.resolve(SDK.SDKSettings.breakpointsActiveSettingDescriptor).set(false);
             // Verify that the backend received the message.
             assert.isTrue(breakpointsDeactivated);
             // Resume and verify that the setBreakpointsActive(false) is called again when the target resumes.
@@ -69,15 +69,95 @@ describe('DebuggerModel', () => {
                 }
                 return {};
             });
-            // Deactivate breakpoints befroe the target is created.
-            universe.settings.moduleSetting('breakpoints-active').set(false);
+            // Deactivate breakpoints before the target is created.
+            universe.settings.resolve(SDK.SDKSettings.breakpointsActiveSettingDescriptor).set(false);
             const target = universe.createTarget({ connection });
             assert.isTrue(breakpointsDeactivated);
             await target.suspend();
             // Activate breakpoints while suspended.
-            universe.settings.moduleSetting('breakpoints-active').set(true);
+            universe.settings.resolve(SDK.SDKSettings.breakpointsActiveSettingDescriptor).set(true);
             // Verify that the backend received the message.
             assert.isTrue(breakpointsActivated);
+        });
+    });
+    describe('skipAllPauses', () => {
+        it('skips all pauses on construction when setting is enabled', async () => {
+            const connection = new MockCDPConnection();
+            let skipAllPausesEnabled = false;
+            connection.setSuccessHandler('Debugger.setSkipAllPauses', request => {
+                if (request.skip === true) {
+                    skipAllPausesEnabled = true;
+                }
+                return {};
+            });
+            universe.settings.resolve(SDK.DebuggerModel.skipAllPausesSettingDescriptor).set(true);
+            universe.createTarget({ connection });
+            assert.isTrue(skipAllPausesEnabled);
+        });
+        it('updates skip all pauses when setting changes', async () => {
+            const connection = new MockCDPConnection();
+            const skipRequests = [];
+            connection.setSuccessHandler('Debugger.setSkipAllPauses', request => {
+                skipRequests.push(request.skip);
+                return {};
+            });
+            universe.createTarget({ connection });
+            universe.settings.resolve(SDK.DebuggerModel.skipAllPausesSettingDescriptor).set(true);
+            universe.settings.resolve(SDK.DebuggerModel.skipAllPausesSettingDescriptor).set(false);
+            assert.deepEqual(skipRequests, [true, false]);
+        });
+        it('skips all pauses for suspended target when resumed', async () => {
+            const connection = new MockCDPConnection();
+            let skipAllPausesEnabled = false;
+            connection.setSuccessHandler('Debugger.setSkipAllPauses', request => {
+                if (request.skip === true) {
+                    skipAllPausesEnabled = true;
+                }
+                return {};
+            });
+            universe.settings.resolve(SDK.DebuggerModel.skipAllPausesSettingDescriptor).set(true);
+            const target = universe.createTarget({ connection });
+            assert.isTrue(skipAllPausesEnabled);
+            await target.suspend();
+            skipAllPausesEnabled = false;
+            await target.resume();
+            assert.isTrue(skipAllPausesEnabled);
+        });
+        it('does not re-enable pauses on pause() when setting is enabled', async () => {
+            const connection = new MockCDPConnection();
+            const skipRequests = [];
+            connection.setSuccessHandler('Debugger.setSkipAllPauses', request => {
+                skipRequests.push(request.skip);
+                return {};
+            });
+            connection.setSuccessHandler('Debugger.pause', () => ({}));
+            universe.settings.resolve(SDK.DebuggerModel.skipAllPausesSettingDescriptor).set(true);
+            const target = universe.createTarget({ connection });
+            const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
+            assert.deepEqual(skipRequests, [true]);
+            debuggerModel?.pause();
+            assert.deepEqual(skipRequests, [true]);
+        });
+        it('does not re-enable pauses after timeout when setting is enabled', async () => {
+            const clock = sinon.useFakeTimers();
+            try {
+                const connection = new MockCDPConnection();
+                const skipRequests = [];
+                connection.setSuccessHandler('Debugger.setSkipAllPauses', request => {
+                    skipRequests.push(request.skip);
+                    return {};
+                });
+                universe.settings.resolve(SDK.DebuggerModel.skipAllPausesSettingDescriptor).set(true);
+                const target = universe.createTarget({ connection });
+                const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
+                assert.deepEqual(skipRequests, [true]);
+                debuggerModel?.skipAllPausesUntilReloadOrTimeout(500);
+                clock.tick(600);
+                assert.deepEqual(skipRequests, [true]);
+            }
+            finally {
+                clock.restore();
+            }
         });
     });
     describe('createRawLocationFromURL', () => {
@@ -96,7 +176,6 @@ describe('DebuggerModel', () => {
                 executionContextId: 1,
                 hash: '',
                 buildId: '',
-                isLiveEdit: false,
                 sourceMapURL: undefined,
                 hasSourceURL: false,
                 length: 10,
@@ -111,7 +190,6 @@ describe('DebuggerModel', () => {
                 executionContextId: 1,
                 hash: '',
                 buildId: '',
-                isLiveEdit: false,
                 sourceMapURL: undefined,
                 hasSourceURL: false,
                 length: 10,
@@ -160,7 +238,6 @@ describe('DebuggerModel', () => {
                 executionContextId: 1,
                 hash: '',
                 buildId: '',
-                isLiveEdit: false,
                 sourceMapURL: undefined,
                 hasSourceURL: false,
                 length: 10,
@@ -175,7 +252,6 @@ describe('DebuggerModel', () => {
                 executionContextId: 1,
                 buildId: '',
                 hash: '',
-                isLiveEdit: false,
                 sourceMapURL: undefined,
                 hasSourceURL: false,
                 length: 10,
@@ -192,7 +268,7 @@ describe('DebuggerModel', () => {
             const target = universe.createTarget();
             const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
             const scriptUrl = urlString `https://script-host/script.js`;
-            const script = new SDK.Script.Script(debuggerModel, SCRIPT_ID_ONE, scriptUrl, 0, 0, 0, 0, 0, '', false, false, undefined, false, 0, null, null, null, null, null, null, null);
+            const script = new SDK.Script.Script(debuggerModel, SCRIPT_ID_ONE, scriptUrl, 0, 0, 0, 0, 0, '', false, undefined, false, 0, null, null, null, null, null, null, null);
             const scopeTypes = [
                 "global" /* Protocol.Debugger.ScopeType.Global */,
                 "local" /* Protocol.Debugger.ScopeType.Local */,
@@ -270,7 +346,6 @@ describe('DebuggerModel', () => {
                 executionContextId: 1,
                 hash: '',
                 buildId: '',
-                isLiveEdit: false,
                 sourceMapURL: sourceMapUrl,
                 hasSourceURL: false,
                 length: 10,
@@ -296,7 +371,6 @@ describe('DebuggerModel', () => {
                 executionContextId: 1,
                 hash: '',
                 buildId: '',
-                isLiveEdit: false,
                 sourceMapURL: sourceMapUrl,
                 hasSourceURL: false,
                 length: 10,

@@ -45,6 +45,9 @@
   "references": [
     {
       "path": "./comments-tsconfig.json"
+    },
+    {
+      "path": "./css_files-tsconfig.json"
     }
   ]
 }

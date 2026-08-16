@@ -74,7 +74,7 @@ color: red;
                 };
                 const file = new Workspace.UISourceCode.UISourceCode(project, urlString `https://example.com/script.js`, Common.ResourceType.resourceTypes.Script);
                 sinon.stub(workspace, 'projects').returns([project]);
-                AiAssistanceModel.ContextSelectionAgent.ContextSelectionAgent.uiSourceCodeId.set(file, 1);
+                AiAssistanceModel.ListSources.ListSourcesTool.uiSourceCodeId.set(file, 1);
                 const el = renderToElem('[text](#file-1)');
                 const link = el.querySelector('devtools-link');
                 assert.exists(link);

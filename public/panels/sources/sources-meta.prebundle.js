@@ -15,6 +15,26 @@ import * as UI from '../../ui/legacy/legacy.js';
 import * as SettingsUI from '../../ui/settings/settings.js';
 const UIStrings = {
     /**
+     * @description Title of a setting under the Debugger category in Settings.
+     */
+    disableAsyncStackTraces: 'Disable async stack traces',
+    /**
+     * @description Title of a setting under the Debugger category that can be invoked through the Command Menu.
+     */
+    doNotCaptureAsyncStackTraces: 'Do not capture async stack traces',
+    /**
+     * @description Title of a setting under the Debugger category that can be invoked through the Command Menu.
+     */
+    captureAsyncStackTraces: 'Capture async stack traces',
+    /**
+     * @description Title of a setting under the Debugger category that can be invoked through the Command Menu.
+     */
+    disableJavascript: 'Disable JavaScript',
+    /**
+     * @description Title of a setting under the Debugger category that can be invoked through the Command Menu.
+     */
+    enableJavascript: 'Enable JavaScript',
+    /**
      * @description Text for pausing the debugger on exceptions.
      */
     pauseOnExceptions: 'Pause on exceptions',
@@ -1528,6 +1548,36 @@ SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.cssSourceMapsEnabledSe
         {
             value: false,
             title: i18nLazyString(UIStrings.disableCssSourceMaps),
+        },
+    ],
+});
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.javaScriptDisabledSettingDescriptor, {
+    category: "DEBUGGER" /* Common.Settings.SettingCategory.DEBUGGER */,
+    title: i18nLazyString(UIStrings.disableJavascript),
+    order: 1,
+    options: [
+        {
+            value: true,
+            title: i18nLazyString(UIStrings.disableJavascript),
+        },
+        {
+            value: false,
+            title: i18nLazyString(UIStrings.enableJavascript),
+        },
+    ],
+});
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.disableAsyncStackTracesSettingDescriptor, {
+    category: "DEBUGGER" /* Common.Settings.SettingCategory.DEBUGGER */,
+    title: i18nLazyString(UIStrings.disableAsyncStackTraces),
+    order: 2,
+    options: [
+        {
+            value: true,
+            title: i18nLazyString(UIStrings.doNotCaptureAsyncStackTraces),
+        },
+        {
+            value: false,
+            title: i18nLazyString(UIStrings.captureAsyncStackTraces),
         },
     ],
 });

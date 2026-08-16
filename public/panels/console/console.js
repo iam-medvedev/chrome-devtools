@@ -673,10 +673,10 @@ import * as i18n5 from "./../../core/i18n/i18n.js";
 import * as Root from "./../../core/root/root.js";
 import * as AiAssistanceModel3 from "./../../models/ai_assistance/ai_assistance.js";
 import * as Buttons from "./../../ui/components/buttons/buttons.js";
+import * as Dialogs from "./../../ui/components/dialogs/dialogs.js";
 import * as UI5 from "./../../ui/legacy/legacy.js";
 import * as Lit3 from "./../../ui/lit/lit.js";
 import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
-import * as PanelCommon from "./../common/common.js";
 
 // gen/front_end/panels/console/consoleInsightTeaser.css.js
 var consoleInsightTeaser_css_default = `/*
@@ -948,6 +948,7 @@ import * as Components2 from "./../../ui/legacy/components/utils/utils.js";
 import * as UI3 from "./../../ui/legacy/legacy.js";
 import { nothing as nothing3, render as render3 } from "./../../ui/lit/lit.js";
 import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
+import * as Elements from "./../elements/elements.js";
 
 // gen/front_end/panels/console/consoleView.css.js
 var consoleView_css_default = `/* Copyright 2021 The Chromium Authors
@@ -2330,6 +2331,16 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
       UI3.UIUtils.createTextChild(anchorWrapperElement, " ");
       return anchorWrapperElement;
     }
+    const affectedResourceElements = this.createAffectedResourceLinks();
+    if (affectedResourceElements.length) {
+      const anchorWrapperElement = document.createElement("span");
+      anchorWrapperElement.classList.add("console-message-anchor");
+      for (const element of affectedResourceElements) {
+        anchorWrapperElement.append(element);
+      }
+      UI3.UIUtils.createTextChild(anchorWrapperElement, " ");
+      return anchorWrapperElement;
+    }
     return null;
   }
   buildMessageWithStackTrace(runtimeModel) {
@@ -2605,21 +2616,40 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
     if (!domModel) {
       return result;
     }
-    void domModel.pushObjectAsNodeToFrontend(remoteObject).then(async (node) => {
+    void domModel.pushObjectAsNodeToFrontend(remoteObject).then((node) => {
       if (!node) {
         result.appendChild(this.formatParameterAsObject(remoteObject, false));
         return;
       }
-      const renderResult2 = await UI3.UIUtils.Renderer.render(node);
-      if (renderResult2) {
-        this.selectableChildren.push(renderResult2);
-        renderResult2.element.addEventListener("dimensionschanged", () => {
-          this.messageResized({ data: renderResult2.element });
-        });
-        result.appendChild(renderResult2.element);
-      } else {
-        result.appendChild(this.formatParameterAsObject(remoteObject, false));
-      }
+      const treeOutline = new Elements.ElementsTreeOutline.ElementsTreeOutline(
+        /* omitRootDOMNode: */
+        false,
+        /* selectEnabled: */
+        true,
+        /* hideGutter: */
+        true
+      );
+      treeOutline.rootDOMNode = node;
+      treeOutline.deindentSingleNode();
+      treeOutline.setVisible(true);
+      treeOutline.element.treeElementForTest = treeOutline.firstChild();
+      treeOutline.setShowSelectionOnKeyboardFocus(
+        /* show: */
+        true,
+        /* preventTabOrder: */
+        true
+      );
+      this.selectableChildren.push({
+        element: treeOutline.element,
+        forceSelect: treeOutline.forceSelect.bind(treeOutline)
+      });
+      const dispatchDimensionChange = () => {
+        this.messageResized({ data: treeOutline.element });
+      };
+      treeOutline.addEventListener(UI3.TreeOutline.Events.ElementAttached, dispatchDimensionChange);
+      treeOutline.addEventListener(UI3.TreeOutline.Events.ElementExpanded, dispatchDimensionChange);
+      treeOutline.addEventListener(UI3.TreeOutline.Events.ElementCollapsed, dispatchDimensionChange);
+      result.appendChild(treeOutline.element);
       this.formattedParameterAsNodeForTest();
     });
     return result;
@@ -4358,7 +4388,7 @@ var ConsoleInsightTeaser = class extends UI5.Widget.Widget {
   async #showFreDialog() {
     const noLogging = Root.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue === Root.Runtime.GenAiEnterprisePolicyValue.ALLOW_WITHOUT_LOGGING;
     const iconName = AiAssistanceModel3.AiUtils.getIconName();
-    const result = await PanelCommon.FreDialog.show({
+    const result = await Dialogs.FreDialog.FreDialog.show({
       header: { iconName, text: lockedString(UIStringsNotTranslate.freDisclaimerHeader) },
       reminderItems: [
         {
@@ -4598,12 +4628,12 @@ import * as Root2 from "./../../core/root/root.js";
 import * as SDK5 from "./../../core/sdk/sdk.js";
 import * as CodeMirror from "./../../third_party/codemirror.next/codemirror.next.js";
 import * as Buttons2 from "./../../ui/components/buttons/buttons.js";
+import * as Dialogs2 from "./../../ui/components/dialogs/dialogs.js";
 import * as TextEditor from "./../../ui/components/text_editor/text_editor.js";
 import * as ObjectUI3 from "./../../ui/legacy/components/object_ui/object_ui.js";
 import * as UI6 from "./../../ui/legacy/legacy.js";
 import { Directives, html as html4, nothing as nothing5, render as render5 } from "./../../ui/lit/lit.js";
 import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
-import * as PanelCommon2 from "./../common/common.js";
 
 // gen/front_end/panels/console/consolePinPane.css.js
 var consolePinPane_css_default = `/*
@@ -5026,7 +5056,7 @@ var ConsolePinPresenter = class extends UI6.Widget.Widget {
     return true;
   }
   async #showSelfXssWarning() {
-    const allowPasting = await PanelCommon2.TypeToAllowDialog.show({
+    const allowPasting = await Dialogs2.TypeToAllowDialog.TypeToAllowDialog.show({
       jslogContext: {
         dialog: "self-xss-warning",
         input: "allow-pasting"
@@ -6150,6 +6180,7 @@ import { createIcon as createIcon2 } from "./../../ui/kit/kit.js";
 import * as SettingsUI from "./../../ui/legacy/components/settings_ui/settings_ui.js";
 import * as Components5 from "./../../ui/legacy/components/utils/utils.js";
 import * as UI9 from "./../../ui/legacy/legacy.js";
+import * as SettingUIRegistration from "./../../ui/settings/settings.js";
 import * as VisualLogging5 from "./../../ui/visual_logging/visual_logging.js";
 import { AiCodeCompletionSummaryToolbar } from "./../common/common.js";
 
@@ -6584,7 +6615,7 @@ var ConsoleView = class _ConsoleView extends UI9.Widget.VBox {
     const consoleEagerEvalSetting = Common6.Settings.Settings.instance().moduleSetting("console-eager-eval");
     const preserveConsoleLogSetting = Common6.Settings.Settings.instance().resolve(SDK7.SDKSettings.preserveConsoleLogSettingDescriptor);
     const userActivationEvalSetting = Common6.Settings.Settings.instance().moduleSetting("console-user-activation-eval");
-    settingsPane.append(SettingsUI.SettingsUI.createSettingCheckbox(i18nString5(UIStrings5.networkMessages), this.filter.networkMessagesSetting, this.filter.networkMessagesSetting.title()), SettingsUI.SettingsUI.createSettingCheckbox(i18nString5(UIStrings5.logXMLHttpRequests), monitoringXHREnabledSetting), SettingsUI.SettingsUI.createSettingCheckbox(i18nString5(UIStrings5.preserveLog), preserveConsoleLogSetting, i18nString5(UIStrings5.doNotClearLogOnPageReload)), SettingsUI.SettingsUI.createSettingCheckbox(consoleEagerEvalSetting.title(), consoleEagerEvalSetting, i18nString5(UIStrings5.eagerlyEvaluateTextInThePrompt)), SettingsUI.SettingsUI.createSettingCheckbox(i18nString5(UIStrings5.selectedContextOnly), this.filter.filterByExecutionContextSetting, i18nString5(UIStrings5.onlyShowMessagesFromTheCurrentContext)), SettingsUI.SettingsUI.createSettingCheckbox(this.consoleHistoryAutocompleteSetting.title(), this.consoleHistoryAutocompleteSetting, i18nString5(UIStrings5.autocompleteFromHistory)), SettingsUI.SettingsUI.createSettingCheckbox(this.groupSimilarSetting.title(), this.groupSimilarSetting, i18nString5(UIStrings5.groupSimilarMessagesInConsole)), SettingsUI.SettingsUI.createSettingCheckbox(userActivationEvalSetting.title(), userActivationEvalSetting, i18nString5(UIStrings5.treatEvaluationAsUserActivation)), SettingsUI.SettingsUI.createSettingCheckbox(this.showCorsErrorsSetting.title(), this.showCorsErrorsSetting, i18nString5(UIStrings5.showCorsErrorsInConsole)));
+    settingsPane.append(SettingsUI.SettingsUI.createSettingCheckbox(i18nString5(UIStrings5.networkMessages), this.filter.networkMessagesSetting, SettingUIRegistration.SettingUIRegistration.resolve(this.filter.networkMessagesSetting.descriptor()).title), SettingsUI.SettingsUI.createSettingCheckbox(i18nString5(UIStrings5.logXMLHttpRequests), monitoringXHREnabledSetting), SettingsUI.SettingsUI.createSettingCheckbox(i18nString5(UIStrings5.preserveLog), preserveConsoleLogSetting, i18nString5(UIStrings5.doNotClearLogOnPageReload)), SettingsUI.SettingsUI.createSettingCheckbox(SettingUIRegistration.SettingUIRegistration.resolve(consoleEagerEvalSetting.descriptor()).title, consoleEagerEvalSetting, i18nString5(UIStrings5.eagerlyEvaluateTextInThePrompt)), SettingsUI.SettingsUI.createSettingCheckbox(i18nString5(UIStrings5.selectedContextOnly), this.filter.filterByExecutionContextSetting, i18nString5(UIStrings5.onlyShowMessagesFromTheCurrentContext)), SettingsUI.SettingsUI.createSettingCheckbox(SettingUIRegistration.SettingUIRegistration.resolve(this.consoleHistoryAutocompleteSetting.descriptor()).title, this.consoleHistoryAutocompleteSetting, i18nString5(UIStrings5.autocompleteFromHistory)), SettingsUI.SettingsUI.createSettingCheckbox(SettingUIRegistration.SettingUIRegistration.resolve(this.groupSimilarSetting.descriptor()).title, this.groupSimilarSetting, i18nString5(UIStrings5.groupSimilarMessagesInConsole)), SettingsUI.SettingsUI.createSettingCheckbox(SettingUIRegistration.SettingUIRegistration.resolve(userActivationEvalSetting.descriptor()).title, userActivationEvalSetting, i18nString5(UIStrings5.treatEvaluationAsUserActivation)), SettingsUI.SettingsUI.createSettingCheckbox(SettingUIRegistration.SettingUIRegistration.resolve(this.showCorsErrorsSetting.descriptor()).title, this.showCorsErrorsSetting, i18nString5(UIStrings5.showCorsErrorsInConsole)));
     if (!this.showSettingsPaneSetting.get()) {
       settingsPane.classList.add("hidden");
     }
@@ -6892,6 +6923,15 @@ var ConsoleView = class _ConsoleView extends UI9.Widget.VBox {
       this.viewport.setStickToBottom(oldStickToBottom);
       this.viewport.element.scrollTop = oldScrollTop;
     }
+  }
+  /**
+   * Inserts text into the console prompt (replacing any existing content)
+   * and focuses the prompt. Used by cross-panel features such as
+   * "Edit and resend as fetch".
+   */
+  insertIntoPrompt(text) {
+    this.prompt.insertText(text);
+    this.focusPrompt();
   }
   restoreScrollPositions() {
     if (this.viewport.stickToBottom()) {
@@ -7235,7 +7275,7 @@ var ConsoleView = class _ConsoleView extends UI9.Widget.VBox {
     }
     if (consoleMessage) {
       const request = Logs3.NetworkLog.NetworkLog.requestForConsoleMessage(consoleMessage);
-      if (request && SDK7.NetworkManager.NetworkManager.canResendRequest(request)) {
+      if (request && SDK7.NetworkManager.NetworkManager.canResendRequest(request, true)) {
         contextMenu.debugSection().appendItem(i18nString5(UIStrings5.resend), SDK7.NetworkManager.NetworkManager.replayRequest.bind(null, request), { jslogContext: "resend" });
       }
     }
@@ -7915,6 +7955,9 @@ var WrapperView = class _WrapperView extends UI10.Widget.VBox {
   showViewInWrapper() {
     this.view.show(this.element);
   }
+  insertIntoPrompt(text) {
+    this.view.insertIntoPrompt(text);
+  }
 };
 var ConsoleRevealer = class {
   async reveal(_object) {
@@ -8204,6 +8247,17 @@ var ConsolePrompt = class extends Common7.ObjectWrapper.eventMixin(UI11.Widget.W
   clear() {
     this.editor.dispatch({
       changes: { from: 0, to: this.editor.state.doc.length }
+    });
+  }
+  /**
+   * Replaces the full prompt content with the given text, places the caret
+   * at the end, and scrolls the editor into view.
+   */
+  insertText(text) {
+    this.editor.dispatch({
+      changes: { from: 0, to: this.editor.state.doc.length, insert: text },
+      selection: { anchor: text.length },
+      scrollIntoView: true
     });
   }
   text() {

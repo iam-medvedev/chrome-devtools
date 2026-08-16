@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { computeBuildTestId, escapeTestIdBlock, generateExactTestId, } from './TestIdGeneration.js';
+import { computeBuildTestId, escapeTestIdBlock, formatFailedTestsSummary, generateExactTestId, } from './TestIdGeneration.js';
 describe('TestIdGeneration', () => {
     describe('escapeTestIdBlock', () => {
         it('converts to lowercase', () => {
@@ -113,6 +113,25 @@ describe('TestIdGeneration', () => {
             const file = '/gen/front_end/my_test.js';
             const titlePath = ['a'.repeat(600)];
             assert.throws(() => generateExactTestId(genDir, file, titlePath), /Test ID is too long/);
+        });
+    });
+    describe('formatFailedTestsSummary', () => {
+        it('returns empty string when there are no failed tests', () => {
+            assert.strictEqual(formatFailedTestsSummary([]), '');
+            assert.strictEqual(formatFailedTestsSummary(new Set()), '');
+        });
+        it('formats a single failed test correctly', () => {
+            const failed = ['front_end/core/common/Color.test.ts:color:parses_hex'];
+            const expected = '\nFailed tests (1):\n  front_end/core/common/Color.test.ts:color:parses_hex\n\nTo rerun:\n  npm run test -- front_end/core/common/Color.test.ts:color:parses_hex\n\n';
+            assert.strictEqual(formatFailedTestsSummary(failed), expected);
+        });
+        it('formats multiple failed tests correctly', () => {
+            const failed = new Set([
+                'front_end/core/common/Color.test.ts:color:parses_hex',
+                'test/e2e/console/console-log.test.ts:the_console_tab:shows_console_messages',
+            ]);
+            const expected = '\nFailed tests (2):\n  front_end/core/common/Color.test.ts:color:parses_hex\n  test/e2e/console/console-log.test.ts:the_console_tab:shows_console_messages\n\nTo rerun:\n  npm run test -- front_end/core/common/Color.test.ts:color:parses_hex test/e2e/console/console-log.test.ts:the_console_tab:shows_console_messages\n\n';
+            assert.strictEqual(formatFailedTestsSummary(failed), expected);
         });
     });
 });

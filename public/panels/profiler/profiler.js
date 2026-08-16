@@ -783,7 +783,6 @@ var HeapDetachedElementsDataGridNode = class extends DataGrid.DataGrid.DataGridN
     }
     return count;
   }
-  // FIXME: is it a partial dupe of front_end/panels/elements/ElementsTreeOutlineRenderer.ts?
   #renderNode(node, target) {
     render(html`
           <devtools-widget
@@ -1487,15 +1486,6 @@ var heapProfiler_css_default = `/*
   flex: 0 1 auto;
   overflow: hidden;
   white-space: nowrap;
-}
-
-.heap-snapshot-view .heap-snapshot-view-resizer .verticalResizerIcon {
-  /* stylelint-disable-next-line custom-property-pattern */
-  background-image: var(--image-file-toolbarResizerVertical);
-  background-repeat: no-repeat;
-  background-position: center;
-  flex: 0 0 28px;
-  margin-left: auto;
 }
 
 .heap-snapshot-view .heap-snapshot-view-resizer .title > span {
@@ -6306,7 +6296,6 @@ var HeapSnapshotView = class _HeapSnapshotView extends UI9.View.SimpleView {
       const retainmentViewHeader = document.createElement("div");
       retainmentViewHeader.classList.add("heap-snapshot-view-resizer");
       const retainingPathsTitleDiv = retainmentViewHeader.createChild("div", "title");
-      retainmentViewHeader.createChild("div", "verticalResizerIcon");
       const retainingPathsTitle = retainingPathsTitleDiv.createChild("span");
       retainingPathsTitle.textContent = i18nString7(UIStrings8.retainers);
       splitWidgetResizer = retainmentViewHeader;
@@ -7026,7 +7015,6 @@ var AllocationPerspective = class extends Perspective {
     const resizer = document.createElement("div");
     resizer.classList.add("heap-snapshot-view-resizer");
     const title = resizer.createChild("div", "title").createChild("span");
-    resizer.createChild("div", "verticalResizerIcon");
     title.textContent = i18nString7(UIStrings8.liveObjects);
     this.allocationSplitWidget.hideDefaultResizer();
     this.allocationSplitWidget.installResizer(resizer);

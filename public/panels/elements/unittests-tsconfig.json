@@ -126,6 +126,9 @@
       "path": "../../third_party/codemirror.next/bundle-tsconfig.json"
     },
     {
+      "path": "../../ui/components/adorners/bundle-tsconfig.json"
+    },
+    {
       "path": "../../ui/components/text_editor/bundle-tsconfig.json"
     },
     {

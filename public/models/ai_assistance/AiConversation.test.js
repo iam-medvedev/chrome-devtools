@@ -377,6 +377,35 @@ describe('AiConversation', () => {
         assert.strictEqual(serialized.history[2].type, "action" /* AiAssistance.AiAgent.ResponseType.ACTION */);
         assert.isUndefined(serialized.history[2].widgets);
     });
+    it('redacts action outputs of tools annotated with REDACT_FROM_HISTORY', () => {
+        const conversation = new AiAssistance.AiConversation.AiConversation({ type: "freestyler" /* AiAssistance.AiHistoryStorage.ConversationType.STYLING */ });
+        const dummyTool = {
+            name: 'dummyTool',
+            annotations: ["redact-from-history" /* AiAssistance.Tool.ToolAnnotation.REDACT_FROM_HISTORY */],
+        };
+        sinon.stub(AiAssistance.ToolRegistry.ToolRegistry, 'get').withArgs('dummyTool').returns(dummyTool);
+        const actionResponseWithRedaction = {
+            type: "action" /* AiAssistance.AiAgent.ResponseType.ACTION */,
+            code: 'code',
+            output: 'secret storage value',
+            canceled: false,
+            toolName: 'dummyTool',
+        };
+        const actionResponseWithoutRedaction = {
+            type: "action" /* AiAssistance.AiAgent.ResponseType.ACTION */,
+            code: 'code',
+            output: 'normal output',
+            canceled: false,
+            toolName: 'otherTool',
+        };
+        conversation.history.push(actionResponseWithRedaction, actionResponseWithoutRedaction);
+        const serialized = conversation.serialize();
+        assert.lengthOf(serialized.history, 2);
+        assert.strictEqual(serialized.history[0].type, "action" /* AiAssistance.AiAgent.ResponseType.ACTION */);
+        assert.strictEqual(serialized.history[0].output, '<redacted>');
+        assert.strictEqual(serialized.history[1].type, "action" /* AiAssistance.AiAgent.ResponseType.ACTION */);
+        assert.strictEqual(serialized.history[1].output, 'normal output');
+    });
     async function testNavigationDuringRun({ navigationUrl, expectBlocked, }) {
         updateHostConfig({ devToolsAiAssistanceContextSelectionAgent: { enabled: true } });
         const origin = Platform.DevToolsPath.urlString `https://example.com`;

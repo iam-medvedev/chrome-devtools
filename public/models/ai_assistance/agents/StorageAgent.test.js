@@ -48,7 +48,7 @@ describe('StorageAgent', function () {
             aidaClient,
             targetManager: universe.targetManager,
         });
-        const context = new AiAssistance.StorageAgent.StorageContext(new AiAssistance.StorageItem.DOMStorageItem('https://example.com', 'https://example.com', 'https://example.com/', 'localStorage'));
+        const context = new AiAssistance.StorageContext.StorageContext(new AiAssistance.StorageItem.DOMStorageItem('https://example.com', 'https://example.com', 'https://example.com/', 'localStorage'));
         const responses = await Array.fromAsync(agent.run('list keys', { selected: context }));
         const actionResponse = responses.find((r) => r.type === 'action');
         assert.exists(actionResponse, 'Expected an action response');
@@ -72,7 +72,7 @@ describe('StorageAgent', function () {
             confirmSideEffectForTest: (() => sideEffectPromise),
             targetManager: universe.targetManager,
         });
-        const context = new AiAssistance.StorageAgent.StorageContext(new AiAssistance.StorageItem.DOMStorageItem('https://example.com', 'https://example.com', 'https://example.com/', 'localStorage'));
+        const context = new AiAssistance.StorageContext.StorageContext(new AiAssistance.StorageItem.DOMStorageItem('https://example.com', 'https://example.com', 'https://example.com/', 'localStorage'));
         sideEffectPromise.resolve(true);
         const responses = await Array.fromAsync(agent.run('get key1', { selected: context }));
         const actionResponses = responses.filter((r) => r.type === 'action');
@@ -93,7 +93,7 @@ describe('StorageAgent', function () {
             confirmSideEffectForTest: (() => sideEffectPromise),
             targetManager: universe.targetManager,
         });
-        const context = new AiAssistance.StorageAgent.StorageContext(new AiAssistance.StorageItem.DOMStorageItem('https://example.com', 'https://example.com', 'https://example.com/', 'localStorage'));
+        const context = new AiAssistance.StorageContext.StorageContext(new AiAssistance.StorageItem.DOMStorageItem('https://example.com', 'https://example.com', 'https://example.com/', 'localStorage'));
         sideEffectPromise.resolve(false);
         const responses = await Array.fromAsync(agent.run('get key1', { selected: context }));
         const finalAction = responses.findLast((r) => r.type === 'action');
@@ -113,7 +113,7 @@ describe('StorageAgent', function () {
             aidaClient,
             targetManager: universe.targetManager,
         });
-        const context = new AiAssistance.StorageAgent.StorageContext(new AiAssistance.StorageItem.DOMStorageItem('https://example.com', 'https://example.com', 'https://example.com^0', 'localStorage'));
+        const context = new AiAssistance.StorageContext.StorageContext(new AiAssistance.StorageItem.DOMStorageItem('https://example.com', 'https://example.com', 'https://example.com^0', 'localStorage'));
         const target = universe.targetManager.primaryPageTarget();
         assert.exists(target);
         const domStorageModel = target.model(SDK.DOMStorageModel.DOMStorageModel);
@@ -140,7 +140,7 @@ describe('StorageAgent', function () {
             [{ explanation: 'Here are the keys.' }],
         ]);
         const agent = new AiAssistance.StorageAgent.StorageAgent({ aidaClient, targetManager: universe.targetManager });
-        const context = new AiAssistance.StorageAgent.StorageContext(AiAssistance.StorageItem.DOMStorageItem.createGenericContext('https://example.com', 'localStorage'));
+        const context = new AiAssistance.StorageContext.StorageContext(AiAssistance.StorageItem.DOMStorageItem.createGenericContext('https://example.com', 'localStorage'));
         const target = universe.targetManager.primaryPageTarget();
         assert.exists(target);
         const mockStorageA = sinon.createStubInstance(SDK.DOMStorageModel.DOMStorage);
@@ -173,7 +173,7 @@ describe('StorageAgent', function () {
             aidaClient,
             targetManager: universe.targetManager,
         });
-        const context = new AiAssistance.StorageAgent.StorageContext(new AiAssistance.StorageItem.CookieItem('https://example.com', 'https://example.com'));
+        const context = new AiAssistance.StorageContext.StorageContext(new AiAssistance.StorageItem.CookieItem('https://example.com', 'https://example.com'));
         const target = universe.targetManager.primaryPageTarget();
         assert.exists(target);
         const cookieModel = target.model(SDK.CookieModel.CookieModel);
@@ -215,7 +215,7 @@ describe('StorageAgent', function () {
             confirmSideEffectForTest: (() => sideEffectPromise),
             targetManager: universe.targetManager,
         });
-        const context = new AiAssistance.StorageAgent.StorageContext(new AiAssistance.StorageItem.CookieItem('https://example.com', 'https://example.com'));
+        const context = new AiAssistance.StorageContext.StorageContext(new AiAssistance.StorageItem.CookieItem('https://example.com', 'https://example.com'));
         const target = universe.targetManager.primaryPageTarget();
         assert.exists(target);
         const cookieModel = target.model(SDK.CookieModel.CookieModel);
@@ -251,7 +251,7 @@ describe('StorageAgent', function () {
             confirmSideEffectForTest: (() => sideEffectPromise),
             targetManager: universe.targetManager,
         });
-        const context = new AiAssistance.StorageAgent.StorageContext(new AiAssistance.StorageItem.CookieItem('https://example.com', 'https://example.com'));
+        const context = new AiAssistance.StorageContext.StorageContext(new AiAssistance.StorageItem.CookieItem('https://example.com', 'https://example.com'));
         const target = universe.targetManager.primaryPageTarget();
         assert.exists(target);
         const cookieModel = target.model(SDK.CookieModel.CookieModel);
@@ -292,7 +292,7 @@ describe('StorageAgent', function () {
             confirmSideEffectForTest: (() => sideEffectPromise),
             targetManager: universe.targetManager,
         });
-        const context = new AiAssistance.StorageAgent.StorageContext(new AiAssistance.StorageItem.CookieItem('https://example.com', 'https://example.com'));
+        const context = new AiAssistance.StorageContext.StorageContext(new AiAssistance.StorageItem.CookieItem('https://example.com', 'https://example.com'));
         const target = universe.targetManager.primaryPageTarget();
         assert.exists(target);
         const cookieModel = target.model(SDK.CookieModel.CookieModel);
@@ -345,7 +345,7 @@ describe('StorageAgent', function () {
             aidaClient,
             targetManager: universe.targetManager,
         });
-        const context = new AiAssistance.StorageAgent.StorageContext(new AiAssistance.StorageItem.CookieItem('https://example.com', 'https://example.com'));
+        const context = new AiAssistance.StorageContext.StorageContext(new AiAssistance.StorageItem.CookieItem('https://example.com', 'https://example.com'));
         assert.isTrue(AiAssistance.StorageAgent.isSamePageOrigin(target2.outermostTarget(), context));
         const responses = await Array.fromAsync(agent.run('list cookies', { selected: context }));
         const actionResponse = responses.find((r) => r.type === 'action');
@@ -391,7 +391,7 @@ describe('StorageAgent', function () {
             confirmSideEffectForTest: (() => sideEffectPromise),
             targetManager: universe.targetManager,
         });
-        const context = new AiAssistance.StorageAgent.StorageContext(new AiAssistance.StorageItem.CookieItem('https://example.com', 'https://example.com'));
+        const context = new AiAssistance.StorageContext.StorageContext(new AiAssistance.StorageItem.CookieItem('https://example.com', 'https://example.com'));
         assert.isTrue(AiAssistance.StorageAgent.isSamePageOrigin(target2.outermostTarget(), context));
         sideEffectPromise.resolve(true);
         const responses = await Array.fromAsync(agent.run('get cookie values', { selected: context }));
@@ -420,7 +420,7 @@ describe('StorageAgent', function () {
             confirmSideEffectForTest: (() => sideEffectPromise),
             targetManager: universe.targetManager,
         });
-        const context = new AiAssistance.StorageAgent.StorageContext(AiAssistance.StorageItem.DOMStorageItem.createGenericContext('https://example.com', 'localStorage'));
+        const context = new AiAssistance.StorageContext.StorageContext(AiAssistance.StorageItem.DOMStorageItem.createGenericContext('https://example.com', 'localStorage'));
         const target = universe.targetManager.primaryPageTarget();
         assert.exists(target);
         const mockStorageA = sinon.createStubInstance(SDK.DOMStorageModel.DOMStorage);
@@ -443,9 +443,9 @@ describe('StorageAgent', function () {
         assert.deepEqual(parsed.storageValuesByOrigin['https://b.com'].items, [{ storageKey: 'https://b.com^0', values: { keyA: 'valB' } }]);
     });
     it('correctly formats the title for CookieItem without a name or origin', () => {
-        const context = new AiAssistance.StorageAgent.StorageContext(new AiAssistance.StorageItem.CookieItem('https://example.com', 'https://example.com'));
+        const context = new AiAssistance.StorageContext.StorageContext(new AiAssistance.StorageItem.CookieItem('https://example.com', 'https://example.com'));
         assert.strictEqual(context.getTitle(), 'cookies: https://example.com');
-        const genericContext = new AiAssistance.StorageAgent.StorageContext(new AiAssistance.StorageItem.CookieItem('https://example.com', ''));
+        const genericContext = new AiAssistance.StorageContext.StorageContext(new AiAssistance.StorageItem.CookieItem('https://example.com', ''));
         assert.strictEqual(genericContext.getTitle(), 'cookies');
     });
     it('getStorageValues truncates large values to 10000 characters', async () => {
@@ -464,7 +464,7 @@ describe('StorageAgent', function () {
             confirmSideEffectForTest: (() => sideEffectPromise),
             targetManager: universe.targetManager,
         });
-        const context = new AiAssistance.StorageAgent.StorageContext(new AiAssistance.StorageItem.DOMStorageItem('https://example.com', 'https://example.com', 'https://example.com/', 'localStorage'));
+        const context = new AiAssistance.StorageContext.StorageContext(new AiAssistance.StorageItem.DOMStorageItem('https://example.com', 'https://example.com', 'https://example.com/', 'localStorage'));
         const target = universe.targetManager.primaryPageTarget();
         assert.exists(target);
         const domStorageModel = target.model(SDK.DOMStorageModel.DOMStorageModel);
@@ -497,7 +497,7 @@ describe('StorageAgent', function () {
             aidaClient,
             targetManager: universe.targetManager,
         });
-        const context = new AiAssistance.StorageAgent.StorageContext(new AiAssistance.StorageItem.DOMStorageItem('https://example.com', 'https://example.com', 'https://example.com/', 'localStorage'));
+        const context = new AiAssistance.StorageContext.StorageContext(new AiAssistance.StorageItem.DOMStorageItem('https://example.com', 'https://example.com', 'https://example.com/', 'localStorage'));
         const responses = await Array.fromAsync(agent.run('list origins', { selected: context }));
         const actionResponse = responses.find((r) => r.type === 'action');
         assert.exists(actionResponse, 'Expected an action response');
@@ -550,7 +550,7 @@ describe('StorageAgent', function () {
             targetManager: universe.targetManager,
         });
         const item = new AiAssistance.StorageItem.CookieItem('https://example.com', 'https://example.com');
-        const context = new AiAssistance.StorageAgent.StorageContext(item);
+        const context = new AiAssistance.StorageContext.StorageContext(item);
         const responses = await Array.fromAsync(agent.run('get breakdown', { selected: context }));
         const actionResponse = responses.find((r) => r.type === 'action');
         assert.exists(actionResponse, 'Expected an action response');
@@ -566,11 +566,27 @@ describe('StorageAgent', function () {
                 { storageType: 'session_storage', usage: AiAssistance.UnitFormatters.bytes(12) },
             ],
         });
+        assert.deepEqual(actionResponse.widgets, [
+            {
+                name: 'STORAGE_BREAKDOWN',
+                data: {
+                    totalUsageBytes: 1000,
+                    totalQuotaBytes: 10000,
+                    usageBreakdown: [
+                        { storageType: 'service_workers', bytes: 800 },
+                        { storageType: 'indexeddb', bytes: 200 },
+                        { storageType: 'local_storage', bytes: 20 },
+                        { storageType: 'cookies', bytes: 15 },
+                        { storageType: 'session_storage', bytes: 12 },
+                    ],
+                },
+            },
+        ]);
     });
     describe('findFrameForOrigin', () => {
         it('returns the frame if it belongs to the same page target and has the primary origin', () => {
             const PRIMARY_ORIGIN = 'https://example.com';
-            const context = new AiAssistance.StorageAgent.StorageContext(new AiAssistance.StorageItem.CookieItem(PRIMARY_ORIGIN, PRIMARY_ORIGIN));
+            const context = new AiAssistance.StorageContext.StorageContext(new AiAssistance.StorageItem.CookieItem(PRIMARY_ORIGIN, PRIMARY_ORIGIN));
             const primaryTarget = universe.targetManager.primaryPageTarget();
             assert.exists(primaryTarget);
             const frame = AiAssistance.StorageAgent.findFrameForOrigin(context, PRIMARY_ORIGIN, universe.targetManager);
@@ -580,7 +596,7 @@ describe('StorageAgent', function () {
         it('returns the frame if it has a different origin but belongs to the same page target (iframe)', () => {
             const PRIMARY_ORIGIN = 'https://example.com';
             const DIFFERENT_ORIGIN = 'https://different.com';
-            const context = new AiAssistance.StorageAgent.StorageContext(new AiAssistance.StorageItem.CookieItem(PRIMARY_ORIGIN, PRIMARY_ORIGIN));
+            const context = new AiAssistance.StorageContext.StorageContext(new AiAssistance.StorageItem.CookieItem(PRIMARY_ORIGIN, PRIMARY_ORIGIN));
             const primaryTarget = universe.targetManager.primaryPageTarget();
             assert.exists(primaryTarget);
             const resourceTreeModel = primaryTarget.model(SDK.ResourceTreeModel.ResourceTreeModel);
@@ -597,7 +613,7 @@ describe('StorageAgent', function () {
         it('returns null if the origin frame belongs to a different page target', () => {
             const PRIMARY_ORIGIN = 'https://example.com';
             const DIFFERENT_ORIGIN = 'https://different.com';
-            const context = new AiAssistance.StorageAgent.StorageContext(new AiAssistance.StorageItem.CookieItem(PRIMARY_ORIGIN, PRIMARY_ORIGIN));
+            const context = new AiAssistance.StorageContext.StorageContext(new AiAssistance.StorageItem.CookieItem(PRIMARY_ORIGIN, PRIMARY_ORIGIN));
             const primaryTarget = universe.targetManager.primaryPageTarget();
             assert.exists(primaryTarget);
             // 1. Create a new target representing a different page target
@@ -617,18 +633,18 @@ describe('StorageAgent', function () {
     });
     describe('resolveDOMStorages', () => {
         it('returns active matching DOM storage instances in the active tab', () => {
-            const context = new AiAssistance.StorageAgent.StorageContext(new AiAssistance.StorageItem.DOMStorageItem('https://example.com', 'https://example.com', 'https://example.com/', 'localStorage'));
+            const context = new AiAssistance.StorageContext.StorageContext(new AiAssistance.StorageItem.DOMStorageItem('https://example.com', 'https://example.com', 'https://example.com/', 'localStorage'));
             const resolved = AiAssistance.StorageAgent.resolveDOMStorages(context, 'localStorage', 'https://example.com', universe.targetManager);
             assert.lengthOf(resolved, 1);
             assert.strictEqual(resolved[0].storageKey, 'https://example.com/');
         });
         it('filters out storages that do not belong to the conversation top-site', () => {
-            const context = new AiAssistance.StorageAgent.StorageContext(new AiAssistance.StorageItem.DOMStorageItem('https://different.com', 'https://different.com', 'https://different.com/', 'localStorage'));
+            const context = new AiAssistance.StorageContext.StorageContext(new AiAssistance.StorageItem.DOMStorageItem('https://different.com', 'https://different.com', 'https://different.com/', 'localStorage'));
             const resolved = AiAssistance.StorageAgent.resolveDOMStorages(context, 'localStorage', 'https://different.com', universe.targetManager);
             assert.lengthOf(resolved, 0);
         });
         it('targets a specific storageKey partition if specified', () => {
-            const context = new AiAssistance.StorageAgent.StorageContext(new AiAssistance.StorageItem.DOMStorageItem('https://example.com', 'https://example.com', 'https://example.com/', 'localStorage'));
+            const context = new AiAssistance.StorageContext.StorageContext(new AiAssistance.StorageItem.DOMStorageItem('https://example.com', 'https://example.com', 'https://example.com/', 'localStorage'));
             const resolved = AiAssistance.StorageAgent.resolveDOMStorages(context, 'localStorage', 'https://example.com', universe.targetManager, 'https://example.com/');
             assert.lengthOf(resolved, 1);
             const nonMatching = AiAssistance.StorageAgent.resolveDOMStorages(context, 'localStorage', 'https://example.com', universe.targetManager, 'https://different-partition/');
@@ -661,30 +677,30 @@ describe('StorageAgent', function () {
     describe('StorageContext', () => {
         it('correctly formats the title for DOMStorageItem with a key', () => {
             const item = new AiAssistance.StorageItem.DOMStorageItem('https://example.com', 'https://example.com', 'https://example.com/', 'localStorage', 'key1');
-            const context = new AiAssistance.StorageAgent.StorageContext(item);
+            const context = new AiAssistance.StorageContext.StorageContext(item);
             assert.strictEqual(context.getTitle(), 'entry: key1 https://example.com');
         });
         it('correctly formats the title for DOMStorageItem without a key', () => {
             const item = new AiAssistance.StorageItem.DOMStorageItem('https://example.com', 'https://example.com', 'https://example.com/', 'localStorage');
-            const context = new AiAssistance.StorageAgent.StorageContext(item);
+            const context = new AiAssistance.StorageContext.StorageContext(item);
             assert.strictEqual(context.getTitle(), 'local storage: https://example.com');
             const sessionItem = new AiAssistance.StorageItem.DOMStorageItem('https://example.com', 'https://example.com', 'https://example.com/', 'sessionStorage');
-            const sessionContext = new AiAssistance.StorageAgent.StorageContext(sessionItem);
+            const sessionContext = new AiAssistance.StorageContext.StorageContext(sessionItem);
             assert.strictEqual(sessionContext.getTitle(), 'session storage: https://example.com');
         });
         it('correctly formats the title for CookieItem with a name', () => {
             const item = new AiAssistance.StorageItem.CookieItem('https://example.com', 'https://example.com', 'cookie1');
-            const context = new AiAssistance.StorageAgent.StorageContext(item);
+            const context = new AiAssistance.StorageContext.StorageContext(item);
             assert.strictEqual(context.getTitle(), 'cookie: cookie1 https://example.com');
         });
         it('correctly formats the title for CookieItem without a name', () => {
             const item = new AiAssistance.StorageItem.CookieItem('https://example.com', 'https://example.com');
-            const context = new AiAssistance.StorageAgent.StorageContext(item);
+            const context = new AiAssistance.StorageContext.StorageContext(item);
             assert.strictEqual(context.getTitle(), 'cookies: https://example.com');
         });
         it('returns correct suggestions if a cookie is selected', async () => {
             const item = new AiAssistance.StorageItem.CookieItem('https://example.com', 'https://example.com', 'cookie1');
-            const context = new AiAssistance.StorageAgent.StorageContext(item);
+            const context = new AiAssistance.StorageContext.StorageContext(item);
             const suggestions = await context.getSuggestions();
             assert.deepEqual(suggestions, [
                 {
@@ -699,7 +715,7 @@ describe('StorageAgent', function () {
         });
         it('returns correct suggestions if a storage item is selected', async () => {
             const item = new AiAssistance.StorageItem.DOMStorageItem('https://example.com', 'https://example.com', 'https://example.com/', 'localStorage', 'key1');
-            const context = new AiAssistance.StorageAgent.StorageContext(item);
+            const context = new AiAssistance.StorageContext.StorageContext(item);
             const suggestions = await context.getSuggestions();
             assert.deepEqual(suggestions, [
                 {
@@ -714,7 +730,7 @@ describe('StorageAgent', function () {
         });
         it('returns correct suggestions when a whole cookie context of a page is selected', async () => {
             const item = new AiAssistance.StorageItem.CookieItem('https://example.com', 'https://example.com');
-            const context = new AiAssistance.StorageAgent.StorageContext(item);
+            const context = new AiAssistance.StorageContext.StorageContext(item);
             const suggestions = await context.getSuggestions();
             assert.deepEqual(suggestions, [
                 {
@@ -725,7 +741,7 @@ describe('StorageAgent', function () {
         });
         it('returns correct suggestions if a storage bucket is selected', async () => {
             const item = new AiAssistance.StorageItem.DOMStorageItem('https://example.com', 'https://example.com', 'https://example.com/', 'localStorage');
-            const context = new AiAssistance.StorageAgent.StorageContext(item);
+            const context = new AiAssistance.StorageContext.StorageContext(item);
             const suggestions = await context.getSuggestions();
             assert.deepEqual(suggestions, [
                 {
@@ -748,11 +764,11 @@ describe('StorageAgent', function () {
             sideEffectPromise.resolve(true);
             const agent = new AiAssistance.StorageAgent.StorageAgent({
                 aidaClient,
-                serverSideLoggingEnabled: true,
+                serverSideLoggingAllowed: true,
                 confirmSideEffectForTest: sinon.stub().returns(sideEffectPromise),
                 targetManager: universe.targetManager,
             });
-            const context = new AiAssistance.StorageAgent.StorageContext(item);
+            const context = new AiAssistance.StorageContext.StorageContext(item);
             await Array.fromAsync(agent.run(prompt, { selected: context }));
             const call = aidaClient.doConversation.lastCall;
             assert.exists(call);

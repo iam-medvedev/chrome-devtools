@@ -14,6 +14,7 @@ import * as Common from "./../../core/common/common.js";
 import * as Host from "./../../core/host/host.js";
 import * as i18n from "./../../core/i18n/i18n.js";
 import * as Root from "./../../core/root/root.js";
+import * as SDK from "./../../core/sdk/sdk.js";
 import * as SettingsUI from "./../../ui/legacy/components/settings_ui/settings_ui.js";
 import * as UI from "./../../ui/legacy/legacy.js";
 import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
@@ -221,26 +222,26 @@ var RenderingOptionsView = class extends UI.Widget.VBox {
     super({ useShadowDom: true });
     this.registerRequiredCSS(renderingOptions_css_default);
     this.element.setAttribute("jslog", `${VisualLogging.panel("rendering").track({ resize: true })}`);
-    this.#appendCheckbox(i18nString(UIStrings.paintFlashing), i18nString(UIStrings.highlightsAreasOfThePageGreen), Common.Settings.Settings.instance().moduleSetting("show-paint-rects"));
-    this.#appendCheckbox(i18nString(UIStrings.layoutShiftRegions), i18nString(UIStrings.highlightsAreasOfThePageBlueThat), Common.Settings.Settings.instance().moduleSetting("show-layout-shift-regions"));
-    this.#appendCheckbox(i18nString(UIStrings.layerBorders), i18nString(UIStrings.showsLayerBordersOrangeoliveAnd), Common.Settings.Settings.instance().moduleSetting("show-debug-borders"));
-    this.#appendCheckbox(i18nString(UIStrings.frameRenderingStats), i18nString(UIStrings.plotsFrameThroughputDropped), Common.Settings.Settings.instance().moduleSetting("show-fps-counter"));
-    this.#appendCheckbox(i18nString(UIStrings.scrollingPerformanceIssues), i18nString(UIStrings.highlightsElementsTealThatCan), Common.Settings.Settings.instance().moduleSetting("show-scroll-bottleneck-rects"));
+    this.#appendCheckbox(i18nString(UIStrings.paintFlashing), i18nString(UIStrings.highlightsAreasOfThePageGreen), Common.Settings.Settings.instance().resolve(SDK.SDKSettings.showPaintRectsSettingDescriptor));
+    this.#appendCheckbox(i18nString(UIStrings.layoutShiftRegions), i18nString(UIStrings.highlightsAreasOfThePageBlueThat), Common.Settings.Settings.instance().resolve(SDK.SDKSettings.showLayoutShiftRegionsSettingDescriptor));
+    this.#appendCheckbox(i18nString(UIStrings.layerBorders), i18nString(UIStrings.showsLayerBordersOrangeoliveAnd), Common.Settings.Settings.instance().resolve(SDK.SDKSettings.showDebugBordersSettingDescriptor));
+    this.#appendCheckbox(i18nString(UIStrings.frameRenderingStats), i18nString(UIStrings.plotsFrameThroughputDropped), Common.Settings.Settings.instance().resolve(SDK.SDKSettings.showFPSCounterSettingDescriptor));
+    this.#appendCheckbox(i18nString(UIStrings.scrollingPerformanceIssues), i18nString(UIStrings.highlightsElementsTealThatCan), Common.Settings.Settings.instance().resolve(SDK.SDKSettings.showScrollBottleneckRectsSettingDescriptor));
     if (!Root.Runtime.hostConfig.devToolsAdsPanel?.enabled) {
-      this.#appendCheckbox(i18nString(UIStrings.highlightAds), i18nString(UIStrings.highlightsElementsRedDetectedToBe), Common.Settings.Settings.instance().moduleSetting("show-ad-highlights"));
+      this.#appendCheckbox(i18nString(UIStrings.highlightAds), i18nString(UIStrings.highlightsElementsRedDetectedToBe), Common.Settings.Settings.instance().resolve(SDK.SDKSettings.showAdHighlightsSettingDescriptor));
     }
     this.#appendCheckbox(i18nString(UIStrings.disableLocalFonts), i18nString(UIStrings.disablesLocalSourcesInFontface), Common.Settings.Settings.instance().moduleSetting("local-fonts-disabled"));
-    this.#appendCheckbox(i18nString(UIStrings.emulateAFocusedPage), i18nString(UIStrings.emulatesAFocusedPage), Common.Settings.Settings.instance().moduleSetting("emulate-page-focus"), { toggle: Host.UserMetrics.Action.ToggleEmulateFocusedPageFromRenderingTab });
+    this.#appendCheckbox(i18nString(UIStrings.emulateAFocusedPage), i18nString(UIStrings.emulatesAFocusedPage), Common.Settings.Settings.instance().resolve(SDK.SDKSettings.emulatePageFocusSettingDescriptor), { toggle: Host.UserMetrics.Action.ToggleEmulateFocusedPageFromRenderingTab });
     const autoDarkModeSetting = Common.Settings.Settings.instance().moduleSetting("emulate-auto-dark-mode");
     this.#appendCheckbox(i18nString(UIStrings.emulateAutoDarkMode), i18nString(UIStrings.emulatesAutoDarkMode), autoDarkModeSetting);
     this.contentElement.createChild("div").classList.add("panel-section-separator");
-    this.#appendSelect(i18nString(UIStrings.forcesCssPreferscolorschemeMedia), Common.Settings.Settings.instance().moduleSetting("emulated-css-media-feature-prefers-color-scheme"), autoDarkModeSetting.get());
-    this.#appendSelect(i18nString(UIStrings.forcesMediaTypeForTestingPrint), Common.Settings.Settings.instance().moduleSetting("emulated-css-media"));
-    this.#appendSelect(i18nString(UIStrings.forcesCssForcedColors), Common.Settings.Settings.instance().moduleSetting("emulated-css-media-feature-forced-colors"));
+    this.#appendSelect(i18nString(UIStrings.forcesCssPreferscolorschemeMedia), Common.Settings.Settings.instance().resolve(SDK.SDKSettings.emulatedCSSMediaFeaturePrefersColorSchemeSettingDescriptor), autoDarkModeSetting.get());
+    this.#appendSelect(i18nString(UIStrings.forcesMediaTypeForTestingPrint), Common.Settings.Settings.instance().resolve(SDK.SDKSettings.emulatedCSSMediaSettingDescriptor));
+    this.#appendSelect(i18nString(UIStrings.forcesCssForcedColors), Common.Settings.Settings.instance().resolve(SDK.SDKSettings.emulatedCSSMediaFeatureForcedColorsSettingDescriptor));
     if (supportsPrefersContrast()) {
       this.#appendSelect(i18nString(UIStrings.forcesCssPreferscontrastMedia), Common.Settings.Settings.instance().moduleSetting("emulated-css-media-feature-prefers-contrast"));
     }
-    this.#appendSelect(i18nString(UIStrings.forcesCssPrefersreducedmotion), Common.Settings.Settings.instance().moduleSetting("emulated-css-media-feature-prefers-reduced-motion"));
+    this.#appendSelect(i18nString(UIStrings.forcesCssPrefersreducedmotion), Common.Settings.Settings.instance().resolve(SDK.SDKSettings.emulatedCSSMediaFeaturePrefersReducedMotionSettingDescriptor));
     if (supportsPrefersReducedData()) {
       this.#appendSelect(i18nString(UIStrings.forcesCssPrefersreduceddataMedia), Common.Settings.Settings.instance().moduleSetting("emulated-css-media-feature-prefers-reduced-data"));
     }
@@ -283,7 +284,7 @@ var RenderingOptionsView = class extends UI.Widget.VBox {
 };
 var ReloadActionDelegate = class {
   handleAction(_context, actionId) {
-    const emulatedCSSMediaFeaturePrefersColorSchemeSetting = Common.Settings.Settings.instance().moduleSetting("emulated-css-media-feature-prefers-color-scheme");
+    const emulatedCSSMediaFeaturePrefersColorSchemeSetting = Common.Settings.Settings.instance().resolve(SDK.SDKSettings.emulatedCSSMediaFeaturePrefersColorSchemeSettingDescriptor);
     switch (actionId) {
       case "rendering.toggle-prefers-color-scheme": {
         const options = ["", "light", "dark"];
@@ -312,7 +313,7 @@ import * as Common2 from "./../../core/common/common.js";
 import * as Host2 from "./../../core/host/host.js";
 import * as i18n3 from "./../../core/i18n/i18n.js";
 import * as Root2 from "./../../core/root/root.js";
-import * as SDK from "./../../core/sdk/sdk.js";
+import * as SDK2 from "./../../core/sdk/sdk.js";
 import * as MobileThrottling from "./../../panels/mobile_throttling/mobile_throttling.js";
 import * as Components from "./../../ui/legacy/components/utils/utils.js";
 import * as UI2 from "./../../ui/legacy/legacy.js";
@@ -380,14 +381,14 @@ var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
 var InspectorMainImpl = class {
   async run() {
     let firstCall = true;
-    await SDK.Connections.initMainConnection(async () => {
-      const type = Root2.Runtime.Runtime.queryParam("v8only") ? SDK.Target.Type.NODE : Root2.Runtime.Runtime.queryParam("targetType") === "tab" || Root2.Runtime.Runtime.isTraceApp() ? SDK.Target.Type.TAB : SDK.Target.Type.FRAME;
-      const waitForDebuggerInPage = type === SDK.Target.Type.FRAME && Root2.Runtime.Runtime.queryParam("panel") === "sources";
-      const name = type === SDK.Target.Type.FRAME ? i18nString2(UIStrings2.main) : i18nString2(UIStrings2.tab);
-      const target = SDK.TargetManager.TargetManager.instance().createTarget("main", name, type, null, void 0, waitForDebuggerInPage);
+    await SDK2.Connections.initMainConnection(async () => {
+      const type = Root2.Runtime.Runtime.queryParam("v8only") ? SDK2.Target.Type.NODE : Root2.Runtime.Runtime.queryParam("targetType") === "tab" || Root2.Runtime.Runtime.isTraceApp() ? SDK2.Target.Type.TAB : SDK2.Target.Type.FRAME;
+      const waitForDebuggerInPage = type === SDK2.Target.Type.FRAME && Root2.Runtime.Runtime.queryParam("panel") === "sources";
+      const name = type === SDK2.Target.Type.FRAME ? i18nString2(UIStrings2.main) : i18nString2(UIStrings2.tab);
+      const target = SDK2.TargetManager.TargetManager.instance().createTarget("main", name, type, null, void 0, waitForDebuggerInPage);
       const waitForPrimaryPageTarget = () => {
         return new Promise((resolve) => {
-          const targetManager = SDK.TargetManager.TargetManager.instance();
+          const targetManager = SDK2.TargetManager.TargetManager.instance();
           targetManager.observeTargets({
             targetAdded: (target2) => {
               if (target2 === targetManager.primaryPageTarget()) {
@@ -406,15 +407,15 @@ var InspectorMainImpl = class {
       }
       firstCall = false;
       if (waitForDebuggerInPage) {
-        const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
+        const debuggerModel = target.model(SDK2.DebuggerModel.DebuggerModel);
         if (debuggerModel) {
           if (!debuggerModel.isReadyToPause()) {
-            await debuggerModel.once(SDK.DebuggerModel.Events.DebuggerIsReadyToPause);
+            await debuggerModel.once(SDK2.DebuggerModel.Events.DebuggerIsReadyToPause);
           }
           debuggerModel.pause();
         }
       }
-      if (type !== SDK.Target.Type.TAB) {
+      if (type !== SDK2.Target.Type.TAB) {
         void target.runtimeAgent().invoke_runIfWaitingForDebugger();
       }
     }, Components.TargetDetachedDialog.TargetDetachedDialog.connectionLost);
@@ -422,7 +423,7 @@ var InspectorMainImpl = class {
     new BackendSettingsSync();
     new MobileThrottling.NetworkPanelIndicator.NetworkPanelIndicator();
     Host2.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host2.InspectorFrontendHostAPI.Events.ReloadInspectedPage, ({ data: hard }) => {
-      SDK.ResourceTreeModel.ResourceTreeModel.reloadAllPages(SDK.TargetManager.TargetManager.instance(), hard);
+      SDK2.ResourceTreeModel.ResourceTreeModel.reloadAllPages(SDK2.TargetManager.TargetManager.instance(), hard);
     });
   }
 };
@@ -431,10 +432,10 @@ var ReloadActionDelegate2 = class {
   handleAction(_context, actionId) {
     switch (actionId) {
       case "inspector-main.reload":
-        SDK.ResourceTreeModel.ResourceTreeModel.reloadAllPages(SDK.TargetManager.TargetManager.instance(), false);
+        SDK2.ResourceTreeModel.ResourceTreeModel.reloadAllPages(SDK2.TargetManager.TargetManager.instance(), false);
         return true;
       case "inspector-main.hard-reload":
-        SDK.ResourceTreeModel.ResourceTreeModel.reloadAllPages(SDK.TargetManager.TargetManager.instance(), true);
+        SDK2.ResourceTreeModel.ResourceTreeModel.reloadAllPages(SDK2.TargetManager.TargetManager.instance(), true);
         return true;
     }
     return false;
@@ -442,7 +443,7 @@ var ReloadActionDelegate2 = class {
 };
 var FocusDebuggeeActionDelegate = class {
   handleAction(_context, _actionId) {
-    const mainTarget = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
+    const mainTarget = SDK2.TargetManager.TargetManager.instance().primaryPageTarget();
     if (!mainTarget) {
       return false;
     }
@@ -471,7 +472,7 @@ var NodeIndicator = class extends UI2.Widget.Widget {
   constructor(element, view = DEFAULT_VIEW) {
     super(element, { useShadowDom: true });
     this.#view = view;
-    SDK.TargetManager.TargetManager.instance().addEventListener("AvailableTargetsChanged", (event) => {
+    SDK2.TargetManager.TargetManager.instance().addEventListener("AvailableTargetsChanged", (event) => {
       this.#targetInfos = event.data;
       this.requestUpdate();
     });
@@ -506,11 +507,12 @@ var NodeIndicatorProvider = class {
 };
 var SourcesPanelIndicator = class {
   constructor() {
-    Common2.Settings.Settings.instance().moduleSetting("java-script-disabled").addChangeListener(javaScriptDisabledChanged);
+    const disableJavascriptSetting = Common2.Settings.Settings.instance().resolve(SDK2.SDKSettings.javaScriptDisabledSettingDescriptor);
+    disableJavascriptSetting.addChangeListener(javaScriptDisabledChanged);
     javaScriptDisabledChanged();
     function javaScriptDisabledChanged() {
       const warnings = [];
-      if (Common2.Settings.Settings.instance().moduleSetting("java-script-disabled").get()) {
+      if (disableJavascriptSetting.get()) {
         warnings.push(i18nString2(UIStrings2.javascriptIsDisabled));
       }
       UI2.InspectorView.InspectorView.instance().setPanelWarnings("sources", warnings);
@@ -527,13 +529,13 @@ var BackendSettingsSync = class {
     this.#updateAutoAttach();
     this.#adBlockEnabledSetting = Common2.Settings.Settings.instance().moduleSetting("network.ad-blocking-enabled");
     this.#adBlockEnabledSetting.addChangeListener(this.#update, this);
-    this.#emulatePageFocusSetting = Common2.Settings.Settings.instance().moduleSetting("emulate-page-focus");
+    this.#emulatePageFocusSetting = Common2.Settings.Settings.instance().resolve(SDK2.SDKSettings.emulatePageFocusSettingDescriptor);
     this.#emulatePageFocusSetting.addChangeListener(this.#update, this);
-    SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ChildTargetManager.ChildTargetManager, "TargetInfoChanged", this.#targetInfoChanged, this);
-    SDK.TargetManager.TargetManager.instance().observeTargets(this);
+    SDK2.TargetManager.TargetManager.instance().addModelListener(SDK2.ChildTargetManager.ChildTargetManager, "TargetInfoChanged", this.#targetInfoChanged, this);
+    SDK2.TargetManager.TargetManager.instance().observeTargets(this);
   }
   #updateTarget(target) {
-    if (target.type() !== SDK.Target.Type.FRAME || target.parentTarget()?.type() === SDK.Target.Type.FRAME) {
+    if (target.type() !== SDK2.Target.Type.FRAME || target.parentTarget()?.type() === SDK2.Target.Type.FRAME) {
       return;
     }
     void target.pageAgent().invoke_setAdBlockingEnabled({ enabled: this.#adBlockEnabledSetting.get() });
@@ -543,12 +545,12 @@ var BackendSettingsSync = class {
     Host2.InspectorFrontendHost.InspectorFrontendHostInstance.setOpenNewWindowForPopups(this.#autoAttachSetting.get());
   }
   #update() {
-    for (const target of SDK.TargetManager.TargetManager.instance().targets()) {
+    for (const target of SDK2.TargetManager.TargetManager.instance().targets()) {
       this.#updateTarget(target);
     }
   }
   #targetInfoChanged(event) {
-    const targetManager = SDK.TargetManager.TargetManager.instance();
+    const targetManager = SDK2.TargetManager.TargetManager.instance();
     const target = targetManager.targetById(event.data.targetId);
     if (!target || target.outermostTarget() !== target) {
       return;
@@ -561,7 +563,7 @@ var BackendSettingsSync = class {
   targetRemoved(_target) {
   }
 };
-SDK.ChildTargetManager.ChildTargetManager.install();
+SDK2.ChildTargetManager.ChildTargetManager.install();
 
 // gen/front_end/entrypoints/inspector_main/OutermostTargetSelector.js
 var OutermostTargetSelector_exports = {};
@@ -570,7 +572,7 @@ __export(OutermostTargetSelector_exports, {
 });
 import * as i18n5 from "./../../core/i18n/i18n.js";
 import * as Platform from "./../../core/platform/platform.js";
-import * as SDK2 from "./../../core/sdk/sdk.js";
+import * as SDK3 from "./../../core/sdk/sdk.js";
 import * as Bindings from "./../../models/bindings/bindings.js";
 import * as UI3 from "./../../ui/legacy/legacy.js";
 
@@ -638,11 +640,11 @@ var OutermostTargetSelector = class {
     this.#toolbarItem.setTitle(i18nString3(UIStrings3.targetNotSelected));
     this.listItems.addEventListener("ItemsReplaced", () => this.#toolbarItem.setEnabled(Boolean(this.listItems.length)));
     this.#toolbarItem.element.classList.add("toolbar-has-dropdown");
-    const targetManager = SDK2.TargetManager.TargetManager.instance();
-    targetManager.addModelListener(SDK2.ChildTargetManager.ChildTargetManager, "TargetInfoChanged", this.#onTargetInfoChanged, this);
+    const targetManager = SDK3.TargetManager.TargetManager.instance();
+    targetManager.addModelListener(SDK3.ChildTargetManager.ChildTargetManager, "TargetInfoChanged", this.#onTargetInfoChanged, this);
     targetManager.addEventListener("NameChanged", this.#onInspectedURLChanged, this);
     targetManager.observeTargets(this);
-    UI3.Context.Context.instance().addFlavorChangeListener(SDK2.Target.Target, this.#targetChanged, this);
+    UI3.Context.Context.instance().addFlavorChangeListener(SDK3.Target.Target, this.#targetChanged, this);
   }
   item() {
     return this.#toolbarItem;
@@ -664,8 +666,8 @@ var OutermostTargetSelector = class {
     }
     this.listItems.insertWithComparator(target, this.#targetComparator());
     this.#toolbarItem.setVisible(this.listItems.length > 1);
-    const primaryTarget = SDK2.TargetManager.TargetManager.instance().primaryPageTarget();
-    if (target === primaryTarget || target === UI3.Context.Context.instance().flavor(SDK2.Target.Target)) {
+    const primaryTarget = SDK3.TargetManager.TargetManager.instance().primaryPageTarget();
+    if (target === primaryTarget || target === UI3.Context.Context.instance().flavor(SDK3.Target.Target)) {
       this.#dropDown.selectItem(target);
     }
   }
@@ -694,7 +696,7 @@ var OutermostTargetSelector = class {
     };
   }
   #onTargetInfoChanged(event) {
-    const targetManager = SDK2.TargetManager.TargetManager.instance();
+    const targetManager = SDK3.TargetManager.TargetManager.instance();
     const target = targetManager.targetById(event.data.targetId);
     if (!target || target.outermostTarget() !== target) {
       return;
@@ -725,7 +727,7 @@ var OutermostTargetSelector = class {
   }
   #subtitleFor(target) {
     const targetInfo = target.targetInfo();
-    if (target === SDK2.TargetManager.TargetManager.instance().primaryPageTarget() && targetInfo) {
+    if (target === SDK3.TargetManager.TargetManager.instance().primaryPageTarget() && targetInfo) {
       return Bindings.ResourceUtils.displayNameForURL(targetInfo.url);
     }
     return target.targetInfo()?.subtype || "";
@@ -736,8 +738,8 @@ var OutermostTargetSelector = class {
   itemSelected(item) {
     const title = item ? i18nString3(UIStrings3.targetS, { PH1: this.titleFor(item) }) : i18nString3(UIStrings3.targetNotSelected);
     this.#toolbarItem.setTitle(title);
-    if (item && item !== UI3.Context.Context.instance().flavor(SDK2.Target.Target)?.outermostTarget()) {
-      UI3.Context.Context.instance().setFlavor(SDK2.Target.Target, item);
+    if (item && item !== UI3.Context.Context.instance().flavor(SDK3.Target.Target)?.outermostTarget()) {
+      UI3.Context.Context.instance().setFlavor(SDK3.Target.Target, item);
     }
   }
 };

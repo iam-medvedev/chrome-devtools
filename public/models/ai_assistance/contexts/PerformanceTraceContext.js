@@ -263,5 +263,158 @@ export class PerformanceTraceContext extends ConversationContext {
         }
         return details.length > 0 ? details : null;
     }
+    /**
+     * Returns initial UI widgets to display with the conversation context header
+     * depending on the active focus:
+     * - Specific task (call tree) -> timeline summary & bottom up tree widgets
+     * - Insight -> PERF_INSIGHT widget & Core Web Vitals widget
+     * - Whole Trace -> Core Web Vitals widget
+     */
+    async getWidgets() {
+        const widgets = [];
+        const focus = this.#focus;
+        // Case 1: Specific task (call tree) -> timeline summary & bottom up tree widgets
+        if (focus.callTree) {
+            const event = focus.callTree.selectedNode?.event ?? focus.callTree.rootNode.event;
+            if (event) {
+                const { startTime, endTime } = Trace.Helpers.Timing.eventTimingsMicroSeconds(event);
+                const bounds = Trace.Helpers.Timing.traceWindowFromMicroSeconds(startTime, endTime);
+                widgets.push({
+                    name: 'TIMELINE_RANGE_SUMMARY',
+                    data: {
+                        bounds,
+                        parsedTrace: focus.parsedTrace,
+                        track: 'main',
+                    },
+                });
+                widgets.push({
+                    name: 'BOTTOM_UP_TREE',
+                    data: {
+                        bounds,
+                        parsedTrace: focus.parsedTrace,
+                    },
+                });
+            }
+            return widgets;
+        }
+        // Case 2: Insight -> PERF_INSIGHT widget
+        if (focus.insight) {
+            const insightKey = focus.insight.insightKey;
+            if (Trace.Insights.Common.isInsightKey(insightKey)) {
+                widgets.push({
+                    name: 'PERF_INSIGHT',
+                    data: {
+                        insight: insightKey,
+                        insightData: focus.insight,
+                    },
+                });
+            }
+        }
+        // Case 3: Whole Trace or insight -> CWV widget
+        const primaryInsightSet = focus.primaryInsightSet;
+        if (primaryInsightSet) {
+            widgets.push({
+                name: 'CORE_VITALS',
+                data: {
+                    parsedTrace: focus.parsedTrace,
+                    insightSetKey: primaryInsightSet.id,
+                },
+            });
+        }
+        return widgets;
+    }
+    getBoundsForLabel(label) {
+        const focus = this.#focus;
+        const { parsedTrace } = focus;
+        const insightSet = focus.primaryInsightSet;
+        if (label === 'nav-to-lcp') {
+            if (insightSet) {
+                const lcp = Trace.Insights.Common.getLCP(insightSet);
+                if (lcp) {
+                    return Trace.Helpers.Timing.traceWindowFromMicroSeconds(insightSet.bounds.min, lcp.event.ts);
+                }
+            }
+            return null;
+        }
+        if (label === 'lcp-ttfb') {
+            if (insightSet) {
+                const subparts = insightSet.model.LCPBreakdown?.subparts;
+                if (subparts?.ttfb) {
+                    return subparts.ttfb;
+                }
+            }
+            return null;
+        }
+        if (label === 'lcp-render-delay') {
+            if (insightSet) {
+                const subparts = insightSet.model.LCPBreakdown?.subparts;
+                if (subparts?.renderDelay) {
+                    return subparts.renderDelay;
+                }
+            }
+            return null;
+        }
+        if (label === 'trace-bounds') {
+            return parsedTrace.data.Meta.traceBounds;
+        }
+        const insightSetById = parsedTrace.insights?.get(label);
+        if (insightSetById) {
+            return insightSetById.bounds;
+        }
+        if (insightSet) {
+            const model = getInsightModel(insightSet.model, label);
+            if (model) {
+                return Trace.Insights.Common.insightBounds(model, insightSet.bounds);
+            }
+        }
+        for (const is of parsedTrace.insights?.values() ?? []) {
+            const model = getInsightModel(is.model, label);
+            if (model) {
+                return Trace.Insights.Common.insightBounds(model, is.bounds);
+            }
+        }
+        return null;
+    }
+    getLabelName(label) {
+        return getLabelName(label, this.#focus.parsedTrace);
+    }
+    createBounds(min, max) {
+        const { min: bMin, max: bMax } = this.#focus.parsedTrace.data.Meta.traceBounds;
+        const clampedMin = Math.round(Math.max(min ?? bMin, bMin));
+        const clampedMax = Math.round(Math.min(max ?? bMax, bMax));
+        if (clampedMin > clampedMax) {
+            return null;
+        }
+        return Trace.Helpers.Timing.traceWindowFromMicroSeconds(clampedMin, clampedMax);
+    }
+}
+const STATIC_LABEL_NAMES = {
+    'nav-to-lcp': 'navigation to LCP',
+    'lcp-ttfb': 'LCP to TTFB',
+    'lcp-render-delay': 'LCP render delay',
+    'trace-bounds': 'the entire trace',
+    NO_NAVIGATION: 'the period before the first navigation',
+};
+function getInsightModel(model, key) {
+    if (Object.prototype.hasOwnProperty.call(model, key)) {
+        return model[key];
+    }
+    return undefined;
+}
+function getLabelName(label, parsedTrace) {
+    if (Object.prototype.hasOwnProperty.call(STATIC_LABEL_NAMES, label)) {
+        return STATIC_LABEL_NAMES[label];
+    }
+    const insightSetById = parsedTrace.insights?.get(label);
+    if (insightSetById) {
+        return `navigation to ${insightSetById.url.href}`;
+    }
+    for (const insightSet of parsedTrace.insights?.values() ?? []) {
+        const model = getInsightModel(insightSet.model, label);
+        if (model) {
+            return `${model.title} insight`;
+        }
+    }
+    return label;
 }
 //# sourceMappingURL=PerformanceTraceContext.js.map

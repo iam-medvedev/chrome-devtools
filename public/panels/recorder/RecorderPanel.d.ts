@@ -2,7 +2,7 @@ import '../../ui/kit/kit.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as PublicExtensions from '../../models/extensions/extensions.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
-import type * as Dialogs from '../../ui/components/dialogs/dialogs.js';
+import * as Dialogs from '../../ui/components/dialogs/dialogs.js';
 import type * as Menus from '../../ui/components/menus/menus.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Converters from './converters/converters.js';

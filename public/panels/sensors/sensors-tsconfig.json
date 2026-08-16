@@ -66,9 +66,6 @@
       "path": "../../ui/components/buttons/bundle-tsconfig.json"
     },
     {
-      "path": "../../ui/components/dialogs/bundle-tsconfig.json"
-    },
-    {
       "path": "../../ui/components/lists/bundle-tsconfig.json"
     },
     {

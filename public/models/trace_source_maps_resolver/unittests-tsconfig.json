@@ -70,6 +70,9 @@
       "path": "../bindings/bundle-tsconfig.json"
     },
     {
+      "path": "../formatter/bundle-tsconfig.json"
+    },
+    {
       "path": "../trace/bundle-tsconfig.json"
     },
     {

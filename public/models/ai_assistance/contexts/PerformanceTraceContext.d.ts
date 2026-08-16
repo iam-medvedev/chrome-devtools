@@ -2,10 +2,15 @@ import * as SDK from '../../../core/sdk/sdk.js';
 import * as Tracing from '../../../services/tracing/tracing.js';
 import * as Bindings from '../../bindings/bindings.js';
 import * as Trace from '../../trace/trace.js';
-import { type ContextDetail, ConversationContext, type ConversationSuggestions } from '../agents/AiAgent.js';
+import { type AiWidget, type ContextDetail, ConversationContext, type ConversationSuggestions } from '../agents/AiAgent.js';
 import { PerformanceTraceFormatter } from '../data_formatters/PerformanceTraceFormatter.js';
 import type { AICallTree } from '../performance/AICallTree.js';
 import { AgentFocus } from '../performance/AIContext.js';
+/**
+ * Labels used to identify specific periods or categories in the trace for getting main thread summary.
+ * Supports hardcoded phases, dynamic navigation IDs (`NAVIGATION_X`), and insight models.
+ */
+export type MainThreadSectionLabel = 'nav-to-lcp' | 'lcp-ttfb' | 'lcp-render-delay' | 'trace-bounds' | 'NO_NAVIGATION' | `NAVIGATION_${string}` | keyof Trace.Insights.Types.InsightModels;
 /**
  * The conversation context for AI queries regarding performance traces.
  * Encapsulates the user's active trace selection/focus and handles formatting
@@ -61,4 +66,15 @@ export declare class PerformanceTraceContext extends ConversationContext<AgentFo
      * the LLM prompt via `getPromptDetails()`.
      */
     getUserFacingDetails(): Promise<[ContextDetail, ...ContextDetail[]] | null>;
+    /**
+     * Returns initial UI widgets to display with the conversation context header
+     * depending on the active focus:
+     * - Specific task (call tree) -> timeline summary & bottom up tree widgets
+     * - Insight -> PERF_INSIGHT widget & Core Web Vitals widget
+     * - Whole Trace -> Core Web Vitals widget
+     */
+    getWidgets(): Promise<AiWidget[]>;
+    getBoundsForLabel(label: MainThreadSectionLabel): Trace.Types.Timing.TraceWindowMicro | null;
+    getLabelName(label: MainThreadSectionLabel): string;
+    createBounds(min?: number, max?: number): Trace.Types.Timing.TraceWindowMicro | null;
 }

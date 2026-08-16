@@ -15,7 +15,6 @@ style.setProperty('--image-file-chromeMiddle', 'url(\"' + new URL('./chromeMiddl
 style.setProperty('--image-file-chromeRight', 'url(\"' + new URL('./chromeRight.avif', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-cssoverview_icons_2x', 'url(\"' + new URL('./cssoverview_icons_2x.avif', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-nodeIcon', 'url(\"' + new URL('./nodeIcon.avif', import.meta.url).toString() + '\")');
-style.setProperty('--image-file-toolbarResizerVertical', 'url(\"' + new URL('./toolbarResizerVertical.png', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-touchCursor_2x', 'url(\"' + new URL('./touchCursor_2x.png', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-geminiInDevTools', 'url(\"' + new URL('./geminiInDevTools.png', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-geminiInDevTools_2x', 'url(\"' + new URL('./geminiInDevTools_2x.png', import.meta.url).toString() + '\")');
@@ -100,6 +99,7 @@ style.setProperty('--image-file-code', 'url(\"' + new URL('./src/code.svg', impo
 style.setProperty('--image-file-colon', 'url(\"' + new URL('./src/colon.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-color-picker-filled', 'url(\"' + new URL('./src/color-picker-filled.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-color-picker', 'url(\"' + new URL('./src/color-picker.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-comment-mode', 'url(\"' + new URL('./src/comment-mode.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-compress', 'url(\"' + new URL('./src/compress.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-console-conditional-breakpoint', 'url(\"' + new URL('./src/console-conditional-breakpoint.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-console-logpoint', 'url(\"' + new URL('./src/console-logpoint.svg', import.meta.url).toString() + '\")');

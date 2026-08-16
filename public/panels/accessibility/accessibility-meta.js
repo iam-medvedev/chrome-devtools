@@ -4,11 +4,11 @@ import * as UI from "./../../ui/legacy/legacy.js";
 var loadedAccessibilityModule;
 var UIStrings = {
   /**
-   * @description Text for accessibility of the web page
+   * @description Title of the Accessibility tab in the Elements panel.
    */
   accessibility: "Accessibility",
   /**
-   * @description Command for showing the 'Accessibility' tool
+   * @description Command for showing the Accessibility tab in the Elements panel.
    */
   shoAccessibility: "Show Accessibility"
 };

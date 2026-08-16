@@ -339,8 +339,12 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         if (message.command !== "registerRecorderExtensionPlugin" /* Extensions.ExtensionAPI.PrivateAPI.Commands.RegisterRecorderExtensionPlugin */) {
             return this.status.E_BADARG('command', `expected ${"registerRecorderExtensionPlugin" /* Extensions.ExtensionAPI.PrivateAPI.Commands.RegisterRecorderExtensionPlugin */}`);
         }
-        const { pluginName, mediaType, port, capabilities } = message;
         const extensionOrigin = this.getExtensionOrigin(_shared_port);
+        const extension = this.registeredExtensions.get(extensionOrigin);
+        if (!extension || extension.hostsPolicy.runtimeBlockedHosts.length > 0) {
+            return this.status.E_FAILED('Permission denied');
+        }
+        const { pluginName, mediaType, port, capabilities } = message;
         const recorderPluginManager = Extensions.RecorderPluginManager.RecorderPluginManager.instance();
         recorderPluginManager.addPlugin(new Extensions.RecorderExtensionEndpoint.RecorderExtensionEndpoint(pluginName, port, capabilities, extensionOrigin, recorderPluginManager, mediaType));
         return this.status.OK();
@@ -415,6 +419,10 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
             return this.status.E_EXISTS(id);
         }
         const extensionOrigin = this.getExtensionOrigin(port);
+        const extension = this.registeredExtensions.get(extensionOrigin);
+        if (!extension || extension.hostsPolicy.runtimeBlockedHosts.length > 0) {
+            return this.status.E_FAILED('Permission denied');
+        }
         const pagePath = ExtensionServer.expandResourcePath(extensionOrigin, message.pagePath);
         if (pagePath === undefined) {
             return this.status.E_BADARG('pagePath', 'Resources paths cannot point to non-extension resources');
@@ -781,6 +789,14 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
      * long as the corresponding target and the embedder name (if it is a URL) are permitted.
      */
     extensionAllowedOnContentProvider(contentProvider, port) {
+        if (contentProvider instanceof Workspace.UISourceCode.UISourceCode) {
+            const debuggerSourceMapURLs = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().sourceMapURLsForUISourceCode(contentProvider);
+            const cssSourceMapURLs = Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.instance().sourceMapURLsForUISourceCode(contentProvider);
+            const sourceMapURLs = [...debuggerSourceMapURLs, ...cssSourceMapURLs];
+            if (sourceMapURLs.some(url => !this.extensionAllowedOnURL(url, port))) {
+                return false;
+            }
+        }
         // 1. Exception for Scripts with sourceURL
         if (contentProvider instanceof Workspace.UISourceCode.UISourceCode &&
             contentProvider.contentType() === Common.ResourceType.resourceTypes.Script) {

@@ -10,7 +10,6 @@ import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { expectCall } from '../../testing/ExpectStubCall.js';
 import * as RenderCoordinator from '../../ui/components/render_coordinator/render_coordinator.js';
 import * as ReportView from '../../ui/components/report_view/report_view.js';
-import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Application from './application.js';
 describeWithEnvironment('IDBDatabaseView', () => {
@@ -220,13 +219,8 @@ describeWithEnvironment('IDBDataView', () => {
         const valueCell = getCellByIndexes(dataGrid?.shadowRoot, { column: 2, row: 1 });
         const widgetElement = valueCell.firstElementChild;
         assert.exists(widgetElement);
-        const presentation = ObjectUI.ObjectPropertiesSection.getObjectPropertiesSectionFrom(widgetElement.firstElementChild);
-        assert.exists(presentation);
-        const rootElement = presentation.objectTreeElement();
-        await rootElement.onpopulate();
-        const child = rootElement.childAt(0);
-        assert.instanceOf(child, ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement);
-        assert.isFalse(child.editable);
+        const widget = UI.Widget.Widget.get(widgetElement);
+        assert.isTrue(widget.objectTree?.readOnly);
     });
     it('renders toolbar and data grid', async () => {
         const model = sinon.createStubInstance(Application.IndexedDBModel.IndexedDBModel);

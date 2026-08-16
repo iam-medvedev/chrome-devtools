@@ -134,7 +134,7 @@ describeWithEnvironment('RequestHeadersView', () => {
         const responseHeadersCategory = component.contentElement.querySelector('[aria-label="Response headers"]');
         assert.instanceOf(responseHeadersCategory, HTMLDetailsElement);
         assert.deepEqual(getRowsTextFromCategory(responseHeadersCategory), [['age', '0'], ['cache-control', 'max-age=600'], ['content-encoding', 'gzip'], ['content-length', '661']]);
-        const requestHeadersCategory = component.contentElement.querySelector('[aria-label="Request Headers"]');
+        const requestHeadersCategory = component.contentElement.querySelector('[aria-label="Request headers"]');
         assert.instanceOf(requestHeadersCategory, HTMLDetailsElement);
         assert.deepEqual(getRowsTextFromCategory(requestHeadersCategory), [[':method', 'GET'], ['accept-encoding', 'gzip, deflate, br'], ['cache-control', 'no-cache']]);
         await assertScreenshot('network/request-headers-view-response.png');
@@ -272,7 +272,7 @@ describeWithEnvironment('RequestHeadersView', () => {
             { name: 'DevTools', value: 'rock' },
         ]);
         component = await renderHeadersComponent(request);
-        const requestHeadersCategory = component.contentElement.querySelector('[aria-label="Request Headers"]');
+        const requestHeadersCategory = component.contentElement.querySelector('[aria-label="Request headers"]');
         assert.instanceOf(requestHeadersCategory, HTMLDetailsElement);
         assert.deepEqual(getRowsTextFromCategory(requestHeadersCategory), [['devtools', 'rock'], ['foo', 'bar'], ['highlightme', 'some value']]);
         assert.deepEqual(getRowHighlightStatus(requestHeadersCategory), [false, false, false]);

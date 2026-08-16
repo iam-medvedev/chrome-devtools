@@ -128,38 +128,21 @@ export class VariableNameMatcher extends matcherBase(VariableNameMatch) {
         return true;
     }
     matches(node, matching) {
-        if (node.name !== 'VariableName' && node.name !== 'FeatureName' && node.name !== 'KeywordQuery') {
-            // TODO(b/484268589): The result shouldn't be KeywordQuery, but currently
-            // sometimes Lezer parses it that way. Fix this when Lezer is fixed.
+        if (!node.parent) {
+            return null;
+        }
+        // TODO(b/484268589): When the misspelling is removed from Lezer we can remove that case.
+        if (node.name !== 'FeatureName' && node.name !== 'PropertyName' && node.name !== 'ProperyName') {
+            return null;
+        }
+        if (node.parent.name !== 'StyleFeature' && node.parent.name !== 'StyleRange') {
             return null;
         }
         const rawText = matching.ast.text(node);
         if (!rawText.startsWith('--')) {
             return null;
         }
-        let cur = node.parent;
-        let foundStyleCall = null;
-        while (cur) {
-            if (cur.name === 'CallExpression') {
-                return null;
-            }
-            if (cur.name === 'CallQuery') {
-                const callee = cur.getChild('QueryCallee');
-                if (callee && matching.ast.text(callee) === 'style') {
-                    foundStyleCall = cur;
-                    break;
-                }
-                return null;
-            }
-            cur = cur.parent;
-        }
-        if (!foundStyleCall) {
-            return null;
-        }
-        // When parsing style(--foo > 10px), Lezer thinks it is a KeywordQuery and
-        // includes the > in the token with --foo. We need to strip it.
-        const text = node.name === 'KeywordQuery' ? rawText.split(/\s|[>!=<:]/)[0] : rawText;
-        return new VariableNameMatch(node, text, this.matchedStyles, this.style);
+        return new VariableNameMatch(node, rawText, this.matchedStyles, this.style);
     }
 }
 export class AttributeMatch extends BaseVariableMatch {
@@ -430,12 +413,13 @@ export class ColorMixMatcher extends matcherBase(ColorMixMatch) {
             return null;
         }
         const computedValueArgs = ASTUtils.callArgs(value);
-        if (computedValueArgs.length !== 3) {
+        if (computedValueArgs.length !== 2 && computedValueArgs.length !== 3) {
             return null;
         }
-        const [space, color1, color2] = computedValueArgs;
-        // Verify that all arguments are there, and that the space starts with a literal `in`.
-        if (space.length < 2 || computedValueTree.text(ASTUtils.stripComments(space).next().value) !== 'in' ||
+        const [space, color1, color2] = computedValueArgs.length === 3 ? computedValueArgs : [[], ...computedValueArgs];
+        // Verify that all arguments are there, and that an optional interpolation method starts with a literal `in`.
+        if ((space.length > 0 &&
+            (space.length < 2 || computedValueTree.text(ASTUtils.stripComments(space).next().value) !== 'in')) ||
             color1.length < 1 || color2.length < 1) {
             return null;
         }
@@ -451,10 +435,11 @@ export class ColorMixMatcher extends matcherBase(ColorMixMatch) {
             return null;
         }
         const args = ASTUtils.callArgs(node);
-        if (args.length !== 3) {
+        if (args.length !== computedValueArgs.length) {
             return null;
         }
-        return new ColorMixMatch(matching.ast.text(node), node, args[0], args[1], args[2]);
+        const [authoredSpace, authoredColor1, authoredColor2] = args.length === 3 ? args : [[], ...args];
+        return new ColorMixMatch(matching.ast.text(node), node, authoredSpace, authoredColor1, authoredColor2);
     }
 }
 export class ContrastColorMatch {

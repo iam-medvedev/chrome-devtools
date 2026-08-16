@@ -1,10 +1,6 @@
 // Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-// Unsure why this lint is failing, given `lantern/metrics/SpeedIndex.test.ts` does the same
-// and is fine. Maybe `*.test.*` files are excluded from this rule?
-// eslint-disable-next-line @devtools/es-modules-import
-import * as TraceLoader from '../../../../testing/TraceLoader.js';
 import * as Trace from '../../trace.js';
 import * as Lantern from '../lantern.js';
 function toLanternTrace(traceEvents) {
@@ -12,8 +8,7 @@ function toLanternTrace(traceEvents) {
         traceEvents: traceEvents,
     };
 }
-async function runTraceProcessor(context, trace) {
-    TraceLoader.TraceLoader.setTestTimeout(context);
+async function runTraceProcessor(_context, trace) {
     const processor = Trace.Processor.TraceProcessor.createWithAllHandlers();
     await processor.parse(trace.traceEvents, { isCPUProfile: false, isFreshRecording: true });
     if (!processor.data) {

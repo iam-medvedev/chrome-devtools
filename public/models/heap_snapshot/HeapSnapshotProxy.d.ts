@@ -7,7 +7,7 @@ export declare class HeapSnapshotWorkerProxy extends Common.ObjectWrapper.Object
     readonly eventHandler: (arg0: string, arg1: string) => void;
     nextObjectId: number;
     nextCallId: number;
-    callbacks: Map<number, (...args: any[]) => void>;
+    callbacks: Map<number, (error?: string, result?: unknown) => void>;
     readonly previousCallbacks: Set<number>;
     readonly worker: PlatformApi.HostRuntime.Worker;
     interval?: ReturnType<typeof setInterval>;
@@ -19,8 +19,8 @@ export declare class HeapSnapshotWorkerProxy extends Common.ObjectWrapper.Object
     disposeObject(objectId: number): void;
     evaluateForTest(script: string, callback: (...arg0: any[]) => void): void;
     callFactoryMethod<T extends Object>(callback: null, objectId: string, methodName: string, proxyConstructor: new (...arg1: any[]) => T, transfer: PlatformApi.HostRuntime.WorkerTransferable[], ...methodArguments: any[]): T;
-    callFactoryMethod<T extends Object>(callback: ((...arg0: any[]) => void), objectId: string, methodName: string, proxyConstructor: new (...arg1: any[]) => T, transfer: PlatformApi.HostRuntime.WorkerTransferable[], ...methodArguments: any[]): null;
-    callMethod(callback: (...arg0: any[]) => void, objectId: string, methodName: string, ...methodArguments: any[]): void;
+    callFactoryMethod<T extends Object>(callback: ((error?: string, result?: T) => void), objectId: string, methodName: string, proxyConstructor: new (...arg1: any[]) => T, transfer: PlatformApi.HostRuntime.WorkerTransferable[], ...methodArguments: any[]): null;
+    callMethod(callback: ((error?: string, result?: unknown) => void) | null, objectId: string, methodName: string, ...methodArguments: any[]): void;
     startCheckingForLongRunningCalls(): void;
     checkLongRunningCalls(): void;
     setupForSecondaryInit(port: MessagePort): Promise<void>;
@@ -58,6 +58,7 @@ export declare class HeapSnapshotProxy extends HeapSnapshotProxyObject {
     search(searchConfig: HeapSnapshotModel.SearchConfig, filter: HeapSnapshotModel.NodeFilter): Promise<number[]>;
     interfaceDefinitions(): Promise<string>;
     getNativeContextSizes(): Promise<HeapSnapshotModel.NativeContextSizes>;
+    getRetainedByContextSummary(): Promise<HeapSnapshotModel.RetainedByContextSummary>;
     aggregatesWithFilter(filter: HeapSnapshotModel.NodeFilter): Promise<Record<string, HeapSnapshotModel.AggregatedInfo>>;
     getDuplicateStrings(): Promise<HeapSnapshotModel.DuplicateStringGroup[]>;
     aggregatesForDiff(interfaceDefinitions: string): Promise<Record<string, HeapSnapshotModel.AggregateForDiff>>;
@@ -65,12 +66,13 @@ export declare class HeapSnapshotProxy extends HeapSnapshotProxyObject {
     nodeClassKey(snapshotObjectId: number): Promise<string | null>;
     nodeIndexForId(nodeId: number): Promise<number | undefined>;
     getObjectInfo(nodeIndex: number): Promise<HeapSnapshotModel.ObjectInfo>;
-    createEdgesProvider(nodeIndex: number): HeapSnapshotProviderProxy;
+    createEdgesProvider(nodeIndex: number, options?: HeapSnapshotModel.HeapEdgesQueryOptions): HeapSnapshotProviderProxy;
     createRetainingEdgesProvider(nodeIndex: number): HeapSnapshotProviderProxy;
     createAddedNodesProvider(baseSnapshotId: number, classKey: string): HeapSnapshotProviderProxy;
     createDeletedNodesProvider(nodeIndexes: number[]): HeapSnapshotProviderProxy;
     createNodesProvider(filter: (...args: any[]) => boolean): HeapSnapshotProviderProxy;
     createNodesProviderForClass(classKey: string, nodeFilter: HeapSnapshotModel.NodeFilter): HeapSnapshotProviderProxy;
+    queryObjects(queryOptions: HeapSnapshotModel.HeapQueryOptions): HeapSnapshotProviderProxy;
     allocationTracesTops(): Promise<HeapSnapshotModel.SerializedAllocationNode[]>;
     allocationNodeCallers(nodeId: number): Promise<HeapSnapshotModel.AllocationNodeCallers>;
     allocationStack(nodeIndex: number): Promise<HeapSnapshotModel.AllocationStackFrame[] | null>;

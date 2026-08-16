@@ -1,7 +1,7 @@
 import * as Trace from '../../trace.js';
 import * as Lantern from '../lantern.js';
 declare function toLanternTrace(traceEvents: readonly Trace.Types.Events.Event[]): Lantern.Types.Trace;
-declare function runTraceProcessor(context: Mocha.Suite | Mocha.Context, trace: Lantern.Types.Trace): Promise<Readonly<Trace.Handlers.Types.EnabledHandlerDataWithMeta<typeof Trace.Handlers.ModelHandlers>>>;
+declare function runTraceProcessor(_context: Mocha.Suite | Mocha.Context, trace: Lantern.Types.Trace): Promise<Readonly<Trace.Handlers.Types.EnabledHandlerDataWithMeta<typeof Trace.Handlers.ModelHandlers>>>;
 declare function getComputationDataFromFixture(context: Mocha.Suite | Mocha.Context, { trace, settings, url }: {
     trace: Lantern.Types.Trace;
     settings?: Lantern.Types.Simulation.Settings;

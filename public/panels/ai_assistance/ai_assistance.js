@@ -311,7 +311,7 @@ var AIv2MarkdownRenderer = class extends MarkdownView3.MarkdownView.MarkdownInsi
       return html3`${fallbackText}`;
     }
     if (href.startsWith("#file-")) {
-      const file = AiAssistanceModel3.ContextSelectionAgent.ContextSelectionAgent.getUISourceCodes().find((file2) => AiAssistanceModel3.ContextSelectionAgent.ContextSelectionAgent.uiSourceCodeId.get(file2) === Number(href.substring(6)));
+      const file = AiAssistanceModel3.ListSources.ListSourcesTool.getUISourceCodes().find((file2) => AiAssistanceModel3.ListSources.ListSourcesTool.uiSourceCodeId.get(file2) === Number(href.substring(6)));
       if (file) {
         return this.#revealableLink(file, file.name());
       }
@@ -1018,7 +1018,7 @@ function getContextRemoveLabel(context) {
   if (context instanceof AiAssistanceModel4.PerformanceTraceContext.PerformanceTraceContext) {
     return lockedString(UIStringsNotTranslate.removeContextPerfInsight);
   }
-  if (context instanceof AiAssistanceModel4.StorageAgent.StorageContext) {
+  if (context instanceof AiAssistanceModel4.StorageContext.StorageContext) {
     return lockedString(UIStringsNotTranslate.removeContextStorage);
   }
   return lockedString(UIStringsNotTranslate.removeContext);
@@ -1165,7 +1165,7 @@ var DEFAULT_VIEW = (input, _output, target) => {
     }
   })}
                               ></devtools-widget>` : html4`
-                          ${input.context instanceof AiAssistanceModel4.RequestContext.RequestContext ? PanelUtils.PanelUtils.getIconForNetworkRequest(input.context.getItem()) : input.context instanceof AiAssistanceModel4.FileContext.FileContext ? PanelUtils.PanelUtils.getIconForSourceFile(input.context.getItem()) : input.context instanceof AiAssistanceModel4.AccessibilityContext.AccessibilityContext ? html4`<devtools-icon class="icon" name="performance" title="Lighthouse"></devtools-icon>` : input.context instanceof AiAssistanceModel4.PerformanceTraceContext.PerformanceTraceContext ? html4`<devtools-icon class="icon" name="performance" title="Performance"></devtools-icon>` : input.context instanceof AiAssistanceModel4.StorageAgent.StorageContext ? html4`<devtools-icon class="icon" name="table" title="Storage"></devtools-icon>` : Lit4.nothing}
+                          ${input.context instanceof AiAssistanceModel4.RequestContext.RequestContext ? PanelUtils.PanelUtils.getIconForNetworkRequest(input.context.getItem()) : input.context instanceof AiAssistanceModel4.FileContext.FileContext ? PanelUtils.PanelUtils.getIconForSourceFile(input.context.getItem()) : input.context instanceof AiAssistanceModel4.AccessibilityContext.AccessibilityContext ? html4`<devtools-icon class="icon" name="performance" title="Lighthouse"></devtools-icon>` : input.context instanceof AiAssistanceModel4.PerformanceTraceContext.PerformanceTraceContext ? html4`<devtools-icon class="icon" name="performance" title="Performance"></devtools-icon>` : input.context instanceof AiAssistanceModel4.StorageContext.StorageContext ? html4`<devtools-icon class="icon" name="table" title="Storage"></devtools-icon>` : Lit4.nothing}
                             <span
                               role="button"
                               class="title"
@@ -1624,6 +1624,7 @@ import * as UIHelpers from "./../../ui/helpers/helpers.js";
 import * as UI3 from "./../../ui/legacy/legacy.js";
 import * as Lit6 from "./../../ui/lit/lit.js";
 import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
+import * as Application from "./../application/application.js";
 import * as Elements from "./../elements/elements.js";
 import * as Lighthouse from "./../lighthouse/lighthouse.js";
 import * as NetworkForward from "./../network/forward/forward.js";
@@ -2248,6 +2249,12 @@ var chatMessage_css_default = `/*
     display: flex;
     flex-direction: column;
     gap: var(--sys-size-4);
+  }
+
+  .storage-breakdown-widget {
+    display: flex;
+    justify-content: center;
+    padding: var(--sys-size-4);
   }
 }
 
@@ -3212,7 +3219,15 @@ var UIStringsNotTranslate2 = {
   /**
    * @description Title for the source files list widget.
    */
-  inspectedFileNames: "Inspected file names"
+  inspectedFileNames: "Inspected file names",
+  /**
+   * @description Title for the storage breakdown widget.
+   */
+  storageBreakdown: "Storage breakdown",
+  /**
+   * @description Accessible label for the reveal button in the storage breakdown widget.
+   */
+  revealStorageBreakdown: "Reveal storage breakdown in Application panel"
 };
 var DEFAULT_VIEW3 = (input, output, target) => {
   const message = input.message;
@@ -3491,6 +3506,43 @@ async function resolveNode(backendNodeId) {
     nodeCache.set(backendNodeId, resolved);
   }
   return resolved;
+}
+async function makeStorageBreakdownWidget(widgetData) {
+  const target = SDK4.TargetManager.TargetManager.instance().primaryPageTarget();
+  if (!target) {
+    return null;
+  }
+  const breakdown = widgetData.data.usageBreakdown;
+  const total = breakdown.reduce((sum, item) => sum + item.bytes, 0);
+  const slices = breakdown.map((item) => {
+    const color = Application.StorageView.storagePieColors.get(item.storageType) || "rgb(180, 180, 180)";
+    const title = Application.StorageView.StorageView.getStorageTypeNameForWidget(item.storageType);
+    return {
+      value: item.bytes,
+      color,
+      title
+    };
+  });
+  const chartData = {
+    chartName: lockedString3(UIStringsNotTranslate2.storageBreakdown),
+    size: 110,
+    formatter: (val) => AiAssistanceModel6.UnitFormatters.bytes(val),
+    showLegend: true,
+    total,
+    slices
+  };
+  const renderedWidget = html6`
+    <div class="storage-breakdown-widget">
+      <devtools-perf-piechart .data=${chartData}></devtools-perf-piechart>
+    </div>
+  `;
+  return {
+    renderedWidget,
+    title: lockedString3(UIStringsNotTranslate2.storageBreakdown),
+    revealable: new Application.StorageView.StorageRevealable(target),
+    accessibleRevealLabel: lockedString3(UIStringsNotTranslate2.revealStorageBreakdown),
+    jslogContext: "storage-breakdown-widget"
+  };
 }
 async function makeComputedStyleWidget(widgetData) {
   const domNodeForId = await resolveNode(widgetData.data.backendNodeId);
@@ -4052,6 +4104,8 @@ function getWidgetSignature(widget5) {
       return `${widget5.name}:${widget5.data.url}:${widget5.data.line ?? ""}:${widget5.data.column ?? ""}`;
     case "NETWORK_REQUESTS_LIST":
       return `${widget5.name}:${widget5.data.requests.map((r) => r.requestId()).join(",")}`;
+    case "STORAGE_BREAKDOWN":
+      return `${widget5.name}:${widget5.data.totalUsageBytes}:${widget5.data.usageBreakdown.map((e) => `${e.storageType}_${e.bytes}`).join(",")}`;
     default:
       Platform3.assertNever(widget5, "Unknown AiWidget name");
   }
@@ -4146,15 +4200,22 @@ async function renderWidgets(widgets, options = {}) {
       case "SOURCE_CODE":
         response = await makeSourceCodeWidget(widgetData);
         break;
+      case "STORAGE_BREAKDOWN":
+        response = await makeStorageBreakdownWidget(widgetData);
+        break;
       default:
         Platform3.assertNever(widgetData, "Unknown AiWidget name");
     }
     return renderWidgetResponse(response);
   }));
-  if (options.wrapperClass) {
-    return html6`<div class=${options.wrapperClass}>${ui}</div>`;
+  const renderedItems = ui.filter((item) => item !== Lit6.nothing);
+  if (renderedItems.length === 0) {
+    return Lit6.nothing;
   }
-  return html6`${ui}`;
+  if (options.wrapperClass) {
+    return html6`<div class=${options.wrapperClass}>${renderedItems}</div>`;
+  }
+  return html6`${renderedItems}`;
 }
 function renderSideEffectConfirmationUi(step) {
   if (step.state.type !== "needs_approval") {
@@ -4622,16 +4683,22 @@ async function makeNetworkTrackWidget(widgetData) {
   };
 }
 async function makeLighthouseReportWidget(widgetData) {
-  const reportEl = Lighthouse.LighthouseReportRenderer.LighthouseReportRenderer.renderLighthouseScores(widgetData.data.report);
-  if (!reportEl) {
-    return null;
+  let reportEl = null;
+  try {
+    reportEl = Lighthouse.LighthouseReportRenderer.LighthouseReportRenderer.renderLighthouseScores(widgetData.data.report);
+  } catch {
+    reportEl = null;
   }
   const snapshotReport = widgetData.data.snapshotReport;
+  const revealLighthouseLabel = lockedString3(UIStringsNotTranslate2.revealLighthouse);
+  const title = reportEl ? lockedString3(UIStringsNotTranslate2.lighthouseReport) : null;
+  const customRevealTitle = reportEl ? void 0 : revealLighthouseLabel;
   return {
-    renderedWidget: html6`<div class="lighthouse-report-widget">${reportEl}</div>`,
+    renderedWidget: reportEl ? html6`<div class="lighthouse-report-widget">${reportEl}</div>` : null,
     revealable: new Lighthouse.LighthousePanel.ActiveLighthouseReport(widgetData.data.report),
-    accessibleRevealLabel: lockedString3(UIStringsNotTranslate2.revealLighthouse),
-    title: lockedString3(UIStringsNotTranslate2.lighthouseReport),
+    accessibleRevealLabel: revealLighthouseLabel,
+    customRevealTitle,
+    title,
     jslogContext: snapshotReport ? "lighthouse-snapshot-report-widget" : "lighthouse-report-widget"
   };
 }
@@ -6836,7 +6903,7 @@ function createStorageContext(item) {
   if (!item) {
     return null;
   }
-  return new AiAssistanceModel8.StorageAgent.StorageContext(item);
+  return new AiAssistanceModel8.StorageContext.StorageContext(item);
 }
 var panelInstance;
 var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
@@ -7649,7 +7716,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
       this.#selectedPerformanceTrace = data;
     } else if (data instanceof AiAssistanceModel8.AccessibilityContext.AccessibilityContext) {
       this.#selectedAccessibility = data;
-    } else if (data instanceof AiAssistanceModel8.StorageAgent.StorageContext) {
+    } else if (data instanceof AiAssistanceModel8.StorageContext.StorageContext) {
       this.#selectedStorage = data;
     }
     void VisualLogging8.logFunctionCall(`context-change-${this.#conversation?.type}`);

@@ -218,6 +218,20 @@ const renderKeyColumnHeader = (prefix, keyPath) => {
         html `[${keyPath.map((path, i) => html `${i > 0 ? ', ' : ''}${renderKeyPathString(path)}`)}]` :
         renderKeyPathString(keyPath)})`;
 };
+const populateContextMenu = (e) => {
+    const row = e.currentTarget;
+    const widgetElement = row.querySelector('.value-column devtools-widget');
+    const widget = widgetElement ? UI.Widget.Widget.get(widgetElement) : null;
+    if (widget?.objectTree) {
+        const contextMenu = e.detail;
+        contextMenu.revealSection().appendItem(i18nString(UIStrings.expandRecursively), () => {
+            void widget.expandRecursively();
+        }, { jslogContext: 'expand-recursively' });
+        contextMenu.revealSection().appendItem(i18nString(UIStrings.collapse), () => {
+            widget.expanded = false;
+        }, { jslogContext: 'collapse' });
+    }
+};
 const renderDataGrid = (input) => {
     const keyPath = input.isIndex && input.index ? input.index.keyPath : input.objectStore.keyPath;
     // clang-format off
@@ -230,16 +244,20 @@ const renderDataGrid = (input) => {
         ${input.isIndex ? html `<th id="primary-key">${renderKeyColumnHeader(i18nString(UIStrings.primaryKey), input.objectStore.keyPath)}</th>` : nothing}
         <th id="value">${i18nString(UIStrings.valueString)}</th>
       </tr>
-      ${repeat(input.entries, (_entry, index) => index, (entry, index) => html `
-        <tr ?selected=${index + input.skipCount === input.selectedRowNumber}
-            @select=${() => input.onRowSelected(index + input.skipCount)}
-            @delete=${() => input.deleteEntry(entry)}
-            @contextmenu=${(e) => input.populateContextMenu(e, entry)}>
-          <td>${index + input.skipCount}</td>
-          <td>${widget(ObjectPropertiesSectionWidget, { value: entry.key })}</td>
-          ${input.isIndex ? html `<td>${widget(ObjectPropertiesSectionWidget, { value: entry.primaryKey })}</td>` : nothing}
-          <td class="value-column">${widget(ObjectPropertiesSectionWidget, { value: entry.value })}</td>
-        </tr>`)}
+      ${repeat(input.entries, (_entry, index) => index, (entry, index) => {
+        return html `
+          <tr ?selected=${index + input.skipCount === input.selectedRowNumber}
+              class="data-grid-data-row"
+              @select=${() => input.onRowSelected(index + input.skipCount)}
+              @delete=${() => input.deleteEntry(entry)}
+              @contextmenu=${populateContextMenu}>
+            <td>${index + input.skipCount}</td>
+            <td>${widget(ObjectPropertiesSectionWidget, { value: entry.key })}</td>
+            ${input.isIndex ? html `<td>${widget(ObjectPropertiesSectionWidget, { value: entry.primaryKey })}</td>`
+            : nothing}
+            <td class="value-column">${widget(ObjectPropertiesSectionWidget, { value: entry.value })}</td>
+          </tr>`;
+    })}
     </table>`}>
   </devtools-data-grid>`;
     // clang-format on
@@ -392,30 +410,6 @@ export class IDBDataView extends UI.View.SimpleView {
     pageForwardButtonClicked() {
         this.skipCount = this.skipCount + this.pageSize;
         this.updateData(false);
-    }
-    populateContextMenu(e, { value }) {
-        const contextMenu = e.detail;
-        if (value && value.hasChildren) {
-            const tr = e.currentTarget;
-            const valueTd = tr.querySelector('.value-column');
-            if (valueTd) {
-                const widgetEl = valueTd.querySelector('devtools-widget');
-                if (widgetEl) {
-                    const widget = UI.Widget.Widget.get(widgetEl);
-                    if (widget instanceof ObjectPropertiesSectionWidget) {
-                        const objectUi = widget.objectPropertiesSection;
-                        if (objectUi) {
-                            contextMenu.revealSection().appendItem(i18nString(UIStrings.expandRecursively), () => {
-                                void objectUi.objectTreeElement().expandRecursively();
-                            }, { jslogContext: 'expand-recursively' });
-                            contextMenu.revealSection().appendItem(i18nString(UIStrings.collapse), () => {
-                                objectUi.objectTreeElement().collapse();
-                            }, { jslogContext: 'collapse' });
-                        }
-                    }
-                }
-            }
-        }
     }
     refreshData() {
         this.updateData(true);
@@ -588,43 +582,55 @@ export class IDBDataView extends UI.View.SimpleView {
             },
             onRowSelected: this.onRowSelected.bind(this),
             deleteEntry: this.deleteEntry.bind(this),
-            populateContextMenu: this.populateContextMenu.bind(this),
         }, undefined, this.element);
     }
 }
 const OBJECT_PROPERTIES_SECTION_WIDGET_DEFAULT_VIEW = (input, output, target) => {
-    if (!input.value) {
-        output.objectPropSection = null;
+    if (!input.objectTree) {
         render(nothing, target);
         return;
     }
-    const objectPropSection = ObjectUI.ObjectPropertiesSection.ObjectPropertiesSection.defaultObjectPropertiesSection(input.value, undefined /* linkifier */, true /* skipProto */, true /* readOnly */);
-    output.objectPropSection = objectPropSection;
-    const element = input.value.hasChildren ? objectPropSection.element : objectPropSection.titleElement;
-    render(html `${element}`, target);
+    render(ObjectUI.ObjectPropertiesSection.defaultObjectPresentation(input.objectTree, undefined /* linkifier */, true /* skipProto */, true /* readOnly */), target);
 };
-class ObjectPropertiesSectionWidget extends UI.Widget.Widget {
-    #value = null;
-    #objectPropSection = null;
+export class ObjectPropertiesSectionWidget extends UI.Widget.Widget {
+    #objectTree = null;
     #view;
     constructor(element, view = OBJECT_PROPERTIES_SECTION_WIDGET_DEFAULT_VIEW) {
         super(element);
         this.#view = view;
     }
     set value(value) {
-        if (this.#value === value) {
-            return;
+        if (value) {
+            this.#objectTree = new ObjectUI.ObjectPropertiesSection.ObjectTree(value, {
+                readOnly: true,
+                propertiesMode: 1 /* ObjectUI.ObjectPropertiesSection.ObjectPropertiesMode.OWN_AND_INTERNAL_AND_INHERITED */,
+            });
         }
-        this.#value = value;
+        else {
+            this.#objectTree = null;
+        }
         this.requestUpdate();
     }
-    get objectPropertiesSection() {
-        return this.#objectPropSection;
+    get objectTree() {
+        return this.#objectTree;
+    }
+    get expanded() {
+        return this.#objectTree?.expanded ?? false;
+    }
+    set expanded(expanded) {
+        if (this.#objectTree) {
+            this.#objectTree.expanded = expanded;
+            this.requestUpdate();
+        }
+    }
+    async expandRecursively() {
+        if (this.#objectTree) {
+            await this.#objectTree.expandRecursively(ObjectUI.ObjectPropertiesSection.EXPANDABLE_MAX_DEPTH);
+            this.requestUpdate();
+        }
     }
     performUpdate() {
-        const output = { objectPropSection: null };
-        this.#view({ value: this.#value }, output, this.contentElement);
-        this.#objectPropSection = output.objectPropSection;
+        this.#view({ objectTree: this.#objectTree }, undefined, this.contentElement);
     }
 }
 //# sourceMappingURL=IndexedDBViews.js.map

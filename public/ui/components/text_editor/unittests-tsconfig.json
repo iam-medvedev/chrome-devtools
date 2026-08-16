@@ -42,9 +42,12 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../../front_end/ui/components/text_editor/AiCodeCompletionDisclaimer.test.ts",
     "../../../../../../../front_end/ui/components/text_editor/AiCodeCompletionProvider.test.ts",
+    "../../../../../../../front_end/ui/components/text_editor/AiCodeCompletionTeaser.test.ts",
     "../../../../../../../front_end/ui/components/text_editor/AiCodeGenerationParser.test.ts",
     "../../../../../../../front_end/ui/components/text_editor/AiCodeGenerationProvider.test.ts",
+    "../../../../../../../front_end/ui/components/text_editor/AiCodeGenerationTeaser.test.ts",
     "../../../../../../../front_end/ui/components/text_editor/AutocompleteHistory.test.ts",
     "../../../../../../../front_end/ui/components/text_editor/ExecutionPositionHighlighter.test.ts",
     "../../../../../../../front_end/ui/components/text_editor/TextEditor.test.ts",
@@ -68,6 +71,9 @@
       "path": "../../../core/platform/bundle-tsconfig.json"
     },
     {
+      "path": "../../../core/root/bundle-tsconfig.json"
+    },
+    {
       "path": "../../../core/sdk/bundle-tsconfig.json"
     },
     {
@@ -86,9 +92,6 @@
       "path": "../../../models/workspace/bundle-tsconfig.json"
     },
     {
-      "path": "../../../panels/common/bundle-tsconfig.json"
-    },
-    {
       "path": "../../../testing/testing-tsconfig.json"
     },
     {
@@ -96,6 +99,12 @@
     },
     {
       "path": "../../legacy/bundle-tsconfig.json"
+    },
+    {
+      "path": "../dialogs/bundle-tsconfig.json"
+    },
+    {
+      "path": "../snackbars/bundle-tsconfig.json"
     }
   ]
 }

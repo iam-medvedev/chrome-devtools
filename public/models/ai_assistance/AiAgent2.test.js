@@ -6,7 +6,7 @@ import sinon from 'sinon';
 import * as Host from '../../core/host/host.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { mockAidaClient } from '../../testing/AiAssistanceHelpers.js';
-import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import * as AiAssistance from './ai_assistance.js';
 import { SKILLS } from './skills/SkillRegistry.js';
 function assertIsFunctionResponse(part) {
@@ -29,7 +29,7 @@ function mockSkills(agent, skills) {
 }
 describeWithEnvironment('AiAgent2', () => {
     it('registers all expected skills', () => {
-        assert.deepEqual(Object.keys(SKILLS).sort(), ['styling', 'network', 'accessibility', 'performance'].sort());
+        assert.deepEqual(Object.keys(SKILLS).sort(), ['styling', 'network', 'accessibility', 'performance', 'storage', 'sources'].sort());
     });
     it('accepts changeManager in options and passes it to tools', async () => {
         const aidaClient = mockAidaClient([
@@ -241,6 +241,33 @@ describeWithEnvironment('AiAgent2', () => {
                 title: 'Data used',
                 text: 'element-description',
             }]);
+        assert.isUndefined(contextResponse?.widgets);
+    });
+    it('yields context widgets in handleContextDetails if available', async () => {
+        const aidaClient = mockAidaClient();
+        const agent = new AiAssistance.AiAgent2.AiAgent2({ aidaClient });
+        const element = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+        const nodeContext = new AiAssistance.DOMNodeContext.DOMNodeContext(element);
+        sinon.stub(nodeContext, 'getUserFacingDetails').resolves([{
+                title: 'Data used',
+                text: 'element-description',
+            }]);
+        const fakeWidget = {
+            name: 'CORE_VITALS',
+            data: {
+                parsedTrace: {},
+                insightSetKey: 'set-1',
+            },
+        };
+        sinon.stub(nodeContext, 'getWidgets').resolves([fakeWidget]);
+        const responses = await Array.fromAsync(agent.handleContextDetails(nodeContext));
+        const contextResponse = responses.find(r => r.type === "context" /* AiAssistance.AiAgent.ResponseType.CONTEXT */);
+        assert.exists(contextResponse);
+        assert.deepEqual(contextResponse?.details, [{
+                title: 'Data used',
+                text: 'element-description',
+            }]);
+        assert.deepEqual(contextResponse?.widgets, [fakeWidget]);
     });
     it('handles invalid skill names with overridden skills gracefully', async () => {
         const aidaClient = mockAidaClient();
@@ -370,6 +397,156 @@ describeWithEnvironment('AiAgent2', () => {
         assert.exists(thirdLearnSkills);
         assert.isFalse(thirdLearnSkills?.description.includes('styling'));
         assert.isFalse(thirdLearnSkills?.description.includes('network'));
+    });
+    it('falls back to document body for getExecutionContextNode when context is not DOMNodeContext', async () => {
+        const target = createTarget();
+        const domModel = target.model(SDK.DOMModel.DOMModel);
+        assert.exists(domModel);
+        const mockDocument = sinon.createStubInstance(SDK.DOMModel.DOMDocument);
+        const mockBodyNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+        mockDocument.body = mockBodyNode;
+        sinon.stub(domModel, 'existingDocument').returns(mockDocument);
+        const aidaClient = mockAidaClient([
+            [{
+                    explanation: '',
+                    functionCalls: [{ name: 'learnSkills', args: { skills: ['accessibility'] } }],
+                }],
+            [{
+                    explanation: '',
+                    functionCalls: [{ name: 'executeJavaScript', args: { action: 'console.log(1)' } }],
+                }],
+            [{
+                    explanation: 'Done',
+                }],
+        ]);
+        const agent = new AiAssistance.AiAgent2.AiAgent2({ aidaClient });
+        const executeJsTool = AiAssistance.ToolRegistry.ToolRegistry.get('executeJavaScript');
+        assert.exists(executeJsTool);
+        const handlerStub = sinon.stub(executeJsTool, 'handler').resolves({ result: 'mocked result' });
+        await Array.fromAsync(agent.run('question', { selected: null }));
+        sinon.assert.calledOnce(handlerStub);
+        const [, context] = handlerStub.getCall(0).args;
+        assert.strictEqual(context.getExecutionContextNode(), mockBodyNode);
+    });
+    it('pushes body node to frontend during preRun when body is missing', async () => {
+        const target = createTarget();
+        const domModel = target.model(SDK.DOMModel.DOMModel);
+        assert.exists(domModel);
+        const mockDocument = sinon.createStubInstance(SDK.DOMModel.DOMDocument);
+        mockDocument.body = null;
+        sinon.stub(domModel, 'existingDocument').returns(mockDocument);
+        const pushStub = sinon.stub(domModel, 'pushNodeByPathToFrontend').resolves(null);
+        const aidaClient = mockAidaClient([[{ explanation: 'Done' }]]);
+        const agent = new AiAssistance.AiAgent2.AiAgent2({ aidaClient });
+        await Array.fromAsync(agent.run('question', { selected: null }));
+        sinon.assert.calledOnceWithExactly(pushStub, '1,HTML,1,BODY');
+    });
+    it('returns null for getExecutionContextNode when body is absent and does not return document', async () => {
+        const target = createTarget();
+        const domModel = target.model(SDK.DOMModel.DOMModel);
+        assert.exists(domModel);
+        const mockDocument = sinon.createStubInstance(SDK.DOMModel.DOMDocument);
+        mockDocument.body = null;
+        sinon.stub(domModel, 'existingDocument').returns(mockDocument);
+        const aidaClient = mockAidaClient([
+            [{
+                    explanation: '',
+                    functionCalls: [{ name: 'learnSkills', args: { skills: ['accessibility'] } }],
+                }],
+            [{
+                    explanation: '',
+                    functionCalls: [{ name: 'executeJavaScript', args: { action: 'console.log(1)' } }],
+                }],
+            [{
+                    explanation: 'Done',
+                }],
+        ]);
+        const agent = new AiAssistance.AiAgent2.AiAgent2({ aidaClient });
+        const executeJsTool = AiAssistance.ToolRegistry.ToolRegistry.get('executeJavaScript');
+        assert.exists(executeJsTool);
+        const handlerStub = sinon.stub(executeJsTool, 'handler').resolves({ result: 'mocked result' });
+        await Array.fromAsync(agent.run('question', { selected: null }));
+        sinon.assert.calledOnce(handlerStub);
+        const [, context] = handlerStub.getCall(0).args;
+        assert.isNull(context.getExecutionContextNode());
+    });
+    it('creates ExtensionScope using document body when context is not DOMNodeContext', async () => {
+        const target = createTarget();
+        const domModel = target.model(SDK.DOMModel.DOMModel);
+        assert.exists(domModel);
+        const mockDocument = sinon.createStubInstance(SDK.DOMModel.DOMDocument);
+        const mockBodyNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+        mockBodyNode.domModel.returns(domModel);
+        mockDocument.body = mockBodyNode;
+        sinon.stub(domModel, 'existingDocument').returns(mockDocument);
+        const aidaClient = mockAidaClient([
+            [{
+                    explanation: '',
+                    functionCalls: [{ name: 'learnSkills', args: { skills: ['accessibility'] } }],
+                }],
+            [{
+                    explanation: '',
+                    functionCalls: [{ name: 'executeJavaScript', args: { action: 'console.log(1)' } }],
+                }],
+            [{
+                    explanation: 'Done',
+                }],
+        ]);
+        const agent = new AiAssistance.AiAgent2.AiAgent2({ aidaClient });
+        const executeJsTool = AiAssistance.ToolRegistry.ToolRegistry.get('executeJavaScript');
+        assert.exists(executeJsTool);
+        const handlerStub = sinon.stub(executeJsTool, 'handler').resolves({ result: 'mocked result' });
+        await Array.fromAsync(agent.run('question', { selected: null }));
+        sinon.assert.calledOnce(handlerStub);
+        const [, context] = handlerStub.getCall(0).args;
+        const scope = context.createExtensionScope(new AiAssistance.ChangeManager.ChangeManager());
+        assert.exists(scope);
+    });
+    it('can learn storage skill and declare listStorageKeys and getStorageValues', async () => {
+        const aidaClient = mockAidaClient([
+            [{
+                    explanation: '',
+                    functionCalls: [{ name: 'learnSkills', args: { skills: ['storage'] } }],
+                }],
+            [{
+                    explanation: 'Storage skill learned.',
+                }],
+        ]);
+        const agent = new AiAssistance.AiAgent2.AiAgent2({ aidaClient });
+        await Array.fromAsync(agent.run('question', { selected: null }));
+        sinon.assert.callCount(aidaClient.doConversation, 2);
+        const postLearnDeclarations = aidaClient.doConversation.getCall(1).args[0].function_declarations ?? [];
+        const declaredNames = postLearnDeclarations.map(d => d.name);
+        assert.include(declaredNames, 'listPageOrigins');
+        assert.include(declaredNames, 'listStorageKeys');
+        assert.include(declaredNames, 'getStorageValues');
+    });
+    it('disables server logging when calling storage tools in AiAgent2', async () => {
+        const aidaClient = mockAidaClient([
+            [{
+                    explanation: '',
+                    functionCalls: [{ name: 'learnSkills', args: { skills: ['storage'] } }],
+                }],
+            [{
+                    explanation: 'I will list keys',
+                    functionCalls: [{ name: 'listStorageKeys', args: { type: 'localStorage', origins: ['https://example.com'] } }],
+                }],
+            [{
+                    explanation: 'Keys listed.',
+                }],
+        ]);
+        const agent = new AiAssistance.AiAgent2.AiAgent2({ aidaClient });
+        const listStorageKeysTool = AiAssistance.ToolRegistry.ToolRegistry.get('listStorageKeys');
+        assert.exists(listStorageKeysTool);
+        const handlerStub = sinon.stub(listStorageKeysTool, 'handler').callsFake(async (_args, context) => {
+            context.setLoggingEnabled(false);
+            return { result: { storageKeysByOrigin: {} } };
+        });
+        await Array.fromAsync(agent.run('list keys', { selected: null }));
+        sinon.assert.calledOnce(handlerStub);
+        sinon.assert.callCount(aidaClient.doConversation, 3);
+        const thirdCallArgs = aidaClient.doConversation.getCall(2).args[0];
+        assert.isTrue(thirdCallArgs.metadata?.disable_user_content_logging);
     });
 });
 //# sourceMappingURL=AiAgent2.test.js.map

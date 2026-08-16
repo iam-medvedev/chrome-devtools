@@ -30,4 +30,143 @@ export const pauseOnCaughtExceptionSettingDescriptor = {
     type: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: false,
 };
+export const pauseOnUncaughtExceptionSettingDescriptor = {
+    name: 'pause-on-uncaught-exception',
+    type: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+    defaultValue: false,
+};
+export const javaScriptDisabledSettingDescriptor = {
+    name: 'java-script-disabled',
+    type: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+    defaultValue: false,
+    storageType: "Session" /* Common.Settings.SettingStorageType.SESSION */,
+};
+export const disableAsyncStackTracesSettingDescriptor = {
+    name: 'disable-async-stack-traces',
+    type: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+    defaultValue: false,
+};
+export const breakpointsActiveSettingDescriptor = {
+    name: 'breakpoints-active',
+    type: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+    defaultValue: true,
+    storageType: "Session" /* Common.Settings.SettingStorageType.SESSION */,
+};
+export const showMetricsRulersSettingDescriptor = {
+    name: 'show-metrics-rulers',
+    type: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+    defaultValue: false,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
+};
+export const apcaSettingDescriptor = {
+    name: 'apca',
+    type: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+    defaultValue: false,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
+};
+export const showGridAreasSettingDescriptor = {
+    name: 'show-grid-areas',
+    type: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+    defaultValue: false,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
+};
+export const showGridTrackSizesSettingDescriptor = {
+    name: 'show-grid-track-sizes',
+    type: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+    defaultValue: false,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
+};
+export const extendGridLinesSettingDescriptor = {
+    name: 'extend-grid-lines',
+    type: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+    defaultValue: false,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
+};
+export const showGridLineLabelsSettingDescriptor = {
+    name: 'show-grid-line-labels',
+    type: "enum" /* Common.Settings.SettingType.ENUM */,
+    defaultValue: 'lineNumbers',
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
+};
+export const showPaintRectsSettingDescriptor = {
+    name: 'show-paint-rects',
+    type: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+    defaultValue: false,
+    storageType: "Session" /* Common.Settings.SettingStorageType.SESSION */,
+};
+export const showLayoutShiftRegionsSettingDescriptor = {
+    name: 'show-layout-shift-regions',
+    type: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+    defaultValue: false,
+    storageType: "Session" /* Common.Settings.SettingStorageType.SESSION */,
+};
+export const showAdHighlightsSettingDescriptor = {
+    name: 'show-ad-highlights',
+    type: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+    defaultValue: false,
+    storageType: "Session" /* Common.Settings.SettingStorageType.SESSION */,
+};
+export const showDebugBordersSettingDescriptor = {
+    name: 'show-debug-borders',
+    type: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+    defaultValue: false,
+    storageType: "Session" /* Common.Settings.SettingStorageType.SESSION */,
+};
+export const showFPSCounterSettingDescriptor = {
+    name: 'show-fps-counter',
+    type: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+    defaultValue: false,
+    storageType: "Session" /* Common.Settings.SettingStorageType.SESSION */,
+};
+export const showScrollBottleneckRectsSettingDescriptor = {
+    name: 'show-scroll-bottleneck-rects',
+    type: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+    defaultValue: false,
+    storageType: "Session" /* Common.Settings.SettingStorageType.SESSION */,
+};
+export const emulatePageFocusSettingDescriptor = {
+    name: 'emulate-page-focus',
+    type: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+    defaultValue: false,
+    storageType: "Local" /* Common.Settings.SettingStorageType.LOCAL */,
+};
+export const emulatedCSSMediaSettingDescriptor = {
+    name: 'emulated-css-media',
+    type: "enum" /* Common.Settings.SettingType.ENUM */,
+    defaultValue: '',
+    storageType: "Session" /* Common.Settings.SettingStorageType.SESSION */,
+};
+export const cpuPressureSettingDescriptor = {
+    name: 'emulation.cpu-pressure',
+    type: "enum" /* Common.Settings.SettingType.ENUM */,
+    defaultValue: 'none',
+};
+export const touchSettingDescriptor = {
+    name: 'emulation.touch',
+    type: "enum" /* Common.Settings.SettingType.ENUM */,
+    defaultValue: 'none',
+};
+export const idleDetectionSettingDescriptor = {
+    name: 'emulation.idle-detection',
+    type: "enum" /* Common.Settings.SettingType.ENUM */,
+    defaultValue: 'none',
+};
+export const emulatedCSSMediaFeaturePrefersColorSchemeSettingDescriptor = {
+    name: 'emulated-css-media-feature-prefers-color-scheme',
+    type: "enum" /* Common.Settings.SettingType.ENUM */,
+    defaultValue: '',
+    storageType: "Session" /* Common.Settings.SettingStorageType.SESSION */,
+};
+export const emulatedCSSMediaFeatureForcedColorsSettingDescriptor = {
+    name: 'emulated-css-media-feature-forced-colors',
+    type: "enum" /* Common.Settings.SettingType.ENUM */,
+    defaultValue: '',
+    storageType: "Session" /* Common.Settings.SettingStorageType.SESSION */,
+};
+export const emulatedCSSMediaFeaturePrefersReducedMotionSettingDescriptor = {
+    name: 'emulated-css-media-feature-prefers-reduced-motion',
+    type: "enum" /* Common.Settings.SettingType.ENUM */,
+    defaultValue: '',
+    storageType: "Session" /* Common.Settings.SettingStorageType.SESSION */,
+};
 //# sourceMappingURL=SDKSettings.js.map

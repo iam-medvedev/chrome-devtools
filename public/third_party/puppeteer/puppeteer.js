@@ -2105,6 +2105,31 @@ function tap(observerOrNext, error, complete) {
   }) : identity;
 }
 
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/environment.js
+var isNode = !!(typeof process !== "undefined" && process.version);
+var environment = {
+  value: {
+    get fs() {
+      throw new Error("fs is not available in this environment");
+    },
+    ScreenRecorder: class {
+      constructor() {
+        throw new Error("ScreenRecorder is not available in this environment");
+      }
+    }
+  }
+};
+
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/common/Debug.js
+var DEBUG_PREFIXES = {
+  cdpSend: "puppeteer:protocol:SEND \u25BA",
+  cdpReceive: "puppeteer:protocol:RECV \u25C0",
+  bidiSend: "puppeteer:webDriverBiDi:SEND \u25BA",
+  bidiReceive: "puppeteer:webDriverBiDi:RECV \u25C0",
+  error: "puppeteer:error",
+  ffmpeg: "puppeteer:ffmpeg"
+};
+
 // gen/front_end/third_party/puppeteer/package/lib/third_party/mitt/mitt.js
 function mitt_default(n) {
   return { all: n = n || /* @__PURE__ */ new Map(), on: function(t, e) {
@@ -2427,18 +2452,116 @@ var SuppressedErrorPolyfill = class extends Error {
 };
 var SuppressedError2 = globalThis.SuppressedError ?? SuppressedErrorPolyfill;
 
-// gen/front_end/third_party/puppeteer/package/lib/puppeteer/environment.js
-var isNode = !!(typeof process !== "undefined" && process.version);
-var environment = {
-  value: {
-    get fs() {
-      throw new Error("fs is not available in this environment");
-    },
-    ScreenRecorder: class {
-      constructor() {
-        throw new Error("ScreenRecorder is not available in this environment");
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/common/EventEmitter.js
+var EventEmitter = class {
+  #emitter;
+  #handlers = /* @__PURE__ */ new Map();
+  #logger;
+  /**
+   * If you pass an emitter, the returned emitter will wrap the passed emitter.
+   *
+   * @internal
+   */
+  constructor(emitter = mitt_default(/* @__PURE__ */ new Map()), logger) {
+    this.#emitter = emitter;
+    this.#logger = logger;
+  }
+  /**
+   * Bind an event listener to fire when an event occurs.
+   * @param type - the event type you'd like to listen to. Can be a string or symbol.
+   * @param handler - the function to be called when the event occurs.
+   * @returns `this` to enable you to chain method calls.
+   */
+  on(type, handler) {
+    const handlers = this.#handlers.get(type);
+    if (handlers === void 0) {
+      this.#handlers.set(type, [handler]);
+    } else {
+      handlers.push(handler);
+    }
+    this.#emitter.on(type, handler);
+    return this;
+  }
+  /**
+   * Remove an event listener from firing.
+   * @param type - the event type you'd like to stop listening to.
+   * @param handler - the function that should be removed.
+   * @returns `this` to enable you to chain method calls.
+   */
+  off(type, handler) {
+    const handlers = this.#handlers.get(type) ?? [];
+    if (handler === void 0) {
+      for (const handler2 of handlers) {
+        this.#emitter.off(type, handler2);
+      }
+      this.#handlers.delete(type);
+      return this;
+    }
+    const index = handlers.lastIndexOf(handler);
+    if (index > -1) {
+      this.#emitter.off(type, ...handlers.splice(index, 1));
+    }
+    return this;
+  }
+  /**
+   * Emit an event and call any associated listeners.
+   *
+   * @param type - the event you'd like to emit
+   * @param eventData - any data you'd like to emit with the event
+   * @returns `true` if there are any listeners, `false` if there are not.
+   */
+  emit(type, event) {
+    this.#emitter.emit(type, event);
+    return this.listenerCount(type) > 0;
+  }
+  /**
+   * Like `on` but the listener will only be fired once and then it will be removed.
+   * @param type - the event you'd like to listen to
+   * @param handler - the handler function to run when the event occurs
+   * @returns `this` to enable you to chain method calls.
+   */
+  once(type, handler) {
+    const onceHandler = (eventData) => {
+      handler(eventData);
+      this.off(type, onceHandler);
+    };
+    return this.on(type, onceHandler);
+  }
+  /**
+   * Gets the number of listeners for a given event.
+   *
+   * @param type - the event to get the listener count for
+   * @returns the number of listeners bound to the given event
+   */
+  listenerCount(type) {
+    return this.#handlers.get(type)?.length || 0;
+  }
+  /**
+   * Removes all listeners. If given an event argument, it will remove only
+   * listeners for that event.
+   *
+   * @param type - the event to remove listeners for.
+   * @returns `this` to enable you to chain method calls.
+   */
+  removeAllListeners(type) {
+    if (type !== void 0) {
+      return this.off(type);
+    }
+    this[disposeSymbol]();
+    return this;
+  }
+  [disposeSymbol]() {
+    return void this[asyncDisposeSymbol]().catch((error) => {
+      this.#logger?.(DEBUG_PREFIXES.error)?.(error);
+    });
+  }
+  async [asyncDisposeSymbol]() {
+    for (const [type, handlers] of this.#handlers) {
+      for (const handler of handlers) {
+        this.#emitter.off(type, handler);
       }
     }
+    this.#handlers.clear();
   }
 };
 
@@ -2492,50 +2615,7 @@ function mergeUint8Arrays(items) {
 }
 
 // gen/front_end/third_party/puppeteer/package/lib/puppeteer/util/version.js
-var packageVersion = "25.5.0";
-
-// gen/front_end/third_party/puppeteer/package/lib/puppeteer/common/Debug.js
-var DEBUG_PREFIXES = {
-  cdpSend: "puppeteer:protocol:SEND \u25BA",
-  cdpReceive: "puppeteer:protocol:RECV \u25C0",
-  bidiSend: "puppeteer:webDriverBiDi:SEND \u25BA",
-  bidiReceive: "puppeteer:webDriverBiDi:RECV \u25C0",
-  error: "puppeteer:error",
-  ffmpeg: "puppeteer:ffmpeg"
-};
-var debug = (prefix) => {
-  if (isNode) {
-    const nodeDebug = environment.value.debuglog?.(prefix);
-    if (!nodeDebug || !nodeDebug.enabled) {
-      return;
-    }
-    return (...logArgs) => {
-      if (captureLogs) {
-        capturedLogs.push(prefix + logArgs);
-      }
-      nodeDebug(...logArgs);
-    };
-  }
-  const debugLevel = globalThis.__PUPPETEER_DEBUG;
-  if (!debugLevel) {
-    return;
-  }
-  const everythingShouldBeLogged = debugLevel === "*";
-  const prefixMatchesDebugLevel = everythingShouldBeLogged || /**
-   * If the debug level is `foo*`, that means we match any prefix that
-   * starts with `foo`. If the level is `foo`, we match only the prefix
-   * `foo`.
-   */
-  (debugLevel.endsWith("*") ? prefix.startsWith(debugLevel.slice(0, -1)) : prefix === debugLevel);
-  if (!prefixMatchesDebugLevel) {
-    return;
-  }
-  return (...logArgs) => {
-    console.log(`${prefix}:`, ...logArgs);
-  };
-};
-var capturedLogs = [];
-var captureLogs = false;
+var packageVersion = "25.7.0";
 
 // gen/front_end/third_party/puppeteer/package/lib/puppeteer/common/Errors.js
 var PuppeteerError = class extends Error {
@@ -2637,9 +2717,6 @@ var paperFormats = {
 };
 
 // gen/front_end/third_party/puppeteer/package/lib/puppeteer/common/util.js
-var debugError = debug(DEBUG_PREFIXES.error);
-var debugCatchError = debugError ?? (() => {
-});
 var DEFAULT_VIEWPORT = Object.freeze({ width: 800, height: 600 });
 var SOURCE_URL = Symbol("Source URL for Puppeteer evaluation scripts");
 var PuppeteerURL = class _PuppeteerURL {
@@ -2715,7 +2792,7 @@ function evaluationString(fun, ...args) {
   }
   return `(${fun})(${args.map(serializeArgument).join(",")})`;
 }
-async function getReadableAsTypedArray(readable, path) {
+async function getReadableAsTypedArray(readable, path, logger) {
   const buffers = [];
   const reader = readable.getReader();
   if (path) {
@@ -2748,7 +2825,7 @@ async function getReadableAsTypedArray(readable, path) {
     }
     return concat2;
   } catch (error) {
-    debugError?.(error);
+    logger?.(DEBUG_PREFIXES.error)?.(error);
     return null;
   }
 }
@@ -2895,115 +2972,6 @@ function filterAsync(predicate) {
   });
 }
 
-// gen/front_end/third_party/puppeteer/package/lib/puppeteer/common/EventEmitter.js
-var EventEmitter = class {
-  #emitter;
-  #handlers = /* @__PURE__ */ new Map();
-  /**
-   * If you pass an emitter, the returned emitter will wrap the passed emitter.
-   *
-   * @internal
-   */
-  constructor(emitter = mitt_default(/* @__PURE__ */ new Map())) {
-    this.#emitter = emitter;
-  }
-  /**
-   * Bind an event listener to fire when an event occurs.
-   * @param type - the event type you'd like to listen to. Can be a string or symbol.
-   * @param handler - the function to be called when the event occurs.
-   * @returns `this` to enable you to chain method calls.
-   */
-  on(type, handler) {
-    const handlers = this.#handlers.get(type);
-    if (handlers === void 0) {
-      this.#handlers.set(type, [handler]);
-    } else {
-      handlers.push(handler);
-    }
-    this.#emitter.on(type, handler);
-    return this;
-  }
-  /**
-   * Remove an event listener from firing.
-   * @param type - the event type you'd like to stop listening to.
-   * @param handler - the function that should be removed.
-   * @returns `this` to enable you to chain method calls.
-   */
-  off(type, handler) {
-    const handlers = this.#handlers.get(type) ?? [];
-    if (handler === void 0) {
-      for (const handler2 of handlers) {
-        this.#emitter.off(type, handler2);
-      }
-      this.#handlers.delete(type);
-      return this;
-    }
-    const index = handlers.lastIndexOf(handler);
-    if (index > -1) {
-      this.#emitter.off(type, ...handlers.splice(index, 1));
-    }
-    return this;
-  }
-  /**
-   * Emit an event and call any associated listeners.
-   *
-   * @param type - the event you'd like to emit
-   * @param eventData - any data you'd like to emit with the event
-   * @returns `true` if there are any listeners, `false` if there are not.
-   */
-  emit(type, event) {
-    this.#emitter.emit(type, event);
-    return this.listenerCount(type) > 0;
-  }
-  /**
-   * Like `on` but the listener will only be fired once and then it will be removed.
-   * @param type - the event you'd like to listen to
-   * @param handler - the handler function to run when the event occurs
-   * @returns `this` to enable you to chain method calls.
-   */
-  once(type, handler) {
-    const onceHandler = (eventData) => {
-      handler(eventData);
-      this.off(type, onceHandler);
-    };
-    return this.on(type, onceHandler);
-  }
-  /**
-   * Gets the number of listeners for a given event.
-   *
-   * @param type - the event to get the listener count for
-   * @returns the number of listeners bound to the given event
-   */
-  listenerCount(type) {
-    return this.#handlers.get(type)?.length || 0;
-  }
-  /**
-   * Removes all listeners. If given an event argument, it will remove only
-   * listeners for that event.
-   *
-   * @param type - the event to remove listeners for.
-   * @returns `this` to enable you to chain method calls.
-   */
-  removeAllListeners(type) {
-    if (type !== void 0) {
-      return this.off(type);
-    }
-    this[disposeSymbol]();
-    return this;
-  }
-  [disposeSymbol]() {
-    return void this[asyncDisposeSymbol]().catch(debugCatchError);
-  }
-  async [asyncDisposeSymbol]() {
-    for (const [type, handlers] of this.#handlers) {
-      for (const handler of handlers) {
-        this.#emitter.off(type, handler);
-      }
-    }
-    this.#handlers.clear();
-  }
-};
-
 // gen/front_end/third_party/puppeteer/package/lib/puppeteer/api/Browser.js
 var WEB_PERMISSION_TO_PROTOCOL_PERMISSION = /* @__PURE__ */ new Map([
   ["accelerometer", "sensors"],
@@ -3028,11 +2996,19 @@ var WEB_PERMISSION_TO_PROTOCOL_PERMISSION = /* @__PURE__ */ new Map([
   ["midi-sysex", "midiSysex"]
 ]);
 var Browser = class extends EventEmitter {
+  #logger;
   /**
    * @internal
    */
-  constructor() {
-    super();
+  constructor(logger) {
+    super(void 0, logger);
+    this.#logger = logger;
+  }
+  /**
+   * @internal
+   */
+  get logger() {
+    return this.#logger;
   }
   /**
    * Waits until a {@link Target | target} matching the given `predicate`
@@ -3147,7 +3123,9 @@ var Browser = class extends EventEmitter {
     return await this.defaultBrowserContext().setPermission(origin, ...permissions);
   }
   [disposeSymbol]() {
-    return void this[asyncDisposeSymbol]().catch(debugCatchError);
+    return void this[asyncDisposeSymbol]().catch((error) => {
+      this.#logger?.(DEBUG_PREFIXES.error)?.(error);
+    });
   }
   async [asyncDisposeSymbol]() {
     if (this.process()) {
@@ -3311,11 +3289,19 @@ var Mutex = class _Mutex {
 
 // gen/front_end/third_party/puppeteer/package/lib/puppeteer/api/BrowserContext.js
 var BrowserContext = class extends EventEmitter {
+  #logger;
   /**
    * @internal
    */
-  constructor() {
-    super();
+  constructor(logger) {
+    super(void 0, logger);
+    this.#logger = logger;
+  }
+  /**
+   * @internal
+   */
+  get logger() {
+    return this.#logger;
   }
   /**
    * If defined, indicates an ongoing screenshot operation.
@@ -3438,7 +3424,9 @@ var BrowserContext = class extends EventEmitter {
     return void 0;
   }
   [disposeSymbol]() {
-    return void this[asyncDisposeSymbol]().catch(debugCatchError);
+    return void this[asyncDisposeSymbol]().catch((error) => {
+      this.#logger?.(DEBUG_PREFIXES.error)?.(error);
+    });
   }
   async [asyncDisposeSymbol]() {
     await this.close();
@@ -3701,6 +3689,20 @@ var LocatorEvent;
   LocatorEvent2["Action"] = "action";
 })(LocatorEvent || (LocatorEvent = {}));
 var Locator = class extends EventEmitter {
+  #logger;
+  /**
+   * @internal
+   */
+  constructor(logger) {
+    super(void 0, logger);
+    this.#logger = logger;
+  }
+  /**
+   * @internal
+   */
+  get logger() {
+    return this.#logger;
+  }
   /**
    * Creates a race between multiple locators trying to locate elements in
    * parallel but ensures that only a single element receives the action.
@@ -3905,7 +3907,9 @@ var Locator = class extends EventEmitter {
       return this.emit(LocatorEvent.Action, void 0);
     }), mergeMap((handle) => {
       return from(handle.click(options)).pipe(catchError((err) => {
-        void handle.dispose().catch(debugCatchError);
+        void handle.dispose().catch((error) => {
+          this.#logger?.(DEBUG_PREFIXES.error)?.(error);
+        });
         throw err;
       }));
     }), this.operators.retryAndRaceWithSignalAndTimer(signal, cause));
@@ -4033,7 +4037,9 @@ var Locator = class extends EventEmitter {
             throw new Error(`Element cannot be filled out.`);
         }
       })).pipe(catchError((err) => {
-        void handle.dispose().catch(debugCatchError);
+        void handle.dispose().catch((error) => {
+          this.#logger?.(DEBUG_PREFIXES.error)?.(error);
+        });
         throw err;
       }));
     }), this.operators.retryAndRaceWithSignalAndTimer(signal, cause));
@@ -4048,7 +4054,9 @@ var Locator = class extends EventEmitter {
       return this.emit(LocatorEvent.Action, void 0);
     }), mergeMap((handle) => {
       return from(handle.hover()).pipe(catchError((err) => {
-        void handle.dispose().catch(debugCatchError);
+        void handle.dispose().catch((error) => {
+          this.#logger?.(DEBUG_PREFIXES.error)?.(error);
+        });
         throw err;
       }));
     }), this.operators.retryAndRaceWithSignalAndTimer(signal, cause));
@@ -4070,7 +4078,9 @@ var Locator = class extends EventEmitter {
           el.scrollLeft = scrollLeft;
         }
       }, options?.scrollTop, options?.scrollLeft)).pipe(catchError((err) => {
-        void handle.dispose().catch(debugCatchError);
+        void handle.dispose().catch((error) => {
+          this.#logger?.(DEBUG_PREFIXES.error)?.(error);
+        });
         throw err;
       }));
     }), this.operators.retryAndRaceWithSignalAndTimer(signal, cause));
@@ -4186,7 +4196,7 @@ var FunctionLocator = class _FunctionLocator extends Locator {
   #pageOrFrame;
   #func;
   constructor(pageOrFrame, func) {
-    super();
+    super(pageOrFrame.logger);
     this.#pageOrFrame = pageOrFrame;
     this.#func = func;
   }
@@ -4206,7 +4216,7 @@ var FunctionLocator = class _FunctionLocator extends Locator {
 var DelegatedLocator = class extends Locator {
   #delegate;
   constructor(delegate) {
-    super();
+    super(delegate.logger);
     this.#delegate = delegate;
     this.copyOptions(this.#delegate);
   }
@@ -4283,7 +4293,7 @@ var NodeLocator = class _NodeLocator extends Locator {
   #pageOrFrame;
   #selectorOrHandle;
   constructor(pageOrFrame, selectorOrHandle) {
-    super();
+    super(pageOrFrame.logger);
     this.#pageOrFrame = pageOrFrame;
     this.#selectorOrHandle = selectorOrHandle;
   }
@@ -4349,7 +4359,9 @@ var RaceLocator = class _RaceLocator extends Locator {
   }
   #locators;
   constructor(locators) {
-    super();
+    super(locators[0]?.logger ?? (() => {
+      return void 0;
+    }));
     this.#locators = locators;
   }
   _clone() {
@@ -4503,8 +4515,13 @@ var Page = (() => {
     /**
      * @internal
      */
-    constructor() {
-      super();
+    logger;
+    /**
+     * @internal
+     */
+    constructor(logger) {
+      super(void 0, logger);
+      this.logger = logger;
       fromEmitterEvent(
         this,
         "request"
@@ -5271,7 +5288,7 @@ var Page = (() => {
       const recorder = new ScreenRecorder(this, width, height, {
         ...options,
         crop
-      });
+      }, this.logger);
       try {
         await this._startScreencast();
       } catch (error) {
@@ -5327,7 +5344,9 @@ var Page = (() => {
         if (viewport && viewport.deviceScaleFactor !== 0) {
           await this.setViewport({ ...viewport, deviceScaleFactor: 0 });
           stack.defer(() => {
-            void this.setViewport(viewport).catch(debugCatchError);
+            void this.setViewport(viewport).catch((error) => {
+              this.logger?.(DEBUG_PREFIXES.error)?.(error);
+            });
           });
         }
         return await this.mainFrame().isolatedRealm().evaluate(() => {
@@ -5409,7 +5428,9 @@ var Page = (() => {
                 ...scrollDimensions
               });
               stack.defer(async () => {
-                await this.setViewport(viewport).catch(debugCatchError);
+                await this.setViewport(viewport).catch((error) => {
+                  this.logger?.(DEBUG_PREFIXES.error)?.(error);
+                });
               });
             }
           } else {
@@ -5787,7 +5808,9 @@ var Page = (() => {
     [(_screenshot_decorators = [guarded(function() {
       return this.browser();
     })], disposeSymbol)]() {
-      return void this[asyncDisposeSymbol]().catch(debugCatchError);
+      return void this[asyncDisposeSymbol]().catch((error) => {
+        this.logger?.(DEBUG_PREFIXES.error)?.(error);
+      });
     }
     async [asyncDisposeSymbol]() {
       await this.close();
@@ -6174,11 +6197,18 @@ var JSHandle = (() => {
       if (_metadata) Object.defineProperty(_classThis, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
       __runInitializers2(_classThis, _classExtraInitializers);
     }
+    #logger = __runInitializers2(this, _instanceExtraInitializers);
     /**
      * @internal
      */
-    constructor() {
-      __runInitializers2(this, _instanceExtraInitializers);
+    constructor(logger) {
+      this.#logger = logger;
+    }
+    /**
+     * @internal
+     */
+    get logger() {
+      return this.#logger;
     }
     /**
      * Evaluates the given function with the current handle as its first argument.
@@ -6246,7 +6276,9 @@ var JSHandle = (() => {
       return map2;
     }
     [(_getProperty_decorators = [throwIfDisposed()], _getProperties_decorators = [throwIfDisposed()], disposeSymbol)]() {
-      return void this[asyncDisposeSymbol]().catch(debugCatchError);
+      return void this[asyncDisposeSymbol]().catch((error) => {
+        this.#logger?.(DEBUG_PREFIXES.error)?.(error);
+      });
     }
     [asyncDisposeSymbol]() {
       return this.dispose();
@@ -6318,10 +6350,12 @@ var Binding = class {
   #name;
   #fn;
   #initSource;
-  constructor(name, fn, initSource) {
+  #logger;
+  constructor(name, fn, initSource, logger) {
     this.#name = name;
     this.#fn = fn;
     this.#initSource = initSource;
+    this.#logger = logger;
   }
   get name() {
     return this.#name;
@@ -6384,13 +6418,17 @@ var Binding = class {
           const callbacks = globalThis[name].callbacks;
           callbacks.get(seq).reject(error2);
           callbacks.delete(seq);
-        }, this.#name, id, error.message, error.stack).catch(debugCatchError);
+        }, this.#name, id, error.message, error.stack).catch((error2) => {
+          this.#logger?.(DEBUG_PREFIXES.error)?.(error2);
+        });
       } else {
         await context2.evaluate((name, seq, error2) => {
           const callbacks = globalThis[name].callbacks;
           callbacks.get(seq).reject(error2);
           callbacks.delete(seq);
-        }, this.#name, id, error).catch(debugCatchError);
+        }, this.#name, id, error).catch((error2) => {
+          this.#logger?.(DEBUG_PREFIXES.error)?.(error2);
+        });
       }
     }
   }
@@ -6421,8 +6459,10 @@ var CdpBluetoothEmulation = class {
 var CallbackRegistry = class {
   #callbacks = /* @__PURE__ */ new Map();
   #idGenerator;
-  constructor(idGenerator) {
+  #logger;
+  constructor(idGenerator, logger) {
     this.#idGenerator = idGenerator;
+    this.#logger = logger;
   }
   has(id) {
     return this.#callbacks.has(id);
@@ -6433,7 +6473,9 @@ var CallbackRegistry = class {
     try {
       request(callback.id);
     } catch (error) {
-      void callback.promise.catch(debugCatchError).finally(() => {
+      void callback.promise.catch((err) => {
+        this.#logger?.(DEBUG_PREFIXES.error)?.(err);
+      }).finally(() => {
         this.#callbacks.delete(callback.id);
       });
       callback.reject(error);
@@ -6544,11 +6586,11 @@ var CdpCDPSession = class extends CDPSession {
   /**
    * @internal
    */
-  constructor(connection, targetType, sessionId, parentSessionId, rawErrors) {
+  constructor(connection, targetType, sessionId, parentSessionId, rawErrors, logger) {
     super();
     this.#connection = connection;
     this.#targetType = targetType;
-    this.#callbacks = new CallbackRegistry(connection._idGenerator);
+    this.#callbacks = new CallbackRegistry(connection._idGenerator, logger);
     this.#sessionId = sessionId;
     this.#parentSessionId = parentSessionId;
     this.#rawErrors = rawErrors;
@@ -6681,17 +6723,19 @@ var Connection = class extends EventEmitter {
   #idGenerator;
   #debugProtocolSend;
   #debugProtocolReceive;
+  #logger;
   /**
    * @internal
    */
-  constructor(url, transport, delay = 0, timeout2, rawErrors = false, idGenerator = createIncrementalIdGenerator(), logger = debug) {
+  constructor(url, transport, delay = 0, timeout2 = void 0, rawErrors = false, idGenerator = createIncrementalIdGenerator(), logger) {
     super();
+    this.#logger = logger;
     this.#rawErrors = rawErrors;
     this.#idGenerator = idGenerator;
-    this.#callbacks = new CallbackRegistry(idGenerator);
+    this.#callbacks = new CallbackRegistry(idGenerator, logger);
     this.#url = url;
-    this.#debugProtocolSend = logger(DEBUG_PREFIXES.cdpSend);
-    this.#debugProtocolReceive = logger(DEBUG_PREFIXES.cdpReceive);
+    this.#debugProtocolSend = logger?.(DEBUG_PREFIXES.cdpSend);
+    this.#debugProtocolReceive = logger?.(DEBUG_PREFIXES.cdpReceive);
     this.#delay = delay;
     this.#timeout = timeout2 ?? 18e4;
     this.#transport = transport;
@@ -6796,7 +6840,7 @@ var Connection = class extends EventEmitter {
     const object = JSON.parse(message);
     if (object.method === "Target.attachedToTarget") {
       const sessionId = object.params.sessionId;
-      const session = new CdpCDPSession(this, object.params.targetInfo.type, sessionId, object.sessionId, this.#rawErrors);
+      const session = new CdpCDPSession(this, object.params.targetInfo.type, sessionId, object.sessionId, this.#rawErrors, this.#logger);
       this.#sessions.set(sessionId, session);
       this.emit(CDPSessionEvent.SessionAttached, session);
       const parentSession = this.#sessions.get(object.sessionId);
@@ -6982,10 +7026,12 @@ var JSCoverage = class {
   #resetOnNavigation = false;
   #reportAnonymousScripts = false;
   #includeRawScriptCoverage = false;
+  #logger;
   /**
    * @internal
    */
-  constructor(client) {
+  constructor(client, logger) {
+    this.#logger = logger;
     this.#client = client;
   }
   /**
@@ -7038,7 +7084,7 @@ var JSCoverage = class {
       this.#scriptURLs.set(event.scriptId, event.url);
       this.#scriptSources.set(event.scriptId, response.scriptSource);
     } catch (error) {
-      debugError?.(error);
+      this.#logger?.(DEBUG_PREFIXES.error)?.(error);
     }
   }
   async stop() {
@@ -7083,7 +7129,9 @@ var CSSCoverage = class {
   #stylesheetSources = /* @__PURE__ */ new Map();
   #eventListeners;
   #resetOnNavigation = false;
-  constructor(client) {
+  #logger;
+  constructor(client, logger) {
+    this.#logger = logger;
     this.#client = client;
   }
   /**
@@ -7128,7 +7176,7 @@ var CSSCoverage = class {
       this.#stylesheetURLs.set(header.styleSheetId, header.sourceURL);
       this.#stylesheetSources.set(header.styleSheetId, response.text);
     } catch (error) {
-      debugError?.(error);
+      this.#logger?.(DEBUG_PREFIXES.error)?.(error);
     }
   }
   async stop() {
@@ -7413,7 +7461,9 @@ var EmulationManager = (() => {
             client.send("Emulation.setTouchEmulationEnabled", {
               enabled: false
             })
-          ]).catch(debugCatchError);
+          ]).catch((err) => {
+            return this.#logger?.(DEBUG_PREFIXES.error)?.(err);
+          });
           return;
         }
         const { viewport } = viewportState;
@@ -7432,7 +7482,7 @@ var EmulationManager = (() => {
             screenOrientation
           }).catch((err) => {
             if (err.message.includes("Target does not support metrics override")) {
-              debugError?.(err);
+              this.#logger?.(DEBUG_PREFIXES.error)?.(err);
               return;
             }
             throw err;
@@ -7589,7 +7639,9 @@ var EmulationManager = (() => {
       active: false
     }, this, this.#emulateFocus);
     #secondaryClients = /* @__PURE__ */ new Set();
-    constructor(client) {
+    #logger;
+    constructor(client, logger) {
+      this.#logger = logger;
       this.#client = client;
     }
     updateClient(client) {
@@ -7608,7 +7660,9 @@ var EmulationManager = (() => {
         this.#secondaryClients.delete(client);
       });
       void Promise.all(this.#states.map((s) => {
-        return s.sync().catch(debugCatchError);
+        return s.sync().catch((err) => {
+          return this.#logger?.(DEBUG_PREFIXES.error)?.(err);
+        });
       }));
     }
     get javascriptEnabled() {
@@ -8920,8 +8974,13 @@ var Frame = (() => {
     /**
      * @internal
      */
-    constructor() {
-      super();
+    logger;
+    /**
+     * @internal
+     */
+    constructor(logger) {
+      super(void 0, logger);
+      this.logger = logger;
     }
     #_document;
     /**
@@ -9585,17 +9644,15 @@ var CdpDeviceRequestPrompt = class extends DeviceRequestPrompt {
   #timeoutSettings;
   #id;
   #handled = false;
-  #updateDevicesHandle = this.#updateDevices.bind(this);
   #waitForDevicePromises = /* @__PURE__ */ new Set();
+  #subscriptions = new DisposableStack();
   constructor(client, timeoutSettings, firstEvent) {
     super();
     this.#client = client;
     this.#timeoutSettings = timeoutSettings;
     this.#id = firstEvent.id;
-    this.#client.on("DeviceAccess.deviceRequestPrompted", this.#updateDevicesHandle);
-    this.#client.on("Target.detachedFromTarget", () => {
-      this.#client = null;
-    });
+    const clientEmitter = this.#subscriptions.use(new EventEmitter(this.#client));
+    clientEmitter.on("DeviceAccess.deviceRequestPrompted", this.#updateDevices.bind(this));
     this.#updateDevices(firstEvent);
   }
   #updateDevices(event) {
@@ -9642,22 +9699,20 @@ var CdpDeviceRequestPrompt = class extends DeviceRequestPrompt {
     }
   }
   async select(device) {
-    assert(this.#client !== null, "Cannot select device through detached session!");
     assert(this.devices.includes(device), "Cannot select unknown device!");
     assert(!this.#handled, "Cannot select DeviceRequestPrompt which is already handled!");
-    this.#client.off("DeviceAccess.deviceRequestPrompted", this.#updateDevicesHandle);
+    this.#subscriptions.dispose();
     this.#handled = true;
-    return await this.#client.send("DeviceAccess.selectPrompt", {
+    await this.#client.send("DeviceAccess.selectPrompt", {
       id: this.#id,
       deviceId: device.id
     });
   }
   async cancel() {
-    assert(this.#client !== null, "Cannot cancel prompt through detached session!");
     assert(!this.#handled, "Cannot cancel DeviceRequestPrompt which is already handled!");
-    this.#client.off("DeviceAccess.deviceRequestPrompted", this.#updateDevicesHandle);
+    this.#subscriptions.dispose();
     this.#handled = true;
-    return await this.#client.send("DeviceAccess.cancelPrompt", { id: this.#id });
+    await this.#client.send("DeviceAccess.cancelPrompt", { id: this.#id });
   }
 };
 var CdpDeviceRequestPromptManager = class {
@@ -9972,8 +10027,8 @@ var ElementHandle = (() => {
     /**
      * @internal
      */
-    constructor(handle) {
-      super();
+    constructor(handle, logger) {
+      super(logger);
       this.handle = handle;
       this[_isElementHandle] = true;
     }
@@ -11221,10 +11276,12 @@ var CdpJSHandle = class extends JSHandle {
   #disposed = false;
   #remoteObject;
   #world;
-  constructor(world, remoteObject) {
-    super();
+  #logger;
+  constructor(world, remoteObject, logger) {
+    super(logger);
     this.#world = world;
     this.#remoteObject = remoteObject;
+    this.#logger = logger;
   }
   get disposed() {
     return this.#disposed;
@@ -11259,7 +11316,7 @@ var CdpJSHandle = class extends JSHandle {
       return;
     }
     this.#disposed = true;
-    await releaseObject(this.client, this.#remoteObject);
+    await releaseObject(this.client, this.#remoteObject, this.#logger);
   }
   toString() {
     if (!this.#remoteObject.objectId) {
@@ -11289,12 +11346,12 @@ var CdpJSHandle = class extends JSHandle {
     return result;
   }
 };
-async function releaseObject(client, remoteObject) {
+async function releaseObject(client, remoteObject, logger) {
   if (!remoteObject.objectId) {
     return;
   }
   await client.send("Runtime.releaseObject", { objectId: remoteObject.objectId }).catch((error) => {
-    debugError?.(error);
+    logger?.(DEBUG_PREFIXES.error)?.(error);
   });
 }
 
@@ -11360,8 +11417,10 @@ var CdpElementHandle = (() => {
       if (_metadata) Object.defineProperty(this, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
     }
     #backendNodeId = __runInitializers6(this, _instanceExtraInitializers);
-    constructor(world, remoteObject) {
-      super(new CdpJSHandle(world, remoteObject));
+    #logger;
+    constructor(world, remoteObject, logger) {
+      super(new CdpJSHandle(world, remoteObject, logger), logger);
+      this.#logger = logger;
     }
     get realm() {
       return this.handle.realm;
@@ -11394,7 +11453,7 @@ var CdpElementHandle = (() => {
           objectId: this.id
         });
       } catch (error) {
-        debugError?.(error);
+        this.#logger?.(DEBUG_PREFIXES.error)?.(error);
         await super.scrollIntoView();
       }
     }
@@ -11537,23 +11596,43 @@ var __disposeResources10 = /* @__PURE__ */ function(SuppressedError3) {
   var e = new Error(message);
   return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
 });
-var ariaQuerySelectorBinding = new Binding("__ariaQuerySelector", ARIAQueryHandler.queryOne, "");
-var ariaQuerySelectorAllBinding = new Binding("__ariaQuerySelectorAll", async (element, selector) => {
-  const results = ARIAQueryHandler.queryAll(element, selector);
-  return await element.realm.evaluateHandle((...elements) => {
-    return elements;
-  }, ...await AsyncIterableUtil.collect(results));
-}, "");
-var ExecutionContext = class extends EventEmitter {
+var ExecutionContext = class _ExecutionContext extends EventEmitter {
+  static #ariaQuerySelectorBinding;
+  static getOrCreateAriaQuerySelectorBinding(logger) {
+    return this.#ariaQuerySelectorBinding ??= new Binding(
+      "__ariaQuerySelector",
+      ARIAQueryHandler.queryOne,
+      "",
+      // custom init
+      logger
+    );
+  }
+  static #ariaQuerySelectorAllBinding;
+  static getOrCreateAriaQuerySelectorAllBinding(logger) {
+    return this.#ariaQuerySelectorAllBinding ??= new Binding(
+      "__ariaQuerySelectorAll",
+      async (element, selector) => {
+        const results = ARIAQueryHandler.queryAll(element, selector);
+        return await element.realm.evaluateHandle((...elements) => {
+          return elements;
+        }, ...await AsyncIterableUtil.collect(results));
+      },
+      "",
+      // custom init
+      logger
+    );
+  }
   #client;
   #world;
   #id;
   #name;
   #disposables = new DisposableStack();
-  constructor(client, contextPayload, world) {
-    super();
+  #logger;
+  constructor(client, contextPayload, world, logger) {
+    super(void 0, logger);
     this.#client = client;
     this.#world = world;
+    this.#logger = logger;
     this.#id = contextPayload.id;
     if (contextPayload.name) {
       this.#name = contextPayload.name;
@@ -11604,7 +11683,7 @@ var ExecutionContext = class extends EventEmitter {
             return;
           }
         }
-        debugError?.(error);
+        this.#logger?.(DEBUG_PREFIXES.error)?.(error);
       }
     } catch (e_1) {
       env_1.error = e_1;
@@ -11636,7 +11715,7 @@ var ExecutionContext = class extends EventEmitter {
       const binding = this.#bindings.get(name);
       await binding?.run(this, seq, args, isTrivial);
     } catch (err) {
-      debugError?.(err);
+      this.#logger?.(DEBUG_PREFIXES.error)?.(err);
     }
   }
   get id() {
@@ -11650,12 +11729,15 @@ var ExecutionContext = class extends EventEmitter {
   }
   #bindingsInstalled = false;
   #puppeteerUtil;
+  /**
+   * @internal
+   */
   get puppeteerUtil() {
     let promise = Promise.resolve();
     if (!this.#bindingsInstalled) {
       promise = Promise.all([
-        this.#addBindingWithoutThrowing(ariaQuerySelectorBinding),
-        this.#addBindingWithoutThrowing(ariaQuerySelectorAllBinding)
+        this.#addBindingWithoutThrowing(_ExecutionContext.getOrCreateAriaQuerySelectorBinding(this.#logger)),
+        this.#addBindingWithoutThrowing(_ExecutionContext.getOrCreateAriaQuerySelectorAllBinding(this.#logger))
       ]);
       this.#bindingsInstalled = true;
     }
@@ -11675,7 +11757,7 @@ var ExecutionContext = class extends EventEmitter {
     try {
       await this.#addBinding(binding);
     } catch (err) {
-      debugError?.(err);
+      this.#logger?.(DEBUG_PREFIXES.error)?.(err);
     }
   }
   /**
@@ -11956,12 +12038,14 @@ var __disposeResources11 = /* @__PURE__ */ function(SuppressedError3) {
 var Accessibility = class {
   #realm;
   #frameId;
+  #logger;
   /**
    * @internal
    */
-  constructor(realm, frameId = "") {
+  constructor(realm, frameId = "", logger) {
     this.#realm = realm;
     this.#frameId = frameId;
+    this.#logger = logger;
   }
   /**
    * Captures the current state of the accessibility tree.
@@ -12034,7 +12118,7 @@ var Accessibility = class {
             const iframeSnapshot = await frame.accessibility.snapshot(options);
             root2.iframeSnapshot = iframeSnapshot ?? void 0;
           } catch (error) {
-            debugError?.(error);
+            this.#logger?.(DEBUG_PREFIXES.error)?.(error);
           }
         } catch (e_1) {
           env_1.error = e_1;
@@ -12692,10 +12776,12 @@ var TargetType;
   TargetType2["TAB"] = "tab";
 })(TargetType || (TargetType = {}));
 var Target = class {
+  logger;
   /**
    * @internal
    */
-  constructor() {
+  constructor(logger) {
+    this.logger = logger;
   }
   /**
    * If the target is not of type `"service_worker"` or `"shared_worker"`, returns `null`.
@@ -12718,20 +12804,22 @@ var CdpWebWorker = class extends WebWorker {
   #client;
   #id;
   #targetType;
+  #logger;
   #emitter;
   #workerLoaded = new Deferred();
   get internalEmitter() {
     return this.#emitter;
   }
-  constructor(client, url, targetId, targetType, exceptionThrown, networkManager) {
+  constructor(client, url, targetId, targetType, exceptionThrown, networkManager, logger) {
     super(url);
     this.#id = targetId;
     this.#client = client;
+    this.#logger = logger;
     this.#targetType = targetType;
-    this.#world = new IsolatedWorld(this, new TimeoutSettings(), MAIN_WORLD);
-    this.#emitter = new EventEmitter();
+    this.#world = new IsolatedWorld(this, new TimeoutSettings(), MAIN_WORLD, logger);
+    this.#emitter = new EventEmitter(void 0, logger);
     this.#client.once("Runtime.executionContextCreated", async (event) => {
-      this.#world.setContext(new ExecutionContext(client, event.context, this.#world));
+      this.#world.setContext(new ExecutionContext(client, event.context, this.#world, logger));
     });
     this.#client.once("Inspector.workerScriptLoaded", () => {
       this.#workerLoaded.resolve();
@@ -12745,7 +12833,9 @@ var CdpWebWorker = class extends WebWorker {
         const noWorkerListeners = this.listenerCount(WebWorkerEvent.Console) === 0;
         if (noInternalListeners && noWorkerListeners) {
           for (const value of values) {
-            void value.dispose().catch(debugCatchError);
+            void value.dispose().catch((err) => {
+              return this.#logger?.(DEBUG_PREFIXES.error)?.(err);
+            });
           }
           return;
         }
@@ -12755,17 +12845,19 @@ var CdpWebWorker = class extends WebWorker {
           this.emit(WebWorkerEvent.Console, consoleMessages);
         }
       } catch (err) {
-        debugError?.(err);
+        this.#logger?.(DEBUG_PREFIXES.error)?.(err);
       }
     });
     this.#client.on("Runtime.exceptionThrown", exceptionThrown);
     this.#client.once(CDPSessionEvent.Disconnected, () => {
       this.#world.dispose();
     });
-    networkManager?.addClient(this.#client).catch(debugCatchError ?? (() => {
-    }));
-    this.#client.send("Runtime.enable").catch(debugCatchError ?? (() => {
-    }));
+    networkManager?.addClient(this.#client).catch((err) => {
+      return this.#logger?.(DEBUG_PREFIXES.error)?.(err);
+    });
+    this.#client.send("Runtime.enable").catch((err) => {
+      return this.#logger?.(DEBUG_PREFIXES.error)?.(err);
+    });
   }
   mainRealm() {
     return this.#world;
@@ -12813,10 +12905,12 @@ var IsolatedWorld = class extends Realm {
   #worldId;
   #origin;
   #frameOrWorker;
-  constructor(frameOrWorker, timeoutSettings, worldId) {
+  #logger;
+  constructor(frameOrWorker, timeoutSettings, worldId, logger) {
     super(timeoutSettings);
     this.#frameOrWorker = frameOrWorker;
     this.#worldId = worldId;
+    this.#logger = logger;
   }
   get environment() {
     return this.#frameOrWorker;
@@ -12927,9 +13021,9 @@ var IsolatedWorld = class extends Realm {
    */
   createCdpHandle(remoteObject) {
     if (remoteObject.subtype === "node") {
-      return new CdpElementHandle(this, remoteObject);
+      return new CdpElementHandle(this, remoteObject, this.#logger);
     }
-    return new CdpJSHandle(this, remoteObject);
+    return new CdpJSHandle(this, remoteObject, this.#logger);
   }
   [disposeSymbol]() {
     this.#context?.[disposeSymbol]();
@@ -13187,20 +13281,22 @@ var CdpFrame = (() => {
     accessibility;
     worlds;
     extensionWorlds = {};
-    constructor(frameManager, frameId, parentFrameId, client) {
-      super();
+    #logger;
+    constructor(frameManager, frameId, parentFrameId, client, logger) {
+      super(logger);
       this._frameManager = frameManager;
       this.#url = "";
       this._id = frameId;
       this._parentId = parentFrameId;
       this.#detached = false;
       this.#client = client;
+      this.#logger = logger;
       this._loaderId = "";
       this.worlds = {
-        [MAIN_WORLD]: new IsolatedWorld(this, this._frameManager.timeoutSettings, MAIN_WORLD),
-        [PUPPETEER_WORLD]: new IsolatedWorld(this, this._frameManager.timeoutSettings, PUPPETEER_WORLD)
+        [MAIN_WORLD]: new IsolatedWorld(this, this._frameManager.timeoutSettings, MAIN_WORLD, logger),
+        [PUPPETEER_WORLD]: new IsolatedWorld(this, this._frameManager.timeoutSettings, PUPPETEER_WORLD, logger)
       };
-      this.accessibility = new Accessibility(this.worlds[MAIN_WORLD], frameId);
+      this.accessibility = new Accessibility(this.worlds[MAIN_WORLD], frameId, logger);
       this.on(FrameEvent.FrameSwappedByActivation, () => {
         this._onLoadingStarted();
         this._onLoadingStopped();
@@ -13364,7 +13460,9 @@ var CdpFrame = (() => {
         this.#client.send("Runtime.addBinding", {
           name: CDP_BINDING_PREFIX + binding.name
         }),
-        this.evaluate(binding.initSource).catch(debugCatchError)
+        this.evaluate(binding.initSource).catch((error) => {
+          this.#logger?.(DEBUG_PREFIXES.error)?.(error);
+        })
       ]);
     }
     async removeExposedFunctionBinding(binding) {
@@ -13377,7 +13475,9 @@ var CdpFrame = (() => {
         }),
         this.evaluate((name) => {
           globalThis[name] = void 0;
-        }, binding.name).catch(debugCatchError)
+        }, binding.name).catch((error) => {
+          this.#logger?.(DEBUG_PREFIXES.error)?.(error);
+        })
       ]);
     }
     async waitForDevicePrompt(options = {}) {
@@ -13905,12 +14005,12 @@ var errorReasons = {
   timedout: "TimedOut",
   failed: "Failed"
 };
-function handleError(error) {
+function handleError(error, logger) {
   if (error.originalMessage.includes("Invalid header") || error.originalMessage.includes("Unsafe header") || error.originalMessage.includes('Expected "header"') || // WebDriver BiDi error for invalid values, for example, headers.
   error.originalMessage.includes("invalid argument")) {
     throw error;
   }
-  debugError?.(error);
+  logger?.(DEBUG_PREFIXES.error)?.(error);
 }
 
 // gen/front_end/third_party/puppeteer/package/lib/puppeteer/cdp/HTTPRequest.js
@@ -13926,14 +14026,16 @@ var CdpHTTPRequest = class extends HTTPRequest {
   #headers = {};
   #frame;
   #initiator;
+  #logger;
   get client() {
     return this.#client;
   }
   set client(newClient) {
     this.#client = newClient;
   }
-  constructor(client, frame, interceptionId, allowInterception, data, redirectChain) {
+  constructor(client, frame, interceptionId, allowInterception, data, redirectChain, logger) {
     super();
+    this.#logger = logger;
     this.#client = client;
     this.id = data.requestId;
     this.#isNavigationRequest = data.requestId === data.loaderId && data.type === "Document";
@@ -13984,7 +14086,7 @@ var CdpHTTPRequest = class extends HTTPRequest {
       });
       return result.postData;
     } catch (err) {
-      debugError?.(err);
+      this.#logger?.(DEBUG_PREFIXES.error)?.(err);
       return;
     }
   }
@@ -14035,7 +14137,7 @@ var CdpHTTPRequest = class extends HTTPRequest {
       headers: headers ? headersArray(headers) : void 0
     }).catch((error) => {
       this.interception.handled = false;
-      return handleError(error);
+      return handleError(error, this.#logger);
     });
   }
   async _respond(response) {
@@ -14071,7 +14173,7 @@ var CdpHTTPRequest = class extends HTTPRequest {
       body: parsedBody?.base64
     }).catch((error) => {
       this.interception.handled = false;
-      return handleError(error);
+      return handleError(error, this.#logger);
     });
   }
   async _abort(errorReason) {
@@ -14082,7 +14184,9 @@ var CdpHTTPRequest = class extends HTTPRequest {
     await this.#client.send("Fetch.failRequest", {
       requestId: this._interceptionId,
       errorReason: errorReason || "Failed"
-    }).catch(handleError);
+    }).catch((error) => {
+      return handleError(error, this.#logger);
+    });
   }
 };
 
@@ -14492,10 +14596,12 @@ var NetworkManager = class extends EventEmitter {
   ];
   #clients = /* @__PURE__ */ new Map();
   #networkEnabled;
-  constructor(frameManager, networkEnabled) {
-    super();
+  #logger;
+  constructor(frameManager, networkEnabled = true, logger) {
+    super(void 0, logger);
     this.#frameManager = frameManager;
     this.#networkEnabled = networkEnabled ?? true;
+    this.#logger = logger;
   }
   #canIgnoreError(error) {
     return isErrorLike(error) && (isTargetClosedError(error) || error.message.includes("Not supported") || error.message.includes("wasn't found"));
@@ -14742,7 +14848,9 @@ var NetworkManager = class extends EventEmitter {
     void client.send("Fetch.continueWithAuth", {
       requestId: event.requestId,
       authChallengeResponse: { response, username, password }
-    }).catch(debugCatchError);
+    }).catch((err) => {
+      this.#logger?.(DEBUG_PREFIXES.error)?.(err);
+    });
   }
   /**
    * CDP may send a Fetch.requestPaused without or before a
@@ -14755,7 +14863,9 @@ var NetworkManager = class extends EventEmitter {
     if (!this.#userRequestInterceptionEnabled && this.#protocolRequestInterceptionEnabled) {
       void client.send("Fetch.continueRequest", {
         requestId: event.requestId
-      }).catch(debugCatchError);
+      }).catch((err) => {
+        this.#logger?.(DEBUG_PREFIXES.error)?.(err);
+      });
     }
     const { networkId: networkRequestId, requestId: fetchRequestId } = event;
     if (!networkRequestId) {
@@ -14786,7 +14896,7 @@ var NetworkManager = class extends EventEmitter {
   }
   #onRequestWithoutNetworkInstrumentation(client, event) {
     const frame = event.frameId ? this.#frameManager.frame(event.frameId) : null;
-    const request = new CdpHTTPRequest(client, frame, event.requestId, this.#userRequestInterceptionEnabled, event, []);
+    const request = new CdpHTTPRequest(client, frame, event.requestId, this.#userRequestInterceptionEnabled, event, [], this.#logger);
     this.emit(NetworkManagerEvent.Request, request);
     void request.finalizeInterceptions();
   }
@@ -14815,7 +14925,7 @@ var NetworkManager = class extends EventEmitter {
       }
     }
     const frame = event.frameId ? this.#frameManager.frame(event.frameId) : null;
-    const request = new CdpHTTPRequest(client, frame, fetchRequestId, this.#userRequestInterceptionEnabled, event, redirectChain);
+    const request = new CdpHTTPRequest(client, frame, fetchRequestId, this.#userRequestInterceptionEnabled, event, redirectChain, this.#logger);
     const extraInfo = this.#networkEventManager.requestExtraInfo(event.requestId).shift();
     if (extraInfo) {
       request.updateHeaders(extraInfo.headers);
@@ -14844,7 +14954,7 @@ var NetworkManager = class extends EventEmitter {
       request = this.#networkEventManager.getRequest(event.requestId);
     }
     if (!request) {
-      debugError?.(new Error(`Request ${event.requestId} was served from cache but we could not find the corresponding request object`));
+      this.#logger?.(DEBUG_PREFIXES.error)?.(new Error(`Request ${event.requestId} was served from cache but we could not find the corresponding request object`));
       return;
     }
     this.emit(NetworkManagerEvent.RequestServedFromCache, request);
@@ -14865,7 +14975,7 @@ var NetworkManager = class extends EventEmitter {
     }
     const extraInfos = this.#networkEventManager.responseExtraInfo(responseReceived.requestId);
     if (extraInfos.length) {
-      debugError?.(new Error("Unexpected extraInfo events for request " + responseReceived.requestId));
+      this.#logger?.(DEBUG_PREFIXES.error)?.(new Error("Unexpected extraInfo events for request " + responseReceived.requestId));
     }
     if (responseReceived.response.fromDiskCache) {
       extraInfo = null;
@@ -14970,6 +15080,64 @@ var NetworkManager = class extends EventEmitter {
 };
 
 // gen/front_end/third_party/puppeteer/package/lib/puppeteer/cdp/FrameManager.js
+var __addDisposableResource12 = function(env, value, async2) {
+  if (value !== null && value !== void 0) {
+    if (typeof value !== "object" && typeof value !== "function") throw new TypeError("Object expected.");
+    var dispose, inner;
+    if (async2) {
+      if (!Symbol.asyncDispose) throw new TypeError("Symbol.asyncDispose is not defined.");
+      dispose = value[Symbol.asyncDispose];
+    }
+    if (dispose === void 0) {
+      if (!Symbol.dispose) throw new TypeError("Symbol.dispose is not defined.");
+      dispose = value[Symbol.dispose];
+      if (async2) inner = dispose;
+    }
+    if (typeof dispose !== "function") throw new TypeError("Object not disposable.");
+    if (inner) dispose = function() {
+      try {
+        inner.call(this);
+      } catch (e) {
+        return Promise.reject(e);
+      }
+    };
+    env.stack.push({ value, dispose, async: async2 });
+  } else if (async2) {
+    env.stack.push({ async: true });
+  }
+  return value;
+};
+var __disposeResources12 = /* @__PURE__ */ function(SuppressedError3) {
+  return function(env) {
+    function fail(e) {
+      env.error = env.hasError ? new SuppressedError3(e, env.error, "An error was suppressed during disposal.") : e;
+      env.hasError = true;
+    }
+    var r, s = 0;
+    function next() {
+      while (r = env.stack.pop()) {
+        try {
+          if (!r.async && s === 1) return s = 0, env.stack.push(r), Promise.resolve().then(next);
+          if (r.dispose) {
+            var result = r.dispose.call(r.value);
+            if (r.async) return s |= 2, Promise.resolve(result).then(next, function(e) {
+              fail(e);
+              return next();
+            });
+          } else s |= 1;
+        } catch (e) {
+          fail(e);
+        }
+      }
+      if (s === 1) return env.hasError ? Promise.reject(env.error) : Promise.resolve();
+      if (env.hasError) throw env.error;
+    }
+    return next();
+  };
+}(typeof SuppressedError === "function" ? SuppressedError : function(error, suppressed, message) {
+  var e = new Error(message);
+  return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+});
 var CHROME_EXTENSION_PREFIX = "chrome-extension://";
 var FrameManager = class extends EventEmitter {
   #page;
@@ -14988,6 +15156,7 @@ var FrameManager = class extends EventEmitter {
   #frameNavigatedReceived = /* @__PURE__ */ new Set();
   #deviceRequestPromptManagerMap = /* @__PURE__ */ new WeakMap();
   #frameTreeHandled;
+  #logger;
   get timeoutSettings() {
     return this.#timeoutSettings;
   }
@@ -14997,15 +15166,18 @@ var FrameManager = class extends EventEmitter {
   get client() {
     return this.#client;
   }
-  constructor(client, page, timeoutSettings) {
-    super();
+  constructor(client, page, timeoutSettings, logger) {
+    super(void 0, logger);
     this.#client = client;
     this.#page = page;
-    this.#networkManager = new NetworkManager(this, page.browser().isNetworkEnabled());
+    this.#networkManager = new NetworkManager(this, page.browser().isNetworkEnabled(), logger);
     this.#timeoutSettings = timeoutSettings;
+    this.#logger = logger;
     this.setupEventListeners(this.#client);
     client.once(CDPSessionEvent.Disconnected, () => {
-      void this.#onClientDisconnect(client).catch(debugCatchError);
+      void this.#onClientDisconnect(client).catch((error) => {
+        this.#logger?.(DEBUG_PREFIXES.error)?.(error);
+      });
     });
   }
   /**
@@ -15014,36 +15186,42 @@ var FrameManager = class extends EventEmitter {
    * new frame. Therefore, we wait for a swap event.
    */
   async #onClientDisconnect(client) {
-    const mainFrame = this._frameTree.getMainFrame();
-    if (!mainFrame) {
-      return;
-    }
-    if (this.#client !== client) {
-      return;
-    }
-    if (!this.#page.browser().connected || this.#page.isClosed()) {
-      this.#removeFramesRecursively(mainFrame);
-      return;
-    }
-    for (const child of mainFrame.childFrames()) {
-      this.#removeFramesRecursively(child);
-    }
-    const swapped = Deferred.create();
-    const onFrameSwapped = () => {
-      swapped.resolve();
-    };
-    const onPageClosed = () => {
-      swapped.reject(new Error("Page closed"));
-    };
-    mainFrame.once(FrameEvent.FrameSwappedByActivation, onFrameSwapped);
-    this.#page.once("close", onPageClosed);
+    const env_1 = { stack: [], error: void 0, hasError: false };
     try {
-      await swapped.valueOrThrow();
-    } catch {
-      this.#removeFramesRecursively(mainFrame);
+      const mainFrame = this._frameTree.getMainFrame();
+      if (!mainFrame) {
+        return;
+      }
+      if (this.#client !== client) {
+        return;
+      }
+      if (!this.#page.browser().connected || this.#page.isClosed()) {
+        this.#removeFramesRecursively(mainFrame);
+        return;
+      }
+      for (const child of mainFrame.childFrames()) {
+        this.#removeFramesRecursively(child);
+      }
+      const swapped = Deferred.create();
+      const subscriptions = __addDisposableResource12(env_1, new DisposableStack(), false);
+      const frameEmitter = subscriptions.use(new EventEmitter(mainFrame));
+      const pageEmitter = subscriptions.use(new EventEmitter(this.#page));
+      frameEmitter.once(FrameEvent.FrameSwappedByActivation, () => {
+        swapped.resolve();
+      });
+      pageEmitter.once("close", () => {
+        swapped.reject(new Error("Page closed"));
+      });
+      try {
+        await swapped.valueOrThrow();
+      } catch {
+        this.#removeFramesRecursively(mainFrame);
+      }
+    } catch (e_1) {
+      env_1.error = e_1;
+      env_1.hasError = true;
     } finally {
-      mainFrame.off(FrameEvent.FrameSwappedByActivation, onFrameSwapped);
-      this.#page.off("close", onPageClosed);
+      __disposeResources12(env_1);
     }
   }
   /**
@@ -15063,7 +15241,9 @@ var FrameManager = class extends EventEmitter {
     }
     this.setupEventListeners(client);
     client.once(CDPSessionEvent.Disconnected, () => {
-      void this.#onClientDisconnect(client).catch(debugCatchError);
+      void this.#onClientDisconnect(client).catch((error) => {
+        this.#logger?.(DEBUG_PREFIXES.error)?.(error);
+      });
     });
     await this.initialize(client, frame);
     await this.#networkManager.addClient(client);
@@ -15157,17 +15337,28 @@ var FrameManager = class extends EventEmitter {
   frame(frameId) {
     return this._frameTree.getById(frameId) || null;
   }
+  async #forEachFrame(action) {
+    await Promise.all(this.frames().map(async (frame) => {
+      try {
+        await action(frame);
+      } catch (error) {
+        if (frame._client() === this.#client || !isErrorLike(error) || !isTargetClosedError(error)) {
+          throw error;
+        }
+      }
+    }));
+  }
   async addExposedFunctionBinding(binding) {
     this.#bindings.add(binding);
-    await Promise.all(this.frames().map(async (frame) => {
-      return await frame.addExposedFunctionBinding(binding);
-    }));
+    await this.#forEachFrame((frame) => {
+      return frame.addExposedFunctionBinding(binding);
+    });
   }
   async removeExposedFunctionBinding(binding) {
     this.#bindings.delete(binding);
-    await Promise.all(this.frames().map(async (frame) => {
-      return await frame.removeExposedFunctionBinding(binding);
-    }));
+    await this.#forEachFrame((frame) => {
+      return frame.removeExposedFunctionBinding(binding);
+    });
   }
   async evaluateOnNewDocument(source2) {
     const { identifier } = await this.mainFrame()._client().send("Page.addScriptToEvaluateOnNewDocument", {
@@ -15175,9 +15366,9 @@ var FrameManager = class extends EventEmitter {
     });
     const preloadScript = new CdpPreloadScript(this.mainFrame(), identifier, source2);
     this.#scriptsToEvaluateOnNewDocument.set(identifier, preloadScript);
-    await Promise.all(this.frames().map(async (frame) => {
-      return await frame.addPreloadScript(preloadScript);
-    }));
+    await this.#forEachFrame((frame) => {
+      return frame.addPreloadScript(preloadScript);
+    });
     return { identifier };
   }
   async removeScriptToEvaluateOnNewDocument(identifier) {
@@ -15193,7 +15384,9 @@ var FrameManager = class extends EventEmitter {
       }
       return frame._client().send("Page.removeScriptToEvaluateOnNewDocument", {
         identifier: identifier2
-      }).catch(debugCatchError);
+      }).catch((error) => {
+        this.#logger?.(DEBUG_PREFIXES.error)?.(error);
+      });
     }));
   }
   onAttachedToTarget(target) {
@@ -15205,7 +15398,9 @@ var FrameManager = class extends EventEmitter {
       frame.updateClient(target._session());
     }
     this.setupEventListeners(target._session());
-    void this.initialize(target._session(), frame).catch(debugCatchError);
+    void this.initialize(target._session(), frame).catch((error) => {
+      this.#logger?.(DEBUG_PREFIXES.error)?.(error);
+    });
   }
   _deviceRequestPromptManager(client) {
     let manager = this.#deviceRequestPromptManagerMap.get(client);
@@ -15265,7 +15460,7 @@ var FrameManager = class extends EventEmitter {
       }
       return;
     }
-    frame = new CdpFrame(this, frameId, parentFrameId, session);
+    frame = new CdpFrame(this, frameId, parentFrameId, session, this.#logger);
     this._frameTree.addFrame(frame);
     this.emit(FrameManagerEvent.FrameAttached, frame);
   }
@@ -15283,7 +15478,7 @@ var FrameManager = class extends EventEmitter {
         this._frameTree.removeFrame(frame);
         frame._id = frameId;
       } else {
-        frame = new CdpFrame(this, frameId, void 0, this.#client);
+        frame = new CdpFrame(this, frameId, void 0, this.#client, this.#logger);
       }
       this._frameTree.addFrame(frame);
     }
@@ -15308,7 +15503,9 @@ var FrameManager = class extends EventEmitter {
         frameId: frame._id,
         worldName: name,
         grantUniveralAccess: true
-      }).catch(debugCatchError);
+      }).catch((error) => {
+        this.#logger?.(DEBUG_PREFIXES.error)?.(error);
+      });
     }));
     this.#isolatedWorlds.add(key);
   }
@@ -15366,13 +15563,13 @@ var FrameManager = class extends EventEmitter {
       } else if (this.#isExtensionOrigin(origin)) {
         const extId = this.#extractExtensionId(origin);
         if (!extId) {
-          debugError?.("Error while parsing extension id");
+          this.#logger?.(DEBUG_PREFIXES.error)?.("Error while parsing extension id");
           return;
         }
         if (frame.extensionWorlds[extId]) {
           world = frame.extensionWorlds[extId];
         } else {
-          world = new IsolatedWorld(frame, this.timeoutSettings, extId);
+          world = new IsolatedWorld(frame, this.timeoutSettings, extId, this.#logger);
           frame.extensionWorlds[extId] = world;
           frame.registerWorldListeners(world);
           world.origin = origin;
@@ -15383,7 +15580,7 @@ var FrameManager = class extends EventEmitter {
     if (!world) {
       return;
     }
-    const context2 = new ExecutionContext(frame?.client || this.#client, contextPayload, world);
+    const context2 = new ExecutionContext(frame?.client || this.#client, contextPayload, world, this.#logger);
     world.setContext(context2);
   }
   #removeFramesRecursively(frame) {
@@ -16341,11 +16538,13 @@ var Tracing = class {
   #client;
   #recording = false;
   #path;
+  #logger;
   /**
    * @internal
    */
-  constructor(client) {
+  constructor(client, logger) {
     this.#client = client;
+    this.#logger = logger;
   }
   /**
    * @internal
@@ -16375,7 +16574,7 @@ var Tracing = class {
       "disabled-by-default-devtools.timeline.stack",
       "disabled-by-default-v8.cpu_profiler"
     ];
-    const { path, screenshots = false, categories = defaultCategories } = options;
+    const { path, screenshots = false, categories = defaultCategories, bufferSize } = options;
     if (screenshots) {
       categories.push("disabled-by-default-devtools.screenshot");
     }
@@ -16393,7 +16592,8 @@ var Tracing = class {
       transferMode: "ReturnAsStream",
       traceConfig: {
         excludedCategories,
-        includedCategories
+        includedCategories,
+        traceBufferSizeInKb: bufferSize
       }
     });
   }
@@ -16407,7 +16607,7 @@ var Tracing = class {
       try {
         assert(event.stream, 'Missing "stream"');
         const readable = await getReadableFromProtocolStream(this.#client, event.stream);
-        const typedArray = await getReadableAsTypedArray(readable, this.#path);
+        const typedArray = await getReadableAsTypedArray(readable, this.#path, this.#logger);
         contentDeferred.resolve(typedArray ?? void 0);
       } catch (error) {
         if (isErrorLike(error)) {
@@ -16521,17 +16721,19 @@ var WebMCPToolCall = class {
    * The input parameters used for the call.
    */
   input;
+  #logger;
   /**
    * @internal
    */
-  constructor(invocationId, tool, input) {
+  constructor(invocationId, tool, input, logger) {
     this.id = invocationId;
     this.tool = tool;
+    this.#logger = logger;
     try {
       this.input = JSON.parse(input);
     } catch (error) {
       this.input = {};
-      debugError?.(error);
+      this.#logger?.(DEBUG_PREFIXES.error)?.(error);
     }
   }
 };
@@ -16540,6 +16742,8 @@ var WebMCP = class extends EventEmitter {
   #frameManager;
   #tools = /* @__PURE__ */ new Map();
   #pendingCalls = /* @__PURE__ */ new Map();
+  #logger;
+  #subscriptions = new DisposableStack();
   #onToolsAdded = (event) => {
     const tools = [];
     for (const tool of event.tools) {
@@ -16574,7 +16778,7 @@ var WebMCP = class extends EventEmitter {
     if (!tool) {
       return;
     }
-    const call = new WebMCPToolCall(event.invocationId, tool, event.input);
+    const call = new WebMCPToolCall(event.invocationId, tool, event.input, this.#logger);
     this.#pendingCalls.set(call.id, call);
     tool.emit("toolinvoked", call);
     this.emit("toolinvoked", call);
@@ -16614,17 +16818,20 @@ var WebMCP = class extends EventEmitter {
   /**
    * @internal
    */
-  constructor(client, frameManager) {
-    super();
+  constructor(client, frameManager, logger) {
+    super(void 0, logger);
     this.#client = client;
     this.#frameManager = frameManager;
+    this.#logger = logger;
     this.#bindListeners();
   }
   /**
    * @internal
    */
   async initialize() {
-    return await this.#client.send("WebMCP.enable").catch(debugCatchError);
+    return await this.#client.send("WebMCP.enable").catch((err) => {
+      this.#logger?.(DEBUG_PREFIXES.error)?.(err);
+    });
   }
   /**
    * @internal
@@ -16645,26 +16852,25 @@ var WebMCP = class extends EventEmitter {
     });
   }
   #bindListeners() {
-    this.#client.on("WebMCP.toolsAdded", this.#onToolsAdded);
-    this.#client.on("WebMCP.toolsRemoved", this.#onToolsRemoved);
-    this.#client.on("WebMCP.toolInvoked", this.#onToolInvoked);
-    this.#client.on("WebMCP.toolResponded", this.#onToolResponded);
+    const clientEmitter = this.#subscriptions.use(new EventEmitter(this.#client));
+    clientEmitter.on("WebMCP.toolsAdded", this.#onToolsAdded);
+    clientEmitter.on("WebMCP.toolsRemoved", this.#onToolsRemoved);
+    clientEmitter.on("WebMCP.toolInvoked", this.#onToolInvoked);
+    clientEmitter.on("WebMCP.toolResponded", this.#onToolResponded);
   }
   /**
    * @internal
    */
   updateClient(client) {
-    this.#client.off("WebMCP.toolsAdded", this.#onToolsAdded);
-    this.#client.off("WebMCP.toolsRemoved", this.#onToolsRemoved);
-    this.#client.off("WebMCP.toolInvoked", this.#onToolInvoked);
-    this.#client.off("WebMCP.toolResponded", this.#onToolResponded);
+    this.#subscriptions.dispose();
+    this.#subscriptions = new DisposableStack();
     this.#client = client;
     this.#bindListeners();
   }
 };
 
 // gen/front_end/third_party/puppeteer/package/lib/puppeteer/cdp/Page.js
-var __addDisposableResource12 = function(env, value, async2) {
+var __addDisposableResource13 = function(env, value, async2) {
   if (value !== null && value !== void 0) {
     if (typeof value !== "object" && typeof value !== "function") throw new TypeError("Object expected.");
     var dispose, inner;
@@ -16691,7 +16897,7 @@ var __addDisposableResource12 = function(env, value, async2) {
   }
   return value;
 };
-var __disposeResources12 = /* @__PURE__ */ function(SuppressedError3) {
+var __disposeResources13 = /* @__PURE__ */ function(SuppressedError3) {
   return function(env) {
     function fail(e) {
       env.error = env.hasError ? new SuppressedError3(e, env.error, "An error was suppressed during disposal.") : e;
@@ -16733,15 +16939,15 @@ function convertSameSiteFromPuppeteerToCdp(sameSite) {
   }
 }
 var CdpPage = class _CdpPage extends Page {
-  static async _create(client, target, defaultViewport) {
-    const page = new _CdpPage(client, target);
+  static async _create(client, target, defaultViewport, logger) {
+    const page = new _CdpPage(client, target, logger);
     await page.#initialize();
     if (defaultViewport) {
       try {
         await page.setViewport(defaultViewport);
       } catch (err) {
         if (isErrorLike(err) && isTargetClosedError(err)) {
-          debugError?.(err);
+          page.logger?.(DEBUG_PREFIXES.error)?.(err);
         } else {
           throw err;
         }
@@ -16772,8 +16978,8 @@ var CdpPage = class _CdpPage extends Page {
   #sessionCloseDeferred = Deferred.create();
   #serviceWorkerBypassed = false;
   #userDragInterceptionEnabled = false;
-  constructor(client, target) {
-    super();
+  constructor(client, target, logger) {
+    super(logger);
     this.#primaryTargetClient = client;
     this.#tabTargetClient = client.parentSession();
     assert(this.#tabTargetClient, "Tab target session is not defined.");
@@ -16785,10 +16991,10 @@ var CdpPage = class _CdpPage extends Page {
     this.#keyboard = new CdpKeyboard(client);
     this.#mouse = new CdpMouse(client, this.#keyboard);
     this.#touchscreen = new CdpTouchscreen(client, this.#keyboard);
-    this.#frameManager = new FrameManager(client, this, this._timeoutSettings);
-    this.#emulationManager = new EmulationManager(client);
-    this.#tracing = new Tracing(client);
-    this.#webmcp = new WebMCP(client, this.#frameManager);
+    this.#frameManager = new FrameManager(client, this, this._timeoutSettings, logger);
+    this.#emulationManager = new EmulationManager(client, this.logger);
+    this.#tracing = new Tracing(client, this.logger);
+    this.#webmcp = new WebMCP(client, this.#frameManager, logger);
     this.#coverage = new Coverage(client);
     this.#viewport = null;
     this.#cdpBluetoothEmulation = new CdpBluetoothEmulation(this.#primaryTargetClient.connection());
@@ -16831,7 +17037,9 @@ var CdpPage = class _CdpPage extends Page {
       this.#targetManager.off("targetGone", this.#onDetachedFromTarget);
       this.emit("close", void 0);
       this.#closed = true;
-    }).catch(debugCatchError);
+    }).catch((error) => {
+      this.logger?.(DEBUG_PREFIXES.error)?.(error);
+    });
     this.#setupPrimaryTargetListeners();
     this.#attachExistingTargets();
   }
@@ -16873,8 +17081,12 @@ var CdpPage = class _CdpPage extends Page {
     if (session.target()._subtype() !== "prerender") {
       return;
     }
-    void this.#frameManager.registerSpeculativeSession(session).catch(debugCatchError);
-    void this.#emulationManager.registerSpeculativeSession(session).catch(debugCatchError);
+    void this.#frameManager.registerSpeculativeSession(session).catch((error) => {
+      this.logger?.(DEBUG_PREFIXES.error)?.(error);
+    });
+    void this.#emulationManager.registerSpeculativeSession(session).catch((error) => {
+      this.logger?.(DEBUG_PREFIXES.error)?.(error);
+    });
   }
   /**
    * Sets up listeners for the primary target. The primary target can change
@@ -16912,7 +17124,7 @@ var CdpPage = class _CdpPage extends Page {
     assert(session instanceof CdpCDPSession);
     this.#frameManager.onAttachedToTarget(session.target());
     if (session.target()._getTargetInfo().type === "worker") {
-      const worker = new CdpWebWorker(session, session.target().url(), session.target()._targetId, session.target().type(), this.#handleException.bind(this), this.#frameManager.networkManager);
+      const worker = new CdpWebWorker(session, session.target().url(), session.target()._targetId, session.target().type(), this.#handleException.bind(this), this.#frameManager.networkManager, this.logger);
       this.#workers.set(session.id(), worker);
       worker.internalEmitter.on(WebWorkerEvent.Console, (message) => {
         const noListenersForConsoleOnPage = this.listenerCount(
@@ -16922,7 +17134,9 @@ var CdpPage = class _CdpPage extends Page {
         const noListenersForConsoleOnWorker = worker.listenerCount(WebWorkerEvent.Console) === 0;
         if (noListenersForConsoleOnPage && noListenersForConsoleOnWorker) {
           for (const arg of message.args()) {
-            void arg.dispose().catch(debugCatchError);
+            void arg.dispose().catch((error) => {
+              this.logger?.(DEBUG_PREFIXES.error)?.(error);
+            });
           }
           return;
         }
@@ -16944,7 +17158,7 @@ var CdpPage = class _CdpPage extends Page {
       ]);
     } catch (err) {
       if (isErrorLike(err) && isTargetClosedError(err)) {
-        debugError?.(err);
+        this.logger?.(DEBUG_PREFIXES.error)?.(err);
       } else {
         throw err;
       }
@@ -16970,7 +17184,7 @@ var CdpPage = class _CdpPage extends Page {
       }
       const frame = this.#frameManager.frame(event.frameId);
       assert(frame, "This should never happen.");
-      const handle = __addDisposableResource12(env_1, await frame.worlds[MAIN_WORLD].adoptBackendNode(event.backendNodeId), false);
+      const handle = __addDisposableResource13(env_1, await frame.worlds[MAIN_WORLD].adoptBackendNode(event.backendNodeId), false);
       const fileChooser = new FileChooser(handle.move(), event.mode !== "selectSingle");
       for (const promise of this.#fileChooserDeferreds) {
         promise.resolve(fileChooser);
@@ -16980,7 +17194,7 @@ var CdpPage = class _CdpPage extends Page {
       env_1.error = e_1;
       env_1.hasError = true;
     } finally {
-      __disposeResources12(env_1);
+      __disposeResources13(env_1);
     }
   }
   _client() {
@@ -17062,7 +17276,7 @@ var CdpPage = class _CdpPage extends Page {
     const { level, text, args, source: source2, url, lineNumber, stackTrace } = event.entry;
     if (args) {
       args.map((arg) => {
-        void releaseObject(this.#primaryTargetClient, arg);
+        void releaseObject(this.#primaryTargetClient, arg, this.logger);
       });
     }
     if (source2 !== "worker") {
@@ -17211,10 +17425,10 @@ var CdpPage = class _CdpPage extends Page {
     let binding;
     switch (typeof pptrFunction) {
       case "function":
-        binding = new Binding(name, pptrFunction, source2);
+        binding = new Binding(name, pptrFunction, source2, this.logger);
         break;
       default:
-        binding = new Binding(name, pptrFunction.default, source2);
+        binding = new Binding(name, pptrFunction.default, source2, this.logger);
         break;
     }
     this.#bindings.set(name, binding);
@@ -17256,29 +17470,36 @@ var CdpPage = class _CdpPage extends Page {
     return this.#buildMetricsObject(response.metrics);
   }
   async captureHeapSnapshot(options) {
-    const { createWriteStream } = environment.value.fs;
-    const stream = createWriteStream(options.path);
-    const streamPromise = new Promise((resolve, reject) => {
-      stream.on("error", reject);
-      stream.on("finish", resolve);
-    });
-    const client = this.#primaryTargetClient;
-    await client.send("HeapProfiler.enable");
-    await client.send("HeapProfiler.collectGarbage");
-    const handler = (event) => {
-      stream.write(event.chunk);
-    };
-    client.on("HeapProfiler.addHeapSnapshotChunk", handler);
+    const env_2 = { stack: [], error: void 0, hasError: false };
     try {
-      await client.send("HeapProfiler.takeHeapSnapshot", {
-        reportProgress: false
+      const { createWriteStream } = environment.value.fs;
+      const stream = createWriteStream(options.path);
+      const streamPromise = new Promise((resolve, reject) => {
+        stream.on("error", reject);
+        stream.on("finish", resolve);
       });
+      const client = this.#primaryTargetClient;
+      await client.send("HeapProfiler.enable");
+      await client.send("HeapProfiler.collectGarbage");
+      const clientEmitter = __addDisposableResource13(env_2, new EventEmitter(client), false);
+      clientEmitter.on("HeapProfiler.addHeapSnapshotChunk", (event) => {
+        stream.write(event.chunk);
+      });
+      try {
+        await client.send("HeapProfiler.takeHeapSnapshot", {
+          reportProgress: false
+        });
+      } finally {
+        await client.send("HeapProfiler.disable");
+      }
+      stream.end();
+      await streamPromise;
+    } catch (e_2) {
+      env_2.error = e_2;
+      env_2.hasError = true;
     } finally {
-      client.off("HeapProfiler.addHeapSnapshotChunk", handler);
-      await client.send("HeapProfiler.disable");
+      __disposeResources13(env_2);
     }
-    stream.end();
-    await streamPromise;
   }
   #emitMetrics(event) {
     this.emit("metrics", {
@@ -17312,7 +17533,9 @@ var CdpPage = class _CdpPage extends Page {
     if (!hasPageConsoleListeners) {
       if (!hasWorkerConsoleListeners) {
         for (const value of values) {
-          void value.dispose().catch(debugCatchError);
+          void value.dispose().catch((error) => {
+            this.logger?.(DEBUG_PREFIXES.error)?.(error);
+          });
         }
       }
       return;
@@ -17436,14 +17659,16 @@ var CdpPage = class _CdpPage extends Page {
     await this.#frameManager.networkManager.setCacheEnabled(enabled);
   }
   async _screenshot(options) {
-    const env_2 = { stack: [], error: void 0, hasError: false };
+    const env_3 = { stack: [], error: void 0, hasError: false };
     try {
       const { fromSurface, omitBackground, optimizeForSpeed, quality, clip: userClip, type, captureBeyondViewport } = options;
-      const stack = __addDisposableResource12(env_2, new AsyncDisposableStack(), true);
+      const stack = __addDisposableResource13(env_3, new AsyncDisposableStack(), true);
       if (omitBackground && (type === "png" || type === "webp")) {
         await this.#emulationManager.setTransparentBackgroundColor();
         stack.defer(async () => {
-          await this.#emulationManager.resetDefaultBackgroundColor().catch(debugCatchError);
+          await this.#emulationManager.resetDefaultBackgroundColor().catch((error) => {
+            this.logger?.(DEBUG_PREFIXES.error)?.(error);
+          });
         });
       }
       let clip = userClip;
@@ -17463,11 +17688,11 @@ var CdpPage = class _CdpPage extends Page {
         captureBeyondViewport
       });
       return data;
-    } catch (e_2) {
-      env_2.error = e_2;
-      env_2.hasError = true;
+    } catch (e_3) {
+      env_3.error = e_3;
+      env_3.hasError = true;
     } finally {
-      const result_1 = __disposeResources12(env_2);
+      const result_1 = __disposeResources13(env_3);
       if (result_1)
         await result_1;
     }
@@ -17512,14 +17737,14 @@ var CdpPage = class _CdpPage extends Page {
   async pdf(options = {}) {
     const { path = void 0 } = options;
     const readable = await this.createPDFStream(options);
-    const typedArray = await getReadableAsTypedArray(readable, path);
+    const typedArray = await getReadableAsTypedArray(readable, path, this.logger);
     assert(typedArray, "Could not create typed array");
     return typedArray;
   }
   async close(options = { runBeforeUnload: void 0 }) {
-    const env_3 = { stack: [], error: void 0, hasError: false };
+    const env_4 = { stack: [], error: void 0, hasError: false };
     try {
-      const _guard = __addDisposableResource12(env_3, await this.browserContext().waitForScreenshotOperations(), false);
+      const _guard = __addDisposableResource13(env_4, await this.browserContext().waitForScreenshotOperations(), false);
       const connection = this.#primaryTargetClient.connection();
       assert(connection, "Connection closed. Most likely the page has been closed.");
       const runBeforeUnload = !!options.runBeforeUnload;
@@ -17531,11 +17756,11 @@ var CdpPage = class _CdpPage extends Page {
         });
         await this.#tabTarget._isClosedDeferred.valueOrThrow();
       }
-    } catch (e_3) {
-      env_3.error = e_3;
-      env_3.hasError = true;
+    } catch (e_4) {
+      env_4.error = e_4;
+      env_4.hasError = true;
     } finally {
-      __disposeResources12(env_3);
+      __disposeResources13(env_4);
     }
   }
   isClosed() {
@@ -17619,7 +17844,7 @@ function convertCookiesPartitionKeyFromPuppeteerToCdp(partitionKey) {
 }
 
 // gen/front_end/third_party/puppeteer/package/lib/puppeteer/cdp/BrowserContext.js
-var __addDisposableResource13 = function(env, value, async2) {
+var __addDisposableResource14 = function(env, value, async2) {
   if (value !== null && value !== void 0) {
     if (typeof value !== "object" && typeof value !== "function") throw new TypeError("Object expected.");
     var dispose, inner;
@@ -17646,7 +17871,7 @@ var __addDisposableResource13 = function(env, value, async2) {
   }
   return value;
 };
-var __disposeResources13 = /* @__PURE__ */ function(SuppressedError3) {
+var __disposeResources14 = /* @__PURE__ */ function(SuppressedError3) {
   return function(env) {
     function fail(e) {
       env.error = env.hasError ? new SuppressedError3(e, env.error, "An error was suppressed during disposal.") : e;
@@ -17681,8 +17906,8 @@ var CdpBrowserContext = class extends BrowserContext {
   #connection;
   #browser;
   #id;
-  constructor(connection, browser, contextId) {
-    super();
+  constructor(connection, browser, contextId = void 0, logger) {
+    super(logger);
     this.#connection = connection;
     this.#browser = browser;
     this.#id = contextId;
@@ -17744,13 +17969,13 @@ var CdpBrowserContext = class extends BrowserContext {
   async newPage(options) {
     const env_1 = { stack: [], error: void 0, hasError: false };
     try {
-      const _guard = __addDisposableResource13(env_1, await this.waitForScreenshotOperations(), false);
+      const _guard = __addDisposableResource14(env_1, await this.waitForScreenshotOperations(), false);
       return await this.#browser._createPageInContext(this.#id, options);
     } catch (e_1) {
       env_1.error = e_1;
       env_1.hasError = true;
     } finally {
-      __disposeResources13(env_1);
+      __disposeResources14(env_1);
     }
   }
   browser() {
@@ -17861,12 +18086,14 @@ var Extension = class {
 var CdpExtension = class extends Extension {
   // needed to access the CDPSession to trigger an extension action.
   #browser;
+  #logger;
   /*
    * @internal
    */
-  constructor(id, version, name, path, enabled, browser) {
+  constructor(id, version, name, path, enabled, browser, logger) {
     super(id, version, name, path, enabled);
     this.#browser = browser;
+    this.#logger = logger;
   }
   async workers() {
     const targets = this.#browser.targets();
@@ -17879,7 +18106,7 @@ var CdpExtension = class extends Extension {
         return await target.worker();
       } catch (err) {
         if (this.#canIgnoreError(err)) {
-          debugError?.(err);
+          this.#logger?.(DEBUG_PREFIXES.error)?.(err);
           return null;
         }
         throw err;
@@ -17900,7 +18127,7 @@ var CdpExtension = class extends Extension {
         return await target.asPage();
       } catch (err) {
         if (this.#canIgnoreError(err)) {
-          debugError?.(err);
+          this.#logger?.(DEBUG_PREFIXES.error)?.(err);
           return null;
         }
         throw err;
@@ -17933,6 +18160,7 @@ var CdpTarget = class extends Target {
   #targetInfo;
   #targetManager;
   #sessionFactory;
+  #logger;
   #childTargets = /* @__PURE__ */ new Set();
   _initializedDeferred = Deferred.create();
   _isClosedDeferred = Deferred.create();
@@ -17945,14 +18173,15 @@ var CdpTarget = class extends Target {
    *
    * @internal
    */
-  constructor(targetInfo, session, browserContext, targetManager, sessionFactory) {
-    super();
+  constructor(targetInfo, session, browserContext, targetManager, sessionFactory, logger) {
+    super(logger);
     this.#session = session;
     this.#targetManager = targetManager;
     this.#targetInfo = targetInfo;
     this.#browserContext = browserContext;
     this._targetId = targetInfo.targetId;
     this.#sessionFactory = sessionFactory;
+    this.#logger = logger;
     if (this.#session) {
       this.#session.setTarget(this);
     }
@@ -17970,7 +18199,7 @@ var CdpTarget = class extends Target {
         /* isAutoAttachEmulated=*/
         false
       )).then((client) => {
-        return CdpPage._create(client, this, null);
+        return CdpPage._create(client, this, null, this.#logger);
       });
     }
     return await this._asPagePromise ?? null;
@@ -18077,8 +18306,8 @@ var CdpTarget = class extends Target {
 };
 var PageTarget = class _PageTarget extends CdpTarget {
   #defaultViewport;
-  constructor(targetInfo, session, browserContext, targetManager, sessionFactory, defaultViewport) {
-    super(targetInfo, session, browserContext, targetManager, sessionFactory);
+  constructor(targetInfo, session, browserContext, targetManager, sessionFactory, defaultViewport, logger) {
+    super(targetInfo, session, browserContext, targetManager, sessionFactory, logger);
     this.#defaultViewport = defaultViewport ?? void 0;
   }
   _initialize() {
@@ -18103,7 +18332,9 @@ var PageTarget = class _PageTarget extends CdpTarget {
       const popupPage = await this.page();
       openerPage.emit("popup", popupPage);
       return true;
-    }).catch(debugCatchError);
+    }).catch((error) => {
+      this.logger?.(DEBUG_PREFIXES.error)?.(error);
+    });
     this._checkIfInitialized();
   }
   async page() {
@@ -18113,7 +18344,7 @@ var PageTarget = class _PageTarget extends CdpTarget {
         /* isAutoAttachEmulated=*/
         false
       )).then((client) => {
-        return CdpPage._create(client, this, this.#defaultViewport ?? null);
+        return CdpPage._create(client, this, this.#defaultViewport ?? null, this.logger);
       });
     }
     return await this.pagePromise ?? null;
@@ -18138,16 +18369,8 @@ var WorkerTarget = class extends CdpTarget {
         /* isAutoAttachEmulated=*/
         false
       )).then((client) => {
-        return new CdpWebWorker(
-          client,
-          this._getTargetInfo().url,
-          this._targetId,
-          this.type(),
-          () => {
-          },
-          void 0
-          /* networkManager */
-        );
+        return new CdpWebWorker(client, this._getTargetInfo().url, this._targetId, this.type(), () => {
+        }, void 0, this.logger);
       });
     }
     return await this.#workerPromise;
@@ -18969,8 +19192,8 @@ var TargetManager = class extends EventEmitter {
   #ignoredTargets = /* @__PURE__ */ new Set();
   #targetFilterCallback;
   #targetFactory;
-  #attachedToTargetListenersBySession = /* @__PURE__ */ new WeakMap();
-  #detachedFromTargetListenersBySession = /* @__PURE__ */ new WeakMap();
+  #subscriptions = new DisposableStack();
+  #attachmentSubscriptions = /* @__PURE__ */ new WeakMap();
   #initializeDeferred = Deferred.create();
   #waitForInitiallyDiscoveredTargets = true;
   #discoveryFilter = [{}];
@@ -18987,8 +19210,9 @@ var TargetManager = class extends EventEmitter {
   #initialAttachDone = false;
   #blocklist = [];
   #allowlist = [];
-  constructor(connection, targetFactory, targetFilterCallback, waitForInitiallyDiscoveredTargets = true, blocklist, allowlist) {
-    super();
+  #logger;
+  constructor(connection, targetFactory, targetFilterCallback, waitForInitiallyDiscoveredTargets = true, blocklist, allowlist, logger) {
+    super(void 0, logger);
     if (blocklist && allowlist) {
       throw new Error("Cannot specify both blockList and allowList");
     }
@@ -18996,12 +19220,14 @@ var TargetManager = class extends EventEmitter {
     this.#targetFilterCallback = targetFilterCallback;
     this.#targetFactory = targetFactory;
     this.#waitForInitiallyDiscoveredTargets = waitForInitiallyDiscoveredTargets;
+    this.#logger = logger;
     this.#blocklist = this.#mapPatterns(blocklist);
     this.#allowlist = this.#mapPatterns(allowlist);
-    this.#connection.on("Target.targetCreated", this.#onTargetCreated);
-    this.#connection.on("Target.targetDestroyed", this.#onTargetDestroyed);
-    this.#connection.on("Target.targetInfoChanged", this.#onTargetInfoChanged);
-    this.#connection.on(CDPSessionEvent.SessionDetached, this.#onSessionDetached);
+    const connectionEmitter = this.#subscriptions.use(new EventEmitter(this.#connection));
+    connectionEmitter.on("Target.targetCreated", this.#onTargetCreated);
+    connectionEmitter.on("Target.targetDestroyed", this.#onTargetDestroyed);
+    connectionEmitter.on("Target.targetInfoChanged", this.#onTargetInfoChanged);
+    connectionEmitter.on(CDPSessionEvent.SessionDetached, this.#onSessionDetached);
     this.#setupAttachmentListeners(this.#connection);
   }
   async initialize() {
@@ -19032,10 +19258,7 @@ var TargetManager = class extends EventEmitter {
     return target._childTargets();
   }
   dispose() {
-    this.#connection.off("Target.targetCreated", this.#onTargetCreated);
-    this.#connection.off("Target.targetDestroyed", this.#onTargetDestroyed);
-    this.#connection.off("Target.targetInfoChanged", this.#onTargetInfoChanged);
-    this.#connection.off(CDPSessionEvent.SessionDetached, this.#onSessionDetached);
+    this.#subscriptions.dispose();
     this.#removeAttachmentListeners(this.#connection);
   }
   getAvailableTargets() {
@@ -19045,36 +19268,33 @@ var TargetManager = class extends EventEmitter {
     return this.#discoveredTargetsByTargetId;
   }
   #setupAttachmentListeners(session) {
-    const listener = (event) => {
+    assert(!this.#attachmentSubscriptions.has(session));
+    const subscriptions = new DisposableStack();
+    const sessionEmitter = subscriptions.use(new EventEmitter(session));
+    sessionEmitter.on("Target.attachedToTarget", (event) => {
       void this.#onAttachedToTarget(session, event);
-    };
-    assert(!this.#attachedToTargetListenersBySession.has(session));
-    this.#attachedToTargetListenersBySession.set(session, listener);
-    session.on("Target.attachedToTarget", listener);
-    const detachedListener = (event) => {
+    });
+    sessionEmitter.on("Target.detachedFromTarget", (event) => {
       return this.#onDetachedFromTarget(session, event);
-    };
-    assert(!this.#detachedFromTargetListenersBySession.has(session));
-    this.#detachedFromTargetListenersBySession.set(session, detachedListener);
-    session.on("Target.detachedFromTarget", detachedListener);
+    });
+    this.#attachmentSubscriptions.set(session, subscriptions);
   }
   #removeAttachmentListeners(session) {
-    const listener = this.#attachedToTargetListenersBySession.get(session);
-    if (listener) {
-      session.off("Target.attachedToTarget", listener);
-      this.#attachedToTargetListenersBySession.delete(session);
-    }
-    const detachedListener = this.#detachedFromTargetListenersBySession.get(session);
-    if (detachedListener) {
-      session.off("Target.detachedFromTarget", detachedListener);
-      this.#detachedFromTargetListenersBySession.delete(session);
+    const subscriptions = this.#attachmentSubscriptions.get(session);
+    if (subscriptions) {
+      subscriptions.dispose();
+      this.#attachmentSubscriptions.delete(session);
     }
   }
   #silentDetach = async (session, parentSession) => {
-    await session.send("Runtime.runIfWaitingForDebugger").catch(debugCatchError);
+    await session.send("Runtime.runIfWaitingForDebugger").catch((error) => {
+      this.#logger?.(DEBUG_PREFIXES.error)?.(error);
+    });
     await parentSession.send("Target.detachFromTarget", {
       sessionId: session.id()
-    }).catch(debugCatchError);
+    }).catch((error) => {
+      this.#logger?.(DEBUG_PREFIXES.error)?.(error);
+    });
   };
   #getParentTarget = (parentSession) => {
     return parentSession instanceof CdpCDPSession ? parentSession.target() : null;
@@ -19150,7 +19370,9 @@ var TargetManager = class extends EventEmitter {
         await Promise.all([
           this.#maybeSetupNetworkConditions(session, targetInfo),
           session.send("Runtime.runIfWaitingForDebugger")
-        ]).catch(debugCatchError);
+        ]).catch((error) => {
+          this.#logger?.(DEBUG_PREFIXES.error)?.(error);
+        });
         return;
       }
       await this.#silentDetach(session, parentSession);
@@ -19206,7 +19428,9 @@ var TargetManager = class extends EventEmitter {
       }),
       this.#maybeSetupNetworkConditions(session, targetInfo),
       session.send("Runtime.runIfWaitingForDebugger")
-    ]).catch(debugCatchError);
+    ]).catch((error) => {
+      this.#logger?.(DEBUG_PREFIXES.error)?.(error);
+    });
   };
   #finishInitializationIfReady(targetId) {
     if (targetId !== void 0) {
@@ -19304,7 +19528,9 @@ var TargetManager = class extends EventEmitter {
       offline: this.#blocklist.length > 0 ? true : void 0,
       matchedNetworkConditions
     }));
-    await Promise.all(promises).catch(debugCatchError);
+    await Promise.all(promises).catch((error) => {
+      this.#logger?.(DEBUG_PREFIXES.error)?.(error);
+    });
   };
 };
 
@@ -19314,8 +19540,8 @@ function isDevToolsPageTarget(url) {
 }
 var CdpBrowser = class _CdpBrowser extends Browser {
   protocol = "cdp";
-  static async _create(connection, contextIds, acceptInsecureCerts, defaultViewport, downloadBehavior, process3, closeCallback, targetFilterCallback, isPageTargetCallback, waitForInitiallyDiscoveredTargets = true, networkEnabled = true, issuesEnabled = true, handleDevToolsAsPage = false, blocklist, allowlist) {
-    const browser = new _CdpBrowser(connection, contextIds, defaultViewport, process3, closeCallback, targetFilterCallback, isPageTargetCallback, waitForInitiallyDiscoveredTargets, networkEnabled, issuesEnabled, handleDevToolsAsPage, blocklist, allowlist);
+  static async _create(connection, contextIds, acceptInsecureCerts, defaultViewport = void 0, downloadBehavior = void 0, process3 = void 0, closeCallback = void 0, targetFilterCallback = void 0, isPageTargetCallback = void 0, waitForInitiallyDiscoveredTargets = true, networkEnabled = true, issuesEnabled = true, handleDevToolsAsPage = false, blocklist = void 0, allowlist = void 0, logger) {
+    const browser = new _CdpBrowser(connection, contextIds, defaultViewport, process3, closeCallback, targetFilterCallback, isPageTargetCallback, waitForInitiallyDiscoveredTargets, networkEnabled, issuesEnabled, handleDevToolsAsPage, blocklist, allowlist, logger);
     if (allowlist) {
       const version = await browser.#getVersion();
       const majorVersion = parseInt(version.product.match(/\d+/)?.[0] ?? "0", 10);
@@ -19346,8 +19572,9 @@ var CdpBrowser = class _CdpBrowser extends Browser {
   #extensions = /* @__PURE__ */ new Map();
   #version;
   #hasNetworkRestrictions = false;
-  constructor(connection, contextIds, defaultViewport, process3, closeCallback, targetFilterCallback, isPageTargetCallback, waitForInitiallyDiscoveredTargets = true, networkEnabled = true, issuesEnabled = true, handleDevToolsAsPage = false, blocklist, allowlist) {
-    super();
+  #subscriptions = new DisposableStack();
+  constructor(connection, contextIds, defaultViewport = void 0, process3 = void 0, closeCallback = void 0, targetFilterCallback = void 0, isPageTargetCallback = void 0, waitForInitiallyDiscoveredTargets = true, networkEnabled = true, issuesEnabled = true, handleDevToolsAsPage = false, blocklist = void 0, allowlist = void 0, logger) {
+    super(logger);
     this.#networkEnabled = networkEnabled;
     this.#issuesEnabled = issuesEnabled;
     this.#defaultViewport = defaultViewport;
@@ -19362,32 +19589,30 @@ var CdpBrowser = class _CdpBrowser extends Browser {
     this.#setIsPageTargetCallback(isPageTargetCallback);
     this.#hasNetworkRestrictions = Boolean(blocklist && blocklist.length > 0 || allowlist && allowlist.length > 0);
     connection.rejectEmulateNetworkConditionsCalls = this.#hasNetworkRestrictions;
-    this.#targetManager = new TargetManager(connection, this.#createTarget, this.#targetFilterCallback, waitForInitiallyDiscoveredTargets, blocklist, allowlist);
-    this.#defaultContext = new CdpBrowserContext(this.#connection, this);
+    this.#targetManager = new TargetManager(connection, this.#createTarget, this.#targetFilterCallback, waitForInitiallyDiscoveredTargets, blocklist, allowlist, logger);
+    this.#defaultContext = new CdpBrowserContext(this.#connection, this, void 0, logger);
     for (const contextId of contextIds) {
-      this.#contexts.set(contextId, new CdpBrowserContext(this.#connection, this, contextId));
+      this.#contexts.set(contextId, new CdpBrowserContext(this.#connection, this, contextId, logger));
     }
   }
   #emitDisconnected = () => {
     this.emit("disconnected", void 0);
   };
   async _attach(downloadBehavior) {
-    this.#connection.on(CDPSessionEvent.Disconnected, this.#emitDisconnected);
+    const connectionEmitter = this.#subscriptions.use(new EventEmitter(this.#connection));
+    connectionEmitter.on(CDPSessionEvent.Disconnected, this.#emitDisconnected);
     if (downloadBehavior) {
       await this.#defaultContext.setDownloadBehavior(downloadBehavior);
     }
-    this.#targetManager.on("targetAvailable", this.#onAttachedToTarget);
-    this.#targetManager.on("targetGone", this.#onDetachedFromTarget);
-    this.#targetManager.on("targetChanged", this.#onTargetChanged);
-    this.#targetManager.on("targetDiscovered", this.#onTargetDiscovered);
+    const targetManagerEmitter = this.#subscriptions.use(new EventEmitter(this.#targetManager));
+    targetManagerEmitter.on("targetAvailable", this.#onAttachedToTarget);
+    targetManagerEmitter.on("targetGone", this.#onDetachedFromTarget);
+    targetManagerEmitter.on("targetChanged", this.#onTargetChanged);
+    targetManagerEmitter.on("targetDiscovered", this.#onTargetDiscovered);
     await this.#targetManager.initialize();
   }
   _detach() {
-    this.#connection.off(CDPSessionEvent.Disconnected, this.#emitDisconnected);
-    this.#targetManager.off("targetAvailable", this.#onAttachedToTarget);
-    this.#targetManager.off("targetGone", this.#onDetachedFromTarget);
-    this.#targetManager.off("targetChanged", this.#onTargetChanged);
-    this.#targetManager.off("targetDiscovered", this.#onTargetDiscovered);
+    this.#subscriptions.dispose();
   }
   process() {
     return this.#process ?? null;
@@ -19409,7 +19634,7 @@ var CdpBrowser = class _CdpBrowser extends Browser {
       proxyServer,
       proxyBypassList: proxyBypassList && proxyBypassList.join(",")
     });
-    const context2 = new CdpBrowserContext(this.#connection, this, browserContextId);
+    const context2 = new CdpBrowserContext(this.#connection, this, browserContextId, this.logger);
     if (downloadBehavior) {
       await context2.setDownloadBehavior(downloadBehavior);
     }
@@ -19440,15 +19665,15 @@ var CdpBrowser = class _CdpBrowser extends Browser {
     const createSession = (isAutoAttachEmulated) => {
       return this.#connection._createSession(targetInfo, isAutoAttachEmulated);
     };
-    const otherTarget = new OtherTarget(targetInfo, session, context2, this.#targetManager, createSession);
+    const otherTarget = new OtherTarget(targetInfo, session, context2, this.#targetManager, createSession, this.logger);
     if (targetInfo.url && isDevToolsPageTarget(targetInfo.url)) {
-      return new DevToolsTarget(targetInfo, session, context2, this.#targetManager, createSession, this.#defaultViewport ?? null);
+      return new DevToolsTarget(targetInfo, session, context2, this.#targetManager, createSession, this.#defaultViewport ?? null, this.logger);
     }
     if (this.#isPageTargetCallback(otherTarget)) {
-      return new PageTarget(targetInfo, session, context2, this.#targetManager, createSession, this.#defaultViewport ?? null);
+      return new PageTarget(targetInfo, session, context2, this.#targetManager, createSession, this.#defaultViewport ?? null, this.logger);
     }
     if (targetInfo.type === "service_worker" || targetInfo.type === "shared_worker") {
-      return new WorkerTarget(targetInfo, session, context2, this.#targetManager, createSession);
+      return new WorkerTarget(targetInfo, session, context2, this.#targetManager, createSession, this.logger);
     }
     return otherTarget;
   };
@@ -19715,7 +19940,7 @@ var CdpBrowser = class _CdpBrowser extends Browser {
       if (this.#extensions.has(currExtension.id)) {
         extensionsMap.set(currExtension.id, this.#extensions.get(currExtension.id));
       } else {
-        const newExtension = new CdpExtension(currExtension.id, currExtension.version, currExtension.name, currExtension.path, currExtension.enabled, this);
+        const newExtension = new CdpExtension(currExtension.id, currExtension.version, currExtension.name, currExtension.path, currExtension.enabled, this, this.logger);
         extensionsMap.set(currExtension.id, newExtension);
       }
     }
@@ -19738,12 +19963,17 @@ export {
 };
 /**
  * @license
+ * Copyright 2020 Google Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+/**
+ * @license
  * Copyright 2023 Google Inc.
  * SPDX-License-Identifier: Apache-2.0
  */
 /**
  * @license
- * Copyright 2020 Google Inc.
+ * Copyright 2022 Google Inc.
  * SPDX-License-Identifier: Apache-2.0
  */
 /**
@@ -19764,11 +19994,6 @@ export {
 /**
  * @license
  * Copyright 2017 Google Inc.
- * SPDX-License-Identifier: Apache-2.0
- */
-/**
- * @license
- * Copyright 2022 Google Inc.
  * SPDX-License-Identifier: Apache-2.0
  */
 /**

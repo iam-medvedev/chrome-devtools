@@ -1,1 +1,1 @@
-{"compilerOptions":{"composite":true,"outDir":".","baseUrl":".","rootDir":"../../../../../../front_end/ui/comments"},"files":["../../../../../../front_end/ui/comments/comments.ts"],"references":[{"path":"./comments-tsconfig.json"}]}
+{"compilerOptions":{"composite":true,"outDir":".","baseUrl":".","rootDir":"../../../../../../front_end/ui/comments"},"files":["../../../../../../front_end/ui/comments/comments.ts"],"references":[{"path":"./comments-tsconfig.json"},{"path":"./css_files-tsconfig.json"}]}

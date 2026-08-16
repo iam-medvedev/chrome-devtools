@@ -71,13 +71,27 @@
     "../../../../../../front_end/models/ai_assistance/performance/AIContext.test.ts",
     "../../../../../../front_end/models/ai_assistance/performance/AIQueries.test.ts",
     "../../../../../../front_end/models/ai_assistance/tools/ExecuteJavaScript.test.ts",
+    "../../../../../../front_end/models/ai_assistance/tools/GetDetailedCallTree.test.ts",
     "../../../../../../front_end/models/ai_assistance/tools/GetElementAccessibilityDetails.test.ts",
+    "../../../../../../front_end/models/ai_assistance/tools/GetFunctionCode.test.ts",
+    "../../../../../../front_end/models/ai_assistance/tools/GetInsightDetails.test.ts",
     "../../../../../../front_end/models/ai_assistance/tools/GetLighthouseAudits.test.ts",
     "../../../../../../front_end/models/ai_assistance/tools/GetNetworkRequestDetails.test.ts",
+    "../../../../../../front_end/models/ai_assistance/tools/GetResourceContent.test.ts",
+    "../../../../../../front_end/models/ai_assistance/tools/GetSourceContent.test.ts",
+    "../../../../../../front_end/models/ai_assistance/tools/GetStorageValues.test.ts",
     "../../../../../../front_end/models/ai_assistance/tools/GetStyles.test.ts",
+    "../../../../../../front_end/models/ai_assistance/tools/GetTraceEventByKey.test.ts",
+    "../../../../../../front_end/models/ai_assistance/tools/GetTraceMainThreadSummary.test.ts",
+    "../../../../../../front_end/models/ai_assistance/tools/GetTraceNetworkSummary.test.ts",
     "../../../../../../front_end/models/ai_assistance/tools/ListNetworkRequests.test.ts",
+    "../../../../../../front_end/models/ai_assistance/tools/ListPageOrigins.test.ts",
+    "../../../../../../front_end/models/ai_assistance/tools/ListSources.test.ts",
+    "../../../../../../front_end/models/ai_assistance/tools/ListStorageKeys.test.ts",
     "../../../../../../front_end/models/ai_assistance/tools/RecordPerformanceTrace.test.ts",
     "../../../../../../front_end/models/ai_assistance/tools/ResolveDevtoolsNodePath.test.ts",
+    "../../../../../../front_end/models/ai_assistance/tools/RunLighthouse.test.ts",
+    "../../../../../../front_end/models/ai_assistance/tools/SelectTraceEventByKey.test.ts",
     "../../../../../../front_end/models/ai_assistance/tools/ToolRegistry.test.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../front_end/global_typings/global_defs.d.ts",
@@ -124,6 +138,9 @@
       "path": "../bindings/bundle-tsconfig.json"
     },
     {
+      "path": "../formatter/bundle-tsconfig.json"
+    },
+    {
       "path": "../lighthouse/bundle-tsconfig.json"
     },
     {
@@ -140,9 +157,6 @@
     },
     {
       "path": "../workspace/bundle-tsconfig.json"
-    },
-    {
-      "path": "data_formatters/unittests-tsconfig.json"
     }
   ]
 }

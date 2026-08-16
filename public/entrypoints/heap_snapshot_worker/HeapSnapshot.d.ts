@@ -280,7 +280,7 @@ export declare abstract class HeapSnapshot {
     dominatedNodes: Uint32Array;
     dominatorsTree: Uint32Array;
     nodeDetachednessAndClassIndexOffset: number;
-    detachednessAndClassIndexArray?: Uint32Array;
+    detachednessAndClassIndexArray: Uint32Array;
     nodeNativeContextAttribution: Int32Array;
     constructor(profile: Profile, progress: HeapSnapshotProgress);
     initialize(secondWorker: PlatformApi.HostRuntime.WorkerMessagePort): Promise<void>;
@@ -337,6 +337,7 @@ export declare abstract class HeapSnapshot {
     private mergeNativeContextOwner;
     private propagateNativeContextAttribution;
     getNativeContextSizes(): HeapSnapshotModel.HeapSnapshotModel.NativeContextSizes;
+    getRetainedByContextSummary(): HeapSnapshotModel.HeapSnapshotModel.RetainedByContextSummary;
     nodeNativeContext(nodeIndex: number): number;
     private isNativeContext;
     interfaceDefinitions(): string;
@@ -358,6 +359,7 @@ export declare abstract class HeapSnapshot {
      * @returns The target node if found, null otherwise
      */
     private getEdgeTarget;
+    private initDetachednessAndClassIndex;
     /**
      * The phase propagates whether a node is attached or detached through the
      * graph and adjusts the low-level representation of nodes.
@@ -386,7 +388,7 @@ export declare abstract class HeapSnapshot {
     private calculateDiffForClass;
     private nodeForSnapshotObjectId;
     nodeClassKey(snapshotObjectId: number): string | null;
-    createEdgesProvider(nodeIndex: number): HeapSnapshotEdgesProvider;
+    createEdgesProvider(nodeIndex: number, options?: HeapSnapshotModel.HeapSnapshotModel.HeapEdgesQueryOptions): HeapSnapshotEdgesProvider;
     createEdgesProviderForTest(nodeIndex: number, filter: ((arg0: HeapSnapshotEdge) => boolean) | null): HeapSnapshotEdgesProvider;
     retainingEdgesFilter(): ((arg0: HeapSnapshotEdge) => boolean) | null;
     containmentEdgesFilter(): ((arg0: HeapSnapshotEdge) => boolean) | null;
@@ -396,6 +398,7 @@ export declare abstract class HeapSnapshot {
     createAddedNodesProvider(baseSnapshotId: number, classKey: string): HeapSnapshotNodesProvider;
     createDeletedNodesProvider(nodeIndexes: number[]): HeapSnapshotNodesProvider;
     createNodesProviderForClass(classKey: string, nodeFilter: HeapSnapshotModel.HeapSnapshotModel.NodeFilter): HeapSnapshotNodesProvider;
+    queryObjects(queryOptions: HeapSnapshotModel.HeapSnapshotModel.HeapQueryOptions): HeapSnapshotNodesProvider;
     private maxJsNodeId;
     updateStaticData(): HeapSnapshotModel.HeapSnapshotModel.StaticData;
     ignoreNodeInRetainersView(nodeIndex: number): void;

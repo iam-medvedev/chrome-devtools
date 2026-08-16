@@ -676,7 +676,7 @@ var UIStrings6 = {
   /**
    * @description Command for showing the 'Network request blocking' tool
    */
-  showRequestConditions: "Show Request conditions",
+  showRequestConditions: "Show request conditions",
   /**
    * @description Title of the 'Request conditions' tool in the bottom drawer
    */
@@ -1302,6 +1302,16 @@ Common7.Revealer.registerRevealer({
   async loadRevealer() {
     const Resources = await loadResourcesModule();
     return new Resources.ResourcesPanel.StorageBucketRevealer();
+  }
+});
+Common7.Revealer.registerRevealer({
+  contextTypes() {
+    return maybeRetrieveContextTypes3((Resources) => [Resources.StorageView.StorageRevealable]);
+  },
+  destination: Common7.Revealer.RevealerDestination.APPLICATION_PANEL,
+  async loadRevealer() {
+    const Resources = await loadResourcesModule();
+    return new Resources.StorageView.StorageRevealer();
   }
 });
 

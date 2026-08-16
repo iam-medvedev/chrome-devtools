@@ -9,6 +9,13 @@ import { debugLog, isStructuredLogEnabled } from '../debug.js';
 const MAX_SUGGESTION_LENGTH = 200;
 export const MAX_STEPS = 10;
 export class ConversationContext {
+    /**
+     * Returns true if the server-side logging is enabled when this context is active.
+     * Currently only used for AI v2.
+     */
+    isLoggingEnabled() {
+        return true;
+    }
     getOrigin() {
         return extractContextOrigin(this.getURL());
     }
@@ -58,6 +65,14 @@ export class ConversationContext {
     async getUserFacingDetails() {
         return null;
     }
+    /**
+     * Returns initial UI widgets to display in the conversation context header
+     * when this context is active (e.g. Core Web Vitals summary for a performance trace).
+     * Used by PerformanceAgent and AiAgent2.
+     */
+    async getWidgets() {
+        return [];
+    }
 }
 class CrossOriginError extends Error {
     constructor() {
@@ -78,7 +93,16 @@ class CrossOriginError extends Error {
 export class AiAgent {
     #sessionId;
     #aidaClient;
-    #serverSideLoggingEnabled;
+    /**
+     * Whether server-side logging is permitted by the system policy (based on
+     * user preferences, feature flags, or branding configurations).
+     */
+    #serverSideLoggingAllowed;
+    /**
+     * Tracks the dynamic runtime state of logging. Even if logging is allowed
+     * by policy, tools can temporarily deactivate this to avoid logging sensitive data.
+     */
+    #serverSideLoggingActive;
     confirmSideEffect;
     #functionDeclarations = new Map();
     #allowedOrigin;
@@ -97,13 +121,15 @@ export class AiAgent {
     #facts = new Set();
     constructor(opts) {
         this.#aidaClient = opts.aidaClient;
-        this.#serverSideLoggingEnabled = opts.serverSideLoggingEnabled ?? false;
+        let serverSideLoggingAllowed = opts.serverSideLoggingAllowed ?? false;
         // Disable logging for now.
         // For context, see b/454563259#comment35.
         // We should be able to remove this ~end of April.
         if (Root.Runtime.hostConfig.devToolsGeminiRebranding?.enabled) {
-            this.#serverSideLoggingEnabled = false;
+            serverSideLoggingAllowed = false;
         }
+        this.#serverSideLoggingAllowed = serverSideLoggingAllowed;
+        this.#serverSideLoggingActive = serverSideLoggingAllowed;
         this.#sessionId = opts.sessionId ?? crypto.randomUUID();
         this.confirmSideEffect = opts.confirmSideEffectForTest ?? (() => Promise.withResolvers());
         this.#history = opts.history ?? [];
@@ -145,8 +171,18 @@ export class AiAgent {
      */
     clearCache() {
     }
-    disableServerSideLogging() {
-        this.#serverSideLoggingEnabled = false;
+    /**
+     * Toggles whether server-side logging is active.
+     * Note that logging can only be activated if it was allowed by policy/configuration
+     * at startup (i.e., `#serverSideLoggingAllowed` is true).
+     */
+    setServerSideLoggingActive(active) {
+        if (active && this.#serverSideLoggingAllowed) {
+            this.#serverSideLoggingActive = true;
+        }
+        else {
+            this.#serverSideLoggingActive = false;
+        }
     }
     popPendingMultimodalInput() {
         return undefined;
@@ -182,8 +218,6 @@ export class AiAgent {
         }
         const enableAidaFunctionCalling = declarations.length;
         const userTier = Host.AidaClient.convertToUserTierEnum(this.userTier);
-        const clientFeatureName = Host.AidaClient.getClientFeatureName(this.clientFeature);
-        debugLog(`Client ${clientFeatureName} running with userTier ${this.userTier}`);
         const preamble = userTier === Host.AidaClient.UserTier.TESTERS ? this.preamble : undefined;
         const facts = Array.from(this.#facts);
         const request = {
@@ -198,7 +232,7 @@ export class AiAgent {
                 model_id: this.options.modelId || undefined,
             },
             metadata: {
-                disable_user_content_logging: !(this.#serverSideLoggingEnabled ?? false),
+                disable_user_content_logging: !(this.#serverSideLoggingActive ?? false),
                 string_session_id: this.#sessionId,
                 user_tier: userTier,
                 client_version: Root.Runtime.getChromeVersion() + this.preambleFeatures().map(feature => `+${feature}`).join(''),
@@ -311,11 +345,22 @@ export class AiAgent {
         query = multimodalInput ? [{ text: enhancedQuery }, multimodalInput.input] : [{ text: enhancedQuery }];
         // Request is built here to capture history up to this point.
         let request = this.buildRequest(query, Host.AidaClient.Role.USER);
+        const clientFeatureName = Host.AidaClient.getClientFeatureName(this.clientFeature);
+        debugLog(`[AiAgent] Starting conversation with client ${clientFeatureName}, userTier ${this.userTier}`);
         yield* this.handleContextDetails(options.selected);
         for (let i = 0; i < MAX_STEPS; i++) {
             yield {
                 type: "querying" /* ResponseType.QUERYING */,
             };
+            if (i === 0) {
+                debugLog('[AiAgent] Step 1: Sending user prompt to model:', enhancedQuery);
+            }
+            else if (!Array.isArray(query) && 'functionResponse' in query) {
+                debugLog(`[AiAgent] Step ${i + 1}: Sending function response for '${query.functionResponse.name}' to model:`, query.functionResponse.response);
+            }
+            else {
+                debugLog(`[AiAgent] Step ${i + 1}: Sending request to model:`, request.current_message);
+            }
             let rpcId;
             let textResponse = '';
             let functionCall = undefined;
@@ -352,6 +397,7 @@ export class AiAgent {
                     throw new Error('Expected a completed response to have an answer');
                 }
                 if (!functionCall) {
+                    debugLog(`[AiAgent] Step ${i + 1}: Model returned text response:`, parsedResponse.answer);
                     this.#history.push({
                         parts: [{
                                 text: parsedResponse.answer,
@@ -372,6 +418,7 @@ export class AiAgent {
                 }
             }
             if (functionCall) {
+                debugLog(`[AiAgent] Step ${i + 1}: Model requested function call: ${functionCall.name}`, functionCall.args);
                 const allowedOriginResult = this.#allowedOrigin?.();
                 if (allowedOriginResult && 'blocked' in allowedOriginResult) {
                     // Abort immediately if the page navigated before we could lock the origin.
@@ -431,6 +478,7 @@ export class AiAgent {
         if (!call) {
             throw new Error(`Function ${name} is not found.`);
         }
+        debugLog(`[AiAgent] Executing tool '${name}' with args:`, args);
         const parts = [];
         if (options?.explanation) {
             parts.push({
@@ -508,6 +556,7 @@ export class AiAgent {
                     output: 'Error: User denied code execution with side effects.',
                     canceled: true,
                 };
+                debugLog(`[AiAgent] Tool '${name}' denied by user.`);
                 return {
                     result: 'Error: User denied code execution with side effects.',
                 };
@@ -536,6 +585,7 @@ export class AiAgent {
                 output: typeof result.result === 'string' ? result.result : JSON.stringify(result.result),
                 widgets: result.widgets,
                 canceled: false,
+                toolName: name,
             };
         }
         if ('error' in result) {
@@ -544,8 +594,10 @@ export class AiAgent {
                 code,
                 output: result.error,
                 canceled: false,
+                toolName: name,
             };
         }
+        debugLog(`[AiAgent] Tool '${name}' result:`, result);
         if ('context' in result) {
             return result;
         }
@@ -556,7 +608,9 @@ export class AiAgent {
         let rpcId;
         for await (aidaResponse of this.#aidaClient.doConversation(request, options)) {
             if (aidaResponse.functionCalls?.length) {
-                debugLog('functionCalls.length', aidaResponse.functionCalls.length);
+                if (aidaResponse.functionCalls.length > 1) {
+                    debugLog(`[AiAgent] Unexpected: received ${aidaResponse.functionCalls.length} function calls in response:`, aidaResponse.functionCalls);
+                }
                 yield {
                     rpcId,
                     functionCall: aidaResponse.functionCalls[0],
@@ -572,10 +626,6 @@ export class AiAgent {
                 completed: aidaResponse.completed,
             };
         }
-        debugLog({
-            request,
-            response: aidaResponse,
-        });
         if (isStructuredLogEnabled() && aidaResponse) {
             this.#structuredLog.push({
                 request: structuredClone(request),

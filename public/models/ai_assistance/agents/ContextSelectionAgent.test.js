@@ -16,7 +16,7 @@ import { TestUniverse } from '../../../testing/TestUniverse.js';
 import * as Bindings from '../../bindings/bindings.js';
 import * as Logs from '../../logs/logs.js';
 import * as Workspace from '../../workspace/workspace.js';
-import { ContextSelectionAgent, DOMNodeContext, FileContext, PerformanceTraceContext, RequestContext, StorageAgent, StorageItem, } from '../ai_assistance.js';
+import { ContextSelectionAgent, DOMNodeContext, FileContext, PerformanceTraceContext, RequestContext, StorageContext, StorageItem, } from '../ai_assistance.js';
 const { urlString } = Platform.DevToolsPath;
 describe('ContextSelectionAgent', function () {
     const snapshotTester = new SnapshotTester(this, import.meta);
@@ -53,7 +53,7 @@ describe('ContextSelectionAgent', function () {
             sinon.stub(crypto, 'randomUUID').returns('sessionId');
             const agent = new ContextSelectionAgent.ContextSelectionAgent({
                 aidaClient: mockAidaClient([[{ explanation: 'answer' }]]),
-                serverSideLoggingEnabled: true,
+                serverSideLoggingAllowed: true,
             });
             await Array.fromAsync(agent.run('question', { selected: null }));
             setUserAgentForTesting();
@@ -801,6 +801,7 @@ describe('ContextSelectionAgent', function () {
                 type: "action" /* AiAgent.ResponseType.ACTION */,
                 code: 'listSourceFiles()',
                 output: '[{"file":"script.js","id":1}]',
+                toolName: 'listSourceFiles',
                 widgets: [{
                         name: 'SOURCE_FILES_LIST',
                         data: {
@@ -860,6 +861,7 @@ describe('ContextSelectionAgent', function () {
                 type: "action" /* AiAgent.ResponseType.ACTION */,
                 code: 'listSourceFiles()',
                 output: '[{"file":"script.js","id":1}]',
+                toolName: 'listSourceFiles',
                 widgets: [{
                         name: 'SOURCE_FILES_LIST',
                         data: {
@@ -911,7 +913,7 @@ describe('ContextSelectionAgent', function () {
             const responses = await Array.fromAsync(agent.run('test', { selected: null }));
             const contextChange = responses.find(response => response.type === "context-change" /* AiAgent.ResponseType.CONTEXT_CHANGE */);
             assert.exists(contextChange);
-            assert.instanceOf(contextChange.context, StorageAgent.StorageContext);
+            assert.instanceOf(contextChange.context, StorageContext.StorageContext);
             const storageContext = contextChange.context;
             assert.strictEqual(storageContext.getItem().constructor, StorageItem.StorageItem);
             assert.strictEqual(storageContext.getItem().origin, 'https://example.com');

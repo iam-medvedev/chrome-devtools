@@ -49,7 +49,7 @@ describe('FileAgent', () => {
             sinon.stub(crypto, 'randomUUID').returns('sessionId');
             const agent = new FileAgent.FileAgent({
                 aidaClient: mockAidaClient([[{ explanation: 'answer' }]]),
-                serverSideLoggingEnabled: true,
+                serverSideLoggingAllowed: true,
             });
             await Array.fromAsync(agent.run('question', { selected: null }));
             setUserAgentForTesting();

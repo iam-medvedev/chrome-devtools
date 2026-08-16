@@ -170,4 +170,14 @@ Common.Revealer.registerRevealer({
         return new Resources.ResourcesPanel.StorageBucketRevealer();
     },
 });
+Common.Revealer.registerRevealer({
+    contextTypes() {
+        return maybeRetrieveContextTypes(Resources => [Resources.StorageView.StorageRevealable]);
+    },
+    destination: Common.Revealer.RevealerDestination.APPLICATION_PANEL,
+    async loadRevealer() {
+        const Resources = await loadResourcesModule();
+        return new Resources.StorageView.StorageRevealer();
+    },
+});
 //# sourceMappingURL=application-meta.prebundle.js.map

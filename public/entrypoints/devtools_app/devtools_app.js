@@ -43,8 +43,73 @@ import * as i18n3 from "./../../core/i18n/i18n.js";
 import * as Root from "./../../core/root/root.js";
 import * as SDK from "./../../core/sdk/sdk.js";
 import * as UI2 from "./../../ui/legacy/legacy.js";
+import * as SettingsUI from "./../../ui/settings/settings.js";
 import * as Elements from "./../../panels/elements/elements.js";
 var UIStrings2 = {
+  /**
+   * @description Text of a setting that turn on the measuring rulers when hover over a target.
+   */
+  rulersOnHover: "Rulers on hover",
+  /**
+   * @description Text of an option that turn on the measuring rulers when hover over a target through the Command Menu.
+   */
+  showRulersOnHover: "Show rulers on hover",
+  /**
+   * @description Text of a setting that do turn off the measuring rulers when hover over a target.
+   */
+  doNotShowRulersOnHover: "Don\u2019t show rulers on hover",
+  /**
+   * @description Title of a setting under the Elements category in Settings.
+   */
+  apca: "Advanced Perceptual Contrast Algorithm (APCA) replacing previous contrast ratio and AA/AAA guidelines",
+  /**
+   * @description Title of a setting that turns on grid area name labels.
+   */
+  showAreaNames: "Show area names",
+  /**
+   * @description Title of a setting under the Grid category that turns CSS Grid Area highlighting on.
+   */
+  showGridNamedAreas: "Show grid named areas",
+  /**
+   * @description Title of a setting under the Grid category that turns CSS Grid Area highlighting off.
+   */
+  doNotShowGridNamedAreas: "Do not show grid named areas",
+  /**
+   * @description Title of a setting that turns on grid track size labels.
+   */
+  showTrackSizes: "Show track sizes",
+  /**
+   * @description Title for CSS Grid tooling option.
+   */
+  showGridTrackSizes: "Show grid track sizes",
+  /**
+   * @description Title for CSS Grid tooling option.
+   */
+  doNotShowGridTrackSizes: "Do not show grid track sizes",
+  /**
+   * @description Title of a setting that turns on grid extension lines.
+   */
+  extendGridLines: "Extend grid lines",
+  /**
+   * @description Title of a setting that turns off the grid extension lines.
+   */
+  doNotExtendGridLines: "Do not extend grid lines",
+  /**
+   * @description Title of a setting that turns on grid line labels.
+   */
+  showLineLabels: "Show line labels",
+  /**
+   * @description Title of a setting that turns off the grid line labels.
+   */
+  hideLineLabels: "Hide line labels",
+  /**
+   * @description Title of a setting that turns on grid line number labels.
+   */
+  showLineNumbers: "Show line numbers",
+  /**
+   * @description Title of a setting that turns on grid line name labels.
+   */
+  showLineNames: "Show line names",
   /**
    * @description Command for showing the 'Elements' panel. Elements refers to HTML elements.
    */
@@ -693,15 +758,6 @@ UI2.Toolbar.registerToolbarItem({
   location: "main-toolbar-left",
   order: 0
 });
-UI2.UIUtils.registerRenderer({
-  contextTypes() {
-    return [SDK.DOMModel.DOMNode, SDK.DOMModel.DeferredDOMNode];
-  },
-  async loadRenderer() {
-    const Elements2 = await loadElementsModule();
-    return Elements2.ElementsTreeOutlineRenderer.Renderer.instance();
-  }
-});
 Common.Settings.registerSettingExtension({
   category: "",
   storageType: "Global",
@@ -709,6 +765,87 @@ Common.Settings.registerSettingExtension({
   settingName: "show-frameowkr-listeners",
   settingType: "boolean",
   defaultValue: true
+});
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.showMetricsRulersSettingDescriptor, {
+  category: "ELEMENTS",
+  title: i18nLazyString2(UIStrings2.rulersOnHover),
+  options: [
+    {
+      value: true,
+      title: i18nLazyString2(UIStrings2.showRulersOnHover)
+    },
+    {
+      value: false,
+      title: i18nLazyString2(UIStrings2.doNotShowRulersOnHover)
+    }
+  ]
+});
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.apcaSettingDescriptor, {
+  category: "ELEMENTS",
+  title: i18nLazyString2(UIStrings2.apca)
+});
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.showGridAreasSettingDescriptor, {
+  category: "GRID",
+  title: i18nLazyString2(UIStrings2.showAreaNames),
+  options: [
+    {
+      value: true,
+      title: i18nLazyString2(UIStrings2.showGridNamedAreas)
+    },
+    {
+      value: false,
+      title: i18nLazyString2(UIStrings2.doNotShowGridNamedAreas)
+    }
+  ]
+});
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.showGridTrackSizesSettingDescriptor, {
+  category: "GRID",
+  title: i18nLazyString2(UIStrings2.showTrackSizes),
+  options: [
+    {
+      value: true,
+      title: i18nLazyString2(UIStrings2.showGridTrackSizes)
+    },
+    {
+      value: false,
+      title: i18nLazyString2(UIStrings2.doNotShowGridTrackSizes)
+    }
+  ]
+});
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.extendGridLinesSettingDescriptor, {
+  category: "GRID",
+  title: i18nLazyString2(UIStrings2.extendGridLines),
+  options: [
+    {
+      value: true,
+      title: i18nLazyString2(UIStrings2.extendGridLines)
+    },
+    {
+      value: false,
+      title: i18nLazyString2(UIStrings2.doNotExtendGridLines)
+    }
+  ]
+});
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.showGridLineLabelsSettingDescriptor, {
+  category: "GRID",
+  title: i18nLazyString2(UIStrings2.showLineLabels),
+  options: [
+    {
+      title: i18nLazyString2(UIStrings2.hideLineLabels),
+      text: i18nLazyString2(UIStrings2.hideLineLabels),
+      value: "none"
+    },
+    {
+      title: i18nLazyString2(UIStrings2.showLineNumbers),
+      text: i18nLazyString2(UIStrings2.showLineNumbers),
+      value: "lineNumbers"
+    },
+    {
+      title: i18nLazyString2(UIStrings2.showLineNames),
+      text: i18nLazyString2(UIStrings2.showLineNames),
+      value: "lineNames"
+    }
+  ]
 });
 
 // gen/front_end/panels/browser_debugger/browser_debugger-meta.js
@@ -988,7 +1125,7 @@ var UIStrings4 = {
   /**
    * @description Command for showing the 'Network request blocking' tool
    */
-  showRequestConditions: "Show Request conditions",
+  showRequestConditions: "Show request conditions",
   /**
    * @description Title of the 'Request conditions' tool in the bottom drawer
    */
@@ -1628,7 +1765,7 @@ UI6.Toolbar.registerToolbarItem({
   actionId: "emulation.toggle-device-mode",
   condition: Root4.Runtime.conditions.canDock,
   location: "main-toolbar-left",
-  order: 1
+  order: 2
 });
 UI6.AppProvider.registerAppProvider({
   async loadAppProvider() {
@@ -1652,8 +1789,75 @@ UI6.ContextMenu.registerItem({
 // gen/front_end/panels/sensors/sensors-meta.js
 import * as Common5 from "./../../core/common/common.js";
 import * as i18n13 from "./../../core/i18n/i18n.js";
+import * as SDK4 from "./../../core/sdk/sdk.js";
 import * as UI7 from "./../../ui/legacy/legacy.js";
+import * as SettingsUI2 from "./../../ui/settings/settings.js";
 var UIStrings7 = {
+  /**
+   * @description Text for the CPU Pressure type to simulate on a device.
+   */
+  cpuPressure: "CPU Pressure",
+  /**
+   * @description Title of an option in Sensors tab cpu pressure emulation drop-down. Turns off emulation of cpu pressure state.
+   */
+  noPressureEmulation: "No override",
+  /**
+   * @description An option that appears in a drop-down that represents the nominal state.
+   */
+  nominal: "Nominal",
+  /**
+   * @description An option that appears in a drop-down that represents the fair state.
+   */
+  fair: "Fair",
+  /**
+   * @description An option that appears in a drop-down that represents the serious state.
+   */
+  serious: "Serious",
+  /**
+   * @description An option that appears in a drop-down that represents the critical state.
+   */
+  critical: "Critical",
+  /**
+   * @description Text for the touch type to simulate on a device. Refers to touch input as opposed to
+   * mouse input.
+   */
+  touch: "Touch",
+  /**
+   * @description Text in Sensors View of the Device Toolbar. Means that touch input will be forced
+   *on, even if the device type e.g. desktop computer does not normally have touch input.
+   */
+  forceEnabled: "Force enabled",
+  /**
+   * @description Text in Sensors View of the Device Toolbar. Refers to device-based touch input,
+   *which means the input type will be 'touch' only if the device normally has touch input e.g. a
+   *phone or tablet.
+   */
+  devicebased: "Device-based",
+  /**
+   * @description Title of a section option in Sensors tab for idle emulation. This is a command, to
+   *emulate the state of the 'Idle Detector'.
+   */
+  emulateIdleDetectorState: "Emulate Idle Detector state",
+  /**
+   * @description Title of an option in Sensors tab idle emulation drop-down. Turns off emulation of idle state.
+   */
+  noIdleEmulation: "No idle emulation",
+  /**
+   * @description Title of an option in Sensors tab idle emulation drop-down.
+   */
+  userActiveScreenUnlocked: "User active, screen unlocked",
+  /**
+   * @description Title of an option in Sensors tab idle emulation drop-down.
+   */
+  userActiveScreenLocked: "User active, screen locked",
+  /**
+   * @description Title of an option in Sensors tab idle emulation drop-down.
+   */
+  userIdleScreenUnlocked: "User idle, screen unlocked",
+  /**
+   * @description Title of an option in Sensors tab idle emulation drop-down.
+   */
+  userIdleScreenLocked: "User idle, screen locked",
   /**
    * @description Title of the Sensors view. The Sensors view contains GPS, orientation sensors, touch
    * settings, and more.
@@ -1823,6 +2027,83 @@ Common5.Settings.registerSettingExtension({
     }
   ]
 });
+SettingsUI2.SettingUIRegistration.register(SDK4.SDKSettings.cpuPressureSettingDescriptor, {
+  title: i18nLazyString7(UIStrings7.cpuPressure),
+  reloadRequired: true,
+  options: [
+    {
+      value: "none",
+      title: i18nLazyString7(UIStrings7.noPressureEmulation),
+      text: i18nLazyString7(UIStrings7.noPressureEmulation)
+    },
+    {
+      value: "nominal",
+      title: i18nLazyString7(UIStrings7.nominal),
+      text: i18nLazyString7(UIStrings7.nominal)
+    },
+    {
+      value: "fair",
+      title: i18nLazyString7(UIStrings7.fair),
+      text: i18nLazyString7(UIStrings7.fair)
+    },
+    {
+      value: "serious",
+      title: i18nLazyString7(UIStrings7.serious),
+      text: i18nLazyString7(UIStrings7.serious)
+    },
+    {
+      value: "critical",
+      title: i18nLazyString7(UIStrings7.critical),
+      text: i18nLazyString7(UIStrings7.critical)
+    }
+  ]
+});
+SettingsUI2.SettingUIRegistration.register(SDK4.SDKSettings.touchSettingDescriptor, {
+  title: i18nLazyString7(UIStrings7.touch),
+  reloadRequired: true,
+  options: [
+    {
+      value: "none",
+      title: i18nLazyString7(UIStrings7.devicebased),
+      text: i18nLazyString7(UIStrings7.devicebased)
+    },
+    {
+      value: "force",
+      title: i18nLazyString7(UIStrings7.forceEnabled),
+      text: i18nLazyString7(UIStrings7.forceEnabled)
+    }
+  ]
+});
+SettingsUI2.SettingUIRegistration.register(SDK4.SDKSettings.idleDetectionSettingDescriptor, {
+  title: i18nLazyString7(UIStrings7.emulateIdleDetectorState),
+  options: [
+    {
+      value: "none",
+      title: i18nLazyString7(UIStrings7.noIdleEmulation),
+      text: i18nLazyString7(UIStrings7.noIdleEmulation)
+    },
+    {
+      value: '{"isUserActive":true,"isScreenUnlocked":true}',
+      title: i18nLazyString7(UIStrings7.userActiveScreenUnlocked),
+      text: i18nLazyString7(UIStrings7.userActiveScreenUnlocked)
+    },
+    {
+      value: '{"isUserActive":true,"isScreenUnlocked":false}',
+      title: i18nLazyString7(UIStrings7.userActiveScreenLocked),
+      text: i18nLazyString7(UIStrings7.userActiveScreenLocked)
+    },
+    {
+      value: '{"isUserActive":false,"isScreenUnlocked":true}',
+      title: i18nLazyString7(UIStrings7.userIdleScreenUnlocked),
+      text: i18nLazyString7(UIStrings7.userIdleScreenUnlocked)
+    },
+    {
+      value: '{"isUserActive":false,"isScreenUnlocked":false}',
+      title: i18nLazyString7(UIStrings7.userIdleScreenLocked),
+      text: i18nLazyString7(UIStrings7.userIdleScreenLocked)
+    }
+  ]
+});
 
 // gen/front_end/panels/accessibility/accessibility-meta.js
 import * as i18n15 from "./../../core/i18n/i18n.js";
@@ -1830,11 +2111,11 @@ import * as UI8 from "./../../ui/legacy/legacy.js";
 var loadedAccessibilityModule;
 var UIStrings8 = {
   /**
-   * @description Text for accessibility of the web page
+   * @description Title of the Accessibility tab in the Elements panel.
    */
   accessibility: "Accessibility",
   /**
-   * @description Command for showing the 'Accessibility' tool
+   * @description Command for showing the Accessibility tab in the Elements panel.
    */
   shoAccessibility: "Show Accessibility"
 };
@@ -1862,7 +2143,7 @@ UI8.ViewManager.registerViewExtension({
 // gen/front_end/panels/animation/animation-meta.js
 import * as Common6 from "./../../core/common/common.js";
 import * as i18n17 from "./../../core/i18n/i18n.js";
-import * as SDK4 from "./../../core/sdk/sdk.js";
+import * as SDK5 from "./../../core/sdk/sdk.js";
 import * as UI9 from "./../../ui/legacy/legacy.js";
 var loadedAnimationModule;
 var UIStrings9 = {
@@ -1898,7 +2179,7 @@ UI9.ViewManager.registerViewExtension({
 Common6.Revealer.registerRevealer({
   contextTypes() {
     return [
-      SDK4.AnimationModel.AnimationGroup
+      SDK5.AnimationModel.AnimationGroup
     ];
   },
   destination: Common6.Revealer.RevealerDestination.SOURCES_PANEL,
@@ -1911,7 +2192,7 @@ Common6.Revealer.registerRevealer({
 // gen/front_end/panels/developer_resources/developer_resources-meta.js
 import * as Common7 from "./../../core/common/common.js";
 import * as i18n19 from "./../../core/i18n/i18n.js";
-import * as SDK5 from "./../../core/sdk/sdk.js";
+import * as SDK6 from "./../../core/sdk/sdk.js";
 import * as UI10 from "./../../ui/legacy/legacy.js";
 var UIStrings10 = {
   /**
@@ -1946,7 +2227,7 @@ UI10.ViewManager.registerViewExtension({
 });
 Common7.Revealer.registerRevealer({
   contextTypes() {
-    return [SDK5.PageResourceLoader.ResourceKey];
+    return [SDK6.PageResourceLoader.ResourceKey];
   },
   destination: Common7.Revealer.RevealerDestination.DEVELOPER_RESOURCES_PANEL,
   async loadRevealer() {
@@ -1994,8 +2275,113 @@ UI11.ViewManager.registerViewExtension({
 // gen/front_end/entrypoints/inspector_main/inspector_main-meta.js
 import * as Common8 from "./../../core/common/common.js";
 import * as i18n23 from "./../../core/i18n/i18n.js";
+import * as SDK7 from "./../../core/sdk/sdk.js";
 import * as UI12 from "./../../ui/legacy/legacy.js";
+import * as SettingsUI3 from "./../../ui/settings/settings.js";
 var UIStrings12 = {
+  /**
+   * @description Title of an option under the Rendering category that can be invoked through the Command Menu.
+   */
+  showPaintFlashingRectangles: "Show paint flashing rectangles",
+  /**
+   * @description Title of an option under the Rendering category that can be invoked through the Command Menu.
+   */
+  hidePaintFlashingRectangles: "Hide paint flashing rectangles",
+  /**
+   * @description Title of an option under the Rendering category that can be invoked through the Command Menu.
+   */
+  showLayoutShiftRegions: "Show layout shift regions",
+  /**
+   * @description Title of an option under the Rendering category that can be invoked through the Command Menu.
+   */
+  hideLayoutShiftRegions: "Hide layout shift regions",
+  /**
+   * @description Text to highlight the rendering frames for ads.
+   */
+  highlightAdFrames: "Highlight ad frames",
+  /**
+   * @description Title of an option under the Rendering category that can be invoked through the Command Menu.
+   */
+  doNotHighlightAdFrames: "Do not highlight ad frames",
+  /**
+   * @description Title of an option under the Rendering category that can be invoked through the Command Menu.
+   */
+  showLayerBorders: "Show layer borders",
+  /**
+   * @description Title of an option under the Rendering category that can be invoked through the Command Menu.
+   */
+  hideLayerBorders: "Hide layer borders",
+  /**
+   * @description Title of an option under the Rendering category that can be invoked through the Command Menu.
+   */
+  showFramesPerSecondFpsMeter: "Show frames per second (FPS) meter",
+  /**
+   * @description Title of an option under the Rendering category that can be invoked through the Command Menu.
+   */
+  hideFramesPerSecondFpsMeter: "Hide frames per second (FPS) meter",
+  /**
+   * @description Title of an option under the Rendering category that can be invoked through the Command Menu.
+   */
+  showScrollPerformanceBottlenecks: "Show scroll performance bottlenecks",
+  /**
+   * @description Title of an option under the Rendering category that can be invoked through the Command Menu.
+   */
+  hideScrollPerformanceBottlenecks: "Hide scroll performance bottlenecks",
+  /**
+   * @description Title of a Rendering setting that can be invoked through the Command Menu.
+   */
+  emulateAFocusedPage: "Emulate a focused page",
+  /**
+   * @description Title of a Rendering setting that can be invoked through the Command Menu.
+   */
+  doNotEmulateAFocusedPage: "Do not emulate a focused page",
+  /**
+   * @description Title of a setting under the Rendering category that can be invoked through the Command Menu.
+   */
+  doNotEmulateCssMediaType: "Do not emulate CSS media type",
+  /**
+   * @description A drop-down menu option to do not emulate css media type.
+   */
+  noEmulation: "No emulation",
+  /**
+   * @description Title of a setting under the Rendering category that can be invoked through the Command Menu.
+   */
+  emulateCssPrintMediaType: "Emulate CSS print media type",
+  /**
+   * @description A drop-down menu option to emulate css print media type.
+   */
+  print: "print",
+  /**
+   * @description Title of a setting under the Rendering category that can be invoked through the Command Menu.
+   */
+  emulateCssScreenMediaType: "Emulate CSS screen media type",
+  /**
+   * @description A drop-down menu option to emulate css screen media type.
+   */
+  screen: "screen",
+  /**
+   * @description A tag of Emulate CSS screen media type setting that can be searched in the command menu.
+   */
+  query: "query",
+  /**
+   * @description Title of a setting under the Rendering drawer.
+   */
+  emulateCssMediaType: "Emulate CSS media type",
+  /**
+   * @description Title of a setting under the Rendering drawer that can be invoked through the Command Menu.
+   * @example {prefers-color-scheme} PH1
+   */
+  doNotEmulateCss: "Do not emulate CSS {PH1}",
+  /**
+   * @description Title of a setting under the Rendering drawer that can be invoked through the Command Menu.
+   * @example {prefers-color-scheme: light} PH1
+   */
+  emulateCss: "Emulate CSS {PH1}",
+  /**
+   * @description Title of a setting under the Rendering drawer that can be invoked through the Command Menu.
+   * @example {prefers-color-scheme} PH1
+   */
+  emulateCssMediaFeature: "Emulate CSS media feature {PH1}",
   /**
    * @description Title of the Rendering panel. The Rendering panel is a collection of settings that
    * lets the user debug the rendering (i.e. how the website is drawn onto the screen) of the
@@ -2230,11 +2616,194 @@ UI12.Toolbar.registerToolbarItem({
   order: 97,
   location: "main-toolbar-right"
 });
+SettingsUI3.SettingUIRegistration.register(SDK7.SDKSettings.showPaintRectsSettingDescriptor, {
+  category: "RENDERING",
+  options: [
+    {
+      value: true,
+      title: i18nLazyString12(UIStrings12.showPaintFlashingRectangles)
+    },
+    {
+      value: false,
+      title: i18nLazyString12(UIStrings12.hidePaintFlashingRectangles)
+    }
+  ]
+});
+SettingsUI3.SettingUIRegistration.register(SDK7.SDKSettings.showLayoutShiftRegionsSettingDescriptor, {
+  category: "RENDERING",
+  options: [
+    {
+      value: true,
+      title: i18nLazyString12(UIStrings12.showLayoutShiftRegions)
+    },
+    {
+      value: false,
+      title: i18nLazyString12(UIStrings12.hideLayoutShiftRegions)
+    }
+  ]
+});
+SettingsUI3.SettingUIRegistration.register(SDK7.SDKSettings.showAdHighlightsSettingDescriptor, {
+  category: "RENDERING",
+  options: [
+    {
+      value: true,
+      title: i18nLazyString12(UIStrings12.highlightAdFrames)
+    },
+    {
+      value: false,
+      title: i18nLazyString12(UIStrings12.doNotHighlightAdFrames)
+    }
+  ]
+});
+SettingsUI3.SettingUIRegistration.register(SDK7.SDKSettings.showDebugBordersSettingDescriptor, {
+  category: "RENDERING",
+  options: [
+    {
+      value: true,
+      title: i18nLazyString12(UIStrings12.showLayerBorders)
+    },
+    {
+      value: false,
+      title: i18nLazyString12(UIStrings12.hideLayerBorders)
+    }
+  ]
+});
+SettingsUI3.SettingUIRegistration.register(SDK7.SDKSettings.showFPSCounterSettingDescriptor, {
+  category: "RENDERING",
+  options: [
+    {
+      value: true,
+      title: i18nLazyString12(UIStrings12.showFramesPerSecondFpsMeter)
+    },
+    {
+      value: false,
+      title: i18nLazyString12(UIStrings12.hideFramesPerSecondFpsMeter)
+    }
+  ]
+});
+SettingsUI3.SettingUIRegistration.register(SDK7.SDKSettings.showScrollBottleneckRectsSettingDescriptor, {
+  category: "RENDERING",
+  options: [
+    {
+      value: true,
+      title: i18nLazyString12(UIStrings12.showScrollPerformanceBottlenecks)
+    },
+    {
+      value: false,
+      title: i18nLazyString12(UIStrings12.hideScrollPerformanceBottlenecks)
+    }
+  ]
+});
+SettingsUI3.SettingUIRegistration.register(SDK7.SDKSettings.emulatePageFocusSettingDescriptor, {
+  category: "RENDERING",
+  title: i18nLazyString12(UIStrings12.emulateAFocusedPage),
+  options: [
+    {
+      value: true,
+      title: i18nLazyString12(UIStrings12.emulateAFocusedPage)
+    },
+    {
+      value: false,
+      title: i18nLazyString12(UIStrings12.doNotEmulateAFocusedPage)
+    }
+  ]
+});
+SettingsUI3.SettingUIRegistration.register(SDK7.SDKSettings.emulatedCSSMediaSettingDescriptor, {
+  category: "RENDERING",
+  title: i18nLazyString12(UIStrings12.emulateCssMediaType),
+  options: [
+    {
+      title: i18nLazyString12(UIStrings12.doNotEmulateCssMediaType),
+      text: i18nLazyString12(UIStrings12.noEmulation),
+      value: ""
+    },
+    {
+      title: i18nLazyString12(UIStrings12.emulateCssPrintMediaType),
+      text: i18nLazyString12(UIStrings12.print),
+      value: "print"
+    },
+    {
+      title: i18nLazyString12(UIStrings12.emulateCssScreenMediaType),
+      text: i18nLazyString12(UIStrings12.screen),
+      value: "screen"
+    }
+  ],
+  tags: [
+    i18nLazyString12(UIStrings12.query)
+  ]
+});
+SettingsUI3.SettingUIRegistration.register(SDK7.SDKSettings.emulatedCSSMediaFeaturePrefersColorSchemeSettingDescriptor, {
+  category: "RENDERING",
+  options: [
+    {
+      title: i18nLazyString12(UIStrings12.doNotEmulateCss, { PH1: "prefers-color-scheme" }),
+      text: i18nLazyString12(UIStrings12.noEmulation),
+      value: ""
+    },
+    {
+      title: i18nLazyString12(UIStrings12.emulateCss, { PH1: "prefers-color-scheme: light" }),
+      text: i18n23.i18n.lockedLazyString("prefers-color-scheme: light"),
+      value: "light"
+    },
+    {
+      title: i18nLazyString12(UIStrings12.emulateCss, { PH1: "prefers-color-scheme: dark" }),
+      text: i18n23.i18n.lockedLazyString("prefers-color-scheme: dark"),
+      value: "dark"
+    }
+  ],
+  tags: [
+    i18nLazyString12(UIStrings12.query)
+  ],
+  title: i18nLazyString12(UIStrings12.emulateCssMediaFeature, { PH1: "prefers-color-scheme" })
+});
+SettingsUI3.SettingUIRegistration.register(SDK7.SDKSettings.emulatedCSSMediaFeatureForcedColorsSettingDescriptor, {
+  category: "RENDERING",
+  options: [
+    {
+      title: i18nLazyString12(UIStrings12.doNotEmulateCss, { PH1: "forced-colors" }),
+      text: i18nLazyString12(UIStrings12.noEmulation),
+      value: ""
+    },
+    {
+      title: i18nLazyString12(UIStrings12.emulateCss, { PH1: "forced-colors: active" }),
+      text: i18n23.i18n.lockedLazyString("forced-colors: active"),
+      value: "active"
+    },
+    {
+      title: i18nLazyString12(UIStrings12.emulateCss, { PH1: "forced-colors: none" }),
+      text: i18n23.i18n.lockedLazyString("forced-colors: none"),
+      value: "none"
+    }
+  ],
+  tags: [
+    i18nLazyString12(UIStrings12.query)
+  ],
+  title: i18nLazyString12(UIStrings12.emulateCssMediaFeature, { PH1: "forced-colors" })
+});
+SettingsUI3.SettingUIRegistration.register(SDK7.SDKSettings.emulatedCSSMediaFeaturePrefersReducedMotionSettingDescriptor, {
+  category: "RENDERING",
+  options: [
+    {
+      title: i18nLazyString12(UIStrings12.doNotEmulateCss, { PH1: "prefers-reduced-motion" }),
+      text: i18nLazyString12(UIStrings12.noEmulation),
+      value: ""
+    },
+    {
+      title: i18nLazyString12(UIStrings12.emulateCss, { PH1: "prefers-reduced-motion: reduce" }),
+      text: i18n23.i18n.lockedLazyString("prefers-reduced-motion: reduce"),
+      value: "reduce"
+    }
+  ],
+  tags: [
+    i18nLazyString12(UIStrings12.query)
+  ],
+  title: i18nLazyString12(UIStrings12.emulateCssMediaFeature, { PH1: "prefers-reduced-motion" })
+});
 
 // gen/front_end/panels/application/application-meta.js
 import * as Common9 from "./../../core/common/common.js";
 import * as i18n25 from "./../../core/i18n/i18n.js";
-import * as SDK6 from "./../../core/sdk/sdk.js";
+import * as SDK8 from "./../../core/sdk/sdk.js";
 import * as UI13 from "./../../ui/legacy/legacy.js";
 import * as PreloadingHelper from "./../../panels/application/preloading/helper/helper.js";
 var UIStrings13 = {
@@ -2350,7 +2919,7 @@ UI13.ActionRegistration.registerActionExtension({
 Common9.Revealer.registerRevealer({
   contextTypes() {
     return [
-      SDK6.Resource.Resource
+      SDK8.Resource.Resource
     ];
   },
   destination: Common9.Revealer.RevealerDestination.APPLICATION_PANEL,
@@ -2362,7 +2931,7 @@ Common9.Revealer.registerRevealer({
 Common9.Revealer.registerRevealer({
   contextTypes() {
     return [
-      SDK6.ResourceTreeModel.ResourceTreeFrame
+      SDK8.ResourceTreeModel.ResourceTreeFrame
     ];
   },
   destination: Common9.Revealer.RevealerDestination.APPLICATION_PANEL,
@@ -2399,6 +2968,16 @@ Common9.Revealer.registerRevealer({
   async loadRevealer() {
     const Resources = await loadResourcesModule();
     return new Resources.ResourcesPanel.StorageBucketRevealer();
+  }
+});
+Common9.Revealer.registerRevealer({
+  contextTypes() {
+    return maybeRetrieveContextTypes4((Resources) => [Resources.StorageView.StorageRevealable]);
+  },
+  destination: Common9.Revealer.RevealerDestination.APPLICATION_PANEL,
+  async loadRevealer() {
+    const Resources = await loadResourcesModule();
+    return new Resources.StorageView.StorageRevealer();
   }
 });
 
@@ -2887,10 +3466,10 @@ UI19.ViewManager.registerViewExtension({
 // gen/front_end/panels/timeline/timeline-meta.js
 import * as Common13 from "./../../core/common/common.js";
 import * as i18n39 from "./../../core/i18n/i18n.js";
-import * as SDK7 from "./../../core/sdk/sdk.js";
+import * as SDK9 from "./../../core/sdk/sdk.js";
 import * as LiveMetrics from "./../../models/live-metrics/live-metrics.js";
 import * as UI20 from "./../../ui/legacy/legacy.js";
-import * as SettingsUI from "./../../ui/settings/settings.js";
+import * as SettingsUI4 from "./../../ui/settings/settings.js";
 var UIStrings20 = {
   /**
    * @description Text for the performance of something
@@ -3266,7 +3845,7 @@ Common13.Settings.registerSettingExtension({
   settingType: "boolean",
   defaultValue: false
 });
-SettingsUI.SettingUIRegistration.register(LiveMetrics.timelineEnableSoftNavigationsSettingDescriptor, {
+SettingsUI4.SettingUIRegistration.register(LiveMetrics.timelineEnableSoftNavigationsSettingDescriptor, {
   category: "PERFORMANCE",
   title: i18nLazyString20(UIStrings20.enableSoftNavigations)
 });
@@ -3297,7 +3876,7 @@ UI20.ContextMenu.registerItem({
 });
 Common13.Revealer.registerRevealer({
   contextTypes() {
-    return [SDK7.TraceObject.TraceObject];
+    return [SDK9.TraceObject.TraceObject];
   },
   destination: Common13.Revealer.RevealerDestination.TIMELINE_PANEL,
   async loadRevealer() {
@@ -3317,7 +3896,7 @@ Common13.Revealer.registerRevealer({
 });
 Common13.Revealer.registerRevealer({
   contextTypes() {
-    return [SDK7.TraceObject.RevealableEvent];
+    return [SDK9.TraceObject.RevealableEvent];
   },
   destination: Common13.Revealer.RevealerDestination.TIMELINE_PANEL,
   async loadRevealer() {
@@ -3368,7 +3947,7 @@ Common13.Revealer.registerRevealer({
 Common13.Revealer.registerRevealer({
   contextTypes() {
     return [
-      SDK7.CPUProfilerModel.ProfileFinishedData
+      SDK9.CPUProfilerModel.ProfileFinishedData
     ];
   },
   destination: Common13.Revealer.RevealerDestination.TIMELINE_PANEL,

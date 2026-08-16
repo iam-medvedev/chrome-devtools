@@ -3,8 +3,113 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as SettingsUI from '../../ui/settings/settings.js';
 const UIStrings = {
+    /**
+     * @description Title of an option under the Rendering category that can be invoked through the Command Menu.
+     */
+    showPaintFlashingRectangles: 'Show paint flashing rectangles',
+    /**
+     * @description Title of an option under the Rendering category that can be invoked through the Command Menu.
+     */
+    hidePaintFlashingRectangles: 'Hide paint flashing rectangles',
+    /**
+     * @description Title of an option under the Rendering category that can be invoked through the Command Menu.
+     */
+    showLayoutShiftRegions: 'Show layout shift regions',
+    /**
+     * @description Title of an option under the Rendering category that can be invoked through the Command Menu.
+     */
+    hideLayoutShiftRegions: 'Hide layout shift regions',
+    /**
+     * @description Text to highlight the rendering frames for ads.
+     */
+    highlightAdFrames: 'Highlight ad frames',
+    /**
+     * @description Title of an option under the Rendering category that can be invoked through the Command Menu.
+     */
+    doNotHighlightAdFrames: 'Do not highlight ad frames',
+    /**
+     * @description Title of an option under the Rendering category that can be invoked through the Command Menu.
+     */
+    showLayerBorders: 'Show layer borders',
+    /**
+     * @description Title of an option under the Rendering category that can be invoked through the Command Menu.
+     */
+    hideLayerBorders: 'Hide layer borders',
+    /**
+     * @description Title of an option under the Rendering category that can be invoked through the Command Menu.
+     */
+    showFramesPerSecondFpsMeter: 'Show frames per second (FPS) meter',
+    /**
+     * @description Title of an option under the Rendering category that can be invoked through the Command Menu.
+     */
+    hideFramesPerSecondFpsMeter: 'Hide frames per second (FPS) meter',
+    /**
+     * @description Title of an option under the Rendering category that can be invoked through the Command Menu.
+     */
+    showScrollPerformanceBottlenecks: 'Show scroll performance bottlenecks',
+    /**
+     * @description Title of an option under the Rendering category that can be invoked through the Command Menu.
+     */
+    hideScrollPerformanceBottlenecks: 'Hide scroll performance bottlenecks',
+    /**
+     * @description Title of a Rendering setting that can be invoked through the Command Menu.
+     */
+    emulateAFocusedPage: 'Emulate a focused page',
+    /**
+     * @description Title of a Rendering setting that can be invoked through the Command Menu.
+     */
+    doNotEmulateAFocusedPage: 'Do not emulate a focused page',
+    /**
+     * @description Title of a setting under the Rendering category that can be invoked through the Command Menu.
+     */
+    doNotEmulateCssMediaType: 'Do not emulate CSS media type',
+    /**
+     * @description A drop-down menu option to do not emulate css media type.
+     */
+    noEmulation: 'No emulation',
+    /**
+     * @description Title of a setting under the Rendering category that can be invoked through the Command Menu.
+     */
+    emulateCssPrintMediaType: 'Emulate CSS print media type',
+    /**
+     * @description A drop-down menu option to emulate css print media type.
+     */
+    print: 'print',
+    /**
+     * @description Title of a setting under the Rendering category that can be invoked through the Command Menu.
+     */
+    emulateCssScreenMediaType: 'Emulate CSS screen media type',
+    /**
+     * @description A drop-down menu option to emulate css screen media type.
+     */
+    screen: 'screen',
+    /**
+     * @description A tag of Emulate CSS screen media type setting that can be searched in the command menu.
+     */
+    query: 'query',
+    /**
+     * @description Title of a setting under the Rendering drawer.
+     */
+    emulateCssMediaType: 'Emulate CSS media type',
+    /**
+     * @description Title of a setting under the Rendering drawer that can be invoked through the Command Menu.
+     * @example {prefers-color-scheme} PH1
+     */
+    doNotEmulateCss: 'Do not emulate CSS {PH1}',
+    /**
+     * @description Title of a setting under the Rendering drawer that can be invoked through the Command Menu.
+     * @example {prefers-color-scheme: light} PH1
+     */
+    emulateCss: 'Emulate CSS {PH1}',
+    /**
+     * @description Title of a setting under the Rendering drawer that can be invoked through the Command Menu.
+     * @example {prefers-color-scheme} PH1
+     */
+    emulateCssMediaFeature: 'Emulate CSS media feature {PH1}',
     /**
      * @description Title of the Rendering panel. The Rendering panel is a collection of settings that
      * lets the user debug the rendering (i.e. how the website is drawn onto the screen) of the
@@ -238,5 +343,188 @@ UI.Toolbar.registerToolbarItem({
     }),
     order: 97,
     location: "main-toolbar-right" /* UI.Toolbar.ToolbarItemLocation.MAIN_TOOLBAR_RIGHT */,
+});
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.showPaintRectsSettingDescriptor, {
+    category: "RENDERING" /* Common.Settings.SettingCategory.RENDERING */,
+    options: [
+        {
+            value: true,
+            title: i18nLazyString(UIStrings.showPaintFlashingRectangles),
+        },
+        {
+            value: false,
+            title: i18nLazyString(UIStrings.hidePaintFlashingRectangles),
+        },
+    ],
+});
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.showLayoutShiftRegionsSettingDescriptor, {
+    category: "RENDERING" /* Common.Settings.SettingCategory.RENDERING */,
+    options: [
+        {
+            value: true,
+            title: i18nLazyString(UIStrings.showLayoutShiftRegions),
+        },
+        {
+            value: false,
+            title: i18nLazyString(UIStrings.hideLayoutShiftRegions),
+        },
+    ],
+});
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.showAdHighlightsSettingDescriptor, {
+    category: "RENDERING" /* Common.Settings.SettingCategory.RENDERING */,
+    options: [
+        {
+            value: true,
+            title: i18nLazyString(UIStrings.highlightAdFrames),
+        },
+        {
+            value: false,
+            title: i18nLazyString(UIStrings.doNotHighlightAdFrames),
+        },
+    ],
+});
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.showDebugBordersSettingDescriptor, {
+    category: "RENDERING" /* Common.Settings.SettingCategory.RENDERING */,
+    options: [
+        {
+            value: true,
+            title: i18nLazyString(UIStrings.showLayerBorders),
+        },
+        {
+            value: false,
+            title: i18nLazyString(UIStrings.hideLayerBorders),
+        },
+    ],
+});
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.showFPSCounterSettingDescriptor, {
+    category: "RENDERING" /* Common.Settings.SettingCategory.RENDERING */,
+    options: [
+        {
+            value: true,
+            title: i18nLazyString(UIStrings.showFramesPerSecondFpsMeter),
+        },
+        {
+            value: false,
+            title: i18nLazyString(UIStrings.hideFramesPerSecondFpsMeter),
+        },
+    ],
+});
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.showScrollBottleneckRectsSettingDescriptor, {
+    category: "RENDERING" /* Common.Settings.SettingCategory.RENDERING */,
+    options: [
+        {
+            value: true,
+            title: i18nLazyString(UIStrings.showScrollPerformanceBottlenecks),
+        },
+        {
+            value: false,
+            title: i18nLazyString(UIStrings.hideScrollPerformanceBottlenecks),
+        },
+    ],
+});
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.emulatePageFocusSettingDescriptor, {
+    category: "RENDERING" /* Common.Settings.SettingCategory.RENDERING */,
+    title: i18nLazyString(UIStrings.emulateAFocusedPage),
+    options: [
+        {
+            value: true,
+            title: i18nLazyString(UIStrings.emulateAFocusedPage),
+        },
+        {
+            value: false,
+            title: i18nLazyString(UIStrings.doNotEmulateAFocusedPage),
+        },
+    ],
+});
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.emulatedCSSMediaSettingDescriptor, {
+    category: "RENDERING" /* Common.Settings.SettingCategory.RENDERING */,
+    title: i18nLazyString(UIStrings.emulateCssMediaType),
+    options: [
+        {
+            title: i18nLazyString(UIStrings.doNotEmulateCssMediaType),
+            text: i18nLazyString(UIStrings.noEmulation),
+            value: '',
+        },
+        {
+            title: i18nLazyString(UIStrings.emulateCssPrintMediaType),
+            text: i18nLazyString(UIStrings.print),
+            value: 'print',
+        },
+        {
+            title: i18nLazyString(UIStrings.emulateCssScreenMediaType),
+            text: i18nLazyString(UIStrings.screen),
+            value: 'screen',
+        },
+    ],
+    tags: [
+        i18nLazyString(UIStrings.query),
+    ],
+});
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.emulatedCSSMediaFeaturePrefersColorSchemeSettingDescriptor, {
+    category: "RENDERING" /* Common.Settings.SettingCategory.RENDERING */,
+    options: [
+        {
+            title: i18nLazyString(UIStrings.doNotEmulateCss, { PH1: 'prefers-color-scheme' }),
+            text: i18nLazyString(UIStrings.noEmulation),
+            value: '',
+        },
+        {
+            title: i18nLazyString(UIStrings.emulateCss, { PH1: 'prefers-color-scheme: light' }),
+            text: i18n.i18n.lockedLazyString('prefers-color-scheme: light'),
+            value: 'light',
+        },
+        {
+            title: i18nLazyString(UIStrings.emulateCss, { PH1: 'prefers-color-scheme: dark' }),
+            text: i18n.i18n.lockedLazyString('prefers-color-scheme: dark'),
+            value: 'dark',
+        },
+    ],
+    tags: [
+        i18nLazyString(UIStrings.query),
+    ],
+    title: i18nLazyString(UIStrings.emulateCssMediaFeature, { PH1: 'prefers-color-scheme' }),
+});
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.emulatedCSSMediaFeatureForcedColorsSettingDescriptor, {
+    category: "RENDERING" /* Common.Settings.SettingCategory.RENDERING */,
+    options: [
+        {
+            title: i18nLazyString(UIStrings.doNotEmulateCss, { PH1: 'forced-colors' }),
+            text: i18nLazyString(UIStrings.noEmulation),
+            value: '',
+        },
+        {
+            title: i18nLazyString(UIStrings.emulateCss, { PH1: 'forced-colors: active' }),
+            text: i18n.i18n.lockedLazyString('forced-colors: active'),
+            value: 'active',
+        },
+        {
+            title: i18nLazyString(UIStrings.emulateCss, { PH1: 'forced-colors: none' }),
+            text: i18n.i18n.lockedLazyString('forced-colors: none'),
+            value: 'none',
+        },
+    ],
+    tags: [
+        i18nLazyString(UIStrings.query),
+    ],
+    title: i18nLazyString(UIStrings.emulateCssMediaFeature, { PH1: 'forced-colors' }),
+});
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.emulatedCSSMediaFeaturePrefersReducedMotionSettingDescriptor, {
+    category: "RENDERING" /* Common.Settings.SettingCategory.RENDERING */,
+    options: [
+        {
+            title: i18nLazyString(UIStrings.doNotEmulateCss, { PH1: 'prefers-reduced-motion' }),
+            text: i18nLazyString(UIStrings.noEmulation),
+            value: '',
+        },
+        {
+            title: i18nLazyString(UIStrings.emulateCss, { PH1: 'prefers-reduced-motion: reduce' }),
+            text: i18n.i18n.lockedLazyString('prefers-reduced-motion: reduce'),
+            value: 'reduce',
+        },
+    ],
+    tags: [
+        i18nLazyString(UIStrings.query),
+    ],
+    title: i18nLazyString(UIStrings.emulateCssMediaFeature, { PH1: 'prefers-reduced-motion' }),
 });
 //# sourceMappingURL=inspector_main-meta.prebundle.js.map

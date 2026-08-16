@@ -33,7 +33,7 @@ async function addUISourceCode(universe, helper, url) {
 async function addScript(universe, helper, debuggerModel, executionContext, url) {
     const scriptParsedSpy = sinon.stub(helper, 'parsedScriptSourceForTest');
     const parsedScriptSourceDonePromise = expectCall(scriptParsedSpy);
-    const script = debuggerModel.parsedScriptSource('scriptId', url, 0, 0, 3, 3, executionContext.id, '', undefined, false, undefined, false, false, 0, false, null, null, null, null, null, null);
+    const script = debuggerModel.parsedScriptSource('scriptId', url, 0, 0, 3, 3, executionContext.id, '', undefined, undefined, false, false, 0, false, null, null, null, null, null, null);
     await parsedScriptSourceDonePromise;
     scriptParsedSpy.restore();
     await universe.debuggerWorkspaceBinding.pendingLiveLocationChangesPromise();

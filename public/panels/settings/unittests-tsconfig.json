@@ -76,7 +76,7 @@
       "path": "../../ui/components/switch/bundle-tsconfig.json"
     },
     {
-      "path": "emulation/unittests-tsconfig.json"
+      "path": "../../ui/legacy/bundle-tsconfig.json"
     }
   ]
 }

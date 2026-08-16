@@ -12,8 +12,8 @@ import * as TextUtils from '../../core/text_utils/text_utils.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import * as Workspace from '../../models/workspace/workspace.js';
-import { findMenuItemWithLabel, getContextMenuForElement } from '../../testing/ContextMenuHelpers.js';
-import { dispatchPasteEvent, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { findMenuItemWithLabel, getContextMenuForElement, getMenuItemLabels } from '../../testing/ContextMenuHelpers.js';
+import { assertScreenshot, dispatchPasteEvent, doubleRaf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment, registerNoopActions, updateHostConfig, } from '../../testing/EnvironmentHelpers.js';
 import { expectCall, expectCalled } from '../../testing/ExpectStubCall.js';
 import { stubFileManager } from '../../testing/FileManagerHelpers.js';
@@ -1064,6 +1064,161 @@ describeWithEnvironment('ConsoleView', () => {
             activeElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, composed: true }));
             activeElement = getActiveElement();
             assert.include(activeElement.textContent || '', 'foo.js:23');
+        });
+    });
+    it('insertIntoPrompt delegates to prompt and focuses', () => {
+        const focusPromptSpy = sinon.spy(consoleView, 'focusPrompt');
+        consoleView.insertIntoPrompt('await fetch("https://example.com")');
+        // Verify prompt contains the injected text
+        const editor = consoleView.element.querySelector('devtools-text-editor');
+        assert.exists(editor);
+        assert.strictEqual(editor.state.doc.toString(), 'await fetch("https://example.com")');
+        // Verify focusPrompt was called
+        sinon.assert.calledOnce(focusPromptSpy);
+    });
+    describe('logged object screenshot and context menu', () => {
+        it('screenshots how ConsoleView logs an object', async () => {
+            const target = createTarget();
+            SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
+            const consoleModel = target.model(SDK.ConsoleModel.ConsoleModel);
+            assert.exists(consoleModel);
+            renderElementIntoDOM(consoleView, { includeCommonStyles: true, width: 800, height: 600 });
+            const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+            assert.exists(runtimeModel);
+            const remoteObject = runtimeModel.createRemoteObject({
+                type: "object" /* Protocol.Runtime.RemoteObjectType.Object */,
+                objectId: '1',
+                description: 'Object',
+                preview: {
+                    type: "object" /* Protocol.Runtime.ObjectPreviewType.Object */,
+                    description: 'Object',
+                    overflow: false,
+                    properties: [
+                        { name: 'foo', type: "string" /* Protocol.Runtime.PropertyPreviewType.String */, value: 'bar' },
+                        { name: 'number', type: "number" /* Protocol.Runtime.PropertyPreviewType.Number */, value: '42' },
+                    ],
+                },
+            });
+            const properties = [
+                new SDK.RemoteObject.RemoteObjectProperty('foo', SDK.RemoteObject.RemoteObject.fromLocalObject('bar')),
+                new SDK.RemoteObject.RemoteObjectProperty('number', SDK.RemoteObject.RemoteObject.fromLocalObject(42)),
+            ];
+            sinon.stub(remoteObject, 'getOwnProperties').resolves({ properties, internalProperties: null });
+            sinon.stub(remoteObject, 'getAllProperties').resolves({ properties, internalProperties: null });
+            const consoleMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, "javascript" /* Protocol.Log.LogEntrySource.Javascript */, "info" /* Protocol.Log.LogEntryLevel.Info */, '', {
+                type: "log" /* Protocol.Runtime.ConsoleAPICalledEventType.Log */,
+                parameters: [remoteObject],
+            });
+            consoleModel.addMessage(consoleMessage);
+            await consoleView.getScheduledRefreshPromiseForTest();
+            await UI.Widget.Widget.allUpdatesComplete;
+            await doubleRaf();
+            const messagesElement = consoleView.element.querySelector('#console-messages');
+            assert.exists(messagesElement);
+            const objectElement = messagesElement.querySelector('.console-view-object-properties-section');
+            assert.exists(objectElement);
+            await assertScreenshot('console/console_view_logged_object.png');
+        });
+        it('screenshots how ConsoleView logs an object expanded recursively', async () => {
+            const target = createTarget();
+            SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
+            const consoleModel = target.model(SDK.ConsoleModel.ConsoleModel);
+            assert.exists(consoleModel);
+            renderElementIntoDOM(consoleView, { includeCommonStyles: true, width: 800, height: 600 });
+            const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+            assert.exists(runtimeModel);
+            const remoteObject = runtimeModel.createRemoteObject({
+                type: "object" /* Protocol.Runtime.RemoteObjectType.Object */,
+                objectId: '1',
+                description: 'Object',
+                preview: {
+                    type: "object" /* Protocol.Runtime.ObjectPreviewType.Object */,
+                    description: 'Object',
+                    overflow: false,
+                    properties: [
+                        { name: 'foo', type: "string" /* Protocol.Runtime.PropertyPreviewType.String */, value: 'bar' },
+                        { name: 'number', type: "number" /* Protocol.Runtime.PropertyPreviewType.Number */, value: '42' },
+                    ],
+                },
+            });
+            const properties = [
+                new SDK.RemoteObject.RemoteObjectProperty('foo', SDK.RemoteObject.RemoteObject.fromLocalObject('bar')),
+                new SDK.RemoteObject.RemoteObjectProperty('number', SDK.RemoteObject.RemoteObject.fromLocalObject(42)),
+            ];
+            sinon.stub(remoteObject, 'getOwnProperties').resolves({ properties, internalProperties: null });
+            sinon.stub(remoteObject, 'getAllProperties').resolves({ properties, internalProperties: null });
+            const consoleMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, "javascript" /* Protocol.Log.LogEntrySource.Javascript */, "info" /* Protocol.Log.LogEntryLevel.Info */, '', {
+                type: "log" /* Protocol.Runtime.ConsoleAPICalledEventType.Log */,
+                parameters: [remoteObject],
+            });
+            consoleModel.addMessage(consoleMessage);
+            await consoleView.getScheduledRefreshPromiseForTest();
+            await UI.Widget.Widget.allUpdatesComplete;
+            await doubleRaf();
+            const messagesElement = consoleView.element.querySelector('#console-messages');
+            assert.exists(messagesElement);
+            const objectElement = messagesElement.querySelector('.console-view-object-properties-section');
+            assert.exists(objectElement);
+            const targetElement = objectElement.shadowRoot?.querySelector('li') || objectElement;
+            const contextMenu = getContextMenuForElement(targetElement);
+            const expandItem = contextMenu.viewSection().items.find(item => item.buildDescriptor().label === 'Expand recursively');
+            if (expandItem) {
+                contextMenu.invokeHandler(expandItem.id());
+                await doubleRaf();
+            }
+            await assertScreenshot('console/console_view_logged_object_expanded.png');
+        });
+        it('verifies context menu contents of a logged object', async () => {
+            const target = createTarget();
+            SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
+            const consoleModel = target.model(SDK.ConsoleModel.ConsoleModel);
+            assert.exists(consoleModel);
+            renderElementIntoDOM(consoleView, { includeCommonStyles: true, width: 800, height: 600 });
+            const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+            assert.exists(runtimeModel);
+            const remoteObject = runtimeModel.createRemoteObject({
+                type: "object" /* Protocol.Runtime.RemoteObjectType.Object */,
+                objectId: '2',
+                description: 'Object',
+                preview: {
+                    type: "object" /* Protocol.Runtime.ObjectPreviewType.Object */,
+                    description: 'Object',
+                    overflow: false,
+                    properties: [
+                        { name: 'foo', type: "string" /* Protocol.Runtime.PropertyPreviewType.String */, value: 'bar' },
+                        { name: 'number', type: "number" /* Protocol.Runtime.PropertyPreviewType.Number */, value: '42' },
+                    ],
+                },
+            });
+            const consoleMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, "javascript" /* Protocol.Log.LogEntrySource.Javascript */, "info" /* Protocol.Log.LogEntryLevel.Info */, '', {
+                type: "log" /* Protocol.Runtime.ConsoleAPICalledEventType.Log */,
+                parameters: [remoteObject],
+            });
+            consoleModel.addMessage(consoleMessage);
+            await consoleView.getScheduledRefreshPromiseForTest();
+            await UI.Widget.Widget.allUpdatesComplete;
+            await doubleRaf();
+            const messagesElement = consoleView.element.querySelector('#console-messages');
+            assert.exists(messagesElement);
+            const objectElement = messagesElement.querySelector('.console-view-object-properties-section');
+            assert.exists(objectElement);
+            const targetElement = objectElement.shadowRoot?.querySelector('li') || objectElement;
+            const contextMenu = getContextMenuForElement(targetElement);
+            const allSections = [
+                contextMenu.headerSection(),
+                contextMenu.clipboardSection(),
+                contextMenu.viewSection(),
+                contextMenu.defaultSection(),
+                contextMenu.saveSection(),
+                contextMenu.footerSection(),
+            ];
+            const allLabels = allSections.flatMap(section => getMenuItemLabels(section));
+            assert.deepEqual(allLabels, [
+                'Expand recursively',
+                'Collapse children',
+                'Sort properties alphabetically',
+                'Show all',
+            ]);
         });
     });
 });

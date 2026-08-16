@@ -214,9 +214,6 @@ interface GdpProfilesAvailability {
     enabled: boolean;
     enterprisePolicyValue: GdpProfilesEnterprisePolicyValue;
 }
-interface LiveEdit {
-    enabled: boolean;
-}
 interface ExtensionsOnChromeUrls {
     enabled: boolean;
 }
@@ -258,6 +255,9 @@ interface DevToolsInstrumentationBreakpoints {
     enabled: boolean;
 }
 interface HostConfigDevToolsComments {
+    enabled: boolean;
+}
+interface DevToolsAriaLiveRecording {
     enabled: boolean;
 }
 /**
@@ -304,7 +304,6 @@ export type HostConfig = Platform.TypeScriptUtilities.RecursivePartial<{
     devToolsGlobalAiButton: GlobalAiButton;
     devToolsGdpProfiles: GdpProfiles;
     devToolsGdpProfilesAvailability: GdpProfilesAvailability;
-    devToolsLiveEdit: LiveEdit;
     devToolsFlexibleLayout: DevToolsFlexibleLayout;
     deviceBoundSessionsDebugging: DeviceBoundSessionsDebugging;
     devToolsEnableDurableMessages: DevToolsEnableDurableMessages;
@@ -316,6 +315,7 @@ export type HostConfig = Platform.TypeScriptUtilities.RecursivePartial<{
     devToolsAdsPanel: DevToolsAdsPanel;
     devToolsUseGcaApi: UseGcaApi;
     devToolsPlusButton: DevToolsPlusButton;
+    devToolsAriaLiveRecording: DevToolsAriaLiveRecording;
     devToolsInstrumentationBreakpoints: DevToolsInstrumentationBreakpoints;
     extensionsOnChromeUrls: ExtensionsOnChromeUrls;
     devToolsComments: HostConfigDevToolsComments;

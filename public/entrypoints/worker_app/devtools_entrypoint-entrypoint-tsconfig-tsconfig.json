@@ -47,6 +47,9 @@
       "path": "./worker_main-tsconfig.json"
     },
     {
+      "path": "../../core/root/bundle-tsconfig.json"
+    },
+    {
       "path": "../../panels/application/meta-tsconfig.json"
     },
     {
@@ -54,9 +57,6 @@
     },
     {
       "path": "../../panels/developer_resources/meta-tsconfig.json"
-    },
-    {
-      "path": "../../panels/elements/meta-tsconfig.json"
     },
     {
       "path": "../../panels/issues/meta-tsconfig.json"

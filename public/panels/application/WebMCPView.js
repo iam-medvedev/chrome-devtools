@@ -230,7 +230,7 @@ export function filterToolCalls(toolCalls, filterState) {
         const regex = Platform.StringUtilities.createPlainTextSearchRegex(filterState.text, 'i');
         filtered = filtered.filter(call => {
             return regex.test(call.tool.name) || regex.test(call.input) ||
-                (call.result?.output && regex.test(JSON.stringify(call.result.output))) ||
+                (call.result?.output !== undefined && regex.test(JSON.stringify(call.result.output))) ||
                 (call.result?.errorText && regex.test(call.result.errorText));
         });
     }
@@ -473,7 +473,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
                         <td @click=${(e) => {
         e.stopPropagation();
         input.onCallSelect(call, "webmcp.call-outputs" /* TabId.OUTPUT */);
-    }}>${call.result?.output ? JSON.stringify(call.result.output)
+    }}>${call.result?.output !== undefined ? JSON.stringify(call.result.output)
         : call.result?.errorText ?? ''}</td>
                         ` : nothing}
                     </tr>
@@ -482,7 +482,9 @@ export const DEFAULT_VIEW = (input, output, target) => {
               </devtools-data-grid>
             </div>
             <div slot="sidebar" style="height: 100%; display: flex; flex-direction: column; overflow: hidden;">
-              <devtools-tabbed-pane class="call-details-tabbed-pane">
+              <devtools-tabbed-pane
+                class="call-details-tabbed-pane"
+                @select=${(e) => input.onTabSelect(e.detail.tabId)}>
                 <devtools-button
                   slot="left"
                   .iconName=${'cross'}
@@ -493,19 +495,19 @@ export const DEFAULT_VIEW = (input, output, target) => {
                 ></devtools-button>
                 <devtools-widget
                   id=${"webmcp.tool-details" /* TabId.DETAILS */}
-                  ?selected=${input.selectedTab === "webmcp.tool-details" /* TabId.DETAILS */}
+                  ?selected=${Directives.live(input.selectedTab === "webmcp.tool-details" /* TabId.DETAILS */)}
                   title=${i18nString(UIStrings.toolDetails)}
                   ${widget(ToolDetailsWidget, { tool: input.selectedCall?.tool, isUnregistered: input.selectedCall ? !input.tools.includes(input.selectedCall.tool) : false })}>
                 </devtools-widget>
                 <devtools-widget
                   id=${"webmcp.call-inputs" /* TabId.INPUT */}
-                  ?selected=${input.selectedTab === "webmcp.call-inputs" /* TabId.INPUT */}
+                  ?selected=${Directives.live(input.selectedTab === "webmcp.call-inputs" /* TabId.INPUT */)}
                   title=${i18nString(UIStrings.input)}
                   ${widget(PayloadWidget, parsePayload(input.selectedCall?.input))}>
                 </devtools-widget>
                 <devtools-widget
                   id=${"webmcp.call-outputs" /* TabId.OUTPUT */}
-                  ?selected=${input.selectedTab === "webmcp.call-outputs" /* TabId.OUTPUT */}
+                  ?selected=${Directives.live(input.selectedTab === "webmcp.call-outputs" /* TabId.OUTPUT */)}
                   title=${i18nString(UIStrings.output)}
                   ${widget(PayloadWidget, {
         valueObject: input.selectedCall?.result?.output,
@@ -778,8 +780,12 @@ export class WebMCPView extends UI.Widget.VBox {
                 }
                 else {
                     this.#selectedCall = call;
+                    this.#selectedTab = undefined;
                 }
                 this.requestUpdate();
+            },
+            onTabSelect: tabId => {
+                this.#selectedTab = tabId;
             },
             toolCalls: filteredCalls,
             filters: this.#filterState,
@@ -822,7 +828,8 @@ export class WebMCPView extends UI.Widget.VBox {
     }
 }
 export const PAYLOAD_DEFAULT_VIEW = (input, output, target) => {
-    if (!input.valueObject && !input.valueString && !input.errorText && !input.symbolizedError) {
+    if (input.valueObject === undefined && input.valueString === undefined && !input.errorText &&
+        !input.symbolizedError) {
         render(nothing, target);
         return;
     }
@@ -833,6 +840,7 @@ export const PAYLOAD_DEFAULT_VIEW = (input, output, target) => {
             readOnly: true,
             propertiesMode: 1 /* ObjectUI.ObjectPropertiesSection.ObjectPropertiesMode.OWN_AND_INTERNAL_AND_INHERITED */,
         });
+        objectTree.expanded = true;
         return html `<devtools-tree .template=${html `
           <style>${ObjectUI.ObjectPropertiesSection.objectValueStyles}</style>
           <style>${ObjectUI.ObjectPropertiesSection.objectPropertiesSectionStyles}</style>

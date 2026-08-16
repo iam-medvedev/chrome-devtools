@@ -82,16 +82,13 @@
       "path": "../../models/bindings/bundle-tsconfig.json"
     },
     {
+      "path": "../../models/emulation/bundle-tsconfig.json"
+    },
+    {
       "path": "../../models/extensions/bundle-tsconfig.json"
     },
     {
       "path": "../../models/trace/bundle-tsconfig.json"
-    },
-    {
-      "path": "../common/bundle-tsconfig.json"
-    },
-    {
-      "path": "../emulation/bundle-tsconfig.json"
     },
     {
       "path": "../../services/tracing/bundle-tsconfig.json"

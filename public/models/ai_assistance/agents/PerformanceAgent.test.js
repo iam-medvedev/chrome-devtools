@@ -20,7 +20,7 @@ import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Bindings from '../../bindings/bindings.js';
 import * as Logs from '../../logs/logs.js';
 import * as Trace from '../../trace/trace.js';
-import { AICallTree, AIContext, PerformanceAgent, PerformanceTraceContext, PerformanceTraceFormatter, } from '../ai_assistance.js';
+import { AICallTree, PerformanceAgent, PerformanceTraceContext, PerformanceTraceFormatter, } from '../ai_assistance.js';
 /**
  * Widget data can be huge (e.g. an entire perf trace) and if we snapshot or
  * try to assert on these, it is not useful and also can crash Karma etc with
@@ -78,7 +78,7 @@ describe('PerformanceAgent', function () {
             sinon.stub(crypto, 'randomUUID').returns('sessionId');
             const agent = new PerformanceAgent.PerformanceAgent({
                 aidaClient: mockAidaClient([[{ explanation: 'answer' }]]),
-                serverSideLoggingEnabled: true,
+                serverSideLoggingAllowed: true,
             });
             await Array.fromAsync(agent.run('question', { selected: null }));
             setUserAgentForTesting();
@@ -2000,38 +2000,38 @@ code
     describe('getLabelName', () => {
         it('returns correct names for static labels', async function () {
             const parsedTrace = await TraceLoader.traceEngine(this, 'lcp-discovery-delay.json.gz');
-            const focus = AIContext.AgentFocus.fromParsedTrace(parsedTrace);
-            assert.strictEqual(PerformanceAgent.getLabelName('nav-to-lcp', focus), 'navigation to LCP');
-            assert.strictEqual(PerformanceAgent.getLabelName('lcp-ttfb', focus), 'LCP to TTFB');
-            assert.strictEqual(PerformanceAgent.getLabelName('lcp-render-delay', focus), 'LCP render delay');
-            assert.strictEqual(PerformanceAgent.getLabelName('trace-bounds', focus), 'the entire trace');
-            assert.strictEqual(PerformanceAgent.getLabelName('NO_NAVIGATION', focus), 'the period before the first navigation');
+            const context = PerformanceTraceContext.PerformanceTraceContext.fromParsedTrace(parsedTrace);
+            assert.strictEqual(context.getLabelName('nav-to-lcp'), 'navigation to LCP');
+            assert.strictEqual(context.getLabelName('lcp-ttfb'), 'LCP to TTFB');
+            assert.strictEqual(context.getLabelName('lcp-render-delay'), 'LCP render delay');
+            assert.strictEqual(context.getLabelName('trace-bounds'), 'the entire trace');
+            assert.strictEqual(context.getLabelName('NO_NAVIGATION'), 'the period before the first navigation');
         });
         it('returns correct name for navigation labels', async function () {
             const parsedTrace = await TraceLoader.traceEngine(this, 'lcp-discovery-delay.json.gz');
-            const focus = AIContext.AgentFocus.fromParsedTrace(parsedTrace);
+            const context = PerformanceTraceContext.PerformanceTraceContext.fromParsedTrace(parsedTrace);
             const insightSet = Array.from(parsedTrace.insights.values())[0];
             const navId = insightSet.id;
             assert.exists(navId);
-            assert.strictEqual(PerformanceAgent.getLabelName(navId, focus), `navigation to ${insightSet.url.href}`);
+            assert.strictEqual(context.getLabelName(navId), `navigation to ${insightSet.url.href}`);
         });
         it('returns correct name for insight labels', async function () {
             const parsedTrace = await TraceLoader.traceEngine(this, 'lcp-discovery-delay.json.gz');
-            const focus = AIContext.AgentFocus.fromParsedTrace(parsedTrace);
-            assert.strictEqual(PerformanceAgent.getLabelName('LCPBreakdown', focus), 'LCP breakdown insight');
-            assert.strictEqual(PerformanceAgent.getLabelName('CLSCulprits', focus), 'Layout shift culprits insight');
+            const context = PerformanceTraceContext.PerformanceTraceContext.fromParsedTrace(parsedTrace);
+            assert.strictEqual(context.getLabelName('LCPBreakdown'), 'LCP breakdown insight');
+            assert.strictEqual(context.getLabelName('CLSCulprits'), 'Layout shift culprits insight');
         });
         it('returns the label itself for unknown labels', async function () {
             const parsedTrace = await TraceLoader.traceEngine(this, 'lcp-discovery-delay.json.gz');
-            const focus = AIContext.AgentFocus.fromParsedTrace(parsedTrace);
-            assert.strictEqual(PerformanceAgent.getLabelName('unknown-label', focus), 'unknown-label');
+            const context = PerformanceTraceContext.PerformanceTraceContext.fromParsedTrace(parsedTrace);
+            assert.strictEqual(context.getLabelName('unknown-label'), 'unknown-label');
         });
         // Guard against prototype pollution: 'toString' is a prototype property
         // and should not be resolved as a valid model, returning the fallback label name.
         it('returns the label itself for prototype properties', async function () {
             const parsedTrace = await TraceLoader.traceEngine(this, 'lcp-discovery-delay.json.gz');
-            const focus = AIContext.AgentFocus.fromParsedTrace(parsedTrace);
-            assert.strictEqual(PerformanceAgent.getLabelName('toString', focus), 'toString');
+            const context = PerformanceTraceContext.PerformanceTraceContext.fromParsedTrace(parsedTrace);
+            assert.strictEqual(context.getLabelName('toString'), 'toString');
         });
     });
     describe('clearCache', () => {

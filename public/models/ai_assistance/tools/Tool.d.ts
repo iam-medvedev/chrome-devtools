@@ -118,11 +118,12 @@ export interface PerformanceRecordingCapability {
  * Unified context interface providing all capabilities available in the project.
  * Used by the agent to pass a complete context to any tool type-safely.
  */
-export type AllToolsCapabilities = BaseToolCapability & PageExecutionCapability & StyleMutationCapability & TargetCapability & OriginLockCapability & LighthouseCapability & PerformanceRecordingCapability;
+export type AllToolsCapabilities = BaseToolCapability & PageExecutionCapability & StyleMutationCapability & TargetCapability & OriginLockCapability & LighthouseCapability & PerformanceRecordingCapability & ServerLoggingCapability;
 /**
  * Base argument type for AI Tools.
  */
 export type ToolArgs = Record<string, unknown>;
+export declare const MAX_FUNCTION_RESULT_BYTE_LENGTH: number;
 export declare const enum ToolName {
     EXECUTE_JAVASCRIPT = "executeJavaScript",
     GET_STYLES = "getStyles",
@@ -131,7 +132,21 @@ export declare const enum ToolName {
     GET_LIGHTHOUSE_AUDITS = "getLighthouseAudits",
     RESOLVE_DEVTOOLS_NODE_PATH = "resolveDevtoolsNodePath",
     GET_ELEMENT_ACCESSIBILITY_DETAILS = "getElementAccessibilityDetails",
-    RECORD_PERFORMANCE_TRACE = "recordPerformanceTrace"
+    RECORD_PERFORMANCE_TRACE = "recordPerformanceTrace",
+    LIST_PAGE_ORIGINS = "listPageOrigins",
+    LIST_STORAGE_KEYS = "listStorageKeys",
+    GET_STORAGE_VALUES = "getStorageValues",
+    GET_TRACE_EVENT_BY_KEY = "getTraceEventByKey",
+    SELECT_TRACE_EVENT_BY_KEY = "selectTraceEventByKey",
+    LIST_SOURCES = "listSources",
+    GET_SOURCE_CONTENT = "getSourceContent",
+    GET_TRACE_MAIN_THREAD_SUMMARY = "getTraceMainThreadSummary",
+    GET_TRACE_NETWORK_SUMMARY = "getTraceNetworkSummary",
+    RUN_LIGHTHOUSE = "runLighthouse",
+    GET_DETAILED_CALL_TREE = "getDetailedCallTree",
+    GET_FUNCTION_CODE = "getFunctionCode",
+    GET_RESOURCE_CONTENT = "getResourceContent",
+    GET_INSIGHT_DETAILS = "getInsightDetails"
 }
 /**
  * Base metadata interface for a Tool.
@@ -156,6 +171,7 @@ export interface BaseTool<ArgsType extends ToolArgs = ToolArgs> {
         action?: string;
         suggestions?: [string, ...string[]];
     };
+    readonly annotations?: ToolAnnotation[];
 }
 /**
  * Generic tool interface for tools that process inputs and return structured data results.
@@ -195,3 +211,9 @@ export interface ContextTool<ArgsType extends ToolArgs = ToolArgs, ContextClass 
  * Represents any AI Assistance tool: either a `DataTool` (returns data/widgets) or a `ContextTool` (switches active context).
  */
 export type Tool<ArgsType extends ToolArgs = ToolArgs, ReturnType = unknown, CapabilitiesType extends BaseToolCapability = BaseToolCapability> = DataTool<ArgsType, ReturnType, CapabilitiesType> | ContextTool<ArgsType, ReturnType, CapabilitiesType>;
+export interface ServerLoggingCapability {
+    setLoggingEnabled(enabled: boolean): void;
+}
+export declare const enum ToolAnnotation {
+    REDACT_FROM_HISTORY = "redact-from-history"
+}

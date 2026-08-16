@@ -217,6 +217,13 @@ describeWithEnvironment('NetworkLogView', () => {
         assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl --url \'http://localhost\' -b $\'query=evil\\r & cmd /c calc.exe\'');
         assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl --url ^\"http://localhost^\" -b ^\"query=evil^\n\n ^& cmd /c calc.exe^\"');
     });
+    it('generates a valid curl command when header values contain dollar, parentheses and backtick', async () => {
+        const request = createNetworkRequest(urlString `http://localhost`, {
+            requestHeaders: [{ name: 'cookie', value: 'query=$(calc)`whoami`' }],
+        });
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl --url \'http://localhost\' -b \'query=$(calc)`whoami`\'');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl --url ^"http://localhost^" -b ^"query=^$^(calc^)^`whoami^`^"');
+    });
     it('generates a valid curl command for a POST request with data', async () => {
         const request = createNetworkRequest(urlString `http://localhost`, {});
         request.requestMethod = 'POST';
@@ -1101,6 +1108,184 @@ Invoke-WebRequest -UseBasicParsing -Uri "https://url-header-and-content-overridd
         });
         await RenderCoordinator.done();
         assert.strictEqual(dataGrid.selectedNode, node);
+    });
+});
+describeWithEnvironment('Edit and resend as fetch', () => {
+    let target;
+    let networkLogView;
+    let connection;
+    beforeEach(() => {
+        connection = new MockCDPConnection();
+        connection.setSuccessHandler('Debugger.enable', () => ({}));
+        connection.setSuccessHandler('Storage.getStorageKey', () => ({}));
+        const dummyStorage = new Common.Settings.SettingsStorage({});
+        for (const settingName of ['network-color-code-resource-types', 'network.group-by-frame']) {
+            Common.Settings.maybeRemoveSettingExtension(settingName);
+            Common.Settings.registerSettingExtension({
+                settingName,
+                settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+                defaultValue: false,
+            });
+        }
+        Common.Settings.Settings.instance({
+            forceNew: true,
+            syncedStorage: dummyStorage,
+            globalStorage: dummyStorage,
+            localStorage: dummyStorage,
+            settingRegistrations: Common.SettingRegistration.getRegisteredSettings(),
+            console: Common.Console.Console.instance(),
+        });
+        registerNoopActions(['network.toggle-recording', 'inspector-main.reload']);
+        sinon.stub(UI.ShortcutRegistry.ShortcutRegistry, 'instance').returns({
+            shortcutTitleForAction: () => { },
+            shortcutsForAction: () => [],
+        });
+        const tabTarget = createTarget({ type: SDK.Target.Type.TAB, connection });
+        createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
+        target = createTarget({ parentTarget: tabTarget });
+    });
+    afterEach(() => {
+        if (networkLogView) {
+            networkLogView.detach();
+        }
+    });
+    function createRequest(url) {
+        const networkManager = target.model(SDK.NetworkManager.NetworkManager);
+        assert.exists(networkManager);
+        let request;
+        const onRequestStarted = (event) => {
+            request = event.data.request;
+        };
+        networkManager.addEventListener(SDK.NetworkManager.Events.RequestStarted, onRequestStarted);
+        dispatchEvent(target, 'Network.requestWillBeSent', { requestId: `resendTest${Date.now()}`, loaderId: 'loaderId', request: { url } });
+        networkManager.removeEventListener(SDK.NetworkManager.Events.RequestStarted, onRequestStarted);
+        assert.exists(request);
+        request.requestMethod = 'GET';
+        request.setResourceType(Common.ResourceType.resourceTypes.Fetch);
+        return request;
+    }
+    function createNetworkLogViewForTest() {
+        const filterBar = new UI.FilterBar.FilterBar('network-test');
+        return new Network.NetworkLogView.NetworkLogView(filterBar, document.createElement('div'), Common.Settings.Settings.instance().createSetting('network-log-large-rows', false));
+    }
+    it('context menu shows \'Edit and resend as fetch\' for eligible requests', () => {
+        networkLogView = createNetworkLogViewForTest();
+        const request = createRequest('https://example.com/api');
+        const event = new Event('contextmenu');
+        sinon.stub(event, 'target').value(document);
+        const contextMenu = new UI.ContextMenu.ContextMenu(event);
+        networkLogView.handleContextMenuForRequest(contextMenu, request);
+        const item = findMenuItemWithLabel(contextMenu.debugSection(), 'Edit and resend as fetch');
+        assert.exists(item);
+    });
+    it('Copy as fetch filters headers using the forbidden-header rules', async () => {
+        networkLogView = createNetworkLogViewForTest();
+        const request = createRequest('https://example.com/api');
+        request.setRequestHeaders([
+            { name: 'Sec-Fetch-Mode', value: 'cors' },
+            { name: 'X-HTTP-Method', value: 'TRACE' },
+            { name: 'X-HTTP-Method-Override', value: 'PATCH' },
+            { name: 'X-Custom', value: 'value' },
+            { name: 'User-Agent', value: 'custom' },
+        ]);
+        const copyText = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'copyText').resolves();
+        const event = new Event('contextmenu');
+        sinon.stub(event, 'target').value(document);
+        const contextMenu = new UI.ContextMenu.ContextMenu(event);
+        networkLogView.handleContextMenuForRequest(contextMenu, request);
+        const copyMenu = contextMenu.clipboardSection().items[0];
+        const item = findMenuItemWithLabel(copyMenu.defaultSection(), 'Copy as fetch');
+        assert.exists(item);
+        contextMenu.invokeHandler(item.id());
+        await expectCalled(copyText);
+        const fetchCall = copyText.lastCall.args[0];
+        assert.notInclude(fetchCall, 'sec-fetch-mode');
+        assert.notInclude(fetchCall, 'x-http-method": "TRACE');
+        assert.notInclude(fetchCall, 'user-agent');
+        assert.include(fetchCall, 'x-http-method-override": "PATCH');
+        assert.include(fetchCall, 'x-custom": "value');
+    });
+    it('resendFromConsole generates fetch with await prefix', async () => {
+        networkLogView = createNetworkLogViewForTest();
+        const request = createRequest('https://example.com/data');
+        request.setRequestHeaders([{ name: 'Host', value: 'example.com' }]);
+        // Stub InspectorView and ViewManager to avoid real UI interaction
+        sinon.stub(UI.InspectorView.InspectorView.instance(), 'showDrawer');
+        const fakeWidget = { insertIntoPrompt: sinon.stub() };
+        const fakeView = { widget: sinon.stub().resolves(fakeWidget) };
+        sinon.stub(UI.ViewManager.ViewManager.instance(), 'showView').resolves();
+        sinon.stub(UI.ViewManager.ViewManager.instance(), 'view').returns(fakeView);
+        // Trigger via context menu
+        const event = new Event('contextmenu');
+        sinon.stub(event, 'target').value(document);
+        const contextMenu = new UI.ContextMenu.ContextMenu(event);
+        networkLogView.handleContextMenuForRequest(contextMenu, request);
+        const item = findMenuItemWithLabel(contextMenu.debugSection(), 'Edit and resend as fetch');
+        assert.exists(item);
+        contextMenu.invokeHandler(item.id());
+        await new Promise(resolve => setTimeout(resolve, 0));
+        sinon.assert.calledOnce(fakeWidget.insertIntoPrompt);
+        const injected = fakeWidget.insertIntoPrompt.firstCall.args[0];
+        assert.isTrue(injected.includes('await fetch('), 'should include await fetch(');
+        assert.isFalse(injected.includes('await await'), 'should not contain double await');
+        assert.include(injected, '// "host": "example.com"', 'should comment forbidden headers');
+    });
+    it('resendFromConsole logs console message with affectedResources', async () => {
+        networkLogView = createNetworkLogViewForTest();
+        const request = createRequest('https://example.com/api/data');
+        // Stub InspectorView and ViewManager
+        sinon.stub(UI.InspectorView.InspectorView.instance(), 'showDrawer');
+        const fakeWidget = { insertIntoPrompt: sinon.stub() };
+        const fakeView = { widget: sinon.stub().resolves(fakeWidget) };
+        sinon.stub(UI.ViewManager.ViewManager.instance(), 'showView').resolves();
+        sinon.stub(UI.ViewManager.ViewManager.instance(), 'view').returns(fakeView);
+        // Spy on console model
+        const consoleModel = target.model(SDK.ConsoleModel.ConsoleModel);
+        assert.exists(consoleModel);
+        const addMessageSpy = sinon.spy(consoleModel, 'addMessage');
+        // Trigger via context menu
+        const event = new Event('contextmenu');
+        sinon.stub(event, 'target').value(document);
+        const contextMenu = new UI.ContextMenu.ContextMenu(event);
+        networkLogView.handleContextMenuForRequest(contextMenu, request);
+        const item = findMenuItemWithLabel(contextMenu.debugSection(), 'Edit and resend as fetch');
+        assert.exists(item);
+        contextMenu.invokeHandler(item.id());
+        await new Promise(resolve => setTimeout(resolve, 0));
+        sinon.assert.calledOnce(addMessageSpy);
+        const message = addMessageSpy.firstCall.args[0];
+        assert.exists(message.getAffectedResources());
+        assert.strictEqual(message.getAffectedResources()?.requestId, request.requestId());
+        assert.include(message.messageText, 'GET');
+    });
+    it('resendFromConsole clears stackTrace/url from associated message', async () => {
+        networkLogView = createNetworkLogViewForTest();
+        const request = createRequest('https://example.com/api/data');
+        // Stub InspectorView and ViewManager
+        sinon.stub(UI.InspectorView.InspectorView.instance(), 'showDrawer');
+        const fakeWidget = { insertIntoPrompt: sinon.stub() };
+        const fakeView = { widget: sinon.stub().resolves(fakeWidget) };
+        sinon.stub(UI.ViewManager.ViewManager.instance(), 'showView').resolves();
+        sinon.stub(UI.ViewManager.ViewManager.instance(), 'view').returns(fakeView);
+        // Spy on console model
+        const consoleModel = target.model(SDK.ConsoleModel.ConsoleModel);
+        assert.exists(consoleModel);
+        const addMessageSpy = sinon.spy(consoleModel, 'addMessage');
+        // Trigger via context menu
+        const event = new Event('contextmenu');
+        sinon.stub(event, 'target').value(document);
+        const contextMenu = new UI.ContextMenu.ContextMenu(event);
+        networkLogView.handleContextMenuForRequest(contextMenu, request);
+        const item = findMenuItemWithLabel(contextMenu.debugSection(), 'Edit and resend as fetch');
+        assert.exists(item);
+        contextMenu.invokeHandler(item.id());
+        await new Promise(resolve => setTimeout(resolve, 0));
+        sinon.assert.calledOnce(addMessageSpy);
+        const message = addMessageSpy.firstCall.args[0];
+        assert.isUndefined(message.url);
+        assert.strictEqual(message.line, 0);
+        assert.strictEqual(message.column, 0);
+        assert.isUndefined(message.stackTrace);
     });
 });
 describeWithEnvironment('NetworkLogView placeholder', () => {

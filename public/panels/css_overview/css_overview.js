@@ -305,7 +305,7 @@ var CSSOverviewModel = class extends SDK.SDKModel.SDKModel {
           const formattedTextColor = formatColor(blendedTextColor);
           const formattedBackgroundColor = formatColor(blendedBackgroundColor.asLegacyColor());
           const key = `${formattedTextColor}_${formattedBackgroundColor}`;
-          if (Common.Settings.Settings.instance().moduleSetting("apca").get()) {
+          if (Common.Settings.Settings.instance().resolve(SDK.SDKSettings.apcaSettingDescriptor).get()) {
             const contrastRatio = contrastInfo.contrastRatioAPCA();
             const threshold = contrastInfo.contrastRatioAPCAThreshold();
             const passes = contrastRatio && threshold ? Math.abs(contrastRatio) >= threshold : false;
@@ -1545,7 +1545,7 @@ function renderContrastIssue(key, issues) {
     "hexa"
     /* Common.Color.Format.HEXA */
   );
-  const showAPCA = Common2.Settings.Settings.instance().moduleSetting("apca").get();
+  const showAPCA = Common2.Settings.Settings.instance().resolve(SDK2.SDKSettings.apcaSettingDescriptor).get();
   const title = i18nString4(UIStrings4.textColorSOverSBackgroundResults, {
     PH1: color,
     PH2: backgroundColor,
@@ -1993,7 +1993,7 @@ function renderContrastRatio(data) {
   if (!("contrastRatio" in data)) {
     throw new Error("Contrast ratio entry is missing a contrast ratio.");
   }
-  const showAPCA = Common2.Settings.Settings.instance().moduleSetting("apca").get();
+  const showAPCA = Common2.Settings.Settings.instance().resolve(SDK2.SDKSettings.apcaSettingDescriptor).get();
   const contrastRatio = Platform.NumberUtilities.floor(data.contrastRatio, 2);
   const contrastRatioString = showAPCA ? contrastRatio + "%" : contrastRatio;
   const border = getBorderString(data.backgroundColor);

@@ -23,6 +23,8 @@ export class HeapSnapshotLoader {
         this.#dataCallback = null;
         this.#done = false;
         this.parsingComplete = this.#parseInput();
+        // Catch unhandled rejection so the error is preserved until buildSnapshot awaits it.
+        this.parsingComplete.catch(() => { });
     }
     dispose() {
         this.#reset();
@@ -35,6 +37,7 @@ export class HeapSnapshotLoader {
         this.#done = true;
         if (this.#dataCallback) {
             this.#dataCallback('');
+            this.#dataCallback = null;
         }
     }
     async buildSnapshot(secondWorker) {
@@ -102,6 +105,10 @@ export class HeapSnapshotLoader {
         this.#snapshot.strings = JSON.parse(this.#json);
     }
     write(chunk) {
+        // Do not push empty chunks into the buffer because this is the EOF marker returned from fetchChunk().
+        if (!chunk) {
+            return;
+        }
         this.#buffer.push(chunk);
         if (!this.#dataCallback) {
             return;
@@ -116,6 +123,10 @@ export class HeapSnapshotLoader {
         if (this.#buffer.length > 0) {
             return Promise.resolve(this.#buffer.shift());
         }
+        if (this.#done) {
+            // The empty string signals EOF.
+            return Promise.resolve('');
+        }
         const { promise, resolve } = Promise.withResolvers();
         this.#dataCallback = resolve;
         return promise;
@@ -127,7 +138,11 @@ export class HeapSnapshotLoader {
                 return pos;
             }
             startIndex = this.#json.length - token.length + 1;
-            this.#json += await this.#fetchChunk();
+            const chunk = await this.#fetchChunk();
+            if (!chunk) {
+                throw new Error(`Token ${token} not found (unexpected end of input)`);
+            }
+            this.#json += chunk;
         }
     }
     async #parseArray(name, title, length) {
@@ -144,7 +159,11 @@ export class HeapSnapshotLoader {
             else {
                 this.#progress.updateStatus(title);
             }
-            this.#json += await this.#fetchChunk();
+            const chunk = await this.#fetchChunk();
+            if (!chunk) {
+                throw new Error(`Unexpected end of input while ${title}`);
+            }
+            this.#json += chunk;
         }
         const result = this.#array;
         this.#array = null;
@@ -167,7 +186,11 @@ export class HeapSnapshotLoader {
         });
         jsonTokenizer.write(json);
         while (!jsonTokenizerDone) {
-            jsonTokenizer.write(await this.#fetchChunk());
+            const chunk = await this.#fetchChunk();
+            if (!chunk) {
+                throw new Error('Unexpected end of input while loading snapshot info');
+            }
+            jsonTokenizer.write(chunk);
         }
         this.#snapshot = this.#snapshot || {};
         const nodes = await this.#parseArray('"nodes"', 'Loading nodes… {PH1}%', this.#snapshot.snapshot.meta.node_fields.length * this.#snapshot.snapshot.node_count);

@@ -71,6 +71,9 @@
       "path": "../../../generated/generated-tsconfig.json"
     },
     {
+      "path": "../../../models/bindings/bundle-tsconfig.json"
+    },
+    {
       "path": "../../../models/persistence/bundle-tsconfig.json"
     },
     {

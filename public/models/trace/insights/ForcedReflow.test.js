@@ -14,6 +14,9 @@ describeWithEnvironment('ForcedReflow', function () {
         return { data, insights };
     }
     it('generates call stacks', async function () {
+        if (this.timeout() > 0) {
+            this.timeout(45_000);
+        }
         const { data, insights } = await processTrace(this, 'forced-reflow.json.gz');
         assert.strictEqual(insights.size, 1);
         const insight = getInsightOrError('ForcedReflow', insights, data.Meta.navigationsByNavigationId.values().next().value);

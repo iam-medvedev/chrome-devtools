@@ -4,8 +4,73 @@ import * as i18n from "./../../core/i18n/i18n.js";
 import * as Root from "./../../core/root/root.js";
 import * as SDK from "./../../core/sdk/sdk.js";
 import * as UI from "./../../ui/legacy/legacy.js";
+import * as SettingsUI from "./../../ui/settings/settings.js";
 import * as Elements from "./elements.js";
 var UIStrings = {
+  /**
+   * @description Text of a setting that turn on the measuring rulers when hover over a target.
+   */
+  rulersOnHover: "Rulers on hover",
+  /**
+   * @description Text of an option that turn on the measuring rulers when hover over a target through the Command Menu.
+   */
+  showRulersOnHover: "Show rulers on hover",
+  /**
+   * @description Text of a setting that do turn off the measuring rulers when hover over a target.
+   */
+  doNotShowRulersOnHover: "Don\u2019t show rulers on hover",
+  /**
+   * @description Title of a setting under the Elements category in Settings.
+   */
+  apca: "Advanced Perceptual Contrast Algorithm (APCA) replacing previous contrast ratio and AA/AAA guidelines",
+  /**
+   * @description Title of a setting that turns on grid area name labels.
+   */
+  showAreaNames: "Show area names",
+  /**
+   * @description Title of a setting under the Grid category that turns CSS Grid Area highlighting on.
+   */
+  showGridNamedAreas: "Show grid named areas",
+  /**
+   * @description Title of a setting under the Grid category that turns CSS Grid Area highlighting off.
+   */
+  doNotShowGridNamedAreas: "Do not show grid named areas",
+  /**
+   * @description Title of a setting that turns on grid track size labels.
+   */
+  showTrackSizes: "Show track sizes",
+  /**
+   * @description Title for CSS Grid tooling option.
+   */
+  showGridTrackSizes: "Show grid track sizes",
+  /**
+   * @description Title for CSS Grid tooling option.
+   */
+  doNotShowGridTrackSizes: "Do not show grid track sizes",
+  /**
+   * @description Title of a setting that turns on grid extension lines.
+   */
+  extendGridLines: "Extend grid lines",
+  /**
+   * @description Title of a setting that turns off the grid extension lines.
+   */
+  doNotExtendGridLines: "Do not extend grid lines",
+  /**
+   * @description Title of a setting that turns on grid line labels.
+   */
+  showLineLabels: "Show line labels",
+  /**
+   * @description Title of a setting that turns off the grid line labels.
+   */
+  hideLineLabels: "Hide line labels",
+  /**
+   * @description Title of a setting that turns on grid line number labels.
+   */
+  showLineNumbers: "Show line numbers",
+  /**
+   * @description Title of a setting that turns on grid line name labels.
+   */
+  showLineNames: "Show line names",
   /**
    * @description Command for showing the 'Elements' panel. Elements refers to HTML elements.
    */
@@ -654,15 +719,6 @@ UI.Toolbar.registerToolbarItem({
   location: "main-toolbar-left",
   order: 0
 });
-UI.UIUtils.registerRenderer({
-  contextTypes() {
-    return [SDK.DOMModel.DOMNode, SDK.DOMModel.DeferredDOMNode];
-  },
-  async loadRenderer() {
-    const Elements2 = await loadElementsModule();
-    return Elements2.ElementsTreeOutlineRenderer.Renderer.instance();
-  }
-});
 Common.Settings.registerSettingExtension({
   category: "",
   storageType: "Global",
@@ -670,5 +726,86 @@ Common.Settings.registerSettingExtension({
   settingName: "show-frameowkr-listeners",
   settingType: "boolean",
   defaultValue: true
+});
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.showMetricsRulersSettingDescriptor, {
+  category: "ELEMENTS",
+  title: i18nLazyString(UIStrings.rulersOnHover),
+  options: [
+    {
+      value: true,
+      title: i18nLazyString(UIStrings.showRulersOnHover)
+    },
+    {
+      value: false,
+      title: i18nLazyString(UIStrings.doNotShowRulersOnHover)
+    }
+  ]
+});
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.apcaSettingDescriptor, {
+  category: "ELEMENTS",
+  title: i18nLazyString(UIStrings.apca)
+});
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.showGridAreasSettingDescriptor, {
+  category: "GRID",
+  title: i18nLazyString(UIStrings.showAreaNames),
+  options: [
+    {
+      value: true,
+      title: i18nLazyString(UIStrings.showGridNamedAreas)
+    },
+    {
+      value: false,
+      title: i18nLazyString(UIStrings.doNotShowGridNamedAreas)
+    }
+  ]
+});
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.showGridTrackSizesSettingDescriptor, {
+  category: "GRID",
+  title: i18nLazyString(UIStrings.showTrackSizes),
+  options: [
+    {
+      value: true,
+      title: i18nLazyString(UIStrings.showGridTrackSizes)
+    },
+    {
+      value: false,
+      title: i18nLazyString(UIStrings.doNotShowGridTrackSizes)
+    }
+  ]
+});
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.extendGridLinesSettingDescriptor, {
+  category: "GRID",
+  title: i18nLazyString(UIStrings.extendGridLines),
+  options: [
+    {
+      value: true,
+      title: i18nLazyString(UIStrings.extendGridLines)
+    },
+    {
+      value: false,
+      title: i18nLazyString(UIStrings.doNotExtendGridLines)
+    }
+  ]
+});
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.showGridLineLabelsSettingDescriptor, {
+  category: "GRID",
+  title: i18nLazyString(UIStrings.showLineLabels),
+  options: [
+    {
+      title: i18nLazyString(UIStrings.hideLineLabels),
+      text: i18nLazyString(UIStrings.hideLineLabels),
+      value: "none"
+    },
+    {
+      title: i18nLazyString(UIStrings.showLineNumbers),
+      text: i18nLazyString(UIStrings.showLineNumbers),
+      value: "lineNumbers"
+    },
+    {
+      title: i18nLazyString(UIStrings.showLineNames),
+      text: i18nLazyString(UIStrings.showLineNames),
+      value: "lineNames"
+    }
+  ]
 });
 //# sourceMappingURL=elements-meta.js.map
