@@ -5,6 +5,7 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
+import * as UI from '../../ui/legacy/legacy.js';
 import * as Common from './common.js';
 describeWithEnvironment('ExtensionSidebarPane', () => {
     it('creates a read-only object properties section for objects', async () => {
@@ -13,9 +14,10 @@ describeWithEnvironment('ExtensionSidebarPane', () => {
         await new Promise(resolve => sidebarPane.setObject({ foo: 'bar' }, 'title', resolve));
         const sectionElement = sidebarPane.element.firstElementChild?.firstElementChild;
         assert.exists(sectionElement);
-        const section = ObjectUI.ObjectPropertiesSection.getObjectPropertiesSectionFrom(sectionElement);
-        assert.exists(section);
-        assert.isTrue(section.root.readOnly);
+        const section = UI.Widget.Widget.get(sectionElement);
+        assert.instanceOf(section, ObjectUI.ObjectPropertiesSection.ObjectPropertiesSectionWidget);
+        assert.exists(section.objectTree);
+        assert.isTrue(section.objectTree.readOnly);
     });
 });
 //# sourceMappingURL=ExtensionPanel.test.js.map

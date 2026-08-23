@@ -74,5 +74,32 @@ describe('DOMModel API Test', () => {
         assert.isFalse(attrModifiedFired, 'AttrModified should not have fired for same value');
         domModel.removeEventListener(SDK.DOMModel.Events.AttrModified, listener);
     });
+    it('saves node to temporary variable', async ({ inspectedPage, universe }) => {
+        const primaryTarget = universe.targetManager.primaryPageTarget();
+        assert.isNotNull(primaryTarget);
+        const domModel = primaryTarget.model(SDK.DOMModel.DOMModel);
+        assert.isNotNull(domModel);
+        const consoleModel = primaryTarget.model(SDK.ConsoleModel.ConsoleModel);
+        assert.isNotNull(consoleModel);
+        await inspectedPage.goToHtml('<div id="node"></div>');
+        const documentNode = await domModel.requestDocument();
+        assert.isNotNull(documentNode);
+        // Retrieve the subtree to populate the DOMModel cache.
+        await documentNode.getSubtree(5, true);
+        const node = findNode(documentNode, n => n.getAttribute('id') === 'node');
+        assert.isNotNull(node);
+        if (!node) {
+            assert.fail('Could not find test node');
+        }
+        const commandEvaluatedPromise = consoleModel.once(SDK.ConsoleModel.Events.CommandEvaluated);
+        await node.saveNodeToTempVariable();
+        const { result, commandMessage } = await commandEvaluatedPromise;
+        assert.strictEqual(commandMessage.messageText, 'temp1');
+        assert.strictEqual(result?.description, 'div#node');
+        const evaluatedId = await inspectedPage.evaluate(() => {
+            return window.temp1?.id;
+        });
+        assert.strictEqual(evaluatedId, 'node');
+    });
 });
 //# sourceMappingURL=DOMModel.test.api.js.map

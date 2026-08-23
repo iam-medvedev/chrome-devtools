@@ -70,6 +70,9 @@
       "path": "../../models/persistence/bundle-tsconfig.json"
     },
     {
+      "path": "../../models/workspace/bundle-tsconfig.json"
+    },
+    {
       "path": "../../testing/testing-tsconfig.json"
     },
     {

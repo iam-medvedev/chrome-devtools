@@ -400,7 +400,7 @@ export function rematchCommentAnchor(comment, root = document, cachedJslogElemen
     }
     if (anchor.editor) {
         const { lineNumber, filePath } = anchor.editor;
-        const cmEditors = cachedJslogElements ? cachedJslogElements.filter(isCodeMirrorEditor) : deepQuerySelectorAll(root, '.cm-editor');
+        const cmEditors = deepQuerySelectorAll(root, '.cm-editor');
         const matchingEditors = cmEditors.filter(cmEditor => {
             if (filePath !== undefined && cmEditor.getAttribute('data-file-path') !== filePath) {
                 return false;

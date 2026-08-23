@@ -135,12 +135,6 @@
       "path": "../../ui/legacy/bundle-tsconfig.json"
     },
     {
-      "path": "../../ui/legacy/ui-tsconfig.json"
-    },
-    {
-      "path": "../../ui/legacy/components/object_ui/bundle-tsconfig.json"
-    },
-    {
       "path": "../protocol_monitor/bundle-tsconfig.json"
     },
     {

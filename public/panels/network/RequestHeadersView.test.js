@@ -312,7 +312,9 @@ describeWithEnvironment('RequestHeadersView', () => {
         assert.isNull(linkElement);
     });
     it('allows enabling header overrides via buttons located next to each header', async () => {
-        Common.Settings.Settings.instance().moduleSetting('persistence-network-overrides-enabled').set(false);
+        Common.Settings.Settings.instance()
+            .resolve(Persistence.NetworkPersistenceManager.persistenceNetworkOverridesEnabledSettingDescriptor)
+            .set(false);
         const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/`, urlString ``, null, null, null);
         request.responseHeaders = [
             { name: 'foo', value: 'bar' },

@@ -19,7 +19,6 @@ import { expectCall } from '../../testing/ExpectStubCall.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import { dispatchEvent } from '../../testing/MockConnection.js';
 import { mockResourceTree } from '../../testing/ResourceTreeHelpers.js';
-import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Console from './console.js';
@@ -149,15 +148,12 @@ describeWithEnvironment('ConsoleViewMessage', () => {
             const messageElement = message.toMessageElement();
             const propertiesSectionElement = messageElement.querySelector('.console-view-object-properties-section');
             assert.exists(propertiesSectionElement);
-            const section = ObjectUI.ObjectPropertiesSection.getObjectPropertiesSectionFrom(propertiesSectionElement);
+            const section = UI.Widget.Widget.get(propertiesSectionElement);
             assert.exists(section);
-            const rootElement = section.objectTreeElement();
-            await rootElement.onpopulate();
-            const child = rootElement.childAt(0);
-            assert.instanceOf(child, ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement);
-            assert.isTrue(child.editable);
+            assert.exists(section.objectTree);
+            assert.isFalse(section.objectTree.readOnly);
         });
-        it('formats console.dir(document.__proto__) without exception', () => {
+        it('formats console.dir(document.__proto__) without exception', async () => {
             const target = createTarget();
             const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
             assert.exists(runtimeModel);
@@ -174,11 +170,16 @@ describeWithEnvironment('ConsoleViewMessage', () => {
             });
             const { message } = createConsoleViewMessageWithStubDeps(rawMessage);
             const messageElement = message.toMessageElement();
+            renderElementIntoDOM(messageElement);
+            await UI.Widget.Widget.allUpdatesComplete;
+            await raf();
             const propertiesSectionElement = messageElement.querySelector('.console-view-object-properties-section');
             assert.exists(propertiesSectionElement);
-            assert.include(propertiesSectionElement.textContent, 'HTMLDocument');
+            const tree = propertiesSectionElement.querySelector('devtools-tree');
+            assert.exists(tree?.shadowRoot);
+            assert.include(tree.shadowRoot.textContent || '', 'HTMLDocument');
         });
-        it('formats an object which throws on string conversion without crashing', () => {
+        it('formats an object which throws on string conversion without crashing', async () => {
             const target = createTarget();
             const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
             assert.exists(runtimeModel);
@@ -206,9 +207,14 @@ describeWithEnvironment('ConsoleViewMessage', () => {
             });
             const { message } = createConsoleViewMessageWithStubDeps(rawMessage);
             const messageElement = message.toMessageElement();
+            renderElementIntoDOM(messageElement);
+            await UI.Widget.Widget.allUpdatesComplete;
+            await raf();
             const propertiesSectionElement = messageElement.querySelector('.console-view-object-properties-section');
             assert.exists(propertiesSectionElement);
-            assert.include(propertiesSectionElement.textContent, 'toString');
+            const tree = propertiesSectionElement.querySelector('devtools-tree');
+            assert.exists(tree?.shadowRoot);
+            assert.include(tree.shadowRoot.textContent || '', 'toString');
         });
         it('formats native functions without exception', async () => {
             const target = createTarget();
@@ -243,7 +249,7 @@ describeWithEnvironment('ConsoleViewMessage', () => {
             await formattedPromise2;
             assert.strictEqual(messageElement2.deepTextContent(), 'ƒ appendChild() { [native code] }');
         });
-        it('formats performance getters (PerformanceTiming and MemoryInfo)', () => {
+        it('formats performance getters (PerformanceTiming and MemoryInfo)', async () => {
             const target = createTarget();
             const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
             assert.exists(runtimeModel);
@@ -287,6 +293,9 @@ describeWithEnvironment('ConsoleViewMessage', () => {
             });
             const { message } = createConsoleViewMessageWithStubDeps(rawMessage);
             const messageElement = message.toMessageElement();
+            renderElementIntoDOM(messageElement);
+            await UI.Widget.Widget.allUpdatesComplete;
+            await raf();
             const textContent = messageElement.deepTextContent();
             assert.include(textContent, 'PerformanceTiming');
             assert.include(textContent, 'navigationStart');
@@ -721,7 +730,7 @@ describeWithEnvironment('ConsoleViewMessage', () => {
             const anchor = element.querySelector('.console-message-anchor');
             assert.exists(anchor);
             assert.strictEqual(anchor.textContent?.trim(), 'foo.js:20');
-            const setting = Common.Settings.Settings.instance().moduleSetting('skip-stack-frames-pattern');
+            const setting = Common.Settings.Settings.instance().resolve(Workspace.IgnoreListManager.skipStackFramesPatternSettingDescriptor);
             // Ignore-list foo.js: anchor should now point to boo.js:27.
             setting.setAsArray([{ pattern: 'foo\\.js', disabled: false }]);
             await debuggerWorkspaceBinding.pendingLiveLocationChangesPromise();
@@ -1152,7 +1161,7 @@ describeWithEnvironment('ConsoleViewMessage', () => {
             target = createTarget();
             runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
         });
-        it('formats Promise correctly', () => {
+        it('formats Promise correctly', async () => {
             const promisePreview = {
                 type: "object" /* Protocol.Runtime.ObjectPreviewType.Object */,
                 subtype: "promise" /* Protocol.Runtime.ObjectPreviewSubtype.Promise */,
@@ -1167,7 +1176,12 @@ describeWithEnvironment('ConsoleViewMessage', () => {
             const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, "info" /* Protocol.Log.LogEntryLevel.Info */, '', { parameters: [remoteObject] });
             const { message } = createConsoleViewMessageWithStubDeps(rawMessage);
             const messageElement = message.toMessageElement();
-            assert.strictEqual(messageElement.textContent, 'Promise {<rejected>: -0}');
+            renderElementIntoDOM(messageElement);
+            await UI.Widget.Widget.allUpdatesComplete;
+            await raf();
+            const tree = messageElement.querySelector('devtools-tree');
+            assert.exists(tree?.shadowRoot);
+            assert.include(tree.shadowRoot.textContent || '', 'Promise {<rejected>: -0}');
         });
         it('formats Symbol correctly', () => {
             const remoteObject = new SDK.RemoteObject.RemoteObjectImpl(runtimeModel, undefined, 'symbol', undefined, undefined, undefined, 'Symbol(a)');
@@ -1176,7 +1190,7 @@ describeWithEnvironment('ConsoleViewMessage', () => {
             const messageElement = message.toMessageElement();
             assert.strictEqual(messageElement.textContent, 'Symbol(a)');
         });
-        it('formats Map correctly', () => {
+        it('formats Map correctly', async () => {
             const mapPreview = {
                 type: "object" /* Protocol.Runtime.ObjectPreviewType.Object */,
                 subtype: "map" /* Protocol.Runtime.ObjectPreviewSubtype.Map */,
@@ -1202,9 +1216,14 @@ describeWithEnvironment('ConsoleViewMessage', () => {
             const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, "info" /* Protocol.Log.LogEntryLevel.Info */, '', { parameters: [remoteObject] });
             const { message } = createConsoleViewMessageWithStubDeps(rawMessage);
             const messageElement = message.toMessageElement();
-            assert.strictEqual(messageElement.textContent, 'Map(1) {{…} => {…}}');
+            renderElementIntoDOM(messageElement);
+            await UI.Widget.Widget.allUpdatesComplete;
+            await raf();
+            const tree = messageElement.querySelector('devtools-tree');
+            assert.exists(tree?.shadowRoot);
+            assert.include(tree.shadowRoot.textContent || '', 'Map(1) {{…} => {…}}');
         });
-        it('formats Set correctly', () => {
+        it('formats Set correctly', async () => {
             const setPreview = {
                 type: "object" /* Protocol.Runtime.ObjectPreviewType.Object */,
                 subtype: "set" /* Protocol.Runtime.ObjectPreviewSubtype.Set */,
@@ -1224,7 +1243,12 @@ describeWithEnvironment('ConsoleViewMessage', () => {
             const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, "info" /* Protocol.Log.LogEntryLevel.Info */, '', { parameters: [remoteObject] });
             const { message } = createConsoleViewMessageWithStubDeps(rawMessage);
             const messageElement = message.toMessageElement();
-            assert.strictEqual(messageElement.textContent, 'Set(1) {{…}}');
+            renderElementIntoDOM(messageElement);
+            await UI.Widget.Widget.allUpdatesComplete;
+            await raf();
+            const tree = messageElement.querySelector('devtools-tree');
+            assert.exists(tree?.shadowRoot);
+            assert.include(tree.shadowRoot.textContent || '', 'Set(1) {{…}}');
         });
     });
     describe('ConsoleMessageFormat', () => {
@@ -1234,31 +1258,35 @@ describeWithEnvironment('ConsoleViewMessage', () => {
             target = createTarget();
             runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
         });
-        const createMessageElement = (formatString, parameters) => {
+        const createMessageElement = async (formatString, parameters) => {
             const formatStringObj = SDK.RemoteObject.RemoteObject.fromLocalObject(formatString);
             const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, "info" /* Protocol.Log.LogEntryLevel.Info */, formatString, {
                 type: "log" /* Protocol.Runtime.ConsoleAPICalledEventType.Log */,
                 parameters: [formatStringObj, ...parameters],
             });
             const { message } = createConsoleViewMessageWithStubDeps(rawMessage);
-            return message.toMessageElement();
+            const element = message.toMessageElement();
+            renderElementIntoDOM(element);
+            await UI.Widget.Widget.allUpdatesComplete;
+            await raf();
+            return element;
         };
-        it('formats numbers correctly', () => {
-            const element = createMessageElement('Message format number %i, %d and %f', [
+        it('formats numbers correctly', async () => {
+            const element = await createMessageElement('Message format number %i, %d and %f', [
                 SDK.RemoteObject.RemoteObject.fromLocalObject(1),
                 SDK.RemoteObject.RemoteObject.fromLocalObject(2),
                 SDK.RemoteObject.RemoteObject.fromLocalObject(3.5),
             ]);
             assert.strictEqual(element.deepTextContent(), 'Message format number 1, 2 and 3.5');
         });
-        it('formats strings correctly', () => {
-            const element = createMessageElement('Message %s for %s', [
+        it('formats strings correctly', async () => {
+            const element = await createMessageElement('Message %s for %s', [
                 SDK.RemoteObject.RemoteObject.fromLocalObject('format'),
                 SDK.RemoteObject.RemoteObject.fromLocalObject('string'),
             ]);
             assert.strictEqual(element.deepTextContent(), 'Message format for string');
         });
-        it('formats objects optimally (%o)', () => {
+        it('formats objects optimally (%o)', async () => {
             const obj = runtimeModel.createRemoteObject({
                 type: "object" /* Protocol.Runtime.RemoteObjectType.Object */,
                 className: 'Object',
@@ -1273,12 +1301,12 @@ describeWithEnvironment('ConsoleViewMessage', () => {
                     ],
                 },
             });
-            const element = createMessageElement('Object %o', [obj]);
+            const element = await createMessageElement('Object %o', [obj]);
             assert.include(element.deepTextContent(), 'Object');
             assert.include(element.deepTextContent(), 'foo');
             assert.include(element.deepTextContent(), 'bar');
         });
-        it('formats arrays optimally (%o)', () => {
+        it('formats arrays optimally (%o)', async () => {
             const arr = runtimeModel.createRemoteObject({
                 type: "object" /* Protocol.Runtime.RemoteObjectType.Object */,
                 subtype: "array" /* Protocol.Runtime.RemoteObjectSubtype.Array */,
@@ -1296,22 +1324,22 @@ describeWithEnvironment('ConsoleViewMessage', () => {
                     ],
                 },
             });
-            const element = createMessageElement('Array %o', [arr]);
+            const element = await createMessageElement('Array %o', [arr]);
             assert.include(element.deepTextContent(), 'Array');
             assert.include(element.deepTextContent(), 'foo');
             assert.include(element.deepTextContent(), 'bar');
         });
-        it('formats objects generically (%O)', () => {
+        it('formats objects generically (%O)', async () => {
             const obj = runtimeModel.createRemoteObject({
                 type: "object" /* Protocol.Runtime.RemoteObjectType.Object */,
                 className: 'Object',
                 description: 'Object',
                 objectId: '1',
             });
-            const element = createMessageElement('Object as object: %O', [obj]);
+            const element = await createMessageElement('Object as object: %O', [obj]);
             assert.strictEqual(element.deepTextContent(), 'Object as object: Object');
         });
-        it('formats arrays generically (%O)', () => {
+        it('formats arrays generically (%O)', async () => {
             const arr = runtimeModel.createRemoteObject({
                 type: "object" /* Protocol.Runtime.RemoteObjectType.Object */,
                 subtype: "array" /* Protocol.Runtime.RemoteObjectSubtype.Array */,
@@ -1319,50 +1347,50 @@ describeWithEnvironment('ConsoleViewMessage', () => {
                 description: 'Array(2)',
                 objectId: '1',
             });
-            const element = createMessageElement('Array as object: %O', [arr]);
+            const element = await createMessageElement('Array as object: %O', [arr]);
             assert.strictEqual(element.deepTextContent(), 'Array as object: Array(2)');
         });
-        it('formats floating points as integers (%d %i)', () => {
-            const element = createMessageElement('Floating as integers: %d %i', [
+        it('formats floating points as integers (%d %i)', async () => {
+            const element = await createMessageElement('Floating as integers: %d %i', [
                 SDK.RemoteObject.RemoteObject.fromLocalObject(42.5),
                 SDK.RemoteObject.RemoteObject.fromLocalObject(42.5),
             ]);
             assert.strictEqual(element.deepTextContent(), 'Floating as integers: 42 42');
         });
-        it('formats floating points as is (%f)', () => {
-            const element = createMessageElement('Floating as is: %f', [
+        it('formats floating points as is (%f)', async () => {
+            const element = await createMessageElement('Floating as is: %f', [
                 SDK.RemoteObject.RemoteObject.fromLocalObject(42.5),
             ]);
             assert.strictEqual(element.deepTextContent(), 'Floating as is: 42.5');
         });
-        it('formats non-numbers as numbers (%d %i %f)', () => {
+        it('formats non-numbers as numbers (%d %i %f)', async () => {
             const doc = runtimeModel.createRemoteObject({
                 type: "object" /* Protocol.Runtime.RemoteObjectType.Object */,
                 subtype: "node" /* Protocol.Runtime.RemoteObjectSubtype.Node */,
                 className: 'HTMLDocument',
                 description: 'document',
             });
-            const element = createMessageElement('Non-numbers as numbers: %d %i %f', [
+            const element = await createMessageElement('Non-numbers as numbers: %d %i %f', [
                 doc,
                 SDK.RemoteObject.RemoteObject.fromLocalObject(null),
                 SDK.RemoteObject.RemoteObject.fromLocalObject('document'),
             ]);
             assert.strictEqual(element.deepTextContent(), 'Non-numbers as numbers: NaN NaN NaN');
         });
-        it('formats string as is (%s)', () => {
-            const element = createMessageElement('String as is: %s', [
+        it('formats string as is (%s)', async () => {
+            const element = await createMessageElement('String as is: %s', [
                 SDK.RemoteObject.RemoteObject.fromLocalObject('string'),
             ]);
             assert.strictEqual(element.deepTextContent(), 'String as is: string');
         });
-        it('formats object as string (%s)', () => {
+        it('formats object as string (%s)', async () => {
             const doc = runtimeModel.createRemoteObject({
                 type: "object" /* Protocol.Runtime.RemoteObjectType.Object */,
                 subtype: "node" /* Protocol.Runtime.RemoteObjectSubtype.Node */,
                 className: 'HTMLDocument',
                 description: '[object HTMLDocument]',
             });
-            const element = createMessageElement('Object as string: %s', [doc]);
+            const element = await createMessageElement('Object as string: %s', [doc]);
             assert.strictEqual(element.deepTextContent(), 'Object as string: [object HTMLDocument]');
         });
     });

@@ -54,7 +54,7 @@ function mockGetAwardedBadgeNames(gdpClient, names) {
     sinon.stub(gdpClient, 'getAwardedBadgeNames').resolves(names ? new Set(names) : null);
 }
 function setReceiveBadgesSetting(settings, value) {
-    settings.moduleSetting('receive-gdp-badges').set(value);
+    settings.resolve(Badges.receiveGdpBadgesSettingDescriptor).set(value);
 }
 function setStarterBadgeSnoozeCount(settings, value) {
     settings.createSetting('starter-badge-snooze-count', 0).set(value);

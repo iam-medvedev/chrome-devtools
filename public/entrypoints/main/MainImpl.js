@@ -54,6 +54,7 @@ import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
 import { html, render } from '../../ui/lit/lit.js';
+import * as SettingsUI from '../../ui/settings/settings.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { ExecutionContextSelector } from './ExecutionContextSelector.js';
 const UIStrings = {
@@ -198,7 +199,7 @@ export class MainImpl {
         Root.DevToolsContext.setGlobalInstance(this.#universe.context);
         // Mark 'cache-disabled' as requiring user interaction when multiple CDP clients are attached.
         if (Root.Runtime.Runtime.queryParam('hasOtherClients')) {
-            this.#universe.settings.moduleSetting('cache-disabled').setRequiresUserAction(true);
+            this.#universe.settings.resolve(SDK.SDKSettings.cacheDisabledSettingDescriptor).setRequiresUserAction(true);
         }
         Root.Runtime.experiments.removeAllExperimentsFromLocalStorage();
         await this.requestAndRegisterLocaleData();
@@ -243,7 +244,7 @@ export class MainImpl {
         self.ProtocolClient.test ||= ProtocolClient.InspectorBackend.test;
     }
     async requestAndRegisterLocaleData() {
-        const settingLanguage = Common.Settings.Settings.instance().moduleSetting('language').get();
+        const settingLanguage = Common.Settings.Settings.instance().resolve(SettingsUI.MainSettings.languageSettingDescriptor).get();
         const devToolsLocale = i18n.DevToolsLocale.DevToolsLocale.instance({
             create: true,
             data: {
@@ -375,8 +376,7 @@ export class MainImpl {
         // Request filesystems early, we won't create connections until callback is fired. Things will happen in parallel.
         const isolatedFileSystemManager = this.#universe.isolatedFileSystemManager;
         isolatedFileSystemManager.addEventListener(Persistence.IsolatedFileSystemManager.Events.FileSystemError, event => Snackbar.Snackbar.Snackbar.show({ message: event.data }));
-        const defaultThemeSetting = 'systemPreferred';
-        const themeSetting = Common.Settings.Settings.instance().createSetting('ui-theme', defaultThemeSetting);
+        const themeSetting = Common.Settings.Settings.instance().resolve(SettingsUI.MainSettings.uiThemeSettingDescriptor);
         UI.UIUtils.initializeUIUtils(document);
         // Initialize theme support and apply it.
         if (!ThemeSupport.ThemeSupport.hasInstance()) {
@@ -506,7 +506,7 @@ export class MainImpl {
                     if (event.data.payload === 'true' || event.data.payload === 'false') {
                         VisualLogging.setVeDebuggingEnabled(event.data.payload === 'true', (query) => {
                             VisualLogging.setVeDebuggingEnabled(false);
-                            void runtimeModel?.defaultExecutionContext()?.evaluate({
+                            void runtimeModel?.defaultExecutionContext()?.evaluateWithSelectedFrameFallback({
                                 expression: `window.inspect(${JSON.stringify(query)})`,
                                 includeCommandLineAPI: false,
                                 silent: true,

@@ -1009,7 +1009,7 @@ var ObjectEventListenersSidebarPane = class _ObjectEventListenersSidebarPane ext
     const executionContext = UI3.Context.Context.instance().flavor(SDK5.RuntimeModel.ExecutionContext);
     if (executionContext) {
       this.#lastRequestedContext = executionContext;
-      const result = await executionContext.evaluate(
+      const result = await executionContext.evaluateWithSelectedFrameFallback(
         {
           expression: "self",
           objectGroup: objectGroupName,

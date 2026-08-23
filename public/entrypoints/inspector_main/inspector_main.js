@@ -230,33 +230,33 @@ var RenderingOptionsView = class extends UI.Widget.VBox {
     if (!Root.Runtime.hostConfig.devToolsAdsPanel?.enabled) {
       this.#appendCheckbox(i18nString(UIStrings.highlightAds), i18nString(UIStrings.highlightsElementsRedDetectedToBe), Common.Settings.Settings.instance().resolve(SDK.SDKSettings.showAdHighlightsSettingDescriptor));
     }
-    this.#appendCheckbox(i18nString(UIStrings.disableLocalFonts), i18nString(UIStrings.disablesLocalSourcesInFontface), Common.Settings.Settings.instance().moduleSetting("local-fonts-disabled"));
+    this.#appendCheckbox(i18nString(UIStrings.disableLocalFonts), i18nString(UIStrings.disablesLocalSourcesInFontface), Common.Settings.Settings.instance().resolve(SDK.SDKSettings.localFontsDisabledSettingDescriptor));
     this.#appendCheckbox(i18nString(UIStrings.emulateAFocusedPage), i18nString(UIStrings.emulatesAFocusedPage), Common.Settings.Settings.instance().resolve(SDK.SDKSettings.emulatePageFocusSettingDescriptor), { toggle: Host.UserMetrics.Action.ToggleEmulateFocusedPageFromRenderingTab });
-    const autoDarkModeSetting = Common.Settings.Settings.instance().moduleSetting("emulate-auto-dark-mode");
+    const autoDarkModeSetting = Common.Settings.Settings.instance().resolve(SDK.SDKSettings.emulateAutoDarkModeSettingDescriptor);
     this.#appendCheckbox(i18nString(UIStrings.emulateAutoDarkMode), i18nString(UIStrings.emulatesAutoDarkMode), autoDarkModeSetting);
     this.contentElement.createChild("div").classList.add("panel-section-separator");
     this.#appendSelect(i18nString(UIStrings.forcesCssPreferscolorschemeMedia), Common.Settings.Settings.instance().resolve(SDK.SDKSettings.emulatedCSSMediaFeaturePrefersColorSchemeSettingDescriptor), autoDarkModeSetting.get());
     this.#appendSelect(i18nString(UIStrings.forcesMediaTypeForTestingPrint), Common.Settings.Settings.instance().resolve(SDK.SDKSettings.emulatedCSSMediaSettingDescriptor));
     this.#appendSelect(i18nString(UIStrings.forcesCssForcedColors), Common.Settings.Settings.instance().resolve(SDK.SDKSettings.emulatedCSSMediaFeatureForcedColorsSettingDescriptor));
     if (supportsPrefersContrast()) {
-      this.#appendSelect(i18nString(UIStrings.forcesCssPreferscontrastMedia), Common.Settings.Settings.instance().moduleSetting("emulated-css-media-feature-prefers-contrast"));
+      this.#appendSelect(i18nString(UIStrings.forcesCssPreferscontrastMedia), Common.Settings.Settings.instance().resolve(SDK.SDKSettings.emulatedCSSMediaFeaturePrefersContrastSettingDescriptor));
     }
     this.#appendSelect(i18nString(UIStrings.forcesCssPrefersreducedmotion), Common.Settings.Settings.instance().resolve(SDK.SDKSettings.emulatedCSSMediaFeaturePrefersReducedMotionSettingDescriptor));
     if (supportsPrefersReducedData()) {
-      this.#appendSelect(i18nString(UIStrings.forcesCssPrefersreduceddataMedia), Common.Settings.Settings.instance().moduleSetting("emulated-css-media-feature-prefers-reduced-data"));
+      this.#appendSelect(i18nString(UIStrings.forcesCssPrefersreduceddataMedia), Common.Settings.Settings.instance().resolve(SDK.SDKSettings.emulatedCSSMediaFeaturePrefersReducedDataSettingDescriptor));
     }
     if (supportsPrefersReducedTransparency()) {
-      this.#appendSelect(i18nString(UIStrings.forcesCssPrefersreducedtransparencyMedia), Common.Settings.Settings.instance().moduleSetting("emulated-css-media-feature-prefers-reduced-transparency"));
+      this.#appendSelect(i18nString(UIStrings.forcesCssPrefersreducedtransparencyMedia), Common.Settings.Settings.instance().resolve(SDK.SDKSettings.emulatedCSSMediaFeaturePrefersReducedTransparencySettingDescriptor));
     }
-    this.#appendSelect(i18nString(UIStrings.forcesCssColorgamutMediaFeature), Common.Settings.Settings.instance().moduleSetting("emulated-css-media-feature-color-gamut"));
+    this.#appendSelect(i18nString(UIStrings.forcesCssColorgamutMediaFeature), Common.Settings.Settings.instance().resolve(SDK.SDKSettings.emulatedCSSMediaFeatureColorGamutSettingDescriptor));
     this.contentElement.createChild("div").classList.add("panel-section-separator");
-    this.#appendSelect(i18nString(UIStrings.forcesVisionDeficiencyEmulation), Common.Settings.Settings.instance().moduleSetting("emulated-vision-deficiency"));
+    this.#appendSelect(i18nString(UIStrings.forcesVisionDeficiencyEmulation), Common.Settings.Settings.instance().resolve(SDK.SDKSettings.emulatedVisionDeficiencySettingDescriptor));
     this.contentElement.createChild("div").classList.add("panel-section-separator");
-    this.#appendSelect(i18nString(UIStrings.forcesOsTextScaleEmulation), Common.Settings.Settings.instance().moduleSetting("emulated-os-text-scale"));
+    this.#appendSelect(i18nString(UIStrings.forcesOsTextScaleEmulation), Common.Settings.Settings.instance().resolve(SDK.SDKSettings.emulatedOSTextScaleSettingDescriptor));
     this.contentElement.createChild("div").classList.add("panel-section-separator");
-    const avifFormatDisabledSetting = Common.Settings.Settings.instance().moduleSetting("avif-format-disabled");
-    const jpegXlFormatDisabledSetting = Common.Settings.Settings.instance().moduleSetting("jpeg-xl-format-disabled");
-    const webpFormatDisabledSetting = Common.Settings.Settings.instance().moduleSetting("webp-format-disabled");
+    const avifFormatDisabledSetting = Common.Settings.Settings.instance().resolve(SDK.SDKSettings.avifFormatDisabledSettingDescriptor);
+    const jpegXlFormatDisabledSetting = Common.Settings.Settings.instance().resolve(SDK.SDKSettings.jpegXlFormatDisabledSettingDescriptor);
+    const webpFormatDisabledSetting = Common.Settings.Settings.instance().resolve(SDK.SDKSettings.webpFormatDisabledSettingDescriptor);
     this.#appendCheckbox(i18nString(UIStrings.disableAvifImageFormat), i18nString(UIStrings.requiresAPageReloadToApplyAnd), avifFormatDisabledSetting);
     const webpCheckbox = this.#appendCheckbox(i18nString(UIStrings.disableWebpImageFormat), i18nString(UIStrings.requiresAPageReloadToApplyAnd), webpFormatDisabledSetting);
     this.#appendJpegXlCheckboxWhenSupported(webpCheckbox, jpegXlFormatDisabledSetting);
@@ -318,6 +318,7 @@ import * as MobileThrottling from "./../../panels/mobile_throttling/mobile_throt
 import * as Components from "./../../ui/legacy/components/utils/utils.js";
 import * as UI2 from "./../../ui/legacy/legacy.js";
 import * as Lit from "./../../ui/lit/lit.js";
+import * as SettingsUI3 from "./../../ui/settings/settings.js";
 
 // gen/front_end/entrypoints/inspector_main/nodeIcon.css.js
 var nodeIcon_css_default = `/*
@@ -524,10 +525,10 @@ var BackendSettingsSync = class {
   #adBlockEnabledSetting;
   #emulatePageFocusSetting;
   constructor() {
-    this.#autoAttachSetting = Common2.Settings.Settings.instance().moduleSetting("auto-attach-to-created-pages");
+    this.#autoAttachSetting = Common2.Settings.Settings.instance().resolve(SettingsUI3.InspectorMainSettings.autoAttachToCreatedPagesSettingDescriptor);
     this.#autoAttachSetting.addChangeListener(this.#updateAutoAttach, this);
     this.#updateAutoAttach();
-    this.#adBlockEnabledSetting = Common2.Settings.Settings.instance().moduleSetting("network.ad-blocking-enabled");
+    this.#adBlockEnabledSetting = Common2.Settings.Settings.instance().resolve(SettingsUI3.InspectorMainSettings.adBlockingEnabledSettingDescriptor);
     this.#adBlockEnabledSetting.addChangeListener(this.#update, this);
     this.#emulatePageFocusSetting = Common2.Settings.Settings.instance().resolve(SDK2.SDKSettings.emulatePageFocusSettingDescriptor);
     this.#emulatePageFocusSetting.addChangeListener(this.#update, this);

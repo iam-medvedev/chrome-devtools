@@ -458,6 +458,7 @@ import * as Components from "./../../ui/legacy/components/utils/utils.js";
 import * as UI2 from "./../../ui/legacy/legacy.js";
 import * as ThemeSupport from "./../../ui/legacy/theme_support/theme_support.js";
 import { html as html2, render as render2 } from "./../../ui/lit/lit.js";
+import * as SettingsUI from "./../../ui/settings/settings.js";
 import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
 var _a;
 var UIStrings2 = {
@@ -602,7 +603,7 @@ var MainImpl = class {
     this.#universe = new Foundation.Universe.Universe(creationOptions);
     Root2.DevToolsContext.setGlobalInstance(this.#universe.context);
     if (Root2.Runtime.Runtime.queryParam("hasOtherClients")) {
-      this.#universe.settings.moduleSetting("cache-disabled").setRequiresUserAction(true);
+      this.#universe.settings.resolve(SDK2.SDKSettings.cacheDisabledSettingDescriptor).setRequiresUserAction(true);
     }
     Root2.Runtime.experiments.removeAllExperimentsFromLocalStorage();
     await this.requestAndRegisterLocaleData();
@@ -640,7 +641,7 @@ var MainImpl = class {
     self.ProtocolClient.test ||= ProtocolClient.InspectorBackend.test;
   }
   async requestAndRegisterLocaleData() {
-    const settingLanguage = Common2.Settings.Settings.instance().moduleSetting("language").get();
+    const settingLanguage = Common2.Settings.Settings.instance().resolve(SettingsUI.MainSettings.languageSettingDescriptor).get();
     const devToolsLocale = i18n3.DevToolsLocale.DevToolsLocale.instance({
       create: true,
       data: {
@@ -753,8 +754,7 @@ var MainImpl = class {
     _a.time("Main._createAppUI");
     const isolatedFileSystemManager = this.#universe.isolatedFileSystemManager;
     isolatedFileSystemManager.addEventListener(Persistence.IsolatedFileSystemManager.Events.FileSystemError, (event) => Snackbar.Snackbar.Snackbar.show({ message: event.data }));
-    const defaultThemeSetting = "systemPreferred";
-    const themeSetting = Common2.Settings.Settings.instance().createSetting("ui-theme", defaultThemeSetting);
+    const themeSetting = Common2.Settings.Settings.instance().resolve(SettingsUI.MainSettings.uiThemeSettingDescriptor);
     UI2.UIUtils.initializeUIUtils(document);
     if (!ThemeSupport.ThemeSupport.hasInstance()) {
       ThemeSupport.ThemeSupport.instance({ forceNew: true, setting: themeSetting });
@@ -869,7 +869,7 @@ var MainImpl = class {
           if (event.data.payload === "true" || event.data.payload === "false") {
             VisualLogging2.setVeDebuggingEnabled(event.data.payload === "true", (query) => {
               VisualLogging2.setVeDebuggingEnabled(false);
-              void runtimeModel?.defaultExecutionContext()?.evaluate(
+              void runtimeModel?.defaultExecutionContext()?.evaluateWithSelectedFrameFallback(
                 {
                   expression: `window.inspect(${JSON.stringify(query)})`,
                   includeCommandLineAPI: false,

@@ -413,7 +413,7 @@ describeWithEnvironment('NetworkLogView', () => {
     describe('in scope', tests(true));
     describe('out of scope', tests(false));
     const handlesSwitchingScope = (preserveLog) => async () => {
-        Common.Settings.Settings.instance().moduleSetting('network-log.preserve-log').set(preserveLog);
+        Common.Settings.Settings.instance().resolve(SDK.SDKSettings.preserveNetworkLogSettingDescriptor).set(preserveLog);
         SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
         const anotherTarget = createTarget();
         const networkManager = target.model(SDK.NetworkManager.NetworkManager);
@@ -433,7 +433,7 @@ describeWithEnvironment('NetworkLogView', () => {
     it('replaces requests when switching scope with keep log off', handlesSwitchingScope(false));
     it('appends requests when switching scope with keep log on', handlesSwitchingScope(true));
     it('appends requests on prerender activation with keep log on', async () => {
-        Common.Settings.Settings.instance().moduleSetting('network-log.preserve-log').set(true);
+        Common.Settings.Settings.instance().resolve(SDK.SDKSettings.preserveNetworkLogSettingDescriptor).set(true);
         SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
         const anotherTarget = createTarget();
         const networkManager = target.model(SDK.NetworkManager.NetworkManager);

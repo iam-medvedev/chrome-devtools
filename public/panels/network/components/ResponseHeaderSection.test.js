@@ -8,6 +8,7 @@ import * as Host from '../../../core/host/host.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Bindings from '../../../models/bindings/bindings.js';
+import * as Persistence from '../../../models/persistence/persistence.js';
 import * as Workspace from '../../../models/workspace/workspace.js';
 import { dispatchInputEvent, getCleanTextContentFromElements, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
@@ -321,12 +322,16 @@ Learn more`);
         const rows = component.shadowRoot.querySelectorAll('devtools-header-section-row');
         checkHeaderSectionRow(rows[0], 'cache-control', 'max-age=600', false, false, true);
         checkHeaderSectionRow(rows[1], 'server', 'overridden server', true, false, true);
-        Common.Settings.Settings.instance().moduleSetting('persistence-network-overrides-enabled').set(false);
+        Common.Settings.Settings.instance()
+            .resolve(Persistence.NetworkPersistenceManager.persistenceNetworkOverridesEnabledSettingDescriptor)
+            .set(false);
         component.data = { request };
         await RenderCoordinator.done();
         checkHeaderSectionRow(rows[0], 'cache-control', 'max-age=600', false, false, false);
         checkHeaderSectionRow(rows[1], 'server', 'overridden server', true, false, false);
-        Common.Settings.Settings.instance().moduleSetting('persistence-network-overrides-enabled').set(true);
+        Common.Settings.Settings.instance()
+            .resolve(Persistence.NetworkPersistenceManager.persistenceNetworkOverridesEnabledSettingDescriptor)
+            .set(true);
     });
     it('does not set headers as "editable" when matching ".headers" file cannot be parsed correctly', async () => {
         await createWorkspaceProject(urlString `file:///path/to/overrides`, [
@@ -760,7 +765,9 @@ Learn more`);
         checkHeaderSectionRow(rows[0], 'server', 'overridden server', true, false, true);
         checkHeaderSectionRow(rows[1], 'header-name', 'header value', true, true, true);
         component.remove();
-        Common.Settings.Settings.instance().moduleSetting('persistence-network-overrides-enabled').set(false);
+        Common.Settings.Settings.instance()
+            .resolve(Persistence.NetworkPersistenceManager.persistenceNetworkOverridesEnabledSettingDescriptor)
+            .set(false);
         const component2 = await renderResponseHeaderSection(request);
         assert.isNotNull(component2.shadowRoot);
         rows = component2.shadowRoot.querySelectorAll('devtools-header-section-row');
@@ -768,7 +775,9 @@ Learn more`);
         checkHeaderSectionRow(rows[0], 'server', 'overridden server', true, false, false);
         checkHeaderSectionRow(rows[1], 'header-name', 'header value', true, false, false);
         component2.remove();
-        Common.Settings.Settings.instance().moduleSetting('persistence-network-overrides-enabled').set(true);
+        Common.Settings.Settings.instance()
+            .resolve(Persistence.NetworkPersistenceManager.persistenceNetworkOverridesEnabledSettingDescriptor)
+            .set(true);
         const component3 = await renderResponseHeaderSection(request);
         assert.isNotNull(component3.shadowRoot);
         rows = component3.shadowRoot.querySelectorAll('devtools-header-section-row');

@@ -2109,13 +2109,26 @@ function tap(observerOrNext, error, complete) {
 var isNode = !!(typeof process !== "undefined" && process.version);
 var environment = {
   value: {
-    get fs() {
-      throw new Error("fs is not available in this environment");
-    },
+    followSymlinks: true,
     ScreenRecorder: class {
       constructor() {
         throw new Error("ScreenRecorder is not available in this environment");
       }
+    },
+    readFile: () => {
+      throw new Error("readFile is not available in this environment");
+    },
+    writeFile: () => {
+      throw new Error("writeFile is not available in this environment");
+    },
+    openFileForWriting: () => {
+      throw new Error("openFileForWriting is not available in this environment");
+    },
+    createWriteStream: () => {
+      throw new Error("createWriteStream is not available in this environment");
+    },
+    mkdir: () => {
+      throw new Error("mkdir is not available in this environment");
     }
   }
 };
@@ -2615,7 +2628,7 @@ function mergeUint8Arrays(items) {
 }
 
 // gen/front_end/third_party/puppeteer/package/lib/puppeteer/util/version.js
-var packageVersion = "25.7.0";
+var packageVersion = "25.8.0";
 
 // gen/front_end/third_party/puppeteer/package/lib/puppeteer/common/Errors.js
 var PuppeteerError = class extends Error {
@@ -2796,7 +2809,7 @@ async function getReadableAsTypedArray(readable, path, logger) {
   const buffers = [];
   const reader = readable.getReader();
   if (path) {
-    const fileHandle = await environment.value.fs.promises.open(path, "w+");
+    const fileHandle = await environment.value.openFileForWriting(path);
     try {
       while (true) {
         const { done, value } = await reader.read();
@@ -5210,7 +5223,7 @@ var Page = (() => {
       if (!path) {
         return;
       }
-      await environment.value.fs.promises.writeFile(path, typedArray);
+      await environment.value.writeFile(path, typedArray);
     }
     /**
      * Captures a screencast of this {@link Page | page}.
@@ -5285,6 +5298,13 @@ var Page = (() => {
       if (options.scale !== void 0 && options.scale <= 0) {
         throw new Error(`\`scale\` must be greater than 0.`);
       }
+      if (options.path && environment.value.path) {
+        await environment.value.mkdir(environment.value.path.dirname(options.path), { recursive: options.overwrite ?? true });
+      }
+      const stream = options.path ? environment.value.createWriteStream(options.path, {
+        encoding: "binary",
+        overwrite: options.overwrite
+      }) : void 0;
       const recorder = new ScreenRecorder(this, width, height, {
         ...options,
         crop
@@ -5295,9 +5315,7 @@ var Page = (() => {
         void recorder.stop();
         throw error;
       }
-      if (options.path) {
-        const { createWriteStream } = environment.value.fs;
-        const stream = createWriteStream(options.path, "binary");
+      if (stream) {
         recorder.pipe(stream);
       }
       return recorder;
@@ -9351,7 +9369,7 @@ var Frame = (() => {
         throw new Error("Exactly one of `url`, `path`, or `content` must be specified.");
       }
       if (path) {
-        content = await environment.value.fs.promises.readFile(path, "utf8");
+        content = await environment.value.readFile(path, "utf8");
         content += `//# sourceURL=${path.replace(/\n/g, "")}`;
       }
       type = type ?? "text/javascript";
@@ -9389,7 +9407,7 @@ var Frame = (() => {
         throw new Error("Exactly one of `url`, `path`, or `content` must be specified.");
       }
       if (path) {
-        content = await environment.value.fs.promises.readFile(path, "utf8");
+        content = await environment.value.readFile(path, "utf8");
         content += "/*# sourceURL=" + path.replace(/\n/g, "") + "*/";
         options.content = content;
       }
@@ -17472,8 +17490,7 @@ var CdpPage = class _CdpPage extends Page {
   async captureHeapSnapshot(options) {
     const env_2 = { stack: [], error: void 0, hasError: false };
     try {
-      const { createWriteStream } = environment.value.fs;
-      const stream = createWriteStream(options.path);
+      const stream = environment.value.createWriteStream(options.path);
       const streamPromise = new Promise((resolve, reject) => {
         stream.on("error", reject);
         stream.on("finish", resolve);

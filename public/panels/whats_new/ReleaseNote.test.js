@@ -46,6 +46,9 @@ describe('Release Note', () => {
         await initializeGlobalVars({ reset: false });
     });
     after(async () => await deinitializeGlobalVars());
+    beforeEach(() => {
+        WhatsNew.WhatsNew.getReleaseNoteVersionSetting().set(0);
+    });
     it('sets and gets the last seen release note version correctly', () => {
         const releaseNoteVersionSetting = WhatsNew.WhatsNew.getReleaseNoteVersionSetting();
         assert.strictEqual(releaseNoteVersionSetting.get(), 0);
@@ -53,6 +56,7 @@ describe('Release Note', () => {
         assert.strictEqual(releaseNoteVersionSetting.get(), 1);
     });
     it('updates the last seen version when the release notes are shown', () => {
+        WhatsNew.WhatsNew.getReleaseNoteVersionSetting().set(1);
         assert.strictEqual(WhatsNew.WhatsNew.getReleaseNoteVersionSetting().get(), 1);
         WhatsNew.WhatsNew.showReleaseNoteIfNeeded();
         assert.strictEqual(WhatsNew.WhatsNew.getReleaseNoteVersionSetting().get(), 99);

@@ -1764,6 +1764,7 @@ __export(FrameworkIgnoreListSettingsTab_exports, {
 import "./../../ui/kit/kit.js";
 import * as Common3 from "./../../core/common/common.js";
 import * as i18n7 from "./../../core/i18n/i18n.js";
+import * as Workspace from "./../../models/workspace/workspace.js";
 import * as Buttons3 from "./../../ui/components/buttons/buttons.js";
 import * as UIHelpers2 from "./../../ui/helpers/helpers.js";
 import * as SettingsUI3 from "./../../ui/legacy/components/settings_ui/settings_ui.js";
@@ -1960,7 +1961,7 @@ var FrameworkIgnoreListSettingsTab = class extends UI4.Widget.VBox {
     settingsContent.classList.add("settings-card-container", "ignore-list-settings");
     const ignoreListingDescription = document.createElement("span");
     ignoreListingDescription.textContent = i18nString4(UIStrings4.ignoreListingDescription);
-    const enabledSetting = Common3.Settings.Settings.instance().moduleSetting("enable-ignore-listing");
+    const enabledSetting = Common3.Settings.Settings.instance().resolve(Workspace.IgnoreListManager.enableIgnoreListingSettingDescriptor);
     const enableIgnoreListing = this.contentElement.createChild("div", "enable-ignore-listing");
     enableIgnoreListing.appendChild(SettingsUI3.SettingsUI.createSettingCheckbox(i18nString4(UIStrings4.ignoreListing), enabledSetting));
     UI4.Tooltip.Tooltip.install(enableIgnoreListing, i18nString4(UIStrings4.enableIgnoreListingTooltip));
@@ -1969,9 +1970,9 @@ var FrameworkIgnoreListSettingsTab = class extends UI4.Widget.VBox {
     enableIgnoreListingCard.append(ignoreListingDescription, enableIgnoreListing);
     const generalExclusionGroup = this.createSettingGroup();
     generalExclusionGroup.classList.add("general-exclusion-group");
-    const ignoreListContentScripts = generalExclusionGroup.createChild("div", "ignore-list-option").appendChild(SettingsUI3.SettingsUI.createSettingCheckbox(i18nString4(UIStrings4.ignoreListContentScripts), Common3.Settings.Settings.instance().moduleSetting("skip-content-scripts")));
+    const ignoreListContentScripts = generalExclusionGroup.createChild("div", "ignore-list-option").appendChild(SettingsUI3.SettingsUI.createSettingCheckbox(i18nString4(UIStrings4.ignoreListContentScripts), Common3.Settings.Settings.instance().resolve(Workspace.IgnoreListManager.skipContentScriptsSettingDescriptor)));
     const automaticallyIgnoreListContainer = generalExclusionGroup.createChild("div", "ignore-list-option");
-    const automaticallyIgnoreList = automaticallyIgnoreListContainer.appendChild(SettingsUI3.SettingsUI.createSettingCheckbox(i18nString4(UIStrings4.automaticallyIgnoreListKnownThirdPartyScripts), Common3.Settings.Settings.instance().moduleSetting("automatically-ignore-list-known-third-party-scripts")));
+    const automaticallyIgnoreList = automaticallyIgnoreListContainer.appendChild(SettingsUI3.SettingsUI.createSettingCheckbox(i18nString4(UIStrings4.automaticallyIgnoreListKnownThirdPartyScripts), Common3.Settings.Settings.instance().resolve(Workspace.IgnoreListManager.automaticallyIgnoreListKnownThirdPartyScriptsSettingDescriptor)));
     const automaticallyIgnoreLinkButton = new Buttons3.Button.Button();
     automaticallyIgnoreLinkButton.data = {
       iconName: "help",
@@ -1982,7 +1983,7 @@ var FrameworkIgnoreListSettingsTab = class extends UI4.Widget.VBox {
     };
     automaticallyIgnoreLinkButton.addEventListener("click", () => UIHelpers2.openInNewTab("https://developer.chrome.com/docs/devtools/settings/ignore-list/#skip-third-party"));
     automaticallyIgnoreListContainer.appendChild(automaticallyIgnoreLinkButton);
-    const ignoreListAnonymousScripts = generalExclusionGroup.createChild("div", "ignore-list-option").appendChild(SettingsUI3.SettingsUI.createSettingCheckbox(i18nString4(UIStrings4.ignoreListAnonymousScripts), Common3.Settings.Settings.instance().moduleSetting("skip-anonymous-scripts")));
+    const ignoreListAnonymousScripts = generalExclusionGroup.createChild("div", "ignore-list-option").appendChild(SettingsUI3.SettingsUI.createSettingCheckbox(i18nString4(UIStrings4.ignoreListAnonymousScripts), Common3.Settings.Settings.instance().resolve(Workspace.IgnoreListManager.skipAnonymousScriptsSettingDescriptor)));
     const generalExclusionGroupCard = settingsContent.createChild("devtools-card", "ignore-list-options");
     generalExclusionGroupCard.heading = i18nString4(UIStrings4.generalExclusionRules);
     generalExclusionGroupCard.append(generalExclusionGroup);
@@ -2001,7 +2002,7 @@ var FrameworkIgnoreListSettingsTab = class extends UI4.Widget.VBox {
     const addPatternButton = UI4.UIUtils.createTextButton(i18nString4(UIStrings4.addPattern), this.addButtonClicked.bind(this), { className: "add-button", jslogContext: "settings.add-ignore-list-pattern" });
     UI4.ARIAUtils.setLabel(addPatternButton, i18nString4(UIStrings4.addFilenamePattern));
     customExclusionGroup.appendChild(addPatternButton);
-    this.setting = Common3.Settings.Settings.instance().moduleSetting("skip-stack-frames-pattern");
+    this.setting = Common3.Settings.Settings.instance().resolve(Workspace.IgnoreListManager.skipStackFramesPatternSettingDescriptor);
     this.setting.addChangeListener(this.settingUpdated, this);
     const enabledChanged = () => {
       const enabled = enabledSetting.get();
@@ -2020,7 +2021,7 @@ var FrameworkIgnoreListSettingsTab = class extends UI4.Widget.VBox {
     this.settingUpdated();
   }
   settingUpdated() {
-    const editable = Common3.Settings.Settings.instance().moduleSetting("enable-ignore-listing").get();
+    const editable = Common3.Settings.Settings.instance().resolve(Workspace.IgnoreListManager.enableIgnoreListingSettingDescriptor).get();
     this.list.clear();
     const patterns = this.setting.getAsArray();
     for (let i = 0; i < patterns.length; ++i) {

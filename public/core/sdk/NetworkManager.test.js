@@ -1426,7 +1426,7 @@ describe('MultitargetNetworkManager', () => {
         const multitargetNetworkManager = universe.multitargetNetworkManager;
         let eventCounter = 0;
         multitargetNetworkManager.addEventListener("BlockedPatternsChanged" /* SDK.NetworkManager.MultitargetNetworkManager.Events.BLOCKED_PATTERNS_CHANGED */, () => eventCounter++);
-        const blockingEnabledSetting = universe.settings.moduleSetting('request-blocking-enabled');
+        const blockingEnabledSetting = universe.settings.resolve(SDK.SDKSettings.requestBlockingEnabledSettingDescriptor);
         // Change blocking setting via Common.Settings.Settings.
         assert.isFalse(multitargetNetworkManager.isBlocking());
         assert.isFalse(multitargetNetworkManager.requestConditions.conditionsEnabled);
@@ -2250,7 +2250,8 @@ describe('InterceptedRequest', () => {
         sinon.stub(SDK.TargetManager.TargetManager, 'instance').returns(targetManager);
         sinon.stub(Common.Settings.Settings, 'instance').returns(settings);
         sinon.stub(SDK.NetworkManager.MultitargetNetworkManager, 'instance').returns(universe.multitargetNetworkManager);
-        settings.moduleSetting('persistence-network-overrides-enabled').set(true);
+        settings.resolve(Persistence.NetworkPersistenceManager.persistenceNetworkOverridesEnabledSettingDescriptor)
+            .set(true);
         target = universe.createTarget({});
         networkPersistenceManager = await createWorkspaceProject(urlString `file:///path/to/overrides`, [
             {

@@ -4,12 +4,17 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Bindings from '../../models/bindings/bindings.js';
+import * as Workspace from '../../models/workspace/workspace.js';
 import { assertScreenshot, raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { spyCall } from '../../testing/ExpectStubCall.js';
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Sources from './sources.js';
+const { urlString } = Platform.DevToolsPath;
 describeWithEnvironment('WatchExpression', () => {
     it('creates read-only object properties for watch expression', async () => {
         const object = SDK.RemoteObject.RemoteObject.fromLocalObject({ foo: 'bar' });
@@ -17,7 +22,7 @@ describeWithEnvironment('WatchExpression', () => {
         const debuggerModel = sinon.createStubInstance(SDK.DebuggerModel.DebuggerModel);
         debuggerModel.selectedCallFrame.returns(null);
         executionContext.debuggerModel = debuggerModel;
-        executionContext.evaluate.resolves({ object, exceptionDetails: undefined });
+        executionContext.evaluateWithSelectedFrameFallback.resolves({ object, exceptionDetails: undefined });
         sinon.stub(UI.Context.Context.instance(), 'flavor').returns(executionContext);
         const expansionTracker = new ObjectUI.ObjectPropertiesSection.ObjectTreeExpansionTracker();
         const watchExpression = new Sources.WatchExpressionsSidebarPane.WatchExpression();
@@ -57,12 +62,12 @@ describeWithEnvironment('WatchExpression', () => {
         const debuggerModel = sinon.createStubInstance(SDK.DebuggerModel.DebuggerModel);
         debuggerModel.selectedCallFrame.returns(null);
         executionContext.debuggerModel = debuggerModel;
-        executionContext.evaluate.resolves({ object: SDK.RemoteObject.RemoteObject.fromLocalObject(2), exceptionDetails: undefined });
+        executionContext.evaluateWithSelectedFrameFallback.resolves({ object: SDK.RemoteObject.RemoteObject.fromLocalObject(2), exceptionDetails: undefined });
         sinon.stub(UI.Context.Context.instance(), 'flavor').returns(executionContext);
         const pane = new Sources.WatchExpressionsSidebarPane.WatchExpressionsSidebarPane();
         renderElementIntoDOM(pane);
         await raf();
-        await pane.updateComplete;
+        await UI.Widget.Widget.allUpdatesComplete;
         const treeElement = pane.contentElement.querySelector('devtools-tree');
         const listItemElement = treeElement?.shadowRoot?.querySelector('.watch-expression-tree-item');
         assert.exists(listItemElement);
@@ -71,12 +76,13 @@ describeWithEnvironment('WatchExpression', () => {
         // Double click to start editing
         headerElement.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
         await raf();
-        await pane.updateComplete;
-        const textPromptElement = listItemElement.querySelector('devtools-prompt');
+        await UI.Widget.Widget.allUpdatesComplete;
+        const textPromptElement = treeElement?.shadowRoot?.querySelector('devtools-prompt');
         assert.exists(textPromptElement);
+        const savePromise = spyCall(pane, 'saveExpressions');
         textPromptElement.dispatchEvent(new CustomEvent('commit', { detail: '2 + 2' }));
-        await raf();
-        await pane.updateComplete;
+        await savePromise;
+        await UI.Widget.Widget.allUpdatesComplete;
         assert.deepEqual(setting.get(), ['2 + 2']);
     });
     it('deletes an expression and saves to settings', async () => {
@@ -86,7 +92,7 @@ describeWithEnvironment('WatchExpression', () => {
         const debuggerModel = sinon.createStubInstance(SDK.DebuggerModel.DebuggerModel);
         debuggerModel.selectedCallFrame.returns(null);
         executionContext.debuggerModel = debuggerModel;
-        executionContext.evaluate.resolves({ object: SDK.RemoteObject.RemoteObject.fromLocalObject(2), exceptionDetails: undefined });
+        executionContext.evaluateWithSelectedFrameFallback.resolves({ object: SDK.RemoteObject.RemoteObject.fromLocalObject(2), exceptionDetails: undefined });
         sinon.stub(UI.Context.Context.instance(), 'flavor').returns(executionContext);
         const pane = new Sources.WatchExpressionsSidebarPane.WatchExpressionsSidebarPane();
         renderElementIntoDOM(pane);
@@ -120,7 +126,7 @@ describeWithEnvironment('WatchExpression', () => {
         const debuggerModel = sinon.createStubInstance(SDK.DebuggerModel.DebuggerModel);
         debuggerModel.selectedCallFrame.returns(null);
         executionContext.debuggerModel = debuggerModel;
-        executionContext.evaluate.callsFake(async (options) => {
+        executionContext.evaluateWithSelectedFrameFallback.callsFake(async (options) => {
             if (options.expression === '1 + 1') {
                 return { object: object1, exceptionDetails: undefined };
             }
@@ -145,7 +151,7 @@ describeWithEnvironment('WatchExpression', () => {
         const debuggerModel = sinon.createStubInstance(SDK.DebuggerModel.DebuggerModel);
         debuggerModel.selectedCallFrame.returns(null);
         executionContext.debuggerModel = debuggerModel;
-        executionContext.evaluate.resolves({ object: object1, exceptionDetails: undefined });
+        executionContext.evaluateWithSelectedFrameFallback.resolves({ object: object1, exceptionDetails: undefined });
         sinon.stub(UI.Context.Context.instance(), 'flavor').returns(executionContext);
         const pane = new Sources.WatchExpressionsSidebarPane.WatchExpressionsSidebarPane();
         pane.element.style.width = '300px';
@@ -165,13 +171,75 @@ describeWithEnvironment('WatchExpression', () => {
         await pane.updateComplete;
         await assertScreenshot('sources/watch-expression-delete-button.png');
     });
+    it('screenshot for expanded function expression', async () => {
+        Common.Settings.Settings.instance().createLocalSetting('watch-expressions', []).set(['f']);
+        const workspace = Workspace.Workspace.WorkspaceImpl.instance();
+        const targetManager = SDK.TargetManager.TargetManager.instance();
+        const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);
+        const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
+        Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
+            forceNew: true,
+            resourceMapping,
+            targetManager,
+            ignoreListManager,
+            workspace,
+        });
+        Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.instance({
+            forceNew: true,
+            resourceMapping,
+            targetManager,
+        });
+        const target = createTarget();
+        const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+        assert.exists(runtimeModel);
+        const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
+        assert.exists(debuggerModel);
+        debuggerModel.parsedScriptSource('1', urlString `http://example.com/test.js`, 0, 0, 10, 0, 0, '', undefined, undefined, false, false, 100, null, null, null, null, null, null, null);
+        const executionContext = sinon.createStubInstance(SDK.RuntimeModel.ExecutionContext);
+        executionContext.debuggerModel = debuggerModel;
+        executionContext.runtimeModel = runtimeModel;
+        const functionObject = new SDK.RemoteObject.RemoteObjectImpl(runtimeModel, 'mock-f-id', 'function', undefined, undefined, undefined, 'ƒ () {}');
+        const locationObject = new SDK.RemoteObject.RemoteObjectImpl(runtimeModel, undefined, 'object', 'internal#location', { scriptId: '1', lineNumber: 0, columnNumber: 0 });
+        const protoObject = new SDK.RemoteObject.RemoteObjectImpl(runtimeModel, 'mock-proto-id', 'function', undefined, undefined, undefined, 'function () {}');
+        const properties = [
+            new SDK.RemoteObject.RemoteObjectProperty('arguments', SDK.RemoteObject.RemoteObject.fromLocalObject(null), false, false, true),
+            new SDK.RemoteObject.RemoteObjectProperty('caller', SDK.RemoteObject.RemoteObject.fromLocalObject(null), false, false, true),
+            new SDK.RemoteObject.RemoteObjectProperty('length', SDK.RemoteObject.RemoteObject.fromLocalObject(0), false, false, true),
+            new SDK.RemoteObject.RemoteObjectProperty('name', SDK.RemoteObject.RemoteObject.fromLocalObject('f'), false, false, true),
+            new SDK.RemoteObject.RemoteObjectProperty('prototype', SDK.RemoteObject.RemoteObject.fromLocalObject({}), false, true, true),
+        ];
+        const internalProperties = [
+            new SDK.RemoteObject.RemoteObjectProperty('[[FunctionLocation]]', locationObject, true, false, undefined, undefined, undefined, true),
+            new SDK.RemoteObject.RemoteObjectProperty('[[Prototype]]', protoObject, true, false, undefined, undefined, undefined, true),
+            new SDK.RemoteObject.RemoteObjectProperty('[[Scopes]]', SDK.RemoteObject.RemoteObject.fromLocalObject('Scopes[0]'), true, false, undefined, undefined, undefined, true),
+        ];
+        sinon.stub(functionObject, 'getOwnProperties').resolves({ properties, internalProperties });
+        sinon.stub(functionObject, 'getAllProperties').resolves({ properties: [], internalProperties: null });
+        executionContext.evaluateWithSelectedFrameFallback.resolves({ object: functionObject, exceptionDetails: undefined });
+        sinon.stub(UI.Context.Context.instance(), 'flavor').returns(executionContext);
+        const pane = new Sources.WatchExpressionsSidebarPane.WatchExpressionsSidebarPane();
+        pane.element.style.width = '300px';
+        pane.element.style.height = '200px';
+        renderElementIntoDOM(pane, { includeCommonStyles: true });
+        await raf();
+        await pane.updateComplete;
+        const watchExpressions = pane.watchExpressions;
+        assert.lengthOf(watchExpressions, 1);
+        const treeComponent = pane.contentElement.querySelector('devtools-tree');
+        assert.exists(treeComponent);
+        const treeOutline = treeComponent.getInternalTreeOutlineForTest();
+        treeOutline.firstChild()?.expand();
+        await raf();
+        await pane.updateComplete;
+        await assertScreenshot('sources/watch-expressions-function.png');
+    });
     it('preserves expansion state across updates', async () => {
         const object = SDK.RemoteObject.RemoteObject.fromLocalObject({ foo: { bar: 'baz' } });
         const executionContext = sinon.createStubInstance(SDK.RuntimeModel.ExecutionContext);
         const debuggerModel = sinon.createStubInstance(SDK.DebuggerModel.DebuggerModel);
         debuggerModel.selectedCallFrame.returns(null);
         executionContext.debuggerModel = debuggerModel;
-        executionContext.evaluate.resolves({ object, exceptionDetails: undefined });
+        executionContext.evaluateWithSelectedFrameFallback.resolves({ object, exceptionDetails: undefined });
         sinon.stub(UI.Context.Context.instance(), 'flavor').returns(executionContext);
         const setting = Common.Settings.Settings.instance().createLocalSetting('watch-expressions', []);
         setting.set(['obj']);
@@ -212,7 +280,7 @@ describeWithEnvironment('WatchExpression', () => {
         const debuggerModel = sinon.createStubInstance(SDK.DebuggerModel.DebuggerModel);
         debuggerModel.selectedCallFrame.returns(null);
         executionContext.debuggerModel = debuggerModel;
-        executionContext.evaluate.resolves({ object, exceptionDetails: undefined });
+        executionContext.evaluateWithSelectedFrameFallback.resolves({ object, exceptionDetails: undefined });
         sinon.stub(UI.Context.Context.instance(), 'flavor').returns(executionContext);
         const setting = Common.Settings.Settings.instance().createLocalSetting('watch-expressions', []);
         setting.set(['obj1']);
@@ -237,11 +305,12 @@ describeWithEnvironment('WatchExpression', () => {
         const headerElement = listItemElement.querySelector('.watch-expression-header');
         headerElement.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
         await raf();
-        await pane.updateComplete;
-        const textPromptElement = listItemElement.querySelector('devtools-prompt');
+        await UI.Widget.Widget.allUpdatesComplete;
+        const textPromptElement = treeElement?.shadowRoot?.querySelector('devtools-prompt');
+        const savePromise = spyCall(pane, 'saveExpressions');
         textPromptElement.dispatchEvent(new CustomEvent('commit', { detail: 'obj2' }));
-        await raf();
-        await pane.updateComplete;
+        await savePromise;
+        await UI.Widget.Widget.allUpdatesComplete;
         const newWatchExpression = pane.watchExpressions[0];
         const newTree = newWatchExpression.result;
         assert.notStrictEqual(tree, newTree);
@@ -259,14 +328,14 @@ describeWithEnvironment('WatchExpression', () => {
         const debuggerModel = sinon.createStubInstance(SDK.DebuggerModel.DebuggerModel);
         debuggerModel.selectedCallFrame.returns(null);
         executionContext.debuggerModel = debuggerModel;
-        executionContext.evaluate.resolves({ object, exceptionDetails: undefined });
+        executionContext.evaluateWithSelectedFrameFallback.resolves({ object, exceptionDetails: undefined });
         sinon.stub(UI.Context.Context.instance(), 'flavor').returns(executionContext);
         const setting = Common.Settings.Settings.instance().createLocalSetting('watch-expressions', []);
         setting.set(['obj1']);
         const pane = new Sources.WatchExpressionsSidebarPane.WatchExpressionsSidebarPane();
         renderElementIntoDOM(pane);
         await raf();
-        await pane.updateComplete;
+        await UI.Widget.Widget.allUpdatesComplete;
         const watchExpression = pane.watchExpressions[0];
         const tree = watchExpression.result;
         assert.exists(tree);
@@ -283,21 +352,23 @@ describeWithEnvironment('WatchExpression', () => {
         let headerElement = listItemElement.querySelector('.watch-expression-header');
         headerElement.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
         await raf();
-        await pane.updateComplete;
-        let textPromptElement = listItemElement.querySelector('devtools-prompt');
+        await UI.Widget.Widget.allUpdatesComplete;
+        let textPromptElement = treeElement?.shadowRoot?.querySelector('devtools-prompt');
+        let savePromise = spyCall(pane, 'saveExpressions');
         textPromptElement.dispatchEvent(new CustomEvent('commit', { detail: 'obj2' }));
-        await raf();
-        await pane.updateComplete;
+        await savePromise;
+        await UI.Widget.Widget.allUpdatesComplete;
         // Change expression back to obj1
         listItemElement = treeElement?.shadowRoot?.querySelector('.watch-expression-tree-item');
         headerElement = listItemElement.querySelector('.watch-expression-header');
         headerElement.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
         await raf();
-        await pane.updateComplete;
-        textPromptElement = listItemElement.querySelector('devtools-prompt');
+        await UI.Widget.Widget.allUpdatesComplete;
+        textPromptElement = treeElement?.shadowRoot?.querySelector('devtools-prompt');
+        savePromise = spyCall(pane, 'saveExpressions');
         textPromptElement.dispatchEvent(new CustomEvent('commit', { detail: 'obj1' }));
-        await raf();
-        await pane.updateComplete;
+        await savePromise;
+        await UI.Widget.Widget.allUpdatesComplete;
         const newWatchExpression = pane.watchExpressions[0];
         const finalTree = newWatchExpression.result;
         assert.isFalse(finalTree.expanded, 'Expansion state of root should be cleared when expression changes');
@@ -306,6 +377,55 @@ describeWithEnvironment('WatchExpression', () => {
         assert.exists(finalFooProperty);
         assert.notStrictEqual(fooProperty, finalFooProperty);
         assert.isFalse(finalFooProperty.expanded);
+    });
+    it('updates completions on beforeautocomplete without cancelling editing', async () => {
+        Common.Settings.Settings.instance().createLocalSetting('watch-expressions', []).set(['as']);
+        const executionContext = sinon.createStubInstance(SDK.RuntimeModel.ExecutionContext);
+        const debuggerModel = sinon.createStubInstance(SDK.DebuggerModel.DebuggerModel);
+        const runtimeModel = sinon.createStubInstance(SDK.RuntimeModel.RuntimeModel);
+        debuggerModel.selectedCallFrame.returns(null);
+        executionContext.debuggerModel = debuggerModel;
+        executionContext.runtimeModel = runtimeModel;
+        executionContext.globalLexicalScopeNames.resolves([]);
+        executionContext.evaluateWithSelectedFrameFallback.resolves({ object: SDK.RemoteObject.RemoteObject.fromLocalObject(123), exceptionDetails: undefined });
+        sinon.stub(UI.Context.Context.instance(), 'flavor').returns(executionContext);
+        const pane = new Sources.WatchExpressionsSidebarPane.WatchExpressionsSidebarPane();
+        renderElementIntoDOM(pane);
+        await raf();
+        await UI.Widget.Widget.allUpdatesComplete;
+        const treeElement = pane.contentElement.querySelector('devtools-tree');
+        const listItemElement = treeElement?.shadowRoot?.querySelector('.watch-expression-tree-item');
+        assert.exists(listItemElement);
+        const headerElement = listItemElement.querySelector('.watch-expression-header');
+        assert.exists(headerElement);
+        headerElement.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
+        await raf();
+        await UI.Widget.Widget.allUpdatesComplete;
+        const textPromptElement = treeElement?.shadowRoot?.querySelector('devtools-prompt');
+        assert.exists(textPromptElement);
+        assert.isTrue(textPromptElement.hasAttribute('editing'));
+        const widgetElement = treeElement?.shadowRoot?.querySelector('devtools-widget');
+        const promptWidget = UI.Widget.Widget.get(widgetElement);
+        assert.exists(promptWidget);
+        const updatePromise = spyCall(promptWidget, 'performUpdate');
+        textPromptElement.dispatchEvent(new UI.TextPrompt.TextPromptElement.BeforeAutoCompleteEvent({
+            expression: '',
+            filter: 'as',
+            force: false,
+        }));
+        await updatePromise;
+        await UI.Widget.Widget.allUpdatesComplete;
+        const datalist = textPromptElement.querySelector('datalist');
+        assert.exists(datalist);
+        const options = Array.from(datalist.querySelectorAll('option')).map(opt => opt.value || opt.textContent);
+        assert.include(options, 'async');
+        assert.isTrue(textPromptElement.hasAttribute('editing'));
+        const savePromise = spyCall(pane, 'saveExpressions');
+        textPromptElement.dispatchEvent(new CustomEvent('commit', { detail: 'async' }));
+        await savePromise;
+        await UI.Widget.Widget.allUpdatesComplete;
+        const clearedDatalist = textPromptElement.querySelector('datalist');
+        assert.isNull(clearedDatalist);
     });
 });
 //# sourceMappingURL=WatchExpressionsSidebarPane.test.js.map

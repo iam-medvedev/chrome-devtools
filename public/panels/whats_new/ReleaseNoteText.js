@@ -16,29 +16,23 @@ export function getReleaseNote() {
     return releaseNote;
 }
 let releaseNote = {
-    version: 151,
-    header: 'What’s new in DevTools 151',
+    version: 152,
+    header: 'What’s new in DevTools 152',
     markdownLinks: [
         {
             key: 'devtools-for-agents',
-            link: 'https://developer.chrome.com/blog/new-in-devtools-151/#devtools-for-agents',
+            link: 'https://developer.chrome.com/blog/new-in-devtools-152/#devtools-for-agents',
         },
         {
-            key: 'ai-assistance',
-            link: 'https://developer.chrome.com/blog/new-in-devtools-151/#ai-assistance',
+            key: 'performance',
+            link: 'https://developer.chrome.com/blog/new-in-devtools-152/#performance',
         },
         {
-            key: 'css-specificity',
-            link: 'https://developer.chrome.com/blog/new-in-devtools-151/#css-specificity',
+            key: 'nested-selectors',
+            link: 'https://developer.chrome.com/blog/new-in-devtools-152/#nested-selectors',
         },
     ],
-    videoLinks: [
-        {
-            description: 'See all highlights from Chrome 148-150',
-            link: 'https://www.youtube.com/watch?v=wBNCPp5gdqg',
-            type: "WhatsNew" /* VideoType.WHATS_NEW */,
-        },
-    ],
-    link: 'https://developer.chrome.com/blog/new-in-devtools-151/',
+    videoLinks: [],
+    link: 'https://developer.chrome.com/blog/new-in-devtools-152/',
 };
 //# sourceMappingURL=ReleaseNoteText.js.map

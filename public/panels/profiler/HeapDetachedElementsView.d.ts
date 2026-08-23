@@ -1,13 +1,13 @@
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import type * as Protocol from '../../generated/protocol.js';
-import type * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import { HeapDetachedElementsDataGrid } from './HeapDetachedElementsDataGrid.js';
 import { type DataDisplayDelegate, type ProfileHeader, ProfileType } from './ProfileHeader.js';
 import { WritableProfileHeader } from './WritableProfileHeader.js';
 export declare class DetachedElementsProfileView extends UI.View.SimpleView implements DataDisplayDelegate {
     readonly selectedSizeText: UI.Toolbar.ToolbarText;
-    dataGrid: DataGrid.DataGrid.DataGridImpl<unknown>;
+    dataGrid: HeapDetachedElementsDataGrid;
     profile: DetachedElementsProfileHeader;
     readonly parentDataDisplayDelegate: DataDisplayDelegate;
     constructor(dataDisplayDelegate: DataDisplayDelegate, profile: DetachedElementsProfileHeader);

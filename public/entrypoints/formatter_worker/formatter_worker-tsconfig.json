@@ -67,13 +67,7 @@
       "path": "../../core/text_utils/bundle-tsconfig.json"
     },
     {
-      "path": "../../third_party/acorn/acorn-tsconfig.json"
-    },
-    {
       "path": "../../third_party/acorn/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../third_party/codemirror/codemirror-tsconfig.json"
     },
     {
       "path": "../../third_party/codemirror/codemirror-legacy-types-tsconfig.json"

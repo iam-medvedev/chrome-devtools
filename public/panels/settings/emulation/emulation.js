@@ -11,6 +11,7 @@ __export(DevicesSettingsTab_exports, {
 });
 import "./../../../ui/kit/kit.js";
 import * as i18n from "./../../../core/i18n/i18n.js";
+import * as Root from "./../../../core/root/root.js";
 import * as EmulationModel from "./../../../models/emulation/emulation.js";
 import * as UI from "./../../../ui/legacy/legacy.js";
 import * as VisualLogging from "./../../../ui/visual_logging/visual_logging.js";
@@ -530,26 +531,28 @@ var DevicesSettingsTab = class extends UI.Widget.VBox {
     device.modes = [];
     const verticalMode = {
       title: "",
-      orientation: EmulationModel.EmulatedDevices.Vertical,
-      insets: new EmulationModel.DeviceModeModel.Insets(0, 0, 0, 0)
+      orientation: EmulationModel.EmulatedDevices.Vertical
     };
-    const safeAreaInsets = this.safeAreaInsetsFromEditor(editor);
-    if (safeAreaInsets) {
-      verticalMode.safeAreaInsets = safeAreaInsets;
-    }
-    const cutout = this.cutoutFromEditor(editor);
-    if (cutout) {
-      verticalMode.cutout = cutout;
+    if (Root.Runtime.hostConfig.devToolsMobileSafeAreaEmulation?.enabled) {
+      const safeAreaInsets = this.safeAreaInsetsFromEditor(editor);
+      if (safeAreaInsets) {
+        verticalMode.safeAreaInsets = safeAreaInsets;
+      }
+      const cutout = this.cutoutFromEditor(editor);
+      if (cutout) {
+        verticalMode.cutout = cutout;
+      }
     }
     device.modes.push(verticalMode);
     const horizontalMode = {
       title: "",
-      orientation: EmulationModel.EmulatedDevices.Horizontal,
-      insets: new EmulationModel.DeviceModeModel.Insets(0, 0, 0, 0)
+      orientation: EmulationModel.EmulatedDevices.Horizontal
     };
-    const landscapeSafeAreaInsets = this.safeAreaInsetsFromEditor(editor, "landscape-");
-    if (landscapeSafeAreaInsets) {
-      horizontalMode.safeAreaInsets = landscapeSafeAreaInsets;
+    if (Root.Runtime.hostConfig.devToolsMobileSafeAreaEmulation?.enabled) {
+      const landscapeSafeAreaInsets = this.safeAreaInsetsFromEditor(editor, "landscape-");
+      if (landscapeSafeAreaInsets) {
+        horizontalMode.safeAreaInsets = landscapeSafeAreaInsets;
+      }
     }
     device.modes.push(horizontalMode);
     device.capabilities = [];
@@ -591,8 +594,10 @@ var DevicesSettingsTab = class extends UI.Widget.VBox {
     editor.control("height").value = this.toNumericInputValue(device.vertical.height);
     editor.control("scale").value = this.toNumericInputValue(device.deviceScaleFactor);
     editor.control("user-agent").value = device.userAgent;
-    this.populateSafeAreaEditor(editor, device);
-    this.populateCutoutEditor(editor, device);
+    if (Root.Runtime.hostConfig.devToolsMobileSafeAreaEmulation?.enabled) {
+      this.populateSafeAreaEditor(editor, device);
+      this.populateCutoutEditor(editor, device);
+    }
     let uaType;
     if (device.mobile()) {
       uaType = device.touch() ? "Mobile" : "Mobile (no touch)";
@@ -716,21 +721,23 @@ var DevicesSettingsTab = class extends UI.Widget.VBox {
     const dpr = editor.createInput("scale", "text", i18nString(UIStrings.devicePixelRatio), scaleValidator);
     dpr.classList.add("device-edit-fixed");
     screen.appendChild(dpr);
-    this.appendSafeAreaFields(editor, deviceFields, i18nString(UIStrings.portraitSafeArea), "", portraitSafeAreaValidator);
-    this.appendSafeAreaFields(editor, deviceFields, i18nString(UIStrings.landscapeSafeArea), "landscape-", landscapeSafeAreaValidator);
-    this.appendCutoutFields(editor, content, {
-      shape: cutoutShapeValidator,
-      x: cutoutXValidator,
-      y: cutoutYValidator,
-      width: cutoutWidthValidator,
-      height: cutoutHeightValidator,
-      pillRadius: cutoutPillRadiusValidator,
-      notchUpperRadius: cutoutNotchUpperRadiusValidator,
-      notchLowerRadius: cutoutNotchLowerRadiusValidator,
-      circleCenterX: cutoutCircleCenterXValidator,
-      circleCenterY: cutoutCircleCenterYValidator,
-      circleRadius: cutoutCircleRadiusValidator
-    });
+    if (Root.Runtime.hostConfig.devToolsMobileSafeAreaEmulation?.enabled) {
+      this.appendSafeAreaFields(editor, deviceFields, i18nString(UIStrings.portraitSafeArea), "", portraitSafeAreaValidator);
+      this.appendSafeAreaFields(editor, deviceFields, i18nString(UIStrings.landscapeSafeArea), "landscape-", landscapeSafeAreaValidator);
+      this.appendCutoutFields(editor, content, {
+        shape: cutoutShapeValidator,
+        x: cutoutXValidator,
+        y: cutoutYValidator,
+        width: cutoutWidthValidator,
+        height: cutoutHeightValidator,
+        pillRadius: cutoutPillRadiusValidator,
+        notchUpperRadius: cutoutNotchUpperRadiusValidator,
+        notchLowerRadius: cutoutNotchLowerRadiusValidator,
+        circleCenterX: cutoutCircleCenterXValidator,
+        circleCenterY: cutoutCircleCenterYValidator,
+        circleRadius: cutoutCircleRadiusValidator
+      });
+    }
     const uaStringFields = content.createChild("div", "devices-edit-fields");
     UI.UIUtils.createTextChild(uaStringFields.createChild("b"), i18nString(UIStrings.userAgentString));
     const ua = uaStringFields.createChild("div", "hbox");

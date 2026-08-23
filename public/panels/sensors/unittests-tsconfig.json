@@ -59,9 +59,6 @@
       "path": "../../testing/testing-tsconfig.json"
     },
     {
-      "path": "../../ui/components/dialogs/bundle-tsconfig.json"
-    },
-    {
       "path": "../../ui/components/render_coordinator/bundle-tsconfig.json"
     },
     {

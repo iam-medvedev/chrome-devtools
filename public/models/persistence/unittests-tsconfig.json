@@ -80,9 +80,6 @@
       "path": "../../testing/testing-tsconfig.json"
     },
     {
-      "path": "../bindings/bundle-tsconfig.json"
-    },
-    {
       "path": "../breakpoints/bundle-tsconfig.json"
     },
     {

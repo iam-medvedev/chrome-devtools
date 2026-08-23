@@ -1159,11 +1159,12 @@ describeWithEnvironment('ConsoleView', () => {
             assert.exists(messagesElement);
             const objectElement = messagesElement.querySelector('.console-view-object-properties-section');
             assert.exists(objectElement);
-            const targetElement = objectElement.shadowRoot?.querySelector('li') || objectElement;
+            const targetElement = objectElement.querySelector('devtools-tree')?.shadowRoot?.querySelector('li') || objectElement;
             const contextMenu = getContextMenuForElement(targetElement);
             const expandItem = contextMenu.viewSection().items.find(item => item.buildDescriptor().label === 'Expand recursively');
             if (expandItem) {
                 contextMenu.invokeHandler(expandItem.id());
+                await UI.Widget.Widget.allUpdatesComplete;
                 await doubleRaf();
             }
             await assertScreenshot('console/console_view_logged_object_expanded.png');
@@ -1202,7 +1203,7 @@ describeWithEnvironment('ConsoleView', () => {
             assert.exists(messagesElement);
             const objectElement = messagesElement.querySelector('.console-view-object-properties-section');
             assert.exists(objectElement);
-            const targetElement = objectElement.shadowRoot?.querySelector('li') || objectElement;
+            const targetElement = objectElement.querySelector('devtools-tree')?.shadowRoot?.querySelector('li') || objectElement;
             const contextMenu = getContextMenuForElement(targetElement);
             const allSections = [
                 contextMenu.headerSection(),

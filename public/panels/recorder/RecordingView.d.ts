@@ -7,7 +7,6 @@ import * as UI from '../../ui/legacy/legacy.js';
 import type * as Converters from './converters/converters.js';
 import type * as Extensions from './extensions/extensions.js';
 import * as Models from './models/models.js';
-import { PlayRecordingSpeed } from './models/RecordingPlayer.js';
 import { type AddStepPosition, State } from './StepView.js';
 declare global {
     interface HTMLElementTagNameMap {
@@ -24,7 +23,7 @@ export declare const enum TargetPanel {
 }
 export interface PlayRecordingEvent {
     targetPanel: TargetPanel;
-    speed: PlayRecordingSpeed;
+    speed: Models.RecordingPlayer.PlayRecordingSpeed;
     extension?: Extensions.ExtensionManager.Extension;
 }
 interface ViewInput {
@@ -57,7 +56,7 @@ interface ViewInput {
     getStepState: (step: Models.Schema.Step) => State;
     onAbortReplay: () => void;
     onMeasurePerformanceClick: (event: Event) => void;
-    onTogglePlaying: (speed: PlayRecordingSpeed, extension?: Extensions.ExtensionManager.Extension) => void;
+    onTogglePlaying: (speed: Models.RecordingPlayer.PlayRecordingSpeed, extension?: Extensions.ExtensionManager.Extension) => void;
     onCodeFormatChange: (event: Menus.SelectMenu.SelectMenuItemSelectedEvent) => void;
     onCopyStep: (step: Models.Schema.Step) => void;
     onEditTitleButtonClick: (event: Event) => void;

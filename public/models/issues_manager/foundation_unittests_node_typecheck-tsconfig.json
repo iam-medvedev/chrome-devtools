@@ -46,6 +46,7 @@
     "../../../../../../front_end/models/issues_manager/ConnectionAllowlistIssue.test.ts",
     "../../../../../../front_end/models/issues_manager/DeprecationIssue.test.ts",
     "../../../../../../front_end/models/issues_manager/ElementAccessibilityIssue.test.ts",
+    "../../../../../../front_end/models/issues_manager/FederatedAuthRequestIssue.test.ts",
     "../../../../../../front_end/models/issues_manager/FederatedAuthUserInfoRequestIssue.test.ts",
     "../../../../../../front_end/models/issues_manager/GenericIssue.test.ts",
     "../../../../../../front_end/models/issues_manager/Issue.test.ts",

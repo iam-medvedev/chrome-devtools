@@ -63,9 +63,6 @@
     },
     {
       "path": "../../ui/settings/bundle-tsconfig.json"
-    },
-    {
-      "path": "components/bundle-tsconfig.json"
     }
   ]
 }

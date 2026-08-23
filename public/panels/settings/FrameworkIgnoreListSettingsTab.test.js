@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import * as Common from '../../core/common/common.js';
+import * as Workspace from '../../models/workspace/workspace.js';
 import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
@@ -47,20 +48,28 @@ describeWithEnvironment('FrameworkIgnoreListSettingsTab', () => {
         const checkboxInput0 = generalCheckboxes[0].shadowRoot?.querySelector('input');
         assert.exists(checkboxInput0);
         checkboxInput0.click();
-        assert.isFalse(Common.Settings.Settings.instance().moduleSetting('skip-content-scripts').get());
+        assert.isFalse(Common.Settings.Settings.instance()
+            .resolve(Workspace.IgnoreListManager.skipContentScriptsSettingDescriptor)
+            .get());
         // Toggle skip-anonymous-scripts (default false -> true)
         const checkboxInput1 = generalCheckboxes[2].shadowRoot?.querySelector('input');
         assert.exists(checkboxInput1);
         checkboxInput1.click();
-        assert.isTrue(Common.Settings.Settings.instance().moduleSetting('skip-anonymous-scripts').get());
+        assert.isTrue(Common.Settings.Settings.instance()
+            .resolve(Workspace.IgnoreListManager.skipAnonymousScriptsSettingDescriptor)
+            .get());
     });
     it('updates checkbox state when settings are changed programmatically', () => {
         const shadowRoot = tab.element.shadowRoot;
         assert.exists(shadowRoot);
         const generalCheckboxes = shadowRoot.querySelectorAll('.general-exclusion-group devtools-checkbox');
-        Common.Settings.Settings.instance().moduleSetting('skip-content-scripts').set(false);
+        Common.Settings.Settings.instance()
+            .resolve(Workspace.IgnoreListManager.skipContentScriptsSettingDescriptor)
+            .set(false);
         assert.isFalse(generalCheckboxes[0].checked);
-        Common.Settings.Settings.instance().moduleSetting('skip-anonymous-scripts').set(true);
+        Common.Settings.Settings.instance()
+            .resolve(Workspace.IgnoreListManager.skipAnonymousScriptsSettingDescriptor)
+            .set(true);
         assert.isTrue(generalCheckboxes[2].checked);
     });
     it('disables other settings when ignore listing is disabled', () => {
@@ -88,7 +97,7 @@ describeWithEnvironment('FrameworkIgnoreListSettingsTab', () => {
         assert.isTrue(addPatternButton.disabled);
     });
     it('renders ignore-list items and updates settings when toggled', () => {
-        const regexSetting = Common.Settings.Settings.instance().moduleSetting('skip-stack-frames-pattern');
+        const regexSetting = Common.Settings.Settings.instance().resolve(Workspace.IgnoreListManager.skipStackFramesPatternSettingDescriptor);
         regexSetting.setAsArray([
             { pattern: 'pattern1', disabled: false },
             { pattern: 'pattern2', disabled: true },
@@ -117,7 +126,7 @@ describeWithEnvironment('FrameworkIgnoreListSettingsTab', () => {
         assert.isTrue(updatedPatterns[1].disabled);
     });
     it('removes custom regex rules', () => {
-        const regexSetting = Common.Settings.Settings.instance().moduleSetting('skip-stack-frames-pattern');
+        const regexSetting = Common.Settings.Settings.instance().resolve(Workspace.IgnoreListManager.skipStackFramesPatternSettingDescriptor);
         regexSetting.setAsArray([
             { pattern: 'pattern1', disabled: false },
             { pattern: 'pattern2', disabled: true },
@@ -139,7 +148,7 @@ describeWithEnvironment('FrameworkIgnoreListSettingsTab', () => {
         ]);
     });
     it('adds custom regex rules', () => {
-        const regexSetting = Common.Settings.Settings.instance().moduleSetting('skip-stack-frames-pattern');
+        const regexSetting = Common.Settings.Settings.instance().resolve(Workspace.IgnoreListManager.skipStackFramesPatternSettingDescriptor);
         regexSetting.setAsArray([]);
         const shadowRoot = tab.element.shadowRoot;
         assert.exists(shadowRoot);
@@ -164,7 +173,7 @@ describeWithEnvironment('FrameworkIgnoreListSettingsTab', () => {
         ]);
     });
     it('shows validation errors for invalid rules', () => {
-        const regexSetting = Common.Settings.Settings.instance().moduleSetting('skip-stack-frames-pattern');
+        const regexSetting = Common.Settings.Settings.instance().resolve(Workspace.IgnoreListManager.skipStackFramesPatternSettingDescriptor);
         regexSetting.setAsArray([
             { pattern: 'duplicate-pattern', disabled: false },
         ]);
@@ -202,7 +211,7 @@ describeWithEnvironment('FrameworkIgnoreListSettingsTab', () => {
         assert.strictEqual(errorContainer.textContent, 'Rule must be a valid regular expression');
     });
     it('renders ignore list tab screenshot', async () => {
-        const regexSetting = Common.Settings.Settings.instance().moduleSetting('skip-stack-frames-pattern');
+        const regexSetting = Common.Settings.Settings.instance().resolve(Workspace.IgnoreListManager.skipStackFramesPatternSettingDescriptor);
         regexSetting.setAsArray([
             { pattern: 'pattern1', disabled: false },
             { pattern: 'pattern2', disabled: true },
@@ -210,12 +219,14 @@ describeWithEnvironment('FrameworkIgnoreListSettingsTab', () => {
         await assertScreenshot('settings/framework_ignore_list_settings_tab.png');
     });
     it('renders ignore list tab screenshot when ignore listing is disabled', async () => {
-        const regexSetting = Common.Settings.Settings.instance().moduleSetting('skip-stack-frames-pattern');
+        const regexSetting = Common.Settings.Settings.instance().resolve(Workspace.IgnoreListManager.skipStackFramesPatternSettingDescriptor);
         regexSetting.setAsArray([
             { pattern: 'pattern1', disabled: false },
             { pattern: 'pattern2', disabled: true },
         ]);
-        Common.Settings.Settings.instance().moduleSetting('enable-ignore-listing').set(false);
+        Common.Settings.Settings.instance()
+            .resolve(Workspace.IgnoreListManager.enableIgnoreListingSettingDescriptor)
+            .set(false);
         await assertScreenshot('settings/framework_ignore_list_settings_tab_disabled.png');
     });
     it('renders ignore list tab screenshot in edit mode with error', async () => {

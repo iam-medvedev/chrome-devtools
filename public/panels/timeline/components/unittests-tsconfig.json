@@ -87,9 +87,6 @@
       "path": "../../../generated/generated-tsconfig.json"
     },
     {
-      "path": "../../../models/bindings/bundle-tsconfig.json"
-    },
-    {
       "path": "../../../models/crux-manager/bundle-tsconfig.json"
     },
     {
@@ -108,9 +105,6 @@
       "path": "../../../testing/testing-tsconfig.json"
     },
     {
-      "path": "../../../ui/components/menus/bundle-tsconfig.json"
-    },
-    {
       "path": "../../../ui/components/render_coordinator/bundle-tsconfig.json"
     },
     {
@@ -118,9 +112,6 @@
     },
     {
       "path": "../../../ui/legacy/components/utils/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../mobile_throttling/bundle-tsconfig.json"
     },
     {
       "path": "insights/bundle-tsconfig.json"

@@ -1853,35 +1853,37 @@ var ReplaySection = class extends UI5.Widget.Widget {
     }, void 0, this.contentElement);
   }
   #computeGroups() {
-    const groups = [{
-      name: i18nString4(UIStrings4.speedGroup),
-      items: [
-        {
-          value: "normal",
-          buttonIconName: "play",
-          buttonLabel: () => i18nString4(UIStrings4.ReplayNormalButtonLabel),
-          label: () => i18nString4(UIStrings4.ReplayNormalItemLabel)
-        },
-        {
-          value: "slow",
-          buttonIconName: "play",
-          buttonLabel: () => i18nString4(UIStrings4.ReplaySlowButtonLabel),
-          label: () => i18nString4(UIStrings4.ReplaySlowItemLabel)
-        },
-        {
-          value: "very_slow",
-          buttonIconName: "play",
-          buttonLabel: () => i18nString4(UIStrings4.ReplayVerySlowButtonLabel),
-          label: () => i18nString4(UIStrings4.ReplayVerySlowItemLabel)
-        },
-        {
-          value: "extremely_slow",
-          buttonIconName: "play",
-          buttonLabel: () => i18nString4(UIStrings4.ReplayExtremelySlowButtonLabel),
-          label: () => i18nString4(UIStrings4.ReplayExtremelySlowItemLabel)
-        }
-      ]
-    }];
+    const groups = [
+      {
+        name: i18nString4(UIStrings4.speedGroup),
+        items: [
+          {
+            value: "normal",
+            buttonIconName: "play",
+            buttonLabel: () => i18nString4(UIStrings4.ReplayNormalButtonLabel),
+            label: () => i18nString4(UIStrings4.ReplayNormalItemLabel)
+          },
+          {
+            value: "slow",
+            buttonIconName: "play",
+            buttonLabel: () => i18nString4(UIStrings4.ReplaySlowButtonLabel),
+            label: () => i18nString4(UIStrings4.ReplaySlowItemLabel)
+          },
+          {
+            value: "very_slow",
+            buttonIconName: "play",
+            buttonLabel: () => i18nString4(UIStrings4.ReplayVerySlowButtonLabel),
+            label: () => i18nString4(UIStrings4.ReplayVerySlowItemLabel)
+          },
+          {
+            value: "extremely_slow",
+            buttonIconName: "play",
+            buttonLabel: () => i18nString4(UIStrings4.ReplayExtremelySlowButtonLabel),
+            label: () => i18nString4(UIStrings4.ReplayExtremelySlowItemLabel)
+          }
+        ]
+      }
+    ];
     if (this.#replayExtensions.length) {
       groups.push({
         name: i18nString4(UIStrings4.extensionGroup),
@@ -1927,7 +1929,7 @@ var ReplaySection = class extends UI5.Widget.Widget {
     if (this.onStartReplay) {
       this.onStartReplay(
         this.#settings ? this.#settings.speed : "normal"
-        /* PlayRecordingSpeed.NORMAL */
+        /* Models.RecordingPlayer.PlayRecordingSpeed.NORMAL */
       );
     }
     this.performUpdate();
