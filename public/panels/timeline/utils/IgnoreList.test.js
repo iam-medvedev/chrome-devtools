@@ -139,7 +139,7 @@ describe('isIgnoreListedEntry', () => {
         const resolver = new SourceMapsResolver.SourceMapsResolver(parsedTrace);
         await resolver.install();
         assert.isTrue(Utils.IgnoreList.isIgnoreListedEntry(profileCallWithMappings));
-        const ignoreKnownThirdPartySetting = Common.Settings.Settings.instance().moduleSetting('automatically-ignore-list-known-third-party-scripts');
+        const ignoreKnownThirdPartySetting = Common.Settings.Settings.instance().resolve(Workspace.IgnoreListManager.automaticallyIgnoreListKnownThirdPartyScriptsSettingDescriptor);
         const ignoreKnownThirdPartySettingValue = ignoreKnownThirdPartySetting.get();
         ignoreKnownThirdPartySetting.set(true);
         assert.isTrue(Utils.IgnoreList.isIgnoreListedEntry(profileCallWithMappings));
@@ -174,7 +174,7 @@ describe('isIgnoreListedEntry', () => {
         const resolver = new SourceMapsResolver.SourceMapsResolver(parsedTrace);
         await resolver.install();
         assert.isTrue(Utils.IgnoreList.isIgnoreListedEntry(profileCallWithContentScript));
-        const ignoreContentScriptSetting = Common.Settings.Settings.instance().moduleSetting('skip-content-scripts');
+        const ignoreContentScriptSetting = Common.Settings.Settings.instance().resolve(Workspace.IgnoreListManager.skipContentScriptsSettingDescriptor);
         const ignoreContentScriptSettingValue = ignoreContentScriptSetting.get();
         ignoreContentScriptSetting.set(true);
         assert.isTrue(Utils.IgnoreList.isIgnoreListedEntry(profileCallWithContentScript));
@@ -208,15 +208,15 @@ describe('isIgnoreListedEntry', () => {
     });
 });
 function ignoreRegex(regexValue) {
-    const regexPatterns = Common.Settings.Settings.instance().moduleSetting('skip-stack-frames-pattern')
+    const regexPatterns = Common.Settings.Settings.instance().resolve(Workspace.IgnoreListManager.skipStackFramesPatternSettingDescriptor)
         .getAsArray();
     regexPatterns.push({ pattern: regexValue, disabled: false });
 }
 function unignoreRegex(regexValue) {
-    const regexPatterns = Common.Settings.Settings.instance().moduleSetting('skip-stack-frames-pattern')
+    const regexPatterns = Common.Settings.Settings.instance().resolve(Workspace.IgnoreListManager.skipStackFramesPatternSettingDescriptor)
         .getAsArray();
     const result = regexPatterns.filter(regexPattern => regexPattern.pattern !== regexValue);
-    Common.Settings.Settings.instance().moduleSetting('skip-stack-frames-pattern')
+    Common.Settings.Settings.instance().resolve(Workspace.IgnoreListManager.skipStackFramesPatternSettingDescriptor)
         .setAsArray(result);
 }
 //# sourceMappingURL=IgnoreList.test.js.map

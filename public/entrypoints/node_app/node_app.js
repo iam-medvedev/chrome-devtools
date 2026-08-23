@@ -302,11 +302,73 @@ import * as Common3 from "./../../core/common/common.js";
 import * as i18n5 from "./../../core/i18n/i18n.js";
 import * as Root from "./../../core/root/root.js";
 import * as SDK from "./../../core/sdk/sdk.js";
+import * as Logs from "./../../models/logs/logs.js";
 import * as Workspace from "./../../models/workspace/workspace.js";
 import * as PanelCommon from "./../../panels/common/common.js";
 import * as UI3 from "./../../ui/legacy/legacy.js";
+import * as SettingsUI from "./../../ui/settings/settings.js";
 import * as NetworkForward from "./../../panels/network/forward/forward.js";
 var UIStrings3 = {
+  /**
+   * @description Text to keep the log after refreshing.
+   */
+  keepLog: "Keep log",
+  /**
+   * @description A term that can be used to search in the command menu, and will find the search
+   * result 'Keep log on page reload / navigation'. This is an additional search term to help
+   * the user find the setting even when they don't know the exact name of it.
+   */
+  keep: "keep",
+  /**
+   * @description A term that can be used to search in the command menu, and will find the search
+   * result 'Keep log on page reload / navigation'. This is an additional search term to help
+   * the user find the setting even when they don't know the exact name of it.
+   */
+  preserve: "preserve",
+  /**
+   * @description A term that can be used to search in the command menu, and will find the search
+   * result 'Keep log on page reload / navigation'. This is an additional search term to help
+   * the user find the setting even when they don't know the exact name of it.
+   */
+  clearTag: "clear",
+  /**
+   * @description A term that can be used to search in the command menu, and will find the search
+   * result 'Keep log on page reload / navigation'. This is an additional search term to help
+   * the user find the setting even when they don't know the exact name of it.
+   */
+  reset: "reset",
+  /**
+   * @description Title of a setting under the Network category that can be invoked through the Command Menu.
+   */
+  keepLogOnPageReload: "Keep log on page reload / navigation",
+  /**
+   * @description Title of a setting under the Network category that can be invoked through the Command Menu.
+   */
+  doNotKeepLogOnPageReload: "Don\u2019t keep log on page reload / navigation",
+  /**
+   * @description Title of a setting under the Network category that can be invoked through the Command Menu.
+   */
+  enableCache: "Enable cache",
+  /**
+   * @description Title of a setting under the Network category that can be invoked through the Command Menu.
+   */
+  disableCache: "Disable cache while DevTools is open",
+  /**
+   * @description Tooltip text for a setting that controls the network cache. Disabling the network cache can simulate the network connections of users that are visiting a page for the first time.
+   */
+  networkCacheExplanation: "Disabling the network cache will simulate a network experience similar to a first time visitor.",
+  /**
+   * @description Title of a setting under the Network category.
+   */
+  networkRequestBlocking: "Network request blocking",
+  /**
+   * @description Title of a setting under the Network category that can be invoked through the Command Menu.
+   */
+  enableNetworkRequestBlocking: "Enable network request blocking",
+  /**
+   * @description Title of a setting under the Network category that can be invoked through the Command Menu.
+   */
+  disableNetworkRequestBlocking: "Disable network request blocking",
   /**
    * @description Command for showing the 'Network' tool
    */
@@ -701,6 +763,62 @@ Common3.Settings.registerSettingExtension({
       title: i18nLazyString3(UIStrings3.dontGroupNetworkLogItemsByFrame)
     }
   ]
+});
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.requestBlockingEnabledSettingDescriptor, {
+  category: "NETWORK",
+  title: i18nLazyString3(UIStrings3.networkRequestBlocking),
+  options: [
+    {
+      value: true,
+      title: i18nLazyString3(UIStrings3.enableNetworkRequestBlocking)
+    },
+    {
+      value: false,
+      title: i18nLazyString3(UIStrings3.disableNetworkRequestBlocking)
+    }
+  ]
+});
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.cacheDisabledSettingDescriptor, {
+  category: "NETWORK",
+  title: i18nLazyString3(UIStrings3.disableCache),
+  order: 0,
+  options: [
+    {
+      value: true,
+      title: i18nLazyString3(UIStrings3.disableCache)
+    },
+    {
+      value: false,
+      title: i18nLazyString3(UIStrings3.enableCache)
+    }
+  ],
+  learnMore: {
+    tooltip: i18nLazyString3(UIStrings3.networkCacheExplanation)
+  }
+});
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.preserveNetworkLogSettingDescriptor, {
+  category: "NETWORK",
+  title: i18nLazyString3(UIStrings3.keepLog),
+  tags: [
+    i18nLazyString3(UIStrings3.keep),
+    i18nLazyString3(UIStrings3.preserve),
+    i18nLazyString3(UIStrings3.clearTag),
+    i18nLazyString3(UIStrings3.reset)
+  ],
+  options: [
+    {
+      value: true,
+      title: i18nLazyString3(UIStrings3.keepLogOnPageReload)
+    },
+    {
+      value: false,
+      title: i18nLazyString3(UIStrings3.doNotKeepLogOnPageReload)
+    }
+  ]
+});
+SettingsUI.SettingUIRegistration.register(Logs.NetworkLog.recordNetworkLogSettingDescriptor, {
+  category: "NETWORK",
+  title: i18nLazyString3(UIStrings3.recordNetworkLog)
 });
 UI3.ViewManager.registerLocationResolver({
   name: "network-sidebar",

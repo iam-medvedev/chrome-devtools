@@ -20,6 +20,14 @@ const UIStrings = {
    */
   doNotPreserveLogUponNavigation: 'Don’t keep log on navigation',
   /**
+   * @description Title of a setting under the Console category in Settings.
+   */
+  customFormatters: 'Custom formatters',
+  /**
+   * @description Title of a setting under the Console category in Settings.
+   */
+  logXmlhttprequests: 'Log XMLHttpRequests',
+  /**
    * @description Title of the Console tool.
    */
   console: 'Console',
@@ -412,13 +420,9 @@ Common.Settings.registerSettingExtension({
   ],
 });
 
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.consoleUserActivationEvalSettingDescriptor, {
   category: Common.Settings.SettingCategory.CONSOLE,
-  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.evaluateTriggersUserActivation),
-  settingName: 'console-user-activation-eval',
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: true,
   options: [
     {
       value: true,
@@ -472,6 +476,16 @@ SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.preserveConsoleLogSett
       title: i18nLazyString(UIStrings.doNotPreserveLogUponNavigation),
     },
   ],
+});
+
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.customFormattersSettingDescriptor, {
+  category: Common.Settings.SettingCategory.CONSOLE,
+  title: i18nLazyString(UIStrings.customFormatters),
+});
+
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.monitoringXHREnabledSettingDescriptor, {
+  category: Common.Settings.SettingCategory.CONSOLE,
+  title: i18nLazyString(UIStrings.logXmlhttprequests),
 });
 
 Common.Revealer.registerRevealer({

@@ -79,9 +79,6 @@
       "path": "../../../ui/legacy/components/perf_ui/bundle-tsconfig.json"
     },
     {
-      "path": "../../common/bundle-tsconfig.json"
-    },
-    {
       "path": "components/bundle-tsconfig.json"
     }
   ]

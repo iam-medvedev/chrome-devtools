@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 import * as RecordingClient from './RecordingClient.js';
 import * as SelectorPicker from './SelectorPicker.js';
+import { findMinMax } from './selectors/CSSSelector.js';
+// Exported for testing
+export { findMinMax };
 class DevToolsRecorder {
     #recordingClient;
     startRecording(bindings, options) {

@@ -27,7 +27,7 @@ export class ProfileSidebarTreeElement extends UI.TreeOutline.TreeElement {
     profile;
     editing;
     constructor(dataDisplayDelegate, profile, className) {
-        super('', false);
+        super('', false, 'profile-item');
         this.iconElement = document.createElement('div');
         this.iconElement.classList.add('icon');
         this.titlesElement = document.createElement('div');

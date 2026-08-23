@@ -7,6 +7,7 @@ interface ViewInput {
     onCancelEditing: (attribute: SDK.DOMModel.Attribute) => void;
     attributeBeingEdited: SDK.DOMModel.Attribute | null;
     attributes: SDK.DOMModel.Attribute[];
+    backendNodeId?: number;
 }
 type View = (input: ViewInput, output: object, target: HTMLElement | DocumentFragment) => void;
 export declare const DEFAULT_VIEW: View;

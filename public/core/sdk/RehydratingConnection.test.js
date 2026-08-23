@@ -100,7 +100,10 @@ describe('RehydratingSession', () => {
     const target = mockTarget1;
     let mockRehydratingConnection;
     let mockRehydratingSession;
-    const executionContextsForTarget1 = [mockExecutionContext1, mockExecutionContext2];
+    const executionContextsForTarget1 = [
+        mockExecutionContext1,
+        mockExecutionContext2,
+    ];
     const scriptsForTarget1 = [mockScript1, mockScript2];
     const resourcesForTarget1 = [mockResource];
     class MockRehydratingConnection {
@@ -186,7 +189,7 @@ describeWithEnvironment('RehydratingConnection emittance', function () {
         // `RehydratingSession.handleFrontendMessageAsFakeCDPAgent` cares about
         let id = 1;
         const fakeDevToolsFrontend = (arg0) => {
-            const message = ((typeof arg0 === 'string') ? JSON.parse(arg0) : arg0);
+            const message = (typeof arg0 === 'string' ? JSON.parse(arg0) : arg0);
             messageLog.push('RehydratingConnection says:', message);
             if (message.method === 'Target.attachedToTarget') {
                 const attachedParams = message.params;
@@ -197,7 +200,12 @@ describeWithEnvironment('RehydratingConnection emittance', function () {
             if (message.method === 'Debugger.scriptParsed') {
                 const scriptParsedParams = message.params;
                 const sessionId = message.sessionId;
-                conn.sendRawMessage({ id: id++, sessionId, method: 'Debugger.getScriptSource', params: { scriptId: scriptParsedParams.scriptId } });
+                conn.sendRawMessage({
+                    id: id++,
+                    sessionId,
+                    method: 'Debugger.getScriptSource',
+                    params: { scriptId: scriptParsedParams.scriptId },
+                });
             }
         };
         conn.setOnMessage(fakeDevToolsFrontend);
@@ -208,7 +216,10 @@ describeWithEnvironment('RehydratingConnection emittance', function () {
         };
         // Kick off the rehydration process
         conn.onReceiveHostWindowPayload({
-            data: { type: 'REHYDRATING_TRACE_FILE', traceJson: JSON.stringify(contents) },
+            data: {
+                type: 'REHYDRATING_TRACE_FILE',
+                traceJson: JSON.stringify(contents),
+            },
         });
         // Poll for rehydration complete
         const poll = async () => {
@@ -252,7 +263,8 @@ describeWithEnvironment('RehydratingConnection ?traceURL loading', () => {
     // A minimal "enhanced trace" whose single primary frame's url is fully controlled.
     function makeTrace(frameUrl) {
         return {
-            traceEvents: [{
+            traceEvents: [
+                {
                     cat: 'disabled-by-default-devtools.timeline',
                     name: 'TracingStartedInBrowser',
                     ph: 'I',
@@ -261,7 +273,8 @@ describeWithEnvironment('RehydratingConnection ?traceURL loading', () => {
                     ts: 0,
                     args: {
                         data: {
-                            frames: [{
+                            frames: [
+                                {
                                     frame: 'FRAME',
                                     isInPrimaryMainFrame: true,
                                     isOutermostMainFrame: true,
@@ -269,10 +282,12 @@ describeWithEnvironment('RehydratingConnection ?traceURL loading', () => {
                                     processId: 1,
                                     url: frameUrl,
                                     pid: 1,
-                                }],
+                                },
+                            ],
                         },
                     },
-                }],
+                },
+            ],
         };
     }
     let queryParamStub;

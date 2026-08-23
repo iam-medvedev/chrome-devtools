@@ -91,11 +91,12 @@ export class EditFileSystemView extends UI.Widget.VBox {
         this.requestUpdate();
     }
     #resyncExcludedFolderPaths() {
-        this.#excludedFolderPaths = this.#fileSystem?.excludedFolders()
-            .values()
-            .map(path => ({ path, status: 1 /* ExcludedFolderStatus.VALID */ }))
-            .toArray() ??
-            [];
+        this.#excludedFolderPaths =
+            this.#fileSystem?.excludedFolders()
+                .values()
+                .map((path) => ({ path, status: 1 /* ExcludedFolderStatus.VALID */ }))
+                .toArray() ??
+                [];
     }
     performUpdate() {
         const input = {

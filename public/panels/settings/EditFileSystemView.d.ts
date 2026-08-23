@@ -1,6 +1,6 @@
 import '../../ui/legacy/components/data_grid/data_grid.js';
 import * as Platform from '../../core/platform/platform.js';
-import type { PlatformFileSystem } from '../../models/persistence/PlatformFileSystem.js';
+import type * as Persistence from '../../models/persistence/persistence.js';
 import * as UI from '../../ui/legacy/legacy.js';
 export declare const enum ExcludedFolderStatus {
     VALID = 1,
@@ -29,7 +29,7 @@ export declare const DEFAULT_VIEW: View;
 export declare class EditFileSystemView extends UI.Widget.VBox {
     #private;
     constructor(element: HTMLElement | undefined, view?: View);
-    set fileSystem(fileSystem: PlatformFileSystem);
+    set fileSystem(fileSystem: Persistence.PlatformFileSystem.PlatformFileSystem);
     wasShown(): void;
     performUpdate(): void;
 }

@@ -3,11 +3,16 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import sinon from 'sinon';
+import * as Common from '../../core/common/common.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
-import { createTarget, describeWithEnvironment, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
+import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { TestUniverse } from '../../testing/TestUniverse.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
+import * as Components from '../../ui/legacy/components/utils/utils.js';
+import * as UI from '../../ui/legacy/legacy.js';
 import * as Elements from './elements.js';
 describeWithEnvironment('DOMTreeWidget', () => {
     let target;
@@ -16,7 +21,6 @@ describeWithEnvironment('DOMTreeWidget', () => {
         sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, 'instance')
             .returns(universe.debuggerWorkspaceBinding);
         sinon.stub(Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding, 'instance').returns(universe.cssWorkspaceBinding);
-        stubNoopSettings();
         target = createTarget();
     });
     describe('node highlighting', () => {
@@ -54,6 +58,175 @@ describeWithEnvironment('DOMTreeWidget', () => {
         };
         it('highlights node on in scope request event', highlightsNodeOnRequestEvent(true));
         it('does not highlight node on out of scope request event', highlightsNodeOnRequestEvent(false));
+    });
+    describe('show-html-comments setting', () => {
+        it('updates showComments when setting changes', async () => {
+            const elementsTreeOutline = new Elements.ElementsTreeOutline.ElementsTreeOutline();
+            const view = createViewFunctionStub(Elements.ElementsTreeOutline.DOMTreeWidget, {
+                elementsTreeOutline,
+                alreadyExpandedParentTreeElement: null,
+                highlightedTreeElement: null,
+                isUpdatingHighlights: false,
+            });
+            const domTree = new Elements.ElementsTreeOutline.DOMTreeWidget(undefined, view);
+            domTree.performUpdate();
+            assert.isTrue(domTree.showComments);
+            assert.isTrue(view.input.showComments);
+            const setting = Common.Settings.Settings.instance().moduleSetting('show-html-comments');
+            setting.set(false);
+            assert.isFalse(domTree.showComments);
+            assert.isFalse(view.input.showComments);
+        });
+        it('removes change listener on detach', async () => {
+            const elementsTreeOutline = new Elements.ElementsTreeOutline.ElementsTreeOutline();
+            const view = createViewFunctionStub(Elements.ElementsTreeOutline.DOMTreeWidget, {
+                elementsTreeOutline,
+                alreadyExpandedParentTreeElement: null,
+                highlightedTreeElement: null,
+                isUpdatingHighlights: false,
+            });
+            const domTree = new Elements.ElementsTreeOutline.DOMTreeWidget(undefined, view);
+            domTree.performUpdate();
+            domTree.detach();
+            const setting = Common.Settings.Settings.instance().moduleSetting('show-html-comments');
+            const viewCallCount = view.callCount;
+            setting.set(false);
+            sinon.assert.callCount(view, viewCallCount);
+        });
+    });
+    describe('image preview popover', () => {
+        it('shows preview when hovering over a link within the elements tree outline', async () => {
+            const clock = sinon.useFakeTimers();
+            try {
+                const domTree = new Elements.ElementsTreeOutline.DOMTreeWidget();
+                domTree.markAsRoot();
+                renderElementIntoDOM(domTree);
+                domTree.performUpdate();
+                const shadowHost = domTree.contentElement.firstElementChild;
+                assert.exists(shadowHost);
+                const elementsTreeOutline = shadowHost.shadowRoot?.querySelector('.elements-tree-outline');
+                assert.exists(elementsTreeOutline);
+                const link = elementsTreeOutline.createChild('span');
+                link.boxInWindow = () => new AnchorBox(0, 0, 10, 10);
+                const imageUrl = Platform.DevToolsPath.urlString `http://example.com/image.png`;
+                Elements.ImagePreviewPopover.ImagePreviewPopover.setImageUrl(link, imageUrl);
+                const buildStub = sinon.stub(Components.ImagePreview.ImagePreview, 'build').resolves(document.createElement('div'));
+                const event = new MouseEvent('mousemove', {
+                    bubbles: true,
+                    cancelable: true,
+                    composed: true,
+                    clientX: 5,
+                    clientY: 5,
+                });
+                link.dispatchEvent(event);
+                for (let i = 0; i < 20; i++) {
+                    if (buildStub.called) {
+                        break;
+                    }
+                    clock.tick(1);
+                    await Promise.resolve();
+                }
+                sinon.assert.calledWith(buildStub, imageUrl, true);
+                domTree.detach();
+            }
+            finally {
+                clock.restore();
+            }
+        });
+    });
+    describe('context menu', () => {
+        it('allows default context menu on text selection when editing', async () => {
+            const domModel = target.model(SDK.DOMModel.DOMModel);
+            const domTree = new Elements.ElementsTreeOutline.DOMTreeWidget();
+            domTree.markAsRoot();
+            renderElementIntoDOM(domTree);
+            domTree.performUpdate();
+            domTree.modelAdded(domModel);
+            const rootNode = SDK.DOMModel.DOMNode.create(domModel, null, false, {
+                nodeId: 1,
+                backendNodeId: 1,
+                nodeType: Node.ELEMENT_NODE,
+                nodeName: 'BODY',
+                localName: 'body',
+                nodeValue: '',
+                childNodeCount: 1,
+                children: [{
+                        nodeId: 2,
+                        parentId: 1,
+                        backendNodeId: 2,
+                        nodeType: Node.TEXT_NODE,
+                        nodeName: '#text',
+                        localName: '#text',
+                        nodeValue: 'Some text',
+                    }],
+            });
+            assert.isNotNull(rootNode);
+            domTree.rootDOMNode = rootNode;
+            const pNode = rootNode.children()[0];
+            domTree.selectDOMNode(pNode);
+            const treeOutline = Elements.ElementsTreeOutline.ElementsTreeOutline.forDOMModel(domModel);
+            assert.exists(treeOutline);
+            const treeElement = treeOutline.findTreeElement(pNode);
+            assert.isNotNull(treeElement);
+            const textNodeContainer = treeElement.widget.contentElement.querySelector('.webkit-html-text-node');
+            assert.isNotNull(textNodeContainer);
+            assert.isFalse(UI.UIUtils.isEditing());
+            UI.UIUtils.markBeingEdited(textNodeContainer, true);
+            assert.isTrue(UI.UIUtils.isEditing());
+            const event = new MouseEvent('contextmenu', { bubbles: true, composed: true });
+            sinon.stub(treeOutline, 'treeElementFromEventInternal').returns(treeElement);
+            const preventDefaultSpy = sinon.spy(event, 'preventDefault');
+            textNodeContainer.dispatchEvent(event);
+            sinon.assert.notCalled(preventDefaultSpy);
+            UI.UIUtils.markBeingEdited(textNodeContainer, false);
+            domTree.detach();
+        });
+        it('prevents default context menu on node selection and no edit', async () => {
+            const domModel = target.model(SDK.DOMModel.DOMModel);
+            const domTree = new Elements.ElementsTreeOutline.DOMTreeWidget();
+            domTree.markAsRoot();
+            renderElementIntoDOM(domTree);
+            domTree.performUpdate();
+            domTree.modelAdded(domModel);
+            const rootNode = SDK.DOMModel.DOMNode.create(domModel, null, false, {
+                nodeId: 1,
+                backendNodeId: 1,
+                nodeType: Node.ELEMENT_NODE,
+                nodeName: 'BODY',
+                localName: 'body',
+                nodeValue: '',
+                childNodeCount: 1,
+                children: [{
+                        nodeId: 2,
+                        parentId: 1,
+                        backendNodeId: 2,
+                        nodeType: Node.TEXT_NODE,
+                        nodeName: '#text',
+                        localName: '#text',
+                        nodeValue: 'Some text',
+                    }],
+            });
+            assert.isNotNull(rootNode);
+            domTree.rootDOMNode = rootNode;
+            const pNode = rootNode.children()[0];
+            domTree.selectDOMNode(pNode);
+            const treeOutline = Elements.ElementsTreeOutline.ElementsTreeOutline.forDOMModel(domModel);
+            assert.exists(treeOutline);
+            const treeElement = treeOutline.findTreeElement(pNode);
+            assert.isNotNull(treeElement);
+            assert.isFalse(UI.UIUtils.isEditing());
+            const textNodeContainer = treeElement.widget.contentElement.querySelector('.webkit-html-text-node');
+            assert.isNotNull(textNodeContainer);
+            const event = new MouseEvent('contextmenu', {
+                bubbles: true,
+                composed: true,
+            });
+            sinon.stub(treeOutline, 'treeElementFromEventInternal').returns(treeElement);
+            const preventDefaultSpy = sinon.spy(event, 'preventDefault');
+            textNodeContainer.dispatchEvent(event);
+            sinon.assert.called(preventDefaultSpy);
+            domTree.detach();
+        });
     });
 });
 //# sourceMappingURL=DOMTreeWidget.test.js.map

@@ -1,17 +1,16 @@
-import type { AggregatedIssue } from '../../models/issues_manager/IssueAggregator.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import * as UI from '../../ui/legacy/legacy.js';
 export declare class IssueView extends UI.TreeOutline.TreeElement {
     #private;
     toggleOnClick: boolean;
     affectedResources: UI.TreeOutline.TreeElement;
-    constructor(issue: AggregatedIssue, description: IssuesManager.MarkdownIssueDescription.IssueDescription);
+    constructor(issue: IssuesManager.IssueAggregator.AggregatedIssue, description: IssuesManager.MarkdownIssueDescription.IssueDescription);
     /**
      * Sets the issue to take the resources from. Assumes that the description
      * this IssueView was initialized with fits the new issue as well, i.e.
      * title and issue description will not be updated.
      */
-    setIssue(issue: AggregatedIssue): void;
+    setIssue(issue: IssuesManager.IssueAggregator.AggregatedIssue): void;
     private static getBodyCSSClass;
     getIssueTitle(): string;
     onattach(): void;

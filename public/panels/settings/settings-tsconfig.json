@@ -70,6 +70,9 @@
       "path": "../../models/persistence/bundle-tsconfig.json"
     },
     {
+      "path": "../../models/workspace/bundle-tsconfig.json"
+    },
+    {
       "path": "../../ui/components/buttons/bundle-tsconfig.json"
     },
     {

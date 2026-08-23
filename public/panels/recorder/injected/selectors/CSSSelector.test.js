@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { findMinMax } from './CSSSelector.js';
+import { findMinMax } from '../injected.js';
 describe('findMinMax', () => {
     it('should work', () => {
         const minmax = findMinMax([0, 10], {

@@ -17,6 +17,14 @@ import * as UI from "./../../ui/legacy/legacy.js";
 import * as SettingsUI from "./../../ui/settings/settings.js";
 var UIStrings = {
   /**
+   * @description Label of a checkbox in the DevTools settings UI.
+   */
+  enableRemoteFileLoading: "Allow loading remote file path resources in DevTools",
+  /**
+   * @description Tooltip text for a setting that controls whether external resource can be loaded in DevTools.
+   */
+  remoteFileLoadingInfo: "Example resources are source maps. Disabled by default for security reasons.",
+  /**
    * @description Title of a setting under the Debugger category in Settings.
    */
   disableAsyncStackTraces: "Disable async stack traces",
@@ -1553,6 +1561,13 @@ SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.cssSourceMapsEnabledSe
     }
   ]
 });
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.enableRemoteFileLoadingSettingDescriptor, {
+  category: "SOURCES",
+  title: i18nLazyString(UIStrings.enableRemoteFileLoading),
+  learnMore: {
+    tooltip: i18nLazyString(UIStrings.remoteFileLoadingInfo)
+  }
+});
 SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.javaScriptDisabledSettingDescriptor, {
   category: "DEBUGGER",
   title: i18nLazyString(UIStrings.disableJavascript),
@@ -2312,6 +2327,14 @@ var UIStrings3 = {
    */
   doNotPreserveLogUponNavigation: "Don\u2019t keep log on navigation",
   /**
+   * @description Title of a setting under the Console category in Settings.
+   */
+  customFormatters: "Custom formatters",
+  /**
+   * @description Title of a setting under the Console category in Settings.
+   */
+  logXmlhttprequests: "Log XMLHttpRequests",
+  /**
    * @description Title of the Console tool.
    */
   console: "Console",
@@ -2687,13 +2710,9 @@ Common2.Settings.registerSettingExtension({
     }
   ]
 });
-Common2.Settings.registerSettingExtension({
+SettingsUI2.SettingUIRegistration.register(SDK3.SDKSettings.consoleUserActivationEvalSettingDescriptor, {
   category: "CONSOLE",
-  storageType: "Synced",
   title: i18nLazyString3(UIStrings3.evaluateTriggersUserActivation),
-  settingName: "console-user-activation-eval",
-  settingType: "boolean",
-  defaultValue: true,
   options: [
     {
       value: true,
@@ -2744,6 +2763,14 @@ SettingsUI2.SettingUIRegistration.register(SDK3.SDKSettings.preserveConsoleLogSe
       title: i18nLazyString3(UIStrings3.doNotPreserveLogUponNavigation)
     }
   ]
+});
+SettingsUI2.SettingUIRegistration.register(SDK3.SDKSettings.customFormattersSettingDescriptor, {
+  category: "CONSOLE",
+  title: i18nLazyString3(UIStrings3.customFormatters)
+});
+SettingsUI2.SettingUIRegistration.register(SDK3.SDKSettings.monitoringXHREnabledSettingDescriptor, {
+  category: "CONSOLE",
+  title: i18nLazyString3(UIStrings3.logXmlhttprequests)
 });
 Common2.Revealer.registerRevealer({
   contextTypes() {
@@ -3294,9 +3321,18 @@ UI8.ViewManager.registerViewExtension({
   experiment: Root3.ExperimentNames.ExperimentName.PROTOCOL_MONITOR
 });
 
-// gen/front_end/models/persistence/persistence-meta.js
+// gen/front_end/entrypoints/main/main-meta.js
 import * as Common5 from "./../../core/common/common.js";
+import * as Host2 from "./../../core/host/host.js";
 import * as i18n18 from "./../../core/i18n/i18n.js";
+import * as Root4 from "./../../core/root/root.js";
+import * as SDK5 from "./../../core/sdk/sdk.js";
+import * as Badges from "./../../models/badges/badges.js";
+import * as Persistence from "./../../models/persistence/persistence.js";
+import * as Workspace2 from "./../../models/workspace/workspace.js";
+import * as Components from "./../../ui/legacy/components/utils/utils.js";
+import * as UI9 from "./../../ui/legacy/legacy.js";
+import * as SettingsUI3 from "./../../ui/settings/settings.js";
 var UIStrings9 = {
   /**
    * @description Title of a setting under the Persistence category in Settings.
@@ -3330,146 +3366,19 @@ var UIStrings9 = {
   /**
    * @description Title of an option under the Persistence category that can be invoked through the command menu.
    */
-  disableOverrideNetworkRequests: "Disable override network requests"
-};
-var str_9 = i18n18.i18n.registerUIStrings("models/persistence/persistence-meta.ts", UIStrings9);
-var i18nLazyString9 = i18n18.i18n.getLazilyComputedLocalizedString.bind(void 0, str_9);
-Common5.Settings.registerSettingExtension({
-  category: "PERSISTENCE",
-  title: i18nLazyString9(UIStrings9.localOverrides),
-  settingName: "persistence-network-overrides-enabled",
-  settingType: "boolean",
-  defaultValue: false,
-  tags: [
-    i18nLazyString9(UIStrings9.interception),
-    i18nLazyString9(UIStrings9.override),
-    i18nLazyString9(UIStrings9.network),
-    i18nLazyString9(UIStrings9.rewrite),
-    i18nLazyString9(UIStrings9.request)
-  ],
-  options: [
-    {
-      value: true,
-      title: i18nLazyString9(UIStrings9.enableOverrideNetworkRequests)
-    },
-    {
-      value: false,
-      title: i18nLazyString9(UIStrings9.disableOverrideNetworkRequests)
-    }
-  ]
-});
-
-// gen/front_end/models/logs/logs-meta.js
-import * as Common6 from "./../../core/common/common.js";
-import * as i18n20 from "./../../core/i18n/i18n.js";
-var UIStrings10 = {
-  /**
-   * @description Text to keep the log after refreshing.
-   */
-  keepLog: "Keep log",
-  /**
-   * @description A term that can be used to search in the command menu, and will find the search
-   * result 'Keep log on page reload / navigation'. This is an additional search term to help
-   * the user find the setting even when they don't know the exact name of it.
-   */
-  keep: "keep",
-  /**
-   * @description A term that can be used to search in the command menu, and will find the search
-   * result 'Keep log on page reload / navigation'. This is an additional search term to help
-   * the user find the setting even when they don't know the exact name of it.
-   */
-  preserve: "preserve",
-  /**
-   * @description A term that can be used to search in the command menu, and will find the search
-   * result 'Keep log on page reload / navigation'. This is an additional search term to help
-   * the user find the setting even when they don't know the exact name of it.
-   */
-  clear: "clear",
-  /**
-   * @description A term that can be used to search in the command menu, and will find the search
-   * result 'Keep log on page reload / navigation'. This is an additional search term to help
-   * the user find the setting even when they don't know the exact name of it.
-   */
-  reset: "reset",
-  /**
-   * @description Title of a setting under the Network category that can be invoked through the Command Menu.
-   */
-  keepLogOnPageReload: "Keep log on page reload / navigation",
-  /**
-   * @description Title of a setting under the Network category that can be invoked through the Command Menu.
-   */
-  doNotKeepLogOnPageReload: "Don\u2019t keep log on page reload / navigation",
-  /**
-   * @description Title of an action in the network tool to toggle recording.
-   */
-  recordNetworkLog: "Record network log"
-};
-var str_10 = i18n20.i18n.registerUIStrings("models/logs/logs-meta.ts", UIStrings10);
-var i18nLazyString10 = i18n20.i18n.getLazilyComputedLocalizedString.bind(void 0, str_10);
-Common6.Settings.registerSettingExtension({
-  category: "NETWORK",
-  title: i18nLazyString10(UIStrings10.keepLog),
-  settingName: "network-log.preserve-log",
-  settingType: "boolean",
-  defaultValue: false,
-  tags: [
-    i18nLazyString10(UIStrings10.keep),
-    i18nLazyString10(UIStrings10.preserve),
-    i18nLazyString10(UIStrings10.clear),
-    i18nLazyString10(UIStrings10.reset)
-  ],
-  options: [
-    {
-      value: true,
-      title: i18nLazyString10(UIStrings10.keepLogOnPageReload)
-    },
-    {
-      value: false,
-      title: i18nLazyString10(UIStrings10.doNotKeepLogOnPageReload)
-    }
-  ]
-});
-Common6.Settings.registerSettingExtension({
-  category: "NETWORK",
-  title: i18nLazyString10(UIStrings10.recordNetworkLog),
-  settingName: "network-log.record-log",
-  settingType: "boolean",
-  defaultValue: true,
-  storageType: "Session"
-});
-
-// gen/front_end/models/badges/badges-meta.js
-import * as Common7 from "./../../core/common/common.js";
-import * as i18n22 from "./../../core/i18n/i18n.js";
-var UIStrings11 = {
+  disableOverrideNetworkRequests: "Disable override network requests",
   /**
    * @description Label for a checkbox in the settings UI. Allows developers to opt-in/opt-out
    * of receiving Google Developer Program (GDP) badges based on their activity in Chrome DevTools.
    */
-  earnBadges: "Earn badges"
-};
-var str_11 = i18n22.i18n.registerUIStrings("models/badges/badges-meta.ts", UIStrings11);
-var i18nLazyString11 = i18n22.i18n.getLazilyComputedLocalizedString.bind(void 0, str_11);
-Common7.Settings.registerSettingExtension({
-  category: "ACCOUNT",
-  settingName: "receive-gdp-badges",
-  settingType: "boolean",
-  storageType: "Synced",
-  title: i18nLazyString11(UIStrings11.earnBadges),
-  defaultValue: false,
-  reloadRequired: true
-});
-
-// gen/front_end/entrypoints/main/main-meta.js
-import * as Common8 from "./../../core/common/common.js";
-import * as Host2 from "./../../core/host/host.js";
-import * as i18n24 from "./../../core/i18n/i18n.js";
-import * as Root4 from "./../../core/root/root.js";
-import * as SDK5 from "./../../core/sdk/sdk.js";
-import * as Workspace2 from "./../../models/workspace/workspace.js";
-import * as Components from "./../../ui/legacy/components/utils/utils.js";
-import * as UI9 from "./../../ui/legacy/legacy.js";
-var UIStrings12 = {
+  earnBadges: "Earn badges",
+  /**
+   * @description Title of a setting under the Appearance category in Settings. When the webpage is
+   * paused by devtools, an overlay is shown on top of the page to indicate that it is paused. The
+   * overlay is a pause/unpause button and some text, which appears on top of the paused page. This
+   * setting turns off this overlay.
+   */
+  disablePaused: "Disable paused state overlay",
   /**
    * @description Action title to focus the page being debugged.
    */
@@ -3683,8 +3592,8 @@ var UIStrings12 = {
    */
   toggleDrawerOrientation: "Toggle drawer orientation"
 };
-var str_12 = i18n24.i18n.registerUIStrings("entrypoints/main/main-meta.ts", UIStrings12);
-var i18nLazyString12 = i18n24.i18n.getLazilyComputedLocalizedString.bind(void 0, str_12);
+var str_9 = i18n18.i18n.registerUIStrings("entrypoints/main/main-meta.ts", UIStrings9);
+var i18nLazyString9 = i18n18.i18n.getLazilyComputedLocalizedString.bind(void 0, str_9);
 var loadedMainModule;
 var loadedInspectorMainModule;
 async function loadMainModule() {
@@ -3707,7 +3616,7 @@ UI9.ActionRegistration.registerActionExtension({
     return new InspectorMain.InspectorMain.FocusDebuggeeActionDelegate();
   },
   order: 100,
-  title: i18nLazyString12(UIStrings12.focusDebuggee)
+  title: i18nLazyString9(UIStrings9.focusDebuggee)
 });
 UI9.ActionRegistration.registerActionExtension({
   category: "DRAWER",
@@ -3716,7 +3625,7 @@ UI9.ActionRegistration.registerActionExtension({
     return new UI9.InspectorView.ActionDelegate();
   },
   order: 101,
-  title: i18nLazyString12(UIStrings12.toggleDrawer),
+  title: i18nLazyString9(UIStrings9.toggleDrawer),
   bindings: [
     {
       shortcut: "Esc"
@@ -3729,7 +3638,7 @@ UI9.ActionRegistration.registerActionExtension({
   async loadActionDelegate() {
     return new UI9.InspectorView.ActionDelegate();
   },
-  title: i18nLazyString12(UIStrings12.toggleDrawerOrientation),
+  title: i18nLazyString9(UIStrings9.toggleDrawerOrientation),
   bindings: [
     {
       shortcut: "Shift+Esc"
@@ -3740,7 +3649,7 @@ UI9.ActionRegistration.registerActionExtension({
 UI9.ActionRegistration.registerActionExtension({
   actionId: "main.next-tab",
   category: "GLOBAL",
-  title: i18nLazyString12(UIStrings12.nextPanel),
+  title: i18nLazyString9(UIStrings9.nextPanel),
   async loadActionDelegate() {
     return new UI9.InspectorView.ActionDelegate();
   },
@@ -3758,7 +3667,7 @@ UI9.ActionRegistration.registerActionExtension({
 UI9.ActionRegistration.registerActionExtension({
   actionId: "main.previous-tab",
   category: "GLOBAL",
-  title: i18nLazyString12(UIStrings12.previousPanel),
+  title: i18nLazyString9(UIStrings9.previousPanel),
   async loadActionDelegate() {
     return new UI9.InspectorView.ActionDelegate();
   },
@@ -3776,7 +3685,7 @@ UI9.ActionRegistration.registerActionExtension({
 UI9.ActionRegistration.registerActionExtension({
   actionId: "main.debug-reload",
   category: "GLOBAL",
-  title: i18nLazyString12(UIStrings12.reloadDevtools),
+  title: i18nLazyString9(UIStrings9.reloadDevtools),
   async loadActionDelegate() {
     const Main = await loadMainModule();
     return new Main.MainImpl.ReloadActionDelegate();
@@ -3789,7 +3698,7 @@ UI9.ActionRegistration.registerActionExtension({
 });
 UI9.ActionRegistration.registerActionExtension({
   category: "GLOBAL",
-  title: i18nLazyString12(UIStrings12.restoreLastDockPosition),
+  title: i18nLazyString9(UIStrings9.restoreLastDockPosition),
   actionId: "main.toggle-dock",
   async loadActionDelegate() {
     return new UI9.DockController.ToggleDockActionDelegate();
@@ -3808,7 +3717,7 @@ UI9.ActionRegistration.registerActionExtension({
 UI9.ActionRegistration.registerActionExtension({
   actionId: "main.zoom-in",
   category: "GLOBAL",
-  title: i18nLazyString12(UIStrings12.zoomIn),
+  title: i18nLazyString9(UIStrings9.zoomIn),
   async loadActionDelegate() {
     const Main = await loadMainModule();
     return new Main.MainImpl.ZoomActionDelegate();
@@ -3859,7 +3768,7 @@ UI9.ActionRegistration.registerActionExtension({
 UI9.ActionRegistration.registerActionExtension({
   actionId: "main.zoom-out",
   category: "GLOBAL",
-  title: i18nLazyString12(UIStrings12.zoomOut),
+  title: i18nLazyString9(UIStrings9.zoomOut),
   async loadActionDelegate() {
     const Main = await loadMainModule();
     return new Main.MainImpl.ZoomActionDelegate();
@@ -3910,7 +3819,7 @@ UI9.ActionRegistration.registerActionExtension({
 UI9.ActionRegistration.registerActionExtension({
   actionId: "main.zoom-reset",
   category: "GLOBAL",
-  title: i18nLazyString12(UIStrings12.resetZoomLevel),
+  title: i18nLazyString9(UIStrings9.resetZoomLevel),
   async loadActionDelegate() {
     const Main = await loadMainModule();
     return new Main.MainImpl.ZoomActionDelegate();
@@ -3937,7 +3846,7 @@ UI9.ActionRegistration.registerActionExtension({
 UI9.ActionRegistration.registerActionExtension({
   actionId: "main.search-in-panel.find",
   category: "GLOBAL",
-  title: i18nLazyString12(UIStrings12.searchInPanel),
+  title: i18nLazyString9(UIStrings9.searchInPanel),
   async loadActionDelegate() {
     const Main = await loadMainModule();
     return new Main.MainImpl.SearchActionDelegate();
@@ -3968,7 +3877,7 @@ UI9.ActionRegistration.registerActionExtension({
 UI9.ActionRegistration.registerActionExtension({
   actionId: "main.search-in-panel.cancel",
   category: "GLOBAL",
-  title: i18nLazyString12(UIStrings12.cancelSearch),
+  title: i18nLazyString9(UIStrings9.cancelSearch),
   async loadActionDelegate() {
     const Main = await loadMainModule();
     return new Main.MainImpl.SearchActionDelegate();
@@ -3983,7 +3892,7 @@ UI9.ActionRegistration.registerActionExtension({
 UI9.ActionRegistration.registerActionExtension({
   actionId: "main.search-in-panel.find-next",
   category: "GLOBAL",
-  title: i18nLazyString12(UIStrings12.findNextResult),
+  title: i18nLazyString9(UIStrings9.findNextResult),
   async loadActionDelegate() {
     const Main = await loadMainModule();
     return new Main.MainImpl.SearchActionDelegate();
@@ -4014,7 +3923,7 @@ UI9.ActionRegistration.registerActionExtension({
 UI9.ActionRegistration.registerActionExtension({
   actionId: "main.search-in-panel.find-previous",
   category: "GLOBAL",
-  title: i18nLazyString12(UIStrings12.findPreviousResult),
+  title: i18nLazyString9(UIStrings9.findPreviousResult),
   async loadActionDelegate() {
     const Main = await loadMainModule();
     return new Main.MainImpl.SearchActionDelegate();
@@ -4042,110 +3951,98 @@ UI9.ActionRegistration.registerActionExtension({
     }
   ]
 });
-Common8.Settings.registerSettingExtension({
+SettingsUI3.SettingUIRegistration.register(SettingsUI3.MainSettings.uiThemeSettingDescriptor, {
   category: "APPEARANCE",
-  storageType: "Synced",
-  title: i18nLazyString12(UIStrings12.theme),
-  settingName: "ui-theme",
-  settingType: "enum",
-  defaultValue: "systemPreferred",
+  title: i18nLazyString9(UIStrings9.theme),
   reloadRequired: false,
   options: [
     {
-      title: i18nLazyString12(UIStrings12.switchToBrowserPreferredTheme),
-      text: i18nLazyString12(UIStrings12.autoTheme),
+      title: i18nLazyString9(UIStrings9.switchToBrowserPreferredTheme),
+      text: i18nLazyString9(UIStrings9.autoTheme),
       value: "systemPreferred"
     },
     {
-      title: i18nLazyString12(UIStrings12.switchToLightTheme),
-      text: i18nLazyString12(UIStrings12.lightCapital),
+      title: i18nLazyString9(UIStrings9.switchToLightTheme),
+      text: i18nLazyString9(UIStrings9.lightCapital),
       value: "default"
     },
     {
-      title: i18nLazyString12(UIStrings12.switchToDarkTheme),
-      text: i18nLazyString12(UIStrings12.darkCapital),
+      title: i18nLazyString9(UIStrings9.switchToDarkTheme),
+      text: i18nLazyString9(UIStrings9.darkCapital),
       value: "dark"
     }
   ],
   tags: [
-    i18nLazyString12(UIStrings12.darkLower),
-    i18nLazyString12(UIStrings12.lightLower)
+    i18nLazyString9(UIStrings9.darkLower),
+    i18nLazyString9(UIStrings9.lightLower)
   ]
 });
-Common8.Settings.registerSettingExtension({
+SettingsUI3.SettingUIRegistration.register(SettingsUI3.MainSettings.chromeThemeColorsSettingDescriptor, {
   category: "APPEARANCE",
-  storageType: "Synced",
-  title: i18nLazyString12(UIStrings12.matchChromeColorScheme),
-  settingName: "chrome-theme-colors",
-  settingType: "boolean",
-  defaultValue: true,
+  title: i18nLazyString9(UIStrings9.matchChromeColorScheme),
   options: [
     {
       value: true,
-      title: i18nLazyString12(UIStrings12.matchChromeColorSchemeCommand)
+      title: i18nLazyString9(UIStrings9.matchChromeColorSchemeCommand)
     },
     {
       value: false,
-      title: i18nLazyString12(UIStrings12.dontMatchChromeColorSchemeCommand)
+      title: i18nLazyString9(UIStrings9.dontMatchChromeColorSchemeCommand)
     }
   ],
   reloadRequired: true,
   learnMore: {
     url: "https://goo.gle/devtools-customize-theme",
-    tooltip: i18nLazyString12(UIStrings12.matchChromeColorSchemeDocumentation)
+    tooltip: i18nLazyString9(UIStrings9.matchChromeColorSchemeDocumentation)
   }
 });
-Common8.Settings.registerSettingExtension({
+SettingsUI3.SettingUIRegistration.register(SettingsUI3.MainSettings.sidebarPositionSettingDescriptor, {
   category: "APPEARANCE",
-  storageType: "Synced",
-  title: i18nLazyString12(UIStrings12.panelLayout),
-  settingName: "sidebar-position",
-  settingType: "enum",
-  defaultValue: "auto",
+  title: i18nLazyString9(UIStrings9.panelLayout),
   options: [
     {
-      title: i18nLazyString12(UIStrings12.useHorizontalPanelLayout),
-      text: i18nLazyString12(UIStrings12.horizontal),
+      title: i18nLazyString9(UIStrings9.useHorizontalPanelLayout),
+      text: i18nLazyString9(UIStrings9.horizontal),
       value: "bottom"
     },
     {
-      title: i18nLazyString12(UIStrings12.useVerticalPanelLayout),
-      text: i18nLazyString12(UIStrings12.vertical),
+      title: i18nLazyString9(UIStrings9.useVerticalPanelLayout),
+      text: i18nLazyString9(UIStrings9.vertical),
       value: "right"
     },
     {
-      title: i18nLazyString12(UIStrings12.useAutomaticPanelLayout),
-      text: i18nLazyString12(UIStrings12.auto),
+      title: i18nLazyString9(UIStrings9.useAutomaticPanelLayout),
+      text: i18nLazyString9(UIStrings9.auto),
       value: "auto"
     }
   ]
 });
-Common8.Settings.registerSettingExtension({
+SettingsUI3.SettingUIRegistration.register(SettingsUI3.MainSettings.languageSettingDescriptor, {
   category: "APPEARANCE",
-  storageType: "Synced",
-  settingName: "language",
-  settingType: "enum",
-  title: i18nLazyString12(UIStrings12.language),
-  defaultValue: "en-US",
+  title: i18nLazyString9(UIStrings9.language),
   options: [
     {
       value: "browserLanguage",
-      title: i18nLazyString12(UIStrings12.browserLanguage),
-      text: i18nLazyString12(UIStrings12.browserLanguage)
+      title: i18nLazyString9(UIStrings9.browserLanguage),
+      text: i18nLazyString9(UIStrings9.browserLanguage)
     },
-    ...i18n24.i18n.getAllSupportedDevToolsLocales().sort().map((locale) => createOptionForLocale(locale))
+    ...i18n18.i18n.getAllSupportedDevToolsLocales().sort().map((locale) => createOptionForLocale(locale))
   ],
   reloadRequired: true
 });
-Common8.Settings.registerSettingExtension({
+Common5.Settings.registerSettingExtension({
   category: "APPEARANCE",
   storageType: "Synced",
-  title: Host2.Platform.platform() === "mac" ? i18nLazyString12(UIStrings12.enableShortcutToSwitchPanels) : i18nLazyString12(UIStrings12.enableCtrlShortcutToSwitchPanels),
+  title: Host2.Platform.platform() === "mac" ? i18nLazyString9(UIStrings9.enableShortcutToSwitchPanels) : i18nLazyString9(UIStrings9.enableCtrlShortcutToSwitchPanels),
   settingName: "shortcut-panel-switch",
   settingType: "boolean",
   defaultValue: false
 });
-Common8.Settings.registerSettingExtension({
+SettingsUI3.SettingUIRegistration.register(SDK5.SDKSettings.disablePausedStateOverlaySettingDescriptor, {
+  category: "APPEARANCE",
+  title: i18nLazyString9(UIStrings9.disablePaused)
+});
+Common5.Settings.registerSettingExtension({
   category: "GLOBAL",
   settingName: "currentDockState",
   settingType: "enum",
@@ -4153,27 +4050,27 @@ Common8.Settings.registerSettingExtension({
   options: [
     {
       value: "right",
-      text: i18nLazyString12(UIStrings12.right),
-      title: i18nLazyString12(UIStrings12.dockToRight)
+      text: i18nLazyString9(UIStrings9.right),
+      title: i18nLazyString9(UIStrings9.dockToRight)
     },
     {
       value: "bottom",
-      text: i18nLazyString12(UIStrings12.bottom),
-      title: i18nLazyString12(UIStrings12.dockToBottom)
+      text: i18nLazyString9(UIStrings9.bottom),
+      title: i18nLazyString9(UIStrings9.dockToBottom)
     },
     {
       value: "left",
-      text: i18nLazyString12(UIStrings12.left),
-      title: i18nLazyString12(UIStrings12.dockToLeft)
+      text: i18nLazyString9(UIStrings9.left),
+      title: i18nLazyString9(UIStrings9.dockToLeft)
     },
     {
       value: "undocked",
-      text: i18nLazyString12(UIStrings12.undocked),
-      title: i18nLazyString12(UIStrings12.undockIntoSeparateWindow)
+      text: i18nLazyString9(UIStrings9.undocked),
+      title: i18nLazyString9(UIStrings9.undockIntoSeparateWindow)
     }
   ]
 });
-Common8.Settings.registerSettingExtension({
+Common5.Settings.registerSettingExtension({
   storageType: "Synced",
   settingName: "active-keybind-set",
   settingType: "enum",
@@ -4181,18 +4078,18 @@ Common8.Settings.registerSettingExtension({
   options: [
     {
       value: "devToolsDefault",
-      title: i18nLazyString12(UIStrings12.devtoolsDefault),
-      text: i18nLazyString12(UIStrings12.devtoolsDefault)
+      title: i18nLazyString9(UIStrings9.devtoolsDefault),
+      text: i18nLazyString9(UIStrings9.devtoolsDefault)
     },
     {
       value: "vsCode",
-      title: i18n24.i18n.lockedLazyString("Visual Studio Code"),
-      text: i18n24.i18n.lockedLazyString("Visual Studio Code")
+      title: i18n18.i18n.lockedLazyString("Visual Studio Code"),
+      text: i18n18.i18n.lockedLazyString("Visual Studio Code")
     }
   ]
 });
 function createLazyLocalizedLocaleSettingText(localeString) {
-  return () => i18n24.i18n.getLocalizedLanguageRegion(localeString, i18n24.DevToolsLocale.DevToolsLocale.instance());
+  return () => i18n18.i18n.getLocalizedLanguageRegion(localeString, i18n18.DevToolsLocale.DevToolsLocale.instance());
 }
 function createOptionForLocale(localeString) {
   return {
@@ -4201,25 +4098,51 @@ function createOptionForLocale(localeString) {
     text: createLazyLocalizedLocaleSettingText(localeString)
   };
 }
-Common8.Settings.registerSettingExtension({
+Common5.Settings.registerSettingExtension({
   category: "ACCOUNT",
   // This name must be kept in sync with DevToolsSettings::kSyncDevToolsPreferencesFrontendName.
   settingName: "sync-preferences",
   settingType: "boolean",
-  title: i18nLazyString12(UIStrings12.saveSettings),
+  title: i18nLazyString9(UIStrings9.saveSettings),
   defaultValue: false,
   reloadRequired: true
 });
-Common8.Settings.registerSettingExtension({
+SettingsUI3.SettingUIRegistration.register(Badges.receiveGdpBadgesSettingDescriptor, {
+  category: "ACCOUNT",
+  title: i18nLazyString9(UIStrings9.earnBadges),
+  reloadRequired: true
+});
+SettingsUI3.SettingUIRegistration.register(Persistence.NetworkPersistenceManager.persistenceNetworkOverridesEnabledSettingDescriptor, {
+  category: "PERSISTENCE",
+  title: i18nLazyString9(UIStrings9.localOverrides),
+  tags: [
+    i18nLazyString9(UIStrings9.interception),
+    i18nLazyString9(UIStrings9.override),
+    i18nLazyString9(UIStrings9.network),
+    i18nLazyString9(UIStrings9.rewrite),
+    i18nLazyString9(UIStrings9.request)
+  ],
+  options: [
+    {
+      value: true,
+      title: i18nLazyString9(UIStrings9.enableOverrideNetworkRequests)
+    },
+    {
+      value: false,
+      title: i18nLazyString9(UIStrings9.disableOverrideNetworkRequests)
+    }
+  ]
+});
+Common5.Settings.registerSettingExtension({
   storageType: "Synced",
   settingName: "user-shortcuts",
   settingType: "array",
   defaultValue: []
 });
-Common8.Settings.registerSettingExtension({
+Common5.Settings.registerSettingExtension({
   category: "GLOBAL",
   storageType: "Local",
-  title: i18nLazyString12(UIStrings12.searchAsYouTypeSetting),
+  title: i18nLazyString9(UIStrings9.searchAsYouTypeSetting),
   settingName: "search-as-you-type",
   settingType: "boolean",
   order: 3,
@@ -4227,11 +4150,11 @@ Common8.Settings.registerSettingExtension({
   options: [
     {
       value: true,
-      title: i18nLazyString12(UIStrings12.searchAsYouTypeCommand)
+      title: i18nLazyString9(UIStrings9.searchAsYouTypeCommand)
     },
     {
       value: false,
-      title: i18nLazyString12(UIStrings12.searchOnEnterCommand)
+      title: i18nLazyString9(UIStrings9.searchOnEnterCommand)
     }
   ]
 });
@@ -4305,7 +4228,7 @@ UI9.Toolbar.registerToolbarItem({
     const isPolicyRestricted3 = config?.aidaAvailability?.blockedByEnterprisePolicy === true;
     return Boolean(isFlagEnabled && !isGeoRestricted3 && !isPolicyRestricted3);
   },
-  loadItem: Common8.Lazy.lazy(async () => {
+  loadItem: Common5.Lazy.lazy(async () => {
     const Main = await loadMainModule();
     return new Main.GlobalAiButton.GlobalAiButtonToolbarProvider();
   }),
@@ -4313,7 +4236,7 @@ UI9.Toolbar.registerToolbarItem({
   location: "main-toolbar-right"
 });
 UI9.Toolbar.registerToolbarItem({
-  loadItem: Common8.Lazy.lazy(async () => {
+  loadItem: Common5.Lazy.lazy(async () => {
     const Main = await loadMainModule();
     return new Main.MainImpl.SettingsButtonProvider();
   }),
@@ -4322,7 +4245,7 @@ UI9.Toolbar.registerToolbarItem({
 });
 UI9.Toolbar.registerToolbarItem({
   condition: () => !Root4.Runtime.Runtime.isTraceApp(),
-  loadItem: Common8.Lazy.lazy(async () => {
+  loadItem: Common5.Lazy.lazy(async () => {
     const Main = await loadMainModule();
     return new Main.MainImpl.MainMenuItem();
   }),
@@ -4345,10 +4268,10 @@ UI9.AppProvider.registerAppProvider({
 });
 
 // gen/front_end/ui/legacy/components/perf_ui/perf_ui-meta.js
-import * as Common9 from "./../../core/common/common.js";
-import * as i18n26 from "./../../core/i18n/i18n.js";
+import * as Common6 from "./../../core/common/common.js";
+import * as i18n20 from "./../../core/i18n/i18n.js";
 import * as UI10 from "./../../ui/legacy/legacy.js";
-var UIStrings13 = {
+var UIStrings10 = {
   /**
    * @description Title of a setting under the Performance category in Settings.
    * Selected navigation allows switching between 2 different sets of shortcuts
@@ -4368,8 +4291,8 @@ var UIStrings13 = {
    */
   collectGarbage: "Collect garbage"
 };
-var str_13 = i18n26.i18n.registerUIStrings("ui/legacy/components/perf_ui/perf_ui-meta.ts", UIStrings13);
-var i18nLazyString13 = i18n26.i18n.getLazilyComputedLocalizedString.bind(void 0, str_13);
+var str_10 = i18n20.i18n.registerUIStrings("ui/legacy/components/perf_ui/perf_ui-meta.ts", UIStrings10);
+var i18nLazyString10 = i18n20.i18n.getLazilyComputedLocalizedString.bind(void 0, str_10);
 var loadedPerfUIModule;
 async function loadPerfUIModule() {
   if (!loadedPerfUIModule) {
@@ -4380,49 +4303,49 @@ async function loadPerfUIModule() {
 UI10.ActionRegistration.registerActionExtension({
   actionId: "components.collect-garbage",
   category: "PERFORMANCE",
-  title: i18nLazyString13(UIStrings13.collectGarbage),
+  title: i18nLazyString10(UIStrings10.collectGarbage),
   iconClass: "mop",
   async loadActionDelegate() {
     const PerfUI = await loadPerfUIModule();
     return new PerfUI.GCActionDelegate.GCActionDelegate();
   }
 });
-Common9.Settings.registerSettingExtension({
+Common6.Settings.registerSettingExtension({
   category: "PERFORMANCE",
   storageType: "Synced",
-  title: i18nLazyString13(UIStrings13.flamechartSelectedNavigation),
+  title: i18nLazyString10(UIStrings10.flamechartSelectedNavigation),
   settingName: "flamechart-selected-navigation",
   settingType: "enum",
   defaultValue: "classic",
   options: [
     {
-      title: i18nLazyString13(UIStrings13.modern),
-      text: i18nLazyString13(UIStrings13.modern),
+      title: i18nLazyString10(UIStrings10.modern),
+      text: i18nLazyString10(UIStrings10.modern),
       value: "modern"
     },
     {
-      title: i18nLazyString13(UIStrings13.classic),
-      text: i18nLazyString13(UIStrings13.classic),
+      title: i18nLazyString10(UIStrings10.classic),
+      text: i18nLazyString10(UIStrings10.classic),
       value: "classic"
     }
   ]
 });
 
 // gen/front_end/ui/legacy/components/quick_open/quick_open-meta.js
-import * as i18n28 from "./../../core/i18n/i18n.js";
+import * as i18n22 from "./../../core/i18n/i18n.js";
 import * as UI11 from "./../../ui/legacy/legacy.js";
-var UIStrings14 = {
+var UIStrings11 = {
   /**
-   * @description Title of action that opens a file
+   * @description Title of an action that opens a file.
    */
   openFile: "Open file",
   /**
-   * @description Title of command that runs a Quick Open command
+   * @description Title of an action that opens the command menu.
    */
   runCommand: "Run command"
 };
-var str_14 = i18n28.i18n.registerUIStrings("ui/legacy/components/quick_open/quick_open-meta.ts", UIStrings14);
-var i18nLazyString14 = i18n28.i18n.getLazilyComputedLocalizedString.bind(void 0, str_14);
+var str_11 = i18n22.i18n.registerUIStrings("ui/legacy/components/quick_open/quick_open-meta.ts", UIStrings11);
+var i18nLazyString11 = i18n22.i18n.getLazilyComputedLocalizedString.bind(void 0, str_11);
 var loadedQuickOpenModule;
 async function loadQuickOpenModule() {
   if (!loadedQuickOpenModule) {
@@ -4433,7 +4356,7 @@ async function loadQuickOpenModule() {
 UI11.ActionRegistration.registerActionExtension({
   actionId: "quick-open.show-command-menu",
   category: "GLOBAL",
-  title: i18nLazyString14(UIStrings14.runCommand),
+  title: i18nLazyString11(UIStrings11.runCommand),
   async loadActionDelegate() {
     const QuickOpen2 = await loadQuickOpenModule();
     return new QuickOpen2.CommandMenu.ShowActionDelegate();
@@ -4466,7 +4389,7 @@ UI11.ActionRegistration.registerActionExtension({
 UI11.ActionRegistration.registerActionExtension({
   actionId: "quick-open.show",
   category: "GLOBAL",
-  title: i18nLazyString14(UIStrings14.openFile),
+  title: i18nLazyString11(UIStrings11.openFile),
   async loadActionDelegate() {
     const QuickOpen2 = await loadQuickOpenModule();
     return new QuickOpen2.QuickOpen.ShowActionDelegate();
@@ -4516,630 +4439,10 @@ UI11.ContextMenu.registerItem({
   actionId: "quick-open.show"
 });
 
-// gen/front_end/core/sdk/sdk-meta.js
-import * as Common10 from "./../../core/common/common.js";
-import * as i18n30 from "./../../core/i18n/i18n.js";
-var UIStrings15 = {
-  /**
-   * @description A drop-down menu option to do not emulate css media type.
-   */
-  noEmulation: "No emulation",
-  /**
-   * @description A tag of Emulate CSS screen media type setting that can be searched in the command menu.
-   */
-  query: "query",
-  /**
-   * @description Title of a setting under the Rendering drawer that can be invoked through the Command Menu.
-   * @example {prefers-color-scheme} PH1
-   */
-  doNotEmulateCss: "Do not emulate CSS {PH1}",
-  /**
-   * @description Title of a setting under the Rendering drawer that can be invoked through the Command Menu.
-   * @example {prefers-color-scheme: light} PH1
-   */
-  emulateCss: "Emulate CSS {PH1}",
-  /**
-   * @description Title of a setting under the Rendering drawer that can be invoked through the Command Menu.
-   * @example {prefers-color-scheme} PH1
-   */
-  emulateCssMediaFeature: "Emulate CSS media feature {PH1}",
-  /**
-   * @description Title of a setting under the Rendering drawer that can be invoked through the Command Menu.
-   */
-  doNotEmulateAnyVisionDeficiency: "Do not emulate any vision deficiency",
-  /**
-   * @description Title of a setting under the Rendering drawer that can be invoked through the Command Menu.
-   */
-  emulateBlurredVision: "Emulate blurred vision",
-  /**
-   * @description Title of a setting under the Rendering drawer that can be invoked through the Command Menu.
-   */
-  emulateReducedContrast: "Emulate reduced contrast",
-  /**
-   * @description Name of a vision deficiency that can be emulated via the Rendering drawer.
-   */
-  blurredVision: "Blurred vision",
-  /**
-   * @description Name of a vision deficiency that can be emulated via the Rendering drawer.
-   */
-  reducedContrast: "Reduced contrast",
-  /**
-   * @description Title of a setting under the Rendering drawer that can be invoked through the Command Menu.
-   */
-  emulateProtanopia: "Emulate protanopia (no red)",
-  /**
-   * @description Name of a color vision deficiency that can be emulated via the Rendering drawer.
-   */
-  protanopia: "Protanopia (no red)",
-  /**
-   * @description Title of a setting under the Rendering drawer that can be invoked through the Command Menu.
-   */
-  emulateDeuteranopia: "Emulate deuteranopia (no green)",
-  /**
-   * @description Name of a color vision deficiency that can be emulated via the Rendering drawer.
-   */
-  deuteranopia: "Deuteranopia (no green)",
-  /**
-   * @description Title of a setting under the Rendering drawer that can be invoked through the Command Menu.
-   */
-  emulateTritanopia: "Emulate tritanopia (no blue)",
-  /**
-   * @description Name of a color vision deficiency that can be emulated via the Rendering drawer.
-   */
-  tritanopia: "Tritanopia (no blue)",
-  /**
-   * @description Title of a setting under the Rendering drawer that can be invoked through the Command Menu.
-   */
-  emulateAchromatopsia: "Emulate achromatopsia (no color)",
-  /**
-   * @description Name of a color vision deficiency that can be emulated via the Rendering drawer.
-   */
-  achromatopsia: "Achromatopsia (no color)",
-  /**
-   * @description Title of a setting under the Rendering drawer.
-   */
-  emulateVisionDeficiencies: "Emulate vision deficiencies",
-  /**
-   * @description Title of a setting under the Rendering drawer.
-   */
-  emulateOsTextScale: "Emulate OS text scale",
-  /**
-   * @description Title of a setting under the Rendering category that can be invoked through the Command Menu.
-   */
-  doNotEmulateOsTextScale: "Do not emulate OS text scale",
-  /**
-   * @description A drop-down menu option to not emulate OS text scale.
-   */
-  osTextScaleEmulationNone: "No emulation",
-  /**
-   * @description A drop-down menu option to emulate an OS text scale 85%.
-   */
-  osTextScaleEmulation85: "85%",
-  /**
-   * @description A drop-down menu option to emulate an OS text scale of 100%.
-   */
-  osTextScaleEmulation100: "100% (default)",
-  /**
-   * @description A drop-down menu option to emulate an OS text scale of 115%.
-   */
-  osTextScaleEmulation115: "115%",
-  /**
-   * @description A drop-down menu option to emulate an OS text scale of 130%.
-   */
-  osTextScaleEmulation130: "130%",
-  /**
-   * @description A drop-down menu option to emulate an OS text scale of 150%.
-   */
-  osTextScaleEmulation150: "150%",
-  /**
-   * @description A drop-down menu option to emulate an OS text scale of 180%.
-   */
-  osTextScaleEmulation180: "180%",
-  /**
-   * @description A drop-down menu option to emulate an OS text scale of 200%.
-   */
-  osTextScaleEmulation200: "200%",
-  /**
-   * @description A drop-down menu option to emulate an OS text scale of 250%.
-   */
-  osTextScaleEmulation250: "250%",
-  /**
-   * @description A drop-down menu option to emulate an OS text scale of 300%.
-   */
-  osTextScaleEmulation300: "300%",
-  /**
-   * @description A drop-down menu option to emulate an OS text scale of 350%.
-   */
-  osTextScaleEmulation350: "350%",
-  /**
-   * @description Text that refers to disabling local fonts.
-   */
-  disableLocalFonts: "Disable local fonts",
-  /**
-   * @description Text that refers to enabling local fonts.
-   */
-  enableLocalFonts: "Enable local fonts",
-  /**
-   * @description Title of a setting that disables AVIF format.
-   */
-  disableAvifFormat: "Disable `AVIF` format",
-  /**
-   * @description Title of a setting that enables AVIF format.
-   */
-  enableAvifFormat: "Enable `AVIF` format",
-  /**
-   * @description Title of a setting that disables JPEG XL format.
-   */
-  disableJpegXlFormat: "Disable `JPEG XL` format",
-  /**
-   * @description Title of a setting that enables JPEG XL format.
-   */
-  enableJpegXlFormat: "Enable `JPEG XL` format",
-  /**
-   * @description Title of a setting that disables WebP format.
-   */
-  disableWebpFormat: "Disable `WebP` format",
-  /**
-   * @description Title of a setting that enables WebP format.
-   */
-  enableWebpFormat: "Enable `WebP` format",
-  /**
-   * @description Title of a setting under the Console category in Settings.
-   */
-  customFormatters: "Custom formatters",
-  /**
-   * @description Title of a setting under the Network category.
-   */
-  networkRequestBlocking: "Network request blocking",
-  /**
-   * @description Title of a setting under the Network category that can be invoked through the Command Menu.
-   */
-  enableNetworkRequestBlocking: "Enable network request blocking",
-  /**
-   * @description Title of a setting under the Network category that can be invoked through the Command Menu.
-   */
-  disableNetworkRequestBlocking: "Disable network request blocking",
-  /**
-   * @description Title of a setting under the Network category that can be invoked through the Command Menu.
-   */
-  enableCache: "Enable cache",
-  /**
-   * @description Title of a setting under the Network category that can be invoked through the Command Menu.
-   */
-  disableCache: "Disable cache while DevTools is open",
-  /**
-   * @description The name of a checkbox setting in the Rendering tool. This setting
-   * emulates that the webpage is in auto dark mode.
-   */
-  emulateAutoDarkMode: "Emulate auto dark mode",
-  /**
-   * @description Label of a checkbox in the DevTools settings UI.
-   */
-  enableRemoteFileLoading: "Allow loading remote file path resources in DevTools",
-  /**
-   * @description Tooltip text for a setting that controls whether external resource can be loaded in DevTools.
-   */
-  remoteFileLoadingInfo: "Example resources are source maps. Disabled by default for security reasons.",
-  /**
-   * @description Tooltip text for a setting that controls the network cache. Disabling the network cache can simulate the network connections of users that are visiting a page for the first time.
-   */
-  networkCacheExplanation: "Disabling the network cache will simulate a network experience similar to a first time visitor.",
-  /**
-   * @description Title of a setting under the Console category in Settings.
-   */
-  logXmlhttprequests: "Log XMLHttpRequests",
-  /**
-   * @description Title of a setting under the Appearance category in Settings. When the webpage is
-   * paused by devtools, an overlay is shown on top of the page to indicate that it is paused. The
-   * overlay is a pause/unpause button and some text, which appears on top of the paused page. This
-   * setting turns off this overlay.
-   */
-  disablePaused: "Disable paused state overlay"
-};
-var str_15 = i18n30.i18n.registerUIStrings("core/sdk/sdk-meta.ts", UIStrings15);
-var i18nLazyString15 = i18n30.i18n.getLazilyComputedLocalizedString.bind(void 0, str_15);
-Common10.Settings.registerSettingExtension({
-  settingName: "emulated-css-media-feature-prefers-contrast",
-  settingType: "enum",
-  storageType: "Session",
-  defaultValue: "",
-  options: [
-    {
-      title: i18nLazyString15(UIStrings15.doNotEmulateCss, { PH1: "prefers-contrast" }),
-      text: i18nLazyString15(UIStrings15.noEmulation),
-      value: ""
-    },
-    {
-      title: i18nLazyString15(UIStrings15.emulateCss, { PH1: "prefers-contrast: more" }),
-      text: i18n30.i18n.lockedLazyString("prefers-contrast: more"),
-      value: "more"
-    },
-    {
-      title: i18nLazyString15(UIStrings15.emulateCss, { PH1: "prefers-contrast: less" }),
-      text: i18n30.i18n.lockedLazyString("prefers-contrast: less"),
-      value: "less"
-    },
-    {
-      title: i18nLazyString15(UIStrings15.emulateCss, { PH1: "prefers-contrast: custom" }),
-      text: i18n30.i18n.lockedLazyString("prefers-contrast: custom"),
-      value: "custom"
-    }
-  ],
-  tags: [
-    i18nLazyString15(UIStrings15.query)
-  ],
-  title: i18nLazyString15(UIStrings15.emulateCssMediaFeature, { PH1: "prefers-contrast" })
-});
-Common10.Settings.registerSettingExtension({
-  settingName: "emulated-css-media-feature-prefers-reduced-data",
-  settingType: "enum",
-  storageType: "Session",
-  defaultValue: "",
-  options: [
-    {
-      title: i18nLazyString15(UIStrings15.doNotEmulateCss, { PH1: "prefers-reduced-data" }),
-      text: i18nLazyString15(UIStrings15.noEmulation),
-      value: ""
-    },
-    {
-      title: i18nLazyString15(UIStrings15.emulateCss, { PH1: "prefers-reduced-data: reduce" }),
-      text: i18n30.i18n.lockedLazyString("prefers-reduced-data: reduce"),
-      value: "reduce"
-    }
-  ],
-  title: i18nLazyString15(UIStrings15.emulateCssMediaFeature, { PH1: "prefers-reduced-data" })
-});
-Common10.Settings.registerSettingExtension({
-  settingName: "emulated-css-media-feature-prefers-reduced-transparency",
-  settingType: "enum",
-  storageType: "Session",
-  defaultValue: "",
-  options: [
-    {
-      title: i18nLazyString15(UIStrings15.doNotEmulateCss, { PH1: "prefers-reduced-transparency" }),
-      text: i18nLazyString15(UIStrings15.noEmulation),
-      value: ""
-    },
-    {
-      title: i18nLazyString15(UIStrings15.emulateCss, { PH1: "prefers-reduced-transparency: reduce" }),
-      text: i18n30.i18n.lockedLazyString("prefers-reduced-transparency: reduce"),
-      value: "reduce"
-    }
-  ],
-  title: i18nLazyString15(UIStrings15.emulateCssMediaFeature, { PH1: "prefers-reduced-transparency" })
-});
-Common10.Settings.registerSettingExtension({
-  settingName: "emulated-css-media-feature-color-gamut",
-  settingType: "enum",
-  storageType: "Session",
-  defaultValue: "",
-  options: [
-    {
-      title: i18nLazyString15(UIStrings15.doNotEmulateCss, { PH1: "color-gamut" }),
-      text: i18nLazyString15(UIStrings15.noEmulation),
-      value: ""
-    },
-    {
-      title: i18nLazyString15(UIStrings15.emulateCss, { PH1: "color-gamut: srgb" }),
-      text: i18n30.i18n.lockedLazyString("color-gamut: srgb"),
-      value: "srgb"
-    },
-    {
-      title: i18nLazyString15(UIStrings15.emulateCss, { PH1: "color-gamut: p3" }),
-      text: i18n30.i18n.lockedLazyString("color-gamut: p3"),
-      value: "p3"
-    },
-    {
-      title: i18nLazyString15(UIStrings15.emulateCss, { PH1: "color-gamut: rec2020" }),
-      text: i18n30.i18n.lockedLazyString("color-gamut: rec2020"),
-      value: "rec2020"
-    }
-  ],
-  title: i18nLazyString15(UIStrings15.emulateCssMediaFeature, { PH1: "color-gamut" })
-});
-Common10.Settings.registerSettingExtension({
-  category: "RENDERING",
-  settingName: "emulated-vision-deficiency",
-  settingType: "enum",
-  storageType: "Session",
-  defaultValue: "none",
-  options: [
-    {
-      title: i18nLazyString15(UIStrings15.doNotEmulateAnyVisionDeficiency),
-      text: i18nLazyString15(UIStrings15.noEmulation),
-      value: "none"
-    },
-    {
-      title: i18nLazyString15(UIStrings15.emulateBlurredVision),
-      text: i18nLazyString15(UIStrings15.blurredVision),
-      value: "blurredVision"
-    },
-    {
-      title: i18nLazyString15(UIStrings15.emulateReducedContrast),
-      text: i18nLazyString15(UIStrings15.reducedContrast),
-      value: "reducedContrast"
-    },
-    {
-      title: i18nLazyString15(UIStrings15.emulateProtanopia),
-      text: i18nLazyString15(UIStrings15.protanopia),
-      value: "protanopia"
-    },
-    {
-      title: i18nLazyString15(UIStrings15.emulateDeuteranopia),
-      text: i18nLazyString15(UIStrings15.deuteranopia),
-      value: "deuteranopia"
-    },
-    {
-      title: i18nLazyString15(UIStrings15.emulateTritanopia),
-      text: i18nLazyString15(UIStrings15.tritanopia),
-      value: "tritanopia"
-    },
-    {
-      title: i18nLazyString15(UIStrings15.emulateAchromatopsia),
-      text: i18nLazyString15(UIStrings15.achromatopsia),
-      value: "achromatopsia"
-    }
-  ],
-  tags: [
-    i18nLazyString15(UIStrings15.query)
-  ],
-  title: i18nLazyString15(UIStrings15.emulateVisionDeficiencies)
-});
-Common10.Settings.registerSettingExtension({
-  category: "RENDERING",
-  settingName: "emulated-os-text-scale",
-  settingType: "enum",
-  storageType: "Session",
-  defaultValue: "",
-  options: [
-    {
-      title: i18nLazyString15(UIStrings15.doNotEmulateOsTextScale),
-      text: i18nLazyString15(UIStrings15.osTextScaleEmulationNone),
-      value: ""
-    },
-    {
-      title: i18nLazyString15(UIStrings15.osTextScaleEmulation85),
-      text: i18nLazyString15(UIStrings15.osTextScaleEmulation85),
-      value: "0.85"
-    },
-    {
-      title: i18nLazyString15(UIStrings15.osTextScaleEmulation100),
-      text: i18nLazyString15(UIStrings15.osTextScaleEmulation100),
-      value: "1"
-    },
-    {
-      title: i18nLazyString15(UIStrings15.osTextScaleEmulation115),
-      text: i18nLazyString15(UIStrings15.osTextScaleEmulation115),
-      value: "1.15"
-    },
-    {
-      title: i18nLazyString15(UIStrings15.osTextScaleEmulation130),
-      text: i18nLazyString15(UIStrings15.osTextScaleEmulation130),
-      value: "1.3"
-    },
-    {
-      title: i18nLazyString15(UIStrings15.osTextScaleEmulation150),
-      text: i18nLazyString15(UIStrings15.osTextScaleEmulation150),
-      value: "1.5"
-    },
-    {
-      title: i18nLazyString15(UIStrings15.osTextScaleEmulation180),
-      text: i18nLazyString15(UIStrings15.osTextScaleEmulation180),
-      value: "1.8"
-    },
-    {
-      title: i18nLazyString15(UIStrings15.osTextScaleEmulation200),
-      text: i18nLazyString15(UIStrings15.osTextScaleEmulation200),
-      value: "2"
-    },
-    {
-      title: i18nLazyString15(UIStrings15.osTextScaleEmulation250),
-      text: i18nLazyString15(UIStrings15.osTextScaleEmulation250),
-      value: "2.5"
-    },
-    {
-      title: i18nLazyString15(UIStrings15.osTextScaleEmulation300),
-      text: i18nLazyString15(UIStrings15.osTextScaleEmulation300),
-      value: "3"
-    },
-    {
-      title: i18nLazyString15(UIStrings15.osTextScaleEmulation350),
-      text: i18nLazyString15(UIStrings15.osTextScaleEmulation350),
-      value: "3.5"
-    }
-  ],
-  tags: [
-    i18nLazyString15(UIStrings15.query)
-  ],
-  title: i18nLazyString15(UIStrings15.emulateOsTextScale)
-});
-Common10.Settings.registerSettingExtension({
-  category: "RENDERING",
-  settingName: "local-fonts-disabled",
-  settingType: "boolean",
-  storageType: "Session",
-  options: [
-    {
-      value: true,
-      title: i18nLazyString15(UIStrings15.disableLocalFonts)
-    },
-    {
-      value: false,
-      title: i18nLazyString15(UIStrings15.enableLocalFonts)
-    }
-  ],
-  defaultValue: false
-});
-Common10.Settings.registerSettingExtension({
-  category: "RENDERING",
-  settingName: "avif-format-disabled",
-  settingType: "boolean",
-  storageType: "Session",
-  options: [
-    {
-      value: true,
-      title: i18nLazyString15(UIStrings15.disableAvifFormat)
-    },
-    {
-      value: false,
-      title: i18nLazyString15(UIStrings15.enableAvifFormat)
-    }
-  ],
-  defaultValue: false
-});
-Common10.Settings.registerSettingExtension({
-  category: "RENDERING",
-  settingName: "jpeg-xl-format-disabled",
-  settingType: "boolean",
-  storageType: "Session",
-  options: [
-    {
-      value: true,
-      title: i18nLazyString15(UIStrings15.disableJpegXlFormat)
-    },
-    {
-      value: false,
-      title: i18nLazyString15(UIStrings15.enableJpegXlFormat)
-    }
-  ],
-  defaultValue: false
-});
-Common10.Settings.registerSettingExtension({
-  category: "RENDERING",
-  settingName: "webp-format-disabled",
-  settingType: "boolean",
-  storageType: "Session",
-  options: [
-    {
-      value: true,
-      title: i18nLazyString15(UIStrings15.disableWebpFormat)
-    },
-    {
-      value: false,
-      title: i18nLazyString15(UIStrings15.enableWebpFormat)
-    }
-  ],
-  defaultValue: false
-});
-Common10.Settings.registerSettingExtension({
-  category: "CONSOLE",
-  title: i18nLazyString15(UIStrings15.customFormatters),
-  settingName: "custom-formatters",
-  settingType: "boolean",
-  defaultValue: false
-});
-Common10.Settings.registerSettingExtension({
-  category: "NETWORK",
-  title: i18nLazyString15(UIStrings15.networkRequestBlocking),
-  settingName: "request-blocking-enabled",
-  settingType: "boolean",
-  storageType: "Local",
-  defaultValue: false,
-  options: [
-    {
-      value: true,
-      title: i18nLazyString15(UIStrings15.enableNetworkRequestBlocking)
-    },
-    {
-      value: false,
-      title: i18nLazyString15(UIStrings15.disableNetworkRequestBlocking)
-    }
-  ]
-});
-Common10.Settings.registerSettingExtension({
-  category: "NETWORK",
-  title: i18nLazyString15(UIStrings15.disableCache),
-  settingName: "cache-disabled",
-  settingType: "boolean",
-  order: 0,
-  defaultValue: false,
-  options: [
-    {
-      value: true,
-      title: i18nLazyString15(UIStrings15.disableCache)
-    },
-    {
-      value: false,
-      title: i18nLazyString15(UIStrings15.enableCache)
-    }
-  ],
-  learnMore: {
-    tooltip: i18nLazyString15(UIStrings15.networkCacheExplanation)
-  }
-});
-Common10.Settings.registerSettingExtension({
-  category: "RENDERING",
-  title: i18nLazyString15(UIStrings15.emulateAutoDarkMode),
-  settingName: "emulate-auto-dark-mode",
-  settingType: "boolean",
-  storageType: "Session",
-  defaultValue: false
-});
-Common10.Settings.registerSettingExtension({
-  category: "SOURCES",
-  storageType: "Synced",
-  title: i18nLazyString15(UIStrings15.enableRemoteFileLoading),
-  settingName: "network.enable-remote-file-loading",
-  settingType: "boolean",
-  defaultValue: false,
-  learnMore: {
-    tooltip: i18nLazyString15(UIStrings15.remoteFileLoadingInfo)
-  }
-});
-Common10.Settings.registerSettingExtension({
-  category: "CONSOLE",
-  storageType: "Synced",
-  title: i18nLazyString15(UIStrings15.logXmlhttprequests),
-  settingName: "monitoring-xhr-enabled",
-  settingType: "boolean",
-  defaultValue: false
-});
-Common10.Settings.registerSettingExtension({
-  category: "APPEARANCE",
-  storageType: "Synced",
-  title: i18nLazyString15(UIStrings15.disablePaused),
-  settingName: "disable-paused-state-overlay",
-  settingType: "boolean",
-  defaultValue: false
-});
-
-// gen/front_end/models/workspace/workspace-meta.js
-import * as Common11 from "./../../core/common/common.js";
-Common11.Settings.registerSettingExtension({
-  storageType: "Synced",
-  settingName: "skip-stack-frames-pattern",
-  settingType: "regex",
-  defaultValue: "/node_modules/|^node:"
-});
-Common11.Settings.registerSettingExtension({
-  storageType: "Synced",
-  settingName: "skip-content-scripts",
-  settingType: "boolean",
-  defaultValue: true
-});
-Common11.Settings.registerSettingExtension({
-  storageType: "Synced",
-  settingName: "automatically-ignore-list-known-third-party-scripts",
-  settingType: "boolean",
-  defaultValue: true
-});
-Common11.Settings.registerSettingExtension({
-  storageType: "Synced",
-  settingName: "skip-anonymous-scripts",
-  settingType: "boolean",
-  defaultValue: false
-});
-Common11.Settings.registerSettingExtension({
-  storageType: "Synced",
-  settingName: "enable-ignore-listing",
-  settingType: "boolean",
-  defaultValue: true
-});
-
 // gen/front_end/ui/legacy/components/source_frame/source_frame-meta.js
-import * as Common12 from "./../../core/common/common.js";
-import * as i18n33 from "./../../core/i18n/i18n.js";
-var UIStrings16 = {
+import * as Common7 from "./../../core/common/common.js";
+import * as i18n24 from "./../../core/i18n/i18n.js";
+var UIStrings12 = {
   /**
    * @description Title of a setting under the Sources category in Settings
    */
@@ -5177,34 +4480,34 @@ var UIStrings16 = {
    */
   tabCharacter: "Tab character"
 };
-var str_16 = i18n33.i18n.registerUIStrings("ui/legacy/components/source_frame/source_frame-meta.ts", UIStrings16);
-var i18nLazyString16 = i18n33.i18n.getLazilyComputedLocalizedString.bind(void 0, str_16);
-Common12.Settings.registerSettingExtension({
+var str_12 = i18n24.i18n.registerUIStrings("ui/legacy/components/source_frame/source_frame-meta.ts", UIStrings12);
+var i18nLazyString12 = i18n24.i18n.getLazilyComputedLocalizedString.bind(void 0, str_12);
+Common7.Settings.registerSettingExtension({
   category: "SOURCES",
   storageType: "Synced",
-  title: i18nLazyString16(UIStrings16.defaultIndentation),
+  title: i18nLazyString12(UIStrings12.defaultIndentation),
   settingName: "text-editor-indent",
   settingType: "enum",
   defaultValue: "    ",
   options: [
     {
-      title: i18nLazyString16(UIStrings16.setIndentationToSpaces),
-      text: i18nLazyString16(UIStrings16.Spaces),
+      title: i18nLazyString12(UIStrings12.setIndentationToSpaces),
+      text: i18nLazyString12(UIStrings12.Spaces),
       value: "  "
     },
     {
-      title: i18nLazyString16(UIStrings16.setIndentationToFSpaces),
-      text: i18nLazyString16(UIStrings16.fSpaces),
+      title: i18nLazyString12(UIStrings12.setIndentationToFSpaces),
+      text: i18nLazyString12(UIStrings12.fSpaces),
       value: "    "
     },
     {
-      title: i18nLazyString16(UIStrings16.setIndentationToESpaces),
-      text: i18nLazyString16(UIStrings16.eSpaces),
+      title: i18nLazyString12(UIStrings12.setIndentationToESpaces),
+      text: i18nLazyString12(UIStrings12.eSpaces),
       value: "        "
     },
     {
-      title: i18nLazyString16(UIStrings16.setIndentationToTabCharacter),
-      text: i18nLazyString16(UIStrings16.tabCharacter),
+      title: i18nLazyString12(UIStrings12.setIndentationToTabCharacter),
+      text: i18nLazyString12(UIStrings12.tabCharacter),
       value: "	"
     }
   ]
@@ -5229,13 +4532,13 @@ UI12.Toolbar.registerToolbarItem({
 });
 
 // gen/front_end/panels/explain/explain-meta.js
-import * as Common13 from "./../../core/common/common.js";
-import * as i18n35 from "./../../core/i18n/i18n.js";
+import * as Common8 from "./../../core/common/common.js";
+import * as i18n26 from "./../../core/i18n/i18n.js";
 import * as AiAssistanceModel from "./../../models/ai_assistance/ai_assistance.js";
 import * as Console2 from "./../../panels/console/console.js";
 import * as UI13 from "./../../ui/legacy/legacy.js";
-import * as SettingUIRegistration3 from "./../../ui/settings/settings.js";
-var UIStrings17 = {
+import * as SettingUIRegistration4 from "./../../ui/settings/settings.js";
+var UIStrings13 = {
   /**
    * @description Message to offer insights for a console error message.
    */
@@ -5254,12 +4557,12 @@ var UIStrings17 = {
    */
   enableConsoleInsights: "Understand console messages with AI"
 };
-var str_17 = i18n35.i18n.registerUIStrings("panels/explain/explain-meta.ts", UIStrings17);
-var i18nLazyString17 = i18n35.i18n.getLazilyComputedLocalizedString.bind(void 0, str_17);
+var str_13 = i18n26.i18n.registerUIStrings("panels/explain/explain-meta.ts", UIStrings13);
+var i18nLazyString13 = i18n26.i18n.getLazilyComputedLocalizedString.bind(void 0, str_13);
 var actions = [
   {
     actionId: "explain.console-message.hover",
-    title: i18nLazyString17(UIStrings17.explainThisMessage),
+    title: i18nLazyString13(UIStrings13.explainThisMessage),
     configurableBindings: false,
     contextTypes() {
       return [Console2.ConsoleViewMessage.ConsoleViewMessage];
@@ -5267,7 +4570,7 @@ var actions = [
   },
   {
     actionId: "explain.console-message.teaser",
-    title: i18nLazyString17(UIStrings17.explainThisMessage),
+    title: i18nLazyString13(UIStrings13.explainThisMessage),
     configurableBindings: false,
     contextTypes() {
       return [];
@@ -5275,7 +4578,7 @@ var actions = [
   },
   {
     actionId: "explain.console-message.context.error",
-    title: i18nLazyString17(UIStrings17.explainThisError),
+    title: i18nLazyString13(UIStrings13.explainThisError),
     configurableBindings: false,
     contextTypes() {
       return [];
@@ -5283,7 +4586,7 @@ var actions = [
   },
   {
     actionId: "explain.console-message.context.warning",
-    title: i18nLazyString17(UIStrings17.explainThisWarning),
+    title: i18nLazyString13(UIStrings13.explainThisWarning),
     configurableBindings: false,
     contextTypes() {
       return [];
@@ -5291,7 +4594,7 @@ var actions = [
   },
   {
     actionId: "explain.console-message.context.other",
-    title: i18nLazyString17(UIStrings17.explainThisMessage),
+    title: i18nLazyString13(UIStrings13.explainThisMessage),
     configurableBindings: false,
     contextTypes() {
       return [];
@@ -5307,9 +4610,9 @@ function isPolicyRestricted(config) {
 function isFeatureEnabled(config) {
   return (config?.aidaAvailability?.enabled && config?.devToolsConsoleInsights?.enabled) === true;
 }
-SettingUIRegistration3.SettingUIRegistration.register(AiAssistanceModel.AiUtils.consoleInsightsEnabledSettingDescriptor, {
+SettingUIRegistration4.SettingUIRegistration.register(AiAssistanceModel.AiUtils.consoleInsightsEnabledSettingDescriptor, {
   category: "AI",
-  title: i18nLazyString17(UIStrings17.enableConsoleInsights)
+  title: i18nLazyString13(UIStrings13.enableConsoleInsights)
 });
 for (const action of actions) {
   UI13.ActionRegistration.registerActionExtension({
@@ -5326,13 +4629,13 @@ for (const action of actions) {
 }
 
 // gen/front_end/panels/ai_assistance/ai_assistance-meta.js
-import * as Common14 from "./../../core/common/common.js";
-import * as i18n37 from "./../../core/i18n/i18n.js";
+import * as Common9 from "./../../core/common/common.js";
+import * as i18n28 from "./../../core/i18n/i18n.js";
 import * as Root5 from "./../../core/root/root.js";
 import * as AiAssistanceModel2 from "./../../models/ai_assistance/ai_assistance.js";
 import * as UI14 from "./../../ui/legacy/legacy.js";
-import * as SettingUIRegistration5 from "./../../ui/settings/settings.js";
-var UIStrings18 = {
+import * as SettingUIRegistration6 from "./../../ui/settings/settings.js";
+var UIStrings14 = {
   /**
    * @description The title of the AI assistance panel.
    */
@@ -5368,8 +4671,8 @@ var UIStrings18 = {
    */
   debugWithGemini: "Debug with Gemini"
 };
-var str_18 = i18n37.i18n.registerUIStrings("panels/ai_assistance/ai_assistance-meta.ts", UIStrings18);
-var i18nString = i18n37.i18n.getLocalizedString.bind(void 0, str_18);
+var str_14 = i18n28.i18n.registerUIStrings("panels/ai_assistance/ai_assistance-meta.ts", UIStrings14);
+var i18nString = i18n28.i18n.getLocalizedString.bind(void 0, str_14);
 function i18nAiBrandedString(gemini, assistance) {
   return () => Root5.Runtime.hostConfig.devToolsGeminiRebranding?.enabled ? i18nString(gemini) : i18nString(assistance);
 }
@@ -5407,8 +4710,8 @@ function isAnyFeatureAvailable(config) {
 UI14.ViewManager.registerViewExtension({
   location: "drawer-view",
   id: "freestyler",
-  commandPrompt: i18nAiBrandedString(UIStrings18.showGemini, UIStrings18.showAiAssistance),
-  title: i18nAiBrandedString(UIStrings18.gemini, UIStrings18.aiAssistance),
+  commandPrompt: i18nAiBrandedString(UIStrings14.showGemini, UIStrings14.showAiAssistance),
+  title: i18nAiBrandedString(UIStrings14.gemini, UIStrings14.aiAssistance),
   order: 10,
   persistence: "closeable",
   hasToolbar: false,
@@ -5418,9 +4721,9 @@ UI14.ViewManager.registerViewExtension({
     return await AiAssistance.AiAssistancePanel.instance();
   }
 });
-SettingUIRegistration5.SettingUIRegistration.register(AiAssistanceModel2.AiUtils.aiAssistanceEnabledSettingDescriptor, {
+SettingUIRegistration6.SettingUIRegistration.register(AiAssistanceModel2.AiUtils.aiAssistanceEnabledSettingDescriptor, {
   category: "AI",
-  title: i18nAiBrandedString(UIStrings18.enableGemini, UIStrings18.enableAiAssistance)
+  title: i18nAiBrandedString(UIStrings14.enableGemini, UIStrings14.enableAiAssistance)
 });
 UI14.ActionRegistration.registerActionExtension({
   actionId: "freestyler.main-menu",
@@ -5428,7 +4731,7 @@ UI14.ActionRegistration.registerActionExtension({
     return [];
   },
   category: "GLOBAL",
-  title: i18nAiBrandedString(UIStrings18.debugWithGemini, UIStrings18.debugWithAi),
+  title: i18nAiBrandedString(UIStrings14.debugWithGemini, UIStrings14.debugWithAi),
   configurableBindings: false,
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
@@ -5442,7 +4745,7 @@ UI14.ActionRegistration.registerActionExtension({
     return [];
   },
   category: "GLOBAL",
-  title: i18nAiBrandedString(UIStrings18.debugWithGemini, UIStrings18.debugWithAi),
+  title: i18nAiBrandedString(UIStrings14.debugWithGemini, UIStrings14.debugWithAi),
   configurableBindings: false,
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
@@ -5456,7 +4759,7 @@ UI14.ActionRegistration.registerActionExtension({
     return [];
   },
   category: "GLOBAL",
-  title: i18nAiBrandedString(UIStrings18.debugWithGemini, UIStrings18.debugWithAi),
+  title: i18nAiBrandedString(UIStrings14.debugWithGemini, UIStrings14.debugWithAi),
   configurableBindings: false,
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
@@ -5470,7 +4773,7 @@ UI14.ActionRegistration.registerActionExtension({
     return [];
   },
   category: "GLOBAL",
-  title: i18nAiBrandedString(UIStrings18.debugWithGemini, UIStrings18.debugWithAi),
+  title: i18nAiBrandedString(UIStrings14.debugWithGemini, UIStrings14.debugWithAi),
   configurableBindings: false,
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
@@ -5484,7 +4787,7 @@ UI14.ActionRegistration.registerActionExtension({
     return [];
   },
   category: "GLOBAL",
-  title: i18nAiBrandedString(UIStrings18.debugWithGemini, UIStrings18.debugWithAi),
+  title: i18nAiBrandedString(UIStrings14.debugWithGemini, UIStrings14.debugWithAi),
   configurableBindings: false,
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
@@ -5498,7 +4801,7 @@ UI14.ActionRegistration.registerActionExtension({
     return [];
   },
   category: "GLOBAL",
-  title: i18nAiBrandedString(UIStrings18.debugWithGemini, UIStrings18.debugWithAi),
+  title: i18nAiBrandedString(UIStrings14.debugWithGemini, UIStrings14.debugWithAi),
   configurableBindings: false,
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
@@ -5512,7 +4815,7 @@ UI14.ActionRegistration.registerActionExtension({
     return [];
   },
   category: "GLOBAL",
-  title: i18nAiBrandedString(UIStrings18.debugWithGemini, UIStrings18.debugWithAi),
+  title: i18nAiBrandedString(UIStrings14.debugWithGemini, UIStrings14.debugWithAi),
   configurableBindings: false,
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
@@ -5526,7 +4829,7 @@ UI14.ActionRegistration.registerActionExtension({
     return [];
   },
   category: "GLOBAL",
-  title: i18nAiBrandedString(UIStrings18.debugWithGemini, UIStrings18.debugWithAi),
+  title: i18nAiBrandedString(UIStrings14.debugWithGemini, UIStrings14.debugWithAi),
   configurableBindings: false,
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
@@ -5540,7 +4843,7 @@ UI14.ActionRegistration.registerActionExtension({
     return [];
   },
   category: "GLOBAL",
-  title: i18nAiBrandedString(UIStrings18.debugWithGemini, UIStrings18.debugWithAi),
+  title: i18nAiBrandedString(UIStrings14.debugWithGemini, UIStrings14.debugWithAi),
   configurableBindings: false,
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
@@ -5554,7 +4857,7 @@ UI14.ActionRegistration.registerActionExtension({
     return [];
   },
   category: "GLOBAL",
-  title: i18nAiBrandedString(UIStrings18.debugWithGemini, UIStrings18.debugWithAi),
+  title: i18nAiBrandedString(UIStrings14.debugWithGemini, UIStrings14.debugWithAi),
   configurableBindings: false,
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
@@ -5564,16 +4867,16 @@ UI14.ActionRegistration.registerActionExtension({
 });
 
 // gen/front_end/ui/comments/comments-meta.js
-import * as i18n39 from "./../../core/i18n/i18n.js";
+import * as i18n30 from "./../../core/i18n/i18n.js";
 import * as UI15 from "./../../ui/legacy/legacy.js";
-var UIStrings19 = {
+var UIStrings15 = {
   /**
    * @description Title of an action that toggles comment mode.
    */
   toggleCommentMode: "Add comments to send to your AI coding agent"
 };
-var str_19 = i18n39.i18n.registerUIStrings("ui/comments/comments-meta.ts", UIStrings19);
-var i18nLazyString18 = i18n39.i18n.getLazilyComputedLocalizedString.bind(void 0, str_19);
+var str_15 = i18n30.i18n.registerUIStrings("ui/comments/comments-meta.ts", UIStrings15);
+var i18nLazyString14 = i18n30.i18n.getLazilyComputedLocalizedString.bind(void 0, str_15);
 var loadedCommentsModule;
 async function loadCommentsModule() {
   if (!loadedCommentsModule) {
@@ -5587,7 +4890,7 @@ function isCommentsEnabled(config) {
 UI15.ActionRegistration.registerActionExtension({
   category: "GLOBAL",
   actionId: "comments.toggle-comment-mode",
-  title: i18nLazyString18(UIStrings19.toggleCommentMode),
+  title: i18nLazyString14(UIStrings15.toggleCommentMode),
   iconClass: "comment-mode",
   toggleable: true,
   condition: isCommentsEnabled,

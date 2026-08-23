@@ -1017,6 +1017,7 @@ export class NodeUI {
     constructor(_animationEffect) {
         this.element = document.createElement('div');
         this.element.classList.add('animation-node-row');
+        this.element.setAttribute('jslog', `${VisualLogging.tableRow('animation-node-row')}`);
         this.#description = this.element.createChild('div', 'animation-node-description');
         this.#description.setAttribute('jslog', `${VisualLogging.tableCell('description').track({ resize: true })}`);
         this.#timelineElement = this.element.createChild('div', 'animation-node-timeline');
@@ -1028,6 +1029,7 @@ export class NodeUI {
             UI.UIUtils.createTextChild(this.#description, '<node>');
             return;
         }
+        this.element.setAttribute('data-backend-node-id', String(node.backendNodeId()));
         this.#node = node;
         this.nodeChanged();
         const link = PanelsCommon.DOMLinkifier.Linkifier.instance().linkify(node, {

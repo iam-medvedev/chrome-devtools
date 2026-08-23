@@ -210,7 +210,7 @@ describeWithEnvironment('Pattern validator', () => {
     });
 });
 function getIgnoredRegexes() {
-    return Common.Settings.Settings.instance().moduleSetting('skip-stack-frames-pattern')
+    return Common.Settings.Settings.instance().resolve(Workspace.IgnoreListManager.skipStackFramesPatternSettingDescriptor)
         .getAsArray();
 }
 function ignoreRegex(regexValue) {

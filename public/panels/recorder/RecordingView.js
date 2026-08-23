@@ -955,7 +955,7 @@ export class RecordingView extends UI.Widget.Widget {
         event.stopPropagation();
         this.onPlayRecording?.({
             targetPanel: "timeline" /* TargetPanel.PERFORMANCE_PANEL */,
-            speed: "normal" /* PlayRecordingSpeed.NORMAL */,
+            speed: "normal" /* Models.RecordingPlayer.PlayRecordingSpeed.NORMAL */,
         });
     }
     showCodeToggle = () => {

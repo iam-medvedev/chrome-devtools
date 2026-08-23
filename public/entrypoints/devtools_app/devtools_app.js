@@ -176,11 +176,11 @@ var UIStrings2 = {
    */
   selectAnElementInThePageTo: "Select an element in the page to inspect it",
   /**
-   * @description Title/tooltip of an action in the elements panel to add a new style rule.
+   * @description Title/tooltip of an action in the Elements panel to add a new style rule.
    */
-  newStyleRule: "New Style Rule",
+  newStyleRule: "New style rule",
   /**
-   * @description Title/tooltip of an action in the elements panel to refresh the event listeners.
+   * @description Title/tooltip of an action in the Elements panel to refresh the event listeners.
    */
   refreshEventListeners: "Refresh event listeners",
   /**
@@ -200,11 +200,11 @@ var UIStrings2 = {
    */
   htmlComments: "HTML comments",
   /**
-   * @description Title of an option under the Elements category that can be invoked through the Command Menu
+   * @description Title of an option under the Elements category that can be invoked through the Command Menu.
    */
   showHtmlComments: "Show `HTML` comments",
   /**
-   * @description Title of an option under the Elements category that can be invoked through the Command Menu
+   * @description Title of an option under the Elements category that can be invoked through the Command Menu.
    */
   hideHtmlComments: "Hide `HTML` comments",
   /**
@@ -221,12 +221,12 @@ var UIStrings2 = {
   detailedInspectTooltip: "Detailed inspect tooltip",
   /**
    * @description Title of a setting under the Elements category in Settings. Turns on a mode where
-   * hovering over CSS properties in the Styles pane will display a popover with documentation.
+   * hovering over CSS properties in the Styles tab will display a popover with documentation.
    */
   CSSDocumentationTooltip: "CSS documentation tooltip",
   /**
-   * @description A context menu item (command) in the Elements panel that copy the styles of
-   * the HTML element.
+   * @description A context menu item (command) in the Elements panel that copies the styles of
+   * an HTML element.
    */
   copyStyles: "Copy styles",
   /**
@@ -235,20 +235,20 @@ var UIStrings2 = {
    */
   toggleA11yTree: "Toggle accessibility tree",
   /**
-   * @description Title of a setting under the Elements category. Whether to show/hide hide
+   * @description Title of a setting under the Elements category. Whether to show or hide
    * the shadow DOM nodes of HTML elements that are built into the browser (e.g. the <input> element).
    */
   userAgentShadowDOM: "User agent shadow `DOM`",
   /**
    * @description Command for showing the 'Computed' tool. Displays computed CSS styles in Elements sidebar.
    */
-  showComputedStyles: "Show Computed Styles",
+  showComputedStyles: "Show Computed styles",
   /**
    * @description Command for showing the 'Styles' tool. Displays CSS styles in Elements sidebar.
    */
   showStyles: "Show Styles",
   /**
-   * @description Command for toggling the eye dropper when the color picker is open
+   * @description Command for toggling the eye dropper when the color picker is open.
    */
   toggleEyeDropper: "Toggle eye dropper",
   /**
@@ -256,11 +256,11 @@ var UIStrings2 = {
    */
   cssAnimationsOnlyWhenAnimationsTabOpen: "Show animation styles only when the Animations tab is open",
   /**
-   * @description Whether CSS rules that do not apply active styles in the Styles pane are collapsed by default.
+   * @description Whether CSS rules that do not apply active styles in the Styles tab are collapsed by default.
    */
   collapseNonContributingCSSRules: "Collapse non-contributing CSS rules",
   /**
-   * @description Title of a setting in the Event Listeners widget.
+   * @description Title of a setting in the Event listeners tab.
    */
   frameworkListeners: "Framework listeners"
 };
@@ -1109,11 +1109,73 @@ import * as Common3 from "./../../core/common/common.js";
 import * as i18n7 from "./../../core/i18n/i18n.js";
 import * as Root3 from "./../../core/root/root.js";
 import * as SDK3 from "./../../core/sdk/sdk.js";
+import * as Logs from "./../../models/logs/logs.js";
 import * as Workspace from "./../../models/workspace/workspace.js";
 import * as PanelCommon from "./../../panels/common/common.js";
 import * as UI4 from "./../../ui/legacy/legacy.js";
+import * as SettingsUI2 from "./../../ui/settings/settings.js";
 import * as NetworkForward from "./../../panels/network/forward/forward.js";
 var UIStrings4 = {
+  /**
+   * @description Text to keep the log after refreshing.
+   */
+  keepLog: "Keep log",
+  /**
+   * @description A term that can be used to search in the command menu, and will find the search
+   * result 'Keep log on page reload / navigation'. This is an additional search term to help
+   * the user find the setting even when they don't know the exact name of it.
+   */
+  keep: "keep",
+  /**
+   * @description A term that can be used to search in the command menu, and will find the search
+   * result 'Keep log on page reload / navigation'. This is an additional search term to help
+   * the user find the setting even when they don't know the exact name of it.
+   */
+  preserve: "preserve",
+  /**
+   * @description A term that can be used to search in the command menu, and will find the search
+   * result 'Keep log on page reload / navigation'. This is an additional search term to help
+   * the user find the setting even when they don't know the exact name of it.
+   */
+  clearTag: "clear",
+  /**
+   * @description A term that can be used to search in the command menu, and will find the search
+   * result 'Keep log on page reload / navigation'. This is an additional search term to help
+   * the user find the setting even when they don't know the exact name of it.
+   */
+  reset: "reset",
+  /**
+   * @description Title of a setting under the Network category that can be invoked through the Command Menu.
+   */
+  keepLogOnPageReload: "Keep log on page reload / navigation",
+  /**
+   * @description Title of a setting under the Network category that can be invoked through the Command Menu.
+   */
+  doNotKeepLogOnPageReload: "Don\u2019t keep log on page reload / navigation",
+  /**
+   * @description Title of a setting under the Network category that can be invoked through the Command Menu.
+   */
+  enableCache: "Enable cache",
+  /**
+   * @description Title of a setting under the Network category that can be invoked through the Command Menu.
+   */
+  disableCache: "Disable cache while DevTools is open",
+  /**
+   * @description Tooltip text for a setting that controls the network cache. Disabling the network cache can simulate the network connections of users that are visiting a page for the first time.
+   */
+  networkCacheExplanation: "Disabling the network cache will simulate a network experience similar to a first time visitor.",
+  /**
+   * @description Title of a setting under the Network category.
+   */
+  networkRequestBlocking: "Network request blocking",
+  /**
+   * @description Title of a setting under the Network category that can be invoked through the Command Menu.
+   */
+  enableNetworkRequestBlocking: "Enable network request blocking",
+  /**
+   * @description Title of a setting under the Network category that can be invoked through the Command Menu.
+   */
+  disableNetworkRequestBlocking: "Disable network request blocking",
   /**
    * @description Command for showing the 'Network' tool
    */
@@ -1509,6 +1571,62 @@ Common3.Settings.registerSettingExtension({
     }
   ]
 });
+SettingsUI2.SettingUIRegistration.register(SDK3.SDKSettings.requestBlockingEnabledSettingDescriptor, {
+  category: "NETWORK",
+  title: i18nLazyString4(UIStrings4.networkRequestBlocking),
+  options: [
+    {
+      value: true,
+      title: i18nLazyString4(UIStrings4.enableNetworkRequestBlocking)
+    },
+    {
+      value: false,
+      title: i18nLazyString4(UIStrings4.disableNetworkRequestBlocking)
+    }
+  ]
+});
+SettingsUI2.SettingUIRegistration.register(SDK3.SDKSettings.cacheDisabledSettingDescriptor, {
+  category: "NETWORK",
+  title: i18nLazyString4(UIStrings4.disableCache),
+  order: 0,
+  options: [
+    {
+      value: true,
+      title: i18nLazyString4(UIStrings4.disableCache)
+    },
+    {
+      value: false,
+      title: i18nLazyString4(UIStrings4.enableCache)
+    }
+  ],
+  learnMore: {
+    tooltip: i18nLazyString4(UIStrings4.networkCacheExplanation)
+  }
+});
+SettingsUI2.SettingUIRegistration.register(SDK3.SDKSettings.preserveNetworkLogSettingDescriptor, {
+  category: "NETWORK",
+  title: i18nLazyString4(UIStrings4.keepLog),
+  tags: [
+    i18nLazyString4(UIStrings4.keep),
+    i18nLazyString4(UIStrings4.preserve),
+    i18nLazyString4(UIStrings4.clearTag),
+    i18nLazyString4(UIStrings4.reset)
+  ],
+  options: [
+    {
+      value: true,
+      title: i18nLazyString4(UIStrings4.keepLogOnPageReload)
+    },
+    {
+      value: false,
+      title: i18nLazyString4(UIStrings4.doNotKeepLogOnPageReload)
+    }
+  ]
+});
+SettingsUI2.SettingUIRegistration.register(Logs.NetworkLog.recordNetworkLogSettingDescriptor, {
+  category: "NETWORK",
+  title: i18nLazyString4(UIStrings4.recordNetworkLog)
+});
 UI4.ViewManager.registerLocationResolver({
   name: "network-sidebar",
   category: "NETWORK",
@@ -1791,7 +1909,7 @@ import * as Common5 from "./../../core/common/common.js";
 import * as i18n13 from "./../../core/i18n/i18n.js";
 import * as SDK4 from "./../../core/sdk/sdk.js";
 import * as UI7 from "./../../ui/legacy/legacy.js";
-import * as SettingsUI2 from "./../../ui/settings/settings.js";
+import * as SettingsUI3 from "./../../ui/settings/settings.js";
 var UIStrings7 = {
   /**
    * @description Text for the CPU Pressure type to simulate on a device.
@@ -2027,7 +2145,7 @@ Common5.Settings.registerSettingExtension({
     }
   ]
 });
-SettingsUI2.SettingUIRegistration.register(SDK4.SDKSettings.cpuPressureSettingDescriptor, {
+SettingsUI3.SettingUIRegistration.register(SDK4.SDKSettings.cpuPressureSettingDescriptor, {
   title: i18nLazyString7(UIStrings7.cpuPressure),
   reloadRequired: true,
   options: [
@@ -2058,7 +2176,7 @@ SettingsUI2.SettingUIRegistration.register(SDK4.SDKSettings.cpuPressureSettingDe
     }
   ]
 });
-SettingsUI2.SettingUIRegistration.register(SDK4.SDKSettings.touchSettingDescriptor, {
+SettingsUI3.SettingUIRegistration.register(SDK4.SDKSettings.touchSettingDescriptor, {
   title: i18nLazyString7(UIStrings7.touch),
   reloadRequired: true,
   options: [
@@ -2074,7 +2192,7 @@ SettingsUI2.SettingUIRegistration.register(SDK4.SDKSettings.touchSettingDescript
     }
   ]
 });
-SettingsUI2.SettingUIRegistration.register(SDK4.SDKSettings.idleDetectionSettingDescriptor, {
+SettingsUI3.SettingUIRegistration.register(SDK4.SDKSettings.idleDetectionSettingDescriptor, {
   title: i18nLazyString7(UIStrings7.emulateIdleDetectorState),
   options: [
     {
@@ -2277,8 +2395,13 @@ import * as Common8 from "./../../core/common/common.js";
 import * as i18n23 from "./../../core/i18n/i18n.js";
 import * as SDK7 from "./../../core/sdk/sdk.js";
 import * as UI12 from "./../../ui/legacy/legacy.js";
-import * as SettingsUI3 from "./../../ui/settings/settings.js";
+import * as SettingsUI4 from "./../../ui/settings/settings.js";
 var UIStrings12 = {
+  /**
+   * @description The name of a checkbox setting in the Rendering tool. This setting
+   * emulates that the webpage is in auto dark mode.
+   */
+  emulateAutoDarkMode: "Emulate auto dark mode",
   /**
    * @description Title of an option under the Rendering category that can be invoked through the Command Menu.
    */
@@ -2433,6 +2556,146 @@ var UIStrings12 = {
    */
   colorVisionDeficiency: "color vision deficiency",
   /**
+   * @description Title of a setting under the Rendering drawer that can be invoked through the Command Menu.
+   */
+  doNotEmulateAnyVisionDeficiency: "Do not emulate any vision deficiency",
+  /**
+   * @description Title of a setting under the Rendering drawer that can be invoked through the Command Menu.
+   */
+  emulateBlurredVision: "Emulate blurred vision",
+  /**
+   * @description Title of a setting under the Rendering drawer that can be invoked through the Command Menu.
+   */
+  emulateReducedContrast: "Emulate reduced contrast",
+  /**
+   * @description Name of a vision deficiency that can be emulated via the Rendering drawer.
+   */
+  blurredVision: "Blurred vision",
+  /**
+   * @description Name of a vision deficiency that can be emulated via the Rendering drawer.
+   */
+  reducedContrast: "Reduced contrast",
+  /**
+   * @description Title of a setting under the Rendering drawer that can be invoked through the Command Menu.
+   */
+  emulateProtanopia: "Emulate protanopia (no red)",
+  /**
+   * @description Name of a color vision deficiency that can be emulated via the Rendering drawer.
+   */
+  protanopia: "Protanopia (no red)",
+  /**
+   * @description Title of a setting under the Rendering drawer that can be invoked through the Command Menu.
+   */
+  emulateDeuteranopia: "Emulate deuteranopia (no green)",
+  /**
+   * @description Name of a color vision deficiency that can be emulated via the Rendering drawer.
+   */
+  deuteranopia: "Deuteranopia (no green)",
+  /**
+   * @description Title of a setting under the Rendering drawer that can be invoked through the Command Menu.
+   */
+  emulateTritanopia: "Emulate tritanopia (no blue)",
+  /**
+   * @description Name of a color vision deficiency that can be emulated via the Rendering drawer.
+   */
+  tritanopia: "Tritanopia (no blue)",
+  /**
+   * @description Title of a setting under the Rendering drawer that can be invoked through the Command Menu.
+   */
+  emulateAchromatopsia: "Emulate achromatopsia (no color)",
+  /**
+   * @description Name of a color vision deficiency that can be emulated via the Rendering drawer.
+   */
+  achromatopsia: "Achromatopsia (no color)",
+  /**
+   * @description Title of a setting under the Rendering drawer.
+   */
+  emulateVisionDeficiencies: "Emulate vision deficiencies",
+  /**
+   * @description Title of a setting under the Rendering drawer.
+   */
+  emulateOsTextScale: "Emulate OS text scale",
+  /**
+   * @description Title of a setting under the Rendering category that can be invoked through the Command Menu.
+   */
+  doNotEmulateOsTextScale: "Do not emulate OS text scale",
+  /**
+   * @description A drop-down menu option to not emulate OS text scale.
+   */
+  osTextScaleEmulationNone: "No emulation",
+  /**
+   * @description A drop-down menu option to emulate an OS text scale 85%.
+   */
+  osTextScaleEmulation85: "85%",
+  /**
+   * @description A drop-down menu option to emulate an OS text scale of 100%.
+   */
+  osTextScaleEmulation100: "100% (default)",
+  /**
+   * @description A drop-down menu option to emulate an OS text scale of 115%.
+   */
+  osTextScaleEmulation115: "115%",
+  /**
+   * @description A drop-down menu option to emulate an OS text scale of 130%.
+   */
+  osTextScaleEmulation130: "130%",
+  /**
+   * @description A drop-down menu option to emulate an OS text scale of 150%.
+   */
+  osTextScaleEmulation150: "150%",
+  /**
+   * @description A drop-down menu option to emulate an OS text scale of 180%.
+   */
+  osTextScaleEmulation180: "180%",
+  /**
+   * @description A drop-down menu option to emulate an OS text scale of 200%.
+   */
+  osTextScaleEmulation200: "200%",
+  /**
+   * @description A drop-down menu option to emulate an OS text scale of 250%.
+   */
+  osTextScaleEmulation250: "250%",
+  /**
+   * @description A drop-down menu option to emulate an OS text scale of 300%.
+   */
+  osTextScaleEmulation300: "300%",
+  /**
+   * @description A drop-down menu option to emulate an OS text scale of 350%.
+   */
+  osTextScaleEmulation350: "350%",
+  /**
+   * @description Text that refers to disabling local fonts.
+   */
+  disableLocalFonts: "Disable local fonts",
+  /**
+   * @description Text that refers to enabling local fonts.
+   */
+  enableLocalFonts: "Enable local fonts",
+  /**
+   * @description Title of a setting that disables AVIF format.
+   */
+  disableAvifFormat: "Disable `AVIF` format",
+  /**
+   * @description Title of a setting that enables AVIF format.
+   */
+  enableAvifFormat: "Enable `AVIF` format",
+  /**
+   * @description Title of a setting that disables JPEG XL format.
+   */
+  disableJpegXlFormat: "Disable `JPEG XL` format",
+  /**
+   * @description Title of a setting that enables JPEG XL format.
+   */
+  enableJpegXlFormat: "Enable `JPEG XL` format",
+  /**
+   * @description Title of a setting that disables WebP format.
+   */
+  disableWebpFormat: "Disable `WebP` format",
+  /**
+   * @description Title of a setting that enables WebP format.
+   */
+  enableWebpFormat: "Enable `WebP` format",
+  /**
    * @description Title of an action that reloads the inspected page.
    */
   reloadPage: "Reload page",
@@ -2563,13 +2826,9 @@ UI12.ActionRegistration.registerActionExtension({
     return new InspectorMain.RenderingOptions.ReloadActionDelegate();
   }
 });
-Common8.Settings.registerSettingExtension({
+SettingsUI4.SettingUIRegistration.register(SettingsUI4.InspectorMainSettings.adBlockingEnabledSettingDescriptor, {
   category: "NETWORK",
   title: i18nLazyString12(UIStrings12.forceAdBlocking),
-  settingName: "network.ad-blocking-enabled",
-  settingType: "boolean",
-  storageType: "Session",
-  defaultValue: false,
   options: [
     {
       value: true,
@@ -2581,14 +2840,10 @@ Common8.Settings.registerSettingExtension({
     }
   ]
 });
-Common8.Settings.registerSettingExtension({
+SettingsUI4.SettingUIRegistration.register(SettingsUI4.InspectorMainSettings.autoAttachToCreatedPagesSettingDescriptor, {
   category: "GLOBAL",
-  storageType: "Synced",
   title: i18nLazyString12(UIStrings12.autoOpenDevTools),
-  settingName: "auto-attach-to-created-pages",
-  settingType: "boolean",
   order: 2,
-  defaultValue: false,
   options: [
     {
       value: true,
@@ -2616,7 +2871,7 @@ UI12.Toolbar.registerToolbarItem({
   order: 97,
   location: "main-toolbar-right"
 });
-SettingsUI3.SettingUIRegistration.register(SDK7.SDKSettings.showPaintRectsSettingDescriptor, {
+SettingsUI4.SettingUIRegistration.register(SDK7.SDKSettings.showPaintRectsSettingDescriptor, {
   category: "RENDERING",
   options: [
     {
@@ -2629,7 +2884,7 @@ SettingsUI3.SettingUIRegistration.register(SDK7.SDKSettings.showPaintRectsSettin
     }
   ]
 });
-SettingsUI3.SettingUIRegistration.register(SDK7.SDKSettings.showLayoutShiftRegionsSettingDescriptor, {
+SettingsUI4.SettingUIRegistration.register(SDK7.SDKSettings.showLayoutShiftRegionsSettingDescriptor, {
   category: "RENDERING",
   options: [
     {
@@ -2642,7 +2897,7 @@ SettingsUI3.SettingUIRegistration.register(SDK7.SDKSettings.showLayoutShiftRegio
     }
   ]
 });
-SettingsUI3.SettingUIRegistration.register(SDK7.SDKSettings.showAdHighlightsSettingDescriptor, {
+SettingsUI4.SettingUIRegistration.register(SDK7.SDKSettings.showAdHighlightsSettingDescriptor, {
   category: "RENDERING",
   options: [
     {
@@ -2655,7 +2910,7 @@ SettingsUI3.SettingUIRegistration.register(SDK7.SDKSettings.showAdHighlightsSett
     }
   ]
 });
-SettingsUI3.SettingUIRegistration.register(SDK7.SDKSettings.showDebugBordersSettingDescriptor, {
+SettingsUI4.SettingUIRegistration.register(SDK7.SDKSettings.showDebugBordersSettingDescriptor, {
   category: "RENDERING",
   options: [
     {
@@ -2668,7 +2923,7 @@ SettingsUI3.SettingUIRegistration.register(SDK7.SDKSettings.showDebugBordersSett
     }
   ]
 });
-SettingsUI3.SettingUIRegistration.register(SDK7.SDKSettings.showFPSCounterSettingDescriptor, {
+SettingsUI4.SettingUIRegistration.register(SDK7.SDKSettings.showFPSCounterSettingDescriptor, {
   category: "RENDERING",
   options: [
     {
@@ -2681,7 +2936,7 @@ SettingsUI3.SettingUIRegistration.register(SDK7.SDKSettings.showFPSCounterSettin
     }
   ]
 });
-SettingsUI3.SettingUIRegistration.register(SDK7.SDKSettings.showScrollBottleneckRectsSettingDescriptor, {
+SettingsUI4.SettingUIRegistration.register(SDK7.SDKSettings.showScrollBottleneckRectsSettingDescriptor, {
   category: "RENDERING",
   options: [
     {
@@ -2694,7 +2949,7 @@ SettingsUI3.SettingUIRegistration.register(SDK7.SDKSettings.showScrollBottleneck
     }
   ]
 });
-SettingsUI3.SettingUIRegistration.register(SDK7.SDKSettings.emulatePageFocusSettingDescriptor, {
+SettingsUI4.SettingUIRegistration.register(SDK7.SDKSettings.emulatePageFocusSettingDescriptor, {
   category: "RENDERING",
   title: i18nLazyString12(UIStrings12.emulateAFocusedPage),
   options: [
@@ -2708,7 +2963,7 @@ SettingsUI3.SettingUIRegistration.register(SDK7.SDKSettings.emulatePageFocusSett
     }
   ]
 });
-SettingsUI3.SettingUIRegistration.register(SDK7.SDKSettings.emulatedCSSMediaSettingDescriptor, {
+SettingsUI4.SettingUIRegistration.register(SDK7.SDKSettings.emulatedCSSMediaSettingDescriptor, {
   category: "RENDERING",
   title: i18nLazyString12(UIStrings12.emulateCssMediaType),
   options: [
@@ -2732,7 +2987,7 @@ SettingsUI3.SettingUIRegistration.register(SDK7.SDKSettings.emulatedCSSMediaSett
     i18nLazyString12(UIStrings12.query)
   ]
 });
-SettingsUI3.SettingUIRegistration.register(SDK7.SDKSettings.emulatedCSSMediaFeaturePrefersColorSchemeSettingDescriptor, {
+SettingsUI4.SettingUIRegistration.register(SDK7.SDKSettings.emulatedCSSMediaFeaturePrefersColorSchemeSettingDescriptor, {
   category: "RENDERING",
   options: [
     {
@@ -2756,7 +3011,7 @@ SettingsUI3.SettingUIRegistration.register(SDK7.SDKSettings.emulatedCSSMediaFeat
   ],
   title: i18nLazyString12(UIStrings12.emulateCssMediaFeature, { PH1: "prefers-color-scheme" })
 });
-SettingsUI3.SettingUIRegistration.register(SDK7.SDKSettings.emulatedCSSMediaFeatureForcedColorsSettingDescriptor, {
+SettingsUI4.SettingUIRegistration.register(SDK7.SDKSettings.emulatedCSSMediaFeatureForcedColorsSettingDescriptor, {
   category: "RENDERING",
   options: [
     {
@@ -2780,7 +3035,7 @@ SettingsUI3.SettingUIRegistration.register(SDK7.SDKSettings.emulatedCSSMediaFeat
   ],
   title: i18nLazyString12(UIStrings12.emulateCssMediaFeature, { PH1: "forced-colors" })
 });
-SettingsUI3.SettingUIRegistration.register(SDK7.SDKSettings.emulatedCSSMediaFeaturePrefersReducedMotionSettingDescriptor, {
+SettingsUI4.SettingUIRegistration.register(SDK7.SDKSettings.emulatedCSSMediaFeaturePrefersReducedMotionSettingDescriptor, {
   category: "RENDERING",
   options: [
     {
@@ -2798,6 +3053,266 @@ SettingsUI3.SettingUIRegistration.register(SDK7.SDKSettings.emulatedCSSMediaFeat
     i18nLazyString12(UIStrings12.query)
   ],
   title: i18nLazyString12(UIStrings12.emulateCssMediaFeature, { PH1: "prefers-reduced-motion" })
+});
+SettingsUI4.SettingUIRegistration.register(SDK7.SDKSettings.emulatedCSSMediaFeaturePrefersContrastSettingDescriptor, {
+  category: "RENDERING",
+  options: [
+    {
+      title: i18nLazyString12(UIStrings12.doNotEmulateCss, { PH1: "prefers-contrast" }),
+      text: i18nLazyString12(UIStrings12.noEmulation),
+      value: ""
+    },
+    {
+      title: i18nLazyString12(UIStrings12.emulateCss, { PH1: "prefers-contrast: more" }),
+      text: i18n23.i18n.lockedLazyString("prefers-contrast: more"),
+      value: "more"
+    },
+    {
+      title: i18nLazyString12(UIStrings12.emulateCss, { PH1: "prefers-contrast: less" }),
+      text: i18n23.i18n.lockedLazyString("prefers-contrast: less"),
+      value: "less"
+    },
+    {
+      title: i18nLazyString12(UIStrings12.emulateCss, { PH1: "prefers-contrast: custom" }),
+      text: i18n23.i18n.lockedLazyString("prefers-contrast: custom"),
+      value: "custom"
+    }
+  ],
+  tags: [
+    i18nLazyString12(UIStrings12.query)
+  ],
+  title: i18nLazyString12(UIStrings12.emulateCssMediaFeature, { PH1: "prefers-contrast" })
+});
+SettingsUI4.SettingUIRegistration.register(SDK7.SDKSettings.emulatedCSSMediaFeaturePrefersReducedDataSettingDescriptor, {
+  category: "RENDERING",
+  options: [
+    {
+      title: i18nLazyString12(UIStrings12.doNotEmulateCss, { PH1: "prefers-reduced-data" }),
+      text: i18nLazyString12(UIStrings12.noEmulation),
+      value: ""
+    },
+    {
+      title: i18nLazyString12(UIStrings12.emulateCss, { PH1: "prefers-reduced-data: reduce" }),
+      text: i18n23.i18n.lockedLazyString("prefers-reduced-data: reduce"),
+      value: "reduce"
+    }
+  ],
+  tags: [
+    i18nLazyString12(UIStrings12.query)
+  ],
+  title: i18nLazyString12(UIStrings12.emulateCssMediaFeature, { PH1: "prefers-reduced-data" })
+});
+SettingsUI4.SettingUIRegistration.register(SDK7.SDKSettings.emulatedCSSMediaFeaturePrefersReducedTransparencySettingDescriptor, {
+  category: "RENDERING",
+  options: [
+    {
+      title: i18nLazyString12(UIStrings12.doNotEmulateCss, { PH1: "prefers-reduced-transparency" }),
+      text: i18nLazyString12(UIStrings12.noEmulation),
+      value: ""
+    },
+    {
+      title: i18nLazyString12(UIStrings12.emulateCss, { PH1: "prefers-reduced-transparency: reduce" }),
+      text: i18n23.i18n.lockedLazyString("prefers-reduced-transparency: reduce"),
+      value: "reduce"
+    }
+  ],
+  tags: [
+    i18nLazyString12(UIStrings12.query)
+  ],
+  title: i18nLazyString12(UIStrings12.emulateCssMediaFeature, { PH1: "prefers-reduced-transparency" })
+});
+SettingsUI4.SettingUIRegistration.register(SDK7.SDKSettings.emulatedCSSMediaFeatureColorGamutSettingDescriptor, {
+  category: "RENDERING",
+  options: [
+    {
+      title: i18nLazyString12(UIStrings12.doNotEmulateCss, { PH1: "color-gamut" }),
+      text: i18nLazyString12(UIStrings12.noEmulation),
+      value: ""
+    },
+    {
+      title: i18nLazyString12(UIStrings12.emulateCss, { PH1: "color-gamut: srgb" }),
+      text: i18n23.i18n.lockedLazyString("color-gamut: srgb"),
+      value: "srgb"
+    },
+    {
+      title: i18nLazyString12(UIStrings12.emulateCss, { PH1: "color-gamut: p3" }),
+      text: i18n23.i18n.lockedLazyString("color-gamut: p3"),
+      value: "p3"
+    },
+    {
+      title: i18nLazyString12(UIStrings12.emulateCss, { PH1: "color-gamut: rec2020" }),
+      text: i18n23.i18n.lockedLazyString("color-gamut: rec2020"),
+      value: "rec2020"
+    }
+  ],
+  tags: [
+    i18nLazyString12(UIStrings12.query)
+  ],
+  title: i18nLazyString12(UIStrings12.emulateCssMediaFeature, { PH1: "color-gamut" })
+});
+SettingsUI4.SettingUIRegistration.register(SDK7.SDKSettings.emulatedVisionDeficiencySettingDescriptor, {
+  category: "RENDERING",
+  options: [
+    {
+      title: i18nLazyString12(UIStrings12.doNotEmulateAnyVisionDeficiency),
+      text: i18nLazyString12(UIStrings12.noEmulation),
+      value: "none"
+    },
+    {
+      title: i18nLazyString12(UIStrings12.emulateBlurredVision),
+      text: i18nLazyString12(UIStrings12.blurredVision),
+      value: "blurredVision"
+    },
+    {
+      title: i18nLazyString12(UIStrings12.emulateReducedContrast),
+      text: i18nLazyString12(UIStrings12.reducedContrast),
+      value: "reducedContrast"
+    },
+    {
+      title: i18nLazyString12(UIStrings12.emulateProtanopia),
+      text: i18nLazyString12(UIStrings12.protanopia),
+      value: "protanopia"
+    },
+    {
+      title: i18nLazyString12(UIStrings12.emulateDeuteranopia),
+      text: i18nLazyString12(UIStrings12.deuteranopia),
+      value: "deuteranopia"
+    },
+    {
+      title: i18nLazyString12(UIStrings12.emulateTritanopia),
+      text: i18nLazyString12(UIStrings12.tritanopia),
+      value: "tritanopia"
+    },
+    {
+      title: i18nLazyString12(UIStrings12.emulateAchromatopsia),
+      text: i18nLazyString12(UIStrings12.achromatopsia),
+      value: "achromatopsia"
+    }
+  ],
+  tags: [
+    i18nLazyString12(UIStrings12.query)
+  ],
+  title: i18nLazyString12(UIStrings12.emulateVisionDeficiencies)
+});
+SettingsUI4.SettingUIRegistration.register(SDK7.SDKSettings.emulatedOSTextScaleSettingDescriptor, {
+  category: "RENDERING",
+  options: [
+    {
+      title: i18nLazyString12(UIStrings12.doNotEmulateOsTextScale),
+      text: i18nLazyString12(UIStrings12.osTextScaleEmulationNone),
+      value: ""
+    },
+    {
+      title: i18nLazyString12(UIStrings12.osTextScaleEmulation85),
+      text: i18nLazyString12(UIStrings12.osTextScaleEmulation85),
+      value: "0.85"
+    },
+    {
+      title: i18nLazyString12(UIStrings12.osTextScaleEmulation100),
+      text: i18nLazyString12(UIStrings12.osTextScaleEmulation100),
+      value: "1"
+    },
+    {
+      title: i18nLazyString12(UIStrings12.osTextScaleEmulation115),
+      text: i18nLazyString12(UIStrings12.osTextScaleEmulation115),
+      value: "1.15"
+    },
+    {
+      title: i18nLazyString12(UIStrings12.osTextScaleEmulation130),
+      text: i18nLazyString12(UIStrings12.osTextScaleEmulation130),
+      value: "1.3"
+    },
+    {
+      title: i18nLazyString12(UIStrings12.osTextScaleEmulation150),
+      text: i18nLazyString12(UIStrings12.osTextScaleEmulation150),
+      value: "1.5"
+    },
+    {
+      title: i18nLazyString12(UIStrings12.osTextScaleEmulation180),
+      text: i18nLazyString12(UIStrings12.osTextScaleEmulation180),
+      value: "1.8"
+    },
+    {
+      title: i18nLazyString12(UIStrings12.osTextScaleEmulation200),
+      text: i18nLazyString12(UIStrings12.osTextScaleEmulation200),
+      value: "2"
+    },
+    {
+      title: i18nLazyString12(UIStrings12.osTextScaleEmulation250),
+      text: i18nLazyString12(UIStrings12.osTextScaleEmulation250),
+      value: "2.5"
+    },
+    {
+      title: i18nLazyString12(UIStrings12.osTextScaleEmulation300),
+      text: i18nLazyString12(UIStrings12.osTextScaleEmulation300),
+      value: "3"
+    },
+    {
+      title: i18nLazyString12(UIStrings12.osTextScaleEmulation350),
+      text: i18nLazyString12(UIStrings12.osTextScaleEmulation350),
+      value: "3.5"
+    }
+  ],
+  tags: [
+    i18nLazyString12(UIStrings12.query)
+  ],
+  title: i18nLazyString12(UIStrings12.emulateOsTextScale)
+});
+SettingsUI4.SettingUIRegistration.register(SDK7.SDKSettings.localFontsDisabledSettingDescriptor, {
+  category: "RENDERING",
+  options: [
+    {
+      value: true,
+      title: i18nLazyString12(UIStrings12.disableLocalFonts)
+    },
+    {
+      value: false,
+      title: i18nLazyString12(UIStrings12.enableLocalFonts)
+    }
+  ]
+});
+SettingsUI4.SettingUIRegistration.register(SDK7.SDKSettings.avifFormatDisabledSettingDescriptor, {
+  category: "RENDERING",
+  options: [
+    {
+      value: true,
+      title: i18nLazyString12(UIStrings12.disableAvifFormat)
+    },
+    {
+      value: false,
+      title: i18nLazyString12(UIStrings12.enableAvifFormat)
+    }
+  ]
+});
+SettingsUI4.SettingUIRegistration.register(SDK7.SDKSettings.jpegXlFormatDisabledSettingDescriptor, {
+  category: "RENDERING",
+  options: [
+    {
+      value: true,
+      title: i18nLazyString12(UIStrings12.disableJpegXlFormat)
+    },
+    {
+      value: false,
+      title: i18nLazyString12(UIStrings12.enableJpegXlFormat)
+    }
+  ]
+});
+SettingsUI4.SettingUIRegistration.register(SDK7.SDKSettings.webpFormatDisabledSettingDescriptor, {
+  category: "RENDERING",
+  options: [
+    {
+      value: true,
+      title: i18nLazyString12(UIStrings12.disableWebpFormat)
+    },
+    {
+      value: false,
+      title: i18nLazyString12(UIStrings12.enableWebpFormat)
+    }
+  ]
+});
+SettingsUI4.SettingUIRegistration.register(SDK7.SDKSettings.emulateAutoDarkModeSettingDescriptor, {
+  category: "RENDERING",
+  title: i18nLazyString12(UIStrings12.emulateAutoDarkMode)
 });
 
 // gen/front_end/panels/application/application-meta.js
@@ -2988,11 +3503,11 @@ import * as IssuesManager from "./../../models/issues_manager/issues_manager.js"
 import * as UI14 from "./../../ui/legacy/legacy.js";
 var UIStrings14 = {
   /**
-   * @description Label for the issues pane
+   * @description Title for the Issues panel.
    */
   issues: "Issues",
   /**
-   * @description Command for showing the 'Issues' tool
+   * @description Command menu command for showing the Issues panel.
    */
   showIssues: "Show Issues"
 };
@@ -3469,7 +3984,7 @@ import * as i18n39 from "./../../core/i18n/i18n.js";
 import * as SDK9 from "./../../core/sdk/sdk.js";
 import * as LiveMetrics from "./../../models/live-metrics/live-metrics.js";
 import * as UI20 from "./../../ui/legacy/legacy.js";
-import * as SettingsUI4 from "./../../ui/settings/settings.js";
+import * as SettingsUI5 from "./../../ui/settings/settings.js";
 var UIStrings20 = {
   /**
    * @description Text for the performance of something
@@ -3845,7 +4360,7 @@ Common13.Settings.registerSettingExtension({
   settingType: "boolean",
   defaultValue: false
 });
-SettingsUI4.SettingUIRegistration.register(LiveMetrics.timelineEnableSoftNavigationsSettingDescriptor, {
+SettingsUI5.SettingUIRegistration.register(LiveMetrics.timelineEnableSoftNavigationsSettingDescriptor, {
   category: "PERFORMANCE",
   title: i18nLazyString20(UIStrings20.enableSoftNavigations)
 });

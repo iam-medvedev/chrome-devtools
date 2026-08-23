@@ -1183,6 +1183,9 @@ var DevToolsRecorder = class {
 if (!window.DevToolsRecorder) {
   window.DevToolsRecorder = new DevToolsRecorder();
 }
+export {
+  findMinMax
+};
 /**
  * @license
  * Copyright 2022 Google Inc.

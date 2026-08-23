@@ -686,15 +686,36 @@ var BottomUpProfileDataGridTree = class extends ProfileDataGridTree {
 // gen/front_end/panels/profiler/HeapDetachedElementsDataGrid.js
 var HeapDetachedElementsDataGrid_exports = {};
 __export(HeapDetachedElementsDataGrid_exports, {
-  HeapDetachedElementsDataGrid: () => HeapDetachedElementsDataGrid,
-  HeapDetachedElementsDataGridNode: () => HeapDetachedElementsDataGridNode
+  HeapDetachedElementsDataGrid: () => HeapDetachedElementsDataGrid
 });
+import "./../../ui/legacy/components/data_grid/data_grid.js";
 import * as i18n from "./../../core/i18n/i18n.js";
 import * as SDK from "./../../core/sdk/sdk.js";
-import * as DataGrid from "./../../ui/legacy/components/data_grid/data_grid.js";
 import * as UI2 from "./../../ui/legacy/legacy.js";
-import { html, render } from "./../../ui/lit/lit.js";
+import * as Lit from "./../../ui/lit/lit.js";
+import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
 import * as Elements from "./../elements/elements.js";
+
+// gen/front_end/panels/profiler/heapDetachedElementsDataGrid.css.js
+var heapDetachedElementsDataGrid_css_default = `/*
+ * Copyright 2026 The Chromium Authors
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+:host {
+  display: block;
+  height: 100%;
+}
+
+devtools-data-grid {
+  height: 100%;
+}
+
+/*# sourceURL=${import.meta.resolve("./heapDetachedElementsDataGrid.css")} */`;
+
+// gen/front_end/panels/profiler/HeapDetachedElementsDataGrid.js
+var { html, render } = Lit;
 var { widget } = UI2.Widget;
 var UIStrings = {
   /**
@@ -712,91 +733,88 @@ var UIStrings = {
 };
 var str_ = i18n.i18n.registerUIStrings("panels/profiler/HeapDetachedElementsDataGrid.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
-var HeapDetachedElementsDataGrid = class extends DataGrid.DataGrid.DataGridImpl {
-  constructor() {
-    const columns = [];
-    columns.push({
-      id: "detached-node",
-      title: i18nString(UIStrings.detachedNodes),
-      sortable: false
-    });
-    columns.push({
-      id: "detached-node-count",
-      title: i18nString(UIStrings.nodeSize),
-      sortable: false,
-      disclosure: true
-    });
-    super({
-      displayName: i18nString(UIStrings.detachedElementsList),
-      columns
-    });
-    this.setStriped(true);
-  }
+var DEFAULT_VIEW = (input, output, target) => {
+  render(html`
+    <devtools-data-grid striped name=${i18nString(UIStrings.detachedElementsList)}>
+      <table>
+        <tr>
+          <th id="detached-node">${i18nString(UIStrings.detachedNodes)}</th>
+          <th id="detached-node-count">${i18nString(UIStrings.nodeSize)}</th>
+        </tr>
+        ${input.parsedElements.map((parsed) => html`
+          <tr jslog=${VisualLogging.tableRow("detached-element")}>
+            <td>
+              <devtools-widget
+                ${widget(Elements.ElementsTreeOutline.DOMTreeWidget, {
+    omitRootDOMNode: false,
+    selectEnabled: true,
+    hideGutter: true,
+    rootDOMNode: parsed.node,
+    showSelectionOnKeyboardFocus: true,
+    preventTabOrder: true,
+    deindentSingleNode: true
+  })}
+              ></devtools-widget>
+            </td>
+            <td>${parsed.nodeCount}</td>
+          </tr>
+        `)}
+      </table>
+    </devtools-data-grid>
+  `, target);
 };
-var HeapDetachedElementsDataGridNode = class extends DataGrid.DataGrid.DataGridNode {
-  detachedElementInfo;
-  domModel;
-  retainedNodeIds = /* @__PURE__ */ new Set();
-  constructor(detachedElementInfo, domModel) {
-    super(null);
-    this.detachedElementInfo = detachedElementInfo;
-    this.domModel = domModel;
-    for (const retainedNodeId of detachedElementInfo.retainedNodeIds) {
-      this.retainedNodeIds.add(retainedNodeId);
+function calculateDetachedNodeCount(treeNode) {
+  if (!treeNode) {
+    return 0;
+  }
+  let count = 1;
+  const queue = [];
+  let node;
+  queue.push(treeNode);
+  while (queue.length > 0) {
+    node = queue.shift();
+    if (!node) {
+      break;
+    }
+    if (node.childNodeCount) {
+      count += node.childNodeCount;
+    }
+    if (node.children) {
+      for (const child of node.children) {
+        queue.push(child);
+      }
     }
   }
-  createCell(columnId) {
-    const cell = this.createTD(columnId);
-    switch (columnId) {
-      case "detached-node": {
-        const node = SDK.DOMModel.DOMNode.create(this.domModel, null, false, this.detachedElementInfo.treeNode, this.retainedNodeIds);
-        node.detached = true;
-        this.#renderNode(node, cell);
-        return cell;
-      }
-      case "detached-node-count": {
-        const size = this.#getNodeSize(this.detachedElementInfo);
-        render(html`${size}`, cell);
-        return cell;
-      }
-    }
-    return cell;
+  return count;
+}
+var HeapDetachedElementsDataGrid = class extends UI2.Widget.Widget {
+  #view;
+  #parsedElements = [];
+  constructor(element, view = DEFAULT_VIEW) {
+    super(element, { useShadowDom: true });
+    this.#view = view;
+    this.registerRequiredCSS(heapDetachedElementsDataGrid_css_default);
   }
-  #getNodeSize(detachedElementInfo) {
-    let count = 1;
-    const queue = [];
-    let node;
-    queue.push(detachedElementInfo.treeNode);
-    while (queue.length > 0) {
-      node = queue.shift();
-      if (!node) {
-        break;
-      }
-      if (node.childNodeCount) {
-        count += node.childNodeCount;
-      }
-      if (node.children) {
-        for (const child of node.children) {
-          queue.push(child);
-        }
-      }
-    }
-    return count;
+  wasShown() {
+    super.wasShown();
+    this.requestUpdate();
   }
-  #renderNode(node, target) {
-    render(html`
-          <devtools-widget
-            ${widget(Elements.ElementsTreeOutline.DOMTreeWidget, {
-      omitRootDOMNode: false,
-      selectEnabled: true,
-      hideGutter: true,
-      rootDOMNode: node,
-      showSelectionOnKeyboardFocus: true,
-      preventTabOrder: true,
-      deindentSingleNode: true
-    })}
-          ></devtools-widget>
-        `, target);
+  performUpdate() {
+    this.#view({ parsedElements: this.#parsedElements }, void 0, this.contentElement);
+  }
+  set data(data) {
+    this.#parsedElements = [];
+    if (!data || !data.detachedElements || !data.domModel) {
+      this.requestUpdate();
+      return;
+    }
+    for (const elementInfo of data.detachedElements) {
+      const retainedNodeIds = new Set(elementInfo.retainedNodeIds ?? []);
+      const node = SDK.DOMModel.DOMNode.create(data.domModel, null, false, elementInfo.treeNode, retainedNodeIds);
+      node.detached = true;
+      this.#parsedElements.push({ elementInfo, node, nodeCount: calculateDetachedNodeCount(elementInfo.treeNode) });
+    }
+    this.requestUpdate();
   }
 };
 
@@ -1162,8 +1180,8 @@ var DetachedElementsProfileView = class extends UI3.View.SimpleView {
     this.parentDataDisplayDelegate = dataDisplayDelegate;
     this.selectedSizeText = new UI3.Toolbar.ToolbarText();
     this.dataGrid = new HeapDetachedElementsDataGrid();
+    this.dataGrid.show(this.element);
     this.populateElementsGrid(profile.detachedElements);
-    this.dataGrid.asWidget().show(this.element);
   }
   showProfile(profile) {
     return this.parentDataDisplayDelegate.showProfile(profile);
@@ -1183,9 +1201,7 @@ var DetachedElementsProfileView = class extends UI3.View.SimpleView {
     if (!domModel) {
       return;
     }
-    for (const detachedElement of detachedElements) {
-      this.dataGrid.rootNode().appendChild(new HeapDetachedElementsDataGridNode(detachedElement, domModel));
-    }
+    this.dataGrid.data = { detachedElements, domModel };
   }
   async toolbarItems() {
     return [this.selectedSizeText];
@@ -1383,7 +1399,7 @@ var objectValue_css_default = `/*
 // gen/front_end/panels/profiler/ProfilesPanel.js
 import * as UI13 from "./../../ui/legacy/legacy.js";
 import { render as render5 } from "./../../ui/lit/lit.js";
-import * as VisualLogging7 from "./../../ui/visual_logging/visual_logging.js";
+import * as VisualLogging8 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/profiler/heapProfiler.css.js
 var heapProfiler_css_default = `/*
@@ -1627,7 +1643,7 @@ var heapProfiler_css_default = `/*
 // gen/front_end/panels/profiler/HeapProfileView.js
 var HeapProfileView_exports = {};
 __export(HeapProfileView_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW,
+  DEFAULT_VIEW: () => DEFAULT_VIEW2,
   HeapFlameChartDataProvider: () => HeapFlameChartDataProvider,
   HeapProfileView: () => HeapProfileView,
   NodeFormatter: () => NodeFormatter,
@@ -1654,7 +1670,7 @@ import * as SettingsUI from "./../../ui/legacy/components/settings_ui/settings_u
 import * as Components from "./../../ui/legacy/components/utils/utils.js";
 import * as UI6 from "./../../ui/legacy/legacy.js";
 import { Directives, html as html2, nothing, render as render2 } from "./../../ui/lit/lit.js";
-import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
+import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/profiler/HeapTimelineOverview.js
 var HeapTimelineOverview_exports = {};
@@ -1670,7 +1686,7 @@ import * as Platform4 from "./../../core/platform/platform.js";
 import * as PerfUI from "./../../ui/legacy/components/perf_ui/perf_ui.js";
 import * as UI4 from "./../../ui/legacy/legacy.js";
 import * as ThemeSupport from "./../../ui/legacy/theme_support/theme_support.js";
-import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
+import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
 var HeapTimelineOverview = class extends Common4.ObjectWrapper.eventMixin(UI4.Widget.VBox) {
   overviewCalculator;
   overviewContainer;
@@ -1687,7 +1703,7 @@ var HeapTimelineOverview = class extends Common4.ObjectWrapper.eventMixin(UI4.Wi
   updateTimerId;
   windowWidthRatio;
   constructor(element) {
-    super(element, { jslog: `${VisualLogging.section("heap-tracking-overview")}` });
+    super(element, { jslog: `${VisualLogging2.section("heap-tracking-overview")}` });
     this.element.id = "heap-recording-view";
     this.element.classList.add("heap-tracking-overview");
     this.overviewCalculator = new OverviewCalculator();
@@ -2712,7 +2728,7 @@ function convertToSamplingHeapProfile(profileHeader) {
   return profileHeader.profile || profileHeader.protocolProfile();
 }
 var maxLinkLength = 30;
-var DEFAULT_VIEW = (input, output, target) => {
+var DEFAULT_VIEW2 = (input, output, target) => {
   const { searchableView, dataProvider } = input;
   render2(html2`
     ${input.hasTemporaryView ? html2`
@@ -2861,7 +2877,7 @@ var HeapProfileView = class extends UI6.View.SimpleView {
   #range;
   #lastAppliedRange = null;
   #lastAppliedViewType = null;
-  constructor(profileHeader, view = DEFAULT_VIEW) {
+  constructor(profileHeader, view = DEFAULT_VIEW2) {
     super({
       title: i18nString4(UIStrings4.profile),
       viewId: "profile"
@@ -2896,7 +2912,7 @@ var HeapProfileView = class extends UI6.View.SimpleView {
     return html2`
       <select title=${i18nString4(UIStrings4.profileViewMode)} aria-label=${i18nString4(UIStrings4.profileViewMode)}
               @change=${this.changeView.bind(this)}
-              jslog=${VisualLogging2.dropDown("profile-view.selected-view").track({ change: true })}
+              jslog=${VisualLogging3.dropDown("profile-view.selected-view").track({ change: true })}
               ${ref((e) => {
       this.viewSelectComboBox = e;
     })}>
@@ -3435,7 +3451,7 @@ var SamplingHeapProfileType = class _SamplingHeapProfileType extends SamplingHea
   customContent() {
     const checkboxSetting = SettingsUI.SettingsUI.createSettingCheckbox(i18nString4(UIStrings4.samplingHeapProfilerTimeline), this.#recordTimelineSetting);
     this.customContentInternal = checkboxSetting;
-    checkboxSetting.setAttribute("jslog", `${VisualLogging2.toggle("record-sampling-heap-profiler-timeline").track({ click: true })}`);
+    checkboxSetting.setAttribute("jslog", `${VisualLogging3.toggle("record-sampling-heap-profiler-timeline").track({ click: true })}`);
     return checkboxSetting;
   }
   setCustomContentEnabled(enable) {
@@ -3731,13 +3747,13 @@ import * as SDK5 from "./../../core/sdk/sdk.js";
 import * as Bindings3 from "./../../models/bindings/bindings.js";
 import * as HeapSnapshotModel5 from "./../../models/heap_snapshot/heap_snapshot.js";
 import * as Workspace2 from "./../../models/workspace/workspace.js";
-import * as DataGrid7 from "./../../ui/legacy/components/data_grid/data_grid.js";
+import * as DataGrid5 from "./../../ui/legacy/components/data_grid/data_grid.js";
 import * as ObjectUI from "./../../ui/legacy/components/object_ui/object_ui.js";
 import * as PerfUI4 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
 import * as SettingsUI3 from "./../../ui/legacy/components/settings_ui/settings_ui.js";
 import * as Components3 from "./../../ui/legacy/components/utils/utils.js";
 import * as UI9 from "./../../ui/legacy/legacy.js";
-import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
+import * as VisualLogging5 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/profiler/HeapSnapshotDataGrids.js
 var HeapSnapshotDataGrids_exports = {};
@@ -3755,7 +3771,7 @@ __export(HeapSnapshotDataGrids_exports, {
 import * as Common8 from "./../../core/common/common.js";
 import * as i18n13 from "./../../core/i18n/i18n.js";
 import * as HeapSnapshotModel3 from "./../../models/heap_snapshot/heap_snapshot.js";
-import * as DataGrid5 from "./../../ui/legacy/components/data_grid/data_grid.js";
+import * as DataGrid3 from "./../../ui/legacy/components/data_grid/data_grid.js";
 import * as Components2 from "./../../ui/legacy/components/utils/utils.js";
 import * as UI8 from "./../../ui/legacy/legacy.js";
 
@@ -3778,10 +3794,10 @@ import * as Platform7 from "./../../core/platform/platform.js";
 import * as SDK4 from "./../../core/sdk/sdk.js";
 import * as HeapSnapshotModel from "./../../models/heap_snapshot/heap_snapshot.js";
 import { createIcon } from "./../../ui/kit/kit.js";
-import * as DataGrid3 from "./../../ui/legacy/components/data_grid/data_grid.js";
+import * as DataGrid from "./../../ui/legacy/components/data_grid/data_grid.js";
 import * as UI7 from "./../../ui/legacy/legacy.js";
 import { Directives as Directives2, html as html3, render as render3 } from "./../../ui/lit/lit.js";
-import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
+import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
 var UIStrings5 = {
   /**
    * @description Accessible name template combining a numeric value and its percentage (e.g. "1,613,680, 44%").
@@ -3882,7 +3898,7 @@ var UIStrings5 = {
 };
 var str_5 = i18n11.i18n.registerUIStrings("panels/profiler/HeapSnapshotGridNodes.ts", UIStrings5);
 var i18nString5 = i18n11.i18n.getLocalizedString.bind(void 0, str_5);
-var HeapSnapshotGridNodeBase = class extends DataGrid3.DataGrid.DataGridNode {
+var HeapSnapshotGridNodeBase = class extends DataGrid.DataGrid.DataGridNode {
 };
 var HeapSnapshotGridNode = class _HeapSnapshotGridNode extends Common7.ObjectWrapper.eventMixin(HeapSnapshotGridNodeBase) {
   dataGridInternal;
@@ -3977,7 +3993,7 @@ var HeapSnapshotGridNode = class _HeapSnapshotGridNode extends Common7.ObjectWra
     return null;
   }
   createValueCell(columnId) {
-    const jslog = VisualLogging3.tableCell("numeric-column").track({ click: true });
+    const jslog = VisualLogging4.tableCell("numeric-column").track({ click: true });
     const cell = document.createElement("td");
     cell.className = "numeric-column";
     cell.setAttribute("jslog", jslog.toString());
@@ -4036,19 +4052,19 @@ var HeapSnapshotGridNode = class _HeapSnapshotGridNode extends Common7.ObjectWra
         void this.provider().serializeItemsRange(firstNotSerializedPosition, end).then((itemsRange) => childrenRetrieved.call(this, itemsRange, toPosition2));
         firstNotSerializedPosition = end;
       }
-      function insertRetrievedChild(item, insertionIndex) {
+      function insertRetrievedChild(item2, insertionIndex) {
         if (this.savedChildren) {
-          const hash = this.childHashForEntity(item);
+          const hash = this.childHashForEntity(item2);
           const child = this.savedChildren.get(hash);
           if (child) {
             this.dataGridInternal.insertChild(this, child, insertionIndex);
             return;
           }
         }
-        this.dataGridInternal.insertChild(this, this.createChildNode(item), insertionIndex);
+        this.dataGridInternal.insertChild(this, this.createChildNode(item2), insertionIndex);
       }
       function insertShowMoreButton(from, to, insertionIndex) {
-        const button = new DataGrid3.ShowMoreDataGridNode.ShowMoreDataGridNode(this.populateChildren.bind(this), from, to, this.dataGridInternal.defaultPopulateCount());
+        const button = new DataGrid.ShowMoreDataGridNode.ShowMoreDataGridNode(this.populateChildren.bind(this), from, to, this.dataGridInternal.defaultPopulateCount());
         this.dataGridInternal.insertChild(this, button, insertionIndex);
       }
       function childrenRetrieved(itemsRange, toPosition2) {
@@ -4266,7 +4282,7 @@ var HeapSnapshotGenericObjectNode = class extends HeapSnapshotGridNode {
     return this.createObjectCellWithValue(valueStyle, value2 || "");
   }
   createObjectCellWithValue(valueStyle, value2) {
-    const jslog = VisualLogging3.tableCell("object-column").track({ click: true });
+    const jslog = VisualLogging4.tableCell("object-column").track({ click: true });
     const cell = document.createElement("td");
     cell.className = "object-column disclosure";
     cell.setAttribute("jslog", jslog.toString());
@@ -4446,8 +4462,8 @@ var HeapSnapshotObjectNode = class _HeapSnapshotObjectNode extends HeapSnapshotG
     }
     return null;
   }
-  createChildNode(item) {
-    return new _HeapSnapshotObjectNode(this.dataGridInternal, this.snapshot, item, this);
+  createChildNode(item2) {
+    return new _HeapSnapshotObjectNode(this.dataGridInternal, this.snapshot, item2, this);
   }
   getHash() {
     return this.edgeIndex;
@@ -4516,8 +4532,8 @@ var HeapSnapshotRetainingObjectNode = class _HeapSnapshotRetainingObjectNode ext
     }
     return this.snapshot.createRetainingEdgesProvider(this.snapshotNodeIndex);
   }
-  createChildNode(item) {
-    return new _HeapSnapshotRetainingObjectNode(this.dataGridInternal, this.snapshot, item, this);
+  createChildNode(item2) {
+    return new _HeapSnapshotRetainingObjectNode(this.dataGridInternal, this.snapshot, item2, this);
   }
   edgeNodeSeparator() {
     return i18nString5(UIStrings5.inElement);
@@ -4616,8 +4632,8 @@ var HeapSnapshotInstanceNode = class extends HeapSnapshotGenericObjectNode {
     }
     return this.baseSnapshotOrSnapshot.createEdgesProvider(this.snapshotNodeIndex);
   }
-  createChildNode(item) {
-    return new HeapSnapshotObjectNode(this.dataGridInternal, this.baseSnapshotOrSnapshot, item, null);
+  createChildNode(item2) {
+    return new HeapSnapshotObjectNode(this.dataGridInternal, this.baseSnapshotOrSnapshot, item2, null);
   }
   getHash() {
     if (this.snapshotNodeId === void 0) {
@@ -4710,8 +4726,8 @@ var HeapSnapshotConstructorNode = class extends HeapSnapshotGridNode {
     }
     return cell;
   }
-  createChildNode(item) {
-    return new HeapSnapshotInstanceNode(this.dataGridInternal, this.dataGridInternal.snapshot, item, false);
+  createChildNode(item2) {
+    return new HeapSnapshotInstanceNode(this.dataGridInternal, this.dataGridInternal.snapshot, item2, false);
   }
   comparator() {
     const sortAscending = this.dataGridInternal.isSortOrderAscending();
@@ -4756,8 +4772,8 @@ var HeapSnapshotDiffNodesProvider = class {
     let addedItems;
     if (beginPosition < this.addedCount) {
       itemsRange = await this.addedNodesProvider.serializeItemsRange(beginPosition, endPosition);
-      for (const item of itemsRange.items) {
-        item.isAddedNotRemoved = true;
+      for (const item2 of itemsRange.items) {
+        item2.isAddedNotRemoved = true;
       }
       if (itemsRange.endPosition >= endPosition) {
         itemsRange.totalLength = this.addedCount + this.removedCount;
@@ -4772,8 +4788,8 @@ var HeapSnapshotDiffNodesProvider = class {
     if (!addedItems.items.length) {
       addedItems.startPosition = this.addedCount + itemsRange.startPosition;
     }
-    for (const item of itemsRange.items) {
-      item.isAddedNotRemoved = false;
+    for (const item2 of itemsRange.items) {
+      item2.isAddedNotRemoved = false;
     }
     addedItems.items.push(...itemsRange.items);
     addedItems.endPosition = this.addedCount + itemsRange.endPosition;
@@ -4838,18 +4854,18 @@ var HeapSnapshotDiffNode = class extends HeapSnapshotGridNode {
     }
     return cell;
   }
-  createChildNode(item) {
+  createChildNode(item2) {
     const dataGrid = this.dataGridInternal;
-    if (item.isAddedNotRemoved) {
+    if (item2.isAddedNotRemoved) {
       if (dataGrid.snapshot === null) {
         throw new Error("Data sources have not been set correctly");
       }
-      return new HeapSnapshotInstanceNode(this.dataGridInternal, dataGrid.snapshot, item, false);
+      return new HeapSnapshotInstanceNode(this.dataGridInternal, dataGrid.snapshot, item2, false);
     }
     if (dataGrid.baseSnapshot === void 0) {
       throw new Error("Data sources have not been set correctly");
     }
-    return new HeapSnapshotInstanceNode(this.dataGridInternal, dataGrid.baseSnapshot, item, true);
+    return new HeapSnapshotInstanceNode(this.dataGridInternal, dataGrid.baseSnapshot, item2, true);
   }
   comparator() {
     const sortAscending = this.dataGridInternal.isSortOrderAscending();
@@ -5058,7 +5074,7 @@ var UIStrings6 = {
 var str_6 = i18n13.i18n.registerUIStrings("panels/profiler/HeapSnapshotDataGrids.ts", UIStrings6);
 var i18nString6 = i18n13.i18n.getLocalizedString.bind(void 0, str_6);
 var adjacencyMap = /* @__PURE__ */ new WeakMap();
-var HeapSnapshotSortableDataGridBase = class extends DataGrid5.DataGrid.DataGridImpl {
+var HeapSnapshotSortableDataGridBase = class extends DataGrid3.DataGrid.DataGridImpl {
 };
 var HeapSnapshotSortableDataGrid = class extends Common8.ObjectWrapper.eventMixin(HeapSnapshotSortableDataGridBase) {
   snapshot = null;
@@ -5467,7 +5483,7 @@ var HeapSnapshotContainmentDataGrid = class extends HeapSnapshotSortableDataGrid
         width: "110px",
         sortable: true,
         fixedWidth: true,
-        sort: DataGrid5.DataGrid.Order.Descending
+        sort: DataGrid3.DataGrid.Order.Descending
       }
     ];
     columns = columns || defaultColumns;
@@ -5501,7 +5517,7 @@ var HeapSnapshotRetainmentDataGrid = class extends HeapSnapshotContainmentDataGr
         width: "70px",
         sortable: true,
         fixedWidth: true,
-        sort: DataGrid5.DataGrid.Order.Ascending
+        sort: DataGrid3.DataGrid.Order.Ascending
       },
       { id: "shallowSize", title: i18nString6(UIStrings6.shallowSize), width: "110px", sortable: true, fixedWidth: true },
       { id: "retainedSize", title: i18nString6(UIStrings6.retainedSize), width: "110px", sortable: true, fixedWidth: true }
@@ -5576,7 +5592,7 @@ var HeapSnapshotConstructorsDataGrid = class extends HeapSnapshotViewportDataGri
         id: "retainedSize",
         title: i18nString6(UIStrings6.retainedSize),
         width: "110px",
-        sort: DataGrid5.DataGrid.Order.Descending,
+        sort: DataGrid3.DataGrid.Order.Descending,
         sortable: true,
         fixedWidth: true
       }
@@ -5705,7 +5721,7 @@ var HeapSnapshotDiffDataGrid = class extends HeapSnapshotViewportDataGrid {
         width: "75px",
         sortable: true,
         fixedWidth: true,
-        sort: DataGrid5.DataGrid.Order.Descending
+        sort: DataGrid3.DataGrid.Order.Descending
       },
       { id: "removedSize", title: i18nString6(UIStrings6.freedSize), width: "75px", sortable: true, fixedWidth: true },
       { id: "sizeDelta", title: i18nString6(UIStrings6.sizeDelta), width: "75px", sortable: true, fixedWidth: true }
@@ -5776,7 +5792,7 @@ var AllocationDataGrid = class extends HeapSnapshotViewportDataGrid {
         width: "75px",
         sortable: true,
         fixedWidth: true,
-        sort: DataGrid5.DataGrid.Order.Descending
+        sort: DataGrid3.DataGrid.Order.Descending
       },
       { id: "name", title: i18nString6(UIStrings6.function), disclosure: true, sortable: true }
     ];
@@ -5812,7 +5828,7 @@ var AllocationDataGrid = class extends HeapSnapshotViewportDataGrid {
   }
   createComparator() {
     const fieldName = this.sortColumnId();
-    const compareResult = this.sortOrder() === DataGrid5.DataGrid.Order.Ascending ? 1 : -1;
+    const compareResult = this.sortOrder() === DataGrid3.DataGrid.Order.Ascending ? 1 : -1;
     function compare(a, b) {
       if (a[fieldName] > b[fieldName]) {
         return compareResult;
@@ -6265,7 +6281,7 @@ var HeapSnapshotView = class _HeapSnapshotView extends UI9.View.SimpleView {
     this.constructorsDataGrid.addEventListener(HeapSnapshotSortableDataGridEvents.AggregatesReceived, this.#onAggregatesReceived, this);
     this.constructorsWidget = this.constructorsDataGrid.asWidget();
     this.constructorsWidget.setMinimumSize(50, 25);
-    this.constructorsWidget.element.setAttribute("jslog", `${VisualLogging4.pane("heap-snapshot.constructors-view").track({ resize: true })}`);
+    this.constructorsWidget.element.setAttribute("jslog", `${VisualLogging5.pane("heap-snapshot.constructors-view").track({ resize: true })}`);
     this.diffDataGrid = new HeapSnapshotDiffDataGrid(heapProfilerModel, this);
     this.diffDataGrid.addEventListener("SelectedNode", this.selectionChanged, this);
     this.diffWidget = this.diffDataGrid.asWidget();
@@ -6284,7 +6300,7 @@ var HeapSnapshotView = class _HeapSnapshotView extends UI9.View.SimpleView {
     this.retainmentWidget = this.retainmentDataGrid.asWidget();
     this.retainmentWidget.setMinimumSize(50, 21);
     this.retainmentWidget.element.classList.add("retaining-paths-view");
-    this.retainmentWidget.element.setAttribute("jslog", `${VisualLogging4.pane("heap-snapshot.retaining-paths-view").track({ resize: true })}`);
+    this.retainmentWidget.element.setAttribute("jslog", `${VisualLogging5.pane("heap-snapshot.retaining-paths-view").track({ resize: true })}`);
     let splitWidgetResizer;
     if (this.allocationStackView) {
       this.tabbedPane = new UI9.TabbedPane.TabbedPane();
@@ -6821,8 +6837,8 @@ var HeapSnapshotView = class _HeapSnapshotView extends UI9.View.SimpleView {
     const list = this.profiles();
     const selectedIndex = this.baseSelect.selectedIndex();
     this.baseSelect.removeOptions();
-    for (const item of list) {
-      this.baseSelect.createOption(item.title);
+    for (const item2 of list) {
+      this.baseSelect.createOption(item2.title);
     }
     if (selectedIndex > -1) {
       this.baseSelect.setSelectedIndex(selectedIndex);
@@ -7503,7 +7519,7 @@ var HeapSnapshotStatisticsView = class _HeapSnapshotStatisticsView extends UI9.W
   constructor() {
     super();
     this.element.classList.add("heap-snapshot-statistics-view");
-    this.element.setAttribute("jslog", `${VisualLogging4.pane("profiler.heap-snapshot-statistics-view").track({ resize: true })}`);
+    this.element.setAttribute("jslog", `${VisualLogging5.pane("profiler.heap-snapshot-statistics-view").track({ resize: true })}`);
     this.pieChart = new PerfUI4.PieChart.PieChart();
     this.setTotalAndRecords(0, []);
     this.pieChart.classList.add("heap-snapshot-stats-pie-chart");
@@ -7624,15 +7640,16 @@ var stackFrameToURLElement = /* @__PURE__ */ new WeakMap();
 // gen/front_end/panels/profiler/ProfileLauncherView.js
 var ProfileLauncherView_exports = {};
 __export(ProfileLauncherView_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW2,
+  DEFAULT_VIEW: () => DEFAULT_VIEW3,
   ProfileLauncherView: () => ProfileLauncherView
 });
 import * as Common11 from "./../../core/common/common.js";
 import * as i18n19 from "./../../core/i18n/i18n.js";
+import * as Platform9 from "./../../core/platform/platform.js";
 import * as Buttons2 from "./../../ui/components/buttons/buttons.js";
 import * as UI11 from "./../../ui/legacy/legacy.js";
 import { html as html4, nothing as nothing2, render as render4 } from "./../../ui/lit/lit.js";
-import * as VisualLogging5 from "./../../ui/visual_logging/visual_logging.js";
+import * as VisualLogging6 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/profiler/IsolateSelector.js
 var IsolateSelector_exports = {};
@@ -7733,26 +7750,26 @@ var IsolateSelector = class _IsolateSelector extends UI10.Widget.VBox {
   }
   isolateAdded(isolate) {
     this.list.element.tabIndex = 0;
-    const item = new ListItem(isolate);
-    const index = item.model().target() === SDK6.TargetManager.TargetManager.instance().primaryPageTarget() ? 0 : this.items.length;
-    this.items.insert(index, item);
-    this.itemByIsolate.set(isolate, item);
+    const item2 = new ListItem(isolate);
+    const index = item2.model().target() === SDK6.TargetManager.TargetManager.instance().primaryPageTarget() ? 0 : this.items.length;
+    this.items.insert(index, item2);
+    this.itemByIsolate.set(isolate, item2);
     if (index === 0) {
-      this.list.selectItem(item);
+      this.list.selectItem(item2);
     }
     this.update();
   }
   isolateChanged(isolate) {
-    const item = this.itemByIsolate.get(isolate);
-    if (item) {
-      item.updateTitle();
+    const item2 = this.itemByIsolate.get(isolate);
+    if (item2) {
+      item2.updateTitle();
     }
     this.update();
   }
   isolateRemoved(isolate) {
-    const item = this.itemByIsolate.get(isolate);
-    if (item) {
-      this.items.remove(this.items.indexOf(item));
+    const item2 = this.itemByIsolate.get(isolate);
+    if (item2) {
+      this.items.remove(this.items.indexOf(item2));
     }
     this.itemByIsolate.delete(isolate);
     if (this.items.length === 0) {
@@ -7767,9 +7784,9 @@ var IsolateSelector = class _IsolateSelector extends UI10.Widget.VBox {
       return;
     }
     const isolate = SDK6.IsolateManager.IsolateManager.instance().isolateByModel(model);
-    const item = isolate && this.itemByIsolate.get(isolate);
-    if (item) {
-      item.updateTitle();
+    const item2 = isolate && this.itemByIsolate.get(isolate);
+    if (item2) {
+      item2.updateTitle();
     }
   }
   heapStatsChanged(event) {
@@ -7813,8 +7830,8 @@ var IsolateSelector = class _IsolateSelector extends UI10.Widget.VBox {
   totalMemoryElement() {
     return this.totalElement;
   }
-  createElementForItem(item) {
-    return item.element;
+  createElementForItem(item2) {
+    return item2.element;
   }
   heightForItem(_item) {
     console.assert(false, "should not be called");
@@ -8084,10 +8101,10 @@ var UIStrings10 = {
 var str_9 = i18n19.i18n.registerUIStrings("panels/profiler/ProfileLauncherView.ts", UIStrings10);
 var i18nString9 = i18n19.i18n.getLocalizedString.bind(void 0, str_9);
 var { widget: widget3, widgetRef: widgetRef2 } = UI11.Widget;
-var DEFAULT_VIEW2 = (input, output, target) => {
+var DEFAULT_VIEW3 = (input, output, target) => {
   render4(html4`
     <style>${profileLauncherView_css_default}</style>
-    <div class="profile-launcher-view-content vbox">
+    <div class="profile-launcher-view-content vbox" jslog=${VisualLogging6.section("profiler.launcher")}>
       <div class="vbox">
         <h1>${input.headerText}</h1>
         <form role="radiogroup" aria-label=${input.headerText}>
@@ -8095,21 +8112,23 @@ var DEFAULT_VIEW2 = (input, output, target) => {
     const radioId = `profile-type-${entry.profileType.id}`;
     const customContent = entry.customContent;
     return html4`
-              <input id=${radioId} type="radio" name="profile-type"
-                  .checked=${entry.selected}
-                  ?disabled=${input.isProfiling}
-                  @change=${() => input.onProfileTypeChange(entry.profileType)}
-                  jslog=${VisualLogging5.toggle().track({ change: true }).context("profiler.profile-type")}
-                />
-              <label for=${radioId}>${entry.profileType.name}</label>
-              <p>${entry.profileType.description}</p>
-              ${customContent ? html4`
-                <p>
-                  <span role="group" aria-labelledby=${radioId}>
-                    ${customContent}
-                  </span>
-                </p>
-              ` : nothing2}
+              <div class="profile-type-option" jslog=${VisualLogging6.item(Platform9.StringUtilities.toKebabCase(entry.profileType.id))}>
+                <input id=${radioId} type="radio" name="profile-type"
+                    .checked=${entry.selected}
+                    ?disabled=${input.isProfiling}
+                    @change=${() => input.onProfileTypeChange(entry.profileType)}
+                    jslog=${VisualLogging6.toggle().track({ change: true }).context("profiler.profile-type")}
+                  />
+                <label for=${radioId}>${entry.profileType.name}</label>
+                <p>${entry.profileType.description}</p>
+                ${customContent ? html4`
+                  <p>
+                    <span role="group" aria-labelledby=${radioId}>
+                      ${customContent}
+                    </span>
+                  </p>
+                ` : nothing2}
+              </div>
             `;
   })}
         </form>
@@ -8155,7 +8174,7 @@ var ProfileLauncherView = class extends Common11.ObjectWrapper.eventMixin(UI11.W
   #isEnabled = false;
   #recordButtonEnabled = true;
   #selectedTypeId = "";
-  constructor(profilesPanel, view = DEFAULT_VIEW2) {
+  constructor(profilesPanel, view = DEFAULT_VIEW3) {
     super({ classes: ["profile-launcher-view"] });
     this.#view = view;
     this.panel = profilesPanel;
@@ -8272,7 +8291,7 @@ __export(ProfileSidebarTreeElement_exports, {
 import * as i18n21 from "./../../core/i18n/i18n.js";
 import * as Buttons3 from "./../../ui/components/buttons/buttons.js";
 import * as UI12 from "./../../ui/legacy/legacy.js";
-import * as VisualLogging6 from "./../../ui/visual_logging/visual_logging.js";
+import * as VisualLogging7 from "./../../ui/visual_logging/visual_logging.js";
 var UIStrings11 = {
   /**
    * @description Tooltip for the 3-dots menu in the Memory panel profiles list.
@@ -8294,13 +8313,13 @@ var ProfileSidebarTreeElement = class extends UI12.TreeOutline.TreeElement {
   profile;
   editing;
   constructor(dataDisplayDelegate, profile, className) {
-    super("", false);
+    super("", false, "profile-item");
     this.iconElement = document.createElement("div");
     this.iconElement.classList.add("icon");
     this.titlesElement = document.createElement("div");
     this.titlesElement.classList.add("titles");
     this.titlesElement.classList.add("no-subtitle");
-    this.titlesElement.setAttribute("jslog", `${VisualLogging6.value("title").track({ dblclick: true, change: true })}`);
+    this.titlesElement.setAttribute("jslog", `${VisualLogging7.value("title").track({ dblclick: true, change: true })}`);
     this.titleContainer = this.titlesElement.createChild("span", "title-container");
     this.titleElement = this.titleContainer.createChild("span", "title");
     this.subtitleElement = this.titlesElement.createChild("span", "subtitle");
@@ -8312,7 +8331,7 @@ var ProfileSidebarTreeElement = class extends UI12.TreeOutline.TreeElement {
     };
     this.menuElement.tabIndex = -1;
     this.menuElement.addEventListener("click", this.handleContextMenuEvent.bind(this));
-    this.menuElement.setAttribute("jslog", `${VisualLogging6.dropDown("profile-options").track({ click: true })}`);
+    this.menuElement.setAttribute("jslog", `${VisualLogging7.dropDown("profile-options").track({ click: true })}`);
     UI12.Tooltip.Tooltip.install(this.menuElement, i18nString10(UIStrings11.profileOptions));
     this.titleElement.textContent = profile.title;
     this.className = className;
@@ -8756,7 +8775,7 @@ var ProfilesPanel = class _ProfilesPanel extends UI13.Panel.PanelWithSidebar {
     this.panelSidebarElement().classList.add("profiles-tree-sidebar");
     const toolbarContainerLeft = document.createElement("div");
     toolbarContainerLeft.classList.add("profiles-toolbar");
-    toolbarContainerLeft.setAttribute("jslog", `${VisualLogging7.toolbar("profiles-sidebar")}`);
+    toolbarContainerLeft.setAttribute("jslog", `${VisualLogging8.toolbar("profiles-sidebar")}`);
     this.panelSidebarElement().insertBefore(toolbarContainerLeft, this.panelSidebarElement().firstChild);
     const toolbar2 = toolbarContainerLeft.createChild("devtools-toolbar");
     toolbar2.wrappable = true;
@@ -8773,7 +8792,7 @@ var ProfilesPanel = class _ProfilesPanel extends UI13.Panel.PanelWithSidebar {
     toolbar2.appendToolbarItem(UI13.Toolbar.Toolbar.createActionButton("components.collect-garbage"));
     this.profileViewToolbar = this.toolbarElement.createChild("devtools-toolbar");
     this.profileViewToolbar.wrappable = true;
-    this.profileViewToolbar.setAttribute("jslog", `${VisualLogging7.toolbar("profile-view")}`);
+    this.profileViewToolbar.setAttribute("jslog", `${VisualLogging8.toolbar("profile-view")}`);
     this.profileGroups = {};
     this.launcherView = new ProfileLauncherView(this);
     this.launcherView.addEventListener("ProfileTypeSelected", this.onProfileTypeSelected, this);
@@ -8981,7 +9000,7 @@ var ProfilesPanel = class _ProfilesPanel extends UI13.Panel.PanelWithSidebar {
     this.profileViewToolbar.removeToolbarItems();
     void view.toolbarItems().then((items) => {
       if (Array.isArray(items)) {
-        items.map((item) => this.profileViewToolbar.appendToolbarItem(item));
+        items.map((item2) => this.profileViewToolbar.appendToolbarItem(item2));
       } else {
         render5(items, this.profileViewToolbar);
       }
@@ -9004,7 +9023,7 @@ var ProfilesPanel = class _ProfilesPanel extends UI13.Panel.PanelWithSidebar {
     return view;
   }
   indexOfViewForProfile(profile) {
-    return this.profileToView.findIndex((item) => item.profile === profile);
+    return this.profileToView.findIndex((item2) => item2.profile === profile);
   }
   closeVisibleView() {
     UI13.Context.Context.instance().setFlavor(ProfileHeader, null);

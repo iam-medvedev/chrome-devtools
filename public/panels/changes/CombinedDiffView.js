@@ -34,7 +34,7 @@ function renderSingleDiffView(singleDiffViewInput) {
     });
     // clang-format off
     return html `
-    <details open class=${classes}>
+    <details open class=${classes} jslog=${VisualLogging.section('diff-view')}>
       <summary>
         <div class="summary-left">
           <devtools-icon class="drop-down-icon" name="arrow-drop-down"></devtools-icon>

@@ -6723,6 +6723,10 @@ var NativeFunctions = [
     signatures: [["source", "destination"]]
   },
   {
+    name: "drawElementImageToTexture",
+    signatures: [["source", "destination"]]
+  },
+  {
     name: "multiDrawIndirect",
     signatures: [["indirectBuffer", "indirectOffset", "maxDrawCount", "?drawCountBuffer", "?drawCountBufferOffset"]]
   },
@@ -6809,6 +6813,10 @@ var NativeFunctions = [
   {
     name: "texElementImage2D",
     signatures: [["target", "internalformat", "element", "?config"]]
+  },
+  {
+    name: "texElementSubImage2D",
+    signatures: [["target", "level", "xoffset", "yoffset", "element", "?config"]]
   },
   {
     name: "drawingBufferStorage",
@@ -7145,6 +7153,10 @@ var NativeFunctions = [
   {
     name: "FaceDetector",
     signatures: [["?faceDetectorOptions"]]
+  },
+  {
+    name: "setShape",
+    signatures: [["rects"]]
   },
   {
     name: "ExtendableEvent",
@@ -8148,7 +8160,7 @@ var NativeFunctions = [
   },
   {
     name: "drawElementImage",
-    signatures: [["element", "dx", "dy", "?dwidth", "?dheight"], ["element", "sx", "sy", "swidth", "sheight", "dx", "dy", "?dwidth", "?dheight"]]
+    signatures: [["element", "dx", "dy", "?options"], ["element", "dx", "dy", "dwidth", "dheight", "?options"], ["element", "sx", "sy", "swidth", "sheight", "dx", "dy", "?options"], ["element", "sx", "sy", "swidth", "sheight", "dx", "dy", "dwidth", "dheight", "?options"]]
   },
   {
     name: "CanvasFilter",

@@ -449,162 +449,6 @@
   "core/sdk/Script.ts | unableToFetchScriptSource": {
     "message": "Unable to fetch script source."
   },
-  "core/sdk/sdk-meta.ts | achromatopsia": {
-    "message": "Achromatopsia (no color)"
-  },
-  "core/sdk/sdk-meta.ts | blurredVision": {
-    "message": "Blurred vision"
-  },
-  "core/sdk/sdk-meta.ts | customFormatters": {
-    "message": "Custom formatters"
-  },
-  "core/sdk/sdk-meta.ts | deuteranopia": {
-    "message": "Deuteranopia (no green)"
-  },
-  "core/sdk/sdk-meta.ts | disableAvifFormat": {
-    "message": "Disable AVIF format"
-  },
-  "core/sdk/sdk-meta.ts | disableCache": {
-    "message": "Disable cache while DevTools is open"
-  },
-  "core/sdk/sdk-meta.ts | disableJpegXlFormat": {
-    "message": "Disable JPEG XL format"
-  },
-  "core/sdk/sdk-meta.ts | disableLocalFonts": {
-    "message": "Disable local fonts"
-  },
-  "core/sdk/sdk-meta.ts | disableNetworkRequestBlocking": {
-    "message": "Disable network request blocking"
-  },
-  "core/sdk/sdk-meta.ts | disablePaused": {
-    "message": "Disable paused state overlay"
-  },
-  "core/sdk/sdk-meta.ts | disableWebpFormat": {
-    "message": "Disable WebP format"
-  },
-  "core/sdk/sdk-meta.ts | doNotEmulateAnyVisionDeficiency": {
-    "message": "Do not emulate any vision deficiency"
-  },
-  "core/sdk/sdk-meta.ts | doNotEmulateCss": {
-    "message": "Do not emulate CSS {PH1}"
-  },
-  "core/sdk/sdk-meta.ts | doNotEmulateOsTextScale": {
-    "message": "Do not emulate OS text scale"
-  },
-  "core/sdk/sdk-meta.ts | emulateAchromatopsia": {
-    "message": "Emulate achromatopsia (no color)"
-  },
-  "core/sdk/sdk-meta.ts | emulateAutoDarkMode": {
-    "message": "Emulate auto dark mode"
-  },
-  "core/sdk/sdk-meta.ts | emulateBlurredVision": {
-    "message": "Emulate blurred vision"
-  },
-  "core/sdk/sdk-meta.ts | emulateCss": {
-    "message": "Emulate CSS {PH1}"
-  },
-  "core/sdk/sdk-meta.ts | emulateCssMediaFeature": {
-    "message": "Emulate CSS media feature {PH1}"
-  },
-  "core/sdk/sdk-meta.ts | emulateDeuteranopia": {
-    "message": "Emulate deuteranopia (no green)"
-  },
-  "core/sdk/sdk-meta.ts | emulateOsTextScale": {
-    "message": "Emulate OS text scale"
-  },
-  "core/sdk/sdk-meta.ts | emulateProtanopia": {
-    "message": "Emulate protanopia (no red)"
-  },
-  "core/sdk/sdk-meta.ts | emulateReducedContrast": {
-    "message": "Emulate reduced contrast"
-  },
-  "core/sdk/sdk-meta.ts | emulateTritanopia": {
-    "message": "Emulate tritanopia (no blue)"
-  },
-  "core/sdk/sdk-meta.ts | emulateVisionDeficiencies": {
-    "message": "Emulate vision deficiencies"
-  },
-  "core/sdk/sdk-meta.ts | enableAvifFormat": {
-    "message": "Enable AVIF format"
-  },
-  "core/sdk/sdk-meta.ts | enableCache": {
-    "message": "Enable cache"
-  },
-  "core/sdk/sdk-meta.ts | enableJpegXlFormat": {
-    "message": "Enable JPEG XL format"
-  },
-  "core/sdk/sdk-meta.ts | enableLocalFonts": {
-    "message": "Enable local fonts"
-  },
-  "core/sdk/sdk-meta.ts | enableNetworkRequestBlocking": {
-    "message": "Enable network request blocking"
-  },
-  "core/sdk/sdk-meta.ts | enableRemoteFileLoading": {
-    "message": "Allow loading remote file path resources in DevTools"
-  },
-  "core/sdk/sdk-meta.ts | enableWebpFormat": {
-    "message": "Enable WebP format"
-  },
-  "core/sdk/sdk-meta.ts | logXmlhttprequests": {
-    "message": "Log XMLHttpRequests"
-  },
-  "core/sdk/sdk-meta.ts | networkCacheExplanation": {
-    "message": "Disabling the network cache will simulate a network experience similar to a first time visitor."
-  },
-  "core/sdk/sdk-meta.ts | networkRequestBlocking": {
-    "message": "Network request blocking"
-  },
-  "core/sdk/sdk-meta.ts | noEmulation": {
-    "message": "No emulation"
-  },
-  "core/sdk/sdk-meta.ts | osTextScaleEmulation100": {
-    "message": "100% (default)"
-  },
-  "core/sdk/sdk-meta.ts | osTextScaleEmulation115": {
-    "message": "115%"
-  },
-  "core/sdk/sdk-meta.ts | osTextScaleEmulation130": {
-    "message": "130%"
-  },
-  "core/sdk/sdk-meta.ts | osTextScaleEmulation150": {
-    "message": "150%"
-  },
-  "core/sdk/sdk-meta.ts | osTextScaleEmulation180": {
-    "message": "180%"
-  },
-  "core/sdk/sdk-meta.ts | osTextScaleEmulation200": {
-    "message": "200%"
-  },
-  "core/sdk/sdk-meta.ts | osTextScaleEmulation250": {
-    "message": "250%"
-  },
-  "core/sdk/sdk-meta.ts | osTextScaleEmulation300": {
-    "message": "300%"
-  },
-  "core/sdk/sdk-meta.ts | osTextScaleEmulation350": {
-    "message": "350%"
-  },
-  "core/sdk/sdk-meta.ts | osTextScaleEmulation85": {
-    "message": "85%"
-  },
-  "core/sdk/sdk-meta.ts | osTextScaleEmulationNone": {
-    "message": "No emulation"
-  },
-  "core/sdk/sdk-meta.ts | protanopia": {
-    "message": "Protanopia (no red)"
-  },
-  "core/sdk/sdk-meta.ts | query": {
-    "message": "query"
-  },
-  "core/sdk/sdk-meta.ts | reducedContrast": {
-    "message": "Reduced contrast"
-  },
-  "core/sdk/sdk-meta.ts | remoteFileLoadingInfo": {
-    "message": "Example resources are source maps. Disabled by default for security reasons."
-  },
-  "core/sdk/sdk-meta.ts | tritanopia": {
-    "message": "Tritanopia (no blue)"
-  },
   "core/sdk/ServerTiming.ts | deprecatedSyntaxFoundPleaseUse": {
     "message": "Deprecated syntax found for metric \"{PH1}\". Use: <name>;dur=<duration>;desc=<description>"
   },
@@ -674,11 +518,17 @@
   "core/sdk/SourceMapScopeChainEntry.ts | returnValue": {
     "message": "Return value"
   },
+  "entrypoints/inspector_main/inspector_main-meta.ts | achromatopsia": {
+    "message": "Achromatopsia (no color)"
+  },
   "entrypoints/inspector_main/inspector_main-meta.ts | autoOpenDevTools": {
     "message": "Auto-open DevTools for popups"
   },
   "entrypoints/inspector_main/inspector_main-meta.ts | blockAds": {
     "message": "Block ads on this site"
+  },
+  "entrypoints/inspector_main/inspector_main-meta.ts | blurredVision": {
+    "message": "Blurred vision"
   },
   "entrypoints/inspector_main/inspector_main-meta.ts | colorVisionDeficiency": {
     "message": "color vision deficiency"
@@ -689,11 +539,29 @@
   "entrypoints/inspector_main/inspector_main-meta.ts | cssMediaType": {
     "message": "CSS media type"
   },
+  "entrypoints/inspector_main/inspector_main-meta.ts | deuteranopia": {
+    "message": "Deuteranopia (no green)"
+  },
+  "entrypoints/inspector_main/inspector_main-meta.ts | disableAvifFormat": {
+    "message": "Disable AVIF format"
+  },
+  "entrypoints/inspector_main/inspector_main-meta.ts | disableJpegXlFormat": {
+    "message": "Disable JPEG XL format"
+  },
+  "entrypoints/inspector_main/inspector_main-meta.ts | disableLocalFonts": {
+    "message": "Disable local fonts"
+  },
+  "entrypoints/inspector_main/inspector_main-meta.ts | disableWebpFormat": {
+    "message": "Disable WebP format"
+  },
   "entrypoints/inspector_main/inspector_main-meta.ts | doNotAutoOpen": {
     "message": "Do not auto-open DevTools for popups"
   },
   "entrypoints/inspector_main/inspector_main-meta.ts | doNotEmulateAFocusedPage": {
     "message": "Do not emulate a focused page"
+  },
+  "entrypoints/inspector_main/inspector_main-meta.ts | doNotEmulateAnyVisionDeficiency": {
+    "message": "Do not emulate any vision deficiency"
   },
   "entrypoints/inspector_main/inspector_main-meta.ts | doNotEmulateCss": {
     "message": "Do not emulate CSS {PH1}"
@@ -701,11 +569,23 @@
   "entrypoints/inspector_main/inspector_main-meta.ts | doNotEmulateCssMediaType": {
     "message": "Do not emulate CSS media type"
   },
+  "entrypoints/inspector_main/inspector_main-meta.ts | doNotEmulateOsTextScale": {
+    "message": "Do not emulate OS text scale"
+  },
   "entrypoints/inspector_main/inspector_main-meta.ts | doNotHighlightAdFrames": {
     "message": "Do not highlight ad frames"
   },
+  "entrypoints/inspector_main/inspector_main-meta.ts | emulateAchromatopsia": {
+    "message": "Emulate achromatopsia (no color)"
+  },
   "entrypoints/inspector_main/inspector_main-meta.ts | emulateAFocusedPage": {
     "message": "Emulate a focused page"
+  },
+  "entrypoints/inspector_main/inspector_main-meta.ts | emulateAutoDarkMode": {
+    "message": "Emulate auto dark mode"
+  },
+  "entrypoints/inspector_main/inspector_main-meta.ts | emulateBlurredVision": {
+    "message": "Emulate blurred vision"
   },
   "entrypoints/inspector_main/inspector_main-meta.ts | emulateCss": {
     "message": "Emulate CSS {PH1}"
@@ -721,6 +601,36 @@
   },
   "entrypoints/inspector_main/inspector_main-meta.ts | emulateCssScreenMediaType": {
     "message": "Emulate CSS screen media type"
+  },
+  "entrypoints/inspector_main/inspector_main-meta.ts | emulateDeuteranopia": {
+    "message": "Emulate deuteranopia (no green)"
+  },
+  "entrypoints/inspector_main/inspector_main-meta.ts | emulateOsTextScale": {
+    "message": "Emulate OS text scale"
+  },
+  "entrypoints/inspector_main/inspector_main-meta.ts | emulateProtanopia": {
+    "message": "Emulate protanopia (no red)"
+  },
+  "entrypoints/inspector_main/inspector_main-meta.ts | emulateReducedContrast": {
+    "message": "Emulate reduced contrast"
+  },
+  "entrypoints/inspector_main/inspector_main-meta.ts | emulateTritanopia": {
+    "message": "Emulate tritanopia (no blue)"
+  },
+  "entrypoints/inspector_main/inspector_main-meta.ts | emulateVisionDeficiencies": {
+    "message": "Emulate vision deficiencies"
+  },
+  "entrypoints/inspector_main/inspector_main-meta.ts | enableAvifFormat": {
+    "message": "Enable AVIF format"
+  },
+  "entrypoints/inspector_main/inspector_main-meta.ts | enableJpegXlFormat": {
+    "message": "Enable JPEG XL format"
+  },
+  "entrypoints/inspector_main/inspector_main-meta.ts | enableLocalFonts": {
+    "message": "Enable local fonts"
+  },
+  "entrypoints/inspector_main/inspector_main-meta.ts | enableWebpFormat": {
+    "message": "Enable WebP format"
   },
   "entrypoints/inspector_main/inspector_main-meta.ts | forceAdBlocking": {
     "message": "Force ad blocking on this site"
@@ -755,14 +665,53 @@
   "entrypoints/inspector_main/inspector_main-meta.ts | noEmulation": {
     "message": "No emulation"
   },
+  "entrypoints/inspector_main/inspector_main-meta.ts | osTextScaleEmulation100": {
+    "message": "100% (default)"
+  },
+  "entrypoints/inspector_main/inspector_main-meta.ts | osTextScaleEmulation115": {
+    "message": "115%"
+  },
+  "entrypoints/inspector_main/inspector_main-meta.ts | osTextScaleEmulation130": {
+    "message": "130%"
+  },
+  "entrypoints/inspector_main/inspector_main-meta.ts | osTextScaleEmulation150": {
+    "message": "150%"
+  },
+  "entrypoints/inspector_main/inspector_main-meta.ts | osTextScaleEmulation180": {
+    "message": "180%"
+  },
+  "entrypoints/inspector_main/inspector_main-meta.ts | osTextScaleEmulation200": {
+    "message": "200%"
+  },
+  "entrypoints/inspector_main/inspector_main-meta.ts | osTextScaleEmulation250": {
+    "message": "250%"
+  },
+  "entrypoints/inspector_main/inspector_main-meta.ts | osTextScaleEmulation300": {
+    "message": "300%"
+  },
+  "entrypoints/inspector_main/inspector_main-meta.ts | osTextScaleEmulation350": {
+    "message": "350%"
+  },
+  "entrypoints/inspector_main/inspector_main-meta.ts | osTextScaleEmulation85": {
+    "message": "85%"
+  },
+  "entrypoints/inspector_main/inspector_main-meta.ts | osTextScaleEmulationNone": {
+    "message": "No emulation"
+  },
   "entrypoints/inspector_main/inspector_main-meta.ts | paint": {
     "message": "paint"
   },
   "entrypoints/inspector_main/inspector_main-meta.ts | print": {
     "message": "print"
   },
+  "entrypoints/inspector_main/inspector_main-meta.ts | protanopia": {
+    "message": "Protanopia (no red)"
+  },
   "entrypoints/inspector_main/inspector_main-meta.ts | query": {
     "message": "query"
+  },
+  "entrypoints/inspector_main/inspector_main-meta.ts | reducedContrast": {
+    "message": "Reduced contrast"
   },
   "entrypoints/inspector_main/inspector_main-meta.ts | reloadPage": {
     "message": "Reload page"
@@ -796,6 +745,9 @@
   },
   "entrypoints/inspector_main/inspector_main-meta.ts | toggleCssPrefersColorSchemeMedia": {
     "message": "Toggle CSS media feature prefers-color-scheme"
+  },
+  "entrypoints/inspector_main/inspector_main-meta.ts | tritanopia": {
+    "message": "Tritanopia (no blue)"
   },
   "entrypoints/inspector_main/inspector_main-meta.ts | visionDeficiency": {
     "message": "vision deficiency"
@@ -959,6 +911,12 @@
   "entrypoints/main/main-meta.ts | devtoolsDefault": {
     "message": "DevTools (Default)"
   },
+  "entrypoints/main/main-meta.ts | disableOverrideNetworkRequests": {
+    "message": "Disable override network requests"
+  },
+  "entrypoints/main/main-meta.ts | disablePaused": {
+    "message": "Disable paused state overlay"
+  },
   "entrypoints/main/main-meta.ts | dockToBottom": {
     "message": "Dock to bottom"
   },
@@ -971,8 +929,14 @@
   "entrypoints/main/main-meta.ts | dontMatchChromeColorSchemeCommand": {
     "message": "Don’t match Chrome color scheme"
   },
+  "entrypoints/main/main-meta.ts | earnBadges": {
+    "message": "Earn badges"
+  },
   "entrypoints/main/main-meta.ts | enableCtrlShortcutToSwitchPanels": {
     "message": "Use Ctrl + 1-9 to switch panels"
+  },
+  "entrypoints/main/main-meta.ts | enableOverrideNetworkRequests": {
+    "message": "Enable override network requests"
   },
   "entrypoints/main/main-meta.ts | enableShortcutToSwitchPanels": {
     "message": "Use ⌘ + 1-9 to switch panels"
@@ -989,6 +953,9 @@
   "entrypoints/main/main-meta.ts | horizontal": {
     "message": "horizontal"
   },
+  "entrypoints/main/main-meta.ts | interception": {
+    "message": "interception"
+  },
   "entrypoints/main/main-meta.ts | language": {
     "message": "Language:"
   },
@@ -1001,6 +968,9 @@
   "entrypoints/main/main-meta.ts | lightLower": {
     "message": "light"
   },
+  "entrypoints/main/main-meta.ts | localOverrides": {
+    "message": "Local overrides"
+  },
   "entrypoints/main/main-meta.ts | matchChromeColorScheme": {
     "message": "Match Chrome color scheme"
   },
@@ -1010,8 +980,14 @@
   "entrypoints/main/main-meta.ts | matchChromeColorSchemeDocumentation": {
     "message": "Match DevTools colors to your customized Chrome theme (when enabled)"
   },
+  "entrypoints/main/main-meta.ts | network": {
+    "message": "network"
+  },
   "entrypoints/main/main-meta.ts | nextPanel": {
     "message": "Next panel"
+  },
+  "entrypoints/main/main-meta.ts | override": {
+    "message": "override"
   },
   "entrypoints/main/main-meta.ts | panelLayout": {
     "message": "Panel layout:"
@@ -1022,11 +998,17 @@
   "entrypoints/main/main-meta.ts | reloadDevtools": {
     "message": "Reload DevTools"
   },
+  "entrypoints/main/main-meta.ts | request": {
+    "message": "request"
+  },
   "entrypoints/main/main-meta.ts | resetZoomLevel": {
     "message": "Reset zoom level"
   },
   "entrypoints/main/main-meta.ts | restoreLastDockPosition": {
     "message": "Restore last dock position"
+  },
+  "entrypoints/main/main-meta.ts | rewrite": {
+    "message": "rewrite"
   },
   "entrypoints/main/main-meta.ts | right": {
     "message": "Right"
@@ -1400,9 +1382,6 @@
   "generated/Deprecation.ts | XSLT": {
     "message": "XSLTProcessor and XSLT Processing Instructions have been deprecated by all browsers. These features will be removed from this browser soon."
   },
-  "models/badges/badges-meta.ts | earnBadges": {
-    "message": "Earn badges"
-  },
   "models/bindings/ContentProviderBasedProject.ts | unknownErrorLoadingFile": {
     "message": "Unknown error loading file"
   },
@@ -1547,6 +1526,9 @@
   "models/issues_manager/EmailVerificationRequestIssue.ts | emailVerification": {
     "message": "Email Verification Protocol"
   },
+  "models/issues_manager/FederatedAuthRequestIssue.ts | connectionAllowlist": {
+    "message": "Connection Allowlists API"
+  },
   "models/issues_manager/FederatedAuthRequestIssue.ts | fedCm": {
     "message": "Federated Credential Management API"
   },
@@ -1637,30 +1619,6 @@
   "models/live-metrics/LiveMetrics.ts | lcpVisibilityWarning": {
     "message": "LCP may be inflated because the page started loading in the background."
   },
-  "models/logs/logs-meta.ts | clear": {
-    "message": "clear"
-  },
-  "models/logs/logs-meta.ts | doNotKeepLogOnPageReload": {
-    "message": "Don’t keep log on page reload / navigation"
-  },
-  "models/logs/logs-meta.ts | keep": {
-    "message": "keep"
-  },
-  "models/logs/logs-meta.ts | keepLog": {
-    "message": "Keep log"
-  },
-  "models/logs/logs-meta.ts | keepLogOnPageReload": {
-    "message": "Keep log on page reload / navigation"
-  },
-  "models/logs/logs-meta.ts | preserve": {
-    "message": "preserve"
-  },
-  "models/logs/logs-meta.ts | recordNetworkLog": {
-    "message": "Record network log"
-  },
-  "models/logs/logs-meta.ts | reset": {
-    "message": "reset"
-  },
   "models/logs/NetworkLog.ts | anonymous": {
     "message": "<anonymous>"
   },
@@ -1700,30 +1658,6 @@
   "models/persistence/IsolatedFileSystemManager.ts | unableToAddFilesystemS": {
     "message": "Can’t add file system: {PH1}"
   },
-  "models/persistence/persistence-meta.ts | disableOverrideNetworkRequests": {
-    "message": "Disable override network requests"
-  },
-  "models/persistence/persistence-meta.ts | enableOverrideNetworkRequests": {
-    "message": "Enable override network requests"
-  },
-  "models/persistence/persistence-meta.ts | interception": {
-    "message": "interception"
-  },
-  "models/persistence/persistence-meta.ts | localOverrides": {
-    "message": "Local overrides"
-  },
-  "models/persistence/persistence-meta.ts | network": {
-    "message": "network"
-  },
-  "models/persistence/persistence-meta.ts | override": {
-    "message": "override"
-  },
-  "models/persistence/persistence-meta.ts | request": {
-    "message": "request"
-  },
-  "models/persistence/persistence-meta.ts | rewrite": {
-    "message": "rewrite"
-  },
   "models/persistence/PlatformFileSystem.ts | unableToReadFilesWithThis": {
     "message": "PlatformFileSystem can’t read files"
   },
@@ -1749,16 +1683,16 @@
     "message": "A character encoding declaration is required. It can be done with a meta charset tag in the first 1024 bytes of the HTML or in the Content-Type HTTP response header. [Learn more about declaring the character encoding](https://developer.chrome.com/docs/insights/charset/)."
   },
   "models/trace/insights/CharacterSet.ts | failedHttpHeader": {
-    "message": "Does not declare charset in HTTP header"
+    "message": "Doesn’t declare charset in HTTP header"
   },
   "models/trace/insights/CharacterSet.ts | failedMetaCharsetLate": {
     "message": "Declares charset using a meta tag after the first 1024 bytes"
   },
   "models/trace/insights/CharacterSet.ts | failedMetaCharsetMissing": {
-    "message": "Does not declare charset using a meta tag"
+    "message": "Doesn’t declare charset using a meta tag"
   },
   "models/trace/insights/CharacterSet.ts | failedMetaCharsetUnknown": {
-    "message": "Could not determine meta charset declaration from trace"
+    "message": "Couldn’t determine meta charset declaration from trace"
   },
   "models/trace/insights/CharacterSet.ts | passingHttpHeader": {
     "message": "Declares charset in HTTP header"
@@ -1926,7 +1860,7 @@
     "message": "[unattributed]"
   },
   "models/trace/insights/ImageDelivery.ts | description": {
-    "message": "Reducing the download time of images can improve the perceived load time of the page and LCP. [Learn more about optimizing image size](https://developer.chrome.com/docs/performance/insights/image-delivery)"
+    "message": "Reducing the download time of images can improve the perceived load time of the page and LCP. [Learn more about optimizing image size](https://developer.chrome.com/docs/performance/insights/image-delivery)."
   },
   "models/trace/insights/ImageDelivery.ts | estimatedSavings": {
     "message": "{PH1} (Est {PH2})"
@@ -2010,7 +1944,7 @@
     "message": "LCP breakdown"
   },
   "models/trace/insights/LCPDiscovery.ts | description": {
-    "message": "[Optimize LCP](https://developer.chrome.com/docs/performance/insights/lcp-discovery) by making the LCP image discoverable from the HTML immediately, and avoiding lazy-loading"
+    "message": "[Optimize LCP](https://developer.chrome.com/docs/performance/insights/lcp-discovery) by making the LCP image discoverable from the HTML immediately, and avoiding lazy-loading."
   },
   "models/trace/insights/LCPDiscovery.ts | fetchPriorityApplied": {
     "message": "fetchpriority=high applied"
@@ -2022,7 +1956,7 @@
     "message": "fetchpriority=high should be applied to the image preload request"
   },
   "models/trace/insights/LCPDiscovery.ts | lazyLoadNotApplied": {
-    "message": "LCP resources should not use loading=lazy"
+    "message": "LCP resources shouldn’t use loading=lazy"
   },
   "models/trace/insights/LCPDiscovery.ts | lcpLoadDelay": {
     "message": "LCP image loaded {PH1} after earliest start point."
@@ -2031,7 +1965,7 @@
     "message": "No LCP detected"
   },
   "models/trace/insights/LCPDiscovery.ts | noLcpResource": {
-    "message": "No LCP resource detected because the LCP is not an image"
+    "message": "No LCP resource detected because the LCP isn’t an image"
   },
   "models/trace/insights/LCPDiscovery.ts | requestDiscoverable": {
     "message": "Request is discoverable in initial document"
@@ -2046,7 +1980,7 @@
     "message": "Wasted bytes"
   },
   "models/trace/insights/LegacyJavaScript.ts | description": {
-    "message": "Polyfills and transforms enable older browsers to use new JavaScript features. However, many aren’t necessary for modern browsers. Consider modifying your JavaScript build process to not transpile [Baseline](https://web.dev/articles/baseline-and-polyfills) features, unless you know you must support older browsers. [Learn why most sites can deploy ES6+ code without transpiling](https://developer.chrome.com/docs/performance/insights/legacy-javascript)"
+    "message": "Polyfills and transforms enable older browsers to use new JavaScript features. However, many aren’t necessary for modern browsers. Consider modifying your JavaScript build process to not transpile [Baseline](https://web.dev/articles/baseline-and-polyfills) features, unless you know you must support older browsers. [Learn why most sites can deploy ES6+ code without transpiling](https://developer.chrome.com/docs/performance/insights/legacy-javascript)."
   },
   "models/trace/insights/LegacyJavaScript.ts | noLegacyJavaScript": {
     "message": "No legacy JavaScript found"
@@ -2058,7 +1992,7 @@
     "message": "HTTP/2 and HTTP/3 offer many benefits over HTTP/1.1, such as multiplexing. [Learn more about using modern HTTP](https://developer.chrome.com/docs/performance/insights/modern-http)."
   },
   "models/trace/insights/ModernHTTP.ts | noOldProtocolRequests": {
-    "message": "No requests used HTTP/1.1, or its current use of HTTP/1.1 does not present a significant optimization opportunity. HTTP/1.1 requests are only flagged if six or more static assets originate from the same origin, and they are not served from a local development environment or a third-party source."
+    "message": "No requests used HTTP/1.1, or its current use of HTTP/1.1 doesn’t present a significant optimization opportunity. HTTP/1.1 requests are only flagged if six or more static assets originate from the same origin, and they aren’t served from a local development environment or a third-party source."
   },
   "models/trace/insights/ModernHTTP.ts | protocol": {
     "message": "Protocol"
@@ -2106,7 +2040,7 @@
     "message": "No additional origins are good candidates for preconnecting"
   },
   "models/trace/insights/NetworkDependencyTree.ts | noPreconnectOrigins": {
-    "message": "no origins were preconnected"
+    "message": "No origins were preconnected"
   },
   "models/trace/insights/NetworkDependencyTree.ts | preconnectOriginsTableDescription": {
     "message": "[preconnect](https://developer.chrome.com/docs/lighthouse/performance/uses-rel-preconnect/) hints help the browser establish a connection earlier in the page load, saving time when the first request for that origin is made. The following are the origins that the page preconnected to."
@@ -2142,13 +2076,13 @@
     "message": "Render-blocking requests"
   },
   "models/trace/insights/SlowCSSSelector.ts | description": {
-    "message": "If Recalculate Style costs remain high, selector optimization can reduce them. [Optimize the selectors](https://developer.chrome.com/docs/performance/insights/slow-css-selector) with both high elapsed time and high slow-path %. Simpler selectors, fewer selectors, a smaller DOM, and a shallower DOM will all reduce matching costs."
+    "message": "If recalculate style costs remain high, selector optimization can reduce them. [Optimize the selectors](https://developer.chrome.com/docs/performance/insights/slow-css-selector) with both high elapsed time and high slow-path %. Simpler selectors, fewer selectors, a smaller DOM, and a shallower DOM will all reduce matching costs."
   },
   "models/trace/insights/SlowCSSSelector.ts | elapsed": {
     "message": "Elapsed time"
   },
   "models/trace/insights/SlowCSSSelector.ts | enableSelectorData": {
-    "message": "No CSS selector data was found. CSS selector stats need to be enabled in the performance panel settings."
+    "message": "No CSS selector data was found. CSS selector stats need to be enabled in the Performance panel settings."
   },
   "models/trace/insights/SlowCSSSelector.ts | matchAttempts": {
     "message": "Match attempts"
@@ -2157,7 +2091,7 @@
     "message": "Match count"
   },
   "models/trace/insights/SlowCSSSelector.ts | title": {
-    "message": "CSS Selector costs"
+    "message": "CSS selector costs"
   },
   "models/trace/insights/SlowCSSSelector.ts | topSelectorElapsedTime": {
     "message": "Top selector elapsed time"
@@ -2190,7 +2124,7 @@
     "message": "3rd parties"
   },
   "models/trace/insights/Viewport.ts | description": {
-    "message": "Tap interactions may be [delayed by up to 300 ms](https://developer.chrome.com/docs/performance/insights/viewport) if the viewport is not optimized for mobile."
+    "message": "Tap interactions may be [delayed by up to 300 ms](https://developer.chrome.com/docs/performance/insights/viewport) if the viewport isn’t optimized for mobile."
   },
   "models/trace/insights/Viewport.ts | mobileTapDelayLabel": {
     "message": "Mobile tap delay"
@@ -2379,7 +2313,7 @@
     "message": "Install timer"
   },
   "models/trace/Styles.ts | invalidateLayout": {
-    "message": "Invalidate Layout"
+    "message": "Invalidate layout"
   },
   "models/trace/Styles.ts | jsFrame": {
     "message": "JS frame"
@@ -6713,6 +6647,9 @@
   "panels/console/console-meta.ts | createLiveExpression": {
     "message": "Create live expression"
   },
+  "panels/console/console-meta.ts | customFormatters": {
+    "message": "Custom formatters"
+  },
   "panels/console/console-meta.ts | doNotAutocompleteFromHistory": {
     "message": "Don’t autocomplete from history"
   },
@@ -6754,6 +6691,9 @@
   },
   "panels/console/console-meta.ts | hideTimestamps": {
     "message": "Hide timestamps"
+  },
+  "panels/console/console-meta.ts | logXmlhttprequests": {
+    "message": "Log XMLHttpRequests"
   },
   "panels/console/console-meta.ts | networkMessages": {
     "message": "Network messages"
@@ -7016,6 +6956,9 @@
   "panels/console/ConsoleViewMessage.ts | cndBreakpoint": {
     "message": "Conditional breakpoint"
   },
+  "panels/console/ConsoleViewMessage.ts | collapseChildren": {
+    "message": "Collapse children"
+  },
   "panels/console/ConsoleViewMessage.ts | console": {
     "message": "Console"
   },
@@ -7048,6 +6991,9 @@
   },
   "panels/console/ConsoleViewMessage.ts | exception": {
     "message": "<exception>"
+  },
+  "panels/console/ConsoleViewMessage.ts | expandRecursively": {
+    "message": "Expand recursively"
   },
   "panels/console/ConsoleViewMessage.ts | explainThisError": {
     "message": "Understand this error"
@@ -7506,7 +7452,7 @@
     "message": "Class {PH1} added"
   },
   "panels/elements/ClassesPaneWidget.ts | elementClasses": {
-    "message": "Element Classes"
+    "message": "Element classes"
   },
   "panels/elements/ColorSwatchPopoverIcon.ts | openCubicBezierEditor": {
     "message": "Open cubic bezier editor"
@@ -7518,7 +7464,7 @@
     "message": "Ignored"
   },
   "panels/elements/components/CSSHintDetailsView.ts | learnMore": {
-    "message": "Learn More"
+    "message": "Learn more"
   },
   "panels/elements/components/CSSPropertyDocsView.ts | browserOnPlatform": {
     "message": "{PH1} on {PH2}"
@@ -7578,7 +7524,7 @@
     "message": "Add {propertyName}: {propertyValue}"
   },
   "panels/elements/ComputedStyleWidget.ts | filterUpdateAriaText": {
-    "message": "Filter applied: {PH1}. Total Results: {PH2}"
+    "message": "Filter applied: {PH1}. Total results: {PH2}"
   },
   "panels/elements/ComputedStyleWidget.ts | group": {
     "message": "Group"
@@ -7643,6 +7589,138 @@
   "panels/elements/CSSSpecificityBreakdown.ts | typeLikeSpecificity": {
     "message": "(c) Type-like: {PH1}"
   },
+  "panels/elements/DOMTreeContextMenu.ts | addAttribute": {
+    "message": "Add attribute"
+  },
+  "panels/elements/DOMTreeContextMenu.ts | addPadding": {
+    "message": "Add padding"
+  },
+  "panels/elements/DOMTreeContextMenu.ts | alignItems": {
+    "message": "Align items"
+  },
+  "panels/elements/DOMTreeContextMenu.ts | assessVisibility": {
+    "message": "Assess visibility"
+  },
+  "panels/elements/DOMTreeContextMenu.ts | captureNodeScreenshot": {
+    "message": "Capture node screenshot"
+  },
+  "panels/elements/DOMTreeContextMenu.ts | centerElement": {
+    "message": "Center element"
+  },
+  "panels/elements/DOMTreeContextMenu.ts | changeParentProperties": {
+    "message": "Change parent properties"
+  },
+  "panels/elements/DOMTreeContextMenu.ts | collapseChildren": {
+    "message": "Collapse children"
+  },
+  "panels/elements/DOMTreeContextMenu.ts | copy": {
+    "message": "Copy"
+  },
+  "panels/elements/DOMTreeContextMenu.ts | copyElement": {
+    "message": "Copy element"
+  },
+  "panels/elements/DOMTreeContextMenu.ts | copyFullXpath": {
+    "message": "Copy full XPath"
+  },
+  "panels/elements/DOMTreeContextMenu.ts | copyJsPath": {
+    "message": "Copy JS path"
+  },
+  "panels/elements/DOMTreeContextMenu.ts | copyOuterhtml": {
+    "message": "Copy outerHTML"
+  },
+  "panels/elements/DOMTreeContextMenu.ts | copySelector": {
+    "message": "Copy selector"
+  },
+  "panels/elements/DOMTreeContextMenu.ts | copyStyles": {
+    "message": "Copy styles"
+  },
+  "panels/elements/DOMTreeContextMenu.ts | copyXpath": {
+    "message": "Copy XPath"
+  },
+  "panels/elements/DOMTreeContextMenu.ts | cut": {
+    "message": "Cut"
+  },
+  "panels/elements/DOMTreeContextMenu.ts | deleteElement": {
+    "message": "Delete element"
+  },
+  "panels/elements/DOMTreeContextMenu.ts | distributeItemsEvenly": {
+    "message": "Distribute items evenly"
+  },
+  "panels/elements/DOMTreeContextMenu.ts | duplicateElement": {
+    "message": "Duplicate element"
+  },
+  "panels/elements/DOMTreeContextMenu.ts | editAsHtml": {
+    "message": "Edit as HTML"
+  },
+  "panels/elements/DOMTreeContextMenu.ts | editAttribute": {
+    "message": "Edit attribute"
+  },
+  "panels/elements/DOMTreeContextMenu.ts | editData": {
+    "message": "Edit data"
+  },
+  "panels/elements/DOMTreeContextMenu.ts | editText": {
+    "message": "Edit text"
+  },
+  "panels/elements/DOMTreeContextMenu.ts | expandRecursively": {
+    "message": "Expand recursively"
+  },
+  "panels/elements/DOMTreeContextMenu.ts | explainContainerContext": {
+    "message": "Explain container context"
+  },
+  "panels/elements/DOMTreeContextMenu.ts | explainContainerQueries": {
+    "message": "Explain container queries"
+  },
+  "panels/elements/DOMTreeContextMenu.ts | explainContainerTypes": {
+    "message": "Explain container types"
+  },
+  "panels/elements/DOMTreeContextMenu.ts | explainFlexbox": {
+    "message": "Explain flexbox"
+  },
+  "panels/elements/DOMTreeContextMenu.ts | explainGridLayout": {
+    "message": "Explain grid layout"
+  },
+  "panels/elements/DOMTreeContextMenu.ts | explainScrollbars": {
+    "message": "Explain scrollbars"
+  },
+  "panels/elements/DOMTreeContextMenu.ts | explainSubgrids": {
+    "message": "Explain subgrids"
+  },
+  "panels/elements/DOMTreeContextMenu.ts | findGridDefinition": {
+    "message": "Find grid definition"
+  },
+  "panels/elements/DOMTreeContextMenu.ts | focus": {
+    "message": "Focus"
+  },
+  "panels/elements/DOMTreeContextMenu.ts | hideElement": {
+    "message": "Hide element"
+  },
+  "panels/elements/DOMTreeContextMenu.ts | paste": {
+    "message": "Paste"
+  },
+  "panels/elements/DOMTreeContextMenu.ts | removeScrollbars": {
+    "message": "Remove scrollbars"
+  },
+  "panels/elements/DOMTreeContextMenu.ts | scrollIntoView": {
+    "message": "Scroll into view"
+  },
+  "panels/elements/DOMTreeContextMenu.ts | showFrameDetails": {
+    "message": "Show iframe details"
+  },
+  "panels/elements/DOMTreeContextMenu.ts | startAChat": {
+    "message": "Start a chat"
+  },
+  "panels/elements/DOMTreeContextMenu.ts | storeAsGlobalVariable": {
+    "message": "Store as global variable"
+  },
+  "panels/elements/DOMTreeContextMenu.ts | styleScrollbars": {
+    "message": "Style scrollbars"
+  },
+  "panels/elements/DOMTreeContextMenu.ts | switchToAccessibilityTree": {
+    "message": "Switch to accessibility tree"
+  },
+  "panels/elements/DOMTreeContextMenu.ts | wrapTheseItems": {
+    "message": "Wrap these items"
+  },
   "panels/elements/ElementIssueUtils.ts | disallowedOptGroupChild": {
     "message": "Invalid element or text node within <optgroup>"
   },
@@ -7650,16 +7728,16 @@
     "message": "Invalid element or text node within <select>"
   },
   "panels/elements/ElementIssueUtils.ts | formAriaLabelledByToNonExistingId": {
-    "message": "An aria-labelledby attribute doesn’t match any element id"
+    "message": "An aria-labelledby attribute doesn’t match any element ID"
   },
   "panels/elements/ElementIssueUtils.ts | formAutocompleteAttributeEmptyError": {
     "message": "Incorrect use of autocomplete attribute"
   },
   "panels/elements/ElementIssueUtils.ts | formDuplicateIdForInputError": {
-    "message": "Duplicate form field id in the same form"
+    "message": "Duplicate form field ID in the same form"
   },
   "panels/elements/ElementIssueUtils.ts | formEmptyIdAndNameAttributesForInputError": {
-    "message": "A form field element should have an id or name attribute"
+    "message": "A form field element should have an ID or name attribute"
   },
   "panels/elements/ElementIssueUtils.ts | formInputAssignedAutocompleteValueToIdOrNameAttributeError": {
     "message": "An element doesn’t have an autocomplete attribute"
@@ -7761,7 +7839,7 @@
     "message": "Layout"
   },
   "panels/elements/elements-meta.ts | newStyleRule": {
-    "message": "New Style Rule"
+    "message": "New style rule"
   },
   "panels/elements/elements-meta.ts | properties": {
     "message": "Properties"
@@ -7785,7 +7863,7 @@
     "message": "Show area names"
   },
   "panels/elements/elements-meta.ts | showComputedStyles": {
-    "message": "Show Computed Styles"
+    "message": "Show Computed styles"
   },
   "panels/elements/elements-meta.ts | showElements": {
     "message": "Show Elements"
@@ -7851,10 +7929,10 @@
     "message": "Computed"
   },
   "panels/elements/ElementsPanel.ts | computedStylesHidden": {
-    "message": "Computed Styles sidebar hidden"
+    "message": "Computed styles sidebar hidden"
   },
   "panels/elements/ElementsPanel.ts | computedStylesShown": {
-    "message": "Computed Styles sidebar shown"
+    "message": "Computed styles sidebar shown"
   },
   "panels/elements/ElementsPanel.ts | domTreeExplorer": {
     "message": "DOM tree explorer"
@@ -7866,7 +7944,7 @@
     "message": "Find by string, selector, or XPath"
   },
   "panels/elements/ElementsPanel.ts | hideComputedStylesSidebar": {
-    "message": "Hide Computed Styles sidebar"
+    "message": "Hide Computed styles sidebar"
   },
   "panels/elements/ElementsPanel.ts | nodeCannotBeFoundInTheCurrent": {
     "message": "Node cannot be found in the current page."
@@ -7875,7 +7953,7 @@
     "message": "Open in Elements panel"
   },
   "panels/elements/ElementsPanel.ts | showComputedStylesSidebar": {
-    "message": "Show Computed Styles sidebar"
+    "message": "Show Computed styles sidebar"
   },
   "panels/elements/ElementsPanel.ts | sidePanelContent": {
     "message": "Side panel content"
@@ -7908,67 +7986,19 @@
     "message": "Learn more"
   },
   "panels/elements/ElementStatePaneWidget.ts | toggleElementState": {
-    "message": "Toggle Element State"
-  },
-  "panels/elements/ElementsTreeElement.ts | addAttribute": {
-    "message": "Add attribute"
-  },
-  "panels/elements/ElementsTreeElement.ts | addPadding": {
-    "message": "Add padding"
-  },
-  "panels/elements/ElementsTreeElement.ts | alignItems": {
-    "message": "Align items"
-  },
-  "panels/elements/ElementsTreeElement.ts | assessVisibility": {
-    "message": "Assess visibility"
-  },
-  "panels/elements/ElementsTreeElement.ts | captureNodeScreenshot": {
-    "message": "Capture node screenshot"
-  },
-  "panels/elements/ElementsTreeElement.ts | centerElement": {
-    "message": "Center element"
-  },
-  "panels/elements/ElementsTreeElement.ts | changeParentProperties": {
-    "message": "Change parent properties"
+    "message": "Toggle element state"
   },
   "panels/elements/ElementsTreeElement.ts | children": {
     "message": "Children:"
   },
-  "panels/elements/ElementsTreeElement.ts | collapseChildren": {
-    "message": "Collapse children"
-  },
   "panels/elements/ElementsTreeElement.ts | copy": {
     "message": "Copy"
-  },
-  "panels/elements/ElementsTreeElement.ts | copyElement": {
-    "message": "Copy element"
-  },
-  "panels/elements/ElementsTreeElement.ts | copyFullXpath": {
-    "message": "Copy full XPath"
-  },
-  "panels/elements/ElementsTreeElement.ts | copyJsPath": {
-    "message": "Copy JS path"
-  },
-  "panels/elements/ElementsTreeElement.ts | copyOuterhtml": {
-    "message": "Copy outerHTML"
-  },
-  "panels/elements/ElementsTreeElement.ts | copySelector": {
-    "message": "Copy selector"
-  },
-  "panels/elements/ElementsTreeElement.ts | copyStyles": {
-    "message": "Copy styles"
-  },
-  "panels/elements/ElementsTreeElement.ts | copyXpath": {
-    "message": "Copy XPath"
   },
   "panels/elements/ElementsTreeElement.ts | creatorAdScriptAncestry": {
     "message": "Creator ad script ancestry"
   },
   "panels/elements/ElementsTreeElement.ts | cut": {
     "message": "Cut"
-  },
-  "panels/elements/ElementsTreeElement.ts | deleteElement": {
-    "message": "Delete element"
   },
   "panels/elements/ElementsTreeElement.ts | disableContainer": {
     "message": "Disable container overlay"
@@ -7987,24 +8017,6 @@
   },
   "panels/elements/ElementsTreeElement.ts | disableStartingStyle": {
     "message": "Disable @starting-style mode"
-  },
-  "panels/elements/ElementsTreeElement.ts | distributeItemsEvenly": {
-    "message": "Distribute items evenly"
-  },
-  "panels/elements/ElementsTreeElement.ts | duplicateElement": {
-    "message": "Duplicate element"
-  },
-  "panels/elements/ElementsTreeElement.ts | editAsHtml": {
-    "message": "Edit as HTML"
-  },
-  "panels/elements/ElementsTreeElement.ts | editAttribute": {
-    "message": "Edit attribute"
-  },
-  "panels/elements/ElementsTreeElement.ts | editData": {
-    "message": "Edit data"
-  },
-  "panels/elements/ElementsTreeElement.ts | editText": {
-    "message": "Edit text"
   },
   "panels/elements/ElementsTreeElement.ts | elementHasScrollableOverflow": {
     "message": "This element has a scrollable overflow"
@@ -8027,38 +8039,8 @@
   "panels/elements/ElementsTreeElement.ts | enableStartingStyle": {
     "message": "Enable @starting-style mode"
   },
-  "panels/elements/ElementsTreeElement.ts | expandRecursively": {
-    "message": "Expand recursively"
-  },
-  "panels/elements/ElementsTreeElement.ts | explainContainerContext": {
-    "message": "Explain container context"
-  },
-  "panels/elements/ElementsTreeElement.ts | explainContainerQueries": {
-    "message": "Explain container queries"
-  },
-  "panels/elements/ElementsTreeElement.ts | explainContainerTypes": {
-    "message": "Explain container types"
-  },
-  "panels/elements/ElementsTreeElement.ts | explainFlexbox": {
-    "message": "Explain flexbox"
-  },
-  "panels/elements/ElementsTreeElement.ts | explainGridLayout": {
-    "message": "Explain grid layout"
-  },
-  "panels/elements/ElementsTreeElement.ts | explainScrollbars": {
-    "message": "Explain scrollbars"
-  },
-  "panels/elements/ElementsTreeElement.ts | explainSubgrids": {
-    "message": "Explain subgrids"
-  },
   "panels/elements/ElementsTreeElement.ts | filterListRule": {
     "message": "Filter list rule"
-  },
-  "panels/elements/ElementsTreeElement.ts | findGridDefinition": {
-    "message": "Find grid definition"
-  },
-  "panels/elements/ElementsTreeElement.ts | focus": {
-    "message": "Focus"
   },
   "panels/elements/ElementsTreeElement.ts | forceOpenPopover": {
     "message": "Keep this popover open"
@@ -8069,9 +8051,6 @@
   "panels/elements/ElementsTreeElement.ts | forceState": {
     "message": "Force state"
   },
-  "panels/elements/ElementsTreeElement.ts | hideElement": {
-    "message": "Hide element"
-  },
   "panels/elements/ElementsTreeElement.ts | noProvenanceAvailable": {
     "message": "No provenance data is available"
   },
@@ -8081,17 +8060,11 @@
   "panels/elements/ElementsTreeElement.ts | paste": {
     "message": "Paste"
   },
-  "panels/elements/ElementsTreeElement.ts | removeScrollbars": {
-    "message": "Remove scrollbars"
-  },
   "panels/elements/ElementsTreeElement.ts | reveal": {
-    "message": "reveal"
+    "message": "Reveal"
   },
   "panels/elements/ElementsTreeElement.ts | rootScriptFilterListRule": {
     "message": "Root script filter list rule"
-  },
-  "panels/elements/ElementsTreeElement.ts | scrollIntoView": {
-    "message": "Scroll into view"
   },
   "panels/elements/ElementsTreeElement.ts | selectAll": {
     "message": "Select all"
@@ -8102,29 +8075,17 @@
   "panels/elements/ElementsTreeElement.ts | showCustomElementDefinition": {
     "message": "Show custom element definition"
   },
-  "panels/elements/ElementsTreeElement.ts | showFrameDetails": {
-    "message": "Show iframe details"
-  },
   "panels/elements/ElementsTreeElement.ts | showInterestTarget": {
     "message": "Show element associated with the interesttarget attribute"
   },
   "panels/elements/ElementsTreeElement.ts | showPopoverTarget": {
     "message": "Show element associated with the popovertarget attribute"
   },
-  "panels/elements/ElementsTreeElement.ts | startAChat": {
-    "message": "Start a chat"
-  },
   "panels/elements/ElementsTreeElement.ts | stopForceOpenPopover": {
     "message": "Stop keeping this popover open"
   },
   "panels/elements/ElementsTreeElement.ts | stopForceShowInterest": {
     "message": "Cancel interest on this element"
-  },
-  "panels/elements/ElementsTreeElement.ts | styleScrollbars": {
-    "message": "Style scrollbars"
-  },
-  "panels/elements/ElementsTreeElement.ts | switchToAccessibilityTree": {
-    "message": "Switch to accessibility tree"
   },
   "panels/elements/ElementsTreeElement.ts | thisElementWasIdentifiedAsAnAd": {
     "message": "This element was identified as an ad"
@@ -8138,9 +8099,6 @@
   "panels/elements/ElementsTreeElement.ts | viewSourceCode": {
     "message": "View source code"
   },
-  "panels/elements/ElementsTreeElement.ts | wrapTheseItems": {
-    "message": "Wrap these items"
-  },
   "panels/elements/ElementsTreeOutline.ts | pageDom": {
     "message": "Page DOM"
   },
@@ -8150,11 +8108,8 @@
   "panels/elements/ElementsTreeOutline.ts | showAllNodesDMore": {
     "message": "Show all nodes ({PH1} more)"
   },
-  "panels/elements/ElementsTreeOutline.ts | storeAsGlobalVariable": {
-    "message": "Store as global variable"
-  },
   "panels/elements/ElementsTreeOutline.ts | viewIssue": {
-    "message": "View Issue:"
+    "message": "View issue:"
   },
   "panels/elements/EventListenersWidget.ts | all": {
     "message": "All"
@@ -8184,7 +8139,7 @@
     "message": "CSS layers"
   },
   "panels/elements/LayersWidget.ts | toggleCSSLayers": {
-    "message": "Toggle CSS Layers view"
+    "message": "Toggle CSS layers view"
   },
   "panels/elements/LayoutPane.ts | chooseElementOverlayColor": {
     "message": "Choose the overlay color for this element"
@@ -8199,10 +8154,10 @@
     "message": "Flexbox overlays"
   },
   "panels/elements/LayoutPane.ts | gridOrGridLanes": {
-    "message": "Grid / Grid Lanes"
+    "message": "Grid / grid lanes"
   },
   "panels/elements/LayoutPane.ts | gridOrGridLanesOverlays": {
-    "message": "Grid / Grid Lanes overlays"
+    "message": "Grid / grid lanes overlays"
   },
   "panels/elements/LayoutPane.ts | noFlexboxLayoutsFoundOnThisPage": {
     "message": "No flexbox layouts found on this page"
@@ -8217,7 +8172,7 @@
     "message": "Show element in the Elements panel"
   },
   "panels/elements/MarkerDecorator.ts | domBreakpoint": {
-    "message": "DOM Breakpoint"
+    "message": "DOM breakpoint"
   },
   "panels/elements/MarkerDecorator.ts | elementIsHidden": {
     "message": "Element is hidden"
@@ -8241,7 +8196,7 @@
     "message": "PostScript name"
   },
   "panels/elements/PlatformFontsWidget.ts | renderedFonts": {
-    "message": "Rendered Fonts"
+    "message": "Rendered fonts"
   },
   "panels/elements/PropertiesWidget.ts | noMatchingProperty": {
     "message": "No matching property"
@@ -8670,13 +8625,13 @@
     "message": "Understand this warning"
   },
   "panels/issues/AffectedBlockedByResponseView.ts | blockedResource": {
-    "message": "Blocked Resource"
+    "message": "Blocked resource"
   },
   "panels/issues/AffectedBlockedByResponseView.ts | nRequests": {
     "message": "{n, plural, =1 {# request} other {# requests}}"
   },
   "panels/issues/AffectedBlockedByResponseView.ts | parentFrame": {
-    "message": "Parent Frame"
+    "message": "Parent frame"
   },
   "panels/issues/AffectedBlockedByResponseView.ts | requestC": {
     "message": "Request"
@@ -8685,7 +8640,7 @@
     "message": "Domain"
   },
   "panels/issues/AffectedCookiesView.ts | filterSetCookieTitle": {
-    "message": "Show network requests that include this Set-Cookie header in the network panel"
+    "message": "Show network requests that include this Set-Cookie header in the Network panel"
   },
   "panels/issues/AffectedCookiesView.ts | name": {
     "message": "Name"
@@ -8694,7 +8649,7 @@
     "message": "{n, plural, =1 {# cookie} other {# cookies}}"
   },
   "panels/issues/AffectedCookiesView.ts | nRawCookieLines": {
-    "message": "{n, plural, =1 {1 Raw Set-Cookie header} other {# Raw Set-Cookie headers}}"
+    "message": "{n, plural, =1 {1 raw Set-Cookie header} other {# raw Set-Cookie headers}}"
   },
   "panels/issues/AffectedCookiesView.ts | path": {
     "message": "Path"
@@ -8706,7 +8661,7 @@
     "message": "{n, plural, =1 { descendant} other { descendants}}"
   },
   "panels/issues/AffectedDirectivesView.ts | blocked": {
-    "message": "blocked"
+    "message": "Blocked"
   },
   "panels/issues/AffectedDirectivesView.ts | clickToRevealTheViolatingDomNode": {
     "message": "Click to reveal the violating DOM node in the Elements panel"
@@ -8721,7 +8676,7 @@
     "message": "{n, plural, =1 {# directive} other {# directives}}"
   },
   "panels/issues/AffectedDirectivesView.ts | reportonly": {
-    "message": "report-only"
+    "message": "Report-only"
   },
   "panels/issues/AffectedDirectivesView.ts | resourceC": {
     "message": "Resource"
@@ -8769,7 +8724,7 @@
     "message": "Removed"
   },
   "panels/issues/AffectedHeavyAdView.ts | resolutionStatus": {
-    "message": "Resolution Status"
+    "message": "Resolution status"
   },
   "panels/issues/AffectedHeavyAdView.ts | warned": {
     "message": "Warned"
@@ -8799,19 +8754,19 @@
     "message": "Click to reveal the frame’s DOM node in the Elements panel"
   },
   "panels/issues/AffectedResourcesView.ts | unavailable": {
-    "message": "unavailable"
+    "message": "Unavailable"
   },
   "panels/issues/AffectedResourcesView.ts | unknown": {
-    "message": "unknown"
+    "message": "Unknown"
   },
   "panels/issues/AffectedSelectivePermissionsInterventionView.ts | adAncestry": {
-    "message": "Ad Ancestry"
+    "message": "Ad ancestry"
   },
   "panels/issues/AffectedSelectivePermissionsInterventionView.ts | api": {
     "message": "API"
   },
   "panels/issues/AffectedSelectivePermissionsInterventionView.ts | loading": {
-    "message": "loading…"
+    "message": "Loading…"
   },
   "panels/issues/AffectedSelectivePermissionsInterventionView.ts | nViolations": {
     "message": "{n, plural, =1 {# violation} other {# violations}}"
@@ -8820,13 +8775,13 @@
     "message": "Script"
   },
   "panels/issues/AffectedSelectivePermissionsInterventionView.ts | unknown": {
-    "message": "unknown"
+    "message": "Unknown"
   },
   "panels/issues/AffectedSharedArrayBufferIssueDetailsView.ts | aSharedarraybufferWas": {
     "message": "A SharedArrayBuffer was instantiated in a context that is not cross-origin isolated"
   },
   "panels/issues/AffectedSharedArrayBufferIssueDetailsView.ts | blocked": {
-    "message": "blocked"
+    "message": "Blocked"
   },
   "panels/issues/AffectedSharedArrayBufferIssueDetailsView.ts | instantiation": {
     "message": "Instantiation"
@@ -8835,10 +8790,10 @@
     "message": "{n, plural, =1 {# violation} other {# violations}}"
   },
   "panels/issues/AffectedSharedArrayBufferIssueDetailsView.ts | sharedarraybufferWasTransferedTo": {
-    "message": "SharedArrayBuffer was transfered to a context that is not cross-origin isolated"
+    "message": "SharedArrayBuffer was transferred to a context that is not cross-origin isolated"
   },
   "panels/issues/AffectedSharedArrayBufferIssueDetailsView.ts | sourceLocation": {
-    "message": "Source Location"
+    "message": "Source location"
   },
   "panels/issues/AffectedSharedArrayBufferIssueDetailsView.ts | status": {
     "message": "Status"
@@ -8850,7 +8805,7 @@
     "message": "Trigger"
   },
   "panels/issues/AffectedSharedArrayBufferIssueDetailsView.ts | warning": {
-    "message": "warning"
+    "message": "Warning"
   },
   "panels/issues/AffectedSourcesView.ts | nSources": {
     "message": "{n, plural, =1 {# source} other {# sources}}"
@@ -8862,37 +8817,37 @@
     "message": "Hide issues"
   },
   "panels/issues/CorsIssueDetailsView.ts | allowCredentialsValueFromHeader": {
-    "message": "Access-Control-Allow-Credentials Header Value"
+    "message": "Access-Control-Allow-Credentials header value"
   },
   "panels/issues/CorsIssueDetailsView.ts | allowedOrigin": {
-    "message": "Allowed Origin (from header)"
+    "message": "Allowed origin (from header)"
   },
   "panels/issues/CorsIssueDetailsView.ts | blocked": {
-    "message": "blocked"
+    "message": "Blocked"
   },
   "panels/issues/CorsIssueDetailsView.ts | disallowedRequestHeader": {
-    "message": "Disallowed Request Header"
+    "message": "Disallowed request header"
   },
   "panels/issues/CorsIssueDetailsView.ts | disallowedRequestMethod": {
-    "message": "Disallowed Request Method"
+    "message": "Disallowed request method"
   },
   "panels/issues/CorsIssueDetailsView.ts | failedRequest": {
-    "message": "Failed Request"
+    "message": "Failed request"
   },
   "panels/issues/CorsIssueDetailsView.ts | header": {
     "message": "Header"
   },
   "panels/issues/CorsIssueDetailsView.ts | initiatorAddressSpace": {
-    "message": "Initiator Address"
+    "message": "Initiator address"
   },
   "panels/issues/CorsIssueDetailsView.ts | initiatorContext": {
-    "message": "Initiator Context"
+    "message": "Initiator context"
   },
   "panels/issues/CorsIssueDetailsView.ts | insecure": {
-    "message": "insecure"
+    "message": "Insecure"
   },
   "panels/issues/CorsIssueDetailsView.ts | invalidValue": {
-    "message": "Invalid Value (if available)"
+    "message": "Invalid value (if available)"
   },
   "panels/issues/CorsIssueDetailsView.ts | nRequests": {
     "message": "{n, plural, =1 {# request} other {# requests}}"
@@ -8904,43 +8859,43 @@
     "message": "HTTP status of preflight request didn’t indicate success"
   },
   "panels/issues/CorsIssueDetailsView.ts | preflightRequest": {
-    "message": "Preflight Request"
+    "message": "Preflight request"
   },
   "panels/issues/CorsIssueDetailsView.ts | preflightRequestIfProblematic": {
-    "message": "Preflight Request (if problematic)"
+    "message": "Preflight request (if problematic)"
   },
   "panels/issues/CorsIssueDetailsView.ts | problem": {
     "message": "Problem"
   },
   "panels/issues/CorsIssueDetailsView.ts | problemInvalidValue": {
-    "message": "Invalid Value"
+    "message": "Invalid value"
   },
   "panels/issues/CorsIssueDetailsView.ts | problemMissingHeader": {
-    "message": "Missing Header"
+    "message": "Missing header"
   },
   "panels/issues/CorsIssueDetailsView.ts | problemMultipleValues": {
-    "message": "Multiple Values"
+    "message": "Multiple values"
   },
   "panels/issues/CorsIssueDetailsView.ts | request": {
     "message": "Request"
   },
   "panels/issues/CorsIssueDetailsView.ts | resourceAddressSpace": {
-    "message": "Resource Address"
+    "message": "Resource address"
   },
   "panels/issues/CorsIssueDetailsView.ts | secure": {
-    "message": "secure"
+    "message": "Secure"
   },
   "panels/issues/CorsIssueDetailsView.ts | sourceLocation": {
-    "message": "Source Location"
+    "message": "Source location"
   },
   "panels/issues/CorsIssueDetailsView.ts | status": {
     "message": "Status"
   },
   "panels/issues/CorsIssueDetailsView.ts | unsupportedScheme": {
-    "message": "Unsupported Scheme"
+    "message": "Unsupported scheme"
   },
   "panels/issues/CorsIssueDetailsView.ts | warning": {
-    "message": "warning"
+    "message": "Warning"
   },
   "panels/issues/GenericIssueDetailsView.ts | frameId": {
     "message": "Frame"
@@ -8958,13 +8913,13 @@
     "message": "Unhide all"
   },
   "panels/issues/IssueKindView.ts | hideAllCurrentBreakingChanges": {
-    "message": "Hide all current Breaking Changes"
+    "message": "Hide all current breaking changes"
   },
   "panels/issues/IssueKindView.ts | hideAllCurrentImprovements": {
-    "message": "Hide all current Improvements"
+    "message": "Hide all current improvements"
   },
   "panels/issues/IssueKindView.ts | hideAllCurrentPageErrors": {
-    "message": "Hide all current Page Errors"
+    "message": "Hide all current page errors"
   },
   "panels/issues/issues-meta.ts | issues": {
     "message": "Issues"
@@ -8976,10 +8931,10 @@
     "message": "Content Security Policy"
   },
   "panels/issues/IssuesPane.ts | cors": {
-    "message": "Cross Origin Resource Sharing"
+    "message": "Cross-Origin Resource Sharing"
   },
   "panels/issues/IssuesPane.ts | crossOriginEmbedderPolicy": {
-    "message": "Cross Origin Embedder Policy"
+    "message": "Cross-Origin Embedder Policy"
   },
   "panels/issues/IssuesPane.ts | generic": {
     "message": "Generic"
@@ -8994,13 +8949,13 @@
     "message": "Group displayed issues under associated categories"
   },
   "panels/issues/IssuesPane.ts | groupDisplayedIssuesUnderKind": {
-    "message": "Group displayed issues as Page errors, Breaking changes and Improvements"
+    "message": "Group displayed issues as page errors, breaking changes, and improvements"
   },
   "panels/issues/IssuesPane.ts | heavyAds": {
-    "message": "Heavy Ads"
+    "message": "Heavy ads"
   },
   "panels/issues/IssuesPane.ts | includeCookieIssuesCausedBy": {
-    "message": "Include cookie Issues caused by third-party sites"
+    "message": "Include cookie issues caused by third-party sites"
   },
   "panels/issues/IssuesPane.ts | includeThirdpartyCookieIssues": {
     "message": "Include third-party cookie issues"
@@ -9009,10 +8964,10 @@
     "message": "On this page you can find warnings from the browser."
   },
   "panels/issues/IssuesPane.ts | lowTextContrast": {
-    "message": "Low Text Contrast"
+    "message": "Low text contrast"
   },
   "panels/issues/IssuesPane.ts | mixedContent": {
-    "message": "Mixed Content"
+    "message": "Mixed content"
   },
   "panels/issues/IssuesPane.ts | noIssues": {
     "message": "No issues detected"
@@ -9024,25 +8979,25 @@
     "message": "Other"
   },
   "panels/issues/IssuesPane.ts | permissionElement": {
-    "message": "PEPC Element"
+    "message": "Permission element"
   },
   "panels/issues/IssuesPane.ts | quirksMode": {
-    "message": "Quirks Mode"
+    "message": "Quirks mode"
   },
   "panels/issues/IssuesPane.ts | samesiteCookie": {
-    "message": "SameSite Cookie"
+    "message": "SameSite cookie"
   },
   "panels/issues/IssuesPane.ts | selectivePermissionsIntervention": {
-    "message": "Selective Permissions Intervention"
+    "message": "Selective permissions intervention"
   },
   "panels/issues/IssueView.ts | affectedResources": {
-    "message": "Affected Resources"
+    "message": "Affected resources"
   },
   "panels/issues/IssueView.ts | automaticallyUpgraded": {
-    "message": "automatically upgraded"
+    "message": "Automatically upgraded"
   },
   "panels/issues/IssueView.ts | blocked": {
-    "message": "blocked"
+    "message": "Blocked"
   },
   "panels/issues/IssueView.ts | hideIssuesLikeThis": {
     "message": "Hide issues like this"
@@ -9060,7 +9015,7 @@
     "message": "{n, plural, =1 {# resource} other {# resources}}"
   },
   "panels/issues/IssueView.ts | restrictionStatus": {
-    "message": "Restriction Status"
+    "message": "Restriction status"
   },
   "panels/issues/IssueView.ts | unhideIssuesLikeThis": {
     "message": "Unhide issues like this"
@@ -9773,14 +9728,11 @@
   "panels/media/PlayerMessagesView.ts | warning": {
     "message": "Warning"
   },
-  "panels/media/PlayerPropertiesView.ts | audio": {
-    "message": "Audio"
+  "panels/media/PlayerPropertiesView.ts | audioDecoderProperties": {
+    "message": "Audio Decoder Properties"
   },
   "panels/media/PlayerPropertiesView.ts | bitrate": {
     "message": "Bitrate"
-  },
-  "panels/media/PlayerPropertiesView.ts | decoder": {
-    "message": "Decoder"
   },
   "panels/media/PlayerPropertiesView.ts | decoderName": {
     "message": "Decoder name"
@@ -9824,9 +9776,6 @@
   "panels/media/PlayerPropertiesView.ts | playbackFrameUrl": {
     "message": "Playback frame URL"
   },
-  "panels/media/PlayerPropertiesView.ts | properties": {
-    "message": "Properties"
-  },
   "panels/media/PlayerPropertiesView.ts | rangeHeaderSupport": {
     "message": "Range header support"
   },
@@ -9851,8 +9800,11 @@
   "panels/media/PlayerPropertiesView.ts | track": {
     "message": "Track"
   },
-  "panels/media/PlayerPropertiesView.ts | video": {
-    "message": "Video"
+  "panels/media/PlayerPropertiesView.ts | trackNumber": {
+    "message": "{PH1} #{PH2}"
+  },
+  "panels/media/PlayerPropertiesView.ts | videoDecoderProperties": {
+    "message": "Video Decoder Properties"
   },
   "panels/media/PlayerPropertiesView.ts | videoFreezingScore": {
     "message": "Video freezing score"
@@ -10415,6 +10367,9 @@
   "panels/network/network-meta.ts | clear": {
     "message": "Clear network log"
   },
+  "panels/network/network-meta.ts | clearTag": {
+    "message": "clear"
+  },
   "panels/network/network-meta.ts | colorCode": {
     "message": "color code"
   },
@@ -10424,14 +10379,29 @@
   "panels/network/network-meta.ts | colorcodeResourceTypes": {
     "message": "Color-code resource types"
   },
+  "panels/network/network-meta.ts | disableCache": {
+    "message": "Disable cache while DevTools is open"
+  },
+  "panels/network/network-meta.ts | disableNetworkRequestBlocking": {
+    "message": "Disable network request blocking"
+  },
   "panels/network/network-meta.ts | diskCache": {
     "message": "disk cache"
+  },
+  "panels/network/network-meta.ts | doNotKeepLogOnPageReload": {
+    "message": "Don’t keep log on page reload / navigation"
   },
   "panels/network/network-meta.ts | dontAllowToGenerateHarWithSensitiveData": {
     "message": "Don’t allow to generate HAR with sensitive data"
   },
   "panels/network/network-meta.ts | dontGroupNetworkLogItemsByFrame": {
     "message": "Don’t group network log items by frame"
+  },
+  "panels/network/network-meta.ts | enableCache": {
+    "message": "Enable cache"
+  },
+  "panels/network/network-meta.ts | enableNetworkRequestBlocking": {
+    "message": "Enable network request blocking"
   },
   "panels/network/network-meta.ts | frame": {
     "message": "frame"
@@ -10448,14 +10418,29 @@
   "panels/network/network-meta.ts | hideRequestDetails": {
     "message": "Hide request details"
   },
+  "panels/network/network-meta.ts | keep": {
+    "message": "keep"
+  },
+  "panels/network/network-meta.ts | keepLog": {
+    "message": "Keep log"
+  },
+  "panels/network/network-meta.ts | keepLogOnPageReload": {
+    "message": "Keep log on page reload / navigation"
+  },
   "panels/network/network-meta.ts | network": {
     "message": "Network"
   },
   "panels/network/network-meta.ts | netWork": {
     "message": "network"
   },
+  "panels/network/network-meta.ts | networkCacheExplanation": {
+    "message": "Disabling the network cache will simulate a network experience similar to a first time visitor."
+  },
   "panels/network/network-meta.ts | networkConditions": {
     "message": "Network conditions"
+  },
+  "panels/network/network-meta.ts | networkRequestBlocking": {
+    "message": "Network request blocking"
   },
   "panels/network/network-meta.ts | networkRequestConditions": {
     "message": "Request conditions"
@@ -10463,11 +10448,17 @@
   "panels/network/network-meta.ts | networkThrottling": {
     "message": "network throttling"
   },
+  "panels/network/network-meta.ts | preserve": {
+    "message": "preserve"
+  },
   "panels/network/network-meta.ts | recordNetworkLog": {
     "message": "Record network log"
   },
   "panels/network/network-meta.ts | removeAllNetworkRequestBlockingOrThrottlingPatterns": {
     "message": "Remove all network request blocking or throttling patterns"
+  },
+  "panels/network/network-meta.ts | reset": {
+    "message": "reset"
   },
   "panels/network/network-meta.ts | resourceType": {
     "message": "resource type"
@@ -14978,6 +14969,9 @@
   "panels/sources/sources-meta.ts | enableJavaScriptSourceMaps": {
     "message": "Enable JavaScript source maps"
   },
+  "panels/sources/sources-meta.ts | enableRemoteFileLoading": {
+    "message": "Allow loading remote file path resources in DevTools"
+  },
   "panels/sources/sources-meta.ts | enableTabMovesFocus": {
     "message": "Enable tab moves focus"
   },
@@ -15046,6 +15040,9 @@
   },
   "panels/sources/sources-meta.ts | quickSource": {
     "message": "Quick source"
+  },
+  "panels/sources/sources-meta.ts | remoteFileLoadingInfo": {
+    "message": "Example resources are source maps. Disabled by default for security reasons."
   },
   "panels/sources/sources-meta.ts | rename": {
     "message": "Rename"
@@ -17252,6 +17249,9 @@
   "panels/web_audio/WebAudioView.ts | renderCapacity": {
     "message": "Render capacity"
   },
+  "panels/web_audio/WebAudioView.ts | renderQuantumSize": {
+    "message": "Render quantum size"
+  },
   "panels/web_audio/WebAudioView.ts | sampleRate": {
     "message": "Sample rate"
   },
@@ -17640,7 +17640,7 @@
     "message": "Clear palette"
   },
   "ui/legacy/components/color_picker/Spectrum.ts | colorPalettes": {
-    "message": "Color Palettes"
+    "message": "Color palettes"
   },
   "ui/legacy/components/color_picker/Spectrum.ts | colorS": {
     "message": "Color {PH1}"
@@ -17655,7 +17655,7 @@
     "message": "Long-click or long-press space to show alternate shades of {PH1}"
   },
   "ui/legacy/components/color_picker/Spectrum.ts | pressArrowKeysMessage": {
-    "message": "Press arrow keys with or without modifiers to move swatch position. Arrow key with Shift key moves position largely, with Ctrl key it is less and with Alt key it is even less"
+    "message": "Use arrow keys to move the swatch position. Use Shift to move further, Ctrl to move less, and Alt to move even less."
   },
   "ui/legacy/components/color_picker/Spectrum.ts | previewPalettes": {
     "message": "Preview palettes"
@@ -17847,7 +17847,7 @@
     "message": "Invoke property getter"
   },
   "ui/legacy/components/object_ui/ObjectPropertiesSection.ts | longTextWasTruncatedS": {
-    "message": "long text was truncated ({PH1})"
+    "message": "Long text was truncated ({PH1})"
   },
   "ui/legacy/components/object_ui/ObjectPropertiesSection.ts | noProperties": {
     "message": "No properties"
@@ -17874,7 +17874,7 @@
     "message": "unknown"
   },
   "ui/legacy/components/object_ui/ObjectPropertiesSection.ts | valueNotAccessibleToTheDebugger": {
-    "message": "Value is not accessible to the debugger"
+    "message": "Value isn’t accessible to the debugger"
   },
   "ui/legacy/components/object_ui/ObjectPropertiesSection.ts | valueUnavailable": {
     "message": "<value unavailable>"
@@ -18003,7 +18003,7 @@
     "message": "Settings changed. To apply, reload DevTools."
   },
   "ui/legacy/components/quick_open/FilteredListWidget.ts | newFeature": {
-    "message": "This is a new feature"
+    "message": "New feature"
   },
   "ui/legacy/components/quick_open/FilteredListWidget.ts | noResultsFound": {
     "message": "No results found"
@@ -18153,28 +18153,28 @@
     "message": "Find"
   },
   "ui/legacy/components/utils/ImagePreview.ts | currentSource": {
-    "message": "Current source:"
+    "message": "Current source"
   },
   "ui/legacy/components/utils/ImagePreview.ts | fileSize": {
-    "message": "File size:"
+    "message": "File size"
   },
   "ui/legacy/components/utils/ImagePreview.ts | imageFromS": {
     "message": "Image from {PH1}"
   },
   "ui/legacy/components/utils/ImagePreview.ts | intrinsicAspectRatio": {
-    "message": "Intrinsic aspect ratio:"
+    "message": "Intrinsic aspect ratio"
   },
   "ui/legacy/components/utils/ImagePreview.ts | intrinsicSize": {
-    "message": "Intrinsic size:"
+    "message": "Intrinsic size"
   },
   "ui/legacy/components/utils/ImagePreview.ts | renderedAspectRatio": {
-    "message": "Rendered aspect ratio:"
+    "message": "Rendered aspect ratio"
   },
   "ui/legacy/components/utils/ImagePreview.ts | renderedSize": {
-    "message": "Rendered size:"
+    "message": "Rendered size"
   },
   "ui/legacy/components/utils/ImagePreview.ts | unknownSource": {
-    "message": "unknown source"
+    "message": "Unknown source"
   },
   "ui/legacy/components/utils/JSPresentationUtils.ts | addToIgnore": {
     "message": "Add script to ignore list"
@@ -18189,10 +18189,10 @@
     "message": "Show ignore-listed frames"
   },
   "ui/legacy/components/utils/Linkifier.ts | auto": {
-    "message": "auto"
+    "message": "Auto"
   },
   "ui/legacy/components/utils/Linkifier.ts | linkHandling": {
-    "message": "Link handling:"
+    "message": "Link handling"
   },
   "ui/legacy/components/utils/Linkifier.ts | openUsingS": {
     "message": "Open using {PH1}"

@@ -14,13 +14,11 @@ describeWithEnvironment('ObjectPopoverHelper', () => {
         // The ObjectPropertiesSection element should be a child of popover.contentElement
         const sectionElement = popover.contentElement.querySelector('.object-popover-tree');
         assert.exists(sectionElement);
-        const section = ObjectUI.ObjectPropertiesSection.getObjectPropertiesSectionFrom(sectionElement);
+        const section = UI.Widget.Widget.get(sectionElement);
         assert.exists(section);
-        const rootElement = section.objectTreeElement();
-        await rootElement.onpopulate();
-        const child = rootElement.childAt(0);
-        assert.instanceOf(child, ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement);
-        assert.isTrue(child.editable);
+        assert.exists(section.objectTree);
+        assert.isFalse(section.objectTree.readOnly);
+        assert.isTrue(section.objectTree.expanded);
     });
 });
 //# sourceMappingURL=ObjectPopoverHelper.test.js.map

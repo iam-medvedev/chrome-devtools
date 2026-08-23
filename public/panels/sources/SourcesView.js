@@ -12,11 +12,9 @@ import * as Bindings from '../../models/bindings/bindings.js';
 import * as Persistence from '../../models/persistence/persistence.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as QuickOpen from '../../ui/legacy/components/quick_open/quick_open.js';
-import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { Directives, html, render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
-import * as Components from './components/components.js';
 import { EditingLocationHistoryManager } from './EditingLocationHistoryManager.js';
 import sourcesViewStyles from './sourcesView.css.js';
 import { TabbedEditorContainer, } from './TabbedEditorContainer.js';
@@ -65,9 +63,16 @@ const { widget, widgetRef } = UI.Widget;
 export const DEFAULT_VIEW = (input, output, target) => {
     // clang-format off
     render(html `
-    <devtools-widget class="vbox flex-auto" ${widget(input.searchableViewFactory)}>
+    <devtools-widget class="vbox flex-auto"
+      ${widget(element => {
+        const searchableView = new UI.SearchableView.SearchableView(input.searchProvider, input.replaceProvider, input.searchableViewId, element);
+        searchableView.setMinimalSearchQuerySize(0);
+        return searchableView;
+    })}
+      ${widgetRef(UI.SearchableView.SearchableView, e => { output.searchableView = e; })}
+    >
       <devtools-widget class="vbox flex-auto"
-        ${widget(TabbedEditorContainer, { delegate: input.delegate, previouslyViewedFilesSetting: input.previouslyViewedFilesSetting })}
+        ${widget(TabbedEditorContainer, { historyManager: input.historyManager, previouslyViewedFilesSetting: input.previouslyViewedFilesSetting })}
         ${widgetRef(TabbedEditorContainer, e => { output.editorContainer = e; })}>
       </devtools-widget>
     </devtools-widget>
@@ -83,7 +88,6 @@ export const DEFAULT_VIEW = (input, output, target) => {
 };
 export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     #searchableView;
-    sourceViewByUISourceCode;
     editorContainer;
     #uiSourceCodes = new Set();
     historyManager;
@@ -118,7 +122,6 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
         this.element.id = 'sources-panel-sources-view';
         this.setMinimumAndPreferredSizes(88, 52, 150, 100);
         const workspace = Workspace.Workspace.WorkspaceImpl.instance();
-        this.sourceViewByUISourceCode = new Map();
         this.historyManager = new EditingLocationHistoryManager(this);
         this.toolbarChangedListener = null;
         this.#toggleNavigatorSidebarButton =
@@ -176,8 +179,7 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
             searchableViewId: 'sources-view-search-config',
             scriptViewToolbarItems: this.#scriptViewToolbarItems,
             bottomToolbarItems: this.#bottomToolbarItems,
-            searchableViewFactory: this.#searchableViewFactory,
-            delegate: this,
+            historyManager: this.historyManager,
             previouslyViewedFilesSetting: this.previouslyViewedFilesSetting,
         };
         const that = this;
@@ -187,6 +189,9 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
             },
             set editorContainer(value) {
                 that.setEditorContainer(value);
+            },
+            set searchableView(value) {
+                that.#searchableView = value;
             },
         };
         this.#view(input, output, this.element);
@@ -337,7 +342,10 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
         super.willHide();
     }
     searchableView() {
-        return this.#searchableViewFactory();
+        if (!this.#searchableView) {
+            this.performUpdate();
+        }
+        return this.#searchableView;
     }
     visibleView() {
         return (this.editorContainer?.visibleView ?? null);
@@ -415,7 +423,6 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
         uiSourceCodes.forEach(ui => this.#uiSourceCodes.delete(ui));
         this.editorContainer?.removeUISourceCodes(uiSourceCodes);
         for (let i = 0; i < uiSourceCodes.length; ++i) {
-            this.removeSourceFrame(uiSourceCodes[i]);
             this.historyManager.removeHistoryForSourceCode(uiSourceCodes[i]);
         }
     }
@@ -460,87 +467,11 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
             visibleView.focus();
         }
     }
-    createSourceView(uiSourceCode) {
-        let sourceView;
-        const contentType = uiSourceCode.contentType();
-        if (contentType === Common.ResourceType.resourceTypes.Image || uiSourceCode.mimeType().startsWith('image/')) {
-            sourceView = new SourceFrame.ImageView.ImageView(uiSourceCode.mimeType(), uiSourceCode);
-        }
-        else if (contentType === Common.ResourceType.resourceTypes.Font || uiSourceCode.mimeType().includes('font')) {
-            sourceView = new SourceFrame.FontView.FontView(uiSourceCode.mimeType(), uiSourceCode);
-        }
-        else if (uiSourceCode.name() === HEADER_OVERRIDES_FILENAME) {
-            sourceView = new Components.HeadersView.HeadersView(uiSourceCode);
-        }
-        else {
-            sourceView = new UISourceCodeFrame(uiSourceCode);
-            this.historyManager.trackSourceFrameCursorJumps(sourceView);
-        }
-        uiSourceCode.addEventListener(Workspace.UISourceCode.Events.TitleChanged, this.#uiSourceCodeTitleChanged, this);
-        this.sourceViewByUISourceCode.set(uiSourceCode, sourceView);
-        return sourceView;
-    }
-    #sourceViewTypeForWidget(widget) {
-        if (widget instanceof SourceFrame.ImageView.ImageView) {
-            return "ImageView" /* SourceViewType.IMAGE_VIEW */;
-        }
-        if (widget instanceof SourceFrame.FontView.FontView) {
-            return "FontView" /* SourceViewType.FONT_VIEW */;
-        }
-        if (widget instanceof Components.HeadersView.HeadersView) {
-            return "HeadersView" /* SourceViewType.HEADERS_VIEW */;
-        }
-        return "SourceView" /* SourceViewType.SOURCE_VIEW */;
-    }
-    #sourceViewTypeForUISourceCode(uiSourceCode) {
-        if (uiSourceCode.name() === HEADER_OVERRIDES_FILENAME) {
-            return "HeadersView" /* SourceViewType.HEADERS_VIEW */;
-        }
-        const contentType = uiSourceCode.contentType();
-        switch (contentType) {
-            case Common.ResourceType.resourceTypes.Image:
-                return "ImageView" /* SourceViewType.IMAGE_VIEW */;
-            case Common.ResourceType.resourceTypes.Font:
-                return "FontView" /* SourceViewType.FONT_VIEW */;
-            default:
-                return "SourceView" /* SourceViewType.SOURCE_VIEW */;
-        }
-    }
-    #uiSourceCodeTitleChanged(event) {
-        const uiSourceCode = event.data;
-        const widget = this.sourceViewByUISourceCode.get(uiSourceCode);
-        if (widget) {
-            if (this.#sourceViewTypeForWidget(widget) !== this.#sourceViewTypeForUISourceCode(uiSourceCode)) {
-                // Remove the existing editor tab and create a new one of the correct type.
-                this.removeUISourceCodes([uiSourceCode]);
-                this.#uiSourceCodes.add(uiSourceCode);
-                void this.showSourceLocation(uiSourceCode);
-            }
-        }
+    viewForFile(uiSourceCode) {
+        return this.editorContainer?.viewForFile(uiSourceCode);
     }
     getSourceView(uiSourceCode) {
-        return this.sourceViewByUISourceCode.get(uiSourceCode);
-    }
-    getOrCreateSourceView(uiSourceCode) {
-        return this.sourceViewByUISourceCode.get(uiSourceCode) || this.createSourceView(uiSourceCode);
-    }
-    recycleUISourceCodeFrame(sourceFrame, uiSourceCode) {
-        sourceFrame.uiSourceCode().removeEventListener(Workspace.UISourceCode.Events.TitleChanged, this.#uiSourceCodeTitleChanged, this);
-        this.sourceViewByUISourceCode.delete(sourceFrame.uiSourceCode());
-        sourceFrame.setUISourceCode(uiSourceCode);
-        this.sourceViewByUISourceCode.set(uiSourceCode, sourceFrame);
-        uiSourceCode.addEventListener(Workspace.UISourceCode.Events.TitleChanged, this.#uiSourceCodeTitleChanged, this);
-    }
-    viewForFile(uiSourceCode) {
-        return this.getOrCreateSourceView(uiSourceCode);
-    }
-    removeSourceFrame(uiSourceCode) {
-        const sourceView = this.sourceViewByUISourceCode.get(uiSourceCode);
-        this.sourceViewByUISourceCode.delete(uiSourceCode);
-        if (sourceView && sourceView instanceof UISourceCodeFrame) {
-            (sourceView).dispose();
-        }
-        uiSourceCode.removeEventListener(Workspace.UISourceCode.Events.TitleChanged, this.#uiSourceCodeTitleChanged, this);
+        return this.editorContainer?.getCreatedSourceView(uiSourceCode);
     }
     editorClosed(event) {
         const uiSourceCode = event.data;
@@ -677,13 +608,6 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
         const uiSourceCodeFrame = sourceFrame;
         uiSourceCodeFrame.commitEditing();
     }
-    #searchableViewFactory = () => {
-        if (!this.#searchableView) {
-            this.#searchableView = new UI.SearchableView.SearchableView(this, this, 'sources.search-sources-tab');
-            this.#searchableView.setMinimalSearchQuerySize(0);
-        }
-        return this.#searchableView;
-    };
     toggleBreakpointsActiveState(active) {
         this.#breakpointsActive = active;
         this.editorContainer?.element.classList.toggle('breakpoints-deactivated', !active);
@@ -772,5 +696,4 @@ export class ActionDelegate {
         return false;
     }
 }
-const HEADER_OVERRIDES_FILENAME = '.headers';
 //# sourceMappingURL=SourcesView.js.map

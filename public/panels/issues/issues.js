@@ -28,17 +28,17 @@ import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
 import * as PanelsCommon from "./../common/common.js";
 var UIStrings = {
   /**
-   * @description Text in Object Properties Section
+   * @description Fallback text in the Issues panel when a frame URL is unknown in the affected resources table.
    */
-  unknown: "unknown",
+  unknown: "Unknown",
   /**
-   * @description Tooltip for button linking to the Elements panel
+   * @description Tooltip in the Issues panel for the button to reveal a frame's DOM node in the Elements panel.
    */
   clickToRevealTheFramesDomNodeIn: "Click to reveal the frame\u2019s DOM node in the Elements panel",
   /**
-   * @description Replacement text for a link to an HTML element which is not available (anymore).
+   * @description Fallback text in the Issues panel when an HTML element is unavailable in the affected resources table.
    */
-  unavailable: "unavailable"
+  unavailable: "Unavailable"
 };
 var str_ = i18n.i18n.registerUIStrings("panels/issues/AffectedResourcesView.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
@@ -248,7 +248,7 @@ var AffectedResourcesView = class extends UI.TreeOutline.TreeElement {
 // gen/front_end/panels/issues/AffectedLazyLoadImagesView.js
 var UIStrings2 = {
   /**
-   * @description Noun for singular or plural number of affected element resource indication in issue view.
+   * @description Label in the Issues panel for the number of affected elements for lazy-load image issues.
    */
   nElements: "{n, plural, =1 {# element} other {# elements}}"
 };
@@ -306,29 +306,29 @@ import * as UI2 from "./../../ui/legacy/legacy.js";
 import { Directives, html as html2, nothing, render as render3 } from "./../../ui/lit/lit.js";
 var UIStrings3 = {
   /**
-   * @description Label for number of affected resources indication in issue view
+   * @description Label in the Issues panel for the number of affected violations in the selective permissions intervention table.
    */
   nViolations: "{n, plural, =1 {# violation} other {# violations}}",
   /**
-   * @description Title for the API column in the Selective Permissions Intervention affected resources list
+   * @description Column header in the Issues panel for API names in the selective permissions intervention affected resources table.
    */
   api: "API",
   /**
-   * @description Title for the Script column in the Selective Permissions Intervention affected resources list
+   * @description Column header in the Issues panel for scripts in the selective permissions intervention affected resources table.
    */
   script: "Script",
   /**
-   * @description Title for the Ad Ancestry column in the Selective Permissions Intervention affected resources list
+   * @description Column header in the Issues panel for ad ancestry in the selective permissions intervention affected resources table.
    */
-  adAncestry: "Ad Ancestry",
+  adAncestry: "Ad ancestry",
   /**
-   * @description Text for unknown value
+   * @description Fallback text in the Issues panel when a stack trace is unknown in the selective permissions intervention affected resources table.
    */
-  unknown: "unknown",
+  unknown: "Unknown",
   /**
-   * @description Text for loading state
+   * @description Text in the Issues panel displayed while a stack trace is loading in the selective permissions intervention affected resources table.
    */
-  loading: "loading\u2026"
+  loading: "Loading\u2026"
 };
 var str_3 = i18n5.i18n.registerUIStrings("panels/issues/AffectedSelectivePermissionsInterventionView.ts", UIStrings3);
 var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
@@ -406,7 +406,7 @@ import * as Platform5 from "./../../core/platform/platform.js";
 import * as IssuesManager11 from "./../../models/issues_manager/issues_manager.js";
 import * as IssueCounter5 from "./../../ui/components/issue_counter/issue_counter.js";
 import * as UI6 from "./../../ui/legacy/legacy.js";
-import * as VisualLogging5 from "./../../ui/visual_logging/visual_logging.js";
+import * as VisualLogging7 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/issues/HiddenIssuesRow.js
 import "./../../ui/components/adorners/adorners.js";
@@ -418,11 +418,11 @@ import { html as html3, render as render4 } from "./../../ui/lit/lit.js";
 import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
 var UIStrings4 = {
   /**
-   * @description Title for the hidden issues row
+   * @description Title in the Issues panel for the hidden issues row.
    */
   hiddenIssues: "Hidden issues",
   /**
-   * @description Label for the button to unhide all hidden issues
+   * @description Label in the Issues panel for the button to unhide all hidden issues.
    */
   unhideAll: "Unhide all"
 };
@@ -481,17 +481,17 @@ import * as UI4 from "./../../ui/legacy/legacy.js";
 import * as Components3 from "./components/components.js";
 var UIStrings5 = {
   /**
-   * @description Menu entry for hiding all current Page Errors.
+   * @description Context menu item in the Issues panel to hide all current page errors.
    */
-  hideAllCurrentPageErrors: "Hide all current Page Errors",
+  hideAllCurrentPageErrors: "Hide all current page errors",
   /**
-   * @description Menu entry for hiding all current Breaking Changes.
+   * @description Context menu item in the Issues panel to hide all current breaking changes.
    */
-  hideAllCurrentBreakingChanges: "Hide all current Breaking Changes",
+  hideAllCurrentBreakingChanges: "Hide all current breaking changes",
   /**
-   * @description Menu entry for hiding all current Page Errors.
+   * @description Context menu item in the Issues panel to hide all current improvements.
    */
-  hideAllCurrentImprovements: "Hide all current Improvements"
+  hideAllCurrentImprovements: "Hide all current improvements"
 };
 var str_5 = i18n9.i18n.registerUIStrings("panels/issues/IssueKindView.ts", UIStrings5);
 var i18nString5 = i18n9.i18n.getLocalizedString.bind(void 0, str_5);
@@ -1116,6 +1116,7 @@ import * as MarkdownView from "./../../ui/components/markdown_view/markdown_view
 import { Icon as Icon3 } from "./../../ui/kit/kit.js";
 import * as UI5 from "./../../ui/legacy/legacy.js";
 import { html as html6, render as render7 } from "./../../ui/lit/lit.js";
+import * as VisualLogging6 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/issues/AffectedBlockedByResponseView.js
 import * as Host2 from "./../../core/host/host.js";
@@ -1123,21 +1124,21 @@ import * as i18n11 from "./../../core/i18n/i18n.js";
 import * as IssuesManager5 from "./../../models/issues_manager/issues_manager.js";
 var UIStrings6 = {
   /**
-   * @description Noun for singular or plural network requests. Label for the affected resources section in the issue view.
+   * @description Label in the Issues panel for the number of affected network requests.
    */
   nRequests: "{n, plural, =1 {# request} other {# requests}}",
   /**
-   * @description Noun for a singular network request. Label for a column in the affected resources table in the issue view.
+   * @description Column header in the Issues panel for network requests in the blocked-by-response affected resources table.
    */
   requestC: "Request",
   /**
-   * @description Noun for a singular parent frame. Label for a column in the affected resources table in the issue view.
+   * @description Column header in the Issues panel for parent frames in the blocked-by-response affected resources table.
    */
-  parentFrame: "Parent Frame",
+  parentFrame: "Parent frame",
   /**
-   * @description Noun for a singular resource that was blocked (an example for a blocked resource would be a frame). Label for a column in the affected resources table in the issue view.
+   * @description Column header in the Issues panel for blocked resources in the blocked-by-response affected resources table.
    */
-  blockedResource: "Blocked Resource"
+  blockedResource: "Blocked resource"
 };
 var str_6 = i18n11.i18n.registerUIStrings("panels/issues/AffectedBlockedByResponseView.ts", UIStrings6);
 var i18nString6 = i18n11.i18n.getLocalizedString.bind(void 0, str_6);
@@ -1199,29 +1200,29 @@ import * as NetworkForward from "./../network/forward/forward.js";
 import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
 var UIStrings7 = {
   /**
-   * @description Noun, singular or plural. Label for the kind and number of affected resources associated with a DevTools issue. A cookie is a small piece of data that a server sends to the user's web browser. See https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies.
+   * @description Label in the Issues panel for the number of affected cookies. See https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies.
    */
   nCookies: "{n, plural, =1 {# cookie} other {# cookies}}",
   /**
-   * @description Noun, singular. Label for a column in a table which lists cookies in the affected resources section of a DevTools issue. Each cookie has a name.
+   * @description Column header in the Issues panel for cookie names in the affected cookies table.
    */
   name: "Name",
   /**
-   * @description Noun, singular. Label for a column in a table which lists cookies in the affected resources section of a DevTools issue. Cookies may have a 'Domain' attribute: https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies.#define_where_cookies_are_sent
+   * @description Column header in the Issues panel for cookie domains in the affected cookies table. See https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies#define_where_cookies_are_sent.
    */
   domain: "Domain",
   /**
-   * @description Noun, singular. Label for a column in a table which lists cookies in the affected resources section of a DevTools issue. Cookies may have a 'Path' attribute: https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies.#define_where_cookies_are_sent
+   * @description Column header in the Issues panel for cookie paths in the affected cookies table. See https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies#define_where_cookies_are_sent.
    */
   path: "Path",
   /**
-   * @description Label for the the number of affected `Set-Cookie` lines associated with a DevTools issue. `Set-Cookie` is a specific header line in an HTTP network request and consists of a single line of text.
+   * @description Label in the Issues panel for the number of affected raw Set-Cookie headers.
    */
-  nRawCookieLines: "{n, plural, =1 {1 Raw `Set-Cookie` header} other {# Raw `Set-Cookie` headers}}",
+  nRawCookieLines: "{n, plural, =1 {1 raw `Set-Cookie` header} other {# raw `Set-Cookie` headers}}",
   /**
-   * @description Title for text button in the Issues panel. Clicking the button navigates the user to the Network Panel. `Set-Cookie` is a specific header line in an HTTP network request and consists of a single line of text.
+   * @description Tooltip in the Issues panel for the button to filter network requests by this Set-Cookie header in the Network panel.
    */
-  filterSetCookieTitle: "Show network requests that include this `Set-Cookie` header in the network panel"
+  filterSetCookieTitle: "Show network requests that include this `Set-Cookie` header in the Network panel"
 };
 var str_7 = i18n13.i18n.registerUIStrings("panels/issues/AffectedCookiesView.ts", UIStrings7);
 var i18nString7 = i18n13.i18n.getLocalizedString.bind(void 0, str_7);
@@ -1244,6 +1245,7 @@ var AffectedCookiesView = class extends AffectedResourcesView {
   #appendAffectedCookie(cookie, hasAssociatedRequest) {
     const element = document.createElement("tr");
     element.classList.add("affected-resource-cookie");
+    element.setAttribute("jslog", `${VisualLogging3.tableRow("affected-cookie")}`);
     const name = document.createElement("td");
     if (hasAssociatedRequest) {
       const link4 = document.createElement("button");
@@ -1296,6 +1298,7 @@ var AffectedRawCookieLinesView = class extends AffectedResourcesView {
     for (const cookie of cookieLinesWithRequestIndicator) {
       const row = document.createElement("tr");
       row.classList.add("affected-resource-directive");
+      row.setAttribute("jslog", `${VisualLogging3.tableRow("affected-raw-cookie")}`);
       if (cookie.hasRequest) {
         const cookieLine = document.createElement("td");
         const link4 = document.createElement("button");
@@ -1329,9 +1332,10 @@ import * as i18n17 from "./../../core/i18n/i18n.js";
 
 // gen/front_end/panels/issues/AffectedElementsView.js
 import * as i18n15 from "./../../core/i18n/i18n.js";
+import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
 var UIStrings8 = {
   /**
-   * @description Noun for singular or plural number of affected element resource indication in issue view.
+   * @description Label in the Issues panel for the number of affected elements.
    */
   nElements: "{n, plural, =1 {# element} other {# elements}}"
 };
@@ -1352,6 +1356,10 @@ var AffectedElementsView = class extends AffectedResourcesView {
   async #appendAffectedElement(element) {
     const cellElement = await this.createElementCell(element, this.issue.getCategory());
     const rowElement = document.createElement("tr");
+    rowElement.setAttribute("jslog", `${VisualLogging4.tableRow("affected-element")}`);
+    if (element.backendNodeId) {
+      rowElement.setAttribute("data-backend-node-id", String(element.backendNodeId));
+    }
     rowElement.appendChild(cellElement);
     this.affectedResources.appendChild(rowElement);
   }
@@ -1364,11 +1372,11 @@ var AffectedElementsView = class extends AffectedResourcesView {
 // gen/front_end/panels/issues/AffectedDescendantsWithinSelectElementView.js
 var UIStrings9 = {
   /**
-   * @description Noun for singular or plural number of affected descendant nodes indication in issue view.
+   * @description Label in the Issues panel for the number of affected descendant nodes.
    */
   nDescendants: "{n, plural, =1 { descendant} other { descendants}}",
   /**
-   * @description Label for the disallowed node link in the issue view.
+   * @description Link text in the Issues panel for a disallowed descendant node.
    */
   disallowedNode: "Disallowed descendant"
 };
@@ -1414,40 +1422,39 @@ import * as IssuesManager6 from "./../../models/issues_manager/issues_manager.js
 import * as IssuesComponents from "./components/components.js";
 var UIStrings10 = {
   /**
-   * @description Singular or plural label for number of affected CSP (content security policy,
-   * see https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP) directives in issue view.
+   * @description Label in the Issues panel for the number of affected Content Security Policy (CSP) directives. See https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP.
    */
   nDirectives: "{n, plural, =1 {# directive} other {# directives}}",
   /**
-   * @description Indicates that a CSP error should be treated as a warning
+   * @description Resolution status in the Issues panel indicating that a Content Security Policy violation is report-only.
    */
-  reportonly: "report-only",
+  reportonly: "Report-only",
   /**
-   * @description The kind of resolution for a mixed content issue
+   * @description Resolution status in the Issues panel indicating that a Content Security Policy violation was blocked.
    */
-  blocked: "blocked",
+  blocked: "Blocked",
   /**
-   * @description Tooltip for button linking to the Elements panel
+   * @description Tooltip in the Issues panel for the button to reveal a violating DOM node in the Elements panel.
    */
   clickToRevealTheViolatingDomNode: "Click to reveal the violating DOM node in the Elements panel",
   /**
-   * @description Header for the section listing affected directives
+   * @description Column header in the Issues panel for Content Security Policy directives in the affected directives table.
    */
   directiveC: "Directive",
   /**
-   * @description Label for the column in the element list in the CSS overview report
+   * @description Column header in the Issues panel for DOM elements in the affected directives table.
    */
   element: "Element",
   /**
-   * @description Header for the source location column
+   * @description Column header in the Issues panel for source locations in the affected directives table.
    */
   sourceLocation: "Source location",
   /**
-   * @description Text for the status of something
+   * @description Column header in the Issues panel for violation status in the affected directives table.
    */
   status: "Status",
   /**
-   * @description Text that refers to the resources of the web page
+   * @description Column header in the Issues panel for blocked resources in the affected directives table.
    */
   resourceC: "Resource"
 };
@@ -1595,19 +1602,19 @@ import * as i18n21 from "./../../core/i18n/i18n.js";
 import * as SDK3 from "./../../core/sdk/sdk.js";
 var UIStrings11 = {
   /**
-   * @description Noun for singular or plural number of affected document nodes indication in issue view.
+   * @description Label in the Issues panel for the number of affected document nodes.
    */
   nDocuments: "{n, plural, =1 { document} other { documents}}",
   /**
-   * @description Column title for the Document in the DOM tree column in the quirks mode issue view
+   * @description Column header in the Issues panel for document DOM nodes in the quirks mode affected documents table.
    */
   documentInTheDOMTree: "Document in the DOM tree",
   /**
-   * @description Column title for the url column in the quirks mode issue view
+   * @description Column header in the Issues panel for URLs in the quirks mode affected documents table.
    */
   url: "URL",
   /**
-   * @description Column title for the Mode column in the quirks mode issue view
+   * @description Column header in the Issues panel for document quirks mode in the quirks mode affected documents table.
    */
   mode: "Mode"
 };
@@ -1654,43 +1661,39 @@ var AffectedDocumentsInQuirksModeView = class extends AffectedElementsView {
 import * as i18n23 from "./../../core/i18n/i18n.js";
 var UIStrings12 = {
   /**
-   * @description Label for number of affected resources indication in issue view
+   * @description Label in the Issues panel for the number of affected heavy ad resources.
    */
   nResources: "{n, plural, =1 {# resource} other {# resources}}",
   /**
-   * @description Title for a column in an Heavy Ads issue view
+   * @description Column header in the Issues panel for the exceeded limit type in the heavy ads affected resources table.
    */
   limitExceeded: "Limit exceeded",
   /**
-   * @description Title for a column in an Heavy Ads issue view
+   * @description Column header in the Issues panel for the resolution status in the heavy ads affected resources table.
    */
-  resolutionStatus: "Resolution Status",
+  resolutionStatus: "Resolution status",
   /**
-   * @description Title for a column in an Heavy Ads issue view
+   * @description Column header in the Issues panel for the frame URL in the heavy ads affected resources table.
    */
   frameUrl: "Frame URL",
   /**
-   * @description When there is a Heavy Ad, the browser can choose to deal with it in different ways.
-   * This string indicates that the ad was bad enough that it was removed.
+   * @description Resolution status in the Issues panel indicating that a heavy ad was removed.
    */
   removed: "Removed",
   /**
-   * @description When there is a Heavy Ad, the browser can choose to deal with it in different ways.
-   * This string indicates that the ad was only warned, and not removed.
+   * @description Resolution status in the Issues panel indicating that a heavy ad received a warning.
    */
   warned: "Warned",
   /**
-   * @description Reason for a Heavy Ad being flagged in issue view. The Ad has been flagged as a
-   *Heavy Ad because it exceeded the set limit for peak CPU usage, e.g. it blocked the main thread
-   *for more than 15 seconds in any 30-second window.
+   * @description Reason in the Issues panel for a heavy ad issue indicating peak CPU usage limit was exceeded.
    */
   cpuPeakLimit: "CPU peak limit",
   /**
-   * @description Reason for a Heavy Ad being flagged in issue view
+   * @description Reason in the Issues panel for a heavy ad issue indicating total CPU usage limit was exceeded.
    */
   cpuTotalLimit: "CPU total limit",
   /**
-   * @description Reason for a Heavy Ad being flagged in issue view
+   * @description Reason in the Issues panel for a heavy ad issue indicating total network bandwidth limit was exceeded.
    */
   networkLimit: "Network limit"
 };
@@ -1760,11 +1763,7 @@ import * as i18n25 from "./../../core/i18n/i18n.js";
 import { Link } from "./../../ui/kit/kit.js";
 var UIStrings13 = {
   /**
-   * @description Label for the the number of affected `Allowed Sites` associated with a
-   *DevTools issue. In this context, `Allowed` refers to permission to access cookies
-   *via the third-party cookie deprecation global metadata, and `Site` is equivalent
-   *to eTLD+1.
-   *See https://developer.mozilla.org/en-US/docs/Glossary/eTLD.
+   * @description Label in the Issues panel for the number of affected websites allowed to access cookies. See https://developer.mozilla.org/en-US/docs/Glossary/eTLD.
    */
   nAllowedSites: "{n, plural, =1 {1 website allowed to access cookies} other {# websites allowed to access cookies}}"
 };
@@ -1807,22 +1806,22 @@ var AffectedMetadataAllowedSitesView = class extends AffectedResourcesView {
 import * as i18n27 from "./../../core/i18n/i18n.js";
 var UIStrings14 = {
   /**
-   * @description Description for Partitioning BlobURL issue when PartitioningBlobURLInfo is BlockedCrossPartitionFetching.
+   * @description Description in the Issues panel for a partitioning blob URL issue when cross-partition fetching is blocked.
    * @example {blob:https://web-platform.test:8444/example} url
    */
   blockedCrossPartitionFetching: "Access to the Blob URL {url} was blocked because it was performed from a cross-partition context.",
   /**
-   * @description Description for Partitioning BlobURL issue when PartitioningBlobURLInfo is EnforceNoopenerForNavigation.
+   * @description Description in the Issues panel for a partitioning blob URL issue when noopener is enforced for navigation.
    * @example {blob:https://web-platform.test:8444/example} url
    */
   enforceNoopenerForNavigation: "Blob URL {url} top-level navigation had 'noopener' set because the Blob URL origin was cross-site with the top-level site of the context that initiated the navigation.",
   /**
-   * @description Blob URL issue count
+   * @description Label in the Issues panel for the number of blob URL issues.
    * @example {1} count
    */
   blobURLCount: "Blob URL issues count: {count}",
   /**
-   * @description Message shown when no Blob URL is available for a Partitioning Blob URL issue.
+   * @description Message in the Issues panel shown when no blob URL is available for a partitioning blob URL issue.
    */
   noBlobURLAvailable: "No Blob URL available for this issue."
 };
@@ -1868,7 +1867,7 @@ import * as i18n29 from "./../../core/i18n/i18n.js";
 import { html as html4, render as render5 } from "./../../ui/lit/lit.js";
 var UIStrings15 = {
   /**
-   * @description Noun for singular or plural number of affected element resource indication in issue view.
+   * @description Label in the Issues panel for the number of affected permission elements.
    */
   nElements: "{n, plural, =1 {# element} other {# elements}}"
 };
@@ -1903,43 +1902,43 @@ import * as i18n31 from "./../../core/i18n/i18n.js";
 import * as IssuesManager7 from "./../../models/issues_manager/issues_manager.js";
 var UIStrings16 = {
   /**
-   * @description Label for number of affected resources indication in issue view
+   * @description Label in the Issues panel for the number of affected violations in the SharedArrayBuffer affected resources table.
    */
   nViolations: "{n, plural, =1 {# violation} other {# violations}}",
   /**
-   * @description Value for the status column in SharedArrayBuffer issues
+   * @description Violation status in the Issues panel indicating that a SharedArrayBuffer issue produced a warning.
    */
-  warning: "warning",
+  warning: "Warning",
   /**
-   * @description The kind of resolution for a mixed content issue
+   * @description Violation status in the Issues panel indicating that a SharedArrayBuffer operation was blocked.
    */
-  blocked: "blocked",
+  blocked: "Blocked",
   /**
-   * @description Value for the 'Trigger' column in the SAB affected resources list
+   * @description Trigger type in the Issues panel indicating that a SharedArrayBuffer was instantiated.
    */
   instantiation: "Instantiation",
   /**
-   * @description Tooltip for the 'Trigger' column in the SAB affected resources list
+   * @description Tooltip in the Issues panel explaining that a SharedArrayBuffer was instantiated in a non-cross-origin-isolated context.
    */
   aSharedarraybufferWas: "A `SharedArrayBuffer` was instantiated in a context that is not cross-origin isolated",
   /**
-   * @description Value for the 'Trigger' column in the SAB affected resources list
+   * @description Trigger type in the Issues panel indicating that a SharedArrayBuffer was transferred.
    */
   transfer: "Transfer",
   /**
-   * @description Tooltip for the 'Trigger' column in the SAB affected resources list
+   * @description Tooltip in the Issues panel explaining that a SharedArrayBuffer was transferred to a non-cross-origin-isolated context.
    */
-  sharedarraybufferWasTransferedTo: "`SharedArrayBuffer` was transfered to a context that is not cross-origin isolated",
+  sharedarraybufferWasTransferedTo: "`SharedArrayBuffer` was transferred to a context that is not cross-origin isolated",
   /**
-   * @description Header for the source location column
+   * @description Column header in the Issues panel for source locations in the SharedArrayBuffer affected resources table.
    */
-  sourceLocation: "Source Location",
+  sourceLocation: "Source location",
   /**
-   * @description Title for the 'Trigger' column in the SAB affected resources list
+   * @description Column header in the Issues panel for trigger types in the SharedArrayBuffer affected resources table.
    */
   trigger: "Trigger",
   /**
-   * @description Title for the status column in the SAB affected resources list
+   * @description Column header in the Issues panel for violation status in the SharedArrayBuffer affected resources table.
    */
   status: "Status"
 };
@@ -2006,10 +2005,10 @@ var AffectedSharedArrayBufferIssueDetailsView = class extends AffectedResourcesV
 // gen/front_end/panels/issues/AffectedSourcesView.js
 import * as i18n33 from "./../../core/i18n/i18n.js";
 import * as Components4 from "./../../ui/legacy/components/utils/utils.js";
-import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
+import * as VisualLogging5 from "./../../ui/visual_logging/visual_logging.js";
 var UIStrings17 = {
   /**
-   * @description Singular or Plural label for number of affected sources (consisting of (source) file name + line number) in issue view
+   * @description Label in the Issues panel for the number of affected source code locations.
    */
   nSources: "{n, plural, =1 {# source} other {# sources}}"
 };
@@ -2031,7 +2030,7 @@ var AffectedSourcesView = class extends AffectedResourcesView {
     const cellElement = document.createElement("td");
     const linkifierURLOptions = { columnNumber, lineNumber, tabStop: true, showColumnNumber: false };
     const anchorElement = Components4.Linkifier.Linkifier.linkifyURL(url, linkifierURLOptions);
-    anchorElement.setAttribute("jslog", `${VisualLogging4.link("source-location").track({ click: true })}`);
+    anchorElement.setAttribute("jslog", `${VisualLogging5.link("source-location").track({ click: true })}`);
     cellElement.appendChild(anchorElement);
     const rowElement = document.createElement("tr");
     rowElement.classList.add("affected-resource-source");
@@ -2049,11 +2048,7 @@ import * as i18n35 from "./../../core/i18n/i18n.js";
 import { html as html5, render as render6 } from "./../../ui/lit/lit.js";
 var UIStrings18 = {
   /**
-   * @description Label for the the number of affected `Potentially-tracking Sites` associated with a
-   *DevTools issue. In this context, `tracking` refers to bounce tracking and `Site` is equivalent
-   *to eTLD+1.
-   *See https://github.com/privacycg/nav-tracking-mitigations/blob/main/bounce-tracking-explainer.md
-   *and https://developer.mozilla.org/en-US/docs/Glossary/eTLD.
+   * @description Label in the Issues panel for the number of affected potentially tracking websites. See https://github.com/privacycg/nav-tracking-mitigations/blob/main/bounce-tracking-explainer.md and https://developer.mozilla.org/en-US/docs/Glossary/eTLD.
    */
   nTrackingSites: "{n, plural, =1 {1 potentially tracking website} other {# potentially tracking websites}}"
 };
@@ -2093,113 +2088,113 @@ import * as IssuesManager8 from "./../../models/issues_manager/issues_manager.js
 import * as NetworkForward2 from "./../network/forward/forward.js";
 var UIStrings19 = {
   /**
-   * @description Label for number of affected resources indication in issue view
+   * @description Label in the Issues panel for the number of affected requests in the CORS affected resources table.
    */
   nRequests: "{n, plural, =1 {# request} other {# requests}}",
   /**
-   * @description Value for the status column in SharedArrayBuffer issues
+   * @description Violation status in the Issues panel indicating that a CORS issue produced a warning.
    */
-  warning: "warning",
+  warning: "Warning",
   /**
-   * @description The kind of resolution for a mixed content issue
+   * @description Violation status in the Issues panel indicating that a CORS request was blocked.
    */
-  blocked: "blocked",
+  blocked: "Blocked",
   /**
-   * @description Text for the status column in the item list in the CORS issue details view
+   * @description Column header in the Issues panel for request status in the CORS affected resources table.
    */
   status: "Status",
   /**
-   * @description Text for the column showing the associated network request in the item list in the CORS issue details view
+   * @description Column header in the Issues panel for network requests in the CORS affected resources table.
    */
   request: "Request",
   /**
-   * @description Text for the column showing the resource's address in the item list in the CORS issue details view
+   * @description Column header in the Issues panel for resource addresses in the CORS affected resources table.
    */
-  resourceAddressSpace: "Resource Address",
+  resourceAddressSpace: "Resource address",
   /**
-   * @description Text for the column showing the address of the resource load initiator in the item list in the CORS issue details view
+   * @description Column header in the Issues panel for initiator addresses in the CORS affected resources table.
    */
-  initiatorAddressSpace: "Initiator Address",
+  initiatorAddressSpace: "Initiator address",
   /**
-   * @description Text for the status of the initiator context
+   * @description Context status in the Issues panel indicating a secure initiator context.
    */
-  secure: "secure",
+  secure: "Secure",
   /**
-   * @description Text for the status of the initiator context
+   * @description Context status in the Issues panel indicating an insecure initiator context.
    */
-  insecure: "insecure",
+  insecure: "Insecure",
   /**
-   * @description Title for a column showing the status of the initiator context. The initiator context is either secure or insecure depending on whether it was loaded via HTTP or HTTPS.
+   * @description Column header in the Issues panel for initiator context in the CORS affected resources table.
    */
-  initiatorContext: "Initiator Context",
+  initiatorContext: "Initiator context",
   /**
-   * @description Title for a column in the affected resources for a CORS issue showing a link to the associated preflight request in case the preflight request caused the issue.
+   * @description Column header in the Issues panel for preflight requests when problematic in the CORS affected resources table.
    */
-  preflightRequestIfProblematic: "Preflight Request (if problematic)",
+  preflightRequestIfProblematic: "Preflight request (if problematic)",
   /**
-   * @description Title for a column in the affected resources for a CORS issue showing a link to the associated preflight request.
+   * @description Column header in the Issues panel for preflight requests in the CORS affected resources table.
    */
-  preflightRequest: "Preflight Request",
+  preflightRequest: "Preflight request",
   /**
-   * @description Title for a column in the affected resources for a CORS issue showing the name of the problematic HTTP response header.
+   * @description Column header in the Issues panel for HTTP header names in the CORS affected resources table.
    */
   header: "Header",
   /**
-   * @description Title for a column in the affected resources for a CORS issue showing the problem associated with the resource.
+   * @description Column header in the Issues panel for problem descriptions in the CORS affected resources table.
    */
   problem: "Problem",
   /**
-   * @description Title for a column in the affected resources for a CORS issue showing the value that was invalid and caused the problem if it is available.
+   * @description Column header in the Issues panel for invalid header values in the CORS affected resources table.
    */
-  invalidValue: "Invalid Value (if available)",
+  invalidValue: "Invalid value (if available)",
   /**
-   * @description Content for the problem column in the affected resources table for a CORS issue that indicates that a response header was missing.
+   * @description Problem description in the Issues panel indicating that a required CORS response header was missing.
    */
-  problemMissingHeader: "Missing Header",
+  problemMissingHeader: "Missing header",
   /**
-   * @description Content for the problem column in the affected resources table for a CORS issue that indicates that a response header contained multiple values.
+   * @description Problem description in the Issues panel indicating that a CORS response header contained multiple values.
    */
-  problemMultipleValues: "Multiple Values",
+  problemMultipleValues: "Multiple values",
   /**
-   * @description Content for the problem column in the affected resources table for a CORS issue that indicates that a response header contained an invalid value.
+   * @description Problem description in the Issues panel indicating that a CORS response header contained an invalid value.
    */
-  problemInvalidValue: "Invalid Value",
+  problemInvalidValue: "Invalid value",
   /**
-   * @description Content for the problem column in the affected resources table for a CORS issue that indicates that the response to the preflight request was a redirect.
+   * @description Problem description in the Issues panel indicating that the preflight response was a redirect.
    */
   preflightDisallowedRedirect: "Response to preflight was a redirect",
   /**
-   * @description Content for the problem column in the affected resources table for a CORS issue that indicates that the HTTP status the preflight request was not successful.
+   * @description Problem description in the Issues panel indicating that the preflight request HTTP status was not successful.
    */
   preflightInvalidStatus: "HTTP status of preflight request didn\u2019t indicate success",
   /**
-   * @description Title for a column in the affected resources for a CORS issue showing the origin that was allowed according to CORS headers.
+   * @description Column header in the Issues panel for allowed origins in the CORS affected resources table.
    */
-  allowedOrigin: "Allowed Origin (from header)",
+  allowedOrigin: "Allowed origin (from header)",
   /**
-   * @description Title for a column in the affected resources for a CORS issue showing the value of the Access-Control-Allow-Credentials response header.
+   * @description Column header in the Issues panel for the Access-Control-Allow-Credentials header value in the CORS affected resources table.
    */
-  allowCredentialsValueFromHeader: "`Access-Control-Allow-Credentials` Header Value",
+  allowCredentialsValueFromHeader: "`Access-Control-Allow-Credentials` header value",
   /**
-   * @description Title for a column in the affected resources for a CORS issue showing the request method that was disallowed.
+   * @description Column header in the Issues panel for disallowed request methods in the CORS affected resources table.
    */
-  disallowedRequestMethod: "Disallowed Request Method",
+  disallowedRequestMethod: "Disallowed request method",
   /**
-   * @description Title for a column in the affected resources for a CORS issue showing the request header that was disallowed.
+   * @description Column header in the Issues panel for disallowed request headers in the CORS affected resources table.
    */
-  disallowedRequestHeader: "Disallowed Request Header",
+  disallowedRequestHeader: "Disallowed request header",
   /**
-   * @description Header for the source location column
+   * @description Column header in the Issues panel for source locations in the CORS affected resources table.
    */
-  sourceLocation: "Source Location",
+  sourceLocation: "Source location",
   /**
-   * @description Header for the column with the URL scheme that is not supported by fetch
+   * @description Column header in the Issues panel for unsupported URL schemes in the CORS affected resources table.
    */
-  unsupportedScheme: "Unsupported Scheme",
+  unsupportedScheme: "Unsupported scheme",
   /**
-   * @description A failed network request.
+   * @description Problem description in the Issues panel indicating that a network request failed.
    */
-  failedRequest: "Failed Request"
+  failedRequest: "Failed request"
 };
 var str_19 = i18n37.i18n.registerUIStrings("panels/issues/CorsIssueDetailsView.ts", UIStrings19);
 var i18nString19 = i18n37.i18n.getLocalizedString.bind(void 0, str_19);
@@ -2276,8 +2271,13 @@ var CorsIssueDetailsView = class _CorsIssueDetailsView extends AffectedResources
       case "CorsIssue::NoCorsRedirectModeNotFollow":
         this.appendColumnTitle(header, i18nString19(UIStrings19.sourceLocation));
         break;
+      case "CorsIssue::PreflightMissingAllowExternal":
+      case "CorsIssue::PreflightInvalidAllowExternal":
+      case "CorsIssue::InvalidLocalNetworkAccess":
+      case "CorsIssue::LocalNetworkAccessPermissionDenied":
+        break;
       default:
-        Platform3.assertUnhandled(issueCode);
+        Platform3.assertNever(issueCode, "Unknow issue code " + issueCode);
     }
     this.affectedResources.appendChild(header);
     let count = 0;
@@ -2484,11 +2484,15 @@ var CorsIssueDetailsView = class _CorsIssueDetailsView extends AffectedResources
         this.#appendStatus(element, details.isWarning);
         this.appendSourceLocation(element, details.location, issue.model()?.getTargetIfNotDisposed());
         break;
-      default:
+      case "CorsIssue::PreflightMissingAllowExternal":
+      case "CorsIssue::PreflightInvalidAllowExternal":
+      case "CorsIssue::InvalidLocalNetworkAccess":
+      case "CorsIssue::LocalNetworkAccessPermissionDenied":
         element.appendChild(this.createRequestCell(details.request, opts));
         this.#appendStatus(element, details.isWarning);
-        Platform3.assertUnhandled(issueCode);
         break;
+      default:
+        Platform3.assertNever(issueCode, "Unknown issue code: " + issueCode);
     }
     this.affectedResources.appendChild(element);
   }
@@ -2508,15 +2512,15 @@ var CorsIssueDetailsView = class _CorsIssueDetailsView extends AffectedResources
 import * as i18n39 from "./../../core/i18n/i18n.js";
 var UIStrings20 = {
   /**
-   * @description Label for number of affected resources indication in issue view
+   * @description Label in the Issues panel for the number of affected resources in the generic issue affected resources table.
    */
   nResources: "{n, plural, =1 {# resource} other {# resources}}",
   /**
-   * @description Title for the 'Frame' column.
+   * @description Column header in the Issues panel for frames in the generic issue affected resources table.
    */
   frameId: "Frame",
   /**
-   * @description Label for the violating node link in the issue view.
+   * @description Link text in the Issues panel for the violating DOM node in the generic issue affected resources table.
    */
   violatingNode: "Violating node"
 };
@@ -2578,49 +2582,48 @@ var GenericIssueDetailsView = class extends AffectedResourcesView {
 // gen/front_end/panels/issues/IssueView.js
 var UIStrings21 = {
   /**
-   * @description Noun, singular. Label for a column or field containing the name of an entity.
+   * @description Column header in the Issues panel for the resource name in the mixed content affected resources table.
    */
   name: "Name",
   /**
-   * @description The kind of resolution for a mixed content issue
+   * @description Resolution status in the Issues panel indicating that a mixed content resource was blocked.
    */
-  blocked: "blocked",
+  blocked: "Blocked",
   /**
-   * @description Label for a type of issue that can appear in the Issues view. Noun for singular or plural number of network requests.
+   * @description Label in the Issues panel for the number of affected network requests.
    */
   nRequests: "{n, plural, =1 {# request} other {# requests}}",
   /**
-   * @description Label for singular or plural number of affected resources in issue view
+   * @description Label in the Issues panel for the number of affected mixed content resources.
    */
   nResources: "{n, plural, =1 {# resource} other {# resources}}",
   /**
-   * @description Label for mixed content issue's restriction status
+   * @description Column header in the Issues panel for the restriction status of a mixed content resource.
    */
-  restrictionStatus: "Restriction Status",
+  restrictionStatus: "Restriction status",
   /**
-   * @description When there is a Heavy Ad, the browser can choose to deal with it in different ways.
-   * This string indicates that the ad was only warned, and not removed.
+   * @description Resolution status in the Issues panel indicating that a mixed content resource produced a warning.
    */
   warned: "Warned",
   /**
-   * @description Header for the section listing affected resources
+   * @description Header in the Issues panel for the section listing affected resources for an issue.
    */
-  affectedResources: "Affected Resources",
+  affectedResources: "Affected resources",
   /**
-   * @description Title for a link to further information in issue view
+   * @description Link text in the Issues panel to learn more about an issue.
    * @example {SameSite Cookies Explained} PH1
    */
   learnMoreS: "Learn more: {PH1}",
   /**
-   * @description The kind of resolution for a mixed content issue
+   * @description Resolution status in the Issues panel indicating that a mixed content resource was automatically upgraded to HTTPS.
    */
-  automaticallyUpgraded: "automatically upgraded",
+  automaticallyUpgraded: "Automatically upgraded",
   /**
-   * @description Menu entry for hiding a particular issue, in the Hide Issues context menu.
+   * @description Context menu item in the Issues panel to hide issues of the same type.
    */
   hideIssuesLikeThis: "Hide issues like this",
   /**
-   * @description Menu entry for unhiding a particular issue, in the Hide Issues context menu.
+   * @description Context menu item in the Issues panel to unhide issues of the same type.
    */
   unhideIssuesLikeThis: "Unhide issues like this"
 };
@@ -2632,6 +2635,10 @@ var AffectedRequestsView = class extends AffectedResourcesView {
     for (const affectedRequest of affectedRequests) {
       const element = document.createElement("tr");
       element.classList.add("affected-resource-request");
+      element.setAttribute("jslog", `${VisualLogging6.tableRow("affected-request")}`);
+      if (affectedRequest.requestId) {
+        element.setAttribute("data-network-request-id", affectedRequest.requestId);
+      }
       const category = this.issue.getCategory();
       const tab = issueTypeToNetworkHeaderMap.get(category) || "headers-component";
       element.appendChild(this.createRequestCell(affectedRequest, {
@@ -2910,7 +2917,7 @@ var IssueView = class _IssueView extends UI5.TreeOutline.TreeElement {
     this.affectedResources.hidden = noResources;
   }
   #createAffectedResources() {
-    const wrapper = new UI5.TreeOutline.TreeElement();
+    const wrapper = new UI5.TreeOutline.TreeElement(void 0, false, "affected-resources");
     wrapper.setCollapsible(false);
     wrapper.setExpandable(true);
     wrapper.expand();
@@ -2923,7 +2930,7 @@ var IssueView = class _IssueView extends UI5.TreeOutline.TreeElement {
     return wrapper;
   }
   #createBody() {
-    const messageElement = new UI5.TreeOutline.TreeElement();
+    const messageElement = new UI5.TreeOutline.TreeElement(void 0, false, "issue-description");
     messageElement.setCollapsible(false);
     messageElement.selectable = false;
     const markdownComponent = new MarkdownView.MarkdownView.MarkdownView();
@@ -2981,94 +2988,89 @@ var IssueView = class _IssueView extends UI5.TreeOutline.TreeElement {
 // gen/front_end/panels/issues/IssuesPane.js
 var UIStrings22 = {
   /**
-   * @description Category title for a group of cross origin embedder policy (COEP) issues
+   * @description Category title in the Issues panel for a group of Cross-Origin Embedder Policy (COEP) issues.
    */
-  crossOriginEmbedderPolicy: "Cross Origin Embedder Policy",
+  crossOriginEmbedderPolicy: "Cross-Origin Embedder Policy",
   /**
-   * @description Category title for a group of mixed content issues
+   * @description Category title in the Issues panel for a group of mixed content issues.
    */
-  mixedContent: "Mixed Content",
+  mixedContent: "Mixed content",
   /**
-   * @description Category title for a group of SameSite cookie issues
+   * @description Category title in the Issues panel for a group of SameSite cookie issues.
    */
-  samesiteCookie: "SameSite Cookie",
+  samesiteCookie: "SameSite cookie",
   /**
-   * @description Category title for a group of heavy ads issues
+   * @description Category title in the Issues panel for a group of heavy ads issues.
    */
-  heavyAds: "Heavy Ads",
+  heavyAds: "Heavy ads",
   /**
-   * @description Category title for a group of content security policy (CSP) issues
+   * @description Category title in the Issues panel for a group of Content Security Policy (CSP) issues.
    */
   contentSecurityPolicy: "Content Security Policy",
   /**
-   * @description Text for other types of items
+   * @description Category title in the Issues panel for other types of issues.
    */
   other: "Other",
   /**
-   * @description Category title for the different 'low text contrast' issues. Low text contrast refers
-   *              to the difference between the color of a text and the background color where that text
-   *              appears.
+   * @description Category title in the Issues panel for a group of low text contrast issues.
    */
-  lowTextContrast: "Low Text Contrast",
+  lowTextContrast: "Low text contrast",
   /**
-   * @description Category title for the different 'Cross-Origin Resource Sharing' (CORS) issues. CORS
-   *              refers to one origin (e.g 'a.com') loading resources from another origin (e.g. 'b.com').
+   * @description Category title in the Issues panel for a group of Cross-Origin Resource Sharing (CORS) issues.
    */
-  cors: "Cross Origin Resource Sharing",
+  cors: "Cross-Origin Resource Sharing",
   /**
-   * @description Title for a checkbox which toggles grouping by category in the issues tab
+   * @description Tooltip in the Issues panel for the checkbox to group issues by category.
    */
   groupDisplayedIssuesUnder: "Group displayed issues under associated categories",
   /**
-   * @description Label for a checkbox which toggles grouping by category in the issues tab
+   * @description Label in the Issues panel for the checkbox to group issues by category.
    */
   groupByCategory: "Group by category",
   /**
-   * @description Title for a checkbox which toggles grouping by kind in the issues tab
+   * @description Tooltip in the Issues panel for the checkbox to group issues by kind.
    */
-  groupDisplayedIssuesUnderKind: "Group displayed issues as Page errors, Breaking changes and Improvements",
+  groupDisplayedIssuesUnderKind: "Group displayed issues as page errors, breaking changes, and improvements",
   /**
-   * @description Label for a checkbox which toggles grouping by kind in the issues tab
+   * @description Label in the Issues panel for the checkbox to group issues by kind.
    */
   groupByKind: "Group by kind",
   /**
-   * @description Title for a checkbox. Whether the issues tab should include third-party issues or not.
+   * @description Tooltip in the Issues panel for the checkbox to include cookie issues caused by third-party sites.
    */
-  includeCookieIssuesCausedBy: "Include cookie Issues caused by third-party sites",
+  includeCookieIssuesCausedBy: "Include cookie issues caused by third-party sites",
   /**
-   * @description Label for a checkbox. Whether the issues tab should include third-party issues or not.
+   * @description Label in the Issues panel for the checkbox to include cookie issues caused by third-party sites.
    */
   includeThirdpartyCookieIssues: "Include third-party cookie issues",
   /**
-   * @description Label on the issues tab
+   * @description Message in the Issues panel displayed when only third-party cookie issues are detected.
    */
   onlyThirdpartyCookieIssues: "Only third-party cookie issues detected",
   /**
-   * @description Label in the issues panel
+   * @description Message in the Issues panel displayed when no issues are detected.
    */
   noIssues: "No issues detected",
   /**
-   * @description Text that explains the issues panel that is shown if no issues are shown.
+   * @description Explanation text in the Issues panel shown when no issues are detected.
    */
   issuesPanelDescription: "On this page you can find warnings from the browser.",
   /**
-   * @description Category title for the different 'Quirks Mode' issues. Quirks Mode refers
-   *              to the legacy browser modes that displays web content according to outdated
-   *              browser behaviors.
+   * @description Category title in the Issues panel for a group of quirks mode issues.
    */
-  quirksMode: "Quirks Mode",
+  quirksMode: "Quirks mode",
   /**
-   * @description Category title for the different 'Generic' issues.
+   * @description Category title in the Issues panel for a group of generic issues.
    */
   generic: "Generic",
   /**
-   * @description Category title for a group of permission element issues
+   * @description Category title in the Issues panel for a group of permission element issues.
    */
-  permissionElement: "PEPC Element",
+  permissionElement: "Permission element",
   /**
-   * @description Category title for the different 'Selective Permissions Intervention' issues.
+   * @description Category title in the Issues panel for a group of selective permissions intervention issues.
    */
-  selectivePermissionsIntervention: "Selective Permissions Intervention"
+  selectivePermissionsIntervention: "Selective permissions intervention"
 };
 var str_22 = i18n43.i18n.registerUIStrings("panels/issues/IssuesPane.ts", UIStrings22);
 var i18nString22 = i18n43.i18n.getLocalizedString.bind(void 0, str_22);
@@ -3139,7 +3141,7 @@ var IssuesPane = class extends UI6.Widget.VBox {
   #issueViewUpdatePromise = Promise.resolve();
   constructor() {
     super({
-      jslog: `${VisualLogging5.panel("issues")}`,
+      jslog: `${VisualLogging7.panel("issues")}`,
       useShadowDom: true
     });
     this.registerRequiredCSS(issuesPane_css_default);
@@ -3172,7 +3174,7 @@ var IssuesPane = class extends UI6.Widget.VBox {
   }
   #createToolbars() {
     const toolbarContainer = this.contentElement.createChild("div", "issues-toolbar-container");
-    toolbarContainer.setAttribute("jslog", `${VisualLogging5.toolbar()}`);
+    toolbarContainer.setAttribute("jslog", `${VisualLogging7.toolbar()}`);
     toolbarContainer.role = "toolbar";
     const leftToolbar = toolbarContainer.createChild("devtools-toolbar", "issues-toolbar-left");
     leftToolbar.role = "presentation";
@@ -3210,7 +3212,7 @@ var IssuesPane = class extends UI6.Widget.VBox {
       issuesManager: IssuesManager11.IssuesManager.IssuesManager.instance()
     };
     issueCounter.id = "console-issues-counter";
-    issueCounter.setAttribute("jslog", `${VisualLogging5.counter("issues")}`);
+    issueCounter.setAttribute("jslog", `${VisualLogging7.counter("issues")}`);
     const issuesToolbarItem = new UI6.Toolbar.ToolbarItem(issueCounter);
     rightToolbar.appendToolbarItem(issuesToolbarItem);
     return { toolbarContainer };

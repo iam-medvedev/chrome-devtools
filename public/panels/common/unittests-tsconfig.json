@@ -69,9 +69,6 @@
       "path": "../../core/platform/bundle-tsconfig.json"
     },
     {
-      "path": "../../core/root/bundle-tsconfig.json"
-    },
-    {
       "path": "../../core/sdk/bundle-tsconfig.json"
     },
     {
@@ -81,16 +78,10 @@
       "path": "../../generated/generated-tsconfig.json"
     },
     {
-      "path": "../../models/ai_code_completion/bundle-tsconfig.json"
-    },
-    {
       "path": "../../models/badges/bundle-tsconfig.json"
     },
     {
       "path": "../../models/bindings/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../models/crux-manager/bundle-tsconfig.json"
     },
     {
       "path": "../../models/extensions/bundle-tsconfig.json"
