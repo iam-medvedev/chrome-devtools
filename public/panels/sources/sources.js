@@ -2275,6 +2275,7 @@ import * as PanelCommon3 from "./../common/common.js";
 import * as ObjectUI2 from "./../../ui/legacy/components/object_ui/object_ui.js";
 import * as SettingsUI from "./../../ui/legacy/components/settings_ui/settings_ui.js";
 import * as UI17 from "./../../ui/legacy/legacy.js";
+import * as Settings9 from "./../../ui/settings/settings.js";
 import * as VisualLogging11 from "./../../ui/visual_logging/visual_logging.js";
 import * as Snippets4 from "./../snippets/snippets.js";
 
@@ -3136,7 +3137,7 @@ var SourcesSearchScope = class _SourcesSearchScope {
   }
   projects() {
     const searchInAnonymousAndContentScripts = Common4.Settings.Settings.instance().moduleSetting("search-in-anonymous-and-content-scripts").get();
-    const localOverridesEnabled = Common4.Settings.Settings.instance().moduleSetting("persistence-network-overrides-enabled").get();
+    const localOverridesEnabled = Common4.Settings.Settings.instance().resolve(Persistence.NetworkPersistenceManager.persistenceNetworkOverridesEnabledSettingDescriptor).get();
     return Workspace3.Workspace.WorkspaceImpl.instance().projects().filter((project) => {
       if (project.type() === Workspace3.Workspace.projectTypes.Service) {
         return false;
@@ -4875,7 +4876,7 @@ var NavigatorFolderTreeNode = class _NavigatorFolderTreeNode extends NavigatorTr
     }
     const absoluteFileSystemPath = Common6.ParsedURL.ParsedURL.concatenate(Persistence3.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.fileSystemPath(this.project.id()), "/", this.folderPath);
     const isOverrides = Persistence3.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.fileSystemType(this.project) === "overrides";
-    const hasMappedFiles = isOverrides ? Common6.Settings.Settings.instance().moduleSetting("persistence-network-overrides-enabled").get() : Persistence3.Persistence.PersistenceImpl.instance().filePathHasBindings(absoluteFileSystemPath);
+    const hasMappedFiles = isOverrides ? Common6.Settings.Settings.instance().resolve(Persistence3.NetworkPersistenceManager.persistenceNetworkOverridesEnabledSettingDescriptor).get() : Persistence3.Persistence.PersistenceImpl.instance().filePathHasBindings(absoluteFileSystemPath);
     this.treeElement.listItemElement.classList.toggle("has-mapped-files", hasMappedFiles);
   }
   createTreeElement(title, node) {
@@ -5043,7 +5044,7 @@ var NavigatorGroupTreeNode = class extends NavigatorTreeNode {
     const fileSystemPath = Persistence3.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.fileSystemPath(this.project.id());
     const wasActive = this.treeElement.listItemElement.classList.contains("has-mapped-files");
     const isOverrides = Persistence3.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.fileSystemType(this.project) === "overrides";
-    const isActive = isOverrides ? Common6.Settings.Settings.instance().moduleSetting("persistence-network-overrides-enabled").get() : Persistence3.Persistence.PersistenceImpl.instance().filePathHasBindings(fileSystemPath);
+    const isActive = isOverrides ? Common6.Settings.Settings.instance().resolve(Persistence3.NetworkPersistenceManager.persistenceNetworkOverridesEnabledSettingDescriptor).get() : Persistence3.Persistence.PersistenceImpl.instance().filePathHasBindings(fileSystemPath);
     if (wasActive === isActive) {
       return;
     }
@@ -5167,11 +5168,9 @@ import * as Bindings7 from "./../../models/bindings/bindings.js";
 import * as Persistence9 from "./../../models/persistence/persistence.js";
 import * as Workspace19 from "./../../models/workspace/workspace.js";
 import * as QuickOpen from "./../../ui/legacy/components/quick_open/quick_open.js";
-import * as SourceFrame10 from "./../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI15 from "./../../ui/legacy/legacy.js";
 import { Directives as Directives2, html as html6, render as render7 } from "./../../ui/lit/lit.js";
 import * as VisualLogging9 from "./../../ui/visual_logging/visual_logging.js";
-import * as Components2 from "./components/components.js";
 
 // gen/front_end/panels/sources/EditingLocationHistoryManager.js
 var EditingLocationHistoryManager_exports = {};
@@ -5344,6 +5343,7 @@ import { html as html5, render as render6 } from "./../../ui/lit/lit.js";
 import * as VisualLogging8 from "./../../ui/visual_logging/visual_logging.js";
 import * as PanelCommon2 from "./../common/common.js";
 import * as Snippets3 from "./../snippets/snippets.js";
+import * as Components2 from "./components/components.js";
 
 // gen/front_end/panels/sources/UISourceCodeFrame.js
 var UISourceCodeFrame_exports = {};
@@ -5563,10 +5563,10 @@ function coverageGutter(url) {
         void UI8.ViewManager.ViewManager.instance().showView("coverage").then(() => {
           const view = UI8.ViewManager.ViewManager.instance().view("coverage");
           return view?.widget();
-        }).then((widget2) => {
+        }).then((widget3) => {
           const matchFormattedSuffix = url.match(/(.*):formatted$/);
           const urlWithoutFormattedSuffix = matchFormattedSuffix?.[1] || url;
-          widget2.selectCoverageItemByUrl(urlWithoutFormattedSuffix);
+          widget3.selectCoverageItemByUrl(urlWithoutFormattedSuffix);
         });
         return true;
       }
@@ -5798,7 +5798,7 @@ function createCSSTooltip(active) {
     arrow: false,
     create(view) {
       let text = active.text;
-      let widget2, addListener;
+      let widget3, addListener;
       if (active.type === 0) {
         const spectrum = new ColorPicker.Spectrum.Spectrum();
         addListener = (handler) => {
@@ -5806,44 +5806,44 @@ function createCSSTooltip(active) {
         };
         spectrum.addEventListener("SizeChanged", () => view.requestMeasure());
         spectrum.setColor(active.color);
-        widget2 = spectrum;
+        widget3 = spectrum;
       } else {
         const spectrum = new InlineEditor.BezierEditor.BezierEditor(active.curve);
-        widget2 = spectrum;
+        widget3 = spectrum;
         addListener = (handler) => {
           spectrum.addEventListener("BezierChanged", handler);
         };
       }
       const dom = document.createElement("div");
       dom.className = "cm-tooltip-swatchEdit";
-      widget2.markAsRoot();
-      widget2.show(dom);
-      widget2.showWidget();
-      widget2.element.addEventListener("keydown", (event) => {
+      widget3.markAsRoot();
+      widget3.show(dom);
+      widget3.showWidget();
+      widget3.element.addEventListener("keydown", (event) => {
         if (event.key === "Escape") {
           event.consume();
           view.dispatch({
             effects: setTooltip.of(null),
             changes: text === active.text ? void 0 : { from: active.pos, to: active.pos + text.length, insert: active.text }
           });
-          widget2.hideWidget();
+          widget3.hideWidget();
           view.focus();
         }
       });
-      widget2.element.addEventListener("focusout", (event) => {
-        if (event.relatedTarget && !widget2.element.contains(event.relatedTarget)) {
+      widget3.element.addEventListener("focusout", (event) => {
+        if (event.relatedTarget && !widget3.element.contains(event.relatedTarget)) {
           view.dispatch({ effects: setTooltip.of(null) });
-          widget2.hideWidget();
+          widget3.hideWidget();
         }
       }, false);
-      widget2.element.addEventListener("mousedown", (event) => event.consume());
+      widget3.element.addEventListener("mousedown", (event) => event.consume());
       return {
         dom,
         resize: false,
         offset: { x: -8, y: 0 },
         mount: () => {
-          widget2.focus();
-          widget2.wasShown();
+          widget3.focus();
+          widget3.wasShown();
           addListener((event) => {
             view.dispatch({
               changes: { from: active.pos, to: active.pos + text.length, insert: event.data },
@@ -7632,16 +7632,16 @@ var ValueDecoration = class extends CodeMirror4.WidgetType {
   }
   toDOM() {
     const formatter = new ObjectUI.RemoteObjectPreviewFormatter.RemoteObjectPreviewFormatter();
-    const widget2 = document.createElement("div");
-    widget2.classList.add("cm-variableValues");
+    const widget3 = document.createElement("div");
+    widget3.classList.add("cm-variableValues");
     let first = true;
     for (const [name, value2] of this.pairs) {
       if (first) {
         first = false;
       } else {
-        UI10.UIUtils.createTextChild(widget2, ", ");
+        UI10.UIUtils.createTextChild(widget3, ", ");
       }
-      const nameValuePair = widget2.createChild("span");
+      const nameValuePair = widget3.createChild("span");
       UI10.UIUtils.createTextChild(nameValuePair, name + " = ");
       const propertyCount = value2.preview ? value2.preview.properties.length : 0;
       const entryCount = value2.preview?.entries ? value2.preview.entries.length : 0;
@@ -7660,7 +7660,7 @@ var ValueDecoration = class extends CodeMirror4.WidgetType {
         nameValuePair.appendChild(fragment);
       }
     }
-    return widget2;
+    return widget3;
   }
 };
 var valueDecorations = defineStatefulDecoration();
@@ -8334,7 +8334,7 @@ var UISourceCodeFrame = class _UISourceCodeFrame extends Common9.ObjectWrapper.e
     this.#uiSourceCode = uiSourceCode;
     this.#persistenceBinding = Persistence5.Persistence.PersistenceImpl.instance().binding(uiSourceCode);
     this.#boundOnBindingChanged = this.onBindingChanged.bind(this);
-    Common9.Settings.Settings.instance().moduleSetting("persistence-network-overrides-enabled").addChangeListener(this.onNetworkPersistenceChanged, this);
+    Common9.Settings.Settings.instance().resolve(Persistence5.NetworkPersistenceManager.persistenceNetworkOverridesEnabledSettingDescriptor).addChangeListener(this.onNetworkPersistenceChanged, this);
     this.#errorPopoverHelper = new UI13.PopoverHelper.PopoverHelper(this.textEditor.editor.contentDOM, this.getErrorPopoverContent.bind(this), "sources.error");
     this.#errorPopoverHelper.setTimeout(100, 100);
     this.initializeUISourceCode();
@@ -8627,7 +8627,7 @@ var UISourceCodeFrame = class _UISourceCodeFrame extends Common9.ObjectWrapper.e
     this.unloadUISourceCode();
     this.textEditor.editor.destroy();
     this.detach();
-    Common9.Settings.Settings.instance().moduleSetting("persistence-network-overrides-enabled").removeChangeListener(this.onNetworkPersistenceChanged, this);
+    Common9.Settings.Settings.instance().resolve(Persistence5.NetworkPersistenceManager.persistenceNetworkOverridesEnabledSettingDescriptor).removeChangeListener(this.onNetworkPersistenceChanged, this);
   }
   onMessageAdded(event) {
     const { editor } = this.textEditor, shownMessages = editor.state.field(showRowMessages, false);
@@ -9066,9 +9066,14 @@ var UIStrings14 = {
 };
 var str_14 = i18n27.i18n.registerUIStrings("panels/sources/TabbedEditorContainer.ts", UIStrings14);
 var i18nString13 = i18n27.i18n.getLocalizedString.bind(void 0, str_14);
+var HEADER_OVERRIDES_FILENAME = ".headers";
 var tabId = 0;
 var TabbedEditorContainer = class extends Common10.ObjectWrapper.eventMixin(UI14.Widget.VBox) {
-  delegate;
+  #historyManager;
+  set historyManager(historyManager) {
+    this.#historyManager = historyManager;
+  }
+  sourceViewByUISourceCode = /* @__PURE__ */ new Map();
   tabbedPane;
   tabIds;
   files;
@@ -9130,7 +9135,7 @@ var TabbedEditorContainer = class extends Common10.ObjectWrapper.eventMixin(UI14
       const networkView = this.tabbedPane.tabView(networkTabId);
       const tabIndex = this.tabbedPane.tabIndex(networkTabId);
       if (networkView instanceof UISourceCodeFrame) {
-        this.delegate.recycleUISourceCodeFrame(networkView, binding.fileSystem);
+        this.recycleUISourceCodeFrame(networkView, binding.fileSystem);
         fileSystemTabId = this.appendFileTab(binding.fileSystem, false, tabIndex, networkView);
       } else {
         fileSystemTabId = this.appendFileTab(binding.fileSystem, false, tabIndex);
@@ -9270,7 +9275,7 @@ var TabbedEditorContainer = class extends Common10.ObjectWrapper.eventMixin(UI14
     this.currentView = this.visibleView;
     this.addViewListeners();
     if (this.currentView instanceof UISourceCodeFrame && this.currentView.uiSourceCode() !== uiSourceCode) {
-      this.delegate.recycleUISourceCodeFrame(this.currentView, uiSourceCode);
+      this.recycleUISourceCodeFrame(this.currentView, uiSourceCode);
       if (uiSourceCode.project().type() !== Workspace17.Workspace.projectTypes.FileSystem) {
         uiSourceCode.disableEdit();
       }
@@ -9394,6 +9399,7 @@ var TabbedEditorContainer = class extends Common10.ObjectWrapper.eventMixin(UI14
       if (this.idToUISourceCode.get(uiSourceCode.canonicalScriptId()) === uiSourceCode) {
         this.idToUISourceCode.delete(uiSourceCode.canonicalScriptId());
       }
+      this.removeSourceFrame(uiSourceCode);
     }
     this.tabbedPane.closeTabs(tabIds);
   }
@@ -9420,7 +9426,7 @@ var TabbedEditorContainer = class extends Common10.ObjectWrapper.eventMixin(UI14
     return uiSourceCode.url();
   }
   appendFileTab(uiSourceCode, userGesture, index, replaceView) {
-    const view = replaceView || this.delegate.viewForFile(uiSourceCode);
+    const view = replaceView || this.viewForFile(uiSourceCode);
     const title = this.titleForFile(uiSourceCode);
     const tooltip = this.tooltipForFile(uiSourceCode);
     const tabId2 = this.generateTabId();
@@ -9479,6 +9485,7 @@ var TabbedEditorContainer = class extends Common10.ObjectWrapper.eventMixin(UI14
     this.files.delete(tabId2);
     if (uiSourceCode) {
       this.removeUISourceCodeListeners(uiSourceCode);
+      this.removeSourceFrame(uiSourceCode);
       this.dispatchEventToListeners("EditorClosed", uiSourceCode);
       if (isUserGesture) {
         this.editorClosedByUserAction(uiSourceCode);
@@ -9550,6 +9557,15 @@ var TabbedEditorContainer = class extends Common10.ObjectWrapper.eventMixin(UI14
   }
   uiSourceCodeTitleChanged(event) {
     const uiSourceCode = event.data;
+    const widget3 = this.sourceViewByUISourceCode.get(uiSourceCode);
+    if (widget3) {
+      if (this.#sourceViewTypeForWidget(widget3) !== this.#sourceViewTypeForUISourceCode(uiSourceCode)) {
+        this.removeUISourceCodes([uiSourceCode]);
+        this.addUISourceCode(uiSourceCode);
+        this.showFile(uiSourceCode);
+        return;
+      }
+    }
     this.updateFileTitle(uiSourceCode);
     this.updateHistory();
     for (const [k, v] of this.uriToUISourceCode) {
@@ -9630,6 +9646,75 @@ var TabbedEditorContainer = class extends Common10.ObjectWrapper.eventMixin(UI14
     }
     Host7.userMetrics.actionTaken(Host7.UserMetrics.Action.WorkspaceSelectFolder);
     void UI14.ViewManager.ViewManager.instance().showView("navigator-files");
+  }
+  getCreatedSourceView(uiSourceCode) {
+    return this.sourceViewByUISourceCode.get(uiSourceCode);
+  }
+  viewForFile(uiSourceCode) {
+    return this.getOrCreateSourceView(uiSourceCode);
+  }
+  getOrCreateSourceView(uiSourceCode) {
+    return this.sourceViewByUISourceCode.get(uiSourceCode) || this.createSourceView(uiSourceCode);
+  }
+  createSourceView(uiSourceCode) {
+    let sourceView;
+    const contentType = uiSourceCode.contentType();
+    if (contentType === Common10.ResourceType.resourceTypes.Image || uiSourceCode.mimeType().startsWith("image/")) {
+      sourceView = new SourceFrame8.ImageView.ImageView(uiSourceCode.mimeType(), uiSourceCode);
+    } else if (contentType === Common10.ResourceType.resourceTypes.Font || uiSourceCode.mimeType().includes("font")) {
+      sourceView = new SourceFrame8.FontView.FontView(uiSourceCode.mimeType(), uiSourceCode);
+    } else if (uiSourceCode.name() === HEADER_OVERRIDES_FILENAME) {
+      sourceView = new Components2.HeadersView.HeadersView(uiSourceCode);
+    } else {
+      sourceView = new UISourceCodeFrame(uiSourceCode);
+      this.#historyManager.trackSourceFrameCursorJumps(sourceView);
+    }
+    this.sourceViewByUISourceCode.set(uiSourceCode, sourceView);
+    uiSourceCode.addEventListener(Workspace17.UISourceCode.Events.TitleChanged, this.uiSourceCodeTitleChanged, this);
+    return sourceView;
+  }
+  recycleUISourceCodeFrame(sourceFrame, uiSourceCode) {
+    sourceFrame.uiSourceCode().removeEventListener(Workspace17.UISourceCode.Events.TitleChanged, this.uiSourceCodeTitleChanged, this);
+    this.sourceViewByUISourceCode.delete(sourceFrame.uiSourceCode());
+    sourceFrame.setUISourceCode(uiSourceCode);
+    this.sourceViewByUISourceCode.set(uiSourceCode, sourceFrame);
+    uiSourceCode.addEventListener(Workspace17.UISourceCode.Events.TitleChanged, this.uiSourceCodeTitleChanged, this);
+  }
+  removeSourceFrame(uiSourceCode) {
+    const sourceView = this.sourceViewByUISourceCode.get(uiSourceCode);
+    this.sourceViewByUISourceCode.delete(uiSourceCode);
+    if (sourceView) {
+      uiSourceCode.removeEventListener(Workspace17.UISourceCode.Events.TitleChanged, this.uiSourceCodeTitleChanged, this);
+    }
+    if (sourceView && sourceView instanceof UISourceCodeFrame) {
+      sourceView.dispose();
+    }
+  }
+  #sourceViewTypeForWidget(widget3) {
+    if (widget3 instanceof SourceFrame8.ImageView.ImageView) {
+      return "ImageView";
+    }
+    if (widget3 instanceof SourceFrame8.FontView.FontView) {
+      return "FontView";
+    }
+    if (widget3 instanceof Components2.HeadersView.HeadersView) {
+      return "HeadersView";
+    }
+    return "SourceView";
+  }
+  #sourceViewTypeForUISourceCode(uiSourceCode) {
+    if (uiSourceCode.name() === HEADER_OVERRIDES_FILENAME) {
+      return "HeadersView";
+    }
+    const contentType = uiSourceCode.contentType();
+    switch (contentType) {
+      case Common10.ResourceType.resourceTypes.Image:
+        return "ImageView";
+      case Common10.ResourceType.resourceTypes.Font:
+        return "FontView";
+      default:
+        return "SourceView";
+    }
   }
   currentFile() {
     return this.#currentFile || null;
@@ -9815,9 +9900,18 @@ var i18nString14 = i18n29.i18n.getLocalizedString.bind(void 0, str_15);
 var { widget, widgetRef } = UI15.Widget;
 var DEFAULT_VIEW5 = (input, output, target) => {
   render7(html6`
-    <devtools-widget class="vbox flex-auto" ${widget(input.searchableViewFactory)}>
+    <devtools-widget class="vbox flex-auto"
+      ${widget((element) => {
+    const searchableView = new UI15.SearchableView.SearchableView(input.searchProvider, input.replaceProvider, input.searchableViewId, element);
+    searchableView.setMinimalSearchQuerySize(0);
+    return searchableView;
+  })}
+      ${widgetRef(UI15.SearchableView.SearchableView, (e) => {
+    output.searchableView = e;
+  })}
+    >
       <devtools-widget class="vbox flex-auto"
-        ${widget(TabbedEditorContainer, { delegate: input.delegate, previouslyViewedFilesSetting: input.previouslyViewedFilesSetting })}
+        ${widget(TabbedEditorContainer, { historyManager: input.historyManager, previouslyViewedFilesSetting: input.previouslyViewedFilesSetting })}
         ${widgetRef(TabbedEditorContainer, (e) => {
     output.editorContainer = e;
   })}>
@@ -9836,7 +9930,6 @@ var DEFAULT_VIEW5 = (input, output, target) => {
 };
 var SourcesView = class _SourcesView extends Common11.ObjectWrapper.eventMixin(UI15.Widget.VBox) {
   #searchableView;
-  sourceViewByUISourceCode;
   editorContainer;
   #uiSourceCodes = /* @__PURE__ */ new Set();
   historyManager;
@@ -9871,7 +9964,6 @@ var SourcesView = class _SourcesView extends Common11.ObjectWrapper.eventMixin(U
     this.element.id = "sources-panel-sources-view";
     this.setMinimumAndPreferredSizes(88, 52, 150, 100);
     const workspace = Workspace19.Workspace.WorkspaceImpl.instance();
-    this.sourceViewByUISourceCode = /* @__PURE__ */ new Map();
     this.historyManager = new EditingLocationHistoryManager(this);
     this.toolbarChangedListener = null;
     this.#toggleNavigatorSidebarButton = new UI15.Toolbar.ToolbarButton(i18nString14(UIStrings15.showNavigator), "left-panel-open");
@@ -9926,8 +10018,7 @@ var SourcesView = class _SourcesView extends Common11.ObjectWrapper.eventMixin(U
       searchableViewId: "sources-view-search-config",
       scriptViewToolbarItems: this.#scriptViewToolbarItems,
       bottomToolbarItems: this.#bottomToolbarItems,
-      searchableViewFactory: this.#searchableViewFactory,
-      delegate: this,
+      historyManager: this.historyManager,
       previouslyViewedFilesSetting: this.previouslyViewedFilesSetting
     };
     const that = this;
@@ -9937,6 +10028,9 @@ var SourcesView = class _SourcesView extends Common11.ObjectWrapper.eventMixin(U
       },
       set editorContainer(value2) {
         that.setEditorContainer(value2);
+      },
+      set searchableView(value2) {
+        that.#searchableView = value2;
       }
     };
     this.#view(input, output, this.element);
@@ -10079,7 +10173,10 @@ var SourcesView = class _SourcesView extends Common11.ObjectWrapper.eventMixin(U
     super.willHide();
   }
   searchableView() {
-    return this.#searchableViewFactory();
+    if (!this.#searchableView) {
+      this.performUpdate();
+    }
+    return this.#searchableView;
   }
   visibleView() {
     return this.editorContainer?.visibleView ?? null;
@@ -10156,7 +10253,6 @@ var SourcesView = class _SourcesView extends Common11.ObjectWrapper.eventMixin(U
     uiSourceCodes.forEach((ui) => this.#uiSourceCodes.delete(ui));
     this.editorContainer?.removeUISourceCodes(uiSourceCodes);
     for (let i = 0; i < uiSourceCodes.length; ++i) {
-      this.removeSourceFrame(uiSourceCodes[i]);
       this.historyManager.removeHistoryForSourceCode(uiSourceCodes[i]);
     }
   }
@@ -10199,83 +10295,11 @@ var SourcesView = class _SourcesView extends Common11.ObjectWrapper.eventMixin(U
       visibleView.focus();
     }
   }
-  createSourceView(uiSourceCode) {
-    let sourceView;
-    const contentType = uiSourceCode.contentType();
-    if (contentType === Common11.ResourceType.resourceTypes.Image || uiSourceCode.mimeType().startsWith("image/")) {
-      sourceView = new SourceFrame10.ImageView.ImageView(uiSourceCode.mimeType(), uiSourceCode);
-    } else if (contentType === Common11.ResourceType.resourceTypes.Font || uiSourceCode.mimeType().includes("font")) {
-      sourceView = new SourceFrame10.FontView.FontView(uiSourceCode.mimeType(), uiSourceCode);
-    } else if (uiSourceCode.name() === HEADER_OVERRIDES_FILENAME) {
-      sourceView = new Components2.HeadersView.HeadersView(uiSourceCode);
-    } else {
-      sourceView = new UISourceCodeFrame(uiSourceCode);
-      this.historyManager.trackSourceFrameCursorJumps(sourceView);
-    }
-    uiSourceCode.addEventListener(Workspace19.UISourceCode.Events.TitleChanged, this.#uiSourceCodeTitleChanged, this);
-    this.sourceViewByUISourceCode.set(uiSourceCode, sourceView);
-    return sourceView;
-  }
-  #sourceViewTypeForWidget(widget2) {
-    if (widget2 instanceof SourceFrame10.ImageView.ImageView) {
-      return "ImageView";
-    }
-    if (widget2 instanceof SourceFrame10.FontView.FontView) {
-      return "FontView";
-    }
-    if (widget2 instanceof Components2.HeadersView.HeadersView) {
-      return "HeadersView";
-    }
-    return "SourceView";
-  }
-  #sourceViewTypeForUISourceCode(uiSourceCode) {
-    if (uiSourceCode.name() === HEADER_OVERRIDES_FILENAME) {
-      return "HeadersView";
-    }
-    const contentType = uiSourceCode.contentType();
-    switch (contentType) {
-      case Common11.ResourceType.resourceTypes.Image:
-        return "ImageView";
-      case Common11.ResourceType.resourceTypes.Font:
-        return "FontView";
-      default:
-        return "SourceView";
-    }
-  }
-  #uiSourceCodeTitleChanged(event) {
-    const uiSourceCode = event.data;
-    const widget2 = this.sourceViewByUISourceCode.get(uiSourceCode);
-    if (widget2) {
-      if (this.#sourceViewTypeForWidget(widget2) !== this.#sourceViewTypeForUISourceCode(uiSourceCode)) {
-        this.removeUISourceCodes([uiSourceCode]);
-        this.#uiSourceCodes.add(uiSourceCode);
-        void this.showSourceLocation(uiSourceCode);
-      }
-    }
+  viewForFile(uiSourceCode) {
+    return this.editorContainer?.viewForFile(uiSourceCode);
   }
   getSourceView(uiSourceCode) {
-    return this.sourceViewByUISourceCode.get(uiSourceCode);
-  }
-  getOrCreateSourceView(uiSourceCode) {
-    return this.sourceViewByUISourceCode.get(uiSourceCode) || this.createSourceView(uiSourceCode);
-  }
-  recycleUISourceCodeFrame(sourceFrame, uiSourceCode) {
-    sourceFrame.uiSourceCode().removeEventListener(Workspace19.UISourceCode.Events.TitleChanged, this.#uiSourceCodeTitleChanged, this);
-    this.sourceViewByUISourceCode.delete(sourceFrame.uiSourceCode());
-    sourceFrame.setUISourceCode(uiSourceCode);
-    this.sourceViewByUISourceCode.set(uiSourceCode, sourceFrame);
-    uiSourceCode.addEventListener(Workspace19.UISourceCode.Events.TitleChanged, this.#uiSourceCodeTitleChanged, this);
-  }
-  viewForFile(uiSourceCode) {
-    return this.getOrCreateSourceView(uiSourceCode);
-  }
-  removeSourceFrame(uiSourceCode) {
-    const sourceView = this.sourceViewByUISourceCode.get(uiSourceCode);
-    this.sourceViewByUISourceCode.delete(uiSourceCode);
-    if (sourceView && sourceView instanceof UISourceCodeFrame) {
-      sourceView.dispose();
-    }
-    uiSourceCode.removeEventListener(Workspace19.UISourceCode.Events.TitleChanged, this.#uiSourceCodeTitleChanged, this);
+    return this.editorContainer?.getCreatedSourceView(uiSourceCode);
   }
   editorClosed(event) {
     const uiSourceCode = event.data;
@@ -10411,13 +10435,6 @@ var SourcesView = class _SourcesView extends Common11.ObjectWrapper.eventMixin(U
     const uiSourceCodeFrame = sourceFrame;
     uiSourceCodeFrame.commitEditing();
   }
-  #searchableViewFactory = () => {
-    if (!this.#searchableView) {
-      this.#searchableView = new UI15.SearchableView.SearchableView(this, this, "sources.search-sources-tab");
-      this.#searchableView.setMinimalSearchQuerySize(0);
-    }
-    return this.#searchableView;
-  };
   toggleBreakpointsActiveState(active) {
     this.#breakpointsActive = active;
     this.editorContainer?.element.classList.toggle("breakpoints-deactivated", !active);
@@ -10506,7 +10523,6 @@ var ActionDelegate2 = class {
     return false;
   }
 };
-var HEADER_OVERRIDES_FILENAME = ".headers";
 
 // gen/front_end/panels/sources/ThreadsSidebarPane.js
 var ThreadsSidebarPane_exports = {};
@@ -10873,7 +10889,7 @@ var SourcesPanel = class _SourcesPanel extends UI17.Panel.Panel {
     this.threadsSidebarPane = null;
     this.watchSidebarPane = UI17.ViewManager.ViewManager.instance().view("sources.watch");
     this.callstackPane = CallStackSidebarPane.instance();
-    Common12.Settings.Settings.instance().moduleSetting("sidebar-position").addChangeListener(this.updateSidebarPosition.bind(this));
+    Common12.Settings.Settings.instance().resolve(Settings9.MainSettings.sidebarPositionSettingDescriptor).addChangeListener(this.updateSidebarPosition.bind(this));
     this.updateSidebarPosition();
     void this.updateDebuggerButtonsAndStatus();
     this.setTarget(UI17.Context.Context.instance().flavor(SDK11.Target.Target));
@@ -10972,7 +10988,7 @@ var SourcesPanel = class _SourcesPanel extends UI17.Panel.Panel {
     return true;
   }
   onResize() {
-    if (Common12.Settings.Settings.instance().moduleSetting("sidebar-position").get() === "auto") {
+    if (Common12.Settings.Settings.instance().resolve(Settings9.MainSettings.sidebarPositionSettingDescriptor).get() === "auto") {
       this.element.window().requestAnimationFrame(this.updateSidebarPosition.bind(this));
     }
   }
@@ -11022,7 +11038,7 @@ var SourcesPanel = class _SourcesPanel extends UI17.Panel.Panel {
     }
     window.focus();
     Host8.InspectorFrontendHost.InspectorFrontendHostInstance.bringToFront();
-    const withOverlay = UI17.Context.Context.instance().flavor(SDK11.Target.Target)?.model(SDK11.OverlayModel.OverlayModel) && !Common12.Settings.Settings.instance().moduleSetting("disable-paused-state-overlay").get();
+    const withOverlay = UI17.Context.Context.instance().flavor(SDK11.Target.Target)?.model(SDK11.OverlayModel.OverlayModel) && !Common12.Settings.Settings.instance().resolve(SDK11.SDKSettings.disablePausedStateOverlaySettingDescriptor).get();
     if (withOverlay && !this.overlayLoggables) {
       this.overlayLoggables = { debuggerPausedMessage: {}, resumeButton: {}, stepOverButton: {} };
       VisualLogging11.registerLoggable(this.overlayLoggables.debuggerPausedMessage, `${VisualLogging11.dialog("debugger-paused")}`, null, new DOMRect(0, 0, 200, 20));
@@ -11495,7 +11511,7 @@ var SourcesPanel = class _SourcesPanel extends UI17.Panel.Panel {
   }
   updateSidebarPosition() {
     let vertically;
-    const position = Common12.Settings.Settings.instance().moduleSetting("sidebar-position").get();
+    const position = Common12.Settings.Settings.instance().resolve(Settings9.MainSettings.sidebarPositionSettingDescriptor).get();
     if (position === "right") {
       vertically = false;
     } else if (position === "bottom") {
@@ -11642,7 +11658,7 @@ var RevealingActionDelegate = class {
     }
     switch (actionId) {
       case "debugger.toggle-pause": {
-        const actionHandledInPausedOverlay = context.flavor(UI17.ShortcutRegistry.ForwardedShortcut) && !Common12.Settings.Settings.instance().moduleSetting("disable-paused-state-overlay").get();
+        const actionHandledInPausedOverlay = context.flavor(UI17.ShortcutRegistry.ForwardedShortcut) && !Common12.Settings.Settings.instance().resolve(SDK11.SDKSettings.disablePausedStateOverlaySettingDescriptor).get();
         if (actionHandledInPausedOverlay) {
           return true;
         }
@@ -14007,12 +14023,12 @@ var OverridesNavigatorView = class _OverridesNavigatorView extends NavigatorView
     this.toolbar.removeToolbarItems();
     const project = Persistence16.NetworkPersistenceManager.NetworkPersistenceManager.instance().project();
     if (project) {
-      const enableCheckbox = new UI23.Toolbar.ToolbarSettingCheckbox(Common17.Settings.Settings.instance().moduleSetting("persistence-network-overrides-enabled"));
+      const enableCheckbox = new UI23.Toolbar.ToolbarSettingCheckbox(Common17.Settings.Settings.instance().resolve(Persistence16.NetworkPersistenceManager.persistenceNetworkOverridesEnabledSettingDescriptor));
       this.toolbar.appendToolbarItem(enableCheckbox);
       this.toolbar.appendToolbarItem(new UI23.Toolbar.ToolbarSeparator(true));
       const clearButton = new UI23.Toolbar.ToolbarButton(i18nString23(UIStrings24.clearConfiguration), "clear");
       clearButton.addEventListener("Click", () => {
-        Common17.Settings.Settings.instance().moduleSetting("persistence-network-overrides-enabled").set(false);
+        Common17.Settings.Settings.instance().resolve(Persistence16.NetworkPersistenceManager.persistenceNetworkOverridesEnabledSettingDescriptor).set(false);
         project.remove();
       });
       this.toolbar.appendToolbarItem(clearButton);
@@ -14030,7 +14046,7 @@ var OverridesNavigatorView = class _OverridesNavigatorView extends NavigatorView
     if (!fileSystem) {
       return;
     }
-    Common17.Settings.Settings.instance().moduleSetting("persistence-network-overrides-enabled").set(true);
+    Common17.Settings.Settings.instance().resolve(Persistence16.NetworkPersistenceManager.persistenceNetworkOverridesEnabledSettingDescriptor).set(true);
   }
   sourceSelected(uiSourceCode, focusSource) {
     Host12.userMetrics.actionTaken(Host12.UserMetrics.Action.OverridesSourceSelected);
@@ -14124,8 +14140,10 @@ var ActionDelegate5 = class {
 // gen/front_end/panels/sources/WatchExpressionsSidebarPane.js
 var WatchExpressionsSidebarPane_exports = {};
 __export(WatchExpressionsSidebarPane_exports, {
+  DEFAULT_PROMPT_VIEW: () => DEFAULT_PROMPT_VIEW,
   DEFAULT_VIEW: () => DEFAULT_VIEW8,
   WatchExpression: () => WatchExpression,
+  WatchExpressionPromptWidget: () => WatchExpressionPromptWidget,
   WatchExpressionsSidebarPane: () => WatchExpressionsSidebarPane
 });
 import * as Common18 from "./../../core/common/common.js";
@@ -14138,6 +14156,7 @@ import * as Formatter3 from "./../../models/formatter/formatter.js";
 import * as SourceMapScopes3 from "./../../models/source_map_scopes/source_map_scopes.js";
 import * as StackTrace9 from "./../../models/stack_trace/stack_trace.js";
 import * as Buttons4 from "./../../ui/components/buttons/buttons.js";
+import * as TextEditor6 from "./../../ui/components/text_editor/text_editor.js";
 import * as ObjectUI4 from "./../../ui/legacy/components/object_ui/object_ui.js";
 
 // gen/front_end/ui/legacy/components/object_ui/objectValue.css.js
@@ -14466,6 +14485,174 @@ var str_25 = i18n49.i18n.registerUIStrings("panels/sources/WatchExpressionsSideb
 var i18nString24 = i18n49.i18n.getLocalizedString.bind(void 0, str_25);
 var watchExpressionsSidebarPaneInstance;
 var { classMap: classMap3, ifDefined: ifDefined3 } = Directives6;
+var { widget: widget2 } = UI24.Widget;
+var DEFAULT_PROMPT_VIEW = (input, _output, target) => {
+  const e = input.expression;
+  if (!e) {
+    render11(nothing8, target);
+    return;
+  }
+  const stopPropagationIfEditing = (event) => {
+    if (e.editing) {
+      event.stopPropagation();
+    }
+  };
+  const renderNameElement = () => ObjectUI4.ObjectPropertiesSection.renderPropertyName(
+    e.expression,
+    /* isPrivate= */
+    false,
+    e.expression ?? void 0
+  );
+  render11(html14`
+        <devtools-prompt
+            class=${classMap3({
+    monospace: true,
+    "watch-expression": true,
+    "watch-expression-text-prompt-proxy": Boolean(e.editing)
+  })}
+            value=${e.expression ?? ""}
+            ?editing=${Boolean(e.editing)}
+            completions=${input.completionsId}
+            @commit=${(event) => input.onCommit(event.detail)}
+            @cancel=${() => input.onCancel()}
+            @beforeautocomplete=${input.onBeforeAutoComplete}
+            @mousedown=${stopPropagationIfEditing}
+            @click=${stopPropagationIfEditing}
+            @dblclick=${stopPropagationIfEditing}>
+          <div class=${classMap3({
+    "watch-expression-header": true,
+    "watch-expression-object-header": !e.exceptionDetails && e.result !== void 0 && e.result.hasChildren && !e.result.object.customPreview()
+  })}
+               @contextmenu=${input.onContextMenu}
+               @dblclick=${input.onStartEditing}>
+            <div class=${classMap3({
+    "watch-expression-title": true,
+    "tree-element-title": true,
+    dimmed: Boolean(e.exceptionDetails) && !e.result
+  })}>
+              <devtools-button
+                .data=${{
+    variant: "icon",
+    iconName: "bin",
+    size: "SMALL",
+    jslogContext: "delete-watch-expression"
+  }}
+                class=watch-expression-delete-button
+                title=${i18nString24(UIStrings25.deleteWatchExpression)}
+                @click=${input.onDelete}></devtools-button>
+              ${renderNameElement()}
+              <span class=watch-expressions-separator>: </span>
+              ${e.exceptionDetails || !e.result ? html14`<span
+                    class="watch-expression-error value"
+                    title=${ifDefined3(e.exceptionDetails?.exception?.description)}
+                    >${i18nString24(UIStrings25.notAvailable)}</span>` : ObjectUI4.ObjectPropertiesSection.renderPropertyValue(
+    e.result.object,
+    Boolean(e.exceptionDetails),
+    false,
+    input.linkifier,
+    false,
+    void 0,
+    void 0,
+    /* useCustomPreview */
+    true
+  )}
+            </div>
+          </div>
+          ${e.editing ? html14`
+            <datalist id=${input.completionsId}>
+              ${input.completions.map((c) => html14`<option>${c}</option>`)}
+            </datalist>
+          ` : nothing8}
+        </devtools-prompt>
+      `, target);
+};
+var WatchExpressionPromptWidget = class extends UI24.Widget.Widget {
+  #expression;
+  #linkifier;
+  #completions = [];
+  #completionsId = "";
+  #view;
+  onCommit;
+  onCancel;
+  onStartEditing;
+  onDelete;
+  onContextMenu;
+  set expression(expression) {
+    if (this.#expression !== expression) {
+      this.#completions = [];
+      this.#expression = expression;
+    }
+    this.requestUpdate();
+  }
+  get expression() {
+    return this.#expression;
+  }
+  set linkifier(linkifier) {
+    if (this.#linkifier === linkifier) {
+      return;
+    }
+    this.#linkifier = linkifier;
+    this.requestUpdate();
+  }
+  get linkifier() {
+    return this.#linkifier;
+  }
+  set completionsId(completionsId) {
+    if (this.#completionsId === completionsId) {
+      return;
+    }
+    this.#completionsId = completionsId;
+    this.requestUpdate();
+  }
+  get completionsId() {
+    return this.#completionsId;
+  }
+  constructor(element, view = DEFAULT_PROMPT_VIEW) {
+    super(element);
+    this.#view = view;
+  }
+  wasShown() {
+    super.wasShown();
+    this.requestUpdate();
+  }
+  wasHidden() {
+    super.wasHidden();
+    this.#completions = [];
+  }
+  #handleBeforeAutoComplete = async (event) => {
+    const suggestions = await TextEditor6.JavaScript.completeInContext(event.detail.expression, event.detail.filter, event.detail.force);
+    this.#completions = suggestions.map((v) => v.text);
+    this.requestUpdate();
+  };
+  performUpdate() {
+    if (!this.#expression?.editing) {
+      this.#completions = [];
+    }
+    const viewInput = {
+      expression: this.#expression,
+      linkifier: this.#linkifier,
+      completionsId: this.#completionsId,
+      completions: this.#completions,
+      onCommit: (detail) => {
+        this.#completions = [];
+        this.requestUpdate();
+        this.onCommit?.(detail);
+      },
+      onCancel: () => {
+        this.#completions = [];
+        this.requestUpdate();
+        this.onCancel?.();
+      },
+      onBeforeAutoComplete: (event) => {
+        void this.#handleBeforeAutoComplete(event);
+      },
+      onStartEditing: () => this.onStartEditing?.(),
+      onDelete: () => this.onDelete?.(),
+      onContextMenu: (event) => this.onContextMenu?.(event)
+    };
+    this.#view(viewInput, void 0, this.contentElement);
+  }
+};
 var DEFAULT_VIEW8 = (input, output, target) => {
   const onContextMenu = (watchExpression, event) => {
     const contextMenu = new UI24.ContextMenu.ContextMenu(event);
@@ -14497,81 +14684,29 @@ var DEFAULT_VIEW8 = (input, output, target) => {
       input.onDelete(expression);
     }
   };
-  const renderNameElement = (e) => ObjectUI4.ObjectPropertiesSection.renderPropertyName(
-    e.expression,
-    /* isPrivate= */
-    false,
-    e.expression ?? void 0
-  );
-  const renderTreeElement = (e) => (
-    // clang-format off
-    html14`<li
+  const renderTreeElement = (e) => {
+    const completionsId = `watch-expression-completions-${input.watchExpressions.indexOf(e)}`;
+    return html14`<li
           class=${classMap3({ "watch-expression-tree-item": true, "watch-expression-editing": e.editing })}
           @keydown=${onExpressionKeydown.bind(void 0, e)}
           @expand=${(event) => input.onExpand(e, event.detail.expanded)}
           role=treeitem>
-        <devtools-prompt
-            value=${e.expression ?? ""}
-            @commit=${(event) => input.onFinishEditing(e, event.detail)}
-            @cancel=${() => input.onFinishEditing(e, null)}
-            ?editing=${e.editing}
-            @mousedown=${(event) => e.editing && event.stopPropagation()}
-            @click=${(event) => e.editing && event.stopPropagation()}
-            @dblclick=${(event) => e.editing && event.stopPropagation()}
-            class=${classMap3({
-      monospace: true,
-      "watch-expression": true,
-      "watch-expression-text-prompt-proxy": e.editing
-    })}>
-          <div class=${classMap3({
-      "watch-expression-header": true,
-      "watch-expression-object-header": !e.exceptionDetails && e.result !== void 0 && e.result.hasChildren && !e.result.object.customPreview()
-    })}
-               @contextmenu=${onContextMenu.bind(void 0, e)}
-               @dblclick=${() => input.onStartEditing(e)}>
-            <div class=${classMap3({
-      "watch-expression-title": true,
-      "tree-element-title": true,
-      dimmed: Boolean(e.exceptionDetails) && !e.result
-    })}>
-              <devtools-button
-                .data=${{
-      variant: "icon",
-      iconName: "bin",
-      size: "SMALL",
-      jslogContext: "delete-watch-expression"
-    }}
-                class=watch-expression-delete-button
-                title=${i18nString24(UIStrings25.deleteWatchExpression)}
-                @click=${() => input.onDelete(e)}></devtools-button>
-              ${renderNameElement(e)}<span class=watch-expressions-separator>: </span>${e.exceptionDetails || !e.result ? html14`<span
-                    class="watch-expression-error value"
-                    title=${ifDefined3(e.exceptionDetails?.exception?.description)}
-                    >${i18nString24(UIStrings25.notAvailable)}</span>` : ObjectUI4.ObjectPropertiesSection.renderPropertyValue(
-      e.result.object,
-      Boolean(e.exceptionDetails),
-      false,
-      input.linkifier,
-      false,
-      void 0,
-      void 0,
-      /* useCustomPreview */
-      true
-    )}
-            </div>
-          </div>
-        </devtools-prompt>
+            <devtools-widget ${widget2(WatchExpressionPromptWidget, {
+      expression: e,
+      linkifier: input.linkifier,
+      completionsId,
+      onCommit: (detail) => input.onFinishEditing(e, detail),
+      onCancel: () => input.onFinishEditing(e, null),
+      onStartEditing: () => input.onStartEditing(e),
+      onDelete: () => input.onDelete(e),
+      onContextMenu: (event) => onContextMenu(e, event)
+    })}></devtools-widget>
         ${e.editing || !e.result || e.exceptionDetails || !e.result.hasChildren || e.result.object.customPreview() ? nothing8 : html14`
           <ul role=group>
-            ${ObjectUI4.ObjectPropertiesSection.ObjectPropertyTreeElement.createPropertyNodes(
-      e.result.children ?? {},
-      true,
-      true
-      /* skipGettersAndSetters */
-    ).map((node) => html14`<devtools-tree-wrapper .treeElement=${node}></devtools-tree-wrapper>`)}
+            ${ObjectUI4.ObjectPropertiesSection.ObjectPropertyTreeElement.createPropertyNodes(e.result.children ?? {}, false, false, input.linkifier).map((node) => html14`<devtools-tree-wrapper .treeElement=${node}></devtools-tree-wrapper>`)}
           </ul>`}
-      </li>`
-  );
+      </li>`;
+  };
   render11(
     // clang-format off
     html14`
@@ -14813,7 +14948,7 @@ var WatchExpression = class _WatchExpression {
       }
     }
     try {
-      const result = await executionContext.evaluate(
+      const result = await executionContext.evaluateWithSelectedFrameFallback(
         {
           expression,
           objectGroup: _WatchExpression.watchObjectGroupId,

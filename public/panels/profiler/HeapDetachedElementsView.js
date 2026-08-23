@@ -6,7 +6,7 @@ import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { HeapDetachedElementsDataGrid, HeapDetachedElementsDataGridNode } from './HeapDetachedElementsDataGrid.js';
+import { HeapDetachedElementsDataGrid } from './HeapDetachedElementsDataGrid.js';
 import { ProfileType, } from './ProfileHeader.js';
 import { WritableProfileHeader } from './WritableProfileHeader.js';
 const UIStrings = {
@@ -45,8 +45,8 @@ export class DetachedElementsProfileView extends UI.View.SimpleView {
         this.parentDataDisplayDelegate = dataDisplayDelegate;
         this.selectedSizeText = new UI.Toolbar.ToolbarText();
         this.dataGrid = new HeapDetachedElementsDataGrid();
+        this.dataGrid.show(this.element);
         this.populateElementsGrid(profile.detachedElements);
-        this.dataGrid.asWidget().show(this.element);
     }
     showProfile(profile) {
         return this.parentDataDisplayDelegate.showProfile(profile);
@@ -66,9 +66,7 @@ export class DetachedElementsProfileView extends UI.View.SimpleView {
         if (!domModel) {
             return;
         }
-        for (const detachedElement of detachedElements) {
-            this.dataGrid.rootNode().appendChild(new HeapDetachedElementsDataGridNode(detachedElement, domModel));
-        }
+        this.dataGrid.data = { detachedElements, domModel };
     }
     async toolbarItems() {
         return [this.selectedSizeText];

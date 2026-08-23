@@ -7,6 +7,7 @@ import { DebuggerModel } from './DebuggerModel.js';
 import { HeapProfilerModel } from './HeapProfilerModel.js';
 import { RemoteFunction, RemoteObject, RemoteObjectImpl, RemoteObjectProperty, ScopeRemoteObject, } from './RemoteObject.js';
 import { SDKModel } from './SDKModel.js';
+import { customFormattersSettingDescriptor } from './SDKSettings.js';
 import { Type } from './Target.js';
 export class RuntimeModel extends SDKModel {
     agent;
@@ -17,11 +18,11 @@ export class RuntimeModel extends SDKModel {
         this.agent = target.runtimeAgent();
         this.target().registerRuntimeDispatcher(new RuntimeDispatcher(this));
         void this.agent.invoke_enable();
-        const settings = this.target().targetManager().context.get(Common.Settings.Settings);
-        if (settings.moduleSetting('custom-formatters').get()) {
+        const customFormattersSetting = this.target().targetManager().context.get(Common.Settings.Settings).resolve(customFormattersSettingDescriptor);
+        if (customFormattersSetting.get()) {
             void this.agent.invoke_setCustomObjectFormatterEnabled({ enabled: true });
         }
-        settings.moduleSetting('custom-formatters').addChangeListener(this.customFormattersStateChanged.bind(this));
+        customFormattersSetting.addChangeListener(this.customFormattersStateChanged.bind(this));
     }
     static isSideEffectFailure(response) {
         const exceptionDetails = 'exceptionDetails' in response && response.exceptionDetails;
@@ -442,12 +443,12 @@ export class ExecutionContext {
         }
         return a.name.localeCompare(b.name);
     }
-    async evaluate(options, userGesture, awaitPromise) {
+    async evaluateWithSelectedFrameFallback(options, userGesture, awaitPromise) {
         // FIXME: It will be moved to separate ExecutionContext.
         if (this.debuggerModel.selectedCallFrame()) {
             return await this.debuggerModel.evaluateOnSelectedCallFrame(options);
         }
-        return await this.evaluateGlobal(options, userGesture, awaitPromise);
+        return await this.evaluate(options, userGesture, awaitPromise);
     }
     globalObject(objectGroup, generatePreview) {
         const evaluationOptions = {
@@ -458,7 +459,7 @@ export class ExecutionContext {
             returnByValue: false,
             generatePreview,
         };
-        return this.evaluateGlobal(evaluationOptions, false, false);
+        return this.evaluate(evaluationOptions, false, false);
     }
     async callFunctionOn(options) {
         const response = await this.runtimeModel.agent.invoke_callFunctionOn({
@@ -478,7 +479,7 @@ export class ExecutionContext {
         }
         return { object: this.runtimeModel.createRemoteObject(response.result), exceptionDetails: response.exceptionDetails };
     }
-    async evaluateGlobal(options, userGesture, awaitPromise) {
+    async evaluate(options, userGesture, awaitPromise) {
         if (!options.expression) {
             // There is no expression, so the completion should happen against global properties.
             options.expression = 'this';

@@ -92,9 +92,6 @@
       "path": "../../panels/snippets/bundle-tsconfig.json"
     },
     {
-      "path": "../../ui/comments/bundle-tsconfig.json"
-    },
-    {
       "path": "../../ui/components/buttons/bundle-tsconfig.json"
     },
     {
@@ -114,6 +111,9 @@
     },
     {
       "path": "../../ui/lit/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../ui/settings/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/visual_logging/bundle-tsconfig.json"

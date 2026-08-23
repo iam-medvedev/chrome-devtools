@@ -14,7 +14,6 @@ import { Directives, html, nothing, render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import lockIconStyles from './lockIcon.css.js';
 import mainViewStyles from './mainView.css.js';
-import { ShowOriginEvent } from './OriginTreeElement.js';
 import originViewStyles from './originView.css.js';
 import { Events, SecurityModel, securityStateCompare, SecurityStyleExplanation, SummaryMessages, } from './SecurityModel.js';
 import { SecurityPanelSidebar } from './SecurityPanelSidebar.js';
@@ -523,14 +522,14 @@ export class SecurityPanel extends UI.Panel.Panel {
         this.sidebar.element.setAttribute('jslog', `${VisualLogging.pane('sidebar').track({ resize: true })}`);
         this.mainView = new SecurityMainView();
         this.mainView.panel = this;
-        this.element.addEventListener(ShowOriginEvent.eventName, (event) => {
-            if (event.origin) {
-                this.showOrigin(event.origin);
+        this.sidebar.onShowOrigin = (origin) => {
+            if (origin) {
+                this.showOrigin(origin);
             }
             else {
                 this.setVisibleView(this.mainView);
             }
-        });
+        };
         this.lastResponseReceivedForLoaderId = new Map();
         this.origins = new Map();
         this.filterRequestCounts = new Map();
@@ -571,7 +570,7 @@ export class SecurityPanel extends UI.Panel.Panel {
         this.view({ panel: this }, this, this.contentElement);
     }
     updateVisibleSecurityState(visibleSecurityState) {
-        this.sidebar.securityOverviewElement.setSecurityState(visibleSecurityState.securityState);
+        this.sidebar.updateOverviewSecurityState(visibleSecurityState.securityState);
         this.mainView.updateVisibleSecurityState(visibleSecurityState);
     }
     onVisibleSecurityStateChanged({ data }) {

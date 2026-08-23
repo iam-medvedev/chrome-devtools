@@ -5,11 +5,11 @@ import * as IssuesManager from "./../../models/issues_manager/issues_manager.js"
 import * as UI from "./../../ui/legacy/legacy.js";
 var UIStrings = {
   /**
-   * @description Label for the issues pane
+   * @description Title for the Issues panel.
    */
   issues: "Issues",
   /**
-   * @description Command for showing the 'Issues' tool
+   * @description Command menu command for showing the Issues panel.
    */
   showIssues: "Show Issues"
 };

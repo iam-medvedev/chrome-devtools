@@ -417,7 +417,7 @@ function renderSingleDiffView(singleDiffViewInput) {
     selected: selectedFileUrl === fileUrl
   });
   return html2`
-    <details open class=${classes}>
+    <details open class=${classes} jslog=${VisualLogging2.section("diff-view")}>
       <summary>
         <div class="summary-left">
           <devtools-icon class="drop-down-icon" name="arrow-drop-down"></devtools-icon>

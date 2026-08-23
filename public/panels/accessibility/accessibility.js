@@ -4398,7 +4398,7 @@ var DEFAULT_VIEW = (input, output, target) => {
            .template=${html`
              <ul role="tree">
               ${input.attributes?.map((attribute) => html`
-                <li role="treeitem">
+                <li role="treeitem" jslog=${VisualLogging2.treeItem("aria-attribute")}>
                   <style>${accessibilityProperties_css_default}</style>
                   <span class="ax-name monospace" @mousedown=${onStartEditing.bind(null, attribute)}>
                     ${attribute.name}
@@ -4421,7 +4421,14 @@ var DEFAULT_VIEW = (input, output, target) => {
            `}></devtools-tree>`,
     // clang-format on
     target,
-    { container: { attributes: { jslog: `${VisualLogging2.section("aria-attributes")}` } } }
+    {
+      container: {
+        attributes: {
+          jslog: `${VisualLogging2.section("aria-attributes")}`,
+          ...input.backendNodeId ? { "data-backend-node-id": `${input.backendNodeId}` } : {}
+        }
+      }
+    }
   );
 };
 var ARIAAttributesPane = class extends AccessibilitySubPane {
@@ -4468,7 +4475,8 @@ var ARIAAttributesPane = class extends AccessibilitySubPane {
       onStartEditing,
       onCommitEditing,
       onCancelEditing,
-      propertyCompletions
+      propertyCompletions,
+      backendNodeId: this.node()?.backendNodeId()
     };
     this.#view(input, {}, this.contentElement);
   }

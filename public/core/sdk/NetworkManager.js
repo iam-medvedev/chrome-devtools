@@ -12,6 +12,7 @@ import { Cookie } from './Cookie.js';
 import { DirectSocketChunkType, DirectSocketStatus, DirectSocketType, Events as NetworkRequestEvents, NetworkRequest, } from './NetworkRequest.js';
 import { RuntimeModel } from './RuntimeModel.js';
 import { SDKModel } from './SDKModel.js';
+import { cacheDisabledSettingDescriptor, monitoringXHREnabledSettingDescriptor, preserveNetworkLogSettingDescriptor, requestBlockingEnabledSettingDescriptor, } from './SDKSettings.js';
 import { TargetManager } from './TargetManager.js';
 const UIStrings = {
     /**
@@ -158,7 +159,7 @@ export class NetworkManager extends SDKModel {
         target.registerFetchDispatcher(this.fetchDispatcher);
         const settings = this.target().targetManager().settings;
         this.activeNetworkThrottlingKey = activeNetworkThrottlingKeySetting(settings);
-        if (settings.moduleSetting('cache-disabled').get()) {
+        if (settings.resolve(cacheDisabledSettingDescriptor).get()) {
             void this.#networkAgent.invoke_setCacheDisabled({ cacheDisabled: true });
         }
         void this.#networkAgent.invoke_enable({
@@ -167,7 +168,7 @@ export class NetworkManager extends SDKModel {
             reportDirectSocketTraffic: true,
         });
         if (Root.Runtime.hostConfig.devToolsEnableDurableMessages?.enabled) {
-            const preserveLogSetting = settings.moduleSetting('network-log.preserve-log');
+            const preserveLogSetting = settings.resolve(preserveNetworkLogSettingDescriptor);
             this.#updateDurableMessages(preserveLogSetting.get());
             preserveLogSetting.addChangeListener(this.preserveLogChanged, this);
         }
@@ -177,7 +178,7 @@ export class NetworkManager extends SDKModel {
             this.bypassServiceWorkerChanged();
         }
         this.#bypassServiceWorkerSetting.addChangeListener(this.bypassServiceWorkerChanged, this);
-        settings.moduleSetting('cache-disabled').addChangeListener(this.cacheDisabledSettingChanged, this);
+        settings.resolve(cacheDisabledSettingDescriptor).addChangeListener(this.cacheDisabledSettingChanged, this);
     }
     static forRequest(request) {
         return requestToManagerMap.get(request) || null;
@@ -485,8 +486,8 @@ export class NetworkManager extends SDKModel {
     }
     dispose() {
         const settings = this.target().targetManager().settings;
-        settings.moduleSetting('cache-disabled').removeChangeListener(this.cacheDisabledSettingChanged, this);
-        settings.moduleSetting('network-log.preserve-log').removeChangeListener(this.preserveLogChanged, this);
+        settings.resolve(cacheDisabledSettingDescriptor).removeChangeListener(this.cacheDisabledSettingChanged, this);
+        settings.resolve(preserveNetworkLogSettingDescriptor).removeChangeListener(this.preserveLogChanged, this);
     }
     bypassServiceWorkerChanged() {
         void this.#networkAgent.invoke_setBypassServiceWorker({ bypass: this.#bypassServiceWorkerSetting.get() });
@@ -1141,7 +1142,7 @@ export class NetworkDispatcher {
         this.#manager.dispatchEventToListeners(Events.RequestFinished, networkRequest);
         this.#multitargetNetworkManager.inflightMainResourceRequests.delete(networkRequest.requestId());
         const settings = this.#manager.target().targetManager().settings;
-        if (settings.moduleSetting('monitoring-xhr-enabled').get() &&
+        if (settings.resolve(monitoringXHREnabledSettingDescriptor).get() &&
             networkRequest.resourceType().category() === Common.ResourceType.resourceCategories.XHR) {
             let message;
             const failedToLoad = networkRequest.failed || networkRequest.hasErrorStatusCode();
@@ -1620,7 +1621,7 @@ export class RequestConditions extends Common.ObjectWrapper.ObjectWrapper {
     constructor(settings) {
         super();
         this.#setting = settings.createSetting('network-blocked-patterns', []);
-        this.#conditionsEnabledSetting = settings.moduleSetting('request-blocking-enabled');
+        this.#conditionsEnabledSetting = settings.resolve(requestBlockingEnabledSettingDescriptor);
         for (const condition of this.#setting.get()) {
             try {
                 this.#conditions.push(RequestCondition.createFromSetting(condition, settings));
@@ -1989,8 +1990,8 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
     }
     async updateInterceptionPatterns() {
         const settings = this.#targetManager.settings;
-        if (!settings.moduleSetting('cache-disabled').get()) {
-            settings.moduleSetting('cache-disabled').set(true);
+        if (!settings.resolve(cacheDisabledSettingDescriptor).get()) {
+            settings.resolve(cacheDisabledSettingDescriptor).set(true);
         }
         this.#updatingInterceptionPatternsPromise = null;
         const promises = [];

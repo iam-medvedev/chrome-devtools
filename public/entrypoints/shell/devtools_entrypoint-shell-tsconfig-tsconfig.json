@@ -47,22 +47,7 @@
       "path": "../../Images/optimize_images-tsconfig.json"
     },
     {
-      "path": "../../core/sdk/meta-tsconfig.json"
-    },
-    {
       "path": "../main/meta-tsconfig.json"
-    },
-    {
-      "path": "../../models/badges/meta-tsconfig.json"
-    },
-    {
-      "path": "../../models/logs/meta-tsconfig.json"
-    },
-    {
-      "path": "../../models/persistence/meta-tsconfig.json"
-    },
-    {
-      "path": "../../models/workspace/meta-tsconfig.json"
     },
     {
       "path": "../../panels/ai_assistance/meta-tsconfig.json"

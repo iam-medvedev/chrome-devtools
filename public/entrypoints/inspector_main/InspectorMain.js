@@ -10,6 +10,7 @@ import * as MobileThrottling from '../../panels/mobile_throttling/mobile_throttl
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Lit from '../../ui/lit/lit.js';
+import * as SettingsUI from '../../ui/settings/settings.js';
 import nodeIconStyles from './nodeIcon.css.js';
 const { html } = Lit;
 const UIStrings = {
@@ -200,10 +201,10 @@ export class BackendSettingsSync {
     #adBlockEnabledSetting;
     #emulatePageFocusSetting;
     constructor() {
-        this.#autoAttachSetting = Common.Settings.Settings.instance().moduleSetting('auto-attach-to-created-pages');
+        this.#autoAttachSetting = Common.Settings.Settings.instance().resolve(SettingsUI.InspectorMainSettings.autoAttachToCreatedPagesSettingDescriptor);
         this.#autoAttachSetting.addChangeListener(this.#updateAutoAttach, this);
         this.#updateAutoAttach();
-        this.#adBlockEnabledSetting = Common.Settings.Settings.instance().moduleSetting('network.ad-blocking-enabled');
+        this.#adBlockEnabledSetting = Common.Settings.Settings.instance().resolve(SettingsUI.InspectorMainSettings.adBlockingEnabledSettingDescriptor);
         this.#adBlockEnabledSetting.addChangeListener(this.#update, this);
         this.#emulatePageFocusSetting =
             Common.Settings.Settings.instance().resolve(SDK.SDKSettings.emulatePageFocusSettingDescriptor);

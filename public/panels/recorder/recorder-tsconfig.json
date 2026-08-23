@@ -145,9 +145,6 @@
       "path": "models/bundle-tsconfig.json"
     },
     {
-      "path": "models/recorder-tsconfig.json"
-    },
-    {
       "path": "recorder-actions/bundle-tsconfig.json"
     },
     {

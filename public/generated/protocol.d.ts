@@ -2535,6 +2535,15 @@ export declare namespace Browser {
     interface AddPrivacySandboxEnrollmentOverrideRequest {
         url: string;
     }
+    interface GetGlobalPrivacyControlResponse extends ProtocolResponseWithError {
+        gpc: boolean;
+    }
+    interface SetGlobalPrivacyControlRequest {
+        gpc: boolean;
+    }
+    interface SetGlobalPrivacyControlResponse extends ProtocolResponseWithError {
+        gpc: boolean;
+    }
     /**
      * Fired when page is about to start a download.
      */
@@ -7126,6 +7135,19 @@ export declare namespace Emulation {
          * Hardware concurrency to report
          */
         hardwareConcurrency: integer;
+    }
+    const enum SetCPUPerformanceOverrideRequestPerformanceTier {
+        Unknown = "unknown",
+        Low = "low",
+        Mid = "mid",
+        High = "high",
+        Ultra = "ultra"
+    }
+    interface SetCPUPerformanceOverrideRequest {
+        /**
+         * Override value. Omitting the parameter disables the override.
+         */
+        performanceTier?: SetCPUPerformanceOverrideRequestPerformanceTier;
     }
     interface SetUserAgentOverrideRequest {
         /**
@@ -13532,7 +13554,6 @@ export declare namespace Page {
         IdentityCredentialsGet = "identity-credentials-get",
         IdleDetection = "idle-detection",
         InterestCohort = "interest-cohort",
-        JoinAdInterestGroup = "join-ad-interest-group",
         KeyboardMap = "keyboard-map",
         LanguageDetector = "language-detector",
         LanguageModel = "language-model",
@@ -13553,9 +13574,7 @@ export declare namespace Page {
         PrivateStateTokenRedemption = "private-state-token-redemption",
         PublickeyCredentialsCreate = "publickey-credentials-create",
         PublickeyCredentialsGet = "publickey-credentials-get",
-        RecordAdAuctionEvents = "record-ad-auction-events",
         Rewriter = "rewriter",
-        RunAdAuction = "run-ad-auction",
         ScreenWakeLock = "screen-wake-lock",
         Serial = "serial",
         SharedStorage = "shared-storage",
@@ -15113,9 +15132,21 @@ export declare namespace Page {
          */
         maxHeight?: integer;
         /**
-         * Send every n-th frame.
+         * Send every n-th frame. Must be a positive integer.
          */
         everyNthFrame?: integer;
+        /**
+         * Maximum number of frames sent until screencastFrameAck is required.
+         * Defaults to 3. Must be a positive integer.
+         */
+        maxFramesInFlight?: integer;
+        /**
+         * By default, after screencastFrameAck arrives, the next produced frame is sent.
+         * Passing this flag enables storing the last produced frame in memory, which is
+         * immediately sent upon screencastFrameAck. This way, overall performance is
+         * traded for a better latency.
+         */
+        sendLastFrame?: boolean;
     }
     interface StartScreenRecordingRequest {
         audio?: boolean;
@@ -18455,6 +18486,7 @@ export declare namespace WebAudio {
          * Context sample rate.
          */
         sampleRate: number;
+        renderQuantumSize: number;
     }
     /**
      * Protocol object for AudioListener

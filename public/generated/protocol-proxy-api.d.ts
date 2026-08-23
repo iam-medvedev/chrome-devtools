@@ -713,6 +713,18 @@ declare namespace ProtocolProxyApi {
      */
     invoke_addPrivacySandboxEnrollmentOverride(params: Protocol.Browser.AddPrivacySandboxEnrollmentOverrideRequest): Promise<Protocol.ProtocolResponseWithError>;
 
+    /**
+     * Gets the current globally-applied privacy control status
+     * See https://www.w3.org/TR/gpc/#get-global-privacy-control
+     */
+    invoke_getGlobalPrivacyControl(): Promise<Protocol.Browser.GetGlobalPrivacyControlResponse>;
+
+    /**
+     * Sets and then gets the current globally-applied privacy control status
+     * See https://www.w3.org/TR/gpc/#set-global-privacy-control
+     */
+    invoke_setGlobalPrivacyControl(params: Protocol.Browser.SetGlobalPrivacyControlRequest): Promise<Protocol.Browser.SetGlobalPrivacyControlResponse>;
+
   }
   export interface BrowserDispatcher {
     /**
@@ -1868,6 +1880,11 @@ declare namespace ProtocolProxyApi {
     invoke_setDataSaverOverride(params: Protocol.Emulation.SetDataSaverOverrideRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     invoke_setHardwareConcurrencyOverride(params: Protocol.Emulation.SetHardwareConcurrencyOverrideRequest): Promise<Protocol.ProtocolResponseWithError>;
+
+    /**
+     * Overrides the value of navigator.cpuPerformance
+     */
+    invoke_setCPUPerformanceOverride(params: Protocol.Emulation.SetCPUPerformanceOverrideRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Allows overriding user agent with the given string.

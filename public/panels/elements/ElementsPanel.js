@@ -40,6 +40,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as ComputedStyle from '../../models/computed_style/computed_style.js';
 import * as PanelCommon from '../../panels/common/common.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as SettingsUI from '../../ui/settings/settings.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { AccessibilityTreeView } from './AccessibilityTreeView.js';
 import { ColorSwatchPopoverIcon } from './ColorSwatchPopoverIcon.js';
@@ -53,41 +54,41 @@ import { PlatformFontsWidget } from './PlatformFontsWidget.js';
 import { StylesSidebarPane, } from './StylesSidebarPane.js';
 const UIStrings = {
     /**
-     * @description Placeholder text for the search box the Elements Panel. Selector refers to CSS
+     * @description Placeholder text for the search box in the Elements panel. Selector refers to CSS
      * selectors.
      */
     findByStringSelectorOrXpath: 'Find by string, selector, or `XPath`',
     /**
-     * @description Tooltip for the the Computed Styles sidebar toggle in the Styles pane. Command to
+     * @description Tooltip for the computed styles sidebar toggle in the Styles tab of the Elements panel. Command to
      * open/show the sidebar.
      */
-    showComputedStylesSidebar: 'Show Computed Styles sidebar',
+    showComputedStylesSidebar: 'Show Computed styles sidebar',
     /**
-     * @description Tooltip for the the Computed Styles sidebar toggle in the Styles pane. Command to
+     * @description Tooltip for the computed styles sidebar toggle in the Styles tab of the Elements panel. Command to
      * close/hide the sidebar.
      */
-    hideComputedStylesSidebar: 'Hide Computed Styles sidebar',
+    hideComputedStylesSidebar: 'Hide Computed styles sidebar',
     /**
      * @description Screen reader announcement when the computed styles sidebar is shown in the Elements panel.
      */
-    computedStylesShown: 'Computed Styles sidebar shown',
+    computedStylesShown: 'Computed styles sidebar shown',
     /**
      * @description Screen reader announcement when the computed styles sidebar is hidden in the Elements panel.
      */
-    computedStylesHidden: 'Computed Styles sidebar hidden',
+    computedStylesHidden: 'Computed styles sidebar hidden',
     /**
-     * @description Title of a pane in the Elements panel that shows computed styles for the selected
+     * @description Title of a tab in the Elements panel sidebar that shows computed styles for the selected
      * HTML element. Computed styles are the final, actual styles of the element, including all
      * implicit and specified styles.
      */
     computed: 'Computed',
     /**
-     * @description Title of a pane in the Elements panel that shows the CSS styles for the selected
+     * @description Title of a tab in the Elements panel sidebar that shows the CSS styles for the selected
      * HTML element.
      */
     styles: 'Styles',
     /**
-     * @description A context menu item to reveal a node in the DOM tree of the Elements Panel
+     * @description A context menu item to reveal a node in the DOM tree of the Elements panel.
      */
     openInElementsPanel: 'Open in Elements panel',
     /**
@@ -228,7 +229,8 @@ export class ElementsPanel extends UI.Panel.Panel {
         this.#computedStyleModel.addEventListener("ComputedStyleChanged" /* ComputedStyle.ComputedStyleModel.Events.COMPUTED_STYLE_CHANGED */, this.#updateComputedStyles, this);
         this.#computedStyleModel.addEventListener("CSSModelChanged" /* ComputedStyle.ComputedStyleModel.Events.CSS_MODEL_CHANGED */, this.#updateComputedStyles, this);
         this.metricsWidget = new MetricsSidebarPane(this.#computedStyleModel);
-        this.#settings.moduleSetting('sidebar-position').addChangeListener(this.updateSidebarPosition.bind(this));
+        this.#settings.resolve(SettingsUI.MainSettings.sidebarPositionSettingDescriptor)
+            .addChangeListener(this.updateSidebarPosition.bind(this));
         this.updateSidebarPosition();
         this.cssStyleTrackerByCSSModel = new Map();
         this.currentSearchResultIndex = -1; // -1 represents the initial invalid state
@@ -964,7 +966,7 @@ export class ElementsPanel extends UI.Panel.Panel {
         if (this.sidebarPaneView?.tabbedPane().shouldHideOnDetach()) {
             return;
         } // We can't reparent extension iframes.
-        const position = this.#settings.moduleSetting('sidebar-position').get();
+        const position = this.#settings.resolve(SettingsUI.MainSettings.sidebarPositionSettingDescriptor).get();
         let splitMode = "Horizontal" /* SplitMode.HORIZONTAL */;
         if (position === 'right' || (position === 'auto' && this.splitWidget.element.offsetWidth > 680)) {
             splitMode = "Vertical" /* SplitMode.VERTICAL */;

@@ -105,16 +105,10 @@
       "path": "../../models/network_time_calculator/bundle-tsconfig.json"
     },
     {
-      "path": "../../models/persistence/bundle-tsconfig.json"
-    },
-    {
       "path": "../../models/trace/bundle-tsconfig.json"
     },
     {
       "path": "../../models/workspace/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../models/workspace_diff/bundle-tsconfig.json"
     },
     {
       "path": "../lighthouse/bundle-tsconfig.json"

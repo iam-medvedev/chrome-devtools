@@ -130,21 +130,21 @@ describe('TabbedEditorContainer', () => {
             const actionRegistryInstance = UI.ActionRegistry.ActionRegistry.instance({ forceNew: true });
             UI.ShortcutRegistry.ShortcutRegistry.instance({ forceNew: true, actionRegistry: actionRegistryInstance });
             void testUniverse.networkPersistenceManager;
-            const delegate = {
-                viewForFile: uiSourceCode => {
-                    let view = views.get(uiSourceCode);
-                    if (!view) {
-                        view = new UI.Widget.Widget();
-                        views.set(uiSourceCode, view);
-                    }
-                    return view;
-                },
-                recycleUISourceCodeFrame: () => { },
-            };
             const setting = createFakeSetting('previously-viewed-files', []);
             tabbedEditorContainer = new Sources.TabbedEditorContainer.TabbedEditorContainer();
-            tabbedEditorContainer.delegate = delegate;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            tabbedEditorContainer.historyManager = { trackSourceFrameCursorJumps: () => { } };
             tabbedEditorContainer.previouslyViewedFilesSetting = setting;
+            // Hook getOrCreateSourceView for tests replacing the view caching
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            sinon.stub(tabbedEditorContainer, 'getOrCreateSourceView').callsFake(uiSourceCode => {
+                let view = views.get(uiSourceCode);
+                if (!view) {
+                    view = new UI.Widget.Widget();
+                    views.set(uiSourceCode, view);
+                }
+                return view;
+            });
         });
         afterEach(() => {
             Root.DevToolsContext.setGlobalInstance(null);
@@ -159,14 +159,13 @@ describe('TabbedEditorContainer', () => {
             sinon.stub(UI.ActionRegistry.ActionRegistry.instance(), 'getAction').callsFake(_ => {
                 return { execute: () => Promise.resolve() };
             });
-            const delegate = {
-                viewForFile: () => new UI.Widget.Widget(),
-                recycleUISourceCodeFrame: () => { },
-            };
             const setting = createFakeSetting('previously-viewed-files', []);
             const container = new Sources.TabbedEditorContainer.TabbedEditorContainer();
-            container.delegate = delegate;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            container.historyManager = { trackSourceFrameCursorJumps: () => { } };
             container.previouslyViewedFilesSetting = setting;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            sinon.stub(container, 'getOrCreateSourceView').returns(new UI.Widget.Widget());
             renderElementIntoDOM(container);
             const tabbedPane = container.tabbedPaneForTesting;
             await tabbedPane.updateComplete;
@@ -331,18 +330,13 @@ describeWithEnvironment('TabbedEditorContainer', () => {
             Persistence.Persistence.PersistenceImpl.instance({ forceNew: true, workspace, breakpointManager });
             Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance({ forceNew: true, workspace });
             UI.ShortcutRegistry.ShortcutRegistry.instance({ forceNew: true, actionRegistry: actionRegistryInstance });
-            class MockDelegate {
-                viewForFile(_uiSourceCode) {
-                    return new UI.Widget.Widget();
-                }
-                recycleUISourceCodeFrame() {
-                }
-            }
-            const delegate = new MockDelegate();
             const setting = createFakeSetting('previouslyViewedFilesSetting', []);
             const tabbedEditorContainer = new Sources.TabbedEditorContainer.TabbedEditorContainer();
-            tabbedEditorContainer.delegate = delegate;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            tabbedEditorContainer.historyManager = { trackSourceFrameCursorJumps: () => { } };
             tabbedEditorContainer.previouslyViewedFilesSetting = setting;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            sinon.stub(tabbedEditorContainer, 'getOrCreateSourceView').returns(new UI.Widget.Widget());
             const { uiSourceCode: uiSourceCode1 } = createContentProviderUISourceCode({ url: urlString `http://localhost/foo.js`, mimeType: 'text/javascript' });
             const { uiSourceCode: uiSourceCode2 } = createContentProviderUISourceCode({ url: urlString `http://localhost/bar.js`, mimeType: 'text/javascript' });
             const { uiSourceCode: uiSourceCode3 } = createContentProviderUISourceCode({ url: urlString `http://localhost/baz.js`, mimeType: 'text/javascript' });

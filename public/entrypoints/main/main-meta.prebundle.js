@@ -6,10 +6,58 @@ import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Badges from '../../models/badges/badges.js';
+import * as Persistence from '../../models/persistence/persistence.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as SettingsUI from '../../ui/settings/settings.js';
 const UIStrings = {
+    /**
+     * @description Title of a setting under the Persistence category in Settings.
+     */
+    localOverrides: 'Local overrides',
+    /**
+     * @description A tag of enable local overrides setting that can be searched in the command menu.
+     */
+    interception: 'interception',
+    /**
+     * @description A tag of enable local overrides setting that can be searched in the command menu.
+     */
+    override: 'override',
+    /**
+     * @description A tag of group network by frame setting that can be searched in the command menu.
+     */
+    network: 'network',
+    /**
+     * @description A tag of enable local overrides setting that can be searched in the command menu.
+     */
+    rewrite: 'rewrite',
+    /**
+     * @description A tag of enable local overrides setting that can be searched in the command menu.
+     * Noun for network request.
+     */
+    request: 'request',
+    /**
+     * @description Title of an option under the Persistence category that can be invoked through the command menu.
+     */
+    enableOverrideNetworkRequests: 'Enable override network requests',
+    /**
+     * @description Title of an option under the Persistence category that can be invoked through the command menu.
+     */
+    disableOverrideNetworkRequests: 'Disable override network requests',
+    /**
+     * @description Label for a checkbox in the settings UI. Allows developers to opt-in/opt-out
+     * of receiving Google Developer Program (GDP) badges based on their activity in Chrome DevTools.
+     */
+    earnBadges: 'Earn badges',
+    /**
+     * @description Title of a setting under the Appearance category in Settings. When the webpage is
+     * paused by devtools, an overlay is shown on top of the page to indicate that it is paused. The
+     * overlay is a pause/unpause button and some text, which appears on top of the paused page. This
+     * setting turns off this overlay.
+     */
+    disablePaused: 'Disable paused state overlay',
     /**
      * @description Action title to focus the page being debugged.
      */
@@ -586,13 +634,9 @@ UI.ActionRegistration.registerActionExtension({
         },
     ],
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.MainSettings.uiThemeSettingDescriptor, {
     category: "APPEARANCE" /* Common.Settings.SettingCategory.APPEARANCE */,
-    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
     title: i18nLazyString(UIStrings.theme),
-    settingName: 'ui-theme',
-    settingType: "enum" /* Common.Settings.SettingType.ENUM */,
-    defaultValue: 'systemPreferred',
     reloadRequired: false,
     options: [
         {
@@ -616,13 +660,9 @@ Common.Settings.registerSettingExtension({
         i18nLazyString(UIStrings.lightLower),
     ],
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.MainSettings.chromeThemeColorsSettingDescriptor, {
     category: "APPEARANCE" /* Common.Settings.SettingCategory.APPEARANCE */,
-    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
     title: i18nLazyString(UIStrings.matchChromeColorScheme),
-    settingName: 'chrome-theme-colors',
-    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
-    defaultValue: true,
     options: [
         {
             value: true,
@@ -639,13 +679,9 @@ Common.Settings.registerSettingExtension({
         tooltip: i18nLazyString(UIStrings.matchChromeColorSchemeDocumentation),
     },
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.MainSettings.sidebarPositionSettingDescriptor, {
     category: "APPEARANCE" /* Common.Settings.SettingCategory.APPEARANCE */,
-    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
     title: i18nLazyString(UIStrings.panelLayout),
-    settingName: 'sidebar-position',
-    settingType: "enum" /* Common.Settings.SettingType.ENUM */,
-    defaultValue: 'auto',
     options: [
         {
             title: i18nLazyString(UIStrings.useHorizontalPanelLayout),
@@ -664,13 +700,9 @@ Common.Settings.registerSettingExtension({
         },
     ],
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.MainSettings.languageSettingDescriptor, {
     category: "APPEARANCE" /* Common.Settings.SettingCategory.APPEARANCE */,
-    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
-    settingName: 'language',
-    settingType: "enum" /* Common.Settings.SettingType.ENUM */,
     title: i18nLazyString(UIStrings.language),
-    defaultValue: 'en-US',
     options: [
         {
             value: 'browserLanguage',
@@ -689,6 +721,10 @@ Common.Settings.registerSettingExtension({
     settingName: 'shortcut-panel-switch',
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: false,
+});
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.disablePausedStateOverlaySettingDescriptor, {
+    category: "APPEARANCE" /* Common.Settings.SettingCategory.APPEARANCE */,
+    title: i18nLazyString(UIStrings.disablePaused),
 });
 Common.Settings.registerSettingExtension({
     category: "GLOBAL" /* Common.Settings.SettingCategory.GLOBAL */,
@@ -754,6 +790,32 @@ Common.Settings.registerSettingExtension({
     title: i18nLazyString(UIStrings.saveSettings),
     defaultValue: false,
     reloadRequired: true,
+});
+SettingsUI.SettingUIRegistration.register(Badges.receiveGdpBadgesSettingDescriptor, {
+    category: "ACCOUNT" /* Common.Settings.SettingCategory.ACCOUNT */,
+    title: i18nLazyString(UIStrings.earnBadges),
+    reloadRequired: true,
+});
+SettingsUI.SettingUIRegistration.register(Persistence.NetworkPersistenceManager.persistenceNetworkOverridesEnabledSettingDescriptor, {
+    category: "PERSISTENCE" /* Common.Settings.SettingCategory.PERSISTENCE */,
+    title: i18nLazyString(UIStrings.localOverrides),
+    tags: [
+        i18nLazyString(UIStrings.interception),
+        i18nLazyString(UIStrings.override),
+        i18nLazyString(UIStrings.network),
+        i18nLazyString(UIStrings.rewrite),
+        i18nLazyString(UIStrings.request),
+    ],
+    options: [
+        {
+            value: true,
+            title: i18nLazyString(UIStrings.enableOverrideNetworkRequests),
+        },
+        {
+            value: false,
+            title: i18nLazyString(UIStrings.disableOverrideNetworkRequests),
+        },
+    ],
 });
 Common.Settings.registerSettingExtension({
     storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,

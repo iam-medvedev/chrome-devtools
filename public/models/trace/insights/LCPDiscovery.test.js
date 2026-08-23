@@ -108,7 +108,7 @@ describeWithEnvironment('LCPDiscovery', function () {
         assert.isTrue(insight.checklist.priorityHinted.value);
         assert.isTrue(insight.checklist.requestDiscoverable.value);
         assert.isTrue(insight.checklist.eagerlyLoaded.value);
-        assert.strictEqual(insight.checklist.eagerlyLoaded.label, 'LCP resources should not use loading=lazy');
+        assert.strictEqual(insight.checklist.eagerlyLoaded.label, 'LCP resources shouldn’t use loading=lazy');
         assert.strictEqual(insight.state, 'pass');
     });
     it('does not fail lazy-load check when lazy image preload is not fetchpriority=high', async function () {
@@ -121,7 +121,7 @@ describeWithEnvironment('LCPDiscovery', function () {
         assert.isFalse(insight.checklist.priorityHinted.value);
         assert.isTrue(insight.checklist.requestDiscoverable.value);
         assert.isTrue(insight.checklist.eagerlyLoaded.value);
-        assert.strictEqual(insight.checklist.eagerlyLoaded.label, 'LCP resources should not use loading=lazy');
+        assert.strictEqual(insight.checklist.eagerlyLoaded.label, 'LCP resources shouldn’t use loading=lazy');
         assert.strictEqual(insight.checklist.priorityHinted.label, 'fetchpriority=high should be applied to the image preload request');
         assert.strictEqual(insight.state, 'fail');
     });

@@ -429,7 +429,7 @@ describeWithEnvironment('JSONEditor', () => {
             const param = jsonEditor.contentElement.querySelector('[data-paramId]');
             await renderHoveredElement(param);
             const popupContent = serializePopupContent();
-            const expectedPopupContent = 'test.Type:arrayLearnMore';
+            const expectedPopupContent = 'test.Type:arrayLearnmore';
             assert.deepEqual(popupContent, expectedPopupContent);
         });
         it('should show the popup with the correct description for the description of command', async () => {
@@ -441,7 +441,7 @@ describeWithEnvironment('JSONEditor', () => {
             const command = jsonEditor.contentElement.querySelector('.command');
             await renderHoveredElement(command);
             const popupContent = serializePopupContent();
-            const expectedPopupContent = 'Description1.Returns:Test1LearnMore';
+            const expectedPopupContent = 'Description1.Returns:Test1Learnmore';
             assert.deepEqual(popupContent, expectedPopupContent);
         });
     });

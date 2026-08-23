@@ -311,11 +311,11 @@ import * as IssuesManager from "./../../models/issues_manager/issues_manager.js"
 import * as UI3 from "./../../ui/legacy/legacy.js";
 var UIStrings3 = {
   /**
-   * @description Label for the issues pane
+   * @description Title for the Issues panel.
    */
   issues: "Issues",
   /**
-   * @description Command for showing the 'Issues' tool
+   * @description Command menu command for showing the Issues panel.
    */
   showIssues: "Show Issues"
 };
@@ -660,11 +660,73 @@ import * as Common6 from "./../../core/common/common.js";
 import * as i18n11 from "./../../core/i18n/i18n.js";
 import * as Root2 from "./../../core/root/root.js";
 import * as SDK3 from "./../../core/sdk/sdk.js";
+import * as Logs from "./../../models/logs/logs.js";
 import * as Workspace from "./../../models/workspace/workspace.js";
 import * as PanelCommon from "./../../panels/common/common.js";
 import * as UI6 from "./../../ui/legacy/legacy.js";
+import * as SettingsUI from "./../../ui/settings/settings.js";
 import * as NetworkForward from "./../../panels/network/forward/forward.js";
 var UIStrings6 = {
+  /**
+   * @description Text to keep the log after refreshing.
+   */
+  keepLog: "Keep log",
+  /**
+   * @description A term that can be used to search in the command menu, and will find the search
+   * result 'Keep log on page reload / navigation'. This is an additional search term to help
+   * the user find the setting even when they don't know the exact name of it.
+   */
+  keep: "keep",
+  /**
+   * @description A term that can be used to search in the command menu, and will find the search
+   * result 'Keep log on page reload / navigation'. This is an additional search term to help
+   * the user find the setting even when they don't know the exact name of it.
+   */
+  preserve: "preserve",
+  /**
+   * @description A term that can be used to search in the command menu, and will find the search
+   * result 'Keep log on page reload / navigation'. This is an additional search term to help
+   * the user find the setting even when they don't know the exact name of it.
+   */
+  clearTag: "clear",
+  /**
+   * @description A term that can be used to search in the command menu, and will find the search
+   * result 'Keep log on page reload / navigation'. This is an additional search term to help
+   * the user find the setting even when they don't know the exact name of it.
+   */
+  reset: "reset",
+  /**
+   * @description Title of a setting under the Network category that can be invoked through the Command Menu.
+   */
+  keepLogOnPageReload: "Keep log on page reload / navigation",
+  /**
+   * @description Title of a setting under the Network category that can be invoked through the Command Menu.
+   */
+  doNotKeepLogOnPageReload: "Don\u2019t keep log on page reload / navigation",
+  /**
+   * @description Title of a setting under the Network category that can be invoked through the Command Menu.
+   */
+  enableCache: "Enable cache",
+  /**
+   * @description Title of a setting under the Network category that can be invoked through the Command Menu.
+   */
+  disableCache: "Disable cache while DevTools is open",
+  /**
+   * @description Tooltip text for a setting that controls the network cache. Disabling the network cache can simulate the network connections of users that are visiting a page for the first time.
+   */
+  networkCacheExplanation: "Disabling the network cache will simulate a network experience similar to a first time visitor.",
+  /**
+   * @description Title of a setting under the Network category.
+   */
+  networkRequestBlocking: "Network request blocking",
+  /**
+   * @description Title of a setting under the Network category that can be invoked through the Command Menu.
+   */
+  enableNetworkRequestBlocking: "Enable network request blocking",
+  /**
+   * @description Title of a setting under the Network category that can be invoked through the Command Menu.
+   */
+  disableNetworkRequestBlocking: "Disable network request blocking",
   /**
    * @description Command for showing the 'Network' tool
    */
@@ -1060,6 +1122,62 @@ Common6.Settings.registerSettingExtension({
     }
   ]
 });
+SettingsUI.SettingUIRegistration.register(SDK3.SDKSettings.requestBlockingEnabledSettingDescriptor, {
+  category: "NETWORK",
+  title: i18nLazyString6(UIStrings6.networkRequestBlocking),
+  options: [
+    {
+      value: true,
+      title: i18nLazyString6(UIStrings6.enableNetworkRequestBlocking)
+    },
+    {
+      value: false,
+      title: i18nLazyString6(UIStrings6.disableNetworkRequestBlocking)
+    }
+  ]
+});
+SettingsUI.SettingUIRegistration.register(SDK3.SDKSettings.cacheDisabledSettingDescriptor, {
+  category: "NETWORK",
+  title: i18nLazyString6(UIStrings6.disableCache),
+  order: 0,
+  options: [
+    {
+      value: true,
+      title: i18nLazyString6(UIStrings6.disableCache)
+    },
+    {
+      value: false,
+      title: i18nLazyString6(UIStrings6.enableCache)
+    }
+  ],
+  learnMore: {
+    tooltip: i18nLazyString6(UIStrings6.networkCacheExplanation)
+  }
+});
+SettingsUI.SettingUIRegistration.register(SDK3.SDKSettings.preserveNetworkLogSettingDescriptor, {
+  category: "NETWORK",
+  title: i18nLazyString6(UIStrings6.keepLog),
+  tags: [
+    i18nLazyString6(UIStrings6.keep),
+    i18nLazyString6(UIStrings6.preserve),
+    i18nLazyString6(UIStrings6.clearTag),
+    i18nLazyString6(UIStrings6.reset)
+  ],
+  options: [
+    {
+      value: true,
+      title: i18nLazyString6(UIStrings6.keepLogOnPageReload)
+    },
+    {
+      value: false,
+      title: i18nLazyString6(UIStrings6.doNotKeepLogOnPageReload)
+    }
+  ]
+});
+SettingsUI.SettingUIRegistration.register(Logs.NetworkLog.recordNetworkLogSettingDescriptor, {
+  category: "NETWORK",
+  title: i18nLazyString6(UIStrings6.recordNetworkLog)
+});
 UI6.ViewManager.registerLocationResolver({
   name: "network-sidebar",
   category: "NETWORK",
@@ -1321,7 +1439,7 @@ import * as i18n15 from "./../../core/i18n/i18n.js";
 import * as SDK5 from "./../../core/sdk/sdk.js";
 import * as LiveMetrics from "./../../models/live-metrics/live-metrics.js";
 import * as UI8 from "./../../ui/legacy/legacy.js";
-import * as SettingsUI from "./../../ui/settings/settings.js";
+import * as SettingsUI2 from "./../../ui/settings/settings.js";
 var UIStrings8 = {
   /**
    * @description Text for the performance of something
@@ -1697,7 +1815,7 @@ Common8.Settings.registerSettingExtension({
   settingType: "boolean",
   defaultValue: false
 });
-SettingsUI.SettingUIRegistration.register(LiveMetrics.timelineEnableSoftNavigationsSettingDescriptor, {
+SettingsUI2.SettingUIRegistration.register(LiveMetrics.timelineEnableSoftNavigationsSettingDescriptor, {
   category: "PERFORMANCE",
   title: i18nLazyString8(UIStrings8.enableSoftNavigations)
 });

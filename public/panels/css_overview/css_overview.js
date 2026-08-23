@@ -43,9 +43,9 @@ var UIStrings = {
 var str_ = i18n.i18n.registerUIStrings("panels/css_overview/CSSOverviewUnusedDeclarations.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
 var CSSOverviewUnusedDeclarations = class {
-  static add(target, key, item2) {
+  static add(target, key, item3) {
     const values = target.get(key) || [];
-    values.push(item2);
+    values.push(item3);
     target.set(key, values);
   }
   static checkForUnusedPositionValues(unusedDeclarations, nodeId, strings, positionIdx, topIdx, leftIdx, rightIdx, bottomIdx) {
@@ -1339,13 +1339,13 @@ function getBorderString(color) {
 }
 var formatter = new Intl.NumberFormat("en-US");
 var DEFAULT_VIEW3 = (input, output, target) => {
-  function revealSection(section, setFocus) {
-    if (!section) {
+  function revealSection(section2, setFocus) {
+    if (!section2) {
       return;
     }
-    section.scrollIntoView();
+    section2.scrollIntoView();
     if (setFocus) {
-      const focusableElement = section.querySelector('button, [tabindex="0"]');
+      const focusableElement = section2.querySelector('button, [tabindex="0"]');
       focusableElement?.focus();
     }
   }
@@ -1371,6 +1371,7 @@ var DEFAULT_VIEW3 = (input, output, target) => {
             <!-- Dupe the styles into the main container because of the shadow root will prevent outer styles. -->
             <style>${cssOverviewCompletedView_css_default}</style>
             <div class="results-section horizontally-padded summary"
+                  jslog=${VisualLogging2.section("summary")}
                   ${ref((e) => {
     output.revealSection.set("summary", revealSection.bind(null, e));
   })}>
@@ -1378,6 +1379,7 @@ var DEFAULT_VIEW3 = (input, output, target) => {
               ${renderSummary(input.elementCount, input.globalStyleStats, input.mediaQueries)}
             </div>
             <div class="results-section horizontally-padded colors"
+                jslog=${VisualLogging2.section("colors")}
                 ${ref((e) => {
     output.revealSection.set("colors", revealSection.bind(null, e));
   })}>
@@ -1385,6 +1387,7 @@ var DEFAULT_VIEW3 = (input, output, target) => {
                 ${renderColors(input.backgroundColors, input.textColors, input.textColorContrastIssues, input.fillColors, input.borderColors)}
               </div>
               <div class="results-section font-info"
+                    jslog=${VisualLogging2.section("font-info")}
                     ${ref((e) => {
     output.revealSection.set("font-info", revealSection.bind(null, e));
   })}>
@@ -1392,6 +1395,7 @@ var DEFAULT_VIEW3 = (input, output, target) => {
                 ${renderFontInfo(input.fontInfo)}
               </div>
               <div class="results-section unused-declarations"
+                    jslog=${VisualLogging2.section("unused-declarations")}
                     ${ref((e) => {
     output.revealSection.set("unused-declarations", revealSection.bind(null, e));
   })}>
@@ -1399,6 +1403,7 @@ var DEFAULT_VIEW3 = (input, output, target) => {
                 ${renderUnusedDeclarations(input.unusedDeclarations)}
               </div>
               <div class="results-section media-queries"
+                    jslog=${VisualLogging2.section("media-queries")}
                     ${ref((e) => {
     output.revealSection.set("media-queries", revealSection.bind(null, e));
   })}>
@@ -1444,7 +1449,7 @@ var DEFAULT_VIEW3 = (input, output, target) => {
 };
 function renderSummary(elementCount, globalStyleStats, mediaQueries) {
   const renderSummaryItem = (label, value) => html3`
-    <li>
+    <li jslog=${VisualLogging2.item("summary-item")}>
       <div class="label">${label}</div>
       <div class="value">${formatter.format(value)}</div>
     </li>`;
@@ -1508,7 +1513,7 @@ function renderGroup(values, type, path = "") {
         ${values.map(({ title, nodes }) => {
     const width = 100 * nodes.length / total;
     const itemLabel = i18nString4(UIStrings4.nOccurrences, { n: nodes.length });
-    return html3`<li>
+    return html3`<li jslog=${VisualLogging2.item("css-overview.group-item")}>
             <div class="title">${title}</div>
             <button data-type=${type} data-path=${path} data-label=${title}
             jslog=${VisualLogging2.action().track({ click: true }).context(`css-overview.${type}`)}
@@ -1552,7 +1557,7 @@ function renderContrastIssue(key, issues) {
     PH3: issues.length
   });
   const border = getBorderString(minContrastIssue.backgroundColor.asLegacyColor());
-  return html3`<li>
+  return html3`<li jslog=${VisualLogging2.item("contrast-issue")}>
     <button
       title=${title} aria-label=${title}
       data-type="contrast" data-key=${key} data-section="contrast" class="block"
@@ -1577,14 +1582,14 @@ function renderContrastIssue(key, issues) {
     </div>
   </li>`;
 }
-function renderColor(section, color) {
+function renderColor(section2, color) {
   const borderColor = Common2.Color.parse(color)?.asLegacyColor();
   if (!borderColor) {
     return nothing;
   }
-  return html3`<li>
+  return html3`<li jslog=${VisualLogging2.item("color-item")}>
     <button title=${color} data-type="color" data-color=${color}
-      data-section=${section} class="block"
+      data-section=${section2} class="block"
       style=${styleMap({ backgroundColor: color, border: getBorderString(borderColor) })}
       jslog=${VisualLogging2.action("css-overview.color").track({ click: true })}>
     </button>
@@ -1664,23 +1669,23 @@ var CSSOverviewCompletedView = class _CSSOverviewCompletedView extends UI3.Widge
     let payload;
     switch (type) {
       case "contrast": {
-        const section = dataset.section;
+        const section2 = dataset.section;
         const key = dataset.key;
         if (!key) {
           return;
         }
         const nodes = this.#data.textColorContrastIssues.get(key) || [];
-        payload = { type, key, nodes, section };
+        payload = { type, key, nodes, section: section2 };
         break;
       }
       case "color": {
         const color = dataset.color;
-        const section = dataset.section;
+        const section2 = dataset.section;
         if (!color) {
           return;
         }
         let nodes;
-        switch (section) {
+        switch (section2) {
           case "text":
             nodes = this.#data.textColors.get(color);
             break;
@@ -1698,7 +1703,7 @@ var CSSOverviewCompletedView = class _CSSOverviewCompletedView extends UI3.Widge
           return;
         }
         nodes = Array.from(nodes).map((nodeId) => ({ nodeId }));
-        payload = { type, color, nodes, section };
+        payload = { type, color, nodes, section: section2 };
         break;
       }
       case "unused-declarations": {
@@ -1785,15 +1790,15 @@ var CSSOverviewCompletedView = class _CSSOverviewCompletedView extends UI3.Widge
     let tabTitle = "";
     switch (payload.type) {
       case "contrast": {
-        const { section, key } = payload;
-        id = `${section}-${key}`;
+        const { section: section2, key } = payload;
+        id = `${section2}-${key}`;
         tabTitle = i18nString4(UIStrings4.contrastIssues);
         break;
       }
       case "color": {
-        const { section, color } = payload;
-        id = `${section}-${color}`;
-        tabTitle = `${color.toUpperCase()} (${section})`;
+        const { section: section2, color } = payload;
+        id = `${section2}-${color}`;
+        tabTitle = `${color.toUpperCase()} (${section2})`;
         break;
       }
       case "unused-declarations": {
@@ -1938,18 +1943,18 @@ var ElementDetailsView = class extends UI3.Widget.Widget {
       }, /* @__PURE__ */ new Set());
       relatedNodesMap = await this.#domModel.pushNodesByBackendIdsToFrontend(nodeIds);
     }
-    const items = await Promise.all(this.#data.map(async (item2) => {
+    const items = await Promise.all(this.#data.map(async (item3) => {
       let link, showNode;
-      if ("nodeId" in item2 && visibility.has("node-id")) {
-        const frontendNode = relatedNodesMap?.get(item2.nodeId) ?? null;
+      if ("nodeId" in item3 && visibility.has("node-id")) {
+        const frontendNode = relatedNodesMap?.get(item3.nodeId) ?? null;
         if (frontendNode) {
           link = PanelsCommon.DOMLinkifier.Linkifier.instance().linkify(frontendNode);
           showNode = () => frontendNode.scrollIntoView();
         }
       }
-      if ("range" in item2 && item2.range && item2.styleSheetId && visibility.has("source-url")) {
-        const ruleLocation = TextUtils.TextRange.TextRange.fromObject(item2.range);
-        const styleSheetHeader = this.#cssModel.styleSheetHeaderForId(item2.styleSheetId);
+      if ("range" in item3 && item3.range && item3.styleSheetId && visibility.has("source-url")) {
+        const ruleLocation = TextUtils.TextRange.TextRange.fromObject(item3.range);
+        const styleSheetHeader = this.#cssModel.styleSheetHeaderForId(item3.styleSheetId);
         if (styleSheetHeader) {
           const lineNumber = styleSheetHeader.lineNumberInSource(ruleLocation.startLine);
           const columnNumber = styleSheetHeader.columnNumberInSource(ruleLocation.startLine, ruleLocation.startColumn);
@@ -1957,7 +1962,7 @@ var ElementDetailsView = class extends UI3.Widget.Widget {
           link = html3`${this.#linkifier.linkifyCSSLocation(matchingSelectorLocation)}`;
         }
       }
-      return { data: item2, link, showNode };
+      return { data: item3, link, showNode };
     }));
     this.#view({ items, visibility }, {}, this.element);
   }

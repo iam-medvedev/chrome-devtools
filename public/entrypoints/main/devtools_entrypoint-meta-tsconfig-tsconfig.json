@@ -68,6 +68,12 @@
       "path": "../inspector_main/bundle-tsconfig.json"
     },
     {
+      "path": "../../models/badges/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../models/persistence/bundle-tsconfig.json"
+    },
+    {
       "path": "../../models/workspace/bundle-tsconfig.json"
     },
     {
@@ -75,6 +81,9 @@
     },
     {
       "path": "../../ui/legacy/components/utils/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../ui/settings/bundle-tsconfig.json"
     }
   ]
 }

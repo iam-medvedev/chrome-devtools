@@ -1065,9 +1065,10 @@ describe('addRequestHeaders security', () => {
         assert.exists(context.chrome.devtools);
         const multitargetManager = SDK.NetworkManager.MultitargetNetworkManager.instance();
         // Set headers while on a permitted page.
+        const headersCall = spyCall(multitargetManager, 'setExtraHTTPHeaders');
         const networkApi = context.chrome.devtools?.network;
         networkApi.addRequestHeaders(injectedHeaders);
-        await context.chrome.devtools?.network.getHAR(() => { });
+        await headersCall;
         // Navigate to a URL where the extension should NOT have access.
         target.setInspectedURL(navigateToUrl);
         // Simulate a new target attaching (e.g., OOPIF or service worker).
@@ -1093,11 +1094,17 @@ describe('addRequestHeaders security', () => {
         await assertHeadersNotAppliedAfterNavigation(urlString `chrome://settings`, { Cookie: 'session=attacker', 'X-CSRF-Token': 'injected' });
     });
     it('extension-injected headers must not leak to forbidden-origin targets after navigation', async () => {
-        // Simulate getOriginsForbiddenForExtensions returning a forbidden origin.
-        window.DevToolsAPI = {
-            getOriginsForbiddenForExtensions: () => ['https://addons.example.com'],
-        };
-        await assertHeadersNotAppliedAfterNavigation(urlString `https://addons.example.com/extensions`, { Authorization: 'Bearer attacker' });
+        const oldDevToolsAPI = window.DevToolsAPI;
+        try {
+            // Simulate getOriginsForbiddenForExtensions returning a forbidden origin.
+            window.DevToolsAPI = {
+                getOriginsForbiddenForExtensions: () => ['https://addons.example.com'],
+            };
+            await assertHeadersNotAppliedAfterNavigation(urlString `https://addons.example.com/extensions`, { Authorization: 'Bearer attacker' });
+        }
+        finally {
+            window.DevToolsAPI = oldDevToolsAPI;
+        }
     });
     it('extension-injected headers must not leak to file:// targets without file access', async () => {
         await assertHeadersNotAppliedAfterNavigation(urlString `file:///etc/passwd`, { 'X-Injected': 'value' });
@@ -1636,9 +1643,10 @@ describe('Extension Panels', () => {
             // Verify that the JSON string object is rendered correctly.
             const sectionElement = sidebar.element.firstElementChild?.firstElementChild;
             assert.exists(sectionElement);
-            const section = ObjectUI.ObjectPropertiesSection.getObjectPropertiesSectionFrom(sectionElement);
-            assert.exists(section);
-            assert.strictEqual(section.root.object.value, expectedObject);
+            const section = UI.Widget.Widget.get(sectionElement);
+            assert.instanceOf(section, ObjectUI.ObjectPropertiesSection.ObjectPropertiesSectionWidget);
+            assert.exists(section.objectTree?.object);
+            assert.strictEqual(section.objectTree.object.value, expectedObject);
         }
     });
     /**
@@ -1684,9 +1692,10 @@ describe('Extension Panels', () => {
             // The expression evaluates to the expression itself because of the stub on executionContext.evaluate.
             const sectionElement = sidebar.element.firstElementChild?.firstElementChild;
             assert.exists(sectionElement);
-            const section = ObjectUI.ObjectPropertiesSection.getObjectPropertiesSectionFrom(sectionElement);
-            assert.exists(section);
-            assert.strictEqual(section.root.object.value, expectedObject);
+            const section = UI.Widget.Widget.get(sectionElement);
+            assert.instanceOf(section, ObjectUI.ObjectPropertiesSection.ObjectPropertiesSectionWidget);
+            assert.exists(section.objectTree?.object);
+            assert.strictEqual(section.objectTree.object.value, expectedObject);
         }
     });
     /**
@@ -1747,6 +1756,355 @@ describe('Extension Panels', () => {
                 // Callback should still be invoked even on failure.
                 resolve();
             });
+        });
+    });
+    describe('forwardKeyboardEvent', () => {
+        it('dispatches allowed global shortcut keys', () => {
+            const server = PanelCommon.ExtensionServer.ExtensionServer.instance();
+            const shortcutKey = UI.KeyboardShortcut.KeyboardShortcut.makeKey('P', UI.KeyboardShortcut.Modifiers.Ctrl.value);
+            sinon.stub(UI.ShortcutRegistry.ShortcutRegistry.instance(), 'globalShortcutKeys').returns([shortcutKey]);
+            const dispatchedEvents = [];
+            const listener = (event) => dispatchedEvents.push(event);
+            document.addEventListener('keydown', listener);
+            try {
+                const result = server.onForwardKeyboardEventForTest({
+                    command: "_forwardKeyboardEvent" /* Extensions.ExtensionAPI.PrivateAPI.Commands.ForwardKeyboardEvent */,
+                    entries: [{
+                            eventType: 'keydown',
+                            ctrlKey: true,
+                            altKey: false,
+                            metaKey: false,
+                            shiftKey: false,
+                            key: 'p',
+                            code: 'KeyP',
+                            keyCode: 80,
+                            location: 0,
+                        }],
+                });
+                assert.isUndefined(result);
+                assert.lengthOf(dispatchedEvents, 1);
+                const [event] = dispatchedEvents;
+                assert.strictEqual(event.type, 'keydown');
+                assert.isTrue(event.ctrlKey);
+                assert.isFalse(event.altKey);
+                assert.strictEqual(event.key, 'p');
+                assert.strictEqual(event.code, 'KeyP');
+                assert.strictEqual(event.__keyCode, 80);
+            }
+            finally {
+                document.removeEventListener('keydown', listener);
+            }
+        });
+        it('handles synthetic Escape key code', () => {
+            const server = PanelCommon.ExtensionServer.ExtensionServer.instance();
+            const escapeKey = UI.KeyboardShortcut.KeyboardShortcut.makeKey(27, UI.KeyboardShortcut.Modifiers.None.value);
+            sinon.stub(UI.ShortcutRegistry.ShortcutRegistry.instance(), 'globalShortcutKeys').returns([escapeKey]);
+            const dispatchedEvents = [];
+            const listener = (event) => dispatchedEvents.push(event);
+            document.addEventListener('keydown', listener);
+            try {
+                const result = server.onForwardKeyboardEventForTest({
+                    command: "_forwardKeyboardEvent" /* Extensions.ExtensionAPI.PrivateAPI.Commands.ForwardKeyboardEvent */,
+                    entries: [{
+                            eventType: 'keydown',
+                            ctrlKey: false,
+                            altKey: false,
+                            metaKey: false,
+                            shiftKey: false,
+                            key: Platform.KeyboardUtilities.ESCAPE_KEY,
+                            code: 'Escape',
+                            keyCode: 0,
+                            location: 0,
+                        }],
+                });
+                assert.isUndefined(result);
+                assert.lengthOf(dispatchedEvents, 1);
+                const [event] = dispatchedEvents;
+                assert.strictEqual(event.__keyCode, 27);
+            }
+            finally {
+                document.removeEventListener('keydown', listener);
+            }
+        });
+        it('rejects keys that are not allowed global shortcuts', () => {
+            const server = PanelCommon.ExtensionServer.ExtensionServer.instance();
+            sinon.stub(UI.ShortcutRegistry.ShortcutRegistry.instance(), 'globalShortcutKeys').returns([]);
+            const dispatchedEvents = [];
+            const listener = (event) => dispatchedEvents.push(event);
+            document.addEventListener('keydown', listener);
+            try {
+                const result = server.onForwardKeyboardEventForTest({
+                    command: "_forwardKeyboardEvent" /* Extensions.ExtensionAPI.PrivateAPI.Commands.ForwardKeyboardEvent */,
+                    entries: [{
+                            eventType: 'keydown',
+                            ctrlKey: false,
+                            altKey: false,
+                            metaKey: false,
+                            shiftKey: false,
+                            key: 'a',
+                            code: 'KeyA',
+                            keyCode: 65,
+                            location: 0,
+                        }],
+                });
+                assertIsStatus(result);
+                assert.strictEqual(result.code, 'E_BADARG');
+                assert.lengthOf(dispatchedEvents, 0);
+            }
+            finally {
+                document.removeEventListener('keydown', listener);
+            }
+        });
+        it('rejects malformed entries without dispatching events', () => {
+            const server = PanelCommon.ExtensionServer.ExtensionServer.instance();
+            const shortcutKey = UI.KeyboardShortcut.KeyboardShortcut.makeKey('P', UI.KeyboardShortcut.Modifiers.Ctrl.value);
+            sinon.stub(UI.ShortcutRegistry.ShortcutRegistry.instance(), 'globalShortcutKeys').returns([shortcutKey]);
+            const dispatchedEvents = [];
+            const listener = (event) => dispatchedEvents.push(event);
+            document.addEventListener('keydown', listener);
+            try {
+                // Non-array entries
+                const result1 = server.onForwardKeyboardEventForTest({
+                    command: "_forwardKeyboardEvent" /* Extensions.ExtensionAPI.PrivateAPI.Commands.ForwardKeyboardEvent */,
+                    entries: 'not an array',
+                });
+                assertIsStatus(result1);
+                assert.strictEqual(result1.code, 'E_BADARG');
+                // Invalid eventType
+                const result2 = server.onForwardKeyboardEventForTest({
+                    command: "_forwardKeyboardEvent" /* Extensions.ExtensionAPI.PrivateAPI.Commands.ForwardKeyboardEvent */,
+                    entries: [{
+                            eventType: 'keyup',
+                            ctrlKey: true,
+                            altKey: false,
+                            metaKey: false,
+                            shiftKey: false,
+                            key: 'p',
+                            code: 'KeyP',
+                            keyCode: 80,
+                            location: 0,
+                        }],
+                });
+                assertIsStatus(result2);
+                assert.strictEqual(result2.code, 'E_BADARG');
+                // Invalid property type (keyCode as string)
+                const result3 = server.onForwardKeyboardEventForTest({
+                    command: "_forwardKeyboardEvent" /* Extensions.ExtensionAPI.PrivateAPI.Commands.ForwardKeyboardEvent */,
+                    entries: [{
+                            eventType: 'keydown',
+                            ctrlKey: true,
+                            altKey: false,
+                            metaKey: false,
+                            shiftKey: false,
+                            key: 'p',
+                            code: 'KeyP',
+                            keyCode: '80',
+                            location: 0,
+                        }],
+                });
+                assertIsStatus(result3);
+                assert.strictEqual(result3.code, 'E_BADARGTYPE');
+                // Array with one valid and one invalid entry should dispatch nothing
+                const result4 = server.onForwardKeyboardEventForTest({
+                    command: "_forwardKeyboardEvent" /* Extensions.ExtensionAPI.PrivateAPI.Commands.ForwardKeyboardEvent */,
+                    entries: [
+                        {
+                            eventType: 'keydown',
+                            ctrlKey: true,
+                            altKey: false,
+                            metaKey: false,
+                            shiftKey: false,
+                            key: 'p',
+                            code: 'KeyP',
+                            keyCode: 80,
+                            location: 0,
+                        },
+                        {
+                            eventType: 'keydown',
+                            ctrlKey: false,
+                            altKey: false,
+                            metaKey: false,
+                            shiftKey: false,
+                            key: 'q',
+                            code: 'KeyQ',
+                            keyCode: 81,
+                            location: 0,
+                        },
+                    ],
+                });
+                assertIsStatus(result4);
+                assert.strictEqual(result4.code, 'E_BADARG');
+                assert.lengthOf(dispatchedEvents, 0);
+            }
+            finally {
+                document.removeEventListener('keydown', listener);
+            }
+        });
+        it('extension client reads event properties once and forwards allowed shortcuts', async () => {
+            let sendRequestStub;
+            const shortcutKey = UI.KeyboardShortcut.KeyboardShortcut.makeKey('P', UI.KeyboardShortcut.Modifiers.Ctrl.value);
+            const fakeDocument = document.createElement('div');
+            const fakeWindow = {
+                postMessage: sinon.stub(),
+                addEventListener: sinon.stub(),
+                removeEventListener: sinon.stub(),
+                document: fakeDocument,
+            };
+            const windowWithChrome = window;
+            const originalChrome = windowWithChrome.chrome;
+            delete windowWithChrome.chrome;
+            try {
+                self.injectedExtensionAPI(context.extensionDescriptor, 'main', 'dark', [shortcutKey], (extensionServer) => {
+                    const client = extensionServer;
+                    sendRequestStub = sinon.stub(client, 'sendRequest');
+                }, 1, fakeWindow);
+                assert.exists(sendRequestStub);
+                let keyReadCount = 0;
+                let ctrlKeyReadCount = 0;
+                let keyCodeReadCount = 0;
+                const keydownEvent = new KeyboardEvent('keydown', {
+                    ctrlKey: true,
+                    key: 'p',
+                    code: 'KeyP',
+                    keyCode: 80,
+                });
+                Object.defineProperty(keydownEvent, 'ctrlKey', {
+                    get() {
+                        ctrlKeyReadCount++;
+                        return true;
+                    },
+                });
+                Object.defineProperty(keydownEvent, 'key', {
+                    get() {
+                        keyReadCount++;
+                        return 'p';
+                    },
+                });
+                Object.defineProperty(keydownEvent, 'keyCode', {
+                    get() {
+                        keyCodeReadCount++;
+                        return 80;
+                    },
+                });
+                // Dispatch the event to trigger forwardKeyboardEvent
+                fakeDocument.dispatchEvent(keydownEvent);
+                // Verify properties were read exactly once
+                assert.strictEqual(ctrlKeyReadCount, 1);
+                assert.strictEqual(keyReadCount, 1);
+                assert.strictEqual(keyCodeReadCount, 1);
+                // Wait for forwardTimer debounce.
+                await new Promise(resolve => setTimeout(resolve, 10));
+                sinon.assert.calledWith(sendRequestStub, sinon.match({
+                    command: "_forwardKeyboardEvent" /* Extensions.ExtensionAPI.PrivateAPI.Commands.ForwardKeyboardEvent */,
+                    entries: sinon.match.some(sinon.match({
+                        eventType: 'keydown',
+                        ctrlKey: true,
+                        altKey: false,
+                        metaKey: false,
+                        shiftKey: false,
+                        key: 'p',
+                        code: 'KeyP',
+                        keyCode: 80,
+                        location: 0,
+                    })),
+                }));
+            }
+            finally {
+                windowWithChrome.chrome = originalChrome;
+            }
+        });
+        it('extension client ignores input keystrokes without modifier keys', async () => {
+            let sendRequestStub;
+            const shortcutKey = UI.KeyboardShortcut.KeyboardShortcut.makeKey('P', UI.KeyboardShortcut.Modifiers.None.value);
+            const fakeDocument = document.createElement('div');
+            const input = document.createElement('input');
+            fakeDocument.appendChild(input);
+            Object.defineProperty(fakeDocument, 'activeElement', {
+                get() {
+                    return input;
+                },
+            });
+            const fakeWindow = {
+                postMessage: sinon.stub(),
+                addEventListener: sinon.stub(),
+                removeEventListener: sinon.stub(),
+                document: fakeDocument,
+            };
+            const windowWithChrome = window;
+            const originalChrome = windowWithChrome.chrome;
+            delete windowWithChrome.chrome;
+            try {
+                self.injectedExtensionAPI(context.extensionDescriptor, 'main', 'dark', [shortcutKey], (extensionServer) => {
+                    const client = extensionServer;
+                    sendRequestStub = sinon.stub(client, 'sendRequest');
+                }, 1, fakeWindow);
+                assert.exists(sendRequestStub);
+                const keydownEvent = new KeyboardEvent('keydown', {
+                    ctrlKey: false,
+                    altKey: false,
+                    metaKey: false,
+                    key: 'p',
+                    code: 'KeyP',
+                    keyCode: 80,
+                    cancelable: true,
+                });
+                const preventDefaultSpy = sinon.spy(keydownEvent, 'preventDefault');
+                fakeDocument.dispatchEvent(keydownEvent);
+                sinon.assert.notCalled(preventDefaultSpy);
+                await new Promise(resolve => setTimeout(resolve, 10));
+                sinon.assert.notCalled(sendRequestStub);
+            }
+            finally {
+                windowWithChrome.chrome = originalChrome;
+            }
+        });
+        it('rejects commands other than ForwardKeyboardEvent', () => {
+            const server = PanelCommon.ExtensionServer.ExtensionServer.instance();
+            const result = server.onForwardKeyboardEventForTest({
+                command: 'invalidCommand',
+                entries: [],
+            });
+            assertIsStatus(result);
+            assert.strictEqual(result.code, 'E_BADARG');
+        });
+        it('rejects invalid keyCode values and non-boolean modifiers', () => {
+            const server = PanelCommon.ExtensionServer.ExtensionServer.instance();
+            const shortcutKey = UI.KeyboardShortcut.KeyboardShortcut.makeKey('P', UI.KeyboardShortcut.Modifiers.Ctrl.value);
+            sinon.stub(UI.ShortcutRegistry.ShortcutRegistry.instance(), 'globalShortcutKeys').returns([shortcutKey]);
+            // Invalid keyCode (out of range)
+            const result1 = server.onForwardKeyboardEventForTest({
+                command: "_forwardKeyboardEvent" /* Extensions.ExtensionAPI.PrivateAPI.Commands.ForwardKeyboardEvent */,
+                entries: [{
+                        eventType: 'keydown',
+                        ctrlKey: true,
+                        altKey: false,
+                        metaKey: false,
+                        shiftKey: false,
+                        key: 'p',
+                        code: 'KeyP',
+                        keyCode: 300,
+                        location: 0,
+                    }],
+            });
+            assertIsStatus(result1);
+            assert.strictEqual(result1.code, 'E_BADARG');
+            // Invalid modifier type (ctrlKey as string)
+            const result2 = server.onForwardKeyboardEventForTest({
+                command: "_forwardKeyboardEvent" /* Extensions.ExtensionAPI.PrivateAPI.Commands.ForwardKeyboardEvent */,
+                entries: [{
+                        eventType: 'keydown',
+                        ctrlKey: 'true',
+                        altKey: false,
+                        metaKey: false,
+                        shiftKey: false,
+                        key: 'p',
+                        code: 'KeyP',
+                        keyCode: 80,
+                        location: 0,
+                    }],
+            });
+            assertIsStatus(result2);
+            assert.strictEqual(result2.code, 'E_BADARGTYPE');
         });
     });
 });

@@ -48,9 +48,6 @@
     },
     {
       "path": "../../third_party/codemirror/codemirror-tsconfig.json"
-    },
-    {
-      "path": "../../third_party/codemirror/codemirror-legacy-types-tsconfig.json"
     }
   ]
 }

@@ -4,6 +4,7 @@
 import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
 import * as Root from '../root/root.js';
+import { ConsoleModel } from './ConsoleModel.js';
 import { CSSModel } from './CSSModel.js';
 import { OverlayModel } from './OverlayModel.js';
 import { RemoteObject } from './RemoteObject.js';
@@ -77,6 +78,40 @@ export var DOMNodeEvents;
     DOMNodeEvents["SCROLL_SNAP_OVERLAY_STATE_CHANGED"] = "ScrollSnapOverlayStateChanged";
     DOMNodeEvents["CONTAINER_QUERY_OVERLAY_STATE_CHANGED"] = "ContainerQueryOverlayStateChanged";
 })(DOMNodeEvents || (DOMNodeEvents = {}));
+export function cssEscape(value) {
+    const length = value.length;
+    let index = -1;
+    let codeUnit;
+    let result = '';
+    const firstCodeUnit = value.charCodeAt(0);
+    if (length === 0) {
+        return '';
+    }
+    if (length === 1 && firstCodeUnit === 0x002D) {
+        return '\\' + value;
+    }
+    while (++index < length) {
+        codeUnit = value.charCodeAt(index);
+        if (codeUnit === 0x0000) {
+            result += '\uFFFD';
+            continue;
+        }
+        if ((codeUnit >= 0x0001 && codeUnit <= 0x001F) || codeUnit === 0x007F ||
+            (index === 0 && codeUnit >= 0x0030 && codeUnit <= 0x0039) ||
+            (index === 1 && codeUnit >= 0x0030 && codeUnit <= 0x0039 && firstCodeUnit === 0x002D)) {
+            result += '\\' + codeUnit.toString(16) + ' ';
+            continue;
+        }
+        if (codeUnit >= 0x0080 || codeUnit === 0x002D || codeUnit === 0x005F ||
+            (codeUnit >= 0x0030 && codeUnit <= 0x0039) || (codeUnit >= 0x0041 && codeUnit <= 0x005A) ||
+            (codeUnit >= 0x0061 && codeUnit <= 0x007A)) {
+            result += value.charAt(index);
+            continue;
+        }
+        result += '\\' + value.charAt(index);
+    }
+    return result;
+}
 export class DOMNode extends Common.ObjectWrapper.ObjectWrapper {
     #domModel;
     #frameManager;
@@ -832,6 +867,86 @@ export class DOMNode extends Common.ObjectWrapper.ObjectWrapper {
             }
         });
     }
+    duplicate() {
+        if (this.isInShadowTree()) {
+            return;
+        }
+        const parentNode = this.parentNode ? this.parentNode : this;
+        if (parentNode.nodeName() === '#document') {
+            return;
+        }
+        this.copyTo(parentNode, this.nextSibling);
+    }
+    /**
+     * Runs a script on the node's remote object that toggles a class name on
+     * the node and injects a stylesheet into the head of the node's document
+     * containing a rule to set "visibility: hidden" on the class and all it's
+     * ancestors.
+     */
+    async toggleHideElement() {
+        let pseudoElementName = this.pseudoType() ? this.nodeName() : null;
+        if (pseudoElementName && this.pseudoIdentifier()) {
+            pseudoElementName += `(${this.pseudoIdentifier()})`;
+        }
+        let effectiveNode = this;
+        while (effectiveNode?.pseudoType()) {
+            if (effectiveNode !== this && effectiveNode.pseudoType() === 'column') {
+                // Ideally we would select the specific column pseudo element, but
+                // we don't have a way to do that at the moment.
+                pseudoElementName = '::column' + pseudoElementName;
+            }
+            effectiveNode = effectiveNode.parentNode;
+        }
+        if (!effectiveNode) {
+            return;
+        }
+        const hidden = this.marker('hidden-marker');
+        const object = await effectiveNode.resolveToObject('');
+        if (!object) {
+            return;
+        }
+        await object.callFunction(toggleClassAndInjectStyleRule, [{ value: pseudoElementName }, { value: !hidden }]);
+        object.release();
+        this.setMarker('hidden-marker', hidden ? null : true);
+        function toggleClassAndInjectStyleRule(pseudoElementName, hidden) {
+            const classNamePrefix = '__web-inspector-hide';
+            const classNameSuffix = '-shortcut__';
+            const styleTagId = '__web-inspector-hide-shortcut-style__';
+            const pseudoElementNameEscaped = pseudoElementName ? pseudoElementName.replace(/[\(\)\:]/g, '_') : '';
+            const className = classNamePrefix + pseudoElementNameEscaped + classNameSuffix;
+            this.classList.toggle(className, hidden);
+            let localRoot = this;
+            while (localRoot.parentNode) {
+                localRoot = localRoot.parentNode;
+            }
+            if (localRoot.nodeType === Node.DOCUMENT_NODE) {
+                localRoot = document.head;
+            }
+            let style = localRoot.querySelector('style#' + styleTagId);
+            if (!style) {
+                const selectors = [];
+                selectors.push('.__web-inspector-hide-shortcut__');
+                selectors.push('.__web-inspector-hide-shortcut__ *');
+                const selector = selectors.join(', ');
+                const ruleBody = '    visibility: hidden !important;';
+                const rule = '\n' + selector + '\n{\n' + ruleBody + '\n}\n';
+                style = document.createElement('style');
+                style.id = styleTagId;
+                style.textContent = rule;
+                localRoot.appendChild(style);
+            }
+            // In addition to putting them on the element we want to hide, we will
+            // also add pseudo element classes to the style element to keep track of
+            // which pseudo elements we have style rules for.
+            if (pseudoElementName && !style.classList.contains(className)) {
+                style.classList.add(className);
+                style.textContent = `.${className}${pseudoElementName}, ${style.textContent}`;
+            }
+        }
+    }
+    isToggledToHidden() {
+        return Boolean(this.marker('hidden-marker'));
+    }
     isXMLNode() {
         return Boolean(this.#xmlVersion);
     }
@@ -981,6 +1096,11 @@ export class DOMNode extends Common.ObjectWrapper.ObjectWrapper {
             value: result.object.value,
         };
     }
+    async saveNodeToTempVariable() {
+        const remoteObjectForConsole = await this.resolveToObject();
+        const consoleModel = this.#domModel.target().model(ConsoleModel);
+        await consoleModel?.saveToTempVariable(remoteObjectForConsole?.runtimeModel().defaultExecutionContext() ?? null, remoteObjectForConsole);
+    }
     async scrollIntoView() {
         const node = this.enclosingElementOrSelf();
         if (!node) {
@@ -1019,14 +1139,14 @@ export class DOMNode extends Common.ObjectWrapper.ObjectWrapper {
         const id = this.getAttribute('id');
         const classes = this.getAttribute('class');
         if (lowerCaseName === 'input' && type && !id && !classes) {
-            return lowerCaseName + '[type="' + CSS.escape(type) + '"]';
+            return lowerCaseName + '[type="' + cssEscape(type) + '"]';
         }
         if (id) {
-            return lowerCaseName + '#' + CSS.escape(id);
+            return lowerCaseName + '#' + cssEscape(id);
         }
         if (classes) {
             const classList = classes.trim().split(/\s+/g);
-            return (lowerCaseName === 'div' ? '' : lowerCaseName) + '.' + classList.map(cls => CSS.escape(cls)).join('.');
+            return (lowerCaseName === 'div' ? '' : lowerCaseName) + '.' + classList.map(cls => cssEscape(cls)).join('.');
         }
         if (this.pseudoIdentifier()) {
             return `${lowerCaseName}(${this.pseudoIdentifier()})`;
@@ -1978,6 +2098,8 @@ export class DOMNodeSnapshot extends DOMNode {
     }
     moveTo(_targetNode, _anchorNode, _callback) {
     }
+    duplicate() {
+    }
     canInspectNode() {
         return false;
     }
@@ -2007,6 +2129,8 @@ export class DOMDocumentSnapshot extends DOMDocument {
     copyTo(_targetNode, _anchorNode, _callback) {
     }
     moveTo(_targetNode, _anchorNode, _callback) {
+    }
+    duplicate() {
     }
     canInspectNode() {
         return false;

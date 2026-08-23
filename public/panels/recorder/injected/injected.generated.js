@@ -1,4 +1,4 @@
-(function () {
+(function (exports) {
   'use strict';
 
   // gen/front_end/panels/recorder/injected/Logger.js
@@ -1192,4 +1192,8 @@
    * SPDX-License-Identifier: Apache-2.0
    */
 
-})();
+  exports.findMinMax = findMinMax;
+
+  return exports;
+
+})({});

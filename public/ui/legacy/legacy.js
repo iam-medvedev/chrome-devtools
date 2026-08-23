@@ -5368,11 +5368,28 @@ var TabbedPaneTab = class {
 var tabIcons = /* @__PURE__ */ new WeakMap();
 var tabSuffixElements = /* @__PURE__ */ new WeakMap();
 var TabbedPaneElement = class extends WidgetElement {
+  #closeableTabs = false;
+  #allowTabReorder = false;
+  #automaticReorder = false;
+  set closeableTabs(closeable) {
+    this.#closeableTabs = closeable;
+    this.getWidget()?.setCloseableTabs(closeable);
+  }
+  set allowTabReorder(allow) {
+    this.#allowTabReorder = allow;
+    this.getWidget()?.setAllowTabReorder(this.#allowTabReorder, this.#automaticReorder);
+  }
+  set automaticReorder(automatic) {
+    this.#automaticReorder = automatic;
+    this.getWidget()?.setAllowTabReorder(this.#allowTabReorder, this.#automaticReorder);
+  }
   #tabObserver = new MutationObserver(() => this.#updateTabs());
   constructor() {
     super();
     registerWidgetConfig(this, widgetConfig((element) => {
       const widget2 = new TabbedPane(element);
+      widget2.setCloseableTabs(this.#closeableTabs);
+      widget2.setAllowTabReorder(this.#allowTabReorder, this.#automaticReorder);
       const slot = widget2.contentElement.querySelector("slot:not([name])");
       if (slot) {
         slot.addEventListener("slotchange", () => this.#syncTabs());
@@ -5388,6 +5405,12 @@ var TabbedPaneElement = class extends WidgetElement {
           }
         }
         this.dispatchEvent(new CustomEvent("select", { detail: { tabId: widget2.selectedTabId } }));
+      });
+      widget2.addEventListener(Events.TabClosed, (event) => {
+        this.dispatchEvent(new CustomEvent("close", { detail: { tabId: event.data.tabId } }));
+      });
+      widget2.addEventListener(Events.TabOrderChanged, (event) => {
+        this.dispatchEvent(new CustomEvent("taborderchanged", { detail: { tabId: event.data.tabId, tabIds: widget2.tabIds() } }));
       });
       this.#syncTabs(widget2);
       return widget2;
@@ -5409,7 +5432,10 @@ var TabbedPaneElement = class extends WidgetElement {
     const slot = widget2.contentElement.querySelector("slot:not([name])");
     const nodes = slot ? slot.assignedElements() : [];
     for (const child of nodes) {
-      this.#tabObserver.observe(child, { attributes: true, attributeFilter: ["title", "jslogcontext", "selected", "disabled"] });
+      this.#tabObserver.observe(child, {
+        attributes: true,
+        attributeFilter: ["title", "jslogcontext", "selected", "disabled", "closeable", "uncloseable"]
+      });
     }
   }
   #updateTabs(widget2 = this.getWidget()) {
@@ -5425,6 +5451,7 @@ var TabbedPaneElement = class extends WidgetElement {
       const jslogContext = child.getAttribute("jslogcontext") || void 0;
       const selected = child.hasAttribute("selected");
       const enabled = !child.hasAttribute("disabled");
+      const isCloseable = child.hasAttribute("closeable") ? true : child.hasAttribute("uncloseable") ? false : void 0;
       const view = Widget.getOrCreateWidget(child);
       view.setHideOnDetach();
       if (widget2.selectedTabId !== id2) {
@@ -5439,7 +5466,8 @@ var TabbedPaneElement = class extends WidgetElement {
         view,
         jslogContext,
         selected,
-        enabled
+        enabled,
+        isCloseable
       });
     }
     widget2.tabs = tabs;
@@ -11614,7 +11642,7 @@ var TextPromptElement = class _TextPromptElement extends HTMLElement {
     }
   }
   #updateCompletions() {
-    if (this.isConnected) {
+    if (this.isConnected && this.#isEditing) {
       void this.#textPrompt.complete(
         /* force=*/
         true
@@ -23449,10 +23477,9 @@ var TreeViewTreeElement = class _TreeViewTreeElement extends TreeElement {
       this.refresh();
     });
   }
-  refresh() {
+  updateAttributes() {
     const expandable = Boolean(this.configElement.querySelector(':scope > ul[role="group"]'));
     this.setExpandable(expandable);
-    this.titleElement.textContent = "";
     this.#clonedAttributes.forEach((attr) => this.listItemElement.attributes.removeNamedItem(attr));
     this.#clonedClasses.forEach((className) => this.listItemElement.classList.remove(className));
     this.#clonedAttributes.clear();
@@ -23468,6 +23495,12 @@ var TreeViewTreeElement = class _TreeViewTreeElement extends TreeElement {
       this.listItemElement.classList.add(className);
       this.#clonedClasses.add(className);
     }
+    this.hidden = hasBooleanAttribute(this.configElement, "hidden");
+    this.updateExpansionFromAttribute();
+  }
+  refresh() {
+    this.titleElement.textContent = "";
+    this.updateAttributes();
     const childUl = this.configElement.querySelector(':scope > ul[role="group"]');
     const templateElements = childUl ? [this.configElement, childUl] : [this.configElement];
     Lit3.CustomDirectives.InterceptBindingDirective.setEventListeners(templateElements, this.listItemElement);
@@ -23478,6 +23511,7 @@ var TreeViewTreeElement = class _TreeViewTreeElement extends TreeElement {
       this.titleElement.appendChild(HTMLElementWithLightDOMTemplate.cloneNode(child));
     }
     this.hidden = hasBooleanAttribute(this.configElement, "hidden");
+    this.toggleOnClick = hasBooleanAttribute(this.configElement, "toggle-on-click");
     this.updateExpansionFromAttribute();
     Highlighting.HighlightManager.HighlightManager.instance().apply(this.titleElement);
   }
@@ -23582,20 +23616,26 @@ var TreeViewElement = class _TreeViewElement extends HTMLElementWithLightDOMTemp
       return null;
     }
     if (subtreeRoot.role === "tree") {
-      return { treeElement: this.#treeOutline.rootElement(), expanded: false, classes: subtreeRoot.classList };
+      return {
+        treeElement: this.#treeOutline.rootElement(),
+        expanded: false,
+        classes: subtreeRoot.classList,
+        attributes: subtreeRoot.attributes
+      };
     }
     if (subtreeRoot.role !== "group" || !subtreeRoot.parentElement) {
       return null;
     }
     const treeElement = TreeViewTreeElement.get(subtreeRoot.parentElement);
     const expanded = treeElement ? treeElement.expanded : hasBooleanAttribute(subtreeRoot.parentElement, "open");
-    return treeElement ? { expanded, treeElement, classes: subtreeRoot.classList } : null;
+    return treeElement ? { expanded, treeElement, classes: subtreeRoot.classList, attributes: subtreeRoot.attributes } : null;
   }
   updateNode(node, attributeName) {
-    while (node?.parentNode && !(node instanceof HTMLElement)) {
-      node = node.parentNode;
+    let current = node;
+    while (current?.parentNode && !(current instanceof HTMLElement)) {
+      current = current.parentNode;
     }
-    const treeNode = node instanceof HTMLElement ? node.closest('li[role="treeitem"]') : null;
+    const treeNode = current instanceof HTMLElement ? current.closest('li[role="treeitem"]') : null;
     if (!treeNode) {
       return;
     }
@@ -23603,13 +23643,17 @@ var TreeViewElement = class _TreeViewElement extends HTMLElementWithLightDOMTemp
     if (!treeElement) {
       return;
     }
+    if (node === treeNode) {
+      treeElement.updateAttributes();
+      if (attributeName === "selected" && hasBooleanAttribute(treeNode, "selected")) {
+        treeElement.revealAndSelect(true);
+      }
+      return;
+    }
+    if (node === treeNode && attributeName === "toggle-on-click") {
+      treeElement.toggleOnClick = hasBooleanAttribute(treeNode, "toggle-on-click");
+    }
     treeElement.refreshSoon();
-    if (node === treeNode && attributeName === "selected" && hasBooleanAttribute(treeNode, "selected")) {
-      treeElement.revealAndSelect(true);
-    }
-    if (node === treeNode && attributeName === "open") {
-      treeElement.updateExpansionFromAttribute();
-    }
   }
   addNodes(nodes) {
     for (const node of getTreeNodes(nodes)) {
@@ -23622,6 +23666,11 @@ var TreeViewElement = class _TreeViewElement extends HTMLElementWithLightDOMTemp
       }
       if (parent.treeElement.childCount() === 0) {
         parent.treeElement.childrenListElement.classList.add(...parent.classes.values());
+        for (const attr of parent.attributes || []) {
+          if (attr.name !== "role" && attr.name !== "class") {
+            parent.treeElement.childrenListElement.setAttribute(attr.name, attr.value);
+          }
+        }
       }
       let nextElement = null;
       for (let e = node.nextElementSibling; e; e = e.nextElementSibling) {

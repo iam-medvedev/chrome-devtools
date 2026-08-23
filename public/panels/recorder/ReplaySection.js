@@ -60,8 +60,10 @@ const str_ = i18n.i18n.registerUIStrings('panels/recorder/ReplaySection.ts', UIS
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const REPLAY_EXTENSION_PREFIX = 'extension';
 function isPlayRecordingSpeed(string) {
-    return string === "normal" /* PlayRecordingSpeed.NORMAL */ || string === "slow" /* PlayRecordingSpeed.SLOW */ ||
-        string === "very_slow" /* PlayRecordingSpeed.VERY_SLOW */ || string === "extremely_slow" /* PlayRecordingSpeed.EXTREMELY_SLOW */;
+    return (string === "normal" /* Models.RecordingPlayer.PlayRecordingSpeed.NORMAL */ ||
+        string === "slow" /* Models.RecordingPlayer.PlayRecordingSpeed.SLOW */ ||
+        string === "very_slow" /* Models.RecordingPlayer.PlayRecordingSpeed.VERY_SLOW */ ||
+        string === "extremely_slow" /* Models.RecordingPlayer.PlayRecordingSpeed.EXTREMELY_SLOW */);
 }
 export const DEFAULT_VIEW = (input, _output, target) => {
     const { disabled, groups, selectedItem, actionTitle, onButtonClick, onItemSelected } = input;
@@ -185,35 +187,37 @@ export class ReplaySection extends UI.Widget.Widget {
         }, undefined, this.contentElement);
     }
     #computeGroups() {
-        const groups = [{
+        const groups = [
+            {
                 name: i18nString(UIStrings.speedGroup),
                 items: [
                     {
-                        value: "normal" /* PlayRecordingSpeed.NORMAL */,
+                        value: "normal" /* Models.RecordingPlayer.PlayRecordingSpeed.NORMAL */,
                         buttonIconName: 'play',
                         buttonLabel: () => i18nString(UIStrings.ReplayNormalButtonLabel),
                         label: () => i18nString(UIStrings.ReplayNormalItemLabel),
                     },
                     {
-                        value: "slow" /* PlayRecordingSpeed.SLOW */,
+                        value: "slow" /* Models.RecordingPlayer.PlayRecordingSpeed.SLOW */,
                         buttonIconName: 'play',
                         buttonLabel: () => i18nString(UIStrings.ReplaySlowButtonLabel),
                         label: () => i18nString(UIStrings.ReplaySlowItemLabel),
                     },
                     {
-                        value: "very_slow" /* PlayRecordingSpeed.VERY_SLOW */,
+                        value: "very_slow" /* Models.RecordingPlayer.PlayRecordingSpeed.VERY_SLOW */,
                         buttonIconName: 'play',
                         buttonLabel: () => i18nString(UIStrings.ReplayVerySlowButtonLabel),
                         label: () => i18nString(UIStrings.ReplayVerySlowItemLabel),
                     },
                     {
-                        value: "extremely_slow" /* PlayRecordingSpeed.EXTREMELY_SLOW */,
+                        value: "extremely_slow" /* Models.RecordingPlayer.PlayRecordingSpeed.EXTREMELY_SLOW */,
                         buttonIconName: 'play',
                         buttonLabel: () => i18nString(UIStrings.ReplayExtremelySlowButtonLabel),
                         label: () => i18nString(UIStrings.ReplayExtremelySlowItemLabel),
                     },
                 ],
-            }];
+            },
+        ];
         if (this.#replayExtensions.length) {
             groups.push({
                 name: i18nString(UIStrings.extensionGroup),
@@ -250,14 +254,14 @@ export class ReplaySection extends UI.Widget.Widget {
                     this.#settings.replayExtension = REPLAY_EXTENSION_PREFIX + extension.getOrigin();
                 }
                 if (this.onStartReplay) {
-                    this.onStartReplay("normal" /* PlayRecordingSpeed.NORMAL */, extension);
+                    this.onStartReplay("normal" /* Models.RecordingPlayer.PlayRecordingSpeed.NORMAL */, extension);
                 }
                 this.performUpdate();
                 return;
             }
         }
         if (this.onStartReplay) {
-            this.onStartReplay(this.#settings ? this.#settings.speed : "normal" /* PlayRecordingSpeed.NORMAL */);
+            this.onStartReplay(this.#settings ? this.#settings.speed : "normal" /* Models.RecordingPlayer.PlayRecordingSpeed.NORMAL */);
         }
         this.performUpdate();
     }

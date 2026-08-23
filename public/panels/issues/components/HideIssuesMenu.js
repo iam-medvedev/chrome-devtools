@@ -10,7 +10,7 @@ import { html, render } from '../../../ui/lit/lit.js';
 import hideIssuesMenuStyles from './hideIssuesMenu.css.js';
 const UIStrings = {
     /**
-     * @description Title for the tooltip of the (3 dots) Hide Issues menu icon.
+     * @description Tooltip in the Issues panel for the three dots (options) menu button to hide issues.
      */
     tooltipTitle: 'Hide issues',
 };

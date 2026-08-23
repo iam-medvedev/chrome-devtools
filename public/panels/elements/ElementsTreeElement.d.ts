@@ -8,7 +8,6 @@ import type * as IssuesManager from '../../models/issues_manager/issues_manager.
 import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
 import * as TextEditor from '../../ui/components/text_editor/text_editor.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import * as Lit from '../../ui/lit/lit.js';
 import type { DirectiveResult } from '../../ui/lit/lit.js';
 declare const enum TagType {
     OPENING = "OPENING_TAG",
@@ -90,7 +89,7 @@ export interface ViewOutput {
     contentElement?: HTMLElement;
     editorRef?: TextEditor.TextEditor.TextEditor;
 }
-export declare function adornerRef(): DirectiveResult<typeof Lit.Directives.RefDirective>;
+export declare function adornerRef(): DirectiveResult;
 export interface Decoration {
     title: string;
     color: string;
@@ -179,20 +178,13 @@ export declare class ElementsTreeWidget extends UI.Widget.Widget {
     private insertInLastAttributePosition;
     private startEditingTarget;
     private revealHTMLInSources;
-    populateTagContextMenu(contextMenu: UI.ContextMenu.ContextMenu, event: Event): Promise<void>;
-    populatePseudoElementContextMenu(contextMenu: UI.ContextMenu.ContextMenu): void;
-    private populateExpandRecursively;
-    private populateScrollIntoView;
     private isAiButtonEnabled;
-    populateTextContextMenu(contextMenu: UI.ContextMenu.ContextMenu, textNode: Node): Promise<void>;
-    populateNodeContextMenu(contextMenu: UI.ContextMenu.ContextMenu): Promise<void>;
-    populateProcessingElementContextMenu(contextMenu: UI.ContextMenu.ContextMenu): Promise<void>;
     private startEditing;
     startEditingProcessingInstructionValue(): boolean | undefined;
     addNewAttribute(): boolean;
     triggerEditAttribute(attributeName: string): boolean | undefined;
-    private startEditingAttribute;
-    private startEditingTextNode;
+    startEditingAttribute(attribute: Element, elementForSelection: Element): boolean;
+    startEditingTextNode(textNodeElement: Element): boolean;
     startEditingTagName(tagNameElement?: Element): boolean;
     private updateEditorHandles;
     private startEditingAsHTML;
@@ -205,12 +197,12 @@ export declare class ElementsTreeWidget extends UI.Widget.Widget {
     updateDecorations(): void;
     remove(): Promise<void>;
     toggleEditAsHTML(callback?: ((arg0: boolean) => void), startEditing?: boolean): void;
-    private copyCSSPath;
-    private copyJSPath;
-    private copyXPath;
-    private copyFullXPath;
+    copyCSSPath(): void;
+    copyJSPath(): void;
+    copyXPath(): void;
+    copyFullXPath(): void;
     copyStyles(): Promise<void>;
-    private editAsHTML;
+    editAsHTML(): void;
     updateAdorners(): void;
 }
 export declare class ElementsTreeElement extends UI.TreeOutline.TreeElement {
@@ -231,11 +223,13 @@ export declare class ElementsTreeElement extends UI.TreeOutline.TreeElement {
     expandedChildrenLimit(): number;
     setExpandedChildrenLimit(limit: number): void;
     highlightAttribute(name: string): void;
-    populateTextContextMenu(contextMenu: UI.ContextMenu.ContextMenu, textNode: Node): Promise<void>;
-    populateTagContextMenu(contextMenu: UI.ContextMenu.ContextMenu, event: Event): Promise<void>;
-    populateNodeContextMenu(contextMenu: UI.ContextMenu.ContextMenu): Promise<void>;
-    populatePseudoElementContextMenu(contextMenu: UI.ContextMenu.ContextMenu): void;
-    populateProcessingElementContextMenu(contextMenu: UI.ContextMenu.ContextMenu): Promise<void>;
+    startEditingAttribute(attribute: Element, elementForSelection: Element): boolean;
+    startEditingTextNode(textNodeElement: Element): boolean;
+    editAsHTML(): void;
+    copyCSSPath(): void;
+    copyJSPath(): void;
+    copyXPath(): void;
+    copyFullXPath(): void;
     hasEditableNode(): boolean;
     toggleEditAsHTML(callback?: ((arg0: boolean) => void), startEditing?: boolean): void;
     get expandAllButtonElement(): UI.TreeOutline.TreeElement | null;

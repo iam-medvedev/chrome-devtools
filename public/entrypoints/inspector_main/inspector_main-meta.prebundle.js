@@ -8,6 +8,11 @@ import * as UI from '../../ui/legacy/legacy.js';
 import * as SettingsUI from '../../ui/settings/settings.js';
 const UIStrings = {
     /**
+     * @description The name of a checkbox setting in the Rendering tool. This setting
+     * emulates that the webpage is in auto dark mode.
+     */
+    emulateAutoDarkMode: 'Emulate auto dark mode',
+    /**
      * @description Title of an option under the Rendering category that can be invoked through the Command Menu.
      */
     showPaintFlashingRectangles: 'Show paint flashing rectangles',
@@ -161,6 +166,146 @@ const UIStrings = {
      */
     colorVisionDeficiency: 'color vision deficiency',
     /**
+     * @description Title of a setting under the Rendering drawer that can be invoked through the Command Menu.
+     */
+    doNotEmulateAnyVisionDeficiency: 'Do not emulate any vision deficiency',
+    /**
+     * @description Title of a setting under the Rendering drawer that can be invoked through the Command Menu.
+     */
+    emulateBlurredVision: 'Emulate blurred vision',
+    /**
+     * @description Title of a setting under the Rendering drawer that can be invoked through the Command Menu.
+     */
+    emulateReducedContrast: 'Emulate reduced contrast',
+    /**
+     * @description Name of a vision deficiency that can be emulated via the Rendering drawer.
+     */
+    blurredVision: 'Blurred vision',
+    /**
+     * @description Name of a vision deficiency that can be emulated via the Rendering drawer.
+     */
+    reducedContrast: 'Reduced contrast',
+    /**
+     * @description Title of a setting under the Rendering drawer that can be invoked through the Command Menu.
+     */
+    emulateProtanopia: 'Emulate protanopia (no red)',
+    /**
+     * @description Name of a color vision deficiency that can be emulated via the Rendering drawer.
+     */
+    protanopia: 'Protanopia (no red)',
+    /**
+     * @description Title of a setting under the Rendering drawer that can be invoked through the Command Menu.
+     */
+    emulateDeuteranopia: 'Emulate deuteranopia (no green)',
+    /**
+     * @description Name of a color vision deficiency that can be emulated via the Rendering drawer.
+     */
+    deuteranopia: 'Deuteranopia (no green)',
+    /**
+     * @description Title of a setting under the Rendering drawer that can be invoked through the Command Menu.
+     */
+    emulateTritanopia: 'Emulate tritanopia (no blue)',
+    /**
+     * @description Name of a color vision deficiency that can be emulated via the Rendering drawer.
+     */
+    tritanopia: 'Tritanopia (no blue)',
+    /**
+     * @description Title of a setting under the Rendering drawer that can be invoked through the Command Menu.
+     */
+    emulateAchromatopsia: 'Emulate achromatopsia (no color)',
+    /**
+     * @description Name of a color vision deficiency that can be emulated via the Rendering drawer.
+     */
+    achromatopsia: 'Achromatopsia (no color)',
+    /**
+     * @description Title of a setting under the Rendering drawer.
+     */
+    emulateVisionDeficiencies: 'Emulate vision deficiencies',
+    /**
+     * @description Title of a setting under the Rendering drawer.
+     */
+    emulateOsTextScale: 'Emulate OS text scale',
+    /**
+     * @description Title of a setting under the Rendering category that can be invoked through the Command Menu.
+     */
+    doNotEmulateOsTextScale: 'Do not emulate OS text scale',
+    /**
+     * @description A drop-down menu option to not emulate OS text scale.
+     */
+    osTextScaleEmulationNone: 'No emulation',
+    /**
+     * @description A drop-down menu option to emulate an OS text scale 85%.
+     */
+    osTextScaleEmulation85: '85%',
+    /**
+     * @description A drop-down menu option to emulate an OS text scale of 100%.
+     */
+    osTextScaleEmulation100: '100% (default)',
+    /**
+     * @description A drop-down menu option to emulate an OS text scale of 115%.
+     */
+    osTextScaleEmulation115: '115%',
+    /**
+     * @description A drop-down menu option to emulate an OS text scale of 130%.
+     */
+    osTextScaleEmulation130: '130%',
+    /**
+     * @description A drop-down menu option to emulate an OS text scale of 150%.
+     */
+    osTextScaleEmulation150: '150%',
+    /**
+     * @description A drop-down menu option to emulate an OS text scale of 180%.
+     */
+    osTextScaleEmulation180: '180%',
+    /**
+     * @description A drop-down menu option to emulate an OS text scale of 200%.
+     */
+    osTextScaleEmulation200: '200%',
+    /**
+     * @description A drop-down menu option to emulate an OS text scale of 250%.
+     */
+    osTextScaleEmulation250: '250%',
+    /**
+     * @description A drop-down menu option to emulate an OS text scale of 300%.
+     */
+    osTextScaleEmulation300: '300%',
+    /**
+     * @description A drop-down menu option to emulate an OS text scale of 350%.
+     */
+    osTextScaleEmulation350: '350%',
+    /**
+     * @description Text that refers to disabling local fonts.
+     */
+    disableLocalFonts: 'Disable local fonts',
+    /**
+     * @description Text that refers to enabling local fonts.
+     */
+    enableLocalFonts: 'Enable local fonts',
+    /**
+     * @description Title of a setting that disables AVIF format.
+     */
+    disableAvifFormat: 'Disable `AVIF` format',
+    /**
+     * @description Title of a setting that enables AVIF format.
+     */
+    enableAvifFormat: 'Enable `AVIF` format',
+    /**
+     * @description Title of a setting that disables JPEG XL format.
+     */
+    disableJpegXlFormat: 'Disable `JPEG XL` format',
+    /**
+     * @description Title of a setting that enables JPEG XL format.
+     */
+    enableJpegXlFormat: 'Enable `JPEG XL` format',
+    /**
+     * @description Title of a setting that disables WebP format.
+     */
+    disableWebpFormat: 'Disable `WebP` format',
+    /**
+     * @description Title of a setting that enables WebP format.
+     */
+    enableWebpFormat: 'Enable `WebP` format',
+    /**
      * @description Title of an action that reloads the inspected page.
      */
     reloadPage: 'Reload page',
@@ -291,13 +436,9 @@ UI.ActionRegistration.registerActionExtension({
         return new InspectorMain.RenderingOptions.ReloadActionDelegate();
     },
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.InspectorMainSettings.adBlockingEnabledSettingDescriptor, {
     category: "NETWORK" /* Common.Settings.SettingCategory.NETWORK */,
     title: i18nLazyString(UIStrings.forceAdBlocking),
-    settingName: 'network.ad-blocking-enabled',
-    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
-    storageType: "Session" /* Common.Settings.SettingStorageType.SESSION */,
-    defaultValue: false,
     options: [
         {
             value: true,
@@ -309,14 +450,10 @@ Common.Settings.registerSettingExtension({
         },
     ],
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.InspectorMainSettings.autoAttachToCreatedPagesSettingDescriptor, {
     category: "GLOBAL" /* Common.Settings.SettingCategory.GLOBAL */,
-    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
     title: i18nLazyString(UIStrings.autoOpenDevTools),
-    settingName: 'auto-attach-to-created-pages',
-    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     order: 2,
-    defaultValue: false,
     options: [
         {
             value: true,
@@ -526,5 +663,265 @@ SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.emulatedCSSMediaFeatur
         i18nLazyString(UIStrings.query),
     ],
     title: i18nLazyString(UIStrings.emulateCssMediaFeature, { PH1: 'prefers-reduced-motion' }),
+});
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.emulatedCSSMediaFeaturePrefersContrastSettingDescriptor, {
+    category: "RENDERING" /* Common.Settings.SettingCategory.RENDERING */,
+    options: [
+        {
+            title: i18nLazyString(UIStrings.doNotEmulateCss, { PH1: 'prefers-contrast' }),
+            text: i18nLazyString(UIStrings.noEmulation),
+            value: '',
+        },
+        {
+            title: i18nLazyString(UIStrings.emulateCss, { PH1: 'prefers-contrast: more' }),
+            text: i18n.i18n.lockedLazyString('prefers-contrast: more'),
+            value: 'more',
+        },
+        {
+            title: i18nLazyString(UIStrings.emulateCss, { PH1: 'prefers-contrast: less' }),
+            text: i18n.i18n.lockedLazyString('prefers-contrast: less'),
+            value: 'less',
+        },
+        {
+            title: i18nLazyString(UIStrings.emulateCss, { PH1: 'prefers-contrast: custom' }),
+            text: i18n.i18n.lockedLazyString('prefers-contrast: custom'),
+            value: 'custom',
+        },
+    ],
+    tags: [
+        i18nLazyString(UIStrings.query),
+    ],
+    title: i18nLazyString(UIStrings.emulateCssMediaFeature, { PH1: 'prefers-contrast' }),
+});
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.emulatedCSSMediaFeaturePrefersReducedDataSettingDescriptor, {
+    category: "RENDERING" /* Common.Settings.SettingCategory.RENDERING */,
+    options: [
+        {
+            title: i18nLazyString(UIStrings.doNotEmulateCss, { PH1: 'prefers-reduced-data' }),
+            text: i18nLazyString(UIStrings.noEmulation),
+            value: '',
+        },
+        {
+            title: i18nLazyString(UIStrings.emulateCss, { PH1: 'prefers-reduced-data: reduce' }),
+            text: i18n.i18n.lockedLazyString('prefers-reduced-data: reduce'),
+            value: 'reduce',
+        },
+    ],
+    tags: [
+        i18nLazyString(UIStrings.query),
+    ],
+    title: i18nLazyString(UIStrings.emulateCssMediaFeature, { PH1: 'prefers-reduced-data' }),
+});
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.emulatedCSSMediaFeaturePrefersReducedTransparencySettingDescriptor, {
+    category: "RENDERING" /* Common.Settings.SettingCategory.RENDERING */,
+    options: [
+        {
+            title: i18nLazyString(UIStrings.doNotEmulateCss, { PH1: 'prefers-reduced-transparency' }),
+            text: i18nLazyString(UIStrings.noEmulation),
+            value: '',
+        },
+        {
+            title: i18nLazyString(UIStrings.emulateCss, { PH1: 'prefers-reduced-transparency: reduce' }),
+            text: i18n.i18n.lockedLazyString('prefers-reduced-transparency: reduce'),
+            value: 'reduce',
+        },
+    ],
+    tags: [
+        i18nLazyString(UIStrings.query),
+    ],
+    title: i18nLazyString(UIStrings.emulateCssMediaFeature, { PH1: 'prefers-reduced-transparency' }),
+});
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.emulatedCSSMediaFeatureColorGamutSettingDescriptor, {
+    category: "RENDERING" /* Common.Settings.SettingCategory.RENDERING */,
+    options: [
+        {
+            title: i18nLazyString(UIStrings.doNotEmulateCss, { PH1: 'color-gamut' }),
+            text: i18nLazyString(UIStrings.noEmulation),
+            value: '',
+        },
+        {
+            title: i18nLazyString(UIStrings.emulateCss, { PH1: 'color-gamut: srgb' }),
+            text: i18n.i18n.lockedLazyString('color-gamut: srgb'),
+            value: 'srgb',
+        },
+        {
+            title: i18nLazyString(UIStrings.emulateCss, { PH1: 'color-gamut: p3' }),
+            text: i18n.i18n.lockedLazyString('color-gamut: p3'),
+            value: 'p3',
+        },
+        {
+            title: i18nLazyString(UIStrings.emulateCss, { PH1: 'color-gamut: rec2020' }),
+            text: i18n.i18n.lockedLazyString('color-gamut: rec2020'),
+            value: 'rec2020',
+        },
+    ],
+    tags: [
+        i18nLazyString(UIStrings.query),
+    ],
+    title: i18nLazyString(UIStrings.emulateCssMediaFeature, { PH1: 'color-gamut' }),
+});
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.emulatedVisionDeficiencySettingDescriptor, {
+    category: "RENDERING" /* Common.Settings.SettingCategory.RENDERING */,
+    options: [
+        {
+            title: i18nLazyString(UIStrings.doNotEmulateAnyVisionDeficiency),
+            text: i18nLazyString(UIStrings.noEmulation),
+            value: 'none',
+        },
+        {
+            title: i18nLazyString(UIStrings.emulateBlurredVision),
+            text: i18nLazyString(UIStrings.blurredVision),
+            value: 'blurredVision',
+        },
+        {
+            title: i18nLazyString(UIStrings.emulateReducedContrast),
+            text: i18nLazyString(UIStrings.reducedContrast),
+            value: 'reducedContrast',
+        },
+        {
+            title: i18nLazyString(UIStrings.emulateProtanopia),
+            text: i18nLazyString(UIStrings.protanopia),
+            value: 'protanopia',
+        },
+        {
+            title: i18nLazyString(UIStrings.emulateDeuteranopia),
+            text: i18nLazyString(UIStrings.deuteranopia),
+            value: 'deuteranopia',
+        },
+        {
+            title: i18nLazyString(UIStrings.emulateTritanopia),
+            text: i18nLazyString(UIStrings.tritanopia),
+            value: 'tritanopia',
+        },
+        {
+            title: i18nLazyString(UIStrings.emulateAchromatopsia),
+            text: i18nLazyString(UIStrings.achromatopsia),
+            value: 'achromatopsia',
+        },
+    ],
+    tags: [
+        i18nLazyString(UIStrings.query),
+    ],
+    title: i18nLazyString(UIStrings.emulateVisionDeficiencies),
+});
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.emulatedOSTextScaleSettingDescriptor, {
+    category: "RENDERING" /* Common.Settings.SettingCategory.RENDERING */,
+    options: [
+        {
+            title: i18nLazyString(UIStrings.doNotEmulateOsTextScale),
+            text: i18nLazyString(UIStrings.osTextScaleEmulationNone),
+            value: '',
+        },
+        {
+            title: i18nLazyString(UIStrings.osTextScaleEmulation85),
+            text: i18nLazyString(UIStrings.osTextScaleEmulation85),
+            value: '0.85',
+        },
+        {
+            title: i18nLazyString(UIStrings.osTextScaleEmulation100),
+            text: i18nLazyString(UIStrings.osTextScaleEmulation100),
+            value: '1',
+        },
+        {
+            title: i18nLazyString(UIStrings.osTextScaleEmulation115),
+            text: i18nLazyString(UIStrings.osTextScaleEmulation115),
+            value: '1.15',
+        },
+        {
+            title: i18nLazyString(UIStrings.osTextScaleEmulation130),
+            text: i18nLazyString(UIStrings.osTextScaleEmulation130),
+            value: '1.3',
+        },
+        {
+            title: i18nLazyString(UIStrings.osTextScaleEmulation150),
+            text: i18nLazyString(UIStrings.osTextScaleEmulation150),
+            value: '1.5',
+        },
+        {
+            title: i18nLazyString(UIStrings.osTextScaleEmulation180),
+            text: i18nLazyString(UIStrings.osTextScaleEmulation180),
+            value: '1.8',
+        },
+        {
+            title: i18nLazyString(UIStrings.osTextScaleEmulation200),
+            text: i18nLazyString(UIStrings.osTextScaleEmulation200),
+            value: '2',
+        },
+        {
+            title: i18nLazyString(UIStrings.osTextScaleEmulation250),
+            text: i18nLazyString(UIStrings.osTextScaleEmulation250),
+            value: '2.5',
+        },
+        {
+            title: i18nLazyString(UIStrings.osTextScaleEmulation300),
+            text: i18nLazyString(UIStrings.osTextScaleEmulation300),
+            value: '3',
+        },
+        {
+            title: i18nLazyString(UIStrings.osTextScaleEmulation350),
+            text: i18nLazyString(UIStrings.osTextScaleEmulation350),
+            value: '3.5',
+        },
+    ],
+    tags: [
+        i18nLazyString(UIStrings.query),
+    ],
+    title: i18nLazyString(UIStrings.emulateOsTextScale),
+});
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.localFontsDisabledSettingDescriptor, {
+    category: "RENDERING" /* Common.Settings.SettingCategory.RENDERING */,
+    options: [
+        {
+            value: true,
+            title: i18nLazyString(UIStrings.disableLocalFonts),
+        },
+        {
+            value: false,
+            title: i18nLazyString(UIStrings.enableLocalFonts),
+        },
+    ],
+});
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.avifFormatDisabledSettingDescriptor, {
+    category: "RENDERING" /* Common.Settings.SettingCategory.RENDERING */,
+    options: [
+        {
+            value: true,
+            title: i18nLazyString(UIStrings.disableAvifFormat),
+        },
+        {
+            value: false,
+            title: i18nLazyString(UIStrings.enableAvifFormat),
+        },
+    ],
+});
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.jpegXlFormatDisabledSettingDescriptor, {
+    category: "RENDERING" /* Common.Settings.SettingCategory.RENDERING */,
+    options: [
+        {
+            value: true,
+            title: i18nLazyString(UIStrings.disableJpegXlFormat),
+        },
+        {
+            value: false,
+            title: i18nLazyString(UIStrings.enableJpegXlFormat),
+        },
+    ],
+});
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.webpFormatDisabledSettingDescriptor, {
+    category: "RENDERING" /* Common.Settings.SettingCategory.RENDERING */,
+    options: [
+        {
+            value: true,
+            title: i18nLazyString(UIStrings.disableWebpFormat),
+        },
+        {
+            value: false,
+            title: i18nLazyString(UIStrings.enableWebpFormat),
+        },
+    ],
+});
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.emulateAutoDarkModeSettingDescriptor, {
+    category: "RENDERING" /* Common.Settings.SettingCategory.RENDERING */,
+    title: i18nLazyString(UIStrings.emulateAutoDarkMode),
 });
 //# sourceMappingURL=inspector_main-meta.prebundle.js.map
