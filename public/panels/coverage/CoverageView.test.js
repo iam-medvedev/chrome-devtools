@@ -15,7 +15,7 @@ import * as UI from '../../ui/legacy/legacy.js';
 import * as Coverage from './coverage.js';
 const { urlString } = Platform.DevToolsPath;
 const isShowingLandingPage = (view) => {
-    return Boolean(view.contentElement.querySelector('.empty-state'));
+    return Boolean(view.contentElement.querySelector('devtools-widget')?.shadowRoot?.querySelector('.empty-state'));
 };
 const isShowingResults = (view) => {
     return Boolean(view.contentElement.querySelector('.coverage-results .results'));
@@ -91,7 +91,7 @@ describeWithEnvironment('CoverageView', () => {
         renderElementIntoDOM(view);
         await view.updateComplete;
         assert.isTrue(isShowingLandingPage(view));
-        const button = view.contentElement.querySelector('.empty-state devtools-button');
+        const button = view.contentElement.querySelector('devtools-widget devtools-button');
         assert.exists(button);
         const toggleSpy = sinon.spy(UI.ActionRegistry.ActionRegistry.instance().getAction('coverage.toggle-recording'), 'execute');
         const reloadSpy = sinon.spy(UI.ActionRegistry.ActionRegistry.instance().getAction('coverage.start-with-reload'), 'execute');

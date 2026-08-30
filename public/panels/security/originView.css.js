@@ -10,14 +10,14 @@ export default `/*
  */
 
 .title-section {
-  padding: 16px 0 24px;
-  border-bottom: 1px solid var(--sys-color-divider);
+  padding: var(--sys-size-8) 0 var(--sys-size-11);
+  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
 }
 
 .title-section-header {
-  padding-left: 16px;
+  padding-left: var(--sys-size-8);
   padding-bottom: 10px;
-  font-size: 14px;
+  font-size: var(--sys-typescale-body2-size);
 }
 
 .security-origin-view {
@@ -27,30 +27,30 @@ export default `/*
 }
 
 .security-origin-view .origin-view-section {
-  border-bottom: 1px solid var(--sys-color-divider);
-  padding: 12px 6px 12px  24px;
-  font-size: 12px;
+  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
+  padding: var(--sys-size-6) var(--sys-size-4) var(--sys-size-6) var(--sys-size-11);
+  font-size: var(--sys-typescale-body4-size);
 }
 
 .origin-view-notes {
-  margin-top: 2px;
+  margin-top: var(--sys-size-2);
   color: var(--sys-color-token-subtle);
 }
 
 .origin-view-section-notes {
-  margin-top: 6px;
+  margin-top: var(--sys-size-4);
   color: var(--sys-color-token-subtle);
 }
 
 .security-origin-view .origin-display {
-  font-size: 12px;
+  font-size: var(--sys-typescale-body4-size);
   padding-left: var(--sys-size-8);
   display: flex;
   align-items: center;
 }
 
 .title-section > .view-network-button {
-  padding: 6px 0 0 16px;
+  padding: var(--sys-size-4) 0 0 var(--sys-size-8);
 }
 
 .security-origin-view .origin-display devtools-icon {
@@ -60,8 +60,8 @@ export default `/*
 }
 
 .security-origin-view .origin-view-section-title {
-  margin-top: 4px;
-  margin-bottom: 4px;
+  margin-top: var(--sys-size-3);
+  margin-bottom: var(--sys-size-3);
   font-weight: bold;
 }
 
@@ -72,7 +72,7 @@ export default `/*
 .security-origin-view .details-table-row {
   white-space: nowrap;
   overflow: hidden;
-  line-height: 22px;
+  line-height: var(--sys-size-10);
   vertical-align: top;
 }
 
@@ -92,7 +92,7 @@ export default `/*
 }
 
 .security-origin-view .sct-details .details-table .details-table-row:last-child td:last-child {
-  border-bottom: 1px solid var(--sys-color-divider);
+  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
   padding-bottom: 10px;
 }
 

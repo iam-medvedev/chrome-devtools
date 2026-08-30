@@ -713,24 +713,17 @@ SettingsUI.SettingUIRegistration.register(SettingsUI.MainSettings.languageSettin
     ],
     reloadRequired: true,
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.MainSettings.shortcutPanelSwitchSettingDescriptor, {
     category: "APPEARANCE" /* Common.Settings.SettingCategory.APPEARANCE */,
-    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
     title: Host.Platform.platform() === 'mac' ? i18nLazyString(UIStrings.enableShortcutToSwitchPanels) :
         i18nLazyString(UIStrings.enableCtrlShortcutToSwitchPanels),
-    settingName: 'shortcut-panel-switch',
-    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
-    defaultValue: false,
 });
 SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.disablePausedStateOverlaySettingDescriptor, {
     category: "APPEARANCE" /* Common.Settings.SettingCategory.APPEARANCE */,
     title: i18nLazyString(UIStrings.disablePaused),
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.MainSettings.currentDockStateSettingDescriptor, {
     category: "GLOBAL" /* Common.Settings.SettingCategory.GLOBAL */,
-    settingName: 'currentDockState',
-    settingType: "enum" /* Common.Settings.SettingType.ENUM */,
-    defaultValue: 'right',
     options: [
         {
             value: 'right',
@@ -754,11 +747,7 @@ Common.Settings.registerSettingExtension({
         },
     ],
 });
-Common.Settings.registerSettingExtension({
-    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
-    settingName: 'active-keybind-set',
-    settingType: "enum" /* Common.Settings.SettingType.ENUM */,
-    defaultValue: 'devToolsDefault',
+SettingsUI.SettingUIRegistration.register(SettingsUI.MainSettings.activeKeybindSetSettingDescriptor, {
     options: [
         {
             value: 'devToolsDefault',
@@ -782,13 +771,9 @@ function createOptionForLocale(localeString) {
         text: createLazyLocalizedLocaleSettingText(localeString),
     };
 }
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.MainSettings.syncPreferencesSettingDescriptor, {
     category: "ACCOUNT" /* Common.Settings.SettingCategory.ACCOUNT */,
-    // This name must be kept in sync with DevToolsSettings::kSyncDevToolsPreferencesFrontendName.
-    settingName: 'sync-preferences',
-    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     title: i18nLazyString(UIStrings.saveSettings),
-    defaultValue: false,
     reloadRequired: true,
 });
 SettingsUI.SettingUIRegistration.register(Badges.receiveGdpBadgesSettingDescriptor, {
@@ -817,20 +802,10 @@ SettingsUI.SettingUIRegistration.register(Persistence.NetworkPersistenceManager.
         },
     ],
 });
-Common.Settings.registerSettingExtension({
-    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
-    settingName: 'user-shortcuts',
-    settingType: "array" /* Common.Settings.SettingType.ARRAY */,
-    defaultValue: [],
-});
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.MainSettings.searchAsYouTypeSettingDescriptor, {
     category: "GLOBAL" /* Common.Settings.SettingCategory.GLOBAL */,
-    storageType: "Local" /* Common.Settings.SettingStorageType.LOCAL */,
     title: i18nLazyString(UIStrings.searchAsYouTypeSetting),
-    settingName: 'search-as-you-type',
-    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     order: 3,
-    defaultValue: true,
     options: [
         {
             value: true,

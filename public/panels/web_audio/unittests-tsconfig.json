@@ -6,6 +6,7 @@
     "checkJs": true,
     "composite": true,
     "declaration": true,
+    "disableSourceOfProjectReferenceRedirect": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
     "inlineSources": true,
@@ -26,6 +27,7 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "outDir": ".",
+    "preserveConstEnums": true,
     "rootDir": "../../../../../../front_end/panels/web_audio",
     "skipLibCheck": true,
     "sourceMap": true,
@@ -50,19 +52,19 @@
   ],
   "references": [
     {
-      "path": "./bundle-tsconfig.json"
+      "path": "./bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../core/platform/bundle-tsconfig.json"
+      "path": "../../core/platform/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../generated/generated-tsconfig.json"
+      "path": "../../generated/generated-tsconfig.ref.json"
     },
     {
-      "path": "../../testing/testing-tsconfig.json"
+      "path": "../../testing/testing-tsconfig.ref.json"
     },
     {
-      "path": "../../ui/legacy/bundle-tsconfig.json"
+      "path": "../../ui/legacy/bundle-tsconfig.ref.json"
     }
   ]
 }

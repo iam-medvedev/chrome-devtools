@@ -10,12 +10,12 @@ __export(NodeConnectionsPanel_exports, {
   NodeConnectionsPanel: () => NodeConnectionsPanel,
   NodeConnectionsView: () => NodeConnectionsView
 });
-import * as Host from "./../../../core/host/host.js";
-import * as i18n from "./../../../core/i18n/i18n.js";
-import * as Buttons from "./../../../ui/components/buttons/buttons.js";
-import * as uiI18n from "./../../../ui/i18n/i18n.js";
-import { Link } from "./../../../ui/kit/kit.js";
-import * as UI from "./../../../ui/legacy/legacy.js";
+import * as Host from "../../../core/host/host.js";
+import * as i18n from "../../../core/i18n/i18n.js";
+import * as Buttons from "../../../ui/components/buttons/buttons.js";
+import * as uiI18n from "../../../ui/i18n/i18n.js";
+import { Link } from "../../../ui/kit/kit.js";
+import * as UI from "../../../ui/legacy/legacy.js";
 
 // gen/front_end/entrypoints/node_app/app/nodeConnectionsPanel.css.js
 var nodeConnectionsPanel_css_default = `/*
@@ -33,7 +33,7 @@ var nodeConnectionsPanel_css_default = `/*
   flex: none;
   max-width: 600px;
   max-height: 202px;
-  margin: 20px 0 5px;
+  margin: var(--sys-size-9) 0 5px;
 }
 
 .network-discovery-list-empty {
@@ -69,7 +69,7 @@ var nodeConnectionsPanel_css_default = `/*
   flex: none;
   display: flex;
   flex-direction: row;
-  margin: 6px 5px;
+  margin: var(--sys-size-4) 5px;
   align-items: center;
 }
 
@@ -101,12 +101,12 @@ var nodeConnectionsPanel_css_default = `/*
 }
 
 :host-context(.node-frontend) .network-discovery-list-empty {
-  height: 40px;
+  height: var(--sys-size-14);
 }
 
 :host-context(.node-frontend) .network-discovery-list-item {
   padding: 3px 15px;
-  height: 40px;
+  height: var(--sys-size-14);
 }
 
 .node-panel-center {
@@ -126,7 +126,7 @@ var nodeConnectionsPanel_css_default = `/*
 }
 
 :host-context(.node-frontend) .network-discovery-edit-row {
-  margin: 6px 9px;
+  margin: var(--sys-size-4) 9px;
 }
 
 /*# sourceURL=${import.meta.resolve("./nodeConnectionsPanel.css")} */`;
@@ -289,11 +289,11 @@ __export(NodeMain_exports, {
   NodeConnection: () => NodeConnection,
   NodeMainImpl: () => NodeMainImpl
 });
-import * as Host2 from "./../../../core/host/host.js";
-import * as i18n3 from "./../../../core/i18n/i18n.js";
-import * as ProtocolClient from "./../../../core/protocol_client/protocol_client.js";
-import * as SDK from "./../../../core/sdk/sdk.js";
-import * as Components from "./../../../ui/legacy/components/utils/utils.js";
+import * as Host2 from "../../../core/host/host.js";
+import * as i18n3 from "../../../core/i18n/i18n.js";
+import * as ProtocolClient from "../../../core/protocol_client/protocol_client.js";
+import * as SDK from "../../../core/sdk/sdk.js";
+import * as Components from "../../../ui/legacy/components/utils/utils.js";
 var UIStrings2 = {
   /**
    * @description Text that refers to the main target.

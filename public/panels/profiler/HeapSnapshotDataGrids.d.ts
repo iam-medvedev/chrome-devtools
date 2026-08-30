@@ -9,15 +9,7 @@ import type { HeapProfileHeader } from './HeapSnapshotView.js';
 import type { DataDisplayDelegate } from './ProfileHeader.js';
 declare class HeapSnapshotSortableDataGridBase extends DataGrid.DataGrid.DataGridImpl<HeapSnapshotGridNode> {
 }
-declare const HeapSnapshotSortableDataGrid_base: (new (...args: any[]) => {
-    __events: Common.ObjectWrapper.ObjectWrapper<EventTypes>;
-    addEventListener<T extends keyof EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<EventTypes, T>;
-    once<T extends keyof EventTypes>(eventType: T): Promise<EventTypes[T]>;
-    removeEventListener<T extends keyof EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): void;
-    hasEventListeners(eventType: keyof EventTypes): boolean;
-    dispatchEventToListeners<T extends keyof EventTypes>(eventType: import("../../core/platform/TypescriptUtilities.js").NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T>): void;
-    dispatchDOMEvent?(event: Event): void;
-}) & typeof HeapSnapshotSortableDataGridBase;
+declare const HeapSnapshotSortableDataGrid_base: import("../../core/platform/Constructor.js").Constructor<Common.EventTarget.EventTarget<EventTypes>, any[]> & typeof HeapSnapshotSortableDataGridBase;
 export declare class HeapSnapshotSortableDataGrid extends HeapSnapshotSortableDataGrid_base {
     snapshot: HeapSnapshotModel.HeapSnapshotProxy.HeapSnapshotProxy | null;
     selectedNode: HeapSnapshotGridNode | null;

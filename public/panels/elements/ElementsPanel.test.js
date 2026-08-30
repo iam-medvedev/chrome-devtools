@@ -7,7 +7,7 @@ import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as ComputedStyle from '../../models/computed_style/computed_style.js';
-import { raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { raf, renderElementIntoDOM, setTestUniverseForWidgets } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment, stubNoopSettings, updateHostConfig, } from '../../testing/EnvironmentHelpers.js';
 import { expectCall, expectCalled } from '../../testing/ExpectStubCall.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
@@ -18,8 +18,10 @@ import * as Elements from './elements.js';
 describeWithEnvironment('ElementsPanel', () => {
     let target;
     let connection;
+    let universe;
     beforeEach(() => {
-        const universe = new TestUniverse();
+        universe = new TestUniverse();
+        setTestUniverseForWidgets(universe);
         sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, 'instance')
             .returns(universe.debuggerWorkspaceBinding);
         sinon.stub(Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding, 'instance').returns(universe.cssWorkspaceBinding);

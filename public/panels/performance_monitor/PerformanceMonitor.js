@@ -548,6 +548,11 @@ export class PerformanceMonitorImpl extends UI.Widget.HBox {
         ];
     }
 }
+export var Format;
+(function (Format) {
+    Format["PERCENT"] = "Percent";
+    Format["BYTES"] = "Bytes";
+})(Format || (Format = {}));
 const CONTROL_PANE_DEFAULT_VIEW = (input, _output, target) => {
     // clang-format off
     render(html `

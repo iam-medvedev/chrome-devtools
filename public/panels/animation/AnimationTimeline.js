@@ -1008,6 +1008,12 @@ export class AnimationTimeline extends UI.Widget.VBox {
     }
 }
 export const GlobalPlaybackRates = [1, 0.25, 0.1];
+var ControlState;
+(function (ControlState) {
+    ControlState["PLAY"] = "play-outline";
+    ControlState["REPLAY"] = "replay-outline";
+    ControlState["PAUSE"] = "pause-outline";
+})(ControlState || (ControlState = {}));
 export class NodeUI {
     element;
     #description;

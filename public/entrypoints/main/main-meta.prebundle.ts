@@ -741,14 +741,10 @@ SettingsUI.SettingUIRegistration.register(SettingsUI.MainSettings.languageSettin
   reloadRequired: true,
 });
 
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.MainSettings.shortcutPanelSwitchSettingDescriptor, {
   category: Common.Settings.SettingCategory.APPEARANCE,
-  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: Host.Platform.platform() === 'mac' ? i18nLazyString(UIStrings.enableShortcutToSwitchPanels) :
                                               i18nLazyString(UIStrings.enableCtrlShortcutToSwitchPanels),
-  settingName: 'shortcut-panel-switch',
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: false,
 });
 
 SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.disablePausedStateOverlaySettingDescriptor, {
@@ -756,11 +752,8 @@ SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.disablePausedStateOver
   title: i18nLazyString(UIStrings.disablePaused),
 });
 
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.MainSettings.currentDockStateSettingDescriptor, {
   category: Common.Settings.SettingCategory.GLOBAL,
-  settingName: 'currentDockState',
-  settingType: Common.Settings.SettingType.ENUM,
-  defaultValue: 'right',
   options: [
     {
       value: 'right',
@@ -785,11 +778,7 @@ Common.Settings.registerSettingExtension({
   ],
 });
 
-Common.Settings.registerSettingExtension({
-  storageType: Common.Settings.SettingStorageType.SYNCED,
-  settingName: 'active-keybind-set',
-  settingType: Common.Settings.SettingType.ENUM,
-  defaultValue: 'devToolsDefault',
+SettingsUI.SettingUIRegistration.register(SettingsUI.MainSettings.activeKeybindSetSettingDescriptor, {
   options: [
     {
       value: 'devToolsDefault',
@@ -817,13 +806,9 @@ function createOptionForLocale(localeString: string): Common.Settings.SettingExt
   };
 }
 
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.MainSettings.syncPreferencesSettingDescriptor, {
   category: Common.Settings.SettingCategory.ACCOUNT,
-  // This name must be kept in sync with DevToolsSettings::kSyncDevToolsPreferencesFrontendName.
-  settingName: 'sync-preferences',
-  settingType: Common.Settings.SettingType.BOOLEAN,
   title: i18nLazyString(UIStrings.saveSettings),
-  defaultValue: false,
   reloadRequired: true,
 });
 
@@ -856,21 +841,10 @@ SettingsUI.SettingUIRegistration.register(
       ],
     });
 
-Common.Settings.registerSettingExtension({
-  storageType: Common.Settings.SettingStorageType.SYNCED,
-  settingName: 'user-shortcuts',
-  settingType: Common.Settings.SettingType.ARRAY,
-  defaultValue: [],
-});
-
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.MainSettings.searchAsYouTypeSettingDescriptor, {
   category: Common.Settings.SettingCategory.GLOBAL,
-  storageType: Common.Settings.SettingStorageType.LOCAL,
   title: i18nLazyString(UIStrings.searchAsYouTypeSetting),
-  settingName: 'search-as-you-type',
-  settingType: Common.Settings.SettingType.BOOLEAN,
   order: 3,
-  defaultValue: true,
   options: [
     {
       value: true,

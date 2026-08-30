@@ -9,7 +9,7 @@ var BinaryResourceViewFactory_exports = {};
 __export(BinaryResourceViewFactory_exports, {
   BinaryResourceViewFactory: () => BinaryResourceViewFactory
 });
-import * as TextUtils5 from "./../../../../core/text_utils/text_utils.js";
+import * as TextUtils5 from "../../../../core/text_utils/text_utils.js";
 
 // gen/front_end/ui/legacy/components/source_frame/ResourceSourceFrame.js
 var ResourceSourceFrame_exports = {};
@@ -17,10 +17,10 @@ __export(ResourceSourceFrame_exports, {
   ResourceSourceFrame: () => ResourceSourceFrame,
   SearchableContainer: () => SearchableContainer
 });
-import "./../../legacy.js";
-import * as Common2 from "./../../../../core/common/common.js";
-import * as i18n3 from "./../../../../core/i18n/i18n.js";
-import * as TextUtils3 from "./../../../../core/text_utils/text_utils.js";
+import "../../legacy.js";
+import * as Common2 from "../../../../core/common/common.js";
+import * as i18n3 from "../../../../core/i18n/i18n.js";
+import * as TextUtils3 from "../../../../core/text_utils/text_utils.js";
 
 // gen/front_end/entrypoints/formatter_worker/FormatterActions.js
 var FORMATTABLE_MEDIA_TYPES = [
@@ -30,11 +30,12 @@ var FORMATTABLE_MEDIA_TYPES = [
   "text/css",
   "text/html",
   "text/javascript"
+  /* TEXT_JAVASCRIPT */
 ];
 
 // gen/front_end/ui/legacy/components/source_frame/ResourceSourceFrame.js
-import { render } from "./../../../lit/lit.js";
-import * as UI2 from "./../../legacy.js";
+import { render } from "../../../lit/lit.js";
+import * as UI2 from "../../legacy.js";
 
 // gen/front_end/ui/legacy/components/source_frame/resourceSourceFrame.css.js
 var resourceSourceFrame_css_default = `/*
@@ -49,7 +50,7 @@ var resourceSourceFrame_css_default = `/*
 
 devtools-toolbar {
   background-color: var(--sys-color-cdt-base-container);
-  border-top: 1px solid var(--sys-color-divider);
+  border-top: var(--sys-size-1) solid var(--sys-color-divider);
 }
 
 /*# sourceURL=${import.meta.resolve("./resourceSourceFrame.css")} */`;
@@ -57,6 +58,7 @@ devtools-toolbar {
 // gen/front_end/ui/legacy/components/source_frame/SourceFrame.js
 var SourceFrame_exports = {};
 __export(SourceFrame_exports, {
+  Events: () => Events,
   LINE_NUMBER_FORMATTER: () => LINE_NUMBER_FORMATTER,
   SourceFrameImpl: () => SourceFrameImpl,
   addNonBreakableLines: () => addNonBreakableLines,
@@ -64,77 +66,75 @@ __export(SourceFrame_exports, {
   isBreakableLine: () => isBreakableLine,
   removeSourceFrameInfobar: () => removeSourceFrameInfobar
 });
-import * as Common from "./../../../../core/common/common.js";
-import * as Host from "./../../../../core/host/host.js";
-import * as i18n from "./../../../../core/i18n/i18n.js";
-import * as Platform from "./../../../../core/platform/platform.js";
-import * as Root from "./../../../../core/root/root.js";
-import * as SDK from "./../../../../core/sdk/sdk.js";
-import * as TextUtils from "./../../../../core/text_utils/text_utils.js";
-import * as Formatter from "./../../../../models/formatter/formatter.js";
-import * as CodeMirror from "./../../../../third_party/codemirror.next/codemirror.next.js";
-import * as CodeHighlighter from "./../../../components/code_highlighter/code_highlighter.js";
-import * as Dialogs from "./../../../components/dialogs/dialogs.js";
-import * as TextEditor from "./../../../components/text_editor/text_editor.js";
-import * as VisualLogging from "./../../../visual_logging/visual_logging.js";
-import * as UI from "./../../legacy.js";
+import * as Common from "../../../../core/common/common.js";
+import * as Host from "../../../../core/host/host.js";
+import * as i18n from "../../../../core/i18n/i18n.js";
+import * as Platform from "../../../../core/platform/platform.js";
+import * as Root from "../../../../core/root/root.js";
+import * as SDK from "../../../../core/sdk/sdk.js";
+import * as TextUtils from "../../../../core/text_utils/text_utils.js";
+import * as Formatter from "../../../../models/formatter/formatter.js";
+import * as CodeMirror from "../../../../third_party/codemirror.next/codemirror.next.js";
+import * as CodeHighlighter from "../../../components/code_highlighter/code_highlighter.js";
+import * as Dialogs from "../../../components/dialogs/dialogs.js";
+import * as TextEditor from "../../../components/text_editor/text_editor.js";
+import * as VisualLogging from "../../../visual_logging/visual_logging.js";
+import * as UI from "../../legacy.js";
 var UIStrings = {
   /**
-   * @description Text for the source of something
+   * @description Title of the source frame view tab.
    */
   source: "Source",
   /**
-   * @description Text to pretty print a file
+   * @description Tooltip text for the pretty print button in the toolbar.
    */
   prettyPrint: "Pretty print",
   /**
-   * @description Text when something is loading
+   * @description Tooltip text for the progress indicator while content is loading in the source frame.
    */
   loading: "Loading\u2026",
   /**
-   * @description Text when a file is currently being pretty printed/formatted in the editor
+   * @description Placeholder text shown in the editor while formatting content.
    */
   formatting: "Formatting\u2026",
   /**
-   * @description Shown at the bottom of the Sources panel when the user has made multiple
-   * simultaneous text selections in the text editor.
+   * @description Status bar text in the source frame showing the number of active selection regions.
    * @example {2} PH1
    */
   dSelectionRegions: "{PH1} selection regions",
   /**
-   * @description Position indicator in Source Frame of the Sources panel. The placeholder is a
-   * hexadecimal number value, which is why it is prefixed with '0x'.
+   * @description Status bar text in the source frame showing the current bytecode offset position. The placeholder is a hexadecimal number value, which is why it is prefixed with '0x'.
    * @example {abc} PH1
    */
   bytecodePositionXs: "Bytecode position `0x`{PH1}",
   /**
-   * @description Text in Source Frame of the Sources panel
+   * @description Status bar text in the source frame showing the cursor line and column position.
    * @example {2} PH1
    * @example {2} PH2
    */
-  lineSColumnS: "Line {PH1}, Column {PH2}",
+  lineSColumnS: "Line {PH1}, column {PH2}",
   /**
-   * @description Text in Source Frame of the Sources panel
+   * @description Status bar text in the source frame showing the number of characters selected.
    * @example {2} PH1
    */
   dCharactersSelected: "{PH1} characters selected",
   /**
-   * @description Text in Source Frame of the Sources panel
+   * @description Status bar text in the source frame showing the number of lines and characters selected.
    * @example {2} PH1
    * @example {2} PH2
    */
   dLinesDCharactersSelected: "{PH1} lines, {PH2} characters selected",
   /**
-   * @description Headline of warning shown to users when pasting text/code into DevTools.
+   * @description Title of warning dialog shown to users when pasting code into DevTools.
    */
   doYouTrustThisCode: "Do you trust this code?",
   /**
-   * @description Warning shown to users when pasting text/code into DevTools. IMPORTANT: keep double quotes around PH1 and do not use single quotes.
+   * @description Warning message shown to users when pasting code into DevTools. IMPORTANT: keep double quotes around PH1 and do not use single quotes.
    * @example {allow pasting} PH1
    */
-  doNotPaste: 'Don\u2019t paste code you do not understand or have not reviewed yourself into DevTools. This could allow attackers to steal your identity or take control of your computer. Please type "{PH1}" below to allow pasting.',
+  doNotPaste: 'Don\u2019t paste code you don\u2019t understand or haven\u2019t reviewed yourself into DevTools. This could allow attackers to steal your identity or take control of your computer. Type "{PH1}" below to allow pasting.',
   /**
-   * @description Text a user needs to type in order to confirm that they are aware of the danger of pasting code into the DevTools console.
+   * @description Text the user needs to type to confirm they want to paste code into DevTools.
    */
   allowPasting: "allow pasting",
   /**
@@ -143,13 +143,17 @@ var UIStrings = {
    */
   typeAllowPasting: 'Type "{PH1}"',
   /**
-   * @description Error message shown when the user tries to open a file that contains non-readable data. "Editor" refers to
-   * a text editor.
+   * @description Error message shown in the text editor when binary data cannot be displayed.
    */
   binaryContentError: "Editor can\u2019t show binary data. Use the Response tab in the Network panel to inspect this resource."
 };
 var str_ = i18n.i18n.registerUIStrings("ui/legacy/components/source_frame/SourceFrame.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
+var Events;
+(function(Events2) {
+  Events2["EDITOR_UPDATE"] = "EditorUpdate";
+  Events2["EDITOR_SCROLL"] = "EditorScroll";
+})(Events || (Events = {}));
 var LINE_NUMBER_FORMATTER = CodeMirror.Facet.define({
   combine(value) {
     if (value.length === 0) {
@@ -1102,7 +1106,7 @@ var sourceFrameInfobarState = CodeMirror.StateField.define({
 // gen/front_end/ui/legacy/components/source_frame/ResourceSourceFrame.js
 var UIStrings2 = {
   /**
-   * @description Text to find an item
+   * @description Placeholder text for the search input in the resource source frame.
    */
   find: "Find"
 };
@@ -1180,9 +1184,9 @@ var StreamingContentHexView_exports = {};
 __export(StreamingContentHexView_exports, {
   StreamingContentHexView: () => StreamingContentHexView
 });
-import * as TextUtils4 from "./../../../../core/text_utils/text_utils.js";
-import * as LinearMemoryInspectorComponents from "./../../../../panels/linear_memory_inspector/components/components.js";
-import * as UI3 from "./../../legacy.js";
+import * as TextUtils4 from "../../../../core/text_utils/text_utils.js";
+import * as LinearMemoryInspectorComponents from "../../../../panels/linear_memory_inspector/components/components.js";
+import * as UI3 from "../../legacy.js";
 var MEMORY_TRANSFER_MIN_CHUNK_SIZE = 1e3;
 var LinearMemoryInspectorView = class extends UI3.Widget.VBox {
   #memory = new Uint8Array([0]);
@@ -1347,11 +1351,11 @@ __export(FontView_exports, {
   DEFAULT_VIEW: () => DEFAULT_VIEW,
   FontView: () => FontView
 });
-import * as i18n5 from "./../../../../core/i18n/i18n.js";
-import * as TextUtils6 from "./../../../../core/text_utils/text_utils.js";
-import { Directives, html, render as render2 } from "./../../../lit/lit.js";
-import * as VisualLogging2 from "./../../../visual_logging/visual_logging.js";
-import * as UI4 from "./../../legacy.js";
+import * as i18n5 from "../../../../core/i18n/i18n.js";
+import * as TextUtils6 from "../../../../core/text_utils/text_utils.js";
+import { Directives, html, render as render2 } from "../../../lit/lit.js";
+import * as VisualLogging2 from "../../../visual_logging/visual_logging.js";
+import * as UI4 from "../../legacy.js";
 
 // gen/front_end/ui/legacy/components/source_frame/fontView.css.js
 var fontView_css_default = `/*
@@ -1373,11 +1377,11 @@ var fontView_css_default = `/*
 // gen/front_end/ui/legacy/components/source_frame/FontView.js
 var UIStrings3 = {
   /**
-   * @description Text that appears on a button for the font resource type filter.
+   * @description Title of the font view tab in the Sources panel.
    */
   font: "Font",
   /**
-   * @description Aria accessible name in Font View of the Sources panel
+   * @description Accessible name for the font preview in the font view of the Sources panel.
    * @example {https://example.com} PH1
    */
   previewOfFontFromS: "Preview of font from {PH1}"
@@ -1507,15 +1511,15 @@ var ImageView_exports = {};
 __export(ImageView_exports, {
   ImageView: () => ImageView
 });
-import * as Common3 from "./../../../../core/common/common.js";
-import * as Host2 from "./../../../../core/host/host.js";
-import * as i18n7 from "./../../../../core/i18n/i18n.js";
-import * as Platform2 from "./../../../../core/platform/platform.js";
-import * as TextUtils7 from "./../../../../core/text_utils/text_utils.js";
-import * as Workspace from "./../../../../models/workspace/workspace.js";
-import { createIcon } from "./../../../kit/kit.js";
-import * as VisualLogging3 from "./../../../visual_logging/visual_logging.js";
-import * as UI5 from "./../../legacy.js";
+import * as Common3 from "../../../../core/common/common.js";
+import * as Host2 from "../../../../core/host/host.js";
+import * as i18n7 from "../../../../core/i18n/i18n.js";
+import * as Platform2 from "../../../../core/platform/platform.js";
+import * as TextUtils7 from "../../../../core/text_utils/text_utils.js";
+import * as Workspace from "../../../../models/workspace/workspace.js";
+import { createIcon } from "../../../kit/kit.js";
+import * as VisualLogging3 from "../../../visual_logging/visual_logging.js";
+import * as UI5 from "../../legacy.js";
 
 // gen/front_end/ui/legacy/components/source_frame/imageView.css.js
 var imageView_css_default = `/*
@@ -1529,7 +1533,7 @@ var imageView_css_default = `/*
 }
 
 .image-view > .image {
-  padding: 20px 20px 10px;
+  padding: var(--sys-size-9) var(--sys-size-9) 10px;
   text-align: center;
 }
 
@@ -1560,46 +1564,46 @@ var imageView_css_default = `/*
 // gen/front_end/ui/legacy/components/source_frame/ImageView.js
 var UIStrings4 = {
   /**
-   * @description Text in Image View of the Sources panel
+   * @description Title of the image view tab in the Sources panel.
    */
   image: "Image",
   /**
-   * @description Text that appears when user drag and drop something (for example, a file) in Image View of the Sources panel
+   * @description Drop target message shown when dragging a file into the image view of the Sources panel.
    */
   dropImageFileHere: "Drop image file here",
   /**
-   * @description Text to indicate the source of an image
-   * @example {example.com} PH1
+   * @description Alt text for the image preview in the image view of the Sources panel.
+   * @example {https://example.com} PH1
    */
   imageFromS: "Image from {PH1}",
   /**
-   * @description Text in Image View of the Sources panel
-   * @example {2} PH1
-   * @example {2} PH2
+   * @description Dimensions label in the toolbar of the image view showing width and height in pixels.
+   * @example {200} PH1
+   * @example {100} PH2
    */
   dD: "{PH1} \xD7 {PH2}",
   /**
-   * @description A context menu item in the Image View of the Sources panel
+   * @description Context menu item in the image view of the Sources panel to copy the image URL.
    */
   copyImageUrl: "Copy image URL",
   /**
-   * @description A context menu item in the Image View of the Sources panel
+   * @description Context menu item in the image view of the Sources panel to copy the image as a data URI.
    */
   copyImageAsDataUri: "Copy image as data URI",
   /**
-   * @description A context menu item in the Image View of the Sources panel
+   * @description Context menu item in the image view of the Sources panel to open the image in a new tab.
    */
   openImageInNewTab: "Open image in new tab",
   /**
-   * @description A context menu item in the Image Preview
+   * @description Context menu item in the image view of the Sources panel to save the image.
    */
   saveImageAs: "Save image as\u2026",
   /**
-   * @description The default file name when downloading a file
+   * @description Default file name used when saving an image with a data URI.
    */
   download: "download",
   /**
-   * @description Text indicating an image is too large to display and offering to open it in a new tab
+   * @description Link text shown in the image view of the Sources panel when an image is too large to display.
    */
   thisImageIsTooBig: "This image is too big to display in DevTools. Click here to open it in a new tab."
 };
@@ -1799,12 +1803,12 @@ __export(JSONView_exports, {
   ParsedJSON: () => ParsedJSON,
   SearchableJsonView: () => SearchableJsonView
 });
-import * as i18n9 from "./../../../../core/i18n/i18n.js";
-import * as SDK2 from "./../../../../core/sdk/sdk.js";
-import { html as html2, render as render3 } from "./../../../lit/lit.js";
-import * as VisualLogging4 from "./../../../visual_logging/visual_logging.js";
-import * as UI6 from "./../../legacy.js";
-import * as ObjectUI from "./../object_ui/object_ui.js";
+import * as i18n9 from "../../../../core/i18n/i18n.js";
+import * as SDK2 from "../../../../core/sdk/sdk.js";
+import { html as html2, render as render3 } from "../../../lit/lit.js";
+import * as VisualLogging4 from "../../../visual_logging/visual_logging.js";
+import * as UI6 from "../../legacy.js";
+import * as ObjectUI from "../object_ui/object_ui.js";
 
 // gen/front_end/ui/legacy/components/source_frame/jsonView.css.js
 var jsonView_css_default = `/*
@@ -1814,7 +1818,7 @@ var jsonView_css_default = `/*
  */
 
 .json-view {
-  padding: 2px 6px;
+  padding: var(--sys-size-2) var(--sys-size-4);
   overflow: auto;
 }
 
@@ -1827,7 +1831,7 @@ devtools-tree {
 // gen/front_end/ui/legacy/components/source_frame/JSONView.js
 var UIStrings5 = {
   /**
-   * @description Text to find an item
+   * @description Placeholder text for the search input in the json view.
    */
   find: "Find"
 };
@@ -2068,10 +2072,10 @@ var PreviewFactory_exports = {};
 __export(PreviewFactory_exports, {
   PreviewFactory: () => PreviewFactory
 });
-import * as Common4 from "./../../../../core/common/common.js";
-import * as i18n13 from "./../../../../core/i18n/i18n.js";
-import * as TextUtils9 from "./../../../../core/text_utils/text_utils.js";
-import * as UI8 from "./../../legacy.js";
+import * as Common4 from "../../../../core/common/common.js";
+import * as i18n13 from "../../../../core/i18n/i18n.js";
+import * as TextUtils9 from "../../../../core/text_utils/text_utils.js";
+import * as UI8 from "../../legacy.js";
 
 // gen/front_end/ui/legacy/components/source_frame/XMLView.js
 var XMLView_exports = {};
@@ -2081,12 +2085,12 @@ __export(XMLView_exports, {
   XMLTreeViewNode: () => XMLTreeViewNode,
   XMLView: () => XMLView
 });
-import "./../../../components/highlighting/highlighting.js";
-import * as i18n11 from "./../../../../core/i18n/i18n.js";
-import * as TextUtils8 from "./../../../../core/text_utils/text_utils.js";
-import * as Lit from "./../../../lit/lit.js";
-import * as VisualLogging5 from "./../../../visual_logging/visual_logging.js";
-import * as UI7 from "./../../legacy.js";
+import "../../../components/highlighting/highlighting.js";
+import * as i18n11 from "../../../../core/i18n/i18n.js";
+import * as TextUtils8 from "../../../../core/text_utils/text_utils.js";
+import * as Lit from "../../../lit/lit.js";
+import * as VisualLogging5 from "../../../visual_logging/visual_logging.js";
+import * as UI7 from "../../legacy.js";
 
 // gen/front_end/ui/legacy/components/source_frame/xmlTree.css.js
 var xmlTree_css_default = `/*
@@ -2100,7 +2104,7 @@ var xmlTree_css_default = `/*
   list-style: none;
   padding: 0;
   margin: 0;
-  padding-inline-start: 16px;
+  padding-inline-start: var(--sys-size-8);
 }
 
 ol.tree-outline {
@@ -2108,11 +2112,11 @@ ol.tree-outline {
 }
 
 .tree-outline li {
-  min-height: 12px;
+  min-height: var(--sys-size-6);
 }
 
 ::part(shadow-xml-view-close-tag) {
-  margin-left: -16px;
+  margin-left: calc(-1 * var(--sys-size-8));
 }
 
 ::part(shadow-xml-view-close-tag),::part(shadow-xml-view-tag) {
@@ -2165,7 +2169,7 @@ var xmlView_css_default = `/*
 // gen/front_end/ui/legacy/components/source_frame/XMLView.js
 var UIStrings6 = {
   /**
-   * @description Text to find an item
+   * @description Placeholder text for the search input in the xml view.
    */
   find: "Find"
 };
@@ -2467,11 +2471,11 @@ var XMLView = class _XMLView extends UI7.Widget.Widget {
 // gen/front_end/ui/legacy/components/source_frame/PreviewFactory.js
 var UIStrings7 = {
   /**
-   * @description Text in Preview Factory of the Sources panel if the data to preview can't be shown due to an error
+   * @description Text shown in the empty widget when data fails to load in the preview factory of the Sources panel.
    */
   failedToLoadData: "Failed to load data",
   /**
-   * @description Text in Preview Factory of the Sources panel if there's no data to preview
+   * @description Text shown in the empty widget when there is no content to preview in the preview factory of the Sources panel.
    */
   nothingToPreview: "Nothing to preview"
 };

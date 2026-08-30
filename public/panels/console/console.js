@@ -10,13 +10,13 @@ __export(ConsoleContextSelector_exports, {
   ConsoleContextSelector: () => ConsoleContextSelector,
   ConsoleContextSelectorElement: () => ConsoleContextSelectorElement
 });
-import * as Common from "./../../core/common/common.js";
-import * as i18n from "./../../core/i18n/i18n.js";
-import * as Platform from "./../../core/platform/platform.js";
-import * as SDK from "./../../core/sdk/sdk.js";
-import * as StackTrace from "./../../models/stack_trace/stack_trace.js";
-import * as UI from "./../../ui/legacy/legacy.js";
-import * as Lit from "./../../ui/lit/lit.js";
+import * as Common from "../../core/common/common.js";
+import * as i18n from "../../core/i18n/i18n.js";
+import * as Platform from "../../core/platform/platform.js";
+import * as SDK from "../../core/sdk/sdk.js";
+import * as StackTrace from "../../models/stack_trace/stack_trace.js";
+import * as UI from "../../ui/legacy/legacy.js";
+import * as Lit from "../../ui/lit/lit.js";
 
 // gen/front_end/panels/console/consoleContextSelector.css.js
 var consoleContextSelector_css_default = `/*
@@ -27,7 +27,7 @@ var consoleContextSelector_css_default = `/*
 
 .widget {
   .console-context-selector-element{
-    padding: 2px 1px 2px 2px;
+    padding: var(--sys-size-2) var(--sys-size-1) var(--sys-size-2) var(--sys-size-2);
     white-space: nowrap;
     display: flex;
     flex-direction: column;
@@ -51,7 +51,7 @@ var consoleContextSelector_css_default = `/*
 
     .badge {
       pointer-events: none;
-      margin-right: 4px;
+      margin-right: var(--sys-size-3);
       display: inline-block;
       height: 15px;
     }
@@ -346,8 +346,8 @@ __export(ConsoleFilter_exports, {
   ConsoleFilter: () => ConsoleFilter,
   FilterType: () => FilterType
 });
-import * as SDK2 from "./../../core/sdk/sdk.js";
-import * as TextUtils from "./../../core/text_utils/text_utils.js";
+import * as SDK2 from "../../core/sdk/sdk.js";
+import * as TextUtils from "../../core/text_utils/text_utils.js";
 var ConsoleFilter = class _ConsoleFilter {
   name;
   parsedFilters;
@@ -492,7 +492,7 @@ __export(ConsoleFormat_exports, {
   format: () => format,
   updateStyle: () => updateStyle
 });
-import * as ObjectUI from "./../../ui/legacy/components/object_ui/object_ui.js";
+import * as ObjectUI from "../../ui/legacy/components/object_ui/object_ui.js";
 var ANSI_COLORS = ["black", "red", "green", "yellow", "blue", "magenta", "cyan", "gray"];
 var ANSI_BRIGHT_COLORS = ["darkgray", "lightred", "lightgreen", "lightyellow", "lightblue", "lightmagenta", "lightcyan", "white"];
 var format = (fmt, args) => {
@@ -665,18 +665,18 @@ __export(ConsoleInsightTeaser_exports, {
   ConsoleInsightTeaser: () => ConsoleInsightTeaser,
   DEFAULT_VIEW: () => DEFAULT_VIEW3
 });
-import "./../../ui/components/tooltips/tooltips.js";
-import "./../../ui/kit/kit.js";
-import * as Common3 from "./../../core/common/common.js";
-import * as Host2 from "./../../core/host/host.js";
-import * as i18n5 from "./../../core/i18n/i18n.js";
-import * as Root from "./../../core/root/root.js";
-import * as AiAssistanceModel3 from "./../../models/ai_assistance/ai_assistance.js";
-import * as Buttons from "./../../ui/components/buttons/buttons.js";
-import * as Dialogs from "./../../ui/components/dialogs/dialogs.js";
-import * as UI5 from "./../../ui/legacy/legacy.js";
-import * as Lit3 from "./../../ui/lit/lit.js";
-import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
+import "../../ui/components/tooltips/tooltips.js";
+import "../../ui/kit/kit.js";
+import * as Common3 from "../../core/common/common.js";
+import * as Host2 from "../../core/host/host.js";
+import * as i18n5 from "../../core/i18n/i18n.js";
+import * as Root from "../../core/root/root.js";
+import * as AiAssistanceModel3 from "../../models/ai_assistance/ai_assistance.js";
+import * as Buttons from "../../ui/components/buttons/buttons.js";
+import * as Dialogs from "../../ui/components/dialogs/dialogs.js";
+import * as UI5 from "../../ui/legacy/legacy.js";
+import * as Lit3 from "../../ui/lit/lit.js";
+import * as VisualLogging2 from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/console/consoleInsightTeaser.css.js
 var consoleInsightTeaser_css_default = `/*
@@ -816,23 +816,23 @@ __export(ConsoleViewMessage_exports, {
   setLongStringVisibleLength: () => setLongStringVisibleLength,
   setMaxTokenizableStringLength: () => setMaxTokenizableStringLength
 });
-import * as Common2 from "./../../core/common/common.js";
-import * as Host from "./../../core/host/host.js";
-import * as i18n3 from "./../../core/i18n/i18n.js";
-import * as Platform2 from "./../../core/platform/platform.js";
-import * as SDK3 from "./../../core/sdk/sdk.js";
-import * as TextUtils3 from "./../../core/text_utils/text_utils.js";
-import * as AiAssistanceModel from "./../../models/ai_assistance/ai_assistance.js";
-import * as Bindings2 from "./../../models/bindings/bindings.js";
-import * as Logs from "./../../models/logs/logs.js";
-import * as Workspace from "./../../models/workspace/workspace.js";
-import * as CodeHighlighter from "./../../ui/components/code_highlighter/code_highlighter.js";
-import * as Highlighting from "./../../ui/components/highlighting/highlighting.js";
-import * as IssueCounter from "./../../ui/components/issue_counter/issue_counter.js";
-import * as RequestLinkIcon from "./../../ui/components/request_link_icon/request_link_icon.js";
-import { createIcon, Icon } from "./../../ui/kit/kit.js";
-import * as DataGrid from "./../../ui/legacy/components/data_grid/data_grid.js";
-import * as ObjectUI2 from "./../../ui/legacy/components/object_ui/object_ui.js";
+import * as Common2 from "../../core/common/common.js";
+import * as Host from "../../core/host/host.js";
+import * as i18n3 from "../../core/i18n/i18n.js";
+import * as Platform2 from "../../core/platform/platform.js";
+import * as SDK3 from "../../core/sdk/sdk.js";
+import * as TextUtils3 from "../../core/text_utils/text_utils.js";
+import * as AiAssistanceModel from "../../models/ai_assistance/ai_assistance.js";
+import * as Bindings2 from "../../models/bindings/bindings.js";
+import * as Logs from "../../models/logs/logs.js";
+import * as Workspace from "../../models/workspace/workspace.js";
+import * as CodeHighlighter from "../../ui/components/code_highlighter/code_highlighter.js";
+import * as Highlighting from "../../ui/components/highlighting/highlighting.js";
+import * as IssueCounter from "../../ui/components/issue_counter/issue_counter.js";
+import * as RequestLinkIcon from "../../ui/components/request_link_icon/request_link_icon.js";
+import { createIcon, Icon } from "../../ui/kit/kit.js";
+import * as DataGrid from "../../ui/legacy/components/data_grid/data_grid.js";
+import * as ObjectUI2 from "../../ui/legacy/components/object_ui/object_ui.js";
 
 // gen/front_end/ui/legacy/components/object_ui/objectValue.css.js
 var objectValue_css_default = `/*
@@ -944,11 +944,12 @@ var objectValue_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./objectValue.css")} */`;
 
 // gen/front_end/panels/console/ConsoleViewMessage.js
-import * as Components2 from "./../../ui/legacy/components/utils/utils.js";
-import * as UI3 from "./../../ui/legacy/legacy.js";
-import { html as html3, nothing as nothing3, render as render3 } from "./../../ui/lit/lit.js";
-import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
-import * as Elements from "./../elements/elements.js";
+import * as Components2 from "../../ui/legacy/components/utils/utils.js";
+import * as UI3 from "../../ui/legacy/legacy.js";
+import { html as html3, nothing as nothing3, render as render3 } from "../../ui/lit/lit.js";
+import * as Settings2 from "../../ui/settings/settings.js";
+import * as VisualLogging from "../../ui/visual_logging/visual_logging.js";
+import * as Elements from "../elements/elements.js";
 
 // gen/front_end/panels/console/consoleView.css.js
 var consoleView_css_default = `/* Copyright 2021 The Chromium Authors
@@ -1012,7 +1013,7 @@ var consoleView_css_default = `/* Copyright 2021 The Chromium Authors
 
 .console-toolbar-container > devtools-toolbar {
   background-color: var(--sys-color-cdt-base-container);
-  border-bottom: 1px solid var(--sys-color-divider);
+  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
 }
 
 .console-view-fix-select-all {
@@ -1025,7 +1026,7 @@ var consoleView_css_default = `/* Copyright 2021 The Chromium Authors
   grid-template-columns: 50% 50%;
   flex: none;
   background-color: var(--sys-color-cdt-base-container);
-  border-bottom: 1px solid var(--sys-color-divider);
+  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
 }
 
 #console-messages {
@@ -1041,21 +1042,21 @@ var consoleView_css_default = `/* Copyright 2021 The Chromium Authors
 #console-prompt {
   clear: right;
   position: relative;
-  margin: 0 22px 0 20px;
+  margin: 0 var(--sys-size-10) 0 var(--sys-size-9);
 }
 
 .console-prompt-editor-container {
   min-height: 21px;
-  padding-left: 2px;
-  padding-top: 1px;
+  padding-left: var(--sys-size-2);
+  padding-top: var(--sys-size-1);
 }
 
 .console-message,
 .console-user-command {
   clear: right;
   position: relative;
-  padding: 1px 22px 1px 0;
-  margin-left: 24px;
+  padding: var(--sys-size-1) var(--sys-size-10) var(--sys-size-1) 0;
+  margin-left: var(--sys-size-11);
   min-height: 18px;
   flex: auto;
   display: flex;
@@ -1077,7 +1078,7 @@ var consoleView_css_default = `/* Copyright 2021 The Chromium Authors
 .command-result-icon {
   position: absolute;
   left: -17px;
-  top: 2px;
+  top: var(--sys-size-2);
   user-select: none;
 }
 
@@ -1087,7 +1088,7 @@ var consoleView_css_default = `/* Copyright 2021 The Chromium Authors
 }
 
 .repeated-message {
-  margin-left: 4px;
+  margin-left: var(--sys-size-3);
 }
 
 .repeated-message .message-level-icon {
@@ -1098,7 +1099,7 @@ var consoleView_css_default = `/* Copyright 2021 The Chromium Authors
   display: flex;
   flex-direction: row;
   align-items: flex-start;
-  margin-top: -1px;
+  margin-top: calc(-1 * var(--sys-size-1));
 }
 
 .console-error-level .repeated-message,
@@ -1111,11 +1112,11 @@ var consoleView_css_default = `/* Copyright 2021 The Chromium Authors
 .console-info {
   color: var(--sys-color-token-subtle);
   font-style: italic;
-  padding-bottom: 2px;
+  padding-bottom: var(--sys-size-2);
 }
 
 .console-group .console-group > .console-group-messages {
-  margin-left: 16px;
+  margin-left: var(--sys-size-8);
 }
 
 .console-group-title.console-from-api {
@@ -1123,16 +1124,16 @@ var consoleView_css_default = `/* Copyright 2021 The Chromium Authors
 }
 
 .console-group-title .console-message {
-  margin-left: 12px;
+  margin-left: var(--sys-size-6);
 }
 
 .expand-group-icon {
   user-select: none;
   flex: none;
   position: relative;
-  left: 8px;
+  left: var(--sys-size-5);
   top: 3px;
-  margin-right: 2px;
+  margin-right: var(--sys-size-2);
 }
 
 .console-group-title .message-level-icon {
@@ -1142,7 +1143,7 @@ var consoleView_css_default = `/* Copyright 2021 The Chromium Authors
 .console-message-repeat-count .expand-group-icon {
   position: static;
   color: var(--sys-color-cdt-base-container);
-  margin-left: -1px;
+  margin-left: calc(-1 * var(--sys-size-1));
 }
 
 .console-group {
@@ -1152,7 +1153,7 @@ var consoleView_css_default = `/* Copyright 2021 The Chromium Authors
 .console-message-wrapper {
   display: flex;
   flex-direction: column;
-  margin: 4px;
+  margin: var(--sys-size-3);
   border-radius: 5px;
 
   /* Console ANSI color */
@@ -1216,8 +1217,8 @@ var consoleView_css_default = `/* Copyright 2021 The Chromium Authors
     content: "";
     display: block;
     position: absolute;
-    top: -2px;
-    border-top: 1px solid var(--sys-color-divider);
+    top: calc(-1 * var(--sys-size-2));
+    border-top: var(--sys-size-1) solid var(--sys-color-divider);
   }
 
   &:first-of-type .console-message::before,
@@ -1235,12 +1236,12 @@ var consoleView_css_default = `/* Copyright 2021 The Chromium Authors
 }
 
 .console-message-wrapper.console-adjacent-user-command-result:not(.console-error-level, .console-warning-level):focus {
-  border-top-width: 1px;
+  border-top-width: var(--sys-size-1);
 }
 
 .console-message-wrapper.console-adjacent-user-command-result:not(.console-error-level, .console-warning-level):focus .console-message {
-  padding-top: 2px;
-  min-height: 16px;
+  padding-top: var(--sys-size-2);
+  min-height: var(--sys-size-8);
 }
 
 .console-message-wrapper.console-adjacent-user-command-result:not(.console-error-level, .console-warning-level):focus .command-result-icon {
@@ -1248,11 +1249,11 @@ var consoleView_css_default = `/* Copyright 2021 The Chromium Authors
 }
 
 .console-message-wrapper .nesting-level-marker {
-  width: 14px;
+  width: var(--sys-size-7);
   flex: 0 0 auto;
   position: relative;
-  margin-bottom: -1px;
-  margin-top: -1px;
+  margin-bottom: calc(-1 * var(--sys-size-1));
+  margin-top: calc(-1 * var(--sys-size-1));
   background-color: var(--sys-color-cdt-base-container);
 }
 
@@ -1260,7 +1261,7 @@ var consoleView_css_default = `/* Copyright 2021 The Chromium Authors
   position: absolute;
   left: -30px;
   top: 0;
-  width: 6px;
+  width: var(--sys-size-4);
   height: 100%;
   box-sizing: border-box;
   background-color: var(--sys-color-surface-yellow);
@@ -1334,8 +1335,8 @@ var consoleView_css_default = `/* Copyright 2021 The Chromium Authors
 }
 
 #console-messages .resource-links {
-  margin-top: -1px;
-  margin-bottom: -2px;
+  margin-top: calc(-1 * var(--sys-size-1));
+  margin-bottom: calc(-1 * var(--sys-size-2));
 }
 
 .console-object-preview,
@@ -1443,7 +1444,7 @@ var consoleView_css_default = `/* Copyright 2021 The Chromium Authors
   float: right;
   text-align: right;
   max-width: 100%;
-  margin-left: 4px;
+  margin-left: var(--sys-size-3);
 }
 
 .console-message-nowrap-below,
@@ -1460,7 +1461,7 @@ var consoleView_css_default = `/* Copyright 2021 The Chromium Authors
   text-align: center;
   border-radius: 3px;
   line-height: 13px;
-  margin: 0 6px;
+  margin: 0 var(--sys-size-4);
   font-size: 9px;
 }
 
@@ -1474,7 +1475,7 @@ var consoleView_css_default = `/* Copyright 2021 The Chromium Authors
 }
 
 .console-message-expand-icon {
-  margin-bottom: -4px;
+  margin-bottom: calc(-1 * var(--sys-size-3));
 }
 
 .console-searchable-view {
@@ -1494,11 +1495,11 @@ var consoleView_css_default = `/* Copyright 2021 The Chromium Authors
 }
 
 .devtools-console-insight {
-  margin: 9px 22px 11px 24px;
+  margin: 9px var(--sys-size-10) 11px var(--sys-size-11);
 }
 
 .hover-button {
-  --width: 24px;
+  --width: var(--sys-size-11);
 
   align-items: center;
   border-radius: 50%;
@@ -1519,13 +1520,13 @@ var consoleView_css_default = `/* Copyright 2021 The Chromium Authors
   overflow: hidden;
   padding: var(--sys-size-3) var(--sys-size-4);
   position: absolute;
-  right: 6px;
+  right: var(--sys-size-4);
   display: none;
   width: var(--width);
   z-index: 1;
 
   .theme-with-dark-background & {
-    border: 1px solid var(--sys-color-neutral-outline);
+    border: var(--sys-size-1) solid var(--sys-color-neutral-outline);
     background-color: var(--sys-color-primary);
     color: var(--sys-color-on-primary);
   }
@@ -1548,7 +1549,7 @@ var consoleView_css_default = `/* Copyright 2021 The Chromium Authors
 
 .hover-button:focus,
 .hover-button:hover {
-  border-radius: 4px;
+  border-radius: var(--sys-shape-corner-extra-small);
   max-width: 200px;
   transition:
     max-width var(--sys-motion-duration-short4) var(--sys-motion-easing-emphasized),
@@ -1558,8 +1559,8 @@ var consoleView_css_default = `/* Copyright 2021 The Chromium Authors
 }
 
 .hover-button:focus-visible {
-  outline: 2px solid var(--sys-color-primary);
-  outline-offset: 2px;
+  outline: var(--sys-size-2) solid var(--sys-color-primary);
+  outline-offset: var(--sys-size-2);
 }
 
 .button-label {
@@ -1569,7 +1570,7 @@ var consoleView_css_default = `/* Copyright 2021 The Chromium Authors
 
   & div {
     display: inline-block;
-    vertical-align: -1px;
+    vertical-align: calc(-1 * var(--sys-size-1));
 
     &::after {
       content: attr(data-text);
@@ -1646,10 +1647,10 @@ var SymbolizedErrorWidget_exports = {};
 __export(SymbolizedErrorWidget_exports, {
   SymbolizedErrorWidget: () => SymbolizedErrorWidget
 });
-import * as Bindings from "./../../models/bindings/bindings.js";
-import * as Components from "./../../ui/legacy/components/utils/utils.js";
-import * as UI2 from "./../../ui/legacy/legacy.js";
-import * as Lit2 from "./../../ui/lit/lit.js";
+import * as Bindings from "../../models/bindings/bindings.js";
+import * as Components from "../../ui/legacy/components/utils/utils.js";
+import * as UI2 from "../../ui/legacy/legacy.js";
+import * as Lit2 from "../../ui/lit/lit.js";
 var { html: html2, render: render2 } = Lit2;
 function renderHeader(content, isCause) {
   if (isCause) {
@@ -2382,7 +2383,7 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
       event.consume();
     };
     clickableElement.addEventListener("click", toggleStackTrace, false);
-    if (this.message.type === "trace" && Common2.Settings.Settings.instance().moduleSetting("console-trace-expand").get()) {
+    if (this.message.type === "trace" && Common2.Settings.Settings.instance().resolve(Settings2.ConsoleSettings.consoleTraceExpandSettingDescriptor).get()) {
       this.expandTrace(true);
     }
     this.hasStackTrace = true;
@@ -2841,7 +2842,7 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
     if (!this.contentElementInternal) {
       return;
     }
-    if (Common2.Settings.Settings.instance().moduleSetting("console-timestamps-enabled").get()) {
+    if (Common2.Settings.Settings.instance().resolve(Settings2.ConsoleSettings.consoleTimestampsEnabledSettingDescriptor).get()) {
       if (!this.timestampElement) {
         this.timestampElement = document.createElement("span");
         this.timestampElement.classList.add("console-timestamp");
@@ -3784,14 +3785,14 @@ __export(PromptBuilder_exports, {
   formatRelatedCode: () => formatRelatedCode,
   lineWhitespace: () => lineWhitespace
 });
-import * as SDK4 from "./../../core/sdk/sdk.js";
-import * as TextUtils5 from "./../../core/text_utils/text_utils.js";
-import * as AiAssistanceModel2 from "./../../models/ai_assistance/ai_assistance.js";
-import * as Bindings3 from "./../../models/bindings/bindings.js";
-import * as Formatter from "./../../models/formatter/formatter.js";
-import * as Logs2 from "./../../models/logs/logs.js";
-import * as Components3 from "./../../ui/legacy/components/utils/utils.js";
-import * as UI4 from "./../../ui/legacy/legacy.js";
+import * as SDK4 from "../../core/sdk/sdk.js";
+import * as TextUtils5 from "../../core/text_utils/text_utils.js";
+import * as AiAssistanceModel2 from "../../models/ai_assistance/ai_assistance.js";
+import * as Bindings3 from "../../models/bindings/bindings.js";
+import * as Formatter from "../../models/formatter/formatter.js";
+import * as Logs2 from "../../models/logs/logs.js";
+import * as Components3 from "../../ui/legacy/components/utils/utils.js";
+import * as UI4 from "../../ui/legacy/legacy.js";
 var MAX_MESSAGE_SIZE = 1e3;
 var MAX_STACK_TRACE_SIZE = 1e3;
 var MAX_CODE_SIZE = 1e3;
@@ -4123,6 +4124,16 @@ var CODE_SNIPPET_WARNING_URL = "https://support.google.com/legal/answer/13505487
 var DATA_USAGE_URL = "https://developer.chrome.com/docs/devtools/ai-assistance/get-started#data-use";
 var EXPLAIN_TEASER_ACTION_ID = "explain.console-message.teaser";
 var SLOW_GENERATION_CUTOFF_MILLISECONDS = 3500;
+var State;
+(function(State2) {
+  State2["NO_MODEL"] = "no-model";
+  State2["DOWNLOADING"] = "downloading";
+  State2["READY"] = "ready";
+  State2["GENERATING"] = "generating";
+  State2["PARTIAL_TEASER"] = "partial-teaser";
+  State2["TEASER"] = "teaser";
+  State2["ERROR"] = "error";
+})(State || (State = {}));
 function renderNoModel(input) {
   return html4`
     <div class="teaser-tooltip-container">
@@ -4639,26 +4650,27 @@ var ConsoleInsightTeaser = class extends UI5.Widget.Widget {
 var ConsolePinPane_exports = {};
 __export(ConsolePinPane_exports, {
   ConsolePin: () => ConsolePin,
+  ConsolePinEvent: () => ConsolePinEvent,
   ConsolePinModel: () => ConsolePinModel,
   ConsolePinPane: () => ConsolePinPane,
   ConsolePinPresenter: () => ConsolePinPresenter,
   DEFAULT_PANE_VIEW: () => DEFAULT_PANE_VIEW,
   DEFAULT_VIEW: () => DEFAULT_VIEW4
 });
-import * as Common4 from "./../../core/common/common.js";
-import * as Host3 from "./../../core/host/host.js";
-import * as i18n7 from "./../../core/i18n/i18n.js";
-import * as Platform3 from "./../../core/platform/platform.js";
-import * as Root2 from "./../../core/root/root.js";
-import * as SDK5 from "./../../core/sdk/sdk.js";
-import * as CodeMirror from "./../../third_party/codemirror.next/codemirror.next.js";
-import * as Buttons2 from "./../../ui/components/buttons/buttons.js";
-import * as Dialogs2 from "./../../ui/components/dialogs/dialogs.js";
-import * as TextEditor from "./../../ui/components/text_editor/text_editor.js";
-import * as ObjectUI3 from "./../../ui/legacy/components/object_ui/object_ui.js";
-import * as UI6 from "./../../ui/legacy/legacy.js";
-import { Directives, html as html5, nothing as nothing5, render as render5 } from "./../../ui/lit/lit.js";
-import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
+import * as Common4 from "../../core/common/common.js";
+import * as Host3 from "../../core/host/host.js";
+import * as i18n7 from "../../core/i18n/i18n.js";
+import * as Platform3 from "../../core/platform/platform.js";
+import * as Root2 from "../../core/root/root.js";
+import * as SDK5 from "../../core/sdk/sdk.js";
+import * as CodeMirror from "../../third_party/codemirror.next/codemirror.next.js";
+import * as Buttons2 from "../../ui/components/buttons/buttons.js";
+import * as Dialogs2 from "../../ui/components/dialogs/dialogs.js";
+import * as TextEditor from "../../ui/components/text_editor/text_editor.js";
+import * as ObjectUI3 from "../../ui/legacy/components/object_ui/object_ui.js";
+import * as UI6 from "../../ui/legacy/legacy.js";
+import { Directives, html as html5, nothing as nothing5, render as render5 } from "../../ui/lit/lit.js";
+import * as VisualLogging3 from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/console/consolePinPane.css.js
 var consolePinPane_css_default = `/*
@@ -4682,18 +4694,18 @@ var consolePinPane_css_default = `/*
 }
 
 .console-pins:not(:empty) {
-  border-bottom: 1px solid var(--sys-color-divider);
+  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
 }
 
 .console-pin {
   position: relative;
   user-select: text;
   flex: none;
-  padding: 2px 0 6px 24px;
+  padding: var(--sys-size-2) 0 var(--sys-size-4) var(--sys-size-11);
 }
 
 .console-pin:not(:last-child) {
-  border-bottom: 1px solid var(--sys-color-divider);
+  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
 }
 
 .console-pin.error-level:not(:focus-within) {
@@ -4702,14 +4714,14 @@ var consolePinPane_css_default = `/*
 }
 
 .console-pin:not(:last-child).error-level:not(:focus-within) {
-  border-top: 1px solid var(--sys-color-error-outline);
-  border-bottom: 1px solid var(--sys-color-error-outline);
-  margin-top: -1px;
+  border-top: var(--sys-size-1) solid var(--sys-color-error-outline);
+  border-bottom: var(--sys-size-1) solid var(--sys-color-error-outline);
+  margin-top: calc(-1 * var(--sys-size-1));
 }
 
 .console-pin-name {
   margin-left: -5px;
-  margin-bottom: 1px;
+  margin-bottom: var(--sys-size-1);
   height: auto;
 }
 
@@ -4727,8 +4739,8 @@ var consolePinPane_css_default = `/*
 
 .console-pin-name:focus-within {
   background: var(--sys-color-cdt-base-container);
-  border-radius: 4px;
-  border: 1px solid var(--sys-color-state-focus-ring);
+  border-radius: var(--sys-shape-corner-extra-small);
+  border: var(--sys-size-1) solid var(--sys-color-state-focus-ring);
 }
 
 .console-pin:focus-within .console-pin-preview,
@@ -5284,20 +5296,26 @@ var ConsolePin = class extends Common4.ObjectWrapper.ObjectWrapper {
     this.dispatchEventToListeners("EVALUATE_RESULT_READY", this);
   }
 };
+var ConsolePinEvent;
+(function(ConsolePinEvent2) {
+  ConsolePinEvent2["EVALUATE_RESULT_READY"] = "EVALUATE_RESULT_READY";
+})(ConsolePinEvent || (ConsolePinEvent = {}));
 
 // gen/front_end/panels/console/ConsoleSidebar.js
 var ConsoleSidebar_exports = {};
 __export(ConsoleSidebar_exports, {
   ConsoleFilterGroup: () => ConsoleFilterGroup,
   ConsoleSidebar: () => ConsoleSidebar,
-  DEFAULT_VIEW: () => DEFAULT_VIEW5
+  DEFAULT_VIEW: () => DEFAULT_VIEW5,
+  Events: () => Events,
+  GroupName: () => GroupName
 });
-import * as Common5 from "./../../core/common/common.js";
-import * as i18n9 from "./../../core/i18n/i18n.js";
-import * as SDK6 from "./../../core/sdk/sdk.js";
-import * as UI7 from "./../../ui/legacy/legacy.js";
-import * as Lit4 from "./../../ui/lit/lit.js";
-import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
+import * as Common5 from "../../core/common/common.js";
+import * as i18n9 from "../../core/i18n/i18n.js";
+import * as SDK6 from "../../core/sdk/sdk.js";
+import * as UI7 from "../../ui/legacy/legacy.js";
+import * as Lit4 from "../../ui/lit/lit.js";
+import * as VisualLogging4 from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/console/consoleSidebar.css.js
 var consoleSidebar_css_default = `/*
@@ -5374,6 +5392,15 @@ var UIStrings4 = {
 var str_4 = i18n9.i18n.registerUIStrings("panels/console/ConsoleSidebar.ts", UIStrings4);
 var i18nString4 = i18n9.i18n.getLocalizedString.bind(void 0, str_4);
 var { render: render6, html: html6, nothing: nothing6 } = Lit4;
+var GroupName;
+(function(GroupName2) {
+  GroupName2["CONSOLE_API"] = "user message";
+  GroupName2["ALL"] = "message";
+  GroupName2["ERROR"] = "error";
+  GroupName2["WARNING"] = "warning";
+  GroupName2["INFO"] = "info";
+  GroupName2["VERBOSE"] = "verbose";
+})(GroupName || (GroupName = {}));
 var GROUP_ICONS = {
   [
     "message"
@@ -5543,15 +5570,19 @@ var ConsoleSidebar = class extends Common5.ObjectWrapper.eventMixin(UI7.Widget.V
     return this.#selectedFilter?.shouldBeVisible(viewMessage) ?? true;
   }
 };
+var Events;
+(function(Events3) {
+  Events3["FILTER_SELECTED"] = "FilterSelected";
+})(Events || (Events = {}));
 
 // gen/front_end/panels/console/ConsoleViewport.js
 var ConsoleViewport_exports = {};
 __export(ConsoleViewport_exports, {
   ConsoleViewport: () => ConsoleViewport
 });
-import * as Platform4 from "./../../core/platform/platform.js";
-import * as Components4 from "./../../ui/legacy/components/utils/utils.js";
-import * as UI8 from "./../../ui/legacy/legacy.js";
+import * as Platform4 from "../../core/platform/platform.js";
+import * as Components4 from "../../ui/legacy/components/utils/utils.js";
+import * as UI8 from "../../ui/legacy/legacy.js";
 var ConsoleViewport = class {
   element;
   topGapElement;
@@ -6149,23 +6180,25 @@ var ConsoleViewport = class {
 // gen/front_end/panels/console/ConsolePrompt.js
 var ConsolePrompt_exports = {};
 __export(ConsolePrompt_exports, {
-  ConsolePrompt: () => ConsolePrompt
+  ConsolePrompt: () => ConsolePrompt,
+  Events: () => Events2
 });
-import * as Common7 from "./../../core/common/common.js";
-import * as Host5 from "./../../core/host/host.js";
-import * as i18n13 from "./../../core/i18n/i18n.js";
-import * as Root4 from "./../../core/root/root.js";
-import * as SDK8 from "./../../core/sdk/sdk.js";
-import * as Badges from "./../../models/badges/badges.js";
-import * as Bindings5 from "./../../models/bindings/bindings.js";
-import * as Formatter2 from "./../../models/formatter/formatter.js";
-import * as SourceMapScopes from "./../../models/source_map_scopes/source_map_scopes.js";
-import * as CodeMirror2 from "./../../third_party/codemirror.next/codemirror.next.js";
-import * as TextEditor2 from "./../../ui/components/text_editor/text_editor.js";
-import { Icon as Icon2 } from "./../../ui/kit/kit.js";
-import * as ObjectUI4 from "./../../ui/legacy/components/object_ui/object_ui.js";
-import * as UI11 from "./../../ui/legacy/legacy.js";
-import * as VisualLogging7 from "./../../ui/visual_logging/visual_logging.js";
+import * as Common7 from "../../core/common/common.js";
+import * as Host5 from "../../core/host/host.js";
+import * as i18n13 from "../../core/i18n/i18n.js";
+import * as Root4 from "../../core/root/root.js";
+import * as SDK8 from "../../core/sdk/sdk.js";
+import * as Badges from "../../models/badges/badges.js";
+import * as Bindings5 from "../../models/bindings/bindings.js";
+import * as Formatter2 from "../../models/formatter/formatter.js";
+import * as SourceMapScopes from "../../models/source_map_scopes/source_map_scopes.js";
+import * as CodeMirror2 from "../../third_party/codemirror.next/codemirror.next.js";
+import * as TextEditor2 from "../../ui/components/text_editor/text_editor.js";
+import { Icon as Icon2 } from "../../ui/kit/kit.js";
+import * as ObjectUI4 from "../../ui/legacy/components/object_ui/object_ui.js";
+import * as UI11 from "../../ui/legacy/legacy.js";
+import * as Settings9 from "../../ui/settings/settings.js";
+import * as VisualLogging7 from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/console/ConsolePanel.js
 var ConsolePanel_exports = {};
@@ -6174,8 +6207,8 @@ __export(ConsolePanel_exports, {
   ConsoleRevealer: () => ConsoleRevealer,
   WrapperView: () => WrapperView
 });
-import * as UI10 from "./../../ui/legacy/legacy.js";
-import * as VisualLogging6 from "./../../ui/visual_logging/visual_logging.js";
+import * as UI10 from "../../ui/legacy/legacy.js";
+import * as VisualLogging6 from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/console/ConsoleView.js
 var ConsoleView_exports = {};
@@ -6184,30 +6217,30 @@ __export(ConsoleView_exports, {
   ConsoleView: () => ConsoleView,
   ConsoleViewFilter: () => ConsoleViewFilter
 });
-import "./../../ui/legacy/legacy.js";
-import * as Common6 from "./../../core/common/common.js";
-import * as Host4 from "./../../core/host/host.js";
-import * as i18n11 from "./../../core/i18n/i18n.js";
-import * as Platform5 from "./../../core/platform/platform.js";
-import * as Root3 from "./../../core/root/root.js";
-import * as SDK7 from "./../../core/sdk/sdk.js";
-import * as TextUtils6 from "./../../core/text_utils/text_utils.js";
-import * as AiCodeCompletion from "./../../models/ai_code_completion/ai_code_completion.js";
-import * as AiCodeGeneration from "./../../models/ai_code_generation/ai_code_generation.js";
-import * as Bindings4 from "./../../models/bindings/bindings.js";
-import * as IssuesManager from "./../../models/issues_manager/issues_manager.js";
-import * as Logs3 from "./../../models/logs/logs.js";
-import * as Workspace2 from "./../../models/workspace/workspace.js";
-import * as CodeHighlighter3 from "./../../ui/components/code_highlighter/code_highlighter.js";
-import * as Highlighting2 from "./../../ui/components/highlighting/highlighting.js";
-import * as IssueCounter2 from "./../../ui/components/issue_counter/issue_counter.js";
-import { createIcon as createIcon2 } from "./../../ui/kit/kit.js";
-import * as SettingsUI from "./../../ui/legacy/components/settings_ui/settings_ui.js";
-import * as Components5 from "./../../ui/legacy/components/utils/utils.js";
-import * as UI9 from "./../../ui/legacy/legacy.js";
-import * as SettingUIRegistration from "./../../ui/settings/settings.js";
-import * as VisualLogging5 from "./../../ui/visual_logging/visual_logging.js";
-import { AiCodeCompletionSummaryToolbar } from "./../common/common.js";
+import "../../ui/legacy/legacy.js";
+import * as Common6 from "../../core/common/common.js";
+import * as Host4 from "../../core/host/host.js";
+import * as i18n11 from "../../core/i18n/i18n.js";
+import * as Platform5 from "../../core/platform/platform.js";
+import * as Root3 from "../../core/root/root.js";
+import * as SDK7 from "../../core/sdk/sdk.js";
+import * as TextUtils6 from "../../core/text_utils/text_utils.js";
+import * as AiCodeCompletion from "../../models/ai_code_completion/ai_code_completion.js";
+import * as AiCodeGeneration from "../../models/ai_code_generation/ai_code_generation.js";
+import * as Bindings4 from "../../models/bindings/bindings.js";
+import * as IssuesManager from "../../models/issues_manager/issues_manager.js";
+import * as Logs3 from "../../models/logs/logs.js";
+import * as Workspace2 from "../../models/workspace/workspace.js";
+import * as CodeHighlighter3 from "../../ui/components/code_highlighter/code_highlighter.js";
+import * as Highlighting2 from "../../ui/components/highlighting/highlighting.js";
+import * as IssueCounter2 from "../../ui/components/issue_counter/issue_counter.js";
+import { createIcon as createIcon2 } from "../../ui/kit/kit.js";
+import * as SettingsUI from "../../ui/legacy/components/settings_ui/settings_ui.js";
+import * as Components5 from "../../ui/legacy/components/utils/utils.js";
+import * as UI9 from "../../ui/legacy/legacy.js";
+import * as Settings7 from "../../ui/settings/settings.js";
+import * as VisualLogging5 from "../../ui/visual_logging/visual_logging.js";
+import { AiCodeCompletionSummaryToolbar } from "../common/common.js";
 
 // gen/front_end/panels/console/symbolizedErrorWidget.css.js
 var symbolizedErrorWidget_css_default = `/*
@@ -6584,9 +6617,9 @@ var ConsoleView = class _ConsoleView extends UI9.Widget.VBox {
     this.showSettingsPaneButton = new UI9.Toolbar.ToolbarSettingToggle(this.showSettingsPaneSetting, "gear", i18nString5(UIStrings5.consoleSettings), "gear-filled");
     this.showSettingsPaneButton.element.setAttribute("jslog", `${VisualLogging5.toggleSubpane("console-settings").track({ click: true })}`);
     this.progressToolbarItem = new UI9.Toolbar.ToolbarItem(document.createElement("div"));
-    this.groupSimilarSetting = Common6.Settings.Settings.instance().moduleSetting("console-group-similar");
+    this.groupSimilarSetting = Common6.Settings.Settings.instance().resolve(Settings7.ConsoleSettings.consoleGroupSimilarSettingDescriptor);
     this.groupSimilarSetting.addChangeListener(() => this.updateMessageList());
-    this.showCorsErrorsSetting = Common6.Settings.Settings.instance().moduleSetting("console-shows-cors-errors");
+    this.showCorsErrorsSetting = Common6.Settings.Settings.instance().resolve(Settings7.ConsoleSettings.consoleShowsCorsErrorsSettingDescriptor);
     this.showCorsErrorsSetting.addChangeListener(() => this.updateMessageList());
     const toolbar2 = this.consoleToolbarContainer.createChild("devtools-toolbar", "console-main-toolbar");
     toolbar2.setAttribute("jslog", `${VisualLogging5.toolbar()}`);
@@ -6626,8 +6659,8 @@ var ConsoleView = class _ConsoleView extends UI9.Widget.VBox {
     toolbar2.appendToolbarItem(this.filterStatusText);
     toolbar2.appendToolbarItem(this.showSettingsPaneButton);
     const monitoringXHREnabledSetting = Common6.Settings.Settings.instance().resolve(SDK7.SDKSettings.monitoringXHREnabledSettingDescriptor);
-    this.timestampsSetting = Common6.Settings.Settings.instance().moduleSetting("console-timestamps-enabled");
-    this.consoleHistoryAutocompleteSetting = Common6.Settings.Settings.instance().moduleSetting("console-history-autocomplete");
+    this.timestampsSetting = Common6.Settings.Settings.instance().resolve(Settings7.ConsoleSettings.consoleTimestampsEnabledSettingDescriptor);
+    this.consoleHistoryAutocompleteSetting = Common6.Settings.Settings.instance().resolve(Settings7.ConsoleSettings.consoleHistoryAutocompleteSettingDescriptor);
     this.selfXssWarningDisabledSetting = Common6.Settings.Settings.instance().createSetting(
       "disable-self-xss-warning",
       false,
@@ -6637,10 +6670,10 @@ var ConsoleView = class _ConsoleView extends UI9.Widget.VBox {
     const settingsPane = this.contentsElement.createChild("div", "console-settings-pane");
     UI9.ARIAUtils.setLabel(settingsPane, i18nString5(UIStrings5.consoleSettings));
     UI9.ARIAUtils.markAsGroup(settingsPane);
-    const consoleEagerEvalSetting = Common6.Settings.Settings.instance().moduleSetting("console-eager-eval");
+    const consoleEagerEvalSetting = Common6.Settings.Settings.instance().resolve(Settings7.ConsoleSettings.consoleEagerEvalSettingDescriptor);
     const preserveConsoleLogSetting = Common6.Settings.Settings.instance().resolve(SDK7.SDKSettings.preserveConsoleLogSettingDescriptor);
     const userActivationEvalSetting = Common6.Settings.Settings.instance().resolve(SDK7.SDKSettings.consoleUserActivationEvalSettingDescriptor);
-    settingsPane.append(SettingsUI.SettingsUI.createSettingCheckbox(i18nString5(UIStrings5.networkMessages), this.filter.networkMessagesSetting, SettingUIRegistration.SettingUIRegistration.resolve(this.filter.networkMessagesSetting.descriptor()).title), SettingsUI.SettingsUI.createSettingCheckbox(i18nString5(UIStrings5.logXMLHttpRequests), monitoringXHREnabledSetting), SettingsUI.SettingsUI.createSettingCheckbox(i18nString5(UIStrings5.preserveLog), preserveConsoleLogSetting, i18nString5(UIStrings5.doNotClearLogOnPageReload)), SettingsUI.SettingsUI.createSettingCheckbox(SettingUIRegistration.SettingUIRegistration.resolve(consoleEagerEvalSetting.descriptor()).title, consoleEagerEvalSetting, i18nString5(UIStrings5.eagerlyEvaluateTextInThePrompt)), SettingsUI.SettingsUI.createSettingCheckbox(i18nString5(UIStrings5.selectedContextOnly), this.filter.filterByExecutionContextSetting, i18nString5(UIStrings5.onlyShowMessagesFromTheCurrentContext)), SettingsUI.SettingsUI.createSettingCheckbox(SettingUIRegistration.SettingUIRegistration.resolve(this.consoleHistoryAutocompleteSetting.descriptor()).title, this.consoleHistoryAutocompleteSetting, i18nString5(UIStrings5.autocompleteFromHistory)), SettingsUI.SettingsUI.createSettingCheckbox(SettingUIRegistration.SettingUIRegistration.resolve(this.groupSimilarSetting.descriptor()).title, this.groupSimilarSetting, i18nString5(UIStrings5.groupSimilarMessagesInConsole)), SettingsUI.SettingsUI.createSettingCheckbox(SettingUIRegistration.SettingUIRegistration.resolve(userActivationEvalSetting.descriptor()).title, userActivationEvalSetting, i18nString5(UIStrings5.treatEvaluationAsUserActivation)), SettingsUI.SettingsUI.createSettingCheckbox(SettingUIRegistration.SettingUIRegistration.resolve(this.showCorsErrorsSetting.descriptor()).title, this.showCorsErrorsSetting, i18nString5(UIStrings5.showCorsErrorsInConsole)));
+    settingsPane.append(SettingsUI.SettingsUI.createSettingCheckbox(i18nString5(UIStrings5.networkMessages), this.filter.networkMessagesSetting, Settings7.SettingUIRegistration.resolve(this.filter.networkMessagesSetting.descriptor()).title), SettingsUI.SettingsUI.createSettingCheckbox(i18nString5(UIStrings5.logXMLHttpRequests), monitoringXHREnabledSetting), SettingsUI.SettingsUI.createSettingCheckbox(i18nString5(UIStrings5.preserveLog), preserveConsoleLogSetting, i18nString5(UIStrings5.doNotClearLogOnPageReload)), SettingsUI.SettingsUI.createSettingCheckbox(Settings7.SettingUIRegistration.resolve(consoleEagerEvalSetting.descriptor()).title, consoleEagerEvalSetting, i18nString5(UIStrings5.eagerlyEvaluateTextInThePrompt)), SettingsUI.SettingsUI.createSettingCheckbox(i18nString5(UIStrings5.selectedContextOnly), this.filter.filterByExecutionContextSetting, i18nString5(UIStrings5.onlyShowMessagesFromTheCurrentContext)), SettingsUI.SettingsUI.createSettingCheckbox(Settings7.SettingUIRegistration.resolve(this.consoleHistoryAutocompleteSetting.descriptor()).title, this.consoleHistoryAutocompleteSetting, i18nString5(UIStrings5.autocompleteFromHistory)), SettingsUI.SettingsUI.createSettingCheckbox(Settings7.SettingUIRegistration.resolve(this.groupSimilarSetting.descriptor()).title, this.groupSimilarSetting, i18nString5(UIStrings5.groupSimilarMessagesInConsole)), SettingsUI.SettingsUI.createSettingCheckbox(Settings7.SettingUIRegistration.resolve(userActivationEvalSetting.descriptor()).title, userActivationEvalSetting, i18nString5(UIStrings5.treatEvaluationAsUserActivation)), SettingsUI.SettingsUI.createSettingCheckbox(Settings7.SettingUIRegistration.resolve(this.showCorsErrorsSetting.descriptor()).title, this.showCorsErrorsSetting, i18nString5(UIStrings5.showCorsErrorsInConsole)));
     if (!this.showSettingsPaneSetting.get()) {
       settingsPane.classList.add("hidden");
     }
@@ -7714,8 +7747,8 @@ var ConsoleViewFilter = class _ConsoleViewFilter {
   constructor(filterChangedCallback) {
     this.filterChanged = filterChangedCallback;
     this.messageLevelFiltersSetting = _ConsoleViewFilter.levelFilterSetting();
-    this.networkMessagesSetting = Common6.Settings.Settings.instance().moduleSetting("network-messages");
-    this.filterByExecutionContextSetting = Common6.Settings.Settings.instance().moduleSetting("selected-context-filter-enabled");
+    this.networkMessagesSetting = Common6.Settings.Settings.instance().resolve(Settings7.ConsoleSettings.networkMessagesSettingDescriptor);
+    this.filterByExecutionContextSetting = Common6.Settings.Settings.instance().resolve(Settings7.ConsoleSettings.selectedContextFilterEnabledSettingDescriptor);
     this.messageLevelFiltersSetting.addChangeListener(this.onFilterChanged.bind(this));
     this.networkMessagesSetting.addChangeListener(this.onFilterChanged.bind(this));
     this.filterByExecutionContextSetting.addChangeListener(this.onFilterChanged.bind(this));
@@ -8017,13 +8050,13 @@ var consolePrompt_css_default = `/*
 #console-prompt .console-prompt-icon {
   position: absolute;
   left: -9px;
-  top: 4px;
+  top: var(--sys-size-3);
   user-select: none;
 }
 
 .console-eager-preview {
-  padding-bottom: 2px;
-  margin-left: 4px;
+  padding-bottom: var(--sys-size-2);
+  margin-left: var(--sys-size-3);
   opacity: 60%;
   position: relative;
 }
@@ -8031,7 +8064,7 @@ var consolePrompt_css_default = `/*
 .console-eager-inner-preview {
   text-overflow: ellipsis;
   overflow: hidden;
-  margin-left: 4px;
+  margin-left: var(--sys-size-3);
   height: 100%;
   white-space: nowrap;
 }
@@ -8039,7 +8072,7 @@ var consolePrompt_css_default = `/*
 .preview-result-icon {
   position: absolute;
   left: -13px;
-  top: -1px;
+  top: calc(-1 * var(--sys-size-1));
 }
 
 .console-eager-inner-preview:empty,
@@ -8141,7 +8174,7 @@ var ConsolePrompt = class extends Common7.ObjectWrapper.eventMixin(UI11.Widget.W
     this.promptIcon.classList.add("console-prompt-icon", "medium");
     this.element.appendChild(this.promptIcon);
     this.iconThrottler = new Common7.Throttler.Throttler(0);
-    this.eagerEvalSetting = Common7.Settings.Settings.instance().moduleSetting("console-eager-eval");
+    this.eagerEvalSetting = Common7.Settings.Settings.instance().resolve(Settings9.ConsoleSettings.consoleEagerEvalSettingDescriptor);
     this.eagerEvalSetting.addChangeListener(this.eagerSettingChanged.bind(this));
     this.eagerPreviewElement.classList.toggle("hidden", !this.eagerEvalSetting.get());
     this.element.tabIndex = 0;
@@ -8149,7 +8182,7 @@ var ConsolePrompt = class extends Common7.ObjectWrapper.eventMixin(UI11.Widget.W
     this.highlightingNode = false;
     const argumentHints = TextEditor2.JavaScript.argumentHints();
     this.#argumentHintsState = argumentHints[0];
-    const autocompleteOnEnter = TextEditor2.Config.DynamicSetting.bool("console-autocomplete-on-enter", [], TextEditor2.Config.conservativeCompletion);
+    const autocompleteOnEnter = TextEditor2.Config.DynamicSetting.bool(Settings9.ConsoleSettings.consoleAutocompleteOnEnterSettingDescriptor, [], TextEditor2.Config.conservativeCompletion);
     const extensions = [
       CodeMirror2.keymap.of(this.editorKeymap()),
       CodeMirror2.EditorView.updateListener.of((update) => this.editorUpdate(update)),
@@ -8451,6 +8484,10 @@ var ConsolePrompt = class extends Common7.ObjectWrapper.eventMixin(UI11.Widget.W
   editorSetForTest() {
   }
 };
+var Events2;
+(function(Events3) {
+  Events3["TEXT_CHANGED"] = "TextChanged";
+})(Events2 || (Events2 = {}));
 export {
   ConsoleContextSelector_exports as ConsoleContextSelector,
   ConsoleFilter_exports as ConsoleFilter,

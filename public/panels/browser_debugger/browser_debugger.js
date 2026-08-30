@@ -10,13 +10,13 @@ __export(CategorizedBreakpointsSidebarPane_exports, {
   CategorizedBreakpointsSidebarPane: () => CategorizedBreakpointsSidebarPane,
   DEFAULT_VIEW: () => DEFAULT_VIEW
 });
-import * as i18n from "./../../core/i18n/i18n.js";
-import * as Platform from "./../../core/platform/platform.js";
-import * as SDK from "./../../core/sdk/sdk.js";
-import * as Sources from "./../sources/sources.js";
-import * as UI from "./../../ui/legacy/legacy.js";
-import * as Lit from "./../../ui/lit/lit.js";
-import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
+import * as i18n from "../../core/i18n/i18n.js";
+import * as Platform from "../../core/platform/platform.js";
+import * as SDK from "../../core/sdk/sdk.js";
+import * as Sources from "../sources/sources.js";
+import * as UI from "../../ui/legacy/legacy.js";
+import * as Lit from "../../ui/lit/lit.js";
+import * as VisualLogging from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/browser_debugger/categorizedBreakpointsSidebarPane.css.js
 var categorizedBreakpointsSidebarPane_css_default = `/*
@@ -472,8 +472,8 @@ var CSPViolationBreakpointsSidebarPane_exports = {};
 __export(CSPViolationBreakpointsSidebarPane_exports, {
   CSPViolationBreakpointsSidebarPane: () => CSPViolationBreakpointsSidebarPane
 });
-import * as SDK2 from "./../../core/sdk/sdk.js";
-import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
+import * as SDK2 from "../../core/sdk/sdk.js";
+import * as VisualLogging2 from "../../ui/visual_logging/visual_logging.js";
 var CSPViolationBreakpointsSidebarPane = class extends CategorizedBreakpointsSidebarPane {
   constructor() {
     const breakpoints = SDK2.DOMDebuggerModel.DOMDebuggerManager.instance().cspViolationBreakpoints();
@@ -498,14 +498,14 @@ __export(DOMBreakpointsSidebarPane_exports, {
   DEFAULT_VIEW: () => DEFAULT_VIEW2,
   DOMBreakpointsSidebarPane: () => DOMBreakpointsSidebarPane
 });
-import * as Common from "./../../core/common/common.js";
-import * as i18n3 from "./../../core/i18n/i18n.js";
-import * as SDK3 from "./../../core/sdk/sdk.js";
-import * as UI2 from "./../../ui/legacy/legacy.js";
-import * as Lit2 from "./../../ui/lit/lit.js";
-import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
-import * as PanelsCommon from "./../common/common.js";
-import * as Sources2 from "./../sources/sources.js";
+import * as Common from "../../core/common/common.js";
+import * as i18n3 from "../../core/i18n/i18n.js";
+import * as SDK3 from "../../core/sdk/sdk.js";
+import * as UI2 from "../../ui/legacy/legacy.js";
+import * as Lit2 from "../../ui/lit/lit.js";
+import * as VisualLogging3 from "../../ui/visual_logging/visual_logging.js";
+import * as PanelsCommon from "../common/common.js";
+import * as Sources2 from "../sources/sources.js";
 
 // gen/front_end/panels/browser_debugger/domBreakpointsSidebarPane.css.js
 var domBreakpointsSidebarPane_css_default = `/*
@@ -567,10 +567,12 @@ var domBreakpointsSidebarPane_css_default = `/*
     justify-content: center;
     align-items: center;
     padding: 20px;
+    font-style: italic;
+    color: var(--sys-color-token-subtle);
   }
 }
 
-:host-context(.sources.panel) .empty-view-scroller {
+:host-context(.sources.panel) .empty-widget-container {
   display: none;
 }
 
@@ -942,8 +944,8 @@ var EventListenerBreakpointsSidebarPane_exports = {};
 __export(EventListenerBreakpointsSidebarPane_exports, {
   EventListenerBreakpointsSidebarPane: () => EventListenerBreakpointsSidebarPane
 });
-import * as SDK4 from "./../../core/sdk/sdk.js";
-import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
+import * as SDK4 from "../../core/sdk/sdk.js";
+import * as VisualLogging4 from "../../ui/visual_logging/visual_logging.js";
 var EventListenerBreakpointsSidebarPane = class extends CategorizedBreakpointsSidebarPane {
   #eventBreakpointsManager;
   constructor(eventBreakpointsManager) {
@@ -973,11 +975,11 @@ __export(ObjectEventListenersSidebarPane_exports, {
   ObjectEventListenersSidebarPane: () => ObjectEventListenersSidebarPane,
   objectGroupName: () => objectGroupName
 });
-import * as SDK5 from "./../../core/sdk/sdk.js";
-import * as Buttons from "./../../ui/components/buttons/buttons.js";
-import * as UI3 from "./../../ui/legacy/legacy.js";
-import * as VisualLogging5 from "./../../ui/visual_logging/visual_logging.js";
-import * as EventListeners from "./../event_listeners/event_listeners.js";
+import * as SDK5 from "../../core/sdk/sdk.js";
+import * as Buttons from "../../ui/components/buttons/buttons.js";
+import * as UI3 from "../../ui/legacy/legacy.js";
+import * as VisualLogging5 from "../../ui/visual_logging/visual_logging.js";
+import * as EventListeners from "../event_listeners/event_listeners.js";
 var ObjectEventListenersSidebarPane = class _ObjectEventListenersSidebarPane extends UI3.Widget.VBox {
   #lastRequestedContext;
   // TODO(bmeurer): This is only public for web tests.
@@ -1066,13 +1068,13 @@ var XHRBreakpointsSidebarPane_exports = {};
 __export(XHRBreakpointsSidebarPane_exports, {
   XHRBreakpointsSidebarPane: () => XHRBreakpointsSidebarPane
 });
-import * as i18n5 from "./../../core/i18n/i18n.js";
-import * as Platform2 from "./../../core/platform/platform.js";
-import * as SDK6 from "./../../core/sdk/sdk.js";
-import * as Buttons2 from "./../../ui/components/buttons/buttons.js";
-import * as UI4 from "./../../ui/legacy/legacy.js";
-import { Directives as Directives3, html as html3, render as render3 } from "./../../ui/lit/lit.js";
-import * as VisualLogging6 from "./../../ui/visual_logging/visual_logging.js";
+import * as i18n5 from "../../core/i18n/i18n.js";
+import * as Platform2 from "../../core/platform/platform.js";
+import * as SDK6 from "../../core/sdk/sdk.js";
+import * as Buttons2 from "../../ui/components/buttons/buttons.js";
+import * as UI4 from "../../ui/legacy/legacy.js";
+import { Directives as Directives3, html as html3, render as render3 } from "../../ui/lit/lit.js";
+import * as VisualLogging6 from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/browser_debugger/xhrBreakpointsSidebarPane.css.js
 var xhrBreakpointsSidebarPane_css_default = `/*

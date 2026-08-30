@@ -15,8 +15,8 @@ export default `/*
 
 h1 {
   font-weight: normal;
-  font-size: 18px;
-  line-height: 28px;
+  font-size: var(--sys-typescale-headline3-size);
+  line-height: var(--sys-size-12);
   padding: 0;
   margin-top: 0;
   color: var(--sys-color-on-surface);
@@ -25,14 +25,14 @@ h1 {
 .intro-steps {
   counter-reset: custom-counter;
   list-style: none;
-  margin: 16px 0 30px 30px;
+  margin: var(--sys-size-8) 0 30px 30px;
   padding: 0;
 }
 
 .intro-steps li {
   color: var(--sys-color-on-surface);
   counter-increment: custom-counter;
-  font-size: 13px;
+  font-size: var(--sys-typescale-body3-size);
   letter-spacing: 0.03em;
   line-height: 1.54;
   margin-bottom: 9px;
@@ -44,13 +44,13 @@ h1 {
 
   box-sizing: border-box;
   background: var(--override-color-counter-background);
-  border-radius: 50%;
+  border-radius: var(--sys-shape-corner-full);
   color: var(--sys-color-primary);
   content: counter(custom-counter);
-  font-size: 12px;
+  font-size: var(--sys-typescale-body4-size);
   height: 18px;
   left: -30px;
-  line-height: 20px;
+  line-height: var(--sys-size-9);
   position: absolute;
   text-align: center;
   top: 0;

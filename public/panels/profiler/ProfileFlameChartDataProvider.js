@@ -368,4 +368,8 @@ export class OverviewPane extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox
         this.overviewCanvas.style.height = height + 'px';
     }
 }
+export var OverviewPaneEvents;
+(function (OverviewPaneEvents) {
+    OverviewPaneEvents["WINDOW_CHANGED"] = "WindowChanged";
+})(OverviewPaneEvents || (OverviewPaneEvents = {}));
 //# sourceMappingURL=ProfileFlameChartDataProvider.js.map

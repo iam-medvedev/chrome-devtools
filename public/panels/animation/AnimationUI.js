@@ -403,6 +403,13 @@ export class AnimationUI {
         event.consume(true);
     }
 }
+export var Events;
+(function (Events) {
+    Events["ANIMATION_DRAG"] = "AnimationDrag";
+    Events["KEYFRAME_MOVE"] = "KeyframeMove";
+    Events["START_ENDPOINT_MOVE"] = "StartEndpointMove";
+    Events["FINISH_ENDPOINT_MOVE"] = "FinishEndpointMove";
+})(Events || (Events = {}));
 export const Options = {
     AnimationHeight: 26,
     AnimationSVGHeight: 50,

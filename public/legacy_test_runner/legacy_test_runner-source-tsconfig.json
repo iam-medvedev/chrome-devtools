@@ -6,6 +6,7 @@
     "checkJs": true,
     "composite": true,
     "declaration": true,
+    "disableSourceOfProjectReferenceRedirect": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
     "inlineSources": true,
@@ -26,6 +27,7 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "outDir": ".",
+    "preserveConstEnums": true,
     "rootDir": "../../../../../front_end/legacy_test_runner",
     "skipLibCheck": true,
     "sourceMap": true,
@@ -44,10 +46,10 @@
   ],
   "references": [
     {
-      "path": "../entrypoints/devtools_app/entrypoint-tsconfig.json"
+      "path": "../entrypoints/devtools_app/entrypoint-tsconfig.ref.json"
     },
     {
-      "path": "test_runner/bundle-tsconfig.json"
+      "path": "test_runner/bundle-tsconfig.ref.json"
     }
   ]
 }

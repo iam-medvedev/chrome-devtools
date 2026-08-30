@@ -6,6 +6,7 @@
     "checkJs": true,
     "composite": true,
     "declaration": true,
+    "disableSourceOfProjectReferenceRedirect": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
     "inlineSources": true,
@@ -26,6 +27,7 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "outDir": ".",
+    "preserveConstEnums": true,
     "rootDir": "../../../../../../front_end/entrypoints/formatter_worker",
     "skipLibCheck": true,
     "sourceMap": true,
@@ -55,22 +57,22 @@
   ],
   "references": [
     {
-      "path": "./formatter_actions-tsconfig.json"
+      "path": "./formatter_actions-tsconfig.ref.json"
     },
     {
-      "path": "../../core/platform/bundle-tsconfig.json"
+      "path": "../../core/platform/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../core/root/bundle-tsconfig.json"
+      "path": "../../core/root/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../core/text_utils/bundle-tsconfig.json"
+      "path": "../../core/text_utils/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../third_party/acorn/bundle-tsconfig.json"
+      "path": "../../third_party/acorn/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../third_party/codemirror/codemirror-legacy-types-tsconfig.json"
+      "path": "../../third_party/codemirror/codemirror-legacy-types-tsconfig.ref.json"
     }
   ]
 }

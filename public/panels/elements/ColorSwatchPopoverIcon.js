@@ -90,6 +90,10 @@ export class BezierPopoverIcon {
         delete this.originalPropertyText;
     }
 }
+export var ColorSwatchPopoverIconEvents;
+(function (ColorSwatchPopoverIconEvents) {
+    ColorSwatchPopoverIconEvents["COLOR_CHANGED"] = "colorchanged";
+})(ColorSwatchPopoverIconEvents || (ColorSwatchPopoverIconEvents = {}));
 export class ColorSwatchPopoverIcon extends Common.ObjectWrapper.ObjectWrapper {
     treeElement;
     swatchPopoverHelper;
@@ -203,10 +207,10 @@ export class ColorSwatchPopoverIcon extends Common.ObjectWrapper.ObjectWrapper {
                 return new Common.Color.Oklab(color.l, color.a, color.b, color.alpha, customProperty);
             }
             if (color.is("srgb" /* Common.Color.Format.SRGB */) || color.is("srgb-linear" /* Common.Color.Format.SRGB_LINEAR */) ||
-                color.is("display-p3" /* Common.Color.Format.DISPLAY_P3 */) || color.is("a98-rgb" /* Common.Color.Format.A98_RGB */) ||
-                color.is("prophoto-rgb" /* Common.Color.Format.PROPHOTO_RGB */) || color.is("rec2020" /* Common.Color.Format.REC_2020 */) ||
-                color.is("xyz" /* Common.Color.Format.XYZ */) || color.is("xyz-d50" /* Common.Color.Format.XYZ_D50 */) ||
-                color.is("xyz-d65" /* Common.Color.Format.XYZ_D65 */)) {
+                color.is("display-p3" /* Common.Color.Format.DISPLAY_P3 */) || color.is("display-p3-linear" /* Common.Color.Format.DISPLAY_P3_LINEAR */) ||
+                color.is("a98-rgb" /* Common.Color.Format.A98_RGB */) || color.is("prophoto-rgb" /* Common.Color.Format.PROPHOTO_RGB */) ||
+                color.is("rec2020" /* Common.Color.Format.REC_2020 */) || color.is("xyz" /* Common.Color.Format.XYZ */) ||
+                color.is("xyz-d50" /* Common.Color.Format.XYZ_D50 */) || color.is("xyz-d65" /* Common.Color.Format.XYZ_D65 */)) {
                 return new Common.Color.ColorFunction(color.colorSpace, color.p0, color.p1, color.p2, color.alpha, customProperty);
             }
             throw new Error(`Forgot to handle color format ${color.format()}`);
@@ -236,6 +240,10 @@ export class ColorSwatchPopoverIcon extends Common.ObjectWrapper.ObjectWrapper {
         UI.Context.Context.instance().setFlavor(ColorSwatchPopoverIcon, null);
     }
 }
+export var ShadowEvents;
+(function (ShadowEvents) {
+    ShadowEvents["SHADOW_CHANGED"] = "shadowChanged";
+})(ShadowEvents || (ShadowEvents = {}));
 export class ShadowSwatchPopoverHelper extends Common.ObjectWrapper.ObjectWrapper {
     treeElement;
     swatchPopoverHelper;

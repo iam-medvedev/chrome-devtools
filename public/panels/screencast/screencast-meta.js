@@ -1,5 +1,5 @@
 // gen/front_end/panels/screencast/screencast-meta.prebundle.js
-import * as UI from "./../../ui/legacy/legacy.js";
+import * as UI from "../../ui/legacy/legacy.js";
 var loadedScreencastModule;
 async function loadScreencastModule() {
   if (!loadedScreencastModule) {

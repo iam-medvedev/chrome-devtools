@@ -227,6 +227,10 @@ export class HeapTimelineOverview extends Common.ObjectWrapper.eventMixin(UI.Wid
         this.dispatchEventToListeners("IdsRangeChanged" /* Events.IDS_RANGE_CHANGED */, { minId, maxId, size });
     }
 }
+export var Events;
+(function (Events) {
+    Events["IDS_RANGE_CHANGED"] = "IdsRangeChanged";
+})(Events || (Events = {}));
 export class SmoothScale {
     lastUpdate;
     currentScale;

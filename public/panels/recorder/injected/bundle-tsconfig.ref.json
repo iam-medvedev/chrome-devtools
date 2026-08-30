@@ -1,0 +1,1 @@
+{"compilerOptions":{"composite":true,"declaration":true,"emitDeclarationOnly":true,"skipLibCheck":true,"rootDir":"../../../../../../../front_end/panels/recorder/injected","outDir":".","declarationDir":"."},"files":["../../../../../../../front_end/panels/recorder/injected/injected.ts"],"references":[{"path":"./injected-tsconfig.ref.json"}]}

@@ -3,12 +3,15 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import * as Common from '../../core/common/common.js';
+import * as SDK from '../../core/sdk/sdk.js';
 import { createContentProviderUISourceCodes } from '../../testing/UISourceCodeHelpers.js';
 import * as Workspace from '../workspace/workspace.js';
+import * as Bindings from './bindings.js';
 describe('ContentProviderBasedProject', () => {
+    let workspace;
     beforeEach(() => {
         // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
-        Workspace.Workspace.WorkspaceImpl.instance({ forceNew: true });
+        workspace = Workspace.Workspace.WorkspaceImpl.instance({ forceNew: true });
     });
     describe('findFilesMatchingSearchRequest', () => {
         it('filters UISourceCodes based on search query', async () => {
@@ -91,6 +94,17 @@ describe('ContentProviderBasedProject', () => {
             assert.strictEqual(progress.totalWork, 2);
             assert.strictEqual(progress.worked, 2);
             assert.isTrue(progress.done);
+        });
+    });
+    describe('securityOrigin', () => {
+        it('returns the securityOrigin passed to the constructor', () => {
+            const origin = SDK.SecurityOrigin.SecurityOrigin.create('https://example.com');
+            const project = new Bindings.ContentProviderBasedProject.ContentProviderBasedProject(workspace, 'test-project', Workspace.Workspace.projectTypes.Network, 'Test Project', false, origin);
+            assert.strictEqual(project.securityOrigin(), origin);
+        });
+        it('defaults to null if no securityOrigin is passed', () => {
+            const project = new Bindings.ContentProviderBasedProject.ContentProviderBasedProject(workspace, 'test-project', Workspace.Workspace.projectTypes.Network, 'Test Project', false);
+            assert.isNull(project.securityOrigin());
         });
     });
 });

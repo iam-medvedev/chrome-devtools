@@ -123,6 +123,20 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/recorder/StepView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+export var State;
+(function (State) {
+    State["DEFAULT"] = "default";
+    State["SUCCESS"] = "success";
+    State["CURRENT"] = "current";
+    State["OUTSTANDING"] = "outstanding";
+    State["ERROR"] = "error";
+    State["STOPPED"] = "stopped";
+})(State || (State = {}));
+export var AddStepPosition;
+(function (AddStepPosition) {
+    AddStepPosition["BEFORE"] = "before";
+    AddStepPosition["AFTER"] = "after";
+})(AddStepPosition || (AddStepPosition = {}));
 const COPY_ACTION_PREFIX = 'copy-step-as-';
 function getStepTypeTitle(input) {
     if (input.section) {

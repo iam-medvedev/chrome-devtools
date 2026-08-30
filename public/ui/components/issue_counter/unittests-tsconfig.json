@@ -6,6 +6,7 @@
     "checkJs": true,
     "composite": true,
     "declaration": true,
+    "disableSourceOfProjectReferenceRedirect": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
     "inlineSources": true,
@@ -26,6 +27,7 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "outDir": ".",
+    "preserveConstEnums": true,
     "rootDir": "../../../../../../../front_end/ui/components/issue_counter",
     "skipLibCheck": true,
     "sourceMap": true,
@@ -50,28 +52,28 @@
   ],
   "references": [
     {
-      "path": "./bundle-tsconfig.json"
+      "path": "./bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../../core/common/bundle-tsconfig.json"
+      "path": "../../../core/common/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../../generated/generated-tsconfig.json"
+      "path": "../../../generated/generated-tsconfig.ref.json"
     },
     {
-      "path": "../../../models/issues_manager/bundle-tsconfig.json"
+      "path": "../../../models/issues_manager/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../../testing/testing-tsconfig.json"
+      "path": "../../../testing/testing-tsconfig.ref.json"
     },
     {
-      "path": "../../kit/bundle-tsconfig.json"
+      "path": "../../kit/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../icon_button/bundle-tsconfig.json"
+      "path": "../icon_button/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../render_coordinator/bundle-tsconfig.json"
+      "path": "../render_coordinator/bundle-tsconfig.ref.json"
     }
   ]
 }

@@ -6,6 +6,7 @@
     "checkJs": true,
     "composite": true,
     "declaration": true,
+    "disableSourceOfProjectReferenceRedirect": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
     "inlineSources": true,
@@ -26,6 +27,7 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "outDir": ".",
+    "preserveConstEnums": true,
     "rootDir": "../../../../../../../front_end/panels/recorder/testing",
     "skipLibCheck": true,
     "sourceMap": true,
@@ -49,10 +51,10 @@
   ],
   "references": [
     {
-      "path": "../../../core/sdk/bundle-tsconfig.json"
+      "path": "../../../core/sdk/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../models/bundle-tsconfig.json"
+      "path": "../models/bundle-tsconfig.ref.json"
     }
   ]
 }

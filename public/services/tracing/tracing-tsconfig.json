@@ -6,6 +6,7 @@
     "checkJs": true,
     "composite": true,
     "declaration": true,
+    "disableSourceOfProjectReferenceRedirect": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
     "inlineSources": true,
@@ -26,6 +27,7 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "outDir": ".",
+    "preserveConstEnums": true,
     "rootDir": "../../../../../../front_end/services/tracing",
     "skipLibCheck": true,
     "sourceMap": true,
@@ -46,16 +48,16 @@
   ],
   "references": [
     {
-      "path": "../../core/sdk/bundle-tsconfig.json"
+      "path": "../../core/sdk/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../generated/generated-tsconfig.json"
+      "path": "../../generated/generated-tsconfig.ref.json"
     },
     {
-      "path": "../../generated/protocol-tsconfig.json"
+      "path": "../../generated/protocol-tsconfig.ref.json"
     },
     {
-      "path": "../../models/trace/bundle-tsconfig.json"
+      "path": "../../models/trace/bundle-tsconfig.ref.json"
     }
   ]
 }

@@ -8,87 +8,87 @@ import * as Root from '../../core/root/root.js';
 import { Context } from './Context.js';
 const UIStrings = {
     /**
-     * @description Title of the keybind category 'Elements' in Settings' Shortcuts pannel.
+     * @description Title of the Elements shortcut category in the shortcuts tab in the Settings panel.
      */
     elements: 'Elements',
     /**
-     * @description Title of the keybind category 'Screenshot' in Settings' Shortcuts pannel.
+     * @description Title of the Screenshot shortcut category in the shortcuts tab in the Settings panel.
      */
     screenshot: 'Screenshot',
     /**
-     * @description Title of the keybind category 'Network' in Settings' Shortcuts pannel.
+     * @description Title of the Network shortcut category in the shortcuts tab in the Settings panel.
      */
     network: 'Network',
     /**
-     * @description Title of the keybind category 'Memory' in Settings' Shortcuts pannel.
+     * @description Title of the Memory shortcut category in the shortcuts tab in the Settings panel.
      */
     memory: 'Memory',
     /**
-     * @description Title of the keybind category 'JavaScript Profiler' in Settings' Shortcuts pannel.
+     * @description Title of the JavaScript profiler shortcut category in the shortcuts tab in the Settings panel.
      */
-    javascript_profiler: 'JavaScript Profiler',
+    javascript_profiler: 'JavaScript profiler',
     /**
-     * @description Title of the keybind category 'Console' in Settings' Shortcuts pannel.
+     * @description Title of the Console shortcut category in the shortcuts tab in the Settings panel.
      */
     console: 'Console',
     /**
-     * @description Title of the keybind category 'Performance' in Settings' Shortcuts pannel.
+     * @description Title of the Performance shortcut category in the shortcuts tab in the Settings panel.
      */
     performance: 'Performance',
     /**
-     * @description Title of the keybind category 'Mobile' in Settings' Shortcuts pannel.
+     * @description Title of the Mobile shortcut category in the shortcuts tab in the Settings panel.
      */
     mobile: 'Mobile',
     /**
-     * @description Title of the keybind category 'Help' in Settings' Shortcuts pannel.
+     * @description Title of the Help shortcut category in the shortcuts tab in the Settings panel.
      */
     help: 'Help',
     /**
-     * @description Title of the keybind category 'Layers' in Settings' Shortcuts pannel.
+     * @description Title of the Layers shortcut category in the shortcuts tab in the Settings panel.
      */
     layers: 'Layers',
     /**
-     * @description Title of the keybind category 'Navigation' in Settings' Shortcuts pannel.
+     * @description Title of the Navigation shortcut category in the shortcuts tab in the Settings panel.
      */
     navigation: 'Navigation',
     /**
-     * @description Title of the keybind category 'Drawer' in Settings' Shortcuts pannel.
+     * @description Title of the Drawer shortcut category in the shortcuts tab in the Settings panel.
      */
     drawer: 'Drawer',
     /**
-     * @description Title of the keybind category 'Global' in Settings' Shortcuts pannel.
+     * @description Title of the Global shortcut category in the shortcuts tab in the Settings panel.
      */
     global: 'Global',
     /**
-     * @description Title of the keybind category 'Resources' in Settings' Shortcuts pannel.
+     * @description Title of the Resources shortcut category in the shortcuts tab in the Settings panel.
      */
     resources: 'Resources',
     /**
-     * @description Title of the keybind category 'Background Services' in Settings' Shortcuts pannel.
+     * @description Title of the Background services shortcut category in the shortcuts tab in the Settings panel.
      */
-    background_services: 'Background Services',
+    background_services: 'Background services',
     /**
-     * @description Title of the keybind category 'Settings' in Settings' Shortcuts pannel.
+     * @description Title of the Settings shortcut category in the shortcuts tab in the Settings panel.
      */
     settings: 'Settings',
     /**
-     * @description Title of the keybind category 'Debugger' in Settings' Shortcuts pannel.
+     * @description Title of the Debugger shortcut category in the shortcuts tab in the Settings panel.
      */
     debugger: 'Debugger',
     /**
-     * @description Title of the keybind category 'Sources' in Settings' Shortcuts pannel.
+     * @description Title of the Sources shortcut category in the shortcuts tab in the Settings panel.
      */
     sources: 'Sources',
     /**
-     * @description Title of the keybind category 'Rendering' in Settings' Shortcuts pannel.
+     * @description Title of the Rendering shortcut category in the shortcuts tab in the Settings panel.
      */
     rendering: 'Rendering',
     /**
-     * @description Title of the keybind category 'Recorder' in Settings' Shortcuts pannel.
+     * @description Title of the Recorder shortcut category in the shortcuts tab in the Settings panel.
      */
     recorder: 'Recorder',
     /**
-     * @description Title of the keybind category 'Changes' in Settings' Shortcuts pannel.
+     * @description Title of the Changes shortcut category in the shortcuts tab in the Settings panel.
      */
     changes: 'Changes',
 };
@@ -247,6 +247,44 @@ export function getRegisteredActionExtensions() {
 export function maybeRemoveActionExtension(actionId) {
     return registeredActions.delete(actionId);
 }
+export var Platforms;
+(function (Platforms) {
+    Platforms["ALL"] = "All platforms";
+    Platforms["MAC"] = "mac";
+    Platforms["WINDOWS_LINUX"] = "windows,linux";
+    Platforms["ANDROID"] = "Android";
+    Platforms["WINDOWS"] = "windows";
+})(Platforms || (Platforms = {}));
+export var Events;
+(function (Events) {
+    Events["ENABLED"] = "Enabled";
+    Events["TOGGLED"] = "Toggled";
+})(Events || (Events = {}));
+export var ActionCategory;
+(function (ActionCategory) {
+    ActionCategory["NONE"] = "";
+    ActionCategory["ELEMENTS"] = "ELEMENTS";
+    ActionCategory["SCREENSHOT"] = "SCREENSHOT";
+    ActionCategory["NETWORK"] = "NETWORK";
+    ActionCategory["MEMORY"] = "MEMORY";
+    ActionCategory["JAVASCRIPT_PROFILER"] = "JAVASCRIPT_PROFILER";
+    ActionCategory["CONSOLE"] = "CONSOLE";
+    ActionCategory["PERFORMANCE"] = "PERFORMANCE";
+    ActionCategory["MOBILE"] = "MOBILE";
+    ActionCategory["HELP"] = "HELP";
+    ActionCategory["LAYERS"] = "LAYERS";
+    ActionCategory["NAVIGATION"] = "NAVIGATION";
+    ActionCategory["DRAWER"] = "DRAWER";
+    ActionCategory["GLOBAL"] = "GLOBAL";
+    ActionCategory["RESOURCES"] = "RESOURCES";
+    ActionCategory["BACKGROUND_SERVICES"] = "BACKGROUND_SERVICES";
+    ActionCategory["SETTINGS"] = "SETTINGS";
+    ActionCategory["DEBUGGER"] = "DEBUGGER";
+    ActionCategory["SOURCES"] = "SOURCES";
+    ActionCategory["RENDERING"] = "RENDERING";
+    ActionCategory["RECORDER"] = "RECORDER";
+    ActionCategory["CHANGES"] = "CHANGES";
+})(ActionCategory || (ActionCategory = {}));
 export function getLocalizedActionCategory(category) {
     switch (category) {
         case "ELEMENTS" /* ActionCategory.ELEMENTS */:
@@ -297,4 +335,37 @@ export function getLocalizedActionCategory(category) {
     // Not all categories are cleanly typed yet. Return the category as-is in this case.
     return i18n.i18n.lockedString(category);
 }
+export var IconClass;
+(function (IconClass) {
+    IconClass["LARGEICON_NODE_SEARCH"] = "select-element";
+    IconClass["START_RECORDING"] = "record-start";
+    IconClass["STOP_RECORDING"] = "record-stop";
+    IconClass["REFRESH"] = "refresh";
+    IconClass["CLEAR"] = "clear";
+    IconClass["EYE"] = "eye";
+    IconClass["LARGEICON_PHONE"] = "devices";
+    IconClass["PLAY"] = "play";
+    IconClass["DOWNLOAD"] = "download";
+    IconClass["LARGEICON_PAUSE"] = "pause";
+    IconClass["LARGEICON_RESUME"] = "resume";
+    IconClass["MOP"] = "mop";
+    IconClass["BIN"] = "bin";
+    IconClass["LARGEICON_SETTINGS_GEAR"] = "gear";
+    IconClass["LARGEICON_STEP_OVER"] = "step-over";
+    IconClass["LARGE_ICON_STEP_INTO"] = "step-into";
+    IconClass["LARGE_ICON_STEP"] = "step";
+    IconClass["LARGE_ICON_STEP_OUT"] = "step-out";
+    IconClass["BREAKPOINT_CROSSED_FILLED"] = "breakpoint-crossed-filled";
+    IconClass["BREAKPOINT_CROSSED"] = "breakpoint-crossed";
+    IconClass["PLUS"] = "plus";
+    IconClass["UNDO"] = "undo";
+    IconClass["COPY"] = "copy";
+    IconClass["IMPORT"] = "import";
+    IconClass["COMMENT_MODE"] = "comment-mode";
+})(IconClass || (IconClass = {}));
+export var KeybindSet;
+(function (KeybindSet) {
+    KeybindSet["DEVTOOLS_DEFAULT"] = "devToolsDefault";
+    KeybindSet["VS_CODE"] = "vsCode";
+})(KeybindSet || (KeybindSet = {}));
 //# sourceMappingURL=ActionRegistration.js.map

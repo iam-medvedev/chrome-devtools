@@ -4,34 +4,37 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// gen/front_end/models/ai_assistance/agents/AccessibilityAgent.js
+// ../../front_end/models/ai_assistance/agents/AccessibilityAgent.ts
 var AccessibilityAgent_exports = {};
 __export(AccessibilityAgent_exports, {
   AccessibilityAgent: () => AccessibilityAgent
 });
-import * as Host26 from "./../../core/host/host.js";
-import * as i18n42 from "./../../core/i18n/i18n.js";
-import * as Root6 from "./../../core/root/root.js";
-import * as SDK17 from "./../../core/sdk/sdk.js";
+import * as Host29 from "../../core/host/host.js";
+import * as i18n48 from "../../core/i18n/i18n.js";
+import * as Root6 from "../../core/root/root.js";
+import * as SDK21 from "../../core/sdk/sdk.js";
 
-// gen/front_end/models/ai_assistance/AiUtils.js
+// ../../front_end/models/ai_assistance/AiUtils.ts
 var AiUtils_exports = {};
 __export(AiUtils_exports, {
+  DisabledReason: () => DisabledReason,
+  FrontendAccessPrecondition: () => FrontendAccessPrecondition,
   aiAssistanceEnabledSettingDescriptor: () => aiAssistanceEnabledSettingDescriptor,
   aiAssistanceV2OptInChangeDialogSeenSettingDescriptor: () => aiAssistanceV2OptInChangeDialogSeenSettingDescriptor,
   consoleInsightsEnabledSettingDescriptor: () => consoleInsightsEnabledSettingDescriptor,
   getDisabledReasons: () => getDisabledReasons,
   getIconName: () => getIconName,
+  isContextSelectionEnabled: () => isContextSelectionEnabled,
   isGeminiBranding: () => isGeminiBranding,
   isSameOrigin: () => isSameOrigin,
   runOneShotPrompt: () => runOneShotPrompt
 });
-import * as Common from "./../../core/common/common.js";
-import * as Host from "./../../core/host/host.js";
-import * as i18n from "./../../core/i18n/i18n.js";
-import * as Root from "./../../core/root/root.js";
+import * as Common from "../../core/common/common.js";
+import * as Host from "../../core/host/host.js";
+import * as i18n from "../../core/i18n/i18n.js";
+import * as Root from "../../core/root/root.js";
 
-// gen/front_end/models/ai_assistance/debug.js
+// ../../front_end/models/ai_assistance/debug.ts
 var debug_exports = {};
 __export(debug_exports, {
   debugLog: () => debugLog,
@@ -68,7 +71,14 @@ function setAiAssistanceStructuredLogEnabled(enabled) {
 }
 globalThis.setAiAssistanceStructuredLogEnabled = setAiAssistanceStructuredLogEnabled;
 
-// gen/front_end/models/ai_assistance/AiUtils.js
+// ../../front_end/models/ai_assistance/AiUtils.ts
+var DisabledReason = /* @__PURE__ */ ((DisabledReason2) => {
+  DisabledReason2["GEO_RESTRICTED"] = "geo-restricted";
+  DisabledReason2["POLICY_RESTRICTED"] = "policy-restricted";
+  DisabledReason2["WRONG_LOCALE"] = "wrong-locale";
+  DisabledReason2["NOT_SUPPORTED"] = "not-supported";
+  return DisabledReason2;
+})(DisabledReason || {});
 function isLocaleRestricted() {
   try {
     const devtoolsLocale = i18n.DevToolsLocale.DevToolsLocale.instance();
@@ -88,45 +98,33 @@ function isConsoleInsightsFeatureEnabled(config) {
 }
 var consoleInsightsEnabledSettingDescriptor = {
   name: "console-insights-enabled",
-  type: "boolean",
+  type: Common.Settings.SettingType.BOOLEAN,
   defaultValue: false,
   isAvailable: (config) => {
     if (!isConsoleInsightsFeatureEnabled(config)) {
       return {
-        status: 2,
-        reason: [
-          "not-supported"
-          /* DisabledReason.NOT_SUPPORTED */
-        ]
+        status: Common.Settings.SettingAvailability.UNAVAILABLE,
+        reason: ["not-supported" /* NOT_SUPPORTED */]
       };
     }
     const reasons = [];
     if (isGeoRestricted(config)) {
-      reasons.push(
-        "geo-restricted"
-        /* DisabledReason.GEO_RESTRICTED */
-      );
+      reasons.push("geo-restricted" /* GEO_RESTRICTED */);
     }
     if (isPolicyRestricted(config)) {
-      reasons.push(
-        "policy-restricted"
-        /* DisabledReason.POLICY_RESTRICTED */
-      );
+      reasons.push("policy-restricted" /* POLICY_RESTRICTED */);
     }
     if (isLocaleRestricted()) {
-      reasons.push(
-        "wrong-locale"
-        /* DisabledReason.WRONG_LOCALE */
-      );
+      reasons.push("wrong-locale" /* WRONG_LOCALE */);
     }
     if (reasons.length > 0) {
       return {
-        status: 3,
+        status: Common.Settings.SettingAvailability.DISABLED,
         reason: reasons
       };
     }
     return {
-      status: 1
+      status: Common.Settings.SettingAvailability.AVAILABLE
     };
   }
 };
@@ -135,72 +133,62 @@ function isAiAssistanceFeatureAvailable(config) {
 }
 var aiAssistanceEnabledSettingDescriptor = {
   name: "ai-assistance-enabled",
-  type: "boolean",
+  type: Common.Settings.SettingType.BOOLEAN,
   defaultValue: false,
   isAvailable: (config) => {
     if (!isAiAssistanceFeatureAvailable(config)) {
       return {
-        status: 2,
-        reason: [
-          "not-supported"
-          /* DisabledReason.NOT_SUPPORTED */
-        ]
+        status: Common.Settings.SettingAvailability.UNAVAILABLE,
+        reason: ["not-supported" /* NOT_SUPPORTED */]
       };
     }
     const reasons = [];
     if (isGeoRestricted(config)) {
-      reasons.push(
-        "geo-restricted"
-        /* DisabledReason.GEO_RESTRICTED */
-      );
+      reasons.push("geo-restricted" /* GEO_RESTRICTED */);
     }
     if (isPolicyRestricted(config)) {
-      reasons.push(
-        "policy-restricted"
-        /* DisabledReason.POLICY_RESTRICTED */
-      );
+      reasons.push("policy-restricted" /* POLICY_RESTRICTED */);
     }
     if (isLocaleRestricted()) {
-      reasons.push(
-        "wrong-locale"
-        /* DisabledReason.WRONG_LOCALE */
-      );
+      reasons.push("wrong-locale" /* WRONG_LOCALE */);
     }
     if (reasons.length > 0) {
       return {
-        status: 3,
+        status: Common.Settings.SettingAvailability.DISABLED,
         reason: reasons
       };
     }
     return {
-      status: 1
+      status: Common.Settings.SettingAvailability.AVAILABLE
     };
   }
 };
 var aiAssistanceV2OptInChangeDialogSeenSettingDescriptor = {
   name: "ai-assistance-v2-opt-in-change-dialog-seen",
-  type: "boolean",
+  type: Common.Settings.SettingType.BOOLEAN,
   defaultValue: false
 };
 function isGeminiBranding() {
   return !!Root.Runtime.hostConfig.devToolsGeminiRebranding?.enabled;
 }
+function isContextSelectionEnabled() {
+  return Boolean(Root.Runtime.hostConfig.devToolsAiAssistanceContextSelectionAgent?.enabled) || Boolean(Root.Runtime.hostConfig.devToolsAiV2Architecture?.enabled);
+}
+var FrontendAccessPrecondition = /* @__PURE__ */ ((FrontendAccessPrecondition2) => {
+  FrontendAccessPrecondition2["IS_OFF_THE_RECORD"] = "is-off-the-record";
+  FrontendAccessPrecondition2["AGE_RESTRICTED"] = "age-restricted";
+  return FrontendAccessPrecondition2;
+})(FrontendAccessPrecondition || {});
 function getDisabledReasons(aidaAvailability) {
   const reasons = [];
   if (Root.Runtime.hostConfig.isOffTheRecord) {
-    reasons.push(
-      "is-off-the-record"
-      /* FrontendAccessPrecondition.IS_OFF_THE_RECORD */
-    );
+    reasons.push("is-off-the-record" /* IS_OFF_THE_RECORD */);
   }
-  if (aidaAvailability !== "available") {
+  if (aidaAvailability !== Host.AidaClient.AidaAccessPreconditions.AVAILABLE) {
     reasons.push(aidaAvailability);
   }
-  if ((aidaAvailability === "available" || aidaAvailability === "no-internet") && Root.Runtime.hostConfig?.aidaAvailability?.blockedByAge === true) {
-    reasons.push(
-      "age-restricted"
-      /* FrontendAccessPrecondition.AGE_RESTRICTED */
-    );
+  if ((aidaAvailability === Host.AidaClient.AidaAccessPreconditions.AVAILABLE || aidaAvailability === Host.AidaClient.AidaAccessPreconditions.NO_INTERNET) && Root.Runtime.hostConfig?.aidaAvailability?.blockedByAge === true) {
+    reasons.push("age-restricted" /* AGE_RESTRICTED */);
   }
   return reasons;
 }
@@ -215,7 +203,17 @@ function isSameOrigin(url1, url2) {
   const origin2 = Common.ParsedURL.ParsedURL.extractOrigin(url2);
   return origin1 !== "" && origin1 === origin2;
 }
-async function runOneShotPrompt({ aidaClient, preamble: preamble10, query, clientFeature, temperature, modelId, userTier, serverSideLoggingEnabled, signal }) {
+async function runOneShotPrompt({
+  aidaClient,
+  preamble: preamble10,
+  query,
+  clientFeature,
+  temperature,
+  modelId,
+  userTier,
+  serverSideLoggingEnabled,
+  signal
+}) {
   const chromeVersion = Root.Runtime.getChromeVersion();
   if (!chromeVersion) {
     throw new Error("Cannot determine Chrome version");
@@ -258,14 +256,14 @@ async function runOneShotPrompt({ aidaClient, preamble: preamble10, query, clien
   return textResponse;
 }
 
-// gen/front_end/models/ai_assistance/ChangeManager.js
+// ../../front_end/models/ai_assistance/ChangeManager.ts
 var ChangeManager_exports = {};
 __export(ChangeManager_exports, {
   ChangeManager: () => ChangeManager
 });
-import * as Common2 from "./../../core/common/common.js";
-import * as Platform from "./../../core/platform/platform.js";
-import * as SDK from "./../../core/sdk/sdk.js";
+import * as Common2 from "../../core/common/common.js";
+import * as Platform from "../../core/platform/platform.js";
+import * as SDK from "../../core/sdk/sdk.js";
 function formatStyles(styles, indent = 2) {
   const lines = Object.entries(styles).map(([key, value]) => `${" ".repeat(indent)}${key}: ${value};`);
   return lines.join("\n");
@@ -278,10 +276,20 @@ var ChangeManager = class {
   // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
   constructor(targetManager = SDK.TargetManager.TargetManager.instance()) {
     this.#targetManager = targetManager;
-    this.#targetManager.addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.clear, this);
+    this.#targetManager.addModelListener(
+      SDK.ResourceTreeModel.ResourceTreeModel,
+      SDK.ResourceTreeModel.Events.PrimaryPageChanged,
+      this.clear,
+      this
+    );
   }
   dispose() {
-    this.#targetManager.removeModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.clear, this);
+    this.#targetManager.removeModelListener(
+      SDK.ResourceTreeModel.ResourceTreeModel,
+      SDK.ResourceTreeModel.Events.PrimaryPageChanged,
+      this.clear,
+      this
+    );
     for (const cssModel of this.#cssModelToStylesheetId.keys()) {
       cssModel.removeEventListener(SDK.CSSModel.Events.ModelDisposed, this.#onCssModelDisposed, this);
     }
@@ -370,13 +378,13 @@ ${formatStyles(change.styles, 4)}
   }
 };
 
-// gen/front_end/models/ai_assistance/data_formatters/LighthouseFormatter.js
+// ../../front_end/models/ai_assistance/data_formatters/LighthouseFormatter.ts
 var LighthouseFormatter_exports = {};
 __export(LighthouseFormatter_exports, {
   LighthouseFormatter: () => LighthouseFormatter
 });
 
-// gen/front_end/models/ai_assistance/data_formatters/UnitFormatters.js
+// ../../front_end/models/ai_assistance/data_formatters/UnitFormatters.ts
 var UnitFormatters_exports = {};
 __export(UnitFormatters_exports, {
   bytes: () => bytes,
@@ -528,7 +536,7 @@ function formatAndEnsureSpace(formatter, value, separator = "\xA0") {
   return parts.slice(0, unitIndex).map((part) => part.value).join("") + separator + parts.slice(unitIndex).map((part) => part.value).join("");
 }
 
-// gen/front_end/models/ai_assistance/data_formatters/LighthouseFormatter.js
+// ../../front_end/models/ai_assistance/data_formatters/LighthouseFormatter.ts
 var LighthouseFormatter = class {
   /**
    * Returns an overall summary and high-level overview of the Lighthouse report.
@@ -723,23 +731,2823 @@ var LighthouseFormatter = class {
   }
 };
 
-// gen/front_end/models/ai_assistance/ExtensionScope.js
+// ../../front_end/models/ai_assistance/ExtensionScope.ts
 var ExtensionScope_exports = {};
 __export(ExtensionScope_exports, {
   ExtensionScope: () => ExtensionScope
 });
-import * as Common3 from "./../../core/common/common.js";
-import * as Platform3 from "./../../core/platform/platform.js";
-import * as SDK4 from "./../../core/sdk/sdk.js";
+import * as Common3 from "../../core/common/common.js";
+import * as Platform3 from "../../core/platform/platform.js";
+import * as SDK4 from "../../core/sdk/sdk.js";
 
-// gen/front_end/models/ai_assistance/agents/ExecuteJavascript.js
-import * as Host2 from "./../../core/host/host.js";
-import * as i18n2 from "./../../core/i18n/i18n.js";
-import * as Platform2 from "./../../core/platform/platform.js";
-import * as Root2 from "./../../core/root/root.js";
-import * as SDK3 from "./../../core/sdk/sdk.js";
+// ../../front_end/generated/protocol.ts
+var Accessibility;
+((Accessibility2) => {
+  let AXValueType;
+  ((AXValueType2) => {
+    AXValueType2["Boolean"] = "boolean";
+    AXValueType2["Tristate"] = "tristate";
+    AXValueType2["BooleanOrUndefined"] = "booleanOrUndefined";
+    AXValueType2["Idref"] = "idref";
+    AXValueType2["IdrefList"] = "idrefList";
+    AXValueType2["Integer"] = "integer";
+    AXValueType2["Node"] = "node";
+    AXValueType2["NodeList"] = "nodeList";
+    AXValueType2["Number"] = "number";
+    AXValueType2["String"] = "string";
+    AXValueType2["ComputedString"] = "computedString";
+    AXValueType2["Token"] = "token";
+    AXValueType2["TokenList"] = "tokenList";
+    AXValueType2["DomRelation"] = "domRelation";
+    AXValueType2["Role"] = "role";
+    AXValueType2["InternalRole"] = "internalRole";
+    AXValueType2["ValueUndefined"] = "valueUndefined";
+  })(AXValueType = Accessibility2.AXValueType || (Accessibility2.AXValueType = {}));
+  let AXValueSourceType;
+  ((AXValueSourceType2) => {
+    AXValueSourceType2["Attribute"] = "attribute";
+    AXValueSourceType2["Implicit"] = "implicit";
+    AXValueSourceType2["Style"] = "style";
+    AXValueSourceType2["Contents"] = "contents";
+    AXValueSourceType2["Placeholder"] = "placeholder";
+    AXValueSourceType2["RelatedElement"] = "relatedElement";
+  })(AXValueSourceType = Accessibility2.AXValueSourceType || (Accessibility2.AXValueSourceType = {}));
+  let AXValueNativeSourceType;
+  ((AXValueNativeSourceType2) => {
+    AXValueNativeSourceType2["Description"] = "description";
+    AXValueNativeSourceType2["Figcaption"] = "figcaption";
+    AXValueNativeSourceType2["Label"] = "label";
+    AXValueNativeSourceType2["Labelfor"] = "labelfor";
+    AXValueNativeSourceType2["Labelwrapped"] = "labelwrapped";
+    AXValueNativeSourceType2["Legend"] = "legend";
+    AXValueNativeSourceType2["Rubyannotation"] = "rubyannotation";
+    AXValueNativeSourceType2["Tablecaption"] = "tablecaption";
+    AXValueNativeSourceType2["Title"] = "title";
+    AXValueNativeSourceType2["Other"] = "other";
+  })(AXValueNativeSourceType = Accessibility2.AXValueNativeSourceType || (Accessibility2.AXValueNativeSourceType = {}));
+  let AXPropertyName;
+  ((AXPropertyName2) => {
+    AXPropertyName2["Actions"] = "actions";
+    AXPropertyName2["Busy"] = "busy";
+    AXPropertyName2["Disabled"] = "disabled";
+    AXPropertyName2["Editable"] = "editable";
+    AXPropertyName2["Focusable"] = "focusable";
+    AXPropertyName2["Focused"] = "focused";
+    AXPropertyName2["Hidden"] = "hidden";
+    AXPropertyName2["HiddenRoot"] = "hiddenRoot";
+    AXPropertyName2["Invalid"] = "invalid";
+    AXPropertyName2["Keyshortcuts"] = "keyshortcuts";
+    AXPropertyName2["Settable"] = "settable";
+    AXPropertyName2["Roledescription"] = "roledescription";
+    AXPropertyName2["Live"] = "live";
+    AXPropertyName2["Atomic"] = "atomic";
+    AXPropertyName2["Relevant"] = "relevant";
+    AXPropertyName2["Root"] = "root";
+    AXPropertyName2["Autocomplete"] = "autocomplete";
+    AXPropertyName2["HasPopup"] = "hasPopup";
+    AXPropertyName2["Level"] = "level";
+    AXPropertyName2["Multiselectable"] = "multiselectable";
+    AXPropertyName2["Orientation"] = "orientation";
+    AXPropertyName2["Multiline"] = "multiline";
+    AXPropertyName2["Readonly"] = "readonly";
+    AXPropertyName2["Required"] = "required";
+    AXPropertyName2["Valuemin"] = "valuemin";
+    AXPropertyName2["Valuemax"] = "valuemax";
+    AXPropertyName2["Valuetext"] = "valuetext";
+    AXPropertyName2["Checked"] = "checked";
+    AXPropertyName2["Expanded"] = "expanded";
+    AXPropertyName2["Modal"] = "modal";
+    AXPropertyName2["Pressed"] = "pressed";
+    AXPropertyName2["Selected"] = "selected";
+    AXPropertyName2["Activedescendant"] = "activedescendant";
+    AXPropertyName2["Controls"] = "controls";
+    AXPropertyName2["Describedby"] = "describedby";
+    AXPropertyName2["Details"] = "details";
+    AXPropertyName2["Errormessage"] = "errormessage";
+    AXPropertyName2["Flowto"] = "flowto";
+    AXPropertyName2["Labelledby"] = "labelledby";
+    AXPropertyName2["Owns"] = "owns";
+    AXPropertyName2["Url"] = "url";
+    AXPropertyName2["ActiveFullscreenElement"] = "activeFullscreenElement";
+    AXPropertyName2["ActiveModalDialog"] = "activeModalDialog";
+    AXPropertyName2["ActiveAriaModalDialog"] = "activeAriaModalDialog";
+    AXPropertyName2["AriaHiddenElement"] = "ariaHiddenElement";
+    AXPropertyName2["AriaHiddenSubtree"] = "ariaHiddenSubtree";
+    AXPropertyName2["EmptyAlt"] = "emptyAlt";
+    AXPropertyName2["EmptyText"] = "emptyText";
+    AXPropertyName2["InertElement"] = "inertElement";
+    AXPropertyName2["InertSubtree"] = "inertSubtree";
+    AXPropertyName2["LabelContainer"] = "labelContainer";
+    AXPropertyName2["LabelFor"] = "labelFor";
+    AXPropertyName2["NotRendered"] = "notRendered";
+    AXPropertyName2["NotVisible"] = "notVisible";
+    AXPropertyName2["PresentationalRole"] = "presentationalRole";
+    AXPropertyName2["ProbablyPresentational"] = "probablyPresentational";
+    AXPropertyName2["InactiveCarouselTabContent"] = "inactiveCarouselTabContent";
+    AXPropertyName2["Uninteresting"] = "uninteresting";
+  })(AXPropertyName = Accessibility2.AXPropertyName || (Accessibility2.AXPropertyName = {}));
+})(Accessibility || (Accessibility = {}));
+var Animation;
+((Animation2) => {
+  let AnimationType;
+  ((AnimationType2) => {
+    AnimationType2["CSSTransition"] = "CSSTransition";
+    AnimationType2["CSSAnimation"] = "CSSAnimation";
+    AnimationType2["WebAnimation"] = "WebAnimation";
+  })(AnimationType = Animation2.AnimationType || (Animation2.AnimationType = {}));
+})(Animation || (Animation = {}));
+var Audits;
+((Audits2) => {
+  let CookieExclusionReason;
+  ((CookieExclusionReason2) => {
+    CookieExclusionReason2["ExcludeSameSiteUnspecifiedTreatedAsLax"] = "ExcludeSameSiteUnspecifiedTreatedAsLax";
+    CookieExclusionReason2["ExcludeSameSiteNoneInsecure"] = "ExcludeSameSiteNoneInsecure";
+    CookieExclusionReason2["ExcludeSameSiteLax"] = "ExcludeSameSiteLax";
+    CookieExclusionReason2["ExcludeSameSiteStrict"] = "ExcludeSameSiteStrict";
+    CookieExclusionReason2["ExcludeDomainNonASCII"] = "ExcludeDomainNonASCII";
+    CookieExclusionReason2["ExcludeThirdPartyCookieBlockedInFirstPartySet"] = "ExcludeThirdPartyCookieBlockedInFirstPartySet";
+    CookieExclusionReason2["ExcludeThirdPartyPhaseout"] = "ExcludeThirdPartyPhaseout";
+    CookieExclusionReason2["ExcludePortMismatch"] = "ExcludePortMismatch";
+    CookieExclusionReason2["ExcludeSchemeMismatch"] = "ExcludeSchemeMismatch";
+  })(CookieExclusionReason = Audits2.CookieExclusionReason || (Audits2.CookieExclusionReason = {}));
+  let CookieWarningReason;
+  ((CookieWarningReason2) => {
+    CookieWarningReason2["WarnSameSiteUnspecifiedCrossSiteContext"] = "WarnSameSiteUnspecifiedCrossSiteContext";
+    CookieWarningReason2["WarnSameSiteNoneInsecure"] = "WarnSameSiteNoneInsecure";
+    CookieWarningReason2["WarnSameSiteUnspecifiedLaxAllowUnsafe"] = "WarnSameSiteUnspecifiedLaxAllowUnsafe";
+    CookieWarningReason2["WarnSameSiteStrictLaxDowngradeStrict"] = "WarnSameSiteStrictLaxDowngradeStrict";
+    CookieWarningReason2["WarnSameSiteStrictCrossDowngradeStrict"] = "WarnSameSiteStrictCrossDowngradeStrict";
+    CookieWarningReason2["WarnSameSiteStrictCrossDowngradeLax"] = "WarnSameSiteStrictCrossDowngradeLax";
+    CookieWarningReason2["WarnSameSiteLaxCrossDowngradeStrict"] = "WarnSameSiteLaxCrossDowngradeStrict";
+    CookieWarningReason2["WarnSameSiteLaxCrossDowngradeLax"] = "WarnSameSiteLaxCrossDowngradeLax";
+    CookieWarningReason2["WarnAttributeValueExceedsMaxSize"] = "WarnAttributeValueExceedsMaxSize";
+    CookieWarningReason2["WarnDomainNonASCII"] = "WarnDomainNonASCII";
+    CookieWarningReason2["WarnThirdPartyPhaseout"] = "WarnThirdPartyPhaseout";
+    CookieWarningReason2["WarnCrossSiteRedirectDowngradeChangesInclusion"] = "WarnCrossSiteRedirectDowngradeChangesInclusion";
+    CookieWarningReason2["WarnDeprecationTrialMetadata"] = "WarnDeprecationTrialMetadata";
+    CookieWarningReason2["WarnThirdPartyCookieHeuristic"] = "WarnThirdPartyCookieHeuristic";
+  })(CookieWarningReason = Audits2.CookieWarningReason || (Audits2.CookieWarningReason = {}));
+  let CookieOperation;
+  ((CookieOperation2) => {
+    CookieOperation2["SetCookie"] = "SetCookie";
+    CookieOperation2["ReadCookie"] = "ReadCookie";
+  })(CookieOperation = Audits2.CookieOperation || (Audits2.CookieOperation = {}));
+  let InsightType;
+  ((InsightType2) => {
+    InsightType2["GitHubResource"] = "GitHubResource";
+    InsightType2["GracePeriod"] = "GracePeriod";
+    InsightType2["Heuristics"] = "Heuristics";
+  })(InsightType = Audits2.InsightType || (Audits2.InsightType = {}));
+  let PerformanceIssueType;
+  ((PerformanceIssueType2) => {
+    PerformanceIssueType2["DocumentCookie"] = "DocumentCookie";
+  })(PerformanceIssueType = Audits2.PerformanceIssueType || (Audits2.PerformanceIssueType = {}));
+  let MixedContentResolutionStatus;
+  ((MixedContentResolutionStatus2) => {
+    MixedContentResolutionStatus2["MixedContentBlocked"] = "MixedContentBlocked";
+    MixedContentResolutionStatus2["MixedContentAutomaticallyUpgraded"] = "MixedContentAutomaticallyUpgraded";
+    MixedContentResolutionStatus2["MixedContentWarning"] = "MixedContentWarning";
+  })(MixedContentResolutionStatus = Audits2.MixedContentResolutionStatus || (Audits2.MixedContentResolutionStatus = {}));
+  let MixedContentResourceType;
+  ((MixedContentResourceType2) => {
+    MixedContentResourceType2["Audio"] = "Audio";
+    MixedContentResourceType2["Beacon"] = "Beacon";
+    MixedContentResourceType2["CSPReport"] = "CSPReport";
+    MixedContentResourceType2["Download"] = "Download";
+    MixedContentResourceType2["EventSource"] = "EventSource";
+    MixedContentResourceType2["Favicon"] = "Favicon";
+    MixedContentResourceType2["Font"] = "Font";
+    MixedContentResourceType2["Form"] = "Form";
+    MixedContentResourceType2["Frame"] = "Frame";
+    MixedContentResourceType2["Image"] = "Image";
+    MixedContentResourceType2["Import"] = "Import";
+    MixedContentResourceType2["JSON"] = "JSON";
+    MixedContentResourceType2["Manifest"] = "Manifest";
+    MixedContentResourceType2["Ping"] = "Ping";
+    MixedContentResourceType2["PluginData"] = "PluginData";
+    MixedContentResourceType2["PluginResource"] = "PluginResource";
+    MixedContentResourceType2["Prefetch"] = "Prefetch";
+    MixedContentResourceType2["Resource"] = "Resource";
+    MixedContentResourceType2["Script"] = "Script";
+    MixedContentResourceType2["ServiceWorker"] = "ServiceWorker";
+    MixedContentResourceType2["SharedWorker"] = "SharedWorker";
+    MixedContentResourceType2["SpeculationRules"] = "SpeculationRules";
+    MixedContentResourceType2["Stylesheet"] = "Stylesheet";
+    MixedContentResourceType2["Track"] = "Track";
+    MixedContentResourceType2["Video"] = "Video";
+    MixedContentResourceType2["Worker"] = "Worker";
+    MixedContentResourceType2["XMLHttpRequest"] = "XMLHttpRequest";
+    MixedContentResourceType2["XSLT"] = "XSLT";
+  })(MixedContentResourceType = Audits2.MixedContentResourceType || (Audits2.MixedContentResourceType = {}));
+  let BlockedByResponseReason;
+  ((BlockedByResponseReason2) => {
+    BlockedByResponseReason2["CoepFrameResourceNeedsCoepHeader"] = "CoepFrameResourceNeedsCoepHeader";
+    BlockedByResponseReason2["CoopSandboxedIFrameCannotNavigateToCoopPage"] = "CoopSandboxedIFrameCannotNavigateToCoopPage";
+    BlockedByResponseReason2["CorpNotSameOrigin"] = "CorpNotSameOrigin";
+    BlockedByResponseReason2["CorpNotSameOriginAfterDefaultedToSameOriginByCoep"] = "CorpNotSameOriginAfterDefaultedToSameOriginByCoep";
+    BlockedByResponseReason2["CorpNotSameOriginAfterDefaultedToSameOriginByDip"] = "CorpNotSameOriginAfterDefaultedToSameOriginByDip";
+    BlockedByResponseReason2["CorpNotSameOriginAfterDefaultedToSameOriginByCoepAndDip"] = "CorpNotSameOriginAfterDefaultedToSameOriginByCoepAndDip";
+    BlockedByResponseReason2["CorpNotSameSite"] = "CorpNotSameSite";
+    BlockedByResponseReason2["SRIMessageSignatureMismatch"] = "SRIMessageSignatureMismatch";
+  })(BlockedByResponseReason = Audits2.BlockedByResponseReason || (Audits2.BlockedByResponseReason = {}));
+  let HeavyAdResolutionStatus;
+  ((HeavyAdResolutionStatus2) => {
+    HeavyAdResolutionStatus2["HeavyAdBlocked"] = "HeavyAdBlocked";
+    HeavyAdResolutionStatus2["HeavyAdWarning"] = "HeavyAdWarning";
+  })(HeavyAdResolutionStatus = Audits2.HeavyAdResolutionStatus || (Audits2.HeavyAdResolutionStatus = {}));
+  let HeavyAdReason;
+  ((HeavyAdReason2) => {
+    HeavyAdReason2["NetworkTotalLimit"] = "NetworkTotalLimit";
+    HeavyAdReason2["CpuTotalLimit"] = "CpuTotalLimit";
+    HeavyAdReason2["CpuPeakLimit"] = "CpuPeakLimit";
+  })(HeavyAdReason = Audits2.HeavyAdReason || (Audits2.HeavyAdReason = {}));
+  let ContentSecurityPolicyViolationType;
+  ((ContentSecurityPolicyViolationType2) => {
+    ContentSecurityPolicyViolationType2["KInlineViolation"] = "kInlineViolation";
+    ContentSecurityPolicyViolationType2["KEvalViolation"] = "kEvalViolation";
+    ContentSecurityPolicyViolationType2["KURLViolation"] = "kURLViolation";
+    ContentSecurityPolicyViolationType2["KSRIViolation"] = "kSRIViolation";
+    ContentSecurityPolicyViolationType2["KTrustedTypesSinkViolation"] = "kTrustedTypesSinkViolation";
+    ContentSecurityPolicyViolationType2["KTrustedTypesPolicyViolation"] = "kTrustedTypesPolicyViolation";
+    ContentSecurityPolicyViolationType2["KWasmEvalViolation"] = "kWasmEvalViolation";
+  })(ContentSecurityPolicyViolationType = Audits2.ContentSecurityPolicyViolationType || (Audits2.ContentSecurityPolicyViolationType = {}));
+  let SharedArrayBufferIssueType;
+  ((SharedArrayBufferIssueType2) => {
+    SharedArrayBufferIssueType2["TransferIssue"] = "TransferIssue";
+    SharedArrayBufferIssueType2["CreationIssue"] = "CreationIssue";
+  })(SharedArrayBufferIssueType = Audits2.SharedArrayBufferIssueType || (Audits2.SharedArrayBufferIssueType = {}));
+  let SharedDictionaryError;
+  ((SharedDictionaryError2) => {
+    SharedDictionaryError2["UseErrorCrossOriginNoCorsRequest"] = "UseErrorCrossOriginNoCorsRequest";
+    SharedDictionaryError2["UseErrorDictionaryLoadFailure"] = "UseErrorDictionaryLoadFailure";
+    SharedDictionaryError2["UseErrorMatchingDictionaryNotUsed"] = "UseErrorMatchingDictionaryNotUsed";
+    SharedDictionaryError2["UseErrorUnexpectedContentDictionaryHeader"] = "UseErrorUnexpectedContentDictionaryHeader";
+    SharedDictionaryError2["WriteErrorCossOriginNoCorsRequest"] = "WriteErrorCossOriginNoCorsRequest";
+    SharedDictionaryError2["WriteErrorDisallowedBySettings"] = "WriteErrorDisallowedBySettings";
+    SharedDictionaryError2["WriteErrorExpiredResponse"] = "WriteErrorExpiredResponse";
+    SharedDictionaryError2["WriteErrorFeatureDisabled"] = "WriteErrorFeatureDisabled";
+    SharedDictionaryError2["WriteErrorInsufficientResources"] = "WriteErrorInsufficientResources";
+    SharedDictionaryError2["WriteErrorInvalidMatchField"] = "WriteErrorInvalidMatchField";
+    SharedDictionaryError2["WriteErrorInvalidStructuredHeader"] = "WriteErrorInvalidStructuredHeader";
+    SharedDictionaryError2["WriteErrorInvalidTTLField"] = "WriteErrorInvalidTTLField";
+    SharedDictionaryError2["WriteErrorNavigationRequest"] = "WriteErrorNavigationRequest";
+    SharedDictionaryError2["WriteErrorNoMatchField"] = "WriteErrorNoMatchField";
+    SharedDictionaryError2["WriteErrorNonIntegerTTLField"] = "WriteErrorNonIntegerTTLField";
+    SharedDictionaryError2["WriteErrorNonListMatchDestField"] = "WriteErrorNonListMatchDestField";
+    SharedDictionaryError2["WriteErrorNonSecureContext"] = "WriteErrorNonSecureContext";
+    SharedDictionaryError2["WriteErrorNonStringIdField"] = "WriteErrorNonStringIdField";
+    SharedDictionaryError2["WriteErrorNonStringInMatchDestList"] = "WriteErrorNonStringInMatchDestList";
+    SharedDictionaryError2["WriteErrorInvalidMatchDestList"] = "WriteErrorInvalidMatchDestList";
+    SharedDictionaryError2["WriteErrorNonStringMatchField"] = "WriteErrorNonStringMatchField";
+    SharedDictionaryError2["WriteErrorNonTokenTypeField"] = "WriteErrorNonTokenTypeField";
+    SharedDictionaryError2["WriteErrorRequestAborted"] = "WriteErrorRequestAborted";
+    SharedDictionaryError2["WriteErrorShuttingDown"] = "WriteErrorShuttingDown";
+    SharedDictionaryError2["WriteErrorTooLongIdField"] = "WriteErrorTooLongIdField";
+    SharedDictionaryError2["WriteErrorUnsupportedType"] = "WriteErrorUnsupportedType";
+  })(SharedDictionaryError = Audits2.SharedDictionaryError || (Audits2.SharedDictionaryError = {}));
+  let SRIMessageSignatureError;
+  ((SRIMessageSignatureError2) => {
+    SRIMessageSignatureError2["MissingSignatureHeader"] = "MissingSignatureHeader";
+    SRIMessageSignatureError2["MissingSignatureInputHeader"] = "MissingSignatureInputHeader";
+    SRIMessageSignatureError2["InvalidSignatureHeader"] = "InvalidSignatureHeader";
+    SRIMessageSignatureError2["InvalidSignatureInputHeader"] = "InvalidSignatureInputHeader";
+    SRIMessageSignatureError2["SignatureHeaderValueIsNotByteSequence"] = "SignatureHeaderValueIsNotByteSequence";
+    SRIMessageSignatureError2["SignatureHeaderValueIsParameterized"] = "SignatureHeaderValueIsParameterized";
+    SRIMessageSignatureError2["SignatureHeaderValueIsIncorrectLength"] = "SignatureHeaderValueIsIncorrectLength";
+    SRIMessageSignatureError2["SignatureInputHeaderMissingLabel"] = "SignatureInputHeaderMissingLabel";
+    SRIMessageSignatureError2["SignatureInputHeaderValueNotInnerList"] = "SignatureInputHeaderValueNotInnerList";
+    SRIMessageSignatureError2["SignatureInputHeaderValueMissingComponents"] = "SignatureInputHeaderValueMissingComponents";
+    SRIMessageSignatureError2["SignatureInputHeaderInvalidComponentType"] = "SignatureInputHeaderInvalidComponentType";
+    SRIMessageSignatureError2["SignatureInputHeaderInvalidComponentName"] = "SignatureInputHeaderInvalidComponentName";
+    SRIMessageSignatureError2["SignatureInputHeaderInvalidHeaderComponentParameter"] = "SignatureInputHeaderInvalidHeaderComponentParameter";
+    SRIMessageSignatureError2["SignatureInputHeaderInvalidDerivedComponentParameter"] = "SignatureInputHeaderInvalidDerivedComponentParameter";
+    SRIMessageSignatureError2["SignatureInputHeaderKeyIdLength"] = "SignatureInputHeaderKeyIdLength";
+    SRIMessageSignatureError2["SignatureInputHeaderInvalidParameter"] = "SignatureInputHeaderInvalidParameter";
+    SRIMessageSignatureError2["SignatureInputHeaderMissingRequiredParameters"] = "SignatureInputHeaderMissingRequiredParameters";
+    SRIMessageSignatureError2["ValidationFailedSignatureExpired"] = "ValidationFailedSignatureExpired";
+    SRIMessageSignatureError2["ValidationFailedInvalidLength"] = "ValidationFailedInvalidLength";
+    SRIMessageSignatureError2["ValidationFailedSignatureMismatch"] = "ValidationFailedSignatureMismatch";
+    SRIMessageSignatureError2["ValidationFailedIntegrityMismatch"] = "ValidationFailedIntegrityMismatch";
+    SRIMessageSignatureError2["SignatureBaseUnknownDerivedComponent"] = "SignatureBaseUnknownDerivedComponent";
+    SRIMessageSignatureError2["SignatureBaseMissingHeader"] = "SignatureBaseMissingHeader";
+    SRIMessageSignatureError2["SignatureBaseInvalidUnencodedDigest"] = "SignatureBaseInvalidUnencodedDigest";
+    SRIMessageSignatureError2["SignatureBaseUnsupportedComponent"] = "SignatureBaseUnsupportedComponent";
+  })(SRIMessageSignatureError = Audits2.SRIMessageSignatureError || (Audits2.SRIMessageSignatureError = {}));
+  let UnencodedDigestError;
+  ((UnencodedDigestError2) => {
+    UnencodedDigestError2["MalformedDictionary"] = "MalformedDictionary";
+    UnencodedDigestError2["UnknownAlgorithm"] = "UnknownAlgorithm";
+    UnencodedDigestError2["IncorrectDigestType"] = "IncorrectDigestType";
+    UnencodedDigestError2["IncorrectDigestLength"] = "IncorrectDigestLength";
+  })(UnencodedDigestError = Audits2.UnencodedDigestError || (Audits2.UnencodedDigestError = {}));
+  let ConnectionAllowlistError;
+  ((ConnectionAllowlistError2) => {
+    ConnectionAllowlistError2["InvalidHeader"] = "InvalidHeader";
+    ConnectionAllowlistError2["MoreThanOneList"] = "MoreThanOneList";
+    ConnectionAllowlistError2["ItemNotInnerList"] = "ItemNotInnerList";
+    ConnectionAllowlistError2["InvalidAllowlistItemType"] = "InvalidAllowlistItemType";
+    ConnectionAllowlistError2["ReportingEndpointNotToken"] = "ReportingEndpointNotToken";
+    ConnectionAllowlistError2["InvalidUrlPattern"] = "InvalidUrlPattern";
+    ConnectionAllowlistError2["IFrameAttributeLoosensEmbeddingRequirement"] = "IFrameAttributeLoosensEmbeddingRequirement";
+    ConnectionAllowlistError2["InvalidAllowConnectionAllowlistFrom"] = "InvalidAllowConnectionAllowlistFrom";
+    ConnectionAllowlistError2["EmbeddingRequirementNotSatisfied"] = "EmbeddingRequirementNotSatisfied";
+  })(ConnectionAllowlistError = Audits2.ConnectionAllowlistError || (Audits2.ConnectionAllowlistError = {}));
+  let GenericIssueErrorType;
+  ((GenericIssueErrorType2) => {
+    GenericIssueErrorType2["FormLabelForNameError"] = "FormLabelForNameError";
+    GenericIssueErrorType2["FormDuplicateIdForInputError"] = "FormDuplicateIdForInputError";
+    GenericIssueErrorType2["FormInputWithNoLabelError"] = "FormInputWithNoLabelError";
+    GenericIssueErrorType2["FormAutocompleteAttributeEmptyError"] = "FormAutocompleteAttributeEmptyError";
+    GenericIssueErrorType2["FormEmptyIdAndNameAttributesForInputError"] = "FormEmptyIdAndNameAttributesForInputError";
+    GenericIssueErrorType2["FormAriaLabelledByToNonExistingIdError"] = "FormAriaLabelledByToNonExistingIdError";
+    GenericIssueErrorType2["FormInputAssignedAutocompleteValueToIdOrNameAttributeError"] = "FormInputAssignedAutocompleteValueToIdOrNameAttributeError";
+    GenericIssueErrorType2["FormLabelHasNeitherForNorNestedInputError"] = "FormLabelHasNeitherForNorNestedInputError";
+    GenericIssueErrorType2["FormLabelForMatchesNonExistingIdError"] = "FormLabelForMatchesNonExistingIdError";
+    GenericIssueErrorType2["FormInputHasWrongButWellIntendedAutocompleteValueError"] = "FormInputHasWrongButWellIntendedAutocompleteValueError";
+    GenericIssueErrorType2["ResponseWasBlockedByORB"] = "ResponseWasBlockedByORB";
+    GenericIssueErrorType2["NavigationEntryMarkedSkippable"] = "NavigationEntryMarkedSkippable";
+    GenericIssueErrorType2["BackUINavigationWouldSkipAd"] = "BackUINavigationWouldSkipAd";
+    GenericIssueErrorType2["AutofillAndManualTextPolicyControlledFeaturesInfo"] = "AutofillAndManualTextPolicyControlledFeaturesInfo";
+    GenericIssueErrorType2["AutofillPolicyControlledFeatureInfo"] = "AutofillPolicyControlledFeatureInfo";
+    GenericIssueErrorType2["ManualTextPolicyControlledFeatureInfo"] = "ManualTextPolicyControlledFeatureInfo";
+    GenericIssueErrorType2["FormModelContextParameterMissingTitleAndDescription"] = "FormModelContextParameterMissingTitleAndDescription";
+    GenericIssueErrorType2["FormModelContextMissingToolName"] = "FormModelContextMissingToolName";
+    GenericIssueErrorType2["FormModelContextMissingToolDescription"] = "FormModelContextMissingToolDescription";
+    GenericIssueErrorType2["FormModelContextRequiredParameterMissingName"] = "FormModelContextRequiredParameterMissingName";
+    GenericIssueErrorType2["FormModelContextParameterMissingName"] = "FormModelContextParameterMissingName";
+  })(GenericIssueErrorType = Audits2.GenericIssueErrorType || (Audits2.GenericIssueErrorType = {}));
+  let ClientHintIssueReason;
+  ((ClientHintIssueReason2) => {
+    ClientHintIssueReason2["MetaTagAllowListInvalidOrigin"] = "MetaTagAllowListInvalidOrigin";
+    ClientHintIssueReason2["MetaTagModifiedHTML"] = "MetaTagModifiedHTML";
+  })(ClientHintIssueReason = Audits2.ClientHintIssueReason || (Audits2.ClientHintIssueReason = {}));
+  let FederatedAuthRequestIssueReason;
+  ((FederatedAuthRequestIssueReason2) => {
+    FederatedAuthRequestIssueReason2["ShouldEmbargo"] = "ShouldEmbargo";
+    FederatedAuthRequestIssueReason2["TooManyRequests"] = "TooManyRequests";
+    FederatedAuthRequestIssueReason2["WellKnownHttpNotFound"] = "WellKnownHttpNotFound";
+    FederatedAuthRequestIssueReason2["WellKnownNoResponse"] = "WellKnownNoResponse";
+    FederatedAuthRequestIssueReason2["WellKnownBlockedByConnectionAllowlist"] = "WellKnownBlockedByConnectionAllowlist";
+    FederatedAuthRequestIssueReason2["WellKnownInvalidResponse"] = "WellKnownInvalidResponse";
+    FederatedAuthRequestIssueReason2["WellKnownListEmpty"] = "WellKnownListEmpty";
+    FederatedAuthRequestIssueReason2["WellKnownInvalidContentType"] = "WellKnownInvalidContentType";
+    FederatedAuthRequestIssueReason2["ConfigNotInWellKnown"] = "ConfigNotInWellKnown";
+    FederatedAuthRequestIssueReason2["WellKnownTooBig"] = "WellKnownTooBig";
+    FederatedAuthRequestIssueReason2["ConfigHttpNotFound"] = "ConfigHttpNotFound";
+    FederatedAuthRequestIssueReason2["ConfigNoResponse"] = "ConfigNoResponse";
+    FederatedAuthRequestIssueReason2["ConfigBlockedByConnectionAllowlist"] = "ConfigBlockedByConnectionAllowlist";
+    FederatedAuthRequestIssueReason2["ConfigInvalidResponse"] = "ConfigInvalidResponse";
+    FederatedAuthRequestIssueReason2["ConfigInvalidContentType"] = "ConfigInvalidContentType";
+    FederatedAuthRequestIssueReason2["IdpNotPotentiallyTrustworthy"] = "IdpNotPotentiallyTrustworthy";
+    FederatedAuthRequestIssueReason2["DisabledInSettings"] = "DisabledInSettings";
+    FederatedAuthRequestIssueReason2["DisabledInFlags"] = "DisabledInFlags";
+    FederatedAuthRequestIssueReason2["ErrorFetchingSignin"] = "ErrorFetchingSignin";
+    FederatedAuthRequestIssueReason2["InvalidSigninResponse"] = "InvalidSigninResponse";
+    FederatedAuthRequestIssueReason2["AccountsHttpNotFound"] = "AccountsHttpNotFound";
+    FederatedAuthRequestIssueReason2["AccountsNoResponse"] = "AccountsNoResponse";
+    FederatedAuthRequestIssueReason2["AccountsBlockedByConnectionAllowlist"] = "AccountsBlockedByConnectionAllowlist";
+    FederatedAuthRequestIssueReason2["AccountsInvalidResponse"] = "AccountsInvalidResponse";
+    FederatedAuthRequestIssueReason2["AccountsListEmpty"] = "AccountsListEmpty";
+    FederatedAuthRequestIssueReason2["AccountsInvalidContentType"] = "AccountsInvalidContentType";
+    FederatedAuthRequestIssueReason2["IdTokenHttpNotFound"] = "IdTokenHttpNotFound";
+    FederatedAuthRequestIssueReason2["IdTokenNoResponse"] = "IdTokenNoResponse";
+    FederatedAuthRequestIssueReason2["IdTokenBlockedByConnectionAllowlist"] = "IdTokenBlockedByConnectionAllowlist";
+    FederatedAuthRequestIssueReason2["IdTokenInvalidResponse"] = "IdTokenInvalidResponse";
+    FederatedAuthRequestIssueReason2["IdTokenIdpErrorResponse"] = "IdTokenIdpErrorResponse";
+    FederatedAuthRequestIssueReason2["IdTokenCrossSiteIdpErrorResponse"] = "IdTokenCrossSiteIdpErrorResponse";
+    FederatedAuthRequestIssueReason2["IdTokenInvalidRequest"] = "IdTokenInvalidRequest";
+    FederatedAuthRequestIssueReason2["IdTokenInvalidContentType"] = "IdTokenInvalidContentType";
+    FederatedAuthRequestIssueReason2["ErrorIdToken"] = "ErrorIdToken";
+    FederatedAuthRequestIssueReason2["Canceled"] = "Canceled";
+    FederatedAuthRequestIssueReason2["RpPageNotVisible"] = "RpPageNotVisible";
+    FederatedAuthRequestIssueReason2["SilentMediationFailure"] = "SilentMediationFailure";
+    FederatedAuthRequestIssueReason2["NotSignedInWithIdp"] = "NotSignedInWithIdp";
+    FederatedAuthRequestIssueReason2["MissingTransientUserActivation"] = "MissingTransientUserActivation";
+    FederatedAuthRequestIssueReason2["ReplacedByActiveMode"] = "ReplacedByActiveMode";
+    FederatedAuthRequestIssueReason2["RelyingPartyOriginIsOpaque"] = "RelyingPartyOriginIsOpaque";
+    FederatedAuthRequestIssueReason2["TypeNotMatching"] = "TypeNotMatching";
+    FederatedAuthRequestIssueReason2["UiDismissedNoEmbargo"] = "UiDismissedNoEmbargo";
+    FederatedAuthRequestIssueReason2["CorsError"] = "CorsError";
+    FederatedAuthRequestIssueReason2["SuppressedBySegmentationPlatform"] = "SuppressedBySegmentationPlatform";
+  })(FederatedAuthRequestIssueReason = Audits2.FederatedAuthRequestIssueReason || (Audits2.FederatedAuthRequestIssueReason = {}));
+  let FederatedAuthUserInfoRequestIssueReason;
+  ((FederatedAuthUserInfoRequestIssueReason2) => {
+    FederatedAuthUserInfoRequestIssueReason2["NotSameOrigin"] = "NotSameOrigin";
+    FederatedAuthUserInfoRequestIssueReason2["NotIframe"] = "NotIframe";
+    FederatedAuthUserInfoRequestIssueReason2["NotPotentiallyTrustworthy"] = "NotPotentiallyTrustworthy";
+    FederatedAuthUserInfoRequestIssueReason2["NoAPIPermission"] = "NoApiPermission";
+    FederatedAuthUserInfoRequestIssueReason2["NotSignedInWithIdp"] = "NotSignedInWithIdp";
+    FederatedAuthUserInfoRequestIssueReason2["NoAccountSharingPermission"] = "NoAccountSharingPermission";
+    FederatedAuthUserInfoRequestIssueReason2["InvalidConfigOrWellKnown"] = "InvalidConfigOrWellKnown";
+    FederatedAuthUserInfoRequestIssueReason2["InvalidAccountsResponse"] = "InvalidAccountsResponse";
+    FederatedAuthUserInfoRequestIssueReason2["NoReturningUserFromFetchedAccounts"] = "NoReturningUserFromFetchedAccounts";
+  })(FederatedAuthUserInfoRequestIssueReason = Audits2.FederatedAuthUserInfoRequestIssueReason || (Audits2.FederatedAuthUserInfoRequestIssueReason = {}));
+  let EmailVerificationRequestIssueReason;
+  ((EmailVerificationRequestIssueReason2) => {
+    EmailVerificationRequestIssueReason2["InvalidEmail"] = "InvalidEmail";
+    EmailVerificationRequestIssueReason2["DnsFetchFailed"] = "DnsFetchFailed";
+    EmailVerificationRequestIssueReason2["DnsInvalidRecord"] = "DnsInvalidRecord";
+    EmailVerificationRequestIssueReason2["WellKnownHttpNotFound"] = "WellKnownHttpNotFound";
+    EmailVerificationRequestIssueReason2["WellKnownNoResponse"] = "WellKnownNoResponse";
+    EmailVerificationRequestIssueReason2["WellKnownInvalidResponse"] = "WellKnownInvalidResponse";
+    EmailVerificationRequestIssueReason2["WellKnownListEmpty"] = "WellKnownListEmpty";
+    EmailVerificationRequestIssueReason2["WellKnownInvalidContentType"] = "WellKnownInvalidContentType";
+    EmailVerificationRequestIssueReason2["WellKnownMissingIssuanceEndpoint"] = "WellKnownMissingIssuanceEndpoint";
+    EmailVerificationRequestIssueReason2["WellKnownIssuanceEndpointCrossOrigin"] = "WellKnownIssuanceEndpointCrossOrigin";
+    EmailVerificationRequestIssueReason2["WellKnownUnsupportedSigningAlgorithm"] = "WellKnownUnsupportedSigningAlgorithm";
+    EmailVerificationRequestIssueReason2["TokenHttpNotFound"] = "TokenHttpNotFound";
+    EmailVerificationRequestIssueReason2["TokenNoResponse"] = "TokenNoResponse";
+    EmailVerificationRequestIssueReason2["TokenInvalidResponse"] = "TokenInvalidResponse";
+    EmailVerificationRequestIssueReason2["TokenInvalidContentType"] = "TokenInvalidContentType";
+    EmailVerificationRequestIssueReason2["TokenMalformedSdJwt"] = "TokenMalformedSdJwt";
+    EmailVerificationRequestIssueReason2["TokenInvalidSdJwt"] = "TokenInvalidSdJwt";
+    EmailVerificationRequestIssueReason2["KeyBindingSigningFailed"] = "KeyBindingSigningFailed";
+    EmailVerificationRequestIssueReason2["RpOriginIsOpaque"] = "RpOriginIsOpaque";
+    EmailVerificationRequestIssueReason2["WellKnownMissingAccountsEndpoint"] = "WellKnownMissingAccountsEndpoint";
+    EmailVerificationRequestIssueReason2["UserLoggedOut"] = "UserLoggedOut";
+    EmailVerificationRequestIssueReason2["WellKnownAccountsEndpointCrossOrigin"] = "WellKnownAccountsEndpointCrossOrigin";
+    EmailVerificationRequestIssueReason2["AccountsHttpNotFound"] = "AccountsHttpNotFound";
+    EmailVerificationRequestIssueReason2["AccountsNoResponse"] = "AccountsNoResponse";
+    EmailVerificationRequestIssueReason2["AccountsInvalidResponse"] = "AccountsInvalidResponse";
+    EmailVerificationRequestIssueReason2["AccountsInvalidContentType"] = "AccountsInvalidContentType";
+    EmailVerificationRequestIssueReason2["AccountsEmptyList"] = "AccountsEmptyList";
+    EmailVerificationRequestIssueReason2["EmailVerificationWellKnownHttpNotFound"] = "EmailVerificationWellKnownHttpNotFound";
+    EmailVerificationRequestIssueReason2["EmailVerificationWellKnownNoResponse"] = "EmailVerificationWellKnownNoResponse";
+    EmailVerificationRequestIssueReason2["EmailVerificationWellKnownInvalidResponse"] = "EmailVerificationWellKnownInvalidResponse";
+    EmailVerificationRequestIssueReason2["EmailVerificationWellKnownInvalidContentType"] = "EmailVerificationWellKnownInvalidContentType";
+    EmailVerificationRequestIssueReason2["JwksHttpNotFound"] = "JwksHttpNotFound";
+    EmailVerificationRequestIssueReason2["JwksInvalidResponse"] = "JwksInvalidResponse";
+    EmailVerificationRequestIssueReason2["TokenVerificationSdJwtUnsupportedHeaderAlg"] = "TokenVerificationSdJwtUnsupportedHeaderAlg";
+    EmailVerificationRequestIssueReason2["TokenVerificationSdJwtInvalidTyp"] = "TokenVerificationSdJwtInvalidTyp";
+    EmailVerificationRequestIssueReason2["TokenVerificationSdJwtMissingIss"] = "TokenVerificationSdJwtMissingIss";
+    EmailVerificationRequestIssueReason2["TokenVerificationSdJwtMissingIat"] = "TokenVerificationSdJwtMissingIat";
+    EmailVerificationRequestIssueReason2["TokenVerificationSdJwtMissingCnf"] = "TokenVerificationSdJwtMissingCnf";
+    EmailVerificationRequestIssueReason2["TokenVerificationSdJwtMissingEmail"] = "TokenVerificationSdJwtMissingEmail";
+    EmailVerificationRequestIssueReason2["TokenVerificationSdJwtInvalidIssuedAt"] = "TokenVerificationSdJwtInvalidIssuedAt";
+    EmailVerificationRequestIssueReason2["TokenVerificationSdJwtInvalidIssuer"] = "TokenVerificationSdJwtInvalidIssuer";
+    EmailVerificationRequestIssueReason2["TokenVerificationSdJwtJwksMissingKeys"] = "TokenVerificationSdJwtJwksMissingKeys";
+    EmailVerificationRequestIssueReason2["TokenVerificationSdJwtSignatureFailed"] = "TokenVerificationSdJwtSignatureFailed";
+    EmailVerificationRequestIssueReason2["TokenVerificationSdJwtInvalidEmailVerified"] = "TokenVerificationSdJwtInvalidEmailVerified";
+    EmailVerificationRequestIssueReason2["TokenVerificationSdJwtInvalidEmail"] = "TokenVerificationSdJwtInvalidEmail";
+    EmailVerificationRequestIssueReason2["TokenVerificationSdJwtInvalidHolderKey"] = "TokenVerificationSdJwtInvalidHolderKey";
+    EmailVerificationRequestIssueReason2["TokenVerificationKbInvalidTyp"] = "TokenVerificationKbInvalidTyp";
+    EmailVerificationRequestIssueReason2["TokenVerificationKbMissingAud"] = "TokenVerificationKbMissingAud";
+    EmailVerificationRequestIssueReason2["TokenVerificationKbMissingNonce"] = "TokenVerificationKbMissingNonce";
+    EmailVerificationRequestIssueReason2["TokenVerificationKbMissingIat"] = "TokenVerificationKbMissingIat";
+    EmailVerificationRequestIssueReason2["TokenVerificationKbMissingSdHash"] = "TokenVerificationKbMissingSdHash";
+    EmailVerificationRequestIssueReason2["TokenVerificationKbInvalidIssuedAt"] = "TokenVerificationKbInvalidIssuedAt";
+    EmailVerificationRequestIssueReason2["TokenVerificationKbInvalidAudience"] = "TokenVerificationKbInvalidAudience";
+    EmailVerificationRequestIssueReason2["TokenVerificationKbInvalidNonce"] = "TokenVerificationKbInvalidNonce";
+    EmailVerificationRequestIssueReason2["TokenVerificationKbInvalidSdHash"] = "TokenVerificationKbInvalidSdHash";
+    EmailVerificationRequestIssueReason2["TokenVerificationKbMissingCnf"] = "TokenVerificationKbMissingCnf";
+    EmailVerificationRequestIssueReason2["TokenVerificationKbSignatureFailed"] = "TokenVerificationKbSignatureFailed";
+  })(EmailVerificationRequestIssueReason = Audits2.EmailVerificationRequestIssueReason || (Audits2.EmailVerificationRequestIssueReason = {}));
+  let PartitioningBlobURLInfo;
+  ((PartitioningBlobURLInfo2) => {
+    PartitioningBlobURLInfo2["BlockedCrossPartitionFetching"] = "BlockedCrossPartitionFetching";
+    PartitioningBlobURLInfo2["EnforceNoopenerForNavigation"] = "EnforceNoopenerForNavigation";
+  })(PartitioningBlobURLInfo = Audits2.PartitioningBlobURLInfo || (Audits2.PartitioningBlobURLInfo = {}));
+  let ElementAccessibilityIssueReason;
+  ((ElementAccessibilityIssueReason2) => {
+    ElementAccessibilityIssueReason2["DisallowedSelectChild"] = "DisallowedSelectChild";
+    ElementAccessibilityIssueReason2["DisallowedOptGroupChild"] = "DisallowedOptGroupChild";
+    ElementAccessibilityIssueReason2["NonPhrasingContentOptionChild"] = "NonPhrasingContentOptionChild";
+    ElementAccessibilityIssueReason2["InteractiveContentOptionChild"] = "InteractiveContentOptionChild";
+    ElementAccessibilityIssueReason2["InteractiveContentLegendChild"] = "InteractiveContentLegendChild";
+    ElementAccessibilityIssueReason2["InteractiveContentSummaryDescendant"] = "InteractiveContentSummaryDescendant";
+  })(ElementAccessibilityIssueReason = Audits2.ElementAccessibilityIssueReason || (Audits2.ElementAccessibilityIssueReason = {}));
+  let StyleSheetLoadingIssueReason;
+  ((StyleSheetLoadingIssueReason2) => {
+    StyleSheetLoadingIssueReason2["LateImportRule"] = "LateImportRule";
+    StyleSheetLoadingIssueReason2["RequestFailed"] = "RequestFailed";
+  })(StyleSheetLoadingIssueReason = Audits2.StyleSheetLoadingIssueReason || (Audits2.StyleSheetLoadingIssueReason = {}));
+  let PropertyRuleIssueReason;
+  ((PropertyRuleIssueReason2) => {
+    PropertyRuleIssueReason2["InvalidSyntax"] = "InvalidSyntax";
+    PropertyRuleIssueReason2["InvalidInitialValue"] = "InvalidInitialValue";
+    PropertyRuleIssueReason2["InvalidInherits"] = "InvalidInherits";
+    PropertyRuleIssueReason2["InvalidName"] = "InvalidName";
+  })(PropertyRuleIssueReason = Audits2.PropertyRuleIssueReason || (Audits2.PropertyRuleIssueReason = {}));
+  let UserReidentificationIssueType;
+  ((UserReidentificationIssueType2) => {
+    UserReidentificationIssueType2["BlockedFrameNavigation"] = "BlockedFrameNavigation";
+    UserReidentificationIssueType2["BlockedSubresource"] = "BlockedSubresource";
+    UserReidentificationIssueType2["NoisedCanvasReadback"] = "NoisedCanvasReadback";
+  })(UserReidentificationIssueType = Audits2.UserReidentificationIssueType || (Audits2.UserReidentificationIssueType = {}));
+  let PermissionElementIssueType;
+  ((PermissionElementIssueType2) => {
+    PermissionElementIssueType2["InvalidType"] = "InvalidType";
+    PermissionElementIssueType2["FencedFrameDisallowed"] = "FencedFrameDisallowed";
+    PermissionElementIssueType2["CspFrameAncestorsMissing"] = "CspFrameAncestorsMissing";
+    PermissionElementIssueType2["PermissionsPolicyBlocked"] = "PermissionsPolicyBlocked";
+    PermissionElementIssueType2["PaddingRightUnsupported"] = "PaddingRightUnsupported";
+    PermissionElementIssueType2["PaddingBottomUnsupported"] = "PaddingBottomUnsupported";
+    PermissionElementIssueType2["InsetBoxShadowUnsupported"] = "InsetBoxShadowUnsupported";
+    PermissionElementIssueType2["RequestInProgress"] = "RequestInProgress";
+    PermissionElementIssueType2["UntrustedEvent"] = "UntrustedEvent";
+    PermissionElementIssueType2["RegistrationFailed"] = "RegistrationFailed";
+    PermissionElementIssueType2["TypeNotSupported"] = "TypeNotSupported";
+    PermissionElementIssueType2["InvalidTypeActivation"] = "InvalidTypeActivation";
+    PermissionElementIssueType2["SecurityChecksFailed"] = "SecurityChecksFailed";
+    PermissionElementIssueType2["ActivationDisabled"] = "ActivationDisabled";
+    PermissionElementIssueType2["GeolocationDeprecated"] = "GeolocationDeprecated";
+    PermissionElementIssueType2["InvalidDisplayStyle"] = "InvalidDisplayStyle";
+    PermissionElementIssueType2["NonOpaqueColor"] = "NonOpaqueColor";
+    PermissionElementIssueType2["LowContrast"] = "LowContrast";
+    PermissionElementIssueType2["FontSizeTooSmall"] = "FontSizeTooSmall";
+    PermissionElementIssueType2["FontSizeTooLarge"] = "FontSizeTooLarge";
+    PermissionElementIssueType2["InvalidSizeValue"] = "InvalidSizeValue";
+    PermissionElementIssueType2["NonSecureContext"] = "NonSecureContext";
+    PermissionElementIssueType2["MissingTransientUserActivation"] = "MissingTransientUserActivation";
+  })(PermissionElementIssueType = Audits2.PermissionElementIssueType || (Audits2.PermissionElementIssueType = {}));
+  let InspectorIssueCode;
+  ((InspectorIssueCode2) => {
+    InspectorIssueCode2["CookieIssue"] = "CookieIssue";
+    InspectorIssueCode2["MixedContentIssue"] = "MixedContentIssue";
+    InspectorIssueCode2["BlockedByResponseIssue"] = "BlockedByResponseIssue";
+    InspectorIssueCode2["HeavyAdIssue"] = "HeavyAdIssue";
+    InspectorIssueCode2["ContentSecurityPolicyIssue"] = "ContentSecurityPolicyIssue";
+    InspectorIssueCode2["SharedArrayBufferIssue"] = "SharedArrayBufferIssue";
+    InspectorIssueCode2["CorsIssue"] = "CorsIssue";
+    InspectorIssueCode2["QuirksModeIssue"] = "QuirksModeIssue";
+    InspectorIssueCode2["PartitioningBlobURLIssue"] = "PartitioningBlobURLIssue";
+    InspectorIssueCode2["NavigatorUserAgentIssue"] = "NavigatorUserAgentIssue";
+    InspectorIssueCode2["GenericIssue"] = "GenericIssue";
+    InspectorIssueCode2["DeprecationIssue"] = "DeprecationIssue";
+    InspectorIssueCode2["ClientHintIssue"] = "ClientHintIssue";
+    InspectorIssueCode2["FederatedAuthRequestIssue"] = "FederatedAuthRequestIssue";
+    InspectorIssueCode2["BounceTrackingIssue"] = "BounceTrackingIssue";
+    InspectorIssueCode2["CookieDeprecationMetadataIssue"] = "CookieDeprecationMetadataIssue";
+    InspectorIssueCode2["StylesheetLoadingIssue"] = "StylesheetLoadingIssue";
+    InspectorIssueCode2["FederatedAuthUserInfoRequestIssue"] = "FederatedAuthUserInfoRequestIssue";
+    InspectorIssueCode2["PropertyRuleIssue"] = "PropertyRuleIssue";
+    InspectorIssueCode2["SharedDictionaryIssue"] = "SharedDictionaryIssue";
+    InspectorIssueCode2["ElementAccessibilityIssue"] = "ElementAccessibilityIssue";
+    InspectorIssueCode2["SRIMessageSignatureIssue"] = "SRIMessageSignatureIssue";
+    InspectorIssueCode2["UnencodedDigestIssue"] = "UnencodedDigestIssue";
+    InspectorIssueCode2["ConnectionAllowlistIssue"] = "ConnectionAllowlistIssue";
+    InspectorIssueCode2["UserReidentificationIssue"] = "UserReidentificationIssue";
+    InspectorIssueCode2["PermissionElementIssue"] = "PermissionElementIssue";
+    InspectorIssueCode2["PerformanceIssue"] = "PerformanceIssue";
+    InspectorIssueCode2["SelectivePermissionsInterventionIssue"] = "SelectivePermissionsInterventionIssue";
+    InspectorIssueCode2["EmailVerificationRequestIssue"] = "EmailVerificationRequestIssue";
+    InspectorIssueCode2["LazyLoadImageIssue"] = "LazyLoadImageIssue";
+  })(InspectorIssueCode = Audits2.InspectorIssueCode || (Audits2.InspectorIssueCode = {}));
+  let GetEncodedResponseRequestEncoding;
+  ((GetEncodedResponseRequestEncoding2) => {
+    GetEncodedResponseRequestEncoding2["Webp"] = "webp";
+    GetEncodedResponseRequestEncoding2["Jpeg"] = "jpeg";
+    GetEncodedResponseRequestEncoding2["Png"] = "png";
+  })(GetEncodedResponseRequestEncoding = Audits2.GetEncodedResponseRequestEncoding || (Audits2.GetEncodedResponseRequestEncoding = {}));
+})(Audits || (Audits = {}));
+var Autofill;
+((Autofill2) => {
+  let FillingStrategy;
+  ((FillingStrategy2) => {
+    FillingStrategy2["AutocompleteAttribute"] = "autocompleteAttribute";
+    FillingStrategy2["AutofillInferred"] = "autofillInferred";
+  })(FillingStrategy = Autofill2.FillingStrategy || (Autofill2.FillingStrategy = {}));
+})(Autofill || (Autofill = {}));
+var BackgroundService;
+((BackgroundService2) => {
+  let ServiceName;
+  ((ServiceName2) => {
+    ServiceName2["BackgroundFetch"] = "backgroundFetch";
+    ServiceName2["BackgroundSync"] = "backgroundSync";
+    ServiceName2["PushMessaging"] = "pushMessaging";
+    ServiceName2["Notifications"] = "notifications";
+    ServiceName2["PaymentHandler"] = "paymentHandler";
+    ServiceName2["PeriodicBackgroundSync"] = "periodicBackgroundSync";
+  })(ServiceName = BackgroundService2.ServiceName || (BackgroundService2.ServiceName = {}));
+})(BackgroundService || (BackgroundService = {}));
+var BluetoothEmulation;
+((BluetoothEmulation2) => {
+  let CentralState;
+  ((CentralState2) => {
+    CentralState2["Absent"] = "absent";
+    CentralState2["PoweredOff"] = "powered-off";
+    CentralState2["PoweredOn"] = "powered-on";
+  })(CentralState = BluetoothEmulation2.CentralState || (BluetoothEmulation2.CentralState = {}));
+  let GATTOperationType;
+  ((GATTOperationType2) => {
+    GATTOperationType2["Connection"] = "connection";
+    GATTOperationType2["Discovery"] = "discovery";
+  })(GATTOperationType = BluetoothEmulation2.GATTOperationType || (BluetoothEmulation2.GATTOperationType = {}));
+  let CharacteristicWriteType;
+  ((CharacteristicWriteType2) => {
+    CharacteristicWriteType2["WriteDefaultDeprecated"] = "write-default-deprecated";
+    CharacteristicWriteType2["WriteWithResponse"] = "write-with-response";
+    CharacteristicWriteType2["WriteWithoutResponse"] = "write-without-response";
+  })(CharacteristicWriteType = BluetoothEmulation2.CharacteristicWriteType || (BluetoothEmulation2.CharacteristicWriteType = {}));
+  let CharacteristicOperationType;
+  ((CharacteristicOperationType2) => {
+    CharacteristicOperationType2["Read"] = "read";
+    CharacteristicOperationType2["Write"] = "write";
+    CharacteristicOperationType2["SubscribeToNotifications"] = "subscribe-to-notifications";
+    CharacteristicOperationType2["UnsubscribeFromNotifications"] = "unsubscribe-from-notifications";
+  })(CharacteristicOperationType = BluetoothEmulation2.CharacteristicOperationType || (BluetoothEmulation2.CharacteristicOperationType = {}));
+  let DescriptorOperationType;
+  ((DescriptorOperationType2) => {
+    DescriptorOperationType2["Read"] = "read";
+    DescriptorOperationType2["Write"] = "write";
+  })(DescriptorOperationType = BluetoothEmulation2.DescriptorOperationType || (BluetoothEmulation2.DescriptorOperationType = {}));
+})(BluetoothEmulation || (BluetoothEmulation = {}));
+var Browser;
+((Browser2) => {
+  let WindowState;
+  ((WindowState2) => {
+    WindowState2["Normal"] = "normal";
+    WindowState2["Minimized"] = "minimized";
+    WindowState2["Maximized"] = "maximized";
+    WindowState2["Fullscreen"] = "fullscreen";
+  })(WindowState = Browser2.WindowState || (Browser2.WindowState = {}));
+  let PermissionType;
+  ((PermissionType2) => {
+    PermissionType2["Ar"] = "ar";
+    PermissionType2["AudioCapture"] = "audioCapture";
+    PermissionType2["AutomaticFullscreen"] = "automaticFullscreen";
+    PermissionType2["BackgroundFetch"] = "backgroundFetch";
+    PermissionType2["BackgroundSync"] = "backgroundSync";
+    PermissionType2["CameraPanTiltZoom"] = "cameraPanTiltZoom";
+    PermissionType2["CapturedSurfaceControl"] = "capturedSurfaceControl";
+    PermissionType2["ClipboardReadWrite"] = "clipboardReadWrite";
+    PermissionType2["ClipboardSanitizedWrite"] = "clipboardSanitizedWrite";
+    PermissionType2["DisplayCapture"] = "displayCapture";
+    PermissionType2["DurableStorage"] = "durableStorage";
+    PermissionType2["Geolocation"] = "geolocation";
+    PermissionType2["HandTracking"] = "handTracking";
+    PermissionType2["IdleDetection"] = "idleDetection";
+    PermissionType2["KeyboardLock"] = "keyboardLock";
+    PermissionType2["LocalFonts"] = "localFonts";
+    PermissionType2["LocalNetwork"] = "localNetwork";
+    PermissionType2["LocalNetworkAccess"] = "localNetworkAccess";
+    PermissionType2["LoopbackNetwork"] = "loopbackNetwork";
+    PermissionType2["Midi"] = "midi";
+    PermissionType2["MidiSysex"] = "midiSysex";
+    PermissionType2["Nfc"] = "nfc";
+    PermissionType2["Notifications"] = "notifications";
+    PermissionType2["PaymentHandler"] = "paymentHandler";
+    PermissionType2["PeriodicBackgroundSync"] = "periodicBackgroundSync";
+    PermissionType2["PointerLock"] = "pointerLock";
+    PermissionType2["ProtectedMediaIdentifier"] = "protectedMediaIdentifier";
+    PermissionType2["Sensors"] = "sensors";
+    PermissionType2["SmartCard"] = "smartCard";
+    PermissionType2["SpeakerSelection"] = "speakerSelection";
+    PermissionType2["StorageAccess"] = "storageAccess";
+    PermissionType2["TopLevelStorageAccess"] = "topLevelStorageAccess";
+    PermissionType2["VideoCapture"] = "videoCapture";
+    PermissionType2["Vr"] = "vr";
+    PermissionType2["WakeLockScreen"] = "wakeLockScreen";
+    PermissionType2["WakeLockSystem"] = "wakeLockSystem";
+    PermissionType2["WebAppInstallation"] = "webAppInstallation";
+    PermissionType2["WebPrinting"] = "webPrinting";
+    PermissionType2["WindowManagement"] = "windowManagement";
+  })(PermissionType = Browser2.PermissionType || (Browser2.PermissionType = {}));
+  let PermissionSetting;
+  ((PermissionSetting2) => {
+    PermissionSetting2["Granted"] = "granted";
+    PermissionSetting2["Denied"] = "denied";
+    PermissionSetting2["Prompt"] = "prompt";
+  })(PermissionSetting = Browser2.PermissionSetting || (Browser2.PermissionSetting = {}));
+  let BrowserCommandId;
+  ((BrowserCommandId2) => {
+    BrowserCommandId2["OpenTabSearch"] = "openTabSearch";
+    BrowserCommandId2["CloseTabSearch"] = "closeTabSearch";
+    BrowserCommandId2["OpenGlic"] = "openGlic";
+  })(BrowserCommandId = Browser2.BrowserCommandId || (Browser2.BrowserCommandId = {}));
+  let SetDownloadBehaviorRequestBehavior;
+  ((SetDownloadBehaviorRequestBehavior2) => {
+    SetDownloadBehaviorRequestBehavior2["Deny"] = "deny";
+    SetDownloadBehaviorRequestBehavior2["Allow"] = "allow";
+    SetDownloadBehaviorRequestBehavior2["AllowAndName"] = "allowAndName";
+    SetDownloadBehaviorRequestBehavior2["Default"] = "default";
+  })(SetDownloadBehaviorRequestBehavior = Browser2.SetDownloadBehaviorRequestBehavior || (Browser2.SetDownloadBehaviorRequestBehavior = {}));
+  let DownloadProgressEventState;
+  ((DownloadProgressEventState2) => {
+    DownloadProgressEventState2["InProgress"] = "inProgress";
+    DownloadProgressEventState2["Completed"] = "completed";
+    DownloadProgressEventState2["Canceled"] = "canceled";
+  })(DownloadProgressEventState = Browser2.DownloadProgressEventState || (Browser2.DownloadProgressEventState = {}));
+})(Browser || (Browser = {}));
+var CSS;
+((CSS2) => {
+  let StyleSheetOrigin;
+  ((StyleSheetOrigin2) => {
+    StyleSheetOrigin2["Injected"] = "injected";
+    StyleSheetOrigin2["UserAgent"] = "user-agent";
+    StyleSheetOrigin2["Inspector"] = "inspector";
+    StyleSheetOrigin2["Regular"] = "regular";
+  })(StyleSheetOrigin = CSS2.StyleSheetOrigin || (CSS2.StyleSheetOrigin = {}));
+  let CSSRuleType;
+  ((CSSRuleType2) => {
+    CSSRuleType2["MediaRule"] = "MediaRule";
+    CSSRuleType2["SupportsRule"] = "SupportsRule";
+    CSSRuleType2["ContainerRule"] = "ContainerRule";
+    CSSRuleType2["LayerRule"] = "LayerRule";
+    CSSRuleType2["ScopeRule"] = "ScopeRule";
+    CSSRuleType2["StyleRule"] = "StyleRule";
+    CSSRuleType2["StartingStyleRule"] = "StartingStyleRule";
+    CSSRuleType2["NavigationRule"] = "NavigationRule";
+  })(CSSRuleType = CSS2.CSSRuleType || (CSS2.CSSRuleType = {}));
+  let CSSMediaSource;
+  ((CSSMediaSource2) => {
+    CSSMediaSource2["MediaRule"] = "mediaRule";
+    CSSMediaSource2["ImportRule"] = "importRule";
+    CSSMediaSource2["LinkedSheet"] = "linkedSheet";
+    CSSMediaSource2["InlineSheet"] = "inlineSheet";
+  })(CSSMediaSource = CSS2.CSSMediaSource || (CSS2.CSSMediaSource = {}));
+  let CSSAtRuleType;
+  ((CSSAtRuleType2) => {
+    CSSAtRuleType2["FontFace"] = "font-face";
+    CSSAtRuleType2["FontFeatureValues"] = "font-feature-values";
+    CSSAtRuleType2["FontPaletteValues"] = "font-palette-values";
+    CSSAtRuleType2["CounterStyle"] = "counter-style";
+  })(CSSAtRuleType = CSS2.CSSAtRuleType || (CSS2.CSSAtRuleType = {}));
+  let CSSAtRuleSubsection;
+  ((CSSAtRuleSubsection2) => {
+    CSSAtRuleSubsection2["Swash"] = "swash";
+    CSSAtRuleSubsection2["Annotation"] = "annotation";
+    CSSAtRuleSubsection2["Ornaments"] = "ornaments";
+    CSSAtRuleSubsection2["Stylistic"] = "stylistic";
+    CSSAtRuleSubsection2["Styleset"] = "styleset";
+    CSSAtRuleSubsection2["CharacterVariant"] = "character-variant";
+  })(CSSAtRuleSubsection = CSS2.CSSAtRuleSubsection || (CSS2.CSSAtRuleSubsection = {}));
+})(CSS || (CSS = {}));
+var CacheStorage;
+((CacheStorage2) => {
+  let CachedResponseType;
+  ((CachedResponseType2) => {
+    CachedResponseType2["Basic"] = "basic";
+    CachedResponseType2["Cors"] = "cors";
+    CachedResponseType2["Default"] = "default";
+    CachedResponseType2["Error"] = "error";
+    CachedResponseType2["OpaqueResponse"] = "opaqueResponse";
+    CachedResponseType2["OpaqueRedirect"] = "opaqueRedirect";
+  })(CachedResponseType = CacheStorage2.CachedResponseType || (CacheStorage2.CachedResponseType = {}));
+})(CacheStorage || (CacheStorage = {}));
+var DOM;
+((DOM2) => {
+  let PseudoType;
+  ((PseudoType2) => {
+    PseudoType2["FirstLine"] = "first-line";
+    PseudoType2["FirstLetter"] = "first-letter";
+    PseudoType2["Checkmark"] = "checkmark";
+    PseudoType2["Before"] = "before";
+    PseudoType2["After"] = "after";
+    PseudoType2["ExpandIcon"] = "expand-icon";
+    PseudoType2["PickerIcon"] = "picker-icon";
+    PseudoType2["InterestButton"] = "interest-button";
+    PseudoType2["Marker"] = "marker";
+    PseudoType2["Backdrop"] = "backdrop";
+    PseudoType2["Column"] = "column";
+    PseudoType2["Selection"] = "selection";
+    PseudoType2["SearchText"] = "search-text";
+    PseudoType2["TargetText"] = "target-text";
+    PseudoType2["SpellingError"] = "spelling-error";
+    PseudoType2["GrammarError"] = "grammar-error";
+    PseudoType2["Highlight"] = "highlight";
+    PseudoType2["FirstLineInherited"] = "first-line-inherited";
+    PseudoType2["ScrollMarker"] = "scroll-marker";
+    PseudoType2["ScrollMarkerGroup"] = "scroll-marker-group";
+    PseudoType2["ScrollButton"] = "scroll-button";
+    PseudoType2["Scrollbar"] = "scrollbar";
+    PseudoType2["ScrollbarThumb"] = "scrollbar-thumb";
+    PseudoType2["ScrollbarButton"] = "scrollbar-button";
+    PseudoType2["ScrollbarTrack"] = "scrollbar-track";
+    PseudoType2["ScrollbarTrackPiece"] = "scrollbar-track-piece";
+    PseudoType2["ScrollbarCorner"] = "scrollbar-corner";
+    PseudoType2["Resizer"] = "resizer";
+    PseudoType2["InputListButton"] = "input-list-button";
+    PseudoType2["ViewTransition"] = "view-transition";
+    PseudoType2["ViewTransitionGroup"] = "view-transition-group";
+    PseudoType2["ViewTransitionImagePair"] = "view-transition-image-pair";
+    PseudoType2["ViewTransitionGroupChildren"] = "view-transition-group-children";
+    PseudoType2["ViewTransitionOld"] = "view-transition-old";
+    PseudoType2["ViewTransitionNew"] = "view-transition-new";
+    PseudoType2["Placeholder"] = "placeholder";
+    PseudoType2["FileSelectorButton"] = "file-selector-button";
+    PseudoType2["DetailsContent"] = "details-content";
+    PseudoType2["Picker"] = "picker";
+    PseudoType2["SelectListbox"] = "select-listbox";
+    PseudoType2["PermissionIcon"] = "permission-icon";
+    PseudoType2["OverscrollAreaParent"] = "overscroll-area-parent";
+    PseudoType2["OverscrollBackdrop"] = "overscroll-backdrop";
+    PseudoType2["Skeleton"] = "skeleton";
+  })(PseudoType = DOM2.PseudoType || (DOM2.PseudoType = {}));
+  let ShadowRootType;
+  ((ShadowRootType2) => {
+    ShadowRootType2["UserAgent"] = "user-agent";
+    ShadowRootType2["Open"] = "open";
+    ShadowRootType2["Closed"] = "closed";
+  })(ShadowRootType = DOM2.ShadowRootType || (DOM2.ShadowRootType = {}));
+  let CompatibilityMode;
+  ((CompatibilityMode2) => {
+    CompatibilityMode2["QuirksMode"] = "QuirksMode";
+    CompatibilityMode2["LimitedQuirksMode"] = "LimitedQuirksMode";
+    CompatibilityMode2["NoQuirksMode"] = "NoQuirksMode";
+  })(CompatibilityMode = DOM2.CompatibilityMode || (DOM2.CompatibilityMode = {}));
+  let PhysicalAxes;
+  ((PhysicalAxes2) => {
+    PhysicalAxes2["Horizontal"] = "Horizontal";
+    PhysicalAxes2["Vertical"] = "Vertical";
+    PhysicalAxes2["Both"] = "Both";
+  })(PhysicalAxes = DOM2.PhysicalAxes || (DOM2.PhysicalAxes = {}));
+  let LogicalAxes;
+  ((LogicalAxes2) => {
+    LogicalAxes2["Inline"] = "Inline";
+    LogicalAxes2["Block"] = "Block";
+    LogicalAxes2["Both"] = "Both";
+  })(LogicalAxes = DOM2.LogicalAxes || (DOM2.LogicalAxes = {}));
+  let ScrollOrientation;
+  ((ScrollOrientation2) => {
+    ScrollOrientation2["Horizontal"] = "horizontal";
+    ScrollOrientation2["Vertical"] = "vertical";
+  })(ScrollOrientation = DOM2.ScrollOrientation || (DOM2.ScrollOrientation = {}));
+  let EnableRequestIncludeWhitespace;
+  ((EnableRequestIncludeWhitespace2) => {
+    EnableRequestIncludeWhitespace2["None"] = "none";
+    EnableRequestIncludeWhitespace2["All"] = "all";
+  })(EnableRequestIncludeWhitespace = DOM2.EnableRequestIncludeWhitespace || (DOM2.EnableRequestIncludeWhitespace = {}));
+  let GetElementByRelationRequestRelation;
+  ((GetElementByRelationRequestRelation2) => {
+    GetElementByRelationRequestRelation2["PopoverTarget"] = "PopoverTarget";
+    GetElementByRelationRequestRelation2["InterestTarget"] = "InterestTarget";
+    GetElementByRelationRequestRelation2["CommandFor"] = "CommandFor";
+  })(GetElementByRelationRequestRelation = DOM2.GetElementByRelationRequestRelation || (DOM2.GetElementByRelationRequestRelation = {}));
+})(DOM || (DOM = {}));
+var DOMDebugger;
+((DOMDebugger2) => {
+  let DOMBreakpointType;
+  ((DOMBreakpointType2) => {
+    DOMBreakpointType2["SubtreeModified"] = "subtree-modified";
+    DOMBreakpointType2["AttributeModified"] = "attribute-modified";
+    DOMBreakpointType2["NodeRemoved"] = "node-removed";
+  })(DOMBreakpointType = DOMDebugger2.DOMBreakpointType || (DOMDebugger2.DOMBreakpointType = {}));
+  let CSPViolationType;
+  ((CSPViolationType2) => {
+    CSPViolationType2["TrustedtypeSinkViolation"] = "trustedtype-sink-violation";
+    CSPViolationType2["TrustedtypePolicyViolation"] = "trustedtype-policy-violation";
+  })(CSPViolationType = DOMDebugger2.CSPViolationType || (DOMDebugger2.CSPViolationType = {}));
+})(DOMDebugger || (DOMDebugger = {}));
+var DigitalCredentials;
+((DigitalCredentials2) => {
+  let VirtualWalletAction;
+  ((VirtualWalletAction2) => {
+    VirtualWalletAction2["Respond"] = "respond";
+    VirtualWalletAction2["Decline"] = "decline";
+    VirtualWalletAction2["Wait"] = "wait";
+    VirtualWalletAction2["Clear"] = "clear";
+  })(VirtualWalletAction = DigitalCredentials2.VirtualWalletAction || (DigitalCredentials2.VirtualWalletAction = {}));
+})(DigitalCredentials || (DigitalCredentials = {}));
+var Emulation;
+((Emulation2) => {
+  let ScreenOrientationType;
+  ((ScreenOrientationType2) => {
+    ScreenOrientationType2["PortraitPrimary"] = "portraitPrimary";
+    ScreenOrientationType2["PortraitSecondary"] = "portraitSecondary";
+    ScreenOrientationType2["LandscapePrimary"] = "landscapePrimary";
+    ScreenOrientationType2["LandscapeSecondary"] = "landscapeSecondary";
+  })(ScreenOrientationType = Emulation2.ScreenOrientationType || (Emulation2.ScreenOrientationType = {}));
+  let DisplayFeatureOrientation;
+  ((DisplayFeatureOrientation2) => {
+    DisplayFeatureOrientation2["Vertical"] = "vertical";
+    DisplayFeatureOrientation2["Horizontal"] = "horizontal";
+  })(DisplayFeatureOrientation = Emulation2.DisplayFeatureOrientation || (Emulation2.DisplayFeatureOrientation = {}));
+  let DevicePostureType;
+  ((DevicePostureType2) => {
+    DevicePostureType2["Continuous"] = "continuous";
+    DevicePostureType2["Folded"] = "folded";
+  })(DevicePostureType = Emulation2.DevicePostureType || (Emulation2.DevicePostureType = {}));
+  let VirtualTimePolicy;
+  ((VirtualTimePolicy2) => {
+    VirtualTimePolicy2["Advance"] = "advance";
+    VirtualTimePolicy2["Pause"] = "pause";
+    VirtualTimePolicy2["PauseIfNetworkFetchesPending"] = "pauseIfNetworkFetchesPending";
+  })(VirtualTimePolicy = Emulation2.VirtualTimePolicy || (Emulation2.VirtualTimePolicy = {}));
+  let SensorType;
+  ((SensorType2) => {
+    SensorType2["AbsoluteOrientation"] = "absolute-orientation";
+    SensorType2["Accelerometer"] = "accelerometer";
+    SensorType2["AmbientLight"] = "ambient-light";
+    SensorType2["Gravity"] = "gravity";
+    SensorType2["Gyroscope"] = "gyroscope";
+    SensorType2["LinearAcceleration"] = "linear-acceleration";
+    SensorType2["Magnetometer"] = "magnetometer";
+    SensorType2["RelativeOrientation"] = "relative-orientation";
+  })(SensorType = Emulation2.SensorType || (Emulation2.SensorType = {}));
+  let PressureSource;
+  ((PressureSource2) => {
+    PressureSource2["Cpu"] = "cpu";
+  })(PressureSource = Emulation2.PressureSource || (Emulation2.PressureSource = {}));
+  let PressureState;
+  ((PressureState2) => {
+    PressureState2["Nominal"] = "nominal";
+    PressureState2["Fair"] = "fair";
+    PressureState2["Serious"] = "serious";
+    PressureState2["Critical"] = "critical";
+  })(PressureState = Emulation2.PressureState || (Emulation2.PressureState = {}));
+  let DisabledImageType;
+  ((DisabledImageType2) => {
+    DisabledImageType2["Avif"] = "avif";
+    DisabledImageType2["Jxl"] = "jxl";
+    DisabledImageType2["Webp"] = "webp";
+  })(DisabledImageType = Emulation2.DisabledImageType || (Emulation2.DisabledImageType = {}));
+  let SetDeviceMetricsOverrideRequestScrollbarType;
+  ((SetDeviceMetricsOverrideRequestScrollbarType2) => {
+    SetDeviceMetricsOverrideRequestScrollbarType2["Overlay"] = "overlay";
+    SetDeviceMetricsOverrideRequestScrollbarType2["Default"] = "default";
+  })(SetDeviceMetricsOverrideRequestScrollbarType = Emulation2.SetDeviceMetricsOverrideRequestScrollbarType || (Emulation2.SetDeviceMetricsOverrideRequestScrollbarType = {}));
+  let SetEmitTouchEventsForMouseRequestConfiguration;
+  ((SetEmitTouchEventsForMouseRequestConfiguration2) => {
+    SetEmitTouchEventsForMouseRequestConfiguration2["Mobile"] = "mobile";
+    SetEmitTouchEventsForMouseRequestConfiguration2["Desktop"] = "desktop";
+  })(SetEmitTouchEventsForMouseRequestConfiguration = Emulation2.SetEmitTouchEventsForMouseRequestConfiguration || (Emulation2.SetEmitTouchEventsForMouseRequestConfiguration = {}));
+  let SetEmulatedVisionDeficiencyRequestType;
+  ((SetEmulatedVisionDeficiencyRequestType2) => {
+    SetEmulatedVisionDeficiencyRequestType2["None"] = "none";
+    SetEmulatedVisionDeficiencyRequestType2["BlurredVision"] = "blurredVision";
+    SetEmulatedVisionDeficiencyRequestType2["ReducedContrast"] = "reducedContrast";
+    SetEmulatedVisionDeficiencyRequestType2["Achromatopsia"] = "achromatopsia";
+    SetEmulatedVisionDeficiencyRequestType2["Deuteranopia"] = "deuteranopia";
+    SetEmulatedVisionDeficiencyRequestType2["Protanopia"] = "protanopia";
+    SetEmulatedVisionDeficiencyRequestType2["Tritanopia"] = "tritanopia";
+  })(SetEmulatedVisionDeficiencyRequestType = Emulation2.SetEmulatedVisionDeficiencyRequestType || (Emulation2.SetEmulatedVisionDeficiencyRequestType = {}));
+  let SetCPUPerformanceOverrideRequestPerformanceTier;
+  ((SetCPUPerformanceOverrideRequestPerformanceTier2) => {
+    SetCPUPerformanceOverrideRequestPerformanceTier2["Unknown"] = "unknown";
+    SetCPUPerformanceOverrideRequestPerformanceTier2["Low"] = "low";
+    SetCPUPerformanceOverrideRequestPerformanceTier2["Mid"] = "mid";
+    SetCPUPerformanceOverrideRequestPerformanceTier2["High"] = "high";
+    SetCPUPerformanceOverrideRequestPerformanceTier2["Ultra"] = "ultra";
+  })(SetCPUPerformanceOverrideRequestPerformanceTier = Emulation2.SetCPUPerformanceOverrideRequestPerformanceTier || (Emulation2.SetCPUPerformanceOverrideRequestPerformanceTier = {}));
+})(Emulation || (Emulation = {}));
+var Extensions;
+((Extensions2) => {
+  let StorageArea;
+  ((StorageArea2) => {
+    StorageArea2["Session"] = "session";
+    StorageArea2["Local"] = "local";
+    StorageArea2["Sync"] = "sync";
+    StorageArea2["Managed"] = "managed";
+  })(StorageArea = Extensions2.StorageArea || (Extensions2.StorageArea = {}));
+})(Extensions || (Extensions = {}));
+var FedCm;
+((FedCm2) => {
+  let LoginState;
+  ((LoginState2) => {
+    LoginState2["SignIn"] = "SignIn";
+    LoginState2["SignUp"] = "SignUp";
+  })(LoginState = FedCm2.LoginState || (FedCm2.LoginState = {}));
+  let DialogType;
+  ((DialogType2) => {
+    DialogType2["AccountChooser"] = "AccountChooser";
+    DialogType2["AutoReauthn"] = "AutoReauthn";
+    DialogType2["ConfirmIdpLogin"] = "ConfirmIdpLogin";
+    DialogType2["Error"] = "Error";
+  })(DialogType = FedCm2.DialogType || (FedCm2.DialogType = {}));
+  let DialogButton;
+  ((DialogButton2) => {
+    DialogButton2["ConfirmIdpLoginContinue"] = "ConfirmIdpLoginContinue";
+    DialogButton2["ErrorGotIt"] = "ErrorGotIt";
+    DialogButton2["ErrorMoreDetails"] = "ErrorMoreDetails";
+  })(DialogButton = FedCm2.DialogButton || (FedCm2.DialogButton = {}));
+  let AccountUrlType;
+  ((AccountUrlType2) => {
+    AccountUrlType2["TermsOfService"] = "TermsOfService";
+    AccountUrlType2["PrivacyPolicy"] = "PrivacyPolicy";
+  })(AccountUrlType = FedCm2.AccountUrlType || (FedCm2.AccountUrlType = {}));
+})(FedCm || (FedCm = {}));
+var Fetch;
+((Fetch2) => {
+  let RequestStage;
+  ((RequestStage2) => {
+    RequestStage2["Request"] = "Request";
+    RequestStage2["Response"] = "Response";
+  })(RequestStage = Fetch2.RequestStage || (Fetch2.RequestStage = {}));
+  let AuthChallengeSource;
+  ((AuthChallengeSource2) => {
+    AuthChallengeSource2["Server"] = "Server";
+    AuthChallengeSource2["Proxy"] = "Proxy";
+  })(AuthChallengeSource = Fetch2.AuthChallengeSource || (Fetch2.AuthChallengeSource = {}));
+  let AuthChallengeResponseResponse;
+  ((AuthChallengeResponseResponse2) => {
+    AuthChallengeResponseResponse2["Default"] = "Default";
+    AuthChallengeResponseResponse2["CancelAuth"] = "CancelAuth";
+    AuthChallengeResponseResponse2["ProvideCredentials"] = "ProvideCredentials";
+  })(AuthChallengeResponseResponse = Fetch2.AuthChallengeResponseResponse || (Fetch2.AuthChallengeResponseResponse = {}));
+})(Fetch || (Fetch = {}));
+var HeadlessExperimental;
+((HeadlessExperimental2) => {
+  let ScreenshotParamsFormat;
+  ((ScreenshotParamsFormat2) => {
+    ScreenshotParamsFormat2["Jpeg"] = "jpeg";
+    ScreenshotParamsFormat2["Png"] = "png";
+    ScreenshotParamsFormat2["Webp"] = "webp";
+  })(ScreenshotParamsFormat = HeadlessExperimental2.ScreenshotParamsFormat || (HeadlessExperimental2.ScreenshotParamsFormat = {}));
+})(HeadlessExperimental || (HeadlessExperimental = {}));
+var IndexedDB;
+((IndexedDB2) => {
+  let KeyType;
+  ((KeyType2) => {
+    KeyType2["Number"] = "number";
+    KeyType2["String"] = "string";
+    KeyType2["Date"] = "date";
+    KeyType2["Array"] = "array";
+  })(KeyType = IndexedDB2.KeyType || (IndexedDB2.KeyType = {}));
+  let KeyPathType;
+  ((KeyPathType2) => {
+    KeyPathType2["Null"] = "null";
+    KeyPathType2["String"] = "string";
+    KeyPathType2["Array"] = "array";
+  })(KeyPathType = IndexedDB2.KeyPathType || (IndexedDB2.KeyPathType = {}));
+})(IndexedDB || (IndexedDB = {}));
+var Input;
+((Input2) => {
+  let GestureSourceType;
+  ((GestureSourceType2) => {
+    GestureSourceType2["Default"] = "default";
+    GestureSourceType2["Touch"] = "touch";
+    GestureSourceType2["Mouse"] = "mouse";
+  })(GestureSourceType = Input2.GestureSourceType || (Input2.GestureSourceType = {}));
+  let MouseButton;
+  ((MouseButton2) => {
+    MouseButton2["None"] = "none";
+    MouseButton2["Left"] = "left";
+    MouseButton2["Middle"] = "middle";
+    MouseButton2["Right"] = "right";
+    MouseButton2["Back"] = "back";
+    MouseButton2["Forward"] = "forward";
+  })(MouseButton = Input2.MouseButton || (Input2.MouseButton = {}));
+  let DispatchDragEventRequestType;
+  ((DispatchDragEventRequestType2) => {
+    DispatchDragEventRequestType2["DragEnter"] = "dragEnter";
+    DispatchDragEventRequestType2["DragOver"] = "dragOver";
+    DispatchDragEventRequestType2["Drop"] = "drop";
+    DispatchDragEventRequestType2["DragCancel"] = "dragCancel";
+  })(DispatchDragEventRequestType = Input2.DispatchDragEventRequestType || (Input2.DispatchDragEventRequestType = {}));
+  let DispatchKeyEventRequestType;
+  ((DispatchKeyEventRequestType2) => {
+    DispatchKeyEventRequestType2["KeyDown"] = "keyDown";
+    DispatchKeyEventRequestType2["KeyUp"] = "keyUp";
+    DispatchKeyEventRequestType2["RawKeyDown"] = "rawKeyDown";
+    DispatchKeyEventRequestType2["Char"] = "char";
+  })(DispatchKeyEventRequestType = Input2.DispatchKeyEventRequestType || (Input2.DispatchKeyEventRequestType = {}));
+  let DispatchMouseEventRequestType;
+  ((DispatchMouseEventRequestType2) => {
+    DispatchMouseEventRequestType2["MousePressed"] = "mousePressed";
+    DispatchMouseEventRequestType2["MouseReleased"] = "mouseReleased";
+    DispatchMouseEventRequestType2["MouseMoved"] = "mouseMoved";
+    DispatchMouseEventRequestType2["MouseWheel"] = "mouseWheel";
+  })(DispatchMouseEventRequestType = Input2.DispatchMouseEventRequestType || (Input2.DispatchMouseEventRequestType = {}));
+  let DispatchMouseEventRequestPointerType;
+  ((DispatchMouseEventRequestPointerType2) => {
+    DispatchMouseEventRequestPointerType2["Mouse"] = "mouse";
+    DispatchMouseEventRequestPointerType2["Pen"] = "pen";
+  })(DispatchMouseEventRequestPointerType = Input2.DispatchMouseEventRequestPointerType || (Input2.DispatchMouseEventRequestPointerType = {}));
+  let DispatchTouchEventRequestType;
+  ((DispatchTouchEventRequestType2) => {
+    DispatchTouchEventRequestType2["TouchStart"] = "touchStart";
+    DispatchTouchEventRequestType2["TouchEnd"] = "touchEnd";
+    DispatchTouchEventRequestType2["TouchMove"] = "touchMove";
+    DispatchTouchEventRequestType2["TouchCancel"] = "touchCancel";
+  })(DispatchTouchEventRequestType = Input2.DispatchTouchEventRequestType || (Input2.DispatchTouchEventRequestType = {}));
+  let EmulateTouchFromMouseEventRequestType;
+  ((EmulateTouchFromMouseEventRequestType2) => {
+    EmulateTouchFromMouseEventRequestType2["MousePressed"] = "mousePressed";
+    EmulateTouchFromMouseEventRequestType2["MouseReleased"] = "mouseReleased";
+    EmulateTouchFromMouseEventRequestType2["MouseMoved"] = "mouseMoved";
+    EmulateTouchFromMouseEventRequestType2["MouseWheel"] = "mouseWheel";
+  })(EmulateTouchFromMouseEventRequestType = Input2.EmulateTouchFromMouseEventRequestType || (Input2.EmulateTouchFromMouseEventRequestType = {}));
+})(Input || (Input = {}));
+var LayerTree;
+((LayerTree2) => {
+  let ScrollRectType;
+  ((ScrollRectType2) => {
+    ScrollRectType2["RepaintsOnScroll"] = "RepaintsOnScroll";
+    ScrollRectType2["TouchEventHandler"] = "TouchEventHandler";
+    ScrollRectType2["WheelEventHandler"] = "WheelEventHandler";
+  })(ScrollRectType = LayerTree2.ScrollRectType || (LayerTree2.ScrollRectType = {}));
+})(LayerTree || (LayerTree = {}));
+var Log;
+((Log2) => {
+  let LogEntrySource;
+  ((LogEntrySource2) => {
+    LogEntrySource2["XML"] = "xml";
+    LogEntrySource2["Javascript"] = "javascript";
+    LogEntrySource2["Network"] = "network";
+    LogEntrySource2["Storage"] = "storage";
+    LogEntrySource2["Appcache"] = "appcache";
+    LogEntrySource2["Rendering"] = "rendering";
+    LogEntrySource2["Security"] = "security";
+    LogEntrySource2["Deprecation"] = "deprecation";
+    LogEntrySource2["Worker"] = "worker";
+    LogEntrySource2["Violation"] = "violation";
+    LogEntrySource2["Intervention"] = "intervention";
+    LogEntrySource2["Recommendation"] = "recommendation";
+    LogEntrySource2["Other"] = "other";
+  })(LogEntrySource = Log2.LogEntrySource || (Log2.LogEntrySource = {}));
+  let LogEntryLevel;
+  ((LogEntryLevel2) => {
+    LogEntryLevel2["Verbose"] = "verbose";
+    LogEntryLevel2["Info"] = "info";
+    LogEntryLevel2["Warning"] = "warning";
+    LogEntryLevel2["Error"] = "error";
+  })(LogEntryLevel = Log2.LogEntryLevel || (Log2.LogEntryLevel = {}));
+  let LogEntryCategory;
+  ((LogEntryCategory2) => {
+    LogEntryCategory2["Cors"] = "cors";
+  })(LogEntryCategory = Log2.LogEntryCategory || (Log2.LogEntryCategory = {}));
+  let ViolationSettingName;
+  ((ViolationSettingName2) => {
+    ViolationSettingName2["LongTask"] = "longTask";
+    ViolationSettingName2["LongLayout"] = "longLayout";
+    ViolationSettingName2["BlockedEvent"] = "blockedEvent";
+    ViolationSettingName2["BlockedParser"] = "blockedParser";
+    ViolationSettingName2["DiscouragedAPIUse"] = "discouragedAPIUse";
+    ViolationSettingName2["Handler"] = "handler";
+    ViolationSettingName2["RecurringHandler"] = "recurringHandler";
+  })(ViolationSettingName = Log2.ViolationSettingName || (Log2.ViolationSettingName = {}));
+})(Log || (Log = {}));
+var Media;
+((Media2) => {
+  let PlayerMessageLevel;
+  ((PlayerMessageLevel2) => {
+    PlayerMessageLevel2["Error"] = "error";
+    PlayerMessageLevel2["Warning"] = "warning";
+    PlayerMessageLevel2["Info"] = "info";
+    PlayerMessageLevel2["Debug"] = "debug";
+  })(PlayerMessageLevel = Media2.PlayerMessageLevel || (Media2.PlayerMessageLevel = {}));
+})(Media || (Media = {}));
+var Memory;
+((Memory2) => {
+  let PressureLevel;
+  ((PressureLevel2) => {
+    PressureLevel2["Moderate"] = "moderate";
+    PressureLevel2["Critical"] = "critical";
+  })(PressureLevel = Memory2.PressureLevel || (Memory2.PressureLevel = {}));
+})(Memory || (Memory = {}));
+var Network;
+((Network2) => {
+  let ResourceType;
+  ((ResourceType2) => {
+    ResourceType2["Document"] = "Document";
+    ResourceType2["Stylesheet"] = "Stylesheet";
+    ResourceType2["Image"] = "Image";
+    ResourceType2["Media"] = "Media";
+    ResourceType2["Font"] = "Font";
+    ResourceType2["Script"] = "Script";
+    ResourceType2["TextTrack"] = "TextTrack";
+    ResourceType2["XHR"] = "XHR";
+    ResourceType2["Fetch"] = "Fetch";
+    ResourceType2["Prefetch"] = "Prefetch";
+    ResourceType2["EventSource"] = "EventSource";
+    ResourceType2["WebSocket"] = "WebSocket";
+    ResourceType2["Manifest"] = "Manifest";
+    ResourceType2["SignedExchange"] = "SignedExchange";
+    ResourceType2["Ping"] = "Ping";
+    ResourceType2["CSPViolationReport"] = "CSPViolationReport";
+    ResourceType2["Preflight"] = "Preflight";
+    ResourceType2["FedCM"] = "FedCM";
+    ResourceType2["Other"] = "Other";
+  })(ResourceType = Network2.ResourceType || (Network2.ResourceType = {}));
+  let ErrorReason;
+  ((ErrorReason2) => {
+    ErrorReason2["Failed"] = "Failed";
+    ErrorReason2["Aborted"] = "Aborted";
+    ErrorReason2["TimedOut"] = "TimedOut";
+    ErrorReason2["AccessDenied"] = "AccessDenied";
+    ErrorReason2["ConnectionClosed"] = "ConnectionClosed";
+    ErrorReason2["ConnectionReset"] = "ConnectionReset";
+    ErrorReason2["ConnectionRefused"] = "ConnectionRefused";
+    ErrorReason2["ConnectionAborted"] = "ConnectionAborted";
+    ErrorReason2["ConnectionFailed"] = "ConnectionFailed";
+    ErrorReason2["NameNotResolved"] = "NameNotResolved";
+    ErrorReason2["InternetDisconnected"] = "InternetDisconnected";
+    ErrorReason2["AddressUnreachable"] = "AddressUnreachable";
+    ErrorReason2["BlockedByClient"] = "BlockedByClient";
+    ErrorReason2["BlockedByResponse"] = "BlockedByResponse";
+  })(ErrorReason = Network2.ErrorReason || (Network2.ErrorReason = {}));
+  let ConnectionType;
+  ((ConnectionType2) => {
+    ConnectionType2["None"] = "none";
+    ConnectionType2["Cellular2g"] = "cellular2g";
+    ConnectionType2["Cellular3g"] = "cellular3g";
+    ConnectionType2["Cellular4g"] = "cellular4g";
+    ConnectionType2["Bluetooth"] = "bluetooth";
+    ConnectionType2["Ethernet"] = "ethernet";
+    ConnectionType2["Wifi"] = "wifi";
+    ConnectionType2["Wimax"] = "wimax";
+    ConnectionType2["Other"] = "other";
+  })(ConnectionType = Network2.ConnectionType || (Network2.ConnectionType = {}));
+  let CookieSameSite;
+  ((CookieSameSite2) => {
+    CookieSameSite2["Strict"] = "Strict";
+    CookieSameSite2["Lax"] = "Lax";
+    CookieSameSite2["None"] = "None";
+  })(CookieSameSite = Network2.CookieSameSite || (Network2.CookieSameSite = {}));
+  let CookiePriority;
+  ((CookiePriority2) => {
+    CookiePriority2["Low"] = "Low";
+    CookiePriority2["Medium"] = "Medium";
+    CookiePriority2["High"] = "High";
+  })(CookiePriority = Network2.CookiePriority || (Network2.CookiePriority = {}));
+  let CookieSourceScheme;
+  ((CookieSourceScheme2) => {
+    CookieSourceScheme2["Unset"] = "Unset";
+    CookieSourceScheme2["NonSecure"] = "NonSecure";
+    CookieSourceScheme2["Secure"] = "Secure";
+  })(CookieSourceScheme = Network2.CookieSourceScheme || (Network2.CookieSourceScheme = {}));
+  let ResourcePriority;
+  ((ResourcePriority2) => {
+    ResourcePriority2["VeryLow"] = "VeryLow";
+    ResourcePriority2["Low"] = "Low";
+    ResourcePriority2["Medium"] = "Medium";
+    ResourcePriority2["High"] = "High";
+    ResourcePriority2["VeryHigh"] = "VeryHigh";
+  })(ResourcePriority = Network2.ResourcePriority || (Network2.ResourcePriority = {}));
+  let RenderBlockingBehavior;
+  ((RenderBlockingBehavior2) => {
+    RenderBlockingBehavior2["Blocking"] = "Blocking";
+    RenderBlockingBehavior2["InBodyParserBlocking"] = "InBodyParserBlocking";
+    RenderBlockingBehavior2["NonBlocking"] = "NonBlocking";
+    RenderBlockingBehavior2["NonBlockingDynamic"] = "NonBlockingDynamic";
+    RenderBlockingBehavior2["PotentiallyBlocking"] = "PotentiallyBlocking";
+  })(RenderBlockingBehavior = Network2.RenderBlockingBehavior || (Network2.RenderBlockingBehavior = {}));
+  let RequestReferrerPolicy;
+  ((RequestReferrerPolicy2) => {
+    RequestReferrerPolicy2["UnsafeUrl"] = "unsafe-url";
+    RequestReferrerPolicy2["NoReferrerWhenDowngrade"] = "no-referrer-when-downgrade";
+    RequestReferrerPolicy2["NoReferrer"] = "no-referrer";
+    RequestReferrerPolicy2["Origin"] = "origin";
+    RequestReferrerPolicy2["OriginWhenCrossOrigin"] = "origin-when-cross-origin";
+    RequestReferrerPolicy2["SameOrigin"] = "same-origin";
+    RequestReferrerPolicy2["StrictOrigin"] = "strict-origin";
+    RequestReferrerPolicy2["StrictOriginWhenCrossOrigin"] = "strict-origin-when-cross-origin";
+  })(RequestReferrerPolicy = Network2.RequestReferrerPolicy || (Network2.RequestReferrerPolicy = {}));
+  let CertificateTransparencyCompliance;
+  ((CertificateTransparencyCompliance2) => {
+    CertificateTransparencyCompliance2["Unknown"] = "unknown";
+    CertificateTransparencyCompliance2["NotCompliant"] = "not-compliant";
+    CertificateTransparencyCompliance2["Compliant"] = "compliant";
+  })(CertificateTransparencyCompliance = Network2.CertificateTransparencyCompliance || (Network2.CertificateTransparencyCompliance = {}));
+  let BlockedReason;
+  ((BlockedReason2) => {
+    BlockedReason2["Other"] = "other";
+    BlockedReason2["Csp"] = "csp";
+    BlockedReason2["MixedContent"] = "mixed-content";
+    BlockedReason2["Origin"] = "origin";
+    BlockedReason2["Inspector"] = "inspector";
+    BlockedReason2["Integrity"] = "integrity";
+    BlockedReason2["SubresourceFilter"] = "subresource-filter";
+    BlockedReason2["ContentType"] = "content-type";
+    BlockedReason2["CoepFrameResourceNeedsCoepHeader"] = "coep-frame-resource-needs-coep-header";
+    BlockedReason2["CoopSandboxedIframeCannotNavigateToCoopPage"] = "coop-sandboxed-iframe-cannot-navigate-to-coop-page";
+    BlockedReason2["CorpNotSameOrigin"] = "corp-not-same-origin";
+    BlockedReason2["CorpNotSameOriginAfterDefaultedToSameOriginByCoep"] = "corp-not-same-origin-after-defaulted-to-same-origin-by-coep";
+    BlockedReason2["CorpNotSameOriginAfterDefaultedToSameOriginByDip"] = "corp-not-same-origin-after-defaulted-to-same-origin-by-dip";
+    BlockedReason2["CorpNotSameOriginAfterDefaultedToSameOriginByCoepAndDip"] = "corp-not-same-origin-after-defaulted-to-same-origin-by-coep-and-dip";
+    BlockedReason2["CorpNotSameSite"] = "corp-not-same-site";
+    BlockedReason2["SriMessageSignatureMismatch"] = "sri-message-signature-mismatch";
+  })(BlockedReason = Network2.BlockedReason || (Network2.BlockedReason = {}));
+  let CorsError;
+  ((CorsError2) => {
+    CorsError2["DisallowedByMode"] = "DisallowedByMode";
+    CorsError2["InvalidResponse"] = "InvalidResponse";
+    CorsError2["WildcardOriginNotAllowed"] = "WildcardOriginNotAllowed";
+    CorsError2["MissingAllowOriginHeader"] = "MissingAllowOriginHeader";
+    CorsError2["MultipleAllowOriginValues"] = "MultipleAllowOriginValues";
+    CorsError2["InvalidAllowOriginValue"] = "InvalidAllowOriginValue";
+    CorsError2["AllowOriginMismatch"] = "AllowOriginMismatch";
+    CorsError2["InvalidAllowCredentials"] = "InvalidAllowCredentials";
+    CorsError2["CorsDisabledScheme"] = "CorsDisabledScheme";
+    CorsError2["PreflightInvalidStatus"] = "PreflightInvalidStatus";
+    CorsError2["PreflightDisallowedRedirect"] = "PreflightDisallowedRedirect";
+    CorsError2["PreflightWildcardOriginNotAllowed"] = "PreflightWildcardOriginNotAllowed";
+    CorsError2["PreflightMissingAllowOriginHeader"] = "PreflightMissingAllowOriginHeader";
+    CorsError2["PreflightMultipleAllowOriginValues"] = "PreflightMultipleAllowOriginValues";
+    CorsError2["PreflightInvalidAllowOriginValue"] = "PreflightInvalidAllowOriginValue";
+    CorsError2["PreflightAllowOriginMismatch"] = "PreflightAllowOriginMismatch";
+    CorsError2["PreflightInvalidAllowCredentials"] = "PreflightInvalidAllowCredentials";
+    CorsError2["PreflightMissingAllowExternal"] = "PreflightMissingAllowExternal";
+    CorsError2["PreflightInvalidAllowExternal"] = "PreflightInvalidAllowExternal";
+    CorsError2["InvalidAllowMethodsPreflightResponse"] = "InvalidAllowMethodsPreflightResponse";
+    CorsError2["InvalidAllowHeadersPreflightResponse"] = "InvalidAllowHeadersPreflightResponse";
+    CorsError2["MethodDisallowedByPreflightResponse"] = "MethodDisallowedByPreflightResponse";
+    CorsError2["HeaderDisallowedByPreflightResponse"] = "HeaderDisallowedByPreflightResponse";
+    CorsError2["RedirectContainsCredentials"] = "RedirectContainsCredentials";
+    CorsError2["InsecureLocalNetwork"] = "InsecureLocalNetwork";
+    CorsError2["InvalidLocalNetworkAccess"] = "InvalidLocalNetworkAccess";
+    CorsError2["NoCorsRedirectModeNotFollow"] = "NoCorsRedirectModeNotFollow";
+    CorsError2["LocalNetworkAccessPermissionDenied"] = "LocalNetworkAccessPermissionDenied";
+  })(CorsError = Network2.CorsError || (Network2.CorsError = {}));
+  let ServiceWorkerResponseSource;
+  ((ServiceWorkerResponseSource2) => {
+    ServiceWorkerResponseSource2["CacheStorage"] = "cache-storage";
+    ServiceWorkerResponseSource2["HttpCache"] = "http-cache";
+    ServiceWorkerResponseSource2["FallbackCode"] = "fallback-code";
+    ServiceWorkerResponseSource2["Network"] = "network";
+  })(ServiceWorkerResponseSource = Network2.ServiceWorkerResponseSource || (Network2.ServiceWorkerResponseSource = {}));
+  let TrustTokenParamsRefreshPolicy;
+  ((TrustTokenParamsRefreshPolicy2) => {
+    TrustTokenParamsRefreshPolicy2["UseCached"] = "UseCached";
+    TrustTokenParamsRefreshPolicy2["Refresh"] = "Refresh";
+  })(TrustTokenParamsRefreshPolicy = Network2.TrustTokenParamsRefreshPolicy || (Network2.TrustTokenParamsRefreshPolicy = {}));
+  let TrustTokenOperationType;
+  ((TrustTokenOperationType2) => {
+    TrustTokenOperationType2["Issuance"] = "Issuance";
+    TrustTokenOperationType2["Redemption"] = "Redemption";
+    TrustTokenOperationType2["Signing"] = "Signing";
+  })(TrustTokenOperationType = Network2.TrustTokenOperationType || (Network2.TrustTokenOperationType = {}));
+  let AlternateProtocolUsage;
+  ((AlternateProtocolUsage2) => {
+    AlternateProtocolUsage2["AlternativeJobWonWithoutRace"] = "alternativeJobWonWithoutRace";
+    AlternateProtocolUsage2["AlternativeJobWonRace"] = "alternativeJobWonRace";
+    AlternateProtocolUsage2["MainJobWonRace"] = "mainJobWonRace";
+    AlternateProtocolUsage2["MappingMissing"] = "mappingMissing";
+    AlternateProtocolUsage2["Broken"] = "broken";
+    AlternateProtocolUsage2["DnsAlpnH3JobWonWithoutRace"] = "dnsAlpnH3JobWonWithoutRace";
+    AlternateProtocolUsage2["DnsAlpnH3JobWonRace"] = "dnsAlpnH3JobWonRace";
+    AlternateProtocolUsage2["UnspecifiedReason"] = "unspecifiedReason";
+  })(AlternateProtocolUsage = Network2.AlternateProtocolUsage || (Network2.AlternateProtocolUsage = {}));
+  let ServiceWorkerRouterSource;
+  ((ServiceWorkerRouterSource2) => {
+    ServiceWorkerRouterSource2["Network"] = "network";
+    ServiceWorkerRouterSource2["Cache"] = "cache";
+    ServiceWorkerRouterSource2["FetchEvent"] = "fetch-event";
+    ServiceWorkerRouterSource2["RaceNetworkAndFetchHandler"] = "race-network-and-fetch-handler";
+    ServiceWorkerRouterSource2["RaceNetworkAndCache"] = "race-network-and-cache";
+  })(ServiceWorkerRouterSource = Network2.ServiceWorkerRouterSource || (Network2.ServiceWorkerRouterSource = {}));
+  let InitiatorType;
+  ((InitiatorType2) => {
+    InitiatorType2["Parser"] = "parser";
+    InitiatorType2["Script"] = "script";
+    InitiatorType2["Preload"] = "preload";
+    InitiatorType2["SignedExchange"] = "SignedExchange";
+    InitiatorType2["Preflight"] = "preflight";
+    InitiatorType2["FedCM"] = "FedCM";
+    InitiatorType2["Other"] = "other";
+  })(InitiatorType = Network2.InitiatorType || (Network2.InitiatorType = {}));
+  let SetCookieBlockedReason;
+  ((SetCookieBlockedReason2) => {
+    SetCookieBlockedReason2["SecureOnly"] = "SecureOnly";
+    SetCookieBlockedReason2["SameSiteStrict"] = "SameSiteStrict";
+    SetCookieBlockedReason2["SameSiteLax"] = "SameSiteLax";
+    SetCookieBlockedReason2["SameSiteUnspecifiedTreatedAsLax"] = "SameSiteUnspecifiedTreatedAsLax";
+    SetCookieBlockedReason2["SameSiteNoneInsecure"] = "SameSiteNoneInsecure";
+    SetCookieBlockedReason2["UserPreferences"] = "UserPreferences";
+    SetCookieBlockedReason2["ThirdPartyPhaseout"] = "ThirdPartyPhaseout";
+    SetCookieBlockedReason2["ThirdPartyBlockedInFirstPartySet"] = "ThirdPartyBlockedInFirstPartySet";
+    SetCookieBlockedReason2["SyntaxError"] = "SyntaxError";
+    SetCookieBlockedReason2["SchemeNotSupported"] = "SchemeNotSupported";
+    SetCookieBlockedReason2["OverwriteSecure"] = "OverwriteSecure";
+    SetCookieBlockedReason2["InvalidDomain"] = "InvalidDomain";
+    SetCookieBlockedReason2["InvalidPrefix"] = "InvalidPrefix";
+    SetCookieBlockedReason2["UnknownError"] = "UnknownError";
+    SetCookieBlockedReason2["SchemefulSameSiteStrict"] = "SchemefulSameSiteStrict";
+    SetCookieBlockedReason2["SchemefulSameSiteLax"] = "SchemefulSameSiteLax";
+    SetCookieBlockedReason2["SchemefulSameSiteUnspecifiedTreatedAsLax"] = "SchemefulSameSiteUnspecifiedTreatedAsLax";
+    SetCookieBlockedReason2["NameValuePairExceedsMaxSize"] = "NameValuePairExceedsMaxSize";
+    SetCookieBlockedReason2["DisallowedCharacter"] = "DisallowedCharacter";
+    SetCookieBlockedReason2["NoCookieContent"] = "NoCookieContent";
+  })(SetCookieBlockedReason = Network2.SetCookieBlockedReason || (Network2.SetCookieBlockedReason = {}));
+  let CookieBlockedReason;
+  ((CookieBlockedReason2) => {
+    CookieBlockedReason2["SecureOnly"] = "SecureOnly";
+    CookieBlockedReason2["NotOnPath"] = "NotOnPath";
+    CookieBlockedReason2["DomainMismatch"] = "DomainMismatch";
+    CookieBlockedReason2["SameSiteStrict"] = "SameSiteStrict";
+    CookieBlockedReason2["SameSiteLax"] = "SameSiteLax";
+    CookieBlockedReason2["SameSiteUnspecifiedTreatedAsLax"] = "SameSiteUnspecifiedTreatedAsLax";
+    CookieBlockedReason2["SameSiteNoneInsecure"] = "SameSiteNoneInsecure";
+    CookieBlockedReason2["UserPreferences"] = "UserPreferences";
+    CookieBlockedReason2["ThirdPartyPhaseout"] = "ThirdPartyPhaseout";
+    CookieBlockedReason2["ThirdPartyBlockedInFirstPartySet"] = "ThirdPartyBlockedInFirstPartySet";
+    CookieBlockedReason2["UnknownError"] = "UnknownError";
+    CookieBlockedReason2["SchemefulSameSiteStrict"] = "SchemefulSameSiteStrict";
+    CookieBlockedReason2["SchemefulSameSiteLax"] = "SchemefulSameSiteLax";
+    CookieBlockedReason2["SchemefulSameSiteUnspecifiedTreatedAsLax"] = "SchemefulSameSiteUnspecifiedTreatedAsLax";
+    CookieBlockedReason2["NameValuePairExceedsMaxSize"] = "NameValuePairExceedsMaxSize";
+    CookieBlockedReason2["PortMismatch"] = "PortMismatch";
+    CookieBlockedReason2["SchemeMismatch"] = "SchemeMismatch";
+    CookieBlockedReason2["AnonymousContext"] = "AnonymousContext";
+  })(CookieBlockedReason = Network2.CookieBlockedReason || (Network2.CookieBlockedReason = {}));
+  let CookieExemptionReason;
+  ((CookieExemptionReason2) => {
+    CookieExemptionReason2["None"] = "None";
+    CookieExemptionReason2["UserSetting"] = "UserSetting";
+    CookieExemptionReason2["EnterprisePolicy"] = "EnterprisePolicy";
+    CookieExemptionReason2["StorageAccess"] = "StorageAccess";
+    CookieExemptionReason2["TopLevelStorageAccess"] = "TopLevelStorageAccess";
+    CookieExemptionReason2["Scheme"] = "Scheme";
+    CookieExemptionReason2["SameSiteNoneCookiesInSandbox"] = "SameSiteNoneCookiesInSandbox";
+  })(CookieExemptionReason = Network2.CookieExemptionReason || (Network2.CookieExemptionReason = {}));
+  let AuthChallengeSource;
+  ((AuthChallengeSource2) => {
+    AuthChallengeSource2["Server"] = "Server";
+    AuthChallengeSource2["Proxy"] = "Proxy";
+  })(AuthChallengeSource = Network2.AuthChallengeSource || (Network2.AuthChallengeSource = {}));
+  let AuthChallengeResponseResponse;
+  ((AuthChallengeResponseResponse2) => {
+    AuthChallengeResponseResponse2["Default"] = "Default";
+    AuthChallengeResponseResponse2["CancelAuth"] = "CancelAuth";
+    AuthChallengeResponseResponse2["ProvideCredentials"] = "ProvideCredentials";
+  })(AuthChallengeResponseResponse = Network2.AuthChallengeResponseResponse || (Network2.AuthChallengeResponseResponse = {}));
+  let SignedExchangeErrorField;
+  ((SignedExchangeErrorField2) => {
+    SignedExchangeErrorField2["SignatureSig"] = "signatureSig";
+    SignedExchangeErrorField2["SignatureIntegrity"] = "signatureIntegrity";
+    SignedExchangeErrorField2["SignatureCertUrl"] = "signatureCertUrl";
+    SignedExchangeErrorField2["SignatureCertSha256"] = "signatureCertSha256";
+    SignedExchangeErrorField2["SignatureValidityUrl"] = "signatureValidityUrl";
+    SignedExchangeErrorField2["SignatureTimestamps"] = "signatureTimestamps";
+  })(SignedExchangeErrorField = Network2.SignedExchangeErrorField || (Network2.SignedExchangeErrorField = {}));
+  let DirectSocketDnsQueryType;
+  ((DirectSocketDnsQueryType2) => {
+    DirectSocketDnsQueryType2["Ipv4"] = "ipv4";
+    DirectSocketDnsQueryType2["Ipv6"] = "ipv6";
+  })(DirectSocketDnsQueryType = Network2.DirectSocketDnsQueryType || (Network2.DirectSocketDnsQueryType = {}));
+  let LocalNetworkAccessRequestPolicy;
+  ((LocalNetworkAccessRequestPolicy2) => {
+    LocalNetworkAccessRequestPolicy2["Allow"] = "Allow";
+    LocalNetworkAccessRequestPolicy2["BlockFromInsecureToMorePrivate"] = "BlockFromInsecureToMorePrivate";
+    LocalNetworkAccessRequestPolicy2["WarnFromInsecureToMorePrivate"] = "WarnFromInsecureToMorePrivate";
+    LocalNetworkAccessRequestPolicy2["PermissionBlock"] = "PermissionBlock";
+    LocalNetworkAccessRequestPolicy2["PermissionWarn"] = "PermissionWarn";
+  })(LocalNetworkAccessRequestPolicy = Network2.LocalNetworkAccessRequestPolicy || (Network2.LocalNetworkAccessRequestPolicy = {}));
+  let IPAddressSpace;
+  ((IPAddressSpace2) => {
+    IPAddressSpace2["Loopback"] = "Loopback";
+    IPAddressSpace2["Local"] = "Local";
+    IPAddressSpace2["Public"] = "Public";
+    IPAddressSpace2["Unknown"] = "Unknown";
+  })(IPAddressSpace = Network2.IPAddressSpace || (Network2.IPAddressSpace = {}));
+  let CrossOriginOpenerPolicyValue;
+  ((CrossOriginOpenerPolicyValue2) => {
+    CrossOriginOpenerPolicyValue2["SameOrigin"] = "SameOrigin";
+    CrossOriginOpenerPolicyValue2["SameOriginAllowPopups"] = "SameOriginAllowPopups";
+    CrossOriginOpenerPolicyValue2["RestrictProperties"] = "RestrictProperties";
+    CrossOriginOpenerPolicyValue2["UnsafeNone"] = "UnsafeNone";
+    CrossOriginOpenerPolicyValue2["SameOriginPlusCoep"] = "SameOriginPlusCoep";
+    CrossOriginOpenerPolicyValue2["RestrictPropertiesPlusCoep"] = "RestrictPropertiesPlusCoep";
+    CrossOriginOpenerPolicyValue2["NoopenerAllowPopups"] = "NoopenerAllowPopups";
+  })(CrossOriginOpenerPolicyValue = Network2.CrossOriginOpenerPolicyValue || (Network2.CrossOriginOpenerPolicyValue = {}));
+  let CrossOriginEmbedderPolicyValue;
+  ((CrossOriginEmbedderPolicyValue2) => {
+    CrossOriginEmbedderPolicyValue2["None"] = "None";
+    CrossOriginEmbedderPolicyValue2["Credentialless"] = "Credentialless";
+    CrossOriginEmbedderPolicyValue2["RequireCorp"] = "RequireCorp";
+  })(CrossOriginEmbedderPolicyValue = Network2.CrossOriginEmbedderPolicyValue || (Network2.CrossOriginEmbedderPolicyValue = {}));
+  let ContentSecurityPolicySource;
+  ((ContentSecurityPolicySource2) => {
+    ContentSecurityPolicySource2["HTTP"] = "HTTP";
+    ContentSecurityPolicySource2["Meta"] = "Meta";
+  })(ContentSecurityPolicySource = Network2.ContentSecurityPolicySource || (Network2.ContentSecurityPolicySource = {}));
+  let ReportStatus;
+  ((ReportStatus2) => {
+    ReportStatus2["Queued"] = "Queued";
+    ReportStatus2["Pending"] = "Pending";
+    ReportStatus2["MarkedForRemoval"] = "MarkedForRemoval";
+    ReportStatus2["Success"] = "Success";
+  })(ReportStatus = Network2.ReportStatus || (Network2.ReportStatus = {}));
+  let DeviceBoundSessionWithUsageUsage;
+  ((DeviceBoundSessionWithUsageUsage2) => {
+    DeviceBoundSessionWithUsageUsage2["NotInScope"] = "NotInScope";
+    DeviceBoundSessionWithUsageUsage2["InScopeRefreshNotYetNeeded"] = "InScopeRefreshNotYetNeeded";
+    DeviceBoundSessionWithUsageUsage2["InScopeRefreshNotAllowed"] = "InScopeRefreshNotAllowed";
+    DeviceBoundSessionWithUsageUsage2["ProactiveRefreshNotPossible"] = "ProactiveRefreshNotPossible";
+    DeviceBoundSessionWithUsageUsage2["ProactiveRefreshAttempted"] = "ProactiveRefreshAttempted";
+    DeviceBoundSessionWithUsageUsage2["Deferred"] = "Deferred";
+  })(DeviceBoundSessionWithUsageUsage = Network2.DeviceBoundSessionWithUsageUsage || (Network2.DeviceBoundSessionWithUsageUsage = {}));
+  let DeviceBoundSessionUrlRuleRuleType;
+  ((DeviceBoundSessionUrlRuleRuleType2) => {
+    DeviceBoundSessionUrlRuleRuleType2["Exclude"] = "Exclude";
+    DeviceBoundSessionUrlRuleRuleType2["Include"] = "Include";
+  })(DeviceBoundSessionUrlRuleRuleType = Network2.DeviceBoundSessionUrlRuleRuleType || (Network2.DeviceBoundSessionUrlRuleRuleType = {}));
+  let DeviceBoundSessionFetchResult;
+  ((DeviceBoundSessionFetchResult2) => {
+    DeviceBoundSessionFetchResult2["Success"] = "Success";
+    DeviceBoundSessionFetchResult2["SigningKeyGenerationError"] = "SigningKeyGenerationError";
+    DeviceBoundSessionFetchResult2["AttestationKeyGenerationError"] = "AttestationKeyGenerationError";
+    DeviceBoundSessionFetchResult2["SigningError"] = "SigningError";
+    DeviceBoundSessionFetchResult2["TransientSigningError"] = "TransientSigningError";
+    DeviceBoundSessionFetchResult2["ServerRequestedTermination"] = "ServerRequestedTermination";
+    DeviceBoundSessionFetchResult2["InvalidSessionId"] = "InvalidSessionId";
+    DeviceBoundSessionFetchResult2["InvalidChallenge"] = "InvalidChallenge";
+    DeviceBoundSessionFetchResult2["TooManyChallenges"] = "TooManyChallenges";
+    DeviceBoundSessionFetchResult2["InvalidFetcherUrl"] = "InvalidFetcherUrl";
+    DeviceBoundSessionFetchResult2["InvalidRefreshUrl"] = "InvalidRefreshUrl";
+    DeviceBoundSessionFetchResult2["TransientHttpError"] = "TransientHttpError";
+    DeviceBoundSessionFetchResult2["ScopeOriginSameSiteMismatch"] = "ScopeOriginSameSiteMismatch";
+    DeviceBoundSessionFetchResult2["RefreshUrlSameSiteMismatch"] = "RefreshUrlSameSiteMismatch";
+    DeviceBoundSessionFetchResult2["MismatchedSessionId"] = "MismatchedSessionId";
+    DeviceBoundSessionFetchResult2["MissingScope"] = "MissingScope";
+    DeviceBoundSessionFetchResult2["NoCredentials"] = "NoCredentials";
+    DeviceBoundSessionFetchResult2["SubdomainRegistrationWellKnownUnavailable"] = "SubdomainRegistrationWellKnownUnavailable";
+    DeviceBoundSessionFetchResult2["SubdomainRegistrationUnauthorized"] = "SubdomainRegistrationUnauthorized";
+    DeviceBoundSessionFetchResult2["SubdomainRegistrationWellKnownMalformed"] = "SubdomainRegistrationWellKnownMalformed";
+    DeviceBoundSessionFetchResult2["SessionProviderWellKnownUnavailable"] = "SessionProviderWellKnownUnavailable";
+    DeviceBoundSessionFetchResult2["RelyingPartyWellKnownUnavailable"] = "RelyingPartyWellKnownUnavailable";
+    DeviceBoundSessionFetchResult2["FederatedKeyThumbprintMismatch"] = "FederatedKeyThumbprintMismatch";
+    DeviceBoundSessionFetchResult2["InvalidFederatedSessionUrl"] = "InvalidFederatedSessionUrl";
+    DeviceBoundSessionFetchResult2["InvalidFederatedKey"] = "InvalidFederatedKey";
+    DeviceBoundSessionFetchResult2["TooManyRelyingOriginLabels"] = "TooManyRelyingOriginLabels";
+    DeviceBoundSessionFetchResult2["BoundCookieSetForbidden"] = "BoundCookieSetForbidden";
+    DeviceBoundSessionFetchResult2["NetError"] = "NetError";
+    DeviceBoundSessionFetchResult2["ProxyError"] = "ProxyError";
+    DeviceBoundSessionFetchResult2["EmptySessionConfig"] = "EmptySessionConfig";
+    DeviceBoundSessionFetchResult2["InvalidCredentialsConfig"] = "InvalidCredentialsConfig";
+    DeviceBoundSessionFetchResult2["InvalidCredentialsType"] = "InvalidCredentialsType";
+    DeviceBoundSessionFetchResult2["InvalidCredentialsEmptyName"] = "InvalidCredentialsEmptyName";
+    DeviceBoundSessionFetchResult2["InvalidCredentialsCookie"] = "InvalidCredentialsCookie";
+    DeviceBoundSessionFetchResult2["PersistentHttpError"] = "PersistentHttpError";
+    DeviceBoundSessionFetchResult2["RegistrationAttemptedChallenge"] = "RegistrationAttemptedChallenge";
+    DeviceBoundSessionFetchResult2["InvalidScopeOrigin"] = "InvalidScopeOrigin";
+    DeviceBoundSessionFetchResult2["ScopeOriginContainsPath"] = "ScopeOriginContainsPath";
+    DeviceBoundSessionFetchResult2["RefreshInitiatorNotString"] = "RefreshInitiatorNotString";
+    DeviceBoundSessionFetchResult2["RefreshInitiatorInvalidHostPattern"] = "RefreshInitiatorInvalidHostPattern";
+    DeviceBoundSessionFetchResult2["InvalidScopeSpecification"] = "InvalidScopeSpecification";
+    DeviceBoundSessionFetchResult2["MissingScopeSpecificationType"] = "MissingScopeSpecificationType";
+    DeviceBoundSessionFetchResult2["EmptyScopeSpecificationDomain"] = "EmptyScopeSpecificationDomain";
+    DeviceBoundSessionFetchResult2["EmptyScopeSpecificationPath"] = "EmptyScopeSpecificationPath";
+    DeviceBoundSessionFetchResult2["InvalidScopeSpecificationType"] = "InvalidScopeSpecificationType";
+    DeviceBoundSessionFetchResult2["InvalidScopeIncludeSite"] = "InvalidScopeIncludeSite";
+    DeviceBoundSessionFetchResult2["MissingScopeIncludeSite"] = "MissingScopeIncludeSite";
+    DeviceBoundSessionFetchResult2["FederatedNotAuthorizedByProvider"] = "FederatedNotAuthorizedByProvider";
+    DeviceBoundSessionFetchResult2["FederatedNotAuthorizedByRelyingParty"] = "FederatedNotAuthorizedByRelyingParty";
+    DeviceBoundSessionFetchResult2["SessionProviderWellKnownMalformed"] = "SessionProviderWellKnownMalformed";
+    DeviceBoundSessionFetchResult2["SessionProviderWellKnownHasProviderOrigin"] = "SessionProviderWellKnownHasProviderOrigin";
+    DeviceBoundSessionFetchResult2["RelyingPartyWellKnownMalformed"] = "RelyingPartyWellKnownMalformed";
+    DeviceBoundSessionFetchResult2["RelyingPartyWellKnownHasRelyingOrigins"] = "RelyingPartyWellKnownHasRelyingOrigins";
+    DeviceBoundSessionFetchResult2["InvalidFederatedSessionProviderSessionMissing"] = "InvalidFederatedSessionProviderSessionMissing";
+    DeviceBoundSessionFetchResult2["InvalidFederatedSessionWrongProviderOrigin"] = "InvalidFederatedSessionWrongProviderOrigin";
+    DeviceBoundSessionFetchResult2["InvalidCredentialsCookieCreationTime"] = "InvalidCredentialsCookieCreationTime";
+    DeviceBoundSessionFetchResult2["InvalidCredentialsCookieName"] = "InvalidCredentialsCookieName";
+    DeviceBoundSessionFetchResult2["InvalidCredentialsCookieParsing"] = "InvalidCredentialsCookieParsing";
+    DeviceBoundSessionFetchResult2["InvalidCredentialsCookieUnpermittedAttribute"] = "InvalidCredentialsCookieUnpermittedAttribute";
+    DeviceBoundSessionFetchResult2["InvalidCredentialsCookieInvalidDomain"] = "InvalidCredentialsCookieInvalidDomain";
+    DeviceBoundSessionFetchResult2["InvalidCredentialsCookiePrefix"] = "InvalidCredentialsCookiePrefix";
+    DeviceBoundSessionFetchResult2["InvalidScopeRulePath"] = "InvalidScopeRulePath";
+    DeviceBoundSessionFetchResult2["InvalidScopeRuleHostPattern"] = "InvalidScopeRuleHostPattern";
+    DeviceBoundSessionFetchResult2["ScopeRuleOriginScopedHostPatternMismatch"] = "ScopeRuleOriginScopedHostPatternMismatch";
+    DeviceBoundSessionFetchResult2["ScopeRuleSiteScopedHostPatternMismatch"] = "ScopeRuleSiteScopedHostPatternMismatch";
+    DeviceBoundSessionFetchResult2["SigningQuotaExceeded"] = "SigningQuotaExceeded";
+    DeviceBoundSessionFetchResult2["InvalidConfigJson"] = "InvalidConfigJson";
+    DeviceBoundSessionFetchResult2["InvalidFederatedSessionProviderFailedToRestoreKey"] = "InvalidFederatedSessionProviderFailedToRestoreKey";
+    DeviceBoundSessionFetchResult2["FailedToUnwrapKey"] = "FailedToUnwrapKey";
+    DeviceBoundSessionFetchResult2["SessionDeletedDuringRefresh"] = "SessionDeletedDuringRefresh";
+    DeviceBoundSessionFetchResult2["CrossOriginRegistrationSiteNotIncluded"] = "CrossOriginRegistrationSiteNotIncluded";
+    DeviceBoundSessionFetchResult2["InvalidPreProvisionedKeyInitiatorMissing"] = "InvalidPreProvisionedKeyInitiatorMissing";
+    DeviceBoundSessionFetchResult2["PreProvisionedKeyAccessNotGranted"] = "PreProvisionedKeyAccessNotGranted";
+    DeviceBoundSessionFetchResult2["PreProvisionedKeyNotFound"] = "PreProvisionedKeyNotFound";
+    DeviceBoundSessionFetchResult2["AttestationCertificationError"] = "AttestationCertificationError";
+    DeviceBoundSessionFetchResult2["AttestationSigningError"] = "AttestationSigningError";
+  })(DeviceBoundSessionFetchResult = Network2.DeviceBoundSessionFetchResult || (Network2.DeviceBoundSessionFetchResult = {}));
+  let RefreshEventDetailsRefreshResult;
+  ((RefreshEventDetailsRefreshResult2) => {
+    RefreshEventDetailsRefreshResult2["Refreshed"] = "Refreshed";
+    RefreshEventDetailsRefreshResult2["InitializedService"] = "InitializedService";
+    RefreshEventDetailsRefreshResult2["Unreachable"] = "Unreachable";
+    RefreshEventDetailsRefreshResult2["ServerError"] = "ServerError";
+    RefreshEventDetailsRefreshResult2["FatalError"] = "FatalError";
+    RefreshEventDetailsRefreshResult2["SigningQuotaExceeded"] = "SigningQuotaExceeded";
+    RefreshEventDetailsRefreshResult2["RefreshedAsWaiter"] = "RefreshedAsWaiter";
+    RefreshEventDetailsRefreshResult2["TransientSigningError"] = "TransientSigningError";
+    RefreshEventDetailsRefreshResult2["InScopeRefreshNotYetNeeded"] = "InScopeRefreshNotYetNeeded";
+  })(RefreshEventDetailsRefreshResult = Network2.RefreshEventDetailsRefreshResult || (Network2.RefreshEventDetailsRefreshResult = {}));
+  let TerminationEventDetailsDeletionReason;
+  ((TerminationEventDetailsDeletionReason2) => {
+    TerminationEventDetailsDeletionReason2["Expired"] = "Expired";
+    TerminationEventDetailsDeletionReason2["FailedToRestoreKey"] = "FailedToRestoreKey";
+    TerminationEventDetailsDeletionReason2["FailedToUnwrapKey"] = "FailedToUnwrapKey";
+    TerminationEventDetailsDeletionReason2["StoragePartitionCleared"] = "StoragePartitionCleared";
+    TerminationEventDetailsDeletionReason2["ClearBrowsingData"] = "ClearBrowsingData";
+    TerminationEventDetailsDeletionReason2["ServerRequested"] = "ServerRequested";
+    TerminationEventDetailsDeletionReason2["InvalidSessionParams"] = "InvalidSessionParams";
+    TerminationEventDetailsDeletionReason2["RefreshFatalError"] = "RefreshFatalError";
+    TerminationEventDetailsDeletionReason2["DevTools"] = "DevTools";
+  })(TerminationEventDetailsDeletionReason = Network2.TerminationEventDetailsDeletionReason || (Network2.TerminationEventDetailsDeletionReason = {}));
+  let ChallengeEventDetailsChallengeResult;
+  ((ChallengeEventDetailsChallengeResult2) => {
+    ChallengeEventDetailsChallengeResult2["Success"] = "Success";
+    ChallengeEventDetailsChallengeResult2["NoSessionId"] = "NoSessionId";
+    ChallengeEventDetailsChallengeResult2["NoSessionMatch"] = "NoSessionMatch";
+    ChallengeEventDetailsChallengeResult2["CantSetBoundCookie"] = "CantSetBoundCookie";
+  })(ChallengeEventDetailsChallengeResult = Network2.ChallengeEventDetailsChallengeResult || (Network2.ChallengeEventDetailsChallengeResult = {}));
+  let TrustTokenOperationDoneEventStatus;
+  ((TrustTokenOperationDoneEventStatus2) => {
+    TrustTokenOperationDoneEventStatus2["Ok"] = "Ok";
+    TrustTokenOperationDoneEventStatus2["InvalidArgument"] = "InvalidArgument";
+    TrustTokenOperationDoneEventStatus2["MissingIssuerKeys"] = "MissingIssuerKeys";
+    TrustTokenOperationDoneEventStatus2["FailedPrecondition"] = "FailedPrecondition";
+    TrustTokenOperationDoneEventStatus2["ResourceExhausted"] = "ResourceExhausted";
+    TrustTokenOperationDoneEventStatus2["AlreadyExists"] = "AlreadyExists";
+    TrustTokenOperationDoneEventStatus2["ResourceLimited"] = "ResourceLimited";
+    TrustTokenOperationDoneEventStatus2["Unauthorized"] = "Unauthorized";
+    TrustTokenOperationDoneEventStatus2["BadResponse"] = "BadResponse";
+    TrustTokenOperationDoneEventStatus2["InternalError"] = "InternalError";
+    TrustTokenOperationDoneEventStatus2["UnknownError"] = "UnknownError";
+    TrustTokenOperationDoneEventStatus2["FulfilledLocally"] = "FulfilledLocally";
+    TrustTokenOperationDoneEventStatus2["SiteIssuerLimit"] = "SiteIssuerLimit";
+  })(TrustTokenOperationDoneEventStatus = Network2.TrustTokenOperationDoneEventStatus || (Network2.TrustTokenOperationDoneEventStatus = {}));
+})(Network || (Network = {}));
+var Overlay;
+((Overlay2) => {
+  let LineStylePattern;
+  ((LineStylePattern2) => {
+    LineStylePattern2["Dashed"] = "dashed";
+    LineStylePattern2["Dotted"] = "dotted";
+  })(LineStylePattern = Overlay2.LineStylePattern || (Overlay2.LineStylePattern = {}));
+  let ContrastAlgorithm;
+  ((ContrastAlgorithm2) => {
+    ContrastAlgorithm2["Aa"] = "aa";
+    ContrastAlgorithm2["Aaa"] = "aaa";
+    ContrastAlgorithm2["Apca"] = "apca";
+  })(ContrastAlgorithm = Overlay2.ContrastAlgorithm || (Overlay2.ContrastAlgorithm = {}));
+  let ColorFormat;
+  ((ColorFormat2) => {
+    ColorFormat2["Rgb"] = "rgb";
+    ColorFormat2["Hsl"] = "hsl";
+    ColorFormat2["Hwb"] = "hwb";
+    ColorFormat2["Hex"] = "hex";
+  })(ColorFormat = Overlay2.ColorFormat || (Overlay2.ColorFormat = {}));
+  let DisplayCutoutShape;
+  ((DisplayCutoutShape2) => {
+    DisplayCutoutShape2["Pill"] = "pill";
+    DisplayCutoutShape2["Notch"] = "notch";
+    DisplayCutoutShape2["Circle"] = "circle";
+    DisplayCutoutShape2["Rectangle"] = "rectangle";
+  })(DisplayCutoutShape = Overlay2.DisplayCutoutShape || (Overlay2.DisplayCutoutShape = {}));
+  let InspectMode;
+  ((InspectMode2) => {
+    InspectMode2["SearchForNode"] = "searchForNode";
+    InspectMode2["SearchForUAShadowDOM"] = "searchForUAShadowDOM";
+    InspectMode2["CaptureAreaScreenshot"] = "captureAreaScreenshot";
+    InspectMode2["None"] = "none";
+  })(InspectMode = Overlay2.InspectMode || (Overlay2.InspectMode = {}));
+})(Overlay || (Overlay = {}));
+var PWA;
+((PWA2) => {
+  let DisplayMode;
+  ((DisplayMode2) => {
+    DisplayMode2["Standalone"] = "standalone";
+    DisplayMode2["Browser"] = "browser";
+  })(DisplayMode = PWA2.DisplayMode || (PWA2.DisplayMode = {}));
+})(PWA || (PWA = {}));
+var Page;
+((Page2) => {
+  let AdFrameType;
+  ((AdFrameType2) => {
+    AdFrameType2["None"] = "none";
+    AdFrameType2["Child"] = "child";
+    AdFrameType2["Root"] = "root";
+  })(AdFrameType = Page2.AdFrameType || (Page2.AdFrameType = {}));
+  let AdFrameExplanation;
+  ((AdFrameExplanation2) => {
+    AdFrameExplanation2["ParentIsAd"] = "ParentIsAd";
+    AdFrameExplanation2["CreatedByAdScript"] = "CreatedByAdScript";
+    AdFrameExplanation2["MatchedBlockingRule"] = "MatchedBlockingRule";
+  })(AdFrameExplanation = Page2.AdFrameExplanation || (Page2.AdFrameExplanation = {}));
+  let SecureContextType;
+  ((SecureContextType2) => {
+    SecureContextType2["Secure"] = "Secure";
+    SecureContextType2["SecureLocalhost"] = "SecureLocalhost";
+    SecureContextType2["InsecureScheme"] = "InsecureScheme";
+    SecureContextType2["InsecureAncestor"] = "InsecureAncestor";
+  })(SecureContextType = Page2.SecureContextType || (Page2.SecureContextType = {}));
+  let CrossOriginIsolatedContextType;
+  ((CrossOriginIsolatedContextType2) => {
+    CrossOriginIsolatedContextType2["Isolated"] = "Isolated";
+    CrossOriginIsolatedContextType2["NotIsolated"] = "NotIsolated";
+    CrossOriginIsolatedContextType2["NotIsolatedFeatureDisabled"] = "NotIsolatedFeatureDisabled";
+  })(CrossOriginIsolatedContextType = Page2.CrossOriginIsolatedContextType || (Page2.CrossOriginIsolatedContextType = {}));
+  let GatedAPIFeatures;
+  ((GatedAPIFeatures2) => {
+    GatedAPIFeatures2["SharedArrayBuffers"] = "SharedArrayBuffers";
+    GatedAPIFeatures2["SharedArrayBuffersTransferAllowed"] = "SharedArrayBuffersTransferAllowed";
+    GatedAPIFeatures2["PerformanceMeasureMemory"] = "PerformanceMeasureMemory";
+    GatedAPIFeatures2["PerformanceProfile"] = "PerformanceProfile";
+  })(GatedAPIFeatures = Page2.GatedAPIFeatures || (Page2.GatedAPIFeatures = {}));
+  let PermissionsPolicyFeature;
+  ((PermissionsPolicyFeature2) => {
+    PermissionsPolicyFeature2["Accelerometer"] = "accelerometer";
+    PermissionsPolicyFeature2["AllScreensCapture"] = "all-screens-capture";
+    PermissionsPolicyFeature2["AmbientLightSensor"] = "ambient-light-sensor";
+    PermissionsPolicyFeature2["AriaNotify"] = "aria-notify";
+    PermissionsPolicyFeature2["Autofill"] = "autofill";
+    PermissionsPolicyFeature2["Autoplay"] = "autoplay";
+    PermissionsPolicyFeature2["Bluetooth"] = "bluetooth";
+    PermissionsPolicyFeature2["BrowsingTopics"] = "browsing-topics";
+    PermissionsPolicyFeature2["Camera"] = "camera";
+    PermissionsPolicyFeature2["CapturedSurfaceControl"] = "captured-surface-control";
+    PermissionsPolicyFeature2["ChDpr"] = "ch-dpr";
+    PermissionsPolicyFeature2["ChDeviceMemory"] = "ch-device-memory";
+    PermissionsPolicyFeature2["ChDownlink"] = "ch-downlink";
+    PermissionsPolicyFeature2["ChEct"] = "ch-ect";
+    PermissionsPolicyFeature2["ChPrefersColorScheme"] = "ch-prefers-color-scheme";
+    PermissionsPolicyFeature2["ChPrefersReducedMotion"] = "ch-prefers-reduced-motion";
+    PermissionsPolicyFeature2["ChPrefersReducedTransparency"] = "ch-prefers-reduced-transparency";
+    PermissionsPolicyFeature2["ChRtt"] = "ch-rtt";
+    PermissionsPolicyFeature2["ChSaveData"] = "ch-save-data";
+    PermissionsPolicyFeature2["ChUa"] = "ch-ua";
+    PermissionsPolicyFeature2["ChUaArch"] = "ch-ua-arch";
+    PermissionsPolicyFeature2["ChUaBitness"] = "ch-ua-bitness";
+    PermissionsPolicyFeature2["ChUaHighEntropyValues"] = "ch-ua-high-entropy-values";
+    PermissionsPolicyFeature2["ChUaPlatform"] = "ch-ua-platform";
+    PermissionsPolicyFeature2["ChUaModel"] = "ch-ua-model";
+    PermissionsPolicyFeature2["ChUaMobile"] = "ch-ua-mobile";
+    PermissionsPolicyFeature2["ChUaFormFactors"] = "ch-ua-form-factors";
+    PermissionsPolicyFeature2["ChUaFullVersion"] = "ch-ua-full-version";
+    PermissionsPolicyFeature2["ChUaFullVersionList"] = "ch-ua-full-version-list";
+    PermissionsPolicyFeature2["ChUaPlatformVersion"] = "ch-ua-platform-version";
+    PermissionsPolicyFeature2["ChUaWow64"] = "ch-ua-wow64";
+    PermissionsPolicyFeature2["ChViewportHeight"] = "ch-viewport-height";
+    PermissionsPolicyFeature2["ChViewportWidth"] = "ch-viewport-width";
+    PermissionsPolicyFeature2["ChWidth"] = "ch-width";
+    PermissionsPolicyFeature2["ClipboardRead"] = "clipboard-read";
+    PermissionsPolicyFeature2["ClipboardWrite"] = "clipboard-write";
+    PermissionsPolicyFeature2["ComputePressure"] = "compute-pressure";
+    PermissionsPolicyFeature2["ControlledFrame"] = "controlled-frame";
+    PermissionsPolicyFeature2["CrossOriginIsolated"] = "cross-origin-isolated";
+    PermissionsPolicyFeature2["DeferredFetch"] = "deferred-fetch";
+    PermissionsPolicyFeature2["DeferredFetchMinimal"] = "deferred-fetch-minimal";
+    PermissionsPolicyFeature2["DeviceAttributes"] = "device-attributes";
+    PermissionsPolicyFeature2["DigitalCredentialsCreate"] = "digital-credentials-create";
+    PermissionsPolicyFeature2["DigitalCredentialsGet"] = "digital-credentials-get";
+    PermissionsPolicyFeature2["DirectSockets"] = "direct-sockets";
+    PermissionsPolicyFeature2["DirectSocketsMulticast"] = "direct-sockets-multicast";
+    PermissionsPolicyFeature2["DisplayCapture"] = "display-capture";
+    PermissionsPolicyFeature2["DocumentDomain"] = "document-domain";
+    PermissionsPolicyFeature2["EncryptedMedia"] = "encrypted-media";
+    PermissionsPolicyFeature2["ExecutionWhileOutOfViewport"] = "execution-while-out-of-viewport";
+    PermissionsPolicyFeature2["ExecutionWhileNotRendered"] = "execution-while-not-rendered";
+    PermissionsPolicyFeature2["FocusWithoutUserActivation"] = "focus-without-user-activation";
+    PermissionsPolicyFeature2["Fullscreen"] = "fullscreen";
+    PermissionsPolicyFeature2["Frobulate"] = "frobulate";
+    PermissionsPolicyFeature2["Gamepad"] = "gamepad";
+    PermissionsPolicyFeature2["Geolocation"] = "geolocation";
+    PermissionsPolicyFeature2["Gyroscope"] = "gyroscope";
+    PermissionsPolicyFeature2["Hid"] = "hid";
+    PermissionsPolicyFeature2["IdentityCredentialsGet"] = "identity-credentials-get";
+    PermissionsPolicyFeature2["IdleDetection"] = "idle-detection";
+    PermissionsPolicyFeature2["InterestCohort"] = "interest-cohort";
+    PermissionsPolicyFeature2["KeyboardMap"] = "keyboard-map";
+    PermissionsPolicyFeature2["LanguageDetector"] = "language-detector";
+    PermissionsPolicyFeature2["LanguageModel"] = "language-model";
+    PermissionsPolicyFeature2["LocalFonts"] = "local-fonts";
+    PermissionsPolicyFeature2["LocalNetwork"] = "local-network";
+    PermissionsPolicyFeature2["LocalNetworkAccess"] = "local-network-access";
+    PermissionsPolicyFeature2["LoopbackNetwork"] = "loopback-network";
+    PermissionsPolicyFeature2["Magnetometer"] = "magnetometer";
+    PermissionsPolicyFeature2["ManualText"] = "manual-text";
+    PermissionsPolicyFeature2["MediaPlaybackWhileNotVisible"] = "media-playback-while-not-visible";
+    PermissionsPolicyFeature2["Microphone"] = "microphone";
+    PermissionsPolicyFeature2["Midi"] = "midi";
+    PermissionsPolicyFeature2["OnDeviceSpeechRecognition"] = "on-device-speech-recognition";
+    PermissionsPolicyFeature2["OtpCredentials"] = "otp-credentials";
+    PermissionsPolicyFeature2["Payment"] = "payment";
+    PermissionsPolicyFeature2["PictureInPicture"] = "picture-in-picture";
+    PermissionsPolicyFeature2["PrivateStateTokenIssuance"] = "private-state-token-issuance";
+    PermissionsPolicyFeature2["PrivateStateTokenRedemption"] = "private-state-token-redemption";
+    PermissionsPolicyFeature2["PublickeyCredentialsCreate"] = "publickey-credentials-create";
+    PermissionsPolicyFeature2["PublickeyCredentialsGet"] = "publickey-credentials-get";
+    PermissionsPolicyFeature2["Rewriter"] = "rewriter";
+    PermissionsPolicyFeature2["ScreenWakeLock"] = "screen-wake-lock";
+    PermissionsPolicyFeature2["Serial"] = "serial";
+    PermissionsPolicyFeature2["SharedStorage"] = "shared-storage";
+    PermissionsPolicyFeature2["SharedStorageSelectUrl"] = "shared-storage-select-url";
+    PermissionsPolicyFeature2["SmartCard"] = "smart-card";
+    PermissionsPolicyFeature2["SpeakerSelection"] = "speaker-selection";
+    PermissionsPolicyFeature2["StorageAccess"] = "storage-access";
+    PermissionsPolicyFeature2["SubApps"] = "sub-apps";
+    PermissionsPolicyFeature2["Summarizer"] = "summarizer";
+    PermissionsPolicyFeature2["SyncXhr"] = "sync-xhr";
+    PermissionsPolicyFeature2["Tools"] = "tools";
+    PermissionsPolicyFeature2["Translator"] = "translator";
+    PermissionsPolicyFeature2["Unload"] = "unload";
+    PermissionsPolicyFeature2["Usb"] = "usb";
+    PermissionsPolicyFeature2["UsbUnrestricted"] = "usb-unrestricted";
+    PermissionsPolicyFeature2["VerticalScroll"] = "vertical-scroll";
+    PermissionsPolicyFeature2["WebAppInstallation"] = "web-app-installation";
+    PermissionsPolicyFeature2["Webnn"] = "webnn";
+    PermissionsPolicyFeature2["WebPrinting"] = "web-printing";
+    PermissionsPolicyFeature2["WebShare"] = "web-share";
+    PermissionsPolicyFeature2["WindowManagement"] = "window-management";
+    PermissionsPolicyFeature2["Writer"] = "writer";
+    PermissionsPolicyFeature2["XrSpatialTracking"] = "xr-spatial-tracking";
+  })(PermissionsPolicyFeature = Page2.PermissionsPolicyFeature || (Page2.PermissionsPolicyFeature = {}));
+  let PermissionsPolicyBlockReason;
+  ((PermissionsPolicyBlockReason2) => {
+    PermissionsPolicyBlockReason2["Header"] = "Header";
+    PermissionsPolicyBlockReason2["IframeAttribute"] = "IframeAttribute";
+    PermissionsPolicyBlockReason2["InFencedFrameTree"] = "InFencedFrameTree";
+    PermissionsPolicyBlockReason2["InIsolatedApp"] = "InIsolatedApp";
+  })(PermissionsPolicyBlockReason = Page2.PermissionsPolicyBlockReason || (Page2.PermissionsPolicyBlockReason = {}));
+  let OriginTrialTokenStatus;
+  ((OriginTrialTokenStatus2) => {
+    OriginTrialTokenStatus2["Success"] = "Success";
+    OriginTrialTokenStatus2["NotSupported"] = "NotSupported";
+    OriginTrialTokenStatus2["Insecure"] = "Insecure";
+    OriginTrialTokenStatus2["Expired"] = "Expired";
+    OriginTrialTokenStatus2["WrongOrigin"] = "WrongOrigin";
+    OriginTrialTokenStatus2["InvalidSignature"] = "InvalidSignature";
+    OriginTrialTokenStatus2["Malformed"] = "Malformed";
+    OriginTrialTokenStatus2["WrongVersion"] = "WrongVersion";
+    OriginTrialTokenStatus2["FeatureDisabled"] = "FeatureDisabled";
+    OriginTrialTokenStatus2["TokenDisabled"] = "TokenDisabled";
+    OriginTrialTokenStatus2["FeatureDisabledForUser"] = "FeatureDisabledForUser";
+    OriginTrialTokenStatus2["UnknownTrial"] = "UnknownTrial";
+  })(OriginTrialTokenStatus = Page2.OriginTrialTokenStatus || (Page2.OriginTrialTokenStatus = {}));
+  let OriginTrialStatus;
+  ((OriginTrialStatus2) => {
+    OriginTrialStatus2["Enabled"] = "Enabled";
+    OriginTrialStatus2["ValidTokenNotProvided"] = "ValidTokenNotProvided";
+    OriginTrialStatus2["OSNotSupported"] = "OSNotSupported";
+    OriginTrialStatus2["TrialNotAllowed"] = "TrialNotAllowed";
+  })(OriginTrialStatus = Page2.OriginTrialStatus || (Page2.OriginTrialStatus = {}));
+  let OriginTrialUsageRestriction;
+  ((OriginTrialUsageRestriction2) => {
+    OriginTrialUsageRestriction2["None"] = "None";
+    OriginTrialUsageRestriction2["Subset"] = "Subset";
+  })(OriginTrialUsageRestriction = Page2.OriginTrialUsageRestriction || (Page2.OriginTrialUsageRestriction = {}));
+  let TransitionType;
+  ((TransitionType2) => {
+    TransitionType2["Link"] = "link";
+    TransitionType2["Typed"] = "typed";
+    TransitionType2["Address_bar"] = "address_bar";
+    TransitionType2["Auto_bookmark"] = "auto_bookmark";
+    TransitionType2["Auto_subframe"] = "auto_subframe";
+    TransitionType2["Manual_subframe"] = "manual_subframe";
+    TransitionType2["Generated"] = "generated";
+    TransitionType2["Auto_toplevel"] = "auto_toplevel";
+    TransitionType2["Form_submit"] = "form_submit";
+    TransitionType2["Reload"] = "reload";
+    TransitionType2["Keyword"] = "keyword";
+    TransitionType2["Keyword_generated"] = "keyword_generated";
+    TransitionType2["Other"] = "other";
+  })(TransitionType = Page2.TransitionType || (Page2.TransitionType = {}));
+  let DialogType;
+  ((DialogType2) => {
+    DialogType2["Alert"] = "alert";
+    DialogType2["Confirm"] = "confirm";
+    DialogType2["Prompt"] = "prompt";
+    DialogType2["Beforeunload"] = "beforeunload";
+  })(DialogType = Page2.DialogType || (Page2.DialogType = {}));
+  let ClientNavigationReason;
+  ((ClientNavigationReason2) => {
+    ClientNavigationReason2["AnchorClick"] = "anchorClick";
+    ClientNavigationReason2["FormSubmissionGet"] = "formSubmissionGet";
+    ClientNavigationReason2["FormSubmissionPost"] = "formSubmissionPost";
+    ClientNavigationReason2["HttpHeaderRefresh"] = "httpHeaderRefresh";
+    ClientNavigationReason2["InitialFrameNavigation"] = "initialFrameNavigation";
+    ClientNavigationReason2["MetaTagRefresh"] = "metaTagRefresh";
+    ClientNavigationReason2["Other"] = "other";
+    ClientNavigationReason2["PageBlockInterstitial"] = "pageBlockInterstitial";
+    ClientNavigationReason2["Reload"] = "reload";
+    ClientNavigationReason2["ScriptInitiated"] = "scriptInitiated";
+  })(ClientNavigationReason = Page2.ClientNavigationReason || (Page2.ClientNavigationReason = {}));
+  let ClientNavigationDisposition;
+  ((ClientNavigationDisposition2) => {
+    ClientNavigationDisposition2["CurrentTab"] = "currentTab";
+    ClientNavigationDisposition2["NewTab"] = "newTab";
+    ClientNavigationDisposition2["NewWindow"] = "newWindow";
+    ClientNavigationDisposition2["Download"] = "download";
+  })(ClientNavigationDisposition = Page2.ClientNavigationDisposition || (Page2.ClientNavigationDisposition = {}));
+  let ReferrerPolicy;
+  ((ReferrerPolicy2) => {
+    ReferrerPolicy2["NoReferrer"] = "noReferrer";
+    ReferrerPolicy2["NoReferrerWhenDowngrade"] = "noReferrerWhenDowngrade";
+    ReferrerPolicy2["Origin"] = "origin";
+    ReferrerPolicy2["OriginWhenCrossOrigin"] = "originWhenCrossOrigin";
+    ReferrerPolicy2["SameOrigin"] = "sameOrigin";
+    ReferrerPolicy2["StrictOrigin"] = "strictOrigin";
+    ReferrerPolicy2["StrictOriginWhenCrossOrigin"] = "strictOriginWhenCrossOrigin";
+    ReferrerPolicy2["UnsafeUrl"] = "unsafeUrl";
+  })(ReferrerPolicy = Page2.ReferrerPolicy || (Page2.ReferrerPolicy = {}));
+  let NavigationType;
+  ((NavigationType2) => {
+    NavigationType2["Navigation"] = "Navigation";
+    NavigationType2["BackForwardCacheRestore"] = "BackForwardCacheRestore";
+  })(NavigationType = Page2.NavigationType || (Page2.NavigationType = {}));
+  let BackForwardCacheNotRestoredReason;
+  ((BackForwardCacheNotRestoredReason2) => {
+    BackForwardCacheNotRestoredReason2["NotPrimaryMainFrame"] = "NotPrimaryMainFrame";
+    BackForwardCacheNotRestoredReason2["BackForwardCacheDisabled"] = "BackForwardCacheDisabled";
+    BackForwardCacheNotRestoredReason2["RelatedActiveContentsExist"] = "RelatedActiveContentsExist";
+    BackForwardCacheNotRestoredReason2["HTTPStatusNotOK"] = "HTTPStatusNotOK";
+    BackForwardCacheNotRestoredReason2["SchemeNotHTTPOrHTTPS"] = "SchemeNotHTTPOrHTTPS";
+    BackForwardCacheNotRestoredReason2["Loading"] = "Loading";
+    BackForwardCacheNotRestoredReason2["WasGrantedMediaAccess"] = "WasGrantedMediaAccess";
+    BackForwardCacheNotRestoredReason2["DisableForRenderFrameHostCalled"] = "DisableForRenderFrameHostCalled";
+    BackForwardCacheNotRestoredReason2["DomainNotAllowed"] = "DomainNotAllowed";
+    BackForwardCacheNotRestoredReason2["HTTPMethodNotGET"] = "HTTPMethodNotGET";
+    BackForwardCacheNotRestoredReason2["SubframeIsNavigating"] = "SubframeIsNavigating";
+    BackForwardCacheNotRestoredReason2["Timeout"] = "Timeout";
+    BackForwardCacheNotRestoredReason2["CacheLimit"] = "CacheLimit";
+    BackForwardCacheNotRestoredReason2["JavaScriptExecution"] = "JavaScriptExecution";
+    BackForwardCacheNotRestoredReason2["RendererProcessKilled"] = "RendererProcessKilled";
+    BackForwardCacheNotRestoredReason2["RendererProcessCrashed"] = "RendererProcessCrashed";
+    BackForwardCacheNotRestoredReason2["SchedulerTrackedFeatureUsed"] = "SchedulerTrackedFeatureUsed";
+    BackForwardCacheNotRestoredReason2["ConflictingBrowsingInstance"] = "ConflictingBrowsingInstance";
+    BackForwardCacheNotRestoredReason2["CacheFlushed"] = "CacheFlushed";
+    BackForwardCacheNotRestoredReason2["ServiceWorkerVersionActivation"] = "ServiceWorkerVersionActivation";
+    BackForwardCacheNotRestoredReason2["SessionRestored"] = "SessionRestored";
+    BackForwardCacheNotRestoredReason2["ServiceWorkerPostMessage"] = "ServiceWorkerPostMessage";
+    BackForwardCacheNotRestoredReason2["EnteredBackForwardCacheBeforeServiceWorkerHostAdded"] = "EnteredBackForwardCacheBeforeServiceWorkerHostAdded";
+    BackForwardCacheNotRestoredReason2["RenderFrameHostReused_SameSite"] = "RenderFrameHostReused_SameSite";
+    BackForwardCacheNotRestoredReason2["RenderFrameHostReused_CrossSite"] = "RenderFrameHostReused_CrossSite";
+    BackForwardCacheNotRestoredReason2["ServiceWorkerClaim"] = "ServiceWorkerClaim";
+    BackForwardCacheNotRestoredReason2["IgnoreEventAndEvict"] = "IgnoreEventAndEvict";
+    BackForwardCacheNotRestoredReason2["HaveInnerContents"] = "HaveInnerContents";
+    BackForwardCacheNotRestoredReason2["TimeoutPuttingInCache"] = "TimeoutPuttingInCache";
+    BackForwardCacheNotRestoredReason2["BackForwardCacheDisabledByLowMemory"] = "BackForwardCacheDisabledByLowMemory";
+    BackForwardCacheNotRestoredReason2["BackForwardCacheDisabledByCommandLine"] = "BackForwardCacheDisabledByCommandLine";
+    BackForwardCacheNotRestoredReason2["NetworkRequestDatAPIpeDrainedAsBytesConsumer"] = "NetworkRequestDatapipeDrainedAsBytesConsumer";
+    BackForwardCacheNotRestoredReason2["NetworkRequestRedirected"] = "NetworkRequestRedirected";
+    BackForwardCacheNotRestoredReason2["NetworkRequestTimeout"] = "NetworkRequestTimeout";
+    BackForwardCacheNotRestoredReason2["NetworkExceedsBufferLimit"] = "NetworkExceedsBufferLimit";
+    BackForwardCacheNotRestoredReason2["NavigationCancelledWhileRestoring"] = "NavigationCancelledWhileRestoring";
+    BackForwardCacheNotRestoredReason2["NotMostRecentNavigationEntry"] = "NotMostRecentNavigationEntry";
+    BackForwardCacheNotRestoredReason2["BackForwardCacheDisabledForPrerender"] = "BackForwardCacheDisabledForPrerender";
+    BackForwardCacheNotRestoredReason2["UserAgentOverrideDiffers"] = "UserAgentOverrideDiffers";
+    BackForwardCacheNotRestoredReason2["ForegroundCacheLimit"] = "ForegroundCacheLimit";
+    BackForwardCacheNotRestoredReason2["ForwardCacheDisabled"] = "ForwardCacheDisabled";
+    BackForwardCacheNotRestoredReason2["BrowsingInstanceNotSwapped"] = "BrowsingInstanceNotSwapped";
+    BackForwardCacheNotRestoredReason2["BackForwardCacheDisabledForDelegate"] = "BackForwardCacheDisabledForDelegate";
+    BackForwardCacheNotRestoredReason2["UnloadHandlerExistsInMainFrame"] = "UnloadHandlerExistsInMainFrame";
+    BackForwardCacheNotRestoredReason2["UnloadHandlerExistsInSubFrame"] = "UnloadHandlerExistsInSubFrame";
+    BackForwardCacheNotRestoredReason2["ServiceWorkerUnregistration"] = "ServiceWorkerUnregistration";
+    BackForwardCacheNotRestoredReason2["CacheControlNoStore"] = "CacheControlNoStore";
+    BackForwardCacheNotRestoredReason2["CacheControlNoStoreCookieModified"] = "CacheControlNoStoreCookieModified";
+    BackForwardCacheNotRestoredReason2["CacheControlNoStoreHTTPOnlyCookieModified"] = "CacheControlNoStoreHTTPOnlyCookieModified";
+    BackForwardCacheNotRestoredReason2["NoResponseHead"] = "NoResponseHead";
+    BackForwardCacheNotRestoredReason2["Unknown"] = "Unknown";
+    BackForwardCacheNotRestoredReason2["ActivationNavigationsDisallowedForBug1234857"] = "ActivationNavigationsDisallowedForBug1234857";
+    BackForwardCacheNotRestoredReason2["ErrorDocument"] = "ErrorDocument";
+    BackForwardCacheNotRestoredReason2["FencedFramesEmbedder"] = "FencedFramesEmbedder";
+    BackForwardCacheNotRestoredReason2["CookieDisabled"] = "CookieDisabled";
+    BackForwardCacheNotRestoredReason2["HTTPAuthRequired"] = "HTTPAuthRequired";
+    BackForwardCacheNotRestoredReason2["CookieFlushed"] = "CookieFlushed";
+    BackForwardCacheNotRestoredReason2["BroadcastChannelOnMessage"] = "BroadcastChannelOnMessage";
+    BackForwardCacheNotRestoredReason2["WebViewSettingsChanged"] = "WebViewSettingsChanged";
+    BackForwardCacheNotRestoredReason2["WebViewJavaScriptObjectChanged"] = "WebViewJavaScriptObjectChanged";
+    BackForwardCacheNotRestoredReason2["WebViewMessageListenerInjected"] = "WebViewMessageListenerInjected";
+    BackForwardCacheNotRestoredReason2["WebViewSafeBrowsingAllowlistChanged"] = "WebViewSafeBrowsingAllowlistChanged";
+    BackForwardCacheNotRestoredReason2["WebViewDocumentStartJavascriptChanged"] = "WebViewDocumentStartJavascriptChanged";
+    BackForwardCacheNotRestoredReason2["WebSocket"] = "WebSocket";
+    BackForwardCacheNotRestoredReason2["WebTransport"] = "WebTransport";
+    BackForwardCacheNotRestoredReason2["WebRTC"] = "WebRTC";
+    BackForwardCacheNotRestoredReason2["MainResourceHasCacheControlNoStore"] = "MainResourceHasCacheControlNoStore";
+    BackForwardCacheNotRestoredReason2["MainResourceHasCacheControlNoCache"] = "MainResourceHasCacheControlNoCache";
+    BackForwardCacheNotRestoredReason2["SubresourceHasCacheControlNoStore"] = "SubresourceHasCacheControlNoStore";
+    BackForwardCacheNotRestoredReason2["SubresourceHasCacheControlNoCache"] = "SubresourceHasCacheControlNoCache";
+    BackForwardCacheNotRestoredReason2["ContainsPlugins"] = "ContainsPlugins";
+    BackForwardCacheNotRestoredReason2["DocumentLoaded"] = "DocumentLoaded";
+    BackForwardCacheNotRestoredReason2["OutstandingNetworkRequestOthers"] = "OutstandingNetworkRequestOthers";
+    BackForwardCacheNotRestoredReason2["RequestedMIDIPermission"] = "RequestedMIDIPermission";
+    BackForwardCacheNotRestoredReason2["RequestedAudioCapturePermission"] = "RequestedAudioCapturePermission";
+    BackForwardCacheNotRestoredReason2["RequestedVideoCapturePermission"] = "RequestedVideoCapturePermission";
+    BackForwardCacheNotRestoredReason2["RequestedBackForwardCacheBlockedSensors"] = "RequestedBackForwardCacheBlockedSensors";
+    BackForwardCacheNotRestoredReason2["RequestedBackgroundWorkPermission"] = "RequestedBackgroundWorkPermission";
+    BackForwardCacheNotRestoredReason2["BroadcastChannel"] = "BroadcastChannel";
+    BackForwardCacheNotRestoredReason2["WebXR"] = "WebXR";
+    BackForwardCacheNotRestoredReason2["SharedWorker"] = "SharedWorker";
+    BackForwardCacheNotRestoredReason2["SharedWorkerMessage"] = "SharedWorkerMessage";
+    BackForwardCacheNotRestoredReason2["SharedWorkerWithNoActiveClient"] = "SharedWorkerWithNoActiveClient";
+    BackForwardCacheNotRestoredReason2["WebLocks"] = "WebLocks";
+    BackForwardCacheNotRestoredReason2["WebLocksContention"] = "WebLocksContention";
+    BackForwardCacheNotRestoredReason2["WebHID"] = "WebHID";
+    BackForwardCacheNotRestoredReason2["WebBluetooth"] = "WebBluetooth";
+    BackForwardCacheNotRestoredReason2["WebShare"] = "WebShare";
+    BackForwardCacheNotRestoredReason2["RequestedStorageAccessGrant"] = "RequestedStorageAccessGrant";
+    BackForwardCacheNotRestoredReason2["WebNfc"] = "WebNfc";
+    BackForwardCacheNotRestoredReason2["OutstandingNetworkRequestFetch"] = "OutstandingNetworkRequestFetch";
+    BackForwardCacheNotRestoredReason2["OutstandingNetworkRequestXHR"] = "OutstandingNetworkRequestXHR";
+    BackForwardCacheNotRestoredReason2["AppBanner"] = "AppBanner";
+    BackForwardCacheNotRestoredReason2["Printing"] = "Printing";
+    BackForwardCacheNotRestoredReason2["WebDatabase"] = "WebDatabase";
+    BackForwardCacheNotRestoredReason2["PictureInPicture"] = "PictureInPicture";
+    BackForwardCacheNotRestoredReason2["SpeechRecognizer"] = "SpeechRecognizer";
+    BackForwardCacheNotRestoredReason2["IdleManager"] = "IdleManager";
+    BackForwardCacheNotRestoredReason2["PaymentManager"] = "PaymentManager";
+    BackForwardCacheNotRestoredReason2["SpeechSynthesis"] = "SpeechSynthesis";
+    BackForwardCacheNotRestoredReason2["KeyboardLock"] = "KeyboardLock";
+    BackForwardCacheNotRestoredReason2["WebOTPService"] = "WebOTPService";
+    BackForwardCacheNotRestoredReason2["OutstandingNetworkRequestDirectSocket"] = "OutstandingNetworkRequestDirectSocket";
+    BackForwardCacheNotRestoredReason2["InjectedJavascript"] = "InjectedJavascript";
+    BackForwardCacheNotRestoredReason2["InjectedStyleSheet"] = "InjectedStyleSheet";
+    BackForwardCacheNotRestoredReason2["KeepaliveRequest"] = "KeepaliveRequest";
+    BackForwardCacheNotRestoredReason2["IndexedDBEvent"] = "IndexedDBEvent";
+    BackForwardCacheNotRestoredReason2["Dummy"] = "Dummy";
+    BackForwardCacheNotRestoredReason2["JsNetworkRequestReceivedCacheControlNoStoreResource"] = "JsNetworkRequestReceivedCacheControlNoStoreResource";
+    BackForwardCacheNotRestoredReason2["WebRTCUsedWithCCNS"] = "WebRTCUsedWithCCNS";
+    BackForwardCacheNotRestoredReason2["WebTransportUsedWithCCNS"] = "WebTransportUsedWithCCNS";
+    BackForwardCacheNotRestoredReason2["WebSocketUsedWithCCNS"] = "WebSocketUsedWithCCNS";
+    BackForwardCacheNotRestoredReason2["SmartCard"] = "SmartCard";
+    BackForwardCacheNotRestoredReason2["LiveMediaStreamTrack"] = "LiveMediaStreamTrack";
+    BackForwardCacheNotRestoredReason2["UnloadHandler"] = "UnloadHandler";
+    BackForwardCacheNotRestoredReason2["ParserAborted"] = "ParserAborted";
+    BackForwardCacheNotRestoredReason2["ContentSecurityHandler"] = "ContentSecurityHandler";
+    BackForwardCacheNotRestoredReason2["ContentWebAuthenticationAPI"] = "ContentWebAuthenticationAPI";
+    BackForwardCacheNotRestoredReason2["ContentFileChooser"] = "ContentFileChooser";
+    BackForwardCacheNotRestoredReason2["ContentSerial"] = "ContentSerial";
+    BackForwardCacheNotRestoredReason2["ContentFileSystemAccess"] = "ContentFileSystemAccess";
+    BackForwardCacheNotRestoredReason2["ContentMediaDevicesDispatcherHost"] = "ContentMediaDevicesDispatcherHost";
+    BackForwardCacheNotRestoredReason2["ContentWebBluetooth"] = "ContentWebBluetooth";
+    BackForwardCacheNotRestoredReason2["ContentWebUSB"] = "ContentWebUSB";
+    BackForwardCacheNotRestoredReason2["ContentMediaSessionService"] = "ContentMediaSessionService";
+    BackForwardCacheNotRestoredReason2["ContentScreenReader"] = "ContentScreenReader";
+    BackForwardCacheNotRestoredReason2["ContentDiscarded"] = "ContentDiscarded";
+    BackForwardCacheNotRestoredReason2["EmbedderPopupBlockerTabHelper"] = "EmbedderPopupBlockerTabHelper";
+    BackForwardCacheNotRestoredReason2["EmbedderSafeBrowsingTriggeredPopupBlocker"] = "EmbedderSafeBrowsingTriggeredPopupBlocker";
+    BackForwardCacheNotRestoredReason2["EmbedderSafeBrowsingThreatDetails"] = "EmbedderSafeBrowsingThreatDetails";
+    BackForwardCacheNotRestoredReason2["EmbedderAppBannerManager"] = "EmbedderAppBannerManager";
+    BackForwardCacheNotRestoredReason2["EmbedderDomDistillerViewerSource"] = "EmbedderDomDistillerViewerSource";
+    BackForwardCacheNotRestoredReason2["EmbedderDomDistillerSelfDeletingRequestDelegate"] = "EmbedderDomDistillerSelfDeletingRequestDelegate";
+    BackForwardCacheNotRestoredReason2["EmbedderOomInterventionTabHelper"] = "EmbedderOomInterventionTabHelper";
+    BackForwardCacheNotRestoredReason2["EmbedderOfflinePage"] = "EmbedderOfflinePage";
+    BackForwardCacheNotRestoredReason2["EmbedderChromePasswordManagerClientBindCredentialManager"] = "EmbedderChromePasswordManagerClientBindCredentialManager";
+    BackForwardCacheNotRestoredReason2["EmbedderPermissionRequestManager"] = "EmbedderPermissionRequestManager";
+    BackForwardCacheNotRestoredReason2["EmbedderModalDialog"] = "EmbedderModalDialog";
+    BackForwardCacheNotRestoredReason2["EmbedderExtensions"] = "EmbedderExtensions";
+    BackForwardCacheNotRestoredReason2["EmbedderExtensionMessaging"] = "EmbedderExtensionMessaging";
+    BackForwardCacheNotRestoredReason2["EmbedderExtensionMessagingForOpenPort"] = "EmbedderExtensionMessagingForOpenPort";
+    BackForwardCacheNotRestoredReason2["EmbedderExtensionSentMessageToCachedFrame"] = "EmbedderExtensionSentMessageToCachedFrame";
+    BackForwardCacheNotRestoredReason2["EmbedderExtensionFrame"] = "EmbedderExtensionFrame";
+    BackForwardCacheNotRestoredReason2["EmbedderPrivilegedWebContents"] = "EmbedderPrivilegedWebContents";
+    BackForwardCacheNotRestoredReason2["RequestedByWebViewClient"] = "RequestedByWebViewClient";
+    BackForwardCacheNotRestoredReason2["PostMessageByWebViewClient"] = "PostMessageByWebViewClient";
+    BackForwardCacheNotRestoredReason2["CacheControlNoStoreDeviceBoundSessionTerminated"] = "CacheControlNoStoreDeviceBoundSessionTerminated";
+    BackForwardCacheNotRestoredReason2["CacheLimitPrunedOnModerateMemoryPressure"] = "CacheLimitPrunedOnModerateMemoryPressure";
+    BackForwardCacheNotRestoredReason2["CacheLimitPrunedOnCriticalMemoryPressure"] = "CacheLimitPrunedOnCriticalMemoryPressure";
+  })(BackForwardCacheNotRestoredReason = Page2.BackForwardCacheNotRestoredReason || (Page2.BackForwardCacheNotRestoredReason = {}));
+  let BackForwardCacheNotRestoredReasonType;
+  ((BackForwardCacheNotRestoredReasonType2) => {
+    BackForwardCacheNotRestoredReasonType2["SupportPending"] = "SupportPending";
+    BackForwardCacheNotRestoredReasonType2["PageSupportNeeded"] = "PageSupportNeeded";
+    BackForwardCacheNotRestoredReasonType2["Circumstantial"] = "Circumstantial";
+  })(BackForwardCacheNotRestoredReasonType = Page2.BackForwardCacheNotRestoredReasonType || (Page2.BackForwardCacheNotRestoredReasonType = {}));
+  let CaptureScreenshotRequestFormat;
+  ((CaptureScreenshotRequestFormat2) => {
+    CaptureScreenshotRequestFormat2["Jpeg"] = "jpeg";
+    CaptureScreenshotRequestFormat2["Png"] = "png";
+    CaptureScreenshotRequestFormat2["Webp"] = "webp";
+  })(CaptureScreenshotRequestFormat = Page2.CaptureScreenshotRequestFormat || (Page2.CaptureScreenshotRequestFormat = {}));
+  let CaptureSnapshotRequestFormat;
+  ((CaptureSnapshotRequestFormat2) => {
+    CaptureSnapshotRequestFormat2["MHTML"] = "mhtml";
+  })(CaptureSnapshotRequestFormat = Page2.CaptureSnapshotRequestFormat || (Page2.CaptureSnapshotRequestFormat = {}));
+  let PrintToPDFRequestTransferMode;
+  ((PrintToPDFRequestTransferMode2) => {
+    PrintToPDFRequestTransferMode2["ReturnAsBase64"] = "ReturnAsBase64";
+    PrintToPDFRequestTransferMode2["ReturnAsStream"] = "ReturnAsStream";
+  })(PrintToPDFRequestTransferMode = Page2.PrintToPDFRequestTransferMode || (Page2.PrintToPDFRequestTransferMode = {}));
+  let SetDownloadBehaviorRequestBehavior;
+  ((SetDownloadBehaviorRequestBehavior2) => {
+    SetDownloadBehaviorRequestBehavior2["Deny"] = "deny";
+    SetDownloadBehaviorRequestBehavior2["Allow"] = "allow";
+    SetDownloadBehaviorRequestBehavior2["Default"] = "default";
+  })(SetDownloadBehaviorRequestBehavior = Page2.SetDownloadBehaviorRequestBehavior || (Page2.SetDownloadBehaviorRequestBehavior = {}));
+  let SetTouchEmulationEnabledRequestConfiguration;
+  ((SetTouchEmulationEnabledRequestConfiguration2) => {
+    SetTouchEmulationEnabledRequestConfiguration2["Mobile"] = "mobile";
+    SetTouchEmulationEnabledRequestConfiguration2["Desktop"] = "desktop";
+  })(SetTouchEmulationEnabledRequestConfiguration = Page2.SetTouchEmulationEnabledRequestConfiguration || (Page2.SetTouchEmulationEnabledRequestConfiguration = {}));
+  let StartScreencastRequestFormat;
+  ((StartScreencastRequestFormat2) => {
+    StartScreencastRequestFormat2["Jpeg"] = "jpeg";
+    StartScreencastRequestFormat2["Png"] = "png";
+  })(StartScreencastRequestFormat = Page2.StartScreencastRequestFormat || (Page2.StartScreencastRequestFormat = {}));
+  let SetWebLifecycleStateRequestState;
+  ((SetWebLifecycleStateRequestState2) => {
+    SetWebLifecycleStateRequestState2["Frozen"] = "frozen";
+    SetWebLifecycleStateRequestState2["Active"] = "active";
+  })(SetWebLifecycleStateRequestState = Page2.SetWebLifecycleStateRequestState || (Page2.SetWebLifecycleStateRequestState = {}));
+  let SetSPCTransactionModeRequestMode;
+  ((SetSPCTransactionModeRequestMode2) => {
+    SetSPCTransactionModeRequestMode2["None"] = "none";
+    SetSPCTransactionModeRequestMode2["AutoAccept"] = "autoAccept";
+    SetSPCTransactionModeRequestMode2["AutoChooseToAuthAnotherWay"] = "autoChooseToAuthAnotherWay";
+    SetSPCTransactionModeRequestMode2["AutoReject"] = "autoReject";
+    SetSPCTransactionModeRequestMode2["AutoOptOut"] = "autoOptOut";
+  })(SetSPCTransactionModeRequestMode = Page2.SetSPCTransactionModeRequestMode || (Page2.SetSPCTransactionModeRequestMode = {}));
+  let SetRPHRegistrationModeRequestMode;
+  ((SetRPHRegistrationModeRequestMode2) => {
+    SetRPHRegistrationModeRequestMode2["None"] = "none";
+    SetRPHRegistrationModeRequestMode2["AutoAccept"] = "autoAccept";
+    SetRPHRegistrationModeRequestMode2["AutoReject"] = "autoReject";
+  })(SetRPHRegistrationModeRequestMode = Page2.SetRPHRegistrationModeRequestMode || (Page2.SetRPHRegistrationModeRequestMode = {}));
+  let FileChooserOpenedEventMode;
+  ((FileChooserOpenedEventMode2) => {
+    FileChooserOpenedEventMode2["SelectSingle"] = "selectSingle";
+    FileChooserOpenedEventMode2["SelectMultiple"] = "selectMultiple";
+  })(FileChooserOpenedEventMode = Page2.FileChooserOpenedEventMode || (Page2.FileChooserOpenedEventMode = {}));
+  let FrameDetachedEventReason;
+  ((FrameDetachedEventReason2) => {
+    FrameDetachedEventReason2["Remove"] = "remove";
+    FrameDetachedEventReason2["Swap"] = "swap";
+  })(FrameDetachedEventReason = Page2.FrameDetachedEventReason || (Page2.FrameDetachedEventReason = {}));
+  let FrameStartedNavigatingEventNavigationType;
+  ((FrameStartedNavigatingEventNavigationType2) => {
+    FrameStartedNavigatingEventNavigationType2["Reload"] = "reload";
+    FrameStartedNavigatingEventNavigationType2["ReloadBypassingCache"] = "reloadBypassingCache";
+    FrameStartedNavigatingEventNavigationType2["Restore"] = "restore";
+    FrameStartedNavigatingEventNavigationType2["RestoreWithPost"] = "restoreWithPost";
+    FrameStartedNavigatingEventNavigationType2["HistorySameDocument"] = "historySameDocument";
+    FrameStartedNavigatingEventNavigationType2["HistoryDifferentDocument"] = "historyDifferentDocument";
+    FrameStartedNavigatingEventNavigationType2["SameDocument"] = "sameDocument";
+    FrameStartedNavigatingEventNavigationType2["DifferentDocument"] = "differentDocument";
+  })(FrameStartedNavigatingEventNavigationType = Page2.FrameStartedNavigatingEventNavigationType || (Page2.FrameStartedNavigatingEventNavigationType = {}));
+  let DownloadProgressEventState;
+  ((DownloadProgressEventState2) => {
+    DownloadProgressEventState2["InProgress"] = "inProgress";
+    DownloadProgressEventState2["Completed"] = "completed";
+    DownloadProgressEventState2["Canceled"] = "canceled";
+  })(DownloadProgressEventState = Page2.DownloadProgressEventState || (Page2.DownloadProgressEventState = {}));
+  let NavigatedWithinDocumentEventNavigationType;
+  ((NavigatedWithinDocumentEventNavigationType2) => {
+    NavigatedWithinDocumentEventNavigationType2["Fragment"] = "fragment";
+    NavigatedWithinDocumentEventNavigationType2["HistoryAPI"] = "historyApi";
+    NavigatedWithinDocumentEventNavigationType2["Other"] = "other";
+  })(NavigatedWithinDocumentEventNavigationType = Page2.NavigatedWithinDocumentEventNavigationType || (Page2.NavigatedWithinDocumentEventNavigationType = {}));
+})(Page || (Page = {}));
+var Performance;
+((Performance2) => {
+  let EnableRequestTimeDomain;
+  ((EnableRequestTimeDomain2) => {
+    EnableRequestTimeDomain2["TimeTicks"] = "timeTicks";
+    EnableRequestTimeDomain2["ThreadTicks"] = "threadTicks";
+  })(EnableRequestTimeDomain = Performance2.EnableRequestTimeDomain || (Performance2.EnableRequestTimeDomain = {}));
+  let SetTimeDomainRequestTimeDomain;
+  ((SetTimeDomainRequestTimeDomain2) => {
+    SetTimeDomainRequestTimeDomain2["TimeTicks"] = "timeTicks";
+    SetTimeDomainRequestTimeDomain2["ThreadTicks"] = "threadTicks";
+  })(SetTimeDomainRequestTimeDomain = Performance2.SetTimeDomainRequestTimeDomain || (Performance2.SetTimeDomainRequestTimeDomain = {}));
+})(Performance || (Performance = {}));
+var Preload;
+((Preload2) => {
+  let RuleSetErrorType;
+  ((RuleSetErrorType2) => {
+    RuleSetErrorType2["SourceIsNotJsonObject"] = "SourceIsNotJsonObject";
+    RuleSetErrorType2["InvalidRulesSkipped"] = "InvalidRulesSkipped";
+    RuleSetErrorType2["InvalidRulesetLevelTag"] = "InvalidRulesetLevelTag";
+  })(RuleSetErrorType = Preload2.RuleSetErrorType || (Preload2.RuleSetErrorType = {}));
+  let SpeculationAction;
+  ((SpeculationAction2) => {
+    SpeculationAction2["Prefetch"] = "Prefetch";
+    SpeculationAction2["Prerender"] = "Prerender";
+    SpeculationAction2["PrerenderUntilScript"] = "PrerenderUntilScript";
+  })(SpeculationAction = Preload2.SpeculationAction || (Preload2.SpeculationAction = {}));
+  let SpeculationTargetHint;
+  ((SpeculationTargetHint2) => {
+    SpeculationTargetHint2["Blank"] = "Blank";
+    SpeculationTargetHint2["Self"] = "Self";
+  })(SpeculationTargetHint = Preload2.SpeculationTargetHint || (Preload2.SpeculationTargetHint = {}));
+  let PrerenderFinalStatus;
+  ((PrerenderFinalStatus2) => {
+    PrerenderFinalStatus2["Activated"] = "Activated";
+    PrerenderFinalStatus2["Destroyed"] = "Destroyed";
+    PrerenderFinalStatus2["LowEndDevice"] = "LowEndDevice";
+    PrerenderFinalStatus2["InvalidSchemeRedirect"] = "InvalidSchemeRedirect";
+    PrerenderFinalStatus2["InvalidSchemeNavigation"] = "InvalidSchemeNavigation";
+    PrerenderFinalStatus2["NavigationRequestBlockedByCsp"] = "NavigationRequestBlockedByCsp";
+    PrerenderFinalStatus2["MojoBinderPolicy"] = "MojoBinderPolicy";
+    PrerenderFinalStatus2["RendererProcessCrashed"] = "RendererProcessCrashed";
+    PrerenderFinalStatus2["RendererProcessKilled"] = "RendererProcessKilled";
+    PrerenderFinalStatus2["Download"] = "Download";
+    PrerenderFinalStatus2["TriggerDestroyed"] = "TriggerDestroyed";
+    PrerenderFinalStatus2["NavigationNotCommitted"] = "NavigationNotCommitted";
+    PrerenderFinalStatus2["NavigationBadHttpStatus"] = "NavigationBadHttpStatus";
+    PrerenderFinalStatus2["ClientCertRequested"] = "ClientCertRequested";
+    PrerenderFinalStatus2["NavigationRequestNetworkError"] = "NavigationRequestNetworkError";
+    PrerenderFinalStatus2["CancelAllHostsForTesting"] = "CancelAllHostsForTesting";
+    PrerenderFinalStatus2["DidFailLoad"] = "DidFailLoad";
+    PrerenderFinalStatus2["Stop"] = "Stop";
+    PrerenderFinalStatus2["SslCertificateError"] = "SslCertificateError";
+    PrerenderFinalStatus2["LoginAuthRequested"] = "LoginAuthRequested";
+    PrerenderFinalStatus2["UaChangeRequiresReload"] = "UaChangeRequiresReload";
+    PrerenderFinalStatus2["BlockedByClient"] = "BlockedByClient";
+    PrerenderFinalStatus2["AudioOutputDeviceRequested"] = "AudioOutputDeviceRequested";
+    PrerenderFinalStatus2["MixedContent"] = "MixedContent";
+    PrerenderFinalStatus2["TriggerBackgrounded"] = "TriggerBackgrounded";
+    PrerenderFinalStatus2["MemoryLimitExceeded"] = "MemoryLimitExceeded";
+    PrerenderFinalStatus2["DataSaverEnabled"] = "DataSaverEnabled";
+    PrerenderFinalStatus2["TriggerUrlHasEffectiveUrl"] = "TriggerUrlHasEffectiveUrl";
+    PrerenderFinalStatus2["ActivatedBeforeStarted"] = "ActivatedBeforeStarted";
+    PrerenderFinalStatus2["InactivePageRestriction"] = "InactivePageRestriction";
+    PrerenderFinalStatus2["StartFailed"] = "StartFailed";
+    PrerenderFinalStatus2["TimeoutBackgrounded"] = "TimeoutBackgrounded";
+    PrerenderFinalStatus2["CrossSiteRedirectInInitialNavigation"] = "CrossSiteRedirectInInitialNavigation";
+    PrerenderFinalStatus2["CrossSiteNavigationInInitialNavigation"] = "CrossSiteNavigationInInitialNavigation";
+    PrerenderFinalStatus2["SameSiteCrossOriginRedirectNotOptInInInitialNavigation"] = "SameSiteCrossOriginRedirectNotOptInInInitialNavigation";
+    PrerenderFinalStatus2["SameSiteCrossOriginNavigationNotOptInInInitialNavigation"] = "SameSiteCrossOriginNavigationNotOptInInInitialNavigation";
+    PrerenderFinalStatus2["ActivationNavigationParameterMismatch"] = "ActivationNavigationParameterMismatch";
+    PrerenderFinalStatus2["ActivatedInBackground"] = "ActivatedInBackground";
+    PrerenderFinalStatus2["EmbedderHostDisallowed"] = "EmbedderHostDisallowed";
+    PrerenderFinalStatus2["ActivationNavigationDestroyedBeforeSuccess"] = "ActivationNavigationDestroyedBeforeSuccess";
+    PrerenderFinalStatus2["TabClosedByUserGesture"] = "TabClosedByUserGesture";
+    PrerenderFinalStatus2["TabClosedWithoutUserGesture"] = "TabClosedWithoutUserGesture";
+    PrerenderFinalStatus2["PrimaryMainFrameRendererProcessCrashed"] = "PrimaryMainFrameRendererProcessCrashed";
+    PrerenderFinalStatus2["PrimaryMainFrameRendererProcessKilled"] = "PrimaryMainFrameRendererProcessKilled";
+    PrerenderFinalStatus2["ActivationFramePolicyNotCompatible"] = "ActivationFramePolicyNotCompatible";
+    PrerenderFinalStatus2["PreloadingDisabled"] = "PreloadingDisabled";
+    PrerenderFinalStatus2["BatterySaverEnabled"] = "BatterySaverEnabled";
+    PrerenderFinalStatus2["ActivatedDuringMainFrameNavigation"] = "ActivatedDuringMainFrameNavigation";
+    PrerenderFinalStatus2["PreloadingUnsupportedByWebContents"] = "PreloadingUnsupportedByWebContents";
+    PrerenderFinalStatus2["CrossSiteRedirectInMainFrameNavigation"] = "CrossSiteRedirectInMainFrameNavigation";
+    PrerenderFinalStatus2["CrossSiteNavigationInMainFrameNavigation"] = "CrossSiteNavigationInMainFrameNavigation";
+    PrerenderFinalStatus2["SameSiteCrossOriginRedirectNotOptInInMainFrameNavigation"] = "SameSiteCrossOriginRedirectNotOptInInMainFrameNavigation";
+    PrerenderFinalStatus2["SameSiteCrossOriginNavigationNotOptInInMainFrameNavigation"] = "SameSiteCrossOriginNavigationNotOptInInMainFrameNavigation";
+    PrerenderFinalStatus2["MemoryPressureOnTrigger"] = "MemoryPressureOnTrigger";
+    PrerenderFinalStatus2["MemoryPressureAfterTriggered"] = "MemoryPressureAfterTriggered";
+    PrerenderFinalStatus2["PrerenderingDisabledByDevTools"] = "PrerenderingDisabledByDevTools";
+    PrerenderFinalStatus2["SpeculationRuleRemoved"] = "SpeculationRuleRemoved";
+    PrerenderFinalStatus2["ActivatedWithAuxiliaryBrowsingContexts"] = "ActivatedWithAuxiliaryBrowsingContexts";
+    PrerenderFinalStatus2["MaxNumOfRunningEagerPrerendersExceeded"] = "MaxNumOfRunningEagerPrerendersExceeded";
+    PrerenderFinalStatus2["MaxNumOfRunningNonEagerPrerendersExceeded"] = "MaxNumOfRunningNonEagerPrerendersExceeded";
+    PrerenderFinalStatus2["MaxNumOfRunningEmbedderPrerendersExceeded"] = "MaxNumOfRunningEmbedderPrerendersExceeded";
+    PrerenderFinalStatus2["PrerenderingUrlHasEffectiveUrl"] = "PrerenderingUrlHasEffectiveUrl";
+    PrerenderFinalStatus2["RedirectedPrerenderingUrlHasEffectiveUrl"] = "RedirectedPrerenderingUrlHasEffectiveUrl";
+    PrerenderFinalStatus2["ActivationUrlHasEffectiveUrl"] = "ActivationUrlHasEffectiveUrl";
+    PrerenderFinalStatus2["JavaScriptInterfaceAdded"] = "JavaScriptInterfaceAdded";
+    PrerenderFinalStatus2["JavaScriptInterfaceRemoved"] = "JavaScriptInterfaceRemoved";
+    PrerenderFinalStatus2["AllPrerenderingCanceled"] = "AllPrerenderingCanceled";
+    PrerenderFinalStatus2["WindowClosed"] = "WindowClosed";
+    PrerenderFinalStatus2["SlowNetwork"] = "SlowNetwork";
+    PrerenderFinalStatus2["OtherPrerenderedPageActivated"] = "OtherPrerenderedPageActivated";
+    PrerenderFinalStatus2["V8OptimizerDisabled"] = "V8OptimizerDisabled";
+    PrerenderFinalStatus2["PrerenderFailedDuringPrefetch"] = "PrerenderFailedDuringPrefetch";
+    PrerenderFinalStatus2["BrowsingDataRemoved"] = "BrowsingDataRemoved";
+    PrerenderFinalStatus2["PrerenderHostReused"] = "PrerenderHostReused";
+    PrerenderFinalStatus2["FormSubmitWhenPrerendering"] = "FormSubmitWhenPrerendering";
+    PrerenderFinalStatus2["CrossDocumentRestart"] = "CrossDocumentRestart";
+  })(PrerenderFinalStatus = Preload2.PrerenderFinalStatus || (Preload2.PrerenderFinalStatus = {}));
+  let PreloadingStatus;
+  ((PreloadingStatus2) => {
+    PreloadingStatus2["Pending"] = "Pending";
+    PreloadingStatus2["Running"] = "Running";
+    PreloadingStatus2["Ready"] = "Ready";
+    PreloadingStatus2["Success"] = "Success";
+    PreloadingStatus2["Failure"] = "Failure";
+    PreloadingStatus2["NotSupported"] = "NotSupported";
+  })(PreloadingStatus = Preload2.PreloadingStatus || (Preload2.PreloadingStatus = {}));
+  let PrefetchStatus;
+  ((PrefetchStatus2) => {
+    PrefetchStatus2["PrefetchAllowed"] = "PrefetchAllowed";
+    PrefetchStatus2["PrefetchFailedIneligibleRedirect"] = "PrefetchFailedIneligibleRedirect";
+    PrefetchStatus2["PrefetchFailedInvalidRedirect"] = "PrefetchFailedInvalidRedirect";
+    PrefetchStatus2["PrefetchFailedMIMENotSupported"] = "PrefetchFailedMIMENotSupported";
+    PrefetchStatus2["PrefetchFailedNetError"] = "PrefetchFailedNetError";
+    PrefetchStatus2["PrefetchFailedNon2XX"] = "PrefetchFailedNon2XX";
+    PrefetchStatus2["PrefetchEvictedAfterBrowsingDataRemoved"] = "PrefetchEvictedAfterBrowsingDataRemoved";
+    PrefetchStatus2["PrefetchEvictedAfterCandidateRemoved"] = "PrefetchEvictedAfterCandidateRemoved";
+    PrefetchStatus2["PrefetchEvictedForNewerPrefetch"] = "PrefetchEvictedForNewerPrefetch";
+    PrefetchStatus2["PrefetchHeldback"] = "PrefetchHeldback";
+    PrefetchStatus2["PrefetchIneligibleRetryAfter"] = "PrefetchIneligibleRetryAfter";
+    PrefetchStatus2["PrefetchIsPrivacyDecoy"] = "PrefetchIsPrivacyDecoy";
+    PrefetchStatus2["PrefetchIsStale"] = "PrefetchIsStale";
+    PrefetchStatus2["PrefetchNotEligibleBlockedByConnectionAllowlist"] = "PrefetchNotEligibleBlockedByConnectionAllowlist";
+    PrefetchStatus2["PrefetchNotEligibleBrowserContextOffTheRecord"] = "PrefetchNotEligibleBrowserContextOffTheRecord";
+    PrefetchStatus2["PrefetchNotEligibleCrossOrigin"] = "PrefetchNotEligibleCrossOrigin";
+    PrefetchStatus2["PrefetchNotEligibleDataSaverEnabled"] = "PrefetchNotEligibleDataSaverEnabled";
+    PrefetchStatus2["PrefetchNotEligibleExistingProxy"] = "PrefetchNotEligibleExistingProxy";
+    PrefetchStatus2["PrefetchNotEligibleHostIsNonUnique"] = "PrefetchNotEligibleHostIsNonUnique";
+    PrefetchStatus2["PrefetchNotEligibleNonDefaultStoragePartition"] = "PrefetchNotEligibleNonDefaultStoragePartition";
+    PrefetchStatus2["PrefetchNotEligibleSameSiteCrossOriginPrefetchRequiredProxy"] = "PrefetchNotEligibleSameSiteCrossOriginPrefetchRequiredProxy";
+    PrefetchStatus2["PrefetchNotEligibleSchemeIsNotHttps"] = "PrefetchNotEligibleSchemeIsNotHttps";
+    PrefetchStatus2["PrefetchNotEligibleUserHasCookies"] = "PrefetchNotEligibleUserHasCookies";
+    PrefetchStatus2["PrefetchNotEligibleUserHasServiceWorker"] = "PrefetchNotEligibleUserHasServiceWorker";
+    PrefetchStatus2["PrefetchNotEligibleUserHasServiceWorkerNoFetchHandler"] = "PrefetchNotEligibleUserHasServiceWorkerNoFetchHandler";
+    PrefetchStatus2["PrefetchNotEligibleRedirectFromServiceWorker"] = "PrefetchNotEligibleRedirectFromServiceWorker";
+    PrefetchStatus2["PrefetchNotEligibleRedirectToServiceWorker"] = "PrefetchNotEligibleRedirectToServiceWorker";
+    PrefetchStatus2["PrefetchNotEligibleBatterySaverEnabled"] = "PrefetchNotEligibleBatterySaverEnabled";
+    PrefetchStatus2["PrefetchNotEligiblePreloadingDisabled"] = "PrefetchNotEligiblePreloadingDisabled";
+    PrefetchStatus2["PrefetchNotFinishedInTime"] = "PrefetchNotFinishedInTime";
+    PrefetchStatus2["PrefetchNotStarted"] = "PrefetchNotStarted";
+    PrefetchStatus2["PrefetchNotUsedCookiesChanged"] = "PrefetchNotUsedCookiesChanged";
+    PrefetchStatus2["PrefetchProxyNotAvailable"] = "PrefetchProxyNotAvailable";
+    PrefetchStatus2["PrefetchResponseUsed"] = "PrefetchResponseUsed";
+    PrefetchStatus2["PrefetchSuccessfulButNotUsed"] = "PrefetchSuccessfulButNotUsed";
+    PrefetchStatus2["PrefetchNotUsedProbeFailed"] = "PrefetchNotUsedProbeFailed";
+    PrefetchStatus2["PrefetchCancelledOnUserNavigation"] = "PrefetchCancelledOnUserNavigation";
+  })(PrefetchStatus = Preload2.PrefetchStatus || (Preload2.PrefetchStatus = {}));
+})(Preload || (Preload = {}));
+var Security;
+((Security2) => {
+  let MixedContentType;
+  ((MixedContentType2) => {
+    MixedContentType2["Blockable"] = "blockable";
+    MixedContentType2["OptionallyBlockable"] = "optionally-blockable";
+    MixedContentType2["None"] = "none";
+  })(MixedContentType = Security2.MixedContentType || (Security2.MixedContentType = {}));
+  let SecurityState;
+  ((SecurityState2) => {
+    SecurityState2["Unknown"] = "unknown";
+    SecurityState2["Neutral"] = "neutral";
+    SecurityState2["Insecure"] = "insecure";
+    SecurityState2["Secure"] = "secure";
+    SecurityState2["Info"] = "info";
+    SecurityState2["InsecureBroken"] = "insecure-broken";
+  })(SecurityState = Security2.SecurityState || (Security2.SecurityState = {}));
+  let SafetyTipStatus;
+  ((SafetyTipStatus2) => {
+    SafetyTipStatus2["BadReputation"] = "badReputation";
+    SafetyTipStatus2["Lookalike"] = "lookalike";
+  })(SafetyTipStatus = Security2.SafetyTipStatus || (Security2.SafetyTipStatus = {}));
+  let CertificateErrorAction;
+  ((CertificateErrorAction2) => {
+    CertificateErrorAction2["Continue"] = "continue";
+    CertificateErrorAction2["Cancel"] = "cancel";
+  })(CertificateErrorAction = Security2.CertificateErrorAction || (Security2.CertificateErrorAction = {}));
+})(Security || (Security = {}));
+var ServiceWorker;
+((ServiceWorker2) => {
+  let ServiceWorkerVersionRunningStatus;
+  ((ServiceWorkerVersionRunningStatus2) => {
+    ServiceWorkerVersionRunningStatus2["Stopped"] = "stopped";
+    ServiceWorkerVersionRunningStatus2["Starting"] = "starting";
+    ServiceWorkerVersionRunningStatus2["Running"] = "running";
+    ServiceWorkerVersionRunningStatus2["Stopping"] = "stopping";
+  })(ServiceWorkerVersionRunningStatus = ServiceWorker2.ServiceWorkerVersionRunningStatus || (ServiceWorker2.ServiceWorkerVersionRunningStatus = {}));
+  let ServiceWorkerVersionStatus;
+  ((ServiceWorkerVersionStatus2) => {
+    ServiceWorkerVersionStatus2["New"] = "new";
+    ServiceWorkerVersionStatus2["Installing"] = "installing";
+    ServiceWorkerVersionStatus2["Installed"] = "installed";
+    ServiceWorkerVersionStatus2["Activating"] = "activating";
+    ServiceWorkerVersionStatus2["Activated"] = "activated";
+    ServiceWorkerVersionStatus2["Redundant"] = "redundant";
+  })(ServiceWorkerVersionStatus = ServiceWorker2.ServiceWorkerVersionStatus || (ServiceWorker2.ServiceWorkerVersionStatus = {}));
+  let ServiceWorkerRouterSourceType;
+  ((ServiceWorkerRouterSourceType2) => {
+    ServiceWorkerRouterSourceType2["Cache"] = "cache";
+    ServiceWorkerRouterSourceType2["FetchEvent"] = "fetchEvent";
+    ServiceWorkerRouterSourceType2["Network"] = "network";
+    ServiceWorkerRouterSourceType2["RaceNetworkAndFetchHandler"] = "raceNetworkAndFetchHandler";
+    ServiceWorkerRouterSourceType2["RaceNetworkAndCache"] = "raceNetworkAndCache";
+    ServiceWorkerRouterSourceType2["SourceDict"] = "sourceDict";
+  })(ServiceWorkerRouterSourceType = ServiceWorker2.ServiceWorkerRouterSourceType || (ServiceWorker2.ServiceWorkerRouterSourceType = {}));
+})(ServiceWorker || (ServiceWorker = {}));
+var SmartCardEmulation;
+((SmartCardEmulation2) => {
+  let ResultCode;
+  ((ResultCode2) => {
+    ResultCode2["Success"] = "success";
+    ResultCode2["RemovedCard"] = "removed-card";
+    ResultCode2["ResetCard"] = "reset-card";
+    ResultCode2["UnpoweredCard"] = "unpowered-card";
+    ResultCode2["UnresponsiveCard"] = "unresponsive-card";
+    ResultCode2["UnsupportedCard"] = "unsupported-card";
+    ResultCode2["ReaderUnavailable"] = "reader-unavailable";
+    ResultCode2["SharingViolation"] = "sharing-violation";
+    ResultCode2["NotTransacted"] = "not-transacted";
+    ResultCode2["NoSmartcard"] = "no-smartcard";
+    ResultCode2["ProtoMismatch"] = "proto-mismatch";
+    ResultCode2["SystemCancelled"] = "system-cancelled";
+    ResultCode2["NotReady"] = "not-ready";
+    ResultCode2["Cancelled"] = "cancelled";
+    ResultCode2["InsufficientBuffer"] = "insufficient-buffer";
+    ResultCode2["InvalidHandle"] = "invalid-handle";
+    ResultCode2["InvalidParameter"] = "invalid-parameter";
+    ResultCode2["InvalidValue"] = "invalid-value";
+    ResultCode2["NoMemory"] = "no-memory";
+    ResultCode2["Timeout"] = "timeout";
+    ResultCode2["UnknownReader"] = "unknown-reader";
+    ResultCode2["UnsupportedFeature"] = "unsupported-feature";
+    ResultCode2["NoReadersAvailable"] = "no-readers-available";
+    ResultCode2["ServiceStopped"] = "service-stopped";
+    ResultCode2["NoService"] = "no-service";
+    ResultCode2["CommError"] = "comm-error";
+    ResultCode2["InternalError"] = "internal-error";
+    ResultCode2["ServerTooBusy"] = "server-too-busy";
+    ResultCode2["Unexpected"] = "unexpected";
+    ResultCode2["Shutdown"] = "shutdown";
+    ResultCode2["UnknownCard"] = "unknown-card";
+    ResultCode2["Unknown"] = "unknown";
+  })(ResultCode = SmartCardEmulation2.ResultCode || (SmartCardEmulation2.ResultCode = {}));
+  let ShareMode;
+  ((ShareMode2) => {
+    ShareMode2["Shared"] = "shared";
+    ShareMode2["Exclusive"] = "exclusive";
+    ShareMode2["Direct"] = "direct";
+  })(ShareMode = SmartCardEmulation2.ShareMode || (SmartCardEmulation2.ShareMode = {}));
+  let Disposition;
+  ((Disposition2) => {
+    Disposition2["LeaveCard"] = "leave-card";
+    Disposition2["ResetCard"] = "reset-card";
+    Disposition2["UnpowerCard"] = "unpower-card";
+    Disposition2["EjectCard"] = "eject-card";
+  })(Disposition = SmartCardEmulation2.Disposition || (SmartCardEmulation2.Disposition = {}));
+  let ConnectionState;
+  ((ConnectionState2) => {
+    ConnectionState2["Absent"] = "absent";
+    ConnectionState2["Present"] = "present";
+    ConnectionState2["Swallowed"] = "swallowed";
+    ConnectionState2["Powered"] = "powered";
+    ConnectionState2["Negotiable"] = "negotiable";
+    ConnectionState2["Specific"] = "specific";
+  })(ConnectionState = SmartCardEmulation2.ConnectionState || (SmartCardEmulation2.ConnectionState = {}));
+  let Protocol;
+  ((Protocol2) => {
+    Protocol2["T0"] = "t0";
+    Protocol2["T1"] = "t1";
+    Protocol2["Raw"] = "raw";
+  })(Protocol = SmartCardEmulation2.Protocol || (SmartCardEmulation2.Protocol = {}));
+})(SmartCardEmulation || (SmartCardEmulation = {}));
+var Storage;
+((Storage2) => {
+  let StorageType;
+  ((StorageType2) => {
+    StorageType2["Cookies"] = "cookies";
+    StorageType2["File_systems"] = "file_systems";
+    StorageType2["Indexeddb"] = "indexeddb";
+    StorageType2["Local_storage"] = "local_storage";
+    StorageType2["Shader_cache"] = "shader_cache";
+    StorageType2["Websql"] = "websql";
+    StorageType2["Service_workers"] = "service_workers";
+    StorageType2["Cache_storage"] = "cache_storage";
+    StorageType2["Storage_buckets"] = "storage_buckets";
+    StorageType2["All"] = "all";
+    StorageType2["Other"] = "other";
+  })(StorageType = Storage2.StorageType || (Storage2.StorageType = {}));
+  let StorageBucketsDurability;
+  ((StorageBucketsDurability2) => {
+    StorageBucketsDurability2["Relaxed"] = "relaxed";
+    StorageBucketsDurability2["Strict"] = "strict";
+  })(StorageBucketsDurability = Storage2.StorageBucketsDurability || (Storage2.StorageBucketsDurability = {}));
+})(Storage || (Storage = {}));
+var SystemInfo;
+((SystemInfo2) => {
+  let SubsamplingFormat;
+  ((SubsamplingFormat2) => {
+    SubsamplingFormat2["Yuv420"] = "yuv420";
+    SubsamplingFormat2["Yuv422"] = "yuv422";
+    SubsamplingFormat2["Yuv444"] = "yuv444";
+  })(SubsamplingFormat = SystemInfo2.SubsamplingFormat || (SystemInfo2.SubsamplingFormat = {}));
+  let ImageType;
+  ((ImageType2) => {
+    ImageType2["Jpeg"] = "jpeg";
+    ImageType2["Webp"] = "webp";
+    ImageType2["Unknown"] = "unknown";
+  })(ImageType = SystemInfo2.ImageType || (SystemInfo2.ImageType = {}));
+})(SystemInfo || (SystemInfo = {}));
+var Target;
+((Target2) => {
+  let WindowState;
+  ((WindowState2) => {
+    WindowState2["Normal"] = "normal";
+    WindowState2["Minimized"] = "minimized";
+    WindowState2["Maximized"] = "maximized";
+    WindowState2["Fullscreen"] = "fullscreen";
+  })(WindowState = Target2.WindowState || (Target2.WindowState = {}));
+})(Target || (Target = {}));
+var Tracing;
+((Tracing4) => {
+  let TraceConfigRecordMode;
+  ((TraceConfigRecordMode2) => {
+    TraceConfigRecordMode2["RecordUntilFull"] = "recordUntilFull";
+    TraceConfigRecordMode2["RecordContinuously"] = "recordContinuously";
+    TraceConfigRecordMode2["RecordAsMuchAsPossible"] = "recordAsMuchAsPossible";
+    TraceConfigRecordMode2["EchoToConsole"] = "echoToConsole";
+  })(TraceConfigRecordMode = Tracing4.TraceConfigRecordMode || (Tracing4.TraceConfigRecordMode = {}));
+  let StreamFormat;
+  ((StreamFormat2) => {
+    StreamFormat2["Json"] = "json";
+    StreamFormat2["Proto"] = "proto";
+  })(StreamFormat = Tracing4.StreamFormat || (Tracing4.StreamFormat = {}));
+  let StreamCompression;
+  ((StreamCompression2) => {
+    StreamCompression2["None"] = "none";
+    StreamCompression2["Gzip"] = "gzip";
+  })(StreamCompression = Tracing4.StreamCompression || (Tracing4.StreamCompression = {}));
+  let MemoryDumpLevelOfDetail;
+  ((MemoryDumpLevelOfDetail2) => {
+    MemoryDumpLevelOfDetail2["Background"] = "background";
+    MemoryDumpLevelOfDetail2["Light"] = "light";
+    MemoryDumpLevelOfDetail2["Detailed"] = "detailed";
+  })(MemoryDumpLevelOfDetail = Tracing4.MemoryDumpLevelOfDetail || (Tracing4.MemoryDumpLevelOfDetail = {}));
+  let TracingBackend;
+  ((TracingBackend2) => {
+    TracingBackend2["Auto"] = "auto";
+    TracingBackend2["Chrome"] = "chrome";
+    TracingBackend2["System"] = "system";
+  })(TracingBackend = Tracing4.TracingBackend || (Tracing4.TracingBackend = {}));
+  let StartRequestTransferMode;
+  ((StartRequestTransferMode2) => {
+    StartRequestTransferMode2["ReportEvents"] = "ReportEvents";
+    StartRequestTransferMode2["ReturnAsStream"] = "ReturnAsStream";
+  })(StartRequestTransferMode = Tracing4.StartRequestTransferMode || (Tracing4.StartRequestTransferMode = {}));
+})(Tracing || (Tracing = {}));
+var WebAudio;
+((WebAudio2) => {
+  let ContextType;
+  ((ContextType2) => {
+    ContextType2["Realtime"] = "realtime";
+    ContextType2["Offline"] = "offline";
+  })(ContextType = WebAudio2.ContextType || (WebAudio2.ContextType = {}));
+  let ContextState;
+  ((ContextState2) => {
+    ContextState2["Suspended"] = "suspended";
+    ContextState2["Running"] = "running";
+    ContextState2["Closed"] = "closed";
+    ContextState2["Interrupted"] = "interrupted";
+  })(ContextState = WebAudio2.ContextState || (WebAudio2.ContextState = {}));
+  let ChannelCountMode;
+  ((ChannelCountMode2) => {
+    ChannelCountMode2["ClampedMax"] = "clamped-max";
+    ChannelCountMode2["Explicit"] = "explicit";
+    ChannelCountMode2["Max"] = "max";
+  })(ChannelCountMode = WebAudio2.ChannelCountMode || (WebAudio2.ChannelCountMode = {}));
+  let ChannelInterpretation;
+  ((ChannelInterpretation2) => {
+    ChannelInterpretation2["Discrete"] = "discrete";
+    ChannelInterpretation2["Speakers"] = "speakers";
+  })(ChannelInterpretation = WebAudio2.ChannelInterpretation || (WebAudio2.ChannelInterpretation = {}));
+  let AutomationRate;
+  ((AutomationRate2) => {
+    AutomationRate2["ARate"] = "a-rate";
+    AutomationRate2["KRate"] = "k-rate";
+  })(AutomationRate = WebAudio2.AutomationRate || (WebAudio2.AutomationRate = {}));
+})(WebAudio || (WebAudio = {}));
+var WebAuthn;
+((WebAuthn2) => {
+  let AuthenticatorProtocol;
+  ((AuthenticatorProtocol2) => {
+    AuthenticatorProtocol2["U2f"] = "u2f";
+    AuthenticatorProtocol2["Ctap2"] = "ctap2";
+  })(AuthenticatorProtocol = WebAuthn2.AuthenticatorProtocol || (WebAuthn2.AuthenticatorProtocol = {}));
+  let Ctap2Version;
+  ((Ctap2Version2) => {
+    Ctap2Version2["Ctap2_0"] = "ctap2_0";
+    Ctap2Version2["Ctap2_1"] = "ctap2_1";
+    Ctap2Version2["Ctap2_2"] = "ctap2_2";
+  })(Ctap2Version = WebAuthn2.Ctap2Version || (WebAuthn2.Ctap2Version = {}));
+  let AuthenticatorTransport;
+  ((AuthenticatorTransport2) => {
+    AuthenticatorTransport2["Usb"] = "usb";
+    AuthenticatorTransport2["Nfc"] = "nfc";
+    AuthenticatorTransport2["Ble"] = "ble";
+    AuthenticatorTransport2["Cable"] = "cable";
+    AuthenticatorTransport2["Hybrid"] = "hybrid";
+    AuthenticatorTransport2["SmartCard"] = "smart-card";
+    AuthenticatorTransport2["Internal"] = "internal";
+  })(AuthenticatorTransport = WebAuthn2.AuthenticatorTransport || (WebAuthn2.AuthenticatorTransport = {}));
+})(WebAuthn || (WebAuthn = {}));
+var WebMCP;
+((WebMCP2) => {
+  let InvocationStatus;
+  ((InvocationStatus2) => {
+    InvocationStatus2["Completed"] = "Completed";
+    InvocationStatus2["Canceled"] = "Canceled";
+    InvocationStatus2["Error"] = "Error";
+  })(InvocationStatus = WebMCP2.InvocationStatus || (WebMCP2.InvocationStatus = {}));
+})(WebMCP || (WebMCP = {}));
+var Debugger;
+((Debugger2) => {
+  let ScopeType;
+  ((ScopeType2) => {
+    ScopeType2["Global"] = "global";
+    ScopeType2["Local"] = "local";
+    ScopeType2["With"] = "with";
+    ScopeType2["Closure"] = "closure";
+    ScopeType2["Catch"] = "catch";
+    ScopeType2["Block"] = "block";
+    ScopeType2["Script"] = "script";
+    ScopeType2["Eval"] = "eval";
+    ScopeType2["Module"] = "module";
+    ScopeType2["WasmExpressionStack"] = "wasm-expression-stack";
+  })(ScopeType = Debugger2.ScopeType || (Debugger2.ScopeType = {}));
+  let BreakLocationType;
+  ((BreakLocationType2) => {
+    BreakLocationType2["DebuggerStatement"] = "debuggerStatement";
+    BreakLocationType2["Call"] = "call";
+    BreakLocationType2["Return"] = "return";
+  })(BreakLocationType = Debugger2.BreakLocationType || (Debugger2.BreakLocationType = {}));
+  let ScriptLanguage;
+  ((ScriptLanguage2) => {
+    ScriptLanguage2["JavaScript"] = "JavaScript";
+    ScriptLanguage2["WebAssembly"] = "WebAssembly";
+  })(ScriptLanguage = Debugger2.ScriptLanguage || (Debugger2.ScriptLanguage = {}));
+  let DebugSymbolsType;
+  ((DebugSymbolsType2) => {
+    DebugSymbolsType2["SourceMap"] = "SourceMap";
+    DebugSymbolsType2["EmbeddedDWARF"] = "EmbeddedDWARF";
+    DebugSymbolsType2["ExternalDWARF"] = "ExternalDWARF";
+  })(DebugSymbolsType = Debugger2.DebugSymbolsType || (Debugger2.DebugSymbolsType = {}));
+  let ContinueToLocationRequestTargetCallFrames;
+  ((ContinueToLocationRequestTargetCallFrames2) => {
+    ContinueToLocationRequestTargetCallFrames2["Any"] = "any";
+    ContinueToLocationRequestTargetCallFrames2["Current"] = "current";
+  })(ContinueToLocationRequestTargetCallFrames = Debugger2.ContinueToLocationRequestTargetCallFrames || (Debugger2.ContinueToLocationRequestTargetCallFrames = {}));
+  let RestartFrameRequestMode;
+  ((RestartFrameRequestMode2) => {
+    RestartFrameRequestMode2["StepInto"] = "StepInto";
+  })(RestartFrameRequestMode = Debugger2.RestartFrameRequestMode || (Debugger2.RestartFrameRequestMode = {}));
+  let SetInstrumentationBreakpointRequestInstrumentation;
+  ((SetInstrumentationBreakpointRequestInstrumentation2) => {
+    SetInstrumentationBreakpointRequestInstrumentation2["BeforeScriptExecution"] = "beforeScriptExecution";
+    SetInstrumentationBreakpointRequestInstrumentation2["BeforeScriptWithSourceMapExecution"] = "beforeScriptWithSourceMapExecution";
+  })(SetInstrumentationBreakpointRequestInstrumentation = Debugger2.SetInstrumentationBreakpointRequestInstrumentation || (Debugger2.SetInstrumentationBreakpointRequestInstrumentation = {}));
+  let SetPauseOnExceptionsRequestState;
+  ((SetPauseOnExceptionsRequestState2) => {
+    SetPauseOnExceptionsRequestState2["None"] = "none";
+    SetPauseOnExceptionsRequestState2["Caught"] = "caught";
+    SetPauseOnExceptionsRequestState2["Uncaught"] = "uncaught";
+    SetPauseOnExceptionsRequestState2["All"] = "all";
+  })(SetPauseOnExceptionsRequestState = Debugger2.SetPauseOnExceptionsRequestState || (Debugger2.SetPauseOnExceptionsRequestState = {}));
+  let SetScriptSourceResponseStatus;
+  ((SetScriptSourceResponseStatus2) => {
+    SetScriptSourceResponseStatus2["Ok"] = "Ok";
+    SetScriptSourceResponseStatus2["CompileError"] = "CompileError";
+    SetScriptSourceResponseStatus2["BlockedByActiveGenerator"] = "BlockedByActiveGenerator";
+    SetScriptSourceResponseStatus2["BlockedByActiveFunction"] = "BlockedByActiveFunction";
+    SetScriptSourceResponseStatus2["BlockedByTopLevelEsModuleChange"] = "BlockedByTopLevelEsModuleChange";
+  })(SetScriptSourceResponseStatus = Debugger2.SetScriptSourceResponseStatus || (Debugger2.SetScriptSourceResponseStatus = {}));
+  let PausedEventReason;
+  ((PausedEventReason2) => {
+    PausedEventReason2["Ambiguous"] = "ambiguous";
+    PausedEventReason2["Assert"] = "assert";
+    PausedEventReason2["CSPViolation"] = "CSPViolation";
+    PausedEventReason2["DebugCommand"] = "debugCommand";
+    PausedEventReason2["DOM"] = "DOM";
+    PausedEventReason2["EventListener"] = "EventListener";
+    PausedEventReason2["Exception"] = "exception";
+    PausedEventReason2["Instrumentation"] = "instrumentation";
+    PausedEventReason2["OOM"] = "OOM";
+    PausedEventReason2["Other"] = "other";
+    PausedEventReason2["PromiseRejection"] = "promiseRejection";
+    PausedEventReason2["XHR"] = "XHR";
+    PausedEventReason2["Step"] = "step";
+  })(PausedEventReason = Debugger2.PausedEventReason || (Debugger2.PausedEventReason = {}));
+})(Debugger || (Debugger = {}));
+var Runtime2;
+((Runtime19) => {
+  let SerializationOptionsSerialization;
+  ((SerializationOptionsSerialization2) => {
+    SerializationOptionsSerialization2["Deep"] = "deep";
+    SerializationOptionsSerialization2["Json"] = "json";
+    SerializationOptionsSerialization2["IdOnly"] = "idOnly";
+  })(SerializationOptionsSerialization = Runtime19.SerializationOptionsSerialization || (Runtime19.SerializationOptionsSerialization = {}));
+  let DeepSerializedValueType;
+  ((DeepSerializedValueType2) => {
+    DeepSerializedValueType2["Undefined"] = "undefined";
+    DeepSerializedValueType2["Null"] = "null";
+    DeepSerializedValueType2["String"] = "string";
+    DeepSerializedValueType2["Number"] = "number";
+    DeepSerializedValueType2["Boolean"] = "boolean";
+    DeepSerializedValueType2["Bigint"] = "bigint";
+    DeepSerializedValueType2["Regexp"] = "regexp";
+    DeepSerializedValueType2["Date"] = "date";
+    DeepSerializedValueType2["Symbol"] = "symbol";
+    DeepSerializedValueType2["Array"] = "array";
+    DeepSerializedValueType2["Object"] = "object";
+    DeepSerializedValueType2["Function"] = "function";
+    DeepSerializedValueType2["Map"] = "map";
+    DeepSerializedValueType2["Set"] = "set";
+    DeepSerializedValueType2["Weakmap"] = "weakmap";
+    DeepSerializedValueType2["Weakset"] = "weakset";
+    DeepSerializedValueType2["Error"] = "error";
+    DeepSerializedValueType2["Proxy"] = "proxy";
+    DeepSerializedValueType2["Promise"] = "promise";
+    DeepSerializedValueType2["Typedarray"] = "typedarray";
+    DeepSerializedValueType2["Arraybuffer"] = "arraybuffer";
+    DeepSerializedValueType2["Node"] = "node";
+    DeepSerializedValueType2["Window"] = "window";
+    DeepSerializedValueType2["Generator"] = "generator";
+  })(DeepSerializedValueType = Runtime19.DeepSerializedValueType || (Runtime19.DeepSerializedValueType = {}));
+  let RemoteObjectType;
+  ((RemoteObjectType2) => {
+    RemoteObjectType2["Object"] = "object";
+    RemoteObjectType2["Function"] = "function";
+    RemoteObjectType2["Undefined"] = "undefined";
+    RemoteObjectType2["String"] = "string";
+    RemoteObjectType2["Number"] = "number";
+    RemoteObjectType2["Boolean"] = "boolean";
+    RemoteObjectType2["Symbol"] = "symbol";
+    RemoteObjectType2["Bigint"] = "bigint";
+  })(RemoteObjectType = Runtime19.RemoteObjectType || (Runtime19.RemoteObjectType = {}));
+  let RemoteObjectSubtype;
+  ((RemoteObjectSubtype2) => {
+    RemoteObjectSubtype2["Array"] = "array";
+    RemoteObjectSubtype2["Null"] = "null";
+    RemoteObjectSubtype2["Node"] = "node";
+    RemoteObjectSubtype2["Regexp"] = "regexp";
+    RemoteObjectSubtype2["Date"] = "date";
+    RemoteObjectSubtype2["Map"] = "map";
+    RemoteObjectSubtype2["Set"] = "set";
+    RemoteObjectSubtype2["Weakmap"] = "weakmap";
+    RemoteObjectSubtype2["Weakset"] = "weakset";
+    RemoteObjectSubtype2["Iterator"] = "iterator";
+    RemoteObjectSubtype2["Generator"] = "generator";
+    RemoteObjectSubtype2["Error"] = "error";
+    RemoteObjectSubtype2["Proxy"] = "proxy";
+    RemoteObjectSubtype2["Promise"] = "promise";
+    RemoteObjectSubtype2["Typedarray"] = "typedarray";
+    RemoteObjectSubtype2["Arraybuffer"] = "arraybuffer";
+    RemoteObjectSubtype2["Dataview"] = "dataview";
+    RemoteObjectSubtype2["Webassemblymemory"] = "webassemblymemory";
+    RemoteObjectSubtype2["Wasmvalue"] = "wasmvalue";
+    RemoteObjectSubtype2["Trustedtype"] = "trustedtype";
+  })(RemoteObjectSubtype = Runtime19.RemoteObjectSubtype || (Runtime19.RemoteObjectSubtype = {}));
+  let ObjectPreviewType;
+  ((ObjectPreviewType2) => {
+    ObjectPreviewType2["Object"] = "object";
+    ObjectPreviewType2["Function"] = "function";
+    ObjectPreviewType2["Undefined"] = "undefined";
+    ObjectPreviewType2["String"] = "string";
+    ObjectPreviewType2["Number"] = "number";
+    ObjectPreviewType2["Boolean"] = "boolean";
+    ObjectPreviewType2["Symbol"] = "symbol";
+    ObjectPreviewType2["Bigint"] = "bigint";
+  })(ObjectPreviewType = Runtime19.ObjectPreviewType || (Runtime19.ObjectPreviewType = {}));
+  let ObjectPreviewSubtype;
+  ((ObjectPreviewSubtype2) => {
+    ObjectPreviewSubtype2["Array"] = "array";
+    ObjectPreviewSubtype2["Null"] = "null";
+    ObjectPreviewSubtype2["Node"] = "node";
+    ObjectPreviewSubtype2["Regexp"] = "regexp";
+    ObjectPreviewSubtype2["Date"] = "date";
+    ObjectPreviewSubtype2["Map"] = "map";
+    ObjectPreviewSubtype2["Set"] = "set";
+    ObjectPreviewSubtype2["Weakmap"] = "weakmap";
+    ObjectPreviewSubtype2["Weakset"] = "weakset";
+    ObjectPreviewSubtype2["Iterator"] = "iterator";
+    ObjectPreviewSubtype2["Generator"] = "generator";
+    ObjectPreviewSubtype2["Error"] = "error";
+    ObjectPreviewSubtype2["Proxy"] = "proxy";
+    ObjectPreviewSubtype2["Promise"] = "promise";
+    ObjectPreviewSubtype2["Typedarray"] = "typedarray";
+    ObjectPreviewSubtype2["Arraybuffer"] = "arraybuffer";
+    ObjectPreviewSubtype2["Dataview"] = "dataview";
+    ObjectPreviewSubtype2["Webassemblymemory"] = "webassemblymemory";
+    ObjectPreviewSubtype2["Wasmvalue"] = "wasmvalue";
+    ObjectPreviewSubtype2["Trustedtype"] = "trustedtype";
+  })(ObjectPreviewSubtype = Runtime19.ObjectPreviewSubtype || (Runtime19.ObjectPreviewSubtype = {}));
+  let PropertyPreviewType;
+  ((PropertyPreviewType2) => {
+    PropertyPreviewType2["Object"] = "object";
+    PropertyPreviewType2["Function"] = "function";
+    PropertyPreviewType2["Undefined"] = "undefined";
+    PropertyPreviewType2["String"] = "string";
+    PropertyPreviewType2["Number"] = "number";
+    PropertyPreviewType2["Boolean"] = "boolean";
+    PropertyPreviewType2["Symbol"] = "symbol";
+    PropertyPreviewType2["Accessor"] = "accessor";
+    PropertyPreviewType2["Bigint"] = "bigint";
+  })(PropertyPreviewType = Runtime19.PropertyPreviewType || (Runtime19.PropertyPreviewType = {}));
+  let PropertyPreviewSubtype;
+  ((PropertyPreviewSubtype2) => {
+    PropertyPreviewSubtype2["Array"] = "array";
+    PropertyPreviewSubtype2["Null"] = "null";
+    PropertyPreviewSubtype2["Node"] = "node";
+    PropertyPreviewSubtype2["Regexp"] = "regexp";
+    PropertyPreviewSubtype2["Date"] = "date";
+    PropertyPreviewSubtype2["Map"] = "map";
+    PropertyPreviewSubtype2["Set"] = "set";
+    PropertyPreviewSubtype2["Weakmap"] = "weakmap";
+    PropertyPreviewSubtype2["Weakset"] = "weakset";
+    PropertyPreviewSubtype2["Iterator"] = "iterator";
+    PropertyPreviewSubtype2["Generator"] = "generator";
+    PropertyPreviewSubtype2["Error"] = "error";
+    PropertyPreviewSubtype2["Proxy"] = "proxy";
+    PropertyPreviewSubtype2["Promise"] = "promise";
+    PropertyPreviewSubtype2["Typedarray"] = "typedarray";
+    PropertyPreviewSubtype2["Arraybuffer"] = "arraybuffer";
+    PropertyPreviewSubtype2["Dataview"] = "dataview";
+    PropertyPreviewSubtype2["Webassemblymemory"] = "webassemblymemory";
+    PropertyPreviewSubtype2["Wasmvalue"] = "wasmvalue";
+    PropertyPreviewSubtype2["Trustedtype"] = "trustedtype";
+  })(PropertyPreviewSubtype = Runtime19.PropertyPreviewSubtype || (Runtime19.PropertyPreviewSubtype = {}));
+  let ConsoleAPICalledEventType;
+  ((ConsoleAPICalledEventType2) => {
+    ConsoleAPICalledEventType2["Log"] = "log";
+    ConsoleAPICalledEventType2["Debug"] = "debug";
+    ConsoleAPICalledEventType2["Info"] = "info";
+    ConsoleAPICalledEventType2["Error"] = "error";
+    ConsoleAPICalledEventType2["Warning"] = "warning";
+    ConsoleAPICalledEventType2["Dir"] = "dir";
+    ConsoleAPICalledEventType2["DirXML"] = "dirxml";
+    ConsoleAPICalledEventType2["Table"] = "table";
+    ConsoleAPICalledEventType2["Trace"] = "trace";
+    ConsoleAPICalledEventType2["Clear"] = "clear";
+    ConsoleAPICalledEventType2["StartGroup"] = "startGroup";
+    ConsoleAPICalledEventType2["StartGroupCollapsed"] = "startGroupCollapsed";
+    ConsoleAPICalledEventType2["EndGroup"] = "endGroup";
+    ConsoleAPICalledEventType2["Assert"] = "assert";
+    ConsoleAPICalledEventType2["Profile"] = "profile";
+    ConsoleAPICalledEventType2["ProfileEnd"] = "profileEnd";
+    ConsoleAPICalledEventType2["Count"] = "count";
+    ConsoleAPICalledEventType2["TimeEnd"] = "timeEnd";
+  })(ConsoleAPICalledEventType = Runtime19.ConsoleAPICalledEventType || (Runtime19.ConsoleAPICalledEventType = {}));
+})(Runtime2 || (Runtime2 = {}));
 
-// gen/front_end/models/ai_assistance/EvaluateAction.js
+// ../../front_end/models/ai_assistance/agents/ExecuteJavascript.ts
+import * as Host2 from "../../core/host/host.js";
+import * as i18n2 from "../../core/i18n/i18n.js";
+import * as Platform2 from "../../core/platform/platform.js";
+import * as Root2 from "../../core/root/root.js";
+import * as SDK3 from "../../core/sdk/sdk.js";
+
+// ../../front_end/models/ai_assistance/EvaluateAction.ts
 var EvaluateAction_exports = {};
 __export(EvaluateAction_exports, {
   EvaluateAction: () => EvaluateAction,
@@ -749,9 +3557,9 @@ __export(EvaluateAction_exports, {
   stringifyObjectOnThePage: () => stringifyObjectOnThePage,
   stringifyRemoteObject: () => stringifyRemoteObject
 });
-import * as SDK2 from "./../../core/sdk/sdk.js";
+import * as SDK2 from "../../core/sdk/sdk.js";
 
-// gen/front_end/models/ai_assistance/injected.js
+// ../../front_end/models/ai_assistance/injected.ts
 var injected_exports = {};
 __export(injected_exports, {
   AI_ASSISTANCE_CSS_CLASS_NAME: () => AI_ASSISTANCE_CSS_CLASS_NAME,
@@ -882,7 +3690,7 @@ var setupSetElementStyles = `function setupSetElementStyles(prefix) {
 }`;
 var injectedFunctions = `(${setupSetElementStyles})('${AI_ASSISTANCE_CSS_CLASS_NAME}')`;
 
-// gen/front_end/models/ai_assistance/EvaluateAction.js
+// ../../front_end/models/ai_assistance/EvaluateAction.ts
 function formatError(message) {
   return `Error: ${message}`;
 }
@@ -915,19 +3723,19 @@ function stringifyObjectOnThePage() {
 }
 async function stringifyRemoteObject(object, functionDeclaration) {
   switch (object.type) {
-    case "string":
+    case Runtime2.RemoteObjectType.String:
       return `'${object.value}'`;
-    case "bigint":
+    case Runtime2.RemoteObjectType.Bigint:
       return `${object.value}n`;
-    case "boolean":
-    case "number":
+    case Runtime2.RemoteObjectType.Boolean:
+    case Runtime2.RemoteObjectType.Number:
       return `${object.value}`;
-    case "undefined":
+    case Runtime2.RemoteObjectType.Undefined:
       return "undefined";
-    case "symbol":
-    case "function":
+    case Runtime2.RemoteObjectType.Symbol:
+    case Runtime2.RemoteObjectType.Function:
       return `${object.description}`;
-    case "object": {
+    case Runtime2.RemoteObjectType.Object: {
       if (object.subtype === "error") {
         const res2 = await object.callFunctionJSON(getErrorStackOnThePage, [], { throwOnSideEffect: true });
         if (!res2) {
@@ -938,7 +3746,7 @@ async function stringifyRemoteObject(object, functionDeclaration) {
       const res = await object.callFunction(stringifyObjectOnThePage, void 0, {
         throwOnSideEffect: true
       });
-      if (!res.object || res.object.type !== "string") {
+      if (!res.object || res.object.type !== Runtime2.RemoteObjectType.String) {
         throw new Error("Could not stringify the object" + object);
       }
       return res.object.value;
@@ -1032,7 +3840,7 @@ ${result.message}`;
   }
 };
 
-// gen/front_end/models/ai_assistance/agents/ExecuteJavascript.js
+// ../../front_end/models/ai_assistance/agents/ExecuteJavascript.ts
 var lockedString = i18n2.i18n.lockedString;
 async function getOrCreateIsolatedWorld(target, frameId) {
   const pageAgent = target.pageAgent();
@@ -1070,7 +3878,12 @@ async function executeJsCode(functionDeclaration, options) {
   if (!remoteObject) {
     throw new Error("Cannot execute JavaScript because remote object cannot be resolved");
   }
-  return await EvaluateAction.execute(functionDeclaration, [remoteObject], executionContext, { throwOnSideEffect: !!throwOnSideEffect });
+  return await EvaluateAction.execute(
+    functionDeclaration,
+    [remoteObject],
+    executionContext,
+    { throwOnSideEffect: !!throwOnSideEffect }
+  );
 }
 var MAX_OBSERVATION_BYTE_LENGTH = 25e3;
 var OBSERVATION_TIMEOUT = 5e3;
@@ -1138,7 +3951,9 @@ var JavascriptExecutor = class {
       await scope.uninstall();
     }
   }
-  async generateObservation(action, { throwOnSideEffect }) {
+  async generateObservation(action, {
+    throwOnSideEffect
+  }) {
     const functionDeclaration = `async function ($0) {
   try {
     ${action}
@@ -1154,10 +3969,13 @@ var JavascriptExecutor = class {
     try {
       timeoutId = setTimeout(() => resolveTimeout(timeoutSentinel), OBSERVATION_TIMEOUT);
       const result = await Promise.race([
-        this.#execJs(functionDeclaration, {
-          throwOnSideEffect,
-          contextNode: this.#options.getContextNode()
-        }),
+        this.#execJs(
+          functionDeclaration,
+          {
+            throwOnSideEffect,
+            contextNode: this.#options.getContextNode()
+          }
+        ),
         timeoutPromise
       ]);
       if (result === timeoutSentinel) {
@@ -1195,9 +4013,8 @@ var JavascriptExecutor = class {
   }
 };
 
-// gen/front_end/models/ai_assistance/ExtensionScope.js
-var _a;
-var ExtensionScope = class {
+// ../../front_end/models/ai_assistance/ExtensionScope.ts
+var ExtensionScope = class _ExtensionScope {
   #listeners = [];
   #changeManager;
   #agentId;
@@ -1288,7 +4105,7 @@ var ExtensionScope = class {
         continue;
       }
       const rule = style.parentRule;
-      if (rule?.origin === "user-agent") {
+      if (rule?.origin === CSS.StyleSheetOrigin.UserAgent) {
         break;
       }
       if (rule instanceof SDK4.CSSRule.CSSStyleRule) {
@@ -1361,11 +4178,11 @@ var ExtensionScope = class {
       if (!matchedStyles) {
         throw new Error("No matching styles");
       }
-      const styleRule = _a.getStyleRuleFromMatchesStyles(matchedStyles);
+      const styleRule = _ExtensionScope.getStyleRuleFromMatchesStyles(matchedStyles);
       if (!styleRule) {
         throw new Error("No style rule found");
       }
-      const selector = _a.getSelectorsFromStyleRule(styleRule, matchedStyles);
+      const selector = _ExtensionScope.getSelectorsFromStyleRule(styleRule, matchedStyles);
       if (!selector) {
         throw new Error("No selector found");
       }
@@ -1375,7 +4192,7 @@ var ExtensionScope = class {
     } catch {
     }
     return {
-      selector: _a.getSelectorForNode(node)
+      selector: _ExtensionScope.getSelectorForNode(node)
     };
   }
   async #bindingCalled(executionContext, event) {
@@ -1445,34 +4262,76 @@ var ExtensionScope = class {
       }
     }
     if (Object.keys(sanitizedStyles).length === 0) {
-      throw new Error("None of the suggested CSS properties or their values for selector were considered valid by the browser's CSS engine. Please ensure property names are correct and values match the expected format for those properties.");
+      throw new Error(
+        "None of the suggested CSS properties or their values for selector were considered valid by the browser's CSS engine. Please ensure property names are correct and values match the expected format for those properties."
+      );
     }
     return sanitizedStyles;
   }
 };
-_a = ExtensionScope;
 
-// gen/front_end/models/ai_assistance/tools/ToolRegistry.js
+// ../../front_end/models/ai_assistance/tools/Tool.ts
+var Tool_exports = {};
+__export(Tool_exports, {
+  MAX_FUNCTION_RESULT_BYTE_LENGTH: () => MAX_FUNCTION_RESULT_BYTE_LENGTH,
+  ToolAnnotation: () => ToolAnnotation,
+  ToolName: () => ToolName
+});
+var MAX_FUNCTION_RESULT_BYTE_LENGTH = 16384 * 4;
+var ToolName = /* @__PURE__ */ ((ToolName2) => {
+  ToolName2["EXECUTE_JAVASCRIPT"] = "executeJavaScript";
+  ToolName2["GET_STYLES"] = "getStyles";
+  ToolName2["LIST_NETWORK_REQUESTS"] = "listNetworkRequests";
+  ToolName2["GET_NETWORK_REQUEST_DETAILS"] = "getNetworkRequestDetails";
+  ToolName2["GET_LIGHTHOUSE_AUDITS"] = "getLighthouseAudits";
+  ToolName2["RESOLVE_DEVTOOLS_NODE_PATH"] = "resolveDevtoolsNodePath";
+  ToolName2["GET_ELEMENT_ACCESSIBILITY_DETAILS"] = "getElementAccessibilityDetails";
+  ToolName2["RECORD_PERFORMANCE_TRACE"] = "recordPerformanceTrace";
+  ToolName2["LIST_PAGE_ORIGINS"] = "listPageOrigins";
+  ToolName2["LIST_STORAGE_KEYS"] = "listStorageKeys";
+  ToolName2["GET_STORAGE_VALUES"] = "getStorageValues";
+  ToolName2["LIST_COOKIES"] = "listCookies";
+  ToolName2["GET_COOKIE_VALUES"] = "getCookieValues";
+  ToolName2["GET_TRACE_EVENT_BY_KEY"] = "getTraceEventByKey";
+  ToolName2["SELECT_TRACE_EVENT_BY_KEY"] = "selectTraceEventByKey";
+  ToolName2["LIST_SOURCES"] = "listSources";
+  ToolName2["GET_SOURCE_CONTENT"] = "getSourceContent";
+  ToolName2["GET_TRACE_MAIN_THREAD_SUMMARY"] = "getTraceMainThreadSummary";
+  ToolName2["GET_TRACE_NETWORK_SUMMARY"] = "getTraceNetworkSummary";
+  ToolName2["RUN_LIGHTHOUSE"] = "runLighthouse";
+  ToolName2["GET_DETAILED_CALL_TREE"] = "getDetailedCallTree";
+  ToolName2["GET_FUNCTION_CODE"] = "getFunctionCode";
+  ToolName2["GET_RESOURCE_CONTENT"] = "getResourceContent";
+  ToolName2["GET_INSIGHT_DETAILS"] = "getInsightDetails";
+  ToolName2["GET_STORAGE_BREAKDOWN"] = "getStorageBreakdown";
+  return ToolName2;
+})(ToolName || {});
+var ToolAnnotation = /* @__PURE__ */ ((ToolAnnotation2) => {
+  ToolAnnotation2["REDACT_FROM_HISTORY"] = "redact-from-history";
+  return ToolAnnotation2;
+})(ToolAnnotation || {});
+
+// ../../front_end/models/ai_assistance/tools/ToolRegistry.ts
 var ToolRegistry_exports = {};
 __export(ToolRegistry_exports, {
   TOOLS: () => TOOLS,
   ToolRegistry: () => ToolRegistry
 });
 
-// gen/front_end/models/ai_assistance/tools/ExecuteJavaScript.js
+// ../../front_end/models/ai_assistance/tools/ExecuteJavaScript.ts
 var ExecuteJavaScript_exports = {};
 __export(ExecuteJavaScript_exports, {
   ExecuteJavaScriptTool: () => ExecuteJavaScriptTool
 });
-import * as Common4 from "./../../core/common/common.js";
-import * as Host3 from "./../../core/host/host.js";
-import * as Root3 from "./../../core/root/root.js";
-import * as Formatter from "./../formatter/formatter.js";
+import * as Common4 from "../../core/common/common.js";
+import * as Host3 from "../../core/host/host.js";
+import * as Root3 from "../../core/root/root.js";
+import * as Formatter from "../formatter/formatter.js";
 var MAX_FORMATTED_LINES = 40;
 var MAX_LINE_LENGTH = 120;
 var MAX_TOTAL_CHARACTERS = 2500;
 var ExecuteJavaScriptTool = class _ExecuteJavaScriptTool {
-  name = "executeJavaScript";
+  name = "executeJavaScript" /* EXECUTE_JAVASCRIPT */;
   description = "This function allows you to run JavaScript code on the inspected page to access the element styles and page content.\nCall this function to gather additional information or modify the page state. Call this function enough times to investigate the user request. Note: You cannot make network requests using this function.";
   static async validateAndFormatCode(code) {
     try {
@@ -1497,12 +4356,12 @@ var ExecuteJavaScriptTool = class _ExecuteJavaScriptTool {
     }
   }
   parameters = {
-    type: 6,
+    type: Host3.AidaClient.ParametersTypes.OBJECT,
     description: "",
     nullable: false,
     properties: {
       code: {
-        type: 1,
+        type: Host3.AidaClient.ParametersTypes.STRING,
         description: `JavaScript code snippet to run on the inspected page. Make sure the code is formatted for readability.
 
 # Instructions
@@ -1550,11 +4409,11 @@ const data = {
 `
       },
       explanation: {
-        type: 1,
+        type: Host3.AidaClient.ParametersTypes.STRING,
         description: "Explain why you want to run this code"
       },
       title: {
-        type: 1,
+        type: Host3.AidaClient.ParametersTypes.STRING,
         description: 'Provide a summary of what the code does. For example, "Checking related element styles".'
       }
     },
@@ -1582,50 +4441,40 @@ const data = {
       }
     }
     const executionMode = Root3.Runtime.hostConfig.devToolsFreestyler?.executionMode ?? Root3.Runtime.HostConfigFreestylerExecutionMode.ALL_SCRIPTS;
-    const executor = new JavascriptExecutor({
-      executionMode,
-      getContextNode: () => executionNode,
-      createExtensionScope: context.createExtensionScope,
-      changes: context.changeManager
-    }, context.execJs);
+    const executor = new JavascriptExecutor(
+      {
+        executionMode,
+        getContextNode: () => executionNode,
+        createExtensionScope: context.createExtensionScope,
+        changes: context.changeManager
+      },
+      context.execJs
+    );
     return await executor.executeAction(params.code, options);
   }
 };
 
-// gen/front_end/models/ai_assistance/tools/GetDetailedCallTree.js
-var GetDetailedCallTree_exports = {};
-__export(GetDetailedCallTree_exports, {
-  GetDetailedCallTreeTool: () => GetDetailedCallTreeTool
+// ../../front_end/models/ai_assistance/tools/GetCookieValues.ts
+var GetCookieValues_exports = {};
+__export(GetCookieValues_exports, {
+  GetCookieValuesTool: () => GetCookieValuesTool,
+  MAX_NUM_CHAR_LENGTH: () => MAX_NUM_CHAR_LENGTH
 });
-import * as Host5 from "./../../core/host/host.js";
-import * as i18n4 from "./../../core/i18n/i18n.js";
-import * as Trace7 from "./../trace/trace.js";
+import * as Host4 from "../../core/host/host.js";
+import * as i18n4 from "../../core/i18n/i18n.js";
+import * as SDK7 from "../../core/sdk/sdk.js";
 
-// gen/front_end/models/ai_assistance/contexts/PerformanceTraceContext.js
-var PerformanceTraceContext_exports = {};
-__export(PerformanceTraceContext_exports, {
-  PerformanceTraceContext: () => PerformanceTraceContext
+// ../../front_end/models/ai_assistance/tools/CookieUtils.ts
+var CookieUtils_exports = {};
+__export(CookieUtils_exports, {
+  findFrameForOrigin: () => findFrameForOrigin,
+  getCookiesForOrigin: () => getCookiesForOrigin,
+  resolveAllowedTargetOrigins: () => resolveAllowedTargetOrigins
 });
-import * as Common8 from "./../../core/common/common.js";
-import * as SDK6 from "./../../core/sdk/sdk.js";
-import * as Tracing from "./../../services/tracing/tracing.js";
-import * as Bindings from "./../bindings/bindings.js";
-import * as SourceMapScopes from "./../source_map_scopes/source_map_scopes.js";
-import * as Trace6 from "./../trace/trace.js";
+import * as Common6 from "../../core/common/common.js";
+import * as SDK6 from "../../core/sdk/sdk.js";
 
-// gen/front_end/models/ai_assistance/agents/AiAgent.js
-var AiAgent_exports = {};
-__export(AiAgent_exports, {
-  AiAgent: () => AiAgent,
-  ConversationContext: () => ConversationContext,
-  MAX_STEPS: () => MAX_STEPS,
-  aidaErrorToErrorType: () => aidaErrorToErrorType
-});
-import * as Host4 from "./../../core/host/host.js";
-import * as Root4 from "./../../core/root/root.js";
-import * as SDK5 from "./../../core/sdk/sdk.js";
-
-// gen/front_end/models/ai_assistance/AiOrigins.js
+// ../../front_end/models/ai_assistance/AiOrigins.ts
 var AiOrigins_exports = {};
 __export(AiOrigins_exports, {
   areOriginsEquivalent: () => areOriginsEquivalent,
@@ -1633,7 +4482,7 @@ __export(AiOrigins_exports, {
   extractContextOrigin: () => extractContextOrigin,
   isOpaqueOrigin: () => isOpaqueOrigin
 });
-import * as Common5 from "./../../core/common/common.js";
+import * as Common5 from "../../core/common/common.js";
 function isOpaqueOrigin(origin) {
   const lower = origin.toLowerCase();
   return lower === "" || lower === "null" || lower === "data:" || lower.startsWith("about") || lower.startsWith("detached") || lower.startsWith("undefined");
@@ -1675,691 +4524,204 @@ function canResourceContentsBeReadForTrace(targetURL, traceOrigin) {
   return areOriginsEquivalent(targetOrigin, traceOrigin);
 }
 
-// gen/front_end/models/ai_assistance/agents/AiAgent.js
-var MAX_SUGGESTION_LENGTH = 200;
-var MAX_STEPS = 10;
-var ConversationContext = class {
-  /**
-   * Returns true if the server-side logging is enabled when this context is active.
-   * Currently only used for AI v2.
-   */
-  isLoggingEnabled() {
-    return true;
-  }
-  getOrigin() {
-    return extractContextOrigin(this.getURL());
-  }
-  /**
-   * Returns true if this data context (e.g., a DOM node or Network Request) is
-   * allowed to be included in a conversation that is locked to the provided
-   * `establishedOrigin`.
-   *
-   * A conversation is "locked" to an origin once the first query is made.
-   * This method ensures that we don't mix data from different origins in the
-   * same conversation.
-   *
-   * @param establishedOrigin The origin that the current conversation is locked to.
-   * If undefined, the conversation has not yet been locked to an origin.
-   */
-  isOriginAllowed(establishedOrigin) {
-    const origin = this.getOrigin();
-    if (!establishedOrigin) {
-      return !isOpaqueOrigin(origin);
+// ../../front_end/models/ai_assistance/tools/DOMStorageUtils.ts
+var DOMStorageUtils_exports = {};
+__export(DOMStorageUtils_exports, {
+  MAX_TARGET_ORIGINS: () => MAX_TARGET_ORIGINS,
+  calculateDOMStoragesUsage: () => calculateDOMStoragesUsage,
+  resolveDOMStorages: () => resolveDOMStorages
+});
+import * as SDK5 from "../../core/sdk/sdk.js";
+var MAX_TARGET_ORIGINS = 100;
+function resolveDOMStorages(origin, type, targetManager, primaryPageTarget, storageKey) {
+  const resolvedStorages = [];
+  const isLocalStorage = type === "localStorage";
+  const targetOrigin = extractContextOrigin(origin);
+  const domStorageModels = targetManager.models(SDK5.DOMStorageModel.DOMStorageModel);
+  for (const domStorageModel of domStorageModels) {
+    if (domStorageModel.target().outermostTarget() !== primaryPageTarget) {
+      continue;
     }
-    return areOriginsEquivalent(origin, establishedOrigin);
-  }
-  /**
-   * This method is called at the start of `AiAgent.run`.
-   * It will be overridden in subclasses to fetch data related to the context item.
-   */
-  async refresh() {
-    return;
-  }
-  async getSuggestions() {
-    return;
-  }
-  /**
-   * Returns a detailed description of the context item for inclusion in the AI model prompt.
-   * Currently only used by AiAgent2.
-   */
-  async getPromptDetails() {
-    return null;
-  }
-  /**
-   * Returns a list of context details to display to the user in the UI.
-   * Currently only used by AiAgent2.
-   */
-  async getUserFacingDetails() {
-    return null;
-  }
-  /**
-   * Returns initial UI widgets to display in the conversation context header
-   * when this context is active (e.g. Core Web Vitals summary for a performance trace).
-   * Used by PerformanceAgent and AiAgent2.
-   */
-  async getWidgets() {
-    return [];
-  }
-};
-var CrossOriginError = class extends Error {
-  constructor() {
-    super("Cross-origin navigation detected");
-    this.name = "CrossOriginError";
-  }
-};
-var AiAgent = class {
-  #sessionId;
-  #aidaClient;
-  /**
-   * Whether server-side logging is permitted by the system policy (based on
-   * user preferences, feature flags, or branding configurations).
-   */
-  #serverSideLoggingAllowed;
-  /**
-   * Tracks the dynamic runtime state of logging. Even if logging is allowed
-   * by policy, tools can temporarily deactivate this to avoid logging sensitive data.
-   */
-  #serverSideLoggingActive;
-  confirmSideEffect;
-  #functionDeclarations = /* @__PURE__ */ new Map();
-  #allowedOrigin;
-  #targetManager;
-  /**
-   * Used in the debug mode and evals.
-   */
-  #structuredLog = [];
-  /**
-   * `context` does not change during `AiAgent.run()`, ensuring that calls to JS
-   * have the correct `context`. We don't want element selection by the user to
-   * change the `context` during an `AiAgent.run()`.
-   */
-  context;
-  #history;
-  #facts = /* @__PURE__ */ new Set();
-  constructor(opts) {
-    this.#aidaClient = opts.aidaClient;
-    let serverSideLoggingAllowed = opts.serverSideLoggingAllowed ?? false;
-    if (Root4.Runtime.hostConfig.devToolsGeminiRebranding?.enabled) {
-      serverSideLoggingAllowed = false;
-    }
-    this.#serverSideLoggingAllowed = serverSideLoggingAllowed;
-    this.#serverSideLoggingActive = serverSideLoggingAllowed;
-    this.#sessionId = opts.sessionId ?? crypto.randomUUID();
-    this.confirmSideEffect = opts.confirmSideEffectForTest ?? (() => Promise.withResolvers());
-    this.#history = opts.history ?? [];
-    this.#allowedOrigin = opts.allowedOrigin;
-    this.#targetManager = opts.targetManager ?? SDK5.TargetManager.TargetManager.instance();
-  }
-  async enhanceQuery(query) {
-    return query;
-  }
-  currentFacts() {
-    return this.#facts;
-  }
-  get history() {
-    return [...this.#history];
-  }
-  get targetManager() {
-    return this.#targetManager;
-  }
-  /**
-   * Add a fact which will be sent for any subsequent requests.
-   * Returns the new list of all facts.
-   * Facts are never automatically removed.
-   */
-  addFact(fact) {
-    this.#facts.add(fact);
-    return this.#facts;
-  }
-  removeFact(fact) {
-    return this.#facts.delete(fact);
-  }
-  clearFacts() {
-    this.#facts.clear();
-  }
-  /**
-   * Clears any subclass-specific caches. This is called when a run encounters
-   * an error (e.g., cross-origin navigation, abort, or execution error) to
-   * prevent unvalidated cached data from being replayed in subsequent runs.
-   */
-  clearCache() {
-  }
-  /**
-   * Toggles whether server-side logging is active.
-   * Note that logging can only be activated if it was allowed by policy/configuration
-   * at startup (i.e., `#serverSideLoggingAllowed` is true).
-   */
-  setServerSideLoggingActive(active) {
-    if (active && this.#serverSideLoggingAllowed) {
-      this.#serverSideLoggingActive = true;
-    } else {
-      this.#serverSideLoggingActive = false;
+    domStorageModel.enable();
+    for (const storage of domStorageModel.storages()) {
+      if (storage.isLocalStorage !== isLocalStorage) {
+        continue;
+      }
+      const currentStorageKey = storage.storageKey;
+      if (!currentStorageKey) {
+        continue;
+      }
+      if (storageKey && storageKey !== currentStorageKey) {
+        continue;
+      }
+      const parsedKey = SDK5.StorageKeyManager.parseStorageKey(currentStorageKey);
+      if (areOriginsEquivalent(parsedKey.origin, targetOrigin)) {
+        resolvedStorages.push(storage);
+      }
     }
   }
-  popPendingMultimodalInput() {
-    return void 0;
-  }
-  /**
-   * Preamble features appended to the `client_version` in metadata.
-   * This is required ONLY for the Styling Agent for legacy reasons to serve
-   * different server-side preambles based on the Chrome version.
-   * Other agents should NOT set or override this.
-   * If you are curious about this, look for `do_conversation_handler.cc` in
-   * Google3 or chat to @jacktfranklin.
-   */
-  preambleFeatures() {
-    return [];
-  }
-  buildRequest(part, role) {
-    const parts = Array.isArray(part) ? part : [part];
-    const currentMessage = {
-      parts,
-      role
-    };
-    const history = [...this.#history];
-    const declarations = [];
-    for (const [name, definition] of this.#functionDeclarations.entries()) {
-      declarations.push({
-        name,
-        description: typeof definition.description === "function" ? definition.description() : definition.description,
-        parameters: definition.parameters
-      });
+  return resolvedStorages;
+}
+async function calculateDOMStoragesUsage(storages) {
+  const itemBatches = await Promise.all(storages.map((storage) => storage.getItems().catch(() => null)));
+  let totalBytes = 0;
+  for (const items of itemBatches) {
+    if (items) {
+      for (const [key, value] of items) {
+        totalBytes += (key.length + value.length) * 2;
+      }
     }
-    function validTemperature(temperature) {
-      return typeof temperature === "number" && temperature >= 0 ? temperature : void 0;
+  }
+  return totalBytes;
+}
+
+// ../../front_end/models/ai_assistance/tools/CookieUtils.ts
+function resolveAllowedTargetOrigins(requestedOrigins, context, targetManager) {
+  const allowedOrigin = context.getEstablishedOrigin();
+  if (!allowedOrigin || isOpaqueOrigin(allowedOrigin) || isOpaqueOrigin(extractContextOrigin(allowedOrigin))) {
+    return { error: "No origin available or not allowed." };
+  }
+  const primaryPageTarget = targetManager.primaryPageTarget();
+  if (!primaryPageTarget) {
+    return { error: "Primary page target not found." };
+  }
+  const pageOrigin = Common6.ParsedURL.ParsedURL.extractOrigin(primaryPageTarget.inspectedURL());
+  if (!pageOrigin || !areOriginsEquivalent(pageOrigin, allowedOrigin)) {
+    return { error: "Page origin does not match allowed origin." };
+  }
+  const rawOrigins = Array.isArray(requestedOrigins) && requestedOrigins.length > 0 ? requestedOrigins : [allowedOrigin];
+  const validOrigins = rawOrigins.map((origin) => extractContextOrigin(origin)).filter((origin) => areOriginsEquivalent(origin, allowedOrigin));
+  const targetOrigins = Array.from(new Set(validOrigins)).slice(0, MAX_TARGET_ORIGINS);
+  if (targetOrigins.length === 0) {
+    return { error: "No valid origins found." };
+  }
+  return { targetOrigins, primaryPageTarget };
+}
+function findFrameForOrigin(origin, targetManager, primaryPageTarget) {
+  const targetOrigin = extractContextOrigin(origin);
+  for (const frame of SDK6.ResourceTreeModel.ResourceTreeModel.frames(targetManager)) {
+    if (frame.resourceTreeModel().target().outermostTarget() !== primaryPageTarget) {
+      continue;
     }
-    const enableAidaFunctionCalling = declarations.length;
-    const userTier = Host4.AidaClient.convertToUserTierEnum(this.userTier);
-    const preamble10 = userTier === Host4.AidaClient.UserTier.TESTERS ? this.preamble : void 0;
-    const facts = Array.from(this.#facts);
-    const request = {
-      client: Host4.AidaClient.CLIENT_NAME,
-      current_message: currentMessage,
-      preamble: preamble10,
-      historical_contexts: history.length ? history : void 0,
-      facts: facts.length ? facts : void 0,
-      ...enableAidaFunctionCalling ? { function_declarations: declarations } : {},
-      options: {
-        temperature: validTemperature(this.options.temperature),
-        model_id: this.options.modelId || void 0
+    if (frame.securityOrigin && areOriginsEquivalent(frame.securityOrigin, targetOrigin)) {
+      return frame;
+    }
+  }
+  return null;
+}
+async function getCookiesForOrigin(origin, targetManager, primaryPageTarget) {
+  const frame = findFrameForOrigin(origin, targetManager, primaryPageTarget);
+  if (!frame) {
+    return { error: `Frame not found or origin disallowed for ${origin}` };
+  }
+  const target = frame.resourceTreeModel().target();
+  const cookieModel = target.model(SDK6.CookieModel.CookieModel);
+  if (!cookieModel) {
+    return { error: `Cookie model not found for ${origin}` };
+  }
+  const allCookies = await cookieModel.getCookiesForDomain(origin, true).catch(() => null);
+  if (!allCookies) {
+    return { error: `Failed to fetch cookies for ${origin}` };
+  }
+  return { cookies: allCookies.filter((cookie) => !cookie.httpOnly() && cookie.matchesSecurityOrigin(origin)) };
+}
+
+// ../../front_end/models/ai_assistance/tools/GetCookieValues.ts
+var lockedString2 = i18n4.i18n.lockedString;
+var MAX_NUM_CHAR_LENGTH = 1e4;
+var GetCookieValuesTool = class {
+  name = "getCookieValues" /* GET_COOKIE_VALUES */;
+  description = "Retrieve the values and detailed metadata of specific cookies by their names across origins.";
+  annotations = ["redact-from-history" /* REDACT_FROM_HISTORY */];
+  parameters = {
+    type: Host4.AidaClient.ParametersTypes.OBJECT,
+    description: "",
+    nullable: false,
+    properties: {
+      cookieNames: {
+        type: Host4.AidaClient.ParametersTypes.ARRAY,
+        description: "A list of cookie names to retrieve values and metadata for.",
+        items: { type: Host4.AidaClient.ParametersTypes.STRING, description: "A cookie name." },
+        nullable: false
       },
-      metadata: {
-        disable_user_content_logging: !(this.#serverSideLoggingActive ?? false),
-        string_session_id: this.#sessionId,
-        user_tier: userTier,
-        client_version: Root4.Runtime.getChromeVersion() + this.preambleFeatures().map((feature) => `+${feature}`).join("")
-      },
-      functionality_type: enableAidaFunctionCalling ? Host4.AidaClient.FunctionalityType.AGENTIC_CHAT : Host4.AidaClient.FunctionalityType.CHAT,
-      client_feature: this.clientFeature
-    };
-    return request;
-  }
-  get sessionId() {
-    return this.#sessionId;
-  }
-  /**
-   * The AI has instructions to emit structured suggestions in their response. This
-   * function parses for that.
-   *
-   * Note: currently only StylingAgent and PerformanceAgent utilize this, but
-   * eventually all agents should support this.
-   */
-  parseTextResponseForSuggestions(text) {
-    if (!text) {
-      return { answer: "" };
-    }
-    const lines = text.split("\n");
-    const answerLines = [];
-    let suggestions;
-    for (const line of lines) {
-      const trimmed = line.trim();
-      if (trimmed.startsWith("SUGGESTIONS:")) {
-        try {
-          suggestions = sanitizeSuggestions(trimmed.substring("SUGGESTIONS:".length).trim());
-        } catch {
-        }
-      } else {
-        answerLines.push(line);
+      origins: {
+        type: Host4.AidaClient.ParametersTypes.ARRAY,
+        description: "Optional list of origins the cookies belong to. Defaults to the current page origin if omitted.",
+        items: { type: Host4.AidaClient.ParametersTypes.STRING, description: "An origin URL." },
+        nullable: true
       }
-    }
-    if (!suggestions && answerLines.at(-1)?.includes("SUGGESTIONS:")) {
-      const [answer, suggestionsText] = answerLines[answerLines.length - 1].split("SUGGESTIONS:", 2);
-      try {
-        suggestions = sanitizeSuggestions(suggestionsText.trim());
-      } catch {
-      }
-      answerLines[answerLines.length - 1] = answer;
-    }
-    const response = {
-      // If we could not parse the parts, consider the response to be an
-      // answer.
-      answer: answerLines.join("\n")
-    };
-    if (suggestions) {
-      response.suggestions = suggestions;
-    }
-    return response;
-  }
-  /**
-   * Parses a streaming text response into a
-   * though/action/title/answer/suggestions component.
-   */
-  parseTextResponse(response) {
-    return this.parseTextResponseForSuggestions(response.trim());
-  }
-  async finalizeAnswer(answer) {
-    return answer;
-  }
-  /**
-   * Declare a function that the AI model can call.
-   * @param name The name of the function
-   * @param declaration the function declaration. Currently functions must:
-   * 1. Return an object of serializable key/value pairs. You cannot return
-   *    anything other than a plain JavaScript object that can be serialized.
-   * 2. Take one parameter which is an object that can have
-   *    multiple keys and values. For example, rather than a function being called
-   *    with two args, `foo` and `bar`, you should instead have the function be
-   *    called with one object with `foo` and `bar` keys.
-   */
-  declareFunction(name, declaration) {
-    if (this.#functionDeclarations.has(name)) {
-      throw new Error(`Duplicate function declaration ${name}`);
-    }
-    this.#functionDeclarations.set(name, declaration);
-  }
-  clearDeclaredFunctions() {
-    this.#functionDeclarations.clear();
-  }
-  /**
-   * Executed immediately after the current context is populated with the selected
-   * context and before the request is built.
-   */
-  async preRun() {
-  }
-  async *run(initialQuery, options, multimodalInput) {
-    await options.selected?.refresh();
-    if (options.selected) {
-      this.context = options.selected;
-    }
-    await this.preRun();
-    const enhancedQuery = await this.enhanceQuery(initialQuery, options.selected, multimodalInput?.type);
-    if (!enhancedQuery.trim() && !multimodalInput) {
-      return;
-    }
-    Host4.userMetrics.freestylerQueryLength(enhancedQuery.length);
-    let query;
-    query = multimodalInput ? [{ text: enhancedQuery }, multimodalInput.input] : [{ text: enhancedQuery }];
-    let request = this.buildRequest(query, Host4.AidaClient.Role.USER);
-    const clientFeatureName = Host4.AidaClient.getClientFeatureName(this.clientFeature);
-    debugLog(`[AiAgent] Starting conversation with client ${clientFeatureName}, userTier ${this.userTier}`);
-    yield* this.handleContextDetails(options.selected);
-    for (let i = 0; i < MAX_STEPS; i++) {
-      yield {
-        type: "querying"
-      };
-      if (i === 0) {
-        debugLog("[AiAgent] Step 1: Sending user prompt to model:", enhancedQuery);
-      } else if (!Array.isArray(query) && "functionResponse" in query) {
-        debugLog(`[AiAgent] Step ${i + 1}: Sending function response for '${query.functionResponse.name}' to model:`, query.functionResponse.response);
-      } else {
-        debugLog(`[AiAgent] Step ${i + 1}: Sending request to model:`, request.current_message);
-      }
-      let rpcId;
-      let textResponse = "";
-      let functionCall = void 0;
-      try {
-        for await (const fetchResult of this.#aidaFetch(request, { signal: options.signal })) {
-          rpcId = fetchResult.rpcId;
-          textResponse = fetchResult.text ?? "";
-          functionCall = fetchResult.functionCall;
-          if (!functionCall && !fetchResult.completed) {
-            const parsed = this.parseTextResponse(textResponse);
-            const partialAnswer = "answer" in parsed ? parsed.answer : "";
-            if (!partialAnswer) {
-              continue;
-            }
-            yield {
-              type: "answer",
-              text: partialAnswer,
-              complete: false
-            };
-          }
-        }
-      } catch (err) {
-        debugLog("Error calling the AIDA API", err);
-        const error = aidaErrorToErrorType(err);
-        yield this.#createErrorResponse(error);
-        break;
-      }
-      this.#history.push(request.current_message);
-      if (textResponse) {
-        const parsedResponse = this.parseTextResponse(textResponse);
-        if (!("answer" in parsedResponse)) {
-          throw new Error("Expected a completed response to have an answer");
-        }
-        if (!functionCall) {
-          debugLog(`[AiAgent] Step ${i + 1}: Model returned text response:`, parsedResponse.answer);
-          this.#history.push({
-            parts: [{
-              text: parsedResponse.answer
-            }],
-            role: Host4.AidaClient.Role.MODEL
-          });
-        }
-        Host4.userMetrics.actionTaken(Host4.UserMetrics.Action.AiAssistanceAnswerReceived);
-        yield await this.finalizeAnswer({
-          type: "answer",
-          text: parsedResponse.answer,
-          suggestions: parsedResponse.suggestions,
-          complete: true,
-          rpcId
-        });
-        if (!functionCall) {
-          break;
-        }
-      }
-      if (functionCall) {
-        debugLog(`[AiAgent] Step ${i + 1}: Model requested function call: ${functionCall.name}`, functionCall.args);
-        const allowedOriginResult = this.#allowedOrigin?.();
-        if (allowedOriginResult && "blocked" in allowedOriginResult) {
-          yield this.#createErrorResponse(
-            "cross-origin"
-            /* ErrorType.CROSS_ORIGIN */
-          );
-          break;
-        }
-        try {
-          const result = yield* this.#callFunction(functionCall.name, functionCall.args, functionCall.thoughtSignature, {
-            ...options,
-            explanation: textResponse
-          });
-          if (options.signal?.aborted) {
-            yield this.#createErrorResponse(
-              "abort"
-              /* ErrorType.ABORT */
-            );
-            break;
-          }
-          if ("context" in result) {
-            yield {
-              type: "context-change",
-              description: result.description,
-              context: result.context,
-              widgets: result.widgets
-            };
-            return;
-          }
-          query = {
-            functionResponse: {
-              name: functionCall.name,
-              // Widgets are not sent back to the LLM
-              response: { ...result, widgets: void 0 }
-            }
-          };
-          request = this.buildRequest(query, Host4.AidaClient.Role.ROLE_UNSPECIFIED);
-        } catch (err) {
-          if (err instanceof CrossOriginError) {
-            yield this.#createErrorResponse(
-              "cross-origin"
-              /* ErrorType.CROSS_ORIGIN */
-            );
-            break;
-          }
-          debugLog("Error handling function call", err);
-          yield this.#createErrorResponse(
-            "unknown"
-            /* ErrorType.UNKNOWN */
-          );
-          break;
-        }
-      } else {
-        yield this.#createErrorResponse(
-          i - 1 === MAX_STEPS ? "max-steps" : "unknown"
-          /* ErrorType.UNKNOWN */
-        );
-        break;
-      }
-    }
-    if (isStructuredLogEnabled()) {
-      window.dispatchEvent(new CustomEvent("aiassistancedone"));
-    }
-    return;
-  }
-  async *#callFunction(name, args, thoughtSignature, options) {
-    const call = this.#functionDeclarations.get(name);
-    if (!call) {
-      throw new Error(`Function ${name} is not found.`);
-    }
-    debugLog(`[AiAgent] Executing tool '${name}' with args:`, args);
-    const parts = [];
-    if (options?.explanation) {
-      parts.push({
-        text: options.explanation
-      });
-    }
-    const functionCall = {
-      name,
-      args
-    };
-    if (thoughtSignature) {
-      functionCall.thoughtSignature = thoughtSignature;
-    }
-    parts.push({ functionCall });
-    this.#history.push({
-      parts,
-      role: Host4.AidaClient.Role.MODEL
-    });
-    let code;
-    if (call.displayInfoFromArgs) {
-      const { title, thought, action: callCode } = call.displayInfoFromArgs(args);
-      code = callCode;
-      if (title) {
-        yield {
-          type: "title",
-          title
-        };
-      }
-      if (thought) {
-        yield {
-          type: "thought",
-          thought
-        };
-      }
-    }
-    const isOriginBlocked = () => {
-      const allowedOriginResult = this.#allowedOrigin?.();
-      return Boolean(allowedOriginResult && "blocked" in allowedOriginResult);
-    };
-    let result = await call.handler(args, options);
-    if (isOriginBlocked()) {
-      throw new CrossOriginError();
-    }
-    if ("requiresApproval" in result) {
-      if (code) {
-        yield {
-          type: "action",
-          code,
-          canceled: false
-        };
-      }
-      const sideEffectConfirmationPromiseWithResolvers = this.confirmSideEffect();
-      void sideEffectConfirmationPromiseWithResolvers.promise.then((result2) => {
-        Host4.userMetrics.actionTaken(result2 ? Host4.UserMetrics.Action.AiAssistanceSideEffectConfirmed : Host4.UserMetrics.Action.AiAssistanceSideEffectRejected);
-      });
-      if (options?.signal?.aborted) {
-        sideEffectConfirmationPromiseWithResolvers.resolve(false);
-      }
-      options?.signal?.addEventListener("abort", () => {
-        sideEffectConfirmationPromiseWithResolvers.resolve(false);
-      }, { once: true });
-      yield {
-        type: "side-effect",
-        confirm: sideEffectConfirmationPromiseWithResolvers.resolve,
-        description: result.description
-      };
-      const approvedRun = await sideEffectConfirmationPromiseWithResolvers.promise;
-      if (!approvedRun) {
-        yield {
-          type: "action",
-          code,
-          output: "Error: User denied code execution with side effects.",
-          canceled: true
-        };
-        debugLog(`[AiAgent] Tool '${name}' denied by user.`);
-        return {
-          result: "Error: User denied code execution with side effects."
-        };
-      }
-      if (isOriginBlocked()) {
-        throw new CrossOriginError();
-      }
-      result = await call.handler(args, {
-        ...options,
-        approved: true
-      });
-      if (isOriginBlocked()) {
-        throw new CrossOriginError();
-      }
-    }
-    if ("result" in result) {
-      yield {
-        type: "action",
-        code,
-        output: typeof result.result === "string" ? result.result : JSON.stringify(result.result),
-        widgets: result.widgets,
-        canceled: false,
-        toolName: name
-      };
-    }
-    if ("error" in result) {
-      yield {
-        type: "action",
-        code,
-        output: result.error,
-        canceled: false,
-        toolName: name
-      };
-    }
-    debugLog(`[AiAgent] Tool '${name}' result:`, result);
-    if ("context" in result) {
-      return result;
-    }
-    return result;
-  }
-  async *#aidaFetch(request, options) {
-    let aidaResponse = void 0;
-    let rpcId;
-    for await (aidaResponse of this.#aidaClient.doConversation(request, options)) {
-      if (aidaResponse.functionCalls?.length) {
-        if (aidaResponse.functionCalls.length > 1) {
-          debugLog(`[AiAgent] Unexpected: received ${aidaResponse.functionCalls.length} function calls in response:`, aidaResponse.functionCalls);
-        }
-        yield {
-          rpcId,
-          functionCall: aidaResponse.functionCalls[0],
-          completed: true,
-          text: aidaResponse.explanation
-        };
-        break;
-      }
-      rpcId = aidaResponse.metadata.rpcGlobalId ?? rpcId;
-      yield {
-        rpcId,
-        text: aidaResponse.explanation,
-        completed: aidaResponse.completed
-      };
-    }
-    if (isStructuredLogEnabled() && aidaResponse) {
-      this.#structuredLog.push({
-        request: structuredClone(request),
-        aidaResponse
-      });
-      try {
-        localStorage.setItem("aiAssistanceStructuredLog", JSON.stringify(this.#structuredLog));
-      } catch (err) {
-        console.warn('Failed to write to local storage "aiAssistanceStructuredLog":', err);
-      }
-    }
-  }
-  #removeLastRunParts() {
-    this.#history.splice(this.#history.findLastIndex((item) => {
-      return item.role === Host4.AidaClient.Role.USER;
-    }));
-  }
-  #createErrorResponse(error) {
-    this.#removeLastRunParts();
-    this.clearCache();
-    if (error !== "abort") {
-      Host4.userMetrics.actionTaken(Host4.UserMetrics.Action.AiAssistanceError);
-    }
+    },
+    required: ["cookieNames"]
+  };
+  displayInfoFromArgs(args) {
     return {
-      type: "error",
-      error
+      title: lockedString2("Reading cookie values and metadata"),
+      action: `getCookieValues(${JSON.stringify(args?.cookieNames ?? [])}, ${JSON.stringify(args?.origins ?? [])})`
     };
   }
+  async handler(args, context, options) {
+    context.disableLogging();
+    if (!args || !Array.isArray(args.cookieNames) || args.cookieNames.length === 0) {
+      return { error: "No cookie names provided." };
+    }
+    const targetManager = SDK7.TargetManager.TargetManager.instance();
+    const targetOriginsResult = resolveAllowedTargetOrigins(args?.origins, context, targetManager);
+    if ("error" in targetOriginsResult) {
+      return { error: targetOriginsResult.error };
+    }
+    const { targetOrigins, primaryPageTarget } = targetOriginsResult;
+    if (options?.approved !== true) {
+      const cookieString = args.cookieNames.map((name) => `\`${name}\``).join(", ");
+      const targetsDesc = targetOrigins.join(", ");
+      return {
+        requiresApproval: true,
+        description: lockedString2(
+          `The AI wants to access the value(s) and metadata of cookie(s) ${cookieString} on ${targetsDesc}.`
+        )
+      };
+    }
+    const cookiesByOrigin = {};
+    await Promise.all(targetOrigins.map(async (origin) => {
+      const result = await getCookiesForOrigin(origin, targetManager, primaryPageTarget);
+      if ("error" in result) {
+        cookiesByOrigin[origin] = { error: result.error };
+        return;
+      }
+      const matchingCookies = result.cookies.filter((c) => args.cookieNames.includes(c.name()));
+      const cookieData = matchingCookies.map((cookie) => {
+        const value = cookie.value();
+        const truncatedValue = value.length > MAX_NUM_CHAR_LENGTH ? value.substring(0, MAX_NUM_CHAR_LENGTH) + "... <truncated>" : value;
+        return {
+          name: cookie.name(),
+          value: truncatedValue,
+          domain: cookie.domain(),
+          path: cookie.path(),
+          expires: cookie.expires(),
+          size: cookie.size(),
+          secure: cookie.secure(),
+          sameSite: cookie.sameSite(),
+          partitioned: cookie.partitioned(),
+          priority: cookie.priority(),
+          sourcePort: cookie.sourcePort(),
+          sourceScheme: cookie.sourceScheme()
+        };
+      });
+      cookiesByOrigin[origin] = { cookies: cookieData };
+    }));
+    return { result: { cookiesByOrigin } };
+  }
 };
-function sanitizeSuggestions(suggestions) {
-  const parsed = JSON.parse(suggestions);
-  if (!Array.isArray(parsed)) {
-    return void 0;
-  }
-  const sanitized = [];
-  for (const item of parsed) {
-    if (typeof item !== "string") {
-      continue;
-    }
-    const noExtraWhitespace = item.replace(/\s+/g, " ").trim();
-    if (noExtraWhitespace.length === 0) {
-      continue;
-    }
-    sanitized.push(noExtraWhitespace.substring(0, MAX_SUGGESTION_LENGTH));
-  }
-  if (sanitized.length === 0) {
-    return void 0;
-  }
-  return sanitized;
-}
-function aidaErrorToErrorType(err) {
-  if (err instanceof Host4.AidaClient.AidaAbortError) {
-    return "abort";
-  }
-  if (err instanceof Host4.AidaClient.AidaBlockError) {
-    return "block";
-  }
-  if (err instanceof Host4.AidaClient.AidaQuotaError) {
-    return "quota";
-  }
-  if (err instanceof Host4.AidaClient.AidaPayloadTooLargeError) {
-    return "payload-too-large";
-  }
-  return "unknown";
-}
 
-// gen/front_end/models/ai_assistance/data_formatters/PerformanceInsightFormatter.js
-var PerformanceInsightFormatter_exports = {};
-__export(PerformanceInsightFormatter_exports, {
-  PerformanceInsightFormatter: () => PerformanceInsightFormatter
+// ../../front_end/models/ai_assistance/tools/GetDetailedCallTree.ts
+var GetDetailedCallTree_exports = {};
+__export(GetDetailedCallTree_exports, {
+  GetDetailedCallTreeTool: () => GetDetailedCallTreeTool
 });
-import * as Common7 from "./../../core/common/common.js";
-import * as Trace4 from "./../trace/trace.js";
+import * as Host5 from "../../core/host/host.js";
+import * as i18n6 from "../../core/i18n/i18n.js";
+import * as Trace2 from "../trace/trace.js";
 
-// gen/front_end/models/ai_assistance/data_formatters/PerformanceTraceFormatter.js
-var PerformanceTraceFormatter_exports = {};
-__export(PerformanceTraceFormatter_exports, {
-  PerformanceTraceFormatter: () => PerformanceTraceFormatter,
-  formatEventForAI: () => formatEventForAI
-});
-import * as CrUXManager from "./../crux-manager/crux-manager.js";
-import * as Trace3 from "./../trace/trace.js";
-
-// gen/front_end/models/ai_assistance/performance/AIQueries.js
-var AIQueries_exports = {};
-__export(AIQueries_exports, {
-  AIQueries: () => AIQueries
-});
-import * as Trace2 from "./../trace/trace.js";
-
-// gen/front_end/models/ai_assistance/performance/AICallTree.js
+// ../../front_end/models/ai_assistance/performance/AICallTree.ts
 var AICallTree_exports = {};
 __export(AICallTree_exports, {
   AICallTree: () => AICallTree,
@@ -2367,9 +4729,9 @@ __export(AICallTree_exports, {
   MinDurationFilter: () => MinDurationFilter,
   SelectedEventDurationFilter: () => SelectedEventDurationFilter
 });
-import * as Trace from "./../trace/trace.js";
-import * as SourceMapsResolver from "./../trace_source_maps_resolver/trace_source_maps_resolver.js";
-import * as Workspace from "./../workspace/workspace.js";
+import * as Trace from "../trace/trace.js";
+import * as SourceMapsResolver from "../trace_source_maps_resolver/trace_source_maps_resolver.js";
+import * as Workspace from "../workspace/workspace.js";
 function depthFirstWalk(nodes, callback) {
   for (const node of nodes) {
     if (callback?.(node)) {
@@ -2379,19 +4741,15 @@ function depthFirstWalk(nodes, callback) {
   }
 }
 var AICallTree = class _AICallTree {
-  selectedNode;
-  rootNode;
-  parsedTrace;
-  workspace;
-  // Note: ideally this is passed in (or lived on ParsedTrace), but this class is
-  // stateless (mostly, there's a cache for some stuff) so it doesn't match much.
-  #eventsSerializer = new Trace.EventsSerializer.EventsSerializer();
   constructor(selectedNode, rootNode, parsedTrace, workspace = Workspace.Workspace.WorkspaceImpl.instance()) {
     this.selectedNode = selectedNode;
     this.rootNode = rootNode;
     this.parsedTrace = parsedTrace;
     this.workspace = workspace;
   }
+  // Note: ideally this is passed in (or lived on ParsedTrace), but this class is
+  // stateless (mostly, there's a cache for some stuff) so it doesn't match much.
+  #eventsSerializer = new Trace.EventsSerializer.EventsSerializer();
   static findEventsForThread({ thread, parsedTrace, bounds }) {
     const threadEvents = parsedTrace.data.Renderer.processes.get(thread.pid)?.threads.get(thread.tid)?.entries;
     if (!threadEvents) {
@@ -2448,7 +4806,7 @@ var AICallTree = class _AICallTree {
     if (!thread) {
       return null;
     }
-    if (thread.type !== "MAIN_THREAD" && thread.type !== "CPU_PROFILE") {
+    if (thread.type !== Trace.Handlers.Threads.ThreadType.MAIN_THREAD && thread.type !== Trace.Handlers.Threads.ThreadType.CPU_PROFILE) {
       return null;
     }
     const data = parsedTrace.data;
@@ -2457,7 +4815,10 @@ var AICallTree = class _AICallTree {
     }
     const showAllEvents = parsedTrace.data.Meta.config.showAllEvents;
     const { startTime, endTime } = Trace.Helpers.Timing.eventTimingsMilliSeconds(selectedEvent);
-    const selectedEventBounds = Trace.Helpers.Timing.traceWindowFromMicroSeconds(Trace.Helpers.Timing.milliToMicro(startTime), Trace.Helpers.Timing.milliToMicro(endTime));
+    const selectedEventBounds = Trace.Helpers.Timing.traceWindowFromMicroSeconds(
+      Trace.Helpers.Timing.milliToMicro(startTime),
+      Trace.Helpers.Timing.milliToMicro(endTime)
+    );
     let threadEvents = data.Renderer.processes.get(selectedEvent.pid)?.threads.get(selectedEvent.tid)?.entries;
     if (!threadEvents) {
       threadEvents = data.Samples.profilesInProcess.get(selectedEvent.pid)?.get(selectedEvent.tid)?.profileCalls;
@@ -2685,7 +5046,7 @@ var ExcludeCompileCodeFilter = class extends Trace.Extras.TraceFilter.TraceFilte
     if (this.#selectedEvent && event === this.#selectedEvent) {
       return true;
     }
-    return event.name !== "V8.CompileCode";
+    return event.name !== Trace.Types.Events.Name.COMPILE_CODE;
   }
 };
 var SelectedEventDurationFilter = class extends Trace.Extras.TraceFilter.TraceFilter {
@@ -2714,7 +5075,1182 @@ var MinDurationFilter = class extends Trace.Extras.TraceFilter.TraceFilter {
   }
 };
 
-// gen/front_end/models/ai_assistance/performance/AIQueries.js
+// ../../front_end/models/ai_assistance/tools/GetDetailedCallTree.ts
+var UIStringsNotTranslate = {
+  lookingAtCallTree: "Looking at call tree"
+};
+var lockedString3 = i18n6.i18n.lockedString;
+var GetDetailedCallTreeTool = class {
+  name = "getDetailedCallTree" /* GET_DETAILED_CALL_TREE */;
+  description = "Returns a detailed call tree for the given main thread event.";
+  parameters = {
+    type: Host5.AidaClient.ParametersTypes.OBJECT,
+    description: "Arguments for looking up a call tree.",
+    nullable: false,
+    properties: {
+      eventKey: {
+        type: Host5.AidaClient.ParametersTypes.STRING,
+        description: "The key for the event.",
+        nullable: false
+      }
+    },
+    required: ["eventKey"]
+  };
+  displayInfoFromArgs(params) {
+    return {
+      title: lockedString3(UIStringsNotTranslate.lookingAtCallTree),
+      action: `getDetailedCallTree('${params.eventKey}')`
+    };
+  }
+  async handler(params, capabilities) {
+    const performanceTraceContext = capabilities.getPerformanceTraceContext();
+    if (!performanceTraceContext) {
+      return { error: "Performance trace context is not available." };
+    }
+    if (!params.eventKey) {
+      return { error: "Missing arg: eventKey" };
+    }
+    const focus = performanceTraceContext.getItem();
+    const event = focus.lookupEvent(params.eventKey);
+    if (!event) {
+      return { error: "Invalid eventKey" };
+    }
+    const tree = AICallTree.fromEvent(event, focus.parsedTrace);
+    if (!tree) {
+      return { error: "No call tree found" };
+    }
+    const formatter = performanceTraceContext.createFormatter();
+    const callTree = await formatter.formatCallTree(tree);
+    const bounds = Trace2.Helpers.Timing.traceWindowFromEvent(event);
+    return {
+      result: callTree,
+      widgets: [
+        {
+          name: "BOTTOM_UP_TREE",
+          data: {
+            bounds,
+            parsedTrace: focus.parsedTrace
+          }
+        },
+        {
+          name: "TIMELINE_RANGE_SUMMARY",
+          data: {
+            bounds,
+            parsedTrace: focus.parsedTrace,
+            track: "main"
+          }
+        }
+      ]
+    };
+  }
+};
+
+// ../../front_end/models/ai_assistance/tools/GetElementAccessibilityDetails.ts
+var GetElementAccessibilityDetails_exports = {};
+__export(GetElementAccessibilityDetails_exports, {
+  GetElementAccessibilityDetailsTool: () => GetElementAccessibilityDetailsTool
+});
+import * as Host7 from "../../core/host/host.js";
+import * as i18n10 from "../../core/i18n/i18n.js";
+import * as SDK9 from "../../core/sdk/sdk.js";
+
+// ../../front_end/models/ai_assistance/contexts/DOMNodeContext.ts
+var DOMNodeContext_exports = {};
+__export(DOMNodeContext_exports, {
+  DOMNodeContext: () => DOMNodeContext
+});
+import * as i18n8 from "../../core/i18n/i18n.js";
+
+// ../../front_end/models/ai_assistance/agents/AiAgent.ts
+var AiAgent_exports = {};
+__export(AiAgent_exports, {
+  AiAgent: () => AiAgent,
+  ConversationContext: () => ConversationContext,
+  ErrorType: () => ErrorType,
+  MAX_STEPS: () => MAX_STEPS,
+  MultimodalInputType: () => MultimodalInputType,
+  ResponseType: () => ResponseType,
+  aidaErrorToErrorType: () => aidaErrorToErrorType
+});
+import * as Host6 from "../../core/host/host.js";
+import * as Root4 from "../../core/root/root.js";
+import * as SDK8 from "../../core/sdk/sdk.js";
+var MAX_SUGGESTION_LENGTH = 200;
+var ResponseType = /* @__PURE__ */ ((ResponseType2) => {
+  ResponseType2["CONTEXT"] = "context";
+  ResponseType2["TITLE"] = "title";
+  ResponseType2["THOUGHT"] = "thought";
+  ResponseType2["ACTION"] = "action";
+  ResponseType2["SIDE_EFFECT"] = "side-effect";
+  ResponseType2["SUGGESTIONS"] = "suggestions";
+  ResponseType2["ANSWER"] = "answer";
+  ResponseType2["ERROR"] = "error";
+  ResponseType2["QUERYING"] = "querying";
+  ResponseType2["USER_QUERY"] = "user-query";
+  ResponseType2["CONTEXT_CHANGE"] = "context-change";
+  return ResponseType2;
+})(ResponseType || {});
+var ErrorType = /* @__PURE__ */ ((ErrorType2) => {
+  ErrorType2["UNKNOWN"] = "unknown";
+  ErrorType2["ABORT"] = "abort";
+  ErrorType2["MAX_STEPS"] = "max-steps";
+  ErrorType2["BLOCK"] = "block";
+  ErrorType2["CROSS_ORIGIN"] = "cross-origin";
+  ErrorType2["QUOTA"] = "quota";
+  ErrorType2["PAYLOAD_TOO_LARGE"] = "payload-too-large";
+  return ErrorType2;
+})(ErrorType || {});
+var MultimodalInputType = /* @__PURE__ */ ((MultimodalInputType2) => {
+  MultimodalInputType2["SCREENSHOT"] = "screenshot";
+  MultimodalInputType2["UPLOADED_IMAGE"] = "uploaded-image";
+  return MultimodalInputType2;
+})(MultimodalInputType || {});
+var MAX_STEPS = 10;
+var ConversationContext = class {
+  /**
+   * Returns true if the server-side logging is enabled when this context is active.
+   * Currently only used for AI v2.
+   */
+  isLoggingEnabled() {
+    return true;
+  }
+  getOrigin() {
+    return extractContextOrigin(this.getURL());
+  }
+  /**
+   * Returns true if this data context (e.g., a DOM node or Network Request) is
+   * allowed to be included in a conversation that is locked to the provided
+   * `establishedOrigin`.
+   *
+   * A conversation is "locked" to an origin once the first query is made.
+   * This method ensures that we don't mix data from different origins in the
+   * same conversation.
+   *
+   * @param establishedOrigin The origin that the current conversation is locked to.
+   * If undefined, the conversation has not yet been locked to an origin.
+   */
+  isOriginAllowed(establishedOrigin) {
+    const origin = this.getOrigin();
+    if (origin instanceof SDK8.SecurityOrigin.SecurityOrigin) {
+      if (origin.isOpaque()) {
+        return false;
+      }
+      if (!establishedOrigin) {
+        return true;
+      }
+      const established = establishedOrigin instanceof SDK8.SecurityOrigin.SecurityOrigin ? establishedOrigin : SDK8.SecurityOrigin.SecurityOrigin.create(establishedOrigin);
+      return origin.isSameOriginWith(established);
+    }
+    if (!establishedOrigin) {
+      return !isOpaqueOrigin(origin);
+    }
+    const establishedString = establishedOrigin instanceof SDK8.SecurityOrigin.SecurityOrigin ? establishedOrigin.siteId() : establishedOrigin;
+    return areOriginsEquivalent(origin, establishedString);
+  }
+  /**
+   * This method is called at the start of `AiAgent.run`.
+   * It will be overridden in subclasses to fetch data related to the context item.
+   */
+  async refresh() {
+    return;
+  }
+  async getSuggestions() {
+    return;
+  }
+  /**
+   * Returns a detailed description of the context item for inclusion in the AI model prompt.
+   * Currently only used by AiAgent2.
+   */
+  async getPromptDetails() {
+    return null;
+  }
+  /**
+   * Returns a list of context details to display to the user in the UI.
+   * Currently only used by AiAgent2.
+   */
+  async getUserFacingDetails() {
+    return null;
+  }
+  /**
+   * Returns initial UI widgets to display in the conversation context header
+   * when this context is active (e.g. Core Web Vitals summary for a performance trace).
+   * Used by PerformanceAgent and AiAgent2.
+   */
+  async getWidgets() {
+    return [];
+  }
+};
+var CrossOriginError = class extends Error {
+  constructor() {
+    super("Cross-origin navigation detected");
+    this.name = "CrossOriginError";
+  }
+};
+var AiAgent = class {
+  #sessionId;
+  #aidaClient;
+  /**
+   * Tracks the dynamic runtime state of logging. Even if logging is allowed
+   * by policy, tools or sensitive contexts can deactivate this to avoid logging sensitive data.
+   */
+  #serverSideLoggingActive;
+  confirmSideEffect;
+  #functionDeclarations = /* @__PURE__ */ new Map();
+  #allowedOrigin;
+  #targetManager;
+  /**
+   * Used in the debug mode and evals.
+   */
+  #structuredLog = [];
+  /**
+   * `context` does not change during `AiAgent.run()`, ensuring that calls to JS
+   * have the correct `context`. We don't want element selection by the user to
+   * change the `context` during an `AiAgent.run()`.
+   */
+  context;
+  #history;
+  #facts = /* @__PURE__ */ new Set();
+  constructor(opts) {
+    this.#aidaClient = opts.aidaClient;
+    let serverSideLoggingAllowed = opts.serverSideLoggingAllowed ?? false;
+    if (Root4.Runtime.hostConfig.devToolsGeminiRebranding?.enabled) {
+      serverSideLoggingAllowed = false;
+    }
+    this.#serverSideLoggingActive = serverSideLoggingAllowed;
+    this.#sessionId = opts.sessionId ?? crypto.randomUUID();
+    this.confirmSideEffect = opts.confirmSideEffectForTest ?? (() => Promise.withResolvers());
+    this.#history = opts.history ?? [];
+    this.#allowedOrigin = opts.allowedOrigin;
+    this.#targetManager = opts.targetManager ?? SDK8.TargetManager.TargetManager.instance();
+  }
+  async enhanceQuery(query) {
+    return query;
+  }
+  currentFacts() {
+    return this.#facts;
+  }
+  get history() {
+    return [...this.#history];
+  }
+  get targetManager() {
+    return this.#targetManager;
+  }
+  /**
+   * Add a fact which will be sent for any subsequent requests.
+   * Returns the new list of all facts.
+   * Facts are never automatically removed.
+   */
+  addFact(fact) {
+    this.#facts.add(fact);
+    return this.#facts;
+  }
+  removeFact(fact) {
+    return this.#facts.delete(fact);
+  }
+  clearFacts() {
+    this.#facts.clear();
+  }
+  /**
+   * Clears any subclass-specific caches. This is called when a run encounters
+   * an error (e.g., cross-origin navigation, abort, or execution error) to
+   * prevent unvalidated cached data from being replayed in subsequent runs.
+   */
+  clearCache() {
+  }
+  /**
+   * Disables server-side logging for the remainder of this agent instance's lifetime.
+   *
+   * Logging deactivation is irreversible for the session. Conversation history
+   * accumulates across turns; re-enabling logging later would leak sensitive
+   * data from prior turns to AIDA.
+   */
+  disableServerSideLogging() {
+    this.#serverSideLoggingActive = false;
+  }
+  popPendingMultimodalInput() {
+    return void 0;
+  }
+  /**
+   * Preamble features appended to the `client_version` in metadata.
+   * This is required ONLY for the Styling Agent for legacy reasons to serve
+   * different server-side preambles based on the Chrome version.
+   * Other agents should NOT set or override this.
+   * If you are curious about this, look for `do_conversation_handler.cc` in
+   * Google3 or chat to @jacktfranklin.
+   */
+  preambleFeatures() {
+    return [];
+  }
+  buildRequest(part, role) {
+    const parts = Array.isArray(part) ? part : [part];
+    const currentMessage = {
+      parts,
+      role
+    };
+    const history = [...this.#history];
+    const declarations = [];
+    for (const [name, definition] of this.#functionDeclarations.entries()) {
+      declarations.push({
+        name,
+        description: typeof definition.description === "function" ? definition.description() : definition.description,
+        parameters: definition.parameters
+      });
+    }
+    function validTemperature(temperature) {
+      return typeof temperature === "number" && temperature >= 0 ? temperature : void 0;
+    }
+    const enableAidaFunctionCalling = declarations.length;
+    const userTier = Host6.AidaClient.convertToUserTierEnum(this.userTier);
+    const preamble10 = userTier === Host6.AidaClient.UserTier.TESTERS ? this.preamble : void 0;
+    const facts = Array.from(this.#facts);
+    const request = {
+      client: Host6.AidaClient.CLIENT_NAME,
+      current_message: currentMessage,
+      preamble: preamble10,
+      historical_contexts: history.length ? history : void 0,
+      facts: facts.length ? facts : void 0,
+      ...enableAidaFunctionCalling ? { function_declarations: declarations } : {},
+      options: {
+        temperature: validTemperature(this.options.temperature),
+        model_id: this.options.modelId || void 0
+      },
+      metadata: {
+        disable_user_content_logging: !(this.#serverSideLoggingActive ?? false),
+        string_session_id: this.#sessionId,
+        user_tier: userTier,
+        client_version: Root4.Runtime.getChromeVersion() + this.preambleFeatures().map((feature) => `+${feature}`).join("")
+      },
+      functionality_type: enableAidaFunctionCalling ? Host6.AidaClient.FunctionalityType.AGENTIC_CHAT : Host6.AidaClient.FunctionalityType.CHAT,
+      client_feature: this.clientFeature
+    };
+    return request;
+  }
+  get sessionId() {
+    return this.#sessionId;
+  }
+  /**
+   * The AI has instructions to emit structured suggestions in their response. This
+   * function parses for that.
+   *
+   * Note: currently only StylingAgent and PerformanceAgent utilize this, but
+   * eventually all agents should support this.
+   */
+  parseTextResponseForSuggestions(text) {
+    if (!text) {
+      return { answer: "" };
+    }
+    const lines = text.split("\n");
+    const answerLines = [];
+    let suggestions;
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (trimmed.startsWith("SUGGESTIONS:")) {
+        try {
+          suggestions = sanitizeSuggestions(trimmed.substring("SUGGESTIONS:".length).trim());
+        } catch {
+        }
+      } else {
+        answerLines.push(line);
+      }
+    }
+    if (!suggestions && answerLines.at(-1)?.includes("SUGGESTIONS:")) {
+      const [answer, suggestionsText] = answerLines[answerLines.length - 1].split("SUGGESTIONS:", 2);
+      try {
+        suggestions = sanitizeSuggestions(suggestionsText.trim());
+      } catch {
+      }
+      answerLines[answerLines.length - 1] = answer;
+    }
+    const response = {
+      // If we could not parse the parts, consider the response to be an
+      // answer.
+      answer: answerLines.join("\n")
+    };
+    if (suggestions) {
+      response.suggestions = suggestions;
+    }
+    return response;
+  }
+  /**
+   * Parses a streaming text response into a
+   * though/action/title/answer/suggestions component.
+   */
+  parseTextResponse(response) {
+    return this.parseTextResponseForSuggestions(response.trim());
+  }
+  async finalizeAnswer(answer) {
+    return answer;
+  }
+  /**
+   * Declare a function that the AI model can call.
+   * @param name The name of the function
+   * @param declaration the function declaration. Currently functions must:
+   * 1. Return an object of serializable key/value pairs. You cannot return
+   *    anything other than a plain JavaScript object that can be serialized.
+   * 2. Take one parameter which is an object that can have
+   *    multiple keys and values. For example, rather than a function being called
+   *    with two args, `foo` and `bar`, you should instead have the function be
+   *    called with one object with `foo` and `bar` keys.
+   */
+  declareFunction(name, declaration) {
+    if (this.#functionDeclarations.has(name)) {
+      throw new Error(`Duplicate function declaration ${name}`);
+    }
+    this.#functionDeclarations.set(name, declaration);
+  }
+  clearDeclaredFunctions() {
+    this.#functionDeclarations.clear();
+  }
+  /**
+   * Executed immediately after the current context is populated with the selected
+   * context and before the request is built.
+   */
+  async preRun() {
+  }
+  async *run(initialQuery, options, multimodalInput) {
+    await options.selected?.refresh();
+    this.context = options.selected ?? void 0;
+    await this.preRun();
+    const enhancedQuery = await this.enhanceQuery(initialQuery, options.selected, multimodalInput?.type);
+    if (!enhancedQuery.trim() && !multimodalInput) {
+      return;
+    }
+    Host6.userMetrics.freestylerQueryLength(enhancedQuery.length);
+    let query;
+    query = multimodalInput ? [{ text: enhancedQuery }, multimodalInput.input] : [{ text: enhancedQuery }];
+    let request = this.buildRequest(query, Host6.AidaClient.Role.USER);
+    const clientFeatureName = Host6.AidaClient.getClientFeatureName(this.clientFeature);
+    debugLog(`[AiAgent] Starting conversation with client ${clientFeatureName}, userTier ${this.userTier}`);
+    yield* this.handleContextDetails(options.selected);
+    for (let i = 0; i < MAX_STEPS; i++) {
+      yield {
+        type: "querying" /* QUERYING */
+      };
+      if (i === 0) {
+        debugLog("[AiAgent] Step 1: Sending user prompt to model:", enhancedQuery);
+      } else if (!Array.isArray(query) && "functionResponse" in query) {
+        debugLog(
+          `[AiAgent] Step ${i + 1}: Sending function response for '${query.functionResponse.name}' to model:`,
+          query.functionResponse.response
+        );
+      } else {
+        debugLog(`[AiAgent] Step ${i + 1}: Sending request to model:`, request.current_message);
+      }
+      let rpcId;
+      let textResponse = "";
+      let functionCall = void 0;
+      try {
+        for await (const fetchResult of this.#aidaFetch(request, { signal: options.signal })) {
+          rpcId = fetchResult.rpcId;
+          textResponse = fetchResult.text ?? "";
+          functionCall = fetchResult.functionCall;
+          if (!functionCall && !fetchResult.completed) {
+            const parsed = this.parseTextResponse(textResponse);
+            const partialAnswer = "answer" in parsed ? parsed.answer : "";
+            if (!partialAnswer) {
+              continue;
+            }
+            yield {
+              type: "answer" /* ANSWER */,
+              text: partialAnswer,
+              complete: false
+            };
+          }
+        }
+      } catch (err) {
+        debugLog("Error calling the AIDA API", err);
+        const error = aidaErrorToErrorType(err);
+        yield this.#createErrorResponse(error);
+        break;
+      }
+      this.#history.push(request.current_message);
+      if (textResponse) {
+        const parsedResponse = this.parseTextResponse(textResponse);
+        if (!("answer" in parsedResponse)) {
+          throw new Error("Expected a completed response to have an answer");
+        }
+        if (!functionCall) {
+          debugLog(`[AiAgent] Step ${i + 1}: Model returned text response:`, parsedResponse.answer);
+          this.#history.push({
+            parts: [{
+              text: parsedResponse.answer
+            }],
+            role: Host6.AidaClient.Role.MODEL
+          });
+        }
+        Host6.userMetrics.actionTaken(Host6.UserMetrics.Action.AiAssistanceAnswerReceived);
+        yield await this.finalizeAnswer({
+          type: "answer" /* ANSWER */,
+          text: parsedResponse.answer,
+          suggestions: parsedResponse.suggestions,
+          complete: true,
+          rpcId
+        });
+        if (!functionCall) {
+          break;
+        }
+      }
+      if (functionCall) {
+        debugLog(`[AiAgent] Step ${i + 1}: Model requested function call: ${functionCall.name}`, functionCall.args);
+        const allowedOriginResult = this.#allowedOrigin?.();
+        if (allowedOriginResult && "blocked" in allowedOriginResult) {
+          yield this.#createErrorResponse("cross-origin" /* CROSS_ORIGIN */);
+          break;
+        }
+        try {
+          const result = yield* this.#callFunction(
+            functionCall.name,
+            functionCall.args,
+            functionCall.thoughtSignature,
+            {
+              ...options,
+              explanation: textResponse
+            }
+          );
+          if (options.signal?.aborted) {
+            yield this.#createErrorResponse("abort" /* ABORT */);
+            break;
+          }
+          if ("context" in result) {
+            yield {
+              type: "context-change" /* CONTEXT_CHANGE */,
+              description: result.description,
+              context: result.context,
+              widgets: result.widgets
+            };
+            return;
+          }
+          query = {
+            functionResponse: {
+              name: functionCall.name,
+              // Widgets are not sent back to the LLM
+              response: { ...result, widgets: void 0 }
+            }
+          };
+          request = this.buildRequest(query, Host6.AidaClient.Role.ROLE_UNSPECIFIED);
+        } catch (err) {
+          if (err instanceof CrossOriginError) {
+            yield this.#createErrorResponse("cross-origin" /* CROSS_ORIGIN */);
+            break;
+          }
+          debugLog("Error handling function call", err);
+          yield this.#createErrorResponse("unknown" /* UNKNOWN */);
+          break;
+        }
+      } else {
+        yield this.#createErrorResponse(i - 1 === MAX_STEPS ? "max-steps" /* MAX_STEPS */ : "unknown" /* UNKNOWN */);
+        break;
+      }
+    }
+    if (isStructuredLogEnabled()) {
+      window.dispatchEvent(new CustomEvent("aiassistancedone"));
+    }
+    return;
+  }
+  async *#callFunction(name, args, thoughtSignature, options) {
+    const call = this.#functionDeclarations.get(name);
+    if (!call) {
+      throw new Error(`Function ${name} is not found.`);
+    }
+    debugLog(`[AiAgent] Executing tool '${name}' with args:`, args);
+    const parts = [];
+    if (options?.explanation) {
+      parts.push({
+        text: options.explanation
+      });
+    }
+    const functionCall = {
+      name,
+      args
+    };
+    if (thoughtSignature) {
+      functionCall.thoughtSignature = thoughtSignature;
+    }
+    parts.push({ functionCall });
+    this.#history.push({
+      parts,
+      role: Host6.AidaClient.Role.MODEL
+    });
+    let code;
+    if (call.displayInfoFromArgs) {
+      const { title, thought, action: callCode } = call.displayInfoFromArgs(args);
+      code = callCode;
+      if (title) {
+        yield {
+          type: "title" /* TITLE */,
+          title
+        };
+      }
+      if (thought) {
+        yield {
+          type: "thought" /* THOUGHT */,
+          thought
+        };
+      }
+    }
+    const isOriginBlocked = () => {
+      const allowedOriginResult = this.#allowedOrigin?.();
+      return Boolean(allowedOriginResult && "blocked" in allowedOriginResult);
+    };
+    let result = await call.handler(args, options);
+    if (isOriginBlocked()) {
+      throw new CrossOriginError();
+    }
+    if ("requiresApproval" in result) {
+      if (code) {
+        yield {
+          type: "action" /* ACTION */,
+          code,
+          canceled: false
+        };
+      }
+      const sideEffectConfirmationPromiseWithResolvers = this.confirmSideEffect();
+      void sideEffectConfirmationPromiseWithResolvers.promise.then((result2) => {
+        Host6.userMetrics.actionTaken(
+          result2 ? Host6.UserMetrics.Action.AiAssistanceSideEffectConfirmed : Host6.UserMetrics.Action.AiAssistanceSideEffectRejected
+        );
+      });
+      if (options?.signal?.aborted) {
+        sideEffectConfirmationPromiseWithResolvers.resolve(false);
+      }
+      const onAbort = () => {
+        sideEffectConfirmationPromiseWithResolvers.resolve(false);
+      };
+      options?.signal?.addEventListener("abort", onAbort, { once: true });
+      yield {
+        type: "side-effect" /* SIDE_EFFECT */,
+        confirm: sideEffectConfirmationPromiseWithResolvers.resolve,
+        description: result.description
+      };
+      let approvedRun = false;
+      try {
+        approvedRun = await sideEffectConfirmationPromiseWithResolvers.promise;
+      } finally {
+        options?.signal?.removeEventListener("abort", onAbort);
+      }
+      if (!approvedRun) {
+        yield {
+          type: "action" /* ACTION */,
+          code,
+          output: "Error: User denied code execution with side effects.",
+          canceled: true
+        };
+        debugLog(`[AiAgent] Tool '${name}' denied by user.`);
+        return {
+          result: "Error: User denied code execution with side effects."
+        };
+      }
+      if (isOriginBlocked()) {
+        throw new CrossOriginError();
+      }
+      result = await call.handler(args, {
+        ...options,
+        approved: true
+      });
+      if (isOriginBlocked()) {
+        throw new CrossOriginError();
+      }
+    }
+    if ("result" in result) {
+      yield {
+        type: "action" /* ACTION */,
+        code,
+        output: typeof result.result === "string" ? result.result : JSON.stringify(result.result),
+        widgets: result.widgets,
+        canceled: false,
+        toolName: name
+      };
+    }
+    if ("error" in result) {
+      yield {
+        type: "action" /* ACTION */,
+        code,
+        output: result.error,
+        canceled: false,
+        toolName: name
+      };
+    }
+    debugLog(`[AiAgent] Tool '${name}' result:`, result);
+    if ("context" in result) {
+      return result;
+    }
+    return result;
+  }
+  async *#aidaFetch(request, options) {
+    let aidaResponse = void 0;
+    let rpcId;
+    for await (aidaResponse of this.#aidaClient.doConversation(request, options)) {
+      if (aidaResponse.functionCalls?.length) {
+        if (aidaResponse.functionCalls.length > 1) {
+          debugLog(
+            `[AiAgent] Unexpected: received ${aidaResponse.functionCalls.length} function calls in response:`,
+            aidaResponse.functionCalls
+          );
+        }
+        yield {
+          rpcId,
+          functionCall: aidaResponse.functionCalls[0],
+          completed: true,
+          text: aidaResponse.explanation
+        };
+        break;
+      }
+      rpcId = aidaResponse.metadata.rpcGlobalId ?? rpcId;
+      yield {
+        rpcId,
+        text: aidaResponse.explanation,
+        completed: aidaResponse.completed
+      };
+    }
+    if (isStructuredLogEnabled() && aidaResponse) {
+      this.#structuredLog.push({
+        request: structuredClone(request),
+        aidaResponse
+      });
+      try {
+        localStorage.setItem("aiAssistanceStructuredLog", JSON.stringify(this.#structuredLog));
+      } catch (err) {
+        console.warn('Failed to write to local storage "aiAssistanceStructuredLog":', err);
+      }
+    }
+  }
+  #removeLastRunParts() {
+    this.#history.splice(this.#history.findLastIndex((item) => {
+      return item.role === Host6.AidaClient.Role.USER;
+    }));
+  }
+  #createErrorResponse(error) {
+    this.#removeLastRunParts();
+    this.clearCache();
+    if (error !== "abort" /* ABORT */) {
+      Host6.userMetrics.actionTaken(Host6.UserMetrics.Action.AiAssistanceError);
+    }
+    return {
+      type: "error" /* ERROR */,
+      error
+    };
+  }
+};
+function sanitizeSuggestions(suggestions) {
+  const parsed = JSON.parse(suggestions);
+  if (!Array.isArray(parsed)) {
+    return void 0;
+  }
+  const sanitized = [];
+  for (const item of parsed) {
+    if (typeof item !== "string") {
+      continue;
+    }
+    const noExtraWhitespace = item.replace(/\s+/g, " ").trim();
+    if (noExtraWhitespace.length === 0) {
+      continue;
+    }
+    sanitized.push(noExtraWhitespace.substring(0, MAX_SUGGESTION_LENGTH));
+  }
+  if (sanitized.length === 0) {
+    return void 0;
+  }
+  return sanitized;
+}
+function aidaErrorToErrorType(err) {
+  if (err instanceof Host6.AidaClient.AidaAbortError) {
+    return "abort" /* ABORT */;
+  }
+  if (err instanceof Host6.AidaClient.AidaBlockError) {
+    return "block" /* BLOCK */;
+  }
+  if (err instanceof Host6.AidaClient.AidaQuotaError) {
+    return "quota" /* QUOTA */;
+  }
+  if (err instanceof Host6.AidaClient.AidaPayloadTooLargeError) {
+    return "payload-too-large" /* PAYLOAD_TOO_LARGE */;
+  }
+  return "unknown" /* UNKNOWN */;
+}
+
+// ../../front_end/models/ai_assistance/contexts/DOMNodeContext.ts
+var UIStringsNotTranslate2 = {
+  /**
+   * @description Heading text for context details of DevTools AI Agent.
+   */
+  dataUsed: "Data used"
+};
+var lockedString4 = i18n8.i18n.lockedString;
+var DOMNodeContext = class extends ConversationContext {
+  #node;
+  constructor(node) {
+    super();
+    this.#node = node;
+  }
+  getURL() {
+    const ownerDocument = this.#node.ownerDocument;
+    if (!ownerDocument) {
+      return "detached";
+    }
+    return ownerDocument.documentURL;
+  }
+  getItem() {
+    return this.#node;
+  }
+  getTitle() {
+    throw new Error("Not implemented");
+  }
+  async getSuggestions() {
+    const layoutProps = await this.#node.domModel().cssModel().getLayoutPropertiesFromComputedStyle(this.#node.id);
+    if (!layoutProps) {
+      return;
+    }
+    if (layoutProps.isFlex) {
+      return [
+        { title: "How can I make flex items wrap?", jslogContext: "flex-wrap" },
+        { title: "How do I distribute flex items evenly?", jslogContext: "flex-distribute" },
+        { title: "What is flexbox?", jslogContext: "flex-what" }
+      ];
+    }
+    if (layoutProps.isSubgrid) {
+      return [
+        { title: "Where is this grid defined?", jslogContext: "subgrid-where" },
+        { title: "How to overwrite parent grid properties?", jslogContext: "subgrid-override" },
+        { title: "How do subgrids work? ", jslogContext: "subgrid-how" }
+      ];
+    }
+    if (layoutProps.isGrid) {
+      return [
+        { title: "How do I align items in a grid?", jslogContext: "grid-align" },
+        { title: "How to add spacing between grid items?", jslogContext: "grid-gap" },
+        { title: "How does grid layout work?", jslogContext: "grid-how" }
+      ];
+    }
+    if (layoutProps.hasScroll) {
+      return [
+        { title: "How do I remove scrollbars for this element?", jslogContext: "scroll-remove" },
+        { title: "How can I style a scrollbar?", jslogContext: "scroll-style" },
+        { title: "Why does this element scroll?", jslogContext: "scroll-why" }
+      ];
+    }
+    if (layoutProps.containerType) {
+      return [
+        { title: "What are container queries?", jslogContext: "container-what" },
+        { title: "How do I use container-type?", jslogContext: "container-how" },
+        { title: "What's the container context for this element?", jslogContext: "container-context" }
+      ];
+    }
+    return;
+  }
+  async getPromptDetails() {
+    return `# Inspected element
+
+${await this.describe()}`;
+  }
+  async getUserFacingDetails() {
+    return [
+      {
+        title: lockedString4(UIStringsNotTranslate2.dataUsed),
+        text: await this.describe()
+      }
+    ];
+  }
+  async describe() {
+    const element = this.#node;
+    let output = `* Element's uid is ${element.backendNodeId()}.
+* Its selector is \`${element.simpleSelector()}\``;
+    const childNodes = await element.getChildNodesPromise();
+    if (childNodes) {
+      const textChildNodes = childNodes.filter((childNode) => childNode.nodeType() === Node.TEXT_NODE);
+      const elementChildNodes = childNodes.filter((childNode) => childNode.nodeType() === Node.ELEMENT_NODE);
+      switch (elementChildNodes.length) {
+        case 0:
+          output += "\n* It doesn't have any child element nodes";
+          break;
+        case 1:
+          output += `
+* It only has 1 child element node: \`${elementChildNodes[0].simpleSelector()}\``;
+          break;
+        default:
+          output += `
+* It has ${elementChildNodes.length} child element nodes: ${elementChildNodes.map((node) => `\`${node.simpleSelector()}\` (uid=${node.backendNodeId()})`).join(", ")}`;
+      }
+      switch (textChildNodes.length) {
+        case 0:
+          output += "\n* It doesn't have any child text nodes";
+          break;
+        case 1:
+          output += "\n* It only has 1 child text node";
+          break;
+        default:
+          output += `
+* It has ${textChildNodes.length} child text nodes`;
+      }
+    }
+    if (element.nextSibling) {
+      const elementOrNodeElementNodeText = element.nextSibling.nodeType() === Node.ELEMENT_NODE ? `an element (uid=${element.nextSibling.backendNodeId()})` : "a non element";
+      output += `
+* It has a next sibling and it is ${elementOrNodeElementNodeText} node`;
+    }
+    if (element.previousSibling) {
+      const elementOrNodeElementNodeText = element.previousSibling.nodeType() === Node.ELEMENT_NODE ? `an element (uid=${element.previousSibling.backendNodeId()})` : "a non element";
+      output += `
+* It has a previous sibling and it is ${elementOrNodeElementNodeText} node`;
+    }
+    if (element.isInShadowTree()) {
+      output += "\n* It is in a shadow DOM tree.";
+    }
+    const parentNode = element.parentNode;
+    if (parentNode) {
+      const parentChildrenNodes = await parentNode.getChildNodesPromise();
+      output += `
+* Its parent's selector is \`${parentNode.simpleSelector()}\` (uid=${parentNode.backendNodeId()})`;
+      const elementOrNodeElementNodeText = parentNode.nodeType() === Node.ELEMENT_NODE ? "an element" : "a non element";
+      output += `
+* Its parent is ${elementOrNodeElementNodeText} node`;
+      if (parentNode.isShadowRoot()) {
+        output += "\n* Its parent is a shadow root.";
+      }
+      if (parentChildrenNodes) {
+        const childElementNodes = parentChildrenNodes.filter((siblingNode) => siblingNode.nodeType() === Node.ELEMENT_NODE);
+        switch (childElementNodes.length) {
+          case 0:
+            break;
+          case 1:
+            output += "\n* Its parent has only 1 child element node";
+            break;
+          default:
+            output += `
+* Its parent has ${childElementNodes.length} child element nodes: ${childElementNodes.map((node) => `\`${node.simpleSelector()}\` (uid=${node.backendNodeId()})`).join(", ")}`;
+            break;
+        }
+        const siblingTextNodes = parentChildrenNodes.filter((siblingNode) => siblingNode.nodeType() === Node.TEXT_NODE);
+        switch (siblingTextNodes.length) {
+          case 0:
+            break;
+          case 1:
+            output += "\n* Its parent has only 1 child text node";
+            break;
+          default:
+            output += `
+* Its parent has ${siblingTextNodes.length} child text nodes: ${siblingTextNodes.map((node) => `\`${node.simpleSelector()}\``).join(", ")}`;
+            break;
+        }
+      }
+    }
+    return output.trim();
+  }
+};
+
+// ../../front_end/models/ai_assistance/tools/GetElementAccessibilityDetails.ts
+var GetElementAccessibilityDetailsTool = class {
+  name = "getElementAccessibilityDetails" /* GET_ELEMENT_ACCESSIBILITY_DETAILS */;
+  description = "Get detailed accessibility information for an element on the inspected page by its backend node ID.";
+  parameters = {
+    type: Host7.AidaClient.ParametersTypes.OBJECT,
+    description: "Arguments for getting element accessibility details.",
+    nullable: false,
+    properties: {
+      explanation: {
+        type: Host7.AidaClient.ParametersTypes.STRING,
+        description: "Reason for requesting accessibility details.",
+        nullable: false
+      },
+      element: {
+        type: Host7.AidaClient.ParametersTypes.INTEGER,
+        description: "The backend node ID of the element.",
+        nullable: false
+      }
+    },
+    required: ["explanation", "element"]
+  };
+  displayInfoFromArgs(params) {
+    return {
+      title: "Reading accessibility details",
+      thought: params.explanation,
+      action: `getElementAccessibilityDetails(${params.element})`
+    };
+  }
+  /**
+   * Handles the request to retrieve accessibility details.
+   *
+   * Resolves the element backend node ID, validates its origin against the locked origin,
+   * requests the AX subtree via AccessibilityModel, and maps the relevant attributes.
+   */
+  async handler(params, context) {
+    const establishedOrigin = context.getEstablishedOrigin();
+    if (!establishedOrigin) {
+      return { error: "Error: Origin lock is not established." };
+    }
+    const target = context.getTarget();
+    if (!target) {
+      return { error: "Error: Inspected target not found." };
+    }
+    const deferredNode = new SDK9.DOMModel.DeferredDOMNode(target, params.element);
+    const resolved = await deferredNode.resolvePromise();
+    if (!resolved) {
+      return { error: "Error: Could not resolve element by ID." };
+    }
+    const nodeContext = new DOMNodeContext(resolved);
+    if (!nodeContext.isOriginAllowed(establishedOrigin)) {
+      return { error: "Error: Node does not belong to the locked origin." };
+    }
+    const axModel = target.model(SDK9.AccessibilityModel.AccessibilityModel);
+    if (!axModel) {
+      return { error: "Error: Accessibility model not found." };
+    }
+    await axModel.requestAndLoadSubTreeToNode(resolved);
+    const axNode = axModel.axNodeForDOMNode(resolved);
+    if (!axNode) {
+      return { error: "Error: AX node details not found." };
+    }
+    const result = {
+      role: axNode.role()?.value,
+      name: axNode.name()?.value,
+      nameSource: axNode.name()?.sources?.[0]?.type,
+      properties: axNode.properties()?.map((p) => ({ name: p.name, value: p.value?.value })) ?? [],
+      ariaAttributes: resolved.attributes().filter((attr) => attr.name.startsWith("aria-") || attr.name === "role").reduce(
+        (acc, attr) => {
+          acc[attr.name] = attr.value;
+          return acc;
+        },
+        {}
+      ),
+      isIgnored: axNode.ignored(),
+      ignoredReasons: axNode.ignoredReasons()?.map((p) => ({ name: p.name, value: p.value?.value })) ?? [],
+      backendNodeId: resolved.backendNodeId()
+    };
+    const snapshot = await resolved.takeSnapshot();
+    return {
+      result: JSON.stringify(result, null, 2),
+      widgets: [{
+        name: "DOM_TREE",
+        data: {
+          root: snapshot,
+          title: i18n10.i18n.lockedString("Element details"),
+          accessibleRevealLabel: i18n10.i18n.lockedString("Reveal element")
+        }
+      }]
+    };
+  }
+};
+
+// ../../front_end/models/ai_assistance/tools/GetFunctionCode.ts
+var GetFunctionCode_exports = {};
+__export(GetFunctionCode_exports, {
+  GetFunctionCodeTool: () => GetFunctionCodeTool
+});
+import * as Host8 from "../../core/host/host.js";
+import * as i18n12 from "../../core/i18n/i18n.js";
+var UIStringsNotTranslate3 = {
+  lookingUpFunctionCode: "Looking up function code"
+};
+var lockedString5 = i18n12.i18n.lockedString;
+var GetFunctionCodeTool = class {
+  name = "getFunctionCode" /* GET_FUNCTION_CODE */;
+  description = "Returns the code for a function defined at the given location. The result is annotated with the runtime performance of each line of code.";
+  parameters = {
+    type: Host8.AidaClient.ParametersTypes.OBJECT,
+    description: "Arguments for looking up function code.",
+    nullable: false,
+    properties: {
+      scriptUrl: {
+        type: Host8.AidaClient.ParametersTypes.STRING,
+        description: "The url of the function.",
+        nullable: false
+      },
+      line: {
+        type: Host8.AidaClient.ParametersTypes.INTEGER,
+        description: "The line number where the function is defined.",
+        nullable: false
+      },
+      column: {
+        type: Host8.AidaClient.ParametersTypes.INTEGER,
+        description: "The column number where the function is defined.",
+        nullable: false
+      }
+    },
+    required: ["scriptUrl", "line", "column"]
+  };
+  displayInfoFromArgs(params) {
+    return {
+      title: lockedString5(UIStringsNotTranslate3.lookingUpFunctionCode),
+      action: `getFunctionCode('${params.scriptUrl}', ${params.line}, ${params.column})`
+    };
+  }
+  async handler(params, capabilities) {
+    const performanceTraceContext = capabilities.getPerformanceTraceContext();
+    if (!performanceTraceContext) {
+      return { error: "Performance trace context is not available." };
+    }
+    if (performanceTraceContext.getOrigin().startsWith("imported-trace://")) {
+      return { error: "Cannot use this tool on an imported file." };
+    }
+    if (!params.scriptUrl) {
+      return { error: "Missing arg: scriptUrl" };
+    }
+    const allowedOrigin = performanceTraceContext.getOrigin();
+    if (!canResourceContentsBeReadForTrace(params.scriptUrl, allowedOrigin)) {
+      return { error: "Script not found" };
+    }
+    if (params.line === void 0) {
+      return { error: "Missing arg: line" };
+    }
+    if (params.column === void 0) {
+      return { error: "Missing arg: column" };
+    }
+    const formatter = performanceTraceContext.createFormatter();
+    const url = params.scriptUrl;
+    const code = await formatter.resolveFunctionCodeAtLocation(url, params.line, params.column);
+    if (!code) {
+      return { error: "Could not find code" };
+    }
+    const result = formatter.formatFunctionCode(code);
+    return {
+      result,
+      widgets: [{
+        name: "SOURCE_CODE",
+        data: {
+          url,
+          line: params.line,
+          column: params.column,
+          code: code.code
+        }
+      }]
+    };
+  }
+};
+
+// ../../front_end/models/ai_assistance/tools/GetInsightDetails.ts
+var GetInsightDetails_exports = {};
+__export(GetInsightDetails_exports, {
+  GetInsightDetailsTool: () => GetInsightDetailsTool
+});
+import * as Host9 from "../../core/host/host.js";
+import * as i18n14 from "../../core/i18n/i18n.js";
+import * as SDK10 from "../../core/sdk/sdk.js";
+import * as TextUtils2 from "../../core/text_utils/text_utils.js";
+import * as Logs2 from "../logs/logs.js";
+import * as Trace6 from "../trace/trace.js";
+
+// ../../front_end/models/ai_assistance/data_formatters/PerformanceInsightFormatter.ts
+var PerformanceInsightFormatter_exports = {};
+__export(PerformanceInsightFormatter_exports, {
+  PerformanceInsightFormatter: () => PerformanceInsightFormatter
+});
+import * as Common8 from "../../core/common/common.js";
+import * as Trace5 from "../trace/trace.js";
+
+// ../../front_end/models/ai_assistance/data_formatters/PerformanceTraceFormatter.ts
+var PerformanceTraceFormatter_exports = {};
+__export(PerformanceTraceFormatter_exports, {
+  PerformanceTraceFormatter: () => PerformanceTraceFormatter,
+  formatEventForAI: () => formatEventForAI
+});
+import * as CrUXManager from "../crux-manager/crux-manager.js";
+import * as Trace4 from "../trace/trace.js";
+
+// ../../front_end/models/ai_assistance/performance/AIQueries.ts
+var AIQueries_exports = {};
+__export(AIQueries_exports, {
+  AIQueries: () => AIQueries
+});
+import * as Trace3 from "../trace/trace.js";
 var AIQueries = class {
   static findMainThread(navigationId, parsedTrace) {
     let mainThreadPID = null;
@@ -2726,7 +6262,7 @@ var AIQueries = class {
         mainThreadTID = navigation.tid;
       }
     }
-    const threads = Trace2.Handlers.Threads.threadsInTrace(parsedTrace.data);
+    const threads = Trace3.Handlers.Threads.threadsInTrace(parsedTrace.data);
     const thread = threads.find((thread2) => {
       if (!thread2.processIsOnMainFrame) {
         return false;
@@ -2734,7 +6270,7 @@ var AIQueries = class {
       if (mainThreadPID && mainThreadTID) {
         return thread2.pid === mainThreadPID && thread2.tid === mainThreadTID;
       }
-      return thread2.type === "MAIN_THREAD";
+      return thread2.type === Trace3.Handlers.Threads.ThreadType.MAIN_THREAD;
     });
     return thread ?? null;
   }
@@ -2750,15 +6286,14 @@ var AIQueries = class {
     if (!events) {
       return null;
     }
-    const visibleEvents = Trace2.Helpers.Trace.VISIBLE_TRACE_EVENT_TYPES.values().toArray();
-    const filter = new Trace2.Extras.TraceFilter.VisibleEventsFilter(visibleEvents.concat([
-      "SyntheticNetworkRequest"
-      /* Trace.Types.Events.Name.SYNTHETIC_NETWORK_REQUEST */
-    ]));
-    const startTime = Trace2.Helpers.Timing.microToMilli(bounds.min);
-    const endTime = Trace2.Helpers.Timing.microToMilli(bounds.max);
-    return new Trace2.Extras.TraceTree.BottomUpRootNode(events, {
-      textFilter: new Trace2.Extras.TraceFilter.ExclusiveNameFilter([]),
+    const visibleEvents = Trace3.Helpers.Trace.VISIBLE_TRACE_EVENT_TYPES.values().toArray();
+    const filter = new Trace3.Extras.TraceFilter.VisibleEventsFilter(
+      visibleEvents.concat([Trace3.Types.Events.Name.SYNTHETIC_NETWORK_REQUEST])
+    );
+    const startTime = Trace3.Helpers.Timing.microToMilli(bounds.min);
+    const endTime = Trace3.Helpers.Timing.microToMilli(bounds.max);
+    return new Trace3.Extras.TraceTree.BottomUpRootNode(events, {
+      textFilter: new Trace3.Extras.TraceFilter.ExclusiveNameFilter([]),
       filters: [filter],
       startTime,
       endTime
@@ -2791,15 +6326,14 @@ var AIQueries = class {
     if (events.length === 0) {
       return null;
     }
-    const visibleEvents = Trace2.Helpers.Trace.VISIBLE_TRACE_EVENT_TYPES.values().toArray();
-    const filter = new Trace2.Extras.TraceFilter.VisibleEventsFilter(visibleEvents.concat([
-      "SyntheticNetworkRequest"
-      /* Trace.Types.Events.Name.SYNTHETIC_NETWORK_REQUEST */
-    ]));
-    const startTime = Trace2.Helpers.Timing.microToMilli(bounds.min);
-    const endTime = Trace2.Helpers.Timing.microToMilli(bounds.max);
-    return new Trace2.Extras.TraceTree.BottomUpRootNode(events, {
-      textFilter: new Trace2.Extras.TraceFilter.ExclusiveNameFilter([]),
+    const visibleEvents = Trace3.Helpers.Trace.VISIBLE_TRACE_EVENT_TYPES.values().toArray();
+    const filter = new Trace3.Extras.TraceFilter.VisibleEventsFilter(
+      visibleEvents.concat([Trace3.Types.Events.Name.SYNTHETIC_NETWORK_REQUEST])
+    );
+    const startTime = Trace3.Helpers.Timing.microToMilli(bounds.min);
+    const endTime = Trace3.Helpers.Timing.microToMilli(bounds.max);
+    return new Trace3.Extras.TraceTree.BottomUpRootNode(events, {
+      textFilter: new Trace3.Extras.TraceFilter.ExclusiveNameFilter([]),
       filters: [filter],
       startTime,
       endTime
@@ -2846,17 +6380,16 @@ var AIQueries = class {
   }
 };
 
-// gen/front_end/models/ai_assistance/data_formatters/NetworkRequestFormatter.js
+// ../../front_end/models/ai_assistance/data_formatters/NetworkRequestFormatter.ts
 var NetworkRequestFormatter_exports = {};
 __export(NetworkRequestFormatter_exports, {
   NetworkRequestFormatter: () => NetworkRequestFormatter,
   sanitizeHeaders: () => sanitizeHeaders
 });
-import * as Common6 from "./../../core/common/common.js";
-import * as TextUtils from "./../../core/text_utils/text_utils.js";
-import * as Logs from "./../logs/logs.js";
-import * as NetworkTimeCalculator from "./../network_time_calculator/network_time_calculator.js";
-var _a2;
+import * as Common7 from "../../core/common/common.js";
+import * as TextUtils from "../../core/text_utils/text_utils.js";
+import * as Logs from "../logs/logs.js";
+import * as NetworkTimeCalculator from "../network_time_calculator/network_time_calculator.js";
 var MAX_HEADERS_SIZE = 1e3;
 var MAX_BODY_SIZE = 1e4;
 function sanitizeHeaders(headers) {
@@ -2867,17 +6400,21 @@ function sanitizeHeaders(headers) {
     return { name: header.name, value: "<redacted>" };
   });
 }
-var NetworkRequestFormatter = class {
+var NetworkRequestFormatter = class _NetworkRequestFormatter {
   #calculator;
   #request;
   static allowHeader(headerName) {
     return allowedHeaders.has(headerName.toLowerCase().trim());
   }
   static formatHeaders(title, headers, addListPrefixToEachLine) {
-    return formatLines(title, sanitizeHeaders(headers).map((header) => {
-      const prefix = addListPrefixToEachLine ? "- " : "";
-      return prefix + header.name + ": " + header.value + "\n";
-    }), MAX_HEADERS_SIZE);
+    return formatLines(
+      title,
+      sanitizeHeaders(headers).map((header) => {
+        const prefix = addListPrefixToEachLine ? "- " : "";
+        return prefix + header.name + ": " + header.value + "\n";
+      }),
+      MAX_HEADERS_SIZE
+    );
   }
   static async formatBody(title, request, maxBodySize) {
     const data = await request.requestContentData();
@@ -2901,7 +6438,7 @@ ${dataAsText}`;
 <binary data>`;
   }
   static formatInitiatorUrl(initiatorUrl, allowedOrigin) {
-    const initiatorOrigin = Common6.ParsedURL.ParsedURL.extractOrigin(initiatorUrl);
+    const initiatorOrigin = Common7.ParsedURL.ParsedURL.extractOrigin(initiatorUrl);
     if (initiatorOrigin && initiatorOrigin === allowedOrigin) {
       return initiatorUrl;
     }
@@ -2932,7 +6469,7 @@ ${dataAsText}`;
   static formatFailureReasons(reasons) {
     const lines = [];
     if (reasons.blockedReason) {
-      if (reasons.blockedReason === "inspector") {
+      if (reasons.blockedReason === Network.BlockedReason.Inspector) {
         lines.push("Blocked reason: a custom network condition in DevTools is blocking this request");
       } else {
         lines.push(`Blocked reason: ${reasons.blockedReason}`);
@@ -2954,13 +6491,13 @@ ${dataAsText}`;
     this.#networkLog = networkLog;
   }
   formatRequestHeaders() {
-    return _a2.formatHeaders("Request headers:", this.#request.requestHeaders());
+    return _NetworkRequestFormatter.formatHeaders("Request headers:", this.#request.requestHeaders());
   }
   formatResponseHeaders() {
-    return _a2.formatHeaders("Response headers:", this.#request.responseHeaders);
+    return _NetworkRequestFormatter.formatHeaders("Response headers:", this.#request.responseHeaders);
   }
   async formatResponseBody() {
-    return await _a2.formatBody("Response body:", this.#request, MAX_BODY_SIZE);
+    return await _NetworkRequestFormatter.formatBody("Response body:", this.#request, MAX_BODY_SIZE);
   }
   /**
    * Note: nothing here should include information from origins other than
@@ -2986,7 +6523,7 @@ Request initiator chain:
 ${this.formatRequestInitiatorChain()}`;
   }
   formatStatus() {
-    return _a2.formatStatus({
+    return _NetworkRequestFormatter.formatStatus({
       statusCode: this.#request.statusCode,
       statusText: this.#request.statusText,
       failed: this.#request.failed,
@@ -2996,7 +6533,7 @@ ${this.formatRequestInitiatorChain()}`;
     });
   }
   formatFailureReasons() {
-    return _a2.formatFailureReasons({
+    return _NetworkRequestFormatter.formatFailureReasons({
       blockedReason: this.#request.blockedReason(),
       corsErrorStatus: this.#request.corsErrorStatus(),
       localizedFailDescription: this.#request.localizedFailDescription
@@ -3007,12 +6544,12 @@ ${this.formatRequestInitiatorChain()}`;
    * the request's origin.
    */
   formatRequestInitiatorChain() {
-    const allowedOrigin = Common6.ParsedURL.ParsedURL.extractOrigin(this.#request.url());
+    const allowedOrigin = Common7.ParsedURL.ParsedURL.extractOrigin(this.#request.url());
     let initiatorChain = "";
     let lineStart = "- URL: ";
     const graph = this.#networkLog.initiatorGraphForRequest(this.#request);
     for (const initiator of Array.from(graph.initiators).reverse()) {
-      initiatorChain = initiatorChain + lineStart + _a2.formatInitiatorUrl(initiator.url(), allowedOrigin) + "\n";
+      initiatorChain = initiatorChain + lineStart + _NetworkRequestFormatter.formatInitiatorUrl(initiator.url(), allowedOrigin) + "\n";
       lineStart = "	" + lineStart;
       if (initiator === this.#request) {
         initiatorChain = this.#formatRequestInitiated(graph.initiated, this.#request, initiatorChain, lineStart, allowedOrigin);
@@ -3072,7 +6609,7 @@ ${this.formatRequestInitiatorChain()}`;
       if (initiatedRequest === parentRequest) {
         if (!visited.has(keyRequest)) {
           visited.add(keyRequest);
-          initiatorChain = initiatorChain + lineStart + _a2.formatInitiatorUrl(keyRequest.url(), allowedOrigin) + "\n";
+          initiatorChain = initiatorChain + lineStart + _NetworkRequestFormatter.formatInitiatorUrl(keyRequest.url(), allowedOrigin) + "\n";
           initiatorChain = this.#formatRequestInitiated(initiated, keyRequest, initiatorChain, "	" + lineStart, allowedOrigin);
         }
       }
@@ -3080,7 +6617,6 @@ ${this.formatRequestInitiatorChain()}`;
     return initiatorChain;
   }
 };
-_a2 = NetworkRequestFormatter;
 var allowedHeaders = /* @__PURE__ */ new Set([
   ":authority",
   ":method",
@@ -3194,7 +6730,7 @@ function formatLines(title, lines, maxLength) {
   return result && title ? title + "\n" + result : result;
 }
 
-// gen/front_end/models/ai_assistance/data_formatters/PerformanceTraceFormatter.js
+// ../../front_end/models/ai_assistance/data_formatters/PerformanceTraceFormatter.ts
 var PerformanceTraceFormatter = class {
   #focus;
   #parsedTrace;
@@ -3245,7 +6781,7 @@ var PerformanceTraceFormatter = class {
         return [];
       }
       const parts = [];
-      const fieldMetrics = Trace3.Insights.Common.getFieldMetricsForInsightSet(insightSet, this.#parsedTrace.metadata, cruxScope);
+      const fieldMetrics = Trace4.Insights.Common.getFieldMetricsForInsightSet(insightSet, this.#parsedTrace.metadata, cruxScope);
       const fieldLcp = fieldMetrics?.lcp;
       const fieldInp = fieldMetrics?.inp;
       const fieldCls = fieldMetrics?.cls;
@@ -3282,10 +6818,14 @@ var PerformanceTraceFormatter = class {
         if (fieldCls) {
           parts.push(`  - CLS: ${serializeFieldMetricNumberResult(fieldCls)}`);
         }
-        parts.push("  - The above data is from CrUX\u2013Chrome User Experience Report. It's how the page performs for real users.");
+        parts.push(
+          "  - The above data is from CrUX\u2013Chrome User Experience Report. It's how the page performs for real users."
+        );
         parts.push("  - The values shown above are the p75 measure of all real Chrome users");
         parts.push("  - The scope indicates if the data came from the entire origin, or a specific url");
-        parts.push("  - Lab metrics describe how this specific page load performed, while field metrics are an aggregation of results from real-world users. Best practice is to prioritize metrics that are bad in field data. Lab metrics may be better or worse than fields metrics depending on the developer's machine, network, or the actions performed while tracing.");
+        parts.push(
+          "  - Lab metrics describe how this specific page load performed, while field metrics are an aggregation of results from real-world users. Best practice is to prioritize metrics that are bad in field data. Lab metrics may be better or worse than fields metrics depending on the developer's machine, network, or the actions performed while tracing."
+        );
       }
       return parts;
     } catch {
@@ -3302,11 +6842,13 @@ var PerformanceTraceFormatter = class {
     parts.push("CPU throttling: " + (traceMetadata.cpuThrottling ? `${traceMetadata.cpuThrottling}x` : "none"));
     parts.push(`Network throttling: ${traceMetadata.networkThrottling ?? "none"}`);
     parts.push("\n# Available insight sets\n");
-    parts.push("The following is a list of insight sets. An insight set covers a specific part of the trace, split by navigations. The insights within each insight set are specific to that part of the trace. Be sure to consider the insight set id and bounds when calling functions. If no specific insight set or navigation is mentioned, assume the user is referring to the first one.");
+    parts.push(
+      "The following is a list of insight sets. An insight set covers a specific part of the trace, split by navigations. The insights within each insight set are specific to that part of the trace. Be sure to consider the insight set id and bounds when calling functions. If no specific insight set or navigation is mentioned, assume the user is referring to the first one."
+    );
     for (const insightSet of parsedTrace.insights?.values() ?? []) {
-      const lcp = Trace3.Insights.Common.getLCP(insightSet);
-      const cls = Trace3.Insights.Common.getCLS(insightSet);
-      const inp = Trace3.Insights.Common.getINP(insightSet);
+      const lcp = Trace4.Insights.Common.getLCP(insightSet);
+      const cls = Trace4.Insights.Common.getCLS(insightSet);
+      const inp = Trace4.Insights.Common.getINP(insightSet);
       parts.push(`
 ## insight set id: ${insightSet.id}
 `);
@@ -3317,7 +6859,9 @@ var PerformanceTraceFormatter = class {
         if (lcp) {
           const nodeId = insightSet.model.LCPBreakdown?.lcpEvent?.args.data?.nodeId;
           const nodeIdText = nodeId !== void 0 ? `, nodeId: ${nodeId}` : "";
-          parts.push(`  - LCP: ${Math.round(lcp.value / 1e3)} ms, event: ${this.serializeEvent(lcp.event)}${nodeIdText}`);
+          parts.push(
+            `  - LCP: ${Math.round(lcp.value / 1e3)} ms, event: ${this.serializeEvent(lcp.event)}${nodeIdText}`
+          );
           const subparts = insightSet.model.LCPBreakdown?.subparts;
           if (subparts) {
             const serializeSubpart = (subpart) => {
@@ -3359,7 +6903,7 @@ var PerformanceTraceFormatter = class {
         if (!formatter.insightIsSupported()) {
           continue;
         }
-        const insightBounds = Trace3.Insights.Common.insightBounds(model, insightSet.bounds);
+        const insightBounds = Trace4.Insights.Common.insightBounds(model, insightSet.bounds);
         const insightParts = [
           `insight name: ${insightName}`,
           `description: ${model.description}`,
@@ -3445,15 +6989,15 @@ var PerformanceTraceFormatter = class {
     function nodeToText(node) {
       const event = node.event;
       let frame;
-      if (Trace3.Types.Events.isProfileCall(event)) {
+      if (Trace4.Types.Events.isProfileCall(event)) {
         frame = event.callFrame;
         if (node.selfTime >= 100 && callFrames.length < 3) {
           callFrames.push(frame);
         }
       } else {
-        frame = Trace3.Helpers.Trace.getStackTraceTopCallFrameInEventPayload(event);
+        frame = Trace4.Helpers.Trace.getStackTraceTopCallFrameInEventPayload(event);
       }
-      let source = Trace3.Name.forEntry(event);
+      let source = Trace4.Name.forEntry(event);
       if (frame?.url) {
         source += ` (url: ${frame.url}`;
         if (frame.lineNumber !== -1) {
@@ -3480,7 +7024,11 @@ var PerformanceTraceFormatter = class {
       description: this.#getSerializeBottomUpRootNodeFormat(limit),
       empty: "no activity",
       cb: async (insightSet) => {
-        const rootNode = AIQueries.mainThreadActivityBottomUpSingleNavigation(insightSet.navigation?.args.data?.navigationId, insightSet.bounds, parsedTrace);
+        const rootNode = AIQueries.mainThreadActivityBottomUpSingleNavigation(
+          insightSet.navigation?.args.data?.navigationId,
+          insightSet.bounds,
+          parsedTrace
+        );
         return rootNode ? await this.#serializeBottomUpRootNode(rootNode, limit) : null;
       }
     });
@@ -3503,7 +7051,7 @@ var PerformanceTraceFormatter = class {
       title: "3rd party summary",
       empty: "no 3rd parties",
       cb: async (insightSet) => {
-        const thirdPartySummaries = Trace3.Extras.ThirdParties.summarizeByThirdParty(parsedTrace.data, insightSet.bounds);
+        const thirdPartySummaries = Trace4.Extras.ThirdParties.summarizeByThirdParty(parsedTrace.data, insightSet.bounds);
         return thirdPartySummaries.length ? this.#formatThirdPartyEntitySummaries(thirdPartySummaries) : null;
       }
     });
@@ -3551,7 +7099,7 @@ var PerformanceTraceFormatter = class {
     }
     const results = [];
     for (const [insightKey, events2] of insightNameToRelatedEvents) {
-      const eventsString = events2.slice(0, 5).map((e) => Trace3.Name.forEntry(e) + " " + this.serializeEvent(e)).join(", ");
+      const eventsString = events2.slice(0, 5).map((e) => Trace4.Name.forEntry(e) + " " + this.serializeEvent(e)).join(", ");
       results.push(`- ${insightKey}: ${eventsString}`);
     }
     return results.join("\n");
@@ -3561,8 +7109,14 @@ var PerformanceTraceFormatter = class {
       return "No main thread activity found";
     }
     const results = [];
-    const insightSet = this.#parsedTrace.insights?.values().find((insightSet2) => Trace3.Helpers.Timing.boundsIncludeTimeRange({ bounds, timeRange: insightSet2.bounds }));
-    const topDownTree = AIQueries.mainThreadActivityTopDown(insightSet?.navigation?.args.data?.navigationId, bounds, this.#parsedTrace);
+    const insightSet = this.#parsedTrace.insights?.values().find(
+      (insightSet2) => Trace4.Helpers.Timing.boundsIncludeTimeRange({ bounds, timeRange: insightSet2.bounds })
+    );
+    const topDownTree = AIQueries.mainThreadActivityTopDown(
+      insightSet?.navigation?.args.data?.navigationId,
+      bounds,
+      this.#parsedTrace
+    );
     if (topDownTree) {
       results.push("# Top-down main thread summary");
       results.push(await this.formatCallTree(
@@ -3571,22 +7125,29 @@ var PerformanceTraceFormatter = class {
         /* headerLevel */
       ));
     }
-    const bottomUpRootNode = AIQueries.mainThreadActivityBottomUp(bounds, this.#parsedTrace);
+    const bottomUpRootNode = AIQueries.mainThreadActivityBottomUp(
+      bounds,
+      this.#parsedTrace
+    );
     if (bottomUpRootNode) {
       results.push("# Bottom-up main thread summary");
       const limit = 20;
       results.push(this.#getSerializeBottomUpRootNodeFormat(limit));
       results.push(await this.#serializeBottomUpRootNode(bottomUpRootNode, limit));
     }
-    const thirdPartySummaries = Trace3.Extras.ThirdParties.summarizeByThirdParty(this.#parsedTrace.data, bounds);
+    const thirdPartySummaries = Trace4.Extras.ThirdParties.summarizeByThirdParty(this.#parsedTrace.data, bounds);
     if (thirdPartySummaries.length) {
       results.push("# Third parties");
       results.push(this.#formatThirdPartyEntitySummaries(thirdPartySummaries));
     }
-    const relatedInsightsText = this.#serializeRelatedInsightsForEvents([...topDownTree?.rootNode.events ?? [], ...bottomUpRootNode?.events ?? []]);
+    const relatedInsightsText = this.#serializeRelatedInsightsForEvents(
+      [...topDownTree?.rootNode.events ?? [], ...bottomUpRootNode?.events ?? []]
+    );
     if (relatedInsightsText) {
       results.push("# Related insights");
-      results.push("Here are all the insights that contain some related event from the main thread in the given range.");
+      results.push(
+        "Here are all the insights that contain some related event from the main thread in the given range."
+      );
       results.push(relatedInsightsText);
     }
     if (!results.length) {
@@ -3596,7 +7157,9 @@ var PerformanceTraceFormatter = class {
   }
   formatNetworkTrackSummary(bounds) {
     const results = [];
-    const requests = this.#parsedTrace.data.NetworkRequests.byTime.filter((request) => Trace3.Helpers.Timing.eventIsInBounds(request, bounds));
+    const requests = this.#parsedTrace.data.NetworkRequests.byTime.filter(
+      (request) => Trace4.Helpers.Timing.eventIsInBounds(request, bounds)
+    );
     const requestsText = this.formatNetworkRequests(requests, { verbose: false });
     results.push("# Network requests summary");
     results.push(requestsText || "No requests in the given bounds");
@@ -3621,7 +7184,7 @@ var PerformanceTraceFormatter = class {
       let hasEntriesInBounds = false;
       for (const trackName of Object.keys(trackData.entriesByTrack)) {
         const entries = trackData.entriesByTrack[trackName];
-        const filteredEntries = entries.filter((entry) => Trace3.Helpers.Timing.eventIsInBounds(entry, bounds));
+        const filteredEntries = entries.filter((entry) => Trace4.Helpers.Timing.eventIsInBounds(entry, bounds));
         if (filteredEntries.length === 0) {
           continue;
         }
@@ -3634,7 +7197,7 @@ var PerformanceTraceFormatter = class {
           const parts = [
             `Name: ${entry.name}`,
             `eventKey: ${entryKey}`,
-            `duration: ${micros(entry.dur ?? Trace3.Types.Timing.Micro(0))}`
+            `duration: ${micros(entry.dur ?? Trace4.Types.Timing.Micro(0))}`
           ];
           if (entry.devtoolsObj.properties) {
             const props = entry.devtoolsObj.properties.map((prop) => `${prop[0]}: ${JSON.stringify(prop[1])}`).join(", ");
@@ -3658,7 +7221,7 @@ var PerformanceTraceFormatter = class {
 IMPORTANT: Never show eventKey to the user.
 `;
     const relevantCallFrames = [];
-    if (tree.selectedNode && Trace3.Types.Events.isProfileCall(tree.selectedNode.event)) {
+    if (tree.selectedNode && Trace4.Types.Events.isProfileCall(tree.selectedNode.event)) {
       relevantCallFrames.push(tree.selectedNode.event.callFrame);
     }
     const topCallFrameByTotalTime = tree.topCallFrameByTotalTime();
@@ -3697,7 +7260,7 @@ IMPORTANT: Never show eventKey to the user.
     const initiators = [];
     let cur = request;
     while (cur) {
-      const initiator = Trace3.Extras.Initiators.getNetworkInitiator(parsedTrace.data, cur);
+      const initiator = Trace4.Extras.Initiators.getNetworkInitiator(parsedTrace.data, cur);
       if (initiator) {
         if (initiators.includes(initiator)) {
           return [];
@@ -3717,10 +7280,24 @@ IMPORTANT: Never show eventKey to the user.
    * talk to jacktfranklin@.
    */
   #networkRequestVerbosely(request, options) {
-    const { url, statusCode, initialPriority, priority, fromServiceWorker, mimeType, responseHeaders, syntheticData, protocol } = request.args.data;
+    const {
+      url,
+      statusCode,
+      initialPriority,
+      priority,
+      fromServiceWorker,
+      mimeType,
+      responseHeaders,
+      syntheticData,
+      protocol
+    } = request.args.data;
     const parsedTrace = this.#parsedTrace;
     const titlePrefix = `## ${options?.customTitle ?? "Network request"}`;
-    const navigationForEvent = Trace3.Helpers.Trace.getNavigationForTraceEvent(request, request.args.data.frame, parsedTrace.data.Meta.navigationsByFrameId);
+    const navigationForEvent = Trace4.Helpers.Trace.getNavigationForTraceEvent(
+      request,
+      request.args.data.frame,
+      parsedTrace.data.Meta.navigationsByFrameId
+    );
     const baseTime = navigationForEvent?.ts ?? parsedTrace.data.Meta.traceBounds.min;
     const startTimesForLifecycle = {
       queuedAt: request.ts - baseTime,
@@ -3730,8 +7307,8 @@ IMPORTANT: Never show eventKey to the user.
     };
     const mainThreadProcessingDuration = startTimesForLifecycle.processingCompletedAt - startTimesForLifecycle.downloadCompletedAt;
     const downloadTime = syntheticData.finishTime - syntheticData.downloadStart;
-    const renderBlocking = Trace3.Helpers.Network.isSyntheticNetworkRequestEventRenderBlocking(request);
-    const initiator = Trace3.Extras.Initiators.getNetworkInitiator(parsedTrace.data, request);
+    const renderBlocking = Trace4.Helpers.Network.isSyntheticNetworkRequestEventRenderBlocking(request);
+    const initiator = Trace4.Extras.Initiators.getNetworkInitiator(parsedTrace.data, request);
     const priorityLines = [];
     if (initialPriority === priority) {
       priorityLines.push(`Priority: ${priority}`);
@@ -3858,9 +7435,22 @@ The order of headers corresponds to an internal fixed list. If a header is not p
    * See `networkDataFormatDescription` above for specifics.
    */
   #networkRequestCompressedFormat(urlIndex, request, urlIdToIndex) {
-    const { statusCode, initialPriority, priority, fromServiceWorker, mimeType, responseHeaders, syntheticData, protocol } = request.args.data;
+    const {
+      statusCode,
+      initialPriority,
+      priority,
+      fromServiceWorker,
+      mimeType,
+      responseHeaders,
+      syntheticData,
+      protocol
+    } = request.args.data;
     const parsedTrace = this.#parsedTrace;
-    const navigationForEvent = Trace3.Helpers.Trace.getNavigationForTraceEvent(request, request.args.data.frame, parsedTrace.data.Meta.navigationsByFrameId);
+    const navigationForEvent = Trace4.Helpers.Trace.getNavigationForTraceEvent(
+      request,
+      request.args.data.frame,
+      parsedTrace.data.Meta.navigationsByFrameId
+    );
     const baseTime = navigationForEvent?.ts ?? parsedTrace.data.Meta.traceBounds.min;
     const queuedTime = micros(request.ts - baseTime);
     const requestSentTime = micros(syntheticData.sendStartTime - baseTime);
@@ -3869,7 +7459,7 @@ The order of headers corresponds to an internal fixed list. If a header is not p
     const totalDuration = micros(request.dur);
     const downloadDuration = micros(syntheticData.finishTime - syntheticData.downloadStart);
     const mainThreadProcessingDuration = micros(request.ts + request.dur - syntheticData.finishTime);
-    const renderBlocking = Trace3.Helpers.Network.isSyntheticNetworkRequestEventRenderBlocking(request) ? "t" : "f";
+    const renderBlocking = Trace4.Helpers.Network.isSyntheticNetworkRequestEventRenderBlocking(request) ? "t" : "f";
     const finalPriority = priority;
     const headerValues = responseHeaders?.map((header) => {
       const value = NetworkRequestFormatter.allowHeader(header.name) ? header.value : "<redacted>";
@@ -3928,7 +7518,12 @@ The order of headers corresponds to an internal fixed list. If a header is not p
   #formatFunctionCode(code) {
     this.#formattedFunctionCodes.add(this.#functionCodeToKey(code));
     const { startLine, startColumn } = code.range;
-    const { startLine: contextStartLine, startColumn: contextStartColumn, endLine: contextEndLine, endColumn: contextEndColumn } = code.rangeWithContext;
+    const {
+      startLine: contextStartLine,
+      startColumn: contextStartColumn,
+      endLine: contextEndLine,
+      endColumn: contextEndColumn
+    } = code.rangeWithContext;
     const name = code.functionBounds.name || "(anonymous)";
     const url = code.functionBounds.uiSourceCode.url();
     const parts = [];
@@ -3966,7 +7561,9 @@ The order of headers corresponds to an internal fixed list. If a header is not p
       return "";
     }
     const functionCodeStrings = [];
-    const functionCodes = await Promise.all(callFrames.map((frame) => resolveFunctionCode(frame.url, frame.lineNumber, frame.columnNumber)));
+    const functionCodes = await Promise.all(callFrames.map(
+      (frame) => resolveFunctionCode(frame.url, frame.lineNumber, frame.columnNumber)
+    ));
     for (const code of functionCodes) {
       if (code && !this.#hasFormattedFunctionCode(code)) {
         functionCodeStrings.push(this.#formatFunctionCodeSummary(code));
@@ -3983,7 +7580,7 @@ The order of headers corresponds to an internal fixed list. If a header is not p
   }
 };
 function formatEventForAI(event) {
-  if (Trace3.Types.Events.isSyntheticNetworkRequest(event)) {
+  if (Trace4.Types.Events.isSyntheticNetworkRequest(event)) {
     return JSON.stringify({
       ...event,
       args: {
@@ -3995,7 +7592,7 @@ function formatEventForAI(event) {
       }
     });
   }
-  if (Trace3.Types.Events.isResourceReceiveResponse(event)) {
+  if (Trace4.Types.Events.isResourceReceiveResponse(event)) {
     return JSON.stringify({
       ...event,
       args: {
@@ -4007,7 +7604,7 @@ function formatEventForAI(event) {
       }
     });
   }
-  if (Trace3.Types.Events.isRundownScriptSource(event)) {
+  if (Trace4.Types.Events.isRundownScriptSource(event)) {
     const safeData = {
       isolate: event.args.data.isolate,
       scriptId: event.args.data.scriptId,
@@ -4021,7 +7618,7 @@ function formatEventForAI(event) {
       }
     });
   }
-  if (Trace3.Types.Events.isRundownScriptSourceLarge(event)) {
+  if (Trace4.Types.Events.isRundownScriptSourceLarge(event)) {
     const safeData = {
       isolate: event.args.data.isolate,
       scriptId: event.args.data.scriptId,
@@ -4036,7 +7633,7 @@ function formatEventForAI(event) {
       }
     });
   }
-  if (Trace3.Types.Events.isScreenshot(event) || Trace3.Types.Events.isLegacyScreenshot(event)) {
+  if (Trace4.Types.Events.isScreenshot(event) || Trace4.Types.Events.isLegacyScreenshot(event)) {
     return JSON.stringify({
       ...event,
       args: {
@@ -4045,7 +7642,7 @@ function formatEventForAI(event) {
       }
     });
   }
-  if (Trace3.Types.Events.isLegacySyntheticScreenshot(event)) {
+  if (Trace4.Types.Events.isLegacySyntheticScreenshot(event)) {
     return JSON.stringify({
       ...event,
       args: {
@@ -4057,24 +7654,21 @@ function formatEventForAI(event) {
   return JSON.stringify(event);
 }
 
-// gen/front_end/models/ai_assistance/data_formatters/PerformanceInsightFormatter.js
+// ../../front_end/models/ai_assistance/data_formatters/PerformanceInsightFormatter.ts
 function getLCPData(parsedTrace, frameId, navigation) {
   const navMetrics = parsedTrace.data.PageLoadMetrics.metricScoresByFrameId.get(frameId)?.get(navigation);
   if (!navMetrics) {
     return null;
   }
-  const metric = navMetrics.get(
-    "LCP"
-    /* Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.LCP */
-  );
-  if (!metric || !Trace4.Handlers.ModelHandlers.PageLoadMetrics.metricIsLCP(metric)) {
+  const metric = navMetrics.get(Trace5.Handlers.ModelHandlers.PageLoadMetrics.MetricName.LCP);
+  if (!metric || !Trace5.Handlers.ModelHandlers.PageLoadMetrics.metricIsLCP(metric)) {
     return null;
   }
   const lcpEvent = metric?.event;
-  if (!lcpEvent || !Trace4.Types.Events.isAnyLargestContentfulPaintCandidate(lcpEvent)) {
+  if (!lcpEvent || !Trace5.Types.Events.isAnyLargestContentfulPaintCandidate(lcpEvent)) {
     return null;
   }
-  const navigationId = Trace4.Types.Events.isSoftNavigationStart(navigation) ? void 0 : navigation.args.data?.navigationId;
+  const navigationId = Trace5.Types.Events.isSoftNavigationStart(navigation) ? void 0 : navigation.args.data?.navigationId;
   return {
     lcpEvent,
     lcpRequest: navigationId ? parsedTrace.data.LargestImagePaint.lcpRequestByNavigationId.get(navigationId) : void 0,
@@ -4100,7 +7694,7 @@ var PerformanceInsightFormatter = class {
     if (x === void 0) {
       return "";
     }
-    return this.#formatMilli(Trace4.Helpers.Timing.microToMilli(x));
+    return this.#formatMilli(Trace5.Helpers.Timing.microToMilli(x));
   }
   #formatRequestUrl(request) {
     return `${request.args.data.url} ${this.#traceFormatter.serializeEvent(request)}`;
@@ -4139,7 +7733,10 @@ var PerformanceInsightFormatter = class {
     ];
     if (lcpRequest) {
       parts.push(`${theLcpElement} is an image fetched from ${this.#formatRequestUrl(lcpRequest)}.`);
-      const request = this.#traceFormatter.formatNetworkRequests([lcpRequest], { verbose: true, customTitle: "LCP resource network request" });
+      const request = this.#traceFormatter.formatNetworkRequests(
+        [lcpRequest],
+        { verbose: true, customTitle: "LCP resource network request" }
+      );
       parts.push(request);
     } else {
       parts.push(`${theLcpElement} is text and was not fetched from the network.`);
@@ -4243,7 +7840,7 @@ var PerformanceInsightFormatter = class {
    */
   formatCacheInsight(insight) {
     if (insight.requests.length === 0) {
-      return Trace4.Insights.Models.Cache.UIStrings.noRequestsToCache + ".";
+      return Trace5.Insights.Models.Cache.UIStrings.noRequestsToCache + ".";
     }
     let output = "The following resources were associated with ineffficient cache policies:\n";
     for (const entry of insight.requests) {
@@ -4254,14 +7851,18 @@ var PerformanceInsightFormatter = class {
       output += `
   - Wasted bytes: ${bytes(entry.wastedBytes)}`;
     }
-    output += "\n\n" + Trace4.Insights.Models.Cache.UIStrings.description;
+    output += "\n\n" + Trace5.Insights.Models.Cache.UIStrings.description;
     return output;
   }
   #formatLayoutShift(shift, index, rootCauses) {
     const baseTime = this.#parsedTrace.data.Meta.traceBounds.min;
     const potentialRootCauses = [];
     if (rootCauses) {
-      rootCauses.iframes.forEach((iframe) => potentialRootCauses.push(`- An iframe (id: ${iframe.frame}, url: ${iframe.url ?? "unknown"} was injected into the page)`));
+      rootCauses.iframes.forEach(
+        (iframe) => potentialRootCauses.push(
+          `- An iframe (id: ${iframe.frame}, url: ${iframe.url ?? "unknown"} was injected into the page)`
+        )
+      );
       rootCauses.webFonts.forEach((req) => {
         potentialRootCauses.push(`- A font that was loaded over the network: ${this.#formatRequestUrl(req)}.`);
       });
@@ -4289,7 +7890,7 @@ var PerformanceInsightFormatter = class {
     }
     const rootCauseText = potentialRootCauses.length ? `- Potential root causes:
   ${potentialRootCauses.join("\n")}` : "- No potential root causes identified";
-    const startTime = Trace4.Helpers.Timing.microToMilli(Trace4.Types.Timing.Micro(shift.ts - baseTime));
+    const startTime = Trace5.Helpers.Timing.microToMilli(Trace5.Types.Timing.Micro(shift.ts - baseTime));
     const impactedNodeNames = shift.rawSourceEvent.args.data?.impacted_nodes?.map((n) => n.debug_name).filter((name) => name !== void 0) ?? [];
     const impactedNodeText = impactedNodeNames.length ? `
 - Impacted elements:
@@ -4372,17 +7973,17 @@ ${checklistBulletPoints.map((point) => `- ${point.name}: ${point.passed ? "PASSE
     if (insight.state === "pass") {
       return "No DOM size issues were detected.";
     }
-    let output = Trace4.Insights.Models.DOMSize.UIStrings.description + "\n";
+    let output = Trace5.Insights.Models.DOMSize.UIStrings.description + "\n";
     if (insight.maxDOMStats) {
-      output += "\n" + Trace4.Insights.Models.DOMSize.UIStrings.statistic + ":\n\n";
+      output += "\n" + Trace5.Insights.Models.DOMSize.UIStrings.statistic + ":\n\n";
       const maxDepthStats = insight.maxDOMStats.args.data.maxDepth;
       const maxChildrenStats = insight.maxDOMStats.args.data.maxChildren;
-      output += Trace4.Insights.Models.DOMSize.UIStrings.totalElements + ": " + insight.maxDOMStats.args.data.totalElements + ".\n";
+      output += Trace5.Insights.Models.DOMSize.UIStrings.totalElements + ": " + insight.maxDOMStats.args.data.totalElements + ".\n";
       if (maxDepthStats) {
-        output += Trace4.Insights.Models.DOMSize.UIStrings.maxDOMDepth + ": " + maxDepthStats.depth + ` nodes, starting with element '${maxDepthStats.nodeName}' (node id: ` + maxDepthStats.nodeId + ").\n";
+        output += Trace5.Insights.Models.DOMSize.UIStrings.maxDOMDepth + ": " + maxDepthStats.depth + ` nodes, starting with element '${maxDepthStats.nodeName}' (node id: ` + maxDepthStats.nodeId + ").\n";
       }
       if (maxChildrenStats) {
-        output += Trace4.Insights.Models.DOMSize.UIStrings.maxChildren + ": " + maxChildrenStats.numChildren + `, for parent '${maxChildrenStats.nodeName}' (node id: ` + maxChildrenStats.nodeId + ").\n";
+        output += Trace5.Insights.Models.DOMSize.UIStrings.maxChildren + ": " + maxChildrenStats.numChildren + `, for parent '${maxChildrenStats.nodeName}' (node id: ` + maxChildrenStats.nodeId + ").\n";
       }
     }
     if (insight.largeLayoutUpdates.length > 0 || insight.largeStyleRecalcs.length > 0) {
@@ -4417,7 +8018,9 @@ Large layout updates/style calculations:
     if (duplicatedScriptsByModule.size === 0) {
       return "There is no duplicated JavaScript in the page modules";
     }
-    const filesFormatted = Array.from(duplicatedScriptsByModule).map(([module, duplication]) => `- Source: ${module} - Duplicated bytes: ${duplication.estimatedDuplicateBytes} bytes`).join("\n");
+    const filesFormatted = Array.from(duplicatedScriptsByModule).map(
+      ([module, duplication]) => `- Source: ${module} - Duplicated bytes: ${duplication.estimatedDuplicateBytes} bytes`
+    ).join("\n");
     return `Total wasted bytes: ${totalWastedBytes} bytes.
 
 Duplication grouped by Node modules: ${filesFormatted}`;
@@ -4438,13 +8041,13 @@ Duplication grouped by Node modules: ${filesFormatted}`;
     for (const font of insight.fonts) {
       let fontName = font.name;
       if (!fontName) {
-        const url = new Common7.ParsedURL.ParsedURL(font.request.args.data.url);
+        const url = new Common8.ParsedURL.ParsedURL(font.request.args.data.url);
         fontName = url.isValid ? url.lastPathComponent : "(not available)";
       }
       output += `
  - Font name: ${fontName}, URL: ${this.#formatRequestUrl(font.request)}, Property 'font-display' set to: '${font.display}', Wasted time: ${this.#formatMilli(font.wastedTime)}.`;
     }
-    output += "\n\n" + Trace4.Insights.Models.FontDisplay.UIStrings.description;
+    output += "\n\n" + Trace5.Insights.Models.FontDisplay.UIStrings.description;
     return output;
   }
   /**
@@ -4456,7 +8059,7 @@ Duplication grouped by Node modules: ${filesFormatted}`;
    * @returns a string formatted for sending to Ask AI.
    */
   formatForcedReflowInsight(insight) {
-    let output = Trace4.Insights.Models.ForcedReflow.UIStrings.description + "\n\n";
+    let output = Trace5.Insights.Models.ForcedReflow.UIStrings.description + "\n\n";
     if (insight.topLevelFunctionCallData || insight.aggregatedBottomUpData.length > 0) {
       output += "The forced reflow checks revealed one or more problems.\n\n";
     } else {
@@ -4465,9 +8068,9 @@ Duplication grouped by Node modules: ${filesFormatted}`;
     }
     function callFrameToString(frame) {
       if (frame === null) {
-        return Trace4.Insights.Models.ForcedReflow.UIStrings.unattributed;
+        return Trace5.Insights.Models.ForcedReflow.UIStrings.unattributed;
       }
-      let result = `${frame.functionName || Trace4.Insights.Models.ForcedReflow.UIStrings.anonymous}`;
+      let result = `${frame.functionName || Trace5.Insights.Models.ForcedReflow.UIStrings.anonymous}`;
       if (frame.url) {
         result += ` @ ${frame.url}:${frame.lineNumber}:${frame.columnNumber}`;
       } else {
@@ -4480,13 +8083,13 @@ Duplication grouped by Node modules: ${filesFormatted}`;
       output += " - " + callFrameToString(insight.topLevelFunctionCallData.topLevelFunctionCall);
       output += `
 
-${Trace4.Insights.Models.ForcedReflow.UIStrings.totalReflowTime}: ${this.#formatMicro(insight.topLevelFunctionCallData.totalReflowTime)}
+${Trace5.Insights.Models.ForcedReflow.UIStrings.totalReflowTime}: ${this.#formatMicro(insight.topLevelFunctionCallData.totalReflowTime)}
 `;
     } else {
       output += "No top-level functions causing forced reflows were identified.\n";
     }
     if (insight.aggregatedBottomUpData.length > 0) {
-      output += "\n" + Trace4.Insights.Models.ForcedReflow.UIStrings.reflowCallFrames + " (including total time):\n";
+      output += "\n" + Trace5.Insights.Models.ForcedReflow.UIStrings.reflowCallFrames + " (including total time):\n";
       for (const data of insight.aggregatedBottomUpData) {
         output += `
  - ${this.#formatMicro(data.totalTime)} in ${callFrameToString(data.bottomUpData)}`;
@@ -4508,7 +8111,7 @@ ${Trace4.Insights.Models.ForcedReflow.UIStrings.totalReflowTime}: ${this.#format
     }
     const imageDetails = optimizableImages.map((image) => {
       const optimizations = image.optimizations.map((optimization) => {
-        const message = Trace4.Insights.Models.ImageDelivery.getOptimizationMessage(optimization);
+        const message = Trace5.Insights.Models.ImageDelivery.getOptimizationMessage(optimization);
         const byteSavings = bytes(optimization.byteSavings);
         return `${message} (Est ${byteSavings})`;
       }).join("\n");
@@ -4552,7 +8155,7 @@ ${imageDetails}`;
     }
     const subpartBulletPoints = [];
     Object.values(subparts).forEach((subpart) => {
-      const subpartMilli = Trace4.Helpers.Timing.microToMilli(subpart.range);
+      const subpartMilli = Trace5.Helpers.Timing.microToMilli(subpart.range);
       const percentage = (subpartMilli / lcpMs * 100).toFixed(1);
       subpartBulletPoints.push({ name: subpart.label, value: this.#formatMilli(subpartMilli), percentage });
     });
@@ -4600,10 +8203,12 @@ ${checklistBulletPoints.map((point) => `- ${point.name}: ${point.passed ? "PASSE
     if (legacyJavaScriptResults.size === 0) {
       return "There is no significant amount of legacy JavaScript on the page.";
     }
-    const filesFormatted = Array.from(legacyJavaScriptResults).map(([script, result]) => `
+    const filesFormatted = Array.from(legacyJavaScriptResults).map(
+      ([script, result]) => `
 - Script: ${this.#formatScriptUrl(script)} - Wasted bytes: ${result.estimatedByteSavings} bytes
 Matches:
-${result.matches.map((match) => `Line: ${match.line}, Column: ${match.column}, Name: ${match.name}`).join("\n")}`).join("\n");
+${result.matches.map((match) => `Line: ${match.line}, Column: ${match.column}, Name: ${match.name}`).join("\n")}`
+    ).join("\n");
     return `Total legacy JavaScript: ${legacyJavaScriptResults.size} files.
 
 Legacy JavaScript by file:
@@ -4654,46 +8259,46 @@ ${requestSummary}`;
       }
       output += "\n";
     } else {
-      output += `${Trace4.Insights.Models.NetworkDependencyTree.UIStrings.noNetworkDependencyTree}.
+      output += `${Trace5.Insights.Models.NetworkDependencyTree.UIStrings.noNetworkDependencyTree}.
 
 `;
     }
     if (insight.preconnectedOrigins?.length > 0) {
-      output += `${Trace4.Insights.Models.NetworkDependencyTree.UIStrings.preconnectOriginsTableTitle}:
+      output += `${Trace5.Insights.Models.NetworkDependencyTree.UIStrings.preconnectOriginsTableTitle}:
 `;
-      output += `${Trace4.Insights.Models.NetworkDependencyTree.UIStrings.preconnectOriginsTableDescription}
+      output += `${Trace5.Insights.Models.NetworkDependencyTree.UIStrings.preconnectOriginsTableDescription}
 `;
       for (const origin of insight.preconnectedOrigins) {
         const headerText = "headerText" in origin ? `'${origin.headerText}'` : ``;
         output += `
   - ${origin.url}
-    - ${Trace4.Insights.Models.NetworkDependencyTree.UIStrings.columnSource}: '${origin.source}'`;
+    - ${Trace5.Insights.Models.NetworkDependencyTree.UIStrings.columnSource}: '${origin.source}'`;
         if (headerText) {
           output += `
    - Header: ${headerText}`;
         }
         if (origin.unused) {
           output += `
-   - Warning: ${Trace4.Insights.Models.NetworkDependencyTree.UIStrings.unusedWarning}`;
+   - Warning: ${Trace5.Insights.Models.NetworkDependencyTree.UIStrings.unusedWarning}`;
         }
         if (origin.crossorigin) {
           output += `
-   - Warning: ${Trace4.Insights.Models.NetworkDependencyTree.UIStrings.crossoriginWarning}`;
+   - Warning: ${Trace5.Insights.Models.NetworkDependencyTree.UIStrings.crossoriginWarning}`;
         }
       }
-      if (insight.preconnectedOrigins.length > Trace4.Insights.Models.NetworkDependencyTree.TOO_MANY_PRECONNECTS_THRESHOLD) {
+      if (insight.preconnectedOrigins.length > Trace5.Insights.Models.NetworkDependencyTree.TOO_MANY_PRECONNECTS_THRESHOLD) {
         output += `
 
-**Warning**: ${Trace4.Insights.Models.NetworkDependencyTree.UIStrings.tooManyPreconnectLinksWarning}`;
+**Warning**: ${Trace5.Insights.Models.NetworkDependencyTree.UIStrings.tooManyPreconnectLinksWarning}`;
       }
     } else {
-      output += `${Trace4.Insights.Models.NetworkDependencyTree.UIStrings.noPreconnectOrigins}.`;
+      output += `${Trace5.Insights.Models.NetworkDependencyTree.UIStrings.noPreconnectOrigins}.`;
     }
-    if (insight.preconnectCandidates.length > 0 && insight.preconnectedOrigins.length < Trace4.Insights.Models.NetworkDependencyTree.TOO_MANY_PRECONNECTS_THRESHOLD) {
+    if (insight.preconnectCandidates.length > 0 && insight.preconnectedOrigins.length < Trace5.Insights.Models.NetworkDependencyTree.TOO_MANY_PRECONNECTS_THRESHOLD) {
       output += `
 
-${Trace4.Insights.Models.NetworkDependencyTree.UIStrings.estSavingTableTitle}:
-${Trace4.Insights.Models.NetworkDependencyTree.UIStrings.estSavingTableDescription}
+${Trace5.Insights.Models.NetworkDependencyTree.UIStrings.estSavingTableTitle}:
+${Trace5.Insights.Models.NetworkDependencyTree.UIStrings.estSavingTableDescription}
 `;
       for (const candidate of insight.preconnectCandidates) {
         output += `
@@ -4727,32 +8332,32 @@ ${requestSummary}`;
   formatSlowCssSelectorsInsight(insight) {
     let output = "";
     if (!insight.topSelectorElapsedMs && !insight.topSelectorMatchAttempts) {
-      return Trace4.Insights.Models.SlowCSSSelector.UIStrings.enableSelectorData;
+      return Trace5.Insights.Models.SlowCSSSelector.UIStrings.enableSelectorData;
     }
     output += "One or more slow CSS selectors were identified as negatively affecting page performance:\n\n";
     if (insight.topSelectorElapsedMs) {
-      output += `${Trace4.Insights.Models.SlowCSSSelector.UIStrings.topSelectorElapsedTime} (as ranked by elapsed time in ms):
+      output += `${Trace5.Insights.Models.SlowCSSSelector.UIStrings.topSelectorElapsedTime} (as ranked by elapsed time in ms):
 `;
       output += `${this.#formatMicro(insight.topSelectorElapsedMs["elapsed (us)"])}: ${insight.topSelectorElapsedMs.selector}
 
 `;
     }
     if (insight.topSelectorMatchAttempts) {
-      output += Trace4.Insights.Models.SlowCSSSelector.UIStrings.topSelectorMatchAttempt + ":\n";
+      output += Trace5.Insights.Models.SlowCSSSelector.UIStrings.topSelectorMatchAttempt + ":\n";
       output += `${insight.topSelectorMatchAttempts.match_attempts} attempts for selector: '${insight.topSelectorMatchAttempts.selector}'
 
 `;
     }
-    output += `${Trace4.Insights.Models.SlowCSSSelector.UIStrings.total}:
+    output += `${Trace5.Insights.Models.SlowCSSSelector.UIStrings.total}:
 `;
-    output += `${Trace4.Insights.Models.SlowCSSSelector.UIStrings.elapsed}: ${this.#formatMicro(insight.totalElapsedMs)}
+    output += `${Trace5.Insights.Models.SlowCSSSelector.UIStrings.elapsed}: ${this.#formatMicro(insight.totalElapsedMs)}
 `;
-    output += `${Trace4.Insights.Models.SlowCSSSelector.UIStrings.matchAttempts}: ${insight.totalMatchAttempts}
+    output += `${Trace5.Insights.Models.SlowCSSSelector.UIStrings.matchAttempts}: ${insight.totalMatchAttempts}
 `;
-    output += `${Trace4.Insights.Models.SlowCSSSelector.UIStrings.matchCount}: ${insight.totalMatchCount}
+    output += `${Trace5.Insights.Models.SlowCSSSelector.UIStrings.matchCount}: ${insight.totalMatchCount}
 
 `;
-    output += Trace4.Insights.Models.SlowCSSSelector.UIStrings.description;
+    output += Trace5.Insights.Models.SlowCSSSelector.UIStrings.description;
     return output;
   }
   /**
@@ -4796,7 +8401,7 @@ ${requestSummary}`;
       }
       output += "\n";
     }
-    output += Trace4.Insights.Models.ThirdParties.UIStrings.description;
+    output += Trace5.Insights.Models.ThirdParties.UIStrings.description;
     return output;
   }
   /**
@@ -4830,7 +8435,7 @@ The viewport meta tag was found: \`${insight.viewportEvent?.args?.data.content}\
 The viewport meta tag is missing.`;
     }
     if (!hasMetaTag) {
-      output += "\n\n" + Trace4.Insights.Models.Viewport.UIStrings.description;
+      output += "\n\n" + Trace5.Insights.Models.Viewport.UIStrings.description;
     }
     return output;
   }
@@ -4856,61 +8461,61 @@ ${header} External resources:
 ${this.#links()}`;
   }
   #details() {
-    if (Trace4.Insights.Models.Cache.isCacheInsight(this.#insight)) {
+    if (Trace5.Insights.Models.Cache.isCacheInsight(this.#insight)) {
       return this.formatCacheInsight(this.#insight);
     }
-    if (Trace4.Insights.Models.CLSCulprits.isCLSCulpritsInsight(this.#insight)) {
+    if (Trace5.Insights.Models.CLSCulprits.isCLSCulpritsInsight(this.#insight)) {
       return this.formatClsCulpritsInsight(this.#insight);
     }
-    if (Trace4.Insights.Models.DocumentLatency.isDocumentLatencyInsight(this.#insight)) {
+    if (Trace5.Insights.Models.DocumentLatency.isDocumentLatencyInsight(this.#insight)) {
       return this.formatDocumentLatencyInsight(this.#insight);
     }
-    if (Trace4.Insights.Models.DOMSize.isDomSizeInsight(this.#insight)) {
+    if (Trace5.Insights.Models.DOMSize.isDomSizeInsight(this.#insight)) {
       return this.formatDomSizeInsight(this.#insight);
     }
-    if (Trace4.Insights.Models.DuplicatedJavaScript.isDuplicatedJavaScriptInsight(this.#insight)) {
+    if (Trace5.Insights.Models.DuplicatedJavaScript.isDuplicatedJavaScriptInsight(this.#insight)) {
       return this.formatDuplicatedJavaScriptInsight(this.#insight);
     }
-    if (Trace4.Insights.Models.FontDisplay.isFontDisplayInsight(this.#insight)) {
+    if (Trace5.Insights.Models.FontDisplay.isFontDisplayInsight(this.#insight)) {
       return this.formatFontDisplayInsight(this.#insight);
     }
-    if (Trace4.Insights.Models.ForcedReflow.isForcedReflowInsight(this.#insight)) {
+    if (Trace5.Insights.Models.ForcedReflow.isForcedReflowInsight(this.#insight)) {
       return this.formatForcedReflowInsight(this.#insight);
     }
-    if (Trace4.Insights.Models.ImageDelivery.isImageDeliveryInsight(this.#insight)) {
+    if (Trace5.Insights.Models.ImageDelivery.isImageDeliveryInsight(this.#insight)) {
       return this.formatImageDeliveryInsight(this.#insight);
     }
-    if (Trace4.Insights.Models.INPBreakdown.isINPBreakdownInsight(this.#insight)) {
+    if (Trace5.Insights.Models.INPBreakdown.isINPBreakdownInsight(this.#insight)) {
       return this.formatInpBreakdownInsight(this.#insight);
     }
-    if (Trace4.Insights.Models.LCPBreakdown.isLCPBreakdownInsight(this.#insight)) {
+    if (Trace5.Insights.Models.LCPBreakdown.isLCPBreakdownInsight(this.#insight)) {
       return this.formatLcpBreakdownInsight(this.#insight);
     }
-    if (Trace4.Insights.Models.LCPDiscovery.isLCPDiscoveryInsight(this.#insight)) {
+    if (Trace5.Insights.Models.LCPDiscovery.isLCPDiscoveryInsight(this.#insight)) {
       return this.formatLcpDiscoveryInsight(this.#insight);
     }
-    if (Trace4.Insights.Models.LegacyJavaScript.isLegacyJavaScript(this.#insight)) {
+    if (Trace5.Insights.Models.LegacyJavaScript.isLegacyJavaScript(this.#insight)) {
       return this.formatLegacyJavaScriptInsight(this.#insight);
     }
-    if (Trace4.Insights.Models.ModernHTTP.isModernHTTPInsight(this.#insight)) {
+    if (Trace5.Insights.Models.ModernHTTP.isModernHTTPInsight(this.#insight)) {
       return this.formatModernHttpInsight(this.#insight);
     }
-    if (Trace4.Insights.Models.NetworkDependencyTree.isNetworkDependencyTreeInsight(this.#insight)) {
+    if (Trace5.Insights.Models.NetworkDependencyTree.isNetworkDependencyTreeInsight(this.#insight)) {
       return this.formatNetworkDependencyTreeInsight(this.#insight);
     }
-    if (Trace4.Insights.Models.RenderBlocking.isRenderBlockingInsight(this.#insight)) {
+    if (Trace5.Insights.Models.RenderBlocking.isRenderBlockingInsight(this.#insight)) {
       return this.formatRenderBlockingInsight(this.#insight);
     }
-    if (Trace4.Insights.Models.SlowCSSSelector.isSlowCSSSelectorInsight(this.#insight)) {
+    if (Trace5.Insights.Models.SlowCSSSelector.isSlowCSSSelectorInsight(this.#insight)) {
       return this.formatSlowCssSelectorsInsight(this.#insight);
     }
-    if (Trace4.Insights.Models.ThirdParties.isThirdPartyInsight(this.#insight)) {
+    if (Trace5.Insights.Models.ThirdParties.isThirdPartyInsight(this.#insight)) {
       return this.formatThirdPartiesInsight(this.#insight);
     }
-    if (Trace4.Insights.Models.Viewport.isViewportInsight(this.#insight)) {
+    if (Trace5.Insights.Models.Viewport.isViewportInsight(this.#insight)) {
       return this.formatViewportInsight(this.#insight);
     }
-    if (Trace4.Insights.Models.CharacterSet.isCharacterSetInsight(this.#insight)) {
+    if (Trace5.Insights.Models.CharacterSet.isCharacterSetInsight(this.#insight)) {
       return this.formatCharacterSetInsight(this.#insight);
     }
     return "";
@@ -4945,7 +8550,9 @@ ${this.#links()}`;
         links.push("https://developer.chrome.com/blog/font-fallbacks");
         break;
       case "ForcedReflow":
-        links.push("https://developers.google.com/web/fundamentals/performance/rendering/avoid-large-complex-layouts-and-layout-thrashing#avoid-forced-synchronous-layouts");
+        links.push(
+          "https://developers.google.com/web/fundamentals/performance/rendering/avoid-large-complex-layouts-and-layout-thrashing#avoid-forced-synchronous-layouts"
+        );
         break;
       case "ImageDelivery":
         links.push("https://developer.chrome.com/docs/lighthouse/performance/uses-optimized-images/");
@@ -5076,13 +8683,1552 @@ Polyfills and transforms enable older browsers to use new JavaScript features. H
   }
 };
 
-// gen/front_end/models/ai_assistance/performance/AIContext.js
+// ../../front_end/models/ai_assistance/tools/GetInsightDetails.ts
+var lockedString6 = i18n14.i18n.lockedString;
+async function getNetworkRequestImageData(target, lcpRequest, networkLog = Logs2.NetworkLog.NetworkLog.instance()) {
+  const networkManager = target?.model(SDK10.NetworkManager.NetworkManager);
+  if (!target || !networkManager) {
+    return void 0;
+  }
+  const requestId = lcpRequest.args.data.requestId;
+  const sdkRequest = networkLog.requestByManagerAndId(networkManager, requestId);
+  if (sdkRequest?.contentType().isImage()) {
+    const contentData = await sdkRequest.requestContentData();
+    if (!TextUtils2.ContentData.ContentData.isError(contentData)) {
+      return contentData;
+    }
+  }
+  return void 0;
+}
+var GetInsightDetailsTool = class {
+  name = "getInsightDetails" /* GET_INSIGHT_DETAILS */;
+  description = "Returns detailed information about a specific insight of an insight set. Use this before commenting on any specific issue to get more information.";
+  parameters = {
+    type: Host9.AidaClient.ParametersTypes.OBJECT,
+    description: "Arguments for getting insight details.",
+    nullable: false,
+    properties: {
+      insightSetId: {
+        type: Host9.AidaClient.ParametersTypes.STRING,
+        description: 'The id for the specific insight set. Only use the ids given in the "Available insight sets" list.',
+        nullable: false
+      },
+      insightName: {
+        type: Host9.AidaClient.ParametersTypes.STRING,
+        description: 'The name of the insight. Only use the insight names given in the "Available insights" list.',
+        nullable: false
+      }
+    },
+    required: ["insightSetId", "insightName"]
+  };
+  displayInfoFromArgs(params) {
+    return {
+      title: lockedString6(`Investigating insight ${params.insightName}`),
+      action: `getInsightDetails('${params.insightSetId}', '${params.insightName}')`
+    };
+  }
+  async #generateDOMTreeWidget(insight, insightSet, target) {
+    try {
+      if (!Trace6.Insights.Models.LCPDiscovery.isLCPDiscoveryInsight(insight) && !Trace6.Insights.Models.LCPBreakdown.isLCPBreakdownInsight(insight)) {
+        return null;
+      }
+      const lcpMetric = Trace6.Insights.Common.getLCP(insightSet);
+      const lcpEvent = lcpMetric?.event;
+      if (!lcpEvent || !Trace6.Types.Events.isAnyLargestContentfulPaintCandidate(lcpEvent)) {
+        return null;
+      }
+      const nodeId = lcpEvent.args.data?.nodeId;
+      if (!nodeId) {
+        return null;
+      }
+      const domModel = target?.model(SDK10.DOMModel.DOMModel);
+      if (!domModel) {
+        return null;
+      }
+      const nodeMap = await domModel.pushNodesByBackendIdsToFrontend(/* @__PURE__ */ new Set([nodeId]));
+      const node = nodeMap?.get(nodeId);
+      if (!node) {
+        return null;
+      }
+      const lcpSyntheticRequest = insight.lcpRequest;
+      const [snapshot, imageContent] = await Promise.all([
+        node.takeSnapshot(),
+        lcpSyntheticRequest ? getNetworkRequestImageData(target, lcpSyntheticRequest) : Promise.resolve(void 0)
+      ]);
+      let networkRequest;
+      if (lcpSyntheticRequest) {
+        networkRequest = {
+          url: lcpSyntheticRequest.args.data.url,
+          size: lcpSyntheticRequest.args.data.decodedBodyLength ?? lcpSyntheticRequest.args.data.encodedDataLength ?? 0,
+          resourceType: lcpSyntheticRequest.args.data.resourceType,
+          mimeType: lcpSyntheticRequest.args.data.mimeType ?? "",
+          imageContent
+        };
+      }
+      return {
+        name: "DOM_TREE",
+        data: {
+          root: snapshot,
+          networkRequest,
+          title: lockedString6("LCP element"),
+          accessibleRevealLabel: lockedString6("Reveal LCP element")
+        }
+      };
+    } catch (err) {
+      debugLog("GetInsightDetails: Failed to generate DOM tree widget", err);
+      return null;
+    }
+  }
+  async handler(params, capabilities) {
+    const performanceTraceContext = capabilities.getPerformanceTraceContext();
+    if (!performanceTraceContext) {
+      return { error: "Performance trace context is not available." };
+    }
+    if (!params.insightSetId || !params.insightName) {
+      return { error: "Missing required arguments: insightSetId and insightName must be provided." };
+    }
+    const focus = performanceTraceContext.getItem();
+    const parsedTrace = focus.parsedTrace;
+    const insightSet = parsedTrace.insights?.get(params.insightSetId);
+    if (!insightSet) {
+      const formatter = performanceTraceContext.createFormatter();
+      const valid = [...parsedTrace.insights?.values() ?? []].map((insightSet2) => `id: ${insightSet2.id}, url: ${insightSet2.url}, bounds: ${formatter.serializeBounds(insightSet2.bounds)}`).join("; ");
+      return { error: `Invalid insight set id. Valid insight set ids are: ${valid || "(none)"}` };
+    }
+    if (!Trace6.Insights.Common.isInsightKey(params.insightName)) {
+      const valid = Object.keys(insightSet.model).join(", ");
+      return { error: `No insight available. Valid insight names are: ${valid || "(none)"}` };
+    }
+    const insightError = insightSet.modelErrors?.[params.insightName];
+    if (insightError) {
+      return { error: `Insight "${params.insightName}" failed during trace processing: ${insightError.message}` };
+    }
+    const insight = insightSet.model[params.insightName];
+    if (!insight) {
+      const valid = Object.keys(insightSet.model).join(", ");
+      return { error: `No insight available. Valid insight names are: ${valid || "(none)"}` };
+    }
+    const details = new PerformanceInsightFormatter(focus, insight).formatInsight();
+    if (details.length > MAX_FUNCTION_RESULT_BYTE_LENGTH) {
+      return {
+        error: "The insight details output is too large to fit in the context window. Please inspect specific events using getTraceEventByKey or getDetailedCallTree."
+      };
+    }
+    const widgets = [];
+    const isImportedTrace = performanceTraceContext.getOrigin().startsWith("imported-trace://");
+    if (!isImportedTrace) {
+      const domTreeWidget = await this.#generateDOMTreeWidget(insight, insightSet, capabilities.getTarget());
+      if (domTreeWidget) {
+        widgets.push(domTreeWidget);
+      }
+    }
+    widgets.push({
+      name: "PERF_INSIGHT",
+      data: {
+        insight: params.insightName,
+        insightData: insight
+      }
+    });
+    return { result: details, widgets };
+  }
+};
+
+// ../../front_end/models/ai_assistance/tools/GetLighthouseAudits.ts
+var GetLighthouseAudits_exports = {};
+__export(GetLighthouseAudits_exports, {
+  GetLighthouseAuditsTool: () => GetLighthouseAuditsTool
+});
+import * as Host10 from "../../core/host/host.js";
+var GetLighthouseAuditsTool = class {
+  name = "getLighthouseAudits" /* GET_LIGHTHOUSE_AUDITS */;
+  description = "Returns the audits for a specific Lighthouse category.";
+  parameters = {
+    type: Host10.AidaClient.ParametersTypes.OBJECT,
+    description: "Arguments for retrieving Lighthouse category audits.",
+    nullable: false,
+    properties: {
+      categoryId: {
+        type: Host10.AidaClient.ParametersTypes.STRING,
+        description: 'The category of audits to retrieve. E.g. "accessibility".',
+        nullable: false
+      }
+    },
+    required: ["categoryId"]
+  };
+  displayInfoFromArgs(params) {
+    return {
+      title: `Getting Lighthouse audits for ${params.categoryId}`,
+      action: `getLighthouseAudits('${params.categoryId}')`
+    };
+  }
+  async handler(params, context) {
+    const report = context.getLighthouseReport();
+    if (!report) {
+      return { error: "Error: Active context is not a Lighthouse report." };
+    }
+    const audits = new LighthouseFormatter().audits(report, params.categoryId);
+    return {
+      result: { audits },
+      widgets: [{ name: "LIGHTHOUSE_REPORT", data: { report } }]
+    };
+  }
+};
+
+// ../../front_end/models/ai_assistance/tools/GetNetworkRequestDetails.ts
+var GetNetworkRequestDetails_exports = {};
+__export(GetNetworkRequestDetails_exports, {
+  GetNetworkRequestDetailsTool: () => GetNetworkRequestDetailsTool
+});
+import * as Host11 from "../../core/host/host.js";
+import * as i18n18 from "../../core/i18n/i18n.js";
+import * as Logs3 from "../logs/logs.js";
+import * as NetworkTimeCalculator2 from "../network_time_calculator/network_time_calculator.js";
+
+// ../../front_end/models/ai_assistance/contexts/RequestContext.ts
+var RequestContext_exports = {};
+__export(RequestContext_exports, {
+  RequestContext: () => RequestContext,
+  getRequestContextOrigin: () => getRequestContextOrigin
+});
+import * as Common9 from "../../core/common/common.js";
+import * as i18n16 from "../../core/i18n/i18n.js";
+var UIStringsNotTranslate4 = {
+  request: "Request",
+  response: "Response",
+  requestUrl: "Request URL",
+  timing: "Timing",
+  requestInitiatorChain: "Request initiator chain"
+};
+var lockedString7 = i18n16.i18n.lockedString;
+function getRequestContextOrigin(request) {
+  const origin = extractContextOrigin(request.documentURL);
+  if (request.isImportedHar()) {
+    const parsed = Common9.ParsedURL.ParsedURL.fromString(origin);
+    return `imported-har://${parsed ? parsed.domain() : origin}`;
+  }
+  return origin;
+}
+var RequestContext = class extends ConversationContext {
+  #request;
+  #calculator;
+  constructor(request, calculator) {
+    super();
+    this.#request = request;
+    this.#calculator = calculator;
+  }
+  /**
+   * Note: this is not the literal origin of the network request. This URL
+   * is used to determine when we should force the user to start a new AI
+   * conversation when the context changes. We allow a single AI conversation to
+   * inspect all network requests that were made for that given target URL.
+   */
+  getURL() {
+    return this.#request.documentURL;
+  }
+  getOrigin() {
+    return getRequestContextOrigin(this.#request);
+  }
+  getItem() {
+    return this.#request;
+  }
+  getTitle() {
+    return this.#request.name();
+  }
+  async getPromptDetails() {
+    const formatter = new NetworkRequestFormatter(this.#request, this.#calculator);
+    return `# Selected network request
+${await formatter.formatNetworkRequest()}`;
+  }
+  async getUserFacingDetails() {
+    const formatter = new NetworkRequestFormatter(this.#request, this.#calculator);
+    const requestContextDetail = {
+      title: lockedString7(UIStringsNotTranslate4.request),
+      text: lockedString7(UIStringsNotTranslate4.requestUrl) + ": " + this.#request.url() + "\n\n" + formatter.formatRequestHeaders()
+    };
+    const responseBody = await formatter.formatResponseBody();
+    const responseBodyString = responseBody ? `
+
+${responseBody}` : "";
+    const responseContextDetail = {
+      title: lockedString7(UIStringsNotTranslate4.response),
+      text: formatter.formatResponseHeaders() + responseBodyString + `
+
+${formatter.formatStatus()}${formatter.formatFailureReasons()}`
+    };
+    const timingContextDetail = {
+      title: lockedString7(UIStringsNotTranslate4.timing),
+      text: formatter.formatNetworkRequestTiming()
+    };
+    const initiatorChainContextDetail = {
+      title: lockedString7(UIStringsNotTranslate4.requestInitiatorChain),
+      text: formatter.formatRequestInitiatorChain()
+    };
+    return [
+      requestContextDetail,
+      responseContextDetail,
+      timingContextDetail,
+      initiatorChainContextDetail
+    ];
+  }
+};
+
+// ../../front_end/models/ai_assistance/tools/GetNetworkRequestDetails.ts
+var UIStringsNotTranslate5 = {
+  gettingNetworkRequestDetails: "Getting network request details"
+};
+var lockedString8 = i18n18.i18n.lockedString;
+var GetNetworkRequestDetailsTool = class {
+  name = "getNetworkRequestDetails" /* GET_NETWORK_REQUEST_DETAILS */;
+  description = "Retrieves the full headers, timing, status, and body details of a specific network request by ID.";
+  #networkLog;
+  constructor(networkLog) {
+    this.#networkLog = networkLog;
+  }
+  parameters = {
+    type: Host11.AidaClient.ParametersTypes.OBJECT,
+    description: "Arguments for retrieving detailed information about a specific network request.",
+    nullable: false,
+    properties: {
+      id: {
+        type: Host11.AidaClient.ParametersTypes.STRING,
+        description: "The id of the network request to inspect.",
+        nullable: false
+      }
+    },
+    required: ["id"]
+  };
+  displayInfoFromArgs(args) {
+    return {
+      title: lockedString8(UIStringsNotTranslate5.gettingNetworkRequestDetails),
+      action: `getNetworkRequestDetails(${args.id})`
+    };
+  }
+  /**
+   * Handles the request to retrieve details for a network request by its ID.
+   * Filters by the conversation's established origin to prevent cross-origin data exposure.
+   */
+  async handler(args, context) {
+    const origin = context.getEstablishedOrigin();
+    if (origin && isOpaqueOrigin(origin)) {
+      return {
+        error: "Opaque origin not allowed"
+      };
+    }
+    const networkLog = this.#networkLog ?? Logs3.NetworkLog.NetworkLog.instance();
+    const request = networkLog.requests().find((req) => {
+      if (req.requestId() !== args.id) {
+        return false;
+      }
+      const requestOrigin = getRequestContextOrigin(req);
+      return !origin || requestOrigin === origin;
+    });
+    if (!request) {
+      return {
+        error: "No request found"
+      };
+    }
+    const calculator = new NetworkTimeCalculator2.NetworkTransferTimeCalculator();
+    const formatter = new NetworkRequestFormatter(request, calculator, networkLog);
+    const formattedDetails = await formatter.formatNetworkRequest();
+    return {
+      result: formattedDetails,
+      widgets: [{
+        name: "NETWORK_REQUEST_GENERAL_HEADERS",
+        data: {
+          request
+        }
+      }]
+    };
+  }
+};
+
+// ../../front_end/models/ai_assistance/tools/GetResourceContent.ts
+var GetResourceContent_exports = {};
+__export(GetResourceContent_exports, {
+  GetResourceContentTool: () => GetResourceContentTool
+});
+import * as Host12 from "../../core/host/host.js";
+import * as i18n20 from "../../core/i18n/i18n.js";
+import * as Root5 from "../../core/root/root.js";
+import * as SDK11 from "../../core/sdk/sdk.js";
+import * as TextUtils3 from "../../core/text_utils/text_utils.js";
+var UIStringsNotTranslate6 = {
+  lookingAtResourceContent: "Looking at resource content"
+};
+var lockedString9 = i18n20.i18n.lockedString;
+var GetResourceContentTool = class {
+  name = "getResourceContent" /* GET_RESOURCE_CONTENT */;
+  description = "Returns the content of the resource with the given url. Only use this for text resource types.";
+  parameters = {
+    type: Host12.AidaClient.ParametersTypes.OBJECT,
+    description: "Arguments for looking up resource content.",
+    nullable: false,
+    properties: {
+      url: {
+        type: Host12.AidaClient.ParametersTypes.STRING,
+        description: "The url for the resource.",
+        nullable: false
+      }
+    },
+    required: ["url"]
+  };
+  displayInfoFromArgs(params) {
+    return {
+      title: lockedString9(UIStringsNotTranslate6.lookingAtResourceContent),
+      action: `getResourceContent('${params.url}')`
+    };
+  }
+  async handler(params, capabilities) {
+    const performanceTraceContext = capabilities.getPerformanceTraceContext();
+    if (!performanceTraceContext) {
+      return { error: "Performance trace context is not available." };
+    }
+    if (performanceTraceContext.getOrigin().startsWith("imported-trace://")) {
+      return { error: "Cannot use this tool on an imported file." };
+    }
+    const allowedOrigin = performanceTraceContext.getOrigin();
+    if (!canResourceContentsBeReadForTrace(params.url, allowedOrigin)) {
+      return { error: "Resource not found" };
+    }
+    const focus = performanceTraceContext.getItem();
+    const { parsedTrace } = focus;
+    let content;
+    const url = params.url;
+    const script = parsedTrace.data.Scripts?.scripts.find((script2) => script2.url === params.url);
+    if (script?.content !== void 0) {
+      content = script.content;
+    } else {
+      const target = capabilities.getTarget();
+      const isTraceApp = Root5.Runtime.Runtime.isTraceApp();
+      if (target || isTraceApp) {
+        const targetManager = target?.targetManager() ?? // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
+        SDK11.TargetManager.TargetManager.instance();
+        const resource = SDK11.ResourceTreeModel.ResourceTreeModel.resourceForURL(targetManager, url);
+        if (!resource) {
+          return { error: "Resource not found" };
+        }
+        const data = await resource.requestContentData();
+        if (TextUtils3.ContentData.ContentData.isError(data)) {
+          return { error: `Could not get resource content: ${data.error}` };
+        }
+        if (!data.isTextContent) {
+          return { error: "Cannot retrieve content for non-text resource" };
+        }
+        content = data.text;
+      } else {
+        return { error: "Resource not found" };
+      }
+    }
+    return {
+      result: { content },
+      widgets: [{
+        name: "SOURCE_CODE",
+        data: {
+          url,
+          code: content
+        }
+      }]
+    };
+  }
+};
+
+// ../../front_end/models/ai_assistance/tools/GetSourceContent.ts
+var GetSourceContent_exports = {};
+__export(GetSourceContent_exports, {
+  GetSourceContentTool: () => GetSourceContentTool
+});
+import * as Common11 from "../../core/common/common.js";
+import * as Host14 from "../../core/host/host.js";
+import * as i18n24 from "../../core/i18n/i18n.js";
+import * as TextUtils4 from "../../core/text_utils/text_utils.js";
+
+// ../../front_end/models/ai_assistance/data_formatters/FileFormatter.ts
+var FileFormatter_exports = {};
+__export(FileFormatter_exports, {
+  FileFormatter: () => FileFormatter
+});
+import * as Bindings from "../bindings/bindings.js";
+import * as Logs4 from "../logs/logs.js";
+import * as NetworkTimeCalculator3 from "../network_time_calculator/network_time_calculator.js";
+var MAX_FILE_SIZE = 1e4;
+var FileFormatter = class _FileFormatter {
+  static formatSourceMapDetails(selectedFile, debuggerWorkspaceBinding) {
+    const mappedFileUrls = [];
+    const sourceMapUrls = [];
+    if (selectedFile.contentType().isFromSourceMap()) {
+      for (const script of debuggerWorkspaceBinding.scriptsForUISourceCode(selectedFile)) {
+        const uiSourceCode = debuggerWorkspaceBinding.uiSourceCodeForScript(script);
+        if (uiSourceCode) {
+          mappedFileUrls.push(uiSourceCode.url());
+          if (script.sourceMapURL !== void 0) {
+            sourceMapUrls.push(script.sourceMapURL);
+          }
+        }
+      }
+      for (const originURL of Bindings.SASSSourceMapping.SASSSourceMapping.uiSourceOrigin(selectedFile)) {
+        mappedFileUrls.push(originURL);
+      }
+    } else if (selectedFile.contentType().isScript()) {
+      for (const script of debuggerWorkspaceBinding.scriptsForUISourceCode(selectedFile)) {
+        if (script.sourceMapURL !== void 0 && script.sourceMapURL !== "") {
+          sourceMapUrls.push(script.sourceMapURL);
+        }
+      }
+    }
+    if (sourceMapUrls.length === 0) {
+      return "";
+    }
+    let sourceMapDetails = "Source map: " + sourceMapUrls;
+    if (mappedFileUrls.length > 0) {
+      sourceMapDetails += "\nSource mapped from: " + mappedFileUrls;
+    }
+    return sourceMapDetails;
+  }
+  #file;
+  #debuggerWorkspaceBinding;
+  #networkLog;
+  constructor(file, debuggerWorkspaceBinding = (
+    // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
+    Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()
+  ), networkLog = Logs4.NetworkLog.NetworkLog.instance()) {
+    this.#file = file;
+    this.#debuggerWorkspaceBinding = debuggerWorkspaceBinding;
+    this.#networkLog = networkLog;
+  }
+  formatFile() {
+    const sourceMapDetails = _FileFormatter.formatSourceMapDetails(this.#file, this.#debuggerWorkspaceBinding);
+    const lines = [
+      `File name: ${this.#file.displayName()}`,
+      `URL: ${this.#file.url()}`,
+      sourceMapDetails
+    ];
+    const resource = Bindings.ResourceUtils.resourceForURL(this.#file.url());
+    if (resource?.request) {
+      const calculator = new NetworkTimeCalculator3.NetworkTransferTimeCalculator();
+      calculator.updateBoundaries(resource.request);
+      lines.push(`Request initiator chain:
+${new NetworkRequestFormatter(resource.request, calculator, this.#networkLog).formatRequestInitiatorChain()}`);
+    }
+    lines.push(`File content:
+${this.#formatFileContent()}`);
+    return lines.filter((line) => line.trim() !== "").join("\n");
+  }
+  #formatFileContent() {
+    const contentData = this.#file.workingCopyContentData();
+    const content = contentData.isTextContent ? contentData.text : "<binary data>";
+    const truncated = content.length > MAX_FILE_SIZE ? content.slice(0, MAX_FILE_SIZE) + "..." : content;
+    return `\`\`\`
+${truncated}
+\`\`\``;
+  }
+};
+
+// ../../front_end/models/ai_assistance/tools/ListSources.ts
+var ListSources_exports = {};
+__export(ListSources_exports, {
+  ListSourcesTool: () => ListSourcesTool
+});
+import * as Common10 from "../../core/common/common.js";
+import * as Host13 from "../../core/host/host.js";
+import * as i18n22 from "../../core/i18n/i18n.js";
+import * as Workspace3 from "../workspace/workspace.js";
+var UIStringsNotTranslate7 = {
+  listingSources: "Listing workspace sources"
+};
+var lockedString10 = i18n22.i18n.lockedString;
+var ListSourcesTool = class _ListSourcesTool {
+  name = "listSources" /* LIST_SOURCES */;
+  description = "Lists all source files in the workspace with their name and a unique ID.";
+  static lastSourceId = 0;
+  static uiSourceCodeId = /* @__PURE__ */ new WeakMap();
+  static reset() {
+    _ListSourcesTool.lastSourceId = 0;
+    _ListSourcesTool.uiSourceCodeId = /* @__PURE__ */ new WeakMap();
+  }
+  // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
+  static getUISourceCodes(workspace = Workspace3.Workspace.WorkspaceImpl.instance()) {
+    const projects = workspace.projects().filter((project) => project.type() === Workspace3.Workspace.projectTypes.Network);
+    const uiSourceCodes = /* @__PURE__ */ new Map();
+    for (const project of projects) {
+      for (const uiSourceCode of project.uiSourceCodes()) {
+        if (uiSourceCode.isIgnoreListed()) {
+          continue;
+        }
+        const url = uiSourceCode.url();
+        if (!uiSourceCodes.get(url) || uiSourceCode.contentType().isFromSourceMap()) {
+          uiSourceCodes.set(url, uiSourceCode);
+          if (!_ListSourcesTool.uiSourceCodeId.has(uiSourceCode)) {
+            _ListSourcesTool.uiSourceCodeId.set(uiSourceCode, ++_ListSourcesTool.lastSourceId);
+          }
+        }
+      }
+    }
+    return [...uiSourceCodes.values()];
+  }
+  parameters = {
+    type: Host13.AidaClient.ParametersTypes.OBJECT,
+    description: "",
+    nullable: true,
+    required: [],
+    properties: {}
+  };
+  displayInfoFromArgs() {
+    return {
+      title: lockedString10(UIStringsNotTranslate7.listingSources),
+      action: "listSources()"
+    };
+  }
+  async handler(_params, context) {
+    const origin = context.getEstablishedOrigin();
+    if (origin && isOpaqueOrigin(origin)) {
+      return {
+        error: "Opaque origin not allowed"
+      };
+    }
+    const files = _ListSourcesTool.getUISourceCodes().filter((file) => {
+      const fileUrl = file.url();
+      const fileOrigin = Common10.ParsedURL.ParsedURL.extractOrigin(fileUrl);
+      return !origin || fileOrigin === origin;
+    });
+    return {
+      result: {
+        files: files.map((file) => ({
+          id: _ListSourcesTool.uiSourceCodeId.get(file) ?? 0,
+          name: file.fullDisplayName()
+        }))
+      }
+    };
+  }
+};
+
+// ../../front_end/models/ai_assistance/tools/GetSourceContent.ts
+var UIStringsNotTranslate8 = {
+  readingSource: "Reading source content"
+};
+var lockedString11 = i18n24.i18n.lockedString;
+var GetSourceContentTool = class {
+  name = "getSourceContent" /* GET_SOURCE_CONTENT */;
+  description = "Gets the content and metadata of a source file by its ID.";
+  parameters = {
+    type: Host14.AidaClient.ParametersTypes.OBJECT,
+    description: "",
+    properties: {
+      id: {
+        type: Host14.AidaClient.ParametersTypes.INTEGER,
+        description: "The unique numeric ID of the source file to retrieve.",
+        nullable: false
+      }
+    },
+    required: ["id"]
+  };
+  displayInfoFromArgs(args) {
+    return {
+      title: lockedString11(UIStringsNotTranslate8.readingSource),
+      action: `getSourceContent(${args.id})`
+    };
+  }
+  async handler(args, context) {
+    const origin = context.getEstablishedOrigin();
+    const file = ListSourcesTool.getUISourceCodes().find(
+      (f) => ListSourcesTool.uiSourceCodeId.get(f) === args.id
+    );
+    if (!file) {
+      return {
+        error: "Unable to find file."
+      };
+    }
+    const fileUrl = file.url();
+    const fileOrigin = Common11.ParsedURL.ParsedURL.extractOrigin(fileUrl);
+    if (origin && fileOrigin !== origin) {
+      return {
+        error: "Cross-origin access blocked."
+      };
+    }
+    const contentData = await file.requestContentData();
+    if (TextUtils4.ContentData.ContentData.isError(contentData)) {
+      return {
+        error: `Failed to load file content: ${contentData.error}`
+      };
+    }
+    const formatter = new FileFormatter(file);
+    return {
+      result: {
+        content: formatter.formatFile()
+      }
+    };
+  }
+};
+
+// ../../front_end/models/ai_assistance/tools/GetStorageBreakdown.ts
+var GetStorageBreakdown_exports = {};
+__export(GetStorageBreakdown_exports, {
+  GetStorageBreakdownTool: () => GetStorageBreakdownTool
+});
+import * as Host15 from "../../core/host/host.js";
+import * as i18n26 from "../../core/i18n/i18n.js";
+import * as SDK12 from "../../core/sdk/sdk.js";
+var lockedString12 = i18n26.i18n.lockedString;
+var GetStorageBreakdownTool = class {
+  name = "getStorageBreakdown" /* GET_STORAGE_BREAKDOWN */;
+  description = "Retrieves a breakdown of active storage usage per storage type for the top-level page.";
+  parameters = {
+    type: Host15.AidaClient.ParametersTypes.OBJECT,
+    description: "",
+    nullable: false,
+    properties: {},
+    required: []
+  };
+  displayInfoFromArgs() {
+    return {
+      title: lockedString12("Retrieving storage breakdown"),
+      action: "getStorageBreakdown()"
+    };
+  }
+  async handler(_args, context) {
+    const targetManager = SDK12.TargetManager.TargetManager.instance();
+    const targetResolution = resolveAllowedTargetOrigins(void 0, context, targetManager);
+    if ("error" in targetResolution) {
+      return { error: targetResolution.error };
+    }
+    const { targetOrigins, primaryPageTarget } = targetResolution;
+    const pageOrigin = targetOrigins[0];
+    const mainStorageKey = primaryPageTarget.model(SDK12.StorageKeyManager.StorageKeyManager)?.mainStorageKey() || void 0;
+    const localStorages = resolveDOMStorages(pageOrigin, "localStorage", targetManager, primaryPageTarget, mainStorageKey);
+    const sessionStorages = resolveDOMStorages(pageOrigin, "sessionStorage", targetManager, primaryPageTarget, mainStorageKey);
+    const [response, localStorageBytes, sessionStorageBytes, cookieResult] = await Promise.all([
+      primaryPageTarget.storageAgent().invoke_getUsageAndQuota({ origin: pageOrigin }),
+      calculateDOMStoragesUsage(localStorages),
+      calculateDOMStoragesUsage(sessionStorages),
+      getCookiesForOrigin(pageOrigin, targetManager, primaryPageTarget)
+    ]);
+    if (response.getError()) {
+      return { error: response.getError() || "Unknown CDP error" };
+    }
+    let cookieBytes = 0;
+    if ("cookies" in cookieResult) {
+      for (const cookie of cookieResult.cookies) {
+        cookieBytes += cookie.size();
+      }
+    }
+    const rawUsageBreakdown = (response.usageBreakdown ?? []).filter((entry) => entry.usage > 0).map((entry) => ({
+      storageType: entry.storageType,
+      rawUsage: entry.usage
+    }));
+    rawUsageBreakdown.push(
+      { storageType: "local_storage", rawUsage: localStorageBytes },
+      { storageType: "session_storage", rawUsage: sessionStorageBytes },
+      { storageType: "cookies", rawUsage: cookieBytes }
+    );
+    rawUsageBreakdown.sort((a, b) => b.rawUsage - a.rawUsage);
+    const usageBreakdown = rawUsageBreakdown.map((entry) => ({
+      storageType: entry.storageType,
+      usage: bytes(entry.rawUsage)
+    }));
+    return {
+      result: {
+        usageBreakdown
+      },
+      widgets: [
+        {
+          name: "STORAGE_BREAKDOWN",
+          data: {
+            totalUsageBytes: response.usage,
+            totalQuotaBytes: response.quota,
+            usageBreakdown: rawUsageBreakdown.map((entry) => ({
+              storageType: entry.storageType,
+              bytes: entry.rawUsage
+            }))
+          }
+        }
+      ]
+    };
+  }
+};
+
+// ../../front_end/models/ai_assistance/tools/GetStorageValues.ts
+var GetStorageValues_exports = {};
+__export(GetStorageValues_exports, {
+  GetStorageValuesTool: () => GetStorageValuesTool,
+  MAX_NUM_CHAR_LENGTH: () => MAX_NUM_CHAR_LENGTH2
+});
+import * as Common12 from "../../core/common/common.js";
+import * as Host16 from "../../core/host/host.js";
+import * as i18n28 from "../../core/i18n/i18n.js";
+import * as Platform4 from "../../core/platform/platform.js";
+import * as SDK13 from "../../core/sdk/sdk.js";
+var lockedString13 = i18n28.i18n.lockedString;
+var MAX_NUM_CHAR_LENGTH2 = 1e4;
+var GetStorageValuesTool = class {
+  name = "getStorageValues" /* GET_STORAGE_VALUES */;
+  description = "Retrieve specific string values from storage partitions for requested keys across origins.";
+  annotations = ["redact-from-history" /* REDACT_FROM_HISTORY */];
+  parameters = {
+    type: Host16.AidaClient.ParametersTypes.OBJECT,
+    description: "",
+    nullable: false,
+    properties: {
+      type: {
+        type: Host16.AidaClient.ParametersTypes.STRING,
+        description: "Storage type: localStorage or sessionStorage",
+        nullable: false
+      },
+      keys: {
+        type: Host16.AidaClient.ParametersTypes.ARRAY,
+        description: "A list of keys to retrieve values for.",
+        items: { type: Host16.AidaClient.ParametersTypes.STRING, description: "A storage key." },
+        nullable: false
+      },
+      origins: {
+        type: Host16.AidaClient.ParametersTypes.ARRAY,
+        description: "List of origins to get values for.",
+        items: { type: Host16.AidaClient.ParametersTypes.STRING, description: "An origin URL." },
+        nullable: false
+      },
+      storageKey: {
+        type: Host16.AidaClient.ParametersTypes.STRING,
+        description: "Optional. Specific storageKey partition to get values for. Only applies if single origin is provided.",
+        nullable: true
+      }
+    },
+    required: ["type", "keys", "origins"]
+  };
+  displayInfoFromArgs(args) {
+    let title;
+    switch (args.type) {
+      case "localStorage":
+        title = lockedString13("Reading local storage values");
+        break;
+      case "sessionStorage":
+        title = lockedString13("Reading session storage values");
+        break;
+      default:
+        Platform4.TypeScriptUtilities.assertNever(args.type, `Unknown storage type: ${args.type}`);
+    }
+    return {
+      title,
+      action: `getStorageValues('${args.type}', ${JSON.stringify(args.keys)}, ${JSON.stringify(args.origins)})`
+    };
+  }
+  async handler(args, context, options) {
+    context.disableLogging();
+    const targetManager = SDK13.TargetManager.TargetManager.instance();
+    const primaryPageTarget = targetManager.primaryPageTarget();
+    const allowedOrigin = context.getEstablishedOrigin();
+    if (!allowedOrigin || isOpaqueOrigin(allowedOrigin)) {
+      return { error: "No origin available or not allowed." };
+    }
+    if (!primaryPageTarget) {
+      return { error: "No origin available or not allowed." };
+    }
+    const pageOrigin = Common12.ParsedURL.ParsedURL.extractOrigin(primaryPageTarget.inspectedURL());
+    if (!pageOrigin || !areOriginsEquivalent(pageOrigin, allowedOrigin)) {
+      return { error: "No origin available or not allowed." };
+    }
+    const rawList = args.origins && args.origins.length > 0 ? args.origins : [allowedOrigin];
+    const validOrigins = rawList.map((origin) => extractContextOrigin(origin)).filter((origin) => areOriginsEquivalent(origin, allowedOrigin));
+    const targetOrigins = Array.from(new Set(validOrigins)).slice(0, MAX_TARGET_ORIGINS);
+    if (targetOrigins.length === 0) {
+      return { error: "No valid origins found." };
+    }
+    const storageKey = targetOrigins.length === 1 && args.storageKey ? args.storageKey : void 0;
+    const allStoragesMap = {};
+    let totalStoragesCount = 0;
+    for (const origin of targetOrigins) {
+      const storages = resolveDOMStorages(origin, args.type, targetManager, primaryPageTarget, storageKey);
+      if (storages.length > 0) {
+        allStoragesMap[origin] = storages;
+        totalStoragesCount += storages.length;
+      }
+    }
+    if (totalStoragesCount === 0) {
+      return { error: "No matching storage partitions found." };
+    }
+    if (options?.approved !== true) {
+      const keyString = args.keys.map((k) => `\`${k}\``).join(", ");
+      const targetsDesc = Object.keys(allStoragesMap).join(", ");
+      return {
+        requiresApproval: true,
+        description: lockedString13(`The AI wants to access the value(s) of ${args.type} keys ${keyString} on ${targetsDesc}.`)
+      };
+    }
+    const storageValuesByOrigin = {};
+    await Promise.all(targetOrigins.map(async (origin) => {
+      const storages = allStoragesMap[origin] || [];
+      const itemsResult = [];
+      const keyAndItems = await Promise.all(storages.map(async (storage) => {
+        const items = await storage.getItems().catch(() => null);
+        return { storageKey: storage.storageKey, items };
+      }));
+      for (const { storageKey: partitionKey, items } of keyAndItems) {
+        if (!items || !partitionKey) {
+          continue;
+        }
+        const itemMap = /* @__PURE__ */ new Map();
+        for (const [key, value] of items) {
+          itemMap.set(key, value);
+        }
+        const storageValues = {};
+        for (const key of args.keys) {
+          const value = itemMap.get(key);
+          if (value === void 0) {
+            continue;
+          }
+          const truncatedValue = value.length > MAX_NUM_CHAR_LENGTH2 ? value.substring(0, MAX_NUM_CHAR_LENGTH2) + "... <truncated>" : value;
+          storageValues[key] = truncatedValue;
+        }
+        itemsResult.push({ storageKey: partitionKey, values: storageValues });
+      }
+      storageValuesByOrigin[origin] = { items: itemsResult };
+    }));
+    return { result: { storageValuesByOrigin } };
+  }
+};
+
+// ../../front_end/models/ai_assistance/tools/GetStyles.ts
+var GetStyles_exports = {};
+__export(GetStyles_exports, {
+  GetStylesTool: () => GetStylesTool
+});
+import * as Host17 from "../../core/host/host.js";
+import * as SDK14 from "../../core/sdk/sdk.js";
+var GetStylesTool = class {
+  name = "getStyles" /* GET_STYLES */;
+  description = `Get computed and source styles for one or multiple elements on the inspected page for multiple elements at once by uid.
+
+**CRITICAL** An element uid is a number, not a selector.
+**CRITICAL** Use selectors to refer to elements in the text output. Do not use uids.
+**CRITICAL** Always provide the explanation argument to explain what and why you query.
+**CRITICAL** You MUST provide a specific list of CSS property names. Do not use generic values like "all" or "*".`;
+  parameters = {
+    type: Host17.AidaClient.ParametersTypes.OBJECT,
+    description: "",
+    nullable: false,
+    properties: {
+      explanation: {
+        type: Host17.AidaClient.ParametersTypes.STRING,
+        description: "Explain why you want to get styles",
+        nullable: false
+      },
+      elements: {
+        type: Host17.AidaClient.ParametersTypes.ARRAY,
+        description: "A list of element uids to get data for. These are numbers, not selectors.",
+        items: { type: Host17.AidaClient.ParametersTypes.INTEGER, description: "An element uid." },
+        nullable: false
+      },
+      styleProperties: {
+        type: Host17.AidaClient.ParametersTypes.ARRAY,
+        description: 'One or more specific CSS style property names to fetch. Generic values like "all" or "*" are not supported.',
+        nullable: false,
+        items: {
+          type: Host17.AidaClient.ParametersTypes.STRING,
+          description: "A CSS style property name to retrieve. For example, 'background-color'."
+        }
+      }
+    },
+    required: ["explanation", "elements", "styleProperties"]
+  };
+  displayInfoFromArgs(params) {
+    return {
+      title: "Reading computed and source styles",
+      thought: params.explanation,
+      action: `getStyles(${JSON.stringify(params.elements)}, ${JSON.stringify(params.styleProperties)})`
+    };
+  }
+  async handler(params, context, _options) {
+    const widgets = [];
+    const result = {};
+    const target = context.getTarget();
+    if (!target) {
+      return { error: "Error: Could not find the inspected page." };
+    }
+    const establishedOrigin = context.getEstablishedOrigin();
+    if (!establishedOrigin) {
+      return { error: "Error: Origin lock is not established." };
+    }
+    for (const uid of params.elements) {
+      result[uid] = { computed: {}, authored: {} };
+      const node = new SDK14.DOMModel.DeferredDOMNode(target, uid);
+      const resolved = await node.resolvePromise();
+      if (!resolved) {
+        return { error: "Error: Could not find the element with uid=" + uid };
+      }
+      const newContext = new DOMNodeContext(resolved);
+      if (!newContext.isOriginAllowed(establishedOrigin)) {
+        return { error: "Error: Node does not belong to the current origin." };
+      }
+      const styles = await resolved.domModel().cssModel().getComputedStyle(resolved.id);
+      if (!styles) {
+        return { error: "Error: Could not get computed styles." };
+      }
+      const matchedStyles = await resolved.domModel().cssModel().getMatchedStyles(resolved.id);
+      if (!matchedStyles) {
+        return { error: "Error: Could not get authored styles." };
+      }
+      widgets.push({
+        name: "COMPUTED_STYLES",
+        data: {
+          computedStyles: styles,
+          backendNodeId: node.backendNodeId(),
+          matchedCascade: matchedStyles,
+          properties: params.styleProperties
+        }
+      });
+      for (const prop of params.styleProperties) {
+        result[uid].computed[prop] = styles.get(prop);
+      }
+      for (const style of matchedStyles.nodeStyles()) {
+        for (const property of style.allProperties()) {
+          if (!params.styleProperties.includes(property.name)) {
+            continue;
+          }
+          const state = matchedStyles.propertyState(property);
+          if (state === SDK14.CSSMatchedStyles.PropertyState.ACTIVE) {
+            result[uid].authored[property.name] = property.value;
+          }
+        }
+      }
+    }
+    return {
+      result: JSON.stringify(result, null, 2),
+      widgets
+    };
+  }
+};
+
+// ../../front_end/models/ai_assistance/tools/GetTraceEventByKey.ts
+var GetTraceEventByKey_exports = {};
+__export(GetTraceEventByKey_exports, {
+  GetTraceEventByKeyTool: () => GetTraceEventByKeyTool
+});
+import * as Host18 from "../../core/host/host.js";
+import * as i18n30 from "../../core/i18n/i18n.js";
+var UIStringsNotTranslate9 = {
+  lookingAtTraceEvent: "Looking at trace event"
+};
+var lockedString14 = i18n30.i18n.lockedString;
+var GetTraceEventByKeyTool = class {
+  name = "getTraceEventByKey" /* GET_TRACE_EVENT_BY_KEY */;
+  description = "Get details for a specific trace event by its event key.";
+  parameters = {
+    type: Host18.AidaClient.ParametersTypes.OBJECT,
+    description: "Arguments for looking up a trace event.",
+    nullable: false,
+    properties: {
+      eventKey: {
+        type: Host18.AidaClient.ParametersTypes.STRING,
+        description: "The key of the event to look up.",
+        nullable: false
+      }
+    },
+    required: ["eventKey"]
+  };
+  displayInfoFromArgs(params) {
+    return {
+      title: lockedString14(UIStringsNotTranslate9.lookingAtTraceEvent),
+      action: `getTraceEventByKey('${params.eventKey}')`
+    };
+  }
+  async handler(params, capabilities) {
+    const performanceTraceContext = capabilities.getPerformanceTraceContext();
+    if (!performanceTraceContext) {
+      return { error: "Performance trace context is not available." };
+    }
+    const focus = performanceTraceContext.getItem();
+    const event = focus.lookupEvent(params.eventKey);
+    if (!event) {
+      return { error: `Could not find event with key "${params.eventKey}".` };
+    }
+    const details = formatEventForAI(event);
+    return {
+      result: details,
+      widgets: [{
+        name: "TIMELINE_EVENT_SUMMARY",
+        data: {
+          event,
+          parsedTrace: focus.parsedTrace
+        }
+      }]
+    };
+  }
+};
+
+// ../../front_end/models/ai_assistance/tools/GetTraceMainThreadSummary.ts
+var GetTraceMainThreadSummary_exports = {};
+__export(GetTraceMainThreadSummary_exports, {
+  GetTraceMainThreadSummaryTool: () => GetTraceMainThreadSummaryTool
+});
+import * as Host19 from "../../core/host/host.js";
+import * as i18n32 from "../../core/i18n/i18n.js";
+var UIStringsNotTranslate10 = {
+  mainThreadActivity: "Main thread activity"
+};
+var lockedString15 = i18n32.i18n.lockedString;
+var GetTraceMainThreadSummaryTool = class {
+  name = "getTraceMainThreadSummary" /* GET_TRACE_MAIN_THREAD_SUMMARY */;
+  description = "Returns a focused, detailed summary of the main thread for a predefined labeled period.";
+  parameters = {
+    type: Host19.AidaClient.ParametersTypes.OBJECT,
+    description: "Arguments for looking up a main thread summary.",
+    nullable: false,
+    properties: {
+      label: {
+        type: Host19.AidaClient.ParametersTypes.STRING,
+        description: "The label of the period to investigate (e.g., 'LCPBreakdown', 'CLSCulprits', 'nav-to-lcp').",
+        nullable: false
+      }
+    },
+    required: ["label"]
+  };
+  displayInfoFromArgs(params) {
+    return {
+      title: `${lockedString15(UIStringsNotTranslate10.mainThreadActivity)}: ${params.label}`,
+      action: `getTraceMainThreadSummary('${params.label}')`
+    };
+  }
+  async handler(params, capabilities) {
+    const performanceTraceContext = capabilities.getPerformanceTraceContext();
+    if (!performanceTraceContext) {
+      return { error: "Performance trace context is not available." };
+    }
+    const focus = performanceTraceContext.getItem();
+    const bounds = performanceTraceContext.getBoundsForLabel(params.label);
+    if (!bounds) {
+      return { error: `Invalid label: ${params.label}` };
+    }
+    const formatter = performanceTraceContext.createFormatter();
+    const summary = await formatter.formatMainThreadTrackSummary(bounds);
+    if (summary.length > MAX_FUNCTION_RESULT_BYTE_LENGTH) {
+      return {
+        error: "getTraceMainThreadSummary response is too large. Try investigating using other functions, or a more narrow bounds"
+      };
+    }
+    return {
+      result: summary,
+      widgets: [
+        {
+          name: "TIMELINE_RANGE_SUMMARY",
+          data: {
+            parsedTrace: focus.parsedTrace,
+            bounds,
+            track: "main"
+          }
+        },
+        {
+          name: "BOTTOM_UP_TREE",
+          data: {
+            bounds,
+            parsedTrace: focus.parsedTrace
+          }
+        }
+      ]
+    };
+  }
+};
+
+// ../../front_end/models/ai_assistance/tools/GetTraceNetworkSummary.ts
+var GetTraceNetworkSummary_exports = {};
+__export(GetTraceNetworkSummary_exports, {
+  GetTraceNetworkSummaryTool: () => GetTraceNetworkSummaryTool
+});
+import * as Host20 from "../../core/host/host.js";
+import * as i18n34 from "../../core/i18n/i18n.js";
+var UIStringsNotTranslate11 = {
+  networkActivitySummary: "Network activity summary"
+};
+var lockedString16 = i18n34.i18n.lockedString;
+var GetTraceNetworkSummaryTool = class {
+  name = "getTraceNetworkSummary" /* GET_TRACE_NETWORK_SUMMARY */;
+  description = "Returns a summary of the network requests for the given bounds.";
+  parameters = {
+    type: Host20.AidaClient.ParametersTypes.OBJECT,
+    description: "Arguments for looking up a network track summary.",
+    nullable: false,
+    properties: {
+      min: {
+        type: Host20.AidaClient.ParametersTypes.INTEGER,
+        description: "The minimum time of the bounds, in microseconds.",
+        nullable: true
+      },
+      max: {
+        type: Host20.AidaClient.ParametersTypes.INTEGER,
+        description: "The maximum time of the bounds, in microseconds.",
+        nullable: true
+      }
+    },
+    required: []
+  };
+  displayInfoFromArgs(params) {
+    const parts = [];
+    if (params.min !== void 0) {
+      parts.push(`min: ${params.min}`);
+    }
+    if (params.max !== void 0) {
+      parts.push(`max: ${params.max}`);
+    }
+    return {
+      title: lockedString16(UIStringsNotTranslate11.networkActivitySummary),
+      action: `getTraceNetworkSummary({${parts.join(", ")}})`
+    };
+  }
+  async handler(params, capabilities) {
+    const performanceTraceContext = capabilities.getPerformanceTraceContext();
+    if (!performanceTraceContext) {
+      return { error: "Performance trace context is not available." };
+    }
+    const focus = performanceTraceContext.getItem();
+    const bounds = performanceTraceContext.createBounds(params.min, params.max);
+    if (!bounds) {
+      return { error: "Invalid bounds." };
+    }
+    const formatter = performanceTraceContext.createFormatter();
+    const summary = formatter.formatNetworkTrackSummary(bounds);
+    if (summary.length > MAX_FUNCTION_RESULT_BYTE_LENGTH) {
+      return {
+        error: "getTraceNetworkSummary response is too large. Try investigating using other functions, or a more narrow bounds"
+      };
+    }
+    return {
+      result: summary,
+      widgets: [{
+        name: "NETWORK_TRACK",
+        data: {
+          parsedTrace: focus.parsedTrace,
+          bounds
+        }
+      }]
+    };
+  }
+};
+
+// ../../front_end/models/ai_assistance/tools/ListCookies.ts
+var ListCookies_exports = {};
+__export(ListCookies_exports, {
+  ListCookiesTool: () => ListCookiesTool
+});
+import * as Host21 from "../../core/host/host.js";
+import * as i18n36 from "../../core/i18n/i18n.js";
+import * as SDK15 from "../../core/sdk/sdk.js";
+var lockedString17 = i18n36.i18n.lockedString;
+var ListCookiesTool = class {
+  name = "listCookies" /* LIST_COOKIES */;
+  description = "Lists all cookie names for requested origins (or the current page origin if omitted), strictly excluding their values.";
+  annotations = ["redact-from-history" /* REDACT_FROM_HISTORY */];
+  parameters = {
+    type: Host21.AidaClient.ParametersTypes.OBJECT,
+    description: "",
+    nullable: false,
+    properties: {
+      origins: {
+        type: Host21.AidaClient.ParametersTypes.ARRAY,
+        description: "Optional list of origins to list cookies for. Defaults to the current page origin if omitted.",
+        items: { type: Host21.AidaClient.ParametersTypes.STRING, description: "An origin URL." },
+        nullable: true
+      }
+    },
+    required: []
+  };
+  displayInfoFromArgs(args) {
+    return {
+      title: lockedString17("Reading cookies"),
+      action: `listCookies(${JSON.stringify(args?.origins ?? [])})`
+    };
+  }
+  async handler(args, context) {
+    context.disableLogging();
+    const targetManager = SDK15.TargetManager.TargetManager.instance();
+    const targetOriginsResult = resolveAllowedTargetOrigins(args?.origins, context, targetManager);
+    if ("error" in targetOriginsResult) {
+      return { error: targetOriginsResult.error };
+    }
+    const { targetOrigins, primaryPageTarget } = targetOriginsResult;
+    const cookieNamesByOrigin = {};
+    await Promise.all(targetOrigins.map(async (origin) => {
+      const result = await getCookiesForOrigin(origin, targetManager, primaryPageTarget);
+      if ("error" in result) {
+        cookieNamesByOrigin[origin] = { error: result.error };
+        return;
+      }
+      const uniqueNames = Array.from(new Set(result.cookies.map((c) => c.name())));
+      cookieNamesByOrigin[origin] = { cookies: uniqueNames };
+    }));
+    return { result: { cookieNamesByOrigin } };
+  }
+};
+
+// ../../front_end/models/ai_assistance/tools/ListNetworkRequests.ts
+var ListNetworkRequests_exports = {};
+__export(ListNetworkRequests_exports, {
+  ListNetworkRequestsTool: () => ListNetworkRequestsTool
+});
+import * as Host22 from "../../core/host/host.js";
+import * as i18n38 from "../../core/i18n/i18n.js";
+import * as Logs5 from "../logs/logs.js";
+var UIStringsNotTranslate12 = {
+  listingNetworkRequests: "Listing network requests"
+};
+var lockedString18 = i18n38.i18n.lockedString;
+var ListNetworkRequestsTool = class {
+  name = "listNetworkRequests" /* LIST_NETWORK_REQUESTS */;
+  description = "Gives a list of network requests including URL, status code, and duration.";
+  #networkLog;
+  constructor(networkLog) {
+    this.#networkLog = networkLog;
+  }
+  parameters = {
+    type: Host22.AidaClient.ParametersTypes.OBJECT,
+    description: "",
+    nullable: true,
+    required: [],
+    properties: {}
+  };
+  displayInfoFromArgs() {
+    return {
+      title: lockedString18(UIStringsNotTranslate12.listingNetworkRequests),
+      action: "listNetworkRequests()"
+    };
+  }
+  /**
+   * Handles the request to list network requests.
+   * Returns requests matching the conversation's established origin, if set.
+   */
+  async handler(_params, context) {
+    const requests = [];
+    const origin = context.getEstablishedOrigin();
+    if (origin && isOpaqueOrigin(origin)) {
+      return {
+        error: "Opaque origin not allowed"
+      };
+    }
+    const networkLog = this.#networkLog ?? Logs5.NetworkLog.NetworkLog.instance();
+    let hasCrossOriginRequest = false;
+    const requestsToShow = [];
+    for (const request of networkLog.requests()) {
+      const requestOrigin = getRequestContextOrigin(request);
+      if (origin && requestOrigin !== origin) {
+        hasCrossOriginRequest = true;
+        continue;
+      }
+      requests.push({
+        id: request.requestId(),
+        url: request.url(),
+        statusCode: request.statusCode,
+        duration: seconds(request.duration),
+        transferSize: formatBytesToKb(request.transferSize)
+      });
+      requestsToShow.push(request);
+    }
+    if (requests.length === 0) {
+      return {
+        // If there were requests but they were filtered out due to the origin lock,
+        // we ask the user to start a new chat so they can select a request from the other origin.
+        error: hasCrossOriginRequest ? `No requests showing with origin ${origin}. Tell the user to start a new chat` : "No requests recorded by DevTools"
+      };
+    }
+    return {
+      result: JSON.stringify(requests),
+      widgets: [{
+        name: "NETWORK_REQUESTS_LIST",
+        data: {
+          requests: requestsToShow
+        }
+      }]
+    };
+  }
+};
+
+// ../../front_end/models/ai_assistance/tools/ListPageOrigins.ts
+var ListPageOrigins_exports = {};
+__export(ListPageOrigins_exports, {
+  ListPageOriginsTool: () => ListPageOriginsTool
+});
+import * as Common13 from "../../core/common/common.js";
+import * as Host23 from "../../core/host/host.js";
+import * as i18n40 from "../../core/i18n/i18n.js";
+import * as SDK16 from "../../core/sdk/sdk.js";
+var lockedString19 = i18n40.i18n.lockedString;
+var ListPageOriginsTool = class {
+  name = "listPageOrigins" /* LIST_PAGE_ORIGINS */;
+  description = "Lists all active, non-empty frame origins loaded by the page. Use this first when generic category context is active to discover all page origins, then pass them to listCookies or listStorageKeys, unless the user's explicit request hints at focusing only on the primary page.";
+  parameters = {
+    type: Host23.AidaClient.ParametersTypes.OBJECT,
+    description: "",
+    nullable: false,
+    properties: {},
+    required: []
+  };
+  displayInfoFromArgs() {
+    return {
+      title: lockedString19("Listing page origins"),
+      action: "listPageOrigins()"
+    };
+  }
+  /**
+   * Retrieves the set of unique frame origins loaded within the primary page's target tree.
+   *
+   * To prevent data leakage across different tabs/windows, this tool:
+   * 1. Restricts the frame search to those belonging to the `primaryPageTarget`'s outermost target tree.
+   * 2. Filters out any origins that are not equivalent to the established allowed origin.
+   *    Note: Under site isolation, frames may be hosted on different sub-targets or processes,
+   *    so we check `frame.securityOrigin` directly instead of the frame's target origin.
+   */
+  async handler(_args, context) {
+    const targetManager = SDK16.TargetManager.TargetManager.instance();
+    const primaryPageTarget = targetManager.primaryPageTarget();
+    const allowedOrigin = context.getEstablishedOrigin();
+    if (!allowedOrigin || isOpaqueOrigin(allowedOrigin)) {
+      return { error: "No origin available or not allowed." };
+    }
+    const pageOrigin = primaryPageTarget ? Common13.ParsedURL.ParsedURL.extractOrigin(primaryPageTarget.inspectedURL()) : "";
+    const isAllowed = pageOrigin !== "" && areOriginsEquivalent(pageOrigin, allowedOrigin);
+    if (!isAllowed) {
+      return { error: "No origin available or not allowed." };
+    }
+    const origins = /* @__PURE__ */ new Set();
+    for (const frame of SDK16.ResourceTreeModel.ResourceTreeModel.frames(targetManager)) {
+      if (frame.resourceTreeModel().target().outermostTarget() !== primaryPageTarget) {
+        continue;
+      }
+      const origin = frame.securityOrigin;
+      if (!origin || !areOriginsEquivalent(origin, allowedOrigin)) {
+        continue;
+      }
+      if (origins.has(origin)) {
+        continue;
+      }
+      origins.add(origin);
+    }
+    return { result: { origins: Array.from(origins) } };
+  }
+};
+
+// ../../front_end/models/ai_assistance/tools/ListStorageKeys.ts
+var ListStorageKeys_exports = {};
+__export(ListStorageKeys_exports, {
+  ListStorageKeysTool: () => ListStorageKeysTool
+});
+import * as Common14 from "../../core/common/common.js";
+import * as Host24 from "../../core/host/host.js";
+import * as i18n42 from "../../core/i18n/i18n.js";
+import * as Platform5 from "../../core/platform/platform.js";
+import * as SDK17 from "../../core/sdk/sdk.js";
+var lockedString20 = i18n42.i18n.lockedString;
+var ListStorageKeysTool = class {
+  name = "listStorageKeys" /* LIST_STORAGE_KEYS */;
+  description = "Lists all keys for a given storage type for requested origins. Returns keys grouped by storage partition under their origin.";
+  annotations = ["redact-from-history" /* REDACT_FROM_HISTORY */];
+  parameters = {
+    type: Host24.AidaClient.ParametersTypes.OBJECT,
+    description: "",
+    nullable: false,
+    properties: {
+      type: {
+        type: Host24.AidaClient.ParametersTypes.STRING,
+        description: "Storage type: localStorage or sessionStorage",
+        nullable: false
+      },
+      origins: {
+        type: Host24.AidaClient.ParametersTypes.ARRAY,
+        description: "List of origins to list keys for.",
+        items: { type: Host24.AidaClient.ParametersTypes.STRING, description: "An origin URL." },
+        nullable: false
+      },
+      storageKey: {
+        type: Host24.AidaClient.ParametersTypes.STRING,
+        description: "Optional. Specific storageKey to list keys for. Only applies if single origin is provided.",
+        nullable: true
+      }
+    },
+    required: ["type", "origins"]
+  };
+  displayInfoFromArgs(args) {
+    let title;
+    switch (args.type) {
+      case "localStorage":
+        title = lockedString20("Reading local storage keys");
+        break;
+      case "sessionStorage":
+        title = lockedString20("Reading session storage keys");
+        break;
+      default:
+        Platform5.TypeScriptUtilities.assertNever(args.type, `Unknown storage type: ${args.type}`);
+    }
+    return {
+      title,
+      action: `listStorageKeys('${args.type}', ${JSON.stringify(args.origins)})`
+    };
+  }
+  async handler(args, context) {
+    context.disableLogging();
+    const targetManager = SDK17.TargetManager.TargetManager.instance();
+    const primaryPageTarget = targetManager.primaryPageTarget();
+    const allowedOrigin = context.getEstablishedOrigin();
+    if (!allowedOrigin || isOpaqueOrigin(allowedOrigin)) {
+      return { error: "No origin available or not allowed." };
+    }
+    if (!primaryPageTarget) {
+      return { error: "No origin available or not allowed." };
+    }
+    const pageOrigin = Common14.ParsedURL.ParsedURL.extractOrigin(primaryPageTarget.inspectedURL());
+    if (!pageOrigin || !areOriginsEquivalent(pageOrigin, allowedOrigin)) {
+      return { error: "No origin available or not allowed." };
+    }
+    const rawList = args.origins && args.origins.length > 0 ? args.origins : [allowedOrigin];
+    const validOrigins = rawList.map((origin) => extractContextOrigin(origin)).filter((origin) => areOriginsEquivalent(origin, allowedOrigin));
+    const targetOrigins = Array.from(new Set(validOrigins)).slice(0, MAX_TARGET_ORIGINS);
+    if (targetOrigins.length === 0) {
+      return { error: "No valid origins found." };
+    }
+    const storageKey = targetOrigins.length === 1 && args.storageKey ? args.storageKey : void 0;
+    const storageKeysByOrigin = {};
+    await Promise.all(targetOrigins.map(async (origin) => {
+      const storages = resolveDOMStorages(origin, args.type, targetManager, primaryPageTarget, storageKey);
+      const keyAndItems = await Promise.all(storages.map(async (storage) => {
+        const items = await storage.getItems().catch(() => null);
+        return { storageKey: storage.storageKey, items };
+      }));
+      const partitions = [];
+      for (const { storageKey: partKey, items } of keyAndItems) {
+        if (!items || !partKey) {
+          continue;
+        }
+        const keys = items.map(([key]) => key);
+        if (keys.length > 0) {
+          partitions.push({ storageKey: partKey, keys });
+        }
+      }
+      storageKeysByOrigin[origin] = { partitions };
+    }));
+    return { result: { storageKeysByOrigin } };
+  }
+};
+
+// ../../front_end/models/ai_assistance/tools/RecordPerformanceTrace.ts
+var RecordPerformanceTrace_exports = {};
+__export(RecordPerformanceTrace_exports, {
+  RecordPerformanceTraceTool: () => RecordPerformanceTraceTool
+});
+import * as Host25 from "../../core/host/host.js";
+import * as i18n44 from "../../core/i18n/i18n.js";
+
+// ../../front_end/models/ai_assistance/contexts/PerformanceTraceContext.ts
+var PerformanceTraceContext_exports = {};
+__export(PerformanceTraceContext_exports, {
+  PerformanceTraceContext: () => PerformanceTraceContext
+});
+import * as Common15 from "../../core/common/common.js";
+import * as SDK18 from "../../core/sdk/sdk.js";
+import * as Tracing2 from "../../services/tracing/tracing.js";
+import * as Bindings2 from "../bindings/bindings.js";
+import * as SourceMapScopes from "../source_map_scopes/source_map_scopes.js";
+import * as Trace8 from "../trace/trace.js";
+
+// ../../front_end/models/ai_assistance/performance/AIContext.ts
 var AIContext_exports = {};
 __export(AIContext_exports, {
   AgentFocus: () => AgentFocus,
   getPerformanceAgentFocusFromModel: () => getPerformanceAgentFocusFromModel
 });
-import * as Trace5 from "./../trace/trace.js";
+import * as Trace7 from "../trace/trace.js";
 function getPrimaryInsightSet(insights) {
   const insightSets = Array.from(insights.values());
   if (insightSets.length === 0) {
@@ -5128,7 +10274,7 @@ var AgentFocus = class _AgentFocus {
   }
   #data;
   #primaryInsightSet;
-  eventsSerializer = new Trace5.EventsSerializer.EventsSerializer();
+  eventsSerializer = new Trace7.EventsSerializer.EventsSerializer();
   constructor(data) {
     if (!data.parsedTrace.insights) {
       throw new Error("missing insights");
@@ -5185,7 +10331,7 @@ var AgentFocus = class _AgentFocus {
     if (callTree) {
       return { callTree, event: null };
     }
-    if (event && Trace5.Types.Events.isSyntheticNetworkRequest(event)) {
+    if (event && Trace7.Types.Events.isSyntheticNetworkRequest(event)) {
       return { callTree: null, event };
     }
     return { callTree: null, event: null };
@@ -5199,33 +10345,48 @@ function getPerformanceAgentFocusFromModel(model) {
   return AgentFocus.fromParsedTrace(parsedTrace);
 }
 
-// gen/front_end/models/ai_assistance/contexts/PerformanceTraceContext.js
+// ../../front_end/models/ai_assistance/contexts/PerformanceTraceContext.ts
 var PerformanceTraceContext = class _PerformanceTraceContext extends ConversationContext {
-  static fromParsedTrace(parsedTrace, targetManager = SDK6.TargetManager.TargetManager.instance(), freshRecordingTracker = Tracing.FreshRecording.Tracker.instance(), debuggerWorkspaceBinding = (
+  static fromParsedTrace(parsedTrace, targetManager = SDK18.TargetManager.TargetManager.instance(), freshRecordingTracker = Tracing2.FreshRecording.Tracker.instance(), debuggerWorkspaceBinding = (
     // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
-    Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()
+    Bindings2.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()
   )) {
-    return new _PerformanceTraceContext(AgentFocus.fromParsedTrace(parsedTrace), targetManager, freshRecordingTracker, debuggerWorkspaceBinding);
+    return new _PerformanceTraceContext(
+      AgentFocus.fromParsedTrace(parsedTrace),
+      targetManager,
+      freshRecordingTracker,
+      debuggerWorkspaceBinding
+    );
   }
-  static fromInsight(parsedTrace, insight, targetManager = SDK6.TargetManager.TargetManager.instance(), freshRecordingTracker = Tracing.FreshRecording.Tracker.instance(), debuggerWorkspaceBinding = (
+  static fromInsight(parsedTrace, insight, targetManager = SDK18.TargetManager.TargetManager.instance(), freshRecordingTracker = Tracing2.FreshRecording.Tracker.instance(), debuggerWorkspaceBinding = (
     // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
-    Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()
+    Bindings2.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()
   )) {
-    return new _PerformanceTraceContext(AgentFocus.fromInsight(parsedTrace, insight), targetManager, freshRecordingTracker, debuggerWorkspaceBinding);
+    return new _PerformanceTraceContext(
+      AgentFocus.fromInsight(parsedTrace, insight),
+      targetManager,
+      freshRecordingTracker,
+      debuggerWorkspaceBinding
+    );
   }
-  static fromCallTree(callTree, targetManager = SDK6.TargetManager.TargetManager.instance(), freshRecordingTracker = Tracing.FreshRecording.Tracker.instance(), debuggerWorkspaceBinding = (
+  static fromCallTree(callTree, targetManager = SDK18.TargetManager.TargetManager.instance(), freshRecordingTracker = Tracing2.FreshRecording.Tracker.instance(), debuggerWorkspaceBinding = (
     // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
-    Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()
+    Bindings2.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()
   )) {
-    return new _PerformanceTraceContext(AgentFocus.fromCallTree(callTree), targetManager, freshRecordingTracker, debuggerWorkspaceBinding);
+    return new _PerformanceTraceContext(
+      AgentFocus.fromCallTree(callTree),
+      targetManager,
+      freshRecordingTracker,
+      debuggerWorkspaceBinding
+    );
   }
   #focus;
   #targetManager;
   #freshRecordingTracker;
   #debuggerWorkspaceBinding;
-  constructor(focus, targetManager = SDK6.TargetManager.TargetManager.instance(), freshRecordingTracker = Tracing.FreshRecording.Tracker.instance(), debuggerWorkspaceBinding = (
+  constructor(focus, targetManager = SDK18.TargetManager.TargetManager.instance(), freshRecordingTracker = Tracing2.FreshRecording.Tracker.instance(), debuggerWorkspaceBinding = (
     // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
-    Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()
+    Bindings2.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()
   )) {
     super();
     this.#focus = focus;
@@ -5250,7 +10411,14 @@ var PerformanceTraceContext = class _PerformanceTraceContext extends Conversatio
       if (!target || !isFresh) {
         return null;
       }
-      return await SourceMapScopes.FunctionCodeResolver.getFunctionCodeFromLocation(target, url, line, column, this.#debuggerWorkspaceBinding, { contextLength: 200, contextLineLength: 5, appendProfileData: true });
+      return await SourceMapScopes.FunctionCodeResolver.getFunctionCodeFromLocation(
+        target,
+        url,
+        line,
+        column,
+        this.#debuggerWorkspaceBinding,
+        { contextLength: 200, contextLineLength: 5, appendProfileData: true }
+      );
     };
     return formatter;
   }
@@ -5279,7 +10447,7 @@ var PerformanceTraceContext = class _PerformanceTraceContext extends Conversatio
     const origin = extractContextOrigin(url);
     const isFresh = this.#freshRecordingTracker.recordingIsFresh(parsedTrace);
     if (!isFresh) {
-      const parsed = Common8.ParsedURL.ParsedURL.fromString(origin);
+      const parsed = Common15.ParsedURL.ParsedURL.fromString(origin);
       return `imported-trace://${parsed ? parsed.domain() : origin}`;
     }
     return origin;
@@ -5298,11 +10466,11 @@ var PerformanceTraceContext = class _PerformanceTraceContext extends Conversatio
       parts.push(focus.insight.title);
     }
     if (focus.event) {
-      parts.push(Trace6.Name.forEntry(focus.event));
+      parts.push(Trace8.Name.forEntry(focus.event));
     }
     if (focus.callTree) {
       const node = focus.callTree.selectedNode ?? focus.callTree.rootNode;
-      parts.push(Trace6.Name.forEntry(node.event));
+      parts.push(Trace8.Name.forEntry(node.event));
     }
     return parts.join(" \u2013 ");
   }
@@ -5325,29 +10493,29 @@ var PerformanceTraceContext = class _PerformanceTraceContext extends Conversatio
     const suggestions = [{ title: "What performance issues exist with my page?", jslogContext: "performance-default" }];
     const insightSet = focus.primaryInsightSet;
     if (insightSet) {
-      const lcp = Trace6.Insights.Common.getLCP(insightSet);
-      const cls = Trace6.Insights.Common.getCLS(insightSet);
-      const inp = Trace6.Insights.Common.getINP(insightSet);
-      const ModelHandlers = Trace6.Handlers.ModelHandlers;
-      const GOOD = "good";
+      const lcp = Trace8.Insights.Common.getLCP(insightSet);
+      const cls = Trace8.Insights.Common.getCLS(insightSet);
+      const inp = Trace8.Insights.Common.getINP(insightSet);
+      const ModelHandlers = Trace8.Handlers.ModelHandlers;
+      const GOOD = Trace8.Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.GOOD;
       const poorMetrics = /* @__PURE__ */ new Set();
       if (lcp && ModelHandlers.PageLoadMetrics.scoreClassificationForLargestContentfulPaint(lcp.value) !== GOOD) {
         suggestions.push({ title: "How can I improve LCP?", jslogContext: "performance-default" });
-        poorMetrics.add(Trace6.Insights.Types.InsightKeys.LCP_BREAKDOWN);
-        poorMetrics.add(Trace6.Insights.Types.InsightKeys.LCP_DISCOVERY);
+        poorMetrics.add(Trace8.Insights.Types.InsightKeys.LCP_BREAKDOWN);
+        poorMetrics.add(Trace8.Insights.Types.InsightKeys.LCP_DISCOVERY);
       }
       if (inp && ModelHandlers.UserInteractions.scoreClassificationForInteractionToNextPaint(inp.value) !== GOOD) {
         suggestions.push({ title: "How can I improve INP?", jslogContext: "performance-default" });
-        poorMetrics.add(Trace6.Insights.Types.InsightKeys.INP_BREAKDOWN);
+        poorMetrics.add(Trace8.Insights.Types.InsightKeys.INP_BREAKDOWN);
       }
       if (cls && ModelHandlers.LayoutShifts.scoreClassificationForLayoutShift(cls.value) !== GOOD) {
         suggestions.push({ title: "How can I improve CLS?", jslogContext: "performance-default" });
-        poorMetrics.add(Trace6.Insights.Types.InsightKeys.CLS_CULPRITS);
+        poorMetrics.add(Trace8.Insights.Types.InsightKeys.CLS_CULPRITS);
       }
       const additionalSuggestionsRequired = Math.max(0, 4 - suggestions.length);
       if (additionalSuggestionsRequired > 0) {
         const failingInsightSuggestions = Object.values(insightSet.model).filter((model) => {
-          return model.state !== "pass" && Trace6.Insights.Common.isInsightKey(model.insightKey) && !poorMetrics.has(model.insightKey);
+          return model.state !== "pass" && Trace8.Insights.Common.isInsightKey(model.insightKey) && !poorMetrics.has(model.insightKey);
         }).map((model) => new PerformanceInsightFormatter(focus, model).getSuggestions().at(-1)).filter((suggestion) => !!suggestion).slice(0, additionalSuggestionsRequired);
         suggestions.push(...failingInsightSuggestions);
       }
@@ -5448,8 +10616,8 @@ ${traceSummary}`);
     if (focus.callTree) {
       const event = focus.callTree.selectedNode?.event ?? focus.callTree.rootNode.event;
       if (event) {
-        const { startTime, endTime } = Trace6.Helpers.Timing.eventTimingsMicroSeconds(event);
-        const bounds = Trace6.Helpers.Timing.traceWindowFromMicroSeconds(startTime, endTime);
+        const { startTime, endTime } = Trace8.Helpers.Timing.eventTimingsMicroSeconds(event);
+        const bounds = Trace8.Helpers.Timing.traceWindowFromMicroSeconds(startTime, endTime);
         widgets.push({
           name: "TIMELINE_RANGE_SUMMARY",
           data: {
@@ -5470,7 +10638,7 @@ ${traceSummary}`);
     }
     if (focus.insight) {
       const insightKey = focus.insight.insightKey;
-      if (Trace6.Insights.Common.isInsightKey(insightKey)) {
+      if (Trace8.Insights.Common.isInsightKey(insightKey)) {
         widgets.push({
           name: "PERF_INSIGHT",
           data: {
@@ -5498,9 +10666,12 @@ ${traceSummary}`);
     const insightSet = focus.primaryInsightSet;
     if (label === "nav-to-lcp") {
       if (insightSet) {
-        const lcp = Trace6.Insights.Common.getLCP(insightSet);
+        const lcp = Trace8.Insights.Common.getLCP(insightSet);
         if (lcp) {
-          return Trace6.Helpers.Timing.traceWindowFromMicroSeconds(insightSet.bounds.min, lcp.event.ts);
+          return Trace8.Helpers.Timing.traceWindowFromMicroSeconds(
+            insightSet.bounds.min,
+            lcp.event.ts
+          );
         }
       }
       return null;
@@ -5533,13 +10704,13 @@ ${traceSummary}`);
     if (insightSet) {
       const model = getInsightModel(insightSet.model, label);
       if (model) {
-        return Trace6.Insights.Common.insightBounds(model, insightSet.bounds);
+        return Trace8.Insights.Common.insightBounds(model, insightSet.bounds);
       }
     }
     for (const is of parsedTrace.insights?.values() ?? []) {
       const model = getInsightModel(is.model, label);
       if (model) {
-        return Trace6.Insights.Common.insightBounds(model, is.bounds);
+        return Trace8.Insights.Common.insightBounds(model, is.bounds);
       }
     }
     return null;
@@ -5554,7 +10725,10 @@ ${traceSummary}`);
     if (clampedMin > clampedMax) {
       return null;
     }
-    return Trace6.Helpers.Timing.traceWindowFromMicroSeconds(clampedMin, clampedMax);
+    return Trace8.Helpers.Timing.traceWindowFromMicroSeconds(
+      clampedMin,
+      clampedMax
+    );
   }
 };
 var STATIC_LABEL_NAMES = {
@@ -5587,1916 +10761,16 @@ function getLabelName(label, parsedTrace) {
   return label;
 }
 
-// gen/front_end/models/ai_assistance/tools/GetDetailedCallTree.js
-var UIStringsNotTranslate = {
-  lookingAtCallTree: "Looking at call tree"
-};
-var lockedString2 = i18n4.i18n.lockedString;
-var GetDetailedCallTreeTool = class {
-  name = "getDetailedCallTree";
-  description = "Returns a detailed call tree for the given main thread event.";
-  parameters = {
-    type: 6,
-    description: "Arguments for looking up a call tree.",
-    nullable: false,
-    properties: {
-      eventKey: {
-        type: 1,
-        description: "The key for the event.",
-        nullable: false
-      }
-    },
-    required: ["eventKey"]
-  };
-  displayInfoFromArgs(params) {
-    return {
-      title: lockedString2(UIStringsNotTranslate.lookingAtCallTree),
-      action: `getDetailedCallTree('${params.eventKey}')`
-    };
-  }
-  async handler(params, capabilities) {
-    const conversationContext = capabilities.conversationContext;
-    if (!conversationContext || !(conversationContext instanceof PerformanceTraceContext)) {
-      return { error: "Performance trace context is not available." };
-    }
-    if (!params.eventKey) {
-      return { error: "Missing arg: eventKey" };
-    }
-    const focus = conversationContext.getItem();
-    const event = focus.lookupEvent(params.eventKey);
-    if (!event) {
-      return { error: "Invalid eventKey" };
-    }
-    const tree = AICallTree.fromEvent(event, focus.parsedTrace);
-    if (!tree) {
-      return { error: "No call tree found" };
-    }
-    const formatter = conversationContext.createFormatter();
-    const callTree = await formatter.formatCallTree(tree);
-    const bounds = Trace7.Helpers.Timing.traceWindowFromEvent(event);
-    return {
-      result: callTree,
-      widgets: [
-        {
-          name: "BOTTOM_UP_TREE",
-          data: {
-            bounds,
-            parsedTrace: focus.parsedTrace
-          }
-        },
-        {
-          name: "TIMELINE_RANGE_SUMMARY",
-          data: {
-            bounds,
-            parsedTrace: focus.parsedTrace,
-            track: "main"
-          }
-        }
-      ]
-    };
-  }
-};
-
-// gen/front_end/models/ai_assistance/tools/GetElementAccessibilityDetails.js
-var GetElementAccessibilityDetails_exports = {};
-__export(GetElementAccessibilityDetails_exports, {
-  GetElementAccessibilityDetailsTool: () => GetElementAccessibilityDetailsTool
-});
-import * as Host6 from "./../../core/host/host.js";
-import * as i18n8 from "./../../core/i18n/i18n.js";
-import * as SDK7 from "./../../core/sdk/sdk.js";
-
-// gen/front_end/models/ai_assistance/contexts/DOMNodeContext.js
-var DOMNodeContext_exports = {};
-__export(DOMNodeContext_exports, {
-  DOMNodeContext: () => DOMNodeContext
-});
-import * as i18n6 from "./../../core/i18n/i18n.js";
-var UIStringsNotTranslate2 = {
-  /**
-   * @description Heading text for context details of DevTools AI Agent.
-   */
-  dataUsed: "Data used"
-};
-var lockedString3 = i18n6.i18n.lockedString;
-var DOMNodeContext = class extends ConversationContext {
-  #node;
-  constructor(node) {
-    super();
-    this.#node = node;
-  }
-  getURL() {
-    const ownerDocument = this.#node.ownerDocument;
-    if (!ownerDocument) {
-      return "detached";
-    }
-    return ownerDocument.documentURL;
-  }
-  getItem() {
-    return this.#node;
-  }
-  getTitle() {
-    throw new Error("Not implemented");
-  }
-  async getSuggestions() {
-    const layoutProps = await this.#node.domModel().cssModel().getLayoutPropertiesFromComputedStyle(this.#node.id);
-    if (!layoutProps) {
-      return;
-    }
-    if (layoutProps.isFlex) {
-      return [
-        { title: "How can I make flex items wrap?", jslogContext: "flex-wrap" },
-        { title: "How do I distribute flex items evenly?", jslogContext: "flex-distribute" },
-        { title: "What is flexbox?", jslogContext: "flex-what" }
-      ];
-    }
-    if (layoutProps.isSubgrid) {
-      return [
-        { title: "Where is this grid defined?", jslogContext: "subgrid-where" },
-        { title: "How to overwrite parent grid properties?", jslogContext: "subgrid-override" },
-        { title: "How do subgrids work? ", jslogContext: "subgrid-how" }
-      ];
-    }
-    if (layoutProps.isGrid) {
-      return [
-        { title: "How do I align items in a grid?", jslogContext: "grid-align" },
-        { title: "How to add spacing between grid items?", jslogContext: "grid-gap" },
-        { title: "How does grid layout work?", jslogContext: "grid-how" }
-      ];
-    }
-    if (layoutProps.hasScroll) {
-      return [
-        { title: "How do I remove scrollbars for this element?", jslogContext: "scroll-remove" },
-        { title: "How can I style a scrollbar?", jslogContext: "scroll-style" },
-        { title: "Why does this element scroll?", jslogContext: "scroll-why" }
-      ];
-    }
-    if (layoutProps.containerType) {
-      return [
-        { title: "What are container queries?", jslogContext: "container-what" },
-        { title: "How do I use container-type?", jslogContext: "container-how" },
-        { title: "What's the container context for this element?", jslogContext: "container-context" }
-      ];
-    }
-    return;
-  }
-  async getPromptDetails() {
-    return `# Inspected element
-
-${await this.describe()}`;
-  }
-  async getUserFacingDetails() {
-    return [
-      {
-        title: lockedString3(UIStringsNotTranslate2.dataUsed),
-        text: await this.describe()
-      }
-    ];
-  }
-  async describe() {
-    const element = this.#node;
-    let output = `* Element's uid is ${element.backendNodeId()}.
-* Its selector is \`${element.simpleSelector()}\``;
-    const childNodes = await element.getChildNodesPromise();
-    if (childNodes) {
-      const textChildNodes = childNodes.filter((childNode) => childNode.nodeType() === Node.TEXT_NODE);
-      const elementChildNodes = childNodes.filter((childNode) => childNode.nodeType() === Node.ELEMENT_NODE);
-      switch (elementChildNodes.length) {
-        case 0:
-          output += "\n* It doesn't have any child element nodes";
-          break;
-        case 1:
-          output += `
-* It only has 1 child element node: \`${elementChildNodes[0].simpleSelector()}\``;
-          break;
-        default:
-          output += `
-* It has ${elementChildNodes.length} child element nodes: ${elementChildNodes.map((node) => `\`${node.simpleSelector()}\` (uid=${node.backendNodeId()})`).join(", ")}`;
-      }
-      switch (textChildNodes.length) {
-        case 0:
-          output += "\n* It doesn't have any child text nodes";
-          break;
-        case 1:
-          output += "\n* It only has 1 child text node";
-          break;
-        default:
-          output += `
-* It has ${textChildNodes.length} child text nodes`;
-      }
-    }
-    if (element.nextSibling) {
-      const elementOrNodeElementNodeText = element.nextSibling.nodeType() === Node.ELEMENT_NODE ? `an element (uid=${element.nextSibling.backendNodeId()})` : "a non element";
-      output += `
-* It has a next sibling and it is ${elementOrNodeElementNodeText} node`;
-    }
-    if (element.previousSibling) {
-      const elementOrNodeElementNodeText = element.previousSibling.nodeType() === Node.ELEMENT_NODE ? `an element (uid=${element.previousSibling.backendNodeId()})` : "a non element";
-      output += `
-* It has a previous sibling and it is ${elementOrNodeElementNodeText} node`;
-    }
-    if (element.isInShadowTree()) {
-      output += "\n* It is in a shadow DOM tree.";
-    }
-    const parentNode = element.parentNode;
-    if (parentNode) {
-      const parentChildrenNodes = await parentNode.getChildNodesPromise();
-      output += `
-* Its parent's selector is \`${parentNode.simpleSelector()}\` (uid=${parentNode.backendNodeId()})`;
-      const elementOrNodeElementNodeText = parentNode.nodeType() === Node.ELEMENT_NODE ? "an element" : "a non element";
-      output += `
-* Its parent is ${elementOrNodeElementNodeText} node`;
-      if (parentNode.isShadowRoot()) {
-        output += "\n* Its parent is a shadow root.";
-      }
-      if (parentChildrenNodes) {
-        const childElementNodes = parentChildrenNodes.filter((siblingNode) => siblingNode.nodeType() === Node.ELEMENT_NODE);
-        switch (childElementNodes.length) {
-          case 0:
-            break;
-          case 1:
-            output += "\n* Its parent has only 1 child element node";
-            break;
-          default:
-            output += `
-* Its parent has ${childElementNodes.length} child element nodes: ${childElementNodes.map((node) => `\`${node.simpleSelector()}\` (uid=${node.backendNodeId()})`).join(", ")}`;
-            break;
-        }
-        const siblingTextNodes = parentChildrenNodes.filter((siblingNode) => siblingNode.nodeType() === Node.TEXT_NODE);
-        switch (siblingTextNodes.length) {
-          case 0:
-            break;
-          case 1:
-            output += "\n* Its parent has only 1 child text node";
-            break;
-          default:
-            output += `
-* Its parent has ${siblingTextNodes.length} child text nodes: ${siblingTextNodes.map((node) => `\`${node.simpleSelector()}\``).join(", ")}`;
-            break;
-        }
-      }
-    }
-    return output.trim();
-  }
-};
-
-// gen/front_end/models/ai_assistance/tools/GetElementAccessibilityDetails.js
-var GetElementAccessibilityDetailsTool = class {
-  name = "getElementAccessibilityDetails";
-  description = "Get detailed accessibility information for an element on the inspected page by its backend node ID.";
-  parameters = {
-    type: 6,
-    description: "Arguments for getting element accessibility details.",
-    nullable: false,
-    properties: {
-      explanation: {
-        type: 1,
-        description: "Reason for requesting accessibility details.",
-        nullable: false
-      },
-      element: {
-        type: 3,
-        description: "The backend node ID of the element.",
-        nullable: false
-      }
-    },
-    required: ["explanation", "element"]
-  };
-  displayInfoFromArgs(params) {
-    return {
-      title: "Reading accessibility details",
-      thought: params.explanation,
-      action: `getElementAccessibilityDetails(${params.element})`
-    };
-  }
-  /**
-   * Handles the request to retrieve accessibility details.
-   *
-   * Resolves the element backend node ID, validates its origin against the locked origin,
-   * requests the AX subtree via AccessibilityModel, and maps the relevant attributes.
-   */
-  async handler(params, context) {
-    const establishedOrigin = context.getEstablishedOrigin();
-    if (!establishedOrigin) {
-      return { error: "Error: Origin lock is not established." };
-    }
-    const target = context.getTarget();
-    if (!target) {
-      return { error: "Error: Inspected target not found." };
-    }
-    const deferredNode = new SDK7.DOMModel.DeferredDOMNode(target, params.element);
-    const resolved = await deferredNode.resolvePromise();
-    if (!resolved) {
-      return { error: "Error: Could not resolve element by ID." };
-    }
-    const nodeContext = new DOMNodeContext(resolved);
-    if (!nodeContext.isOriginAllowed(establishedOrigin)) {
-      return { error: "Error: Node does not belong to the locked origin." };
-    }
-    const axModel = target.model(SDK7.AccessibilityModel.AccessibilityModel);
-    if (!axModel) {
-      return { error: "Error: Accessibility model not found." };
-    }
-    await axModel.requestAndLoadSubTreeToNode(resolved);
-    const axNode = axModel.axNodeForDOMNode(resolved);
-    if (!axNode) {
-      return { error: "Error: AX node details not found." };
-    }
-    const properties = {
-      role: axNode.role()?.value,
-      name: axNode.name()?.value,
-      properties: axNode.properties()?.map((p) => ({ name: p.name, value: p.value?.value })) ?? []
-    };
-    const snapshot = await resolved.takeSnapshot();
-    return {
-      result: JSON.stringify(properties, null, 2),
-      widgets: [{
-        name: "DOM_TREE",
-        data: {
-          root: snapshot,
-          title: i18n8.i18n.lockedString("Element details"),
-          accessibleRevealLabel: i18n8.i18n.lockedString("Reveal element")
-        }
-      }]
-    };
-  }
-};
-
-// gen/front_end/models/ai_assistance/tools/GetFunctionCode.js
-var GetFunctionCode_exports = {};
-__export(GetFunctionCode_exports, {
-  GetFunctionCodeTool: () => GetFunctionCodeTool
-});
-import * as Host7 from "./../../core/host/host.js";
-import * as i18n10 from "./../../core/i18n/i18n.js";
-var UIStringsNotTranslate3 = {
-  lookingUpFunctionCode: "Looking up function code"
-};
-var lockedString4 = i18n10.i18n.lockedString;
-var GetFunctionCodeTool = class {
-  name = "getFunctionCode";
-  description = "Returns the code for a function defined at the given location. The result is annotated with the runtime performance of each line of code.";
-  parameters = {
-    type: 6,
-    description: "Arguments for looking up function code.",
-    nullable: false,
-    properties: {
-      scriptUrl: {
-        type: 1,
-        description: "The url of the function.",
-        nullable: false
-      },
-      line: {
-        type: 3,
-        description: "The line number where the function is defined.",
-        nullable: false
-      },
-      column: {
-        type: 3,
-        description: "The column number where the function is defined.",
-        nullable: false
-      }
-    },
-    required: ["scriptUrl", "line", "column"]
-  };
-  displayInfoFromArgs(params) {
-    return {
-      title: lockedString4(UIStringsNotTranslate3.lookingUpFunctionCode),
-      action: `getFunctionCode('${params.scriptUrl}', ${params.line}, ${params.column})`
-    };
-  }
-  async handler(params, capabilities) {
-    const conversationContext = capabilities.conversationContext;
-    if (!conversationContext || !(conversationContext instanceof PerformanceTraceContext)) {
-      return { error: "Performance trace context is not available." };
-    }
-    if (conversationContext.getOrigin().startsWith("imported-trace://")) {
-      return { error: "Cannot use this tool on an imported file." };
-    }
-    if (!params.scriptUrl) {
-      return { error: "Missing arg: scriptUrl" };
-    }
-    const allowedOrigin = conversationContext.getOrigin();
-    if (!canResourceContentsBeReadForTrace(params.scriptUrl, allowedOrigin)) {
-      return { error: "Script not found" };
-    }
-    if (params.line === void 0) {
-      return { error: "Missing arg: line" };
-    }
-    if (params.column === void 0) {
-      return { error: "Missing arg: column" };
-    }
-    const formatter = conversationContext.createFormatter();
-    const url = params.scriptUrl;
-    const code = await formatter.resolveFunctionCodeAtLocation(url, params.line, params.column);
-    if (!code) {
-      return { error: "Could not find code" };
-    }
-    const result = formatter.formatFunctionCode(code);
-    return {
-      result,
-      widgets: [{
-        name: "SOURCE_CODE",
-        data: {
-          url,
-          line: params.line,
-          column: params.column,
-          code: code.code
-        }
-      }]
-    };
-  }
-};
-
-// gen/front_end/models/ai_assistance/tools/GetInsightDetails.js
-var GetInsightDetails_exports = {};
-__export(GetInsightDetails_exports, {
-  GetInsightDetailsTool: () => GetInsightDetailsTool
-});
-import * as Host8 from "./../../core/host/host.js";
-import * as i18n12 from "./../../core/i18n/i18n.js";
-import * as SDK8 from "./../../core/sdk/sdk.js";
-import * as TextUtils2 from "./../../core/text_utils/text_utils.js";
-import * as Logs2 from "./../logs/logs.js";
-import * as Trace8 from "./../trace/trace.js";
-
-// gen/front_end/models/ai_assistance/tools/Tool.js
-var Tool_exports = {};
-__export(Tool_exports, {
-  MAX_FUNCTION_RESULT_BYTE_LENGTH: () => MAX_FUNCTION_RESULT_BYTE_LENGTH
-});
-var MAX_FUNCTION_RESULT_BYTE_LENGTH = 16384 * 4;
-
-// gen/front_end/models/ai_assistance/tools/GetInsightDetails.js
-var lockedString5 = i18n12.i18n.lockedString;
-async function getNetworkRequestImageData(target, lcpRequest, networkLog = Logs2.NetworkLog.NetworkLog.instance()) {
-  const networkManager = target?.model(SDK8.NetworkManager.NetworkManager);
-  if (!target || !networkManager) {
-    return void 0;
-  }
-  const requestId = lcpRequest.args.data.requestId;
-  const sdkRequest = networkLog.requestByManagerAndId(networkManager, requestId);
-  if (sdkRequest?.contentType().isImage()) {
-    const contentData = await sdkRequest.requestContentData();
-    if (!TextUtils2.ContentData.ContentData.isError(contentData)) {
-      return contentData;
-    }
-  }
-  return void 0;
-}
-var GetInsightDetailsTool = class {
-  name = "getInsightDetails";
-  description = "Returns detailed information about a specific insight of an insight set. Use this before commenting on any specific issue to get more information.";
-  parameters = {
-    type: 6,
-    description: "Arguments for getting insight details.",
-    nullable: false,
-    properties: {
-      insightSetId: {
-        type: 1,
-        description: 'The id for the specific insight set. Only use the ids given in the "Available insight sets" list.',
-        nullable: false
-      },
-      insightName: {
-        type: 1,
-        description: 'The name of the insight. Only use the insight names given in the "Available insights" list.',
-        nullable: false
-      }
-    },
-    required: ["insightSetId", "insightName"]
-  };
-  displayInfoFromArgs(params) {
-    return {
-      title: lockedString5(`Investigating insight ${params.insightName}`),
-      action: `getInsightDetails('${params.insightSetId}', '${params.insightName}')`
-    };
-  }
-  async #generateDOMTreeWidget(insight, insightSet, target) {
-    try {
-      if (!Trace8.Insights.Models.LCPDiscovery.isLCPDiscoveryInsight(insight) && !Trace8.Insights.Models.LCPBreakdown.isLCPBreakdownInsight(insight)) {
-        return null;
-      }
-      const lcpMetric = Trace8.Insights.Common.getLCP(insightSet);
-      const lcpEvent = lcpMetric?.event;
-      if (!lcpEvent || !Trace8.Types.Events.isAnyLargestContentfulPaintCandidate(lcpEvent)) {
-        return null;
-      }
-      const nodeId = lcpEvent.args.data?.nodeId;
-      if (!nodeId) {
-        return null;
-      }
-      const domModel = target?.model(SDK8.DOMModel.DOMModel);
-      if (!domModel) {
-        return null;
-      }
-      const nodeMap = await domModel.pushNodesByBackendIdsToFrontend(/* @__PURE__ */ new Set([nodeId]));
-      const node = nodeMap?.get(nodeId);
-      if (!node) {
-        return null;
-      }
-      const lcpSyntheticRequest = insight.lcpRequest;
-      const [snapshot, imageContent] = await Promise.all([
-        node.takeSnapshot(),
-        lcpSyntheticRequest ? getNetworkRequestImageData(target, lcpSyntheticRequest) : Promise.resolve(void 0)
-      ]);
-      let networkRequest;
-      if (lcpSyntheticRequest) {
-        networkRequest = {
-          url: lcpSyntheticRequest.args.data.url,
-          size: lcpSyntheticRequest.args.data.decodedBodyLength ?? lcpSyntheticRequest.args.data.encodedDataLength ?? 0,
-          resourceType: lcpSyntheticRequest.args.data.resourceType,
-          mimeType: lcpSyntheticRequest.args.data.mimeType ?? "",
-          imageContent
-        };
-      }
-      return {
-        name: "DOM_TREE",
-        data: {
-          root: snapshot,
-          networkRequest,
-          title: lockedString5("LCP element"),
-          accessibleRevealLabel: lockedString5("Reveal LCP element")
-        }
-      };
-    } catch (err) {
-      debugLog("GetInsightDetails: Failed to generate DOM tree widget", err);
-      return null;
-    }
-  }
-  async handler(params, capabilities) {
-    const conversationContext = capabilities.conversationContext;
-    if (!conversationContext || !(conversationContext instanceof PerformanceTraceContext)) {
-      return { error: "Performance trace context is not available." };
-    }
-    if (!params.insightSetId || !params.insightName) {
-      return { error: "Missing required arguments: insightSetId and insightName must be provided." };
-    }
-    const focus = conversationContext.getItem();
-    const parsedTrace = focus.parsedTrace;
-    const insightSet = parsedTrace.insights?.get(params.insightSetId);
-    if (!insightSet) {
-      const formatter = conversationContext.createFormatter();
-      const valid = [...parsedTrace.insights?.values() ?? []].map((insightSet2) => `id: ${insightSet2.id}, url: ${insightSet2.url}, bounds: ${formatter.serializeBounds(insightSet2.bounds)}`).join("; ");
-      return { error: `Invalid insight set id. Valid insight set ids are: ${valid || "(none)"}` };
-    }
-    if (!Trace8.Insights.Common.isInsightKey(params.insightName)) {
-      const valid = Object.keys(insightSet.model).join(", ");
-      return { error: `No insight available. Valid insight names are: ${valid || "(none)"}` };
-    }
-    const insightError = insightSet.modelErrors?.[params.insightName];
-    if (insightError) {
-      return { error: `Insight "${params.insightName}" failed during trace processing: ${insightError.message}` };
-    }
-    const insight = insightSet.model[params.insightName];
-    if (!insight) {
-      const valid = Object.keys(insightSet.model).join(", ");
-      return { error: `No insight available. Valid insight names are: ${valid || "(none)"}` };
-    }
-    const details = new PerformanceInsightFormatter(focus, insight).formatInsight();
-    if (details.length > MAX_FUNCTION_RESULT_BYTE_LENGTH) {
-      return {
-        error: "The insight details output is too large to fit in the context window. Please inspect specific events using getTraceEventByKey or getDetailedCallTree."
-      };
-    }
-    const widgets = [];
-    const isImportedTrace = conversationContext.getOrigin().startsWith("imported-trace://");
-    if (!isImportedTrace) {
-      const domTreeWidget = await this.#generateDOMTreeWidget(insight, insightSet, capabilities.getTarget());
-      if (domTreeWidget) {
-        widgets.push(domTreeWidget);
-      }
-    }
-    widgets.push({
-      name: "PERF_INSIGHT",
-      data: {
-        insight: params.insightName,
-        insightData: insight
-      }
-    });
-    return { result: details, widgets };
-  }
-};
-
-// gen/front_end/models/ai_assistance/tools/GetLighthouseAudits.js
-var GetLighthouseAudits_exports = {};
-__export(GetLighthouseAudits_exports, {
-  GetLighthouseAuditsTool: () => GetLighthouseAuditsTool
-});
-import * as Host9 from "./../../core/host/host.js";
-
-// gen/front_end/models/ai_assistance/contexts/AccessibilityContext.js
-var AccessibilityContext_exports = {};
-__export(AccessibilityContext_exports, {
-  AccessibilityContext: () => AccessibilityContext
-});
-var AccessibilityContext = class extends ConversationContext {
-  #lh;
-  #cachedPayload = null;
-  constructor(report) {
-    super();
-    this.#lh = report;
-  }
-  #url() {
-    return this.#lh.finalUrl ?? this.#lh.finalDisplayedUrl;
-  }
-  getURL() {
-    return this.#url();
-  }
-  getItem() {
-    return this.#lh;
-  }
-  getTitle() {
-    return `Lighthouse report: ${this.#url()}`;
-  }
-  #getInitialPayload() {
-    if (this.#cachedPayload !== null) {
-      return this.#cachedPayload;
-    }
-    const formatter = new LighthouseFormatter();
-    const summary = formatter.summary(this.#lh);
-    const audits = formatter.audits(this.#lh, "accessibility");
-    const allFailed = Object.values(this.#lh.categories).every((category) => category.score === null);
-    if (allFailed) {
-      this.#cachedPayload = "**CRITICAL**: The Lighthouse report failed to record or all category scores are error/unavailable (n/a). This indicates a failed run or missing data.";
-    } else {
-      this.#cachedPayload = `# Lighthouse Report:
-${summary}
-${audits}`;
-    }
-    return this.#cachedPayload;
-  }
-  async getPromptDetails() {
-    return this.#getInitialPayload();
-  }
-  async getUserFacingDetails() {
-    return [
-      {
-        title: "Lighthouse report",
-        text: this.#getInitialPayload()
-      }
-    ];
-  }
-};
-
-// gen/front_end/models/ai_assistance/tools/GetLighthouseAudits.js
-var GetLighthouseAuditsTool = class {
-  name = "getLighthouseAudits";
-  description = "Returns the audits for a specific Lighthouse category.";
-  parameters = {
-    type: 6,
-    description: "Arguments for retrieving Lighthouse category audits.",
-    nullable: false,
-    properties: {
-      categoryId: {
-        type: 1,
-        description: 'The category of audits to retrieve. E.g. "accessibility".',
-        nullable: false
-      }
-    },
-    required: ["categoryId"]
-  };
-  displayInfoFromArgs(params) {
-    return {
-      title: `Getting Lighthouse audits for ${params.categoryId}`,
-      action: `getLighthouseAudits('${params.categoryId}')`
-    };
-  }
-  async handler(params, context) {
-    if (!(context.conversationContext instanceof AccessibilityContext)) {
-      return { error: "Error: Active context is not a Lighthouse report." };
-    }
-    const report = context.conversationContext.getItem();
-    const audits = new LighthouseFormatter().audits(report, params.categoryId);
-    return {
-      result: { audits },
-      widgets: [{ name: "LIGHTHOUSE_REPORT", data: { report } }]
-    };
-  }
-};
-
-// gen/front_end/models/ai_assistance/tools/GetNetworkRequestDetails.js
-var GetNetworkRequestDetails_exports = {};
-__export(GetNetworkRequestDetails_exports, {
-  GetNetworkRequestDetailsTool: () => GetNetworkRequestDetailsTool
-});
-import * as Host10 from "./../../core/host/host.js";
-import * as i18n16 from "./../../core/i18n/i18n.js";
-import * as Logs3 from "./../logs/logs.js";
-import * as NetworkTimeCalculator2 from "./../network_time_calculator/network_time_calculator.js";
-
-// gen/front_end/models/ai_assistance/contexts/RequestContext.js
-var RequestContext_exports = {};
-__export(RequestContext_exports, {
-  RequestContext: () => RequestContext,
-  getRequestContextOrigin: () => getRequestContextOrigin
-});
-import * as Common9 from "./../../core/common/common.js";
-import * as i18n14 from "./../../core/i18n/i18n.js";
-var UIStringsNotTranslate4 = {
-  request: "Request",
-  response: "Response",
-  requestUrl: "Request URL",
-  timing: "Timing",
-  requestInitiatorChain: "Request initiator chain"
-};
-var lockedString6 = i18n14.i18n.lockedString;
-function getRequestContextOrigin(request) {
-  const origin = extractContextOrigin(request.documentURL);
-  if (request.isImportedHar()) {
-    const parsed = Common9.ParsedURL.ParsedURL.fromString(origin);
-    return `imported-har://${parsed ? parsed.domain() : origin}`;
-  }
-  return origin;
-}
-var RequestContext = class extends ConversationContext {
-  #request;
-  #calculator;
-  constructor(request, calculator) {
-    super();
-    this.#request = request;
-    this.#calculator = calculator;
-  }
-  /**
-   * Note: this is not the literal origin of the network request. This URL
-   * is used to determine when we should force the user to start a new AI
-   * conversation when the context changes. We allow a single AI conversation to
-   * inspect all network requests that were made for that given target URL.
-   */
-  getURL() {
-    return this.#request.documentURL;
-  }
-  getOrigin() {
-    return getRequestContextOrigin(this.#request);
-  }
-  getItem() {
-    return this.#request;
-  }
-  getTitle() {
-    return this.#request.name();
-  }
-  async getPromptDetails() {
-    const formatter = new NetworkRequestFormatter(this.#request, this.#calculator);
-    return `# Selected network request
-${await formatter.formatNetworkRequest()}`;
-  }
-  async getUserFacingDetails() {
-    const formatter = new NetworkRequestFormatter(this.#request, this.#calculator);
-    const requestContextDetail = {
-      title: lockedString6(UIStringsNotTranslate4.request),
-      text: lockedString6(UIStringsNotTranslate4.requestUrl) + ": " + this.#request.url() + "\n\n" + formatter.formatRequestHeaders()
-    };
-    const responseBody = await formatter.formatResponseBody();
-    const responseBodyString = responseBody ? `
-
-${responseBody}` : "";
-    const responseContextDetail = {
-      title: lockedString6(UIStringsNotTranslate4.response),
-      text: formatter.formatResponseHeaders() + responseBodyString + `
-
-${formatter.formatStatus()}${formatter.formatFailureReasons()}`
-    };
-    const timingContextDetail = {
-      title: lockedString6(UIStringsNotTranslate4.timing),
-      text: formatter.formatNetworkRequestTiming()
-    };
-    const initiatorChainContextDetail = {
-      title: lockedString6(UIStringsNotTranslate4.requestInitiatorChain),
-      text: formatter.formatRequestInitiatorChain()
-    };
-    return [
-      requestContextDetail,
-      responseContextDetail,
-      timingContextDetail,
-      initiatorChainContextDetail
-    ];
-  }
-};
-
-// gen/front_end/models/ai_assistance/tools/GetNetworkRequestDetails.js
-var UIStringsNotTranslate5 = {
-  gettingNetworkRequestDetails: "Getting network request details"
-};
-var lockedString7 = i18n16.i18n.lockedString;
-var GetNetworkRequestDetailsTool = class {
-  name = "getNetworkRequestDetails";
-  description = "Retrieves the full headers, timing, status, and body details of a specific network request by ID.";
-  #networkLog;
-  constructor(networkLog) {
-    this.#networkLog = networkLog;
-  }
-  parameters = {
-    type: 6,
-    description: "Arguments for retrieving detailed information about a specific network request.",
-    nullable: false,
-    properties: {
-      id: {
-        type: 1,
-        description: "The id of the network request to inspect.",
-        nullable: false
-      }
-    },
-    required: ["id"]
-  };
-  displayInfoFromArgs(args) {
-    return {
-      title: lockedString7(UIStringsNotTranslate5.gettingNetworkRequestDetails),
-      action: `getNetworkRequestDetails(${args.id})`
-    };
-  }
-  /**
-   * Handles the request to retrieve details for a network request by its ID.
-   * Filters by the conversation's established origin to prevent cross-origin data exposure.
-   */
-  async handler(args, context) {
-    const origin = context.getEstablishedOrigin();
-    if (origin && isOpaqueOrigin(origin)) {
-      return {
-        error: "Opaque origin not allowed"
-      };
-    }
-    const networkLog = this.#networkLog ?? Logs3.NetworkLog.NetworkLog.instance();
-    const request = networkLog.requests().find((req) => {
-      if (req.requestId() !== args.id) {
-        return false;
-      }
-      const requestOrigin = getRequestContextOrigin(req);
-      return !origin || requestOrigin === origin;
-    });
-    if (!request) {
-      return {
-        error: "No request found"
-      };
-    }
-    const calculator = new NetworkTimeCalculator2.NetworkTransferTimeCalculator();
-    const formatter = new NetworkRequestFormatter(request, calculator, networkLog);
-    const formattedDetails = await formatter.formatNetworkRequest();
-    return {
-      result: formattedDetails,
-      widgets: [{
-        name: "NETWORK_REQUEST_GENERAL_HEADERS",
-        data: {
-          request
-        }
-      }]
-    };
-  }
-};
-
-// gen/front_end/models/ai_assistance/tools/GetResourceContent.js
-var GetResourceContent_exports = {};
-__export(GetResourceContent_exports, {
-  GetResourceContentTool: () => GetResourceContentTool
-});
-import * as Host11 from "./../../core/host/host.js";
-import * as i18n18 from "./../../core/i18n/i18n.js";
-import * as Root5 from "./../../core/root/root.js";
-import * as SDK9 from "./../../core/sdk/sdk.js";
-import * as TextUtils3 from "./../../core/text_utils/text_utils.js";
-var UIStringsNotTranslate6 = {
-  lookingAtResourceContent: "Looking at resource content"
-};
-var lockedString8 = i18n18.i18n.lockedString;
-var GetResourceContentTool = class {
-  name = "getResourceContent";
-  description = "Returns the content of the resource with the given url. Only use this for text resource types.";
-  parameters = {
-    type: 6,
-    description: "Arguments for looking up resource content.",
-    nullable: false,
-    properties: {
-      url: {
-        type: 1,
-        description: "The url for the resource.",
-        nullable: false
-      }
-    },
-    required: ["url"]
-  };
-  displayInfoFromArgs(params) {
-    return {
-      title: lockedString8(UIStringsNotTranslate6.lookingAtResourceContent),
-      action: `getResourceContent('${params.url}')`
-    };
-  }
-  async handler(params, capabilities) {
-    const conversationContext = capabilities.conversationContext;
-    if (!conversationContext || !(conversationContext instanceof PerformanceTraceContext)) {
-      return { error: "Performance trace context is not available." };
-    }
-    if (conversationContext.getOrigin().startsWith("imported-trace://")) {
-      return { error: "Cannot use this tool on an imported file." };
-    }
-    const allowedOrigin = conversationContext.getOrigin();
-    if (!canResourceContentsBeReadForTrace(params.url, allowedOrigin)) {
-      return { error: "Resource not found" };
-    }
-    const focus = conversationContext.getItem();
-    const { parsedTrace } = focus;
-    let content;
-    const url = params.url;
-    const script = parsedTrace.data.Scripts?.scripts.find((script2) => script2.url === params.url);
-    if (script?.content !== void 0) {
-      content = script.content;
-    } else {
-      const target = capabilities.getTarget();
-      const isTraceApp = Root5.Runtime.Runtime.isTraceApp();
-      if (target || isTraceApp) {
-        const targetManager = target?.targetManager() ?? // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
-        SDK9.TargetManager.TargetManager.instance();
-        const resource = SDK9.ResourceTreeModel.ResourceTreeModel.resourceForURL(targetManager, url);
-        if (!resource) {
-          return { error: "Resource not found" };
-        }
-        const data = await resource.requestContentData();
-        if (TextUtils3.ContentData.ContentData.isError(data)) {
-          return { error: `Could not get resource content: ${data.error}` };
-        }
-        if (!data.isTextContent) {
-          return { error: "Cannot retrieve content for non-text resource" };
-        }
-        content = data.text;
-      } else {
-        return { error: "Resource not found" };
-      }
-    }
-    return {
-      result: { content },
-      widgets: [{
-        name: "SOURCE_CODE",
-        data: {
-          url,
-          code: content
-        }
-      }]
-    };
-  }
-};
-
-// gen/front_end/models/ai_assistance/tools/GetSourceContent.js
-var GetSourceContent_exports = {};
-__export(GetSourceContent_exports, {
-  GetSourceContentTool: () => GetSourceContentTool
-});
-import * as Common11 from "./../../core/common/common.js";
-import * as Host13 from "./../../core/host/host.js";
-import * as i18n22 from "./../../core/i18n/i18n.js";
-import * as TextUtils4 from "./../../core/text_utils/text_utils.js";
-
-// gen/front_end/models/ai_assistance/data_formatters/FileFormatter.js
-var FileFormatter_exports = {};
-__export(FileFormatter_exports, {
-  FileFormatter: () => FileFormatter
-});
-import * as Bindings2 from "./../bindings/bindings.js";
-import * as Logs4 from "./../logs/logs.js";
-import * as NetworkTimeCalculator3 from "./../network_time_calculator/network_time_calculator.js";
-var MAX_FILE_SIZE = 1e4;
-var FileFormatter = class _FileFormatter {
-  static formatSourceMapDetails(selectedFile, debuggerWorkspaceBinding) {
-    const mappedFileUrls = [];
-    const sourceMapUrls = [];
-    if (selectedFile.contentType().isFromSourceMap()) {
-      for (const script of debuggerWorkspaceBinding.scriptsForUISourceCode(selectedFile)) {
-        const uiSourceCode = debuggerWorkspaceBinding.uiSourceCodeForScript(script);
-        if (uiSourceCode) {
-          mappedFileUrls.push(uiSourceCode.url());
-          if (script.sourceMapURL !== void 0) {
-            sourceMapUrls.push(script.sourceMapURL);
-          }
-        }
-      }
-      for (const originURL of Bindings2.SASSSourceMapping.SASSSourceMapping.uiSourceOrigin(selectedFile)) {
-        mappedFileUrls.push(originURL);
-      }
-    } else if (selectedFile.contentType().isScript()) {
-      for (const script of debuggerWorkspaceBinding.scriptsForUISourceCode(selectedFile)) {
-        if (script.sourceMapURL !== void 0 && script.sourceMapURL !== "") {
-          sourceMapUrls.push(script.sourceMapURL);
-        }
-      }
-    }
-    if (sourceMapUrls.length === 0) {
-      return "";
-    }
-    let sourceMapDetails = "Source map: " + sourceMapUrls;
-    if (mappedFileUrls.length > 0) {
-      sourceMapDetails += "\nSource mapped from: " + mappedFileUrls;
-    }
-    return sourceMapDetails;
-  }
-  #file;
-  #debuggerWorkspaceBinding;
-  #networkLog;
-  constructor(file, debuggerWorkspaceBinding = (
-    // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
-    Bindings2.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()
-  ), networkLog = Logs4.NetworkLog.NetworkLog.instance()) {
-    this.#file = file;
-    this.#debuggerWorkspaceBinding = debuggerWorkspaceBinding;
-    this.#networkLog = networkLog;
-  }
-  formatFile() {
-    const sourceMapDetails = _FileFormatter.formatSourceMapDetails(this.#file, this.#debuggerWorkspaceBinding);
-    const lines = [
-      `File name: ${this.#file.displayName()}`,
-      `URL: ${this.#file.url()}`,
-      sourceMapDetails
-    ];
-    const resource = Bindings2.ResourceUtils.resourceForURL(this.#file.url());
-    if (resource?.request) {
-      const calculator = new NetworkTimeCalculator3.NetworkTransferTimeCalculator();
-      calculator.updateBoundaries(resource.request);
-      lines.push(`Request initiator chain:
-${new NetworkRequestFormatter(resource.request, calculator, this.#networkLog).formatRequestInitiatorChain()}`);
-    }
-    lines.push(`File content:
-${this.#formatFileContent()}`);
-    return lines.filter((line) => line.trim() !== "").join("\n");
-  }
-  #formatFileContent() {
-    const contentData = this.#file.workingCopyContentData();
-    const content = contentData.isTextContent ? contentData.text : "<binary data>";
-    const truncated = content.length > MAX_FILE_SIZE ? content.slice(0, MAX_FILE_SIZE) + "..." : content;
-    return `\`\`\`
-${truncated}
-\`\`\``;
-  }
-};
-
-// gen/front_end/models/ai_assistance/tools/ListSources.js
-var ListSources_exports = {};
-__export(ListSources_exports, {
-  ListSourcesTool: () => ListSourcesTool
-});
-import * as Common10 from "./../../core/common/common.js";
-import * as Host12 from "./../../core/host/host.js";
-import * as i18n20 from "./../../core/i18n/i18n.js";
-import * as Workspace3 from "./../workspace/workspace.js";
-var UIStringsNotTranslate7 = {
-  listingSources: "Listing workspace sources"
-};
-var lockedString9 = i18n20.i18n.lockedString;
-var ListSourcesTool = class _ListSourcesTool {
-  name = "listSources";
-  description = "Lists all source files in the workspace with their name and a unique ID.";
-  static lastSourceId = 0;
-  static uiSourceCodeId = /* @__PURE__ */ new WeakMap();
-  static reset() {
-    _ListSourcesTool.lastSourceId = 0;
-    _ListSourcesTool.uiSourceCodeId = /* @__PURE__ */ new WeakMap();
-  }
-  // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
-  static getUISourceCodes(workspace = Workspace3.Workspace.WorkspaceImpl.instance()) {
-    const projects = workspace.projects().filter((project) => project.type() === Workspace3.Workspace.projectTypes.Network);
-    const uiSourceCodes = /* @__PURE__ */ new Map();
-    for (const project of projects) {
-      for (const uiSourceCode of project.uiSourceCodes()) {
-        if (uiSourceCode.isIgnoreListed()) {
-          continue;
-        }
-        const url = uiSourceCode.url();
-        if (!uiSourceCodes.get(url) || uiSourceCode.contentType().isFromSourceMap()) {
-          uiSourceCodes.set(url, uiSourceCode);
-          if (!_ListSourcesTool.uiSourceCodeId.has(uiSourceCode)) {
-            _ListSourcesTool.uiSourceCodeId.set(uiSourceCode, ++_ListSourcesTool.lastSourceId);
-          }
-        }
-      }
-    }
-    return [...uiSourceCodes.values()];
-  }
-  parameters = {
-    type: 6,
-    description: "",
-    nullable: true,
-    required: [],
-    properties: {}
-  };
-  displayInfoFromArgs() {
-    return {
-      title: lockedString9(UIStringsNotTranslate7.listingSources),
-      action: "listSources()"
-    };
-  }
-  async handler(_params, context) {
-    const origin = context.getEstablishedOrigin();
-    if (origin && isOpaqueOrigin(origin)) {
-      return {
-        error: "Opaque origin not allowed"
-      };
-    }
-    const files = _ListSourcesTool.getUISourceCodes().filter((file) => {
-      const fileUrl = file.url();
-      const fileOrigin = Common10.ParsedURL.ParsedURL.extractOrigin(fileUrl);
-      return !origin || fileOrigin === origin;
-    });
-    return {
-      result: {
-        files: files.map((file) => ({
-          id: _ListSourcesTool.uiSourceCodeId.get(file) ?? 0,
-          name: file.fullDisplayName()
-        }))
-      }
-    };
-  }
-};
-
-// gen/front_end/models/ai_assistance/tools/GetSourceContent.js
-var UIStringsNotTranslate8 = {
-  readingSource: "Reading source content"
-};
-var lockedString10 = i18n22.i18n.lockedString;
-var GetSourceContentTool = class {
-  name = "getSourceContent";
-  description = "Gets the content and metadata of a source file by its ID.";
-  parameters = {
-    type: 6,
-    description: "",
-    properties: {
-      id: {
-        type: 3,
-        description: "The unique numeric ID of the source file to retrieve.",
-        nullable: false
-      }
-    },
-    required: ["id"]
-  };
-  displayInfoFromArgs(args) {
-    return {
-      title: lockedString10(UIStringsNotTranslate8.readingSource),
-      action: `getSourceContent(${args.id})`
-    };
-  }
-  async handler(args, context) {
-    const origin = context.getEstablishedOrigin();
-    const file = ListSourcesTool.getUISourceCodes().find((f) => ListSourcesTool.uiSourceCodeId.get(f) === args.id);
-    if (!file) {
-      return {
-        error: "Unable to find file."
-      };
-    }
-    const fileUrl = file.url();
-    const fileOrigin = Common11.ParsedURL.ParsedURL.extractOrigin(fileUrl);
-    if (origin && fileOrigin !== origin) {
-      return {
-        error: "Cross-origin access blocked."
-      };
-    }
-    const contentData = await file.requestContentData();
-    if (TextUtils4.ContentData.ContentData.isError(contentData)) {
-      return {
-        error: `Failed to load file content: ${contentData.error}`
-      };
-    }
-    const formatter = new FileFormatter(file);
-    return {
-      result: {
-        content: formatter.formatFile()
-      }
-    };
-  }
-};
-
-// gen/front_end/models/ai_assistance/tools/GetStorageValues.js
-var GetStorageValues_exports = {};
-__export(GetStorageValues_exports, {
-  GetStorageValuesTool: () => GetStorageValuesTool,
-  MAX_NUM_CHAR_LENGTH: () => MAX_NUM_CHAR_LENGTH
-});
-import * as Common12 from "./../../core/common/common.js";
-import * as Host14 from "./../../core/host/host.js";
-import * as i18n24 from "./../../core/i18n/i18n.js";
-import * as SDK11 from "./../../core/sdk/sdk.js";
-
-// gen/front_end/models/ai_assistance/tools/DOMStorageUtils.js
-var DOMStorageUtils_exports = {};
-__export(DOMStorageUtils_exports, {
-  MAX_TARGET_ORIGINS: () => MAX_TARGET_ORIGINS,
-  resolveDOMStorages: () => resolveDOMStorages
-});
-import * as SDK10 from "./../../core/sdk/sdk.js";
-var MAX_TARGET_ORIGINS = 100;
-function resolveDOMStorages(origin, type, targetManager, primaryPageTarget, storageKey) {
-  const resolvedStorages = [];
-  const isLocalStorage = type === "localStorage";
-  const targetOrigin = extractContextOrigin(origin);
-  const domStorageModels = targetManager.models(SDK10.DOMStorageModel.DOMStorageModel);
-  for (const domStorageModel of domStorageModels) {
-    if (domStorageModel.target().outermostTarget() !== primaryPageTarget) {
-      continue;
-    }
-    domStorageModel.enable();
-    for (const storage of domStorageModel.storages()) {
-      if (storage.isLocalStorage !== isLocalStorage) {
-        continue;
-      }
-      const currentStorageKey = storage.storageKey;
-      if (!currentStorageKey) {
-        continue;
-      }
-      if (storageKey && storageKey !== currentStorageKey) {
-        continue;
-      }
-      const parsedKey = SDK10.StorageKeyManager.parseStorageKey(currentStorageKey);
-      if (areOriginsEquivalent(parsedKey.origin, targetOrigin)) {
-        resolvedStorages.push(storage);
-      }
-    }
-  }
-  return resolvedStorages;
-}
-
-// gen/front_end/models/ai_assistance/tools/GetStorageValues.js
-var lockedString11 = i18n24.i18n.lockedString;
-var MAX_NUM_CHAR_LENGTH = 1e4;
-var GetStorageValuesTool = class {
-  name = "getStorageValues";
-  description = "Retrieve specific string values from storage partitions for requested keys across origins.";
-  annotations = [
-    "redact-from-history"
-    /* ToolAnnotation.REDACT_FROM_HISTORY */
-  ];
-  parameters = {
-    type: 6,
-    description: "",
-    nullable: false,
-    properties: {
-      type: {
-        type: 1,
-        description: "Storage type: localStorage or sessionStorage",
-        nullable: false
-      },
-      keys: {
-        type: 5,
-        description: "A list of keys to retrieve values for.",
-        items: { type: 1, description: "A storage key." },
-        nullable: false
-      },
-      origins: {
-        type: 5,
-        description: "List of origins to get values for.",
-        items: { type: 1, description: "An origin URL." },
-        nullable: false
-      },
-      storageKey: {
-        type: 1,
-        description: "Optional. Specific storageKey partition to get values for. Only applies if single origin is provided.",
-        nullable: true
-      }
-    },
-    required: ["type", "keys", "origins"]
-  };
-  displayInfoFromArgs(args) {
-    return {
-      title: lockedString11("Reading storage values"),
-      action: `getStorageValues('${args.type}', ${JSON.stringify(args.keys)}, ${JSON.stringify(args.origins)})`
-    };
-  }
-  async handler(args, context, options) {
-    context.setLoggingEnabled(false);
-    const targetManager = SDK11.TargetManager.TargetManager.instance();
-    const primaryPageTarget = targetManager.primaryPageTarget();
-    const allowedOrigin = context.getEstablishedOrigin();
-    if (!allowedOrigin || isOpaqueOrigin(allowedOrigin)) {
-      return { error: "No origin available or not allowed." };
-    }
-    if (!primaryPageTarget) {
-      return { error: "No origin available or not allowed." };
-    }
-    const pageOrigin = Common12.ParsedURL.ParsedURL.extractOrigin(primaryPageTarget.inspectedURL());
-    if (!pageOrigin || !areOriginsEquivalent(pageOrigin, allowedOrigin)) {
-      return { error: "No origin available or not allowed." };
-    }
-    const rawList = args.origins && args.origins.length > 0 ? args.origins : [allowedOrigin];
-    const validOrigins = rawList.map((origin) => extractContextOrigin(origin)).filter((origin) => areOriginsEquivalent(origin, allowedOrigin));
-    const targetOrigins = Array.from(new Set(validOrigins)).slice(0, MAX_TARGET_ORIGINS);
-    if (targetOrigins.length === 0) {
-      return { error: "No valid origins found." };
-    }
-    const storageKey = targetOrigins.length === 1 && args.storageKey ? args.storageKey : void 0;
-    const allStoragesMap = {};
-    let totalStoragesCount = 0;
-    for (const origin of targetOrigins) {
-      const storages = resolveDOMStorages(origin, args.type, targetManager, primaryPageTarget, storageKey);
-      if (storages.length > 0) {
-        allStoragesMap[origin] = storages;
-        totalStoragesCount += storages.length;
-      }
-    }
-    if (totalStoragesCount === 0) {
-      return { error: "No matching storage partitions found." };
-    }
-    if (options?.approved !== true) {
-      const keyString = args.keys.map((k) => `\`${k}\``).join(", ");
-      const targetsDesc = Object.keys(allStoragesMap).join(", ");
-      return {
-        requiresApproval: true,
-        description: lockedString11(`The AI wants to access the value(s) of ${args.type} keys ${keyString} on ${targetsDesc}.`)
-      };
-    }
-    const storageValuesByOrigin = {};
-    await Promise.all(targetOrigins.map(async (origin) => {
-      const storages = allStoragesMap[origin] || [];
-      const itemsResult = [];
-      const keyAndItems = await Promise.all(storages.map(async (storage) => {
-        const items = await storage.getItems().catch(() => null);
-        return { storageKey: storage.storageKey, items };
-      }));
-      for (const { storageKey: partitionKey, items } of keyAndItems) {
-        if (!items || !partitionKey) {
-          continue;
-        }
-        const itemMap = /* @__PURE__ */ new Map();
-        for (const [key, value] of items) {
-          itemMap.set(key, value);
-        }
-        const storageValues = {};
-        for (const key of args.keys) {
-          const value = itemMap.get(key);
-          if (value === void 0) {
-            continue;
-          }
-          const truncatedValue = value.length > MAX_NUM_CHAR_LENGTH ? value.substring(0, MAX_NUM_CHAR_LENGTH) + "... <truncated>" : value;
-          storageValues[key] = truncatedValue;
-        }
-        itemsResult.push({ storageKey: partitionKey, values: storageValues });
-      }
-      storageValuesByOrigin[origin] = { items: itemsResult };
-    }));
-    return { result: { storageValuesByOrigin } };
-  }
-};
-
-// gen/front_end/models/ai_assistance/tools/GetStyles.js
-var GetStyles_exports = {};
-__export(GetStyles_exports, {
-  GetStylesTool: () => GetStylesTool
-});
-import * as Host15 from "./../../core/host/host.js";
-import * as SDK12 from "./../../core/sdk/sdk.js";
-var GetStylesTool = class {
-  name = "getStyles";
-  description = `Get computed and source styles for one or multiple elements on the inspected page for multiple elements at once by uid.
-
-**CRITICAL** An element uid is a number, not a selector.
-**CRITICAL** Use selectors to refer to elements in the text output. Do not use uids.
-**CRITICAL** Always provide the explanation argument to explain what and why you query.
-**CRITICAL** You MUST provide a specific list of CSS property names. Do not use generic values like "all" or "*".`;
-  parameters = {
-    type: 6,
-    description: "",
-    nullable: false,
-    properties: {
-      explanation: {
-        type: 1,
-        description: "Explain why you want to get styles",
-        nullable: false
-      },
-      elements: {
-        type: 5,
-        description: "A list of element uids to get data for. These are numbers, not selectors.",
-        items: { type: 3, description: "An element uid." },
-        nullable: false
-      },
-      styleProperties: {
-        type: 5,
-        description: 'One or more specific CSS style property names to fetch. Generic values like "all" or "*" are not supported.',
-        nullable: false,
-        items: {
-          type: 1,
-          description: "A CSS style property name to retrieve. For example, 'background-color'."
-        }
-      }
-    },
-    required: ["explanation", "elements", "styleProperties"]
-  };
-  displayInfoFromArgs(params) {
-    return {
-      title: "Reading computed and source styles",
-      thought: params.explanation,
-      action: `getStyles(${JSON.stringify(params.elements)}, ${JSON.stringify(params.styleProperties)})`
-    };
-  }
-  async handler(params, context, _options) {
-    const widgets = [];
-    const result = {};
-    const target = context.getTarget();
-    if (!target) {
-      return { error: "Error: Could not find the inspected page." };
-    }
-    const establishedOrigin = context.getEstablishedOrigin();
-    if (!establishedOrigin) {
-      return { error: "Error: Origin lock is not established." };
-    }
-    for (const uid of params.elements) {
-      result[uid] = { computed: {}, authored: {} };
-      const node = new SDK12.DOMModel.DeferredDOMNode(target, uid);
-      const resolved = await node.resolvePromise();
-      if (!resolved) {
-        return { error: "Error: Could not find the element with uid=" + uid };
-      }
-      const newContext = new DOMNodeContext(resolved);
-      if (!newContext.isOriginAllowed(establishedOrigin)) {
-        return { error: "Error: Node does not belong to the current origin." };
-      }
-      const styles = await resolved.domModel().cssModel().getComputedStyle(resolved.id);
-      if (!styles) {
-        return { error: "Error: Could not get computed styles." };
-      }
-      const matchedStyles = await resolved.domModel().cssModel().getMatchedStyles(resolved.id);
-      if (!matchedStyles) {
-        return { error: "Error: Could not get authored styles." };
-      }
-      widgets.push({
-        name: "COMPUTED_STYLES",
-        data: {
-          computedStyles: styles,
-          backendNodeId: node.backendNodeId(),
-          matchedCascade: matchedStyles,
-          properties: params.styleProperties
-        }
-      });
-      for (const prop of params.styleProperties) {
-        result[uid].computed[prop] = styles.get(prop);
-      }
-      for (const style of matchedStyles.nodeStyles()) {
-        for (const property of style.allProperties()) {
-          if (!params.styleProperties.includes(property.name)) {
-            continue;
-          }
-          const state = matchedStyles.propertyState(property);
-          if (state === "Active") {
-            result[uid].authored[property.name] = property.value;
-          }
-        }
-      }
-    }
-    return {
-      result: JSON.stringify(result, null, 2),
-      widgets
-    };
-  }
-};
-
-// gen/front_end/models/ai_assistance/tools/GetTraceEventByKey.js
-var GetTraceEventByKey_exports = {};
-__export(GetTraceEventByKey_exports, {
-  GetTraceEventByKeyTool: () => GetTraceEventByKeyTool
-});
-import * as Host16 from "./../../core/host/host.js";
-import * as i18n26 from "./../../core/i18n/i18n.js";
-var UIStringsNotTranslate9 = {
-  lookingAtTraceEvent: "Looking at trace event"
-};
-var lockedString12 = i18n26.i18n.lockedString;
-var GetTraceEventByKeyTool = class {
-  name = "getTraceEventByKey";
-  description = "Get details for a specific trace event by its event key.";
-  parameters = {
-    type: 6,
-    description: "Arguments for looking up a trace event.",
-    nullable: false,
-    properties: {
-      eventKey: {
-        type: 1,
-        description: "The key of the event to look up.",
-        nullable: false
-      }
-    },
-    required: ["eventKey"]
-  };
-  displayInfoFromArgs(params) {
-    return {
-      title: lockedString12(UIStringsNotTranslate9.lookingAtTraceEvent),
-      action: `getTraceEventByKey('${params.eventKey}')`
-    };
-  }
-  async handler(params, capabilities) {
-    const conversationContext = capabilities.conversationContext;
-    if (!conversationContext || !(conversationContext instanceof PerformanceTraceContext)) {
-      return { error: "Performance trace context is not available." };
-    }
-    const focus = conversationContext.getItem();
-    const event = focus.lookupEvent(params.eventKey);
-    if (!event) {
-      return { error: `Could not find event with key "${params.eventKey}".` };
-    }
-    const details = formatEventForAI(event);
-    return {
-      result: details,
-      widgets: [{
-        name: "TIMELINE_EVENT_SUMMARY",
-        data: {
-          event,
-          parsedTrace: focus.parsedTrace
-        }
-      }]
-    };
-  }
-};
-
-// gen/front_end/models/ai_assistance/tools/GetTraceMainThreadSummary.js
-var GetTraceMainThreadSummary_exports = {};
-__export(GetTraceMainThreadSummary_exports, {
-  GetTraceMainThreadSummaryTool: () => GetTraceMainThreadSummaryTool
-});
-import * as Host17 from "./../../core/host/host.js";
-import * as i18n28 from "./../../core/i18n/i18n.js";
-var UIStringsNotTranslate10 = {
-  mainThreadActivity: "Main thread activity"
-};
-var lockedString13 = i18n28.i18n.lockedString;
-var GetTraceMainThreadSummaryTool = class {
-  name = "getTraceMainThreadSummary";
-  description = "Returns a focused, detailed summary of the main thread for a predefined labeled period.";
-  parameters = {
-    type: 6,
-    description: "Arguments for looking up a main thread summary.",
-    nullable: false,
-    properties: {
-      label: {
-        type: 1,
-        description: "The label of the period to investigate (e.g., 'LCPBreakdown', 'CLSCulprits', 'nav-to-lcp').",
-        nullable: false
-      }
-    },
-    required: ["label"]
-  };
-  displayInfoFromArgs(params) {
-    return {
-      title: `${lockedString13(UIStringsNotTranslate10.mainThreadActivity)}: ${params.label}`,
-      action: `getTraceMainThreadSummary('${params.label}')`
-    };
-  }
-  async handler(params, capabilities) {
-    const conversationContext = capabilities.conversationContext;
-    if (!conversationContext || !(conversationContext instanceof PerformanceTraceContext)) {
-      return { error: "Performance trace context is not available." };
-    }
-    const focus = conversationContext.getItem();
-    const bounds = conversationContext.getBoundsForLabel(params.label);
-    if (!bounds) {
-      return { error: `Invalid label: ${params.label}` };
-    }
-    const formatter = conversationContext.createFormatter();
-    const summary = await formatter.formatMainThreadTrackSummary(bounds);
-    if (summary.length > MAX_FUNCTION_RESULT_BYTE_LENGTH) {
-      return {
-        error: "getTraceMainThreadSummary response is too large. Try investigating using other functions, or a more narrow bounds"
-      };
-    }
-    return {
-      result: summary,
-      widgets: [
-        {
-          name: "TIMELINE_RANGE_SUMMARY",
-          data: {
-            parsedTrace: focus.parsedTrace,
-            bounds,
-            track: "main"
-          }
-        },
-        {
-          name: "BOTTOM_UP_TREE",
-          data: {
-            bounds,
-            parsedTrace: focus.parsedTrace
-          }
-        }
-      ]
-    };
-  }
-};
-
-// gen/front_end/models/ai_assistance/tools/GetTraceNetworkSummary.js
-var GetTraceNetworkSummary_exports = {};
-__export(GetTraceNetworkSummary_exports, {
-  GetTraceNetworkSummaryTool: () => GetTraceNetworkSummaryTool
-});
-import * as Host18 from "./../../core/host/host.js";
-import * as i18n30 from "./../../core/i18n/i18n.js";
-var UIStringsNotTranslate11 = {
-  networkActivitySummary: "Network activity summary"
-};
-var lockedString14 = i18n30.i18n.lockedString;
-var GetTraceNetworkSummaryTool = class {
-  name = "getTraceNetworkSummary";
-  description = "Returns a summary of the network requests for the given bounds.";
-  parameters = {
-    type: 6,
-    description: "Arguments for looking up a network track summary.",
-    nullable: false,
-    properties: {
-      min: {
-        type: 3,
-        description: "The minimum time of the bounds, in microseconds.",
-        nullable: true
-      },
-      max: {
-        type: 3,
-        description: "The maximum time of the bounds, in microseconds.",
-        nullable: true
-      }
-    },
-    required: []
-  };
-  displayInfoFromArgs(params) {
-    const parts = [];
-    if (params.min !== void 0) {
-      parts.push(`min: ${params.min}`);
-    }
-    if (params.max !== void 0) {
-      parts.push(`max: ${params.max}`);
-    }
-    return {
-      title: lockedString14(UIStringsNotTranslate11.networkActivitySummary),
-      action: `getTraceNetworkSummary({${parts.join(", ")}})`
-    };
-  }
-  async handler(params, capabilities) {
-    const conversationContext = capabilities.conversationContext;
-    if (!conversationContext || !(conversationContext instanceof PerformanceTraceContext)) {
-      return { error: "Performance trace context is not available." };
-    }
-    const focus = conversationContext.getItem();
-    const bounds = conversationContext.createBounds(params.min, params.max);
-    if (!bounds) {
-      return { error: "Invalid bounds." };
-    }
-    const formatter = conversationContext.createFormatter();
-    const summary = formatter.formatNetworkTrackSummary(bounds);
-    if (summary.length > MAX_FUNCTION_RESULT_BYTE_LENGTH) {
-      return {
-        error: "getTraceNetworkSummary response is too large. Try investigating using other functions, or a more narrow bounds"
-      };
-    }
-    return {
-      result: summary,
-      widgets: [{
-        name: "NETWORK_TRACK",
-        data: {
-          parsedTrace: focus.parsedTrace,
-          bounds
-        }
-      }]
-    };
-  }
-};
-
-// gen/front_end/models/ai_assistance/tools/ListNetworkRequests.js
-var ListNetworkRequests_exports = {};
-__export(ListNetworkRequests_exports, {
-  ListNetworkRequestsTool: () => ListNetworkRequestsTool
-});
-import * as Host19 from "./../../core/host/host.js";
-import * as i18n32 from "./../../core/i18n/i18n.js";
-import * as Logs5 from "./../logs/logs.js";
-var UIStringsNotTranslate12 = {
-  listingNetworkRequests: "Listing network requests"
-};
-var lockedString15 = i18n32.i18n.lockedString;
-var ListNetworkRequestsTool = class {
-  name = "listNetworkRequests";
-  description = "Gives a list of network requests including URL, status code, and duration.";
-  #networkLog;
-  constructor(networkLog) {
-    this.#networkLog = networkLog;
-  }
-  parameters = {
-    type: 6,
-    description: "",
-    nullable: true,
-    required: [],
-    properties: {}
-  };
-  displayInfoFromArgs() {
-    return {
-      title: lockedString15(UIStringsNotTranslate12.listingNetworkRequests),
-      action: "listNetworkRequests()"
-    };
-  }
-  /**
-   * Handles the request to list network requests.
-   * Returns requests matching the conversation's established origin, if set.
-   */
-  async handler(_params, context) {
-    const requests = [];
-    const origin = context.getEstablishedOrigin();
-    if (origin && isOpaqueOrigin(origin)) {
-      return {
-        error: "Opaque origin not allowed"
-      };
-    }
-    const networkLog = this.#networkLog ?? Logs5.NetworkLog.NetworkLog.instance();
-    let hasCrossOriginRequest = false;
-    const requestsToShow = [];
-    for (const request of networkLog.requests()) {
-      const requestOrigin = getRequestContextOrigin(request);
-      if (origin && requestOrigin !== origin) {
-        hasCrossOriginRequest = true;
-        continue;
-      }
-      requests.push({
-        id: request.requestId(),
-        url: request.url(),
-        statusCode: request.statusCode,
-        duration: seconds(request.duration),
-        transferSize: formatBytesToKb(request.transferSize)
-      });
-      requestsToShow.push(request);
-    }
-    if (requests.length === 0) {
-      return {
-        // If there were requests but they were filtered out due to the origin lock,
-        // we ask the user to start a new chat so they can select a request from the other origin.
-        error: hasCrossOriginRequest ? `No requests showing with origin ${origin}. Tell the user to start a new chat` : "No requests recorded by DevTools"
-      };
-    }
-    return {
-      result: JSON.stringify(requests),
-      widgets: [{
-        name: "NETWORK_REQUESTS_LIST",
-        data: {
-          requests: requestsToShow
-        }
-      }]
-    };
-  }
-};
-
-// gen/front_end/models/ai_assistance/tools/ListPageOrigins.js
-var ListPageOrigins_exports = {};
-__export(ListPageOrigins_exports, {
-  ListPageOriginsTool: () => ListPageOriginsTool
-});
-import * as Common13 from "./../../core/common/common.js";
-import * as Host20 from "./../../core/host/host.js";
-import * as i18n34 from "./../../core/i18n/i18n.js";
-import * as SDK13 from "./../../core/sdk/sdk.js";
-var lockedString16 = i18n34.i18n.lockedString;
-var ListPageOriginsTool = class {
-  name = "listPageOrigins";
-  description = "Lists all active, non-empty frame origins loaded by the page. Use this first when generic category context is active to discover all page origins, then pass them to listCookies or listStorageKeys, unless the user's explicit request hints at focusing only on the primary page.";
-  parameters = {
-    type: 6,
-    description: "",
-    nullable: false,
-    properties: {},
-    required: []
-  };
-  displayInfoFromArgs() {
-    return {
-      title: lockedString16("Listing page origins"),
-      action: "listPageOrigins()"
-    };
-  }
-  /**
-   * Retrieves the set of unique frame origins loaded within the primary page's target tree.
-   *
-   * To prevent data leakage across different tabs/windows, this tool:
-   * 1. Restricts the frame search to those belonging to the `primaryPageTarget`'s outermost target tree.
-   * 2. Filters out any origins that are not equivalent to the established allowed origin.
-   *    Note: Under site isolation, frames may be hosted on different sub-targets or processes,
-   *    so we check `frame.securityOrigin` directly instead of the frame's target origin.
-   */
-  async handler(_args, context) {
-    const targetManager = SDK13.TargetManager.TargetManager.instance();
-    const primaryPageTarget = targetManager.primaryPageTarget();
-    const allowedOrigin = context.getEstablishedOrigin();
-    if (!allowedOrigin || isOpaqueOrigin(allowedOrigin)) {
-      return { error: "No origin available or not allowed." };
-    }
-    const pageOrigin = primaryPageTarget ? Common13.ParsedURL.ParsedURL.extractOrigin(primaryPageTarget.inspectedURL()) : "";
-    const isAllowed = pageOrigin !== "" && areOriginsEquivalent(pageOrigin, allowedOrigin);
-    if (!isAllowed) {
-      return { error: "No origin available or not allowed." };
-    }
-    const origins = /* @__PURE__ */ new Set();
-    for (const frame of SDK13.ResourceTreeModel.ResourceTreeModel.frames(targetManager)) {
-      if (frame.resourceTreeModel().target().outermostTarget() !== primaryPageTarget) {
-        continue;
-      }
-      const origin = frame.securityOrigin;
-      if (!origin || !areOriginsEquivalent(origin, allowedOrigin)) {
-        continue;
-      }
-      if (origins.has(origin)) {
-        continue;
-      }
-      origins.add(origin);
-    }
-    return { result: { origins: Array.from(origins) } };
-  }
-};
-
-// gen/front_end/models/ai_assistance/tools/ListStorageKeys.js
-var ListStorageKeys_exports = {};
-__export(ListStorageKeys_exports, {
-  ListStorageKeysTool: () => ListStorageKeysTool
-});
-import * as Common14 from "./../../core/common/common.js";
-import * as Host21 from "./../../core/host/host.js";
-import * as i18n36 from "./../../core/i18n/i18n.js";
-import * as SDK14 from "./../../core/sdk/sdk.js";
-var lockedString17 = i18n36.i18n.lockedString;
-var ListStorageKeysTool = class {
-  name = "listStorageKeys";
-  description = "Lists all keys for a given storage type for requested origins. Returns keys grouped by storage partition under their origin.";
-  annotations = [
-    "redact-from-history"
-    /* ToolAnnotation.REDACT_FROM_HISTORY */
-  ];
-  parameters = {
-    type: 6,
-    description: "",
-    nullable: false,
-    properties: {
-      type: {
-        type: 1,
-        description: "Storage type: localStorage or sessionStorage",
-        nullable: false
-      },
-      origins: {
-        type: 5,
-        description: "List of origins to list keys for.",
-        items: { type: 1, description: "An origin URL." },
-        nullable: false
-      },
-      storageKey: {
-        type: 1,
-        description: "Optional. Specific storageKey to list keys for. Only applies if single origin is provided.",
-        nullable: true
-      }
-    },
-    required: ["type", "origins"]
-  };
-  displayInfoFromArgs(args) {
-    return {
-      title: lockedString17("Reading storage keys"),
-      action: `listStorageKeys('${args.type}', ${JSON.stringify(args.origins)})`
-    };
-  }
-  async handler(args, context) {
-    context.setLoggingEnabled(false);
-    const targetManager = SDK14.TargetManager.TargetManager.instance();
-    const primaryPageTarget = targetManager.primaryPageTarget();
-    const allowedOrigin = context.getEstablishedOrigin();
-    if (!allowedOrigin || isOpaqueOrigin(allowedOrigin)) {
-      return { error: "No origin available or not allowed." };
-    }
-    if (!primaryPageTarget) {
-      return { error: "No origin available or not allowed." };
-    }
-    const pageOrigin = Common14.ParsedURL.ParsedURL.extractOrigin(primaryPageTarget.inspectedURL());
-    if (!pageOrigin || !areOriginsEquivalent(pageOrigin, allowedOrigin)) {
-      return { error: "No origin available or not allowed." };
-    }
-    const rawList = args.origins && args.origins.length > 0 ? args.origins : [allowedOrigin];
-    const validOrigins = rawList.map((origin) => extractContextOrigin(origin)).filter((origin) => areOriginsEquivalent(origin, allowedOrigin));
-    const targetOrigins = Array.from(new Set(validOrigins)).slice(0, MAX_TARGET_ORIGINS);
-    if (targetOrigins.length === 0) {
-      return { error: "No valid origins found." };
-    }
-    const storageKey = targetOrigins.length === 1 && args.storageKey ? args.storageKey : void 0;
-    const storageKeysByOrigin = {};
-    await Promise.all(targetOrigins.map(async (origin) => {
-      const storages = resolveDOMStorages(origin, args.type, targetManager, primaryPageTarget, storageKey);
-      const keyAndItems = await Promise.all(storages.map(async (storage) => {
-        const items = await storage.getItems().catch(() => null);
-        return { storageKey: storage.storageKey, items };
-      }));
-      const partitions = [];
-      for (const { storageKey: partKey, items } of keyAndItems) {
-        if (!items || !partKey) {
-          continue;
-        }
-        const keys = items.map(([key]) => key);
-        if (keys.length > 0) {
-          partitions.push({ storageKey: partKey, keys });
-        }
-      }
-      storageKeysByOrigin[origin] = { partitions };
-    }));
-    return { result: { storageKeysByOrigin } };
-  }
-};
-
-// gen/front_end/models/ai_assistance/tools/RecordPerformanceTrace.js
-var RecordPerformanceTrace_exports = {};
-__export(RecordPerformanceTrace_exports, {
-  RecordPerformanceTraceTool: () => RecordPerformanceTraceTool
-});
-import * as Host22 from "./../../core/host/host.js";
-import * as i18n38 from "./../../core/i18n/i18n.js";
+// ../../front_end/models/ai_assistance/tools/RecordPerformanceTrace.ts
 var UIStringsNotTranslate13 = {
   recordingPerformanceTrace: "Recording a performance trace"
 };
-var lockedString18 = i18n38.i18n.lockedString;
+var lockedString21 = i18n44.i18n.lockedString;
 var RecordPerformanceTraceTool = class {
-  name = "recordPerformanceTrace";
+  name = "recordPerformanceTrace" /* RECORD_PERFORMANCE_TRACE */;
   description = "Records a new performance trace to measure, analyze, and debug page performance.";
   parameters = {
-    type: 6,
+    type: Host25.AidaClient.ParametersTypes.OBJECT,
     description: "Parameters for recording a performance trace.",
     nullable: false,
     properties: {},
@@ -7504,7 +10778,7 @@ var RecordPerformanceTraceTool = class {
   };
   displayInfoFromArgs() {
     return {
-      title: lockedString18(UIStringsNotTranslate13.recordingPerformanceTrace),
+      title: lockedString21(UIStringsNotTranslate13.recordingPerformanceTrace),
       action: "recordPerformanceTrace()"
     };
   }
@@ -7525,28 +10799,28 @@ var RecordPerformanceTraceTool = class {
   }
 };
 
-// gen/front_end/models/ai_assistance/tools/ResolveDevtoolsNodePath.js
+// ../../front_end/models/ai_assistance/tools/ResolveDevtoolsNodePath.ts
 var ResolveDevtoolsNodePath_exports = {};
 __export(ResolveDevtoolsNodePath_exports, {
   ResolveDevtoolsNodePathTool: () => ResolveDevtoolsNodePathTool
 });
-import * as Host23 from "./../../core/host/host.js";
-import * as SDK15 from "./../../core/sdk/sdk.js";
+import * as Host26 from "../../core/host/host.js";
+import * as SDK19 from "../../core/sdk/sdk.js";
 var ResolveDevtoolsNodePathTool = class {
-  name = "resolveDevtoolsNodePath";
+  name = "resolveDevtoolsNodePath" /* RESOLVE_DEVTOOLS_NODE_PATH */;
   description = "Resolves a DevTools node path to a backend node ID.";
   parameters = {
-    type: 6,
+    type: Host26.AidaClient.ParametersTypes.OBJECT,
     description: "Arguments for resolving a DevTools node path to a backend node ID.",
     nullable: false,
     properties: {
       explanation: {
-        type: 1,
+        type: Host26.AidaClient.ParametersTypes.STRING,
         description: "Reason for requesting this resolution.",
         nullable: false
       },
       path: {
-        type: 1,
+        type: Host26.AidaClient.ParametersTypes.STRING,
         description: "DevTools node path string.",
         nullable: false
       }
@@ -7573,7 +10847,7 @@ var ResolveDevtoolsNodePathTool = class {
       return { error: "Error: Origin lock is not established." };
     }
     const target = context.getTarget();
-    const domModel = target?.model(SDK15.DOMModel.DOMModel);
+    const domModel = target?.model(SDK19.DOMModel.DOMModel);
     if (!domModel) {
       return { error: "Error: Inspected target not found." };
     }
@@ -7599,32 +10873,32 @@ var ResolveDevtoolsNodePathTool = class {
   }
 };
 
-// gen/front_end/models/ai_assistance/tools/RunLighthouse.js
+// ../../front_end/models/ai_assistance/tools/RunLighthouse.ts
 var RunLighthouse_exports = {};
 __export(RunLighthouse_exports, {
   RunLighthouseTool: () => RunLighthouseTool
 });
-import * as Host24 from "./../../core/host/host.js";
+import * as Host27 from "../../core/host/host.js";
 var RunLighthouseTool = class {
-  name = "runLighthouse";
+  name = "runLighthouse" /* RUN_LIGHTHOUSE */;
   description = 'Runs Lighthouse audits on the active page. Supports "navigation" (for full initial page load audits), "snapshot" (for inspecting live in-page modifications without reload), and "timespan" (for interactions).';
   parameters = {
-    type: 6,
+    type: Host27.AidaClient.ParametersTypes.OBJECT,
     description: "Parameters for running Lighthouse audits.",
     nullable: false,
     properties: {
       explanation: {
-        type: 1,
+        type: Host27.AidaClient.ParametersTypes.STRING,
         description: "Reason for running new audits.",
         nullable: false
       },
       category: {
-        type: 1,
+        type: Host27.AidaClient.ParametersTypes.STRING,
         description: 'Lighthouse category. E.g. "accessibility", "performance".',
         nullable: false
       },
       mode: {
-        type: 1,
+        type: Host27.AidaClient.ParametersTypes.STRING,
         description: 'Lighthouse execution mode: "navigation", "snapshot", "timespan". Use "navigation" for initial full audits unless the user requested otherwise or in-page changes are being evaluated. Defaults to "snapshot".',
         nullable: true
       }
@@ -7639,12 +10913,9 @@ var RunLighthouseTool = class {
     };
   }
   async handler(params, context) {
-    if (!context.lighthouseRecording) {
-      return { error: "Error: Lighthouse recording capability is not available." };
-    }
     const mode = params.mode ?? "snapshot";
     try {
-      const report = await context.lighthouseRecording({
+      const report = await context.runLighthouse({
         mode,
         categoryIds: [params.category],
         isAIControlled: true
@@ -7664,29 +10935,29 @@ var RunLighthouseTool = class {
   }
 };
 
-// gen/front_end/models/ai_assistance/tools/SelectTraceEventByKey.js
+// ../../front_end/models/ai_assistance/tools/SelectTraceEventByKey.ts
 var SelectTraceEventByKey_exports = {};
 __export(SelectTraceEventByKey_exports, {
   SelectTraceEventByKeyTool: () => SelectTraceEventByKeyTool
 });
-import * as Common15 from "./../../core/common/common.js";
-import * as Host25 from "./../../core/host/host.js";
-import * as i18n40 from "./../../core/i18n/i18n.js";
-import * as SDK16 from "./../../core/sdk/sdk.js";
+import * as Common16 from "../../core/common/common.js";
+import * as Host28 from "../../core/host/host.js";
+import * as i18n46 from "../../core/i18n/i18n.js";
+import * as SDK20 from "../../core/sdk/sdk.js";
 var UIStringsNotTranslate14 = {
   selectingTraceEvent: "Selecting trace event"
 };
-var lockedString19 = i18n40.i18n.lockedString;
+var lockedString22 = i18n46.i18n.lockedString;
 var SelectTraceEventByKeyTool = class {
-  name = "selectTraceEventByKey";
+  name = "selectTraceEventByKey" /* SELECT_TRACE_EVENT_BY_KEY */;
   description = "Selects and reveals a specific event by its key in the Performance panel Flamechart.";
   parameters = {
-    type: 6,
+    type: Host28.AidaClient.ParametersTypes.OBJECT,
     description: "Arguments for selecting a trace event.",
     nullable: false,
     properties: {
       eventKey: {
-        type: 1,
+        type: Host28.AidaClient.ParametersTypes.STRING,
         description: "The key of the event to select.",
         nullable: false
       }
@@ -7695,23 +10966,23 @@ var SelectTraceEventByKeyTool = class {
   };
   displayInfoFromArgs(params) {
     return {
-      title: lockedString19(UIStringsNotTranslate14.selectingTraceEvent),
+      title: lockedString22(UIStringsNotTranslate14.selectingTraceEvent),
       action: `selectTraceEventByKey('${params.eventKey}')`
     };
   }
   async handler(params, capabilities) {
-    const conversationContext = capabilities.conversationContext;
-    if (!conversationContext || !(conversationContext instanceof PerformanceTraceContext)) {
+    const performanceTraceContext = capabilities.getPerformanceTraceContext();
+    if (!performanceTraceContext) {
       return { error: "Performance trace context is not available." };
     }
-    const focus = conversationContext.getItem();
+    const focus = performanceTraceContext.getItem();
     const event = focus.lookupEvent(params.eventKey);
     if (!event) {
       return { error: `Could not find event with key "${params.eventKey}".` };
     }
-    const revealable = new SDK16.TraceObject.RevealableEvent(event);
+    const revealable = new SDK20.TraceObject.RevealableEvent(event);
     try {
-      await Common15.Revealer.reveal(revealable);
+      await Common16.Revealer.reveal(revealable);
     } catch {
     }
     return {
@@ -7727,96 +10998,33 @@ var SelectTraceEventByKeyTool = class {
   }
 };
 
-// gen/front_end/models/ai_assistance/tools/ToolRegistry.js
+// ../../front_end/models/ai_assistance/tools/ToolRegistry.ts
 var TOOLS = {
-  [
-    "executeJavaScript"
-    /* ToolName.EXECUTE_JAVASCRIPT */
-  ]: new ExecuteJavaScriptTool(),
-  [
-    "getStyles"
-    /* ToolName.GET_STYLES */
-  ]: new GetStylesTool(),
-  [
-    "listNetworkRequests"
-    /* ToolName.LIST_NETWORK_REQUESTS */
-  ]: new ListNetworkRequestsTool(),
-  [
-    "getNetworkRequestDetails"
-    /* ToolName.GET_NETWORK_REQUEST_DETAILS */
-  ]: new GetNetworkRequestDetailsTool(),
-  [
-    "getLighthouseAudits"
-    /* ToolName.GET_LIGHTHOUSE_AUDITS */
-  ]: new GetLighthouseAuditsTool(),
-  [
-    "resolveDevtoolsNodePath"
-    /* ToolName.RESOLVE_DEVTOOLS_NODE_PATH */
-  ]: new ResolveDevtoolsNodePathTool(),
-  [
-    "getElementAccessibilityDetails"
-    /* ToolName.GET_ELEMENT_ACCESSIBILITY_DETAILS */
-  ]: new GetElementAccessibilityDetailsTool(),
-  [
-    "recordPerformanceTrace"
-    /* ToolName.RECORD_PERFORMANCE_TRACE */
-  ]: new RecordPerformanceTraceTool(),
-  [
-    "listPageOrigins"
-    /* ToolName.LIST_PAGE_ORIGINS */
-  ]: new ListPageOriginsTool(),
-  [
-    "listStorageKeys"
-    /* ToolName.LIST_STORAGE_KEYS */
-  ]: new ListStorageKeysTool(),
-  [
-    "getStorageValues"
-    /* ToolName.GET_STORAGE_VALUES */
-  ]: new GetStorageValuesTool(),
-  [
-    "getTraceEventByKey"
-    /* ToolName.GET_TRACE_EVENT_BY_KEY */
-  ]: new GetTraceEventByKeyTool(),
-  [
-    "selectTraceEventByKey"
-    /* ToolName.SELECT_TRACE_EVENT_BY_KEY */
-  ]: new SelectTraceEventByKeyTool(),
-  [
-    "listSources"
-    /* ToolName.LIST_SOURCES */
-  ]: new ListSourcesTool(),
-  [
-    "getSourceContent"
-    /* ToolName.GET_SOURCE_CONTENT */
-  ]: new GetSourceContentTool(),
-  [
-    "getTraceMainThreadSummary"
-    /* ToolName.GET_TRACE_MAIN_THREAD_SUMMARY */
-  ]: new GetTraceMainThreadSummaryTool(),
-  [
-    "getTraceNetworkSummary"
-    /* ToolName.GET_TRACE_NETWORK_SUMMARY */
-  ]: new GetTraceNetworkSummaryTool(),
-  [
-    "runLighthouse"
-    /* ToolName.RUN_LIGHTHOUSE */
-  ]: new RunLighthouseTool(),
-  [
-    "getDetailedCallTree"
-    /* ToolName.GET_DETAILED_CALL_TREE */
-  ]: new GetDetailedCallTreeTool(),
-  [
-    "getFunctionCode"
-    /* ToolName.GET_FUNCTION_CODE */
-  ]: new GetFunctionCodeTool(),
-  [
-    "getResourceContent"
-    /* ToolName.GET_RESOURCE_CONTENT */
-  ]: new GetResourceContentTool(),
-  [
-    "getInsightDetails"
-    /* ToolName.GET_INSIGHT_DETAILS */
-  ]: new GetInsightDetailsTool()
+  ["executeJavaScript" /* EXECUTE_JAVASCRIPT */]: new ExecuteJavaScriptTool(),
+  ["getStyles" /* GET_STYLES */]: new GetStylesTool(),
+  ["listNetworkRequests" /* LIST_NETWORK_REQUESTS */]: new ListNetworkRequestsTool(),
+  ["getNetworkRequestDetails" /* GET_NETWORK_REQUEST_DETAILS */]: new GetNetworkRequestDetailsTool(),
+  ["getLighthouseAudits" /* GET_LIGHTHOUSE_AUDITS */]: new GetLighthouseAuditsTool(),
+  ["resolveDevtoolsNodePath" /* RESOLVE_DEVTOOLS_NODE_PATH */]: new ResolveDevtoolsNodePathTool(),
+  ["getElementAccessibilityDetails" /* GET_ELEMENT_ACCESSIBILITY_DETAILS */]: new GetElementAccessibilityDetailsTool(),
+  ["recordPerformanceTrace" /* RECORD_PERFORMANCE_TRACE */]: new RecordPerformanceTraceTool(),
+  ["listPageOrigins" /* LIST_PAGE_ORIGINS */]: new ListPageOriginsTool(),
+  ["listStorageKeys" /* LIST_STORAGE_KEYS */]: new ListStorageKeysTool(),
+  ["getStorageValues" /* GET_STORAGE_VALUES */]: new GetStorageValuesTool(),
+  ["listCookies" /* LIST_COOKIES */]: new ListCookiesTool(),
+  ["getCookieValues" /* GET_COOKIE_VALUES */]: new GetCookieValuesTool(),
+  ["getTraceEventByKey" /* GET_TRACE_EVENT_BY_KEY */]: new GetTraceEventByKeyTool(),
+  ["selectTraceEventByKey" /* SELECT_TRACE_EVENT_BY_KEY */]: new SelectTraceEventByKeyTool(),
+  ["listSources" /* LIST_SOURCES */]: new ListSourcesTool(),
+  ["getSourceContent" /* GET_SOURCE_CONTENT */]: new GetSourceContentTool(),
+  ["getTraceMainThreadSummary" /* GET_TRACE_MAIN_THREAD_SUMMARY */]: new GetTraceMainThreadSummaryTool(),
+  ["getTraceNetworkSummary" /* GET_TRACE_NETWORK_SUMMARY */]: new GetTraceNetworkSummaryTool(),
+  ["runLighthouse" /* RUN_LIGHTHOUSE */]: new RunLighthouseTool(),
+  ["getDetailedCallTree" /* GET_DETAILED_CALL_TREE */]: new GetDetailedCallTreeTool(),
+  ["getFunctionCode" /* GET_FUNCTION_CODE */]: new GetFunctionCodeTool(),
+  ["getResourceContent" /* GET_RESOURCE_CONTENT */]: new GetResourceContentTool(),
+  ["getInsightDetails" /* GET_INSIGHT_DETAILS */]: new GetInsightDetailsTool(),
+  ["getStorageBreakdown" /* GET_STORAGE_BREAKDOWN */]: new GetStorageBreakdownTool()
 };
 var ToolRegistry = class {
   static get(name) {
@@ -7824,7 +11032,7 @@ var ToolRegistry = class {
   }
 };
 
-// gen/front_end/models/ai_assistance/agents/AccessibilityAgent.js
+// ../../front_end/models/ai_assistance/agents/AccessibilityAgent.ts
 var preamble = `You are an accessibility expert agent integrated into Chrome DevTools.
 Your role is to help users understand and fix accessibility issues found in Lighthouse reports.
 
@@ -7871,7 +11079,7 @@ If the user asks a question that requires an investigation of a problem, use thi
 `;
 var AccessibilityAgent = class extends AiAgent {
   preamble = preamble;
-  clientFeature = Host26.AidaClient.ClientFeature.CHROME_ACCESSIBILITY_AGENT;
+  clientFeature = Host29.AidaClient.ClientFeature.CHROME_ACCESSIBILITY_AGENT;
   #lighthouseRecording;
   #execJs;
   #changes;
@@ -7901,7 +11109,7 @@ var AccessibilityAgent = class extends AiAgent {
   }
   async preRun() {
     const target = this.targetManager.primaryPageTarget();
-    const domModel = target?.model(SDK17.DOMModel.DOMModel);
+    const domModel = target?.model(SDK21.DOMModel.DOMModel);
     if (domModel && !domModel.existingDocument()) {
       try {
         await domModel.requestDocument();
@@ -7916,7 +11124,7 @@ var AccessibilityAgent = class extends AiAgent {
    * so that the AI has a valid $0 to start with.
    */
   #getDocumentBodyNode() {
-    const document2 = this.targetManager.primaryPageTarget()?.model(SDK17.DOMModel.DOMModel)?.existingDocument();
+    const document2 = this.targetManager.primaryPageTarget()?.model(SDK21.DOMModel.DOMModel)?.existingDocument();
     return document2?.body ?? document2 ?? null;
   }
   async *handleContextDetails(lhr) {
@@ -7926,7 +11134,7 @@ var AccessibilityAgent = class extends AiAgent {
     const details = await lhr.getUserFacingDetails();
     if (details) {
       yield {
-        type: "context",
+        type: "context" /* CONTEXT */,
         details
       };
     }
@@ -7936,7 +11144,7 @@ var AccessibilityAgent = class extends AiAgent {
     if (!target) {
       return null;
     }
-    const domModel = target.model(SDK17.DOMModel.DOMModel);
+    const domModel = target.model(SDK21.DOMModel.DOMModel);
     if (!domModel) {
       return null;
     }
@@ -7964,12 +11172,12 @@ var AccessibilityAgent = class extends AiAgent {
     this.declareFunction("getLighthouseAudits", {
       description: "Returns the audits for a specific Lighthouse category. Use this to get more information about the performance, accessibility, best-practices, or seo audits.",
       parameters: {
-        type: 6,
+        type: Host29.AidaClient.ParametersTypes.OBJECT,
         description: "",
         nullable: false,
         properties: {
           categoryId: {
-            type: 1,
+            type: Host29.AidaClient.ParametersTypes.STRING,
             description: 'The category of audits to retrieve. Valid values are "performance", "accessibility", "best-practices", "seo".',
             nullable: false
           }
@@ -7978,7 +11186,7 @@ var AccessibilityAgent = class extends AiAgent {
       },
       displayInfoFromArgs: (params) => {
         return {
-          title: i18n42.i18n.lockedString(`Getting Lighthouse audits for ${params.categoryId}`),
+          title: i18n48.i18n.lockedString(`Getting Lighthouse audits for ${params.categoryId}`),
           action: `getLighthouseAudits('${params.categoryId}')`
         };
       },
@@ -7995,10 +11203,7 @@ var AccessibilityAgent = class extends AiAgent {
         };
       }
     });
-    const executeJsTool = ToolRegistry.get(
-      "executeJavaScript"
-      /* ToolName.EXECUTE_JAVASCRIPT */
-    );
+    const executeJsTool = ToolRegistry.get("executeJavaScript" /* EXECUTE_JAVASCRIPT */);
     if (!executeJsTool) {
       throw new Error('Required tool "executeJavaScript" not found');
     }
@@ -8012,24 +11217,28 @@ var AccessibilityAgent = class extends AiAgent {
             error: "Cannot use this tool on an imported file."
           };
         }
-        return await executeJsTool.handler(args, {
-          conversationContext: this.context ?? null,
-          changeManager: this.#changes,
-          createExtensionScope: this.#createExtensionScope.bind(this),
-          execJs: this.#execJs,
-          getExecutionContextNode: () => this.#getDocumentBodyNode()
-        }, options);
+        return await executeJsTool.handler(
+          args,
+          {
+            conversationContext: this.context ?? null,
+            changeManager: this.#changes,
+            createExtensionScope: this.#createExtensionScope.bind(this),
+            execJs: this.#execJs,
+            getExecutionContextNode: () => this.#getDocumentBodyNode()
+          },
+          options
+        );
       }
     });
     this.declareFunction("runAccessibilityAudits", {
       description: "Triggers new Lighthouse accessibility audits in snapshot mode. Use this if the user has made changes to the page and you want to re-evaluate the accessibility audits.",
       parameters: {
-        type: 6,
+        type: Host29.AidaClient.ParametersTypes.OBJECT,
         description: "",
         nullable: false,
         properties: {
           explanation: {
-            type: 1,
+            type: Host29.AidaClient.ParametersTypes.STRING,
             description: "Explain why you want to run new audits.",
             nullable: false
           }
@@ -8038,7 +11247,7 @@ var AccessibilityAgent = class extends AiAgent {
       },
       displayInfoFromArgs: (params) => {
         return {
-          title: i18n42.i18n.lockedString("Running accessibility audits"),
+          title: i18n48.i18n.lockedString("Running accessibility audits"),
           thought: params.explanation,
           action: "runAccessibilityAudits()"
         };
@@ -8071,26 +11280,26 @@ var AccessibilityAgent = class extends AiAgent {
     this.declareFunction("getStyles", {
       description: 'Get computed styles for an element on the inspected page by its Lighthouse path. **CRITICAL** You MUST provide a specific list of CSS property names. Do not use generic values like "all" or "*".',
       parameters: {
-        type: 6,
+        type: Host29.AidaClient.ParametersTypes.OBJECT,
         description: "",
         nullable: false,
         properties: {
           explanation: {
-            type: 1,
+            type: Host29.AidaClient.ParametersTypes.STRING,
             description: "Explain why you want to get styles.",
             nullable: false
           },
           path: {
-            type: 1,
+            type: Host29.AidaClient.ParametersTypes.STRING,
             description: 'The Lighthouse path of the element (e.g., "1,HTML,1,BODY,2,DIV"). Find this in the report data.',
             nullable: false
           },
           styleProperties: {
-            type: 5,
+            type: Host29.AidaClient.ParametersTypes.ARRAY,
             description: 'One or more specific CSS style property names to fetch. Generic values like "all" or "*" are not supported.',
             nullable: false,
             items: {
-              type: 1,
+              type: Host29.AidaClient.ParametersTypes.STRING,
               description: "A CSS style property name to retrieve. For example, 'background-color'."
             }
           }
@@ -8146,17 +11355,17 @@ var AccessibilityAgent = class extends AiAgent {
     this.declareFunction("getElementAccessibilityDetails", {
       description: "Get detailed accessibility information for an element on the inspected page by its Lighthouse path.",
       parameters: {
-        type: 6,
+        type: Host29.AidaClient.ParametersTypes.OBJECT,
         description: "",
         nullable: false,
         properties: {
           explanation: {
-            type: 1,
+            type: Host29.AidaClient.ParametersTypes.STRING,
             description: "Explain why you want to get accessibility details.",
             nullable: false
           },
           path: {
-            type: 1,
+            type: Host29.AidaClient.ParametersTypes.STRING,
             description: 'The Lighthouse path of the element (e.g., "1,HTML,1,BODY,2,DIV"). Find this in the report data.',
             nullable: false
           }
@@ -8181,7 +11390,7 @@ var AccessibilityAgent = class extends AiAgent {
         if (!node) {
           return { error: `Could not find the element with path: ${params.path}` };
         }
-        const accessibilityModel = node.domModel().target().model(SDK17.AccessibilityModel.AccessibilityModel);
+        const accessibilityModel = node.domModel().target().model(SDK21.AccessibilityModel.AccessibilityModel);
         if (!accessibilityModel) {
           return { error: "Accessibility model not found." };
         }
@@ -8198,10 +11407,13 @@ var AccessibilityAgent = class extends AiAgent {
             focusable: node.getAttribute("tabindex") !== void 0 || axNode.role()?.value === "button" || axNode.role()?.value === "link",
             hidden: axNode.ignored()
           },
-          ariaAttributes: node.attributes().filter((attr) => attr.name.startsWith("aria-") || attr.name === "role").reduce((acc, attr) => {
-            acc[attr.name] = attr.value;
-            return acc;
-          }, {}),
+          ariaAttributes: node.attributes().filter((attr) => attr.name.startsWith("aria-") || attr.name === "role").reduce(
+            (acc, attr) => {
+              acc[attr.name] = attr.value;
+              return acc;
+            },
+            {}
+          ),
           isIgnored: axNode.ignored(),
           ignoredReasons: axNode.ignoredReasons(),
           backendNodeId: node.backendNodeId()
@@ -8212,8 +11424,8 @@ var AccessibilityAgent = class extends AiAgent {
           name: "DOM_TREE",
           data: {
             root: snapshot,
-            title: i18n42.i18n.lockedString("Element details"),
-            accessibleRevealLabel: i18n42.i18n.lockedString("Reveal element")
+            title: i18n48.i18n.lockedString("Element details"),
+            accessibleRevealLabel: i18n48.i18n.lockedString("Reveal element")
           }
         });
         return {
@@ -8237,20 +11449,84 @@ var AccessibilityAgent = class extends AiAgent {
   }
 };
 
-// gen/front_end/models/ai_assistance/agents/ContextSelectionAgent.js
+// ../../front_end/models/ai_assistance/agents/ContextSelectionAgent.ts
 var ContextSelectionAgent_exports = {};
 __export(ContextSelectionAgent_exports, {
   ContextSelectionAgent: () => ContextSelectionAgent
 });
-import * as Common16 from "./../../core/common/common.js";
-import * as Host27 from "./../../core/host/host.js";
-import * as i18n44 from "./../../core/i18n/i18n.js";
-import * as Root7 from "./../../core/root/root.js";
-import * as Logs6 from "./../logs/logs.js";
-import * as NetworkTimeCalculator4 from "./../network_time_calculator/network_time_calculator.js";
-import * as Workspace5 from "./../workspace/workspace.js";
+import * as Common17 from "../../core/common/common.js";
+import * as Host30 from "../../core/host/host.js";
+import * as i18n50 from "../../core/i18n/i18n.js";
+import * as Root7 from "../../core/root/root.js";
+import * as Logs6 from "../logs/logs.js";
+import * as NetworkTimeCalculator4 from "../network_time_calculator/network_time_calculator.js";
+import * as Workspace5 from "../workspace/workspace.js";
 
-// gen/front_end/models/ai_assistance/contexts/FileContext.js
+// ../../front_end/models/ai_assistance/contexts/AccessibilityContext.ts
+var AccessibilityContext_exports = {};
+__export(AccessibilityContext_exports, {
+  AccessibilityContext: () => AccessibilityContext
+});
+var AccessibilityContext = class extends ConversationContext {
+  #lh;
+  #cachedPayload = null;
+  constructor(report) {
+    super();
+    this.#lh = report;
+  }
+  #url() {
+    return this.#lh.finalUrl ?? this.#lh.finalDisplayedUrl;
+  }
+  getURL() {
+    return this.#url();
+  }
+  getItem() {
+    return this.#lh;
+  }
+  getTitle() {
+    return `Lighthouse report: ${this.#url()}`;
+  }
+  #getInitialPayload() {
+    if (this.#cachedPayload !== null) {
+      return this.#cachedPayload;
+    }
+    const formatter = new LighthouseFormatter();
+    const summary = formatter.summary(this.#lh);
+    const audits = formatter.audits(this.#lh, "accessibility");
+    const allFailed = Object.values(this.#lh.categories).every((category) => category.score === null);
+    if (allFailed) {
+      this.#cachedPayload = "**CRITICAL**: The Lighthouse report failed to record or all category scores are error/unavailable (n/a). This indicates a failed run or missing data.";
+    } else {
+      this.#cachedPayload = `# Lighthouse Report:
+${summary}
+${audits}`;
+    }
+    return this.#cachedPayload;
+  }
+  async getPromptDetails() {
+    return this.#getInitialPayload();
+  }
+  async getUserFacingDetails() {
+    return [
+      {
+        title: "Lighthouse report",
+        text: this.#getInitialPayload()
+      }
+    ];
+  }
+  async getWidgets() {
+    return [
+      {
+        name: "LIGHTHOUSE_REPORT",
+        data: {
+          report: this.#lh
+        }
+      }
+    ];
+  }
+};
+
+// ../../front_end/models/ai_assistance/contexts/FileContext.ts
 var FileContext_exports = {};
 __export(FileContext_exports, {
   FileContext: () => FileContext
@@ -8262,6 +11538,10 @@ var FileContext = class extends ConversationContext {
     super();
     this.#file = file;
     this.#debuggerWorkspaceBinding = debuggerWorkspaceBinding;
+  }
+  getOrigin() {
+    const fallbackOrigin = super.getOrigin();
+    return this.#file.project()?.securityOrigin?.() ?? fallbackOrigin;
   }
   getURL() {
     return this.#file.url();
@@ -8289,13 +11569,13 @@ ${new FileFormatter(this.#file, this.#debuggerWorkspaceBinding).formatFile()}`;
   }
 };
 
-// gen/front_end/models/ai_assistance/contexts/StorageContext.js
+// ../../front_end/models/ai_assistance/contexts/StorageContext.ts
 var StorageContext_exports = {};
 __export(StorageContext_exports, {
   StorageContext: () => StorageContext
 });
 
-// gen/front_end/models/ai_assistance/StorageItem.js
+// ../../front_end/models/ai_assistance/StorageItem.ts
 var StorageItem_exports = {};
 __export(StorageItem_exports, {
   CookieItem: () => CookieItem,
@@ -8305,8 +11585,6 @@ __export(StorageItem_exports, {
 });
 var EMPTY_ORIGIN = "";
 var StorageItem = class _StorageItem {
-  primaryTargetOrigin;
-  origin;
   constructor(primaryTargetOrigin, origin = EMPTY_ORIGIN) {
     this.primaryTargetOrigin = primaryTargetOrigin;
     this.origin = origin;
@@ -8319,9 +11597,6 @@ var StorageItem = class _StorageItem {
   }
 };
 var DOMStorageItem = class _DOMStorageItem extends StorageItem {
-  storageKey;
-  type;
-  key;
   constructor(primaryTargetOrigin, origin, storageKey, type, key) {
     super(primaryTargetOrigin, origin);
     this.storageKey = storageKey;
@@ -8333,7 +11608,6 @@ var DOMStorageItem = class _DOMStorageItem extends StorageItem {
   }
 };
 var CookieItem = class _CookieItem extends StorageItem {
-  name;
   constructor(primaryTargetOrigin, origin, name) {
     super(primaryTargetOrigin, origin);
     this.name = name;
@@ -8343,7 +11617,7 @@ var CookieItem = class _CookieItem extends StorageItem {
   }
 };
 
-// gen/front_end/models/ai_assistance/contexts/StorageContext.js
+// ../../front_end/models/ai_assistance/contexts/StorageContext.ts
 var StorageContext = class extends ConversationContext {
   #item;
   constructor(item) {
@@ -8429,8 +11703,8 @@ var StorageContext = class extends ConversationContext {
   }
 };
 
-// gen/front_end/models/ai_assistance/agents/ContextSelectionAgent.js
-var lockedString20 = i18n44.i18n.lockedString;
+// ../../front_end/models/ai_assistance/agents/ContextSelectionAgent.ts
+var lockedString23 = i18n50.i18n.lockedString;
 var preamble2 = `
 You are an advanced Web Development Assistant and AI routing agent integrated into Chrome DevTools. Your tone is educational, supportive, and technically precise. You aim to help developers of all levels, prioritizing teaching web concepts as the primary entry point for any solution.
 
@@ -8468,7 +11742,7 @@ Your role is to understand the user's query, identify the appropriate specialize
 `;
 var ContextSelectionAgent = class _ContextSelectionAgent extends AiAgent {
   preamble = preamble2;
-  clientFeature = Host27.AidaClient.ClientFeature.CHROME_CONTEXT_SELECTION_AGENT;
+  clientFeature = Host30.AidaClient.ClientFeature.CHROME_CONTEXT_SELECTION_AGENT;
   get userTier() {
     return Root7.Runtime.hostConfig.devToolsFreestyler?.userTier;
   }
@@ -8499,7 +11773,7 @@ var ContextSelectionAgent = class _ContextSelectionAgent extends AiAgent {
     this.declareFunction("listNetworkRequests", {
       description: `Gives a list of network requests including URL, status code, and duration.`,
       parameters: {
-        type: 6,
+        type: Host30.AidaClient.ParametersTypes.OBJECT,
         description: "",
         nullable: true,
         required: [],
@@ -8507,7 +11781,7 @@ var ContextSelectionAgent = class _ContextSelectionAgent extends AiAgent {
       },
       displayInfoFromArgs: () => {
         return {
-          title: lockedString20("Listing network requests"),
+          title: lockedString23("Listing network requests"),
           action: "listNetworkRequest()"
         };
       },
@@ -8561,13 +11835,13 @@ var ContextSelectionAgent = class _ContextSelectionAgent extends AiAgent {
     this.declareFunction("selectNetworkRequest", {
       description: `Selects a specific network request to further provide information about. Use this when asked about network requests issues.`,
       parameters: {
-        type: 6,
+        type: Host30.AidaClient.ParametersTypes.OBJECT,
         description: "",
         nullable: true,
         required: ["id"],
         properties: {
           id: {
-            type: 1,
+            type: Host30.AidaClient.ParametersTypes.STRING,
             description: "The id of the network request",
             nullable: false
           }
@@ -8575,7 +11849,7 @@ var ContextSelectionAgent = class _ContextSelectionAgent extends AiAgent {
       },
       displayInfoFromArgs: (args) => {
         return {
-          title: lockedString20("Getting network request"),
+          title: lockedString23("Getting network request"),
           action: `selectNetworkRequest(${args.id})`
         };
       },
@@ -8620,7 +11894,7 @@ var ContextSelectionAgent = class _ContextSelectionAgent extends AiAgent {
     this.declareFunction("listSourceFiles", {
       description: `Returns a list of all files in the project.`,
       parameters: {
-        type: 6,
+        type: Host30.AidaClient.ParametersTypes.OBJECT,
         description: "",
         nullable: true,
         required: [],
@@ -8628,7 +11902,7 @@ var ContextSelectionAgent = class _ContextSelectionAgent extends AiAgent {
       },
       displayInfoFromArgs: () => {
         return {
-          title: lockedString20("Listing source requests"),
+          title: lockedString23("Listing source requests"),
           action: "listSourceFiles()"
         };
       },
@@ -8644,7 +11918,7 @@ var ContextSelectionAgent = class _ContextSelectionAgent extends AiAgent {
         const uiSourceCodes = [];
         for (const file of _ContextSelectionAgent.getUISourceCodes(this.#workspace)) {
           const fileUrl = file.url();
-          const fileOrigin = Common16.ParsedURL.ParsedURL.extractOrigin(fileUrl);
+          const fileOrigin = Common17.ParsedURL.ParsedURL.extractOrigin(fileUrl);
           if (origin && fileOrigin !== origin) {
             continue;
           }
@@ -8668,13 +11942,13 @@ var ContextSelectionAgent = class _ContextSelectionAgent extends AiAgent {
     this.declareFunction("selectSourceFile", {
       description: `Selects a source file. Use this when asked about files on the page. Use listSourceFiles to find the file ID.`,
       parameters: {
-        type: 6,
+        type: Host30.AidaClient.ParametersTypes.OBJECT,
         description: "",
         nullable: true,
         required: ["id"],
         properties: {
           id: {
-            type: 3,
+            type: Host30.AidaClient.ParametersTypes.INTEGER,
             description: "The id (URL) of the file you want to select.",
             nullable: false
           }
@@ -8682,7 +11956,7 @@ var ContextSelectionAgent = class _ContextSelectionAgent extends AiAgent {
       },
       displayInfoFromArgs: (args) => {
         return {
-          title: lockedString20("Getting source file"),
+          title: lockedString23("Getting source file"),
           action: `selectSourceFile(${args.id})`
         };
       },
@@ -8699,7 +11973,7 @@ var ContextSelectionAgent = class _ContextSelectionAgent extends AiAgent {
             return false;
           }
           const fileUrl = file2.url();
-          const fileOrigin = Common16.ParsedURL.ParsedURL.extractOrigin(fileUrl);
+          const fileOrigin = Common17.ParsedURL.ParsedURL.extractOrigin(fileUrl);
           return !origin || fileOrigin === origin;
         });
         if (!file) {
@@ -8722,7 +11996,7 @@ var ContextSelectionAgent = class _ContextSelectionAgent extends AiAgent {
     this.declareFunction("performanceRecordAndReload", {
       description: "Records a new performance trace. Use this to measure, analyze, and debug page performance, general performance issues, performance metrics, and Core Web Vitals like Largest Contentful Paint (LCP), Interaction to Next Paint (INP), and Cumulative Layout Shift (CLS).",
       parameters: {
-        type: 6,
+        type: Host30.AidaClient.ParametersTypes.OBJECT,
         description: "",
         nullable: true,
         required: [],
@@ -8754,13 +12028,13 @@ var ContextSelectionAgent = class _ContextSelectionAgent extends AiAgent {
     this.declareFunction("runLighthouseAudits", {
       description: "Records a Lighthouse audit on the current page. Use this to debug accessibility, SEO, and best practices. (For any performance-related questions or performance issues, do NOT use this; use performanceRecordAndReload instead).",
       parameters: {
-        type: 6,
+        type: Host30.AidaClient.ParametersTypes.OBJECT,
         description: "",
         nullable: true,
         required: ["mode"],
         properties: {
           mode: {
-            type: 1,
+            type: Host30.AidaClient.ParametersTypes.STRING,
             description: `The mode to run Lighthouse in. Your ONLY options are "navigation" or "snapshot". You should determine this based on the user's question. If the user is asking specifically about accessibility, you can run in "snapshot" mode which avoids reloading the page. If the user asks for a full Lighthouse report, you should run in "navigation" mode which is the default. These are the only options you can pass.`,
             nullable: false
           }
@@ -8795,7 +12069,7 @@ var ContextSelectionAgent = class _ContextSelectionAgent extends AiAgent {
     this.declareFunction("inspectDom", {
       description: `Prompts user to select a DOM element from the page. Use this when you don't know which element is selected.`,
       parameters: {
-        type: 6,
+        type: Host30.AidaClient.ParametersTypes.OBJECT,
         description: "",
         nullable: true,
         required: [],
@@ -8803,7 +12077,7 @@ var ContextSelectionAgent = class _ContextSelectionAgent extends AiAgent {
       },
       displayInfoFromArgs: () => {
         return {
-          title: lockedString20("Select an element on the page or in the Elements panel")
+          title: lockedString23("Select an element on the page or in the Elements panel")
         };
       },
       handler: async (_params, options) => {
@@ -8834,7 +12108,7 @@ var ContextSelectionAgent = class _ContextSelectionAgent extends AiAgent {
       this.declareFunction("analyzeStorage", {
         description: "Selects the page storage. Use this when asked about browser storage (localStorage, sessionStorage, cookies) and issues related to these.",
         parameters: {
-          type: 6,
+          type: Host30.AidaClient.ParametersTypes.OBJECT,
           description: "",
           nullable: true,
           required: [],
@@ -8842,7 +12116,7 @@ var ContextSelectionAgent = class _ContextSelectionAgent extends AiAgent {
         },
         displayInfoFromArgs: () => {
           return {
-            title: lockedString20("Prepare storage analysis"),
+            title: lockedString23("Prepare storage analysis"),
             action: "analyzeStorage()"
           };
         },
@@ -8910,13 +12184,13 @@ var ContextSelectionAgent = class _ContextSelectionAgent extends AiAgent {
   }
 };
 
-// gen/front_end/models/ai_assistance/agents/FileAgent.js
+// ../../front_end/models/ai_assistance/agents/FileAgent.ts
 var FileAgent_exports = {};
 __export(FileAgent_exports, {
   FileAgent: () => FileAgent
 });
-import * as Host28 from "./../../core/host/host.js";
-import * as Root8 from "./../../core/root/root.js";
+import * as Host31 from "../../core/host/host.js";
+import * as Root8 from "../../core/root/root.js";
 var preamble3 = `You are a highly skilled software engineer with expertise in various programming languages and frameworks.
 You are provided with the content of a file from the Chrome DevTools Sources panel. To aid your analysis, you've been given the below links to understand the context of the code and its relationship to other files. When answering questions, prioritize providing these links directly.
 * Source-mapped from: If this code is the source for a mapped file, you'll have a link to that generated file.
@@ -8971,7 +12245,7 @@ MDN Web Docs: JavaScript Functions: https://developer.mozilla.org/en-US/docs/Web
 `;
 var FileAgent = class extends AiAgent {
   preamble = preamble3;
-  clientFeature = Host28.AidaClient.ClientFeature.CHROME_FILE_AGENT;
+  clientFeature = Host31.AidaClient.ClientFeature.CHROME_FILE_AGENT;
   get userTier() {
     return Root8.Runtime.hostConfig.devToolsAiAssistanceFileAgent?.userTier;
   }
@@ -8992,7 +12266,7 @@ var FileAgent = class extends AiAgent {
       return;
     }
     yield {
-      type: "context",
+      type: "context" /* CONTEXT */,
       details
     };
   }
@@ -9007,13 +12281,13 @@ var FileAgent = class extends AiAgent {
   }
 };
 
-// gen/front_end/models/ai_assistance/agents/NetworkAgent.js
+// ../../front_end/models/ai_assistance/agents/NetworkAgent.ts
 var NetworkAgent_exports = {};
 __export(NetworkAgent_exports, {
   NetworkAgent: () => NetworkAgent
 });
-import * as Host29 from "./../../core/host/host.js";
-import * as Root9 from "./../../core/root/root.js";
+import * as Host32 from "../../core/host/host.js";
+import * as Root9 from "../../core/root/root.js";
 var preamble4 = `You are the most advanced network request debugging assistant integrated into Chrome DevTools.
 The user selected a network request in the browser's DevTools Network Panel and sends a query to understand the request.
 Provide a comprehensive analysis of the network request, focusing on areas crucial for a software engineer. Your analysis should include:
@@ -9060,7 +12334,7 @@ This request aims to retrieve a list of products matching the search query "lapt
 `;
 var NetworkAgent = class extends AiAgent {
   preamble = preamble4;
-  clientFeature = Host29.AidaClient.ClientFeature.CHROME_NETWORK_AGENT;
+  clientFeature = Host32.AidaClient.ClientFeature.CHROME_NETWORK_AGENT;
   get userTier() {
     return Root9.Runtime.hostConfig.devToolsAiAssistanceNetworkAgent?.userTier;
   }
@@ -9081,7 +12355,7 @@ var NetworkAgent = class extends AiAgent {
       return;
     }
     yield {
-      type: "context",
+      type: "context" /* CONTEXT */,
       details,
       widgets: [{
         name: "NETWORK_REQUEST_GENERAL_HEADERS",
@@ -9102,20 +12376,20 @@ var NetworkAgent = class extends AiAgent {
   }
 };
 
-// gen/front_end/models/ai_assistance/agents/PerformanceAgent.js
+// ../../front_end/models/ai_assistance/agents/PerformanceAgent.ts
 var PerformanceAgent_exports = {};
 __export(PerformanceAgent_exports, {
   PerformanceAgent: () => PerformanceAgent
 });
-import * as Common17 from "./../../core/common/common.js";
-import * as Host30 from "./../../core/host/host.js";
-import * as i18n46 from "./../../core/i18n/i18n.js";
-import * as Root10 from "./../../core/root/root.js";
-import * as SDK18 from "./../../core/sdk/sdk.js";
-import * as TextUtils5 from "./../../core/text_utils/text_utils.js";
-import * as Tracing2 from "./../../services/tracing/tracing.js";
-import * as Logs7 from "./../logs/logs.js";
-import * as Trace9 from "./../trace/trace.js";
+import * as Common18 from "../../core/common/common.js";
+import * as Host33 from "../../core/host/host.js";
+import * as i18n52 from "../../core/i18n/i18n.js";
+import * as Root10 from "../../core/root/root.js";
+import * as SDK22 from "../../core/sdk/sdk.js";
+import * as TextUtils5 from "../../core/text_utils/text_utils.js";
+import * as Tracing3 from "../../services/tracing/tracing.js";
+import * as Logs7 from "../logs/logs.js";
+import * as Trace9 from "../trace/trace.js";
 var UIStringsNotTranslated = {
   /**
    * @description Shown when the agent is investigating network activity
@@ -9126,7 +12400,7 @@ var UIStringsNotTranslated = {
    */
   mainThreadActivity: "Investigating main thread activity"
 };
-var lockedString21 = i18n46.i18n.lockedString;
+var lockedString24 = i18n52.i18n.lockedString;
 var preamble5 = `You are an assistant, expert in web performance and highly skilled with Chrome DevTools.
 
 Your primary goal is to provide actionable advice to web developers about their web page by using the Chrome Performance Panel and analyzing a trace. You may need to diagnose problems yourself, or you may be given direction for what to focus on by the user.
@@ -9242,12 +12516,6 @@ When referring to an element for which you know the nodeId, annotate your output
 - Never mention node or nodeId when referring to the element, and especially not in the link text.
 - When referring to the LCP, it's useful to also mention what the LCP element is via its nodeId. Use the markdown link syntax to do so.
 `;
-var ScorePriority;
-(function(ScorePriority2) {
-  ScorePriority2[ScorePriority2["REQUIRED"] = 3] = "REQUIRED";
-  ScorePriority2[ScorePriority2["CRITICAL"] = 2] = "CRITICAL";
-  ScorePriority2[ScorePriority2["DEFAULT"] = 1] = "DEFAULT";
-})(ScorePriority || (ScorePriority = {}));
 var MAX_FUNCTION_RESULT_BYTE_LENGTH2 = 16384 * 4;
 function getInsightModel2(model, key) {
   if (Object.prototype.hasOwnProperty.call(model, key)) {
@@ -9261,7 +12529,7 @@ var PerformanceAgent = class extends AiAgent {
   #networkLog;
   constructor(opts) {
     super(opts);
-    this.#tracker = opts.tracker ?? Tracing2.FreshRecording.Tracker.instance();
+    this.#tracker = opts.tracker ?? Tracing3.FreshRecording.Tracker.instance();
     this.#networkLog = opts.networkLog ?? Logs7.NetworkLog.NetworkLog.instance();
   }
   #formatter = null;
@@ -9281,19 +12549,19 @@ var PerformanceAgent = class extends AiAgent {
   #functionCallCacheForFocus = /* @__PURE__ */ new Map();
   #notExternalExtraPreambleFact = {
     text: extraPreambleWhenNotExternal,
-    metadata: { source: "devtools", score: ScorePriority.CRITICAL }
+    metadata: { source: "devtools", score: 2 /* CRITICAL */ }
   };
   #freshTraceExtraPreambleFact = {
     text: freshTracePreamble,
-    metadata: { source: "devtools", score: ScorePriority.CRITICAL }
+    metadata: { source: "devtools", score: 2 /* CRITICAL */ }
   };
   #networkDataDescriptionFact = {
     text: PerformanceTraceFormatter.networkDataFormatDescription,
-    metadata: { source: "devtools", score: ScorePriority.CRITICAL }
+    metadata: { source: "devtools", score: 2 /* CRITICAL */ }
   };
   #callFrameDataDescriptionFact = {
     text: PerformanceTraceFormatter.callFrameDataFormatDescription,
-    metadata: { source: "devtools", score: ScorePriority.CRITICAL }
+    metadata: { source: "devtools", score: 2 /* CRITICAL */ }
   };
   #traceFacts = [];
   /**
@@ -9313,7 +12581,7 @@ var PerformanceAgent = class extends AiAgent {
    */
   #additionalSelectionsForDisclosure = [];
   get clientFeature() {
-    return Host30.AidaClient.ClientFeature.CHROME_PERFORMANCE_FULL_AGENT;
+    return Host33.AidaClient.ClientFeature.CHROME_PERFORMANCE_FULL_AGENT;
   }
   get userTier() {
     return Root10.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.userTier;
@@ -9340,7 +12608,7 @@ var PerformanceAgent = class extends AiAgent {
     contextDisclosure.push(...this.#additionalSelectionsForDisclosure);
     const widgets = await context.getWidgets();
     yield {
-      type: "context",
+      type: "context" /* CONTEXT */,
       details: [
         {
           title: "Trace details",
@@ -9496,8 +12764,10 @@ ${query}`);
     if (!text) {
       return;
     }
-    this.#traceFacts.push({ text: `Trace summary:
-${text}`, metadata: { source: "devtools", score: ScorePriority.REQUIRED } });
+    this.#traceFacts.push(
+      { text: `Trace summary:
+${text}`, metadata: { source: "devtools", score: 3 /* REQUIRED */ } }
+    );
   }
   async #createFactForCriticalRequests() {
     if (!this.#formatter) {
@@ -9509,7 +12779,7 @@ ${text}`, metadata: { source: "devtools", score: ScorePriority.REQUIRED } });
     }
     this.#traceFacts.push({
       text,
-      metadata: { source: "devtools", score: ScorePriority.CRITICAL }
+      metadata: { source: "devtools", score: 2 /* CRITICAL */ }
     });
   }
   async #createFactForMainThreadBottomUpSummary() {
@@ -9523,7 +12793,7 @@ ${text}`, metadata: { source: "devtools", score: ScorePriority.REQUIRED } });
     }
     this.#traceFacts.push({
       text,
-      metadata: { source: "devtools", score: ScorePriority.CRITICAL }
+      metadata: { source: "devtools", score: 2 /* CRITICAL */ }
     });
   }
   async #createFactForThirdPartySummary() {
@@ -9536,7 +12806,7 @@ ${text}`, metadata: { source: "devtools", score: ScorePriority.REQUIRED } });
     }
     this.#traceFacts.push({
       text,
-      metadata: { source: "devtools", score: ScorePriority.CRITICAL }
+      metadata: { source: "devtools", score: 2 /* CRITICAL */ }
     });
   }
   async #createFactForLongestTasks() {
@@ -9549,7 +12819,7 @@ ${text}`, metadata: { source: "devtools", score: ScorePriority.REQUIRED } });
     }
     this.#traceFacts.push({
       text,
-      metadata: { source: "devtools", score: ScorePriority.CRITICAL }
+      metadata: { source: "devtools", score: 2 /* CRITICAL */ }
     });
   }
   async #addFacts(context) {
@@ -9587,7 +12857,7 @@ ${text}`, metadata: { source: "devtools", score: ScorePriority.REQUIRED } });
     const fact = {
       text: `This is the result of calling ${key}:
 ${result}`,
-      metadata: { source: key, score: ScorePriority.DEFAULT }
+      metadata: { source: key, score: 1 /* DEFAULT */ }
     };
     const cache = this.#functionCallCacheForFocus.get(focus) ?? {};
     cache[key] = fact;
@@ -9633,17 +12903,17 @@ ${result}`,
     this.declareFunction("getInsightDetails", {
       description: "Returns detailed information about a specific insight of an insight set. Use this before commenting on any specific issue to get more information.",
       parameters: {
-        type: 6,
+        type: Host33.AidaClient.ParametersTypes.OBJECT,
         description: "",
         nullable: false,
         properties: {
           insightSetId: {
-            type: 1,
+            type: Host33.AidaClient.ParametersTypes.STRING,
             description: 'The id for the specific insight set. Only use the ids given in the "Available insight sets" list.',
             nullable: false
           },
           insightName: {
-            type: 1,
+            type: Host33.AidaClient.ParametersTypes.STRING,
             description: 'The name of the insight. Only use the insight names given in the "Available insights" list.',
             nullable: false
           }
@@ -9652,7 +12922,7 @@ ${result}`,
       },
       displayInfoFromArgs: (params) => {
         return {
-          title: lockedString21(`Investigating insight ${params.insightName}`),
+          title: lockedString24(`Investigating insight ${params.insightName}`),
           action: `getInsightDetails('${params.insightSetId}', '${params.insightName}')`
         };
       },
@@ -9677,7 +12947,7 @@ ${result}`,
             const nodeId = lcpEvent.args.data?.nodeId;
             if (nodeId) {
               const target = this.targetManager.primaryPageTarget();
-              const domModel = target?.model(SDK18.DOMModel.DOMModel);
+              const domModel = target?.model(SDK22.DOMModel.DOMModel);
               if (domModel) {
                 const nodeMap = await domModel.pushNodesByBackendIdsToFrontend(/* @__PURE__ */ new Set([nodeId]));
                 const node = nodeMap?.get(nodeId);
@@ -9702,8 +12972,8 @@ ${result}`,
                     data: {
                       root: snapshot,
                       networkRequest,
-                      title: lockedString21("LCP element"),
-                      accessibleRevealLabel: lockedString21("Reveal LCP element")
+                      title: lockedString24("LCP element"),
+                      accessibleRevealLabel: lockedString24("Reveal LCP element")
                     }
                   });
                 }
@@ -9729,12 +12999,12 @@ ${result}`,
     this.declareFunction("getEventByKey", {
       description: "Returns detailed information about a specific event. Use the detail returned to validate performance issues, but do not tell the user about irrelevant raw data from a trace event.",
       parameters: {
-        type: 6,
+        type: Host33.AidaClient.ParametersTypes.OBJECT,
         description: "",
         nullable: false,
         properties: {
           eventKey: {
-            type: 1,
+            type: Host33.AidaClient.ParametersTypes.STRING,
             description: "The key for the event.",
             nullable: false
           }
@@ -9742,7 +13012,7 @@ ${result}`,
         required: ["eventKey"]
       },
       displayInfoFromArgs: (params) => {
-        return { title: lockedString21("Looking at trace event"), action: `getEventByKey('${params.eventKey}')` };
+        return { title: lockedString24("Looking at trace event"), action: `getEventByKey('${params.eventKey}')` };
       },
       handler: async (params) => {
         debugLog("Function call: getEventByKey", params);
@@ -9768,12 +13038,12 @@ ${result}`,
     this.declareFunction("getMainThreadTrackSummaryByLabel", {
       description: "Returns a focused, detailed summary of the main thread for a predefined labeled period. Use this to get more relevant detail than the initial trace summary before diagnosing issues.",
       parameters: {
-        type: 6,
+        type: Host33.AidaClient.ParametersTypes.OBJECT,
         description: "",
         nullable: false,
         properties: {
           label: {
-            type: 1,
+            type: Host33.AidaClient.ParametersTypes.STRING,
             description: "The label of the period to investigate (e.g., 'LCPBreakdown', 'CLSCulprits', 'nav-to-lcp').",
             nullable: false
           }
@@ -9783,7 +13053,7 @@ ${result}`,
       displayInfoFromArgs: (args) => {
         const labelName = context.getLabelName(args.label);
         return {
-          title: lockedString21(`${UIStringsNotTranslated.mainThreadActivity}: ${labelName}`),
+          title: lockedString24(`${UIStringsNotTranslated.mainThreadActivity}: ${labelName}`),
           action: `getMainThreadTrackSummaryByLabel('${args.label}')`
         };
       },
@@ -9800,17 +13070,17 @@ ${result}`,
     this.declareFunction("getNetworkTrackSummary", {
       description: "Returns a summary of the network for the given bounds.",
       parameters: {
-        type: 6,
+        type: Host33.AidaClient.ParametersTypes.OBJECT,
         description: "",
         nullable: false,
         properties: {
           min: {
-            type: 3,
+            type: Host33.AidaClient.ParametersTypes.INTEGER,
             description: `The minimum time of the bounds, in microseconds (the current trace starts at ${parsedTrace.data.Meta.traceBounds.min})`,
             nullable: true
           },
           max: {
-            type: 3,
+            type: Host33.AidaClient.ParametersTypes.INTEGER,
             description: `The maximum time of the bounds, in microseconds (the current trace ends at ${parsedTrace.data.Meta.traceBounds.max})`,
             nullable: true
           }
@@ -9821,7 +13091,7 @@ ${result}`,
         const min = args.min ?? parsedTrace.data.Meta.traceBounds.min;
         const max = args.max ?? parsedTrace.data.Meta.traceBounds.max;
         return {
-          title: lockedString21(UIStringsNotTranslated.networkActivitySummary),
+          title: lockedString24(UIStringsNotTranslated.networkActivitySummary),
           action: `getNetworkTrackSummary({min: ${min}, max: ${max}})`
         };
       },
@@ -9857,12 +13127,12 @@ ${result}`,
     this.declareFunction("getDetailedCallTree", {
       description: "Returns a detailed call tree for the given main thread event.",
       parameters: {
-        type: 6,
+        type: Host33.AidaClient.ParametersTypes.OBJECT,
         description: "",
         nullable: false,
         properties: {
           eventKey: {
-            type: 1,
+            type: Host33.AidaClient.ParametersTypes.STRING,
             description: "The key for the event.",
             nullable: false
           }
@@ -9870,7 +13140,7 @@ ${result}`,
         required: ["eventKey"]
       },
       displayInfoFromArgs: (args) => {
-        return { title: lockedString21("Looking at call tree"), action: `getDetailedCallTree('${args.eventKey}')` };
+        return { title: lockedString24("Looking at call tree"), action: `getDetailedCallTree('${args.eventKey}')` };
       },
       handler: async (args) => {
         debugLog("Function call: getDetailedCallTree");
@@ -9914,22 +13184,22 @@ ${result}`,
     this.declareFunction("getFunctionCode", {
       description: "Returns the code for a function defined at the given location. The result is annotated with the runtime performance of each line of code.",
       parameters: {
-        type: 6,
+        type: Host33.AidaClient.ParametersTypes.OBJECT,
         description: "",
         nullable: false,
         properties: {
           scriptUrl: {
-            type: 1,
+            type: Host33.AidaClient.ParametersTypes.STRING,
             description: "The url of the function.",
             nullable: false
           },
           line: {
-            type: 3,
+            type: Host33.AidaClient.ParametersTypes.INTEGER,
             description: "The line number where the function is defined.",
             nullable: false
           },
           column: {
-            type: 3,
+            type: Host33.AidaClient.ParametersTypes.INTEGER,
             description: "The column number where the function is defined.",
             nullable: false
           }
@@ -9938,7 +13208,7 @@ ${result}`,
       },
       displayInfoFromArgs: (args) => {
         return {
-          title: lockedString21("Looking up function code"),
+          title: lockedString24("Looking up function code"),
           action: `getFunctionCode('${args.scriptUrl}', ${args.line}, ${args.column})`
         };
       },
@@ -9988,12 +13258,12 @@ ${result}`,
     this.declareFunction("getResourceContent", {
       description: "Returns the content of the resource with the given url. Only use this for text resource types. This function is helpful for getting script contents in order to further analyze main thread activity and suggest code improvements. When analyzing the main thread activity, always call this function to get more detail. Always call this function when asked to provide specifics about what is happening in the code. Never ask permission to call this function, just do it.",
       parameters: {
-        type: 6,
+        type: Host33.AidaClient.ParametersTypes.OBJECT,
         description: "",
         nullable: false,
         properties: {
           url: {
-            type: 1,
+            type: Host33.AidaClient.ParametersTypes.STRING,
             description: "The url for the resource.",
             nullable: false
           }
@@ -10001,7 +13271,7 @@ ${result}`,
         required: ["url"]
       },
       displayInfoFromArgs: (args) => {
-        return { title: lockedString21("Looking at resource content"), action: `getResourceContent('${args.url}')` };
+        return { title: lockedString24("Looking at resource content"), action: `getResourceContent('${args.url}')` };
       },
       handler: async (args) => {
         debugLog("Function call: getResourceContent");
@@ -10018,7 +13288,7 @@ ${result}`,
         if (script?.content !== void 0) {
           content = script.content;
         } else if (isFresh || isTraceApp) {
-          const resource = SDK18.ResourceTreeModel.ResourceTreeModel.resourceForURL(this.targetManager, url);
+          const resource = SDK22.ResourceTreeModel.ResourceTreeModel.resourceForURL(this.targetManager, url);
           if (!resource) {
             return { error: "Resource not found" };
           }
@@ -10050,12 +13320,12 @@ ${result}`,
     this.declareFunction("selectEventByKey", {
       description: "Selects the event in the flamechart for the user. If the user asks to show them something, it's likely a good idea to call this function.",
       parameters: {
-        type: 6,
+        type: Host33.AidaClient.ParametersTypes.OBJECT,
         description: "",
         nullable: false,
         properties: {
           eventKey: {
-            type: 1,
+            type: Host33.AidaClient.ParametersTypes.STRING,
             description: "The key for the event.",
             nullable: false
           }
@@ -10063,7 +13333,7 @@ ${result}`,
         required: ["eventKey"]
       },
       displayInfoFromArgs: (params) => {
-        return { title: lockedString21("Selecting event"), action: `selectEventByKey('${params.eventKey}')` };
+        return { title: lockedString24("Selecting event"), action: `selectEventByKey('${params.eventKey}')` };
       },
       handler: async (params) => {
         debugLog("Function call: selectEventByKey", params);
@@ -10071,8 +13341,8 @@ ${result}`,
         if (!event) {
           return { error: "Invalid eventKey" };
         }
-        const revealable = new SDK18.TraceObject.RevealableEvent(event);
-        await Common17.Revealer.reveal(revealable);
+        const revealable = new SDK22.TraceObject.RevealableEvent(event);
+        await Common18.Revealer.reveal(revealable);
         return {
           result: { success: true },
           widgets: [{
@@ -10088,7 +13358,7 @@ ${result}`,
   }
   async #getNetworkRequestImageData(lcpRequest) {
     const target = this.targetManager.primaryPageTarget();
-    const networkManager = target?.model(SDK18.NetworkManager.NetworkManager);
+    const networkManager = target?.model(SDK22.NetworkManager.NetworkManager);
     if (!target || !networkManager) {
       return void 0;
     }
@@ -10105,21 +13375,21 @@ ${result}`,
   }
 };
 
-// gen/front_end/models/ai_assistance/agents/StorageAgent.js
+// ../../front_end/models/ai_assistance/agents/StorageAgent.ts
 var StorageAgent_exports = {};
 __export(StorageAgent_exports, {
   StorageAgent: () => StorageAgent,
-  findFrameForOrigin: () => findFrameForOrigin,
+  findFrameForOrigin: () => findFrameForOrigin2,
   getCookiesForDomain: () => getCookiesForDomain,
   isSamePageOrigin: () => isSamePageOrigin,
   resolveDOMStorages: () => resolveDOMStorages2
 });
-import * as Common18 from "./../../core/common/common.js";
-import * as Host31 from "./../../core/host/host.js";
-import * as i18n48 from "./../../core/i18n/i18n.js";
-import * as Root11 from "./../../core/root/root.js";
-import * as SDK19 from "./../../core/sdk/sdk.js";
-var lockedString22 = i18n48.i18n.lockedString;
+import * as Common19 from "../../core/common/common.js";
+import * as Host34 from "../../core/host/host.js";
+import * as i18n54 from "../../core/i18n/i18n.js";
+import * as Root11 from "../../core/root/root.js";
+import * as SDK23 from "../../core/sdk/sdk.js";
+var lockedString25 = i18n54.i18n.lockedString;
 var preamble6 = `You are a Senior Software Engineer specializing in state audit and storage analysis within Chrome DevTools. Your mission is to help developers debug storage-related issues faster by analyzing the evidence in LocalStorage, SessionStorage, and Cookies.
 
  You have access to the site's storage using tools like \`getStorageBreakdown\`, \`listPageOrigins\`, \`listStorageKeys\`, \`getStorageValues\`, \`listCookies\`, and \`getCookieValues\`.
@@ -10166,20 +13436,21 @@ function isSamePageOrigin(target, context) {
   if (!target || !context) {
     return false;
   }
-  const pageOrigin = Common18.ParsedURL.ParsedURL.extractOrigin(target.inspectedURL());
+  const pageOrigin = Common19.ParsedURL.ParsedURL.extractOrigin(target.inspectedURL());
   return pageOrigin !== "" && context.isOriginAllowed(pageOrigin);
 }
 var MAX_TARGET_ORIGINS2 = 100;
 function resolveTargetOrigins(context, origins) {
   const primaryOrigin = context?.getOrigin();
-  const rawList = origins && origins.length > 0 ? origins : primaryOrigin ? [primaryOrigin] : [];
+  const primaryString = primaryOrigin instanceof SDK23.SecurityOrigin.SecurityOrigin ? primaryOrigin.siteId() : primaryOrigin;
+  const rawList = origins && origins.length > 0 ? origins : primaryString ? [primaryString] : [];
   const uniqueOrigins = Array.from(new Set(rawList));
   return uniqueOrigins.slice(0, MAX_TARGET_ORIGINS2);
 }
-var MAX_NUM_CHAR_LENGTH2 = 1e4;
+var MAX_NUM_CHAR_LENGTH3 = 1e4;
 var StorageAgent = class _StorageAgent extends AiAgent {
   preamble = preamble6;
-  clientFeature = Host31.AidaClient.ClientFeature.CHROME_STORAGE_AGENT;
+  clientFeature = Host34.AidaClient.ClientFeature.CHROME_STORAGE_AGENT;
   get userTier() {
     return Root11.Runtime.hostConfig.devToolsFreestyler?.userTier;
   }
@@ -10196,7 +13467,7 @@ var StorageAgent = class _StorageAgent extends AiAgent {
     this.declareFunction("listPageOrigins", {
       description: "Lists all active, non-empty frame origins loaded by the page. Use this first when generic category context is active to discover all page origins, then pass them to listCookies or listStorageKeys, unless the user's explicit request hints at focusing only on the primary page.",
       parameters: {
-        type: 6,
+        type: Host34.AidaClient.ParametersTypes.OBJECT,
         description: "",
         nullable: false,
         properties: {},
@@ -10204,7 +13475,7 @@ var StorageAgent = class _StorageAgent extends AiAgent {
       },
       displayInfoFromArgs: () => {
         return {
-          title: lockedString22("Listing page origins"),
+          title: lockedString25("Listing page origins"),
           action: "listPageOrigins()"
         };
       },
@@ -10213,7 +13484,7 @@ var StorageAgent = class _StorageAgent extends AiAgent {
           return { error: "No origin available or not allowed." };
         }
         const origins = /* @__PURE__ */ new Set();
-        for (const frame of SDK19.ResourceTreeModel.ResourceTreeModel.frames(this.targetManager)) {
+        for (const frame of SDK23.ResourceTreeModel.ResourceTreeModel.frames(this.targetManager)) {
           if (!isSamePageOrigin(frame.resourceTreeModel().target().outermostTarget(), this.context)) {
             continue;
           }
@@ -10229,23 +13500,23 @@ var StorageAgent = class _StorageAgent extends AiAgent {
     this.declareFunction("listStorageKeys", {
       description: "Lists all keys for a given storage type for requested origins. Returns keys grouped by storage partition under their origin.",
       parameters: {
-        type: 6,
+        type: Host34.AidaClient.ParametersTypes.OBJECT,
         description: "",
         nullable: false,
         properties: {
           type: {
-            type: 1,
+            type: Host34.AidaClient.ParametersTypes.STRING,
             description: "Storage type: localStorage or sessionStorage",
             nullable: false
           },
           origins: {
-            type: 5,
+            type: Host34.AidaClient.ParametersTypes.ARRAY,
             description: "List of origins to list keys for.",
-            items: { type: 1, description: "An origin URL." },
+            items: { type: Host34.AidaClient.ParametersTypes.STRING, description: "An origin URL." },
             nullable: false
           },
           storageKey: {
-            type: 1,
+            type: Host34.AidaClient.ParametersTypes.STRING,
             description: "Optional. Specific storageKey to list keys for. Only applies if single origin is provided.",
             nullable: true
           }
@@ -10254,12 +13525,12 @@ var StorageAgent = class _StorageAgent extends AiAgent {
       },
       displayInfoFromArgs: (args) => {
         return {
-          title: lockedString22("Reading storage keys"),
+          title: lockedString25("Reading storage keys"),
           action: `listStorageKeys('${args.type}', ${JSON.stringify(args.origins)})`
         };
       },
       handler: async (args) => {
-        this.setServerSideLoggingActive(false);
+        this.disableServerSideLogging();
         if (!isSamePrimaryPageOrigin(this.targetManager, this.context)) {
           return { error: "No origin available or not allowed." };
         }
@@ -10290,29 +13561,29 @@ var StorageAgent = class _StorageAgent extends AiAgent {
     this.declareFunction("getStorageValues", {
       description: "Retrieve specific string values from storage partitions for requested keys across origins.",
       parameters: {
-        type: 6,
+        type: Host34.AidaClient.ParametersTypes.OBJECT,
         description: "",
         nullable: false,
         properties: {
           type: {
-            type: 1,
+            type: Host34.AidaClient.ParametersTypes.STRING,
             description: "Storage type: localStorage or sessionStorage",
             nullable: false
           },
           keys: {
-            type: 5,
+            type: Host34.AidaClient.ParametersTypes.ARRAY,
             description: "A list of keys to retrieve values for.",
-            items: { type: 1, description: "A storage key." },
+            items: { type: Host34.AidaClient.ParametersTypes.STRING, description: "A storage key." },
             nullable: false
           },
           origins: {
-            type: 5,
+            type: Host34.AidaClient.ParametersTypes.ARRAY,
             description: "List of origins to get values for.",
-            items: { type: 1, description: "An origin URL." },
+            items: { type: Host34.AidaClient.ParametersTypes.STRING, description: "An origin URL." },
             nullable: false
           },
           storageKey: {
-            type: 1,
+            type: Host34.AidaClient.ParametersTypes.STRING,
             description: "Optional. Specific storageKey partition to get values for. Only applies if single origin is provided.",
             nullable: true
           }
@@ -10321,12 +13592,12 @@ var StorageAgent = class _StorageAgent extends AiAgent {
       },
       displayInfoFromArgs: (args) => {
         return {
-          title: lockedString22("Reading storage values"),
+          title: lockedString25("Reading storage values"),
           action: `getStorageValues('${args.type}', ${JSON.stringify(args.keys)}, ${JSON.stringify(args.origins)}${args.storageKey ? `, '${args.storageKey}'` : ""})`
         };
       },
       handler: async (args, options) => {
-        this.setServerSideLoggingActive(false);
+        this.disableServerSideLogging();
         if (!isSamePrimaryPageOrigin(this.targetManager, this.context)) {
           return { error: "No origin available or not allowed." };
         }
@@ -10349,7 +13620,9 @@ var StorageAgent = class _StorageAgent extends AiAgent {
           const targetsDesc = Object.keys(allStoragesMap).join(", ");
           return {
             requiresApproval: true,
-            description: lockedString22(`The AI wants to access the value(s) of ${args.type} keys ${keyString} on ${targetsDesc}.`)
+            description: lockedString25(
+              `The AI wants to access the value(s) of ${args.type} keys ${keyString} on ${targetsDesc}.`
+            )
           };
         }
         const storageValuesByOrigin = {};
@@ -10371,7 +13644,7 @@ var StorageAgent = class _StorageAgent extends AiAgent {
               if (value === void 0) {
                 continue;
               }
-              const truncatedValue = value.length > MAX_NUM_CHAR_LENGTH2 ? value.substring(0, MAX_NUM_CHAR_LENGTH2) + "... <truncated>" : value;
+              const truncatedValue = value.length > MAX_NUM_CHAR_LENGTH3 ? value.substring(0, MAX_NUM_CHAR_LENGTH3) + "... <truncated>" : value;
               storageValues[key] = truncatedValue;
             }
             itemsResult.push({ storageKey: partitionKey, values: storageValues });
@@ -10384,14 +13657,14 @@ var StorageAgent = class _StorageAgent extends AiAgent {
     this.declareFunction("listCookies", {
       description: "Lists all cookies for requested origins, strictly excluding their values.",
       parameters: {
-        type: 6,
+        type: Host34.AidaClient.ParametersTypes.OBJECT,
         description: "",
         nullable: false,
         properties: {
           origins: {
-            type: 5,
+            type: Host34.AidaClient.ParametersTypes.ARRAY,
             description: "List of origins to list cookies for.",
-            items: { type: 1, description: "An origin URL." },
+            items: { type: Host34.AidaClient.ParametersTypes.STRING, description: "An origin URL." },
             nullable: false
           }
         },
@@ -10399,19 +13672,19 @@ var StorageAgent = class _StorageAgent extends AiAgent {
       },
       displayInfoFromArgs: (args) => {
         return {
-          title: lockedString22("Reading cookies"),
+          title: lockedString25("Reading cookies"),
           action: `listCookies(${JSON.stringify(args.origins)})`
         };
       },
       handler: async (args) => {
-        this.setServerSideLoggingActive(false);
+        this.disableServerSideLogging();
         if (!isSamePrimaryPageOrigin(this.targetManager, this.context)) {
           return { error: "No origin available or not allowed." };
         }
         const targetOrigins = resolveTargetOrigins(this.context, args.origins);
         const cookieNamesByOrigin = {};
         await Promise.all(targetOrigins.map(async (origin) => {
-          const frame = findFrameForOrigin(this.context, origin, this.targetManager);
+          const frame = findFrameForOrigin2(this.context, origin, this.targetManager);
           if (!frame) {
             cookieNamesByOrigin[origin] = { error: "Frame not found or origin disallowed" };
             return;
@@ -10427,20 +13700,20 @@ var StorageAgent = class _StorageAgent extends AiAgent {
     this.declareFunction("getCookieValues", {
       description: "Retrieve the values and detailed metadata of specific cookies by their names across origins.",
       parameters: {
-        type: 6,
+        type: Host34.AidaClient.ParametersTypes.OBJECT,
         description: "",
         nullable: false,
         properties: {
           cookieNames: {
-            type: 5,
+            type: Host34.AidaClient.ParametersTypes.ARRAY,
             description: "A list of cookie names to retrieve values and metadata for.",
-            items: { type: 1, description: "A cookie name." },
+            items: { type: Host34.AidaClient.ParametersTypes.STRING, description: "A cookie name." },
             nullable: false
           },
           origins: {
-            type: 5,
+            type: Host34.AidaClient.ParametersTypes.ARRAY,
             description: "List of origins the cookies belong to.",
-            items: { type: 1, description: "An origin URL." },
+            items: { type: Host34.AidaClient.ParametersTypes.STRING, description: "An origin URL." },
             nullable: false
           }
         },
@@ -10448,12 +13721,12 @@ var StorageAgent = class _StorageAgent extends AiAgent {
       },
       displayInfoFromArgs: (args) => {
         return {
-          title: lockedString22("Reading cookie values and metadata"),
+          title: lockedString25("Reading cookie values and metadata"),
           action: `getCookieValues(${JSON.stringify(args.cookieNames)}, ${JSON.stringify(args.origins)})`
         };
       },
       handler: async (args, options) => {
-        this.setServerSideLoggingActive(false);
+        this.disableServerSideLogging();
         if (!isSamePrimaryPageOrigin(this.targetManager, this.context)) {
           return { error: "No origin available or not allowed." };
         }
@@ -10461,12 +13734,12 @@ var StorageAgent = class _StorageAgent extends AiAgent {
         if (options?.approved !== true) {
           return {
             requiresApproval: true,
-            description: lockedString22(`The AI wants to access the value(s) and metadata of cookie(s) ${args.cookieNames.map((name) => `\`${name}\``).join(", ")} on ${targetOrigins.join(", ")}.`)
+            description: lockedString25(`The AI wants to access the value(s) and metadata of cookie(s) ${args.cookieNames.map((name) => `\`${name}\``).join(", ")} on ${targetOrigins.join(", ")}.`)
           };
         }
         const cookiesByOrigin = {};
         await Promise.all(targetOrigins.map(async (origin) => {
-          const frame = findFrameForOrigin(this.context, origin, this.targetManager);
+          const frame = findFrameForOrigin2(this.context, origin, this.targetManager);
           if (!frame) {
             cookiesByOrigin[origin] = { error: "Frame not found or origin disallowed" };
             return;
@@ -10480,7 +13753,7 @@ var StorageAgent = class _StorageAgent extends AiAgent {
           const matchingCookies = cookies.filter((c) => args.cookieNames.includes(c.name()));
           const cookieData = matchingCookies.map((cookie) => {
             const value = cookie.value();
-            const truncatedValue = value.length > MAX_NUM_CHAR_LENGTH2 ? value.substring(0, MAX_NUM_CHAR_LENGTH2) + "... <truncated>" : value;
+            const truncatedValue = value.length > MAX_NUM_CHAR_LENGTH3 ? value.substring(0, MAX_NUM_CHAR_LENGTH3) + "... <truncated>" : value;
             return {
               value: truncatedValue,
               domain: cookie.domain(),
@@ -10503,7 +13776,7 @@ var StorageAgent = class _StorageAgent extends AiAgent {
     this.declareFunction("getStorageBreakdown", {
       description: "Retrieves a breakdown of active storage usage per storage type for the top-level page.",
       parameters: {
-        type: 6,
+        type: Host34.AidaClient.ParametersTypes.OBJECT,
         description: "",
         nullable: false,
         properties: {},
@@ -10511,7 +13784,7 @@ var StorageAgent = class _StorageAgent extends AiAgent {
       },
       displayInfoFromArgs: () => {
         return {
-          title: lockedString22("Retrieving storage breakdown"),
+          title: lockedString25("Retrieving storage breakdown"),
           action: "getStorageBreakdown()"
         };
       },
@@ -10525,11 +13798,11 @@ var StorageAgent = class _StorageAgent extends AiAgent {
         if (response.getError()) {
           return { error: response.getError() || "Unknown CDP error" };
         }
-        const mainStorageKey = target.model(SDK19.StorageKeyManager.StorageKeyManager)?.mainStorageKey() || void 0;
+        const mainStorageKey = target.model(SDK23.StorageKeyManager.StorageKeyManager)?.mainStorageKey() || void 0;
         const localStorages = resolveDOMStorages2(this.context, "localStorage", origin, this.targetManager, mainStorageKey);
-        const localStorageBytes = await calculateDOMStoragesUsage(localStorages);
+        const localStorageBytes = await calculateDOMStoragesUsage2(localStorages);
         const sessionStorages = resolveDOMStorages2(this.context, "sessionStorage", origin, this.targetManager, mainStorageKey);
-        const sessionStorageBytes = await calculateDOMStoragesUsage(sessionStorages);
+        const sessionStorageBytes = await calculateDOMStoragesUsage2(sessionStorages);
         const cookies = await getCookiesForDomain(target, origin);
         let cookieBytes = 0;
         if (cookies) {
@@ -10541,7 +13814,11 @@ var StorageAgent = class _StorageAgent extends AiAgent {
           storageType: entry.storageType,
           rawUsage: entry.usage
         }));
-        rawUsageBreakdown.push({ storageType: "local_storage", rawUsage: localStorageBytes }, { storageType: "session_storage", rawUsage: sessionStorageBytes }, { storageType: "cookies", rawUsage: cookieBytes });
+        rawUsageBreakdown.push(
+          { storageType: "local_storage", rawUsage: localStorageBytes },
+          { storageType: "session_storage", rawUsage: sessionStorageBytes },
+          { storageType: "cookies", rawUsage: cookieBytes }
+        );
         rawUsageBreakdown.sort((a, b) => b.rawUsage - a.rawUsage);
         const usageBreakdown = rawUsageBreakdown.map((entry) => ({
           storageType: entry.storageType,
@@ -10571,7 +13848,7 @@ var StorageAgent = class _StorageAgent extends AiAgent {
   static #formatContext(item) {
     const primaryTargetOrigin = `Primary target: ${item.primaryTargetOrigin}`;
     if (item instanceof CookieItem) {
-      const parsedURL = Common18.ParsedURL.ParsedURL.fromString(item.origin);
+      const parsedURL = Common19.ParsedURL.ParsedURL.fromString(item.origin);
       const domain = parsedURL ? parsedURL.host : item.origin;
       return `${primaryTargetOrigin}
 User-selected Context: Cookies${item.isGenericContext ? "" : `
@@ -10591,9 +13868,9 @@ Key: ${item.key}` : ""}`;
   async preRun() {
     const item = this.context?.getItem();
     if (item instanceof CookieItem && Boolean(item.name)) {
-      this.setServerSideLoggingActive(false);
+      this.disableServerSideLogging();
     } else if (item instanceof DOMStorageItem && Boolean(item.key)) {
-      this.setServerSideLoggingActive(false);
+      this.disableServerSideLogging();
     }
   }
   async *handleContextDetails(context) {
@@ -10601,7 +13878,7 @@ Key: ${item.key}` : ""}`;
       return;
     }
     yield {
-      type: "context",
+      type: "context" /* CONTEXT */,
       details: [
         {
           title: "Selected Storage Context",
@@ -10621,7 +13898,7 @@ ${query}`;
   }
 };
 async function getCookiesForDomain(target, origin) {
-  const cookieModel = target.model(SDK19.CookieModel.CookieModel);
+  const cookieModel = target.model(SDK23.CookieModel.CookieModel);
   if (!cookieModel) {
     return null;
   }
@@ -10631,8 +13908,8 @@ async function getCookiesForDomain(target, origin) {
   }
   return allCookies.filter((cookie) => !cookie.httpOnly());
 }
-function findFrameForOrigin(context, origin, targetManager) {
-  for (const frame of SDK19.ResourceTreeModel.ResourceTreeModel.frames(targetManager)) {
+function findFrameForOrigin2(context, origin, targetManager) {
+  for (const frame of SDK23.ResourceTreeModel.ResourceTreeModel.frames(targetManager)) {
     if (frame.securityOrigin === origin) {
       const target = frame.resourceTreeModel().target();
       if (isSamePageOrigin(target.outermostTarget(), context)) {
@@ -10642,7 +13919,7 @@ function findFrameForOrigin(context, origin, targetManager) {
   }
   return null;
 }
-async function calculateDOMStoragesUsage(storages) {
+async function calculateDOMStoragesUsage2(storages) {
   let totalBytes = 0;
   for (const storage of storages) {
     const items = await storage.getItems();
@@ -10657,7 +13934,7 @@ async function calculateDOMStoragesUsage(storages) {
 function resolveDOMStorages2(context, type, origin, targetManager, storageKey) {
   const resolvedStorages = [];
   const isLocalStorage = type === "localStorage";
-  const domStorageModels = targetManager.models(SDK19.DOMStorageModel.DOMStorageModel);
+  const domStorageModels = targetManager.models(SDK23.DOMStorageModel.DOMStorageModel);
   for (const domStorageModel of domStorageModels) {
     if (!isSamePageOrigin(domStorageModel.target().outermostTarget(), context)) {
       continue;
@@ -10672,14 +13949,14 @@ function resolveDOMStorages2(context, type, origin, targetManager, storageKey) {
       }
       if (storageKey) {
         if (storageKey === currentStorageKey) {
-          const parsedKey2 = SDK19.StorageKeyManager.parseStorageKey(currentStorageKey);
+          const parsedKey2 = SDK23.StorageKeyManager.parseStorageKey(currentStorageKey);
           if (parsedKey2.origin === origin) {
             resolvedStorages.push(storage);
           }
         }
         continue;
       }
-      const parsedKey = SDK19.StorageKeyManager.parseStorageKey(currentStorageKey);
+      const parsedKey = SDK23.StorageKeyManager.parseStorageKey(currentStorageKey);
       if (parsedKey.origin === origin) {
         resolvedStorages.push(storage);
       }
@@ -10688,14 +13965,15 @@ function resolveDOMStorages2(context, type, origin, targetManager, storageKey) {
   return resolvedStorages;
 }
 
-// gen/front_end/models/ai_assistance/agents/StylingAgent.js
+// ../../front_end/models/ai_assistance/agents/StylingAgent.ts
 var StylingAgent_exports = {};
 __export(StylingAgent_exports, {
   AI_ASSISTANCE_FILTER_REGEX: () => AI_ASSISTANCE_FILTER_REGEX,
   StylingAgent: () => StylingAgent
 });
-import * as Host32 from "./../../core/host/host.js";
-import * as Root12 from "./../../core/root/root.js";
+import * as Host35 from "../../core/host/host.js";
+import * as Root12 from "../../core/root/root.js";
+import * as SDK24 from "../../core/sdk/sdk.js";
 var preamble7 = `You are the most advanced CSS/DOM/HTML debugging assistant integrated into Chrome DevTools.
 You always suggest considering the best web development practices and the newest platform features such as view transitions.
 The user selected a DOM element in the browser's DevTools and sends a query about the page or the selected DOM element.
@@ -10752,19 +14030,13 @@ In case query is related to the image, ALWAYS first use image evaluation to get 
 
 `;
 var MULTIMODAL_ENHANCEMENT_PROMPTS = {
-  [
-    "screenshot"
-    /* MultimodalInputType.SCREENSHOT */
-  ]: promptForScreenshot + considerationsForMultimodalInputEvaluation,
-  [
-    "uploaded-image"
-    /* MultimodalInputType.UPLOADED_IMAGE */
-  ]: promptForUploadedImage + considerationsForMultimodalInputEvaluation
+  ["screenshot" /* SCREENSHOT */]: promptForScreenshot + considerationsForMultimodalInputEvaluation,
+  ["uploaded-image" /* UPLOADED_IMAGE */]: promptForUploadedImage + considerationsForMultimodalInputEvaluation
 };
 var AI_ASSISTANCE_FILTER_REGEX = `\\.${AI_ASSISTANCE_CSS_CLASS_NAME}-.*&`;
 var StylingAgent = class extends AiAgent {
   preamble = preamble7;
-  clientFeature = Host32.AidaClient.ClientFeature.CHROME_STYLING_AGENT;
+  clientFeature = Host35.AidaClient.ClientFeature.CHROME_STYLING_AGENT;
   get userTier() {
     return Root12.Runtime.hostConfig.devToolsFreestyler?.userTier;
   }
@@ -10792,14 +14064,11 @@ var StylingAgent = class extends AiAgent {
     this.#createExtensionScope = opts.createExtensionScope ?? ((changes) => {
       return new ExtensionScope(changes, this.sessionId, this.context?.getItem() ?? null);
     });
-    const getStylesTool = ToolRegistry.get(
-      "getStyles"
-      /* ToolName.GET_STYLES */
-    );
+    const getStylesTool = ToolRegistry.get("getStyles" /* GET_STYLES */);
     if (!getStylesTool) {
       throw new Error('Required tool "getStyles" not found');
     }
-    this.declareFunction("getStyles", {
+    this.declareFunction("getStyles" /* GET_STYLES */, {
       description: getStylesTool.description,
       parameters: getStylesTool.parameters,
       displayInfoFromArgs: getStylesTool.displayInfoFromArgs,
@@ -10811,28 +14080,32 @@ var StylingAgent = class extends AiAgent {
         return await getStylesTool.handler(args, {
           conversationContext: context,
           getTarget: () => this.targetManager.primaryPageTarget() ?? context.getItem().domModel().target(),
-          getEstablishedOrigin: () => context.getOrigin()
+          getEstablishedOrigin: () => {
+            const origin = context.getOrigin();
+            return origin instanceof SDK24.SecurityOrigin.SecurityOrigin ? origin.siteId() : origin;
+          }
         });
       }
     });
-    const executeJsTool = ToolRegistry.get(
-      "executeJavaScript"
-      /* ToolName.EXECUTE_JAVASCRIPT */
-    );
+    const executeJsTool = ToolRegistry.get("executeJavaScript" /* EXECUTE_JAVASCRIPT */);
     if (!executeJsTool) {
       throw new Error('Required tool "executeJavaScript" not found');
     }
-    this.declareFunction("executeJavaScript", {
+    this.declareFunction("executeJavaScript" /* EXECUTE_JAVASCRIPT */, {
       description: executeJsTool.description,
       parameters: executeJsTool.parameters,
       displayInfoFromArgs: executeJsTool.displayInfoFromArgs,
-      handler: (args, options) => executeJsTool.handler(args, {
-        conversationContext: this.context ?? null,
-        changeManager: this.#changes,
-        createExtensionScope: this.#createExtensionScope.bind(this),
-        execJs: this.#execJs,
-        getExecutionContextNode: () => this.context?.getItem() ?? null
-      }, options)
+      handler: (args, options) => executeJsTool.handler(
+        args,
+        {
+          conversationContext: this.context ?? null,
+          changeManager: this.#changes,
+          createExtensionScope: this.#createExtensionScope.bind(this),
+          execJs: this.#execJs,
+          getExecutionContextNode: () => this.context?.getItem() ?? null
+        },
+        options
+      )
     });
   }
   preambleFeatures() {
@@ -10843,7 +14116,7 @@ var StylingAgent = class extends AiAgent {
       const details = await selectedElement.getUserFacingDetails();
       if (details) {
         yield {
-          type: "context",
+          type: "context" /* CONTEXT */,
           details
         };
       }
@@ -10861,13 +14134,19 @@ var StylingAgent = class extends AiAgent {
   }
 };
 
-// gen/front_end/models/ai_assistance/AiAgent2.js
+// ../../front_end/models/ai_assistance/AiAgent2.ts
 var AiAgent2_exports = {};
 __export(AiAgent2_exports, {
   AiAgent2: () => AiAgent2
 });
-import * as Host33 from "./../../core/host/host.js";
-import * as SDK20 from "./../../core/sdk/sdk.js";
+import * as Host36 from "../../core/host/host.js";
+import * as SDK25 from "../../core/sdk/sdk.js";
+
+// ../../front_end/models/ai_assistance/skills/SkillRegistry.ts
+var SkillRegistry_exports = {};
+__export(SkillRegistry_exports, {
+  SKILLS: () => SKILLS
+});
 
 // gen/front_end/models/ai_assistance/skills/accessibility.skill.js
 var skill = {
@@ -10927,13 +14206,16 @@ var skill4 = {
 // gen/front_end/models/ai_assistance/skills/storage.skill.js
 var skill5 = {
   "name": "storage",
-  "description": "inspect, understand, and audit the state stored in browser storage (LocalStorage, SessionStorage).",
+  "description": "inspect, understand, and audit the state stored in browser storage (LocalStorage, SessionStorage) and cookies.",
   "allowedTools": [
     "listPageOrigins",
     "listStorageKeys",
-    "getStorageValues"
+    "getStorageValues",
+    "listCookies",
+    "getCookieValues",
+    "getStorageBreakdown"
   ],
-  "instructions": 'You are a Senior Software Engineer specializing in state audit and storage analysis within Chrome DevTools. Your mission is to help developers debug storage-related issues faster by analyzing the evidence in LocalStorage and SessionStorage.\n\nYou have access to the site\'s storage using tools.\n\n# Goals\n\n1.  **Explain Purpose**: Identify what specific storage entries are for.\n2.  **Understand Application State**: Help users inspect, understand, and audit the state stored in browser storage, and how it relates to application behavior or issues (such as state mismatch/drift or security misconfigurations).\n3.  **Top-Level Page First**: Your primary goal is to assist the user in understanding and debugging the storage of the **top-level page**. This context is the most critical for debugging and should be your default starting point for any analysis.\n\n# Tools & Workflow\n\n-   **Top-Level Context**: Generally, questions refer to the primary page target ("my page", "this page", etc.). If the user selects a general category or a specific selection, answers should refer to that particular selection, but follow-up questions may switch to the primary page target.\n-   **Address Specific Selections**: The user can select individual storage items in the DevTools UI (provided in the \'# Active Context\' section of the prompt). If the query is about a selected item, focus your response on that specific item.\n-   **Discovery & General Category**: When investigating storage across the page, start by calling `listPageOrigins` to discover all active frame origins loaded by the page. Then pass the origins to `listStorageKeys` to discover available keys and storage partitions.\n-   **Value Inspection**: Use `getStorageValues` to inspect specific keys when key names alone are insufficient.\n-   **Expand Scope When Necessary**: For general questions or those implying a wider scope (e.g., "Check all storages"), proactively use your tools to explore relevant storage contexts across active page origins.\n\n# Considerations\n\n-   **Strictly Read-Only**: You cannot write, clear, delete, or edit storage.\n-   **DevTools UI Fallback**: If the user asks you to modify state, politely decline and provide exact step-by-step visual navigation directions on how they can perform the edit manually in the DevTools Application panel. Do NOT supply Console scripts.\n-   **Raw Evidence**: Treat storage data as raw evidence. Do not make assumptions about values without reading them first.\n-   **Dynamic State**: Always re-request values if you suspect they might have changed, rather than relying on past tool outputs.'
+  "instructions": 'You are a Senior Software Engineer specializing in state audit and storage analysis within Chrome DevTools. Your mission is to help developers debug storage-related issues faster by analyzing the evidence in LocalStorage, SessionStorage, and cookies.\n\nYou have access to the site\'s storage using tools.\n\n# Goals\n\n1.  **Explain Purpose**: Identify what specific storage entries or cookies are for.\n2.  **Understand Application State**: Help users inspect, understand, and audit the state stored in browser storage and cookies, and how it relates to application behavior or issues (such as state mismatch/drift or security misconfigurations).\n3.  **Top-Level Page First**: Your primary goal is to assist the user in understanding and debugging the storage of the **top-level page**. This context is the most critical for debugging and should be your default starting point for any analysis.\n\n# Tools & Workflow\n\n-   **Top-Level Context**: Generally, questions refer to the primary page target ("my page", "this page", etc.). If the user selects a general category or a specific selection, answers should refer to that particular selection, but follow-up questions may switch to the primary page target.\n-   **Storage Breakdown**: Calling `getStorageBreakdown` gives you the total usage and quota breakdown across storage types (including service workers, IndexedDB, CacheStorage, LocalStorage, SessionStorage, and cookies) for the top-level page. Proactively call this when asked about storage usage, quota limits, or overall storage footprints.\n-   **Address Specific Selections**: The user can select individual storage items in the DevTools UI (provided in the \'# Active Context\' section of the prompt). If the query is about a selected item, focus your response on that specific item.\n-   **Discovery & General Category**: When investigating storage across the page, start by calling `listPageOrigins` to discover all active frame origins loaded by the page. Then pass the origins to `listStorageKeys` or `listCookies` to discover available keys, storage partitions, and cookies.\n-   **Cookies**: Use `listCookies` to discover active cookie names (defaults to the current page origin if omitted). Use `getCookieValues` to retrieve values and detailed metadata of specific cookies by name. Provide `origins` only when targeting specific frames or subdomains.\n-   **HttpOnly Protection**: You don\'t have access to `HttpOnly` cookies. They are filtered out from discovery and retrieval tools for security reasons.\n-   **Value Inspection**: Use `getStorageValues` or `getCookieValues` to inspect specific keys and cookies when names alone are insufficient.\n-   **Expand Scope When Necessary**: For general questions or those implying a wider scope (e.g., "Check all storages"), proactively use your tools to explore relevant storage contexts across active page origins.\n\n# Considerations\n\n-   **Strictly Read-Only**: You cannot write, clear, delete, or edit storage or cookies.\n-   **DevTools UI Fallback**: If the user asks you to modify state, politely decline and provide exact step-by-step visual navigation directions on how they can perform the edit manually in the DevTools Application panel. Do NOT supply Console scripts.\n-   **Raw Evidence**: Treat storage data as raw evidence. Do not make assumptions about values without reading them first.\n-   **Dynamic State**: Always re-request values if you suspect they might have changed, rather than relying on past tool outputs.'
 };
 
 // gen/front_end/models/ai_assistance/skills/styling.skill.js
@@ -10944,10 +14226,10 @@ var skill6 = {
     "executeJavaScript",
     "getStyles"
   ],
-  "instructions": 'You are the most advanced CSS/DOM/HTML debugging assistant integrated into Chrome DevTools.\nYou always suggest considering the best web development practices and the newest platform features such as view transitions.\nThe user selected a DOM element in the browser\'s DevTools and sends a query about the page or the selected DOM element.\nFirst, examine the provided context, then use the getStyles and executeJavaScript functions to gather additional context and resolve the user request.\n\n# Considerations\n\n* Meticulously investigate all potential causes for the observed behavior before moving on. Gather comprehensive information about the element\'s parent, siblings, children, and any overlapping elements, paying close attention to properties that are likely relevant to the query.\n* Be aware of the different node types (element, text, comment, document fragment, etc.) and their properties. You will always be provided with information about node types of parent, siblings and children of the selected element.\n* Avoid making assumptions without sufficient evidence, and always seek further clarification if needed.\n* Always explore multiple possible explanations for the observed behavior before settling on a conclusion.\n* When presenting solutions, clearly distinguish between the primary cause and contributing factors.\n* Please answer only if you are sure about the answer. Otherwise, explain why you\'re not able to answer.\n* When answering, always consider MULTIPLE possible solutions.\n* When answering, remember to consider CSS concepts such as the CSS cascade, explicit and implicit stacking contexts and various CSS layout types.\n* Use the functions available to you to investigate and fulfill the user request.\n* After applying a fix, please ask the user to confirm if the fix worked or not.\n* ALWAYS OUTPUT a list of follow-up queries at the end of your text response. The format is SUGGESTIONS: ["suggestion1", "suggestion2", "suggestion3"]. Make sure that the array and the `SUGGESTIONS: ` text is in the same line. You\'re also capable of executing the fix for the issue user mentioned. Reflect this in your suggestions.\n* Use the precision of Strunk & White, the brevity of Hemingway, and the simple clarity of Vonnegut. Don\'t add repeated information, and keep the whole answer short.\n* **CRITICAL** NEVER output text before a function call. Always do a function call first.\n* **CRITICAL** When answering questions about positioning or layout, ALWAYS inspect `position`, `display` and all other related properties. You MUST provide a specific list of CSS property names when calling getStyles. Do not use generic values like "all" or "*".\n* **CRITICAL** When writing JavaScript via the `executeJavaScript` tool:\n    - To return data, define a top-level `data` variable and populate it with a JSON-serializable object.\n    - If you modify styles on an element, ALWAYS call the pre-defined global `async setElementStyles(el: Element, styles: object)` function. This function is an internal mechanism and should never be presented to the user.\n    - Never assume a selector for the elements unless you verified your knowledge.\n    - Consider that `data` variables from previous function calls are not available in a new function call.\n* **CRITICAL** You are a CSS/DOM/HTML debugging assistant. NEVER provide answers to questions of unrelated topics such as legal advice, financial advice, personal opinions, medical advice, religion, race, politics, sexuality, gender, or any other non web-development topics. Answer "Sorry, I can\'t answer that. I\'m best at questions about debugging web pages." to such questions.\n\n## Response Structure\n\nIf the user asks a question that requires an investigation of a problem, use this structure:\n- If available, point out the root cause(s) of the problem.\n  - Example: "**Root Cause**: The page is slow because of [reason]."\n    - Example: "**Root Causes**:"\n      - [Reason 1]\n      - [Reason 2]\n- if applicable, list actionable solution suggestion(s) in order of impact:\n  - Example: "**Suggestion**: [Suggestion 1]\n    - Example: "**Suggestions**:"\n      - [Suggestion 1]\n      - [Suggestion 2]'
+  "instructions": 'You are the most advanced CSS/DOM/HTML debugging assistant integrated into Chrome DevTools.\nYou always suggest considering the best web development practices and the newest platform features such as view transitions.\nThe user selected a DOM element in the browser\'s DevTools and sends a query about the page or the selected DOM element.\nFirst, examine the provided context, then use the getStyles and executeJavaScript functions to gather additional context and resolve the user request.\n\n# Considerations\n\n* Meticulously investigate all potential causes for the observed behavior before moving on. Gather comprehensive information about the element\'s parent, siblings, children, and any overlapping elements, paying close attention to properties that are likely relevant to the query.\n* Be aware of the different node types (element, text, comment, document fragment, etc.) and their properties. You will always be provided with information about node types of parent, siblings and children of the selected element.\n* Avoid making assumptions without sufficient evidence, and always seek further clarification if needed.\n* Always explore multiple possible explanations for the observed behavior before settling on a conclusion.\n* When presenting solutions, clearly distinguish between the primary cause and contributing factors.\n* Please answer only if you are sure about the answer. Otherwise, explain why you\'re not able to answer.\n* When answering, always consider MULTIPLE possible solutions.\n* When answering, remember to consider CSS concepts such as the CSS cascade, explicit and implicit stacking contexts and various CSS layout types.\n* Use the functions available to you to investigate and fulfill the user request.\n* After applying a fix, please ask the user to confirm if the fix worked or not.\n* Use the precision of Strunk & White, the brevity of Hemingway, and the simple clarity of Vonnegut. Don\'t add repeated information, and keep the whole answer short.\n* **CRITICAL** NEVER output text before a function call. Always do a function call first.\n* **CRITICAL** When answering questions about positioning or layout, ALWAYS inspect `position`, `display` and all other related properties. You MUST provide a specific list of CSS property names when calling getStyles. Do not use generic values like "all" or "*".\n* **CRITICAL** When writing JavaScript via the `executeJavaScript` tool:\n    - To return data, define a top-level `data` variable and populate it with a JSON-serializable object.\n    - If you modify styles on an element, ALWAYS call the pre-defined global `async setElementStyles(el: Element, styles: object)` function. This function is an internal mechanism and should never be presented to the user.\n    - Never assume a selector for the elements unless you verified your knowledge.\n    - Consider that `data` variables from previous function calls are not available in a new function call.\n* **CRITICAL** You are a CSS/DOM/HTML debugging assistant. NEVER provide answers to questions of unrelated topics such as legal advice, financial advice, personal opinions, medical advice, religion, race, politics, sexuality, gender, or any other non web-development topics. Answer "Sorry, I can\'t answer that. I\'m best at questions about debugging web pages." to such questions.\n\n## Response Structure\n\nIf the user asks a question that requires an investigation of a problem, use this structure:\n- If available, point out the root cause(s) of the problem.\n  - Example: "**Root Cause**: The page is slow because of [reason]."\n    - Example: "**Root Causes**:"\n      - [Reason 1]\n      - [Reason 2]\n- if applicable, list actionable solution suggestion(s) in order of impact:\n  - Example: "**Suggestion**: [Suggestion 1]\n    - Example: "**Suggestions**:"\n      - [Suggestion 1]\n      - [Suggestion 2]'
 };
 
-// gen/front_end/models/ai_assistance/skills/SkillRegistry.js
+// ../../front_end/models/ai_assistance/skills/SkillRegistry.ts
 var SKILLS = {
   styling: skill6,
   network: skill2,
@@ -10957,7 +14239,7 @@ var SKILLS = {
   sources: skill4
 };
 
-// gen/front_end/models/ai_assistance/AiAgent2.js
+// ../../front_end/models/ai_assistance/AiAgent2.ts
 var SKILL_DISPLAY_NAMES = {
   styling: "CSS and styling",
   network: "Network requests",
@@ -10988,6 +14270,11 @@ If the user asks a question that requires an investigation or debugging, use thi
 * **Suggestion(s)**: List actionable solution suggestion(s) in order of impact.
   - Example: "**Suggestion**: [Suggestion]" or "**Suggestions**:" followed by a bulleted list.
 
+# Follow-up Suggestions
+* Output a list of suggested follow-up queries or actions for the user at the very end of your response.
+* The format MUST be SUGGESTIONS: ["suggestion 1", "suggestion 2"] on its own single line.
+* Ensure suggestions are relevant, concise, and helpful next steps for the user.
+
 # Constraints
 * **CRITICAL**: You are a web development assistant. NEVER provide answers to questions of unrelated topics (such as legal advice, financial advice, personal opinions, medical advice, religion, race, politics, sexuality, gender, or any other non-web-development topics). If asked about these, respond with: "Sorry, I can't answer that. I'm best at questions about web development and debugging."
 * **CRITICAL**: Do not write full Python programs or other scripts to interact with the environment. Only invoke the allowed tools.
@@ -10995,7 +14282,7 @@ If the user asks a question that requires an investigation or debugging, use thi
 var AiAgent2 = class extends AiAgent {
   // TODO: The static preamble is a placeholder and will eventually live server-side.
   preamble = preamble8;
-  clientFeature = Host33.AidaClient.ClientFeature.CHROME_DEVTOOLS_V2_AGENT;
+  clientFeature = Host36.AidaClient.ClientFeature.CHROME_DEVTOOLS_V2_AGENT;
   userTier = "TESTERS";
   #changes;
   #execJs;
@@ -11007,10 +14294,10 @@ var AiAgent2 = class extends AiAgent {
   }
   async preRun() {
     if (this.context && !this.context.isLoggingEnabled()) {
-      this.setServerSideLoggingActive(false);
+      this.disableServerSideLogging();
     }
     const target = this.targetManager.primaryPageTarget();
-    const domModel = target?.model(SDK20.DOMModel.DOMModel);
+    const domModel = target?.model(SDK25.DOMModel.DOMModel);
     if (domModel) {
       if (!domModel.existingDocument()) {
         try {
@@ -11044,13 +14331,13 @@ var AiAgent2 = class extends AiAgent {
         return `Loads the specified skills to gain access to their specialized tools. Call this ONLY for skills listed under Available skills that are not yet loaded. Do not call this for skills that are already loaded. Available skills that are not yet loaded: ${unloadedSkills.join(", ")}.`;
       },
       parameters: {
-        type: 6,
+        type: Host36.AidaClient.ParametersTypes.OBJECT,
         description: "Parameters for learning skills",
         properties: {
           skills: {
-            type: 5,
+            type: Host36.AidaClient.ParametersTypes.ARRAY,
             items: {
-              type: 1,
+              type: Host36.AidaClient.ParametersTypes.STRING,
               description: "Skill name"
             },
             description: "List of unloaded skill names to load"
@@ -11107,7 +14394,7 @@ User query: ${enhancedQuery}`;
       ]);
       if (details) {
         yield {
-          type: "context",
+          type: "context" /* CONTEXT */,
           details,
           ...widgets.length > 0 ? { widgets } : {}
         };
@@ -11174,10 +14461,12 @@ ${skillObj.instructions}
           getExecutionContextNode: () => this.context instanceof DOMNodeContext ? this.context.getItem() : this.#getDocumentBodyNode(),
           getTarget: () => this.targetManager.primaryPageTarget(),
           getEstablishedOrigin: () => this.#getConversationOrigin(),
-          lighthouseRecording: this.#lighthouseRecording,
+          getLighthouseReport: () => this.context instanceof AccessibilityContext ? this.context.getItem() : null,
+          runLighthouse: async (overrides) => await (this.#lighthouseRecording?.(overrides) ?? null),
+          getPerformanceTraceContext: () => this.context instanceof PerformanceTraceContext ? this.context : null,
           performanceRecordAndReload: this.#performanceRecordAndReload,
-          setLoggingEnabled: (enabled) => {
-            this.setServerSideLoggingActive(enabled);
+          disableLogging: () => {
+            this.disableServerSideLogging();
           }
         };
         return tool.handler(args, context, options);
@@ -11190,7 +14479,7 @@ ${skillObj.instructions}
    * default execution context node so scripts have a valid `$0` target.
    */
   #getDocumentBodyNode() {
-    const document2 = this.targetManager.primaryPageTarget()?.model(SDK20.DOMModel.DOMModel)?.existingDocument();
+    const document2 = this.targetManager.primaryPageTarget()?.model(SDK25.DOMModel.DOMModel)?.existingDocument();
     return document2?.body ?? null;
   }
   #getConversationOrigin() {
@@ -11202,7 +14491,7 @@ ${skillObj.instructions}
   }
 };
 
-// gen/front_end/models/ai_assistance/AiConversation.js
+// ../../front_end/models/ai_assistance/AiConversation.ts
 var AiConversation_exports = {};
 __export(AiConversation_exports, {
   ALLOWED_PAGE_NAVIGATIONS: () => ALLOWED_PAGE_NAVIGATIONS,
@@ -11211,36 +14500,55 @@ __export(AiConversation_exports, {
   NOT_FOUND_IMAGE_DATA: () => NOT_FOUND_IMAGE_DATA,
   generateContextDetailsMarkdown: () => generateContextDetailsMarkdown
 });
-import * as Common20 from "./../../core/common/common.js";
-import * as Host34 from "./../../core/host/host.js";
-import * as Platform4 from "./../../core/platform/platform.js";
-import * as Root14 from "./../../core/root/root.js";
-import * as SDK21 from "./../../core/sdk/sdk.js";
+import * as Common21 from "../../core/common/common.js";
+import * as Host37 from "../../core/host/host.js";
+import * as Platform6 from "../../core/platform/platform.js";
+import * as Root14 from "../../core/root/root.js";
+import * as SDK26 from "../../core/sdk/sdk.js";
 
-// gen/front_end/models/ai_assistance/AiHistoryStorage.js
+// ../../front_end/models/ai_assistance/AiHistoryStorage.ts
 var AiHistoryStorage_exports = {};
 __export(AiHistoryStorage_exports, {
   AiHistoryStorage: () => AiHistoryStorage,
+  ConversationType: () => ConversationType,
+  Events: () => Events,
   MAX_CONVERSATIONS_COUNT: () => MAX_CONVERSATIONS_COUNT,
   MAX_RECENT_PROMPTS_COUNT: () => MAX_RECENT_PROMPTS_COUNT,
   RECENT_PROMPTS_SIZE_LIMIT: () => RECENT_PROMPTS_SIZE_LIMIT
 });
-import * as Common19 from "./../../core/common/common.js";
-import * as Root13 from "./../../core/root/root.js";
+import * as Common20 from "../../core/common/common.js";
+import * as Root13 from "../../core/root/root.js";
+var ConversationType = /* @__PURE__ */ ((ConversationType2) => {
+  ConversationType2["NONE"] = "none";
+  ConversationType2["STYLING"] = "freestyler";
+  ConversationType2["FILE"] = "drjones-file";
+  ConversationType2["NETWORK"] = "drjones-network-request";
+  ConversationType2["PERFORMANCE"] = "drjones-performance-full";
+  ConversationType2["ACCESSIBILITY"] = "accessibility";
+  ConversationType2["STORAGE"] = "storage";
+  return ConversationType2;
+})(ConversationType || {});
 var DEFAULT_MAX_STORAGE_SIZE = 50 * 1024 * 1024;
 var MAX_RECENT_PROMPTS_COUNT = 20;
 var MAX_CONVERSATIONS_COUNT = 50;
 var RECENT_PROMPTS_SIZE_LIMIT = 100 * 1024;
-var AiHistoryStorage = class _AiHistoryStorage extends Common19.ObjectWrapper.ObjectWrapper {
+var Events = /* @__PURE__ */ ((Events4) => {
+  Events4["HISTORY_DELETED"] = "AiHistoryDeleted";
+  return Events4;
+})(Events || {});
+var AiHistoryStorage = class _AiHistoryStorage extends Common20.ObjectWrapper.ObjectWrapper {
   #historySetting;
   #imageHistorySettings;
   #recentPromptsSetting;
-  #mutex = new Common19.Mutex.Mutex();
+  #mutex = new Common20.Mutex.Mutex();
   #maxStorageSize;
-  constructor(settings = Common19.Settings.Settings.instance(), maxStorageSize = DEFAULT_MAX_STORAGE_SIZE) {
+  constructor(settings = Common20.Settings.Settings.instance(), maxStorageSize = DEFAULT_MAX_STORAGE_SIZE) {
     super();
     this.#historySetting = settings.createSetting("ai-assistance-history-entries", []);
-    this.#imageHistorySettings = settings.createSetting("ai-assistance-history-images", []);
+    this.#imageHistorySettings = settings.createSetting(
+      "ai-assistance-history-images",
+      []
+    );
     this.#recentPromptsSetting = settings.createSetting("ai-assistance-recent-prompts", []);
     this.#maxStorageSize = maxStorageSize;
   }
@@ -11279,7 +14587,7 @@ var AiHistoryStorage = class _AiHistoryStorage extends Common19.ObjectWrapper.Ob
   }
   #getImageIdsFromHistory(history) {
     return history.flatMap((item) => {
-      if (item.type === "user-query" && item.imageId) {
+      if (item.type === "user-query" /* USER_QUERY */ && item.imageId) {
         return [item.imageId];
       }
       return [];
@@ -11323,7 +14631,9 @@ var AiHistoryStorage = class _AiHistoryStorage extends Common19.ObjectWrapper.Ob
       }
       const imagesToBeStored = [];
       let currentStorageSize = 0;
-      for (const [, serializedImage] of Array.from(imageHistory.entries()).reverse()) {
+      for (const [, serializedImage] of Array.from(
+        imageHistory.entries()
+      ).reverse()) {
         if (currentStorageSize >= this.#maxStorageSize) {
           break;
         }
@@ -11344,7 +14654,9 @@ var AiHistoryStorage = class _AiHistoryStorage extends Common19.ObjectWrapper.Ob
         return;
       }
       const imageIdsForDeletion = this.#getImageIdsFromHistory(conversation.history);
-      this.#historySetting.set(history.filter((entry) => entry.id !== id));
+      this.#historySetting.set(
+        history.filter((entry) => entry.id !== id)
+      );
       if (imageIdsForDeletion.length > 0) {
         const images = structuredClone(await this.#imageHistorySettings.forceGet());
         this.#imageHistorySettings.set(images.filter((entry) => !imageIdsForDeletion.includes(entry.id)));
@@ -11361,10 +14673,7 @@ var AiHistoryStorage = class _AiHistoryStorage extends Common19.ObjectWrapper.Ob
       this.#recentPromptsSetting.set([]);
     } finally {
       release();
-      this.dispatchEventToListeners(
-        "AiHistoryDeleted"
-        /* Events.HISTORY_DELETED */
-      );
+      this.dispatchEventToListeners("AiHistoryDeleted" /* HISTORY_DELETED */);
     }
   }
   getHistory() {
@@ -11376,11 +14685,14 @@ var AiHistoryStorage = class _AiHistoryStorage extends Common19.ObjectWrapper.Ob
   static instance(opts = { forceNew: false, maxStorageSize: DEFAULT_MAX_STORAGE_SIZE }) {
     const { forceNew, maxStorageSize, settings } = opts;
     if (!Root13.DevToolsContext.globalInstance().has(_AiHistoryStorage) || forceNew) {
-      Root13.DevToolsContext.globalInstance().set(_AiHistoryStorage, new _AiHistoryStorage(
-        // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
-        settings ?? Common19.Settings.Settings.instance(),
-        maxStorageSize
-      ));
+      Root13.DevToolsContext.globalInstance().set(
+        _AiHistoryStorage,
+        new _AiHistoryStorage(
+          // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
+          settings ?? Common20.Settings.Settings.instance(),
+          maxStorageSize
+        )
+      );
     }
     return Root13.DevToolsContext.globalInstance().get(_AiHistoryStorage);
   }
@@ -11389,13 +14701,13 @@ var AiHistoryStorage = class _AiHistoryStorage extends Common19.ObjectWrapper.Ob
   }
 };
 
-// gen/front_end/models/ai_assistance/AiConversation.js
+// ../../front_end/models/ai_assistance/AiConversation.ts
 var NOT_FOUND_IMAGE_DATA = "";
 var CONTEXT_TITLE = "Analyzing data";
 var MAX_TITLE_LENGTH = 80;
 var ALLOWED_PAGE_NAVIGATIONS = [
-  Platform4.DevToolsPath.urlString`about://`,
-  Platform4.DevToolsPath.urlString`chrome://terms`
+  Platform6.DevToolsPath.urlString`about://`,
+  Platform6.DevToolsPath.urlString`chrome://terms`
 ];
 function generateContextDetailsMarkdown(details) {
   const detailsMarkdown = [];
@@ -11411,7 +14723,7 @@ ${text}`);
 var AiConversation = class _AiConversation {
   static fromSerializedConversation(serializedConversation) {
     const history = serializedConversation.history.map((entry) => {
-      if (entry.type === "side-effect") {
+      if (entry.type === "side-effect" /* SIDE_EFFECT */) {
         return { ...entry, confirm: () => {
         } };
       }
@@ -11448,7 +14760,7 @@ var AiConversation = class _AiConversation {
       data = [],
       id = crypto.randomUUID(),
       isReadOnly = true,
-      aidaClient = new Host34.AidaClient.AidaClient(),
+      aidaClient = new Host37.AidaClient.AidaClient(),
       changeManager,
       performanceRecordAndReload,
       onInspectElement,
@@ -11456,7 +14768,7 @@ var AiConversation = class _AiConversation {
       lighthouseRecording,
       aiHistoryStorage = AiHistoryStorage.instance(),
       // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
-      targetManager = SDK21.TargetManager.TargetManager.instance()
+      targetManager = SDK26.TargetManager.TargetManager.instance()
     } = options;
     this.#changeManager = changeManager;
     this.#aidaClient = aidaClient;
@@ -11475,10 +14787,7 @@ var AiConversation = class _AiConversation {
     return this.#isReadOnly;
   }
   static titleForSerialized(serialized) {
-    const query = serialized.history.find(
-      (item) => item.type === "user-query"
-      /* ResponseType.USER_QUERY */
-    )?.query;
+    const query = serialized.history.find((item) => item.type === "user-query" /* USER_QUERY */)?.query;
     if (!query) {
       return void 0;
     }
@@ -11488,10 +14797,7 @@ var AiConversation = class _AiConversation {
     return `${query.substring(0, MAX_TITLE_LENGTH)}${query.length > MAX_TITLE_LENGTH ? "\u2026" : ""}`;
   }
   get title() {
-    const query = this.history.find(
-      (response) => response.type === "user-query"
-      /* ResponseType.USER_QUERY */
-    )?.query;
+    const query = this.history.find((response) => response.type === "user-query" /* USER_QUERY */)?.query;
     if (!query) {
       return;
     }
@@ -11508,46 +14814,25 @@ var AiConversation = class _AiConversation {
   setContext(updateContext) {
     if (!updateContext) {
       this.#contexts = [];
-      if (isAiAssistanceContextSelectionAgentEnabled()) {
-        this.#updateAgent(
-          "none"
-          /* ConversationType.NONE */
-        );
+      if (isContextSelectionEnabled()) {
+        this.#updateAgent("none" /* NONE */);
       }
       return;
     }
     this.#contexts = [updateContext];
-    if (isAiAssistanceContextSelectionAgentEnabled()) {
+    if (isContextSelectionEnabled()) {
       if (updateContext instanceof FileContext) {
-        this.#updateAgent(
-          "drjones-file"
-          /* ConversationType.FILE */
-        );
+        this.#updateAgent("drjones-file" /* FILE */);
       } else if (updateContext instanceof DOMNodeContext) {
-        this.#updateAgent(
-          "freestyler"
-          /* ConversationType.STYLING */
-        );
+        this.#updateAgent("freestyler" /* STYLING */);
       } else if (updateContext instanceof RequestContext) {
-        this.#updateAgent(
-          "drjones-network-request"
-          /* ConversationType.NETWORK */
-        );
+        this.#updateAgent("drjones-network-request" /* NETWORK */);
       } else if (updateContext instanceof PerformanceTraceContext) {
-        this.#updateAgent(
-          "drjones-performance-full"
-          /* ConversationType.PERFORMANCE */
-        );
+        this.#updateAgent("drjones-performance-full" /* PERFORMANCE */);
       } else if (updateContext instanceof AccessibilityContext) {
-        this.#updateAgent(
-          "accessibility"
-          /* ConversationType.ACCESSIBILITY */
-        );
+        this.#updateAgent("accessibility" /* ACCESSIBILITY */);
       } else if (updateContext instanceof StorageContext) {
-        this.#updateAgent(
-          "storage"
-          /* ConversationType.STORAGE */
-        );
+        this.#updateAgent("storage" /* STORAGE */);
       }
     }
   }
@@ -11559,7 +14844,7 @@ var AiConversation = class _AiConversation {
     if (imageHistory && imageHistory.length > 0) {
       const history = [];
       for (const data of historyWithoutImages) {
-        if (data.type === "user-query" && data.imageId) {
+        if (data.type === "user-query" /* USER_QUERY */ && data.imageId) {
           const image = imageHistory.find((item) => item.id === data.imageId);
           const inlineData = image ? { data: image.data, mimeType: image.mimeType } : { data: NOT_FOUND_IMAGE_DATA, mimeType: "image/jpeg" };
           history.push({ ...data, imageInput: { inlineData } });
@@ -11573,14 +14858,16 @@ var AiConversation = class _AiConversation {
   }
   getConversationMarkdown() {
     const contentParts = [];
-    contentParts.push(`# Exported Chat from Chrome DevTools AI Assistance
+    contentParts.push(
+      `# Exported Chat from Chrome DevTools AI Assistance
 
 **Export Timestamp (UTC):** ${(/* @__PURE__ */ new Date()).toISOString()}
 
----`);
+---`
+    );
     for (const item of this.history) {
       switch (item.type) {
-        case "user-query": {
+        case "user-query" /* USER_QUERY */: {
           contentParts.push(`## User
 
 ${item.query}`);
@@ -11590,22 +14877,22 @@ ${item.query}`);
           contentParts.push("## AI");
           break;
         }
-        case "context": {
+        case "context" /* CONTEXT */: {
           contentParts.push(`### ${CONTEXT_TITLE}`);
           if (item.details && item.details.length > 0) {
             contentParts.push(generateContextDetailsMarkdown(item.details));
           }
           break;
         }
-        case "title": {
+        case "title" /* TITLE */: {
           contentParts.push(`### ${item.title}`);
           break;
         }
-        case "thought": {
+        case "thought" /* THOUGHT */: {
           contentParts.push(`${item.thought}`);
           break;
         }
-        case "action": {
+        case "action" /* ACTION */: {
           if (!item.output) {
             break;
           }
@@ -11621,7 +14908,7 @@ ${item.output}
 \`\`\``);
           break;
         }
-        case "answer": {
+        case "answer" /* ANSWER */: {
           if (item.complete) {
             contentParts.push(`### Answer
 
@@ -11639,7 +14926,7 @@ ${item.text.trim()}`);
   async addHistoryItem(item) {
     this.history.push(item);
     await this.#aiHistoryStorage.upsertHistoryEntry(this.serialize());
-    if (item.type === "user-query") {
+    if (item.type === "user-query" /* USER_QUERY */) {
       void this.#aiHistoryStorage.addRecentPrompt(item.query);
       if (item.imageId && item.imageInput && "inlineData" in item.imageInput) {
         const inlineData = item.imageInput.inlineData;
@@ -11656,24 +14943,21 @@ ${item.text.trim()}`);
       id: this.id,
       history: this.history.map((item) => {
         switch (item.type) {
-          case "context-change": {
+          case "context-change" /* CONTEXT_CHANGE */: {
             return null;
           }
-          case "user-query": {
+          case "user-query" /* USER_QUERY */: {
             return { ...item, imageInput: void 0 };
           }
-          case "side-effect": {
+          case "side-effect" /* SIDE_EFFECT */: {
             return { ...item, confirm: void 0 };
           }
-          case "context": {
+          case "context" /* CONTEXT */: {
             return { ...item, widgets: void 0 };
           }
-          case "action": {
+          case "action" /* ACTION */: {
             const tool = item.toolName ? ToolRegistry.get(item.toolName) : void 0;
-            const shouldRedact = tool?.annotations?.includes(
-              "redact-from-history"
-              /* ToolAnnotation.REDACT_FROM_HISTORY */
-            );
+            const shouldRedact = tool?.annotations?.includes("redact-from-history" /* REDACT_FROM_HISTORY */);
             return {
               ...item,
               output: shouldRedact ? "<redacted>" : item.output,
@@ -11699,9 +14983,13 @@ ${item.text.trim()}`);
     if (this.#type === type) {
       return;
     }
-    const isTransitioningFromStorage = this.#type === "storage" && type !== "storage";
-    const history = isTransitioningFromStorage ? [] : this.#filterHistoryForNewAgent();
+    const previousType = this.#type;
     this.#type = type;
+    if (Root14.Runtime.hostConfig.devToolsAiV2Architecture?.enabled && this.#agent instanceof AiAgent2) {
+      return;
+    }
+    const isTransitioningFromStorage = previousType === "storage" /* STORAGE */ && type !== "storage" /* STORAGE */;
+    const history = isTransitioningFromStorage ? [] : this.#filterHistoryForNewAgent();
     const options = {
       aidaClient: this.#aidaClient,
       serverSideLoggingAllowed: isAiAssistanceServerSideLoggingAllowed(),
@@ -11719,22 +15007,22 @@ ${item.text.trim()}`);
   }
   #createV1Agent(type, options) {
     switch (type) {
-      case "freestyler":
+      case "freestyler" /* STYLING */:
         return new StylingAgent(options);
-      case "drjones-network-request":
+      case "drjones-network-request" /* NETWORK */:
         return new NetworkAgent(options);
-      case "drjones-file":
+      case "drjones-file" /* FILE */:
         return new FileAgent(options);
-      case "drjones-performance-full":
+      case "drjones-performance-full" /* PERFORMANCE */:
         return new PerformanceAgent(options);
-      case "accessibility":
+      case "accessibility" /* ACCESSIBILITY */:
         return new AccessibilityAgent(options);
-      case "storage":
+      case "storage" /* STORAGE */:
         return new StorageAgent(options);
-      case "none":
+      case "none" /* NONE */:
         return new ContextSelectionAgent(options);
       default:
-        Platform4.assertNever(type, "Unknown conversation type");
+        Platform6.assertNever(type, "Unknown conversation type");
     }
   }
   async *run(initialQuery, options = {}) {
@@ -11747,14 +15035,24 @@ ${item.text.trim()}`);
       }
     };
     const targetManager = this.#targetManager;
-    targetManager.addModelListener(SDK21.ResourceTreeModel.ResourceTreeModel, SDK21.ResourceTreeModel.Events.PrimaryPageChanged, listener, this);
+    targetManager.addModelListener(
+      SDK26.ResourceTreeModel.ResourceTreeModel,
+      SDK26.ResourceTreeModel.Events.PrimaryPageChanged,
+      listener,
+      this
+    );
     try {
       if (this.isBlockedByOrigin) {
         throw new Error("cross-origin context data should not be included");
       }
       yield* this.#runAgent(initialQuery, options, { isInitialCall: true });
     } finally {
-      targetManager.removeModelListener(SDK21.ResourceTreeModel.ResourceTreeModel, SDK21.ResourceTreeModel.Events.PrimaryPageChanged, listener, this);
+      targetManager.removeModelListener(
+        SDK26.ResourceTreeModel.ResourceTreeModel,
+        SDK26.ResourceTreeModel.Events.PrimaryPageChanged,
+        listener,
+        this
+      );
     }
   }
   #getQueryAfterSelection(initialQuery, selection) {
@@ -11765,14 +15063,14 @@ Original user query: ${initialQuery}`;
     this.#setOriginIfEmpty(this.selectedContext?.getOrigin());
     if (this.isBlockedByOrigin) {
       yield {
-        type: "error",
-        error: "cross-origin"
+        type: "error" /* ERROR */,
+        error: "cross-origin" /* CROSS_ORIGIN */
       };
       return;
     }
     if (runOptions.isInitialCall) {
       const userQuery = {
-        type: "user-query",
+        type: "user-query" /* USER_QUERY */,
         query: initialQuery,
         imageInput: options.multimodalInput?.input,
         imageId: options.multimodalInput?.id
@@ -11781,25 +15079,33 @@ Original user query: ${initialQuery}`;
       yield userQuery;
     }
     function shouldAddToHistory(data) {
-      if (data.type === "context-change") {
+      if (data.type === "context-change" /* CONTEXT_CHANGE */) {
         return false;
       }
-      if (data.type === "answer" && !data.complete) {
+      if (data.type === "answer" /* ANSWER */ && !data.complete) {
         return false;
       }
       return true;
     }
-    for await (const data of this.#agent.run(initialQuery, {
-      signal: options.signal,
-      selected: this.selectedContext ?? null
-    }, options.multimodalInput)) {
+    for await (const data of this.#agent.run(
+      initialQuery,
+      {
+        signal: options.signal,
+        selected: this.selectedContext ?? null
+      },
+      options.multimodalInput
+    )) {
       if (shouldAddToHistory(data)) {
         void this.addHistoryItem(data);
       }
       yield data;
-      if (data.type === "context-change") {
+      if (data.type === "context-change" /* CONTEXT_CHANGE */) {
         this.setContext(data.context);
-        yield* this.#runAgent(this.#getQueryAfterSelection(initialQuery, data.description), options, { isInitialCall: false });
+        yield* this.#runAgent(
+          this.#getQueryAfterSelection(initialQuery, data.description),
+          options,
+          { isInitialCall: false }
+        );
         return;
       }
     }
@@ -11813,7 +15119,7 @@ Original user query: ${initialQuery}`;
     return !this.#contexts.every((context) => context.isOriginAllowed(this.#origin));
   }
   get origin() {
-    return this.#origin;
+    return this.#origin instanceof SDK26.SecurityOrigin.SecurityOrigin ? this.#origin.siteId() : this.#origin;
   }
   get type() {
     return this.#type;
@@ -11823,33 +15129,35 @@ Original user query: ${initialQuery}`;
       return { blocked: true };
     }
     if (this.#origin) {
-      return { origin: this.#origin };
+      return { origin: this.origin };
     }
     this.#origin = getPrimaryPageOrigin(this.#targetManager);
-    return { origin: this.#origin };
+    return { origin: this.origin };
   };
 };
 function isAiAssistanceServerSideLoggingAllowed() {
   return !Root14.Runtime.hostConfig.aidaAvailability?.disallowLogging;
 }
-function isAiAssistanceContextSelectionAgentEnabled() {
-  return Boolean(Root14.Runtime.hostConfig.devToolsAiAssistanceContextSelectionAgent?.enabled);
-}
 function getPrimaryPageOrigin(targetManager) {
   const target = targetManager.primaryPageTarget();
   const inspectedURL = target?.inspectedURL();
-  return inspectedURL ? new Common20.ParsedURL.ParsedURL(inspectedURL).securityOrigin() : void 0;
+  return inspectedURL ? new Common21.ParsedURL.ParsedURL(inspectedURL).securityOrigin() : void 0;
 }
 
-// gen/front_end/models/ai_assistance/AiSetting.js
+// ../../front_end/models/ai_assistance/AiSetting.ts
 var AiSetting_exports = {};
 __export(AiSetting_exports, {
-  AiSetting: () => AiSetting
+  AiSetting: () => AiSetting,
+  Events: () => Events2
 });
-import * as Common21 from "./../../core/common/common.js";
-import * as Host35 from "./../../core/host/host.js";
-import * as Root15 from "./../../core/root/root.js";
-var AiSetting = class extends Common21.ObjectWrapper.ObjectWrapper {
+import * as Common22 from "../../core/common/common.js";
+import * as Host38 from "../../core/host/host.js";
+import * as Root15 from "../../core/root/root.js";
+var Events2 = /* @__PURE__ */ ((Events4) => {
+  Events4["CHANGED"] = "Changed";
+  return Events4;
+})(Events2 || {});
+var AiSetting = class extends Common22.ObjectWrapper.ObjectWrapper {
   #setting;
   #descriptor;
   #hostConfigTracker;
@@ -11884,7 +15192,10 @@ var AiSetting = class extends Common21.ObjectWrapper.ObjectWrapper {
     }
     this.#tryResolveSetting();
     this.#isSubscribed = true;
-    this.#hostConfigTracker.addEventListener("aidaAvailabilityChanged", this.#boundOnAidaAvailabilityChanged);
+    this.#hostConfigTracker.addEventListener(
+      Host38.AidaClient.Events.AIDA_AVAILABILITY_CHANGED,
+      this.#boundOnAidaAvailabilityChanged
+    );
     this.#setting?.addChangeListener(this.#boundOnSettingChanged);
   }
   #unsubscribe() {
@@ -11892,7 +15203,10 @@ var AiSetting = class extends Common21.ObjectWrapper.ObjectWrapper {
       return;
     }
     this.#isSubscribed = false;
-    this.#hostConfigTracker.removeEventListener("aidaAvailabilityChanged", this.#boundOnAidaAvailabilityChanged);
+    this.#hostConfigTracker.removeEventListener(
+      Host38.AidaClient.Events.AIDA_AVAILABILITY_CHANGED,
+      this.#boundOnAidaAvailabilityChanged
+    );
     this.#setting?.removeChangeListener(this.#boundOnSettingChanged);
   }
   #tryResolveSetting() {
@@ -11916,15 +15230,15 @@ var AiSetting = class extends Common21.ObjectWrapper.ObjectWrapper {
   }
   get unavailable() {
     const availability = this.#descriptor.isAvailable(Root15.Runtime.hostConfig);
-    return availability.status === 2;
+    return availability.status === Common22.Settings.SettingAvailability.UNAVAILABLE;
   }
   get disabled() {
     const availability = this.#descriptor.isAvailable(Root15.Runtime.hostConfig);
-    return availability.status === 3;
+    return availability.status === Common22.Settings.SettingAvailability.DISABLED;
   }
   get disabledReasons() {
     const availability = this.#descriptor.isAvailable(Root15.Runtime.hostConfig);
-    if (availability.status === 3) {
+    if (availability.status === Common22.Settings.SettingAvailability.DISABLED) {
       return availability.reason;
     }
     return [];
@@ -11950,29 +15264,33 @@ var AiSetting = class extends Common21.ObjectWrapper.ObjectWrapper {
     this.setIfNotDisabled(value);
   }
   #onSettingChanged() {
-    this.dispatchEventToListeners(
-      "Changed"
-      /* Events.CHANGED */
-    );
+    this.dispatchEventToListeners("Changed" /* CHANGED */);
   }
   #onAidaAvailabilityChanged() {
     this.#tryResolveSetting();
-    this.dispatchEventToListeners(
-      "Changed"
-      /* Events.CHANGED */
-    );
+    this.dispatchEventToListeners("Changed" /* CHANGED */);
   }
 };
 
-// gen/front_end/models/ai_assistance/BuiltInAi.js
+// ../../front_end/models/ai_assistance/BuiltInAi.ts
 var BuiltInAi_exports = {};
 __export(BuiltInAi_exports, {
-  BuiltInAi: () => BuiltInAi
+  BuiltInAi: () => BuiltInAi,
+  Events: () => Events3,
+  LanguageModelAvailability: () => LanguageModelAvailability
 });
-import * as Common22 from "./../../core/common/common.js";
-import * as Host36 from "./../../core/host/host.js";
-import * as Root16 from "./../../core/root/root.js";
-var BuiltInAi = class _BuiltInAi extends Common22.ObjectWrapper.ObjectWrapper {
+import * as Common23 from "../../core/common/common.js";
+import * as Host39 from "../../core/host/host.js";
+import * as Root16 from "../../core/root/root.js";
+var LanguageModelAvailability = /* @__PURE__ */ ((LanguageModelAvailability2) => {
+  LanguageModelAvailability2["UNAVAILABLE"] = "unavailable";
+  LanguageModelAvailability2["DOWNLOADABLE"] = "downloadable";
+  LanguageModelAvailability2["DOWNLOADING"] = "downloading";
+  LanguageModelAvailability2["AVAILABLE"] = "available";
+  LanguageModelAvailability2["DISABLED"] = "disabled";
+  return LanguageModelAvailability2;
+})(LanguageModelAvailability || {});
+var BuiltInAi = class _BuiltInAi extends Common23.ObjectWrapper.ObjectWrapper {
   #availability = null;
   #hasGpu;
   #consoleInsightsSession;
@@ -11992,7 +15310,7 @@ var BuiltInAi = class _BuiltInAi extends Common22.ObjectWrapper.ObjectWrapper {
   }
   async getLanguageModelAvailability() {
     if (!Root16.Runtime.hostConfig.devToolsConsoleInsightsTeasers?.enabled) {
-      this.#availability = "disabled";
+      this.#availability = "disabled" /* DISABLED */;
       return this.#availability;
     }
     try {
@@ -12007,22 +15325,22 @@ var BuiltInAi = class _BuiltInAi extends Common22.ObjectWrapper.ObjectWrapper {
         }]
       });
     } catch {
-      this.#availability = "unavailable";
+      this.#availability = "unavailable" /* UNAVAILABLE */;
     }
     return this.#availability;
   }
   isDownloading() {
-    return this.#availability === "downloading";
+    return this.#availability === "downloading" /* DOWNLOADING */;
   }
   isEventuallyAvailable() {
     if (!this.#hasGpu && !Boolean(Root16.Runtime.hostConfig.devToolsConsoleInsightsTeasers?.allowWithoutGpu)) {
       return false;
     }
-    return this.#availability === "available" || this.#availability === "downloading" || this.#availability === "downloadable";
+    return this.#availability === "available" /* AVAILABLE */ || this.#availability === "downloading" /* DOWNLOADING */ || this.#availability === "downloadable" /* DOWNLOADABLE */;
   }
   #setDownloadProgress(newValue) {
     this.#downloadProgress = newValue;
-    this.dispatchEventToListeners("downloadProgressChanged", this.#downloadProgress);
+    this.dispatchEventToListeners("downloadProgressChanged" /* DOWNLOAD_PROGRESS_CHANGED */, this.#downloadProgress);
   }
   getDownloadProgress() {
     return this.#downloadProgress;
@@ -12031,7 +15349,7 @@ var BuiltInAi = class _BuiltInAi extends Common22.ObjectWrapper.ObjectWrapper {
     if (!Root16.Runtime.hostConfig.devToolsConsoleInsightsTeasers?.allowWithoutGpu && !this.#hasGpu) {
       return;
     }
-    if (this.#availability !== "downloadable") {
+    if (this.#availability !== "downloadable" /* DOWNLOADABLE */) {
       return;
     }
     void this.#createSession();
@@ -12069,7 +15387,7 @@ var BuiltInAi = class _BuiltInAi extends Common22.ObjectWrapper.ObjectWrapper {
     if (!Root16.Runtime.hostConfig.devToolsConsoleInsightsTeasers?.allowWithoutGpu && !this.#hasGpu) {
       return;
     }
-    if (this.#availability !== "available" && this.#availability !== "downloading") {
+    if (this.#availability !== "available" /* AVAILABLE */ && this.#availability !== "downloading" /* DOWNLOADING */) {
       return;
     }
     await this.#createSession();
@@ -12115,11 +15433,8 @@ Your instructions are as follows:
           languages: ["en"]
         }]
       });
-      if (this.#availability !== "available") {
-        this.dispatchEventToListeners(
-          "downloadedAndSessionCreated"
-          /* Events.DOWNLOADED_AND_SESSION_CREATED */
-        );
+      if (this.#availability !== "available" /* AVAILABLE */) {
+        this.dispatchEventToListeners("downloadedAndSessionCreated" /* DOWNLOADED_AND_SESSION_CREATED */);
         void this.getLanguageModelAvailability();
       }
     } catch (e) {
@@ -12152,51 +15467,56 @@ Your instructions are as follows:
   #sendAvailabilityMetrics() {
     if (this.#hasGpu) {
       switch (this.#availability) {
-        case "unavailable":
-          Host36.userMetrics.builtInAiAvailability(Host36.UserMetrics.BuiltInAiAvailability.UNAVAILABLE_HAS_GPU);
+        case "unavailable" /* UNAVAILABLE */:
+          Host39.userMetrics.builtInAiAvailability(Host39.UserMetrics.BuiltInAiAvailability.UNAVAILABLE_HAS_GPU);
           break;
-        case "downloadable":
-          Host36.userMetrics.builtInAiAvailability(Host36.UserMetrics.BuiltInAiAvailability.DOWNLOADABLE_HAS_GPU);
+        case "downloadable" /* DOWNLOADABLE */:
+          Host39.userMetrics.builtInAiAvailability(Host39.UserMetrics.BuiltInAiAvailability.DOWNLOADABLE_HAS_GPU);
           break;
-        case "downloading":
-          Host36.userMetrics.builtInAiAvailability(Host36.UserMetrics.BuiltInAiAvailability.DOWNLOADING_HAS_GPU);
+        case "downloading" /* DOWNLOADING */:
+          Host39.userMetrics.builtInAiAvailability(Host39.UserMetrics.BuiltInAiAvailability.DOWNLOADING_HAS_GPU);
           break;
-        case "available":
-          Host36.userMetrics.builtInAiAvailability(Host36.UserMetrics.BuiltInAiAvailability.AVAILABLE_HAS_GPU);
+        case "available" /* AVAILABLE */:
+          Host39.userMetrics.builtInAiAvailability(Host39.UserMetrics.BuiltInAiAvailability.AVAILABLE_HAS_GPU);
           break;
-        case "disabled":
-          Host36.userMetrics.builtInAiAvailability(Host36.UserMetrics.BuiltInAiAvailability.DISABLED_HAS_GPU);
+        case "disabled" /* DISABLED */:
+          Host39.userMetrics.builtInAiAvailability(Host39.UserMetrics.BuiltInAiAvailability.DISABLED_HAS_GPU);
           break;
       }
     } else {
       switch (this.#availability) {
-        case "unavailable":
-          Host36.userMetrics.builtInAiAvailability(Host36.UserMetrics.BuiltInAiAvailability.UNAVAILABLE_NO_GPU);
+        case "unavailable" /* UNAVAILABLE */:
+          Host39.userMetrics.builtInAiAvailability(Host39.UserMetrics.BuiltInAiAvailability.UNAVAILABLE_NO_GPU);
           break;
-        case "downloadable":
-          Host36.userMetrics.builtInAiAvailability(Host36.UserMetrics.BuiltInAiAvailability.DOWNLOADABLE_NO_GPU);
+        case "downloadable" /* DOWNLOADABLE */:
+          Host39.userMetrics.builtInAiAvailability(Host39.UserMetrics.BuiltInAiAvailability.DOWNLOADABLE_NO_GPU);
           break;
-        case "downloading":
-          Host36.userMetrics.builtInAiAvailability(Host36.UserMetrics.BuiltInAiAvailability.DOWNLOADING_NO_GPU);
+        case "downloading" /* DOWNLOADING */:
+          Host39.userMetrics.builtInAiAvailability(Host39.UserMetrics.BuiltInAiAvailability.DOWNLOADING_NO_GPU);
           break;
-        case "available":
-          Host36.userMetrics.builtInAiAvailability(Host36.UserMetrics.BuiltInAiAvailability.AVAILABLE_NO_GPU);
+        case "available" /* AVAILABLE */:
+          Host39.userMetrics.builtInAiAvailability(Host39.UserMetrics.BuiltInAiAvailability.AVAILABLE_NO_GPU);
           break;
-        case "disabled":
-          Host36.userMetrics.builtInAiAvailability(Host36.UserMetrics.BuiltInAiAvailability.DISABLED_NO_GPU);
+        case "disabled" /* DISABLED */:
+          Host39.userMetrics.builtInAiAvailability(Host39.UserMetrics.BuiltInAiAvailability.DISABLED_NO_GPU);
           break;
       }
     }
   }
 };
+var Events3 = /* @__PURE__ */ ((Events4) => {
+  Events4["DOWNLOAD_PROGRESS_CHANGED"] = "downloadProgressChanged";
+  Events4["DOWNLOADED_AND_SESSION_CREATED"] = "downloadedAndSessionCreated";
+  return Events4;
+})(Events3 || {});
 
-// gen/front_end/models/ai_assistance/ConversationSummary.js
+// ../../front_end/models/ai_assistance/ConversationSummary.ts
 var ConversationSummary_exports = {};
 __export(ConversationSummary_exports, {
   ConversationSummary: () => ConversationSummary
 });
-import * as Host37 from "./../../core/host/host.js";
-import * as Root17 from "./../../core/root/root.js";
+import * as Host40 from "../../core/host/host.js";
+import * as Root17 from "../../core/root/root.js";
 var preamble9 = `### Role
 You are a Conversation Summarizer. Your task is to take a transcript of a conversation between a user and a DevTools AI agent and produce a succinct, actionable Markdown summary. This summary will be used to help apply fixes in an IDE, so it must capture all relevant technical details, findings, and proposed code changes without any conversational fluff.
 
@@ -12305,7 +15625,7 @@ ${conversation}`;
       aidaClient: this.#aidaClient,
       preamble: preamble9,
       query: enhancedQuery,
-      clientFeature: Host37.AidaClient.ClientFeature.CHROME_CONVERSATION_SUMMARY_AGENT,
+      clientFeature: Host40.AidaClient.ClientFeature.CHROME_CONVERSATION_SUMMARY_AGENT,
       temperature,
       modelId,
       userTier,
@@ -12321,13 +15641,13 @@ ${disclaimer}`;
   }
 };
 
-// gen/front_end/models/ai_assistance/PerformanceAnnotations.js
+// ../../front_end/models/ai_assistance/PerformanceAnnotations.ts
 var PerformanceAnnotations_exports = {};
 __export(PerformanceAnnotations_exports, {
   PerformanceAnnotations: () => PerformanceAnnotations
 });
-import * as Host38 from "./../../core/host/host.js";
-import * as Root18 from "./../../core/root/root.js";
+import * as Host41 from "../../core/host/host.js";
+import * as Root18 from "../../core/root/root.js";
 var callTreePreamble = `You are an expert performance analyst embedded within Chrome DevTools.
 You meticulously examine web application behavior captured by the Chrome DevTools Performance Panel and Chrome tracing.
 You will receive a structured text representation of a call tree, derived from a user-selected call frame within a performance trace's flame chart.
@@ -12425,7 +15745,7 @@ ${AI_LABEL_GENERATION_PROMPT}`;
       aidaClient: this.#aidaClient,
       preamble: callTreePreamble,
       query,
-      clientFeature: Host38.AidaClient.ClientFeature.CHROME_PERFORMANCE_ANNOTATIONS_AGENT,
+      clientFeature: Host41.AidaClient.ClientFeature.CHROME_PERFORMANCE_ANNOTATIONS_AGENT,
       temperature,
       modelId,
       userTier,
@@ -12437,6 +15757,9 @@ ${AI_LABEL_GENERATION_PROMPT}`;
     return resultText.trim();
   }
 };
+
+// ../../front_end/models/ai_assistance/skills/Skill.ts
+var Skill_exports = {};
 export {
   AICallTree_exports as AICallTree,
   AIContext_exports as AIContext,
@@ -12454,6 +15777,7 @@ export {
   ChangeManager_exports as ChangeManager,
   ContextSelectionAgent_exports as ContextSelectionAgent,
   ConversationSummary_exports as ConversationSummary,
+  CookieUtils_exports as CookieUtils,
   DOMNodeContext_exports as DOMNodeContext,
   DOMStorageUtils_exports as DOMStorageUtils,
   debug_exports as Debug,
@@ -12463,6 +15787,7 @@ export {
   FileAgent_exports as FileAgent,
   FileContext_exports as FileContext,
   FileFormatter_exports as FileFormatter,
+  GetCookieValues_exports as GetCookieValues,
   GetDetailedCallTree_exports as GetDetailedCallTree,
   GetElementAccessibilityDetails_exports as GetElementAccessibilityDetails,
   GetFunctionCode_exports as GetFunctionCode,
@@ -12471,6 +15796,7 @@ export {
   GetNetworkRequestDetails_exports as GetNetworkRequestDetails,
   GetResourceContent_exports as GetResourceContent,
   GetSourceContent_exports as GetSourceContent,
+  GetStorageBreakdown_exports as GetStorageBreakdown,
   GetStorageValues_exports as GetStorageValues,
   GetStyles_exports as GetStyles,
   GetTraceEventByKey_exports as GetTraceEventByKey,
@@ -12478,6 +15804,7 @@ export {
   GetTraceNetworkSummary_exports as GetTraceNetworkSummary,
   injected_exports as Injected,
   LighthouseFormatter_exports as LighthouseFormatter,
+  ListCookies_exports as ListCookies,
   ListNetworkRequests_exports as ListNetworkRequests,
   ListPageOrigins_exports as ListPageOrigins,
   ListSources_exports as ListSources,
@@ -12494,6 +15821,8 @@ export {
   ResolveDevtoolsNodePath_exports as ResolveDevtoolsNodePath,
   RunLighthouse_exports as RunLighthouse,
   SelectTraceEventByKey_exports as SelectTraceEventByKey,
+  Skill_exports as Skill,
+  SkillRegistry_exports as SkillRegistry,
   StorageAgent_exports as StorageAgent,
   StorageContext_exports as StorageContext,
   StorageItem_exports as StorageItem,

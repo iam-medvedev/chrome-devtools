@@ -6,6 +6,7 @@
     "checkJs": true,
     "composite": true,
     "declaration": true,
+    "disableSourceOfProjectReferenceRedirect": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
     "inlineSources": true,
@@ -26,6 +27,7 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "outDir": ".",
+    "preserveConstEnums": true,
     "rootDir": "../../../../../../front_end/panels/lighthouse",
     "skipLibCheck": true,
     "sourceMap": true,
@@ -56,37 +58,37 @@
   ],
   "references": [
     {
-      "path": "./bundle-tsconfig.json"
+      "path": "./bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../core/common/bundle-tsconfig.json"
+      "path": "../../core/common/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../core/platform/bundle-tsconfig.json"
+      "path": "../../core/platform/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../core/protocol_client/bundle-tsconfig.json"
+      "path": "../../core/protocol_client/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../core/sdk/bundle-tsconfig.json"
+      "path": "../../core/sdk/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../generated/generated-tsconfig.json"
+      "path": "../../generated/generated-tsconfig.ref.json"
     },
     {
-      "path": "../../models/lighthouse/bundle-tsconfig.json"
+      "path": "../../models/lighthouse/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../testing/testing-tsconfig.json"
+      "path": "../../testing/testing-tsconfig.ref.json"
     },
     {
-      "path": "../../ui/legacy/bundle-tsconfig.json"
+      "path": "../../ui/legacy/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../ui/lit/bundle-tsconfig.json"
+      "path": "../../ui/lit/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../common/bundle-tsconfig.json"
+      "path": "../common/bundle-tsconfig.ref.json"
     }
   ]
 }

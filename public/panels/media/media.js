@@ -10,12 +10,12 @@ __export(EventDisplayTable_exports, {
   DEFAULT_VIEW: () => DEFAULT_VIEW,
   PlayerEventsView: () => PlayerEventsView
 });
-import "./../../ui/legacy/components/data_grid/data_grid.js";
-import * as i18n from "./../../core/i18n/i18n.js";
-import * as SourceFrame from "./../../ui/legacy/components/source_frame/source_frame.js";
-import * as UI from "./../../ui/legacy/legacy.js";
-import { Directives, html, render } from "./../../ui/lit/lit.js";
-import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
+import "../../ui/legacy/components/data_grid/data_grid.js";
+import * as i18n from "../../core/i18n/i18n.js";
+import * as SourceFrame from "../../ui/legacy/components/source_frame/source_frame.js";
+import * as UI from "../../ui/legacy/legacy.js";
+import { Directives, html, render } from "../../ui/lit/lit.js";
+import * as VisualLogging from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/media/eventDisplayTable.css.js
 var eventDisplayTable_css_default = `/*
@@ -160,16 +160,25 @@ __export(MainView_exports, {
   MainView: () => MainView,
   PlayerDataDownloadManager: () => PlayerDataDownloadManager
 });
-import * as i18n13 from "./../../core/i18n/i18n.js";
-import * as SDK2 from "./../../core/sdk/sdk.js";
-import * as UI7 from "./../../ui/legacy/legacy.js";
+import * as i18n13 from "../../core/i18n/i18n.js";
+import * as SDK2 from "../../core/sdk/sdk.js";
+import * as UI7 from "../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/media/MediaModel.js
 var MediaModel_exports = {};
 __export(MediaModel_exports, {
+  Events: () => Events,
   MediaModel: () => MediaModel
 });
-import * as SDK from "./../../core/sdk/sdk.js";
+import * as SDK from "../../core/sdk/sdk.js";
+var Events;
+(function(Events2) {
+  Events2["PLAYER_PROPERTIES_CHANGED"] = "PlayerPropertiesChanged";
+  Events2["PLAYER_EVENTS_ADDED"] = "PlayerEventsAdded";
+  Events2["PLAYER_MESSAGES_LOGGED"] = "PlayerMessagesLogged";
+  Events2["PLAYER_ERRORS_RAISED"] = "PlayerErrorsRaised";
+  Events2["PLAYER_CREATED"] = "PlayerCreated";
+})(Events || (Events = {}));
 var MediaModel = class extends SDK.SDKModel.SDKModel {
   enabled;
   agent;
@@ -210,14 +219,15 @@ SDK.SDKModel.SDKModel.register(MediaModel, { capabilities: 262144, autostart: fa
 // gen/front_end/panels/media/PlayerDetailView.js
 var PlayerDetailView_exports = {};
 __export(PlayerDetailView_exports, {
-  PlayerDetailView: () => PlayerDetailView
+  PlayerDetailView: () => PlayerDetailView,
+  PlayerDetailViewTabs: () => PlayerDetailViewTabs
 });
-import * as i18n9 from "./../../core/i18n/i18n.js";
-import * as UI5 from "./../../ui/legacy/legacy.js";
+import * as i18n9 from "../../core/i18n/i18n.js";
+import * as UI5 from "../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/media/EventTimelineView.js
-import * as i18n3 from "./../../core/i18n/i18n.js";
-import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
+import * as i18n3 from "../../core/i18n/i18n.js";
+import * as VisualLogging2 from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/media/TickingFlameChart.js
 var TickingFlameChart_exports = {};
@@ -227,11 +237,11 @@ __export(TickingFlameChart_exports, {
   HotColorScheme: () => HotColorScheme,
   TickingFlameChart: () => TickingFlameChart
 });
-import * as Common from "./../../core/common/common.js";
-import * as Host from "./../../core/host/host.js";
-import * as PerfUI from "./../../ui/legacy/components/perf_ui/perf_ui.js";
-import * as UI2 from "./../../ui/legacy/legacy.js";
-import * as ThemeSupport from "./../../ui/legacy/theme_support/theme_support.js";
+import * as Common from "../../core/common/common.js";
+import * as Host from "../../core/host/host.js";
+import * as PerfUI from "../../ui/legacy/components/perf_ui/perf_ui.js";
+import * as UI2 from "../../ui/legacy/legacy.js";
+import * as ThemeSupport from "../../ui/legacy/theme_support/theme_support.js";
 
 // gen/front_end/panels/media/TickingFlameChartHelpers.js
 var TickingFlameChartHelpers_exports = {};
@@ -875,11 +885,11 @@ var PlayerMessagesView_exports = {};
 __export(PlayerMessagesView_exports, {
   PlayerMessagesView: () => PlayerMessagesView
 });
-import "./../../ui/legacy/legacy.js";
-import * as i18n5 from "./../../core/i18n/i18n.js";
-import * as UI3 from "./../../ui/legacy/legacy.js";
-import { Directives as Directives2, html as html2, nothing, render as render2 } from "./../../ui/lit/lit.js";
-import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
+import "../../ui/legacy/legacy.js";
+import * as i18n5 from "../../core/i18n/i18n.js";
+import * as UI3 from "../../ui/legacy/legacy.js";
+import { Directives as Directives2, html as html2, nothing, render as render2 } from "../../ui/lit/lit.js";
+import * as VisualLogging3 from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/media/playerMessagesView.css.js
 var playerMessagesView_css_default = `/*
@@ -889,7 +899,7 @@ var playerMessagesView_css_default = `/*
  */
 .media-messages-header {
   background-color: var(--sys-color-cdt-base-container);
-  border-bottom: 1px solid var(--sys-color-divider);
+  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
   min-height: 26px;
 }
 
@@ -910,19 +920,19 @@ var playerMessagesView_css_default = `/*
   float: left;
   width: 18px;
   height: 100%;
-  padding-left: 2px;
+  padding-left: var(--sys-size-2);
 }
 
 .media-messages-message-container {
-  margin: 4px;
-  font-size: 14px;
+  margin: var(--sys-size-3);
+  font-size: var(--sys-typescale-body2-size);
   line-height: 18px;
-  padding: 4px;
+  padding: var(--sys-size-3);
   user-select: text;
 }
 
 .media-messages-message-container + .media-messages-message-container {
-  border-top: 1px solid var(--sys-color-divider);
+  border-top: var(--sys-size-1) solid var(--sys-color-divider);
 
   &.media-message-warning,
   &.media-message-error {
@@ -952,9 +962,9 @@ var playerMessagesView_css_default = `/*
 
 .status-error-box {
   font-family: var(--monospace-font-family);
-  border: 1px solid var(--sys-color-error-outline);
+  border: var(--sys-size-1) solid var(--sys-color-error-outline);
   border-radius: 5px;
-  padding: 4px;
+  padding: var(--sys-size-3);
 }
 
 .status-error-field-label {
@@ -1030,6 +1040,16 @@ var UIStrings3 = {
 };
 var str_3 = i18n5.i18n.registerUIStrings("panels/media/PlayerMessagesView.ts", UIStrings3);
 var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
+var MessageLevelBitfield;
+(function(MessageLevelBitfield2) {
+  MessageLevelBitfield2[MessageLevelBitfield2["ERROR"] = 1] = "ERROR";
+  MessageLevelBitfield2[MessageLevelBitfield2["WARNING"] = 2] = "WARNING";
+  MessageLevelBitfield2[MessageLevelBitfield2["INFO"] = 4] = "INFO";
+  MessageLevelBitfield2[MessageLevelBitfield2["DEBUG"] = 8] = "DEBUG";
+  MessageLevelBitfield2[MessageLevelBitfield2["DEFAULT"] = 7] = "DEFAULT";
+  MessageLevelBitfield2[MessageLevelBitfield2["ALL"] = 15] = "ALL";
+  MessageLevelBitfield2[MessageLevelBitfield2["CUSTOM"] = 0] = "CUSTOM";
+})(MessageLevelBitfield || (MessageLevelBitfield = {}));
 var MessageLevelSelector = class {
   items;
   view;
@@ -1339,14 +1359,15 @@ var PlayerMessagesView = class extends UI3.Widget.VBox {
 var PlayerPropertiesView_exports = {};
 __export(PlayerPropertiesView_exports, {
   DEFAULT_VIEW: () => DEFAULT_VIEW2,
-  PlayerPropertiesView: () => PlayerPropertiesView
+  PlayerPropertiesView: () => PlayerPropertiesView,
+  PlayerPropertyKeys: () => PlayerPropertyKeys
 });
-import * as i18n7 from "./../../core/i18n/i18n.js";
-import * as Platform2 from "./../../core/platform/platform.js";
-import * as SourceFrame2 from "./../../ui/legacy/components/source_frame/source_frame.js";
-import * as UI4 from "./../../ui/legacy/legacy.js";
-import { Directives as Directives3, html as html3, nothing as nothing2, render as render3 } from "./../../ui/lit/lit.js";
-import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
+import * as i18n7 from "../../core/i18n/i18n.js";
+import * as Platform2 from "../../core/platform/platform.js";
+import * as SourceFrame2 from "../../ui/legacy/components/source_frame/source_frame.js";
+import * as UI4 from "../../ui/legacy/legacy.js";
+import { Directives as Directives3, html as html3, nothing as nothing2, render as render3 } from "../../ui/lit/lit.js";
+import * as VisualLogging4 from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/media/playerPropertiesView.css.js
 var playerPropertiesView_css_default = `/*
@@ -1356,13 +1377,13 @@ var playerPropertiesView_css_default = `/*
  */
 
 .media-attributes-view {
-  border-bottom: 1px solid var(--sys-color-divider);
+  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
 }
 
 .media-property-renderer {
-  line-height: 20px;
-  min-height: 28px;
-  padding: 4px 10px;
+  line-height: var(--sys-size-9);
+  min-height: var(--sys-size-12);
+  padding: var(--sys-size-3) 10px;
   display: block;
   overflow: hidden;
 
@@ -1380,7 +1401,7 @@ var playerPropertiesView_css_default = `/*
 }
 
 .media-property-renderer:has(.json-view > .expanded) {
-  padding-bottom: 4px;
+  padding-bottom: var(--sys-size-3);
 }
 
 .media-property-renderer-hidden {
@@ -1388,7 +1409,7 @@ var playerPropertiesView_css_default = `/*
 }
 
 .media-property-renderer-title {
-  font-size: 12px;
+  font-size: var(--sys-typescale-body4-size);
   float: left;
   width: 150px;
 }
@@ -1536,6 +1557,35 @@ var UIStrings4 = {
 };
 var str_4 = i18n7.i18n.registerUIStrings("panels/media/PlayerPropertiesView.ts", UIStrings4);
 var i18nString4 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
+var PlayerPropertyKeys;
+(function(PlayerPropertyKeys2) {
+  PlayerPropertyKeys2["RESOLUTION"] = "kResolution";
+  PlayerPropertyKeys2["TOTAL_BYTES"] = "kTotalBytes";
+  PlayerPropertyKeys2["BITRATE"] = "kBitrate";
+  PlayerPropertyKeys2["MAX_DURATION"] = "kMaxDuration";
+  PlayerPropertyKeys2["START_TIME"] = "kStartTime";
+  PlayerPropertyKeys2["IS_STREAMING"] = "kIsStreaming";
+  PlayerPropertyKeys2["FRAME_URL"] = "kFrameUrl";
+  PlayerPropertyKeys2["FRAME_TITLE"] = "kFrameTitle";
+  PlayerPropertyKeys2["IS_SINGLE_ORIGIN"] = "kIsSingleOrigin";
+  PlayerPropertyKeys2["IS_RANGE_HEADER_SUPPORTED"] = "kIsRangeHeaderSupported";
+  PlayerPropertyKeys2["RENDERER_NAME"] = "kRendererName";
+  PlayerPropertyKeys2["VIDEO_DECODER_NAME"] = "kVideoDecoderName";
+  PlayerPropertyKeys2["AUDIO_DECODER_NAME"] = "kAudioDecoderName";
+  PlayerPropertyKeys2["IS_PLATFORM_VIDEO_DECODER"] = "kIsPlatformVideoDecoder";
+  PlayerPropertyKeys2["IS_PLATFORM_AUDIO_DECODER"] = "kIsPlatformAudioDecoder";
+  PlayerPropertyKeys2["VIDEO_ENCODER_NAME"] = "kVideoEncoderName";
+  PlayerPropertyKeys2["IS_PLATFORM_VIDEO_ENCODER"] = "kIsPlatformVideoEncoder";
+  PlayerPropertyKeys2["IS_VIDEO_DECRYPTION_DEMUXER_STREAM"] = "kIsVideoDecryptingDemuxerStream";
+  PlayerPropertyKeys2["IS_AUDIO_DECRYPTING_DEMUXER_STREAM"] = "kIsAudioDecryptingDemuxerStream";
+  PlayerPropertyKeys2["AUDIO_TRACKS"] = "kAudioTracks";
+  PlayerPropertyKeys2["TEXT_TRACKS"] = "kTextTracks";
+  PlayerPropertyKeys2["VIDEO_TRACKS"] = "kVideoTracks";
+  PlayerPropertyKeys2["FRAMERATE"] = "kFramerate";
+  PlayerPropertyKeys2["VIDEO_PLAYBACK_ROUGHNESS"] = "kVideoPlaybackRoughness";
+  PlayerPropertyKeys2["VIDEO_PLAYBACK_FREEZING"] = "kVideoPlaybackFreezing";
+  PlayerPropertyKeys2["HLS_BUFFERED_RANGES"] = "kHlsBufferedRanges";
+})(PlayerPropertyKeys || (PlayerPropertyKeys = {}));
 var Property = class {
   type;
   dataInternal = null;
@@ -2131,6 +2181,13 @@ var UIStrings5 = {
 };
 var str_5 = i18n9.i18n.registerUIStrings("panels/media/PlayerDetailView.ts", UIStrings5);
 var i18nString5 = i18n9.i18n.getLocalizedString.bind(void 0, str_5);
+var PlayerDetailViewTabs;
+(function(PlayerDetailViewTabs2) {
+  PlayerDetailViewTabs2["EVENTS"] = "events";
+  PlayerDetailViewTabs2["PROPERTIES"] = "properties";
+  PlayerDetailViewTabs2["MESSAGES"] = "messages";
+  PlayerDetailViewTabs2["TIMELINE"] = "timeline";
+})(PlayerDetailViewTabs || (PlayerDetailViewTabs = {}));
 var PlayerDetailView = class extends UI5.TabbedPane.TabbedPane {
   eventView;
   propertyView;
@@ -2167,12 +2224,12 @@ var PlayerListView_exports = {};
 __export(PlayerListView_exports, {
   PlayerListView: () => PlayerListView
 });
-import "./../../ui/kit/kit.js";
-import * as i18n11 from "./../../core/i18n/i18n.js";
-import * as Platform3 from "./../../core/platform/platform.js";
-import * as UI6 from "./../../ui/legacy/legacy.js";
-import { Directives as Directives4, html as html4, render as render4 } from "./../../ui/lit/lit.js";
-import * as VisualLogging5 from "./../../ui/visual_logging/visual_logging.js";
+import "../../ui/kit/kit.js";
+import * as i18n11 from "../../core/i18n/i18n.js";
+import * as Platform3 from "../../core/platform/platform.js";
+import * as UI6 from "../../ui/legacy/legacy.js";
+import { Directives as Directives4, html as html4, render as render4 } from "../../ui/lit/lit.js";
+import * as VisualLogging5 from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/media/playerListView.css.js
 var playerListView_css_default = `/*
@@ -2187,11 +2244,11 @@ var playerListView_css_default = `/*
 }
 
 li.storage-group-list-item {
-  padding: 10px 8px 6px;
+  padding: 10px var(--sys-size-5) var(--sys-size-4);
 }
 
 li.storage-group-list-item:not(:first-child) {
-  border-top: 1px solid var(--sys-color-divider);
+  border-top: var(--sys-size-1) solid var(--sys-color-divider);
 }
 
 li.storage-group-list-item::before {
@@ -2227,16 +2284,16 @@ li.storage-group-list-item::before {
   display: inherit;
 
   & > devtools-icon {
-    height: 16px;
-    width: 16px;
+    height: var(--sys-size-8);
+    width: var(--sys-size-8);
   }
 }
 
 .player-entry-status-icon {
-  width: 28px;
-  min-width: 28px;
+  width: var(--sys-size-12);
+  min-width: var(--sys-size-12);
   height: 26px;
-  border-right: 1px solid var(--sys-color-divider);
+  border-right: var(--sys-size-1) solid var(--sys-color-divider);
   overflow: hidden;
 }
 
@@ -2246,7 +2303,7 @@ li.storage-group-list-item::before {
   min-width: 125px;
   text-overflow: ellipsis;
   padding: 0 10px;
-  border-right: 1px solid var(--sys-color-divider);
+  border-right: var(--sys-size-1) solid var(--sys-color-divider);
   overflow: hidden;
 }
 
@@ -2261,7 +2318,7 @@ li.storage-group-list-item::before {
   line-height: 27px;
   min-height: 27px;
   padding-left: 10px;
-  border-bottom: 1px solid var(--sys-color-divider);
+  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
 }
 
 /*# sourceURL=${import.meta.resolve("./playerListView.css")} */`;

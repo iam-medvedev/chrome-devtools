@@ -6,6 +6,7 @@
     "checkJs": true,
     "composite": true,
     "declaration": true,
+    "disableSourceOfProjectReferenceRedirect": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
     "inlineSources": true,
@@ -26,6 +27,7 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "outDir": ".",
+    "preserveConstEnums": true,
     "rootDir": "../../../../../../../front_end/models/live-metrics/web-vitals-injected",
     "skipLibCheck": true,
     "sourceMap": true,
@@ -45,13 +47,13 @@
   ],
   "references": [
     {
-      "path": "../../../third_party/web-vitals/bundle-tsconfig.json"
+      "path": "../../../third_party/web-vitals/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../trace/bundle-tsconfig.json"
+      "path": "../../trace/bundle-tsconfig.ref.json"
     },
     {
-      "path": "spec/bundle-tsconfig.json"
+      "path": "spec/bundle-tsconfig.ref.json"
     }
   ]
 }

@@ -8,6 +8,7 @@ var __export = (target, all) => {
 var CommentAnchorResolver_exports = {};
 __export(CommentAnchorResolver_exports, {
   closestAcrossShadow: () => closestAcrossShadow,
+  computeVisibleRect: () => computeVisibleRect,
   deepQuerySelector: () => deepQuerySelector,
   deepQuerySelectorAll: () => deepQuerySelectorAll,
   extractVeName: () => extractVeName,
@@ -20,9 +21,18 @@ __export(CommentAnchorResolver_exports, {
   resolveCommentAnchor: () => resolveCommentAnchor,
   resolveCommentAnchorElement: () => resolveCommentAnchorElement
 });
-import * as CodeMirror from "./../../third_party/codemirror.next/codemirror.next.js";
-import * as VisualLogging from "./../visual_logging/visual_logging.js";
-var IGNORED_MINOR_CONTROLS = /* @__PURE__ */ new Set([
+import * as CodeMirror from "../../third_party/codemirror.next/codemirror.next.js";
+import * as VisualLogging from "../visual_logging/visual_logging.js";
+var DISALLOWED_COMMENT_TARGETS = /* @__PURE__ */ new Set([
+  // Top-level containers & layout structures
+  VisualLogging.VisualElements.Panel,
+  VisualLogging.VisualElements.Drawer,
+  VisualLogging.VisualElements.Pane,
+  VisualLogging.VisualElements.Tree,
+  VisualLogging.VisualElements.PanelTabHeader,
+  VisualLogging.VisualElements.Resizer,
+  VisualLogging.VisualElements.Menu,
+  // Minor controls and toolbars
   VisualLogging.VisualElements.Action,
   VisualLogging.VisualElements.Toggle,
   VisualLogging.VisualElements.Close,
@@ -130,7 +140,7 @@ function resolveCommentAnchorElement(element) {
         if (config.ve === VisualLogging.VisualElements.TableRow || config.ve === VisualLogging.VisualElements.TreeItem) {
           return isNonEmptyItem(target) ? target : null;
         }
-        if (!fallbackCandidate && !IGNORED_MINOR_CONTROLS.has(config.ve)) {
+        if (!fallbackCandidate && !DISALLOWED_COMMENT_TARGETS.has(config.ve)) {
           fallbackCandidate = target;
         }
       } catch {
@@ -320,6 +330,70 @@ function rematchCommentAnchor(comment, root = document, cachedJslogElements) {
   }
   return candidateList[0] || null;
 }
+function isClippingOverflow(overflow) {
+  return overflow === "hidden" || overflow === "auto" || overflow === "scroll" || overflow === "clip";
+}
+function computeVisibleRect(element, targetRect) {
+  if (!element.isConnected) {
+    return null;
+  }
+  if (!element.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true, contentVisibilityAuto: true })) {
+    return null;
+  }
+  const rect = targetRect ?? element.getBoundingClientRect();
+  if (rect.width <= 0 || rect.height <= 0) {
+    return null;
+  }
+  let visibleLeft = rect.left;
+  let visibleRight = rect.right;
+  let visibleTop = rect.top;
+  let visibleBottom = rect.bottom;
+  const doc = element.ownerDocument || document;
+  const win = doc.defaultView || window;
+  const viewportWidth = win.innerWidth || doc.documentElement.clientWidth;
+  const viewportHeight = win.innerHeight || doc.documentElement.clientHeight;
+  visibleLeft = Math.max(visibleLeft, 0);
+  visibleTop = Math.max(visibleTop, 0);
+  visibleRight = Math.min(visibleRight, viewportWidth);
+  visibleBottom = Math.min(visibleBottom, viewportHeight);
+  if (visibleLeft >= visibleRight || visibleTop >= visibleBottom) {
+    return null;
+  }
+  let current = element.parentElementOrShadowHost();
+  while (current && current !== doc.documentElement && current !== doc.body) {
+    const style = win.getComputedStyle(current);
+    const clipsX = isClippingOverflow(style.overflowX);
+    const clipsY = isClippingOverflow(style.overflowY);
+    if (clipsX || clipsY) {
+      const parentRect = current.getBoundingClientRect();
+      if (clipsX) {
+        visibleLeft = Math.max(visibleLeft, parentRect.left);
+        visibleRight = Math.min(visibleRight, parentRect.right);
+      }
+      if (clipsY) {
+        visibleTop = Math.max(visibleTop, parentRect.top);
+        visibleBottom = Math.min(visibleBottom, parentRect.bottom);
+      }
+      if (visibleLeft >= visibleRight || visibleTop >= visibleBottom) {
+        return null;
+      }
+    }
+    current = current.parentElementOrShadowHost();
+  }
+  const width = visibleRight - visibleLeft;
+  const height = visibleBottom - visibleTop;
+  if (width <= 0 || height <= 0) {
+    return null;
+  }
+  return {
+    left: visibleLeft,
+    top: visibleTop,
+    right: visibleRight,
+    bottom: visibleBottom,
+    width,
+    height
+  };
+}
 function isElementVisible(element) {
   if (!element.isConnected) {
     return false;
@@ -334,10 +408,16 @@ function isElementVisible(element) {
 // gen/front_end/ui/comments/CommentOverlayManager.js
 var CommentOverlayManager_exports = {};
 __export(CommentOverlayManager_exports, {
-  CommentOverlayManager: () => CommentOverlayManager
+  CommentOverlayManager: () => CommentOverlayManager,
+  Events: () => Events
 });
-import * as Common from "./../../core/common/common.js";
-import * as CommentManager from "./../../models/comment_manager/comment_manager.js";
+import * as Common from "../../core/common/common.js";
+import * as CommentManager from "../../models/comment_manager/comment_manager.js";
+var Events;
+(function(Events2) {
+  Events2["POSITIONS_UPDATED"] = "PositionsUpdated";
+  Events2["HOVER_HIGHLIGHT_CHANGED"] = "HoverHighlightChanged";
+})(Events || (Events = {}));
 var CommentOverlayManager = class extends Common.ObjectWrapper.ObjectWrapper {
   #commentManager;
   #liveNodeCache = /* @__PURE__ */ new WeakMap();
@@ -527,25 +607,25 @@ var CommentOverlayManager = class extends Common.ObjectWrapper.ObjectWrapper {
         observer.observe(el);
         this.#observedThreads.add(el);
       }
-      if (!isElementVisible(el)) {
+      const visibleRect = computeVisibleRect(el);
+      if (!visibleRect) {
         continue;
       }
-      const rect = el.getBoundingClientRect();
       const offsetIndex = elementPinCounts.get(el) || 0;
       elementPinCounts.set(el, offsetIndex + 1);
       const offsetY = offsetIndex * 26;
       newPins.push({
         id: thread.id,
-        top: scrollY + rect.top - 12 + offsetY,
-        left: scrollX + rect.right - 12,
+        top: scrollY + visibleRect.top - 12 + offsetY,
+        left: scrollX + visibleRect.right - 12,
         visible: true
       });
       newHighlights.push({
         id: thread.id,
-        top: scrollY + rect.top,
-        left: scrollX + rect.left,
-        width: rect.width,
-        height: rect.height,
+        top: scrollY + visibleRect.top,
+        left: scrollX + visibleRect.left,
+        width: visibleRect.width,
+        height: visibleRect.height,
         visible: true
       });
     }
@@ -664,29 +744,15 @@ var CommentOverlayManager = class extends Common.ObjectWrapper.ObjectWrapper {
       if (anchorEl) {
         const cmLine = target.closest(".cm-line");
         const highlightTarget = cmLine && anchorEl.classList.contains("cm-editor") ? cmLine : anchorEl;
-        const rect = highlightTarget.getBoundingClientRect();
-        let visibleLeft = rect.left;
-        let visibleRight = rect.right;
-        let visibleTop = rect.top;
-        let visibleBottom = rect.bottom;
-        if (anchorEl.classList.contains("cm-editor")) {
-          const scroller = anchorEl.querySelector(".cm-scroller") || anchorEl;
-          const scrollerRect = scroller.getBoundingClientRect();
-          visibleLeft = Math.max(visibleLeft, scrollerRect.left);
-          visibleRight = Math.min(visibleRight, scrollerRect.right);
-          visibleTop = Math.max(visibleTop, scrollerRect.top);
-          visibleBottom = Math.min(visibleBottom, scrollerRect.bottom);
-        }
-        const visibleWidth = Math.max(0, visibleRight - visibleLeft);
-        const visibleHeight = Math.max(0, visibleBottom - visibleTop);
-        if (visibleWidth > 0 && visibleHeight > 0) {
+        const visibleRect = computeVisibleRect(highlightTarget);
+        if (visibleRect) {
           const scrollX = window.scrollX;
           const scrollY = window.scrollY;
           this.#setHoverHighlight({
-            top: scrollY + visibleTop,
-            left: scrollX + visibleLeft,
-            width: visibleWidth,
-            height: visibleHeight,
+            top: scrollY + visibleRect.top,
+            left: scrollX + visibleRect.left,
+            width: visibleRect.width,
+            height: visibleRect.height,
             visible: true
           });
         } else {
@@ -855,10 +921,10 @@ __export(CommentsOverlayWidget_exports, {
   ActionDelegate: () => ActionDelegate,
   CommentsOverlayWidget: () => CommentsOverlayWidget
 });
-import * as Root from "./../../core/root/root.js";
-import * as CommentManager2 from "./../../models/comment_manager/comment_manager.js";
-import * as UI from "./../legacy/legacy.js";
-import * as Lit from "./../lit/lit.js";
+import * as Root from "../../core/root/root.js";
+import * as CommentManager2 from "../../models/comment_manager/comment_manager.js";
+import * as UI from "../legacy/legacy.js";
+import * as Lit from "../lit/lit.js";
 
 // gen/front_end/ui/comments/commentsOverlay.css.js
 var commentsOverlay_css_default = `/*
@@ -873,7 +939,8 @@ var commentsOverlay_css_default = `/*
     position: fixed;
     inset: 0;
     pointer-events: none;
-    z-index: 999990;
+    /* Needs to be above regular panel widgets (e.g. flame chart at z-index 2000) but below floating glass panes (which start at z-index 3000). */
+    z-index: 2500;
     overflow: hidden;
     width: 100vw;
     height: 100vh;
@@ -883,8 +950,8 @@ var commentsOverlay_css_default = `/*
     position: absolute;
     pointer-events: auto;
     cursor: pointer;
-    font-size: 24px;
-    line-height: 24px;
+    font-size: var(--sys-typescale-headline1-size);
+    line-height: var(--sys-typescale-body1-line-height);
     filter: drop-shadow(0 2px 5px rgb(0 0 0 / 35%));
     user-select: none;
     transition: transform 0.1s ease;
@@ -897,7 +964,7 @@ var commentsOverlay_css_default = `/*
   .comment-anchor-highlight {
     position: absolute;
     pointer-events: none;
-    border: 2px dashed var(--sys-color-primary);
+    border: var(--sys-size-2) dashed var(--sys-color-primary);
     background-color: color-mix(in srgb, var(--sys-color-primary), transparent 90%);
     box-sizing: border-box;
   }
@@ -905,7 +972,7 @@ var commentsOverlay_css_default = `/*
   .comment-hover-highlight {
     position: absolute;
     pointer-events: none;
-    border: 2px solid var(--sys-color-primary);
+    border: var(--sys-size-2) solid var(--sys-color-primary);
     background-color: color-mix(in srgb, var(--sys-color-primary), transparent 85%);
     box-sizing: border-box;
   }

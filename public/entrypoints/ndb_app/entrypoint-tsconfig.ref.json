@@ -1,0 +1,1 @@
+{"compilerOptions":{"composite":true,"declaration":true,"emitDeclarationOnly":true,"skipLibCheck":true,"rootDir":"../../../../../../front_end/entrypoints/ndb_app","outDir":".","declarationDir":"."},"files":["../../../../../../front_end/entrypoints/ndb_app/ndb_app.ts"],"references":[{"path":"../main/bundle-tsconfig.ref.json"},{"path":"../shell/shell-tsconfig.ref.json"}]}

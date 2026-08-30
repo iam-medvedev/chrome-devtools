@@ -6,6 +6,7 @@
     "checkJs": true,
     "composite": true,
     "declaration": true,
+    "disableSourceOfProjectReferenceRedirect": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
     "inlineSources": true,
@@ -26,6 +27,7 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "outDir": ".",
+    "preserveConstEnums": true,
     "rootDir": "../../../../../../../front_end/ui/components/icon_button",
     "skipLibCheck": true,
     "sourceMap": true,
@@ -48,10 +50,10 @@
       "path": "../../../Images/optimize_images-tsconfig.json"
     },
     {
-      "path": "../../kit/bundle-tsconfig.json"
+      "path": "../../kit/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../lit/bundle-tsconfig.json"
+      "path": "../../lit/bundle-tsconfig.ref.json"
     }
   ]
 }

@@ -4,6 +4,7 @@
 import * as Common from '../../../core/common/common.js';
 import * as Host from '../../../core/host/host.js';
 import * as i18n from '../../../core/i18n/i18n.js';
+import * as Platform from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import { areOriginsEquivalent, extractContextOrigin, isOpaqueOrigin } from '../AiOrigins.js';
 import { MAX_TARGET_ORIGINS, resolveDOMStorages } from './DOMStorageUtils.js';
@@ -46,13 +47,24 @@ export class GetStorageValuesTool {
         required: ['type', 'keys', 'origins'],
     };
     displayInfoFromArgs(args) {
+        let title;
+        switch (args.type) {
+            case 'localStorage':
+                title = lockedString('Reading local storage values');
+                break;
+            case 'sessionStorage':
+                title = lockedString('Reading session storage values');
+                break;
+            default:
+                Platform.TypeScriptUtilities.assertNever(args.type, `Unknown storage type: ${args.type}`);
+        }
         return {
-            title: lockedString('Reading storage values'),
+            title,
             action: `getStorageValues('${args.type}', ${JSON.stringify(args.keys)}, ${JSON.stringify(args.origins)})`,
         };
     }
     async handler(args, context, options) {
-        context.setLoggingEnabled(false);
+        context.disableLogging();
         // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
         const targetManager = SDK.TargetManager.TargetManager.instance();
         const primaryPageTarget = targetManager.primaryPageTarget();

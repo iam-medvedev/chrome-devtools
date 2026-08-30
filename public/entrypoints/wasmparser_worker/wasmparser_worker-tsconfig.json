@@ -6,6 +6,7 @@
     "checkJs": true,
     "composite": true,
     "declaration": true,
+    "disableSourceOfProjectReferenceRedirect": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
     "inlineSources": true,
@@ -26,6 +27,7 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "outDir": ".",
+    "preserveConstEnums": true,
     "rootDir": "../../../../../../front_end/entrypoints/wasmparser_worker",
     "skipLibCheck": true,
     "sourceMap": true,
@@ -44,10 +46,10 @@
   ],
   "references": [
     {
-      "path": "../../core/common/bundle-tsconfig.json"
+      "path": "../../core/common/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../third_party/wasmparser/bundle-tsconfig.json"
+      "path": "../../third_party/wasmparser/bundle-tsconfig.ref.json"
     }
   ]
 }

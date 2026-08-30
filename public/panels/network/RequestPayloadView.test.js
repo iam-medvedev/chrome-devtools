@@ -8,6 +8,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../../core/text_utils/text_utils.js';
 import { assertScreenshot, raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { render } from '../../ui/lit/lit.js';
@@ -226,6 +227,119 @@ describeWithEnvironment('RequestPayloadView', () => {
         assert.instanceOf(firstProperty, ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement);
         assert.isFalse(firstProperty.editable);
     });
+    it('calls onPayloadContextMenu and onPayloadToggle from DEFAULT_VIEW', async () => {
+        const object = new SDK.RemoteObject.LocalJSONObject({ foo: 'bar' });
+        const objectTree = new ObjectUI.ObjectPropertiesSection.ObjectTree(object, {
+            readOnly: true,
+            propertiesMode: 1 /* ObjectUI.ObjectPropertiesSection.ObjectPropertiesMode.OWN_AND_INTERNAL_AND_INHERITED */,
+        });
+        objectTree.expanded = true;
+        const onPayloadContextMenu = sinon.spy();
+        const onPayloadToggle = sinon.spy();
+        const container = document.createElement('div');
+        renderElementIntoDOM(container);
+        const input = {
+            decodeQueryParameters: true,
+            setDecodeQueryParameters: sinon.spy(),
+            decodeFormParameters: true,
+            setDecodeFormParameters: sinon.spy(),
+            viewQueryParamSource: false,
+            setViewQueryParamSource: sinon.spy(),
+            viewFormParamSource: false,
+            setViewFormParamSource: sinon.spy(),
+            viewJSONPayloadSource: false,
+            setViewJSONPayloadSource: sinon.spy(),
+            copyValue: sinon.spy(),
+            formData: '{"foo": "bar"}',
+            formParameters: undefined,
+            queryString: null,
+            queryParameters: null,
+            objectTree,
+            onPayloadContextMenu,
+            onPayloadToggle,
+            binaryPayloadContentData: null,
+            requestUrl: urlString `https://example.com/api`,
+        };
+        Network.RequestPayloadView.DEFAULT_VIEW(input, {}, container);
+        await UI.Widget.Widget.allUpdatesComplete;
+        const treeOutline = container.querySelector('.request-payload-tree');
+        assert.exists(treeOutline);
+        const shadowRoot = treeOutline.shadowRoot;
+        assert.exists(shadowRoot);
+        const rootElement = shadowRoot.querySelector('li.object-properties-section-root-element');
+        assert.exists(rootElement);
+        const showStub = sinon.stub(UI.ContextMenu.ContextMenu.prototype, 'show').resolves();
+        rootElement.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
+        sinon.assert.calledOnce(onPayloadContextMenu);
+        assert.instanceOf(onPayloadContextMenu.firstCall.args[0], UI.ContextMenu.ContextMenu);
+        sinon.assert.calledOnce(showStub);
+        rootElement.dispatchEvent(new UI.TreeOutline.TreeViewElement.ExpandEvent({ expanded: false }));
+        sinon.assert.calledWith(onPayloadToggle, false);
+    });
+    it('handles payload context menu operations in presenter', async () => {
+        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://example.com/api`, urlString ``, null, null, null);
+        request.setRequestHeaders([{ name: 'Content-Type', value: 'application/json' }]);
+        sinon.stub(request, 'requestFormData').resolves('{"outer": {"inner": "val"}}');
+        sinon.stub(request, 'formParameters').resolves(null);
+        const viewStub = createViewFunctionStub(Network.RequestPayloadView.RequestPayloadView);
+        const view = new Network.RequestPayloadView.RequestPayloadView(undefined, viewStub);
+        view.request = request;
+        renderElementIntoDOM(view);
+        view.wasShown();
+        const input = await viewStub.nextInput;
+        assert.exists(input.objectTree);
+        const objectTree = input.objectTree;
+        await objectTree.populateChildrenIfNeeded();
+        const contextMenu = new UI.ContextMenu.ContextMenu(new MouseEvent('contextmenu'));
+        const appendItemSpy = sinon.spy(UI.ContextMenu.Section.prototype, 'appendItem');
+        const appendCheckboxItemSpy = sinon.spy(UI.ContextMenu.Section.prototype, 'appendCheckboxItem');
+        input.onPayloadContextMenu(contextMenu);
+        const copyValueItem = appendItemSpy.args.find(args => args[0] === 'Copy value');
+        assert.exists(copyValueItem);
+        // Test "Expand recursively"
+        const expandRecursivelyItem = appendItemSpy.args.find(args => args[0] === 'Expand recursively');
+        assert.exists(expandRecursivelyItem);
+        const expandHandler = expandRecursivelyItem[1];
+        assert.isFunction(expandHandler);
+        await expandHandler();
+        await view.updateComplete;
+        assert.isTrue(objectTree.expanded);
+        assert.exists(objectTree.children?.properties);
+        assert.isTrue(objectTree.children.properties[0].expanded);
+        // Test "Collapse children"
+        const collapseChildrenItem = appendItemSpy.args.find(args => args[0] === 'Collapse children');
+        assert.exists(collapseChildrenItem);
+        const collapseHandler = collapseChildrenItem[1];
+        assert.isFunction(collapseHandler);
+        collapseHandler();
+        await view.updateComplete;
+        assert.isFalse(objectTree.expanded);
+        assert.exists(objectTree.children?.properties);
+        assert.isFalse(objectTree.children.properties[0].expanded);
+        // Test "Sort properties alphabetically"
+        const sortPropertiesItem = appendCheckboxItemSpy.args.find(args => args[0] === 'Sort properties alphabetically');
+        assert.exists(sortPropertiesItem);
+        const sortHandler = sortPropertiesItem[1];
+        assert.isFunction(sortHandler);
+        const initialSort = objectTree.sortPropertiesAlphabetically;
+        sortHandler();
+        await view.updateComplete;
+        assert.strictEqual(objectTree.sortPropertiesAlphabetically, !initialSort);
+        // Test "Show all"
+        const showAllItem = appendCheckboxItemSpy.args.find(args => args[0] === 'Show all');
+        assert.exists(showAllItem);
+        const showAllHandler = showAllItem[1];
+        assert.isFunction(showAllHandler);
+        const initialShowAll = objectTree.includeNullOrUndefinedValues;
+        showAllHandler();
+        await view.updateComplete;
+        assert.strictEqual(objectTree.includeNullOrUndefinedValues, !initialShowAll);
+        // Test onPayloadToggle
+        input.onPayloadToggle(true);
+        assert.isTrue(objectTree.expanded);
+        input.onPayloadToggle(false);
+        assert.isFalse(objectTree.expanded);
+    });
     it('sets binaryPayloadContentData for base64-encoded request bodies', async () => {
         const base64Data = 'SGVsbG8gV29ybGQ='; // "Hello World" in base64
         const binaryContentData = new TextUtils.ContentData.ContentData(base64Data, /* isBase64= */ true, 'application/octet-stream');
@@ -237,24 +351,16 @@ describeWithEnvironment('RequestPayloadView', () => {
         sinon.stub(request, 'requestFormData').resolves(base64Data);
         sinon.stub(request, 'formParameters').resolves(null);
         sinon.stub(request, 'requestFormDataContentData').resolves(binaryContentData);
-        // Use a spy view to capture the input passed to the view function.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let lastInput = null;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const spyView = (input, _output, _target) => {
-            lastInput = input;
-        };
-        const view = new Network.RequestPayloadView.RequestPayloadView(undefined, spyView);
+        const viewStub = createViewFunctionStub(Network.RequestPayloadView.RequestPayloadView);
+        const view = new Network.RequestPayloadView.RequestPayloadView(undefined, viewStub);
         view.request = request;
         renderElementIntoDOM(view);
         view.wasShown();
-        await view.refreshFormDataPromiseForTest;
-        await view.updateComplete;
-        assert.exists(lastInput, 'View should have been called');
-        assert.exists(lastInput.binaryPayloadContentData, 'binaryPayloadContentData should be set for base64-encoded request bodies');
-        assert.isTrue(lastInput.binaryPayloadContentData.createdFromBase64, 'ContentData should be created from base64');
-        assert.strictEqual(lastInput.binaryPayloadContentData.base64, base64Data, 'ContentData base64 should match the original encoded data');
-        assert.strictEqual(lastInput.requestUrl, 'https://example.com/api');
+        const input = await viewStub.nextInput;
+        assert.exists(input.binaryPayloadContentData, 'binaryPayloadContentData should be set for base64-encoded request bodies');
+        assert.isTrue(input.binaryPayloadContentData.createdFromBase64, 'ContentData should be created from base64');
+        assert.strictEqual(input.binaryPayloadContentData.base64, base64Data, 'ContentData base64 should match the original encoded data');
+        assert.strictEqual(input.requestUrl, 'https://example.com/api');
     });
     it('does not set binaryPayloadContentData for text request bodies', async () => {
         const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://example.com/api`, urlString ``, null, null, null);
@@ -263,20 +369,13 @@ describeWithEnvironment('RequestPayloadView', () => {
         sinon.stub(request, 'requestFormData').resolves('{"foo": "bar"}');
         sinon.stub(request, 'formParameters').resolves(null);
         sinon.stub(request, 'requestFormDataContentData').resolves(textContentData);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let lastInput = null;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const spyView = (input, _output, _target) => {
-            lastInput = input;
-        };
-        const view = new Network.RequestPayloadView.RequestPayloadView(undefined, spyView);
+        const viewStub = createViewFunctionStub(Network.RequestPayloadView.RequestPayloadView);
+        const view = new Network.RequestPayloadView.RequestPayloadView(undefined, viewStub);
         view.request = request;
         renderElementIntoDOM(view);
         view.wasShown();
-        await view.refreshFormDataPromiseForTest;
-        await view.updateComplete;
-        assert.exists(lastInput, 'View should have been called');
-        assert.isNull(lastInput.binaryPayloadContentData, 'binaryPayloadContentData should be null for text request bodies');
+        const input = await viewStub.nextInput;
+        assert.isNull(input.binaryPayloadContentData, 'binaryPayloadContentData should be null for text request bodies');
     });
     it('decodes query string parameters by default even for POST requests with JSON body', async () => {
         const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://example.com/api?foo=bar%20baz`, urlString ``, null, null, null);

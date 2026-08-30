@@ -3,7 +3,12 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as CommentManager from '../../models/comment_manager/comment_manager.js';
-import { deepQuerySelectorAll, isElementVisible, rematchCommentAnchor, resolveCommentAnchor, resolveCommentAnchorElement, } from './CommentAnchorResolver.js';
+import { computeVisibleRect, deepQuerySelectorAll, rematchCommentAnchor, resolveCommentAnchor, resolveCommentAnchorElement, } from './CommentAnchorResolver.js';
+export var Events;
+(function (Events) {
+    Events["POSITIONS_UPDATED"] = "PositionsUpdated";
+    Events["HOVER_HIGHLIGHT_CHANGED"] = "HoverHighlightChanged";
+})(Events || (Events = {}));
 /**
  * Orchestrates live DOM overlay positioning, coordinates interactive commenting UI mode,
  * and tracks live DOM element positions via observers and event listeners.
@@ -202,27 +207,27 @@ export class CommentOverlayManager extends Common.ObjectWrapper.ObjectWrapper {
                 observer.observe(el);
                 this.#observedThreads.add(el);
             }
-            if (!isElementVisible(el)) {
+            const visibleRect = computeVisibleRect(el);
+            if (!visibleRect) {
                 continue;
             }
-            const rect = el.getBoundingClientRect();
             const offsetIndex = elementPinCounts.get(el) || 0;
             elementPinCounts.set(el, offsetIndex + 1);
             // Offset by 26px vertically (24px pin icon height + 2px spacing) so multiple comment pins on the same element stack vertically without overlapping.
             const offsetY = offsetIndex * 26;
-            // Offset by -12px (half of the 24px pin diameter) so the pin icon is centered on the top-right corner of the target element.
+            // Offset by -12px (half of the 24px pin diameter) so the pin icon is centered on the top-right corner of the visible clipped area.
             newPins.push({
                 id: thread.id,
-                top: scrollY + rect.top - 12 + offsetY,
-                left: scrollX + rect.right - 12,
+                top: scrollY + visibleRect.top - 12 + offsetY,
+                left: scrollX + visibleRect.right - 12,
                 visible: true,
             });
             newHighlights.push({
                 id: thread.id,
-                top: scrollY + rect.top,
-                left: scrollX + rect.left,
-                width: rect.width,
-                height: rect.height,
+                top: scrollY + visibleRect.top,
+                left: scrollX + visibleRect.left,
+                width: visibleRect.width,
+                height: visibleRect.height,
                 visible: true,
             });
         }
@@ -342,29 +347,15 @@ export class CommentOverlayManager extends Common.ObjectWrapper.ObjectWrapper {
             if (anchorEl) {
                 const cmLine = target.closest('.cm-line');
                 const highlightTarget = (cmLine && anchorEl.classList.contains('cm-editor')) ? cmLine : anchorEl;
-                const rect = highlightTarget.getBoundingClientRect();
-                let visibleLeft = rect.left;
-                let visibleRight = rect.right;
-                let visibleTop = rect.top;
-                let visibleBottom = rect.bottom;
-                if (anchorEl.classList.contains('cm-editor')) {
-                    const scroller = anchorEl.querySelector('.cm-scroller') || anchorEl;
-                    const scrollerRect = scroller.getBoundingClientRect();
-                    visibleLeft = Math.max(visibleLeft, scrollerRect.left);
-                    visibleRight = Math.min(visibleRight, scrollerRect.right);
-                    visibleTop = Math.max(visibleTop, scrollerRect.top);
-                    visibleBottom = Math.min(visibleBottom, scrollerRect.bottom);
-                }
-                const visibleWidth = Math.max(0, visibleRight - visibleLeft);
-                const visibleHeight = Math.max(0, visibleBottom - visibleTop);
-                if (visibleWidth > 0 && visibleHeight > 0) {
+                const visibleRect = computeVisibleRect(highlightTarget);
+                if (visibleRect) {
                     const scrollX = window.scrollX;
                     const scrollY = window.scrollY;
                     this.#setHoverHighlight({
-                        top: scrollY + visibleTop,
-                        left: scrollX + visibleLeft,
-                        width: visibleWidth,
-                        height: visibleHeight,
+                        top: scrollY + visibleRect.top,
+                        left: scrollX + visibleRect.left,
+                        width: visibleRect.width,
+                        height: visibleRect.height,
                         visible: true,
                     });
                 }

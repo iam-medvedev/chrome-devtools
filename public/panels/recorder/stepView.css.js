@@ -57,17 +57,17 @@ export default `/*
 .circle-icon {
   fill: var(--sys-color-primary);
   stroke: var(--sys-color-cdt-base-container);
-  stroke-width: 4px;
+  stroke-width: var(--sys-size-3);
   r: 5px;
-  cx: 8px;
-  cy: 8px;
+  cx: var(--sys-size-5);
+  cy: var(--sys-size-5);
 }
 
 .is-start-of-group:not(:first-of-type) .circle-icon {
   r: 7px;
   fill: var(--sys-color-cdt-base-container);
   stroke: var(--sys-color-primary);
-  stroke-width: 2px;
+  stroke-width: var(--sys-size-2);
 }
 
 .step.is-success .circle-icon {
@@ -80,12 +80,12 @@ export default `/*
   animation: rotate 1s linear infinite;
   fill: var(--sys-color-cdt-base-container);
   stroke: var(--sys-color-primary);
-  stroke-width: 2px;
+  stroke-width: var(--sys-size-2);
 }
 
 .error {
-  margin: 16px 0 0;
-  padding: 8px;
+  margin: var(--sys-size-8) 0 0;
+  padding: var(--sys-size-5);
   background: var(--sys-color-error-container);
   color: var(--sys-color-error);
   position: relative;
@@ -93,11 +93,11 @@ export default `/*
 
 @keyframes rotate {
   0% {
-    transform: translate(8px, 8px) rotate(0) translate(-8px, -8px);
+    transform: translate(var(--sys-size-5), var(--sys-size-5)) rotate(0) translate(calc(-1 * var(--sys-size-5)), calc(-1 * var(--sys-size-5)));
   }
 
   100% {
-    transform: translate(8px, 8px) rotate(360deg) translate(-8px, -8px);
+    transform: translate(var(--sys-size-5), var(--sys-size-5)) rotate(360deg) translate(calc(-1 * var(--sys-size-5)), calc(-1 * var(--sys-size-5)));
   }
 }
 
@@ -108,7 +108,7 @@ export default `/*
 
 .step.is-error .error-icon {
   display: block;
-  transform: translate(4px, 4px);
+  transform: translate(var(--sys-size-3), var(--sys-size-3));
 }
 
 :host-context(.was-successful) .circle-icon {
@@ -144,12 +144,12 @@ export default `/*
 }
 
 .chevron {
-  width: 14px;
-  height: 14px;
+  width: var(--sys-size-7);
+  height: var(--sys-size-7);
   transition: 200ms;
   position: absolute;
-  top: 14px;
-  left: 24px;
+  top: var(--sys-size-7);
+  left: var(--sys-size-11);
   transform: rotate(-90deg);
   color: var(--sys-color-on-surface);
 }
@@ -164,7 +164,7 @@ export default `/*
 
 .details {
   display: none;
-  margin-top: 8px;
+  margin-top: var(--sys-size-5);
   position: relative;
 }
 
@@ -177,14 +177,14 @@ export default `/*
 }
 
 devtools-recorder-step-editor {
-  border: 1px solid var(--sys-color-neutral-outline);
+  border: var(--sys-size-1) solid var(--sys-color-neutral-outline);
   padding: 3px 6px 6px;
-  margin-left: -6px;
+  margin-left: calc(-1 * var(--sys-size-4));
   border-radius: 3px;
 }
 
 devtools-recorder-step-editor:hover {
-  border: 1px solid var(--sys-color-neutral-outline);
+  border: var(--sys-size-1) solid var(--sys-color-neutral-outline);
 }
 
 devtools-recorder-step-editor.is-selected {
@@ -193,7 +193,7 @@ devtools-recorder-step-editor.is-selected {
     var(--sys-color-tonal-container),
     var(--sys-color-cdt-base-container) 50%
   );
-  border: 1px solid var(--sys-color-tonal-outline);
+  border: var(--sys-size-1) solid var(--sys-color-tonal-outline);
 }
 
 .summary {
@@ -220,7 +220,7 @@ devtools-recorder-step-editor.is-selected {
 .step-actions {
   border: none;
   border-radius: 0;
-  height: 24px;
+  height: var(--sys-size-11);
 
   --override-select-menu-show-button-border-radius: 0;
   --override-select-menu-show-button-outline: none;

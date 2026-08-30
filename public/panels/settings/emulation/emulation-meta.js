@@ -1,6 +1,6 @@
 // gen/front_end/panels/settings/emulation/emulation-meta.prebundle.js
-import * as i18n from "./../../../core/i18n/i18n.js";
-import * as UI from "./../../../ui/legacy/legacy.js";
+import * as i18n from "../../../core/i18n/i18n.js";
+import * as UI from "../../../ui/legacy/legacy.js";
 var UIStrings = {
   /**
    * @description Title of the Devices tab/tool. Devices refers to e.g., phones/tablets.

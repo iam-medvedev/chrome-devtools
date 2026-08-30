@@ -13,21 +13,21 @@ __export(SettingsScreen_exports, {
   Revealer: () => Revealer,
   SettingsScreen: () => SettingsScreen
 });
-import "./../../ui/kit/kit.js";
-import * as Common from "./../../core/common/common.js";
-import * as Host from "./../../core/host/host.js";
-import * as i18n from "./../../core/i18n/i18n.js";
-import * as Root from "./../../core/root/root.js";
-import * as Buttons from "./../../ui/components/buttons/buttons.js";
-import * as UIHelpers from "./../../ui/helpers/helpers.js";
-import { createIcon, Link } from "./../../ui/kit/kit.js";
-import * as SettingsUI from "./../../ui/legacy/components/settings_ui/settings_ui.js";
-import * as Components from "./../../ui/legacy/components/utils/utils.js";
-import * as UI from "./../../ui/legacy/legacy.js";
-import { html, render } from "./../../ui/lit/lit.js";
-import * as SettingUIRegistration from "./../../ui/settings/settings.js";
-import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
-import { PanelUtils } from "./../utils/utils.js";
+import "../../ui/kit/kit.js";
+import * as Common from "../../core/common/common.js";
+import * as Host from "../../core/host/host.js";
+import * as i18n from "../../core/i18n/i18n.js";
+import * as Root from "../../core/root/root.js";
+import * as Buttons from "../../ui/components/buttons/buttons.js";
+import * as UIHelpers from "../../ui/helpers/helpers.js";
+import { createIcon, Link } from "../../ui/kit/kit.js";
+import * as SettingsUI from "../../ui/legacy/components/settings_ui/settings_ui.js";
+import * as Components from "../../ui/legacy/components/utils/utils.js";
+import * as UI from "../../ui/legacy/legacy.js";
+import { html, render } from "../../ui/lit/lit.js";
+import * as SettingUIRegistration from "../../ui/settings/settings.js";
+import * as VisualLogging from "../../ui/visual_logging/visual_logging.js";
+import { PanelUtils } from "../utils/utils.js";
 import * as PanelComponents from "./components/components.js";
 
 // gen/front_end/panels/settings/settingsScreen.css.js
@@ -44,8 +44,8 @@ var settingsScreen_css_default = `/*
 
 .settings-content {
   overflow: hidden auto;
-  margin: 8px 8px 8px 0;
-  padding: 0 4px;
+  margin: var(--sys-size-5) var(--sys-size-5) var(--sys-size-5) 0;
+  padding: 0 var(--sys-size-3);
   flex: auto;
 }
 
@@ -60,7 +60,7 @@ fieldset {
 }
 
 label {
-  padding-right: 8px;
+  padding-right: var(--sys-size-5);
 }
 
 .experiments-filter {
@@ -182,7 +182,7 @@ devtools-button.link-icon {
 .settings-experiment .feedback-link {
   color: var(--sys-color-primary);
   text-decoration-line: underline;
-  margin-left: 4px;
+  margin-left: var(--sys-size-3);
 }
 
 .tabbed-pane-content slot::slotted(.widget) {
@@ -226,7 +226,7 @@ devtools-button.link-icon {
 }
 
 .greendev-widgets input[type="radio"] {
-  margin: 6px;
+  margin: var(--sys-size-4);
 }
 
 /*# sourceURL=${import.meta.resolve("./settingsScreen.css")} */`;
@@ -723,20 +723,20 @@ __export(AISettingsTab_exports, {
   AISettingsTab: () => AISettingsTab,
   AI_SETTINGS_TAB_DEFAULT_VIEW: () => AI_SETTINGS_TAB_DEFAULT_VIEW
 });
-import "./../../ui/kit/kit.js";
-import * as Common2 from "./../../core/common/common.js";
-import * as Host2 from "./../../core/host/host.js";
-import * as i18n3 from "./../../core/i18n/i18n.js";
-import * as Platform2 from "./../../core/platform/platform.js";
-import * as Root2 from "./../../core/root/root.js";
-import * as AiAssistanceModel from "./../../models/ai_assistance/ai_assistance.js";
-import * as Buttons2 from "./../../ui/components/buttons/buttons.js";
-import * as Input from "./../../ui/components/input/input.js";
-import * as Switch from "./../../ui/components/switch/switch.js";
-import * as uiI18n from "./../../ui/i18n/i18n.js";
-import * as UI2 from "./../../ui/legacy/legacy.js";
-import * as Lit from "./../../ui/lit/lit.js";
-import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
+import "../../ui/kit/kit.js";
+import * as Common2 from "../../core/common/common.js";
+import * as Host2 from "../../core/host/host.js";
+import * as i18n3 from "../../core/i18n/i18n.js";
+import * as Platform2 from "../../core/platform/platform.js";
+import * as Root2 from "../../core/root/root.js";
+import * as AiAssistanceModel from "../../models/ai_assistance/ai_assistance.js";
+import * as Buttons2 from "../../ui/components/buttons/buttons.js";
+import * as Input from "../../ui/components/input/input.js";
+import * as Switch from "../../ui/components/switch/switch.js";
+import * as uiI18n from "../../ui/i18n/i18n.js";
+import * as UI2 from "../../ui/legacy/legacy.js";
+import * as Lit from "../../ui/lit/lit.js";
+import * as VisualLogging2 from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/settings/aiSettingsTab.css.js
 var aiSettingsTab_css_default = `/*
@@ -1548,13 +1548,14 @@ var AISettingsTab = class extends UI2.Widget.VBox {
 var EditFileSystemView_exports = {};
 __export(EditFileSystemView_exports, {
   DEFAULT_VIEW: () => DEFAULT_VIEW,
-  EditFileSystemView: () => EditFileSystemView
+  EditFileSystemView: () => EditFileSystemView,
+  ExcludedFolderStatus: () => ExcludedFolderStatus
 });
-import "./../../ui/legacy/components/data_grid/data_grid.js";
-import * as i18n5 from "./../../core/i18n/i18n.js";
-import * as Platform3 from "./../../core/platform/platform.js";
-import * as UI3 from "./../../ui/legacy/legacy.js";
-import { Directives, html as html3, render as render3 } from "./../../ui/lit/lit.js";
+import "../../ui/legacy/components/data_grid/data_grid.js";
+import * as i18n5 from "../../core/i18n/i18n.js";
+import * as Platform3 from "../../core/platform/platform.js";
+import * as UI3 from "../../ui/legacy/legacy.js";
+import { Directives, html as html3, render as render3 } from "../../ui/lit/lit.js";
 
 // gen/front_end/panels/settings/editFileSystemView.css.js
 var editFileSystemView_css_default = `/*
@@ -1610,6 +1611,12 @@ var UIStrings3 = {
 };
 var str_3 = i18n5.i18n.registerUIStrings("panels/settings/EditFileSystemView.ts", UIStrings3);
 var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
+var ExcludedFolderStatus;
+(function(ExcludedFolderStatus2) {
+  ExcludedFolderStatus2[ExcludedFolderStatus2["VALID"] = 1] = "VALID";
+  ExcludedFolderStatus2[ExcludedFolderStatus2["ERROR_NOT_A_PATH"] = 2] = "ERROR_NOT_A_PATH";
+  ExcludedFolderStatus2[ExcludedFolderStatus2["ERROR_NOT_UNIQUE"] = 3] = "ERROR_NOT_UNIQUE";
+})(ExcludedFolderStatus || (ExcludedFolderStatus = {}));
 function statusString(status) {
   switch (status) {
     case 2:
@@ -1761,15 +1768,15 @@ var FrameworkIgnoreListSettingsTab_exports = {};
 __export(FrameworkIgnoreListSettingsTab_exports, {
   FrameworkIgnoreListSettingsTab: () => FrameworkIgnoreListSettingsTab
 });
-import "./../../ui/kit/kit.js";
-import * as Common3 from "./../../core/common/common.js";
-import * as i18n7 from "./../../core/i18n/i18n.js";
-import * as Workspace from "./../../models/workspace/workspace.js";
-import * as Buttons3 from "./../../ui/components/buttons/buttons.js";
-import * as UIHelpers2 from "./../../ui/helpers/helpers.js";
-import * as SettingsUI3 from "./../../ui/legacy/components/settings_ui/settings_ui.js";
-import * as UI4 from "./../../ui/legacy/legacy.js";
-import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
+import "../../ui/kit/kit.js";
+import * as Common3 from "../../core/common/common.js";
+import * as i18n7 from "../../core/i18n/i18n.js";
+import * as Workspace from "../../models/workspace/workspace.js";
+import * as Buttons3 from "../../ui/components/buttons/buttons.js";
+import * as UIHelpers2 from "../../ui/helpers/helpers.js";
+import * as SettingsUI3 from "../../ui/legacy/components/settings_ui/settings_ui.js";
+import * as UI4 from "../../ui/legacy/legacy.js";
+import * as VisualLogging3 from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/settings/frameworkIgnoreListSettingsTab.css.js
 var frameworkIgnoreListSettingsTab_css_default = `/*
@@ -1841,7 +1848,7 @@ var frameworkIgnoreListSettingsTab_css_default = `/*
   flex: none;
   display: flex;
   flex-direction: row;
-  margin: 6px 5px;
+  margin: var(--sys-size-4) 5px;
   align-items: center;
 }
 
@@ -1867,7 +1874,7 @@ var frameworkIgnoreListSettingsTab_css_default = `/*
 }
 
 .devtools-link:has(devtools-icon) {
-  margin-left: 6px;
+  margin-left: var(--sys-size-4);
 }
 
 /*# sourceURL=${import.meta.resolve("./frameworkIgnoreListSettingsTab.css")} */`;
@@ -2120,15 +2127,16 @@ __export(KeybindsSettingsTab_exports, {
   KeybindsSettingsTab: () => KeybindsSettingsTab,
   ShortcutListItem: () => ShortcutListItem
 });
-import * as Common4 from "./../../core/common/common.js";
-import * as Host3 from "./../../core/host/host.js";
-import * as i18n9 from "./../../core/i18n/i18n.js";
-import * as Platform5 from "./../../core/platform/platform.js";
-import * as Buttons4 from "./../../ui/components/buttons/buttons.js";
-import { createIcon as createIcon2, Link as Link2 } from "./../../ui/kit/kit.js";
-import * as SettingsUI5 from "./../../ui/legacy/components/settings_ui/settings_ui.js";
-import * as UI5 from "./../../ui/legacy/legacy.js";
-import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
+import * as Common4 from "../../core/common/common.js";
+import * as Host3 from "../../core/host/host.js";
+import * as i18n9 from "../../core/i18n/i18n.js";
+import * as Platform5 from "../../core/platform/platform.js";
+import * as Buttons4 from "../../ui/components/buttons/buttons.js";
+import { createIcon as createIcon2, Link as Link2 } from "../../ui/kit/kit.js";
+import * as SettingsUI5 from "../../ui/legacy/components/settings_ui/settings_ui.js";
+import * as UI5 from "../../ui/legacy/legacy.js";
+import * as Settings5 from "../../ui/settings/settings.js";
+import * as VisualLogging4 from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/settings/keybindsSettingsTab.css.js
 var keybindsSettingsTab_css_default = `/*
@@ -2259,7 +2267,7 @@ button.text-button {
 }
 
 .keybinds-list-text input {
-  margin: 0 2px;
+  margin: 0 var(--sys-size-2);
 }
 
 .keybinds-set-select {
@@ -2288,7 +2296,7 @@ button.text-button {
   align-self: flex-start;
   min-height: 2em;
   line-height: 2em;
-  margin-bottom: 4px;
+  margin-bottom: var(--sys-size-3);
 }
 
 .keybinds-footer {
@@ -2454,8 +2462,8 @@ var KeybindsSettingsTab = class extends UI5.Widget.VBox {
     this.registerRequiredCSS(keybindsSettingsTab_css_default, settingsScreen_css_default);
     const settingsContent = this.contentElement.createChild("div", "settings-card-container-wrapper").createChild("div");
     settingsContent.classList.add("settings-card-container");
-    const keybindsSetSetting = Common4.Settings.Settings.instance().moduleSetting("active-keybind-set");
-    const userShortcutsSetting = Common4.Settings.Settings.instance().moduleSetting("user-shortcuts");
+    const keybindsSetSetting = Common4.Settings.Settings.instance().resolve(Settings5.MainSettings.activeKeybindSetSettingDescriptor);
+    const userShortcutsSetting = Common4.Settings.Settings.instance().resolve(Settings5.MainSettings.userShortcutsSettingDescriptor);
     keybindsSetSetting.addChangeListener(this.update, this);
     const keybindsSetSelect = SettingsUI5.SettingsUI.createControlForSetting(keybindsSetSetting, i18nString5(UIStrings5.matchShortcutsFromPreset));
     const card = settingsContent.createChild("devtools-card");
@@ -2918,16 +2926,16 @@ __export(WorkspaceSettingsTab_exports, {
   DEFAULT_VIEW: () => DEFAULT_VIEW2,
   WorkspaceSettingsTab: () => WorkspaceSettingsTab
 });
-import "./../../ui/legacy/legacy.js";
-import "./../../ui/components/buttons/buttons.js";
-import "./../../ui/kit/kit.js";
-import * as Common5 from "./../../core/common/common.js";
-import * as i18n11 from "./../../core/i18n/i18n.js";
-import * as Persistence from "./../../models/persistence/persistence.js";
-import * as Buttons5 from "./../../ui/components/buttons/buttons.js";
-import * as UI6 from "./../../ui/legacy/legacy.js";
-import { html as html4, render as render4 } from "./../../ui/lit/lit.js";
-import * as VisualLogging5 from "./../../ui/visual_logging/visual_logging.js";
+import "../../ui/legacy/legacy.js";
+import "../../ui/components/buttons/buttons.js";
+import "../../ui/kit/kit.js";
+import * as Common5 from "../../core/common/common.js";
+import * as i18n11 from "../../core/i18n/i18n.js";
+import * as Persistence from "../../models/persistence/persistence.js";
+import * as Buttons5 from "../../ui/components/buttons/buttons.js";
+import * as UI6 from "../../ui/legacy/legacy.js";
+import { html as html4, render as render4 } from "../../ui/lit/lit.js";
+import * as VisualLogging5 from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/settings/workspaceSettingsTab.css.js
 var workspaceSettingsTab_css_default = `/*

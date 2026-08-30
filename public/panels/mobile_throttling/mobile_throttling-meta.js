@@ -1,7 +1,7 @@
 // gen/front_end/panels/mobile_throttling/mobile_throttling-meta.prebundle.js
-import * as Common from "./../../core/common/common.js";
-import * as i18n from "./../../core/i18n/i18n.js";
-import * as UI from "./../../ui/legacy/legacy.js";
+import * as Common from "../../core/common/common.js";
+import * as i18n from "../../core/i18n/i18n.js";
+import * as UI from "../../ui/legacy/legacy.js";
 var UIStrings = {
   /**
    * @description Text for throttling the network.

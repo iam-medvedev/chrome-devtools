@@ -1,0 +1,1 @@
+{"compilerOptions":{"composite":true,"declaration":true,"emitDeclarationOnly":true,"skipLibCheck":true,"rootDir":"../../../../../../front_end/services/puppeteer","outDir":".","declarationDir":"."},"files":["../../../../../../front_end/services/puppeteer/puppeteer.ts"],"references":[{"path":"./puppeteer_connection-tsconfig.ref.json"}]}

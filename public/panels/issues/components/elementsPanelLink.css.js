@@ -11,8 +11,8 @@ export default `/*
 
 .element-reveal-icon {
   display: inline-block;
-  width: 20px;
-  height: 20px;
+  width: var(--sys-size-9);
+  height: var(--sys-size-9);
   mask-image: var(--image-file-select-element);
   background-color: var(--icon-default);
 }

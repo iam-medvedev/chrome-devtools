@@ -10,8 +10,8 @@ export default `/*
  */
 
 .accessibility-toggle-container {
-  padding: 12px 18px;
-  border-bottom: 1px solid var(--sys-color-divider);
+  padding: var(--sys-size-6) 18px;
+  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
 }
 
 /*# sourceURL=${import.meta.resolve('./accessibilitySidebarView.css')} */`;

@@ -1,13 +1,14 @@
 {
-  "checkJs": true,
   "compilerOptions": {
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "checkJs": true,
-    "composite": true,
-    "declaration": true,
+    "composite": false,
+    "declaration": false,
+    "disableSourceOfProjectReferenceRedirect": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
+    "incremental": false,
     "inlineSources": true,
     "lib": [
       "dom",
@@ -19,21 +20,24 @@
       "ESNext.Array"
     ],
     "module": "esnext",
+    "moduleResolution": "bundler",
     "noEmitOnError": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
     "noImplicitReturns": true,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
     "outDir": ".",
+    "preserveConstEnums": true,
     "rootDir": "../../../../../../front_end/core/platform",
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
     "target": "es2023",
-    "tsBuildInfoFile": "platform-tsconfig.json.tsbuildinfo",
-    "typeRoots": [],
-    "types": [],
+    "typeRoots": [
+
+    ],
+    "types": [
+
+    ],
     "useUnknownInCatchVariables": false
   },
   "files": [
@@ -59,13 +63,13 @@
   ],
   "references": [
     {
-      "path": "api/bundle-tsconfig.json"
+      "path": "api/bundle-tsconfig.ref.json"
     },
     {
-      "path": "browser/bundle-tsconfig.json"
+      "path": "browser/bundle-tsconfig.ref.json"
     },
     {
-      "path": "node/bundle-tsconfig.json"
+      "path": "node/bundle-tsconfig.ref.json"
     }
   ]
 }

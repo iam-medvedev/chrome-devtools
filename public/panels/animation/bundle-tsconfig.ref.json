@@ -1,0 +1,1 @@
+{"compilerOptions":{"composite":true,"declaration":true,"emitDeclarationOnly":true,"skipLibCheck":true,"rootDir":"../../../../../../front_end/panels/animation","outDir":".","declarationDir":"."},"files":["../../../../../../front_end/panels/animation/animation.ts"],"references":[{"path":"./animation-tsconfig.ref.json"},{"path":"./css_files-tsconfig.ref.json"}]}

@@ -1,9 +1,9 @@
 {
-    "compilerOptions": {
-        "composite": true,
-        "outDir": "."
-    },
-    "files": [
-        "webAudio.css.js"
-    ]
+  "compilerOptions": {
+    "composite": true,
+    "outDir": "."
+  },
+  "files": [
+    "webAudio.css.js"
+  ]
 }

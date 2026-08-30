@@ -1,5 +1,5 @@
 // gen/front_end/ui/kit/cards/Card.js
-import { html, nothing, render } from "./../lit/lit.js";
+import { html, nothing, render } from "../lit/lit.js";
 
 // gen/front_end/ui/kit/cards/card.css.js
 var card_css_default = `/*
@@ -113,7 +113,7 @@ var Card = class extends HTMLElement {
 customElements.define("devtools-card", Card);
 
 // gen/front_end/ui/kit/icons/Icon.js
-import "./../../Images/Images.js";
+import "../../Images/Images.js";
 
 // gen/front_end/ui/kit/icons/icon.css.js
 var icon_css_default = `/*
@@ -126,8 +126,8 @@ var icon_css_default = `/*
   flex-grow: 0;
   flex-shrink: 0;
   display: inline-block;
-  width: 20px;
-  height: 20px;
+  width: var(--sys-size-9);
+  height: var(--sys-size-9);
   color: var(--icon-default);
   vertical-align: sub;
   position: relative;
@@ -214,8 +214,8 @@ var icon_css_default = `/*
 :host([name="triangle-down"]),
 :host([name="triangle-left"]),
 :host([name="triangle-right"]) {
-  width: 14px;
-  height: 14px;
+  width: var(--sys-size-7);
+  height: var(--sys-size-7);
   vertical-align: baseline;
 }
 
@@ -333,10 +333,10 @@ var createIcon = (name, className) => {
 customElements.define("devtools-icon", Icon);
 
 // gen/front_end/ui/kit/link/Link.js
-import * as Platform from "./../../core/platform/platform.js";
-import * as UIHelpers from "./../helpers/helpers.js";
-import { html as html2, render as render2 } from "./../lit/lit.js";
-import * as VisualLogging from "./../visual_logging/visual_logging.js";
+import * as Platform from "../../core/platform/platform.js";
+import * as UIHelpers from "../helpers/helpers.js";
+import { html as html2, render as render2 } from "../lit/lit.js";
+import * as VisualLogging from "../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/kit/link/link.css.js
 var link_css_default = `/*
@@ -361,7 +361,7 @@ var link_css_default = `/*
 
 :host(:focus-visible) {
   outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
-  outline-offset: 2px;
+  outline-offset: var(--sys-size-2);
   /* stylelint-disable-next-line declaration-no-important */
   outline-style: solid !important;
   border-radius: var(--sys-shape-corner-extra-small);

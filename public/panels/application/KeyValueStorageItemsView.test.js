@@ -84,14 +84,14 @@ describe('KeyValueStorageItemsView', () => {
         viewFunction.input.onSelect({ key, value });
         // Check createPreview function was called.
         await createPreviewPromise;
-        assert.include(viewFunction.input.preview.element.innerText, `${key}:${value}`);
+        assert.include(viewFunction.input.preview.contentElement.textContent, `${key}:${value}`);
     });
     it('shows empty preview when no row is selected', async () => {
         viewFunction.input.onSelect(MOCK_ITEMS[0]);
         await raf();
         viewFunction.input.onSelect(null);
         // Check preview was updated.
-        assert.include(viewFunction.input.preview.element.innerText, 'No value selectedSelect a value to preview');
+        assert.include(viewFunction.input.preview.contentElement.textContent, 'No value selectedSelect a value to preview');
     });
     it('preview changed when value changes', async () => {
         const { key, value } = MOCK_ITEMS[0];
@@ -111,7 +111,7 @@ describe('KeyValueStorageItemsView', () => {
         await createPreviewPromise;
         // Check preview was updated.
         await raf();
-        assert.include(viewFunction.input.preview.element.innerText, `${key}:newValue`);
+        assert.include(String(viewFunction.input.preview.contentElement.textContent), `${key}:newValue`);
     });
     it('clicking Ask AI button calls onAiButtonClick', () => {
         const onAiButtonClickSpy = sinon.spy(keyValueStorageItemsView, 'onAiButtonClick');

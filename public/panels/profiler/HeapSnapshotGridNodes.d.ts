@@ -8,15 +8,7 @@ import { type AllocationDataGrid, type HeapSnapshotConstructorsDataGrid, type He
 import type { DataDisplayDelegate } from './ProfileHeader.js';
 declare class HeapSnapshotGridNodeBase extends DataGrid.DataGrid.DataGridNode<HeapSnapshotGridNode> {
 }
-declare const HeapSnapshotGridNode_base: (new (...args: any[]) => {
-    __events: Common.ObjectWrapper.ObjectWrapper<HeapSnapshotGridNode.EventTypes>;
-    addEventListener<T extends HeapSnapshotGridNode.Events.PopulateComplete>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<HeapSnapshotGridNode.EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<HeapSnapshotGridNode.EventTypes, T>;
-    once<T extends HeapSnapshotGridNode.Events.PopulateComplete>(eventType: T): Promise<HeapSnapshotGridNode.EventTypes[T]>;
-    removeEventListener<T extends HeapSnapshotGridNode.Events.PopulateComplete>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<HeapSnapshotGridNode.EventTypes[T], any>) => void, thisObject?: Object): void;
-    hasEventListeners(eventType: HeapSnapshotGridNode.Events.PopulateComplete): boolean;
-    dispatchEventToListeners<T extends HeapSnapshotGridNode.Events.PopulateComplete>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<HeapSnapshotGridNode.EventTypes, T>): void;
-    dispatchDOMEvent?(event: Event): void;
-}) & typeof HeapSnapshotGridNodeBase;
+declare const HeapSnapshotGridNode_base: Platform.Constructor.Constructor<Common.EventTarget.EventTarget<HeapSnapshotGridNode.EventTypes>, any[]> & typeof HeapSnapshotGridNodeBase;
 export declare class HeapSnapshotGridNode extends HeapSnapshotGridNode_base {
     dataGridInternal: HeapSnapshotSortableDataGrid;
     instanceCount: number;

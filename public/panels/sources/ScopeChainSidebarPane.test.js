@@ -3,34 +3,39 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import sinon from 'sinon';
+import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as StackTrace from '../../models/stack_trace/stack_trace.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import { assertScreenshot, raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { deinitializeGlobalVars } from '../../testing/EnvironmentHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { MockDebuggerBackend, parseScopeChain } from '../../testing/MockScopeChain.js';
+import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
+import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Sources from './sources.js';
-describeWithEnvironment('ScopeChainSidebarPane', () => {
+describe('ScopeChainSidebarPane', () => {
+    setupLocaleHooks();
+    setupSettingsHooks();
+    setupRuntimeHooks();
     let backend;
     let target;
     beforeEach(() => {
-        const workspace = Workspace.Workspace.WorkspaceImpl.instance();
-        const targetManager = SDK.TargetManager.TargetManager.instance();
-        const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);
-        const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
-        Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
-            forceNew: true,
-            resourceMapping,
-            targetManager,
-            ignoreListManager,
-            workspace,
-        });
         backend = new MockDebuggerBackend();
+        sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, 'instance')
+            .returns(backend.universe.debuggerWorkspaceBinding);
+        sinon.stub(Workspace.Workspace.WorkspaceImpl, 'instance').returns(backend.universe.workspace);
+        sinon.stub(SDK.TargetManager.TargetManager, 'instance').returns(backend.universe.targetManager);
+        sinon.stub(Common.Settings.Settings, 'instance').returns(backend.universe.settings);
         target = backend.createTarget();
+    });
+    afterEach(async () => {
+        sinon.restore();
+        await deinitializeGlobalVars();
     });
     it('renders correctly with scope entries', async () => {
         const source = 'function f(a) { debugger } f(1)';
@@ -38,7 +43,7 @@ describeWithEnvironment('ScopeChainSidebarPane', () => {
         parseScopeChain(scopes); // Verify it parses
         const functionScopeObject = backend.createSimpleRemoteObject([{ name: 'a', value: 1 }]);
         const callFrame = await backend.createCallFrame(target, { url: 'file:///tmp/example.js', content: source }, scopes, null, [functionScopeObject]);
-        const pane = Sources.ScopeChainSidebarPane.ScopeChainSidebarPane.instance();
+        const pane = new Sources.ScopeChainSidebarPane.ScopeChainSidebarPane();
         renderElementIntoDOM(pane, { includeCommonStyles: true });
         const debuggableFrame = {
             sdkFrame: callFrame,
@@ -53,6 +58,9 @@ describeWithEnvironment('ScopeChainSidebarPane', () => {
         await populateSpy.returnValues[0];
         await raf(); // Wait for Lit and MutationObserver to tick
         await UI.Widget.Widget.allUpdatesComplete;
+        const tree = pane.contentElement.querySelector('devtools-tree');
+        tree?.getInternalTreeOutlineForTest().focus();
+        await raf();
         await assertScreenshot('sources/scope-chain-sidebar-pane.png');
     });
     it('validates object property widgets are not readonly', async () => {

@@ -1,13 +1,14 @@
 {
-  "checkJs": true,
   "compilerOptions": {
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "checkJs": true,
-    "composite": true,
-    "declaration": true,
+    "composite": false,
+    "declaration": false,
+    "disableSourceOfProjectReferenceRedirect": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
+    "incremental": false,
     "inlineSources": true,
     "lib": [
       "ES2023",
@@ -17,20 +18,19 @@
       "ESNext.Array"
     ],
     "module": "esnext",
+    "moduleResolution": "bundler",
     "noEmit": true,
     "noEmitOnError": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
     "noImplicitReturns": true,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
     "outDir": ".",
+    "preserveConstEnums": true,
     "rootDir": "../../../../../../front_end/core/i18n",
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
     "target": "es2023",
-    "tsBuildInfoFile": "foundation_unittests_node_typecheck-tsconfig.json.tsbuildinfo",
     "typeRoots": [
       "../../../../../../node_modules/@types",
       "../../../../../../node_modules"
@@ -48,23 +48,20 @@
     "../../../../../../front_end/core/i18n/NumberFormatter.test.ts",
     "../../../../../../front_end/core/i18n/i18n.test.ts",
     "../../../../../../front_end/core/i18n/i18nImpl.test.ts",
-    "../../../../../../front_end/core/i18n/time-utilities.test.ts",
-    "../../../../../../front_end/legacy/legacy-defs.d.ts",
-    "../../../../../../front_end/global_typings/global_defs.d.ts",
-    "../../../../../../node_modules/@types/filesystem/index.d.ts"
+    "../../../../../../front_end/core/i18n/time-utilities.test.ts"
   ],
   "references": [
     {
-      "path": "./bundle-tsconfig.json"
+      "path": "bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../testing/testing-tsconfig.json"
+      "path": "../../testing/testing-tsconfig.ref.json"
     },
     {
-      "path": "../../third_party/i18n/bundle-tsconfig.json"
+      "path": "../../third_party/i18n/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../platform/bundle-tsconfig.json"
+      "path": "../platform/bundle-tsconfig.ref.json"
     }
   ]
 }

@@ -6,6 +6,7 @@
     "checkJs": true,
     "composite": true,
     "declaration": true,
+    "disableSourceOfProjectReferenceRedirect": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
     "inlineSources": true,
@@ -26,6 +27,7 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "outDir": ".",
+    "preserveConstEnums": true,
     "rootDir": "../../../../../front_end/testing",
     "skipLibCheck": true,
     "sourceMap": true,
@@ -50,10 +52,10 @@
   ],
   "references": [
     {
-      "path": "./mocha_helpers-tsconfig.json"
+      "path": "./mocha_helpers-tsconfig.ref.json"
     },
     {
-      "path": "./test_id_generation-tsconfig.json"
+      "path": "./test_id_generation-tsconfig.ref.json"
     }
   ]
 }

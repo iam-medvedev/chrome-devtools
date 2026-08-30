@@ -4,8 +4,8 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// gen/front_end/models/ai_code_completion/debug.js
-import * as Platform from "./../../core/platform/platform.js";
+// ../../front_end/models/ai_code_completion/debug.ts
+import * as Platform from "../../core/platform/platform.js";
 function isDebugMode() {
   return Boolean(Platform.HostRuntime.HOST_RUNTIME.getLocalStorage()?.getItem("debugAiCodeCompletionEnabled"));
 }
@@ -25,14 +25,14 @@ function setDebugAiCodeCompletionEnabled(enabled) {
 }
 globalThis.setDebugAiCodeCompletionEnabled = setDebugAiCodeCompletionEnabled;
 
-// gen/front_end/models/ai_code_completion/AiCodeCompletion.js
+// ../../front_end/models/ai_code_completion/AiCodeCompletion.ts
 var AiCodeCompletion_exports = {};
 __export(AiCodeCompletion_exports, {
   AiCodeCompletion: () => AiCodeCompletion,
   consoleAdditionalContextFileContent: () => consoleAdditionalContextFileContent
 });
-import * as Host from "./../../core/host/host.js";
-import * as Root from "./../../core/root/root.js";
+import * as Host from "../../core/host/host.js";
+import * as Root from "../../core/root/root.js";
 var consoleAdditionalContextFileContent = `/**
  * This file describes the execution environment of the Chrome DevTools Console.
  * The code is JavaScript, but with special global functions and variables.
@@ -140,7 +140,7 @@ var AiCodeCompletion = class _AiCodeCompletion {
     this.#stopSequences = stopSequences ?? [];
     this.#callbacks = callbacks;
   }
-  #buildRequest(prefix, suffix, inferenceLanguage = "JAVASCRIPT", additionalFiles) {
+  #buildRequest(prefix, suffix, inferenceLanguage = Host.AidaClient.AidaInferenceLanguage.JAVASCRIPT, additionalFiles) {
     const userTier = Host.AidaClient.convertToUserTierEnum(this.#userTier);
     function validTemperature(temperature) {
       return typeof temperature === "number" && temperature >= 0 ? temperature : void 0;

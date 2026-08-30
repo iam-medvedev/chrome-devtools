@@ -1,9 +1,9 @@
-// gen/front_end/models/crux-manager/CrUXManager.js
-import * as Common from "./../../core/common/common.js";
-import * as i18n from "./../../core/i18n/i18n.js";
-import * as Root from "./../../core/root/root.js";
-import * as SDK from "./../../core/sdk/sdk.js";
-import * as EmulationModel from "./../emulation/emulation.js";
+// ../../front_end/models/crux-manager/CrUXManager.ts
+import * as Common from "../../core/common/common.js";
+import * as i18n from "../../core/i18n/i18n.js";
+import * as Root from "../../core/root/root.js";
+import * as SDK from "../../core/sdk/sdk.js";
+import * as EmulationModel from "../emulation/emulation.js";
 var UIStrings = {
   /**
    * @description Warning message indicating that the user will see real user data for a URL which is different from the URL they are currently looking at.
@@ -42,12 +42,21 @@ var CrUXManager = class _CrUXManager extends Common.ObjectWrapper.ObjectWrapper 
     super();
     this.#targetManager = targetManager;
     const useSessionStorage = Root.Runtime.hostConfig.isOffTheRecord === true;
-    const storageTypeForConsent = useSessionStorage ? "Session" : "Global";
-    this.#configSetting = settings.createSetting("field-data", { enabled: false, override: "", originMappings: [], overrideEnabled: false }, storageTypeForConsent);
+    const storageTypeForConsent = useSessionStorage ? Common.Settings.SettingStorageType.SESSION : Common.Settings.SettingStorageType.GLOBAL;
+    this.#configSetting = settings.createSetting(
+      "field-data",
+      { enabled: false, override: "", originMappings: [], overrideEnabled: false },
+      storageTypeForConsent
+    );
     this.#configSetting.addChangeListener(() => {
       void this.refresh();
     });
-    this.#targetManager.addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.FrameNavigated, this.#onFrameNavigated, this);
+    this.#targetManager.addModelListener(
+      SDK.ResourceTreeModel.ResourceTreeModel,
+      SDK.ResourceTreeModel.Events.FrameNavigated,
+      this.#onFrameNavigated,
+      this
+    );
   }
   static instance(opts = { forceNew: null }) {
     const { forceNew } = opts;
@@ -150,10 +159,10 @@ var CrUXManager = class _CrUXManager extends Common.ObjectWrapper.ObjectWrapper 
           const newInspectedURL = event.data.inspectedURL();
           if (newInspectedURL) {
             resolve(newInspectedURL);
-            targetManager.removeEventListener("InspectedURLChanged", handler);
+            targetManager.removeEventListener(SDK.TargetManager.Events.INSPECTED_URL_CHANGED, handler);
           }
         }
-        targetManager.addEventListener("InspectedURLChanged", handler);
+        targetManager.addEventListener(SDK.TargetManager.Events.INSPECTED_URL_CHANGED, handler);
       });
     }
     return inspectedURL;
@@ -167,12 +176,12 @@ var CrUXManager = class _CrUXManager extends Common.ObjectWrapper.ObjectWrapper 
   }
   async refresh() {
     this.#pageResult = void 0;
-    this.dispatchEventToListeners("field-data-changed", void 0);
+    this.dispatchEventToListeners("field-data-changed" /* FIELD_DATA_CHANGED */, void 0);
     if (!this.#configSetting.get().enabled) {
       return;
     }
     this.#pageResult = await this.#getFieldDataForCurrentPage();
-    this.dispatchEventToListeners("field-data-changed", this.#pageResult);
+    this.dispatchEventToListeners("field-data-changed" /* FIELD_DATA_CHANGED */, this.#pageResult);
   }
   setMainDocumentURL(url) {
     this.#mainDocumentUrl = url;
@@ -265,8 +274,13 @@ var CrUXManager = class _CrUXManager extends Common.ObjectWrapper.ObjectWrapper 
     this.#endpoint = endpoint;
   }
 };
+var Events = /* @__PURE__ */ ((Events2) => {
+  Events2["FIELD_DATA_CHANGED"] = "field-data-changed";
+  return Events2;
+})(Events || {});
 export {
   CrUXManager,
-  DEVICE_SCOPE_LIST
+  DEVICE_SCOPE_LIST,
+  Events
 };
 //# sourceMappingURL=crux-manager.js.map

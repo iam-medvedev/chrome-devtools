@@ -31,6 +31,14 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/issues/AffectedResourcesView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+export var AffectedItem;
+(function (AffectedItem) {
+    AffectedItem["COOKIE"] = "Cookie";
+    AffectedItem["DIRECTIVE"] = "Directive";
+    AffectedItem["ELEMENT"] = "Element";
+    AffectedItem["REQUEST"] = "Request";
+    AffectedItem["SOURCE"] = "Source";
+})(AffectedItem || (AffectedItem = {}));
 export const extractShortPath = (path) => {
     // 1st regex matches everything after last '/'
     // if path ends with '/', 2nd regex returns everything between the last two '/'

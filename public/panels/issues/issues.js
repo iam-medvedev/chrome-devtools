@@ -10,22 +10,22 @@ __export(AffectedLazyLoadImagesView_exports, {
   AffectedLazyLoadImagesView: () => AffectedLazyLoadImagesView,
   DEFAULT_VIEW: () => DEFAULT_VIEW
 });
-import * as i18n3 from "./../../core/i18n/i18n.js";
-import { html, render as render2 } from "./../../ui/lit/lit.js";
+import * as i18n3 from "../../core/i18n/i18n.js";
+import { html, render as render2 } from "../../ui/lit/lit.js";
 
 // gen/front_end/panels/issues/AffectedResourcesView.js
-import * as Common from "./../../core/common/common.js";
-import * as Host from "./../../core/host/host.js";
-import * as i18n from "./../../core/i18n/i18n.js";
-import * as SDK from "./../../core/sdk/sdk.js";
-import * as Logs from "./../../models/logs/logs.js";
-import * as RequestLinkIcon from "./../../ui/components/request_link_icon/request_link_icon.js";
-import { Icon } from "./../../ui/kit/kit.js";
-import * as Components from "./../../ui/legacy/components/utils/utils.js";
-import * as UI from "./../../ui/legacy/legacy.js";
-import { render } from "./../../ui/lit/lit.js";
-import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
-import * as PanelsCommon from "./../common/common.js";
+import * as Common from "../../core/common/common.js";
+import * as Host from "../../core/host/host.js";
+import * as i18n from "../../core/i18n/i18n.js";
+import * as SDK from "../../core/sdk/sdk.js";
+import * as Logs from "../../models/logs/logs.js";
+import * as RequestLinkIcon from "../../ui/components/request_link_icon/request_link_icon.js";
+import { Icon } from "../../ui/kit/kit.js";
+import * as Components from "../../ui/legacy/components/utils/utils.js";
+import * as UI from "../../ui/legacy/legacy.js";
+import { render } from "../../ui/lit/lit.js";
+import * as VisualLogging from "../../ui/visual_logging/visual_logging.js";
+import * as PanelsCommon from "../common/common.js";
 var UIStrings = {
   /**
    * @description Fallback text in the Issues panel when a frame URL is unknown in the affected resources table.
@@ -42,6 +42,14 @@ var UIStrings = {
 };
 var str_ = i18n.i18n.registerUIStrings("panels/issues/AffectedResourcesView.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
+var AffectedItem;
+(function(AffectedItem2) {
+  AffectedItem2["COOKIE"] = "Cookie";
+  AffectedItem2["DIRECTIVE"] = "Directive";
+  AffectedItem2["ELEMENT"] = "Element";
+  AffectedItem2["REQUEST"] = "Request";
+  AffectedItem2["SOURCE"] = "Source";
+})(AffectedItem || (AffectedItem = {}));
 var extractShortPath = (path) => {
   return (/[^/]+$/.exec(path) || /[^/]+\/$/.exec(path) || [""])[0];
 };
@@ -299,11 +307,11 @@ var AffectedSelectivePermissionsInterventionView_exports = {};
 __export(AffectedSelectivePermissionsInterventionView_exports, {
   AffectedSelectivePermissionsInterventionView: () => AffectedSelectivePermissionsInterventionView
 });
-import * as i18n5 from "./../../core/i18n/i18n.js";
-import * as Bindings from "./../../models/bindings/bindings.js";
-import * as Components2 from "./../../ui/legacy/components/utils/utils.js";
-import * as UI2 from "./../../ui/legacy/legacy.js";
-import { Directives, html as html2, nothing, render as render3 } from "./../../ui/lit/lit.js";
+import * as i18n5 from "../../core/i18n/i18n.js";
+import * as Bindings from "../../models/bindings/bindings.js";
+import * as Components2 from "../../ui/legacy/components/utils/utils.js";
+import * as UI2 from "../../ui/legacy/legacy.js";
+import { Directives, html as html2, nothing, render as render3 } from "../../ui/lit/lit.js";
 var UIStrings3 = {
   /**
    * @description Label in the Issues panel for the number of affected violations in the selective permissions intervention table.
@@ -391,7 +399,7 @@ var IssueRevealer_exports = {};
 __export(IssueRevealer_exports, {
   IssueRevealer: () => IssueRevealer
 });
-import * as UI7 from "./../../ui/legacy/legacy.js";
+import * as UI7 from "../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/issues/IssuesPane.js
 var IssuesPane_exports = {};
@@ -399,23 +407,23 @@ __export(IssuesPane_exports, {
   IssuesPane: () => IssuesPane,
   getGroupIssuesByCategorySetting: () => getGroupIssuesByCategorySetting
 });
-import "./../../ui/legacy/legacy.js";
-import * as Common6 from "./../../core/common/common.js";
-import * as i18n43 from "./../../core/i18n/i18n.js";
-import * as Platform5 from "./../../core/platform/platform.js";
-import * as IssuesManager11 from "./../../models/issues_manager/issues_manager.js";
-import * as IssueCounter5 from "./../../ui/components/issue_counter/issue_counter.js";
-import * as UI6 from "./../../ui/legacy/legacy.js";
-import * as VisualLogging7 from "./../../ui/visual_logging/visual_logging.js";
+import "../../ui/legacy/legacy.js";
+import * as Common6 from "../../core/common/common.js";
+import * as i18n43 from "../../core/i18n/i18n.js";
+import * as Platform5 from "../../core/platform/platform.js";
+import * as IssuesManager11 from "../../models/issues_manager/issues_manager.js";
+import * as IssueCounter5 from "../../ui/components/issue_counter/issue_counter.js";
+import * as UI6 from "../../ui/legacy/legacy.js";
+import * as VisualLogging7 from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/issues/HiddenIssuesRow.js
-import "./../../ui/components/adorners/adorners.js";
-import * as i18n7 from "./../../core/i18n/i18n.js";
-import * as IssuesManager from "./../../models/issues_manager/issues_manager.js";
-import * as Buttons from "./../../ui/components/buttons/buttons.js";
-import * as UI3 from "./../../ui/legacy/legacy.js";
-import { html as html3, render as render4 } from "./../../ui/lit/lit.js";
-import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
+import "../../ui/components/adorners/adorners.js";
+import * as i18n7 from "../../core/i18n/i18n.js";
+import * as IssuesManager from "../../models/issues_manager/issues_manager.js";
+import * as Buttons from "../../ui/components/buttons/buttons.js";
+import * as UI3 from "../../ui/legacy/legacy.js";
+import { html as html3, render as render4 } from "../../ui/lit/lit.js";
+import * as VisualLogging2 from "../../ui/visual_logging/visual_logging.js";
 var UIStrings4 = {
   /**
    * @description Title in the Issues panel for the hidden issues row.
@@ -470,14 +478,14 @@ var HiddenIssuesRow = class extends UI3.TreeOutline.TreeElement {
 };
 
 // gen/front_end/panels/issues/IssueKindView.js
-import * as Common2 from "./../../core/common/common.js";
-import * as i18n9 from "./../../core/i18n/i18n.js";
-import * as Platform from "./../../core/platform/platform.js";
-import * as IssuesManager3 from "./../../models/issues_manager/issues_manager.js";
-import * as Adorners from "./../../ui/components/adorners/adorners.js";
-import * as IssueCounter from "./../../ui/components/issue_counter/issue_counter.js";
-import { Icon as Icon2 } from "./../../ui/kit/kit.js";
-import * as UI4 from "./../../ui/legacy/legacy.js";
+import * as Common2 from "../../core/common/common.js";
+import * as i18n9 from "../../core/i18n/i18n.js";
+import * as Platform from "../../core/platform/platform.js";
+import * as IssuesManager3 from "../../models/issues_manager/issues_manager.js";
+import * as Adorners from "../../ui/components/adorners/adorners.js";
+import * as IssueCounter from "../../ui/components/issue_counter/issue_counter.js";
+import { Icon as Icon2 } from "../../ui/kit/kit.js";
+import * as UI4 from "../../ui/legacy/legacy.js";
 import * as Components3 from "./components/components.js";
 var UIStrings5 = {
   /**
@@ -607,7 +615,7 @@ var issuesPane_css_default = `/*
 
 .issues-toolbar-container > devtools-toolbar {
   background-color: var(--sys-color-cdt-base-container);
-  border-bottom: 1px solid var(--sys-color-divider);
+  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
 }
 
 .issues-toolbar-left {
@@ -615,7 +623,7 @@ var issuesPane_css_default = `/*
 }
 
 .issues-toolbar-right {
-  padding-right: 6px;
+  padding-right: var(--sys-size-4);
 }
 
 /*# sourceURL=${import.meta.resolve("./issuesPane.css")} */`;
@@ -636,7 +644,7 @@ var issuesTree_css_default = `/*
 }
 
 .issues {
-  --issue-indent: 8px;
+  --issue-indent: var(--sys-size-5);
 }
 
 /* The top most parents need to be larger, as they may include an unhide button. */
@@ -666,18 +674,18 @@ var issuesTree_css_default = `/*
 .issue-category,
 .issue-kind,
 .issue {
-  padding: 0 8px;
+  padding: 0 var(--sys-size-5);
   padding-left: var(--issue-indent);
   overflow: hidden;
   flex: none;
   transition: background-color 200ms;
-  border: 1px solid var(--sys-color-divider);
-  border-width: 0 0 1px;
+  border: var(--sys-size-1) solid var(--sys-color-divider);
+  border-width: 0 0 var(--sys-size-1);
 }
 
 .issue-category.hidden-issues.parent.expanded,
 .issue-kind.parent.expanded {
-  border-width: 0 0 1px;
+  border-width: 0 0 var(--sys-size-1);
   background-color: var(--sys-color-surface2);
 }
 
@@ -716,7 +724,7 @@ var issuesTree_css_default = `/*
 }
 
 p {
-  margin-block: 2px;
+  margin-block: var(--sys-size-2);
 }
 
 /* Override selected tree item styles for issues to avoid changing width. */
@@ -724,14 +732,14 @@ p {
 .tree-outline-disclosure:not(.tree-outline-disclosure-hide-overflow) .tree-outline.hide-selection-when-blurred .issue-kind.selected:focus-visible,
 .tree-outline-disclosure:not(.tree-outline-disclosure-hide-overflow) .tree-outline.hide-selection-when-blurred .issue.selected:focus-visible {
   width: auto;
-  padding-right: 8px;
+  padding-right: var(--sys-size-5);
 }
 
 .header {
   display: flex;
   flex-direction: row;
   align-items: flex-start;
-  padding: 4px 0;
+  padding: var(--sys-size-3) 0;
   cursor: pointer;
   width: 100%;
 
@@ -751,11 +759,11 @@ p {
 
 .title {
   flex: 1;
-  font-size: 12px;
+  font-size: var(--sys-typescale-body4-size);
   color: var(--sys-color-on-surface);
   font-weight: normal;
   user-select: text;
-  padding-top: 2px;
+  padding-top: var(--sys-size-2);
 }
 
 .issue.expanded .title {
@@ -763,17 +771,17 @@ p {
 }
 
 .issue-body.children {
-  border-bottom: 1px solid var(--sys-color-divider);
-  padding: 6px 0;
+  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
+  padding: var(--sys-size-4) 0;
   position: relative;
   padding-left: calc(var(--issue-indent) + 43px);
   padding-bottom: 26px;
-  padding-right: 8px;
+  padding-right: var(--sys-size-5);
 }
 
 .issue-category + .children,
 .issue-kind + .children {
-  --issue-indent: 24px;
+  --issue-indent: var(--sys-size-11);
 
   padding-left: 0;
 }
@@ -785,20 +793,20 @@ p {
   position: absolute;
   left: calc(var(--issue-indent) + 23px);
   top: 0;
-  bottom: 20px;
-  width: 2px;
+  bottom: var(--sys-size-9);
+  width: var(--sys-size-2);
 }
 
 .issue-kind-breaking-change.issue-body::before {
-  border-left: 2px solid var(--issue-color-yellow);
+  border-left: var(--sys-size-2) solid var(--issue-color-yellow);
 }
 
 .issue-kind-page-error.issue-body::before {
-  border-left: 2px solid var(--issue-color-red);
+  border-left: var(--sys-size-2) solid var(--issue-color-red);
 }
 
 .issue-kind-improvement.issue-body::before {
-  border-left: 2px solid var(--issue-color-blue);
+  border-left: var(--sys-size-2) solid var(--issue-color-blue);
 }
 
 .tree-outline .issue-body li:hover:not(:has(devtools-checkbox)) .selection {
@@ -806,29 +814,29 @@ p {
 }
 
 devtools-icon.leading-issue-icon {
-  margin: 1px 0 -1px 7px;
+  margin: var(--sys-size-1) 0 calc(-1 * var(--sys-size-1)) 7px;
 }
 
 .message {
   line-height: 18px;
-  font-size: 12px;
+  font-size: var(--sys-typescale-body4-size);
   color: var(--sys-color-token-subtle);
-  margin-bottom: 4px;
+  margin-bottom: var(--sys-size-3);
   user-select: text;
 }
 
 .message p {
-  margin-bottom: 16px;
+  margin-bottom: var(--sys-size-8);
 }
 
 .message li {
-  margin-top: 8px;
+  margin-top: var(--sys-size-5);
 }
 
 .message code {
   color: var(--sys-color-on-surface);
-  padding: 0 2px;
-  font-size: 12px;
+  padding: 0 var(--sys-size-2);
+  font-size: var(--sys-typescale-body4-size);
   user-select: text;
   cursor: text;
   background: var(--sys-color-surface2);
@@ -841,7 +849,7 @@ devtools-icon.leading-issue-icon {
 }
 
 .link {
-  font-size: 12px;
+  font-size: var(--sys-typescale-body4-size);
   color: var(--sys-color-primary);
 }
 
@@ -884,7 +892,7 @@ devtools-icon.leading-issue-icon {
   mask-image: none;
   padding-right: 5px;
   position: relative;
-  top: -1px;
+  top: calc(-1 * var(--sys-size-1));
 }
 
 .resolutions-list li {
@@ -911,7 +919,7 @@ ul > li.plain-enum::before {
 }
 
 .affected-resource-label {
-  font-size: 12px;
+  font-size: var(--sys-typescale-body4-size);
   line-height: 18px;
   color: var(--sys-color-on-surface);
   position: relative;
@@ -919,14 +927,14 @@ ul > li.plain-enum::before {
 }
 
 .affected-resource-cookie {
-  font-size: 12px;
+  font-size: var(--sys-typescale-body4-size);
   line-height: 18px;
   border: 0;
   border-collapse: collapse;
 }
 
 .affected-resource-element {
-  font-size: 12px;
+  font-size: var(--sys-typescale-body4-size);
   line-height: 18px;
   color: var(--sys-color-primary);
   border: 0;
@@ -934,7 +942,7 @@ ul > li.plain-enum::before {
 }
 
 .affected-resource-row {
-  font-size: 12px;
+  font-size: var(--sys-typescale-body4-size);
   line-height: 18px;
   border: 0;
   border-collapse: collapse;
@@ -942,28 +950,28 @@ ul > li.plain-enum::before {
 }
 
 .affected-resource-mixed-content {
-  font-size: 12px;
+  font-size: var(--sys-typescale-body4-size);
   line-height: 18px;
   border: 0;
   border-collapse: collapse;
 }
 
 .affected-resource-heavy-ad {
-  font-size: 12px;
+  font-size: var(--sys-typescale-body4-size);
   line-height: 18px;
   border: 0;
   border-collapse: collapse;
 }
 
 .affected-resource-request {
-  font-size: 12px;
+  font-size: var(--sys-typescale-body4-size);
   line-height: 18px;
   border: 0;
   border-collapse: collapse;
 }
 
 .affected-resource-source {
-  font-size: 12px;
+  font-size: var(--sys-typescale-body4-size);
   line-height: 18px;
   color: var(--sys-color-primary);
   border: 0;
@@ -972,13 +980,13 @@ ul > li.plain-enum::before {
 
 .affected-resource-list {
   border-spacing: 10px 0;
-  margin-left: -12px;
+  margin-left: calc(-1 * var(--sys-size-6));
 }
 
 .affected-resource-header {
-  font-size: 12px;
+  font-size: var(--sys-typescale-body4-size);
   color: var(--sys-color-on-surface);
-  padding-left: 2px;
+  padding-left: var(--sys-size-2);
 }
 
 .code-example {
@@ -996,7 +1004,7 @@ ul > li.plain-enum::before {
 
 .affected-resource-cookie-info {
   color: var(--sys-color-token-subtle);
-  padding: 2px;
+  padding: var(--sys-size-2);
   text-align: right;
 }
 
@@ -1006,24 +1014,24 @@ ul > li.plain-enum::before {
 
 .affected-resource-mixed-content-info {
   color: var(--sys-color-token-subtle);
-  padding: 2px;
+  padding: var(--sys-size-2);
 }
 
 .affected-resource-heavy-ad-info {
   color: var(--sys-color-token-subtle);
-  padding: 2px;
+  padding: var(--sys-size-2);
 }
 
 .affected-resource-heavy-ad-info-frame {
   display: flex;
   align-items: center;
   color: var(--sys-color-token-subtle);
-  padding: 2px;
+  padding: var(--sys-size-2);
 }
 
 .affected-resource-cell {
   color: var(--sys-color-token-subtle);
-  padding: 2px;
+  padding: var(--sys-size-2);
 }
 
 .affected-resource-cell.link {
@@ -1037,7 +1045,7 @@ ul > li.plain-enum::before {
 
 .affected-resources > .parent {
   margin-top: 0;
-  padding: 2px 5px 0;
+  padding: var(--sys-size-2) 5px 0;
 }
 
 .affected-resources > .parent.expanded {
@@ -1046,7 +1054,7 @@ ul > li.plain-enum::before {
 
 .affected-resources > .children.expanded {
   background: var(--sys-color-cdt-base-container);
-  padding: 6px 0 9px 5px;
+  padding: var(--sys-size-4) 0 9px 5px;
 }
 
 .aggregated-issues-count {
@@ -1058,7 +1066,7 @@ ul > li.plain-enum::before {
 }
 
 .affected-resource-directive {
-  font-size: 12px;
+  font-size: var(--sys-typescale-body4-size);
   line-height: 18px;
   border: 0;
   border-collapse: collapse;
@@ -1066,12 +1074,12 @@ ul > li.plain-enum::before {
 
 .affected-resource-directive-info {
   color: var(--sys-color-token-subtle);
-  padding: 2px;
+  padding: var(--sys-size-2);
   text-align: left;
 }
 
 .devtools-link {
-  padding-top: 4px;
+  padding-top: var(--sys-size-3);
 }
 
 devtools-icon.link-icon {
@@ -1083,7 +1091,7 @@ devtools-icon.elements-panel,
 devtools-icon.network-panel {
   margin-right: 0.5ex;
   vertical-align: baseline;
-  height: 14px;
+  height: var(--sys-size-7);
 }
 
 @media (forced-colors: active) {
@@ -1104,24 +1112,24 @@ var IssueView_exports = {};
 __export(IssueView_exports, {
   IssueView: () => IssueView
 });
-import * as Common5 from "./../../core/common/common.js";
-import * as Host6 from "./../../core/host/host.js";
-import * as i18n41 from "./../../core/i18n/i18n.js";
-import * as Platform4 from "./../../core/platform/platform.js";
-import * as IssuesManager9 from "./../../models/issues_manager/issues_manager.js";
-import * as NetworkForward3 from "./../network/forward/forward.js";
-import * as Adorners2 from "./../../ui/components/adorners/adorners.js";
-import * as IssueCounter3 from "./../../ui/components/issue_counter/issue_counter.js";
-import * as MarkdownView from "./../../ui/components/markdown_view/markdown_view.js";
-import { Icon as Icon3 } from "./../../ui/kit/kit.js";
-import * as UI5 from "./../../ui/legacy/legacy.js";
-import { html as html6, render as render7 } from "./../../ui/lit/lit.js";
-import * as VisualLogging6 from "./../../ui/visual_logging/visual_logging.js";
+import * as Common5 from "../../core/common/common.js";
+import * as Host6 from "../../core/host/host.js";
+import * as i18n41 from "../../core/i18n/i18n.js";
+import * as Platform4 from "../../core/platform/platform.js";
+import * as IssuesManager9 from "../../models/issues_manager/issues_manager.js";
+import * as NetworkForward3 from "../network/forward/forward.js";
+import * as Adorners2 from "../../ui/components/adorners/adorners.js";
+import * as IssueCounter3 from "../../ui/components/issue_counter/issue_counter.js";
+import * as MarkdownView from "../../ui/components/markdown_view/markdown_view.js";
+import { Icon as Icon3 } from "../../ui/kit/kit.js";
+import * as UI5 from "../../ui/legacy/legacy.js";
+import { html as html6, render as render7 } from "../../ui/lit/lit.js";
+import * as VisualLogging6 from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/issues/AffectedBlockedByResponseView.js
-import * as Host2 from "./../../core/host/host.js";
-import * as i18n11 from "./../../core/i18n/i18n.js";
-import * as IssuesManager5 from "./../../models/issues_manager/issues_manager.js";
+import * as Host2 from "../../core/host/host.js";
+import * as i18n11 from "../../core/i18n/i18n.js";
+import * as IssuesManager5 from "../../models/issues_manager/issues_manager.js";
 var UIStrings6 = {
   /**
    * @description Label in the Issues panel for the number of affected network requests.
@@ -1193,11 +1201,11 @@ var AffectedBlockedByResponseView = class extends AffectedResourcesView {
 };
 
 // gen/front_end/panels/issues/AffectedCookiesView.js
-import * as Common3 from "./../../core/common/common.js";
-import * as Host3 from "./../../core/host/host.js";
-import * as i18n13 from "./../../core/i18n/i18n.js";
-import * as NetworkForward from "./../network/forward/forward.js";
-import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
+import * as Common3 from "../../core/common/common.js";
+import * as Host3 from "../../core/host/host.js";
+import * as i18n13 from "../../core/i18n/i18n.js";
+import * as NetworkForward from "../network/forward/forward.js";
+import * as VisualLogging3 from "../../ui/visual_logging/visual_logging.js";
 var UIStrings7 = {
   /**
    * @description Label in the Issues panel for the number of affected cookies. See https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies.
@@ -1328,11 +1336,11 @@ var AffectedRawCookieLinesView = class extends AffectedResourcesView {
 };
 
 // gen/front_end/panels/issues/AffectedDescendantsWithinSelectElementView.js
-import * as i18n17 from "./../../core/i18n/i18n.js";
+import * as i18n17 from "../../core/i18n/i18n.js";
 
 // gen/front_end/panels/issues/AffectedElementsView.js
-import * as i18n15 from "./../../core/i18n/i18n.js";
-import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
+import * as i18n15 from "../../core/i18n/i18n.js";
+import * as VisualLogging4 from "../../ui/visual_logging/visual_logging.js";
 var UIStrings8 = {
   /**
    * @description Label in the Issues panel for the number of affected elements.
@@ -1413,12 +1421,12 @@ var AffectedDescendantsWithinSelectElementView = class extends AffectedElementsV
 };
 
 // gen/front_end/panels/issues/AffectedDirectivesView.js
-import * as Common4 from "./../../core/common/common.js";
-import * as Host4 from "./../../core/host/host.js";
-import * as i18n19 from "./../../core/i18n/i18n.js";
-import * as Platform2 from "./../../core/platform/platform.js";
-import * as SDK2 from "./../../core/sdk/sdk.js";
-import * as IssuesManager6 from "./../../models/issues_manager/issues_manager.js";
+import * as Common4 from "../../core/common/common.js";
+import * as Host4 from "../../core/host/host.js";
+import * as i18n19 from "../../core/i18n/i18n.js";
+import * as Platform2 from "../../core/platform/platform.js";
+import * as SDK2 from "../../core/sdk/sdk.js";
+import * as IssuesManager6 from "../../models/issues_manager/issues_manager.js";
 import * as IssuesComponents from "./components/components.js";
 var UIStrings10 = {
   /**
@@ -1598,8 +1606,8 @@ var AffectedDirectivesView = class extends AffectedResourcesView {
 };
 
 // gen/front_end/panels/issues/AffectedDocumentsInQuirksModeView.js
-import * as i18n21 from "./../../core/i18n/i18n.js";
-import * as SDK3 from "./../../core/sdk/sdk.js";
+import * as i18n21 from "../../core/i18n/i18n.js";
+import * as SDK3 from "../../core/sdk/sdk.js";
 var UIStrings11 = {
   /**
    * @description Label in the Issues panel for the number of affected document nodes.
@@ -1658,7 +1666,7 @@ var AffectedDocumentsInQuirksModeView = class extends AffectedElementsView {
 };
 
 // gen/front_end/panels/issues/AffectedHeavyAdView.js
-import * as i18n23 from "./../../core/i18n/i18n.js";
+import * as i18n23 from "../../core/i18n/i18n.js";
 var UIStrings12 = {
   /**
    * @description Label in the Issues panel for the number of affected heavy ad resources.
@@ -1759,8 +1767,8 @@ var AffectedHeavyAdView = class extends AffectedResourcesView {
 };
 
 // gen/front_end/panels/issues/AffectedMetadataAllowedSitesView.js
-import * as i18n25 from "./../../core/i18n/i18n.js";
-import { Link } from "./../../ui/kit/kit.js";
+import * as i18n25 from "../../core/i18n/i18n.js";
+import { Link } from "../../ui/kit/kit.js";
 var UIStrings13 = {
   /**
    * @description Label in the Issues panel for the number of affected websites allowed to access cookies. See https://developer.mozilla.org/en-US/docs/Glossary/eTLD.
@@ -1803,7 +1811,7 @@ var AffectedMetadataAllowedSitesView = class extends AffectedResourcesView {
 };
 
 // gen/front_end/panels/issues/AffectedPartitioningBlobURLView.js
-import * as i18n27 from "./../../core/i18n/i18n.js";
+import * as i18n27 from "../../core/i18n/i18n.js";
 var UIStrings14 = {
   /**
    * @description Description in the Issues panel for a partitioning blob URL issue when cross-partition fetching is blocked.
@@ -1863,8 +1871,8 @@ var AffectedPartitioningBlobURLView = class extends AffectedResourcesView {
 };
 
 // gen/front_end/panels/issues/AffectedPermissionElementsView.js
-import * as i18n29 from "./../../core/i18n/i18n.js";
-import { html as html4, render as render5 } from "./../../ui/lit/lit.js";
+import * as i18n29 from "../../core/i18n/i18n.js";
+import { html as html4, render as render5 } from "../../ui/lit/lit.js";
 var UIStrings15 = {
   /**
    * @description Label in the Issues panel for the number of affected permission elements.
@@ -1898,8 +1906,8 @@ var AffectedPermissionElementsView = class extends AffectedElementsView {
 };
 
 // gen/front_end/panels/issues/AffectedSharedArrayBufferIssueDetailsView.js
-import * as i18n31 from "./../../core/i18n/i18n.js";
-import * as IssuesManager7 from "./../../models/issues_manager/issues_manager.js";
+import * as i18n31 from "../../core/i18n/i18n.js";
+import * as IssuesManager7 from "../../models/issues_manager/issues_manager.js";
 var UIStrings16 = {
   /**
    * @description Label in the Issues panel for the number of affected violations in the SharedArrayBuffer affected resources table.
@@ -2003,9 +2011,9 @@ var AffectedSharedArrayBufferIssueDetailsView = class extends AffectedResourcesV
 };
 
 // gen/front_end/panels/issues/AffectedSourcesView.js
-import * as i18n33 from "./../../core/i18n/i18n.js";
-import * as Components4 from "./../../ui/legacy/components/utils/utils.js";
-import * as VisualLogging5 from "./../../ui/visual_logging/visual_logging.js";
+import * as i18n33 from "../../core/i18n/i18n.js";
+import * as Components4 from "../../ui/legacy/components/utils/utils.js";
+import * as VisualLogging5 from "../../ui/visual_logging/visual_logging.js";
 var UIStrings17 = {
   /**
    * @description Label in the Issues panel for the number of affected source code locations.
@@ -2044,8 +2052,8 @@ var AffectedSourcesView = class extends AffectedResourcesView {
 };
 
 // gen/front_end/panels/issues/AffectedTrackingSitesView.js
-import * as i18n35 from "./../../core/i18n/i18n.js";
-import { html as html5, render as render6 } from "./../../ui/lit/lit.js";
+import * as i18n35 from "../../core/i18n/i18n.js";
+import { html as html5, render as render6 } from "../../ui/lit/lit.js";
 var UIStrings18 = {
   /**
    * @description Label in the Issues panel for the number of affected potentially tracking websites. See https://github.com/privacycg/nav-tracking-mitigations/blob/main/bounce-tracking-explainer.md and https://developer.mozilla.org/en-US/docs/Glossary/eTLD.
@@ -2081,11 +2089,11 @@ var AffectedTrackingSitesView = class extends AffectedResourcesView {
 import * as Components5 from "./components/components.js";
 
 // gen/front_end/panels/issues/CorsIssueDetailsView.js
-import * as Host5 from "./../../core/host/host.js";
-import * as i18n37 from "./../../core/i18n/i18n.js";
-import * as Platform3 from "./../../core/platform/platform.js";
-import * as IssuesManager8 from "./../../models/issues_manager/issues_manager.js";
-import * as NetworkForward2 from "./../network/forward/forward.js";
+import * as Host5 from "../../core/host/host.js";
+import * as i18n37 from "../../core/i18n/i18n.js";
+import * as Platform3 from "../../core/platform/platform.js";
+import * as IssuesManager8 from "../../models/issues_manager/issues_manager.js";
+import * as NetworkForward2 from "../network/forward/forward.js";
 var UIStrings19 = {
   /**
    * @description Label in the Issues panel for the number of affected requests in the CORS affected resources table.
@@ -2509,7 +2517,7 @@ var CorsIssueDetailsView = class _CorsIssueDetailsView extends AffectedResources
 };
 
 // gen/front_end/panels/issues/GenericIssueDetailsView.js
-import * as i18n39 from "./../../core/i18n/i18n.js";
+import * as i18n39 from "../../core/i18n/i18n.js";
 var UIStrings20 = {
   /**
    * @description Label in the Issues panel for the number of affected resources in the generic issue affected resources table.

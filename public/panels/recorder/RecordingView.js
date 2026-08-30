@@ -135,6 +135,11 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/recorder/RecordingView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+export var TargetPanel;
+(function (TargetPanel) {
+    TargetPanel["PERFORMANCE_PANEL"] = "timeline";
+    TargetPanel["DEFAULT"] = "chrome-recorder";
+})(TargetPanel || (TargetPanel = {}));
 const networkConditionPresets = [
     SDK.NetworkManager.NoThrottlingConditions,
     SDK.NetworkManager.OfflineConditions,

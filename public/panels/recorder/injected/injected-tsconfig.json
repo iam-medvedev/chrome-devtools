@@ -6,6 +6,7 @@
     "checkJs": true,
     "composite": true,
     "declaration": true,
+    "disableSourceOfProjectReferenceRedirect": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
     "inlineSources": true,
@@ -26,6 +27,7 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "outDir": ".",
+    "preserveConstEnums": true,
     "rootDir": "../../../../../../../front_end/panels/recorder/injected",
     "skipLibCheck": true,
     "sourceMap": true,
@@ -56,13 +58,13 @@
   ],
   "references": [
     {
-      "path": "../../../third_party/puppeteer/puppeteer-tsconfig.json"
+      "path": "../../../third_party/puppeteer/puppeteer-tsconfig.ref.json"
     },
     {
-      "path": "../../../third_party/puppeteer/bundle-tsconfig.json"
+      "path": "../../../third_party/puppeteer/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../../third_party/puppeteer-replay/bundle-tsconfig.json"
+      "path": "../../../third_party/puppeteer-replay/bundle-tsconfig.ref.json"
     }
   ]
 }

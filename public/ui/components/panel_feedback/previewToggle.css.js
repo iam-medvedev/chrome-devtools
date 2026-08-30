@@ -16,7 +16,7 @@ export default `/*
 .container {
   display: flex;
   flex-wrap: wrap;
-  padding: 4px;
+  padding: var(--sys-size-3);
 }
 
 .feedback,
@@ -38,7 +38,7 @@ export default `/*
 .devtools-link {
   color: var(--sys-color-primary);
   text-decoration-line: underline;
-  margin: 0 4px;
+  margin: 0 var(--sys-size-3);
 }
 
 .feedback .devtools-link {

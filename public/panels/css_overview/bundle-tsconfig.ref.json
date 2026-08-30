@@ -1,0 +1,1 @@
+{"compilerOptions":{"composite":true,"declaration":true,"emitDeclarationOnly":true,"skipLibCheck":true,"rootDir":"../../../../../../front_end/panels/css_overview","outDir":".","declarationDir":"."},"files":["../../../../../../front_end/panels/css_overview/css_overview.ts"],"references":[{"path":"./css_files-tsconfig.ref.json"},{"path":"./css_overview-tsconfig.ref.json"}]}

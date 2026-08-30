@@ -19,7 +19,7 @@ export default `/*
 
   details {
     flex-shrink: 0;
-    border-radius: 12px;
+    border-radius: var(--sys-shape-corner-medium-small);
 
     &.selected {
       outline: var(--sys-size-2) solid var(--sys-color-divider-on-tonal-container);

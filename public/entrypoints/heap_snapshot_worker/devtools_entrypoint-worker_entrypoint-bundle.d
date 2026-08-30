@@ -1,0 +1,1 @@
+gen/front_end/entrypoints/heap_snapshot_worker/heap_snapshot_worker-entrypoint.js: gen/front_end/entrypoints/heap_snapshot_worker/heap_snapshot_worker-entrypoint.prebundle.js

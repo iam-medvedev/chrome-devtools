@@ -6,6 +6,7 @@
     "checkJs": true,
     "composite": true,
     "declaration": true,
+    "disableSourceOfProjectReferenceRedirect": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
     "inlineSources": true,
@@ -26,6 +27,7 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "outDir": ".",
+    "preserveConstEnums": true,
     "rootDir": "../../../../../../../front_end/panels/timeline/track_appenders",
     "skipLibCheck": true,
     "sourceMap": true,
@@ -58,34 +60,34 @@
   ],
   "references": [
     {
-      "path": "../../../core/common/bundle-tsconfig.json"
+      "path": "../../../core/common/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../../core/platform/bundle-tsconfig.json"
+      "path": "../../../core/platform/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../../core/sdk/bundle-tsconfig.json"
+      "path": "../../../core/sdk/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../../models/trace/bundle-tsconfig.json"
+      "path": "../../../models/trace/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../../models/workspace/bundle-tsconfig.json"
+      "path": "../../../models/workspace/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../bundle-tsconfig.json"
+      "path": "../bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../../testing/testing-tsconfig.json"
+      "path": "../../../testing/testing-tsconfig.ref.json"
     },
     {
-      "path": "../../../ui/legacy/components/perf_ui/bundle-tsconfig.json"
+      "path": "../../../ui/legacy/components/perf_ui/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../../ui/legacy/theme_support/bundle-tsconfig.json"
+      "path": "../../../ui/legacy/theme_support/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../components/bundle-tsconfig.json"
+      "path": "../components/bundle-tsconfig.ref.json"
     }
   ]
 }

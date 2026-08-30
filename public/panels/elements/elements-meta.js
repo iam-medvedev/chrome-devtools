@@ -1,10 +1,10 @@
 // gen/front_end/panels/elements/elements-meta.prebundle.js
-import * as Common from "./../../core/common/common.js";
-import * as i18n from "./../../core/i18n/i18n.js";
-import * as Root from "./../../core/root/root.js";
-import * as SDK from "./../../core/sdk/sdk.js";
-import * as UI from "./../../ui/legacy/legacy.js";
-import * as SettingsUI from "./../../ui/settings/settings.js";
+import * as Common from "../../core/common/common.js";
+import * as i18n from "../../core/i18n/i18n.js";
+import * as Root from "../../core/root/root.js";
+import * as SDK from "../../core/sdk/sdk.js";
+import * as UI from "../../ui/legacy/legacy.js";
+import * as SettingsUI from "../../ui/settings/settings.js";
 import * as Elements from "./elements.js";
 var UIStrings = {
   /**
@@ -220,6 +220,10 @@ var UIStrings = {
    * @description Whether CSS rules that do not apply active styles in the Styles tab are collapsed by default.
    */
   collapseNonContributingCSSRules: "Collapse non-contributing CSS rules",
+  /**
+   * @description Title of a setting under the Elements category in Settings.
+   */
+  showInactiveCSSRules: "Show inactive CSS rules",
   /**
    * @description Title of a setting in the Event listeners tab.
    */
@@ -609,6 +613,15 @@ Common.Settings.registerSettingExtension({
   order: 7,
   title: i18nLazyString(UIStrings.collapseNonContributingCSSRules),
   settingName: "collapse-non-contributing-css-rules",
+  settingType: "boolean",
+  defaultValue: false
+});
+Common.Settings.registerSettingExtension({
+  category: "ELEMENTS",
+  storageType: "Synced",
+  order: 8,
+  title: i18nLazyString(UIStrings.showInactiveCSSRules),
+  settingName: "show-inactive-css-rules",
   settingType: "boolean",
   defaultValue: false
 });

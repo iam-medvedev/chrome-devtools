@@ -1,9 +1,9 @@
 {
-    "compilerOptions": {
-        "composite": true,
-        "outDir": "."
-    },
-    "files": [
-        "commentsOverlay.css.js"
-    ]
+  "compilerOptions": {
+    "composite": true,
+    "outDir": "."
+  },
+  "files": [
+    "commentsOverlay.css.js"
+  ]
 }

@@ -1,13 +1,14 @@
 {
-  "checkJs": true,
   "compilerOptions": {
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "checkJs": true,
-    "composite": true,
-    "declaration": true,
+    "composite": false,
+    "declaration": false,
+    "disableSourceOfProjectReferenceRedirect": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
+    "incremental": false,
     "inlineSources": true,
     "lib": [
       "ES2023",
@@ -17,20 +18,19 @@
       "ESNext.Array"
     ],
     "module": "esnext",
+    "moduleResolution": "bundler",
     "noEmit": true,
     "noEmitOnError": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
     "noImplicitReturns": true,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
     "outDir": ".",
+    "preserveConstEnums": true,
     "rootDir": "../../../../../../front_end/models/ai_code_generation",
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
     "target": "es2023",
-    "tsBuildInfoFile": "ai_code_generation_node_typecheck-tsconfig.json.tsbuildinfo",
     "typeRoots": [
       "../../../../../../node_modules/@types",
       "../../../../../../node_modules"
@@ -43,20 +43,17 @@
   },
   "files": [
     "../../../../../../front_end/models/ai_code_generation/AiCodeGeneration.ts",
-    "../../../../../../front_end/models/ai_code_generation/debug.ts",
-    "../../../../../../front_end/legacy/legacy-defs.d.ts",
-    "../../../../../../front_end/global_typings/global_defs.d.ts",
-    "../../../../../../node_modules/@types/filesystem/index.d.ts"
+    "../../../../../../front_end/models/ai_code_generation/debug.ts"
   ],
   "references": [
     {
-      "path": "../../core/host/bundle-tsconfig.json"
+      "path": "../../core/host/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../core/platform/bundle-tsconfig.json"
+      "path": "../../core/platform/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../core/root/bundle-tsconfig.json"
+      "path": "../../core/root/bundle-tsconfig.ref.json"
     }
   ]
 }

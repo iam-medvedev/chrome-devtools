@@ -123,4 +123,8 @@ export class ChangesSidebar extends Common.ObjectWrapper.eventMixin(UI.Widget.Wi
         this.requestUpdate();
     }
 }
+export var Events;
+(function (Events) {
+    Events["SELECTED_UI_SOURCE_CODE_CHANGED"] = "SelectedUISourceCodeChanged";
+})(Events || (Events = {}));
 //# sourceMappingURL=ChangesSidebar.js.map

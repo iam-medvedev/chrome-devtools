@@ -9,12 +9,12 @@ var FeedbackButton_exports = {};
 __export(FeedbackButton_exports, {
   FeedbackButton: () => FeedbackButton
 });
-import * as Host from "./../../../core/host/host.js";
-import * as i18n from "./../../../core/i18n/i18n.js";
-import * as Platform from "./../../../core/platform/platform.js";
-import * as ComponentHelpers from "./../helpers/helpers.js";
-import { html, render } from "./../../lit/lit.js";
-import * as Buttons from "./../buttons/buttons.js";
+import * as Host from "../../../core/host/host.js";
+import * as i18n from "../../../core/i18n/i18n.js";
+import * as Platform from "../../../core/platform/platform.js";
+import * as ComponentHelpers from "../helpers/helpers.js";
+import { html, render } from "../../lit/lit.js";
+import * as Buttons from "../buttons/buttons.js";
 var UIStrings = {
   /**
    * @description The title of the button that leads to the feedback form.
@@ -56,11 +56,11 @@ var PanelFeedback_exports = {};
 __export(PanelFeedback_exports, {
   PanelFeedback: () => PanelFeedback
 });
-import "./../../kit/kit.js";
-import * as i18n3 from "./../../../core/i18n/i18n.js";
-import * as Platform2 from "./../../../core/platform/platform.js";
-import * as ComponentHelpers2 from "./../helpers/helpers.js";
-import { html as html2, render as render2 } from "./../../lit/lit.js";
+import "../../kit/kit.js";
+import * as i18n3 from "../../../core/i18n/i18n.js";
+import * as Platform2 from "../../../core/platform/platform.js";
+import * as ComponentHelpers2 from "../helpers/helpers.js";
+import { html as html2, render as render2 } from "../../lit/lit.js";
 
 // gen/front_end/ui/components/panel_feedback/panelFeedback.css.js
 var panelFeedback_css_default = `/*
@@ -74,22 +74,22 @@ var panelFeedback_css_default = `/*
 }
 
 .preview {
-  padding: 12px 16px;
-  border: 1px solid var(--sys-color-divider);
+  padding: var(--sys-size-6) var(--sys-size-8);
+  border: var(--sys-size-1) solid var(--sys-color-divider);
   color: var(--sys-color-on-surface);
-  font-size: 13px;
-  line-height: 20px;
-  border-radius: 12px;
+  font-size: var(--sys-typescale-body3-size);
+  line-height: var(--sys-typescale-body3-line-height);
+  border-radius: var(--sys-shape-corner-medium-small);
   margin: 42px 0;
   letter-spacing: 0.01em;
 }
 
 h2 {
   color: var(--sys-color-primary);
-  font-size: 13px;
-  line-height: 20px;
+  font-size: var(--sys-typescale-body3-size);
+  line-height: var(--sys-typescale-body3-line-height);
   letter-spacing: 0.01em;
-  margin: 9px 0 14px;
+  margin: 9px 0 var(--sys-size-7);
   display: flex;
   align-items: center;
   gap: 5px;
@@ -97,16 +97,16 @@ h2 {
 }
 
 h3 {
-  font-size: 13px;
-  line-height: 20px;
+  font-size: var(--sys-typescale-body3-size);
+  line-height: var(--sys-typescale-body3-line-height);
   letter-spacing: 0.04em;
   color: var(--sys-color-on-surface);
-  margin-bottom: 2px;
+  margin-bottom: var(--sys-size-2);
   font-weight: normal;
 }
 
 .preview p {
-  margin-bottom: 24px;
+  margin-bottom: var(--sys-size-11);
 }
 
 .thumbnail {
@@ -116,7 +116,7 @@ h3 {
 .video {
   display: flex;
   flex-flow: row wrap;
-  gap: 20px;
+  gap: var(--sys-size-9);
 }
 
 devtools-link {
@@ -125,8 +125,8 @@ devtools-link {
 }
 
 devtools-link.quick-start-link {
-  font-size: 14px;
-  line-height: 22px;
+  font-size: var(--sys-typescale-body2-size);
+  line-height: var(--sys-size-10);
   letter-spacing: 0.04em;
 }
 
@@ -208,11 +208,11 @@ var PreviewToggle_exports = {};
 __export(PreviewToggle_exports, {
   PreviewToggle: () => PreviewToggle
 });
-import "./../../kit/kit.js";
-import "./../../legacy/legacy.js";
-import * as i18n5 from "./../../../core/i18n/i18n.js";
-import * as Root from "./../../../core/root/root.js";
-import { html as html3, nothing, render as render3 } from "./../../lit/lit.js";
+import "../../kit/kit.js";
+import "../../legacy/legacy.js";
+import * as i18n5 from "../../../core/i18n/i18n.js";
+import * as Root from "../../../core/root/root.js";
+import { html as html3, nothing, render as render3 } from "../../lit/lit.js";
 
 // gen/front_end/ui/components/panel_feedback/previewToggle.css.js
 var previewToggle_css_default = `/*
@@ -228,7 +228,7 @@ var previewToggle_css_default = `/*
 .container {
   display: flex;
   flex-wrap: wrap;
-  padding: 4px;
+  padding: var(--sys-size-3);
 }
 
 .feedback,
@@ -250,7 +250,7 @@ var previewToggle_css_default = `/*
 .devtools-link {
   color: var(--sys-color-primary);
   text-decoration-line: underline;
-  margin: 0 4px;
+  margin: 0 var(--sys-size-3);
 }
 
 .feedback .devtools-link {

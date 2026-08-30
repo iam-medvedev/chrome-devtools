@@ -1,0 +1,1 @@
+gen/front_end/models/heap_snapshot/heap_snapshot.js: ../../front_end/models/heap_snapshot/ChildrenProvider.ts ../../front_end/models/heap_snapshot/HeapSnapshotModel.ts ../../front_end/models/heap_snapshot/HeapSnapshotProxy.ts ../../front_end/models/heap_snapshot/heap_snapshot.ts

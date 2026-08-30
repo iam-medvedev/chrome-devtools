@@ -202,7 +202,9 @@ models/ai_assistance/contexts/RequestContext.test.js
 models/ai_assistance/performance/AICallTree.test.js
 models/ai_assistance/performance/AIContext.test.js
 models/ai_assistance/performance/AIQueries.test.js
+models/ai_assistance/tools/CookieUtils.test.js
 models/ai_assistance/tools/ExecuteJavaScript.test.js
+models/ai_assistance/tools/GetCookieValues.test.js
 models/ai_assistance/tools/GetDetailedCallTree.test.js
 models/ai_assistance/tools/GetElementAccessibilityDetails.test.js
 models/ai_assistance/tools/GetFunctionCode.test.js
@@ -211,11 +213,13 @@ models/ai_assistance/tools/GetLighthouseAudits.test.js
 models/ai_assistance/tools/GetNetworkRequestDetails.test.js
 models/ai_assistance/tools/GetResourceContent.test.js
 models/ai_assistance/tools/GetSourceContent.test.js
+models/ai_assistance/tools/GetStorageBreakdown.test.js
 models/ai_assistance/tools/GetStorageValues.test.js
 models/ai_assistance/tools/GetStyles.test.js
 models/ai_assistance/tools/GetTraceEventByKey.test.js
 models/ai_assistance/tools/GetTraceMainThreadSummary.test.js
 models/ai_assistance/tools/GetTraceNetworkSummary.test.js
+models/ai_assistance/tools/ListCookies.test.js
 models/ai_assistance/tools/ListNetworkRequests.test.js
 models/ai_assistance/tools/ListPageOrigins.test.js
 models/ai_assistance/tools/ListSources.test.js
@@ -252,6 +256,7 @@ models/extensions/HostUrlPattern.test.js
 models/extensions/LanguageExtensionEndpoint.test.js
 models/extensions/RecorderPluginManager.test.js
 models/geometry/Geometry.test.js
+models/issues_manager/DOMIssuesManager.test.js
 models/issues_manager/IssuesManager.test.js
 models/issues_manager/SelectivePermissionsInterventionIssue.test.js
 models/javascript_metadata/JavaScriptMetadata.test.js
@@ -358,9 +363,11 @@ models/trace_source_maps_resolver/SourceMapsResolver.test.js
 models/web_mcp/WebMCPModel.test.js
 models/workspace_diff/WorkspaceDiff.test.js
 panels/accessibility/ARIAAttributesView.test.js
+panels/accessibility/AccessibilityAnnouncementRecordingView.test.js
 panels/accessibility/AccessibilitySidebarView.test.js
 panels/ai_assistance/AiAssistancePanel.test.js
 panels/ai_assistance/ExportConversation.test.js
+panels/ai_assistance/ExternalHandler.test.js
 panels/ai_assistance/components/AIv2MarkdownRenderer.test.js
 panels/ai_assistance/components/AccessibilityAgentMarkdownRenderer.test.js
 panels/ai_assistance/components/ChatInput.test.js
@@ -461,6 +468,7 @@ panels/elements/ClassesPaneWidget.test.js
 panels/elements/ColorSwatchPopoverIcon.test.js
 panels/elements/ComputedStyleWidget.test.js
 panels/elements/DOMPath.test.js
+panels/elements/DOMTreeContextMenu.test.js
 panels/elements/DOMTreeWidget.test.js
 panels/elements/ElementStatePaneWidget.test.js
 panels/elements/ElementsPanel.test.js
@@ -766,6 +774,7 @@ ui/legacy/ContextMenu.test.js
 ui/legacy/DOMUtilities.test.js
 ui/legacy/Dialog.test.js
 ui/legacy/DockController.test.js
+ui/legacy/EmptyWidget.test.js
 ui/legacy/FilterBar.test.js
 ui/legacy/Infobar.test.js
 ui/legacy/InspectorDrawerView.test.js

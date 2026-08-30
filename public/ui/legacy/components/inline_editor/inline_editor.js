@@ -10,14 +10,14 @@ __export(AnimationTimingModel_exports, {
   AnimationTimingModel: () => AnimationTimingModel,
   LINEAR_BEZIER: () => LINEAR_BEZIER2
 });
-import * as Geometry from "./../../../../models/geometry/geometry.js";
+import * as Geometry from "../../../../models/geometry/geometry.js";
 
 // gen/front_end/ui/legacy/components/inline_editor/CSSLinearEasingModel.js
 var CSSLinearEasingModel_exports = {};
 __export(CSSLinearEasingModel_exports, {
   CSSLinearEasingModel: () => CSSLinearEasingModel
 });
-import * as CodeMirror from "./../../../../third_party/codemirror.next/codemirror.next.js";
+import * as CodeMirror from "../../../../third_party/codemirror.next/codemirror.next.js";
 var cssParser = CodeMirror.css.cssLanguage.parser;
 var numberFormatter = new Intl.NumberFormat("en", {
   maximumFractionDigits: 2
@@ -186,11 +186,11 @@ __export(AnimationTimingUI_exports, {
   AnimationTimingUI: () => AnimationTimingUI,
   PresetUI: () => PresetUI
 });
-import * as i18n from "./../../../../core/i18n/i18n.js";
-import * as Platform from "./../../../../core/platform/platform.js";
-import * as Geometry3 from "./../../../../models/geometry/geometry.js";
-import * as VisualLogging2 from "./../../../visual_logging/visual_logging.js";
-import * as UI2 from "./../../legacy.js";
+import * as i18n from "../../../../core/i18n/i18n.js";
+import * as Platform from "../../../../core/platform/platform.js";
+import * as Geometry3 from "../../../../models/geometry/geometry.js";
+import * as VisualLogging2 from "../../../visual_logging/visual_logging.js";
+import * as UI2 from "../../legacy.js";
 
 // gen/front_end/ui/legacy/components/inline_editor/BezierUI.js
 var BezierUI_exports = {};
@@ -198,9 +198,9 @@ __export(BezierUI_exports, {
   BezierUI: () => BezierUI,
   Height: () => Height
 });
-import * as Geometry2 from "./../../../../models/geometry/geometry.js";
-import * as VisualLogging from "./../../../visual_logging/visual_logging.js";
-import * as UI from "./../../legacy.js";
+import * as Geometry2 from "../../../../models/geometry/geometry.js";
+import * as VisualLogging from "../../../visual_logging/visual_logging.js";
+import * as UI from "../../legacy.js";
 var BezierUI = class {
   width;
   height;
@@ -585,12 +585,13 @@ var AnimationTimingUI = class {
 var BezierEditor_exports = {};
 __export(BezierEditor_exports, {
   BezierEditor: () => BezierEditor,
+  Events: () => Events,
   Presets: () => Presets
 });
-import * as Common from "./../../../../core/common/common.js";
-import * as Platform2 from "./../../../../core/platform/platform.js";
-import * as VisualLogging3 from "./../../../visual_logging/visual_logging.js";
-import * as UI3 from "./../../legacy.js";
+import * as Common from "../../../../core/common/common.js";
+import * as Platform2 from "../../../../core/platform/platform.js";
+import * as VisualLogging3 from "../../../visual_logging/visual_logging.js";
+import * as UI3 from "../../legacy.js";
 
 // gen/front_end/ui/legacy/components/inline_editor/bezierEditor.css.js
 var bezierEditor_css_default = `/*
@@ -603,7 +604,7 @@ var bezierEditor_css_default = `/*
   width: 270px;
   height: 350px;
   user-select: none;
-  padding: 16px;
+  padding: var(--sys-size-8);
   overflow: hidden;
 }
 
@@ -619,7 +620,7 @@ var bezierEditor_css_default = `/*
   flex-shrink: 0;
   /* overflown bezier visualization must be on top of the source text */
   z-index: 2;
-  background-image: radial-gradient(circle, var(--sys-color-surface-variant) 1px, var(--color-background-inverted-opacity-0) 1px);
+  background-image: radial-gradient(circle, var(--sys-color-surface-variant) var(--sys-size-1), var(--color-background-inverted-opacity-0) var(--sys-size-1));
   background-size: 17px 17px;
   background-position: -5px -10px;
 }
@@ -695,9 +696,9 @@ var bezierEditor_css_default = `/*
   position: relative;
   background-color: var(--sys-color-cdt-base-container);
   overflow: hidden;
-  border-radius: 20px;
+  border-radius: var(--sys-size-9);
   width: 200%;
-  height: 20px;
+  height: var(--sys-size-9);
   z-index: 2;
   flex-shrink: 0;
   opacity: 0%;
@@ -705,14 +706,14 @@ var bezierEditor_css_default = `/*
 
 .bezier-preview-animation {
   background-color: var(--sys-color-purple-bright);
-  width: 20px;
-  height: 20px;
-  border-radius: 20px;
+  width: var(--sys-size-9);
+  height: var(--sys-size-9);
+  border-radius: var(--sys-size-9);
   position: absolute;
 }
 
 .bezier-preview-onion {
-  margin-top: -20px;
+  margin-top: calc(-1 * var(--sys-size-9));
   position: relative;
   z-index: 1;
 }
@@ -767,14 +768,14 @@ span.bezier-display-value {
   user-select: text;
   display: block;
   text-align: center;
-  line-height: 20px;
-  min-height: 20px;
+  line-height: var(--sys-size-9);
+  min-height: var(--sys-size-9);
   cursor: text;
 }
 
 svg.bezier-curve {
-  margin-left: 32px;
-  margin-top: -8px;
+  margin-left: var(--sys-size-13);
+  margin-top: calc(-1 * var(--sys-size-5));
 }
 
 svg.bezier-curve.linear {
@@ -787,7 +788,7 @@ svg.bezier-preset-modify.bezier-preset-plus {
 }
 
 .bezier-header {
-  margin-top: 16px;
+  margin-top: var(--sys-size-8);
   z-index: 1;
 }
 
@@ -989,6 +990,10 @@ var BezierEditor = class extends Common.ObjectWrapper.eventMixin(UI3.Widget.VBox
     }
   }
 };
+var Events;
+(function(Events4) {
+  Events4["BEZIER_CHANGED"] = "BezierChanged";
+})(Events || (Events = {}));
 var Presets = [
   [
     { name: "linear", value: "linear" },
@@ -1037,10 +1042,10 @@ __export(ColorMixSwatch_exports, {
   ColorMixChangedEvent: () => ColorMixChangedEvent,
   ColorMixSwatch: () => ColorMixSwatch
 });
-import * as Common2 from "./../../../../core/common/common.js";
-import * as Platform3 from "./../../../../core/platform/platform.js";
-import * as Lit from "./../../../lit/lit.js";
-import * as VisualLogging4 from "./../../../visual_logging/visual_logging.js";
+import * as Common2 from "../../../../core/common/common.js";
+import * as Platform3 from "../../../../core/platform/platform.js";
+import * as Lit from "../../../lit/lit.js";
+import * as VisualLogging4 from "../../../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/components/inline_editor/colorMixSwatch.css.js
 var colorMixSwatch_css_default = `/*
@@ -1160,10 +1165,10 @@ __export(ColorSwatch_exports, {
   ColorFormatChangedEvent: () => ColorFormatChangedEvent,
   ColorSwatch: () => ColorSwatch
 });
-import * as i18n3 from "./../../../../core/i18n/i18n.js";
-import * as ColorPicker from "./../color_picker/color_picker.js";
-import * as Lit2 from "./../../../lit/lit.js";
-import * as VisualLogging5 from "./../../../visual_logging/visual_logging.js";
+import * as i18n3 from "../../../../core/i18n/i18n.js";
+import * as ColorPicker from "../color_picker/color_picker.js";
+import * as Lit2 from "../../../lit/lit.js";
+import * as VisualLogging5 from "../../../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/components/inline_editor/colorSwatch.css.js
 var colorSwatch_css_default = `/*
@@ -1178,12 +1183,12 @@ var colorSwatch_css_default = `/*
 
 .color-swatch {
   position: relative;
-  margin-left: 1px;
-  margin-right: 2px;
-  width: 12px;
-  height: 12px;
+  margin-left: var(--sys-size-1);
+  margin-right: var(--sys-size-2);
+  width: var(--sys-size-6);
+  height: var(--sys-size-6);
   transform: scale(0.8);
-  vertical-align: -2px;
+  vertical-align: calc(-1 * var(--sys-size-2));
   display: inline-block;
   user-select: none;
   background-image: var(--image-file-checker);
@@ -1194,7 +1199,7 @@ var colorSwatch_css_default = `/*
   width: 100%;
   height: 100%;
   display: inline-block;
-  border: 1px solid var(--sys-color-neutral-outline);
+  border: var(--sys-size-1) solid var(--sys-color-neutral-outline);
   box-sizing: border-box;
   cursor: pointer;
 }
@@ -1204,7 +1209,7 @@ var colorSwatch_css_default = `/*
 }
 
 .color-swatch:not(.readonly) .color-swatch-inner:hover {
-  border: 1px solid var(--sys-color-outline);
+  border: var(--sys-size-1) solid var(--sys-color-outline);
 }
 
 @media (forced-colors: active) {
@@ -1348,9 +1353,9 @@ __export(CSSAngle_exports, {
 });
 
 // gen/front_end/ui/legacy/components/inline_editor/CSSAngleEditor.js
-import * as Common3 from "./../../../../core/common/common.js";
-import * as Lit3 from "./../../../lit/lit.js";
-import * as VisualLogging6 from "./../../../visual_logging/visual_logging.js";
+import * as Common3 from "../../../../core/common/common.js";
+import * as Lit3 from "../../../lit/lit.js";
+import * as VisualLogging6 from "../../../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/components/inline_editor/cssAngleEditor.css.js
 var cssAngleEditor_css_default = `/*
@@ -1374,7 +1379,7 @@ var cssAngleEditor_css_default = `/*
 }
 
 .clock {
-  top: 6px;
+  top: var(--sys-size-4);
   width: 6em;
   height: 6em;
   background-color: var(--sys-color-cdt-base-container);
@@ -1386,7 +1391,7 @@ var cssAngleEditor_css_default = `/*
 
 .center,
 .hand {
-  box-shadow: 0 0 2px var(--box-shadow-outline-color);
+  box-shadow: 0 0 var(--sys-size-2) var(--box-shadow-outline-color);
 }
 
 .pointer {
@@ -1416,10 +1421,10 @@ var cssAngleEditor_css_default = `/*
 }
 
 .dial {
-  width: 2px;
+  width: var(--sys-size-2);
   height: var(--clock-dial-length);
   background-color: var(--override-dial-color);
-  border-radius: 1px;
+  border-radius: var(--sys-size-1);
 }
 
 .hand {
@@ -1454,7 +1459,7 @@ var cssAngleEditor_css_default = `/*
 :host-context(.theme-with-dark-background) .center,
 :host-context(.theme-with-dark-background) .hand {
   /* stylelint-disable-next-line plugin/use_theme_colors */
-  box-shadow: 0 0 2px hsl(0deg 0% 0% / 60%);
+  box-shadow: 0 0 var(--sys-size-2) hsl(0deg 0% 0% / 60%);
 }
 
 :host-context(.theme-with-dark-background) .clock {
@@ -1467,6 +1472,7 @@ var cssAngleEditor_css_default = `/*
 // gen/front_end/ui/legacy/components/inline_editor/CSSAngleUtils.js
 var CSSAngleUtils_exports = {};
 __export(CSSAngleUtils_exports, {
+  AngleUnit: () => AngleUnit,
   CSSAngleRegex: () => CSSAngleRegex,
   convertAngleUnit: () => convertAngleUnit,
   get2DTranslationsForAngle: () => get2DTranslationsForAngle,
@@ -1477,10 +1483,17 @@ __export(CSSAngleUtils_exports, {
   parseText: () => parseText,
   roundAngleByUnit: () => roundAngleByUnit
 });
-import * as Platform4 from "./../../../../core/platform/platform.js";
-import * as Geometry4 from "./../../../../models/geometry/geometry.js";
-import * as UI4 from "./../../legacy.js";
+import * as Platform4 from "../../../../core/platform/platform.js";
+import * as Geometry4 from "../../../../models/geometry/geometry.js";
+import * as UI4 from "../../legacy.js";
 var CSSAngleRegex = /(?<value>[+-]?\d*\.?\d+)(?<unit>deg|grad|rad|turn)/;
+var AngleUnit;
+(function(AngleUnit2) {
+  AngleUnit2["DEG"] = "deg";
+  AngleUnit2["GRAD"] = "grad";
+  AngleUnit2["RAD"] = "rad";
+  AngleUnit2["TURN"] = "turn";
+})(AngleUnit || (AngleUnit = {}));
 var parseText = (text) => {
   const result = text.match(CSSAngleRegex);
   if (!result?.groups) {
@@ -1711,7 +1724,7 @@ var CSSAngleEditor = class extends HTMLElement {
 customElements.define("devtools-css-angle-editor", CSSAngleEditor);
 
 // gen/front_end/ui/legacy/components/inline_editor/CSSAngleSwatch.js
-import * as Lit4 from "./../../../lit/lit.js";
+import * as Lit4 from "../../../lit/lit.js";
 
 // gen/front_end/ui/legacy/components/inline_editor/cssAngleSwatch.css.js
 var cssAngleSwatch_css_default = `/*
@@ -1777,8 +1790,8 @@ var CSSAngleSwatch = class extends HTMLElement {
 customElements.define("devtools-css-angle-swatch", CSSAngleSwatch);
 
 // gen/front_end/ui/legacy/components/inline_editor/CSSAngle.js
-import * as Platform5 from "./../../../../core/platform/platform.js";
-import * as Lit5 from "./../../../lit/lit.js";
+import * as Platform5 from "../../../../core/platform/platform.js";
+import * as Lit5 from "../../../lit/lit.js";
 
 // gen/front_end/ui/legacy/components/inline_editor/cssAngle.css.js
 var cssAngle_css_default = `/*
@@ -2024,14 +2037,15 @@ customElements.define("devtools-css-angle", CSSAngle);
 var CSSShadowEditor_exports = {};
 __export(CSSShadowEditor_exports, {
   CSSLength: () => CSSLength,
-  CSSShadowEditor: () => CSSShadowEditor
+  CSSShadowEditor: () => CSSShadowEditor,
+  Events: () => Events2
 });
-import * as Common4 from "./../../../../core/common/common.js";
-import * as i18n5 from "./../../../../core/i18n/i18n.js";
-import * as Platform6 from "./../../../../core/platform/platform.js";
-import * as Geometry5 from "./../../../../models/geometry/geometry.js";
-import * as VisualLogging7 from "./../../../visual_logging/visual_logging.js";
-import * as UI5 from "./../../legacy.js";
+import * as Common4 from "../../../../core/common/common.js";
+import * as i18n5 from "../../../../core/i18n/i18n.js";
+import * as Platform6 from "../../../../core/platform/platform.js";
+import * as Geometry5 from "../../../../models/geometry/geometry.js";
+import * as VisualLogging7 from "../../../visual_logging/visual_logging.js";
+import * as UI5 from "../../legacy.js";
 
 // gen/front_end/ui/legacy/components/inline_editor/cssShadowEditor.css.js
 var cssShadowEditor_css_default = `/*
@@ -2042,18 +2056,18 @@ var cssShadowEditor_css_default = `/*
 
 :host {
   user-select: none;
-  border: 1px solid transparent;
+  border: var(--sys-size-1) solid transparent;
 }
 
 .shadow-editor-field {
-  height: 24px;
-  margin-top: 8px;
-  font-size: 12px;
+  height: var(--sys-size-11);
+  margin-top: var(--sys-size-5);
+  font-size: var(--sys-typescale-body4-size);
   flex-shrink: 0;
 }
 
 .shadow-editor-field:last-of-type {
-  margin-bottom: 8px;
+  margin-bottom: var(--sys-size-5);
 }
 
 .shadow-editor-flex-field {
@@ -2063,33 +2077,33 @@ var cssShadowEditor_css_default = `/*
 }
 
 .shadow-editor-field.shadow-editor-blur-field {
-  margin-top: 40px;
+  margin-top: var(--sys-size-14);
 }
 
 .shadow-editor-2D-slider {
   position: absolute;
   height: 88px;
   width: 88px;
-  border: 1px solid var(--divider-line);
-  border-radius: 2px;
+  border: var(--sys-size-1) solid var(--divider-line);
+  border-radius: var(--sys-size-2);
 }
 
 .shadow-editor-label {
   display: inline-block;
   width: 52px;
-  height: 24px;
-  line-height: 24px;
-  margin-right: 8px;
+  height: var(--sys-size-11);
+  line-height: var(--sys-size-11);
+  margin-right: var(--sys-size-5);
   text-align: right;
 }
 
 .shadow-editor-button-left,
 .shadow-editor-button-right {
   width: 74px;
-  height: 24px;
+  height: var(--sys-size-11);
   padding: 3px 7px;
-  line-height: 16px;
-  border: 1px solid var(--divider-line);
+  line-height: var(--sys-size-8);
+  border: var(--sys-size-1) solid var(--divider-line);
   color: var(--sys-color-on-surface);
   background-color: var(--sys-color-cdt-base-container);
   text-align: center;
@@ -2097,17 +2111,17 @@ var cssShadowEditor_css_default = `/*
 }
 
 .shadow-editor-button-left {
-  border-radius: 2px 0 0 2px;
+  border-radius: var(--sys-size-2) 0 0 var(--sys-size-2);
 }
 
 .shadow-editor-button-right {
-  border-radius: 0 2px 2px 0;
+  border-radius: 0 var(--sys-size-2) var(--sys-size-2) 0;
   border-left-width: 0;
 }
 
 .shadow-editor-button-left:hover,
 .shadow-editor-button-right:hover {
-  box-shadow: 0 1px 1px var(--color-background-elevation-1);
+  box-shadow: 0 var(--sys-size-1) var(--sys-size-1) var(--color-background-elevation-1);
 }
 
 .shadow-editor-button-left:focus,
@@ -2130,7 +2144,7 @@ var cssShadowEditor_css_default = `/*
 
 .shadow-editor-text-input {
   width: 52px;
-  margin-right: 8px;
+  margin-right: var(--sys-size-5);
   text-align: right;
   box-shadow: var(--legacy-focus-ring-inactive-shadow);
 }
@@ -2564,16 +2578,20 @@ var CSSShadowEditor = class extends Common4.ObjectWrapper.eventMixin(UI5.Widget.
     return this.constrainPoint(new Geometry5.Point(x, y), this.innerCanvasSize);
   }
 };
+var Events2;
+(function(Events4) {
+  Events4["SHADOW_CHANGED"] = "ShadowChanged";
+})(Events2 || (Events2 = {}));
 
 // gen/front_end/ui/legacy/components/inline_editor/LinkSwatch.js
 var LinkSwatch_exports = {};
 __export(LinkSwatch_exports, {
   LinkSwatch: () => LinkSwatch
 });
-import * as Platform7 from "./../../../../core/platform/platform.js";
-import * as Buttons from "./../../../components/buttons/buttons.js";
-import * as Lit6 from "./../../../lit/lit.js";
-import * as VisualLogging8 from "./../../../visual_logging/visual_logging.js";
+import * as Platform7 from "../../../../core/platform/platform.js";
+import * as Buttons from "../../../components/buttons/buttons.js";
+import * as Lit6 from "../../../lit/lit.js";
+import * as VisualLogging8 from "../../../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/components/inline_editor/linkSwatch.css.js
 var linkSwatch_css_default = `/*
@@ -2663,8 +2681,8 @@ var Swatches_exports = {};
 __export(Swatches_exports, {
   CSSShadowSwatch: () => CSSShadowSwatch
 });
-import "./../../../kit/kit.js";
-import { html as html7, render as render7 } from "./../../../lit/lit.js";
+import "../../../kit/kit.js";
+import { html as html7, render as render7 } from "../../../lit/lit.js";
 
 // gen/front_end/ui/legacy/components/inline_editor/cssShadowSwatch.css.js
 var cssShadowSwatch_css_default = `/*
@@ -2713,12 +2731,13 @@ customElements.define("css-shadow-swatch", CSSShadowSwatch);
 // gen/front_end/ui/legacy/components/inline_editor/SwatchPopoverHelper.js
 var SwatchPopoverHelper_exports = {};
 __export(SwatchPopoverHelper_exports, {
+  Events: () => Events3,
   SwatchPopoverHelper: () => SwatchPopoverHelper
 });
-import * as Common5 from "./../../../../core/common/common.js";
-import * as Platform8 from "./../../../../core/platform/platform.js";
-import * as VisualLogging9 from "./../../../visual_logging/visual_logging.js";
-import * as UI6 from "./../../legacy.js";
+import * as Common5 from "../../../../core/common/common.js";
+import * as Platform8 from "../../../../core/platform/platform.js";
+import * as VisualLogging9 from "../../../visual_logging/visual_logging.js";
+import * as UI6 from "../../legacy.js";
 
 // gen/front_end/ui/legacy/components/inline_editor/swatchPopover.css.js
 var swatchPopover_css_default = `/*
@@ -2873,6 +2892,10 @@ var SwatchPopoverHelper = class extends Common5.ObjectWrapper.ObjectWrapper {
     }
   }
 };
+var Events3;
+(function(Events4) {
+  Events4["WILL_SHOW_POPOVER"] = "WillShowPopover";
+})(Events3 || (Events3 = {}));
 export {
   AnimationTimingModel_exports as AnimationTimingModel,
   AnimationTimingUI_exports as AnimationTimingUI,

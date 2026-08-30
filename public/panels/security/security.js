@@ -15,8 +15,8 @@ __export(SecurityModel_exports, {
   SummaryMessages: () => SummaryMessages,
   securityStateCompare: () => securityStateCompare
 });
-import * as i18n from "./../../core/i18n/i18n.js";
-import * as SDK from "./../../core/sdk/sdk.js";
+import * as i18n from "../../core/i18n/i18n.js";
+import * as SDK from "../../core/sdk/sdk.js";
 var UIStrings = {
   /**
    * @description Summary text displayed in the overview of the Security panel when the page's security state is unknown.
@@ -223,16 +223,16 @@ __export(SecurityPanel_exports, {
   getSecurityStateIconForDetailedView: () => getSecurityStateIconForDetailedView,
   getSecurityStateIconForOverview: () => getSecurityStateIconForOverview
 });
-import * as Common2 from "./../../core/common/common.js";
-import * as Host from "./../../core/host/host.js";
-import * as i18n5 from "./../../core/i18n/i18n.js";
-import * as SDK2 from "./../../core/sdk/sdk.js";
-import * as NetworkForward from "./../network/forward/forward.js";
-import * as Buttons from "./../../ui/components/buttons/buttons.js";
-import { createIcon } from "./../../ui/kit/kit.js";
-import * as UI2 from "./../../ui/legacy/legacy.js";
-import { Directives, html as html2, nothing as nothing2, render as render2 } from "./../../ui/lit/lit.js";
-import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
+import * as Common2 from "../../core/common/common.js";
+import * as Host from "../../core/host/host.js";
+import * as i18n5 from "../../core/i18n/i18n.js";
+import * as SDK2 from "../../core/sdk/sdk.js";
+import * as NetworkForward from "../network/forward/forward.js";
+import * as Buttons from "../../ui/components/buttons/buttons.js";
+import { createIcon } from "../../ui/kit/kit.js";
+import * as UI2 from "../../ui/legacy/legacy.js";
+import { Directives, html as html2, nothing as nothing2, render as render2 } from "../../ui/lit/lit.js";
+import * as VisualLogging from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/security/lockIcon.css.js
 var lockIcon_css_default = `/*
@@ -317,26 +317,26 @@ var mainView_css_default = `/*
 
 .security-summary-section-title {
   font-size: 15px;
-  margin: 12px 16px;
+  margin: var(--sys-size-6) var(--sys-size-8);
   user-select: text;
 }
 
 .lock-spectrum {
-  margin: 8px 16px;
+  margin: var(--sys-size-5) var(--sys-size-8);
   display: flex;
   align-items: flex-start;
 }
 
 .security-summary .lock-icon {
   flex: none;
-  width: 16px;
-  height: 16px;
+  width: var(--sys-size-8);
+  height: var(--sys-size-8);
   margin: 0;
 }
 /* Separate the middle icon from the other two. */
 
 .security-summary .lock-icon-neutral {
-  margin: 0 16px;
+  margin: 0 var(--sys-size-8);
 }
 
 .security-summary:not(.security-summary-secure) .lock-icon-secure,
@@ -360,7 +360,7 @@ var mainView_css_default = `/*
 }
 
 .triangle-pointer-container {
-  margin: 8px 24px 0;
+  margin: var(--sys-size-5) var(--sys-size-11) 0;
   padding: 0;
 }
 
@@ -371,13 +371,13 @@ var mainView_css_default = `/*
 }
 
 .triangle-pointer {
-  width: 12px;
-  height: 12px;
-  margin-bottom: -6px;
-  margin-left: -6px;
+  width: var(--sys-size-6);
+  height: var(--sys-size-6);
+  margin-bottom: calc(-1 * var(--sys-size-4));
+  margin-left: calc(-1 * var(--sys-size-4));
   transform: rotate(-45deg);
   border-style: solid;
-  border-width: 1px 1px 0 0;
+  border-width: var(--sys-size-1) var(--sys-size-1) 0 0;
   background: var(--sys-color-cdt-base-container);
   border-color: var(--sys-color-neutral-outline);
 }
@@ -387,21 +387,21 @@ var mainView_css_default = `/*
 }
 
 .security-summary-neutral .triangle-pointer-wrapper {
-  transform: translateX(32px);
+  transform: translateX(var(--sys-size-13));
 }
 
 .security-summary-insecure .triangle-pointer-wrapper {
-  transform: translateX(64px);
+  transform: translateX(var(--sys-size-18));
 }
 
 .security-summary-insecure-broken .triangle-pointer-wrapper {
-  transform: translateX(64px);
+  transform: translateX(var(--sys-size-18));
 }
 
 .security-summary-text {
-  padding: 16px 24px;
+  padding: var(--sys-size-8) var(--sys-size-11);
   border-style: solid;
-  border-width: 1px 0;
+  border-width: var(--sys-size-1) 0;
   font-size: 15px;
   background: var(--sys-color-cdt-base-container);
   border-color: var(--sys-color-neutral-outline);
@@ -423,7 +423,7 @@ var mainView_css_default = `/*
 }
 
 .security-explanation-list {
-  padding-bottom: 16px;
+  padding-bottom: var(--sys-size-8);
 }
 
 .security-explanation-list:empty {
@@ -434,7 +434,7 @@ var mainView_css_default = `/*
 .security-explanations-main {
   margin-top: -5px;
   background-color: var(--sys-color-cdt-base-container);
-  border-bottom: 1px solid var(--sys-color-divider);
+  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
 }
 
 .security-explanations-extra {
@@ -461,27 +461,27 @@ var mainView_css_default = `/*
 
 .security-explanation .security-property {
   flex: none;
-  width: 16px;
-  height: 16px;
-  margin-right: 16px;
+  width: var(--sys-size-8);
+  height: var(--sys-size-8);
+  margin-right: var(--sys-size-8);
 }
 
 .security-explanation-title {
   color: var(--sys-color-token-subtle);
-  margin-top: 1px;
-  margin-bottom: 8px;
+  margin-top: var(--sys-size-1);
+  margin-bottom: var(--sys-size-5);
 }
 
 .security-mixed-content {
-  margin-top: 8px;
+  margin-top: var(--sys-size-5);
 }
 
 .security-explanation-recommendations {
-  padding-inline-start: 16px;
+  padding-inline-start: var(--sys-size-8);
 }
 
 .security-explanation-recommendations > li {
-  margin-bottom: 4px;
+  margin-bottom: var(--sys-size-3);
 }
 
 /*# sourceURL=${import.meta.resolve("./mainView.css")} */`;
@@ -494,14 +494,14 @@ var originView_css_default = `/*
  */
 
 .title-section {
-  padding: 16px 0 24px;
-  border-bottom: 1px solid var(--sys-color-divider);
+  padding: var(--sys-size-8) 0 var(--sys-size-11);
+  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
 }
 
 .title-section-header {
-  padding-left: 16px;
+  padding-left: var(--sys-size-8);
   padding-bottom: 10px;
-  font-size: 14px;
+  font-size: var(--sys-typescale-body2-size);
 }
 
 .security-origin-view {
@@ -511,30 +511,30 @@ var originView_css_default = `/*
 }
 
 .security-origin-view .origin-view-section {
-  border-bottom: 1px solid var(--sys-color-divider);
-  padding: 12px 6px 12px  24px;
-  font-size: 12px;
+  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
+  padding: var(--sys-size-6) var(--sys-size-4) var(--sys-size-6) var(--sys-size-11);
+  font-size: var(--sys-typescale-body4-size);
 }
 
 .origin-view-notes {
-  margin-top: 2px;
+  margin-top: var(--sys-size-2);
   color: var(--sys-color-token-subtle);
 }
 
 .origin-view-section-notes {
-  margin-top: 6px;
+  margin-top: var(--sys-size-4);
   color: var(--sys-color-token-subtle);
 }
 
 .security-origin-view .origin-display {
-  font-size: 12px;
+  font-size: var(--sys-typescale-body4-size);
   padding-left: var(--sys-size-8);
   display: flex;
   align-items: center;
 }
 
 .title-section > .view-network-button {
-  padding: 6px 0 0 16px;
+  padding: var(--sys-size-4) 0 0 var(--sys-size-8);
 }
 
 .security-origin-view .origin-display devtools-icon {
@@ -544,8 +544,8 @@ var originView_css_default = `/*
 }
 
 .security-origin-view .origin-view-section-title {
-  margin-top: 4px;
-  margin-bottom: 4px;
+  margin-top: var(--sys-size-3);
+  margin-bottom: var(--sys-size-3);
   font-weight: bold;
 }
 
@@ -556,7 +556,7 @@ var originView_css_default = `/*
 .security-origin-view .details-table-row {
   white-space: nowrap;
   overflow: hidden;
-  line-height: 22px;
+  line-height: var(--sys-size-10);
   vertical-align: top;
 }
 
@@ -576,7 +576,7 @@ var originView_css_default = `/*
 }
 
 .security-origin-view .sct-details .details-table .details-table-row:last-child td:last-child {
-  border-bottom: 1px solid var(--sys-color-divider);
+  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
   padding-bottom: 10px;
 }
 
@@ -622,10 +622,10 @@ __export(SecurityPanelSidebar_exports, {
   DEFAULT_VIEW: () => DEFAULT_VIEW,
   SecurityPanelSidebar: () => SecurityPanelSidebar
 });
-import * as Common from "./../../core/common/common.js";
-import * as i18n3 from "./../../core/i18n/i18n.js";
-import * as UI from "./../../ui/legacy/legacy.js";
-import { html, nothing, render } from "./../../ui/lit/lit.js";
+import * as Common from "../../core/common/common.js";
+import * as i18n3 from "../../core/i18n/i18n.js";
+import * as UI from "../../ui/legacy/legacy.js";
+import { html, nothing, render } from "../../ui/lit/lit.js";
 
 // gen/front_end/panels/security/sidebar.css.js
 var sidebar_css_default = `/*
@@ -897,27 +897,6 @@ var SecurityPanelSidebar = class extends UI.Widget.VBox {
   clearOrigins() {
     this.#origins.clear();
     this.requestUpdate();
-  }
-  // Used in web tests
-  elementsByOrigin() {
-    const map = /* @__PURE__ */ new Map();
-    for (const [origin, state] of this.#origins.entries()) {
-      const element = {
-        select: () => {
-          this.#selectedElementId = origin;
-          this.#securitySidebarLastItemSetting.set(origin);
-          this.requestUpdate();
-          this.#onShowOrigin?.(origin);
-        },
-        showElement: () => {
-          this.#onShowOrigin?.(origin);
-        },
-        origin: () => origin,
-        securityState: () => state
-      };
-      map.set(origin, element);
-    }
-    return map;
   }
   set selectedOrigin(origin) {
     this.#selectedElementId = origin ?? "overview";
@@ -2106,6 +2085,48 @@ function renderSan(sanList, isSanListTruncatable, isSanListTruncated, onToggleTr
         </devtools-button>` : nothing2}
     </div>`;
 }
+function renderDetailsTable(rows) {
+  return html2`
+    <table class="details-table">
+      ${rows.map((row) => html2`
+        <tr class="details-table-row">
+          <td>${row.key}</td>
+          <td>${row.value}</td>
+        </tr>`)}
+    </table>`;
+}
+function formatKeyExchange(securityDetails) {
+  if (securityDetails.keyExchange && securityDetails.keyExchangeGroup) {
+    return securityDetails.keyExchange + " with " + securityDetails.keyExchangeGroup;
+  }
+  return securityDetails.keyExchange || securityDetails.keyExchangeGroup || null;
+}
+function buildConnectionDetailsRows(securityDetails) {
+  const rows = [{ key: i18nString3(UIStrings3.protocol), value: securityDetails.protocol }];
+  const keyExchange = formatKeyExchange(securityDetails);
+  if (keyExchange) {
+    rows.push({ key: i18nString3(UIStrings3.keyExchange), value: keyExchange });
+  }
+  if (securityDetails.serverSignatureAlgorithm) {
+    let sigString = SignatureSchemeStrings.get(securityDetails.serverSignatureAlgorithm);
+    sigString ??= i18nString3(UIStrings3.unknownField) + " (" + securityDetails.serverSignatureAlgorithm + ")";
+    rows.push({ key: i18nString3(UIStrings3.serverSignature), value: sigString });
+  }
+  rows.push({
+    key: i18nString3(UIStrings3.cipher),
+    value: securityDetails.cipher + (securityDetails.mac ? " with " + securityDetails.mac : "")
+  });
+  if (securityDetails.encryptedClientHello) {
+    rows.push({ key: i18nString3(UIStrings3.encryptedClientHello), value: i18nString3(UIStrings3.enabled) });
+  }
+  return rows;
+}
+function renderConnectionSection(securityDetails) {
+  const rows = buildConnectionDetailsRows(securityDetails);
+  return html2`
+    <div class="origin-view-section-title" role="heading" aria-level="2">${i18nString3(UIStrings3.connection)}</div>
+    ${renderDetailsTable(rows)}`;
+}
 var SecurityOriginView = class extends UI2.Widget.VBox {
   #origin;
   #originDisplay;
@@ -2133,29 +2154,8 @@ var SecurityOriginView = class extends UI2.Widget.VBox {
     originNetworkDiv.appendChild(originNetworkButton);
     UI2.ARIAUtils.markAsLink(originNetworkButton);
     if (originState.securityDetails) {
-      const connectionSection = this.element.createChild("div", "origin-view-section");
-      const connectionDiv = connectionSection.createChild("div", "origin-view-section-title");
-      connectionDiv.textContent = i18nString3(UIStrings3.connection);
-      UI2.ARIAUtils.markAsHeading(connectionDiv, 2);
-      let table = new SecurityDetailsTable();
-      connectionSection.appendChild(table.element());
-      table.addRow(i18nString3(UIStrings3.protocol), originState.securityDetails.protocol);
-      if (originState.securityDetails.keyExchange && originState.securityDetails.keyExchangeGroup) {
-        table.addRow(i18nString3(UIStrings3.keyExchange), originState.securityDetails.keyExchange + " with " + originState.securityDetails.keyExchangeGroup);
-      } else if (originState.securityDetails.keyExchange) {
-        table.addRow(i18nString3(UIStrings3.keyExchange), originState.securityDetails.keyExchange);
-      } else if (originState.securityDetails.keyExchangeGroup) {
-        table.addRow(i18nString3(UIStrings3.keyExchange), originState.securityDetails.keyExchangeGroup);
-      }
-      if (originState.securityDetails.serverSignatureAlgorithm) {
-        let sigString = SignatureSchemeStrings.get(originState.securityDetails.serverSignatureAlgorithm);
-        sigString ??= i18nString3(UIStrings3.unknownField) + " (" + originState.securityDetails.serverSignatureAlgorithm + ")";
-        table.addRow(i18nString3(UIStrings3.serverSignature), sigString);
-      }
-      table.addRow(i18nString3(UIStrings3.cipher), originState.securityDetails.cipher + (originState.securityDetails.mac ? " with " + originState.securityDetails.mac : ""));
-      if (originState.securityDetails.encryptedClientHello) {
-        table.addRow(i18nString3(UIStrings3.encryptedClientHello), i18nString3(UIStrings3.enabled));
-      }
+      const connectionSection = this.element.createChild("div", "origin-view-section connection-section");
+      render2(renderConnectionSection(originState.securityDetails), connectionSection);
       const certificateSection = this.element.createChild("div", "origin-view-section");
       const certificateDiv = certificateSection.createChild("div", "origin-view-section-title");
       certificateDiv.textContent = i18nString3(UIStrings3.certificate);
@@ -2172,7 +2172,7 @@ var SecurityOriginView = class extends UI2.Widget.VBox {
       const sanDiv = this.#createSanDiv(originState.securityDetails.sanList);
       const validFromString = new Date(1e3 * originState.securityDetails.validFrom).toUTCString();
       const validUntilString = new Date(1e3 * originState.securityDetails.validTo).toUTCString();
-      table = new SecurityDetailsTable();
+      const table = new SecurityDetailsTable();
       certificateSection.appendChild(table.element());
       table.addRow(i18nString3(UIStrings3.subject), originState.securityDetails.subjectName);
       table.addRow(i18n5.i18n.lockedString("SAN"), sanDiv);

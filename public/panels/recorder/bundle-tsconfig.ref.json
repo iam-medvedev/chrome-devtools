@@ -1,0 +1,1 @@
+{"compilerOptions":{"composite":true,"declaration":true,"emitDeclarationOnly":true,"skipLibCheck":true,"rootDir":"../../../../../../front_end/panels/recorder","outDir":".","declarationDir":"."},"files":["../../../../../../front_end/panels/recorder/recorder.ts"],"references":[{"path":"./css_files-tsconfig.ref.json"},{"path":"./recorder-tsconfig.ref.json"}]}

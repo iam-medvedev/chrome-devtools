@@ -7,11 +7,12 @@ var __export = (target, all) => {
 // gen/front_end/panels/recorder/extensions/ExtensionManager.js
 var ExtensionManager_exports = {};
 __export(ExtensionManager_exports, {
+  Events: () => Events,
   ExtensionManager: () => ExtensionManager
 });
-import * as Common from "./../../../core/common/common.js";
-import * as Extensions from "./../../../models/extensions/extensions.js";
-import * as PanelCommon from "./../../common/common.js";
+import * as Common from "../../../core/common/common.js";
+import * as Extensions from "../../../models/extensions/extensions.js";
+import * as PanelCommon from "../../common/common.js";
 var instance = null;
 var ExtensionManager = class _ExtensionManager extends Common.ObjectWrapper.ObjectWrapper {
   static instance() {
@@ -61,6 +62,10 @@ var ExtensionManager = class _ExtensionManager extends Common.ObjectWrapper.Obje
     }
   };
 };
+var Events;
+(function(Events2) {
+  Events2["EXTENSIONS_UPDATED"] = "extensionsUpdated";
+})(Events || (Events = {}));
 export {
   ExtensionManager_exports as ExtensionManager
 };

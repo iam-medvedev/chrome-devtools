@@ -6,6 +6,7 @@
     "checkJs": true,
     "composite": true,
     "declaration": true,
+    "disableSourceOfProjectReferenceRedirect": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
     "inlineSources": true,
@@ -26,6 +27,7 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "outDir": ".",
+    "preserveConstEnums": true,
     "rootDir": "../../../../../../../front_end/panels/recorder/converters",
     "skipLibCheck": true,
     "sourceMap": true,
@@ -51,13 +53,13 @@
   ],
   "references": [
     {
-      "path": "./bundle-tsconfig.json"
+      "path": "./bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../../testing/testing-tsconfig.json"
+      "path": "../../../testing/testing-tsconfig.ref.json"
     },
     {
-      "path": "../models/bundle-tsconfig.json"
+      "path": "../models/bundle-tsconfig.ref.json"
     }
   ]
 }

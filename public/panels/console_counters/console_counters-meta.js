@@ -1,5 +1,5 @@
 // gen/front_end/panels/console_counters/console_counters-meta.prebundle.js
-import * as UI from "./../../ui/legacy/legacy.js";
+import * as UI from "../../ui/legacy/legacy.js";
 var loadedConsoleCountersModule;
 async function loadConsoleCountersModule() {
   if (!loadedConsoleCountersModule) {

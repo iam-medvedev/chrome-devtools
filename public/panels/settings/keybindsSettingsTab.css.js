@@ -131,7 +131,7 @@ button.text-button {
 }
 
 .keybinds-list-text input {
-  margin: 0 2px;
+  margin: 0 var(--sys-size-2);
 }
 
 .keybinds-set-select {
@@ -160,7 +160,7 @@ button.text-button {
   align-self: flex-start;
   min-height: 2em;
   line-height: 2em;
-  margin-bottom: 4px;
+  margin-bottom: var(--sys-size-3);
 }
 
 .keybinds-footer {

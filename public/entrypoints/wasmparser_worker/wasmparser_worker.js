@@ -9,8 +9,8 @@ var WasmParserWorker_exports = {};
 __export(WasmParserWorker_exports, {
   dissambleWASM: () => dissambleWASM
 });
-import * as Common from "./../../core/common/common.js";
-import * as WasmParser from "./../../third_party/wasmparser/wasmparser.js";
+import * as Common from "../../core/common/common.js";
+import * as WasmParser from "../../third_party/wasmparser/wasmparser.js";
 function dissambleWASM(params, postMessage) {
   try {
     const dataBuffer = Common.Base64.decode(params.content);

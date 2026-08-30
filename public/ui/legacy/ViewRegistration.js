@@ -5,36 +5,55 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Root from '../../core/root/root.js';
 const UIStrings = {
     /**
-     * @description Badge label for an entry in the Quick Open menu. Selecting the entry opens the 'Elements' panel.
+     * @description Badge label for an entry in the command menu that opens the Elements panel.
      */
     elements: 'Elements',
     /**
-     * @description Badge label for an entry in the Quick Open menu. Selecting the entry opens the 'Drawer' panel.
+     * @description Badge label for an entry in the command menu that opens the drawer.
      */
     drawer: 'Drawer',
     /**
-     * @description Badge label for an entry in the Quick Open menu. Selecting the entry opens the 'Drawer sidebar' panel.
+     * @description Badge label for an entry in the command menu that opens the drawer sidebar.
      */
     drawer_sidebar: 'Drawer sidebar',
     /**
-     * @description Badge label for an entry in the Quick Open menu. Selecting the entry opens the 'Panel'.
+     * @description Badge label for an entry in the command menu that opens a panel.
      */
     panel: 'Panel',
     /**
-     * @description Badge label for an entry in the Quick Open menu. Selecting the entry opens the 'Network' panel.
+     * @description Badge label for an entry in the command menu that opens the Network panel.
      */
     network: 'Network',
     /**
-     * @description Badge label for an entry in the Quick Open menu. Selecting the entry opens the 'Settings' panel.
+     * @description Badge label for an entry in the command menu that opens the Settings panel.
      */
     settings: 'Settings',
     /**
-     * @description Badge label for an entry in the Quick Open menu. Selecting the entry opens the 'Sources' panel.
+     * @description Badge label for an entry in the command menu that opens the Sources panel.
      */
     sources: 'Sources',
 };
 const str_ = i18n.i18n.registerUIStrings('ui/legacy/ViewRegistration.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+export var ViewPersistence;
+(function (ViewPersistence) {
+    ViewPersistence["CLOSEABLE"] = "closeable";
+    ViewPersistence["PERMANENT"] = "permanent";
+    ViewPersistence["TRANSIENT"] = "transient";
+})(ViewPersistence || (ViewPersistence = {}));
+export var ViewLocationValues;
+(function (ViewLocationValues) {
+    ViewLocationValues["PANEL"] = "panel";
+    ViewLocationValues["SETTINGS_VIEW"] = "settings-view";
+    ViewLocationValues["ELEMENTS_SIDEBAR"] = "elements-sidebar";
+    ViewLocationValues["SOURCES_SIDEBAR_BOTTOM"] = "sources.sidebar-bottom";
+    ViewLocationValues["NAVIGATOR_VIEW"] = "navigator-view";
+    ViewLocationValues["DRAWER_VIEW"] = "drawer-view";
+    ViewLocationValues["DRAWER_SIDEBAR"] = "drawer-sidebar";
+    ViewLocationValues["NETWORK_SIDEBAR"] = "network-sidebar";
+    ViewLocationValues["SOURCES_SIDEBAR_TOP"] = "sources.sidebar-top";
+    ViewLocationValues["SOURCES_SIDEBAR_TABS"] = "sources.sidebar-tabs";
+})(ViewLocationValues || (ViewLocationValues = {}));
 const registeredViewExtensions = new Map();
 export function registerViewExtension(registration) {
     const viewId = registration.id;
@@ -69,6 +88,17 @@ export function resetViewRegistration() {
     registeredLocationResolvers.length = 0;
     viewLocationNameSet.clear();
 }
+export var ViewLocationCategory;
+(function (ViewLocationCategory) {
+    ViewLocationCategory["NONE"] = "";
+    ViewLocationCategory["ELEMENTS"] = "ELEMENTS";
+    ViewLocationCategory["DRAWER"] = "DRAWER";
+    ViewLocationCategory["DRAWER_SIDEBAR"] = "DRAWER_SIDEBAR";
+    ViewLocationCategory["PANEL"] = "PANEL";
+    ViewLocationCategory["NETWORK"] = "NETWORK";
+    ViewLocationCategory["SETTINGS"] = "SETTINGS";
+    ViewLocationCategory["SOURCES"] = "SOURCES";
+})(ViewLocationCategory || (ViewLocationCategory = {}));
 export function getLocalizedViewLocationCategory(category) {
     switch (category) {
         case "ELEMENTS" /* ViewLocationCategory.ELEMENTS */:

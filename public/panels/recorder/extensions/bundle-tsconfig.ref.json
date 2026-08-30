@@ -1,0 +1,1 @@
+{"compilerOptions":{"composite":true,"declaration":true,"emitDeclarationOnly":true,"skipLibCheck":true,"rootDir":"../../../../../../../front_end/panels/recorder/extensions","outDir":".","declarationDir":"."},"files":["../../../../../../../front_end/panels/recorder/extensions/extensions.ts"],"references":[{"path":"./extensions-tsconfig.ref.json"}]}

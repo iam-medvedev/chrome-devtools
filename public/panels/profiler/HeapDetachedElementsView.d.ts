@@ -17,15 +17,7 @@ export declare class DetachedElementsProfileView extends UI.View.SimpleView impl
     populateElementsGrid(detachedElements: Protocol.DOM.DetachedElementInfo[] | null): void;
     toolbarItems(): Promise<UI.Toolbar.ToolbarItem[]>;
 }
-declare const DetachedElementsProfileType_base: (new (...args: any[]) => {
-    __events: Common.ObjectWrapper.ObjectWrapper<DetachedElementsProfileType.EventTypes>;
-    addEventListener<T extends keyof DetachedElementsProfileType.EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<DetachedElementsProfileType.EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<DetachedElementsProfileType.EventTypes, T>;
-    once<T extends keyof DetachedElementsProfileType.EventTypes>(eventType: T): Promise<DetachedElementsProfileType.EventTypes[T]>;
-    removeEventListener<T extends keyof DetachedElementsProfileType.EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<DetachedElementsProfileType.EventTypes[T], any>) => void, thisObject?: Object): void;
-    hasEventListeners(eventType: keyof DetachedElementsProfileType.EventTypes): boolean;
-    dispatchEventToListeners<T extends keyof DetachedElementsProfileType.EventTypes>(eventType: import("../../core/platform/TypescriptUtilities.js").NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<DetachedElementsProfileType.EventTypes, T>): void;
-    dispatchDOMEvent?(event: Event): void;
-}) & typeof ProfileType;
+declare const DetachedElementsProfileType_base: import("../../core/platform/Constructor.js").Constructor<Common.EventTarget.EventTarget<DetachedElementsProfileType.EventTypes>, any[]> & typeof ProfileType;
 export declare class DetachedElementsProfileType extends DetachedElementsProfileType_base {
     constructor(typeId?: string, description?: string);
     profileBeingRecorded(): DetachedElementsProfileHeader | null;

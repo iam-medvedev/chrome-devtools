@@ -599,4 +599,9 @@ export class RecordingSession extends Common.ObjectWrapper.ObjectWrapper {
         ]);
     }
 }
+export var Events;
+(function (Events) {
+    Events["RECORDING_UPDATED"] = "recordingupdated";
+    Events["RECORDING_STOPPED"] = "recordingstopped";
+})(Events || (Events = {}));
 //# sourceMappingURL=RecordingSession.js.map

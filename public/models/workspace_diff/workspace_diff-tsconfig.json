@@ -1,13 +1,14 @@
 {
-  "checkJs": true,
   "compilerOptions": {
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "checkJs": true,
-    "composite": true,
-    "declaration": true,
+    "composite": false,
+    "declaration": false,
+    "disableSourceOfProjectReferenceRedirect": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
+    "incremental": false,
     "inlineSources": true,
     "lib": [
       "dom",
@@ -19,21 +20,24 @@
       "ESNext.Array"
     ],
     "module": "esnext",
+    "moduleResolution": "bundler",
     "noEmitOnError": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
     "noImplicitReturns": true,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
     "outDir": ".",
+    "preserveConstEnums": true,
     "rootDir": "../../../../../../front_end/models/workspace_diff",
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
     "target": "ES2023",
-    "tsBuildInfoFile": "workspace_diff-tsconfig.json.tsbuildinfo",
-    "typeRoots": [],
-    "types": [],
+    "typeRoots": [
+
+    ],
+    "types": [
+
+    ],
     "useUnknownInCatchVariables": false
   },
   "files": [
@@ -44,28 +48,28 @@
   ],
   "references": [
     {
-      "path": "../../core/common/bundle-tsconfig.json"
+      "path": "../../core/common/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../core/host/bundle-tsconfig.json"
+      "path": "../../core/host/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../core/root/bundle-tsconfig.json"
+      "path": "../../core/root/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../core/text_utils/bundle-tsconfig.json"
+      "path": "../../core/text_utils/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../formatter/bundle-tsconfig.json"
+      "path": "../formatter/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../persistence/bundle-tsconfig.json"
+      "path": "../persistence/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../workspace/bundle-tsconfig.json"
+      "path": "../workspace/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../third_party/diff/bundle-tsconfig.json"
+      "path": "../../third_party/diff/bundle-tsconfig.ref.json"
     }
   ]
 }

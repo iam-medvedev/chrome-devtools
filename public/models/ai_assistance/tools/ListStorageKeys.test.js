@@ -38,15 +38,15 @@ describe('ListStorageKeysTool', () => {
         sinon.stub(mockStorage, 'isLocalStorage').get(() => true);
         mockStorage.getItems.resolves([['key1', 'value1'], ['key2', 'value2']]);
         activeStorages = [mockStorage];
-        const setLoggingEnabledStub = sinon.stub();
+        const disableLoggingStub = sinon.stub();
         const context = {
             conversationContext: null,
             getEstablishedOrigin: sinon.stub().returns('https://example.com'),
-            setLoggingEnabled: setLoggingEnabledStub,
+            disableLogging: disableLoggingStub,
         };
         const tool = new AiAssistance.ListStorageKeys.ListStorageKeysTool();
         const response = await tool.handler({ type: 'localStorage', origins: ['https://example.com'] }, context);
-        sinon.assert.calledWith(setLoggingEnabledStub, false);
+        sinon.assert.calledOnce(disableLoggingStub);
         assertIsResult(response);
         assert.deepEqual(response.result.storageKeysByOrigin, {
             'https://example.com': {
@@ -69,7 +69,7 @@ describe('ListStorageKeysTool', () => {
         const context = {
             conversationContext: null,
             getEstablishedOrigin: sinon.stub().returns('https://example.com'),
-            setLoggingEnabled: sinon.stub(),
+            disableLogging: sinon.stub(),
         };
         const tool = new AiAssistance.ListStorageKeys.ListStorageKeysTool();
         const response = await tool.handler({ type: 'sessionStorage', origins: ['https://example.com'] }, context);
@@ -99,7 +99,7 @@ describe('ListStorageKeysTool', () => {
         const context = {
             conversationContext: null,
             getEstablishedOrigin: sinon.stub().returns('https://example.com'),
-            setLoggingEnabled: sinon.stub(),
+            disableLogging: sinon.stub(),
         };
         const tool = new AiAssistance.ListStorageKeys.ListStorageKeysTool();
         const response = await tool.handler({ type: 'localStorage', origins: ['https://example.com'], storageKey: 'https://example.com^1' }, context);
@@ -120,7 +120,7 @@ describe('ListStorageKeysTool', () => {
         const context = {
             conversationContext: null,
             getEstablishedOrigin: sinon.stub().returns(''),
-            setLoggingEnabled: sinon.stub(),
+            disableLogging: sinon.stub(),
         };
         const tool = new AiAssistance.ListStorageKeys.ListStorageKeysTool();
         const response = await tool.handler({ type: 'localStorage', origins: ['https://example.com'] }, context);
@@ -132,7 +132,7 @@ describe('ListStorageKeysTool', () => {
         const context = {
             conversationContext: null,
             getEstablishedOrigin: sinon.stub().returns('https://example.com'),
-            setLoggingEnabled: sinon.stub(),
+            disableLogging: sinon.stub(),
         };
         const tool = new AiAssistance.ListStorageKeys.ListStorageKeysTool();
         const response = await tool.handler({ type: 'localStorage', origins: ['https://example.com'] }, context);
@@ -149,7 +149,7 @@ describe('ListStorageKeysTool', () => {
         const context = {
             conversationContext: null,
             getEstablishedOrigin: sinon.stub().returns('https://example.com'),
-            setLoggingEnabled: sinon.stub(),
+            disableLogging: sinon.stub(),
         };
         const tool = new AiAssistance.ListStorageKeys.ListStorageKeysTool();
         const response = await tool.handler({ type: 'localStorage', origins: ['https://example.com', 'https://blocked-origin.com'] }, context);
@@ -185,7 +185,7 @@ describe('ListStorageKeysTool', () => {
         const context = {
             conversationContext: null,
             getEstablishedOrigin: sinon.stub().returns('https://example.com'),
-            setLoggingEnabled: sinon.stub(),
+            disableLogging: sinon.stub(),
         };
         const tool = new AiAssistance.ListStorageKeys.ListStorageKeysTool();
         const response = await tool.handler({ type: 'localStorage', origins: ['https://example.com'] }, context);
@@ -206,18 +206,24 @@ describe('ListStorageKeysTool', () => {
         const context = {
             conversationContext: null,
             getEstablishedOrigin: sinon.stub().returns('https://example.com'),
-            setLoggingEnabled: sinon.stub(),
+            disableLogging: sinon.stub(),
         };
         const tool = new AiAssistance.ListStorageKeys.ListStorageKeysTool();
         const response = await tool.handler({ type: 'localStorage', origins: ['https://blocked-domain.com'] }, context);
         assertIsError(response);
         assert.strictEqual(response.error, 'No valid origins found.');
     });
-    it('returns correct displayInfoFromArgs', () => {
+    it('returns correct displayInfoFromArgs for localStorage', () => {
         const tool = new AiAssistance.ListStorageKeys.ListStorageKeysTool();
         const info = tool.displayInfoFromArgs({ type: 'localStorage', origins: ['https://example.com'] });
-        assert.strictEqual(info.title, 'Reading storage keys');
+        assert.strictEqual(info.title, 'Reading local storage keys');
         assert.strictEqual(info.action, 'listStorageKeys(\'localStorage\', ["https://example.com"])');
+    });
+    it('returns correct displayInfoFromArgs for sessionStorage', () => {
+        const tool = new AiAssistance.ListStorageKeys.ListStorageKeysTool();
+        const info = tool.displayInfoFromArgs({ type: 'sessionStorage', origins: ['https://example.com'] });
+        assert.strictEqual(info.title, 'Reading session storage keys');
+        assert.strictEqual(info.action, 'listStorageKeys(\'sessionStorage\', ["https://example.com"])');
     });
     it('normalizes origins with trailing slashes', async () => {
         setupPrimaryTarget('https://example.com');
@@ -229,7 +235,7 @@ describe('ListStorageKeysTool', () => {
         const context = {
             conversationContext: null,
             getEstablishedOrigin: sinon.stub().returns('https://example.com'),
-            setLoggingEnabled: sinon.stub(),
+            disableLogging: sinon.stub(),
         };
         const tool = new AiAssistance.ListStorageKeys.ListStorageKeysTool();
         const response = await tool.handler({ type: 'localStorage', origins: ['https://example.com/'] }, context);
@@ -255,7 +261,7 @@ describe('ListStorageKeysTool', () => {
         const context = {
             conversationContext: null,
             getEstablishedOrigin: sinon.stub().returns('https://example.com'),
-            setLoggingEnabled: sinon.stub(),
+            disableLogging: sinon.stub(),
         };
         const tool = new AiAssistance.ListStorageKeys.ListStorageKeysTool();
         const response = await tool.handler({ type: 'localStorage', origins: [] }, context);

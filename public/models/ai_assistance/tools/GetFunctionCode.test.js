@@ -27,9 +27,10 @@ describe('GetFunctionCodeTool', () => {
         assert.strictEqual(displayInfo.title, 'Looking up function code');
         assert.strictEqual(displayInfo.action, 'getFunctionCode(\'https://example.com/app.js\', 10, 5)');
     });
-    it('returns error when conversationContext is not available', async () => {
+    it('returns error when PerformanceTraceContext is not available', async () => {
         const context = {
             conversationContext: null,
+            getPerformanceTraceContext: () => null,
         };
         const tool = new GetFunctionCodeTool();
         const result = await tool.handler({ scriptUrl: 'https://example.com/app.js', line: 10, column: 5 }, context);
@@ -42,7 +43,8 @@ describe('GetFunctionCodeTool', () => {
         const tracker = new Tracing.FreshRecording.Tracker();
         const traceContext = AiAssistance.PerformanceTraceContext.PerformanceTraceContext.fromParsedTrace(parsedTrace, universe.targetManager, tracker, universe.debuggerWorkspaceBinding);
         const capabilities = {
-            conversationContext: traceContext,
+            conversationContext: null,
+            getPerformanceTraceContext: () => traceContext,
         };
         const tool = new GetFunctionCodeTool();
         const result = await tool.handler({ scriptUrl: 'https://example.com/app.js', line: 10, column: 5 }, capabilities);
@@ -55,7 +57,8 @@ describe('GetFunctionCodeTool', () => {
         tracker.registerFreshRecording(parsedTrace);
         const traceContext = AiAssistance.PerformanceTraceContext.PerformanceTraceContext.fromParsedTrace(parsedTrace, universe.targetManager, tracker, universe.debuggerWorkspaceBinding);
         const capabilities = {
-            conversationContext: traceContext,
+            conversationContext: null,
+            getPerformanceTraceContext: () => traceContext,
         };
         const tool = new GetFunctionCodeTool();
         const result = await tool.handler({ scriptUrl: 'https://cross-origin.com/app.js', line: 10, column: 5 }, capabilities);
@@ -68,7 +71,8 @@ describe('GetFunctionCodeTool', () => {
         tracker.registerFreshRecording(parsedTrace);
         const traceContext = AiAssistance.PerformanceTraceContext.PerformanceTraceContext.fromParsedTrace(parsedTrace, universe.targetManager, tracker, universe.debuggerWorkspaceBinding);
         const capabilities = {
-            conversationContext: traceContext,
+            conversationContext: null,
+            getPerformanceTraceContext: () => traceContext,
         };
         const tool = new GetFunctionCodeTool();
         const result = await tool.handler({ scriptUrl: '', line: 10, column: 5 }, capabilities);
@@ -81,7 +85,8 @@ describe('GetFunctionCodeTool', () => {
         tracker.registerFreshRecording(parsedTrace);
         const traceContext = AiAssistance.PerformanceTraceContext.PerformanceTraceContext.fromParsedTrace(parsedTrace, universe.targetManager, tracker, universe.debuggerWorkspaceBinding);
         const capabilities = {
-            conversationContext: traceContext,
+            conversationContext: null,
+            getPerformanceTraceContext: () => traceContext,
         };
         const tool = new GetFunctionCodeTool();
         const result = await tool.handler({ scriptUrl: 'https://example.com/app.js', line: undefined, column: 5 }, capabilities);
@@ -94,7 +99,8 @@ describe('GetFunctionCodeTool', () => {
         tracker.registerFreshRecording(parsedTrace);
         const traceContext = AiAssistance.PerformanceTraceContext.PerformanceTraceContext.fromParsedTrace(parsedTrace, universe.targetManager, tracker, universe.debuggerWorkspaceBinding);
         const capabilities = {
-            conversationContext: traceContext,
+            conversationContext: null,
+            getPerformanceTraceContext: () => traceContext,
         };
         const tool = new GetFunctionCodeTool();
         const result = await tool.handler({ scriptUrl: 'https://example.com/app.js', line: 10, column: undefined }, capabilities);
@@ -110,7 +116,8 @@ describe('GetFunctionCodeTool', () => {
             resolveFunctionCodeAtLocation: sinon.stub().resolves(null),
         });
         const capabilities = {
-            conversationContext: traceContext,
+            conversationContext: null,
+            getPerformanceTraceContext: () => traceContext,
         };
         const tool = new GetFunctionCodeTool();
         const result = await tool.handler({ scriptUrl: 'https://example.com/app.js', line: 10, column: 5 }, capabilities);
@@ -134,7 +141,8 @@ describe('GetFunctionCodeTool', () => {
             formatFunctionCode: sinon.stub().returns('mock formatted function code with annotations'),
         });
         const capabilities = {
-            conversationContext: traceContext,
+            conversationContext: null,
+            getPerformanceTraceContext: () => traceContext,
         };
         const tool = new GetFunctionCodeTool();
         const result = await tool.handler({ scriptUrl: 'https://example.com/app.js', line: 10, column: 5 }, capabilities);

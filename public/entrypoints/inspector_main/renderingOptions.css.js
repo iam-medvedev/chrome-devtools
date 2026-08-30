@@ -10,7 +10,7 @@ export default `/*
  */
 
 :host {
-  padding: 12px;
+  padding: var(--sys-size-6);
 }
 
 devtools-checkbox {
@@ -19,7 +19,7 @@ devtools-checkbox {
 }
 
 .panel-section-separator {
-  height: 1px;
+  height: var(--sys-size-1);
   margin-bottom: 10px;
   background: var(--sys-color-divider);
   flex: none;
@@ -30,7 +30,7 @@ devtools-checkbox {
 }
 
 .chrome-select-label {
-  margin-bottom: 16px;
+  margin-bottom: var(--sys-size-8);
 }
 
 /*# sourceURL=${import.meta.resolve('./renderingOptions.css')} */`;

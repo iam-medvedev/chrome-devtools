@@ -182,8 +182,11 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
     initialUpdateCompleted = false;
     hasMatchedStyles = false;
     sectionBlocks = [];
+    #allKnownBlocks = new Map();
+    #lastNode = null;
     idleCallbackManager = null;
     needsForceUpdate = false;
+    isSuppressingResets = false;
     resizeThrottler = new Common.Throttler.Throttler(100);
     resetUpdateThrottler = new Common.Throttler.Throttler(500);
     computedStyleUpdateThrottler = new Common.Throttler.Throttler(500);
@@ -198,6 +201,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
     aiCodeCompletionProvider;
     #aiCodeCompletionSummaryToolbarContainer;
     #aiCodeCompletionSummaryToolbar;
+    #aiCodeCompletionEnabled = false;
     #shouldRenderLazily = false;
     #lazyRenderObserver;
     #lazyRenderCallbacks = new WeakMap();
@@ -211,6 +215,9 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         Common.Settings.Settings.instance()
             .moduleSetting('collapse-non-contributing-css-rules')
             .addChangeListener(this.updateCollapsedSectionsSetting, this);
+        Common.Settings.Settings.instance()
+            .moduleSetting('show-inactive-css-rules')
+            .addChangeListener(this.requestUpdate, this);
         this.toolbarPaneElement = this.createStylesSidebarToolbar();
         this.noMatchesElement = this.contentElement.createChild('div', 'gray-info-message hidden');
         this.noMatchesElement.textContent = i18nString(UIStrings.noMatchingSelectorOrStyle);
@@ -226,16 +233,17 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         UI.Context.Context.instance().addFlavorChangeListener(SDK.DOMModel.DOMNode, this.forceUpdate, this);
         this.contentElement.addEventListener('copy', this.clipboardCopy.bind(this));
         this.boundOnScroll = this.onScroll.bind(this);
-        this.imagePreviewPopover = new ImagePreviewPopover(this.contentElement, event => {
-            const link = event.composedPath()[0];
-            if (link instanceof Element) {
-                return link;
-            }
-            return null;
-        }, async () => {
-            const features = await Components.ImagePreview.loadPrecomputedFeatures(this.node());
-            return features;
-        });
+        this.imagePreviewPopover =
+            new ImagePreviewPopover(this.contentElement, event => {
+                const link = event.composedPath()[0];
+                if (link instanceof Element) {
+                    return link;
+                }
+                return null;
+            }, async () => {
+                const features = await Components.ImagePreview.loadPrecomputedFeatures(this.node());
+                return features;
+            });
         UI.ViewManager.ViewManager.instance().addEventListener("ViewVisibilityChanged" /* UI.ViewManager.Events.VIEW_VISIBILITY_CHANGED */, event => {
             if (event.data.revealedViewId === 'animations' || event.data.hiddenViewId === 'animations') {
                 this.#scheduleResetUpdateIfNotEditing();
@@ -246,9 +254,11 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
                 completionContext: {},
                 generationContext: {},
                 onFeatureEnabled: () => {
+                    this.#aiCodeCompletionEnabled = true;
                     this.#createAiCodeCompletionSummaryToolbar();
                 },
                 onFeatureDisabled: () => {
+                    this.#aiCodeCompletionEnabled = false;
                     this.#cleanupAiCodeCompletion();
                 },
                 onSuggestionAccepted: this.#onAiCodeCompletionSuggestionAccepted.bind(this),
@@ -276,6 +286,9 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         return this.#swatchPopoverHelper;
     }
     setUserOperation(userOperation) {
+        if (userOperation) {
+            this.isSuppressingResets = false;
+        }
         this.userOperation = userOperation;
     }
     revealProperty(cssProperty) {
@@ -437,7 +450,8 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
             if (this.lastFilterChange) {
                 const stillTyping = Date.now() - this.lastFilterChange < FILTER_IDLE_PERIOD;
                 if (!stillTyping) {
-                    UI.ARIAUtils.LiveAnnouncer.alert(this.visibleSections ? i18nString(UIStrings.visibleSelectors, { n: this.visibleSections }) :
+                    UI.ARIAUtils.LiveAnnouncer.alert(this.visibleSections ?
+                        i18nString(UIStrings.visibleSelectors, { n: this.visibleSections }) :
                         i18nString(UIStrings.noMatchingSelectorOrStyle));
                 }
             }
@@ -568,6 +582,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         return Promise.resolve();
     }
     resetCache() {
+        this.isSuppressingResets = false;
         const cssModel = this.cssModel();
         if (cssModel) {
             cssModel.discardCachedMatchedCascade();
@@ -588,6 +603,9 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         }
     }
     setEditingStyle(editing) {
+        if (editing) {
+            this.isSuppressingResets = false;
+        }
         if (this.isEditingStyle === editing) {
             return;
         }
@@ -651,8 +669,14 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         this.resetCache();
         this.requestUpdate();
     }
+    suppressResets() {
+        this.isSuppressingResets = true;
+    }
     #scheduleResetUpdateIfNotEditing() {
         this.scheduleResetUpdateIfNotEditingCalledForTest();
+        if (this.isSuppressingResets) {
+            return;
+        }
         // Don't schedule if editing; the edit completion will handle the update.
         if (this.userOperation || this.isEditingStyle) {
             return;
@@ -665,7 +689,8 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
     }
     #hasAnimatedStyles(animatedStyles) {
         return Boolean(animatedStyles.animationStyles?.length || animatedStyles.transitionsStyle?.cssProperties.length ||
-            animatedStyles.inherited?.some(inherited => inherited.animationStyles?.length || inherited.transitionsStyle?.cssProperties.length));
+            animatedStyles.inherited?.some(inherited => inherited.animationStyles?.length ||
+                inherited.transitionsStyle?.cssProperties.length));
     }
     async #updateAnimatedStyles() {
         if (!this.matchedStyles) {
@@ -681,8 +706,9 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         }
         if (!this.#hasAnimatedStyles(animatedStyles)) {
             // A computed style change that doesn't correspond to any animation is
-            // likely to be a change in the matched styles. In this case, we should
-            // update the matched styles.
+            // likely to be a change in the matched styles, which is already handled
+            // by CSSModelChanged events. We still schedule a reset update here for
+            // DevTools garbage collection purposes.
             this.#scheduleResetUpdateIfNotEditing();
             return;
         }
@@ -814,8 +840,13 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         const focusedIndex = this.focusedSectionIndex();
         this.#elementsForSyncViewportCheck = [];
         this.linkifier.reset();
-        const prevSections = this.sectionBlocks.map(block => block.sections).flat();
         const node = this.node();
+        if (this.#lastNode !== node) {
+            // Clear inactive styles when a different node is selected.
+            this.#allKnownBlocks.clear();
+            this.#lastNode = node;
+        }
+        const prevSections = this.sectionBlocks.map(block => block.sections).flat();
         this.hasMatchedStyles = matchedStyles !== null && node !== null;
         if (!this.hasMatchedStyles) {
             this.sectionBlocks = [];
@@ -889,6 +920,34 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
     setMatchedStylesForTest(matchedStyles) {
         this.matchedStyles = matchedStyles;
     }
+    setNodeForTest(node) {
+        if (this.#lastNode !== node) {
+            this.#allKnownBlocks.clear();
+            this.#lastNode = node;
+        }
+    }
+    getStyleId(style) {
+        if (style.range) {
+            return `${style.styleSheetId || ''}:${style.range.toString()}`;
+        }
+        if (style.type === SDK.CSSStyleDeclaration.Type.Inline || style.type === SDK.CSSStyleDeclaration.Type.Attributes) {
+            return style.type;
+        }
+        if (style.type === SDK.CSSStyleDeclaration.Type.Animation) {
+            return `${style.type}:${style.animationName() || ''}:${style.cssText}`;
+        }
+        const parentRule = style.parentRule;
+        if (parentRule instanceof SDK.CSSRule.CSSStyleRule) {
+            return `${style.type}:${parentRule.selectorText()}`;
+        }
+        if (parentRule instanceof SDK.CSSRule.CSSKeyframeRule) {
+            return `${style.type}:${parentRule.parentRuleName()}:${parentRule.key().text}`;
+        }
+        if (parentRule instanceof SDK.CSSRule.CSSPropertyRule) {
+            return `${style.type}:${parentRule.propertyName().text}`;
+        }
+        return `${style.type}:${style.cssText}`;
+    }
     rebuildSectionsForMatchedStyleRulesForTest(matchedStyles, computedStyles, parentsComputedStyles, computedStyleExtraFields) {
         return this.rebuildSectionsForMatchedStyleRules(undefined, matchedStyles, computedStyles, parentsComputedStyles, computedStyleExtraFields);
     }
@@ -900,7 +959,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         const blocks = [new SectionBlock(null)];
         let sectionIdx = 0;
         let lastParentNode = null;
-        let lastLayerParent;
+        let lastLayerParent = blocks[0];
         let lastLayers = null;
         let sawLayers = false;
         const addLayerSeparator = (style) => {
@@ -927,12 +986,14 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         }
         // Always render eagerly for layout tests.
         this.#shouldRenderLazily = !Host.InspectorFrontendHost.isUnderTest() && totalProperties > LAZY_RENDER_THRESHOLD;
-        for (const style of matchedStyles.nodeStyles()) {
+        const activeStyles = matchedStyles.nodeStyles().filter(style => {
             const isTransitionOrAnimationStyle = style.type === SDK.CSSStyleDeclaration.Type.Transition ||
                 style.type === SDK.CSSStyleDeclaration.Type.Animation;
-            if (isTransitionOrAnimationStyle && cssAnimationsOnlyWhenAnimationsTabOpen && !animationsPanelVisible) {
-                continue;
-            }
+            return !isTransitionOrAnimationStyle || animationsPanelVisible || !cssAnimationsOnlyWhenAnimationsTabOpen;
+        });
+        for (const style of activeStyles) {
+            const isTransitionOrAnimationStyle = style.type === SDK.CSSStyleDeclaration.Type.Transition ||
+                style.type === SDK.CSSStyleDeclaration.Type.Animation;
             const parentNode = matchedStyles.isInherited(style) ? matchedStyles.nodeForStyle(style) : null;
             if (parentNode && parentNode !== lastParentNode) {
                 lastParentNode = parentNode;
@@ -1092,7 +1153,42 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
             ElementsPanel.instance().showToolbarPane(null, LayersWidget.ButtonProvider.instance().item());
         }
         await this.idleCallbackManager.awaitDone();
-        return blocks;
+        const showInactiveCSSRules = Common.Settings.Settings.instance().moduleSetting('show-inactive-css-rules').get();
+        if (!showInactiveCSSRules) {
+            return blocks;
+        }
+        return this.mergeInactiveStyles(blocks);
+    }
+    computeBlockIds(blocks) {
+        let nullBlockCounter = 0;
+        const blockIds = new Map();
+        for (const block of blocks) {
+            blockIds.set(block, block.titleElement()?.textContent || `MAIN_BLOCK_NULL_${nullBlockCounter++}`);
+        }
+        return blockIds;
+    }
+    mergeInactiveStyles(blocks) {
+        const blockIds = this.computeBlockIds(blocks);
+        for (const [id, block] of this.#allKnownBlocks) {
+            if (!blockIds.has(block)) {
+                blockIds.set(block, id);
+            }
+        }
+        const getBlockId = (block) => blockIds.get(block) || 'UNKNOWN_BLOCK';
+        for (const block of blocks) {
+            const bid = getBlockId(block);
+            const knownBlock = this.#allKnownBlocks.get(bid);
+            if (knownBlock) {
+                block.sections = mergeOrderedItems(knownBlock.sections, block.sections, section => this.getStyleId(section.styleInternal), section => section.setInactive(true));
+            }
+        }
+        const oldBlocks = Array.from(this.#allKnownBlocks.values());
+        const finalBlocks = mergeOrderedItems(oldBlocks, blocks, getBlockId, block => block.sections.forEach(section => section.setInactive(true)));
+        this.#allKnownBlocks.clear();
+        for (const block of finalBlocks) {
+            this.#allKnownBlocks.set(getBlockId(block), block);
+        }
+        return finalBlocks;
     }
     async createNewRuleInViaInspectorStyleSheet() {
         const cssModel = this.cssModel();
@@ -1162,6 +1258,9 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
     wasShown() {
         UI.Context.Context.instance().setFlavor(StylesSidebarPane, this);
         super.wasShown();
+        if (this.#aiCodeCompletionEnabled && !this.#aiCodeCompletionSummaryToolbar) {
+            this.#createAiCodeCompletionSummaryToolbar();
+        }
     }
     willHide() {
         this.hideAllPopovers();
@@ -1195,7 +1294,8 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         const hbox = container.createChild('div', 'hbox styles-sidebar-pane-toolbar');
         const toolbar = hbox.createChild('devtools-toolbar', 'styles-pane-toolbar');
         toolbar.role = 'presentation';
-        const filterInput = new UI.Toolbar.ToolbarFilter(undefined, 1, 1, undefined, undefined, false, undefined, undefined, /* showRegexToggle=*/ true, this.onRegexToggled.bind(this));
+        const filterInput = new UI.Toolbar.ToolbarFilter(undefined, 1, 1, undefined, undefined, false, undefined, undefined, 
+        /* showRegexToggle=*/ true, this.onRegexToggled.bind(this));
         filterInput.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TEXT_CHANGED */, this.onFilterChanged, this);
         toolbar.appendToolbarItem(filterInput);
         void toolbar.appendItemsAtLocation('styles-sidebarpane-toolbar');
@@ -1314,7 +1414,11 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         this.#aiCodeCompletionSummaryToolbar = undefined;
     }
     #createAiCodeCompletionSummaryToolbar() {
-        if (this.#aiCodeCompletionSummaryToolbar) {
+        if (!this.#aiCodeCompletionEnabled || this.#aiCodeCompletionSummaryToolbar) {
+            return;
+        }
+        const containingPane = this.contentElement.enclosingNodeOrSelfWithClass('style-panes-wrapper');
+        if (!containingPane) {
             return;
         }
         this.#aiCodeCompletionSummaryToolbar =
@@ -1324,7 +1428,6 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
                 spinnerTooltipId: SPINNER_TOOLTIP_ID,
                 disclaimerTextVariant: 'styles',
             });
-        const containingPane = this.contentElement.enclosingNodeOrSelfWithClass('style-panes-wrapper');
         this.#aiCodeCompletionSummaryToolbarContainer =
             containingPane.createChild('div', 'ai-code-completion-summary-toolbar-container');
         this.#aiCodeCompletionSummaryToolbarContainer.role = 'toolbar';
@@ -1412,6 +1515,11 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         this.#lazyRenderCallbacks.delete(element);
     }
 }
+export var Events;
+(function (Events) {
+    Events["INITIAL_UPDATE_COMPLETED"] = "InitialUpdateCompleted";
+    Events["STYLES_UPDATE_COMPLETED"] = "StylesUpdateCompleted";
+})(Events || (Events = {}));
 const MAX_LINK_LENGTH = 23;
 export class SectionBlock {
     #titleElement;
@@ -2150,6 +2258,35 @@ export function escapeUrlAsCssComment(urlText) {
         return `${url.origin}${url.pathname}${url.search.replaceAll('*/', '*%2F')}${url.hash}`;
     }
     return url.toString();
+}
+/**
+ * Merges a newly active list of items with an existing (previously known) list of items,
+ * preserving the relative order of inactive items while updating and inserting active items.
+ */
+export function mergeOrderedItems(oldItems, newItems, getId, markInactive) {
+    const newIds = new Set(newItems.map(getId));
+    const merged = [];
+    let newIdx = 0;
+    for (const oldItem of oldItems) {
+        const oldId = getId(oldItem);
+        if (newIds.has(oldId)) {
+            while (newIdx < newItems.length) {
+                const newItem = newItems[newIdx++];
+                merged.push(newItem);
+                if (getId(newItem) === oldId) {
+                    break;
+                }
+            }
+        }
+        else {
+            markInactive(oldItem);
+            merged.push(oldItem);
+        }
+    }
+    while (newIdx < newItems.length) {
+        merged.push(newItems[newIdx++]);
+    }
+    return merged;
 }
 export class ActionDelegate {
     handleAction(_context, actionId) {

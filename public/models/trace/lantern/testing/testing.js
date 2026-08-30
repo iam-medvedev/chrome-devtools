@@ -1,6 +1,6 @@
-// gen/front_end/models/trace/lantern/testing/MetricTestUtils.js
-import * as Trace from "./../../trace.js";
-import * as Lantern from "./../lantern.js";
+// ../../front_end/models/trace/lantern/testing/MetricTestUtils.ts
+import * as Trace from "../../trace.js";
+import * as Lantern from "../lantern.js";
 function toLanternTrace(traceEvents) {
   return {
     traceEvents
@@ -30,10 +30,13 @@ async function getComputationDataFromFixture(context, { trace, settings, url }) 
   if (!navigation) {
     throw new Error("no navigation found");
   }
+  const simulator = Lantern.Simulation.Simulator.createSimulator({ ...settings, networkAnalysis });
+  const graph = Trace.LanternComputationData.createGraph(requests, trace, data, url);
+  const processedNavigation = Trace.LanternComputationData.createProcessedNavigation(data, frameId, navigation);
   return {
-    simulator: Lantern.Simulation.Simulator.createSimulator({ ...settings, networkAnalysis }),
-    graph: Trace.LanternComputationData.createGraph(requests, trace, data, url),
-    processedNavigation: Trace.LanternComputationData.createProcessedNavigation(data, frameId, navigation)
+    simulator,
+    graph,
+    processedNavigation
   };
 }
 export {

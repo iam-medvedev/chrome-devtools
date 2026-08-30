@@ -18,7 +18,7 @@ export default `/*
   flex: none;
   max-width: 600px;
   max-height: 202px;
-  margin: 20px 0 5px;
+  margin: var(--sys-size-9) 0 5px;
 }
 
 .network-discovery-list-empty {
@@ -54,7 +54,7 @@ export default `/*
   flex: none;
   display: flex;
   flex-direction: row;
-  margin: 6px 5px;
+  margin: var(--sys-size-4) 5px;
   align-items: center;
 }
 
@@ -86,12 +86,12 @@ export default `/*
 }
 
 :host-context(.node-frontend) .network-discovery-list-empty {
-  height: 40px;
+  height: var(--sys-size-14);
 }
 
 :host-context(.node-frontend) .network-discovery-list-item {
   padding: 3px 15px;
-  height: 40px;
+  height: var(--sys-size-14);
 }
 
 .node-panel-center {
@@ -111,7 +111,7 @@ export default `/*
 }
 
 :host-context(.node-frontend) .network-discovery-edit-row {
-  margin: 6px 9px;
+  margin: var(--sys-size-4) 9px;
 }
 
 /*# sourceURL=${import.meta.resolve('./nodeConnectionsPanel.css')} */`;

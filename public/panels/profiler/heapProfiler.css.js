@@ -52,7 +52,7 @@ export default `/*
 }
 
 .heap-snapshot-view .data-grid tr:empty {
-  height: 16px;
+  height: var(--sys-size-8);
   visibility: hidden;
 }
 
@@ -72,7 +72,7 @@ export default `/*
 
 .heap-snapshot-view td.object-column .objects-count {
   margin-left: 10px;
-  font-size: 11px;
+  font-size: var(--sys-typescale-body5-size);
   color: var(--sys-color-token-subtle);
 }
 
@@ -81,8 +81,8 @@ export default `/*
 }
 
 .profile-view .heap-tracking-overview {
-  flex: 0 0 80px;
-  height: 80px;
+  flex: 0 0 var(--sys-size-19);
+  height: var(--sys-size-19);
 }
 
 .heap-snapshot-view .retaining-paths-view {
@@ -96,7 +96,7 @@ export default `/*
 }
 
 .heap-snapshot-view td.object-column > div > span {
-  margin-right: 6px;
+  margin-right: var(--sys-size-4);
 }
 
 .heap-snapshot-view .heap-snapshot-view-resizer .title {
@@ -109,8 +109,8 @@ export default `/*
   display: inline-block;
   padding-top: 3px;
   vertical-align: middle;
-  margin-left: 4px;
-  margin-right: 8px;
+  margin-left: var(--sys-size-3);
+  margin-right: var(--sys-size-5);
 }
 
 .heap-snapshot-view .heap-snapshot-view-resizer * {
@@ -155,8 +155,8 @@ export default `/*
 }
 
 .heap-object-tag {
-  height: 14px;
-  width: 14px;
+  height: var(--sys-size-7);
+  width: var(--sys-size-7);
 }
 
 .heap-snapshot-view tr:not(.selected) td.object-column span.heap-object-tag,
@@ -170,7 +170,7 @@ export default `/*
 }
 
 #heap-recording-view .profile-view {
-  top: 80px;
+  top: var(--sys-size-19);
 }
 
 .heap-overview-container {
@@ -178,7 +178,7 @@ export default `/*
   position: absolute;
   top: 0;
   width: 100%;
-  height: 80px;
+  height: var(--sys-size-19);
 }
 
 #heap-recording-overview-grid .resources-dividers-label-bar {
@@ -187,7 +187,7 @@ export default `/*
 
 .heap-recording-overview-canvas {
   position: absolute;
-  inset: 20px 0 0;
+  inset: var(--sys-size-9) 0 0;
 }
 
 .heap-snapshot-statistics-view {
@@ -195,15 +195,15 @@ export default `/*
 }
 
 .heap-snapshot-stats-pie-chart {
-  margin: 12px 30px;
+  margin: var(--sys-size-6) 30px;
   flex-shrink: 0;
 }
 
 .heap-allocation-stack .stack-frame {
   display: flex;
   justify-content: space-between;
-  border-bottom: 1px solid var(--sys-color-divider);
-  padding: 2px;
+  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
+  padding: var(--sys-size-2);
 }
 
 .heap-allocation-stack .stack-frame:focus {

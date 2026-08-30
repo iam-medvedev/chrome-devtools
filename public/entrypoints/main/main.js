@@ -9,7 +9,7 @@ var ExecutionContextSelector_exports = {};
 __export(ExecutionContextSelector_exports, {
   ExecutionContextSelector: () => ExecutionContextSelector
 });
-import * as SDK from "./../../core/sdk/sdk.js";
+import * as SDK from "../../core/sdk/sdk.js";
 var ExecutionContextSelector = class {
   #targetManager;
   #context;
@@ -178,13 +178,13 @@ __export(GlobalAiButton_exports, {
   GlobalAiButtonState: () => GlobalAiButtonState,
   GlobalAiButtonToolbarProvider: () => GlobalAiButtonToolbarProvider
 });
-import * as Common from "./../../core/common/common.js";
-import * as i18n from "./../../core/i18n/i18n.js";
-import * as Root from "./../../core/root/root.js";
-import * as AIAssistance from "./../../models/ai_assistance/ai_assistance.js";
-import * as UI from "./../../ui/legacy/legacy.js";
-import * as Lit from "./../../ui/lit/lit.js";
-import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
+import * as Common from "../../core/common/common.js";
+import * as i18n from "../../core/i18n/i18n.js";
+import * as Root from "../../core/root/root.js";
+import * as AIAssistance from "../../models/ai_assistance/ai_assistance.js";
+import * as UI from "../../ui/legacy/legacy.js";
+import * as Lit from "../../ui/lit/lit.js";
+import * as VisualLogging from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/entrypoints/main/globalAiButton.css.js
 var globalAiButton_css_default = `/*
@@ -437,29 +437,29 @@ __export(MainImpl_exports, {
   ZoomActionDelegate: () => ZoomActionDelegate,
   sendOverProtocol: () => sendOverProtocol
 });
-import * as Common2 from "./../../core/common/common.js";
-import * as Host from "./../../core/host/host.js";
-import * as i18n3 from "./../../core/i18n/i18n.js";
-import * as Platform2 from "./../../core/platform/platform.js";
-import * as ProtocolClient from "./../../core/protocol_client/protocol_client.js";
-import * as Root2 from "./../../core/root/root.js";
-import * as SDK2 from "./../../core/sdk/sdk.js";
-import * as Foundation from "./../../foundation/foundation.js";
-import * as AiAssistanceModel from "./../../models/ai_assistance/ai_assistance.js";
-import * as CrUXManager from "./../../models/crux-manager/crux-manager.js";
-import * as Persistence from "./../../models/persistence/persistence.js";
-import * as Workspace from "./../../models/workspace/workspace.js";
-import * as PanelCommon from "./../../panels/common/common.js";
-import * as Snippets from "./../../panels/snippets/snippets.js";
-import * as Buttons from "./../../ui/components/buttons/buttons.js";
-import * as Snackbar from "./../../ui/components/snackbars/snackbars.js";
-import * as UIHelpers from "./../../ui/helpers/helpers.js";
-import * as Components from "./../../ui/legacy/components/utils/utils.js";
-import * as UI2 from "./../../ui/legacy/legacy.js";
-import * as ThemeSupport from "./../../ui/legacy/theme_support/theme_support.js";
-import { html as html2, render as render2 } from "./../../ui/lit/lit.js";
-import * as SettingsUI from "./../../ui/settings/settings.js";
-import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
+import * as Common2 from "../../core/common/common.js";
+import * as Host from "../../core/host/host.js";
+import * as i18n3 from "../../core/i18n/i18n.js";
+import * as Platform2 from "../../core/platform/platform.js";
+import * as ProtocolClient from "../../core/protocol_client/protocol_client.js";
+import * as Root2 from "../../core/root/root.js";
+import * as SDK2 from "../../core/sdk/sdk.js";
+import * as Foundation from "../../foundation/foundation.js";
+import * as AiAssistanceModel from "../../models/ai_assistance/ai_assistance.js";
+import * as CrUXManager from "../../models/crux-manager/crux-manager.js";
+import * as Persistence from "../../models/persistence/persistence.js";
+import * as Workspace from "../../models/workspace/workspace.js";
+import * as PanelCommon from "../../panels/common/common.js";
+import * as Snippets from "../../panels/snippets/snippets.js";
+import * as Buttons from "../../ui/components/buttons/buttons.js";
+import * as Snackbar from "../../ui/components/snackbars/snackbars.js";
+import * as UIHelpers from "../../ui/helpers/helpers.js";
+import * as Components from "../../ui/legacy/components/utils/utils.js";
+import * as UI2 from "../../ui/legacy/legacy.js";
+import * as ThemeSupport from "../../ui/legacy/theme_support/theme_support.js";
+import { html as html2, render as render2 } from "../../ui/lit/lit.js";
+import * as SettingsUI from "../../ui/settings/settings.js";
+import * as VisualLogging2 from "../../ui/visual_logging/visual_logging.js";
 var _a;
 var UIStrings2 = {
   /**
@@ -607,7 +607,7 @@ var MainImpl = class {
     }
     Root2.Runtime.experiments.removeAllExperimentsFromLocalStorage();
     await this.requestAndRegisterLocaleData();
-    Host.userMetrics.syncSetting(Common2.Settings.Settings.instance().moduleSetting("sync-preferences").get());
+    Host.userMetrics.syncSetting(Common2.Settings.Settings.instance().resolve(SettingsUI.MainSettings.syncPreferencesSettingDescriptor).get());
     const veLogging = config.devToolsVeLogging;
     const veLogsTestMode = Common2.Settings.Settings.instance().createSetting("veLogsTestMode", false).get();
     if (veLogging?.enabled) {
@@ -804,7 +804,7 @@ var MainImpl = class {
       });
       void this.#universe.userBadges.initialize();
       this.#universe.userBadges.addEventListener("BadgeTriggered", async (ev) => {
-        loadedPanelCommonModule ??= await import("./../../panels/common/common.js");
+        loadedPanelCommonModule ??= await import("../../panels/common/common.js");
         const badgeNotification = new loadedPanelCommonModule.BadgeNotification();
         const { badge, reason } = ev.data;
         void badgeNotification.present(badge, reason);
@@ -1250,7 +1250,7 @@ __export(SimpleApp_exports, {
   SimpleApp: () => SimpleApp,
   SimpleAppProvider: () => SimpleAppProvider
 });
-import * as UI3 from "./../../ui/legacy/legacy.js";
+import * as UI3 from "../../ui/legacy/legacy.js";
 var SimpleApp = class {
   #universe;
   constructor(universe) {

@@ -9,12 +9,15 @@ import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../../core/text_utils/text_utils.js';
 import * as Bindings from '../../models/bindings/bindings.js';
+import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import { findMenuItemWithLabel } from '../../testing/ContextMenuHelpers.js';
-import { assertScreenshot, raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { assertScreenshot, raf, renderElementIntoDOM, setTestUniverseForWidgets } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment, registerActions } from '../../testing/EnvironmentHelpers.js';
 import { dispatchEvent } from '../../testing/MockConnection.js';
+import { MockIssuesModel } from '../../testing/MockIssuesModel.js';
 import { TestUniverse } from '../../testing/TestUniverse.js';
+import * as Highlighting from '../../ui/components/highlighting/highlighting.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { html } from '../../ui/lit/lit.js';
@@ -150,6 +153,7 @@ describeWithEnvironment('ElementsTreeElement', () => {
     let universe;
     beforeEach(() => {
         universe = new TestUniverse();
+        setTestUniverseForWidgets(universe);
         sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, 'instance')
             .returns(universe.debuggerWorkspaceBinding);
         sinon.stub(Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding, 'instance').returns(universe.cssWorkspaceBinding);
@@ -353,12 +357,10 @@ describeWithEnvironment('ElementsTreeElement', () => {
         sinon.stub(node, 'nodeType').returns(Node.ELEMENT_NODE);
         sinon.stub(node, 'nodeNameInCorrectCase').returns('div');
         sinon.stub(node, 'nodeName').returns('DIV');
-        const treeOutline = new Elements.ElementsTreeOutline.ElementsTreeOutline();
-        const treeElement = new Elements.ElementsTreeElement.ElementsTreeElement(node);
-        treeElement.treeOutline = treeOutline;
+        const domTreeWidget = new Elements.ElementsTreeOutline.DOMTreeWidget();
         const event = new Event('contextmenu');
         const contextMenu = new UI.ContextMenu.ContextMenu(event);
-        await Elements.DOMTreeContextMenu.populateNodeContextMenu(contextMenu, treeElement);
+        await Elements.DOMTreeContextMenu.populateNodeContextMenu(contextMenu, domTreeWidget, node);
         return contextMenu;
     }
     it('shows default submenu items', async () => {
@@ -779,6 +781,7 @@ describeWithEnvironment('ElementsTreeElement highlighting', () => {
     }
     beforeEach(async () => {
         const universe = new TestUniverse();
+        setTestUniverseForWidgets(universe);
         sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, 'instance')
             .returns(universe.debuggerWorkspaceBinding);
         sinon.stub(Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding, 'instance').returns(universe.cssWorkspaceBinding);
@@ -807,9 +810,12 @@ describeWithEnvironment('ElementsTreeElement highlighting', () => {
         renderElementIntoDOM(treeOutline.element);
         containerTreeElement.expand();
     });
-    afterEach(() => {
+    afterEach(async () => {
+        attrTestTreeElement?.hideSearchHighlights();
         treeOutline.removeChildren();
         treeOutline.setVisible(false);
+        await UI.Widget.Widget.allUpdatesComplete;
+        Highlighting.HighlightManager.HighlightManager.removeInstance();
     });
     let stub;
     async function waitForHighlights(element) {
@@ -1030,8 +1036,9 @@ describeWithEnvironment('ElementsTreeElement highlighting', () => {
         sinon.assert.calledOnce(setNodeValueSpy);
         sinon.assert.calledWith(setNodeValueSpy, 'New Text');
     });
-    it('highlights search results in ordered text ranges', () => {
+    it('highlights search results in ordered text ranges', async () => {
         attrTestTreeElement.highlightSearchResults('foo');
+        await attrTestTreeElement.widget.updateComplete;
         const highlight = CSS.highlights.get('highlighted-search-result');
         assert.exists(highlight);
         assert.deepEqual(Array.from(highlight).map(range => range.toString()), ['Foo', 'foo']);
@@ -1045,6 +1052,7 @@ describeWithEnvironment('ElementsTreeElement in Snapshot Mode', () => {
     let treeElement;
     beforeEach(() => {
         const universe = new TestUniverse();
+        setTestUniverseForWidgets(universe);
         sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, 'instance')
             .returns(universe.debuggerWorkspaceBinding);
         sinon.stub(Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding, 'instance').returns(universe.cssWorkspaceBinding);
@@ -1290,6 +1298,189 @@ describeWithEnvironment('ElementsTreeElement in Snapshot Mode', () => {
             assert.isTrue(handled);
             sinon.assert.calledOnce(removeSpy);
         });
+    });
+});
+describeWithEnvironment('ElementsTreeElement issue management', () => {
+    let universe;
+    let target;
+    let testDomModel;
+    let domIssuesManager;
+    let issuesManager;
+    let labelNode;
+    let outline;
+    let testTreeElement;
+    let mockModel;
+    beforeEach(() => {
+        universe = new TestUniverse();
+        setTestUniverseForWidgets(universe);
+        sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, 'instance')
+            .returns(universe.debuggerWorkspaceBinding);
+        sinon.stub(Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding, 'instance').returns(universe.cssWorkspaceBinding);
+        target = universe.createTarget();
+        testDomModel = target.model(SDK.DOMModel.DOMModel);
+        domIssuesManager = universe.domIssuesManager;
+        issuesManager = universe.issuesManager;
+        const labelNodePayload = {
+            nodeId: 2,
+            parentId: 1,
+            backendNodeId: 2,
+            nodeType: Node.ELEMENT_NODE,
+            nodeName: 'LABEL',
+            localName: 'label',
+            nodeValue: 'A label',
+            attributes: ['for', 'input-id'],
+            childNodeCount: 0,
+        };
+        const rootNode = SDK.DOMModel.DOMNode.create(testDomModel, null, false, {
+            nodeId: 1,
+            backendNodeId: 1,
+            nodeType: Node.ELEMENT_NODE,
+            nodeName: 'BODY',
+            localName: 'body',
+            nodeValue: 'Body',
+            childNodeCount: 1,
+            children: [labelNodePayload],
+        });
+        assert.isNotNull(rootNode);
+        labelNode = rootNode.children()[0];
+        assert.isNotNull(labelNode);
+        outline = new Elements.ElementsTreeOutline.ElementsTreeOutline();
+        outline.wireToDOMModel(testDomModel);
+        outline.setVisible(true);
+        renderElementIntoDOM(outline.element);
+        testTreeElement = new Elements.ElementsTreeElement.ElementsTreeElement(labelNode, false);
+        outline.appendChild(testTreeElement);
+        testTreeElement.widget.performUpdate();
+        sinon.stub(SDK.DOMModel.DeferredDOMNode.prototype, 'resolvePromise').resolves(labelNode);
+        mockModel = new MockIssuesModel([]);
+    });
+    it('adds generic tag issue to tree element and highlights tag name', async () => {
+        const inspectorIssue = {
+            code: "GenericIssue" /* Protocol.Audits.InspectorIssueCode.GenericIssue */,
+            details: {
+                genericIssueDetails: {
+                    errorType: "FormLabelForNameError" /* Protocol.Audits.GenericIssueErrorType.FormLabelForNameError */,
+                    frameId: 'main',
+                    violatingNodeId: 2,
+                },
+            },
+        };
+        const issue = IssuesManager.GenericIssue.GenericIssue.fromInspectorIssue(mockModel, inspectorIssue)[0];
+        issuesManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, { issuesModel: mockModel, issue });
+        await new Promise(resolve => setTimeout(resolve, 0));
+        const tagElement = testTreeElement.widget.contentElement.querySelectorAll('.webkit-html-tag-name')[0];
+        assert.isTrue(tagElement.classList.contains('violating-element'));
+        assert.deepEqual(domIssuesManager.issuesForNode(labelNode), [issue]);
+    });
+    it('adds select accessibility issue to tree element and highlights tag name', async () => {
+        const inspectorIssue = {
+            code: "ElementAccessibilityIssue" /* Protocol.Audits.InspectorIssueCode.ElementAccessibilityIssue */,
+            details: {
+                elementAccessibilityIssueDetails: {
+                    nodeId: 2,
+                    elementAccessibilityIssueReason: "DisallowedSelectChild" /* Protocol.Audits.ElementAccessibilityIssueReason.DisallowedSelectChild */,
+                    hasDisallowedAttributes: false,
+                },
+            },
+        };
+        const issue = IssuesManager.ElementAccessibilityIssue.ElementAccessibilityIssue.fromInspectorIssue(mockModel, inspectorIssue)[0];
+        issuesManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, { issuesModel: mockModel, issue });
+        await new Promise(resolve => setTimeout(resolve, 0));
+        const tagElement = testTreeElement.widget.contentElement.querySelectorAll('.webkit-html-tag-name')[0];
+        assert.isTrue(tagElement.classList.contains('violating-element'));
+        assert.deepEqual(domIssuesManager.issuesForNode(labelNode), [issue]);
+    });
+    it('adds attribute-specific issue to tree element and highlights attribute name', async () => {
+        const inspectorIssue = {
+            code: "GenericIssue" /* Protocol.Audits.InspectorIssueCode.GenericIssue */,
+            details: {
+                genericIssueDetails: {
+                    errorType: "FormLabelForMatchesNonExistingIdError" /* Protocol.Audits.GenericIssueErrorType.FormLabelForMatchesNonExistingIdError */,
+                    frameId: 'main',
+                    violatingNodeId: 2,
+                    violatingNodeAttribute: 'for',
+                },
+            },
+        };
+        const issue = IssuesManager.GenericIssue.GenericIssue.fromInspectorIssue(mockModel, inspectorIssue)[0];
+        issuesManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, { issuesModel: mockModel, issue });
+        await new Promise(resolve => setTimeout(resolve, 0));
+        const attrElement = testTreeElement.widget.contentElement.querySelector('.webkit-html-attribute-name');
+        assert.isNotNull(attrElement);
+        assert.isTrue(attrElement.classList.contains('violating-element'));
+        assert.include(domIssuesManager.issuesForNode(labelNode), issue);
+    });
+    it('does not highlight tree element for non-supported issue', async () => {
+        const inspectorIssue = {
+            code: "ContentSecurityPolicyIssue" /* Protocol.Audits.InspectorIssueCode.ContentSecurityPolicyIssue */,
+            details: {},
+        };
+        const issue = IssuesManager.ContentSecurityPolicyIssue.ContentSecurityPolicyIssue.fromInspectorIssue(mockModel, inspectorIssue)[0];
+        issuesManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, { issuesModel: mockModel, issue });
+        await new Promise(resolve => setTimeout(resolve, 0));
+        const tagElement = testTreeElement.widget.contentElement.querySelectorAll('.webkit-html-tag-name')[0];
+        assert.isFalse(tagElement.classList.contains('violating-element'));
+    });
+    it('removes highlight when issue is hidden', async () => {
+        const inspectorIssue = {
+            code: "GenericIssue" /* Protocol.Audits.InspectorIssueCode.GenericIssue */,
+            details: {
+                genericIssueDetails: {
+                    errorType: "FormInputWithNoLabelError" /* Protocol.Audits.GenericIssueErrorType.FormInputWithNoLabelError */,
+                    frameId: 'main',
+                    violatingNodeId: 2,
+                },
+            },
+        };
+        const issue = IssuesManager.GenericIssue.GenericIssue.fromInspectorIssue(mockModel, inspectorIssue)[0];
+        issuesManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, { issuesModel: mockModel, issue });
+        await new Promise(resolve => setTimeout(resolve, 0));
+        const tagElement = testTreeElement.widget.contentElement.querySelectorAll('.webkit-html-tag-name')[0];
+        assert.isTrue(tagElement.classList.contains('violating-element'));
+        issue.setHidden(true);
+        issuesManager.dispatchEventToListeners("IssueHiddenStatusUpdated" /* IssuesManager.IssuesManager.Events.ISSUE_HIDDEN_STATUS_UPDATED */, { issue });
+        await new Promise(resolve => setTimeout(resolve, 0));
+        assert.isFalse(tagElement.classList.contains('violating-element'));
+    });
+    it('restores highlight when hidden issue is unhidden', async () => {
+        const inspectorIssue = {
+            code: "GenericIssue" /* Protocol.Audits.InspectorIssueCode.GenericIssue */,
+            details: {
+                genericIssueDetails: {
+                    errorType: "FormInputWithNoLabelError" /* Protocol.Audits.GenericIssueErrorType.FormInputWithNoLabelError */,
+                    frameId: 'main',
+                    violatingNodeId: 2,
+                },
+            },
+        };
+        const issue = IssuesManager.GenericIssue.GenericIssue.fromInspectorIssue(mockModel, inspectorIssue)[0];
+        issue.setHidden(true);
+        issuesManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, { issuesModel: mockModel, issue });
+        await new Promise(resolve => setTimeout(resolve, 0));
+        const tagElement = testTreeElement.widget.contentElement.querySelectorAll('.webkit-html-tag-name')[0];
+        assert.isFalse(tagElement.classList.contains('violating-element'));
+        issue.setHidden(false);
+        issuesManager.dispatchEventToListeners("IssueHiddenStatusUpdated" /* IssuesManager.IssuesManager.Events.ISSUE_HIDDEN_STATUS_UPDATED */, { issue });
+        await new Promise(resolve => setTimeout(resolve, 0));
+        assert.isTrue(tagElement.classList.contains('violating-element'));
+    });
+    it('does not highlight tree element for pre-hidden issue', async () => {
+        const inspectorIssue = {
+            code: "GenericIssue" /* Protocol.Audits.InspectorIssueCode.GenericIssue */,
+            details: {
+                genericIssueDetails: {
+                    errorType: "FormInputWithNoLabelError" /* Protocol.Audits.GenericIssueErrorType.FormInputWithNoLabelError */,
+                    frameId: 'main',
+                    violatingNodeId: 2,
+                },
+            },
+        };
+        const preHiddenIssue = IssuesManager.GenericIssue.GenericIssue.fromInspectorIssue(mockModel, inspectorIssue)[0];
+        preHiddenIssue.setHidden(true);
+        issuesManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, { issuesModel: mockModel, issue: preHiddenIssue });
+        await new Promise(resolve => setTimeout(resolve, 0));
+        const tagElement = testTreeElement.widget.contentElement.querySelectorAll('.webkit-html-tag-name')[0];
+        assert.isFalse(tagElement.classList.contains('violating-element'));
     });
 });
 //# sourceMappingURL=ElementsTreeElement.test.js.map

@@ -10,7 +10,7 @@ __export(PuppeteerConnection_exports, {
   PuppeteerConnectionAdapter: () => PuppeteerConnectionAdapter,
   PuppeteerConnectionHelper: () => PuppeteerConnectionHelper
 });
-import * as puppeteer from "./../../third_party/puppeteer/puppeteer.js";
+import * as puppeteer from "../../third_party/puppeteer/puppeteer.js";
 var ProtocolError = class extends Error {
   code;
   data;

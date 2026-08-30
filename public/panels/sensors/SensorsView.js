@@ -922,6 +922,13 @@ export class SensorsView extends UI.Widget.VBox {
         container.append(checkbox, div);
     }
 }
+export var DeviceOrientationModificationSource;
+(function (DeviceOrientationModificationSource) {
+    DeviceOrientationModificationSource["USER_INPUT"] = "userInput";
+    DeviceOrientationModificationSource["USER_DRAG"] = "userDrag";
+    DeviceOrientationModificationSource["RESET_BUTTON"] = "resetButton";
+    DeviceOrientationModificationSource["SELECT_PRESET"] = "selectPreset";
+})(DeviceOrientationModificationSource || (DeviceOrientationModificationSource = {}));
 export const PressureOptions = {
     NoOverride: 'no-override',
     Nominal: 'nominal',

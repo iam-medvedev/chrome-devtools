@@ -15,16 +15,16 @@ export default `/*
 }
 
 .device-group-container {
-  margin-bottom: 8px;
+  margin-bottom: var(--sys-size-5);
 }
 
 .device-group-title {
   font-weight: 600;
   color: var(--sys-color-on-surface-subtle);
-  font-size: 11px;
+  font-size: var(--sys-typescale-body5-size);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin: 12px 0 4px;
+  margin: var(--sys-size-6) 0 var(--sys-size-3);
 }
 
 .list {
@@ -42,7 +42,7 @@ export default `/*
   display: flex;
 
   devtools-button {
-    margin: 4px 0 0 5px;
+    margin: var(--sys-size-3) 0 0 5px;
   }
 }
 
@@ -65,9 +65,9 @@ export default `/*
 }
 
 .devices-list-checkbox {
-  height: 12px;
-  width: 12px;
-  margin: 2px 5px 2px 2px;
+  height: var(--sys-size-6);
+  width: var(--sys-size-6);
+  margin: var(--sys-size-2) 5px var(--sys-size-2) var(--sys-size-2);
   flex: none;
   pointer-events: none;
 }
@@ -83,7 +83,7 @@ export default `/*
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  padding-left: 4px;
+  padding-left: var(--sys-size-3);
   margin-bottom: 5px;
 }
 
@@ -93,7 +93,7 @@ export default `/*
 }
 
 .devices-edit-fields b {
-  margin-top: 8px;
+  margin-top: var(--sys-size-5);
   margin-bottom: 0;
 }
 
@@ -112,12 +112,12 @@ li .devices-edit-client-hints-heading {
 }
 
 .devices-edit-client-hints-heading b {
-  margin-inline-end: 2px;
+  margin-inline-end: var(--sys-size-2);
 }
 
 .devices-edit-client-hints-heading .help-icon {
-  margin-left: 2px;
-  margin-right: 2px;
+  margin-left: var(--sys-size-2);
+  margin-right: var(--sys-size-2);
   vertical-align: middle;
 }
 
@@ -127,17 +127,17 @@ li .devices-edit-client-hints-heading {
 
 .devices-edit-fields input {
   flex: auto;
-  margin: 8px 5px 0;
+  margin: var(--sys-size-5) 5px 0;
 }
 
 li.devices-edit-client-hints-field {
   /* Cancel out padding from treeview's .tree-outline ol */
-  left: -12px;
+  left: calc(-1 * var(--sys-size-6));
 }
 
 .devices-edit-client-hints-field input {
   flex: auto;
-  margin: 8px 5px 0;
+  margin: var(--sys-size-5) 5px 0;
 }
 
 .devices-edit-fields .device-edit-fixed {
@@ -145,7 +145,7 @@ li.devices-edit-client-hints-field {
 }
 
 .devices-edit-fields select {
-  margin: 8px 5px 0;
+  margin: var(--sys-size-5) 5px 0;
 }
 
 /*# sourceURL=${import.meta.resolve('./devicesSettingsTab.css')} */`;

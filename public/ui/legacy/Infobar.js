@@ -12,11 +12,11 @@ import { Keys } from './KeyboardShortcut.js';
 import { createShadowRootWithCoreStyles, createTextButton } from './UIUtils.js';
 const UIStrings = {
     /**
-     * @description Text on a button to close the infobar and never show the infobar in the future
+     * @description Button text to permanently dismiss an infobar and prevent it from appearing again.
      */
     dontShowAgain: 'Don’t show again',
     /**
-     * @description Text to close something
+     * @description Accessible label for the close button in an infobar.
      */
     close: 'Close',
 };
@@ -161,6 +161,13 @@ export class Infobar {
         return detailsRowMessage;
     }
 }
+export var Type;
+(function (Type) {
+    Type["WARNING"] = "warning";
+    Type["INFO"] = "info";
+    Type["ISSUE"] = "issue";
+    Type["ERROR"] = "error";
+})(Type || (Type = {}));
 const TYPE_TO_ICON = {
     ["warning" /* Type.WARNING */]: 'warning',
     ["info" /* Type.INFO */]: 'info',

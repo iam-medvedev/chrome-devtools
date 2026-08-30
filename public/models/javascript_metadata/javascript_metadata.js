@@ -4,7 +4,7 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// gen/front_end/models/javascript_metadata/NativeFunctions.js
+// ../../front_end/models/javascript_metadata/NativeFunctions.ts
 var NativeFunctions_exports = {};
 __export(NativeFunctions_exports, {
   NativeFunctions: () => NativeFunctions
@@ -7907,6 +7907,10 @@ var NativeFunctions = [
     signatures: [["reportId"]]
   },
   {
+    name: "playHaptics",
+    signatures: [["effect", "?intensity"]]
+  },
+  {
     name: "addStroke",
     signatures: [["stroke"]]
   },
@@ -9648,12 +9652,12 @@ var NativeFunctions = [
   }
 ];
 
-// gen/front_end/models/javascript_metadata/JavaScriptMetadata.js
+// ../../front_end/models/javascript_metadata/JavaScriptMetadata.ts
 var JavaScriptMetadata_exports = {};
 __export(JavaScriptMetadata_exports, {
   JavaScriptMetadataImpl: () => JavaScriptMetadataImpl
 });
-import * as Root from "./../../core/root/root.js";
+import * as Root from "../../core/root/root.js";
 var JavaScriptMetadataImpl = class _JavaScriptMetadataImpl {
   uniqueFunctions;
   receiverMethods;

@@ -21,6 +21,7 @@ import { dispatchEvent } from '../../testing/MockConnection.js';
 import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as TextEditor from '../../ui/components/text_editor/text_editor.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as Settings from '../../ui/settings/settings.js';
 import { AiCodeCompletionSummaryToolbar } from '../common/common.js';
 import * as Console from './console.js';
 const { urlString } = Platform.DevToolsPath;
@@ -434,7 +435,9 @@ describeWithEnvironment('ConsoleView', () => {
             consoleModel = target.model(SDK.ConsoleModel.ConsoleModel);
             assert.exists(consoleModel);
             messageTimestamp = 0;
-            Common.Settings.Settings.instance().createSetting('console-group-similar', true).set(true);
+            Common.Settings.Settings.instance()
+                .resolve(Settings.ConsoleSettings.consoleGroupSimilarSettingDescriptor)
+                .set(true);
         });
         for (const level of ["error" /* Protocol.Log.LogEntryLevel.Error */, "warning" /* Protocol.Log.LogEntryLevel.Warning */, "info" /* Protocol.Log.LogEntryLevel.Info */, "verbose" /* Protocol.Log.LogEntryLevel.Verbose */,]) {
             it(`shows collapsed group but not message when filtering for ${level}`, async () => {
@@ -816,7 +819,7 @@ describeWithEnvironment('ConsoleView', () => {
         renderElementIntoDOM(consoleView);
         const consoleModel = target.model(SDK.ConsoleModel.ConsoleModel);
         assert.exists(consoleModel);
-        const timestampsSetting = Common.Settings.Settings.instance().moduleSetting('console-timestamps-enabled');
+        const timestampsSetting = Common.Settings.Settings.instance().resolve(Settings.ConsoleSettings.consoleTimestampsEnabledSettingDescriptor);
         timestampsSetting.set(false);
         const timestamp = 1400000000789;
         const message = new SDK.ConsoleModel.ConsoleMessage(target.model(SDK.RuntimeModel.RuntimeModel), "other" /* Protocol.Log.LogEntrySource.Other */, "info" /* Protocol.Log.LogEntryLevel.Info */, 'Message with timestamp', {

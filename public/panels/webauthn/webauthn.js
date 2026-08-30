@@ -10,17 +10,17 @@ __export(WebauthnPane_exports, {
   DEFAULT_VIEW: () => DEFAULT_VIEW,
   WebauthnPaneImpl: () => WebauthnPaneImpl
 });
-import "./../../ui/legacy/legacy.js";
-import "./../../ui/legacy/components/data_grid/data_grid.js";
-import * as Common from "./../../core/common/common.js";
-import * as Host from "./../../core/host/host.js";
-import * as i18n from "./../../core/i18n/i18n.js";
-import * as SDK from "./../../core/sdk/sdk.js";
-import * as Buttons from "./../../ui/components/buttons/buttons.js";
-import * as Input from "./../../ui/components/input/input.js";
-import * as UI from "./../../ui/legacy/legacy.js";
-import * as Lit from "./../../ui/lit/lit.js";
-import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
+import "../../ui/legacy/legacy.js";
+import "../../ui/legacy/components/data_grid/data_grid.js";
+import * as Common from "../../core/common/common.js";
+import * as Host from "../../core/host/host.js";
+import * as i18n from "../../core/i18n/i18n.js";
+import * as SDK from "../../core/sdk/sdk.js";
+import * as Buttons from "../../ui/components/buttons/buttons.js";
+import * as Input from "../../ui/components/input/input.js";
+import * as UI from "../../ui/legacy/legacy.js";
+import * as Lit from "../../ui/lit/lit.js";
+import * as VisualLogging from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/webauthn/webauthnPane.css.js
 var webauthnPane_css_default = `/*

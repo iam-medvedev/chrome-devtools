@@ -1,6 +1,6 @@
 // gen/front_end/panels/performance_monitor/performance_monitor-meta.prebundle.js
-import * as i18n from "./../../core/i18n/i18n.js";
-import * as UI from "./../../ui/legacy/legacy.js";
+import * as i18n from "../../core/i18n/i18n.js";
+import * as UI from "../../ui/legacy/legacy.js";
 var UIStrings = {
   /**
    * @description Title of the 'Performance monitor' tool in the bottom drawer.

@@ -1,7 +1,7 @@
 {
   "version": 3,
-  "sources": [],
-  "sourcesContent": [],
-  "mappings": "",
-  "names": []
+  "sources": ["recorder-actions.prebundle.ts"],
+  "sourcesContent": ["// Copyright 2023 The Chromium Authors\n// Use of this source code is governed by a BSD-style license that can be\n// found in the LICENSE file.\n\nexport const enum RecorderActions {\n  CREATE_RECORDING = 'chrome-recorder.create-recording',\n  START_RECORDING = 'chrome-recorder.start-recording',\n  REPLAY_RECORDING = 'chrome-recorder.replay-recording',\n  TOGGLE_CODE_VIEW = 'chrome-recorder.toggle-code-view',\n  COPY_RECORDING_OR_STEP = 'chrome-recorder.copy-recording-or-step',\n}\n"],
+  "mappings": ";AAIA,IAAkB;CAAlB,SAAkBA,kBAAe;AAC/B,EAAAA,iBAAA,kBAAA,IAAA;AACA,EAAAA,iBAAA,iBAAA,IAAA;AACA,EAAAA,iBAAA,kBAAA,IAAA;AACA,EAAAA,iBAAA,kBAAA,IAAA;AACA,EAAAA,iBAAA,wBAAA,IAAA;AACF,GANkB,oBAAA,kBAAe,CAAA,EAAA;",
+  "names": ["RecorderActions"]
 }

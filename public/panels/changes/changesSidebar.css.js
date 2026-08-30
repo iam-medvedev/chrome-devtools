@@ -11,7 +11,7 @@ export default `/*
 
 @scope to (devtools-widget > *) {
 .tree-outline li {
-  min-height: 20px;
+  min-height: var(--sys-size-9);
 }
 
 devtools-icon {

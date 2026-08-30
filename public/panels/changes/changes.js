@@ -10,28 +10,29 @@ __export(ChangesView_exports, {
   ChangesView: () => ChangesView,
   DEFAULT_VIEW: () => DEFAULT_VIEW3
 });
-import "./../../ui/legacy/legacy.js";
-import * as i18n5 from "./../../core/i18n/i18n.js";
-import * as WorkspaceDiff3 from "./../../models/workspace_diff/workspace_diff.js";
-import * as UI3 from "./../../ui/legacy/legacy.js";
-import * as Lit3 from "./../../ui/lit/lit.js";
-import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
+import "../../ui/legacy/legacy.js";
+import * as i18n5 from "../../core/i18n/i18n.js";
+import * as WorkspaceDiff3 from "../../models/workspace_diff/workspace_diff.js";
+import * as UI3 from "../../ui/legacy/legacy.js";
+import * as Lit3 from "../../ui/lit/lit.js";
+import * as VisualLogging3 from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/changes/ChangesSidebar.js
 var ChangesSidebar_exports = {};
 __export(ChangesSidebar_exports, {
   ChangesSidebar: () => ChangesSidebar,
-  DEFAULT_VIEW: () => DEFAULT_VIEW
+  DEFAULT_VIEW: () => DEFAULT_VIEW,
+  Events: () => Events
 });
-import "./../../ui/kit/kit.js";
-import * as Common from "./../../core/common/common.js";
-import * as i18n from "./../../core/i18n/i18n.js";
-import * as Workspace from "./../../models/workspace/workspace.js";
-import * as WorkspaceDiff from "./../../models/workspace_diff/workspace_diff.js";
-import * as UI from "./../../ui/legacy/legacy.js";
-import * as Lit from "./../../ui/lit/lit.js";
-import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
-import * as Snippets from "./../snippets/snippets.js";
+import "../../ui/kit/kit.js";
+import * as Common from "../../core/common/common.js";
+import * as i18n from "../../core/i18n/i18n.js";
+import * as Workspace from "../../models/workspace/workspace.js";
+import * as WorkspaceDiff from "../../models/workspace_diff/workspace_diff.js";
+import * as UI from "../../ui/legacy/legacy.js";
+import * as Lit from "../../ui/lit/lit.js";
+import * as VisualLogging from "../../ui/visual_logging/visual_logging.js";
+import * as Snippets from "../snippets/snippets.js";
 
 // gen/front_end/panels/changes/changesSidebar.css.js
 var changesSidebar_css_default = `/*
@@ -42,7 +43,7 @@ var changesSidebar_css_default = `/*
 
 @scope to (devtools-widget > *) {
 .tree-outline li {
-  min-height: 20px;
+  min-height: var(--sys-size-9);
 }
 
 devtools-icon {
@@ -207,6 +208,10 @@ var ChangesSidebar = class extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
     this.requestUpdate();
   }
 };
+var Events;
+(function(Events2) {
+  Events2["SELECTED_UI_SOURCE_CODE_CHANGED"] = "SelectedUISourceCodeChanged";
+})(Events || (Events = {}));
 
 // gen/front_end/panels/changes/changesView.css.js
 var changesView_css_default = `/*
@@ -245,7 +250,7 @@ var changesView_css_default = `/*
 
 .changes-toolbar {
   background-color: var(--sys-color-cdt-base-container);
-  border-top: 1px solid var(--sys-color-divider);
+  border-top: var(--sys-size-1) solid var(--sys-color-divider);
 }
 
 [hidden] {
@@ -265,16 +270,16 @@ var CombinedDiffView_exports = {};
 __export(CombinedDiffView_exports, {
   CombinedDiffView: () => CombinedDiffView
 });
-import "./../../ui/kit/kit.js";
-import * as Common2 from "./../../core/common/common.js";
-import * as i18n3 from "./../../core/i18n/i18n.js";
-import * as Persistence from "./../../models/persistence/persistence.js";
-import * as WorkspaceDiff2 from "./../../models/workspace_diff/workspace_diff.js";
-import * as Buttons from "./../../ui/components/buttons/buttons.js";
-import * as UI2 from "./../../ui/legacy/legacy.js";
-import * as Lit2 from "./../../ui/lit/lit.js";
-import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
-import * as PanelUtils from "./../utils/utils.js";
+import "../../ui/kit/kit.js";
+import * as Common2 from "../../core/common/common.js";
+import * as i18n3 from "../../core/i18n/i18n.js";
+import * as Persistence from "../../models/persistence/persistence.js";
+import * as WorkspaceDiff2 from "../../models/workspace_diff/workspace_diff.js";
+import * as Buttons from "../../ui/components/buttons/buttons.js";
+import * as UI2 from "../../ui/legacy/legacy.js";
+import * as Lit2 from "../../ui/lit/lit.js";
+import * as VisualLogging2 from "../../ui/visual_logging/visual_logging.js";
+import * as PanelUtils from "../utils/utils.js";
 
 // gen/front_end/panels/changes/combinedDiffView.css.js
 var combinedDiffView_css_default = `/*
@@ -293,7 +298,7 @@ var combinedDiffView_css_default = `/*
 
   details {
     flex-shrink: 0;
-    border-radius: 12px;
+    border-radius: var(--sys-shape-corner-medium-small);
 
     &.selected {
       outline: var(--sys-size-2) solid var(--sys-color-divider-on-tonal-container);

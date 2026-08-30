@@ -12,15 +12,15 @@ __export(UserAgentClientHintsForm_exports, {
   ClientHintsSubmitEvent: () => ClientHintsSubmitEvent,
   UserAgentClientHintsForm: () => UserAgentClientHintsForm
 });
-import "./../../../../ui/kit/kit.js";
-import "./../../../../ui/legacy/legacy.js";
-import * as i18n from "./../../../../core/i18n/i18n.js";
-import * as Platform from "./../../../../core/platform/platform.js";
-import * as Buttons from "./../../../../ui/components/buttons/buttons.js";
-import * as Input from "./../../../../ui/components/input/input.js";
-import * as Lit from "./../../../../ui/lit/lit.js";
-import * as VisualLogging from "./../../../../ui/visual_logging/visual_logging.js";
-import * as EmulationUtils from "./../utils/utils.js";
+import "../../../../ui/kit/kit.js";
+import "../../../../ui/legacy/legacy.js";
+import * as i18n from "../../../../core/i18n/i18n.js";
+import * as Platform from "../../../../core/platform/platform.js";
+import * as Buttons from "../../../../ui/components/buttons/buttons.js";
+import * as Input from "../../../../ui/components/input/input.js";
+import * as Lit from "../../../../ui/lit/lit.js";
+import * as VisualLogging from "../../../../ui/visual_logging/visual_logging.js";
+import * as EmulationUtils from "../utils/utils.js";
 
 // gen/front_end/panels/settings/emulation/components/userAgentClientHintsForm.css.js
 var userAgentClientHintsForm_css_default = `/*
@@ -62,7 +62,7 @@ var userAgentClientHintsForm_css_default = `/*
   display: grid;
   grid-template-columns: 1fr 1fr 1fr auto;
   align-items: center;
-  gap: 8px 10px;
+  gap: var(--sys-size-5) 10px;
   padding: 0 10px;
 }
 
@@ -73,20 +73,20 @@ var userAgentClientHintsForm_css_default = `/*
 .form-factors-checkbox-group {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 6px 10px;
+  gap: var(--sys-size-4) 10px;
 }
 
 .form-factor-checkbox-label {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--sys-size-4);
   white-space: nowrap;
 }
 
 hr.section-separator {
   grid-column: 1 / 5; /* Ensures the separator spans all columns */
   border: none;
-  margin-top: 1px;
+  margin-top: var(--sys-size-1);
 }
 
 .half-row {
@@ -103,9 +103,9 @@ hr.section-separator {
 
 .input-field {
   color: var(--sys-color-on-surface);
-  padding: 3px 6px;
-  border-radius: 2px;
-  border: 1px solid var(--sys-color-neutral-outline);
+  padding: 3px var(--sys-size-4);
+  border-radius: var(--sys-size-2);
+  border: var(--sys-size-1) solid var(--sys-color-neutral-outline);
   background-color: var(--sys-color-cdt-base-container);
   font-size: inherit;
   height: 18px;
@@ -116,7 +116,7 @@ hr.section-separator {
 }
 
 .input-field:focus {
-  border: 1px solid var(--sys-color-state-focus-ring);
+  border: var(--sys-size-1) solid var(--sys-color-state-focus-ring);
   outline-style: none;
 }
 
@@ -124,7 +124,7 @@ hr.section-separator {
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--sys-size-4);
 }
 
 .add-icon {
@@ -144,7 +144,7 @@ hr.section-separator {
 
 .info-icon {
   margin-left: 5px;
-  margin-right: 1px;
+  margin-right: var(--sys-size-1);
   height: var(--sys-size-8);
   width: var(--sys-size-8);
 }
@@ -154,12 +154,12 @@ hr.section-separator {
   color: var(--sys-color-primary);
   text-decoration: underline;
   cursor: pointer;
-  outline-offset: 2px;
+  outline-offset: var(--sys-size-2);
   font-weight: 400;
 }
 
 devtools-icon + .link {
-  margin-inline-start: 2px;
+  margin-inline-start: var(--sys-size-2);
 }
 
 .hide-container {
@@ -174,7 +174,7 @@ devtools-icon + .link {
 
 @media (forced-colors: active) {
   .input-field {
-    border: 1px solid;
+    border: var(--sys-size-1) solid;
   }
 
   .tree-title[aria-disabled="true"] {

@@ -25,9 +25,10 @@ describe('GetTraceEventByKeyTool', () => {
         assert.strictEqual(displayInfo.title, 'Looking at trace event');
         assert.strictEqual(displayInfo.action, 'getTraceEventByKey(\'event-key-1\')');
     });
-    it('returns error when conversationContext is not available', async () => {
+    it('returns error when PerformanceTraceContext is not available', async () => {
         const context = {
             conversationContext: null,
+            getPerformanceTraceContext: () => null,
         };
         const tool = new GetTraceEventByKeyTool();
         const result = await tool.handler({ eventKey: 'event-key-1' }, context);
@@ -40,7 +41,8 @@ describe('GetTraceEventByKeyTool', () => {
         const focus = traceContext.getItem();
         sinon.stub(focus, 'lookupEvent').returns(null);
         const capabilities = {
-            conversationContext: traceContext,
+            conversationContext: null,
+            getPerformanceTraceContext: () => traceContext,
         };
         const tool = new GetTraceEventByKeyTool();
         const result = await tool.handler({ eventKey: 'invalid-key' }, capabilities);
@@ -57,7 +59,8 @@ describe('GetTraceEventByKeyTool', () => {
         };
         sinon.stub(focus, 'lookupEvent').withArgs('valid-key').returns(mockEvent);
         const capabilities = {
-            conversationContext: traceContext,
+            conversationContext: null,
+            getPerformanceTraceContext: () => traceContext,
         };
         const tool = new GetTraceEventByKeyTool();
         const result = await tool.handler({ eventKey: 'valid-key' }, capabilities);

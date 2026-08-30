@@ -10,8 +10,8 @@ __export(ControlButton_exports, {
   ControlButton: () => ControlButton,
   DEFAULT_VIEW: () => DEFAULT_VIEW
 });
-import * as UI from "./../../ui/legacy/legacy.js";
-import * as Lit from "./../../ui/lit/lit.js";
+import * as UI from "../../ui/legacy/legacy.js";
+import * as Lit from "../../ui/lit/lit.js";
 
 // gen/front_end/panels/recorder/controlButton.css.js
 var controlButton_css_default = `/*
@@ -165,14 +165,14 @@ __export(CreateRecordingView_exports, {
   CreateRecordingView: () => CreateRecordingView,
   DEFAULT_VIEW: () => DEFAULT_VIEW2
 });
-import "./../../ui/kit/kit.js";
-import * as i18n from "./../../core/i18n/i18n.js";
-import * as Badges from "./../../models/badges/badges.js";
-import * as Buttons from "./../../ui/components/buttons/buttons.js";
-import * as Input from "./../../ui/components/input/input.js";
-import * as UI2 from "./../../ui/legacy/legacy.js";
-import * as Lit2 from "./../../ui/lit/lit.js";
-import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
+import "../../ui/kit/kit.js";
+import * as i18n from "../../core/i18n/i18n.js";
+import * as Badges from "../../models/badges/badges.js";
+import * as Buttons from "../../ui/components/buttons/buttons.js";
+import * as Input from "../../ui/components/input/input.js";
+import * as UI2 from "../../ui/legacy/legacy.js";
+import * as Lit2 from "../../ui/lit/lit.js";
+import * as VisualLogging from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/recorder/createRecordingView.css.js
 var createRecordingView_css_default = `/*
@@ -190,13 +190,13 @@ var createRecordingView_css_default = `/*
 }
 
 .wrapper {
-  padding: 24px;
+  padding: var(--sys-size-11);
   flex: 1;
 }
 
 h1 {
-  font-size: 18px;
-  line-height: 24px;
+  font-size: var(--sys-typescale-headline3-size);
+  line-height: var(--sys-typescale-headline3-line-height);
   letter-spacing: 0.02em;
   color: var(--sys-color-on-surface);
   margin: 0;
@@ -205,13 +205,13 @@ h1 {
 
 .row-label {
   font-weight: 500;
-  font-size: 11px;
-  line-height: 16px;
+  font-size: var(--sys-typescale-body5-size);
+  line-height: var(--sys-typescale-body5-line-height);
   letter-spacing: 0.8px;
   text-transform: uppercase;
   color: var(--sys-color-secondary);
-  margin-bottom: 8px;
-  margin-top: 32px;
+  margin-bottom: var(--sys-size-5);
+  margin-top: var(--sys-size-13);
   display: flex;
   align-items: center;
   gap: 3px;
@@ -220,8 +220,8 @@ h1 {
 .footer {
   display: flex;
   justify-content: center;
-  border-top: 1px solid var(--sys-color-divider);
-  padding: 12px;
+  border-top: var(--sys-size-1) solid var(--sys-color-divider);
+  padding: var(--sys-size-6);
   background: var(--sys-color-cdt-base-container);
 }
 
@@ -230,14 +230,14 @@ h1 {
 }
 
 .error {
-  margin: 16px 0 0;
-  padding: 8px;
+  margin: var(--sys-size-8) 0 0;
+  padding: var(--sys-size-5);
   background: var(--sys-color-error-container);
   color: var(--sys-color-error);
 }
 
 .row-label .link:focus-visible {
-  outline: var(--sys-color-state-focus-ring) auto 1px;
+  outline: var(--sys-color-state-focus-ring) auto var(--sys-size-1);
 }
 
 .header-wrapper {
@@ -251,9 +251,9 @@ h1 {
   align-items: center;
   overflow: hidden;
   text-overflow: ellipsis;
-  gap: 4px;
+  gap: var(--sys-size-3);
   line-height: 1.1;
-  padding: 4px;
+  padding: var(--sys-size-3);
 }
 
 .checkbox-container {
@@ -263,12 +263,12 @@ h1 {
 }
 
 input[type="checkbox"]:focus-visible {
-  outline: var(--sys-color-state-focus-ring) auto 1px;
+  outline: var(--sys-color-state-focus-ring) auto var(--sys-size-1);
 }
 
 devtools-icon[name="help"] {
-  width: 16px;
-  height: 16px;
+  width: var(--sys-size-8);
+  height: var(--sys-size-8);
 }
 
 /*# sourceURL=${import.meta.resolve("./createRecordingView.css")} */`;
@@ -625,24 +625,25 @@ var RecorderPanel_exports = {};
 __export(RecorderPanel_exports, {
   ActionDelegate: () => ActionDelegate,
   DEFAULT_VIEW: () => DEFAULT_VIEW11,
+  Pages: () => Pages,
   RecorderPanel: () => RecorderPanel
 });
-import "./../../ui/kit/kit.js";
-import * as Common2 from "./../../core/common/common.js";
-import * as Host2 from "./../../core/host/host.js";
-import * as i18n17 from "./../../core/i18n/i18n.js";
-import * as Platform7 from "./../../core/platform/platform.js";
-import * as Root from "./../../core/root/root.js";
-import * as SDK3 from "./../../core/sdk/sdk.js";
-import * as Bindings from "./../../models/bindings/bindings.js";
-import * as EmulationModel2 from "./../../models/emulation/emulation.js";
-import * as PublicExtensions from "./../../models/extensions/extensions.js";
-import * as Tracing from "./../../services/tracing/tracing.js";
-import * as Buttons8 from "./../../ui/components/buttons/buttons.js";
-import * as Dialogs2 from "./../../ui/components/dialogs/dialogs.js";
-import * as UI11 from "./../../ui/legacy/legacy.js";
-import { Directives as Directives5, html as html11, render as render11 } from "./../../ui/lit/lit.js";
-import * as VisualLogging9 from "./../../ui/visual_logging/visual_logging.js";
+import "../../ui/kit/kit.js";
+import * as Common2 from "../../core/common/common.js";
+import * as Host2 from "../../core/host/host.js";
+import * as i18n17 from "../../core/i18n/i18n.js";
+import * as Platform7 from "../../core/platform/platform.js";
+import * as Root from "../../core/root/root.js";
+import * as SDK3 from "../../core/sdk/sdk.js";
+import * as Bindings from "../../models/bindings/bindings.js";
+import * as EmulationModel2 from "../../models/emulation/emulation.js";
+import * as PublicExtensions from "../../models/extensions/extensions.js";
+import * as Tracing from "../../services/tracing/tracing.js";
+import * as Buttons8 from "../../ui/components/buttons/buttons.js";
+import * as Dialogs2 from "../../ui/components/dialogs/dialogs.js";
+import * as UI11 from "../../ui/legacy/legacy.js";
+import { Directives as Directives5, html as html11, render as render11 } from "../../ui/lit/lit.js";
+import * as VisualLogging9 from "../../ui/visual_logging/visual_logging.js";
 import * as Converters from "./converters/converters.js";
 import * as Extensions2 from "./extensions/extensions.js";
 import * as Models8 from "./models/models.js";
@@ -689,7 +690,7 @@ devtools-create-recording-view {
   display: flex;
   flex-flow: row wrap;
   align-items: center;
-  border-bottom: 1px solid var(--sys-color-divider);
+  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
   padding: 0 5px;
   gap: 3px;
   flex-shrink: 0;
@@ -697,7 +698,7 @@ devtools-create-recording-view {
 
 .separator {
   background-color: var(--sys-color-divider);
-  width: 1px;
+  width: var(--sys-size-1);
   height: 17px;
   margin: 0;
 }
@@ -769,28 +770,28 @@ devtools-recording-list-view {
 
 .error {
   color: var(--sys-color-error);
-  border: 1px solid var(--sys-color-error);
+  border: var(--sys-size-1) solid var(--sys-color-error);
   background-color: var(--sys-color-error-container);
-  padding: 4px;
+  padding: var(--sys-size-3);
 }
 
 .feedback {
   margin-left: auto;
-  margin-right: 4px;
+  margin-right: var(--sys-size-3);
 }
 
 .feedback .devtools-link {
   letter-spacing: 0.03em;
   text-decoration-line: underline;
   font-size: var(--sys-typescale-body4-size);
-  line-height: 16px;
+  line-height: var(--sys-typescale-body4-line-height);
   color: var(--sys-color-primary);
   outline-offset: 3px;
 }
 
 .feedback .devtools-link:focus-visible,
 .empty-state-description .devtools-link:focus-visible {
-  outline: -webkit-focus-ring-color auto 1px;
+  outline: -webkit-focus-ring-color auto var(--sys-size-1);
 }
 
 .empty-state {
@@ -840,12 +841,12 @@ __export(RecordingListView_exports, {
   DEFAULT_VIEW: () => DEFAULT_VIEW3,
   RecordingListView: () => RecordingListView
 });
-import "./../../ui/kit/kit.js";
-import * as i18n3 from "./../../core/i18n/i18n.js";
-import * as Buttons2 from "./../../ui/components/buttons/buttons.js";
-import * as UI3 from "./../../ui/legacy/legacy.js";
-import * as Lit3 from "./../../ui/lit/lit.js";
-import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
+import "../../ui/kit/kit.js";
+import * as i18n3 from "../../core/i18n/i18n.js";
+import * as Buttons2 from "../../ui/components/buttons/buttons.js";
+import * as UI3 from "../../ui/legacy/legacy.js";
+import * as Lit3 from "../../ui/lit/lit.js";
+import * as VisualLogging2 from "../../ui/visual_logging/visual_logging.js";
 import * as Models2 from "./models/models.js";
 
 // gen/front_end/panels/recorder/recordingListView.css.js
@@ -1103,29 +1104,30 @@ var RecordingListView = class extends UI3.Widget.Widget {
 var RecordingView_exports = {};
 __export(RecordingView_exports, {
   DEFAULT_VIEW: () => DEFAULT_VIEW10,
-  RecordingView: () => RecordingView
+  RecordingView: () => RecordingView,
+  TargetPanel: () => TargetPanel
 });
-import "./../../ui/kit/kit.js";
-import * as Host from "./../../core/host/host.js";
-import * as i18n15 from "./../../core/i18n/i18n.js";
-import * as Platform5 from "./../../core/platform/platform.js";
-import * as SDK2 from "./../../core/sdk/sdk.js";
-import * as CodeMirror from "./../../third_party/codemirror.next/codemirror.next.js";
-import * as Buttons7 from "./../../ui/components/buttons/buttons.js";
-import * as CodeHighlighter from "./../../ui/components/code_highlighter/code_highlighter.js";
-import * as Dialogs from "./../../ui/components/dialogs/dialogs.js";
-import * as Input2 from "./../../ui/components/input/input.js";
-import * as TextEditor from "./../../ui/components/text_editor/text_editor.js";
-import * as UI10 from "./../../ui/legacy/legacy.js";
-import * as Lit10 from "./../../ui/lit/lit.js";
-import * as VisualLogging8 from "./../../ui/visual_logging/visual_logging.js";
+import "../../ui/kit/kit.js";
+import * as Host from "../../core/host/host.js";
+import * as i18n15 from "../../core/i18n/i18n.js";
+import * as Platform5 from "../../core/platform/platform.js";
+import * as SDK2 from "../../core/sdk/sdk.js";
+import * as CodeMirror from "../../third_party/codemirror.next/codemirror.next.js";
+import * as Buttons7 from "../../ui/components/buttons/buttons.js";
+import * as CodeHighlighter from "../../ui/components/code_highlighter/code_highlighter.js";
+import * as Dialogs from "../../ui/components/dialogs/dialogs.js";
+import * as Input2 from "../../ui/components/input/input.js";
+import * as TextEditor from "../../ui/components/text_editor/text_editor.js";
+import * as UI10 from "../../ui/legacy/legacy.js";
+import * as Lit10 from "../../ui/lit/lit.js";
+import * as VisualLogging8 from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/recorder/ExtensionView.js
-import * as i18n5 from "./../../core/i18n/i18n.js";
-import * as Buttons3 from "./../../ui/components/buttons/buttons.js";
-import * as UI4 from "./../../ui/legacy/legacy.js";
-import * as Lit4 from "./../../ui/lit/lit.js";
-import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
+import * as i18n5 from "../../core/i18n/i18n.js";
+import * as Buttons3 from "../../ui/components/buttons/buttons.js";
+import * as UI4 from "../../ui/legacy/legacy.js";
+import * as Lit4 from "../../ui/lit/lit.js";
+import * as VisualLogging3 from "../../ui/visual_logging/visual_logging.js";
 import * as Extensions from "./extensions/extensions.js";
 
 // gen/front_end/panels/recorder/extensionView.css.js
@@ -1161,9 +1163,9 @@ iframe {
 
 header {
   display: flex;
-  padding: 3px 8px;
+  padding: 3px var(--sys-size-5);
   justify-content: space-between;
-  border-bottom: 1px solid var(--sys-color-divider);
+  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
 }
 
 header > div {
@@ -1172,15 +1174,15 @@ header > div {
 
 .icon {
   display: block;
-  width: 16px;
-  height: 16px;
+  width: var(--sys-size-8);
+  height: var(--sys-size-8);
   color: var(--sys-color-secondary);
 }
 
 .title {
   display: flex;
   flex-direction: row;
-  gap: 6px;
+  gap: var(--sys-size-4);
   color: var(--sys-color-secondary);
   align-items: center;
   font-weight: 500;
@@ -1315,14 +1317,14 @@ var recordingView_css_default = `/*
 
   .section {
     display: flex;
-    padding: 0 16px;
-    gap: 8px;
+    padding: 0 var(--sys-size-8);
+    gap: var(--sys-size-5);
     position: relative;
   }
 
   .section::after {
     content: '';
-    border-bottom: 1px solid var(--sys-color-divider);
+    border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
     position: absolute;
     left: 0;
     right: 0;
@@ -1335,8 +1337,8 @@ var recordingView_css_default = `/*
   }
 
   .screenshot-wrapper {
-    flex: 0 0 80px;
-    padding-top: 32px;
+    flex: 0 0 var(--sys-size-19);
+    padding-top: var(--sys-size-13);
     /* We want this to be on top of \\'.step-overlay\\' */
     z-index: 2;
   }
@@ -1353,7 +1355,7 @@ var recordingView_css_default = `/*
     max-width: 100%;
     width: 200px;
     height: auto;
-    border: 1px solid var(--sys-color-divider);
+    border: var(--sys-size-1) solid var(--sys-color-divider);
     border-radius: 1px;
   }
 
@@ -1371,55 +1373,55 @@ var recordingView_css_default = `/*
 
   .step {
     position: relative;
-    padding-left: 40px;
-    margin: 16px 0;
+    padding-left: var(--sys-size-14);
+    margin: var(--sys-size-8) 0;
   }
 
   .step .action {
-    font-size: 13px;
-    line-height: 16px;
+    font-size: var(--sys-typescale-body3-size);
+    line-height: var(--sys-typescale-body4-line-height);
     letter-spacing: 0.03em;
   }
 
   .recording {
     color: var(--sys-color-primary);
     font-style: italic;
-    margin-top: 8px;
+    margin-top: var(--sys-size-5);
     margin-bottom: 0;
   }
 
   .add-assertion-button {
-    margin-top: 8px;
+    margin-top: var(--sys-size-5);
   }
 
   .details {
-    max-width: 240px;
+    max-width: var(--sys-size-28);
     display: flex;
     flex-direction: column;
     align-items: flex-end;
   }
 
   .url {
-    font-size: 12px;
-    line-height: 16px;
+    font-size: var(--sys-typescale-body4-size);
+    line-height: var(--sys-typescale-body4-line-height);
     letter-spacing: 0.03em;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     color: var(--sys-color-secondary);
     max-width: 100%;
-    margin-bottom: 16px;
+    margin-bottom: var(--sys-size-8);
   }
 
   .header {
     flex-shrink: 0;
     align-items: center;
-    border-bottom: 1px solid var(--sys-color-divider);
+    border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
     justify-content: space-between;
-    padding: 16px;
+    padding: var(--sys-size-8);
   }
 
   .header-title-wrapper {
@@ -1435,8 +1437,8 @@ var recordingView_css_default = `/*
 
   .header-title::before {
     content: '';
-    min-width: 12px;
-    height: 12px;
+    min-width: var(--sys-size-6);
+    height: var(--sys-size-6);
     display: inline-block;
     background: var(--sys-color-primary);
     border-radius: 50%;
@@ -1446,11 +1448,11 @@ var recordingView_css_default = `/*
   #title-input {
     font-family: inherit;
     field-sizing: content;
-    font-size: 18px;
+    font-size: var(--sys-typescale-headline3-size);
     line-height: 22px;
     letter-spacing: 0.02em;
-    padding: 1px 4px;
-    border: 1px solid transparent;
+    padding: var(--sys-size-1) var(--sys-size-3);
+    border: var(--sys-size-1) solid transparent;
     border-radius: 1px;
     word-break: break-all;
   }
@@ -1469,14 +1471,14 @@ var recordingView_css_default = `/*
   }
 
   .title-input-error-text {
-    margin-top: 4px;
+    margin-top: var(--sys-size-3);
     margin-left: 19px;
     color: var(--sys-color-error);
   }
 
   .title-button-bar {
     flex-shrink: 0;
-    padding-left: 2px;
+    padding-left: var(--sys-size-2);
     display: flex;
   }
 
@@ -1485,16 +1487,16 @@ var recordingView_css_default = `/*
   }
 
   .settings-row {
-    padding: 16px 28px;
-    border-bottom: 1px solid var(--sys-color-divider);
+    padding: var(--sys-size-8) var(--sys-size-12);
+    border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
     display: flex;
     flex-flow: row wrap;
     justify-content: space-between;
   }
 
   .settings-title {
-    font-size: 14px;
-    line-height: 24px;
+    font-size: var(--sys-typescale-body2-size);
+    line-height: var(--sys-typescale-body1-line-height);
     letter-spacing: 0.03em;
     color: var(--sys-color-on-surface);
     display: flex;
@@ -1505,16 +1507,16 @@ var recordingView_css_default = `/*
   }
 
   .settings-title:focus-visible {
-    outline: 2px solid var(--sys-color-state-focus-ring);
-    outline-offset: 2px;
+    outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
+    outline-offset: var(--sys-size-2);
   }
 
   .settings {
-    margin-top: 4px;
+    margin-top: var(--sys-size-3);
     display: flex;
     flex-wrap: wrap;
-    font-size: 12px;
-    line-height: 20px;
+    font-size: var(--sys-typescale-body4-size);
+    line-height: var(--sys-typescale-body2-line-height);
     letter-spacing: 0.03em;
     color: var(--sys-color-on-surface-subtle);
   }
@@ -1524,8 +1526,8 @@ var recordingView_css_default = `/*
   }
 
   .settings .separator {
-    width: 1px;
-    height: 20px;
+    width: var(--sys-size-1);
+    height: var(--sys-size-9);
     background-color: var(--sys-color-divider);
     margin: 0 5px;
   }
@@ -1534,12 +1536,12 @@ var recordingView_css_default = `/*
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: var(--sys-size-6);
   }
 
   .actions .separator {
-    width: 1px;
-    height: 24px;
+    width: var(--sys-size-1);
+    height: var(--sys-size-11);
     background-color: var(--sys-color-divider);
   }
 
@@ -1550,8 +1552,8 @@ var recordingView_css_default = `/*
   .footer {
     display: flex;
     justify-content: center;
-    border-top: 1px solid var(--sys-color-divider);
-    padding: 12px;
+    border-top: var(--sys-size-1) solid var(--sys-color-divider);
+    padding: var(--sys-size-6);
     background: var(--sys-color-cdt-base-container);
     z-index: 1;
   }
@@ -1565,8 +1567,8 @@ var recordingView_css_default = `/*
   }
 
   .chevron {
-    width: 14px;
-    height: 14px;
+    width: var(--sys-size-7);
+    height: var(--sys-size-7);
     transform: rotate(-90deg);
     color: var(--sys-color-on-surface);
   }
@@ -1578,7 +1580,7 @@ var recordingView_css_default = `/*
   .editable-setting {
     display: flex;
     flex-direction: row;
-    gap: 12px;
+    gap: var(--sys-size-6);
     align-items: center;
   }
 
@@ -1590,7 +1592,7 @@ var recordingView_css_default = `/*
   .wrapping-label {
     display: inline-flex;
     align-items: center;
-    gap: 12px;
+    gap: var(--sys-size-6);
   }
 
   .text-editor {
@@ -1607,7 +1609,7 @@ var recordingView_css_default = `/*
   }
 
   .section-toolbar > devtools-select-menu {
-    height: 24px;
+    height: var(--sys-size-11);
     min-width: 50px;
   }
 
@@ -1633,7 +1635,7 @@ var recordingView_css_default = `/*
   }
 
   [slot='sidebar'] .section-toolbar {
-    border-bottom: 1px solid var(--sys-color-divider);
+    border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
   }
 
   .recorder-extension-view {
@@ -1649,12 +1651,12 @@ __export(ReplaySection_exports, {
   DEFAULT_VIEW: () => DEFAULT_VIEW5,
   ReplaySection: () => ReplaySection
 });
-import * as i18n7 from "./../../core/i18n/i18n.js";
-import * as Platform from "./../../core/platform/platform.js";
-import * as Buttons4 from "./../../ui/components/buttons/buttons.js";
-import * as UI5 from "./../../ui/legacy/legacy.js";
-import * as Lit5 from "./../../ui/lit/lit.js";
-import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
+import * as i18n7 from "../../core/i18n/i18n.js";
+import * as Platform from "../../core/platform/platform.js";
+import * as Buttons4 from "../../ui/components/buttons/buttons.js";
+import * as UI5 from "../../ui/legacy/legacy.js";
+import * as Lit5 from "../../ui/lit/lit.js";
+import * as VisualLogging4 from "../../ui/visual_logging/visual_logging.js";
 import * as Models3 from "./models/models.js";
 
 // gen/front_end/panels/recorder/replaySection.css.js
@@ -1951,16 +1953,18 @@ var ReplaySection = class extends UI5.Widget.Widget {
 // gen/front_end/panels/recorder/StepView.js
 var StepView_exports = {};
 __export(StepView_exports, {
+  AddStepPosition: () => AddStepPosition,
   DEFAULT_VIEW: () => DEFAULT_VIEW9,
+  State: () => State,
   StepView: () => StepView
 });
-import "./../../ui/kit/kit.js";
-import * as i18n13 from "./../../core/i18n/i18n.js";
-import * as Platform4 from "./../../core/platform/platform.js";
-import * as Menus from "./../../ui/components/menus/menus.js";
-import * as UI9 from "./../../ui/legacy/legacy.js";
-import * as Lit9 from "./../../ui/lit/lit.js";
-import * as VisualLogging7 from "./../../ui/visual_logging/visual_logging.js";
+import "../../ui/kit/kit.js";
+import * as i18n13 from "../../core/i18n/i18n.js";
+import * as Platform4 from "../../core/platform/platform.js";
+import * as Menus from "../../ui/components/menus/menus.js";
+import * as UI9 from "../../ui/legacy/legacy.js";
+import * as Lit9 from "../../ui/lit/lit.js";
+import * as VisualLogging7 from "../../ui/visual_logging/visual_logging.js";
 import * as Models6 from "./models/models.js";
 
 // gen/front_end/panels/recorder/StepEditor.js
@@ -1969,13 +1973,13 @@ __export(StepEditor_exports, {
   EditorState: () => EditorState,
   StepEditor: () => StepEditor
 });
-import * as i18n11 from "./../../core/i18n/i18n.js";
-import * as Platform3 from "./../../core/platform/platform.js";
-import * as Buttons6 from "./../../ui/components/buttons/buttons.js";
-import * as SuggestionInput from "./../../ui/components/suggestion_input/suggestion_input.js";
-import * as UI7 from "./../../ui/legacy/legacy.js";
-import * as Lit7 from "./../../ui/lit/lit.js";
-import * as VisualLogging6 from "./../../ui/visual_logging/visual_logging.js";
+import * as i18n11 from "../../core/i18n/i18n.js";
+import * as Platform3 from "../../core/platform/platform.js";
+import * as Buttons6 from "../../ui/components/buttons/buttons.js";
+import * as SuggestionInput from "../../ui/components/suggestion_input/suggestion_input.js";
+import * as UI7 from "../../ui/legacy/legacy.js";
+import * as Lit7 from "../../ui/lit/lit.js";
+import * as VisualLogging6 from "../../ui/visual_logging/visual_logging.js";
 import * as Models5 from "./models/models.js";
 
 // gen/front_end/panels/recorder/SelectorPicker.js
@@ -1984,14 +1988,14 @@ __export(SelectorPicker_exports, {
   DEFAULT_VIEW: () => DEFAULT_VIEW6,
   SelectorPicker: () => SelectorPicker
 });
-import * as Common from "./../../core/common/common.js";
-import * as i18n9 from "./../../core/i18n/i18n.js";
-import * as Platform2 from "./../../core/platform/platform.js";
-import * as SDK from "./../../core/sdk/sdk.js";
-import * as Buttons5 from "./../../ui/components/buttons/buttons.js";
-import * as UI6 from "./../../ui/legacy/legacy.js";
-import * as Lit6 from "./../../ui/lit/lit.js";
-import * as VisualLogging5 from "./../../ui/visual_logging/visual_logging.js";
+import * as Common from "../../core/common/common.js";
+import * as i18n9 from "../../core/i18n/i18n.js";
+import * as Platform2 from "../../core/platform/platform.js";
+import * as SDK from "../../core/sdk/sdk.js";
+import * as Buttons5 from "../../ui/components/buttons/buttons.js";
+import * as UI6 from "../../ui/legacy/legacy.js";
+import * as Lit6 from "../../ui/lit/lit.js";
+import * as VisualLogging5 from "../../ui/visual_logging/visual_logging.js";
 import * as Models4 from "./models/models.js";
 
 // gen/front_end/panels/recorder/selectorPicker.css.js
@@ -2304,8 +2308,8 @@ var stepEditor_css_default = `/*
 }
 
 .error {
-  margin: 3px 0 6px;
-  padding: 8px 12px;
+  margin: 3px 0 var(--sys-size-4);
+  padding: var(--sys-size-5) var(--sys-size-6);
   background: var(--sys-color-error-container);
   color: var(--sys-color-error);
 }
@@ -3274,17 +3278,17 @@ var stepView_css_default = `/*
 .circle-icon {
   fill: var(--sys-color-primary);
   stroke: var(--sys-color-cdt-base-container);
-  stroke-width: 4px;
+  stroke-width: var(--sys-size-3);
   r: 5px;
-  cx: 8px;
-  cy: 8px;
+  cx: var(--sys-size-5);
+  cy: var(--sys-size-5);
 }
 
 .is-start-of-group:not(:first-of-type) .circle-icon {
   r: 7px;
   fill: var(--sys-color-cdt-base-container);
   stroke: var(--sys-color-primary);
-  stroke-width: 2px;
+  stroke-width: var(--sys-size-2);
 }
 
 .step.is-success .circle-icon {
@@ -3297,12 +3301,12 @@ var stepView_css_default = `/*
   animation: rotate 1s linear infinite;
   fill: var(--sys-color-cdt-base-container);
   stroke: var(--sys-color-primary);
-  stroke-width: 2px;
+  stroke-width: var(--sys-size-2);
 }
 
 .error {
-  margin: 16px 0 0;
-  padding: 8px;
+  margin: var(--sys-size-8) 0 0;
+  padding: var(--sys-size-5);
   background: var(--sys-color-error-container);
   color: var(--sys-color-error);
   position: relative;
@@ -3310,11 +3314,11 @@ var stepView_css_default = `/*
 
 @keyframes rotate {
   0% {
-    transform: translate(8px, 8px) rotate(0) translate(-8px, -8px);
+    transform: translate(var(--sys-size-5), var(--sys-size-5)) rotate(0) translate(calc(-1 * var(--sys-size-5)), calc(-1 * var(--sys-size-5)));
   }
 
   100% {
-    transform: translate(8px, 8px) rotate(360deg) translate(-8px, -8px);
+    transform: translate(var(--sys-size-5), var(--sys-size-5)) rotate(360deg) translate(calc(-1 * var(--sys-size-5)), calc(-1 * var(--sys-size-5)));
   }
 }
 
@@ -3325,7 +3329,7 @@ var stepView_css_default = `/*
 
 .step.is-error .error-icon {
   display: block;
-  transform: translate(4px, 4px);
+  transform: translate(var(--sys-size-3), var(--sys-size-3));
 }
 
 :host-context(.was-successful) .circle-icon {
@@ -3361,12 +3365,12 @@ var stepView_css_default = `/*
 }
 
 .chevron {
-  width: 14px;
-  height: 14px;
+  width: var(--sys-size-7);
+  height: var(--sys-size-7);
   transition: 200ms;
   position: absolute;
-  top: 14px;
-  left: 24px;
+  top: var(--sys-size-7);
+  left: var(--sys-size-11);
   transform: rotate(-90deg);
   color: var(--sys-color-on-surface);
 }
@@ -3381,7 +3385,7 @@ var stepView_css_default = `/*
 
 .details {
   display: none;
-  margin-top: 8px;
+  margin-top: var(--sys-size-5);
   position: relative;
 }
 
@@ -3394,14 +3398,14 @@ var stepView_css_default = `/*
 }
 
 devtools-recorder-step-editor {
-  border: 1px solid var(--sys-color-neutral-outline);
+  border: var(--sys-size-1) solid var(--sys-color-neutral-outline);
   padding: 3px 6px 6px;
-  margin-left: -6px;
+  margin-left: calc(-1 * var(--sys-size-4));
   border-radius: 3px;
 }
 
 devtools-recorder-step-editor:hover {
-  border: 1px solid var(--sys-color-neutral-outline);
+  border: var(--sys-size-1) solid var(--sys-color-neutral-outline);
 }
 
 devtools-recorder-step-editor.is-selected {
@@ -3410,7 +3414,7 @@ devtools-recorder-step-editor.is-selected {
     var(--sys-color-tonal-container),
     var(--sys-color-cdt-base-container) 50%
   );
-  border: 1px solid var(--sys-color-tonal-outline);
+  border: var(--sys-size-1) solid var(--sys-color-tonal-outline);
 }
 
 .summary {
@@ -3437,7 +3441,7 @@ devtools-recorder-step-editor.is-selected {
 .step-actions {
   border: none;
   border-radius: 0;
-  height: 24px;
+  height: var(--sys-size-11);
 
   --override-select-menu-show-button-border-radius: 0;
   --override-select-menu-show-button-outline: none;
@@ -3476,8 +3480,8 @@ __export(TimelineSection_exports, {
   DEFAULT_VIEW: () => DEFAULT_VIEW8,
   TimelineSection: () => TimelineSection
 });
-import * as UI8 from "./../../ui/legacy/legacy.js";
-import * as Lit8 from "./../../ui/lit/lit.js";
+import * as UI8 from "../../ui/legacy/legacy.js";
+import * as Lit8 from "../../ui/lit/lit.js";
 
 // gen/front_end/panels/recorder/timelineSection.css.js
 var timelineSection_css_default = `/*
@@ -3495,8 +3499,8 @@ var timelineSection_css_default = `/*
 
 .timeline-section {
   position: relative;
-  padding: 8px 0 8px 40px;
-  margin-left: 8px;
+  padding: var(--sys-size-5) 0 var(--sys-size-5) var(--sys-size-14);
+  margin-left: var(--sys-size-5);
 
   --override-color-recording-successful-text: #36a854;
   --override-color-recording-successful-background: #e6f4ea;
@@ -3507,7 +3511,7 @@ var timelineSection_css_default = `/*
   width: 100vw;
   height: 100%;
   /* Offset of 32px for spacing and 80px for screenshot */
-  left: calc(-32px - 80px);
+  left: calc(-1 * var(--sys-size-13) - var(--sys-size-19));
   top: 0;
   z-index: -1;
   pointer-events: none;
@@ -3516,7 +3520,7 @@ var timelineSection_css_default = `/*
 @container (max-width: 400px) {
   .overlay {
     /* Offset of 32px for spacing */
-    left: -32px;
+    left: calc(-1 * var(--sys-size-13));
   }
 }
 
@@ -3530,28 +3534,28 @@ var timelineSection_css_default = `/*
 
 :host-context(.is-stopped) .overlay {
   background: var(--sys-color-state-ripple-primary);
-  outline: 1px solid var(--sys-color-state-focus-ring);
+  outline: var(--sys-size-1) solid var(--sys-color-state-focus-ring);
   z-index: 4;
 }
 
 .is-start-of-group:not(:first-of-type) {
-  padding-top: 16px;
+  padding-top: var(--sys-size-8);
 }
 
 .is-end-of-group {
-  padding-bottom: 16px;
+  padding-bottom: var(--sys-size-8);
 }
 
 .icon {
   position: absolute;
-  left: 4px;
+  left: var(--sys-size-3);
   transform: translateX(-50%);
   z-index: 2;
 }
 
 .bar {
   position: absolute;
-  left: 4px;
+  left: var(--sys-size-3);
   display: block;
   transform: translateX(-50%);
   top: 18px;
@@ -3799,6 +3803,20 @@ var UIStrings7 = {
 };
 var str_7 = i18n13.i18n.registerUIStrings("panels/recorder/StepView.ts", UIStrings7);
 var i18nString7 = i18n13.i18n.getLocalizedString.bind(void 0, str_7);
+var State;
+(function(State2) {
+  State2["DEFAULT"] = "default";
+  State2["SUCCESS"] = "success";
+  State2["CURRENT"] = "current";
+  State2["OUTSTANDING"] = "outstanding";
+  State2["ERROR"] = "error";
+  State2["STOPPED"] = "stopped";
+})(State || (State = {}));
+var AddStepPosition;
+(function(AddStepPosition2) {
+  AddStepPosition2["BEFORE"] = "before";
+  AddStepPosition2["AFTER"] = "after";
+})(AddStepPosition || (AddStepPosition = {}));
 var COPY_ACTION_PREFIX = "copy-step-as-";
 function getStepTypeTitle(input) {
   if (input.section) {
@@ -4441,6 +4459,11 @@ var UIStrings8 = {
 };
 var str_8 = i18n15.i18n.registerUIStrings("panels/recorder/RecordingView.ts", UIStrings8);
 var i18nString8 = i18n15.i18n.getLocalizedString.bind(void 0, str_8);
+var TargetPanel;
+(function(TargetPanel2) {
+  TargetPanel2["PERFORMANCE_PANEL"] = "timeline";
+  TargetPanel2["DEFAULT"] = "chrome-recorder";
+})(TargetPanel || (TargetPanel = {}));
 var networkConditionPresets = [
   SDK2.NetworkManager.NoThrottlingConditions,
   SDK2.NetworkManager.OfflineConditions,
@@ -5398,6 +5421,13 @@ var GET_EXTENSIONS_MENU_ITEM = "get-extensions-link";
 var GET_EXTENSIONS_URL = "https://goo.gle/recorder-extension-list";
 var RECORDER_EXPLANATION_URL = "https://developer.chrome.com/docs/devtools/recorder";
 var FEEDBACK_URL = "https://goo.gle/recorder-feedback";
+var Pages;
+(function(Pages2) {
+  Pages2["START_PAGE"] = "StartPage";
+  Pages2["ALL_RECORDINGS_PAGE"] = "AllRecordingsPage";
+  Pages2["CREATE_RECORDING_PAGE"] = "CreateRecordingPage";
+  Pages2["RECORDING_PAGE"] = "RecordingPage";
+})(Pages || (Pages = {}));
 function verifyFlowSize(flow) {
   if (flow.steps.length > 4096) {
     throw new Error("Recording with steps over 4096 is not allowed");

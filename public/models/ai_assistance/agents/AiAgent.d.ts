@@ -161,7 +161,7 @@ export declare abstract class ConversationContext<T> {
      * Currently only used for AI v2.
      */
     isLoggingEnabled(): boolean;
-    getOrigin(): string;
+    getOrigin(): string | SDK.SecurityOrigin.SecurityOrigin;
     /**
      * Returns true if this data context (e.g., a DOM node or Network Request) is
      * allowed to be included in a conversation that is locked to the provided
@@ -174,7 +174,7 @@ export declare abstract class ConversationContext<T> {
      * @param establishedOrigin The origin that the current conversation is locked to.
      * If undefined, the conversation has not yet been locked to an origin.
      */
-    isOriginAllowed(establishedOrigin: string | undefined): boolean;
+    isOriginAllowed(establishedOrigin: string | SDK.SecurityOrigin.SecurityOrigin | undefined): boolean;
     /**
      * This method is called at the start of `AiAgent.run`.
      * It will be overridden in subclasses to fetch data related to the context item.
@@ -419,11 +419,13 @@ export declare abstract class AiAgent<T> {
      */
     clearCache(): void;
     /**
-     * Toggles whether server-side logging is active.
-     * Note that logging can only be activated if it was allowed by policy/configuration
-     * at startup (i.e., `#serverSideLoggingAllowed` is true).
+     * Disables server-side logging for the remainder of this agent instance's lifetime.
+     *
+     * Logging deactivation is irreversible for the session. Conversation history
+     * accumulates across turns; re-enabling logging later would leak sensitive
+     * data from prior turns to AIDA.
      */
-    protected setServerSideLoggingActive(active: boolean): void;
+    protected disableServerSideLogging(): void;
     popPendingMultimodalInput(): MultimodalInput | undefined;
     /**
      * Preamble features appended to the `client_version` in metadata.

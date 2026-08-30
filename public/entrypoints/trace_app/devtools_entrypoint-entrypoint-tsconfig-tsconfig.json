@@ -6,6 +6,7 @@
     "checkJs": true,
     "composite": true,
     "declaration": true,
+    "disableSourceOfProjectReferenceRedirect": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
     "inlineSources": true,
@@ -26,6 +27,7 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "outDir": ".",
+    "preserveConstEnums": true,
     "rootDir": ".",
     "skipLibCheck": true,
     "sourceMap": true,
@@ -47,49 +49,49 @@
       "path": "../../Images/optimize_images-tsconfig.json"
     },
     {
-      "path": "../inspector_main/meta-tsconfig.json"
+      "path": "../inspector_main/meta-tsconfig.ref.json"
     },
     {
-      "path": "../main/meta-tsconfig.json"
+      "path": "../main/meta-tsconfig.ref.json"
     },
     {
-      "path": "../../panels/ai_assistance/meta-tsconfig.json"
+      "path": "../../panels/ai_assistance/meta-tsconfig.ref.json"
     },
     {
-      "path": "../../panels/browser_debugger/meta-tsconfig.json"
+      "path": "../../panels/browser_debugger/meta-tsconfig.ref.json"
     },
     {
-      "path": "../../panels/developer_resources/meta-tsconfig.json"
+      "path": "../../panels/developer_resources/meta-tsconfig.ref.json"
     },
     {
-      "path": "../../panels/mobile_throttling/meta-tsconfig.json"
+      "path": "../../panels/mobile_throttling/meta-tsconfig.ref.json"
     },
     {
-      "path": "../../panels/protocol_monitor/meta-tsconfig.json"
+      "path": "../../panels/protocol_monitor/meta-tsconfig.ref.json"
     },
     {
-      "path": "../../panels/sensors/meta-tsconfig.json"
+      "path": "../../panels/sensors/meta-tsconfig.ref.json"
     },
     {
-      "path": "../../panels/settings/meta-tsconfig.json"
+      "path": "../../panels/settings/meta-tsconfig.ref.json"
     },
     {
-      "path": "../../panels/sources/meta-tsconfig.json"
+      "path": "../../panels/sources/meta-tsconfig.ref.json"
     },
     {
-      "path": "../../panels/timeline/meta-tsconfig.json"
+      "path": "../../panels/timeline/meta-tsconfig.ref.json"
     },
     {
-      "path": "../../ui/legacy/components/perf_ui/meta-tsconfig.json"
+      "path": "../../ui/legacy/components/perf_ui/meta-tsconfig.ref.json"
     },
     {
-      "path": "../../ui/legacy/components/quick_open/meta-tsconfig.json"
+      "path": "../../ui/legacy/components/quick_open/meta-tsconfig.ref.json"
     },
     {
-      "path": "../../ui/legacy/components/source_frame/meta-tsconfig.json"
+      "path": "../../ui/legacy/components/source_frame/meta-tsconfig.ref.json"
     },
     {
-      "path": "../main/bundle-tsconfig.json"
+      "path": "../main/bundle-tsconfig.ref.json"
     }
   ]
 }

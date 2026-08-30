@@ -9,7 +9,7 @@ var SharedObject_exports = {};
 __export(SharedObject_exports, {
   SharedObject: () => SharedObject
 });
-import * as Common from "./../../../core/common/common.js";
+import * as Common from "../../../core/common/common.js";
 var SharedObject = class {
   #mutex = new Common.Mutex.Mutex();
   #counter = 0;

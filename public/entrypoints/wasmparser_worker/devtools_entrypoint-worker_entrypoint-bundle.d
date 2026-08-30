@@ -1,0 +1,1 @@
+gen/front_end/entrypoints/wasmparser_worker/wasmparser_worker-entrypoint.js: gen/front_end/entrypoints/wasmparser_worker/wasmparser_worker-entrypoint.prebundle.js

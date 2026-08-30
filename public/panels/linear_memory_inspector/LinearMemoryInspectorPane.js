@@ -89,6 +89,10 @@ export class LinearMemoryInspectorPane extends Common.ObjectWrapper.eventMixin(U
         this.dispatchEventToListeners("ViewClosed" /* Events.VIEW_CLOSED */, tabId);
     }
 }
+export var Events;
+(function (Events) {
+    Events["VIEW_CLOSED"] = "ViewClosed";
+})(Events || (Events = {}));
 export class LinearMemoryInspectorView extends UI.Widget.VBox {
     #memoryWrapper;
     #memory;
