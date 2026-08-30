@@ -1,7 +1,7 @@
 // gen/front_end/panels/protocol_monitor/protocol_monitor-meta.prebundle.js
-import * as i18n from "./../../core/i18n/i18n.js";
-import * as Root from "./../../core/root/root.js";
-import * as UI from "./../../ui/legacy/legacy.js";
+import * as i18n from "../../core/i18n/i18n.js";
+import * as Root from "../../core/root/root.js";
+import * as UI from "../../ui/legacy/legacy.js";
 var UIStrings = {
   /**
    * @description Title of the 'Protocol monitor' tool in the bottom drawer. This is a tool for

@@ -203,7 +203,7 @@ export class MainImpl {
         }
         Root.Runtime.experiments.removeAllExperimentsFromLocalStorage();
         await this.requestAndRegisterLocaleData();
-        Host.userMetrics.syncSetting(Common.Settings.Settings.instance().moduleSetting('sync-preferences').get());
+        Host.userMetrics.syncSetting(Common.Settings.Settings.instance().resolve(SettingsUI.MainSettings.syncPreferencesSettingDescriptor).get());
         const veLogging = config.devToolsVeLogging;
         // Used by e2e to put VE Logs into "test mode".
         const veLogsTestMode = Common.Settings.Settings.instance().createSetting('veLogsTestMode', false).get();

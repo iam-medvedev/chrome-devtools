@@ -10,7 +10,7 @@ export default `/*
  */
 
 :host {
-  padding: 2px 1px 2px 2px;
+  padding: var(--sys-size-2) var(--sys-size-1) var(--sys-size-2) var(--sys-size-2);
   white-space: nowrap;
   display: flex;
   flex-direction: column;
@@ -21,7 +21,7 @@ export default `/*
 
 .title {
   overflow: hidden;
-  padding-left: 8px;
+  padding-left: var(--sys-size-5);
   text-overflow: ellipsis;
   flex-grow: 0;
 }
@@ -30,7 +30,7 @@ export default `/*
   color: var(--sys-color-token-subtle);
   margin-right: 3px;
   overflow: hidden;
-  padding-left: 8px;
+  padding-left: var(--sys-size-5);
   text-overflow: ellipsis;
   flex-grow: 0;
 }

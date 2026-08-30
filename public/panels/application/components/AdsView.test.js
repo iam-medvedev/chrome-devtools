@@ -4,6 +4,7 @@
 import { assert } from 'chai';
 import * as sinon from 'sinon';
 import * as Common from '../../../core/common/common.js';
+import * as Platform from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import { raf, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { cleanTestDOM } from '../../../testing/DOMHooks.js';
@@ -11,6 +12,7 @@ import { createTarget, describeWithEnvironment } from '../../../testing/Environm
 import { MockCDPConnection } from '../../../testing/MockCDPConnection.js';
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as ApplicationComponents from './components.js';
+const { urlString } = Platform.DevToolsPath;
 describeWithEnvironment('AdsView', () => {
     let target;
     let connection;
@@ -43,6 +45,9 @@ describeWithEnvironment('AdsView', () => {
                 updateAdFrames: [],
                 removeAdFrames: [],
             },
+        }));
+        connection.setSuccessHandler('Ads.getAdScripts', () => ({
+            newScripts: [],
         }));
         const tabTarget = createTarget({ type: SDK.Target.Type.TAB, connection });
         createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
@@ -127,6 +132,10 @@ describeWithEnvironment('AdsView', () => {
                 updateAdFrames: [],
                 removeAdFrames: [],
             },
+        }));
+        connection.setHandler('Ads.getAdScripts', null);
+        connection.setSuccessHandler('Ads.getAdScripts', () => ({
+            newScripts: [],
         }));
         resourceTreeModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.PrimaryPageChanged, {
             frame: {},
@@ -362,6 +371,64 @@ describeWithEnvironment('AdsView', () => {
         sinon.assert.calledOnce(revealStub);
         const revealable = revealStub.firstCall.args[0];
         assert.strictEqual(revealable.id, 'frame-1');
+        panel.detach();
+    });
+    it('renders ad scripts in data grid, dedupes by URL, and filters inline/anonymous/content scripts', async () => {
+        let callCount = 0;
+        connection.setHandler('Ads.getAdScripts', null);
+        connection.setSuccessHandler('Ads.getAdScripts', () => {
+            callCount++;
+            if (callCount === 1) {
+                return {
+                    newScripts: [
+                        { scriptId: 'script-1' },
+                        { scriptId: 'script-2' },
+                        { scriptId: 'script-3' },
+                        { scriptId: 'script-4' },
+                        { scriptId: 'script-5' },
+                    ],
+                };
+            }
+            return { newScripts: [] };
+        });
+        const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
+        assert.exists(debuggerModel);
+        sinon.stub(debuggerModel, 'scriptForId').callsFake((scriptId) => {
+            const mockScript = {
+                scriptId,
+                sourceURL: '',
+                isInlineScript: () => false,
+                isContentScript: () => false,
+            };
+            if (scriptId === 'script-1') {
+                mockScript.sourceURL = urlString `https://example.com/ad.js`;
+            }
+            else if (scriptId === 'script-2') {
+                mockScript.sourceURL = urlString `https://example.com/ad.js`; // Duplicate URL
+            }
+            else if (scriptId === 'script-3') {
+                mockScript.sourceURL = urlString `https://example.com/other-ad.js`;
+            }
+            else if (scriptId === 'script-4') {
+                mockScript.sourceURL = urlString `https://example.com/index.html`;
+                mockScript.isInlineScript = () => true; // Inline script, should be filtered
+            }
+            else if (scriptId === 'script-5') {
+                mockScript.sourceURL = urlString `https://example.com/content-script.js`;
+                mockScript.isContentScript = () => true; // Content script, should be filtered
+            }
+            return mockScript;
+        });
+        const panel = new ApplicationComponents.AdsView.AdsView();
+        renderElementIntoDOM(panel);
+        await clock.tickAsync(0);
+        await panel.updateComplete;
+        await RenderCoordinator.done();
+        assert.include(panel.contentElement.textContent, 'Ad scripts (total 2)');
+        assert.include(panel.contentElement.textContent, 'https://example.com/ad.js');
+        assert.include(panel.contentElement.textContent, 'https://example.com/other-ad.js');
+        assert.notInclude(panel.contentElement.textContent, 'https://example.com/index.html');
+        assert.notInclude(panel.contentElement.textContent, 'https://example.com/content-script.js');
         panel.detach();
     });
 });

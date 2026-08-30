@@ -147,6 +147,13 @@ const GET_EXTENSIONS_MENU_ITEM = 'get-extensions-link';
 const GET_EXTENSIONS_URL = 'https://goo.gle/recorder-extension-list';
 const RECORDER_EXPLANATION_URL = 'https://developer.chrome.com/docs/devtools/recorder';
 const FEEDBACK_URL = 'https://goo.gle/recorder-feedback';
+export var Pages;
+(function (Pages) {
+    Pages["START_PAGE"] = "StartPage";
+    Pages["ALL_RECORDINGS_PAGE"] = "AllRecordingsPage";
+    Pages["CREATE_RECORDING_PAGE"] = "CreateRecordingPage";
+    Pages["RECORDING_PAGE"] = "RecordingPage";
+})(Pages || (Pages = {}));
 /** Provide some defaults to prevent OOM issues like crbug.com/491027421 */
 function verifyFlowSize(flow) {
     if (flow.steps.length > 4096) {

@@ -1,6 +1,6 @@
 // gen/front_end/ui/legacy/components/quick_open/quick_open-meta.prebundle.js
-import * as i18n from "./../../../../core/i18n/i18n.js";
-import * as UI from "./../../legacy.js";
+import * as i18n from "../../../../core/i18n/i18n.js";
+import * as UI from "../../legacy.js";
 var UIStrings = {
   /**
    * @description Title of an action that opens a file.

@@ -10,14 +10,14 @@ __export(RenderingOptions_exports, {
   ReloadActionDelegate: () => ReloadActionDelegate,
   RenderingOptionsView: () => RenderingOptionsView
 });
-import * as Common from "./../../core/common/common.js";
-import * as Host from "./../../core/host/host.js";
-import * as i18n from "./../../core/i18n/i18n.js";
-import * as Root from "./../../core/root/root.js";
-import * as SDK from "./../../core/sdk/sdk.js";
-import * as SettingsUI from "./../../ui/legacy/components/settings_ui/settings_ui.js";
-import * as UI from "./../../ui/legacy/legacy.js";
-import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
+import * as Common from "../../core/common/common.js";
+import * as Host from "../../core/host/host.js";
+import * as i18n from "../../core/i18n/i18n.js";
+import * as Root from "../../core/root/root.js";
+import * as SDK from "../../core/sdk/sdk.js";
+import * as SettingsUI from "../../ui/legacy/components/settings_ui/settings_ui.js";
+import * as UI from "../../ui/legacy/legacy.js";
+import * as VisualLogging from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/entrypoints/inspector_main/renderingOptions.css.js
 var renderingOptions_css_default = `/*
@@ -27,7 +27,7 @@ var renderingOptions_css_default = `/*
  */
 
 :host {
-  padding: 12px;
+  padding: var(--sys-size-6);
 }
 
 devtools-checkbox {
@@ -36,7 +36,7 @@ devtools-checkbox {
 }
 
 .panel-section-separator {
-  height: 1px;
+  height: var(--sys-size-1);
   margin-bottom: 10px;
   background: var(--sys-color-divider);
   flex: none;
@@ -47,7 +47,7 @@ devtools-checkbox {
 }
 
 .chrome-select-label {
-  margin-bottom: 16px;
+  margin-bottom: var(--sys-size-8);
 }
 
 /*# sourceURL=${import.meta.resolve("./renderingOptions.css")} */`;
@@ -309,16 +309,16 @@ __export(InspectorMain_exports, {
   ReloadActionDelegate: () => ReloadActionDelegate2,
   SourcesPanelIndicator: () => SourcesPanelIndicator
 });
-import * as Common2 from "./../../core/common/common.js";
-import * as Host2 from "./../../core/host/host.js";
-import * as i18n3 from "./../../core/i18n/i18n.js";
-import * as Root2 from "./../../core/root/root.js";
-import * as SDK2 from "./../../core/sdk/sdk.js";
-import * as MobileThrottling from "./../../panels/mobile_throttling/mobile_throttling.js";
-import * as Components from "./../../ui/legacy/components/utils/utils.js";
-import * as UI2 from "./../../ui/legacy/legacy.js";
-import * as Lit from "./../../ui/lit/lit.js";
-import * as SettingsUI3 from "./../../ui/settings/settings.js";
+import * as Common2 from "../../core/common/common.js";
+import * as Host2 from "../../core/host/host.js";
+import * as i18n3 from "../../core/i18n/i18n.js";
+import * as Root2 from "../../core/root/root.js";
+import * as SDK2 from "../../core/sdk/sdk.js";
+import * as MobileThrottling from "../../panels/mobile_throttling/mobile_throttling.js";
+import * as Components from "../../ui/legacy/components/utils/utils.js";
+import * as UI2 from "../../ui/legacy/legacy.js";
+import * as Lit from "../../ui/lit/lit.js";
+import * as SettingsUI3 from "../../ui/settings/settings.js";
 
 // gen/front_end/entrypoints/inspector_main/nodeIcon.css.js
 var nodeIcon_css_default = `/*
@@ -328,7 +328,7 @@ var nodeIcon_css_default = `/*
  */
 
 .node-icon {
-  width: 28px;
+  width: var(--sys-size-12);
   height: 26px;
   /* stylelint-disable-next-line custom-property-pattern */
   background-image: var(--image-file-nodeIcon);
@@ -571,11 +571,11 @@ var OutermostTargetSelector_exports = {};
 __export(OutermostTargetSelector_exports, {
   OutermostTargetSelector: () => OutermostTargetSelector
 });
-import * as i18n5 from "./../../core/i18n/i18n.js";
-import * as Platform from "./../../core/platform/platform.js";
-import * as SDK3 from "./../../core/sdk/sdk.js";
-import * as Bindings from "./../../models/bindings/bindings.js";
-import * as UI3 from "./../../ui/legacy/legacy.js";
+import * as i18n5 from "../../core/i18n/i18n.js";
+import * as Platform from "../../core/platform/platform.js";
+import * as SDK3 from "../../core/sdk/sdk.js";
+import * as Bindings from "../../models/bindings/bindings.js";
+import * as UI3 from "../../ui/legacy/legacy.js";
 
 // gen/front_end/entrypoints/inspector_main/outermostTargetSelector.css.js
 var outermostTargetSelector_css_default = `/*
@@ -585,7 +585,7 @@ var outermostTargetSelector_css_default = `/*
  */
 
 :host {
-  padding: 2px 1px 2px 2px;
+  padding: var(--sys-size-2) var(--sys-size-1) var(--sys-size-2) var(--sys-size-2);
   white-space: nowrap;
   display: flex;
   flex-direction: column;
@@ -596,7 +596,7 @@ var outermostTargetSelector_css_default = `/*
 
 .title {
   overflow: hidden;
-  padding-left: 8px;
+  padding-left: var(--sys-size-5);
   text-overflow: ellipsis;
   flex-grow: 0;
 }
@@ -605,7 +605,7 @@ var outermostTargetSelector_css_default = `/*
   color: var(--sys-color-token-subtle);
   margin-right: 3px;
   overflow: hidden;
-  padding-left: 8px;
+  padding-left: var(--sys-size-5);
   text-overflow: ellipsis;
   flex-grow: 0;
 }

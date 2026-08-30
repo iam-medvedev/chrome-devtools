@@ -47,6 +47,9 @@ describe('ElementAccessibilityIssue', () => {
             assert.deepEqual(selectIssue.details(), issueDetails);
             assert.strictEqual(selectIssue.getKind(), "PageError" /* IssuesManager.Issue.IssueKind.PAGE_ERROR */);
             assert.isNotNull(selectIssue.getDescription());
+            const elements = Array.from(selectIssue.elements());
+            assert.lengthOf(elements, 1);
+            assert.strictEqual(elements[0].backendNodeId, 1);
         }
     });
     it('adds a disallowed select child issue without details', () => {

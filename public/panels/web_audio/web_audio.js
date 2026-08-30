@@ -7,9 +7,10 @@ var __export = (target, all) => {
 // gen/front_end/panels/web_audio/WebAudioModel.js
 var WebAudioModel_exports = {};
 __export(WebAudioModel_exports, {
+  Events: () => Events,
   WebAudioModel: () => WebAudioModel
 });
-import * as SDK from "./../../core/sdk/sdk.js";
+import * as SDK from "../../core/sdk/sdk.js";
 var WebAudioModel = class extends SDK.SDKModel.SDKModel {
   enabled;
   agent;
@@ -91,6 +92,24 @@ var WebAudioModel = class extends SDK.SDKModel.SDKModel {
   }
 };
 SDK.SDKModel.SDKModel.register(WebAudioModel, { capabilities: 2, autostart: false });
+var Events;
+(function(Events2) {
+  Events2["CONTEXT_CREATED"] = "ContextCreated";
+  Events2["CONTEXT_DESTROYED"] = "ContextDestroyed";
+  Events2["CONTEXT_CHANGED"] = "ContextChanged";
+  Events2["MODEL_RESET"] = "ModelReset";
+  Events2["MODEL_SUSPEND"] = "ModelSuspend";
+  Events2["AUDIO_LISTENER_CREATED"] = "AudioListenerCreated";
+  Events2["AUDIO_LISTENER_WILL_BE_DESTROYED"] = "AudioListenerWillBeDestroyed";
+  Events2["AUDIO_NODE_CREATED"] = "AudioNodeCreated";
+  Events2["AUDIO_NODE_WILL_BE_DESTROYED"] = "AudioNodeWillBeDestroyed";
+  Events2["AUDIO_PARAM_CREATED"] = "AudioParamCreated";
+  Events2["AUDIO_PARAM_WILL_BE_DESTROYED"] = "AudioParamWillBeDestroyed";
+  Events2["NODES_CONNECTED"] = "NodesConnected";
+  Events2["NODES_DISCONNECTED"] = "NodesDisconnected";
+  Events2["NODE_PARAM_CONNECTED"] = "NodeParamConnected";
+  Events2["NODE_PARAM_DISCONNECTED"] = "NodeParamDisconnected";
+})(Events || (Events = {}));
 
 // gen/front_end/panels/web_audio/WebAudioView.js
 var WebAudioView_exports = {};
@@ -98,13 +117,13 @@ __export(WebAudioView_exports, {
   DEFAULT_VIEW: () => DEFAULT_VIEW,
   WebAudioView: () => WebAudioView
 });
-import "./../../ui/legacy/legacy.js";
-import * as Common from "./../../core/common/common.js";
-import * as i18n from "./../../core/i18n/i18n.js";
-import * as SDK2 from "./../../core/sdk/sdk.js";
-import * as UI from "./../../ui/legacy/legacy.js";
-import { html, render } from "./../../ui/lit/lit.js";
-import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
+import "../../ui/legacy/legacy.js";
+import * as Common from "../../core/common/common.js";
+import * as i18n from "../../core/i18n/i18n.js";
+import * as SDK2 from "../../core/sdk/sdk.js";
+import * as UI from "../../ui/legacy/legacy.js";
+import { html, render } from "../../ui/lit/lit.js";
+import * as VisualLogging from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/web_audio/webAudio.css.js
 var webAudio_css_default = `/*

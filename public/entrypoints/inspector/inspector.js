@@ -1,12 +1,12 @@
 // gen/front_end/entrypoints/inspector/inspector.prebundle.js
-import "./../devtools_app/devtools_app.js";
+import "../devtools_app/devtools_app.js";
 
 // gen/front_end/panels/screencast/screencast-meta.js
-import * as UI from "./../../ui/legacy/legacy.js";
+import * as UI from "../../ui/legacy/legacy.js";
 var loadedScreencastModule;
 async function loadScreencastModule() {
   if (!loadedScreencastModule) {
-    loadedScreencastModule = await import("./../../panels/screencast/screencast.js");
+    loadedScreencastModule = await import("../../panels/screencast/screencast.js");
   }
   return loadedScreencastModule;
 }

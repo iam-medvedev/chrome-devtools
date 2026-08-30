@@ -31,15 +31,7 @@ export declare class ProfileFlameChartDataProvider implements PerfUI.FlameChart.
     textColor(_entryIndex: number): string;
     entryNodesLength(): number;
 }
-declare const ProfileFlameChart_base: (new (...args: any[]) => {
-    __events: Common.ObjectWrapper.ObjectWrapper<PerfUI.FlameChart.EventTypes>;
-    addEventListener<T extends keyof PerfUI.FlameChart.EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<PerfUI.FlameChart.EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<PerfUI.FlameChart.EventTypes, T>;
-    once<T extends keyof PerfUI.FlameChart.EventTypes>(eventType: T): Promise<PerfUI.FlameChart.EventTypes[T]>;
-    removeEventListener<T extends keyof PerfUI.FlameChart.EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<PerfUI.FlameChart.EventTypes[T], any>) => void, thisObject?: Object): void;
-    hasEventListeners(eventType: keyof PerfUI.FlameChart.EventTypes): boolean;
-    dispatchEventToListeners<T extends keyof PerfUI.FlameChart.EventTypes>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<PerfUI.FlameChart.EventTypes, T>): void;
-    dispatchDOMEvent?(event: Event): void;
-}) & typeof UI.Widget.VBox;
+declare const ProfileFlameChart_base: Platform.Constructor.Constructor<Common.EventTarget.EventTarget<PerfUI.FlameChart.EventTypes>, any[]> & typeof UI.Widget.VBox;
 export declare class ProfileFlameChart extends ProfileFlameChart_base implements UI.SearchableView.Searchable {
     readonly searchableView: UI.SearchableView.SearchableView;
     readonly overviewPane: OverviewPane;
@@ -84,15 +76,7 @@ export declare class OverviewCalculator implements NetworkTimeCalculator.Calcula
     zeroTime(): number;
     boundarySpan(): number;
 }
-declare const OverviewPane_base: (new (...args: any[]) => {
-    __events: Common.ObjectWrapper.ObjectWrapper<OverviewPaneEventTypes>;
-    addEventListener<T extends OverviewPaneEvents.WINDOW_CHANGED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<OverviewPaneEventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<OverviewPaneEventTypes, T>;
-    once<T extends OverviewPaneEvents.WINDOW_CHANGED>(eventType: T): Promise<OverviewPaneEventTypes[T]>;
-    removeEventListener<T extends OverviewPaneEvents.WINDOW_CHANGED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<OverviewPaneEventTypes[T], any>) => void, thisObject?: Object): void;
-    hasEventListeners(eventType: OverviewPaneEvents.WINDOW_CHANGED): boolean;
-    dispatchEventToListeners<T extends OverviewPaneEvents.WINDOW_CHANGED>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<OverviewPaneEventTypes, T>): void;
-    dispatchDOMEvent?(event: Event): void;
-}) & typeof UI.Widget.VBox;
+declare const OverviewPane_base: Platform.Constructor.Constructor<Common.EventTarget.EventTarget<OverviewPaneEventTypes>, any[]> & typeof UI.Widget.VBox;
 export declare class OverviewPane extends OverviewPane_base implements PerfUI.FlameChart.FlameChartDelegate {
     overviewContainer: HTMLElement;
     readonly overviewCalculator: OverviewCalculator;

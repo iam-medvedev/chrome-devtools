@@ -1,0 +1,1 @@
+{"compilerOptions":{"composite":true,"declaration":true,"emitDeclarationOnly":true,"skipLibCheck":true,"rootDir":"../../../../../../front_end/entrypoints/heap_snapshot_worker","outDir":".","declarationDir":"."},"files":["../../../../../../front_end/entrypoints/heap_snapshot_worker/heap_snapshot_worker.ts"],"references":[{"path":"./heap_snapshot_worker-tsconfig.ref.json"}]}

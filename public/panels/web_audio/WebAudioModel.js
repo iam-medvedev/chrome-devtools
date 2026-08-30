@@ -85,4 +85,22 @@ export class WebAudioModel extends SDK.SDKModel.SDKModel {
     }
 }
 SDK.SDKModel.SDKModel.register(WebAudioModel, { capabilities: 2 /* SDK.Target.Capability.DOM */, autostart: false });
+export var Events;
+(function (Events) {
+    Events["CONTEXT_CREATED"] = "ContextCreated";
+    Events["CONTEXT_DESTROYED"] = "ContextDestroyed";
+    Events["CONTEXT_CHANGED"] = "ContextChanged";
+    Events["MODEL_RESET"] = "ModelReset";
+    Events["MODEL_SUSPEND"] = "ModelSuspend";
+    Events["AUDIO_LISTENER_CREATED"] = "AudioListenerCreated";
+    Events["AUDIO_LISTENER_WILL_BE_DESTROYED"] = "AudioListenerWillBeDestroyed";
+    Events["AUDIO_NODE_CREATED"] = "AudioNodeCreated";
+    Events["AUDIO_NODE_WILL_BE_DESTROYED"] = "AudioNodeWillBeDestroyed";
+    Events["AUDIO_PARAM_CREATED"] = "AudioParamCreated";
+    Events["AUDIO_PARAM_WILL_BE_DESTROYED"] = "AudioParamWillBeDestroyed";
+    Events["NODES_CONNECTED"] = "NodesConnected";
+    Events["NODES_DISCONNECTED"] = "NodesDisconnected";
+    Events["NODE_PARAM_CONNECTED"] = "NodeParamConnected";
+    Events["NODE_PARAM_DISCONNECTED"] = "NodeParamDisconnected";
+})(Events || (Events = {}));
 //# sourceMappingURL=WebAudioModel.js.map

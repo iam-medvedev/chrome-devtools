@@ -146,15 +146,7 @@ export declare class StatisticsPerspective extends Perspective {
     activate(heapSnapshotView: HeapSnapshotView): void;
     masterGrid(_heapSnapshotView: HeapSnapshotView): HeapSnapshotSortableDataGrid | null;
 }
-declare const HeapSnapshotProfileType_base: (new (...args: any[]) => {
-    __events: Common.ObjectWrapper.ObjectWrapper<HeapSnapshotProfileTypeEventTypes>;
-    addEventListener<T extends HeapSnapshotProfileTypeEvents.SNAPSHOT_RECEIVED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<HeapSnapshotProfileTypeEventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<HeapSnapshotProfileTypeEventTypes, T>;
-    once<T extends HeapSnapshotProfileTypeEvents.SNAPSHOT_RECEIVED>(eventType: T): Promise<HeapSnapshotProfileTypeEventTypes[T]>;
-    removeEventListener<T extends HeapSnapshotProfileTypeEvents.SNAPSHOT_RECEIVED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<HeapSnapshotProfileTypeEventTypes[T], any>) => void, thisObject?: Object): void;
-    hasEventListeners(eventType: HeapSnapshotProfileTypeEvents.SNAPSHOT_RECEIVED): boolean;
-    dispatchEventToListeners<T extends HeapSnapshotProfileTypeEvents.SNAPSHOT_RECEIVED>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<HeapSnapshotProfileTypeEventTypes, T>): void;
-    dispatchDOMEvent?(event: Event): void;
-}) & typeof ProfileType;
+declare const HeapSnapshotProfileType_base: Platform.Constructor.Constructor<Common.EventTarget.EventTarget<HeapSnapshotProfileTypeEventTypes>, any[]> & typeof ProfileType;
 export declare class HeapSnapshotProfileType extends HeapSnapshotProfileType_base implements SDK.TargetManager.SDKModelObserver<SDK.HeapProfilerModel.HeapProfilerModel> {
     customContentInternal: UI.UIUtils.CheckboxLabel | null;
     constructor(id?: string, title?: string);
@@ -182,15 +174,7 @@ export declare const enum HeapSnapshotProfileTypeEvents {
 export interface HeapSnapshotProfileTypeEventTypes {
     [HeapSnapshotProfileTypeEvents.SNAPSHOT_RECEIVED]: ProfileHeader;
 }
-declare const TrackingHeapSnapshotProfileType_base: (new (...args: any[]) => {
-    __events: Common.ObjectWrapper.ObjectWrapper<TrackingHeapSnapshotProfileTypeEventTypes>;
-    addEventListener<T extends keyof TrackingHeapSnapshotProfileTypeEventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<TrackingHeapSnapshotProfileTypeEventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<TrackingHeapSnapshotProfileTypeEventTypes, T>;
-    once<T extends keyof TrackingHeapSnapshotProfileTypeEventTypes>(eventType: T): Promise<TrackingHeapSnapshotProfileTypeEventTypes[T]>;
-    removeEventListener<T extends keyof TrackingHeapSnapshotProfileTypeEventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<TrackingHeapSnapshotProfileTypeEventTypes[T], any>) => void, thisObject?: Object): void;
-    hasEventListeners(eventType: keyof TrackingHeapSnapshotProfileTypeEventTypes): boolean;
-    dispatchEventToListeners<T extends keyof TrackingHeapSnapshotProfileTypeEventTypes>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<TrackingHeapSnapshotProfileTypeEventTypes, T>): void;
-    dispatchDOMEvent?(event: Event): void;
-}) & typeof HeapSnapshotProfileType;
+declare const TrackingHeapSnapshotProfileType_base: Platform.Constructor.Constructor<Common.EventTarget.EventTarget<TrackingHeapSnapshotProfileTypeEventTypes>, any[]> & typeof HeapSnapshotProfileType;
 export declare class TrackingHeapSnapshotProfileType extends TrackingHeapSnapshotProfileType_base {
     readonly recordAllocationStacksSettingInternal: Common.Settings.Setting<boolean>;
     customContentInternal: UI.UIUtils.CheckboxLabel | null;

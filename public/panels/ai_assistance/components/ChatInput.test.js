@@ -5,7 +5,6 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as AiAssistanceModel from '../../../models/ai_assistance/ai_assistance.js';
-import { createDummyImageFile } from '../../../testing/AiAssistanceHelpers.js';
 import { assertScreenshot, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment, } from '../../../testing/EnvironmentHelpers.js';
 import { createViewFunctionStub } from '../../../testing/ViewFunctionHelpers.js';
@@ -66,8 +65,11 @@ describeWithEnvironment('ChatInput', () => {
                 value: [file],
                 writable: false,
             });
+            const nextInput = view.nextInput;
             mockInput.dispatchEvent(new Event('change'));
-            await new Promise(resolve => setTimeout(resolve, 0));
+            if (file.size <= 10 * 1024 * 1024) {
+                await nextInput;
+            }
         }
         beforeEach(() => {
             target = createTarget();
@@ -87,9 +89,10 @@ describeWithEnvironment('ChatInput', () => {
             sinon.stub(SDK.TargetManager.TargetManager.instance(), 'primaryPageTarget').returns(target);
             const [view] = createComponent();
             // Simulate screenshot button click
+            const nextInput = view.nextInput;
             view.input.onTakeScreenshot();
             // Wait for async operations
-            await new Promise(resolve => setTimeout(resolve, 0));
+            await nextInput;
             sinon.assert.calledOnce(captureScreenshotStub);
             assert.deepEqual(view.input.imageInput, {
                 isLoading: false,
@@ -100,7 +103,7 @@ describeWithEnvironment('ChatInput', () => {
         });
         it('handles image upload', async () => {
             const [view] = createComponent();
-            const file = await createDummyImageFile(10, 10);
+            const file = new File(['dummy'], 'dummy.jpg', { type: 'image/jpeg' });
             await triggerImageUpload(view, file);
             assert.exists(view.input.imageInput);
             assert.isFalse(view.input.imageInput.isLoading);
@@ -110,7 +113,7 @@ describeWithEnvironment('ChatInput', () => {
         });
         it('removes image input', async () => {
             const [view] = createComponent();
-            const file = await createDummyImageFile(10, 10);
+            const file = new File(['dummy'], 'dummy.jpg', { type: 'image/jpeg' });
             await triggerImageUpload(view, file);
             assert.isDefined(view.input.imageInput);
             view.input.onRemoveImageInput();
@@ -118,7 +121,7 @@ describeWithEnvironment('ChatInput', () => {
         });
         it('clears image input on submit', async () => {
             const [view, component] = createComponent();
-            const file = await createDummyImageFile(10, 10);
+            const file = new File(['dummy'], 'dummy.jpg', { type: 'image/jpeg' });
             await triggerImageUpload(view, file);
             component.setInputValue('test');
             const submitEvent = new SubmitEvent('submit', { cancelable: true });
@@ -128,14 +131,15 @@ describeWithEnvironment('ChatInput', () => {
         it('handles image paste from clipboard', async () => {
             const [view, component] = createComponent();
             component.conversationType = "freestyler" /* AiAssistanceModel.AiHistoryStorage.ConversationType.STYLING */;
-            const file = await createDummyImageFile(10, 10);
+            const file = new File(['dummy'], 'dummy.jpg', { type: 'image/jpeg' });
             const dataTransfer = new DataTransfer();
             dataTransfer.items.add(file);
             const clipboardEvent = new ClipboardEvent('paste', {
                 clipboardData: dataTransfer,
             });
+            const nextInput = view.nextInput;
             view.input.onImagePaste(clipboardEvent);
-            await new Promise(resolve => setTimeout(resolve, 0));
+            await nextInput;
             assert.exists(view.input.imageInput);
             assert.isFalse(view.input.imageInput.isLoading);
             assert.strictEqual(view.input.imageInput.data, 'dGVzdA==');
@@ -144,7 +148,7 @@ describeWithEnvironment('ChatInput', () => {
         });
         it('handles drag-and-drop image upload', async () => {
             const [view] = createComponent();
-            const file = await createDummyImageFile(10, 10);
+            const file = new File(['dummy'], 'dummy.jpg', { type: 'image/jpeg' });
             const dataTransfer = new DataTransfer();
             dataTransfer.items.add(file);
             const dragOverEvent = new DragEvent('dragover', {
@@ -155,9 +159,10 @@ describeWithEnvironment('ChatInput', () => {
             });
             view.input.onImageDragOver(dragOverEvent);
             dragOverEvent.preventDefault();
+            const nextInput = view.nextInput;
             view.input.onImageDrop(dropEvent);
             dropEvent.preventDefault();
-            await new Promise(resolve => setTimeout(resolve, 0));
+            await nextInput;
             assert.exists(view.input.imageInput);
             assert.isFalse(view.input.imageInput.isLoading);
             assert.strictEqual(view.input.imageInput.data, 'dGVzdA==');
@@ -168,7 +173,7 @@ describeWithEnvironment('ChatInput', () => {
             const target = createTarget();
             const [view] = createComponent();
             // Set up initial state with an image and non-empty conversation
-            const file = await createDummyImageFile(10, 10);
+            const file = new File(['dummy'], 'dummy.jpg', { type: 'image/jpeg' });
             await triggerImageUpload(view, file);
             // Verify image input is present
             assert.isDefined(view.input.imageInput);

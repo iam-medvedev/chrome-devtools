@@ -7,22 +7,23 @@ var __export = (target, all) => {
 // gen/front_end/panels/settings/components/SyncSection.js
 var SyncSection_exports = {};
 __export(SyncSection_exports, {
-  SyncSection: () => SyncSection
+  SyncSection: () => SyncSection,
+  WarningType: () => WarningType
 });
-import "./../../../ui/components/settings/settings.js";
-import "./../../../ui/components/tooltips/tooltips.js";
-import "./../../../ui/kit/kit.js";
-import * as Common from "./../../../core/common/common.js";
-import * as Host from "./../../../core/host/host.js";
-import * as i18n from "./../../../core/i18n/i18n.js";
-import * as Badges from "./../../../models/badges/badges.js";
-import * as Buttons from "./../../../ui/components/buttons/buttons.js";
-import * as UIHelpers from "./../../../ui/helpers/helpers.js";
-import * as UI from "./../../../ui/legacy/legacy.js";
-import * as Lit from "./../../../ui/lit/lit.js";
-import * as VisualLogging from "./../../../ui/visual_logging/visual_logging.js";
-import * as PanelCommon from "./../../common/common.js";
-import * as PanelUtils from "./../../utils/utils.js";
+import "../../../ui/components/settings/settings.js";
+import "../../../ui/components/tooltips/tooltips.js";
+import "../../../ui/kit/kit.js";
+import * as Common from "../../../core/common/common.js";
+import * as Host from "../../../core/host/host.js";
+import * as i18n from "../../../core/i18n/i18n.js";
+import * as Badges from "../../../models/badges/badges.js";
+import * as Buttons from "../../../ui/components/buttons/buttons.js";
+import * as UIHelpers from "../../../ui/helpers/helpers.js";
+import * as UI from "../../../ui/legacy/legacy.js";
+import * as Lit from "../../../ui/lit/lit.js";
+import * as VisualLogging from "../../../ui/visual_logging/visual_logging.js";
+import * as PanelCommon from "../../common/common.js";
+import * as PanelUtils from "../../utils/utils.js";
 
 // gen/front_end/panels/settings/components/syncSection.css.js
 var syncSection_css_default = `/*
@@ -42,14 +43,14 @@ var syncSection_css_default = `/*
   fieldset {
     border: 0;
     padding: 0;
-    padding: 4px 0 0;
+    padding: var(--sys-size-3) 0 0;
   }
 
   .link {
     color: var(--sys-color-primary);
     text-decoration: underline;
     cursor: pointer;
-    outline-offset: 2px;
+    outline-offset: var(--sys-size-2);
   }
 
   .account-avatar {
@@ -68,11 +69,11 @@ var syncSection_css_default = `/*
   .account-email {
     display: flex;
     flex-direction: column;
-    margin-left: 8px;
+    margin-left: var(--sys-size-5);
   }
 
   .not-signed-in {
-    padding-bottom: 4px;
+    padding-bottom: var(--sys-size-3);
   }
 
   .setting-checkbox-container {
@@ -138,7 +139,7 @@ var syncSection_css_default = `/*
   }
 
   .gdp-profile-container .gdp-profile-details-content .setting-container {
-    margin: calc(var(--sys-size-3) - 6px) 0 -6px;
+    margin: calc(var(--sys-size-3) - var(--sys-size-4)) 0 calc(-1 * var(--sys-size-4));
     display: flex;
     align-items: center;
     gap: var(--sys-size-2);
@@ -352,6 +353,11 @@ var DEFAULT_VIEW = (input, output, target) => {
     </fieldset>
   `, target);
 };
+var WarningType;
+(function(WarningType2) {
+  WarningType2["SYNC_DISABLED"] = "SYNC_DISABLED";
+  WarningType2["PREFERENCES_SYNC_DISABLED"] = "PREFERENCES_SYNC_DISABLED";
+})(WarningType || (WarningType = {}));
 var SyncSection = class extends UI.Widget.Widget {
   #syncInfo = { isSyncActive: false };
   #syncSetting;

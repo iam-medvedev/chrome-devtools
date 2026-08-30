@@ -13,7 +13,7 @@ __export(ExtensionConverter_exports, {
   EXTENSION_PREFIX: () => EXTENSION_PREFIX,
   ExtensionConverter: () => ExtensionConverter
 });
-import * as PuppeteerReplay from "./../../../third_party/puppeteer-replay/puppeteer-replay.js";
+import * as PuppeteerReplay from "../../../third_party/puppeteer-replay/puppeteer-replay.js";
 var EXTENSION_PREFIX = "extension_";
 var ExtensionConverter = class {
   #idx;
@@ -64,8 +64,8 @@ var JSONConverter_exports = {};
 __export(JSONConverter_exports, {
   JSONConverter: () => JSONConverter
 });
-import * as PuppeteerReplay2 from "./../../../third_party/puppeteer-replay/puppeteer-replay.js";
-import * as Models from "./../models/models.js";
+import * as PuppeteerReplay2 from "../../../third_party/puppeteer-replay/puppeteer-replay.js";
+import * as Models from "../models/models.js";
 var JSONConverter = class {
   #indent;
   constructor(indent) {
@@ -104,8 +104,8 @@ var LighthouseConverter_exports = {};
 __export(LighthouseConverter_exports, {
   LighthouseConverter: () => LighthouseConverter
 });
-import * as PuppeteerReplay3 from "./../../../third_party/puppeteer-replay/puppeteer-replay.js";
-import * as Models2 from "./../models/models.js";
+import * as PuppeteerReplay3 from "../../../third_party/puppeteer-replay/puppeteer-replay.js";
+import * as Models2 from "../models/models.js";
 var LighthouseConverter = class {
   #indent;
   constructor(indent) {
@@ -143,8 +143,8 @@ var PuppeteerConverter_exports = {};
 __export(PuppeteerConverter_exports, {
   PuppeteerConverter: () => PuppeteerConverter
 });
-import * as PuppeteerReplay4 from "./../../../third_party/puppeteer-replay/puppeteer-replay.js";
-import * as Models3 from "./../models/models.js";
+import * as PuppeteerReplay4 from "../../../third_party/puppeteer-replay/puppeteer-replay.js";
+import * as Models3 from "../models/models.js";
 var PuppeteerConverter = class {
   #indent;
   #extension;
@@ -188,8 +188,8 @@ var PuppeteerFirefoxConverter_exports = {};
 __export(PuppeteerFirefoxConverter_exports, {
   PuppeteerFirefoxConverter: () => PuppeteerFirefoxConverter
 });
-import * as PuppeteerReplay5 from "./../../../third_party/puppeteer-replay/puppeteer-replay.js";
-import * as Models4 from "./../models/models.js";
+import * as PuppeteerReplay5 from "../../../third_party/puppeteer-replay/puppeteer-replay.js";
+import * as Models4 from "../models/models.js";
 var PuppeteerFirefoxConverter = class extends PuppeteerConverter {
   getId() {
     return "puppeteer-firefox";
@@ -207,8 +207,8 @@ var PuppeteerReplayConverter_exports = {};
 __export(PuppeteerReplayConverter_exports, {
   PuppeteerReplayConverter: () => PuppeteerReplayConverter
 });
-import * as PuppeteerReplay6 from "./../../../third_party/puppeteer-replay/puppeteer-replay.js";
-import * as Models5 from "./../models/models.js";
+import * as PuppeteerReplay6 from "../../../third_party/puppeteer-replay/puppeteer-replay.js";
+import * as Models5 from "../models/models.js";
 var PuppeteerReplayConverter = class {
   #indent;
   constructor(indent) {

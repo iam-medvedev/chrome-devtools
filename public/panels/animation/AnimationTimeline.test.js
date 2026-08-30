@@ -561,8 +561,10 @@ describeWithEnvironment('AnimationTimeline', () => {
         view.markAsRoot();
         renderElementIntoDOM(view);
         assert.deepEqual(window.getComputedStyle(placeholder).display, 'flex');
-        assert.deepEqual(placeholder.querySelector('.empty-state-header')?.textContent, 'Currently waiting for animations');
-        assert.deepEqual(placeholder.querySelector('.empty-state-description span')?.textContent, 'On this page you can inspect and modify animations.');
+        const emptyWidget = placeholder.firstElementChild;
+        assert.exists(emptyWidget);
+        assert.deepEqual(emptyWidget.shadowRoot?.querySelector('.empty-state-header')?.textContent, 'Currently waiting for animations');
+        assert.deepEqual(emptyWidget.shadowRoot?.querySelector('.empty-state-description span')?.textContent, 'On this page you can inspect and modify animations.');
         view.detach();
     });
     it('shows placeholder if no animation has been selected', async () => {
@@ -584,8 +586,10 @@ describeWithEnvironment('AnimationTimeline', () => {
         const placeholder = view.contentElement.querySelector('.animation-timeline-rows-hint');
         assert.exists(placeholder);
         assert.deepEqual(window.getComputedStyle(placeholder).display, 'flex');
-        assert.deepEqual(placeholder.querySelector('.empty-state-header')?.textContent, 'No animation effect selected');
-        assert.deepEqual(placeholder.querySelector('.empty-state-description span')?.textContent, 'Select an effect above to inspect and modify');
+        const emptyWidget = placeholder.firstElementChild;
+        assert.exists(emptyWidget);
+        assert.deepEqual(emptyWidget.shadowRoot?.querySelector('.empty-state-header')?.textContent, 'No animation effect selected');
+        assert.deepEqual(emptyWidget.shadowRoot?.querySelector('.empty-state-description span')?.textContent, 'Select an effect above to inspect and modify');
         view.detach();
     });
 });

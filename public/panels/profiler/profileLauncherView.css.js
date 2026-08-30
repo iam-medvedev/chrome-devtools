@@ -14,12 +14,12 @@ export default `/*
 }
 
 .profile-launcher-view-content {
-  margin: 10px 16px;
+  margin: 10px var(--sys-size-8);
   flex: auto 1 0;
 
   & h1 {
     font: var(--sys-typescale-headline4);
-    margin: 6px 0 10px;
+    margin: var(--sys-size-4) 0 10px;
   }
 
   & label {
@@ -52,8 +52,8 @@ export default `/*
 }
 
 .profile-launcher-target-list {
-  margin-bottom: 6px;
-  border: 1px solid var(--sys-color-divider);
+  margin-bottom: var(--sys-size-4);
+  border: var(--sys-size-1) solid var(--sys-color-divider);
   flex: 150px 1 0;
 }
 
@@ -64,13 +64,13 @@ export default `/*
 .profile-memory-usage-item {
   min-width: 100%;
   width: max-content;
-  padding: 4px;
-  line-height: 16px;
+  padding: var(--sys-size-3);
+  line-height: var(--sys-size-8);
 }
 
 .profile-isolate-selector-block > .profile-memory-usage-item {
-  margin-left: 1px;
-  margin-bottom: 4px;
+  margin-left: var(--sys-size-1);
+  margin-bottom: var(--sys-size-3);
   font-weight: bolder;
 }
 
@@ -97,7 +97,7 @@ export default `/*
 
 .profile-memory-usage-item > div {
   flex-shrink: 0;
-  margin-right: 12px;
+  margin-right: var(--sys-size-6);
 }
 
 .profile-memory-usage-item-size {
@@ -116,7 +116,7 @@ export default `/*
 
 .profile-launcher-buttons {
   flex-wrap: wrap;
-  column-gap: 8px;
+  column-gap: var(--sys-size-5);
 }
 
 @media (forced-colors: active) {

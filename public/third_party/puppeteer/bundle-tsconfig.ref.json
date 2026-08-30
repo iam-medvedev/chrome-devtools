@@ -1,0 +1,1 @@
+{"compilerOptions":{"composite":true,"declaration":true,"emitDeclarationOnly":true,"skipLibCheck":true,"rootDir":"../../../../../../front_end/third_party/puppeteer","outDir":".","declarationDir":"."},"files":["../../../../../../front_end/third_party/puppeteer/puppeteer.ts"],"references":[{"path":"./puppeteer-tsconfig.ref.json"}]}

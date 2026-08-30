@@ -7,12 +7,24 @@ import * as Common from '../../../core/common/common.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as PuppeteerService from '../../../services/puppeteer/puppeteer.js';
 import * as PuppeteerReplay from '../../../third_party/puppeteer-replay/puppeteer-replay.js';
+export var PlayRecordingSpeed;
+(function (PlayRecordingSpeed) {
+    PlayRecordingSpeed["NORMAL"] = "normal";
+    PlayRecordingSpeed["SLOW"] = "slow";
+    PlayRecordingSpeed["VERY_SLOW"] = "very_slow";
+    PlayRecordingSpeed["EXTREMELY_SLOW"] = "extremely_slow";
+})(PlayRecordingSpeed || (PlayRecordingSpeed = {}));
 const speedDelayMap = {
     ["normal" /* PlayRecordingSpeed.NORMAL */]: 0,
     ["slow" /* PlayRecordingSpeed.SLOW */]: 500,
     ["very_slow" /* PlayRecordingSpeed.VERY_SLOW */]: 1000,
     ["extremely_slow" /* PlayRecordingSpeed.EXTREMELY_SLOW */]: 2000,
 };
+export var ReplayResult;
+(function (ReplayResult) {
+    ReplayResult["FAILURE"] = "Failure";
+    ReplayResult["SUCCESS"] = "Success";
+})(ReplayResult || (ReplayResult = {}));
 export const defaultTimeout = 5000; // ms
 function isPageTarget(target) {
     // Treat DevTools targets as page targets too.
@@ -236,4 +248,13 @@ export class RecordingPlayer extends Common.ObjectWrapper.ObjectWrapper {
         }
     }
 }
+export var Events;
+(function (Events) {
+    Events["ABORT"] = "Abort";
+    Events["DONE"] = "Done";
+    Events["STEP"] = "Step";
+    Events["STOP"] = "Stop";
+    Events["ERROR"] = "Error";
+    Events["CONTINUE"] = "Continue";
+})(Events || (Events = {}));
 //# sourceMappingURL=RecordingPlayer.js.map

@@ -15,7 +15,7 @@ export default `/*
 }
 
 .ax-ignored-info {
-  padding: 6px;
+  padding: var(--sys-size-4);
 }
 
 .ax-ignored-node-pane {
@@ -52,9 +52,9 @@ span.ax-value-undefined {
 
 .tree-outline li::before {
   content: "";
-  width: 14px;
+  width: var(--sys-size-7);
   display: inline-block;
-  margin-bottom: -2px;
+  margin-bottom: calc(-1 * var(--sys-size-2));
   margin-right: 3px;
 }
 
@@ -64,7 +64,7 @@ span.ax-value-undefined {
 
 .tree-outline li.invalid {
   position: relative;
-  left: -2px;
+  left: calc(-1 * var(--sys-size-2));
 }
 
 .tree-outline dt-icon-label + .ax-name {

@@ -18,7 +18,7 @@ export default `/*
   .header {
     display: flex;
     flex-wrap: wrap;
-    border-bottom: 1px solid var(--sys-color-divider);
+    border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
     width: 100%;
   }
 
@@ -32,11 +32,11 @@ export default `/*
 
   .address {
     padding: 10px;
-    border-bottom: 1px solid var(--sys-color-divider);
+    border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
   }
 
   .filled-fields-grid {
-    border-top: 1px solid var(--sys-color-divider);
+    border-top: var(--sys-size-1) solid var(--sys-color-divider);
     box-sizing: border-box;
   }
 
@@ -69,7 +69,7 @@ export default `/*
   }
 
   .top-left-corner {
-    border-bottom: 1px solid var(--sys-color-divider);
+    border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
     display: flex;
     flex-wrap: wrap;
     padding: 5px;

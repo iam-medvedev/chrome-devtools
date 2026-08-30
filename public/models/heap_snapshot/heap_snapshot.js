@@ -4,16 +4,17 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// gen/front_end/models/heap_snapshot/ChildrenProvider.js
+// ../../front_end/models/heap_snapshot/ChildrenProvider.ts
 var ChildrenProvider_exports = {};
 
-// gen/front_end/models/heap_snapshot/HeapSnapshotModel.js
+// ../../front_end/models/heap_snapshot/HeapSnapshotModel.ts
 var HeapSnapshotModel_exports = {};
 __export(HeapSnapshotModel_exports, {
   AggregateForDiff: () => AggregateForDiff,
   AllocationNodeCallers: () => AllocationNodeCallers,
   AllocationStackFrame: () => AllocationStackFrame,
   ComparatorConfig: () => ComparatorConfig,
+  DOMLinkState: () => DOMLinkState,
   Diff: () => Diff,
   Edge: () => Edge,
   HeapSnapshotProgressEvent: () => HeapSnapshotProgressEvent,
@@ -237,8 +238,14 @@ var Location = class {
     this.columnNumber = columnNumber;
   }
 };
+var DOMLinkState = /* @__PURE__ */ ((DOMLinkState2) => {
+  DOMLinkState2[DOMLinkState2["UNKNOWN"] = 0] = "UNKNOWN";
+  DOMLinkState2[DOMLinkState2["ATTACHED"] = 1] = "ATTACHED";
+  DOMLinkState2[DOMLinkState2["DETACHED"] = 2] = "DETACHED";
+  return DOMLinkState2;
+})(DOMLinkState || {});
 
-// gen/front_end/models/heap_snapshot/HeapSnapshotProxy.js
+// ../../front_end/models/heap_snapshot/HeapSnapshotProxy.ts
 var HeapSnapshotProxy_exports = {};
 __export(HeapSnapshotProxy_exports, {
   HeapSnapshotLoaderProxy: () => HeapSnapshotLoaderProxy,
@@ -247,9 +254,9 @@ __export(HeapSnapshotProxy_exports, {
   HeapSnapshotProxyObject: () => HeapSnapshotProxyObject,
   HeapSnapshotWorkerProxy: () => HeapSnapshotWorkerProxy
 });
-import * as Common from "./../../core/common/common.js";
-import * as Platform from "./../../core/platform/platform.js";
-var HeapSnapshotWorkerProxy = class extends Common.ObjectWrapper.ObjectWrapper {
+import * as Common from "../../core/common/common.js";
+import * as Platform from "../../core/platform/platform.js";
+var HeapSnapshotWorkerProxy = class _HeapSnapshotWorkerProxy extends Common.ObjectWrapper.ObjectWrapper {
   eventHandler;
   #console;
   nextObjectId = 1;
@@ -264,7 +271,9 @@ var HeapSnapshotWorkerProxy = class extends Common.ObjectWrapper.ObjectWrapper {
     this.eventHandler = eventHandler;
     this.#console = console;
     this.workerUrl = workerUrl;
-    this.worker = Platform.HostRuntime.HOST_RUNTIME.createWorker(workerUrl ?? import.meta.resolve("../../entrypoints/heap_snapshot_worker/heap_snapshot_worker-entrypoint.js"));
+    this.worker = Platform.HostRuntime.HOST_RUNTIME.createWorker(
+      workerUrl ?? import.meta.resolve("../../entrypoints/heap_snapshot_worker/heap_snapshot_worker-entrypoint.js")
+    );
     this.worker.onmessage = this.messageReceived.bind(this);
   }
   get console() {
@@ -305,24 +314,30 @@ var HeapSnapshotWorkerProxy = class extends Common.ObjectWrapper.ObjectWrapper {
         }
         callback(void 0, remoteResult ? new proxyConstructor(this, newObjectId) : void 0);
       });
-      this.postMessage({
+      this.postMessage(
+        {
+          callId,
+          disposition: "factory",
+          objectId,
+          methodName,
+          methodArguments,
+          newObjectId
+        },
+        transfer
+      );
+      return null;
+    }
+    this.postMessage(
+      {
         callId,
         disposition: "factory",
         objectId,
         methodName,
         methodArguments,
         newObjectId
-      }, transfer);
-      return null;
-    }
-    this.postMessage({
-      callId,
-      disposition: "factory",
-      objectId,
-      methodName,
-      methodArguments,
-      newObjectId
-    }, transfer);
+      },
+      transfer
+    );
     return new proxyConstructor(this, newObjectId);
   }
   callMethod(callback, objectId, methodName, ...methodArguments) {
@@ -354,7 +369,7 @@ var HeapSnapshotWorkerProxy = class extends Common.ObjectWrapper.ObjectWrapper {
       }
     }
     const hasLongRunningCalls = Boolean(this.previousCallbacks.size);
-    this.dispatchEventToListeners("Wait", hasLongRunningCalls);
+    this.dispatchEventToListeners(_HeapSnapshotWorkerProxy.Events.WAIT, hasLongRunningCalls);
     for (const callId of this.callbacks.keys()) {
       this.previousCallbacks.add(callId);
     }
@@ -370,11 +385,14 @@ var HeapSnapshotWorkerProxy = class extends Common.ObjectWrapper.ObjectWrapper {
         }
       });
     });
-    this.postMessage({
-      callId,
-      disposition: "setupForSecondaryInit",
-      objectId: this.nextObjectId++
-    }, [port]);
+    this.postMessage(
+      {
+        callId,
+        disposition: "setupForSecondaryInit",
+        objectId: this.nextObjectId++
+      },
+      [port]
+    );
     return done;
   }
   messageReceived(event) {
@@ -404,6 +422,12 @@ var HeapSnapshotWorkerProxy = class extends Common.ObjectWrapper.ObjectWrapper {
     this.worker.postMessage(message, transfer);
   }
 };
+((HeapSnapshotWorkerProxy2) => {
+  let Events;
+  ((Events2) => {
+    Events2["WAIT"] = "Wait";
+  })(Events = HeapSnapshotWorkerProxy2.Events || (HeapSnapshotWorkerProxy2.Events = {}));
+})(HeapSnapshotWorkerProxy || (HeapSnapshotWorkerProxy = {}));
 var HeapSnapshotProxyObject = class {
   worker;
   objectId;

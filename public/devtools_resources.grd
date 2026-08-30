@@ -706,8 +706,6 @@
       <include file="panels/issues/components/components.js" name="PANELS_ISSUES_COMPONENTS_COMPONENTS_JS" resource_path="panels/issues/components/components.js" type="BINDATA" compress="false"/>
       <include file="panels/issues/issues-meta.js" name="PANELS_ISSUES_ISSUES_META_JS" resource_path="panels/issues/issues-meta.js" type="BINDATA" compress="false"/>
       <include file="panels/issues/issues.js" name="PANELS_ISSUES_ISSUES_JS" resource_path="panels/issues/issues.js" type="BINDATA" compress="false"/>
-      <include file="panels/js_timeline/js_timeline-meta.js" name="PANELS_JS_TIMELINE_JS_TIMELINE_META_JS" resource_path="panels/js_timeline/js_timeline-meta.js" type="BINDATA" compress="false"/>
-      <include file="panels/js_timeline/js_timeline.js" name="PANELS_JS_TIMELINE_JS_TIMELINE_JS" resource_path="panels/js_timeline/js_timeline.js" type="BINDATA" compress="false"/>
       <include file="panels/layer_viewer/layer_viewer-meta.js" name="PANELS_LAYER_VIEWER_LAYER_VIEWER_META_JS" resource_path="panels/layer_viewer/layer_viewer-meta.js" type="BINDATA" compress="false"/>
       <include file="panels/layer_viewer/layer_viewer.js" name="PANELS_LAYER_VIEWER_LAYER_VIEWER_JS" resource_path="panels/layer_viewer/layer_viewer.js" type="BINDATA" compress="false"/>
       <include file="panels/layers/layers-meta.js" name="PANELS_LAYERS_LAYERS_META_JS" resource_path="panels/layers/layers-meta.js" type="BINDATA" compress="false"/>

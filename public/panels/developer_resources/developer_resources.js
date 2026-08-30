@@ -11,23 +11,23 @@ __export(DeveloperResourcesView_exports, {
   DeveloperResourcesRevealer: () => DeveloperResourcesRevealer,
   DeveloperResourcesView: () => DeveloperResourcesView
 });
-import "./../../ui/legacy/legacy.js";
-import * as i18n3 from "./../../core/i18n/i18n.js";
-import * as Platform2 from "./../../core/platform/platform.js";
-import * as SDK2 from "./../../core/sdk/sdk.js";
-import * as UI2 from "./../../ui/legacy/legacy.js";
-import { html as html2, render as render2 } from "./../../ui/lit/lit.js";
-import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
+import "../../ui/legacy/legacy.js";
+import * as i18n3 from "../../core/i18n/i18n.js";
+import * as Platform2 from "../../core/platform/platform.js";
+import * as SDK2 from "../../core/sdk/sdk.js";
+import * as UI2 from "../../ui/legacy/legacy.js";
+import { html as html2, render as render2 } from "../../ui/lit/lit.js";
+import * as VisualLogging from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/developer_resources/DeveloperResourcesListView.js
-import "./../../ui/legacy/components/data_grid/data_grid.js";
-import "./../../ui/components/highlighting/highlighting.js";
-import * as Host from "./../../core/host/host.js";
-import * as i18n from "./../../core/i18n/i18n.js";
-import * as Platform from "./../../core/platform/platform.js";
-import * as SDK from "./../../core/sdk/sdk.js";
-import * as UI from "./../../ui/legacy/legacy.js";
-import { html, nothing, render } from "./../../ui/lit/lit.js";
+import "../../ui/legacy/components/data_grid/data_grid.js";
+import "../../ui/components/highlighting/highlighting.js";
+import * as Host from "../../core/host/host.js";
+import * as i18n from "../../core/i18n/i18n.js";
+import * as Platform from "../../core/platform/platform.js";
+import * as SDK from "../../core/sdk/sdk.js";
+import * as UI from "../../ui/legacy/legacy.js";
+import { html, nothing, render } from "../../ui/lit/lit.js";
 
 // gen/front_end/panels/developer_resources/developerResourcesListView.css.js
 var developerResourcesListView_css_default = `/*

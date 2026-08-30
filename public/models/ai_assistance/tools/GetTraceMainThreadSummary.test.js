@@ -25,9 +25,10 @@ describe('GetTraceMainThreadSummaryTool', () => {
         assert.strictEqual(displayInfo.title, 'Main thread activity: nav-to-lcp');
         assert.strictEqual(displayInfo.action, 'getTraceMainThreadSummary(\'nav-to-lcp\')');
     });
-    it('returns error when conversationContext is not available', async () => {
+    it('returns error when PerformanceTraceContext is not available', async () => {
         const context = {
             conversationContext: null,
+            getPerformanceTraceContext: () => null,
         };
         const tool = new GetTraceMainThreadSummaryTool();
         const result = await tool.handler({ label: 'nav-to-lcp' }, context);
@@ -39,7 +40,8 @@ describe('GetTraceMainThreadSummaryTool', () => {
         const traceContext = AiAssistance.PerformanceTraceContext.PerformanceTraceContext.fromParsedTrace(parsedTrace, universe.targetManager, new Tracing.FreshRecording.Tracker(), universe.debuggerWorkspaceBinding);
         sinon.stub(traceContext, 'getBoundsForLabel').returns(null);
         const capabilities = {
-            conversationContext: traceContext,
+            conversationContext: null,
+            getPerformanceTraceContext: () => traceContext,
         };
         const tool = new GetTraceMainThreadSummaryTool();
         const result = await tool.handler({ label: 'NAVIGATION_invalid' }, capabilities);
@@ -55,7 +57,8 @@ describe('GetTraceMainThreadSummaryTool', () => {
             formatMainThreadTrackSummary: sinon.stub().resolves('mock main thread summary details'),
         });
         const capabilities = {
-            conversationContext: traceContext,
+            conversationContext: null,
+            getPerformanceTraceContext: () => traceContext,
         };
         const tool = new GetTraceMainThreadSummaryTool();
         const result = await tool.handler({ label: 'trace-bounds' }, capabilities);

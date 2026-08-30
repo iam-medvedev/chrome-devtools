@@ -170,6 +170,12 @@ function convertToSamplingHeapProfile(profileHeader) {
     return (profileHeader.profile || profileHeader.protocolProfile());
 }
 export const maxLinkLength = 30;
+export var ViewTypes;
+(function (ViewTypes) {
+    ViewTypes["FLAME"] = "Flame";
+    ViewTypes["TREE"] = "Tree";
+    ViewTypes["HEAVY"] = "Heavy";
+})(ViewTypes || (ViewTypes = {}));
 export const DEFAULT_VIEW = (input, output, target) => {
     const { searchableView, dataProvider } = input;
     // clang-format off
@@ -965,6 +971,13 @@ export class SamplingHeapProfileType extends SamplingHeapProfileTypeBase {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     static TypeId = 'SamplingHeap';
 }
+(function (SamplingHeapProfileType) {
+    let Events;
+    (function (Events) {
+        Events["RECORDING_STOPPED"] = "RecordingStopped";
+        Events["STATS_UPDATE"] = "StatsUpdate";
+    })(Events = SamplingHeapProfileType.Events || (SamplingHeapProfileType.Events = {}));
+})(SamplingHeapProfileType || (SamplingHeapProfileType = {}));
 export class SamplingHeapProfileHeader extends WritableProfileHeader {
     heapProfilerModelInternal;
     protocolProfileInternal;

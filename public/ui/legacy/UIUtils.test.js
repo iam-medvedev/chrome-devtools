@@ -362,6 +362,96 @@ describe('UIUtils', () => {
             // The update is successfully synchronized to the clone!
             assert.strictEqual(widget.payload, 'updated');
         });
+        it('synchronizes widget config updates to cloned template for CHILD bindings and caches the DOM node', async () => {
+            class MockWidget extends UI.Widget.Widget {
+                payload = '';
+            }
+            class TestComponentCHILD extends UI.UIUtils.HTMLElementWithLightDOMTemplate {
+            }
+            if (!customElements.get('test-component-reactivity-child')) {
+                customElements.define('test-component-reactivity-child', TestComponentCHILD);
+            }
+            const container = document.createElement('div');
+            renderElementIntoDOM(container);
+            function renderMockWidget(payload) {
+                Lit.render(html `
+          <test-component-reactivity-child
+            .template=${html `${UI.Widget.widget(MockWidget, { payload })}`}></test-component-reactivity-child>`, container);
+            }
+            renderMockWidget('initial');
+            await raf();
+            const el = container.querySelector('test-component-reactivity-child');
+            assert.exists(el);
+            const template = el.querySelector('template');
+            assert.exists(template);
+            const lightWidgetStr = template.content.querySelector('devtools-widget');
+            assert.exists(lightWidgetStr);
+            // Simulate DevTools cloning the template into a shadow root
+            const shadowRootMock = document.createElement('div');
+            container.appendChild(shadowRootMock);
+            const shadowWidgetStr = UI.UIUtils.HTMLElementWithLightDOMTemplate.cloneNode(lightWidgetStr);
+            shadowRootMock.appendChild(shadowWidgetStr);
+            const widget = UI.Widget.Widget.get(shadowWidgetStr);
+            assert.instanceOf(widget, MockWidget);
+            assert.strictEqual(widget.payload, 'initial');
+            // Re-render with new payload
+            renderMockWidget('updated');
+            await raf();
+            // The update is successfully synchronized to the clone!
+            assert.strictEqual(widget.payload, 'updated');
+            // Also ensure it is the same DOM node
+            const updatedLightWidgetStr = template.content.querySelector('devtools-widget');
+            assert.strictEqual(updatedLightWidgetStr, lightWidgetStr, 'DOM node should be cached and reused for CHILD binding');
+        });
+        it('recreates the DOM node if widgetClass changes for CHILD bindings', async () => {
+            class MockWidgetA extends UI.Widget.Widget {
+                payload = '';
+            }
+            class MockWidgetB extends UI.Widget.Widget {
+                payload = '';
+            }
+            class TestComponentCHILDClass extends UI.UIUtils.HTMLElementWithLightDOMTemplate {
+            }
+            if (!customElements.get('test-component-reactivity-child-class')) {
+                customElements.define('test-component-reactivity-child-class', TestComponentCHILDClass);
+            }
+            const container = document.createElement('div');
+            renderElementIntoDOM(container);
+            let currentClass = MockWidgetA;
+            function renderMockWidget(payload) {
+                Lit.render(html `
+          <test-component-reactivity-child-class
+            .template=${html `${UI.Widget.widget(currentClass, { payload })}`}></test-component-reactivity-child-class>`, container);
+            }
+            renderMockWidget('initial');
+            await raf();
+            const el = container.querySelector('test-component-reactivity-child-class');
+            assert.exists(el);
+            const template = el.querySelector('template');
+            assert.exists(template);
+            const lightWidgetStrA = template.content.querySelector('devtools-widget');
+            assert.exists(lightWidgetStrA);
+            // Re-render with new class
+            currentClass = MockWidgetB;
+            renderMockWidget('updated class');
+            await raf();
+            const lightWidgetStrB = template.content.querySelector('devtools-widget');
+            assert.exists(lightWidgetStrB);
+            assert.notStrictEqual(lightWidgetStrB, lightWidgetStrA, 'DOM node should be recreated when widgetClass changes');
+            // Test inline factory recreation tracking
+            currentClass = (elem) => new MockWidgetB(elem);
+            renderMockWidget('updated factory');
+            await raf();
+            const lightWidgetStrC = template.content.querySelector('devtools-widget');
+            assert.exists(lightWidgetStrC);
+            assert.notStrictEqual(lightWidgetStrC, lightWidgetStrB, 'DOM node should be recreated for the initial inline factory array format');
+            const prevFactoryStrC = lightWidgetStrC;
+            currentClass = (elem) => new MockWidgetB(elem);
+            renderMockWidget('updated identical factory string');
+            await raf();
+            const lightWidgetStrD = template.content.querySelector('devtools-widget');
+            assert.strictEqual(lightWidgetStrD, prevFactoryStrC, 'DOM node should NOT be recreated if the identical inline factory stringified representations match');
+        });
     });
     describe('animateOn', () => {
         it('triggers an animation when the condition transitions from false to true', () => {
@@ -602,9 +692,9 @@ describe('bindCheckbox', () => {
     });
     describe('asyncFragmentLabel', () => {
         setupLocaleHooks();
-        it('returns "Async Call" if description is missing', () => {
+        it('returns "Async call" if description is missing', () => {
             const stackTrace = StubStackTrace.create([], [{ description: '', frames: [] }]);
-            assert.strictEqual(UI.UIUtils.asyncFragmentLabel(stackTrace, stackTrace.asyncFragments[0]), 'Async Call');
+            assert.strictEqual(UI.UIUtils.asyncFragmentLabel(stackTrace, stackTrace.asyncFragments[0]), 'Async call');
         });
         it('returns the description as is for other descriptions', () => {
             const stackTrace = StubStackTrace.create([], [{ description: 'Other description', frames: [] }]);
@@ -632,6 +722,42 @@ describe('bindCheckbox', () => {
                 { description: 'await', frames: [] },
             ]);
             assert.strictEqual(UI.UIUtils.asyncFragmentLabel(stackTrace, stackTrace.asyncFragments[1]), 'await in asyncFunction');
+        });
+    });
+    describe('createHistoryInput', () => {
+        it('navigates query history on ArrowUp and ArrowDown without dispatching redundant input events at boundaries', () => {
+            const inputElement = UI.UIUtils.createHistoryInput('search');
+            const inputEventSpy = sinon.spy();
+            inputElement.addEventListener('input', inputEventSpy);
+            inputElement.value = 'first';
+            inputElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', keyCode: 13, bubbles: true, cancelable: true }));
+            inputElement.value = 'second';
+            inputElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', keyCode: 13, bubbles: true, cancelable: true }));
+            // Navigate up to the previous history entry ('first', historyPosition 0)
+            const arrowUpEvent = new KeyboardEvent('keydown', { key: 'ArrowUp', keyCode: 38, shiftKey: false, bubbles: true, cancelable: true });
+            inputElement.dispatchEvent(arrowUpEvent);
+            assert.strictEqual(inputElement.value, 'first');
+            sinon.assert.calledOnce(inputEventSpy);
+            inputEventSpy.resetHistory();
+            // Hitting the boundary (historyPosition 0), no input event should be dispatched
+            inputElement.dispatchEvent(arrowUpEvent);
+            assert.strictEqual(inputElement.value, 'first');
+            sinon.assert.notCalled(inputEventSpy);
+            // Navigate down to the next history entry ('second', historyPosition 1)
+            const arrowDownEvent = new KeyboardEvent('keydown', { key: 'ArrowDown', keyCode: 40, shiftKey: false, bubbles: true, cancelable: true });
+            inputElement.dispatchEvent(arrowDownEvent);
+            assert.strictEqual(inputElement.value, 'second');
+            sinon.assert.calledOnce(inputEventSpy);
+            inputEventSpy.resetHistory();
+            // Navigate down to the empty search string (historyPosition 2)
+            inputElement.dispatchEvent(arrowDownEvent);
+            assert.strictEqual(inputElement.value, '');
+            sinon.assert.calledOnce(inputEventSpy);
+            inputEventSpy.resetHistory();
+            // Hitting the boundary (historyPosition 2), no input event should be dispatched
+            inputElement.dispatchEvent(arrowDownEvent);
+            assert.strictEqual(inputElement.value, '');
+            sinon.assert.notCalled(inputEventSpy);
         });
     });
 });

@@ -20,14 +20,14 @@ export default `/*
   fieldset {
     border: 0;
     padding: 0;
-    padding: 4px 0 0;
+    padding: var(--sys-size-3) 0 0;
   }
 
   .link {
     color: var(--sys-color-primary);
     text-decoration: underline;
     cursor: pointer;
-    outline-offset: 2px;
+    outline-offset: var(--sys-size-2);
   }
 
   .account-avatar {
@@ -46,11 +46,11 @@ export default `/*
   .account-email {
     display: flex;
     flex-direction: column;
-    margin-left: 8px;
+    margin-left: var(--sys-size-5);
   }
 
   .not-signed-in {
-    padding-bottom: 4px;
+    padding-bottom: var(--sys-size-3);
   }
 
   .setting-checkbox-container {
@@ -116,7 +116,7 @@ export default `/*
   }
 
   .gdp-profile-container .gdp-profile-details-content .setting-container {
-    margin: calc(var(--sys-size-3) - 6px) 0 -6px;
+    margin: calc(var(--sys-size-3) - var(--sys-size-4)) 0 calc(-1 * var(--sys-size-4));
     display: flex;
     align-items: center;
     gap: var(--sys-size-2);

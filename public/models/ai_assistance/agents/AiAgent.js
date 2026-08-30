@@ -7,6 +7,35 @@ import * as SDK from '../../../core/sdk/sdk.js';
 import { areOriginsEquivalent, extractContextOrigin, isOpaqueOrigin } from '../AiOrigins.js';
 import { debugLog, isStructuredLogEnabled } from '../debug.js';
 const MAX_SUGGESTION_LENGTH = 200;
+export var ResponseType;
+(function (ResponseType) {
+    ResponseType["CONTEXT"] = "context";
+    ResponseType["TITLE"] = "title";
+    ResponseType["THOUGHT"] = "thought";
+    ResponseType["ACTION"] = "action";
+    ResponseType["SIDE_EFFECT"] = "side-effect";
+    ResponseType["SUGGESTIONS"] = "suggestions";
+    ResponseType["ANSWER"] = "answer";
+    ResponseType["ERROR"] = "error";
+    ResponseType["QUERYING"] = "querying";
+    ResponseType["USER_QUERY"] = "user-query";
+    ResponseType["CONTEXT_CHANGE"] = "context-change";
+})(ResponseType || (ResponseType = {}));
+export var ErrorType;
+(function (ErrorType) {
+    ErrorType["UNKNOWN"] = "unknown";
+    ErrorType["ABORT"] = "abort";
+    ErrorType["MAX_STEPS"] = "max-steps";
+    ErrorType["BLOCK"] = "block";
+    ErrorType["CROSS_ORIGIN"] = "cross-origin";
+    ErrorType["QUOTA"] = "quota";
+    ErrorType["PAYLOAD_TOO_LARGE"] = "payload-too-large";
+})(ErrorType || (ErrorType = {}));
+export var MultimodalInputType;
+(function (MultimodalInputType) {
+    MultimodalInputType["SCREENSHOT"] = "screenshot";
+    MultimodalInputType["UPLOADED_IMAGE"] = "uploaded-image";
+})(MultimodalInputType || (MultimodalInputType = {}));
 export const MAX_STEPS = 10;
 export class ConversationContext {
     /**
@@ -33,13 +62,26 @@ export class ConversationContext {
      */
     isOriginAllowed(establishedOrigin) {
         const origin = this.getOrigin();
+        if (origin instanceof SDK.SecurityOrigin.SecurityOrigin) {
+            if (origin.isOpaque()) {
+                return false;
+            }
+            if (!establishedOrigin) {
+                return true;
+            }
+            const established = establishedOrigin instanceof SDK.SecurityOrigin.SecurityOrigin ?
+                establishedOrigin :
+                SDK.SecurityOrigin.SecurityOrigin.create(establishedOrigin);
+            return origin.isSameOriginWith(established);
+        }
         // If no origin is established yet, this context will be the one to lock the conversation.
         // Opaque origins are never allowed to be used as context.
         if (!establishedOrigin) {
             return !isOpaqueOrigin(origin);
         }
         // Only allow data that matches the origin the conversation is already locked to.
-        return areOriginsEquivalent(origin, establishedOrigin);
+        const establishedString = establishedOrigin instanceof SDK.SecurityOrigin.SecurityOrigin ? establishedOrigin.siteId() : establishedOrigin;
+        return areOriginsEquivalent(origin, establishedString);
     }
     /**
      * This method is called at the start of `AiAgent.run`.
@@ -94,13 +136,8 @@ export class AiAgent {
     #sessionId;
     #aidaClient;
     /**
-     * Whether server-side logging is permitted by the system policy (based on
-     * user preferences, feature flags, or branding configurations).
-     */
-    #serverSideLoggingAllowed;
-    /**
      * Tracks the dynamic runtime state of logging. Even if logging is allowed
-     * by policy, tools can temporarily deactivate this to avoid logging sensitive data.
+     * by policy, tools or sensitive contexts can deactivate this to avoid logging sensitive data.
      */
     #serverSideLoggingActive;
     confirmSideEffect;
@@ -128,7 +165,6 @@ export class AiAgent {
         if (Root.Runtime.hostConfig.devToolsGeminiRebranding?.enabled) {
             serverSideLoggingAllowed = false;
         }
-        this.#serverSideLoggingAllowed = serverSideLoggingAllowed;
         this.#serverSideLoggingActive = serverSideLoggingAllowed;
         this.#sessionId = opts.sessionId ?? crypto.randomUUID();
         this.confirmSideEffect = opts.confirmSideEffectForTest ?? (() => Promise.withResolvers());
@@ -172,17 +208,14 @@ export class AiAgent {
     clearCache() {
     }
     /**
-     * Toggles whether server-side logging is active.
-     * Note that logging can only be activated if it was allowed by policy/configuration
-     * at startup (i.e., `#serverSideLoggingAllowed` is true).
+     * Disables server-side logging for the remainder of this agent instance's lifetime.
+     *
+     * Logging deactivation is irreversible for the session. Conversation history
+     * accumulates across turns; re-enabling logging later would leak sensitive
+     * data from prior turns to AIDA.
      */
-    setServerSideLoggingActive(active) {
-        if (active && this.#serverSideLoggingAllowed) {
-            this.#serverSideLoggingActive = true;
-        }
-        else {
-            this.#serverSideLoggingActive = false;
-        }
+    disableServerSideLogging() {
+        this.#serverSideLoggingActive = false;
     }
     popPendingMultimodalInput() {
         return undefined;
@@ -332,9 +365,9 @@ export class AiAgent {
     }
     async *run(initialQuery, options, multimodalInput) {
         await options.selected?.refresh();
-        if (options.selected) {
-            this.context = options.selected;
-        }
+        // Reset context on each run so cleared selections (`null`) do not leave
+        // stale context references on long-lived agent instances (e.g. `AiAgent2`).
+        this.context = options.selected ?? undefined;
         await this.preRun();
         const enhancedQuery = await this.enhanceQuery(initialQuery, options.selected, multimodalInput?.type);
         if (!enhancedQuery.trim() && !multimodalInput) {
@@ -540,15 +573,22 @@ export class AiAgent {
             if (options?.signal?.aborted) {
                 sideEffectConfirmationPromiseWithResolvers.resolve(false);
             }
-            options?.signal?.addEventListener('abort', () => {
+            const onAbort = () => {
                 sideEffectConfirmationPromiseWithResolvers.resolve(false);
-            }, { once: true });
+            };
+            options?.signal?.addEventListener('abort', onAbort, { once: true });
             yield {
                 type: "side-effect" /* ResponseType.SIDE_EFFECT */,
                 confirm: sideEffectConfirmationPromiseWithResolvers.resolve,
                 description: result.description,
             };
-            const approvedRun = await sideEffectConfirmationPromiseWithResolvers.promise;
+            let approvedRun = false;
+            try {
+                approvedRun = await sideEffectConfirmationPromiseWithResolvers.promise;
+            }
+            finally {
+                options?.signal?.removeEventListener('abort', onAbort);
+            }
             if (!approvedRun) {
                 yield {
                     type: "action" /* ResponseType.ACTION */,

@@ -17,7 +17,7 @@ export default `/*
   align-items: center;
   justify-content: center;
   padding: 0;
-  margin: 0 -2px 0 4px;
+  margin: 0 calc(-1 * var(--sys-size-2)) 0 var(--sys-size-3);
   overflow: hidden;
   border-radius: 0;
   border: none;

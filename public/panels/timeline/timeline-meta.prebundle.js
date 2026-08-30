@@ -374,8 +374,6 @@ Common.Settings.registerSettingExtension({
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: false,
 });
-// IMPORTANT: if you are updating this, you should also update the setting in
-// js_timeline-meta.
 Common.Settings.registerSettingExtension({
     category: "PERFORMANCE" /* Common.Settings.SettingCategory.PERFORMANCE */,
     storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
@@ -388,8 +386,6 @@ SettingsUI.SettingUIRegistration.register(LiveMetrics.timelineEnableSoftNavigati
     category: "PERFORMANCE" /* Common.Settings.SettingCategory.PERFORMANCE */,
     title: i18nLazyString(UIStrings.enableSoftNavigations),
 });
-// IMPORTANT: if you are updating this, you should also update the setting in
-// js_timeline-meta.
 Common.Settings.registerSettingExtension({
     category: "PERFORMANCE" /* Common.Settings.SettingCategory.PERFORMANCE */,
     storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
@@ -398,8 +394,6 @@ Common.Settings.registerSettingExtension({
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: false,
 });
-// IMPORTANT: if you are updating this, you should also update the setting in
-// js_timeline-meta.
 Common.Settings.registerSettingExtension({
     category: "PERFORMANCE" /* Common.Settings.SettingCategory.PERFORMANCE */,
     storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,

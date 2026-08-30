@@ -40,14 +40,14 @@ export default `/*
 
   .section {
     display: flex;
-    padding: 0 16px;
-    gap: 8px;
+    padding: 0 var(--sys-size-8);
+    gap: var(--sys-size-5);
     position: relative;
   }
 
   .section::after {
     content: '';
-    border-bottom: 1px solid var(--sys-color-divider);
+    border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
     position: absolute;
     left: 0;
     right: 0;
@@ -60,8 +60,8 @@ export default `/*
   }
 
   .screenshot-wrapper {
-    flex: 0 0 80px;
-    padding-top: 32px;
+    flex: 0 0 var(--sys-size-19);
+    padding-top: var(--sys-size-13);
     /* We want this to be on top of \\'.step-overlay\\' */
     z-index: 2;
   }
@@ -78,7 +78,7 @@ export default `/*
     max-width: 100%;
     width: 200px;
     height: auto;
-    border: 1px solid var(--sys-color-divider);
+    border: var(--sys-size-1) solid var(--sys-color-divider);
     border-radius: 1px;
   }
 
@@ -96,55 +96,55 @@ export default `/*
 
   .step {
     position: relative;
-    padding-left: 40px;
-    margin: 16px 0;
+    padding-left: var(--sys-size-14);
+    margin: var(--sys-size-8) 0;
   }
 
   .step .action {
-    font-size: 13px;
-    line-height: 16px;
+    font-size: var(--sys-typescale-body3-size);
+    line-height: var(--sys-typescale-body4-line-height);
     letter-spacing: 0.03em;
   }
 
   .recording {
     color: var(--sys-color-primary);
     font-style: italic;
-    margin-top: 8px;
+    margin-top: var(--sys-size-5);
     margin-bottom: 0;
   }
 
   .add-assertion-button {
-    margin-top: 8px;
+    margin-top: var(--sys-size-5);
   }
 
   .details {
-    max-width: 240px;
+    max-width: var(--sys-size-28);
     display: flex;
     flex-direction: column;
     align-items: flex-end;
   }
 
   .url {
-    font-size: 12px;
-    line-height: 16px;
+    font-size: var(--sys-typescale-body4-size);
+    line-height: var(--sys-typescale-body4-line-height);
     letter-spacing: 0.03em;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     color: var(--sys-color-secondary);
     max-width: 100%;
-    margin-bottom: 16px;
+    margin-bottom: var(--sys-size-8);
   }
 
   .header {
     flex-shrink: 0;
     align-items: center;
-    border-bottom: 1px solid var(--sys-color-divider);
+    border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
     justify-content: space-between;
-    padding: 16px;
+    padding: var(--sys-size-8);
   }
 
   .header-title-wrapper {
@@ -160,8 +160,8 @@ export default `/*
 
   .header-title::before {
     content: '';
-    min-width: 12px;
-    height: 12px;
+    min-width: var(--sys-size-6);
+    height: var(--sys-size-6);
     display: inline-block;
     background: var(--sys-color-primary);
     border-radius: 50%;
@@ -171,11 +171,11 @@ export default `/*
   #title-input {
     font-family: inherit;
     field-sizing: content;
-    font-size: 18px;
+    font-size: var(--sys-typescale-headline3-size);
     line-height: 22px;
     letter-spacing: 0.02em;
-    padding: 1px 4px;
-    border: 1px solid transparent;
+    padding: var(--sys-size-1) var(--sys-size-3);
+    border: var(--sys-size-1) solid transparent;
     border-radius: 1px;
     word-break: break-all;
   }
@@ -194,14 +194,14 @@ export default `/*
   }
 
   .title-input-error-text {
-    margin-top: 4px;
+    margin-top: var(--sys-size-3);
     margin-left: 19px;
     color: var(--sys-color-error);
   }
 
   .title-button-bar {
     flex-shrink: 0;
-    padding-left: 2px;
+    padding-left: var(--sys-size-2);
     display: flex;
   }
 
@@ -210,16 +210,16 @@ export default `/*
   }
 
   .settings-row {
-    padding: 16px 28px;
-    border-bottom: 1px solid var(--sys-color-divider);
+    padding: var(--sys-size-8) var(--sys-size-12);
+    border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
     display: flex;
     flex-flow: row wrap;
     justify-content: space-between;
   }
 
   .settings-title {
-    font-size: 14px;
-    line-height: 24px;
+    font-size: var(--sys-typescale-body2-size);
+    line-height: var(--sys-typescale-body1-line-height);
     letter-spacing: 0.03em;
     color: var(--sys-color-on-surface);
     display: flex;
@@ -230,16 +230,16 @@ export default `/*
   }
 
   .settings-title:focus-visible {
-    outline: 2px solid var(--sys-color-state-focus-ring);
-    outline-offset: 2px;
+    outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
+    outline-offset: var(--sys-size-2);
   }
 
   .settings {
-    margin-top: 4px;
+    margin-top: var(--sys-size-3);
     display: flex;
     flex-wrap: wrap;
-    font-size: 12px;
-    line-height: 20px;
+    font-size: var(--sys-typescale-body4-size);
+    line-height: var(--sys-typescale-body2-line-height);
     letter-spacing: 0.03em;
     color: var(--sys-color-on-surface-subtle);
   }
@@ -249,8 +249,8 @@ export default `/*
   }
 
   .settings .separator {
-    width: 1px;
-    height: 20px;
+    width: var(--sys-size-1);
+    height: var(--sys-size-9);
     background-color: var(--sys-color-divider);
     margin: 0 5px;
   }
@@ -259,12 +259,12 @@ export default `/*
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: var(--sys-size-6);
   }
 
   .actions .separator {
-    width: 1px;
-    height: 24px;
+    width: var(--sys-size-1);
+    height: var(--sys-size-11);
     background-color: var(--sys-color-divider);
   }
 
@@ -275,8 +275,8 @@ export default `/*
   .footer {
     display: flex;
     justify-content: center;
-    border-top: 1px solid var(--sys-color-divider);
-    padding: 12px;
+    border-top: var(--sys-size-1) solid var(--sys-color-divider);
+    padding: var(--sys-size-6);
     background: var(--sys-color-cdt-base-container);
     z-index: 1;
   }
@@ -290,8 +290,8 @@ export default `/*
   }
 
   .chevron {
-    width: 14px;
-    height: 14px;
+    width: var(--sys-size-7);
+    height: var(--sys-size-7);
     transform: rotate(-90deg);
     color: var(--sys-color-on-surface);
   }
@@ -303,7 +303,7 @@ export default `/*
   .editable-setting {
     display: flex;
     flex-direction: row;
-    gap: 12px;
+    gap: var(--sys-size-6);
     align-items: center;
   }
 
@@ -315,7 +315,7 @@ export default `/*
   .wrapping-label {
     display: inline-flex;
     align-items: center;
-    gap: 12px;
+    gap: var(--sys-size-6);
   }
 
   .text-editor {
@@ -332,7 +332,7 @@ export default `/*
   }
 
   .section-toolbar > devtools-select-menu {
-    height: 24px;
+    height: var(--sys-size-11);
     min-width: 50px;
   }
 
@@ -358,7 +358,7 @@ export default `/*
   }
 
   [slot='sidebar'] .section-toolbar {
-    border-bottom: 1px solid var(--sys-color-divider);
+    border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
   }
 
   .recorder-extension-view {

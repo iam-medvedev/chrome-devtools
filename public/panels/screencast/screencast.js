@@ -9,7 +9,7 @@ var InputModel_exports = {};
 __export(InputModel_exports, {
   InputModel: () => InputModel
 });
-import * as SDK from "./../../core/sdk/sdk.js";
+import * as SDK from "../../core/sdk/sdk.js";
 var BUTTONS = [
   "left",
   "middle",
@@ -112,10 +112,10 @@ __export(ScreencastApp_exports, {
   ScreencastAppProvider: () => ScreencastAppProvider,
   ToolbarButtonProvider: () => ToolbarButtonProvider
 });
-import * as Common2 from "./../../core/common/common.js";
-import * as i18n3 from "./../../core/i18n/i18n.js";
-import * as SDK3 from "./../../core/sdk/sdk.js";
-import * as UI2 from "./../../ui/legacy/legacy.js";
+import * as Common2 from "../../core/common/common.js";
+import * as i18n3 from "../../core/i18n/i18n.js";
+import * as SDK3 from "../../core/sdk/sdk.js";
+import * as UI2 from "../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/screencast/ScreencastView.js
 var ScreencastView_exports = {};
@@ -128,13 +128,13 @@ __export(ScreencastView_exports, {
   SCHEME_REGEX: () => SCHEME_REGEX,
   ScreencastView: () => ScreencastView
 });
-import * as Common from "./../../core/common/common.js";
-import * as Host from "./../../core/host/host.js";
-import * as i18n from "./../../core/i18n/i18n.js";
-import * as SDK2 from "./../../core/sdk/sdk.js";
-import * as Buttons from "./../../ui/components/buttons/buttons.js";
-import * as UI from "./../../ui/legacy/legacy.js";
-import { Directives, html, nothing, render } from "./../../ui/lit/lit.js";
+import * as Common from "../../core/common/common.js";
+import * as Host from "../../core/host/host.js";
+import * as i18n from "../../core/i18n/i18n.js";
+import * as SDK2 from "../../core/sdk/sdk.js";
+import * as Buttons from "../../ui/components/buttons/buttons.js";
+import * as UI from "../../ui/legacy/legacy.js";
+import { Directives, html, nothing, render } from "../../ui/lit/lit.js";
 
 // gen/front_end/panels/screencast/screencastView.css.js
 var screencastView_css_default = `/*

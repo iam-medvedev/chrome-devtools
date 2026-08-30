@@ -1,18 +1,18 @@
 // gen/front_end/legacy_test_runner/test_runner/test_runner.prebundle.js
-import * as Common2 from "./../../core/common/common.js";
-import * as Root2 from "./../../core/root/root.js";
-import * as SDK2 from "./../../core/sdk/sdk.js";
-import * as Tracing from "./../../services/tracing/tracing.js";
+import * as Common2 from "../../core/common/common.js";
+import * as Root2 from "../../core/root/root.js";
+import * as SDK2 from "../../core/sdk/sdk.js";
+import * as Tracing from "../../services/tracing/tracing.js";
 
 // gen/front_end/legacy_test_runner/test_runner/TestRunner.js
-import * as Common from "./../../core/common/common.js";
-import * as ProtocolClient from "./../../core/protocol_client/protocol_client.js";
-import * as Root from "./../../core/root/root.js";
-import * as SDK from "./../../core/sdk/sdk.js";
-import * as Bindings from "./../../models/bindings/bindings.js";
-import * as Workspace from "./../../models/workspace/workspace.js";
-import * as CodeHighlighter from "./../../ui/components/code_highlighter/code_highlighter.js";
-import * as UI from "./../../ui/legacy/legacy.js";
+import * as Common from "../../core/common/common.js";
+import * as ProtocolClient from "../../core/protocol_client/protocol_client.js";
+import * as Root from "../../core/root/root.js";
+import * as SDK from "../../core/sdk/sdk.js";
+import * as Bindings from "../../models/bindings/bindings.js";
+import * as Workspace from "../../models/workspace/workspace.js";
+import * as CodeHighlighter from "../../ui/components/code_highlighter/code_highlighter.js";
+import * as UI from "../../ui/legacy/legacy.js";
 function isDebugTest() {
   return !self.testRunner || Boolean(Root.Runtime.Runtime.queryParam("debugFrontend"));
 }

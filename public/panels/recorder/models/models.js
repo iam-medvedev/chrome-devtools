@@ -6,14 +6,25 @@ var __export = (target, all) => {
 
 // gen/front_end/panels/recorder/models/ConverterIds.js
 var ConverterIds_exports = {};
+__export(ConverterIds_exports, {
+  ConverterIds: () => ConverterIds
+});
+var ConverterIds;
+(function(ConverterIds2) {
+  ConverterIds2["JSON"] = "json";
+  ConverterIds2["PUPPETEER"] = "puppeteer";
+  ConverterIds2["PUPPETEER_FIREFOX"] = "puppeteer-firefox";
+  ConverterIds2["REPLAY"] = "@puppeteer/replay";
+  ConverterIds2["LIGHTHOUSE"] = "lighthouse";
+})(ConverterIds || (ConverterIds = {}));
 
 // gen/front_end/panels/recorder/models/RecorderSettings.js
 var RecorderSettings_exports = {};
 __export(RecorderSettings_exports, {
   RecorderSettings: () => RecorderSettings
 });
-import * as Common from "./../../../core/common/common.js";
-import * as i18n from "./../../../core/i18n/i18n.js";
+import * as Common from "../../../core/common/common.js";
+import * as i18n from "../../../core/i18n/i18n.js";
 
 // gen/front_end/panels/recorder/models/Schema.js
 var Schema_exports = {};
@@ -22,7 +33,7 @@ __export(Schema_exports, {
   SelectorType: () => SelectorType,
   StepType: () => StepType
 });
-import { AssertedEventType, SelectorType, StepType } from "./../../../third_party/puppeteer-replay/puppeteer-replay.js";
+import { AssertedEventType, SelectorType, StepType } from "../../../third_party/puppeteer-replay/puppeteer-replay.js";
 
 // gen/front_end/panels/recorder/models/RecorderSettings.js
 var UIStrings = {
@@ -103,7 +114,7 @@ var RecorderShortcutHelper_exports = {};
 __export(RecorderShortcutHelper_exports, {
   RecorderShortcutHelper: () => RecorderShortcutHelper
 });
-import * as UI from "./../../../ui/legacy/legacy.js";
+import * as UI from "../../../ui/legacy/legacy.js";
 var RecorderShortcutHelper = class {
   #abortController;
   #timeoutId = null;
@@ -137,13 +148,23 @@ var RecorderShortcutHelper = class {
 // gen/front_end/panels/recorder/models/RecordingPlayer.js
 var RecordingPlayer_exports = {};
 __export(RecordingPlayer_exports, {
+  Events: () => Events,
+  PlayRecordingSpeed: () => PlayRecordingSpeed,
   RecordingPlayer: () => RecordingPlayer,
+  ReplayResult: () => ReplayResult,
   defaultTimeout: () => defaultTimeout
 });
-import * as Common2 from "./../../../core/common/common.js";
-import * as SDK from "./../../../core/sdk/sdk.js";
-import * as PuppeteerService from "./../../../services/puppeteer/puppeteer.js";
-import * as PuppeteerReplay from "./../../../third_party/puppeteer-replay/puppeteer-replay.js";
+import * as Common2 from "../../../core/common/common.js";
+import * as SDK from "../../../core/sdk/sdk.js";
+import * as PuppeteerService from "../../../services/puppeteer/puppeteer.js";
+import * as PuppeteerReplay from "../../../third_party/puppeteer-replay/puppeteer-replay.js";
+var PlayRecordingSpeed;
+(function(PlayRecordingSpeed2) {
+  PlayRecordingSpeed2["NORMAL"] = "normal";
+  PlayRecordingSpeed2["SLOW"] = "slow";
+  PlayRecordingSpeed2["VERY_SLOW"] = "very_slow";
+  PlayRecordingSpeed2["EXTREMELY_SLOW"] = "extremely_slow";
+})(PlayRecordingSpeed || (PlayRecordingSpeed = {}));
 var speedDelayMap = {
   [
     "normal"
@@ -162,6 +183,11 @@ var speedDelayMap = {
     /* PlayRecordingSpeed.EXTREMELY_SLOW */
   ]: 2e3
 };
+var ReplayResult;
+(function(ReplayResult2) {
+  ReplayResult2["FAILURE"] = "Failure";
+  ReplayResult2["SUCCESS"] = "Success";
+})(ReplayResult || (ReplayResult = {}));
 var defaultTimeout = 5e3;
 function isPageTarget(target) {
   return Common2.ParsedURL.schemeIs(target.url, "devtools:") || target.type === "page" || target.type === "background_page" || target.type === "webview";
@@ -383,17 +409,27 @@ var RecordingPlayer = class _RecordingPlayer extends Common2.ObjectWrapper.Objec
     }
   }
 };
+var Events;
+(function(Events3) {
+  Events3["ABORT"] = "Abort";
+  Events3["DONE"] = "Done";
+  Events3["STEP"] = "Step";
+  Events3["STOP"] = "Stop";
+  Events3["ERROR"] = "Error";
+  Events3["CONTINUE"] = "Continue";
+})(Events || (Events = {}));
 
 // gen/front_end/panels/recorder/models/RecordingSession.js
 var RecordingSession_exports = {};
 __export(RecordingSession_exports, {
+  Events: () => Events2,
   RecordingSession: () => RecordingSession
 });
-import * as Common3 from "./../../../core/common/common.js";
-import * as Platform from "./../../../core/platform/platform.js";
-import * as SDK3 from "./../../../core/sdk/sdk.js";
-import * as UI2 from "./../../../ui/legacy/legacy.js";
-import * as Util from "./../util/util.js";
+import * as Common3 from "../../../core/common/common.js";
+import * as Platform from "../../../core/platform/platform.js";
+import * as SDK3 from "../../../core/sdk/sdk.js";
+import * as UI2 from "../../../ui/legacy/legacy.js";
+import * as Util from "../util/util.js";
 
 // gen/front_end/panels/recorder/models/SchemaUtils.js
 var SchemaUtils_exports = {};
@@ -406,7 +442,7 @@ __export(SchemaUtils_exports, {
   parse: () => parse2,
   parseStep: () => parseStep2
 });
-import * as PuppeteerReplay2 from "./../../../third_party/puppeteer-replay/puppeteer-replay.js";
+import * as PuppeteerReplay2 from "../../../third_party/puppeteer-replay/puppeteer-replay.js";
 function createViewportStep(viewport) {
   return {
     type: StepType.SetViewport,
@@ -448,7 +484,7 @@ __export(SDKUtils_exports, {
   getTargetName: () => getTargetName,
   isFrameTargetInfo: () => isFrameTargetInfo
 });
-import * as SDK2 from "./../../../core/sdk/sdk.js";
+import * as SDK2 from "../../../core/sdk/sdk.js";
 function getTargetName(target) {
   if (SDK2.TargetManager.TargetManager.instance().primaryPageTarget() === target) {
     return "main";
@@ -1073,6 +1109,11 @@ var RecordingSession = class _RecordingSession extends Common3.ObjectWrapper.Obj
     ]);
   }
 };
+var Events2;
+(function(Events3) {
+  Events3["RECORDING_UPDATED"] = "recordingupdated";
+  Events3["RECORDING_STOPPED"] = "recordingstopped";
+})(Events2 || (Events2 = {}));
 
 // gen/front_end/panels/recorder/models/RecordingSettings.js
 var RecordingSettings_exports = {};
@@ -1082,8 +1123,8 @@ var RecordingStorage_exports = {};
 __export(RecordingStorage_exports, {
   RecordingStorage: () => RecordingStorage
 });
-import * as Common4 from "./../../../core/common/common.js";
-import * as Platform2 from "./../../../core/platform/platform.js";
+import * as Common4 from "../../../core/common/common.js";
+import * as Platform2 from "../../../core/platform/platform.js";
 var instance = null;
 var UUIDGenerator = class {
   next() {
@@ -1154,7 +1195,7 @@ var ScreenshotStorage_exports = {};
 __export(ScreenshotStorage_exports, {
   ScreenshotStorage: () => ScreenshotStorage
 });
-import * as Common5 from "./../../../core/common/common.js";
+import * as Common5 from "../../../core/common/common.js";
 var instance2 = null;
 var DEFAULT_MAX_STORAGE_SIZE = 50 * 1024 * 1024;
 var ScreenshotStorage = class _ScreenshotStorage {
@@ -1235,7 +1276,7 @@ __export(ScreenshotUtils_exports, {
   resizeScreenshot: () => resizeScreenshot,
   takeScreenshot: () => takeScreenshot
 });
-import * as SDK4 from "./../../../core/sdk/sdk.js";
+import * as SDK4 from "../../../core/sdk/sdk.js";
 var SCREENSHOT_WIDTH = 160;
 var SCREENSHOT_MAX_HEIGHT = 240;
 async function captureScreenshot() {
@@ -1336,7 +1377,7 @@ var Tooltip_exports = {};
 __export(Tooltip_exports, {
   getTooltipForActions: () => getTooltipForActions
 });
-import * as UI3 from "./../../../ui/legacy/legacy.js";
+import * as UI3 from "../../../ui/legacy/legacy.js";
 function getTooltipForActions(translation, action) {
   let title = translation;
   const shortcuts = UI3.ShortcutRegistry.ShortcutRegistry.instance().shortcutsForAction(action);

@@ -53,4 +53,8 @@ export class ExtensionManager extends Common.ObjectWrapper.ObjectWrapper {
         }
     };
 }
+export var Events;
+(function (Events) {
+    Events["EXTENSIONS_UPDATED"] = "extensionsUpdated";
+})(Events || (Events = {}));
 //# sourceMappingURL=ExtensionManager.js.map

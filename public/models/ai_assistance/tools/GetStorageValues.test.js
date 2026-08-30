@@ -38,15 +38,15 @@ describe('GetStorageValuesTool', () => {
         sinon.stub(mockStorage, 'isLocalStorage').get(() => true);
         mockStorage.getItems.resolves([['key1', 'value1']]);
         activeStorages = [mockStorage];
-        const setLoggingEnabledStub = sinon.stub();
+        const disableLoggingStub = sinon.stub();
         const context = {
             conversationContext: null,
             getEstablishedOrigin: sinon.stub().returns('https://example.com'),
-            setLoggingEnabled: setLoggingEnabledStub,
+            disableLogging: disableLoggingStub,
         };
         const tool = new AiAssistance.GetStorageValues.GetStorageValuesTool();
         const response = await tool.handler({ type: 'localStorage', keys: ['key1'], origins: ['https://example.com'] }, context);
-        sinon.assert.calledWith(setLoggingEnabledStub, false);
+        sinon.assert.calledOnce(disableLoggingStub);
         assert.isTrue('requiresApproval' in response && response.requiresApproval);
         if ('requiresApproval' in response) {
             assert.include(response.description || '', 'key1');
@@ -62,7 +62,7 @@ describe('GetStorageValuesTool', () => {
         const context = {
             conversationContext: null,
             getEstablishedOrigin: sinon.stub().returns('https://example.com'),
-            setLoggingEnabled: sinon.stub(),
+            disableLogging: sinon.stub(),
         };
         const tool = new AiAssistance.GetStorageValues.GetStorageValuesTool();
         const response = await tool.handler({ type: 'localStorage', keys: ['key1', 'key2'], origins: ['https://example.com'] }, context, { approved: true });
@@ -91,7 +91,7 @@ describe('GetStorageValuesTool', () => {
         const context = {
             conversationContext: null,
             getEstablishedOrigin: sinon.stub().returns('https://example.com'),
-            setLoggingEnabled: sinon.stub(),
+            disableLogging: sinon.stub(),
         };
         const tool = new AiAssistance.GetStorageValues.GetStorageValuesTool();
         const response = await tool.handler({ type: 'sessionStorage', keys: ['sessKey'], origins: ['https://example.com'] }, context, { approved: true });
@@ -115,7 +115,7 @@ describe('GetStorageValuesTool', () => {
         const context = {
             conversationContext: null,
             getEstablishedOrigin: sinon.stub().returns('https://example.com'),
-            setLoggingEnabled: sinon.stub(),
+            disableLogging: sinon.stub(),
         };
         const tool = new AiAssistance.GetStorageValues.GetStorageValuesTool();
         const response = await tool.handler({ type: 'localStorage', keys: ['key1'], origins: ['https://example.com'] }, context, { approved: true });
@@ -133,7 +133,7 @@ describe('GetStorageValuesTool', () => {
         const context = {
             conversationContext: null,
             getEstablishedOrigin: sinon.stub().returns('https://example.com'),
-            setLoggingEnabled: sinon.stub(),
+            disableLogging: sinon.stub(),
         };
         const tool = new AiAssistance.GetStorageValues.GetStorageValuesTool();
         const response = await tool.handler({ type: 'localStorage', keys: ['hugeKey'], origins: ['https://example.com'] }, context, { approved: true });
@@ -148,7 +148,7 @@ describe('GetStorageValuesTool', () => {
         const context = {
             conversationContext: null,
             getEstablishedOrigin: sinon.stub().returns(''),
-            setLoggingEnabled: sinon.stub(),
+            disableLogging: sinon.stub(),
         };
         const tool = new AiAssistance.GetStorageValues.GetStorageValuesTool();
         const response = await tool.handler({ type: 'localStorage', keys: ['key1'], origins: ['https://example.com'] }, context, { approved: true });
@@ -160,7 +160,7 @@ describe('GetStorageValuesTool', () => {
         const context = {
             conversationContext: null,
             getEstablishedOrigin: sinon.stub().returns('https://example.com'),
-            setLoggingEnabled: sinon.stub(),
+            disableLogging: sinon.stub(),
         };
         const tool = new AiAssistance.GetStorageValues.GetStorageValuesTool();
         const response = await tool.handler({ type: 'localStorage', keys: ['key1'], origins: ['https://example.com'] }, context, { approved: true });
@@ -181,7 +181,7 @@ describe('GetStorageValuesTool', () => {
         const context = {
             conversationContext: null,
             getEstablishedOrigin: sinon.stub().returns('https://example.com'),
-            setLoggingEnabled: sinon.stub(),
+            disableLogging: sinon.stub(),
         };
         const tool = new AiAssistance.GetStorageValues.GetStorageValuesTool();
         const response = await tool.handler({ type: 'localStorage', keys: ['key1'], origins: ['https://example.com'], storageKey: 'https://example.com^1' }, context, { approved: true });
@@ -204,18 +204,24 @@ describe('GetStorageValuesTool', () => {
         const context = {
             conversationContext: null,
             getEstablishedOrigin: sinon.stub().returns('https://example.com'),
-            setLoggingEnabled: sinon.stub(),
+            disableLogging: sinon.stub(),
         };
         const tool = new AiAssistance.GetStorageValues.GetStorageValuesTool();
         const response = await tool.handler({ type: 'localStorage', keys: ['key1'], origins: ['https://blocked-domain.com'] }, context, { approved: true });
         assertIsError(response);
         assert.strictEqual(response.error, 'No valid origins found.');
     });
-    it('returns correct displayInfoFromArgs', () => {
+    it('returns correct displayInfoFromArgs for localStorage', () => {
         const tool = new AiAssistance.GetStorageValues.GetStorageValuesTool();
         const info = tool.displayInfoFromArgs({ type: 'localStorage', keys: ['key1'], origins: ['https://example.com'] });
-        assert.strictEqual(info.title, 'Reading storage values');
+        assert.strictEqual(info.title, 'Reading local storage values');
         assert.strictEqual(info.action, 'getStorageValues(\'localStorage\', ["key1"], ["https://example.com"])');
+    });
+    it('returns correct displayInfoFromArgs for sessionStorage', () => {
+        const tool = new AiAssistance.GetStorageValues.GetStorageValuesTool();
+        const info = tool.displayInfoFromArgs({ type: 'sessionStorage', keys: ['key1'], origins: ['https://example.com'] });
+        assert.strictEqual(info.title, 'Reading session storage values');
+        assert.strictEqual(info.action, 'getStorageValues(\'sessionStorage\', ["key1"], ["https://example.com"])');
     });
     it('omits non-existent keys from returned values', async () => {
         setupPrimaryTarget('https://example.com');
@@ -227,7 +233,7 @@ describe('GetStorageValuesTool', () => {
         const context = {
             conversationContext: null,
             getEstablishedOrigin: sinon.stub().returns('https://example.com'),
-            setLoggingEnabled: sinon.stub(),
+            disableLogging: sinon.stub(),
         };
         const tool = new AiAssistance.GetStorageValues.GetStorageValuesTool();
         const response = await tool.handler({ type: 'localStorage', keys: ['nonExistentKey'], origins: ['https://example.com'] }, context, { approved: true });
@@ -253,7 +259,7 @@ describe('GetStorageValuesTool', () => {
         const context = {
             conversationContext: null,
             getEstablishedOrigin: sinon.stub().returns('https://example.com'),
-            setLoggingEnabled: sinon.stub(),
+            disableLogging: sinon.stub(),
         };
         const tool = new AiAssistance.GetStorageValues.GetStorageValuesTool();
         const response = await tool.handler({ type: 'localStorage', keys: ['key1'], origins: ['https://example.com/'] }, context, { approved: true });
@@ -285,7 +291,7 @@ describe('GetStorageValuesTool', () => {
         const context = {
             conversationContext: null,
             getEstablishedOrigin: sinon.stub().returns('https://example.com'),
-            setLoggingEnabled: sinon.stub(),
+            disableLogging: sinon.stub(),
         };
         const tool = new AiAssistance.GetStorageValues.GetStorageValuesTool();
         const response = await tool.handler({

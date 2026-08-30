@@ -39,7 +39,7 @@ export default `/**
   }
 
   .overview-toolbar {
-    border-bottom: 1px solid var(--sys-color-divider);
+    border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
     flex: 0 0 auto;
   }
 

@@ -1032,9 +1032,7 @@ Invoke-WebRequest -UseBasicParsing -Uri "https://url-header-and-content-overridd
         connection.setSuccessHandler('Network.emulateNetworkConditionsByRule', params => params.matchedNetworkConditions.length > 0 ? { ruleIds: [ruleId] } : { ruleIds: [] });
         SDK.NetworkManager.MultitargetNetworkManager.instance({ forceNew: true });
         networkLogView = createNetworkLogView();
-        const container = renderElementIntoDOM(document.createElement('div'), { includeCommonStyles: true });
-        networkLogView.markAsRoot();
-        networkLogView.show(container);
+        renderElementIntoDOM(networkLogView, { includeCommonStyles: true, width: 400, height: 100 });
         networkLogView.columns().switchViewMode(true);
         networkLogView.setRecording(true);
         const ruleId = 'rule-id';
@@ -1075,12 +1073,10 @@ Invoke-WebRequest -UseBasicParsing -Uri "https://url-header-and-content-overridd
         assert.exists(networkManager);
         networkLog.modelAdded(networkManager);
         networkManager.dispatchEventToListeners(SDK.NetworkManager.Events.LoadingFinished, request);
-        networkLogView.element.style.height = '100px';
-        networkLogView.element.style.width = '400px';
         networkLogView.columns().dataGrid().updateInstantly();
         await assertScreenshot('network-log/throttled-request.png');
         await RenderCoordinator.done();
-        const icons = Array.from(container.querySelectorAll('devtools-icon'));
+        const icons = Array.from(networkLogView.element.querySelectorAll('devtools-icon'));
         assert.deepEqual(icons.map(e => e.title), ['Other (throttled to 3G)', 'Request was throttled (3G)']);
         const appliedConditions = SDK.NetworkManager.MultitargetNetworkManager.instance().appliedRequestConditions(request);
         assert.exists(appliedConditions);
@@ -1380,14 +1376,16 @@ describeWithEnvironment('NetworkLogView', () => {
     });
 });
 function testPlaceholderText(networkLogView, expectedHeaderText, expectedDescriptionText) {
-    const emptyWidget = networkLogView.element.querySelector('.empty-state');
+    const emptyWidgetHost = networkLogView.element.querySelector('.network-status-pane');
+    const emptyWidget = emptyWidgetHost?.shadowRoot;
     const header = emptyWidget?.querySelector('.empty-state-header')?.textContent;
     const description = emptyWidget?.querySelector('.empty-state-description > span')?.textContent;
     assert.deepEqual(header, expectedHeaderText);
     assert.deepEqual(description, expectedDescriptionText);
 }
 function testPlaceholderButton(networkLogView, expectedButtonText, actionId) {
-    const button = networkLogView.element.querySelector('.empty-state devtools-button');
+    const emptyWidgetHost = networkLogView.element.querySelector('.network-status-pane');
+    const button = emptyWidgetHost?.shadowRoot?.querySelector('devtools-button');
     assert.exists(button);
     assert.deepEqual(button.textContent, expectedButtonText);
     const action = UI.ActionRegistry.ActionRegistry.instance().getAction(actionId);

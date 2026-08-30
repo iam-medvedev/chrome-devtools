@@ -24,17 +24,21 @@ describe('GetResourceContentTool', () => {
         universe = new TestUniverse();
         universe.createTarget();
     });
+    function createCapabilities(traceContext, target = universe.targetManager.primaryPageTarget()) {
+        return {
+            conversationContext: null,
+            getPerformanceTraceContext: () => traceContext,
+            getTarget: () => target,
+        };
+    }
     it('returns display info', () => {
         const tool = new GetResourceContentTool();
         const displayInfo = tool.displayInfoFromArgs({ url: 'https://example.com/script.js' });
         assert.strictEqual(displayInfo.title, 'Looking at resource content');
         assert.strictEqual(displayInfo.action, 'getResourceContent(\'https://example.com/script.js\')');
     });
-    it('returns error when conversationContext is not available', async () => {
-        const context = {
-            conversationContext: null,
-            getTarget: () => universe.targetManager.primaryPageTarget(),
-        };
+    it('returns error when PerformanceTraceContext is not available', async () => {
+        const context = createCapabilities(null);
         const tool = new GetResourceContentTool();
         const result = await tool.handler({ url: 'https://example.com/script.js' }, context);
         assertIsError(result);
@@ -44,10 +48,7 @@ describe('GetResourceContentTool', () => {
         const parsedTrace = makeFakeParsedTrace();
         const tracker = new Tracing.FreshRecording.Tracker();
         const traceContext = AiAssistance.PerformanceTraceContext.PerformanceTraceContext.fromParsedTrace(parsedTrace, universe.targetManager, tracker, universe.debuggerWorkspaceBinding);
-        const capabilities = {
-            conversationContext: traceContext,
-            getTarget: () => universe.targetManager.primaryPageTarget(),
-        };
+        const capabilities = createCapabilities(traceContext);
         const tool = new GetResourceContentTool();
         const result = await tool.handler({ url: 'https://example.com/script.js' }, capabilities);
         assertIsError(result);
@@ -58,10 +59,7 @@ describe('GetResourceContentTool', () => {
         const tracker = new Tracing.FreshRecording.Tracker();
         tracker.registerFreshRecording(parsedTrace);
         const traceContext = AiAssistance.PerformanceTraceContext.PerformanceTraceContext.fromParsedTrace(parsedTrace, universe.targetManager, tracker, universe.debuggerWorkspaceBinding);
-        const capabilities = {
-            conversationContext: traceContext,
-            getTarget: () => universe.targetManager.primaryPageTarget(),
-        };
+        const capabilities = createCapabilities(traceContext);
         const tool = new GetResourceContentTool();
         const result = await tool.handler({ url: 'https://cross-origin.com/script.js' }, capabilities);
         assertIsError(result);
@@ -81,10 +79,7 @@ describe('GetResourceContentTool', () => {
             content: 'console.log("cached script");',
         });
         const traceContext = AiAssistance.PerformanceTraceContext.PerformanceTraceContext.fromParsedTrace(parsedTrace, universe.targetManager, tracker, universe.debuggerWorkspaceBinding);
-        const capabilities = {
-            conversationContext: traceContext,
-            getTarget: () => universe.targetManager.primaryPageTarget(),
-        };
+        const capabilities = createCapabilities(traceContext);
         const tool = new GetResourceContentTool();
         const result = await tool.handler({ url: 'https://example.com/script.js' }, capabilities);
         assertIsResult(result);
@@ -106,10 +101,7 @@ describe('GetResourceContentTool', () => {
             requestContentData: sinon.stub().resolves(new TextUtils.ContentData.ContentData('content from resource', false, 'text/javascript')),
         };
         sinon.stub(SDK.ResourceTreeModel.ResourceTreeModel, 'resourceForURL').returns(mockResource);
-        const capabilities = {
-            conversationContext: traceContext,
-            getTarget: () => universe.targetManager.primaryPageTarget(),
-        };
+        const capabilities = createCapabilities(traceContext);
         const tool = new GetResourceContentTool();
         const result = await tool.handler({ url: 'https://example.com/script.js' }, capabilities);
         assertIsResult(result);
@@ -131,10 +123,7 @@ describe('GetResourceContentTool', () => {
             requestContentData: sinon.stub().resolves({ error: 'Failed to load content' }),
         };
         sinon.stub(SDK.ResourceTreeModel.ResourceTreeModel, 'resourceForURL').returns(mockResource);
-        const capabilities = {
-            conversationContext: traceContext,
-            getTarget: () => universe.targetManager.primaryPageTarget(),
-        };
+        const capabilities = createCapabilities(traceContext);
         const tool = new GetResourceContentTool();
         const result = await tool.handler({ url: 'https://example.com/script.js' }, capabilities);
         assertIsError(result);
@@ -149,10 +138,7 @@ describe('GetResourceContentTool', () => {
             requestContentData: sinon.stub().resolves(new TextUtils.ContentData.ContentData('AQIDBA==', true, 'image/png')),
         };
         sinon.stub(SDK.ResourceTreeModel.ResourceTreeModel, 'resourceForURL').returns(mockResource);
-        const capabilities = {
-            conversationContext: traceContext,
-            getTarget: () => universe.targetManager.primaryPageTarget(),
-        };
+        const capabilities = createCapabilities(traceContext);
         const tool = new GetResourceContentTool();
         const result = await tool.handler({ url: 'https://example.com/image.png' }, capabilities);
         assertIsError(result);
@@ -164,10 +150,7 @@ describe('GetResourceContentTool', () => {
         tracker.registerFreshRecording(parsedTrace);
         const traceContext = AiAssistance.PerformanceTraceContext.PerformanceTraceContext.fromParsedTrace(parsedTrace, universe.targetManager, tracker, universe.debuggerWorkspaceBinding);
         sinon.stub(SDK.ResourceTreeModel.ResourceTreeModel, 'resourceForURL').returns(null);
-        const capabilities = {
-            conversationContext: traceContext,
-            getTarget: () => universe.targetManager.primaryPageTarget(),
-        };
+        const capabilities = createCapabilities(traceContext);
         const tool = new GetResourceContentTool();
         const result = await tool.handler({ url: 'https://example.com/missing.js' }, capabilities);
         assertIsError(result);
@@ -178,10 +161,7 @@ describe('GetResourceContentTool', () => {
         const tracker = new Tracing.FreshRecording.Tracker();
         tracker.registerFreshRecording(parsedTrace);
         const traceContext = AiAssistance.PerformanceTraceContext.PerformanceTraceContext.fromParsedTrace(parsedTrace, universe.targetManager, tracker, universe.debuggerWorkspaceBinding);
-        const capabilities = {
-            conversationContext: traceContext,
-            getTarget: () => null,
-        };
+        const capabilities = createCapabilities(traceContext, null);
         const tool = new GetResourceContentTool();
         const result = await tool.handler({ url: 'https://example.com/script.js' }, capabilities);
         assertIsError(result);

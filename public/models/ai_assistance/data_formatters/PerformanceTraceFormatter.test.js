@@ -165,7 +165,8 @@ describe('PerformanceTraceFormatter', function () {
     it('formatMainThreadTrackSummary', async function () {
         const { formatter, parsedTrace } = await createFormatter(this, 'yahoo-news.json.gz', cruxManager);
         const min = parsedTrace.data.Meta.traceBounds.min;
-        const max = parsedTrace.data.Meta.traceBounds.min + parsedTrace.data.Meta.traceBounds.range / 2;
+        const max = (parsedTrace.data.Meta.traceBounds.min +
+            Trace.Helpers.Timing.milliToMicro(Trace.Types.Timing.Milli(5000)));
         const bounds = Trace.Helpers.Timing.traceWindowFromMicroSeconds(min, max);
         const output = await formatter.formatMainThreadTrackSummary(bounds);
         snapshotTester.assert(this, output);

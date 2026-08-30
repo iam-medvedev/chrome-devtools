@@ -19,6 +19,11 @@ import * as RenderCoordinator from '../../../ui/components/render_coordinator/re
 import * as NetworkForward from '../forward/forward.js';
 import * as NetworkComponents from './components.js';
 const { urlString } = Platform.DevToolsPath;
+var HeaderAttribute;
+(function (HeaderAttribute) {
+    HeaderAttribute["HEADER_NAME"] = "HeaderName";
+    HeaderAttribute["HEADER_VALUE"] = "HeaderValue";
+})(HeaderAttribute || (HeaderAttribute = {}));
 async function renderResponseHeaderSection(request) {
     const component = new NetworkComponents.ResponseHeaderSection.ResponseHeaderSection();
     renderElementIntoDOM(component);

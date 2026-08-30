@@ -10,24 +10,25 @@ __export(LinearMemoryInspectorController_exports, {
   LinearMemoryInspectorController: () => LinearMemoryInspectorController,
   RemoteArrayBufferWrapper: () => RemoteArrayBufferWrapper
 });
-import * as Common2 from "./../../core/common/common.js";
-import * as i18n3 from "./../../core/i18n/i18n.js";
-import * as SDK from "./../../core/sdk/sdk.js";
-import * as Bindings from "./../../models/bindings/bindings.js";
-import * as UI2 from "./../../ui/legacy/legacy.js";
+import * as Common2 from "../../core/common/common.js";
+import * as i18n3 from "../../core/i18n/i18n.js";
+import * as SDK from "../../core/sdk/sdk.js";
+import * as Bindings from "../../models/bindings/bindings.js";
+import * as UI2 from "../../ui/legacy/legacy.js";
 import * as LinearMemoryInspectorComponents2 from "./components/components.js";
 
 // gen/front_end/panels/linear_memory_inspector/LinearMemoryInspectorPane.js
 var LinearMemoryInspectorPane_exports = {};
 __export(LinearMemoryInspectorPane_exports, {
+  Events: () => Events,
   LinearMemoryInspectorPane: () => LinearMemoryInspectorPane,
   LinearMemoryInspectorView: () => LinearMemoryInspectorView
 });
-import * as Common from "./../../core/common/common.js";
-import * as i18n from "./../../core/i18n/i18n.js";
-import { Link } from "./../../ui/kit/kit.js";
-import * as UI from "./../../ui/legacy/legacy.js";
-import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
+import * as Common from "../../core/common/common.js";
+import * as i18n from "../../core/i18n/i18n.js";
+import { Link } from "../../ui/kit/kit.js";
+import * as UI from "../../ui/legacy/legacy.js";
+import * as VisualLogging from "../../ui/visual_logging/visual_logging.js";
 import * as LinearMemoryInspectorComponents from "./components/components.js";
 var UIStrings = {
   /**
@@ -109,6 +110,10 @@ var LinearMemoryInspectorPane = class _LinearMemoryInspectorPane extends Common.
     this.dispatchEventToListeners("ViewClosed", tabId);
   }
 };
+var Events;
+(function(Events2) {
+  Events2["VIEW_CLOSED"] = "ViewClosed";
+})(Events || (Events = {}));
 var LinearMemoryInspectorView = class extends UI.Widget.VBox {
   #memoryWrapper;
   #memory;

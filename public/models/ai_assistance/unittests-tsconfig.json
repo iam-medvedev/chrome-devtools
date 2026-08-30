@@ -1,13 +1,14 @@
 {
-  "checkJs": true,
   "compilerOptions": {
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "checkJs": true,
-    "composite": true,
-    "declaration": true,
+    "composite": false,
+    "declaration": false,
+    "disableSourceOfProjectReferenceRedirect": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
+    "incremental": false,
     "inlineSources": true,
     "lib": [
       "dom",
@@ -19,19 +20,18 @@
       "ESNext.Array"
     ],
     "module": "esnext",
+    "moduleResolution": "bundler",
     "noEmitOnError": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
     "noImplicitReturns": true,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
     "outDir": ".",
+    "preserveConstEnums": true,
     "rootDir": "../../../../../../front_end/models/ai_assistance",
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
     "target": "ES2023",
-    "tsBuildInfoFile": "unittests-tsconfig.json.tsbuildinfo",
     "typeRoots": [
       "../../../../../../node_modules/@types",
       "../../../../../../node_modules"
@@ -70,7 +70,9 @@
     "../../../../../../front_end/models/ai_assistance/performance/AICallTree.test.ts",
     "../../../../../../front_end/models/ai_assistance/performance/AIContext.test.ts",
     "../../../../../../front_end/models/ai_assistance/performance/AIQueries.test.ts",
+    "../../../../../../front_end/models/ai_assistance/tools/CookieUtils.test.ts",
     "../../../../../../front_end/models/ai_assistance/tools/ExecuteJavaScript.test.ts",
+    "../../../../../../front_end/models/ai_assistance/tools/GetCookieValues.test.ts",
     "../../../../../../front_end/models/ai_assistance/tools/GetDetailedCallTree.test.ts",
     "../../../../../../front_end/models/ai_assistance/tools/GetElementAccessibilityDetails.test.ts",
     "../../../../../../front_end/models/ai_assistance/tools/GetFunctionCode.test.ts",
@@ -79,11 +81,13 @@
     "../../../../../../front_end/models/ai_assistance/tools/GetNetworkRequestDetails.test.ts",
     "../../../../../../front_end/models/ai_assistance/tools/GetResourceContent.test.ts",
     "../../../../../../front_end/models/ai_assistance/tools/GetSourceContent.test.ts",
+    "../../../../../../front_end/models/ai_assistance/tools/GetStorageBreakdown.test.ts",
     "../../../../../../front_end/models/ai_assistance/tools/GetStorageValues.test.ts",
     "../../../../../../front_end/models/ai_assistance/tools/GetStyles.test.ts",
     "../../../../../../front_end/models/ai_assistance/tools/GetTraceEventByKey.test.ts",
     "../../../../../../front_end/models/ai_assistance/tools/GetTraceMainThreadSummary.test.ts",
     "../../../../../../front_end/models/ai_assistance/tools/GetTraceNetworkSummary.test.ts",
+    "../../../../../../front_end/models/ai_assistance/tools/ListCookies.test.ts",
     "../../../../../../front_end/models/ai_assistance/tools/ListNetworkRequests.test.ts",
     "../../../../../../front_end/models/ai_assistance/tools/ListPageOrigins.test.ts",
     "../../../../../../front_end/models/ai_assistance/tools/ListSources.test.ts",
@@ -99,61 +103,61 @@
   ],
   "references": [
     {
-      "path": "./bundle-tsconfig.json"
+      "path": "bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../core/common/bundle-tsconfig.json"
+      "path": "../../core/common/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../core/host/bundle-tsconfig.json"
+      "path": "../../core/host/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../core/platform/bundle-tsconfig.json"
+      "path": "../../core/platform/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../core/root/bundle-tsconfig.json"
+      "path": "../../core/root/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../core/sdk/bundle-tsconfig.json"
+      "path": "../../core/sdk/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../core/text_utils/bundle-tsconfig.json"
+      "path": "../../core/text_utils/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../generated/generated-tsconfig.json"
+      "path": "../../generated/generated-tsconfig.ref.json"
     },
     {
-      "path": "../../services/tracing/bundle-tsconfig.json"
+      "path": "../../services/tracing/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../testing/testing-tsconfig.json"
+      "path": "../../testing/testing-tsconfig.ref.json"
     },
     {
-      "path": "../../ui/components/render_coordinator/bundle-tsconfig.json"
+      "path": "../../ui/components/render_coordinator/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../bindings/bundle-tsconfig.json"
+      "path": "../bindings/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../formatter/bundle-tsconfig.json"
+      "path": "../formatter/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../lighthouse/bundle-tsconfig.json"
+      "path": "../lighthouse/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../logs/bundle-tsconfig.json"
+      "path": "../logs/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../network_time_calculator/bundle-tsconfig.json"
+      "path": "../network_time_calculator/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../source_map_scopes/bundle-tsconfig.json"
+      "path": "../source_map_scopes/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../trace/bundle-tsconfig.json"
+      "path": "../trace/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../workspace/bundle-tsconfig.json"
+      "path": "../workspace/bundle-tsconfig.ref.json"
     }
   ]
 }

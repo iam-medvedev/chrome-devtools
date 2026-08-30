@@ -1,13 +1,14 @@
 {
-  "checkJs": true,
   "compilerOptions": {
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "checkJs": true,
-    "composite": true,
-    "declaration": true,
+    "composite": false,
+    "declaration": false,
+    "disableSourceOfProjectReferenceRedirect": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
+    "incremental": false,
     "inlineSources": true,
     "lib": [
       "ES2023",
@@ -17,20 +18,19 @@
       "ESNext.Array"
     ],
     "module": "esnext",
+    "moduleResolution": "bundler",
     "noEmit": true,
     "noEmitOnError": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
     "noImplicitReturns": true,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
     "outDir": ".",
+    "preserveConstEnums": true,
     "rootDir": "../../../../../../front_end/core/protocol_client",
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
     "target": "es2023",
-    "tsBuildInfoFile": "puppeteer_devtools_connection_node_typecheck-tsconfig.json.tsbuildinfo",
     "typeRoots": [
       "../../../../../../node_modules/@types",
       "../../../../../../node_modules"
@@ -42,17 +42,14 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
-    "../../../../../../front_end/core/protocol_client/PuppeteerDevToolsConnection.ts",
-    "../../../../../../front_end/legacy/legacy-defs.d.ts",
-    "../../../../../../front_end/global_typings/global_defs.d.ts",
-    "../../../../../../node_modules/@types/filesystem/index.d.ts"
+    "../../../../../../front_end/core/protocol_client/PuppeteerDevToolsConnection.ts"
   ],
   "references": [
     {
-      "path": "./protocol_client-tsconfig.json"
+      "path": "protocol_client-tsconfig.ref.json"
     },
     {
-      "path": "../../third_party/puppeteer/bundle-tsconfig.json"
+      "path": "../../third_party/puppeteer/bundle-tsconfig.ref.json"
     }
   ]
 }

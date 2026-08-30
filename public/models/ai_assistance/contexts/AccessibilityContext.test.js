@@ -49,5 +49,17 @@ describe('AccessibilityContext', function () {
         assert.exists(details);
         snapshotTester.assert(this, JSON.stringify(details, null, 2));
     });
+    it('should return LIGHTHOUSE_REPORT widget in getWidgets', async () => {
+        const context = new AiAssistance.AccessibilityContext.AccessibilityContext(mockReport);
+        const widgets = await context.getWidgets();
+        assert.deepEqual(widgets, [
+            {
+                name: 'LIGHTHOUSE_REPORT',
+                data: {
+                    report: mockReport,
+                },
+            },
+        ]);
+    });
 });
 //# sourceMappingURL=AccessibilityContext.test.js.map

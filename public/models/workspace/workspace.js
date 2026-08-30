@@ -4,23 +4,36 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// gen/front_end/models/workspace/FileManager.js
+// ../../front_end/models/workspace/FileManager.ts
 var FileManager_exports = {};
 __export(FileManager_exports, {
+  Events: () => Events,
   FileManager: () => FileManager
 });
-import * as Common from "./../../core/common/common.js";
-import * as Host from "./../../core/host/host.js";
-import * as Root from "./../../core/root/root.js";
+import * as Common from "../../core/common/common.js";
+import * as Host from "../../core/host/host.js";
+import * as Root from "../../core/root/root.js";
 var FileManager = class _FileManager extends Common.ObjectWrapper.ObjectWrapper {
   #saveCallbacks = /* @__PURE__ */ new Map();
   #eventDescriptors;
   constructor() {
     super();
     this.#eventDescriptors = [
-      Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.SavedURL, this.savedURL, this),
-      Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.CanceledSaveURL, this.#canceledSavedURL, this),
-      Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.AppendedToURL, this.appendedToURL, this)
+      Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(
+        Host.InspectorFrontendHostAPI.Events.SavedURL,
+        this.savedURL,
+        this
+      ),
+      Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(
+        Host.InspectorFrontendHostAPI.Events.CanceledSaveURL,
+        this.#canceledSavedURL,
+        this
+      ),
+      Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(
+        Host.InspectorFrontendHostAPI.Events.AppendedToURL,
+        this.appendedToURL,
+        this
+      )
     ];
   }
   dispose() {
@@ -75,13 +88,18 @@ var FileManager = class _FileManager extends Common.ObjectWrapper.ObjectWrapper 
    * Used in web tests
    */
   appendedToURL({ data: url }) {
-    this.dispatchEventToListeners("AppendedToURL", url);
+    this.dispatchEventToListeners("AppendedToURL" /* APPENDED_TO_URL */, url);
   }
 };
+var Events = /* @__PURE__ */ ((Events5) => {
+  Events5["APPENDED_TO_URL"] = "AppendedToURL";
+  return Events5;
+})(Events || {});
 
-// gen/front_end/models/workspace/IgnoreListManager.js
+// ../../front_end/models/workspace/IgnoreListManager.ts
 var IgnoreListManager_exports = {};
 __export(IgnoreListManager_exports, {
+  Events: () => Events4,
   IgnoreListManager: () => IgnoreListManager,
   automaticallyIgnoreListKnownThirdPartyScriptsSettingDescriptor: () => automaticallyIgnoreListKnownThirdPartyScriptsSettingDescriptor,
   enableIgnoreListingSettingDescriptor: () => enableIgnoreListingSettingDescriptor,
@@ -89,27 +107,28 @@ __export(IgnoreListManager_exports, {
   skipContentScriptsSettingDescriptor: () => skipContentScriptsSettingDescriptor,
   skipStackFramesPatternSettingDescriptor: () => skipStackFramesPatternSettingDescriptor
 });
-import * as Common4 from "./../../core/common/common.js";
-import * as i18n3 from "./../../core/i18n/i18n.js";
-import * as Platform2 from "./../../core/platform/platform.js";
-import * as Root3 from "./../../core/root/root.js";
-import * as SDK from "./../../core/sdk/sdk.js";
+import * as Common4 from "../../core/common/common.js";
+import * as i18n3 from "../../core/i18n/i18n.js";
+import * as Platform2 from "../../core/platform/platform.js";
+import * as Root3 from "../../core/root/root.js";
+import * as SDK from "../../core/sdk/sdk.js";
 
-// gen/front_end/models/workspace/WorkspaceImpl.js
+// ../../front_end/models/workspace/WorkspaceImpl.ts
 var WorkspaceImpl_exports = {};
 __export(WorkspaceImpl_exports, {
-  Events: () => Events,
+  Events: () => Events2,
   ProjectStore: () => ProjectStore,
   WorkspaceImpl: () => WorkspaceImpl,
   projectTypes: () => projectTypes
 });
-import * as Common3 from "./../../core/common/common.js";
-import * as Root2 from "./../../core/root/root.js";
+import * as Common3 from "../../core/common/common.js";
+import * as Root2 from "../../core/root/root.js";
 
-// gen/front_end/models/workspace/UISourceCode.js
+// ../../front_end/models/workspace/UISourceCode.ts
 var UISourceCode_exports = {};
 __export(UISourceCode_exports, {
-  Events: () => Events2,
+  DecoratorType: () => DecoratorType,
+  Events: () => Events3,
   Message: () => Message,
   UIFunctionBounds: () => UIFunctionBounds,
   UILocation: () => UILocation,
@@ -118,10 +137,10 @@ __export(UISourceCode_exports, {
   UISourceCodeMetadata: () => UISourceCodeMetadata,
   createMappedProfileData: () => createMappedProfileData
 });
-import * as Common2 from "./../../core/common/common.js";
-import * as i18n from "./../../core/i18n/i18n.js";
-import * as Platform from "./../../core/platform/platform.js";
-import * as TextUtils from "./../../core/text_utils/text_utils.js";
+import * as Common2 from "../../core/common/common.js";
+import * as i18n from "../../core/i18n/i18n.js";
+import * as Platform from "../../core/platform/platform.js";
+import * as TextUtils from "../../core/text_utils/text_utils.js";
 var UIStrings = {
   /**
    * @description Text for the index of something.
@@ -222,7 +241,11 @@ var UISourceCode = class extends Common2.ObjectWrapper.ObjectWrapper {
     return promise;
     function innerCallback(success, newName2, newURL, newContentType) {
       if (success) {
-        this.#updateName(newName2, newURL, newContentType);
+        this.#updateName(
+          newName2,
+          newURL,
+          newContentType
+        );
       }
       resolve(success);
     }
@@ -241,8 +264,11 @@ var UISourceCode = class extends Common2.ObjectWrapper.ObjectWrapper {
     if (contentType) {
       this.#contentType = contentType;
     }
-    this.dispatchEventToListeners(Events2.TitleChanged, this);
-    this.project().workspace().dispatchEventToListeners(Events.UISourceCodeRenamed, { oldURL, uiSourceCode: this });
+    this.dispatchEventToListeners("TitleChanged" /* TitleChanged */, this);
+    this.project().workspace().dispatchEventToListeners(
+      "UISourceCodeRenamed" /* UISourceCodeRenamed */,
+      { oldURL, uiSourceCode: this }
+    );
   }
   contentURL() {
     return this.url();
@@ -345,10 +371,10 @@ var UISourceCode = class extends Common2.ObjectWrapper.ObjectWrapper {
     this.#hasCommits = true;
     this.#resetWorkingCopy();
     const data = { uiSourceCode: this, content, encoded: this.#contentEncoded };
-    this.dispatchEventToListeners(Events2.WorkingCopyCommitted, data);
-    this.#project.workspace().dispatchEventToListeners(Events.WorkingCopyCommitted, data);
+    this.dispatchEventToListeners("WorkingCopyCommitted" /* WorkingCopyCommitted */, data);
+    this.#project.workspace().dispatchEventToListeners("WorkingCopyCommitted" /* WorkingCopyCommitted */, data);
     if (committedByUser) {
-      this.#project.workspace().dispatchEventToListeners(Events.WorkingCopyCommittedByUser, data);
+      this.#project.workspace().dispatchEventToListeners("WorkingCopyCommittedByUser" /* WorkingCopyCommittedByUser */, data);
     }
   }
   addRevision(content) {
@@ -405,8 +431,8 @@ var UISourceCode = class extends Common2.ObjectWrapper.ObjectWrapper {
   }
   #workingCopyChanged() {
     this.#removeAllMessages();
-    this.dispatchEventToListeners(Events2.WorkingCopyChanged, this);
-    this.#project.workspace().dispatchEventToListeners(Events.WorkingCopyChanged, { uiSourceCode: this });
+    this.dispatchEventToListeners("WorkingCopyChanged" /* WorkingCopyChanged */, this);
+    this.#project.workspace().dispatchEventToListeners("WorkingCopyChanged" /* WorkingCopyChanged */, { uiSourceCode: this });
   }
   removeWorkingCopyGetter() {
     if (!this.#workingCopyGetter) {
@@ -436,7 +462,9 @@ var UISourceCode = class extends Common2.ObjectWrapper.ObjectWrapper {
     return this.#isUnconditionallyIgnoreListed;
   }
   isFetchXHR() {
-    return [Common2.ResourceType.resourceTypes.XHR, Common2.ResourceType.resourceTypes.Fetch].includes(this.contentType());
+    return [Common2.ResourceType.resourceTypes.XHR, Common2.ResourceType.resourceTypes.Fetch].includes(
+      this.contentType()
+    );
   }
   /**
    * Unconditionally ignore list this UISourcecode, ignoring any user
@@ -461,7 +489,9 @@ var UISourceCode = class extends Common2.ObjectWrapper.ObjectWrapper {
     if (!this.#content || "error" in this.#content) {
       return this.#project.searchInFileContent(this, query, caseSensitive, isRegex);
     }
-    return Promise.resolve(TextUtils.TextUtils.performSearchInContentData(this.#content, query, caseSensitive, isRegex));
+    return Promise.resolve(
+      TextUtils.TextUtils.performSearchInContentData(this.#content, query, caseSensitive, isRegex)
+    );
   }
   contentLoaded() {
     return Boolean(this.#content);
@@ -483,11 +513,11 @@ var UISourceCode = class extends Common2.ObjectWrapper.ObjectWrapper {
       this.#messages = /* @__PURE__ */ new Set();
     }
     this.#messages.add(message);
-    this.dispatchEventToListeners(Events2.MessageAdded, message);
+    this.dispatchEventToListeners("MessageAdded" /* MessageAdded */, message);
   }
   removeMessage(message) {
     if (this.#messages?.delete(message)) {
-      this.dispatchEventToListeners(Events2.MessageRemoved, message);
+      this.dispatchEventToListeners("MessageRemoved" /* MessageRemoved */, message);
     }
   }
   #removeAllMessages() {
@@ -495,14 +525,14 @@ var UISourceCode = class extends Common2.ObjectWrapper.ObjectWrapper {
       return;
     }
     for (const message of this.#messages) {
-      this.dispatchEventToListeners(Events2.MessageRemoved, message);
+      this.dispatchEventToListeners("MessageRemoved" /* MessageRemoved */, message);
     }
     this.#messages = null;
   }
   setDecorationData(type, data) {
     if (data !== this.#decorations.get(type)) {
       this.#decorations.set(type, data);
-      this.dispatchEventToListeners(Events2.DecorationChanged, type);
+      this.dispatchEventToListeners("DecorationChanged" /* DecorationChanged */, type);
     }
   }
   getDecorationData(type) {
@@ -519,15 +549,15 @@ var UISourceCode = class extends Common2.ObjectWrapper.ObjectWrapper {
     return ignoreListManager.isUserOrSourceMapIgnoreListedUISourceCode(this);
   }
 };
-var Events2;
-(function(Events3) {
-  Events3["WorkingCopyChanged"] = "WorkingCopyChanged";
-  Events3["WorkingCopyCommitted"] = "WorkingCopyCommitted";
-  Events3["TitleChanged"] = "TitleChanged";
-  Events3["MessageAdded"] = "MessageAdded";
-  Events3["MessageRemoved"] = "MessageRemoved";
-  Events3["DecorationChanged"] = "DecorationChanged";
-})(Events2 || (Events2 = {}));
+var Events3 = /* @__PURE__ */ ((Events5) => {
+  Events5["WorkingCopyChanged"] = "WorkingCopyChanged";
+  Events5["WorkingCopyCommitted"] = "WorkingCopyCommitted";
+  Events5["TitleChanged"] = "TitleChanged";
+  Events5["MessageAdded"] = "MessageAdded";
+  Events5["MessageRemoved"] = "MessageRemoved";
+  Events5["DecorationChanged"] = "DecorationChanged";
+  return Events5;
+})(Events3 || {});
 var UILocation = class {
   uiSourceCode;
   lineNumber;
@@ -643,6 +673,14 @@ var Message = class {
     return this.text() === another.text() && this.level() === another.level() && this.range.equal(another.range);
   }
 };
+((Message2) => {
+  let Level;
+  ((Level2) => {
+    Level2["ERROR"] = "Error";
+    Level2["ISSUE"] = "Issue";
+    Level2["WARNING"] = "Warning";
+  })(Level = Message2.Level || (Message2.Level = {}));
+})(Message || (Message = {}));
 var UISourceCodeMetadata = class {
   modificationTime;
   contentSize;
@@ -651,6 +689,11 @@ var UISourceCodeMetadata = class {
     this.contentSize = contentSize;
   }
 };
+var DecoratorType = /* @__PURE__ */ ((DecoratorType2) => {
+  DecoratorType2["PERFORMANCE"] = "performance";
+  DecoratorType2["COVERAGE"] = "coverage";
+  return DecoratorType2;
+})(DecoratorType || {});
 function createMappedProfileData(profileData, originalToMappedLocation) {
   const mappedProfileData = /* @__PURE__ */ new Map();
   for (const [lineNumber, columnData] of profileData) {
@@ -666,15 +709,17 @@ function createMappedProfileData(profileData, originalToMappedLocation) {
         mappedColumnData = /* @__PURE__ */ new Map();
         mappedProfileData.set(oneBasedFormattedLineNumber, mappedColumnData);
       }
-      mappedColumnData.set(oneBasedFormattedColumnNumber, (mappedColumnData.get(oneBasedFormattedColumnNumber) || 0) + data);
+      mappedColumnData.set(
+        oneBasedFormattedColumnNumber,
+        (mappedColumnData.get(oneBasedFormattedColumnNumber) || 0) + data
+      );
     }
   }
   return mappedProfileData;
 }
 
-// gen/front_end/models/workspace/WorkspaceImpl.js
-var projectTypes;
-(function(projectTypes2) {
+// ../../front_end/models/workspace/WorkspaceImpl.ts
+var projectTypes = /* @__PURE__ */ ((projectTypes2) => {
   projectTypes2["Debugger"] = "debugger";
   projectTypes2["Formatter"] = "formatter";
   projectTypes2["Network"] = "network";
@@ -682,18 +727,21 @@ var projectTypes;
   projectTypes2["ConnectableFileSystem"] = "connectablefilesystem";
   projectTypes2["ContentScripts"] = "contentscripts";
   projectTypes2["Service"] = "service";
-})(projectTypes || (projectTypes = {}));
+  return projectTypes2;
+})(projectTypes || {});
 var ProjectStore = class {
   #workspace;
   #id;
   #type;
   #displayName;
+  #securityOrigin;
   #uiSourceCodes = /* @__PURE__ */ new Map();
-  constructor(workspace, id, type, displayName) {
+  constructor(workspace, id, type, displayName, securityOrigin) {
     this.#workspace = workspace;
     this.#id = id;
     this.#type = type;
     this.#displayName = displayName;
+    this.#securityOrigin = securityOrigin ?? null;
   }
   id() {
     return this.#id;
@@ -703,6 +751,9 @@ var ProjectStore = class {
   }
   displayName() {
     return this.#displayName;
+  }
+  securityOrigin() {
+    return this.#securityOrigin;
   }
   workspace() {
     return this.#workspace;
@@ -716,7 +767,7 @@ var ProjectStore = class {
       return false;
     }
     this.#uiSourceCodes.set(url, uiSourceCode);
-    this.#workspace.dispatchEventToListeners(Events.UISourceCodeAdded, uiSourceCode);
+    this.#workspace.dispatchEventToListeners("UISourceCodeAdded" /* UISourceCodeAdded */, uiSourceCode);
     return true;
   }
   removeUISourceCode(url) {
@@ -725,7 +776,7 @@ var ProjectStore = class {
       return;
     }
     this.#uiSourceCodes.delete(url);
-    this.#workspace.dispatchEventToListeners(Events.UISourceCodeRemoved, uiSourceCode);
+    this.#workspace.dispatchEventToListeners("UISourceCodeRemoved" /* UISourceCodeRemoved */, uiSourceCode);
   }
   removeProject() {
     this.#workspace.removeProject(this);
@@ -775,8 +826,14 @@ var WorkspaceImpl = class _WorkspaceImpl extends Common3.ObjectWrapper.ObjectWra
     const project = this.#projects.get(projectId);
     return project ? project.uiSourceCodeForURL(url) : null;
   }
-  uiSourceCodeForURL(url) {
+  uiSourceCodeForURL(url, targetOrigin) {
     for (const project of this.#projects.values()) {
+      if (targetOrigin !== void 0) {
+        const projectOrigin = project.securityOrigin();
+        if (projectOrigin === null || !projectOrigin.isSameOriginWith(targetOrigin)) {
+          continue;
+        }
+      }
       const uiSourceCode = project.uiSourceCodeForURL(url);
       if (uiSourceCode) {
         return uiSourceCode;
@@ -813,11 +870,11 @@ var WorkspaceImpl = class _WorkspaceImpl extends Common3.ObjectWrapper.ObjectWra
   addProject(project) {
     console.assert(!this.#projects.has(project.id()), `A project with id ${project.id()} already exists!`);
     this.#projects.set(project.id(), project);
-    this.dispatchEventToListeners(Events.ProjectAdded, project);
+    this.dispatchEventToListeners("ProjectAdded" /* ProjectAdded */, project);
   }
   removeProject(project) {
     this.#projects.delete(project.id());
-    this.dispatchEventToListeners(Events.ProjectRemoved, project);
+    this.dispatchEventToListeners("ProjectRemoved" /* ProjectRemoved */, project);
   }
   project(projectId) {
     return this.#projects.get(projectId) || null;
@@ -851,19 +908,19 @@ var WorkspaceImpl = class _WorkspaceImpl extends Common3.ObjectWrapper.ObjectWra
     return this.#hasResourceContentTrackingExtensions;
   }
 };
-var Events;
-(function(Events3) {
-  Events3["UISourceCodeAdded"] = "UISourceCodeAdded";
-  Events3["UISourceCodeRemoved"] = "UISourceCodeRemoved";
-  Events3["UISourceCodeRenamed"] = "UISourceCodeRenamed";
-  Events3["WorkingCopyChanged"] = "WorkingCopyChanged";
-  Events3["WorkingCopyCommitted"] = "WorkingCopyCommitted";
-  Events3["WorkingCopyCommittedByUser"] = "WorkingCopyCommittedByUser";
-  Events3["ProjectAdded"] = "ProjectAdded";
-  Events3["ProjectRemoved"] = "ProjectRemoved";
-})(Events || (Events = {}));
+var Events2 = /* @__PURE__ */ ((Events5) => {
+  Events5["UISourceCodeAdded"] = "UISourceCodeAdded";
+  Events5["UISourceCodeRemoved"] = "UISourceCodeRemoved";
+  Events5["UISourceCodeRenamed"] = "UISourceCodeRenamed";
+  Events5["WorkingCopyChanged"] = "WorkingCopyChanged";
+  Events5["WorkingCopyCommitted"] = "WorkingCopyCommitted";
+  Events5["WorkingCopyCommittedByUser"] = "WorkingCopyCommittedByUser";
+  Events5["ProjectAdded"] = "ProjectAdded";
+  Events5["ProjectRemoved"] = "ProjectRemoved";
+  return Events5;
+})(Events2 || {});
 
-// gen/front_end/models/workspace/IgnoreListManager.js
+// ../../front_end/models/workspace/IgnoreListManager.ts
 var UIStrings2 = {
   /**
    * @description Text to stop preventing the debugger from stepping into library code.
@@ -894,33 +951,33 @@ var str_2 = i18n3.i18n.registerUIStrings("models/workspace/IgnoreListManager.ts"
 var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
 var skipStackFramesPatternSettingDescriptor = {
   name: "skip-stack-frames-pattern",
-  type: "regex",
+  type: Common4.Settings.SettingType.REGEX,
   defaultValue: "/node_modules/|^node:",
-  storageType: "Synced"
+  storageType: Common4.Settings.SettingStorageType.SYNCED
 };
 var skipContentScriptsSettingDescriptor = {
   name: "skip-content-scripts",
-  type: "boolean",
+  type: Common4.Settings.SettingType.BOOLEAN,
   defaultValue: true,
-  storageType: "Synced"
+  storageType: Common4.Settings.SettingStorageType.SYNCED
 };
 var automaticallyIgnoreListKnownThirdPartyScriptsSettingDescriptor = {
   name: "automatically-ignore-list-known-third-party-scripts",
-  type: "boolean",
+  type: Common4.Settings.SettingType.BOOLEAN,
   defaultValue: true,
-  storageType: "Synced"
+  storageType: Common4.Settings.SettingStorageType.SYNCED
 };
 var skipAnonymousScriptsSettingDescriptor = {
   name: "skip-anonymous-scripts",
-  type: "boolean",
+  type: Common4.Settings.SettingType.BOOLEAN,
   defaultValue: false,
-  storageType: "Synced"
+  storageType: Common4.Settings.SettingStorageType.SYNCED
 };
 var enableIgnoreListingSettingDescriptor = {
   name: "enable-ignore-listing",
-  type: "boolean",
+  type: Common4.Settings.SettingType.BOOLEAN,
   defaultValue: true,
-  storageType: "Synced"
+  storageType: Common4.Settings.SettingStorageType.SYNCED
 };
 var IgnoreListManager = class _IgnoreListManager extends Common4.ObjectWrapper.ObjectWrapper {
   #settings;
@@ -932,9 +989,26 @@ var IgnoreListManager = class _IgnoreListManager extends Common4.ObjectWrapper.O
     super();
     this.#settings = settings;
     this.#targetManager = targetManager;
-    this.#targetManager.addModelListener(SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.GlobalObjectCleared, this.clearCacheIfNeeded.bind(this), this);
-    this.#targetManager.addModelListener(SDK.RuntimeModel.RuntimeModel, SDK.RuntimeModel.Events.ExecutionContextCreated, this.onExecutionContextCreated, this, { scoped: true });
-    this.#targetManager.addModelListener(SDK.RuntimeModel.RuntimeModel, SDK.RuntimeModel.Events.ExecutionContextDestroyed, this.onExecutionContextDestroyed, this, { scoped: true });
+    this.#targetManager.addModelListener(
+      SDK.DebuggerModel.DebuggerModel,
+      SDK.DebuggerModel.Events.GlobalObjectCleared,
+      this.clearCacheIfNeeded.bind(this),
+      this
+    );
+    this.#targetManager.addModelListener(
+      SDK.RuntimeModel.RuntimeModel,
+      SDK.RuntimeModel.Events.ExecutionContextCreated,
+      this.onExecutionContextCreated,
+      this,
+      { scoped: true }
+    );
+    this.#targetManager.addModelListener(
+      SDK.RuntimeModel.RuntimeModel,
+      SDK.RuntimeModel.Events.ExecutionContextDestroyed,
+      this.onExecutionContextDestroyed,
+      this,
+      { scoped: true }
+    );
     this.#settings.resolve(skipStackFramesPatternSettingDescriptor).addChangeListener(this.patternChanged.bind(this));
     this.#settings.resolve(skipContentScriptsSettingDescriptor).addChangeListener(this.patternChanged.bind(this));
     this.#settings.resolve(automaticallyIgnoreListKnownThirdPartyScriptsSettingDescriptor).addChangeListener(this.patternChanged.bind(this));
@@ -947,12 +1021,15 @@ var IgnoreListManager = class _IgnoreListManager extends Common4.ObjectWrapper.O
   }) {
     const { forceNew } = opts;
     if (forceNew) {
-      Root3.DevToolsContext.globalInstance().set(_IgnoreListManager, new _IgnoreListManager(
-        // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
-        opts.settings ?? Common4.Settings.Settings.instance(),
-        // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
-        opts.targetManager ?? SDK.TargetManager.TargetManager.instance()
-      ));
+      Root3.DevToolsContext.globalInstance().set(
+        _IgnoreListManager,
+        new _IgnoreListManager(
+          // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
+          opts.settings ?? Common4.Settings.Settings.instance(),
+          // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
+          opts.targetManager ?? SDK.TargetManager.TargetManager.instance()
+        )
+      );
     }
     return Root3.DevToolsContext.globalInstance().get(_IgnoreListManager);
   }
@@ -1019,11 +1096,13 @@ var IgnoreListManager = class _IgnoreListManager extends Common4.ObjectWrapper.O
     return debuggerModel.setBlackboxPatterns(patterns, this.skipAnonymousScripts);
   }
   updateIgnoredExecutionContexts(debuggerModel) {
-    return debuggerModel.setBlackboxExecutionContexts(this.skipContentScripts ? Array.from(this.#contentScriptExecutionContexts) : []);
+    return debuggerModel.setBlackboxExecutionContexts(
+      this.skipContentScripts ? Array.from(this.#contentScriptExecutionContexts) : []
+    );
   }
   getGeneralRulesForUISourceCode(uiSourceCode) {
     const projectType = uiSourceCode.project().type();
-    const isContentScript = projectType === projectTypes.ContentScripts;
+    const isContentScript = projectType === "contentscripts" /* ContentScripts */;
     const isKnownThirdParty = uiSourceCode.isKnownThirdParty();
     return { isContentScript, isKnownThirdParty };
   }
@@ -1087,24 +1166,29 @@ var IgnoreListManager = class _IgnoreListManager extends Common4.ObjectWrapper.O
   async updateScriptRanges(script, sourceMap) {
     let hasIgnoreListedMappings = false;
     if (!this.isUserIgnoreListedURL(script.sourceURL, { isContentScript: script.isContentScript() })) {
-      hasIgnoreListedMappings = sourceMap?.sourceURLs().some((url) => this.isUserIgnoreListedURL(url, { isKnownThirdParty: sourceMap.hasIgnoreListHint(url) })) ?? false;
+      hasIgnoreListedMappings = sourceMap?.sourceURLs().some(
+        (url) => this.isUserIgnoreListedURL(url, { isKnownThirdParty: sourceMap.hasIgnoreListHint(url) })
+      ) ?? false;
     }
     if (!hasIgnoreListedMappings) {
       if (scriptToRange.get(script) && await script.setBlackboxedRanges([])) {
         scriptToRange.delete(script);
       }
-      this.dispatchEventToListeners("IGNORED_SCRIPT_RANGES_UPDATED", script);
+      this.dispatchEventToListeners("IGNORED_SCRIPT_RANGES_UPDATED" /* IGNORED_SCRIPT_RANGES_UPDATED */, script);
       return;
     }
     if (!sourceMap) {
       return;
     }
-    const newRanges = sourceMap.findRanges((srcURL) => this.isUserIgnoreListedURL(srcURL, { isKnownThirdParty: sourceMap.hasIgnoreListHint(srcURL) }), { isStartMatching: true }).flatMap((range) => [range.start, range.end]);
+    const newRanges = sourceMap.findRanges(
+      (srcURL) => this.isUserIgnoreListedURL(srcURL, { isKnownThirdParty: sourceMap.hasIgnoreListHint(srcURL) }),
+      { isStartMatching: true }
+    ).flatMap((range) => [range.start, range.end]);
     const oldRanges = scriptToRange.get(script) || [];
     if (!isEqual(oldRanges, newRanges) && await script.setBlackboxedRanges(newRanges)) {
       scriptToRange.set(script, newRanges);
     }
-    this.dispatchEventToListeners("IGNORED_SCRIPT_RANGES_UPDATED", script);
+    this.dispatchEventToListeners("IGNORED_SCRIPT_RANGES_UPDATED" /* IGNORED_SCRIPT_RANGES_UPDATED */, script);
     function isEqual(rangesA, rangesB) {
       if (rangesA.length !== rangesB.length) {
         return false;
@@ -1118,7 +1202,7 @@ var IgnoreListManager = class _IgnoreListManager extends Common4.ObjectWrapper.O
     }
   }
   uiSourceCodeURL(uiSourceCode) {
-    return uiSourceCode.project().type() === projectTypes.Debugger ? null : uiSourceCode.url();
+    return uiSourceCode.project().type() === "debugger" /* Debugger */ ? null : uiSourceCode.url();
   }
   canIgnoreListUISourceCode(uiSourceCode) {
     const url = this.uiSourceCodeURL(uiSourceCode);
@@ -1299,7 +1383,7 @@ var IgnoreListManager = class _IgnoreListManager extends Common4.ObjectWrapper.O
     return prefix + Platform2.StringUtilities.escapeForRegExp(name) + (url.endsWith(name) ? "$" : "\\b");
   }
   getIgnoreListURLContextMenuItems(uiSourceCode) {
-    if (uiSourceCode.project().type() === projectTypes.FileSystem) {
+    if (uiSourceCode.project().type() === "filesystem" /* FileSystem */) {
       return [];
     }
     const menuItems = [];
@@ -1378,13 +1462,17 @@ var IgnoreListManager = class _IgnoreListManager extends Common4.ObjectWrapper.O
   }
 };
 var scriptToRange = /* @__PURE__ */ new WeakMap();
+var Events4 = /* @__PURE__ */ ((Events5) => {
+  Events5["IGNORED_SCRIPT_RANGES_UPDATED"] = "IGNORED_SCRIPT_RANGES_UPDATED";
+  return Events5;
+})(Events4 || {});
 
-// gen/front_end/models/workspace/SearchConfig.js
+// ../../front_end/models/workspace/SearchConfig.ts
 var SearchConfig_exports = {};
 __export(SearchConfig_exports, {
   SearchConfig: () => SearchConfig
 });
-import * as Platform3 from "./../../core/platform/platform.js";
+import * as Platform3 from "../../core/platform/platform.js";
 var SearchConfig = class _SearchConfig {
   #query;
   #ignoreCase;

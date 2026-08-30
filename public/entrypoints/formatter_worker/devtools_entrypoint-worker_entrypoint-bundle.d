@@ -1,0 +1,1 @@
+gen/front_end/entrypoints/formatter_worker/formatter_worker-entrypoint.js: gen/front_end/entrypoints/formatter_worker/formatter_worker-entrypoint.prebundle.js

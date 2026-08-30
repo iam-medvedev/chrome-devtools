@@ -10,6 +10,7 @@ import * as Buttons from '../../ui/components/buttons/buttons.js';
 import { createIcon, Link } from '../../ui/kit/kit.js';
 import * as SettingsUI from '../../ui/legacy/components/settings_ui/settings_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as Settings from '../../ui/settings/settings.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import keybindsSettingsTabStyles from './keybindsSettingsTab.css.js';
 import settingsScreenStyles from './settingsScreen.css.js';
@@ -113,8 +114,8 @@ export class KeybindsSettingsTab extends UI.Widget.VBox {
         this.registerRequiredCSS(keybindsSettingsTabStyles, settingsScreenStyles);
         const settingsContent = this.contentElement.createChild('div', 'settings-card-container-wrapper').createChild('div');
         settingsContent.classList.add('settings-card-container');
-        const keybindsSetSetting = Common.Settings.Settings.instance().moduleSetting('active-keybind-set');
-        const userShortcutsSetting = Common.Settings.Settings.instance().moduleSetting('user-shortcuts');
+        const keybindsSetSetting = Common.Settings.Settings.instance().resolve(Settings.MainSettings.activeKeybindSetSettingDescriptor);
+        const userShortcutsSetting = Common.Settings.Settings.instance().resolve(Settings.MainSettings.userShortcutsSettingDescriptor);
         keybindsSetSetting.addChangeListener(this.update, this);
         const keybindsSetSelect = SettingsUI.SettingsUI.createControlForSetting(keybindsSetSetting, i18nString(UIStrings.matchShortcutsFromPreset));
         const card = settingsContent.createChild('devtools-card');

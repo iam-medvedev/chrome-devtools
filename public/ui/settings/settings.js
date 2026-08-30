@@ -4,13 +4,80 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
+// gen/front_end/ui/settings/ConsoleSettings.js
+var ConsoleSettings_exports = {};
+__export(ConsoleSettings_exports, {
+  consoleAutocompleteOnEnterSettingDescriptor: () => consoleAutocompleteOnEnterSettingDescriptor,
+  consoleEagerEvalSettingDescriptor: () => consoleEagerEvalSettingDescriptor,
+  consoleGroupSimilarSettingDescriptor: () => consoleGroupSimilarSettingDescriptor,
+  consoleHistoryAutocompleteSettingDescriptor: () => consoleHistoryAutocompleteSettingDescriptor,
+  consoleShowsCorsErrorsSettingDescriptor: () => consoleShowsCorsErrorsSettingDescriptor,
+  consoleTimestampsEnabledSettingDescriptor: () => consoleTimestampsEnabledSettingDescriptor,
+  consoleTraceExpandSettingDescriptor: () => consoleTraceExpandSettingDescriptor,
+  networkMessagesSettingDescriptor: () => networkMessagesSettingDescriptor,
+  selectedContextFilterEnabledSettingDescriptor: () => selectedContextFilterEnabledSettingDescriptor
+});
+import * as Common from "../../core/common/common.js";
+var networkMessagesSettingDescriptor = {
+  name: "network-messages",
+  type: "boolean",
+  defaultValue: true,
+  storageType: "Synced"
+};
+var selectedContextFilterEnabledSettingDescriptor = {
+  name: "selected-context-filter-enabled",
+  type: "boolean",
+  defaultValue: false,
+  storageType: "Synced"
+};
+var consoleTimestampsEnabledSettingDescriptor = {
+  name: "console-timestamps-enabled",
+  type: "boolean",
+  defaultValue: false,
+  storageType: "Synced"
+};
+var consoleHistoryAutocompleteSettingDescriptor = {
+  name: "console-history-autocomplete",
+  type: "boolean",
+  defaultValue: true
+};
+var consoleAutocompleteOnEnterSettingDescriptor = {
+  name: "console-autocomplete-on-enter",
+  type: "boolean",
+  defaultValue: false,
+  storageType: "Synced"
+};
+var consoleGroupSimilarSettingDescriptor = {
+  name: "console-group-similar",
+  type: "boolean",
+  defaultValue: true,
+  storageType: "Synced"
+};
+var consoleShowsCorsErrorsSettingDescriptor = {
+  name: "console-shows-cors-errors",
+  type: "boolean",
+  defaultValue: true
+};
+var consoleEagerEvalSettingDescriptor = {
+  name: "console-eager-eval",
+  type: "boolean",
+  defaultValue: true,
+  storageType: "Synced"
+};
+var consoleTraceExpandSettingDescriptor = {
+  name: "console-trace-expand",
+  type: "boolean",
+  defaultValue: true,
+  storageType: "Synced"
+};
+
 // gen/front_end/ui/settings/InspectorMainSettings.js
 var InspectorMainSettings_exports = {};
 __export(InspectorMainSettings_exports, {
   adBlockingEnabledSettingDescriptor: () => adBlockingEnabledSettingDescriptor,
   autoAttachToCreatedPagesSettingDescriptor: () => autoAttachToCreatedPagesSettingDescriptor
 });
-import * as Common from "./../../core/common/common.js";
+import * as Common2 from "../../core/common/common.js";
 var adBlockingEnabledSettingDescriptor = {
   name: "network.ad-blocking-enabled",
   type: "boolean",
@@ -27,12 +94,18 @@ var autoAttachToCreatedPagesSettingDescriptor = {
 // gen/front_end/ui/settings/MainSettings.js
 var MainSettings_exports = {};
 __export(MainSettings_exports, {
+  activeKeybindSetSettingDescriptor: () => activeKeybindSetSettingDescriptor,
   chromeThemeColorsSettingDescriptor: () => chromeThemeColorsSettingDescriptor,
+  currentDockStateSettingDescriptor: () => currentDockStateSettingDescriptor,
   languageSettingDescriptor: () => languageSettingDescriptor,
+  searchAsYouTypeSettingDescriptor: () => searchAsYouTypeSettingDescriptor,
+  shortcutPanelSwitchSettingDescriptor: () => shortcutPanelSwitchSettingDescriptor,
   sidebarPositionSettingDescriptor: () => sidebarPositionSettingDescriptor,
-  uiThemeSettingDescriptor: () => uiThemeSettingDescriptor
+  syncPreferencesSettingDescriptor: () => syncPreferencesSettingDescriptor,
+  uiThemeSettingDescriptor: () => uiThemeSettingDescriptor,
+  userShortcutsSettingDescriptor: () => userShortcutsSettingDescriptor
 });
-import * as Common2 from "./../../core/common/common.js";
+import * as Common3 from "../../core/common/common.js";
 var uiThemeSettingDescriptor = {
   name: "ui-theme",
   type: "enum",
@@ -57,6 +130,40 @@ var languageSettingDescriptor = {
   defaultValue: "en-US",
   storageType: "Synced"
 };
+var shortcutPanelSwitchSettingDescriptor = {
+  name: "shortcut-panel-switch",
+  type: "boolean",
+  defaultValue: false,
+  storageType: "Synced"
+};
+var currentDockStateSettingDescriptor = {
+  name: "currentDockState",
+  type: "enum",
+  defaultValue: "right"
+};
+var activeKeybindSetSettingDescriptor = {
+  name: "active-keybind-set",
+  type: "enum",
+  defaultValue: "devToolsDefault",
+  storageType: "Synced"
+};
+var syncPreferencesSettingDescriptor = {
+  name: "sync-preferences",
+  type: "boolean",
+  defaultValue: false
+};
+var userShortcutsSettingDescriptor = {
+  name: "user-shortcuts",
+  type: "array",
+  defaultValue: [],
+  storageType: "Synced"
+};
+var searchAsYouTypeSettingDescriptor = {
+  name: "search-as-you-type",
+  type: "boolean",
+  defaultValue: true,
+  storageType: "Local"
+};
 
 // gen/front_end/ui/settings/SettingUIRegistration.js
 var SettingUIRegistration_exports = {};
@@ -68,19 +175,19 @@ __export(SettingUIRegistration_exports, {
   resetSettings: () => resetSettings,
   resolve: () => resolve
 });
-import * as Common3 from "./../../core/common/common.js";
+import * as Common4 from "../../core/common/common.js";
 var registeredSettings = /* @__PURE__ */ new Map();
 function register(settingDescriptor, settingUIDescriptor) {
   const settingName = settingDescriptor.name;
   if (registeredSettings.has(settingName)) {
     throw new Error(`Duplicate setting name '${settingName}'`);
   }
-  Common3.SettingRegistration.registerCategoryOrder(settingUIDescriptor.category, settingUIDescriptor.order);
+  Common4.SettingRegistration.registerCategoryOrder(settingUIDescriptor.category, settingUIDescriptor.order);
   registeredSettings.set(settingName, { descriptor: settingDescriptor, uiDescriptor: settingUIDescriptor });
 }
 function getRegisteredSettings() {
   const combined = /* @__PURE__ */ new Map();
-  for (const legacy of Common3.SettingRegistration.getRegisteredSettings()) {
+  for (const legacy of Common4.SettingRegistration.getRegisteredSettings()) {
     combined.set(legacy.settingName, {
       descriptor: {
         name: legacy.settingName,
@@ -149,11 +256,12 @@ function resolve(settingDescriptor) {
 }
 function resetSettings() {
   for (const { uiDescriptor } of registeredSettings.values()) {
-    Common3.SettingRegistration.removeCategoryOrder(uiDescriptor.category, uiDescriptor.order);
+    Common4.SettingRegistration.removeCategoryOrder(uiDescriptor.category, uiDescriptor.order);
   }
   registeredSettings.clear();
 }
 export {
+  ConsoleSettings_exports as ConsoleSettings,
   InspectorMainSettings_exports as InspectorMainSettings,
   MainSettings_exports as MainSettings,
   SettingUIRegistration_exports as SettingUIRegistration

@@ -5,6 +5,14 @@
 //            that the type magic of `EventTarget` behaves as expected w.r.t
 //            to the TypeScript compiler.
 import * as Common from './common.js';
+var Events;
+(function (Events) {
+    Events["VOID_EVENT"] = "VoidEvent";
+    Events["NUMBER_EVENT"] = "NumberEvent";
+    Events["KEY_VALUE_EVENT"] = "KeyValueEvent";
+    Events["BOOLEAN_EVENT"] = "BooleanEvent";
+    Events["UNION_EVENT"] = "UnionEvent";
+})(Events || (Events = {}));
 class TypedEventEmitter extends Common.ObjectWrapper.ObjectWrapper {
     testValidArgumentTypes() {
         this.dispatchEventToListeners("VoidEvent" /* Events.VOID_EVENT */);

@@ -62,10 +62,12 @@ export default `/*
     justify-content: center;
     align-items: center;
     padding: 20px;
+    font-style: italic;
+    color: var(--sys-color-token-subtle);
   }
 }
 
-:host-context(.sources.panel) .empty-view-scroller {
+:host-context(.sources.panel) .empty-widget-container {
   display: none;
 }
 

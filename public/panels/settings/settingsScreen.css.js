@@ -16,8 +16,8 @@ export default `/*
 
 .settings-content {
   overflow: hidden auto;
-  margin: 8px 8px 8px 0;
-  padding: 0 4px;
+  margin: var(--sys-size-5) var(--sys-size-5) var(--sys-size-5) 0;
+  padding: 0 var(--sys-size-3);
   flex: auto;
 }
 
@@ -32,7 +32,7 @@ fieldset {
 }
 
 label {
-  padding-right: 8px;
+  padding-right: var(--sys-size-5);
 }
 
 .experiments-filter {
@@ -154,7 +154,7 @@ devtools-button.link-icon {
 .settings-experiment .feedback-link {
   color: var(--sys-color-primary);
   text-decoration-line: underline;
-  margin-left: 4px;
+  margin-left: var(--sys-size-3);
 }
 
 .tabbed-pane-content slot::slotted(.widget) {
@@ -198,7 +198,7 @@ devtools-button.link-icon {
 }
 
 .greendev-widgets input[type="radio"] {
-  margin: 6px;
+  margin: var(--sys-size-4);
 }
 
 /*# sourceURL=${import.meta.resolve('./settingsScreen.css')} */`;

@@ -1,13 +1,14 @@
 {
-  "checkJs": true,
   "compilerOptions": {
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "checkJs": true,
-    "composite": true,
-    "declaration": true,
+    "composite": false,
+    "declaration": false,
+    "disableSourceOfProjectReferenceRedirect": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
+    "incremental": false,
     "inlineSources": true,
     "lib": [
       "dom",
@@ -19,19 +20,18 @@
       "ESNext.Array"
     ],
     "module": "esnext",
+    "moduleResolution": "bundler",
     "noEmitOnError": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
     "noImplicitReturns": true,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
     "outDir": ".",
+    "preserveConstEnums": true,
     "rootDir": "../../../../../front_end/foundation",
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
     "target": "es2023",
-    "tsBuildInfoFile": "unittests-tsconfig.json.tsbuildinfo",
     "typeRoots": [
       "../../../../../node_modules/@types",
       "../../../../../node_modules"
@@ -49,25 +49,25 @@
   ],
   "references": [
     {
-      "path": "./bundle-tsconfig.json"
+      "path": "bundle-tsconfig.ref.json"
     },
     {
-      "path": "../core/common/bundle-tsconfig.json"
+      "path": "../core/common/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../core/host/bundle-tsconfig.json"
+      "path": "../core/host/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../core/root/bundle-tsconfig.json"
+      "path": "../core/root/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../core/sdk/bundle-tsconfig.json"
+      "path": "../core/sdk/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../generated/generated-tsconfig.json"
+      "path": "../generated/generated-tsconfig.ref.json"
     },
     {
-      "path": "../testing/testing-tsconfig.json"
+      "path": "../testing/testing-tsconfig.ref.json"
     }
   ]
 }

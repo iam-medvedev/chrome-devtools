@@ -1,0 +1,1 @@
+gen/front_end/ui/comments/comments.js: gen/front_end/ui/comments/CommentAnchorResolver.js gen/front_end/ui/comments/CommentOverlayManager.js gen/front_end/ui/comments/commentsOverlay.css.js gen/front_end/ui/comments/CommentsOverlayWidget.js gen/front_end/ui/comments/comments.prebundle.js

@@ -1,15 +1,15 @@
 // gen/front_end/entrypoints/main/main-meta.prebundle.js
-import * as Common from "./../../core/common/common.js";
-import * as Host from "./../../core/host/host.js";
-import * as i18n from "./../../core/i18n/i18n.js";
-import * as Root from "./../../core/root/root.js";
-import * as SDK from "./../../core/sdk/sdk.js";
-import * as Badges from "./../../models/badges/badges.js";
-import * as Persistence from "./../../models/persistence/persistence.js";
-import * as Workspace from "./../../models/workspace/workspace.js";
-import * as Components from "./../../ui/legacy/components/utils/utils.js";
-import * as UI from "./../../ui/legacy/legacy.js";
-import * as SettingsUI from "./../../ui/settings/settings.js";
+import * as Common from "../../core/common/common.js";
+import * as Host from "../../core/host/host.js";
+import * as i18n from "../../core/i18n/i18n.js";
+import * as Root from "../../core/root/root.js";
+import * as SDK from "../../core/sdk/sdk.js";
+import * as Badges from "../../models/badges/badges.js";
+import * as Persistence from "../../models/persistence/persistence.js";
+import * as Workspace from "../../models/workspace/workspace.js";
+import * as Components from "../../ui/legacy/components/utils/utils.js";
+import * as UI from "../../ui/legacy/legacy.js";
+import * as SettingsUI from "../../ui/settings/settings.js";
 var UIStrings = {
   /**
    * @description Title of a setting under the Persistence category in Settings.
@@ -281,7 +281,7 @@ async function loadMainModule() {
 }
 async function loadInspectorMainModule() {
   if (!loadedInspectorMainModule) {
-    loadedInspectorMainModule = await import("./../inspector_main/inspector_main.js");
+    loadedInspectorMainModule = await import("../inspector_main/inspector_main.js");
   }
   return loadedInspectorMainModule;
 }
@@ -707,23 +707,16 @@ SettingsUI.SettingUIRegistration.register(SettingsUI.MainSettings.languageSettin
   ],
   reloadRequired: true
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.MainSettings.shortcutPanelSwitchSettingDescriptor, {
   category: "APPEARANCE",
-  storageType: "Synced",
-  title: Host.Platform.platform() === "mac" ? i18nLazyString(UIStrings.enableShortcutToSwitchPanels) : i18nLazyString(UIStrings.enableCtrlShortcutToSwitchPanels),
-  settingName: "shortcut-panel-switch",
-  settingType: "boolean",
-  defaultValue: false
+  title: Host.Platform.platform() === "mac" ? i18nLazyString(UIStrings.enableShortcutToSwitchPanels) : i18nLazyString(UIStrings.enableCtrlShortcutToSwitchPanels)
 });
 SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.disablePausedStateOverlaySettingDescriptor, {
   category: "APPEARANCE",
   title: i18nLazyString(UIStrings.disablePaused)
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.MainSettings.currentDockStateSettingDescriptor, {
   category: "GLOBAL",
-  settingName: "currentDockState",
-  settingType: "enum",
-  defaultValue: "right",
   options: [
     {
       value: "right",
@@ -747,11 +740,7 @@ Common.Settings.registerSettingExtension({
     }
   ]
 });
-Common.Settings.registerSettingExtension({
-  storageType: "Synced",
-  settingName: "active-keybind-set",
-  settingType: "enum",
-  defaultValue: "devToolsDefault",
+SettingsUI.SettingUIRegistration.register(SettingsUI.MainSettings.activeKeybindSetSettingDescriptor, {
   options: [
     {
       value: "devToolsDefault",
@@ -775,13 +764,9 @@ function createOptionForLocale(localeString) {
     text: createLazyLocalizedLocaleSettingText(localeString)
   };
 }
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.MainSettings.syncPreferencesSettingDescriptor, {
   category: "ACCOUNT",
-  // This name must be kept in sync with DevToolsSettings::kSyncDevToolsPreferencesFrontendName.
-  settingName: "sync-preferences",
-  settingType: "boolean",
   title: i18nLazyString(UIStrings.saveSettings),
-  defaultValue: false,
   reloadRequired: true
 });
 SettingsUI.SettingUIRegistration.register(Badges.receiveGdpBadgesSettingDescriptor, {
@@ -810,20 +795,10 @@ SettingsUI.SettingUIRegistration.register(Persistence.NetworkPersistenceManager.
     }
   ]
 });
-Common.Settings.registerSettingExtension({
-  storageType: "Synced",
-  settingName: "user-shortcuts",
-  settingType: "array",
-  defaultValue: []
-});
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.MainSettings.searchAsYouTypeSettingDescriptor, {
   category: "GLOBAL",
-  storageType: "Local",
   title: i18nLazyString(UIStrings.searchAsYouTypeSetting),
-  settingName: "search-as-you-type",
-  settingType: "boolean",
   order: 3,
-  defaultValue: true,
   options: [
     {
       value: true,

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import '../shell/shell.js';
-import '../../panels/js_timeline/js_timeline-meta.js';
+import '../../panels/timeline/timeline-meta.js';
 import '../../panels/mobile_throttling/mobile_throttling-meta.js';
 import '../../panels/network/network-meta.js';
 import * as Common from '../../core/common/common.js';
@@ -62,7 +62,10 @@ UI.ViewManager.registerViewExtension({
     persistence: "permanent" /* UI.ViewManager.ViewPersistence.PERMANENT */,
     async loadView(universe) {
         const Sources = await loadSourcesModule();
-        return Sources.SourcesNavigator.NetworkNavigatorView.instance({ forceNew: null, networkProjectManager: universe.networkProjectManager });
+        return Sources.SourcesNavigator.NetworkNavigatorView.instance({
+            forceNew: null,
+            networkProjectManager: universe.networkProjectManager,
+        });
     },
 });
 Common.Runnable.registerEarlyInitializationRunnable(JsMainImpl.instance);

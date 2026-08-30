@@ -18,7 +18,7 @@ export default `/*
 }
 
 .issues {
-  --issue-indent: 8px;
+  --issue-indent: var(--sys-size-5);
 }
 
 /* The top most parents need to be larger, as they may include an unhide button. */
@@ -48,18 +48,18 @@ export default `/*
 .issue-category,
 .issue-kind,
 .issue {
-  padding: 0 8px;
+  padding: 0 var(--sys-size-5);
   padding-left: var(--issue-indent);
   overflow: hidden;
   flex: none;
   transition: background-color 200ms;
-  border: 1px solid var(--sys-color-divider);
-  border-width: 0 0 1px;
+  border: var(--sys-size-1) solid var(--sys-color-divider);
+  border-width: 0 0 var(--sys-size-1);
 }
 
 .issue-category.hidden-issues.parent.expanded,
 .issue-kind.parent.expanded {
-  border-width: 0 0 1px;
+  border-width: 0 0 var(--sys-size-1);
   background-color: var(--sys-color-surface2);
 }
 
@@ -98,7 +98,7 @@ export default `/*
 }
 
 p {
-  margin-block: 2px;
+  margin-block: var(--sys-size-2);
 }
 
 /* Override selected tree item styles for issues to avoid changing width. */
@@ -106,14 +106,14 @@ p {
 .tree-outline-disclosure:not(.tree-outline-disclosure-hide-overflow) .tree-outline.hide-selection-when-blurred .issue-kind.selected:focus-visible,
 .tree-outline-disclosure:not(.tree-outline-disclosure-hide-overflow) .tree-outline.hide-selection-when-blurred .issue.selected:focus-visible {
   width: auto;
-  padding-right: 8px;
+  padding-right: var(--sys-size-5);
 }
 
 .header {
   display: flex;
   flex-direction: row;
   align-items: flex-start;
-  padding: 4px 0;
+  padding: var(--sys-size-3) 0;
   cursor: pointer;
   width: 100%;
 
@@ -133,11 +133,11 @@ p {
 
 .title {
   flex: 1;
-  font-size: 12px;
+  font-size: var(--sys-typescale-body4-size);
   color: var(--sys-color-on-surface);
   font-weight: normal;
   user-select: text;
-  padding-top: 2px;
+  padding-top: var(--sys-size-2);
 }
 
 .issue.expanded .title {
@@ -145,17 +145,17 @@ p {
 }
 
 .issue-body.children {
-  border-bottom: 1px solid var(--sys-color-divider);
-  padding: 6px 0;
+  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
+  padding: var(--sys-size-4) 0;
   position: relative;
   padding-left: calc(var(--issue-indent) + 43px);
   padding-bottom: 26px;
-  padding-right: 8px;
+  padding-right: var(--sys-size-5);
 }
 
 .issue-category + .children,
 .issue-kind + .children {
-  --issue-indent: 24px;
+  --issue-indent: var(--sys-size-11);
 
   padding-left: 0;
 }
@@ -167,20 +167,20 @@ p {
   position: absolute;
   left: calc(var(--issue-indent) + 23px);
   top: 0;
-  bottom: 20px;
-  width: 2px;
+  bottom: var(--sys-size-9);
+  width: var(--sys-size-2);
 }
 
 .issue-kind-breaking-change.issue-body::before {
-  border-left: 2px solid var(--issue-color-yellow);
+  border-left: var(--sys-size-2) solid var(--issue-color-yellow);
 }
 
 .issue-kind-page-error.issue-body::before {
-  border-left: 2px solid var(--issue-color-red);
+  border-left: var(--sys-size-2) solid var(--issue-color-red);
 }
 
 .issue-kind-improvement.issue-body::before {
-  border-left: 2px solid var(--issue-color-blue);
+  border-left: var(--sys-size-2) solid var(--issue-color-blue);
 }
 
 .tree-outline .issue-body li:hover:not(:has(devtools-checkbox)) .selection {
@@ -188,29 +188,29 @@ p {
 }
 
 devtools-icon.leading-issue-icon {
-  margin: 1px 0 -1px 7px;
+  margin: var(--sys-size-1) 0 calc(-1 * var(--sys-size-1)) 7px;
 }
 
 .message {
   line-height: 18px;
-  font-size: 12px;
+  font-size: var(--sys-typescale-body4-size);
   color: var(--sys-color-token-subtle);
-  margin-bottom: 4px;
+  margin-bottom: var(--sys-size-3);
   user-select: text;
 }
 
 .message p {
-  margin-bottom: 16px;
+  margin-bottom: var(--sys-size-8);
 }
 
 .message li {
-  margin-top: 8px;
+  margin-top: var(--sys-size-5);
 }
 
 .message code {
   color: var(--sys-color-on-surface);
-  padding: 0 2px;
-  font-size: 12px;
+  padding: 0 var(--sys-size-2);
+  font-size: var(--sys-typescale-body4-size);
   user-select: text;
   cursor: text;
   background: var(--sys-color-surface2);
@@ -223,7 +223,7 @@ devtools-icon.leading-issue-icon {
 }
 
 .link {
-  font-size: 12px;
+  font-size: var(--sys-typescale-body4-size);
   color: var(--sys-color-primary);
 }
 
@@ -266,7 +266,7 @@ devtools-icon.leading-issue-icon {
   mask-image: none;
   padding-right: 5px;
   position: relative;
-  top: -1px;
+  top: calc(-1 * var(--sys-size-1));
 }
 
 .resolutions-list li {
@@ -293,7 +293,7 @@ ul > li.plain-enum::before {
 }
 
 .affected-resource-label {
-  font-size: 12px;
+  font-size: var(--sys-typescale-body4-size);
   line-height: 18px;
   color: var(--sys-color-on-surface);
   position: relative;
@@ -301,14 +301,14 @@ ul > li.plain-enum::before {
 }
 
 .affected-resource-cookie {
-  font-size: 12px;
+  font-size: var(--sys-typescale-body4-size);
   line-height: 18px;
   border: 0;
   border-collapse: collapse;
 }
 
 .affected-resource-element {
-  font-size: 12px;
+  font-size: var(--sys-typescale-body4-size);
   line-height: 18px;
   color: var(--sys-color-primary);
   border: 0;
@@ -316,7 +316,7 @@ ul > li.plain-enum::before {
 }
 
 .affected-resource-row {
-  font-size: 12px;
+  font-size: var(--sys-typescale-body4-size);
   line-height: 18px;
   border: 0;
   border-collapse: collapse;
@@ -324,28 +324,28 @@ ul > li.plain-enum::before {
 }
 
 .affected-resource-mixed-content {
-  font-size: 12px;
+  font-size: var(--sys-typescale-body4-size);
   line-height: 18px;
   border: 0;
   border-collapse: collapse;
 }
 
 .affected-resource-heavy-ad {
-  font-size: 12px;
+  font-size: var(--sys-typescale-body4-size);
   line-height: 18px;
   border: 0;
   border-collapse: collapse;
 }
 
 .affected-resource-request {
-  font-size: 12px;
+  font-size: var(--sys-typescale-body4-size);
   line-height: 18px;
   border: 0;
   border-collapse: collapse;
 }
 
 .affected-resource-source {
-  font-size: 12px;
+  font-size: var(--sys-typescale-body4-size);
   line-height: 18px;
   color: var(--sys-color-primary);
   border: 0;
@@ -354,13 +354,13 @@ ul > li.plain-enum::before {
 
 .affected-resource-list {
   border-spacing: 10px 0;
-  margin-left: -12px;
+  margin-left: calc(-1 * var(--sys-size-6));
 }
 
 .affected-resource-header {
-  font-size: 12px;
+  font-size: var(--sys-typescale-body4-size);
   color: var(--sys-color-on-surface);
-  padding-left: 2px;
+  padding-left: var(--sys-size-2);
 }
 
 .code-example {
@@ -378,7 +378,7 @@ ul > li.plain-enum::before {
 
 .affected-resource-cookie-info {
   color: var(--sys-color-token-subtle);
-  padding: 2px;
+  padding: var(--sys-size-2);
   text-align: right;
 }
 
@@ -388,24 +388,24 @@ ul > li.plain-enum::before {
 
 .affected-resource-mixed-content-info {
   color: var(--sys-color-token-subtle);
-  padding: 2px;
+  padding: var(--sys-size-2);
 }
 
 .affected-resource-heavy-ad-info {
   color: var(--sys-color-token-subtle);
-  padding: 2px;
+  padding: var(--sys-size-2);
 }
 
 .affected-resource-heavy-ad-info-frame {
   display: flex;
   align-items: center;
   color: var(--sys-color-token-subtle);
-  padding: 2px;
+  padding: var(--sys-size-2);
 }
 
 .affected-resource-cell {
   color: var(--sys-color-token-subtle);
-  padding: 2px;
+  padding: var(--sys-size-2);
 }
 
 .affected-resource-cell.link {
@@ -419,7 +419,7 @@ ul > li.plain-enum::before {
 
 .affected-resources > .parent {
   margin-top: 0;
-  padding: 2px 5px 0;
+  padding: var(--sys-size-2) 5px 0;
 }
 
 .affected-resources > .parent.expanded {
@@ -428,7 +428,7 @@ ul > li.plain-enum::before {
 
 .affected-resources > .children.expanded {
   background: var(--sys-color-cdt-base-container);
-  padding: 6px 0 9px 5px;
+  padding: var(--sys-size-4) 0 9px 5px;
 }
 
 .aggregated-issues-count {
@@ -440,7 +440,7 @@ ul > li.plain-enum::before {
 }
 
 .affected-resource-directive {
-  font-size: 12px;
+  font-size: var(--sys-typescale-body4-size);
   line-height: 18px;
   border: 0;
   border-collapse: collapse;
@@ -448,12 +448,12 @@ ul > li.plain-enum::before {
 
 .affected-resource-directive-info {
   color: var(--sys-color-token-subtle);
-  padding: 2px;
+  padding: var(--sys-size-2);
   text-align: left;
 }
 
 .devtools-link {
-  padding-top: 4px;
+  padding-top: var(--sys-size-3);
 }
 
 devtools-icon.link-icon {
@@ -465,7 +465,7 @@ devtools-icon.elements-panel,
 devtools-icon.network-panel {
   margin-right: 0.5ex;
   vertical-align: baseline;
-  height: 14px;
+  height: var(--sys-size-7);
 }
 
 @media (forced-colors: active) {

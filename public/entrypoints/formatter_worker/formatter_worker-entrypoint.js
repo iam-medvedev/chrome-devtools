@@ -1,5 +1,5 @@
 // gen/front_end/entrypoints/formatter_worker/formatter_worker-entrypoint.prebundle.js
-import * as Platform from "./../../core/platform/platform.js";
+import * as Platform from "../../core/platform/platform.js";
 import * as FormatterWorker from "./formatter_worker.js";
 Platform.HostRuntime.HOST_RUNTIME.workerScope.onmessage = function(event) {
   const method = event.data.method;

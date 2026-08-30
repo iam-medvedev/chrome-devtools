@@ -1,0 +1,1 @@
+{"compilerOptions":{"composite":true,"declaration":true,"emitDeclarationOnly":true,"skipLibCheck":true,"rootDir":"../../../../../../front_end/ui/comments","outDir":".","declarationDir":"."},"files":["../../../../../../front_end/ui/comments/comments.ts"],"references":[{"path":"./comments-tsconfig.ref.json"},{"path":"./css_files-tsconfig.ref.json"}]}

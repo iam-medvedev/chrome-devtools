@@ -20,7 +20,7 @@ export default `/*
 
 .issues-toolbar-container > devtools-toolbar {
   background-color: var(--sys-color-cdt-base-container);
-  border-bottom: 1px solid var(--sys-color-divider);
+  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
 }
 
 .issues-toolbar-left {
@@ -28,7 +28,7 @@ export default `/*
 }
 
 .issues-toolbar-right {
-  padding-right: 6px;
+  padding-right: var(--sys-size-4);
 }
 
 /*# sourceURL=${import.meta.resolve('./issuesPane.css')} */`;

@@ -15,6 +15,7 @@ import { StorageAgent } from './agents/StorageAgent.js';
 import { StylingAgent } from './agents/StylingAgent.js';
 import { AiAgent2 } from './AiAgent2.js';
 import { AiHistoryStorage } from './AiHistoryStorage.js';
+import { isContextSelectionEnabled } from './AiUtils.js';
 import { AccessibilityContext } from './contexts/AccessibilityContext.js';
 import { DOMNodeContext } from './contexts/DOMNodeContext.js';
 import { FileContext } from './contexts/FileContext.js';
@@ -126,13 +127,13 @@ export class AiConversation {
     setContext(updateContext) {
         if (!updateContext) {
             this.#contexts = [];
-            if (isAiAssistanceContextSelectionAgentEnabled()) {
+            if (isContextSelectionEnabled()) {
                 this.#updateAgent("none" /* ConversationType.NONE */);
             }
             return;
         }
         this.#contexts = [updateContext];
-        if (isAiAssistanceContextSelectionAgentEnabled()) {
+        if (isContextSelectionEnabled()) {
             if (updateContext instanceof FileContext) {
                 this.#updateAgent("drjones-file" /* ConversationType.FILE */);
             }
@@ -294,9 +295,20 @@ export class AiConversation {
         if (this.#type === type) {
             return;
         }
-        const isTransitioningFromStorage = this.#type === "storage" /* ConversationType.STORAGE */ && type !== "storage" /* ConversationType.STORAGE */;
-        const history = isTransitioningFromStorage ? [] : this.#filterHistoryForNewAgent();
+        const previousType = this.#type;
         this.#type = type;
+        // In AI Architecture V2, DevTools uses a single unified agent (AiAgent2) that
+        // dynamically loads skills on demand. Reusing the existing agent instance across
+        // context changes preserves its loaded activeSkills and declared tools so the model
+        // does not need to re-learn skills it already acquired earlier in the conversation.
+        if (Root.Runtime.hostConfig.devToolsAiV2Architecture?.enabled && this.#agent instanceof AiAgent2) {
+            return;
+        }
+        // In legacy V1 architecture, agents are recreated when switching conversation types.
+        // Discard conversation history when transitioning away from Storage to prevent
+        // sensitive data (e.g. cookies or storage items) from leaking into subsequent agent queries.
+        const isTransitioningFromStorage = previousType === "storage" /* ConversationType.STORAGE */ && type !== "storage" /* ConversationType.STORAGE */;
+        const history = isTransitioningFromStorage ? [] : this.#filterHistoryForNewAgent();
         const options = {
             aidaClient: this.#aidaClient,
             serverSideLoggingAllowed: isAiAssistanceServerSideLoggingAllowed(),
@@ -421,7 +433,7 @@ export class AiConversation {
         return !this.#contexts.every(context => context.isOriginAllowed(this.#origin));
     }
     get origin() {
-        return this.#origin;
+        return this.#origin instanceof SDK.SecurityOrigin.SecurityOrigin ? this.#origin.siteId() : this.#origin;
     }
     get type() {
         return this.#type;
@@ -431,10 +443,10 @@ export class AiConversation {
             return { blocked: true };
         }
         if (this.#origin) {
-            return { origin: this.#origin };
+            return { origin: this.origin };
         }
         this.#origin = getPrimaryPageOrigin(this.#targetManager);
-        return { origin: this.#origin };
+        return { origin: this.origin };
     };
 }
 /**
@@ -445,9 +457,6 @@ export class AiConversation {
  */
 function isAiAssistanceServerSideLoggingAllowed() {
     return !Root.Runtime.hostConfig.aidaAvailability?.disallowLogging;
-}
-function isAiAssistanceContextSelectionAgentEnabled() {
-    return Boolean(Root.Runtime.hostConfig.devToolsAiAssistanceContextSelectionAgent?.enabled);
 }
 function getPrimaryPageOrigin(targetManager) {
     const target = targetManager.primaryPageTarget();

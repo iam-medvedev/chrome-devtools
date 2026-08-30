@@ -213,10 +213,6 @@ export class ServiceWorkerCacheModel extends SDKModel {
     }
     indexedDBContentUpdated(_event) {
     }
-    sharedStorageAccessed(_event) {
-    }
-    sharedStorageWorkletOperationExecutionFinished(_event) {
-    }
     storageBucketCreatedOrUpdated(_event) {
     }
     storageBucketDeleted(_event) {
@@ -225,6 +221,12 @@ export class ServiceWorkerCacheModel extends SDKModel {
         this.#scheduleAsSoonAsPossible = true;
     }
 }
+export var Events;
+(function (Events) {
+    Events["CACHE_ADDED"] = "CacheAdded";
+    Events["CACHE_REMOVED"] = "CacheRemoved";
+    Events["CACHE_STORAGE_CONTENT_UPDATED"] = "CacheStorageContentUpdated";
+})(Events || (Events = {}));
 export class Cache {
     #model;
     storageKey;

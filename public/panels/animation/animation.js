@@ -9,24 +9,25 @@ var AnimationGroupPreviewUI_exports = {};
 __export(AnimationGroupPreviewUI_exports, {
   AnimationGroupPreviewUI: () => AnimationGroupPreviewUI
 });
-import * as UI3 from "./../../ui/legacy/legacy.js";
-import * as Lit2 from "./../../ui/lit/lit.js";
-import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
+import * as UI3 from "../../ui/legacy/legacy.js";
+import * as Lit2 from "../../ui/lit/lit.js";
+import * as VisualLogging3 from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/animation/AnimationUI.js
 var AnimationUI_exports = {};
 __export(AnimationUI_exports, {
   AnimationUI: () => AnimationUI,
   Colors: () => Colors,
+  Events: () => Events,
   Options: () => Options
 });
-import * as Common2 from "./../../core/common/common.js";
-import * as i18n3 from "./../../core/i18n/i18n.js";
-import * as Platform2 from "./../../core/platform/platform.js";
-import * as Geometry from "./../../models/geometry/geometry.js";
-import * as InlineEditor from "./../../ui/legacy/components/inline_editor/inline_editor.js";
-import * as UI2 from "./../../ui/legacy/legacy.js";
-import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
+import * as Common2 from "../../core/common/common.js";
+import * as i18n3 from "../../core/i18n/i18n.js";
+import * as Platform2 from "../../core/platform/platform.js";
+import * as Geometry from "../../models/geometry/geometry.js";
+import * as InlineEditor from "../../ui/legacy/components/inline_editor/inline_editor.js";
+import * as UI2 from "../../ui/legacy/legacy.js";
+import * as VisualLogging2 from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/animation/AnimationTimeline.js
 var AnimationTimeline_exports = {};
@@ -37,17 +38,17 @@ __export(AnimationTimeline_exports, {
   NodeUI: () => NodeUI,
   StepTimingFunction: () => StepTimingFunction
 });
-import "./../../ui/legacy/legacy.js";
-import * as Common from "./../../core/common/common.js";
-import * as Host from "./../../core/host/host.js";
-import * as i18n from "./../../core/i18n/i18n.js";
-import * as Platform from "./../../core/platform/platform.js";
-import * as SDK from "./../../core/sdk/sdk.js";
-import * as Buttons from "./../../ui/components/buttons/buttons.js";
-import * as UI from "./../../ui/legacy/legacy.js";
-import * as Lit from "./../../ui/lit/lit.js";
-import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
-import * as PanelsCommon from "./../common/common.js";
+import "../../ui/legacy/legacy.js";
+import * as Common from "../../core/common/common.js";
+import * as Host from "../../core/host/host.js";
+import * as i18n from "../../core/i18n/i18n.js";
+import * as Platform from "../../core/platform/platform.js";
+import * as SDK from "../../core/sdk/sdk.js";
+import * as Buttons from "../../ui/components/buttons/buttons.js";
+import * as UI from "../../ui/legacy/legacy.js";
+import * as Lit from "../../ui/lit/lit.js";
+import * as VisualLogging from "../../ui/visual_logging/visual_logging.js";
+import * as PanelsCommon from "../common/common.js";
 
 // gen/front_end/panels/animation/animationTimeline.css.js
 var animationTimeline_css_default = `/*
@@ -69,11 +70,11 @@ var animationTimeline_css_default = `/*
 .animation-node-row {
   width: 100%;
   display: flex;
-  border-bottom: 1px dashed var(--sys-color-divider);
+  border-bottom: var(--sys-size-1) dashed var(--sys-color-divider);
 }
 
 .animation-node-description {
-  padding-left: 8px;
+  padding-left: var(--sys-size-5);
   overflow: hidden;
   position: relative;
   background-color: var(--sys-color-cdt-base-container);
@@ -91,7 +92,7 @@ var animationTimeline_css_default = `/*
 }
 
 .animation-timeline-row {
-  height: 32px;
+  height: var(--sys-size-13);
   position: relative;
 }
 
@@ -105,13 +106,13 @@ svg.animation-ui g:first-child:hover path.animation-keyframe {
 }
 
 line.animation-line {
-  stroke-width: 2px;
+  stroke-width: var(--sys-size-2);
   stroke-linecap: round;
   fill: none;
 }
 
 line.animation-delay-line {
-  stroke-width: 2px;
+  stroke-width: var(--sys-size-2);
   stroke-dasharray: 6, 4;
 }
 
@@ -125,7 +126,7 @@ circle.animation-keyframe-point {
 
 circle.animation-endpoint,
 circle.animation-keyframe-point {
-  stroke-width: 2px;
+  stroke-width: var(--sys-size-2);
   transition: transform 100ms cubic-bezier(0, 0, 0.2, 1);
   transform: scale(1);
   transform-box: fill-box;
@@ -144,37 +145,37 @@ circle.animation-keyframe-point:active {
 
 .animation-name {
   position: absolute;
-  top: 8px;
+  top: var(--sys-size-5);
   color: var(--sys-color-on-surface);
   text-align: center;
-  margin-left: -8px;
+  margin-left: calc(-1 * var(--sys-size-5));
   white-space: nowrap;
 }
 
 .animation-timeline-toolbar-container {
   display: flex;
   background-color: var(--sys-color-cdt-base-container);
-  border-bottom: 1px solid var(--sys-color-divider);
+  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
   flex: 0 0 auto;
 }
 
 .animation-timeline-header {
-  height: 28px;
-  border-bottom: 1px solid var(--sys-color-divider);
+  height: var(--sys-size-12);
+  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
   flex-shrink: 0;
   display: flex;
 }
 
 .animation-timeline-header::after {
   content: '';
-  height: calc(100% - 48px - 28px);
+  height: calc(100% - var(--sys-size-16) - var(--sys-size-12));
   position: absolute;
   width: var(--timeline-controls-width);
   left: 0;
-  margin-top: 28px;
+  margin-top: var(--sys-size-12);
   background-color: var(--sys-color-cdt-base-container);
   z-index: 0;
-  border-right: 1px solid var(--sys-color-divider);
+  border-right: var(--sys-size-1) solid var(--sys-color-divider);
 }
 
 .animation-controls {
@@ -182,12 +183,12 @@ circle.animation-keyframe-point:active {
   position: relative;
   display: flex;
   justify-content: flex-end;
-  padding-right: 8px;
+  padding-right: var(--sys-size-5);
 }
 
 .animation-timeline-current-time {
   flex: 0 0 auto;
-  line-height: 28px;
+  line-height: var(--sys-size-12);
   margin-right: 5px;
 }
 
@@ -201,11 +202,11 @@ circle.animation-keyframe-point:active {
 }
 
 .animation-timeline-buffer {
-  height: 48px;
+  height: var(--sys-size-16);
   flex: 0 0 auto;
-  border-bottom: 1px solid var(--sys-color-divider);
+  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
   display: flex;
-  padding: 0 2px;
+  padding: 0 var(--sys-size-2);
 }
 
 .animation-timeline-buffer-hint {
@@ -231,8 +232,8 @@ circle.animation-keyframe-point:active {
   left: 10px;
   height: 100%;
   width: 100%;
-  top: 28px;
-  border-left: 1px solid var(--sys-color-error);
+  top: var(--sys-size-12);
+  border-left: var(--sys-size-1) solid var(--sys-color-error);
   z-index: 2;
 }
 
@@ -242,13 +243,13 @@ circle.animation-keyframe-point:active {
     to right,
     transparent 5px,
     var(--sys-color-error) 5px,
-    var(--sys-color-error) 6px,
-    transparent 6px
+    var(--sys-color-error) var(--sys-size-4),
+    transparent var(--sys-size-4)
   );
   position: absolute;
-  top: -28px;
-  height: 28px;
-  left: -6px;
+  top: calc(-1 * var(--sys-size-12));
+  height: var(--sys-size-12);
+  left: calc(-1 * var(--sys-size-4));
   padding: 0 5px;
   z-index: 3;
 }
@@ -259,8 +260,8 @@ circle.animation-keyframe-point:active {
   transform: rotate(45deg);
   background: var(--sys-color-error);
   position: absolute;
-  left: 2px;
-  top: 1px;
+  left: var(--sys-size-2);
+  top: var(--sys-size-1);
   z-index: 4;
 }
 
@@ -318,7 +319,7 @@ svg.animation-ui g:first-child {
 
 svg.animation-ui circle:focus-visible,
 svg.animation-ui path:focus-visible {
-  outline: 2px solid -webkit-focus-ring-color;
+  outline: var(--sys-size-2) solid -webkit-focus-ring-color;
 }
 
 .animation-tail-iterations {
@@ -361,7 +362,7 @@ text.animation-timeline-grid-label {
   ~ .animation-timeline-buffer-hint:not(:empty)
   ~ .animation-timeline-rows-hint,
 .animation-timeline-buffer:empty ~ .animation-timeline-buffer-hint {
-  font-size: 14px;
+  font-size: var(--sys-typescale-body2-size);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -382,13 +383,13 @@ text.animation-timeline-grid-label {
 }
 
 .animation-buffer-preview {
-  height: 40px;
-  margin: 4px 2px;
+  height: var(--sys-size-14);
+  margin: var(--sys-size-3) var(--sys-size-2);
   background-color: var(--sys-color-neutral-container);
-  border: 1px solid transparent;
-  border-radius: 2px;
+  border: var(--sys-size-1) solid transparent;
+  border-radius: var(--sys-size-2);
   flex: 1 1;
-  padding: 4px;
+  padding: var(--sys-size-3);
   max-width: 100px;
   animation: newGroupAnim 200ms;
   position: relative;
@@ -400,23 +401,23 @@ text.animation-timeline-grid-label {
 
 .animation-buffer-preview .preview-icon {
   position: absolute;
-  width: 14px;
-  height: 14px;
-  right: 1px;
-  bottom: 2px;
+  width: var(--sys-size-7);
+  height: var(--sys-size-7);
+  right: var(--sys-size-1);
+  bottom: var(--sys-size-2);
   opacity: 60%;
 }
 
 .animation-buffer-preview-animation {
   width: 100%;
   height: 100%;
-  border-radius: 2px 0 0 2px;
+  border-radius: var(--sys-size-2) 0 0 var(--sys-size-2);
   position: absolute;
   top: 0;
   left: 0;
   background: var(--sys-color-tonal-container);
   opacity: 0%;
-  border-right: 1px solid var(--sys-color-divider);
+  border-right: var(--sys-size-1) solid var(--sys-color-divider);
 }
 
 .animation-buffer-preview:focus-visible {
@@ -451,10 +452,10 @@ text.animation-timeline-grid-label {
   content: '';
   background: var(--sys-color-cdt-base-container);
   width: 7px;
-  height: 20px;
-  border-radius: 2px;
-  margin: 2px;
-  border: 1px solid var(--sys-color-divider);
+  height: var(--sys-size-9);
+  border-radius: var(--sys-size-2);
+  margin: var(--sys-size-2);
+  border: var(--sys-size-1) solid var(--sys-color-divider);
 }
 
 .animation-buffer-preview.paused .animation-paused {
@@ -462,7 +463,7 @@ text.animation-timeline-grid-label {
 }
 
 .animation-buffer-preview > svg > line {
-  stroke-width: 1px;
+  stroke-width: var(--sys-size-1);
 }
 
 .animation-buffer-preview.selected > svg > line {
@@ -482,32 +483,32 @@ text.animation-timeline-grid-label {
 }
 
 .animation-playback-rate-control {
-  margin: 4px 0 4px 2px;
+  margin: var(--sys-size-3) 0 var(--sys-size-3) var(--sys-size-2);
   display: flex;
   width: 120px;
 }
 
 .animation-playback-rate-button {
-  border-width: 1px;
+  border-width: var(--sys-size-1);
   border-style: solid;
   border-color: var(--sys-color-tonal-outline);
   border-right-width: 0;
   color: var(--sys-color-on-surface);
   display: inline-block;
-  margin-right: -1px;
-  padding: 1px 4px;
+  margin-right: calc(-1 * var(--sys-size-1));
+  padding: var(--sys-size-1) var(--sys-size-3);
   background-color: transparent;
   flex: 1 0 auto;
   text-align: center;
 }
 
 .animation-playback-rate-button:first-child {
-  border-radius: 4px 0 0 4px;
+  border-radius: var(--sys-shape-corner-extra-small) 0 0 var(--sys-shape-corner-extra-small);
 }
 
 .animation-playback-rate-button:last-child {
-  border-radius: 0 4px 4px 0;
-  border-right-width: 1px;
+  border-radius: 0 var(--sys-shape-corner-extra-small) var(--sys-shape-corner-extra-small) 0;
+  border-right-width: var(--sys-size-1);
 }
 
 .animation-playback-rate-button.selected {
@@ -522,8 +523,8 @@ text.animation-timeline-grid-label {
 }
 
 .animation-playback-rate-button:focus-visible {
-  outline: 2px solid var(--sys-color-primary);
-  outline-offset: 2px;
+  outline: var(--sys-size-2) solid var(--sys-color-primary);
+  outline-offset: var(--sys-size-2);
   z-index: 9999;
 }
 
@@ -542,17 +543,17 @@ text.animation-timeline-grid-label {
   top: -3px;
   right: -3px;
   background: var(--sys-color-token-subtle);
-  border-radius: 12px;
+  border-radius: var(--sys-shape-corner-medium-small);
   border: 0;
-  height: 16px;
-  width: 16px;
+  height: var(--sys-size-8);
+  width: var(--sys-size-8);
   z-index: 100;
   display: none;
   padding: 0;
 
   & > devtools-icon {
-    height: 16px;
-    width: 16px;
+    height: var(--sys-size-8);
+    width: var(--sys-size-8);
     color: var(--sys-color-cdt-base-container);
   }
 
@@ -571,14 +572,14 @@ text.animation-timeline-grid-label {
 
 .timeline-controls-resizer {
   position: absolute;
-  width: 6px;
+  width: var(--sys-size-4);
   height: 100%;
   left: var(--timeline-controls-width);
   top: 104px;
   z-index: 3;
   /* We put this a bit to the left of the line to allow dragging
   the delay point of the keyframes */
-  margin-left: -4px;
+  margin-left: calc(-1 * var(--sys-size-3));
 }
 
 @media (forced-colors: active) {
@@ -1550,6 +1551,12 @@ var AnimationTimeline = class _AnimationTimeline extends UI.Widget.VBox {
   }
 };
 var GlobalPlaybackRates = [1, 0.25, 0.1];
+var ControlState;
+(function(ControlState2) {
+  ControlState2["PLAY"] = "play-outline";
+  ControlState2["REPLAY"] = "replay-outline";
+  ControlState2["PAUSE"] = "pause-outline";
+})(ControlState || (ControlState = {}));
 var NodeUI = class {
   element;
   #description;
@@ -2009,6 +2016,13 @@ var AnimationUI = class _AnimationUI {
     event.consume(true);
   }
 };
+var Events;
+(function(Events2) {
+  Events2["ANIMATION_DRAG"] = "AnimationDrag";
+  Events2["KEYFRAME_MOVE"] = "KeyframeMove";
+  Events2["START_ENDPOINT_MOVE"] = "StartEndpointMove";
+  Events2["FINISH_ENDPOINT_MOVE"] = "FinishEndpointMove";
+})(Events || (Events = {}));
 var Options = {
   AnimationHeight: 26,
   AnimationSVGHeight: 50,

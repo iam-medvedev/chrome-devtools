@@ -9,7 +9,7 @@ var CSSOverviewUnusedDeclarations_exports = {};
 __export(CSSOverviewUnusedDeclarations_exports, {
   CSSOverviewUnusedDeclarations: () => CSSOverviewUnusedDeclarations
 });
-import * as i18n from "./../../core/i18n/i18n.js";
+import * as i18n from "../../core/i18n/i18n.js";
 var UIStrings = {
   /**
    * @description Label to explain why top values are ignored.
@@ -119,9 +119,9 @@ var CSSOverviewModel_exports = {};
 __export(CSSOverviewModel_exports, {
   CSSOverviewModel: () => CSSOverviewModel
 });
-import * as Common from "./../../core/common/common.js";
-import * as SDK from "./../../core/sdk/sdk.js";
-import * as ColorPicker from "./../../ui/legacy/components/color_picker/color_picker.js";
+import * as Common from "../../core/common/common.js";
+import * as SDK from "../../core/sdk/sdk.js";
+import * as ColorPicker from "../../ui/legacy/components/color_picker/color_picker.js";
 var CSSOverviewModel = class extends SDK.SDKModel.SDKModel {
   #runtimeAgent;
   #cssAgent;
@@ -490,10 +490,10 @@ __export(CSSOverviewProcessingView_exports, {
   CSSOverviewProcessingView: () => CSSOverviewProcessingView,
   DEFAULT_VIEW: () => DEFAULT_VIEW
 });
-import * as i18n3 from "./../../core/i18n/i18n.js";
-import * as Buttons from "./../../ui/components/buttons/buttons.js";
-import * as UI from "./../../ui/legacy/legacy.js";
-import { html, render } from "./../../ui/lit/lit.js";
+import * as i18n3 from "../../core/i18n/i18n.js";
+import * as Buttons from "../../ui/components/buttons/buttons.js";
+import * as UI from "../../ui/legacy/legacy.js";
+import { html, render } from "../../ui/lit/lit.js";
 
 // gen/front_end/panels/css_overview/cssOverviewProcessingView.css.js
 var cssOverviewProcessingView_css_default = `/**
@@ -504,26 +504,26 @@ var cssOverviewProcessingView_css_default = `/**
 
 .overview-processing-view {
   overflow: hidden;
-  padding: 16px;
+  padding: var(--sys-size-8);
   justify-content: center;
   align-items: center;
   height: 100%;
 }
 
 .overview-processing-view h1 {
-  font-size: 16px;
+  font-size: var(--sys-typescale-body1-size);
   text-align: center;
   font-weight: normal;
   margin: 0;
-  padding: 8px;
+  padding: var(--sys-size-5);
 }
 
 .overview-processing-view h2 {
-  font-size: 12px;
+  font-size: var(--sys-typescale-body4-size);
   text-align: center;
   font-weight: normal;
   margin: 0;
-  padding-top: 32px;
+  padding-top: var(--sys-size-13);
 }
 
 /*# sourceURL=${import.meta.resolve("./cssOverviewProcessingView.css")} */`;
@@ -578,19 +578,19 @@ __export(CSSOverviewCompletedView_exports, {
   ELEMENT_DETAILS_DEFAULT_VIEW: () => ELEMENT_DETAILS_DEFAULT_VIEW,
   ElementDetailsView: () => ElementDetailsView
 });
-import "./../../ui/legacy/components/data_grid/data_grid.js";
-import "./../../ui/kit/kit.js";
-import * as Common2 from "./../../core/common/common.js";
-import * as i18n7 from "./../../core/i18n/i18n.js";
-import * as Platform from "./../../core/platform/platform.js";
-import * as SDK2 from "./../../core/sdk/sdk.js";
-import * as TextUtils from "./../../core/text_utils/text_utils.js";
-import * as Geometry from "./../../models/geometry/geometry.js";
-import * as Components from "./../../ui/legacy/components/utils/utils.js";
-import * as UI3 from "./../../ui/legacy/legacy.js";
-import { Directives as Directives2, html as html3, nothing, render as render3 } from "./../../ui/lit/lit.js";
-import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
-import * as PanelsCommon from "./../common/common.js";
+import "../../ui/legacy/components/data_grid/data_grid.js";
+import "../../ui/kit/kit.js";
+import * as Common2 from "../../core/common/common.js";
+import * as i18n7 from "../../core/i18n/i18n.js";
+import * as Platform from "../../core/platform/platform.js";
+import * as SDK2 from "../../core/sdk/sdk.js";
+import * as TextUtils from "../../core/text_utils/text_utils.js";
+import * as Geometry from "../../models/geometry/geometry.js";
+import * as Components from "../../ui/legacy/components/utils/utils.js";
+import * as UI3 from "../../ui/legacy/legacy.js";
+import { Directives as Directives2, html as html3, nothing, render as render3 } from "../../ui/lit/lit.js";
+import * as VisualLogging2 from "../../ui/visual_logging/visual_logging.js";
+import * as PanelsCommon from "../common/common.js";
 
 // gen/front_end/panels/css_overview/cssOverviewCompletedView.css.js
 var cssOverviewCompletedView_css_default = `/**
@@ -603,8 +603,8 @@ var cssOverviewCompletedView_css_default = `/**
   .overview-completed-view {
     overflow: auto;
 
-    --overview-default-padding: 28px;
-    --overview-icon-padding: 32px;
+    --overview-default-padding: var(--sys-size-12);
+    --overview-icon-padding: var(--sys-size-13);
   }
 
   .overview-completed-view .summary ul,
@@ -619,13 +619,13 @@ var cssOverviewCompletedView_css_default = `/**
   .overview-completed-view .summary ul {
     display: grid;
     grid-template-columns: repeat(auto-fill, 140px);
-    gap: 16px;
+    gap: var(--sys-size-8);
   }
 
   .overview-completed-view .colors ul li {
     display: inline-block;
-    margin: 0 0 16px;
-    padding: 0 8px 0 0;
+    margin: 0 0 var(--sys-size-8);
+    padding: 0 var(--sys-size-5) 0 0;
   }
 
   .overview-completed-view .summary ul li {
@@ -635,8 +635,8 @@ var cssOverviewCompletedView_css_default = `/**
   }
 
   .overview-completed-view li .label {
-    font-size: 12px;
-    padding-bottom: 2px;
+    font-size: var(--sys-typescale-body4-size);
+    padding-bottom: var(--sys-size-2);
   }
 
   .overview-completed-view li .value {
@@ -680,17 +680,17 @@ var cssOverviewCompletedView_css_default = `/**
     width: 65px;
     height: 25px;
     border-radius: 3px;
-    margin-right: 16px;
+    margin-right: var(--sys-size-8);
 
     &:focus-visible {
-      outline: 2px solid var(--sys-color-state-focus-ring);
-      outline-offset: 2px;
+      outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
+      outline-offset: var(--sys-size-2);
     }
   }
 
   .block-title {
-    padding-top: 4px;
-    font-size: 12px;
+    padding-top: var(--sys-size-3);
+    font-size: var(--sys-typescale-body4-size);
     color: var(--sys-color-on-surface);
     letter-spacing: 0;
     text-transform: uppercase;
@@ -708,7 +708,7 @@ var cssOverviewCompletedView_css_default = `/**
 
   .results-section {
     flex-shrink: 0;
-    border-bottom: 1px solid var(--sys-color-divider);
+    border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
     padding: var(--overview-default-padding) 0 var(--overview-default-padding) 0;
   }
 
@@ -721,7 +721,7 @@ var cssOverviewCompletedView_css_default = `/**
     font-size: 15px;
     font-weight: normal;
     padding: 0;
-    margin: 0 0 20px;
+    margin: 0 0 var(--sys-size-9);
     padding-left: calc(var(--overview-default-padding) + var(--overview-icon-padding));
     position: relative;
     height: 26px;
@@ -774,8 +774,8 @@ var cssOverviewCompletedView_css_default = `/**
   }
 
   .results-section.colors h2 {
-    margin-top: 20px;
-    font-size: 13px;
+    margin-top: var(--sys-size-9);
+    font-size: var(--sys-typescale-body3-size);
     font-weight: normal;
   }
 
@@ -793,8 +793,8 @@ var cssOverviewCompletedView_css_default = `/**
   .overview-completed-view .unused-declarations ul li {
     display: grid;
     grid-template-columns: 2fr 3fr;
-    gap: 12px;
-    margin-bottom: 4px;
+    gap: var(--sys-size-6);
+    margin-bottom: var(--sys-size-3);
     align-items: center;
   }
 
@@ -803,7 +803,7 @@ var cssOverviewCompletedView_css_default = `/**
   .overview-completed-view .unused-declarations button .details {
     min-width: 100px;
     text-align: right;
-    margin-right: 8px;
+    margin-right: var(--sys-size-5);
     color: var(--sys-color-primary);
     pointer-events: none;
   }
@@ -818,10 +818,10 @@ var cssOverviewCompletedView_css_default = `/**
   .overview-completed-view .font-info button .bar,
   .overview-completed-view .media-queries button .bar,
   .overview-completed-view .unused-declarations button .bar {
-    height: 8px;
+    height: var(--sys-size-5);
     background: var(--sys-color-primary-bright);
-    border-radius: 2px;
-    min-width: 2px;
+    border-radius: var(--sys-size-2);
+    min-width: var(--sys-size-2);
   }
 
   .overview-completed-view .font-info button,
@@ -833,17 +833,17 @@ var cssOverviewCompletedView_css_default = `/**
     margin: 0;
     display: flex;
     align-items: center;
-    border-radius: 2px;
+    border-radius: var(--sys-size-2);
     cursor: pointer;
-    height: 28px;
+    height: var(--sys-size-12);
     background: none;
 
     &:focus-visible {
-      outline: 2px solid var(--sys-color-state-focus-ring);
+      outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
     }
 
     &:hover {
-      border-radius: 12px;
+      border-radius: var(--sys-shape-corner-medium-small);
       background: var(--sys-color-state-hover-on-subtle);
     }
 
@@ -862,7 +862,7 @@ var cssOverviewCompletedView_css_default = `/**
   .overview-completed-view .font-info .font-metric {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 12px;
+    gap: var(--sys-size-6);
   }
 
   .overview-completed-view .font-info ul {
@@ -874,13 +874,13 @@ var cssOverviewCompletedView_css_default = `/**
   }
 
   .overview-completed-view .font-info h2 {
-    font-size: 14px;
+    font-size: var(--sys-typescale-body2-size);
     font-weight: bold;
     margin: 0 0 1em;
   }
 
   .overview-completed-view .font-info h3 {
-    font-size: 13px;
+    font-size: var(--sys-typescale-body3-size);
     font-weight: normal;
     font-style: italic;
     margin: 0 0 0.5em;
@@ -905,7 +905,7 @@ var cssOverviewCompletedView_css_default = `/**
   .contrast-warning {
     display: flex;
     align-items: center;
-    margin-top: 2px;
+    margin-top: var(--sys-size-2);
   }
 
   .contrast-warning .threshold-label {
@@ -914,7 +914,7 @@ var cssOverviewCompletedView_css_default = `/**
   }
 
   .contrast-warning devtools-icon {
-    margin-left: 2px;
+    margin-left: var(--sys-size-2);
   }
 
   .contrast-preview {
@@ -933,7 +933,7 @@ var cssOverviewCompletedView_css_default = `/**
 
   ::part(node-id-column) {
     align-items: center;
-    height: 20px;
+    height: var(--sys-size-9);
 
     --show-element-display: none;
   }
@@ -945,8 +945,8 @@ var cssOverviewCompletedView_css_default = `/**
 
   ::part(show-element) {
     display: var(--show-element-display);
-    height: 16px;
-    width: 16px;
+    height: var(--sys-size-8);
+    width: var(--sys-size-8);
   }
 
   .results-section.colors {
@@ -962,12 +962,12 @@ __export(CSSOverviewSidebarPanel_exports, {
   CSSOverviewSidebarPanel: () => CSSOverviewSidebarPanel,
   DEFAULT_VIEW: () => DEFAULT_VIEW2
 });
-import "./../../ui/legacy/legacy.js";
-import * as i18n5 from "./../../core/i18n/i18n.js";
-import * as Buttons2 from "./../../ui/components/buttons/buttons.js";
-import * as UI2 from "./../../ui/legacy/legacy.js";
-import { Directives, html as html2, render as render2 } from "./../../ui/lit/lit.js";
-import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
+import "../../ui/legacy/legacy.js";
+import * as i18n5 from "../../core/i18n/i18n.js";
+import * as Buttons2 from "../../ui/components/buttons/buttons.js";
+import * as UI2 from "../../ui/legacy/legacy.js";
+import { Directives, html as html2, render as render2 } from "../../ui/lit/lit.js";
+import * as VisualLogging from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/css_overview/cssOverviewSidebarPanel.css.js
 var cssOverviewSidebarPanel_css_default = `/**
@@ -1006,7 +1006,7 @@ var cssOverviewSidebarPanel_css_default = `/**
   }
 
   .overview-toolbar {
-    border-bottom: 1px solid var(--sys-color-divider);
+    border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
     flex: 0 0 auto;
   }
 
@@ -2032,18 +2032,18 @@ __export(CSSOverviewPanel_exports, {
   CSSOverviewPanel: () => CSSOverviewPanel,
   DEFAULT_VIEW: () => DEFAULT_VIEW5
 });
-import * as Host from "./../../core/host/host.js";
-import * as SDK3 from "./../../core/sdk/sdk.js";
-import * as UI5 from "./../../ui/legacy/legacy.js";
-import { render as render5 } from "./../../ui/lit/lit.js";
+import * as Host from "../../core/host/host.js";
+import * as SDK3 from "../../core/sdk/sdk.js";
+import * as UI5 from "../../ui/legacy/legacy.js";
+import { render as render5 } from "../../ui/lit/lit.js";
 
 // gen/front_end/panels/css_overview/CSSOverviewStartView.js
-import "./../../ui/components/panel_feedback/panel_feedback.js";
-import "./../../ui/components/panel_introduction_steps/panel_introduction_steps.js";
-import * as i18n9 from "./../../core/i18n/i18n.js";
-import * as Buttons3 from "./../../ui/components/buttons/buttons.js";
-import * as UI4 from "./../../ui/legacy/legacy.js";
-import { html as html4, render as render4 } from "./../../ui/lit/lit.js";
+import "../../ui/components/panel_feedback/panel_feedback.js";
+import "../../ui/components/panel_introduction_steps/panel_introduction_steps.js";
+import * as i18n9 from "../../core/i18n/i18n.js";
+import * as Buttons3 from "../../ui/components/buttons/buttons.js";
+import * as UI4 from "../../ui/legacy/legacy.js";
+import { html as html4, render as render4 } from "../../ui/lit/lit.js";
 
 // gen/front_end/panels/css_overview/cssOverviewStartView.css.js
 var cssOverviewStartView_css_default = `/**
@@ -2058,7 +2058,7 @@ var cssOverviewStartView_css_default = `/**
   }
 
   .css-overview-start-view {
-    padding: 24px;
+    padding: var(--sys-size-11);
     display: flex;
     flex-direction: column;
     background-color: var(--sys-color-cdt-base-container);
@@ -2070,22 +2070,22 @@ var cssOverviewStartView_css_default = `/**
   }
 
   .preview-feature {
-    padding: 12px 16px;
-    border: 1px solid var(--sys-color-neutral-outline);
+    padding: var(--sys-size-6) var(--sys-size-8);
+    border: var(--sys-size-1) solid var(--sys-color-neutral-outline);
     color: var(--sys-color-on-surface);
-    font-size: 13px;
-    line-height: 20px;
-    border-radius: 12px;
+    font-size: var(--sys-typescale-body3-size);
+    line-height: var(--sys-typescale-body3-line-height);
+    border-radius: var(--sys-shape-corner-medium-small);
     margin: 42px 0;
     letter-spacing: 0.01em;
   }
 
   .preview-header {
     color: var(--sys-color-primary);
-    font-size: 13px;
-    line-height: 20px;
+    font-size: var(--sys-typescale-body3-size);
+    line-height: var(--sys-typescale-body3-line-height);
     letter-spacing: 0.01em;
-    margin: 9px 0 14px;
+    margin: 9px 0 var(--sys-size-7);
   }
 
   .preview-icon {
@@ -2093,7 +2093,7 @@ var cssOverviewStartView_css_default = `/**
   }
 
   .feedback-prompt {
-    margin-bottom: 24px;
+    margin-bottom: var(--sys-size-11);
   }
 
   .feedback-prompt .devtools-link {
@@ -2108,17 +2108,17 @@ var cssOverviewStartView_css_default = `/**
   }
 
   .thumbnail-wrapper {
-    width: 144px;
+    width: var(--sys-size-22);
     height: 92px;
-    margin-right: 20px;
+    margin-right: var(--sys-size-9);
   }
 
   .video-doc-header {
-    font-size: 13px;
-    line-height: 20px;
+    font-size: var(--sys-typescale-body3-size);
+    line-height: var(--sys-typescale-body3-line-height);
     letter-spacing: 0.04em;
     color: var(--sys-color-on-surface);
-    margin-bottom: 2px;
+    margin-bottom: var(--sys-size-2);
   }
 
   devtools-feedback-button {
@@ -2126,8 +2126,8 @@ var cssOverviewStartView_css_default = `/**
   }
 
   .resources .devtools-link {
-    font-size: 14px;
-    line-height: 22px;
+    font-size: var(--sys-typescale-body2-size);
+    line-height: var(--sys-size-10);
     letter-spacing: 0.04em;
     text-decoration-line: underline;
     color: var(--sys-color-primary);

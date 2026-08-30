@@ -35,9 +35,9 @@ iframe {
 
 header {
   display: flex;
-  padding: 3px 8px;
+  padding: 3px var(--sys-size-5);
   justify-content: space-between;
-  border-bottom: 1px solid var(--sys-color-divider);
+  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
 }
 
 header > div {
@@ -46,15 +46,15 @@ header > div {
 
 .icon {
   display: block;
-  width: 16px;
-  height: 16px;
+  width: var(--sys-size-8);
+  height: var(--sys-size-8);
   color: var(--sys-color-secondary);
 }
 
 .title {
   display: flex;
   flex-direction: row;
-  gap: 6px;
+  gap: var(--sys-size-4);
   color: var(--sys-color-secondary);
   align-items: center;
   font-weight: 500;

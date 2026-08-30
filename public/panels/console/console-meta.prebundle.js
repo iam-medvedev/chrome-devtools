@@ -257,13 +257,9 @@ UI.ActionRegistration.registerActionExtension({
         return new Console.ConsoleView.ActionDelegate();
     },
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.ConsoleSettings.networkMessagesSettingDescriptor, {
     category: "CONSOLE" /* Common.Settings.SettingCategory.CONSOLE */,
-    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
     title: i18nLazyString(UIStrings.networkMessages),
-    settingName: 'network-messages',
-    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
-    defaultValue: true,
     options: [
         {
             value: true,
@@ -275,13 +271,9 @@ Common.Settings.registerSettingExtension({
         },
     ],
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.ConsoleSettings.selectedContextFilterEnabledSettingDescriptor, {
     category: "CONSOLE" /* Common.Settings.SettingCategory.CONSOLE */,
-    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
     title: i18nLazyString(UIStrings.selectedContextOnly),
-    settingName: 'selected-context-filter-enabled',
-    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
-    defaultValue: false,
     options: [
         {
             value: true,
@@ -293,13 +285,9 @@ Common.Settings.registerSettingExtension({
         },
     ],
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.ConsoleSettings.consoleTimestampsEnabledSettingDescriptor, {
     category: "CONSOLE" /* Common.Settings.SettingCategory.CONSOLE */,
-    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
     title: i18nLazyString(UIStrings.timestamps),
-    settingName: 'console-timestamps-enabled',
-    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
-    defaultValue: false,
     options: [
         {
             value: true,
@@ -311,12 +299,9 @@ Common.Settings.registerSettingExtension({
         },
     ],
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.ConsoleSettings.consoleHistoryAutocompleteSettingDescriptor, {
     category: "CONSOLE" /* Common.Settings.SettingCategory.CONSOLE */,
     title: i18nLazyString(UIStrings.autocompleteFromHistory),
-    settingName: 'console-history-autocomplete',
-    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
-    defaultValue: true,
     options: [
         {
             value: true,
@@ -328,13 +313,9 @@ Common.Settings.registerSettingExtension({
         },
     ],
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.ConsoleSettings.consoleAutocompleteOnEnterSettingDescriptor, {
     category: "CONSOLE" /* Common.Settings.SettingCategory.CONSOLE */,
-    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
     title: i18nLazyString(UIStrings.autocompleteOnEnter),
-    settingName: 'console-autocomplete-on-enter',
-    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
-    defaultValue: false,
     options: [
         {
             value: true,
@@ -346,13 +327,9 @@ Common.Settings.registerSettingExtension({
         },
     ],
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.ConsoleSettings.consoleGroupSimilarSettingDescriptor, {
     category: "CONSOLE" /* Common.Settings.SettingCategory.CONSOLE */,
-    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
     title: i18nLazyString(UIStrings.groupSimilarMessages),
-    settingName: 'console-group-similar',
-    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
-    defaultValue: true,
     options: [
         {
             value: true,
@@ -364,12 +341,9 @@ Common.Settings.registerSettingExtension({
         },
     ],
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.ConsoleSettings.consoleShowsCorsErrorsSettingDescriptor, {
     category: "CONSOLE" /* Common.Settings.SettingCategory.CONSOLE */,
     title: i18nLazyString(UIStrings.corsErrorsInConsole),
-    settingName: 'console-shows-cors-errors',
-    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
-    defaultValue: true,
     options: [
         {
             value: true,
@@ -381,13 +355,9 @@ Common.Settings.registerSettingExtension({
         },
     ],
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.ConsoleSettings.consoleEagerEvalSettingDescriptor, {
     category: "CONSOLE" /* Common.Settings.SettingCategory.CONSOLE */,
-    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
     title: i18nLazyString(UIStrings.eagerEvaluation),
-    settingName: 'console-eager-eval',
-    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
-    defaultValue: true,
     options: [
         {
             value: true,
@@ -413,13 +383,9 @@ SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.consoleUserActivationE
         },
     ],
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.ConsoleSettings.consoleTraceExpandSettingDescriptor, {
     category: "CONSOLE" /* Common.Settings.SettingCategory.CONSOLE */,
-    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
     title: i18nLazyString(UIStrings.expandConsoleTraceMessagesByDefault),
-    settingName: 'console-trace-expand',
-    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
-    defaultValue: true,
     options: [
         {
             value: true,

@@ -5,6 +5,7 @@ import type * as Trace from '../../trace/trace.js';
 import type { AiWidget, ConversationContext, FunctionHandlerOptions } from '../agents/AiAgent.js';
 import type { executeJsCode } from '../agents/ExecuteJavascript.js';
 import type { ChangeManager } from '../ChangeManager.js';
+import type { PerformanceTraceContext } from '../contexts/PerformanceTraceContext.js';
 /**
  * Result indicating an error occurred during tool execution.
  */
@@ -103,10 +104,22 @@ export interface OriginLockCapability {
     getEstablishedOrigin(): string | undefined;
 }
 /**
- * Capability for tools that need to run or query Lighthouse audits.
+ * Capability for tools that need to inspect an active Lighthouse report from context.
  */
-export interface LighthouseCapability {
-    lighthouseRecording?: (overrides?: LHModel.RunTypes.RunOverrides) => Promise<LHModel.ReporterTypes.ReportJSON | null>;
+export interface LighthouseReportCapability {
+    getLighthouseReport(): LHModel.ReporterTypes.ReportJSON | null;
+}
+/**
+ * Capability for tools that trigger new Lighthouse audit runs.
+ */
+export interface LighthouseRecordingCapability {
+    runLighthouse(overrides?: LHModel.RunTypes.RunOverrides): Promise<LHModel.ReporterTypes.ReportJSON | null>;
+}
+/**
+ * Capability for tools that need access to the active performance trace context.
+ */
+export interface PerformanceTraceCapability {
+    getPerformanceTraceContext(): PerformanceTraceContext | null;
 }
 /**
  * Capability for tools that need to record performance traces.
@@ -118,7 +131,7 @@ export interface PerformanceRecordingCapability {
  * Unified context interface providing all capabilities available in the project.
  * Used by the agent to pass a complete context to any tool type-safely.
  */
-export type AllToolsCapabilities = BaseToolCapability & PageExecutionCapability & StyleMutationCapability & TargetCapability & OriginLockCapability & LighthouseCapability & PerformanceRecordingCapability & ServerLoggingCapability;
+export type AllToolsCapabilities = BaseToolCapability & PageExecutionCapability & StyleMutationCapability & TargetCapability & OriginLockCapability & LighthouseReportCapability & LighthouseRecordingCapability & PerformanceRecordingCapability & PerformanceTraceCapability & ServerLoggingCapability;
 /**
  * Base argument type for AI Tools.
  */
@@ -136,6 +149,8 @@ export declare const enum ToolName {
     LIST_PAGE_ORIGINS = "listPageOrigins",
     LIST_STORAGE_KEYS = "listStorageKeys",
     GET_STORAGE_VALUES = "getStorageValues",
+    LIST_COOKIES = "listCookies",
+    GET_COOKIE_VALUES = "getCookieValues",
     GET_TRACE_EVENT_BY_KEY = "getTraceEventByKey",
     SELECT_TRACE_EVENT_BY_KEY = "selectTraceEventByKey",
     LIST_SOURCES = "listSources",
@@ -146,7 +161,8 @@ export declare const enum ToolName {
     GET_DETAILED_CALL_TREE = "getDetailedCallTree",
     GET_FUNCTION_CODE = "getFunctionCode",
     GET_RESOURCE_CONTENT = "getResourceContent",
-    GET_INSIGHT_DETAILS = "getInsightDetails"
+    GET_INSIGHT_DETAILS = "getInsightDetails",
+    GET_STORAGE_BREAKDOWN = "getStorageBreakdown"
 }
 /**
  * Base metadata interface for a Tool.
@@ -211,8 +227,13 @@ export interface ContextTool<ArgsType extends ToolArgs = ToolArgs, ContextClass 
  * Represents any AI Assistance tool: either a `DataTool` (returns data/widgets) or a `ContextTool` (switches active context).
  */
 export type Tool<ArgsType extends ToolArgs = ToolArgs, ReturnType = unknown, CapabilitiesType extends BaseToolCapability = BaseToolCapability> = DataTool<ArgsType, ReturnType, CapabilitiesType> | ContextTool<ArgsType, ReturnType, CapabilitiesType>;
+/**
+ * Capability provided to tools that handle sensitive user data (e.g. cookies or storage values).
+ * Calling `disableLogging()` irreversibly disables server-side logging for the remainder of
+ * the conversation session to prevent sensitive data from being logged on future turns.
+ */
 export interface ServerLoggingCapability {
-    setLoggingEnabled(enabled: boolean): void;
+    disableLogging(): void;
 }
 export declare const enum ToolAnnotation {
     REDACT_FROM_HISTORY = "redact-from-history"

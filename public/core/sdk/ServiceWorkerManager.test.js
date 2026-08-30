@@ -34,6 +34,116 @@ describe('ServiceWorkerVersion', () => {
         assert.strictEqual(version.targetId, VERSION_PAYLOAD.targetId);
         assert.deepEqual(version.routerRules, expectedRouterRules);
     });
+    it('initializes with a given payload containing typedRouterRules', () => {
+        const TYPED_ROUTER_RULES_PAYLOAD = {
+            ...VERSION_PAYLOAD,
+            routerRules: undefined,
+            typedRouterRules: [
+                {
+                    condition: {
+                        requestMethod: 'POST',
+                        urlPattern: '{"hash":"*","hostname":"*","password":"*","pathname":"/example","port":"*","protocol":"*","search":"*","username":"*"}',
+                    },
+                    source: {
+                        type: 'network',
+                    },
+                    id: 1,
+                },
+            ],
+        };
+        const version = makeVersion(REGISTRATION_PAYLOAD, TYPED_ROUTER_RULES_PAYLOAD);
+        const expectedRouterRules = [{
+                condition: '{"requestMethod":"POST","urlPattern":{"hash":"*","hostname":"*","password":"*","pathname":"/example","port":"*","protocol":"*","search":"*","username":"*"}}',
+                source: '"network"',
+                id: 1,
+            }];
+        assert.deepEqual(version.routerRules, expectedRouterRules);
+    });
+    it('initializes with typedRouterRules containing plain string urlPattern', () => {
+        const TYPED_ROUTER_RULES_PAYLOAD = {
+            ...VERSION_PAYLOAD,
+            routerRules: undefined,
+            typedRouterRules: [
+                {
+                    condition: {
+                        requestMethod: 'GET',
+                        urlPattern: 'https://example.com/api/*',
+                    },
+                    source: {
+                        type: 'network',
+                    },
+                    id: 1,
+                },
+            ],
+        };
+        const version = makeVersion(REGISTRATION_PAYLOAD, TYPED_ROUTER_RULES_PAYLOAD);
+        const expectedRouterRules = [{ condition: '{"requestMethod":"GET","urlPattern":"https://example.com/api/*"}', source: '"network"', id: 1 }];
+        assert.deepEqual(version.routerRules, expectedRouterRules);
+    });
+    it('initializes with typedRouterRules with sourceDict source', () => {
+        const TYPED_ROUTER_RULES_PAYLOAD = {
+            ...VERSION_PAYLOAD,
+            routerRules: undefined,
+            typedRouterRules: [
+                {
+                    condition: {
+                        requestMethod: 'GET',
+                    },
+                    source: {
+                        type: 'sourceDict',
+                        sourceDict: {
+                            cacheName: 'v1',
+                        },
+                    },
+                    id: 1,
+                },
+            ],
+        };
+        const version = makeVersion(REGISTRATION_PAYLOAD, TYPED_ROUTER_RULES_PAYLOAD);
+        const expectedRouterRules = [{ condition: '{"requestMethod":"GET"}', source: '{"cacheName":"v1"}', id: 1 }];
+        assert.deepEqual(version.routerRules, expectedRouterRules);
+    });
+    it('fails to parse typedRouterRules when sourceDict is missing for SourceDict source type', () => {
+        const TYPED_ROUTER_RULES_PAYLOAD = {
+            ...VERSION_PAYLOAD,
+            routerRules: undefined,
+            typedRouterRules: [
+                {
+                    condition: {
+                        requestMethod: 'GET',
+                    },
+                    source: {
+                        type: 'sourceDict',
+                    },
+                    id: 1,
+                },
+            ],
+        };
+        const version = makeVersion(REGISTRATION_PAYLOAD, TYPED_ROUTER_RULES_PAYLOAD);
+        assert.isNull(version.routerRules);
+    });
+    it('fails to parse typedRouterRules when sourceDict is present for non-SourceDict source type', () => {
+        const TYPED_ROUTER_RULES_PAYLOAD = {
+            ...VERSION_PAYLOAD,
+            routerRules: undefined,
+            typedRouterRules: [
+                {
+                    condition: {
+                        requestMethod: 'GET',
+                    },
+                    source: {
+                        type: 'network',
+                        sourceDict: {
+                            cacheName: 'v1',
+                        },
+                    },
+                    id: 1,
+                },
+            ],
+        };
+        const version = makeVersion(REGISTRATION_PAYLOAD, TYPED_ROUTER_RULES_PAYLOAD);
+        assert.isNull(version.routerRules);
+    });
     it('should update the version with the given payload', () => {
         const version = makeVersion(REGISTRATION_PAYLOAD, VERSION_PAYLOAD);
         version.update({

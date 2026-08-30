@@ -10,7 +10,7 @@ export default `/*
  */
 
 .node-icon {
-  width: 28px;
+  width: var(--sys-size-12);
   height: 26px;
   /* stylelint-disable-next-line custom-property-pattern */
   background-image: var(--image-file-nodeIcon);

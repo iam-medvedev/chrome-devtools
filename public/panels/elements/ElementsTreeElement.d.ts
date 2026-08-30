@@ -4,7 +4,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../../core/text_utils/text_utils.js';
 import * as Protocol from '../../generated/protocol.js';
 import type * as Elements from '../../models/elements/elements.js';
-import type * as IssuesManager from '../../models/issues_manager/issues_manager.js';
+import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
 import * as TextEditor from '../../ui/components/text_editor/text_editor.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -31,6 +31,7 @@ export interface ViewInput {
     updateRecord: Elements.ElementUpdateRecord.ElementUpdateRecord | null;
     onHighlightSearchResults: () => void;
     onExpand: () => void;
+    issues?: IssuesManager.Issue.Issue[];
     containerAdornerActive: boolean;
     flexAdornerActive: boolean;
     gridAdornerActive: boolean;
@@ -98,6 +99,7 @@ export declare const DEFAULT_VIEW: (input: ViewInput, output: ViewOutput, target
 type View = typeof DEFAULT_VIEW;
 export declare class ElementsTreeWidget extends UI.Widget.Widget {
     #private;
+    static readonly INJECT: readonly [typeof IssuesManager.DOMIssuesManager.DOMIssuesManager];
     isClosingTag: boolean;
     isXMLMimeType: boolean;
     disableEdits: boolean;
@@ -111,18 +113,13 @@ export declare class ElementsTreeWidget extends UI.Widget.Widget {
     childCount?: () => number;
     closingTagElement?: () => Element | null;
     updateShadowRootDepth?: (depth: number) => void;
-    computeLeftIndent?: () => number;
+    computeLeftIndent?: number | (() => number);
     setChildrenListElementVisible?: (visible: boolean) => void;
     findStartTagWidget?: () => ElementsTreeWidget | null;
     selectDOMNode?: (node: SDK.DOMModel.DOMNode, selectedByUser?: boolean) => void;
     revealInTopLayer?: (node: SDK.DOMModel.DOMNode) => void;
     showContextMenu?: (event: Event) => void;
     populateTreeElement?: () => Promise<void>;
-    updateNodeElementToIssue?: (nodeElement: Element, issues: IssuesManager.Issue.Issue[]) => void;
-    performCopyOrCut?: (isCut: boolean, node: SDK.DOMModel.DOMNode, isElement?: boolean) => void;
-    duplicateNode?: (node: SDK.DOMModel.DOMNode) => void;
-    pasteNode?: (node: SDK.DOMModel.DOMNode) => void;
-    canPaste?: (node: SDK.DOMModel.DOMNode) => boolean;
     toggleHideElement?: (node: SDK.DOMModel.DOMNode) => Promise<void>;
     isToggledToHidden?: (node: SDK.DOMModel.DOMNode) => boolean;
     selectNodeAfterEdit?: (wasExpanded: boolean, error: string | null, newNode: SDK.DOMModel.DOMNode | null) => ElementsTreeWidget | null;
@@ -130,9 +127,8 @@ export declare class ElementsTreeWidget extends UI.Widget.Widget {
     focusOutline?: () => void;
     setMultilineEditing?: (multilineEditing: EditorHandles | null) => void;
     visibleWidth?: () => number;
-    private searchQuery;
     private readonly decorationsThrottler;
-    private inClipboard;
+    inClipboard: boolean;
     editing: EditorHandles | null;
     expandAllButtonElement: UI.TreeOutline.TreeElement | null;
     get node(): SDK.DOMModel.DOMNode;
@@ -143,8 +139,11 @@ export declare class ElementsTreeWidget extends UI.Widget.Widget {
     set isExpandable(isExpandable: boolean);
     get selected(): boolean;
     set selected(selected: boolean);
+    get searchQuery(): string | null;
+    set searchQuery(query: string | null);
     get tagTypeContext(): TagTypeContext;
-    constructor(element?: HTMLElement, view?: View);
+    get issues(): IssuesManager.Issue.Issue[];
+    constructor(element?: HTMLElement, [domIssuesManager]?: UI.Widget.WidgetDependencies<typeof ElementsTreeWidget> | [undefined], view?: View);
     static visibleShadowRoots(node: SDK.DOMModel.DOMNode): SDK.DOMModel.DOMNode[];
     static canShowInlineText(node: SDK.DOMModel.DOMNode): boolean;
     static populateForcedPseudoStateItems(contextMenu: UI.ContextMenu.ContextMenu, node: SDK.DOMModel.DOMNode): void;
@@ -158,9 +157,6 @@ export declare class ElementsTreeWidget extends UI.Widget.Widget {
     setInClipboard(inClipboard: boolean): void;
     get hovered(): boolean;
     set hovered(isHovered: boolean);
-    addIssue(newIssue: IssuesManager.Issue.Issue): void;
-    get issuesByNodeElement(): Map<Element, IssuesManager.Issue.Issue[]>;
-    removeIssue(issue: IssuesManager.Issue.Issue): void;
     expandedChildrenLimit(): number;
     setExpandedChildrenLimit(expandedChildrenLimit: number): void;
     onTopLayerIndexChanged(): void;
@@ -197,11 +193,6 @@ export declare class ElementsTreeWidget extends UI.Widget.Widget {
     updateDecorations(): void;
     remove(): Promise<void>;
     toggleEditAsHTML(callback?: ((arg0: boolean) => void), startEditing?: boolean): void;
-    copyCSSPath(): void;
-    copyJSPath(): void;
-    copyXPath(): void;
-    copyFullXPath(): void;
-    copyStyles(): Promise<void>;
     editAsHTML(): void;
     updateAdorners(): void;
 }
@@ -215,9 +206,6 @@ export declare class ElementsTreeElement extends UI.TreeOutline.TreeElement {
     highlightSearchResults(searchQuery: string): void;
     hideSearchHighlights(): void;
     copyStyles(): Promise<void>;
-    addIssue(issue: IssuesManager.Issue.Issue): void;
-    get issuesByNodeElement(): Map<Element, IssuesManager.Issue.Issue[]>;
-    removeIssue(issue: IssuesManager.Issue.Issue): void;
     setInClipboard(inClipboard: boolean): void;
     get isEditing(): boolean;
     expandedChildrenLimit(): number;

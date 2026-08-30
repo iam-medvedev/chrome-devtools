@@ -15,7 +15,8 @@ export default `/*
     position: fixed;
     inset: 0;
     pointer-events: none;
-    z-index: 999990;
+    /* Needs to be above regular panel widgets (e.g. flame chart at z-index 2000) but below floating glass panes (which start at z-index 3000). */
+    z-index: 2500;
     overflow: hidden;
     width: 100vw;
     height: 100vh;
@@ -25,8 +26,8 @@ export default `/*
     position: absolute;
     pointer-events: auto;
     cursor: pointer;
-    font-size: 24px;
-    line-height: 24px;
+    font-size: var(--sys-typescale-headline1-size);
+    line-height: var(--sys-typescale-body1-line-height);
     filter: drop-shadow(0 2px 5px rgb(0 0 0 / 35%));
     user-select: none;
     transition: transform 0.1s ease;
@@ -39,7 +40,7 @@ export default `/*
   .comment-anchor-highlight {
     position: absolute;
     pointer-events: none;
-    border: 2px dashed var(--sys-color-primary);
+    border: var(--sys-size-2) dashed var(--sys-color-primary);
     background-color: color-mix(in srgb, var(--sys-color-primary), transparent 90%);
     box-sizing: border-box;
   }
@@ -47,7 +48,7 @@ export default `/*
   .comment-hover-highlight {
     position: absolute;
     pointer-events: none;
-    border: 2px solid var(--sys-color-primary);
+    border: var(--sys-size-2) solid var(--sys-color-primary);
     background-color: color-mix(in srgb, var(--sys-color-primary), transparent 85%);
     box-sizing: border-box;
   }

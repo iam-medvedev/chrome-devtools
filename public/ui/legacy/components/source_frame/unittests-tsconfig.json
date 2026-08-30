@@ -6,6 +6,7 @@
     "checkJs": true,
     "composite": true,
     "declaration": true,
+    "disableSourceOfProjectReferenceRedirect": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
     "inlineSources": true,
@@ -26,6 +27,7 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "outDir": ".",
+    "preserveConstEnums": true,
     "rootDir": "../../../../../../../../front_end/ui/legacy/components/source_frame",
     "skipLibCheck": true,
     "sourceMap": true,
@@ -54,37 +56,37 @@
   ],
   "references": [
     {
-      "path": "./bundle-tsconfig.json"
+      "path": "./bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../../../core/common/bundle-tsconfig.json"
+      "path": "../../../../core/common/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../../../core/platform/bundle-tsconfig.json"
+      "path": "../../../../core/platform/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../../../core/root/bundle-tsconfig.json"
+      "path": "../../../../core/root/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../../../core/text_utils/bundle-tsconfig.json"
+      "path": "../../../../core/text_utils/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../../../panels/linear_memory_inspector/components/bundle-tsconfig.json"
+      "path": "../../../../panels/linear_memory_inspector/components/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../../../testing/testing-tsconfig.json"
+      "path": "../../../../testing/testing-tsconfig.ref.json"
     },
     {
-      "path": "../../../../third_party/codemirror.next/bundle-tsconfig.json"
+      "path": "../../../../third_party/codemirror.next/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../bundle-tsconfig.json"
+      "path": "../../bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../../components/buttons/bundle-tsconfig.json"
+      "path": "../../../components/buttons/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../object_ui/bundle-tsconfig.json"
+      "path": "../object_ui/bundle-tsconfig.ref.json"
     }
   ]
 }

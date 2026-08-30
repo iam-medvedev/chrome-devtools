@@ -32,10 +32,13 @@ async function getComputationDataFromFixture(context, { trace, settings, url }) 
     if (!navigation) {
         throw new Error('no navigation found');
     }
+    const simulator = Lantern.Simulation.Simulator.createSimulator({ ...settings, networkAnalysis });
+    const graph = Trace.LanternComputationData.createGraph(requests, trace, data, url);
+    const processedNavigation = Trace.LanternComputationData.createProcessedNavigation(data, frameId, navigation);
     return {
-        simulator: Lantern.Simulation.Simulator.createSimulator({ ...settings, networkAnalysis }),
-        graph: Trace.LanternComputationData.createGraph(requests, trace, data, url),
-        processedNavigation: Trace.LanternComputationData.createProcessedNavigation(data, frameId, navigation),
+        simulator,
+        graph,
+        processedNavigation,
     };
 }
 export { getComputationDataFromFixture, runTraceProcessor as runTrace, toLanternTrace, };

@@ -10,7 +10,7 @@ __export(BottomUpProfileDataGrid_exports, {
   BottomUpProfileDataGridTree: () => BottomUpProfileDataGridTree,
   BottomUpProfileEntry: () => BottomUpProfileEntry
 });
-import * as Platform2 from "./../../core/platform/platform.js";
+import * as Platform2 from "../../core/platform/platform.js";
 
 // gen/front_end/panels/profiler/ProfileDataGrid.js
 var ProfileDataGrid_exports = {};
@@ -18,8 +18,8 @@ __export(ProfileDataGrid_exports, {
   ProfileDataGridTree: () => ProfileDataGridTree,
   ProfileEntry: () => ProfileEntry
 });
-import * as Platform from "./../../core/platform/platform.js";
-import * as UI from "./../../ui/legacy/legacy.js";
+import * as Platform from "../../core/platform/platform.js";
+import * as UI from "../../ui/legacy/legacy.js";
 var ProfileEntry = class _ProfileEntry {
   searchMatchedSelfColumn;
   searchMatchedTotalColumn;
@@ -688,13 +688,13 @@ var HeapDetachedElementsDataGrid_exports = {};
 __export(HeapDetachedElementsDataGrid_exports, {
   HeapDetachedElementsDataGrid: () => HeapDetachedElementsDataGrid
 });
-import "./../../ui/legacy/components/data_grid/data_grid.js";
-import * as i18n from "./../../core/i18n/i18n.js";
-import * as SDK from "./../../core/sdk/sdk.js";
-import * as UI2 from "./../../ui/legacy/legacy.js";
-import * as Lit from "./../../ui/lit/lit.js";
-import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
-import * as Elements from "./../elements/elements.js";
+import "../../ui/legacy/components/data_grid/data_grid.js";
+import * as i18n from "../../core/i18n/i18n.js";
+import * as SDK from "../../core/sdk/sdk.js";
+import * as UI2 from "../../ui/legacy/legacy.js";
+import * as Lit from "../../ui/lit/lit.js";
+import * as VisualLogging from "../../ui/visual_logging/visual_logging.js";
+import * as Elements from "../elements/elements.js";
 
 // gen/front_end/panels/profiler/heapDetachedElementsDataGrid.css.js
 var heapDetachedElementsDataGrid_css_default = `/*
@@ -825,19 +825,21 @@ __export(HeapDetachedElementsView_exports, {
   DetachedElementsProfileType: () => DetachedElementsProfileType,
   DetachedElementsProfileView: () => DetachedElementsProfileView
 });
-import * as Common3 from "./../../core/common/common.js";
-import * as i18n5 from "./../../core/i18n/i18n.js";
-import * as SDK2 from "./../../core/sdk/sdk.js";
-import * as UI3 from "./../../ui/legacy/legacy.js";
+import * as Common3 from "../../core/common/common.js";
+import * as i18n5 from "../../core/i18n/i18n.js";
+import * as SDK2 from "../../core/sdk/sdk.js";
+import * as UI3 from "../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/profiler/ProfileHeader.js
 var ProfileHeader_exports = {};
 __export(ProfileHeader_exports, {
+  Events: () => Events,
+  ProfileEvents: () => ProfileEvents,
   ProfileHeader: () => ProfileHeader,
   ProfileType: () => ProfileType,
   StatusUpdate: () => StatusUpdate
 });
-import * as Common from "./../../core/common/common.js";
+import * as Common from "../../core/common/common.js";
 var ProfileHeader = class extends Common.ObjectWrapper.ObjectWrapper {
   #profileType;
   title;
@@ -893,6 +895,11 @@ var StatusUpdate = class {
     this.wait = wait;
   }
 };
+var Events;
+(function(Events4) {
+  Events4["UPDATE_STATUS"] = "UpdateStatus";
+  Events4["PROFILE_TITLE_CHANGED"] = "ProfileTitleChanged";
+})(Events || (Events = {}));
 var ProfileType = class extends Common.ObjectWrapper.ObjectWrapper {
   #id;
   #name;
@@ -1010,17 +1017,24 @@ var ProfileType = class extends Common.ObjectWrapper.ObjectWrapper {
     }
   }
 };
+var ProfileEvents;
+(function(ProfileEvents2) {
+  ProfileEvents2["ADD_PROFILE_HEADER"] = "add-profile-header";
+  ProfileEvents2["PROFILE_COMPLETE"] = "profile-complete";
+  ProfileEvents2["REMOVE_PROFILE_HEADER"] = "remove-profile-header";
+  ProfileEvents2["VIEW_UPDATED"] = "view-updated";
+})(ProfileEvents || (ProfileEvents = {}));
 
 // gen/front_end/panels/profiler/WritableProfileHeader.js
 var WritableProfileHeader_exports = {};
 __export(WritableProfileHeader_exports, {
   WritableProfileHeader: () => WritableProfileHeader
 });
-import * as Common2 from "./../../core/common/common.js";
-import * as i18n3 from "./../../core/i18n/i18n.js";
-import * as Platform3 from "./../../core/platform/platform.js";
-import * as Bindings from "./../../models/bindings/bindings.js";
-import * as Workspace from "./../../models/workspace/workspace.js";
+import * as Common2 from "../../core/common/common.js";
+import * as i18n3 from "../../core/i18n/i18n.js";
+import * as Platform3 from "../../core/platform/platform.js";
+import * as Bindings from "../../models/bindings/bindings.js";
+import * as Workspace from "../../models/workspace/workspace.js";
 var UIStrings2 = {
   /**
    * @description Name of a profile.
@@ -1248,6 +1262,14 @@ var DetachedElementsProfileType = class extends Common3.ObjectWrapper.eventMixin
   // eslint-disable-next-line @typescript-eslint/naming-convention
   static TypeId = "DetachedElements";
 };
+(function(DetachedElementsProfileType2) {
+  let Events4;
+  (function(Events5) {
+    Events5["RECORDING_STOPPED"] = "RecordingStopped";
+    Events5["STATS_UPDATE"] = "StatsUpdate";
+    Events5["DETACHED_ELEMENTS_OBTAINED"] = "DetachedElementsObtained";
+  })(Events4 = DetachedElementsProfileType2.Events || (DetachedElementsProfileType2.Events = {}));
+})(DetachedElementsProfileType || (DetachedElementsProfileType = {}));
 var DetachedElementsProfileHeader = class extends WritableProfileHeader {
   #heapProfilerModel;
   detachedElements;
@@ -1269,8 +1291,8 @@ var HeapProfilerPanel_exports = {};
 __export(HeapProfilerPanel_exports, {
   HeapProfilerPanel: () => HeapProfilerPanel
 });
-import * as i18n25 from "./../../core/i18n/i18n.js";
-import * as UI14 from "./../../ui/legacy/legacy.js";
+import * as i18n25 from "../../core/i18n/i18n.js";
+import * as UI14 from "../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/profiler/ProfilesPanel.js
 var ProfilesPanel_exports = {};
@@ -1281,11 +1303,11 @@ __export(ProfilesPanel_exports, {
   ProfilesPanel: () => ProfilesPanel,
   ProfilesSidebarTreeElement: () => ProfilesSidebarTreeElement
 });
-import "./../../ui/legacy/legacy.js";
-import * as Common12 from "./../../core/common/common.js";
-import * as i18n23 from "./../../core/i18n/i18n.js";
-import * as SDK7 from "./../../core/sdk/sdk.js";
-import { createIcon as createIcon2 } from "./../../ui/kit/kit.js";
+import "../../ui/legacy/legacy.js";
+import * as Common12 from "../../core/common/common.js";
+import * as i18n23 from "../../core/i18n/i18n.js";
+import * as SDK7 from "../../core/sdk/sdk.js";
+import { createIcon as createIcon2 } from "../../ui/kit/kit.js";
 
 // gen/front_end/ui/legacy/components/object_ui/objectValue.css.js
 var objectValue_css_default = `/*
@@ -1397,9 +1419,9 @@ var objectValue_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./objectValue.css")} */`;
 
 // gen/front_end/panels/profiler/ProfilesPanel.js
-import * as UI13 from "./../../ui/legacy/legacy.js";
-import { render as render5 } from "./../../ui/lit/lit.js";
-import * as VisualLogging8 from "./../../ui/visual_logging/visual_logging.js";
+import * as UI13 from "../../ui/legacy/legacy.js";
+import { render as render5 } from "../../ui/lit/lit.js";
+import * as VisualLogging8 from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/profiler/heapProfiler.css.js
 var heapProfiler_css_default = `/*
@@ -1451,7 +1473,7 @@ var heapProfiler_css_default = `/*
 }
 
 .heap-snapshot-view .data-grid tr:empty {
-  height: 16px;
+  height: var(--sys-size-8);
   visibility: hidden;
 }
 
@@ -1471,7 +1493,7 @@ var heapProfiler_css_default = `/*
 
 .heap-snapshot-view td.object-column .objects-count {
   margin-left: 10px;
-  font-size: 11px;
+  font-size: var(--sys-typescale-body5-size);
   color: var(--sys-color-token-subtle);
 }
 
@@ -1480,8 +1502,8 @@ var heapProfiler_css_default = `/*
 }
 
 .profile-view .heap-tracking-overview {
-  flex: 0 0 80px;
-  height: 80px;
+  flex: 0 0 var(--sys-size-19);
+  height: var(--sys-size-19);
 }
 
 .heap-snapshot-view .retaining-paths-view {
@@ -1495,7 +1517,7 @@ var heapProfiler_css_default = `/*
 }
 
 .heap-snapshot-view td.object-column > div > span {
-  margin-right: 6px;
+  margin-right: var(--sys-size-4);
 }
 
 .heap-snapshot-view .heap-snapshot-view-resizer .title {
@@ -1508,8 +1530,8 @@ var heapProfiler_css_default = `/*
   display: inline-block;
   padding-top: 3px;
   vertical-align: middle;
-  margin-left: 4px;
-  margin-right: 8px;
+  margin-left: var(--sys-size-3);
+  margin-right: var(--sys-size-5);
 }
 
 .heap-snapshot-view .heap-snapshot-view-resizer * {
@@ -1554,8 +1576,8 @@ var heapProfiler_css_default = `/*
 }
 
 .heap-object-tag {
-  height: 14px;
-  width: 14px;
+  height: var(--sys-size-7);
+  width: var(--sys-size-7);
 }
 
 .heap-snapshot-view tr:not(.selected) td.object-column span.heap-object-tag,
@@ -1569,7 +1591,7 @@ var heapProfiler_css_default = `/*
 }
 
 #heap-recording-view .profile-view {
-  top: 80px;
+  top: var(--sys-size-19);
 }
 
 .heap-overview-container {
@@ -1577,7 +1599,7 @@ var heapProfiler_css_default = `/*
   position: absolute;
   top: 0;
   width: 100%;
-  height: 80px;
+  height: var(--sys-size-19);
 }
 
 #heap-recording-overview-grid .resources-dividers-label-bar {
@@ -1586,7 +1608,7 @@ var heapProfiler_css_default = `/*
 
 .heap-recording-overview-canvas {
   position: absolute;
-  inset: 20px 0 0;
+  inset: var(--sys-size-9) 0 0;
 }
 
 .heap-snapshot-statistics-view {
@@ -1594,15 +1616,15 @@ var heapProfiler_css_default = `/*
 }
 
 .heap-snapshot-stats-pie-chart {
-  margin: 12px 30px;
+  margin: var(--sys-size-6) 30px;
   flex-shrink: 0;
 }
 
 .heap-allocation-stack .stack-frame {
   display: flex;
   justify-content: space-between;
-  border-bottom: 1px solid var(--sys-color-divider);
-  padding: 2px;
+  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
+  padding: var(--sys-size-2);
 }
 
 .heap-allocation-stack .stack-frame:focus {
@@ -1652,41 +1674,43 @@ __export(HeapProfileView_exports, {
   SamplingHeapProfileNode: () => SamplingHeapProfileNode,
   SamplingHeapProfileType: () => SamplingHeapProfileType,
   SamplingHeapProfileTypeBase: () => SamplingHeapProfileTypeBase,
+  ViewTypes: () => ViewTypes,
   maxLinkLength: () => maxLinkLength,
   nodeFormatter: () => nodeFormatter
 });
-import "./../../ui/components/icon_button/icon_button.js";
-import "./../../ui/legacy/components/data_grid/data_grid.js";
-import * as Common6 from "./../../core/common/common.js";
-import * as Host from "./../../core/host/host.js";
-import * as i18n9 from "./../../core/i18n/i18n.js";
-import * as Platform6 from "./../../core/platform/platform.js";
-import * as SDK3 from "./../../core/sdk/sdk.js";
-import * as Bindings2 from "./../../models/bindings/bindings.js";
-import * as CPUProfile from "./../../models/cpu_profile/cpu_profile.js";
-import * as Buttons from "./../../ui/components/buttons/buttons.js";
-import * as PerfUI3 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
-import * as SettingsUI from "./../../ui/legacy/components/settings_ui/settings_ui.js";
-import * as Components from "./../../ui/legacy/components/utils/utils.js";
-import * as UI6 from "./../../ui/legacy/legacy.js";
-import { Directives, html as html2, nothing, render as render2 } from "./../../ui/lit/lit.js";
-import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
+import "../../ui/components/icon_button/icon_button.js";
+import "../../ui/legacy/components/data_grid/data_grid.js";
+import * as Common6 from "../../core/common/common.js";
+import * as Host from "../../core/host/host.js";
+import * as i18n9 from "../../core/i18n/i18n.js";
+import * as Platform6 from "../../core/platform/platform.js";
+import * as SDK3 from "../../core/sdk/sdk.js";
+import * as Bindings2 from "../../models/bindings/bindings.js";
+import * as CPUProfile from "../../models/cpu_profile/cpu_profile.js";
+import * as Buttons from "../../ui/components/buttons/buttons.js";
+import * as PerfUI3 from "../../ui/legacy/components/perf_ui/perf_ui.js";
+import * as SettingsUI from "../../ui/legacy/components/settings_ui/settings_ui.js";
+import * as Components from "../../ui/legacy/components/utils/utils.js";
+import * as UI6 from "../../ui/legacy/legacy.js";
+import { Directives, html as html2, nothing, render as render2 } from "../../ui/lit/lit.js";
+import * as VisualLogging3 from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/profiler/HeapTimelineOverview.js
 var HeapTimelineOverview_exports = {};
 __export(HeapTimelineOverview_exports, {
+  Events: () => Events2,
   HeapTimelineOverview: () => HeapTimelineOverview,
   OverviewCalculator: () => OverviewCalculator,
   Samples: () => Samples,
   SmoothScale: () => SmoothScale
 });
-import * as Common4 from "./../../core/common/common.js";
-import * as i18n7 from "./../../core/i18n/i18n.js";
-import * as Platform4 from "./../../core/platform/platform.js";
-import * as PerfUI from "./../../ui/legacy/components/perf_ui/perf_ui.js";
-import * as UI4 from "./../../ui/legacy/legacy.js";
-import * as ThemeSupport from "./../../ui/legacy/theme_support/theme_support.js";
-import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
+import * as Common4 from "../../core/common/common.js";
+import * as i18n7 from "../../core/i18n/i18n.js";
+import * as Platform4 from "../../core/platform/platform.js";
+import * as PerfUI from "../../ui/legacy/components/perf_ui/perf_ui.js";
+import * as UI4 from "../../ui/legacy/legacy.js";
+import * as ThemeSupport from "../../ui/legacy/theme_support/theme_support.js";
+import * as VisualLogging2 from "../../ui/visual_logging/visual_logging.js";
 var HeapTimelineOverview = class extends Common4.ObjectWrapper.eventMixin(UI4.Widget.VBox) {
   overviewCalculator;
   overviewContainer;
@@ -1901,6 +1925,10 @@ var HeapTimelineOverview = class extends Common4.ObjectWrapper.eventMixin(UI4.Wi
     this.dispatchEventToListeners("IdsRangeChanged", { minId, maxId, size });
   }
 };
+var Events2;
+(function(Events4) {
+  Events4["IDS_RANGE_CHANGED"] = "IdsRangeChanged";
+})(Events2 || (Events2 = {}));
 var SmoothScale = class {
   lastUpdate;
   currentScale;
@@ -1977,14 +2005,15 @@ var ProfileFlameChartDataProvider_exports = {};
 __export(ProfileFlameChartDataProvider_exports, {
   OverviewCalculator: () => OverviewCalculator2,
   OverviewPane: () => OverviewPane,
+  OverviewPaneEvents: () => OverviewPaneEvents,
   ProfileFlameChart: () => ProfileFlameChart,
   ProfileFlameChartDataProvider: () => ProfileFlameChartDataProvider
 });
-import * as Common5 from "./../../core/common/common.js";
-import * as i18n8 from "./../../core/i18n/i18n.js";
-import * as Platform5 from "./../../core/platform/platform.js";
-import * as PerfUI2 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
-import * as UI5 from "./../../ui/legacy/legacy.js";
+import * as Common5 from "../../core/common/common.js";
+import * as i18n8 from "../../core/i18n/i18n.js";
+import * as Platform5 from "../../core/platform/platform.js";
+import * as PerfUI2 from "../../ui/legacy/components/perf_ui/perf_ui.js";
+import * as UI5 from "../../ui/legacy/legacy.js";
 var colorGeneratorInstance = null;
 var ProfileFlameChartDataProvider = class _ProfileFlameChartDataProvider {
   #colorGenerator;
@@ -2346,6 +2375,10 @@ var OverviewPane = class extends Common5.ObjectWrapper.eventMixin(UI5.Widget.VBo
     this.overviewCanvas.style.height = height + "px";
   }
 };
+var OverviewPaneEvents;
+(function(OverviewPaneEvents2) {
+  OverviewPaneEvents2["WINDOW_CHANGED"] = "WindowChanged";
+})(OverviewPaneEvents || (OverviewPaneEvents = {}));
 
 // gen/front_end/panels/profiler/profilesPanel.css.js
 var profilesPanel_css_default = `/*
@@ -2728,6 +2761,12 @@ function convertToSamplingHeapProfile(profileHeader) {
   return profileHeader.profile || profileHeader.protocolProfile();
 }
 var maxLinkLength = 30;
+var ViewTypes;
+(function(ViewTypes2) {
+  ViewTypes2["FLAME"] = "Flame";
+  ViewTypes2["TREE"] = "Tree";
+  ViewTypes2["HEAVY"] = "Heavy";
+})(ViewTypes || (ViewTypes = {}));
 var DEFAULT_VIEW2 = (input, output, target) => {
   const { searchableView, dataProvider } = input;
   render2(html2`
@@ -3513,6 +3552,13 @@ var SamplingHeapProfileType = class _SamplingHeapProfileType extends SamplingHea
   // eslint-disable-next-line @typescript-eslint/naming-convention
   static TypeId = "SamplingHeap";
 };
+(function(SamplingHeapProfileType2) {
+  let Events4;
+  (function(Events5) {
+    Events5["RECORDING_STOPPED"] = "RecordingStopped";
+    Events5["STATS_UPDATE"] = "StatsUpdate";
+  })(Events4 = SamplingHeapProfileType2.Events || (SamplingHeapProfileType2.Events = {}));
+})(SamplingHeapProfileType || (SamplingHeapProfileType = {}));
 var SamplingHeapProfileHeader = class extends WritableProfileHeader {
   heapProfilerModelInternal;
   protocolProfileInternal;
@@ -3732,28 +3778,30 @@ __export(HeapSnapshotView_exports, {
   HeapAllocationStackView: () => HeapAllocationStackView,
   HeapProfileHeader: () => HeapProfileHeader,
   HeapSnapshotProfileType: () => HeapSnapshotProfileType,
+  HeapSnapshotProfileTypeEvents: () => HeapSnapshotProfileTypeEvents,
   HeapSnapshotStatisticsView: () => HeapSnapshotStatisticsView,
   HeapSnapshotView: () => HeapSnapshotView,
   Perspective: () => Perspective,
   StatisticsPerspective: () => StatisticsPerspective,
   SummaryPerspective: () => SummaryPerspective,
-  TrackingHeapSnapshotProfileType: () => TrackingHeapSnapshotProfileType
+  TrackingHeapSnapshotProfileType: () => TrackingHeapSnapshotProfileType,
+  TrackingHeapSnapshotProfileTypeEvents: () => TrackingHeapSnapshotProfileTypeEvents
 });
-import * as Common9 from "./../../core/common/common.js";
-import * as Host2 from "./../../core/host/host.js";
-import * as i18n15 from "./../../core/i18n/i18n.js";
-import * as Platform8 from "./../../core/platform/platform.js";
-import * as SDK5 from "./../../core/sdk/sdk.js";
-import * as Bindings3 from "./../../models/bindings/bindings.js";
-import * as HeapSnapshotModel5 from "./../../models/heap_snapshot/heap_snapshot.js";
-import * as Workspace2 from "./../../models/workspace/workspace.js";
-import * as DataGrid5 from "./../../ui/legacy/components/data_grid/data_grid.js";
-import * as ObjectUI from "./../../ui/legacy/components/object_ui/object_ui.js";
-import * as PerfUI4 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
-import * as SettingsUI3 from "./../../ui/legacy/components/settings_ui/settings_ui.js";
-import * as Components3 from "./../../ui/legacy/components/utils/utils.js";
-import * as UI9 from "./../../ui/legacy/legacy.js";
-import * as VisualLogging5 from "./../../ui/visual_logging/visual_logging.js";
+import * as Common9 from "../../core/common/common.js";
+import * as Host2 from "../../core/host/host.js";
+import * as i18n15 from "../../core/i18n/i18n.js";
+import * as Platform8 from "../../core/platform/platform.js";
+import * as SDK5 from "../../core/sdk/sdk.js";
+import * as Bindings3 from "../../models/bindings/bindings.js";
+import * as HeapSnapshotModel5 from "../../models/heap_snapshot/heap_snapshot.js";
+import * as Workspace2 from "../../models/workspace/workspace.js";
+import * as DataGrid5 from "../../ui/legacy/components/data_grid/data_grid.js";
+import * as ObjectUI from "../../ui/legacy/components/object_ui/object_ui.js";
+import * as PerfUI4 from "../../ui/legacy/components/perf_ui/perf_ui.js";
+import * as SettingsUI3 from "../../ui/legacy/components/settings_ui/settings_ui.js";
+import * as Components3 from "../../ui/legacy/components/utils/utils.js";
+import * as UI9 from "../../ui/legacy/legacy.js";
+import * as VisualLogging5 from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/profiler/HeapSnapshotDataGrids.js
 var HeapSnapshotDataGrids_exports = {};
@@ -3768,12 +3816,12 @@ __export(HeapSnapshotDataGrids_exports, {
   HeapSnapshotSortableDataGridEvents: () => HeapSnapshotSortableDataGridEvents,
   HeapSnapshotViewportDataGrid: () => HeapSnapshotViewportDataGrid
 });
-import * as Common8 from "./../../core/common/common.js";
-import * as i18n13 from "./../../core/i18n/i18n.js";
-import * as HeapSnapshotModel3 from "./../../models/heap_snapshot/heap_snapshot.js";
-import * as DataGrid3 from "./../../ui/legacy/components/data_grid/data_grid.js";
-import * as Components2 from "./../../ui/legacy/components/utils/utils.js";
-import * as UI8 from "./../../ui/legacy/legacy.js";
+import * as Common8 from "../../core/common/common.js";
+import * as i18n13 from "../../core/i18n/i18n.js";
+import * as HeapSnapshotModel3 from "../../models/heap_snapshot/heap_snapshot.js";
+import * as DataGrid3 from "../../ui/legacy/components/data_grid/data_grid.js";
+import * as Components2 from "../../ui/legacy/components/utils/utils.js";
+import * as UI8 from "../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/profiler/HeapSnapshotGridNodes.js
 var HeapSnapshotGridNodes_exports = {};
@@ -3788,16 +3836,16 @@ __export(HeapSnapshotGridNodes_exports, {
   HeapSnapshotObjectNode: () => HeapSnapshotObjectNode,
   HeapSnapshotRetainingObjectNode: () => HeapSnapshotRetainingObjectNode
 });
-import * as Common7 from "./../../core/common/common.js";
-import * as i18n11 from "./../../core/i18n/i18n.js";
-import * as Platform7 from "./../../core/platform/platform.js";
-import * as SDK4 from "./../../core/sdk/sdk.js";
-import * as HeapSnapshotModel from "./../../models/heap_snapshot/heap_snapshot.js";
-import { createIcon } from "./../../ui/kit/kit.js";
-import * as DataGrid from "./../../ui/legacy/components/data_grid/data_grid.js";
-import * as UI7 from "./../../ui/legacy/legacy.js";
-import { Directives as Directives2, html as html3, render as render3 } from "./../../ui/lit/lit.js";
-import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
+import * as Common7 from "../../core/common/common.js";
+import * as i18n11 from "../../core/i18n/i18n.js";
+import * as Platform7 from "../../core/platform/platform.js";
+import * as SDK4 from "../../core/sdk/sdk.js";
+import * as HeapSnapshotModel from "../../models/heap_snapshot/heap_snapshot.js";
+import { createIcon } from "../../ui/kit/kit.js";
+import * as DataGrid from "../../ui/legacy/components/data_grid/data_grid.js";
+import * as UI7 from "../../ui/legacy/legacy.js";
+import { Directives as Directives2, html as html3, render as render3 } from "../../ui/lit/lit.js";
+import * as VisualLogging4 from "../../ui/visual_logging/visual_logging.js";
 var UIStrings5 = {
   /**
    * @description Accessible name template combining a numeric value and its percentage (e.g. "1,613,680, 44%").
@@ -4182,10 +4230,10 @@ var HeapSnapshotGridNode = class _HeapSnapshotGridNode extends Common7.ObjectWra
   }
 };
 (function(HeapSnapshotGridNode2) {
-  let Events;
-  (function(Events2) {
-    Events2["PopulateComplete"] = "PopulateComplete";
-  })(Events = HeapSnapshotGridNode2.Events || (HeapSnapshotGridNode2.Events = {}));
+  let Events4;
+  (function(Events5) {
+    Events5["PopulateComplete"] = "PopulateComplete";
+  })(Events4 = HeapSnapshotGridNode2.Events || (HeapSnapshotGridNode2.Events = {}));
 })(HeapSnapshotGridNode || (HeapSnapshotGridNode = {}));
 var HeapSnapshotGenericObjectNode = class extends HeapSnapshotGridNode {
   referenceName;
@@ -7170,6 +7218,10 @@ var HeapSnapshotProfileType = class _HeapSnapshotProfileType extends Common9.Obj
   // eslint-disable-next-line @typescript-eslint/naming-convention
   static SnapshotReceived = "SnapshotReceived";
 };
+var HeapSnapshotProfileTypeEvents;
+(function(HeapSnapshotProfileTypeEvents2) {
+  HeapSnapshotProfileTypeEvents2["SNAPSHOT_RECEIVED"] = "SnapshotReceived";
+})(HeapSnapshotProfileTypeEvents || (HeapSnapshotProfileTypeEvents = {}));
 var TrackingHeapSnapshotProfileType = class _TrackingHeapSnapshotProfileType extends Common9.ObjectWrapper.eventMixin(HeapSnapshotProfileType) {
   recordAllocationStacksSettingInternal;
   customContentInternal;
@@ -7340,6 +7392,12 @@ var TrackingHeapSnapshotProfileType = class _TrackingHeapSnapshotProfileType ext
   // eslint-disable-next-line @typescript-eslint/naming-convention
   static TrackingStopped = "TrackingStopped";
 };
+var TrackingHeapSnapshotProfileTypeEvents;
+(function(TrackingHeapSnapshotProfileTypeEvents2) {
+  TrackingHeapSnapshotProfileTypeEvents2["HEAP_STATS_UPDATE"] = "HeapStatsUpdate";
+  TrackingHeapSnapshotProfileTypeEvents2["TRACKING_STARTED"] = "TrackingStarted";
+  TrackingHeapSnapshotProfileTypeEvents2["TRACKING_STOPPED"] = "TrackingStopped";
+})(TrackingHeapSnapshotProfileTypeEvents || (TrackingHeapSnapshotProfileTypeEvents = {}));
 var HeapProfileHeader = class extends ProfileHeader {
   heapProfilerModelInternal;
   maxJSObjectId = -1;
@@ -7641,15 +7699,16 @@ var stackFrameToURLElement = /* @__PURE__ */ new WeakMap();
 var ProfileLauncherView_exports = {};
 __export(ProfileLauncherView_exports, {
   DEFAULT_VIEW: () => DEFAULT_VIEW3,
+  Events: () => Events3,
   ProfileLauncherView: () => ProfileLauncherView
 });
-import * as Common11 from "./../../core/common/common.js";
-import * as i18n19 from "./../../core/i18n/i18n.js";
-import * as Platform9 from "./../../core/platform/platform.js";
-import * as Buttons2 from "./../../ui/components/buttons/buttons.js";
-import * as UI11 from "./../../ui/legacy/legacy.js";
-import { html as html4, nothing as nothing2, render as render4 } from "./../../ui/lit/lit.js";
-import * as VisualLogging6 from "./../../ui/visual_logging/visual_logging.js";
+import * as Common11 from "../../core/common/common.js";
+import * as i18n19 from "../../core/i18n/i18n.js";
+import * as Platform9 from "../../core/platform/platform.js";
+import * as Buttons2 from "../../ui/components/buttons/buttons.js";
+import * as UI11 from "../../ui/legacy/legacy.js";
+import { html as html4, nothing as nothing2, render as render4 } from "../../ui/lit/lit.js";
+import * as VisualLogging6 from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/profiler/IsolateSelector.js
 var IsolateSelector_exports = {};
@@ -7657,10 +7716,10 @@ __export(IsolateSelector_exports, {
   IsolateSelector: () => IsolateSelector,
   ListItem: () => ListItem
 });
-import * as Common10 from "./../../core/common/common.js";
-import * as i18n17 from "./../../core/i18n/i18n.js";
-import * as SDK6 from "./../../core/sdk/sdk.js";
-import * as UI10 from "./../../ui/legacy/legacy.js";
+import * as Common10 from "../../core/common/common.js";
+import * as i18n17 from "../../core/i18n/i18n.js";
+import * as SDK6 from "../../core/sdk/sdk.js";
+import * as UI10 from "../../ui/legacy/legacy.js";
 var UIStrings9 = {
   /**
    * @description Aria label for JavaScript VM instances target list in heap profiler.
@@ -7922,12 +7981,12 @@ var profileLauncherView_css_default = `/*
 }
 
 .profile-launcher-view-content {
-  margin: 10px 16px;
+  margin: 10px var(--sys-size-8);
   flex: auto 1 0;
 
   & h1 {
     font: var(--sys-typescale-headline4);
-    margin: 6px 0 10px;
+    margin: var(--sys-size-4) 0 10px;
   }
 
   & label {
@@ -7960,8 +8019,8 @@ var profileLauncherView_css_default = `/*
 }
 
 .profile-launcher-target-list {
-  margin-bottom: 6px;
-  border: 1px solid var(--sys-color-divider);
+  margin-bottom: var(--sys-size-4);
+  border: var(--sys-size-1) solid var(--sys-color-divider);
   flex: 150px 1 0;
 }
 
@@ -7972,13 +8031,13 @@ var profileLauncherView_css_default = `/*
 .profile-memory-usage-item {
   min-width: 100%;
   width: max-content;
-  padding: 4px;
-  line-height: 16px;
+  padding: var(--sys-size-3);
+  line-height: var(--sys-size-8);
 }
 
 .profile-isolate-selector-block > .profile-memory-usage-item {
-  margin-left: 1px;
-  margin-bottom: 4px;
+  margin-left: var(--sys-size-1);
+  margin-bottom: var(--sys-size-3);
   font-weight: bolder;
 }
 
@@ -8005,7 +8064,7 @@ var profileLauncherView_css_default = `/*
 
 .profile-memory-usage-item > div {
   flex-shrink: 0;
-  margin-right: 12px;
+  margin-right: var(--sys-size-6);
 }
 
 .profile-memory-usage-item-size {
@@ -8024,7 +8083,7 @@ var profileLauncherView_css_default = `/*
 
 .profile-launcher-buttons {
   flex-wrap: wrap;
-  column-gap: 8px;
+  column-gap: var(--sys-size-5);
 }
 
 @media (forced-colors: active) {
@@ -8282,16 +8341,20 @@ var ProfileLauncherView = class extends Common11.ObjectWrapper.eventMixin(UI11.W
     }, this.contentElement);
   }
 };
+var Events3;
+(function(Events4) {
+  Events4["PROFILE_TYPE_SELECTED"] = "ProfileTypeSelected";
+})(Events3 || (Events3 = {}));
 
 // gen/front_end/panels/profiler/ProfileSidebarTreeElement.js
 var ProfileSidebarTreeElement_exports = {};
 __export(ProfileSidebarTreeElement_exports, {
   ProfileSidebarTreeElement: () => ProfileSidebarTreeElement
 });
-import * as i18n21 from "./../../core/i18n/i18n.js";
-import * as Buttons3 from "./../../ui/components/buttons/buttons.js";
-import * as UI12 from "./../../ui/legacy/legacy.js";
-import * as VisualLogging7 from "./../../ui/visual_logging/visual_logging.js";
+import * as i18n21 from "../../core/i18n/i18n.js";
+import * as Buttons3 from "../../ui/components/buttons/buttons.js";
+import * as UI12 from "../../ui/legacy/legacy.js";
+import * as VisualLogging7 from "../../ui/visual_logging/visual_logging.js";
 var UIStrings11 = {
   /**
    * @description Tooltip for the 3-dots menu in the Memory panel profiles list.

@@ -57,6 +57,11 @@ export class StatusUpdate {
         this.wait = wait;
     }
 }
+export var Events;
+(function (Events) {
+    Events["UPDATE_STATUS"] = "UpdateStatus";
+    Events["PROFILE_TITLE_CHANGED"] = "ProfileTitleChanged";
+})(Events || (Events = {}));
 export class ProfileType extends Common.ObjectWrapper.ObjectWrapper {
     #id;
     #name;
@@ -174,4 +179,11 @@ export class ProfileType extends Common.ObjectWrapper.ObjectWrapper {
         }
     }
 }
+export var ProfileEvents;
+(function (ProfileEvents) {
+    ProfileEvents["ADD_PROFILE_HEADER"] = "add-profile-header";
+    ProfileEvents["PROFILE_COMPLETE"] = "profile-complete";
+    ProfileEvents["REMOVE_PROFILE_HEADER"] = "remove-profile-header";
+    ProfileEvents["VIEW_UPDATED"] = "view-updated";
+})(ProfileEvents || (ProfileEvents = {}));
 //# sourceMappingURL=ProfileHeader.js.map

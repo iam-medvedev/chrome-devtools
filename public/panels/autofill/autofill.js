@@ -10,17 +10,17 @@ __export(AutofillView_exports, {
   AutofillView: () => AutofillView,
   i18nString: () => i18nString
 });
-import "./../../ui/kit/kit.js";
-import "./../../ui/components/adorners/adorners.js";
-import "./../../ui/legacy/components/data_grid/data_grid.js";
-import * as Common from "./../../core/common/common.js";
-import * as Host from "./../../core/host/host.js";
-import * as i18n from "./../../core/i18n/i18n.js";
-import * as SDK from "./../../core/sdk/sdk.js";
-import * as AutofillManager from "./../../models/autofill_manager/autofill_manager.js";
-import * as UI from "./../../ui/legacy/legacy.js";
-import * as Lit from "./../../ui/lit/lit.js";
-import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
+import "../../ui/kit/kit.js";
+import "../../ui/components/adorners/adorners.js";
+import "../../ui/legacy/components/data_grid/data_grid.js";
+import * as Common from "../../core/common/common.js";
+import * as Host from "../../core/host/host.js";
+import * as i18n from "../../core/i18n/i18n.js";
+import * as SDK from "../../core/sdk/sdk.js";
+import * as AutofillManager from "../../models/autofill_manager/autofill_manager.js";
+import * as UI from "../../ui/legacy/legacy.js";
+import * as Lit from "../../ui/lit/lit.js";
+import * as VisualLogging from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/autofill/autofillView.css.js
 var autofillView_css_default = `/*
@@ -38,7 +38,7 @@ var autofillView_css_default = `/*
   .header {
     display: flex;
     flex-wrap: wrap;
-    border-bottom: 1px solid var(--sys-color-divider);
+    border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
     width: 100%;
   }
 
@@ -52,11 +52,11 @@ var autofillView_css_default = `/*
 
   .address {
     padding: 10px;
-    border-bottom: 1px solid var(--sys-color-divider);
+    border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
   }
 
   .filled-fields-grid {
-    border-top: 1px solid var(--sys-color-divider);
+    border-top: var(--sys-size-1) solid var(--sys-color-divider);
     box-sizing: border-box;
   }
 
@@ -89,7 +89,7 @@ var autofillView_css_default = `/*
   }
 
   .top-left-corner {
-    border-bottom: 1px solid var(--sys-color-divider);
+    border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
     display: flex;
     flex-wrap: wrap;
     padding: 5px;

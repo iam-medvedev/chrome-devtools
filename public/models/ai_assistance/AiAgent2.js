@@ -6,7 +6,9 @@ import * as SDK from '../../core/sdk/sdk.js';
 import { AiAgent, } from './agents/AiAgent.js';
 import { executeJsCode } from './agents/ExecuteJavascript.js';
 import { ChangeManager } from './ChangeManager.js';
+import { AccessibilityContext } from './contexts/AccessibilityContext.js';
 import { DOMNodeContext } from './contexts/DOMNodeContext.js';
+import { PerformanceTraceContext } from './contexts/PerformanceTraceContext.js';
 import { debugLog } from './debug.js';
 import { ExtensionScope } from './ExtensionScope.js';
 import { SKILLS } from './skills/SkillRegistry.js';
@@ -41,6 +43,11 @@ If the user asks a question that requires an investigation or debugging, use thi
 * **Suggestion(s)**: List actionable solution suggestion(s) in order of impact.
   - Example: "**Suggestion**: [Suggestion]" or "**Suggestions**:" followed by a bulleted list.
 
+# Follow-up Suggestions
+* Output a list of suggested follow-up queries or actions for the user at the very end of your response.
+* The format MUST be SUGGESTIONS: ["suggestion 1", "suggestion 2"] on its own single line.
+* Ensure suggestions are relevant, concise, and helpful next steps for the user.
+
 # Constraints
 * **CRITICAL**: You are a web development assistant. NEVER provide answers to questions of unrelated topics (such as legal advice, financial advice, personal opinions, medical advice, religion, race, politics, sexuality, gender, or any other non-web-development topics). If asked about these, respond with: "Sorry, I can't answer that. I'm best at questions about web development and debugging."
 * **CRITICAL**: Do not write full Python programs or other scripts to interact with the environment. Only invoke the allowed tools.
@@ -59,8 +66,10 @@ export class AiAgent2 extends AiAgent {
         return {};
     }
     async preRun() {
+        // One-way latch: once sensitive data enters the conversation history,
+        // logging must remain disabled for the lifetime of this agent instance.
         if (this.context && !this.context.isLoggingEnabled()) {
-            this.setServerSideLoggingActive(false);
+            this.disableServerSideLogging();
         }
         const target = this.targetManager.primaryPageTarget();
         const domModel = target?.model(SDK.DOMModel.DOMModel);
@@ -149,6 +158,9 @@ QUERY: ${query}`;
         if (unloadedSkills.length === 0) {
             return enhancedQuery;
         }
+        // Note: Test assertion helpers in front_end/testing/AiAssistanceHelpers.ts (assertSkillLoaded,
+        // assertSkillNotLoaded) rely on this formatting (`Available skills that are not yet loaded:`
+        // and `- ${name}: ${skill.description}`). If this format is updated, update those helpers too.
         const skillsManifest = unloadedSkills.map(([name, skill]) => `- ${name}: ${skill.description}`).join('\n');
         return `Available skills that are not yet loaded:
 ${skillsManifest}
@@ -231,10 +243,12 @@ User query: ${enhancedQuery}`;
                     getExecutionContextNode: () => (this.context instanceof DOMNodeContext ? this.context.getItem() : this.#getDocumentBodyNode()),
                     getTarget: () => this.targetManager.primaryPageTarget(),
                     getEstablishedOrigin: () => this.#getConversationOrigin(),
-                    lighthouseRecording: this.#lighthouseRecording,
+                    getLighthouseReport: () => (this.context instanceof AccessibilityContext ? this.context.getItem() : null),
+                    runLighthouse: async (overrides) => await (this.#lighthouseRecording?.(overrides) ?? null),
+                    getPerformanceTraceContext: () => (this.context instanceof PerformanceTraceContext ? this.context : null),
                     performanceRecordAndReload: this.#performanceRecordAndReload,
-                    setLoggingEnabled: (enabled) => {
-                        this.setServerSideLoggingActive(enabled);
+                    disableLogging: () => {
+                        this.disableServerSideLogging();
                     },
                 };
                 return tool.handler(args, context, options);

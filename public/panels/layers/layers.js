@@ -10,10 +10,10 @@ __export(LayerPaintProfilerView_exports, {
   DEFAULT_VIEW: () => DEFAULT_VIEW,
   LayerPaintProfilerView: () => LayerPaintProfilerView
 });
-import * as UI from "./../../ui/legacy/legacy.js";
-import * as Lit from "./../../ui/lit/lit.js";
-import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
-import * as LayerViewer from "./../layer_viewer/layer_viewer.js";
+import * as UI from "../../ui/legacy/legacy.js";
+import * as Lit from "../../ui/lit/lit.js";
+import * as VisualLogging from "../../ui/visual_logging/visual_logging.js";
+import * as LayerViewer from "../layer_viewer/layer_viewer.js";
 var { html, render } = Lit;
 var { widget } = UI.Widget;
 var DEFAULT_VIEW = (input, _output, target) => {
@@ -98,11 +98,11 @@ __export(LayersPanel_exports, {
   DetailsViewTabs: () => DetailsViewTabs,
   LayersPanel: () => LayersPanel
 });
-import * as Common2 from "./../../core/common/common.js";
-import * as i18n from "./../../core/i18n/i18n.js";
-import * as SDK2 from "./../../core/sdk/sdk.js";
-import * as UI2 from "./../../ui/legacy/legacy.js";
-import * as LayerViewer2 from "./../layer_viewer/layer_viewer.js";
+import * as Common2 from "../../core/common/common.js";
+import * as i18n from "../../core/i18n/i18n.js";
+import * as SDK2 from "../../core/sdk/sdk.js";
+import * as UI2 from "../../ui/legacy/legacy.js";
+import * as LayerViewer2 from "../layer_viewer/layer_viewer.js";
 
 // gen/front_end/panels/layers/LayerTreeModel.js
 var LayerTreeModel_exports = {};
@@ -112,9 +112,9 @@ __export(LayerTreeModel_exports, {
   Events: () => Events,
   LayerTreeModel: () => LayerTreeModel
 });
-import * as Common from "./../../core/common/common.js";
-import * as SDK from "./../../core/sdk/sdk.js";
-import * as Geometry from "./../../models/geometry/geometry.js";
+import * as Common from "../../core/common/common.js";
+import * as SDK from "../../core/sdk/sdk.js";
+import * as Geometry from "../../models/geometry/geometry.js";
 var LayerTreeModel = class extends SDK.SDKModel.SDKModel {
   layerTreeAgent;
   paintProfilerModel;

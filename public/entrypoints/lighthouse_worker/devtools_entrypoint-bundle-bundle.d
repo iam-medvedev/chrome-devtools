@@ -1,0 +1,1 @@
+gen/front_end/entrypoints/lighthouse_worker/lighthouse_worker.js: gen/front_end/entrypoints/lighthouse_worker/LighthouseWorkerService.js gen/front_end/entrypoints/lighthouse_worker/lighthouse_worker.prebundle.js

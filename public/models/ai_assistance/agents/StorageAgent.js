@@ -62,7 +62,8 @@ export function isSamePageOrigin(target, context) {
 const MAX_TARGET_ORIGINS = 100;
 function resolveTargetOrigins(context, origins) {
     const primaryOrigin = context?.getOrigin();
-    const rawList = (origins && origins.length > 0) ? origins : (primaryOrigin ? [primaryOrigin] : []);
+    const primaryString = primaryOrigin instanceof SDK.SecurityOrigin.SecurityOrigin ? primaryOrigin.siteId() : primaryOrigin;
+    const rawList = (origins && origins.length > 0) ? origins : (primaryString ? [primaryString] : []);
     const uniqueOrigins = Array.from(new Set(rawList));
     return uniqueOrigins.slice(0, MAX_TARGET_ORIGINS);
 }
@@ -150,7 +151,7 @@ export class StorageAgent extends AiAgent {
                 };
             },
             handler: async (args) => {
-                this.setServerSideLoggingActive(false);
+                this.disableServerSideLogging();
                 if (!isSamePrimaryPageOrigin(this.targetManager, this.context)) {
                     return { error: 'No origin available or not allowed.' };
                 }
@@ -217,7 +218,7 @@ export class StorageAgent extends AiAgent {
                 };
             },
             handler: async (args, options) => {
-                this.setServerSideLoggingActive(false);
+                this.disableServerSideLogging();
                 if (!isSamePrimaryPageOrigin(this.targetManager, this.context)) {
                     return { error: 'No origin available or not allowed.' };
                 }
@@ -297,7 +298,7 @@ export class StorageAgent extends AiAgent {
                 };
             },
             handler: async (args) => {
-                this.setServerSideLoggingActive(false);
+                this.disableServerSideLogging();
                 if (!isSamePrimaryPageOrigin(this.targetManager, this.context)) {
                     return { error: 'No origin available or not allowed.' };
                 }
@@ -346,7 +347,7 @@ export class StorageAgent extends AiAgent {
                 };
             },
             handler: async (args, options) => {
-                this.setServerSideLoggingActive(false);
+                this.disableServerSideLogging();
                 if (!isSamePrimaryPageOrigin(this.targetManager, this.context)) {
                     return { error: 'No origin available or not allowed.' };
                 }
@@ -480,10 +481,10 @@ export class StorageAgent extends AiAgent {
     async preRun() {
         const item = this.context?.getItem();
         if (item instanceof CookieItem && Boolean(item.name)) {
-            this.setServerSideLoggingActive(false);
+            this.disableServerSideLogging();
         }
         else if (item instanceof DOMStorageItem && Boolean(item.key)) {
-            this.setServerSideLoggingActive(false);
+            this.disableServerSideLogging();
         }
     }
     async *handleContextDetails(context) {

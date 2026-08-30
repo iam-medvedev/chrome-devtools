@@ -1,16 +1,16 @@
 // gen/front_end/panels/sources/sources-meta.prebundle.js
-import * as Common from "./../../core/common/common.js";
-import * as Host from "./../../core/host/host.js";
-import * as i18n from "./../../core/i18n/i18n.js";
-import * as Root from "./../../core/root/root.js";
-import * as SDK from "./../../core/sdk/sdk.js";
-import * as Breakpoints from "./../../models/breakpoints/breakpoints.js";
-import * as StackTrace from "./../../models/stack_trace/stack_trace.js";
-import * as Workspace from "./../../models/workspace/workspace.js";
-import * as ObjectUI from "./../../ui/legacy/components/object_ui/object_ui.js";
-import * as QuickOpen from "./../../ui/legacy/components/quick_open/quick_open.js";
-import * as UI from "./../../ui/legacy/legacy.js";
-import * as SettingsUI from "./../../ui/settings/settings.js";
+import * as Common from "../../core/common/common.js";
+import * as Host from "../../core/host/host.js";
+import * as i18n from "../../core/i18n/i18n.js";
+import * as Root from "../../core/root/root.js";
+import * as SDK from "../../core/sdk/sdk.js";
+import * as Breakpoints from "../../models/breakpoints/breakpoints.js";
+import * as StackTrace from "../../models/stack_trace/stack_trace.js";
+import * as Workspace from "../../models/workspace/workspace.js";
+import * as ObjectUI from "../../ui/legacy/components/object_ui/object_ui.js";
+import * as QuickOpen from "../../ui/legacy/components/quick_open/quick_open.js";
+import * as UI from "../../ui/legacy/legacy.js";
+import * as SettingsUI from "../../ui/settings/settings.js";
 var UIStrings = {
   /**
    * @description Label of a checkbox in the DevTools settings UI.

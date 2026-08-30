@@ -7,6 +7,8 @@ import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
 import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import { TestUniverse } from '../../testing/TestUniverse.js';
+import * as SDK from './sdk.js';
+const { CPUPerformanceTier, tierToNumber } = SDK.CPUThrottlingManager;
 describe('CPUThrottlingManager', () => {
     setupSettingsHooks(); // For the MultitargetNetworkManager.
     setupRuntimeHooks();
@@ -38,6 +40,174 @@ describe('CPUThrottlingManager', () => {
         sinon.assert.notCalled(cdpStub);
         manager.setHardwareConcurrency(-1);
         sinon.assert.notCalled(cdpStub);
+    });
+    async function createManagerWithHostTier(universe, hostTier) {
+        const connection = new MockCDPConnection();
+        const tierValue = tierToNumber(hostTier);
+        connection.setSuccessHandler('Runtime.evaluate', ({ expression }) => {
+            assert.strictEqual(expression, 'navigator.cpuPerformance');
+            return { result: { value: tierValue, type: "number" /* Protocol.Runtime.RemoteObjectType.Number */ } };
+        });
+        universe.createTarget({ connection });
+        const manager = universe.cpuThrottlingManager;
+        manager.initialize();
+        await manager.updateHostDefaultCPUPerformanceTier();
+        return manager;
+    }
+    it('can set and clear the current CPU performance tier', async () => {
+        const universe = new TestUniverse();
+        const cdpSpy = sinon.spy(universe.createTarget().emulationAgent(), 'invoke_setCPUPerformanceOverride');
+        const manager = universe.cpuThrottlingManager;
+        manager.initialize();
+        // Default startup dispatches a clear command.
+        sinon.assert.calledOnce(cdpSpy);
+        sinon.assert.calledWithExactly(cdpSpy, { performanceTier: undefined });
+        cdpSpy.resetHistory();
+        // Setting a tier dispatches the override.
+        manager.setCPUPerformanceTier("low" /* CPUPerformanceTier.Low */);
+        sinon.assert.calledOnce(cdpSpy);
+        sinon.assert.calledWithExactly(cdpSpy, { performanceTier: "low" /* CPUPerformanceTier.Low */ });
+        cdpSpy.resetHistory();
+        // Changing the tier dispatches the new override.
+        manager.setCPUPerformanceTier("mid" /* CPUPerformanceTier.Mid */);
+        sinon.assert.calledOnce(cdpSpy);
+        sinon.assert.calledWithExactly(cdpSpy, { performanceTier: "mid" /* CPUPerformanceTier.Mid */ });
+        cdpSpy.resetHistory();
+        // Setting back to undefined (no override) dispatches clear command.
+        manager.setCPUPerformanceTier(undefined);
+        sinon.assert.calledOnce(cdpSpy);
+        sinon.assert.calledWithExactly(cdpSpy, { performanceTier: undefined });
+    });
+    it('dispatches CPU performance tier when throttling rate changes', async () => {
+        const universe = new TestUniverse();
+        const manager = await createManagerWithHostTier(universe, "ultra" /* CPUPerformanceTier.Ultra */);
+        const target = universe.targetManager.primaryPageTarget();
+        assert.exists(target);
+        const cdpSpy = sinon.spy(target.emulationAgent(), 'invoke_setCPUPerformanceOverride');
+        // Setting throttling rate to 4x (Mid tier) dispatches the override.
+        manager.setCPUThrottlingRate(4);
+        sinon.assert.calledWith(cdpSpy, { performanceTier: "mid" /* CPUPerformanceTier.Mid */ });
+        cdpSpy.resetHistory();
+        // Setting throttling rate back to 1x clears the override.
+        manager.setCPUThrottlingRate(1);
+        sinon.assert.calledOnce(cdpSpy);
+        sinon.assert.calledWithExactly(cdpSpy, { performanceTier: undefined });
+    });
+    it('listens to changes in CPU performance setting and dispatches events', () => {
+        const universe = new TestUniverse();
+        const manager = universe.cpuThrottlingManager;
+        manager.initialize();
+        const spy = sinon.spy();
+        manager.addEventListener("CpuPerformanceTierChanged" /* SDK.CPUThrottlingManager.Events.CPU_PERFORMANCE_TIER_CHANGED */, spy);
+        assert.isUndefined(manager.effectiveCPUPerformanceTier());
+        manager.setCPUPerformanceTier("low" /* CPUPerformanceTier.Low */);
+        sinon.assert.calledWith(spy, sinon.match({ data: "low" /* CPUPerformanceTier.Low */ }));
+        assert.strictEqual(manager.effectiveCPUPerformanceTier(), "low" /* CPUPerformanceTier.Low */);
+        manager.setCPUPerformanceTier("high" /* CPUPerformanceTier.High */);
+        sinon.assert.calledWith(spy, sinon.match({ data: "high" /* CPUPerformanceTier.High */ }));
+        assert.strictEqual(manager.effectiveCPUPerformanceTier(), "high" /* CPUPerformanceTier.High */);
+        manager.setCPUPerformanceTier(undefined);
+        sinon.assert.calledWith(spy, sinon.match({ data: undefined }));
+        assert.isUndefined(manager.effectiveCPUPerformanceTier());
+    });
+    it('calculates effective CPU performance tier based on throttling rate (uncalibrated)', async () => {
+        const universe = new TestUniverse();
+        const manager = await createManagerWithHostTier(universe, "ultra" /* CPUPerformanceTier.Ultra */);
+        const spy = sinon.spy();
+        manager.addEventListener("CpuPerformanceTierChanged" /* SDK.CPUThrottlingManager.Events.CPU_PERFORMANCE_TIER_CHANGED */, spy);
+        const checkTier = (rate) => {
+            manager.setCPUThrottlingRate(rate);
+            return manager.effectiveCPUPerformanceTier();
+        };
+        assert.strictEqual(checkTier(1), "ultra" /* CPUPerformanceTier.Ultra */);
+        assert.strictEqual(checkTier(2), "mid" /* CPUPerformanceTier.Mid */);
+        assert.strictEqual(checkTier(4), "mid" /* CPUPerformanceTier.Mid */);
+        assert.strictEqual(checkTier(6), "low" /* CPUPerformanceTier.Low */);
+        assert.strictEqual(checkTier(20), "low" /* CPUPerformanceTier.Low */);
+        sinon.assert.calledWith(spy, sinon.match({ data: "low" /* CPUPerformanceTier.Low */ }));
+    });
+    it('calculates effective CPU performance tier when both low and mid calibration options are valid', async () => {
+        const universe = new TestUniverse();
+        const manager = await createManagerWithHostTier(universe, "high" /* CPUPerformanceTier.High */);
+        const spy = sinon.spy();
+        manager.addEventListener("CpuPerformanceTierChanged" /* SDK.CPUThrottlingManager.Events.CPU_PERFORMANCE_TIER_CHANGED */, spy);
+        const setting = universe.settings.createSetting('calibrated-cpu-throttling', {});
+        setting.set({
+            low: 4.5,
+            mid: 1.2,
+            actualScore: 1200,
+        });
+        manager.setCPUThrottlingRate(4);
+        sinon.assert.calledWith(spy, sinon.match({ data: "low" /* CPUPerformanceTier.Low */ }));
+        assert.strictEqual(manager.effectiveCPUPerformanceTier(), "low" /* CPUPerformanceTier.Low */);
+    });
+    it('calculates effective CPU performance tier when only low calibration option is valid (mid is DEVICE_TOO_WEAK)', async () => {
+        const universe = new TestUniverse();
+        const manager = await createManagerWithHostTier(universe, "mid" /* CPUPerformanceTier.Mid */);
+        const spy = sinon.spy();
+        manager.addEventListener("CpuPerformanceTierChanged" /* SDK.CPUThrottlingManager.Events.CPU_PERFORMANCE_TIER_CHANGED */, spy);
+        const setting = universe.settings.createSetting('calibrated-cpu-throttling', {});
+        setting.set({
+            low: 1.8,
+            mid: 'DEVICE_TOO_WEAK',
+            actualScore: 480,
+        });
+        manager.setCPUThrottlingRate(2);
+        sinon.assert.calledWith(spy, sinon.match({ data: "low" /* CPUPerformanceTier.Low */ }));
+        assert.strictEqual(manager.effectiveCPUPerformanceTier(), "low" /* CPUPerformanceTier.Low */);
+    });
+    it('calculates effective CPU performance tier when neither low nor mid calibration options are valid (both DEVICE_TOO_WEAK)', async () => {
+        const universe = new TestUniverse();
+        const manager = await createManagerWithHostTier(universe, "low" /* CPUPerformanceTier.Low */);
+        const spy = sinon.spy();
+        manager.addEventListener("CpuPerformanceTierChanged" /* SDK.CPUThrottlingManager.Events.CPU_PERFORMANCE_TIER_CHANGED */, spy);
+        const setting = universe.settings.createSetting('calibrated-cpu-throttling', {});
+        setting.set({
+            low: 'DEVICE_TOO_WEAK',
+            mid: 'DEVICE_TOO_WEAK',
+            actualScore: 180,
+        });
+        manager.setCPUThrottlingRate(2);
+        sinon.assert.calledWith(spy, sinon.match({ data: "low" /* CPUPerformanceTier.Low */ }));
+        assert.strictEqual(manager.effectiveCPUPerformanceTier(), "low" /* CPUPerformanceTier.Low */);
+    });
+    it('prioritizes manual CPU performance override over throttling rate', async () => {
+        const universe = new TestUniverse();
+        const manager = await createManagerWithHostTier(universe, "ultra" /* CPUPerformanceTier.Ultra */);
+        // Apply manual override to Low.
+        manager.setCPUPerformanceTier("low" /* CPUPerformanceTier.Low */);
+        assert.strictEqual(manager.effectiveCPUPerformanceTier(), "low" /* CPUPerformanceTier.Low */);
+        // Enable 4x throttling (which would normally calculate to Mid).
+        manager.setCPUThrottlingRate(4);
+        assert.strictEqual(manager.effectiveCPUPerformanceTier(), "low" /* CPUPerformanceTier.Low */);
+        // Clear manual override -> should fall back to Mid (from 4x throttling).
+        manager.setCPUPerformanceTier(undefined);
+        assert.strictEqual(manager.effectiveCPUPerformanceTier(), "mid" /* CPUPerformanceTier.Mid */);
+    });
+    it('applies active CPU performance override to newly attached targets', async () => {
+        const universe = new TestUniverse();
+        const manager = await createManagerWithHostTier(universe, "ultra" /* CPUPerformanceTier.Ultra */);
+        manager.setCPUPerformanceTier("low" /* CPUPerformanceTier.Low */);
+        // Attach a second target (e.g. iframe or worker)
+        const secondTarget = universe.createTarget();
+        const emulationModel = secondTarget.model(SDK.EmulationModel.EmulationModel);
+        assert.exists(emulationModel);
+        const cdpSpy = sinon.spy(secondTarget.emulationAgent(), 'invoke_setCPUPerformanceOverride');
+        // Trigger modelAdded for the new target
+        manager.modelAdded(emulationModel);
+        sinon.assert.calledOnce(cdpSpy);
+        sinon.assert.calledWithExactly(cdpSpy, { performanceTier: "low" /* CPUPerformanceTier.Low */ });
+    });
+    it('exhaustively covers all protocol CPUPerformanceTier enum variants', () => {
+        // Compile-time check: fails build if a new tier is added to Emulation.pdl
+        const allTiers = {
+            ["unknown" /* CPUPerformanceTier.Unknown */]: true,
+            ["low" /* CPUPerformanceTier.Low */]: true,
+            ["mid" /* CPUPerformanceTier.Mid */]: true,
+            ["high" /* CPUPerformanceTier.High */]: true,
+            ["ultra" /* CPUPerformanceTier.Ultra */]: true,
+        };
+        assert.exists(allTiers);
     });
 });
 //# sourceMappingURL=CPUThrottlingManager.test.js.map

@@ -16,6 +16,7 @@ import * as TextEditor from '../../ui/components/text_editor/text_editor.js';
 import { Icon } from '../../ui/kit/kit.js';
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as Settings from '../../ui/settings/settings.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { ConsolePanel } from './ConsolePanel.js';
 import consolePromptStyles from './consolePrompt.css.js';
@@ -107,7 +108,8 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
         this.promptIcon.classList.add('console-prompt-icon', 'medium');
         this.element.appendChild(this.promptIcon);
         this.iconThrottler = new Common.Throttler.Throttler(0);
-        this.eagerEvalSetting = Common.Settings.Settings.instance().moduleSetting('console-eager-eval');
+        this.eagerEvalSetting =
+            Common.Settings.Settings.instance().resolve(Settings.ConsoleSettings.consoleEagerEvalSettingDescriptor);
         this.eagerEvalSetting.addChangeListener(this.eagerSettingChanged.bind(this));
         this.eagerPreviewElement.classList.toggle('hidden', !this.eagerEvalSetting.get());
         this.element.tabIndex = 0;
@@ -115,7 +117,7 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
         this.highlightingNode = false;
         const argumentHints = TextEditor.JavaScript.argumentHints();
         this.#argumentHintsState = argumentHints[0];
-        const autocompleteOnEnter = TextEditor.Config.DynamicSetting.bool('console-autocomplete-on-enter', [], TextEditor.Config.conservativeCompletion);
+        const autocompleteOnEnter = TextEditor.Config.DynamicSetting.bool(Settings.ConsoleSettings.consoleAutocompleteOnEnterSettingDescriptor, [], TextEditor.Config.conservativeCompletion);
         const extensions = [
             CodeMirror.keymap.of(this.editorKeymap()),
             CodeMirror.EditorView.updateListener.of(update => this.editorUpdate(update)),
@@ -410,4 +412,8 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
     editorSetForTest() {
     }
 }
+export var Events;
+(function (Events) {
+    Events["TEXT_CHANGED"] = "TextChanged";
+})(Events || (Events = {}));
 //# sourceMappingURL=ConsolePrompt.js.map

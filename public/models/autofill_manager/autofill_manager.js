@@ -4,14 +4,15 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// gen/front_end/models/autofill_manager/AutofillManager.js
+// ../../front_end/models/autofill_manager/AutofillManager.ts
 var AutofillManager_exports = {};
 __export(AutofillManager_exports, {
-  AutofillManager: () => AutofillManager
+  AutofillManager: () => AutofillManager,
+  Events: () => Events
 });
-import * as Common from "./../../core/common/common.js";
-import * as Platform from "./../../core/platform/platform.js";
-import * as SDK from "./../../core/sdk/sdk.js";
+import * as Common from "../../core/common/common.js";
+import * as Platform from "../../core/platform/platform.js";
+import * as SDK from "../../core/sdk/sdk.js";
 var AutofillManager = class extends Common.ObjectWrapper.ObjectWrapper {
   #targetManager;
   #address = "";
@@ -23,13 +24,19 @@ var AutofillManager = class extends Common.ObjectWrapper.ObjectWrapper {
     super();
     this.#targetManager = targetManager;
     this.#frameManager = frameManager;
-    targetManager.addModelListener(SDK.AutofillModel.AutofillModel, "AddressFormFilled", this.#addressFormFilled, this, { scoped: true });
+    targetManager.addModelListener(
+      SDK.AutofillModel.AutofillModel,
+      SDK.AutofillModel.Events.ADDRESS_FORM_FILLED,
+      this.#addressFormFilled,
+      this,
+      { scoped: true }
+    );
   }
   async #addressFormFilled({ data }) {
     this.#autofillModel = data.autofillModel;
     this.#processAddressFormFilledData(data.event);
     if (this.#address) {
-      this.dispatchEventToListeners("AddressFormFilled", {
+      this.dispatchEventToListeners("AddressFormFilled" /* ADDRESS_FORM_FILLED */, {
         address: this.#address,
         filledFields: this.#filledFields,
         matches: this.#matches
@@ -79,6 +86,10 @@ var AutofillManager = class extends Common.ObjectWrapper.ObjectWrapper {
     }
   }
 };
+var Events = /* @__PURE__ */ ((Events2) => {
+  Events2["ADDRESS_FORM_FILLED"] = "AddressFormFilled";
+  return Events2;
+})(Events || {});
 export {
   AutofillManager_exports as AutofillManager
 };

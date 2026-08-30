@@ -28,6 +28,12 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/settings/EditFileSystemView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+export var ExcludedFolderStatus;
+(function (ExcludedFolderStatus) {
+    ExcludedFolderStatus[ExcludedFolderStatus["VALID"] = 1] = "VALID";
+    ExcludedFolderStatus[ExcludedFolderStatus["ERROR_NOT_A_PATH"] = 2] = "ERROR_NOT_A_PATH";
+    ExcludedFolderStatus[ExcludedFolderStatus["ERROR_NOT_UNIQUE"] = 3] = "ERROR_NOT_UNIQUE";
+})(ExcludedFolderStatus || (ExcludedFolderStatus = {}));
 function statusString(status) {
     switch (status) {
         case 2 /* ExcludedFolderStatus.ERROR_NOT_A_PATH */:

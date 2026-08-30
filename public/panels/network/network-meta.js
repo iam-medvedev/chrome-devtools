@@ -1,13 +1,13 @@
 // gen/front_end/panels/network/network-meta.prebundle.js
-import * as Common from "./../../core/common/common.js";
-import * as i18n from "./../../core/i18n/i18n.js";
-import * as Root from "./../../core/root/root.js";
-import * as SDK from "./../../core/sdk/sdk.js";
-import * as Logs from "./../../models/logs/logs.js";
-import * as Workspace from "./../../models/workspace/workspace.js";
-import * as PanelCommon from "./../common/common.js";
-import * as UI from "./../../ui/legacy/legacy.js";
-import * as SettingsUI from "./../../ui/settings/settings.js";
+import * as Common from "../../core/common/common.js";
+import * as i18n from "../../core/i18n/i18n.js";
+import * as Root from "../../core/root/root.js";
+import * as SDK from "../../core/sdk/sdk.js";
+import * as Logs from "../../models/logs/logs.js";
+import * as Workspace from "../../models/workspace/workspace.js";
+import * as PanelCommon from "../common/common.js";
+import * as UI from "../../ui/legacy/legacy.js";
+import * as SettingsUI from "../../ui/settings/settings.js";
 import * as NetworkForward from "./forward/forward.js";
 var UIStrings = {
   /**

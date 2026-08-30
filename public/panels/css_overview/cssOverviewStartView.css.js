@@ -15,7 +15,7 @@ export default `/**
   }
 
   .css-overview-start-view {
-    padding: 24px;
+    padding: var(--sys-size-11);
     display: flex;
     flex-direction: column;
     background-color: var(--sys-color-cdt-base-container);
@@ -27,22 +27,22 @@ export default `/**
   }
 
   .preview-feature {
-    padding: 12px 16px;
-    border: 1px solid var(--sys-color-neutral-outline);
+    padding: var(--sys-size-6) var(--sys-size-8);
+    border: var(--sys-size-1) solid var(--sys-color-neutral-outline);
     color: var(--sys-color-on-surface);
-    font-size: 13px;
-    line-height: 20px;
-    border-radius: 12px;
+    font-size: var(--sys-typescale-body3-size);
+    line-height: var(--sys-typescale-body3-line-height);
+    border-radius: var(--sys-shape-corner-medium-small);
     margin: 42px 0;
     letter-spacing: 0.01em;
   }
 
   .preview-header {
     color: var(--sys-color-primary);
-    font-size: 13px;
-    line-height: 20px;
+    font-size: var(--sys-typescale-body3-size);
+    line-height: var(--sys-typescale-body3-line-height);
     letter-spacing: 0.01em;
-    margin: 9px 0 14px;
+    margin: 9px 0 var(--sys-size-7);
   }
 
   .preview-icon {
@@ -50,7 +50,7 @@ export default `/**
   }
 
   .feedback-prompt {
-    margin-bottom: 24px;
+    margin-bottom: var(--sys-size-11);
   }
 
   .feedback-prompt .devtools-link {
@@ -65,17 +65,17 @@ export default `/**
   }
 
   .thumbnail-wrapper {
-    width: 144px;
+    width: var(--sys-size-22);
     height: 92px;
-    margin-right: 20px;
+    margin-right: var(--sys-size-9);
   }
 
   .video-doc-header {
-    font-size: 13px;
-    line-height: 20px;
+    font-size: var(--sys-typescale-body3-size);
+    line-height: var(--sys-typescale-body3-line-height);
     letter-spacing: 0.04em;
     color: var(--sys-color-on-surface);
-    margin-bottom: 2px;
+    margin-bottom: var(--sys-size-2);
   }
 
   devtools-feedback-button {
@@ -83,8 +83,8 @@ export default `/**
   }
 
   .resources .devtools-link {
-    font-size: 14px;
-    line-height: 22px;
+    font-size: var(--sys-typescale-body2-size);
+    line-height: var(--sys-size-10);
     letter-spacing: 0.04em;
     text-decoration-line: underline;
     color: var(--sys-color-primary);

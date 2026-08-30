@@ -4,8 +4,8 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// gen/front_end/models/ai_code_generation/debug.js
-import * as Platform from "./../../core/platform/platform.js";
+// ../../front_end/models/ai_code_generation/debug.ts
+import * as Platform from "../../core/platform/platform.js";
 function isDebugMode() {
   return Boolean(Platform.HostRuntime.HOST_RUNTIME.getLocalStorage()?.getItem("debugAiCodeGenerationEnabled"));
 }
@@ -25,15 +25,15 @@ function setDebugAiCodeGenerationEnabled(enabled) {
 }
 globalThis.setDebugAiCodeGenerationEnabled = setDebugAiCodeGenerationEnabled;
 
-// gen/front_end/models/ai_code_generation/AiCodeGeneration.js
+// ../../front_end/models/ai_code_generation/AiCodeGeneration.ts
 var AiCodeGeneration_exports = {};
 __export(AiCodeGeneration_exports, {
   AiCodeGeneration: () => AiCodeGeneration,
   additionalContextForConsole: () => additionalContextForConsole,
   basePreamble: () => basePreamble
 });
-import * as Host from "./../../core/host/host.js";
-import * as Root from "./../../core/root/root.js";
+import * as Host from "../../core/host/host.js";
+import * as Root from "../../core/root/root.js";
 var basePreamble = `You are a highly skilled senior software engineer with deep expertise across multiple web technologies and programming languages, including JavaScript, TypeScript, HTML, and CSS.
 Your role is to act as an expert pair programmer within the Chrome DevTools environment.
 
@@ -71,7 +71,7 @@ var AiCodeGeneration = class _AiCodeGeneration {
       this.#serverSideLoggingEnabled = false;
     }
   }
-  #buildRequest(prompt, preamble, inferenceLanguage = "JAVASCRIPT") {
+  #buildRequest(prompt, preamble, inferenceLanguage = Host.AidaClient.AidaInferenceLanguage.JAVASCRIPT) {
     const userTier = Host.AidaClient.convertToUserTierEnum(this.#userTier);
     function validTemperature(temperature) {
       return typeof temperature === "number" && temperature >= 0 ? temperature : void 0;

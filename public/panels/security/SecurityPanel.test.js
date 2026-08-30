@@ -5,7 +5,7 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import { doubleRaf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { doubleRaf, querySelectorErrorOnMissing, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { getMainFrame, navigate } from '../../testing/ResourceTreeHelpers.js';
 import * as Security from './security.js';
@@ -29,7 +29,7 @@ describe('createHighlightedUrl', () => {
     });
 });
 describeWithEnvironment('SecurityOriginView', () => {
-    function createOriginState(sanList) {
+    function createOriginState(securityDetails = {}) {
         return {
             securityState: "secure" /* Protocol.Security.SecurityState.Secure */,
             securityDetails: {
@@ -38,25 +38,119 @@ describeWithEnvironment('SecurityOriginView', () => {
                 cipher: 'AES_128_GCM',
                 certificateId: 0,
                 subjectName: 'example.com',
-                sanList,
+                sanList: [],
                 issuer: 'Test CA',
                 validFrom: 0,
                 validTo: 1,
                 signedCertificateTimestampList: [],
                 certificateTransparencyCompliance: "unknown" /* Protocol.Network.CertificateTransparencyCompliance.Unknown */,
                 encryptedClientHello: false,
+                ...securityDetails,
             },
             loadedFromCache: false,
         };
     }
+    function getDetailsTableRows(section) {
+        return [...section.querySelectorAll('.details-table-row')].map(row => [...row.cells].map(cell => cell.textContent ?? ''));
+    }
+    describe('connection section', () => {
+        function getConnectionDetailsRows(securityDetails = {}) {
+            const view = new Security.SecurityPanel.SecurityOriginView(urlString `https://foo.bar`, createOriginState(securityDetails));
+            const connectionSection = querySelectorErrorOnMissing(view.element, '.connection-section');
+            return getDetailsTableRows(connectionSection);
+        }
+        it('renders the heading', () => {
+            const view = new Security.SecurityPanel.SecurityOriginView(urlString `https://foo.bar`, createOriginState());
+            const connectionSection = querySelectorErrorOnMissing(view.element, '.connection-section');
+            const heading = querySelectorErrorOnMissing(connectionSection, '.origin-view-section-title');
+            assert.strictEqual(heading.textContent, 'Connection');
+            assert.strictEqual(heading.getAttribute('role'), 'heading');
+            assert.strictEqual(heading.getAttribute('aria-level'), '2');
+        });
+        it('does not render without security details', () => {
+            const view = new Security.SecurityPanel.SecurityOriginView(urlString `https://foo.bar`, {
+                securityState: "secure" /* Protocol.Security.SecurityState.Secure */,
+                securityDetails: null,
+                loadedFromCache: false,
+            });
+            assert.notExists(view.element.querySelector('.connection-section'));
+        });
+        it('renders all connection details in order', () => {
+            assert.deepEqual(getConnectionDetailsRows({
+                protocol: 'TLS 1.3',
+                keyExchange: 'ECDHE_RSA',
+                keyExchangeGroup: 'X25519',
+                serverSignatureAlgorithm: 0x0804,
+                cipher: 'AES_128_GCM',
+                mac: 'HMAC-SHA256',
+                encryptedClientHello: true,
+            }), [
+                ['Protocol', 'TLS 1.3'],
+                ['Key exchange', 'ECDHE_RSA with X25519'],
+                ['Server signature', 'RSA-PSS with SHA-256'],
+                ['Cipher', 'AES_128_GCM with HMAC-SHA256'],
+                ['Encrypted ClientHello', 'enabled'],
+            ]);
+        });
+        it('renders the protocol', () => {
+            assert.deepInclude(getConnectionDetailsRows({ protocol: 'TLS 1.2' }), ['Protocol', 'TLS 1.2']);
+        });
+        describe('key exchange', () => {
+            it('renders the algorithm and group', () => {
+                assert.deepInclude(getConnectionDetailsRows({ keyExchange: 'ECDHE_RSA', keyExchangeGroup: 'X25519' }), ['Key exchange', 'ECDHE_RSA with X25519']);
+            });
+            it('renders only the algorithm', () => {
+                assert.deepInclude(getConnectionDetailsRows({ keyExchange: 'ECDHE_RSA', keyExchangeGroup: undefined }), ['Key exchange', 'ECDHE_RSA']);
+            });
+            it('renders only the group', () => {
+                assert.deepInclude(getConnectionDetailsRows({ keyExchange: '', keyExchangeGroup: 'X25519' }), ['Key exchange', 'X25519']);
+            });
+            it('does not render when both are unavailable', () => {
+                const rowNames = getConnectionDetailsRows({
+                    keyExchange: '',
+                    keyExchangeGroup: undefined,
+                }).map(([key]) => key);
+                assert.notInclude(rowNames, 'Key exchange');
+            });
+        });
+        describe('server signature', () => {
+            it('renders a known algorithm', () => {
+                assert.deepInclude(getConnectionDetailsRows({ serverSignatureAlgorithm: 0x0804 }), ['Server signature', 'RSA-PSS with SHA-256']);
+            });
+            it('renders an unknown algorithm', () => {
+                assert.deepInclude(getConnectionDetailsRows({ serverSignatureAlgorithm: 0xffff }), ['Server signature', 'unknown (65535)']);
+            });
+            it('does not render when unavailable', () => {
+                const rowNames = getConnectionDetailsRows({ serverSignatureAlgorithm: undefined }).map(([key]) => key);
+                assert.notInclude(rowNames, 'Server signature');
+            });
+        });
+        describe('cipher', () => {
+            it('renders with a MAC', () => {
+                assert.deepInclude(getConnectionDetailsRows({ cipher: 'AES_128_GCM', mac: 'HMAC-SHA256' }), ['Cipher', 'AES_128_GCM with HMAC-SHA256']);
+            });
+            it('renders without a MAC', () => {
+                assert.deepInclude(getConnectionDetailsRows({ cipher: 'AES_128_GCM', mac: undefined }), ['Cipher', 'AES_128_GCM']);
+            });
+        });
+        describe('Encrypted ClientHello', () => {
+            it('renders when enabled', () => {
+                assert.deepInclude(getConnectionDetailsRows({ encryptedClientHello: true }), ['Encrypted ClientHello', 'enabled']);
+            });
+            it('does not render when disabled', () => {
+                const rowNames = getConnectionDetailsRows({ encryptedClientHello: false }).map(([key]) => key);
+                assert.notInclude(rowNames, 'Encrypted ClientHello');
+            });
+        });
+    });
     it('renders an empty SAN', () => {
-        const view = new Security.SecurityPanel.SecurityOriginView(urlString `https://foo.bar`, createOriginState([]));
+        const view = new Security.SecurityPanel.SecurityOriginView(urlString `https://foo.bar`, createOriginState());
         const sanElement = view.element.querySelector('.san');
         assert.instanceOf(sanElement, HTMLElement);
         assert.strictEqual(sanElement.textContent, '(n/a)');
     });
     it('renders a SAN without truncation button', () => {
-        const view = new Security.SecurityPanel.SecurityOriginView(urlString `https://foo.bar`, createOriginState(['a.test', 'b.test', 'c.test']));
+        const view = new Security.SecurityPanel.SecurityOriginView(urlString `https://foo.bar`, createOriginState({ sanList: ['a.test', 'b.test', 'c.test'] }));
         renderElementIntoDOM(view);
         const sanElement = view.element.querySelector('.san');
         assert.instanceOf(sanElement, HTMLElement);
@@ -67,7 +161,7 @@ describeWithEnvironment('SecurityOriginView', () => {
         assert.notExists(truncationToggle);
     });
     it('renders a SAN with truncation button and updates on truncation toggle', () => {
-        const view = new Security.SecurityPanel.SecurityOriginView(urlString `https://foo.bar`, createOriginState(['a.test', 'b.test', 'c.test', 'd.test']));
+        const view = new Security.SecurityPanel.SecurityOriginView(urlString `https://foo.bar`, createOriginState({ sanList: ['a.test', 'b.test', 'c.test', 'd.test'] }));
         renderElementIntoDOM(view);
         const sanElement = view.element.querySelector('.san');
         assert.instanceOf(sanElement, HTMLElement);

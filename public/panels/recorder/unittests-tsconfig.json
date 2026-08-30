@@ -6,6 +6,7 @@
     "checkJs": true,
     "composite": true,
     "declaration": true,
+    "disableSourceOfProjectReferenceRedirect": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
     "inlineSources": true,
@@ -26,6 +27,7 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "outDir": ".",
+    "preserveConstEnums": true,
     "rootDir": "../../../../../../front_end/panels/recorder",
     "skipLibCheck": true,
     "sourceMap": true,
@@ -56,40 +58,40 @@
   ],
   "references": [
     {
-      "path": "./bundle-tsconfig.json"
+      "path": "./bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../core/host/bundle-tsconfig.json"
+      "path": "../../core/host/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../testing/testing-tsconfig.json"
+      "path": "../../testing/testing-tsconfig.ref.json"
     },
     {
-      "path": "../../ui/components/menus/bundle-tsconfig.json"
+      "path": "../../ui/components/menus/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../ui/components/suggestion_input/bundle-tsconfig.json"
+      "path": "../../ui/components/suggestion_input/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../ui/legacy/bundle-tsconfig.json"
+      "path": "../../ui/legacy/bundle-tsconfig.ref.json"
     },
     {
-      "path": "converters/bundle-tsconfig.json"
+      "path": "converters/bundle-tsconfig.ref.json"
     },
     {
-      "path": "extensions/bundle-tsconfig.json"
+      "path": "extensions/bundle-tsconfig.ref.json"
     },
     {
-      "path": "models/bundle-tsconfig.json"
+      "path": "models/bundle-tsconfig.ref.json"
     },
     {
-      "path": "recorder-actions/bundle-tsconfig.json"
+      "path": "recorder-actions/bundle-tsconfig.ref.json"
     },
     {
-      "path": "testing/testing-tsconfig.json"
+      "path": "testing/testing-tsconfig.ref.json"
     },
     {
-      "path": "injected/bundle-tsconfig.json"
+      "path": "injected/bundle-tsconfig.ref.json"
     }
   ]
 }

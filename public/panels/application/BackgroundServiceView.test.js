@@ -14,6 +14,7 @@ describeWithEnvironment('BackgroundServiceView', () => {
     let target;
     let backgroundServiceModel;
     let manager;
+    let securityOriginManager;
     let view;
     const BACKGROUND_SERVICE_EVENT = {
         timestamp: 1556889085, // 2019-05-03 14:11:25.000.
@@ -29,6 +30,7 @@ describeWithEnvironment('BackgroundServiceView', () => {
         target = createTarget();
         backgroundServiceModel = target.model(Resources.BackgroundServiceModel.BackgroundServiceModel);
         manager = target.model(SDK.StorageKeyManager.StorageKeyManager);
+        securityOriginManager = target.model(SDK.SecurityOriginManager.SecurityOriginManager);
         registerActions([{
                 actionId: 'background-service.toggle-recording',
                 category: "BACKGROUND_SERVICES" /* UI.ActionRegistration.ActionCategory.BACKGROUND_SERVICES */,
@@ -46,7 +48,21 @@ describeWithEnvironment('BackgroundServiceView', () => {
         });
         assert.exists(backgroundServiceModel);
         view = new Resources.BackgroundServiceView.BackgroundServiceView(serviceName, backgroundServiceModel);
+        renderElementIntoDOM(view, { width: 1100, height: 800, includeCommonStyles: true });
     });
+    function assertEmptyState(expectedHeader, expectedDescription) {
+        const emptyWidget = view.contentElement.querySelector('.empty-widget-container');
+        assert.exists(emptyWidget);
+        const shadowRoot = emptyWidget.shadowRoot;
+        assert.exists(shadowRoot);
+        const header = shadowRoot.querySelector('.empty-state-header')?.textContent;
+        assert.deepEqual(header, expectedHeader);
+        if (expectedDescription !== undefined) {
+            const description = shadowRoot.querySelector('.empty-state-description')?.textContent;
+            assert.deepEqual(description, expectedDescription);
+        }
+        return shadowRoot;
+    }
     it('updates event list when main storage key changes', () => {
         assert.exists(backgroundServiceModel);
         assert.exists(manager);
@@ -68,21 +84,14 @@ describeWithEnvironment('BackgroundServiceView', () => {
         backgroundServiceModel.backgroundServiceEventReceived({ backgroundServiceEvent: BACKGROUND_SERVICE_EVENT });
         manager.updateStorageKeys(new Set([testKey]));
         manager.setMainStorageKey(testKey);
-        assert.isNotNull(view.contentElement.querySelector('.empty-state'));
-        const header = view.contentElement.querySelector('.empty-state-header')?.textContent;
-        const description = view.contentElement.querySelector('.empty-state-description')?.textContent;
-        assert.deepEqual(header, 'No event selected');
-        assert.deepEqual(description, 'Select an event to view its metadata');
+        assertEmptyState('No event selected', 'Select an event to view its metadata');
     });
     it('shows placeholder text', () => {
-        assert.isNotNull(view.contentElement.querySelector('.empty-state'));
-        const header = view.contentElement.querySelector('.empty-state-header')?.textContent;
-        const description = view.contentElement.querySelector('.empty-state-description')?.textContent;
-        assert.deepEqual(header, 'No recording yet');
-        assert.deepEqual(description, 'Start to debug background services by using the "Start recording events" button or by pressing Ctrl.Learn more');
+        assertEmptyState('No recording yet', 'Start to debug background services by using the "Start recording events" button or by pressing Ctrl.Learn more');
     });
     it('Triggers record on button click', () => {
-        const recordButton = view.contentElement.querySelector('.empty-state devtools-button');
+        assertEmptyState('No recording yet');
+        const recordButton = view.contentElement.querySelector('devtools-button.start-recording-button');
         assert.exists(recordButton);
         assert.deepEqual(recordButton.textContent, 'Start recording events');
         const recordingSpy = sinon.spy(view, 'toggleRecording');
@@ -91,11 +100,7 @@ describeWithEnvironment('BackgroundServiceView', () => {
     });
     it('informs developer about current recording', () => {
         backgroundServiceModel?.recordingStateChanged({ isRecording: true, service: "backgroundFetch" /* Protocol.BackgroundService.ServiceName.BackgroundFetch */ });
-        assert.isNotNull(view.contentElement.querySelector('.empty-state'));
-        const header = view.contentElement.querySelector('.empty-state-header')?.textContent;
-        const description = view.contentElement.querySelector('.empty-state-description')?.textContent;
-        assert.deepEqual(header, 'Recording background fetch activity…');
-        assert.deepEqual(description, 'DevTools will record all background fetch activity for up to 3 days, even when closed.');
+        assertEmptyState('Recording background fetch activity…', 'DevTools will record all background fetch activity for up to 3 days, even when closed.');
     });
     it('clears preview when view is cleared', async () => {
         backgroundServiceModel?.backgroundServiceEventReceived({ backgroundServiceEvent: BACKGROUND_SERVICE_EVENT });
@@ -104,19 +109,16 @@ describeWithEnvironment('BackgroundServiceView', () => {
         await view.updateComplete;
         view.getDataGrid().asWidget().dataGrid.rootNode().children[0].select();
         // Metadata is shown.
-        assert.isNull(view.contentElement.querySelector('.empty-state'));
+        assert.isNull(view.contentElement.querySelector('.empty-widget-container'));
         const toolbar = view.contentElement.querySelector('devtools-toolbar');
         assert.exists(toolbar);
         const clearButton = toolbar.querySelector('[aria-label="Clear"]');
         assert.exists(clearButton);
         dispatchClickEvent(clearButton);
         // Preview is cleared, showing general empty state text.
-        assert.isNotNull(view.contentElement.querySelector('.empty-state'));
-        const header = view.contentElement.querySelector('.empty-state-header')?.textContent;
-        assert.deepEqual(header, 'No recording yet');
+        assertEmptyState('No recording yet');
     });
     it('shows metadata in preview and renders a screenshot', async () => {
-        renderElementIntoDOM(view, { width: 800, height: 800, includeCommonStyles: true });
         backgroundServiceModel?.backgroundServiceEventReceived({ backgroundServiceEvent: BACKGROUND_SERVICE_EVENT });
         const eventWithMetadata = {
             ...BACKGROUND_SERVICE_EVENT,
@@ -137,6 +139,119 @@ describeWithEnvironment('BackgroundServiceView', () => {
         // Focus the datagrid to ensure consistent focused styling across test runs
         view.getDataGrid().asWidget().dataGrid.element.focus();
         await assertScreenshot('application/background_service_view.png');
+    });
+    it('shows events in the grid and filters by service and origin', async () => {
+        assert.exists(backgroundServiceModel);
+        assert.exists(securityOriginManager);
+        backgroundServiceModel.enable("backgroundSync" /* Protocol.BackgroundService.ServiceName.BackgroundSync */);
+        securityOriginManager.updateSecurityOrigins(new Set(['http://127.0.0.1:8000']));
+        // Initially grid is empty.
+        let dataRows = view.getDataGrid().dataTableBody.querySelectorAll('tr.data-grid-data-grid-node');
+        assert.lengthOf(dataRows, 0);
+        // Event for BackgroundFetch from matching origin.
+        const event1 = {
+            timestamp: 1556889085, // 2019-05-03 14:11:25.000.
+            origin: 'http://127.0.0.1:8000/',
+            serviceWorkerRegistrationId: '42',
+            service: "backgroundFetch" /* Protocol.BackgroundService.ServiceName.BackgroundFetch */,
+            eventName: 'Event1',
+            instanceId: 'Instance1',
+            eventMetadata: [],
+            storageKey: 'testKey',
+        };
+        backgroundServiceModel.backgroundServiceEventReceived({ backgroundServiceEvent: event1 });
+        await view.updateComplete;
+        dataRows = view.getDataGrid().dataTableBody.querySelectorAll('tr.data-grid-data-grid-node');
+        assert.lengthOf(dataRows, 1);
+        const getRowValues = (row) => Array.from(row.querySelectorAll('td:not(.corner)')).map(td => td.textContent);
+        assert.deepEqual(getRowValues(dataRows[0]), [
+            '1',
+            UI.UIUtils.formatTimestamp(1556889085 * 1000, true),
+            'Event1',
+            'http://127.0.0.1:8000/',
+            'testKey',
+            '',
+            'Instance1',
+        ]);
+        // Event from a different service is ignored.
+        const eventDifferentService = {
+            timestamp: 1556889085,
+            origin: 'http://127.0.0.1:8000/',
+            serviceWorkerRegistrationId: '42',
+            service: "backgroundSync" /* Protocol.BackgroundService.ServiceName.BackgroundSync */,
+            eventName: 'Event1',
+            instanceId: 'Instance2',
+            eventMetadata: [],
+            storageKey: 'testKey',
+        };
+        backgroundServiceModel.backgroundServiceEventReceived({ backgroundServiceEvent: eventDifferentService });
+        await view.updateComplete;
+        dataRows = view.getDataGrid().dataTableBody.querySelectorAll('tr.data-grid-data-grid-node');
+        assert.lengthOf(dataRows, 1);
+        // Event from a different origin is ignored by default.
+        const eventDifferentOrigin = {
+            timestamp: 1556889085,
+            origin: 'http://127.0.0.1:8080/',
+            serviceWorkerRegistrationId: '42',
+            service: "backgroundFetch" /* Protocol.BackgroundService.ServiceName.BackgroundFetch */,
+            eventName: 'Event2',
+            instanceId: 'Instance1',
+            eventMetadata: [],
+            storageKey: 'testKey',
+        };
+        backgroundServiceModel.backgroundServiceEventReceived({ backgroundServiceEvent: eventDifferentOrigin });
+        await view.updateComplete;
+        dataRows = view.getDataGrid().dataTableBody.querySelectorAll('tr.data-grid-data-grid-node');
+        assert.lengthOf(dataRows, 1);
+        // The event from a different origin should show up when the origin checkbox is checked.
+        const originCheckbox = view.contentElement.querySelectorAll('devtools-checkbox')[0];
+        assert.exists(originCheckbox);
+        originCheckbox.checked = true;
+        dispatchClickEvent(originCheckbox);
+        await view.updateComplete;
+        dataRows = view.getDataGrid().dataTableBody.querySelectorAll('tr.data-grid-data-grid-node');
+        assert.lengthOf(dataRows, 2);
+        assert.deepEqual(getRowValues(dataRows[0]), [
+            '1',
+            UI.UIUtils.formatTimestamp(1556889085 * 1000, true),
+            'Event1',
+            'http://127.0.0.1:8000/',
+            'testKey',
+            '',
+            'Instance1',
+        ]);
+        assert.deepEqual(getRowValues(dataRows[1]), [
+            '2',
+            UI.UIUtils.formatTimestamp(1556889085 * 1000, true),
+            'Event2',
+            'http://127.0.0.1:8080/',
+            'testKey',
+            '',
+            'Instance1',
+        ]);
+        // Unchecking the origin checkbox removes it again.
+        originCheckbox.checked = false;
+        dispatchClickEvent(originCheckbox);
+        await view.updateComplete;
+        dataRows = view.getDataGrid().dataTableBody.querySelectorAll('tr.data-grid-data-grid-node');
+        assert.lengthOf(dataRows, 1);
+        assert.deepEqual(getRowValues(dataRows[0]), [
+            '1',
+            UI.UIUtils.formatTimestamp(1556889085 * 1000, true),
+            'Event1',
+            'http://127.0.0.1:8000/',
+            'testKey',
+            '',
+            'Instance1',
+        ]);
+        // Clicking the clear button clears events.
+        const clearButton = view.contentElement.querySelector('devtools-button[aria-label="Clear"]');
+        assert.exists(clearButton);
+        dispatchClickEvent(clearButton);
+        await view.updateComplete;
+        dataRows = view.getDataGrid().dataTableBody.querySelectorAll('tr.data-grid-data-grid-node');
+        assert.lengthOf(dataRows, 0);
+        assertEmptyState('No recording yet');
     });
 });
 //# sourceMappingURL=BackgroundServiceView.test.js.map

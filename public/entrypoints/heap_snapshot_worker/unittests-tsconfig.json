@@ -6,6 +6,7 @@
     "checkJs": true,
     "composite": true,
     "declaration": true,
+    "disableSourceOfProjectReferenceRedirect": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
     "inlineSources": true,
@@ -26,6 +27,7 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "outDir": ".",
+    "preserveConstEnums": true,
     "rootDir": "../../../../../../front_end/entrypoints/heap_snapshot_worker",
     "skipLibCheck": true,
     "sourceMap": true,
@@ -50,10 +52,10 @@
   ],
   "references": [
     {
-      "path": "./bundle-tsconfig.json"
+      "path": "./bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../models/heap_snapshot/bundle-tsconfig.json"
+      "path": "../../models/heap_snapshot/bundle-tsconfig.ref.json"
     }
   ]
 }

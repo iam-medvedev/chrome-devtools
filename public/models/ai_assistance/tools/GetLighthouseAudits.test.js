@@ -26,7 +26,8 @@ describe('GetLighthouseAuditsTool', () => {
     };
     const tool = new AiAssistance.GetLighthouseAudits.GetLighthouseAuditsTool();
     const context = {
-        conversationContext: new AiAssistance.AccessibilityContext.AccessibilityContext(mockReport),
+        conversationContext: null,
+        getLighthouseReport: () => mockReport,
     };
     it('returns formatted audits for a given category', async () => {
         const result = await tool.handler({ categoryId: 'accessibility' }, context);
@@ -36,9 +37,10 @@ describe('GetLighthouseAuditsTool', () => {
         assert.include(result.result.audits, '- **Low contrast**: 0');
         assert.deepEqual(result.widgets, [{ name: 'LIGHTHOUSE_REPORT', data: { report: mockReport } }]);
     });
-    it('returns error when context is not AccessibilityContext', async () => {
+    it('returns error when Lighthouse report is not available', async () => {
         const invalidContext = {
             conversationContext: null,
+            getLighthouseReport: () => null,
         };
         const result = await tool.handler({ categoryId: 'accessibility' }, invalidContext);
         assertIsError(result);

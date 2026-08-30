@@ -25,9 +25,10 @@ describe('GetTraceNetworkSummaryTool', () => {
         assert.strictEqual(displayInfo.title, 'Network activity summary');
         assert.strictEqual(displayInfo.action, 'getTraceNetworkSummary({min: 10, max: 50})');
     });
-    it('returns error when conversationContext is not available', async () => {
+    it('returns error when PerformanceTraceContext is not available', async () => {
         const context = {
             conversationContext: null,
+            getPerformanceTraceContext: () => null,
         };
         const tool = new GetTraceNetworkSummaryTool();
         const result = await tool.handler({ min: 10, max: 50 }, context);
@@ -39,7 +40,8 @@ describe('GetTraceNetworkSummaryTool', () => {
         const traceContext = AiAssistance.PerformanceTraceContext.PerformanceTraceContext.fromParsedTrace(parsedTrace, universe.targetManager, new Tracing.FreshRecording.Tracker(), universe.debuggerWorkspaceBinding);
         sinon.stub(traceContext, 'createBounds').returns(null);
         const capabilities = {
-            conversationContext: traceContext,
+            conversationContext: null,
+            getPerformanceTraceContext: () => traceContext,
         };
         const tool = new GetTraceNetworkSummaryTool();
         const result = await tool.handler({ min: 50, max: 10 }, capabilities);
@@ -55,7 +57,8 @@ describe('GetTraceNetworkSummaryTool', () => {
             formatNetworkTrackSummary: sinon.stub().returns('mock network summary details'),
         });
         const capabilities = {
-            conversationContext: traceContext,
+            conversationContext: null,
+            getPerformanceTraceContext: () => traceContext,
         };
         const tool = new GetTraceNetworkSummaryTool();
         const result = await tool.handler({ min: 10, max: 50 }, capabilities);

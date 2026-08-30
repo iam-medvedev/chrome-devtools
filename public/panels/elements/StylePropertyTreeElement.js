@@ -1131,6 +1131,15 @@ export class AutoBaseRenderer extends rendererBase(SDK.CSSPropertyParserMatchers
         return [content];
     }
 }
+export var ShadowPropertyType;
+(function (ShadowPropertyType) {
+    ShadowPropertyType["X"] = "x";
+    ShadowPropertyType["Y"] = "y";
+    ShadowPropertyType["SPREAD"] = "spread";
+    ShadowPropertyType["BLUR"] = "blur";
+    ShadowPropertyType["INSET"] = "inset";
+    ShadowPropertyType["COLOR"] = "color";
+})(ShadowPropertyType || (ShadowPropertyType = {}));
 /**
  * The shadow model is an abstraction over the various shadow properties on the one hand and the order they were defined
  * in on the other, so that modifications through the shadow editor can retain the property order in the authored text.
@@ -1967,6 +1976,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
             return;
         }
         this.#stylesContainer.setUserOperation(true);
+        this.#stylesContainer.suppressResets();
         const success = await this.property.setDisabled(disabled);
         this.#stylesContainer.setUserOperation(false);
         if (!success) {
@@ -3082,6 +3092,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         }
         const currentNode = this.#stylesContainer.node();
         this.#stylesContainer.setUserOperation(true);
+        this.#stylesContainer.suppressResets();
         styleText += Platform.StringUtilities.findUnclosedCssQuote(styleText);
         styleText += ')'.repeat(Platform.StringUtilities.countUnmatchedLeftParentheses(styleText));
         // Append a ";" if the new text does not end in ";".

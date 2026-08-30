@@ -1,0 +1,1 @@
+{"compilerOptions":{"composite":true,"declaration":true,"emitDeclarationOnly":true,"skipLibCheck":true,"rootDir":"../../../../../../front_end/third_party/wasmparser","outDir":".","declarationDir":"."},"files":["../../../../../../front_end/third_party/wasmparser/wasmparser.ts"],"references":[{"path":"./wasmparser-tsconfig.ref.json"}]}

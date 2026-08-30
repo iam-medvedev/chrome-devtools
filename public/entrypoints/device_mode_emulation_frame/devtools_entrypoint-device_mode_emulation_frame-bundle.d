@@ -1,0 +1,1 @@
+gen/front_end/entrypoints/device_mode_emulation_frame/device_mode_emulation_frame.js: gen/front_end/entrypoints/device_mode_emulation_frame/device_mode_emulation_frame.prebundle.js

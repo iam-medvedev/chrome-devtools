@@ -3,6 +3,12 @@
 // found in the LICENSE file.
 import * as MarkdownView from '../../ui/components/markdown_view/markdown_view.js';
 let registeredLinks = false;
+export var VideoType;
+(function (VideoType) {
+    VideoType["WHATS_NEW"] = "WhatsNew";
+    VideoType["DEVTOOLS_TIPS"] = "DevtoolsTips";
+    VideoType["OTHER"] = "Other";
+})(VideoType || (VideoType = {}));
 export function setReleaseNoteForTest(testReleaseNote) {
     releaseNote = testReleaseNote;
 }

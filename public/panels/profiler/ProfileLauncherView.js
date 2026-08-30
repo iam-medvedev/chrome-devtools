@@ -223,4 +223,8 @@ export class ProfileLauncherView extends Common.ObjectWrapper.eventMixin(UI.Widg
         }, this.contentElement);
     }
 }
+export var Events;
+(function (Events) {
+    Events["PROFILE_TYPE_SELECTED"] = "ProfileTypeSelected";
+})(Events || (Events = {}));
 //# sourceMappingURL=ProfileLauncherView.js.map

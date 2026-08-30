@@ -1,0 +1,1 @@
+{"compilerOptions":{"composite":true,"declaration":true,"emitDeclarationOnly":true,"skipLibCheck":true,"rootDir":"../../../../../../front_end/panels/web_audio","outDir":".","declarationDir":"."},"files":["../../../../../../front_end/panels/web_audio/web_audio.ts"],"references":[{"path":"./css_files-tsconfig.ref.json"},{"path":"./web_audio-tsconfig.ref.json"}]}

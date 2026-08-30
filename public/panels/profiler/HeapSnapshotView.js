@@ -1276,6 +1276,10 @@ export class HeapSnapshotProfileType extends Common.ObjectWrapper.eventMixin(Pro
     // eslint-disable-next-line @typescript-eslint/naming-convention
     static SnapshotReceived = 'SnapshotReceived';
 }
+export var HeapSnapshotProfileTypeEvents;
+(function (HeapSnapshotProfileTypeEvents) {
+    HeapSnapshotProfileTypeEvents["SNAPSHOT_RECEIVED"] = "SnapshotReceived";
+})(HeapSnapshotProfileTypeEvents || (HeapSnapshotProfileTypeEvents = {}));
 export class TrackingHeapSnapshotProfileType extends Common.ObjectWrapper.eventMixin(HeapSnapshotProfileType) {
     recordAllocationStacksSettingInternal;
     customContentInternal;
@@ -1444,6 +1448,12 @@ export class TrackingHeapSnapshotProfileType extends Common.ObjectWrapper.eventM
     // eslint-disable-next-line @typescript-eslint/naming-convention
     static TrackingStopped = 'TrackingStopped';
 }
+export var TrackingHeapSnapshotProfileTypeEvents;
+(function (TrackingHeapSnapshotProfileTypeEvents) {
+    TrackingHeapSnapshotProfileTypeEvents["HEAP_STATS_UPDATE"] = "HeapStatsUpdate";
+    TrackingHeapSnapshotProfileTypeEvents["TRACKING_STARTED"] = "TrackingStarted";
+    TrackingHeapSnapshotProfileTypeEvents["TRACKING_STOPPED"] = "TrackingStopped";
+})(TrackingHeapSnapshotProfileTypeEvents || (TrackingHeapSnapshotProfileTypeEvents = {}));
 export class HeapProfileHeader extends ProfileHeader {
     heapProfilerModelInternal;
     maxJSObjectId = -1;

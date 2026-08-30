@@ -96,6 +96,29 @@ describeWithEnvironment('ServiceWorkersView', () => {
             await view.updateComplete;
             assert.isTrue(hasRouterField());
         });
+        it('shows the router field if active version has at least one typed router rule', async () => {
+            const payload = { registrationId, scopeURL: origin, isDeleted: false };
+            const registration = new SDK.ServiceWorkerManager.ServiceWorkerRegistration(payload);
+            const versionId = 1;
+            const versionPayload = {
+                registrationId,
+                versionId: versionId.toString(),
+                scriptURL: '',
+                status: "activated" /* Protocol.ServiceWorker.ServiceWorkerVersionStatus.Activated */,
+                runningStatus: "running" /* Protocol.ServiceWorker.ServiceWorkerVersionRunningStatus.Running */,
+                typedRouterRules: [
+                    {
+                        condition: { urlPattern: '/foo/bar' },
+                        source: { type: "network" /* Protocol.ServiceWorker.ServiceWorkerRouterSourceType.Network */ },
+                        id: 1,
+                    },
+                ],
+            };
+            registration.updateVersion(versionPayload);
+            serviceWorkersManager?.dispatchEventToListeners("RegistrationUpdated" /* SDK.ServiceWorkerManager.Events.REGISTRATION_UPDATED */, registration);
+            await view.updateComplete;
+            assert.isTrue(hasRouterField());
+        });
         it('does not show the router field if active version does not have router rules', async () => {
             const payload = { registrationId, scopeURL: origin, isDeleted: false };
             const registration = new SDK.ServiceWorkerManager.ServiceWorkerRegistration(payload);

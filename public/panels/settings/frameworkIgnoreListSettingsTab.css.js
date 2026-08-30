@@ -72,7 +72,7 @@ export default `/*
   flex: none;
   display: flex;
   flex-direction: row;
-  margin: 6px 5px;
+  margin: var(--sys-size-4) 5px;
   align-items: center;
 }
 
@@ -98,7 +98,7 @@ export default `/*
 }
 
 .devtools-link:has(devtools-icon) {
-  margin-left: 6px;
+  margin-left: var(--sys-size-4);
 }
 
 /*# sourceURL=${import.meta.resolve('./frameworkIgnoreListSettingsTab.css')} */`;

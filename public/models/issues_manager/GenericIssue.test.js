@@ -35,6 +35,9 @@ describe('GenericIssue', () => {
         assert.strictEqual(genericIssue.primaryKey(), `GenericIssue::FormLabelForNameError-(${'main'})-(1)-(attribute)-(no-request)`);
         assert.strictEqual(genericIssue.getKind(), "PageError" /* IssuesManager.Issue.IssueKind.PAGE_ERROR */);
         assert.isNotNull(genericIssue.getDescription());
+        const elements = Array.from(genericIssue.elements());
+        assert.lengthOf(elements, 1);
+        assert.strictEqual(elements[0].backendNodeId, 1);
     });
     it('adds an incorrect form label use issue without details', () => {
         const inspectorIssueWithoutGenericDetails = createProtocolIssueWithoutDetails();

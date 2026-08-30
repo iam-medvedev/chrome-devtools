@@ -8,7 +8,6 @@ import * as TextUtils from '../../core/text_utils/text_utils.js';
 import * as ComputedStyle from '../../models/computed_style/computed_style.js';
 import { assertScreenshot, renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment, } from '../../testing/EnvironmentHelpers.js';
-import { spyCall } from '../../testing/ExpectStubCall.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import { getMatchedStyles, getMatchedStylesWithProperties, ruleMatch, } from '../../testing/StyleHelpers.js';
 import * as Elements from './elements.js';
@@ -166,12 +165,6 @@ describeWithEnvironment('StandaloneStylesContainer', () => {
         container.filter = null;
         await container.updateComplete;
         assert.lengthOf(container.contentElement.querySelectorAll('.styles-section'), 2);
-    });
-    it('should refresh all sections when computed styles change', async () => {
-        const { container } = await setupContainer([{ name: 'color', value: 'red' }]);
-        const updatePromise = spyCall(container, 'performUpdate');
-        container.computedStyleModel().dispatchEventToListeners("ComputedStyleChanged" /* ComputedStyle.ComputedStyleModel.Events.COMPUTED_STYLE_CHANGED */);
-        await updatePromise;
     });
 });
 //# sourceMappingURL=StandaloneStylesContainer.test.js.map

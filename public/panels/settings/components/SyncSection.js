@@ -216,6 +216,11 @@ const DEFAULT_VIEW = (input, output, target) => {
     </fieldset>
   `, target);
 };
+export var WarningType;
+(function (WarningType) {
+    WarningType["SYNC_DISABLED"] = "SYNC_DISABLED";
+    WarningType["PREFERENCES_SYNC_DISABLED"] = "PREFERENCES_SYNC_DISABLED";
+})(WarningType || (WarningType = {}));
 export class SyncSection extends UI.Widget.Widget {
     #syncInfo = { isSyncActive: false };
     #syncSetting;

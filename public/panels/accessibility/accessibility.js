@@ -7,9 +7,17 @@ var __export = (target, all) => {
 // gen/front_end/panels/accessibility/AccessibilityAnnouncementRecordingView.js
 var AccessibilityAnnouncementRecordingView_exports = {};
 __export(AccessibilityAnnouncementRecordingView_exports, {
-  AccessibilityAnnouncementRecordingView: () => AccessibilityAnnouncementRecordingView
+  AccessibilityAnnouncementRecordingView: () => AccessibilityAnnouncementRecordingView,
+  AnnouncementApi: () => AnnouncementApi,
+  BINDING_NAME: () => BINDING_NAME,
+  INJECTED_SCRIPT_SOURCE: () => INJECTED_SCRIPT_SOURCE,
+  TEARDOWN_SCRIPT_SOURCE: () => TEARDOWN_SCRIPT_SOURCE,
+  checkForBlockedPayload: () => checkForBlockedPayload,
+  injectedScript: () => injectedScript,
+  teardownScript: () => teardownScript,
+  validateAndSanitizeAnnouncement: () => validateAndSanitizeAnnouncement
 });
-import * as i18n from "./../../core/i18n/i18n.js";
+import * as i18n from "../../core/i18n/i18n.js";
 
 // gen/front_end/panels/accessibility/AccessibilitySubPane.js
 var AccessibilitySubPane_exports = {};
@@ -127,7 +135,7 @@ var objectValue_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./objectValue.css")} */`;
 
 // gen/front_end/panels/accessibility/AccessibilitySubPane.js
-import * as UI from "./../../ui/legacy/legacy.js";
+import * as UI from "../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/accessibility/accessibilityNode.css.js
 var accessibilityNode_css_default = `/*
@@ -142,7 +150,7 @@ var accessibilityNode_css_default = `/*
 }
 
 .ax-ignored-info {
-  padding: 6px;
+  padding: var(--sys-size-4);
 }
 
 .ax-ignored-node-pane {
@@ -179,9 +187,9 @@ span.ax-value-undefined {
 
 .tree-outline li::before {
   content: "";
-  width: 14px;
+  width: var(--sys-size-7);
   display: inline-block;
-  margin-bottom: -2px;
+  margin-bottom: calc(-1 * var(--sys-size-2));
   margin-right: 3px;
 }
 
@@ -191,7 +199,7 @@ span.ax-value-undefined {
 
 .tree-outline li.invalid {
   position: relative;
-  left: -2px;
+  left: calc(-1 * var(--sys-size-2));
 }
 
 .tree-outline dt-icon-label + .ax-name {
@@ -251,7 +259,7 @@ span.ax-internal-role {
 }
 
 .source-order-checkbox {
-  margin: 2px 2px 2px 5px;
+  margin: var(--sys-size-2) var(--sys-size-2) var(--sys-size-2) 5px;
 }
 
 .info-message-overflow {
@@ -302,10 +310,424 @@ var UIStrings = {
   /**
    * @description Title for the ARIA-Live and JS announcements recording tool
    */
-  ariaLiveRecording: "A11y Announcements recording"
+  ariaLiveRecording: "Announcements recording"
 };
 var str_ = i18n.i18n.registerUIStrings("panels/accessibility/AccessibilityAnnouncementRecordingView.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
+var BINDING_NAME = "__announcementsRecorderBinding";
+var AnnouncementApi;
+(function(AnnouncementApi2) {
+  AnnouncementApi2["ARIA_LIVE"] = "aria-live";
+  AnnouncementApi2["JS_TRIGGERED"] = "js-triggered";
+})(AnnouncementApi || (AnnouncementApi = {}));
+function injectedScript(ariaLiveApi, jsTriggeredApi) {
+  if (window.__announcementsRecorderBinding_loaded) {
+    return;
+  }
+  const elementIdMap = /* @__PURE__ */ new WeakMap();
+  let recordIdCounter = 0;
+  function getOrCreateRecordId(element) {
+    if (!element || element.nodeType !== Node.ELEMENT_NODE) {
+      return "";
+    }
+    let id = elementIdMap.get(element);
+    if (!id) {
+      recordIdCounter++;
+      id = String(recordIdCounter);
+      elementIdMap.set(element, id);
+    }
+    return id;
+  }
+  function getParentOrHost(node) {
+    if (!node) {
+      return null;
+    }
+    if (node.parentElement) {
+      return node.parentElement;
+    }
+    const root = node.getRootNode();
+    if (root && root !== node && root instanceof ShadowRoot) {
+      return root.host;
+    }
+    return null;
+  }
+  function checkVisibility(element) {
+    if (!element) {
+      return false;
+    }
+    try {
+      return element.checkVisibility({
+        checkOpacity: true,
+        checkVisibilityCSS: true
+      });
+    } catch {
+      return true;
+    }
+  }
+  function isAncestorHidden(element) {
+    let current = getParentOrHost(element);
+    while (current) {
+      if (current.getAttribute("aria-hidden") === "true") {
+        return true;
+      }
+      if (!checkVisibility(current)) {
+        return true;
+      }
+      current = getParentOrHost(current);
+    }
+    return false;
+  }
+  function patchAriaNotify(proto, name) {
+    if (!proto || typeof proto !== "object") {
+      return void 0;
+    }
+    if (!Object.isExtensible(proto) || Object.isFrozen(proto) || Object.isSealed(proto)) {
+      throw new TypeError("Prototype object is non-extensible, frozen, or sealed");
+    }
+    const desc = Object.getOwnPropertyDescriptor(proto, name);
+    if (desc && (!desc.writable && !desc.set)) {
+      throw new TypeError("Property " + name + " is read-only");
+    }
+    const protoRecord = proto;
+    const original = protoRecord[name];
+    const wrapped = function(message, options) {
+      const bindingFn = window.__announcementsRecorderBinding;
+      if (typeof bindingFn === "function") {
+        try {
+          const announcement = {
+            api: jsTriggeredApi,
+            message: String(message || ""),
+            politeness: options && options.politeness || "polite",
+            elementId: getOrCreateRecordId(this),
+            element: this.outerHTML || this.nodeName,
+            stack: new Error().stack || "",
+            time: Date.now()
+          };
+          bindingFn(JSON.stringify(announcement));
+        } catch {
+        }
+      }
+      if (typeof original === "function") {
+        return original.apply(this, arguments);
+      }
+      return void 0;
+    };
+    Object.defineProperty(proto, name, {
+      value: wrapped,
+      writable: true,
+      configurable: true,
+      enumerable: desc ? desc.enumerable : false
+    });
+    if (protoRecord[name] !== wrapped) {
+      throw new TypeError("Failed to override " + name + " on prototype");
+    }
+    return original;
+  }
+  let originalElementAriaNotify;
+  let originalDocumentAriaNotify;
+  let originalAttachShadow;
+  try {
+    originalElementAriaNotify = patchAriaNotify(Element.prototype, "ariaNotify");
+    originalDocumentAriaNotify = patchAriaNotify(Document.prototype, "ariaNotify");
+  } catch (e) {
+    const bindingFn = window.__announcementsRecorderBinding;
+    if (typeof bindingFn === "function") {
+      try {
+        const error = e;
+        bindingFn(JSON.stringify({
+          api: "blocked",
+          reason: error && error.message ? String(error.message) : String(e)
+        }));
+      } catch {
+      }
+    }
+  }
+  function derivePoliteness(element) {
+    const explicit = element.getAttribute("aria-live");
+    if (explicit) {
+      return explicit;
+    }
+    const role = element.getAttribute("role");
+    if (role === "status" || role === "log") {
+      return "polite";
+    }
+    if (role === "alert") {
+      return "assertive";
+    }
+    return "off";
+  }
+  let lastRecordedId = null;
+  let lastRecordedText = null;
+  let lastRecordedTime = 0;
+  function recordLiveNode(node) {
+    if (!node || node.nodeType !== Node.ELEMENT_NODE) {
+      return;
+    }
+    const element = node;
+    const politeness = derivePoliteness(element);
+    if (politeness === "off") {
+      return;
+    }
+    if (element.getAttribute("aria-hidden") === "true") {
+      return;
+    }
+    if (!checkVisibility(element)) {
+      return;
+    }
+    if (isAncestorHidden(element)) {
+      return;
+    }
+    const text = (element.textContent || "").trim();
+    if (!text) {
+      return;
+    }
+    const elementId = getOrCreateRecordId(element);
+    const now = Date.now();
+    if (lastRecordedId === elementId && lastRecordedText === text && now - lastRecordedTime < 50) {
+      return;
+    }
+    lastRecordedId = elementId;
+    lastRecordedText = text;
+    lastRecordedTime = now;
+    const bindingFn = window.__announcementsRecorderBinding;
+    if (typeof bindingFn === "function") {
+      try {
+        const announcement = {
+          api: ariaLiveApi,
+          message: text,
+          politeness,
+          elementId,
+          element: element.outerHTML || element.nodeName,
+          time: now
+        };
+        bindingFn(JSON.stringify(announcement));
+      } catch {
+      }
+    }
+  }
+  const selector = '[aria-live], [role="status"], [role="alert"], [role="log"]';
+  function findLiveParent(node) {
+    let current = node;
+    while (current) {
+      if (current.nodeType === Node.ELEMENT_NODE) {
+        const el = current;
+        if (el.matches && el.matches(selector)) {
+          return el;
+        }
+        if (el.closest) {
+          const match = el.closest(selector);
+          if (match) {
+            return match;
+          }
+        }
+      }
+      current = getParentOrHost(current);
+    }
+    return null;
+  }
+  const observer = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      if (mutation.type === "childList") {
+        const target = mutation.target;
+        if (target && target.nodeType === Node.ELEMENT_NODE) {
+          const liveParent = findLiveParent(target);
+          if (liveParent) {
+            recordLiveNode(liveParent);
+          }
+        }
+        for (const node of mutation.addedNodes) {
+          if (node.nodeType === Node.ELEMENT_NODE) {
+            const el = node;
+            if (el.shadowRoot) {
+              observeSubtree(el.shadowRoot);
+              scanAndObserveShadowRoots(el.shadowRoot);
+            }
+            scanAndObserveShadowRoots(el);
+            if (el.matches && el.matches(selector)) {
+              recordLiveNode(el);
+            }
+            const children = el.querySelectorAll ? el.querySelectorAll(selector) : [];
+            for (const child of children) {
+              recordLiveNode(child);
+            }
+          }
+        }
+      } else if (mutation.type === "characterData") {
+        const parent = mutation.target.parentElement || getParentOrHost(mutation.target);
+        if (parent) {
+          const liveParent = findLiveParent(parent);
+          if (liveParent) {
+            recordLiveNode(liveParent);
+          }
+        }
+      } else if (mutation.type === "attributes") {
+        const target = mutation.target;
+        if (target && target.nodeType === Node.ELEMENT_NODE) {
+          const liveTarget = findLiveParent(target);
+          if (liveTarget) {
+            recordLiveNode(liveTarget);
+          }
+        }
+      }
+    }
+  });
+  const observedRoots = /* @__PURE__ */ new WeakSet();
+  function observeSubtree(root) {
+    if (!root || observedRoots.has(root)) {
+      return;
+    }
+    try {
+      observer.observe(root, {
+        childList: true,
+        subtree: true,
+        characterData: true,
+        attributes: true,
+        attributeFilter: ["aria-live", "aria-hidden", "hidden", "style", "class", "role"]
+      });
+      observedRoots.add(root);
+    } catch {
+    }
+  }
+  function scanAndObserveShadowRoots(node) {
+    if (!node) {
+      return;
+    }
+    if (node.nodeType === Node.ELEMENT_NODE) {
+      const el = node;
+      if (el.shadowRoot) {
+        observeSubtree(el.shadowRoot);
+        scanAndObserveShadowRoots(el.shadowRoot);
+      }
+    }
+    const children = node.children || [];
+    for (let i = 0; i < children.length; i++) {
+      scanAndObserveShadowRoots(children[i]);
+    }
+  }
+  const rootNode = document.body || document.documentElement;
+  if (rootNode) {
+    observeSubtree(rootNode);
+    scanAndObserveShadowRoots(rootNode);
+  }
+  try {
+    const origAttachShadow = Element.prototype.attachShadow;
+    if (typeof origAttachShadow === "function") {
+      originalAttachShadow = origAttachShadow;
+      Element.prototype.attachShadow = function(init) {
+        const shadow = origAttachShadow.apply(this, [init]);
+        if (init && init.mode === "open") {
+          observeSubtree(shadow);
+        }
+        return shadow;
+      };
+    }
+  } catch {
+  }
+  window.__announcementsRecorderBinding_loaded = true;
+  window.__announcementsRecorderBinding_cleanup = function() {
+    observer.disconnect();
+    if (originalElementAriaNotify) {
+      try {
+        Element.prototype["ariaNotify"] = originalElementAriaNotify;
+      } catch {
+      }
+    }
+    if (originalDocumentAriaNotify) {
+      try {
+        Document.prototype["ariaNotify"] = originalDocumentAriaNotify;
+      } catch {
+      }
+    }
+    if (originalAttachShadow) {
+      try {
+        Element.prototype.attachShadow = originalAttachShadow;
+      } catch {
+      }
+    }
+    delete window.__announcementsRecorderBinding_loaded;
+    delete window.__announcementsRecorderBinding_cleanup;
+  };
+}
+function teardownScript() {
+  if (typeof window.__announcementsRecorderBinding_cleanup === "function") {
+    window.__announcementsRecorderBinding_cleanup();
+  }
+}
+var INJECTED_SCRIPT_SOURCE = `(${injectedScript.toString()})(${JSON.stringify(
+  "aria-live"
+  /* AnnouncementApi.ARIA_LIVE */
+)}, ${JSON.stringify(
+  "js-triggered"
+  /* AnnouncementApi.JS_TRIGGERED */
+)});`;
+var TEARDOWN_SCRIPT_SOURCE = `(${teardownScript.toString()})();`;
+function checkForBlockedPayload(payload) {
+  if (typeof payload !== "string") {
+    return null;
+  }
+  try {
+    const parsed = JSON.parse(payload);
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed) && parsed.api === "blocked") {
+      return typeof parsed.reason === "string" ? parsed.reason : "";
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
+function validateAndSanitizeAnnouncement(payload) {
+  if (typeof payload !== "string") {
+    return null;
+  }
+  let parsed;
+  try {
+    parsed = JSON.parse(payload);
+  } catch {
+    return null;
+  }
+  if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+    return null;
+  }
+  const parsedObj = parsed;
+  if (parsedObj.api !== "aria-live" && parsedObj.api !== "js-triggered") {
+    return null;
+  }
+  if (typeof parsedObj.message !== "string") {
+    return null;
+  }
+  if (typeof parsedObj.politeness !== "string") {
+    return null;
+  }
+  if (typeof parsedObj.element !== "string") {
+    return null;
+  }
+  if (typeof parsedObj.time !== "number" || !Number.isFinite(parsedObj.time)) {
+    return null;
+  }
+  let elementId = void 0;
+  if ("elementId" in parsedObj) {
+    if (typeof parsedObj.elementId !== "string") {
+      return null;
+    }
+    elementId = parsedObj.elementId;
+  }
+  let stack = void 0;
+  if ("stack" in parsedObj) {
+    if (typeof parsedObj.stack !== "string") {
+      return null;
+    }
+    stack = parsedObj.stack;
+  }
+  return {
+    api: parsedObj.api,
+    message: parsedObj.message,
+    politeness: parsedObj.politeness,
+    element: parsedObj.element,
+    ...elementId !== void 0 ? { elementId } : {},
+    ...stack !== void 0 ? { stack } : {},
+    time: parsedObj.time
+  };
+}
 var AccessibilityAnnouncementRecordingView = class extends AccessibilitySubPane {
   constructor() {
     super({
@@ -328,14 +750,14 @@ __export(AccessibilityNodeView_exports, {
   StringProperties: () => StringProperties,
   TypeStyles: () => TypeStyles
 });
-import * as Common from "./../../core/common/common.js";
-import * as i18n5 from "./../../core/i18n/i18n.js";
-import * as SDK from "./../../core/sdk/sdk.js";
-import * as uiI18n from "./../../ui/i18n/i18n.js";
-import * as UI2 from "./../../ui/legacy/legacy.js";
-import { render } from "./../../ui/lit/lit.js";
-import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
-import * as PanelsCommon from "./../common/common.js";
+import * as Common from "../../core/common/common.js";
+import * as i18n5 from "../../core/i18n/i18n.js";
+import * as SDK from "../../core/sdk/sdk.js";
+import * as uiI18n from "../../ui/i18n/i18n.js";
+import * as UI2 from "../../ui/legacy/legacy.js";
+import { render } from "../../ui/lit/lit.js";
+import * as VisualLogging from "../../ui/visual_logging/visual_logging.js";
+import * as PanelsCommon from "../common/common.js";
 
 // gen/front_end/panels/accessibility/AccessibilityStrings.js
 var AccessibilityStrings_exports = {};
@@ -344,7 +766,7 @@ __export(AccessibilityStrings_exports, {
   AXNativeSourceTypes: () => AXNativeSourceTypes,
   AXSourceTypes: () => AXSourceTypes
 });
-import * as i18n3 from "./../../core/i18n/i18n.js";
+import * as i18n3 from "../../core/i18n/i18n.js";
 var UIStrings2 = {
   /**
    * @description Text to indicate something is not enabled.
@@ -1616,12 +2038,12 @@ var AccessibilitySidebarView_exports = {};
 __export(AccessibilitySidebarView_exports, {
   AccessibilitySidebarView: () => AccessibilitySidebarView
 });
-import "./../../ui/components/switch/switch.js";
-import * as i18n11 from "./../../core/i18n/i18n.js";
-import * as Root from "./../../core/root/root.js";
-import * as SDK3 from "./../../core/sdk/sdk.js";
-import * as UI4 from "./../../ui/legacy/legacy.js";
-import * as Lit2 from "./../../ui/lit/lit.js";
+import "../../ui/components/switch/switch.js";
+import * as i18n11 from "../../core/i18n/i18n.js";
+import * as Root from "../../core/root/root.js";
+import * as SDK3 from "../../core/sdk/sdk.js";
+import * as UI4 from "../../ui/legacy/legacy.js";
+import * as Lit2 from "../../ui/lit/lit.js";
 
 // gen/front_end/panels/accessibility/accessibilitySidebarView.css.js
 var accessibilitySidebarView_css_default = `/*
@@ -1631,8 +2053,8 @@ var accessibilitySidebarView_css_default = `/*
  */
 
 .accessibility-toggle-container {
-  padding: 12px 18px;
-  border-bottom: 1px solid var(--sys-color-divider);
+  padding: var(--sys-size-6) 18px;
+  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
 }
 
 /*# sourceURL=${import.meta.resolve("./accessibilitySidebarView.css")} */`;
@@ -1643,12 +2065,12 @@ __export(ARIAAttributesView_exports, {
   ARIAAttributesPane: () => ARIAAttributesPane,
   DEFAULT_VIEW: () => DEFAULT_VIEW
 });
-import * as i18n7 from "./../../core/i18n/i18n.js";
-import * as Platform from "./../../core/platform/platform.js";
-import * as SDK2 from "./../../core/sdk/sdk.js";
-import * as UI3 from "./../../ui/legacy/legacy.js";
-import * as Lit from "./../../ui/lit/lit.js";
-import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
+import * as i18n7 from "../../core/i18n/i18n.js";
+import * as Platform from "../../core/platform/platform.js";
+import * as SDK2 from "../../core/sdk/sdk.js";
+import * as UI3 from "../../ui/legacy/legacy.js";
+import * as Lit from "../../ui/lit/lit.js";
+import * as VisualLogging2 from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/accessibility/ARIAMetadata.js
 var ARIAMetadata_exports = {};
@@ -4486,10 +4908,10 @@ var ARIAAttributesPane = class extends AccessibilitySubPane {
 };
 
 // gen/front_end/panels/accessibility/SourceOrderView.js
-import "./../../ui/legacy/legacy.js";
-import * as i18n9 from "./../../core/i18n/i18n.js";
-import { html as html2, nothing as nothing2, render as render3 } from "./../../ui/lit/lit.js";
-import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
+import "../../ui/legacy/legacy.js";
+import * as i18n9 from "../../core/i18n/i18n.js";
+import { html as html2, nothing as nothing2, render as render3 } from "../../ui/lit/lit.js";
+import * as VisualLogging3 from "../../ui/visual_logging/visual_logging.js";
 var UIStrings5 = {
   /**
    * @description Name of a feature that allows the developer to view the contents of the page in the
