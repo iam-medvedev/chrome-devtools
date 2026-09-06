@@ -22,7 +22,7 @@ export default `/*
   }
 
   .wrapper {
-    padding: 24px;
+    padding: var(--sys-size-11);
   }
 
   .header {
@@ -34,7 +34,7 @@ export default `/*
   }
 
   h1 {
-    font-size: 16px;
+    font-size: var(--sys-typescale-body1-size);
     line-height: 19px;
     color: var(--sys-color-on-surface);
     font-weight: normal;
@@ -42,8 +42,8 @@ export default `/*
 
   .icon,
   .icon devtools-icon {
-    width: 20px;
-    height: 20px;
+    width: var(--sys-size-9);
+    height: var(--sys-size-9);
     color: var(--sys-color-primary);
   }
 
@@ -52,7 +52,7 @@ export default `/*
   }
 
   .title {
-    font-size: 13px;
+    font-size: var(--sys-typescale-body3-size);
     color: var(--sys-color-on-surface);
     margin-left: 10px;
     flex: 1;
@@ -65,8 +65,8 @@ export default `/*
     display: flex;
     align-items: center;
     padding-right: 5px;
-    height: 28px;
-    border-bottom: 1px solid var(--sys-color-divider);
+    height: var(--sys-size-12);
+    border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
   }
 
   .row:focus-within,
@@ -86,16 +86,16 @@ export default `/*
   .actions button {
     border: none;
     background-color: transparent;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
+    width: var(--sys-size-11);
+    height: var(--sys-size-11);
+    border-radius: var(--sys-shape-corner-full);
   }
 
   .actions .divider {
-    width: 1px;
+    width: var(--sys-size-1);
     height: 17px;
     background-color: var(--sys-color-divider);
-    margin: 0 6px;
+    margin: 0 var(--sys-size-4);
   }
 }
 

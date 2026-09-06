@@ -1,4 +1,4 @@
-// gen/front_end/panels/animation/animation-meta.prebundle.js
+// ../../front_end/panels/animation/animation-meta.ts
 import * as Common from "../../core/common/common.js";
 import * as i18n from "../../core/i18n/i18n.js";
 import * as SDK from "../../core/sdk/sdk.js";
@@ -23,11 +23,11 @@ async function loadAnimationModule() {
   return loadedAnimationModule;
 }
 UI.ViewManager.registerViewExtension({
-  location: "drawer-view",
+  location: UI.ViewManager.ViewLocationValues.DRAWER_VIEW,
   id: "animations",
   title: i18nLazyString(UIStrings.animations),
   commandPrompt: i18nLazyString(UIStrings.showAnimations),
-  persistence: "closeable",
+  persistence: UI.ViewManager.ViewPersistence.CLOSEABLE,
   order: 0,
   async loadView() {
     const Animation = await loadAnimationModule();

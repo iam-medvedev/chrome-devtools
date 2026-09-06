@@ -1,4 +1,4 @@
-// gen/front_end/panels/network/network-meta.prebundle.js
+// ../../front_end/panels/network/network-meta.ts
 import * as Common from "../../core/common/common.js";
 import * as i18n from "../../core/i18n/i18n.js";
 import * as Root from "../../core/root/root.js";
@@ -61,15 +61,15 @@ var UIStrings = {
   /**
    * @description Title of a setting under the Network category.
    */
-  networkRequestBlocking: "Network request blocking",
+  requestBlockingAndThrottling: "Request blocking and throttling",
   /**
    * @description Title of a setting under the Network category that can be invoked through the Command Menu.
    */
-  enableNetworkRequestBlocking: "Enable network request blocking",
+  enableRequestBlockingAndThrottling: "Enable request blocking and throttling",
   /**
    * @description Title of a setting under the Network category that can be invoked through the Command Menu.
    */
-  disableNetworkRequestBlocking: "Disable network request blocking",
+  disableRequestBlockingAndThrottling: "Disable request blocking and throttling",
   /**
    * @description Command for showing the 'Network' tool
    */
@@ -79,7 +79,7 @@ var UIStrings = {
    */
   network: "Network",
   /**
-   * @description Command for showing the 'Network request blocking' tool
+   * @description Command for showing the 'Request conditions' tool
    */
   showRequestConditions: "Show request conditions",
   /**
@@ -171,11 +171,11 @@ var UIStrings = {
    */
   clear: "Clear network log",
   /**
-   * @description Title of an action in the Network request blocking panel to add a new URL pattern to the blocklist.
+   * @description Title of an action in the Request conditions panel to add a new URL pattern to the blocklist.
    */
   addNetworkRequestBlockingOrThrottlingPattern: "Add network request blocking or throttling pattern",
   /**
-   * @description Title of an action in the Network request blocking panel to clear all URL patterns.
+   * @description Title of an action in the Request conditions panel to clear all URL patterns.
    */
   removeAllNetworkRequestBlockingOrThrottlingPatterns: "Remove all network request blocking or throttling patterns",
   /**
@@ -212,7 +212,7 @@ function maybeRetrieveContextTypes(getClassCallBack) {
   return getClassCallBack(loadedNetworkModule);
 }
 UI.ViewManager.registerViewExtension({
-  location: "panel",
+  location: UI.ViewManager.ViewLocationValues.PANEL,
   id: "network",
   commandPrompt: i18nLazyString(UIStrings.showNetwork),
   title: i18nLazyString(UIStrings.network),
@@ -224,11 +224,11 @@ UI.ViewManager.registerViewExtension({
   }
 });
 UI.ViewManager.registerViewExtension({
-  location: "drawer-view",
+  location: UI.ViewManager.ViewLocationValues.DRAWER_VIEW,
   id: "network.blocked-urls",
   commandPrompt: () => i18nString(UIStrings.showRequestConditions),
   title: () => i18nString(UIStrings.networkRequestConditions),
-  persistence: "closeable",
+  persistence: UI.ViewManager.ViewPersistence.CLOSEABLE,
   order: 60,
   async loadView() {
     const Network = await loadNetworkModule();
@@ -236,11 +236,11 @@ UI.ViewManager.registerViewExtension({
   }
 });
 UI.ViewManager.registerViewExtension({
-  location: "drawer-view",
+  location: UI.ViewManager.ViewLocationValues.DRAWER_VIEW,
   id: "network.config",
   commandPrompt: i18nLazyString(UIStrings.showNetworkConditions),
   title: i18nLazyString(UIStrings.networkConditions),
-  persistence: "closeable",
+  persistence: UI.ViewManager.ViewPersistence.CLOSEABLE,
   order: 40,
   tags: [
     i18nLazyString(UIStrings.diskCache),
@@ -255,11 +255,11 @@ UI.ViewManager.registerViewExtension({
   }
 });
 UI.ViewManager.registerViewExtension({
-  location: "network-sidebar",
+  location: UI.ViewManager.ViewLocationValues.NETWORK_SIDEBAR,
   id: "network.search-network-tab",
   commandPrompt: i18nLazyString(UIStrings.showSearch),
   title: i18nLazyString(UIStrings.search),
-  persistence: "permanent",
+  persistence: UI.ViewManager.ViewPersistence.PERMANENT,
   async loadView() {
     const Network = await loadNetworkModule();
     return Network.NetworkPanel.SearchNetworkView.instance();
@@ -267,10 +267,10 @@ UI.ViewManager.registerViewExtension({
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "network.toggle-recording",
-  category: "NETWORK",
-  iconClass: "record-start",
+  category: UI.ActionRegistration.ActionCategory.NETWORK,
+  iconClass: UI.ActionRegistration.IconClass.START_RECORDING,
   toggleable: true,
-  toggledIconClass: "record-stop",
+  toggledIconClass: UI.ActionRegistration.IconClass.STOP_RECORDING,
   toggleWithRedColor: true,
   contextTypes() {
     return maybeRetrieveContextTypes((Network) => [Network.NetworkPanel.NetworkPanel]);
@@ -292,19 +292,19 @@ UI.ActionRegistration.registerActionExtension({
   bindings: [
     {
       shortcut: "Ctrl+E",
-      platform: "windows,linux"
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX
     },
     {
       shortcut: "Meta+E",
-      platform: "mac"
+      platform: UI.ActionRegistration.Platforms.MAC
     }
   ]
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "network.clear",
-  category: "NETWORK",
+  category: UI.ActionRegistration.ActionCategory.NETWORK,
   title: i18nLazyString(UIStrings.clear),
-  iconClass: "clear",
+  iconClass: UI.ActionRegistration.IconClass.CLEAR,
   async loadActionDelegate() {
     const Network = await loadNetworkModule();
     return new Network.NetworkPanel.ActionDelegate();
@@ -318,13 +318,13 @@ UI.ActionRegistration.registerActionExtension({
     },
     {
       shortcut: "Meta+K",
-      platform: "mac"
+      platform: UI.ActionRegistration.Platforms.MAC
     }
   ]
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "network.hide-request-details",
-  category: "NETWORK",
+  category: UI.ActionRegistration.ActionCategory.NETWORK,
   title: i18nLazyString(UIStrings.hideRequestDetails),
   contextTypes() {
     return maybeRetrieveContextTypes((Network) => [Network.NetworkPanel.NetworkPanel]);
@@ -341,7 +341,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "network.search",
-  category: "NETWORK",
+  category: UI.ActionRegistration.ActionCategory.NETWORK,
   title: i18nLazyString(UIStrings.search),
   contextTypes() {
     return maybeRetrieveContextTypes((Network) => [Network.NetworkPanel.NetworkPanel]);
@@ -352,28 +352,28 @@ UI.ActionRegistration.registerActionExtension({
   },
   bindings: [
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Meta+F",
       keybindSets: [
-        "devToolsDefault",
-        "vsCode"
+        UI.ActionRegistration.KeybindSet.DEVTOOLS_DEFAULT,
+        UI.ActionRegistration.KeybindSet.VS_CODE
       ]
     },
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Ctrl+F",
       keybindSets: [
-        "devToolsDefault",
-        "vsCode"
+        UI.ActionRegistration.KeybindSet.DEVTOOLS_DEFAULT,
+        UI.ActionRegistration.KeybindSet.VS_CODE
       ]
     }
   ]
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "network.add-network-request-blocking-pattern",
-  category: "NETWORK",
+  category: UI.ActionRegistration.ActionCategory.NETWORK,
   title: () => i18nString(UIStrings.addNetworkRequestBlockingOrThrottlingPattern),
-  iconClass: "plus",
+  iconClass: UI.ActionRegistration.IconClass.PLUS,
   contextTypes() {
     return maybeRetrieveContextTypes((Network) => [Network.RequestConditionsDrawer.RequestConditionsDrawer]);
   },
@@ -384,9 +384,9 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "network.remove-all-network-request-blocking-patterns",
-  category: "NETWORK",
+  category: UI.ActionRegistration.ActionCategory.NETWORK,
   title: () => i18nString(UIStrings.removeAllNetworkRequestBlockingOrThrottlingPatterns),
-  iconClass: "clear",
+  iconClass: UI.ActionRegistration.IconClass.CLEAR,
   contextTypes() {
     return maybeRetrieveContextTypes((Network) => [Network.RequestConditionsDrawer.RequestConditionsDrawer]);
   },
@@ -396,11 +396,11 @@ UI.ActionRegistration.registerActionExtension({
   }
 });
 Common.Settings.registerSettingExtension({
-  category: "NETWORK",
-  storageType: "Synced",
+  category: Common.Settings.SettingCategory.NETWORK,
+  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.allowToGenerateHarWithSensitiveData),
   settingName: "network.show-options-to-generate-har-with-sensitive-data",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: false,
   tags: [
     i18n.i18n.lockedLazyString("HAR")
@@ -421,11 +421,11 @@ Common.Settings.registerSettingExtension({
   }
 });
 Common.Settings.registerSettingExtension({
-  category: "NETWORK",
-  storageType: "Synced",
+  category: Common.Settings.SettingCategory.NETWORK,
+  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.colorcodeResourceTypes),
   settingName: "network-color-code-resource-types",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: false,
   tags: [
     i18nLazyString(UIStrings.colorCode),
@@ -443,11 +443,11 @@ Common.Settings.registerSettingExtension({
   ]
 });
 Common.Settings.registerSettingExtension({
-  category: "NETWORK",
-  storageType: "Synced",
+  category: Common.Settings.SettingCategory.NETWORK,
+  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.groupNetworkLogByFrame),
   settingName: "network.group-by-frame",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: false,
   tags: [
     i18nLazyString(UIStrings.netWork),
@@ -466,21 +466,21 @@ Common.Settings.registerSettingExtension({
   ]
 });
 SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.requestBlockingEnabledSettingDescriptor, {
-  category: "NETWORK",
-  title: i18nLazyString(UIStrings.networkRequestBlocking),
+  category: Common.Settings.SettingCategory.NETWORK,
+  title: i18nLazyString(UIStrings.requestBlockingAndThrottling),
   options: [
     {
       value: true,
-      title: i18nLazyString(UIStrings.enableNetworkRequestBlocking)
+      title: i18nLazyString(UIStrings.enableRequestBlockingAndThrottling)
     },
     {
       value: false,
-      title: i18nLazyString(UIStrings.disableNetworkRequestBlocking)
+      title: i18nLazyString(UIStrings.disableRequestBlockingAndThrottling)
     }
   ]
 });
 SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.cacheDisabledSettingDescriptor, {
-  category: "NETWORK",
+  category: Common.Settings.SettingCategory.NETWORK,
   title: i18nLazyString(UIStrings.disableCache),
   order: 0,
   options: [
@@ -498,7 +498,7 @@ SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.cacheDisabledSettingDe
   }
 });
 SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.preserveNetworkLogSettingDescriptor, {
-  category: "NETWORK",
+  category: Common.Settings.SettingCategory.NETWORK,
   title: i18nLazyString(UIStrings.keepLog),
   tags: [
     i18nLazyString(UIStrings.keep),
@@ -518,12 +518,12 @@ SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.preserveNetworkLogSett
   ]
 });
 SettingsUI.SettingUIRegistration.register(Logs.NetworkLog.recordNetworkLogSettingDescriptor, {
-  category: "NETWORK",
+  category: Common.Settings.SettingCategory.NETWORK,
   title: i18nLazyString(UIStrings.recordNetworkLog)
 });
 UI.ViewManager.registerLocationResolver({
-  name: "network-sidebar",
-  category: "NETWORK",
+  name: UI.ViewManager.ViewLocationValues.NETWORK_SIDEBAR,
+  category: UI.ViewManager.ViewLocationCategory.NETWORK,
   async loadResolver() {
     const Network = await loadNetworkModule();
     return Network.NetworkPanel.NetworkPanel.instance();

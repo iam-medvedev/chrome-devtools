@@ -4,7 +4,7 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// gen/front_end/ui/comments/CommentAnchorResolver.js
+// ../../front_end/ui/comments/CommentAnchorResolver.ts
 var CommentAnchorResolver_exports = {};
 __export(CommentAnchorResolver_exports, {
   closestAcrossShadow: () => closestAcrossShadow,
@@ -12,6 +12,7 @@ __export(CommentAnchorResolver_exports, {
   deepQuerySelector: () => deepQuerySelector,
   deepQuerySelectorAll: () => deepQuerySelectorAll,
   extractVeName: () => extractVeName,
+  getEditorFilePath: () => getEditorFilePath,
   getSiblingIndex: () => getSiblingIndex,
   isElementVisible: () => isElementVisible,
   isNonEmptyItem: () => isNonEmptyItem,
@@ -52,6 +53,9 @@ function closestAcrossShadow(element, selector) {
 }
 function isCodeMirrorEditor(element) {
   return element.classList.contains("cm-editor");
+}
+function getEditorFilePath(element) {
+  return element.getAttribute("data-file-path") ?? void 0;
 }
 function isNonEmptyItem(element) {
   return element.deepTextContent().trim().length > 0;
@@ -214,7 +218,7 @@ function resolveCommentAnchor(element, root = element.ownerDocument || document)
       return null;
     }
     textSignature = lineInfo.textSignature;
-    const filePath = target.getAttribute("data-file-path") ?? void 0;
+    const filePath = getEditorFilePath(target);
     editor = { lineNumber: lineInfo.lineNumber, filePath };
   } else {
     textSignature = target.deepTextContent();
@@ -279,7 +283,7 @@ function rematchCommentAnchor(comment, root = document, cachedJslogElements) {
     const { lineNumber, filePath } = anchor.editor;
     const cmEditors = deepQuerySelectorAll(root, ".cm-editor");
     const matchingEditors = cmEditors.filter((cmEditor) => {
-      if (filePath !== void 0 && cmEditor.getAttribute("data-file-path") !== filePath) {
+      if (filePath !== void 0 && getEditorFilePath(cmEditor) !== filePath) {
         return false;
       }
       return VisualLogging.getVePath(cmEditor) === anchor.vePath;
@@ -405,7 +409,7 @@ function isElementVisible(element) {
   return rect.width > 0 && rect.height > 0;
 }
 
-// gen/front_end/ui/comments/CommentOverlayManager.js
+// ../../front_end/ui/comments/CommentOverlayManager.ts
 var CommentOverlayManager_exports = {};
 __export(CommentOverlayManager_exports, {
   CommentOverlayManager: () => CommentOverlayManager,
@@ -413,11 +417,11 @@ __export(CommentOverlayManager_exports, {
 });
 import * as Common from "../../core/common/common.js";
 import * as CommentManager from "../../models/comment_manager/comment_manager.js";
-var Events;
-(function(Events2) {
+var Events = /* @__PURE__ */ ((Events2) => {
   Events2["POSITIONS_UPDATED"] = "PositionsUpdated";
   Events2["HOVER_HIGHLIGHT_CHANGED"] = "HoverHighlightChanged";
-})(Events || (Events = {}));
+  return Events2;
+})(Events || {});
 var CommentOverlayManager = class extends Common.ObjectWrapper.ObjectWrapper {
   #commentManager;
   #liveNodeCache = /* @__PURE__ */ new WeakMap();
@@ -456,15 +460,23 @@ var CommentOverlayManager = class extends Common.ObjectWrapper.ObjectWrapper {
   constructor(commentManager) {
     super();
     this.#commentManager = commentManager;
-    this.#commentManager.addEventListener("CommentThreadsChanged", () => {
-      this.#updatePositions();
-    }, this);
-    this.#commentManager.addEventListener("CommentModeChanged", ({ data: active }) => {
-      if (!active) {
-        this.#setHoverHighlight(null);
-      }
-      document.body.style.cursor = active ? "crosshair" : "";
-    }, this);
+    this.#commentManager.addEventListener(
+      CommentManager.CommentManager.Events.COMMENT_THREADS_CHANGED,
+      () => {
+        this.#updatePositions();
+      },
+      this
+    );
+    this.#commentManager.addEventListener(
+      CommentManager.CommentManager.Events.COMMENT_MODE_CHANGED,
+      ({ data: active }) => {
+        if (!active) {
+          this.#setHoverHighlight(null);
+        }
+        document.body.style.cursor = active ? "crosshair" : "";
+      },
+      this
+    );
   }
   get commentManager() {
     return this.#commentManager;
@@ -499,7 +511,7 @@ var CommentOverlayManager = class extends Common.ObjectWrapper.ObjectWrapper {
       return;
     }
     this.#hoverData = data;
-    this.dispatchEventToListeners("HoverHighlightChanged", data);
+    this.dispatchEventToListeners("HoverHighlightChanged" /* HOVER_HIGHLIGHT_CHANGED */, data);
   }
   getHoverHighlight() {
     return this.#hoverData;
@@ -602,6 +614,12 @@ var CommentOverlayManager = class extends Common.ObjectWrapper.ObjectWrapper {
       if (!el || !el.isConnected) {
         continue;
       }
+      if (thread.anchor.editor?.filePath) {
+        const currentFilePath = getEditorFilePath(el);
+        if (currentFilePath && currentFilePath !== thread.anchor.editor.filePath) {
+          continue;
+        }
+      }
       const observer = this.#getIntersectionObserver();
       if (!this.#observedThreads.has(el)) {
         observer.observe(el);
@@ -631,7 +649,7 @@ var CommentOverlayManager = class extends Common.ObjectWrapper.ObjectWrapper {
     }
     this.#pinPositions = newPins;
     this.#highlightRects = newHighlights;
-    this.dispatchEventToListeners("PositionsUpdated", {
+    this.dispatchEventToListeners("PositionsUpdated" /* POSITIONS_UPDATED */, {
       pins: newPins,
       highlights: newHighlights
     });
@@ -886,7 +904,7 @@ var CommentOverlayManager = class extends Common.ObjectWrapper.ObjectWrapper {
       childList: true,
       subtree: true,
       attributes: true,
-      attributeFilter: ["jslog", "data-network-request-id", "data-backend-node-id", "aria-expanded"]
+      attributeFilter: ["jslog", "data-network-request-id", "data-backend-node-id", "aria-expanded", "data-file-path"]
     });
   }
   #removeMutationObserver() {
@@ -915,14 +933,14 @@ var CommentOverlayManager = class extends Common.ObjectWrapper.ObjectWrapper {
   }
 };
 
-// gen/front_end/ui/comments/CommentsOverlayWidget.js
+// ../../front_end/ui/comments/CommentsOverlayWidget.ts
 var CommentsOverlayWidget_exports = {};
 __export(CommentsOverlayWidget_exports, {
   ActionDelegate: () => ActionDelegate,
   CommentsOverlayWidget: () => CommentsOverlayWidget
 });
 import * as Root from "../../core/root/root.js";
-import * as CommentManager2 from "../../models/comment_manager/comment_manager.js";
+import * as CommentManager3 from "../../models/comment_manager/comment_manager.js";
 import * as UI from "../legacy/legacy.js";
 import * as Lit from "../lit/lit.js";
 
@@ -980,7 +998,7 @@ var commentsOverlay_css_default = `/*
 
 /*# sourceURL=${import.meta.resolve("./commentsOverlay.css")} */`;
 
-// gen/front_end/ui/comments/CommentsOverlayWidget.js
+// ../../front_end/ui/comments/CommentsOverlayWidget.ts
 var { html, render, nothing, Directives: { styleMap } } = Lit;
 var DEFAULT_VIEW = (input, _output, target) => {
   render(html`
@@ -1040,18 +1058,50 @@ var CommentsOverlayWidget = class extends UI.Widget.Widget {
   wasShown() {
     super.wasShown();
     this.#commentOverlayManager.start();
-    this.#commentOverlayManager.addEventListener("PositionsUpdated", this.#onStateChanged, this);
-    this.#commentOverlayManager.addEventListener("HoverHighlightChanged", this.#onStateChanged, this);
-    this.#commentManager.addEventListener("CommentThreadsChanged", this.#onStateChanged, this);
-    this.#commentManager.addEventListener("CommentModeChanged", this.#onCommentModeChanged, this);
+    this.#commentOverlayManager.addEventListener(
+      "PositionsUpdated" /* POSITIONS_UPDATED */,
+      this.#onStateChanged,
+      this
+    );
+    this.#commentOverlayManager.addEventListener(
+      "HoverHighlightChanged" /* HOVER_HIGHLIGHT_CHANGED */,
+      this.#onStateChanged,
+      this
+    );
+    this.#commentManager.addEventListener(
+      CommentManager3.CommentManager.Events.COMMENT_THREADS_CHANGED,
+      this.#onStateChanged,
+      this
+    );
+    this.#commentManager.addEventListener(
+      CommentManager3.CommentManager.Events.COMMENT_MODE_CHANGED,
+      this.#onCommentModeChanged,
+      this
+    );
     this.requestUpdate();
   }
   willHide() {
     this.#commentOverlayManager.stop();
-    this.#commentOverlayManager.removeEventListener("PositionsUpdated", this.#onStateChanged, this);
-    this.#commentOverlayManager.removeEventListener("HoverHighlightChanged", this.#onStateChanged, this);
-    this.#commentManager.removeEventListener("CommentThreadsChanged", this.#onStateChanged, this);
-    this.#commentManager.removeEventListener("CommentModeChanged", this.#onCommentModeChanged, this);
+    this.#commentOverlayManager.removeEventListener(
+      "PositionsUpdated" /* POSITIONS_UPDATED */,
+      this.#onStateChanged,
+      this
+    );
+    this.#commentOverlayManager.removeEventListener(
+      "HoverHighlightChanged" /* HOVER_HIGHLIGHT_CHANGED */,
+      this.#onStateChanged,
+      this
+    );
+    this.#commentManager.removeEventListener(
+      CommentManager3.CommentManager.Events.COMMENT_THREADS_CHANGED,
+      this.#onStateChanged,
+      this
+    );
+    this.#commentManager.removeEventListener(
+      CommentManager3.CommentManager.Events.COMMENT_MODE_CHANGED,
+      this.#onCommentModeChanged,
+      this
+    );
     super.willHide();
   }
   #onCommentModeChanged(event) {
@@ -1080,7 +1130,9 @@ var widgetInstance = null;
 var ActionDelegate = class {
   #commentManager;
   constructor(commentManager) {
-    this.#commentManager = commentManager ?? Root.DevToolsContext.globalInstance().get(CommentManager2.CommentManager.CommentManager);
+    this.#commentManager = commentManager ?? Root.DevToolsContext.globalInstance().get(
+      CommentManager3.CommentManager.CommentManager
+    );
   }
   handleAction(_context, actionId) {
     if (actionId === "comments.toggle-comment-mode") {

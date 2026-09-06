@@ -1,33 +1,4 @@
-// gen/front_end/entrypoints/inspector/inspector.prebundle.js
+// ../../front_end/entrypoints/inspector/inspector.ts
 import "../devtools_app/devtools_app.js";
-
-// gen/front_end/panels/screencast/screencast-meta.js
-import * as UI from "../../ui/legacy/legacy.js";
-var loadedScreencastModule;
-async function loadScreencastModule() {
-  if (!loadedScreencastModule) {
-    loadedScreencastModule = await import("../../panels/screencast/screencast.js");
-  }
-  return loadedScreencastModule;
-}
-UI.Toolbar.registerToolbarItem({
-  async loadItem() {
-    const Screencast = await loadScreencastModule();
-    return Screencast.ScreencastApp.ToolbarButtonProvider.instance();
-  },
-  order: 1,
-  location: "main-toolbar-left"
-});
-UI.AppProvider.registerAppProvider({
-  async loadAppProvider() {
-    const Screencast = await loadScreencastModule();
-    return Screencast.ScreencastApp.ScreencastAppProvider.instance();
-  },
-  order: 1
-});
-UI.ContextMenu.registerItem({
-  location: "mainMenu",
-  order: 10,
-  actionId: "components.request-app-banner"
-});
+import "../../panels/screencast/screencast-meta.js";
 //# sourceMappingURL=inspector.js.map

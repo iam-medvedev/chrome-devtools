@@ -4,10 +4,10 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// gen/front_end/panels/recorder/converters/Converter.js
+// ../../front_end/panels/recorder/converters/Converter.ts
 var Converter_exports = {};
 
-// gen/front_end/panels/recorder/converters/ExtensionConverter.js
+// ../../front_end/panels/recorder/converters/ExtensionConverter.ts
 var ExtensionConverter_exports = {};
 __export(ExtensionConverter_exports, {
   EXTENSION_PREFIX: () => EXTENSION_PREFIX,
@@ -32,7 +32,9 @@ var ExtensionConverter = class {
     return this.#extension.getMediaType();
   }
   getFilename(flow) {
-    const fileExtension = this.#mediaTypeToExtension(this.#extension.getMediaType());
+    const fileExtension = this.#mediaTypeToExtension(
+      this.#extension.getMediaType()
+    );
     return `${flow.title}${fileExtension}`;
   }
   async stringify(flow) {
@@ -59,7 +61,7 @@ var ExtensionConverter = class {
   }
 };
 
-// gen/front_end/panels/recorder/converters/JSONConverter.js
+// ../../front_end/panels/recorder/converters/JSONConverter.ts
 var JSONConverter_exports = {};
 __export(JSONConverter_exports, {
   JSONConverter: () => JSONConverter
@@ -72,7 +74,7 @@ var JSONConverter = class {
     this.#indent = indent;
   }
   getId() {
-    return "json";
+    return Models.ConverterIds.ConverterIds.JSON;
   }
   getFormatName() {
     return "JSON";
@@ -99,7 +101,7 @@ var JSONConverter = class {
   }
 };
 
-// gen/front_end/panels/recorder/converters/LighthouseConverter.js
+// ../../front_end/panels/recorder/converters/LighthouseConverter.ts
 var LighthouseConverter_exports = {};
 __export(LighthouseConverter_exports, {
   LighthouseConverter: () => LighthouseConverter
@@ -112,7 +114,7 @@ var LighthouseConverter = class {
     this.#indent = indent;
   }
   getId() {
-    return "lighthouse";
+    return Models2.ConverterIds.ConverterIds.LIGHTHOUSE;
   }
   getFormatName() {
     return "Puppeteer (including Lighthouse analysis)";
@@ -138,7 +140,7 @@ var LighthouseConverter = class {
   }
 };
 
-// gen/front_end/panels/recorder/converters/PuppeteerConverter.js
+// ../../front_end/panels/recorder/converters/PuppeteerConverter.ts
 var PuppeteerConverter_exports = {};
 __export(PuppeteerConverter_exports, {
   PuppeteerConverter: () => PuppeteerConverter
@@ -153,7 +155,7 @@ var PuppeteerConverter = class {
     this.#extension = this.createExtension();
   }
   getId() {
-    return "puppeteer";
+    return Models3.ConverterIds.ConverterIds.PUPPETEER;
   }
   createExtension() {
     return new PuppeteerReplay4.PuppeteerStringifyExtension();
@@ -183,7 +185,7 @@ var PuppeteerConverter = class {
   }
 };
 
-// gen/front_end/panels/recorder/converters/PuppeteerFirefoxConverter.js
+// ../../front_end/panels/recorder/converters/PuppeteerFirefoxConverter.ts
 var PuppeteerFirefoxConverter_exports = {};
 __export(PuppeteerFirefoxConverter_exports, {
   PuppeteerFirefoxConverter: () => PuppeteerFirefoxConverter
@@ -192,7 +194,7 @@ import * as PuppeteerReplay5 from "../../../third_party/puppeteer-replay/puppete
 import * as Models4 from "../models/models.js";
 var PuppeteerFirefoxConverter = class extends PuppeteerConverter {
   getId() {
-    return "puppeteer-firefox";
+    return Models4.ConverterIds.ConverterIds.PUPPETEER_FIREFOX;
   }
   createExtension() {
     return new PuppeteerReplay5.PuppeteerStringifyExtension("firefox");
@@ -202,7 +204,7 @@ var PuppeteerFirefoxConverter = class extends PuppeteerConverter {
   }
 };
 
-// gen/front_end/panels/recorder/converters/PuppeteerReplayConverter.js
+// ../../front_end/panels/recorder/converters/PuppeteerReplayConverter.ts
 var PuppeteerReplayConverter_exports = {};
 __export(PuppeteerReplayConverter_exports, {
   PuppeteerReplayConverter: () => PuppeteerReplayConverter
@@ -215,7 +217,7 @@ var PuppeteerReplayConverter = class {
     this.#indent = indent;
   }
   getId() {
-    return "@puppeteer/replay";
+    return Models5.ConverterIds.ConverterIds.REPLAY;
   }
   getFormatName() {
     return "@puppeteer/replay";

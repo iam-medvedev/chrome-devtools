@@ -95,8 +95,17 @@ export interface Decoration {
     title: string;
     color: string;
 }
+export declare function handleAdornerKeydown(cb: (event: Event) => void): (event: KeyboardEvent) => void;
 export declare const DEFAULT_VIEW: (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
 type View = typeof DEFAULT_VIEW;
+export interface InitialEditState {
+    attributeName?: string;
+    isNewAttribute?: boolean;
+    isProcessingInstruction?: boolean;
+    isTextNode?: boolean;
+    isEditAsHTML?: boolean;
+    editAsHTMLCallback?: (success: boolean) => void;
+}
 export declare class ElementsTreeWidget extends UI.Widget.Widget {
     #private;
     static readonly INJECT: readonly [typeof IssuesManager.DOMIssuesManager.DOMIssuesManager];
@@ -105,6 +114,8 @@ export declare class ElementsTreeWidget extends UI.Widget.Widget {
     disableEdits: boolean;
     showAIButton: boolean;
     isDOMNodeSelected: boolean;
+    initialEdit?: InitialEditState | null;
+    onInitialEditCompleted?: () => void;
     expand?: () => void;
     collapse?: () => void;
     selectTreeElement?: (omitFocus?: boolean, selectedByUser?: boolean) => boolean | void;
@@ -118,19 +129,20 @@ export declare class ElementsTreeWidget extends UI.Widget.Widget {
     findStartTagWidget?: () => ElementsTreeWidget | null;
     selectDOMNode?: (node: SDK.DOMModel.DOMNode, selectedByUser?: boolean) => void;
     revealInTopLayer?: (node: SDK.DOMModel.DOMNode) => void;
-    showContextMenu?: (event: Event) => void;
+    showContextMenu?: (event: Event, widget?: ElementsTreeWidget) => void;
     populateTreeElement?: () => Promise<void>;
     toggleHideElement?: (node: SDK.DOMModel.DOMNode) => Promise<void>;
     isToggledToHidden?: (node: SDK.DOMModel.DOMNode) => boolean;
-    selectNodeAfterEdit?: (wasExpanded: boolean, error: string | null, newNode: SDK.DOMModel.DOMNode | null) => ElementsTreeWidget | null;
+    selectNodeAfterEdit?: (wasExpanded: boolean, error: string | null, newNode: SDK.DOMModel.DOMNode | null, moveDirection?: string) => void;
     runPendingUpdates?: () => void;
     focusOutline?: () => void;
     setMultilineEditing?: (multilineEditing: EditorHandles | null) => void;
     visibleWidth?: () => number;
-    private readonly decorationsThrottler;
     inClipboard: boolean;
     editing: EditorHandles | null;
     expandAllButtonElement: UI.TreeOutline.TreeElement | null;
+    get updateRecord(): Elements.ElementUpdateRecord.ElementUpdateRecord | null;
+    set updateRecord(updateRecord: Elements.ElementUpdateRecord.ElementUpdateRecord | null);
     get node(): SDK.DOMModel.DOMNode;
     set node(node: SDK.DOMModel.DOMNode);
     get expanded(): boolean;
@@ -148,6 +160,7 @@ export declare class ElementsTreeWidget extends UI.Widget.Widget {
     static canShowInlineText(node: SDK.DOMModel.DOMNode): boolean;
     static populateForcedPseudoStateItems(contextMenu: UI.ContextMenu.ContextMenu, node: SDK.DOMModel.DOMNode): void;
     animateOnDOMUpdate(): void;
+    wasShown(): void;
     performUpdate(): void;
     highlightAttribute(attributeName: string): void;
     isDisplayContents(): boolean;
@@ -175,7 +188,7 @@ export declare class ElementsTreeWidget extends UI.Widget.Widget {
     private startEditingTarget;
     private revealHTMLInSources;
     private isAiButtonEnabled;
-    private startEditing;
+    startEditing(): boolean | undefined;
     startEditingProcessingInstructionValue(): boolean | undefined;
     addNewAttribute(): boolean;
     triggerEditAttribute(attributeName: string): boolean | undefined;
@@ -211,6 +224,7 @@ export declare class ElementsTreeElement extends UI.TreeOutline.TreeElement {
     expandedChildrenLimit(): number;
     setExpandedChildrenLimit(limit: number): void;
     highlightAttribute(name: string): void;
+    startEditing(): boolean | undefined;
     startEditingAttribute(attribute: Element, elementForSelection: Element): boolean;
     startEditingTextNode(textNodeElement: Element): boolean;
     editAsHTML(): void;

@@ -107,12 +107,8 @@ color: red;
                 sinon.stub(targetManager, 'primaryPageTarget').returns(mockTarget);
             });
             it('linkifies nodes using #node-ID', async () => {
-                const mockDocument = {
-                    documentURL: 'https://example.com',
-                };
-                const mockNode = {
-                    ownerDocument: mockDocument,
-                };
+                const mockNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+                mockNode.securityOrigin.returns(SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'));
                 mockDomModel.pushNodesByBackendIdsToFrontend.resolves(new Map([
                     [23, mockNode],
                 ]));
@@ -125,12 +121,8 @@ color: red;
                 assert.include(el.textContent, 'LINKIFIED');
             });
             it('does not linkify nodes if the node belongs to a different origin', async () => {
-                const mockDocument = {
-                    documentURL: 'https://cross-origin.com',
-                };
-                const mockNode = {
-                    ownerDocument: mockDocument,
-                };
+                const mockNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+                mockNode.securityOrigin.returns(SDK.SecurityOrigin.SecurityOrigin.create('https://cross-origin.com'));
                 mockDomModel.pushNodesByBackendIdsToFrontend.resolves(new Map([
                     [23, mockNode],
                 ]));
@@ -143,13 +135,9 @@ color: red;
                 assert.notInclude(el.textContent, 'LINKIFIED');
             });
             it('restricts linkification by frameId if mainFrameId is provided', async () => {
-                const mockDocument = {
-                    documentURL: 'https://example.com',
-                };
-                const mockNode = {
-                    ownerDocument: mockDocument,
-                    frameId: () => 'frame-123',
-                };
+                const mockNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+                mockNode.securityOrigin.returns(SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'));
+                mockNode.frameId.returns('frame-123');
                 mockDomModel.pushNodesByBackendIdsToFrontend.resolves(new Map([
                     [23, mockNode],
                 ]));
@@ -161,12 +149,8 @@ color: red;
                 assert.include(el.textContent, 'text');
             });
             it('linkifies paths using #path-PATH', async () => {
-                const mockDocument = {
-                    documentURL: 'https://example.com',
-                };
-                const mockNode = {
-                    ownerDocument: mockDocument,
-                };
+                const mockNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+                mockNode.securityOrigin.returns(SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'));
                 mockDomModel.pushNodeByPathToFrontend.resolves(42);
                 mockDomModel.nodeForId.returns(mockNode);
                 const linkifyStub = sinon.stub(PanelsCommon.DOMLinkifier.Linkifier.instance(), 'linkify')
@@ -178,12 +162,8 @@ color: red;
                 assert.include(el.textContent, 'LINKIFIED_PATH');
             });
             it('linkifies paths using #1,HTML (without #path- prefix)', async () => {
-                const mockDocument = {
-                    documentURL: 'https://example.com',
-                };
-                const mockNode = {
-                    ownerDocument: mockDocument,
-                };
+                const mockNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+                mockNode.securityOrigin.returns(SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'));
                 mockDomModel.pushNodeByPathToFrontend.resolves(42);
                 mockDomModel.nodeForId.returns(mockNode);
                 const linkifyStub = sinon.stub(PanelsCommon.DOMLinkifier.Linkifier.instance(), 'linkify')
@@ -196,12 +176,8 @@ color: red;
                 assert.include(el.textContent, 'LINKIFIED_PATH');
             });
             it('works for nodes inside codespan', async () => {
-                const mockDocument = {
-                    documentURL: 'https://example.com',
-                };
-                const mockNode = {
-                    ownerDocument: mockDocument,
-                };
+                const mockNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+                mockNode.securityOrigin.returns(SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'));
                 mockDomModel.pushNodesByBackendIdsToFrontend.resolves(new Map([
                     [23, mockNode],
                 ]));

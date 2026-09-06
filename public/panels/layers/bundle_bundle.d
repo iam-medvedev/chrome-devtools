@@ -1,0 +1,1 @@
+gen/front_end/panels/layers/layers.js: ../../front_end/panels/layers/LayerPaintProfilerView.ts ../../front_end/panels/layers/LayerTreeModel.ts ../../front_end/panels/layers/LayersPanel.ts ../../front_end/panels/layers/layers.ts

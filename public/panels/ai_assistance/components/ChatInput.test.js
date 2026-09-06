@@ -331,7 +331,7 @@ describeWithEnvironment('ChatInput', () => {
         }
         it('renders correctly when multimodal is enabled', async () => {
             const target = document.createElement('div');
-            renderElementIntoDOM(target);
+            renderElementIntoDOM(target, { includeCommonStyles: true });
             AiAssistance.ChatInput.DEFAULT_VIEW({
                 ...createDefaultViewInput(),
                 multimodalInputEnabled: true,
@@ -341,7 +341,7 @@ describeWithEnvironment('ChatInput', () => {
         });
         it('renders correctly when multimodal is disabled', async () => {
             const target = document.createElement('div');
-            renderElementIntoDOM(target);
+            renderElementIntoDOM(target, { includeCommonStyles: true });
             AiAssistance.ChatInput.DEFAULT_VIEW({
                 ...createDefaultViewInput(),
             }, undefined, target);

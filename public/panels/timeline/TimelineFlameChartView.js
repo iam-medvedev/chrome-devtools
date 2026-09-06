@@ -17,7 +17,6 @@ import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { getAnnotationEntries, getAnnotationWindow } from './AnnotationHelpers.js';
 import * as TimelineInsights from './components/insights/insights.js';
 import { CountersGraph } from './CountersGraph.js';
-import { SHOULD_SHOW_EASTER_EGG } from './EasterEgg.js';
 import { ModificationsManager } from './ModificationsManager.js';
 import * as OverlayComponents from './overlays/components/components.js';
 import * as Overlays from './overlays/overlays.js';
@@ -32,7 +31,7 @@ import { AggregatedTimelineTreeView } from './TimelineTreeView.js';
 import * as Utils from './utils/utils.js';
 const UIStrings = {
     /**
-     * @description Text in Timeline Flame Chart View of the Performance panel
+     * @description Accessible title for a timeline marker at a given timestamp in the Performance panel.
      * @example {Frame} PH1
      * @example {10ms} PH2
      */
@@ -59,7 +58,8 @@ export const SORT_ORDER_PAGE_LOAD_MARKERS = {
 // Threshold to match up overlay markers that are off by a tiny amount so they aren't rendered
 // on top of each other.
 const TIMESTAMP_THRESHOLD_MS = Trace.Types.Timing.Micro(10);
-export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
+const TimelineFlameChartViewBase = Common.ObjectWrapper.eventMixin(UI.Widget.VBox);
+export class TimelineFlameChartView extends TimelineFlameChartViewBase {
     delegate;
     /**
      * Tracks the indexes of matched entries when the user searches the panel.
@@ -76,7 +76,6 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
     networkPane;
     splitResizer;
     chartSplitWidget;
-    brickGame;
     countersView;
     detailsSplitWidget;
     detailsView;
@@ -100,8 +99,7 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
     #eventToRelatedInsightsMap = null;
     #selectedGroupName = null;
     #onTraceBoundsChangeBound = this.#onTraceBoundsChange.bind(this);
-    #gameKeyMatches = 0;
-    #gameTimeout = setTimeout(() => ({}), 0);
+    #debouncedUpdateSearchResults = Common.Debouncer.debounce(() => this.updateSearchResults(false, false), 100);
     #overlaysContainer = document.createElement('div');
     #overlays;
     // Tracks the in-progress time range annotation when the user alt/option clicks + drags, or when the user uses the keyboard
@@ -867,7 +865,6 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         }
     }
     #keydownHandler(event) {
-        const keyCombo = 'fixme';
         // `CREATION_NOT_STARTED` is only true in the state when both empty label and button to create connection are
         // created at the same time. If any key is typed in that state, it means that the label is in focus and the key
         // is typed into the label. This tells us that the user chose to create the
@@ -894,35 +891,9 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
             event.stopPropagation();
             return;
         }
-        if (event.key === keyCombo[this.#gameKeyMatches]) {
-            this.#gameKeyMatches++;
-            clearTimeout(this.#gameTimeout);
-            this.#gameTimeout = setTimeout(() => {
-                this.#gameKeyMatches = 0;
-            }, 2000);
-        }
-        else {
-            this.#gameKeyMatches = 0;
-            clearTimeout(this.#gameTimeout);
-        }
-        if (this.#gameKeyMatches !== keyCombo.length) {
-            return;
-        }
-        this.runBrickBreakerGame();
     }
     forceAnimationsForTest() {
         this.#checkReducedMotion = false;
-    }
-    runBrickBreakerGame() {
-        if (!SHOULD_SHOW_EASTER_EGG) {
-            return;
-        }
-        if ([...this.element.childNodes].find(child => child instanceof PerfUI.BrickBreaker.BrickBreaker)) {
-            return;
-        }
-        this.brickGame = new PerfUI.BrickBreaker.BrickBreaker(this.mainFlameChart);
-        this.brickGame.classList.add('brick-game');
-        this.element.append(this.brickGame);
     }
     #onTraceBoundsChange(event) {
         if (event.updateType === 'MINIMAP_BOUNDS') {
@@ -937,11 +908,7 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         this.mainFlameChart.setWindowTimes(visibleWindow.min, visibleWindow.max, shouldAnimate);
         this.networkDataProvider.setWindowTimes(visibleWindow.min, visibleWindow.max);
         this.networkFlameChart.setWindowTimes(visibleWindow.min, visibleWindow.max, shouldAnimate);
-        // Updating search results can be very expensive. Debounce to avoid over-calling it.
-        const debouncedUpdate = Common.Debouncer.debounce(() => {
-            this.updateSearchResults(false, false);
-        }, 100);
-        debouncedUpdate();
+        this.#debouncedUpdateSearchResults();
     }
     getLinkSelectionAnnotation() {
         return this.#linkSelectionAnnotation;

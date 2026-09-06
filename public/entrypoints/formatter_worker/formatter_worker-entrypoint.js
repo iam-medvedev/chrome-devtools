@@ -1,5 +1,6 @@
-// gen/front_end/entrypoints/formatter_worker/formatter_worker-entrypoint.prebundle.js
+// ../../front_end/entrypoints/formatter_worker/formatter_worker-entrypoint.ts
 import * as Platform from "../../core/platform/platform.js";
+import { FormatterActions } from "../formatter_actions/formatter_actions.js";
 import * as FormatterWorker from "./formatter_worker.js";
 Platform.HostRuntime.HOST_RUNTIME.workerScope.onmessage = function(event) {
   const method = event.data.method;
@@ -8,18 +9,24 @@ Platform.HostRuntime.HOST_RUNTIME.workerScope.onmessage = function(event) {
     return;
   }
   switch (method) {
-    case "format":
-      Platform.HostRuntime.HOST_RUNTIME.workerScope.postMessage(FormatterWorker.FormatterWorker.format(params.mimeType, params.content, params.indentString));
+    case FormatterActions.FORMAT:
+      Platform.HostRuntime.HOST_RUNTIME.workerScope.postMessage(
+        FormatterWorker.FormatterWorker.format(params.mimeType, params.content, params.indentString)
+      );
       break;
-    case "parseCSS":
+    case FormatterActions.PARSE_CSS:
       FormatterWorker.CSSRuleParser.parseCSS(params.content, self.postMessage);
       break;
-    case "javaScriptSubstitute": {
-      Platform.HostRuntime.HOST_RUNTIME.workerScope.postMessage(FormatterWorker.Substitute.substituteExpression(params.content, params.mapping));
+    case FormatterActions.JAVASCRIPT_SUBSTITUTE: {
+      Platform.HostRuntime.HOST_RUNTIME.workerScope.postMessage(
+        FormatterWorker.Substitute.substituteExpression(params.content, params.mapping)
+      );
       break;
     }
-    case "javaScriptScopeTree": {
-      Platform.HostRuntime.HOST_RUNTIME.workerScope.postMessage(FormatterWorker.ScopeParser.parseScopes(params.content, params.sourceType)?.export());
+    case FormatterActions.JAVASCRIPT_SCOPE_TREE: {
+      Platform.HostRuntime.HOST_RUNTIME.workerScope.postMessage(
+        FormatterWorker.ScopeParser.parseScopes(params.content, params.sourceType)?.export()
+      );
       break;
     }
     default:

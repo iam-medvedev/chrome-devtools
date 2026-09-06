@@ -1,4 +1,4 @@
-// gen/front_end/panels/screencast/screencast-meta.prebundle.js
+// ../../front_end/panels/screencast/screencast-meta.ts
 import * as UI from "../../ui/legacy/legacy.js";
 var loadedScreencastModule;
 async function loadScreencastModule() {
@@ -13,7 +13,7 @@ UI.Toolbar.registerToolbarItem({
     return Screencast.ScreencastApp.ToolbarButtonProvider.instance();
   },
   order: 1,
-  location: "main-toolbar-left"
+  location: UI.Toolbar.ToolbarItemLocation.MAIN_TOOLBAR_LEFT
 });
 UI.AppProvider.registerAppProvider({
   async loadAppProvider() {
@@ -23,7 +23,7 @@ UI.AppProvider.registerAppProvider({
   order: 1
 });
 UI.ContextMenu.registerItem({
-  location: "mainMenu",
+  location: UI.ContextMenu.ItemLocation.MAIN_MENU,
   order: 10,
   actionId: "components.request-app-banner"
 });

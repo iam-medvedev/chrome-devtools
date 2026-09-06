@@ -798,7 +798,8 @@ describeWithEnvironment('Widget', () => {
             container.remove();
         });
         it('dispatches DOM events through eventMixin', async () => {
-            class EventWidget extends Common.ObjectWrapper.eventMixin(UI.Widget.Widget) {
+            const EventWidgetBase = Common.ObjectWrapper.eventMixin(UI.Widget.Widget);
+            class EventWidget extends EventWidgetBase {
                 trigger() {
                     this.dispatchEventToListeners('test-event', 'payload');
                 }

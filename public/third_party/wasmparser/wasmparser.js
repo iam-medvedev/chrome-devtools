@@ -4,7 +4,7 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// gen/front_end/third_party/wasmparser/package/dist/esm/WasmDis.js
+// ../../front_end/third_party/wasmparser/package/dist/esm/WasmDis.js
 var WasmDis_exports = {};
 __export(WasmDis_exports, {
   DefaultNameResolver: () => DefaultNameResolver,
@@ -16,7 +16,7 @@ __export(WasmDis_exports, {
   WasmDisassembler: () => WasmDisassembler
 });
 
-// gen/front_end/third_party/wasmparser/package/dist/esm/WasmParser.js
+// ../../front_end/third_party/wasmparser/package/dist/esm/WasmParser.js
 var WasmParser_exports = {};
 __export(WasmParser_exports, {
   BinaryReader: () => BinaryReader,
@@ -3618,11 +3618,11 @@ var BinaryReader = class {
 var bytesToString;
 if (typeof TextDecoder !== "undefined") {
   try {
-    bytesToString = function() {
+    bytesToString = (function() {
       var utf8Decoder = new TextDecoder("utf-8");
       utf8Decoder.decode(new Uint8Array([97, 208, 144]));
       return (b) => utf8Decoder.decode(b);
-    }();
+    })();
   } catch (_) {
   }
 }
@@ -3633,7 +3633,7 @@ if (!bytesToString) {
   };
 }
 
-// gen/front_end/third_party/wasmparser/package/dist/esm/WasmDis.js
+// ../../front_end/third_party/wasmparser/package/dist/esm/WasmDis.js
 var NAME_SECTION_NAME = "name";
 var INVALID_NAME_SYMBOLS_REGEX = /[^0-9A-Za-z!#$%&'*+.:<=>?@^_`|~\/\-]/;
 var INVALID_NAME_SYMBOLS_REGEX_GLOBAL = new RegExp(INVALID_NAME_SYMBOLS_REGEX.source, "g");

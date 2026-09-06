@@ -1,0 +1,1 @@
+gen/front_end/panels/settings/emulation/emulation.js: gen/front_end/panels/settings/emulation/devicesSettingsTab.css.js ../../front_end/panels/settings/emulation/DevicesSettingsTab.ts ../../front_end/panels/settings/emulation/emulation.ts

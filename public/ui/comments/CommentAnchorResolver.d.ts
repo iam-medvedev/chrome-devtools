@@ -12,6 +12,13 @@ export type CommentThread = CommentManager.CommentManager.CommentThread;
  */
 export declare function closestAcrossShadow(element: Element, selector: string): Element | null;
 /**
+ * Resolves the file path attribute for a CodeMirror editor element.
+ *
+ * @param element The editor element to check.
+ * @returns The file path string or undefined if not found.
+ */
+export declare function getEditorFilePath(element: Element): string | undefined;
+/**
  * Checks whether an element contains non-empty text content (after trimming whitespace),
  * including text from any nested shadow roots.
  *

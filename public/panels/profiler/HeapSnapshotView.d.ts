@@ -146,8 +146,8 @@ export declare class StatisticsPerspective extends Perspective {
     activate(heapSnapshotView: HeapSnapshotView): void;
     masterGrid(_heapSnapshotView: HeapSnapshotView): HeapSnapshotSortableDataGrid | null;
 }
-declare const HeapSnapshotProfileType_base: Platform.Constructor.Constructor<Common.EventTarget.EventTarget<HeapSnapshotProfileTypeEventTypes>, any[]> & typeof ProfileType;
-export declare class HeapSnapshotProfileType extends HeapSnapshotProfileType_base implements SDK.TargetManager.SDKModelObserver<SDK.HeapProfilerModel.HeapProfilerModel> {
+declare const HeapSnapshotProfileTypeBase: Common.ObjectWrapper.EventMixin<HeapSnapshotProfileTypeEventTypes, typeof ProfileType>;
+export declare class HeapSnapshotProfileType extends HeapSnapshotProfileTypeBase implements SDK.TargetManager.SDKModelObserver<SDK.HeapProfilerModel.HeapProfilerModel> {
     customContentInternal: UI.UIUtils.CheckboxLabel | null;
     constructor(id?: string, title?: string);
     modelAdded(heapProfilerModel: SDK.HeapProfilerModel.HeapProfilerModel): void;
@@ -174,8 +174,8 @@ export declare const enum HeapSnapshotProfileTypeEvents {
 export interface HeapSnapshotProfileTypeEventTypes {
     [HeapSnapshotProfileTypeEvents.SNAPSHOT_RECEIVED]: ProfileHeader;
 }
-declare const TrackingHeapSnapshotProfileType_base: Platform.Constructor.Constructor<Common.EventTarget.EventTarget<TrackingHeapSnapshotProfileTypeEventTypes>, any[]> & typeof HeapSnapshotProfileType;
-export declare class TrackingHeapSnapshotProfileType extends TrackingHeapSnapshotProfileType_base {
+declare const TrackingHeapSnapshotProfileTypeBase: Common.ObjectWrapper.EventMixin<TrackingHeapSnapshotProfileTypeEventTypes, typeof HeapSnapshotProfileType>;
+export declare class TrackingHeapSnapshotProfileType extends TrackingHeapSnapshotProfileTypeBase {
     readonly recordAllocationStacksSettingInternal: Common.Settings.Setting<boolean>;
     customContentInternal: UI.UIUtils.CheckboxLabel | null;
     recording: boolean;

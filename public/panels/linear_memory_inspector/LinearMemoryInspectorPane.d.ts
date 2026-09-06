@@ -1,10 +1,9 @@
 import * as Common from '../../core/common/common.js';
-import type * as Platform from '../../core/platform/platform.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as LinearMemoryInspectorComponents from './components/components.js';
 import { type LazyUint8Array } from './LinearMemoryInspectorController.js';
-declare const LinearMemoryInspectorPane_base: Platform.Constructor.Constructor<Common.EventTarget.EventTarget<EventTypes>, any[]> & typeof UI.Widget.VBox;
-export declare class LinearMemoryInspectorPane extends LinearMemoryInspectorPane_base {
+declare const LinearMemoryInspectorPaneBase: Common.ObjectWrapper.EventMixin<EventTypes, typeof UI.Widget.VBox>;
+export declare class LinearMemoryInspectorPane extends LinearMemoryInspectorPaneBase {
     #private;
     constructor();
     createPlaceholder(): HTMLElement;

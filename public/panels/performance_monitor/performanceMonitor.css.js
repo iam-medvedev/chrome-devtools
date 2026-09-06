@@ -51,14 +51,14 @@ export default `/*
   display: flex;
   flex: initial;
   flex-direction: column;
-  padding: 6px 0;
+  padding: var(--sys-size-4) 0;
   overflow: hidden auto;
 }
 
 .perfmon-chart-container {
   display: flex;
   flex: 1 1;
-  border-left: 1px solid var(--sys-color-divider);
+  border-left: var(--sys-size-1) solid var(--sys-color-divider);
   overflow-y: auto;
 }
 
@@ -68,7 +68,7 @@ export default `/*
 
 .perfmon-indicator {
   padding: 3px 9px;
-  margin: -1px 0;
+  margin: calc(-1 * var(--sys-size-1)) 0;
   display: flex;
   flex-shrink: 0;
   width: 210px;

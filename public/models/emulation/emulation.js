@@ -26,7 +26,6 @@ import * as i18n3 from "../../core/i18n/i18n.js";
 import * as Platform from "../../core/platform/platform.js";
 import * as Root2 from "../../core/root/root.js";
 import * as SDK2 from "../../core/sdk/sdk.js";
-import * as TextUtils from "../../core/text_utils/text_utils.js";
 
 // ../../front_end/generated/protocol.ts
 var Accessibility;
@@ -1774,6 +1773,7 @@ var Page;
     PermissionsPolicyFeature2["Gamepad"] = "gamepad";
     PermissionsPolicyFeature2["Geolocation"] = "geolocation";
     PermissionsPolicyFeature2["Gyroscope"] = "gyroscope";
+    PermissionsPolicyFeature2["Haptics"] = "haptics";
     PermissionsPolicyFeature2["Hid"] = "hid";
     PermissionsPolicyFeature2["IdentityCredentialsGet"] = "identity-credentials-get";
     PermissionsPolicyFeature2["IdleDetection"] = "idle-detection";
@@ -2830,7 +2830,6 @@ var Runtime;
 
 // ../../front_end/models/emulation/DeviceModeModel.ts
 import * as Geometry from "../geometry/geometry.js";
-import * as Workspace from "../workspace/workspace.js";
 
 // ../../front_end/models/emulation/EmulatedDevices.ts
 var EmulatedDevices_exports = {};
@@ -4890,13 +4889,12 @@ var DeviceModeModel = class _DeviceModeModel extends Common2.ObjectWrapper.Objec
   #targetManager;
   #settings;
   #multitargetNetworkManager;
-  #fileManager;
-  constructor(targetManager, settings, multitargetNetworkManager, fileManager) {
+  #lastScreenshotBlobUrl = null;
+  constructor(targetManager, settings, multitargetNetworkManager) {
     super();
     this.#targetManager = targetManager;
     this.#settings = settings;
     this.#multitargetNetworkManager = multitargetNetworkManager;
-    this.#fileManager = fileManager;
     this.#screenRect = new Rect(0, 0, 1, 1);
     this.#visiblePageRect = new Rect(0, 0, 1, 1);
     this.#availableSize = new Geometry.Size(1, 1);
@@ -4958,9 +4956,7 @@ var DeviceModeModel = class _DeviceModeModel extends Common2.ObjectWrapper.Objec
           // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
           Common2.Settings.Settings.instance(),
           // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
-          SDK2.NetworkManager.MultitargetNetworkManager.instance(),
-          // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
-          Workspace.FileManager.FileManager.instance()
+          SDK2.NetworkManager.MultitargetNetworkManager.instance()
         )
       );
     }
@@ -4988,6 +4984,7 @@ var DeviceModeModel = class _DeviceModeModel extends Common2.ObjectWrapper.Objec
   }
   dispose() {
     this.#targetManager.unobserveModels(SDK2.EmulationModel.EmulationModel, this);
+    this.#revokeLastScreenshotBlobUrl();
   }
   static widthValidator(value) {
     let valid = false;
@@ -5080,6 +5077,8 @@ var DeviceModeModel = class _DeviceModeModel extends Common2.ObjectWrapper.Objec
     }
     if (type !== "None" /* None */) {
       Host.userMetrics.actionTaken(Host.UserMetrics.Action.DeviceModeEnabled);
+    } else {
+      this.#revokeLastScreenshotBlobUrl();
     }
     this.calculateAndEmulate(resetPageScaleFactor);
   }
@@ -5197,7 +5196,7 @@ var DeviceModeModel = class _DeviceModeModel extends Common2.ObjectWrapper.Objec
       const resourceTreeModel = emulationModel.target().model(SDK2.ResourceTreeModel.ResourceTreeModel);
       if (resourceTreeModel) {
         resourceTreeModel.addEventListener(SDK2.ResourceTreeModel.Events.FrameResized, this.onFrameChange, this);
-        resourceTreeModel.addEventListener(SDK2.ResourceTreeModel.Events.FrameNavigated, this.onFrameChange, this);
+        resourceTreeModel.addEventListener(SDK2.ResourceTreeModel.Events.FrameNavigated, this.onFrameNavigated, this);
       }
     } else {
       void emulationModel.emulateTouch(this.#touchEnabled, this.#touchMobile);
@@ -5210,8 +5209,14 @@ var DeviceModeModel = class _DeviceModeModel extends Common2.ObjectWrapper.Objec
         this.onScreenOrientationLockChanged,
         this
       );
+      const resourceTreeModel = emulationModel.target().model(SDK2.ResourceTreeModel.ResourceTreeModel);
+      if (resourceTreeModel) {
+        resourceTreeModel.removeEventListener(SDK2.ResourceTreeModel.Events.FrameResized, this.onFrameChange, this);
+        resourceTreeModel.removeEventListener(SDK2.ResourceTreeModel.Events.FrameNavigated, this.onFrameNavigated, this);
+      }
       this.#emulationModel = null;
       this.#screenOrientationLocked = false;
+      this.#revokeLastScreenshotBlobUrl();
       this.dispatchEventToListeners("Updated" /* UPDATED */);
     }
   }
@@ -5224,6 +5229,12 @@ var DeviceModeModel = class _DeviceModeModel extends Common2.ObjectWrapper.Objec
       return;
     }
     this.showDeviceOverlaysIfApplicable(overlayModel);
+  }
+  onFrameNavigated(event) {
+    if (event.data.isMainFrame()) {
+      this.#revokeLastScreenshotBlobUrl();
+    }
+    this.onFrameChange();
   }
   onScreenOrientationLockChanged(event) {
     this.#screenOrientationLocked = event.data.locked;
@@ -5600,55 +5611,29 @@ var DeviceModeModel = class _DeviceModeModel extends Common2.ObjectWrapper.Objec
   }
   async saveScreenshot(canvas) {
     const url = this.inspectedURL();
-    let baseName = "";
+    let fileName = "";
     if (url) {
-      const parsedURL = Common2.ParsedURL.ParsedURL.fromString(url);
-      if (parsedURL) {
-        const host = parsedURL.host;
-        const path = parsedURL.path.replace(/^\/+/, "").replace(/\/+$/, "");
-        baseName = host;
-        if (path) {
-          baseName += "-" + path.replaceAll("/", "-");
-        }
-        baseName = baseName.replace(/[^a-z0-9._-]/gi, "_");
-      }
+      const withoutFragment = Platform.StringUtilities.removeURLFragment(url);
+      fileName = Platform.StringUtilities.trimURL(withoutFragment);
     }
-    if (!baseName) {
-      baseName = "screenshot";
-    }
-    let suffix = "";
     const device = this.device();
     if (device && this.type() === "Device" /* Device */) {
-      suffix += `(${device.title})`;
+      fileName += `(${device.title})`;
     }
-    suffix += ".png";
-    const maxBaseNameLength = Math.max(0, 63 - suffix.length);
-    baseName = Platform.StringUtilities.truncateToCodeUnitLength(baseName, maxBaseNameLength);
-    let fileName = baseName + suffix;
-    if (fileName.length > 63) {
-      fileName = Platform.StringUtilities.truncateToCodeUnitLength(fileName, 59) + ".png";
-    }
+    this.#revokeLastScreenshotBlobUrl();
+    const link = document.createElement("a");
+    link.download = fileName + ".png";
     const blob = await canvas.convertToBlob({ type: "image/png" });
-    const dataUrl = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
-    const base64 = dataUrl.slice(dataUrl.indexOf(",") + 1);
-    const contentData = new TextUtils.ContentData.ContentData(
-      base64,
-      /* isBase64=*/
-      true,
-      "image/png"
-    );
-    await this.#fileManager.save(
-      fileName,
-      contentData,
-      /* forceSaveAs=*/
-      true
-    );
-    this.#fileManager.close(fileName);
+    const blobUrl = URL.createObjectURL(blob);
+    this.#lastScreenshotBlobUrl = blobUrl;
+    link.href = blobUrl;
+    link.click();
+  }
+  #revokeLastScreenshotBlobUrl() {
+    if (this.#lastScreenshotBlobUrl) {
+      URL.revokeObjectURL(this.#lastScreenshotBlobUrl);
+      this.#lastScreenshotBlobUrl = null;
+    }
   }
   applyTouch(touchEnabled, mobile) {
     this.#touchEnabled = touchEnabled;
@@ -5787,6 +5772,10 @@ var Insets = class {
     this.right = right;
     this.bottom = bottom;
   }
+  left;
+  top;
+  right;
+  bottom;
   isEqual(insets) {
     return insets !== null && this.left === insets.left && this.top === insets.top && this.right === insets.right && this.bottom === insets.bottom;
   }
@@ -5798,6 +5787,10 @@ var Rect = class _Rect {
     this.width = width;
     this.height = height;
   }
+  left;
+  top;
+  width;
+  height;
   isEqual(rect) {
     return rect !== null && this.left === rect.left && this.top === rect.top && this.width === rect.width && this.height === rect.height;
   }

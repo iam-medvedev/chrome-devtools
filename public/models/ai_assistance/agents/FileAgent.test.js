@@ -26,7 +26,7 @@ describe('FileAgent', () => {
         sinon.stub(SDK.TargetManager.TargetManager, 'instance').returns(targetManager);
         sinon.stub(Logs.NetworkLog.NetworkLog, 'instance').returns(universe.networkLog);
     });
-    afterEach(async () => {
+    after(async () => {
         await deinitializeGlobalVars();
     });
     describe('buildRequest', () => {

@@ -11,7 +11,7 @@ export default `/*
 
 :host {
   margin: 0;
-  padding: 2px 4px;
+  padding: var(--sys-size-2) var(--sys-size-3);
   min-height: 18px;
 }
 
@@ -20,12 +20,12 @@ export default `/*
 }
 
 .tree-outline li {
-  margin-left: 14px;
+  margin-left: var(--sys-size-7);
   user-select: text;
 }
 
 .tree-outline li.parent {
-  margin-left: 1px;
+  margin-left: var(--sys-size-1);
 }
 
 .tree-outline li:not(.parent)::before {
@@ -45,7 +45,7 @@ export default `/*
   left: 0;
   margin-left: -30px;
   position: absolute;
-  right: -4px;
+  right: calc(-1 * var(--sys-size-3));
   z-index: -1;
 }
 

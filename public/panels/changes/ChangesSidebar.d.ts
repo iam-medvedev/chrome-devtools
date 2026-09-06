@@ -10,8 +10,8 @@ interface ViewInput {
 }
 type View = (input: ViewInput, output: object, target: HTMLElement) => void;
 export declare const DEFAULT_VIEW: View;
-declare const ChangesSidebar_base: import("../../core/platform/Constructor.js").Constructor<Common.EventTarget.EventTarget<EventTypes>, any[]> & typeof UI.Widget.Widget;
-export declare class ChangesSidebar extends ChangesSidebar_base {
+declare const ChangesSidebarBase: Common.ObjectWrapper.EventMixin<EventTypes, typeof UI.Widget.Widget>;
+export declare class ChangesSidebar extends ChangesSidebarBase {
     #private;
     constructor(target?: HTMLElement, view?: View);
     set workspaceDiff(workspaceDiff: WorkspaceDiff.WorkspaceDiff.WorkspaceDiffImpl);

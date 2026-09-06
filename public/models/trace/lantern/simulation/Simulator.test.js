@@ -5,16 +5,11 @@ import { assert } from 'chai';
 import { TraceLoader } from '../../../../testing/TraceLoader.js';
 import * as Trace from '../../trace.js';
 import * as Lantern from '../lantern.js';
-import { runTrace, toLanternTrace } from '../testing/testing.js';
+import { toLanternTrace } from '../testing/testing.js';
 const { NetworkNode, CPUNode } = Lantern.Graph;
 const { Simulator, DNSCache } = Lantern.Simulation;
 let nextRequestId = 1;
 let nextTid = 1;
-async function createGraph(context, trace) {
-    const parsedTrace = await runTrace(context, trace);
-    const requests = Trace.LanternComputationData.createNetworkRequests(trace, parsedTrace);
-    return Trace.LanternComputationData.createGraph(requests, trace, parsedTrace);
-}
 // Instantiating a Simulator instance requires this value, but it isn't really
 // needed for the sake of these tests, so we hardcode a reasonable value here
 // to use throughout.
@@ -46,9 +41,12 @@ function cpuTask({ tid, ts, duration }) {
 describe('DependencyGraph/Simulator', () => {
     // Insulate the simulator tests from DNS multiplier changes
     let originalDNSMultiplier = 1;
-    let trace;
+    let realTraceGraph;
     before(async function () {
-        trace = toLanternTrace(await TraceLoader.rawEvents(this, 'lantern/progressive-app/trace.json.gz'));
+        const parsedTrace = await TraceLoader.traceEngine(this, 'lantern/progressive-app/trace.json.gz', undefined, { withTimelinePanel: false });
+        const trace = toLanternTrace(parsedTrace.traceEvents);
+        const requests = Trace.LanternComputationData.createNetworkRequests(trace, parsedTrace.data);
+        realTraceGraph = Trace.LanternComputationData.createGraph(requests, trace, parsedTrace.data);
         originalDNSMultiplier = DNSCache.rttMultiplier;
         DNSCache.rttMultiplier = 1;
     });
@@ -321,20 +319,15 @@ describe('DependencyGraph/Simulator', () => {
             const simulator = new Simulator({ serverResponseTimeByOrigin, observedThroughput });
             assert.throws(() => simulator.simulate(rootNode), /cycle/);
         });
-        describe('on a real trace', function () {
-            if (this.timeout() > 0) {
-                this.timeout(45_000);
-            }
-            it('should compute a timeInMs', async function () {
-                const graph = await createGraph(this, trace);
+        describe('on a real trace', () => {
+            it('should compute a timeInMs', () => {
                 const simulator = new Simulator({ serverResponseTimeByOrigin, observedThroughput });
-                const result = simulator.simulate(graph);
+                const result = simulator.simulate(realTraceGraph);
                 assert.isAbove(result.timeInMs, 100);
             });
-            it('should sort the task event times', async () => {
-                const graph = await createGraph(this, trace);
+            it('should sort the task event times', () => {
                 const simulator = new Simulator({ serverResponseTimeByOrigin, observedThroughput });
-                const result = simulator.simulate(graph);
+                const result = simulator.simulate(realTraceGraph);
                 const nodeTimings = Array.from(result.nodeTimings.entries());
                 for (let i = 1; i < nodeTimings.length; i++) {
                     const startTime = nodeTimings[i][1].startTime;

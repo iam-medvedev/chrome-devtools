@@ -107,10 +107,10 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/profiler/HeapSnapshotDataGrids.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const adjacencyMap = new WeakMap();
-class HeapSnapshotSortableDataGridBase extends DataGrid.DataGrid.DataGridImpl {
+class HeapSnapshotSortableDataGridRawBase extends DataGrid.DataGrid.DataGridImpl {
 }
-export class HeapSnapshotSortableDataGrid extends Common.ObjectWrapper
-    .eventMixin(HeapSnapshotSortableDataGridBase) {
+const HeapSnapshotSortableDataGridBase = Common.ObjectWrapper.eventMixin(HeapSnapshotSortableDataGridRawBase);
+export class HeapSnapshotSortableDataGrid extends HeapSnapshotSortableDataGridBase {
     snapshot = null;
     selectedNode = null;
     heapProfilerModelInternal;

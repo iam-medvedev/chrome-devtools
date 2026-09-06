@@ -28,7 +28,6 @@ describe('ListCookiesTool', () => {
     function createMockContext(options) {
         const origin = options && 'origin' in options ? options.origin : 'https://example.com';
         return {
-            conversationContext: null,
             getEstablishedOrigin: sinon.stub().returns(origin),
             disableLogging: sinon.stub(),
         };
@@ -246,7 +245,6 @@ describe('ListCookiesTool', () => {
         cookie.addAttribute("path" /* SDK.Cookie.Attribute.PATH */, '/');
         activeCookies = [cookie];
         const context = {
-            conversationContext: null,
             getEstablishedOrigin: sinon.stub().returns('https://example.com'),
             disableLogging: sinon.stub(),
         };

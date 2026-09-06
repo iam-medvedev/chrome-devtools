@@ -4,7 +4,7 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// gen/front_end/panels/settings/components/SyncSection.js
+// ../../front_end/panels/settings/components/SyncSection.ts
 var SyncSection_exports = {};
 __export(SyncSection_exports, {
   SyncSection: () => SyncSection,
@@ -154,7 +154,7 @@ var syncSection_css_default = `/*
 
 /*# sourceURL=${import.meta.resolve("./syncSection.css")} */`;
 
-// gen/front_end/panels/settings/components/SyncSection.js
+// ../../front_end/panels/settings/components/SyncSection.ts
 var UIStrings = {
   /**
    * @description Text shown to the user in Settings. ‘This setting' refers
@@ -242,7 +242,7 @@ var DEFAULT_VIEW = (input, output, target) => {
     if (!input.syncInfo.accountEmail) {
       return Lit.nothing;
     }
-    const warningText = input.warningType === "SYNC_DISABLED" ? i18nString(UIStrings.syncDisabled) : i18nString(UIStrings.preferencesSyncDisabled);
+    const warningText = input.warningType === "SYNC_DISABLED" /* SYNC_DISABLED */ ? i18nString(UIStrings.syncDisabled) : i18nString(UIStrings.preferencesSyncDisabled);
     return html`
       <div class="setting-checkbox-container">
         <setting-checkbox class="setting-checkbox"
@@ -252,8 +252,8 @@ var DEFAULT_VIEW = (input, output, target) => {
           <devtools-button
             aria-details="settings-sync-info"
             .iconName=${"info"}
-            .variant=${"icon"}
-            .size=${"SMALL"}
+            .variant=${Buttons.Button.Variant.ICON}
+            .size=${Buttons.Button.Size.SMALL}
             @click=${input.onWarningClick}>
           </devtools-button>
           <devtools-tooltip
@@ -336,7 +336,7 @@ var DEFAULT_VIEW = (input, output, target) => {
             <devtools-button
               @click=${input.onSignUpClick}
               .jslogContext=${"open-sign-up-dialog"}
-              .variant=${"outlined"}>
+              .variant=${Buttons.Button.Variant.OUTLINED}>
                 ${i18nString(UIStrings.signUp)}
             </devtools-button>
           </div>
@@ -353,11 +353,11 @@ var DEFAULT_VIEW = (input, output, target) => {
     </fieldset>
   `, target);
 };
-var WarningType;
-(function(WarningType2) {
+var WarningType = /* @__PURE__ */ ((WarningType2) => {
   WarningType2["SYNC_DISABLED"] = "SYNC_DISABLED";
   WarningType2["PREFERENCES_SYNC_DISABLED"] = "PREFERENCES_SYNC_DISABLED";
-})(WarningType || (WarningType = {}));
+  return WarningType2;
+})(WarningType || {});
 var SyncSection = class extends UI.Widget.Widget {
   #syncInfo = { isSyncActive: false };
   #syncSetting;
@@ -392,9 +392,9 @@ var SyncSection = class extends UI.Widget.Widget {
     const checkboxDisabled = !this.#syncInfo.isSyncActive || !this.#syncInfo.arePreferencesSynced;
     let warningType;
     if (!this.#syncInfo.isSyncActive) {
-      warningType = "SYNC_DISABLED";
+      warningType = "SYNC_DISABLED" /* SYNC_DISABLED */;
     } else if (!this.#syncInfo.arePreferencesSynced) {
-      warningType = "PREFERENCES_SYNC_DISABLED";
+      warningType = "PREFERENCES_SYNC_DISABLED" /* PREFERENCES_SYNC_DISABLED */;
     }
     const viewInput = {
       syncInfo: this.#syncInfo,

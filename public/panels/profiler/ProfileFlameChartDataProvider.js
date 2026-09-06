@@ -99,7 +99,8 @@ export class ProfileFlameChartDataProvider {
         return this.entryNodes.length;
     }
 }
-export class ProfileFlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
+const ProfileFlameChartBase = Common.ObjectWrapper.eventMixin(UI.Widget.VBox);
+export class ProfileFlameChart extends ProfileFlameChartBase {
     searchableView;
     overviewPane;
     mainPane;
@@ -250,7 +251,8 @@ export class OverviewCalculator {
         return this.maximumBoundaries - this.minimumBoundaries;
     }
 }
-export class OverviewPane extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
+const OverviewPaneBase = Common.ObjectWrapper.eventMixin(UI.Widget.VBox);
+export class OverviewPane extends OverviewPaneBase {
     overviewContainer;
     overviewCalculator;
     overviewGrid;

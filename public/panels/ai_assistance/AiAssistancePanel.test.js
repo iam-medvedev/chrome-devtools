@@ -17,12 +17,10 @@ import { cleanup, createAiAssistancePanel, createNetworkRequest, mockAidaClient,
 import { findMenuItemWithLabel } from '../../testing/ContextMenuHelpers.js';
 import { createTarget, deinitializeGlobalVars, describeWithEnvironment, initializeGlobalVars, registerNoopActions, updateHostConfig, } from '../../testing/EnvironmentHelpers.js';
 import { expectCall } from '../../testing/ExpectStubCall.js';
-import { createNetworkPanelForMockConnection } from '../../testing/NetworkHelpers.js';
 import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import { SnapshotTester } from '../../testing/SnapshotTester.js';
 import * as Snackbars from '../../ui/components/snackbars/snackbars.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import * as Network from '../network/network.js';
 import * as Timeline from '../timeline/timeline.js';
 import * as AiAssistancePanel from './ai_assistance.js';
 const { urlString } = Platform.DevToolsPath;
@@ -31,7 +29,6 @@ describeWithEnvironment('AI Assistance Panel', () => {
     let viewManagerIsViewVisibleStub;
     async function enableAllFeatureAndSetting() {
         viewManagerIsViewVisibleStub.callsFake(viewName => viewName === 'elements');
-        await createNetworkPanelForMockConnection();
         Common.Settings.Settings.instance().moduleSetting('ai-assistance-enabled').set(true);
         Common.Settings.Settings.instance()
             .moduleSetting('ai-assistance-v2-opt-in-change-dialog-seen')
@@ -270,9 +267,6 @@ describeWithEnvironment('AI Assistance Panel', () => {
         beforeEach(async () => {
             await enableAllFeatureAndSetting();
         });
-        afterEach(async () => {
-            Network.NetworkPanel.NetworkPanel.instance().detach();
-        });
         const tests = [
             {
                 flavor: SDK.DOMModel.DOMNode,
@@ -477,7 +471,7 @@ describeWithEnvironment('AI Assistance Panel', () => {
                 nodeType: Node.ELEMENT_NODE,
             });
             const ownerDoc = sinon.createStubInstance(SDK.DOMModel.DOMDocument);
-            ownerDoc.documentURL = urlString `https://example.com`;
+            sinon.stub(ownerDoc, 'documentURL').get(() => urlString `https://example.com`);
             initialNode.ownerDocument = ownerDoc;
             UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, initialNode);
             viewManagerIsViewVisibleStub.callsFake(viewName => viewName === 'elements');
@@ -1519,9 +1513,6 @@ describeWithEnvironment('AI Assistance Panel', () => {
             createTarget();
             await enableAllFeatureAndSetting();
         });
-        afterEach(async () => {
-            Network.NetworkPanel.NetworkPanel.instance().detach();
-        });
         it('blocks input on requests with a different document origin', async () => {
             const networkRequest = createNetworkRequest({
                 url: urlString `https://a.test/app.js`,
@@ -2124,7 +2115,7 @@ describeWithEnvironment('AI Assistance Panel', () => {
                     nodeType: Node.ELEMENT_NODE,
                 });
                 const ownerDoc = sinon.createStubInstance(SDK.DOMModel.DOMDocument);
-                ownerDoc.documentURL = urlString `https://example.com`;
+                sinon.stub(ownerDoc, 'documentURL').get(() => urlString `https://example.com`);
                 node.ownerDocument = ownerDoc;
                 UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node);
                 viewManagerIsViewVisibleStub.callsFake(viewName => viewName === 'elements');
@@ -2604,7 +2595,6 @@ describe('AiAssistancePanel.ActionDelegate', () => {
     beforeEach(async () => {
         UI.ViewManager.ViewManager.instance({ forceNew: true });
         UI.InspectorView.InspectorView.instance({ forceNew: true });
-        await createNetworkPanelForMockConnection();
     });
     it('should set drawer size to 25% of total size if it\'s less than that size', async () => {
         const totalSizeStub = 400;

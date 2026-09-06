@@ -1,4 +1,4 @@
-// gen/front_end/panels/accessibility/accessibility-meta.prebundle.js
+// ../../front_end/panels/accessibility/accessibility-meta.ts
 import * as i18n from "../../core/i18n/i18n.js";
 import * as UI from "../../ui/legacy/legacy.js";
 var loadedAccessibilityModule;
@@ -21,12 +21,12 @@ async function loadAccessibilityModule() {
   return loadedAccessibilityModule;
 }
 UI.ViewManager.registerViewExtension({
-  location: "elements-sidebar",
+  location: UI.ViewManager.ViewLocationValues.ELEMENTS_SIDEBAR,
   id: "accessibility.view",
   title: i18nLazyString(UIStrings.accessibility),
   commandPrompt: i18nLazyString(UIStrings.shoAccessibility),
   order: 10,
-  persistence: "permanent",
+  persistence: UI.ViewManager.ViewPersistence.PERMANENT,
   async loadView() {
     const Accessibility = await loadAccessibilityModule();
     return Accessibility.AccessibilitySidebarView.AccessibilitySidebarView.instance();

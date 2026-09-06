@@ -4,7 +4,7 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// gen/front_end/panels/protocol_monitor/JSONEditor.js
+// ../../front_end/panels/protocol_monitor/JSONEditor.ts
 var JSONEditor_exports = {};
 __export(JSONEditor_exports, {
   DEFAULT_VIEW: () => DEFAULT_VIEW,
@@ -52,7 +52,7 @@ var JSONEditor_css_default = `/*
 
 .warning-icon {
   margin-left: -18px;
-  margin-right: 4px;
+  margin-right: var(--sys-size-3);
 }
 
 .row {
@@ -133,12 +133,12 @@ ul {
 }
 
 .protocol-monitor-sidebar-toolbar {
-  border-top: 1px solid var(--sys-color-divider);
+  border-top: var(--sys-size-1) solid var(--sys-color-divider);
 }
 
 /*# sourceURL=${import.meta.resolve("./JSONEditor.css")} */`;
 
-// gen/front_end/panels/protocol_monitor/JSONEditor.js
+// ../../front_end/panels/protocol_monitor/JSONEditor.ts
 var { html, render, Directives, nothing } = Lit;
 var { live, classMap, repeat } = Directives;
 var UIStrings = {
@@ -177,15 +177,15 @@ var UIStrings = {
 };
 var str_ = i18n.i18n.registerUIStrings("panels/protocol_monitor/JSONEditor.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
-var ParameterType;
-(function(ParameterType2) {
+var ParameterType = /* @__PURE__ */ ((ParameterType2) => {
   ParameterType2["STRING"] = "string";
   ParameterType2["NUMBER"] = "number";
   ParameterType2["BOOLEAN"] = "boolean";
   ParameterType2["ARRAY"] = "array";
   ParameterType2["OBJECT"] = "object";
   ParameterType2["UNKNOWN"] = "unknown";
-})(ParameterType || (ParameterType = {}));
+  return ParameterType2;
+})(ParameterType || {});
 var splitDescription = (description) => {
   if (description.length > 150) {
     const [firstSentence, restOfDescription] = description.split(".");
@@ -205,11 +205,14 @@ var EMPTY_STRING = "<empty_string>";
 function suggestionFilter(option, query) {
   return option.toLowerCase().includes(query.toLowerCase());
 }
-var Events;
-(function(Events2) {
+var Events = /* @__PURE__ */ ((Events2) => {
   Events2["SUBMIT_EDITOR"] = "submiteditor";
-})(Events || (Events = {}));
-var JSONEditor = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
+  return Events2;
+})(Events || {});
+var JSONEditorBase = Common.ObjectWrapper.eventMixin(
+  UI.Widget.VBox
+);
+var JSONEditor = class extends JSONEditorBase {
   #metadataByCommand = /* @__PURE__ */ new Map();
   #typesByName = /* @__PURE__ */ new Map();
   #enumsByName = /* @__PURE__ */ new Map();
@@ -285,11 +288,19 @@ var JSONEditor = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
   }
   wasShown() {
     super.wasShown();
-    this.#hintPopoverHelper = new UI.PopoverHelper.PopoverHelper(this.contentElement, (event) => this.#handlePopoverDescriptions(event), "protocol-monitor.hint");
+    this.#hintPopoverHelper = new UI.PopoverHelper.PopoverHelper(
+      this.contentElement,
+      (event) => this.#handlePopoverDescriptions(event),
+      "protocol-monitor.hint"
+    );
     this.#hintPopoverHelper.setDisableOnClick(true);
     this.#hintPopoverHelper.setTimeout(300);
     const targetManager = SDK.TargetManager.TargetManager.instance();
-    targetManager.addEventListener("AvailableTargetsChanged", this.#handleAvailableTargetsChanged, this);
+    targetManager.addEventListener(
+      SDK.TargetManager.Events.AVAILABLE_TARGETS_CHANGED,
+      this.#handleAvailableTargetsChanged,
+      this
+    );
     this.#handleAvailableTargetsChanged();
     this.requestUpdate();
   }
@@ -298,7 +309,11 @@ var JSONEditor = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     this.#hintPopoverHelper?.hidePopover();
     this.#hintPopoverHelper?.dispose();
     const targetManager = SDK.TargetManager.TargetManager.instance();
-    targetManager.removeEventListener("AvailableTargetsChanged", this.#handleAvailableTargetsChanged, this);
+    targetManager.removeEventListener(
+      SDK.TargetManager.Events.AVAILABLE_TARGETS_CHANGED,
+      this.#handleAvailableTargetsChanged,
+      this
+    );
   }
   #handleAvailableTargetsChanged() {
     this.targets = SDK.TargetManager.TargetManager.instance().targets();
@@ -312,13 +327,13 @@ var JSONEditor = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
         return;
       }
       switch (parameter.type) {
-        case "number": {
+        case "number" /* NUMBER */: {
           return Number(parameter.value);
         }
-        case "boolean": {
+        case "boolean" /* BOOLEAN */: {
           return Boolean(parameter.value);
         }
-        case "object": {
+        case "object" /* OBJECT */: {
           const nestedParameters = {};
           for (const subParameter of parameter.value) {
             const formattedValue = formatParameterValue(subParameter);
@@ -331,14 +346,14 @@ var JSONEditor = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
           }
           return nestedParameters;
         }
-        case "array": {
+        case "array" /* ARRAY */: {
           const nestedArrayParameters = [];
           for (const subParameter of parameter.value) {
             nestedArrayParameters.push(formatParameterValue(subParameter));
           }
           return nestedArrayParameters.length === 0 ? [] : nestedArrayParameters;
         }
-        case "unknown": {
+        case "unknown" /* UNKNOWN */: {
           try {
             return JSON.parse(parameter.value);
           } catch {
@@ -355,7 +370,7 @@ var JSONEditor = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
       formattedParameters[parameter.name] = formatParameterValue(parameter);
     }
     return formatParameterValue({
-      type: "object",
+      type: "object" /* OBJECT */,
       name: DUMMY_DATA,
       optional: true,
       value: this.parameters,
@@ -371,14 +386,19 @@ var JSONEditor = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
       return;
     }
     this.populateParametersForCommandWithDefaultValues();
-    const displayedParameters = this.#convertObjectToParameterSchema("", parameters, {
-      typeRef: DUMMY_DATA,
-      type: "object",
-      name: "",
-      description: "",
-      optional: true,
-      value: []
-    }, schema.parameters).value;
+    const displayedParameters = this.#convertObjectToParameterSchema(
+      "",
+      parameters,
+      {
+        typeRef: DUMMY_DATA,
+        type: "object" /* OBJECT */,
+        name: "",
+        description: "",
+        optional: true,
+        value: []
+      },
+      schema.parameters
+    ).value;
     const valueByName = new Map(this.parameters.map((param) => [param.name, param]));
     for (const param of displayedParameters) {
       const existingParam = valueByName.get(param.name);
@@ -393,13 +413,13 @@ var JSONEditor = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     const description = schema?.description ?? "";
     const optional = schema?.optional ?? true;
     switch (type) {
-      case "string":
-      case "boolean":
-      case "number":
+      case "string" /* STRING */:
+      case "boolean" /* BOOLEAN */:
+      case "number" /* NUMBER */:
         return this.#convertPrimitiveParameter(key, value, schema);
-      case "object":
+      case "object" /* OBJECT */:
         return this.#convertObjectParameter(key, value, schema, initialSchema);
-      case "array":
+      case "array" /* ARRAY */:
         return this.#convertArrayParameter(key, value, schema);
     }
     return {
@@ -441,10 +461,12 @@ var JSONEditor = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     const objectValues = [];
     for (const objectKey of Object.keys(value)) {
       const objectType = nestedType.find((param) => param.name === objectKey);
-      objectValues.push(this.#convertObjectToParameterSchema(objectKey, value[objectKey], objectType));
+      objectValues.push(
+        this.#convertObjectToParameterSchema(objectKey, value[objectKey], objectType)
+      );
     }
     return {
-      type: "object",
+      type: "object" /* OBJECT */,
       name: key,
       optional: schema.optional,
       typeRef: schema.typeRef,
@@ -465,7 +487,7 @@ var JSONEditor = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     }
     const nestedType = isTypePrimitive(typeRef) ? void 0 : {
       optional: true,
-      type: "object",
+      type: "object" /* OBJECT */,
       value: [],
       typeRef,
       description: "",
@@ -477,7 +499,7 @@ var JSONEditor = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
       objectValues.push(temp);
     }
     return {
-      type: "array",
+      type: "array" /* ARRAY */,
       name: key,
       optional,
       typeRef: schema?.typeRef,
@@ -545,7 +567,7 @@ var JSONEditor = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(commandJson);
   }
   #handleCommandSend() {
-    this.dispatchEventToListeners("submiteditor", {
+    this.dispatchEventToListeners("submiteditor" /* SUBMIT_EDITOR */, {
       command: this.command,
       parameters: this.getParameters(),
       targetId: this.targetId
@@ -561,7 +583,7 @@ var JSONEditor = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     });
   }
   #populateParameterDefaults(parameter) {
-    if (parameter.type === "object") {
+    if (parameter.type === "object" /* OBJECT */) {
       let typeRef = parameter.typeRef;
       if (!typeRef) {
         typeRef = DUMMY_DATA;
@@ -576,7 +598,7 @@ var JSONEditor = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
         isCorrectType: true
       };
     }
-    if (parameter.type === "array") {
+    if (parameter.type === "array" /* ARRAY */) {
       return {
         ...parameter,
         value: parameter?.optional ? void 0 : parameter.value?.map((param) => this.#populateParameterDefaults(param)) || [],
@@ -598,7 +620,7 @@ var JSONEditor = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
       if (i === pathArray.length - 1) {
         return { parameter, parentParameter };
       }
-      if (parameter?.type === "array" || parameter?.type === "object") {
+      if (parameter?.type === "array" /* ARRAY */ || parameter?.type === "object" /* OBJECT */) {
         if (parameter.value) {
           parameters = parameter.value;
         }
@@ -610,7 +632,7 @@ var JSONEditor = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     throw new Error("Not found");
   }
   #isValueOfCorrectType(parameter, value) {
-    if (parameter.type === "number" && isNaN(Number(value))) {
+    if (parameter.type === "number" /* NUMBER */ && isNaN(Number(value))) {
       return false;
     }
     const acceptedValues = this.#computeDropdownValues(parameter);
@@ -708,7 +730,7 @@ var JSONEditor = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     }
   }
   #createNestedParameter(type, name) {
-    if (type.type === "object") {
+    if (type.type === "object" /* OBJECT */) {
       let typeRef = type.typeRef;
       if (!typeRef) {
         typeRef = DUMMY_DATA;
@@ -716,7 +738,7 @@ var JSONEditor = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
       const nestedTypes = this.typesByName.get(typeRef) ?? [];
       const nestedValue = nestedTypes.map((nestedType) => this.#createNestedParameter(nestedType, nestedType.name));
       return {
-        type: "object",
+        type: "object" /* OBJECT */,
         name,
         optional: type.optional,
         typeRef,
@@ -742,17 +764,17 @@ var JSONEditor = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
       return;
     }
     switch (parameter.type) {
-      case "array": {
+      case "array" /* ARRAY */: {
         const typeRef = parameter.typeRef;
         if (!typeRef) {
           throw new Error("Every array parameter must have a typeRef");
         }
         const nestedType = this.typesByName.get(typeRef) ?? [];
         const nestedValue = nestedType.map((type2) => this.#createNestedParameter(type2, type2.name));
-        let type = isTypePrimitive(typeRef) ? typeRef : "object";
+        let type = isTypePrimitive(typeRef) ? typeRef : "object" /* OBJECT */;
         if (nestedType.length === 0) {
           if (this.enumsByName.get(typeRef)) {
-            type = "string";
+            type = "string" /* STRING */;
           }
         }
         if (!parameter.value) {
@@ -769,7 +791,7 @@ var JSONEditor = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
         });
         break;
       }
-      case "object": {
+      case "object" /* OBJECT */: {
         let typeRef = parameter.typeRef;
         if (!typeRef) {
           typeRef = DUMMY_DATA;
@@ -779,7 +801,7 @@ var JSONEditor = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
         }
         if (!this.typesByName.get(typeRef)) {
           parameter.value.push({
-            type: "string",
+            type: "string" /* STRING */,
             name: "",
             optional: true,
             value: "",
@@ -796,7 +818,7 @@ var JSONEditor = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
         });
         if (parentParameter) {
           parameter.value.push({
-            type: "object",
+            type: "object" /* OBJECT */,
             name: "",
             optional: true,
             typeRef,
@@ -820,7 +842,7 @@ var JSONEditor = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
       return;
     }
     switch (parameter.type) {
-      case "object":
+      case "object" /* OBJECT */:
         if (parameter.optional && !isParentArray) {
           parameter.value = void 0;
           break;
@@ -831,7 +853,7 @@ var JSONEditor = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
           parameter.value.forEach((param) => this.#handleClearParameter(param, isParentArray));
         }
         break;
-      case "array":
+      case "array" /* ARRAY */:
         parameter.value = parameter.optional ? void 0 : [];
         break;
       default:
@@ -849,7 +871,7 @@ var JSONEditor = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
       return;
     }
     parentParameter.value.splice(parentParameter.value.findIndex((p) => p === parameter), 1);
-    if (parentParameter.type === "array") {
+    if (parentParameter.type === "array" /* ARRAY */) {
       for (let i = 0; i < parentParameter.value.length; i++) {
         parentParameter.value[i].name = String(i);
       }
@@ -863,11 +885,11 @@ var JSONEditor = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     this.requestUpdate();
   }
   #computeDropdownValues(parameter) {
-    if (parameter.type === "string") {
+    if (parameter.type === "string" /* STRING */) {
       const enums = this.enumsByName.get(`${parameter.typeRef}`) ?? {};
       return Object.values(enums);
     }
-    if (parameter.type === "boolean") {
+    if (parameter.type === "boolean" /* BOOLEAN */) {
       return ["true", "false"];
     }
     return [];
@@ -925,7 +947,7 @@ var JSONEditor = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
   }
 };
 function isTypePrimitive(type) {
-  if (type === "string" || type === "boolean" || type === "number") {
+  if (type === "string" /* STRING */ || type === "boolean" /* BOOLEAN */ || type === "number" /* NUMBER */) {
     return true;
   }
   return false;
@@ -951,9 +973,9 @@ function renderInlineButton(opts) {
   return html`
           <devtools-button
             title=${opts.title}
-            .size=${"SMALL"}
+            .size=${Buttons.Button.Size.SMALL}
             .iconName=${opts.iconName}
-            .variant=${"icon"}
+            .variant=${Buttons.Button.Variant.ICON}
             class=${classMap(opts.classMap)}
             @click=${opts.onClick}
             .jslogContext=${opts.jslogContext}
@@ -970,18 +992,18 @@ function renderParameters(input, parameters, id, parentParameter, parentParamete
     <ul>
       ${repeat(parameters, (parameter) => {
     const parameterId = parentParameter ? `${parentParameterId}.${parameter.name}` : parameter.name;
-    const subparameters = parameter.type === "array" || parameter.type === "object" ? parameter.value ?? [] : [];
+    const subparameters = parameter.type === "array" /* ARRAY */ || parameter.type === "object" /* OBJECT */ ? parameter.value ?? [] : [];
     const isPrimitive = isTypePrimitive(parameter.type);
-    const isArray = parameter.type === "array";
-    const isParentArray = parentParameter && parentParameter.type === "array";
-    const isParentObject = parentParameter && parentParameter.type === "object";
-    const isObject = parameter.type === "object";
+    const isArray = parameter.type === "array" /* ARRAY */;
+    const isParentArray = parentParameter && parentParameter.type === "array" /* ARRAY */;
+    const isParentObject = parentParameter && parentParameter.type === "object" /* OBJECT */;
+    const isObject = parameter.type === "object" /* OBJECT */;
     const isParamValueUndefined = parameter.value === void 0;
     const isParamOptional = parameter.optional;
     const hasTypeRef = isObject && parameter.typeRef && input.typesByName.get(parameter.typeRef) !== void 0;
     const hasNoKeys = parameter.isKeyEditable;
     const isCustomEditorDisplayed = isObject && !hasTypeRef;
-    const hasOptions = parameter.type === "string" || parameter.type === "boolean";
+    const hasOptions = parameter.type === "string" /* STRING */ || parameter.type === "boolean" /* BOOLEAN */;
     const canClearParameter = isArray && !isParamValueUndefined && parameter.value?.length !== 0 || isObject && !isParamValueUndefined;
     const parametersClasses = {
       "optional-parameter": parameter.optional,
@@ -1174,20 +1196,20 @@ var DEFAULT_VIEW = (input, _output, target) => {
         <devtools-button title=${i18nString(UIStrings.copyCommand)}
                         .iconName=${"copy"}
                         .jslogContext=${"protocol-monitor.copy-command"}
-                        .variant=${"toolbar"}
+                        .variant=${Buttons.Button.Variant.TOOLBAR}
                         @click=${input.onCopyToClipboard}></devtools-button>
           <div class=toolbar-spacer></div>
         <devtools-button title=${Host.Platform.isMac() ? i18nString(UIStrings.sendCommandCmdEnter) : i18nString(UIStrings.sendCommandCtrlEnter)}
                         .iconName=${"send"}
                         jslogContext="protocol-monitor.send-command"
-                        .variant=${"primary_toolbar"}
+                        .variant=${Buttons.Button.Variant.PRIMARY_TOOLBAR}
                         @click=${input.onCommandSend}></devtools-button>
       </devtools-toolbar>
       ` : nothing}
     </div>`, target);
 };
 
-// gen/front_end/panels/protocol_monitor/ProtocolMonitor.js
+// ../../front_end/panels/protocol_monitor/ProtocolMonitor.ts
 var ProtocolMonitor_exports = {};
 __export(ProtocolMonitor_exports, {
   CommandAutocompleteSuggestionProvider: () => CommandAutocompleteSuggestionProvider,
@@ -1222,11 +1244,11 @@ var protocolMonitor_css_default = `/*
  */
 @scope to (devtools-widget > *) {
   .protocol-monitor-toolbar {
-    border-bottom: 1px solid var(--sys-color-divider);
+    border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
   }
 
   .protocol-monitor-bottom-toolbar {
-    border-top: 1px solid var(--sys-color-divider);
+    border-top: var(--sys-size-1) solid var(--sys-color-divider);
   }
 
   .target-selector {
@@ -1241,7 +1263,7 @@ var protocolMonitor_css_default = `/*
 
 /*# sourceURL=${import.meta.resolve("./protocolMonitor.css")} */`;
 
-// gen/front_end/panels/protocol_monitor/ProtocolMonitor.js
+// ../../front_end/panels/protocol_monitor/ProtocolMonitor.ts
 var { styleMap } = Directives2;
 var { widget, widgetRef } = UI2.Widget;
 var UIStrings2 = {
@@ -1346,11 +1368,14 @@ var buildProtocolMetadata = (domains) => {
   }
   return metadataByCommand2;
 };
-var metadataByCommand = buildProtocolMetadata(ProtocolClient.InspectorBackend.inspectorBackend.agentPrototypes.values());
+var metadataByCommand = buildProtocolMetadata(
+  ProtocolClient.InspectorBackend.inspectorBackend.agentPrototypes.values()
+);
 var typesByName = ProtocolClient.InspectorBackend.inspectorBackend.typeMap;
 var enumsByName = ProtocolClient.InspectorBackend.inspectorBackend.enumMap;
 var DEFAULT_VIEW2 = (input, output, target) => {
-  render2(html2`
+  render2(
+    html2`
         <style>${UI2.inspectorCommonStyles}</style>
         <style>${protocolMonitor_css_default}</style>
         <devtools-split-view name="protocol-monitor-split-container"
@@ -1365,19 +1390,19 @@ var DEFAULT_VIEW2 = (input, output, target) => {
                                 .iconName=${"record-start"}
                                 .toggledIconName=${"record-stop"}
                                 .jslogContext=${"protocol-monitor.toggle-recording"}
-                                .variant=${"icon_toggle"}
-                                .toggleType=${"red-toggle"}
+                                .variant=${Buttons2.Button.Variant.ICON_TOGGLE}
+                                .toggleType=${Buttons2.Button.ToggleType.RED}
                                 .toggled=${true}
                                 @click=${(e) => input.onRecord(e.target.toggled)}>
                </devtools-button>
               <devtools-button title=${i18nString2(UIStrings2.clearAll)}
                                .iconName=${"clear"}
-                               .variant=${"toolbar"}
+                               .variant=${Buttons2.Button.Variant.TOOLBAR}
                                .jslogContext=${"protocol-monitor.clear-all"}
                                @click=${() => input.onClear()}></devtools-button>
               <devtools-button title=${i18nString2(UIStrings2.save)}
                                .iconName=${"download"}
-                               .variant=${"toolbar"}
+                               .variant=${Buttons2.Button.Variant.TOOLBAR}
                                .jslogContext=${"protocol-monitor.save"}
                                @click=${() => input.onSave()}></devtools-button>
               <devtools-toolbar-input type="filter"
@@ -1426,7 +1451,8 @@ var DEFAULT_VIEW2 = (input, output, target) => {
                         ${i18nString2(UIStrings2.session)}
                       </th>
                     </tr>
-                    ${input.messages.map((message) => html2`
+                    ${input.messages.map(
+      (message) => html2`
                       <tr @select=${() => input.onSelect(message)}
                           @contextmenu=${(e) => input.onContextMenu(message, e.detail)}
                           style="--override-data-grid-row-background-color: var(--sys-color-surface3)">
@@ -1450,14 +1476,15 @@ var DEFAULT_VIEW2 = (input, output, target) => {
                         <td data-value=${message.requestTime}>${i18nString2(UIStrings2.sMs, { PH1: String(message.requestTime) })}</td>
                         <td>${targetToString(message.target)}</td>
                         <td>${message.sessionId || ""}</td>
-                      </tr>`)}
+                      </tr>`
+    )}
                   </table>
               </devtools-data-grid>
               <devtools-widget ${widget(InfoWidget, {
-    request: input.selectedMessage?.params,
-    response: input.selectedMessage?.result || input.selectedMessage?.error,
-    type: !input.selectedMessage ? void 0 : "id" in input?.selectedMessage ? "sent" : "received"
-  })}
+      request: input.selectedMessage?.params,
+      response: input.selectedMessage?.result || input.selectedMessage?.error,
+      type: !input.selectedMessage ? void 0 : "id" in input?.selectedMessage ? "sent" : "received"
+    })}
                   class="protocol-monitor-info"
                   slot="sidebar"></devtools-widget>
             </devtools-split-view>
@@ -1465,15 +1492,15 @@ var DEFAULT_VIEW2 = (input, output, target) => {
                jslog=${VisualLogging2.toolbar("bottom")}>
               <devtools-button .title=${input.sidebarVisible ? i18nString2(UIStrings2.hideCDPCommandEditor) : i18nString2(UIStrings2.showCDPCommandEditor)}
                                .iconName=${input.sidebarVisible ? "left-panel-close" : "left-panel-open"}
-                               .variant=${"toolbar"}
+                               .variant=${Buttons2.Button.Variant.TOOLBAR}
                                .jslogContext=${"protocol-monitor.toggle-command-editor"}
                                @click=${() => input.onToggleSidebar()}></devtools-button>
               </devtools-button>
               <devtools-toolbar-input id="command-input"
                                       style=${styleMap({
-    "flex-grow": 1,
-    display: input.sidebarVisible ? "none" : "flex"
-  })}
+      "flex-grow": 1,
+      display: input.sidebarVisible ? "none" : "flex"
+    })}
                                       value=${input.command}
                                       list="command-input-suggestions"
                                       placeholder=${i18nString2(UIStrings2.sendRawCDPCommand)}
@@ -1501,10 +1528,12 @@ var DEFAULT_VIEW2 = (input, output, target) => {
               ${widget(JSONEditor, { metadataByCommand, typesByName, enumsByName })}
               @submiteditor=${(e) => input.onEditorSubmit(e.detail.command, e.detail.parameters, e.detail.targetId)}
               ${widgetRef(JSONEditor, (e) => {
-    output.editorWidget = e;
-  })}>
+      output.editorWidget = e;
+    })}>
           </devtools-widget>
-        </devtools-split-view>`, target);
+        </devtools-split-view>`,
+    target
+  );
 };
 var ProtocolMonitorImpl = class extends UI2.Panel.Panel {
   started;
@@ -1522,7 +1551,10 @@ var ProtocolMonitorImpl = class extends UI2.Panel.Panel {
   #filter = "";
   #editorWidget;
   #targetsBySessionId = /* @__PURE__ */ new Map();
-  #columnsVisibilitySetting = Common2.Settings.Settings.instance().createSetting("protocol-monitor-columns", {});
+  #columnsVisibilitySetting = Common2.Settings.Settings.instance().createSetting(
+    "protocol-monitor-columns",
+    {}
+  );
   constructor(view = DEFAULT_VIEW2) {
     super("protocol-monitor", true);
     this.#view = view;
@@ -1532,9 +1564,12 @@ var ProtocolMonitorImpl = class extends UI2.Panel.Panel {
     this.filterParser = new TextUtils.TextUtils.FilterParser(this.#filterKeys);
     this.#selectedTargetId = "main";
     this.performUpdate();
-    SDK2.TargetManager.TargetManager.instance().addEventListener("AvailableTargetsChanged", () => {
-      this.requestUpdate();
-    });
+    SDK2.TargetManager.TargetManager.instance().addEventListener(
+      SDK2.TargetManager.Events.AVAILABLE_TARGETS_CHANGED,
+      () => {
+        this.requestUpdate();
+      }
+    );
     SDK2.TargetManager.TargetManager.instance().observeTargets(this);
   }
   targetAdded(target) {
@@ -1648,7 +1683,9 @@ var ProtocolMonitorImpl = class extends UI2.Panel.Panel {
     menu.footerSection().appendItem(i18nString2(UIStrings2.documentation), () => {
       const [domain, method] = message.method.split(".");
       const type = "id" in message ? "method" : "event";
-      UIHelpers.openInNewTab(`https://chromedevtools.github.io/devtools-protocol/tot/${domain}#${type}-${method}`);
+      UIHelpers.openInNewTab(
+        `https://chromedevtools.github.io/devtools-protocol/tot/${domain}#${type}-${method}`
+      );
     }, { jslogContext: "documentation" });
   }
   onCommandSend(command, parameters, target) {
@@ -1803,12 +1840,16 @@ var InfoWidget = class extends UI2.Widget.VBox {
     this.requestUpdate();
   }
   performUpdate() {
-    this.#view({
-      request: this.request,
-      response: this.response,
-      type: this.type,
-      selectedTab: this.type !== "sent" ? "response" : void 0
-    }, void 0, this.contentElement);
+    this.#view(
+      {
+        request: this.request,
+        response: this.response,
+        type: this.type,
+        selectedTab: this.type !== "sent" ? "response" : void 0
+      },
+      void 0,
+      this.contentElement
+    );
   }
 };
 function parseCommandInput(input) {
@@ -1825,7 +1866,9 @@ function targetToString(target) {
   if (!target) {
     return "";
   }
-  return target.decorateLabel(`${target.name()} ${target === SDK2.TargetManager.TargetManager.instance().rootTarget() ? "" : target.id()}`);
+  return target.decorateLabel(
+    `${target.name()} ${target === SDK2.TargetManager.TargetManager.instance().rootTarget() ? "" : target.id()}`
+  );
 }
 export {
   JSONEditor_exports as JSONEditor,

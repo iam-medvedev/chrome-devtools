@@ -4,7 +4,7 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// gen/front_end/panels/layers/LayerPaintProfilerView.js
+// ../../front_end/panels/layers/LayerPaintProfilerView.ts
 var LayerPaintProfilerView_exports = {};
 __export(LayerPaintProfilerView_exports, {
   DEFAULT_VIEW: () => DEFAULT_VIEW,
@@ -92,7 +92,7 @@ var LayerPaintProfilerView = class extends UI.Widget.VBox {
   };
 };
 
-// gen/front_end/panels/layers/LayersPanel.js
+// ../../front_end/panels/layers/LayersPanel.ts
 var LayersPanel_exports = {};
 __export(LayersPanel_exports, {
   DetailsViewTabs: () => DetailsViewTabs,
@@ -104,7 +104,7 @@ import * as SDK2 from "../../core/sdk/sdk.js";
 import * as UI2 from "../../ui/legacy/legacy.js";
 import * as LayerViewer2 from "../layer_viewer/layer_viewer.js";
 
-// gen/front_end/panels/layers/LayerTreeModel.js
+// ../../front_end/panels/layers/LayerTreeModel.ts
 var LayerTreeModel_exports = {};
 __export(LayerTreeModel_exports, {
   AgentLayer: () => AgentLayer,
@@ -129,7 +129,11 @@ var LayerTreeModel = class extends SDK.SDKModel.SDKModel {
     this.paintProfilerModel = target.model(SDK.PaintProfiler.PaintProfilerModel);
     const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
     if (resourceTreeModel) {
-      resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.onPrimaryPageChanged, this);
+      resourceTreeModel.addEventListener(
+        SDK.ResourceTreeModel.Events.PrimaryPageChanged,
+        this.onPrimaryPageChanged,
+        this
+      );
     }
     this.#layerTree = null;
     this.throttler = new Common.Throttler.Throttler(20);
@@ -178,7 +182,7 @@ var LayerTreeModel = class extends SDK.SDKModel.SDKModel {
       }
     }
     this.lastPaintRectByLayerId = /* @__PURE__ */ new Map();
-    this.dispatchEventToListeners(Events.LayerTreeChanged);
+    this.dispatchEventToListeners("LayerTreeChanged" /* LayerTreeChanged */);
   }
   layerPainted(layerId, clipRect) {
     if (!this.enabled) {
@@ -194,7 +198,7 @@ var LayerTreeModel = class extends SDK.SDKModel.SDKModel {
       return;
     }
     layer.didPaint(clipRect);
-    this.dispatchEventToListeners(Events.LayerPainted, layer);
+    this.dispatchEventToListeners("LayerPainted" /* LayerPainted */, layer);
   }
   onPrimaryPageChanged() {
     this.#layerTree = null;
@@ -203,12 +207,12 @@ var LayerTreeModel = class extends SDK.SDKModel.SDKModel {
     }
   }
 };
-SDK.SDKModel.SDKModel.register(LayerTreeModel, { capabilities: 2, autostart: false });
-var Events;
-(function(Events2) {
+SDK.SDKModel.SDKModel.register(LayerTreeModel, { capabilities: SDK.Target.Capability.DOM, autostart: false });
+var Events = /* @__PURE__ */ ((Events2) => {
   Events2["LayerTreeChanged"] = "LayerTreeChanged";
   Events2["LayerPainted"] = "LayerPainted";
-})(Events || (Events = {}));
+  return Events2;
+})(Events || {});
 var AgentLayerTree = class extends SDK.LayerTreeBase.LayerTreeBase {
   layerTreeModel;
   constructor(layerTreeModel) {
@@ -408,7 +412,10 @@ var AgentLayer = class {
     this.#paintCount = 0;
     this.layerPayload = layerPayload;
     this.scrollRectsInternal = this.layerPayload.scrollRects || [];
-    this.#stickyPositionConstraint = this.layerPayload.stickyPositionConstraint ? new SDK.LayerTreeBase.StickyPositionConstraint(this.layerTreeModel.layerTree(), this.layerPayload.stickyPositionConstraint) : null;
+    this.#stickyPositionConstraint = this.layerPayload.stickyPositionConstraint ? new SDK.LayerTreeBase.StickyPositionConstraint(
+      this.layerTreeModel.layerTree(),
+      this.layerPayload.stickyPositionConstraint
+    ) : null;
   }
   matrixFromArray(a) {
     function toFixed9(x) {
@@ -421,7 +428,11 @@ var AgentLayer = class {
     let matrix = offsetMatrix;
     if (this.layerPayload.transform) {
       const transformMatrix = this.matrixFromArray(this.layerPayload.transform);
-      const anchorVector = new Geometry.Vector(this.layerPayload.width * this.anchorPoint()[0], this.layerPayload.height * this.anchorPoint()[1], this.anchorPoint()[2]);
+      const anchorVector = new Geometry.Vector(
+        this.layerPayload.width * this.anchorPoint()[0],
+        this.layerPayload.height * this.anchorPoint()[1],
+        this.anchorPoint()[2]
+      );
       const anchorPoint = Geometry.multiplyVectorByMatrixAndNormalize(anchorVector, matrix);
       const anchorMatrix = new WebKitCSSMatrix().translate(-anchorPoint.x, -anchorPoint.y, -anchorPoint.z);
       matrix = anchorMatrix.inverse().multiply(transformMatrix.multiply(anchorMatrix.multiply(matrix)));
@@ -437,7 +448,10 @@ var AgentLayer = class {
     this.#quad = [];
     const vertices = this.createVertexArrayForRect(this.layerPayload.width, this.layerPayload.height);
     for (let i = 0; i < 4; ++i) {
-      const point = Geometry.multiplyVectorByMatrixAndNormalize(new Geometry.Vector(vertices[i * 3], vertices[i * 3 + 1], vertices[i * 3 + 2]), matrix);
+      const point = Geometry.multiplyVectorByMatrixAndNormalize(
+        new Geometry.Vector(vertices[i * 3], vertices[i * 3 + 1], vertices[i * 3 + 2]),
+        matrix
+      );
       this.#quad.push(point.x, point.y);
     }
     function calculateQuadForLayer(layer) {
@@ -459,7 +473,7 @@ var LayerTreeDispatcher = class {
   }
 };
 
-// gen/front_end/panels/layers/LayersPanel.js
+// ../../front_end/panels/layers/LayersPanel.ts
 var UIStrings = {
   /**
    * @description Title of the details tab in the Layers panel.
@@ -490,7 +504,11 @@ var LayersPanel = class _LayersPanel extends UI2.Panel.PanelWithSidebar {
     SDK2.TargetManager.TargetManager.instance().observeTargets(this, { scoped: true });
     this.layerViewHost = new LayerViewer2.LayerViewHost.LayerViewHost();
     this.layerTreeOutline = new LayerViewer2.LayerTreeOutline.LayerTreeOutline(this.layerViewHost);
-    this.layerTreeOutline.addEventListener("PaintProfilerRequested", this.onPaintProfileRequested, this);
+    this.layerTreeOutline.addEventListener(
+      LayerViewer2.LayerTreeOutline.Events.PAINT_PROFILER_REQUESTED,
+      this.onPaintProfileRequested,
+      this
+    );
     this.layerTreeOutline.show(this.panelSidebarElement());
     this.setDefaultFocusedElement(this.layerTreeOutline.element);
     this.rightSplitWidget = new UI2.SplitWidget.SplitWidget(false, true, "layer-details-split-view-state");
@@ -499,12 +517,20 @@ var LayersPanel = class _LayersPanel extends UI2.Panel.PanelWithSidebar {
     this.layers3DView = new LayerViewer2.Layers3DView.Layers3DView(this.layerViewHost);
     this.rightSplitWidget.setMainWidget(this.layers3DView);
     this.rightSplitWidget.hideSidebar();
-    this.layers3DView.addEventListener("PaintProfilerRequested", this.onPaintProfileRequested, this);
-    this.layers3DView.addEventListener("ScaleChanged", this.onScaleChanged, this);
+    this.layers3DView.addEventListener(
+      LayerViewer2.Layers3DView.Events.PAINT_PROFILER_REQUESTED,
+      this.onPaintProfileRequested,
+      this
+    );
+    this.layers3DView.addEventListener(LayerViewer2.Layers3DView.Events.SCALE_CHANGED, this.onScaleChanged, this);
     this.tabbedPane = new UI2.TabbedPane.TabbedPane();
     this.rightSplitWidget.setSidebarWidget(this.tabbedPane);
     this.layerDetailsView = new LayerViewer2.LayerDetailsView.LayerDetailsView(this.layerViewHost);
-    this.layerDetailsView.addEventListener("PaintProfilerRequested", this.onPaintProfileRequested, this);
+    this.layerDetailsView.addEventListener(
+      LayerViewer2.LayerDetailsView.Events.PAINT_PROFILER_REQUESTED,
+      this.onPaintProfileRequested,
+      this
+    );
     this.tabbedPane.appendTab(DetailsViewTabs.Details, i18nString(UIStrings.details), this.layerDetailsView);
     this.paintProfilerView = new LayerPaintProfilerView(this.showImage.bind(this));
     this.tabbedPane.addEventListener(UI2.TabbedPane.Events.TabClosed, this.onTabClosed, this);
@@ -539,8 +565,8 @@ var LayersPanel = class _LayersPanel extends UI2.Panel.PanelWithSidebar {
     if (!this.model) {
       return;
     }
-    this.model.addEventListener(Events.LayerTreeChanged, this.onLayerTreeUpdated, this);
-    this.model.addEventListener(Events.LayerPainted, this.onLayerPainted, this);
+    this.model.addEventListener("LayerTreeChanged" /* LayerTreeChanged */, this.onLayerTreeUpdated, this);
+    this.model.addEventListener("LayerPainted" /* LayerPainted */, this.onLayerPainted, this);
     if (this.isShowing()) {
       this.model.enable();
       void this.update();
@@ -550,8 +576,8 @@ var LayersPanel = class _LayersPanel extends UI2.Panel.PanelWithSidebar {
     if (!this.model || this.model.target() !== target) {
       return;
     }
-    this.model.removeEventListener(Events.LayerTreeChanged, this.onLayerTreeUpdated, this);
-    this.model.removeEventListener(Events.LayerPainted, this.onLayerPainted, this);
+    this.model.removeEventListener("LayerTreeChanged" /* LayerTreeChanged */, this.onLayerTreeUpdated, this);
+    this.model.removeEventListener("LayerPainted" /* LayerPainted */, this.onLayerPainted, this);
     void this.model.disable();
     this.model = null;
   }
@@ -590,7 +616,14 @@ var LayersPanel = class _LayersPanel extends UI2.Panel.PanelWithSidebar {
       }
       this.layerBeingProfiled = selection.layer();
       if (!this.tabbedPane.hasTab(DetailsViewTabs.Profiler)) {
-        this.tabbedPane.appendTab(DetailsViewTabs.Profiler, i18nString(UIStrings.profiler), this.paintProfilerView, void 0, true, true);
+        this.tabbedPane.appendTab(
+          DetailsViewTabs.Profiler,
+          i18nString(UIStrings.profiler),
+          this.paintProfilerView,
+          void 0,
+          true,
+          true
+        );
       }
       this.tabbedPane.selectTab(DetailsViewTabs.Profiler);
       this.paintProfilerView.profile(snapshotWithRect.snapshot);

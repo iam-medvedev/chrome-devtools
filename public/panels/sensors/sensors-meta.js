@@ -1,4 +1,4 @@
-// gen/front_end/panels/sensors/sensors-meta.prebundle.js
+// ../../front_end/panels/sensors/sensors-meta.ts
 import * as Common from "../../core/common/common.js";
 import * as i18n from "../../core/i18n/i18n.js";
 import * as SDK from "../../core/sdk/sdk.js";
@@ -124,11 +124,11 @@ async function loadEmulationModule() {
   return loadedSensorsModule;
 }
 UI.ViewManager.registerViewExtension({
-  location: "drawer-view",
+  location: UI.ViewManager.ViewLocationValues.DRAWER_VIEW,
   commandPrompt: i18nLazyString(UIStrings.showSensors),
   title: i18nLazyString(UIStrings.sensors),
   id: "sensors",
-  persistence: "closeable",
+  persistence: UI.ViewManager.ViewPersistence.CLOSEABLE,
   order: 100,
   async loadView() {
     const Sensors = await loadEmulationModule();
@@ -144,7 +144,7 @@ UI.ViewManager.registerViewExtension({
   ]
 });
 UI.ViewManager.registerViewExtension({
-  location: "settings-view",
+  location: UI.ViewManager.ViewLocationValues.SETTINGS_VIEW,
   id: "emulation-locations",
   commandPrompt: i18nLazyString(UIStrings.showLocations),
   title: i18nLazyString(UIStrings.locations),
@@ -159,9 +159,9 @@ UI.ViewManager.registerViewExtension({
   iconName: "location-on"
 });
 Common.Settings.registerSettingExtension({
-  storageType: "Synced",
+  storageType: Common.Settings.SettingStorageType.SYNCED,
   settingName: "emulation.locations",
-  settingType: "array",
+  settingType: Common.Settings.SettingType.ARRAY,
   // TODO(crbug.com/1136655): http://crrev.com/c/2666426 regressed localization of city titles.
   // These titles should be localized since they are displayed to users.
   defaultValue: [

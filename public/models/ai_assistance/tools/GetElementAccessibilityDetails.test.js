@@ -61,7 +61,7 @@ describe('GetElementAccessibilityDetailsTool', () => {
             { name: 'role', value: 'button', _node: mockNode },
         ]);
         const mockDocument = sinon.createStubInstance(SDK.DOMModel.DOMDocument);
-        mockDocument.documentURL = urlString `${nodeUrl}`;
+        sinon.stub(mockDocument, 'documentURL').get(() => urlString `${nodeUrl}`);
         mockNode.ownerDocument = mockDocument;
         const mockSnapshot = sinon.createStubInstance(SDK.DOMModel.DOMNodeSnapshot);
         mockNode.takeSnapshot.resolves(mockSnapshot);
@@ -69,7 +69,6 @@ describe('GetElementAccessibilityDetailsTool', () => {
         sinon.stub(SDK.DOMModel.DeferredDOMNode.prototype, 'resolvePromise').resolves(resolvedNode);
         return {
             context: {
-                conversationContext: null,
                 getTarget: () => mockTarget,
                 getEstablishedOrigin: () => establishedOrigin,
             },

@@ -16,7 +16,7 @@ const renderIssueCounter = (data) => {
     assert.isNotNull(component.shadowRoot);
     return { component, shadowRoot: component.shadowRoot };
 };
-export const extractIconGroups = (shadowRoot) => {
+const extractIconGroups = (shadowRoot) => {
     const iconButton = shadowRoot.querySelector('icon-button');
     assert.instanceOf(iconButton, IconButton.IconButton.IconButton);
     const iconButtonShadowRoot = iconButton.shadowRoot;
@@ -34,7 +34,7 @@ export const extractIconGroups = (shadowRoot) => {
     }
     return iconGroups;
 };
-export const extractButton = (shadowRoot) => {
+const extractButton = (shadowRoot) => {
     const iconButton = shadowRoot.querySelector('icon-button');
     assert.instanceOf(iconButton, IconButton.IconButton.IconButton);
     const iconButtonShadowRoot = iconButton.shadowRoot;

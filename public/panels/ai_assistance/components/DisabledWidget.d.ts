@@ -1,3 +1,4 @@
+import '../../../ui/kit/kit.js';
 import * as Host from '../../../core/host/host.js';
 import * as Root from '../../../core/root/root.js';
 import * as UI from '../../../ui/legacy/legacy.js';
@@ -10,7 +11,7 @@ export type View = typeof DEFAULT_VIEW;
 export declare class DisabledWidget extends UI.Widget.Widget {
     #private;
     aidaAvailability: Host.AidaClient.AidaAccessPreconditions;
-    constructor(element?: HTMLElement, view?: typeof DEFAULT_VIEW);
+    constructor(element?: HTMLElement, view?: View);
     wasShown(): void;
     performUpdate(): Promise<void> | void;
 }

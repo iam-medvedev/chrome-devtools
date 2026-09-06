@@ -1,4 +1,4 @@
-// gen/front_end/panels/changes/changes-meta.prebundle.js
+// ../../front_end/panels/changes/changes-meta.ts
 import * as i18n from "../../core/i18n/i18n.js";
 import * as UI from "../../ui/legacy/legacy.js";
 var loadedChangesModule;
@@ -21,11 +21,11 @@ async function loadChangesModule() {
   return loadedChangesModule;
 }
 UI.ViewManager.registerViewExtension({
-  location: "drawer-view",
+  location: UI.ViewManager.ViewLocationValues.DRAWER_VIEW,
   id: "changes.changes",
   title: i18nLazyString(UIStrings.changes),
   commandPrompt: i18nLazyString(UIStrings.showChanges),
-  persistence: "closeable",
+  persistence: UI.ViewManager.ViewPersistence.CLOSEABLE,
   async loadView() {
     const Changes = await loadChangesModule();
     return new Changes.ChangesView.ChangesView();

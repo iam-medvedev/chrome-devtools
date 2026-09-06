@@ -4,12 +4,13 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { makeCompleteEvent } from '../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../testing/TraceLoader.js';
 import * as Trace from '../trace/trace.js';
 describeWithEnvironment('TraceProcessor', function () {
-    it('can use a trace processor', async function () {
+    it('can use a trace processor', async () => {
         const processor = Trace.Processor.TraceProcessor.createWithAllHandlers();
-        const file = await TraceLoader.rawEvents(this, 'basic.json.gz');
+        const file = [makeCompleteEvent('Program', 0, 10)];
         // Check parsing after instantiation.
         assert.isNull(processor.data);
         await processor.parse(file, { isFreshRecording: true, isCPUProfile: false });
@@ -335,13 +336,11 @@ describeWithEnvironment('TraceProcessor', function () {
             ]);
         });
         it('sorts insights by estimated savings and field data', async function () {
+            const file = await TraceLoader.rawEvents(this, 'image-delivery.json.gz');
+            const loadedMetadata = await TraceLoader.metadata(this, 'image-delivery.json.gz');
             const getInsightOrder = async (includeMetadata) => {
                 const processor = Trace.Processor.TraceProcessor.createWithAllHandlers();
-                const file = await TraceLoader.rawEvents(this, 'image-delivery.json.gz');
-                let metadata;
-                if (includeMetadata) {
-                    metadata = await TraceLoader.metadata(this, 'image-delivery.json.gz');
-                }
+                const metadata = includeMetadata ? loadedMetadata : undefined;
                 await processor.parse(file, { isFreshRecording: true, isCPUProfile: false, metadata });
                 if (!processor.insights) {
                     throw new Error('No insights');

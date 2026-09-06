@@ -1,4 +1,4 @@
-// gen/front_end/panels/ai_assistance/ai_assistance-meta.prebundle.js
+// ../../front_end/panels/ai_assistance/ai_assistance-meta.ts
 import * as Common from "../../core/common/common.js";
 import * as i18n from "../../core/i18n/i18n.js";
 import * as Root from "../../core/root/root.js";
@@ -78,12 +78,12 @@ function isAnyFeatureAvailable(config) {
   return isStylingAgentFeatureAvailable(config) || isNetworkAgentFeatureAvailable(config) || isPerformanceAgentFeatureAvailable(config) || isFileAgentFeatureAvailable(config) || isStorageAgentFeatureAvailable(config);
 }
 UI.ViewManager.registerViewExtension({
-  location: "drawer-view",
+  location: UI.ViewManager.ViewLocationValues.DRAWER_VIEW,
   id: "freestyler",
   commandPrompt: i18nAiBrandedString(UIStrings.showGemini, UIStrings.showAiAssistance),
   title: i18nAiBrandedString(UIStrings.gemini, UIStrings.aiAssistance),
   order: 10,
-  persistence: "closeable",
+  persistence: UI.ViewManager.ViewPersistence.CLOSEABLE,
   hasToolbar: false,
   condition: (config) => isAnyFeatureAvailable(config) && !isPolicyRestricted(config),
   async loadView() {
@@ -92,7 +92,7 @@ UI.ViewManager.registerViewExtension({
   }
 });
 SettingUIRegistration.SettingUIRegistration.register(AiAssistanceModel.AiUtils.aiAssistanceEnabledSettingDescriptor, {
-  category: "AI",
+  category: Common.Settings.SettingCategory.AI,
   title: i18nAiBrandedString(UIStrings.enableGemini, UIStrings.enableAiAssistance)
 });
 UI.ActionRegistration.registerActionExtension({
@@ -100,7 +100,7 @@ UI.ActionRegistration.registerActionExtension({
   contextTypes() {
     return [];
   },
-  category: "GLOBAL",
+  category: UI.ActionRegistration.ActionCategory.GLOBAL,
   title: i18nAiBrandedString(UIStrings.debugWithGemini, UIStrings.debugWithAi),
   configurableBindings: false,
   async loadActionDelegate() {
@@ -114,7 +114,7 @@ UI.ActionRegistration.registerActionExtension({
   contextTypes() {
     return [];
   },
-  category: "GLOBAL",
+  category: UI.ActionRegistration.ActionCategory.GLOBAL,
   title: i18nAiBrandedString(UIStrings.debugWithGemini, UIStrings.debugWithAi),
   configurableBindings: false,
   async loadActionDelegate() {
@@ -128,7 +128,7 @@ UI.ActionRegistration.registerActionExtension({
   contextTypes() {
     return [];
   },
-  category: "GLOBAL",
+  category: UI.ActionRegistration.ActionCategory.GLOBAL,
   title: i18nAiBrandedString(UIStrings.debugWithGemini, UIStrings.debugWithAi),
   configurableBindings: false,
   async loadActionDelegate() {
@@ -142,7 +142,7 @@ UI.ActionRegistration.registerActionExtension({
   contextTypes() {
     return [];
   },
-  category: "GLOBAL",
+  category: UI.ActionRegistration.ActionCategory.GLOBAL,
   title: i18nAiBrandedString(UIStrings.debugWithGemini, UIStrings.debugWithAi),
   configurableBindings: false,
   async loadActionDelegate() {
@@ -156,7 +156,7 @@ UI.ActionRegistration.registerActionExtension({
   contextTypes() {
     return [];
   },
-  category: "GLOBAL",
+  category: UI.ActionRegistration.ActionCategory.GLOBAL,
   title: i18nAiBrandedString(UIStrings.debugWithGemini, UIStrings.debugWithAi),
   configurableBindings: false,
   async loadActionDelegate() {
@@ -170,7 +170,7 @@ UI.ActionRegistration.registerActionExtension({
   contextTypes() {
     return [];
   },
-  category: "GLOBAL",
+  category: UI.ActionRegistration.ActionCategory.GLOBAL,
   title: i18nAiBrandedString(UIStrings.debugWithGemini, UIStrings.debugWithAi),
   configurableBindings: false,
   async loadActionDelegate() {
@@ -184,7 +184,7 @@ UI.ActionRegistration.registerActionExtension({
   contextTypes() {
     return [];
   },
-  category: "GLOBAL",
+  category: UI.ActionRegistration.ActionCategory.GLOBAL,
   title: i18nAiBrandedString(UIStrings.debugWithGemini, UIStrings.debugWithAi),
   configurableBindings: false,
   async loadActionDelegate() {
@@ -198,7 +198,7 @@ UI.ActionRegistration.registerActionExtension({
   contextTypes() {
     return [];
   },
-  category: "GLOBAL",
+  category: UI.ActionRegistration.ActionCategory.GLOBAL,
   title: i18nAiBrandedString(UIStrings.debugWithGemini, UIStrings.debugWithAi),
   configurableBindings: false,
   async loadActionDelegate() {
@@ -212,7 +212,7 @@ UI.ActionRegistration.registerActionExtension({
   contextTypes() {
     return [];
   },
-  category: "GLOBAL",
+  category: UI.ActionRegistration.ActionCategory.GLOBAL,
   title: i18nAiBrandedString(UIStrings.debugWithGemini, UIStrings.debugWithAi),
   configurableBindings: false,
   async loadActionDelegate() {
@@ -226,7 +226,7 @@ UI.ActionRegistration.registerActionExtension({
   contextTypes() {
     return [];
   },
-  category: "GLOBAL",
+  category: UI.ActionRegistration.ActionCategory.GLOBAL,
   title: i18nAiBrandedString(UIStrings.debugWithGemini, UIStrings.debugWithAi),
   configurableBindings: false,
   async loadActionDelegate() {

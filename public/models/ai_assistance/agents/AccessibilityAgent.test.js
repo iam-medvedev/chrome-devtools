@@ -3,13 +3,26 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import sinon from 'sinon';
-import * as Platform from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import { mockAidaClient } from '../../../testing/AiAssistanceHelpers.js';
-import { createTarget, describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
+import { deinitializeGlobalVars } from '../../../testing/EnvironmentHelpers.js';
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
+import { setupRuntimeHooks } from '../../../testing/RuntimeHelpers.js';
+import { setupSettingsHooks } from '../../../testing/SettingsHelpers.js';
+import { TestUniverse } from '../../../testing/TestUniverse.js';
 import * as AiAssistance from '../ai_assistance.js';
-const { urlString } = Platform.DevToolsPath;
-describeWithEnvironment('AccessibilityAgent', () => {
+describe('AccessibilityAgent', () => {
+    setupLocaleHooks();
+    setupSettingsHooks();
+    setupRuntimeHooks();
+    let universe;
+    beforeEach(() => {
+        universe = new TestUniverse();
+        sinon.stub(SDK.TargetManager.TargetManager, 'instance').returns(universe.targetManager);
+    });
+    afterEach(async () => {
+        await deinitializeGlobalVars();
+    });
     const mockReport = {
         lighthouseVersion: '1.0.0',
         userAgent: 'test user agent',
@@ -65,6 +78,27 @@ describeWithEnvironment('AccessibilityAgent', () => {
         assert.include(text, '# Lighthouse Report');
         assert.include(text, '# Audits for Accessibility');
         assert.include(text, '**Accessibility Audit**: 50 (Fail)');
+    });
+    it('yields context with LIGHTHOUSE_REPORT widget', async () => {
+        const aidaClient = mockAidaClient([[{
+                    explanation: 'This is the answer',
+                    metadata: {
+                        rpcGlobalId: 123,
+                    },
+                }]]);
+        const agent = new AiAssistance.AccessibilityAgent.AccessibilityAgent({
+            aidaClient,
+        });
+        const context = new AiAssistance.AccessibilityContext.AccessibilityContext(mockReport);
+        const responses = await Array.fromAsync(agent.run('test', { selected: context }));
+        const contextResponse = responses.find(response => response.type === "context" /* AiAssistance.AiAgent.ResponseType.CONTEXT */);
+        assert.exists(contextResponse);
+        assert.deepEqual(contextResponse.widgets, [{
+                name: 'LIGHTHOUSE_REPORT',
+                data: {
+                    report: mockReport,
+                },
+            }]);
     });
     it('can call the getLighthouseAudits method', async () => {
         const aidaClient = mockAidaClient([[{
@@ -124,7 +158,7 @@ describeWithEnvironment('AccessibilityAgent', () => {
         assert.strictEqual(titleResponse.title, 'Reading accessibility details');
     });
     it('getElementAccessibilityDetails yields a DomTreeAiWidget containing the node snapshot', async () => {
-        const target = createTarget();
+        const target = universe.createTarget();
         const aidaClient = mockAidaClient([[{
                     explanation: '',
                     functionCalls: [{ name: 'getElementAccessibilityDetails', args: { path: '1,HTML,1,BODY', explanation: 'testing' } }],
@@ -143,15 +177,13 @@ describeWithEnvironment('AccessibilityAgent', () => {
         mockNode.id = 42;
         mockNode.backendNodeId.returns(100);
         mockNode.attributes.returns([]);
-        const mockDocument = sinon.createStubInstance(SDK.DOMModel.DOMDocument);
-        mockDocument.documentURL = urlString `https://example.com`;
-        mockNode.ownerDocument = mockDocument;
+        mockNode.securityOrigin.returns(SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'));
         const mockSnapshot = sinon.createStubInstance(SDK.DOMModel.DOMNodeSnapshot);
         mockNode.takeSnapshot.resolves(mockSnapshot);
         sinon.stub(domModel, 'pushNodeByPathToFrontend').resolves(42);
         sinon.stub(domModel, 'nodeForId').withArgs(42).returns(mockNode);
         const mainDocument = sinon.createStubInstance(SDK.DOMModel.DOMDocument);
-        mainDocument.documentURL = urlString `https://example.com`;
+        mainDocument.securityOrigin.returns(SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'));
         sinon.stub(domModel, 'existingDocument').returns(mainDocument);
         sinon.stub(accessibilityModel, 'requestAndLoadSubTreeToNode').resolves();
         const mockAxNode = sinon.createStubInstance(SDK.AccessibilityModel.AccessibilityNode);
@@ -175,7 +207,7 @@ describeWithEnvironment('AccessibilityAgent', () => {
         assert.strictEqual(widget.data.root, mockSnapshot);
     });
     it('getElementAccessibilityDetails returns an error if the node is in a different origin', async () => {
-        const target = createTarget();
+        const target = universe.createTarget();
         const aidaClient = mockAidaClient([[{
                     explanation: '',
                     functionCalls: [{ name: 'getElementAccessibilityDetails', args: { path: '1,HTML,1,BODY', explanation: 'testing' } }],
@@ -191,21 +223,19 @@ describeWithEnvironment('AccessibilityAgent', () => {
         const mockNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
         mockNode.domModel.returns(domModel);
         mockNode.id = 42;
-        const mockDocument = sinon.createStubInstance(SDK.DOMModel.DOMDocument);
-        mockDocument.documentURL = urlString `https://cross-origin.com`;
-        mockNode.ownerDocument = mockDocument;
+        mockNode.securityOrigin.returns(SDK.SecurityOrigin.SecurityOrigin.create('https://cross-origin.com'));
         sinon.stub(domModel, 'pushNodeByPathToFrontend').resolves(42);
         sinon.stub(domModel, 'nodeForId').withArgs(42).returns(mockNode);
         const mainDocument = sinon.createStubInstance(SDK.DOMModel.DOMDocument);
-        mainDocument.documentURL = urlString `https://example.com`;
+        mainDocument.securityOrigin.returns(SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'));
         sinon.stub(domModel, 'existingDocument').returns(mainDocument);
         const responses = await Array.fromAsync(agent.run('test', { selected: context }));
         const actionResponse = responses.find(response => response.type === "action" /* AiAssistance.AiAgent.ResponseType.ACTION */);
         assert.exists(actionResponse);
         assert.strictEqual(actionResponse.output, 'Could not find the element with path: 1,HTML,1,BODY');
     });
-    it('getElementAccessibilityDetails proceeds if both are identical data URLs', async () => {
-        const target = createTarget();
+    it('getElementAccessibilityDetails returns an error if the node is in a different file:// origin', async () => {
+        const target = universe.createTarget();
         const aidaClient = mockAidaClient([[{
                     explanation: '',
                     functionCalls: [{ name: 'getElementAccessibilityDetails', args: { path: '1,HTML,1,BODY', explanation: 'testing' } }],
@@ -223,13 +253,41 @@ describeWithEnvironment('AccessibilityAgent', () => {
         mockNode.id = 42;
         mockNode.backendNodeId.returns(100);
         mockNode.attributes.returns([]);
-        const mockDocument = sinon.createStubInstance(SDK.DOMModel.DOMDocument);
-        mockDocument.documentURL = urlString `data:text/html,foo`;
-        mockNode.ownerDocument = mockDocument;
+        mockNode.securityOrigin.returns(SDK.SecurityOrigin.SecurityOrigin.create('file:///tmp/victim.html'));
         sinon.stub(domModel, 'pushNodeByPathToFrontend').resolves(42);
         sinon.stub(domModel, 'nodeForId').withArgs(42).returns(mockNode);
         const mainDocument = sinon.createStubInstance(SDK.DOMModel.DOMDocument);
-        mainDocument.documentURL = urlString `data:text/html,foo`;
+        mainDocument.securityOrigin.returns(SDK.SecurityOrigin.SecurityOrigin.create('file:///tmp/attacker.html'));
+        sinon.stub(domModel, 'existingDocument').returns(mainDocument);
+        const responses = await Array.fromAsync(agent.run('test', { selected: context }));
+        const actionResponse = responses.find(response => response.type === "action" /* AiAssistance.AiAgent.ResponseType.ACTION */);
+        assert.exists(actionResponse);
+        assert.strictEqual(actionResponse.output, 'Could not find the element with path: 1,HTML,1,BODY');
+    });
+    it('getElementAccessibilityDetails proceeds if both are the same file:// origin', async () => {
+        const target = universe.createTarget();
+        const aidaClient = mockAidaClient([[{
+                    explanation: '',
+                    functionCalls: [{ name: 'getElementAccessibilityDetails', args: { path: '1,HTML,1,BODY', explanation: 'testing' } }],
+                    metadata: {
+                        rpcGlobalId: 123,
+                    },
+                }]]);
+        const agent = new AiAssistance.AccessibilityAgent.AccessibilityAgent({
+            aidaClient,
+        });
+        const context = new AiAssistance.AccessibilityContext.AccessibilityContext(mockReport);
+        const domModel = target.model(SDK.DOMModel.DOMModel);
+        const mockNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+        mockNode.domModel.returns(domModel);
+        mockNode.id = 42;
+        mockNode.backendNodeId.returns(100);
+        mockNode.attributes.returns([]);
+        mockNode.securityOrigin.returns(SDK.SecurityOrigin.SecurityOrigin.create('file:///tmp/index.html'));
+        sinon.stub(domModel, 'pushNodeByPathToFrontend').resolves(42);
+        sinon.stub(domModel, 'nodeForId').withArgs(42).returns(mockNode);
+        const mainDocument = sinon.createStubInstance(SDK.DOMModel.DOMDocument);
+        mainDocument.securityOrigin.returns(SDK.SecurityOrigin.SecurityOrigin.create('file:///tmp/index.html'));
         sinon.stub(domModel, 'existingDocument').returns(mainDocument);
         const responses = await Array.fromAsync(agent.run('test', { selected: context }));
         const actionResponse = responses.find(response => response.type === "action" /* AiAssistance.AiAgent.ResponseType.ACTION */);
@@ -237,7 +295,7 @@ describeWithEnvironment('AccessibilityAgent', () => {
         assert.strictEqual(actionResponse.output, 'Could not find accessibility node for the element.');
     });
     it('getElementAccessibilityDetails returns an error if they are different data URLs', async () => {
-        const target = createTarget();
+        const target = universe.createTarget();
         const aidaClient = mockAidaClient([[{
                     explanation: '',
                     functionCalls: [{ name: 'getElementAccessibilityDetails', args: { path: '1,HTML,1,BODY', explanation: 'testing' } }],
@@ -255,13 +313,11 @@ describeWithEnvironment('AccessibilityAgent', () => {
         mockNode.id = 42;
         mockNode.backendNodeId.returns(100);
         mockNode.attributes.returns([]);
-        const mockDocument = sinon.createStubInstance(SDK.DOMModel.DOMDocument);
-        mockDocument.documentURL = urlString `data:text/html,bar`;
-        mockNode.ownerDocument = mockDocument;
+        mockNode.securityOrigin.returns(SDK.SecurityOrigin.SecurityOrigin.create('data:text/html,bar'));
         sinon.stub(domModel, 'pushNodeByPathToFrontend').resolves(42);
         sinon.stub(domModel, 'nodeForId').withArgs(42).returns(mockNode);
         const mainDocument = sinon.createStubInstance(SDK.DOMModel.DOMDocument);
-        mainDocument.documentURL = urlString `data:text/html,foo`;
+        mainDocument.securityOrigin.returns(SDK.SecurityOrigin.SecurityOrigin.create('data:text/html,foo'));
         sinon.stub(domModel, 'existingDocument').returns(mainDocument);
         const responses = await Array.fromAsync(agent.run('test', { selected: context }));
         const actionResponse = responses.find(response => response.type === "action" /* AiAssistance.AiAgent.ResponseType.ACTION */);
@@ -305,7 +361,7 @@ describeWithEnvironment('AccessibilityAgent', () => {
         };
     }
     it('can call the executeJavaScript method', async () => {
-        const target = createTarget();
+        const target = universe.createTarget();
         const aidaClient = mockAidaClient([
             [{
                     explanation: 'thought',
@@ -338,7 +394,7 @@ describeWithEnvironment('AccessibilityAgent', () => {
         sinon.assert.calledOnce(execJs);
     });
     it('cannot call executeJavaScript if the report is imported', async () => {
-        const target = createTarget();
+        const target = universe.createTarget();
         const aidaClient = mockAidaClient([
             [{
                     explanation: 'thought',

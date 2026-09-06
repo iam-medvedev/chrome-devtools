@@ -1,4 +1,4 @@
-// gen/front_end/panels/timeline/timeline-meta.prebundle.js
+// ../../front_end/panels/timeline/timeline-meta.ts
 import * as Common from "../../core/common/common.js";
 import * as i18n from "../../core/i18n/i18n.js";
 import * as SDK from "../../core/sdk/sdk.js";
@@ -7,123 +7,123 @@ import * as UI from "../../ui/legacy/legacy.js";
 import * as SettingsUI from "../../ui/settings/settings.js";
 var UIStrings = {
   /**
-   * @description Text for the performance of something
+   * @description Name of the Performance panel.
    */
   performance: "Performance",
   /**
-   * @description Command for showing the 'Performance' tool
+   * @description Command to show the Performance panel.
    */
   showPerformance: "Show Performance",
   /**
-   * @description Text to record a series of actions for analysis
+   * @description Title of an action to start recording a performance trace.
    */
   record: "Record",
   /**
-   * @description Text of an item that stops the running task
+   * @description Title of an action to stop recording a performance trace.
    */
   stop: "Stop",
   /**
-   * @description Title of an action in the timeline tool to record reload
+   * @description Title of an action to record a performance trace while reloading the page.
    */
   recordAndReload: "Record and reload",
   /**
-   * @description Tooltip text that appears when hovering over the largeicon download button
+   * @description Title of an action to save the current performance profile.
    */
   saveProfile: "Save profile\u2026",
   /**
-   * @description Tooltip text that appears when hovering over the largeicon load button
+   * @description Title of an action to load a performance profile.
    */
   loadProfile: "Load profile\u2026",
   /**
-   * @description Prev button title in Film Strip View of the Performance panel
+   * @description Title of an action to navigate to the previous frame in the film strip view of the Performance panel.
    */
   previousFrame: "Previous frame",
   /**
-   * @description Next button title in Film Strip View of the Performance panel
+   * @description Title of an action to navigate to the next frame in the film strip view of the Performance panel.
    */
   nextFrame: "Next frame",
   /**
-   * @description Title of an action in the timeline tool to show history
+   * @description Title of an action to show recent timeline sessions in the Performance panel.
    */
   showRecentTimelineSessions: "Show recent timeline sessions",
   /**
-   * @description Title of an action that opens the previous recording in the performance panel
+   * @description Title of an action to switch to the previous recording in the Performance panel.
    */
   previousRecording: "Previous recording",
   /**
-   * @description Title of an action that opens the next recording in the performance panel
+   * @description Title of an action to switch to the next recording in the Performance panel.
    */
   nextRecording: "Next recording",
   /**
-   * @description Title of a setting under the Performance category in Settings
+   * @description Title of a setting under the Performance category in Settings to show Chrome frame in the Layers view.
    */
   chromeFrameInLayersView: "Chrome frame in Layers view",
   /**
-   * @description Title of a setting under the Performance category in Settings
+   * @description Title of a setting under the Performance category in Settings to show all events.
    */
   timelineShowAllEvents: "Show all events",
   /**
-   * @description Title of a setting under the Performance category in Settings
+   * @description Title of a setting under the Performance category in Settings to enable soft navigation monitoring.
    */
   enableSoftNavigations: "Enable soft navigation performance monitoring",
   /**
-   * @description Title of a setting under the Performance category in Settings
+   * @description Title of a setting under the Performance category in Settings to enable timeline debug mode.
    */
   timelineDebugMode: "Timeline debug mode (trace event details, etc.)",
   /**
-   * @description Title of a setting under the Performance category in Settings
+   * @description Title of a setting under the Performance category in Settings for invalidation tracking.
    */
   timelineInvalidationTracking: "Invalidation tracking",
   /**
-   * @description Title of a setting in Performance panel.
+   * @description Title of a setting in the Performance panel to disable JavaScript samples.
    */
   disableJavascriptSamples: "Disable JavaScript samples",
   /**
-   * @description Title of a setting in Performance panel.
+   * @description Title of a setting in the Performance panel to enable advanced paint instrumentation.
    */
   enableAdvancedPaint: "Enable advanced paint instrumentation (slow)",
   /**
-   * @description Title of a setting in Performance panel.
+   * @description Title of a setting in the Performance panel to enable CSS selector stats.
    */
   enableSelectorStats: "Enable CSS selector stats (slow)",
   /**
-   * @description Title of a setting in Performance panel.
+   * @description Title of a setting in the Performance panel to configure screenshot capture.
    */
   screenshotCapture: "Screenshot capture",
   /**
-   * @description Title of a setting in Performance panel.
+   * @description Title of a setting in the Performance panel to capture screenshots.
    */
   screenshots: "Screenshots",
   /**
-   * @description Title of a setting in Performance panel.
+   * @description Title of a setting in the Performance panel to show memory counters.
    */
   memory: "Memory",
   /**
-   * @description Title of a setting in Performance panel.
+   * @description Title of a setting in the Performance panel to dim third parties.
    */
   dimThirdParties: "Dim 3rd parties",
   /**
-   * @description Title of a setting in Performance panel.
+   * @description Title of a setting in the Performance panel to show custom tracks.
    */
   showCustomtracks: "Show custom tracks",
   /**
-   * @description Title of a setting in Performance panel counters graph.
+   * @description Title of a counter setting in the Performance panel counters graph for the JS heap.
    */
   jsHeap: "JS heap",
   /**
-   * @description Title of a setting in Performance panel counters graph.
+   * @description Title of a counter setting in the Performance panel counters graph for documents.
    */
   documents: "Documents",
   /**
-   * @description Title of a setting in Performance panel counters graph.
+   * @description Title of a counter setting in the Performance panel counters graph for DOM nodes.
    */
   nodes: "Nodes",
   /**
-   * @description Title of a setting in Performance panel counters graph.
+   * @description Title of a counter setting in the Performance panel counters graph for event listeners.
    */
   listeners: "Listeners",
   /**
-   * @description Title of a setting in Performance panel counters graph.
+   * @description Title of a counter setting in the Performance panel counters graph for GPU memory.
    */
   gpuMemory: "GPU memory"
 };
@@ -143,7 +143,7 @@ function maybeRetrieveContextTypes(getClassCallBack) {
   return getClassCallBack(loadedTimelineModule);
 }
 UI.ViewManager.registerViewExtension({
-  location: "panel",
+  location: UI.ViewManager.ViewLocationValues.PANEL,
   id: "timeline",
   title: i18nLazyString(UIStrings.performance),
   commandPrompt: i18nLazyString(UIStrings.showPerformance),
@@ -151,15 +151,17 @@ UI.ViewManager.registerViewExtension({
   async loadView(universe) {
     const Timeline = await loadTimelineModule();
     const { pageResourceLoader: resourceLoader, targetManager, isolateManager } = universe;
-    return Timeline.TimelinePanel.TimelinePanel.instance({ forceNew: true, resourceLoader, targetManager, isolateManager });
+    return Timeline.TimelinePanel.TimelinePanel.instance(
+      { forceNew: true, resourceLoader, targetManager, isolateManager }
+    );
   }
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "timeline.toggle-recording",
-  category: "PERFORMANCE",
-  iconClass: "record-start",
+  category: UI.ActionRegistration.ActionCategory.PERFORMANCE,
+  iconClass: UI.ActionRegistration.IconClass.START_RECORDING,
   toggleable: true,
-  toggledIconClass: "record-stop",
+  toggledIconClass: UI.ActionRegistration.IconClass.STOP_RECORDING,
   toggleWithRedColor: true,
   contextTypes() {
     return maybeRetrieveContextTypes((Timeline) => [Timeline.TimelinePanel.TimelinePanel]);
@@ -180,22 +182,22 @@ UI.ActionRegistration.registerActionExtension({
   ],
   bindings: [
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Ctrl+E"
     },
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Meta+E"
     }
   ]
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "timeline.record-reload",
-  iconClass: "refresh",
+  iconClass: UI.ActionRegistration.IconClass.REFRESH,
   contextTypes() {
     return maybeRetrieveContextTypes((Timeline) => [Timeline.TimelinePanel.TimelinePanel]);
   },
-  category: "PERFORMANCE",
+  category: UI.ActionRegistration.ActionCategory.PERFORMANCE,
   title: i18nLazyString(UIStrings.recordAndReload),
   async loadActionDelegate() {
     const Timeline = await loadTimelineModule();
@@ -203,17 +205,17 @@ UI.ActionRegistration.registerActionExtension({
   },
   bindings: [
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Ctrl+Shift+E"
     },
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Meta+Shift+E"
     }
   ]
 });
 UI.ActionRegistration.registerActionExtension({
-  category: "PERFORMANCE",
+  category: UI.ActionRegistration.ActionCategory.PERFORMANCE,
   actionId: "timeline.save-to-file",
   contextTypes() {
     return maybeRetrieveContextTypes((Timeline) => [Timeline.TimelinePanel.TimelinePanel]);
@@ -225,17 +227,17 @@ UI.ActionRegistration.registerActionExtension({
   title: i18nLazyString(UIStrings.saveProfile),
   bindings: [
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Ctrl+S"
     },
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Meta+S"
     }
   ]
 });
 UI.ActionRegistration.registerActionExtension({
-  category: "PERFORMANCE",
+  category: UI.ActionRegistration.ActionCategory.PERFORMANCE,
   actionId: "timeline.load-from-file",
   contextTypes() {
     return maybeRetrieveContextTypes((Timeline) => [Timeline.TimelinePanel.TimelinePanel]);
@@ -247,18 +249,18 @@ UI.ActionRegistration.registerActionExtension({
   title: i18nLazyString(UIStrings.loadProfile),
   bindings: [
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Ctrl+O"
     },
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Meta+O"
     }
   ]
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "timeline.jump-to-previous-frame",
-  category: "PERFORMANCE",
+  category: UI.ActionRegistration.ActionCategory.PERFORMANCE,
   title: i18nLazyString(UIStrings.previousFrame),
   contextTypes() {
     return maybeRetrieveContextTypes((Timeline) => [Timeline.TimelinePanel.TimelinePanel]);
@@ -275,7 +277,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "timeline.jump-to-next-frame",
-  category: "PERFORMANCE",
+  category: UI.ActionRegistration.ActionCategory.PERFORMANCE,
   title: i18nLazyString(UIStrings.nextFrame),
   contextTypes() {
     return maybeRetrieveContextTypes((Timeline) => [Timeline.TimelinePanel.TimelinePanel]);
@@ -296,25 +298,25 @@ UI.ActionRegistration.registerActionExtension({
     const Timeline = await loadTimelineModule();
     return new Timeline.TimelinePanel.ActionDelegate();
   },
-  category: "PERFORMANCE",
+  category: UI.ActionRegistration.ActionCategory.PERFORMANCE,
   title: i18nLazyString(UIStrings.showRecentTimelineSessions),
   contextTypes() {
     return maybeRetrieveContextTypes((Timeline) => [Timeline.TimelinePanel.TimelinePanel]);
   },
   bindings: [
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Ctrl+H"
     },
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Meta+Y"
     }
   ]
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "timeline.previous-recording",
-  category: "PERFORMANCE",
+  category: UI.ActionRegistration.ActionCategory.PERFORMANCE,
   async loadActionDelegate() {
     const Timeline = await loadTimelineModule();
     return new Timeline.TimelinePanel.ActionDelegate();
@@ -325,18 +327,18 @@ UI.ActionRegistration.registerActionExtension({
   },
   bindings: [
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Alt+Left"
     },
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Meta+Left"
     }
   ]
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "timeline.next-recording",
-  category: "PERFORMANCE",
+  category: UI.ActionRegistration.ActionCategory.PERFORMANCE,
   async loadActionDelegate() {
     const Timeline = await loadTimelineModule();
     return new Timeline.TimelinePanel.ActionDelegate();
@@ -347,65 +349,65 @@ UI.ActionRegistration.registerActionExtension({
   },
   bindings: [
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Alt+Right"
     },
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Meta+Right"
     }
   ]
 });
 Common.Settings.registerSettingExtension({
-  category: "PERFORMANCE",
-  storageType: "Synced",
+  category: Common.Settings.SettingCategory.PERFORMANCE,
+  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.chromeFrameInLayersView),
   settingName: "frame-viewer-chrome-window",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: true
 });
 Common.Settings.registerSettingExtension({
-  category: "PERFORMANCE",
-  storageType: "Synced",
+  category: Common.Settings.SettingCategory.PERFORMANCE,
+  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.timelineInvalidationTracking),
   settingName: "timeline-invalidation-tracking",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: false
 });
 Common.Settings.registerSettingExtension({
-  category: "PERFORMANCE",
-  storageType: "Synced",
+  category: Common.Settings.SettingCategory.PERFORMANCE,
+  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.timelineShowAllEvents),
   settingName: "timeline-show-all-events",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: false
 });
 SettingsUI.SettingUIRegistration.register(LiveMetrics.timelineEnableSoftNavigationsSettingDescriptor, {
-  category: "PERFORMANCE",
+  category: Common.Settings.SettingCategory.PERFORMANCE,
   title: i18nLazyString(UIStrings.enableSoftNavigations)
 });
 Common.Settings.registerSettingExtension({
-  category: "PERFORMANCE",
-  storageType: "Synced",
+  category: Common.Settings.SettingCategory.PERFORMANCE,
+  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.timelineDebugMode),
   settingName: "timeline-debug-mode",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: false
 });
 Common.Settings.registerSettingExtension({
-  category: "PERFORMANCE",
-  storageType: "Synced",
+  category: Common.Settings.SettingCategory.PERFORMANCE,
+  storageType: Common.Settings.SettingStorageType.SYNCED,
   settingName: "annotations-hidden",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: false
 });
 UI.ContextMenu.registerItem({
-  location: "timelineMenu/open",
+  location: UI.ContextMenu.ItemLocation.TIMELINE_MENU_OPEN,
   actionId: "timeline.load-from-file",
   order: 10
 });
 UI.ContextMenu.registerItem({
-  location: "timelineMenu/open",
+  location: UI.ContextMenu.ItemLocation.TIMELINE_MENU_OPEN,
   actionId: "timeline.save-to-file",
   order: 15
 });
@@ -492,107 +494,107 @@ Common.Revealer.registerRevealer({
   }
 });
 Common.Settings.registerSettingExtension({
-  category: "",
-  storageType: "Session",
+  category: Common.Settings.SettingCategory.NONE,
+  storageType: Common.Settings.SettingStorageType.SESSION,
   title: i18nLazyString(UIStrings.disableJavascriptSamples),
   settingName: "timeline-disable-js-sampling",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: false
 });
 Common.Settings.registerSettingExtension({
-  category: "",
-  storageType: "Session",
+  category: Common.Settings.SettingCategory.NONE,
+  storageType: Common.Settings.SettingStorageType.SESSION,
   title: i18nLazyString(UIStrings.enableAdvancedPaint),
   settingName: "timeline-capture-layers-and-pictures",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: false
 });
 Common.Settings.registerSettingExtension({
-  category: "",
-  storageType: "Session",
+  category: Common.Settings.SettingCategory.NONE,
+  storageType: Common.Settings.SettingStorageType.SESSION,
   title: i18nLazyString(UIStrings.enableSelectorStats),
   settingName: "timeline-capture-selector-stats",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: false
 });
 Common.Settings.registerSettingExtension({
-  category: "",
-  storageType: "Session",
+  category: Common.Settings.SettingCategory.NONE,
+  storageType: Common.Settings.SettingStorageType.SESSION,
   title: i18nLazyString(UIStrings.screenshotCapture),
   settingName: "timeline-screenshot-capture-mode",
-  settingType: "enum",
+  settingType: Common.Settings.SettingType.ENUM,
   defaultValue: "auto"
 });
 Common.Settings.registerSettingExtension({
-  category: "",
-  storageType: "Global",
+  category: Common.Settings.SettingCategory.NONE,
+  storageType: Common.Settings.SettingStorageType.GLOBAL,
   title: i18nLazyString(UIStrings.screenshots),
   settingName: "timeline-show-screenshots",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: true
 });
 Common.Settings.registerSettingExtension({
-  category: "",
-  storageType: "Session",
+  category: Common.Settings.SettingCategory.NONE,
+  storageType: Common.Settings.SettingStorageType.SESSION,
   title: i18nLazyString(UIStrings.memory),
   settingName: "timeline-show-memory",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: false
 });
 Common.Settings.registerSettingExtension({
-  category: "",
-  storageType: "Session",
+  category: Common.Settings.SettingCategory.NONE,
+  storageType: Common.Settings.SettingStorageType.SESSION,
   title: i18nLazyString(UIStrings.dimThirdParties),
   settingName: "timeline-dim-third-parties",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: false
 });
 Common.Settings.registerSettingExtension({
-  category: "",
-  storageType: "Global",
+  category: Common.Settings.SettingCategory.NONE,
+  storageType: Common.Settings.SettingStorageType.GLOBAL,
   title: i18nLazyString(UIStrings.showCustomtracks),
   settingName: "timeline-show-extension-data",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: true
 });
 Common.Settings.registerSettingExtension({
-  category: "",
-  storageType: "Global",
+  category: Common.Settings.SettingCategory.NONE,
+  storageType: Common.Settings.SettingStorageType.GLOBAL,
   title: i18nLazyString(UIStrings.jsHeap),
   settingName: "timeline-counters-graph-js-heap-size-used",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: true
 });
 Common.Settings.registerSettingExtension({
-  category: "",
-  storageType: "Global",
+  category: Common.Settings.SettingCategory.NONE,
+  storageType: Common.Settings.SettingStorageType.GLOBAL,
   title: i18nLazyString(UIStrings.documents),
   settingName: "timeline-counters-graph-documents",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: true
 });
 Common.Settings.registerSettingExtension({
-  category: "",
-  storageType: "Global",
+  category: Common.Settings.SettingCategory.NONE,
+  storageType: Common.Settings.SettingStorageType.GLOBAL,
   title: i18nLazyString(UIStrings.nodes),
   settingName: "timeline-counters-graph-nodes",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: true
 });
 Common.Settings.registerSettingExtension({
-  category: "",
-  storageType: "Global",
+  category: Common.Settings.SettingCategory.NONE,
+  storageType: Common.Settings.SettingStorageType.GLOBAL,
   title: i18nLazyString(UIStrings.listeners),
   settingName: "timeline-counters-graph-js-event-listeners",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: true
 });
 Common.Settings.registerSettingExtension({
-  category: "",
-  storageType: "Global",
+  category: Common.Settings.SettingCategory.NONE,
+  storageType: Common.Settings.SettingStorageType.GLOBAL,
   title: i18nLazyString(UIStrings.gpuMemory),
   settingName: "timeline-counters-graph-gpu-memory-used-kb",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: true
 });
 //# sourceMappingURL=timeline-meta.js.map

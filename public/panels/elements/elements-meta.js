@@ -1,4 +1,4 @@
-// gen/front_end/panels/elements/elements-meta.prebundle.js
+// ../../front_end/panels/elements/elements-meta.ts
 import * as Common from "../../core/common/common.js";
 import * as i18n from "../../core/i18n/i18n.js";
 import * as Root from "../../core/root/root.js";
@@ -245,12 +245,12 @@ function maybeRetrieveContextTypes(getClassCallBack) {
   return getClassCallBack(loadedElementsModule);
 }
 UI.ViewManager.registerViewExtension({
-  location: "panel",
+  location: UI.ViewManager.ViewLocationValues.PANEL,
   id: "elements",
   commandPrompt: i18nLazyString(UIStrings.showElements),
   title: i18nLazyString(UIStrings.elements),
   order: 10,
-  persistence: "permanent",
+  persistence: UI.ViewManager.ViewPersistence.PERMANENT,
   hasToolbar: false,
   async loadView(universe) {
     const Elements2 = await loadElementsModule();
@@ -260,7 +260,7 @@ UI.ViewManager.registerViewExtension({
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "elements.show-styles",
-  category: "ELEMENTS",
+  category: UI.ActionRegistration.ActionCategory.ELEMENTS,
   title: i18nLazyString(UIStrings.showStyles),
   async loadActionDelegate() {
     const Elements2 = await loadElementsModule();
@@ -269,7 +269,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "elements.show-computed",
-  category: "ELEMENTS",
+  category: UI.ActionRegistration.ActionCategory.ELEMENTS,
   title: i18nLazyString(UIStrings.showComputedStyles),
   async loadActionDelegate() {
     const Elements2 = await loadElementsModule();
@@ -277,36 +277,36 @@ UI.ActionRegistration.registerActionExtension({
   }
 });
 UI.ViewManager.registerViewExtension({
-  location: "elements-sidebar",
+  location: UI.ViewManager.ViewLocationValues.ELEMENTS_SIDEBAR,
   id: "elements.event-listeners",
   commandPrompt: i18nLazyString(UIStrings.showEventListeners),
   title: i18nLazyString(UIStrings.eventListeners),
   order: 5,
-  persistence: "permanent",
+  persistence: UI.ViewManager.ViewPersistence.PERMANENT,
   async loadView() {
     const Elements2 = await loadElementsModule();
     return Elements2.EventListenersWidget.EventListenersWidget.instance();
   }
 });
 UI.ViewManager.registerViewExtension({
-  location: "elements-sidebar",
+  location: UI.ViewManager.ViewLocationValues.ELEMENTS_SIDEBAR,
   id: "elements.dom-properties",
   commandPrompt: i18nLazyString(UIStrings.showProperties),
   title: i18nLazyString(UIStrings.properties),
   order: 7,
-  persistence: "permanent",
+  persistence: UI.ViewManager.ViewPersistence.PERMANENT,
   async loadView() {
     const Elements2 = await loadElementsModule();
     return new Elements2.PropertiesWidget.PropertiesWidget();
   }
 });
 UI.ViewManager.registerViewExtension({
-  location: "elements-sidebar",
+  location: UI.ViewManager.ViewLocationValues.ELEMENTS_SIDEBAR,
   id: "elements.layout",
   commandPrompt: i18nLazyString(UIStrings.showLayout),
   title: i18nLazyString(UIStrings.layout),
   order: 4,
-  persistence: "permanent",
+  persistence: UI.ViewManager.ViewPersistence.PERMANENT,
   async loadView() {
     const Elements2 = await loadElementsModule();
     return Elements2.LayoutPane.LayoutPane.instance();
@@ -314,7 +314,7 @@ UI.ViewManager.registerViewExtension({
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "elements.hide-element",
-  category: "ELEMENTS",
+  category: UI.ActionRegistration.ActionCategory.ELEMENTS,
   title: i18nLazyString(UIStrings.hideElement),
   async loadActionDelegate() {
     const Elements2 = await loadElementsModule();
@@ -331,7 +331,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "elements.toggle-eye-dropper",
-  category: "ELEMENTS",
+  category: UI.ActionRegistration.ActionCategory.ELEMENTS,
   title: i18nLazyString(UIStrings.toggleEyeDropper),
   async loadActionDelegate() {
     const Elements2 = await loadElementsModule();
@@ -348,7 +348,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "elements.edit-as-html",
-  category: "ELEMENTS",
+  category: UI.ActionRegistration.ActionCategory.ELEMENTS,
   title: i18nLazyString(UIStrings.editAsHtml),
   async loadActionDelegate() {
     const Elements2 = await loadElementsModule();
@@ -365,7 +365,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "elements.duplicate-element",
-  category: "ELEMENTS",
+  category: UI.ActionRegistration.ActionCategory.ELEMENTS,
   title: i18nLazyString(UIStrings.duplicateElement),
   async loadActionDelegate() {
     const Elements2 = await loadElementsModule();
@@ -382,7 +382,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "elements.copy-styles",
-  category: "ELEMENTS",
+  category: UI.ActionRegistration.ActionCategory.ELEMENTS,
   title: i18nLazyString(UIStrings.copyStyles),
   async loadActionDelegate() {
     const Elements2 = await loadElementsModule();
@@ -394,17 +394,17 @@ UI.ActionRegistration.registerActionExtension({
   bindings: [
     {
       shortcut: "Ctrl+Alt+C",
-      platform: "windows,linux"
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX
     },
     {
       shortcut: "Meta+Alt+C",
-      platform: "mac"
+      platform: UI.ActionRegistration.Platforms.MAC
     }
   ]
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "elements.toggle-a11y-tree",
-  category: "ELEMENTS",
+  category: UI.ActionRegistration.ActionCategory.ELEMENTS,
   title: i18nLazyString(UIStrings.toggleA11yTree),
   toggleable: true,
   async loadActionDelegate() {
@@ -422,7 +422,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "elements.undo",
-  category: "ELEMENTS",
+  category: UI.ActionRegistration.ActionCategory.ELEMENTS,
   title: i18nLazyString(UIStrings.undo),
   async loadActionDelegate() {
     const Elements2 = await loadElementsModule();
@@ -434,17 +434,17 @@ UI.ActionRegistration.registerActionExtension({
   bindings: [
     {
       shortcut: "Ctrl+Z",
-      platform: "windows,linux"
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX
     },
     {
       shortcut: "Meta+Z",
-      platform: "mac"
+      platform: UI.ActionRegistration.Platforms.MAC
     }
   ]
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "elements.redo",
-  category: "ELEMENTS",
+  category: UI.ActionRegistration.ActionCategory.ELEMENTS,
   title: i18nLazyString(UIStrings.redo),
   async loadActionDelegate() {
     const Elements2 = await loadElementsModule();
@@ -456,11 +456,11 @@ UI.ActionRegistration.registerActionExtension({
   bindings: [
     {
       shortcut: "Ctrl+Y",
-      platform: "windows,linux"
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX
     },
     {
       shortcut: "Meta+Shift+Z",
-      platform: "mac"
+      platform: UI.ActionRegistration.Platforms.MAC
     }
   ]
 });
@@ -472,10 +472,10 @@ UI.ActionRegistration.registerActionExtension({
   },
   condition: Root.Runtime.conditions.canDock,
   title: i18nLazyString(UIStrings.captureAreaScreenshot),
-  category: "SCREENSHOT"
+  category: UI.ActionRegistration.ActionCategory.SCREENSHOT
 });
 UI.ActionRegistration.registerActionExtension({
-  category: "ELEMENTS",
+  category: UI.ActionRegistration.ActionCategory.ELEMENTS,
   actionId: "elements.toggle-element-search",
   toggleable: true,
   async loadActionDelegate() {
@@ -483,24 +483,24 @@ UI.ActionRegistration.registerActionExtension({
     return new Elements2.InspectElementModeController.ToggleSearchActionDelegate();
   },
   title: i18nLazyString(UIStrings.selectAnElementInThePageTo),
-  iconClass: "select-element",
+  iconClass: UI.ActionRegistration.IconClass.LARGEICON_NODE_SEARCH,
   bindings: [
     {
       shortcut: "Ctrl+Shift+C",
-      platform: "windows,linux"
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX
     },
     {
       shortcut: "Meta+Shift+C",
-      platform: "mac"
+      platform: UI.ActionRegistration.Platforms.MAC
     }
   ],
   configurableBindings: false
 });
 UI.ActionRegistration.registerActionExtension({
-  category: "ELEMENTS",
+  category: UI.ActionRegistration.ActionCategory.ELEMENTS,
   actionId: "elements.new-style-rule",
   title: i18nLazyString(UIStrings.newStyleRule),
-  iconClass: "plus",
+  iconClass: UI.ActionRegistration.IconClass.PLUS,
   async loadActionDelegate() {
     const Elements2 = await loadElementsModule();
     return new Elements2.StylesSidebarPane.ActionDelegate();
@@ -510,10 +510,10 @@ UI.ActionRegistration.registerActionExtension({
   }
 });
 UI.ActionRegistration.registerActionExtension({
-  category: "ELEMENTS",
+  category: UI.ActionRegistration.ActionCategory.ELEMENTS,
   actionId: "elements.refresh-event-listeners",
   title: i18nLazyString(UIStrings.refreshEventListeners),
-  iconClass: "refresh",
+  iconClass: UI.ActionRegistration.IconClass.REFRESH,
   async loadActionDelegate() {
     const Elements2 = await loadElementsModule();
     return new Elements2.EventListenersWidget.ActionDelegate();
@@ -523,25 +523,25 @@ UI.ActionRegistration.registerActionExtension({
   }
 });
 Common.Settings.registerSettingExtension({
-  category: "ELEMENTS",
-  storageType: "Synced",
+  category: Common.Settings.SettingCategory.ELEMENTS,
+  storageType: Common.Settings.SettingStorageType.SYNCED,
   order: 1,
   title: i18nLazyString(UIStrings.userAgentShadowDOM),
   settingName: "show-ua-shadow-dom",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: false
 });
 Common.Settings.registerSettingExtension({
-  category: "ELEMENTS",
-  storageType: "Synced",
+  category: Common.Settings.SettingCategory.ELEMENTS,
+  storageType: Common.Settings.SettingStorageType.SYNCED,
   order: 2,
   title: i18nLazyString(UIStrings.wordWrap),
   settingName: "dom-word-wrap",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: true
 });
 UI.ActionRegistration.registerActionExtension({
-  category: "ELEMENTS",
+  category: UI.ActionRegistration.ActionCategory.ELEMENTS,
   actionId: "elements.toggle-word-wrap",
   async loadActionDelegate() {
     const Elements2 = await loadElementsModule();
@@ -554,20 +554,17 @@ UI.ActionRegistration.registerActionExtension({
   bindings: [
     {
       shortcut: "Alt+Z",
-      keybindSets: [
-        "vsCode"
-        /* UI.ActionRegistration.KeybindSet.VS_CODE */
-      ]
+      keybindSets: [UI.ActionRegistration.KeybindSet.VS_CODE]
     }
   ]
 });
 Common.Settings.registerSettingExtension({
-  category: "ELEMENTS",
-  storageType: "Synced",
+  category: Common.Settings.SettingCategory.ELEMENTS,
+  storageType: Common.Settings.SettingStorageType.SYNCED,
   order: 3,
   title: i18nLazyString(UIStrings.htmlComments),
   settingName: "show-html-comments",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: true,
   options: [
     {
@@ -581,68 +578,68 @@ Common.Settings.registerSettingExtension({
   ]
 });
 Common.Settings.registerSettingExtension({
-  category: "ELEMENTS",
-  storageType: "Synced",
+  category: Common.Settings.SettingCategory.ELEMENTS,
+  storageType: Common.Settings.SettingStorageType.SYNCED,
   order: 4,
   title: i18nLazyString(UIStrings.revealDomNodeOnHover),
   settingName: "highlight-node-on-hover-in-overlay",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: true
 });
 Common.Settings.registerSettingExtension({
-  category: "ELEMENTS",
-  storageType: "Synced",
+  category: Common.Settings.SettingCategory.ELEMENTS,
+  storageType: Common.Settings.SettingStorageType.SYNCED,
   order: 5,
   title: i18nLazyString(UIStrings.detailedInspectTooltip),
   settingName: "show-detailed-inspect-tooltip",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: true
 });
 Common.Settings.registerSettingExtension({
-  category: "ELEMENTS",
-  storageType: "Synced",
+  category: Common.Settings.SettingCategory.ELEMENTS,
+  storageType: Common.Settings.SettingStorageType.SYNCED,
   order: 6,
   title: i18nLazyString(UIStrings.cssAnimationsOnlyWhenAnimationsTabOpen),
   settingName: "css-animations-only-when-animations-tab-open",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: true
 });
 Common.Settings.registerSettingExtension({
-  category: "ELEMENTS",
-  storageType: "Synced",
+  category: Common.Settings.SettingCategory.ELEMENTS,
+  storageType: Common.Settings.SettingStorageType.SYNCED,
   order: 7,
   title: i18nLazyString(UIStrings.collapseNonContributingCSSRules),
   settingName: "collapse-non-contributing-css-rules",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: false
 });
 Common.Settings.registerSettingExtension({
-  category: "ELEMENTS",
-  storageType: "Synced",
+  category: Common.Settings.SettingCategory.ELEMENTS,
+  storageType: Common.Settings.SettingStorageType.SYNCED,
   order: 8,
   title: i18nLazyString(UIStrings.showInactiveCSSRules),
   settingName: "show-inactive-css-rules",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: false
 });
 Common.Settings.registerSettingExtension({
   settingName: "show-event-listeners-for-ancestors",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: true
 });
 Common.Settings.registerSettingExtension({
-  category: "ADORNER",
-  storageType: "Synced",
+  category: Common.Settings.SettingCategory.ADORNER,
+  storageType: Common.Settings.SettingStorageType.SYNCED,
   settingName: "adorner-settings",
-  settingType: "array",
+  settingType: Common.Settings.SettingType.ARRAY,
   defaultValue: []
 });
 Common.Settings.registerSettingExtension({
-  category: "ELEMENTS",
-  storageType: "Synced",
+  category: Common.Settings.SettingCategory.ELEMENTS,
+  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.CSSDocumentationTooltip),
   settingName: "show-css-property-documentation-on-hover",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: true
 });
 UI.ContextMenu.registerProvider({
@@ -660,8 +657,8 @@ UI.ContextMenu.registerProvider({
   experiment: void 0
 });
 UI.ViewManager.registerLocationResolver({
-  name: "elements-sidebar",
-  category: "ELEMENTS",
+  name: UI.ViewManager.ViewLocationValues.ELEMENTS_SIDEBAR,
+  category: UI.ViewManager.ViewLocationCategory.ELEMENTS,
   async loadResolver() {
     const Elements2 = await loadElementsModule();
     return Elements2.ElementsPanel.ElementsPanel.instance();
@@ -701,7 +698,7 @@ UI.Toolbar.registerToolbarItem({
     return Elements2.LayersWidget.ButtonProvider.instance();
   },
   order: 1,
-  location: "styles-sidebarpane-toolbar"
+  location: UI.Toolbar.ToolbarItemLocation.STYLES_SIDEBARPANE_TOOLBAR
 });
 UI.Toolbar.registerToolbarItem({
   async loadItem() {
@@ -709,7 +706,7 @@ UI.Toolbar.registerToolbarItem({
     return Elements2.ElementStatePaneWidget.ButtonProvider.instance();
   },
   order: 2,
-  location: "styles-sidebarpane-toolbar"
+  location: UI.Toolbar.ToolbarItemLocation.STYLES_SIDEBARPANE_TOOLBAR
 });
 UI.Toolbar.registerToolbarItem({
   async loadItem() {
@@ -717,7 +714,7 @@ UI.Toolbar.registerToolbarItem({
     return Elements2.ClassesPaneWidget.ButtonProvider.instance();
   },
   order: 3,
-  location: "styles-sidebarpane-toolbar"
+  location: UI.Toolbar.ToolbarItemLocation.STYLES_SIDEBARPANE_TOOLBAR
 });
 UI.Toolbar.registerToolbarItem({
   async loadItem() {
@@ -725,23 +722,23 @@ UI.Toolbar.registerToolbarItem({
     return Elements2.StylesSidebarPane.ButtonProvider.instance();
   },
   order: 100,
-  location: "styles-sidebarpane-toolbar"
+  location: UI.Toolbar.ToolbarItemLocation.STYLES_SIDEBARPANE_TOOLBAR
 });
 UI.Toolbar.registerToolbarItem({
   actionId: "elements.toggle-element-search",
-  location: "main-toolbar-left",
+  location: UI.Toolbar.ToolbarItemLocation.MAIN_TOOLBAR_LEFT,
   order: 0
 });
 Common.Settings.registerSettingExtension({
-  category: "",
-  storageType: "Global",
+  category: Common.Settings.SettingCategory.NONE,
+  storageType: Common.Settings.SettingStorageType.GLOBAL,
   title: i18nLazyString(UIStrings.frameworkListeners),
   settingName: "show-frameowkr-listeners",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: true
 });
 SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.showMetricsRulersSettingDescriptor, {
-  category: "ELEMENTS",
+  category: Common.Settings.SettingCategory.ELEMENTS,
   title: i18nLazyString(UIStrings.rulersOnHover),
   options: [
     {
@@ -755,11 +752,11 @@ SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.showMetricsRulersSetti
   ]
 });
 SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.apcaSettingDescriptor, {
-  category: "ELEMENTS",
+  category: Common.Settings.SettingCategory.ELEMENTS,
   title: i18nLazyString(UIStrings.apca)
 });
 SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.showGridAreasSettingDescriptor, {
-  category: "GRID",
+  category: Common.Settings.SettingCategory.GRID,
   title: i18nLazyString(UIStrings.showAreaNames),
   options: [
     {
@@ -773,7 +770,7 @@ SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.showGridAreasSettingDe
   ]
 });
 SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.showGridTrackSizesSettingDescriptor, {
-  category: "GRID",
+  category: Common.Settings.SettingCategory.GRID,
   title: i18nLazyString(UIStrings.showTrackSizes),
   options: [
     {
@@ -787,7 +784,7 @@ SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.showGridTrackSizesSett
   ]
 });
 SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.extendGridLinesSettingDescriptor, {
-  category: "GRID",
+  category: Common.Settings.SettingCategory.GRID,
   title: i18nLazyString(UIStrings.extendGridLines),
   options: [
     {
@@ -801,7 +798,7 @@ SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.extendGridLinesSetting
   ]
 });
 SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.showGridLineLabelsSettingDescriptor, {
-  category: "GRID",
+  category: Common.Settings.SettingCategory.GRID,
   title: i18nLazyString(UIStrings.showLineLabels),
   options: [
     {

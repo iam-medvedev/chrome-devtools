@@ -11,7 +11,7 @@ import * as Trace from '../../models/trace/trace.js';
 import * as SourceMapsResolver from '../../models/trace_source_maps_resolver/trace_source_maps_resolver.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as Tracing from '../../services/tracing/tracing.js';
-import { dispatchClickEvent, doubleRaf, raf, renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
+import { dispatchClickEvent, raf, renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment, expectConsoleLogs, } from '../../testing/EnvironmentHelpers.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import { loadBasicSourceMapExample, setupPageResourceLoaderForSourceMap, } from '../../testing/SourceMapHelpers.js';
@@ -61,6 +61,30 @@ function getStackTraceForDetailsElement(details) {
         const functionName = row.querySelector('.function-name')?.innerText;
         const url = row.querySelector('.link')?.innerText;
         return `${functionName || ''} @ ${url || ''}`;
+    });
+}
+/**
+ * Waits for an image to be appended to the given container.
+ * This is used to fix flakiness in tests where we wait for an image to load/render.
+ * Using an arbitrary wait like `await doubleRaf()` can cause tests to flake (and hang)
+ * when run on heavily throttled CPU constrained CQ bots. Bypassing the browser's
+ * rendering loop by explicitly pausing using a `MutationObserver`
+ * ensures we correctly advance once the image actually appears in the DOM.
+ */
+async function waitForImage(container) {
+    let img = container.querySelector('img');
+    if (img) {
+        return img;
+    }
+    return await new Promise(resolve => {
+        const observer = new MutationObserver(() => {
+            img = container.querySelector('img');
+            if (img) {
+                observer.disconnect();
+                resolve(img);
+            }
+        });
+        observer.observe(container, { childList: true, subtree: true });
     });
 }
 describeWithEnvironment('TimelineUIUtils', function () {
@@ -478,7 +502,7 @@ describeWithEnvironment('TimelineUIUtils', function () {
                 },
                 {
                     title: 'Selector stats',
-                    value: 'Select "" to collect detailed CSS selector matching statistics.',
+                    value: 'Select "" to collect detailed CSS selector matching statistics',
                 },
                 {
                     // The "Recalculation forced" Stack trace
@@ -1084,8 +1108,7 @@ describeWithEnvironment('TimelineUIUtils', function () {
         renderElementIntoDOM(container);
         container.appendChild(details);
         // Give the image element time to render and load.
-        await doubleRaf();
-        const img = container.querySelector('.timeline-filmstrip-preview img');
+        const img = await waitForImage(container);
         assert.isOk(img);
         const filmStripFrame = filmStrip.frames[0];
         assert.isTrue(Trace.Types.Events.isLegacySyntheticScreenshot(filmStripFrame.screenshotEvent) &&
@@ -1112,8 +1135,7 @@ describeWithEnvironment('TimelineUIUtils', function () {
         renderElementIntoDOM(container);
         container.appendChild(details);
         // Give the image element time to render and load.
-        await doubleRaf();
-        const img = container.querySelector('.timeline-filmstrip-preview img');
+        const img = await waitForImage(container);
         assert.isOk(img);
         const filmStripFrame = filmStrip.frames[0];
         assert.isTrue(Trace.Types.Events.isScreenshot(filmStripFrame.screenshotEvent) &&

@@ -33,30 +33,44 @@ describe('FramesHandler', function () {
     // Therefore the timeout here is larger to allow for the time required to
     // load the file on the bots.
     this.timeout(20_000);
-    it('can parse out a trace and return the frames', async function () {
-        const rawEvents = await TraceLoader.rawEvents(this, 'web-dev-with-commit.json.gz');
-        await processTrace(rawEvents);
-        const parsedFrames = Trace.Handlers.ModelHandlers.Frames.data().frames;
-        assert.lengthOf(parsedFrames, 18);
-        // Assert a couple of frames to check the data, including one that is partial and was dropped.
-        assert.strictEqual(parsedFrames[0].startTime, 122411104714);
-        assert.strictEqual(parsedFrames[0].duration, 37847);
-        assert.isFalse(parsedFrames[0].isPartial);
-        assert.isFalse(parsedFrames[0].isPartial);
-        assert.strictEqual(parsedFrames[2].startTime, 122411159244);
-        assert.strictEqual(parsedFrames[2].duration, 16683);
-        assert.isTrue(parsedFrames[2].isPartial);
-        assert.isTrue(parsedFrames[2].dropped);
-    });
-    it('assigns each frame an index', async function () {
-        const rawEvents = await TraceLoader.rawEvents(this, 'web-dev-with-commit.json.gz');
-        await processTrace(rawEvents);
-        const parsedFrames = Trace.Handlers.ModelHandlers.Frames.data().frames;
-        assert.lengthOf(parsedFrames, 18);
-        parsedFrames.forEach((frame, arrayIndex) => {
-            // Seems silly, but this means we know the frame's index without having
-            // to look it up in the trace data.
-            assert.strictEqual(frame.index, arrayIndex);
+    describe('with web-dev-with-commit trace', () => {
+        let parsedFrames;
+        before(async function () {
+            const rawEvents = await TraceLoader.rawEvents(this, 'web-dev-with-commit.json.gz');
+            await processTrace(rawEvents);
+            parsedFrames = Trace.Handlers.ModelHandlers.Frames.data().frames;
+        });
+        it('can parse out a trace and return the frames', () => {
+            assert.lengthOf(parsedFrames, 18);
+            // Assert a couple of frames to check the data, including one that is partial and was dropped.
+            assert.strictEqual(parsedFrames[0].startTime, 122411104714);
+            assert.strictEqual(parsedFrames[0].duration, 37847);
+            assert.isFalse(parsedFrames[0].isPartial);
+            assert.isFalse(parsedFrames[0].dropped);
+            assert.strictEqual(parsedFrames[2].startTime, 122411159244);
+            assert.strictEqual(parsedFrames[2].duration, 16683);
+            assert.isTrue(parsedFrames[2].isPartial);
+            assert.isTrue(parsedFrames[2].dropped);
+        });
+        it('assigns each frame an index', () => {
+            assert.lengthOf(parsedFrames, 18);
+            parsedFrames.forEach((frame, arrayIndex) => {
+                // Seems silly, but this means we know the frame's index without having
+                // to look it up in the trace data.
+                assert.strictEqual(frame.index, arrayIndex);
+            });
+        });
+        it('can return frames within a given window', () => {
+            assert.lengthOf(parsedFrames, 18);
+            const startTime = Trace.Types.Timing.Micro(parsedFrames[0].startTime);
+            const endTime = Trace.Types.Timing.Micro(parsedFrames[3].endTime);
+            const framesWithinWindow = Trace.Handlers.ModelHandlers.Frames.framesWithinWindow(parsedFrames, startTime, endTime);
+            assert.deepEqual(framesWithinWindow, [
+                parsedFrames[0],
+                parsedFrames[1],
+                parsedFrames[2],
+                parsedFrames[3],
+            ]);
         });
     });
     it('can create LayerPaintEvents from Paint and snapshot events', async function () {
@@ -71,21 +85,6 @@ describe('FramesHandler', function () {
         // Check we have the right one.
         assert.strictEqual(frameWithPaints.seqId, 1127448);
         assert.lengthOf(frameWithPaints.paints, 7);
-    });
-    it('can return frames within a given window', async function () {
-        const rawEvents = await TraceLoader.rawEvents(this, 'web-dev-with-commit.json.gz');
-        await processTrace(rawEvents);
-        const parsedFrames = Trace.Handlers.ModelHandlers.Frames.data().frames;
-        assert.lengthOf(parsedFrames, 18);
-        const startTime = Trace.Types.Timing.Micro(parsedFrames[0].startTime);
-        const endTime = Trace.Types.Timing.Micro(parsedFrames[3].endTime);
-        const framesWithinWindow = Trace.Handlers.ModelHandlers.Frames.framesWithinWindow(parsedFrames, startTime, endTime);
-        assert.deepEqual(framesWithinWindow, [
-            parsedFrames[0],
-            parsedFrames[1],
-            parsedFrames[2],
-            parsedFrames[3],
-        ]);
     });
 });
 describe('FramesHandler', () => {

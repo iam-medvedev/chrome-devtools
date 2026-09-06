@@ -101,7 +101,8 @@ export const DEFAULT_VIEW = (input, output, target) => {
   `, target);
 };
 // clang-format on
-export class ProfileLauncherView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
+const ProfileLauncherViewBase = Common.ObjectWrapper.eventMixin(UI.Widget.VBox);
+export class ProfileLauncherView extends ProfileLauncherViewBase {
     panel;
     selectedProfileTypeSetting;
     #view;

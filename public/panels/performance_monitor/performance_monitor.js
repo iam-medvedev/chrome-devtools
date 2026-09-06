@@ -4,7 +4,7 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// gen/front_end/panels/performance_monitor/PerformanceMonitor.js
+// ../../front_end/panels/performance_monitor/PerformanceMonitor.ts
 var PerformanceMonitor_exports = {};
 __export(PerformanceMonitor_exports, {
   ControlPane: () => ControlPane,
@@ -72,14 +72,14 @@ var performanceMonitor_css_default = `/*
   display: flex;
   flex: initial;
   flex-direction: column;
-  padding: 6px 0;
+  padding: var(--sys-size-4) 0;
   overflow: hidden auto;
 }
 
 .perfmon-chart-container {
   display: flex;
   flex: 1 1;
-  border-left: 1px solid var(--sys-color-divider);
+  border-left: var(--sys-size-1) solid var(--sys-color-divider);
   overflow-y: auto;
 }
 
@@ -89,7 +89,7 @@ var performanceMonitor_css_default = `/*
 
 .perfmon-indicator {
   padding: 3px 9px;
-  margin: -1px 0;
+  margin: calc(-1 * var(--sys-size-1)) 0;
   display: flex;
   flex-shrink: 0;
   width: 210px;
@@ -113,7 +113,7 @@ var performanceMonitor_css_default = `/*
 
 /*# sourceURL=${import.meta.resolve("./performanceMonitor.css")} */`;
 
-// gen/front_end/panels/performance_monitor/PerformanceMonitor.js
+// ../../front_end/panels/performance_monitor/PerformanceMonitor.ts
 var UIStrings = {
   /**
    * @description Aria accessible name in Performance monitor of the Performance monitor tab.
@@ -161,29 +161,33 @@ var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
 var { widget } = UI.Widget;
 var { classMap, ref } = Directives;
 var DEFAULT_VIEW = (input, output, target) => {
-  render(html`
+  render(
+    html`
     <devtools-widget ${widget(ControlPane, {
-    onMetricChanged: input.onMetricChanged,
-    chartsInfo: input.chartsInfo,
-    metrics: input.metrics
-  })} class=${classMap({ suspended: input.suspended })}></devtools-widget>
+      onMetricChanged: input.onMetricChanged,
+      chartsInfo: input.chartsInfo,
+      metrics: input.metrics
+    })} class=${classMap({ suspended: input.suspended })}></devtools-widget>
     <div class="perfmon-chart-container ${classMap({ suspended: input.suspended })}" jslog=${VisualLogging.section("perfmon-chart")}>
       <canvas tabindex="-1" aria-label=${i18nString(UIStrings.graphsDisplayingARealtimeViewOf)}
           jslog=${VisualLogging.canvas("perfmon-canvas")}
           .width=${Math.round(input.width * window.devicePixelRatio)} .height=${input.height}
           style="height:${input.height / window.devicePixelRatio}px" ${ref((e) => {
-    if (e) {
-      const canvas2 = e;
-      output.graphRenderingContext = canvas2.getContext("2d");
-      output.width = canvas2.offsetWidth;
-    }
-  })}>
+      if (e) {
+        const canvas2 = e;
+        output.graphRenderingContext = canvas2.getContext("2d");
+        output.width = canvas2.offsetWidth;
+      }
+    })}>
       </canvas>
     </div>
     ${input.suspended ? html`
       <div class="perfmon-chart-suspend-overlay fill">
         <div>${i18nString(UIStrings.paused)}</div>
-      </div>` : ""}`, target, { container: { attributes: { jslog: `${VisualLogging.pane("performance.monitor").track({ resize: true })}` } } });
+      </div>` : ""}`,
+    target,
+    { container: { attributes: { jslog: `${VisualLogging.pane("performance.monitor").track({ resize: true })}` } } }
+  );
 };
 var PerformanceMonitorImpl = class extends UI.Widget.HBox {
   view;
@@ -234,7 +238,11 @@ var PerformanceMonitorImpl = class extends UI.Widget.HBox {
       this.chartInfos = this.createChartInfos();
       this.requestUpdate();
     });
-    SDK.TargetManager.TargetManager.instance().addEventListener("SuspendStateChanged", this.suspendStateChanged, this);
+    SDK.TargetManager.TargetManager.instance().addEventListener(
+      SDK.TargetManager.Events.SUSPEND_STATE_CHANGED,
+      this.suspendStateChanged,
+      this
+    );
     void this.model.enable();
     this.suspendStateChanged();
     this.requestUpdate();
@@ -244,7 +252,11 @@ var PerformanceMonitorImpl = class extends UI.Widget.HBox {
     if (!this.model) {
       return;
     }
-    SDK.TargetManager.TargetManager.instance().removeEventListener("SuspendStateChanged", this.suspendStateChanged, this);
+    SDK.TargetManager.TargetManager.instance().removeEventListener(
+      SDK.TargetManager.Events.SUSPEND_STATE_CHANGED,
+      this.suspendStateChanged,
+      this
+    );
     this.stopPolling();
     void this.model.disable();
   }
@@ -377,7 +389,13 @@ var PerformanceMonitorImpl = class extends UI.Widget.HBox {
     for (let i = chartInfo.metrics.length - 1; i >= 0; --i) {
       const metricInfo = chartInfo.metrics[i];
       paths.push({
-        path: this.buildMetricPath(chartInfo, metricInfo, height - bottomPadding, max, i ? stackedChartBaseLandscape : null),
+        path: this.buildMetricPath(
+          chartInfo,
+          metricInfo,
+          height - bottomPadding,
+          max,
+          i ? stackedChartBaseLandscape : null
+        ),
         color: metricInfo.color
       });
     }
@@ -484,7 +502,9 @@ var PerformanceMonitorImpl = class extends UI.Widget.HBox {
       x = (this.metricsBuffer[0].timestamp - startTime) * pixelsPerMs;
       path.moveTo(x, calcY(0));
       path.lineTo(this.width + 5, calcY(0));
-      lastY = calcY(this.metricsBuffer[this.metricsBuffer.length - 1].metrics.get(metricName) || 0);
+      lastY = calcY(
+        this.metricsBuffer[this.metricsBuffer.length - 1].metrics.get(metricName) || 0
+      );
       lastX = this.width + 5;
       path.lineTo(lastX, lastY);
     }
@@ -554,10 +574,13 @@ var PerformanceMonitorImpl = class extends UI.Widget.HBox {
           },
           {
             name: "RecalcStyleDuration",
-            color: themeSupport.getComputedValue("--override-color-perf-monitor-cpu-recalc-style-duration", elementForStyles)
+            color: themeSupport.getComputedValue(
+              "--override-color-perf-monitor-cpu-recalc-style-duration",
+              elementForStyles
+            )
           }
         ],
-        format: "Percent",
+        format: "Percent" /* PERCENT */,
         smooth: true,
         stacked: true,
         color: themeSupport.getComputedValue("--override-color-perf-monitor-cpu", elementForStyles),
@@ -576,7 +599,7 @@ var PerformanceMonitorImpl = class extends UI.Widget.HBox {
             color: themeSupport.getComputedValue("--override-color-perf-monitor-jsheap-used-size", elementForStyles)
           }
         ],
-        format: "Bytes",
+        format: "Bytes" /* BYTES */,
         color: themeSupport.getComputedValue("--override-color-perf-monitor-jsheap", elementForStyles)
       },
       {
@@ -636,18 +659,23 @@ var PerformanceMonitorImpl = class extends UI.Widget.HBox {
     ];
   }
 };
-var Format;
-(function(Format2) {
+var Format = /* @__PURE__ */ ((Format2) => {
   Format2["PERCENT"] = "Percent";
   Format2["BYTES"] = "Bytes";
-})(Format || (Format = {}));
+  return Format2;
+})(Format || {});
 var CONTROL_PANE_DEFAULT_VIEW = (input, _output, target) => {
   render(html`
     ${input.chartsInfo.map((chartInfo) => {
     const chartName = chartInfo.metrics[0].name;
     const active = input.enabledCharts.has(chartName);
     const value = input.metricValues.get(chartName) || 0;
-    return renderMetricIndicator(chartInfo, active, value, (e) => input.onCheckboxChange(chartName, e));
+    return renderMetricIndicator(
+      chartInfo,
+      active,
+      value,
+      (e) => input.onCheckboxChange(chartName, e)
+    );
   })}
     `, target, { container: { classes: ["perfmon-control-pane"] } });
 };
@@ -661,7 +689,10 @@ var ControlPane = class extends UI.Widget.VBox {
   constructor(element, view = CONTROL_PANE_DEFAULT_VIEW) {
     super(element, { useShadowDom: false });
     this.#view = view;
-    this.#enabledChartsSetting = Common.Settings.Settings.instance().createSetting("perfmon-active-indicators2", ["TaskDuration", "JSHeapTotalSize", "Nodes"]);
+    this.#enabledChartsSetting = Common.Settings.Settings.instance().createSetting(
+      "perfmon-active-indicators2",
+      ["TaskDuration", "JSHeapTotalSize", "Nodes"]
+    );
     this.#enabledCharts = new Set(this.#enabledChartsSetting.get());
   }
   set chartsInfo(chartsInfo) {
@@ -716,9 +747,9 @@ function formatNumber(value, info) {
     percentFormatter = new Intl.NumberFormat("en-US", { maximumFractionDigits: 1, style: "percent" });
   }
   switch (info.format) {
-    case "Percent":
+    case "Percent" /* PERCENT */:
       return percentFormatter.format(value);
-    case "Bytes":
+    case "Bytes" /* BYTES */:
       return i18n.ByteUtilities.bytesToString(value);
     default:
       return numberFormatter.format(value);

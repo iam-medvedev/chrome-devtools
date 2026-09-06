@@ -29,7 +29,8 @@ const str_ = i18n.i18n.registerUIStrings('panels/linear_memory_inspector/LinearM
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 let inspectorInstance;
 const MEMORY_INSPECTOR_EXPLANATION_URL = 'https://developer.chrome.com/docs/devtools/memory-inspector';
-export class LinearMemoryInspectorPane extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
+const LinearMemoryInspectorPaneBase = Common.ObjectWrapper.eventMixin(UI.Widget.VBox);
+export class LinearMemoryInspectorPane extends LinearMemoryInspectorPaneBase {
     #tabbedPane;
     constructor() {
         super({ jslog: `${VisualLogging.panel('linear-memory-inspector').track({ resize: true })}` });

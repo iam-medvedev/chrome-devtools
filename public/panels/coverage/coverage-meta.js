@@ -1,4 +1,4 @@
-// gen/front_end/panels/coverage/coverage-meta.prebundle.js
+// ../../front_end/panels/coverage/coverage-meta.ts
 import * as i18n from "../../core/i18n/i18n.js";
 import * as UI from "../../ui/legacy/legacy.js";
 var UIStrings = {
@@ -47,11 +47,11 @@ function maybeRetrieveContextTypes(getClassCallBack) {
   return getClassCallBack(loadedCoverageModule);
 }
 UI.ViewManager.registerViewExtension({
-  location: "drawer-view",
+  location: UI.ViewManager.ViewLocationValues.DRAWER_VIEW,
   id: "coverage",
   title: i18nLazyString(UIStrings.coverage),
   commandPrompt: i18nLazyString(UIStrings.showCoverage),
-  persistence: "closeable",
+  persistence: UI.ViewManager.ViewPersistence.CLOSEABLE,
   order: 100,
   async loadView() {
     const Coverage = await loadCoverageModule();
@@ -60,15 +60,15 @@ UI.ViewManager.registerViewExtension({
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "coverage.toggle-recording",
-  iconClass: "record-start",
+  iconClass: UI.ActionRegistration.IconClass.START_RECORDING,
   toggleable: true,
-  toggledIconClass: "record-stop",
+  toggledIconClass: UI.ActionRegistration.IconClass.STOP_RECORDING,
   toggleWithRedColor: true,
   async loadActionDelegate() {
     const Coverage = await loadCoverageModule();
     return new Coverage.CoverageView.ActionDelegate();
   },
-  category: "PERFORMANCE",
+  category: UI.ActionRegistration.ActionCategory.PERFORMANCE,
   options: [
     {
       value: true,
@@ -82,18 +82,18 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "coverage.start-with-reload",
-  iconClass: "refresh",
+  iconClass: UI.ActionRegistration.IconClass.REFRESH,
   async loadActionDelegate() {
     const Coverage = await loadCoverageModule();
     return new Coverage.CoverageView.ActionDelegate();
   },
-  category: "PERFORMANCE",
+  category: UI.ActionRegistration.ActionCategory.PERFORMANCE,
   title: i18nLazyString(UIStrings.startInstrumentingCoverageAnd)
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "coverage.clear",
-  iconClass: "clear",
-  category: "PERFORMANCE",
+  iconClass: UI.ActionRegistration.IconClass.CLEAR,
+  category: UI.ActionRegistration.ActionCategory.PERFORMANCE,
   title: i18nLazyString(UIStrings.clearCoverage),
   async loadActionDelegate() {
     const Coverage = await loadCoverageModule();
@@ -105,8 +105,8 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "coverage.export",
-  iconClass: "download",
-  category: "PERFORMANCE",
+  iconClass: UI.ActionRegistration.IconClass.DOWNLOAD,
+  category: UI.ActionRegistration.ActionCategory.PERFORMANCE,
   title: i18nLazyString(UIStrings.exportCoverage),
   async loadActionDelegate() {
     const Coverage = await loadCoverageModule();

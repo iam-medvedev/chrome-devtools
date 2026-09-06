@@ -48,6 +48,15 @@ function isCodeMirrorEditor(element) {
     return element.classList.contains('cm-editor');
 }
 /**
+ * Resolves the file path attribute for a CodeMirror editor element.
+ *
+ * @param element The editor element to check.
+ * @returns The file path string or undefined if not found.
+ */
+export function getEditorFilePath(element) {
+    return element.getAttribute('data-file-path') ?? undefined;
+}
+/**
  * Checks whether an element contains non-empty text content (after trimming whitespace),
  * including text from any nested shadow roots.
  *
@@ -310,7 +319,7 @@ export function resolveCommentAnchor(element, root = element.ownerDocument || do
             return null;
         }
         textSignature = lineInfo.textSignature;
-        const filePath = target.getAttribute('data-file-path') ?? undefined;
+        const filePath = getEditorFilePath(target);
         editor = { lineNumber: lineInfo.lineNumber, filePath };
     }
     else {
@@ -412,7 +421,7 @@ export function rematchCommentAnchor(comment, root = document, cachedJslogElemen
         const { lineNumber, filePath } = anchor.editor;
         const cmEditors = deepQuerySelectorAll(root, '.cm-editor');
         const matchingEditors = cmEditors.filter(cmEditor => {
-            if (filePath !== undefined && cmEditor.getAttribute('data-file-path') !== filePath) {
+            if (filePath !== undefined && getEditorFilePath(cmEditor) !== filePath) {
                 return false;
             }
             return VisualLogging.getVePath(cmEditor) === anchor.vePath;

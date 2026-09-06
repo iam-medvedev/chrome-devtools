@@ -8114,6 +8114,9 @@
   "panels/elements/ElementsTreeOutline.ts | pageDom": {
     "message": "Page DOM"
   },
+  "panels/elements/ElementsTreeOutline.ts | reveal": {
+    "message": "reveal"
+  },
   "panels/elements/ElementsTreeOutline.ts | showAllLines": {
     "message": "Show all ({PH1} lines)"
   },
@@ -9855,7 +9858,7 @@
     "message": "Network throttling is enabled"
   },
   "panels/mobile_throttling/NetworkPanelIndicator.ts | requestsMayBeBlocked": {
-    "message": "Requests may be blocked. See the Network request blocking panel"
+    "message": "Requests may be blocked. See the Request conditions panel"
   },
   "panels/mobile_throttling/NetworkPanelIndicator.ts | requestsMayBeOverridden": {
     "message": "Requests may be overridden locally. See the Sources panel"
@@ -10373,8 +10376,8 @@
   "panels/network/network-meta.ts | disableCache": {
     "message": "Disable cache while DevTools is open"
   },
-  "panels/network/network-meta.ts | disableNetworkRequestBlocking": {
-    "message": "Disable network request blocking"
+  "panels/network/network-meta.ts | disableRequestBlockingAndThrottling": {
+    "message": "Disable request blocking and throttling"
   },
   "panels/network/network-meta.ts | diskCache": {
     "message": "disk cache"
@@ -10391,8 +10394,8 @@
   "panels/network/network-meta.ts | enableCache": {
     "message": "Enable cache"
   },
-  "panels/network/network-meta.ts | enableNetworkRequestBlocking": {
-    "message": "Enable network request blocking"
+  "panels/network/network-meta.ts | enableRequestBlockingAndThrottling": {
+    "message": "Enable request blocking and throttling"
   },
   "panels/network/network-meta.ts | frame": {
     "message": "frame"
@@ -10430,9 +10433,6 @@
   "panels/network/network-meta.ts | networkConditions": {
     "message": "Network conditions"
   },
-  "panels/network/network-meta.ts | networkRequestBlocking": {
-    "message": "Network request blocking"
-  },
   "panels/network/network-meta.ts | networkRequestConditions": {
     "message": "Request conditions"
   },
@@ -10447,6 +10447,9 @@
   },
   "panels/network/network-meta.ts | removeAllNetworkRequestBlockingOrThrottlingPatterns": {
     "message": "Remove all network request blocking or throttling patterns"
+  },
+  "panels/network/network-meta.ts | requestBlockingAndThrottling": {
+    "message": "Request blocking and throttling"
   },
   "panels/network/network-meta.ts | reset": {
     "message": "reset"
@@ -16140,7 +16143,7 @@
     "message": "Nodes"
   },
   "panels/timeline/CountersGraph.ts | noEventsFound": {
-    "message": "No memory usage data found within selected events."
+    "message": "No memory usage data found within selected events"
   },
   "panels/timeline/CountersGraph.ts | ss": {
     "message": "[{PH1} – {PH2}]"
@@ -16547,9 +16550,6 @@
   "panels/timeline/TimelinePanel.ts | exportingFailed": {
     "message": "Exporting the trace failed"
   },
-  "panels/timeline/TimelinePanel.ts | fixMe": {
-    "message": "Fix me"
-  },
   "panels/timeline/TimelinePanel.ts | frameSelected": {
     "message": "Frame selected"
   },
@@ -16617,7 +16617,7 @@
     "message": "- Selector stats is enabled"
   },
   "panels/timeline/TimelinePanel.ts | shortcutsDialogTitle": {
-    "message": "Keyboard shortcuts for flamechart"
+    "message": "Keyboard shortcuts for flame chart"
   },
   "panels/timeline/TimelinePanel.ts | showDataAddedByExtensions": {
     "message": "Show data added by extensions of the Performance panel"
@@ -16644,7 +16644,7 @@
     "message": "3rd parties classified by third-party-web"
   },
   "panels/timeline/TimelinePanel.ts | timelineScrollPan": {
-    "message": "Scroll & Pan"
+    "message": "Scroll & pan"
   },
   "panels/timeline/TimelinePanel.ts | timelineZoom": {
     "message": "Zoom"
@@ -16659,7 +16659,7 @@
     "message": "Elapsed (ms)"
   },
   "panels/timeline/TimelineSelectorStatsView.ts | elapsedExplanation": {
-    "message": "Elapsed time spent matching a selector against the DOM in milliseconds."
+    "message": "Elapsed time spent matching a selector against the DOM in milliseconds"
   },
   "panels/timeline/TimelineSelectorStatsView.ts | invalidationCount": {
     "message": "Invalidation count"
@@ -16674,19 +16674,19 @@
     "message": "Match attempts"
   },
   "panels/timeline/TimelineSelectorStatsView.ts | matchAttemptsExplanation": {
-    "message": "Count of nodes that the engine attempted to match against a style rule."
+    "message": "Count of nodes that the engine attempted to match against a style rule"
   },
   "panels/timeline/TimelineSelectorStatsView.ts | matchCount": {
     "message": "Match count"
   },
   "panels/timeline/TimelineSelectorStatsView.ts | matchCountExplanation": {
-    "message": "Count of nodes that matched a style rule."
+    "message": "Count of nodes that matched a style rule"
   },
   "panels/timeline/TimelineSelectorStatsView.ts | selector": {
     "message": "Selector"
   },
   "panels/timeline/TimelineSelectorStatsView.ts | selectorExplanation": {
-    "message": "CSS selector text of a style rule."
+    "message": "CSS selector text of a style rule"
   },
   "panels/timeline/TimelineSelectorStatsView.ts | selectorStats": {
     "message": "Selector stats"
@@ -16695,10 +16695,10 @@
     "message": "% of slow-path non-matches"
   },
   "panels/timeline/TimelineSelectorStatsView.ts | slowPathNonMatchesExplanation": {
-    "message": "The percentage of non-matching nodes (Match Attempts - Match Count) that couldn’t be quickly ruled out by the bloom filter due to high selector complexity. Lower is better."
+    "message": "The percentage of non-matching nodes (match attempts − match count) that couldn’t be quickly ruled out by the bloom filter due to high selector complexity. Lower is better."
   },
   "panels/timeline/TimelineSelectorStatsView.ts | styleSheetId": {
-    "message": "Style Sheet"
+    "message": "Style sheet"
   },
   "panels/timeline/TimelineSelectorStatsView.ts | styleSheetIdExplanation": {
     "message": "Links to the selector rule definition in the style sheets. Note that a selector rule could be defined in multiple places in a style sheet or defined in multiple style sheets. Selector rules from browser user-agent style sheet or dynamic style sheets don’t have a link."
@@ -16749,7 +16749,7 @@
     "message": "Group by subdomain"
   },
   "panels/timeline/TimelineTreeView.ts | groupByThirdParties": {
-    "message": "Group by Third Parties"
+    "message": "Group by 3rd parties"
   },
   "panels/timeline/TimelineTreeView.ts | groupByUrl": {
     "message": "Group by URL"
@@ -16785,7 +16785,7 @@
     "message": "Performance"
   },
   "panels/timeline/TimelineTreeView.ts | selectItemForDetails": {
-    "message": "Select item for details."
+    "message": "Select item for details"
   },
   "panels/timeline/TimelineTreeView.ts | selfTime": {
     "message": "Self time"
@@ -16806,10 +16806,10 @@
     "message": "Use regular expression"
   },
   "panels/timeline/TimelineTreeView.ts | viewBottomUp": {
-    "message": "View Bottom-up"
+    "message": "View bottom-up"
   },
   "panels/timeline/TimelineTreeView.ts | vRuntime": {
-    "message": "[V8 Runtime]"
+    "message": "[V8 runtime]"
   },
   "panels/timeline/TimelineUIUtils.ts | aggregatedTime": {
     "message": "Aggregated time"
@@ -16866,7 +16866,7 @@
     "message": "Effect has unsupported timing parameters"
   },
   "panels/timeline/TimelineUIUtils.ts | compositingFailedEffectSuppressedByDevtools": {
-    "message": "Effect suppressed by DevTools "
+    "message": "Effect suppressed by DevTools"
   },
   "panels/timeline/TimelineUIUtils.ts | compositingFailedFilterRelatedPropertyMayMovePixels": {
     "message": "Filter-related property may move pixels"
@@ -16899,7 +16899,7 @@
     "message": "Transform-related property cannot be accelerated on target"
   },
   "panels/timeline/TimelineUIUtils.ts | compositingFailedUnknownReason": {
-    "message": "Unknown Reason"
+    "message": "Unknown reason"
   },
   "panels/timeline/TimelineUIUtils.ts | compositingFailedUnsupportedCSSProperty": {
     "message": "{propertyCount, plural,\n    =1 {Unsupported CSS property: {properties}}\n    other {Unsupported CSS properties: {properties}}\n  }"
@@ -17073,7 +17073,7 @@
     "message": "{PH1}: {PH2}"
   },
   "panels/timeline/TimelineUIUtils.ts | sSelectorStatsInfo": {
-    "message": "Select \"{PH1}\" to collect detailed CSS selector matching statistics."
+    "message": "Select \"{PH1}\" to collect detailed CSS selector matching statistics"
   },
   "panels/timeline/TimelineUIUtils.ts | sSelf": {
     "message": "{PH1} (self)"
@@ -17124,7 +17124,7 @@
     "message": "Show all"
   },
   "panels/timeline/TrackConfigBanner.ts | someTracksAreHidden": {
-    "message": "Some tracks are hidden in this trace. You can configure tracks by right clicking the track name."
+    "message": "Some tracks are hidden in this trace. You can configure tracks by right-clicking the track name."
   },
   "panels/timeline/UIDevtoolsUtils.ts | async": {
     "message": "Async"
@@ -17730,7 +17730,7 @@
     "message": "Add new"
   },
   "ui/legacy/components/data_grid/DataGrid.ts | checked": {
-    "message": "checked"
+    "message": "Checked"
   },
   "ui/legacy/components/data_grid/DataGrid.ts | collapsed": {
     "message": "collapsed"
@@ -17742,10 +17742,10 @@
     "message": "Edit \"{PH1}\""
   },
   "ui/legacy/components/data_grid/DataGrid.ts | emptyRowCreated": {
-    "message": "An empty table row has been created. You may double click or use context menu to edit."
+    "message": "An empty table row was added. Double-click or use the context menu to edit."
   },
   "ui/legacy/components/data_grid/DataGrid.ts | enterToSort": {
-    "message": "Column sort state: {PH1}. Press enter to apply sorting filter"
+    "message": "Column sort state: {PH1}. Press enter to sort."
   },
   "ui/legacy/components/data_grid/DataGrid.ts | expanded": {
     "message": "expanded"
@@ -17754,7 +17754,7 @@
     "message": "Header options"
   },
   "ui/legacy/components/data_grid/DataGrid.ts | levelS": {
-    "message": "level {PH1}"
+    "message": "Level {PH1}"
   },
   "ui/legacy/components/data_grid/DataGrid.ts | refresh": {
     "message": "Refresh"
@@ -17763,19 +17763,19 @@
     "message": "Reset columns"
   },
   "ui/legacy/components/data_grid/DataGrid.ts | rowsS": {
-    "message": "Rows: {PH1}"
+    "message": "rows: {PH1}"
   },
   "ui/legacy/components/data_grid/DataGrid.ts | sortableColumn": {
-    "message": "Sortable column. Press enter to apply sorting filter"
+    "message": "Sortable column. Press enter to sort."
   },
   "ui/legacy/components/data_grid/DataGrid.ts | sortByString": {
     "message": "Sort by"
   },
   "ui/legacy/components/data_grid/DataGrid.ts | sRowS": {
-    "message": "{PH1} Row {PH2}"
+    "message": "{PH1} row {PH2}"
   },
   "ui/legacy/components/data_grid/DataGrid.ts | sSUseTheUpAndDownArrowKeysTo": {
-    "message": "{PH1} {PH2}, use the up and down arrow keys to navigate and interact with the rows of the table; Use browse mode to read cell by cell."
+    "message": "{PH1} {PH2}, use the up and down arrow keys to navigate and interact with the rows of the table; use browse mode to read cell by cell."
   },
   "ui/legacy/components/data_grid/ShowMoreDataGridNode.ts | showAllD": {
     "message": "Show all {PH1}"
@@ -17878,12 +17878,6 @@
   },
   "ui/legacy/components/object_ui/RemoteObjectPreviewFormatter.ts | thePropertyIsComputedWithAGetter": {
     "message": "The property is computed with a getter"
-  },
-  "ui/legacy/components/perf_ui/BrickBreaker.ts | congrats": {
-    "message": "Congrats, you win!"
-  },
-  "ui/legacy/components/perf_ui/BrickBreaker.ts | ps": {
-    "message": "PS: You can also open the game by typing fixme"
   },
   "ui/legacy/components/perf_ui/FilmStripView.ts | doubleclickToZoomImageClickTo": {
     "message": "Double-click to zoom image. Click to view preceding requests."
@@ -18013,6 +18007,9 @@
   },
   "ui/legacy/components/quick_open/quick_open-meta.ts | runCommand": {
     "message": "Run command"
+  },
+  "ui/legacy/components/quick_open/QuickOpen.ts | typeQuestionMarkToSeeAvailableCommands": {
+    "message": "Type question mark to see available commands"
   },
   "ui/legacy/components/quick_open/QuickOpen.ts | typeToSeeAvailableCommands": {
     "message": "Type ? to see available commands"

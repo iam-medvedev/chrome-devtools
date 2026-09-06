@@ -1,0 +1,1 @@
+gen/front_end/panels/changes/changes.js: gen/front_end/panels/changes/changesSidebar.css.js ../../front_end/panels/changes/ChangesSidebar.ts gen/front_end/panels/changes/changesView.css.js gen/front_end/panels/changes/combinedDiffView.css.js ../../front_end/panels/changes/CombinedDiffView.ts ../../front_end/panels/changes/ChangesView.ts ../../front_end/panels/changes/changes.ts

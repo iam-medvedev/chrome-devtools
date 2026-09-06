@@ -4,7 +4,7 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
-import { createTarget, describeWithEnvironment, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import * as WebMCP from './web_mcp.js';
 function createTool(name, frameId) {
     return {
@@ -18,7 +18,6 @@ describeWithEnvironment('WebMCPModel', () => {
     let target;
     let webMCPModel;
     beforeEach(() => {
-        updateHostConfig({ devToolsWebMCPSupport: { enabled: true } });
         target = createTarget();
         const model = target.model(WebMCP.WebMCPModel.WebMCPModel);
         assert.isNotNull(model);

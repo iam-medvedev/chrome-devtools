@@ -104,5 +104,31 @@ describe('EmulationModel', () => {
         await emulationModel.setSafeAreaInsets({});
         sinon.assert.calledOnceWithExactly(spy, { insets: {} });
     });
+    it('applies data saver override setting changes to the target', () => {
+        const universe = new TestUniverse();
+        const parentTarget = universe.createTarget();
+        const target = universe.createTarget({ parentTarget });
+        target.model(SDK.EmulationModel.EmulationModel);
+        const emulationAgent = target.emulationAgent();
+        const spySetDataSaverOverride = sinon.stub(emulationAgent, 'invoke_setDataSaverOverride');
+        const dataSaverSetting = universe.settings.resolve(SDK.SDKSettings.dataSaverSettingDescriptor);
+        dataSaverSetting.set("enabled" /* SDK.EmulationModel.DataSaverOverride.ENABLED */);
+        sinon.assert.calledOnce(spySetDataSaverOverride);
+        sinon.assert.calledWith(spySetDataSaverOverride, { dataSaverEnabled: true });
+    });
+    it('removes data saver setting change listener when disposed', () => {
+        const universe = new TestUniverse();
+        const parentTarget = universe.createTarget();
+        const target = universe.createTarget({ parentTarget });
+        const emulationModel = target.model(SDK.EmulationModel.EmulationModel);
+        assert.isNotNull(emulationModel);
+        const emulationAgent = target.emulationAgent();
+        const spySetDataSaverOverride = sinon.stub(emulationAgent, 'invoke_setDataSaverOverride');
+        target.dispose('test');
+        spySetDataSaverOverride.resetHistory();
+        const dataSaverSetting = universe.settings.resolve(SDK.SDKSettings.dataSaverSettingDescriptor);
+        dataSaverSetting.set("disabled" /* SDK.EmulationModel.DataSaverOverride.DISABLED */);
+        sinon.assert.notCalled(spySetDataSaverOverride);
+    });
 });
 //# sourceMappingURL=EmulationModel.test.js.map

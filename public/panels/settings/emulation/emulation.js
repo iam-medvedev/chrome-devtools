@@ -4,7 +4,7 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// gen/front_end/panels/settings/emulation/DevicesSettingsTab.js
+// ../../front_end/panels/settings/emulation/DevicesSettingsTab.ts
 var DevicesSettingsTab_exports = {};
 __export(DevicesSettingsTab_exports, {
   DevicesSettingsTab: () => DevicesSettingsTab
@@ -165,7 +165,7 @@ li.devices-edit-client-hints-field {
 
 /*# sourceURL=${import.meta.resolve("./devicesSettingsTab.css")} */`;
 
-// gen/front_end/panels/settings/emulation/DevicesSettingsTab.js
+// ../../front_end/panels/settings/emulation/DevicesSettingsTab.ts
 var UIStrings = {
   /**
    * @description Title for a section of the UI that shows all of the custom devices the user can emulate, in the device toolbar.
@@ -393,11 +393,23 @@ var DevicesSettingsTab = class extends UI.Widget.VBox {
     this.containerElement.classList.add("settings-card-container", "ignore-list-settings");
     this.muteUpdate = false;
     this.emulatedDevicesList = EmulationModel.EmulatedDevices.EmulatedDevicesList.instance();
-    this.emulatedDevicesList.addEventListener("CustomDevicesUpdated", this.devicesUpdated, this);
-    this.emulatedDevicesList.addEventListener("StandardDevicesUpdated", this.devicesUpdated, this);
+    this.emulatedDevicesList.addEventListener(
+      EmulationModel.EmulatedDevices.Events.CUSTOM_DEVICES_UPDATED,
+      this.devicesUpdated,
+      this
+    );
+    this.emulatedDevicesList.addEventListener(
+      EmulationModel.EmulatedDevices.Events.STANDARD_DEVICES_UPDATED,
+      this.devicesUpdated,
+      this
+    );
     this.ariaSuccessMessageElement = this.contentElement.createChild("div", "device-success-message");
     UI.ARIAUtils.markAsPoliteLiveRegion(this.ariaSuccessMessageElement, false);
-    this.addCustomButton = UI.UIUtils.createTextButton(i18nString(UIStrings.addCustomDevice), this.addCustomDevice.bind(this), { jslogContext: "add-custom-device" });
+    this.addCustomButton = UI.UIUtils.createTextButton(
+      i18nString(UIStrings.addCustomDevice),
+      this.addCustomDevice.bind(this),
+      { jslogContext: "add-custom-device" }
+    );
     this.addCustomButton.id = "custom-device-add-button";
     const customSettings = document.createElement("div");
     customSettings.classList.add("device-card-content");
@@ -557,17 +569,11 @@ var DevicesSettingsTab = class extends UI.Widget.VBox {
     device.modes.push(horizontalMode);
     device.capabilities = [];
     const uaType = editor.control("ua-type").value;
-    if (uaType === "Mobile" || uaType === "Mobile (no touch)") {
-      device.capabilities.push(
-        "mobile"
-        /* EmulationModel.EmulatedDevices.Capability.MOBILE */
-      );
+    if (uaType === EmulationModel.DeviceModeModel.UA.MOBILE || uaType === EmulationModel.DeviceModeModel.UA.MOBILE_NO_TOUCH) {
+      device.capabilities.push(EmulationModel.EmulatedDevices.Capability.MOBILE);
     }
-    if (uaType === "Mobile" || uaType === "Desktop (touch)") {
-      device.capabilities.push(
-        "touch"
-        /* EmulationModel.EmulatedDevices.Capability.TOUCH */
-      );
+    if (uaType === EmulationModel.DeviceModeModel.UA.MOBILE || uaType === EmulationModel.DeviceModeModel.UA.DESKTOP_TOUCH) {
+      device.capabilities.push(EmulationModel.EmulatedDevices.Capability.TOUCH);
     }
     const userAgentControlValue = editor.control("ua-metadata").value.metaData;
     const hasUserAgentOverride = device.userAgent.trim().length > 0;
@@ -575,7 +581,7 @@ var DevicesSettingsTab = class extends UI.Widget.VBox {
     if (hasUserAgentOverride && userAgentControlValue) {
       device.userAgentMetadata = {
         ...userAgentControlValue,
-        mobile: uaType === "Mobile" || uaType === "Mobile (no touch)"
+        mobile: uaType === EmulationModel.DeviceModeModel.UA.MOBILE || uaType === EmulationModel.DeviceModeModel.UA.MOBILE_NO_TOUCH
       };
     }
     if (isNew) {
@@ -585,7 +591,10 @@ var DevicesSettingsTab = class extends UI.Widget.VBox {
     }
     this.addCustomButton.scrollIntoViewIfNeeded();
     this.addCustomButton.focus();
-    this.ariaSuccessMessageElement.setAttribute("aria-label", i18nString(UIStrings.deviceAddedOrUpdated, { PH1: device.title }));
+    this.ariaSuccessMessageElement.setAttribute(
+      "aria-label",
+      i18nString(UIStrings.deviceAddedOrUpdated, { PH1: device.title })
+    );
   }
   beginEdit(device) {
     const editor = this.createEditor();
@@ -600,9 +609,9 @@ var DevicesSettingsTab = class extends UI.Widget.VBox {
     }
     let uaType;
     if (device.mobile()) {
-      uaType = device.touch() ? "Mobile" : "Mobile (no touch)";
+      uaType = device.touch() ? EmulationModel.DeviceModeModel.UA.MOBILE : EmulationModel.DeviceModeModel.UA.MOBILE_NO_TOUCH;
     } else {
-      uaType = device.touch() ? "Desktop (touch)" : "Desktop";
+      uaType = device.touch() ? EmulationModel.DeviceModeModel.UA.DESKTOP_TOUCH : EmulationModel.DeviceModeModel.UA.DESKTOP;
     }
     editor.control("ua-type").value = uaType;
     editor.control("ua-metadata").value = { metaData: device.userAgentMetadata || void 0 };
@@ -627,20 +636,20 @@ var DevicesSettingsTab = class extends UI.Widget.VBox {
       height: this.editorIntegerValue(editor, "cutout-height")
     };
     switch (shape) {
-      case "pill":
+      case EmulationModel.EmulatedDevices.CutoutShape.PILL:
         return {
           shape,
           ...baseCutout,
           borderRadius: this.editorIntegerValue(editor, "cutout-border-radius")
         };
-      case "notch":
+      case EmulationModel.EmulatedDevices.CutoutShape.NOTCH:
         return {
           shape,
           ...baseCutout,
           upperRadius: this.editorIntegerValue(editor, "cutout-upper-radius"),
           lowerRadius: this.editorIntegerValue(editor, "cutout-lower-radius")
         };
-      case "circle":
+      case EmulationModel.EmulatedDevices.CutoutShape.CIRCLE:
         return {
           shape,
           ...baseCutout,
@@ -648,7 +657,7 @@ var DevicesSettingsTab = class extends UI.Widget.VBox {
           cy: this.editorIntegerValue(editor, "cutout-cy"),
           radius: this.editorIntegerValue(editor, "cutout-radius")
         };
-      case "rectangle":
+      case EmulationModel.EmulatedDevices.CutoutShape.RECTANGLE:
         return { shape, ...baseCutout };
       default:
         return null;
@@ -673,20 +682,20 @@ var DevicesSettingsTab = class extends UI.Widget.VBox {
     editor.control("cutout-y").value = String(cutout?.y ?? "");
     editor.control("cutout-width").value = String(cutout?.width ?? "");
     editor.control("cutout-height").value = String(cutout?.height ?? "");
-    editor.control("cutout-border-radius").value = String(cutout?.shape === "pill" ? cutout.borderRadius : "");
-    editor.control("cutout-upper-radius").value = String(cutout?.shape === "notch" ? cutout.upperRadius : "");
-    editor.control("cutout-lower-radius").value = String(cutout?.shape === "notch" ? cutout.lowerRadius : "");
-    editor.control("cutout-cx").value = String(cutout?.shape === "circle" ? cutout.cx : "");
-    editor.control("cutout-cy").value = String(cutout?.shape === "circle" ? cutout.cy : "");
-    editor.control("cutout-radius").value = String(cutout?.shape === "circle" ? cutout.radius : "");
+    editor.control("cutout-border-radius").value = String(cutout?.shape === EmulationModel.EmulatedDevices.CutoutShape.PILL ? cutout.borderRadius : "");
+    editor.control("cutout-upper-radius").value = String(cutout?.shape === EmulationModel.EmulatedDevices.CutoutShape.NOTCH ? cutout.upperRadius : "");
+    editor.control("cutout-lower-radius").value = String(cutout?.shape === EmulationModel.EmulatedDevices.CutoutShape.NOTCH ? cutout.lowerRadius : "");
+    editor.control("cutout-cx").value = String(cutout?.shape === EmulationModel.EmulatedDevices.CutoutShape.CIRCLE ? cutout.cx : "");
+    editor.control("cutout-cy").value = String(cutout?.shape === EmulationModel.EmulatedDevices.CutoutShape.CIRCLE ? cutout.cy : "");
+    editor.control("cutout-radius").value = String(cutout?.shape === EmulationModel.EmulatedDevices.CutoutShape.CIRCLE ? cutout.radius : "");
     this.updateCutoutFieldsVisibility(editor);
   }
   updateCutoutFieldsVisibility(editor) {
     const shape = editor.control("cutout-shape").value;
     const noCutout = shape === NO_CUSTOM_CUTOUT;
-    const isPill = shape === "pill";
-    const isNotch = shape === "notch";
-    const isCircle = shape === "circle";
+    const isPill = shape === EmulationModel.EmulatedDevices.CutoutShape.PILL;
+    const isNotch = shape === EmulationModel.EmulatedDevices.CutoutShape.NOTCH;
+    const isCircle = shape === EmulationModel.EmulatedDevices.CutoutShape.CIRCLE;
     const content = editor.contentElement();
     const rectRow = content.querySelector(".devices-edit-cutout-rect-row");
     const radiusRow = content.querySelector(".devices-edit-cutout-radius-row");
@@ -722,8 +731,20 @@ var DevicesSettingsTab = class extends UI.Widget.VBox {
     dpr.classList.add("device-edit-fixed");
     screen.appendChild(dpr);
     if (Root.Runtime.hostConfig.devToolsMobileSafeAreaEmulation?.enabled) {
-      this.appendSafeAreaFields(editor, deviceFields, i18nString(UIStrings.portraitSafeArea), "", portraitSafeAreaValidator);
-      this.appendSafeAreaFields(editor, deviceFields, i18nString(UIStrings.landscapeSafeArea), "landscape-", landscapeSafeAreaValidator);
+      this.appendSafeAreaFields(
+        editor,
+        deviceFields,
+        i18nString(UIStrings.portraitSafeArea),
+        "",
+        portraitSafeAreaValidator
+      );
+      this.appendSafeAreaFields(
+        editor,
+        deviceFields,
+        i18nString(UIStrings.landscapeSafeArea),
+        "landscape-",
+        landscapeSafeAreaValidator
+      );
       this.appendCutoutFields(editor, content, {
         shape: cutoutShapeValidator,
         x: cutoutXValidator,
@@ -743,17 +764,21 @@ var DevicesSettingsTab = class extends UI.Widget.VBox {
     const ua = uaStringFields.createChild("div", "hbox");
     ua.appendChild(editor.createInput("user-agent", "text", i18nString(UIStrings.userAgentString), userAgentValidator));
     const uaTypeOptions = [
-      "Mobile",
-      "Mobile (no touch)",
-      "Desktop",
-      "Desktop (touch)"
+      EmulationModel.DeviceModeModel.UA.MOBILE,
+      EmulationModel.DeviceModeModel.UA.MOBILE_NO_TOUCH,
+      EmulationModel.DeviceModeModel.UA.DESKTOP,
+      EmulationModel.DeviceModeModel.UA.DESKTOP_TOUCH
     ];
     const uaType = editor.createSelect("ua-type", uaTypeOptions, () => {
       return { valid: true };
     }, i18nString(UIStrings.userAgentType));
     uaType.classList.add("device-edit-fixed");
     ua.appendChild(uaType);
-    const uaMetadata = editor.createCustomControl("ua-metadata", EmulationComponents.UserAgentClientHintsForm.UserAgentClientHintsForm, userAgentMetadataValidator);
+    const uaMetadata = editor.createCustomControl(
+      "ua-metadata",
+      EmulationComponents.UserAgentClientHintsForm.UserAgentClientHintsForm,
+      userAgentMetadataValidator
+    );
     uaMetadata.value = {};
     uaMetadata.addEventListener("clienthintschange", () => editor.requestValidation(), false);
     content.appendChild(uaMetadata);
@@ -908,40 +933,22 @@ var DevicesSettingsTab = class extends UI.Widget.VBox {
       return { valid: true };
     }
     function cutoutPillRadiusValidator(_item, _index, input) {
-      return isCutoutFieldActive(
-        "pill"
-        /* EmulationModel.EmulatedDevices.CutoutShape.PILL */
-      ) ? cutoutValueValidator(input) : { valid: true };
+      return isCutoutFieldActive(EmulationModel.EmulatedDevices.CutoutShape.PILL) ? cutoutValueValidator(input) : { valid: true };
     }
     function cutoutNotchUpperRadiusValidator(_item, _index, input) {
-      return isCutoutFieldActive(
-        "notch"
-        /* EmulationModel.EmulatedDevices.CutoutShape.NOTCH */
-      ) ? cutoutValueValidator(input) : { valid: true };
+      return isCutoutFieldActive(EmulationModel.EmulatedDevices.CutoutShape.NOTCH) ? cutoutValueValidator(input) : { valid: true };
     }
     function cutoutNotchLowerRadiusValidator(_item, _index, input) {
-      return isCutoutFieldActive(
-        "notch"
-        /* EmulationModel.EmulatedDevices.CutoutShape.NOTCH */
-      ) ? cutoutValueValidator(input) : { valid: true };
+      return isCutoutFieldActive(EmulationModel.EmulatedDevices.CutoutShape.NOTCH) ? cutoutValueValidator(input) : { valid: true };
     }
     function cutoutCircleCenterXValidator(_item, _index, input) {
-      return isCutoutFieldActive(
-        "circle"
-        /* EmulationModel.EmulatedDevices.CutoutShape.CIRCLE */
-      ) ? cutoutValueValidator(input) : { valid: true };
+      return isCutoutFieldActive(EmulationModel.EmulatedDevices.CutoutShape.CIRCLE) ? cutoutValueValidator(input) : { valid: true };
     }
     function cutoutCircleCenterYValidator(_item, _index, input) {
-      return isCutoutFieldActive(
-        "circle"
-        /* EmulationModel.EmulatedDevices.CutoutShape.CIRCLE */
-      ) ? cutoutValueValidator(input) : { valid: true };
+      return isCutoutFieldActive(EmulationModel.EmulatedDevices.CutoutShape.CIRCLE) ? cutoutValueValidator(input) : { valid: true };
     }
     function cutoutCircleRadiusValidator(_item, _index, input) {
-      if (!isCutoutFieldActive(
-        "circle"
-        /* EmulationModel.EmulatedDevices.CutoutShape.CIRCLE */
-      )) {
+      if (!isCutoutFieldActive(EmulationModel.EmulatedDevices.CutoutShape.CIRCLE)) {
         return { valid: true };
       }
       const validation = cutoutValueValidator(input, true);
@@ -969,10 +976,30 @@ var DevicesSettingsTab = class extends UI.Widget.VBox {
     UI.UIUtils.createTextChild(heading, title);
     safeAreaGroup.setAttribute("aria-labelledby", heading.id);
     const safeAreaRow = safeAreaGroup.createChild("div", "hbox");
-    safeAreaRow.appendChild(editor.createInput(`${controlPrefix}safe-area-left`, "text", i18nString(UIStrings.safeAreaLeft), safeAreaValidator));
-    safeAreaRow.appendChild(editor.createInput(`${controlPrefix}safe-area-top`, "text", i18nString(UIStrings.safeAreaTop), safeAreaValidator));
-    safeAreaRow.appendChild(editor.createInput(`${controlPrefix}safe-area-right`, "text", i18nString(UIStrings.safeAreaRight), safeAreaValidator));
-    safeAreaRow.appendChild(editor.createInput(`${controlPrefix}safe-area-bottom`, "text", i18nString(UIStrings.safeAreaBottom), safeAreaValidator));
+    safeAreaRow.appendChild(editor.createInput(
+      `${controlPrefix}safe-area-left`,
+      "text",
+      i18nString(UIStrings.safeAreaLeft),
+      safeAreaValidator
+    ));
+    safeAreaRow.appendChild(editor.createInput(
+      `${controlPrefix}safe-area-top`,
+      "text",
+      i18nString(UIStrings.safeAreaTop),
+      safeAreaValidator
+    ));
+    safeAreaRow.appendChild(editor.createInput(
+      `${controlPrefix}safe-area-right`,
+      "text",
+      i18nString(UIStrings.safeAreaRight),
+      safeAreaValidator
+    ));
+    safeAreaRow.appendChild(editor.createInput(
+      `${controlPrefix}safe-area-bottom`,
+      "text",
+      i18nString(UIStrings.safeAreaBottom),
+      safeAreaValidator
+    ));
   }
   appendCutoutFields(editor, content, validators) {
     const cutoutFields = content.createChild("div", "devices-edit-fields");
@@ -984,10 +1011,10 @@ var DevicesSettingsTab = class extends UI.Widget.VBox {
     cutoutFields.setAttribute("aria-labelledby", heading.id);
     const shapeOptions = [
       NO_CUSTOM_CUTOUT,
-      "pill",
-      "notch",
-      "circle",
-      "rectangle"
+      EmulationModel.EmulatedDevices.CutoutShape.PILL,
+      EmulationModel.EmulatedDevices.CutoutShape.NOTCH,
+      EmulationModel.EmulatedDevices.CutoutShape.CIRCLE,
+      EmulationModel.EmulatedDevices.CutoutShape.RECTANGLE
     ];
     const shapeControl = editor.createSelect("cutout-shape", shapeOptions, validators.shape, i18nString(UIStrings.displayCutout));
     shapeControl.options[0].textContent = i18nString(UIStrings.noDisplayCutout);
@@ -1000,15 +1027,40 @@ var DevicesSettingsTab = class extends UI.Widget.VBox {
     const rectRow = cutoutFields.createChild("div", "hbox devices-edit-cutout-rect-row");
     rectRow.appendChild(editor.createInput("cutout-x", "text", i18nString(UIStrings.cutoutX), validators.x));
     rectRow.appendChild(editor.createInput("cutout-y", "text", i18nString(UIStrings.cutoutY), validators.y));
-    rectRow.appendChild(editor.createInput("cutout-width", "text", i18nString(UIStrings.cutoutWidth), validators.width));
-    rectRow.appendChild(editor.createInput("cutout-height", "text", i18nString(UIStrings.cutoutHeight), validators.height));
+    rectRow.appendChild(
+      editor.createInput("cutout-width", "text", i18nString(UIStrings.cutoutWidth), validators.width)
+    );
+    rectRow.appendChild(
+      editor.createInput("cutout-height", "text", i18nString(UIStrings.cutoutHeight), validators.height)
+    );
     const radiusRow = cutoutFields.createChild("div", "hbox devices-edit-cutout-radius-row");
-    radiusRow.appendChild(editor.createInput("cutout-border-radius", "text", i18nString(UIStrings.cutoutBorderRadius), validators.pillRadius));
-    radiusRow.appendChild(editor.createInput("cutout-upper-radius", "text", i18nString(UIStrings.cutoutUpperRadius), validators.notchUpperRadius));
-    radiusRow.appendChild(editor.createInput("cutout-lower-radius", "text", i18nString(UIStrings.cutoutLowerRadius), validators.notchLowerRadius));
-    radiusRow.appendChild(editor.createInput("cutout-cx", "text", i18nString(UIStrings.cutoutCenterX), validators.circleCenterX));
-    radiusRow.appendChild(editor.createInput("cutout-cy", "text", i18nString(UIStrings.cutoutCenterY), validators.circleCenterY));
-    radiusRow.appendChild(editor.createInput("cutout-radius", "text", i18nString(UIStrings.cutoutRadius), validators.circleRadius));
+    radiusRow.appendChild(editor.createInput(
+      "cutout-border-radius",
+      "text",
+      i18nString(UIStrings.cutoutBorderRadius),
+      validators.pillRadius
+    ));
+    radiusRow.appendChild(editor.createInput(
+      "cutout-upper-radius",
+      "text",
+      i18nString(UIStrings.cutoutUpperRadius),
+      validators.notchUpperRadius
+    ));
+    radiusRow.appendChild(editor.createInput(
+      "cutout-lower-radius",
+      "text",
+      i18nString(UIStrings.cutoutLowerRadius),
+      validators.notchLowerRadius
+    ));
+    radiusRow.appendChild(
+      editor.createInput("cutout-cx", "text", i18nString(UIStrings.cutoutCenterX), validators.circleCenterX)
+    );
+    radiusRow.appendChild(
+      editor.createInput("cutout-cy", "text", i18nString(UIStrings.cutoutCenterY), validators.circleCenterY)
+    );
+    radiusRow.appendChild(
+      editor.createInput("cutout-radius", "text", i18nString(UIStrings.cutoutRadius), validators.circleRadius)
+    );
     this.updateCutoutFieldsVisibility(editor);
   }
 };

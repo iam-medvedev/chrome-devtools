@@ -31,7 +31,6 @@ export default `/*
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-/* Profiler Style */
 
 #profile-views {
   flex: auto;
@@ -66,7 +65,7 @@ export default `/*
 
 .profiles-toolbar {
   background-color: var(--sys-color-cdt-base-container);
-  border-bottom: 1px solid var(--sys-color-divider);
+  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
   flex-shrink: 0;
 }
 
@@ -100,8 +99,8 @@ export default `/*
 }
 
 .profile-warn-marker {
-  vertical-align: -1px;
-  margin-right: 2px;
+  vertical-align: calc(-1 * var(--sys-size-1));
+  margin-right: var(--sys-size-2);
 }
 
 .cpu-profile-flame-chart-overview-container {
@@ -109,17 +108,17 @@ export default `/*
   position: absolute;
   top: 0;
   width: 100%;
-  height: 80px;
+  height: var(--sys-size-19);
 }
 
 #cpu-profile-flame-chart-overview-container {
-  border-bottom: 1px solid var(--sys-color-divider);
+  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
   overflow: hidden;
 }
 
 .cpu-profile-flame-chart-overview-canvas {
   position: absolute;
-  inset: 20px 0 0;
+  inset: var(--sys-size-9) 0 0;
 }
 
 #cpu-profile-flame-chart-overview-grid .resources-dividers-label-bar {
@@ -127,7 +126,7 @@ export default `/*
 }
 
 .cpu-profile-flame-chart-overview-pane {
-  flex: 0 0 80px !important; /* stylelint-disable-line declaration-no-important */
+  flex: 0 0 var(--sys-size-19) !important; /* stylelint-disable-line declaration-no-important */
 }
 
 .profile-text-view {
@@ -144,7 +143,7 @@ export default `/*
   justify-content: center;
   align-items: center;
   overflow: auto;
-  font-size: 16px;
+  font-size: var(--sys-typescale-body1-size);
   color: var(--sys-color-token-subtle);
   padding: 50px;
 }

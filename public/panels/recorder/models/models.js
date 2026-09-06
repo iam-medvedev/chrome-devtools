@@ -4,148 +4,29 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// gen/front_end/panels/recorder/models/ConverterIds.js
+// ../../front_end/panels/recorder/models/ConverterIds.ts
 var ConverterIds_exports = {};
 __export(ConverterIds_exports, {
   ConverterIds: () => ConverterIds
 });
-var ConverterIds;
-(function(ConverterIds2) {
+var ConverterIds = /* @__PURE__ */ ((ConverterIds2) => {
   ConverterIds2["JSON"] = "json";
   ConverterIds2["PUPPETEER"] = "puppeteer";
   ConverterIds2["PUPPETEER_FIREFOX"] = "puppeteer-firefox";
   ConverterIds2["REPLAY"] = "@puppeteer/replay";
   ConverterIds2["LIGHTHOUSE"] = "lighthouse";
-})(ConverterIds || (ConverterIds = {}));
+  return ConverterIds2;
+})(ConverterIds || {});
 
-// gen/front_end/panels/recorder/models/RecorderSettings.js
+// ../../front_end/panels/recorder/models/RecorderSettings.ts
 var RecorderSettings_exports = {};
 __export(RecorderSettings_exports, {
   RecorderSettings: () => RecorderSettings
 });
-import * as Common from "../../../core/common/common.js";
+import * as Common2 from "../../../core/common/common.js";
 import * as i18n from "../../../core/i18n/i18n.js";
 
-// gen/front_end/panels/recorder/models/Schema.js
-var Schema_exports = {};
-__export(Schema_exports, {
-  AssertedEventType: () => AssertedEventType,
-  SelectorType: () => SelectorType,
-  StepType: () => StepType
-});
-import { AssertedEventType, SelectorType, StepType } from "../../../third_party/puppeteer-replay/puppeteer-replay.js";
-
-// gen/front_end/panels/recorder/models/RecorderSettings.js
-var UIStrings = {
-  /**
-   * @description This string is used to generate the default name for the create recording form in the Recorder panel.
-   * The format is similar to the one used by macOS to generate names for screenshots. Both {DATE} and {TIME} are localized
-   * using the current locale.
-   * @example {2022-08-04} DATE
-   * @example {10:32:48} TIME
-   */
-  defaultRecordingName: "Recording {DATE} at {TIME}"
-};
-var str_ = i18n.i18n.registerUIStrings("panels/recorder/models/RecorderSettings.ts", UIStrings);
-var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
-var RecorderSettings = class {
-  #selectorAttribute = Common.Settings.Settings.instance().createSetting("recorder-selector-attribute", "");
-  #speed = Common.Settings.Settings.instance().createSetting(
-    "recorder-panel-replay-speed",
-    "normal"
-    /* PlayRecordingSpeed.NORMAL */
-  );
-  #replayExtension = Common.Settings.Settings.instance().createSetting("recorder-panel-replay-extension", "");
-  #selectorTypes = /* @__PURE__ */ new Map();
-  #preferredCopyFormat = Common.Settings.Settings.instance().createSetting(
-    "recorder-preferred-copy-format",
-    "json"
-    /* ConverterIds.JSON */
-  );
-  constructor() {
-    for (const selectorType of Object.values(SelectorType)) {
-      this.#selectorTypes.set(selectorType, Common.Settings.Settings.instance().createSetting(`recorder-${selectorType}-selector-enabled`, true));
-    }
-  }
-  get selectorAttribute() {
-    return this.#selectorAttribute.get();
-  }
-  set selectorAttribute(value) {
-    this.#selectorAttribute.set(value);
-  }
-  get speed() {
-    return this.#speed.get();
-  }
-  set speed(speed) {
-    this.#speed.set(speed);
-  }
-  get replayExtension() {
-    return this.#replayExtension.get();
-  }
-  set replayExtension(replayExtension) {
-    this.#replayExtension.set(replayExtension);
-  }
-  get defaultTitle() {
-    const now = /* @__PURE__ */ new Date();
-    return i18nString(UIStrings.defaultRecordingName, {
-      DATE: now.toLocaleDateString(),
-      TIME: now.toLocaleTimeString()
-    });
-  }
-  get defaultSelectors() {
-    return Object.values(SelectorType).filter((type) => this.getSelectorByType(type));
-  }
-  getSelectorByType(type) {
-    return this.#selectorTypes.get(type)?.get();
-  }
-  setSelectorByType(type, value) {
-    this.#selectorTypes.get(type)?.set(value);
-  }
-  get preferredCopyFormat() {
-    return this.#preferredCopyFormat.get();
-  }
-  set preferredCopyFormat(value) {
-    this.#preferredCopyFormat.set(value);
-  }
-};
-
-// gen/front_end/panels/recorder/models/RecorderShortcutHelper.js
-var RecorderShortcutHelper_exports = {};
-__export(RecorderShortcutHelper_exports, {
-  RecorderShortcutHelper: () => RecorderShortcutHelper
-});
-import * as UI from "../../../ui/legacy/legacy.js";
-var RecorderShortcutHelper = class {
-  #abortController;
-  #timeoutId = null;
-  #timeout;
-  constructor(timeout = 200) {
-    this.#timeout = timeout;
-    this.#abortController = new AbortController();
-  }
-  #cleanInternals() {
-    this.#abortController.abort();
-    if (this.#timeoutId) {
-      clearTimeout(this.#timeoutId);
-    }
-    this.#abortController = new AbortController();
-  }
-  #handleCallback(callback) {
-    this.#cleanInternals();
-    void callback();
-  }
-  handleShortcut(callback) {
-    this.#cleanInternals();
-    document.addEventListener("keyup", (event) => {
-      if (UI.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey(event)) {
-        this.#handleCallback(callback);
-      }
-    }, { signal: this.#abortController.signal });
-    this.#timeoutId = setTimeout(() => this.#handleCallback(callback), this.#timeout);
-  }
-};
-
-// gen/front_end/panels/recorder/models/RecordingPlayer.js
+// ../../front_end/panels/recorder/models/RecordingPlayer.ts
 var RecordingPlayer_exports = {};
 __export(RecordingPlayer_exports, {
   Events: () => Events,
@@ -154,52 +35,40 @@ __export(RecordingPlayer_exports, {
   ReplayResult: () => ReplayResult,
   defaultTimeout: () => defaultTimeout
 });
-import * as Common2 from "../../../core/common/common.js";
+import * as Common from "../../../core/common/common.js";
 import * as SDK from "../../../core/sdk/sdk.js";
 import * as PuppeteerService from "../../../services/puppeteer/puppeteer.js";
 import * as PuppeteerReplay from "../../../third_party/puppeteer-replay/puppeteer-replay.js";
-var PlayRecordingSpeed;
-(function(PlayRecordingSpeed2) {
+var PlayRecordingSpeed = /* @__PURE__ */ ((PlayRecordingSpeed2) => {
   PlayRecordingSpeed2["NORMAL"] = "normal";
   PlayRecordingSpeed2["SLOW"] = "slow";
   PlayRecordingSpeed2["VERY_SLOW"] = "very_slow";
   PlayRecordingSpeed2["EXTREMELY_SLOW"] = "extremely_slow";
-})(PlayRecordingSpeed || (PlayRecordingSpeed = {}));
+  return PlayRecordingSpeed2;
+})(PlayRecordingSpeed || {});
 var speedDelayMap = {
-  [
-    "normal"
-    /* PlayRecordingSpeed.NORMAL */
-  ]: 0,
-  [
-    "slow"
-    /* PlayRecordingSpeed.SLOW */
-  ]: 500,
-  [
-    "very_slow"
-    /* PlayRecordingSpeed.VERY_SLOW */
-  ]: 1e3,
-  [
-    "extremely_slow"
-    /* PlayRecordingSpeed.EXTREMELY_SLOW */
-  ]: 2e3
+  ["normal" /* NORMAL */]: 0,
+  ["slow" /* SLOW */]: 500,
+  ["very_slow" /* VERY_SLOW */]: 1e3,
+  ["extremely_slow" /* EXTREMELY_SLOW */]: 2e3
 };
-var ReplayResult;
-(function(ReplayResult2) {
+var ReplayResult = /* @__PURE__ */ ((ReplayResult2) => {
   ReplayResult2["FAILURE"] = "Failure";
   ReplayResult2["SUCCESS"] = "Success";
-})(ReplayResult || (ReplayResult = {}));
+  return ReplayResult2;
+})(ReplayResult || {});
 var defaultTimeout = 5e3;
 function isPageTarget(target) {
-  return Common2.ParsedURL.schemeIs(target.url, "devtools:") || target.type === "page" || target.type === "background_page" || target.type === "webview";
+  return Common.ParsedURL.schemeIs(target.url, "devtools:") || target.type === "page" || target.type === "background_page" || target.type === "webview";
 }
 function checkNavigationUrl(url) {
   const allowedSchemes = ["http:", "https:", "data:"];
-  const isAllowed = allowedSchemes.some((scheme) => Common2.ParsedURL.schemeIs(url, scheme));
+  const isAllowed = allowedSchemes.some((scheme) => Common.ParsedURL.schemeIs(url, scheme));
   if (!isAllowed && url !== "about:blank") {
     throw new Error(`Navigation to ${url} is not allowed, due to blocked schema`);
   }
 }
-var RecordingPlayer = class _RecordingPlayer extends Common2.ObjectWrapper.ObjectWrapper {
+var RecordingPlayer = class _RecordingPlayer extends Common.ObjectWrapper.ObjectWrapper {
   userFlow;
   speed;
   timeout;
@@ -209,7 +78,10 @@ var RecordingPlayer = class _RecordingPlayer extends Common2.ObjectWrapper.Objec
   #stopResolver = Promise.withResolvers();
   #abortResolver = Promise.withResolvers();
   #runner;
-  constructor(userFlow, { speed, breakpointIndexes = /* @__PURE__ */ new Set() }) {
+  constructor(userFlow, {
+    speed,
+    breakpointIndexes = /* @__PURE__ */ new Set()
+  }) {
     super();
     this.userFlow = userFlow;
     this.speed = speed;
@@ -229,11 +101,15 @@ var RecordingPlayer = class _RecordingPlayer extends Common2.ObjectWrapper.Objec
     if (!primaryPageTarget) {
       throw new Error("Could not find the primary page target");
     }
-    const childTargetManager = primaryPageTarget.model(SDK.ChildTargetManager.ChildTargetManager);
+    const childTargetManager = primaryPageTarget.model(
+      SDK.ChildTargetManager.ChildTargetManager
+    );
     if (!childTargetManager) {
       throw new Error("Could not get childTargetManager");
     }
-    const resourceTreeModel = primaryPageTarget.model(SDK.ResourceTreeModel.ResourceTreeModel);
+    const resourceTreeModel = primaryPageTarget.model(
+      SDK.ResourceTreeModel.ResourceTreeModel
+    );
     if (!resourceTreeModel) {
       throw new Error("Could not get resource tree model");
     }
@@ -252,12 +128,14 @@ var RecordingPlayer = class _RecordingPlayer extends Common2.ObjectWrapper.Objec
     const mainTargetId = await childTargetManager.getParentTargetId();
     const rootTargetId = await rootChildTargetManager.getParentTargetId();
     const { sessionId } = await rootTarget.targetAgent().invoke_attachToTarget({ targetId: rootTargetId, flatten: true });
-    const { page, browser, puppeteerConnection } = await PuppeteerService.PuppeteerConnection.PuppeteerConnectionHelper.connectPuppeteerToConnectionViaTab({
-      connection,
-      targetId: rootTargetId,
-      sessionId,
-      isPageTargetCallback: isPageTarget
-    });
+    const { page, browser, puppeteerConnection } = await PuppeteerService.PuppeteerConnection.PuppeteerConnectionHelper.connectPuppeteerToConnectionViaTab(
+      {
+        connection,
+        targetId: rootTargetId,
+        sessionId,
+        isPageTargetCallback: isPageTarget
+      }
+    );
     if (!page) {
       throw new Error("could not find main page!");
     }
@@ -338,13 +216,16 @@ var RecordingPlayer = class _RecordingPlayer extends Common2.ObjectWrapper.Objec
     const player = this;
     class ExtensionWithBreak extends PuppeteerReplay.PuppeteerRunnerExtension {
       #speed;
-      constructor(browser2, page2, { timeout, speed }) {
+      constructor(browser2, page2, {
+        timeout,
+        speed
+      }) {
         super(browser2, page2, { timeout });
         this.#speed = speed;
       }
       async beforeEachStep(step, flow) {
         const { resolve, promise } = Promise.withResolvers();
-        player.dispatchEventToListeners("Step", {
+        player.dispatchEventToListeners("Step" /* STEP */, {
           step,
           resolve
         });
@@ -353,24 +234,20 @@ var RecordingPlayer = class _RecordingPlayer extends Common2.ObjectWrapper.Objec
         const shouldStopAtCurrentStep = player.steppingOver || player.breakpointIndexes.has(currentStepIndex);
         const shouldWaitForSpeed = step.type !== "setViewport" && step.type !== "navigate" && !player.aborted;
         if (shouldStopAtCurrentStep) {
-          player.dispatchEventToListeners(
-            "Stop"
-            /* Events.STOP */
-          );
+          player.dispatchEventToListeners("Stop" /* STOP */);
           await player.stop();
-          player.dispatchEventToListeners(
-            "Continue"
-            /* Events.CONTINUE */
-          );
+          player.dispatchEventToListeners("Continue" /* CONTINUE */);
         } else if (shouldWaitForSpeed) {
           await Promise.race([
-            new Promise((resolve2) => setTimeout(resolve2, speedDelayMap[this.#speed])),
+            new Promise(
+              (resolve2) => setTimeout(resolve2, speedDelayMap[this.#speed])
+            ),
             player.abortPromise
           ]);
         }
       }
       async runStep(step, flow) {
-        if (Common2.ParsedURL.schemeIs(page?.url(), "devtools:") && (step.type === "setViewport" || step.type === "navigate")) {
+        if (Common.ParsedURL.schemeIs(page?.url(), "devtools:") && (step.type === "setViewport" || step.type === "navigate")) {
           return;
         }
         if (step.type === "navigate") {
@@ -395,31 +272,166 @@ var RecordingPlayer = class _RecordingPlayer extends Common2.ObjectWrapper.Objec
       await _RecordingPlayer.disconnectPuppeteer(browser);
     }
     if (this.aborted) {
-      this.dispatchEventToListeners(
-        "Abort"
-        /* Events.ABORT */
-      );
+      this.dispatchEventToListeners("Abort" /* ABORT */);
     } else if (error) {
-      this.dispatchEventToListeners("Error", error);
+      this.dispatchEventToListeners("Error" /* ERROR */, error);
     } else {
-      this.dispatchEventToListeners(
-        "Done"
-        /* Events.DONE */
-      );
+      this.dispatchEventToListeners("Done" /* DONE */);
     }
   }
 };
-var Events;
-(function(Events3) {
+var Events = /* @__PURE__ */ ((Events3) => {
   Events3["ABORT"] = "Abort";
   Events3["DONE"] = "Done";
   Events3["STEP"] = "Step";
   Events3["STOP"] = "Stop";
   Events3["ERROR"] = "Error";
   Events3["CONTINUE"] = "Continue";
-})(Events || (Events = {}));
+  return Events3;
+})(Events || {});
 
-// gen/front_end/panels/recorder/models/RecordingSession.js
+// ../../front_end/panels/recorder/models/Schema.ts
+var Schema_exports = {};
+__export(Schema_exports, {
+  AssertedEventType: () => AssertedEventType,
+  SelectorType: () => SelectorType,
+  StepType: () => StepType
+});
+import { AssertedEventType, SelectorType, StepType } from "../../../third_party/puppeteer-replay/puppeteer-replay.js";
+
+// ../../front_end/panels/recorder/models/RecorderSettings.ts
+var UIStrings = {
+  /**
+   * @description This string is used to generate the default name for the create recording form in the Recorder panel.
+   * The format is similar to the one used by macOS to generate names for screenshots. Both {DATE} and {TIME} are localized
+   * using the current locale.
+   * @example {2022-08-04} DATE
+   * @example {10:32:48} TIME
+   */
+  defaultRecordingName: "Recording {DATE} at {TIME}"
+};
+var str_ = i18n.i18n.registerUIStrings(
+  "panels/recorder/models/RecorderSettings.ts",
+  UIStrings
+);
+var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
+var RecorderSettings = class {
+  #selectorAttribute = Common2.Settings.Settings.instance().createSetting(
+    "recorder-selector-attribute",
+    ""
+  );
+  #speed = Common2.Settings.Settings.instance().createSetting(
+    "recorder-panel-replay-speed",
+    "normal" /* NORMAL */
+  );
+  #replayExtension = Common2.Settings.Settings.instance().createSetting(
+    "recorder-panel-replay-extension",
+    ""
+  );
+  #selectorTypes = /* @__PURE__ */ new Map();
+  #preferredCopyFormat = Common2.Settings.Settings.instance().createSetting(
+    "recorder-preferred-copy-format",
+    "json" /* JSON */
+  );
+  constructor() {
+    for (const selectorType of Object.values(SelectorType)) {
+      this.#selectorTypes.set(
+        selectorType,
+        Common2.Settings.Settings.instance().createSetting(
+          `recorder-${selectorType}-selector-enabled`,
+          true
+        )
+      );
+    }
+  }
+  get selectorAttribute() {
+    return this.#selectorAttribute.get();
+  }
+  set selectorAttribute(value) {
+    this.#selectorAttribute.set(value);
+  }
+  get speed() {
+    return this.#speed.get();
+  }
+  set speed(speed) {
+    this.#speed.set(speed);
+  }
+  get replayExtension() {
+    return this.#replayExtension.get();
+  }
+  set replayExtension(replayExtension) {
+    this.#replayExtension.set(replayExtension);
+  }
+  get defaultTitle() {
+    const now = /* @__PURE__ */ new Date();
+    return i18nString(UIStrings.defaultRecordingName, {
+      DATE: now.toLocaleDateString(),
+      TIME: now.toLocaleTimeString()
+    });
+  }
+  get defaultSelectors() {
+    return Object.values(SelectorType).filter(
+      (type) => this.getSelectorByType(type)
+    );
+  }
+  getSelectorByType(type) {
+    return this.#selectorTypes.get(type)?.get();
+  }
+  setSelectorByType(type, value) {
+    this.#selectorTypes.get(type)?.set(value);
+  }
+  get preferredCopyFormat() {
+    return this.#preferredCopyFormat.get();
+  }
+  set preferredCopyFormat(value) {
+    this.#preferredCopyFormat.set(value);
+  }
+};
+
+// ../../front_end/panels/recorder/models/RecorderShortcutHelper.ts
+var RecorderShortcutHelper_exports = {};
+__export(RecorderShortcutHelper_exports, {
+  RecorderShortcutHelper: () => RecorderShortcutHelper
+});
+import * as UI from "../../../ui/legacy/legacy.js";
+var RecorderShortcutHelper = class {
+  #abortController;
+  #timeoutId = null;
+  #timeout;
+  constructor(timeout = 200) {
+    this.#timeout = timeout;
+    this.#abortController = new AbortController();
+  }
+  #cleanInternals() {
+    this.#abortController.abort();
+    if (this.#timeoutId) {
+      clearTimeout(this.#timeoutId);
+    }
+    this.#abortController = new AbortController();
+  }
+  #handleCallback(callback) {
+    this.#cleanInternals();
+    void callback();
+  }
+  handleShortcut(callback) {
+    this.#cleanInternals();
+    document.addEventListener(
+      "keyup",
+      (event) => {
+        if (UI.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey(event)) {
+          this.#handleCallback(callback);
+        }
+      },
+      { signal: this.#abortController.signal }
+    );
+    this.#timeoutId = setTimeout(
+      () => this.#handleCallback(callback),
+      this.#timeout
+    );
+  }
+};
+
+// ../../front_end/panels/recorder/models/RecordingSession.ts
 var RecordingSession_exports = {};
 __export(RecordingSession_exports, {
   Events: () => Events2,
@@ -431,7 +443,7 @@ import * as SDK3 from "../../../core/sdk/sdk.js";
 import * as UI2 from "../../../ui/legacy/legacy.js";
 import * as Util from "../util/util.js";
 
-// gen/front_end/panels/recorder/models/SchemaUtils.js
+// ../../front_end/panels/recorder/models/SchemaUtils.ts
 var SchemaUtils_exports = {};
 __export(SchemaUtils_exports, {
   areSelectorsEqual: () => areSelectorsEqual,
@@ -474,7 +486,7 @@ var maxTimeout = 3e4;
 var parse2 = PuppeteerReplay2.parse;
 var parseStep2 = PuppeteerReplay2.parseStep;
 
-// gen/front_end/panels/recorder/models/SDKUtils.js
+// ../../front_end/panels/recorder/models/SDKUtils.ts
 var SDKUtils_exports = {};
 __export(SDKUtils_exports, {
   evaluateInAllFrames: () => evaluateInAllFrames,
@@ -506,11 +518,17 @@ function getTargetFrameContext(target, frame) {
   return { target: getTargetName(target), frame: path };
 }
 async function evaluateInAllFrames(worldName, target, expression) {
-  const runtimeModel = target.model(SDK2.RuntimeModel.RuntimeModel);
+  const runtimeModel = target.model(
+    SDK2.RuntimeModel.RuntimeModel
+  );
   const executionContexts = runtimeModel.executionContexts();
-  const resourceTreeModel = target.model(SDK2.ResourceTreeModel.ResourceTreeModel);
+  const resourceTreeModel = target.model(
+    SDK2.ResourceTreeModel.ResourceTreeModel
+  );
   for (const frame of resourceTreeModel.frames()) {
-    const executionContext = executionContexts.find((context) => context.frameId === frame.id);
+    const executionContext = executionContexts.find(
+      (context) => context.frameId === frame.id
+    );
     if (!executionContext) {
       continue;
     }
@@ -554,7 +572,7 @@ var isFrameTargetInfo = (target) => {
   return target.type === "page" || target.type === "iframe";
 };
 
-// gen/front_end/panels/recorder/models/RecordingSession.js
+// ../../front_end/panels/recorder/models/RecordingSession.ts
 var formatAsJSLiteral = Platform.StringUtilities.formatAsJSLiteral;
 var unrelatedNavigationTypes = /* @__PURE__ */ new Set([
   "typed",
@@ -644,7 +662,11 @@ var RecordingSession = class _RecordingSession extends Common3.ObjectWrapper.Obj
       throw new Error("The session has started");
     }
     this.#started = true;
-    this.#networkManager.addEventListener("ConditionsChanged", this.#appendCurrentNetworkStep, this);
+    this.#networkManager.addEventListener(
+      SDK3.NetworkManager.MultitargetNetworkManager.Events.CONDITIONS_CHANGED,
+      this.#appendCurrentNetworkStep,
+      this
+    );
     await this.#appendInitialSteps();
     await this.#pageAgent.invoke_bringToFront();
     await this.#setUpTarget(this.#target);
@@ -653,7 +675,11 @@ var RecordingSession = class _RecordingSession extends Common3.ObjectWrapper.Obj
     await this.#dispatchRecordingUpdate();
     void this.#mutex.acquire();
     await Promise.all([...this.#targets.values()].map(this.#tearDownTarget));
-    this.#networkManager.removeEventListener("ConditionsChanged", this.#appendCurrentNetworkStep, this);
+    this.#networkManager.removeEventListener(
+      SDK3.NetworkManager.MultitargetNetworkManager.Events.CONDITIONS_CHANGED,
+      this.#appendCurrentNetworkStep,
+      this
+    );
   }
   async #appendInitialSteps() {
     const mainFrame = this.#resourceTreeModel.mainFrame;
@@ -701,7 +727,7 @@ var RecordingSession = class _RecordingSession extends Common3.ObjectWrapper.Obj
       clearTimeout(this.#updateTimeout);
     }
     this.#updateTimeout = setTimeout(() => {
-      this.dispatchEventToListeners("recordingupdated", structuredClone(this.#userFlow));
+      this.dispatchEventToListeners("recordingupdated" /* RECORDING_UPDATED */, structuredClone(this.#userFlow));
       this.#updateTimeout = void 0;
       for (const resolve of this.#updateListeners) {
         resolve();
@@ -811,7 +837,7 @@ var RecordingSession = class _RecordingSession extends Common3.ObjectWrapper.Obj
     for (let index = 0; index < shortcutLength - 1; index++) {
       this.#userFlow.steps.pop();
     }
-    this.dispatchEventToListeners("recordingstopped", structuredClone(this.#userFlow));
+    this.dispatchEventToListeners("recordingstopped" /* RECORDING_STOPPED */, structuredClone(this.#userFlow));
   }
   #receiveBindingCalled(target, event) {
     switch (event.data.name) {
@@ -936,9 +962,18 @@ var RecordingSession = class _RecordingSession extends Common3.ObjectWrapper.Obj
     const childTargetManager = target.model(SDK3.ChildTargetManager.ChildTargetManager);
     Platform.assertNotNullOrUndefined(childTargetManager);
     this.#childTargetEventDescriptors.set(target, [
-      childTargetManager.addEventListener("TargetCreated", this.#receiveTargetCreated.bind(this, target)),
-      childTargetManager.addEventListener("TargetDestroyed", this.#receiveTargetClosed.bind(this, target)),
-      childTargetManager.addEventListener("TargetInfoChanged", this.#receiveTargetInfoChanged.bind(this, target))
+      childTargetManager.addEventListener(
+        SDK3.ChildTargetManager.Events.TARGET_CREATED,
+        this.#receiveTargetCreated.bind(this, target)
+      ),
+      childTargetManager.addEventListener(
+        SDK3.ChildTargetManager.Events.TARGET_DESTROYED,
+        this.#receiveTargetClosed.bind(this, target)
+      ),
+      childTargetManager.addEventListener(
+        SDK3.ChildTargetManager.Events.TARGET_INFO_CHANGED,
+        this.#receiveTargetInfoChanged.bind(this, target)
+      )
     ]);
     await Promise.all(childTargetManager.childTargets().map(this.#setUpTarget));
   };
@@ -953,8 +988,16 @@ var RecordingSession = class _RecordingSession extends Common3.ObjectWrapper.Obj
   async #addBindings(target) {
     const runtimeModel = target.model(SDK3.RuntimeModel.RuntimeModel);
     Platform.assertNotNullOrUndefined(runtimeModel);
-    this.#runtimeEventDescriptors.set(target, [runtimeModel.addEventListener(SDK3.RuntimeModel.Events.BindingCalled, this.#receiveBindingCalled.bind(this, target))]);
-    await Promise.all(Object.values(RecorderBinding).map((name) => runtimeModel.addBinding({ name, executionContextName: Util.DEVTOOLS_RECORDER_WORLD_NAME })));
+    this.#runtimeEventDescriptors.set(
+      target,
+      [runtimeModel.addEventListener(
+        SDK3.RuntimeModel.Events.BindingCalled,
+        this.#receiveBindingCalled.bind(this, target)
+      )]
+    );
+    await Promise.all(
+      Object.values(RecorderBinding).map((name) => runtimeModel.addBinding({ name, executionContextName: Util.DEVTOOLS_RECORDER_WORLD_NAME }))
+    );
   }
   async #removeBindings(target) {
     await Promise.all(Object.values(RecorderBinding).map((name) => target.runtimeAgent().invoke_removeBinding({ name })));
@@ -975,7 +1018,9 @@ var RecordingSession = class _RecordingSession extends Common3.ObjectWrapper.Obj
       });
     `;
     const [{ identifier }] = await Promise.all([
-      target.pageAgent().invoke_addScriptToEvaluateOnNewDocument({ source: script, worldName: Util.DEVTOOLS_RECORDER_WORLD_NAME, includeCommandLineAPI: true }),
+      target.pageAgent().invoke_addScriptToEvaluateOnNewDocument(
+        { source: script, worldName: Util.DEVTOOLS_RECORDER_WORLD_NAME, includeCommandLineAPI: true }
+      ),
       evaluateInAllFrames(Util.DEVTOOLS_RECORDER_WORLD_NAME, target, script)
     ]);
     this.#scriptIdentifiers.set(target.id(), identifier);
@@ -986,7 +1031,11 @@ var RecordingSession = class _RecordingSession extends Common3.ObjectWrapper.Obj
       return;
     }
     await target.pageAgent().invoke_removeScriptToEvaluateOnNewDocument({ identifier: scriptId });
-    await evaluateInAllTargets(Util.DEVTOOLS_RECORDER_WORLD_NAME, [...this.#targets.values()], "DevToolsRecorder.stopRecording()");
+    await evaluateInAllTargets(
+      Util.DEVTOOLS_RECORDER_WORLD_NAME,
+      [...this.#targets.values()],
+      "DevToolsRecorder.stopRecording()"
+    );
   }
   #receiveTargetCreated(target, event) {
     void this.#handleEvent({ type: "targetCreated", event, target });
@@ -1070,7 +1119,10 @@ var RecordingSession = class _RecordingSession extends Common3.ObjectWrapper.Obj
         assertedEvents: [{ type: AssertedEventType.Navigation, url: entry.url, title: entry.title }]
       });
     } else {
-      this.#replaceUnloadWithNavigation(target, { type: AssertedEventType.Navigation, url: entry.url, title: entry.title });
+      this.#replaceUnloadWithNavigation(
+        target,
+        { type: AssertedEventType.Navigation, url: entry.url, title: entry.title }
+      );
     }
     return true;
   }
@@ -1084,13 +1136,19 @@ var RecordingSession = class _RecordingSession extends Common3.ObjectWrapper.Obj
       throw new Error("ResourceTreeModel is missing in handleNavigation");
     }
     if (event.event.data.type === "iframe") {
-      this.#replaceUnloadWithNavigation(target, { type: AssertedEventType.Navigation, url: event.event.data.url, title: await this.#getDocumentTitle(target) });
+      this.#replaceUnloadWithNavigation(
+        target,
+        { type: AssertedEventType.Navigation, url: event.event.data.url, title: await this.#getDocumentTitle(target) }
+      );
     } else if (event.event.data.type === "page") {
       if (await this.#handlePageNavigation(resourceTreeModel, target)) {
         return;
       }
       await this.#waitForDOMContentLoadedWithTimeout(resourceTreeModel, 500);
-      this.#replaceUnloadWithNavigation(target, { type: AssertedEventType.Navigation, url: event.event.data.url, title: await this.#getDocumentTitle(target) });
+      this.#replaceUnloadWithNavigation(
+        target,
+        { type: AssertedEventType.Navigation, url: event.event.data.url, title: await this.#getDocumentTitle(target) }
+      );
     }
   }
   async #waitForDOMContentLoadedWithTimeout(resourceTreeModel, timeout) {
@@ -1102,23 +1160,31 @@ var RecordingSession = class _RecordingSession extends Common3.ObjectWrapper.Obj
     resourceTreeModel.addEventListener(SDK3.ResourceTreeModel.Events.DOMContentLoaded, onDomContentLoaded);
     await Promise.any([
       contentLoadedPromise,
-      new Promise((resolve) => setTimeout(() => {
-        resourceTreeModel.removeEventListener(SDK3.ResourceTreeModel.Events.DOMContentLoaded, onDomContentLoaded);
-        resolve();
-      }, timeout))
+      new Promise(
+        (resolve) => setTimeout(
+          () => {
+            resourceTreeModel.removeEventListener(
+              SDK3.ResourceTreeModel.Events.DOMContentLoaded,
+              onDomContentLoaded
+            );
+            resolve();
+          },
+          timeout
+        )
+      )
     ]);
   }
 };
-var Events2;
-(function(Events3) {
+var Events2 = /* @__PURE__ */ ((Events3) => {
   Events3["RECORDING_UPDATED"] = "recordingupdated";
   Events3["RECORDING_STOPPED"] = "recordingstopped";
-})(Events2 || (Events2 = {}));
+  return Events3;
+})(Events2 || {});
 
-// gen/front_end/panels/recorder/models/RecordingSettings.js
+// ../../front_end/panels/recorder/models/RecordingSettings.ts
 var RecordingSettings_exports = {};
 
-// gen/front_end/panels/recorder/models/RecordingStorage.js
+// ../../front_end/panels/recorder/models/RecordingStorage.ts
 var RecordingStorage_exports = {};
 __export(RecordingStorage_exports, {
   RecordingStorage: () => RecordingStorage
@@ -1136,7 +1202,10 @@ var RecordingStorage = class _RecordingStorage {
   #mutex = new Common4.Mutex.Mutex();
   #idGenerator = new UUIDGenerator();
   constructor() {
-    this.#recordingsSetting = Common4.Settings.Settings.instance().createSetting("recorder-recordings-ng", []);
+    this.#recordingsSetting = Common4.Settings.Settings.instance().createSetting(
+      "recorder-recordings-ng",
+      []
+    );
   }
   clearForTest() {
     this.#recordingsSetting.set([]);
@@ -1150,7 +1219,9 @@ var RecordingStorage = class _RecordingStorage {
     try {
       const recordings = await this.#recordingsSetting.forceGet();
       flow.title = Platform2.StringUtilities.trimEndWithMaxLength(flow.title, 300);
-      let recording = recordings.find((recording2) => recording2.storageName === storageName);
+      let recording = recordings.find(
+        (recording2) => recording2.storageName === storageName
+      );
       if (recording) {
         recording.flow = flow;
       } else {
@@ -1170,14 +1241,18 @@ var RecordingStorage = class _RecordingStorage {
     const release = await this.#mutex.acquire();
     try {
       const recordings = await this.#recordingsSetting.forceGet();
-      this.#recordingsSetting.set(recordings.filter((recording) => recording.storageName !== storageName));
+      this.#recordingsSetting.set(
+        recordings.filter((recording) => recording.storageName !== storageName)
+      );
     } finally {
       release();
     }
   }
   getRecording(storageName) {
     const recordings = this.#recordingsSetting.get();
-    return recordings.find((recording) => recording.storageName === storageName);
+    return recordings.find(
+      (recording) => recording.storageName === storageName
+    );
   }
   getRecordings() {
     return this.#recordingsSetting.get();
@@ -1190,7 +1265,7 @@ var RecordingStorage = class _RecordingStorage {
   }
 };
 
-// gen/front_end/panels/recorder/models/ScreenshotStorage.js
+// ../../front_end/panels/recorder/models/ScreenshotStorage.ts
 var ScreenshotStorage_exports = {};
 __export(ScreenshotStorage_exports, {
   ScreenshotStorage: () => ScreenshotStorage
@@ -1203,7 +1278,10 @@ var ScreenshotStorage = class _ScreenshotStorage {
   #screenshots;
   #maxStorageSize;
   constructor(maxStorageSize = DEFAULT_MAX_STORAGE_SIZE) {
-    this.#screenshotSettings = Common5.Settings.Settings.instance().createSetting("recorder-screenshots", []);
+    this.#screenshotSettings = Common5.Settings.Settings.instance().createSetting(
+      "recorder-screenshots",
+      []
+    );
     this.#screenshots = this.#loadFromSettings();
     this.#maxStorageSize = maxStorageSize;
   }
@@ -1212,7 +1290,9 @@ var ScreenshotStorage = class _ScreenshotStorage {
     this.#screenshots = /* @__PURE__ */ new Map();
   }
   getScreenshotForSection(recordingName, index) {
-    const screenshot = this.#screenshots.get(this.#calculateKey(recordingName, index));
+    const screenshot = this.#screenshots.get(
+      this.#calculateKey(recordingName, index)
+    );
     if (!screenshot) {
       return null;
     }
@@ -1245,13 +1325,18 @@ var ScreenshotStorage = class _ScreenshotStorage {
   }
   #syncWithSettings(modifiedScreenshot) {
     if (modifiedScreenshot) {
-      const key = this.#calculateKey(modifiedScreenshot.recordingName, modifiedScreenshot.index);
+      const key = this.#calculateKey(
+        modifiedScreenshot.recordingName,
+        modifiedScreenshot.index
+      );
       this.#screenshots.delete(key);
       this.#screenshots.set(key, modifiedScreenshot);
     }
     const screenshots = [];
     let currentStorageSize = 0;
-    for (const [key, screenshot] of Array.from(this.#screenshots.entries()).reverse()) {
+    for (const [key, screenshot] of Array.from(
+      this.#screenshots.entries()
+    ).reverse()) {
       if (currentStorageSize < this.#maxStorageSize) {
         currentStorageSize += screenshot.data.length;
         screenshots.push(screenshot);
@@ -1270,7 +1355,7 @@ var ScreenshotStorage = class _ScreenshotStorage {
   }
 };
 
-// gen/front_end/panels/recorder/models/ScreenshotUtils.js
+// ../../front_end/panels/recorder/models/ScreenshotUtils.ts
 var ScreenshotUtils_exports = {};
 __export(ScreenshotUtils_exports, {
   resizeScreenshot: () => resizeScreenshot,
@@ -1298,7 +1383,13 @@ async function resizeScreenshot(data) {
   img.src = data;
   await imageLoaded;
   const aspectRatio = img.width / img.height;
-  const canvas = new OffscreenCanvas(SCREENSHOT_WIDTH, Math.min(SCREENSHOT_MAX_HEIGHT, SCREENSHOT_WIDTH / aspectRatio));
+  const canvas = new OffscreenCanvas(
+    SCREENSHOT_WIDTH,
+    Math.min(
+      SCREENSHOT_MAX_HEIGHT,
+      SCREENSHOT_WIDTH / aspectRatio
+    )
+  );
   const context = canvas.getContext("2d", { willReadFrequently: true });
   if (!context) {
     throw new Error("Could not create context.");
@@ -1322,13 +1413,15 @@ async function takeScreenshot() {
   return await resizeScreenshot(data);
 }
 
-// gen/front_end/panels/recorder/models/Section.js
+// ../../front_end/panels/recorder/models/Section.ts
 var Section_exports = {};
 __export(Section_exports, {
   buildSections: () => buildSections
 });
 function startNewSection(step) {
-  const navigationEvent = step.assertedEvents?.find((event) => event.type === "navigation");
+  const navigationEvent = step.assertedEvents?.find(
+    (event) => event.type === "navigation"
+  );
   if (step.type === "navigate") {
     return {
       title: navigationEvent?.title || "",
@@ -1372,7 +1465,7 @@ function buildSections(steps) {
   return sections;
 }
 
-// gen/front_end/panels/recorder/models/Tooltip.js
+// ../../front_end/panels/recorder/models/Tooltip.ts
 var Tooltip_exports = {};
 __export(Tooltip_exports, {
   getTooltipForActions: () => getTooltipForActions

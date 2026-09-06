@@ -1,48 +1,10 @@
-// gen/front_end/panels/settings/emulation/emulation-meta.js
+// ../../front_end/panels/settings/settings-meta.ts
+import "./emulation/emulation-meta.js";
+import * as Common from "../../core/common/common.js";
 import * as i18n from "../../core/i18n/i18n.js";
+import * as Root from "../../core/root/root.js";
 import * as UI from "../../ui/legacy/legacy.js";
 var UIStrings = {
-  /**
-   * @description Title of the Devices tab/tool. Devices refers to e.g., phones/tablets.
-   */
-  devices: "Devices",
-  /**
-   * @description Command that opens the device emulation view.
-   */
-  showDevices: "Show Devices"
-};
-var str_ = i18n.i18n.registerUIStrings("panels/settings/emulation/emulation-meta.ts", UIStrings);
-var i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(void 0, str_);
-var loadedEmulationModule;
-async function loadEmulationModule() {
-  if (!loadedEmulationModule) {
-    loadedEmulationModule = await import("./emulation/emulation.js");
-  }
-  return loadedEmulationModule;
-}
-UI.ViewManager.registerViewExtension({
-  location: "settings-view",
-  commandPrompt: i18nLazyString(UIStrings.showDevices),
-  title: i18nLazyString(UIStrings.devices),
-  order: 30,
-  async loadView() {
-    const Emulation = await loadEmulationModule();
-    return new Emulation.DevicesSettingsTab.DevicesSettingsTab();
-  },
-  id: "devices",
-  settings: [
-    "standard-emulated-device-list",
-    "custom-emulated-device-list"
-  ],
-  iconName: "devices"
-});
-
-// gen/front_end/panels/settings/settings-meta.prebundle.js
-import * as Common from "../../core/common/common.js";
-import * as i18n3 from "../../core/i18n/i18n.js";
-import * as Root from "../../core/root/root.js";
-import * as UI2 from "../../ui/legacy/legacy.js";
-var UIStrings2 = {
   /**
    * @description Text for keyboard shortcuts.
    */
@@ -100,8 +62,8 @@ var UIStrings2 = {
    */
   showWorkspace: "Show Workspace settings"
 };
-var str_2 = i18n3.i18n.registerUIStrings("panels/settings/settings-meta.ts", UIStrings2);
-var i18nLazyString2 = i18n3.i18n.getLazilyComputedLocalizedString.bind(void 0, str_2);
+var str_ = i18n.i18n.registerUIStrings("panels/settings/settings-meta.ts", UIStrings);
+var i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(void 0, str_);
 var loadedSettingsModule;
 async function loadSettingsModule() {
   if (!loadedSettingsModule) {
@@ -109,11 +71,11 @@ async function loadSettingsModule() {
   }
   return loadedSettingsModule;
 }
-UI2.ViewManager.registerViewExtension({
-  location: "settings-view",
+UI.ViewManager.registerViewExtension({
+  location: UI.ViewManager.ViewLocationValues.SETTINGS_VIEW,
   id: "preferences",
-  title: i18nLazyString2(UIStrings2.preferences),
-  commandPrompt: i18nLazyString2(UIStrings2.showPreferences),
+  title: i18nLazyString(UIStrings.preferences),
+  commandPrompt: i18nLazyString(UIStrings.showPreferences),
   order: 0,
   async loadView() {
     const Settings2 = await loadSettingsModule();
@@ -121,11 +83,11 @@ UI2.ViewManager.registerViewExtension({
   },
   iconName: "gear"
 });
-UI2.ViewManager.registerViewExtension({
-  location: "settings-view",
+UI.ViewManager.registerViewExtension({
+  location: UI.ViewManager.ViewLocationValues.SETTINGS_VIEW,
   id: "workspace",
-  title: i18nLazyString2(UIStrings2.workspace),
-  commandPrompt: i18nLazyString2(UIStrings2.showWorkspace),
+  title: i18nLazyString(UIStrings.workspace),
+  commandPrompt: i18nLazyString(UIStrings.showWorkspace),
   order: 1,
   async loadView() {
     const Settings2 = await loadSettingsModule();
@@ -133,11 +95,11 @@ UI2.ViewManager.registerViewExtension({
   },
   iconName: "folder"
 });
-UI2.ViewManager.registerViewExtension({
-  location: "settings-view",
+UI.ViewManager.registerViewExtension({
+  location: UI.ViewManager.ViewLocationValues.SETTINGS_VIEW,
   id: "chrome-ai",
-  title: i18nLazyString2(UIStrings2.aiInnovations),
-  commandPrompt: i18nLazyString2(UIStrings2.showAiInnovations),
+  title: i18nLazyString(UIStrings.aiInnovations),
+  commandPrompt: i18nLazyString(UIStrings.showAiInnovations),
   order: 2,
   async loadView() {
     const Settings2 = await loadSettingsModule();
@@ -149,11 +111,11 @@ UI2.ViewManager.registerViewExtension({
     return (config?.aidaAvailability?.enabled && (config?.devToolsConsoleInsights?.enabled || config?.devToolsFreestyler?.enabled)) ?? false;
   }
 });
-UI2.ViewManager.registerViewExtension({
-  location: "settings-view",
+UI.ViewManager.registerViewExtension({
+  location: UI.ViewManager.ViewLocationValues.SETTINGS_VIEW,
   id: "experiments",
-  title: i18nLazyString2(UIStrings2.experiments),
-  commandPrompt: i18nLazyString2(UIStrings2.showExperiments),
+  title: i18nLazyString(UIStrings.experiments),
+  commandPrompt: i18nLazyString(UIStrings.showExperiments),
   order: 3,
   experiment: Root.ExperimentNames.ExperimentName.ALL,
   async loadView() {
@@ -162,11 +124,11 @@ UI2.ViewManager.registerViewExtension({
   },
   iconName: "experiment"
 });
-UI2.ViewManager.registerViewExtension({
-  location: "settings-view",
+UI.ViewManager.registerViewExtension({
+  location: UI.ViewManager.ViewLocationValues.SETTINGS_VIEW,
   id: "blackbox",
-  title: i18nLazyString2(UIStrings2.ignoreList),
-  commandPrompt: i18nLazyString2(UIStrings2.showIgnoreList),
+  title: i18nLazyString(UIStrings.ignoreList),
+  commandPrompt: i18nLazyString(UIStrings.showIgnoreList),
   order: 4,
   async loadView() {
     const Settings2 = await loadSettingsModule();
@@ -174,11 +136,11 @@ UI2.ViewManager.registerViewExtension({
   },
   iconName: "clear-list"
 });
-UI2.ViewManager.registerViewExtension({
-  location: "settings-view",
+UI.ViewManager.registerViewExtension({
+  location: UI.ViewManager.ViewLocationValues.SETTINGS_VIEW,
   id: "keybinds",
-  title: i18nLazyString2(UIStrings2.shortcuts),
-  commandPrompt: i18nLazyString2(UIStrings2.showShortcuts),
+  title: i18nLazyString(UIStrings.shortcuts),
+  commandPrompt: i18nLazyString(UIStrings.showShortcuts),
   order: 100,
   async loadView() {
     const Settings2 = await loadSettingsModule();
@@ -186,78 +148,78 @@ UI2.ViewManager.registerViewExtension({
   },
   iconName: "keyboard"
 });
-UI2.ActionRegistration.registerActionExtension({
-  category: "SETTINGS",
+UI.ActionRegistration.registerActionExtension({
+  category: UI.ActionRegistration.ActionCategory.SETTINGS,
   actionId: "settings.show",
-  title: i18nLazyString2(UIStrings2.settings),
+  title: i18nLazyString(UIStrings.settings),
   async loadActionDelegate() {
     const Settings2 = await loadSettingsModule();
     return new Settings2.SettingsScreen.ActionDelegate();
   },
-  iconClass: "gear",
+  iconClass: UI.ActionRegistration.IconClass.LARGEICON_SETTINGS_GEAR,
   bindings: [
     {
       shortcut: "F1",
       keybindSets: [
-        "devToolsDefault"
+        UI.ActionRegistration.KeybindSet.DEVTOOLS_DEFAULT
       ]
     },
     {
       shortcut: "Shift+?"
     },
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Ctrl+,",
       keybindSets: [
-        "vsCode"
+        UI.ActionRegistration.KeybindSet.VS_CODE
       ]
     },
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Meta+,",
       keybindSets: [
-        "vsCode"
+        UI.ActionRegistration.KeybindSet.VS_CODE
       ]
     }
   ]
 });
-UI2.ActionRegistration.registerActionExtension({
-  category: "SETTINGS",
+UI.ActionRegistration.registerActionExtension({
+  category: UI.ActionRegistration.ActionCategory.SETTINGS,
   actionId: "settings.documentation",
-  title: i18nLazyString2(UIStrings2.documentation),
+  title: i18nLazyString(UIStrings.documentation),
   async loadActionDelegate() {
     const Settings2 = await loadSettingsModule();
     return new Settings2.SettingsScreen.ActionDelegate();
   }
 });
-UI2.ActionRegistration.registerActionExtension({
-  category: "SETTINGS",
+UI.ActionRegistration.registerActionExtension({
+  category: UI.ActionRegistration.ActionCategory.SETTINGS,
   actionId: "settings.shortcuts",
-  title: i18nLazyString2(UIStrings2.showShortcuts),
+  title: i18nLazyString(UIStrings.showShortcuts),
   async loadActionDelegate() {
     const Settings2 = await loadSettingsModule();
     return new Settings2.SettingsScreen.ActionDelegate();
   },
   bindings: [
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Ctrl+K Ctrl+S",
       keybindSets: [
-        "vsCode"
+        UI.ActionRegistration.KeybindSet.VS_CODE
       ]
     },
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Meta+K Meta+S",
       keybindSets: [
-        "vsCode"
+        UI.ActionRegistration.KeybindSet.VS_CODE
       ]
     }
   ]
 });
-UI2.ViewManager.registerLocationResolver({
-  name: "settings-view",
-  category: "SETTINGS",
+UI.ViewManager.registerLocationResolver({
+  name: UI.ViewManager.ViewLocationValues.SETTINGS_VIEW,
+  category: UI.ViewManager.ViewLocationCategory.SETTINGS,
   async loadResolver() {
     const Settings2 = await loadSettingsModule();
     return Settings2.SettingsScreen.SettingsScreen.instance();
@@ -275,12 +237,12 @@ Common.Revealer.registerRevealer({
     return new Settings2.SettingsScreen.Revealer();
   }
 });
-UI2.ContextMenu.registerItem({
-  location: "mainMenu/footer",
+UI.ContextMenu.registerItem({
+  location: UI.ContextMenu.ItemLocation.MAIN_MENU_FOOTER,
   actionId: "settings.shortcuts"
 });
-UI2.ContextMenu.registerItem({
-  location: "mainMenuHelp/default",
+UI.ContextMenu.registerItem({
+  location: UI.ContextMenu.ItemLocation.MAIN_MENU_HELP_DEFAULT,
   actionId: "settings.documentation"
 });
 //# sourceMappingURL=settings-meta.js.map

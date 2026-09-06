@@ -1977,6 +1977,7 @@ var Page;
     PermissionsPolicyFeature2["Gamepad"] = "gamepad";
     PermissionsPolicyFeature2["Geolocation"] = "geolocation";
     PermissionsPolicyFeature2["Gyroscope"] = "gyroscope";
+    PermissionsPolicyFeature2["Haptics"] = "haptics";
     PermissionsPolicyFeature2["Hid"] = "hid";
     PermissionsPolicyFeature2["IdentityCredentialsGet"] = "identity-credentials-get";
     PermissionsPolicyFeature2["IdleDetection"] = "idle-detection";
@@ -3380,6 +3381,7 @@ var TraceParseProgressEvent = class _TraceParseProgressEvent extends Event {
     super(_TraceParseProgressEvent.eventName, init);
     this.data = data;
   }
+  data;
   static eventName = "traceparseprogress";
 };
 function calculateProgress(value, phase) {
@@ -3504,7 +3506,7 @@ var TraceProcessor = class _TraceProcessor extends EventTarget {
     }
     options.logger?.start("parse:handleEvent");
     for (let i = 0; i < traceEvents.length; ++i) {
-      if (i % eventsPerChunk === 0 && i) {
+      if (options.yieldToMain !== false && i % eventsPerChunk === 0 && i) {
         const percent = calculateProgress(i / traceEvents.length, 0.2 /* HANDLE_EVENT */);
         this.dispatchEvent(new TraceParseProgressEvent({ percent }));
         await new Promise((resolve) => setTimeout(resolve, 0));
@@ -3524,7 +3526,9 @@ var TraceProcessor = class _TraceProcessor extends EventTarget {
       const [name, handler] = sortedHandlers[i];
       if (handler.finalize) {
         options.logger?.start(`parse:${name}:finalize`);
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        if (options.yieldToMain !== false) {
+          await new Promise((resolve) => setTimeout(resolve, 0));
+        }
         await handler.finalize(finalizeOptions);
         options.logger?.end(`parse:${name}:finalize`);
       }
@@ -3951,6 +3955,7 @@ var Model = class _Model extends EventTarget {
         this.#processor.data,
         this.#processor.insights
       );
+      syntheticEventsManager.clearRegistrationIndex();
       this.#traces.push(file);
     } catch (e) {
       throw e;
@@ -4022,6 +4027,7 @@ var ModelUpdateEvent = class _ModelUpdateEvent extends Event {
     super(_ModelUpdateEvent.eventName);
     this.data = data;
   }
+  data;
   static eventName = "modelupdate";
 };
 function isModelUpdateDataComplete(eventData) {

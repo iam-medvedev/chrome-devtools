@@ -3,17 +3,12 @@ import '../../ui/legacy/components/data_grid/data_grid.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Protocol from '../../generated/protocol.js';
 import * as UI from '../../ui/legacy/legacy.js';
-interface Authenticator {
+export interface Authenticator {
     name: string;
     options: Protocol.WebAuthn.VirtualAuthenticatorOptions;
     credentials: Protocol.WebAuthn.Credential[];
 }
-interface Authenticator {
-    name: string;
-    options: Protocol.WebAuthn.VirtualAuthenticatorOptions;
-    credentials: Protocol.WebAuthn.Credential[];
-}
-interface ViewInput {
+export interface ViewInput {
     enabled: boolean;
     onToggleEnabled: () => void;
     authenticators: Map<Protocol.WebAuthn.AuthenticatorId, Authenticator>;
@@ -30,10 +25,10 @@ interface ViewInput {
     onExportCredential: (credential: Protocol.WebAuthn.Credential) => void;
     onRemoveCredential: (id: Protocol.WebAuthn.AuthenticatorId, credentialId: string) => void;
 }
-interface ViewOutput {
+export interface ViewOutput {
     revealSection: Map<string, () => void>;
 }
-type ViewFunction = (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
+export type ViewFunction = (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
 export declare const DEFAULT_VIEW: ViewFunction;
 export declare class WebauthnPaneImpl extends UI.Panel.Panel implements SDK.TargetManager.SDKModelObserver<SDK.WebAuthnModel.WebAuthnModel> {
     #private;
@@ -47,4 +42,3 @@ export declare class WebauthnPaneImpl extends UI.Panel.Panel implements SDK.Targ
      */
     removeAuthenticator(authenticatorId: Protocol.WebAuthn.AuthenticatorId): void;
 }
-export {};

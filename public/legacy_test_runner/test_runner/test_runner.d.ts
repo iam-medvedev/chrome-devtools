@@ -1,18 +1,17 @@
+import * as SDK from '../../core/sdk/sdk.js';
+import * as TestRunner from './TestRunner.js';
 export declare function _executeTestScript(): Promise<void>;
-/**
- * @implements {SDK.TargetManager.Observer}
- */
-export declare class _TestObserver {
+export declare class _TestObserver implements SDK.TargetManager.Observer {
     /**
      * @override
-     * @param {!SDK.Target.Target} target
+     * @param target
      */
-    targetAdded(target: any): void;
+    targetAdded(target: SDK.Target.Target): void;
     /**
      * @override
-     * @param {!SDK.Target.Target} target
+     * @param target
      */
-    targetRemoved(target: any): void;
+    targetRemoved(target: SDK.Target.Target): void;
 }
-declare const globalTestRunner: any;
+declare const globalTestRunner: typeof TestRunner;
 export { globalTestRunner as TestRunner };

@@ -146,6 +146,7 @@ core/sdk/DOMStorageModel.test.js
 core/sdk/EmulationModel.test.js
 core/sdk/EnhancedTracesParser.test.js
 core/sdk/NetworkRequest.test.js
+core/sdk/NetworkRequestAccess.test.js
 core/sdk/OverlayColorGenerator.test.js
 core/sdk/OverlayModel.test.js
 core/sdk/PreloadingModel.test.js
@@ -156,6 +157,7 @@ core/sdk/ResourceTreeModel.test.js
 core/sdk/ScopeTreeCache.test.js
 core/sdk/ScreenCaptureModel.test.js
 core/sdk/Script.test.js
+core/sdk/SecurityOrigin.test.js
 core/sdk/ServerTiming.test.js
 core/sdk/ServiceWorkerCacheModel.test.js
 core/sdk/ServiceWorkerManager.test.js
@@ -203,6 +205,7 @@ models/ai_assistance/performance/AICallTree.test.js
 models/ai_assistance/performance/AIContext.test.js
 models/ai_assistance/performance/AIQueries.test.js
 models/ai_assistance/tools/CookieUtils.test.js
+models/ai_assistance/tools/DOMStorageUtils.test.js
 models/ai_assistance/tools/ExecuteJavaScript.test.js
 models/ai_assistance/tools/GetCookieValues.test.js
 models/ai_assistance/tools/GetDetailedCallTree.test.js
@@ -817,6 +820,7 @@ ui/legacy/components/inline_editor/CSSShadowEditor.test.js
 ui/legacy/components/inline_editor/ColorMixSwatch.test.js
 ui/legacy/components/inline_editor/ColorSwatch.test.js
 ui/legacy/components/inline_editor/LinkSwatch.test.js
+ui/legacy/components/inline_editor/PositionAreaEditor.test.js
 ui/legacy/components/object_ui/CSSStyleSanitizer.test.js
 ui/legacy/components/object_ui/CustomPreviewComponent.test.js
 ui/legacy/components/object_ui/JavaScriptREPL.test.js

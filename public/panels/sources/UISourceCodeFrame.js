@@ -6,7 +6,7 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as TextUtils from '../../core/text_utils/text_utils.js';
-import * as FormatterActions from '../../entrypoints/formatter_worker/FormatterActions.js'; // eslint-disable-line @devtools/es-modules-import
+import * as FormatterActions from '../../entrypoints/formatter_actions/formatter_actions.js';
 import * as AiCodeCompletion from '../../models/ai_code_completion/ai_code_completion.js';
 import * as Formatter from '../../models/formatter/formatter.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
@@ -34,8 +34,8 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/sources/UISourceCodeFrame.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export class UISourceCodeFrame extends Common.ObjectWrapper
-    .eventMixin(SourceFrame.SourceFrame.SourceFrameImpl) {
+const UISourceCodeFrameBase = Common.ObjectWrapper.eventMixin(SourceFrame.SourceFrame.SourceFrameImpl);
+export class UISourceCodeFrame extends UISourceCodeFrameBase {
     #uiSourceCode;
     #muteSourceCodeEvents = false;
     #persistenceBinding;
@@ -125,12 +125,14 @@ export class UISourceCodeFrame extends Common.ObjectWrapper
         }, console.error);
     }
     unloadUISourceCode() {
+        this.textEditor.removeAttribute('data-file-path');
         Common.EventTarget.removeEventListeners(this.#messageAndDecorationListeners);
         Common.EventTarget.removeEventListeners(this.#uiSourceCodeEventListeners);
         this.#uiSourceCode.removeWorkingCopyGetter();
         Persistence.Persistence.PersistenceImpl.instance().unsubscribeFromBindingEvent(this.#uiSourceCode, this.#boundOnBindingChanged);
     }
     initializeUISourceCode() {
+        this.textEditor.setAttribute('data-file-path', this.#uiSourceCode.url());
         this.#uiSourceCodeEventListeners = [
             this.#uiSourceCode.addEventListener(Workspace.UISourceCode.Events.WorkingCopyChanged, this.onWorkingCopyChanged, this),
             this.#uiSourceCode.addEventListener(Workspace.UISourceCode.Events.WorkingCopyCommitted, this.onWorkingCopyCommitted, this),
@@ -283,6 +285,7 @@ export class UISourceCodeFrame extends Common.ObjectWrapper
         }
     }
     onTitleChanged() {
+        this.textEditor.setAttribute('data-file-path', this.#uiSourceCode.url());
         this.updateLanguageMode('').then(() => this.reloadPlugins(), console.error);
     }
     static sourceFramePlugins() {

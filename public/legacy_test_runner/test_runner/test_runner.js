@@ -1,11 +1,10 @@
-// gen/front_end/legacy_test_runner/test_runner/test_runner.prebundle.js
-import * as Common2 from "../../core/common/common.js";
+// ../../front_end/legacy_test_runner/test_runner/test_runner.ts
+import * as Common from "../../core/common/common.js";
 import * as Root2 from "../../core/root/root.js";
 import * as SDK2 from "../../core/sdk/sdk.js";
 import * as Tracing from "../../services/tracing/tracing.js";
 
-// gen/front_end/legacy_test_runner/test_runner/TestRunner.js
-import * as Common from "../../core/common/common.js";
+// ../../front_end/legacy_test_runner/test_runner/TestRunner.ts
 import * as ProtocolClient from "../../core/protocol_client/protocol_client.js";
 import * as Root from "../../core/root/root.js";
 import * as SDK from "../../core/sdk/sdk.js";
@@ -262,7 +261,10 @@ function textContentWithoutStyles(node) {
   let buffer = "";
   let currentNode = node;
   while (true) {
-    currentNode = currentNode.traverseNextNode(node, currentNode.tagName === "DEVTOOLS-CSS-LENGTH" || currentNode.tagName === "DEVTOOLS-ICON");
+    currentNode = currentNode.traverseNextNode(
+      node,
+      currentNode.tagName === "DEVTOOLS-CSS-LENGTH" || currentNode.tagName === "DEVTOOLS-ICON"
+    );
     if (!currentNode) {
       break;
     }
@@ -334,7 +336,9 @@ function evaluateInPagePromise(code) {
   return new Promise((success) => evaluateInPage(code, success));
 }
 async function evaluateInPageAsync(code) {
-  const response = await TestRunner.RuntimeAgent.invoke_evaluate({ expression: code, objectGroup: "console", includeCommandLineAPI: false, awaitPromise: true });
+  const response = await TestRunner.RuntimeAgent.invoke_evaluate(
+    { expression: code, objectGroup: "console", includeCommandLineAPI: false, awaitPromise: true }
+  );
   if (response && !response.exceptionDetails && !response.getError()) {
     return response.result.value;
   }
@@ -371,9 +375,51 @@ function check(passCondition, failureText) {
     addResult("FAIL: " + failureText);
   }
 }
-function deprecatedRunAfterPendingDispatches(callback) {
-  ProtocolClient.InspectorBackend.test.deprecatedRunAfterPendingDispatches(callback);
+var LongPollingMethods = /* @__PURE__ */ new Set(["CSS.takeComputedStyleUpdates"]);
+var pendingMessageIds = /* @__PURE__ */ new Set();
+var pendingScripts = [];
+function hasOutstandingNonLongPollingRequests() {
+  return pendingMessageIds.size > 0;
 }
+function executeAfterPendingDispatches() {
+  if (!hasOutstandingNonLongPollingRequests()) {
+    const scripts = pendingScripts;
+    pendingScripts = [];
+    for (let id = 0; id < scripts.length; ++id) {
+      scripts[id]();
+    }
+  }
+}
+function deprecatedRunAfterPendingDispatches(callback) {
+  if (callback) {
+    pendingScripts.push(callback);
+  }
+  setTimeout(() => {
+    if (!hasOutstandingNonLongPollingRequests()) {
+      executeAfterPendingDispatches();
+    } else {
+      deprecatedRunAfterPendingDispatches();
+    }
+  }, 0);
+}
+var prevOnMessageSent = ProtocolClient.InspectorBackend.test.onMessageSent;
+ProtocolClient.InspectorBackend.test.onMessageSent = (message) => {
+  prevOnMessageSent?.(message);
+  if (!LongPollingMethods.has(message.method)) {
+    pendingMessageIds.add(message.id);
+  }
+};
+var prevOnMessageReceived = ProtocolClient.InspectorBackend.test.onMessageReceived;
+ProtocolClient.InspectorBackend.test.onMessageReceived = (message) => {
+  prevOnMessageReceived?.(message);
+  if (typeof message === "object" && message !== null && "id" in message && typeof message.id === "number") {
+    pendingMessageIds.delete(message.id);
+    if (pendingScripts.length && !hasOutstandingNonLongPollingRequests()) {
+      deprecatedRunAfterPendingDispatches();
+    }
+  }
+};
+ProtocolClient.InspectorBackend.test.deprecatedRunAfterPendingDispatches = deprecatedRunAfterPendingDispatches;
 function loadHTML(html) {
   if (!html.includes("<base")) {
     const doctypeRegex = /(<!DOCTYPE.*?>)/i;
@@ -453,15 +499,15 @@ function addScriptForFrame(url2, content, frame) {
 }
 var formatters = {
   /**
-   * @param {*} value
-   * @returns {string}
+   * @param value
+   * @returns
    */
   formatAsTypeName(value) {
     return "<" + typeof value + ">";
   },
   /**
-   * @param {*} value
-   * @returns {string}
+   * @param value
+   * @returns
    */
   formatAsTypeNameOrNull(value) {
     if (value === null) {
@@ -470,8 +516,8 @@ var formatters = {
     return formatters.formatAsTypeName(value);
   },
   /**
-   * @param {*} value
-   * @returns {string|!Date}
+   * @param value
+   * @returns
    */
   formatAsRecentTime(value) {
     if (typeof value !== "object" || !(value instanceof Date)) {
@@ -481,8 +527,8 @@ var formatters = {
     return 0 <= delta && delta < 30 * 60 * 1e3 ? "<plausible>" : value;
   },
   /**
-   * @param {string} value
-   * @returns {string}
+   * @param value
+   * @returns
    */
   formatAsURL(value) {
     if (!value) {
@@ -495,8 +541,8 @@ var formatters = {
     return ".../" + value.substr(lastIndex);
   },
   /**
-   * @param {string} value
-   * @returns {string}
+   * @param value
+   * @returns
    */
   formatAsDescription(value) {
     if (!value) {
@@ -680,7 +726,11 @@ function waitForExecutionContextDestroyed(context) {
   if (runtimeModel.executionContexts().indexOf(context) === -1) {
     return Promise.resolve();
   }
-  return waitForEvent(SDK.RuntimeModel.Events.ExecutionContextDestroyed, runtimeModel, (destroyedContext) => destroyedContext === context);
+  return waitForEvent(
+    SDK.RuntimeModel.Events.ExecutionContextDestroyed,
+    runtimeModel,
+    (destroyedContext) => destroyedContext === context
+  );
 }
 function assertGreaterOrEqual(a, b, message) {
   if (a < b) {
@@ -821,22 +871,24 @@ function mainFrame() {
   return TestRunner.resourceTreeModel.mainFrame;
 }
 var StringOutputStream = class {
+  callback;
+  buffer;
   /**
-   * @param {function(string):void} callback
+   * @param callback
    */
   constructor(callback) {
     this.callback = callback;
     this.buffer = "";
   }
   /**
-   * @param {string} fileName
-   * @returns {!Promise<boolean>}
+   * @param fileName
+   * @returns
    */
   async open(fileName) {
     return true;
   }
   /**
-   * @param {string} chunk
+   * @param chunk
    */
   async write(chunk) {
     this.buffer += chunk;
@@ -846,20 +898,21 @@ var StringOutputStream = class {
   }
 };
 var MockSetting = class {
+  value;
   /**
-   * @param {V} value
+   * @param value
    */
   constructor(value) {
     this.value = value;
   }
   /**
-   * @returns {V}
+   * @returns
    */
   get() {
     return this.value;
   }
   /**
-   * @param {V} value
+   * @param value
    */
   set(value) {
     this.value = value;
@@ -883,7 +936,11 @@ function waitForUISourceCode(urlSuffix, projectType) {
       return Promise.resolve(uiSourceCode);
     }
   }
-  return waitForEvent(Workspace.Workspace.Events.UISourceCodeAdded, Workspace.Workspace.WorkspaceImpl.instance(), matches);
+  return waitForEvent(
+    Workspace.Workspace.Events.UISourceCodeAdded,
+    Workspace.Workspace.WorkspaceImpl.instance(),
+    matches
+  );
 }
 function waitForUISourceCodeRemoved(callback) {
   Workspace.Workspace.WorkspaceImpl.instance().once(Workspace.Workspace.Events.UISourceCodeRemoved).then(callback);
@@ -1006,7 +1063,7 @@ TestRunner.findLineEndingIndexes = findLineEndingIndexes;
 TestRunner.selectTextInTextNode = selectTextInTextNode;
 TestRunner.isScrolledToBottom = UI.UIUtils.isScrolledToBottom;
 
-// gen/front_end/legacy_test_runner/test_runner/test_runner.prebundle.js
+// ../../front_end/legacy_test_runner/test_runner/test_runner.ts
 function _setupTestHelpers(target) {
   self.TestRunner.BrowserAgent = target.browserAgent();
   self.TestRunner.CSSAgent = target.cssAgent();
@@ -1065,7 +1122,7 @@ var _startedTest = false;
 var _TestObserver = class {
   /**
    * @override
-   * @param {!SDK.Target.Target} target
+   * @param target
    */
   targetAdded(target) {
     if (target.id() === "main" && target.type() === "frame" || target.parentTarget()?.type() === "tab" && target.type() === "frame" && !target.targetInfo()?.subtype?.length) {
@@ -1085,14 +1142,16 @@ var _TestObserver = class {
   }
   /**
    * @override
-   * @param {!SDK.Target.Target} target
+   * @param target
    */
   targetRemoved(target) {
   }
 };
-Common2.Runnable.registerEarlyInitializationRunnable(() => ({
+Common.Runnable.registerEarlyInitializationRunnable(() => ({
   run() {
-    SDK2.TargetManager.TargetManager.instance().observeTargets(new _TestObserver());
+    SDK2.TargetManager.TargetManager.instance().observeTargets(
+      new _TestObserver()
+    );
   }
 }));
 var globalTestRunner = self.TestRunner;

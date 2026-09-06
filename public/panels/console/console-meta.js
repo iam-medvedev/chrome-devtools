@@ -1,4 +1,4 @@
-// gen/front_end/panels/console/console-meta.prebundle.js
+// ../../front_end/panels/console/console-meta.ts
 import * as Common from "../../core/common/common.js";
 import * as i18n from "../../core/i18n/i18n.js";
 import * as SDK from "../../core/sdk/sdk.js";
@@ -171,7 +171,7 @@ function maybeRetrieveContextTypes(getClassCallBack) {
   return getClassCallBack(loadedConsoleModule);
 }
 UI.ViewManager.registerViewExtension({
-  location: "panel",
+  location: UI.ViewManager.ViewLocationValues.PANEL,
   id: "console",
   title: i18nLazyString(UIStrings.console),
   commandPrompt: i18nLazyString(UIStrings.showConsole),
@@ -182,11 +182,11 @@ UI.ViewManager.registerViewExtension({
   }
 });
 UI.ViewManager.registerViewExtension({
-  location: "drawer-view",
+  location: UI.ViewManager.ViewLocationValues.DRAWER_VIEW,
   id: "console-view",
   title: i18nLazyString(UIStrings.console),
   commandPrompt: i18nLazyString(UIStrings.showConsole),
-  persistence: "permanent",
+  persistence: UI.ViewManager.ViewPersistence.PERMANENT,
   order: 0,
   async loadView() {
     const Console2 = await loadConsoleModule();
@@ -195,7 +195,7 @@ UI.ViewManager.registerViewExtension({
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "console.toggle",
-  category: "CONSOLE",
+  category: UI.ActionRegistration.ActionCategory.CONSOLE,
   title: i18nLazyString(UIStrings.toggleConsole),
   async loadActionDelegate() {
     const Console2 = await loadConsoleModule();
@@ -205,8 +205,8 @@ UI.ActionRegistration.registerActionExtension({
     {
       shortcut: "Ctrl+`",
       keybindSets: [
-        "devToolsDefault",
-        "vsCode"
+        UI.ActionRegistration.KeybindSet.DEVTOOLS_DEFAULT,
+        UI.ActionRegistration.KeybindSet.VS_CODE
       ]
       // The Cmd+` combination is used in macOS to activate the next
       // open window in the front app. Therefore it was not implemented
@@ -216,9 +216,9 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "console.clear",
-  category: "CONSOLE",
+  category: UI.ActionRegistration.ActionCategory.CONSOLE,
   title: i18nLazyString(UIStrings.clearConsole),
-  iconClass: "clear",
+  iconClass: UI.ActionRegistration.IconClass.CLEAR,
   async loadActionDelegate() {
     const Console2 = await loadConsoleModule();
     return new Console2.ConsoleView.ActionDelegate();
@@ -232,13 +232,13 @@ UI.ActionRegistration.registerActionExtension({
     },
     {
       shortcut: "Meta+K",
-      platform: "mac"
+      platform: UI.ActionRegistration.Platforms.MAC
     }
   ]
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "console.clear.history",
-  category: "CONSOLE",
+  category: UI.ActionRegistration.ActionCategory.CONSOLE,
   title: i18nLazyString(UIStrings.clearConsoleHistory),
   async loadActionDelegate() {
     const Console2 = await loadConsoleModule();
@@ -247,16 +247,16 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "console.create-pin",
-  category: "CONSOLE",
+  category: UI.ActionRegistration.ActionCategory.CONSOLE,
   title: i18nLazyString(UIStrings.createLiveExpression),
-  iconClass: "eye",
+  iconClass: UI.ActionRegistration.IconClass.EYE,
   async loadActionDelegate() {
     const Console2 = await loadConsoleModule();
     return new Console2.ConsoleView.ActionDelegate();
   }
 });
 SettingsUI.SettingUIRegistration.register(SettingsUI.ConsoleSettings.networkMessagesSettingDescriptor, {
-  category: "CONSOLE",
+  category: Common.Settings.SettingCategory.CONSOLE,
   title: i18nLazyString(UIStrings.networkMessages),
   options: [
     {
@@ -270,7 +270,7 @@ SettingsUI.SettingUIRegistration.register(SettingsUI.ConsoleSettings.networkMess
   ]
 });
 SettingsUI.SettingUIRegistration.register(SettingsUI.ConsoleSettings.selectedContextFilterEnabledSettingDescriptor, {
-  category: "CONSOLE",
+  category: Common.Settings.SettingCategory.CONSOLE,
   title: i18nLazyString(UIStrings.selectedContextOnly),
   options: [
     {
@@ -284,7 +284,7 @@ SettingsUI.SettingUIRegistration.register(SettingsUI.ConsoleSettings.selectedCon
   ]
 });
 SettingsUI.SettingUIRegistration.register(SettingsUI.ConsoleSettings.consoleTimestampsEnabledSettingDescriptor, {
-  category: "CONSOLE",
+  category: Common.Settings.SettingCategory.CONSOLE,
   title: i18nLazyString(UIStrings.timestamps),
   options: [
     {
@@ -298,7 +298,7 @@ SettingsUI.SettingUIRegistration.register(SettingsUI.ConsoleSettings.consoleTime
   ]
 });
 SettingsUI.SettingUIRegistration.register(SettingsUI.ConsoleSettings.consoleHistoryAutocompleteSettingDescriptor, {
-  category: "CONSOLE",
+  category: Common.Settings.SettingCategory.CONSOLE,
   title: i18nLazyString(UIStrings.autocompleteFromHistory),
   options: [
     {
@@ -312,7 +312,7 @@ SettingsUI.SettingUIRegistration.register(SettingsUI.ConsoleSettings.consoleHist
   ]
 });
 SettingsUI.SettingUIRegistration.register(SettingsUI.ConsoleSettings.consoleAutocompleteOnEnterSettingDescriptor, {
-  category: "CONSOLE",
+  category: Common.Settings.SettingCategory.CONSOLE,
   title: i18nLazyString(UIStrings.autocompleteOnEnter),
   options: [
     {
@@ -326,7 +326,7 @@ SettingsUI.SettingUIRegistration.register(SettingsUI.ConsoleSettings.consoleAuto
   ]
 });
 SettingsUI.SettingUIRegistration.register(SettingsUI.ConsoleSettings.consoleGroupSimilarSettingDescriptor, {
-  category: "CONSOLE",
+  category: Common.Settings.SettingCategory.CONSOLE,
   title: i18nLazyString(UIStrings.groupSimilarMessages),
   options: [
     {
@@ -340,7 +340,7 @@ SettingsUI.SettingUIRegistration.register(SettingsUI.ConsoleSettings.consoleGrou
   ]
 });
 SettingsUI.SettingUIRegistration.register(SettingsUI.ConsoleSettings.consoleShowsCorsErrorsSettingDescriptor, {
-  category: "CONSOLE",
+  category: Common.Settings.SettingCategory.CONSOLE,
   title: i18nLazyString(UIStrings.corsErrorsInConsole),
   options: [
     {
@@ -354,7 +354,7 @@ SettingsUI.SettingUIRegistration.register(SettingsUI.ConsoleSettings.consoleShow
   ]
 });
 SettingsUI.SettingUIRegistration.register(SettingsUI.ConsoleSettings.consoleEagerEvalSettingDescriptor, {
-  category: "CONSOLE",
+  category: Common.Settings.SettingCategory.CONSOLE,
   title: i18nLazyString(UIStrings.eagerEvaluation),
   options: [
     {
@@ -368,7 +368,7 @@ SettingsUI.SettingUIRegistration.register(SettingsUI.ConsoleSettings.consoleEage
   ]
 });
 SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.consoleUserActivationEvalSettingDescriptor, {
-  category: "CONSOLE",
+  category: Common.Settings.SettingCategory.CONSOLE,
   title: i18nLazyString(UIStrings.evaluateTriggersUserActivation),
   options: [
     {
@@ -382,7 +382,7 @@ SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.consoleUserActivationE
   ]
 });
 SettingsUI.SettingUIRegistration.register(SettingsUI.ConsoleSettings.consoleTraceExpandSettingDescriptor, {
-  category: "CONSOLE",
+  category: Common.Settings.SettingCategory.CONSOLE,
   title: i18nLazyString(UIStrings.expandConsoleTraceMessagesByDefault),
   options: [
     {
@@ -396,15 +396,15 @@ SettingsUI.SettingUIRegistration.register(SettingsUI.ConsoleSettings.consoleTrac
   ]
 });
 Common.Settings.registerSettingExtension({
-  category: "CONSOLE",
-  storageType: "Synced",
+  category: Common.Settings.SettingCategory.CONSOLE,
+  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.consoleInsightTeasers),
   settingName: "console-insight-teasers-enabled",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: true
 });
 SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.preserveConsoleLogSettingDescriptor, {
-  category: "CONSOLE",
+  category: Common.Settings.SettingCategory.CONSOLE,
   title: i18nLazyString(UIStrings.preserveLogUponNavigation),
   options: [
     {
@@ -418,11 +418,11 @@ SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.preserveConsoleLogSett
   ]
 });
 SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.customFormattersSettingDescriptor, {
-  category: "CONSOLE",
+  category: Common.Settings.SettingCategory.CONSOLE,
   title: i18nLazyString(UIStrings.customFormatters)
 });
 SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.monitoringXHREnabledSettingDescriptor, {
-  category: "CONSOLE",
+  category: Common.Settings.SettingCategory.CONSOLE,
   title: i18nLazyString(UIStrings.logXmlhttprequests)
 });
 Common.Revealer.registerRevealer({

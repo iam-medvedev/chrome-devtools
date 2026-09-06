@@ -3,13 +3,13 @@ import * as SDK from '../../core/sdk/sdk.js';
 import type * as Protocol from '../../generated/protocol.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { WebAudioModel } from './WebAudioModel.js';
-interface ViewInput {
+export interface ViewInput {
     contexts: Protocol.WebAudio.BaseAudioContext[];
     selectedContextIndex: number;
     onContextSelectorSelectionChanged: (contextId: string) => void;
     contextRealtimeData: Protocol.WebAudio.ContextRealtimeData | null;
 }
-type View = (input: ViewInput, output: object, target: HTMLElement | DocumentFragment) => void;
+export type View = (input: ViewInput, output: object, target: HTMLElement | DocumentFragment) => void;
 export declare const DEFAULT_VIEW: View;
 export declare class WebAudioView extends UI.Widget.VBox<ShadowRoot> implements SDK.TargetManager.SDKModelObserver<WebAudioModel> {
     private readonly knownContexts;
@@ -34,4 +34,3 @@ export declare class WebAudioView extends UI.Widget.VBox<ShadowRoot> implements 
     private setContextRealtimeData;
     private pollRealtimeData;
 }
-export {};

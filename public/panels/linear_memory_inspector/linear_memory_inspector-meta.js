@@ -1,4 +1,4 @@
-// gen/front_end/panels/linear_memory_inspector/linear_memory_inspector-meta.prebundle.js
+// ../../front_end/panels/linear_memory_inspector/linear_memory_inspector-meta.ts
 import * as Common from "../../core/common/common.js";
 import * as i18n from "../../core/i18n/i18n.js";
 import * as SDK from "../../core/sdk/sdk.js";
@@ -24,12 +24,12 @@ async function loadLinearMemoryInspectorModule() {
   return loadedLinearMemoryInspectorModule;
 }
 UI.ViewManager.registerViewExtension({
-  location: "drawer-view",
+  location: UI.ViewManager.ViewLocationValues.DRAWER_VIEW,
   id: "linear-memory-inspector",
   title: i18nLazyString(UIStrings.memoryInspector),
   commandPrompt: i18nLazyString(UIStrings.showMemoryInspector),
   order: 100,
-  persistence: "closeable",
+  persistence: UI.ViewManager.ViewPersistence.CLOSEABLE,
   async loadView() {
     const LinearMemoryInspector = await loadLinearMemoryInspectorModule();
     return LinearMemoryInspector.LinearMemoryInspectorPane.LinearMemoryInspectorPane.instance();

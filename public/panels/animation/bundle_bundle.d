@@ -1,0 +1,1 @@
+gen/front_end/panels/animation/animation.js: ../../front_end/generated/protocol.ts gen/front_end/panels/animation/animationTimeline.css.js ../../front_end/panels/animation/AnimationTimeline.ts ../../front_end/panels/animation/AnimationUI.ts ../../front_end/panels/animation/AnimationGroupPreviewUI.ts ../../front_end/panels/animation/animation.ts

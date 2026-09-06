@@ -23,7 +23,6 @@ describe('ListNetworkRequestsTool', () => {
         networkLog.requests.returns([request]);
         const tool = new AiAssistance.ListNetworkRequests.ListNetworkRequestsTool(networkLog);
         const context = {
-            conversationContext: null,
             getEstablishedOrigin: () => 'https://example.com',
         };
         const response = await tool.handler({}, context);
@@ -49,7 +48,6 @@ describe('ListNetworkRequestsTool', () => {
         networkLog.requests.returns([request1, request2]);
         const tool = new AiAssistance.ListNetworkRequests.ListNetworkRequestsTool(networkLog);
         const context = {
-            conversationContext: null,
             getEstablishedOrigin: () => 'https://example.com',
         };
         const response = await tool.handler({}, context);
@@ -65,10 +63,26 @@ describe('ListNetworkRequestsTool', () => {
         ]);
         assert.strictEqual(response.result, expectedResult);
     });
-    it('returns error for opaque origins', async () => {
+    it('returns empty array when no requests are recorded', async () => {
+        networkLog.requests.returns([]);
         const tool = new AiAssistance.ListNetworkRequests.ListNetworkRequestsTool(networkLog);
         const context = {
             conversationContext: null,
+            getEstablishedOrigin: () => 'https://example.com',
+        };
+        const response = await tool.handler({}, context);
+        assertIsResult(response);
+        assert.strictEqual(response.result, JSON.stringify([]));
+        assert.deepEqual(response.widgets, [{
+                name: 'NETWORK_REQUESTS_LIST',
+                data: {
+                    requests: [],
+                },
+            }]);
+    });
+    it('returns error for opaque origins', async () => {
+        const tool = new AiAssistance.ListNetworkRequests.ListNetworkRequestsTool(networkLog);
+        const context = {
             getEstablishedOrigin: () => 'null',
         };
         const response = await tool.handler({}, context);

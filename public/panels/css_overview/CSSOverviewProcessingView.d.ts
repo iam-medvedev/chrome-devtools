@@ -1,8 +1,8 @@
 import * as UI from '../../ui/legacy/legacy.js';
-interface ViewInput {
+export interface ViewInput {
     onCancel: () => void;
 }
-type View = (input: ViewInput, output: object, target: HTMLElement) => void;
+export type View = (input: ViewInput, output: object, target: HTMLElement) => void;
 export declare const DEFAULT_VIEW: View;
 export declare class CSSOverviewProcessingView extends UI.Widget.Widget {
     #private;
@@ -10,4 +10,3 @@ export declare class CSSOverviewProcessingView extends UI.Widget.Widget {
     set onCancel(onCancel: () => void);
     performUpdate(): void;
 }
-export {};

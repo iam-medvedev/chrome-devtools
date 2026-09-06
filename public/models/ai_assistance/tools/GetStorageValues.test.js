@@ -40,7 +40,6 @@ describe('GetStorageValuesTool', () => {
         activeStorages = [mockStorage];
         const disableLoggingStub = sinon.stub();
         const context = {
-            conversationContext: null,
             getEstablishedOrigin: sinon.stub().returns('https://example.com'),
             disableLogging: disableLoggingStub,
         };
@@ -60,7 +59,6 @@ describe('GetStorageValuesTool', () => {
         mockStorage.getItems.resolves([['key1', 'value1'], ['key2', 'value2']]);
         activeStorages = [mockStorage];
         const context = {
-            conversationContext: null,
             getEstablishedOrigin: sinon.stub().returns('https://example.com'),
             disableLogging: sinon.stub(),
         };
@@ -89,7 +87,6 @@ describe('GetStorageValuesTool', () => {
         mockStorage.getItems.resolves([['sessKey', 'sessVal']]);
         activeStorages = [mockStorage];
         const context = {
-            conversationContext: null,
             getEstablishedOrigin: sinon.stub().returns('https://example.com'),
             disableLogging: sinon.stub(),
         };
@@ -113,7 +110,6 @@ describe('GetStorageValuesTool', () => {
         setupPrimaryTarget('https://example.com');
         activeStorages = [];
         const context = {
-            conversationContext: null,
             getEstablishedOrigin: sinon.stub().returns('https://example.com'),
             disableLogging: sinon.stub(),
         };
@@ -131,7 +127,6 @@ describe('GetStorageValuesTool', () => {
         mockStorage.getItems.resolves([['hugeKey', largeValue]]);
         activeStorages = [mockStorage];
         const context = {
-            conversationContext: null,
             getEstablishedOrigin: sinon.stub().returns('https://example.com'),
             disableLogging: sinon.stub(),
         };
@@ -146,7 +141,6 @@ describe('GetStorageValuesTool', () => {
     it('returns error when allowed origin is missing or opaque', async () => {
         setupPrimaryTarget('https://example.com');
         const context = {
-            conversationContext: null,
             getEstablishedOrigin: sinon.stub().returns(''),
             disableLogging: sinon.stub(),
         };
@@ -158,7 +152,6 @@ describe('GetStorageValuesTool', () => {
     it('returns error when primary page target does not match allowed origin', async () => {
         setupPrimaryTarget('https://other-domain.com');
         const context = {
-            conversationContext: null,
             getEstablishedOrigin: sinon.stub().returns('https://example.com'),
             disableLogging: sinon.stub(),
         };
@@ -179,7 +172,6 @@ describe('GetStorageValuesTool', () => {
         mockStorage2.getItems.resolves([['key1', 'val2']]);
         activeStorages = [mockStorage1, mockStorage2];
         const context = {
-            conversationContext: null,
             getEstablishedOrigin: sinon.stub().returns('https://example.com'),
             disableLogging: sinon.stub(),
         };
@@ -202,7 +194,6 @@ describe('GetStorageValuesTool', () => {
     it('returns error when all requested origins are disallowed', async () => {
         setupPrimaryTarget('https://example.com');
         const context = {
-            conversationContext: null,
             getEstablishedOrigin: sinon.stub().returns('https://example.com'),
             disableLogging: sinon.stub(),
         };
@@ -231,7 +222,6 @@ describe('GetStorageValuesTool', () => {
         mockStorage.getItems.resolves([['existingKey', 'value1']]);
         activeStorages = [mockStorage];
         const context = {
-            conversationContext: null,
             getEstablishedOrigin: sinon.stub().returns('https://example.com'),
             disableLogging: sinon.stub(),
         };
@@ -257,7 +247,6 @@ describe('GetStorageValuesTool', () => {
         mockStorage.getItems.resolves([['key1', 'val1']]);
         activeStorages = [mockStorage];
         const context = {
-            conversationContext: null,
             getEstablishedOrigin: sinon.stub().returns('https://example.com'),
             disableLogging: sinon.stub(),
         };
@@ -289,7 +278,6 @@ describe('GetStorageValuesTool', () => {
         mockStorage2.getItems.resolves([['key1', 'val2']]);
         activeStorages = [mockStorage1, mockStorage2];
         const context = {
-            conversationContext: null,
             getEstablishedOrigin: sinon.stub().returns('https://example.com'),
             disableLogging: sinon.stub(),
         };

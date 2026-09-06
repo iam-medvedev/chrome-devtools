@@ -27,7 +27,6 @@ describe('GetTraceNetworkSummaryTool', () => {
     });
     it('returns error when PerformanceTraceContext is not available', async () => {
         const context = {
-            conversationContext: null,
             getPerformanceTraceContext: () => null,
         };
         const tool = new GetTraceNetworkSummaryTool();
@@ -40,7 +39,6 @@ describe('GetTraceNetworkSummaryTool', () => {
         const traceContext = AiAssistance.PerformanceTraceContext.PerformanceTraceContext.fromParsedTrace(parsedTrace, universe.targetManager, new Tracing.FreshRecording.Tracker(), universe.debuggerWorkspaceBinding);
         sinon.stub(traceContext, 'createBounds').returns(null);
         const capabilities = {
-            conversationContext: null,
             getPerformanceTraceContext: () => traceContext,
         };
         const tool = new GetTraceNetworkSummaryTool();
@@ -57,7 +55,6 @@ describe('GetTraceNetworkSummaryTool', () => {
             formatNetworkTrackSummary: sinon.stub().returns('mock network summary details'),
         });
         const capabilities = {
-            conversationContext: null,
             getPerformanceTraceContext: () => traceContext,
         };
         const tool = new GetTraceNetworkSummaryTool();

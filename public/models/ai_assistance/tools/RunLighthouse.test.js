@@ -30,7 +30,7 @@ describe('RunLighthouseTool', () => {
         it('formats title, thought, and action with explicit mode', () => {
             const displayInfo = tool.displayInfoFromArgs({
                 explanation: 'Testing color contrast after CSS change',
-                category: 'accessibility',
+                categoryId: 'accessibility',
                 mode: 'navigation',
             });
             assert.deepEqual(displayInfo, {
@@ -42,7 +42,7 @@ describe('RunLighthouseTool', () => {
         it('formats title, thought, and action defaulting to snapshot mode when mode is omitted', () => {
             const displayInfo = tool.displayInfoFromArgs({
                 explanation: 'Testing in-page fix',
-                category: 'accessibility',
+                categoryId: 'accessibility',
             });
             assert.deepEqual(displayInfo, {
                 title: 'Running Lighthouse audits: accessibility (snapshot)',
@@ -55,10 +55,9 @@ describe('RunLighthouseTool', () => {
         it('runs dynamic audits for a specified category and mode', async () => {
             const recordingStub = sinon.stub().resolves(mockReport);
             const context = {
-                conversationContext: null,
                 runLighthouse: recordingStub,
             };
-            const result = await tool.handler({ explanation: 're-audit', category: 'accessibility', mode: 'snapshot' }, context);
+            const result = await tool.handler({ explanation: 're-audit', categoryId: 'accessibility', mode: 'snapshot' }, context);
             assertIsResult(result);
             assert.include(result.result.audits, '# Audits for Accessibility');
             assert.include(result.result.audits, 'Low contrast');
@@ -73,10 +72,9 @@ describe('RunLighthouseTool', () => {
         it('defaults to snapshot mode when mode is omitted', async () => {
             const recordingStub = sinon.stub().resolves(mockReport);
             const context = {
-                conversationContext: null,
                 runLighthouse: recordingStub,
             };
-            const result = await tool.handler({ explanation: 're-audit', category: 'accessibility' }, context);
+            const result = await tool.handler({ explanation: 're-audit', categoryId: 'accessibility' }, context);
             assertIsResult(result);
             assert.deepEqual(result.widgets, [{ name: 'LIGHTHOUSE_REPORT', data: { report: mockReport, snapshotReport: true } }]);
             sinon.assert.calledOnceWithExactly(recordingStub, {
@@ -88,10 +86,9 @@ describe('RunLighthouseTool', () => {
         it('sets snapshotReport to false when running in navigation mode', async () => {
             const recordingStub = sinon.stub().resolves(mockReport);
             const context = {
-                conversationContext: null,
                 runLighthouse: recordingStub,
             };
-            const result = await tool.handler({ explanation: 're-audit', category: 'accessibility', mode: 'navigation' }, context);
+            const result = await tool.handler({ explanation: 're-audit', categoryId: 'accessibility', mode: 'navigation' }, context);
             assertIsResult(result);
             assert.deepEqual(result.widgets, [{ name: 'LIGHTHOUSE_REPORT', data: { report: mockReport, snapshotReport: false } }]);
             sinon.assert.calledOnceWithExactly(recordingStub, {
@@ -103,20 +100,18 @@ describe('RunLighthouseTool', () => {
         it('returns error when runLighthouse returns null', async () => {
             const recordingStub = sinon.stub().resolves(null);
             const context = {
-                conversationContext: null,
                 runLighthouse: recordingStub,
             };
-            const result = await tool.handler({ explanation: 're-audit', category: 'accessibility' }, context);
+            const result = await tool.handler({ explanation: 're-audit', categoryId: 'accessibility' }, context);
             assertIsError(result);
             assert.strictEqual(result.error, 'Error: Failed to record new audits.');
         });
         it('returns error when runLighthouse rejects', async () => {
             const recordingStub = sinon.stub().rejects(new Error('Navigation timed out'));
             const context = {
-                conversationContext: null,
                 runLighthouse: recordingStub,
             };
-            const result = await tool.handler({ explanation: 're-audit', category: 'accessibility' }, context);
+            const result = await tool.handler({ explanation: 're-audit', categoryId: 'accessibility' }, context);
             assertIsError(result);
             assert.strictEqual(result.error, 'Error: Failed to record new audits: Navigation timed out');
         });

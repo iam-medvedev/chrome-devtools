@@ -1,0 +1,1 @@
+gen/front_end/ui/components/panel_introduction_steps/panel_introduction_steps.js: gen/front_end/ui/components/panel_introduction_steps/panelIntroductionSteps.css.js ../../front_end/ui/components/panel_introduction_steps/PanelIntroductionSteps.ts ../../front_end/ui/components/panel_introduction_steps/panel_introduction_steps.ts

@@ -1,0 +1,1 @@
+gen/front_end/panels/settings/components/components.js: gen/front_end/panels/settings/components/syncSection.css.js ../../front_end/panels/settings/components/SyncSection.ts ../../front_end/panels/settings/components/components.ts

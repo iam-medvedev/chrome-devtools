@@ -1,4 +1,4 @@
-// gen/front_end/third_party/puppeteer-replay/package/lib/main.js
+// ../../front_end/third_party/puppeteer-replay/package/lib/main.js
 var SelectorType;
 (function(SelectorType2) {
   SelectorType2["CSS"] = "css";

@@ -1,4 +1,4 @@
-// gen/front_end/panels/profiler/profiler-meta.prebundle.js
+// ../../front_end/panels/profiler/profiler-meta.ts
 import * as i18n from "../../core/i18n/i18n.js";
 import * as SDK from "../../core/sdk/sdk.js";
 import * as UI from "../../ui/legacy/legacy.js";
@@ -48,7 +48,7 @@ function maybeRetrieveContextTypes(getClassCallBack) {
   return getClassCallBack(loadedProfilerModule);
 }
 UI.ViewManager.registerViewExtension({
-  location: "panel",
+  location: UI.ViewManager.ViewLocationValues.PANEL,
   id: "heap-profiler",
   commandPrompt: i18nLazyString(UIStrings.showMemory),
   title: i18nLazyString(UIStrings.memory),
@@ -60,11 +60,11 @@ UI.ViewManager.registerViewExtension({
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "profiler.heap-toggle-recording",
-  category: "MEMORY",
-  iconClass: "record-start",
+  category: UI.ActionRegistration.ActionCategory.MEMORY,
+  iconClass: UI.ActionRegistration.IconClass.START_RECORDING,
   title: i18nLazyString(UIStrings.startStopRecording),
   toggleable: true,
-  toggledIconClass: "record-stop",
+  toggledIconClass: UI.ActionRegistration.IconClass.STOP_RECORDING,
   toggleWithRedColor: true,
   contextTypes() {
     return maybeRetrieveContextTypes((Profiler) => [Profiler.HeapProfilerPanel.HeapProfilerPanel]);
@@ -75,19 +75,19 @@ UI.ActionRegistration.registerActionExtension({
   },
   bindings: [
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Ctrl+E"
     },
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Meta+E"
     }
   ]
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "profiler.clear-all",
-  category: "MEMORY",
-  iconClass: "clear",
+  category: UI.ActionRegistration.ActionCategory.MEMORY,
+  iconClass: UI.ActionRegistration.IconClass.CLEAR,
   contextTypes() {
     return maybeRetrieveContextTypes((Profiler) => [Profiler.ProfilesPanel.ProfilesPanel]);
   },
@@ -99,8 +99,8 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "profiler.load-from-file",
-  category: "MEMORY",
-  iconClass: "import",
+  category: UI.ActionRegistration.ActionCategory.MEMORY,
+  iconClass: UI.ActionRegistration.IconClass.IMPORT,
   contextTypes() {
     return maybeRetrieveContextTypes((Profiler) => [Profiler.ProfilesPanel.ProfilesPanel]);
   },
@@ -111,19 +111,19 @@ UI.ActionRegistration.registerActionExtension({
   title: i18nLazyString(UIStrings.loadProfile),
   bindings: [
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Ctrl+O"
     },
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Meta+O"
     }
   ]
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "profiler.save-to-file",
-  category: "MEMORY",
-  iconClass: "download",
+  category: UI.ActionRegistration.ActionCategory.MEMORY,
+  iconClass: UI.ActionRegistration.IconClass.DOWNLOAD,
   contextTypes() {
     return maybeRetrieveContextTypes((Profiler) => [Profiler.ProfileHeader.ProfileHeader]);
   },
@@ -134,19 +134,19 @@ UI.ActionRegistration.registerActionExtension({
   title: i18nLazyString(UIStrings.saveProfile),
   bindings: [
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Ctrl+S"
     },
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Meta+S"
     }
   ]
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "profiler.delete-profile",
-  category: "MEMORY",
-  iconClass: "download",
+  category: UI.ActionRegistration.ActionCategory.MEMORY,
+  iconClass: UI.ActionRegistration.IconClass.DOWNLOAD,
   contextTypes() {
     return maybeRetrieveContextTypes((Profiler) => [Profiler.ProfileHeader.ProfileHeader]);
   },
@@ -168,12 +168,12 @@ UI.ContextMenu.registerProvider({
   }
 });
 UI.ContextMenu.registerItem({
-  location: "profilerMenu/default",
+  location: UI.ContextMenu.ItemLocation.PROFILER_MENU_DEFAULT,
   actionId: "profiler.save-to-file",
   order: 10
 });
 UI.ContextMenu.registerItem({
-  location: "profilerMenu/default",
+  location: UI.ContextMenu.ItemLocation.PROFILER_MENU_DEFAULT,
   actionId: "profiler.delete-profile",
   order: 11
 });

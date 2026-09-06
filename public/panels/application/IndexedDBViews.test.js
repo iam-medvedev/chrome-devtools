@@ -262,6 +262,7 @@ describeWithEnvironment('IDBDataView', () => {
         // Verify datagrid exists
         const dataGrid = component.element.querySelector('devtools-data-grid');
         assert.isNotNull(dataGrid);
+        assert.strictEqual(dataGrid.getAttribute('row-height'), 'auto');
         // Verify rows rendered
         const bodyRows = getValuesOfAllBodyRows(dataGrid.shadowRoot);
         assert.lengthOf(bodyRows, 3);
@@ -292,8 +293,8 @@ describeWithEnvironment('IDBDataView', () => {
         });
         const dataGrid = component.element.querySelector('devtools-data-grid');
         assert.isNotNull(dataGrid);
-        const allRows = getAllRows(dataGrid.shadowRoot, { withJslog: false });
-        const dataRows = allRows.filter(r => r.querySelector('td') !== null);
+        assert.isNotNull(dataGrid.shadowRoot);
+        const dataRows = getAllRows(dataGrid.shadowRoot);
         assert.lengthOf(dataRows, 1);
         dataRows[0].click();
         const buttons = component.element.querySelectorAll('devtools-button');
@@ -335,8 +336,8 @@ describeWithEnvironment('IDBDataView', () => {
         });
         const dataGrid = component.element.querySelector('devtools-data-grid');
         assert.isNotNull(dataGrid);
-        const allRows = getAllRows(dataGrid.shadowRoot, { withJslog: false });
-        const dataRows = allRows.filter(r => r.querySelector('td') !== null);
+        assert.isNotNull(dataGrid.shadowRoot);
+        const dataRows = getAllRows(dataGrid.shadowRoot);
         assert.lengthOf(dataRows, 1);
         dataRows[0].click();
         const buttons = component.element.querySelectorAll('devtools-button');

@@ -1,4 +1,4 @@
-// gen/front_end/entrypoints/ndb_app/ndb_app.prebundle.js
+// ../../front_end/entrypoints/ndb_app/ndb_app.ts
 import "../shell/shell.js";
 import * as Main from "../main/main.js";
 new Main.MainImpl.MainImpl();

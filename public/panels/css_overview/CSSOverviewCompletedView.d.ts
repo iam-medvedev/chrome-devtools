@@ -45,14 +45,14 @@ export interface OverviewData {
     unusedDeclarations: Map<string, UnusedDeclaration[]>;
 }
 export type FontInfo = Map<string, Map<string, Map<string, number[]>>>;
-interface FontMetric {
+export interface FontMetric {
     label: string;
     values: Array<{
         title: string;
         nodes: number[];
     }>;
 }
-interface ViewInput {
+export interface ViewInput {
     elementCount: number;
     backgroundColors: string[];
     textColors: string[];
@@ -77,14 +77,14 @@ interface ViewInput {
     onSectionSelected: (section: string, withKeyboard: boolean) => void;
     onReset: () => void;
 }
-interface ViewOutput {
+export interface ViewOutput {
     revealSection: Map<string, (setFocus: boolean) => void>;
     closeAllTabs: () => void;
     addTab: (id: string, tabTitle: string, view: UI.Widget.Widget, jslogContext: string) => void;
 }
-type View = (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
+export type View = (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
 export declare const DEFAULT_VIEW: View;
-type PopulateNodesEvent = {
+export type PopulateNodesEvent = {
     type: 'contrast';
     key: string;
     section: string | undefined;
@@ -122,7 +122,7 @@ export declare class CSSOverviewCompletedView extends UI.Widget.VBox {
     set overviewData(data: OverviewData);
     static readonly pushedNodes: Set<Protocol.DOM.BackendNodeId>;
 }
-interface ElementDetailsViewInput {
+export interface ElementDetailsViewInput {
     items: Array<{
         data: PopulateNodesEventNodeTypes;
         link?: LitTemplate;
@@ -130,7 +130,7 @@ interface ElementDetailsViewInput {
     }>;
     visibility: Set<string>;
 }
-type ElementDetailsViewFunction = (input: ElementDetailsViewInput, output: object, target: HTMLElement) => void;
+export type ElementDetailsViewFunction = (input: ElementDetailsViewInput, output: object, target: HTMLElement) => void;
 export declare const ELEMENT_DETAILS_DEFAULT_VIEW: ElementDetailsViewFunction;
 export declare class ElementDetailsView extends UI.Widget.Widget {
     #private;
@@ -138,4 +138,3 @@ export declare class ElementDetailsView extends UI.Widget.Widget {
     set data(data: PopulateNodesEventNodes);
     performUpdate(): Promise<void>;
 }
-export {};

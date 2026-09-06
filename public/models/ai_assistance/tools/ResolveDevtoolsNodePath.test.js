@@ -29,7 +29,6 @@ describe('ResolveDevtoolsNodePathTool', () => {
         } :
             null;
         return {
-            conversationContext: null,
             getTarget: () => mockTarget,
             getEstablishedOrigin: () => establishedOrigin,
         };

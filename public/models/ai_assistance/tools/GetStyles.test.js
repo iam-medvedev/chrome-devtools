@@ -5,11 +5,12 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as SDK from '../../../core/sdk/sdk.js';
 import { assertIsError, assertIsResult, } from '../../../testing/AiAssistanceHelpers.js';
-import { describeWithEnvironment, } from '../../../testing/EnvironmentHelpers.js';
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import { MockCDPConnection } from '../../../testing/MockCDPConnection.js';
 import { createStubbedDomNodeWithModels, getMatchedStyles, ruleMatch, } from '../../../testing/StyleHelpers.js';
 import * as AiAssistance from '../ai_assistance.js';
-describeWithEnvironment('GetStylesTool', () => {
+describe('GetStylesTool', () => {
+    setupLocaleHooks();
     let element;
     let target;
     let domModel;
@@ -40,7 +41,6 @@ describeWithEnvironment('GetStylesTool', () => {
         cssModel.getMatchedStyles.resolves(matchedStyles);
         const tool = new AiAssistance.GetStyles.GetStylesTool();
         const context = {
-            conversationContext: null,
             getTarget: () => target,
             getEstablishedOrigin: () => 'https://example.com',
         };
@@ -60,7 +60,6 @@ describeWithEnvironment('GetStylesTool', () => {
     it('returns error when target is missing', async () => {
         const tool = new AiAssistance.GetStyles.GetStylesTool();
         const context = {
-            conversationContext: null,
             getTarget: () => null,
             getEstablishedOrigin: () => undefined,
         };
@@ -80,7 +79,6 @@ describeWithEnvironment('GetStylesTool', () => {
         sinon.stub(SDK.DOMModel.DeferredDOMNode.prototype, 'resolvePromise').resolves(resolvedNode);
         const tool = new AiAssistance.GetStyles.GetStylesTool();
         const context = {
-            conversationContext: null,
             getTarget: () => target,
             getEstablishedOrigin: () => 'https://example.com',
         };

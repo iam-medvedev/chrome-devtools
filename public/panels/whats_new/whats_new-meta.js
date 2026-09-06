@@ -1,4 +1,4 @@
-// gen/front_end/panels/whats_new/whats_new-meta.prebundle.js
+// ../../front_end/panels/whats_new/whats_new-meta.ts
 import * as Common from "../../core/common/common.js";
 import * as i18n from "../../core/i18n/i18n.js";
 import * as UI from "../../ui/legacy/legacy.js";
@@ -46,20 +46,20 @@ UI.ActionRegistration.maybeRemoveActionExtension("help.release-notes");
 UI.ActionRegistration.maybeRemoveActionExtension("help.report-issue");
 Common.Settings.maybeRemoveSettingExtension("help.show-release-note");
 UI.ContextMenu.maybeRemoveItem({
-  location: "mainMenuHelp/default",
+  location: UI.ContextMenu.ItemLocation.MAIN_MENU_HELP_DEFAULT,
   actionId: "help.release-notes"
 });
 UI.ContextMenu.maybeRemoveItem({
-  location: "mainMenuHelp/default",
+  location: UI.ContextMenu.ItemLocation.MAIN_MENU_HELP_DEFAULT,
   actionId: "help.report-issue"
 });
 Common.Runnable.maybeRemoveLateInitializationRunnable("whats-new");
 UI.ViewManager.registerViewExtension({
-  location: "drawer-view",
+  location: UI.ViewManager.ViewLocationValues.DRAWER_VIEW,
   id: "release-note",
   title: i18nLazyString(UIStrings.whatsNew),
   commandPrompt: i18nLazyString(UIStrings.showWhatsNew),
-  persistence: "closeable",
+  persistence: UI.ViewManager.ViewPersistence.CLOSEABLE,
   order: 1,
   async loadView() {
     const WhatsNew = await loadWhatsNewModule();
@@ -67,7 +67,7 @@ UI.ViewManager.registerViewExtension({
   }
 });
 UI.ActionRegistration.registerActionExtension({
-  category: "HELP",
+  category: UI.ActionRegistration.ActionCategory.HELP,
   actionId: "help.release-notes",
   title: i18nLazyString(UIStrings.releaseNotes),
   async loadActionDelegate() {
@@ -76,7 +76,7 @@ UI.ActionRegistration.registerActionExtension({
   }
 });
 UI.ActionRegistration.registerActionExtension({
-  category: "HELP",
+  category: UI.ActionRegistration.ActionCategory.HELP,
   actionId: "help.report-issue",
   title: i18nLazyString(UIStrings.reportADevtoolsIssue),
   async loadActionDelegate() {
@@ -86,10 +86,10 @@ UI.ActionRegistration.registerActionExtension({
   tags: [i18nLazyString(UIStrings.bug)]
 });
 Common.Settings.registerSettingExtension({
-  category: "APPEARANCE",
+  category: Common.Settings.SettingCategory.APPEARANCE,
   title: i18nLazyString(UIStrings.showWhatsNewAfterEachUpdate),
   settingName: "help.show-release-note",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: true,
   options: [
     {
@@ -103,12 +103,12 @@ Common.Settings.registerSettingExtension({
   ]
 });
 UI.ContextMenu.registerItem({
-  location: "mainMenuHelp/default",
+  location: UI.ContextMenu.ItemLocation.MAIN_MENU_HELP_DEFAULT,
   actionId: "help.release-notes",
   order: 10
 });
 UI.ContextMenu.registerItem({
-  location: "mainMenuHelp/default",
+  location: UI.ContextMenu.ItemLocation.MAIN_MENU_HELP_DEFAULT,
   actionId: "help.report-issue",
   order: 11
 });

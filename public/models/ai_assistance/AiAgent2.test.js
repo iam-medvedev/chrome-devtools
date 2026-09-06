@@ -6,7 +6,11 @@ import sinon from 'sinon';
 import * as Host from '../../core/host/host.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { mockAidaClient } from '../../testing/AiAssistanceHelpers.js';
-import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { updateHostConfig } from '../../testing/EnvironmentHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
+import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
+import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
+import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as AiAssistance from './ai_assistance.js';
 import { SKILLS } from './skills/SkillRegistry.js';
 function assertIsFunctionResponse(part) {
@@ -27,7 +31,24 @@ function getFunctionDeclarations(aidaClient, callIndex) {
 function mockSkills(agent, skills) {
     agent.getSkills = () => skills;
 }
-describeWithEnvironment('AiAgent2', () => {
+describe('AiAgent2', () => {
+    setupLocaleHooks();
+    setupSettingsHooks();
+    setupRuntimeHooks();
+    let universe;
+    beforeEach(() => {
+        universe = new TestUniverse();
+        sinon.stub(SDK.TargetManager.TargetManager, 'instance').returns(universe.targetManager);
+    });
+    it('retrieves userTier from hostConfig', () => {
+        updateHostConfig({
+            devToolsAiV2Architecture: {
+                userTier: 'TESTERS',
+            },
+        });
+        const agent = new AiAssistance.AiAgent2.AiAgent2({ aidaClient: mockAidaClient() });
+        assert.strictEqual(agent.userTier, 'TESTERS');
+    });
     it('registers all expected skills', () => {
         assert.deepEqual(Object.keys(SKILLS).sort(), ['styling', 'network', 'accessibility', 'performance', 'storage', 'sources'].sort());
     });
@@ -199,9 +220,8 @@ describeWithEnvironment('AiAgent2', () => {
         const responses = await Array.fromAsync(agent.run('question', { selected: null }));
         // Verify that handler was called
         sinon.assert.calledOnce(handlerStub);
-        const [args, context] = handlerStub.getCall(0).args;
+        const [args] = handlerStub.getCall(0).args;
         assert.deepEqual(args, { elements: [1], styleProperties: ['color'], explanation: 'testing' });
-        assert.isNull(context.conversationContext);
         // Verify AIDA response included tool output
         const hasTitle = responses.some(r => r.type === "title" /* AiAssistance.AiAgent.ResponseType.TITLE */ && r.title === 'Reading computed and source styles');
         assert.isTrue(hasTitle);
@@ -410,7 +430,7 @@ describeWithEnvironment('AiAgent2', () => {
         assert.isFalse(thirdLearnSkills?.description.includes('network'));
     });
     it('falls back to document body for getExecutionContextNode when context is not DOMNodeContext', async () => {
-        const target = createTarget();
+        const target = universe.createTarget();
         const domModel = target.model(SDK.DOMModel.DOMModel);
         assert.exists(domModel);
         const mockDocument = sinon.createStubInstance(SDK.DOMModel.DOMDocument);
@@ -440,7 +460,7 @@ describeWithEnvironment('AiAgent2', () => {
         assert.strictEqual(context.getExecutionContextNode(), mockBodyNode);
     });
     it('pushes body node to frontend during preRun when body is missing', async () => {
-        const target = createTarget();
+        const target = universe.createTarget();
         const domModel = target.model(SDK.DOMModel.DOMModel);
         assert.exists(domModel);
         const mockDocument = sinon.createStubInstance(SDK.DOMModel.DOMDocument);
@@ -453,7 +473,7 @@ describeWithEnvironment('AiAgent2', () => {
         sinon.assert.calledOnceWithExactly(pushStub, '1,HTML,1,BODY');
     });
     it('returns null for getExecutionContextNode when body is absent and does not return document', async () => {
-        const target = createTarget();
+        const target = universe.createTarget();
         const domModel = target.model(SDK.DOMModel.DOMModel);
         assert.exists(domModel);
         const mockDocument = sinon.createStubInstance(SDK.DOMModel.DOMDocument);
@@ -482,7 +502,7 @@ describeWithEnvironment('AiAgent2', () => {
         assert.isNull(context.getExecutionContextNode());
     });
     it('creates ExtensionScope using document body when context is not DOMNodeContext', async () => {
-        const target = createTarget();
+        const target = universe.createTarget();
         const domModel = target.model(SDK.DOMModel.DOMModel);
         assert.exists(domModel);
         const mockDocument = sinon.createStubInstance(SDK.DOMModel.DOMDocument);

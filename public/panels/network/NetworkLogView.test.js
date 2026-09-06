@@ -1385,7 +1385,7 @@ function testPlaceholderText(networkLogView, expectedHeaderText, expectedDescrip
 }
 function testPlaceholderButton(networkLogView, expectedButtonText, actionId) {
     const emptyWidgetHost = networkLogView.element.querySelector('.network-status-pane');
-    const button = emptyWidgetHost?.shadowRoot?.querySelector('devtools-button');
+    const button = emptyWidgetHost?.querySelector('devtools-button');
     assert.exists(button);
     assert.deepEqual(button.textContent, expectedButtonText);
     const action = UI.ActionRegistry.ActionRegistry.instance().getAction(actionId);

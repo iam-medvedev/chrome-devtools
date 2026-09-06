@@ -3,16 +3,20 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import * as Trace from '../../../models/trace/trace.js';
-import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import { SnapshotTester } from '../../../testing/SnapshotTester.js';
 import { allThreadEntriesInTrace } from '../../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import { AICallTree } from '../ai_assistance.js';
 const NODE_NAME_INDEX = 2;
-describeWithEnvironment('AICallTree', function () {
+async function loadTrace(context, name, config) {
+    return await TraceLoader.traceEngine(context, name, config, { withTimelinePanel: false });
+}
+describe('AICallTree', function () {
+    setupLocaleHooks();
     const snapshotTester = new SnapshotTester(this, import.meta);
     it('will not build a tree from non-main-thread events', async function () {
-        const parsedTrace = await TraceLoader.traceEngine(this, 'cls-single-frame.json.gz');
+        const parsedTrace = await loadTrace(this, 'cls-single-frame.json.gz');
         // A random RasterizerTask. Although this does technically run on the
         // main _frame_, it is not on the thread we identify as the main thread.
         const rasterTask = allThreadEntriesInTrace(parsedTrace).find(e => {
@@ -22,7 +26,7 @@ describeWithEnvironment('AICallTree', function () {
         assert.isNull(AICallTree.AICallTree.fromEvent(rasterTask, parsedTrace));
     });
     it('does not build a tree from events the renderer is not aware of', async function () {
-        const parsedTrace = await TraceLoader.traceEngine(this, 'cls-single-frame.json.gz');
+        const parsedTrace = await loadTrace(this, 'cls-single-frame.json.gz');
         // A SyntheticLayoutShift: the RendererHandler does not know about this.
         const shift = parsedTrace.data.LayoutShifts.clusters.at(0)?.events.at(0);
         assert.isOk(shift);
@@ -30,13 +34,13 @@ describeWithEnvironment('AICallTree', function () {
         assert.isNull(AICallTree.AICallTree.fromEvent(shift, parsedTrace));
     });
     it('does not build a call tree from a performance.mark', async function () {
-        const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-timings.json.gz');
+        const parsedTrace = await loadTrace(this, 'web-dev-with-timings.json.gz');
         const mark = parsedTrace.data.UserTimings.performanceMarks.at(0);
         assert.isOk(mark);
         assert.isNull(AICallTree.AICallTree.fromEvent(mark, parsedTrace));
     });
     it('does not build a call tree from a performance.measure', async function () {
-        const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-timings.json.gz');
+        const parsedTrace = await loadTrace(this, 'web-dev-with-timings.json.gz');
         const measure = parsedTrace.data.UserTimings.performanceMeasures.at(0);
         assert.isOk(measure);
         assert.isNull(AICallTree.AICallTree.fromEvent(measure, parsedTrace));
@@ -58,7 +62,7 @@ describeWithEnvironment('AICallTree', function () {
         snapshotTester.assert(this, callTree.serialize());
     });
     it('serializes a simple tree', async function () {
-        const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-outermost-frames.json.gz');
+        const parsedTrace = await loadTrace(this, 'web-dev-outermost-frames.json.gz');
         const mainEvents = allThreadEntriesInTrace(parsedTrace);
         // A function '_ds.q.ns'. Has a very small tree by default.
         const selectedEvent = mainEvents.find(event => event.ts === 465457308823);
@@ -70,7 +74,7 @@ describeWithEnvironment('AICallTree', function () {
         snapshotTester.assert(this, callTree.serialize());
     });
     it('correctly serializes selected node with multiple children', async function () {
-        const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
+        const parsedTrace = await loadTrace(this, 'web-dev.json.gz');
         const mainEvents = allThreadEntriesInTrace(parsedTrace);
         const selectedEvent = mainEvents.find(event => event.ts === 1020034984106);
         if (!selectedEvent) {
@@ -87,7 +91,7 @@ describeWithEnvironment('AICallTree', function () {
     // Since the childIds are serialized while the node is visited by BFS,
     // it is important to test that the final parent-child IDs are assigned correctly.
     it('correctly numbers child node IDs sequentially', async function () {
-        const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
+        const parsedTrace = await loadTrace(this, 'web-dev.json.gz');
         const mainEvents = allThreadEntriesInTrace(parsedTrace);
         // The selected event is structured like this:
         //
@@ -117,7 +121,7 @@ describeWithEnvironment('AICallTree', function () {
         assert.deepEqual(visited, expectedVisited, 'Callback arguments were incorrect');
     });
     it('correctly numbers child nodes IDs for larger trees', async function () {
-        const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
+        const parsedTrace = await loadTrace(this, 'web-dev.json.gz');
         const mainEvents = allThreadEntriesInTrace(parsedTrace);
         // The selected event is structured like this:
         //
@@ -162,7 +166,7 @@ describeWithEnvironment('AICallTree', function () {
         assert.deepEqual(visited, expectedVisited, 'Callback arguments were incorrect');
     });
     it('serializes a simple tree in a concise format', async function () {
-        const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-outermost-frames.json.gz');
+        const parsedTrace = await loadTrace(this, 'web-dev-outermost-frames.json.gz');
         const mainEvents = allThreadEntriesInTrace(parsedTrace);
         // A function '_ds.q.ns'. Has a very small tree by default.
         const selectedEvent = mainEvents.find(event => event.ts === 465457308823);
@@ -174,7 +178,7 @@ describeWithEnvironment('AICallTree', function () {
         snapshotTester.assert(this, callTree.serialize());
     });
     it('serializes a tree in a concise format', async function () {
-        const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
+        const parsedTrace = await loadTrace(this, 'web-dev.json.gz');
         const mainEvents = allThreadEntriesInTrace(parsedTrace);
         const selectedEvent = mainEvents.find(event => event.ts === 1020035169460);
         if (!selectedEvent) {
@@ -187,7 +191,7 @@ describeWithEnvironment('AICallTree', function () {
     it('can serialize a tree from an event that is not shown unless "show all events" is enabled', async function () {
         const config = Trace.Types.Configuration.defaults();
         config.showAllEvents = true;
-        const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz', config);
+        const parsedTrace = await loadTrace(this, 'web-dev-with-commit.json.gz', config);
         // find a "v8.run" function that would not normally be shown
         const event = allThreadEntriesInTrace(parsedTrace).find(entry => {
             return entry.name === 'v8.run' && entry.ts === 122411196071;
@@ -199,7 +203,7 @@ describeWithEnvironment('AICallTree', function () {
         assert.include(treeStr, 'v8.run'); // make sure the event is in the tree
     });
     it('serializes a tree with lots of recursion', async function () {
-        const parsedTrace = await TraceLoader.traceEngine(this, 'one-second-interaction.json.gz');
+        const parsedTrace = await loadTrace(this, 'one-second-interaction.json.gz');
         const mainEvents = allThreadEntriesInTrace(parsedTrace);
         const selectedEvent = mainEvents.find(event => event.ts === 141251951589);
         if (!selectedEvent) {
@@ -214,7 +218,7 @@ describeWithEnvironment('AICallTree', function () {
         assert.isTrue(fibCallCount > 10);
     });
     it('AITreeFilter includes the right items in the tree', async function () {
-        const parsedTrace = await TraceLoader.traceEngine(this, 'two-workers.json.gz');
+        const parsedTrace = await loadTrace(this, 'two-workers.json.gz');
         const mainEvents = allThreadEntriesInTrace(parsedTrace);
         function getNodeNames(serializedTree) {
             if (!serializedTree) {
@@ -249,7 +253,7 @@ describeWithEnvironment('AICallTree', function () {
         assert.include(compileStr, 'Compile code');
     });
     it('can construct a tree from a period of time', async function () {
-        const parsedTrace = await TraceLoader.traceEngine(this, 'nested-interactions.json.gz');
+        const parsedTrace = await loadTrace(this, 'nested-interactions.json.gz');
         const data = parsedTrace.data;
         // Picked this interaction event because it spans multiple icicles in the main thread.
         // Note: if you are debugging this test, it is useful to load up this trace

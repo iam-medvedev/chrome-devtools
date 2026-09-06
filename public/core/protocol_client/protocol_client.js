@@ -240,6 +240,7 @@ function registerCommands(inspectorBackend2) {
   inspectorBackend2.registerCommand("Browser.crashGpuProcess", [], [], "Crashes GPU process.");
   inspectorBackend2.registerCommand("Browser.getVersion", [], ["protocolVersion", "product", "revision", "userAgent", "jsVersion"], "Returns version information.");
   inspectorBackend2.registerCommand("Browser.getBrowserCommandLine", [], ["arguments"], "Returns the command line switches for the browser process if, and only if --enable-automation is on the commandline.");
+  inspectorBackend2.registerCommand("Browser.addMockCamera", [{ "name": "deviceId", "type": "string", "optional": false, "description": "Required non-empty identifier for the mock camera. This is mapped to an internal virtual-device identifier and is not the MediaDeviceInfo.deviceId exposed to the page.", "typeRef": null }], [], "Adds or updates a mock camera in the shared video capture device list for test automation. The mock camera is not scoped to a particular page or frame and is removed when the DevTools session that created it disconnects.");
   inspectorBackend2.registerCommand("Browser.getHistograms", [{ "name": "query", "type": "string", "optional": true, "description": "Requested substring in name. Only histograms which have query as a substring in their name are extracted. An empty or absent query returns all histograms.", "typeRef": null }, { "name": "delta", "type": "boolean", "optional": true, "description": "If true, retrieve delta since last delta call.", "typeRef": null }], ["histograms"], "Get Chrome histograms.");
   inspectorBackend2.registerCommand("Browser.getHistogram", [{ "name": "name", "type": "string", "optional": false, "description": "Requested histogram name.", "typeRef": null }, { "name": "delta", "type": "boolean", "optional": true, "description": "If true, retrieve delta since last delta call.", "typeRef": null }], ["histogram"], "Get a Chrome histogram by name.");
   inspectorBackend2.registerCommand("Browser.getWindowBounds", [{ "name": "windowId", "type": "number", "optional": false, "description": "Browser window id.", "typeRef": "Browser.WindowID" }], ["bounds"], "Get position and size of the browser window.");
@@ -1003,7 +1004,7 @@ function registerCommands(inspectorBackend2) {
   inspectorBackend2.registerEnum("Page.SecureContextType", { Secure: "Secure", SecureLocalhost: "SecureLocalhost", InsecureScheme: "InsecureScheme", InsecureAncestor: "InsecureAncestor" });
   inspectorBackend2.registerEnum("Page.CrossOriginIsolatedContextType", { Isolated: "Isolated", NotIsolated: "NotIsolated", NotIsolatedFeatureDisabled: "NotIsolatedFeatureDisabled" });
   inspectorBackend2.registerEnum("Page.GatedAPIFeatures", { SharedArrayBuffers: "SharedArrayBuffers", SharedArrayBuffersTransferAllowed: "SharedArrayBuffersTransferAllowed", PerformanceMeasureMemory: "PerformanceMeasureMemory", PerformanceProfile: "PerformanceProfile" });
-  inspectorBackend2.registerEnum("Page.PermissionsPolicyFeature", { Accelerometer: "accelerometer", AllScreensCapture: "all-screens-capture", AmbientLightSensor: "ambient-light-sensor", AriaNotify: "aria-notify", Autofill: "autofill", Autoplay: "autoplay", Bluetooth: "bluetooth", BrowsingTopics: "browsing-topics", Camera: "camera", CapturedSurfaceControl: "captured-surface-control", ChDpr: "ch-dpr", ChDeviceMemory: "ch-device-memory", ChDownlink: "ch-downlink", ChEct: "ch-ect", ChPrefersColorScheme: "ch-prefers-color-scheme", ChPrefersReducedMotion: "ch-prefers-reduced-motion", ChPrefersReducedTransparency: "ch-prefers-reduced-transparency", ChRtt: "ch-rtt", ChSaveData: "ch-save-data", ChUa: "ch-ua", ChUaArch: "ch-ua-arch", ChUaBitness: "ch-ua-bitness", ChUaHighEntropyValues: "ch-ua-high-entropy-values", ChUaPlatform: "ch-ua-platform", ChUaModel: "ch-ua-model", ChUaMobile: "ch-ua-mobile", ChUaFormFactors: "ch-ua-form-factors", ChUaFullVersion: "ch-ua-full-version", ChUaFullVersionList: "ch-ua-full-version-list", ChUaPlatformVersion: "ch-ua-platform-version", ChUaWow64: "ch-ua-wow64", ChViewportHeight: "ch-viewport-height", ChViewportWidth: "ch-viewport-width", ChWidth: "ch-width", ClipboardRead: "clipboard-read", ClipboardWrite: "clipboard-write", ComputePressure: "compute-pressure", ControlledFrame: "controlled-frame", CrossOriginIsolated: "cross-origin-isolated", DeferredFetch: "deferred-fetch", DeferredFetchMinimal: "deferred-fetch-minimal", DeviceAttributes: "device-attributes", DigitalCredentialsCreate: "digital-credentials-create", DigitalCredentialsGet: "digital-credentials-get", DirectSockets: "direct-sockets", DirectSocketsMulticast: "direct-sockets-multicast", DisplayCapture: "display-capture", DocumentDomain: "document-domain", EncryptedMedia: "encrypted-media", ExecutionWhileOutOfViewport: "execution-while-out-of-viewport", ExecutionWhileNotRendered: "execution-while-not-rendered", FocusWithoutUserActivation: "focus-without-user-activation", Fullscreen: "fullscreen", Frobulate: "frobulate", Gamepad: "gamepad", Geolocation: "geolocation", Gyroscope: "gyroscope", Hid: "hid", IdentityCredentialsGet: "identity-credentials-get", IdleDetection: "idle-detection", InterestCohort: "interest-cohort", KeyboardMap: "keyboard-map", LanguageDetector: "language-detector", LanguageModel: "language-model", LocalFonts: "local-fonts", LocalNetwork: "local-network", LocalNetworkAccess: "local-network-access", LoopbackNetwork: "loopback-network", Magnetometer: "magnetometer", ManualText: "manual-text", MediaPlaybackWhileNotVisible: "media-playback-while-not-visible", Microphone: "microphone", Midi: "midi", OnDeviceSpeechRecognition: "on-device-speech-recognition", OtpCredentials: "otp-credentials", Payment: "payment", PictureInPicture: "picture-in-picture", PrivateStateTokenIssuance: "private-state-token-issuance", PrivateStateTokenRedemption: "private-state-token-redemption", PublickeyCredentialsCreate: "publickey-credentials-create", PublickeyCredentialsGet: "publickey-credentials-get", Rewriter: "rewriter", ScreenWakeLock: "screen-wake-lock", Serial: "serial", SharedStorage: "shared-storage", SharedStorageSelectUrl: "shared-storage-select-url", SmartCard: "smart-card", SpeakerSelection: "speaker-selection", StorageAccess: "storage-access", SubApps: "sub-apps", Summarizer: "summarizer", SyncXhr: "sync-xhr", Tools: "tools", Translator: "translator", Unload: "unload", Usb: "usb", UsbUnrestricted: "usb-unrestricted", VerticalScroll: "vertical-scroll", WebAppInstallation: "web-app-installation", Webnn: "webnn", WebPrinting: "web-printing", WebShare: "web-share", WindowManagement: "window-management", Writer: "writer", XrSpatialTracking: "xr-spatial-tracking" });
+  inspectorBackend2.registerEnum("Page.PermissionsPolicyFeature", { Accelerometer: "accelerometer", AllScreensCapture: "all-screens-capture", AmbientLightSensor: "ambient-light-sensor", AriaNotify: "aria-notify", Autofill: "autofill", Autoplay: "autoplay", Bluetooth: "bluetooth", BrowsingTopics: "browsing-topics", Camera: "camera", CapturedSurfaceControl: "captured-surface-control", ChDpr: "ch-dpr", ChDeviceMemory: "ch-device-memory", ChDownlink: "ch-downlink", ChEct: "ch-ect", ChPrefersColorScheme: "ch-prefers-color-scheme", ChPrefersReducedMotion: "ch-prefers-reduced-motion", ChPrefersReducedTransparency: "ch-prefers-reduced-transparency", ChRtt: "ch-rtt", ChSaveData: "ch-save-data", ChUa: "ch-ua", ChUaArch: "ch-ua-arch", ChUaBitness: "ch-ua-bitness", ChUaHighEntropyValues: "ch-ua-high-entropy-values", ChUaPlatform: "ch-ua-platform", ChUaModel: "ch-ua-model", ChUaMobile: "ch-ua-mobile", ChUaFormFactors: "ch-ua-form-factors", ChUaFullVersion: "ch-ua-full-version", ChUaFullVersionList: "ch-ua-full-version-list", ChUaPlatformVersion: "ch-ua-platform-version", ChUaWow64: "ch-ua-wow64", ChViewportHeight: "ch-viewport-height", ChViewportWidth: "ch-viewport-width", ChWidth: "ch-width", ClipboardRead: "clipboard-read", ClipboardWrite: "clipboard-write", ComputePressure: "compute-pressure", ControlledFrame: "controlled-frame", CrossOriginIsolated: "cross-origin-isolated", DeferredFetch: "deferred-fetch", DeferredFetchMinimal: "deferred-fetch-minimal", DeviceAttributes: "device-attributes", DigitalCredentialsCreate: "digital-credentials-create", DigitalCredentialsGet: "digital-credentials-get", DirectSockets: "direct-sockets", DirectSocketsMulticast: "direct-sockets-multicast", DisplayCapture: "display-capture", DocumentDomain: "document-domain", EncryptedMedia: "encrypted-media", ExecutionWhileOutOfViewport: "execution-while-out-of-viewport", ExecutionWhileNotRendered: "execution-while-not-rendered", FocusWithoutUserActivation: "focus-without-user-activation", Fullscreen: "fullscreen", Frobulate: "frobulate", Gamepad: "gamepad", Geolocation: "geolocation", Gyroscope: "gyroscope", Haptics: "haptics", Hid: "hid", IdentityCredentialsGet: "identity-credentials-get", IdleDetection: "idle-detection", InterestCohort: "interest-cohort", KeyboardMap: "keyboard-map", LanguageDetector: "language-detector", LanguageModel: "language-model", LocalFonts: "local-fonts", LocalNetwork: "local-network", LocalNetworkAccess: "local-network-access", LoopbackNetwork: "loopback-network", Magnetometer: "magnetometer", ManualText: "manual-text", MediaPlaybackWhileNotVisible: "media-playback-while-not-visible", Microphone: "microphone", Midi: "midi", OnDeviceSpeechRecognition: "on-device-speech-recognition", OtpCredentials: "otp-credentials", Payment: "payment", PictureInPicture: "picture-in-picture", PrivateStateTokenIssuance: "private-state-token-issuance", PrivateStateTokenRedemption: "private-state-token-redemption", PublickeyCredentialsCreate: "publickey-credentials-create", PublickeyCredentialsGet: "publickey-credentials-get", Rewriter: "rewriter", ScreenWakeLock: "screen-wake-lock", Serial: "serial", SharedStorage: "shared-storage", SharedStorageSelectUrl: "shared-storage-select-url", SmartCard: "smart-card", SpeakerSelection: "speaker-selection", StorageAccess: "storage-access", SubApps: "sub-apps", Summarizer: "summarizer", SyncXhr: "sync-xhr", Tools: "tools", Translator: "translator", Unload: "unload", Usb: "usb", UsbUnrestricted: "usb-unrestricted", VerticalScroll: "vertical-scroll", WebAppInstallation: "web-app-installation", Webnn: "webnn", WebPrinting: "web-printing", WebShare: "web-share", WindowManagement: "window-management", Writer: "writer", XrSpatialTracking: "xr-spatial-tracking" });
   inspectorBackend2.registerEnum("Page.PermissionsPolicyBlockReason", { Header: "Header", IframeAttribute: "IframeAttribute", InFencedFrameTree: "InFencedFrameTree", InIsolatedApp: "InIsolatedApp" });
   inspectorBackend2.registerEnum("Page.OriginTrialTokenStatus", { Success: "Success", NotSupported: "NotSupported", Insecure: "Insecure", Expired: "Expired", WrongOrigin: "WrongOrigin", InvalidSignature: "InvalidSignature", Malformed: "Malformed", WrongVersion: "WrongVersion", FeatureDisabled: "FeatureDisabled", TokenDisabled: "TokenDisabled", FeatureDisabledForUser: "FeatureDisabledForUser", UnknownTrial: "UnknownTrial" });
   inspectorBackend2.registerEnum("Page.OriginTrialStatus", { Enabled: "Enabled", ValidTokenNotProvided: "ValidTokenNotProvided", OSNotSupported: "OSNotSupported", TrialNotAllowed: "TrialNotAllowed" });
@@ -1653,11 +1654,6 @@ var test = {
    */
   dumpProtocol: null,
   /**
-   * Runs a function when no protocol activity is present.
-   * ProtocolClient.test.deprecatedRunAfterPendingDispatches(() => console.log('done'))
-   */
-  deprecatedRunAfterPendingDispatches: null,
-  /**
    * Sends a raw message over main connection.
    * ProtocolClient.test.sendRawMessage('Page.enable', {}, console.log)
    */
@@ -1673,7 +1669,12 @@ var test = {
   /**
    * Set to get notified about any messages received over protocol.
    */
-  onMessageReceived: null
+  onMessageReceived: null,
+  /**
+   * Runs a function when no protocol activity is present.
+   * ProtocolClient.test.deprecatedRunAfterPendingDispatches(() => console.log('done'))
+   */
+  deprecatedRunAfterPendingDispatches: null
 };
 var SessionRouter = class {
   #connection;
@@ -2113,18 +2114,13 @@ var DispatcherManager = class {
 var inspectorBackend = new InspectorBackend();
 
 // ../../front_end/core/protocol_client/DevToolsCDPConnection.ts
-var LongPollingMethods = /* @__PURE__ */ new Set(["CSS.takeComputedStyleUpdates"]);
 var DevToolsCDPConnection = class {
   #transport;
   #lastMessageId = 1;
-  #pendingResponsesCount = 0;
-  #pendingLongPollingMessageIds = /* @__PURE__ */ new Set();
-  #pendingScripts = [];
   #callbacks = /* @__PURE__ */ new Map();
   #observers = /* @__PURE__ */ new Set();
   constructor(transport) {
     this.#transport = transport;
-    test.deprecatedRunAfterPendingDispatches = this.deprecatedRunAfterPendingDispatches.bind(this);
     test.sendRawMessage = this.sendRawMessageForTesting.bind(this);
     this.#transport.setOnMessage(this.onMessage.bind(this));
     this.#transport.setOnDisconnect((reason) => {
@@ -2156,10 +2152,6 @@ var DevToolsCDPConnection = class {
       const domain = method.split(".")[0];
       const paramsObject = JSON.parse(JSON.stringify(params || {}));
       test.onMessageSent({ domain, method, params: paramsObject, id: messageId, sessionId });
-    }
-    ++this.#pendingResponsesCount;
-    if (LongPollingMethods.has(method)) {
-      this.#pendingLongPollingMessageIds.add(messageId);
     }
     return new Promise((resolve) => {
       this.#callbacks.set(messageId, { resolve, method, sessionId });
@@ -2207,39 +2199,10 @@ var DevToolsCDPConnection = class {
         return;
       }
       callback.resolve(messageObject);
-      --this.#pendingResponsesCount;
-      this.#pendingLongPollingMessageIds.delete(messageObject.id);
-      if (this.#pendingScripts.length && !this.hasOutstandingNonLongPollingRequests()) {
-        this.deprecatedRunAfterPendingDispatches();
-      }
     } else if ("method" in messageObject) {
       this.#observers.forEach((observer) => observer.onEvent(messageObject));
     } else {
       InspectorBackend.reportProtocolError("Protocol Error: the message without method", messageObject);
-    }
-  }
-  hasOutstandingNonLongPollingRequests() {
-    return this.#pendingResponsesCount - this.#pendingLongPollingMessageIds.size > 0;
-  }
-  deprecatedRunAfterPendingDispatches(script) {
-    if (script) {
-      this.#pendingScripts.push(script);
-    }
-    setTimeout(() => {
-      if (!this.hasOutstandingNonLongPollingRequests()) {
-        this.executeAfterPendingDispatches();
-      } else {
-        this.deprecatedRunAfterPendingDispatches();
-      }
-    }, 0);
-  }
-  executeAfterPendingDispatches() {
-    if (!this.hasOutstandingNonLongPollingRequests()) {
-      const scripts = this.#pendingScripts;
-      this.#pendingScripts = [];
-      for (let id = 0; id < scripts.length; ++id) {
-        scripts[id]();
-      }
     }
   }
 };

@@ -12,7 +12,8 @@
     "../../../../../../../front_end/ui/components/request_link_icon/RequestLinkIcon.ts",
     "../../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../../front_end/global_typings/global_defs.d.ts",
-    "../../../../../../../node_modules/@types/filesystem/index.d.ts"
+    "../../../../../../../node_modules/@types/filesystem/index.d.ts",
+    "../../../../../../../node_modules/@types/filewriter/index.d.ts"
   ],
   "references": [
     {
@@ -37,13 +38,13 @@
       "path": "../../../panels/network/forward/bundle-tsconfig.ref.json"
     },
     {
+      "path": "../../kit/bundle-tsconfig.ref.json"
+    },
+    {
       "path": "../../lit/bundle-tsconfig.ref.json"
     },
     {
       "path": "../../visual_logging/bundle-tsconfig.ref.json"
-    },
-    {
-      "path": "../../kit/bundle-tsconfig.ref.json"
     },
     {
       "path": "../render_coordinator/bundle-tsconfig.ref.json"

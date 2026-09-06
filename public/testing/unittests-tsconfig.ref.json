@@ -16,14 +16,15 @@
     "../../../../../front_end/testing/SourceMapEncoder.test.ts",
     "../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../front_end/global_typings/global_defs.d.ts",
-    "../../../../../node_modules/@types/filesystem/index.d.ts"
+    "../../../../../node_modules/@types/filesystem/index.d.ts",
+    "../../../../../node_modules/@types/filewriter/index.d.ts"
   ],
   "references": [
     {
-      "path": "./foundation_unittests-tsconfig.ref.json"
+      "path": "foundation_unittests-tsconfig.ref.json"
     },
     {
-      "path": "./testing-tsconfig.ref.json"
+      "path": "testing-tsconfig.ref.json"
     },
     {
       "path": "../core/protocol_client/bundle-tsconfig.ref.json"

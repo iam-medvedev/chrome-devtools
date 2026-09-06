@@ -1,4 +1,4 @@
-// gen/front_end/panels/layer_viewer/layer_viewer-meta.prebundle.js
+// ../../front_end/panels/layer_viewer/layer_viewer-meta.ts
 import * as Common from "../../core/common/common.js";
 import * as i18n from "../../core/i18n/i18n.js";
 import * as UI from "../../ui/legacy/legacy.js";
@@ -52,7 +52,7 @@ var str_ = i18n.i18n.registerUIStrings("panels/layer_viewer/layer_viewer-meta.ts
 var i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(void 0, str_);
 UI.ActionRegistration.registerActionExtension({
   actionId: "layers.reset-view",
-  category: "LAYERS",
+  category: UI.ActionRegistration.ActionCategory.LAYERS,
   title: i18nLazyString(UIStrings.resetView),
   bindings: [
     {
@@ -62,7 +62,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "layers.pan-mode",
-  category: "LAYERS",
+  category: UI.ActionRegistration.ActionCategory.LAYERS,
   title: i18nLazyString(UIStrings.switchToPanMode),
   bindings: [
     {
@@ -72,7 +72,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "layers.rotate-mode",
-  category: "LAYERS",
+  category: UI.ActionRegistration.ActionCategory.LAYERS,
   title: i18nLazyString(UIStrings.switchToRotateMode),
   bindings: [
     {
@@ -82,7 +82,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "layers.zoom-in",
-  category: "LAYERS",
+  category: UI.ActionRegistration.ActionCategory.LAYERS,
   title: i18nLazyString(UIStrings.zoomIn),
   bindings: [
     {
@@ -95,7 +95,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "layers.zoom-out",
-  category: "LAYERS",
+  category: UI.ActionRegistration.ActionCategory.LAYERS,
   title: i18nLazyString(UIStrings.zoomOut),
   bindings: [
     {
@@ -108,7 +108,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "layers.up",
-  category: "LAYERS",
+  category: UI.ActionRegistration.ActionCategory.LAYERS,
   title: i18nLazyString(UIStrings.panOrRotateUp),
   bindings: [
     {
@@ -121,7 +121,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "layers.down",
-  category: "LAYERS",
+  category: UI.ActionRegistration.ActionCategory.LAYERS,
   title: i18nLazyString(UIStrings.panOrRotateDown),
   bindings: [
     {
@@ -134,7 +134,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "layers.left",
-  category: "LAYERS",
+  category: UI.ActionRegistration.ActionCategory.LAYERS,
   title: i18nLazyString(UIStrings.panOrRotateLeft),
   bindings: [
     {
@@ -147,7 +147,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "layers.right",
-  category: "LAYERS",
+  category: UI.ActionRegistration.ActionCategory.LAYERS,
   title: i18nLazyString(UIStrings.panOrRotateRight),
   bindings: [
     {
@@ -159,19 +159,19 @@ UI.ActionRegistration.registerActionExtension({
   ]
 });
 Common.Settings.registerSettingExtension({
-  category: "",
-  storageType: "Global",
+  category: Common.Settings.SettingCategory.NONE,
+  storageType: Common.Settings.SettingStorageType.GLOBAL,
   title: i18nLazyString(UIStrings.paints),
   settingName: "frame-viewer-show-paints",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: false
 });
 Common.Settings.registerSettingExtension({
-  category: "",
-  storageType: "Global",
+  category: Common.Settings.SettingCategory.NONE,
+  storageType: Common.Settings.SettingStorageType.GLOBAL,
   title: i18nLazyString(UIStrings.slowScrollRects),
   settingName: "frame-viewer-show-slow-scroll-rects",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: true
 });
 //# sourceMappingURL=layer_viewer-meta.js.map

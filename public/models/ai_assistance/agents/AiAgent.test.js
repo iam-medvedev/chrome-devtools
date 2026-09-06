@@ -5,7 +5,7 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as Host from '../../../core/host/host.js';
 import { mockAidaClient, MockAidaPayloadLimitError, MockAidaQuotaError } from '../../../testing/AiAssistanceHelpers.js';
-import { describeWithEnvironment, } from '../../../testing/EnvironmentHelpers.js';
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import * as AiAssistance from '../ai_assistance.js';
 function mockConversationContext() {
     return new (class extends AiAssistance.AiAgent.ConversationContext {
@@ -44,7 +44,8 @@ class AiAgentMock extends AiAssistance.AiAgent.AiAgent {
         this.disableServerSideLogging();
     }
 }
-describeWithEnvironment('AiAgent', () => {
+describe('AiAgent', () => {
+    setupLocaleHooks();
     describe('buildRequest', () => {
         beforeEach(() => {
             sinon.stub(crypto, 'randomUUID').returns('sessionId');
