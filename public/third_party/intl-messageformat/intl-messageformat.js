@@ -1,4 +1,4 @@
-// gen/front_end/third_party/intl-messageformat/package/intl-messageformat.esm.js
+// ../../front_end/third_party/intl-messageformat/package/intl-messageformat.esm.js
 var __assign = function() {
   __assign = Object.assign || function __assign2(t) {
     for (var s, i = 1, n = arguments.length; i < n; i++) {
@@ -549,7 +549,7 @@ if (REGEX_SUPPORTS_U_AND_Y) {
   };
 }
 var IDENTIFIER_PREFIX_RE_1;
-var Parser = function() {
+var Parser = (function() {
   function Parser2(message, options) {
     if (options === void 0) {
       options = {};
@@ -1191,7 +1191,7 @@ var Parser = function() {
     return nextCode !== null && nextCode !== void 0 ? nextCode : null;
   };
   return Parser2;
-}();
+})();
 function _isAlpha(codepoint) {
   return codepoint >= 97 && codepoint <= 122 || codepoint >= 65 && codepoint <= 90;
 }

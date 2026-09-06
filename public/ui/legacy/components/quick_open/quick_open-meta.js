@@ -1,4 +1,4 @@
-// gen/front_end/ui/legacy/components/quick_open/quick_open-meta.prebundle.js
+// ../../front_end/ui/legacy/components/quick_open/quick_open-meta.ts
 import * as i18n from "../../../../core/i18n/i18n.js";
 import * as UI from "../../legacy.js";
 var UIStrings = {
@@ -22,7 +22,7 @@ async function loadQuickOpenModule() {
 }
 UI.ActionRegistration.registerActionExtension({
   actionId: "quick-open.show-command-menu",
-  category: "GLOBAL",
+  category: UI.ActionRegistration.ActionCategory.GLOBAL,
   title: i18nLazyString(UIStrings.runCommand),
   async loadActionDelegate() {
     const QuickOpen = await loadQuickOpenModule();
@@ -30,32 +30,32 @@ UI.ActionRegistration.registerActionExtension({
   },
   bindings: [
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Ctrl+Shift+P",
       keybindSets: [
-        "devToolsDefault",
-        "vsCode"
+        UI.ActionRegistration.KeybindSet.DEVTOOLS_DEFAULT,
+        UI.ActionRegistration.KeybindSet.VS_CODE
       ]
     },
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Meta+Shift+P",
       keybindSets: [
-        "devToolsDefault",
-        "vsCode"
+        UI.ActionRegistration.KeybindSet.DEVTOOLS_DEFAULT,
+        UI.ActionRegistration.KeybindSet.VS_CODE
       ]
     },
     {
       shortcut: "F1",
       keybindSets: [
-        "vsCode"
+        UI.ActionRegistration.KeybindSet.VS_CODE
       ]
     }
   ]
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "quick-open.show",
-  category: "GLOBAL",
+  category: UI.ActionRegistration.ActionCategory.GLOBAL,
   title: i18nLazyString(UIStrings.openFile),
   async loadActionDelegate() {
     const QuickOpen = await loadQuickOpenModule();
@@ -64,45 +64,45 @@ UI.ActionRegistration.registerActionExtension({
   order: 100,
   bindings: [
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Meta+P",
       keybindSets: [
-        "devToolsDefault",
-        "vsCode"
+        UI.ActionRegistration.KeybindSet.DEVTOOLS_DEFAULT,
+        UI.ActionRegistration.KeybindSet.VS_CODE
       ]
     },
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Meta+O",
       keybindSets: [
-        "devToolsDefault",
-        "vsCode"
+        UI.ActionRegistration.KeybindSet.DEVTOOLS_DEFAULT,
+        UI.ActionRegistration.KeybindSet.VS_CODE
       ]
     },
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Ctrl+P",
       keybindSets: [
-        "devToolsDefault",
-        "vsCode"
+        UI.ActionRegistration.KeybindSet.DEVTOOLS_DEFAULT,
+        UI.ActionRegistration.KeybindSet.VS_CODE
       ]
     },
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Ctrl+O",
       keybindSets: [
-        "devToolsDefault",
-        "vsCode"
+        UI.ActionRegistration.KeybindSet.DEVTOOLS_DEFAULT,
+        UI.ActionRegistration.KeybindSet.VS_CODE
       ]
     }
   ]
 });
 UI.ContextMenu.registerItem({
-  location: "mainMenu/default",
+  location: UI.ContextMenu.ItemLocation.MAIN_MENU_DEFAULT,
   actionId: "quick-open.show-command-menu"
 });
 UI.ContextMenu.registerItem({
-  location: "mainMenu/default",
+  location: UI.ContextMenu.ItemLocation.MAIN_MENU_DEFAULT,
   actionId: "quick-open.show"
 });
 //# sourceMappingURL=quick_open-meta.js.map

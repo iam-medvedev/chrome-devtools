@@ -192,6 +192,8 @@ describe('Universe', () => {
             'Target.setAutoAttach',
             'Target.setDiscoverTargets',
             'Target.setRemoteLocations',
+            // WebMCP,
+            'WebMCP.enable',
         ];
         for (const call of sendSpy.getCalls()) {
             const method = call.args[0];

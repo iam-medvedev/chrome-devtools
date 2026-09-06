@@ -1171,7 +1171,8 @@ export class StatisticsPerspective extends Perspective {
         return null;
     }
 }
-export class HeapSnapshotProfileType extends Common.ObjectWrapper.eventMixin(ProfileType) {
+const HeapSnapshotProfileTypeBase = Common.ObjectWrapper.eventMixin(ProfileType);
+export class HeapSnapshotProfileType extends HeapSnapshotProfileTypeBase {
     customContentInternal;
     constructor(id, title) {
         super(id || HeapSnapshotProfileType.TypeId, title || i18nString(UIStrings.heapSnapshot));
@@ -1280,7 +1281,8 @@ export var HeapSnapshotProfileTypeEvents;
 (function (HeapSnapshotProfileTypeEvents) {
     HeapSnapshotProfileTypeEvents["SNAPSHOT_RECEIVED"] = "SnapshotReceived";
 })(HeapSnapshotProfileTypeEvents || (HeapSnapshotProfileTypeEvents = {}));
-export class TrackingHeapSnapshotProfileType extends Common.ObjectWrapper.eventMixin(HeapSnapshotProfileType) {
+const TrackingHeapSnapshotProfileTypeBase = Common.ObjectWrapper.eventMixin(HeapSnapshotProfileType);
+export class TrackingHeapSnapshotProfileType extends TrackingHeapSnapshotProfileTypeBase {
     recordAllocationStacksSettingInternal;
     customContentInternal;
     recording;

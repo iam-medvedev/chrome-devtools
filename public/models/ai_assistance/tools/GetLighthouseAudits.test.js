@@ -26,7 +26,6 @@ describe('GetLighthouseAuditsTool', () => {
     };
     const tool = new AiAssistance.GetLighthouseAudits.GetLighthouseAuditsTool();
     const context = {
-        conversationContext: null,
         getLighthouseReport: () => mockReport,
     };
     it('returns formatted audits for a given category', async () => {
@@ -39,7 +38,6 @@ describe('GetLighthouseAuditsTool', () => {
     });
     it('returns error when Lighthouse report is not available', async () => {
         const invalidContext = {
-            conversationContext: null,
             getLighthouseReport: () => null,
         };
         const result = await tool.handler({ categoryId: 'accessibility' }, invalidContext);

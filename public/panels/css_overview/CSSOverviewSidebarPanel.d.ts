@@ -1,6 +1,6 @@
 import '../../ui/legacy/legacy.js';
 import * as UI from '../../ui/legacy/legacy.js';
-interface ViewInput {
+export interface ViewInput {
     items: Array<{
         name: string;
         id: string;
@@ -10,7 +10,7 @@ interface ViewInput {
     onItemClick: (id: string) => void;
     onItemKeyDown: (id: string, key: string) => void;
 }
-type View = (input: ViewInput, output: object, target: HTMLElement) => void;
+export type View = (input: ViewInput, output: object, target: HTMLElement) => void;
 export declare const DEFAULT_VIEW: View;
 export declare class CSSOverviewSidebarPanel extends UI.Widget.VBox {
     #private;
@@ -24,4 +24,3 @@ export declare class CSSOverviewSidebarPanel extends UI.Widget.VBox {
     set onItemSelected(callback: (id: string, shouldFocus: boolean) => void);
     set onReset(callback: () => void);
 }
-export {};

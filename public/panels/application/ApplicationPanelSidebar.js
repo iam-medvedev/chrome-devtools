@@ -352,10 +352,8 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
         this.applicationTreeElement.appendChild(this.serviceWorkersTreeElement);
         this.storageTreeElement = new StorageTreeElement(panel);
         this.applicationTreeElement.appendChild(this.storageTreeElement);
-        if (Root.Runtime.hostConfig.devToolsWebMCPSupport?.enabled) {
-            this.webMcpTreeElement = new WebMCPTreeElement(panel);
-            this.applicationTreeElement.appendChild(this.webMcpTreeElement);
-        }
+        this.webMcpTreeElement = new WebMCPTreeElement(panel);
+        this.applicationTreeElement.appendChild(this.webMcpTreeElement);
         if (Root.Runtime.hostConfig.devToolsAdsPanel?.enabled) {
             const adsTreeElement = new ApplicationPanelTreeElement(panel, i18nString(UIStrings.ads), false, 'ads');
             adsTreeElement.listItemElement.classList.add('ads-tree-element');
@@ -869,6 +867,9 @@ export class BackgroundServiceTreeElement extends ApplicationPanelTreeElement {
     }
     initialize(model) {
         this.model = model;
+        if (this.view && model) {
+            this.view.model = model;
+        }
         // Show the view if the model was initialized after selection.
         if (this.#selected && !this.view) {
             this.onselect(false);
@@ -890,7 +891,9 @@ export class BackgroundServiceTreeElement extends ApplicationPanelTreeElement {
             return false;
         }
         if (!this.view) {
-            this.view = new BackgroundServiceView(this.serviceName, this.model);
+            this.view = new BackgroundServiceView();
+            this.view.serviceName = this.serviceName;
+            this.view.model = this.model;
         }
         this.showView(this.view);
         UI.Context.Context.instance().setFlavor(BackgroundServiceView, this.view);

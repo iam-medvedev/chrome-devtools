@@ -4,7 +4,7 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// gen/front_end/entrypoints/heap_snapshot_worker/AllocationProfile.js
+// ../../front_end/entrypoints/heap_snapshot_worker/AllocationProfile.ts
 var AllocationProfile_exports = {};
 __export(AllocationProfile_exports, {
   AllocationProfile: () => AllocationProfile,
@@ -40,7 +40,13 @@ var AllocationProfile = class {
     const functionInfos = this.#functionInfos = new Array(infoLength / functionInfoFieldCount);
     let index = 0;
     for (let i = 0; i < infoLength; i += functionInfoFieldCount) {
-      functionInfos[index++] = new FunctionAllocationInfo(strings[rawInfos[i + functionNameOffset]], strings[rawInfos[i + scriptNameOffset]], rawInfos[i + scriptIdOffset], rawInfos[i + lineOffset], rawInfos[i + columnOffset]);
+      functionInfos[index++] = new FunctionAllocationInfo(
+        strings[rawInfos[i + functionNameOffset]],
+        strings[rawInfos[i + scriptNameOffset]],
+        rawInfos[i + scriptIdOffset],
+        rawInfos[i + lineOffset],
+        rawInfos[i + columnOffset]
+      );
     }
   }
   #buildAllocationTree(profile, liveObjectStats) {
@@ -60,7 +66,15 @@ var AllocationProfile = class {
       const stats = liveObjectStats[id];
       const liveCount = stats ? stats.count : 0;
       const liveSize = stats ? stats.size : 0;
-      const result = new TopDownAllocationNode(id, functionInfo, rawNodeArray[nodeOffset + allocationCountOffset], rawNodeArray[nodeOffset + allocationSizeOffset], liveCount, liveSize, parent);
+      const result = new TopDownAllocationNode(
+        id,
+        functionInfo,
+        rawNodeArray[nodeOffset + allocationCountOffset],
+        rawNodeArray[nodeOffset + allocationSizeOffset],
+        liveCount,
+        liveSize,
+        parent
+      );
       idToTopDownNode[id] = result;
       functionInfo.addTraceTopNode(result);
       const rawChildren = rawNodeArray[nodeOffset + childrenOffset];
@@ -84,7 +98,15 @@ var AllocationProfile = class {
       }
       const nodeId = this.#nextNodeId++;
       const isRoot = i === 0;
-      result.push(this.#serializeNode(nodeId, info, info.totalCount, info.totalSize, info.totalLiveCount, info.totalLiveSize, !isRoot));
+      result.push(this.#serializeNode(
+        nodeId,
+        info,
+        info.totalCount,
+        info.totalSize,
+        info.totalLiveCount,
+        info.totalLiveSize,
+        !isRoot
+      ));
       this.#collapsedTopNodeIdToFunctionInfo[nodeId] = info;
     }
     result.sort(function(a, b) {
@@ -111,7 +133,13 @@ var AllocationProfile = class {
     const result = [];
     while (node) {
       const functionInfo = node.functionInfo;
-      result.push(new HeapSnapshotModel.HeapSnapshotModel.AllocationStackFrame(functionInfo.functionName, functionInfo.scriptName, functionInfo.scriptId, functionInfo.line, functionInfo.column));
+      result.push(new HeapSnapshotModel.HeapSnapshotModel.AllocationStackFrame(
+        functionInfo.functionName,
+        functionInfo.scriptName,
+        functionInfo.scriptId,
+        functionInfo.line,
+        functionInfo.column
+      ));
       node = node.parent;
     }
     return result;
@@ -132,10 +160,30 @@ var AllocationProfile = class {
   #serializeCaller(node) {
     const callerId = this.#nextNodeId++;
     this.#idToNode[callerId] = node;
-    return this.#serializeNode(callerId, node.functionInfo, node.allocationCount, node.allocationSize, node.liveCount, node.liveSize, node.hasCallers());
+    return this.#serializeNode(
+      callerId,
+      node.functionInfo,
+      node.allocationCount,
+      node.allocationSize,
+      node.liveCount,
+      node.liveSize,
+      node.hasCallers()
+    );
   }
   #serializeNode(nodeId, functionInfo, count, size, liveCount, liveSize, hasChildren) {
-    return new HeapSnapshotModel.HeapSnapshotModel.SerializedAllocationNode(nodeId, functionInfo.functionName, functionInfo.scriptName, functionInfo.scriptId, functionInfo.line, functionInfo.column, count, size, liveCount, liveSize, hasChildren);
+    return new HeapSnapshotModel.HeapSnapshotModel.SerializedAllocationNode(
+      nodeId,
+      functionInfo.functionName,
+      functionInfo.scriptName,
+      functionInfo.scriptId,
+      functionInfo.line,
+      functionInfo.column,
+      count,
+      size,
+      liveCount,
+      liveSize,
+      hasChildren
+    );
   }
 };
 var TopDownAllocationNode = class {
@@ -255,7 +303,7 @@ var FunctionAllocationInfo = class {
   }
 };
 
-// gen/front_end/entrypoints/heap_snapshot_worker/HeapSnapshot.js
+// ../../front_end/entrypoints/heap_snapshot_worker/HeapSnapshot.ts
 var HeapSnapshot_exports = {};
 __export(HeapSnapshot_exports, {
   HeapSnapshot: () => HeapSnapshot,
@@ -284,7 +332,6 @@ __export(HeapSnapshot_exports, {
 import * as i18n from "../../core/i18n/i18n.js";
 import * as Platform from "../../core/platform/platform.js";
 import * as HeapSnapshotModel3 from "../../models/heap_snapshot/heap_snapshot.js";
-var _a;
 var HeapSnapshotEdge = class _HeapSnapshotEdge {
   snapshot;
   edges;
@@ -322,7 +369,12 @@ var HeapSnapshotEdge = class _HeapSnapshotEdge {
     return this.edgeIndex;
   }
   serialize() {
-    return new HeapSnapshotModel3.HeapSnapshotModel.Edge(this.name(), this.node().serialize(), this.type(), this.edgeIndex);
+    return new HeapSnapshotModel3.HeapSnapshotModel.Edge(
+      this.name(),
+      this.node().serialize(),
+      this.type(),
+      this.edgeIndex
+    );
   }
   rawType() {
     if (typeof this.snapshot.edgeTypeOffset === "undefined") {
@@ -470,7 +522,12 @@ var HeapSnapshotRetainerEdge = class _HeapSnapshotRetainerEdge {
     const serializedNode = node.serialize();
     serializedNode.distance = this.#distance();
     serializedNode.ignored = this.snapshot.isNodeIgnoredInRetainersView(node.nodeIndex);
-    return new HeapSnapshotModel3.HeapSnapshotModel.Edge(this.name(), serializedNode, this.type(), this.#globalEdgeIndex);
+    return new HeapSnapshotModel3.HeapSnapshotModel.Edge(
+      this.name(),
+      serializedNode,
+      this.type(),
+      this.#globalEdgeIndex
+    );
   }
   type() {
     return this.edge().type();
@@ -617,7 +674,15 @@ var HeapSnapshotNode = class {
     return this.nodeIndex;
   }
   serialize() {
-    return new HeapSnapshotModel3.HeapSnapshotModel.Node(this.id(), this.name(), this.distance(), this.nodeIndex, this.retainedSize(), this.selfSize(), this.type());
+    return new HeapSnapshotModel3.HeapSnapshotModel.Node(
+      this.id(),
+      this.name(),
+      this.distance(),
+      this.nodeIndex,
+      this.retainedSize(),
+      this.selfSize(),
+      this.type()
+    );
   }
   rawNameIndex() {
     const snapshot = this.snapshot;
@@ -1466,7 +1531,7 @@ var HeapSnapshot = class _HeapSnapshot {
         return (node) => !getBit(node);
       case "objectsRetainedByDetachedDomNodes":
         traverse((_node, edge) => {
-          return edge.node().detachedness() !== 2;
+          return edge.node().detachedness() !== HeapSnapshotModel3.HeapSnapshotModel.DOMLinkState.DETACHED;
         });
         markUnreachableNodes();
         return (node) => !getBit(node);
@@ -1727,7 +1792,9 @@ var HeapSnapshot = class _HeapSnapshot {
       }
     }
     if (nodesToVisitLength > nodeCount) {
-      throw new Error("BFS failed. Nodes to visit (" + nodesToVisitLength + ") is more than nodes count (" + nodeCount + ")");
+      throw new Error(
+        "BFS failed. Nodes to visit (" + nodesToVisitLength + ") is more than nodes count (" + nodeCount + ")"
+      );
     }
   }
   buildAggregates(filter) {
@@ -1904,7 +1971,20 @@ var HeapSnapshot = class _HeapSnapshot {
   // Thomas Lengauer and Robert Endre Tarjan. 1979. A fast algorithm for finding dominators in a flowgraph.
   // ACM Trans. Program. Lang. Syst. 1, 1 (July 1979), 121–141. https://doi.org/10.1145/357062.357071
   static async calculateDominatorsAndRetainedSizes(inputs) {
-    const { nodeCount, firstEdgeIndexes, edgeFieldsCount, nodeFieldCount, firstRetainerIndex, retainingEdges, retainingNodes, edgeToNodeOrdinals, rootNodeOrdinal, essentialEdges, nodeSelfSizesPromise, port } = inputs;
+    const {
+      nodeCount,
+      firstEdgeIndexes,
+      edgeFieldsCount,
+      nodeFieldCount,
+      firstRetainerIndex,
+      retainingEdges,
+      retainingNodes,
+      edgeToNodeOrdinals,
+      rootNodeOrdinal,
+      essentialEdges,
+      nodeSelfSizesPromise,
+      port
+    } = inputs;
     function isEssentialEdge(edgeIndex) {
       return essentialEdges.getBit(edgeIndex / edgeFieldsCount);
     }
@@ -2085,7 +2165,17 @@ var HeapSnapshot = class _HeapSnapshot {
     return { firstDominatedNodeIndex: indexArray, dominatedNodes };
   }
   calculateObjectNames() {
-    const { nodes, nodeCount, nodeNameOffset, nodeNativeType, nodeHiddenType, nodeObjectType, nodeCodeType, nodeClosureType, nodeRegExpType } = this;
+    const {
+      nodes,
+      nodeCount,
+      nodeNameOffset,
+      nodeNativeType,
+      nodeHiddenType,
+      nodeObjectType,
+      nodeCodeType,
+      nodeClosureType,
+      nodeRegExpType
+    } = this;
     const stringTable = /* @__PURE__ */ new Map();
     const getIndexForString = (s) => {
       let index = stringTable.get(s);
@@ -2209,7 +2299,18 @@ var HeapSnapshot = class _HeapSnapshot {
   // - 'map' edge (in the returned 'map' array)
   // This allows fast O(1) lookups of these key edges during attribution.
   buildInitEdgeTargets() {
-    const { nodeCount, nodeFieldCount, containmentEdges, edgeFieldsCount, edgeTypeOffset, edgeNameOffset, edgeToNodeOffset, edgeInternalType, firstEdgeIndexes, strings } = this;
+    const {
+      nodeCount,
+      nodeFieldCount,
+      containmentEdges,
+      edgeFieldsCount,
+      edgeTypeOffset,
+      edgeNameOffset,
+      edgeToNodeOffset,
+      edgeInternalType,
+      firstEdgeIndexes,
+      strings
+    } = this;
     const nativeContext = new Int32Array(nodeCount).fill(-1);
     const map = new Int32Array(nodeCount).fill(-1);
     const nativeContextIdx = strings.indexOf("native_context");
@@ -2267,7 +2368,17 @@ var HeapSnapshot = class _HeapSnapshot {
     return SHARED_NATIVE_CONTEXT;
   }
   propagateNativeContextAttribution(attribution, isFixed) {
-    const { nodeCount, containmentEdges, edgeFieldsCount, edgeTypeOffset, edgeToNodeOffset, edgeShortcutType, edgeWeakType, nodeFieldCount, firstEdgeIndexes } = this;
+    const {
+      nodeCount,
+      containmentEdges,
+      edgeFieldsCount,
+      edgeTypeOffset,
+      edgeToNodeOffset,
+      edgeShortcutType,
+      edgeWeakType,
+      nodeFieldCount,
+      firstEdgeIndexes
+    } = this;
     const queue = [];
     for (let ordinal = 0; ordinal < nodeCount; ordinal++) {
       if (isFixed.getBit(ordinal)) {
@@ -2551,10 +2662,7 @@ var HeapSnapshot = class _HeapSnapshot {
         if (this.nodes.getValue(nodeIndex + nodeTypeOffset) === nodeNativeType) {
           node.nodeIndex = nodeIndex;
           if (node.name().startsWith("Detached ")) {
-            node.setDetachedness(
-              2
-              /* HeapSnapshotModel.HeapSnapshotModel.DOMLinkState.DETACHED */
-            );
+            node.setDetachedness(HeapSnapshotModel3.HeapSnapshotModel.DOMLinkState.DETACHED);
           }
         }
       }
@@ -2602,47 +2710,41 @@ var HeapSnapshot = class _HeapSnapshot {
       }
       node.nodeIndex = nodeIndex;
       node.setDetachedness(newState);
-      if (newState === 1) {
+      if (newState === HeapSnapshotModel3.HeapSnapshotModel.DOMLinkState.ATTACHED) {
         attached.push(nodeOrdinal);
-      } else if (newState === 2) {
+      } else if (newState === HeapSnapshotModel3.HeapSnapshotModel.DOMLinkState.DETACHED) {
         addDetachedPrefixToNodeName(snapshot, nodeIndex);
         detached.push(nodeOrdinal);
       }
       visited[nodeOrdinal] = 1;
     };
     const propagateState = function(snapshot, parentNodeOrdinal, newState) {
-      snapshot.iterateFilteredChildren(parentNodeOrdinal, (edgeType) => ![snapshot.edgeHiddenType, snapshot.edgeInvisibleType, snapshot.edgeWeakType].includes(edgeType), (nodeOrdinal) => processNode(snapshot, nodeOrdinal, newState));
+      snapshot.iterateFilteredChildren(
+        parentNodeOrdinal,
+        (edgeType) => ![snapshot.edgeHiddenType, snapshot.edgeInvisibleType, snapshot.edgeWeakType].includes(edgeType),
+        (nodeOrdinal) => processNode(snapshot, nodeOrdinal, newState)
+      );
     };
     for (let nodeOrdinal = 0; nodeOrdinal < this.nodeCount; ++nodeOrdinal) {
       node.nodeIndex = nodeOrdinal * this.nodeFieldCount;
       const state = node.detachedness();
-      if (state === 0) {
+      if (state === HeapSnapshotModel3.HeapSnapshotModel.DOMLinkState.UNKNOWN) {
         continue;
       }
       processNode(this, nodeOrdinal, state);
     }
     while (attached.length !== 0) {
       const nodeOrdinal = attached.pop();
-      propagateState(
-        this,
-        nodeOrdinal,
-        1
-        /* HeapSnapshotModel.HeapSnapshotModel.DOMLinkState.ATTACHED */
-      );
+      propagateState(this, nodeOrdinal, HeapSnapshotModel3.HeapSnapshotModel.DOMLinkState.ATTACHED);
     }
     while (detached.length !== 0) {
       const nodeOrdinal = detached.pop();
       node.nodeIndex = nodeOrdinal * this.nodeFieldCount;
       const nodeState = node.detachedness();
-      if (nodeState === 1) {
+      if (nodeState === HeapSnapshotModel3.HeapSnapshotModel.DOMLinkState.ATTACHED) {
         continue;
       }
-      propagateState(
-        this,
-        nodeOrdinal,
-        2
-        /* HeapSnapshotModel.HeapSnapshotModel.DOMLinkState.DETACHED */
-      );
+      propagateState(this, nodeOrdinal, HeapSnapshotModel3.HeapSnapshotModel.DOMLinkState.DETACHED);
     }
   }
   buildSamples() {
@@ -2873,7 +2975,15 @@ var HeapSnapshot = class _HeapSnapshot {
     return new HeapSnapshotEdgesProvider(this, filter, node.retainers(), indexProvider);
   }
   getRetainingPaths(nodeIndex, maxDepth = 30, maxNodes = 5e3, maxSiblings = 100) {
-    const { nodeFieldCount, firstRetainerIndex, retainingNodes, retainingEdges, edgeTypeOffset, edgeWeakType, containmentEdges } = this;
+    const {
+      nodeFieldCount,
+      firstRetainerIndex,
+      retainingNodes,
+      retainingEdges,
+      edgeTypeOffset,
+      edgeWeakType,
+      containmentEdges
+    } = this;
     const distances = this.#nodeDistancesForRetainersView ?? this.nodeDistances;
     let traversedNodesCount = 0;
     const visiting = /* @__PURE__ */ new Set();
@@ -3032,7 +3142,7 @@ var HeapSnapshot = class _HeapSnapshot {
         continue;
       }
       if (queryOptions.isDetached !== void 0) {
-        const isDetached = node.detachedness() === 2;
+        const isDetached = node.detachedness() === HeapSnapshotModel3.HeapSnapshotModel.DOMLinkState.DETACHED;
         if (isDetached !== queryOptions.isDetached) {
           continue;
         }
@@ -3102,7 +3212,12 @@ var HeapSnapshot = class _HeapSnapshot {
     return id;
   }
   updateStaticData() {
-    return new HeapSnapshotModel3.HeapSnapshotModel.StaticData(this.nodeCount, this.rootNodeIndexInternal, this.totalSize, this.maxJsNodeId());
+    return new HeapSnapshotModel3.HeapSnapshotModel.StaticData(
+      this.nodeCount,
+      this.rootNodeIndexInternal,
+      this.totalSize,
+      this.maxJsNodeId()
+    );
   }
   ignoreNodeInRetainersView(nodeIndex) {
     this.#ignoredNodesInRetainersView.add(nodeIndex);
@@ -3231,7 +3346,13 @@ var HeapSnapshotItemProvider = class {
     }
     if (this.#sortedPrefixLength < end && begin < this.iterationOrder.length - this.#sortedSuffixLength && this.currentComparator) {
       const currentComparator = this.currentComparator;
-      this.sort(currentComparator, this.#sortedPrefixLength, this.iterationOrder.length - 1 - this.#sortedSuffixLength, begin, end - 1);
+      this.sort(
+        currentComparator,
+        this.#sortedPrefixLength,
+        this.iterationOrder.length - 1 - this.#sortedSuffixLength,
+        begin,
+        end - 1
+      );
       if (begin <= this.#sortedPrefixLength) {
         this.#sortedPrefixLength = end;
       }
@@ -3346,14 +3467,42 @@ var HeapSnapshotEdgesProvider = class extends HeapSnapshotItemProvider {
     }
     if (isEdgeFieldName(fieldName1)) {
       if (isEdgeFieldName(fieldName2)) {
-        Platform.ArrayUtilities.sortRange(this.iterationOrder, compareEdgeAndEdge, leftBound, rightBound, windowLeft, windowRight);
+        Platform.ArrayUtilities.sortRange(
+          this.iterationOrder,
+          compareEdgeAndEdge,
+          leftBound,
+          rightBound,
+          windowLeft,
+          windowRight
+        );
       } else {
-        Platform.ArrayUtilities.sortRange(this.iterationOrder, compareEdgeAndNode, leftBound, rightBound, windowLeft, windowRight);
+        Platform.ArrayUtilities.sortRange(
+          this.iterationOrder,
+          compareEdgeAndNode,
+          leftBound,
+          rightBound,
+          windowLeft,
+          windowRight
+        );
       }
     } else if (isEdgeFieldName(fieldName2)) {
-      Platform.ArrayUtilities.sortRange(this.iterationOrder, compareNodeAndEdge, leftBound, rightBound, windowLeft, windowRight);
+      Platform.ArrayUtilities.sortRange(
+        this.iterationOrder,
+        compareNodeAndEdge,
+        leftBound,
+        rightBound,
+        windowLeft,
+        windowRight
+      );
     } else {
-      Platform.ArrayUtilities.sortRange(this.iterationOrder, compareNodeAndNode, leftBound, rightBound, windowLeft, windowRight);
+      Platform.ArrayUtilities.sortRange(
+        this.iterationOrder,
+        compareNodeAndNode,
+        leftBound,
+        rightBound,
+        windowLeft,
+        windowRight
+      );
     }
   }
 };
@@ -3419,7 +3568,14 @@ var HeapSnapshotNodesProvider = class extends HeapSnapshotItemProvider {
     if (!this.iterationOrder) {
       throw new Error("Iteration order not defined");
     }
-    Platform.ArrayUtilities.sortRange(this.iterationOrder, this.buildCompareFunction(comparator), leftBound, rightBound, windowLeft, windowRight);
+    Platform.ArrayUtilities.sortRange(
+      this.iterationOrder,
+      this.buildCompareFunction(comparator),
+      leftBound,
+      rightBound,
+      windowLeft,
+      windowRight
+    );
   }
 };
 var JSHeapSnapshot = class extends HeapSnapshot {
@@ -3535,7 +3691,10 @@ var JSHeapSnapshot = class extends HeapSnapshot {
           }
           const sizeToTransfer = nodes.getValue(ownedNodeIndex + nodeSelfSizeOffset);
           nodes.setValue(ownedNodeIndex + nodeSelfSizeOffset, 0);
-          nodes.setValue(ownerNodeIndex + nodeSelfSizeOffset, nodes.getValue(ownerNodeIndex + nodeSelfSizeOffset) + sizeToTransfer);
+          nodes.setValue(
+            ownerNodeIndex + nodeSelfSizeOffset,
+            nodes.getValue(ownerNodeIndex + nodeSelfSizeOffset) + sizeToTransfer
+          );
           break;
         }
       }
@@ -3592,7 +3751,7 @@ var JSHeapSnapshot = class extends HeapSnapshot {
         continue;
       }
       node.nodeIndex = nodeIndex;
-      if (node.detachedness() === 2) {
+      if (node.detachedness() === HeapSnapshotModel3.HeapSnapshotModel.DOMLinkState.DETACHED) {
         this.flags[ordinal] |= flag;
       }
     }
@@ -3784,7 +3943,7 @@ async function createJSHeapSnapshotForTesting(profile) {
   await result.initialize(channel.port1);
   return result;
 }
-var JSHeapSnapshotNode = class extends HeapSnapshotNode {
+var JSHeapSnapshotNode = class _JSHeapSnapshotNode extends HeapSnapshotNode {
   canBeQueried() {
     const snapshot = this.snapshot;
     const flags = snapshot.flagsOfNode(this);
@@ -3869,7 +4028,7 @@ var JSHeapSnapshotNode = class extends HeapSnapshotNode {
         }
         continue;
       }
-      const formatted = _a.formatPropertyName(edge.name());
+      const formatted = _JSHeapSnapshotNode.formatPropertyName(edge.name());
       if (categoryNameStart.length > 1 && categoryNameStart.length + categoryNameEnd.length + formatted.length > 100) {
         break;
       }
@@ -3938,7 +4097,6 @@ var JSHeapSnapshotNode = class extends HeapSnapshotNode {
     return result;
   }
 };
-_a = JSHeapSnapshotNode;
 var JSHeapSnapshotEdge = class _JSHeapSnapshotEdge extends HeapSnapshotEdge {
   clone() {
     const snapshot = this.snapshot;
@@ -4039,7 +4197,7 @@ var JSHeapSnapshotRetainerEdge = class _JSHeapSnapshotRetainerEdge extends HeapS
   }
 };
 
-// gen/front_end/entrypoints/heap_snapshot_worker/HeapSnapshotLoader.js
+// ../../front_end/entrypoints/heap_snapshot_worker/HeapSnapshotLoader.ts
 var HeapSnapshotLoader_exports = {};
 __export(HeapSnapshotLoader_exports, {
   HeapSnapshotLoader: () => HeapSnapshotLoader
@@ -4227,12 +4385,24 @@ var HeapSnapshotLoader = class {
       jsonTokenizer.write(chunk);
     }
     this.#snapshot = this.#snapshot || {};
-    const nodes = await this.#parseArray('"nodes"', "Loading nodes\u2026 {PH1}%", this.#snapshot.snapshot.meta.node_fields.length * this.#snapshot.snapshot.node_count);
+    const nodes = await this.#parseArray(
+      '"nodes"',
+      "Loading nodes\u2026 {PH1}%",
+      this.#snapshot.snapshot.meta.node_fields.length * this.#snapshot.snapshot.node_count
+    );
     this.#snapshot.nodes = nodes;
-    const edges = await this.#parseArray('"edges"', "Loading edges\u2026 {PH1}%", this.#snapshot.snapshot.meta.edge_fields.length * this.#snapshot.snapshot.edge_count);
+    const edges = await this.#parseArray(
+      '"edges"',
+      "Loading edges\u2026 {PH1}%",
+      this.#snapshot.snapshot.meta.edge_fields.length * this.#snapshot.snapshot.edge_count
+    );
     this.#snapshot.edges = edges;
     if (this.#snapshot.snapshot.trace_function_count) {
-      const traceFunctionInfos = await this.#parseArray('"trace_function_infos"', "Loading allocation traces\u2026 {PH1}%", this.#snapshot.snapshot.meta.trace_function_info_fields.length * this.#snapshot.snapshot.trace_function_count);
+      const traceFunctionInfos = await this.#parseArray(
+        '"trace_function_infos"',
+        "Loading allocation traces\u2026 {PH1}%",
+        this.#snapshot.snapshot.meta.trace_function_info_fields.length * this.#snapshot.snapshot.trace_function_count
+      );
       this.#snapshot.trace_function_infos = traceFunctionInfos.asUint32ArrayOrFail();
       const thisTokenEndIndex = await this.#findToken(":");
       const nextTokenIndex = await this.#findToken('"', thisTokenEndIndex);
@@ -4262,7 +4432,7 @@ var HeapSnapshotLoader = class {
   }
 };
 
-// gen/front_end/entrypoints/heap_snapshot_worker/HeapSnapshotWorkerDispatcher.js
+// ../../front_end/entrypoints/heap_snapshot_worker/HeapSnapshotWorkerDispatcher.ts
 var HeapSnapshotWorkerDispatcher_exports = {};
 __export(HeapSnapshotWorkerDispatcher_exports, {
   HeapSnapshotWorkerDispatcher: () => HeapSnapshotWorkerDispatcher
@@ -4279,7 +4449,10 @@ var HeapSnapshotWorkerDispatcher = class {
   sendEvent(name, data) {
     this.#postMessage({ eventName: name, data });
   }
-  async dispatchMessage({ data, ports }) {
+  async dispatchMessage({
+    data,
+    ports
+  }) {
     const response = {
       callId: data.callId,
       result: null

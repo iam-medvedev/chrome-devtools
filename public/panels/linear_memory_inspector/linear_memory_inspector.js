@@ -4,7 +4,7 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// gen/front_end/panels/linear_memory_inspector/LinearMemoryInspectorController.js
+// ../../front_end/panels/linear_memory_inspector/LinearMemoryInspectorController.ts
 var LinearMemoryInspectorController_exports = {};
 __export(LinearMemoryInspectorController_exports, {
   LinearMemoryInspectorController: () => LinearMemoryInspectorController,
@@ -17,7 +17,7 @@ import * as Bindings from "../../models/bindings/bindings.js";
 import * as UI2 from "../../ui/legacy/legacy.js";
 import * as LinearMemoryInspectorComponents2 from "./components/components.js";
 
-// gen/front_end/panels/linear_memory_inspector/LinearMemoryInspectorPane.js
+// ../../front_end/panels/linear_memory_inspector/LinearMemoryInspectorPane.ts
 var LinearMemoryInspectorPane_exports = {};
 __export(LinearMemoryInspectorPane_exports, {
   Events: () => Events,
@@ -50,7 +50,10 @@ var str_ = i18n.i18n.registerUIStrings("panels/linear_memory_inspector/LinearMem
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
 var inspectorInstance;
 var MEMORY_INSPECTOR_EXPLANATION_URL = "https://developer.chrome.com/docs/devtools/memory-inspector";
-var LinearMemoryInspectorPane = class _LinearMemoryInspectorPane extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
+var LinearMemoryInspectorPaneBase = Common.ObjectWrapper.eventMixin(
+  UI.Widget.VBox
+);
+var LinearMemoryInspectorPane = class _LinearMemoryInspectorPane extends LinearMemoryInspectorPaneBase {
   #tabbedPane;
   constructor() {
     super({ jslog: `${VisualLogging.panel("linear-memory-inspector").track({ resize: true })}` });
@@ -60,7 +63,10 @@ var LinearMemoryInspectorPane = class _LinearMemoryInspectorPane extends Common.
     this.#tabbedPane.setAllowTabReorder(true, true);
     this.#tabbedPane.addEventListener(UI.TabbedPane.Events.TabClosed, this.#tabClosed, this);
     this.#tabbedPane.show(this.contentElement);
-    this.#tabbedPane.headerElement().setAttribute("jslog", `${VisualLogging.toolbar().track({ keydown: "ArrowUp|ArrowLeft|ArrowDown|ArrowRight|Enter|Space" })}`);
+    this.#tabbedPane.headerElement().setAttribute(
+      "jslog",
+      `${VisualLogging.toolbar().track({ keydown: "ArrowUp|ArrowLeft|ArrowDown|ArrowRight|Enter|Space" })}`
+    );
   }
   createPlaceholder() {
     const placeholder = document.createElement("div");
@@ -107,13 +113,13 @@ var LinearMemoryInspectorPane = class _LinearMemoryInspectorPane extends Common.
   }
   #tabClosed(event) {
     const { tabId } = event.data;
-    this.dispatchEventToListeners("ViewClosed", tabId);
+    this.dispatchEventToListeners("ViewClosed" /* VIEW_CLOSED */, tabId);
   }
 };
-var Events;
-(function(Events2) {
+var Events = /* @__PURE__ */ ((Events2) => {
   Events2["VIEW_CLOSED"] = "ViewClosed";
-})(Events || (Events = {}));
+  return Events2;
+})(Events || {});
 var LinearMemoryInspectorView = class extends UI.Widget.VBox {
   #memoryWrapper;
   #memory;
@@ -134,13 +140,26 @@ var LinearMemoryInspectorView = class extends UI.Widget.VBox {
     this.#hideValueInspector = Boolean(hideValueInspector);
     this.firstTimeOpen = true;
     this.#inspector = new LinearMemoryInspectorComponents.LinearMemoryInspector.LinearMemoryInspector();
-    this.#inspector.addEventListener("MemoryRequest", this.#memoryRequested, this);
-    this.#inspector.addEventListener("AddressChanged", (event) => this.updateAddress(event.data));
-    this.#inspector.addEventListener("SettingsChanged", (event) => this.saveSettings(event.data));
-    this.#inspector.addEventListener("DeleteMemoryHighlight", (event) => {
-      LinearMemoryInspectorController.instance().removeHighlight(this.#tabId, event.data);
-      this.refreshData();
-    });
+    this.#inspector.addEventListener(
+      LinearMemoryInspectorComponents.LinearMemoryInspector.Events.MEMORY_REQUEST,
+      this.#memoryRequested,
+      this
+    );
+    this.#inspector.addEventListener(
+      LinearMemoryInspectorComponents.LinearMemoryInspector.Events.ADDRESS_CHANGED,
+      (event) => this.updateAddress(event.data)
+    );
+    this.#inspector.addEventListener(
+      LinearMemoryInspectorComponents.LinearMemoryInspector.Events.SETTINGS_CHANGED,
+      (event) => this.saveSettings(event.data)
+    );
+    this.#inspector.addEventListener(
+      LinearMemoryInspectorComponents.LinearMemoryInspector.Events.DELETE_MEMORY_HIGHLIGHT,
+      (event) => {
+        LinearMemoryInspectorController.instance().removeHighlight(this.#tabId, event.data);
+        this.refreshData();
+      }
+    );
     this.#inspector.show(this.contentElement);
   }
   render() {
@@ -206,7 +225,7 @@ var LinearMemoryInspectorView = class extends UI.Widget.VBox {
   }
 };
 
-// gen/front_end/panels/linear_memory_inspector/LinearMemoryInspectorController.js
+// ../../front_end/panels/linear_memory_inspector/LinearMemoryInspectorController.ts
 var UIStrings2 = {
   /**
    * @description Error message that shows up in the console if a buffer to be opened in the Memory inspector panel cannot be found.
@@ -263,14 +282,24 @@ var LinearMemoryInspectorController = class _LinearMemoryInspectorController ext
   constructor() {
     super();
     SDK.TargetManager.TargetManager.instance().observeModels(SDK.RuntimeModel.RuntimeModel, this);
-    SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.GlobalObjectCleared, this.#onGlobalObjectClear, this);
-    this.#paneInstance.addEventListener("ViewClosed", this.#viewClosed.bind(this));
-    SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.DebuggerPaused, this.#onDebuggerPause, this);
+    SDK.TargetManager.TargetManager.instance().addModelListener(
+      SDK.DebuggerModel.DebuggerModel,
+      SDK.DebuggerModel.Events.GlobalObjectCleared,
+      this.#onGlobalObjectClear,
+      this
+    );
+    this.#paneInstance.addEventListener("ViewClosed" /* VIEW_CLOSED */, this.#viewClosed.bind(this));
+    SDK.TargetManager.TargetManager.instance().addModelListener(
+      SDK.DebuggerModel.DebuggerModel,
+      SDK.DebuggerModel.Events.DebuggerPaused,
+      this.#onDebuggerPause,
+      this
+    );
     const defaultValueTypeModes = LinearMemoryInspectorComponents2.ValueInterpreterDisplayUtils.getDefaultValueTypeMapping();
     const defaultSettings = {
       valueTypes: Array.from(defaultValueTypeModes.keys()),
       valueTypeModes: Array.from(defaultValueTypeModes),
-      endianness: "Little Endian"
+      endianness: LinearMemoryInspectorComponents2.ValueInterpreterDisplayUtils.Endianness.LITTLE
     };
     this.#settings = Common2.Settings.Settings.instance().createSetting("lmi-interpreter-settings", defaultSettings);
   }
@@ -301,7 +330,9 @@ var LinearMemoryInspectorController = class _LinearMemoryInspectorController ext
       return void 0;
     }
     if ("exceptionDetails" in result && result?.exceptionDetails?.text) {
-      console.error(`Tried to evaluate the expression '${expressionName}' but got an exception: ${result.exceptionDetails.text}`);
+      console.error(
+        `Tried to evaluate the expression '${expressionName}' but got an exception: ${result.exceptionDetails.text}`
+      );
       return void 0;
     }
     return result.object;
@@ -445,7 +476,11 @@ var LinearMemoryInspectorController = class _LinearMemoryInspectorController ext
     if (target.property.object?.isLinearMemoryInspectable()) {
       const expression = target.path();
       const object = target.property.object;
-      contextMenu.debugSection().appendItem(i18nString2(UIStrings2.openInMemoryInspectorPanel), this.reveal.bind(this, new SDK.RemoteObject.LinearMemoryInspectable(object, expression)), { jslogContext: "reveal-in-memory-inspector" });
+      contextMenu.debugSection().appendItem(
+        i18nString2(UIStrings2.openInMemoryInspectorPanel),
+        this.reveal.bind(this, new SDK.RemoteObject.LinearMemoryInspectable(object, expression)),
+        { jslogContext: "reveal-in-memory-inspector" }
+      );
     }
   }
   static extractHighlightInfo(obj, expression) {

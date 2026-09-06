@@ -1,4 +1,4 @@
-// gen/front_end/entrypoints/inspector_main/inspector_main-meta.prebundle.js
+// ../../front_end/entrypoints/inspector_main/inspector_main-meta.ts
 import * as Common from "../../core/common/common.js";
 import * as i18n from "../../core/i18n/i18n.js";
 import * as SDK from "../../core/sdk/sdk.js";
@@ -350,11 +350,11 @@ async function loadInspectorMainModule() {
   return loadedInspectorMainModule;
 }
 UI.ViewManager.registerViewExtension({
-  location: "drawer-view",
+  location: UI.ViewManager.ViewLocationValues.DRAWER_VIEW,
   id: "rendering",
   title: i18nLazyString(UIStrings.rendering),
   commandPrompt: i18nLazyString(UIStrings.showRendering),
-  persistence: "closeable",
+  persistence: UI.ViewManager.ViewPersistence.CLOSEABLE,
   order: 50,
   async loadView() {
     const InspectorMain = await loadInspectorMainModule();
@@ -371,31 +371,31 @@ UI.ViewManager.registerViewExtension({
   ]
 });
 UI.ActionRegistration.registerActionExtension({
-  category: "NAVIGATION",
+  category: UI.ActionRegistration.ActionCategory.NAVIGATION,
   actionId: "inspector-main.reload",
   async loadActionDelegate() {
     const InspectorMain = await loadInspectorMainModule();
     return new InspectorMain.InspectorMain.ReloadActionDelegate();
   },
-  iconClass: "refresh",
+  iconClass: UI.ActionRegistration.IconClass.REFRESH,
   title: i18nLazyString(UIStrings.reloadPage),
   bindings: [
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Ctrl+R"
     },
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "F5"
     },
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Meta+R"
     }
   ]
 });
 UI.ActionRegistration.registerActionExtension({
-  category: "NAVIGATION",
+  category: UI.ActionRegistration.ActionCategory.NAVIGATION,
   actionId: "inspector-main.hard-reload",
   async loadActionDelegate() {
     const InspectorMain = await loadInspectorMainModule();
@@ -404,30 +404,30 @@ UI.ActionRegistration.registerActionExtension({
   title: i18nLazyString(UIStrings.hardReloadPage),
   bindings: [
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Shift+Ctrl+R"
     },
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Shift+F5"
     },
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Ctrl+F5"
     },
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Ctrl+Shift+F5"
     },
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Shift+Meta+R"
     }
   ]
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "rendering.toggle-prefers-color-scheme",
-  category: "RENDERING",
+  category: UI.ActionRegistration.ActionCategory.RENDERING,
   title: i18nLazyString(UIStrings.toggleCssPrefersColorSchemeMedia),
   async loadActionDelegate() {
     const InspectorMain = await loadInspectorMainModule();
@@ -435,7 +435,7 @@ UI.ActionRegistration.registerActionExtension({
   }
 });
 SettingsUI.SettingUIRegistration.register(SettingsUI.InspectorMainSettings.adBlockingEnabledSettingDescriptor, {
-  category: "NETWORK",
+  category: Common.Settings.SettingCategory.NETWORK,
   title: i18nLazyString(UIStrings.forceAdBlocking),
   options: [
     {
@@ -449,7 +449,7 @@ SettingsUI.SettingUIRegistration.register(SettingsUI.InspectorMainSettings.adBlo
   ]
 });
 SettingsUI.SettingUIRegistration.register(SettingsUI.InspectorMainSettings.autoAttachToCreatedPagesSettingDescriptor, {
-  category: "GLOBAL",
+  category: Common.Settings.SettingCategory.GLOBAL,
   title: i18nLazyString(UIStrings.autoOpenDevTools),
   order: 2,
   options: [
@@ -469,7 +469,7 @@ UI.Toolbar.registerToolbarItem({
     return new InspectorMain.InspectorMain.NodeIndicatorProvider();
   },
   order: 2,
-  location: "main-toolbar-left"
+  location: UI.Toolbar.ToolbarItemLocation.MAIN_TOOLBAR_LEFT
 });
 UI.Toolbar.registerToolbarItem({
   loadItem: Common.Lazy.lazy(async () => {
@@ -477,10 +477,10 @@ UI.Toolbar.registerToolbarItem({
     return new InspectorMain.OutermostTargetSelector.OutermostTargetSelector();
   }),
   order: 97,
-  location: "main-toolbar-right"
+  location: UI.Toolbar.ToolbarItemLocation.MAIN_TOOLBAR_RIGHT
 });
 SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.showPaintRectsSettingDescriptor, {
-  category: "RENDERING",
+  category: Common.Settings.SettingCategory.RENDERING,
   options: [
     {
       value: true,
@@ -493,7 +493,7 @@ SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.showPaintRectsSettingD
   ]
 });
 SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.showLayoutShiftRegionsSettingDescriptor, {
-  category: "RENDERING",
+  category: Common.Settings.SettingCategory.RENDERING,
   options: [
     {
       value: true,
@@ -506,7 +506,7 @@ SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.showLayoutShiftRegions
   ]
 });
 SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.showAdHighlightsSettingDescriptor, {
-  category: "RENDERING",
+  category: Common.Settings.SettingCategory.RENDERING,
   options: [
     {
       value: true,
@@ -519,7 +519,7 @@ SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.showAdHighlightsSettin
   ]
 });
 SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.showDebugBordersSettingDescriptor, {
-  category: "RENDERING",
+  category: Common.Settings.SettingCategory.RENDERING,
   options: [
     {
       value: true,
@@ -532,7 +532,7 @@ SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.showDebugBordersSettin
   ]
 });
 SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.showFPSCounterSettingDescriptor, {
-  category: "RENDERING",
+  category: Common.Settings.SettingCategory.RENDERING,
   options: [
     {
       value: true,
@@ -545,7 +545,7 @@ SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.showFPSCounterSettingD
   ]
 });
 SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.showScrollBottleneckRectsSettingDescriptor, {
-  category: "RENDERING",
+  category: Common.Settings.SettingCategory.RENDERING,
   options: [
     {
       value: true,
@@ -558,7 +558,7 @@ SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.showScrollBottleneckRe
   ]
 });
 SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.emulatePageFocusSettingDescriptor, {
-  category: "RENDERING",
+  category: Common.Settings.SettingCategory.RENDERING,
   title: i18nLazyString(UIStrings.emulateAFocusedPage),
   options: [
     {
@@ -572,7 +572,7 @@ SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.emulatePageFocusSettin
   ]
 });
 SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.emulatedCSSMediaSettingDescriptor, {
-  category: "RENDERING",
+  category: Common.Settings.SettingCategory.RENDERING,
   title: i18nLazyString(UIStrings.emulateCssMediaType),
   options: [
     {
@@ -596,7 +596,7 @@ SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.emulatedCSSMediaSettin
   ]
 });
 SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.emulatedCSSMediaFeaturePrefersColorSchemeSettingDescriptor, {
-  category: "RENDERING",
+  category: Common.Settings.SettingCategory.RENDERING,
   options: [
     {
       title: i18nLazyString(UIStrings.doNotEmulateCss, { PH1: "prefers-color-scheme" }),
@@ -620,7 +620,7 @@ SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.emulatedCSSMediaFeatur
   title: i18nLazyString(UIStrings.emulateCssMediaFeature, { PH1: "prefers-color-scheme" })
 });
 SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.emulatedCSSMediaFeatureForcedColorsSettingDescriptor, {
-  category: "RENDERING",
+  category: Common.Settings.SettingCategory.RENDERING,
   options: [
     {
       title: i18nLazyString(UIStrings.doNotEmulateCss, { PH1: "forced-colors" }),
@@ -643,27 +643,30 @@ SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.emulatedCSSMediaFeatur
   ],
   title: i18nLazyString(UIStrings.emulateCssMediaFeature, { PH1: "forced-colors" })
 });
-SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.emulatedCSSMediaFeaturePrefersReducedMotionSettingDescriptor, {
-  category: "RENDERING",
-  options: [
-    {
-      title: i18nLazyString(UIStrings.doNotEmulateCss, { PH1: "prefers-reduced-motion" }),
-      text: i18nLazyString(UIStrings.noEmulation),
-      value: ""
-    },
-    {
-      title: i18nLazyString(UIStrings.emulateCss, { PH1: "prefers-reduced-motion: reduce" }),
-      text: i18n.i18n.lockedLazyString("prefers-reduced-motion: reduce"),
-      value: "reduce"
-    }
-  ],
-  tags: [
-    i18nLazyString(UIStrings.query)
-  ],
-  title: i18nLazyString(UIStrings.emulateCssMediaFeature, { PH1: "prefers-reduced-motion" })
-});
+SettingsUI.SettingUIRegistration.register(
+  SDK.SDKSettings.emulatedCSSMediaFeaturePrefersReducedMotionSettingDescriptor,
+  {
+    category: Common.Settings.SettingCategory.RENDERING,
+    options: [
+      {
+        title: i18nLazyString(UIStrings.doNotEmulateCss, { PH1: "prefers-reduced-motion" }),
+        text: i18nLazyString(UIStrings.noEmulation),
+        value: ""
+      },
+      {
+        title: i18nLazyString(UIStrings.emulateCss, { PH1: "prefers-reduced-motion: reduce" }),
+        text: i18n.i18n.lockedLazyString("prefers-reduced-motion: reduce"),
+        value: "reduce"
+      }
+    ],
+    tags: [
+      i18nLazyString(UIStrings.query)
+    ],
+    title: i18nLazyString(UIStrings.emulateCssMediaFeature, { PH1: "prefers-reduced-motion" })
+  }
+);
 SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.emulatedCSSMediaFeaturePrefersContrastSettingDescriptor, {
-  category: "RENDERING",
+  category: Common.Settings.SettingCategory.RENDERING,
   options: [
     {
       title: i18nLazyString(UIStrings.doNotEmulateCss, { PH1: "prefers-contrast" }),
@@ -692,7 +695,7 @@ SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.emulatedCSSMediaFeatur
   title: i18nLazyString(UIStrings.emulateCssMediaFeature, { PH1: "prefers-contrast" })
 });
 SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.emulatedCSSMediaFeaturePrefersReducedDataSettingDescriptor, {
-  category: "RENDERING",
+  category: Common.Settings.SettingCategory.RENDERING,
   options: [
     {
       title: i18nLazyString(UIStrings.doNotEmulateCss, { PH1: "prefers-reduced-data" }),
@@ -710,27 +713,30 @@ SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.emulatedCSSMediaFeatur
   ],
   title: i18nLazyString(UIStrings.emulateCssMediaFeature, { PH1: "prefers-reduced-data" })
 });
-SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.emulatedCSSMediaFeaturePrefersReducedTransparencySettingDescriptor, {
-  category: "RENDERING",
-  options: [
-    {
-      title: i18nLazyString(UIStrings.doNotEmulateCss, { PH1: "prefers-reduced-transparency" }),
-      text: i18nLazyString(UIStrings.noEmulation),
-      value: ""
-    },
-    {
-      title: i18nLazyString(UIStrings.emulateCss, { PH1: "prefers-reduced-transparency: reduce" }),
-      text: i18n.i18n.lockedLazyString("prefers-reduced-transparency: reduce"),
-      value: "reduce"
-    }
-  ],
-  tags: [
-    i18nLazyString(UIStrings.query)
-  ],
-  title: i18nLazyString(UIStrings.emulateCssMediaFeature, { PH1: "prefers-reduced-transparency" })
-});
+SettingsUI.SettingUIRegistration.register(
+  SDK.SDKSettings.emulatedCSSMediaFeaturePrefersReducedTransparencySettingDescriptor,
+  {
+    category: Common.Settings.SettingCategory.RENDERING,
+    options: [
+      {
+        title: i18nLazyString(UIStrings.doNotEmulateCss, { PH1: "prefers-reduced-transparency" }),
+        text: i18nLazyString(UIStrings.noEmulation),
+        value: ""
+      },
+      {
+        title: i18nLazyString(UIStrings.emulateCss, { PH1: "prefers-reduced-transparency: reduce" }),
+        text: i18n.i18n.lockedLazyString("prefers-reduced-transparency: reduce"),
+        value: "reduce"
+      }
+    ],
+    tags: [
+      i18nLazyString(UIStrings.query)
+    ],
+    title: i18nLazyString(UIStrings.emulateCssMediaFeature, { PH1: "prefers-reduced-transparency" })
+  }
+);
 SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.emulatedCSSMediaFeatureColorGamutSettingDescriptor, {
-  category: "RENDERING",
+  category: Common.Settings.SettingCategory.RENDERING,
   options: [
     {
       title: i18nLazyString(UIStrings.doNotEmulateCss, { PH1: "color-gamut" }),
@@ -759,7 +765,7 @@ SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.emulatedCSSMediaFeatur
   title: i18nLazyString(UIStrings.emulateCssMediaFeature, { PH1: "color-gamut" })
 });
 SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.emulatedVisionDeficiencySettingDescriptor, {
-  category: "RENDERING",
+  category: Common.Settings.SettingCategory.RENDERING,
   options: [
     {
       title: i18nLazyString(UIStrings.doNotEmulateAnyVisionDeficiency),
@@ -803,7 +809,7 @@ SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.emulatedVisionDeficien
   title: i18nLazyString(UIStrings.emulateVisionDeficiencies)
 });
 SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.emulatedOSTextScaleSettingDescriptor, {
-  category: "RENDERING",
+  category: Common.Settings.SettingCategory.RENDERING,
   options: [
     {
       title: i18nLazyString(UIStrings.doNotEmulateOsTextScale),
@@ -867,7 +873,7 @@ SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.emulatedOSTextScaleSet
   title: i18nLazyString(UIStrings.emulateOsTextScale)
 });
 SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.localFontsDisabledSettingDescriptor, {
-  category: "RENDERING",
+  category: Common.Settings.SettingCategory.RENDERING,
   options: [
     {
       value: true,
@@ -880,7 +886,7 @@ SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.localFontsDisabledSett
   ]
 });
 SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.avifFormatDisabledSettingDescriptor, {
-  category: "RENDERING",
+  category: Common.Settings.SettingCategory.RENDERING,
   options: [
     {
       value: true,
@@ -893,7 +899,7 @@ SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.avifFormatDisabledSett
   ]
 });
 SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.jpegXlFormatDisabledSettingDescriptor, {
-  category: "RENDERING",
+  category: Common.Settings.SettingCategory.RENDERING,
   options: [
     {
       value: true,
@@ -906,7 +912,7 @@ SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.jpegXlFormatDisabledSe
   ]
 });
 SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.webpFormatDisabledSettingDescriptor, {
-  category: "RENDERING",
+  category: Common.Settings.SettingCategory.RENDERING,
   options: [
     {
       value: true,
@@ -919,7 +925,7 @@ SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.webpFormatDisabledSett
   ]
 });
 SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.emulateAutoDarkModeSettingDescriptor, {
-  category: "RENDERING",
+  category: Common.Settings.SettingCategory.RENDERING,
   title: i18nLazyString(UIStrings.emulateAutoDarkMode)
 });
 //# sourceMappingURL=inspector_main-meta.js.map

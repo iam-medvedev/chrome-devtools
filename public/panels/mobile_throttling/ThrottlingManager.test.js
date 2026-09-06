@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import sinon from 'sinon';
+import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
@@ -65,14 +67,13 @@ describeWithEnvironment('ThrottlingManager', () => {
         });
     });
     describe('DataSaverEmulation', () => {
-        it('creates a select element which sets the data saver emulation mode', async () => {
+        it('creates a select element which updates the data saver setting and triggers emulation', async () => {
             const connection = new MockCDPConnection();
             connection.setSuccessHandler('Emulation.setDataSaverOverride', () => ({}));
             const target = createTarget({ connection });
             const emulationModel = target.model(SDK.EmulationModel.EmulationModel);
             assert.exists(emulationModel);
-            assert.lengthOf(SDK.TargetManager.TargetManager.instance().models(SDK.EmulationModel.EmulationModel), 1);
-            assert.strictEqual(SDK.TargetManager.TargetManager.instance().models(SDK.EmulationModel.EmulationModel)[0], emulationModel);
+            const setting = Common.Settings.Settings.instance().resolve(SDK.SDKSettings.dataSaverSettingDescriptor);
             const select = MobileThrottling.ThrottlingManager.ThrottlingManager.instance({ forceNew: true })
                 .createSaveDataOverrideSelector();
             renderElementIntoDOM(select);
@@ -80,18 +81,57 @@ describeWithEnvironment('ThrottlingManager', () => {
             const options = Array.from(select.options);
             assert.deepEqual(options.map(option => option.textContent), ['\'Save-Data\': default', '\'Save-Data\': on', '\'Save-Data\': off']);
             let emulationModelSpy = spyCall(emulationModel, 'setDataSaverOverride');
-            select.selectedIndex = 0;
+            select.value = "enabled" /* SDK.EmulationModel.DataSaverOverride.ENABLED */;
             select.dispatchEvent(new Event('change'));
-            assert.strictEqual((await emulationModelSpy).args[0], "unset" /* SDK.EmulationModel.DataSaverOverride.UNSET */);
-            emulationModelSpy = spyCall(emulationModel, 'setDataSaverOverride');
-            select.selectedIndex = 1;
-            select.dispatchEvent(new Event('change'));
+            assert.strictEqual(setting.get(), "enabled" /* SDK.EmulationModel.DataSaverOverride.ENABLED */);
             assert.strictEqual((await emulationModelSpy).args[0], "enabled" /* SDK.EmulationModel.DataSaverOverride.ENABLED */);
             emulationModelSpy = spyCall(emulationModel, 'setDataSaverOverride');
-            select.selectedIndex = 2;
+            select.value = "disabled" /* SDK.EmulationModel.DataSaverOverride.DISABLED */;
             select.dispatchEvent(new Event('change'));
+            assert.strictEqual(setting.get(), "disabled" /* SDK.EmulationModel.DataSaverOverride.DISABLED */);
             assert.strictEqual((await emulationModelSpy).args[0], "disabled" /* SDK.EmulationModel.DataSaverOverride.DISABLED */);
+            emulationModelSpy = spyCall(emulationModel, 'setDataSaverOverride');
+            select.value = "unset" /* SDK.EmulationModel.DataSaverOverride.UNSET */;
+            select.dispatchEvent(new Event('change'));
+            assert.strictEqual(setting.get(), "unset" /* SDK.EmulationModel.DataSaverOverride.UNSET */);
+            assert.strictEqual((await emulationModelSpy).args[0], "unset" /* SDK.EmulationModel.DataSaverOverride.UNSET */);
             target.dispose('test');
+        });
+        it('restores the selected option from setting when re-created', async () => {
+            const setting = Common.Settings.Settings.instance().resolve(SDK.SDKSettings.dataSaverSettingDescriptor);
+            setting.set("enabled" /* SDK.EmulationModel.DataSaverOverride.ENABLED */);
+            const select = MobileThrottling.ThrottlingManager.ThrottlingManager.instance({ forceNew: true })
+                .createSaveDataOverrideSelector();
+            renderElementIntoDOM(select);
+            await UI.Widget.Widget.allUpdatesComplete;
+            assert.strictEqual(select.value, "enabled" /* SDK.EmulationModel.DataSaverOverride.ENABLED */);
+            assert.strictEqual(select.selectedIndex, 1);
+        });
+        it('updates selection when setting changes', async () => {
+            const setting = Common.Settings.Settings.instance().resolve(SDK.SDKSettings.dataSaverSettingDescriptor);
+            const select = MobileThrottling.ThrottlingManager.ThrottlingManager.instance({ forceNew: true })
+                .createSaveDataOverrideSelector();
+            renderElementIntoDOM(select);
+            await UI.Widget.Widget.allUpdatesComplete;
+            assert.strictEqual(select.value, "unset" /* SDK.EmulationModel.DataSaverOverride.UNSET */);
+            setting.set("disabled" /* SDK.EmulationModel.DataSaverOverride.DISABLED */);
+            await UI.Widget.Widget.allUpdatesComplete;
+            assert.strictEqual(select.value, "disabled" /* SDK.EmulationModel.DataSaverOverride.DISABLED */);
+            assert.strictEqual(select.selectedIndex, 2);
+        });
+        it('stops listening to setting changes when removed from DOM', async () => {
+            const setting = Common.Settings.Settings.instance().resolve(SDK.SDKSettings.dataSaverSettingDescriptor);
+            const select = MobileThrottling.ThrottlingManager.ThrottlingManager.instance({ forceNew: true })
+                .createSaveDataOverrideSelector();
+            renderElementIntoDOM(select);
+            await UI.Widget.Widget.allUpdatesComplete;
+            const widget = UI.Widget.Widget.get(select);
+            assert.isNotNull(widget);
+            const requestUpdateSpy = sinon.spy(widget, 'requestUpdate');
+            select.remove();
+            await new Promise(resolve => setTimeout(resolve, 0));
+            setting.set("enabled" /* SDK.EmulationModel.DataSaverOverride.ENABLED */);
+            sinon.assert.notCalled(requestUpdateSpy);
         });
     });
 });

@@ -1,14 +1,14 @@
 {
-  "checkJs": true,
   "compilerOptions": {
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "checkJs": true,
-    "composite": true,
-    "declaration": true,
+    "composite": false,
+    "declaration": false,
     "disableSourceOfProjectReferenceRedirect": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
+    "incremental": false,
     "inlineSources": true,
     "lib": [
       "dom",
@@ -20,12 +20,11 @@
       "ESNext.Array"
     ],
     "module": "esnext",
+    "moduleResolution": "bundler",
     "noEmitOnError": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
     "noImplicitReturns": true,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
     "outDir": ".",
     "preserveConstEnums": true,
     "rootDir": "../../../../../../front_end/panels/recorder",
@@ -33,7 +32,6 @@
     "sourceMap": true,
     "strict": true,
     "target": "esnext",
-    "tsBuildInfoFile": "unittests-tsconfig.json.tsbuildinfo",
     "typeRoots": [
       "../../../../../../node_modules/@types",
       "../../../../../../node_modules"
@@ -54,11 +52,12 @@
     "../../../../../../front_end/panels/recorder/injected.test.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../front_end/global_typings/global_defs.d.ts",
-    "../../../../../../node_modules/@types/filesystem/index.d.ts"
+    "../../../../../../node_modules/@types/filesystem/index.d.ts",
+    "../../../../../../node_modules/@types/filewriter/index.d.ts"
   ],
   "references": [
     {
-      "path": "./bundle-tsconfig.ref.json"
+      "path": "bundle-tsconfig.ref.json"
     },
     {
       "path": "../../core/host/bundle-tsconfig.ref.json"
@@ -82,6 +81,9 @@
       "path": "extensions/bundle-tsconfig.ref.json"
     },
     {
+      "path": "injected/injected-tsconfig.ref.json"
+    },
+    {
       "path": "models/bundle-tsconfig.ref.json"
     },
     {
@@ -89,9 +91,6 @@
     },
     {
       "path": "testing/testing-tsconfig.ref.json"
-    },
-    {
-      "path": "injected/bundle-tsconfig.ref.json"
     }
   ]
 }

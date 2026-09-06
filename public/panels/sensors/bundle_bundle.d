@@ -1,0 +1,1 @@
+gen/front_end/panels/sensors/sensors.js: gen/front_end/panels/sensors/locationsSettingsTab.css.js ../../front_end/panels/sensors/LocationsSettingsTab.ts gen/front_end/panels/sensors/sensors.css.js ../../front_end/panels/sensors/SensorsView.ts ../../front_end/panels/sensors/sensors.ts

@@ -42,12 +42,8 @@ describeWithEnvironment('AccessibilityAgentMarkdownRenderer', () => {
                 },
             };
             sinon.stub(targetManager, 'primaryPageTarget').returns(mockTarget);
-            const mockDocument = {
-                documentURL: 'https://example.com',
-            };
-            const mockNode = {
-                ownerDocument: mockDocument,
-            };
+            const mockNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+            mockNode.securityOrigin.returns(SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'));
             mockDomModel.pushNodesByBackendIdsToFrontend.resolves(new Map([
                 [23, mockNode],
             ]));
@@ -71,12 +67,8 @@ describeWithEnvironment('AccessibilityAgentMarkdownRenderer', () => {
                 },
             };
             sinon.stub(targetManager, 'primaryPageTarget').returns(mockTarget);
-            const mockDocument = {
-                documentURL: 'https://cross-origin.com',
-            };
-            const mockNode = {
-                ownerDocument: mockDocument,
-            };
+            const mockNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+            mockNode.securityOrigin.returns(SDK.SecurityOrigin.SecurityOrigin.create('https://cross-origin.com'));
             mockDomModel.pushNodesByBackendIdsToFrontend.resolves(new Map([
                 [23, mockNode],
             ]));
@@ -88,7 +80,7 @@ describeWithEnvironment('AccessibilityAgentMarkdownRenderer', () => {
             assert.include(el.textContent, 'text');
             assert.notInclude(el.textContent, 'LINKIFIED');
         });
-        it('linkifies nodes using #node-ID if both are identical data URLs', async () => {
+        it('does not linkify nodes if the document is a data URL', async () => {
             const targetManager = SDK.TargetManager.TargetManager.instance();
             const mockDomModel = sinon.createStubInstance(SDK.DOMModel.DOMModel);
             const mockTarget = {
@@ -100,25 +92,20 @@ describeWithEnvironment('AccessibilityAgentMarkdownRenderer', () => {
                 },
             };
             sinon.stub(targetManager, 'primaryPageTarget').returns(mockTarget);
-            const mockDocument = {
-                documentURL: 'data:text/html,foo',
-            };
-            const mockNode = {
-                ownerDocument: mockDocument,
-            };
+            const mockNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+            mockNode.securityOrigin.returns(SDK.SecurityOrigin.SecurityOrigin.create('data:text/html,foo'));
             mockDomModel.pushNodesByBackendIdsToFrontend.resolves(new Map([
                 [23, mockNode],
             ]));
             const linkifyStub = sinon.stub(PanelsCommon.DOMLinkifier.Linkifier.instance(), 'linkify').returns(html `<span>LINKIFIED</span>`);
             const component = new MarkdownView.MarkdownView.MarkdownView();
             renderElementIntoDOM(component, { allowMultipleChildren: true });
-            const linkifyCalledPromise = expectCalled(linkifyStub);
             component.data = {
                 tokens: Marked.Marked.lexer('[text](#node-23)'),
                 renderer: new AiAssistance.AccessibilityAgentMarkdownRenderer(urlString `data:text/html,foo`),
             };
-            await linkifyCalledPromise;
-            sinon.assert.calledOnce(linkifyStub);
+            await new Promise(resolve => setTimeout(resolve, 0));
+            sinon.assert.notCalled(linkifyStub);
         });
         it('does not linkify nodes if they are different data URLs', async () => {
             const targetManager = SDK.TargetManager.TargetManager.instance();
@@ -132,12 +119,8 @@ describeWithEnvironment('AccessibilityAgentMarkdownRenderer', () => {
                 },
             };
             sinon.stub(targetManager, 'primaryPageTarget').returns(mockTarget);
-            const mockDocument = {
-                documentURL: 'data:text/html,bar',
-            };
-            const mockNode = {
-                ownerDocument: mockDocument,
-            };
+            const mockNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+            mockNode.securityOrigin.returns(SDK.SecurityOrigin.SecurityOrigin.create('data:text/html,bar'));
             mockDomModel.pushNodesByBackendIdsToFrontend.resolves(new Map([
                 [23, mockNode],
             ]));
@@ -182,12 +165,8 @@ describeWithEnvironment('AccessibilityAgentMarkdownRenderer', () => {
                 },
             };
             sinon.stub(targetManager, 'primaryPageTarget').returns(mockTarget);
-            const mockDocument = {
-                documentURL: 'https://example.com',
-            };
-            const mockNode = {
-                ownerDocument: mockDocument,
-            };
+            const mockNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+            mockNode.securityOrigin.returns(SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'));
             mockDomModel.pushNodeByPathToFrontend.resolves(42);
             mockDomModel.nodeForId.returns(mockNode);
             const linkifyStub = sinon.stub(PanelsCommon.DOMLinkifier.Linkifier.instance(), 'linkify')
@@ -210,12 +189,8 @@ describeWithEnvironment('AccessibilityAgentMarkdownRenderer', () => {
                 },
             };
             sinon.stub(targetManager, 'primaryPageTarget').returns(mockTarget);
-            const mockDocument = {
-                documentURL: 'https://example.com',
-            };
-            const mockNode = {
-                ownerDocument: mockDocument,
-            };
+            const mockNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+            mockNode.securityOrigin.returns(SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'));
             mockDomModel.pushNodeByPathToFrontend.resolves(42);
             mockDomModel.nodeForId.returns(mockNode);
             const linkifyStub = sinon.stub(PanelsCommon.DOMLinkifier.Linkifier.instance(), 'linkify')
@@ -239,12 +214,8 @@ describeWithEnvironment('AccessibilityAgentMarkdownRenderer', () => {
                 },
             };
             sinon.stub(targetManager, 'primaryPageTarget').returns(mockTarget);
-            const mockDocument = {
-                documentURL: 'https://cross-origin.com',
-            };
-            const mockNode = {
-                ownerDocument: mockDocument,
-            };
+            const mockNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+            mockNode.securityOrigin.returns(SDK.SecurityOrigin.SecurityOrigin.create('https://cross-origin.com'));
             mockDomModel.pushNodeByPathToFrontend.resolves(42);
             mockDomModel.nodeForId.returns(mockNode);
             const component = new MarkdownView.MarkdownView.MarkdownView();

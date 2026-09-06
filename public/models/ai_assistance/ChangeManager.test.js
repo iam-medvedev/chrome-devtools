@@ -4,9 +4,8 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
-import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import * as AiAssistanceModel from '../ai_assistance/ai_assistance.js';
-describeWithEnvironment('ChangeManager', () => {
+describe('ChangeManager', () => {
     let styleSheetId = 0;
     const frameId = '1';
     const anotherFrameId = '2';
@@ -154,9 +153,7 @@ describeWithEnvironment('ChangeManager', () => {
         assert.deepEqual(cssModel.setStyleSheetText.lastCall.args, ['2', '.ai-style-change-1 {\n  body& {\n    color: green;\n  }\n}', true]);
     });
     it('disposes targetManager and cssModel listeners on dispose', async () => {
-        // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
-        const targetManager = SDK.TargetManager.TargetManager.instance();
-        const removeModelListenerSpy = sinon.spy(targetManager, 'removeModelListener');
+        const targetManager = sinon.createStubInstance(SDK.TargetManager.TargetManager);
         const changeManager = new AiAssistanceModel.ChangeManager.ChangeManager(targetManager);
         const cssModel = createModel();
         await changeManager.addChange(cssModel, frameId, {
@@ -168,7 +165,7 @@ describeWithEnvironment('ChangeManager', () => {
             },
         });
         changeManager.dispose();
-        sinon.assert.calledWith(removeModelListenerSpy, SDK.ResourceTreeModel.ResourceTreeModel, sinon.match(SDK.ResourceTreeModel.Events.PrimaryPageChanged), changeManager.clear, changeManager);
+        sinon.assert.calledWith(targetManager.removeModelListener, SDK.ResourceTreeModel.ResourceTreeModel, sinon.match(SDK.ResourceTreeModel.Events.PrimaryPageChanged), changeManager.clear, changeManager);
         sinon.assert.calledWith(cssModel.removeEventListener, SDK.CSSModel.Events.ModelDisposed, sinon.match.func, changeManager);
     });
 });

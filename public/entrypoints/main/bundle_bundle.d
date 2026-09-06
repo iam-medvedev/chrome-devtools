@@ -1,0 +1,1 @@
+gen/front_end/entrypoints/main/main.js: ../../front_end/entrypoints/main/ExecutionContextSelector.ts gen/front_end/entrypoints/main/globalAiButton.css.js ../../front_end/entrypoints/main/GlobalAiButton.ts ../../front_end/entrypoints/main/MainImpl.ts ../../front_end/entrypoints/main/SimpleApp.ts ../../front_end/entrypoints/main/main.ts

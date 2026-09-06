@@ -17,7 +17,7 @@ export default `/*
   .webauthn-toolbar-container {
     display: flex;
     background-color: var(--sys-color-cdt-base-container);
-    border-bottom: 1px solid var(--sys-color-divider);
+    border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
     flex: 0 0 auto;
   }
 
@@ -103,7 +103,7 @@ export default `/*
   }
 
   .authenticator-section-title {
-    line-height: 24px;
+    line-height: var(--sys-typescale-body1-line-height);
     display: inline-flex;
   }
 
@@ -116,7 +116,7 @@ export default `/*
   }
 
   .authenticator-section-title.editing-name .authenticator-name-field {
-    border-bottom: 1px solid var(--sys-color-neutral-outline);
+    border-bottom: var(--sys-size-1) solid var(--sys-color-neutral-outline);
     font-weight: normal;
     animation: none;
   }
@@ -146,13 +146,13 @@ export default `/*
   }
 
   ::part(action-button) {
-    min-width: 20px;
-    margin: 4px;
+    min-width: var(--sys-size-9);
+    margin: var(--sys-size-3);
   }
 
   .active-button-container {
     display: inline-block;
-    min-width: 28px;
+    min-width: var(--sys-size-12);
   }
 
   .edit-name-toolbar {

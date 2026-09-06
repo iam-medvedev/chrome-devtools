@@ -1,7 +1,7 @@
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type OverviewData } from './CSSOverviewCompletedView.js';
-interface ViewInput {
+export interface ViewInput {
     state: 'start' | 'processing' | 'completed';
     onStartCapture: () => void;
     onCancel: () => void;
@@ -9,7 +9,7 @@ interface ViewInput {
     overviewData: OverviewData;
     target?: SDK.Target.Target;
 }
-type View = (input: ViewInput, output: object, target: HTMLElement) => void;
+export type View = (input: ViewInput, output: object, target: HTMLElement) => void;
 export declare const DEFAULT_VIEW: View;
 export declare class CSSOverviewPanel extends UI.Panel.Panel implements SDK.TargetManager.Observer {
     #private;
@@ -18,4 +18,3 @@ export declare class CSSOverviewPanel extends UI.Panel.Panel implements SDK.Targ
     targetRemoved(): void;
     performUpdate(): void;
 }
-export {};

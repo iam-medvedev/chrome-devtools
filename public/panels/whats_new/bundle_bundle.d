@@ -1,0 +1,1 @@
+gen/front_end/panels/whats_new/whats_new.js: ../../front_end/panels/whats_new/ReleaseNoteText.ts gen/front_end/panels/whats_new/releaseNoteView.css.js ../../front_end/panels/whats_new/ReleaseNoteView.ts ../../front_end/panels/whats_new/WhatsNewImpl.ts ../../front_end/panels/whats_new/whats_new.ts

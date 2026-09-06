@@ -1,4 +1,4 @@
-// gen/front_end/ui/legacy/components/source_frame/source_frame-meta.prebundle.js
+// ../../front_end/ui/legacy/components/source_frame/source_frame-meta.ts
 import * as Common from "../../../../core/common/common.js";
 import * as i18n from "../../../../core/i18n/i18n.js";
 var UIStrings = {
@@ -42,11 +42,11 @@ var UIStrings = {
 var str_ = i18n.i18n.registerUIStrings("ui/legacy/components/source_frame/source_frame-meta.ts", UIStrings);
 var i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(void 0, str_);
 Common.Settings.registerSettingExtension({
-  category: "SOURCES",
-  storageType: "Synced",
+  category: Common.Settings.SettingCategory.SOURCES,
+  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.defaultIndentation),
   settingName: "text-editor-indent",
-  settingType: "enum",
+  settingType: Common.Settings.SettingType.ENUM,
   defaultValue: "    ",
   options: [
     {

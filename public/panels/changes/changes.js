@@ -4,7 +4,7 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// gen/front_end/panels/changes/ChangesView.js
+// ../../front_end/panels/changes/ChangesView.ts
 var ChangesView_exports = {};
 __export(ChangesView_exports, {
   ChangesView: () => ChangesView,
@@ -12,12 +12,12 @@ __export(ChangesView_exports, {
 });
 import "../../ui/legacy/legacy.js";
 import * as i18n5 from "../../core/i18n/i18n.js";
-import * as WorkspaceDiff3 from "../../models/workspace_diff/workspace_diff.js";
+import * as WorkspaceDiff5 from "../../models/workspace_diff/workspace_diff.js";
 import * as UI3 from "../../ui/legacy/legacy.js";
 import * as Lit3 from "../../ui/lit/lit.js";
 import * as VisualLogging3 from "../../ui/visual_logging/visual_logging.js";
 
-// gen/front_end/panels/changes/ChangesSidebar.js
+// ../../front_end/panels/changes/ChangesSidebar.ts
 var ChangesSidebar_exports = {};
 __export(ChangesSidebar_exports, {
   ChangesSidebar: () => ChangesSidebar,
@@ -94,7 +94,7 @@ devtools-icon {
 
 /*# sourceURL=${import.meta.resolve("./changesSidebar.css")} */`;
 
-// gen/front_end/panels/changes/ChangesSidebar.js
+// ../../front_end/panels/changes/ChangesSidebar.ts
 var UIStrings = {
   /**
    * @description Tooltip title for a file item in the Changes sidebar when the file is generated from a source map.
@@ -134,7 +134,10 @@ var DEFAULT_VIEW = (input, output, target) => {
     { container: { attributes: { jslog: `${VisualLogging.pane("sidebar").track({ resize: true })}` } } }
   );
 };
-var ChangesSidebar = class extends Common.ObjectWrapper.eventMixin(UI.Widget.Widget) {
+var ChangesSidebarBase = Common.ObjectWrapper.eventMixin(
+  UI.Widget.Widget
+);
+var ChangesSidebar = class extends ChangesSidebarBase {
   #workspaceDiff = null;
   #view;
   #sourceCodes = /* @__PURE__ */ new Set();
@@ -146,11 +149,19 @@ var ChangesSidebar = class extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
   set workspaceDiff(workspaceDiff) {
     if (this.#workspaceDiff) {
       this.#workspaceDiff.modifiedUISourceCodes().forEach(this.#removeUISourceCode.bind(this));
-      this.#workspaceDiff.removeEventListener("ModifiedStatusChanged", this.uiSourceCodeModifiedStatusChanged, this);
+      this.#workspaceDiff.removeEventListener(
+        WorkspaceDiff.WorkspaceDiff.Events.MODIFIED_STATUS_CHANGED,
+        this.uiSourceCodeModifiedStatusChanged,
+        this
+      );
     }
     this.#workspaceDiff = workspaceDiff;
     this.#workspaceDiff.modifiedUISourceCodes().forEach(this.#addUISourceCode.bind(this));
-    this.#workspaceDiff.addEventListener("ModifiedStatusChanged", this.uiSourceCodeModifiedStatusChanged, this);
+    this.#workspaceDiff.addEventListener(
+      WorkspaceDiff.WorkspaceDiff.Events.MODIFIED_STATUS_CHANGED,
+      this.uiSourceCodeModifiedStatusChanged,
+      this
+    );
     this.requestUpdate();
   }
   selectedUISourceCode() {
@@ -166,23 +177,44 @@ var ChangesSidebar = class extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
   }
   #selectionChanged(selectedUISourceCode) {
     this.#selectedUISourceCode = selectedUISourceCode;
-    this.dispatchEventToListeners(
-      "SelectedUISourceCodeChanged"
-      /* Events.SELECTED_UI_SOURCE_CODE_CHANGED */
-    );
+    this.dispatchEventToListeners("SelectedUISourceCodeChanged" /* SELECTED_UI_SOURCE_CODE_CHANGED */);
     this.requestUpdate();
   }
   #addUISourceCode(uiSourceCode) {
     this.#sourceCodes.add(uiSourceCode);
-    uiSourceCode.addEventListener(Workspace.UISourceCode.Events.TitleChanged, this.requestUpdate, this);
-    uiSourceCode.addEventListener(Workspace.UISourceCode.Events.WorkingCopyChanged, this.requestUpdate, this);
-    uiSourceCode.addEventListener(Workspace.UISourceCode.Events.WorkingCopyCommitted, this.requestUpdate, this);
+    uiSourceCode.addEventListener(
+      Workspace.UISourceCode.Events.TitleChanged,
+      this.requestUpdate,
+      this
+    );
+    uiSourceCode.addEventListener(
+      Workspace.UISourceCode.Events.WorkingCopyChanged,
+      this.requestUpdate,
+      this
+    );
+    uiSourceCode.addEventListener(
+      Workspace.UISourceCode.Events.WorkingCopyCommitted,
+      this.requestUpdate,
+      this
+    );
     this.requestUpdate();
   }
   #removeUISourceCode(uiSourceCode) {
-    uiSourceCode.removeEventListener(Workspace.UISourceCode.Events.TitleChanged, this.requestUpdate, this);
-    uiSourceCode.removeEventListener(Workspace.UISourceCode.Events.WorkingCopyChanged, this.requestUpdate, this);
-    uiSourceCode.removeEventListener(Workspace.UISourceCode.Events.WorkingCopyCommitted, this.requestUpdate, this);
+    uiSourceCode.removeEventListener(
+      Workspace.UISourceCode.Events.TitleChanged,
+      this.requestUpdate,
+      this
+    );
+    uiSourceCode.removeEventListener(
+      Workspace.UISourceCode.Events.WorkingCopyChanged,
+      this.requestUpdate,
+      this
+    );
+    uiSourceCode.removeEventListener(
+      Workspace.UISourceCode.Events.WorkingCopyCommitted,
+      this.requestUpdate,
+      this
+    );
     if (uiSourceCode === this.#selectedUISourceCode) {
       let newSelection;
       for (const sourceCode of this.#sourceCodes.values()) {
@@ -192,7 +224,9 @@ var ChangesSidebar = class extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
         newSelection = sourceCode;
       }
       this.#sourceCodes.delete(uiSourceCode);
-      this.#selectionChanged(newSelection ?? this.#sourceCodes.values().next().value ?? null);
+      this.#selectionChanged(
+        newSelection ?? this.#sourceCodes.values().next().value ?? null
+      );
     } else {
       this.#sourceCodes.delete(uiSourceCode);
     }
@@ -208,10 +242,10 @@ var ChangesSidebar = class extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
     this.requestUpdate();
   }
 };
-var Events;
-(function(Events2) {
+var Events = /* @__PURE__ */ ((Events2) => {
   Events2["SELECTED_UI_SOURCE_CODE_CHANGED"] = "SelectedUISourceCodeChanged";
-})(Events || (Events = {}));
+  return Events2;
+})(Events || {});
 
 // gen/front_end/panels/changes/changesView.css.js
 var changesView_css_default = `/*
@@ -265,7 +299,7 @@ var changesView_css_default = `/*
 
 /*# sourceURL=${import.meta.resolve("./changesView.css")} */`;
 
-// gen/front_end/panels/changes/CombinedDiffView.js
+// ../../front_end/panels/changes/CombinedDiffView.ts
 var CombinedDiffView_exports = {};
 __export(CombinedDiffView_exports, {
   CombinedDiffView: () => CombinedDiffView
@@ -274,7 +308,7 @@ import "../../ui/kit/kit.js";
 import * as Common2 from "../../core/common/common.js";
 import * as i18n3 from "../../core/i18n/i18n.js";
 import * as Persistence from "../../models/persistence/persistence.js";
-import * as WorkspaceDiff2 from "../../models/workspace_diff/workspace_diff.js";
+import * as WorkspaceDiff3 from "../../models/workspace_diff/workspace_diff.js";
 import * as Buttons from "../../ui/components/buttons/buttons.js";
 import * as UI2 from "../../ui/legacy/legacy.js";
 import * as Lit2 from "../../ui/lit/lit.js";
@@ -400,7 +434,7 @@ var combinedDiffView_css_default = `/*
 
 /*# sourceURL=${import.meta.resolve("./combinedDiffView.css")} */`;
 
-// gen/front_end/panels/changes/CombinedDiffView.js
+// ../../front_end/panels/changes/CombinedDiffView.ts
 var COPIED_TO_CLIPBOARD_TEXT_TIMEOUT_MS = 1e3;
 var { html: html2, Directives: { classMap } } = Lit2;
 var UIStrings2 = {
@@ -432,10 +466,10 @@ function renderSingleDiffView(singleDiffViewInput) {
         <div class="summary-right">
           <devtools-button
             .title=${i18nString2(UIStrings2.copyFile, { PH1: fileName })}
-            .size=${"SMALL"}
+            .size=${Buttons.Button.Size.SMALL}
             .iconName=${"copy"}
             .jslogContext=${"combined-diff-view.copy"}
-            .variant=${"icon"}
+            .variant=${Buttons.Button.Variant.ICON}
             @click=${() => onCopy(fileUrl)}
           ></devtools-button>
           ${copied ? html2`<span class="copied">${i18nString2(UIStrings2.copied)}</span>` : Lit2.nothing}
@@ -450,11 +484,14 @@ function renderSingleDiffView(singleDiffViewInput) {
   `;
 }
 var DEFAULT_VIEW2 = (input, output, target) => {
-  Lit2.render(html2`
+  Lit2.render(
+    html2`
       <div class="combined-diff-view">
         ${input.singleDiffViewInputs.map((singleDiffViewInput) => renderSingleDiffView(singleDiffViewInput))}
       </div>
-    `, target);
+    `,
+    target
+  );
 };
 var CombinedDiffView = class extends UI2.Widget.Widget {
   /**
@@ -474,12 +511,20 @@ var CombinedDiffView = class extends UI2.Widget.Widget {
   }
   wasShown() {
     super.wasShown();
-    this.#workspaceDiff?.addEventListener("ModifiedStatusChanged", this.#onDiffModifiedStatusChanged, this);
+    this.#workspaceDiff?.addEventListener(
+      WorkspaceDiff3.WorkspaceDiff.Events.MODIFIED_STATUS_CHANGED,
+      this.#onDiffModifiedStatusChanged,
+      this
+    );
     void this.#initializeModifiedUISourceCodes();
   }
   willHide() {
     super.willHide();
-    this.#workspaceDiff?.removeEventListener("ModifiedStatusChanged", this.#onDiffModifiedStatusChanged, this);
+    this.#workspaceDiff?.removeEventListener(
+      WorkspaceDiff3.WorkspaceDiff.Events.MODIFIED_STATUS_CHANGED,
+      this.#onDiffModifiedStatusChanged,
+      this
+    );
   }
   set workspaceDiff(workspaceDiff) {
     this.#workspaceDiff = workspaceDiff;
@@ -520,9 +565,13 @@ var CombinedDiffView = class extends UI2.Widget.Widget {
     const currentModifiedUISourceCodes = this.#modifiedUISourceCodes;
     const nextModifiedUISourceCodes = this.#workspaceDiff.modifiedUISourceCodes();
     const nowNonModifiedUISourceCodes = currentModifiedUISourceCodes.filter((uiSourceCode) => !nextModifiedUISourceCodes.includes(uiSourceCode));
-    nowNonModifiedUISourceCodes.forEach((nonModifiedUISourceCode) => this.#workspaceDiff?.unsubscribeFromDiffChange(nonModifiedUISourceCode, this.requestUpdate, this));
+    nowNonModifiedUISourceCodes.forEach(
+      (nonModifiedUISourceCode) => this.#workspaceDiff?.unsubscribeFromDiffChange(nonModifiedUISourceCode, this.requestUpdate, this)
+    );
     const newlyModifiedUISourceCodes = nextModifiedUISourceCodes.filter((uiSourceCode) => !currentModifiedUISourceCodes.includes(uiSourceCode));
-    newlyModifiedUISourceCodes.forEach((modifiedUISourceCode) => this.#workspaceDiff?.subscribeToDiffChange(modifiedUISourceCode, this.requestUpdate, this));
+    newlyModifiedUISourceCodes.forEach(
+      (modifiedUISourceCode) => this.#workspaceDiff?.subscribeToDiffChange(modifiedUISourceCode, this.requestUpdate, this)
+    );
     this.#modifiedUISourceCodes = nextModifiedUISourceCodes;
     if (this.isShowing()) {
       this.requestUpdate();
@@ -572,7 +621,7 @@ var CombinedDiffView = class extends UI2.Widget.Widget {
   }
 };
 
-// gen/front_end/panels/changes/ChangesView.js
+// ../../front_end/panels/changes/ChangesView.ts
 var CHANGES_VIEW_URL = "https://developer.chrome.com/docs/devtools/changes";
 var UIStrings3 = {
   /**
@@ -628,30 +677,42 @@ var ChangesView = class _ChangesView extends UI3.Widget.VBox {
   #view;
   constructor(target, view = DEFAULT_VIEW3) {
     super(target, { useShadowDom: "pure" });
-    this.#workspaceDiff = WorkspaceDiff3.WorkspaceDiff.workspaceDiff();
+    this.#workspaceDiff = WorkspaceDiff5.WorkspaceDiff.workspaceDiff();
     this.#view = view;
     this.requestUpdate();
   }
   performUpdate() {
-    this.#view({
-      workspaceDiff: this.#workspaceDiff,
-      selectedSourceCode: this.#selectedUISourceCode,
-      onSelect: (sourceCode) => {
-        this.#selectedUISourceCode = sourceCode;
-        this.requestUpdate();
-      }
-    }, {}, this.contentElement);
+    this.#view(
+      {
+        workspaceDiff: this.#workspaceDiff,
+        selectedSourceCode: this.#selectedUISourceCode,
+        onSelect: (sourceCode) => {
+          this.#selectedUISourceCode = sourceCode;
+          this.requestUpdate();
+        }
+      },
+      {},
+      this.contentElement
+    );
   }
   wasShown() {
     UI3.Context.Context.instance().setFlavor(_ChangesView, this);
     super.wasShown();
     this.requestUpdate();
-    this.#workspaceDiff.addEventListener("ModifiedStatusChanged", this.requestUpdate, this);
+    this.#workspaceDiff.addEventListener(
+      WorkspaceDiff5.WorkspaceDiff.Events.MODIFIED_STATUS_CHANGED,
+      this.requestUpdate,
+      this
+    );
   }
   willHide() {
     super.willHide();
     UI3.Context.Context.instance().setFlavor(_ChangesView, null);
-    this.#workspaceDiff.removeEventListener("ModifiedStatusChanged", this.requestUpdate, this);
+    this.#workspaceDiff.removeEventListener(
+      WorkspaceDiff5.WorkspaceDiff.Events.MODIFIED_STATUS_CHANGED,
+      this.requestUpdate,
+      this
+    );
   }
 };
 export {

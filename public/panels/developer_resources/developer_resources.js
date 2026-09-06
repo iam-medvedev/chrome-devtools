@@ -4,7 +4,7 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// gen/front_end/panels/developer_resources/DeveloperResourcesView.js
+// ../../front_end/panels/developer_resources/DeveloperResourcesView.ts
 var DeveloperResourcesView_exports = {};
 __export(DeveloperResourcesView_exports, {
   DEFAULT_VIEW: () => DEFAULT_VIEW2,
@@ -19,7 +19,7 @@ import * as UI2 from "../../ui/legacy/legacy.js";
 import { html as html2, render as render2 } from "../../ui/lit/lit.js";
 import * as VisualLogging from "../../ui/visual_logging/visual_logging.js";
 
-// gen/front_end/panels/developer_resources/DeveloperResourcesListView.js
+// ../../front_end/panels/developer_resources/DeveloperResourcesListView.ts
 import "../../ui/legacy/components/data_grid/data_grid.js";
 import "../../ui/components/highlighting/highlighting.js";
 import * as Host from "../../core/host/host.js";
@@ -62,7 +62,7 @@ var developerResourcesListView_css_default = `/*
 
 /*# sourceURL=${import.meta.resolve("./developerResourcesListView.css")} */`;
 
-// gen/front_end/panels/developer_resources/DeveloperResourcesListView.js
+// ../../front_end/panels/developer_resources/DeveloperResourcesListView.ts
 var UIStrings = {
   /**
    * @description Column header in the Developer resources panel showing the load status (pending, success, or failure) of a resource.
@@ -143,7 +143,8 @@ var DEFAULT_VIEW = (input, _output, target) => {
     }
     return `${matches.index},${matches[0].length}`;
   }
-  render(html`
+  render(
+    html`
       <style>${developerResourcesListView_css_default}</style>
       <devtools-data-grid name=${i18nString(UIStrings.developerResources)} striped class="flex-auto"
          .filters=${input.filters} @contextmenu=${input.onContextMenu} @selected=${input.onSelect}>
@@ -169,8 +170,8 @@ var DEFAULT_VIEW = (input, _output, target) => {
             </th>
           </tr>
           ${input.items.map((item, index) => {
-    const splitURL = /^(.*)(\/[^/]*)$/.exec(item.url);
-    return html`
+      const splitURL = /^(.*)(\/[^/]*)$/.exec(item.url);
+      return html`
             <tr selected=${item === input.selectedItem || nothing}
                 data-url=${item.url ?? nothing}
                 data-initiator-url=${item.initiator.initiatorUrl ?? nothing}
@@ -199,9 +200,11 @@ var DEFAULT_VIEW = (input, _output, target) => {
                 </devtools-highlight>` : nothing}
               </td>
             </tr>`;
-  })}
+    })}
           </table>
-        </devtools-data-grid>`, target);
+        </devtools-data-grid>`,
+    target
+  );
 };
 var DeveloperResourcesListView = class extends UI.Widget.VBox {
   #items = [];
@@ -333,7 +336,7 @@ var developerResourcesView_css_default = `/*
 
 /*# sourceURL=${import.meta.resolve("./developerResourcesView.css")} */`;
 
-// gen/front_end/panels/developer_resources/DeveloperResourcesView.js
+// ../../front_end/panels/developer_resources/DeveloperResourcesView.ts
 var { widget } = UI2.Widget;
 var { bindToSetting } = UI2.UIUtils;
 var UIStrings2 = {
@@ -420,7 +423,7 @@ var DeveloperResourcesView = class extends UI2.Widget.VBox {
     super({ useShadowDom: true });
     this.#view = view;
     this.#loader = SDK2.PageResourceLoader.PageResourceLoader.instance();
-    this.#loader.addEventListener("Update", this.requestUpdate, this);
+    this.#loader.addEventListener(SDK2.PageResourceLoader.Events.UPDATE, this.requestUpdate, this);
     this.requestUpdate();
   }
   async performUpdate() {

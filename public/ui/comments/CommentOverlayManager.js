@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as CommentManager from '../../models/comment_manager/comment_manager.js';
-import { computeVisibleRect, deepQuerySelectorAll, rematchCommentAnchor, resolveCommentAnchor, resolveCommentAnchorElement, } from './CommentAnchorResolver.js';
+import { computeVisibleRect, deepQuerySelectorAll, getEditorFilePath, rematchCommentAnchor, resolveCommentAnchor, resolveCommentAnchorElement, } from './CommentAnchorResolver.js';
 export var Events;
 (function (Events) {
     Events["POSITIONS_UPDATED"] = "PositionsUpdated";
@@ -201,6 +201,12 @@ export class CommentOverlayManager extends Common.ObjectWrapper.ObjectWrapper {
             const el = this.#liveNodeCache.get(thread) || null;
             if (!el || !el.isConnected) {
                 continue;
+            }
+            if (thread.anchor.editor?.filePath) {
+                const currentFilePath = getEditorFilePath(el);
+                if (currentFilePath && currentFilePath !== thread.anchor.editor.filePath) {
+                    continue;
+                }
             }
             const observer = this.#getIntersectionObserver();
             if (!this.#observedThreads.has(el)) {
@@ -491,7 +497,7 @@ export class CommentOverlayManager extends Common.ObjectWrapper.ObjectWrapper {
             childList: true,
             subtree: true,
             attributes: true,
-            attributeFilter: ['jslog', 'data-network-request-id', 'data-backend-node-id', 'aria-expanded'],
+            attributeFilter: ['jslog', 'data-network-request-id', 'data-backend-node-id', 'aria-expanded', 'data-file-path'],
         });
     }
     #removeMutationObserver() {

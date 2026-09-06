@@ -26,7 +26,6 @@ describe('GetResourceContentTool', () => {
     });
     function createCapabilities(traceContext, target = universe.targetManager.primaryPageTarget()) {
         return {
-            conversationContext: null,
             getPerformanceTraceContext: () => traceContext,
             getTarget: () => target,
         };

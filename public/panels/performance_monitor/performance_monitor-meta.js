@@ -1,4 +1,4 @@
-// gen/front_end/panels/performance_monitor/performance_monitor-meta.prebundle.js
+// ../../front_end/panels/performance_monitor/performance_monitor-meta.ts
 import * as i18n from "../../core/i18n/i18n.js";
 import * as UI from "../../ui/legacy/legacy.js";
 var UIStrings = {
@@ -41,11 +41,11 @@ async function loadPerformanceMonitorModule() {
   return loadedPerformanceMonitorModule;
 }
 UI.ViewManager.registerViewExtension({
-  location: "drawer-view",
+  location: UI.ViewManager.ViewLocationValues.DRAWER_VIEW,
   id: "performance.monitor",
   title: i18nLazyString(UIStrings.performanceMonitor),
   commandPrompt: i18nLazyString(UIStrings.showPerformanceMonitor),
-  persistence: "closeable",
+  persistence: UI.ViewManager.ViewPersistence.CLOSEABLE,
   order: 100,
   async loadView() {
     const PerformanceMonitor = await loadPerformanceMonitorModule();

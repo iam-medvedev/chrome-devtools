@@ -4,7 +4,7 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// gen/front_end/ui/components/panel_feedback/FeedbackButton.js
+// ../../front_end/ui/components/panel_feedback/FeedbackButton.ts
 var FeedbackButton_exports = {};
 __export(FeedbackButton_exports, {
   FeedbackButton: () => FeedbackButton
@@ -43,7 +43,7 @@ var FeedbackButton = class extends HTMLElement {
       <devtools-button
           @click=${this.#onFeedbackClick}
           .iconName=${"review"}
-          .variant=${"outlined"}
+          .variant=${Buttons.Button.Variant.OUTLINED}
           .jslogContext=${"feedback"}
       >${i18nString(UIStrings.feedback)}</devtools-button>
       `, this.#shadow, { host: this });
@@ -51,7 +51,7 @@ var FeedbackButton = class extends HTMLElement {
 };
 customElements.define("devtools-feedback-button", FeedbackButton);
 
-// gen/front_end/ui/components/panel_feedback/PanelFeedback.js
+// ../../front_end/ui/components/panel_feedback/PanelFeedback.ts
 var PanelFeedback_exports = {};
 __export(PanelFeedback_exports, {
   PanelFeedback: () => PanelFeedback
@@ -144,7 +144,7 @@ devtools-link.quick-start-link {
 
 /*# sourceURL=${import.meta.resolve("./panelFeedback.css")} */`;
 
-// gen/front_end/ui/components/panel_feedback/PanelFeedback.js
+// ../../front_end/ui/components/panel_feedback/PanelFeedback.ts
 var UIStrings2 = {
   /**
    * @description Introduction sentence to convey the feature is being actively worked on and we are looking for feedback.
@@ -203,7 +203,7 @@ var PanelFeedback = class extends HTMLElement {
 };
 customElements.define("devtools-panel-feedback", PanelFeedback);
 
-// gen/front_end/ui/components/panel_feedback/PreviewToggle.js
+// ../../front_end/ui/components/panel_feedback/PreviewToggle.ts
 var PreviewToggle_exports = {};
 __export(PreviewToggle_exports, {
   PreviewToggle: () => PreviewToggle
@@ -259,7 +259,7 @@ var previewToggle_css_default = `/*
 
 /*# sourceURL=${import.meta.resolve("./previewToggle.css")} */`;
 
-// gen/front_end/ui/components/panel_feedback/PreviewToggle.js
+// ../../front_end/ui/components/panel_feedback/PreviewToggle.ts
 var UIStrings3 = {
   /**
    * @description Link text the user can click to provide feedback to the team.
@@ -295,7 +295,8 @@ var PreviewToggle = class extends HTMLElement {
   }
   #render() {
     const checked = this.#experiment && Root.Runtime.experiments.isEnabled(this.#experiment);
-    render3(html3`
+    render3(
+      html3`
       <style>${previewToggle_css_default}</style>
       <div class="container">
           <devtools-checkbox
@@ -311,9 +312,12 @@ var PreviewToggle = class extends HTMLElement {
         <div class="helper">
           ${this.#helperText && this.#feedbackURL ? html3`<p>${this.#helperText} <devtools-link class="devtools-link" href=${this.#feedbackURL} jslogContext=${"feedback"}>${i18nString3(UIStrings3.previewTextFeedbackLink)}</devtools-link></p>` : nothing}
         </div>
-      </div>`, this.#shadow, {
-      host: this
-    });
+      </div>`,
+      this.#shadow,
+      {
+        host: this
+      }
+    );
   }
   #checkboxChanged(event) {
     const checked = event.target.checked;

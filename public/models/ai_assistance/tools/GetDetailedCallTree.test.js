@@ -27,7 +27,6 @@ describe('GetDetailedCallTreeTool', () => {
     });
     it('returns error when PerformanceTraceContext is not available', async () => {
         const context = {
-            conversationContext: null,
             getPerformanceTraceContext: () => null,
         };
         const tool = new GetDetailedCallTreeTool();
@@ -41,7 +40,6 @@ describe('GetDetailedCallTreeTool', () => {
         tracker.registerFreshRecording(parsedTrace);
         const traceContext = AiAssistance.PerformanceTraceContext.PerformanceTraceContext.fromParsedTrace(parsedTrace, universe.targetManager, tracker, universe.debuggerWorkspaceBinding);
         const capabilities = {
-            conversationContext: null,
             getPerformanceTraceContext: () => traceContext,
         };
         const tool = new GetDetailedCallTreeTool();
@@ -55,7 +53,6 @@ describe('GetDetailedCallTreeTool', () => {
         const focus = traceContext.getItem();
         sinon.stub(focus, 'lookupEvent').returns(null);
         const capabilities = {
-            conversationContext: null,
             getPerformanceTraceContext: () => traceContext,
         };
         const tool = new GetDetailedCallTreeTool();
@@ -75,7 +72,6 @@ describe('GetDetailedCallTreeTool', () => {
         sinon.stub(focus, 'lookupEvent').withArgs('valid-key').returns(mockEvent);
         sinon.stub(AiAssistance.AICallTree.AICallTree, 'fromEvent').returns(null);
         const capabilities = {
-            conversationContext: null,
             getPerformanceTraceContext: () => traceContext,
         };
         const tool = new GetDetailedCallTreeTool();
@@ -99,7 +95,6 @@ describe('GetDetailedCallTreeTool', () => {
             formatCallTree: sinon.stub().resolves('mock formatted call tree'),
         });
         const capabilities = {
-            conversationContext: null,
             getPerformanceTraceContext: () => traceContext,
         };
         const tool = new GetDetailedCallTreeTool();

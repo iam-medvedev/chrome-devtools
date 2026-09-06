@@ -1,6 +1,7 @@
 // Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { assert } from 'chai';
 import { assertScreenshot } from '../../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
 import { renderWidgetInVbox, } from '../../../../testing/TraceHelpers.js';
@@ -45,6 +46,44 @@ describeWithEnvironment('ChartViewport', () => {
         });
         viewport.setContentHeight(1000);
         await assertScreenshot('timeline/chart_viewport_scroll_when_overflow.png');
+    });
+    it('cancels any active animation when setWindowTimes is called without animation', () => {
+        const delegate = new FakeChartViewportDelegate();
+        const viewport = new PerfUI.ChartViewport.ChartViewport(delegate, { enableCursorElement: false });
+        viewport.setBoundaries(0, 1000);
+        viewport.setWindowTimes(0, 1000, false);
+        assert.strictEqual(viewport.windowLeftTime(), 0);
+        assert.strictEqual(viewport.windowRightTime(), 1000);
+        // Start an animated window transition.
+        viewport.setWindowTimes(200, 800, true);
+        // Immediately interrupt with an un-animated window change.
+        viewport.setWindowTimes(300, 700, false);
+        assert.strictEqual(viewport.windowLeftTime(), 300);
+        assert.strictEqual(viewport.windowRightTime(), 700);
+    });
+    it('snaps to target bounds when willHide is called during an active animation', () => {
+        const delegate = new FakeChartViewportDelegate();
+        const viewport = new PerfUI.ChartViewport.ChartViewport(delegate, { enableCursorElement: false });
+        viewport.setBoundaries(0, 1000);
+        viewport.setWindowTimes(0, 1000, false);
+        // Start an animated window transition.
+        viewport.setWindowTimes(200, 800, true);
+        // View is hidden while animation is in flight.
+        viewport.willHide();
+        assert.strictEqual(viewport.windowLeftTime(), 200);
+        assert.strictEqual(viewport.windowRightTime(), 800);
+    });
+    it('snaps immediately when setWindowTimes is called without animation to the same target as an active animation', () => {
+        const delegate = new FakeChartViewportDelegate();
+        const viewport = new PerfUI.ChartViewport.ChartViewport(delegate, { enableCursorElement: false });
+        viewport.setBoundaries(0, 1000);
+        viewport.setWindowTimes(0, 1000, false);
+        // Start an animated window transition to (200, 800).
+        viewport.setWindowTimes(200, 800, true);
+        // Snap to the same target (200, 800) without animation.
+        viewport.setWindowTimes(200, 800, false);
+        assert.strictEqual(viewport.windowLeftTime(), 200);
+        assert.strictEqual(viewport.windowRightTime(), 800);
     });
 });
 //# sourceMappingURL=ChartViewport.test.js.map

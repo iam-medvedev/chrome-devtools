@@ -1,4 +1,4 @@
-// gen/front_end/ui/legacy/components/perf_ui/perf_ui-meta.prebundle.js
+// ../../front_end/ui/legacy/components/perf_ui/perf_ui-meta.ts
 import * as Common from "../../../../core/common/common.js";
 import * as i18n from "../../../../core/i18n/i18n.js";
 import * as UI from "../../legacy.js";
@@ -31,20 +31,20 @@ async function loadPerfUIModule() {
 }
 UI.ActionRegistration.registerActionExtension({
   actionId: "components.collect-garbage",
-  category: "PERFORMANCE",
+  category: UI.ActionRegistration.ActionCategory.PERFORMANCE,
   title: i18nLazyString(UIStrings.collectGarbage),
-  iconClass: "mop",
+  iconClass: UI.ActionRegistration.IconClass.MOP,
   async loadActionDelegate() {
     const PerfUI = await loadPerfUIModule();
     return new PerfUI.GCActionDelegate.GCActionDelegate();
   }
 });
 Common.Settings.registerSettingExtension({
-  category: "PERFORMANCE",
-  storageType: "Synced",
+  category: Common.Settings.SettingCategory.PERFORMANCE,
+  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.flamechartSelectedNavigation),
   settingName: "flamechart-selected-navigation",
-  settingType: "enum",
+  settingType: Common.Settings.SettingType.ENUM,
   defaultValue: "classic",
   options: [
     {

@@ -1,4 +1,4 @@
-// gen/front_end/panels/developer_resources/developer_resources-meta.prebundle.js
+// ../../front_end/panels/developer_resources/developer_resources-meta.ts
 import * as Common from "../../core/common/common.js";
 import * as i18n from "../../core/i18n/i18n.js";
 import * as SDK from "../../core/sdk/sdk.js";
@@ -23,12 +23,12 @@ async function loadDeveloperResourcesModule() {
   return loadedDeveloperResourcesModule;
 }
 UI.ViewManager.registerViewExtension({
-  location: "drawer-view",
+  location: UI.ViewManager.ViewLocationValues.DRAWER_VIEW,
   id: "developer-resources",
   title: i18nLazyString(UIStrings.developerResources),
   commandPrompt: i18nLazyString(UIStrings.showDeveloperResources),
   order: 100,
-  persistence: "closeable",
+  persistence: UI.ViewManager.ViewPersistence.CLOSEABLE,
   async loadView() {
     const DeveloperResources = await loadDeveloperResourcesModule();
     return new DeveloperResources.DeveloperResourcesView.DeveloperResourcesView();

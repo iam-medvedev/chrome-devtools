@@ -4,7 +4,7 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// gen/front_end/entrypoints/wasmparser_worker/WasmParserWorker.js
+// ../../front_end/entrypoints/wasmparser_worker/WasmParserWorker.ts
 var WasmParserWorker_exports = {};
 __export(WasmParserWorker_exports, {
   dissambleWASM: () => dissambleWASM

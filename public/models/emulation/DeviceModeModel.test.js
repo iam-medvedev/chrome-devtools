@@ -830,49 +830,48 @@ describe('DeviceModeModel', () => {
     });
     describe('saveScreenshot', () => {
         const { urlString } = Platform.DevToolsPath;
-        it('generates a correct and safe screenshot filename under 63 characters', async () => {
-            const url = urlString `https://example.test/path/to/a/very/long/url/representing/some/products/coffee-machine-compact-espresso-maker-stainless-steel-model-77`;
+        it('triggers a download with the correct filename and revokes the previous blob URL on subsequent save or dispose', async () => {
+            const url = urlString `https://example.test/path/to/page.html#section`;
             sinon.stub(deviceModeModel, 'inspectedURL').returns(url);
             sinon.stub(deviceModeModel, 'type').returns(EmulationModel.DeviceModeModel.Type.Device);
-            sinon.stub(deviceModeModel, 'device').returns({
-                title: 'Pixel 10',
-            });
-            const saveStub = sinon.stub(universe.fileManager, 'save').resolves({
-                fileSystemPath: 'foo',
-            });
-            sinon.stub(universe.fileManager, 'close');
+            const device = new EmulationModel.EmulatedDevices.EmulatedDevice();
+            device.title = 'Pixel 10';
+            sinon.stub(deviceModeModel, 'device').returns(device);
+            const clickStub = sinon.stub(HTMLAnchorElement.prototype, 'click');
+            const revokeObjectURLSpy = sinon.spy(URL, 'revokeObjectURL');
             const canvas = new OffscreenCanvas(1, 1);
             canvas.getContext('2d');
             await deviceModeModel.saveScreenshot(canvas);
-            sinon.assert.calledOnce(saveStub);
-            const filename = saveStub.firstCall.args[0];
-            assert.isAtMost(filename.length, 63);
-            assert.isTrue(filename.endsWith('(Pixel 10).png'));
-            assert.isFalse(filename.includes('/'));
-            assert.strictEqual(filename, 'example.test-path-to-a-very-long-url-representing(Pixel 10).png');
+            sinon.assert.calledOnce(clickStub);
+            assert.strictEqual(clickStub.firstCall.thisValue.download, 'example.test/path/to/page.html(Pixel 10).png');
+            // The current blob URL is retained so the download can complete without timing issues.
+            sinon.assert.notCalled(revokeObjectURLSpy);
+            // A second screenshot revokes the first blob URL.
+            await deviceModeModel.saveScreenshot(canvas);
+            sinon.assert.calledOnce(revokeObjectURLSpy);
+            // Disposing the model revokes the remaining blob URL.
+            deviceModeModel.dispose();
+            sinon.assert.calledTwice(revokeObjectURLSpy);
         });
-        it('truncates the screenshot filename correctly when the device name is extremely long', async () => {
-            const url = urlString `https://example.test/path/to/a/very/long/url/representing/some/products/coffee-machine-compact-espresso-maker-stainless-steel-model-77`;
-            sinon.stub(deviceModeModel, 'inspectedURL').returns(url);
-            sinon.stub(deviceModeModel, 'type').returns(EmulationModel.DeviceModeModel.Type.Device);
-            const longDeviceName = 'A'.repeat(70);
-            sinon.stub(deviceModeModel, 'device').returns({
-                title: longDeviceName,
-            });
-            const saveStub = sinon.stub(universe.fileManager, 'save').resolves({
-                fileSystemPath: 'foo',
-            });
-            sinon.stub(universe.fileManager, 'close');
+        it('revokes blob URL when turning off device mode', async () => {
+            sinon.stub(HTMLAnchorElement.prototype, 'click');
+            const revokeObjectURLSpy = sinon.spy(URL, 'revokeObjectURL');
             const canvas = new OffscreenCanvas(1, 1);
             canvas.getContext('2d');
             await deviceModeModel.saveScreenshot(canvas);
-            sinon.assert.calledOnce(saveStub);
-            const filename = saveStub.firstCall.args[0];
-            assert.isAtMost(filename.length, 63);
-            assert.isTrue(filename.endsWith('.png'));
-            assert.isFalse(filename.includes('/'));
-            const expectedName = `(${'A'.repeat(58)}.png`;
-            assert.strictEqual(filename, expectedName);
+            sinon.assert.notCalled(revokeObjectURLSpy);
+            deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.None, null, null);
+            sinon.assert.calledOnce(revokeObjectURLSpy);
+        });
+        it('revokes blob URL when the main frame navigates', async () => {
+            sinon.stub(HTMLAnchorElement.prototype, 'click');
+            const revokeObjectURLSpy = sinon.spy(URL, 'revokeObjectURL');
+            const canvas = new OffscreenCanvas(1, 1);
+            canvas.getContext('2d');
+            await deviceModeModel.saveScreenshot(canvas);
+            sinon.assert.notCalled(revokeObjectURLSpy);
+            navigate(getMainFrame(target));
+            sinon.assert.calledOnce(revokeObjectURLSpy);
         });
     });
 });

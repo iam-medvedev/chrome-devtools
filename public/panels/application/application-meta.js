@@ -1,4 +1,4 @@
-// gen/front_end/panels/application/application-meta.prebundle.js
+// ../../front_end/panels/application/application-meta.ts
 import * as Common from "../../core/common/common.js";
 import * as i18n from "../../core/i18n/i18n.js";
 import * as SDK from "../../core/sdk/sdk.js";
@@ -50,7 +50,7 @@ function maybeRetrieveContextTypes(getClassCallBack) {
   return getClassCallBack(loadedResourcesModule);
 }
 UI.ViewManager.registerViewExtension({
-  location: "panel",
+  location: UI.ViewManager.ViewLocationValues.PANEL,
   id: "resources",
   title: i18nLazyString(UIStrings.application),
   commandPrompt: i18nLazyString(UIStrings.showApplication),
@@ -62,7 +62,7 @@ UI.ViewManager.registerViewExtension({
   tags: [i18nLazyString(UIStrings.pwa)]
 });
 UI.ActionRegistration.registerActionExtension({
-  category: "RESOURCES",
+  category: UI.ActionRegistration.ActionCategory.RESOURCES,
   actionId: "resources.clear",
   title: i18nLazyString(UIStrings.clearSiteData),
   async loadActionDelegate() {
@@ -71,7 +71,7 @@ UI.ActionRegistration.registerActionExtension({
   }
 });
 UI.ActionRegistration.registerActionExtension({
-  category: "RESOURCES",
+  category: UI.ActionRegistration.ActionCategory.RESOURCES,
   actionId: "resources.clear-incl-third-party-cookies",
   title: i18nLazyString(UIStrings.clearSiteDataIncludingThirdparty),
   async loadActionDelegate() {
@@ -81,9 +81,9 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "background-service.toggle-recording",
-  iconClass: "record-start",
+  iconClass: UI.ActionRegistration.IconClass.START_RECORDING,
   toggleable: true,
-  toggledIconClass: "record-stop",
+  toggledIconClass: UI.ActionRegistration.IconClass.STOP_RECORDING,
   toggleWithRedColor: true,
   contextTypes() {
     return maybeRetrieveContextTypes((Resources) => [Resources.BackgroundServiceView.BackgroundServiceView]);
@@ -92,7 +92,7 @@ UI.ActionRegistration.registerActionExtension({
     const Resources = await loadResourcesModule();
     return new Resources.BackgroundServiceView.ActionDelegate();
   },
-  category: "BACKGROUND_SERVICES",
+  category: UI.ActionRegistration.ActionCategory.BACKGROUND_SERVICES,
   options: [
     {
       value: true,
@@ -105,11 +105,11 @@ UI.ActionRegistration.registerActionExtension({
   ],
   bindings: [
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Ctrl+E"
     },
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Meta+E"
     }
   ]

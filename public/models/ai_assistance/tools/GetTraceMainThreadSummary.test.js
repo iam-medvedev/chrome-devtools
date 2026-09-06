@@ -27,7 +27,6 @@ describe('GetTraceMainThreadSummaryTool', () => {
     });
     it('returns error when PerformanceTraceContext is not available', async () => {
         const context = {
-            conversationContext: null,
             getPerformanceTraceContext: () => null,
         };
         const tool = new GetTraceMainThreadSummaryTool();
@@ -40,7 +39,6 @@ describe('GetTraceMainThreadSummaryTool', () => {
         const traceContext = AiAssistance.PerformanceTraceContext.PerformanceTraceContext.fromParsedTrace(parsedTrace, universe.targetManager, new Tracing.FreshRecording.Tracker(), universe.debuggerWorkspaceBinding);
         sinon.stub(traceContext, 'getBoundsForLabel').returns(null);
         const capabilities = {
-            conversationContext: null,
             getPerformanceTraceContext: () => traceContext,
         };
         const tool = new GetTraceMainThreadSummaryTool();
@@ -57,7 +55,6 @@ describe('GetTraceMainThreadSummaryTool', () => {
             formatMainThreadTrackSummary: sinon.stub().resolves('mock main thread summary details'),
         });
         const capabilities = {
-            conversationContext: null,
             getPerformanceTraceContext: () => traceContext,
         };
         const tool = new GetTraceMainThreadSummaryTool();

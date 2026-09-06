@@ -4,7 +4,7 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// gen/front_end/services/puppeteer/PuppeteerConnection.js
+// ../../front_end/services/puppeteer/PuppeteerConnection.ts
 var PuppeteerConnection_exports = {};
 __export(PuppeteerConnection_exports, {
   PuppeteerConnectionAdapter: () => PuppeteerConnectionAdapter,
@@ -12,14 +12,14 @@ __export(PuppeteerConnection_exports, {
 });
 import * as puppeteer from "../../third_party/puppeteer/puppeteer.js";
 var ProtocolError = class extends Error {
-  code;
-  data;
   constructor(message, code, data) {
     super(message);
     this.code = code;
     this.data = data;
     this.name = "ProtocolError";
   }
+  code;
+  data;
 };
 var PuppeteerConnectionAdapter = class extends puppeteer.Connection {
   #connection;
@@ -33,7 +33,6 @@ var PuppeteerConnectionAdapter = class extends puppeteer.Connection {
       void 0,
       void 0,
       () => void 0
-      /* logger */
     );
     this.#connection = connection;
     this.#connection.observe(this);
@@ -41,7 +40,11 @@ var PuppeteerConnectionAdapter = class extends puppeteer.Connection {
   }
   // eslint-disable-next-line @devtools/no-underscored-properties
   _rawSend(_callbacks, method, params, sessionId, _options) {
-    return this.#connection.send(method, params, sessionId ?? this.#sessionId).then((response) => {
+    return this.#connection.send(
+      method,
+      params,
+      sessionId ?? this.#sessionId
+    ).then((response) => {
       if ("error" in response) {
         throw new ProtocolError(response.error.message, response.error.code, response.error.data);
       }
@@ -79,7 +82,9 @@ var PuppeteerConnectionHelper = class {
       void 0,
       void 0,
       void 0,
-      (target) => isPageTargetCallback(target._getTargetInfo()),
+      (target) => isPageTargetCallback(
+        target._getTargetInfo()
+      ),
       false,
       void 0,
       void 0,
@@ -87,7 +92,6 @@ var PuppeteerConnectionHelper = class {
       void 0,
       void 0,
       () => void 0
-      /* logger */
     );
     const [, browser] = await Promise.all([
       puppeteerConnection._createSession(

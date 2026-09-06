@@ -9,6 +9,12 @@ export default `/*
  * found in the LICENSE file.
  */
 
+.background-service-view, .data-grid-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
 .background-service-toolbar {
   background-color: var(--sys-color-cdt-base-container);
   border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
@@ -23,13 +29,19 @@ export default `/*
   overflow: auto;
 }
 
+.empty-state-container {
+  flex: auto;
+  display: flex;
+  flex-direction: column;
+}
+
 .background-service-preview {
   position: absolute;
   background-color: var(--sys-color-cdt-base-container);
   justify-content: center;
   align-items: center;
   overflow: auto;
-  font-size: 13px;
+  font-size: var(--sys-typescale-body3-size);
   color: var(--sys-color-on-surface-subtle);
 }
 
@@ -79,7 +91,7 @@ export default `/*
 }
 
 .background-service-record-inline-button {
-  margin-bottom: 6px;
+  margin-bottom: var(--sys-size-4);
 }
 
 .start-recording-button {

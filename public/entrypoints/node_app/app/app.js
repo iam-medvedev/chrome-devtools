@@ -4,7 +4,7 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// gen/front_end/entrypoints/node_app/app/NodeConnectionsPanel.js
+// ../../front_end/entrypoints/node_app/app/NodeConnectionsPanel.ts
 var NodeConnectionsPanel_exports = {};
 __export(NodeConnectionsPanel_exports, {
   NodeConnectionsPanel: () => NodeConnectionsPanel,
@@ -131,7 +131,7 @@ var nodeConnectionsPanel_css_default = `/*
 
 /*# sourceURL=${import.meta.resolve("./nodeConnectionsPanel.css")} */`;
 
-// gen/front_end/entrypoints/node_app/app/NodeConnectionsPanel.js
+// ../../front_end/entrypoints/node_app/app/NodeConnectionsPanel.ts
 var UIStrings = {
   /**
    * @description Text in Node connections panel of the Sources panel when debugging a Node.js app.
@@ -167,7 +167,11 @@ var NodeConnectionsPanel = class extends UI.Panel.Panel {
     const container = this.contentElement.createChild("div", "node-panel-center");
     const image = container.createChild("img", "node-panel-logo");
     image.src = nodejsIconUrl;
-    Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.DevicesDiscoveryConfigChanged, this.#devicesDiscoveryConfigChanged, this);
+    Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(
+      Host.InspectorFrontendHostAPI.Events.DevicesDiscoveryConfigChanged,
+      this.#devicesDiscoveryConfigChanged,
+      this
+    );
     this.contentElement.tabIndex = 0;
     this.setDefaultFocusedElement(this.contentElement);
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.setDevicesUpdatesEnabled(false);
@@ -197,8 +201,15 @@ var NodeConnectionsView = class extends UI.Widget.VBox {
     this.#callback = callback;
     this.element.classList.add("network-discovery-view");
     const networkDiscoveryFooter = this.element.createChild("div", "network-discovery-footer");
-    const documentationLink = Link.create("https://nodejs.org/learn/getting-started/debugging", i18nString(UIStrings.nodejsDebuggingGuide), void 0, "node-js-debugging");
-    networkDiscoveryFooter.appendChild(uiI18n.getFormatLocalizedString(str_, UIStrings.specifyNetworkEndpointAnd, { PH1: documentationLink }));
+    const documentationLink = Link.create(
+      "https://nodejs.org/learn/getting-started/debugging",
+      i18nString(UIStrings.nodejsDebuggingGuide),
+      void 0,
+      "node-js-debugging"
+    );
+    networkDiscoveryFooter.appendChild(
+      uiI18n.getFormatLocalizedString(str_, UIStrings.specifyNetworkEndpointAnd, { PH1: documentationLink })
+    );
     this.#list = new UI.ListWidget.ListWidget(this);
     this.#list.registerRequiredCSS(nodeConnectionsPanel_css_default);
     this.#list.element.classList.add("network-discovery-list");
@@ -208,11 +219,11 @@ var NodeConnectionsView = class extends UI.Widget.VBox {
     this.#list.setEmptyPlaceholder(placeholder);
     this.#list.show(this.element);
     this.#editor = null;
-    const addButton = UI.UIUtils.createTextButton(i18nString(UIStrings.addConnection), this.#addNetworkTargetButtonClicked.bind(this), {
-      className: "add-network-target-button",
-      variant: "primary"
-      /* Buttons.Button.Variant.PRIMARY */
-    });
+    const addButton = UI.UIUtils.createTextButton(
+      i18nString(UIStrings.addConnection),
+      this.#addNetworkTargetButtonClicked.bind(this),
+      { className: "add-network-target-button", variant: Buttons.Button.Variant.PRIMARY }
+    );
     this.element.appendChild(addButton);
     this.#networkDiscoveryConfig = [];
     this.element.classList.add("node-frontend");
@@ -282,7 +293,7 @@ var NodeConnectionsView = class extends UI.Widget.VBox {
   }
 };
 
-// gen/front_end/entrypoints/node_app/app/NodeMain.js
+// ../../front_end/entrypoints/node_app/app/NodeMain.ts
 var NodeMain_exports = {};
 __export(NodeMain_exports, {
   NodeChildTargetManager: () => NodeChildTargetManager,
@@ -348,7 +359,11 @@ var NodeChildTargetManager = class extends SDK.SDKModel.SDKModel {
     this.#targetAgent = parentTarget.targetAgent();
     parentTarget.registerTargetDispatcher(this);
     void this.#targetAgent.invoke_setDiscoverTargets({ discover: true });
-    Host2.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host2.InspectorFrontendHostAPI.Events.DevicesDiscoveryConfigChanged, this.#devicesDiscoveryConfigChanged, this);
+    Host2.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(
+      Host2.InspectorFrontendHostAPI.Events.DevicesDiscoveryConfigChanged,
+      this.#devicesDiscoveryConfigChanged,
+      this
+    );
     Host2.InspectorFrontendHost.InspectorFrontendHostInstance.setDevicesUpdatesEnabled(false);
     Host2.InspectorFrontendHost.InspectorFrontendHostInstance.setDevicesUpdatesEnabled(true);
   }
@@ -364,7 +379,11 @@ var NodeChildTargetManager = class extends SDK.SDKModel.SDKModel {
     void this.#targetAgent.invoke_setRemoteLocations({ locations });
   }
   dispose() {
-    Host2.InspectorFrontendHost.InspectorFrontendHostInstance.events.removeEventListener(Host2.InspectorFrontendHostAPI.Events.DevicesDiscoveryConfigChanged, this.#devicesDiscoveryConfigChanged, this);
+    Host2.InspectorFrontendHost.InspectorFrontendHostInstance.events.removeEventListener(
+      Host2.InspectorFrontendHostAPI.Events.DevicesDiscoveryConfigChanged,
+      this.#devicesDiscoveryConfigChanged,
+      this
+    );
     for (const sessionId of this.#childTargets.keys()) {
       this.detachedFromTarget({ sessionId });
     }
@@ -383,13 +402,30 @@ var NodeChildTargetManager = class extends SDK.SDKModel.SDKModel {
   async attachedToTarget({ sessionId, targetInfo }) {
     let target;
     if (targetInfo.type === "node_worker") {
-      target = this.#targetManager.createTarget(targetInfo.targetId, targetInfo.title, SDK.Target.Type.NODE_WORKER, this.#parentTarget, sessionId, true, void 0, targetInfo);
+      target = this.#targetManager.createTarget(
+        targetInfo.targetId,
+        targetInfo.title,
+        SDK.Target.Type.NODE_WORKER,
+        this.#parentTarget,
+        sessionId,
+        true,
+        void 0,
+        targetInfo
+      );
     } else {
       const name = i18nString2(UIStrings2.nodejsS, { PH1: targetInfo.url });
       document.title = i18nString2(UIStrings2.NodejsTitleS, { PH1: targetInfo.url });
       const connection = new NodeConnection(this.#targetAgent, sessionId);
       this.#childConnections.set(sessionId, connection);
-      target = this.#targetManager.createTarget(targetInfo.targetId, name, SDK.Target.Type.NODE, null, void 0, void 0, new ProtocolClient.DevToolsCDPConnection.DevToolsCDPConnection(connection));
+      target = this.#targetManager.createTarget(
+        targetInfo.targetId,
+        name,
+        SDK.Target.Type.NODE,
+        null,
+        void 0,
+        void 0,
+        new ProtocolClient.DevToolsCDPConnection.DevToolsCDPConnection(connection)
+      );
     }
     this.#childTargets.set(sessionId, target);
     void target.runtimeAgent().invoke_runIfWaitingForDebugger();
@@ -456,7 +492,7 @@ var NodeConnection = class {
     await this.#targetAgent.invoke_detachFromTarget({ sessionId: this.#sessionId });
   }
 };
-SDK.SDKModel.SDKModel.register(NodeChildTargetManager, { capabilities: 32, autostart: true });
+SDK.SDKModel.SDKModel.register(NodeChildTargetManager, { capabilities: SDK.Target.Capability.TARGET, autostart: true });
 export {
   NodeConnectionsPanel_exports as NodeConnectionsPanel,
   NodeMain_exports as NodeMain

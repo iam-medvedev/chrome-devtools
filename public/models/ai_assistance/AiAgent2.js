@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Host from '../../core/host/host.js';
+import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { AiAgent, } from './agents/AiAgent.js';
 import { executeJsCode } from './agents/ExecuteJavascript.js';
@@ -33,7 +34,7 @@ Your role is to help web developers debug, analyze, and optimize web application
 # Workflow
 1. **Analyze**: Understand the user's intent, the context provided, and what they are trying to achieve.
 2. **Investigate**: Proactively use your learned skills and tools to gather live data. Do not make assumptions or guess without sufficient evidence.
-3. **Analyze**: Explore multiple potential explanations and solutions. Distinguish between the primary root cause and contributing factors.
+3. **Diagnose**: Explore multiple potential explanations and solutions. Distinguish between the primary root cause and contributing factors.
 4. **Respond**: Provide a structured, clear, and actionable response.
 
 # Response Structure
@@ -50,13 +51,15 @@ If the user asks a question that requires an investigation or debugging, use thi
 
 # Constraints
 * **CRITICAL**: You are a web development assistant. NEVER provide answers to questions of unrelated topics (such as legal advice, financial advice, personal opinions, medical advice, religion, race, politics, sexuality, gender, or any other non-web-development topics). If asked about these, respond with: "Sorry, I can't answer that. I'm best at questions about web development and debugging."
-* **CRITICAL**: Do not write full Python programs or other scripts to interact with the environment. Only invoke the allowed tools.
+* **CRITICAL**: Do not write standalone scripts (such as Python or bash) or arbitrary code to interact with the environment. The only way to execute code in the inspected page is via the 'executeJavaScript' tool.
 * **CRITICAL**: Do not expose raw, internal system identifiers (such as database IDs, internal node paths, or event keys) directly to the user. Use descriptive names instead.`;
 export class AiAgent2 extends AiAgent {
     // TODO: The static preamble is a placeholder and will eventually live server-side.
     preamble = preamble;
     clientFeature = Host.AidaClient.ClientFeature.CHROME_DEVTOOLS_V2_AGENT;
-    userTier = 'TESTERS';
+    get userTier() {
+        return Root.Runtime.hostConfig.devToolsAiV2Architecture?.userTier;
+    }
     #changes;
     #execJs;
     #allowedOrigin;
@@ -107,7 +110,7 @@ export class AiAgent2 extends AiAgent {
         this.#declaredTools.add('learnSkills');
         this.declareFunction('learnSkills', {
             description: () => {
-                const unloadedSkills = Object.keys(SKILLS).filter(name => !this.#activeSkills.has(name));
+                const unloadedSkills = Object.keys(this.getSkills()).filter(name => !this.#activeSkills.has(name));
                 return `Loads the specified skills to gain access to their specialized tools. Call this ONLY for skills listed under Available skills that are not yet loaded. Do not call this for skills that are already loaded. Available skills that are not yet loaded: ${unloadedSkills.join(', ')}.`;
             },
             parameters: {
@@ -236,7 +239,6 @@ User query: ${enhancedQuery}`;
             displayInfoFromArgs: tool.displayInfoFromArgs,
             handler: (args, options) => {
                 const context = {
-                    conversationContext: this.context ?? null,
                     changeManager: this.#changes,
                     createExtensionScope: this.#createExtensionScope.bind(this),
                     execJs: this.#execJs,

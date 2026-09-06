@@ -797,7 +797,8 @@ export class HeapProfileView extends UI.View.SimpleView {
         this.#view(input, this.#viewOutput, this.contentElement);
     }
 }
-export class SamplingHeapProfileTypeBase extends Common.ObjectWrapper.eventMixin(ProfileType) {
+const SamplingHeapProfileTypeBaseBase = Common.ObjectWrapper.eventMixin(ProfileType);
+export class SamplingHeapProfileTypeBase extends SamplingHeapProfileTypeBaseBase {
     recording;
     clearedDuringRecording;
     constructor(typeId, description) {

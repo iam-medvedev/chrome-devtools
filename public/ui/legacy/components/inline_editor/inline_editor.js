@@ -4,7 +4,7 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// gen/front_end/ui/legacy/components/inline_editor/AnimationTimingModel.js
+// ../../front_end/ui/legacy/components/inline_editor/AnimationTimingModel.ts
 var AnimationTimingModel_exports = {};
 __export(AnimationTimingModel_exports, {
   AnimationTimingModel: () => AnimationTimingModel,
@@ -12,7 +12,7 @@ __export(AnimationTimingModel_exports, {
 });
 import * as Geometry from "../../../../models/geometry/geometry.js";
 
-// gen/front_end/ui/legacy/components/inline_editor/CSSLinearEasingModel.js
+// ../../front_end/ui/legacy/components/inline_editor/CSSLinearEasingModel.ts
 var CSSLinearEasingModel_exports = {};
 __export(CSSLinearEasingModel_exports, {
   CSSLinearEasingModel: () => CSSLinearEasingModel
@@ -168,7 +168,7 @@ var CSSLinearEasingModel = class _CSSLinearEasingModel {
   }
 };
 
-// gen/front_end/ui/legacy/components/inline_editor/AnimationTimingModel.js
+// ../../front_end/ui/legacy/components/inline_editor/AnimationTimingModel.ts
 var AnimationTimingModel = class {
   static parse(text) {
     const cssLinearEasingModel = CSSLinearEasingModel.parse(text);
@@ -180,7 +180,7 @@ var AnimationTimingModel = class {
 };
 var LINEAR_BEZIER2 = Geometry.LINEAR_BEZIER;
 
-// gen/front_end/ui/legacy/components/inline_editor/AnimationTimingUI.js
+// ../../front_end/ui/legacy/components/inline_editor/AnimationTimingUI.ts
 var AnimationTimingUI_exports = {};
 __export(AnimationTimingUI_exports, {
   AnimationTimingUI: () => AnimationTimingUI,
@@ -192,7 +192,7 @@ import * as Geometry3 from "../../../../models/geometry/geometry.js";
 import * as VisualLogging2 from "../../../visual_logging/visual_logging.js";
 import * as UI2 from "../../legacy.js";
 
-// gen/front_end/ui/legacy/components/inline_editor/BezierUI.js
+// ../../front_end/ui/legacy/components/inline_editor/BezierUI.ts
 var BezierUI_exports = {};
 __export(BezierUI_exports, {
   BezierUI: () => BezierUI,
@@ -266,18 +266,39 @@ var BezierUI = class {
     }
     const curve = UI.UIUtils.createSVGChild(group, "path", "bezier-path");
     const curvePoints = [
-      new Geometry2.Point(bezier.controlPoints[0].x * width + this.radius, (1 - bezier.controlPoints[0].y) * height + this.radius + this.marginTop),
-      new Geometry2.Point(bezier.controlPoints[1].x * width + this.radius, (1 - bezier.controlPoints[1].y) * height + this.radius + this.marginTop),
+      new Geometry2.Point(
+        bezier.controlPoints[0].x * width + this.radius,
+        (1 - bezier.controlPoints[0].y) * height + this.radius + this.marginTop
+      ),
+      new Geometry2.Point(
+        bezier.controlPoints[1].x * width + this.radius,
+        (1 - bezier.controlPoints[1].y) * height + this.radius + this.marginTop
+      ),
       new Geometry2.Point(width + this.radius, this.marginTop + this.radius)
     ];
-    curve.setAttribute("d", "M" + this.radius + "," + (height + this.radius + this.marginTop) + " C" + curvePoints.join(" "));
-    this.drawControlPoints(group, 0, height, bezier.controlPoints[0].x * width, (1 - bezier.controlPoints[0].y) * height);
-    this.drawControlPoints(group, width, 0, bezier.controlPoints[1].x * width, (1 - bezier.controlPoints[1].y) * height);
+    curve.setAttribute(
+      "d",
+      "M" + this.radius + "," + (height + this.radius + this.marginTop) + " C" + curvePoints.join(" ")
+    );
+    this.drawControlPoints(
+      group,
+      0,
+      height,
+      bezier.controlPoints[0].x * width,
+      (1 - bezier.controlPoints[0].y) * height
+    );
+    this.drawControlPoints(
+      group,
+      width,
+      0,
+      bezier.controlPoints[1].x * width,
+      (1 - bezier.controlPoints[1].y) * height
+    );
   }
 };
 var Height = 26;
 
-// gen/front_end/ui/legacy/components/inline_editor/AnimationTimingUI.js
+// ../../front_end/ui/legacy/components/inline_editor/AnimationTimingUI.ts
 var UIStrings = {
   /**
    * @description Tooltip text for control points in the linear easing editor.
@@ -306,12 +327,21 @@ var BezierCurveUI = class {
     });
     this.#curve = UI2.UIUtils.createSVGChild(container, "svg", "bezier-curve");
     this.#onBezierChange = onBezierChange;
-    UI2.UIUtils.installDragHandle(this.#curve, this.dragStart.bind(this), this.dragMove.bind(this), this.dragEnd.bind(this), "default");
+    UI2.UIUtils.installDragHandle(
+      this.#curve,
+      this.dragStart.bind(this),
+      this.dragMove.bind(this),
+      this.dragEnd.bind(this),
+      "default"
+    );
   }
   dragStart(event) {
     this.#mouseDownPosition = new Geometry3.Point(event.x, event.y);
     const ui = this.#curveUI;
-    this.#controlPosition = new Geometry3.Point(Platform.NumberUtilities.clamp((event.offsetX - ui.radius) / ui.curveWidth(), 0, 1), (ui.curveHeight() + ui.marginTop + ui.radius - event.offsetY) / ui.curveHeight());
+    this.#controlPosition = new Geometry3.Point(
+      Platform.NumberUtilities.clamp((event.offsetX - ui.radius) / ui.curveWidth(), 0, 1),
+      (ui.curveHeight() + ui.marginTop + ui.radius - event.offsetY) / ui.curveHeight()
+    );
     const firstControlPointIsCloser = this.#controlPosition.distanceTo(this.#bezier.controlPoints[0]) < this.#controlPosition.distanceTo(this.#bezier.controlPoints[1]);
     this.#selectedPoint = firstControlPointIsCloser ? 0 : 1;
     this.#bezier.controlPoints[this.#selectedPoint] = this.#controlPosition;
@@ -325,7 +355,10 @@ var BezierCurveUI = class {
     }
     const deltaX = (mouseX - this.#mouseDownPosition.x) / this.#curveUI.curveWidth();
     const deltaY = (mouseY - this.#mouseDownPosition.y) / this.#curveUI.curveHeight();
-    const newPosition = new Geometry3.Point(Platform.NumberUtilities.clamp(this.#controlPosition.x + deltaX, 0, 1), this.#controlPosition.y - deltaY);
+    const newPosition = new Geometry3.Point(
+      Platform.NumberUtilities.clamp(this.#controlPosition.x + deltaX, 0, 1),
+      this.#controlPosition.y - deltaY
+    );
     this.#bezier.controlPoints[this.#selectedPoint] = newPosition;
   }
   dragMove(event) {
@@ -358,7 +391,10 @@ var LinearEasingPresentation = class {
   }
   #drawControlPoint(parentElement, controlX, controlY, index) {
     const circle = UI2.UIUtils.createSVGChild(parentElement, "circle", "bezier-control-circle");
-    circle.setAttribute("jslog", `${VisualLogging2.controlPoint("bezier.linear-control-circle").track({ drag: true, dblclick: true })}`);
+    circle.setAttribute(
+      "jslog",
+      `${VisualLogging2.controlPoint("bezier.linear-control-circle").track({ drag: true, dblclick: true })}`
+    );
     circle.setAttribute("data-point-index", String(index));
     circle.setAttribute("cx", String(controlX));
     circle.setAttribute("cy", String(controlY));
@@ -412,7 +448,11 @@ var LinearEasingUI = class {
    */
   #dragStartPointPosition;
   #svg;
-  constructor({ model, container, onChange }) {
+  constructor({
+    model,
+    container,
+    onChange
+  }) {
     this.#model = model;
     this.#onChange = onChange;
     this.#presentation = new LinearEasingPresentation({
@@ -422,7 +462,13 @@ var LinearEasingUI = class {
       marginTop: 50
     });
     this.#svg = UI2.UIUtils.createSVGChild(container, "svg", "bezier-curve linear");
-    UI2.UIUtils.installDragHandle(this.#svg, this.#dragStart.bind(this), this.#dragMove.bind(this), this.#dragEnd.bind(this), "default");
+    UI2.UIUtils.installDragHandle(
+      this.#svg,
+      this.#dragStart.bind(this),
+      this.#dragMove.bind(this),
+      this.#dragEnd.bind(this),
+      "default"
+    );
   }
   #handleLineClick(event, lineIndex) {
     const newPoint = this.#presentation.positionToTimingPoint({ x: event.offsetX, y: event.offsetY });
@@ -581,7 +627,7 @@ var AnimationTimingUI = class {
   }
 };
 
-// gen/front_end/ui/legacy/components/inline_editor/BezierEditor.js
+// ../../front_end/ui/legacy/components/inline_editor/BezierEditor.ts
 var BezierEditor_exports = {};
 __export(BezierEditor_exports, {
   BezierEditor: () => BezierEditor,
@@ -811,9 +857,12 @@ svg.bezier-preset-modify:active {
 
 /*# sourceURL=${import.meta.resolve("./bezierEditor.css")} */`;
 
-// gen/front_end/ui/legacy/components/inline_editor/BezierEditor.js
+// ../../front_end/ui/legacy/components/inline_editor/BezierEditor.ts
 var PREVIEW_ANIMATION_DEBOUNCE_DELAY = 300;
-var BezierEditor = class extends Common.ObjectWrapper.eventMixin(UI3.Widget.VBox) {
+var BezierEditorBase = Common.ObjectWrapper.eventMixin(
+  UI3.Widget.VBox
+);
+var BezierEditor = class extends BezierEditorBase {
   model;
   previewElement;
   previewOnion;
@@ -832,7 +881,10 @@ var BezierEditor = class extends Common.ObjectWrapper.eventMixin(UI3.Widget.VBox
     this.registerRequiredCSS(bezierEditor_css_default);
     this.model = model;
     this.contentElement.tabIndex = 0;
-    this.contentElement.setAttribute("jslog", `${VisualLogging3.dialog("bezierEditor").parent("mapped").track({ keydown: "Enter|Escape" })}`);
+    this.contentElement.setAttribute(
+      "jslog",
+      `${VisualLogging3.dialog("bezierEditor").parent("mapped").track({ keydown: "Enter|Escape" })}`
+    );
     this.setDefaultFocusedElement(this.contentElement);
     this.element.style.overflowY = "auto";
     this.previewElement = this.contentElement.createChild("div", "bezier-preview-container");
@@ -865,7 +917,10 @@ var BezierEditor = class extends Common.ObjectWrapper.eventMixin(UI3.Widget.VBox
         this.debouncedStartPreviewAnimation();
       }
     });
-    this.animationTimingUI.element().setAttribute("jslog", `${VisualLogging3.bezierCurveEditor().track({ click: true, drag: true })}`);
+    this.animationTimingUI.element().setAttribute(
+      "jslog",
+      `${VisualLogging3.bezierCurveEditor().track({ click: true, drag: true })}`
+    );
     this.outerContainer.appendChild(this.animationTimingUI.element());
     this.header = this.contentElement.createChild("div", "bezier-header");
     const minus = this.createPresetModifyIcon(this.header, "bezier-preset-minus", "M 12 6 L 8 10 L 12 14");
@@ -897,7 +952,7 @@ var BezierEditor = class extends Common.ObjectWrapper.eventMixin(UI3.Widget.VBox
   }
   onchange() {
     this.updateUI();
-    this.dispatchEventToListeners("BezierChanged", this.model.asCSSText());
+    this.dispatchEventToListeners("BezierChanged" /* BEZIER_CHANGED */, this.model.asCSSText());
   }
   updateUI() {
     const labelText = this.selectedCategory ? this.selectedCategory.presets[this.selectedCategory.presetIndex].name : this.model.asCSSText().replace(/\s(-\d\.\d)/g, "$1");
@@ -984,16 +1039,19 @@ var BezierEditor = class extends Common.ObjectWrapper.eventMixin(UI3.Widget.VBox
     this.previewOnion.removeChildren();
     for (let i = 0; i <= numberOnionSlices; i++) {
       const slice = this.previewOnion.createChild("div", "bezier-preview-animation");
-      const player = slice.animate([{ transform: "translateX(0px)", easing: this.model.asCSSText() }, { transform: "translateX(218px)" }], { duration: animationDuration, fill: "forwards" });
+      const player = slice.animate(
+        [{ transform: "translateX(0px)", easing: this.model.asCSSText() }, { transform: "translateX(218px)" }],
+        { duration: animationDuration, fill: "forwards" }
+      );
       player.pause();
       player.currentTime = animationDuration * i / numberOnionSlices;
     }
   }
 };
-var Events;
-(function(Events4) {
+var Events = /* @__PURE__ */ ((Events4) => {
   Events4["BEZIER_CHANGED"] = "BezierChanged";
-})(Events || (Events = {}));
+  return Events4;
+})(Events || {});
 var Presets = [
   [
     { name: "linear", value: "linear" },
@@ -1036,7 +1094,7 @@ var Presets = [
   ]
 ];
 
-// gen/front_end/ui/legacy/components/inline_editor/ColorMixSwatch.js
+// ../../front_end/ui/legacy/components/inline_editor/ColorMixSwatch.ts
 var ColorMixSwatch_exports = {};
 __export(ColorMixSwatch_exports, {
   ColorMixChangedEvent: () => ColorMixChangedEvent,
@@ -1092,7 +1150,7 @@ var colorMixSwatch_css_default = `/*
 
 /*# sourceURL=${import.meta.resolve("./colorMixSwatch.css")} */`;
 
-// gen/front_end/ui/legacy/components/inline_editor/ColorMixSwatch.js
+// ../../front_end/ui/legacy/components/inline_editor/ColorMixSwatch.ts
 var { html, render, Directives: { ref } } = Lit;
 var ColorMixChangedEvent = class _ColorMixChangedEvent extends Event {
   static eventName = "colormixchanged";
@@ -1144,20 +1202,24 @@ var ColorMixSwatch = class extends HTMLElement {
       render(this.colorMixText, this.shadow, { host: this });
       return;
     }
-    render(html`<style>${colorMixSwatch_css_default}</style><div class="swatch-icon"
+    render(
+      html`<style>${colorMixSwatch_css_default}</style><div class="swatch-icon"
       ${ref((e) => {
-      this.#icon = e;
-    })}
+        this.#icon = e;
+      })}
       jslog=${VisualLogging4.cssColorMix()}
       style="--color: ${this.colorMixText}">
         <span class="swatch swatch-left" id="swatch-1" style="--color: ${this.firstColorText}"></span>
         <span class="swatch swatch-right" id="swatch-2" style="--color: ${this.secondColorText}"></span>
-        <span class="swatch swatch-mix" id="mix-result" style="--color: ${this.colorMixText}"></span></div>`, this.shadow, { host: this });
+        <span class="swatch swatch-mix" id="mix-result" style="--color: ${this.colorMixText}"></span></div>`,
+      this.shadow,
+      { host: this }
+    );
   }
 };
 customElements.define("devtools-color-mix-swatch", ColorMixSwatch);
 
-// gen/front_end/ui/legacy/components/inline_editor/ColorSwatch.js
+// ../../front_end/ui/legacy/components/inline_editor/ColorSwatch.ts
 var ColorSwatch_exports = {};
 __export(ColorSwatch_exports, {
   ClickEvent: () => ClickEvent,
@@ -1220,7 +1282,7 @@ var colorSwatch_css_default = `/*
 
 /*# sourceURL=${import.meta.resolve("./colorSwatch.css")} */`;
 
-// gen/front_end/ui/legacy/components/inline_editor/ColorSwatch.js
+// ../../front_end/ui/legacy/components/inline_editor/ColorSwatch.ts
 var { html: html2 } = Lit2;
 var UIStrings2 = {
   /**
@@ -1300,7 +1362,8 @@ var ColorSwatch = class extends HTMLElement {
       "color-swatch": true,
       readonly: this.readonly
     });
-    Lit2.render(html2`<style>${colorSwatch_css_default}</style><span
+    Lit2.render(
+      html2`<style>${colorSwatch_css_default}</style><span
           class=${colorSwatchClasses}
           title=${this.tooltip}><span
             class="color-swatch-inner"
@@ -1308,7 +1371,10 @@ var ColorSwatch = class extends HTMLElement {
             jslog=${VisualLogging5.showStyleEditor("color").track({ click: true })}
             @click=${this.onActivate}
             @mousedown=${this.consume}
-            @dblclick=${this.consume}></span></span>`, this.shadow, { host: this });
+            @dblclick=${this.consume}></span></span>`,
+      this.shadow,
+      { host: this }
+    );
   }
   onActivate(e) {
     if (this.readonly) {
@@ -1344,7 +1410,7 @@ var ColorSwatch = class extends HTMLElement {
 };
 customElements.define("devtools-color-swatch", ColorSwatch);
 
-// gen/front_end/ui/legacy/components/inline_editor/CSSAngle.js
+// ../../front_end/ui/legacy/components/inline_editor/CSSAngle.ts
 var CSSAngle_exports = {};
 __export(CSSAngle_exports, {
   CSSAngle: () => CSSAngle,
@@ -1352,7 +1418,7 @@ __export(CSSAngle_exports, {
   UnitChangedEvent: () => UnitChangedEvent
 });
 
-// gen/front_end/ui/legacy/components/inline_editor/CSSAngleEditor.js
+// ../../front_end/ui/legacy/components/inline_editor/CSSAngleEditor.ts
 import * as Common3 from "../../../../core/common/common.js";
 import * as Lit3 from "../../../lit/lit.js";
 import * as VisualLogging6 from "../../../visual_logging/visual_logging.js";
@@ -1469,11 +1535,10 @@ var cssAngleEditor_css_default = `/*
 
 /*# sourceURL=${import.meta.resolve("./cssAngleEditor.css")} */`;
 
-// gen/front_end/ui/legacy/components/inline_editor/CSSAngleUtils.js
+// ../../front_end/ui/legacy/components/inline_editor/CSSAngleUtils.ts
 var CSSAngleUtils_exports = {};
 __export(CSSAngleUtils_exports, {
   AngleUnit: () => AngleUnit,
-  CSSAngleRegex: () => CSSAngleRegex,
   convertAngleUnit: () => convertAngleUnit,
   get2DTranslationsForAngle: () => get2DTranslationsForAngle,
   getAngleFromRadians: () => getAngleFromRadians,
@@ -1487,13 +1552,13 @@ import * as Platform4 from "../../../../core/platform/platform.js";
 import * as Geometry4 from "../../../../models/geometry/geometry.js";
 import * as UI4 from "../../legacy.js";
 var CSSAngleRegex = /(?<value>[+-]?\d*\.?\d+)(?<unit>deg|grad|rad|turn)/;
-var AngleUnit;
-(function(AngleUnit2) {
+var AngleUnit = /* @__PURE__ */ ((AngleUnit2) => {
   AngleUnit2["DEG"] = "deg";
   AngleUnit2["GRAD"] = "grad";
   AngleUnit2["RAD"] = "rad";
   AngleUnit2["TURN"] = "turn";
-})(AngleUnit || (AngleUnit = {}));
+  return AngleUnit2;
+})(AngleUnit || {});
 var parseText = (text) => {
   const result = text.match(CSSAngleRegex);
   if (!result?.groups) {
@@ -1507,13 +1572,13 @@ var parseText = (text) => {
 var getAngleFromRadians = (rad, targetUnit) => {
   let value2 = rad;
   switch (targetUnit) {
-    case "grad":
+    case "grad" /* GRAD */:
       value2 = Geometry4.radiansToGradians(rad);
       break;
-    case "deg":
+    case "deg" /* DEG */:
       value2 = Geometry4.radiansToDegrees(rad);
       break;
-    case "turn":
+    case "turn" /* TURN */:
       value2 = Geometry4.radiansToTurns(rad);
       break;
   }
@@ -1524,11 +1589,11 @@ var getAngleFromRadians = (rad, targetUnit) => {
 };
 var getRadiansFromAngle = (angle) => {
   switch (angle.unit) {
-    case "deg":
+    case "deg" /* DEG */:
       return Geometry4.degreesToRadians(angle.value);
-    case "grad":
+    case "grad" /* GRAD */:
       return Geometry4.gradiansToRadians(angle.value);
-    case "turn":
+    case "turn" /* TURN */:
       return Geometry4.turnsToRadians(angle.value);
   }
   return angle.value;
@@ -1543,14 +1608,14 @@ var get2DTranslationsForAngle = (angle, radius) => {
 var roundAngleByUnit = (angle) => {
   let roundedValue = angle.value;
   switch (angle.unit) {
-    case "deg":
-    case "grad":
+    case "deg" /* DEG */:
+    case "grad" /* GRAD */:
       roundedValue = Math.round(angle.value);
       break;
-    case "rad":
+    case "rad" /* RAD */:
       roundedValue = Math.round(angle.value * 1e4) / 1e4;
       break;
-    case "turn":
+    case "turn" /* TURN */:
       roundedValue = Math.round(angle.value * 100) / 100;
       break;
     default:
@@ -1563,14 +1628,14 @@ var roundAngleByUnit = (angle) => {
 };
 var getNextUnit = (currentUnit) => {
   switch (currentUnit) {
-    case "deg":
-      return "grad";
-    case "grad":
-      return "rad";
-    case "rad":
-      return "turn";
+    case "deg" /* DEG */:
+      return "grad" /* GRAD */;
+    case "grad" /* GRAD */:
+      return "rad" /* RAD */;
+    case "rad" /* RAD */:
+      return "turn" /* TURN */;
     default:
-      return "deg";
+      return "deg" /* DEG */;
   }
 };
 var convertAngleUnit = (angle, newUnit) => {
@@ -1593,7 +1658,7 @@ var getNewAngleFromEvent = (angle, event) => {
   return getAngleFromRadians(radian + diff, angle.unit);
 };
 
-// gen/front_end/ui/legacy/components/inline_editor/CSSAngleEditor.js
+// ../../front_end/ui/legacy/components/inline_editor/CSSAngleEditor.ts
 var { render: render3, html: html3 } = Lit3;
 var styleMap = Lit3.Directives.styleMap;
 var CLOCK_DIAL_LENGTH = 6;
@@ -1601,7 +1666,7 @@ var CSSAngleEditor = class extends HTMLElement {
   shadow = this.attachShadow({ mode: "open" });
   angle = {
     value: 0,
-    unit: "rad"
+    unit: "rad" /* RAD */
   };
   onAngleUpdate;
   background = "";
@@ -1635,7 +1700,7 @@ var CSSAngleEditor = class extends HTMLElement {
     if (shouldSnapToMultipleOf15Degrees) {
       const multipleInRadian = getRadiansFromAngle({
         value: 15,
-        unit: "deg"
+        unit: "deg" /* DEG */
       });
       const closestMultipleOf15Degrees = Math.round(radian / multipleInRadian) * multipleInRadian;
       this.onAngleUpdate(getAngleFromRadians(closestMultipleOf15Degrees, this.angle.unit));
@@ -1710,7 +1775,7 @@ var CSSAngleEditor = class extends HTMLElement {
         const radius = this.clockRadius - CLOCK_DIAL_LENGTH - 3;
         const { translateX, translateY } = get2DTranslationsForAngle({
           value: deg,
-          unit: "deg"
+          unit: "deg" /* DEG */
         }, radius);
         const dialStyles = {
           transform: `translate(${translateX}px, ${translateY}px) rotate(${deg}deg)`
@@ -1723,7 +1788,7 @@ var CSSAngleEditor = class extends HTMLElement {
 };
 customElements.define("devtools-css-angle-editor", CSSAngleEditor);
 
-// gen/front_end/ui/legacy/components/inline_editor/CSSAngleSwatch.js
+// ../../front_end/ui/legacy/components/inline_editor/CSSAngleSwatch.ts
 import * as Lit4 from "../../../lit/lit.js";
 
 // gen/front_end/ui/legacy/components/inline_editor/cssAngleSwatch.css.js
@@ -1758,7 +1823,7 @@ var cssAngleSwatch_css_default = `/*
 
 /*# sourceURL=${import.meta.resolve("./cssAngleSwatch.css")} */`;
 
-// gen/front_end/ui/legacy/components/inline_editor/CSSAngleSwatch.js
+// ../../front_end/ui/legacy/components/inline_editor/CSSAngleSwatch.ts
 var { render: render4, html: html4 } = Lit4;
 var styleMap2 = Lit4.Directives.styleMap;
 var swatchWidth = 11;
@@ -1766,7 +1831,7 @@ var CSSAngleSwatch = class extends HTMLElement {
   shadow = this.attachShadow({ mode: "open" });
   angle = {
     value: 0,
-    unit: "rad"
+    unit: "rad" /* RAD */
   };
   set data(data) {
     this.angle = data.angle;
@@ -1789,7 +1854,7 @@ var CSSAngleSwatch = class extends HTMLElement {
 };
 customElements.define("devtools-css-angle-swatch", CSSAngleSwatch);
 
-// gen/front_end/ui/legacy/components/inline_editor/CSSAngle.js
+// ../../front_end/ui/legacy/components/inline_editor/CSSAngle.ts
 import * as Platform5 from "../../../../core/platform/platform.js";
 import * as Lit5 from "../../../lit/lit.js";
 
@@ -1824,7 +1889,7 @@ devtools-css-angle-editor {
 
 /*# sourceURL=${import.meta.resolve("./cssAngle.css")} */`;
 
-// gen/front_end/ui/legacy/components/inline_editor/InlineEditorUtils.js
+// ../../front_end/ui/legacy/components/inline_editor/InlineEditorUtils.ts
 var InlineEditorUtils_exports = {};
 __export(InlineEditorUtils_exports, {
   ValueChangedEvent: () => ValueChangedEvent
@@ -1838,7 +1903,7 @@ var ValueChangedEvent = class _ValueChangedEvent extends Event {
   }
 };
 
-// gen/front_end/ui/legacy/components/inline_editor/CSSAngle.js
+// ../../front_end/ui/legacy/components/inline_editor/CSSAngle.ts
 var { render: render5, html: html5 } = Lit5;
 var styleMap3 = Lit5.Directives.styleMap;
 var PopoverToggledEvent = class _PopoverToggledEvent extends Event {
@@ -1859,7 +1924,7 @@ var UnitChangedEvent = class _UnitChangedEvent extends Event {
 };
 var DefaultAngle = {
   value: 0,
-  unit: "rad"
+  unit: "rad" /* RAD */
 };
 var CSSAngle = class extends HTMLElement {
   angle = DefaultAngle;
@@ -2033,7 +2098,7 @@ var CSSAngle = class extends HTMLElement {
 };
 customElements.define("devtools-css-angle", CSSAngle);
 
-// gen/front_end/ui/legacy/components/inline_editor/CSSShadowEditor.js
+// ../../front_end/ui/legacy/components/inline_editor/CSSShadowEditor.ts
 var CSSShadowEditor_exports = {};
 __export(CSSShadowEditor_exports, {
   CSSLength: () => CSSLength,
@@ -2163,7 +2228,7 @@ var cssShadowEditor_css_default = `/*
 
 /*# sourceURL=${import.meta.resolve("./cssShadowEditor.css")} */`;
 
-// gen/front_end/ui/legacy/components/inline_editor/CSSShadowEditor.js
+// ../../front_end/ui/legacy/components/inline_editor/CSSShadowEditor.ts
 var UIStrings3 = {
   /**
    * @description Label for the shadow type selector in the CSS shadow editor.
@@ -2192,12 +2257,12 @@ var maxRange = 20;
 var defaultUnit = "px";
 var sliderThumbRadius = 6;
 var canvasSize = 88;
-var CSS_LENGTH_REGEX = function() {
+var CSS_LENGTH_REGEX = (function() {
   const number = "([+-]?(?:[0-9]*[.])?[0-9]+(?:[eE][+-]?[0-9]+)?)";
   const unit = "(ch|cm|em|ex|in|mm|pc|pt|px|rem|vh|vmax|vmin|vw)";
   const zero = "[+-]?(?:0*[.])?0+(?:[eE][+-]?[0-9]+)?";
   return new RegExp(number + unit + "|" + zero, "gi").source;
-}();
+})();
 var CSSLength = class _CSSLength {
   amount;
   unit;
@@ -2223,7 +2288,10 @@ var CSSLength = class _CSSLength {
     return this.amount + this.unit;
   }
 };
-var CSSShadowEditor = class extends Common4.ObjectWrapper.eventMixin(UI5.Widget.VBox) {
+var CSSShadowEditorBase = Common4.ObjectWrapper.eventMixin(
+  UI5.Widget.VBox
+);
+var CSSShadowEditor = class extends CSSShadowEditorBase {
   typeField;
   outsetButton;
   insetButton;
@@ -2244,7 +2312,10 @@ var CSSShadowEditor = class extends Common4.ObjectWrapper.eventMixin(UI5.Widget.
     super({ useShadowDom: true });
     this.registerRequiredCSS(cssShadowEditor_css_default);
     this.contentElement.tabIndex = 0;
-    this.contentElement.setAttribute("jslog", `${VisualLogging7.dialog("cssShadowEditor").parent("mapped").track({ keydown: "Enter|Escape" })}`);
+    this.contentElement.setAttribute(
+      "jslog",
+      `${VisualLogging7.dialog("cssShadowEditor").parent("mapped").track({ keydown: "Enter|Escape" })}`
+    );
     this.setDefaultFocusedElement(this.contentElement);
     this.typeField = this.contentElement.createChild("div", "shadow-editor-field shadow-editor-flex-field");
     this.typeField.createChild("label", "shadow-editor-label").textContent = i18nString3(UIStrings3.type);
@@ -2290,7 +2361,10 @@ var CSSShadowEditor = class extends Common4.ObjectWrapper.eventMixin(UI5.Widget.
     textInput.addEventListener("wheel", this.handleValueModification.bind(this), false);
     textInput.addEventListener("input", this.onTextInput.bind(this), false);
     textInput.addEventListener("blur", this.onTextBlur.bind(this), false);
-    textInput.setAttribute("jslog", `${VisualLogging7.value().track({ change: true, keydown: "ArrowUp|ArrowDown" }).context(jslogContext)}`);
+    textInput.setAttribute(
+      "jslog",
+      `${VisualLogging7.value().track({ change: true, keydown: "ArrowUp|ArrowDown" }).context(jslogContext)}`
+    );
     return textInput;
   }
   createSlider(field, jslogContext) {
@@ -2368,7 +2442,7 @@ var CSSShadowEditor = class extends Common4.ObjectWrapper.eventMixin(UI5.Widget.
     }
     this.model.setInset(insetClicked);
     this.updateButtons();
-    this.dispatchEventToListeners("ShadowChanged", this.model);
+    this.dispatchEventToListeners("ShadowChanged" /* SHADOW_CHANGED */, this.model);
   }
   handleValueModification(event) {
     const target = event.currentTarget;
@@ -2416,7 +2490,7 @@ var CSSShadowEditor = class extends Common4.ObjectWrapper.eventMixin(UI5.Widget.
       this.model.setSpreadRadius(length);
       this.spreadSlider.value = length.amount.toString();
     }
-    this.dispatchEventToListeners("ShadowChanged", this.model);
+    this.dispatchEventToListeners("ShadowChanged" /* SHADOW_CHANGED */, this.model);
   }
   onTextBlur() {
     if (!this.changedElement) {
@@ -2452,24 +2526,31 @@ var CSSShadowEditor = class extends Common4.ObjectWrapper.eventMixin(UI5.Widget.
       this.spreadSlider.value = length.amount.toString();
     }
     this.changedElement = null;
-    this.dispatchEventToListeners("ShadowChanged", this.model);
+    this.dispatchEventToListeners("ShadowChanged" /* SHADOW_CHANGED */, this.model);
   }
   onSliderInput(event) {
     if (event.currentTarget === this.blurSlider) {
-      this.model.setBlurRadius(new CSSLength(Number(this.blurSlider.value), this.model.blurRadius().unit || defaultUnit));
+      this.model.setBlurRadius(
+        new CSSLength(Number(this.blurSlider.value), this.model.blurRadius().unit || defaultUnit)
+      );
       this.blurInput.value = this.model.blurRadius().asCSSText();
       this.blurInput.classList.remove("invalid");
     } else if (event.currentTarget === this.spreadSlider) {
-      this.model.setSpreadRadius(new CSSLength(Number(this.spreadSlider.value), this.model.spreadRadius().unit || defaultUnit));
+      this.model.setSpreadRadius(
+        new CSSLength(Number(this.spreadSlider.value), this.model.spreadRadius().unit || defaultUnit)
+      );
       this.spreadInput.value = this.model.spreadRadius().asCSSText();
       this.spreadInput.classList.remove("invalid");
     }
-    this.dispatchEventToListeners("ShadowChanged", this.model);
+    this.dispatchEventToListeners("ShadowChanged" /* SHADOW_CHANGED */, this.model);
   }
   dragStart(event) {
     this.xySlider.focus();
     this.updateCanvas(true);
-    this.canvasOrigin = new Geometry5.Point(this.xySlider.getBoundingClientRect().left + this.halfCanvasSize, this.xySlider.getBoundingClientRect().top + this.halfCanvasSize);
+    this.canvasOrigin = new Geometry5.Point(
+      this.xySlider.getBoundingClientRect().left + this.halfCanvasSize,
+      this.xySlider.getBoundingClientRect().top + this.halfCanvasSize
+    );
     const clickedPoint = new Geometry5.Point(event.x - this.canvasOrigin.x, event.y - this.canvasOrigin.y);
     const thumbPoint = this.sliderThumbPosition();
     if (clickedPoint.distanceTo(thumbPoint) >= sliderThumbRadius) {
@@ -2501,7 +2582,7 @@ var CSSShadowEditor = class extends Common4.ObjectWrapper.eventMixin(UI5.Widget.
     this.xInput.classList.remove("invalid");
     this.yInput.classList.remove("invalid");
     this.updateCanvas(true);
-    this.dispatchEventToListeners("ShadowChanged", this.model);
+    this.dispatchEventToListeners("ShadowChanged" /* SHADOW_CHANGED */, this.model);
   }
   onCanvasBlur() {
     this.updateCanvas(false);
@@ -2544,7 +2625,7 @@ var CSSShadowEditor = class extends Common4.ObjectWrapper.eventMixin(UI5.Widget.
       this.yInput.classList.remove("invalid");
     }
     this.updateCanvas(true);
-    this.dispatchEventToListeners("ShadowChanged", this.model);
+    this.dispatchEventToListeners("ShadowChanged" /* SHADOW_CHANGED */, this.model);
   }
   constrainPoint(point, max) {
     if (Math.abs(point.x) <= max && Math.abs(point.y) <= max) {
@@ -2578,12 +2659,12 @@ var CSSShadowEditor = class extends Common4.ObjectWrapper.eventMixin(UI5.Widget.
     return this.constrainPoint(new Geometry5.Point(x, y), this.innerCanvasSize);
   }
 };
-var Events2;
-(function(Events4) {
+var Events2 = /* @__PURE__ */ ((Events4) => {
   Events4["SHADOW_CHANGED"] = "ShadowChanged";
-})(Events2 || (Events2 = {}));
+  return Events4;
+})(Events2 || {});
 
-// gen/front_end/ui/legacy/components/inline_editor/LinkSwatch.js
+// ../../front_end/ui/legacy/components/inline_editor/LinkSwatch.ts
 var LinkSwatch_exports = {};
 __export(LinkSwatch_exports, {
   LinkSwatch: () => LinkSwatch
@@ -2625,7 +2706,7 @@ var linkSwatch_css_default = `/*
 
 /*# sourceURL=${import.meta.resolve("./linkSwatch.css")} */`;
 
-// gen/front_end/ui/legacy/components/inline_editor/LinkSwatch.js
+// ../../front_end/ui/legacy/components/inline_editor/LinkSwatch.ts
 var { render: render6, html: html6, nothing, Directives: { ref: ref2, ifDefined, classMap } } = Lit6;
 var LinkSwatch = class extends HTMLElement {
   onLinkActivate = () => void 0;
@@ -2676,7 +2757,197 @@ var LinkSwatch = class extends HTMLElement {
 };
 customElements.define("devtools-link-swatch", LinkSwatch);
 
-// gen/front_end/ui/legacy/components/inline_editor/Swatches.js
+// ../../front_end/ui/legacy/components/inline_editor/PositionAreaEditor.ts
+var PositionAreaEditor_exports = {};
+__export(PositionAreaEditor_exports, {
+  Axis: () => Axis,
+  Keyword: () => Keyword,
+  Mode: () => Mode,
+  parsePositionArea: () => parsePositionArea,
+  stringifyPositionArea: () => stringifyPositionArea
+});
+var Mode = /* @__PURE__ */ ((Mode2) => {
+  Mode2["PHYSICAL"] = "physical";
+  Mode2["COORDINATE"] = "coordinate";
+  Mode2["LOGICAL"] = "logical";
+  Mode2["AUTO"] = "auto";
+  return Mode2;
+})(Mode || {});
+var Axis = /* @__PURE__ */ ((Axis2) => {
+  Axis2["BLOCK"] = "block";
+  Axis2["INLINE"] = "inline";
+  return Axis2;
+})(Axis || {});
+var Keyword = /* @__PURE__ */ ((Keyword2) => {
+  Keyword2["TOP"] = "top";
+  Keyword2["BOTTOM"] = "bottom";
+  Keyword2["LEFT"] = "left";
+  Keyword2["RIGHT"] = "right";
+  Keyword2["SPAN_TOP"] = "span-top";
+  Keyword2["SPAN_BOTTOM"] = "span-bottom";
+  Keyword2["SPAN_LEFT"] = "span-left";
+  Keyword2["SPAN_RIGHT"] = "span-right";
+  Keyword2["Y_START"] = "y-start";
+  Keyword2["Y_END"] = "y-end";
+  Keyword2["X_START"] = "x-start";
+  Keyword2["X_END"] = "x-end";
+  Keyword2["SPAN_Y_START"] = "span-y-start";
+  Keyword2["SPAN_Y_END"] = "span-y-end";
+  Keyword2["SPAN_X_START"] = "span-x-start";
+  Keyword2["SPAN_X_END"] = "span-x-end";
+  Keyword2["BLOCK_START"] = "block-start";
+  Keyword2["BLOCK_END"] = "block-end";
+  Keyword2["INLINE_START"] = "inline-start";
+  Keyword2["INLINE_END"] = "inline-end";
+  Keyword2["SPAN_BLOCK_START"] = "span-block-start";
+  Keyword2["SPAN_BLOCK_END"] = "span-block-end";
+  Keyword2["SPAN_INLINE_START"] = "span-inline-start";
+  Keyword2["SPAN_INLINE_END"] = "span-inline-end";
+  Keyword2["SELF_BLOCK_START"] = "self-block-start";
+  Keyword2["SELF_BLOCK_END"] = "self-block-end";
+  Keyword2["SELF_INLINE_START"] = "self-inline-start";
+  Keyword2["SELF_INLINE_END"] = "self-inline-end";
+  Keyword2["SPAN_SELF_BLOCK_START"] = "span-self-block-start";
+  Keyword2["SPAN_SELF_BLOCK_END"] = "span-self-block-end";
+  Keyword2["SPAN_SELF_INLINE_START"] = "span-self-inline-start";
+  Keyword2["SPAN_SELF_INLINE_END"] = "span-self-inline-end";
+  Keyword2["Y_SELF_START"] = "self-y-start";
+  Keyword2["Y_SELF_END"] = "self-y-end";
+  Keyword2["X_SELF_START"] = "self-x-start";
+  Keyword2["X_SELF_END"] = "self-x-end";
+  Keyword2["SPAN_Y_SELF_START"] = "span-self-y-start";
+  Keyword2["SPAN_Y_SELF_END"] = "span-self-y-end";
+  Keyword2["SPAN_X_SELF_START"] = "span-self-x-start";
+  Keyword2["SPAN_X_SELF_END"] = "span-self-x-end";
+  Keyword2["CENTER"] = "center";
+  Keyword2["SPAN_ALL"] = "span-all";
+  Keyword2["START"] = "start";
+  Keyword2["END"] = "end";
+  Keyword2["SPAN_START"] = "span-start";
+  Keyword2["SPAN_END"] = "span-end";
+  Keyword2["SELF_START"] = "self-start";
+  Keyword2["SELF_END"] = "self-end";
+  Keyword2["SPAN_SELF_START"] = "span-self-start";
+  Keyword2["SPAN_SELF_END"] = "span-self-end";
+  return Keyword2;
+})(Keyword || {});
+var KEYWORD_DEFS = {
+  // Physical block
+  ["top" /* TOP */]: { axis: "block" /* BLOCK */, start: 0, end: 0, mode: "physical" /* PHYSICAL */, self: false },
+  ["bottom" /* BOTTOM */]: { axis: "block" /* BLOCK */, start: 2, end: 2, mode: "physical" /* PHYSICAL */, self: false },
+  ["span-top" /* SPAN_TOP */]: { axis: "block" /* BLOCK */, start: 0, end: 1, mode: "physical" /* PHYSICAL */, self: false },
+  ["span-bottom" /* SPAN_BOTTOM */]: { axis: "block" /* BLOCK */, start: 1, end: 2, mode: "physical" /* PHYSICAL */, self: false },
+  // Physical inline
+  ["left" /* LEFT */]: { axis: "inline" /* INLINE */, start: 0, end: 0, mode: "physical" /* PHYSICAL */, self: false },
+  ["right" /* RIGHT */]: { axis: "inline" /* INLINE */, start: 2, end: 2, mode: "physical" /* PHYSICAL */, self: false },
+  ["span-left" /* SPAN_LEFT */]: { axis: "inline" /* INLINE */, start: 0, end: 1, mode: "physical" /* PHYSICAL */, self: false },
+  ["span-right" /* SPAN_RIGHT */]: { axis: "inline" /* INLINE */, start: 1, end: 2, mode: "physical" /* PHYSICAL */, self: false },
+  // Coordinate block
+  ["y-start" /* Y_START */]: { axis: "block" /* BLOCK */, start: 0, end: 0, mode: "coordinate" /* COORDINATE */, self: false },
+  ["y-end" /* Y_END */]: { axis: "block" /* BLOCK */, start: 2, end: 2, mode: "coordinate" /* COORDINATE */, self: false },
+  ["span-y-start" /* SPAN_Y_START */]: { axis: "block" /* BLOCK */, start: 0, end: 1, mode: "coordinate" /* COORDINATE */, self: false },
+  ["span-y-end" /* SPAN_Y_END */]: { axis: "block" /* BLOCK */, start: 1, end: 2, mode: "coordinate" /* COORDINATE */, self: false },
+  ["self-y-start" /* Y_SELF_START */]: { axis: "block" /* BLOCK */, start: 0, end: 0, mode: "coordinate" /* COORDINATE */, self: true },
+  ["self-y-end" /* Y_SELF_END */]: { axis: "block" /* BLOCK */, start: 2, end: 2, mode: "coordinate" /* COORDINATE */, self: true },
+  ["span-self-y-start" /* SPAN_Y_SELF_START */]: { axis: "block" /* BLOCK */, start: 0, end: 1, mode: "coordinate" /* COORDINATE */, self: true },
+  ["span-self-y-end" /* SPAN_Y_SELF_END */]: { axis: "block" /* BLOCK */, start: 1, end: 2, mode: "coordinate" /* COORDINATE */, self: true },
+  // Coordinate inline
+  ["x-start" /* X_START */]: { axis: "inline" /* INLINE */, start: 0, end: 0, mode: "coordinate" /* COORDINATE */, self: false },
+  ["x-end" /* X_END */]: { axis: "inline" /* INLINE */, start: 2, end: 2, mode: "coordinate" /* COORDINATE */, self: false },
+  ["span-x-start" /* SPAN_X_START */]: { axis: "inline" /* INLINE */, start: 0, end: 1, mode: "coordinate" /* COORDINATE */, self: false },
+  ["span-x-end" /* SPAN_X_END */]: { axis: "inline" /* INLINE */, start: 1, end: 2, mode: "coordinate" /* COORDINATE */, self: false },
+  ["self-x-start" /* X_SELF_START */]: { axis: "inline" /* INLINE */, start: 0, end: 0, mode: "coordinate" /* COORDINATE */, self: true },
+  ["self-x-end" /* X_SELF_END */]: { axis: "inline" /* INLINE */, start: 2, end: 2, mode: "coordinate" /* COORDINATE */, self: true },
+  ["span-self-x-start" /* SPAN_X_SELF_START */]: { axis: "inline" /* INLINE */, start: 0, end: 1, mode: "coordinate" /* COORDINATE */, self: true },
+  ["span-self-x-end" /* SPAN_X_SELF_END */]: { axis: "inline" /* INLINE */, start: 1, end: 2, mode: "coordinate" /* COORDINATE */, self: true },
+  // Logical block
+  ["block-start" /* BLOCK_START */]: { axis: "block" /* BLOCK */, start: 0, end: 0, mode: "logical" /* LOGICAL */, self: false },
+  ["block-end" /* BLOCK_END */]: { axis: "block" /* BLOCK */, start: 2, end: 2, mode: "logical" /* LOGICAL */, self: false },
+  ["span-block-start" /* SPAN_BLOCK_START */]: { axis: "block" /* BLOCK */, start: 0, end: 1, mode: "logical" /* LOGICAL */, self: false },
+  ["span-block-end" /* SPAN_BLOCK_END */]: { axis: "block" /* BLOCK */, start: 1, end: 2, mode: "logical" /* LOGICAL */, self: false },
+  ["self-block-start" /* SELF_BLOCK_START */]: { axis: "block" /* BLOCK */, start: 0, end: 0, mode: "logical" /* LOGICAL */, self: true },
+  ["self-block-end" /* SELF_BLOCK_END */]: { axis: "block" /* BLOCK */, start: 2, end: 2, mode: "logical" /* LOGICAL */, self: true },
+  ["span-self-block-start" /* SPAN_SELF_BLOCK_START */]: { axis: "block" /* BLOCK */, start: 0, end: 1, mode: "logical" /* LOGICAL */, self: true },
+  ["span-self-block-end" /* SPAN_SELF_BLOCK_END */]: { axis: "block" /* BLOCK */, start: 1, end: 2, mode: "logical" /* LOGICAL */, self: true },
+  // Logical inline
+  ["inline-start" /* INLINE_START */]: { axis: "inline" /* INLINE */, start: 0, end: 0, mode: "logical" /* LOGICAL */, self: false },
+  ["inline-end" /* INLINE_END */]: { axis: "inline" /* INLINE */, start: 2, end: 2, mode: "logical" /* LOGICAL */, self: false },
+  ["span-inline-start" /* SPAN_INLINE_START */]: { axis: "inline" /* INLINE */, start: 0, end: 1, mode: "logical" /* LOGICAL */, self: false },
+  ["span-inline-end" /* SPAN_INLINE_END */]: { axis: "inline" /* INLINE */, start: 1, end: 2, mode: "logical" /* LOGICAL */, self: false },
+  ["self-inline-start" /* SELF_INLINE_START */]: { axis: "inline" /* INLINE */, start: 0, end: 0, mode: "logical" /* LOGICAL */, self: true },
+  ["self-inline-end" /* SELF_INLINE_END */]: { axis: "inline" /* INLINE */, start: 2, end: 2, mode: "logical" /* LOGICAL */, self: true },
+  ["span-self-inline-start" /* SPAN_SELF_INLINE_START */]: { axis: "inline" /* INLINE */, start: 0, end: 1, mode: "logical" /* LOGICAL */, self: true },
+  ["span-self-inline-end" /* SPAN_SELF_INLINE_END */]: { axis: "inline" /* INLINE */, start: 1, end: 2, mode: "logical" /* LOGICAL */, self: true },
+  // Auto / Ambiguous
+  ["center" /* CENTER */]: { start: 1, end: 1, mode: "auto" /* AUTO */, self: false },
+  ["span-all" /* SPAN_ALL */]: { start: 0, end: 2, mode: "auto" /* AUTO */, self: false },
+  ["start" /* START */]: { start: 0, end: 0, mode: "auto" /* AUTO */, self: false },
+  ["end" /* END */]: { start: 2, end: 2, mode: "auto" /* AUTO */, self: false },
+  ["span-start" /* SPAN_START */]: { start: 0, end: 1, mode: "auto" /* AUTO */, self: false },
+  ["span-end" /* SPAN_END */]: { start: 1, end: 2, mode: "auto" /* AUTO */, self: false },
+  ["self-start" /* SELF_START */]: { start: 0, end: 0, mode: "auto" /* AUTO */, self: true },
+  ["self-end" /* SELF_END */]: { start: 2, end: 2, mode: "auto" /* AUTO */, self: true },
+  ["span-self-start" /* SPAN_SELF_START */]: { start: 0, end: 1, mode: "auto" /* AUTO */, self: true },
+  ["span-self-end" /* SPAN_SELF_END */]: { start: 1, end: 2, mode: "auto" /* AUTO */, self: true }
+};
+var KEYWORD_MAP = new Map(Object.entries(KEYWORD_DEFS));
+function isGeneric(axis) {
+  return axis.start === 0 && axis.end === 2 || axis.start === 1 && axis.end === 1;
+}
+function parsePositionArea(text) {
+  const tokens = text.trim().split(/\s+/).filter((t) => t.length > 0);
+  if (tokens.length === 0 || tokens.length > 2) {
+    return null;
+  }
+  const first = KEYWORD_MAP.get(tokens[0]);
+  const second = KEYWORD_MAP.get(tokens[1] ?? (tokens[0] === "center" /* CENTER */ ? "center" /* CENTER */ : "span-all" /* SPAN_ALL */));
+  if (!first || !second) {
+    return null;
+  }
+  if (first.axis && second.axis && first.axis === second.axis) {
+    return null;
+  }
+  const primaryAxis = first.axis ?? (second.axis === "block" /* BLOCK */ ? "inline" /* INLINE */ : "block" /* BLOCK */);
+  const firstMode = isGeneric(first) && !isGeneric(second) ? second.mode : first.mode;
+  const secondMode = isGeneric(second) && !isGeneric(first) ? first.mode : second.mode;
+  return {
+    first: { start: first.start, end: first.end, mode: firstMode, self: first.self },
+    second: { start: second.start, end: second.end, mode: secondMode, self: second.self },
+    primaryAxis
+  };
+}
+function axisToKeyword(axis, axisType) {
+  if (axis.start === 0 && axis.end === 2) {
+    return "span-all" /* SPAN_ALL */;
+  }
+  if (axis.start === 1 && axis.end === 1) {
+    return "center" /* CENTER */;
+  }
+  for (const [kw, def] of KEYWORD_MAP) {
+    if (def.start === axis.start && def.end === axis.end && def.mode === axis.mode && def.self === axis.self && (def.axis === void 0 || def.axis === axisType)) {
+      return kw;
+    }
+  }
+  return null;
+}
+function stringifyPositionArea(area) {
+  const firstAxis = area.primaryAxis;
+  const secondAxis = area.primaryAxis === "inline" /* INLINE */ ? "block" /* BLOCK */ : "inline" /* INLINE */;
+  const firstKw = axisToKeyword(area.first, firstAxis);
+  const secondKw = axisToKeyword(area.second, secondAxis);
+  if (!firstKw || !secondKw) {
+    return "";
+  }
+  if (firstKw === "center" /* CENTER */ && secondKw === "center" /* CENTER */) {
+    return "center" /* CENTER */;
+  }
+  if (secondKw === "span-all" /* SPAN_ALL */) {
+    return firstKw;
+  }
+  return `${firstKw} ${secondKw}`;
+}
+
+// ../../front_end/ui/legacy/components/inline_editor/Swatches.ts
 var Swatches_exports = {};
 __export(Swatches_exports, {
   CSSShadowSwatch: () => CSSShadowSwatch
@@ -2707,16 +2978,20 @@ devtools-icon.shadow-swatch-icon {
 
 /*# sourceURL=${import.meta.resolve("./cssShadowSwatch.css")} */`;
 
-// gen/front_end/ui/legacy/components/inline_editor/Swatches.js
+// ../../front_end/ui/legacy/components/inline_editor/Swatches.ts
 var CSSShadowSwatch = class extends HTMLElement {
   #icon;
   #model;
   constructor(model) {
     super();
     this.#model = model;
-    render7(html7`
+    render7(
+      html7`
         <style>${cssShadowSwatch_css_default}</style>
-        <devtools-icon tabindex=-1 name="shadow" class="shadow-swatch-icon"></devtools-icon>`, this, { host: this });
+        <devtools-icon tabindex=-1 name="shadow" class="shadow-swatch-icon"></devtools-icon>`,
+      this,
+      { host: this }
+    );
     this.#icon = this.querySelector("devtools-icon");
   }
   model() {
@@ -2728,7 +3003,7 @@ var CSSShadowSwatch = class extends HTMLElement {
 };
 customElements.define("css-shadow-swatch", CSSShadowSwatch);
 
-// gen/front_end/ui/legacy/components/inline_editor/SwatchPopoverHelper.js
+// ../../front_end/ui/legacy/components/inline_editor/SwatchPopoverHelper.ts
 var SwatchPopoverHelper_exports = {};
 __export(SwatchPopoverHelper_exports, {
   Events: () => Events3,
@@ -2764,7 +3039,7 @@ var swatchPopover_css_default = `/*
 
 /*# sourceURL=${import.meta.resolve("./swatchPopover.css")} */`;
 
-// gen/front_end/ui/legacy/components/inline_editor/SwatchPopoverHelper.js
+// ../../front_end/ui/legacy/components/inline_editor/SwatchPopoverHelper.ts
 var SwatchPopoverHelper = class extends Common5.ObjectWrapper.ObjectWrapper {
   popover;
   hideProxy;
@@ -2778,14 +3053,8 @@ var SwatchPopoverHelper = class extends Common5.ObjectWrapper.ObjectWrapper {
   constructor() {
     super();
     this.popover = new UI6.GlassPane.GlassPane();
-    this.popover.setSizeBehavior(
-      "MeasureContent"
-      /* UI.GlassPane.SizeBehavior.MEASURE_CONTENT */
-    );
-    this.popover.setMarginBehavior(
-      "DefaultMargin"
-      /* UI.GlassPane.MarginBehavior.DEFAULT_MARGIN */
-    );
+    this.popover.setSizeBehavior(UI6.GlassPane.SizeBehavior.MEASURE_CONTENT);
+    this.popover.setMarginBehavior(UI6.GlassPane.MarginBehavior.DEFAULT_MARGIN);
     this.popover.element.addEventListener("mousedown", (e) => e.consume(), false);
     this.hideProxy = this.hide.bind(this, true);
     this.boundOnKeyDown = this.onKeyDown.bind(this);
@@ -2815,10 +3084,7 @@ var SwatchPopoverHelper = class extends Common5.ObjectWrapper.ObjectWrapper {
     }
     VisualLogging9.setMappedParent(view.contentElement, anchorElement);
     this.popover.registerRequiredCSS(swatchPopover_css_default);
-    this.dispatchEventToListeners(
-      "WillShowPopover"
-      /* Events.WILL_SHOW_POPOVER */
-    );
+    this.dispatchEventToListeners("WillShowPopover" /* WILL_SHOW_POPOVER */);
     this.isHidden = false;
     this.anchorElement = anchorElement;
     this.view = view;
@@ -2892,10 +3158,10 @@ var SwatchPopoverHelper = class extends Common5.ObjectWrapper.ObjectWrapper {
     }
   }
 };
-var Events3;
-(function(Events4) {
+var Events3 = /* @__PURE__ */ ((Events4) => {
   Events4["WILL_SHOW_POPOVER"] = "WillShowPopover";
-})(Events3 || (Events3 = {}));
+  return Events4;
+})(Events3 || {});
 export {
   AnimationTimingModel_exports as AnimationTimingModel,
   AnimationTimingUI_exports as AnimationTimingUI,
@@ -2909,6 +3175,7 @@ export {
   ColorSwatch_exports as ColorSwatch,
   InlineEditorUtils_exports as InlineEditorUtils,
   LinkSwatch_exports as LinkSwatch,
+  PositionAreaEditor_exports as PositionAreaEditor,
   SwatchPopoverHelper_exports as SwatchPopoverHelper,
   Swatches_exports as Swatches
 };

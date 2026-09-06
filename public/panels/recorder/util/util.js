@@ -4,7 +4,7 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// gen/front_end/panels/recorder/util/SharedObject.js
+// ../../front_end/panels/recorder/util/SharedObject.ts
 var SharedObject_exports = {};
 __export(SharedObject_exports, {
   SharedObject: () => SharedObject
@@ -70,14 +70,16 @@ var SharedObject = class {
   }
 };
 
-// gen/front_end/panels/recorder/util/util.prebundle.js
+// ../../front_end/panels/recorder/util/util.ts
 var isDebugBuild = false;
 var DEVTOOLS_RECORDER_WORLD_NAME = "devtools_recorder";
 var InjectedScript = class {
   static #injectedScript;
   static async get() {
     if (!this.#injectedScript) {
-      this.#injectedScript = (await fetch(new URL("../injected/injected.generated.js", import.meta.url))).text();
+      this.#injectedScript = (await fetch(
+        new URL("../injected/injected.generated.js", import.meta.url)
+      )).text();
     }
     return await this.#injectedScript;
   }
@@ -115,7 +117,9 @@ var immutableDeepAssign = (object, assignments) => {
   if (assignments instanceof ArrayAssignments) {
     assert(Array.isArray(object), `Expected an array. Got ${typeof object}.`);
     const updatedObject = [...object];
-    const keys = Object.keys(assignments.value).sort((a, b) => Number(b) - Number(a));
+    const keys = Object.keys(assignments.value).sort(
+      (a, b) => Number(b) - Number(a)
+    );
     for (const key of keys) {
       const update = assignments.value[Number(key)];
       if (update === void 0) {
@@ -123,7 +127,10 @@ var immutableDeepAssign = (object, assignments) => {
       } else if (update instanceof InsertAssignment) {
         updatedObject.splice(Number(key), 0, update.value);
       } else {
-        updatedObject[Number(key)] = immutableDeepAssign(updatedObject[key], update);
+        updatedObject[Number(key)] = immutableDeepAssign(
+          updatedObject[key],
+          update
+        );
       }
     }
     return Object.freeze(updatedObject);
@@ -137,7 +144,10 @@ var immutableDeepAssign = (object, assignments) => {
       if (update === void 0) {
         delete updatedObject[key];
       } else {
-        updatedObject[key] = immutableDeepAssign(updatedObject[key], update);
+        updatedObject[key] = immutableDeepAssign(
+          updatedObject[key],
+          update
+        );
       }
     }
     return Object.freeze(updatedObject);

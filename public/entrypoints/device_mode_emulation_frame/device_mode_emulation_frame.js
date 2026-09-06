@@ -1,4 +1,4 @@
-// gen/front_end/entrypoints/device_mode_emulation_frame/device_mode_emulation_frame.prebundle.js
+// ../../front_end/entrypoints/device_mode_emulation_frame/device_mode_emulation_frame.ts
 import "../../ui/dom_extension/dom_extension.js";
 import "../../Images/Images.js";
 if (window.opener) {

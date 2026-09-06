@@ -12,7 +12,6 @@ import { deinitializeGlobalVars, updateHostConfig } from '../../../testing/Envir
 import { setupSettingsHooks } from '../../../testing/SettingsHelpers.js';
 import { SnapshotTester } from '../../../testing/SnapshotTester.js';
 import { TestUniverse } from '../../../testing/TestUniverse.js';
-import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as Logs from '../../logs/logs.js';
 import * as NetworkTimeCalculator from '../../network_time_calculator/network_time_calculator.js';
 import { NetworkAgent, RequestContext } from '../ai_assistance.js';
@@ -33,8 +32,7 @@ describe('NetworkAgent', function () {
         universe = new TestUniverse();
         sinon.stub(Logs.NetworkLog.NetworkLog, 'instance').returns(universe.networkLog);
     });
-    afterEach(async () => {
-        await RenderCoordinator.done();
+    after(async () => {
         await deinitializeGlobalVars();
     });
     describe('buildRequest', () => {

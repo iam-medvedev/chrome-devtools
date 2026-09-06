@@ -1,0 +1,1 @@
+gen/front_end/entrypoints/node_app/app/app.js: gen/front_end/entrypoints/node_app/app/nodeConnectionsPanel.css.js ../../front_end/entrypoints/node_app/app/NodeConnectionsPanel.ts ../../front_end/entrypoints/node_app/app/NodeMain.ts ../../front_end/entrypoints/node_app/app/app.ts

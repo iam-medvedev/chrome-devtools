@@ -1,0 +1,1 @@
+gen/front_end/panels/linear_memory_inspector/linear_memory_inspector.js: ../../front_end/panels/linear_memory_inspector/LinearMemoryInspectorPane.ts ../../front_end/panels/linear_memory_inspector/LinearMemoryInspectorController.ts ../../front_end/panels/linear_memory_inspector/linear_memory_inspector.ts

@@ -1,4 +1,4 @@
-// gen/front_end/ui/comments/comments-meta.prebundle.js
+// ../../front_end/ui/comments/comments-meta.ts
 import * as i18n from "../../core/i18n/i18n.js";
 import * as UI from "../legacy/legacy.js";
 var UIStrings = {
@@ -20,10 +20,10 @@ function isCommentsEnabled(config) {
   return Boolean(config?.devToolsComments?.enabled);
 }
 UI.ActionRegistration.registerActionExtension({
-  category: "GLOBAL",
+  category: UI.ActionRegistration.ActionCategory.GLOBAL,
   actionId: "comments.toggle-comment-mode",
   title: i18nLazyString(UIStrings.toggleCommentMode),
-  iconClass: "comment-mode",
+  iconClass: UI.ActionRegistration.IconClass.COMMENT_MODE,
   toggleable: true,
   condition: isCommentsEnabled,
   async loadActionDelegate() {
@@ -33,7 +33,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.Toolbar.registerToolbarItem({
   actionId: "comments.toggle-comment-mode",
-  location: "main-toolbar-left",
+  location: UI.Toolbar.ToolbarItemLocation.MAIN_TOOLBAR_LEFT,
   order: 1,
   condition: isCommentsEnabled
 });

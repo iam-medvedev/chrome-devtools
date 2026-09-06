@@ -1,0 +1,1 @@
+gen/front_end/panels/issues/components/components.js: gen/front_end/panels/issues/components/elementsPanelLink.css.js ../../front_end/panels/issues/components/ElementsPanelLink.ts gen/front_end/panels/issues/components/hideIssuesMenu.css.js ../../front_end/panels/issues/components/HideIssuesMenu.ts ../../front_end/panels/issues/components/components.ts

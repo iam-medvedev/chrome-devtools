@@ -1,4 +1,4 @@
-// gen/front_end/panels/browser_debugger/browser_debugger-meta.prebundle.js
+// ../../front_end/panels/browser_debugger/browser_debugger-meta.ts
 import * as Common from "../../core/common/common.js";
 import * as i18n from "../../core/i18n/i18n.js";
 import * as Root from "../../core/root/root.js";
@@ -99,14 +99,16 @@ async function loadSourcesModule() {
 UI.ViewManager.registerViewExtension({
   loadView: Common.Lazy.lazy(async (universe) => {
     const BrowserDebugger = await loadBrowserDebuggerModule();
-    return new BrowserDebugger.EventListenerBreakpointsSidebarPane.EventListenerBreakpointsSidebarPane(universe.eventBreakpointsManager);
+    return new BrowserDebugger.EventListenerBreakpointsSidebarPane.EventListenerBreakpointsSidebarPane(
+      universe.eventBreakpointsManager
+    );
   }),
   id: "sources.event-listener-breakpoints",
-  location: "sources.sidebar-bottom",
+  location: UI.ViewManager.ViewLocationValues.SOURCES_SIDEBAR_BOTTOM,
   commandPrompt: i18nLazyString(UIStrings.showEventListenerBreakpoints),
   title: i18nLazyString(UIStrings.eventListenerBreakpoints),
   order: 9,
-  persistence: "permanent"
+  persistence: UI.ViewManager.ViewPersistence.PERMANENT
 });
 UI.ViewManager.registerViewExtension({
   async loadView() {
@@ -114,11 +116,11 @@ UI.ViewManager.registerViewExtension({
     return new BrowserDebugger.CSPViolationBreakpointsSidebarPane.CSPViolationBreakpointsSidebarPane();
   },
   id: "sources.csp-violation-breakpoints",
-  location: "sources.sidebar-bottom",
+  location: UI.ViewManager.ViewLocationValues.SOURCES_SIDEBAR_BOTTOM,
   commandPrompt: i18nLazyString(UIStrings.showCspViolationBreakpoints),
   title: i18nLazyString(UIStrings.cspViolationBreakpoints),
   order: 10,
-  persistence: "permanent"
+  persistence: UI.ViewManager.ViewPersistence.PERMANENT
 });
 UI.ViewManager.registerViewExtension({
   async loadView() {
@@ -126,11 +128,11 @@ UI.ViewManager.registerViewExtension({
     return BrowserDebugger.XHRBreakpointsSidebarPane.XHRBreakpointsSidebarPane.instance();
   },
   id: "sources.xhr-breakpoints",
-  location: "sources.sidebar-bottom",
+  location: UI.ViewManager.ViewLocationValues.SOURCES_SIDEBAR_BOTTOM,
   commandPrompt: i18nLazyString(UIStrings.showXhrfetchBreakpoints),
   title: i18nLazyString(UIStrings.xhrfetchBreakpoints),
   order: 5,
-  persistence: "permanent",
+  persistence: UI.ViewManager.ViewPersistence.PERMANENT,
   hasToolbar: true
 });
 UI.ViewManager.registerViewExtension({
@@ -139,11 +141,11 @@ UI.ViewManager.registerViewExtension({
     return BrowserDebugger.DOMBreakpointsSidebarPane.DOMBreakpointsSidebarPane.instance();
   },
   id: "sources.dom-breakpoints",
-  location: "sources.sidebar-bottom",
+  location: UI.ViewManager.ViewLocationValues.SOURCES_SIDEBAR_BOTTOM,
   commandPrompt: i18nLazyString(UIStrings.showDomBreakpoints),
   title: i18nLazyString(UIStrings.domBreakpoints),
   order: 7,
-  persistence: "permanent"
+  persistence: UI.ViewManager.ViewPersistence.PERMANENT
 });
 UI.ViewManager.registerViewExtension({
   async loadView() {
@@ -151,11 +153,11 @@ UI.ViewManager.registerViewExtension({
     return new BrowserDebugger.ObjectEventListenersSidebarPane.ObjectEventListenersSidebarPane();
   },
   id: "sources.global-listeners",
-  location: "sources.sidebar-bottom",
+  location: UI.ViewManager.ViewLocationValues.SOURCES_SIDEBAR_BOTTOM,
   commandPrompt: i18nLazyString(UIStrings.showGlobalListeners),
   title: i18nLazyString(UIStrings.globalListeners),
   order: 8,
-  persistence: "permanent",
+  persistence: UI.ViewManager.ViewPersistence.PERMANENT,
   hasToolbar: true
 });
 UI.ViewManager.registerViewExtension({
@@ -164,44 +166,48 @@ UI.ViewManager.registerViewExtension({
     return BrowserDebugger.DOMBreakpointsSidebarPane.DOMBreakpointsSidebarPane.instance();
   },
   id: "elements.dom-breakpoints",
-  location: "elements-sidebar",
+  location: UI.ViewManager.ViewLocationValues.ELEMENTS_SIDEBAR,
   commandPrompt: i18nLazyString(UIStrings.showDomBreakpoints),
   title: i18nLazyString(UIStrings.domBreakpoints),
   order: 6,
-  persistence: "permanent"
+  persistence: UI.ViewManager.ViewPersistence.PERMANENT
 });
 UI.ViewManager.registerViewExtension({
-  location: "navigator-view",
+  location: UI.ViewManager.ViewLocationValues.NAVIGATOR_VIEW,
   id: "navigator-network",
   title: i18nLazyString(UIStrings.page),
   commandPrompt: i18nLazyString(UIStrings.showPage),
   order: 2,
-  persistence: "permanent",
+  persistence: UI.ViewManager.ViewPersistence.PERMANENT,
   async loadView(universe) {
     const Sources = await loadSourcesModule();
-    return Sources.SourcesNavigator.NetworkNavigatorView.instance({ forceNew: null, networkProjectManager: universe.networkProjectManager });
+    return Sources.SourcesNavigator.NetworkNavigatorView.instance(
+      { forceNew: null, networkProjectManager: universe.networkProjectManager }
+    );
   }
 });
 UI.ViewManager.registerViewExtension({
-  location: "navigator-view",
+  location: UI.ViewManager.ViewLocationValues.NAVIGATOR_VIEW,
   id: "navigator-overrides",
   title: i18nLazyString(UIStrings.overrides),
   commandPrompt: i18nLazyString(UIStrings.showOverrides),
   order: 4,
-  persistence: "permanent",
+  persistence: UI.ViewManager.ViewPersistence.PERMANENT,
   condition: () => !Root.Runtime.Runtime.isTraceApp(),
   async loadView(universe) {
     const Sources = await loadSourcesModule();
-    return Sources.SourcesNavigator.OverridesNavigatorView.instance({ forceNew: null, networkProjectManager: universe.networkProjectManager });
+    return Sources.SourcesNavigator.OverridesNavigatorView.instance(
+      { forceNew: null, networkProjectManager: universe.networkProjectManager }
+    );
   }
 });
 UI.ViewManager.registerViewExtension({
-  location: "navigator-view",
+  location: UI.ViewManager.ViewLocationValues.NAVIGATOR_VIEW,
   id: "navigator-content-scripts",
   title: i18nLazyString(UIStrings.contentScripts),
   commandPrompt: i18nLazyString(UIStrings.showContentScripts),
   order: 5,
-  persistence: "permanent",
+  persistence: UI.ViewManager.ViewPersistence.PERMANENT,
   condition: () => Root.Runtime.getPathName() !== "/bundled/worker_app.html" && !Root.Runtime.Runtime.isTraceApp(),
   async loadView(universe) {
     const Sources = await loadSourcesModule();
@@ -209,18 +215,20 @@ UI.ViewManager.registerViewExtension({
   }
 });
 UI.ActionRegistration.registerActionExtension({
-  category: "DEBUGGER",
+  category: UI.ActionRegistration.ActionCategory.DEBUGGER,
   actionId: "browser-debugger.refresh-global-event-listeners",
   async loadActionDelegate() {
     const BrowserDebugger = await loadBrowserDebuggerModule();
     return new BrowserDebugger.ObjectEventListenersSidebarPane.ActionDelegate();
   },
   title: i18nLazyString(UIStrings.refreshGlobalListeners),
-  iconClass: "refresh",
+  iconClass: UI.ActionRegistration.IconClass.REFRESH,
   contextTypes() {
-    return maybeRetrieveContextTypes((BrowserDebugger) => [
-      BrowserDebugger.ObjectEventListenersSidebarPane.ObjectEventListenersSidebarPane
-    ]);
+    return maybeRetrieveContextTypes(
+      (BrowserDebugger) => [
+        BrowserDebugger.ObjectEventListenersSidebarPane.ObjectEventListenersSidebarPane
+      ]
+    );
   }
 });
 UI.ContextMenu.registerProvider({

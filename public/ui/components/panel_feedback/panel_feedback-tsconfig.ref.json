@@ -14,7 +14,8 @@
     "../../../../../../../front_end/ui/components/panel_feedback/PreviewToggle.ts",
     "../../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../../front_end/global_typings/global_defs.d.ts",
-    "../../../../../../../node_modules/@types/filesystem/index.d.ts"
+    "../../../../../../../node_modules/@types/filesystem/index.d.ts",
+    "../../../../../../../node_modules/@types/filewriter/index.d.ts"
   ],
   "references": [
     {
@@ -30,7 +31,7 @@
       "path": "../../../core/root/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../helpers/bundle-tsconfig.ref.json"
+      "path": "../../kit/bundle-tsconfig.ref.json"
     },
     {
       "path": "../../legacy/bundle-tsconfig.ref.json"
@@ -39,10 +40,10 @@
       "path": "../../lit/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../kit/bundle-tsconfig.ref.json"
+      "path": "../buttons/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../buttons/bundle-tsconfig.ref.json"
+      "path": "../helpers/bundle-tsconfig.ref.json"
     }
   ]
 }

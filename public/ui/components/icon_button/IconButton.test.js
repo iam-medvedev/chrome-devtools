@@ -17,7 +17,7 @@ const defaultIcon = {
     iconColor: 'var(--icon-error)',
     text: '1',
 };
-export const extractIconGroups = (shadowRoot) => {
+const extractIconGroups = (shadowRoot) => {
     const icons = shadowRoot.querySelectorAll('.status-icon');
     assertElements(icons, Icon);
     const labels = shadowRoot.querySelectorAll('.icon-button-title');

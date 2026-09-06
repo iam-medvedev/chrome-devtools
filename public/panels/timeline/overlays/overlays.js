@@ -4,7 +4,7 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// gen/front_end/panels/timeline/overlays/OverlaysImpl.js
+// ../../front_end/panels/timeline/overlays/OverlaysImpl.ts
 var OverlaysImpl_exports = {};
 __export(OverlaysImpl_exports, {
   AnnotationOverlayActionEvent: () => AnnotationOverlayActionEvent,
@@ -33,22 +33,22 @@ import * as VisualLogging from "../../../ui/visual_logging/visual_logging.js";
 import * as Components from "./components/components.js";
 var UIStrings = {
   /**
-   * @description Text for showing that a metric was observed in the local environment.
+   * @description Tooltip text indicating that a metric was observed in the local environment in the Performance panel.
    * @example {LCP} PH1
    */
   fieldMetricMarkerLocal: "{PH1} - Local",
   /**
-   * @description Text for showing that a metric was observed in the field, from real use data (CrUX). Also denotes if from URL or Origin dataset.
+   * @description Tooltip text indicating that a metric was observed in the field (from Chrome UX Report data) for a specific page scope in the Performance panel.
    * @example {LCP} PH1
    * @example {URL} PH2
    */
   fieldMetricMarkerField: "{PH1} - Field ({PH2})",
   /**
-   * @description Label for an option that selects the page's specific URL as opposed to it's entire origin/domain.
+   * @description Text for the page scope option that selects the specific URL instead of its entire origin in the Performance panel.
    */
   urlOption: "URL",
   /**
-   * @description Label for an option that selects the page's entire origin/domain as opposed to it's specific URL.
+   * @description Text for the page scope option that selects the entire origin instead of its specific URL in the Performance panel.
    */
   originOption: "Origin"
 };
@@ -122,30 +122,30 @@ function overlayTypeIsSingleton(type) {
   return type === "TIMESTAMP_MARKER" || type === "ENTRY_SELECTED" || type === "BOTTOM_INFO_BAR";
 }
 var AnnotationOverlayActionEvent = class _AnnotationOverlayActionEvent extends Event {
-  overlay;
-  action;
-  static eventName = "annotationoverlayactionsevent";
   constructor(overlay, action) {
     super(_AnnotationOverlayActionEvent.eventName);
     this.overlay = overlay;
     this.action = action;
   }
+  overlay;
+  action;
+  static eventName = "annotationoverlayactionsevent";
 };
 var ConsentDialogVisibilityChange = class _ConsentDialogVisibilityChange extends Event {
-  isVisible;
-  static eventName = "consentdialogvisibilitychange";
   constructor(isVisible) {
     super(_ConsentDialogVisibilityChange.eventName, { bubbles: true, composed: true });
     this.isVisible = isVisible;
   }
+  isVisible;
+  static eventName = "consentdialogvisibilitychange";
 };
 var TimeRangeMouseOverEvent = class _TimeRangeMouseOverEvent extends Event {
-  overlay;
-  static eventName = "timerangemouseoverevent";
   constructor(overlay) {
     super(_TimeRangeMouseOverEvent.eventName, { bubbles: true });
     this.overlay = overlay;
   }
+  overlay;
+  static eventName = "timerangemouseoverevent";
 };
 var TimeRangeMouseOutEvent = class _TimeRangeMouseOutEvent extends Event {
   static eventName = "timerangemouseoutevent";
@@ -154,20 +154,20 @@ var TimeRangeMouseOutEvent = class _TimeRangeMouseOutEvent extends Event {
   }
 };
 var EntryLabelMouseClick = class _EntryLabelMouseClick extends Event {
-  overlay;
-  static eventName = "entrylabelmouseclick";
   constructor(overlay) {
     super(_EntryLabelMouseClick.eventName, { composed: true, bubbles: true });
     this.overlay = overlay;
   }
+  overlay;
+  static eventName = "entrylabelmouseclick";
 };
 var EventReferenceClick = class _EventReferenceClick extends Event {
-  event;
-  static eventName = "eventreferenceclick";
   constructor(event) {
     super(_EventReferenceClick.eventName, { bubbles: true, composed: true });
     this.event = event;
   }
+  event;
+  static eventName = "eventreferenceclick";
 };
 var Overlays = class extends EventTarget {
   /**
@@ -230,8 +230,14 @@ var Overlays = class extends EventTarget {
     this.#entriesLinkInProgress = null;
     this.#annotationsHiddenSetting = Common.Settings.Settings.instance().moduleSetting("annotations-hidden");
     this.#annotationsHiddenSetting.addChangeListener(this.update.bind(this));
-    init.flameChartsContainers.main.addEventListener("mousemove", (event) => this.#updateMouseCoordinatesProgressEntriesLink.bind(this)(event, "main"));
-    init.flameChartsContainers.network.addEventListener("mousemove", (event) => this.#updateMouseCoordinatesProgressEntriesLink.bind(this)(event, "network"));
+    init.flameChartsContainers.main.addEventListener(
+      "mousemove",
+      (event) => this.#updateMouseCoordinatesProgressEntriesLink.bind(this)(event, "main")
+    );
+    init.flameChartsContainers.network.addEventListener(
+      "mousemove",
+      (event) => this.#updateMouseCoordinatesProgressEntriesLink.bind(this)(event, "network")
+    );
   }
   // Toggle display of the whole OverlaysContainer.
   // This function is used to hide all overlays when the Flamechart is in the 'reorder tracks' state.
@@ -249,7 +255,7 @@ var Overlays = class extends EventTarget {
   // because `overlaysContainer` doesn't have events to enable the interaction with the
   // Flamecharts beneath it.
   #updateMouseCoordinatesProgressEntriesLink(event, chart) {
-    if (this.#entriesLinkInProgress?.state !== "pending_to_event") {
+    if (this.#entriesLinkInProgress?.state !== Trace.Types.File.EntriesLinkState.PENDING_TO_EVENT) {
       return;
     }
     const mouseEvent = event;
@@ -544,10 +550,12 @@ var Overlays = class extends EventTarget {
         this.#positionTimespanBreakdownOverlay(overlay, element);
         if (overlay.entry) {
           const { visibleWindow } = this.#dimensions.trace;
-          const isVisible = Boolean(visibleWindow && this.#entryIsVerticallyVisibleOnChart(overlay.entry) && Trace.Helpers.Timing.boundsIncludeTimeRange({
-            bounds: visibleWindow,
-            timeRange: overlay.sections[0].bounds
-          }));
+          const isVisible = Boolean(
+            visibleWindow && this.#entryIsVerticallyVisibleOnChart(overlay.entry) && Trace.Helpers.Timing.boundsIncludeTimeRange({
+              bounds: visibleWindow,
+              timeRange: overlay.sections[0].bounds
+            })
+          );
           this.#setOverlayElementVisibility(element, isVisible);
         }
         break;
@@ -563,10 +571,12 @@ var Overlays = class extends EventTarget {
       }
       case "CANDY_STRIPED_TIME_RANGE": {
         const { visibleWindow } = this.#dimensions.trace;
-        const isVisible = Boolean(visibleWindow && this.#entryIsVerticallyVisibleOnChart(overlay.entry) && Trace.Helpers.Timing.boundsIncludeTimeRange({
-          bounds: visibleWindow,
-          timeRange: overlay.bounds
-        }));
+        const isVisible = Boolean(
+          visibleWindow && this.#entryIsVerticallyVisibleOnChart(overlay.entry) && Trace.Helpers.Timing.boundsIncludeTimeRange({
+            bounds: visibleWindow,
+            timeRange: overlay.bounds
+          })
+        );
         this.#setOverlayElementVisibility(element, isVisible);
         if (isVisible) {
           this.#positionCandyStripedTimeRange(overlay, element);
@@ -724,7 +734,7 @@ var Overlays = class extends EventTarget {
           return;
         }
       }
-      if (!entryFromVisibility && overlay.state === "creation_not_started") {
+      if (!entryFromVisibility && overlay.state === Trace.Types.File.EntriesLinkState.CREATION_NOT_STARTED) {
         this.dispatchEvent(new AnnotationOverlayActionEvent(overlay, "Remove"));
       }
       const entryToWrapper = component.entryToWrapper();
@@ -1021,10 +1031,13 @@ var Overlays = class extends EventTarget {
         const parsedTrace = this.#queries.parsedTrace();
         const callTree = parsedTrace ? AIAssistance.AICallTree.AICallTree.fromEvent(overlay.entry, parsedTrace) : null;
         component.callTree = callTree;
-        component.addEventListener(Components.EntryLabelOverlay.LabelAnnotationsConsentDialogVisibilityChange.eventName, (e) => {
-          const event = e;
-          this.dispatchEvent(new ConsentDialogVisibilityChange(event.isVisible));
-        });
+        component.addEventListener(
+          Components.EntryLabelOverlay.LabelAnnotationsConsentDialogVisibilityChange.eventName,
+          (e) => {
+            const event = e;
+            this.dispatchEvent(new ConsentDialogVisibilityChange(event.isVisible));
+          }
+        );
         component.addEventListener(Components.EntryLabelOverlay.EntryLabelRemoveEvent.eventName, () => {
           this.dispatchEvent(new AnnotationOverlayActionEvent(overlay, "Remove"));
         });
@@ -1057,9 +1070,12 @@ var Overlays = class extends EventTarget {
         const entryStartY = this.yPixelForEventOnChart(entries.entryFrom) ?? 0;
         const entryWidth = entryEndX - entryStartX;
         const entryHeight = this.pixelHeightForEventOnChart(entries.entryFrom) ?? 0;
-        const component = new Components.EntriesLinkOverlay.EntriesLinkOverlay({ x: entryEndX, y: entryStartY, width: entryWidth, height: entryHeight }, overlay.state);
+        const component = new Components.EntriesLinkOverlay.EntriesLinkOverlay(
+          { x: entryEndX, y: entryStartY, width: entryWidth, height: entryHeight },
+          overlay.state
+        );
         component.addEventListener(Components.EntriesLinkOverlay.EntryLinkStartCreating.eventName, () => {
-          overlay.state = "pending_to_event";
+          overlay.state = Trace.Types.File.EntriesLinkState.PENDING_TO_EVENT;
           this.dispatchEvent(new AnnotationOverlayActionEvent(overlay, "Update"));
         });
         overlayElement.appendChild(component);
@@ -1393,7 +1409,9 @@ var Overlays = class extends EventTarget {
     }
     const timeFromLeft = timestamp - this.#dimensions.trace.visibleWindow.min;
     const totalTimeSpan = this.#dimensions.trace.visibleWindow.range;
-    return Math.floor(timeFromLeft / totalTimeSpan * canvasWidthPixels);
+    return Math.floor(
+      timeFromLeft / totalTimeSpan * canvasWidthPixels
+    );
   }
   /**
    * Calculate the Y pixel position for the event on the timeline relative to
@@ -1503,7 +1521,7 @@ function jsLogContext(overlay) {
       return "timeline.overlays.entry-label";
     }
     case "ENTRIES_LINK": {
-      if (overlay.state !== "connected") {
+      if (overlay.state !== Trace.Types.File.EntriesLinkState.CONNECTED) {
         return null;
       }
       return "timeline.overlays.entries-link";

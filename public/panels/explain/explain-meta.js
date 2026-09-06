@@ -1,4 +1,4 @@
-// gen/front_end/panels/explain/explain-meta.prebundle.js
+// ../../front_end/panels/explain/explain-meta.ts
 import * as Common from "../../core/common/common.js";
 import * as i18n from "../../core/i18n/i18n.js";
 import * as AiAssistanceModel from "../../models/ai_assistance/ai_assistance.js";
@@ -77,14 +77,17 @@ function isPolicyRestricted(config) {
 function isFeatureEnabled(config) {
   return (config?.aidaAvailability?.enabled && config?.devToolsConsoleInsights?.enabled) === true;
 }
-SettingUIRegistration.SettingUIRegistration.register(AiAssistanceModel.AiUtils.consoleInsightsEnabledSettingDescriptor, {
-  category: "AI",
-  title: i18nLazyString(UIStrings.enableConsoleInsights)
-});
+SettingUIRegistration.SettingUIRegistration.register(
+  AiAssistanceModel.AiUtils.consoleInsightsEnabledSettingDescriptor,
+  {
+    category: Common.Settings.SettingCategory.AI,
+    title: i18nLazyString(UIStrings.enableConsoleInsights)
+  }
+);
 for (const action of actions) {
   UI.ActionRegistration.registerActionExtension({
     ...action,
-    category: "CONSOLE",
+    category: UI.ActionRegistration.ActionCategory.CONSOLE,
     async loadActionDelegate() {
       const Explain = await import("./explain.js");
       return new Explain.ActionDelegate();

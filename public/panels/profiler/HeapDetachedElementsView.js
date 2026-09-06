@@ -72,7 +72,8 @@ export class DetachedElementsProfileView extends UI.View.SimpleView {
         return [this.selectedSizeText];
     }
 }
-export class DetachedElementsProfileType extends Common.ObjectWrapper.eventMixin(ProfileType) {
+const DetachedElementsProfileTypeBase = Common.ObjectWrapper.eventMixin(ProfileType);
+export class DetachedElementsProfileType extends DetachedElementsProfileTypeBase {
     constructor(typeId, description) {
         super(typeId || i18nString(UIStrings.detachedElementsTitle), description || i18nString(UIStrings.detachedElementsTitle));
     }

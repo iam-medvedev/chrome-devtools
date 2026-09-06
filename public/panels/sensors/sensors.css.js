@@ -10,7 +10,7 @@ export default `/*
  */
 
 .sensors-view {
-  padding: 12px;
+  padding: var(--sys-size-6);
   display: block;
 }
 
@@ -65,8 +65,8 @@ export default `/*
 }
 
 .sensors-group-title {
-  width: 80px;
-  line-height: 24px;
+  width: var(--sys-size-19);
+  line-height: var(--sys-typescale-body1-line-height);
 }
 
 .sensors-group {
@@ -115,7 +115,7 @@ export default `/*
 
   perspective: 700px;
   perspective-origin: 50% 50%;
-  width: 160px;
+  width: var(--sys-size-23);
   height: 150px;
   background: linear-gradient(var(--override-gradient-color-1) 0%, var(--override-gradient-color-1) 64%, var(--override-gradient-color-2) 64%, var(--override-gradient-color-1) 100%);
   transition: 0.2s ease opacity, 0.2s ease filter;
@@ -168,7 +168,7 @@ export default `/*
 .orientation-back {
   width: 62px;
   height: 122px;
-  border-radius: 8px;
+  border-radius: var(--sys-shape-corner-small);
 }
 
 .orientation-front {
@@ -182,21 +182,21 @@ export default `/*
 
 .orientation-left,
 .orientation-right {
-  width: 8px;
+  width: var(--sys-size-5);
   height: 106px;
-  top: 8px;
+  top: var(--sys-size-5);
   background-position: center center;
 }
 
 .orientation-left {
-  left: -8px;
+  left: calc(-1 * var(--sys-size-5));
   transform-origin: right center;
   transform: rotateY(-90deg);
   background-image: var(--image-file-accelerometer-left);
 }
 
 .orientation-right {
-  right: -8px;
+  right: calc(-1 * var(--sys-size-5));
   transform-origin: left center;
   transform: rotateY(90deg);
   background-image: var(--image-file-accelerometer-right);
@@ -207,8 +207,8 @@ export default `/*
 .orientation-right::before,
 .orientation-right::after {
   content: "";
-  width: 8px;
-  height: 6px;
+  width: var(--sys-size-5);
+  height: var(--sys-size-4);
 }
 
 .orientation-left::before,
@@ -223,7 +223,7 @@ export default `/*
 
 .orientation-left::before,
 .orientation-right::before {
-  top: -6px;
+  top: calc(-1 * var(--sys-size-4));
   transform-origin: center bottom;
   transform: rotateX(26deg);
   background-position: center top;
@@ -231,7 +231,7 @@ export default `/*
 
 .orientation-left::after,
 .orientation-right::after {
-  bottom: -6px;
+  bottom: calc(-1 * var(--sys-size-4));
   transform-origin: center top;
   transform: rotateX(-25deg);
   background-position: center bottom;
@@ -240,20 +240,20 @@ export default `/*
 .orientation-top,
 .orientation-bottom {
   width: 50px;
-  height: 8px;
-  left: 8px;
+  height: var(--sys-size-5);
+  left: var(--sys-size-5);
   background-position: center center;
 }
 
 .orientation-top {
-  top: -8px;
+  top: calc(-1 * var(--sys-size-5));
   transform-origin: center bottom;
   transform: rotateX(90deg);
   background-image: var(--image-file-accelerometer-top);
 }
 
 .orientation-bottom {
-  bottom: -8px;
+  bottom: calc(-1 * var(--sys-size-5));
   transform-origin: center top;
   transform: rotateX(-90deg);
   background-image: var(--image-file-accelerometer-bottom);
@@ -264,8 +264,8 @@ export default `/*
 .orientation-bottom::before,
 .orientation-bottom::after {
   content: "";
-  width: 8px;
-  height: 8px;
+  width: var(--sys-size-5);
+  height: var(--sys-size-5);
 }
 
 .orientation-top::before,
@@ -280,7 +280,7 @@ export default `/*
 
 .orientation-top::before,
 .orientation-bottom::before {
-  left: -6px;
+  left: calc(-1 * var(--sys-size-4));
   transform-origin: right center;
   transform: rotateY(-26deg);
   background-position: left center;
@@ -288,7 +288,7 @@ export default `/*
 
 .orientation-top::after,
 .orientation-bottom::after {
-  right: -6px;
+  right: calc(-1 * var(--sys-size-4));
   transform-origin: left center;
   transform: rotateY(26deg);
   background-position: right center;
@@ -299,7 +299,7 @@ export default `/*
 }
 
 .orientation-reset-button {
-  min-width: 80px;
+  min-width: var(--sys-size-19);
 }
 
 fieldset.device-orientation-override-section {
@@ -308,15 +308,15 @@ fieldset.device-orientation-override-section {
 }
 
 .panel-section-separator {
-  height: 1px;
-  margin-bottom: 20px;
-  margin-left: -12px;
-  margin-right: -12px;
+  height: var(--sys-size-1);
+  margin-bottom: var(--sys-size-9);
+  margin-left: calc(-1 * var(--sys-size-6));
+  margin-right: calc(-1 * var(--sys-size-6));
   background: var(--sys-color-divider);
 }
 
 button.text-button {
-  margin: 4px 0 0 10px;
+  margin: var(--sys-size-3) 0 0 10px;
 }
 
 @media (forced-colors: active) {
@@ -326,7 +326,7 @@ button.text-button {
 }
 
 .chrome-select-label {
-  margin-bottom: 16px;
+  margin-bottom: var(--sys-size-8);
 }
 
 /*# sourceURL=${import.meta.resolve('./sensors.css')} */`;

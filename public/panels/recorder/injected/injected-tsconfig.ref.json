@@ -15,6 +15,7 @@
     "../../../../../../../front_end/panels/recorder/injected/SelectorComputer.ts",
     "../../../../../../../front_end/panels/recorder/injected/SelectorPicker.ts",
     "../../../../../../../front_end/panels/recorder/injected/Step.ts",
+    "../../../../../../../front_end/panels/recorder/injected/injected.ts",
     "../../../../../../../front_end/panels/recorder/injected/selectors/ARIASelector.ts",
     "../../../../../../../front_end/panels/recorder/injected/selectors/CSSSelector.ts",
     "../../../../../../../front_end/panels/recorder/injected/selectors/PierceSelector.ts",
@@ -24,7 +25,8 @@
     "../../../../../../../front_end/panels/recorder/injected/util.ts",
     "../../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../../front_end/global_typings/global_defs.d.ts",
-    "../../../../../../../node_modules/@types/filesystem/index.d.ts"
+    "../../../../../../../node_modules/@types/filesystem/index.d.ts",
+    "../../../../../../../node_modules/@types/filewriter/index.d.ts"
   ],
   "references": [
     {

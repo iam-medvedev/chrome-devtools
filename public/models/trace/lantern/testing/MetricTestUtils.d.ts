@@ -7,9 +7,10 @@ export interface ComputationData {
     processedNavigation: Lantern.Types.Simulation.ProcessedNavigation;
 }
 declare function runTraceProcessor(_context: Mocha.Suite | Mocha.Context, trace: Lantern.Types.Trace): Promise<Trace.Handlers.Types.EnabledHandlerDataWithMeta<typeof Trace.Handlers.ModelHandlers>>;
-declare function getComputationDataFromFixture(context: Mocha.Suite | Mocha.Context, { trace, settings, url }: {
-    trace: Lantern.Types.Trace;
+declare function getComputationDataFromFixture(context: Mocha.Suite | Mocha.Context, { trace, settings, url, parsedTrace }: {
+    trace?: Lantern.Types.Trace;
     settings?: Lantern.Types.Simulation.Settings;
     url?: Lantern.Types.Simulation.URL;
+    parsedTrace?: Trace.TraceModel.ParsedTrace;
 }): Promise<ComputationData>;
 export { getComputationDataFromFixture, runTraceProcessor as runTrace, toLanternTrace, };

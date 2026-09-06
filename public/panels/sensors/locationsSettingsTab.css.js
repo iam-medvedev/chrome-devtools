@@ -20,11 +20,11 @@ devtools-list.locations-list,
   margin-top: var(--sys-size-3);
   flex: auto;
   display: flex;
-  border: 1px solid var(--sys-color-divider);
+  border: var(--sys-size-1) solid var(--sys-color-divider);
 }
 
 .locations-list-item {
-  padding: 3px 6px;
+  padding: 3px var(--sys-size-4);
   height: 30px;
   display: flex;
   align-items: center;
@@ -54,10 +54,10 @@ devtools-list.locations-list,
 }
 
 .locations-list-separator {
-  flex: 0 0 1px;
+  flex: 0 0 var(--sys-size-1);
   background-color: var(--sys-color-divider);
   height: 30px;
-  margin: 0 4px;
+  margin: 0 var(--sys-size-3);
 }
 
 .locations-list-separator-invisible {
@@ -68,7 +68,7 @@ devtools-list.locations-list,
 .locations-edit-row {
   display: flex;
   flex-direction: row;
-  margin: 6px 5px;
+  margin: var(--sys-size-4) 5px;
 }
 
 .locations-edit-row input {
@@ -77,7 +77,7 @@ devtools-list.locations-list,
 }
 
 .locations-input-container {
-  padding: 1px;
+  padding: var(--sys-size-1);
 }
 
 .settings-card-container-wrapper {

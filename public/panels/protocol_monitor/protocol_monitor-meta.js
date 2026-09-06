@@ -1,4 +1,4 @@
-// gen/front_end/panels/protocol_monitor/protocol_monitor-meta.prebundle.js
+// ../../front_end/panels/protocol_monitor/protocol_monitor-meta.ts
 import * as i18n from "../../core/i18n/i18n.js";
 import * as Root from "../../core/root/root.js";
 import * as UI from "../../ui/legacy/legacy.js";
@@ -25,12 +25,12 @@ async function loadProtocolMonitorModule() {
   return loadedProtocolMonitorModule;
 }
 UI.ViewManager.registerViewExtension({
-  location: "drawer-view",
+  location: UI.ViewManager.ViewLocationValues.DRAWER_VIEW,
   id: "protocol-monitor",
   title: i18nLazyString(UIStrings.protocolMonitor),
   commandPrompt: i18nLazyString(UIStrings.showProtocolMonitor),
   order: 100,
-  persistence: "closeable",
+  persistence: UI.ViewManager.ViewPersistence.CLOSEABLE,
   async loadView() {
     const ProtocolMonitor = await loadProtocolMonitorModule();
     return new ProtocolMonitor.ProtocolMonitor.ProtocolMonitorImpl();

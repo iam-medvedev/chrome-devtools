@@ -6,15 +6,20 @@ import sinon from 'sinon';
 import * as Root from '../../../core/root/root.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import { assertIsError, assertIsResult, assertRequiresApproval, } from '../../../testing/AiAssistanceHelpers.js';
-import { describeWithEnvironment, updateHostConfig } from '../../../testing/EnvironmentHelpers.js';
+import { updateHostConfig } from '../../../testing/EnvironmentHelpers.js';
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
+import { setupSettingsHooks } from '../../../testing/SettingsHelpers.js';
 import * as Formatter from '../../formatter/formatter.js';
 import * as AiAssistance from '../ai_assistance.js';
-describeWithEnvironment('ExecuteJavaScriptTool', () => {
+describe('ExecuteJavaScriptTool', () => {
+    setupLocaleHooks();
+    setupSettingsHooks();
     let element;
     let target;
     let domModel;
+    let formatStub;
     beforeEach(() => {
-        sinon.stub(Formatter.FormatterWorkerPool.FormatterWorkerPool.prototype, 'format')
+        formatStub = sinon.stub(Formatter.FormatterWorkerPool.FormatterWorkerPool.prototype, 'format')
             .callsFake(async (_mimeType, content) => {
             return {
                 content,
@@ -37,7 +42,6 @@ describeWithEnvironment('ExecuteJavaScriptTool', () => {
             uninstall: sinon.stub().resolves(),
         };
         const context = {
-            conversationContext: null,
             getExecutionContextNode: () => element,
             execJs: mockExecJs,
             changeManager: new AiAssistance.ChangeManager.ChangeManager(),
@@ -55,7 +59,6 @@ describeWithEnvironment('ExecuteJavaScriptTool', () => {
     it('returns error when execution context node is missing', async () => {
         const tool = new AiAssistance.ExecuteJavaScript.ExecuteJavaScriptTool();
         const context = {
-            conversationContext: null,
             getExecutionContextNode: () => null,
             execJs: sinon.stub(),
             changeManager: new AiAssistance.ChangeManager.ChangeManager(),
@@ -72,7 +75,6 @@ describeWithEnvironment('ExecuteJavaScriptTool', () => {
     it('returns error when user denies execution', async () => {
         const tool = new AiAssistance.ExecuteJavaScript.ExecuteJavaScriptTool();
         const context = {
-            conversationContext: null,
             getExecutionContextNode: () => element,
             execJs: sinon.stub(),
             changeManager: new AiAssistance.ChangeManager.ChangeManager(),
@@ -97,7 +99,6 @@ describeWithEnvironment('ExecuteJavaScriptTool', () => {
         });
         const tool = new AiAssistance.ExecuteJavaScript.ExecuteJavaScriptTool();
         const context = {
-            conversationContext: null,
             getExecutionContextNode: () => element,
             execJs: sinon.stub(),
             changeManager: new AiAssistance.ChangeManager.ChangeManager(),
@@ -127,7 +128,6 @@ describeWithEnvironment('ExecuteJavaScriptTool', () => {
             uninstall: sinon.stub().resolves(),
         };
         const context = {
-            conversationContext: null,
             getExecutionContextNode: () => element,
             execJs: mockExecJs,
             changeManager: new AiAssistance.ChangeManager.ChangeManager(),
@@ -149,7 +149,6 @@ describeWithEnvironment('ExecuteJavaScriptTool', () => {
             uninstall: sinon.stub().resolves(),
         };
         const context = {
-            conversationContext: null,
             getExecutionContextNode: () => element,
             execJs: mockExecJs,
             changeManager: new AiAssistance.ChangeManager.ChangeManager(),
@@ -179,7 +178,6 @@ describeWithEnvironment('ExecuteJavaScriptTool', () => {
                 uninstall: sinon.stub().resolves(),
             };
             const context = {
-                conversationContext: null,
                 getExecutionContextNode: () => element,
                 execJs: mockExecJs,
                 changeManager: new AiAssistance.ChangeManager.ChangeManager(),
@@ -201,7 +199,6 @@ describeWithEnvironment('ExecuteJavaScriptTool', () => {
                 uninstall: sinon.stub().resolves(),
             };
             const context = {
-                conversationContext: null,
                 getExecutionContextNode: () => element,
                 execJs: mockExecJs,
                 changeManager: new AiAssistance.ChangeManager.ChangeManager(),
@@ -227,7 +224,6 @@ describeWithEnvironment('ExecuteJavaScriptTool', () => {
                 uninstall: sinon.stub().resolves(),
             };
             const context = {
-                conversationContext: null,
                 getExecutionContextNode: () => element,
                 execJs: mockExecJs,
                 changeManager: new AiAssistance.ChangeManager.ChangeManager(),
@@ -246,101 +242,95 @@ describeWithEnvironment('ExecuteJavaScriptTool', () => {
             assert.strictEqual(clock.countTimers(), 0);
             resolveMockPromise('done');
         });
-        describe('validateAndFormatCode', () => {
-            const { validateAndFormatCode } = AiAssistance.ExecuteJavaScript.ExecuteJavaScriptTool;
-            let formatStub;
-            beforeEach(() => {
-                formatStub = Formatter.FormatterWorkerPool.FormatterWorkerPool.prototype.format;
-            });
-            it('formats valid JS code correctly', async () => {
-                formatStub.resolves({
-                    content: 'const a = 1;\nconst b = 2;',
-                    mapping: { original: [], formatted: [] },
-                });
-                const result = await validateAndFormatCode('const a=1;const b=2;');
-                assert.strictEqual(result.formattedCode, 'const a = 1;\nconst b = 2;');
-                assert.isUndefined(result.error);
-            });
-            it('returns an error when formatted code exceeds 40 lines', async () => {
-                const longCode = Array.from({ length: 45 }, (_, i) => `const var${i} = ${i};`).join('\n');
-                formatStub.resolves({
-                    content: longCode,
-                    mapping: { original: [], formatted: [] },
-                });
-                const result = await validateAndFormatCode(longCode);
-                assert.match(result.error ?? '', /exceeds maximum allowed size/);
-            });
-            it('returns an error when a line exceeds 120 characters', async () => {
-                const longLineCode = `const longVar = "${'a'.repeat(130)}";`;
-                formatStub.resolves({
-                    content: longLineCode,
-                    mapping: { original: [], formatted: [] },
-                });
-                const result = await validateAndFormatCode(longLineCode);
-                assert.match(result.error ?? '', /exceeds maximum allowed size/);
-            });
-            it('returns an error when total character count exceeds 2500', async () => {
-                const bulkCode = Array.from({ length: 30 }, (_, i) => `const var${i} = "${'x'.repeat(75)}";`).join('\n');
-                formatStub.resolves({
-                    content: bulkCode,
-                    mapping: { original: [], formatted: [] },
-                });
-                const result = await validateAndFormatCode(bulkCode);
-                assert.match(result.error ?? '', /exceeds maximum allowed size/);
-            });
-        });
-        it('formats code and executes successfully when V2 architecture is enabled', async () => {
-            updateHostConfig({ devToolsAiV2Architecture: { enabled: true } });
-            Formatter.FormatterWorkerPool.FormatterWorkerPool.prototype.format.resolves({
+    });
+    describe('validateAndFormatCode', () => {
+        const { validateAndFormatCode } = AiAssistance.ExecuteJavaScript.ExecuteJavaScriptTool;
+        it('formats valid JS code correctly', async () => {
+            formatStub.resolves({
                 content: 'const a = 1;\nconst b = 2;',
                 mapping: { original: [], formatted: [] },
             });
-            const tool = new AiAssistance.ExecuteJavaScript.ExecuteJavaScriptTool();
-            const mockScope = {
-                install: sinon.stub().resolves(),
-                uninstall: sinon.stub().resolves(),
-            };
-            const context = {
-                conversationContext: null,
-                getExecutionContextNode: () => element,
-                execJs: sinon.stub().resolves('undefined'),
-                changeManager: new AiAssistance.ChangeManager.ChangeManager(),
-                createExtensionScope: sinon.stub().returns(mockScope),
-            };
-            const response = await tool.handler({
-                explanation: 'Check element',
-                title: 'Title',
-                code: 'const a=1;const b=2;',
-            }, context);
-            assertIsResult(response);
+            const result = await validateAndFormatCode('const a=1;const b=2;');
+            assert.strictEqual(result.formattedCode, 'const a = 1;\nconst b = 2;');
+            assert.isUndefined(result.error);
         });
-        it('returns error result when V2 architecture is enabled and code violates limits', async () => {
-            updateHostConfig({ devToolsAiV2Architecture: { enabled: true } });
+        it('returns an error when formatted code exceeds 40 lines', async () => {
             const longCode = Array.from({ length: 45 }, (_, i) => `const var${i} = ${i};`).join('\n');
-            Formatter.FormatterWorkerPool.FormatterWorkerPool.prototype.format.resolves({
+            formatStub.resolves({
                 content: longCode,
                 mapping: { original: [], formatted: [] },
             });
-            const tool = new AiAssistance.ExecuteJavaScript.ExecuteJavaScriptTool();
-            const mockScope = {
-                install: sinon.stub().resolves(),
-                uninstall: sinon.stub().resolves(),
-            };
-            const context = {
-                conversationContext: null,
-                getExecutionContextNode: () => element,
-                execJs: sinon.stub().resolves('undefined'),
-                changeManager: new AiAssistance.ChangeManager.ChangeManager(),
-                createExtensionScope: sinon.stub().returns(mockScope),
-            };
-            const response = await tool.handler({
-                explanation: 'Check element',
-                title: 'Title',
-                code: longCode,
-            }, context);
-            assertIsError(response);
-            assert.match(response.error, /exceeds maximum allowed size/);
+            const result = await validateAndFormatCode(longCode);
+            assert.match(result.error ?? '', /exceeds maximum allowed size/);
         });
+        it('returns an error when a line exceeds 120 characters', async () => {
+            const longLineCode = `const longVar = "${'a'.repeat(130)}";`;
+            formatStub.resolves({
+                content: longLineCode,
+                mapping: { original: [], formatted: [] },
+            });
+            const result = await validateAndFormatCode(longLineCode);
+            assert.match(result.error ?? '', /exceeds maximum allowed size/);
+        });
+        it('returns an error when total character count exceeds 2500', async () => {
+            const bulkCode = Array.from({ length: 30 }, (_, i) => `const var${i} = "${'x'.repeat(75)}";`).join('\n');
+            formatStub.resolves({
+                content: bulkCode,
+                mapping: { original: [], formatted: [] },
+            });
+            const result = await validateAndFormatCode(bulkCode);
+            assert.match(result.error ?? '', /exceeds maximum allowed size/);
+        });
+    });
+    it('formats code and executes successfully when V2 architecture is enabled', async () => {
+        updateHostConfig({ devToolsAiV2Architecture: { enabled: true } });
+        formatStub.resolves({
+            content: 'const a = 1;\nconst b = 2;',
+            mapping: { original: [], formatted: [] },
+        });
+        const tool = new AiAssistance.ExecuteJavaScript.ExecuteJavaScriptTool();
+        const mockScope = {
+            install: sinon.stub().resolves(),
+            uninstall: sinon.stub().resolves(),
+        };
+        const context = {
+            getExecutionContextNode: () => element,
+            execJs: sinon.stub().resolves('undefined'),
+            changeManager: new AiAssistance.ChangeManager.ChangeManager(),
+            createExtensionScope: sinon.stub().returns(mockScope),
+        };
+        const response = await tool.handler({
+            explanation: 'Check element',
+            title: 'Title',
+            code: 'const a=1;const b=2;',
+        }, context);
+        assertIsResult(response);
+    });
+    it('returns error result when V2 architecture is enabled and code violates limits', async () => {
+        updateHostConfig({ devToolsAiV2Architecture: { enabled: true } });
+        const longCode = Array.from({ length: 45 }, (_, i) => `const var${i} = ${i};`).join('\n');
+        formatStub.resolves({
+            content: longCode,
+            mapping: { original: [], formatted: [] },
+        });
+        const tool = new AiAssistance.ExecuteJavaScript.ExecuteJavaScriptTool();
+        const mockScope = {
+            install: sinon.stub().resolves(),
+            uninstall: sinon.stub().resolves(),
+        };
+        const context = {
+            getExecutionContextNode: () => element,
+            execJs: sinon.stub().resolves('undefined'),
+            changeManager: new AiAssistance.ChangeManager.ChangeManager(),
+            createExtensionScope: sinon.stub().returns(mockScope),
+        };
+        const response = await tool.handler({
+            explanation: 'Check element',
+            title: 'Title',
+            code: longCode,
+        }, context);
+        assertIsError(response);
+        assert.match(response.error, /exceeds maximum allowed size/);
     });
 });
 //# sourceMappingURL=ExecuteJavaScript.test.js.map

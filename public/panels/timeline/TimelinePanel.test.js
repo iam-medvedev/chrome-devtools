@@ -166,6 +166,11 @@ describe('TimelinePanel', function () {
         assert.isNull(context.flavor(AIAssistance.AIContext.AgentFocus));
     });
     it('includes the trace metadata when saving to a file', async function () {
+        // Loading the trace file and serializing its payload to disk can take
+        // slightly longer on slower environments.
+        if (this.timeout() !== 0) {
+            this.timeout(20000);
+        }
         const events = await TraceLoader.rawEvents(this, 'web-dev-with-commit.json.gz');
         const metadata = await TraceLoader.metadata(this, 'web-dev-with-commit.json.gz');
         const fileManager = stubFileManager();

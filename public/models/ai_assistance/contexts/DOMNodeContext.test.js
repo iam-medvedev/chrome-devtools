@@ -4,10 +4,11 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import * as SDK from '../../../core/sdk/sdk.js';
-import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import { SnapshotTester } from '../../../testing/SnapshotTester.js';
 import * as AiAssistance from '../ai_assistance.js';
-describeWithEnvironment('DOMNodeContext', function () {
+describe('DOMNodeContext', function () {
+    setupLocaleHooks();
     const snapshotTester = new SnapshotTester(this, import.meta);
     let element;
     let target;

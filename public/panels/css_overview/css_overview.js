@@ -4,7 +4,7 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// gen/front_end/panels/css_overview/CSSOverviewUnusedDeclarations.js
+// ../../front_end/panels/css_overview/CSSOverviewUnusedDeclarations.ts
 var CSSOverviewUnusedDeclarations_exports = {};
 __export(CSSOverviewUnusedDeclarations_exports, {
   CSSOverviewUnusedDeclarations: () => CSSOverviewUnusedDeclarations
@@ -114,7 +114,7 @@ var CSSOverviewUnusedDeclarations = class {
   }
 };
 
-// gen/front_end/panels/css_overview/CSSOverviewModel.js
+// ../../front_end/panels/css_overview/CSSOverviewModel.ts
 var CSSOverviewModel_exports = {};
 __export(CSSOverviewModel_exports, {
   CSSOverviewModel: () => CSSOverviewModel
@@ -172,13 +172,7 @@ var CSSOverviewModel = class extends SDK.SDKModel.SDKModel {
     };
     const formatColor = (color) => {
       if (color instanceof Common.Color.Legacy) {
-        return color.hasAlpha() ? color.asString(
-          "hexa"
-          /* Common.Color.Format.HEXA */
-        ) : color.asString(
-          "hex"
-          /* Common.Color.Format.HEX */
-        );
+        return color.hasAlpha() ? color.asString(Common.Color.Format.HEXA) : color.asString(Common.Color.Format.HEX);
       }
       return color.asString();
     };
@@ -293,10 +287,7 @@ var CSSOverviewModel = class extends SDK.SDKModel.SDKModel {
         const blendedBackgroundColor = textColor && layout.blendedBackgroundColors && layout.blendedBackgroundColors[idx] !== -1 ? Common.Color.parse(strings[layout.blendedBackgroundColors[idx]]) : null;
         if (textColor && blendedBackgroundColor) {
           const contrastInfo = new ColorPicker.ContrastInfo.ContrastInfo({
-            backgroundColors: [blendedBackgroundColor.asString(
-              "hexa"
-              /* Common.Color.Format.HEXA */
-            )],
+            backgroundColors: [blendedBackgroundColor.asString(Common.Color.Format.HEXA)],
             computedFontSize: fontSizeIdx !== -1 ? strings[fontSizeIdx] : "",
             computedFontWeight: fontWeightIdx !== -1 ? strings[fontWeightIdx] : ""
           });
@@ -351,12 +342,34 @@ var CSSOverviewModel = class extends SDK.SDKModel.SDKModel {
             }
           }
         }
-        CSSOverviewUnusedDeclarations.checkForUnusedPositionValues(unusedDeclarations, nodeId, strings, positionIdx, topIdx, leftIdx, rightIdx, bottomIdx);
+        CSSOverviewUnusedDeclarations.checkForUnusedPositionValues(
+          unusedDeclarations,
+          nodeId,
+          strings,
+          positionIdx,
+          topIdx,
+          leftIdx,
+          rightIdx,
+          bottomIdx
+        );
         if (!isSVGNode(strings[nodeName]) && !isReplacedContent(strings[nodeName])) {
-          CSSOverviewUnusedDeclarations.checkForUnusedWidthAndHeightValues(unusedDeclarations, nodeId, strings, displayIdx, widthIdx, heightIdx);
+          CSSOverviewUnusedDeclarations.checkForUnusedWidthAndHeightValues(
+            unusedDeclarations,
+            nodeId,
+            strings,
+            displayIdx,
+            widthIdx,
+            heightIdx
+          );
         }
         if (verticalAlignIdx !== -1 && !isTableElementWithDefaultStyles(strings[nodeName], strings[displayIdx])) {
-          CSSOverviewUnusedDeclarations.checkForInvalidVerticalAlignment(unusedDeclarations, nodeId, strings, displayIdx, verticalAlignIdx);
+          CSSOverviewUnusedDeclarations.checkForInvalidVerticalAlignment(
+            unusedDeclarations,
+            nodeId,
+            strings,
+            displayIdx,
+            verticalAlignIdx
+          );
         }
       }
     }
@@ -482,9 +495,9 @@ var CSSOverviewModel = class extends SDK.SDKModel.SDKModel {
     return result.value;
   }
 };
-SDK.SDKModel.SDKModel.register(CSSOverviewModel, { capabilities: 2, autostart: false });
+SDK.SDKModel.SDKModel.register(CSSOverviewModel, { capabilities: SDK.Target.Capability.DOM, autostart: false });
 
-// gen/front_end/panels/css_overview/CSSOverviewProcessingView.js
+// ../../front_end/panels/css_overview/CSSOverviewProcessingView.ts
 var CSSOverviewProcessingView_exports = {};
 __export(CSSOverviewProcessingView_exports, {
   CSSOverviewProcessingView: () => CSSOverviewProcessingView,
@@ -528,7 +541,7 @@ var cssOverviewProcessingView_css_default = `/**
 
 /*# sourceURL=${import.meta.resolve("./cssOverviewProcessingView.css")} */`;
 
-// gen/front_end/panels/css_overview/CSSOverviewProcessingView.js
+// ../../front_end/panels/css_overview/CSSOverviewProcessingView.ts
 var UIStrings2 = {
   /**
    * @description Text to cancel something.
@@ -538,7 +551,8 @@ var UIStrings2 = {
 var str_2 = i18n3.i18n.registerUIStrings("panels/css_overview/CSSOverviewProcessingView.ts", UIStrings2);
 var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
 var DEFAULT_VIEW = (input, _output, target) => {
-  render(html`
+  render(
+    html`
     <style>${cssOverviewProcessingView_css_default}</style>
     <div style="overflow:auto">
       <div class="vbox overview-processing-view">
@@ -547,10 +561,12 @@ var DEFAULT_VIEW = (input, _output, target) => {
           <devtools-button
               @click=${input.onCancel}
               .jslogContext=${"css-overview.cancel-processing"}
-              .variant=${"outlined"}>${i18nString2(UIStrings2.cancel)}</devtools-button>
+              .variant=${Buttons.Button.Variant.OUTLINED}>${i18nString2(UIStrings2.cancel)}</devtools-button>
         </div>
       </div>
-    </div>`, target);
+    </div>`,
+    target
+  );
 };
 var CSSOverviewProcessingView = class extends UI.Widget.Widget {
   #onCancel = () => {
@@ -570,7 +586,7 @@ var CSSOverviewProcessingView = class extends UI.Widget.Widget {
   }
 };
 
-// gen/front_end/panels/css_overview/CSSOverviewCompletedView.js
+// ../../front_end/panels/css_overview/CSSOverviewCompletedView.ts
 var CSSOverviewCompletedView_exports = {};
 __export(CSSOverviewCompletedView_exports, {
   CSSOverviewCompletedView: () => CSSOverviewCompletedView,
@@ -956,7 +972,7 @@ var cssOverviewCompletedView_css_default = `/**
 
 /*# sourceURL=${import.meta.resolve("./cssOverviewCompletedView.css")} */`;
 
-// gen/front_end/panels/css_overview/CSSOverviewSidebarPanel.js
+// ../../front_end/panels/css_overview/CSSOverviewSidebarPanel.ts
 var CSSOverviewSidebarPanel_exports = {};
 __export(CSSOverviewSidebarPanel_exports, {
   CSSOverviewSidebarPanel: () => CSSOverviewSidebarPanel,
@@ -1031,7 +1047,7 @@ var cssOverviewSidebarPanel_css_default = `/**
 
 /*# sourceURL=${import.meta.resolve("./cssOverviewSidebarPanel.css")} */`;
 
-// gen/front_end/panels/css_overview/CSSOverviewSidebarPanel.js
+// ../../front_end/panels/css_overview/CSSOverviewSidebarPanel.ts
 var { classMap } = Directives;
 var UIStrings3 = {
   /**
@@ -1066,28 +1082,31 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
     }
     event.consume(true);
   };
-  render2(html2`
+  render2(
+    html2`
       <style>${cssOverviewSidebarPanel_css_default}</style>
       <div class="overview-sidebar-panel" @click=${onClick} @keydown=${onKeyDown}
            aria-label=${i18nString3(UIStrings3.cssOverviewPanelSidebar)} role="tree">
         <div class="overview-toolbar">
           <devtools-toolbar>
             <devtools-button title=${i18nString3(UIStrings3.clearOverview)} @click=${input.onReset}
-                .iconName=${"clear"} .variant=${"toolbar"}
+                .iconName=${"clear"} .variant=${Buttons2.Button.Variant.TOOLBAR}
                 .jslogContext=${"css-overview.clear-overview"}></devtools-button>
           </devtools-toolbar>
         </div>
         ${input.items.map(({ id, name }) => {
-    const selected = id === input.selectedId;
-    return html2`
+      const selected = id === input.selectedId;
+      return html2`
             <div class="overview-sidebar-panel-item ${classMap({ selected })}"
                 ?autofocus=${selected}
                 role="treeitem" data-id=${id} tabindex="0"
                 jslog=${VisualLogging.item(`css-overview.${id}`).track({ click: true, keydown: "Enter|ArrowUp|ArrowDown" })}>
               ${name}
             </div>`;
-  })}
-      </div>`, target);
+    })}
+      </div>`,
+    target
+  );
 };
 var CSSOverviewSidebarPanel = class extends UI2.Widget.VBox {
   #view;
@@ -1163,7 +1182,7 @@ var CSSOverviewSidebarPanel = class extends UI2.Widget.VBox {
   }
 };
 
-// gen/front_end/panels/css_overview/CSSOverviewCompletedView.js
+// ../../front_end/panels/css_overview/CSSOverviewCompletedView.ts
 var { styleMap, ref } = Directives2;
 var { widget } = UI3.Widget;
 var UIStrings4 = {
@@ -1327,10 +1346,7 @@ var UIStrings4 = {
 var str_4 = i18n7.i18n.registerUIStrings("panels/css_overview/CSSOverviewCompletedView.ts", UIStrings4);
 var i18nString4 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
 function getBorderString(color) {
-  let { h, s, l } = color.as(
-    "hsl"
-    /* Common.Color.Format.HSL */
-  );
+  let { h, s, l } = color.as(Common2.Color.Format.HSL);
   h = Math.round(h * 360);
   s = Math.round(s * 100);
   l = Math.round(l * 100);
@@ -1349,22 +1365,23 @@ var DEFAULT_VIEW3 = (input, output, target) => {
       focusableElement?.focus();
     }
   }
-  render3(html3`
+  render3(
+    html3`
       <style>${cssOverviewCompletedView_css_default}</style>
       <devtools-split-view direction="column" sidebar-position="first" sidebar-initial-size="200">
         <devtools-widget slot="sidebar" ${widget(CSSOverviewSidebarPanel, {
-    minimumSize: new Geometry.Size(100, 25),
-    items: [
-      { name: i18nString4(UIStrings4.overviewSummary), id: "summary" },
-      { name: i18nString4(UIStrings4.colors), id: "colors" },
-      { name: i18nString4(UIStrings4.fontInfo), id: "font-info" },
-      { name: i18nString4(UIStrings4.unusedDeclarations), id: "unused-declarations" },
-      { name: i18nString4(UIStrings4.mediaQueries), id: "media-queries" }
-    ],
-    selectedId: input.selectedSection,
-    onItemSelected: input.onSectionSelected,
-    onReset: input.onReset
-  })}>
+      minimumSize: new Geometry.Size(100, 25),
+      items: [
+        { name: i18nString4(UIStrings4.overviewSummary), id: "summary" },
+        { name: i18nString4(UIStrings4.colors), id: "colors" },
+        { name: i18nString4(UIStrings4.fontInfo), id: "font-info" },
+        { name: i18nString4(UIStrings4.unusedDeclarations), id: "unused-declarations" },
+        { name: i18nString4(UIStrings4.mediaQueries), id: "media-queries" }
+      ],
+      selectedId: input.selectedSection,
+      onItemSelected: input.onSectionSelected,
+      onReset: input.onReset
+    })}>
         </devtools-widget>
         <devtools-split-view sidebar-position="second" slot="main" direction="row" sidebar-initial-size="minimized">
           <div class="vbox overview-completed-view" slot="main" @click=${input.onClick}>
@@ -1373,79 +1390,81 @@ var DEFAULT_VIEW3 = (input, output, target) => {
             <div class="results-section horizontally-padded summary"
                   jslog=${VisualLogging2.section("summary")}
                   ${ref((e) => {
-    output.revealSection.set("summary", revealSection.bind(null, e));
-  })}>
+      output.revealSection.set("summary", revealSection.bind(null, e));
+    })}>
               <h1>${i18nString4(UIStrings4.overviewSummary)}</h1>
               ${renderSummary(input.elementCount, input.globalStyleStats, input.mediaQueries)}
             </div>
             <div class="results-section horizontally-padded colors"
                 jslog=${VisualLogging2.section("colors")}
                 ${ref((e) => {
-    output.revealSection.set("colors", revealSection.bind(null, e));
-  })}>
+      output.revealSection.set("colors", revealSection.bind(null, e));
+    })}>
                 <h1>${i18nString4(UIStrings4.colors)}</h1>
                 ${renderColors(input.backgroundColors, input.textColors, input.textColorContrastIssues, input.fillColors, input.borderColors)}
               </div>
               <div class="results-section font-info"
                     jslog=${VisualLogging2.section("font-info")}
                     ${ref((e) => {
-    output.revealSection.set("font-info", revealSection.bind(null, e));
-  })}>
+      output.revealSection.set("font-info", revealSection.bind(null, e));
+    })}>
                 <h1>${i18nString4(UIStrings4.fontInfo)}</h1>
                 ${renderFontInfo(input.fontInfo)}
               </div>
               <div class="results-section unused-declarations"
                     jslog=${VisualLogging2.section("unused-declarations")}
                     ${ref((e) => {
-    output.revealSection.set("unused-declarations", revealSection.bind(null, e));
-  })}>
+      output.revealSection.set("unused-declarations", revealSection.bind(null, e));
+    })}>
                 <h1>${i18nString4(UIStrings4.unusedDeclarations)}</h1>
                 ${renderUnusedDeclarations(input.unusedDeclarations)}
               </div>
               <div class="results-section media-queries"
                     jslog=${VisualLogging2.section("media-queries")}
                     ${ref((e) => {
-    output.revealSection.set("media-queries", revealSection.bind(null, e));
-  })}>
+      output.revealSection.set("media-queries", revealSection.bind(null, e));
+    })}>
               <h1>${i18nString4(UIStrings4.mediaQueries)}</h1>
               ${renderMediaQueries(input.mediaQueries)}
             </div>
           </div>
           <devtools-widget slot="sidebar" ${widget((e) => {
-    const tabbedPane = new UI3.TabbedPane.TabbedPane(e);
-    output.closeAllTabs = () => {
-      tabbedPane.closeTabs(tabbedPane.tabIds());
-    };
-    output.addTab = (id, tabTitle, view, jslogContext) => {
-      if (!tabbedPane.hasTab(id)) {
-        tabbedPane.appendTab(
-          id,
-          tabTitle,
-          view,
-          void 0,
-          void 0,
-          /* isCloseable */
-          true,
-          void 0,
-          void 0,
-          jslogContext
-        );
-      }
-      tabbedPane.selectTab(id);
-      const splitView = tabbedPane.parentWidget();
-      splitView.setSidebarMinimized(false);
-    };
-    tabbedPane.addEventListener(UI3.TabbedPane.Events.TabClosed, (_) => {
-      if (tabbedPane.tabIds().length === 0) {
+      const tabbedPane = new UI3.TabbedPane.TabbedPane(e);
+      output.closeAllTabs = () => {
+        tabbedPane.closeTabs(tabbedPane.tabIds());
+      };
+      output.addTab = (id, tabTitle, view, jslogContext) => {
+        if (!tabbedPane.hasTab(id)) {
+          tabbedPane.appendTab(
+            id,
+            tabTitle,
+            view,
+            void 0,
+            void 0,
+            /* isCloseable */
+            true,
+            void 0,
+            void 0,
+            jslogContext
+          );
+        }
+        tabbedPane.selectTab(id);
         const splitView = tabbedPane.parentWidget();
-        splitView.setSidebarMinimized(true);
-      }
-    });
-    return tabbedPane;
-  })}>
+        splitView.setSidebarMinimized(false);
+      };
+      tabbedPane.addEventListener(UI3.TabbedPane.Events.TabClosed, (_) => {
+        if (tabbedPane.tabIds().length === 0) {
+          const splitView = tabbedPane.parentWidget();
+          splitView.setSidebarMinimized(true);
+        }
+      });
+      return tabbedPane;
+    })}>
           </devtools-widget>
         </devtools-split-view>
-      </devtools-split-view>`, target);
+      </devtools-split-view>`,
+    target
+  );
 };
 function renderSummary(elementCount, globalStyleStats, mediaQueries) {
   const renderSummaryItem = (label, value) => html3`
@@ -1542,14 +1561,8 @@ function renderContrastIssue(key, issues) {
       minContrastIssue = issue;
     }
   }
-  const color = minContrastIssue.textColor.asString(
-    "hexa"
-    /* Common.Color.Format.HEXA */
-  );
-  const backgroundColor = minContrastIssue.backgroundColor.asString(
-    "hexa"
-    /* Common.Color.Format.HEXA */
-  );
+  const color = minContrastIssue.textColor.asString(Common2.Color.Format.HEXA);
+  const backgroundColor = minContrastIssue.backgroundColor.asString(Common2.Color.Format.HEXA);
   const showAPCA = Common2.Settings.Settings.instance().resolve(SDK2.SDKSettings.apcaSettingDescriptor).get();
   const title = i18nString4(UIStrings4.textColorSOverSBackgroundResults, {
     PH1: color,
@@ -1868,7 +1881,8 @@ var CSSOverviewCompletedView = class _CSSOverviewCompletedView extends UI3.Widge
 };
 var ELEMENT_DETAILS_DEFAULT_VIEW = (input, _output, target) => {
   const { items, visibility } = input;
-  render3(html3`
+  render3(
+    html3`
     <div>
       <devtools-data-grid class="element-grid" striped inline
          name=${i18nString4(UIStrings4.cssOverviewElements)}>
@@ -1900,7 +1914,9 @@ var ELEMENT_DETAILS_DEFAULT_VIEW = (input, _output, target) => {
             </tr>`)}
         </table>
       </devtools-data-grid>
-    </div>`, target);
+    </div>`,
+    target
+  );
 };
 var ElementDetailsView = class extends UI3.Widget.Widget {
   #domModel;
@@ -2026,7 +2042,7 @@ function createCheckIcon() {
         style="color:var(--icon-checkmark-green);"></devtools-icon>`;
 }
 
-// gen/front_end/panels/css_overview/CSSOverviewPanel.js
+// ../../front_end/panels/css_overview/CSSOverviewPanel.ts
 var CSSOverviewPanel_exports = {};
 __export(CSSOverviewPanel_exports, {
   CSSOverviewPanel: () => CSSOverviewPanel,
@@ -2037,7 +2053,7 @@ import * as SDK3 from "../../core/sdk/sdk.js";
 import * as UI5 from "../../ui/legacy/legacy.js";
 import { render as render5 } from "../../ui/lit/lit.js";
 
-// gen/front_end/panels/css_overview/CSSOverviewStartView.js
+// ../../front_end/panels/css_overview/CSSOverviewStartView.ts
 import "../../ui/components/panel_feedback/panel_feedback.js";
 import "../../ui/components/panel_introduction_steps/panel_introduction_steps.js";
 import * as i18n9 from "../../core/i18n/i18n.js";
@@ -2136,7 +2152,7 @@ var cssOverviewStartView_css_default = `/**
 
 /*# sourceURL=${import.meta.resolve("./cssOverviewStartView.css")} */`;
 
-// gen/front_end/panels/css_overview/CSSOverviewStartView.js
+// ../../front_end/panels/css_overview/CSSOverviewStartView.ts
 var UIStrings5 = {
   /**
    * @description Label for the capture button in the CSS overview panel.
@@ -2168,7 +2184,8 @@ var i18nString5 = i18n9.i18n.getLocalizedString.bind(void 0, str_5);
 var FEEDBACK_LINK = "https://g.co/devtools/css-overview-feedback";
 var DOC_LINK = "https://developer.chrome.com/docs/devtools/css-overview";
 var DEFAULT_VIEW4 = (input, output, target) => {
-  render4(html4`
+  render4(
+    html4`
     <style>${cssOverviewStartView_css_default}</style>
     <div class="css-overview-start-view">
       <devtools-panel-introduction-steps>
@@ -2181,23 +2198,25 @@ var DEFAULT_VIEW4 = (input, output, target) => {
         <devtools-button
           class="start-capture"
           autofocus
-          .variant=${"primary"}
+          .variant=${Buttons3.Button.Variant.PRIMARY}
           .jslogContext=${"css-overview.capture-overview"}
           @click=${input.onStartCapture}>
           ${i18nString5(UIStrings5.captureOverview)}
         </devtools-button>
       </div>
       <devtools-panel-feedback .data=${{
-    feedbackUrl: FEEDBACK_LINK,
-    quickStartUrl: DOC_LINK,
-    quickStartLinkText: i18nString5(UIStrings5.quickStartWithCSSOverview)
-  }}>
+      feedbackUrl: FEEDBACK_LINK,
+      quickStartUrl: DOC_LINK,
+      quickStartLinkText: i18nString5(UIStrings5.quickStartWithCSSOverview)
+    }}>
       </devtools-panel-feedback>
       <devtools-feedback-button .data=${{
-    feedbackUrl: FEEDBACK_LINK
-  }}>
+      feedbackUrl: FEEDBACK_LINK
+    }}>
       </devtools-feedback-button>
-    </div>`, target);
+    </div>`,
+    target
+  );
 };
 var CSSOverviewStartView = class extends UI4.Widget.Widget {
   #view;
@@ -2213,14 +2232,17 @@ var CSSOverviewStartView = class extends UI4.Widget.Widget {
   }
 };
 
-// gen/front_end/panels/css_overview/CSSOverviewPanel.js
+// ../../front_end/panels/css_overview/CSSOverviewPanel.ts
 var { widget: widget2 } = UI5.Widget;
 var DEFAULT_VIEW5 = (input, _output, target) => {
-  render5(input.state === "start" ? widget2(CSSOverviewStartView, { onStartCapture: input.onStartCapture }) : input.state === "processing" ? widget2(CSSOverviewProcessingView, { onCancel: input.onCancel }) : widget2(CSSOverviewCompletedView, {
-    onReset: input.onReset,
-    overviewData: input.overviewData,
-    target: input.target
-  }), target);
+  render5(
+    input.state === "start" ? widget2(CSSOverviewStartView, { onStartCapture: input.onStartCapture }) : input.state === "processing" ? widget2(CSSOverviewProcessingView, { onCancel: input.onCancel }) : widget2(CSSOverviewCompletedView, {
+      onReset: input.onReset,
+      overviewData: input.overviewData,
+      target: input.target
+    }),
+    target
+  );
 };
 var CSSOverviewPanel = class extends UI5.Panel.Panel {
   #currentUrl;
@@ -2240,7 +2262,11 @@ var CSSOverviewPanel = class extends UI5.Panel.Panel {
   constructor(view = DEFAULT_VIEW5) {
     super("css-overview");
     this.#currentUrl = SDK3.TargetManager.TargetManager.instance().inspectedURL();
-    SDK3.TargetManager.TargetManager.instance().addEventListener("InspectedURLChanged", this.#checkUrlAndResetIfChanged, this);
+    SDK3.TargetManager.TargetManager.instance().addEventListener(
+      SDK3.TargetManager.Events.INSPECTED_URL_CHANGED,
+      this.#checkUrlAndResetIfChanged,
+      this
+    );
     this.#view = view;
     SDK3.TargetManager.TargetManager.instance().observeTargets(this);
     this.#reset();

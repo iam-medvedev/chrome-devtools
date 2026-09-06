@@ -50,7 +50,8 @@ export const DEFAULT_VIEW = (input, output, target) => {
     // clang-format on
     target, { container: { attributes: { jslog: `${VisualLogging.pane('sidebar').track({ resize: true })}` } } });
 };
-export class ChangesSidebar extends Common.ObjectWrapper.eventMixin(UI.Widget.Widget) {
+const ChangesSidebarBase = Common.ObjectWrapper.eventMixin(UI.Widget.Widget);
+export class ChangesSidebar extends ChangesSidebarBase {
     #workspaceDiff = null;
     #view;
     #sourceCodes = new Set();

@@ -1,4 +1,4 @@
-// gen/front_end/entrypoints/wasmparser_worker/wasmparser_worker-entrypoint.prebundle.js
+// ../../front_end/entrypoints/wasmparser_worker/wasmparser_worker-entrypoint.ts
 import * as WasmParserWorker from "./wasmparser_worker.js";
 self.onmessage = (event) => {
   const method = event.data.method;

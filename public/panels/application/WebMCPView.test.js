@@ -10,7 +10,7 @@ import * as WebMCP from '../../models/web_mcp/web_mcp.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import { findMenuItemWithLabel, getContextMenuForElement, getMenuForToolbarButton, } from '../../testing/ContextMenuHelpers.js';
 import { assertScreenshot, raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget, deinitializeGlobalVars, initializeGlobalVars, updateHostConfig, } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, deinitializeGlobalVars, initializeGlobalVars, } from '../../testing/EnvironmentHelpers.js';
 import { StubStackTrace } from '../../testing/StackTraceHelpers.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as RenderCoordinator from '../../ui/components/render_coordinator/render_coordinator.js';
@@ -45,7 +45,6 @@ describe('WebMCPView (View)', () => {
     before(async () => await initializeGlobalVars());
     after(async () => await deinitializeGlobalVars());
     it('calls onCallSelect with correct tab when clicking different columns', async () => {
-        updateHostConfig({ devToolsWebMCPSupport: { enabled: true } });
         const sdkTarget = createTarget();
         const target = document.createElement('div');
         target.style.width = '800px';
@@ -92,7 +91,6 @@ describe('WebMCPView (View)', () => {
         sinon.assert.calledWith(onCallSelect, call, "webmcp.call-outputs" /* Application.WebMCPView.TabId.OUTPUT */);
     });
     it('renders null output in the output column cell', async () => {
-        updateHostConfig({ devToolsWebMCPSupport: { enabled: true } });
         const sdkTarget = createTarget();
         const target = document.createElement('div');
         target.style.width = '800px';
@@ -123,7 +121,6 @@ describe('WebMCPView (View)', () => {
         assert.strictEqual(cells[3].textContent?.trim(), 'null');
     });
     it('ignores shortcuts when details view is already open', async () => {
-        updateHostConfig({ devToolsWebMCPSupport: { enabled: true } });
         const sdkTarget = createTarget();
         const tool = createTool('testTool', 'Test tool', 'frame-1', sdkTarget);
         const call1 = { invocationId: '1', tool, input: '', cancel: () => { } };
@@ -149,7 +146,6 @@ describe('WebMCPView (View)', () => {
         assert.isUndefined(input.selectedTab);
     });
     it('calls onRevealTool when run tool button is clicked', async () => {
-        updateHostConfig({ devToolsWebMCPSupport: { enabled: true } });
         const sdkTarget = createTarget();
         const target = document.createElement('div');
         target.style.width = '800px';
@@ -200,7 +196,6 @@ describe('WebMCPView (View)', () => {
         await assertScreenshot('application/webmcp-empty.png');
     });
     it('renders tool calls with different statuses', async () => {
-        updateHostConfig({ devToolsWebMCPSupport: { enabled: true } });
         const sdkTarget = createTarget();
         const target = document.createElement('div');
         target.style.width = '600px';
@@ -251,7 +246,6 @@ describe('WebMCPView (View)', () => {
         await assertScreenshot('application/webmcp-tool-calls.png');
     });
     it('renders tool calls with action button visible on focus', async () => {
-        updateHostConfig({ devToolsWebMCPSupport: { enabled: true } });
         const sdkTarget = createTarget();
         const target = document.createElement('div');
         target.style.width = '600px';
@@ -293,7 +287,6 @@ describe('WebMCPView (View)', () => {
         await assertScreenshot('application/webmcp-tool-call-action-focus.png');
     });
     it('renders a list of tools correctly', async () => {
-        updateHostConfig({ devToolsWebMCPSupport: { enabled: true } });
         const sdkTarget = createTarget();
         const container = document.createElement('div');
         container.style.width = '600px';
@@ -334,7 +327,6 @@ describe('WebMCPView (View)', () => {
         sinon.assert.calledWith(copyTextStub, 'A test tool description');
     });
     it('renders a list of tools', async () => {
-        updateHostConfig({ devToolsWebMCPSupport: { enabled: true } });
         const sdkTarget = createTarget();
         const target = document.createElement('div');
         renderElementIntoDOM(target, { includeCommonStyles: true });
@@ -353,7 +345,6 @@ describe('WebMCPView (View)', () => {
         assert.isNull(target.querySelector('.tool-list .empty-state'));
     });
     it('highlights the selected tool', async () => {
-        updateHostConfig({ devToolsWebMCPSupport: { enabled: true } });
         const sdkTarget = createTarget();
         const target = document.createElement('div');
         target.style.width = '600px';
@@ -375,7 +366,6 @@ describe('WebMCPView (View)', () => {
         await assertScreenshot('application/webmcp-tool-selected.png');
     });
     it('renders a selected tool call details in a TabbedPane', async () => {
-        updateHostConfig({ devToolsWebMCPSupport: { enabled: true } });
         const sdkTarget = createTarget();
         const target = document.createElement('div');
         target.style.width = '600px';
@@ -397,7 +387,6 @@ describe('WebMCPView (View)', () => {
         await assertScreenshot('application/webmcp-tool-call-details.png');
     });
     it('renders a tool call with JS exception in a TabbedPane', async () => {
-        updateHostConfig({ devToolsWebMCPSupport: { enabled: true } });
         const sdkTarget = createTarget();
         const target = document.createElement('div');
         target.style.width = '600px';
@@ -468,7 +457,6 @@ describe('WebMCPView (View)', () => {
         sinon.assert.calledOnce(onClearLogClick);
     });
     it('calls onRevealTool on context menu actions', async () => {
-        updateHostConfig({ devToolsWebMCPSupport: { enabled: true } });
         const sdkTarget = createTarget();
         const target = document.createElement('div');
         target.style.width = '600px';
@@ -514,7 +502,6 @@ describe('WebMCPView Presenter', () => {
     after(async () => await deinitializeGlobalVars());
     let target;
     async function setup() {
-        updateHostConfig({ devToolsWebMCPSupport: { enabled: true } });
         target = createTarget();
         const model = target.model(WebMCP.WebMCPModel.WebMCPModel);
         const viewStub = createViewFunctionStub(WebMCPView);
@@ -846,7 +833,6 @@ describe('ToolDetailsWidget', () => {
         Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
     });
     it('renders a DOM node origin', async () => {
-        updateHostConfig({ devToolsWebMCPSupport: { enabled: true } });
         const sdkTarget = createTarget();
         const container = document.createElement('div');
         container.style.width = '600px';
@@ -868,7 +854,6 @@ describe('ToolDetailsWidget', () => {
         await assertScreenshot('application/webmcp_tool_details_node.png');
     });
     it('renders a stack trace origin', async () => {
-        updateHostConfig({ devToolsWebMCPSupport: { enabled: true } });
         const sdkTarget = createTarget();
         const container = document.createElement('div');
         container.style.width = '600px';
@@ -885,7 +870,6 @@ describe('ToolDetailsWidget', () => {
         await assertScreenshot('application/webmcp_tool_details_stacktrace.png');
     });
     it('renders a frame', async () => {
-        updateHostConfig({ devToolsWebMCPSupport: { enabled: true } });
         const sdkTarget = createTarget();
         const container = document.createElement('div');
         container.style.width = '600px';
@@ -903,7 +887,6 @@ describe('ToolDetailsWidget', () => {
         await assertScreenshot('application/webmcp_tool_details_frame.png');
     });
     it('renders an unregistered warning', async () => {
-        updateHostConfig({ devToolsWebMCPSupport: { enabled: true } });
         const sdkTarget = createTarget();
         const container = document.createElement('div');
         container.style.width = '600px';

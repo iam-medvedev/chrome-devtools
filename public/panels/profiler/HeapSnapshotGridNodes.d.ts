@@ -1,15 +1,14 @@
 import * as Common from '../../core/common/common.js';
-import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as HeapSnapshotModel from '../../models/heap_snapshot/heap_snapshot.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type AllocationDataGrid, type HeapSnapshotConstructorsDataGrid, type HeapSnapshotDiffDataGrid, type HeapSnapshotSortableDataGrid } from './HeapSnapshotDataGrids.js';
 import type { DataDisplayDelegate } from './ProfileHeader.js';
-declare class HeapSnapshotGridNodeBase extends DataGrid.DataGrid.DataGridNode<HeapSnapshotGridNode> {
+declare class HeapSnapshotGridNodeRawBase extends DataGrid.DataGrid.DataGridNode<HeapSnapshotGridNode> {
 }
-declare const HeapSnapshotGridNode_base: Platform.Constructor.Constructor<Common.EventTarget.EventTarget<HeapSnapshotGridNode.EventTypes>, any[]> & typeof HeapSnapshotGridNodeBase;
-export declare class HeapSnapshotGridNode extends HeapSnapshotGridNode_base {
+declare const HeapSnapshotGridNodeBase: Common.ObjectWrapper.EventMixin<HeapSnapshotGridNode.EventTypes, typeof HeapSnapshotGridNodeRawBase>;
+export declare class HeapSnapshotGridNode extends HeapSnapshotGridNodeBase {
     dataGridInternal: HeapSnapshotSortableDataGrid;
     instanceCount: number;
     readonly savedChildren: Map<number, HeapSnapshotGridNode>;

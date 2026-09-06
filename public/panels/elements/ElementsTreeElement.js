@@ -254,7 +254,7 @@ export function adornerRef() {
     });
 }
 const DOM_UPDATE_ANIMATION_CLASS_NAME = 'dom-update-highlight';
-function handleAdornerKeydown(cb) {
+export function handleAdornerKeydown(cb) {
     return (event) => {
         if (event.code === 'Enter' || event.code === 'Space') {
             cb(event);
@@ -691,10 +691,14 @@ export const DEFAULT_VIEW = (input, output, target) => {
       ${hasAdorners ? html `<div class="adorner-container ${(input.editorState) ? 'hidden' : ''}">
         ${maybeRenderAdAdorner(input)}
         ${input.showViewSourceAdorner ? html `<devtools-adorner
+          class="clickable"
+          role=button
+          tabindex=0
           .name=${ElementsComponents.AdornerManager.RegisteredAdorners.VIEW_SOURCE}
-          jslog=${VisualLogging.adorner(ElementsComponents.AdornerManager.RegisteredAdorners.VIEW_SOURCE)}
+          jslog=${VisualLogging.adorner(ElementsComponents.AdornerManager.RegisteredAdorners.VIEW_SOURCE).track({ click: true })}
           aria-label=${i18nString(UIStrings.viewSourceCode)}
           @click=${input.onViewSourceAdornerClick}
+          @keydown=${handleAdornerKeydown(input.onViewSourceAdornerClick)}
           ${adornerRef()}>
           <span>${ElementsComponents.AdornerManager.RegisteredAdorners.VIEW_SOURCE}</span>
         </devtools-adorner>` : nothing}
@@ -826,7 +830,9 @@ export const DEFAULT_VIEW = (input, output, target) => {
           </span>
         </devtools-adorner>` : nothing}
         ${input.showStartingStyleAdorner ? html `<devtools-adorner
-          class="starting-style"
+          class="starting-style clickable"
+          role=button
+          tabindex=0
           .name=${ElementsComponents.AdornerManager.RegisteredAdorners.STARTING_STYLE}
           jslog=${VisualLogging.adorner(ElementsComponents.AdornerManager.RegisteredAdorners.STARTING_STYLE).track({ click: true })}
           active=${input.startingStyleAdornerActive}
@@ -860,7 +866,9 @@ export const DEFAULT_VIEW = (input, output, target) => {
           </span>
         </devtools-adorner>` : nothing}
         ${input.showScrollSnapAdorner ? html `<devtools-adorner
-          class="scroll-snap"
+          class="scroll-snap clickable"
+          role=button
+          tabindex=0
           .name=${ElementsComponents.AdornerManager.RegisteredAdorners.SCROLL_SNAP}
           jslog=${VisualLogging.adorner(ElementsComponents.AdornerManager.RegisteredAdorners.SCROLL_SNAP).track({ click: true })}
           active=${input.scrollSnapAdornerActive}
@@ -911,6 +919,8 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
     disableEdits = false;
     showAIButton = false;
     isDOMNodeSelected = false;
+    initialEdit;
+    onInitialEditCompleted;
     expand;
     collapse;
     selectTreeElement;
@@ -936,7 +946,7 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
     #view;
     #searchQuery = null;
     #expandedChildrenLimit;
-    decorationsThrottler;
+    #decorationsThrottler = new Common.Throttler.Throttler(100);
     inClipboard = false;
     #hovered;
     editing;
@@ -963,6 +973,16 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
     static #adTooltipIdCounter = 0;
     #adTooltipId = `ad-tooltip-${++ElementsTreeWidget.#adTooltipIdCounter}`;
     #updateRecord = null;
+    get updateRecord() {
+        return this.#updateRecord;
+    }
+    set updateRecord(updateRecord) {
+        if (this.#updateRecord === updateRecord) {
+            return;
+        }
+        this.#updateRecord = updateRecord;
+        this.requestUpdate();
+    }
     get node() {
         return this.#node;
     }
@@ -970,6 +990,7 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
         this.#node = node;
         if (!this.isClosingTag) {
             void this.#updateAdorners();
+            this.updateDecorations();
         }
     }
     get expanded() {
@@ -977,6 +998,7 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
     }
     set expanded(expanded) {
         this.#expanded = expanded;
+        this.updateDecorations();
         this.requestUpdate();
     }
     get isExpandable() {
@@ -1031,7 +1053,6 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
         this.#domIssuesManager = domIssuesManager;
         this.#view = view;
         this.#expandedChildrenLimit = InitialChildrenLimit;
-        this.decorationsThrottler = new Common.Throttler.Throttler(100);
         this.inClipboard = false;
         this.#hovered = false;
         this.editing = null;
@@ -1087,6 +1108,13 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
         UI.UIUtils.runCSSAnimationOnce(tagName || this.contentElement, DOM_UPDATE_ANIMATION_CLASS_NAME);
     }
     #clearDOMNextUpdate = false;
+    wasShown() {
+        super.wasShown();
+        if (!this.isClosingTag) {
+            void this.#updateAdorners();
+            this.updateDecorations();
+        }
+    }
     performUpdate() {
         // Skip updating when in-place editing (not HTML editing indicated by the
         // editorState) is happening. Doing an update would break editing
@@ -1094,6 +1122,7 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
         if (this.editing && !this.#editorState) {
             return;
         }
+        this.updateDecorations();
         if (this.#clearDOMNextUpdate) {
             this.#clearDOMNextUpdate = false;
             Lit.render(Lit.nothing, this.contentElement, { host: this });
@@ -1157,7 +1186,7 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
             },
             topLayerIndex: this.node.topLayerIndex(),
             onViewSourceAdornerClick: this.disableEdits ? () => { } : this.revealHTMLInSources.bind(this),
-            onGutterClick: this.showContextMenu ? (event) => this.showContextMenu?.(event) : () => { },
+            onGutterClick: this.showContextMenu ? (event) => this.showContextMenu?.(event, this) : () => { },
             onContainerAdornerClick: this.disableEdits ? () => { } : (event) => this.#onContainerAdornerClick(event),
             onFlexAdornerClick: this.disableEdits ? () => { } : (event) => this.#onFlexAdornerClick(event),
             onGridAdornerClick: this.disableEdits ? () => { } : (event) => this.#onGridAdornerClick(event),
@@ -1198,6 +1227,29 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
         }
         else if (!this.#searchQuery && this.#highlights.length) {
             this.hideSearchHighlights();
+        }
+        if (this.initialEdit) {
+            const edit = this.initialEdit;
+            this.initialEdit = null;
+            this.onInitialEditCompleted?.();
+            if (edit.isEditAsHTML) {
+                this.toggleEditAsHTML(edit.editAsHTMLCallback);
+            }
+            else if (edit.isProcessingInstruction) {
+                this.startEditingProcessingInstructionValue();
+            }
+            else if (edit.isTextNode) {
+                const textNode = this.contentElement.querySelector('.webkit-html-text-node');
+                if (textNode) {
+                    this.startEditingTextNode(textNode);
+                }
+            }
+            else if (edit.isNewAttribute) {
+                this.addNewAttribute();
+            }
+            else if (edit.attributeName) {
+                this.triggerEditAttribute(edit.attributeName);
+            }
         }
     }
     async #onCustomElementAdornerClick(event) {
@@ -1929,7 +1981,7 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
             dispose.call(this);
         }
         function dispose() {
-            if (!this.#editorRef) {
+            if (!this.editing && !this.#editorState) {
                 return;
             }
             this.editing = null;
@@ -1946,6 +1998,7 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
     }
     attributeEditingCommitted(element, newText, oldText, attributeName, moveDirection) {
         this.editing = null;
+        this.#clearDOMNextUpdate = true;
         function moveToNextAttributeIfNeeded(error) {
             if (error) {
                 this.editingCancelled(element, attributeName);
@@ -2050,10 +2103,7 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
                 return;
             }
             Badges.UserBadges.instance().recordAction(Badges.BadgeAction.DOM_ELEMENT_OR_ATTRIBUTE_EDITED);
-            const newWidget = this.selectNodeAfterEdit(wasExpanded, error, newNode);
-            if (newWidget) {
-                moveToNextAttributeIfNeeded.call(newWidget);
-            }
+            this.selectNodeAfterEdit(wasExpanded, error, newNode, moveDirection);
         });
     }
     textNodeEditingCommitted(textNode, _element, newText) {
@@ -2120,7 +2170,7 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
         if (this.node.nodeType() !== Node.ELEMENT_NODE) {
             return;
         }
-        void this.decorationsThrottler.schedule(this.#updateDecorations.bind(this));
+        void this.#decorationsThrottler.schedule(this.#updateDecorations.bind(this));
     }
     #updateDecorations() {
         const node = this.node;
@@ -2149,13 +2199,20 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
         }
         return Promise.all(promises).then(updateDecorationsUI.bind(this));
         function updateDecorationsUI() {
-            this.#decorations = decorations;
-            this.#descendantDecorations = descendantDecorations;
-            if (!decorations.length && !descendantDecorations.length) {
-                this.#decorationsTooltip = '';
-                this.requestUpdate();
+            if (!this.isShowing()) {
                 return;
             }
+            if (!decorations.length && !descendantDecorations.length) {
+                if (this.#decorations.length || this.#descendantDecorations.length || this.#decorationsTooltip) {
+                    this.#decorations = [];
+                    this.#descendantDecorations = [];
+                    this.#decorationsTooltip = '';
+                    this.requestUpdate();
+                }
+                return;
+            }
+            this.#decorations = decorations;
+            this.#descendantDecorations = descendantDecorations;
             const tooltip = [];
             for (const decoration of decorations) {
                 tooltip.push(decoration.title);
@@ -2327,6 +2384,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         this.widgetWrapper = document.createElement('div');
         this.widgetWrapper.style.display = 'contents';
         this.title = this.widgetWrapper;
+        this.listItemElement.draggable = true;
         this.widget = new ElementsTreeWidget();
         this.widget.isClosingTag = this.#isClosingTag;
         this.widget.node = this.nodeInternal;
@@ -2415,6 +2473,9 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
     highlightAttribute(name) {
         this.widget.highlightAttribute(name);
     }
+    startEditing() {
+        return this.widget.startEditing();
+    }
     startEditingAttribute(attribute, elementForSelection) {
         return this.widget.startEditingAttribute(attribute, elementForSelection);
     }
@@ -2481,14 +2542,15 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
             this.widget.populateTreeElement = async () => await outline.populateTreeElement(this);
             this.widget.toggleHideElement = node => outline.toggleHideElement(node);
             this.widget.isToggledToHidden = node => outline.isToggledToHidden(node);
-            this.widget.selectNodeAfterEdit = (wasExpanded, error, newNode) => {
-                const newTreeItem = outline.selectNodeAfterEdit(wasExpanded, error, newNode);
-                return newTreeItem?.widget ?? null;
+            this.widget.selectNodeAfterEdit = (wasExpanded, error, newNode, moveDirection) => {
+                outline.domTreeWidget?.selectNodeAfterEdit(wasExpanded, error, newNode, moveDirection);
             };
             this.widget.runPendingUpdates = () => outline.runPendingUpdates();
             this.widget.focusOutline = () => outline.focus();
-            this.widget.setMultilineEditing = multilineEditing => outline.setMultilineEditing(multilineEditing);
-            this.widget.visibleWidth = () => outline.visibleWidth();
+            this.widget.setMultilineEditing = multilineEditing => {
+                outline.domTreeWidget?.setMultilineEditing(multilineEditing);
+            };
+            this.widget.visibleWidth = () => outline.domTreeWidget?.visibleWidth ?? outline.visibleWidth();
         }
     }
     onattach() {
@@ -2538,6 +2600,11 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
     }
     onenter() {
         this.#syncOutlineProperties();
+        const outline = this.treeOutline;
+        if (outline?.domTreeWidget) {
+            outline.domTreeWidget.startEditing(this.nodeInternal);
+            return true;
+        }
         return this.widget.onenter();
     }
     selectOnMouseDown(event) {

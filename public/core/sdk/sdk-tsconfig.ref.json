@@ -60,6 +60,7 @@
     "../../../../../../front_end/core/sdk/LogModel.ts",
     "../../../../../../front_end/core/sdk/NetworkManager.ts",
     "../../../../../../front_end/core/sdk/NetworkRequest.ts",
+    "../../../../../../front_end/core/sdk/NetworkRequestAccess.ts",
     "../../../../../../front_end/core/sdk/OverlayColorGenerator.ts",
     "../../../../../../front_end/core/sdk/OverlayModel.ts",
     "../../../../../../front_end/core/sdk/OverlayPersistentHighlighter.ts",
@@ -100,7 +101,8 @@
     "../../../../../../front_end/core/sdk/WebAuthnModel.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../front_end/global_typings/global_defs.d.ts",
-    "../../../../../../node_modules/@types/filesystem/index.d.ts"
+    "../../../../../../node_modules/@types/filesystem/index.d.ts",
+    "../../../../../../node_modules/@types/filewriter/index.d.ts"
   ],
   "references": [
     {
@@ -126,9 +128,6 @@
     },
     {
       "path": "../../generated/generated-tsconfig.ref.json"
-    },
-    {
-      "path": "../../generated/protocol-tsconfig.ref.json"
     },
     {
       "path": "../../models/formatter/bundle-tsconfig.ref.json"

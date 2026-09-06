@@ -1,7 +1,9 @@
-// gen/front_end/entrypoints/heap_snapshot_worker/heap_snapshot_worker-entrypoint.prebundle.js
+// ../../front_end/entrypoints/heap_snapshot_worker/heap_snapshot_worker-entrypoint.ts
 import * as Platform from "../../core/platform/platform.js";
 import * as HeapSnapshotWorker from "./heap_snapshot_worker.js";
-var dispatcher = new HeapSnapshotWorker.HeapSnapshotWorkerDispatcher.HeapSnapshotWorkerDispatcher(Platform.HostRuntime.HOST_RUNTIME.workerScope.postMessage.bind(Platform.HostRuntime.HOST_RUNTIME.workerScope));
+var dispatcher = new HeapSnapshotWorker.HeapSnapshotWorkerDispatcher.HeapSnapshotWorkerDispatcher(
+  Platform.HostRuntime.HOST_RUNTIME.workerScope.postMessage.bind(Platform.HostRuntime.HOST_RUNTIME.workerScope)
+);
 Platform.HostRuntime.HOST_RUNTIME.workerScope.onmessage = dispatcher.dispatchMessage.bind(dispatcher);
 Platform.HostRuntime.HOST_RUNTIME.workerScope.postMessage("workerReady");
 //# sourceMappingURL=heap_snapshot_worker-entrypoint.js.map

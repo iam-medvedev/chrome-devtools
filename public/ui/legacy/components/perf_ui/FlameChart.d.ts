@@ -1,5 +1,4 @@
 import * as Common from '../../../../core/common/common.js';
-import * as Platform from '../../../../core/platform/platform.js';
 import type * as NetworkTimeCalculator from '../../../../models/network_time_calculator/network_time_calculator.js';
 import * as Trace from '../../../../models/trace/trace.js';
 import { type TemplateResult } from '../../../lit/lit.js';
@@ -87,8 +86,8 @@ export interface PositionOverride {
     z?: number;
 }
 export type DrawOverride = (context: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, timeToPosition: (time: number) => number, transformColor: (color: string) => string) => PositionOverride;
-declare const FlameChart_base: Platform.Constructor.Constructor<Common.EventTarget.EventTarget<EventTypes>, any[]> & typeof UI.Widget.VBox;
-export declare class FlameChart extends FlameChart_base implements NetworkTimeCalculator.Calculator, ChartViewportDelegate {
+declare const FlameChartBase: Common.ObjectWrapper.EventMixin<EventTypes, typeof UI.Widget.VBox>;
+export declare class FlameChart extends FlameChartBase implements NetworkTimeCalculator.Calculator, ChartViewportDelegate {
     #private;
     private readonly flameChartDelegate;
     private chartViewport;
@@ -160,7 +159,6 @@ export declare class FlameChart extends FlameChart_base implements NetworkTimeCa
      * in the right place.
      */
     setTooltipYPixelAdjustment(y: number): void;
-    getBarHeight(): number;
     setBarHeight(value: number): void;
     setTextBaseline(value: number): void;
     setTextPadding(value: number): void;
@@ -234,11 +232,6 @@ export declare class FlameChart extends FlameChart_base implements NetworkTimeCa
     onContextMenu(event: MouseEvent): void;
     private onKeyDown;
     bindCanvasEvent(eventName: string, onEvent: (arg0: Event) => void): void;
-    drawTrackOnCanvas(trackName: string, context: CanvasRenderingContext2D, minWidth: number): {
-        top: number;
-        height: number;
-        visibleEntries: Set<number>;
-    } | null;
     private handleKeyboardGroupNavigation;
     /**
      * Used when the user presses "enter" when a group is selected, so that we
@@ -315,7 +308,6 @@ export declare class FlameChart extends FlameChart_base implements NetworkTimeCa
      * Make sure |setWindowTimes| is called with correct time range before this function.
      */
     private draw;
-    entryWidth(entryIndex: number): number;
     /**
      * Preprocess the data to be drawn to speed the rendering time.
      * Specifically:

@@ -1,4 +1,4 @@
-// gen/front_end/panels/settings/emulation/emulation-meta.prebundle.js
+// ../../front_end/panels/settings/emulation/emulation-meta.ts
 import * as i18n from "../../../core/i18n/i18n.js";
 import * as UI from "../../../ui/legacy/legacy.js";
 var UIStrings = {
@@ -21,7 +21,7 @@ async function loadEmulationModule() {
   return loadedEmulationModule;
 }
 UI.ViewManager.registerViewExtension({
-  location: "settings-view",
+  location: UI.ViewManager.ViewLocationValues.SETTINGS_VIEW,
   commandPrompt: i18nLazyString(UIStrings.showDevices),
   title: i18nLazyString(UIStrings.devices),
   order: 30,

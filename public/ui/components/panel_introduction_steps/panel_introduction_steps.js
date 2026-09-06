@@ -4,7 +4,7 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// gen/front_end/ui/components/panel_introduction_steps/PanelIntroductionSteps.js
+// ../../front_end/ui/components/panel_introduction_steps/PanelIntroductionSteps.ts
 var PanelIntroductionSteps_exports = {};
 __export(PanelIntroductionSteps_exports, {
   PanelIntroductionSteps: () => PanelIntroductionSteps
@@ -72,7 +72,7 @@ h1 {
 
 /*# sourceURL=${import.meta.resolve("./panelIntroductionSteps.css")} */`;
 
-// gen/front_end/ui/components/panel_introduction_steps/PanelIntroductionSteps.js
+// ../../front_end/ui/components/panel_introduction_steps/PanelIntroductionSteps.ts
 var PanelIntroductionSteps = class extends HTMLElement {
   #shadow = this.attachShadow({ mode: "open" });
   connectedCallback() {

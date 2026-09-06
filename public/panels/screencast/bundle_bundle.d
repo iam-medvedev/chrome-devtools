@@ -1,0 +1,1 @@
+gen/front_end/panels/screencast/screencast.js: ../../front_end/generated/protocol.ts ../../front_end/panels/screencast/InputModel.ts gen/front_end/panels/screencast/screencastView.css.js ../../front_end/panels/screencast/ScreencastView.ts ../../front_end/panels/screencast/ScreencastApp.ts ../../front_end/panels/screencast/screencast.ts

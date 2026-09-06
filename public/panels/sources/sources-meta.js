@@ -1,4 +1,4 @@
-// gen/front_end/panels/sources/sources-meta.prebundle.js
+// ../../front_end/panels/sources/sources-meta.ts
 import * as Common from "../../core/common/common.js";
 import * as Host from "../../core/host/host.js";
 import * as i18n from "../../core/i18n/i18n.js";
@@ -534,7 +534,7 @@ function maybeRetrieveContextTypes(getClassCallBack) {
   return getClassCallBack(loadedSourcesModule);
 }
 UI.ViewManager.registerViewExtension({
-  location: "panel",
+  location: UI.ViewManager.ViewLocationValues.PANEL,
   id: "sources",
   commandPrompt: i18nLazyString(UIStrings.showSources),
   title: i18nLazyString(UIStrings.sources),
@@ -545,12 +545,12 @@ UI.ViewManager.registerViewExtension({
   }
 });
 UI.ViewManager.registerViewExtension({
-  location: "navigator-view",
+  location: UI.ViewManager.ViewLocationValues.NAVIGATOR_VIEW,
   id: "navigator-files",
   commandPrompt: i18nLazyString(UIStrings.showWorkspace),
   title: i18nLazyString(UIStrings.workspace),
   order: 3,
-  persistence: "permanent",
+  persistence: UI.ViewManager.ViewPersistence.PERMANENT,
   condition: () => !Root.Runtime.Runtime.isTraceApp(),
   async loadView(universe) {
     const Sources = await loadSourcesModule();
@@ -558,12 +558,12 @@ UI.ViewManager.registerViewExtension({
   }
 });
 UI.ViewManager.registerViewExtension({
-  location: "navigator-view",
+  location: UI.ViewManager.ViewLocationValues.NAVIGATOR_VIEW,
   id: "navigator-snippets",
   commandPrompt: i18nLazyString(UIStrings.showSnippets),
   title: i18nLazyString(UIStrings.snippets),
   order: 6,
-  persistence: "permanent",
+  persistence: UI.ViewManager.ViewPersistence.PERMANENT,
   condition: () => !Root.Runtime.Runtime.isTraceApp(),
   async loadView(universe) {
     const Sources = await loadSourcesModule();
@@ -571,23 +571,23 @@ UI.ViewManager.registerViewExtension({
   }
 });
 UI.ViewManager.registerViewExtension({
-  location: "drawer-view",
+  location: UI.ViewManager.ViewLocationValues.DRAWER_VIEW,
   id: "sources.search-sources-tab",
   commandPrompt: i18nLazyString(UIStrings.showSearch),
   title: i18nLazyString(UIStrings.search),
   order: 7,
-  persistence: "closeable",
+  persistence: UI.ViewManager.ViewPersistence.CLOSEABLE,
   async loadView() {
     const Sources = await loadSourcesModule();
     return new Sources.SearchSourcesView.SearchSourcesView();
   }
 });
 UI.ViewManager.registerViewExtension({
-  location: "drawer-view",
+  location: UI.ViewManager.ViewLocationValues.DRAWER_VIEW,
   id: "sources.quick",
   commandPrompt: i18nLazyString(UIStrings.showQuickSource),
   title: i18nLazyString(UIStrings.quickSource),
-  persistence: "closeable",
+  persistence: UI.ViewManager.ViewPersistence.CLOSEABLE,
   order: 1e3,
   async loadView() {
     const Sources = await loadSourcesModule();
@@ -598,7 +598,7 @@ UI.ViewManager.registerViewExtension({
   id: "sources.threads",
   commandPrompt: i18nLazyString(UIStrings.showThreads),
   title: i18nLazyString(UIStrings.threads),
-  persistence: "permanent",
+  persistence: UI.ViewManager.ViewPersistence.PERMANENT,
   async loadView() {
     const Sources = await loadSourcesModule();
     return new Sources.ThreadsSidebarPane.ThreadsSidebarPane();
@@ -608,7 +608,7 @@ UI.ViewManager.registerViewExtension({
   id: "sources.scope-chain",
   commandPrompt: i18nLazyString(UIStrings.showScope),
   title: i18nLazyString(UIStrings.scope),
-  persistence: "permanent",
+  persistence: UI.ViewManager.ViewPersistence.PERMANENT,
   async loadView() {
     const Sources = await loadSourcesModule();
     return Sources.ScopeChainSidebarPane.ScopeChainSidebarPane.instance();
@@ -618,7 +618,7 @@ UI.ViewManager.registerViewExtension({
   id: "sources.watch",
   commandPrompt: i18nLazyString(UIStrings.showWatch),
   title: i18nLazyString(UIStrings.watch),
-  persistence: "permanent",
+  persistence: UI.ViewManager.ViewPersistence.PERMANENT,
   async loadView() {
     const Sources = await loadSourcesModule();
     return Sources.WatchExpressionsSidebarPane.WatchExpressionsSidebarPane.instance();
@@ -629,24 +629,26 @@ UI.ViewManager.registerViewExtension({
   id: "sources.js-breakpoints",
   commandPrompt: i18nLazyString(UIStrings.showBreakpoints),
   title: i18nLazyString(UIStrings.breakpoints),
-  persistence: "permanent",
+  persistence: UI.ViewManager.ViewPersistence.PERMANENT,
   async loadView() {
     const Sources = await loadSourcesModule();
     return Sources.BreakpointsView.BreakpointsView.instance();
   }
 });
 UI.ActionRegistration.registerActionExtension({
-  category: "DEBUGGER",
+  category: UI.ActionRegistration.ActionCategory.DEBUGGER,
   actionId: "debugger.toggle-pause",
-  iconClass: "pause",
+  iconClass: UI.ActionRegistration.IconClass.LARGEICON_PAUSE,
   toggleable: true,
-  toggledIconClass: "resume",
+  toggledIconClass: UI.ActionRegistration.IconClass.LARGEICON_RESUME,
   async loadActionDelegate() {
     const Sources = await loadSourcesModule();
     return new Sources.SourcesPanel.RevealingActionDelegate();
   },
   contextTypes() {
-    return maybeRetrieveContextTypes((Sources) => [Sources.SourcesView.SourcesView, UI.ShortcutRegistry.ForwardedShortcut]);
+    return maybeRetrieveContextTypes(
+      (Sources) => [Sources.SourcesView.SourcesView, UI.ShortcutRegistry.ForwardedShortcut]
+    );
   },
   options: [
     {
@@ -662,40 +664,40 @@ UI.ActionRegistration.registerActionExtension({
     {
       shortcut: "F8",
       keybindSets: [
-        "devToolsDefault"
+        UI.ActionRegistration.KeybindSet.DEVTOOLS_DEFAULT
       ]
     },
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Ctrl+\\"
     },
     {
       shortcut: "F5",
       keybindSets: [
-        "vsCode"
+        UI.ActionRegistration.KeybindSet.VS_CODE
       ]
     },
     {
       shortcut: "Shift+F5",
       keybindSets: [
-        "vsCode"
+        UI.ActionRegistration.KeybindSet.VS_CODE
       ]
     },
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Meta+\\"
     }
   ]
 });
 UI.ActionRegistration.registerActionExtension({
-  category: "DEBUGGER",
+  category: UI.ActionRegistration.ActionCategory.DEBUGGER,
   actionId: "debugger.step-over",
   async loadActionDelegate() {
     const Sources = await loadSourcesModule();
     return new Sources.SourcesPanel.ActionDelegate();
   },
   title: i18nLazyString(UIStrings.stepOverNextFunctionCall),
-  iconClass: "step-over",
+  iconClass: UI.ActionRegistration.IconClass.LARGEICON_STEP_OVER,
   contextTypes() {
     return [SDK.DebuggerModel.DebuggerPausedDetails];
   },
@@ -703,29 +705,29 @@ UI.ActionRegistration.registerActionExtension({
     {
       shortcut: "F10",
       keybindSets: [
-        "devToolsDefault",
-        "vsCode"
+        UI.ActionRegistration.KeybindSet.DEVTOOLS_DEFAULT,
+        UI.ActionRegistration.KeybindSet.VS_CODE
       ]
     },
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Ctrl+'"
     },
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Meta+'"
     }
   ]
 });
 UI.ActionRegistration.registerActionExtension({
-  category: "DEBUGGER",
+  category: UI.ActionRegistration.ActionCategory.DEBUGGER,
   actionId: "debugger.step-into",
   async loadActionDelegate() {
     const Sources = await loadSourcesModule();
     return new Sources.SourcesPanel.ActionDelegate();
   },
   title: i18nLazyString(UIStrings.stepIntoNextFunctionCall),
-  iconClass: "step-into",
+  iconClass: UI.ActionRegistration.IconClass.LARGE_ICON_STEP_INTO,
   contextTypes() {
     return [SDK.DebuggerModel.DebuggerPausedDetails];
   },
@@ -733,29 +735,29 @@ UI.ActionRegistration.registerActionExtension({
     {
       shortcut: "F11",
       keybindSets: [
-        "devToolsDefault",
-        "vsCode"
+        UI.ActionRegistration.KeybindSet.DEVTOOLS_DEFAULT,
+        UI.ActionRegistration.KeybindSet.VS_CODE
       ]
     },
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Ctrl+;"
     },
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Meta+;"
     }
   ]
 });
 UI.ActionRegistration.registerActionExtension({
-  category: "DEBUGGER",
+  category: UI.ActionRegistration.ActionCategory.DEBUGGER,
   actionId: "debugger.step",
   async loadActionDelegate() {
     const Sources = await loadSourcesModule();
     return new Sources.SourcesPanel.ActionDelegate();
   },
   title: i18nLazyString(UIStrings.step),
-  iconClass: "step",
+  iconClass: UI.ActionRegistration.IconClass.LARGE_ICON_STEP,
   contextTypes() {
     return [SDK.DebuggerModel.DebuggerPausedDetails];
   },
@@ -763,20 +765,20 @@ UI.ActionRegistration.registerActionExtension({
     {
       shortcut: "F9",
       keybindSets: [
-        "devToolsDefault"
+        UI.ActionRegistration.KeybindSet.DEVTOOLS_DEFAULT
       ]
     }
   ]
 });
 UI.ActionRegistration.registerActionExtension({
-  category: "DEBUGGER",
+  category: UI.ActionRegistration.ActionCategory.DEBUGGER,
   actionId: "debugger.step-out",
   async loadActionDelegate() {
     const Sources = await loadSourcesModule();
     return new Sources.SourcesPanel.ActionDelegate();
   },
   title: i18nLazyString(UIStrings.stepOutOfCurrentFunction),
-  iconClass: "step-out",
+  iconClass: UI.ActionRegistration.IconClass.LARGE_ICON_STEP_OUT,
   contextTypes() {
     return [SDK.DebuggerModel.DebuggerPausedDetails];
   },
@@ -784,48 +786,48 @@ UI.ActionRegistration.registerActionExtension({
     {
       shortcut: "Shift+F11",
       keybindSets: [
-        "devToolsDefault",
-        "vsCode"
+        UI.ActionRegistration.KeybindSet.DEVTOOLS_DEFAULT,
+        UI.ActionRegistration.KeybindSet.VS_CODE
       ]
     },
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Shift+Ctrl+;"
     },
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Shift+Meta+;"
     }
   ]
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "debugger.run-snippet",
-  category: "DEBUGGER",
+  category: UI.ActionRegistration.ActionCategory.DEBUGGER,
   async loadActionDelegate() {
     const Sources = await loadSourcesModule();
     return new Sources.SourcesPanel.ActionDelegate();
   },
   title: i18nLazyString(UIStrings.runSnippet),
-  iconClass: "play",
+  iconClass: UI.ActionRegistration.IconClass.PLAY,
   contextTypes() {
     return maybeRetrieveContextTypes((Sources) => [Sources.SourcesView.SourcesView]);
   },
   bindings: [
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Ctrl+Enter"
     },
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Meta+Enter"
     }
   ]
 });
 UI.ActionRegistration.registerActionExtension({
-  category: "DEBUGGER",
+  category: UI.ActionRegistration.ActionCategory.DEBUGGER,
   actionId: "debugger.toggle-breakpoints-active",
-  iconClass: "breakpoint-crossed",
-  toggledIconClass: "breakpoint-crossed-filled",
+  iconClass: UI.ActionRegistration.IconClass.BREAKPOINT_CROSSED,
+  toggledIconClass: UI.ActionRegistration.IconClass.BREAKPOINT_CROSSED_FILLED,
   toggleable: true,
   async loadActionDelegate() {
     const Sources = await loadSourcesModule();
@@ -846,11 +848,11 @@ UI.ActionRegistration.registerActionExtension({
   ],
   bindings: [
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Ctrl+F8"
     },
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Meta+F8"
     }
   ]
@@ -861,25 +863,25 @@ UI.ActionRegistration.registerActionExtension({
     const Sources = await loadSourcesModule();
     return Sources.WatchExpressionsSidebarPane.WatchExpressionsSidebarPane.instance();
   },
-  category: "DEBUGGER",
+  category: UI.ActionRegistration.ActionCategory.DEBUGGER,
   title: i18nLazyString(UIStrings.addSelectedTextToWatches),
   contextTypes() {
     return maybeRetrieveContextTypes((Sources) => [Sources.UISourceCodeFrame.UISourceCodeFrame]);
   },
   bindings: [
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Ctrl+Shift+A"
     },
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Meta+Shift+A"
     }
   ]
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "debugger.evaluate-selection",
-  category: "DEBUGGER",
+  category: UI.ActionRegistration.ActionCategory.DEBUGGER,
   async loadActionDelegate() {
     const Sources = await loadSourcesModule();
     return new Sources.SourcesPanel.ActionDelegate();
@@ -890,18 +892,18 @@ UI.ActionRegistration.registerActionExtension({
   },
   bindings: [
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Ctrl+Shift+E"
     },
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Meta+Shift+E"
     }
   ]
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "sources.switch-file",
-  category: "SOURCES",
+  category: UI.ActionRegistration.ActionCategory.SOURCES,
   title: i18nLazyString(UIStrings.switchFile),
   async loadActionDelegate() {
     const Sources = await loadSourcesModule();
@@ -918,21 +920,21 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "sources.rename",
-  category: "SOURCES",
+  category: UI.ActionRegistration.ActionCategory.SOURCES,
   title: i18nLazyString(UIStrings.rename),
   bindings: [
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "F2"
     },
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Enter"
     }
   ]
 });
 UI.ActionRegistration.registerActionExtension({
-  category: "SOURCES",
+  category: UI.ActionRegistration.ActionCategory.SOURCES,
   actionId: "sources.close-all",
   async loadActionDelegate() {
     const Sources = await loadSourcesModule();
@@ -941,24 +943,24 @@ UI.ActionRegistration.registerActionExtension({
   title: i18nLazyString(UIStrings.closeAll),
   bindings: [
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Ctrl+K W",
       keybindSets: [
-        "vsCode"
+        UI.ActionRegistration.KeybindSet.VS_CODE
       ]
     },
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Meta+K W",
       keybindSets: [
-        "vsCode"
+        UI.ActionRegistration.KeybindSet.VS_CODE
       ]
     }
   ]
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "sources.jump-to-previous-location",
-  category: "SOURCES",
+  category: UI.ActionRegistration.ActionCategory.SOURCES,
   title: i18nLazyString(UIStrings.jumpToPreviousEditingLocation),
   async loadActionDelegate() {
     const Sources = await loadSourcesModule();
@@ -975,7 +977,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "sources.jump-to-next-location",
-  category: "SOURCES",
+  category: UI.ActionRegistration.ActionCategory.SOURCES,
   title: i18nLazyString(UIStrings.jumpToNextEditingLocation),
   async loadActionDelegate() {
     const Sources = await loadSourcesModule();
@@ -992,7 +994,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "sources.close-editor-tab",
-  category: "SOURCES",
+  category: UI.ActionRegistration.ActionCategory.SOURCES,
   title: i18nLazyString(UIStrings.closeTheActiveTab),
   async loadActionDelegate() {
     const Sources = await loadSourcesModule();
@@ -1008,21 +1010,21 @@ UI.ActionRegistration.registerActionExtension({
     {
       shortcut: "Ctrl+W",
       keybindSets: [
-        "vsCode"
+        UI.ActionRegistration.KeybindSet.VS_CODE
       ]
     },
     {
-      platform: "windows",
+      platform: UI.ActionRegistration.Platforms.WINDOWS,
       shortcut: "Ctrl+F4",
       keybindSets: [
-        "vsCode"
+        UI.ActionRegistration.KeybindSet.VS_CODE
       ]
     }
   ]
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "sources.next-editor-tab",
-  category: "SOURCES",
+  category: UI.ActionRegistration.ActionCategory.SOURCES,
   title: i18nLazyString(UIStrings.nextEditorTab),
   async loadActionDelegate() {
     const Sources = await loadSourcesModule();
@@ -1033,26 +1035,26 @@ UI.ActionRegistration.registerActionExtension({
   },
   bindings: [
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Ctrl+PageDown",
       keybindSets: [
-        "devToolsDefault",
-        "vsCode"
+        UI.ActionRegistration.KeybindSet.DEVTOOLS_DEFAULT,
+        UI.ActionRegistration.KeybindSet.VS_CODE
       ]
     },
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Meta+PageDown",
       keybindSets: [
-        "devToolsDefault",
-        "vsCode"
+        UI.ActionRegistration.KeybindSet.DEVTOOLS_DEFAULT,
+        UI.ActionRegistration.KeybindSet.VS_CODE
       ]
     }
   ]
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "sources.previous-editor-tab",
-  category: "SOURCES",
+  category: UI.ActionRegistration.ActionCategory.SOURCES,
   title: i18nLazyString(UIStrings.previousEditorTab),
   async loadActionDelegate() {
     const Sources = await loadSourcesModule();
@@ -1063,26 +1065,26 @@ UI.ActionRegistration.registerActionExtension({
   },
   bindings: [
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Ctrl+PageUp",
       keybindSets: [
-        "devToolsDefault",
-        "vsCode"
+        UI.ActionRegistration.KeybindSet.DEVTOOLS_DEFAULT,
+        UI.ActionRegistration.KeybindSet.VS_CODE
       ]
     },
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Meta+PageUp",
       keybindSets: [
-        "devToolsDefault",
-        "vsCode"
+        UI.ActionRegistration.KeybindSet.DEVTOOLS_DEFAULT,
+        UI.ActionRegistration.KeybindSet.VS_CODE
       ]
     }
   ]
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "sources.go-to-line",
-  category: "SOURCES",
+  category: UI.ActionRegistration.ActionCategory.SOURCES,
   title: i18nLazyString(UIStrings.goToLine),
   async loadActionDelegate() {
     const Sources = await loadSourcesModule();
@@ -1095,30 +1097,30 @@ UI.ActionRegistration.registerActionExtension({
     {
       shortcut: "Ctrl+g",
       keybindSets: [
-        "devToolsDefault",
-        "vsCode"
+        UI.ActionRegistration.KeybindSet.DEVTOOLS_DEFAULT,
+        UI.ActionRegistration.KeybindSet.VS_CODE
       ]
     },
     {
       shortcut: "Alt+g",
       keybindSets: [
-        "devToolsDefault",
-        "vsCode"
+        UI.ActionRegistration.KeybindSet.DEVTOOLS_DEFAULT,
+        UI.ActionRegistration.KeybindSet.VS_CODE
       ]
     },
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Meta+g",
       keybindSets: [
-        "devToolsDefault",
-        "vsCode"
+        UI.ActionRegistration.KeybindSet.DEVTOOLS_DEFAULT,
+        UI.ActionRegistration.KeybindSet.VS_CODE
       ]
     }
   ]
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "sources.go-to-member",
-  category: "SOURCES",
+  category: UI.ActionRegistration.ActionCategory.SOURCES,
   title: i18nLazyString(UIStrings.goToAFunctionDeclarationruleSet),
   async loadActionDelegate() {
     const Sources = await loadSourcesModule();
@@ -1129,103 +1131,103 @@ UI.ActionRegistration.registerActionExtension({
   },
   bindings: [
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Ctrl+Shift+o",
       keybindSets: [
-        "devToolsDefault",
-        "vsCode"
+        UI.ActionRegistration.KeybindSet.DEVTOOLS_DEFAULT,
+        UI.ActionRegistration.KeybindSet.VS_CODE
       ]
     },
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Meta+Shift+o",
       keybindSets: [
-        "devToolsDefault",
-        "vsCode"
+        UI.ActionRegistration.KeybindSet.DEVTOOLS_DEFAULT,
+        UI.ActionRegistration.KeybindSet.VS_CODE
       ]
     },
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Meta+T",
       keybindSets: [
-        "vsCode"
+        UI.ActionRegistration.KeybindSet.VS_CODE
       ]
     },
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Ctrl+T",
       keybindSets: [
-        "vsCode"
+        UI.ActionRegistration.KeybindSet.VS_CODE
       ]
     },
     {
       shortcut: "F12",
       keybindSets: [
-        "vsCode"
+        UI.ActionRegistration.KeybindSet.VS_CODE
       ]
     }
   ]
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "debugger.toggle-breakpoint",
-  category: "DEBUGGER",
+  category: UI.ActionRegistration.ActionCategory.DEBUGGER,
   title: i18nLazyString(UIStrings.toggleBreakpoint),
   bindings: [
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Ctrl+b",
       keybindSets: [
-        "devToolsDefault"
+        UI.ActionRegistration.KeybindSet.DEVTOOLS_DEFAULT
       ]
     },
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Meta+b",
       keybindSets: [
-        "devToolsDefault"
+        UI.ActionRegistration.KeybindSet.DEVTOOLS_DEFAULT
       ]
     },
     {
       shortcut: "F9",
       keybindSets: [
-        "vsCode"
+        UI.ActionRegistration.KeybindSet.VS_CODE
       ]
     }
   ]
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "debugger.toggle-breakpoint-enabled",
-  category: "DEBUGGER",
+  category: UI.ActionRegistration.ActionCategory.DEBUGGER,
   title: i18nLazyString(UIStrings.toggleBreakpointEnabled),
   bindings: [
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Ctrl+Shift+b"
     },
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Meta+Shift+b"
     }
   ]
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "debugger.breakpoint-input-window",
-  category: "DEBUGGER",
+  category: UI.ActionRegistration.ActionCategory.DEBUGGER,
   title: i18nLazyString(UIStrings.toggleBreakpointInputWindow),
   bindings: [
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Ctrl+Alt+b"
     },
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Meta+Alt+b"
     }
   ]
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "sources.save",
-  category: "SOURCES",
+  category: UI.ActionRegistration.ActionCategory.SOURCES,
   title: i18nLazyString(UIStrings.save),
   async loadActionDelegate() {
     const Sources = await loadSourcesModule();
@@ -1236,26 +1238,26 @@ UI.ActionRegistration.registerActionExtension({
   },
   bindings: [
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Ctrl+s",
       keybindSets: [
-        "devToolsDefault",
-        "vsCode"
+        UI.ActionRegistration.KeybindSet.DEVTOOLS_DEFAULT,
+        UI.ActionRegistration.KeybindSet.VS_CODE
       ]
     },
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Meta+s",
       keybindSets: [
-        "devToolsDefault",
-        "vsCode"
+        UI.ActionRegistration.KeybindSet.DEVTOOLS_DEFAULT,
+        UI.ActionRegistration.KeybindSet.VS_CODE
       ]
     }
   ]
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "sources.save-all",
-  category: "SOURCES",
+  category: UI.ActionRegistration.ActionCategory.SOURCES,
   title: i18nLazyString(UIStrings.saveAll),
   async loadActionDelegate() {
     const Sources = await loadSourcesModule();
@@ -1266,31 +1268,31 @@ UI.ActionRegistration.registerActionExtension({
   },
   bindings: [
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Ctrl+Shift+s"
     },
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Meta+Alt+s"
     },
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Ctrl+K S",
       keybindSets: [
-        "vsCode"
+        UI.ActionRegistration.KeybindSet.VS_CODE
       ]
     },
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Meta+Alt+S",
       keybindSets: [
-        "vsCode"
+        UI.ActionRegistration.KeybindSet.VS_CODE
       ]
     }
   ]
 });
 UI.ActionRegistration.registerActionExtension({
-  category: "SOURCES",
+  category: UI.ActionRegistration.ActionCategory.SOURCES,
   actionId: "sources.create-snippet",
   async loadActionDelegate() {
     const Sources = await loadSourcesModule();
@@ -1299,18 +1301,18 @@ UI.ActionRegistration.registerActionExtension({
   title: i18nLazyString(UIStrings.createNewSnippet)
 });
 UI.ActionRegistration.registerActionExtension({
-  category: "SOURCES",
+  category: UI.ActionRegistration.ActionCategory.SOURCES,
   actionId: "sources.add-folder-to-workspace",
   condition: () => !Host.InspectorFrontendHost.InspectorFrontendHostInstance.isHostedMode(),
   async loadActionDelegate() {
     const Sources = await loadSourcesModule();
     return new Sources.SourcesNavigator.ActionDelegate();
   },
-  iconClass: "plus",
+  iconClass: UI.ActionRegistration.IconClass.PLUS,
   title: i18nLazyString(UIStrings.addFolderToWorkspace)
 });
 UI.ActionRegistration.registerActionExtension({
-  category: "DEBUGGER",
+  category: UI.ActionRegistration.ActionCategory.DEBUGGER,
   actionId: "debugger.previous-call-frame",
   async loadActionDelegate() {
     const Sources = await loadSourcesModule();
@@ -1325,13 +1327,13 @@ UI.ActionRegistration.registerActionExtension({
       shortcut: "Ctrl+,"
     },
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Meta+,"
     }
   ]
 });
 UI.ActionRegistration.registerActionExtension({
-  category: "DEBUGGER",
+  category: UI.ActionRegistration.ActionCategory.DEBUGGER,
   actionId: "debugger.next-call-frame",
   async loadActionDelegate() {
     const Sources = await loadSourcesModule();
@@ -1346,7 +1348,7 @@ UI.ActionRegistration.registerActionExtension({
       shortcut: "Ctrl+."
     },
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Meta+."
     }
   ]
@@ -1358,49 +1360,49 @@ UI.ActionRegistration.registerActionExtension({
     const Sources = await loadSourcesModule();
     return new Sources.SearchSourcesView.ActionDelegate();
   },
-  category: "SOURCES",
+  category: UI.ActionRegistration.ActionCategory.SOURCES,
   bindings: [
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Meta+Alt+F",
       keybindSets: [
-        "devToolsDefault"
+        UI.ActionRegistration.KeybindSet.DEVTOOLS_DEFAULT
       ]
     },
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Ctrl+Shift+F",
       keybindSets: [
-        "devToolsDefault",
-        "vsCode"
+        UI.ActionRegistration.KeybindSet.DEVTOOLS_DEFAULT,
+        UI.ActionRegistration.KeybindSet.VS_CODE
       ]
     },
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Ctrl+Shift+J",
       keybindSets: [
-        "vsCode"
+        UI.ActionRegistration.KeybindSet.VS_CODE
       ]
     },
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Meta+Shift+F",
       keybindSets: [
-        "vsCode"
+        UI.ActionRegistration.KeybindSet.VS_CODE
       ]
     },
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Meta+Shift+J",
       keybindSets: [
-        "vsCode"
+        UI.ActionRegistration.KeybindSet.VS_CODE
       ]
     }
   ]
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "sources.increment-css",
-  category: "SOURCES",
+  category: UI.ActionRegistration.ActionCategory.SOURCES,
   title: i18nLazyString(UIStrings.incrementCssUnitBy, { PH1: 1 }),
   bindings: [
     {
@@ -1411,7 +1413,7 @@ UI.ActionRegistration.registerActionExtension({
 UI.ActionRegistration.registerActionExtension({
   actionId: "sources.increment-css-by-ten",
   title: i18nLazyString(UIStrings.incrementCssUnitBy, { PH1: 10 }),
-  category: "SOURCES",
+  category: UI.ActionRegistration.ActionCategory.SOURCES,
   bindings: [
     {
       shortcut: "Alt+PageUp"
@@ -1420,7 +1422,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "sources.decrement-css",
-  category: "SOURCES",
+  category: UI.ActionRegistration.ActionCategory.SOURCES,
   title: i18nLazyString(UIStrings.decrementCssUnitBy, { PH1: 1 }),
   bindings: [
     {
@@ -1430,7 +1432,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "sources.decrement-css-by-ten",
-  category: "SOURCES",
+  category: UI.ActionRegistration.ActionCategory.SOURCES,
   title: i18nLazyString(UIStrings.decrementCssUnitBy, { PH1: 10 }),
   bindings: [
     {
@@ -1440,7 +1442,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "sources.reveal-in-navigator-sidebar",
-  category: "SOURCES",
+  category: UI.ActionRegistration.ActionCategory.SOURCES,
   title: i18nLazyString(UIStrings.revealActiveFileInSidebar),
   async loadActionDelegate() {
     const Sources = await loadSourcesModule();
@@ -1452,7 +1454,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "sources.toggle-navigator-sidebar",
-  category: "SOURCES",
+  category: UI.ActionRegistration.ActionCategory.SOURCES,
   title: i18nLazyString(UIStrings.toggleNavigatorSidebar),
   async loadActionDelegate() {
     const Sources = await loadSourcesModule();
@@ -1463,38 +1465,38 @@ UI.ActionRegistration.registerActionExtension({
   },
   bindings: [
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Ctrl+Shift+y",
       keybindSets: [
-        "devToolsDefault"
+        UI.ActionRegistration.KeybindSet.DEVTOOLS_DEFAULT
       ]
     },
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Meta+Shift+y",
       keybindSets: [
-        "devToolsDefault"
+        UI.ActionRegistration.KeybindSet.DEVTOOLS_DEFAULT
       ]
     },
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Ctrl+b",
       keybindSets: [
-        "vsCode"
+        UI.ActionRegistration.KeybindSet.VS_CODE
       ]
     },
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Meta+b",
       keybindSets: [
-        "vsCode"
+        UI.ActionRegistration.KeybindSet.VS_CODE
       ]
     }
   ]
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "sources.toggle-debugger-sidebar",
-  category: "SOURCES",
+  category: UI.ActionRegistration.ActionCategory.SOURCES,
   title: i18nLazyString(UIStrings.toggleDebuggerSidebar),
   async loadActionDelegate() {
     const Sources = await loadSourcesModule();
@@ -1505,32 +1507,32 @@ UI.ActionRegistration.registerActionExtension({
   },
   bindings: [
     {
-      platform: "windows,linux",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX,
       shortcut: "Ctrl+Shift+h"
     },
     {
-      platform: "mac",
+      platform: UI.ActionRegistration.Platforms.MAC,
       shortcut: "Meta+Shift+h"
     }
   ]
 });
 Common.Settings.registerSettingExtension({
   settingName: "navigator-group-by-folder",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: true
 });
 Common.Settings.registerSettingExtension({
   settingName: "navigator-group-by-authored",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: false
 });
 Common.Settings.registerSettingExtension({
   settingName: "navigator-just-my-code",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: false
 });
 SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.jsSourceMapsEnabledSettingDescriptor, {
-  category: "SOURCES",
+  category: Common.Settings.SettingCategory.SOURCES,
   title: i18nLazyString(UIStrings.javaScriptSourceMaps),
   options: [
     {
@@ -1544,7 +1546,7 @@ SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.jsSourceMapsEnabledSet
   ]
 });
 SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.cssSourceMapsEnabledSettingDescriptor, {
-  category: "SOURCES",
+  category: Common.Settings.SettingCategory.SOURCES,
   title: i18nLazyString(UIStrings.cssSourceMaps),
   options: [
     {
@@ -1558,14 +1560,14 @@ SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.cssSourceMapsEnabledSe
   ]
 });
 SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.enableRemoteFileLoadingSettingDescriptor, {
-  category: "SOURCES",
+  category: Common.Settings.SettingCategory.SOURCES,
   title: i18nLazyString(UIStrings.enableRemoteFileLoading),
   learnMore: {
     tooltip: i18nLazyString(UIStrings.remoteFileLoadingInfo)
   }
 });
 SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.javaScriptDisabledSettingDescriptor, {
-  category: "DEBUGGER",
+  category: Common.Settings.SettingCategory.DEBUGGER,
   title: i18nLazyString(UIStrings.disableJavascript),
   order: 1,
   options: [
@@ -1580,7 +1582,7 @@ SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.javaScriptDisabledSett
   ]
 });
 SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.disableAsyncStackTracesSettingDescriptor, {
-  category: "DEBUGGER",
+  category: Common.Settings.SettingCategory.DEBUGGER,
   title: i18nLazyString(UIStrings.disableAsyncStackTraces),
   order: 2,
   options: [
@@ -1595,7 +1597,7 @@ SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.disableAsyncStackTrace
   ]
 });
 SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.pauseOnExceptionEnabledSettingDescriptor, {
-  category: "DEBUGGER",
+  category: Common.Settings.SettingCategory.DEBUGGER,
   options: [
     {
       value: true,
@@ -1608,11 +1610,11 @@ SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.pauseOnExceptionEnable
   ]
 });
 Common.Settings.registerSettingExtension({
-  category: "SOURCES",
-  storageType: "Synced",
+  category: Common.Settings.SettingCategory.SOURCES,
+  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.searchInAnonymousAndContent),
   settingName: "search-in-anonymous-and-content-scripts",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: false,
   options: [
     {
@@ -1626,11 +1628,11 @@ Common.Settings.registerSettingExtension({
   ]
 });
 Common.Settings.registerSettingExtension({
-  category: "SOURCES",
-  storageType: "Synced",
+  category: Common.Settings.SettingCategory.SOURCES,
+  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.automaticallyRevealFilesIn),
   settingName: "auto-reveal-in-navigator",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: true,
   options: [
     {
@@ -1644,11 +1646,11 @@ Common.Settings.registerSettingExtension({
   ]
 });
 Common.Settings.registerSettingExtension({
-  category: "SOURCES",
-  storageType: "Synced",
+  category: Common.Settings.SettingCategory.SOURCES,
+  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.tabMovesFocus),
   settingName: "text-editor-tab-moves-focus",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: false,
   options: [
     {
@@ -1662,11 +1664,11 @@ Common.Settings.registerSettingExtension({
   ]
 });
 Common.Settings.registerSettingExtension({
-  category: "SOURCES",
-  storageType: "Synced",
+  category: Common.Settings.SettingCategory.SOURCES,
+  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.detectIndentation),
   settingName: "text-editor-auto-detect-indent",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: true,
   options: [
     {
@@ -1680,11 +1682,11 @@ Common.Settings.registerSettingExtension({
   ]
 });
 Common.Settings.registerSettingExtension({
-  category: "SOURCES",
-  storageType: "Synced",
+  category: Common.Settings.SettingCategory.SOURCES,
+  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.autocompletion),
   settingName: "text-editor-autocompletion",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: true,
   options: [
     {
@@ -1698,11 +1700,11 @@ Common.Settings.registerSettingExtension({
   ]
 });
 Common.Settings.registerSettingExtension({
-  category: "SOURCES",
-  storageType: "Synced",
+  category: Common.Settings.SettingCategory.SOURCES,
+  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.bracketClosing),
   settingName: "text-editor-bracket-closing",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: true,
   options: [
     {
@@ -1716,10 +1718,10 @@ Common.Settings.registerSettingExtension({
   ]
 });
 Common.Settings.registerSettingExtension({
-  category: "SOURCES",
+  category: Common.Settings.SettingCategory.SOURCES,
   title: i18nLazyString(UIStrings.bracketMatching),
   settingName: "text-editor-bracket-matching",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: true,
   options: [
     {
@@ -1733,11 +1735,11 @@ Common.Settings.registerSettingExtension({
   ]
 });
 Common.Settings.registerSettingExtension({
-  category: "SOURCES",
-  storageType: "Synced",
+  category: Common.Settings.SettingCategory.SOURCES,
+  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.codeFolding),
   settingName: "text-editor-code-folding",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: true,
   options: [
     {
@@ -1751,11 +1753,11 @@ Common.Settings.registerSettingExtension({
   ]
 });
 Common.Settings.registerSettingExtension({
-  category: "SOURCES",
-  storageType: "Synced",
+  category: Common.Settings.SettingCategory.SOURCES,
+  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.showWhitespaceCharacters),
   settingName: "show-whitespaces-in-editor",
-  settingType: "enum",
+  settingType: Common.Settings.SettingType.ENUM,
   defaultValue: "original",
   options: [
     {
@@ -1776,15 +1778,15 @@ Common.Settings.registerSettingExtension({
   ]
 });
 Common.Settings.registerSettingExtension({
-  category: "SOURCES",
-  storageType: "Synced",
+  category: Common.Settings.SettingCategory.SOURCES,
+  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.wordWrap),
   settingName: "sources.word-wrap",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: false
 });
 UI.ActionRegistration.registerActionExtension({
-  category: "SOURCES",
+  category: UI.ActionRegistration.ActionCategory.SOURCES,
   actionId: "sources.toggle-word-wrap",
   async loadActionDelegate() {
     const Sources = await loadSourcesModule();
@@ -1797,19 +1799,16 @@ UI.ActionRegistration.registerActionExtension({
   bindings: [
     {
       shortcut: "Alt+Z",
-      keybindSets: [
-        "vsCode"
-        /* UI.ActionRegistration.KeybindSet.VS_CODE */
-      ]
+      keybindSets: [UI.ActionRegistration.KeybindSet.VS_CODE]
     }
   ]
 });
 Common.Settings.registerSettingExtension({
-  category: "SOURCES",
-  storageType: "Synced",
+  category: Common.Settings.SettingCategory.SOURCES,
+  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.variableValuesInlineWhile),
   settingName: "inline-variable-values",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: true,
   options: [
     {
@@ -1823,11 +1822,11 @@ Common.Settings.registerSettingExtension({
   ]
 });
 Common.Settings.registerSettingExtension({
-  category: "SOURCES",
-  storageType: "Synced",
+  category: Common.Settings.SettingCategory.SOURCES,
+  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.enableAutoFocusOnDebuggerPaused),
   settingName: "auto-focus-on-debugger-paused-enabled",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: true,
   options: [
     {
@@ -1841,11 +1840,11 @@ Common.Settings.registerSettingExtension({
   ]
 });
 Common.Settings.registerSettingExtension({
-  category: "SOURCES",
-  storageType: "Synced",
+  category: Common.Settings.SettingCategory.SOURCES,
+  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.automaticallyPrettyPrintMinifiedSources),
   settingName: "auto-pretty-print-minified",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: true,
   options: [
     {
@@ -1859,11 +1858,11 @@ Common.Settings.registerSettingExtension({
   ]
 });
 Common.Settings.registerSettingExtension({
-  category: "SOURCES",
-  storageType: "Synced",
+  category: Common.Settings.SettingCategory.SOURCES,
+  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.allowScrollingPastEndOfFile),
   settingName: "allow-scroll-past-eof",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: true,
   options: [
     {
@@ -1877,11 +1876,11 @@ Common.Settings.registerSettingExtension({
   ]
 });
 Common.Settings.registerSettingExtension({
-  category: "SOURCES",
-  storageType: "Local",
+  category: Common.Settings.SettingCategory.SOURCES,
+  storageType: Common.Settings.SettingStorageType.LOCAL,
   title: i18nLazyString(UIStrings.wasmAutoStepping),
   settingName: "wasm-auto-stepping",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: true,
   options: [
     {
@@ -1898,32 +1897,32 @@ Common.Settings.registerSettingExtension({
   }
 });
 UI.ViewManager.registerLocationResolver({
-  name: "navigator-view",
-  category: "SOURCES",
+  name: UI.ViewManager.ViewLocationValues.NAVIGATOR_VIEW,
+  category: UI.ViewManager.ViewLocationCategory.SOURCES,
   async loadResolver() {
     const Sources = await loadSourcesModule();
     return Sources.SourcesPanel.SourcesPanel.instance();
   }
 });
 UI.ViewManager.registerLocationResolver({
-  name: "sources.sidebar-top",
-  category: "SOURCES",
+  name: UI.ViewManager.ViewLocationValues.SOURCES_SIDEBAR_TOP,
+  category: UI.ViewManager.ViewLocationCategory.SOURCES,
   async loadResolver() {
     const Sources = await loadSourcesModule();
     return Sources.SourcesPanel.SourcesPanel.instance();
   }
 });
 UI.ViewManager.registerLocationResolver({
-  name: "sources.sidebar-bottom",
-  category: "SOURCES",
+  name: UI.ViewManager.ViewLocationValues.SOURCES_SIDEBAR_BOTTOM,
+  category: UI.ViewManager.ViewLocationCategory.SOURCES,
   async loadResolver() {
     const Sources = await loadSourcesModule();
     return Sources.SourcesPanel.SourcesPanel.instance();
   }
 });
 UI.ViewManager.registerLocationResolver({
-  name: "sources.sidebar-tabs",
-  category: "SOURCES",
+  name: UI.ViewManager.ViewLocationValues.SOURCES_SIDEBAR_TABS,
+  category: UI.ViewManager.ViewLocationCategory.SOURCES,
   async loadResolver() {
     const Sources = await loadSourcesModule();
     return Sources.SourcesPanel.SourcesPanel.instance();
@@ -2039,7 +2038,7 @@ Common.Revealer.registerRevealer({
 });
 UI.Toolbar.registerToolbarItem({
   actionId: "sources.add-folder-to-workspace",
-  location: "files-navigator-toolbar",
+  location: UI.Toolbar.ToolbarItemLocation.FILES_NAVIGATION_TOOLBAR,
   label: i18nLazyString(UIStrings.addFolderManually)
 });
 UI.Context.registerListener({
@@ -2070,11 +2069,11 @@ UI.Context.registerListener({
   }
 });
 UI.ContextMenu.registerItem({
-  location: "navigatorMenu/default",
+  location: UI.ContextMenu.ItemLocation.NAVIGATOR_MENU_DEFAULT,
   actionId: "quick-open.show"
 });
 UI.ContextMenu.registerItem({
-  location: "mainMenu/default",
+  location: UI.ContextMenu.ItemLocation.MAIN_MENU_DEFAULT,
   actionId: "sources.search"
 });
 QuickOpen.FilteredListWidget.registerProvider({

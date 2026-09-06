@@ -4,7 +4,7 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// gen/front_end/panels/console_counters/WarningErrorCounter.js
+// ../../front_end/panels/console_counters/WarningErrorCounter.ts
 var WarningErrorCounter_exports = {};
 __export(WarningErrorCounter_exports, {
   WarningErrorCounter: () => WarningErrorCounter,
@@ -74,45 +74,63 @@ var DEFAULT_VIEW = (input, _output, target) => {
     issuesManager,
     compact,
     accessibleName: issuesTitle,
-    displayMode: "OnlyMostImportant"
+    displayMode: IssueCounter.IssueCounter.DisplayMode.ONLY_MOST_IMPORTANT
   };
-  render(html`<div class="status-buttons"
+  render(
+    html`<div class="status-buttons"
          >${errors + warnings ? html`<icon-button
             .data=${iconData}
             title=${consoleTitle}
             class=${"small"}
             jslog=${VisualLogging.counter("console").track({
-    click: true
-  })}
+      click: true
+    })}
          ></icon-button>` : nothing}${issues ? html`<devtools-issue-counter
             class=${"main-toolbar"}
             title=${issuesTitle}
             .data=${issueCounterData}
             jslog=${VisualLogging.counter("issue").track({
-    click: true
-  })}
-         ></devtools-issue-counter>` : nothing}</div>`, target);
+      click: true
+    })}
+         ></devtools-issue-counter>` : nothing}</div>`,
+    target
+  );
 };
 var WarningErrorCounterWidget = class _WarningErrorCounterWidget extends UI.Widget.Widget {
+  constructor(element, setVisibility, view = DEFAULT_VIEW) {
+    super(element);
+    this.setVisibility = setVisibility;
+    this.view = view;
+    this.throttler = new Common.Throttler.Throttler(100);
+    SDK.TargetManager.TargetManager.instance().addModelListener(
+      SDK.ConsoleModel.ConsoleModel,
+      SDK.ConsoleModel.Events.ConsoleCleared,
+      this.update,
+      this
+    );
+    SDK.TargetManager.TargetManager.instance().addModelListener(
+      SDK.ConsoleModel.ConsoleModel,
+      SDK.ConsoleModel.Events.MessageAdded,
+      this.update,
+      this
+    );
+    SDK.TargetManager.TargetManager.instance().addModelListener(
+      SDK.ConsoleModel.ConsoleModel,
+      SDK.ConsoleModel.Events.MessageUpdated,
+      this.update,
+      this
+    );
+    const issuesManager = IssuesManager.IssuesManager.IssuesManager.instance();
+    issuesManager.addEventListener(IssuesManager.IssuesManager.Events.ISSUES_COUNT_UPDATED, this.update, this);
+    this.update();
+    _WarningErrorCounterWidget.instanceForTest = this;
+  }
   setVisibility;
   view;
   throttler;
   updatingForTest;
   compact;
   static instanceForTest = null;
-  constructor(element, setVisibility, view = DEFAULT_VIEW) {
-    super(element);
-    this.setVisibility = setVisibility;
-    this.view = view;
-    this.throttler = new Common.Throttler.Throttler(100);
-    SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ConsoleModel.ConsoleModel, SDK.ConsoleModel.Events.ConsoleCleared, this.update, this);
-    SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ConsoleModel.ConsoleModel, SDK.ConsoleModel.Events.MessageAdded, this.update, this);
-    SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ConsoleModel.ConsoleModel, SDK.ConsoleModel.Events.MessageUpdated, this.update, this);
-    const issuesManager = IssuesManager.IssuesManager.IssuesManager.instance();
-    issuesManager.addEventListener("IssuesCountUpdated", this.update, this);
-    this.update();
-    _WarningErrorCounterWidget.instanceForTest = this;
-  }
   onSetCompactLayout(event) {
     this.setCompactLayout(event.data);
   }
@@ -139,7 +157,11 @@ var WarningErrorCounterWidget = class _WarningErrorCounterWidget extends UI.Widg
     const warnings = SDK.ConsoleModel.ConsoleModel.allWarnings(SDK.TargetManager.TargetManager.instance());
     const issuesManager = IssuesManager.IssuesManager.IssuesManager.instance();
     const issues = issuesManager.numberOfIssues();
-    this.view({ compact: this.compact, errors, warnings, issues, showIssuesHandler: this.showIssues.bind(this) }, {}, this.contentElement);
+    this.view(
+      { compact: this.compact, errors, warnings, issues, showIssuesHandler: this.showIssues.bind(this) },
+      {},
+      this.contentElement
+    );
     this.setVisibility(Boolean(errors || warnings || issues));
     UI.InspectorView.InspectorView.instance().toolbarItemResized();
     this.updatingForTest = false;
@@ -155,7 +177,11 @@ var WarningErrorCounter = class _WarningErrorCounter {
     const toolbarItem = new UI.Toolbar.ToolbarItemWithCompactLayout(widgetElement);
     toolbarItem.setVisible(false);
     const widget = new WarningErrorCounterWidget(widgetElement, toolbarItem.setVisible.bind(toolbarItem));
-    toolbarItem.addEventListener("CompactLayoutUpdated", widget.onSetCompactLayout, widget);
+    toolbarItem.addEventListener(
+      UI.Toolbar.ToolbarItemWithCompactLayoutEvents.COMPACT_LAYOUT_UPDATED,
+      widget.onSetCompactLayout,
+      widget
+    );
     this.toolbarItem = toolbarItem;
   }
   item() {

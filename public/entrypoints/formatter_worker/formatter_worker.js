@@ -10,7 +10,7 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// gen/front_end/third_party/codemirror/package/addon/runmode/runmode-standalone.mjs
+// ../../front_end/third_party/codemirror/package/addon/runmode/runmode-standalone.mjs
 (function() {
   "use strict";
   function copyObj(obj, target, overwrite) {
@@ -374,7 +374,7 @@ var __export = (target, all) => {
   });
 })();
 
-// gen/front_end/third_party/codemirror/package/mode/css/css.mjs
+// ../../front_end/third_party/codemirror/package/mode/css/css.mjs
 (function(mod) {
   if (typeof exports == "object" && typeof module == "object")
     mod(__require("../../lib/codemirror"));
@@ -2144,7 +2144,7 @@ var __export = (target, all) => {
   });
 });
 
-// gen/front_end/third_party/codemirror/package/mode/xml/xml.mjs
+// ../../front_end/third_party/codemirror/package/mode/xml/xml.mjs
 (function(mod) {
   if (typeof exports == "object" && typeof module == "object")
     mod(__require("../../lib/codemirror"));
@@ -2582,7 +2582,7 @@ var __export = (target, all) => {
     CodeMirror2.defineMIME("text/html", { name: "xml", htmlMode: true });
 });
 
-// gen/front_end/third_party/codemirror/package/mode/javascript/javascript.mjs
+// ../../front_end/third_party/codemirror/package/mode/javascript/javascript.mjs
 (function(mod) {
   if (typeof exports == "object" && typeof module == "object")
     mod(__require("../../lib/codemirror"));
@@ -2600,7 +2600,7 @@ var __export = (target, all) => {
     var trackScope = parserConfig.trackScope !== false;
     var isTS = parserConfig.typescript;
     var wordRE = parserConfig.wordCharacters || /[\w$\xa1-\uffff]/;
-    var keywords = function() {
+    var keywords = (function() {
       function kw(type2) {
         return { type: type2, style: "keyword" };
       }
@@ -2649,7 +2649,7 @@ var __export = (target, all) => {
         "extends": C,
         "await": C
       };
-    }();
+    })();
     var isOperatorChar = /[+\-*&%=<>!?|~^@]/;
     var isJsonldKeyword = /^@(context|id|value|language|type|container|list|set|reverse|index|base|vocab|graph)"/;
     function readRegexp(stream) {
@@ -3588,13 +3588,13 @@ var __export = (target, all) => {
   CodeMirror2.defineMIME("application/typescript", { name: "javascript", typescript: true });
 });
 
-// gen/front_end/entrypoints/formatter_worker/CSSFormatter.js
+// ../../front_end/entrypoints/formatter_worker/CSSFormatter.ts
 var CSSFormatter_exports = {};
 __export(CSSFormatter_exports, {
   CSSFormatter: () => CSSFormatter
 });
 
-// gen/front_end/entrypoints/formatter_worker/FormatterWorker.js
+// ../../front_end/entrypoints/formatter_worker/FormatterWorker.ts
 var FormatterWorker_exports = {};
 __export(FormatterWorker_exports, {
   AbortTokenization: () => AbortTokenization,
@@ -3604,13 +3604,17 @@ __export(FormatterWorker_exports, {
 });
 import * as Platform3 from "../../core/platform/platform.js";
 import * as Root from "../../core/root/root.js";
+import { FormattableMediaTypes } from "../formatter_actions/formatter_actions.js";
 
-// gen/front_end/entrypoints/formatter_worker/FormattedContentBuilder.js
+// ../../front_end/entrypoints/formatter_worker/FormattedContentBuilder.ts
 var FormattedContentBuilder_exports = {};
 __export(FormattedContentBuilder_exports, {
   FormattedContentBuilder: () => FormattedContentBuilder
 });
 var FormattedContentBuilder = class {
+  constructor(indentString) {
+    this.indentString = indentString;
+  }
   indentString;
   #lastOriginalPosition = 0;
   #formattedContent = [];
@@ -3624,9 +3628,6 @@ var FormattedContentBuilder = class {
   #cachedIndents = /* @__PURE__ */ new Map();
   #canBeIdentifierOrNumber = /[$\u200C\u200D\p{ID_Continue}]/u;
   mapping = { original: [0], formatted: [0] };
-  constructor(indentString) {
-    this.indentString = indentString;
-  }
   setEnforceSpaceBetweenWords(value) {
     const oldValue = this.#enforceSpaceBetweenWords;
     this.#enforceSpaceBetweenWords = value;
@@ -3721,7 +3722,7 @@ var FormattedContentBuilder = class {
   }
 };
 
-// gen/front_end/entrypoints/formatter_worker/HTMLFormatter.js
+// ../../front_end/entrypoints/formatter_worker/HTMLFormatter.ts
 var HTMLFormatter_exports = {};
 __export(HTMLFormatter_exports, {
   HTMLFormatter: () => HTMLFormatter,
@@ -3729,14 +3730,14 @@ __export(HTMLFormatter_exports, {
 });
 import * as Platform2 from "../../core/platform/platform.js";
 
-// gen/front_end/entrypoints/formatter_worker/JavaScriptFormatter.js
+// ../../front_end/entrypoints/formatter_worker/JavaScriptFormatter.ts
 var JavaScriptFormatter_exports = {};
 __export(JavaScriptFormatter_exports, {
   JavaScriptFormatter: () => JavaScriptFormatter
 });
 import * as Acorn2 from "../../third_party/acorn/acorn.js";
 
-// gen/front_end/entrypoints/formatter_worker/AcornTokenizer.js
+// ../../front_end/entrypoints/formatter_worker/AcornTokenizer.ts
 import * as Platform from "../../core/platform/platform.js";
 import * as TextUtils from "../../core/text_utils/text_utils.js";
 import * as Acorn from "../../third_party/acorn/acorn.js";
@@ -3798,7 +3799,7 @@ var AcornTokenizer = class {
 };
 var ECMA_VERSION = "latest";
 
-// gen/front_end/entrypoints/formatter_worker/ESTreeWalker.js
+// ../../front_end/entrypoints/formatter_worker/ESTreeWalker.ts
 var ESTreeWalker = class {
   #beforeVisit;
   #afterVisit;
@@ -3922,7 +3923,7 @@ var WALK_ORDER = {
   YieldExpression: ["argument"]
 };
 
-// gen/front_end/entrypoints/formatter_worker/JavaScriptFormatter.js
+// ../../front_end/entrypoints/formatter_worker/JavaScriptFormatter.ts
 var JavaScriptFormatter = class {
   #builder;
   #tokenizer;
@@ -4338,7 +4339,7 @@ var JavaScriptFormatter = class {
   }
 };
 
-// gen/front_end/entrypoints/formatter_worker/JSONFormatter.js
+// ../../front_end/entrypoints/formatter_worker/JSONFormatter.ts
 var JSONFormatter_exports = {};
 __export(JSONFormatter_exports, {
   JSONFormatter: () => JSONFormatter
@@ -4404,7 +4405,7 @@ var JSONFormatter = class {
   }
 };
 
-// gen/front_end/entrypoints/formatter_worker/HTMLFormatter.js
+// ../../front_end/entrypoints/formatter_worker/HTMLFormatter.ts
 var HTMLFormatter = class {
   #builder;
   #jsFormatter;
@@ -4594,7 +4595,7 @@ function hasTokenInSet(tokenTypes, type) {
   return tokenTypes.has(type) || tokenTypes.has(`xml-${type}`);
 }
 var HTMLModel = class {
-  #state = "Initial";
+  #state = "Initial" /* INITIAL */;
   #document;
   #stack;
   #tokens = [];
@@ -4701,39 +4702,39 @@ var HTMLModel = class {
     const value = token.value;
     const type = token.type;
     switch (this.#state) {
-      case "Initial":
+      case "Initial" /* INITIAL */:
         if (hasTokenInSet(type, "bracket") && (value === "<" || value === "</")) {
           this.#onStartTag(token);
-          this.#state = "Tag";
+          this.#state = "Tag" /* TAG */;
         }
         return;
-      case "Tag":
+      case "Tag" /* TAG */:
         if (hasTokenInSet(type, "tag") && !hasTokenInSet(type, "bracket")) {
           this.#tagName = value.trim().toLowerCase();
         } else if (hasTokenInSet(type, "attribute")) {
           this.#attributeName = value.trim().toLowerCase();
           this.#attributes.set(this.#attributeName, "");
-          this.#state = "AttributeName";
+          this.#state = "AttributeName" /* ATTRIBUTE_NAME */;
         } else if (hasTokenInSet(type, "bracket") && (value === ">" || value === "/>")) {
           this.#onEndTag(token);
-          this.#state = "Initial";
+          this.#state = "Initial" /* INITIAL */;
         }
         return;
-      case "AttributeName":
+      case "AttributeName" /* ATTRIBUTE_NAME */:
         if (!type.size && value === "=") {
-          this.#state = "AttributeValue";
+          this.#state = "AttributeValue" /* ATTRIBUTE_VALUE */;
         } else if (hasTokenInSet(type, "bracket") && (value === ">" || value === "/>")) {
           this.#onEndTag(token);
-          this.#state = "Initial";
+          this.#state = "Initial" /* INITIAL */;
         }
         return;
-      case "AttributeValue":
+      case "AttributeValue" /* ATTRIBUTE_VALUE */:
         if (hasTokenInSet(type, "string")) {
           this.#attributes.set(this.#attributeName, value);
-          this.#state = "Tag";
+          this.#state = "Tag" /* TAG */;
         } else if (hasTokenInSet(type, "bracket") && (value === ">" || value === "/>")) {
           this.#onEndTag(token);
-          this.#state = "Initial";
+          this.#state = "Initial" /* INITIAL */;
         }
         return;
     }
@@ -4749,7 +4750,14 @@ var HTMLModel = class {
   #onEndTag(token) {
     this.#tagEndOffset = token.endOffset;
     const selfClosingTag = token.value === "/>" || SelfClosingTags.has(this.#tagName);
-    const tag = new Tag(this.#tagName, this.#tagStartOffset || 0, this.#tagEndOffset, this.#attributes, this.#isOpenTag, selfClosingTag);
+    const tag = new Tag(
+      this.#tagName,
+      this.#tagStartOffset || 0,
+      this.#tagEndOffset,
+      this.#attributes,
+      this.#isOpenTag,
+      selfClosingTag
+    );
     this.#onTagComplete(tag);
   }
   #onTagComplete(tag) {
@@ -4874,13 +4882,6 @@ var AutoClosingTags = /* @__PURE__ */ new Map([
   ["td", /* @__PURE__ */ new Set(["td", "th"])],
   ["th", /* @__PURE__ */ new Set(["td", "th"])]
 ]);
-var ParseState;
-(function(ParseState2) {
-  ParseState2["INITIAL"] = "Initial";
-  ParseState2["TAG"] = "Tag";
-  ParseState2["ATTRIBUTE_NAME"] = "AttributeName";
-  ParseState2["ATTRIBUTE_VALUE"] = "AttributeValue";
-})(ParseState || (ParseState = {}));
 var Token = class {
   value;
   type;
@@ -4922,26 +4923,27 @@ var FormatterElement = class {
   }
 };
 
-// gen/front_end/entrypoints/formatter_worker/IdentityFormatter.js
+// ../../front_end/entrypoints/formatter_worker/IdentityFormatter.ts
 var IdentityFormatter = class {
-  builder;
   constructor(builder) {
     this.builder = builder;
   }
+  builder;
   format(text, _lineEndings, fromOffset, toOffset) {
     const content = text.substring(fromOffset, toOffset);
     this.builder.addToken(content, fromOffset);
   }
 };
 
-// gen/front_end/entrypoints/formatter_worker/Substitute.js
+// ../../front_end/entrypoints/formatter_worker/Substitute.ts
 var Substitute_exports = {};
 __export(Substitute_exports, {
   substituteExpression: () => substituteExpression
 });
 import * as Acorn4 from "../../third_party/acorn/acorn.js";
+import { DefinitionKind as DefinitionKind2 } from "../formatter_actions/formatter_actions.js";
 
-// gen/front_end/entrypoints/formatter_worker/ScopeParser.js
+// ../../front_end/entrypoints/formatter_worker/ScopeParser.ts
 var ScopeParser_exports = {};
 __export(ScopeParser_exports, {
   Scope: () => Scope,
@@ -4949,10 +4951,14 @@ __export(ScopeParser_exports, {
   parseScopes: () => parseScopes
 });
 import * as Acorn3 from "../../third_party/acorn/acorn.js";
+import { DefinitionKind, ScopeKind } from "../formatter_actions/formatter_actions.js";
 function parseScopes(expression, sourceType = "script") {
   let root = null;
   try {
-    root = Acorn3.parse(expression, { ecmaVersion: ECMA_VERSION, allowAwaitOutsideFunction: true, ranges: false, sourceType });
+    root = Acorn3.parse(
+      expression,
+      { ecmaVersion: ECMA_VERSION, allowAwaitOutsideFunction: true, ranges: false, sourceType }
+    );
   } catch {
     return null;
   }
@@ -5005,7 +5011,7 @@ var Scope = class {
       this.variables.set(name, { definitionKind, uses: [use] });
       return;
     }
-    if (variable.definitionKind === 0) {
+    if (variable.definitionKind === DefinitionKind.NONE) {
       variable.definitionKind = definitionKind;
     }
     variable.uses.push(use);
@@ -5015,7 +5021,7 @@ var Scope = class {
     let scope = this;
     while (scope !== null) {
       const defUse = scope.variables.get(name);
-      if (defUse && defUse.definitionKind !== 0) {
+      if (defUse && defUse.definitionKind !== DefinitionKind.NONE) {
         result.push(defUse);
       }
       scope = scope.parent;
@@ -5029,19 +5035,13 @@ var Scope = class {
       return;
     }
     variable.uses.push(...defUses.uses);
-    if (defUses.definitionKind === 2) {
-      console.assert(
-        variable.definitionKind !== 1
-        /* DefinitionKind.LET */
-      );
-      if (variable.definitionKind === 0) {
+    if (defUses.definitionKind === DefinitionKind.VAR) {
+      console.assert(variable.definitionKind !== DefinitionKind.LET);
+      if (variable.definitionKind === DefinitionKind.NONE) {
         variable.definitionKind = defUses.definitionKind;
       }
     } else {
-      console.assert(
-        defUses.definitionKind === 0
-        /* DefinitionKind.NONE */
-      );
+      console.assert(defUses.definitionKind === DefinitionKind.NONE);
     }
   }
   finalizeToParent(isFunctionScope) {
@@ -5051,7 +5051,7 @@ var Scope = class {
     }
     const keysToRemove = [];
     for (const [name, defUse] of this.variables.entries()) {
-      if (defUse.definitionKind === 0 || defUse.definitionKind === 2 && !isFunctionScope) {
+      if (defUse.definitionKind === DefinitionKind.NONE || defUse.definitionKind === DefinitionKind.VAR && !isFunctionScope) {
         this.parent.#mergeChildDefUses(name, defUse);
         keysToRemove.push(name);
       }
@@ -5070,13 +5070,7 @@ var ScopeVariableAnalysis = class {
   constructor(node, sourceText) {
     this.#rootNode = node;
     this.#sourceText = sourceText;
-    this.#rootScope = new Scope(
-      node.start,
-      node.end,
-      null,
-      3
-      /* ScopeKind.GLOBAL */
-    );
+    this.#rootScope = new Scope(node.start, node.end, null, ScopeKind.GLOBAL);
     this.#currentScope = this.#rootScope;
   }
   run() {
@@ -5106,8 +5100,14 @@ var ScopeVariableAnalysis = class {
         node.elements.forEach((item) => this.#processNode(item));
         break;
       case "ArrowFunctionExpression": {
-        this.#pushScope(node.start, node.end, 4, void 0, mappingLocationsForArrowFunctions(node, this.#sourceText));
-        node.params.forEach(this.#processNodeAsDefinition.bind(this, 2, false));
+        this.#pushScope(
+          node.start,
+          node.end,
+          ScopeKind.ARROW_FUNCTION,
+          void 0,
+          mappingLocationsForArrowFunctions(node, this.#sourceText)
+        );
+        node.params.forEach(this.#processNodeAsDefinition.bind(this, DefinitionKind.VAR, false));
         if (node.body.type === "BlockStatement") {
           node.body.body.forEach(this.#processNode.bind(this));
         } else {
@@ -5124,12 +5124,7 @@ var ScopeVariableAnalysis = class {
         this.#processNode(node.right);
         break;
       case "BlockStatement":
-        this.#pushScope(
-          node.start,
-          node.end,
-          1
-          /* ScopeKind.BLOCK */
-        );
+        this.#pushScope(node.start, node.end, ScopeKind.BLOCK);
         node.body.forEach(this.#processNode.bind(this));
         this.#popScope(false);
         break;
@@ -5138,18 +5133,13 @@ var ScopeVariableAnalysis = class {
         node.arguments.forEach(this.#processNode.bind(this));
         break;
       case "VariableDeclaration": {
-        const definitionKind = node.kind === "var" ? 2 : 1;
+        const definitionKind = node.kind === "var" ? DefinitionKind.VAR : DefinitionKind.LET;
         node.declarations.forEach(this.#processVariableDeclarator.bind(this, definitionKind));
         break;
       }
       case "CatchClause":
-        this.#pushScope(
-          node.start,
-          node.end,
-          1
-          /* ScopeKind.BLOCK */
-        );
-        this.#processNodeAsDefinition(1, false, node.param);
+        this.#pushScope(node.start, node.end, ScopeKind.BLOCK);
+        this.#processNodeAsDefinition(DefinitionKind.LET, false, node.param);
         this.#processNode(node.body);
         this.#popScope(false);
         break;
@@ -5157,7 +5147,7 @@ var ScopeVariableAnalysis = class {
         node.body.forEach(this.#processNode.bind(this));
         break;
       case "ClassDeclaration":
-        this.#processNodeAsDefinition(1, false, node.id);
+        this.#processNodeAsDefinition(DefinitionKind.LET, false, node.id);
         this.#processNode(node.superClass ?? null);
         this.#processNode(node.body);
         break;
@@ -5179,24 +5169,14 @@ var ScopeVariableAnalysis = class {
         break;
       case "ForInStatement":
       case "ForOfStatement":
-        this.#pushScope(
-          node.start,
-          node.end,
-          1
-          /* ScopeKind.BLOCK */
-        );
+        this.#pushScope(node.start, node.end, ScopeKind.BLOCK);
         this.#processNode(node.left);
         this.#processNode(node.right);
         this.#processNode(node.body);
         this.#popScope(false);
         break;
       case "ForStatement":
-        this.#pushScope(
-          node.start,
-          node.end,
-          1
-          /* ScopeKind.BLOCK */
-        );
+        this.#pushScope(node.start, node.end, ScopeKind.BLOCK);
         this.#processNode(node.init ?? null);
         this.#processNode(node.test ?? null);
         this.#processNode(node.update ?? null);
@@ -5204,41 +5184,33 @@ var ScopeVariableAnalysis = class {
         this.#popScope(false);
         break;
       case "FunctionDeclaration":
-        this.#processNodeAsDefinition(2, false, node.id);
-        this.#pushScope(node.id?.end ?? node.start, node.end, 2, node.id.name, mappingLocationsForFunctionDeclaration(node, this.#sourceText));
-        this.#addVariable(
-          "this",
-          node.start,
-          3
-          /* DefinitionKind.FIXED */
+        this.#processNodeAsDefinition(DefinitionKind.VAR, false, node.id);
+        this.#pushScope(
+          node.id?.end ?? node.start,
+          node.end,
+          ScopeKind.FUNCTION,
+          node.id.name,
+          mappingLocationsForFunctionDeclaration(node, this.#sourceText)
         );
-        this.#addVariable(
-          "arguments",
-          node.start,
-          3
-          /* DefinitionKind.FIXED */
-        );
-        node.params.forEach(this.#processNodeAsDefinition.bind(this, 1, false));
+        this.#addVariable("this", node.start, DefinitionKind.FIXED);
+        this.#addVariable("arguments", node.start, DefinitionKind.FIXED);
+        node.params.forEach(this.#processNodeAsDefinition.bind(this, DefinitionKind.LET, false));
         node.body.body.forEach(this.#processNode.bind(this));
         this.#popScope(true);
         break;
       case "FunctionExpression":
-        this.#pushScope(node.id?.end ?? node.start, node.end, 2, this.#methodName ?? node.id?.name, [...this.#additionalMappingLocations, ...mappingLocationsForFunctionExpression(node, this.#sourceText)]);
+        this.#pushScope(
+          node.id?.end ?? node.start,
+          node.end,
+          ScopeKind.FUNCTION,
+          this.#methodName ?? node.id?.name,
+          [...this.#additionalMappingLocations, ...mappingLocationsForFunctionExpression(node, this.#sourceText)]
+        );
         this.#additionalMappingLocations = [];
         this.#methodName = void 0;
-        this.#addVariable(
-          "this",
-          node.start,
-          3
-          /* DefinitionKind.FIXED */
-        );
-        this.#addVariable(
-          "arguments",
-          node.start,
-          3
-          /* DefinitionKind.FIXED */
-        );
-        node.params.forEach(this.#processNodeAsDefinition.bind(this, 1, false));
+        this.#addVariable("this", node.start, DefinitionKind.FIXED);
+        this.#addVariable("arguments", node.start, DefinitionKind.FIXED);
+        node.params.forEach(this.#processNodeAsDefinition.bind(this, DefinitionKind.LET, false));
         node.body.body.forEach(this.#processNode.bind(this));
         this.#popScope(true);
         break;
@@ -5293,7 +5265,7 @@ var ScopeVariableAnalysis = class {
           console.assert(node.value.type === "Identifier");
           console.assert(node.key.type === "Identifier");
           console.assert(node.value.name === node.key.name);
-          this.#addVariable(node.value.name, node.value.start, 0, true);
+          this.#addVariable(node.value.name, node.value.start, DefinitionKind.NONE, true);
         } else {
           if (node.computed) {
             this.#processNode(node.key);
@@ -5305,7 +5277,7 @@ var ScopeVariableAnalysis = class {
         }
         break;
       case "RestElement":
-        this.#processNodeAsDefinition(1, false, node.argument);
+        this.#processNodeAsDefinition(DefinitionKind.LET, false, node.argument);
         break;
       case "ReturnStatement":
         this.#processNode(node.argument ?? null);
@@ -5385,7 +5357,7 @@ var ScopeVariableAnalysis = class {
   getFreeVariables() {
     const result = /* @__PURE__ */ new Map();
     for (const [name, defUse] of this.#rootScope.variables) {
-      if (defUse.definitionKind !== 0) {
+      if (defUse.definitionKind !== DefinitionKind.NONE) {
         continue;
       }
       result.set(name, defUse.uses);
@@ -5406,7 +5378,7 @@ var ScopeVariableAnalysis = class {
     this.#currentScope.finalizeToParent(isFunctionContext);
     this.#currentScope = this.#currentScope.parent;
   }
-  #addVariable(name, offset, definitionKind = 0, isShorthandAssignmentProperty = false) {
+  #addVariable(name, offset, definitionKind = DefinitionKind.NONE, isShorthandAssignmentProperty = false) {
     this.#allNames.add(name);
     this.#currentScope.addVariable(name, offset, definitionKind, isShorthandAssignmentProperty);
   }
@@ -5512,7 +5484,7 @@ function indexOfCharInBounds(str, needle, start, end) {
   return -1;
 }
 
-// gen/front_end/entrypoints/formatter_worker/Substitute.js
+// ../../front_end/entrypoints/formatter_worker/Substitute.ts
 function substituteExpression(expression, nameMap) {
   const replacements = computeSubstitution(expression, nameMap);
   return applySubstitution(expression, replacements);
@@ -5563,7 +5535,7 @@ function computeSubstitution(expression, nameMap) {
       binders.push(...use.scope.findBinders(rename));
     }
     for (const binder of binders) {
-      if (binder.definitionKind === 3) {
+      if (binder.definitionKind === DefinitionKind2.FIXED) {
         throw new Error(`Cannot avoid capture of '${rename}'`);
       }
       const newName = getNewName(rename);
@@ -5596,7 +5568,7 @@ function applySubstitution(expression, replacements) {
   return accumulator.join("");
 }
 
-// gen/front_end/entrypoints/formatter_worker/FormatterWorker.js
+// ../../front_end/entrypoints/formatter_worker/FormatterWorker.ts
 function createTokenizer(mimeType) {
   const mode = CodeMirror.getMode({ indentUnit: 2 }, mimeType);
   const state = CodeMirror.startState(mode);
@@ -5630,24 +5602,24 @@ function format(mimeType, text, indentString) {
   const lineEndings = Platform3.StringUtilities.findLineEndingIndexes(text);
   try {
     switch (mimeType) {
-      case "text/html": {
+      case FormattableMediaTypes.TEXT_HTML: {
         const formatter = new HTMLFormatter(builder);
         formatter.format(text, lineEndings);
         break;
       }
-      case "text/css": {
+      case FormattableMediaTypes.TEXT_CSS: {
         const formatter = new CSSFormatter(builder);
         formatter.format(text, lineEndings, 0, text.length);
         break;
       }
-      case "application/javascript":
-      case "text/javascript": {
+      case FormattableMediaTypes.APPLICATION_JAVASCRIPT:
+      case FormattableMediaTypes.TEXT_JAVASCRIPT: {
         const formatter = new JavaScriptFormatter(builder);
         formatter.format(text, lineEndings, 0, text.length);
         break;
       }
-      case "application/json":
-      case "application/manifest+json": {
+      case FormattableMediaTypes.APPLICATION_JSON:
+      case FormattableMediaTypes.APPLICATION_MANIFEST_JSON: {
         const formatter = new JSONFormatter(builder);
         formatter.format(text, lineEndings, 0, text.length);
         break;
@@ -5676,7 +5648,7 @@ function format(mimeType, text, indentString) {
   }
 })();
 
-// gen/front_end/entrypoints/formatter_worker/CSSFormatter.js
+// ../../front_end/entrypoints/formatter_worker/CSSFormatter.ts
 var cssTrimEnd = (tokenValue) => {
   const re = /(?:\r?\n|[\t\f\r ])+$/g;
   return tokenValue.replace(re, "");
@@ -5768,7 +5740,7 @@ var CSSFormatter = class {
   }
 };
 
-// gen/front_end/entrypoints/formatter_worker/CSSRuleParser.js
+// ../../front_end/entrypoints/formatter_worker/CSSRuleParser.ts
 var CSSRuleParser_exports = {};
 __export(CSSRuleParser_exports, {
   CSSParserStates: () => CSSParserStates,

@@ -344,7 +344,7 @@
       <include file="devtools_compatibility.js" name="DEVTOOLS_COMPATIBILITY_JS" resource_path="devtools_compatibility.js" type="BINDATA" compress="false"/>
       <include file="entrypoints/device_mode_emulation_frame/device_mode_emulation_frame.js" name="ENTRYPOINTS_DEVICE_MODE_EMULATION_FRAME_DEVICE_MODE_EMULATION_FRAME_JS" resource_path="entrypoints/device_mode_emulation_frame/device_mode_emulation_frame.js" type="BINDATA" compress="false"/>
       <include file="entrypoints/devtools_app/devtools_app.js" name="ENTRYPOINTS_DEVTOOLS_APP_DEVTOOLS_APP_JS" resource_path="entrypoints/devtools_app/devtools_app.js" type="BINDATA" compress="false"/>
-      <include file="entrypoints/formatter_worker/FormatterActions.js" name="ENTRYPOINTS_FORMATTER_WORKER_FORMATTERACTIONS_JS" resource_path="entrypoints/formatter_worker/FormatterActions.js" type="BINDATA" compress="false"/>
+      <include file="entrypoints/formatter_actions/formatter_actions.js" name="ENTRYPOINTS_FORMATTER_ACTIONS_FORMATTER_ACTIONS_JS" resource_path="entrypoints/formatter_actions/formatter_actions.js" type="BINDATA" compress="false"/>
       <include file="entrypoints/formatter_worker/formatter_worker-entrypoint.js" name="ENTRYPOINTS_FORMATTER_WORKER_FORMATTER_WORKER_ENTRYPOINT_JS" resource_path="entrypoints/formatter_worker/formatter_worker-entrypoint.js" type="BINDATA" compress="false"/>
       <include file="entrypoints/formatter_worker/formatter_worker.js" name="ENTRYPOINTS_FORMATTER_WORKER_FORMATTER_WORKER_JS" resource_path="entrypoints/formatter_worker/formatter_worker.js" type="BINDATA" compress="false"/>
       <include file="entrypoints/heap_snapshot_worker/heap_snapshot_worker-entrypoint.js" name="ENTRYPOINTS_HEAP_SNAPSHOT_WORKER_HEAP_SNAPSHOT_WORKER_ENTRYPOINT_JS" resource_path="entrypoints/heap_snapshot_worker/heap_snapshot_worker-entrypoint.js" type="BINDATA" compress="false"/>
@@ -732,7 +732,6 @@
       <include file="panels/recorder/converters/converters.js" name="PANELS_RECORDER_CONVERTERS_CONVERTERS_JS" resource_path="panels/recorder/converters/converters.js" type="BINDATA" compress="false"/>
       <include file="panels/recorder/extensions/extensions.js" name="PANELS_RECORDER_EXTENSIONS_EXTENSIONS_JS" resource_path="panels/recorder/extensions/extensions.js" type="BINDATA" compress="false"/>
       <include file="panels/recorder/injected/injected.generated.js" name="PANELS_RECORDER_INJECTED_INJECTED_GENERATED_JS" resource_path="panels/recorder/injected/injected.generated.js" type="BINDATA" compress="false"/>
-      <include file="panels/recorder/injected/injected.js" name="PANELS_RECORDER_INJECTED_INJECTED_JS" resource_path="panels/recorder/injected/injected.js" type="BINDATA" compress="false"/>
       <include file="panels/recorder/models/models.js" name="PANELS_RECORDER_MODELS_MODELS_JS" resource_path="panels/recorder/models/models.js" type="BINDATA" compress="false"/>
       <include file="panels/recorder/recorder-actions/recorder-actions.js" name="PANELS_RECORDER_RECORDER_ACTIONS_RECORDER_ACTIONS_JS" resource_path="panels/recorder/recorder-actions/recorder-actions.js" type="BINDATA" compress="false"/>
       <include file="panels/recorder/recorder-meta.js" name="PANELS_RECORDER_RECORDER_META_JS" resource_path="panels/recorder/recorder-meta.js" type="BINDATA" compress="false"/>

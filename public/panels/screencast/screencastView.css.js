@@ -21,19 +21,19 @@ export default `/*
     display: flex;
     align-items: center;
     position: relative;
-    padding-left: 1px;
-    border-bottom: 1px solid var(--sys-color-divider);
+    padding-left: var(--sys-size-1);
+    border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
     background-origin: padding-box;
     background-clip: padding-box;
   }
 
   .screencast-navigation devtools-button {
-    padding: 2px;
+    padding: var(--sys-size-2);
   }
 
   .screencast-navigation input {
     flex: 1;
-    margin: 2px;
+    margin: var(--sys-size-2);
     max-height: 19px;
   }
 
@@ -49,10 +49,10 @@ export default `/*
 
   .screencast-viewport {
     display: flex;
-    border: 1px solid var(--sys-color-divider);
-    border-radius: 20px;
+    border: var(--sys-size-1) solid var(--sys-color-divider);
+    border-radius: var(--sys-size-9);
     flex: none;
-    padding: 20px;
+    padding: var(--sys-size-9);
     margin: auto;
     background-color: var(--sys-color-surface-variant);
   }
@@ -60,7 +60,7 @@ export default `/*
   .screencast-canvas-container {
     flex: auto;
     display: flex;
-    border: 1px solid var(--sys-color-divider);
+    border: var(--sys-size-1) solid var(--sys-color-divider);
     position: relative;
   }
 
@@ -78,8 +78,8 @@ export default `/*
     position: absolute;
     z-index: 10;
     background-color: var(--sys-color-yellow-container);
-    border: 1px solid var(--sys-color-outline);
-    padding: 2px 4px;
+    border: var(--sys-size-1) solid var(--sys-color-outline);
+    padding: var(--sys-size-2) var(--sys-size-3);
     white-space: nowrap;
   }
 
@@ -87,7 +87,7 @@ export default `/*
     content: "";
     position: absolute;
     bottom: 100%;
-    left: 14px;
+    left: var(--sys-size-7);
     border: 7px solid transparent;
     border-bottom-color: var(--sys-color-yellow-container);
   }
@@ -96,7 +96,7 @@ export default `/*
     content: "";
     position: absolute;
     top: 100%;
-    left: 14px;
+    left: var(--sys-size-7);
     border: 7px solid transparent;
     border-top-color: var(--sys-color-yellow-container);
   }

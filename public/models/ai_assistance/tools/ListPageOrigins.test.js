@@ -45,7 +45,6 @@ describe('ListPageOriginsTool', () => {
         ]);
         const tool = new AiAssistance.ListPageOrigins.ListPageOriginsTool();
         const context = {
-            conversationContext: null,
             getEstablishedOrigin: sinon.stub().returns('http://example.com'),
         };
         const response = await tool.handler({}, context);
@@ -70,7 +69,6 @@ describe('ListPageOriginsTool', () => {
         ]);
         const tool = new AiAssistance.ListPageOrigins.ListPageOriginsTool();
         const context = {
-            conversationContext: null,
             getEstablishedOrigin: sinon.stub().returns('http://example.com'),
         };
         const response = await tool.handler({}, context);
@@ -96,7 +94,6 @@ describe('ListPageOriginsTool', () => {
         ]);
         const tool = new AiAssistance.ListPageOrigins.ListPageOriginsTool();
         const context = {
-            conversationContext: null,
             getEstablishedOrigin: sinon.stub().returns('http://example.com'),
         };
         const response = await tool.handler({}, context);
@@ -121,7 +118,6 @@ describe('ListPageOriginsTool', () => {
         ]);
         const tool = new AiAssistance.ListPageOrigins.ListPageOriginsTool();
         const context = {
-            conversationContext: null,
             getEstablishedOrigin: sinon.stub().returns('http://example.com'),
         };
         const response = await tool.handler({}, context);
@@ -130,7 +126,7 @@ describe('ListPageOriginsTool', () => {
             origins: ['http://example.com'],
         });
     });
-    it('allows primary target origin when conversationContext is null (empty selection)', async () => {
+    it('allows primary target origin when established origin matches', async () => {
         const targetManager = universe.targetManager;
         const primaryTarget = sinon.createStubInstance(SDK.Target.Target);
         primaryTarget.inspectedURL.returns(urlString `http://example.com/index.html`);
@@ -142,7 +138,6 @@ describe('ListPageOriginsTool', () => {
         ]);
         const tool = new AiAssistance.ListPageOrigins.ListPageOriginsTool();
         const context = {
-            conversationContext: null,
             getEstablishedOrigin: sinon.stub().returns('http://example.com'),
         };
         const response = await tool.handler({}, context);
@@ -158,7 +153,6 @@ describe('ListPageOriginsTool', () => {
         sinon.stub(targetManager, 'primaryPageTarget').returns(primaryTarget);
         const tool = new AiAssistance.ListPageOrigins.ListPageOriginsTool();
         const context = {
-            conversationContext: null,
             getEstablishedOrigin: sinon.stub().returns('http://example.com'),
         };
         const response = await tool.handler({}, context);

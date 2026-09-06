@@ -23,7 +23,7 @@ export default `/*
   color: var(--sys-color-on-surface);
   display: flex;
   flex-direction: column;
-  overflow-x: auto;
+  overflow: auto hidden;
 }
 
 .object-properties-section li,
@@ -95,6 +95,8 @@ li.object-properties-section  {
 
 .tree-outline.hide-selection-when-blurred .selected:focus-visible {
   background: none;
+  outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
+  outline-offset: calc(-1 * var(--sys-size-2));
 }
 
 .tree-outline.hide-selection-when-blurred .selected:focus-visible ::slotted(*),

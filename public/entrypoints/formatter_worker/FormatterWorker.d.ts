@@ -1,4 +1,4 @@
-import { type FormatResult } from './FormatterActions.js';
+import { type FormatResult } from '../formatter_actions/formatter_actions.js';
 import { substituteExpression } from './Substitute.js';
 export interface Chunk {
     chunk: unknown[];

@@ -1,5 +1,4 @@
 import * as Common from '../../core/common/common.js';
-import * as Platform from '../../core/platform/platform.js';
 import type * as CPUProfile from '../../models/cpu_profile/cpu_profile.js';
 import type * as NetworkTimeCalculator from '../../models/network_time_calculator/network_time_calculator.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
@@ -31,8 +30,8 @@ export declare class ProfileFlameChartDataProvider implements PerfUI.FlameChart.
     textColor(_entryIndex: number): string;
     entryNodesLength(): number;
 }
-declare const ProfileFlameChart_base: Platform.Constructor.Constructor<Common.EventTarget.EventTarget<PerfUI.FlameChart.EventTypes>, any[]> & typeof UI.Widget.VBox;
-export declare class ProfileFlameChart extends ProfileFlameChart_base implements UI.SearchableView.Searchable {
+declare const ProfileFlameChartBase: Common.ObjectWrapper.EventMixin<PerfUI.FlameChart.EventTypes, typeof UI.Widget.VBox>;
+export declare class ProfileFlameChart extends ProfileFlameChartBase implements UI.SearchableView.Searchable {
     readonly searchableView: UI.SearchableView.SearchableView;
     readonly overviewPane: OverviewPane;
     readonly mainPane: PerfUI.FlameChart.FlameChart;
@@ -76,8 +75,8 @@ export declare class OverviewCalculator implements NetworkTimeCalculator.Calcula
     zeroTime(): number;
     boundarySpan(): number;
 }
-declare const OverviewPane_base: Platform.Constructor.Constructor<Common.EventTarget.EventTarget<OverviewPaneEventTypes>, any[]> & typeof UI.Widget.VBox;
-export declare class OverviewPane extends OverviewPane_base implements PerfUI.FlameChart.FlameChartDelegate {
+declare const OverviewPaneBase: Common.ObjectWrapper.EventMixin<OverviewPaneEventTypes, typeof UI.Widget.VBox>;
+export declare class OverviewPane extends OverviewPaneBase implements PerfUI.FlameChart.FlameChartDelegate {
     overviewContainer: HTMLElement;
     readonly overviewCalculator: OverviewCalculator;
     readonly overviewGrid: PerfUI.OverviewGrid.OverviewGrid;

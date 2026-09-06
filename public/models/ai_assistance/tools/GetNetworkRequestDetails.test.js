@@ -18,7 +18,7 @@ describe('GetNetworkRequestDetailsTool', () => {
         universe = new TestUniverse();
         networkLog = universe.networkLog;
     });
-    afterEach(async () => {
+    after(async () => {
         await deinitializeGlobalVars();
     });
     it('retrieves details successfully', async () => {
@@ -32,7 +32,6 @@ describe('GetNetworkRequestDetailsTool', () => {
         sinon.stub(networkLog, 'requests').returns([request]);
         const tool = new AiAssistance.GetNetworkRequestDetails.GetNetworkRequestDetailsTool(networkLog);
         const context = {
-            conversationContext: null,
             getEstablishedOrigin: () => 'https://example.com',
         };
         const response = await tool.handler({ id: 'requestId' }, context);
@@ -46,7 +45,6 @@ describe('GetNetworkRequestDetailsTool', () => {
         sinon.stub(networkLog, 'requests').returns([]);
         const tool = new AiAssistance.GetNetworkRequestDetails.GetNetworkRequestDetailsTool(networkLog);
         const context = {
-            conversationContext: null,
             getEstablishedOrigin: () => 'https://example.com',
         };
         const response = await tool.handler({ id: 'requestId' }, context);
@@ -58,7 +56,6 @@ describe('GetNetworkRequestDetailsTool', () => {
         sinon.stub(networkLog, 'requests').returns([request]);
         const tool = new AiAssistance.GetNetworkRequestDetails.GetNetworkRequestDetailsTool(networkLog);
         const context = {
-            conversationContext: null,
             getEstablishedOrigin: () => 'https://example.com',
         };
         const response = await tool.handler({ id: 'requestId' }, context);
@@ -68,7 +65,6 @@ describe('GetNetworkRequestDetailsTool', () => {
     it('returns error for opaque origins', async () => {
         const tool = new AiAssistance.GetNetworkRequestDetails.GetNetworkRequestDetailsTool(networkLog);
         const context = {
-            conversationContext: null,
             getEstablishedOrigin: () => 'null',
         };
         const response = await tool.handler({ id: 'requestId' }, context);

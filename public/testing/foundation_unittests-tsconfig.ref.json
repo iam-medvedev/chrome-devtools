@@ -13,14 +13,15 @@
     "../../../../../front_end/testing/TestIdGeneration.test.ts",
     "../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../front_end/global_typings/global_defs.d.ts",
-    "../../../../../node_modules/@types/filesystem/index.d.ts"
+    "../../../../../node_modules/@types/filesystem/index.d.ts",
+    "../../../../../node_modules/@types/filewriter/index.d.ts"
   ],
   "references": [
     {
-      "path": "./mocha_helpers-tsconfig.ref.json"
+      "path": "mocha_helpers-tsconfig.ref.json"
     },
     {
-      "path": "./test_id_generation-tsconfig.ref.json"
+      "path": "test_id_generation-tsconfig.ref.json"
     }
   ]
 }

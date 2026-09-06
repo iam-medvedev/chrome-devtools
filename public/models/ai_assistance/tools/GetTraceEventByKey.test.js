@@ -27,7 +27,6 @@ describe('GetTraceEventByKeyTool', () => {
     });
     it('returns error when PerformanceTraceContext is not available', async () => {
         const context = {
-            conversationContext: null,
             getPerformanceTraceContext: () => null,
         };
         const tool = new GetTraceEventByKeyTool();
@@ -41,7 +40,6 @@ describe('GetTraceEventByKeyTool', () => {
         const focus = traceContext.getItem();
         sinon.stub(focus, 'lookupEvent').returns(null);
         const capabilities = {
-            conversationContext: null,
             getPerformanceTraceContext: () => traceContext,
         };
         const tool = new GetTraceEventByKeyTool();
@@ -59,7 +57,6 @@ describe('GetTraceEventByKeyTool', () => {
         };
         sinon.stub(focus, 'lookupEvent').withArgs('valid-key').returns(mockEvent);
         const capabilities = {
-            conversationContext: null,
             getPerformanceTraceContext: () => traceContext,
         };
         const tool = new GetTraceEventByKeyTool();

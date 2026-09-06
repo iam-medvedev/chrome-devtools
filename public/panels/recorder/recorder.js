@@ -4,7 +4,7 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// gen/front_end/panels/recorder/ControlButton.js
+// ../../front_end/panels/recorder/ControlButton.ts
 var ControlButton_exports = {};
 __export(ControlButton_exports, {
   ControlButton: () => ControlButton,
@@ -99,7 +99,7 @@ var controlButton_css_default = `/*
 
 /*# sourceURL=${import.meta.resolve("./controlButton.css")} */`;
 
-// gen/front_end/panels/recorder/ControlButton.js
+// ../../front_end/panels/recorder/ControlButton.ts
 var { html } = Lit;
 var DEFAULT_VIEW = (input, _output, target) => {
   const { label, shape, disabled, onClick } = input;
@@ -150,16 +150,20 @@ var ControlButton = class extends UI.Widget.Widget {
     this.requestUpdate();
   }
   performUpdate() {
-    this.#view({
-      label: this.#label,
-      shape: this.#shape,
-      disabled: this.#disabled,
-      onClick: this.#onClick
-    }, {}, this.contentElement);
+    this.#view(
+      {
+        label: this.#label,
+        shape: this.#shape,
+        disabled: this.#disabled,
+        onClick: this.#onClick
+      },
+      {},
+      this.contentElement
+    );
   }
 };
 
-// gen/front_end/panels/recorder/CreateRecordingView.js
+// ../../front_end/panels/recorder/CreateRecordingView.ts
 var CreateRecordingView_exports = {};
 __export(CreateRecordingView_exports, {
   CreateRecordingView: () => CreateRecordingView,
@@ -273,8 +277,9 @@ devtools-icon[name="help"] {
 
 /*# sourceURL=${import.meta.resolve("./createRecordingView.css")} */`;
 
-// gen/front_end/panels/recorder/CreateRecordingView.js
+// ../../front_end/panels/recorder/CreateRecordingView.ts
 import * as Models from "./models/models.js";
+import * as Actions from "./recorder-actions/recorder-actions.js";
 var { html: html2, Directives: { ref, createRef, repeat } } = Lit2;
 var UIStrings = {
   /**
@@ -352,11 +357,23 @@ var UIStrings = {
    */
   learnMore: "Learn more"
 };
-var str_ = i18n.i18n.registerUIStrings("panels/recorder/CreateRecordingView.ts", UIStrings);
+var str_ = i18n.i18n.registerUIStrings(
+  "panels/recorder/CreateRecordingView.ts",
+  UIStrings
+);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
 var { widget } = UI2.Widget;
 var DEFAULT_VIEW2 = (input, output, target) => {
-  const { name, selectorAttribute, selectorTypes, error, onUpdate, onRecordingStarted, onRecordingCancelled, onErrorReset } = input;
+  const {
+    name,
+    selectorAttribute,
+    selectorTypes,
+    error,
+    onUpdate,
+    onRecordingStarted,
+    onRecordingCancelled,
+    onErrorReset
+  } = input;
   const nameInputRef = createRef();
   const onKeyDown = (event) => {
     if (error) {
@@ -385,7 +402,8 @@ var DEFAULT_VIEW2 = (input, output, target) => {
       i18nString(UIStrings.selectorTypePierce)
     ]
   ]);
-  Lit2.render(html2`
+  Lit2.render(
+    html2`
       <style>${createRecordingView_css_default}</style>
       <style>${Input.textInputStyles}</style>
       <style>${Input.checkboxStyles}</style>
@@ -396,14 +414,16 @@ var DEFAULT_VIEW2 = (input, output, target) => {
             title=${i18nString(UIStrings.cancelRecording)}
             jslog=${VisualLogging.close().track({ click: true })}
             .data=${{
-    variant: "icon",
-    size: "SMALL",
-    iconName: "cross"
-  }}
+      variant: Buttons.Button.Variant.ICON,
+      size: Buttons.Button.Size.SMALL,
+      iconName: "cross"
+    }}
             @click=${onRecordingCancelled}
           ></devtools-button>
         </div>
-        <label class="row-label" for="user-flow-name">${i18nString(UIStrings.recordingName)}</label>
+        <label class="row-label" for="user-flow-name">${i18nString(
+      UIStrings.recordingName
+    )}</label>
         <input
           value=${name}
           @focus=${() => nameInputRef.value?.select()}
@@ -413,8 +433,8 @@ var DEFAULT_VIEW2 = (input, output, target) => {
           id="user-flow-name"
           ${ref(nameInputRef)}
           @input=${(e) => onUpdate({
-    name: e.target.value.trim()
-  })}
+      name: e.target.value.trim()
+    })}
         />
         <label class="row-label" for="selector-attribute">
           <span>${i18nString(UIStrings.selectorAttribute)}</span>
@@ -434,8 +454,8 @@ var DEFAULT_VIEW2 = (input, output, target) => {
           class="devtools-text-input"
           id="selector-attribute"
           @input=${(e) => onUpdate({
-    selectorAttribute: e.target.value.trim()
-  })}
+      selectorAttribute: e.target.value.trim()
+    })}
         />
         <label class="row-label">
           <span>${i18nString(UIStrings.selectorTypes)}</span>
@@ -449,7 +469,7 @@ var DEFAULT_VIEW2 = (input, output, target) => {
         </label>
         <div class="checkbox-container">
           ${repeat(selectorTypes, (item5) => {
-    return html2`
+      return html2`
               <label class="checkbox-label selector-type">
                 <input
                   @keydown=${onKeyDown}
@@ -458,14 +478,14 @@ var DEFAULT_VIEW2 = (input, output, target) => {
                   ?checked=${item5.checked}
                   type="checkbox"
                   @change=${(e) => onUpdate({
-      selectorType: item5.selectorType,
-      checked: e.target.checked
-    })}
+        selectorType: item5.selectorType,
+        checked: e.target.checked
+      })}
                 />
                 ${selectorTypeToLabel.get(item5.selectorType) || item5.selectorType}
               </label>
             `;
-  })}
+    })}
         </div>
         ${error && html2` <div class="error" role="alert"> ${error.message} </div>`}
       </div>
@@ -474,23 +494,21 @@ var DEFAULT_VIEW2 = (input, output, target) => {
           <devtools-widget
             class="control-button"
             ${widget(ControlButton, {
-    label: i18nString(UIStrings.startRecording),
-    shape: "circle",
-    onClick: onRecordingStarted
-  })}
-            jslog=${VisualLogging.action(
-    "chrome-recorder.start-recording"
-    /* Actions.RecorderActions.START_RECORDING */
-  ).track({ click: true })}
+      label: i18nString(UIStrings.startRecording),
+      shape: "circle",
+      onClick: onRecordingStarted
+    })}
+            jslog=${VisualLogging.action(Actions.RecorderActions.START_RECORDING).track({ click: true })}
             title=${Models.Tooltip.getTooltipForActions(
-    i18nString(UIStrings.startRecording),
-    "chrome-recorder.start-recording"
-    /* Actions.RecorderActions.START_RECORDING */
-  )}
+      i18nString(UIStrings.startRecording),
+      Actions.RecorderActions.START_RECORDING
+    )}
           ></devtools-widget>
         </div>
       </div>
-    `, target);
+    `,
+    target
+  );
 };
 var CreateRecordingView = class extends UI2.Widget.Widget {
   #error;
@@ -540,7 +558,10 @@ var CreateRecordingView = class extends UI2.Widget.Widget {
       return;
     }
     for (const selectorType of Object.values(Models.Schema.SelectorType)) {
-      this.#recorderSettings.setSelectorByType(selectorType, selectorTypesToRecord.includes(selectorType));
+      this.#recorderSettings.setSelectorByType(
+        selectorType,
+        selectorTypesToRecord.includes(selectorType)
+      );
     }
     const selectorAttribute = this.#selectorAttribute.trim();
     if (selectorAttribute) {
@@ -554,42 +575,46 @@ var CreateRecordingView = class extends UI2.Widget.Widget {
     Badges.UserBadges.instance().recordAction(Badges.BadgeAction.RECORDER_RECORDING_STARTED);
   }
   performUpdate() {
-    this.#view({
-      name: this.#name,
-      selectorAttribute: this.#selectorAttribute,
-      selectorTypes: this.#selectorTypes,
-      error: this.#error,
-      onRecordingCancelled: this.onRecordingCancelled,
-      onUpdate: (update) => {
-        if ("name" in update) {
-          this.#name = update.name;
-        } else if ("selectorAttribute" in update) {
-          this.#selectorAttribute = update.selectorAttribute;
-        } else {
-          this.#selectorTypes = this.#selectorTypes.map((item5) => {
-            if (item5.selectorType === update.selectorType) {
-              return {
-                ...item5,
-                checked: update.checked
-              };
-            }
-            return item5;
-          });
+    this.#view(
+      {
+        name: this.#name,
+        selectorAttribute: this.#selectorAttribute,
+        selectorTypes: this.#selectorTypes,
+        error: this.#error,
+        onRecordingCancelled: this.onRecordingCancelled,
+        onUpdate: (update) => {
+          if ("name" in update) {
+            this.#name = update.name;
+          } else if ("selectorAttribute" in update) {
+            this.#selectorAttribute = update.selectorAttribute;
+          } else {
+            this.#selectorTypes = this.#selectorTypes.map((item5) => {
+              if (item5.selectorType === update.selectorType) {
+                return {
+                  ...item5,
+                  checked: update.checked
+                };
+              }
+              return item5;
+            });
+          }
+          this.requestUpdate();
+        },
+        onRecordingStarted: () => {
+          this.startRecording();
+        },
+        onErrorReset: () => {
+          this.#error = void 0;
+          this.requestUpdate();
         }
-        this.requestUpdate();
       },
-      onRecordingStarted: () => {
-        this.startRecording();
-      },
-      onErrorReset: () => {
-        this.#error = void 0;
-        this.requestUpdate();
-      }
-    }, this.#output, this.contentElement);
+      this.#output,
+      this.contentElement
+    );
   }
 };
 
-// gen/front_end/panels/recorder/RecorderEvents.js
+// ../../front_end/panels/recorder/RecorderEvents.ts
 var RecorderEvents_exports = {};
 __export(RecorderEvents_exports, {
   RecordingStateChangedEvent: () => RecordingStateChangedEvent,
@@ -609,8 +634,6 @@ var SetRecordingFinishedEvent = class _SetRecordingFinishedEvent extends Event {
   }
 };
 var RecordingStateChangedEvent = class _RecordingStateChangedEvent extends Event {
-  recording;
-  static eventName = "recordingstatechanged";
   constructor(recording) {
     super(_RecordingStateChangedEvent.eventName, {
       bubbles: true,
@@ -618,9 +641,11 @@ var RecordingStateChangedEvent = class _RecordingStateChangedEvent extends Event
     });
     this.recording = recording;
   }
+  recording;
+  static eventName = "recordingstatechanged";
 };
 
-// gen/front_end/panels/recorder/RecorderPanel.js
+// ../../front_end/panels/recorder/RecorderPanel.ts
 var RecorderPanel_exports = {};
 __export(RecorderPanel_exports, {
   ActionDelegate: () => ActionDelegate,
@@ -647,6 +672,7 @@ import * as VisualLogging9 from "../../ui/visual_logging/visual_logging.js";
 import * as Converters from "./converters/converters.js";
 import * as Extensions2 from "./extensions/extensions.js";
 import * as Models8 from "./models/models.js";
+import * as Actions5 from "./recorder-actions/recorder-actions.js";
 
 // gen/front_end/panels/recorder/recorderPanel.css.js
 var recorderPanel_css_default = `/*
@@ -835,7 +861,7 @@ devtools-recording-list-view {
 
 /*# sourceURL=${import.meta.resolve("./recorderPanel.css")} */`;
 
-// gen/front_end/panels/recorder/RecordingListView.js
+// ../../front_end/panels/recorder/RecordingListView.ts
 var RecordingListView_exports = {};
 __export(RecordingListView_exports, {
   DEFAULT_VIEW: () => DEFAULT_VIEW3,
@@ -848,6 +874,7 @@ import * as UI3 from "../../ui/legacy/legacy.js";
 import * as Lit3 from "../../ui/lit/lit.js";
 import * as VisualLogging2 from "../../ui/visual_logging/visual_logging.js";
 import * as Models2 from "./models/models.js";
+import * as Actions2 from "./recorder-actions/recorder-actions.js";
 
 // gen/front_end/panels/recorder/recordingListView.css.js
 var recordingListView_css_default = `/*
@@ -869,7 +896,7 @@ var recordingListView_css_default = `/*
   }
 
   .wrapper {
-    padding: 24px;
+    padding: var(--sys-size-11);
   }
 
   .header {
@@ -881,7 +908,7 @@ var recordingListView_css_default = `/*
   }
 
   h1 {
-    font-size: 16px;
+    font-size: var(--sys-typescale-body1-size);
     line-height: 19px;
     color: var(--sys-color-on-surface);
     font-weight: normal;
@@ -889,8 +916,8 @@ var recordingListView_css_default = `/*
 
   .icon,
   .icon devtools-icon {
-    width: 20px;
-    height: 20px;
+    width: var(--sys-size-9);
+    height: var(--sys-size-9);
     color: var(--sys-color-primary);
   }
 
@@ -899,7 +926,7 @@ var recordingListView_css_default = `/*
   }
 
   .title {
-    font-size: 13px;
+    font-size: var(--sys-typescale-body3-size);
     color: var(--sys-color-on-surface);
     margin-left: 10px;
     flex: 1;
@@ -912,8 +939,8 @@ var recordingListView_css_default = `/*
     display: flex;
     align-items: center;
     padding-right: 5px;
-    height: 28px;
-    border-bottom: 1px solid var(--sys-color-divider);
+    height: var(--sys-size-12);
+    border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
   }
 
   .row:focus-within,
@@ -933,22 +960,22 @@ var recordingListView_css_default = `/*
   .actions button {
     border: none;
     background-color: transparent;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
+    width: var(--sys-size-11);
+    height: var(--sys-size-11);
+    border-radius: var(--sys-shape-corner-full);
   }
 
   .actions .divider {
-    width: 1px;
+    width: var(--sys-size-1);
     height: 17px;
     background-color: var(--sys-color-divider);
-    margin: 0 6px;
+    margin: 0 var(--sys-size-4);
   }
 }
 
 /*# sourceURL=${import.meta.resolve("./recordingListView.css")} */`;
 
-// gen/front_end/panels/recorder/RecordingListView.js
+// ../../front_end/panels/recorder/RecordingListView.ts
 var { html: html3 } = Lit3;
 var UIStrings2 = {
   /**
@@ -972,23 +999,34 @@ var UIStrings2 = {
    */
   openRecording: "Open recording"
 };
-var str_2 = i18n3.i18n.registerUIStrings("panels/recorder/RecordingListView.ts", UIStrings2);
+var str_2 = i18n3.i18n.registerUIStrings(
+  "panels/recorder/RecordingListView.ts",
+  UIStrings2
+);
 var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
 var DEFAULT_VIEW3 = (input, _output, target) => {
-  const { recordings, replayAllowed, onCreateClick, onDeleteClick, onOpenClick, onPlayRecordingClick, onKeyDown } = input;
-  Lit3.render(html3`
+  const {
+    recordings,
+    replayAllowed,
+    onCreateClick,
+    onDeleteClick,
+    onOpenClick,
+    onPlayRecordingClick,
+    onKeyDown
+  } = input;
+  Lit3.render(
+    html3`
       <style>${recordingListView_css_default}</style>
       <div class="wrapper">
         <div class="header">
           <h1>${i18nString2(UIStrings2.savedRecordings)}</h1>
           <devtools-button
-            .variant=${"primary"}
+            .variant=${Buttons2.Button.Variant.PRIMARY}
             @click=${onCreateClick}
             title=${Models2.Tooltip.getTooltipForActions(
-    i18nString2(UIStrings2.createRecording),
-    "chrome-recorder.create-recording"
-    /* Actions.RecorderActions.CREATE_RECORDING */
-  )}
+      i18nString2(UIStrings2.createRecording),
+      Actions2.RecorderActions.CREATE_RECORDING
+    )}
             .jslogContext=${"create-recording"}
           >
             ${i18nString2(UIStrings2.createRecording)}
@@ -996,7 +1034,7 @@ var DEFAULT_VIEW3 = (input, _output, target) => {
         </div>
         <div class="table">
           ${recordings.map((recording) => {
-    return html3`
+      return html3`
                 <div
                   role="button"
                   tabindex="0"
@@ -1015,10 +1053,10 @@ var DEFAULT_VIEW3 = (input, _output, target) => {
                               <devtools-button
                                 title=${i18nString2(UIStrings2.playRecording)}
                                 .data=${{
-      variant: "icon",
-      iconName: "play",
-      jslogContext: "play-recording"
-    }}
+        variant: Buttons2.Button.Variant.ICON,
+        iconName: "play",
+        jslogContext: "play-recording"
+      }}
                                 @click=${(event) => onPlayRecordingClick(recording.storageName, event)}
                                 @keydown=${(event) => event.stopPropagation()}
                               ></devtools-button>
@@ -1027,20 +1065,22 @@ var DEFAULT_VIEW3 = (input, _output, target) => {
                       class="delete-recording-button"
                       title=${i18nString2(UIStrings2.deleteRecording)}
                       .data=${{
-      variant: "icon",
-      iconName: "bin",
-      jslogContext: "delete-recording"
-    }}
+        variant: Buttons2.Button.Variant.ICON,
+        iconName: "bin",
+        jslogContext: "delete-recording"
+      }}
                       @click=${(event) => onDeleteClick(recording.storageName, event)}
                       @keydown=${(event) => event.stopPropagation()}
                     ></devtools-button>
                   </div>
                 </div>
               `;
-  })}
+    })}
         </div>
       </div>
-    `, target);
+    `,
+    target
+  );
 };
 var RecordingListView = class extends UI3.Widget.Widget {
   #recordings = [];
@@ -1084,15 +1124,19 @@ var RecordingListView = class extends UI3.Widget.Widget {
     this.#onOpenClick(storageName, event);
   }
   performUpdate() {
-    this.#view({
-      recordings: this.#recordings,
-      replayAllowed: this.#replayAllowed,
-      onCreateClick: this.#onCreateClick.bind(this),
-      onDeleteClick: this.#onDeleteClick.bind(this),
-      onOpenClick: this.#onOpenClick.bind(this),
-      onPlayRecordingClick: this.#onPlayRecordingClick.bind(this),
-      onKeyDown: this.#onKeyDown.bind(this)
-    }, {}, this.contentElement);
+    this.#view(
+      {
+        recordings: this.#recordings,
+        replayAllowed: this.#replayAllowed,
+        onCreateClick: this.#onCreateClick.bind(this),
+        onDeleteClick: this.#onDeleteClick.bind(this),
+        onOpenClick: this.#onOpenClick.bind(this),
+        onPlayRecordingClick: this.#onPlayRecordingClick.bind(this),
+        onKeyDown: this.#onKeyDown.bind(this)
+      },
+      {},
+      this.contentElement
+    );
   }
   wasShown() {
     super.wasShown();
@@ -1100,7 +1144,7 @@ var RecordingListView = class extends UI3.Widget.Widget {
   }
 };
 
-// gen/front_end/panels/recorder/RecordingView.js
+// ../../front_end/panels/recorder/RecordingView.ts
 var RecordingView_exports = {};
 __export(RecordingView_exports, {
   DEFAULT_VIEW: () => DEFAULT_VIEW10,
@@ -1122,7 +1166,7 @@ import * as UI10 from "../../ui/legacy/legacy.js";
 import * as Lit10 from "../../ui/lit/lit.js";
 import * as VisualLogging8 from "../../ui/visual_logging/visual_logging.js";
 
-// gen/front_end/panels/recorder/ExtensionView.js
+// ../../front_end/panels/recorder/ExtensionView.ts
 import * as i18n5 from "../../core/i18n/i18n.js";
 import * as Buttons3 from "../../ui/components/buttons/buttons.js";
 import * as UI4 from "../../ui/legacy/legacy.js";
@@ -1190,7 +1234,7 @@ header > div {
 
 /*# sourceURL=${import.meta.resolve("./extensionView.css")} */`;
 
-// gen/front_end/panels/recorder/ExtensionView.js
+// ../../front_end/panels/recorder/ExtensionView.ts
 var { html: html4 } = Lit4;
 var UIStrings3 = {
   /**
@@ -1206,7 +1250,8 @@ var str_3 = i18n5.i18n.registerUIStrings("panels/recorder/ExtensionView.ts", UIS
 var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
 var DEFAULT_VIEW4 = (input, output, target) => {
   const { descriptor, iframe } = input;
-  Lit4.render(html4`
+  Lit4.render(
+    html4`
       <style>${extensionView_css_default}</style>
       <div class="extension-view">
         <header>
@@ -1222,10 +1267,10 @@ var DEFAULT_VIEW4 = (input, output, target) => {
             title=${i18nString3(UIStrings3.closeView)}
             jslog=${VisualLogging3.close().track({ click: true })}
             .data=${{
-    variant: "icon",
-    size: "SMALL",
-    iconName: "cross"
-  }}
+      variant: Buttons3.Button.Variant.ICON,
+      size: Buttons3.Button.Size.SMALL,
+      iconName: "cross"
+    }}
             @click=${output.closeView}
           ></devtools-button>
         </header>
@@ -1233,7 +1278,10 @@ var DEFAULT_VIEW4 = (input, output, target) => {
           ${iframe}
         </main>
     </div>
-  `, target, { container: { attributes: { jslog: VisualLogging3.section("extension-view") } } });
+  `,
+    target,
+    { container: { attributes: { jslog: VisualLogging3.section("extension-view") } } }
+  );
 };
 var ExtensionView = class extends UI4.Widget.VBox {
   #descriptor;
@@ -1276,8 +1324,9 @@ var ExtensionView = class extends UI4.Widget.VBox {
   }
 };
 
-// gen/front_end/panels/recorder/RecordingView.js
+// ../../front_end/panels/recorder/RecordingView.ts
 import * as Models7 from "./models/models.js";
+import * as Actions4 from "./recorder-actions/recorder-actions.js";
 
 // gen/front_end/panels/recorder/recordingView.css.js
 var recordingView_css_default = `/*
@@ -1645,7 +1694,7 @@ var recordingView_css_default = `/*
 
 /*# sourceURL=${import.meta.resolve("./recordingView.css")} */`;
 
-// gen/front_end/panels/recorder/ReplaySection.js
+// ../../front_end/panels/recorder/ReplaySection.ts
 var ReplaySection_exports = {};
 __export(ReplaySection_exports, {
   DEFAULT_VIEW: () => DEFAULT_VIEW5,
@@ -1658,6 +1707,7 @@ import * as UI5 from "../../ui/legacy/legacy.js";
 import * as Lit5 from "../../ui/lit/lit.js";
 import * as VisualLogging4 from "../../ui/visual_logging/visual_logging.js";
 import * as Models3 from "./models/models.js";
+import * as Actions3 from "./recorder-actions/recorder-actions.js";
 
 // gen/front_end/panels/recorder/replaySection.css.js
 var replaySection_css_default = `/*
@@ -1682,7 +1732,7 @@ var replaySection_css_default = `/*
 
 /*# sourceURL=${import.meta.resolve("./replaySection.css")} */`;
 
-// gen/front_end/panels/recorder/ReplaySection.js
+// ../../front_end/panels/recorder/ReplaySection.ts
 var { html: html5, Directives: { ifDefined, repeat: repeat2 } } = Lit5;
 var UIStrings4 = {
   /**
@@ -1730,15 +1780,18 @@ var UIStrings4 = {
    */
   extensionGroup: "Extensions"
 };
-var str_4 = i18n7.i18n.registerUIStrings("panels/recorder/ReplaySection.ts", UIStrings4);
+var str_4 = i18n7.i18n.registerUIStrings(
+  "panels/recorder/ReplaySection.ts",
+  UIStrings4
+);
 var i18nString4 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
 var REPLAY_EXTENSION_PREFIX = "extension";
 function isPlayRecordingSpeed(string) {
-  return string === "normal" || string === "slow" || string === "very_slow" || string === "extremely_slow";
+  return string === Models3.RecordingPlayer.PlayRecordingSpeed.NORMAL || string === Models3.RecordingPlayer.PlayRecordingSpeed.SLOW || string === Models3.RecordingPlayer.PlayRecordingSpeed.VERY_SLOW || string === Models3.RecordingPlayer.PlayRecordingSpeed.EXTREMELY_SLOW;
 }
 var DEFAULT_VIEW5 = (input, _output, target) => {
   const { disabled, groups, selectedItem, actionTitle, onButtonClick, onItemSelected } = input;
-  const buttonVariant = "primary";
+  const buttonVariant = Buttons4.Button.Variant.PRIMARY;
   const handleClick = (ev) => {
     ev.stopPropagation();
     onButtonClick();
@@ -1748,7 +1801,8 @@ var DEFAULT_VIEW5 = (input, _output, target) => {
       onItemSelected(event.target.value);
     }
   };
-  Lit5.render(html5`
+  Lit5.render(
+    html5`
       <style>
         ${UI5.inspectorCommonStyles}
       </style>
@@ -1764,21 +1818,24 @@ var DEFAULT_VIEW5 = (input, _output, target) => {
                 <div
                   class="groups-label"
                   >${groups.map((group) => {
-    return group.name;
-  }).join(" & ")}</div>` : Lit5.nothing}
+      return group.name;
+    }).join(" & ")}</div>` : Lit5.nothing}
           <select
             class="primary"
             ?disabled=${disabled}
             jslog=${VisualLogging4.dropDown("network-conditions").track({
-    change: true
-  })}
+      change: true
+    })}
             @change=${handleSelectMenuSelect}
           >
-            ${repeat2(groups, (group) => group.name, (group) => html5`
+            ${repeat2(
+      groups,
+      (group) => group.name,
+      (group) => html5`
                 <optgroup label=${group.name}>
                   ${repeat2(group.items, (item5) => item5.value, (item5) => {
-    const selected = item5.value === selectedItem.value;
-    return html5`
+        const selected = item5.value === selectedItem.value;
+        return html5`
                       <option
                         .title=${item5.label()}
                         value=${item5.value}
@@ -1788,9 +1845,10 @@ var DEFAULT_VIEW5 = (input, _output, target) => {
                         ${selected && item5.buttonLabel ? item5.buttonLabel() : item5.label()}
                       </option>
                     `;
-  })}
+      })}
                 </optgroup>
-              `)}
+              `
+    )}
           </select>
         </label>
         <devtools-button
@@ -1798,14 +1856,13 @@ var DEFAULT_VIEW5 = (input, _output, target) => {
           .variant=${buttonVariant}
           .iconName=${selectedItem.buttonIconName}
           @click=${handleClick}
-          jslog=${VisualLogging4.action(
-    "chrome-recorder.replay-recording"
-    /* Actions.RecorderActions.REPLAY_RECORDING */
-  ).track({ click: true })}
+          jslog=${VisualLogging4.action(Actions3.RecorderActions.REPLAY_RECORDING).track({ click: true })}
         >
           ${i18nString4(UIStrings4.Replay)}
         </devtools-button>
-      </div>`, target);
+      </div>`,
+    target
+  );
 };
 var ReplaySection = class extends UI5.Widget.Widget {
   onStartReplay;
@@ -1841,18 +1898,21 @@ var ReplaySection = class extends UI5.Widget.Widget {
   }
   performUpdate() {
     const selectedItem = this.#getSelectedItem();
-    this.#view({
-      disabled: this.#disabled,
-      groups: this.#groups,
-      selectedItem,
-      actionTitle: Models3.Tooltip.getTooltipForActions(
-        selectedItem.label(),
-        "chrome-recorder.replay-recording"
-        /* Actions.RecorderActions.REPLAY_RECORDING */
-      ),
-      onButtonClick: () => this.#onStartReplay(),
-      onItemSelected: (item5) => this.#onItemSelected(item5)
-    }, void 0, this.contentElement);
+    this.#view(
+      {
+        disabled: this.#disabled,
+        groups: this.#groups,
+        selectedItem,
+        actionTitle: Models3.Tooltip.getTooltipForActions(
+          selectedItem.label(),
+          Actions3.RecorderActions.REPLAY_RECORDING
+        ),
+        onButtonClick: () => this.#onStartReplay(),
+        onItemSelected: (item5) => this.#onItemSelected(item5)
+      },
+      void 0,
+      this.contentElement
+    );
   }
   #computeGroups() {
     const groups = [
@@ -1860,25 +1920,25 @@ var ReplaySection = class extends UI5.Widget.Widget {
         name: i18nString4(UIStrings4.speedGroup),
         items: [
           {
-            value: "normal",
+            value: Models3.RecordingPlayer.PlayRecordingSpeed.NORMAL,
             buttonIconName: "play",
             buttonLabel: () => i18nString4(UIStrings4.ReplayNormalButtonLabel),
             label: () => i18nString4(UIStrings4.ReplayNormalItemLabel)
           },
           {
-            value: "slow",
+            value: Models3.RecordingPlayer.PlayRecordingSpeed.SLOW,
             buttonIconName: "play",
             buttonLabel: () => i18nString4(UIStrings4.ReplaySlowButtonLabel),
             label: () => i18nString4(UIStrings4.ReplaySlowItemLabel)
           },
           {
-            value: "very_slow",
+            value: Models3.RecordingPlayer.PlayRecordingSpeed.VERY_SLOW,
             buttonIconName: "play",
             buttonLabel: () => i18nString4(UIStrings4.ReplayVerySlowButtonLabel),
             label: () => i18nString4(UIStrings4.ReplayVerySlowItemLabel)
           },
           {
-            value: "extremely_slow",
+            value: Models3.RecordingPlayer.PlayRecordingSpeed.EXTREMELY_SLOW,
             buttonIconName: "play",
             buttonLabel: () => i18nString4(UIStrings4.ReplayExtremelySlowButtonLabel),
             label: () => i18nString4(UIStrings4.ReplayExtremelySlowItemLabel)
@@ -1916,13 +1976,18 @@ var ReplaySection = class extends UI5.Widget.Widget {
     const value2 = this.#settings?.replayExtension || this.#settings?.speed || "";
     if (value2.startsWith(REPLAY_EXTENSION_PREFIX)) {
       const origin = value2.substring(REPLAY_EXTENSION_PREFIX.length);
-      const extension = this.#replayExtensions.find((ext) => ext.getOrigin() === origin);
+      const extension = this.#replayExtensions.find(
+        (ext) => ext.getOrigin() === origin
+      );
       if (extension) {
         if (this.#settings) {
           this.#settings.replayExtension = REPLAY_EXTENSION_PREFIX + extension.getOrigin();
         }
         if (this.onStartReplay) {
-          this.onStartReplay("normal", extension);
+          this.onStartReplay(
+            Models3.RecordingPlayer.PlayRecordingSpeed.NORMAL,
+            extension
+          );
         }
         this.performUpdate();
         return;
@@ -1930,8 +1995,7 @@ var ReplaySection = class extends UI5.Widget.Widget {
     }
     if (this.onStartReplay) {
       this.onStartReplay(
-        this.#settings ? this.#settings.speed : "normal"
-        /* Models.RecordingPlayer.PlayRecordingSpeed.NORMAL */
+        this.#settings ? this.#settings.speed : Models3.RecordingPlayer.PlayRecordingSpeed.NORMAL
       );
     }
     this.performUpdate();
@@ -1950,7 +2014,7 @@ var ReplaySection = class extends UI5.Widget.Widget {
   }
 };
 
-// gen/front_end/panels/recorder/StepView.js
+// ../../front_end/panels/recorder/StepView.ts
 var StepView_exports = {};
 __export(StepView_exports, {
   AddStepPosition: () => AddStepPosition,
@@ -1967,7 +2031,7 @@ import * as Lit9 from "../../ui/lit/lit.js";
 import * as VisualLogging7 from "../../ui/visual_logging/visual_logging.js";
 import * as Models6 from "./models/models.js";
 
-// gen/front_end/panels/recorder/StepEditor.js
+// ../../front_end/panels/recorder/StepEditor.ts
 var StepEditor_exports = {};
 __export(StepEditor_exports, {
   EditorState: () => EditorState,
@@ -1982,7 +2046,7 @@ import * as Lit7 from "../../ui/lit/lit.js";
 import * as VisualLogging6 from "../../ui/visual_logging/visual_logging.js";
 import * as Models5 from "./models/models.js";
 
-// gen/front_end/panels/recorder/SelectorPicker.js
+// ../../front_end/panels/recorder/SelectorPicker.ts
 var SelectorPicker_exports = {};
 __export(SelectorPicker_exports, {
   DEFAULT_VIEW: () => DEFAULT_VIEW6,
@@ -2016,7 +2080,7 @@ var selectorPicker_css_default = `/*
 
 /*# sourceURL=${import.meta.resolve("./selectorPicker.css")} */`;
 
-// gen/front_end/panels/recorder/SelectorPicker.js
+// ../../front_end/panels/recorder/SelectorPicker.ts
 import * as Util from "./util/util.js";
 var { html: html6 } = Lit6;
 var BINDING_NAME = "captureSelectors";
@@ -2030,22 +2094,25 @@ var str_5 = i18n9.i18n.registerUIStrings("panels/recorder/SelectorPicker.ts", UI
 var i18nString5 = i18n9.i18n.getLocalizedString.bind(void 0, str_5);
 var DEFAULT_VIEW6 = (input, _output, target) => {
   const { active, disabled, onClick } = input;
-  Lit6.render(html6`
+  Lit6.render(
+    html6`
       <style>${selectorPicker_css_default}</style>
       <devtools-button
         @click=${onClick}
         .title=${i18nString5(UIStrings5.selectorPicker)}
         class="selector-picker"
-        .size=${"SMALL"}
+        .size=${Buttons5.Button.Size.SMALL}
         .iconName=${"select-element"}
         .active=${active}
         .disabled=${disabled}
-        .variant=${"icon"}
+        .variant=${Buttons5.Button.Variant.ICON}
         jslog=${VisualLogging5.toggle("selector-picker").track({
-    click: true
-  })}
+      click: true
+    })}
       ></devtools-button>
-    `, target);
+    `,
+    target
+  );
 };
 var SelectorPicker = class _SelectorPicker extends UI6.Widget.Widget {
   #view;
@@ -2069,11 +2136,15 @@ var SelectorPicker = class _SelectorPicker extends UI6.Widget.Widget {
     this.requestUpdate();
   }
   performUpdate() {
-    this.#view({
-      active: this.#active,
-      disabled: this.#disabled,
-      onClick: this.#handleClickEvent.bind(this)
-    }, {}, this.contentElement);
+    this.#view(
+      {
+        active: this.#active,
+        disabled: this.#disabled,
+        onClick: this.#handleClickEvent.bind(this)
+      },
+      {},
+      this.contentElement
+    );
   }
   #handleClickEvent(event) {
     event.preventDefault();
@@ -2092,18 +2163,20 @@ var SelectorPicker = class _SelectorPicker extends UI6.Widget.Widget {
         return;
       }
       this.#active = true;
-      this.#selectorAttribute = await new Promise((resolve, reject) => {
-        const timeout = setTimeout(reject, 1e3);
-        if (this.onAttributeRequested) {
-          this.onAttributeRequested((attribute) => {
+      this.#selectorAttribute = await new Promise(
+        (resolve, reject) => {
+          const timeout = setTimeout(reject, 1e3);
+          if (this.onAttributeRequested) {
+            this.onAttributeRequested((attribute) => {
+              clearTimeout(timeout);
+              resolve(attribute);
+            });
+          } else {
             clearTimeout(timeout);
-            resolve(attribute);
-          });
-        } else {
-          clearTimeout(timeout);
-          resolve(void 0);
+            resolve(void 0);
+          }
         }
-      });
+      );
       _SelectorPicker.#targetManager.observeTargets(this);
       this.requestUpdate();
     });
@@ -2153,14 +2226,26 @@ var SelectorPicker = class _SelectorPicker extends UI6.Widget.Widget {
     }
     const contextId = event.data.executionContextId;
     const frames = SDK.TargetManager.TargetManager.instance().targets();
-    const contextTarget = Models4.SDKUtils.findTargetByExecutionContext(frames, contextId);
-    const frameId = Models4.SDKUtils.findFrameIdByExecutionContext(frames, contextId);
+    const contextTarget = Models4.SDKUtils.findTargetByExecutionContext(
+      frames,
+      contextId
+    );
+    const frameId = Models4.SDKUtils.findFrameIdByExecutionContext(
+      frames,
+      contextId
+    );
     if (!contextTarget || !frameId) {
-      throw new Error(`No execution context found for the binding call + ${JSON.stringify(event.data)}`);
+      throw new Error(
+        `No execution context found for the binding call + ${JSON.stringify(
+          event.data
+        )}`
+      );
     }
     const model = contextTarget.model(SDK.ResourceTreeModel.ResourceTreeModel);
     if (!model) {
-      throw new Error(`ResourceTreeModel instance is missing for the target: ${contextTarget.id()}`);
+      throw new Error(
+        `ResourceTreeModel instance is missing for the target: ${contextTarget.id()}`
+      );
     }
     const frame = model.frameForId(frameId);
     if (!frame) {
@@ -2316,8 +2401,15 @@ var stepEditor_css_default = `/*
 
 /*# sourceURL=${import.meta.resolve("./stepEditor.css")} */`;
 
-// gen/front_end/panels/recorder/StepEditor.js
-import { ArrayAssignments, assert, deepFreeze, immutableDeepAssign, InsertAssignment, SharedObject } from "./util/util.js";
+// ../../front_end/panels/recorder/StepEditor.ts
+import {
+  ArrayAssignments,
+  assert,
+  deepFreeze,
+  immutableDeepAssign,
+  InsertAssignment,
+  SharedObject
+} from "./util/util.js";
 var { html: html7, render: render7, Directives } = Lit7;
 var { live } = Directives;
 var { widget: widget2 } = UI7.Widget;
@@ -2549,7 +2641,10 @@ var cleanUndefineds = (value2) => {
   return JSON.parse(JSON.stringify(value2));
 };
 var EditorState = class {
-  static #puppeteer = new SharedObject.SharedObject(() => Models5.RecordingPlayer.RecordingPlayer.connectPuppeteer(), ({ browser }) => Models5.RecordingPlayer.RecordingPlayer.disconnectPuppeteer(browser));
+  static #puppeteer = new SharedObject.SharedObject(
+    () => Models5.RecordingPlayer.RecordingPlayer.connectPuppeteer(),
+    ({ browser }) => Models5.RecordingPlayer.RecordingPlayer.disconnectPuppeteer(browser)
+  );
   static async default(type) {
     const state = { type };
     const attributes = attributesByType[state.type];
@@ -2659,9 +2754,9 @@ function renderInlineButton(input, opts) {
     <devtools-button
       title=${opts.title}
       .accessibleLabel=${opts.title}
-      .size=${"SMALL"}
+      .size=${Buttons6.Button.Size.SMALL}
       .iconName=${opts.iconName}
-      .variant=${"icon"}
+      .variant=${Buttons6.Button.Variant.ICON}
       jslog=${VisualLogging6.action(opts.class).track({
     click: true
   })}
@@ -2680,9 +2775,9 @@ function renderDeleteButton(input, attribute) {
     return;
   }
   return html7`<devtools-button
-    .size=${"SMALL"}
+    .size=${Buttons6.Button.Size.SMALL}
     .iconName=${"bin"}
-    .variant=${"icon"}
+    .variant=${Buttons6.Button.Variant.ICON}
     .title=${i18nString6(UIStrings6.deleteRow)}
     class="inline-button delete-row"
     data-attribute=${attribute}
@@ -2778,19 +2873,30 @@ var DEFAULT_VIEW7 = (input, _output, target) => {
         class: "add-frame",
         title: i18nString6(UIStrings6.addFrameIndex),
         iconName: "plus",
-        onClick: input.handleAddOrRemoveClick({
-          frame: new ArrayAssignments({
-            [index + 1]: new InsertAssignment(defaultValuesByAttribute.frame[0])
-          })
-        }, `devtools-suggestion-input[data-path="frame.${index + 1}"]`)
+        onClick: input.handleAddOrRemoveClick(
+          {
+            frame: new ArrayAssignments({
+              [index + 1]: new InsertAssignment(
+                defaultValuesByAttribute.frame[0]
+              )
+            })
+          },
+          `devtools-suggestion-input[data-path="frame.${index + 1}"]`
+        )
       })}
               ${renderInlineButton(input, {
         class: "remove-frame",
         title: i18nString6(UIStrings6.removeFrameIndex),
         iconName: "minus",
-        onClick: input.handleAddOrRemoveClick({
-          frame: new ArrayAssignments({ [index]: void 0 })
-        }, `devtools-suggestion-input[data-path="frame.${Math.min(index, frames.length - 2)}"]`)
+        onClick: input.handleAddOrRemoveClick(
+          {
+            frame: new ArrayAssignments({ [index]: void 0 })
+          },
+          `devtools-suggestion-input[data-path="frame.${Math.min(
+            index,
+            frames.length - 2
+          )}"]`
+        )
       })}
             </div>
           `;
@@ -2820,17 +2926,28 @@ var DEFAULT_VIEW7 = (input, _output, target) => {
         class: "add-selector",
         title: i18nString6(UIStrings6.addSelector),
         iconName: "plus",
-        onClick: input.handleAddOrRemoveClick({
-          selectors: new ArrayAssignments({
-            [index + 1]: new InsertAssignment(structuredClone(defaultValuesByAttribute.selectors[0]))
-          })
-        }, `devtools-suggestion-input[data-path="selectors.${index + 1}.0"]`)
+        onClick: input.handleAddOrRemoveClick(
+          {
+            selectors: new ArrayAssignments({
+              [index + 1]: new InsertAssignment(
+                structuredClone(defaultValuesByAttribute.selectors[0])
+              )
+            })
+          },
+          `devtools-suggestion-input[data-path="selectors.${index + 1}.0"]`
+        )
       })}
             ${renderInlineButton(input, {
         class: "remove-selector",
         title: i18nString6(UIStrings6.removeSelector),
         iconName: "minus",
-        onClick: input.handleAddOrRemoveClick({ selectors: new ArrayAssignments({ [index]: void 0 }) }, `devtools-suggestion-input[data-path="selectors.${Math.min(index, selectors.length - 2)}.0"]`)
+        onClick: input.handleAddOrRemoveClick(
+          { selectors: new ArrayAssignments({ [index]: void 0 }) },
+          `devtools-suggestion-input[data-path="selectors.${Math.min(
+            index,
+            selectors.length - 2
+          )}.0"]`
+        )
       })}
           </div>
           ${selector.map((part, partIndex, parts) => {
@@ -2864,25 +2981,36 @@ var DEFAULT_VIEW7 = (input, _output, target) => {
           class: "add-selector-part",
           title: i18nString6(UIStrings6.addSelectorPart),
           iconName: "plus",
-          onClick: input.handleAddOrRemoveClick({
-            selectors: new ArrayAssignments({
-              [index]: new ArrayAssignments({
-                [partIndex + 1]: new InsertAssignment(defaultValuesByAttribute.selectors[0][0])
+          onClick: input.handleAddOrRemoveClick(
+            {
+              selectors: new ArrayAssignments({
+                [index]: new ArrayAssignments({
+                  [partIndex + 1]: new InsertAssignment(
+                    defaultValuesByAttribute.selectors[0][0]
+                  )
+                })
               })
-            })
-          }, `devtools-suggestion-input[data-path="selectors.${index}.${partIndex + 1}"]`)
+            },
+            `devtools-suggestion-input[data-path="selectors.${index}.${partIndex + 1}"]`
+          )
         })}
               ${renderInlineButton(input, {
           class: "remove-selector-part",
           title: i18nString6(UIStrings6.removeSelectorPart),
           iconName: "minus",
-          onClick: input.handleAddOrRemoveClick({
-            selectors: new ArrayAssignments({
-              [index]: new ArrayAssignments({
-                [partIndex]: void 0
+          onClick: input.handleAddOrRemoveClick(
+            {
+              selectors: new ArrayAssignments({
+                [index]: new ArrayAssignments({
+                  [partIndex]: void 0
+                })
               })
-            })
-          }, `devtools-suggestion-input[data-path="selectors.${index}.${Math.min(partIndex, parts.length - 2)}"]`)
+            },
+            `devtools-suggestion-input[data-path="selectors.${index}.${Math.min(
+              partIndex,
+              parts.length - 2
+            )}"]`
+          )
         })}
             </div>`;
       })}`;
@@ -3003,29 +3131,42 @@ var DEFAULT_VIEW7 = (input, _output, target) => {
         class: "add-attribute-assertion",
         title: i18nString6(UIStrings6.addSelectorPart),
         iconName: "plus",
-        onClick: input.handleAddOrRemoveClick({
-          attributes: new ArrayAssignments({
-            [index + 1]: new InsertAssignment((() => {
-              {
-                const names = new Set(attributes.map(({ name: name3 }) => name3));
-                const defaultAttribute = defaultValuesByAttribute.attributes[0];
-                let name2 = defaultAttribute.name;
-                let i = 0;
-                while (names.has(name2)) {
-                  ++i;
-                  name2 = `${defaultAttribute.name}-${i}`;
-                }
-                return { ...defaultAttribute, name: name2 };
-              }
-            })())
-          })
-        }, `devtools-suggestion-input[data-path="attributes.${index + 1}.name"]`)
+        onClick: input.handleAddOrRemoveClick(
+          {
+            attributes: new ArrayAssignments({
+              [index + 1]: new InsertAssignment(
+                (() => {
+                  {
+                    const names = new Set(
+                      attributes.map(({ name: name3 }) => name3)
+                    );
+                    const defaultAttribute = defaultValuesByAttribute.attributes[0];
+                    let name2 = defaultAttribute.name;
+                    let i = 0;
+                    while (names.has(name2)) {
+                      ++i;
+                      name2 = `${defaultAttribute.name}-${i}`;
+                    }
+                    return { ...defaultAttribute, name: name2 };
+                  }
+                })()
+              )
+            })
+          },
+          `devtools-suggestion-input[data-path="attributes.${index + 1}.name"]`
+        )
       })}
           ${renderInlineButton(input, {
         class: "remove-attribute-assertion",
         title: i18nString6(UIStrings6.removeSelectorPart),
         iconName: "minus",
-        onClick: input.handleAddOrRemoveClick({ attributes: new ArrayAssignments({ [index]: void 0 }) }, `devtools-suggestion-input[data-path="attributes.${Math.min(index, attributes.length - 2)}.value"]`)
+        onClick: input.handleAddOrRemoveClick(
+          { attributes: new ArrayAssignments({ [index]: void 0 }) },
+          `devtools-suggestion-input[data-path="attributes.${Math.min(
+            index,
+            attributes.length - 2
+          )}.value"]`
+        )
       })}
         </div>`;
     })}
@@ -3035,7 +3176,7 @@ var DEFAULT_VIEW7 = (input, _output, target) => {
     const attributes = attributesByType[input.state.type];
     return [...attributes.optional].filter((attr) => input.state[attr] === void 0).map((attr) => {
       return html7`<devtools-button
-          .variant=${"outlined"}
+          .variant=${Buttons6.Button.Variant.OUTLINED}
           class="add-row"
           data-attribute=${attr}
           jslog=${VisualLogging6.action(`add-${Platform3.StringUtilities.toKebabCase(attr)}`)}
@@ -3474,7 +3615,7 @@ devtools-recorder-step-editor.is-selected {
 
 /*# sourceURL=${import.meta.resolve("./stepView.css")} */`;
 
-// gen/front_end/panels/recorder/TimelineSection.js
+// ../../front_end/panels/recorder/TimelineSection.ts
 var TimelineSection_exports = {};
 __export(TimelineSection_exports, {
   DEFAULT_VIEW: () => DEFAULT_VIEW8,
@@ -3626,7 +3767,7 @@ var timelineSection_css_default = `/*
 
 /*# sourceURL=${import.meta.resolve("./timelineSection.css")} */`;
 
-// gen/front_end/panels/recorder/TimelineSection.js
+// ../../front_end/panels/recorder/TimelineSection.ts
 var { html: html8 } = Lit8;
 var DEFAULT_VIEW8 = (input, _output, target) => {
   const classes = {
@@ -3637,7 +3778,8 @@ var DEFAULT_VIEW8 = (input, _output, target) => {
     "is-last-section": input.isLastSection,
     "is-selected": input.isSelected
   };
-  Lit8.render(html8`
+  Lit8.render(
+    html8`
     <style>${timelineSection_css_default}</style>
     <div class=${Lit8.Directives.classMap(classes)}>
       <div class="overlay"></div>
@@ -3647,7 +3789,9 @@ var DEFAULT_VIEW8 = (input, _output, target) => {
       </svg>
       <slot></slot>
     </div>
-  `, target);
+  `,
+    target
+  );
 };
 var TimelineSection = class extends UI8.Widget.Widget {
   #isEndOfGroup = false;
@@ -3681,17 +3825,21 @@ var TimelineSection = class extends UI8.Widget.Widget {
     this.requestUpdate();
   }
   performUpdate() {
-    this.#view({
-      isEndOfGroup: this.#isEndOfGroup,
-      isStartOfGroup: this.#isStartOfGroup,
-      isFirstSection: this.#isFirstSection,
-      isLastSection: this.#isLastSection,
-      isSelected: this.#isSelected
-    }, {}, this.contentElement);
+    this.#view(
+      {
+        isEndOfGroup: this.#isEndOfGroup,
+        isStartOfGroup: this.#isStartOfGroup,
+        isFirstSection: this.#isFirstSection,
+        isLastSection: this.#isLastSection,
+        isSelected: this.#isSelected
+      },
+      {},
+      this.contentElement
+    );
   }
 };
 
-// gen/front_end/panels/recorder/StepView.js
+// ../../front_end/panels/recorder/StepView.ts
 var { html: html9 } = Lit9;
 var { widget: widget3 } = UI9.Widget;
 var UIStrings7 = {
@@ -3801,22 +3949,25 @@ var UIStrings7 = {
    */
   breakpoints: "Breakpoints"
 };
-var str_7 = i18n13.i18n.registerUIStrings("panels/recorder/StepView.ts", UIStrings7);
+var str_7 = i18n13.i18n.registerUIStrings(
+  "panels/recorder/StepView.ts",
+  UIStrings7
+);
 var i18nString7 = i18n13.i18n.getLocalizedString.bind(void 0, str_7);
-var State;
-(function(State2) {
+var State = /* @__PURE__ */ ((State2) => {
   State2["DEFAULT"] = "default";
   State2["SUCCESS"] = "success";
   State2["CURRENT"] = "current";
   State2["OUTSTANDING"] = "outstanding";
   State2["ERROR"] = "error";
   State2["STOPPED"] = "stopped";
-})(State || (State = {}));
-var AddStepPosition;
-(function(AddStepPosition2) {
+  return State2;
+})(State || {});
+var AddStepPosition = /* @__PURE__ */ ((AddStepPosition2) => {
   AddStepPosition2["BEFORE"] = "before";
   AddStepPosition2["AFTER"] = "after";
-})(AddStepPosition || (AddStepPosition = {}));
+  return AddStepPosition2;
+})(AddStepPosition || {});
 var COPY_ACTION_PREFIX = "copy-step-as-";
 function getStepTypeTitle(input) {
   if (input.section) {
@@ -3908,11 +4059,11 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
   const stepClasses = {
     step: true,
     expanded: input.showDetails,
-    "is-success": input.state === "success",
-    "is-current": input.state === "current",
-    "is-outstanding": input.state === "outstanding",
-    "is-error": input.state === "error",
-    "is-stopped": input.state === "stopped",
+    "is-success": input.state === "success" /* SUCCESS */,
+    "is-current": input.state === "current" /* CURRENT */,
+    "is-outstanding": input.state === "outstanding" /* OUTSTANDING */,
+    "is-error": input.state === "error" /* ERROR */,
+    "is-stopped": input.state === "stopped" /* STOPPED */,
     "is-start-of-group": input.isStartOfGroup,
     "is-first-section": input.isFirstSection,
     "has-breakpoint": input.hasBreakpoint
@@ -3923,36 +4074,37 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
     section: input.section
   });
   const subtitle = input.step ? getSelectorPreview(input.step) : getSectionPreview(input.section);
-  Lit9.render(html9`
+  Lit9.render(
+    html9`
     <style>${stepView_css_default}</style>
     <div>
       <devtools-widget ${widget3(TimelineSection, {
-    isFirstSection: input.isFirstSection,
-    isLastSection: input.isLastSection,
-    isStartOfGroup: input.isStartOfGroup,
-    isEndOfGroup: input.isEndOfGroup,
-    isSelected: input.isSelected
-  })}
+      isFirstSection: input.isFirstSection,
+      isLastSection: input.isLastSection,
+      isStartOfGroup: input.isStartOfGroup,
+      isEndOfGroup: input.isEndOfGroup,
+      isSelected: input.isSelected
+    })}
         @contextmenu=${(e) => {
-    const menu = new UI9.ContextMenu.ContextMenu(e);
-    input.populateStepContextMenu(menu);
-    void menu.show();
-  }}
+      const menu = new UI9.ContextMenu.ContextMenu(e);
+      input.populateStepContextMenu(menu);
+      void menu.show();
+    }}
         data-step-index=${input.stepIndex}
         data-section-index=${input.sectionIndex}
         @click=${(event) => {
-    event.stopPropagation();
-    const stepOrSection = input.step || input.section;
-    if (stepOrSection) {
-      input.onStepClick(stepOrSection);
-    }
-  }}
+      event.stopPropagation();
+      const stepOrSection = input.step || input.section;
+      if (stepOrSection) {
+        input.onStepClick(stepOrSection);
+      }
+    }}
         @mouseover=${() => {
-    const stepOrSection = input.step || input.section;
-    if (stepOrSection) {
-      input.onStepHover(stepOrSection);
-    }
-  }}
+      const stepOrSection = input.step || input.section;
+      if (stepOrSection) {
+        input.onStepHover(stepOrSection);
+      }
+    }}
         class=${Lit9.Directives.classMap(stepClasses)}>
         <svg slot="icon" width="24" height="24" class="icon">
           <circle class="circle-icon"/>
@@ -3985,19 +4137,19 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
         </div>
         <div class="details">
           ${input.step && html9`<devtools-widget ${widget3(StepEditor, {
-    step: input.step,
-    disabled: input.isPlaying,
-    onStepEdited: input.stepEdited,
-    onAttributeRequested: input.onAttributeRequested
-  })}
+      step: input.step,
+      disabled: input.isPlaying,
+      onStepEdited: input.stepEdited,
+      onAttributeRequested: input.onAttributeRequested
+    })}
             class=${input.isSelected ? "is-selected" : ""}></devtools-widget>`}
           ${input.section?.causingStep && html9`<devtools-widget ${widget3(StepEditor, {
-    step: input.section.causingStep,
-    isTypeEditable: false,
-    disabled: input.isPlaying,
-    onStepEdited: input.stepEdited,
-    onAttributeRequested: input.onAttributeRequested
-  })}></devtools-widget>`}
+      step: input.section.causingStep,
+      isTypeEditable: false,
+      disabled: input.isPlaying,
+      onStepEdited: input.stepEdited,
+      onAttributeRequested: input.onAttributeRequested
+    })}></devtools-widget>`}
           }
         </div>
         ${input.error && html9`
@@ -4007,7 +4159,10 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
         `}
       </devtools-widget>
     </div>
-  `, target, { container: { classes: ["step-view-widget"] } });
+  `,
+    target,
+    { container: { classes: ["step-view-widget"] } }
+  );
 };
 var StepView = class extends UI9.Widget.Widget {
   #observer = new IntersectionObserver((result) => {
@@ -4021,7 +4176,7 @@ var StepView = class extends UI9.Widget.Widget {
   onCopyStep;
   onAttributeRequested;
   #viewInput = {
-    state: "default",
+    state: "default" /* DEFAULT */,
     showDetails: false,
     isEndOfGroup: false,
     isStartOfGroup: false,
@@ -4180,11 +4335,7 @@ var StepView = class extends UI9.Widget.Widget {
         if (!stepOrSection) {
           throw new Error("Expected step or section.");
         }
-        this.onAddStep?.(
-          stepOrSection,
-          "before"
-          /* AddStepPosition.BEFORE */
-        );
+        this.onAddStep?.(stepOrSection, "before" /* BEFORE */);
         break;
       }
       case "add-step-after": {
@@ -4192,11 +4343,7 @@ var StepView = class extends UI9.Widget.Widget {
         if (!stepOrSection) {
           throw new Error("Expected step or section.");
         }
-        this.onAddStep?.(
-          stepOrSection,
-          "after"
-          /* AddStepPosition.AFTER */
-        );
+        this.onAddStep?.(stepOrSection, "after" /* AFTER */);
         break;
       }
       case "remove-step": {
@@ -4312,18 +4459,28 @@ var StepView = class extends UI9.Widget.Widget {
   };
   #populateStepContextMenu(contextMenu) {
     const actions = this.#getActions();
-    const copyActions = actions.filter((item5) => item5.id.startsWith(COPY_ACTION_PREFIX));
-    const otherActions = actions.filter((item5) => !item5.id.startsWith(COPY_ACTION_PREFIX));
+    const copyActions = actions.filter(
+      (item5) => item5.id.startsWith(COPY_ACTION_PREFIX)
+    );
+    const otherActions = actions.filter(
+      (item5) => !item5.id.startsWith(COPY_ACTION_PREFIX)
+    );
     for (const item5 of otherActions) {
       const section5 = contextMenu.section(item5.group);
       section5.appendItem(item5.label, () => {
-        this.#handleStepAction(new Menus.Menu.MenuItemSelectedEvent(item5.id));
+        this.#handleStepAction(
+          new Menus.Menu.MenuItemSelectedEvent(item5.id)
+        );
       }, { jslogContext: item5.id });
     }
-    const preferredCopyAction = copyActions.find((item5) => item5.id === COPY_ACTION_PREFIX + this.#viewInput.recorderSettings?.preferredCopyFormat);
+    const preferredCopyAction = copyActions.find(
+      (item5) => item5.id === COPY_ACTION_PREFIX + this.#viewInput.recorderSettings?.preferredCopyFormat
+    );
     if (preferredCopyAction) {
       contextMenu.section("copy").appendItem(preferredCopyAction.label, () => {
-        this.#handleStepAction(new Menus.Menu.MenuItemSelectedEvent(preferredCopyAction.id));
+        this.#handleStepAction(
+          new Menus.Menu.MenuItemSelectedEvent(preferredCopyAction.id)
+        );
       }, { jslogContext: preferredCopyAction.id });
     }
     if (copyActions.length) {
@@ -4333,7 +4490,9 @@ var StepView = class extends UI9.Widget.Widget {
           continue;
         }
         copyAs.section(item5.group).appendItem(item5.label, () => {
-          this.#handleStepAction(new Menus.Menu.MenuItemSelectedEvent(item5.id));
+          this.#handleStepAction(
+            new Menus.Menu.MenuItemSelectedEvent(item5.id)
+          );
         }, { jslogContext: item5.id });
       }
     }
@@ -4344,7 +4503,7 @@ var StepView = class extends UI9.Widget.Widget {
   }
 };
 
-// gen/front_end/panels/recorder/RecordingView.js
+// ../../front_end/panels/recorder/RecordingView.ts
 var { html: html10 } = Lit10;
 var { widget: widget4 } = UI10.Widget;
 var UIStrings8 = {
@@ -4457,13 +4616,16 @@ var UIStrings8 = {
    */
   codeSidebarClosed: "Code sidebar closed"
 };
-var str_8 = i18n15.i18n.registerUIStrings("panels/recorder/RecordingView.ts", UIStrings8);
+var str_8 = i18n15.i18n.registerUIStrings(
+  "panels/recorder/RecordingView.ts",
+  UIStrings8
+);
 var i18nString8 = i18n15.i18n.getLocalizedString.bind(void 0, str_8);
-var TargetPanel;
-(function(TargetPanel2) {
+var TargetPanel = /* @__PURE__ */ ((TargetPanel2) => {
   TargetPanel2["PERFORMANCE_PANEL"] = "timeline";
   TargetPanel2["DEFAULT"] = "chrome-recorder";
-})(TargetPanel || (TargetPanel = {}));
+  return TargetPanel2;
+})(TargetPanel || {});
 var networkConditionPresets = [
   SDK2.NetworkManager.NoThrottlingConditions,
   SDK2.NetworkManager.OfflineConditions,
@@ -4471,28 +4633,48 @@ var networkConditionPresets = [
   SDK2.NetworkManager.Slow4GConditions,
   SDK2.NetworkManager.Fast4GConditions
 ];
-function renderSettings({ settings, replaySettingsExpanded, onSelectMenuLabelClick, onNetworkConditionsChange, onTimeoutInput, isRecording, replayState, onReplaySettingsKeydown, onToggleReplaySettings }) {
+function renderSettings({
+  settings,
+  replaySettingsExpanded,
+  onSelectMenuLabelClick,
+  onNetworkConditionsChange,
+  onTimeoutInput,
+  isRecording,
+  replayState,
+  onReplaySettingsKeydown,
+  onToggleReplaySettings
+}) {
   if (!settings) {
     return Lit10.nothing;
   }
   const environmentFragments = [];
   if (settings.viewportSettings) {
-    environmentFragments.push(html10`<div>${settings.viewportSettings.isMobile ? i18nString8(UIStrings8.mobile) : i18nString8(UIStrings8.desktop)}</div>`);
+    environmentFragments.push(
+      html10`<div>${settings.viewportSettings.isMobile ? i18nString8(UIStrings8.mobile) : i18nString8(UIStrings8.desktop)}</div>`
+    );
     environmentFragments.push(html10`<div class="separator"></div>`);
-    environmentFragments.push(html10`<div>${settings.viewportSettings.width}×${settings.viewportSettings.height} px</div>`);
+    environmentFragments.push(
+      html10`<div>${settings.viewportSettings.width}×${settings.viewportSettings.height} px</div>`
+    );
   }
   const replaySettingsFragments = [];
   if (!replaySettingsExpanded) {
     if (settings.networkConditionsSettings) {
       if (settings.networkConditionsSettings.title) {
-        replaySettingsFragments.push(html10`<div>${settings.networkConditionsSettings.title}</div>`);
+        replaySettingsFragments.push(
+          html10`<div>${settings.networkConditionsSettings.title}</div>`
+        );
       } else {
         replaySettingsFragments.push(html10`<div>
           ${i18nString8(UIStrings8.download, {
-          value: i18n15.ByteUtilities.bytesToString(settings.networkConditionsSettings.download)
+          value: i18n15.ByteUtilities.bytesToString(
+            settings.networkConditionsSettings.download
+          )
         })},
           ${i18nString8(UIStrings8.upload, {
-          value: i18n15.ByteUtilities.bytesToString(settings.networkConditionsSettings.upload)
+          value: i18n15.ByteUtilities.bytesToString(
+            settings.networkConditionsSettings.upload
+          )
         })},
           ${i18nString8(UIStrings8.latency, {
           value: settings.networkConditionsSettings.latency
@@ -4500,15 +4682,21 @@ function renderSettings({ settings, replaySettingsExpanded, onSelectMenuLabelCli
         </div>`);
       }
     } else {
-      replaySettingsFragments.push(html10`<div>${SDK2.NetworkManager.NoThrottlingConditions.title instanceof Function ? SDK2.NetworkManager.NoThrottlingConditions.title() : SDK2.NetworkManager.NoThrottlingConditions.title}</div>`);
+      replaySettingsFragments.push(
+        html10`<div>${SDK2.NetworkManager.NoThrottlingConditions.title instanceof Function ? SDK2.NetworkManager.NoThrottlingConditions.title() : SDK2.NetworkManager.NoThrottlingConditions.title}</div>`
+      );
     }
     replaySettingsFragments.push(html10`<div class="separator"></div>`);
-    replaySettingsFragments.push(html10`<div>${i18nString8(UIStrings8.timeout, {
-      value: settings.timeout || Models7.RecordingPlayer.defaultTimeout
-    })}</div>`);
+    replaySettingsFragments.push(
+      html10`<div>${i18nString8(UIStrings8.timeout, {
+        value: settings.timeout || Models7.RecordingPlayer.defaultTimeout
+      })}</div>`
+    );
   } else {
     const selectedOption = settings.networkConditionsSettings?.i18nTitleKey || SDK2.NetworkManager.NoThrottlingConditions.i18nTitleKey;
-    const selectedOptionTitle = networkConditionPresets.find((preset) => preset.i18nTitleKey === selectedOption);
+    const selectedOptionTitle = networkConditionPresets.find(
+      (preset) => preset.i18nTitleKey === selectedOption
+    );
     let menuButtonTitle = "";
     if (selectedOptionTitle) {
       menuButtonTitle = selectedOptionTitle.title instanceof Function ? selectedOptionTitle.title() : selectedOptionTitle.title;
@@ -4529,7 +4717,9 @@ function renderSettings({ settings, replaySettingsExpanded, onSelectMenuLabelCli
       </label>
     </div>`);
     replaySettingsFragments.push(html10`<div class="editable-setting">
-      <label class="wrapping-label" title=${i18nString8(UIStrings8.timeoutExplanation)}>
+      <label class="wrapping-label" title=${i18nString8(
+      UIStrings8.timeoutExplanation
+    )}>
         ${i18nString8(UIStrings8.timeoutLabel)}
         <input
           @input=${onTimeoutInput}
@@ -4609,7 +4799,7 @@ function renderTimelineArea(input, output) {
                 .showArrow=${true}
                 .sideButton=${false}
                 .showSelectedItem=${true}
-                .position=${"bottom"}
+                .position=${Dialogs.Dialog.DialogVerticalPosition.BOTTOM}
                 .buttonTitle=${input.converterName || ""}
                 .jslogContext=${"code-format"}
               >
@@ -4635,12 +4825,11 @@ function renderTimelineArea(input, output) {
               <devtools-button
                 title=${Models7.Tooltip.getTooltipForActions(
     i18nString8(UIStrings8.hideCode),
-    "chrome-recorder.toggle-code-view"
-    /* Actions.RecorderActions.TOGGLE_CODE_VIEW */
+    Actions4.RecorderActions.TOGGLE_CODE_VIEW
   )}
                 .data=${{
-    variant: "icon",
-    size: "SMALL",
+    variant: Buttons7.Button.Variant.ICON,
+    size: Buttons7.Button.Size.SMALL,
     iconName: "cross"
   }}
                 @click=${input.showCodeToggle}
@@ -4664,9 +4853,15 @@ function renderTextEditor(input, output) {
     }
     output.highlightLinesInEditor = (line, length, scroll = false) => {
       const cm = editor.editor;
-      let selection = editor.createSelection({ lineNumber: line + length, columnNumber: 0 }, { lineNumber: line, columnNumber: 0 });
+      let selection = editor.createSelection(
+        { lineNumber: line + length, columnNumber: 0 },
+        { lineNumber: line, columnNumber: 0 }
+      );
       const lastLine = editor.state.doc.lineAt(selection.main.anchor);
-      selection = editor.createSelection({ lineNumber: line + length - 1, columnNumber: lastLine.length + 1 }, { lineNumber: line, columnNumber: 0 });
+      selection = editor.createSelection(
+        { lineNumber: line + length - 1, columnNumber: lastLine.length + 1 },
+        { lineNumber: line, columnNumber: 0 }
+      );
       cm.dispatch({
         selection,
         effects: scroll ? [
@@ -4685,13 +4880,15 @@ function renderScreenshot(section5) {
     return null;
   }
   return html10`
-      <img class="screenshot" src=${section5.screenshot} alt=${i18nString8(UIStrings8.screenshotForSection)} />
+      <img class="screenshot" src=${section5.screenshot} alt=${i18nString8(
+    UIStrings8.screenshotForSection
+  )} />
     `;
 }
 function renderReplayOrAbortButton(input) {
   if (input.replayState.isPlaying) {
     return html10`
-        <devtools-button .jslogContext=${"abort-replay"} @click=${input.onAbortReplay} .iconName=${"pause"} .variant=${"outlined"}>
+        <devtools-button .jslogContext=${"abort-replay"} @click=${input.onAbortReplay} .iconName=${"pause"} .variant=${Buttons7.Button.Variant.OUTLINED}>
           ${i18nString8(UIStrings8.cancelReplay)}
         </devtools-button>`;
   }
@@ -4713,22 +4910,19 @@ function renderSections(input) {
           @click=${input.showCodeToggle}
           class="show-code"
           .data=${{
-    variant: "outlined",
+    variant: Buttons7.Button.Variant.OUTLINED,
     title: Models7.Tooltip.getTooltipForActions(
       i18nString8(UIStrings8.showCode),
-      "chrome-recorder.toggle-code-view"
-      /* Actions.RecorderActions.TOGGLE_CODE_VIEW */
+      Actions4.RecorderActions.TOGGLE_CODE_VIEW
     )
   }}
-          jslog=${VisualLogging8.toggleSubpane(
-    "chrome-recorder.toggle-code-view"
-    /* Actions.RecorderActions.TOGGLE_CODE_VIEW */
-  ).track({ click: true })}
+          jslog=${VisualLogging8.toggleSubpane(Actions4.RecorderActions.TOGGLE_CODE_VIEW).track({ click: true })}
         >
           ${i18nString8(UIStrings8.showCode)}
         </devtools-button>
       </div>` : ""}
-      ${input.sections.map((section5, i) => html10`
+      ${input.sections.map(
+    (section5, i) => html10`
             <div class="section">
               <div class="screenshot-wrapper">
                 ${renderScreenshot(section5)}
@@ -4736,79 +4930,82 @@ function renderSections(input) {
               <div class="content">
                 <div class="steps">
                   ${widget4(StepView, {
-    section: section5,
-    state: input.getSectionState(section5),
-    isStartOfGroup: true,
-    isEndOfGroup: section5.steps.length === 0,
-    isFirstSection: i === 0,
-    isLastSection: i === input.sections.length - 1 && section5.steps.length === 0,
-    isSelected: input.selectedStep === (section5.causingStep || null),
-    sectionIndex: i,
-    isRecording: input.isRecording,
-    isPlaying: input.replayState.isPlaying,
-    error: input.getSectionState(section5) === "error" ? input.currentError ?? void 0 : void 0,
-    hasBreakpoint: false,
-    removable: input.recording.steps.length > 1 && Boolean(section5.causingStep),
-    onStepClick: input.onStepClick,
-    onStepHover: input.onStepHover,
-    onStepChanged: input.onStepChanged,
-    onAddStep: input.onAddStep,
-    onRemoveStep: input.onRemoveStep,
-    onAddBreakpoint: input.onAddBreakpoint,
-    onRemoveBreakpoint: input.onRemoveBreakpoint,
-    onAttributeRequested: input.onAttributeRequested,
-    onCopyStep: input.onCopyStep
-  })}
-                  ${section5.steps.map((step) => {
-    const stepIndex = input.recording.steps.indexOf(step);
-    return html10`
-                      <devtools-widget
-                      ${widget4(StepView, {
-      step,
-      state: input.getStepState(step),
-      error: input.currentStep === step ? input.currentError ?? void 0 : void 0,
-      isFirstSection: false,
-      isLastSection: i === input.sections.length - 1 && input.recording.steps[input.recording.steps.length - 1] === step,
-      isStartOfGroup: false,
-      isEndOfGroup: section5.steps[section5.steps.length - 1] === step,
-      stepIndex,
-      hasBreakpoint: input.breakpointIndexes.has(stepIndex),
-      sectionIndex: -1,
+      section: section5,
+      state: input.getSectionState(section5),
+      isStartOfGroup: true,
+      isEndOfGroup: section5.steps.length === 0,
+      isFirstSection: i === 0,
+      isLastSection: i === input.sections.length - 1 && section5.steps.length === 0,
+      isSelected: input.selectedStep === (section5.causingStep || null),
+      sectionIndex: i,
       isRecording: input.isRecording,
       isPlaying: input.replayState.isPlaying,
-      removable: input.recording.steps.length > 1,
-      builtInConverters: input.builtInConverters,
-      extensionConverters: input.extensionConverters,
-      isSelected: input.selectedStep === step,
-      recorderSettings: input.recorderSettings ?? void 0,
+      error: input.getSectionState(section5) === "error" /* ERROR */ ? input.currentError ?? void 0 : void 0,
+      hasBreakpoint: false,
+      removable: input.recording.steps.length > 1 && Boolean(section5.causingStep),
       onStepClick: input.onStepClick,
       onStepHover: input.onStepHover,
-      onCopyStep: input.onCopyStep,
       onStepChanged: input.onStepChanged,
       onAddStep: input.onAddStep,
       onRemoveStep: input.onRemoveStep,
       onAddBreakpoint: input.onAddBreakpoint,
       onRemoveBreakpoint: input.onRemoveBreakpoint,
-      onAttributeRequested: input.onAttributeRequested
+      onAttributeRequested: input.onAttributeRequested,
+      onCopyStep: input.onCopyStep
     })}
+                  ${section5.steps.map((step) => {
+      const stepIndex = input.recording.steps.indexOf(step);
+      return html10`
+                      <devtools-widget
+                      ${widget4(StepView, {
+        step,
+        state: input.getStepState(step),
+        error: input.currentStep === step ? input.currentError ?? void 0 : void 0,
+        isFirstSection: false,
+        isLastSection: i === input.sections.length - 1 && input.recording.steps[input.recording.steps.length - 1] === step,
+        isStartOfGroup: false,
+        isEndOfGroup: section5.steps[section5.steps.length - 1] === step,
+        stepIndex,
+        hasBreakpoint: input.breakpointIndexes.has(stepIndex),
+        sectionIndex: -1,
+        isRecording: input.isRecording,
+        isPlaying: input.replayState.isPlaying,
+        removable: input.recording.steps.length > 1,
+        builtInConverters: input.builtInConverters,
+        extensionConverters: input.extensionConverters,
+        isSelected: input.selectedStep === step,
+        recorderSettings: input.recorderSettings ?? void 0,
+        onStepClick: input.onStepClick,
+        onStepHover: input.onStepHover,
+        onCopyStep: input.onCopyStep,
+        onStepChanged: input.onStepChanged,
+        onAddStep: input.onAddStep,
+        onRemoveStep: input.onRemoveStep,
+        onAddBreakpoint: input.onAddBreakpoint,
+        onRemoveBreakpoint: input.onRemoveBreakpoint,
+        onAttributeRequested: input.onAttributeRequested
+      })}
                       jslog=${VisualLogging8.section("step").track({ click: true })}
                       ></devtools-widget>
                     `;
-  })}
+    })}
                   ${!input.recordingTogglingInProgress && input.isRecording && i === input.sections.length - 1 ? html10`<devtools-button
                     class="step add-assertion-button"
                     .data=${{
-    variant: "outlined",
-    title: i18nString8(UIStrings8.addAssertion),
-    jslogContext: "add-assertion"
-  }}
+      variant: Buttons7.Button.Variant.OUTLINED,
+      title: i18nString8(UIStrings8.addAssertion),
+      jslogContext: "add-assertion"
+    }}
                     @click=${input.onAddAssertion}
                   >${i18nString8(UIStrings8.addAssertion)}</devtools-button>` : void 0}
-                  ${input.isRecording && i === input.sections.length - 1 ? html10`<div class="step recording">${i18nString8(UIStrings8.recording)}</div>` : null}
+                  ${input.isRecording && i === input.sections.length - 1 ? html10`<div class="step recording">${i18nString8(
+      UIStrings8.recording
+    )}</div>` : null}
                 </div>
               </div>
             </div>
-      `)}
+      `
+  )}
       </div>
     `;
 }
@@ -4839,7 +5036,7 @@ function renderHeader(input) {
               @click=${input.onEditTitleButtonClick}
               .data=${{
     disabled: !isTitleEditable,
-    variant: "toolbar",
+    variant: Buttons7.Button.Variant.TOOLBAR,
     iconName: "edit",
     title: i18nString8(UIStrings8.editTitle),
     jslogContext: "edit-title"
@@ -4856,7 +5053,7 @@ function renderHeader(input) {
                 @click=${input.onMeasurePerformanceClick}
                 .data=${{
     disabled: input.replayState.isPlaying,
-    variant: "outlined",
+    variant: Buttons7.Button.Variant.OUTLINED,
     iconName: "performance",
     title: i18nString8(UIStrings8.performancePanel),
     jslogContext: "measure-performance"
@@ -4874,24 +5071,27 @@ var DEFAULT_VIEW10 = (input, output, target) => {
     wrapper: true,
     "is-recording": input.isRecording,
     "is-playing": input.replayState.isPlaying,
-    "was-successful": input.lastReplayResult === "Success",
-    "was-failure": input.lastReplayResult === "Failure"
+    "was-successful": input.lastReplayResult === Models7.RecordingPlayer.ReplayResult.SUCCESS,
+    "was-failure": input.lastReplayResult === Models7.RecordingPlayer.ReplayResult.FAILURE
   };
   const footerButtonTitle = input.recordingTogglingInProgress ? i18nString8(UIStrings8.recordingIsBeingStopped) : i18nString8(UIStrings8.endRecording);
-  Lit10.render(html10`
+  Lit10.render(
+    html10`
     <style>${UI10.inspectorCommonStyles}</style>
     <style>${recordingView_css_default}</style>
     <style>${Input2.textInputStyles}</style>
-    <div @click=${input.onWrapperClick} class=${Lit10.Directives.classMap(classNames)}>
+    <div @click=${input.onWrapperClick} class=${Lit10.Directives.classMap(
+      classNames
+    )}>
       <div class="recording-view main">
         ${renderHeader(input)}
         ${input.extensionDescriptor ? html10`
             <devtools-widget class="recorder-extension-view" ${widget4(ExtensionView, {
-    descriptor: input.extensionDescriptor,
-    onClose: () => {
-      target.dispatchEvent(new Event("recorderextensionviewclosed", { bubbles: true, composed: true }));
-    }
-  })}>
+      descriptor: input.extensionDescriptor,
+      onClose: () => {
+        target.dispatchEvent(new Event("recorderextensionviewclosed", { bubbles: true, composed: true }));
+      }
+    })}>
             </devtools-widget>` : html10`
           ${renderSettings(input)}
           ${renderTimelineArea(input, output)}
@@ -4901,24 +5101,25 @@ var DEFAULT_VIEW10 = (input, output, target) => {
             <devtools-widget
               class="control-button"
               ${widget4(ControlButton, {
-    label: footerButtonTitle,
-    shape: "square",
-    disabled: input.recordingTogglingInProgress,
-    onClick: input.onRecordingFinished
-  })}
+      label: footerButtonTitle,
+      shape: "square",
+      disabled: input.recordingTogglingInProgress,
+      onClick: input.onRecordingFinished
+    })}
               jslog=${VisualLogging8.toggle("toggle-recording").track({ click: true })}
               title=${Models7.Tooltip.getTooltipForActions(
-    footerButtonTitle,
-    "chrome-recorder.start-recording"
-    /* Actions.RecorderActions.START_RECORDING */
-  )}
+      footerButtonTitle,
+      Actions4.RecorderActions.START_RECORDING
+    )}
             >
             </devtools-widget>
           </div>
         </div>` : Lit10.nothing}
       </div>
     </div>
-  `, target);
+  `,
+    target
+  );
 };
 var RecordingView = class extends UI10.Widget.Widget {
   replayState = { isPlaying: false, isPausedOnBreakpoint: false };
@@ -4989,70 +5190,74 @@ var RecordingView = class extends UI10.Widget.Widget {
       ...this.builtInConverters || [],
       ...this.extensionConverters || []
     ].find((converter2) => converter2.getId() === this.#converterId) ?? this.builtInConverters[0];
-    this.#view({
-      breakpointIndexes: this.breakpointIndexes,
-      builtInConverters: this.builtInConverters,
-      converterId: this.#converterId,
-      converterName: converter?.getFormatName(),
-      currentError: this.currentError ?? null,
-      currentStep: this.currentStep ?? null,
-      editorState: this.#editorState ?? null,
-      extensionConverters: this.extensionConverters,
-      extensionDescriptor: this.extensionDescriptor,
-      isRecording: this.isRecording,
-      isTitleInvalid: this.#isTitleInvalid,
-      lastReplayResult: this.lastReplayResult ?? null,
-      recorderSettings: this.#recorderSettings ?? null,
-      recording: this.recording,
-      recordingTogglingInProgress: this.recordingTogglingInProgress,
-      replayAllowed: this.replayAllowed,
-      replayExtensions: this.replayExtensions ?? [],
-      replaySettingsExpanded: this.#replaySettingsExpanded,
-      replayState: this.replayState,
-      sections: this.sections,
-      selectedStep: this.#selectedStep ?? null,
-      settings: this.settings ?? null,
-      showCodeView: this.#showCodeView,
-      onAddAssertion: () => {
-        this.onAddAssertion?.();
+    this.#view(
+      {
+        breakpointIndexes: this.breakpointIndexes,
+        builtInConverters: this.builtInConverters,
+        converterId: this.#converterId,
+        converterName: converter?.getFormatName(),
+        currentError: this.currentError ?? null,
+        currentStep: this.currentStep ?? null,
+        editorState: this.#editorState ?? null,
+        extensionConverters: this.extensionConverters,
+        extensionDescriptor: this.extensionDescriptor,
+        isRecording: this.isRecording,
+        isTitleInvalid: this.#isTitleInvalid,
+        lastReplayResult: this.lastReplayResult ?? null,
+        recorderSettings: this.#recorderSettings ?? null,
+        recording: this.recording,
+        recordingTogglingInProgress: this.recordingTogglingInProgress,
+        replayAllowed: this.replayAllowed,
+        replayExtensions: this.replayExtensions ?? [],
+        replaySettingsExpanded: this.#replaySettingsExpanded,
+        replayState: this.replayState,
+        sections: this.sections,
+        selectedStep: this.#selectedStep ?? null,
+        settings: this.settings ?? null,
+        showCodeView: this.#showCodeView,
+        onAddAssertion: () => {
+          this.onAddAssertion?.();
+        },
+        onRecordingFinished: () => {
+          this.onRecordingFinished?.();
+        },
+        getSectionState: this.#getSectionState.bind(this),
+        getStepState: this.#getStepState.bind(this),
+        onAbortReplay: () => {
+          this.onAbortReplay?.();
+        },
+        onMeasurePerformanceClick: this.#handleMeasurePerformanceClickEvent.bind(this),
+        onTogglePlaying: (speed, extension) => {
+          this.onPlayRecording?.({
+            targetPanel: "chrome-recorder" /* DEFAULT */,
+            speed,
+            extension
+          });
+        },
+        onStepChanged: (currentStep, newStep) => this.onStepChanged?.(currentStep, newStep),
+        onAddStep: (stepOrSection, position) => this.onAddStep?.(stepOrSection, position),
+        onRemoveStep: (step) => this.onRemoveStep?.(step),
+        onAddBreakpoint: (index) => this.onAddBreakpoint?.(index),
+        onRemoveBreakpoint: (index) => this.onRemoveBreakpoint?.(index),
+        onAttributeRequested: (send) => this.onAttributeRequested?.(send),
+        onCodeFormatChange: this.#onCodeFormatChange.bind(this),
+        onCopyStep: this.#onCopyStepEvent.bind(this),
+        onEditTitleButtonClick: this.#onEditTitleButtonClick.bind(this),
+        onNetworkConditionsChange: this.#onNetworkConditionsChange.bind(this),
+        onReplaySettingsKeydown: this.#onReplaySettingsKeydown.bind(this),
+        onSelectMenuLabelClick: this.#onSelectMenuLabelClick.bind(this),
+        onStepClick: this.#onStepClick.bind(this),
+        onStepHover: this.#onStepHover.bind(this),
+        onTimeoutInput: this.#onTimeoutInput.bind(this),
+        onTitleBlur: this.#onTitleBlur.bind(this),
+        onTitleInputKeyDown: this.#onTitleInputKeyDown.bind(this),
+        onToggleReplaySettings: this.#onToggleReplaySettings.bind(this),
+        onWrapperClick: this.#onWrapperClick.bind(this),
+        showCodeToggle: this.showCodeToggle.bind(this)
       },
-      onRecordingFinished: () => {
-        this.onRecordingFinished?.();
-      },
-      getSectionState: this.#getSectionState.bind(this),
-      getStepState: this.#getStepState.bind(this),
-      onAbortReplay: () => {
-        this.onAbortReplay?.();
-      },
-      onMeasurePerformanceClick: this.#handleMeasurePerformanceClickEvent.bind(this),
-      onTogglePlaying: (speed, extension) => {
-        this.onPlayRecording?.({
-          targetPanel: "chrome-recorder",
-          speed,
-          extension
-        });
-      },
-      onStepChanged: (currentStep, newStep) => this.onStepChanged?.(currentStep, newStep),
-      onAddStep: (stepOrSection, position) => this.onAddStep?.(stepOrSection, position),
-      onRemoveStep: (step) => this.onRemoveStep?.(step),
-      onAddBreakpoint: (index) => this.onAddBreakpoint?.(index),
-      onRemoveBreakpoint: (index) => this.onRemoveBreakpoint?.(index),
-      onAttributeRequested: (send) => this.onAttributeRequested?.(send),
-      onCodeFormatChange: this.#onCodeFormatChange.bind(this),
-      onCopyStep: this.#onCopyStepEvent.bind(this),
-      onEditTitleButtonClick: this.#onEditTitleButtonClick.bind(this),
-      onNetworkConditionsChange: this.#onNetworkConditionsChange.bind(this),
-      onReplaySettingsKeydown: this.#onReplaySettingsKeydown.bind(this),
-      onSelectMenuLabelClick: this.#onSelectMenuLabelClick.bind(this),
-      onStepClick: this.#onStepClick.bind(this),
-      onStepHover: this.#onStepHover.bind(this),
-      onTimeoutInput: this.#onTimeoutInput.bind(this),
-      onTitleBlur: this.#onTitleBlur.bind(this),
-      onTitleInputKeyDown: this.#onTitleInputKeyDown.bind(this),
-      onToggleReplaySettings: this.#onToggleReplaySettings.bind(this),
-      onWrapperClick: this.#onWrapperClick.bind(this),
-      showCodeToggle: this.showCodeToggle.bind(this)
-    }, this.#viewOutput, this.contentElement);
+      this.#viewOutput,
+      this.contentElement
+    );
   }
   wasShown() {
     super.wasShown();
@@ -5072,44 +5277,46 @@ var RecordingView = class extends UI10.Widget.Widget {
   }
   #getStepState(step) {
     if (!this.currentStep) {
-      return "default";
+      return "default" /* DEFAULT */;
     }
     if (step === this.currentStep) {
       if (this.currentError) {
-        return "error";
+        return "error" /* ERROR */;
       }
       if (!this.replayState?.isPlaying) {
-        return "success";
+        return "success" /* SUCCESS */;
       }
       if (this.replayState?.isPausedOnBreakpoint) {
-        return "stopped";
+        return "stopped" /* STOPPED */;
       }
-      return "current";
+      return "current" /* CURRENT */;
     }
     const currentIndex = this.recording.steps.indexOf(this.currentStep);
     if (currentIndex === -1) {
-      return "default";
+      return "default" /* DEFAULT */;
     }
     const index = this.recording.steps.indexOf(step);
-    return index < currentIndex ? "success" : "outstanding";
+    return index < currentIndex ? "success" /* SUCCESS */ : "outstanding" /* OUTSTANDING */;
   }
   #getSectionState(section5) {
     const currentStep = this.currentStep;
     if (!currentStep) {
-      return "default";
+      return "default" /* DEFAULT */;
     }
-    const currentSection = this.sections.find((section6) => section6.steps.includes(currentStep));
+    const currentSection = this.sections.find(
+      (section6) => section6.steps.includes(currentStep)
+    );
     if (!currentSection) {
       if (this.currentError) {
-        return "error";
+        return "error" /* ERROR */;
       }
     }
     if (section5 === currentSection) {
-      return "success";
+      return "success" /* SUCCESS */;
     }
     const index = this.sections.indexOf(currentSection);
     const ownIndex = this.sections.indexOf(section5);
-    return index >= ownIndex ? "success" : "outstanding";
+    return index >= ownIndex ? "success" /* SUCCESS */ : "outstanding" /* OUTSTANDING */;
   }
   #onStepHover = (stepOrSection) => {
     const step = "type" in stepOrSection ? stepOrSection : stepOrSection.causingStep;
@@ -5155,8 +5362,12 @@ var RecordingView = class extends UI10.Widget.Widget {
   #onNetworkConditionsChange(event) {
     const throttlingMenu = event.target;
     if (throttlingMenu instanceof HTMLSelectElement) {
-      const preset = networkConditionPresets.find((preset2) => preset2.i18nTitleKey === throttlingMenu.value);
-      this.onNetworkConditionsChanged?.(preset?.i18nTitleKey === SDK2.NetworkManager.NoThrottlingConditions.i18nTitleKey ? void 0 : preset);
+      const preset = networkConditionPresets.find(
+        (preset2) => preset2.i18nTitleKey === throttlingMenu.value
+      );
+      this.onNetworkConditionsChanged?.(
+        preset?.i18nTitleKey === SDK2.NetworkManager.NoThrottlingConditions.i18nTitleKey ? void 0 : preset
+      );
     }
   }
   #onTimeoutInput(event) {
@@ -5203,7 +5414,9 @@ var RecordingView = class extends UI10.Widget.Widget {
     let converter = [
       ...this.builtInConverters,
       ...this.extensionConverters
-    ].find((converter2) => converter2.getId() === this.recorderSettings?.preferredCopyFormat);
+    ].find(
+      (converter2) => converter2.getId() === this.recorderSettings?.preferredCopyFormat
+    );
     if (!converter) {
       converter = this.builtInConverters[0];
     }
@@ -5227,16 +5440,13 @@ var RecordingView = class extends UI10.Widget.Widget {
     }
     event.preventDefault();
     await this.#copyCurrentSelection(this.#selectedStep);
-    Host.userMetrics.keyboardShortcutFired(
-      "chrome-recorder.copy-recording-or-step"
-      /* Actions.RecorderActions.COPY_RECORDING_OR_STEP */
-    );
+    Host.userMetrics.keyboardShortcutFired(Actions4.RecorderActions.COPY_RECORDING_OR_STEP);
   }
   #handleMeasurePerformanceClickEvent(event) {
     event.stopPropagation();
     this.onPlayRecording?.({
-      targetPanel: "timeline",
-      speed: "normal"
+      targetPanel: "timeline" /* PERFORMANCE_PANEL */,
+      speed: Models7.RecordingPlayer.PlayRecordingSpeed.NORMAL
     });
   }
   showCodeToggle = () => {
@@ -5298,7 +5508,7 @@ var RecordingView = class extends UI10.Widget.Widget {
   };
 };
 
-// gen/front_end/panels/recorder/RecorderPanel.js
+// ../../front_end/panels/recorder/RecorderPanel.ts
 var { ref: ref2, repeat: repeat3 } = Directives5;
 var recorderPanelInstance;
 var UIStrings9 = {
@@ -5421,13 +5631,13 @@ var GET_EXTENSIONS_MENU_ITEM = "get-extensions-link";
 var GET_EXTENSIONS_URL = "https://goo.gle/recorder-extension-list";
 var RECORDER_EXPLANATION_URL = "https://developer.chrome.com/docs/devtools/recorder";
 var FEEDBACK_URL = "https://goo.gle/recorder-feedback";
-var Pages;
-(function(Pages2) {
+var Pages = /* @__PURE__ */ ((Pages2) => {
   Pages2["START_PAGE"] = "StartPage";
   Pages2["ALL_RECORDINGS_PAGE"] = "AllRecordingsPage";
   Pages2["CREATE_RECORDING_PAGE"] = "CreateRecordingPage";
   Pages2["RECORDING_PAGE"] = "RecordingPage";
-})(Pages || (Pages = {}));
+  return Pages2;
+})(Pages || {});
 function verifyFlowSize(flow) {
   if (flow.steps.length > 4096) {
     throw new Error("Recording with steps over 4096 is not allowed");
@@ -5439,13 +5649,13 @@ function verifyFlowSize(flow) {
 var DEFAULT_VIEW11 = (input, output, target) => {
   function renderCurrentPage() {
     switch (input.currentPage) {
-      case "StartPage":
+      case "StartPage" /* START_PAGE */:
         return renderStartPage();
-      case "AllRecordingsPage":
+      case "AllRecordingsPage" /* ALL_RECORDINGS_PAGE */:
         return renderAllRecordingsPage();
-      case "RecordingPage":
+      case "RecordingPage" /* RECORDING_PAGE */:
         return renderRecordingPage();
-      case "CreateRecordingPage":
+      case "CreateRecordingPage" /* CREATE_RECORDING_PAGE */:
         return renderCreateRecordingPage();
     }
   }
@@ -5479,7 +5689,7 @@ var DEFAULT_VIEW11 = (input, output, target) => {
             jslogcontext="learn-more"
           >${i18nString9(UIStrings9.learnMore)}</devtools-link>
         </div>
-        <devtools-button .variant=${"tonal"} jslogContext=${"chrome-recorder.create-recording"} @click=${input.onCreateNewRecording}>${i18nString9(UIStrings9.createRecording)}</devtools-button>
+        <devtools-button .variant=${Buttons8.Button.Variant.TONAL} jslogContext=${Actions5.RecorderActions.CREATE_RECORDING} @click=${input.onCreateNewRecording}>${i18nString9(UIStrings9.createRecording)}</devtools-button>
       </div>
     `;
   }
@@ -5536,22 +5746,25 @@ var DEFAULT_VIEW11 = (input, output, target) => {
       onRecordingStarted: input.onRecordingStarted,
       onRecordingCancelled: input.onRecordingCancelled
     })}
-        ${UI11.Widget.widgetRef(CreateRecordingView, (widget6) => {
-      output.createRecordingView = widget6;
-    })}
+        ${UI11.Widget.widgetRef(
+      CreateRecordingView,
+      (widget6) => {
+        output.createRecordingView = widget6;
+      }
+    )}
       ></devtools-widget>
     `;
   }
   const selectValue = input.currentRecording ? input.currentRecording.storageName : input.currentPage;
   const values = [
     input.recordings.length === 0 ? {
-      value: "StartPage",
+      value: "StartPage" /* START_PAGE */,
       name: i18nString9(UIStrings9.noRecordings),
-      selected: selectValue === "StartPage"
+      selected: selectValue === "StartPage" /* START_PAGE */
     } : {
-      value: "AllRecordingsPage",
+      value: "AllRecordingsPage" /* ALL_RECORDINGS_PAGE */,
       name: `${input.recordings.length} ${i18nString9(UIStrings9.numberOfRecordings)}`,
-      selected: selectValue === "AllRecordingsPage"
+      selected: selectValue === "AllRecordingsPage" /* ALL_RECORDINGS_PAGE */
     },
     ...input.recordings.map((recording) => ({
       value: recording.storageName,
@@ -5567,15 +5780,14 @@ var DEFAULT_VIEW11 = (input, output, target) => {
             <devtools-button
               @click=${input.onCreateNewRecording}
               .data=${{
-    variant: "toolbar",
+    variant: Buttons8.Button.Variant.TOOLBAR,
     iconName: "plus",
     disabled: input.replayState.isPlaying || input.isRecording || input.isToggling,
     title: Models8.Tooltip.getTooltipForActions(
       i18nString9(UIStrings9.createRecording),
-      "chrome-recorder.create-recording"
-      /* Actions.RecorderActions.CREATE_RECORDING */
+      Actions5.RecorderActions.CREATE_RECORDING
     ),
-    jslogContext: "chrome-recorder.create-recording"
+    jslogContext: Actions5.RecorderActions.CREATE_RECORDING
   }}
             ></devtools-button>
             <div class="separator"></div>
@@ -5585,15 +5797,19 @@ var DEFAULT_VIEW11 = (input, output, target) => {
               @change=${input.onRecordingSelected}
               jslog=${VisualLogging9.dropDown("recordings").track({ change: true })}
             >
-              ${repeat3(values, (item5) => item5.value, (item5) => {
-    return html11`<option .selected=${item5.selected} value=${item5.value}>${item5.name}</option>`;
-  })}
+              ${repeat3(
+    values,
+    (item5) => item5.value,
+    (item5) => {
+      return html11`<option .selected=${item5.selected} value=${item5.value}>${item5.name}</option>`;
+    }
+  )}
             </select>
             <div class="separator"></div>
             <devtools-button
               @click=${input.onImportRecording}
               .data=${{
-    variant: "toolbar",
+    variant: Buttons8.Button.Variant.TOOLBAR,
     iconName: "import",
     title: i18nString9(UIStrings9.importRecording),
     jslogContext: "import-recording"
@@ -5608,7 +5824,7 @@ var DEFAULT_VIEW11 = (input, output, target) => {
     }
   })}
               .data=${{
-    variant: "toolbar",
+    variant: Buttons8.Button.Variant.TOOLBAR,
     iconName: "download",
     title: i18nString9(UIStrings9.exportRecording),
     disabled: !input.currentRecording
@@ -5624,26 +5840,32 @@ var DEFAULT_VIEW11 = (input, output, target) => {
               .open=${input.exportMenuExpanded}
             >
               <devtools-menu-group .name=${i18nString9(UIStrings9.export)}>
-                ${repeat3(input.builtInConverters, (converter) => {
-    return html11`
+                ${repeat3(
+    input.builtInConverters,
+    (converter) => {
+      return html11`
                     <devtools-menu-item
                       .value=${converter.getId()}
                       jslog=${VisualLogging9.item(`converter-${Platform7.StringUtilities.toKebabCase(converter.getId())}`).track({ click: true })}>
                       ${converter.getFormatName()}
                     </devtools-menu-item>
                   `;
-  })}
+    }
+  )}
               </devtools-menu-group>
               <devtools-menu-group .name=${i18nString9(UIStrings9.exportViaExtensions)}>
-                ${repeat3(input.extensionConverters, (converter) => {
-    return html11`
+                ${repeat3(
+    input.extensionConverters,
+    (converter) => {
+      return html11`
                     <devtools-menu-item
                      .value=${converter.getId()}
                       jslog=${VisualLogging9.item("converter-extension").track({ click: true })}>
                     ${converter.getFormatName()}
                     </devtools-menu-item>
                   `;
-  })}
+    }
+  )}
                 <devtools-menu-item .value=${GET_EXTENSIONS_MENU_ITEM}>
                   ${i18nString9(UIStrings9.getExtensions)}
                 </devtools-menu-item>
@@ -5652,7 +5874,7 @@ var DEFAULT_VIEW11 = (input, output, target) => {
             <devtools-button
               @click=${input.onDeleteRecording}
               .data=${{
-    variant: "toolbar",
+    variant: Buttons8.Button.Variant.TOOLBAR,
     iconName: "bin",
     disabled: !input.currentRecording || input.replayState.isPlaying || input.isRecording || input.isToggling,
     title: i18nString9(UIStrings9.deleteRecording),
@@ -5663,7 +5885,7 @@ var DEFAULT_VIEW11 = (input, output, target) => {
             <devtools-button
               @click=${input.onContinueReplay}
               .data=${{
-    variant: "primary_toolbar",
+    variant: Buttons8.Button.Variant.PRIMARY_TOOLBAR,
     iconName: "resume",
     disabled: !input.replayState.isPausedOnBreakpoint,
     title: i18nString9(UIStrings9.continueReplay),
@@ -5673,7 +5895,7 @@ var DEFAULT_VIEW11 = (input, output, target) => {
             <devtools-button
               @click=${input.onStepOverReplay}
               .data=${{
-    variant: "toolbar",
+    variant: Buttons8.Button.Variant.TOOLBAR,
     iconName: "step-over",
     disabled: !input.replayState.isPausedOnBreakpoint,
     title: i18nString9(UIStrings9.stepOverReplay),
@@ -5790,7 +6012,7 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
     }
   }
   #replayState = { isPlaying: false, isPausedOnBreakpoint: false };
-  #currentPage = "StartPage";
+  #currentPage = "StartPage" /* START_PAGE */;
   get currentPage() {
     return this.#currentPage;
   }
@@ -5890,14 +6112,12 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
   #disableRecorderImportWarningSetting = Common2.Settings.Settings.instance().createSetting(
     "disable-recorder-import-warning",
     false,
-    "Synced"
-    /* Common.Settings.SettingStorageType.SYNCED */
+    Common2.Settings.SettingStorageType.SYNCED
   );
   #selfXssWarningDisabledSetting = Common2.Settings.Settings.instance().createSetting(
     "disable-self-xss-warning",
     false,
-    "Synced"
-    /* Common.Settings.SettingStorageType.SYNCED */
+    Common2.Settings.SettingStorageType.SYNCED
   );
   #recordingView;
   #createRecordingView;
@@ -5910,12 +6130,9 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
     this.isRecording = false;
     this.isToggling = false;
     this.exportMenuExpanded = false;
-    this.currentPage = "StartPage";
+    this.currentPage = "StartPage" /* START_PAGE */;
     if (this.#storage.getRecordings().length) {
-      this.#setCurrentPage(
-        "AllRecordingsPage"
-        /* Pages.ALL_RECORDINGS_PAGE */
-      );
+      this.#setCurrentPage("AllRecordingsPage" /* ALL_RECORDINGS_PAGE */);
     }
     const textEditorIndent = Common2.Settings.Settings.instance().moduleSetting("text-editor-indent").get();
     this.#builtInConverters = Object.freeze([
@@ -5927,7 +6144,7 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
     ]);
     const extensionManager = Extensions2.ExtensionManager.ExtensionManager.instance();
     this.#updateExtensions(extensionManager.extensions());
-    extensionManager.addEventListener("extensionsUpdated", (event) => {
+    extensionManager.addEventListener(Extensions2.ExtensionManager.Events.EXTENSIONS_UPDATED, (event) => {
       this.#updateExtensions(event.data);
     });
   }
@@ -5949,7 +6166,10 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
       void this.currentRecordingSession.stop();
     }
     if (this.#extensionViewShowRequestedListener) {
-      PublicExtensions.RecorderPluginManager.RecorderPluginManager.instance().removeEventListener("showViewRequested", this.#extensionViewShowRequestedListener);
+      PublicExtensions.RecorderPluginManager.RecorderPluginManager.instance().removeEventListener(
+        PublicExtensions.RecorderPluginManager.Events.SHOW_VIEW_REQUESTED,
+        this.#extensionViewShowRequestedListener
+      );
       this.#extensionViewShowRequestedListener = void 0;
     }
   }
@@ -6006,10 +6226,7 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
       return;
     }
     this.#setCurrentRecording(await this.#storage.upsertRecording(flow));
-    this.#setCurrentPage(
-      "RecordingPage"
-      /* Pages.RECORDING_PAGE */
-    );
+    this.#setCurrentPage("RecordingPage" /* RECORDING_PAGE */);
     this.#clearError();
     UI11.ARIAUtils.LiveAnnouncer.alert(i18nString9(UIStrings9.recordingImported));
   }
@@ -6122,7 +6339,10 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
     }
     const pluginManager = PublicExtensions.RecorderPluginManager.RecorderPluginManager.instance();
     if (this.#extensionViewShowRequestedListener) {
-      pluginManager.removeEventListener("showViewRequested", this.#extensionViewShowRequestedListener);
+      pluginManager.removeEventListener(
+        PublicExtensions.RecorderPluginManager.Events.SHOW_VIEW_REQUESTED,
+        this.#extensionViewShowRequestedListener
+      );
       this.#extensionViewShowRequestedListener = void 0;
     }
     let resolveView;
@@ -6133,13 +6353,19 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
       const descriptor2 = event.data;
       if (descriptor2.extensionOrigin === extension.getOrigin()) {
         if (this.#extensionViewShowRequestedListener) {
-          pluginManager.removeEventListener("showViewRequested", this.#extensionViewShowRequestedListener);
+          pluginManager.removeEventListener(
+            PublicExtensions.RecorderPluginManager.Events.SHOW_VIEW_REQUESTED,
+            this.#extensionViewShowRequestedListener
+          );
           this.#extensionViewShowRequestedListener = void 0;
         }
         resolveView(descriptor2);
       }
     };
-    pluginManager.addEventListener("showViewRequested", this.#extensionViewShowRequestedListener);
+    pluginManager.addEventListener(
+      PublicExtensions.RecorderPluginManager.Events.SHOW_VIEW_REQUESTED,
+      this.#extensionViewShowRequestedListener
+    );
     extension.replay(this.currentRecording.flow);
     const descriptor = await promise;
     this.viewDescriptor = descriptor;
@@ -6153,13 +6379,18 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
       this.viewDescriptor = void 0;
     }
     if (this.#extensionViewShowRequestedListener) {
-      PublicExtensions.RecorderPluginManager.RecorderPluginManager.instance().removeEventListener("showViewRequested", this.#extensionViewShowRequestedListener);
+      PublicExtensions.RecorderPluginManager.RecorderPluginManager.instance().removeEventListener(
+        PublicExtensions.RecorderPluginManager.Events.SHOW_VIEW_REQUESTED,
+        this.#extensionViewShowRequestedListener
+      );
       this.#extensionViewShowRequestedListener = void 0;
     }
     if (event.extension) {
       return await this.#onPlayViaExtension(event.extension);
     }
-    Host2.userMetrics.recordingReplayStarted(event.targetPanel !== "chrome-recorder" ? Host2.UserMetrics.RecordingReplayStarted.REPLAY_WITH_PERFORMANCE_TRACING : Host2.UserMetrics.RecordingReplayStarted.REPLAY_ONLY);
+    Host2.userMetrics.recordingReplayStarted(
+      event.targetPanel !== "chrome-recorder" /* DEFAULT */ ? Host2.UserMetrics.RecordingReplayStarted.REPLAY_WITH_PERFORMANCE_TRACING : Host2.UserMetrics.RecordingReplayStarted.REPLAY_ONLY
+    );
     this.#replayState.isPlaying = true;
     this.currentStep = void 0;
     this.recordingError = void 0;
@@ -6167,10 +6398,13 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
     const currentRecording = this.currentRecording;
     this.#clearError();
     await this.#disableDeviceModeIfEnabled();
-    this.recordingPlayer = new Models8.RecordingPlayer.RecordingPlayer(this.currentRecording.flow, { speed: event.speed, breakpointIndexes: this.#stepBreakpointIndexes });
-    const withPerformanceTrace = event.targetPanel === "timeline";
+    this.recordingPlayer = new Models8.RecordingPlayer.RecordingPlayer(
+      this.currentRecording.flow,
+      { speed: event.speed, breakpointIndexes: this.#stepBreakpointIndexes }
+    );
+    const withPerformanceTrace = event.targetPanel === "timeline" /* PERFORMANCE_PANEL */;
     const sectionsWithScreenshot = /* @__PURE__ */ new Set();
-    this.recordingPlayer.addEventListener("Step", async ({ data: { step, resolve } }) => {
+    this.recordingPlayer.addEventListener(Models8.RecordingPlayer.Events.STEP, async ({ data: { step, resolve } }) => {
       this.currentStep = step;
       const currentSection = this.#getSectionFromStep(step);
       if (this.sections && currentSection && !sectionsWithScreenshot.has(currentSection)) {
@@ -6178,25 +6412,29 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
         const currentSectionIndex = this.sections.indexOf(currentSection);
         const screenshot = await Models8.ScreenshotUtils.takeScreenshot();
         currentSection.screenshot = screenshot;
-        Models8.ScreenshotStorage.ScreenshotStorage.instance().storeScreenshotForSection(currentRecording.storageName, currentSectionIndex, screenshot);
+        Models8.ScreenshotStorage.ScreenshotStorage.instance().storeScreenshotForSection(
+          currentRecording.storageName,
+          currentSectionIndex,
+          screenshot
+        );
       }
       resolve();
     });
-    this.recordingPlayer.addEventListener("Stop", () => {
+    this.recordingPlayer.addEventListener(Models8.RecordingPlayer.Events.STOP, () => {
       this.#replayState.isPausedOnBreakpoint = true;
       this.requestUpdate();
     });
-    this.recordingPlayer.addEventListener("Continue", () => {
+    this.recordingPlayer.addEventListener(Models8.RecordingPlayer.Events.CONTINUE, () => {
       this.#replayState.isPausedOnBreakpoint = false;
       this.requestUpdate();
     });
-    this.recordingPlayer.addEventListener("Error", ({ data: error }) => {
+    this.recordingPlayer.addEventListener(Models8.RecordingPlayer.Events.ERROR, ({ data: error }) => {
       this.recordingError = error;
       if (!withPerformanceTrace) {
         this.#replayState.isPlaying = false;
         this.recordingPlayer = void 0;
       }
-      this.lastReplayResult = "Failure";
+      this.lastReplayResult = Models8.RecordingPlayer.ReplayResult.FAILURE;
       const errorMessage = error.message.toLowerCase();
       if (errorMessage.startsWith("could not find element")) {
         Host2.userMetrics.recordingReplayFinished(Host2.UserMetrics.RecordingReplayFinished.TIMEOUT_ERROR_SELECTORS);
@@ -6207,16 +6445,16 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
       }
       this.element.dispatchEvent(new ReplayFinishedEvent());
     });
-    this.recordingPlayer.addEventListener("Done", () => {
+    this.recordingPlayer.addEventListener(Models8.RecordingPlayer.Events.DONE, () => {
       if (!withPerformanceTrace) {
         this.#replayState.isPlaying = false;
         this.recordingPlayer = void 0;
       }
-      this.lastReplayResult = "Success";
+      this.lastReplayResult = Models8.RecordingPlayer.ReplayResult.SUCCESS;
       this.element.dispatchEvent(new ReplayFinishedEvent());
       Host2.userMetrics.recordingReplayFinished(Host2.UserMetrics.RecordingReplayFinished.SUCCESS);
     });
-    this.recordingPlayer.addEventListener("Abort", () => {
+    this.recordingPlayer.addEventListener(Models8.RecordingPlayer.Events.ABORT, () => {
       this.currentStep = void 0;
       this.recordingError = void 0;
       this.lastReplayResult = void 0;
@@ -6229,7 +6467,7 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
     });
     let performanceTracing = null;
     switch (event.targetPanel) {
-      case "timeline":
+      case "timeline" /* PERFORMANCE_PANEL */:
         performanceTracing = new Tracing.PerformanceTracing.PerformanceTracing(this.#getMainTarget(), {
           tracingBufferUsage() {
           },
@@ -6253,7 +6491,7 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
       this.#replayState.isPlaying = false;
       this.recordingPlayer = void 0;
       await UI11.InspectorView.InspectorView.instance().showPanel(event.targetPanel);
-      if (event.targetPanel === "timeline") {
+      if (event.targetPanel === "timeline" /* PERFORMANCE_PANEL */) {
         const trace = new SDK3.TraceObject.TraceObject(events);
         void Common2.Revealer.reveal(trace);
       }
@@ -6277,10 +6515,7 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
   async #onSetRecording(event) {
     const json = JSON.parse(event.detail);
     this.#setCurrentRecording(await this.#storage.upsertRecording(Models8.SchemaUtils.parse(json)));
-    this.#setCurrentPage(
-      "RecordingPage"
-      /* Pages.RECORDING_PAGE */
-    );
+    this.#setCurrentPage("RecordingPage" /* RECORDING_PAGE */);
     this.#clearError();
     this.element.dispatchEvent(new SetRecordingFinishedEvent());
   }
@@ -6299,7 +6534,13 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
         steps: this.currentRecording.flow.steps.map((step) => step === currentStep ? newStep : step)
       }
     };
-    this.#setCurrentRecording(await this.#storage.upsertRecording(recording.flow, recording.storageName), { keepBreakpoints: true, updateSession: true });
+    this.#setCurrentRecording(
+      await this.#storage.upsertRecording(
+        recording.flow,
+        recording.storageName
+      ),
+      { keepBreakpoints: true, updateSession: true }
+    );
   }
   async #handleStepAdded(stepOrSection, position) {
     if (!this.currentRecording) {
@@ -6312,13 +6553,13 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
       if (sectionIdx === void 0 || sectionIdx === -1) {
         throw new Error("There is no section to add a step to");
       }
-      if (position === "after") {
+      if (position === "after" /* AFTER */) {
         if (this.sections?.[sectionIdx].steps.length) {
           step = this.sections?.[sectionIdx].steps[0];
-          actualPosition = "before";
+          actualPosition = "before" /* BEFORE */;
         } else {
           step = this.sections?.[sectionIdx].causingStep;
-          actualPosition = "after";
+          actualPosition = "after" /* AFTER */;
         }
       } else {
         if (sectionIdx <= 0) {
@@ -6326,7 +6567,7 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
         }
         const prevSection = this.sections?.[sectionIdx - 1];
         step = prevSection?.steps[prevSection.steps.length - 1];
-        actualPosition = "after";
+        actualPosition = "after" /* AFTER */;
       }
     } else {
       step = stepOrSection;
@@ -6336,7 +6577,7 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
     }
     const steps = this.currentRecording.flow.steps;
     const currentIndex = steps.indexOf(step);
-    const indexToInsertAt = currentIndex + (actualPosition === "before" ? 0 : 1);
+    const indexToInsertAt = currentIndex + (actualPosition === "before" /* BEFORE */ ? 0 : 1);
     steps.splice(indexToInsertAt, 0, { type: Models8.Schema.StepType.WaitForElement, selectors: ["body"] });
     const recording = { ...this.currentRecording, flow: { ...this.currentRecording.flow, steps } };
     this.#stepBreakpointIndexes = new Set([...this.#stepBreakpointIndexes.values()].map((breakpointIndex) => {
@@ -6345,14 +6586,23 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
       }
       return breakpointIndex + 1;
     }));
-    this.#setCurrentRecording(await this.#storage.upsertRecording(recording.flow, recording.storageName), { keepBreakpoints: true, updateSession: true });
+    this.#setCurrentRecording(
+      await this.#storage.upsertRecording(
+        recording.flow,
+        recording.storageName
+      ),
+      { keepBreakpoints: true, updateSession: true }
+    );
   }
   async #handleRecordingTitleChanged(title) {
     if (!this.currentRecording) {
       throw new Error("Current recording expected to be defined.");
     }
     const flow = { ...this.currentRecording.flow, title };
-    this.#setCurrentRecording(await this.#storage.upsertRecording(flow, this.currentRecording.storageName));
+    this.#setCurrentRecording(await this.#storage.upsertRecording(
+      flow,
+      this.currentRecording.storageName
+    ));
   }
   async #handleStepRemoved(step) {
     if (!this.currentRecording) {
@@ -6371,7 +6621,13 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
       }
       return breakpointIndex - 1;
     }).filter((index) => index >= 0));
-    this.#setCurrentRecording(await this.#storage.upsertRecording(flow, this.currentRecording.storageName), { keepBreakpoints: true, updateSession: true });
+    this.#setCurrentRecording(
+      await this.#storage.upsertRecording(
+        flow,
+        this.currentRecording.storageName
+      ),
+      { keepBreakpoints: true, updateSession: true }
+    );
   }
   async #onNetworkConditionsChanged(data) {
     if (!this.currentRecording) {
@@ -6392,21 +6648,33 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
         this.currentRecording.flow.steps.splice(emulateNetworkConditionsIdx, 1);
       }
     } else if (emulateNetworkConditionsIdx === -1) {
-      this.currentRecording.flow.steps.splice(0, 0, Models8.SchemaUtils.createEmulateNetworkConditionsStep({ download: data.download, upload: data.upload, latency: data.latency }));
+      this.currentRecording.flow.steps.splice(
+        0,
+        0,
+        Models8.SchemaUtils.createEmulateNetworkConditionsStep(
+          { download: data.download, upload: data.upload, latency: data.latency }
+        )
+      );
     } else {
       const step = this.currentRecording.flow.steps[emulateNetworkConditionsIdx];
       step.download = data.download;
       step.upload = data.upload;
       step.latency = data.latency;
     }
-    this.#setCurrentRecording(await this.#storage.upsertRecording(this.currentRecording.flow, this.currentRecording.storageName));
+    this.#setCurrentRecording(await this.#storage.upsertRecording(
+      this.currentRecording.flow,
+      this.currentRecording.storageName
+    ));
   }
   async #onTimeoutChanged(timeout) {
     if (!this.currentRecording) {
       throw new Error("Current recording expected to be defined.");
     }
     this.currentRecording.flow.timeout = timeout;
-    this.#setCurrentRecording(await this.#storage.upsertRecording(this.currentRecording.flow, this.currentRecording.storageName));
+    this.#setCurrentRecording(await this.#storage.upsertRecording(
+      this.currentRecording.flow,
+      this.currentRecording.storageName
+    ));
   }
   async #onDeleteRecording(storageNameOrEvent) {
     let storageName;
@@ -6424,25 +6692,16 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
     this.requestUpdate();
     UI11.ARIAUtils.LiveAnnouncer.alert(i18nString9(UIStrings9.recordingDeleted));
     if ((await this.#storage.getRecordings()).length) {
-      this.#setCurrentPage(
-        "AllRecordingsPage"
-        /* Pages.ALL_RECORDINGS_PAGE */
-      );
+      this.#setCurrentPage("AllRecordingsPage" /* ALL_RECORDINGS_PAGE */);
     } else {
-      this.#setCurrentPage(
-        "StartPage"
-        /* Pages.START_PAGE */
-      );
+      this.#setCurrentPage("StartPage" /* START_PAGE */);
     }
     this.#setCurrentRecording(void 0);
     this.#clearError();
   }
   #onCreateNewRecording(event) {
     event?.stopPropagation();
-    this.#setCurrentPage(
-      "CreateRecordingPage"
-      /* Pages.CREATE_RECORDING_PAGE */
-    );
+    this.#setCurrentPage("CreateRecordingPage" /* CREATE_RECORDING_PAGE */);
     this.#clearError();
   }
   async #onRecordingStarted(data) {
@@ -6471,36 +6730,46 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
       const screenshot = await screenshotPromise;
       screenshotPromise = void 0;
       currentSection.screenshot = screenshot;
-      Models8.ScreenshotStorage.ScreenshotStorage.instance().storeScreenshotForSection(currentRecording.storageName, currentSectionIndex, screenshot);
+      Models8.ScreenshotStorage.ScreenshotStorage.instance().storeScreenshotForSection(
+        currentRecording.storageName,
+        currentSectionIndex,
+        screenshot
+      );
       previousSectionIndex = currentSectionIndex;
       this.#updateScreenshotsForSections();
     };
-    this.currentRecordingSession.addEventListener("recordingupdated", async ({ data: data2 }) => {
-      if (!this.currentRecording) {
-        throw new Error("No current recording found");
+    this.currentRecordingSession.addEventListener(
+      Models8.RecordingSession.Events.RECORDING_UPDATED,
+      async ({ data: data2 }) => {
+        if (!this.currentRecording) {
+          throw new Error("No current recording found");
+        }
+        this.#setCurrentRecording(await this.#storage.upsertRecording(
+          data2,
+          this.currentRecording.storageName
+        ));
+        this.#recordingView?.scrollToBottom();
+        await takeScreenshot(this.currentRecording);
       }
-      this.#setCurrentRecording(await this.#storage.upsertRecording(data2, this.currentRecording.storageName));
-      this.#recordingView?.scrollToBottom();
-      await takeScreenshot(this.currentRecording);
-    });
-    this.currentRecordingSession.addEventListener("recordingstopped", async ({ data: data2 }) => {
-      if (!this.currentRecording) {
-        throw new Error("No current recording found");
+    );
+    this.currentRecordingSession.addEventListener(
+      Models8.RecordingSession.Events.RECORDING_STOPPED,
+      async ({ data: data2 }) => {
+        if (!this.currentRecording) {
+          throw new Error("No current recording found");
+        }
+        Host2.userMetrics.keyboardShortcutFired(Actions5.RecorderActions.START_RECORDING);
+        this.#setCurrentRecording(await this.#storage.upsertRecording(
+          data2,
+          this.currentRecording.storageName
+        ));
+        await this.#onRecordingFinished();
       }
-      Host2.userMetrics.keyboardShortcutFired(
-        "chrome-recorder.start-recording"
-        /* Actions.RecorderActions.START_RECORDING */
-      );
-      this.#setCurrentRecording(await this.#storage.upsertRecording(data2, this.currentRecording.storageName));
-      await this.#onRecordingFinished();
-    });
+    );
     await this.currentRecordingSession.start();
     this.isToggling = false;
     this.isRecording = true;
-    this.#setCurrentPage(
-      "RecordingPage"
-      /* Pages.RECORDING_PAGE */
-    );
+    this.#setCurrentPage("RecordingPage" /* RECORDING_PAGE */);
     this.element.dispatchEvent(new RecordingStateChangedEvent(this.currentRecording.flow));
   }
   async #onRecordingFinished() {
@@ -6530,20 +6799,11 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
     }
     this.#setCurrentRecording(await this.#storage.getRecording(storageName));
     if (this.currentRecording) {
-      this.#setCurrentPage(
-        "RecordingPage"
-        /* Pages.RECORDING_PAGE */
-      );
-    } else if (storageName === "StartPage") {
-      this.#setCurrentPage(
-        "StartPage"
-        /* Pages.START_PAGE */
-      );
-    } else if (storageName === "AllRecordingsPage") {
-      this.#setCurrentPage(
-        "AllRecordingsPage"
-        /* Pages.ALL_RECORDINGS_PAGE */
-      );
+      this.#setCurrentPage("RecordingPage" /* RECORDING_PAGE */);
+    } else if (storageName === "StartPage" /* START_PAGE */) {
+      this.#setCurrentPage("StartPage" /* START_PAGE */);
+    } else if (storageName === "AllRecordingsPage" /* ALL_RECORDINGS_PAGE */) {
+      this.#setCurrentPage("AllRecordingsPage" /* ALL_RECORDINGS_PAGE */);
     }
   }
   async #onExportOptionSelected(event) {
@@ -6593,7 +6853,13 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
     }
     const flow = this.currentRecordingSession.cloneUserFlow();
     flow.steps.push({ type: "waitForElement", selectors: [[".cls"]] });
-    this.#setCurrentRecording(await this.#storage.upsertRecording(flow, this.currentRecording.storageName), { keepBreakpoints: true, updateSession: true });
+    this.#setCurrentRecording(
+      await this.#storage.upsertRecording(
+        flow,
+        this.currentRecording.storageName
+      ),
+      { keepBreakpoints: true, updateSession: true }
+    );
     await this.updateComplete;
     await this.#recordingView?.updateComplete;
     this.#recordingView?.contentElement?.querySelector(".section:last-child .step-view-widget:last-of-type")?.shadowRoot?.querySelector(".action")?.click();
@@ -6630,7 +6896,7 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
   }
   async #onPlayRecordingByName(storageName) {
     await this.#onRecordingSelected(storageName);
-    await this.#onPlayRecording({ targetPanel: "chrome-recorder", speed: this.#recorderSettings.speed });
+    await this.#onPlayRecording({ targetPanel: "chrome-recorder" /* DEFAULT */, speed: this.#recorderSettings.speed });
   }
   #onAddBreakpoint = (index) => {
     this.#stepBreakpointIndexes = structuredClone(this.#stepBreakpointIndexes);
@@ -6652,17 +6918,17 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
       return;
     }
     switch (actionId) {
-      case "chrome-recorder.create-recording":
+      case Actions5.RecorderActions.CREATE_RECORDING:
         this.#onCreateNewRecording();
         return;
-      case "chrome-recorder.start-recording":
-        if (this.currentPage !== "CreateRecordingPage" && !this.isRecording) {
+      case Actions5.RecorderActions.START_RECORDING:
+        if (this.currentPage !== "CreateRecordingPage" /* CREATE_RECORDING_PAGE */ && !this.isRecording) {
           this.#shortcutHelper.handleShortcut(this.#onRecordingStarted.bind(this, {
             name: this.#recorderSettings.defaultTitle,
             selectorTypesToRecord: this.#recorderSettings.defaultSelectors,
             selectorAttribute: this.#recorderSettings.selectorAttribute ? this.#recorderSettings.selectorAttribute : void 0
           }));
-        } else if (this.currentPage === "CreateRecordingPage") {
+        } else if (this.currentPage === "CreateRecordingPage" /* CREATE_RECORDING_PAGE */) {
           if (this.#createRecordingView) {
             this.#shortcutHelper.handleShortcut(() => {
               this.#createRecordingView?.startRecording();
@@ -6672,10 +6938,10 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
           void this.#onRecordingFinished();
         }
         return;
-      case "chrome-recorder.replay-recording":
-        void this.#onPlayRecording({ targetPanel: "chrome-recorder", speed: this.#recorderSettings.speed });
+      case Actions5.RecorderActions.REPLAY_RECORDING:
+        void this.#onPlayRecording({ targetPanel: "chrome-recorder" /* DEFAULT */, speed: this.#recorderSettings.speed });
         return;
-      case "chrome-recorder.toggle-code-view": {
+      case Actions5.RecorderActions.TOGGLE_CODE_VIEW: {
         this.#recordingView?.showCodeToggle();
         return;
       }
@@ -6683,15 +6949,15 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
   }
   isActionPossible(actionId) {
     switch (actionId) {
-      case "chrome-recorder.create-recording":
+      case Actions5.RecorderActions.CREATE_RECORDING:
         return !this.isRecording && !this.#replayState.isPlaying;
-      case "chrome-recorder.start-recording":
+      case Actions5.RecorderActions.START_RECORDING:
         return !this.#replayState.isPlaying;
-      case "chrome-recorder.replay-recording":
-        return this.currentPage === "RecordingPage" && !this.#replayState.isPlaying;
-      case "chrome-recorder.toggle-code-view":
-        return this.currentPage === "RecordingPage";
-      case "chrome-recorder.copy-recording-or-step":
+      case Actions5.RecorderActions.REPLAY_RECORDING:
+        return this.currentPage === "RecordingPage" /* RECORDING_PAGE */ && !this.#replayState.isPlaying;
+      case Actions5.RecorderActions.TOGGLE_CODE_VIEW:
+        return this.currentPage === "RecordingPage" /* RECORDING_PAGE */;
+      case Actions5.RecorderActions.COPY_RECORDING_OR_STEP:
         return false;
     }
   }
@@ -6706,17 +6972,11 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
     return [
       {
         title: i18nString9(UIStrings9.startStopRecording),
-        rows: getBindingForAction(
-          "chrome-recorder.start-recording"
-          /* Actions.RecorderActions.START_RECORDING */
-        )
+        rows: getBindingForAction(Actions5.RecorderActions.START_RECORDING)
       },
       {
         title: i18nString9(UIStrings9.replayRecording),
-        rows: getBindingForAction(
-          "chrome-recorder.replay-recording"
-          /* Actions.RecorderActions.REPLAY_RECORDING */
-        )
+        rows: getBindingForAction(Actions5.RecorderActions.REPLAY_RECORDING)
       },
       {
         title: i18nString9(UIStrings9.copyShortcut),
@@ -6724,10 +6984,7 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
       },
       {
         title: i18nString9(UIStrings9.toggleCode),
-        rows: getBindingForAction(
-          "chrome-recorder.toggle-code-view"
-          /* Actions.RecorderActions.TOGGLE_CODE_VIEW */
-        )
+        rows: getBindingForAction(Actions5.RecorderActions.TOGGLE_CODE_VIEW)
       }
     ];
   }
@@ -6759,63 +7016,71 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
         that.#createRecordingView = widget6;
       }
     };
-    this.#view({
-      recordings,
-      currentRecording: this.currentRecording,
-      currentPage: this.currentPage,
-      isRecording: this.isRecording,
-      isToggling: this.isToggling,
-      importError: this.importError,
-      recordingError: this.recordingError,
-      sections: this.sections ?? [],
-      settings: this.settings,
-      recorderSettings: this.#recorderSettings,
-      lastReplayResult: this.lastReplayResult,
-      replayAllowed: this.#replayAllowed,
-      breakpointIndexes: this.#stepBreakpointIndexes,
-      builtInConverters: this.#builtInConverters,
-      extensionConverters: this.extensionConverters,
-      replayExtensions: this.replayExtensions,
-      extensionDescriptor: this.viewDescriptor,
-      exportMenuExpanded: this.exportMenuExpanded,
-      replayState: this.#replayState,
-      shortcutsInfo: this.#getShortcutsInfo(),
-      currentStep: this.currentStep,
-      onCreateNewRecording: this.#onCreateNewRecording.bind(this),
-      onImportRecording: this.#onImportRecording.bind(this),
-      onExportRecording: this.#onExportRecording.bind(this),
-      onDeleteRecording: this.#onDeleteRecording.bind(this),
-      onRecordingSelected: this.#onRecordingSelected.bind(this),
-      onPlayRecordingByName: this.#onPlayRecordingByName.bind(this),
-      onPlayRecording: this.#onPlayRecording.bind(this),
-      onAbortReplay: this.#onAbortReplay.bind(this),
-      onNetworkConditionsChanged: this.#onNetworkConditionsChanged.bind(this),
-      onTimeoutChanged: this.#onTimeoutChanged.bind(this),
-      handleRecordingTitleChanged: this.#handleRecordingTitleChanged.bind(this),
-      handleRecordingChanged: this.#handleRecordingChanged.bind(this),
-      handleStepAdded: this.#handleStepAdded.bind(this),
-      handleStepRemoved: this.#handleStepRemoved.bind(this),
-      onAddBreakpoint: this.#onAddBreakpoint.bind(this),
-      onRemoveBreakpoint: this.#onRemoveBreakpoint.bind(this),
-      onExtensionViewClosed: this.#onExtensionViewClosed.bind(this),
-      onExportMenuClosed: this.#onExportMenuClosed.bind(this),
-      onExportOptionSelected: this.#onExportOptionSelected.bind(this),
-      onRecordingFinished: this.#onRecordingFinished.bind(this),
-      handleAddAssertionEvent: this.#handleAddAssertionEvent.bind(this),
-      onSetRecording: this.#onSetRecording.bind(this),
-      onContinueReplay: () => this.recordingPlayer?.continue(),
-      onStepOverReplay: () => this.recordingPlayer?.stepOver(),
-      getExportMenuButton: this.#getExportMenuButton.bind(this),
-      onRecordingStarted: this.#onRecordingStarted.bind(this),
-      onRecordingCancelled: this.onRecordingCancelled.bind(this)
-    }, output, this.contentElement);
+    this.#view(
+      {
+        recordings,
+        currentRecording: this.currentRecording,
+        currentPage: this.currentPage,
+        isRecording: this.isRecording,
+        isToggling: this.isToggling,
+        importError: this.importError,
+        recordingError: this.recordingError,
+        sections: this.sections ?? [],
+        settings: this.settings,
+        recorderSettings: this.#recorderSettings,
+        lastReplayResult: this.lastReplayResult,
+        replayAllowed: this.#replayAllowed,
+        breakpointIndexes: this.#stepBreakpointIndexes,
+        builtInConverters: this.#builtInConverters,
+        extensionConverters: this.extensionConverters,
+        replayExtensions: this.replayExtensions,
+        extensionDescriptor: this.viewDescriptor,
+        exportMenuExpanded: this.exportMenuExpanded,
+        replayState: this.#replayState,
+        shortcutsInfo: this.#getShortcutsInfo(),
+        currentStep: this.currentStep,
+        onCreateNewRecording: this.#onCreateNewRecording.bind(this),
+        onImportRecording: this.#onImportRecording.bind(this),
+        onExportRecording: this.#onExportRecording.bind(this),
+        onDeleteRecording: this.#onDeleteRecording.bind(this),
+        onRecordingSelected: this.#onRecordingSelected.bind(this),
+        onPlayRecordingByName: this.#onPlayRecordingByName.bind(this),
+        onPlayRecording: this.#onPlayRecording.bind(this),
+        onAbortReplay: this.#onAbortReplay.bind(this),
+        onNetworkConditionsChanged: this.#onNetworkConditionsChanged.bind(this),
+        onTimeoutChanged: this.#onTimeoutChanged.bind(this),
+        handleRecordingTitleChanged: this.#handleRecordingTitleChanged.bind(this),
+        handleRecordingChanged: this.#handleRecordingChanged.bind(this),
+        handleStepAdded: this.#handleStepAdded.bind(this),
+        handleStepRemoved: this.#handleStepRemoved.bind(this),
+        onAddBreakpoint: this.#onAddBreakpoint.bind(this),
+        onRemoveBreakpoint: this.#onRemoveBreakpoint.bind(this),
+        onExtensionViewClosed: this.#onExtensionViewClosed.bind(this),
+        onExportMenuClosed: this.#onExportMenuClosed.bind(this),
+        onExportOptionSelected: this.#onExportOptionSelected.bind(this),
+        onRecordingFinished: this.#onRecordingFinished.bind(this),
+        handleAddAssertionEvent: this.#handleAddAssertionEvent.bind(this),
+        onSetRecording: this.#onSetRecording.bind(this),
+        onContinueReplay: () => this.recordingPlayer?.continue(),
+        onStepOverReplay: () => this.recordingPlayer?.stepOver(),
+        getExportMenuButton: this.#getExportMenuButton.bind(this),
+        onRecordingStarted: this.#onRecordingStarted.bind(this),
+        onRecordingCancelled: this.onRecordingCancelled.bind(this)
+      },
+      output,
+      this.contentElement
+    );
   }
 };
 var ActionDelegate = class {
   handleAction(_context, actionId) {
     void (async () => {
-      await UI11.ViewManager.ViewManager.instance().showView(RecorderPanel.panelName);
-      const view = UI11.ViewManager.ViewManager.instance().view(RecorderPanel.panelName);
+      await UI11.ViewManager.ViewManager.instance().showView(
+        RecorderPanel.panelName
+      );
+      const view = UI11.ViewManager.ViewManager.instance().view(
+        RecorderPanel.panelName
+      );
       if (view) {
         const widget6 = await view.widget();
         widget6.handleActions(actionId);

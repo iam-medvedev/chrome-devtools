@@ -1,5 +1,5 @@
 import * as Acorn from '../../third_party/acorn/acorn.js';
-import { DefinitionKind, ScopeKind, type ScopeTreeNode } from './FormatterActions.js';
+import { DefinitionKind, ScopeKind, type ScopeTreeNode } from '../formatter_actions/formatter_actions.js';
 export declare function parseScopes(expression: string, sourceType?: 'module' | 'script'): Scope | null;
 export interface Use {
     offset: number;

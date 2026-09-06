@@ -44,7 +44,8 @@
     "../../../../../../front_end/panels/sources/WatchExpressionsSidebarPane.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../front_end/global_typings/global_defs.d.ts",
-    "../../../../../../node_modules/@types/filesystem/index.d.ts"
+    "../../../../../../node_modules/@types/filesystem/index.d.ts",
+    "../../../../../../node_modules/@types/filewriter/index.d.ts"
   ],
   "references": [
     {
@@ -69,7 +70,7 @@
       "path": "../../core/text_utils/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../entrypoints/formatter_worker/formatter_actions-tsconfig.ref.json"
+      "path": "../../entrypoints/formatter_actions/bundle-tsconfig.ref.json"
     },
     {
       "path": "../../generated/generated-tsconfig.ref.json"

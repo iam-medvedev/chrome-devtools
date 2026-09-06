@@ -7,10 +7,10 @@ import * as UI from '../../ui/legacy/legacy.js';
 import { type HeapSnapshotGridNode, HeapSnapshotObjectNode, HeapSnapshotRetainingObjectNode } from './HeapSnapshotGridNodes.js';
 import type { HeapProfileHeader } from './HeapSnapshotView.js';
 import type { DataDisplayDelegate } from './ProfileHeader.js';
-declare class HeapSnapshotSortableDataGridBase extends DataGrid.DataGrid.DataGridImpl<HeapSnapshotGridNode> {
+declare class HeapSnapshotSortableDataGridRawBase extends DataGrid.DataGrid.DataGridImpl<HeapSnapshotGridNode> {
 }
-declare const HeapSnapshotSortableDataGrid_base: import("../../core/platform/Constructor.js").Constructor<Common.EventTarget.EventTarget<EventTypes>, any[]> & typeof HeapSnapshotSortableDataGridBase;
-export declare class HeapSnapshotSortableDataGrid extends HeapSnapshotSortableDataGrid_base {
+declare const HeapSnapshotSortableDataGridBase: Common.ObjectWrapper.EventMixin<EventTypes, typeof HeapSnapshotSortableDataGridRawBase>;
+export declare class HeapSnapshotSortableDataGrid extends HeapSnapshotSortableDataGridBase {
     snapshot: HeapSnapshotModel.HeapSnapshotProxy.HeapSnapshotProxy | null;
     selectedNode: HeapSnapshotGridNode | null;
     readonly heapProfilerModelInternal: SDK.HeapProfilerModel.HeapProfilerModel | null;

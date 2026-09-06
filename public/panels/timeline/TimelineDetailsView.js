@@ -27,38 +27,39 @@ import { TimelineUIUtils } from './TimelineUIUtils.js';
 import { TracingFrameLayerTree } from './TracingLayerTree.js';
 const UIStrings = {
     /**
-     * @description Text for the summary view
+     * @description Title for the summary tab in the details view of the Performance panel.
      */
     summary: 'Summary',
     /**
-     * @description Text in Timeline Details View of the Performance panel
+     * @description Title for the bottom-up tab in the details view of the Performance panel.
      */
     bottomup: 'Bottom-up',
     /**
-     * @description Text in Timeline Details View of the Performance panel
+     * @description Title for the call tree tab in the details view of the Performance panel.
      */
     callTree: 'Call tree',
     /**
-     * @description Text in Timeline Details View of the Performance panel
+     * @description Title for the event log tab in the details view of the Performance panel.
      */
     eventLog: 'Event log',
     /**
-     * @description Title of the paint profiler, old name of the performance pane
+     * @description Title for the paint profiler tab in the details view of the Performance panel.
      */
     paintProfiler: 'Paint profiler',
     /**
-     * @description Title of the Layers tool
+     * @description Title for the layers tab in the details view of the Performance panel.
      */
     layers: 'Layers',
     /**
-     * @description Title of the selector stats tab
+     * @description Title for the selector stats tab in the details view of the Performance panel.
      */
     selectorStats: 'Selector stats',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/TimelineDetailsView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const { widget } = UI.Widget;
-export class TimelineDetailsPane extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
+const TimelineDetailsPaneBase = Common.ObjectWrapper.eventMixin(UI.Widget.VBox);
+export class TimelineDetailsPane extends TimelineDetailsPaneBase {
     detailsLinkifier;
     tabbedPane;
     defaultDetailsWidget;
@@ -69,7 +70,7 @@ export class TimelineDetailsPane extends Common.ObjectWrapper.eventMixin(UI.Widg
     lazyLayersView;
     preferredTabId;
     selection;
-    updateContentsScheduled;
+    #debouncedUpdateContentsFromWindow = Common.Debouncer.debounce(() => this.updateContentsFromWindow(), 100);
     lazySelectorStatsView;
     #parsedTrace = null;
     #eventToRelatedInsightsMap = null;
@@ -119,7 +120,6 @@ export class TimelineDetailsPane extends Common.ObjectWrapper.eventMixin(UI.Widg
         this.appendTab(Tab.Details, i18nString(UIStrings.summary), this.defaultDetailsWidget);
         this.setPreferredTab(Tab.Details);
         this.rangeDetailViews = new Map();
-        this.updateContentsScheduled = false;
         const bottomUpView = new BottomUpTimelineTreeView();
         this.appendTab(Tab.BottomUp, i18nString(UIStrings.bottomup), bottomUpView);
         this.rangeDetailViews.set(Tab.BottomUp, bottomUpView);
@@ -314,13 +314,11 @@ export class TimelineDetailsPane extends Common.ObjectWrapper.eventMixin(UI.Widg
         this.preferredTabId = tabId;
     }
     /**
-     * This forces a recalculation and rerendering of the timings
-     * breakdown of a track.
-     * User actions like zooming or scrolling can trigger many updates in
-     * short time windows, so we debounce the calls in those cases. Single
-     * sporadic calls (like selecting a new track) don't need to be
-     * debounced. The forceImmediateUpdate param configures the debouncing
-     * behaviour.
+     * Recalculates and renders the timing breakdown for the active details tab.
+     * Panning or zooming triggers rapid bounds updates, so we debounce this call
+     * using a trailing debounce. This ensures expensive tree recalculations in
+     * detailed views (e.g. Call Tree, Bottom-Up) only run once after user
+     * interaction finishes, preventing main-thread CPU spikes mid-gesture.
      */
     scheduleUpdateContentsFromWindow(forceImmediateUpdate = false) {
         if (!this.#parsedTrace) {
@@ -331,17 +329,7 @@ export class TimelineDetailsPane extends Common.ObjectWrapper.eventMixin(UI.Widg
             this.updateContentsFromWindow();
             return;
         }
-        // Debounce this update as it's not critical.
-        if (!this.updateContentsScheduled) {
-            this.updateContentsScheduled = true;
-            setTimeout(() => {
-                if (!this.updateContentsScheduled) {
-                    return;
-                }
-                this.updateContentsScheduled = false;
-                this.updateContentsFromWindow();
-            }, 100);
-        }
+        this.#debouncedUpdateContentsFromWindow();
     }
     updateContentsFromWindow() {
         const traceBoundsState = TraceBounds.TraceBounds.BoundsManager.instance().state();
@@ -391,7 +379,7 @@ export class TimelineDetailsPane extends Common.ObjectWrapper.eventMixin(UI.Widg
         }
         if (selectionIsEvent(selection)) {
             // Cancel any pending debounced range stats update
-            this.updateContentsScheduled = false;
+            this.#debouncedUpdateContentsFromWindow.cancel();
             if (Trace.Types.Events.isLegacyTimelineFrame(selection.event)) {
                 this.#addLayerTreeForSelectedFrame(selection.event);
             }

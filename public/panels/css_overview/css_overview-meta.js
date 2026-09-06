@@ -1,4 +1,4 @@
-// gen/front_end/panels/css_overview/css_overview-meta.prebundle.js
+// ../../front_end/panels/css_overview/css_overview-meta.ts
 import * as i18n from "../../core/i18n/i18n.js";
 import * as UI from "../../ui/legacy/legacy.js";
 var UIStrings = {
@@ -21,12 +21,12 @@ async function loadCSSOverviewModule() {
   return loadedCSSOverviewModule;
 }
 UI.ViewManager.registerViewExtension({
-  location: "panel",
+  location: UI.ViewManager.ViewLocationValues.PANEL,
   id: "cssoverview",
   commandPrompt: i18nLazyString(UIStrings.showCssOverview),
   title: i18nLazyString(UIStrings.cssOverview),
   order: 95,
-  persistence: "closeable",
+  persistence: UI.ViewManager.ViewPersistence.CLOSEABLE,
   async loadView() {
     const CSSOverview = await loadCSSOverviewModule();
     return new CSSOverview.CSSOverviewPanel.CSSOverviewPanel();

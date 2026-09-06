@@ -1,13 +1,12 @@
 import * as Common from '../../core/common/common.js';
-import * as Platform from '../../core/platform/platform.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as TimelineComponents from './components/components.js';
 import type { TimelineModeViewDelegate } from './TimelinePanel.js';
 import { type TimelineSelection } from './TimelineSelection.js';
 import { AggregatedTimelineTreeView, TimelineTreeView } from './TimelineTreeView.js';
-declare const TimelineDetailsPane_base: Platform.Constructor.Constructor<Common.EventTarget.EventTarget<TimelineTreeView.EventTypes>, any[]> & typeof UI.Widget.VBox;
-export declare class TimelineDetailsPane extends TimelineDetailsPane_base {
+declare const TimelineDetailsPaneBase: Common.ObjectWrapper.EventMixin<TimelineTreeView.EventTypes, typeof UI.Widget.VBox>;
+export declare class TimelineDetailsPane extends TimelineDetailsPaneBase {
     #private;
     private readonly detailsLinkifier;
     private tabbedPane;
@@ -17,7 +16,6 @@ export declare class TimelineDetailsPane extends TimelineDetailsPane_base {
     private lazyLayersView?;
     private preferredTabId?;
     private selection?;
-    private updateContentsScheduled;
     private lazySelectorStatsView;
     static makeEventWidget(event: Trace.Types.Events.Event, parsedTrace: Trace.TraceModel.ParsedTrace): TimelineDetailsPane;
     constructor(delegate: TimelineModeViewDelegate);
@@ -47,13 +45,11 @@ export declare class TimelineDetailsPane extends TimelineDetailsPane_base {
     hideHeader(): void;
     setPreferredTab(tabId: string): void;
     /**
-     * This forces a recalculation and rerendering of the timings
-     * breakdown of a track.
-     * User actions like zooming or scrolling can trigger many updates in
-     * short time windows, so we debounce the calls in those cases. Single
-     * sporadic calls (like selecting a new track) don't need to be
-     * debounced. The forceImmediateUpdate param configures the debouncing
-     * behaviour.
+     * Recalculates and renders the timing breakdown for the active details tab.
+     * Panning or zooming triggers rapid bounds updates, so we debounce this call
+     * using a trailing debounce. This ensures expensive tree recalculations in
+     * detailed views (e.g. Call Tree, Bottom-Up) only run once after user
+     * interaction finishes, preventing main-thread CPU spikes mid-gesture.
      */
     private scheduleUpdateContentsFromWindow;
     private updateContentsFromWindow;

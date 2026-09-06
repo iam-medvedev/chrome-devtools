@@ -4,7 +4,7 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// gen/front_end/panels/whats_new/ReleaseNoteText.js
+// ../../front_end/panels/whats_new/ReleaseNoteText.ts
 var ReleaseNoteText_exports = {};
 __export(ReleaseNoteText_exports, {
   VideoType: () => VideoType,
@@ -13,12 +13,12 @@ __export(ReleaseNoteText_exports, {
 });
 import * as MarkdownView from "../../ui/components/markdown_view/markdown_view.js";
 var registeredLinks = false;
-var VideoType;
-(function(VideoType2) {
+var VideoType = /* @__PURE__ */ ((VideoType2) => {
   VideoType2["WHATS_NEW"] = "WhatsNew";
   VideoType2["DEVTOOLS_TIPS"] = "DevtoolsTips";
   VideoType2["OTHER"] = "Other";
-})(VideoType || (VideoType = {}));
+  return VideoType2;
+})(VideoType || {});
 function setReleaseNoteForTest(testReleaseNote) {
   releaseNote = testReleaseNote;
 }
@@ -32,8 +32,8 @@ function getReleaseNote() {
   return releaseNote;
 }
 var releaseNote = {
-  version: 152,
-  header: "What\u2019s new in DevTools 152",
+  version: 153,
+  header: "New in DevTools (September 2026)",
   markdownLinks: [
     {
       key: "devtools-for-agents",
@@ -52,7 +52,7 @@ var releaseNote = {
   link: "https://developer.chrome.com/blog/new-in-devtools-152/"
 };
 
-// gen/front_end/panels/whats_new/ReleaseNoteView.js
+// ../../front_end/panels/whats_new/ReleaseNoteView.ts
 var ReleaseNoteView_exports = {};
 __export(ReleaseNoteView_exports, {
   DEVTOOLS_TIPS_THUMBNAIL: () => DEVTOOLS_TIPS_THUMBNAIL,
@@ -196,7 +196,7 @@ var releaseNoteView_css_default = `/*
 
 /*# sourceURL=${import.meta.resolve("./releaseNoteView.css")} */`;
 
-// gen/front_end/panels/whats_new/ReleaseNoteView.js
+// ../../front_end/panels/whats_new/ReleaseNoteView.ts
 var UIStrings = {
   /**
    * @description Text on a button in the What's new tool that opens a link with more documentation about new features.
@@ -239,7 +239,7 @@ var ReleaseNoteView = class extends UI.Panel.Panel {
           </div>
           <div>
             <devtools-button
-                  .variant=${"primary"}
+                  .variant=${Buttons.Button.Variant.PRIMARY}
                   .jslogContext=${"learn-more"}
                   @click=${() => input.openNewTab(releaseNote2.link)}
               >${i18nString(UIStrings.seeFeatures)}</devtools-button>
@@ -253,10 +253,7 @@ var ReleaseNoteView = class extends UI.Panel.Panel {
                   href=${value.link}
                   jslogcontext="learn-more">
                     <div class="video">
-                      <img class="thumbnail" src=${input.getThumbnailPath(
-        value.type ?? "WhatsNew"
-        /* VideoType.WHATS_NEW */
-      )}>
+                      <img class="thumbnail" src=${input.getThumbnailPath(value.type ?? "WhatsNew" /* WHATS_NEW */)}>
                       <div class="thumbnail-description"><span>${value.description}</span></div>
                     </div>
                 </devtools-link>
@@ -290,23 +287,27 @@ var ReleaseNoteView = class extends UI.Panel.Panel {
   }
   async performUpdate() {
     const markdownContent = await getMarkdownContent();
-    this.#view({
-      getReleaseNote,
-      openNewTab: UIHelpers.openInNewTab,
-      markdownContent,
-      getThumbnailPath: this.#getThumbnailPath
-    }, this, this.contentElement);
+    this.#view(
+      {
+        getReleaseNote,
+        openNewTab: UIHelpers.openInNewTab,
+        markdownContent,
+        getThumbnailPath: this.#getThumbnailPath
+      },
+      this,
+      this.contentElement
+    );
   }
   #getThumbnailPath(type) {
     let img;
     switch (type) {
-      case "WhatsNew":
+      case "WhatsNew" /* WHATS_NEW */:
         img = WHATS_NEW_THUMBNAIL;
         break;
-      case "DevtoolsTips":
+      case "DevtoolsTips" /* DEVTOOLS_TIPS */:
         img = DEVTOOLS_TIPS_THUMBNAIL;
         break;
-      case "Other":
+      case "Other" /* OTHER */:
         img = GENERAL_THUMBNAIL;
         break;
     }
@@ -314,7 +315,7 @@ var ReleaseNoteView = class extends UI.Panel.Panel {
   }
 };
 
-// gen/front_end/panels/whats_new/WhatsNewImpl.js
+// ../../front_end/panels/whats_new/WhatsNewImpl.ts
 var WhatsNewImpl_exports = {};
 __export(WhatsNewImpl_exports, {
   HelpLateInitialization: () => HelpLateInitialization,
@@ -336,7 +337,11 @@ function showReleaseNoteIfNeeded() {
   const releaseNoteVersionSetting2 = Common.Settings.Settings.instance().createSetting(releaseVersionSeen, 0);
   const releaseNoteVersionSettingValue = releaseNoteVersionSetting2.get();
   const releaseNote2 = getReleaseNote();
-  return innerShowReleaseNoteIfNeeded(releaseNoteVersionSettingValue, releaseNote2.version, Common.Settings.Settings.instance().moduleSetting("help.show-release-note").get());
+  return innerShowReleaseNoteIfNeeded(
+    releaseNoteVersionSettingValue,
+    releaseNote2.version,
+    Common.Settings.Settings.instance().moduleSetting("help.show-release-note").get()
+  );
 }
 function getReleaseNoteVersionSetting() {
   if (!releaseNoteVersionSetting) {

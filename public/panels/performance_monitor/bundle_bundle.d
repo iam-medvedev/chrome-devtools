@@ -1,0 +1,1 @@
+gen/front_end/panels/performance_monitor/performance_monitor.js: gen/front_end/panels/performance_monitor/performanceMonitor.css.js ../../front_end/panels/performance_monitor/PerformanceMonitor.ts ../../front_end/panels/performance_monitor/performance_monitor.ts

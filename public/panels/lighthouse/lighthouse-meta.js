@@ -1,4 +1,4 @@
-// gen/front_end/panels/lighthouse/lighthouse-meta.prebundle.js
+// ../../front_end/panels/lighthouse/lighthouse-meta.ts
 import * as Common from "../../core/common/common.js";
 import * as i18n from "../../core/i18n/i18n.js";
 import * as UI from "../../ui/legacy/legacy.js";
@@ -59,7 +59,7 @@ async function loadLighthouseModule() {
   return loadedLighthouseModule;
 }
 UI.ViewManager.registerViewExtension({
-  location: "panel",
+  location: UI.ViewManager.ViewLocationValues.PANEL,
   id: "lighthouse",
   title: i18n.i18n.lockedLazyString("Lighthouse"),
   commandPrompt: i18nLazyString(UIStrings.showLighthouse),
@@ -86,83 +86,83 @@ Common.Revealer.registerRevealer({
   }
 });
 Common.Settings.registerSettingExtension({
-  category: "",
-  storageType: "Synced",
+  category: Common.Settings.SettingCategory.NONE,
+  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.performance),
   settingName: "lighthouse.cat-perf",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: true
 });
 Common.Settings.registerSettingExtension({
-  category: "",
-  storageType: "Synced",
+  category: Common.Settings.SettingCategory.NONE,
+  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.accessibility),
   settingName: "lighthouse.cat-a11y",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: true
 });
 Common.Settings.registerSettingExtension({
-  category: "",
-  storageType: "Synced",
+  category: Common.Settings.SettingCategory.NONE,
+  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.bestPractices),
   settingName: "lighthouse.cat-best-practices",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: true
 });
 Common.Settings.registerSettingExtension({
-  category: "",
-  storageType: "Synced",
+  category: Common.Settings.SettingCategory.NONE,
+  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.seo),
   settingName: "lighthouse.cat-seo",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: true
 });
 Common.Settings.registerSettingExtension({
-  category: "",
-  storageType: "Synced",
+  category: Common.Settings.SettingCategory.NONE,
+  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.agenticBrowsing),
   settingName: "lighthouse.cat-agentic-browsing",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: false
 });
 Common.Settings.registerSettingExtension({
-  category: "",
-  storageType: "Synced",
+  category: Common.Settings.SettingCategory.NONE,
+  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.device),
   settingName: "lighthouse.device-type",
-  settingType: "enum",
+  settingType: Common.Settings.SettingType.ENUM,
   defaultValue: "mobile"
 });
 Common.Settings.registerSettingExtension({
-  category: "",
-  storageType: "Synced",
+  category: Common.Settings.SettingCategory.NONE,
+  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.mode),
   settingName: "lighthouse.mode",
-  settingType: "enum",
+  settingType: Common.Settings.SettingType.ENUM,
   defaultValue: "navigation"
 });
 Common.Settings.registerSettingExtension({
-  category: "",
-  storageType: "Synced",
+  category: Common.Settings.SettingCategory.NONE,
+  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.throttling),
   settingName: "lighthouse.throttling",
-  settingType: "enum",
+  settingType: Common.Settings.SettingType.ENUM,
   defaultValue: "simulate"
 });
 Common.Settings.registerSettingExtension({
-  category: "",
-  storageType: "Synced",
+  category: Common.Settings.SettingCategory.NONE,
+  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.clearStorage),
   settingName: "lighthouse.clear-storage",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: true
 });
 Common.Settings.registerSettingExtension({
-  category: "",
-  storageType: "Synced",
+  category: Common.Settings.SettingCategory.NONE,
+  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.enableSampling),
   settingName: "lighthouse.enable-sampling",
-  settingType: "boolean",
+  settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: false
 });
 //# sourceMappingURL=lighthouse-meta.js.map

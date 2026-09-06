@@ -1,0 +1,1 @@
+gen/front_end/panels/webauthn/webauthn.js: ../../front_end/generated/protocol.ts gen/front_end/panels/webauthn/webauthnPane.css.js ../../front_end/panels/webauthn/WebauthnPane.ts ../../front_end/panels/webauthn/webauthn.ts

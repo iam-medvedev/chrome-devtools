@@ -17,8 +17,8 @@ export declare class DetachedElementsProfileView extends UI.View.SimpleView impl
     populateElementsGrid(detachedElements: Protocol.DOM.DetachedElementInfo[] | null): void;
     toolbarItems(): Promise<UI.Toolbar.ToolbarItem[]>;
 }
-declare const DetachedElementsProfileType_base: import("../../core/platform/Constructor.js").Constructor<Common.EventTarget.EventTarget<DetachedElementsProfileType.EventTypes>, any[]> & typeof ProfileType;
-export declare class DetachedElementsProfileType extends DetachedElementsProfileType_base {
+declare const DetachedElementsProfileTypeBase: Common.ObjectWrapper.EventMixin<DetachedElementsProfileType.EventTypes, typeof ProfileType>;
+export declare class DetachedElementsProfileType extends DetachedElementsProfileTypeBase {
     constructor(typeId?: string, description?: string);
     profileBeingRecorded(): DetachedElementsProfileHeader | null;
     get buttonTooltip(): Common.UIString.LocalizedString;

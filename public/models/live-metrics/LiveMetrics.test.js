@@ -224,6 +224,37 @@ describe('LiveMetrics', () => {
             assert.include(expr, '\' + "pointer\'); alert(1); (//" + \' interaction\')');
             assert.notInclude(expr, '100ms pointer\'); alert(1); (// interaction');
         });
+        it('handles INP event without startTime and entryGroupId', async () => {
+            await emitBindingCalled(primaryExecutionContextId, { name: 'reset' });
+            await emitBindingCalled(primaryExecutionContextId, {
+                name: 'INP',
+                value: 120,
+                subparts: {
+                    inputDelay: 10,
+                    processingDuration: 100,
+                    presentationDelay: 10,
+                },
+                interactionType: 'pointer',
+            });
+            assert.strictEqual(liveMetrics.inpValue?.value, 120);
+            assert.isUndefined(liveMetrics.inpValue?.interactionId);
+        });
+        it('ignores InteractionEntry without startTime and entryGroupId', async () => {
+            await emitBindingCalled(primaryExecutionContextId, { name: 'reset' });
+            await emitBindingCalled(primaryExecutionContextId, {
+                name: 'InteractionEntry',
+                duration: 120,
+                subparts: {
+                    inputDelay: 10,
+                    processingDuration: 100,
+                    presentationDelay: 10,
+                },
+                nextPaintTime: 130,
+                interactionType: 'pointer',
+                longAnimationFrameEntries: [],
+            });
+            assert.strictEqual(liveMetrics.interactions.size, 0);
+        });
     });
     describe('status updates', () => {
         it('dispatches status events', () => {
@@ -282,6 +313,99 @@ describe('LiveMetrics', () => {
             liveMetrics.clearLayoutShifts();
             assert.lengthOf(liveMetrics.layoutShifts, 0);
         });
+    });
+});
+describe('web-vitals-injected', () => {
+    it('handles empty entries for INP metric without crashing', () => {
+        const mockMetric = {
+            name: 'INP',
+            value: 120,
+            attribution: {
+                interactionType: 'pointer',
+                inputDelay: 10,
+                processingDuration: 100,
+                presentationDelay: 10,
+            },
+            entries: [],
+        };
+        const event = Spec.createInpChangeEvent(mockMetric);
+        assert.deepEqual(event, {
+            name: 'INP',
+            value: 120,
+            subparts: {
+                inputDelay: 10,
+                processingDuration: 100,
+                presentationDelay: 10,
+            },
+            interactionType: 'pointer',
+            startTime: undefined,
+            entryGroupId: undefined,
+        });
+    });
+    it('handles empty entries for each interaction without crashing', () => {
+        const mockInteraction = {
+            name: 'InteractionEntry',
+            value: 120,
+            attribution: {
+                inputDelay: 10,
+                processingDuration: 100,
+                presentationDelay: 10,
+                nextPaintTime: 130,
+                interactionType: 'pointer',
+                longAnimationFrameEntries: [],
+            },
+            entries: [],
+        };
+        const event = Spec.createInteractionEntryEvent(mockInteraction);
+        assert.deepEqual(event, {
+            name: 'InteractionEntry',
+            duration: 120,
+            subparts: {
+                inputDelay: 10,
+                processingDuration: 100,
+                presentationDelay: 10,
+            },
+            nextPaintTime: 130,
+            interactionType: 'pointer',
+            navigationId: undefined,
+            startTime: undefined,
+            entryGroupId: undefined,
+            eventName: undefined,
+            longAnimationFrameEntries: [],
+        });
+    });
+    it('limits and sorts scripts per long animation frame correctly', () => {
+        const mockLoaf = {
+            renderStart: 190,
+            duration: 200,
+            scripts: [
+                { startTime: 20, duration: 80 },
+                { startTime: 10, duration: 20 },
+                { startTime: 30, duration: 50 },
+                { startTime: 1, duration: 10 },
+                { startTime: 2, duration: 10 },
+                { startTime: 3, duration: 10 },
+                { startTime: 4, duration: 10 },
+                { startTime: 5, duration: 10 },
+                { startTime: 6, duration: 10 },
+                { startTime: 7, duration: 10 },
+                { startTime: 8, duration: 10 },
+                { startTime: 9, duration: 10 },
+            ],
+        };
+        const result = Spec.limitScripts([mockLoaf]);
+        assert.deepEqual(result[0].scripts, [
+            { startTime: 1, duration: 10 },
+            { startTime: 2, duration: 10 },
+            { startTime: 3, duration: 10 },
+            { startTime: 4, duration: 10 },
+            { startTime: 5, duration: 10 },
+            { startTime: 6, duration: 10 },
+            { startTime: 7, duration: 10 },
+            { startTime: 10, duration: 20 },
+            { startTime: 20, duration: 80 },
+            { startTime: 30, duration: 50 },
+        ]);
     });
 });
 //# sourceMappingURL=LiveMetrics.test.js.map

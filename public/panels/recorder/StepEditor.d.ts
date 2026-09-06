@@ -49,11 +49,11 @@ declare const defaultValuesByAttribute: DeepImmutable<{
     offsetY: number;
     target: string;
     frame: number[];
-    assertedEvents: {
+    assertedEvents: Array<{
         type: string;
         url: string;
         title: string;
-    }[];
+    }>;
     value: string;
     key: string;
     operator: string;
@@ -79,10 +79,10 @@ declare const defaultValuesByAttribute: DeepImmutable<{
     name: string;
     parameters: string;
     properties: string;
-    attributes: {
+    attributes: Array<{
         name: string;
         value: string;
-    }[];
+    }>;
     visible: boolean;
 }>;
 export interface EditorState {
