@@ -1,6 +1,57 @@
 // Copyright 2026 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Common from '../../../../core/common/common.js';
+import * as i18n from '../../../../core/i18n/i18n.js';
+import * as Lit from '../../../../ui/lit/lit.js';
+import * as UI from '../../legacy.js';
+import positionAreaEditorStyles from './positionAreaEditor.css.js';
+const UIStrings = {
+    /**
+     * @description Accessible description for the position-area grid editor explaining keyboard navigation and range selection.
+     */
+    positionAreaGridDescription: 'Use arrow keys to navigate, Space or Enter to select, and Shift + arrow keys to select a range.',
+    /**
+     * @description Accessible label for the position-area grid editor.
+     */
+    positionAreaGrid: 'position-area grid',
+    /**
+     * @description Title for the block axis section in the position-area editor.
+     */
+    block: 'Block',
+    /**
+     * @description Title for the inline axis section in the position-area editor.
+     */
+    inline: 'Inline',
+    /**
+     * @description Accessible label for the block axis mode radio button group.
+     */
+    blockAxisMode: 'Block axis mode',
+    /**
+     * @description Accessible label for the inline axis mode radio button group.
+     */
+    inlineAxisMode: 'Inline axis mode',
+    /**
+     * @description Label for physical mode radio button in the position-area editor.
+     */
+    physical: 'Physical',
+    /**
+     * @description Label for coordinate mode radio button in the position-area editor.
+     */
+    coordinate: 'Coordinate',
+    /**
+     * @description Label for logical mode radio button in the position-area editor.
+     */
+    logical: 'Logical',
+    /**
+     * @description Label for auto mode radio button in the position-area editor.
+     */
+    auto: 'Auto',
+};
+const str_ = i18n.i18n.registerUIStrings('ui/legacy/components/inline_editor/PositionAreaEditor.ts', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+const { Directives, html, nothing, render } = Lit;
+const { repeat } = Directives;
 /**
  * Valid combinations of (Mode, Self) across axes according to the CSS Anchor Positioning specification
  * (https://drafts.csswg.org/css-anchor-position-1/#typedef-position-area):
@@ -156,8 +207,11 @@ export function parsePositionArea(text) {
         return null;
     }
     const first = KEYWORD_MAP.get(tokens[0]);
-    const second = KEYWORD_MAP.get(tokens[1] ?? (tokens[0] === "center" /* Keyword.CENTER */ ? "center" /* Keyword.CENTER */ : "span-all" /* Keyword.SPAN_ALL */));
-    if (!first || !second) {
+    if (!first) {
+        return null;
+    }
+    const second = KEYWORD_MAP.get(tokens[1] ?? (first.axis ? "span-all" /* Keyword.SPAN_ALL */ : tokens[0]));
+    if (!second) {
         return null;
     }
     if (first.axis && second.axis && first.axis === second.axis) {
@@ -195,12 +249,433 @@ export function stringifyPositionArea(area) {
     if (!firstKw || !secondKw) {
         return '';
     }
-    if (firstKw === "center" /* Keyword.CENTER */ && secondKw === "center" /* Keyword.CENTER */) {
-        return "center" /* Keyword.CENTER */;
+    const firstDef = KEYWORD_MAP.get(firstKw);
+    if (!firstDef?.axis && firstKw === secondKw) {
+        return firstKw;
     }
-    if (secondKw === "span-all" /* Keyword.SPAN_ALL */) {
+    if (firstDef?.axis && secondKw === "span-all" /* Keyword.SPAN_ALL */) {
         return firstKw;
     }
     return `${firstKw} ${secondKw}`;
+}
+export const DEFAULT_VIEW = (input, output, target) => {
+    const container = {
+        attributes: {
+            tabindex: '0',
+        },
+    };
+    if (!input.area) {
+        render(nothing, target, { container });
+        return;
+    }
+    const x = input.area.primaryAxis === "inline" /* Axis.INLINE */ ? input.area.first : input.area.second;
+    const y = input.area.primaryAxis === "block" /* Axis.BLOCK */ ? input.area.first : input.area.second;
+    const grid = [[0, 0], [1, 0], [2, 0], [0, 1], [1, 1], [2, 1], [0, 2], [1, 2], [2, 2]];
+    // Determine which cell receives tabindex="0" for roving focus:
+    // use the currently focused cell if any, otherwise default to the selection's start.
+    const activeCell = target.querySelector('.position-area-builder > div:focus');
+    const focusedX = activeCell ? Number(activeCell.dataset.x) : x.start;
+    const focusedY = activeCell ? Number(activeCell.dataset.y) : y.start;
+    function getCellCoords(e, container) {
+        const root = container.getRootNode();
+        const el = root.elementFromPoint(e.clientX, e.clientY);
+        const cell = el?.closest('.position-area-builder > div');
+        if (!cell || !container.contains(cell)) {
+            return null;
+        }
+        const cellX = Number(cell.dataset.x);
+        const cellY = Number(cell.dataset.y);
+        return [cellX, cellY];
+    }
+    function focusCell(cell, container) {
+        for (const c of container.querySelectorAll('[data-x]')) {
+            c.tabIndex = c === cell ? 0 : -1;
+        }
+        cell.focus();
+    }
+    function onPointerDown(e) {
+        const container = e.currentTarget;
+        const targetCell = e.target.closest('[data-x]');
+        if (!targetCell) {
+            return;
+        }
+        const startX = Number(targetCell.dataset.x);
+        const startY = Number(targetCell.dataset.y);
+        focusCell(targetCell, container);
+        container.setPointerCapture(e.pointerId);
+        input.onSelectStart(startX, startY);
+    }
+    function onPointerMove(e) {
+        const container = e.currentTarget;
+        if (!container.hasPointerCapture(e.pointerId)) {
+            return;
+        }
+        const cell = getCellCoords(e, container);
+        if (cell) {
+            const targetCell = container.querySelector(`[data-x="${cell[0]}"][data-y="${cell[1]}"]`);
+            if (targetCell && targetCell !== document.activeElement) {
+                focusCell(targetCell, container);
+            }
+            input.onSelect(...cell);
+        }
+    }
+    function onPointerUp(e) {
+        const container = e.currentTarget;
+        if (!container.hasPointerCapture(e.pointerId)) {
+            return;
+        }
+        container.releasePointerCapture(e.pointerId);
+        const coords = getCellCoords(e, container);
+        if (coords) {
+            const targetCell = container.querySelector(`[data-x="${coords[0]}"][data-y="${coords[1]}"]`);
+            if (targetCell) {
+                focusCell(targetCell, container);
+            }
+            input.onSelectEnd(...coords);
+        }
+        else {
+            input.onSelectEnd(x.end, y.end);
+        }
+    }
+    function onPointerCancel(e) {
+        const container = e.currentTarget;
+        if (!container.hasPointerCapture(e.pointerId)) {
+            return;
+        }
+        container.releasePointerCapture(e.pointerId);
+        input.onSelectEnd();
+    }
+    function onCellKeyDown(e) {
+        const currentCell = e.currentTarget;
+        const cellX = Number(currentCell.dataset.x);
+        const cellY = Number(currentCell.dataset.y);
+        const builder = currentCell.closest('.position-area-builder');
+        if (!builder) {
+            return;
+        }
+        if (e.key === ' ' || e.key === 'Enter') {
+            e.preventDefault();
+            input.onSelectStart(cellX, cellY);
+            input.onSelectEnd(cellX, cellY);
+            return;
+        }
+        let dx = 0;
+        let dy = 0;
+        switch (e.key) {
+            case 'ArrowLeft':
+                dx = -1;
+                break;
+            case 'ArrowRight':
+                dx = 1;
+                break;
+            case 'ArrowUp':
+                dy = -1;
+                break;
+            case 'ArrowDown':
+                dy = 1;
+                break;
+            default:
+                return;
+        }
+        const nextX = Math.max(0, Math.min(2, cellX + dx));
+        const nextY = Math.max(0, Math.min(2, cellY + dy));
+        if (nextX === cellX && nextY === cellY) {
+            return;
+        }
+        e.preventDefault();
+        const nextCell = builder.querySelector(`[data-x="${nextX}"][data-y="${nextY}"]`);
+        if (!nextCell) {
+            return;
+        }
+        focusCell(nextCell, builder);
+        if (e.shiftKey) {
+            if (!input.isSelecting) {
+                input.onSelectStart(cellX, cellY);
+            }
+            input.onSelect(nextX, nextY);
+        }
+    }
+    function onKeyUp(e) {
+        if (e.key === 'Shift' && input.isSelecting) {
+            const activeCell = e.target.closest('[data-x]');
+            if (activeCell) {
+                const activeX = Number(activeCell.dataset.x);
+                const activeY = Number(activeCell.dataset.y);
+                input.onSelectEnd(activeX, activeY);
+            }
+            else {
+                input.onSelectEnd();
+            }
+        }
+    }
+    function getCellTitle(cellX, cellY) {
+        if (!input.area) {
+            return '';
+        }
+        const cellArea = {
+            first: input.area.primaryAxis === "inline" /* Axis.INLINE */ ? { ...x, start: cellX, end: cellX } :
+                { ...y, start: cellY, end: cellY },
+            second: input.area.primaryAxis === "block" /* Axis.BLOCK */ ? { ...x, start: cellX, end: cellX } :
+                { ...y, start: cellY, end: cellY },
+            primaryAxis: input.area.primaryAxis,
+        };
+        return stringifyPositionArea(cellArea);
+    }
+    const propertyValue = stringifyPositionArea(input.area);
+    const blockAxis = input.area.primaryAxis === "block" /* Axis.BLOCK */ ? input.area.first : input.area.second;
+    const inlineAxis = input.area.primaryAxis === "inline" /* Axis.INLINE */ ? input.area.first : input.area.second;
+    function renderModeRadioGroup(axis, currentMode) {
+        const modes = [
+            { mode: "physical" /* Mode.PHYSICAL */, label: i18nString(UIStrings.physical) },
+            { mode: "coordinate" /* Mode.COORDINATE */, label: i18nString(UIStrings.coordinate) },
+            { mode: "logical" /* Mode.LOGICAL */, label: i18nString(UIStrings.logical) },
+            { mode: "auto" /* Mode.AUTO */, label: i18nString(UIStrings.auto) },
+        ];
+        const axisModeLabel = axis === "block" /* Axis.BLOCK */ ? i18nString(UIStrings.blockAxisMode) : i18nString(UIStrings.inlineAxisMode);
+        return html `
+      <fieldset class="chip-radio-group" aria-label=${axisModeLabel}>
+        ${modes.map(({ mode, label }) => {
+            const id = `${axis}-mode-${mode}`;
+            return html `
+            <input
+              type="radio"
+              id=${id}
+              name="${axis}-mode"
+              value=${mode}
+              .checked=${currentMode === mode}
+              @change=${() => input.onModeChange(axis, mode)}
+            >
+            <label for=${id}>${label}</label>
+          `;
+        })}
+      </fieldset>
+    `;
+    }
+    // clang-format off
+    render(html `
+    <style>${positionAreaEditorStyles}</style>
+    <div class=property aria-live="polite" aria-atomic="true">
+      <span class=property-name>position-area:</span>
+      <span class=property-value>${propertyValue.split(' ').map((keyword, i) => html `${i > 0 ? ' ' : ''}<span class=property-keyword>${keyword}</span>`)}</span>
+    </div>
+    <div class=position-area-builder
+        role="grid"
+        aria-label=${i18nString(UIStrings.positionAreaGrid)}
+        aria-description=${i18nString(UIStrings.positionAreaGridDescription)}
+        aria-multiselectable="true"
+        data-x-start=${x.start} data-x-end=${x.end} data-y-start=${y.start} data-y-end=${y.end}
+        @pointerdown=${onPointerDown}
+        @pointermove=${onPointerMove}
+        @pointerup=${onPointerUp}
+        @pointercancel=${onPointerCancel}
+        @keyup=${onKeyUp}>
+      ${repeat(grid, ([cellX, cellY]) => cellX * 10 + cellY, ([cellX, cellY]) => {
+        const isFocused = cellX === focusedX && cellY === focusedY;
+        const isSelected = cellX >= x.start && cellX <= x.end && cellY >= y.start && cellY <= y.end;
+        const cellTitle = getCellTitle(cellX, cellY);
+        return html `
+         <div
+           role="gridcell"
+           data-x=${cellX}
+           data-y=${cellY}
+           title=${cellTitle}
+           aria-label=${cellTitle}
+           tabindex=${isFocused ? 0 : -1}
+           aria-selected=${isSelected ? 'true' : 'false'}
+           @keydown=${onCellKeyDown}>
+         </div>
+        `;
+    })}
+    </div>
+    <div class=position-area-controls>
+      <div class=axis-section>
+        <div class=axis-header>
+          <span class=axis-title>${i18nString(UIStrings.block)}</span>
+          <devtools-checkbox
+            .checked=${blockAxis.self}
+            ?disabled=${isGeneric(blockAxis)}
+            @change=${(e) => input.onSelfChange("block" /* Axis.BLOCK */, e.target.checked)}>
+            <span class="self-checkbox-label source-code">self</span>
+          </devtools-checkbox>
+        </div>
+        ${renderModeRadioGroup("block" /* Axis.BLOCK */, blockAxis.mode)}
+      </div>
+      <div class=axis-section>
+        <div class=axis-header>
+          <span class=axis-title>${i18nString(UIStrings.inline)}</span>
+          <devtools-checkbox
+            .checked=${inlineAxis.self}
+            ?disabled=${isGeneric(inlineAxis)}
+            @change=${(e) => input.onSelfChange("inline" /* Axis.INLINE */, e.target.checked)}>
+            <span class="self-checkbox-label source-code">self</span>
+          </devtools-checkbox>
+        </div>
+        ${renderModeRadioGroup("inline" /* Axis.INLINE */, inlineAxis.mode)}
+      </div>
+    </div>
+    `, 
+    // clang-format on
+    target, { container });
+};
+export var Events;
+(function (Events) {
+    Events["POSITION_AREA_CHANGED"] = "positionAreaChanged";
+})(Events || (Events = {}));
+const PositionAreaEditorBase = Common.ObjectWrapper.eventMixin(UI.Widget.VBox);
+export class PositionAreaEditor extends PositionAreaEditorBase {
+    #view;
+    #area;
+    #inProgressSelection;
+    constructor(element, view = DEFAULT_VIEW) {
+        super(element);
+        this.setDefaultFocusedElement(this.contentElement);
+        this.#view = view;
+    }
+    wasShown() {
+        super.wasShown();
+        this.performUpdate();
+    }
+    get area() {
+        return this.#area;
+    }
+    set area(val) {
+        if ((this.#inProgressSelection?.origin ?? this.#area) === val) {
+            return;
+        }
+        this.#area = val;
+        this.#inProgressSelection = undefined;
+        this.requestUpdate();
+    }
+    #startSelection(x, y) {
+        this.#finishSelection();
+        this.#select(x, y);
+    }
+    #inlineAxis() {
+        if (!this.#area) {
+            return { start: 0, end: 0, mode: "physical" /* Mode.PHYSICAL */, self: false };
+        }
+        return this.#area.primaryAxis === "inline" /* Axis.INLINE */ ? this.#area.first : this.#area.second;
+    }
+    #blockAxis() {
+        if (!this.#area) {
+            return { start: 0, end: 0, mode: "physical" /* Mode.PHYSICAL */, self: false };
+        }
+        return this.#area.primaryAxis === "block" /* Axis.BLOCK */ ? this.#area.first : this.#area.second;
+    }
+    #axis(axis) {
+        return axis === "inline" /* Axis.INLINE */ ? this.#inlineAxis() : this.#blockAxis();
+    }
+    #notifyChange() {
+        if (!this.#area) {
+            return;
+        }
+        this.dispatchEventToListeners("positionAreaChanged" /* Events.POSITION_AREA_CHANGED */, this.#area);
+    }
+    #select(x, y) {
+        if (!this.#inProgressSelection) {
+            this.#inProgressSelection = { origin: this.#area, start: { x, y }, end: { x, y } };
+        }
+        this.#inProgressSelection.end = { x, y };
+        const { start, end } = this.#inProgressSelection;
+        const primaryAxis = this.#area?.primaryAxis ?? "inline" /* Axis.INLINE */;
+        // The visual 3x3 grid maps horizontal (x) to the inline axis and vertical (y) to the block axis.
+        const inlineAxis = { ...this.#inlineAxis(), start: Math.min(start.x, end.x), end: Math.max(start.x, end.x) };
+        const blockAxis = { ...this.#blockAxis(), start: Math.min(start.y, end.y), end: Math.max(start.y, end.y) };
+        this.#area = {
+            first: primaryAxis === "inline" /* Axis.INLINE */ ? inlineAxis : blockAxis,
+            second: primaryAxis === "block" /* Axis.BLOCK */ ? inlineAxis : blockAxis,
+            primaryAxis,
+        };
+        this.requestUpdate();
+        this.#notifyChange();
+    }
+    #finishSelection(x, y) {
+        if (!this.#inProgressSelection) {
+            return;
+        }
+        if (x === undefined || y === undefined) {
+            this.#area = this.#inProgressSelection.origin ?? this.#area;
+            this.#inProgressSelection = undefined;
+            this.#notifyChange();
+            this.requestUpdate();
+            return;
+        }
+        this.#select(x, y);
+        this.#inProgressSelection = undefined;
+    }
+    #setAxisMode(axis, mode) {
+        if (!this.#area) {
+            return;
+        }
+        const otherAxis = axis === "inline" /* Axis.INLINE */ ? "block" /* Axis.BLOCK */ : "inline" /* Axis.INLINE */;
+        const current = this.#axis(axis);
+        if (mode === current.mode) {
+            return;
+        }
+        const other = this.#axis(otherAxis);
+        current.mode = mode;
+        if (isGeneric(current) || mode === "physical" /* Mode.PHYSICAL */) {
+            // center and span-all and physical axes don't support self
+            current.self = false;
+        }
+        if (!isGeneric(other)) {
+            if (mode === "physical" /* Mode.PHYSICAL */ || mode === "coordinate" /* Mode.COORDINATE */) {
+                // physical axes may be combined with coordinate
+                if (other.mode !== "physical" /* Mode.PHYSICAL */ && other.mode !== "coordinate" /* Mode.COORDINATE */) {
+                    other.mode = mode === "coordinate" /* Mode.COORDINATE */ ? "coordinate" /* Mode.COORDINATE */ : (other.self ? "coordinate" /* Mode.COORDINATE */ : "physical" /* Mode.PHYSICAL */);
+                }
+            }
+            else {
+                other.mode = mode;
+                if (!isGeneric(current)) {
+                    other.self = current.self;
+                }
+            }
+        }
+        else {
+            other.mode = mode;
+            other.self = false;
+        }
+        this.requestUpdate();
+        this.#notifyChange();
+    }
+    #setAxisSelf(axis, self) {
+        if (!this.#area) {
+            return;
+        }
+        const current = this.#axis(axis);
+        const other = this.#axis(axis === "inline" /* Axis.INLINE */ ? "block" /* Axis.BLOCK */ : "inline" /* Axis.INLINE */);
+        if (isGeneric(current)) {
+            if (!isGeneric(other)) {
+                this.#setAxisSelf(axis === "inline" /* Axis.INLINE */ ? "block" /* Axis.BLOCK */ : "inline" /* Axis.INLINE */, self);
+            }
+            this.requestUpdate();
+            this.#notifyChange();
+            return;
+        }
+        current.self = self;
+        if (current.mode === "physical" /* Mode.PHYSICAL */ && self) {
+            current.mode = "coordinate" /* Mode.COORDINATE */;
+        }
+        if (!isGeneric(other) && other.mode !== "physical" /* Mode.PHYSICAL */ && other.mode !== "coordinate" /* Mode.COORDINATE */) {
+            other.self = self;
+        }
+        this.requestUpdate();
+        this.#notifyChange();
+    }
+    performUpdate() {
+        const isSelecting = () => this.#inProgressSelection !== undefined;
+        this.#view({
+            area: this.#area,
+            get isSelecting() {
+                return isSelecting();
+            },
+            onSelectStart: this.#startSelection.bind(this),
+            onSelect: this.#select.bind(this),
+            onSelectEnd: this.#finishSelection.bind(this),
+            onModeChange: this.#setAxisMode.bind(this),
+            onSelfChange: this.#setAxisSelf.bind(this),
+        }, undefined, this.contentElement);
+    }
 }
 //# sourceMappingURL=PositionAreaEditor.js.map

@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "allowJs": true,
+    "allowJs": false,
     "allowSyntheticDefaultImports": true,
-    "checkJs": true,
+    "checkJs": false,
     "composite": false,
     "declaration": false,
     "disableSourceOfProjectReferenceRedirect": true,
@@ -28,6 +28,10 @@
     "outDir": ".",
     "preserveConstEnums": true,
     "rootDir": "../../../../../../front_end/core/sdk",
+    "rootDirs": [
+      "../../../../../../",
+      "../../../"
+    ],
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
@@ -61,6 +65,9 @@
     },
     {
       "path": "../common/bundle-tsconfig.ref.json"
+    },
+    {
+      "path": "../../../test/api/test_interface_types-tsconfig.ref.json"
     }
   ]
 }

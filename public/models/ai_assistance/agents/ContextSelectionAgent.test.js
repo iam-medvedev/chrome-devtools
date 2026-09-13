@@ -10,6 +10,7 @@ import * as SDK from '../../../core/sdk/sdk.js';
 import { mockAidaClient } from '../../../testing/AiAssistanceHelpers.js';
 import { deinitializeGlobalVars, restoreUserAgentForTesting, setUserAgentForTesting, updateHostConfig, } from '../../../testing/EnvironmentHelpers.js';
 import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
+import { createNetworkRequest } from '../../../testing/NetworkRequestHelpers.js';
 import { setupSettingsHooks } from '../../../testing/SettingsHelpers.js';
 import { SnapshotTester } from '../../../testing/SnapshotTester.js';
 import { TestUniverse } from '../../../testing/TestUniverse.js';
@@ -130,8 +131,12 @@ describe('ContextSelectionAgent', function () {
     });
     describe('listNetworkRequests', () => {
         it('lists network requests', async () => {
-            const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://example.com/`, urlString `https://example.com/`, null, null, null);
-            request.statusCode = 200;
+            const request = createNetworkRequest({
+                requestId: 'requestId',
+                url: 'https://example.com/',
+                documentURL: 'https://example.com/',
+                statusCode: 200,
+            });
             request.setIssueTime(0, 0);
             request.setTransferSize(3000);
             request.endTime = 2;
@@ -203,7 +208,7 @@ describe('ContextSelectionAgent', function () {
                         }],
                     [{ explanation: 'Done' }],
                 ]),
-                allowedOrigin: () => ({ origin: 'null' }),
+                allowedOrigin: () => ({ origin: SDK.SecurityOrigin.SecurityOrigin.create('null') }),
             });
             await Array.fromAsync(agent.run('test', { selected: null }));
             const requestToAida = agent.buildRequest({ text: '' }, Host.AidaClient.Role.USER);
@@ -226,7 +231,7 @@ describe('ContextSelectionAgent', function () {
                         }],
                     [{ explanation: 'Done' }],
                 ]),
-                allowedOrigin: () => ({ origin: 'data:' }),
+                allowedOrigin: () => ({ origin: SDK.SecurityOrigin.SecurityOrigin.create('data:') }),
             });
             await Array.fromAsync(agent.run('test', { selected: null }));
             const requestToAida = agent.buildRequest({ text: '' }, Host.AidaClient.Role.USER);
@@ -238,12 +243,20 @@ describe('ContextSelectionAgent', function () {
             });
         });
         it('filters network requests by origin', async () => {
-            const request1 = SDK.NetworkRequest.NetworkRequest.create('requestId1', urlString `https://example.com/`, urlString `https://example.com/`, null, null, null);
-            request1.statusCode = 200;
+            const request1 = createNetworkRequest({
+                requestId: 'requestId1',
+                url: 'https://example.com/',
+                documentURL: 'https://example.com/',
+                statusCode: 200,
+            });
             request1.setIssueTime(0, 0);
             request1.endTime = 1;
-            const request2 = SDK.NetworkRequest.NetworkRequest.create('requestId2', urlString `https://another.com/`, urlString `https://another.com/`, null, null, null);
-            request2.statusCode = 200;
+            const request2 = createNetworkRequest({
+                requestId: 'requestId2',
+                url: 'https://another.com/',
+                documentURL: 'https://another.com/',
+                statusCode: 200,
+            });
             request2.setIssueTime(0, 0);
             request2.endTime = 1;
             const networkLog = universe.networkLog;
@@ -259,7 +272,7 @@ describe('ContextSelectionAgent', function () {
                         }],
                     [{ explanation: 'Done' }],
                 ]),
-                allowedOrigin: () => ({ origin: 'https://example.com' }),
+                allowedOrigin: () => ({ origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com') }),
             });
             await Array.fromAsync(agent.run('test', { selected: null }));
             const requestToAida = agent.buildRequest({ text: '' }, Host.AidaClient.Role.USER);
@@ -304,8 +317,12 @@ describe('ContextSelectionAgent', function () {
             ]);
         });
         it('returns error when all network requests are cross-origin', async () => {
-            const request1 = SDK.NetworkRequest.NetworkRequest.create('requestId1', urlString `https://another.com/`, urlString `https://another.com/`, null, null, null);
-            request1.statusCode = 200;
+            const request1 = createNetworkRequest({
+                requestId: 'requestId1',
+                url: 'https://another.com/',
+                documentURL: 'https://another.com/',
+                statusCode: 200,
+            });
             const networkLog = universe.networkLog;
             sinon.stub(networkLog, 'requests').returns([request1]);
             const agent = new ContextSelectionAgent.ContextSelectionAgent({
@@ -319,7 +336,7 @@ describe('ContextSelectionAgent', function () {
                         }],
                     [{ explanation: 'Done' }],
                 ]),
-                allowedOrigin: () => ({ origin: 'https://example.com' }),
+                allowedOrigin: () => ({ origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com') }),
             });
             await Array.fromAsync(agent.run('test', { selected: null }));
             const requestToAida = agent.buildRequest({ text: '' }, Host.AidaClient.Role.USER);
@@ -356,9 +373,14 @@ describe('ContextSelectionAgent', function () {
             ]);
         });
         it('filters out HAR requests if the allowed origin is not the virtual HAR origin', async () => {
-            const request = SDK.NetworkRequest.NetworkRequest.createWithoutBackendRequest('requestId1', urlString `https://example.com/`, urlString `https://example.com/`, null);
-            request.setIsImportedHar(true);
-            request.statusCode = 200;
+            const request = createNetworkRequest({
+                withoutBackend: true,
+                requestId: 'requestId1',
+                url: 'https://example.com/',
+                documentURL: 'https://example.com/',
+                isImportedHar: true,
+                statusCode: 200,
+            });
             request.setIssueTime(0, 0);
             request.endTime = 1;
             const networkLog = universe.networkLog;
@@ -374,7 +396,7 @@ describe('ContextSelectionAgent', function () {
                         }],
                     [{ explanation: 'Done' }],
                 ]),
-                allowedOrigin: () => ({ origin: 'https://example.com' }),
+                allowedOrigin: () => ({ origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com') }),
             });
             await Array.fromAsync(agent.run('test', { selected: null }));
             const requestToAida = agent.buildRequest({ text: '' }, Host.AidaClient.Role.USER);
@@ -386,9 +408,14 @@ describe('ContextSelectionAgent', function () {
             });
         });
         it('includes HAR requests if the allowed origin is the virtual HAR origin', async () => {
-            const request = SDK.NetworkRequest.NetworkRequest.createWithoutBackendRequest('requestId1', urlString `https://example.com/`, urlString `https://example.com/`, null);
-            request.setIsImportedHar(true);
-            request.statusCode = 200;
+            const request = createNetworkRequest({
+                withoutBackend: true,
+                requestId: 'requestId1',
+                url: 'https://example.com/',
+                documentURL: 'https://example.com/',
+                isImportedHar: true,
+                statusCode: 200,
+            });
             request.setIssueTime(0, 0);
             request.endTime = 1;
             const networkLog = universe.networkLog;
@@ -404,7 +431,7 @@ describe('ContextSelectionAgent', function () {
                         }],
                     [{ explanation: 'Done' }],
                 ]),
-                allowedOrigin: () => ({ origin: 'imported-har://example.com' }),
+                allowedOrigin: () => ({ origin: SDK.SecurityOrigin.SecurityOrigin.create('imported-har://example.com') }),
             });
             await Array.fromAsync(agent.run('test', { selected: null }));
             const requestToAida = agent.buildRequest({ text: '' }, Host.AidaClient.Role.USER);
@@ -437,7 +464,7 @@ describe('ContextSelectionAgent', function () {
                         }],
                     [{ explanation: 'Done' }],
                 ]),
-                allowedOrigin: () => ({ origin: 'https://example.com' }),
+                allowedOrigin: () => ({ origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com') }),
             });
             await Array.fromAsync(agent.run('test', { selected: null }));
             const requestToAida = agent.buildRequest({ text: '' }, Host.AidaClient.Role.USER);
@@ -474,8 +501,12 @@ describe('ContextSelectionAgent', function () {
             ]);
         });
         it('handles invalid documentURL when listing network requests', async () => {
-            const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://example.com/`, urlString `invalid-url`, null, null, null);
-            request.statusCode = 200;
+            const request = createNetworkRequest({
+                requestId: 'requestId',
+                url: 'https://example.com/',
+                documentURL: 'invalid-url',
+                statusCode: 200,
+            });
             const networkLog = universe.networkLog;
             sinon.stub(networkLog, 'requests').returns([request]);
             const agent = new ContextSelectionAgent.ContextSelectionAgent({
@@ -489,7 +520,7 @@ describe('ContextSelectionAgent', function () {
                         }],
                     [{ explanation: 'Done' }],
                 ]),
-                allowedOrigin: () => ({ origin: 'https://example.com' }),
+                allowedOrigin: () => ({ origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com') }),
             });
             await Array.fromAsync(agent.run('test', { selected: null }));
             const requestToAida = agent.buildRequest({ text: '' }, Host.AidaClient.Role.USER);
@@ -506,12 +537,20 @@ describe('ContextSelectionAgent', function () {
             });
         });
         it('lists network requests with different origins but same document origin', async () => {
-            const request1 = SDK.NetworkRequest.NetworkRequest.create('requestId1', urlString `https://example.com/`, urlString `https://example.com/`, null, null, null);
-            request1.statusCode = 200;
+            const request1 = createNetworkRequest({
+                requestId: 'requestId1',
+                url: 'https://example.com/',
+                documentURL: 'https://example.com/',
+                statusCode: 200,
+            });
             request1.setIssueTime(0, 0);
             request1.endTime = 1;
-            const request2 = SDK.NetworkRequest.NetworkRequest.create('requestId2', urlString `https://another.com/script.js`, urlString `https://example.com/`, null, null, null);
-            request2.statusCode = 200;
+            const request2 = createNetworkRequest({
+                requestId: 'requestId2',
+                url: 'https://another.com/script.js',
+                documentURL: 'https://example.com/',
+                statusCode: 200,
+            });
             request2.setIssueTime(0, 0);
             request2.endTime = 1;
             const networkLog = universe.networkLog;
@@ -527,7 +566,7 @@ describe('ContextSelectionAgent', function () {
                         }],
                     [{ explanation: 'Done' }],
                 ]),
-                allowedOrigin: () => ({ origin: 'https://example.com' }),
+                allowedOrigin: () => ({ origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com') }),
             });
             await Array.fromAsync(agent.run('test', { selected: null }));
             const requestToAida = agent.buildRequest({ text: '' }, Host.AidaClient.Role.USER);
@@ -589,8 +628,12 @@ describe('ContextSelectionAgent', function () {
     });
     describe('selectNetworkRequest', () => {
         it('selects a network request', async () => {
-            const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://example.com/`, urlString `https://example.com/`, null, null, null);
-            request.statusCode = 200;
+            const request = createNetworkRequest({
+                requestId: 'requestId',
+                url: 'https://example.com/',
+                documentURL: 'https://example.com/',
+                statusCode: 200,
+            });
             const networkLog = universe.networkLog;
             sinon.stub(networkLog, 'requests').returns([request]);
             const agent = new ContextSelectionAgent.ContextSelectionAgent({
@@ -619,8 +662,12 @@ describe('ContextSelectionAgent', function () {
             assert.strictEqual(widget.data.request, request);
         });
         it('returns an error when selecting cross-origin network request', async () => {
-            const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://another.com/`, urlString `https://another.com/`, null, null, null);
-            request.statusCode = 200;
+            const request = createNetworkRequest({
+                requestId: 'requestId',
+                url: 'https://another.com/',
+                documentURL: 'https://another.com/',
+                statusCode: 200,
+            });
             const networkLog = universe.networkLog;
             sinon.stub(networkLog, 'requests').returns([request]);
             const agent = new ContextSelectionAgent.ContextSelectionAgent({
@@ -636,7 +683,7 @@ describe('ContextSelectionAgent', function () {
                         }],
                     [{ explanation: 'Done' }],
                 ]),
-                allowedOrigin: () => ({ origin: 'https://example.com' }),
+                allowedOrigin: () => ({ origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com') }),
             });
             const responses = await Array.fromAsync(agent.run('test', { selected: null }));
             // No context change because we didn't find a suitable nextwork request.
@@ -655,8 +702,12 @@ describe('ContextSelectionAgent', function () {
             });
         });
         it('handles invalid documentURL when selecting network request', async () => {
-            const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://example.com/`, urlString `invalid-url`, null, null, null);
-            request.statusCode = 200;
+            const request = createNetworkRequest({
+                requestId: 'requestId',
+                url: 'https://example.com/',
+                documentURL: 'invalid-url',
+                statusCode: 200,
+            });
             const networkLog = universe.networkLog;
             sinon.stub(networkLog, 'requests').returns([request]);
             const agent = new ContextSelectionAgent.ContextSelectionAgent({
@@ -672,7 +723,7 @@ describe('ContextSelectionAgent', function () {
                         }],
                     [{ explanation: 'Done' }],
                 ]),
-                allowedOrigin: () => ({ origin: 'https://example.com' }),
+                allowedOrigin: () => ({ origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com') }),
             });
             const responses = await Array.fromAsync(agent.run('test', { selected: null }));
             assert.isUndefined(responses.find(r => r.type === "context-change" /* AiAgent.ResponseType.CONTEXT_CHANGE */));
@@ -752,7 +803,7 @@ describe('ContextSelectionAgent', function () {
                         }],
                     [{ explanation: 'Done' }],
                 ]),
-                allowedOrigin: () => ({ origin: 'https://example.com' }),
+                allowedOrigin: () => ({ origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com') }),
             });
             const responses = await Array.fromAsync(agent.run('test', { selected: null }));
             assert.isUndefined(responses.find(r => r.type === "context-change" /* AiAgent.ResponseType.CONTEXT_CHANGE */));
@@ -852,7 +903,7 @@ describe('ContextSelectionAgent', function () {
                         }],
                     [{ explanation: 'Done' }],
                 ]),
-                allowedOrigin: () => ({ origin: 'https://example.com' }),
+                allowedOrigin: () => ({ origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com') }),
             });
             const responses = await Array.fromAsync(agent.run('test', { selected: null }));
             const actionResponse = responses.find(response => response.type === "action" /* AiAgent.ResponseType.ACTION */);
@@ -908,7 +959,7 @@ describe('ContextSelectionAgent', function () {
                         }],
                     [{ explanation: 'Done' }],
                 ]),
-                allowedOrigin: () => ({ origin: 'https://example.com' }),
+                allowedOrigin: () => ({ origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com') }),
             });
             const responses = await Array.fromAsync(agent.run('test', { selected: null }));
             const contextChange = responses.find(response => response.type === "context-change" /* AiAgent.ResponseType.CONTEXT_CHANGE */);

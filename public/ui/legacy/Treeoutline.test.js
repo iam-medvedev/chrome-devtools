@@ -190,6 +190,17 @@ describe('TreeViewElement', () => {
         assert.strictEqual(secondLevel[0].titleElement.textContent?.trim(), 'Tree Node Text in collapsed subtree 1');
         assert.strictEqual(secondLevel[1].titleElement.textContent?.trim(), 'Tree Node Text in collapsed subtree 2');
     });
+    it('clones style attribute to shadow DOM listItemElement', async () => {
+        const component = await makeTree(html `<devtools-tree .template=${html `
+      <ul role="tree">
+        <li role="treeitem" style="--indent: 24px;">Node with custom style</li>
+      </ul>
+    `}></devtools-tree>`);
+        const treeOutline = component.getInternalTreeOutlineForTest();
+        const rootChildren = treeOutline.rootElement().children();
+        assert.lengthOf(rootChildren, 1);
+        assert.strictEqual(rootChildren[0].listItemElement.style.getPropertyValue('--indent'), '24px');
+    });
     it('selects `selected` config elements', async () => {
         const component = await makeTree(html `<devtools-tree .template=${html `
       <ul role="tree">
@@ -314,6 +325,48 @@ describe('TreeViewElement', () => {
         component.getInternalTreeOutlineForTest().rootElement().lastChild()?.select();
         sinon.assert.notCalled(onSelectFirst);
         sinon.assert.calledOnce(onSelectSecond);
+        assert.isFalse(onSelectSecond.firstCall.args[0].detail?.selectedByUser);
+        component.getInternalTreeOutlineForTest().rootElement().firstChild()?.select(/* omitFocus= */ false, 
+        /* selectedByUser= */ true);
+        sinon.assert.calledOnce(onSelectFirst);
+        assert.isTrue(onSelectFirst.firstCall.args[0].detail?.selectedByUser);
+    });
+    it('applies disclosure-class attribute to the tree outline disclosure element', async () => {
+        const component = await makeTree(html `
+      <devtools-tree disclosure-class="custom-disclosure-style" .template=${html `
+        <ul role="tree">
+          <li role="treeitem">node</li>
+        </ul>`}>
+      </devtools-tree>`);
+        const disclosureElement = component.shadowRoot?.querySelector('.tree-outline-disclosure');
+        assert.isNotNull(disclosureElement);
+        assert.isTrue(disclosureElement?.classList.contains('custom-disclosure-style'));
+    });
+    it('propagates tree ul class names to internal tree outline contentElement without overwriting internal classes', async () => {
+        const component = await makeTree(html `
+      <devtools-tree dense .template=${html `
+        <ul role="tree" class="custom-tree-class">
+          <li role="treeitem">node</li>
+        </ul>`}>
+      </devtools-tree>`);
+        const treeOutline = component.getInternalTreeOutlineForTest();
+        assert.isTrue(treeOutline.contentElement.classList.contains('custom-tree-class'));
+        assert.isTrue(treeOutline.contentElement.classList.contains('tree-outline-dense'));
+        assert.isTrue(treeOutline.contentElement.classList.contains('tree-outline'));
+    });
+    it('preserves focus on listItemElement when TreeViewTreeElement is refreshed', async () => {
+        const component = await makeTree(html `
+      <devtools-tree .template=${html `
+        <ul role="tree">
+          <li role="treeitem">node</li>
+        </ul>`}>
+      </devtools-tree>`);
+        const treeElement = component.getInternalTreeOutlineForTest().rootElement().firstChild();
+        assert.exists(treeElement);
+        treeElement.select();
+        assert.isTrue(treeElement.listItemElement.hasFocus());
+        treeElement.refresh();
+        assert.isTrue(treeElement.listItemElement.hasFocus());
     });
     it('sends an `expand` event when a node is expanded or collapsed', async () => {
         const onExpand1 = sinon.stub();
@@ -356,6 +409,113 @@ describe('TreeViewElement', () => {
         component.getInternalTreeOutlineForTest().rootElement().firstChild()?.expand();
         sinon.assert.calledOnce(onExpand);
         assert.deepEqual(onExpand.args[0][0].detail, { expanded: true });
+    });
+    it('sends an `enter` event and suppresses expansion when canceled', async () => {
+        const onEnter = sinon.stub().callsFake(e => e.preventDefault());
+        const component = await makeTree(html `<devtools-tree @enter=${onEnter} .template=${html `
+      <ul role="tree">
+         <li role="treeitem">
+           Parent Node
+           <ul role="group">
+             <li role="treeitem">Child Node</li>
+           </ul>
+         </li>
+      </ul>
+    `}></devtools-tree>`);
+        const treeOutline = component.getInternalTreeOutlineForTest();
+        const parentNode = treeOutline.rootElement().children()[0];
+        parentNode.select();
+        assert.isFalse(parentNode.expanded);
+        dispatchKeyDownEvent(parentNode.listItemElement, { bubbles: true, key: 'Enter' });
+        sinon.assert.calledOnce(onEnter);
+        assert.isFalse(parentNode.expanded, 'Node should not expand on Enter when enter event is canceled');
+    });
+    it('expands nodes on Enter when enter event is not canceled', async () => {
+        const onEnter = sinon.stub();
+        const component = await makeTree(html `<devtools-tree @enter=${onEnter} .template=${html `
+      <ul role="tree">
+         <li role="treeitem">
+           Parent Node
+           <ul role="group">
+             <li role="treeitem">Child Node</li>
+           </ul>
+         </li>
+      </ul>
+    `}></devtools-tree>`);
+        const treeOutline = component.getInternalTreeOutlineForTest();
+        const parentNode = treeOutline.rootElement().children()[0];
+        parentNode.select();
+        assert.isFalse(parentNode.expanded);
+        dispatchKeyDownEvent(parentNode.listItemElement, { bubbles: true, key: 'Enter' });
+        sinon.assert.calledOnce(onEnter);
+        assert.isTrue(parentNode.expanded, 'Node should expand on Enter when enter event is not canceled');
+    });
+    it('does not toggle node expansion on double click if event is defaultPrevented', async () => {
+        const component = await makeTree(html `<devtools-tree .template=${html `
+      <ul role="tree">
+         <li role="treeitem">
+           Parent Node
+           <ul role="group">
+             <li role="treeitem">Child Node</li>
+           </ul>
+         </li>
+      </ul>
+    `}></devtools-tree>`);
+        const treeOutline = component.getInternalTreeOutlineForTest();
+        const parentNode = treeOutline.rootElement().children()[0];
+        assert.isFalse(parentNode.expanded);
+        const event = new MouseEvent('dblclick', { bubbles: true, cancelable: true });
+        event.preventDefault();
+        parentNode.listItemElement.dispatchEvent(event);
+        assert.isFalse(parentNode.expanded, 'Node should not expand on double click when default is prevented');
+    });
+    it('focuses listItemElement on double click expansion if focus was elsewhere', async () => {
+        const component = await makeTree(html `<devtools-tree .template=${html `
+      <ul role="tree">
+         <li role="treeitem">
+           Parent Node
+           <ul role="group">
+             <li role="treeitem">Child Node</li>
+           </ul>
+         </li>
+      </ul>
+    `}></devtools-tree>`);
+        const treeOutline = component.getInternalTreeOutlineForTest();
+        const parentNode = treeOutline.rootElement().children()[0];
+        assert.isFalse(parentNode.expanded);
+        parentNode.select();
+        assert.isTrue(parentNode.listItemElement.hasFocus());
+        parentNode.listItemElement.blur();
+        assert.isFalse(parentNode.listItemElement.hasFocus());
+        const event = new MouseEvent('dblclick', { bubbles: true, cancelable: true });
+        parentNode.listItemElement.dispatchEvent(event);
+        assert.isTrue(parentNode.expanded);
+        assert.isTrue(parentNode.listItemElement.hasFocus());
+    });
+    it('does not steal focus from focused child inside listItemElement on double click', async () => {
+        const component = await makeTree(html `<devtools-tree .template=${html `
+      <ul role="tree">
+         <li role="treeitem">
+           <input type="text" />
+           Parent Node
+           <ul role="group">
+             <li role="treeitem">Child Node</li>
+           </ul>
+         </li>
+      </ul>
+    `}></devtools-tree>`);
+        const treeOutline = component.getInternalTreeOutlineForTest();
+        const parentNode = treeOutline.rootElement().children()[0];
+        assert.isFalse(parentNode.expanded);
+        const input = parentNode.listItemElement.querySelector('input');
+        assert.isNotNull(input);
+        input.focus();
+        assert.isTrue(parentNode.listItemElement.hasFocus());
+        const event = new MouseEvent('dblclick', { bubbles: true, cancelable: true });
+        input.dispatchEvent(event);
+        assert.isTrue(parentNode.expanded);
+        assert.isTrue(parentNode.listItemElement.hasFocus());
+        assert.strictEqual(input.getRootNode().activeElement, input);
     });
     it('applies jslog contexts to tree elements', async () => {
         const component = await makeTree(html `

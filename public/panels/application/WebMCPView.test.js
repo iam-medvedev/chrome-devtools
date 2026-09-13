@@ -181,6 +181,7 @@ describe('WebMCPView (View)', () => {
         target.style.height = '400px';
         renderElementIntoDOM(target, { includeCommonStyles: true });
         DEFAULT_VIEW(createDefaultViewInput(), {}, target);
+        await UI.Widget.Widget.allUpdatesComplete;
         const listElements = target.querySelectorAll('.tool-item');
         assert.lengthOf(listElements, 0);
         const toolListWidget = target.querySelector('.tool-list devtools-widget');

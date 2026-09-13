@@ -1211,6 +1211,9 @@
   "generated/Deprecation.ts | ExampleBrowserProcessDeprecation": {
     "message": "This is an example for showing the code required for a browser process reported deprecation."
   },
+  "generated/Deprecation.ts | FencedFrame": {
+    "message": "Fenced Frame API is deprecated and scheduled for removal."
+  },
   "generated/Deprecation.ts | Fledge": {
     "message": "The Protected Audience API is deprecated and will be removed in a future release."
   },
@@ -2545,6 +2548,27 @@
   },
   "panels/accessibility/accessibility-meta.ts | shoAccessibility": {
     "message": "Show Accessibility"
+  },
+  "panels/accessibility/AccessibilityAnnouncementRecordingListView.ts | api": {
+    "message": "API"
+  },
+  "panels/accessibility/AccessibilityAnnouncementRecordingListView.ts | ariaLive": {
+    "message": "ARIA live"
+  },
+  "panels/accessibility/AccessibilityAnnouncementRecordingListView.ts | ariaLiveRecordingList": {
+    "message": "Accessibility Announcements"
+  },
+  "panels/accessibility/AccessibilityAnnouncementRecordingListView.ts | jsTriggered": {
+    "message": "JS-triggered"
+  },
+  "panels/accessibility/AccessibilityAnnouncementRecordingListView.ts | message": {
+    "message": "Message"
+  },
+  "panels/accessibility/AccessibilityAnnouncementRecordingListView.ts | politeness": {
+    "message": "Politeness"
+  },
+  "panels/accessibility/AccessibilityAnnouncementRecordingListView.ts | time": {
+    "message": "Time"
   },
   "panels/accessibility/AccessibilityAnnouncementRecordingView.ts | ariaLiveRecording": {
     "message": "Announcements recording"
@@ -8330,6 +8354,9 @@
   "panels/elements/StylePropertyTreeElement.ts | overriddenByAnimation": {
     "message": "Overridden by animation styles."
   },
+  "panels/elements/StylePropertyTreeElement.ts | positionAreaEditorButton": {
+    "message": "Open position-area editor"
+  },
   "panels/elements/StylePropertyTreeElement.ts | shiftClickToChangeColorFormat": {
     "message": "Shift + Click to change color format."
   },
@@ -11374,6 +11401,9 @@
   },
   "panels/network/RequestHeadersView.ts | earlyHintsHeaders": {
     "message": "Early hints headers"
+  },
+  "panels/network/RequestHeadersView.ts | earlyPreloadsIgnoredCacheDisabledWarning": {
+    "message": "Early Hints preloads were ignored because cache is disabled. Enable cache and reload the page to use them."
   },
   "panels/network/RequestHeadersView.ts | fromDiskCache": {
     "message": "(from disk cache)"
@@ -17375,8 +17405,17 @@
   "panels/whats_new/whats_new-meta.ts | whatsNew": {
     "message": "What’s new"
   },
+  "ui/comments/comments-meta.ts | comments": {
+    "message": "Comments"
+  },
+  "ui/comments/comments-meta.ts | showComments": {
+    "message": "Show comments"
+  },
   "ui/comments/comments-meta.ts | toggleCommentMode": {
     "message": "Add comments to send to your AI coding agent"
+  },
+  "ui/comments/CommentsStatusBarPill.ts | commentsCount": {
+    "message": "Comments ({PH1})"
   },
   "ui/components/dialogs/Dialog.ts | close": {
     "message": "Close"
@@ -17806,6 +17845,36 @@
   },
   "ui/legacy/components/inline_editor/CSSShadowEditor.ts | yOffset": {
     "message": "Y offset"
+  },
+  "ui/legacy/components/inline_editor/PositionAreaEditor.ts | auto": {
+    "message": "Auto"
+  },
+  "ui/legacy/components/inline_editor/PositionAreaEditor.ts | block": {
+    "message": "Block"
+  },
+  "ui/legacy/components/inline_editor/PositionAreaEditor.ts | blockAxisMode": {
+    "message": "Block axis mode"
+  },
+  "ui/legacy/components/inline_editor/PositionAreaEditor.ts | coordinate": {
+    "message": "Coordinate"
+  },
+  "ui/legacy/components/inline_editor/PositionAreaEditor.ts | inline": {
+    "message": "Inline"
+  },
+  "ui/legacy/components/inline_editor/PositionAreaEditor.ts | inlineAxisMode": {
+    "message": "Inline axis mode"
+  },
+  "ui/legacy/components/inline_editor/PositionAreaEditor.ts | logical": {
+    "message": "Logical"
+  },
+  "ui/legacy/components/inline_editor/PositionAreaEditor.ts | physical": {
+    "message": "Physical"
+  },
+  "ui/legacy/components/inline_editor/PositionAreaEditor.ts | positionAreaGrid": {
+    "message": "position-area grid"
+  },
+  "ui/legacy/components/inline_editor/PositionAreaEditor.ts | positionAreaGridDescription": {
+    "message": "Use arrow keys to navigate, Space or Enter to select, and Shift + arrow keys to select a range."
   },
   "ui/legacy/components/object_ui/CustomPreviewComponent.ts | showAsJavascriptObject": {
     "message": "Show as JavaScript object"

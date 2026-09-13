@@ -6,6 +6,7 @@ import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { getMenuForToolbarButton } from '../../testing/ContextMenuHelpers.js';
+import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Main from './main.js';
@@ -80,6 +81,27 @@ describeWithEnvironment('ConsoleProfileFinishedListener', () => {
         sinon.assert.calledOnce(revealStub);
         const [revealable] = revealStub.getCall(0).args;
         assert.instanceOf(revealable, SDK.CPUProfilerModel.ProfileFinishedData);
+    });
+});
+describeWithEnvironment('MainImpl clipboard forwarding', () => {
+    it('dispatches a composed clipboard event when a clipboard event is triggered on an active element inside shadow DOM', () => {
+        const main = new Main.MainImpl.MainImpl();
+        const container = document.createElement('div');
+        const shadowRoot = container.attachShadow({ mode: 'open' });
+        const input = document.createElement('input');
+        shadowRoot.appendChild(input);
+        renderElementIntoDOM(container);
+        input.focus();
+        let receivedEvent = null;
+        container.addEventListener('clipboard-copy', (e) => {
+            receivedEvent = e;
+        });
+        const copyEvent = new Event('copy', { bubbles: true });
+        Object.defineProperty(copyEvent, 'target', { value: document.body });
+        main.redispatchClipboardEventForTest(copyEvent);
+        assert.exists(receivedEvent);
+        assert.isTrue(receivedEvent.composed);
+        assert.isTrue(receivedEvent.bubbles);
     });
 });
 //# sourceMappingURL=MainImpl.test.js.map

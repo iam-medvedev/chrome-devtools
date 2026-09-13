@@ -7,7 +7,7 @@ import * as Platform from '../../core/platform/platform.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { expectCalled } from '../../testing/ExpectStubCall.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
-import { createNetworkRequest } from '../../testing/MockNetworkLog.js';
+import { createNetworkRequest } from '../../testing/NetworkRequestHelpers.js';
 import { addChildFrame, createResource, DOMAIN, getMainFrame, mockResourceTree, navigate, } from '../../testing/ResourceTreeHelpers.js';
 import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as SDK from './sdk.js';
@@ -101,7 +101,7 @@ describeWithEnvironment('CookieModel', () => {
             };
         });
         const target = universe.createTarget({ connection });
-        const dispatchLoadingFinished = () => target.model(SDK.NetworkManager.NetworkManager).dispatchEventToListeners(SDK.NetworkManager.Events.LoadingFinished, createNetworkRequest('1'));
+        const dispatchLoadingFinished = () => target.model(SDK.NetworkManager.NetworkManager).dispatchEventToListeners(SDK.NetworkManager.Events.LoadingFinished, createNetworkRequest({ requestId: '1' }));
         const mainFrame = getMainFrame(target);
         const model = target.model(SDK.CookieModel.CookieModel);
         const eventListener = sinon.stub();
@@ -126,7 +126,7 @@ describeWithEnvironment('CookieModel', () => {
         mockResourceTree(connection);
         connection.setSuccessHandler('Network.getCookies', () => ({ cookies: [cookie] }));
         const target = universe.createTarget({ connection });
-        const dispatchLoadingFinished = () => target.model(SDK.NetworkManager.NetworkManager).dispatchEventToListeners(SDK.NetworkManager.Events.LoadingFinished, createNetworkRequest('1'));
+        const dispatchLoadingFinished = () => target.model(SDK.NetworkManager.NetworkManager).dispatchEventToListeners(SDK.NetworkManager.Events.LoadingFinished, createNetworkRequest({ requestId: '1' }));
         const mainFrame = getMainFrame(target);
         const model = target.model(SDK.CookieModel.CookieModel);
         const eventListener = sinon.stub();
@@ -145,7 +145,7 @@ describeWithEnvironment('CookieModel', () => {
         mockResourceTree(connection);
         connection.setSuccessHandler('Network.getCookies', () => ({ cookies: [cookie] }));
         const target = universe.createTarget({ connection });
-        const dispatchLoadingFinished = () => target.model(SDK.NetworkManager.NetworkManager).dispatchEventToListeners(SDK.NetworkManager.Events.LoadingFinished, createNetworkRequest('1'));
+        const dispatchLoadingFinished = () => target.model(SDK.NetworkManager.NetworkManager).dispatchEventToListeners(SDK.NetworkManager.Events.LoadingFinished, createNetworkRequest({ requestId: '1' }));
         const mainFrame = getMainFrame(target);
         const model = target.model(SDK.CookieModel.CookieModel);
         createResource(mainFrame, urlString `${`https://${DOMAIN}/main_resource`}`, 'text/html', '');

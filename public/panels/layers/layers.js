@@ -114,7 +114,7 @@ __export(LayerTreeModel_exports, {
 });
 import * as Common from "../../core/common/common.js";
 import * as SDK from "../../core/sdk/sdk.js";
-import * as Geometry from "../../models/geometry/geometry.js";
+import * as Geometry from "../../ui/geometry/geometry.js";
 var LayerTreeModel = class extends SDK.SDKModel.SDKModel {
   layerTreeAgent;
   paintProfilerModel;

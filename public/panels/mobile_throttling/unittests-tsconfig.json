@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "allowJs": true,
+    "allowJs": false,
     "allowSyntheticDefaultImports": true,
-    "checkJs": true,
+    "checkJs": false,
     "composite": false,
     "declaration": false,
     "disableSourceOfProjectReferenceRedirect": true,
@@ -28,6 +28,10 @@
     "outDir": ".",
     "preserveConstEnums": true,
     "rootDir": "../../../../../../front_end/panels/mobile_throttling",
+    "rootDirs": [
+      "../../../../../../",
+      "../../../"
+    ],
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
@@ -54,6 +58,9 @@
   "references": [
     {
       "path": "bundle-tsconfig.ref.json"
+    },
+    {
+      "path": "../../core/common/bundle-tsconfig.ref.json"
     },
     {
       "path": "../../core/sdk/bundle-tsconfig.ref.json"

@@ -6,6 +6,10 @@
     "emitDeclarationOnly": true,
     "outDir": ".",
     "rootDir": "../../../../../../front_end/panels/application",
+    "rootDirs": [
+      "../../../../../../",
+      "../../../"
+    ],
     "skipLibCheck": true
   },
   "files": [
@@ -48,7 +52,8 @@
     "../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../front_end/global_typings/global_defs.d.ts",
     "../../../../../../node_modules/@types/filesystem/index.d.ts",
-    "../../../../../../node_modules/@types/filewriter/index.d.ts"
+    "../../../../../../node_modules/@types/filewriter/index.d.ts",
+    "../../../../../../node_modules/@types/json-schema/index.d.ts"
   ],
   "references": [
     {
@@ -80,9 +85,6 @@
     },
     {
       "path": "../../models/bindings/bundle-tsconfig.ref.json"
-    },
-    {
-      "path": "../../models/geometry/bundle-tsconfig.ref.json"
     },
     {
       "path": "../../models/issues_manager/bundle-tsconfig.ref.json"
@@ -143,6 +145,9 @@
     },
     {
       "path": "../../ui/components/tree_outline/bundle-tsconfig.ref.json"
+    },
+    {
+      "path": "../../ui/geometry/bundle-tsconfig.ref.json"
     },
     {
       "path": "../../ui/helpers/bundle-tsconfig.ref.json"

@@ -1,8 +1,7 @@
 // Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-var _a;
-import * as Common from '../../../core/common/common.js';
+import * as SDK from '../../../core/sdk/sdk.js';
 import * as TextUtils from '../../../core/text_utils/text_utils.js';
 import * as Logs from '../../logs/logs.js';
 import * as NetworkTimeCalculator from '../../network_time_calculator/network_time_calculator.js';
@@ -10,7 +9,10 @@ import { seconds } from './UnitFormatters.js';
 const MAX_HEADERS_SIZE = 1000;
 const MAX_BODY_SIZE = 10000;
 /**
- * Sanitizes the set of headers, removing values that are not on the allow-list and replacing them with '<redacted>'.
+ * Sanitizes headers by replacing unapproved header values with '<redacted>'.
+ *
+ * @param headers List of header name/value pairs to sanitize.
+ * @returns Sanitized list of headers with unapproved values redacted.
  */
 export function sanitizeHeaders(headers) {
     return headers.map(header => {
@@ -23,6 +25,27 @@ export function sanitizeHeaders(headers) {
 export class NetworkRequestFormatter {
     #calculator;
     #request;
+    #networkLog;
+    #accessingSecurityOrigin;
+    /**
+     * @param request The network request to format.
+     * @param calculator Calculator for request timing metrics.
+     * @param options Configuration options specifying the accessing security origin.
+     */
+    constructor(request, calculator, options) {
+        this.#request = request;
+        this.#calculator = calculator;
+        this.#networkLog = options.networkLog;
+        this.#accessingSecurityOrigin = options.accessingSecurityOrigin;
+    }
+    /**
+     * Evaluates the response access mode for this network request relative to the accessing security origin.
+     *
+     * @returns The evaluated `ResponseAccessMode`.
+     */
+    responseAccessMode() {
+        return SDK.NetworkRequestAccess.evaluateResponseAccessMode(this.#request, this.#accessingSecurityOrigin);
+    }
     static allowHeader(headerName) {
         return allowedHeaders.has(headerName.toLowerCase().trim());
     }
@@ -50,9 +73,9 @@ export class NetworkRequestFormatter {
         return `${title}\n<binary data>`;
     }
     static formatInitiatorUrl(initiatorUrl, allowedOrigin) {
-        // We extract the origin, and if it is invalid/empty we default to redacting.
-        const initiatorOrigin = Common.ParsedURL.ParsedURL.extractOrigin(initiatorUrl);
-        if (initiatorOrigin && initiatorOrigin === allowedOrigin) {
+        const initiatorOrigin = SDK.SecurityOrigin.SecurityOrigin.create(initiatorUrl);
+        const targetOrigin = SDK.SecurityOrigin.SecurityOrigin.create(allowedOrigin);
+        if (initiatorOrigin.isSameOriginWith(targetOrigin)) {
             return initiatorUrl;
         }
         return '<redacted cross-origin initiator URL>';
@@ -95,22 +118,34 @@ export class NetworkRequestFormatter {
         }
         return lines.length > 0 ? `${lines.join('\n')}\n` : '';
     }
-    #networkLog;
-    constructor(request, calculator, 
-    // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
-    networkLog = Logs.NetworkLog.NetworkLog.instance()) {
-        this.#request = request;
-        this.#calculator = calculator;
-        this.#networkLog = networkLog;
-    }
     formatRequestHeaders() {
-        return _a.formatHeaders('Request headers:', this.#request.requestHeaders());
+        return NetworkRequestFormatter.formatHeaders('Request headers:', this.#request.requestHeaders());
     }
+    /**
+     * Formats response headers for the AI prompt.
+     *
+     * Headers are filtered based on the request's evaluated ResponseAccessMode:
+     * - Opaque cross-origin requests only include CORS-safelisted response headers.
+     * - CORS-authorized requests include CORS-safelisted and Access-Control-Expose-Headers.
+     * - Same-origin requests include all response headers.
+     * Values of headers not present on the global allowedHeaders list are then redacted.
+     */
     formatResponseHeaders() {
-        return _a.formatHeaders('Response headers:', this.#request.responseHeaders);
+        const accessMode = this.responseAccessMode();
+        const headers = SDK.NetworkRequestAccess.getFilterableResponseHeaders(this.#request, accessMode);
+        return NetworkRequestFormatter.formatHeaders('Response headers:', headers);
     }
+    /**
+     * Formats the response body for the AI prompt.
+     *
+     * For opaque cross-origin requests, the response body is redacted because the accessing
+     * security origin is forbidden by the Same-Origin Policy from reading it.
+     */
     async formatResponseBody() {
-        return await _a.formatBody('Response body:', this.#request, MAX_BODY_SIZE);
+        if (this.responseAccessMode() === "OPAQUE_CROSS_ORIGIN" /* SDK.NetworkRequestAccess.ResponseAccessMode.OPAQUE_CROSS_ORIGIN */) {
+            return SDK.NetworkRequestAccess.REDACTED_RESPONSE_BODY;
+        }
+        return await NetworkRequestFormatter.formatBody('Response body:', this.#request, MAX_BODY_SIZE);
     }
     /**
      * Note: nothing here should include information from origins other than
@@ -133,7 +168,7 @@ Request timing:\n${this.formatNetworkRequestTiming()}
 Request initiator chain:\n${this.formatRequestInitiatorChain()}`;
     }
     formatStatus() {
-        return _a.formatStatus({
+        return NetworkRequestFormatter.formatStatus({
             statusCode: this.#request.statusCode,
             statusText: this.#request.statusText,
             failed: this.#request.failed,
@@ -143,7 +178,7 @@ Request initiator chain:\n${this.formatRequestInitiatorChain()}`;
         });
     }
     formatFailureReasons() {
-        return _a.formatFailureReasons({
+        return NetworkRequestFormatter.formatFailureReasons({
             blockedReason: this.#request.blockedReason(),
             corsErrorStatus: this.#request.corsErrorStatus(),
             localizedFailDescription: this.#request.localizedFailDescription,
@@ -154,20 +189,9 @@ Request initiator chain:\n${this.formatRequestInitiatorChain()}`;
      * the request's origin.
      */
     formatRequestInitiatorChain() {
-        const allowedOrigin = Common.ParsedURL.ParsedURL.extractOrigin(this.#request.url());
-        let initiatorChain = '';
-        let lineStart = '- URL: ';
-        const graph = this.#networkLog.initiatorGraphForRequest(this.#request);
-        for (const initiator of Array.from(graph.initiators).reverse()) {
-            initiatorChain = initiatorChain + lineStart +
-                _a.formatInitiatorUrl(initiator.url(), allowedOrigin) + '\n';
-            lineStart = '\t' + lineStart;
-            if (initiator === this.#request) {
-                initiatorChain =
-                    this.#formatRequestInitiated(graph.initiated, this.#request, initiatorChain, lineStart, allowedOrigin);
-            }
-        }
-        return initiatorChain.trim();
+        // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
+        const networkLog = this.#networkLog ?? Logs.NetworkLog.NetworkLog.instance();
+        return formatRequestInitiatorChain(this.#request, networkLog);
     }
     formatNetworkRequestTiming() {
         const results = NetworkTimeCalculator.calculateRequestTimeRanges(this.#request, this.#calculator.minimumBoundary());
@@ -214,25 +238,47 @@ Request initiator chain:\n${this.formatRequestInitiatorChain()}`;
         ];
         return labels.filter(label => !!label.value).map(label => `${label.label}: ${label.value}`).join('\n');
     }
-    #formatRequestInitiated(initiated, parentRequest, initiatorChain, lineStart, allowedOrigin) {
-        const visited = new Set();
-        // this.request should be already in the tree when build initiator part
-        visited.add(this.#request);
-        for (const [keyRequest, initiatedRequest] of initiated.entries()) {
-            if (initiatedRequest === parentRequest) {
-                if (!visited.has(keyRequest)) {
-                    visited.add(keyRequest);
-                    initiatorChain = initiatorChain + lineStart +
-                        _a.formatInitiatorUrl(keyRequest.url(), allowedOrigin) + '\n';
-                    initiatorChain =
-                        this.#formatRequestInitiated(initiated, keyRequest, initiatorChain, '\t' + lineStart, allowedOrigin);
-                }
+}
+/**
+ * Formats the initiator chain for a given network request into a formatted string.
+ *
+ * @param request The network request to format the initiator chain for.
+ * @param networkLog Network log instance used to build the initiator graph.
+ * @returns Formatted initiator chain.
+ */
+export function formatRequestInitiatorChain(request, networkLog) {
+    const allowedOrigin = request.url();
+    let initiatorChain = '';
+    let lineStart = '- URL: ';
+    const graph = networkLog.initiatorGraphForRequest(request);
+    for (const initiator of Array.from(graph.initiators).reverse()) {
+        initiatorChain =
+            initiatorChain + lineStart + NetworkRequestFormatter.formatInitiatorUrl(initiator.url(), allowedOrigin) + '\n';
+        lineStart = '\t' + lineStart;
+        if (initiator === request) {
+            initiatorChain =
+                formatRequestInitiated(graph.initiated, request, request, initiatorChain, lineStart, allowedOrigin);
+        }
+    }
+    return initiatorChain.trim();
+}
+function formatRequestInitiated(initiated, rootRequest, parentRequest, initiatorChain, lineStart, allowedOrigin) {
+    const visited = new Set();
+    // rootRequest should be already in the tree when building initiator part
+    visited.add(rootRequest);
+    for (const [keyRequest, initiatedRequest] of initiated.entries()) {
+        if (initiatedRequest === parentRequest) {
+            if (!visited.has(keyRequest)) {
+                visited.add(keyRequest);
+                initiatorChain = initiatorChain + lineStart +
+                    NetworkRequestFormatter.formatInitiatorUrl(keyRequest.url(), allowedOrigin) + '\n';
+                initiatorChain =
+                    formatRequestInitiated(initiated, rootRequest, keyRequest, initiatorChain, '\t' + lineStart, allowedOrigin);
             }
         }
-        return initiatorChain;
     }
+    return initiatorChain;
 }
-_a = NetworkRequestFormatter;
 // Header names that could be included in the prompt, lowercase.
 const allowedHeaders = new Set([
     ':authority',

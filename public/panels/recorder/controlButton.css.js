@@ -31,11 +31,11 @@ export default `/*
 
 .icon {
   display: flex;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+  width: var(--sys-size-14);
+  height: var(--sys-size-14);
+  border-radius: var(--sys-shape-corner-full);
   background: var(--sys-color-error-bright);
-  margin-bottom: 8px;
+  margin-bottom: var(--sys-size-5);
   position: relative;
   transition: background 200ms;
   place-content: center center;
@@ -48,9 +48,9 @@ export default `/*
   box-sizing: border-box;
   content: "";
   display: block;
-  width: 14px;
-  height: 14px;
-  border: 1px solid var(--override-white);
+  width: var(--sys-size-7);
+  height: var(--sys-size-7);
+  border: var(--sys-size-1) solid var(--override-white);
   position: absolute;
   top: 50%;
   left: 50%;
@@ -63,7 +63,7 @@ export default `/*
 }
 
 .icon.circle::before {
-  border-radius: 50%;
+  border-radius: var(--sys-shape-corner-full);
 }
 
 .icon:hover {
@@ -79,8 +79,8 @@ export default `/*
 }
 
 .label {
-  font-size: 12px;
-  line-height: 16px;
+  font-size: var(--sys-typescale-body4-size);
+  line-height: var(--sys-typescale-body4-line-height);
   text-align: center;
   letter-spacing: 0.02em;
   color: var(--sys-color-on-surface);

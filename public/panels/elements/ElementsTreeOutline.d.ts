@@ -29,9 +29,11 @@ interface ViewInput {
     deindentSingleNode: boolean;
     currentHighlightedNode: SDK.DOMModel.DOMNode | null;
     hoveredNode?: SDK.DOMModel.DOMNode | null;
+    hoveredClosingTag?: boolean;
     searchMatchNode?: SDK.DOMModel.DOMNode | null;
     searchMatchQuery?: string | null;
     selectedNode: SDK.DOMModel.DOMNode | null;
+    selectedClosingTag?: boolean;
     onSelectedNodeChanged: (event: Common.EventTarget.EventTargetEvent<{
         node: SDK.DOMModel.DOMNode | null;
         focus: boolean;
@@ -39,10 +41,10 @@ interface ViewInput {
     onElementsTreeUpdated: (event: Common.EventTarget.EventTargetEvent<SDK.DOMModel.DOMNode[]>) => void;
     onElementCollapsed: () => void;
     onElementExpanded: () => void;
-    onSelect?: (node: SDK.DOMModel.DOMNode, selectedByUser?: boolean) => void;
+    onSelect?: (node: SDK.DOMModel.DOMNode, isClosingTag?: boolean, selectedByUser?: boolean) => void;
     onExpand?: (node: SDK.DOMModel.DOMNode, expanded: boolean) => void;
     onContextMenu?: (node: SDK.DOMModel.DOMNode, event: MouseEvent, widget?: ElementsTreeWidget) => void;
-    onHoverNode?: (node: SDK.DOMModel.DOMNode, showInfo?: boolean) => void;
+    onHoverNode?: (node: SDK.DOMModel.DOMNode | null, showInfo?: boolean, isClosingTag?: boolean) => void;
     onLeave?: () => void;
     onToggleHideElement?: (node: SDK.DOMModel.DOMNode) => void;
     onKeyDown?: (event: KeyboardEvent) => void;
@@ -57,6 +59,7 @@ interface ViewInput {
         node: SDK.DOMModel.DOMNode;
     } & InitialEditState) | null;
     onInitialEditCompleted?: () => void;
+    multilineEditingNode?: SDK.DOMModel.DOMNode | null;
     dragOverNode?: {
         node: SDK.DOMModel.DOMNode;
         isClosingTag: boolean;
@@ -141,7 +144,7 @@ export declare class DOMTreeWidget extends UI.Widget.Widget {
     constructor(element?: HTMLElement, view?: View);
     updateRecordsForTest(): Map<SDK.DOMModel.DOMNode, Elements.ElementUpdateRecord.ElementUpdateRecord>;
     updateModifiedNodes(): void;
-    selectDOMNode(node: SDK.DOMModel.DOMNode | SDK.DOMModel.AdoptedStyleSheet | null, focus?: boolean): void;
+    selectDOMNode(node: SDK.DOMModel.DOMNode | SDK.DOMModel.AdoptedStyleSheet | null, focus?: boolean, isClosingTag?: boolean): void;
     highlightNodeAttribute(node: SDK.DOMModel.DOMNode, attribute: string): void;
     get wrap(): boolean;
     set wrap(wrap: boolean);
@@ -167,15 +170,14 @@ export declare class DOMTreeWidget extends UI.Widget.Widget {
     getTreeOutlineForTesting(): ElementsTreeOutline | undefined;
     treeElementForNode(node: SDK.DOMModel.DOMNode): ElementsTreeElement | null;
     hoveredDOMNode(): SDK.DOMModel.DOMNode | null;
+    hoveredClosingTag(): boolean;
+    selectedClosingTag(): boolean;
     searchMatchNode(): SDK.DOMModel.DOMNode | null;
     searchMatchQuery(): string | null;
-    setHoveredNode(node: SDK.DOMModel.DOMNode | null, showInfo?: boolean): void;
+    setHoveredNode(node: SDK.DOMModel.DOMNode | null, showInfo?: boolean, isClosingTag?: boolean): void;
     performUpdate(): void;
     modelAdded(domModel: SDK.DOMModel.DOMModel): void;
     modelRemoved(domModel: SDK.DOMModel.DOMModel): void;
-    /**
-     * FIXME: which node is expanded should be part of the view input.
-     */
     expand(): void;
     /**
      * FIXME: which node is selected should be part of the view input.
@@ -190,8 +192,9 @@ export declare class DOMTreeWidget extends UI.Widget.Widget {
     toggleHideElement(node: SDK.DOMModel.DOMNode): void;
     removeNode(node: SDK.DOMModel.DOMNode): Promise<void>;
     isToggledToHidden(node: SDK.DOMModel.DOMNode): boolean;
-    setMultilineEditing(multilineEditing: MultilineEditorController | null): void;
+    setMultilineEditing(multilineEditing: MultilineEditorController | null, node?: SDK.DOMModel.DOMNode): void;
     multilineEditing(): MultilineEditorController | null;
+    multilineEditingNode(): SDK.DOMModel.DOMNode | null;
     runPendingUpdates(): void;
     onResize(): void;
     willHide(): void;
@@ -284,7 +287,7 @@ export declare class ElementsTreeOutline extends ElementsTreeOutlineBase {
     static forDOMModel(domModel: SDK.DOMModel.DOMModel): ElementsTreeOutline | null;
     deindentSingleNode(): void;
     setWordWrap(wrap: boolean): void;
-    setMultilineEditing(multilineEditing: MultilineEditorController | null): void;
+    setMultilineEditing(multilineEditing: MultilineEditorController | null, node?: SDK.DOMModel.DOMNode): void;
     visibleWidth(): number;
     setVisibleWidth(width: number): void;
     setClipboardData(data: ClipboardData | null): void;

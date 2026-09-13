@@ -2,28 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import { createNetworkRequest } from '../../testing/NetworkRequestHelpers.js';
 import { StubIssue } from '../../testing/StubIssue.js';
 import * as IssuesManager from '../issues_manager/issues_manager.js';
 describe('issuesAssociatedWith', () => {
     const requestId1 = 'r0';
     const requestId2 = 'r1';
     it('should return no issues if no issues exist', () => {
-        const request = SDK.NetworkRequest.NetworkRequest.create(requestId1, Platform.DevToolsPath.EmptyUrlString, Platform.DevToolsPath.EmptyUrlString, null, null, null);
+        const request = createNetworkRequest({ requestId: requestId1 });
         assert.lengthOf(IssuesManager.RelatedIssue.issuesAssociatedWith([], request), 0);
     });
     it('should return no issues if issues dont affect any resources', () => {
         const issue = new StubIssue('code', [], []);
-        const request = SDK.NetworkRequest.NetworkRequest.create(requestId1, Platform.DevToolsPath.EmptyUrlString, Platform.DevToolsPath.EmptyUrlString, null, null, null);
+        const request = createNetworkRequest({ requestId: requestId1 });
         assert.lengthOf(IssuesManager.RelatedIssue.issuesAssociatedWith([issue], request), 0);
     });
     it('should correctly filter issues associated with a given request id', () => {
         const issue1 = StubIssue.createFromRequestIds([requestId1, requestId2]);
         const issue2 = StubIssue.createFromRequestIds([requestId1]);
         const issues = [issue1, issue2];
-        const request1 = SDK.NetworkRequest.NetworkRequest.create(requestId1, Platform.DevToolsPath.EmptyUrlString, Platform.DevToolsPath.EmptyUrlString, null, null, null);
-        const request2 = SDK.NetworkRequest.NetworkRequest.create(requestId2, Platform.DevToolsPath.EmptyUrlString, Platform.DevToolsPath.EmptyUrlString, null, null, null);
+        const request1 = createNetworkRequest({ requestId: requestId1 });
+        const request2 = createNetworkRequest({ requestId: requestId2 });
         assert.deepEqual(IssuesManager.RelatedIssue.issuesAssociatedWith(issues, request1), issues);
         assert.deepEqual(IssuesManager.RelatedIssue.issuesAssociatedWith(issues, request2), [issue1]);
     });

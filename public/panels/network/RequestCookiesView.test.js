@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { assertScreenshot, renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
+import { createNetworkRequest } from '../../testing/NetworkRequestHelpers.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as Network from './network.js';
 const { RequestCookiesView } = Network;
-const { urlString } = Platform.DevToolsPath;
 describeWithEnvironment('RequestCookiesView', () => {
     setupLocaleHooks();
     const mockCookie = (name, value) => {
@@ -74,7 +73,7 @@ describeWithEnvironment('RequestCookiesView', () => {
         await assertScreenshot('network/request_cookies_view_malformed_cookies.png');
     });
     it('shows a message when request site has cookies in another partition', async () => {
-        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/foo.html`, urlString ``, null, null, null);
+        const request = createNetworkRequest({ url: 'https://www.example.com/foo.html' });
         request.addExtraRequestInfo({
             siteHasCookieInOtherPartition: true,
             includedRequestCookies: [],
@@ -90,7 +89,7 @@ describeWithEnvironment('RequestCookiesView', () => {
         assert.isTrue(input.siteHasCookieInOtherPartition);
     });
     it('shows filtered out cookies when checkbox is ticked', async () => {
-        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/foo.html`, urlString ``, null, null, null);
+        const request = createNetworkRequest({ url: 'https://www.example.com/foo.html' });
         const view = createViewFunctionStub(RequestCookiesView.RequestCookiesView);
         const component = new RequestCookiesView.RequestCookiesView(request, view);
         renderElementIntoDOM(component);

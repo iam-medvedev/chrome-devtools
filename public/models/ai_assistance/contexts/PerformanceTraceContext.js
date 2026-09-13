@@ -1,14 +1,12 @@
 // Copyright 2026 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Common from '../../../core/common/common.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Tracing from '../../../services/tracing/tracing.js';
 import * as Bindings from '../../bindings/bindings.js';
 import * as SourceMapScopes from '../../source_map_scopes/source_map_scopes.js';
 import * as Trace from '../../trace/trace.js';
 import { ConversationContext, } from '../agents/AiAgent.js';
-import { extractContextOrigin } from '../AiOrigins.js';
 import { PerformanceInsightFormatter, } from '../data_formatters/PerformanceInsightFormatter.js';
 import { PerformanceTraceFormatter } from '../data_formatters/PerformanceTraceFormatter.js';
 import { AgentFocus } from '../performance/AIContext.js';
@@ -39,10 +37,12 @@ export class PerformanceTraceContext extends ConversationContext {
     Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()) {
         return new PerformanceTraceContext(AgentFocus.fromCallTree(callTree), targetManager, freshRecordingTracker, debuggerWorkspaceBinding);
     }
+    jslogContext = 'ai-context-performance-trace';
     #focus;
     #targetManager;
     #freshRecordingTracker;
     #debuggerWorkspaceBinding;
+    #origin;
     constructor(focus, 
     // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
     targetManager = SDK.TargetManager.TargetManager.instance(), freshRecordingTracker = Tracing.FreshRecording.Tracker.instance(), debuggerWorkspaceBinding = 
@@ -75,36 +75,57 @@ export class PerformanceTraceContext extends ConversationContext {
         };
         return formatter;
     }
-    getURL() {
-        const url = this.#focus.parsedTrace.data.Meta.mainFrameURL;
-        try {
-            new URL(url);
-            return url;
-        }
-        catch {
-            const { min, max } = this.#focus.parsedTrace.data.Meta.traceBounds;
-            return `trace-${min}-${max}`;
-        }
+    /**
+     * Returns whether this trace was imported rather than recorded live in the current session.
+     */
+    isImported() {
+        return !this.#freshRecordingTracker.recordingIsFresh(this.#focus.parsedTrace);
     }
     /**
-     * Returns the origin for a performance trace in the AI context.
+     * Checks whether the AI can access the resource at the specified URL.
      *
-     * To prevent cross-origin prompt injection attacks, imported traces
-     * are isolated from live pages. We assign them a virtual origin
-     * (`imported-trace://${domain}`) so they do not share the origin of live pages
-     * (e.g., `https://${domain}`). This forces a conversation reset when transitioning
-     * between imported trace data and live pages.
+     * Access requires the resource origin to match the trace origin.
+     * Always rejects `file://` URLs to prevent local file leaks (b/523743289).
+     *
+     * @param url The URL of the resource to access.
+     * @returns `true` if the resource is same-origin with the trace and not a `file://` URL; otherwise `false`.
+     */
+    canAccessResource(url) {
+        const traceOrigin = this.getOrigin();
+        const targetOrigin = SDK.SecurityOrigin.SecurityOrigin.create(url);
+        // We explicitly block all file:// URLs even if same-origin (b/523743289).
+        // Allowing local file access in trace AI risks leaking local system files
+        // (such as /etc/passwd) via prompt injection across filesystem edge cases.
+        if (traceOrigin.isFile() || targetOrigin.isFile()) {
+            return false;
+        }
+        return traceOrigin.isSameOriginWith(targetOrigin);
+    }
+    /**
+     * Returns the security origin for the performance trace.
+     *
+     * Live traces use the origin of the main frame URL.
+     *
+     * Imported traces use a custom scheme (`imported-trace://${host}`) to isolate
+     * them from live pages (such as `https://${host}`). This isolation prevents
+     * cross-origin prompt injection and requires a new conversation when switching
+     * between imported traces and live pages.
+     *
+     * If an imported trace origin does not contain a host, this method returns a
+     * unique opaque origin.
+     *
+     * @returns The security origin for the trace.
      */
     getOrigin() {
-        const parsedTrace = this.#focus.parsedTrace;
-        const url = this.getURL();
-        const origin = extractContextOrigin(url);
-        const isFresh = this.#freshRecordingTracker.recordingIsFresh(parsedTrace);
-        if (!isFresh) {
-            const parsed = Common.ParsedURL.ParsedURL.fromString(origin);
-            return `imported-trace://${parsed ? parsed.domain() : origin}`;
+        if (!this.#origin) {
+            if (this.isImported()) {
+                this.#origin = SDK.SecurityOrigin.SecurityOrigin.createForImportedTrace(this.#focus.parsedTrace.data.Meta.mainFrameURL);
+            }
+            else {
+                this.#origin = SDK.SecurityOrigin.SecurityOrigin.create(this.#focus.parsedTrace.data.Meta.mainFrameURL);
+            }
         }
-        return origin;
+        return this.#origin;
     }
     getItem() {
         return this.#focus;

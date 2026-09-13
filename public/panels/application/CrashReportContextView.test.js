@@ -10,7 +10,6 @@ import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as Application from './application.js';
 describeWithEnvironment('CrashReportContextView', () => {
     const FRAME_ID = 'frame-1';
-    const ORIGIN = 'https://example.com';
     const URL = 'https://example.com/index.html';
     let target;
     let connection;
@@ -28,7 +27,6 @@ describeWithEnvironment('CrashReportContextView', () => {
     it('renders frame sections and entries', async () => {
         sinon.stub(SDK.FrameManager.FrameManager.instance(), 'getFrame').returns({
             url: URL,
-            securityOrigin: ORIGIN,
             isMainFrame: () => true,
             displayName: () => URL,
         });
@@ -48,13 +46,11 @@ describeWithEnvironment('CrashReportContextView', () => {
         const stub = sinon.stub(SDK.FrameManager.FrameManager.instance(), 'getFrame');
         stub.withArgs('frame-1').returns({
             url: 'https://frame1.com',
-            securityOrigin: 'https://frame1.com',
             isMainFrame: () => true,
             displayName: () => 'https://frame1.com',
         });
         stub.withArgs('frame-2').returns({
             url: 'https://frame2.com',
-            securityOrigin: 'https://frame2.com',
             isMainFrame: () => false,
             displayName: () => 'https://frame2.com',
         });
@@ -88,13 +84,11 @@ describeWithEnvironment('CrashReportContextView', () => {
         const SHARED_URL = 'https://shared.com';
         stub.withArgs('frame-main').returns({
             url: SHARED_URL,
-            securityOrigin: SHARED_URL,
             isMainFrame: () => true,
             displayName: () => SHARED_URL,
         });
         stub.withArgs('frame-sub').returns({
             url: SHARED_URL,
-            securityOrigin: SHARED_URL,
             isMainFrame: () => false,
             displayName: () => SHARED_URL,
         });
@@ -116,7 +110,6 @@ describeWithEnvironment('CrashReportContextView', () => {
         const TITLE = 'Frame Page Title';
         stub.withArgs('frame-1').returns({
             url: URL,
-            securityOrigin: URL,
             isMainFrame: () => true,
             displayName: () => TITLE,
         });

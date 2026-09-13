@@ -11,9 +11,11 @@ import * as Persistence from '../../models/persistence/persistence.js';
 import { assertScreenshot, dispatchCopyEvent, dispatchKeyDownEvent, getCleanTextContentFromElements, raf, renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
 import { cleanTestDOM } from '../../testing/DOMHooks.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { createNetworkRequest } from '../../testing/NetworkRequestHelpers.js';
 import { createWorkspaceProject, setUpEnvironment } from '../../testing/OverridesHelpers.js';
 import { createFileSystemUISourceCode } from '../../testing/UISourceCodeHelpers.js';
 import { recordedMetricsContain, resetRecordedMetrics, setupUserMetricHooks, } from '../../testing/UserMetricsHelpers.js';
+import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as RenderCoordinator from '../../ui/components/render_coordinator/render_coordinator.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Lit from '../../ui/lit/lit.js';
@@ -37,6 +39,7 @@ const defaultRequest = {
     ],
     requestHeadersText: () => '',
     cached: () => true,
+    cacheDisabled: () => false,
     requestHeaders: () => [{ name: ':method', value: 'GET' }, { name: 'accept-encoding', value: 'gzip, deflate, br' },
         { name: 'cache-control', value: 'no-cache' }],
     responseHeadersText: `HTTP/1.1 200 OK
@@ -122,9 +125,11 @@ describeWithEnvironment('RequestHeadersView', () => {
         await assertScreenshot('network/request-headers-view-general.png');
     });
     it('status text of a request from cache memory corresponds to the status code', async () => {
-        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com`, urlString ``, null, null, null);
-        request.statusCode = 200;
-        request.setFromMemoryCache();
+        const request = createNetworkRequest({
+            url: 'https://www.example.com',
+            statusCode: 200,
+            fromMemoryCache: true,
+        });
         component = await renderHeadersComponent(request);
         const statusCodeSection = component.contentElement.querySelector('.status-with-comment');
         assert.strictEqual('200 OK (from memory cache)', statusCodeSection?.textContent);
@@ -146,6 +151,45 @@ describeWithEnvironment('RequestHeadersView', () => {
         assert.deepEqual(getRowsTextFromCategory(earlyHintsCategory), [['link', '<src="/script.js" as="script">']]);
         await assertScreenshot('network/request-headers-view-early-hints.png');
     });
+    it('passes the request cache-disabled state to the view', async () => {
+        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com`, urlString ``, null, null, null);
+        request.setCacheDisabled(true);
+        const view = createViewFunctionStub(Network.RequestHeadersView.RequestHeadersView);
+        const component = new Network.RequestHeadersView.RequestHeadersView(undefined, view);
+        renderElementIntoDOM(component);
+        component.request = request;
+        const input = await view.nextInput;
+        assert.isTrue(input.cacheDisabled);
+    });
+    it('warns for Early Hints preloads only when cache is disabled', async () => {
+        const cases = [
+            { cacheDisabled: false, relation: 'preload', expectsWarning: false },
+            { cacheDisabled: false, relation: 'modulepreload', expectsWarning: false },
+            { cacheDisabled: false, relation: 'preconnect', expectsWarning: false },
+            { cacheDisabled: true, relation: 'preload', expectsWarning: true },
+            { cacheDisabled: true, relation: 'modulepreload', expectsWarning: true },
+            { cacheDisabled: true, relation: '"preconnect preload"', expectsWarning: true },
+            { cacheDisabled: true, relation: 'preconnect', expectsWarning: false },
+            { cacheDisabled: true, relation: 'superpreload', expectsWarning: false },
+            { cacheDisabled: true, relation: 'preloadnever', expectsWarning: false },
+        ];
+        for (const { cacheDisabled, relation, expectsWarning } of cases) {
+            const container = document.createElement('div');
+            const request = {
+                ...defaultRequest,
+                earlyHintsHeaders: [{ name: 'link', value: `</script.js>; rel=${relation}; as=script` }],
+            };
+            Network.RequestHeadersView.DEFAULT_VIEW({
+                showRequestHeadersText: false,
+                showResponseHeadersText: false,
+                cacheDisabled,
+                request,
+                toggleShowRawResponseHeaders: () => { },
+                toggleShowRawRequestHeaders: () => { },
+            }, {}, container);
+            assert.strictEqual(Boolean(container.querySelector('.early-hints-warning')), expectsWarning, `cacheDisabled=${cacheDisabled}, rel=${relation}`);
+        }
+    });
     it('emits UMA event when a header value is being copied', async () => {
         component = await renderHeadersComponent(defaultRequest);
         const generalCategory = component.contentElement.querySelector('[aria-label="General"]');
@@ -163,6 +207,7 @@ describeWithEnvironment('RequestHeadersView', () => {
         Network.RequestHeadersView.DEFAULT_VIEW({
             showRequestHeadersText: false,
             showResponseHeadersText: true,
+            cacheDisabled: false,
             request: defaultRequest,
             toggleShowRawResponseHeaders: function () {
                 throw new Error('Function not implemented.');
@@ -180,6 +225,7 @@ describeWithEnvironment('RequestHeadersView', () => {
         Network.RequestHeadersView.DEFAULT_VIEW({
             showRequestHeadersText: false,
             showResponseHeadersText: false,
+            cacheDisabled: false,
             request: defaultRequest,
             toggleShowRawResponseHeaders: function () {
                 throw new Error('Function not implemented.');
@@ -206,6 +252,7 @@ describeWithEnvironment('RequestHeadersView', () => {
         Network.RequestHeadersView.DEFAULT_VIEW({
             showRequestHeadersText: false,
             showResponseHeadersText: true,
+            cacheDisabled: false,
             request: defaultRequest,
             toggleShowRawResponseHeaders: function () {
                 throw new Error('Function not implemented.');
@@ -234,8 +281,10 @@ describeWithEnvironment('RequestHeadersView', () => {
         assert.strictEqual(fullRawTextContent?.length, 4450);
     });
     it('re-renders on request headers update', async () => {
-        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/foo.html`, urlString ``, null, null, null);
-        request.responseHeaders = [{ name: 'originalName', value: 'originalValue' }];
+        const request = createNetworkRequest({
+            url: 'https://www.example.com/foo.html',
+            responseHeaders: [{ name: 'originalName', value: 'originalValue' }],
+        });
         component = await renderHeadersComponent(request);
         const responseHeadersCategory = component.contentElement.querySelector('[aria-label="Response headers"]');
         assert.instanceOf(responseHeadersCategory, HTMLDetailsElement);
@@ -247,12 +296,14 @@ describeWithEnvironment('RequestHeadersView', () => {
         assert.deepEqual(getRowsTextFromCategory(responseHeadersCategory), [['updatedname', 'updatedValue']]);
     });
     it('can highlight individual response headers', async () => {
-        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/foo.html`, urlString ``, null, null, null);
-        request.responseHeaders = [
-            { name: 'foo', value: 'bar' },
-            { name: 'highlightMe', value: 'some value' },
-            { name: 'DevTools', value: 'rock' },
-        ];
+        const request = createNetworkRequest({
+            url: 'https://www.example.com/foo.html',
+            responseHeaders: [
+                { name: 'foo', value: 'bar' },
+                { name: 'highlightMe', value: 'some value' },
+                { name: 'DevTools', value: 'rock' },
+            ],
+        });
         component = await renderHeadersComponent(request);
         const responseHeadersCategory = component.contentElement.querySelector('[aria-label="Response headers"]');
         assert.instanceOf(responseHeadersCategory, HTMLDetailsElement);
@@ -265,12 +316,14 @@ describeWithEnvironment('RequestHeadersView', () => {
         await assertScreenshot('network/request-headers-view-early-highlight.png');
     });
     it('can highlight individual request headers', async () => {
-        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/foo.html`, urlString ``, null, null, null);
-        request.setRequestHeaders([
-            { name: 'foo', value: 'bar' },
-            { name: 'highlightMe', value: 'some value' },
-            { name: 'DevTools', value: 'rock' },
-        ]);
+        const request = createNetworkRequest({
+            url: 'https://www.example.com/foo.html',
+            requestHeaders: [
+                { name: 'foo', value: 'bar' },
+                { name: 'highlightMe', value: 'some value' },
+                { name: 'DevTools', value: 'rock' },
+            ],
+        });
         component = await renderHeadersComponent(request);
         const requestHeadersCategory = component.contentElement.querySelector('[aria-label="Request headers"]');
         assert.instanceOf(requestHeadersCategory, HTMLDetailsElement);
@@ -315,10 +368,12 @@ describeWithEnvironment('RequestHeadersView', () => {
         Common.Settings.Settings.instance()
             .resolve(Persistence.NetworkPersistenceManager.persistenceNetworkOverridesEnabledSettingDescriptor)
             .set(false);
-        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/`, urlString ``, null, null, null);
-        request.responseHeaders = [
-            { name: 'foo', value: 'bar' },
-        ];
+        const request = createNetworkRequest({
+            url: 'https://www.example.com/',
+            responseHeaders: [
+                { name: 'foo', value: 'bar' },
+            ],
+        });
         await createWorkspaceProject(urlString `file:///path/to/overrides`, [
             {
                 name: '.headers',
@@ -359,10 +414,12 @@ describeWithEnvironment('RequestHeadersView', () => {
         assert.isTrue(recordedMetricsContain("DevTools.ActionTaken" /* Host.InspectorFrontendHostAPI.EnumeratedHistogram.ActionTaken */, Host.UserMetrics.Action.PersistenceNetworkOverridesEnabled));
     });
     it('records metrics when a new \'.headers\' file is created', async () => {
-        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/`, urlString ``, null, null, null);
-        request.responseHeaders = [
-            { name: 'foo', value: 'bar' },
-        ];
+        const request = createNetworkRequest({
+            url: 'https://www.example.com/',
+            responseHeaders: [
+                { name: 'foo', value: 'bar' },
+            ],
+        });
         await createWorkspaceProject(urlString `file:///path/to/overrides`, []);
         component = await renderHeadersComponent(request);
         const responseHeaderSection = component.contentElement.querySelector('devtools-response-header-section');

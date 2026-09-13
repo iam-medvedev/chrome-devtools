@@ -5,6 +5,7 @@ import { assert } from 'chai';
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import { createNetworkRequest } from '../../testing/NetworkRequestHelpers.js';
 import { SnapshotTester } from '../../testing/SnapshotTester.js';
 import * as HAR from './har.js';
 const { urlString } = Platform.DevToolsPath;
@@ -15,15 +16,25 @@ describe('HAR', function () {
             it('converts network requests into a complete HAR log with pages and entries', async function () {
                 const mainRequestId = 'r0';
                 const postRequestId = 'r1';
-                const mainUrl = urlString `http://127.0.0.1:8000/devtools/resources/inspected-page.html`;
-                const postUrl = urlString `http://127.0.0.1:8000/devtools/resources/post-target.cgi`;
-                const mainRequest = SDK.NetworkRequest.NetworkRequest.create(mainRequestId, mainUrl, Platform.DevToolsPath.EmptyUrlString, null, null, null);
-                mainRequest.requestMethod = 'GET';
-                mainRequest.setResourceType(Common.ResourceType.resourceTypes.Document);
-                mainRequest.responseHeaders = [{
-                        name: 'Set-Cookie',
-                        value: 'x=y; Path=/path; Domain=example.com; httpOnly; Secure\nx1=y1; SameSite=Strict\nz2=y2; SameSite=Lax',
-                    }];
+                const mainUrl = 'http://127.0.0.1:8000/devtools/resources/inspected-page.html';
+                const postUrl = 'http://127.0.0.1:8000/devtools/resources/post-target.cgi';
+                const mainRequest = createNetworkRequest({
+                    requestId: mainRequestId,
+                    url: mainUrl,
+                    documentURL: '',
+                    requestMethod: 'GET',
+                    resourceType: Common.ResourceType.resourceTypes.Document,
+                    responseHeaders: [{
+                            name: 'Set-Cookie',
+                            value: 'x=y; Path=/path; Domain=example.com; httpOnly; Secure\nx1=y1; SameSite=Strict\nz2=y2; SameSite=Lax',
+                        }],
+                    fetchedViaServiceWorker: true,
+                    serviceWorkerRouterInfo: {
+                        ruleIdMatched: 3,
+                        matchedSourceType: "cache" /* Protocol.Network.ServiceWorkerRouterSource.Cache */,
+                        actualSourceType: "cache" /* Protocol.Network.ServiceWorkerRouterSource.Cache */,
+                    },
+                });
                 const cookie1 = new SDK.Cookie.Cookie('a', 'b', 0 /* SDK.Cookie.Type.REQUEST */);
                 cookie1.addAttribute("path" /* SDK.Cookie.Attribute.PATH */, '/path');
                 cookie1.addAttribute("domain" /* SDK.Cookie.Attribute.DOMAIN */, 'example.com');
@@ -39,25 +50,23 @@ describe('HAR', function () {
                     requestHeaders: [{ name: 'version', value: 'HTTP/1.1' }],
                     connectTiming: { requestTime: 1 },
                 });
-                mainRequest.fetchedViaServiceWorker = true;
                 mainRequest.setResponseCacheStorageCacheName('v1');
                 mainRequest.setServiceWorkerResponseSource("cache-storage" /* Protocol.Network.ServiceWorkerResponseSource.CacheStorage */);
-                mainRequest.serviceWorkerRouterInfo = {
-                    ruleIdMatched: 3,
-                    matchedSourceType: "cache" /* Protocol.Network.ServiceWorkerRouterSource.Cache */,
-                    actualSourceType: "cache" /* Protocol.Network.ServiceWorkerRouterSource.Cache */,
-                };
                 const pageLoad = new SDK.PageLoad.PageLoad(mainRequest);
                 pageLoad.id = 1;
                 pageLoad.contentLoadTime = 10;
                 pageLoad.loadTime = 15;
                 pageLoad.bindRequest(mainRequest);
-                const postRequest = SDK.NetworkRequest.NetworkRequest.create(postRequestId, postUrl, Platform.DevToolsPath.EmptyUrlString, null, null, null);
-                postRequest.requestMethod = 'POST';
-                postRequest.setResourceType(Common.ResourceType.resourceTypes.XHR);
-                postRequest.setRequestHeaders([{ name: 'Content-Type', value: 'text/xml' }]);
+                const postRequest = createNetworkRequest({
+                    requestId: postRequestId,
+                    url: postUrl,
+                    documentURL: '',
+                    requestMethod: 'POST',
+                    resourceType: Common.ResourceType.resourceTypes.XHR,
+                    requestHeaders: [{ name: 'Content-Type', value: 'text/xml' }],
+                    mimeType: 'application/xml',
+                });
                 postRequest.setRequestFormData(true, '<xml></xml>');
-                postRequest.mimeType = 'application/xml';
                 pageLoad.bindRequest(postRequest);
                 const log = await HAR.Log.Log.build([mainRequest, postRequest], { sanitize: false });
                 log.creator.version = 'VERSION';
@@ -70,7 +79,11 @@ describe('HAR', function () {
                 const { build } = HAR.Log.Entry;
                 const url = urlString `p0.com`;
                 it('exports request cookies and authorization headers by default', async () => {
-                    const request = SDK.NetworkRequest.NetworkRequest.create(requestId, url, Platform.DevToolsPath.EmptyUrlString, null, null, null);
+                    const request = createNetworkRequest({
+                        requestId,
+                        url,
+                        documentURL: '',
+                    });
                     request.addExtraRequestInfo({
                         blockedRequestCookies: [],
                         requestHeaders: [
@@ -93,7 +106,11 @@ describe('HAR', function () {
                     assert.strictEqual(entry.request.cookies[0].value, 'Bar');
                 });
                 it('removes request cookies and authorization headers when requested', async () => {
-                    const request = SDK.NetworkRequest.NetworkRequest.create(requestId, url, Platform.DevToolsPath.EmptyUrlString, null, null, null);
+                    const request = createNetworkRequest({
+                        requestId,
+                        url,
+                        documentURL: '',
+                    });
                     request.addExtraRequestInfo({
                         blockedRequestCookies: [],
                         requestHeaders: [
@@ -112,8 +129,12 @@ describe('HAR', function () {
                     assert.deepEqual(entry.request.cookies, []);
                 });
                 it('exports response cookies by default', async () => {
-                    const request = SDK.NetworkRequest.NetworkRequest.create(requestId, url, Platform.DevToolsPath.EmptyUrlString, null, null, null);
-                    request.responseHeaders = [{ name: 'Set-Cookie', value: 'Foo=Bar' }];
+                    const request = createNetworkRequest({
+                        requestId,
+                        url,
+                        documentURL: '',
+                        responseHeaders: [{ name: 'Set-Cookie', value: 'Foo=Bar' }],
+                    });
                     const entry = await build(request, { sanitize: false });
                     assert.deepEqual(entry.response.headers, [
                         { name: 'Set-Cookie', value: 'Foo=Bar' },
@@ -123,17 +144,25 @@ describe('HAR', function () {
                     assert.strictEqual(entry.response.cookies[0].value, 'Bar');
                 });
                 it('removes response cookies when requested', async () => {
-                    const request = SDK.NetworkRequest.NetworkRequest.create(requestId, url, Platform.DevToolsPath.EmptyUrlString, null, null, null);
-                    request.responseHeaders = [
-                        { name: 'Content-Type', value: 'text/html' },
-                        { name: 'Set-Cookie', value: 'Foo=Bar' },
-                    ];
+                    const request = createNetworkRequest({
+                        requestId,
+                        url,
+                        documentURL: '',
+                        responseHeaders: [
+                            { name: 'Content-Type', value: 'text/html' },
+                            { name: 'Set-Cookie', value: 'Foo=Bar' },
+                        ],
+                    });
                     const entry = await build(request, { sanitize: true });
                     assert.deepEqual(entry.response.headers, [{ name: 'Content-Type', value: 'text/html' }]);
                     assert.deepEqual(entry.response.cookies, []);
                 });
                 it('returns blocked time when no response is received in milliseconds', async () => {
-                    const request = SDK.NetworkRequest.NetworkRequest.create(requestId, url, Platform.DevToolsPath.EmptyUrlString, null, null, null);
+                    const request = createNetworkRequest({
+                        requestId,
+                        url,
+                        documentURL: '',
+                    });
                     const issueTime = new Date(2020, 1, 3).getTime() / 1000;
                     request.setIssueTime(issueTime, issueTime);
                     request.endTime = issueTime + 5;
@@ -141,35 +170,45 @@ describe('HAR', function () {
                     assert.strictEqual(entry.timings.blocked, 5000, 'HARLog entry\'s blocked time is incorrect');
                 });
                 it('exports initiator request ID', async () => {
-                    const request = SDK.NetworkRequest.NetworkRequest.create(requestId, url, Platform.DevToolsPath.EmptyUrlString, null, null, { requestId, type: "script" /* Protocol.Network.InitiatorType.Script */ });
+                    const request = createNetworkRequest({
+                        requestId,
+                        url,
+                        documentURL: '',
+                        initiator: { requestId, type: "script" /* Protocol.Network.InitiatorType.Script */ },
+                    });
                     const entry = await build(request, { sanitize: false });
                     assert.strictEqual(entry._initiator?.requestId, requestId);
                 });
                 it('exports remote address', async () => {
-                    const request = SDK.NetworkRequest.NetworkRequest.create(requestId, url, Platform.DevToolsPath.EmptyUrlString, null, null, { requestId, type: "script" /* Protocol.Network.InitiatorType.Script */ });
+                    const request = createNetworkRequest({
+                        requestId,
+                        url,
+                        documentURL: '',
+                        initiator: { requestId, type: "script" /* Protocol.Network.InitiatorType.Script */ },
+                    });
                     request.setRemoteAddress('127.0.0.1', 6789);
                     const entry = await build(request, { sanitize: false });
                     assert.strictEqual(entry.serverIPAddress, '127.0.0.1');
                     assert.strictEqual(entry.connection, '6789');
                 });
                 it('exports Chrome-specific connection ID', async () => {
-                    const request = SDK.NetworkRequest.NetworkRequest.create(requestId, url, Platform.DevToolsPath.EmptyUrlString, null, null, { requestId, type: "script" /* Protocol.Network.InitiatorType.Script */ });
+                    const request = createNetworkRequest({
+                        requestId,
+                        url,
+                        documentURL: '',
+                        initiator: { requestId, type: "script" /* Protocol.Network.InitiatorType.Script */ },
+                    });
                     request.connectionId = 'foobar';
                     const entry = await build(request, { sanitize: false });
                     assert.strictEqual(entry._connectionId, 'foobar');
                 });
                 it('exports Service Worker info', async () => {
-                    const request = SDK.NetworkRequest.NetworkRequest.create(requestId, url, Platform.DevToolsPath.EmptyUrlString, null, null, { requestId, type: "script" /* Protocol.Network.InitiatorType.Script */ });
                     const cacheName = 'v1';
-                    request.fetchedViaServiceWorker = true;
-                    request.setResponseCacheStorageCacheName(cacheName);
-                    request.setServiceWorkerResponseSource("cache-storage" /* Protocol.Network.ServiceWorkerResponseSource.CacheStorage */);
                     const serviceWorkerRouterInfo = {
                         ruleIdMatched: 1,
                         matchedSourceType: "cache" /* Protocol.Network.ServiceWorkerRouterSource.Cache */,
                         actualSourceType: "network" /* Protocol.Network.ServiceWorkerRouterSource.Network */,
                     };
-                    request.serviceWorkerRouterInfo = serviceWorkerRouterInfo;
                     const timingInfo = {
                         requestTime: 500,
                         proxyStart: 0,
@@ -193,7 +232,17 @@ describe('HAR', function () {
                         workerRouterEvaluationStart: 200,
                         workerCacheLookupStart: 100,
                     };
-                    request.timing = timingInfo;
+                    const request = createNetworkRequest({
+                        requestId,
+                        url,
+                        documentURL: '',
+                        initiator: { requestId, type: "script" /* Protocol.Network.InitiatorType.Script */ },
+                        fetchedViaServiceWorker: true,
+                        serviceWorkerRouterInfo,
+                        timing: timingInfo,
+                    });
+                    request.setResponseCacheStorageCacheName(cacheName);
+                    request.setServiceWorkerResponseSource("cache-storage" /* Protocol.Network.ServiceWorkerResponseSource.CacheStorage */);
                     const entry = await build(request, { sanitize: false });
                     assert.isTrue(entry.response._fetchedViaServiceWorker);
                     assert.strictEqual(entry.response._responseCacheStorageCacheName, cacheName);
@@ -209,8 +258,12 @@ describe('HAR', function () {
                     assert.strictEqual(entry.timings._workerCacheLookupStart, timingInfo.workerCacheLookupStart);
                 });
                 it('exports WebSocket messages', async () => {
-                    const request = SDK.NetworkRequest.NetworkRequest.create(requestId, url, Platform.DevToolsPath.EmptyUrlString, null, null, null);
-                    request.setResourceType(Common.ResourceType.resourceTypes.WebSocket);
+                    const request = createNetworkRequest({
+                        requestId,
+                        url,
+                        documentURL: '',
+                        resourceType: Common.ResourceType.resourceTypes.WebSocket,
+                    });
                     const time = Date.now() / 1000;
                     request.addFrame({
                         type: SDK.NetworkRequest.WebSocketFrameType.Send,
@@ -256,11 +309,15 @@ describe('HAR', function () {
                     });
                 });
                 it('exports form data parameters, query parameters, and IPv6 address', async () => {
-                    const requestUrl = urlString `http://[::1]:8000/devtools/resources/post-target.cgi?queryParam1=queryValue1&queryParam2=#fragmentParam1=fragmentValue1&fragmentParam2=`;
-                    const request = SDK.NetworkRequest.NetworkRequest.create(requestId, requestUrl, Platform.DevToolsPath.EmptyUrlString, null, null, null);
-                    request.requestMethod = 'POST';
+                    const requestUrl = 'http://[::1]:8000/devtools/resources/post-target.cgi?queryParam1=queryValue1&queryParam2=#fragmentParam1=fragmentValue1&fragmentParam2=';
+                    const request = createNetworkRequest({
+                        requestId,
+                        url: requestUrl,
+                        documentURL: '',
+                        requestMethod: 'POST',
+                        requestHeaders: [{ name: 'Content-Type', value: 'application/x-www-form-urlencoded' }],
+                    });
                     request.setRemoteAddress('[::1]', 8000);
-                    request.setRequestHeaders([{ name: 'Content-Type', value: 'application/x-www-form-urlencoded' }]);
                     request.setRequestFormData(true, 'formParam1=formValue1&formParam2=');
                     const entry = await build(request, { sanitize: false });
                     assert.strictEqual(entry.request.url, 'http://[::1]:8000/devtools/resources/post-target.cgi?queryParam1=queryValue1&queryParam2=');

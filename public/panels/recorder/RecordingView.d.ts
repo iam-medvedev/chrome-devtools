@@ -8,11 +8,6 @@ import type * as Converters from './converters/converters.js';
 import type * as Extensions from './extensions/extensions.js';
 import * as Models from './models/models.js';
 import { type AddStepPosition, State } from './StepView.js';
-declare global {
-    interface HTMLElementTagNameMap {
-        'devtools-recording-view': RecordingView;
-    }
-}
 export interface ReplayState {
     isPlaying: boolean;
     isPausedOnBreakpoint: boolean;

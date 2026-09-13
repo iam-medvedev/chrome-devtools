@@ -1,19 +1,17 @@
 // Copyright 2026 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Common from '../../../core/common/common.js';
 import * as Host from '../../../core/host/host.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Root from '../../../core/root/root.js';
 import * as Logs from '../../logs/logs.js';
 import * as NetworkTimeCalculator from '../../network_time_calculator/network_time_calculator.js';
 import * as Workspace from '../../workspace/workspace.js';
-import { isOpaqueOrigin } from '../AiOrigins.js';
 import { AccessibilityContext } from '../contexts/AccessibilityContext.js';
 import { DOMNodeContext } from '../contexts/DOMNodeContext.js';
 import { FileContext } from '../contexts/FileContext.js';
 import { PerformanceTraceContext } from '../contexts/PerformanceTraceContext.js';
-import { getRequestContextOrigin, RequestContext } from '../contexts/RequestContext.js';
+import { RequestContext } from '../contexts/RequestContext.js';
 import { StorageContext } from '../contexts/StorageContext.js';
 import { formatBytesToKb, seconds } from '../data_formatters/UnitFormatters.js';
 import { debugLog } from '../debug.js';
@@ -121,15 +119,15 @@ export class ContextSelectionAgent extends AiAgent {
                     };
                 }
                 const origin = allowedOriginResult.origin;
-                if (origin && isOpaqueOrigin(origin)) {
+                if (origin?.isOpaque()) {
                     return {
                         error: 'No requests recorded by DevTools',
                     };
                 }
+                const allowedSecurityOrigin = origin ?? null;
                 let hasCrossOriginRequest = false;
                 const requestsToShow = [];
                 for (const request of this.#networkLog.requests()) {
-                    const requestOrigin = getRequestContextOrigin(request);
                     /**
                      * NOTE: this origin check does not ensure that all the requests are
                      * from the same origin as the target page. Instead, it ensures that
@@ -138,7 +136,7 @@ export class ContextSelectionAgent extends AiAgent {
                      * during the loading of the target page, and do not leak URLs from
                      * other pages.
                      */
-                    if (origin && requestOrigin !== origin) {
+                    if (allowedSecurityOrigin && !request.initiatorSecurityOrigin().isSameOriginWith(allowedSecurityOrigin)) {
                         hasCrossOriginRequest = true;
                         continue;
                     }
@@ -154,7 +152,7 @@ export class ContextSelectionAgent extends AiAgent {
                 if (requests.length === 0) {
                     return {
                         error: hasCrossOriginRequest ?
-                            `No requests showing with origin ${origin}. Tell the user to start a new chat` :
+                            `No requests showing with origin ${origin?.siteId() ?? ''}. Tell the user to start a new chat` :
                             'No requests recorded by DevTools',
                     };
                 }
@@ -198,17 +196,17 @@ export class ContextSelectionAgent extends AiAgent {
                     };
                 }
                 const origin = allowedOriginResult.origin;
-                if (origin && isOpaqueOrigin(origin)) {
+                if (origin?.isOpaque()) {
                     return {
                         error: 'No request found',
                     };
                 }
+                const allowedSecurityOrigin = origin ?? null;
                 const request = this.#networkLog.requests().find(req => {
                     if (req.requestId() !== id) {
                         return false;
                     }
-                    const requestOrigin = getRequestContextOrigin(req);
-                    return !origin || requestOrigin === origin;
+                    return !allowedSecurityOrigin || req.initiatorSecurityOrigin().isSameOriginWith(allowedSecurityOrigin);
                 });
                 if (request) {
                     const calculator = this.#networkTimeCalculator ?? new NetworkTimeCalculator.NetworkTransferTimeCalculator();
@@ -254,9 +252,8 @@ export class ContextSelectionAgent extends AiAgent {
                 const files = [];
                 const uiSourceCodes = [];
                 for (const file of ContextSelectionAgent.getUISourceCodes(this.#workspace)) {
-                    const fileUrl = file.url();
-                    const fileOrigin = Common.ParsedURL.ParsedURL.extractOrigin(fileUrl);
-                    if (origin && fileOrigin !== origin) {
+                    const fileSecurityOrigin = FileContext.originForUISourceCode(file);
+                    if (origin && !fileSecurityOrigin.isSameOriginWith(origin)) {
                         continue;
                     }
                     files.push({
@@ -309,9 +306,8 @@ export class ContextSelectionAgent extends AiAgent {
                     if (ContextSelectionAgent.uiSourceCodeId.get(file) !== params.id) {
                         return false;
                     }
-                    const fileUrl = file.url();
-                    const fileOrigin = Common.ParsedURL.ParsedURL.extractOrigin(fileUrl);
-                    return !origin || fileOrigin === origin;
+                    const fileSecurityOrigin = FileContext.originForUISourceCode(file);
+                    return !origin || fileSecurityOrigin.isSameOriginWith(origin);
                 });
                 if (!file) {
                     return {
@@ -471,7 +467,7 @@ export class ContextSelectionAgent extends AiAgent {
                         };
                     }
                     return {
-                        context: new StorageContext(new StorageItem(origin, origin)),
+                        context: new StorageContext(new StorageItem(origin.siteId(), origin.siteId())),
                         description: 'User selected page storage',
                     };
                 },

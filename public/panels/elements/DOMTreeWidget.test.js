@@ -476,6 +476,54 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 domTree.detach();
             }
         });
+        it('highlights closing tag and not opening tag when hovering over expanded closing tag in DEFAULT_VIEW', async () => {
+            const { domTree, domModel } = setupDOMTreeWidget(target, Elements.ElementsTreeOutline.DEFAULT_VIEW);
+            try {
+                const rootNode = createTestDOMTree(domModel, {
+                    nodeId: 1,
+                    nodeName: 'DIV',
+                    children: [
+                        { nodeId: 2, nodeName: 'P' },
+                    ],
+                });
+                domTree.rootDOMNode = rootNode;
+                domTree.performUpdate();
+                await waitForTreeUpdates();
+                const treeOutline = Elements.ElementsTreeOutline.ElementsTreeOutline.forDOMModel(domModel);
+                assert.exists(treeOutline);
+                const rootTreeElement = treeOutline.findTreeElement(rootNode);
+                assert.exists(rootTreeElement);
+                rootTreeElement.expand();
+                await waitForTreeUpdates();
+                const closingTreeElement = rootTreeElement.childAt(rootTreeElement.childCount() - 1);
+                assert.exists(closingTreeElement);
+                assert.isTrue(closingTreeElement.isClosingTag());
+                const highlightSpy = sinon.spy(domModel.overlayModel(), 'highlightInOverlay');
+                // Hover over the opening tag first.
+                rootTreeElement.listItemElement.dispatchEvent(new MouseEvent('mousemove', { bubbles: true }));
+                assert.isTrue(rootTreeElement.hovered);
+                assert.isTrue(rootTreeElement.listItemElement.classList.contains('hovered'));
+                assert.isFalse(closingTreeElement.hovered);
+                assert.isFalse(closingTreeElement.listItemElement.classList.contains('hovered'));
+                assert.strictEqual(domTree.hoveredDOMNode(), rootNode);
+                // Move hover to the closing tag.
+                closingTreeElement.listItemElement.dispatchEvent(new MouseEvent('mousemove', { bubbles: true }));
+                assert.isFalse(rootTreeElement.hovered);
+                assert.isFalse(rootTreeElement.listItemElement.classList.contains('hovered'));
+                assert.isTrue(closingTreeElement.hovered);
+                assert.isTrue(closingTreeElement.listItemElement.classList.contains('hovered'));
+                assert.strictEqual(domTree.hoveredDOMNode(), rootNode);
+                sinon.assert.calledWith(highlightSpy, sinon.match({ node: rootNode }), 'all', true);
+                // Move mouse away.
+                treeOutline.elementInternal.dispatchEvent(new MouseEvent('mouseleave'));
+                assert.isFalse(closingTreeElement.hovered);
+                assert.isFalse(closingTreeElement.listItemElement.classList.contains('hovered'));
+                assert.isNull(domTree.hoveredDOMNode());
+            }
+            finally {
+                domTree.detach();
+            }
+        });
     });
     describe('DECLARATIVE_VIEW', () => {
         it('renders DOM tree declaratively using <devtools-tree> and ElementsTreeWidget', async () => {
@@ -780,11 +828,11 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 const spanWidgetElement = spanTreeElement.listItemElement.querySelector('devtools-widget');
                 const spanWidget = UI.Widget.Widget.get(spanWidgetElement);
                 assert.strictEqual(spanWidget.computeLeftIndent, 24);
-                // Closing DIV (depth 0, not expandable): 12 * (0 - 1) + 12 = 0.
+                // Closing DIV (depth 1 in tree hierarchy, not expandable): 12 * (1 - 1) + 12 = 12.
                 const closingDivTreeElement = rootTreeElements[0].children()[1];
                 const closingDivWidgetElement = closingDivTreeElement.listItemElement.querySelector('devtools-widget');
                 const closingDivWidget = UI.Widget.Widget.get(closingDivWidgetElement);
-                assert.strictEqual(closingDivWidget.computeLeftIndent, 0);
+                assert.strictEqual(closingDivWidget.computeLeftIndent, 12);
             }
             finally {
                 domTree.detach();
@@ -1609,6 +1657,131 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 domTree.detach();
             }
         });
+        it('hides children and closing tag when editing an element with children as HTML in DECLARATIVE_VIEW', async () => {
+            const domModel = target.model(SDK.DOMModel.DOMModel);
+            sinon.stub(domModel, 'requestDocument').resolves(null);
+            const { domTree } = setupDOMTreeWidget(target, Elements.ElementsTreeOutline.DECLARATIVE_VIEW);
+            try {
+                const rootNode = createTestDOMTree(domModel, {
+                    nodeId: 1,
+                    nodeName: 'DIV',
+                    attributes: ['id', 'test-div'],
+                    children: [
+                        { nodeId: 2, nodeName: 'P', attributes: ['class', 'intro'] },
+                    ],
+                });
+                sinon.stub(rootNode, 'getOuterHTML').resolves('<div id="test-div"><p class="intro"></p></div>');
+                domTree.rootDOMNode = rootNode;
+                domTree.setNodeExpanded(rootNode, true);
+                domTree.performUpdate();
+                await waitForTreeUpdates();
+                const tree = domTree.contentElement.querySelector('devtools-tree');
+                assert.exists(tree);
+                const internalTree = tree.getInternalTreeOutlineForTest();
+                const rootTreeElement = internalTree.rootElement().children()[0];
+                assert.exists(rootTreeElement);
+                // Before edit: root has 2 children (p child and closing tag) and is a parent
+                assert.lengthOf(rootTreeElement.children(), 2);
+                assert.isTrue(rootTreeElement.listItemElement.classList.contains('parent'));
+                // Start Edit as HTML on rootNode
+                domTree.toggleEditAsHTML(rootNode);
+                await waitForTreeUpdates();
+                const multiline = domTree.multilineEditing();
+                assert.exists(multiline);
+                assert.strictEqual(domTree.multilineEditingNode(), rootNode);
+                // While editing: children and closing tag are hidden, parent disclosure styling is removed, and editor is present
+                assert.lengthOf(rootTreeElement.children(), 0);
+                assert.isFalse(rootTreeElement.listItemElement.classList.contains('parent'));
+                const editor = rootTreeElement.listItemElement.querySelector('.elements-tree-editor');
+                assert.exists(editor);
+                // Cancel editing restores children and closing tag
+                multiline.cancel();
+                await waitForTreeUpdates();
+                assert.isNull(domTree.multilineEditing());
+                assert.isNull(domTree.multilineEditingNode());
+                assert.lengthOf(rootTreeElement.children(), 2);
+                assert.isTrue(rootTreeElement.listItemElement.classList.contains('parent'));
+                assert.isNull(rootTreeElement.listItemElement.querySelector('.elements-tree-editor'));
+            }
+            finally {
+                domTree.detach();
+            }
+        });
+        it('cleans up multilineEditingNode when Edit as HTML is requested during active inline edit in DECLARATIVE_VIEW', async () => {
+            const domModel = target.model(SDK.DOMModel.DOMModel);
+            sinon.stub(domModel, 'requestDocument').resolves(null);
+            const { domTree } = setupDOMTreeWidget(target, Elements.ElementsTreeOutline.DECLARATIVE_VIEW);
+            try {
+                const rootNode = createTestDOMTree(domModel, {
+                    nodeId: 1,
+                    nodeName: 'DIV',
+                    attributes: ['id', 'test-div'],
+                    children: [
+                        { nodeId: 2, nodeName: 'P', attributes: ['class', 'intro'] },
+                    ],
+                });
+                sinon.stub(rootNode, 'getOuterHTML').resolves('<div id="test-div"><p class="intro"></p></div>');
+                domTree.rootDOMNode = rootNode;
+                domTree.setNodeExpanded(rootNode, true);
+                domTree.performUpdate();
+                await waitForTreeUpdates();
+                const tree = domTree.contentElement.querySelector('devtools-tree');
+                assert.exists(tree);
+                const internalTree = tree.getInternalTreeOutlineForTest();
+                const rootTreeElement = internalTree.rootElement().children()[0];
+                const rootWidgetElement = rootTreeElement.listItemElement.querySelector('devtools-widget');
+                const rootWidget = UI.Widget.Widget.get(rootWidgetElement);
+                assert.exists(rootWidget);
+                // Start inline attribute editing on rootWidget
+                rootWidget.triggerEditAttribute('id');
+                await waitForTreeUpdates();
+                assert.isTrue(rootWidget.isEditing);
+                // Trigger Edit as HTML while inline editing is active
+                domTree.toggleEditAsHTML(rootNode);
+                await waitForTreeUpdates();
+                // Editing aborts, multilineEditingNode should be cleaned up, and children should remain visible
+                assert.isNull(domTree.multilineEditingNode());
+                assert.lengthOf(rootTreeElement.children(), 2);
+                rootWidget.editing?.cancel();
+            }
+            finally {
+                domTree.detach();
+            }
+        });
+        it('cleans up multilineEditingNode when getOuterHTML fails in DECLARATIVE_VIEW', async () => {
+            const domModel = target.model(SDK.DOMModel.DOMModel);
+            sinon.stub(domModel, 'requestDocument').resolves(null);
+            const { domTree } = setupDOMTreeWidget(target, Elements.ElementsTreeOutline.DECLARATIVE_VIEW);
+            try {
+                const rootNode = createTestDOMTree(domModel, {
+                    nodeId: 1,
+                    nodeName: 'DIV',
+                    attributes: ['id', 'test-div'],
+                    children: [
+                        { nodeId: 2, nodeName: 'P', attributes: ['class', 'intro'] },
+                    ],
+                });
+                // Simulate backend error returning undefined
+                sinon.stub(rootNode, 'getOuterHTML').resolves(undefined);
+                domTree.rootDOMNode = rootNode;
+                domTree.setNodeExpanded(rootNode, true);
+                domTree.performUpdate();
+                await waitForTreeUpdates();
+                const tree = domTree.contentElement.querySelector('devtools-tree');
+                assert.exists(tree);
+                const internalTree = tree.getInternalTreeOutlineForTest();
+                const rootTreeElement = internalTree.rootElement().children()[0];
+                // Trigger Edit as HTML
+                domTree.toggleEditAsHTML(rootNode);
+                await waitForTreeUpdates();
+                // multilineEditingNode should be cleaned up and children restored
+                assert.isNull(domTree.multilineEditingNode());
+                assert.lengthOf(rootTreeElement.children(), 2);
+            }
+            finally {
+                domTree.detach();
+            }
+        });
         it('handles drag and drop reordering and class styling in DECLARATIVE_VIEW', async () => {
             const domModel = target.model(SDK.DOMModel.DOMModel);
             sinon.stub(domModel, 'requestDocument').resolves(null);
@@ -1730,6 +1903,88 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 await waitForTreeUpdates();
                 tree.dispatchEvent(new KeyboardEvent('keydown', { key: 'F2', bubbles: true }));
                 sinon.assert.calledWith(toggleEditAsHTMLSpy, rootNode);
+            }
+            finally {
+                domTree.detach();
+            }
+        });
+        it('triggers in-place editing on double click in DECLARATIVE_VIEW', async () => {
+            const domModel = target.model(SDK.DOMModel.DOMModel);
+            sinon.stub(domModel, 'requestDocument').resolves(null);
+            const { domTree } = setupDOMTreeWidget(target, Elements.ElementsTreeOutline.DECLARATIVE_VIEW);
+            try {
+                const rootNode = createTestDOMTree(domModel, {
+                    nodeId: 1,
+                    nodeName: 'DIV',
+                    attributes: ['id', 'test-div'],
+                    children: [],
+                });
+                domTree.rootDOMNode = rootNode;
+                domTree.expandRoot = true;
+                domTree.performUpdate();
+                await waitForTreeUpdates();
+                const tree = domTree.contentElement.querySelector('devtools-tree');
+                assert.exists(tree);
+                const internalTree = tree.getInternalTreeOutlineForTest();
+                const rootTreeElement = internalTree.rootElement().children()[0];
+                const rootWidgetElement = rootTreeElement.listItemElement.querySelector('devtools-widget');
+                const rootWidget = UI.Widget.Widget.get(rootWidgetElement);
+                assert.exists(rootWidget);
+                domTree.selectDOMNode(rootNode);
+                await waitForTreeUpdates();
+                const attrElement = rootWidget.contentElement.querySelector('.webkit-html-attribute');
+                assert.exists(attrElement);
+                const dblClickEvent = new MouseEvent('dblclick', { bubbles: true, cancelable: true });
+                attrElement.dispatchEvent(dblClickEvent);
+                await waitForTreeUpdates();
+                assert.isTrue(rootWidget.isEditing);
+                assert.isTrue(dblClickEvent.defaultPrevented, 'dblclick event should be prevented to stop tree expansion toggle');
+                rootWidget.editing?.cancel();
+            }
+            finally {
+                domTree.detach();
+            }
+        });
+        it('does not abort in-place editing on second double click on expandable node in DECLARATIVE_VIEW', async () => {
+            const domModel = target.model(SDK.DOMModel.DOMModel);
+            sinon.stub(domModel, 'requestDocument').resolves(null);
+            const { domTree } = setupDOMTreeWidget(target, Elements.ElementsTreeOutline.DECLARATIVE_VIEW);
+            try {
+                const rootNode = createTestDOMTree(domModel, {
+                    nodeId: 1,
+                    nodeName: 'DIV',
+                    attributes: ['class', 'foo'],
+                    children: [
+                        { nodeId: 2, nodeName: 'SPAN' },
+                    ],
+                });
+                domTree.rootDOMNode = rootNode;
+                domTree.performUpdate();
+                await waitForTreeUpdates();
+                const tree = domTree.contentElement.querySelector('devtools-tree');
+                assert.exists(tree);
+                const internalTree = tree.getInternalTreeOutlineForTest();
+                const rootTreeElement = internalTree.rootElement().children()[0];
+                assert.isFalse(rootTreeElement.expanded);
+                const rootWidgetElement = rootTreeElement.listItemElement.querySelector('devtools-widget');
+                const rootWidget = UI.Widget.Widget.get(rootWidgetElement);
+                assert.exists(rootWidget);
+                domTree.selectDOMNode(rootNode);
+                await waitForTreeUpdates();
+                const attrElement = rootWidget.contentElement.querySelector('.webkit-html-attribute');
+                assert.exists(attrElement);
+                // First double-click starts editing
+                const firstDblClick = new MouseEvent('dblclick', { bubbles: true, cancelable: true });
+                attrElement.dispatchEvent(firstDblClick);
+                await waitForTreeUpdates();
+                assert.isTrue(rootWidget.isEditing);
+                assert.isFalse(rootTreeElement.expanded);
+                // Second double-click (e.g. word selection) must not steal focus and abort editing
+                const activeBefore = rootTreeElement.listItemElement.getRootNode().activeElement;
+                const secondDblClick = new MouseEvent('dblclick', { bubbles: true, cancelable: true });
+                (activeBefore ?? attrElement).dispatchEvent(secondDblClick);
+                assert.isTrue(rootWidget.isEditing);
+                rootWidget.editing?.cancel();
             }
             finally {
                 domTree.detach();
@@ -1966,6 +2221,40 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 domTree.selectDOMNode(adoptedSheet);
                 await waitForTreeUpdates();
                 assert.isTrue(domTree.isAdoptedStyleSheetsExpanded(rootNode));
+            }
+            finally {
+                domTree.detach();
+            }
+        });
+        it('renders adopted style sheets when omitRootDOMNode is true in DECLARATIVE_VIEW', async () => {
+            const domModel = target.model(SDK.DOMModel.DOMModel);
+            sinon.stub(domModel, 'requestDocument').resolves(null);
+            const sheetId = 'sheet-id';
+            const { domTree } = setupDOMTreeWidget(target, Elements.ElementsTreeOutline.DECLARATIVE_VIEW);
+            domTree.omitRootDOMNode = true;
+            try {
+                const rootNode = createTestDOMTree(domModel, {
+                    nodeId: 1,
+                    nodeName: '#document',
+                    adoptedStyleSheets: [sheetId],
+                    children: [
+                        {
+                            nodeId: 2,
+                            nodeName: 'HTML',
+                            children: [],
+                        },
+                    ],
+                });
+                const adoptedSheet = rootNode.adoptedStyleSheetsForNode[0];
+                assert.exists(adoptedSheet);
+                domTree.rootDOMNode = rootNode;
+                domTree.performUpdate();
+                await waitForTreeUpdates();
+                const tree = domTree.contentElement.querySelector('devtools-tree');
+                assert.exists(tree);
+                const adoptedStyleSheetsContainer = tree.shadowRoot?.querySelector('.elements-tree-adopted-style-sheets');
+                assert.exists(adoptedStyleSheetsContainer);
+                assert.include(adoptedStyleSheetsContainer.textContent, '#adopted-style-sheets');
             }
             finally {
                 domTree.detach();
@@ -2338,6 +2627,134 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 domTree.setExpandedChildrenLimit(rootNode, 15);
                 assert.strictEqual(treeElement.expandedChildrenLimit(), 15);
                 assert.strictEqual(domTree.expandedChildrenLimit(rootNode), 15);
+            }
+            finally {
+                domTree.detach();
+            }
+        });
+        it('separates hover highlight between opening tag and closing tag in declarative view', async () => {
+            SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
+            const domModel = target.model(SDK.DOMModel.DOMModel);
+            sinon.stub(domModel, 'requestDocument').resolves(null);
+            const { domTree } = setupDOMTreeWidget(target, Elements.ElementsTreeOutline.DECLARATIVE_VIEW);
+            try {
+                const rootNode = createTestDOMTree(domModel, {
+                    nodeId: 1,
+                    nodeName: 'DIV',
+                    children: [
+                        {
+                            nodeId: 2,
+                            nodeName: 'P',
+                        },
+                    ],
+                });
+                domTree.rootDOMNode = rootNode;
+                domTree.setNodeExpanded(rootNode, true);
+                domTree.performUpdate();
+                await waitForTreeUpdates();
+                const tree = domTree.contentElement.querySelector('devtools-tree');
+                assert.exists(tree);
+                const internalTree = tree.getInternalTreeOutlineForTest();
+                const rootTreeElements = internalTree.rootElement().children();
+                assert.lengthOf(rootTreeElements, 1);
+                const openingDivTreeElement = rootTreeElements[0];
+                const closingDivTreeElement = rootTreeElements[0].children()[1];
+                assert.exists(openingDivTreeElement);
+                assert.exists(closingDivTreeElement);
+                // 1. Hover opening tag
+                domTree.setHoveredNode(rootNode, /* showInfo= */ true, /* isClosingTag= */ false);
+                await waitForTreeUpdates();
+                assert.strictEqual(domTree.hoveredDOMNode(), rootNode);
+                assert.isFalse(domTree.hoveredClosingTag());
+                assert.isTrue(openingDivTreeElement.listItemElement.classList.contains('hovered'));
+                assert.isFalse(closingDivTreeElement.listItemElement.classList.contains('hovered'));
+                const openingWidgetElement = openingDivTreeElement.listItemElement.querySelector('devtools-widget');
+                const openingWidget = UI.Widget.Widget.get(openingWidgetElement);
+                assert.isTrue(openingWidget.hovered);
+                const closingWidgetElement = closingDivTreeElement.listItemElement.querySelector('devtools-widget');
+                const closingWidget = UI.Widget.Widget.get(closingWidgetElement);
+                assert.isFalse(closingWidget.hovered);
+                // 2. Hover closing tag
+                domTree.setHoveredNode(rootNode, /* showInfo= */ true, /* isClosingTag= */ true);
+                await waitForTreeUpdates();
+                assert.strictEqual(domTree.hoveredDOMNode(), rootNode);
+                assert.isTrue(domTree.hoveredClosingTag());
+                assert.isFalse(openingDivTreeElement.listItemElement.classList.contains('hovered'));
+                assert.isTrue(closingDivTreeElement.listItemElement.classList.contains('hovered'));
+                assert.isFalse(openingWidget.hovered);
+                assert.isTrue(closingWidget.hovered);
+                // 3. Clear hover
+                domTree.setHoveredNode(null);
+                await waitForTreeUpdates();
+                assert.isNull(domTree.hoveredDOMNode());
+                assert.isFalse(domTree.hoveredClosingTag());
+                assert.isFalse(openingDivTreeElement.listItemElement.classList.contains('hovered'));
+                assert.isFalse(closingDivTreeElement.listItemElement.classList.contains('hovered'));
+                // 4. Hover closing tag via mousemove event
+                closingDivTreeElement.listItemElement.dispatchEvent(new MouseEvent('mousemove', { bubbles: true }));
+                await waitForTreeUpdates();
+                assert.strictEqual(domTree.hoveredDOMNode(), rootNode);
+                assert.isTrue(domTree.hoveredClosingTag());
+                assert.isFalse(openingDivTreeElement.listItemElement.classList.contains('hovered'));
+                assert.isTrue(closingDivTreeElement.listItemElement.classList.contains('hovered'));
+                assert.isFalse(openingWidget.hovered);
+                assert.isTrue(closingWidget.hovered);
+                // 5. Hover opening tag via mousemove event
+                openingDivTreeElement.listItemElement.dispatchEvent(new MouseEvent('mousemove', { bubbles: true }));
+                await waitForTreeUpdates();
+                assert.strictEqual(domTree.hoveredDOMNode(), rootNode);
+                assert.isFalse(domTree.hoveredClosingTag());
+                assert.isTrue(openingDivTreeElement.listItemElement.classList.contains('hovered'));
+                assert.isFalse(closingDivTreeElement.listItemElement.classList.contains('hovered'));
+                assert.isTrue(openingWidget.hovered);
+                assert.isFalse(closingWidget.hovered);
+            }
+            finally {
+                domTree.detach();
+            }
+        });
+        it('attaches dragstart and dragend listeners to closing tags in declarative view', async () => {
+            const { domTree, domModel } = setupDOMTreeWidget(target, Elements.ElementsTreeOutline.DECLARATIVE_VIEW);
+            try {
+                const rootNode = createTestDOMTree(domModel, {
+                    nodeId: 1,
+                    nodeName: 'BODY',
+                    children: [
+                        {
+                            nodeId: 2,
+                            nodeName: 'DIV',
+                            children: [
+                                {
+                                    nodeId: 3,
+                                    nodeName: 'SPAN',
+                                },
+                            ],
+                        },
+                    ],
+                });
+                domTree.rootDOMNode = rootNode;
+                const divNode = rootNode.children()[0];
+                domTree.setNodeExpanded(rootNode, true);
+                domTree.setNodeExpanded(divNode, true);
+                domTree.performUpdate();
+                await waitForTreeUpdates();
+                const tree = domTree.contentElement.querySelector('devtools-tree');
+                assert.exists(tree);
+                const internalTree = tree.getInternalTreeOutlineForTest();
+                const rootTreeElements = internalTree.rootElement().children();
+                const divTreeElement = rootTreeElements[0].children()[0];
+                const closingDivTreeElement = divTreeElement.children()[1];
+                assert.exists(closingDivTreeElement);
+                assert.strictEqual(closingDivTreeElement.listItemElement.getAttribute('draggable'), 'true');
+                const dragStartSpy = sinon.spy(domTree, 'onDragStart');
+                const dragEndSpy = sinon.spy(domTree, 'onDragEnd');
+                const dragEvent = new DragEvent('dragstart', { bubbles: true, cancelable: true });
+                closingDivTreeElement.listItemElement.dispatchEvent(dragEvent);
+                sinon.assert.calledOnce(dragStartSpy);
+                assert.strictEqual(dragStartSpy.firstCall.args[0], divNode);
+                const dragEndEvent = new DragEvent('dragend', { bubbles: true, cancelable: true });
+                closingDivTreeElement.listItemElement.dispatchEvent(dragEndEvent);
+                sinon.assert.calledOnce(dragEndSpy);
             }
             finally {
                 domTree.detach();

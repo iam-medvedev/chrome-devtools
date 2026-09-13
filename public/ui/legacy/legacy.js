@@ -653,7 +653,7 @@ __export(Dialog_exports, {
 });
 import * as Common16 from "../../core/common/common.js";
 import * as i18n27 from "../../core/i18n/i18n.js";
-import { nothing as nothing4, render as render8 } from "../lit/lit.js";
+import { nothing as nothing4, render as render10 } from "../lit/lit.js";
 import * as Buttons7 from "../components/buttons/buttons.js";
 import * as VisualLogging17 from "../visual_logging/visual_logging.js";
 
@@ -841,7 +841,7 @@ import * as Root8 from "../../core/root/root.js";
 import * as Buttons5 from "../components/buttons/buttons.js";
 import * as VisualLogging15 from "../visual_logging/visual_logging.js";
 import { createIcon as createIcon7 } from "../kit/kit.js";
-import { nothing as nothing2, render as render5 } from "../lit/lit.js";
+import { nothing as nothing2, render as render7 } from "../lit/lit.js";
 import * as SettingUIRegistration from "../settings/settings.js";
 
 // ../../front_end/ui/legacy/ContextMenu.ts
@@ -860,7 +860,7 @@ __export(ContextMenu_exports, {
 import * as Host8 from "../../core/host/host.js";
 import * as Root7 from "../../core/root/root.js";
 import * as Buttons4 from "../components/buttons/buttons.js";
-import { html as html3, render as render4 } from "../lit/lit.js";
+import { html as html5, render as render6 } from "../lit/lit.js";
 import * as VisualLogging11 from "../visual_logging/visual_logging.js";
 
 // ../../front_end/ui/legacy/ShortcutRegistry.ts
@@ -1653,6 +1653,7 @@ import * as Root6 from "../../core/root/root.js";
 import * as SDK from "../../core/sdk/sdk.js";
 import * as Buttons3 from "../components/buttons/buttons.js";
 import { createIcon as createIcon5 } from "../kit/kit.js";
+import * as Lit3 from "../lit/lit.js";
 import * as SettingsUI2 from "../settings/settings.js";
 import * as VisualLogging9 from "../visual_logging/visual_logging.js";
 
@@ -2268,7 +2269,7 @@ __export(SplitWidget_exports, {
 });
 import * as Common7 from "../../core/common/common.js";
 import * as Platform6 from "../../core/platform/platform.js";
-import * as Geometry2 from "../../models/geometry/geometry.js";
+import * as Geometry2 from "../geometry/geometry.js";
 import * as VisualLogging4 from "../visual_logging/visual_logging.js";
 
 // ../../front_end/ui/legacy/ResizerWidget.ts
@@ -2513,8 +2514,8 @@ __export(Widget_exports, {
 });
 import "../dom_extension/dom_extension.js";
 import * as Platform5 from "../../core/platform/platform.js";
-import * as Geometry from "../../models/geometry/geometry.js";
 import * as Lit from "../lit/lit.js";
+import * as Geometry from "../geometry/geometry.js";
 
 // ../../front_end/ui/legacy/DOMUtilities.ts
 var DOMUtilities_exports = {};
@@ -3852,7 +3853,13 @@ var SplitWidget = class extends SplitWidgetBase {
     const mainSlot = this.#mainElement.createChild("slot");
     mainSlot.name = "main";
     mainSlot.addEventListener("slotchange", (_) => {
-      const assignedNode = mainSlot.assignedNodes()[0];
+      const assignedNode = mainSlot.assignedNodes().find((node) => {
+        const widget3 = node instanceof HTMLElement ? Widget.get(node) : null;
+        if (widget3) {
+          return widget3 === this.#mainWidget || widget3.isShowing();
+        }
+        return node instanceof HTMLElement && !node.classList.contains("hidden");
+      }) ?? mainSlot.assignedNodes()[0];
       const widget2 = assignedNode instanceof HTMLElement ? Widget.getOrCreateWidget(assignedNode) : null;
       if (widget2 && widget2 !== this.#mainWidget) {
         this.setMainWidget(widget2);
@@ -3861,7 +3868,13 @@ var SplitWidget = class extends SplitWidgetBase {
     const sidebarSlot = this.#sidebarElement.createChild("slot");
     sidebarSlot.name = "sidebar";
     sidebarSlot.addEventListener("slotchange", (_) => {
-      const assignedNode = sidebarSlot.assignedNodes()[0];
+      const assignedNode = sidebarSlot.assignedNodes().find((node) => {
+        const widget3 = node instanceof HTMLElement ? Widget.get(node) : null;
+        if (widget3) {
+          return widget3 === this.#sidebarWidget || widget3.isShowing();
+        }
+        return node instanceof HTMLElement && !node.classList.contains("hidden");
+      }) ?? sidebarSlot.assignedNodes()[0];
       const widget2 = assignedNode instanceof HTMLElement ? Widget.getOrCreateWidget(assignedNode) : null;
       if (widget2 && widget2 !== this.#sidebarWidget) {
         this.setSidebarWidget(widget2);
@@ -4584,10 +4597,10 @@ __export(TabbedPane_exports, {
 import * as Common8 from "../../core/common/common.js";
 import * as i18n7 from "../../core/i18n/i18n.js";
 import * as Platform7 from "../../core/platform/platform.js";
-import * as Geometry3 from "../../models/geometry/geometry.js";
 import * as Buttons2 from "../components/buttons/buttons.js";
 import { render } from "../lit/lit.js";
 import * as VisualLogging5 from "../visual_logging/visual_logging.js";
+import * as Geometry3 from "../geometry/geometry.js";
 import { createIcon as createIcon2, Icon } from "../kit/kit.js";
 
 // gen/front_end/ui/legacy/tabbedPane.css.js
@@ -6745,6 +6758,7 @@ var ViewLocationValues = /* @__PURE__ */ ((ViewLocationValues2) => {
   ViewLocationValues2["NETWORK_SIDEBAR"] = "network-sidebar";
   ViewLocationValues2["SOURCES_SIDEBAR_TOP"] = "sources.sidebar-top";
   ViewLocationValues2["SOURCES_SIDEBAR_TABS"] = "sources.sidebar-tabs";
+  ViewLocationValues2["STATUS_BAR"] = "status-bar";
   return ViewLocationValues2;
 })(ViewLocationValues || {});
 var registeredViewExtensions = /* @__PURE__ */ new Map();
@@ -8279,6 +8293,90 @@ var InspectorDrawerView = class {
   }
 };
 
+// ../../front_end/ui/legacy/StatusBar.ts
+var StatusBar_exports = {};
+__export(StatusBar_exports, {
+  DEFAULT_VIEW: () => DEFAULT_VIEW,
+  StatusBarWidget: () => StatusBarWidget
+});
+import * as Lit2 from "../lit/lit.js";
+
+// gen/front_end/ui/legacy/statusBar.css.js
+var statusBar_css_default = `/* Copyright 2026 The Chromium Authors
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+@scope to (devtools-widget > *) {
+  :scope {
+    flex: none;
+  }
+
+  .status-bar {
+    display: flex;
+    padding: var(--sys-size-4) var(--sys-size-5);
+    justify-content: space-between;
+    align-items: center;
+    border-top: var(--sys-size-1) solid var(--sys-color-divider);
+    background: var(--sys-color-cdt-base-container);
+  }
+}
+
+/*# sourceURL=${import.meta.resolve("./statusBar.css")} */`;
+
+// ../../front_end/ui/legacy/StatusBar.ts
+var { html: html3, render: render4 } = Lit2;
+var DEFAULT_VIEW = (_input, _output, target) => {
+  render4(html3`
+    <style>${statusBar_css_default}</style>
+    <div class="status-bar"></div>
+  `, target);
+};
+var StatusBarWidget = class extends Widget {
+  #view;
+  #containerElement;
+  #widgets = [];
+  #viewsLoadedPromise;
+  constructor(element, view = DEFAULT_VIEW) {
+    super(element);
+    this.#view = view;
+  }
+  viewsLoadedForTest() {
+    return this.#viewsLoadedPromise ?? Promise.resolve();
+  }
+  #attachWidgets() {
+    if (!this.#containerElement) {
+      return;
+    }
+    for (const widget2 of this.#widgets) {
+      if (!widget2.isShowing()) {
+        widget2.show(this.#containerElement);
+      }
+    }
+  }
+  async #loadViews() {
+    const views = ViewManager.instance().viewsForLocation(
+      "status-bar" /* STATUS_BAR */
+    );
+    for (const view of views) {
+      const widget2 = await view.widget();
+      if (widget2 instanceof Widget && !this.#widgets.includes(widget2)) {
+        this.#widgets.push(widget2);
+      }
+    }
+    this.#attachWidgets();
+  }
+  wasShown() {
+    super.wasShown();
+    this.requestUpdate();
+    this.#viewsLoadedPromise = this.#loadViews();
+  }
+  performUpdate() {
+    this.#view(void 0, void 0, this.contentElement);
+    this.#containerElement = this.contentElement.querySelector(".status-bar") ?? void 0;
+    this.#attachWidgets();
+  }
+};
+
 // ../../front_end/ui/legacy/UIUserMetrics.ts
 var UIUserMetrics_exports = {};
 __export(UIUserMetrics_exports, {
@@ -8343,6 +8441,7 @@ var UIUserMetrics = class _UIUserMetrics {
 };
 
 // ../../front_end/ui/legacy/InspectorView.ts
+var { html: html4 } = Lit3;
 var UIStrings9 = {
   /**
    * @description Announcement text for screen readers when the drawer is minimized.
@@ -8461,6 +8560,7 @@ var InspectorView = class _InspectorView extends VBox {
   #resizeObserver;
   #drawerShowModeBeforeDockSideChange = null;
   #drawerMinimizedBeforeDockSideChange = null;
+  #statusBarContainer;
   constructor() {
     super();
     GlassPane.setContainer(this.element);
@@ -9055,6 +9155,17 @@ var InspectorView = class _InspectorView extends VBox {
         this.#selectOverrideFolderInfobar = void 0;
       });
     }
+  }
+  renderStatusBar() {
+    if (!this.#statusBarContainer) {
+      this.#statusBarContainer = document.createElement("div");
+      this.#statusBarContainer.style.display = "contents";
+      this.element.appendChild(this.#statusBarContainer);
+    }
+    Lit3.render(
+      html4`<devtools-widget class="flex-none" ${widget(StatusBarWidget)}></devtools-widget>`,
+      this.#statusBarContainer
+    );
   }
   createInfoBarDiv() {
     if (!this.infoBarDiv) {
@@ -10820,8 +10931,8 @@ var MenuButton = class extends HTMLElement {
     if (!this.iconName) {
       throw new Error("<devtools-menu-button> expects an icon.");
     }
-    render4(
-      html3`
+    render6(
+      html5`
         <devtools-button .disabled=${this.disabled}
                          .iconName=${this.iconName}
                          .variant=${Buttons4.Button.Variant.ICON}
@@ -10903,7 +11014,7 @@ __export(SuggestBox_exports, {
 });
 import * as i18n21 from "../../core/i18n/i18n.js";
 import * as Platform11 from "../../core/platform/platform.js";
-import * as Geometry4 from "../../models/geometry/geometry.js";
+import * as Geometry4 from "../geometry/geometry.js";
 import * as VisualLogging13 from "../visual_logging/visual_logging.js";
 
 // ../../front_end/ui/legacy/ListControl.ts
@@ -13324,7 +13435,7 @@ var Toolbar = class _Toolbar extends HTMLElement {
       }
     }
     this.items = [];
-    render5(nothing2, this);
+    render7(nothing2, this);
   }
   hideSeparatorDupes() {
     if (!this.items.length) {
@@ -13697,11 +13808,15 @@ var ToolbarFilter = class extends ToolbarInput {
         toggledIconName: regexIconName,
         toggleType: Buttons5.Button.ToggleType.PRIMARY,
         toggled: false,
+        checked: false,
         title: i18nString12(UIStrings12.useRegularExpression),
         jslogContext: regexIconName
       };
+      regexButton.style.setProperty("--dot-toggle-top", "calc(100% - var(--sys-size-3) - var(--sys-size-1))");
+      regexButton.style.setProperty("--dot-toggle-left", "calc(100% - var(--sys-size-3) - var(--sys-size-1))");
       setLabel(regexButton, i18nString12(UIStrings12.useRegularExpression));
       regexButton.addEventListener("click", () => {
+        regexButton.checked = regexButton.toggled;
         onRegexToggle?.();
       });
       this.insertTrailingElement(regexButton);
@@ -14199,10 +14314,10 @@ import * as Common15 from "../../core/common/common.js";
 import * as Host9 from "../../core/host/host.js";
 import * as i18n25 from "../../core/i18n/i18n.js";
 import * as Platform15 from "../../core/platform/platform.js";
-import * as Geometry5 from "../../models/geometry/geometry.js";
 import * as Buttons6 from "../components/buttons/buttons.js";
+import * as Geometry5 from "../geometry/geometry.js";
 import { Icon as Icon2 } from "../kit/kit.js";
-import * as Lit2 from "../lit/lit.js";
+import * as Lit4 from "../lit/lit.js";
 import * as VisualLogging16 from "../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/checkboxTextLabel.css.js
@@ -15656,11 +15771,41 @@ devtools-toolbar {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  font: inherit;
+  font-size: var(--sys-typescale-body4-size);
   gap: var(--sys-size-3);
   padding: var(--sys-size-1) var(--sys-size-3) var(--sys-size-1) var(--sys-size-4);
   border-radius: var(--sys-shape-corner-extra-small);
   border: var(--sys-size-1) solid var(--sys-color-neutral-outline);
   box-sizing: border-box;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+
+  &:hover:not(:disabled, [aria-disabled="true"]) {
+    background-color: var(--sys-color-state-hover-on-subtle);
+  }
+
+  &:active:not(:disabled, [aria-disabled="true"]),
+  &[aria-pressed="true"]:not(:disabled, [aria-disabled="true"]) {
+    background-color: var(--sys-color-state-ripple-neutral-on-subtle);
+  }
+
+  &:focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  &:focus-visible:not(:disabled, [aria-disabled="true"]) {
+    outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
+    outline-offset: var(--sys-size-2);
+  }
+
+  &:disabled,
+  &[aria-disabled="true"] {
+    color: var(--sys-color-state-disabled);
+    border-color: var(--sys-color-state-disabled);
+    cursor: not-allowed;
+  }
 }
 
 /*# sourceURL=${import.meta.resolve("./inspectorCommon.css")} */`;
@@ -15723,8 +15868,8 @@ div.error {
 /*# sourceURL=${import.meta.resolve("./smallBubble.css")} */`;
 
 // ../../front_end/ui/legacy/UIUtils.ts
-var Directives4 = Lit2.Directives;
-var render7 = Lit2.render;
+var Directives4 = Lit4.Directives;
+var render9 = Lit4.render;
 var UIStrings13 = {
   /**
    * @description Context menu item to open a link in a new tab.
@@ -16270,7 +16415,7 @@ function runCSSAnimationOnce(element, className) {
   element.addEventListener("animationcancel", animationEndCallback, false);
   element.classList.add(className);
 }
-var AnimateOnDirective = class extends Lit2.Directive.Directive {
+var AnimateOnDirective = class extends Lit4.Directive.Directive {
   #previousValue = false;
   render(_condition, _className) {
     return void 0;
@@ -16286,7 +16431,7 @@ var AnimateOnDirective = class extends Lit2.Directive.Directive {
     runCSSAnimationOnce(el, className);
   }
 };
-var animateOn = Lit2.Directive.directive(AnimateOnDirective);
+var animateOn = Lit4.Directive.directive(AnimateOnDirective);
 function measurePreferredSize(element, containerElement) {
   const oldParent = element.parentElement;
   const oldNextSibling = element.nextSibling;
@@ -17261,12 +17406,12 @@ var UIUtilsWidgetDirective = class extends WidgetDirective {
   #lastKey;
   update(part, args) {
     const [widgetClass, widgetParams] = args;
-    if (part.type === Lit2.Directive.PartType.ELEMENT) {
+    if (part.type === Lit4.Directive.PartType.ELEMENT) {
       const element = part.element;
       this.#updateElementAndClones(element, widgetClass, widgetParams);
-      return Lit2.nothing;
+      return Lit4.nothing;
     }
-    if (part.type === Lit2.Directive.PartType.CHILD) {
+    if (part.type === Lit4.Directive.PartType.CHILD) {
       let classChanged = false;
       if (this.#lastWidgetClass !== widgetClass) {
         this.#lastWidgetClass = widgetClass;
@@ -17285,7 +17430,7 @@ var UIUtilsWidgetDirective = class extends WidgetDirective {
         return this.#renderedElement;
       }
       this.#updateElementAndClones(this.#renderedElement, widgetClass, widgetParams);
-      return Lit2.noChange;
+      return Lit4.noChange;
     }
     return super.update(part, args);
   }
@@ -17330,7 +17475,8 @@ var HTMLElementWithLightDOMTemplate = class _HTMLElementWithLightDOMTemplate ext
     const clones = [];
     for (const cloneRef of cloneSet) {
       const clone = cloneRef.deref();
-      if (clone) {
+      const root = clone?.getRootNode();
+      if (clone && (root instanceof Document || root instanceof DocumentFragment)) {
         clones.push(clone);
       } else {
         cloneSet.delete(cloneRef);
@@ -17350,7 +17496,7 @@ var HTMLElementWithLightDOMTemplate = class _HTMLElementWithLightDOMTemplate ext
       clone.appendChild(_HTMLElementWithLightDOMTemplate.cloneNode(child));
     }
     if (node instanceof Element && clone instanceof Element) {
-      Lit2.CustomDirectives.InterceptBindingDirective.setEventListeners(node, clone);
+      Lit4.CustomDirectives.InterceptBindingDirective.setEventListeners(node, clone);
       const currentConfig = widgetConfigs.get(node);
       if (currentConfig) {
         registerWidgetConfig(clone, currentConfig);
@@ -17359,14 +17505,14 @@ var HTMLElementWithLightDOMTemplate = class _HTMLElementWithLightDOMTemplate ext
     return clone;
   }
   static patchLitTemplate(template) {
-    const interceptingWrapper = Lit2.Directive.directive(Lit2.CustomDirectives.InterceptBindingDirective);
+    const interceptingWrapper = Lit4.Directive.directive(Lit4.CustomDirectives.InterceptBindingDirective);
     const patchingWrapper = (fn) => {
       return function(...args) {
         const result = fn.apply(this, args);
         return patchValue(result);
       };
     };
-    if (template === Lit2.nothing) {
+    if (template === Lit4.nothing) {
       return;
     }
     template.values = template.values.map(patchValue);
@@ -17390,7 +17536,7 @@ var HTMLElementWithLightDOMTemplate = class _HTMLElementWithLightDOMTemplate ext
         _HTMLElementWithLightDOMTemplate.patchLitTemplate(value);
         return value;
       }
-      if (Lit2.isLitDirective(value)) {
+      if (Lit4.isLitDirective(value)) {
         const directiveValue = value;
         if (directiveValue["_$litDirective$"] === WidgetDirective) {
           directiveValue["_$litDirective$"] = UIUtilsWidgetDirective;
@@ -17425,7 +17571,7 @@ var HTMLElementWithLightDOMTemplate = class _HTMLElementWithLightDOMTemplate ext
       );
     }
     _HTMLElementWithLightDOMTemplate.patchLitTemplate(template);
-    render7(template, this.#contentTemplate.content);
+    render9(template, this.#contentTemplate.content);
   }
   #onChange(mutationList) {
     this.onChange(mutationList);
@@ -18201,7 +18347,7 @@ var DialogWidget = class extends DialogWidgetBase {
   }
   performUpdate() {
     if (this.open) {
-      render8(this.#content ?? nothing4, this.#dialog.contentElement);
+      render10(this.#content ?? nothing4, this.#dialog.contentElement);
       if (!this.#dialog.isShowing()) {
         this.#dialog.show(this.contentElement.ownerDocument, this.#dialogStack);
         this.#dialog.contentElement.focus();
@@ -18682,7 +18828,7 @@ __export(EmptyWidget_exports, {
 });
 import "../kit/kit.js";
 import * as i18n29 from "../../core/i18n/i18n.js";
-import { html as html4, render as render9 } from "../lit/lit.js";
+import { html as html6, render as render11 } from "../lit/lit.js";
 import * as VisualLogging18 from "../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/emptyWidget.css.js
@@ -18713,15 +18859,15 @@ var UIStrings15 = {
 };
 var str_15 = i18n29.i18n.registerUIStrings("ui/legacy/EmptyWidget.ts", UIStrings15);
 var i18nString15 = i18n29.i18n.getLocalizedString.bind(void 0, str_15);
-var DEFAULT_VIEW = (input, _output, target) => {
-  render9(html4`
+var DEFAULT_VIEW2 = (input, _output, target) => {
+  render11(html6`
     <style>${inspectorCommon_css_default}</style>
     <style>${emptyWidget_css_default}</style>
     <div class="empty-state" jslog=${VisualLogging18.section("empty-view")}>
       <div class="empty-state-header">${input.header}</div>
       <div class="empty-state-description">
         <span>${input.text}</span>
-        ${input.link ? html4`<devtools-link href=${input.link} jslogContext=${"learn-more"}>${i18nString15(UIStrings15.learnMore)}</devtools-link>` : ""}
+        ${input.link ? html6`<devtools-link href=${input.link} jslogContext=${"learn-more"}>${i18nString15(UIStrings15.learnMore)}</devtools-link>` : ""}
       </div>
       <slot></slot>
     </div>`, target, { container: { classes: ["empty-view-scroller"] } });
@@ -18731,7 +18877,7 @@ var EmptyWidget = class extends VBox {
   #text;
   #link;
   #view;
-  constructor(headerOrElement, text = "", element, view = DEFAULT_VIEW) {
+  constructor(headerOrElement, text = "", element, view = DEFAULT_VIEW2) {
     const header = typeof headerOrElement === "string" ? headerOrElement : "";
     if (!element && headerOrElement instanceof HTMLElement) {
       element = headerOrElement;
@@ -19681,7 +19827,7 @@ __export(ListWidget_exports, {
 import * as i18n33 from "../../core/i18n/i18n.js";
 import * as Platform21 from "../../core/platform/platform.js";
 import * as Buttons8 from "../components/buttons/buttons.js";
-import { html as html5, nothing as nothing5, render as render10 } from "../lit/lit.js";
+import { html as html7, nothing as nothing5, render as render12 } from "../lit/lit.js";
 import * as VisualLogging20 from "../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/listWidget.css.js
@@ -20028,11 +20174,11 @@ var ListWidget = class extends VBox {
     const controls = document.createElement("div");
     controls.classList.add("controls-container");
     controls.classList.add("fill");
-    render10(html5`
+    render12(html7`
       <div class="controls-gradient"></div>
       <div class="controls-buttons">
         <devtools-toolbar>
-          ${controlLabels?.hideEdit ? nothing5 : html5`<devtools-button class=toolbar-button
+          ${controlLabels?.hideEdit ? nothing5 : html7`<devtools-button class=toolbar-button
                            .iconName=${"edit"}
                            .jslogContext=${"edit-item"}
                            .title=${controlLabels?.edit ?? i18nString17(UIStrings17.editString)}
@@ -20731,12 +20877,12 @@ customElements.define("devtools-progress", ProgressIndicator);
 // ../../front_end/ui/legacy/RemoteDebuggingTerminatedScreen.ts
 var RemoteDebuggingTerminatedScreen_exports = {};
 __export(RemoteDebuggingTerminatedScreen_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW2,
+  DEFAULT_VIEW: () => DEFAULT_VIEW3,
   RemoteDebuggingTerminatedScreen: () => RemoteDebuggingTerminatedScreen
 });
 import * as i18n35 from "../../core/i18n/i18n.js";
 import * as Buttons9 from "../components/buttons/buttons.js";
-import { html as html6, render as render11 } from "../lit/lit.js";
+import { html as html8, render as render13 } from "../lit/lit.js";
 
 // gen/front_end/ui/legacy/remoteDebuggingTerminatedScreen.css.js
 var remoteDebuggingTerminatedScreen_css_default = `/*
@@ -20800,9 +20946,9 @@ var UIStrings18 = {
 };
 var str_18 = i18n35.i18n.registerUIStrings("ui/legacy/RemoteDebuggingTerminatedScreen.ts", UIStrings18);
 var i18nString18 = i18n35.i18n.getLocalizedString.bind(void 0, str_18);
-var DEFAULT_VIEW2 = (input, _output, target) => {
-  render11(
-    html6`
+var DEFAULT_VIEW3 = (input, _output, target) => {
+  render13(
+    html8`
     <style>${remoteDebuggingTerminatedScreen_css_default}</style>
     <div class="header">${i18nString18(UIStrings18.debuggingConnectionWasClosed)}</div>
     <div class="content">
@@ -20819,7 +20965,7 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
   );
 };
 var RemoteDebuggingTerminatedScreen = class _RemoteDebuggingTerminatedScreen extends VBox {
-  constructor(reason, view = DEFAULT_VIEW2) {
+  constructor(reason, view = DEFAULT_VIEW3) {
     super({ useShadowDom: true });
     const input = {
       reason,
@@ -22022,7 +22168,7 @@ __export(SoftDropDown_exports, {
   SoftDropDown: () => SoftDropDown
 });
 import * as i18n39 from "../../core/i18n/i18n.js";
-import * as Geometry6 from "../../models/geometry/geometry.js";
+import * as Geometry6 from "../geometry/geometry.js";
 import { createIcon as createIcon9 } from "../kit/kit.js";
 import * as VisualLogging25 from "../visual_logging/visual_logging.js";
 
@@ -22400,11 +22546,11 @@ var SoftDropDown = class {
 // ../../front_end/ui/legacy/TargetCrashedScreen.ts
 var TargetCrashedScreen_exports = {};
 __export(TargetCrashedScreen_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW3,
+  DEFAULT_VIEW: () => DEFAULT_VIEW4,
   TargetCrashedScreen: () => TargetCrashedScreen
 });
 import * as i18n41 from "../../core/i18n/i18n.js";
-import { html as html7, render as render12 } from "../lit/lit.js";
+import { html as html9, render as render14 } from "../lit/lit.js";
 
 // gen/front_end/ui/legacy/targetCrashedScreen.css.js
 var targetCrashedScreen_css_default = `/*
@@ -22439,9 +22585,9 @@ var UIStrings21 = {
 };
 var str_21 = i18n41.i18n.registerUIStrings("ui/legacy/TargetCrashedScreen.ts", UIStrings21);
 var i18nString21 = i18n41.i18n.getLocalizedString.bind(void 0, str_21);
-var DEFAULT_VIEW3 = (input, _output, target) => {
-  render12(
-    html7`
+var DEFAULT_VIEW4 = (input, _output, target) => {
+  render14(
+    html9`
     <style>${targetCrashedScreen_css_default}</style>
     <div class="message">${i18nString21(UIStrings21.devtoolsWasDisconnectedFromThe)}</div>
     <div class="message">${i18nString21(UIStrings21.oncePageIsReloadedDevtoolsWill)}</div>`,
@@ -22450,7 +22596,7 @@ var DEFAULT_VIEW3 = (input, _output, target) => {
 };
 var TargetCrashedScreen = class extends VBox {
   hideCallback;
-  constructor(hideCallback, view = DEFAULT_VIEW3) {
+  constructor(hideCallback, view = DEFAULT_VIEW4) {
     super({ useShadowDom: true });
     view({}, {}, this.contentElement);
     this.hideCallback = hideCallback;
@@ -22481,7 +22627,7 @@ import * as i18n43 from "../../core/i18n/i18n.js";
 import * as Platform24 from "../../core/platform/platform.js";
 import * as SDK2 from "../../core/sdk/sdk.js";
 import * as Highlighting from "../components/highlighting/highlighting.js";
-import * as Lit3 from "../lit/lit.js";
+import * as Lit5 from "../lit/lit.js";
 import * as VisualLogging26 from "../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/treeoutline.css.js
@@ -22825,7 +22971,7 @@ var UIStrings22 = {
 var str_22 = i18n43.i18n.registerUIStrings("ui/legacy/Treeoutline.ts", UIStrings22);
 var i18nString22 = i18n43.i18n.getLocalizedString.bind(void 0, str_22);
 var nodeToParentTreeElementMap = /* @__PURE__ */ new WeakMap();
-var { render: render13 } = Lit3;
+var { render: render15 } = Lit5;
 var Events11 = /* @__PURE__ */ ((Events12) => {
   Events12["ElementAttached"] = "ElementAttached";
   Events12["ElementsDetached"] = "ElementsDetached";
@@ -23137,6 +23283,18 @@ var TreeOutlineInShadow = class extends TreeOutline {
   setDense(dense) {
     this.contentElement.classList.toggle("tree-outline-dense", dense);
   }
+  setDisclosureClass(disclosureClass) {
+    const isHideOverflow = this.disclosureElement.classList.contains("tree-outline-disclosure-hide-overflow");
+    this.disclosureElement.className = "tree-outline-disclosure";
+    if (isHideOverflow) {
+      this.disclosureElement.classList.add("tree-outline-disclosure-hide-overflow");
+    }
+    for (const cls of disclosureClass.split(/\s+/)) {
+      if (cls) {
+        this.disclosureElement.classList.add(cls);
+      }
+    }
+  }
   onStartedEditingTitle(treeElement) {
     const selection = this.shadowRoot.getSelection();
     if (selection) {
@@ -23316,6 +23474,7 @@ var TreeElement = class {
     }
     for (let current = child.firstChild(); this.treeOutline && current; current = current.traverseNextTreeElement(false, child, true)) {
       this.treeOutline.bindTreeElement(current);
+      current.ensureSelection();
     }
     child.onattach();
     child.ensureSelection();
@@ -23468,7 +23627,7 @@ var TreeElement = class {
       this.listItemNode.insertBefore(this.leadingIconsElement, this.titleElement);
       this.ensureSelection();
     }
-    render13(icons, this.leadingIconsElement);
+    render15(icons, this.leadingIconsElement);
   }
   setTrailingIcons(icons) {
     if (!this.trailingIconsElement && !icons.length) {
@@ -23481,7 +23640,7 @@ var TreeElement = class {
       this.listItemNode.appendChild(this.trailingIconsElement);
       this.ensureSelection();
     }
-    render13(icons, this.trailingIconsElement);
+    render15(icons, this.trailingIconsElement);
   }
   get tooltip() {
     return this.tooltipInternal;
@@ -23607,12 +23766,18 @@ var TreeElement = class {
     if (!element || treeElementBylistItemNode.get(element) !== this) {
       return;
     }
+    if (event.defaultPrevented) {
+      return;
+    }
     const handled = this.ondblclick(event);
     if (handled) {
       return;
     }
     if (this.expandable && !this.expanded) {
       void this.#setExpandedFromUser(true, false);
+      if (!this.listItemElement.hasFocus()) {
+        this.listItemElement.focus();
+      }
     }
   }
   async #setExpandedFromUser(shouldExpand, recursively) {
@@ -23995,7 +24160,7 @@ var TreeSearch = class _TreeSearch extends Common19.ObjectWrapper.ObjectWrapper 
     return this.#getNodeMatchMap().get(node) ?? [];
   }
   static highlight(ranges, selectedRange) {
-    return Lit3.Directives.ref((element) => {
+    return Lit5.Directives.ref((element) => {
       if (!(element instanceof HTMLElement)) {
         return;
       }
@@ -24081,7 +24246,7 @@ var TreeSearch = class _TreeSearch extends Common19.ObjectWrapper.ObjectWrapper 
   })(Events12 = TreeSearch2.Events || (TreeSearch2.Events = {}));
 })(TreeSearch || (TreeSearch = {}));
 var TreeViewTreeElement = class _TreeViewTreeElement extends TreeElement {
-  static CLONED_ATTRIBUTES = SDK2.DOMModel.ARIA_ATTRIBUTES.union(/* @__PURE__ */ new Set(["jslog", "draggable"]));
+  static CLONED_ATTRIBUTES = SDK2.DOMModel.ARIA_ATTRIBUTES.union(/* @__PURE__ */ new Set(["jslog", "draggable", "style"]));
   #clonedAttributes = /* @__PURE__ */ new Set();
   #clonedClasses = /* @__PURE__ */ new Set();
   #previousOpenAttributeValue;
@@ -24138,11 +24303,12 @@ var TreeViewTreeElement = class _TreeViewTreeElement extends TreeElement {
     this.updateExpansionFromAttribute();
   }
   refresh() {
+    const hadFocus = this.listItemElement.hasFocus();
     this.titleElement.textContent = "";
     this.updateAttributes();
     const childUl = this.configElement.querySelector(':scope > ul[role="group"]');
     const templateElements = childUl ? [this.configElement, childUl] : [this.configElement];
-    Lit3.CustomDirectives.InterceptBindingDirective.setEventListeners(templateElements, this.listItemElement);
+    Lit5.CustomDirectives.InterceptBindingDirective.setEventListeners(templateElements, this.listItemElement);
     for (const child of this.configElement.childNodes) {
       if (child instanceof HTMLUListElement && child.role === "group") {
         continue;
@@ -24153,9 +24319,24 @@ var TreeViewTreeElement = class _TreeViewTreeElement extends TreeElement {
     this.toggleOnClick = hasBooleanAttribute(this.configElement, "toggle-on-click");
     this.updateExpansionFromAttribute();
     Highlighting.HighlightManager.HighlightManager.instance().apply(this.titleElement);
+    if (hadFocus) {
+      this.listItemElement.focus();
+    }
   }
   static get(configElement) {
     return configElement && _TreeViewTreeElement.#elementToTreeElement.get(configElement);
+  }
+  onselect(selectedByUser) {
+    this.listItemElement.dispatchEvent(new TreeViewElement.SelectEvent({ selectedByUser: Boolean(selectedByUser) }));
+    return super.onselect(selectedByUser);
+  }
+  onenter() {
+    const enterEvent = new TreeViewElement.EnterEvent();
+    const shouldExpand = this.listItemElement.dispatchEvent(enterEvent);
+    if (!shouldExpand) {
+      return false;
+    }
+    return super.onenter();
   }
   remove() {
     removeNode(
@@ -24205,10 +24386,18 @@ function removeNode(node, preserveParentExpandable = false) {
   }
 }
 var TreeViewElement = class _TreeViewElement extends HTMLElementWithLightDOMTemplate {
-  static observedAttributes = ["navigation-variant", "hide-overflow", "dense", "show-selection-on-keyboard-focus"];
+  static observedAttributes = ["navigation-variant", "hide-overflow", "dense", "show-selection-on-keyboard-focus", "disclosure-class"];
   #treeOutline = new TreeOutlineInShadow(void 0, this, true);
+  #syncedTreeClasses = /* @__PURE__ */ new Set();
   constructor() {
     super();
+    this.#treeOutline.contentElement.removeAttribute("jslog");
+    if (!this.hasAttribute("jslog")) {
+      this.setAttribute("jslog", `${VisualLogging26.tree()}`);
+    }
+    if (this.hasAttribute("disclosure-class")) {
+      this.#treeOutline.setDisclosureClass(this.getAttribute("disclosure-class") ?? "");
+    }
     this.addEventListener("focusin", (event) => {
       const actualTarget = event.composedPath()[0];
       if (actualTarget === this.#treeOutline.contentElement && !this.#treeOutline.selectedTreeElement && this.#treeOutline.firstChild()) {
@@ -24218,11 +24407,6 @@ var TreeViewElement = class _TreeViewElement extends HTMLElementWithLightDOMTemp
           /* selectedByUser */
           false
         );
-      }
-    });
-    this.#treeOutline.addEventListener("ElementSelected" /* ElementSelected */, (event) => {
-      if (event.data instanceof TreeViewTreeElement) {
-        event.data.listItemElement.dispatchEvent(new _TreeViewElement.SelectEvent());
       }
     });
     this.#treeOutline.addEventListener("ElementExpanded" /* ElementExpanded */, (event) => {
@@ -24275,6 +24459,24 @@ var TreeViewElement = class _TreeViewElement extends HTMLElementWithLightDOMTemp
     return treeElement ? { expanded, treeElement, classes: subtreeRoot.classList, attributes: subtreeRoot.attributes } : null;
   }
   updateNode(node, attributeName) {
+    if (node instanceof HTMLUListElement && node.role === "tree") {
+      if (attributeName === null || attributeName === "class") {
+        for (const cls of this.#syncedTreeClasses) {
+          if (!node.classList.contains(cls)) {
+            this.#treeOutline.contentElement.classList.remove(cls);
+          }
+        }
+        this.#syncedTreeClasses.clear();
+        for (const cls of node.classList) {
+          if (cls) {
+            this.#syncedTreeClasses.add(cls);
+            this.#treeOutline.contentElement.classList.add(cls);
+          }
+        }
+        this.#treeOutline.contentElement.classList.add("tree-outline");
+      }
+      return;
+    }
     let current = node;
     while (current?.parentNode && !(current instanceof HTMLElement)) {
       current = current.parentNode;
@@ -24406,13 +24608,16 @@ var TreeViewElement = class _TreeViewElement extends HTMLElementWithLightDOMTemp
       case "show-selection-on-keyboard-focus":
         this.#treeOutline.setShowSelectionOnKeyboardFocus(booleanValueIsTrue);
         break;
+      case "disclosure-class":
+        this.#treeOutline.setDisclosureClass(newValue ?? "");
+        break;
     }
   }
 };
 ((TreeViewElement2) => {
   class SelectEvent extends CustomEvent {
-    constructor() {
-      super("select");
+    constructor(detail) {
+      super("select", { detail });
     }
   }
   TreeViewElement2.SelectEvent = SelectEvent;
@@ -24422,6 +24627,12 @@ var TreeViewElement = class _TreeViewElement extends HTMLElementWithLightDOMTemp
     }
   }
   TreeViewElement2.ExpandEvent = ExpandEvent;
+  class EnterEvent extends CustomEvent {
+    constructor() {
+      super("enter", { bubbles: true, cancelable: true, composed: true });
+    }
+  }
+  TreeViewElement2.EnterEvent = EnterEvent;
   class TreeElementExpandEvent extends CustomEvent {
     constructor(treeElement, expanded) {
       super("treeelementexpand", { detail: { treeElement, expanded } });
@@ -24429,17 +24640,17 @@ var TreeViewElement = class _TreeViewElement extends HTMLElementWithLightDOMTemp
   }
   TreeViewElement2.TreeElementExpandEvent = TreeElementExpandEvent;
 })(TreeViewElement || (TreeViewElement = {}));
-var IfExpandedDirective = class extends Lit3.Directive.Directive {
+var IfExpandedDirective = class extends Lit5.Directive.Directive {
   #partInfo;
   constructor(partInfo) {
-    if (partInfo.type !== Lit3.Directive.PartType.CHILD) {
+    if (partInfo.type !== Lit5.Directive.PartType.CHILD) {
       throw new Error("ifExpanded directive must be used in a child node");
     }
     super(partInfo);
     this.#partInfo = partInfo;
   }
   render(content) {
-    return this.#isInExpandedRow(this.#partInfo.startNode) ? content : Lit3.nothing;
+    return this.#isInExpandedRow(this.#partInfo.startNode) ? content : Lit5.nothing;
   }
   #isInExpandedRow(element) {
     if (!element) {
@@ -24465,7 +24676,7 @@ var IfExpandedDirective = class extends Lit3.Directive.Directive {
     return node.expanded;
   }
 };
-var ifExpanded = Lit3.Directive.directive(IfExpandedDirective);
+var ifExpanded = Lit5.Directive.directive(IfExpandedDirective);
 var TreeElementWrapper = class extends HTMLElement {
   #treeElement;
   set treeElement(treeElement) {
@@ -24581,6 +24792,7 @@ export {
   SoftDropDown_exports as SoftDropDown,
   SplitWidget_exports as SplitWidget,
   StackedPane_exports as StackedPane,
+  StatusBar_exports as StatusBar,
   SuggestBox_exports as SuggestBox,
   TabbedPane_exports as TabbedPane,
   TargetCrashedScreen_exports as TargetCrashedScreen,

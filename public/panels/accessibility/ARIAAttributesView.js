@@ -79,6 +79,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
             attributes: {
                 jslog: `${VisualLogging.section('aria-attributes')}`,
                 ...(input.backendNodeId ? { 'data-backend-node-id': `${input.backendNodeId}` } : {}),
+                ...(input.targetId ? { 'data-target-id': `${input.targetId}` } : {}),
             },
         },
     });
@@ -130,6 +131,7 @@ export class ARIAAttributesPane extends AccessibilitySubPane {
             onCancelEditing,
             propertyCompletions,
             backendNodeId: this.node()?.backendNodeId(),
+            targetId: this.node()?.domModel().target().id(),
         };
         this.#view(input, {}, this.contentElement);
     }

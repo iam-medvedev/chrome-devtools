@@ -15,7 +15,7 @@ export default `/*
 
 .web-audio-toolbar-container {
   background-color: var(--sys-color-cdt-base-container);
-  border-bottom: 1px solid var(--sys-color-divider);
+  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
   min-height: fit-content;
 }
 
@@ -25,7 +25,7 @@ export default `/*
   justify-content: center;
   align-items: center;
   overflow: auto;
-  font-size: 13px;
+  font-size: var(--sys-typescale-body3-size);
   color: var(--sys-color-on-surface);
 }
 
@@ -59,7 +59,7 @@ export default `/*
 }
 
 .context-detail-header {
-  border-bottom: 1px solid var(--sys-color-divider);
+  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
   padding: var(--sys-size-7) var(--sys-size-9);
   margin-bottom: var(--sys-size-5);
 }
@@ -100,14 +100,14 @@ export default `/*
   line-height: 27px;
   padding-left: 5px;
   background-color: var(--sys-color-cdt-base-container);
-  border-top: 1px solid var(--sys-color-divider);
+  border-top: var(--sys-size-1) solid var(--sys-color-divider);
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
 }
 
 .context-summary-container span {
-  margin-right: 6px;
+  margin-right: var(--sys-size-4);
 }
 
 /*# sourceURL=${import.meta.resolve('./webAudio.css')} */`;

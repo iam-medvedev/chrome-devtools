@@ -62,7 +62,7 @@ describeWithEnvironment('AppenderUtils', () => {
             const selfTime = Trace.Helpers.Timing.milliToMicro(Trace.Types.Timing.Milli(self));
             return Timeline.AppenderUtils.getDurationString(totalTime, selfTime);
         };
-        it('returns the time info for a entry with no duration correctly', async () => {
+        it('returns the time info for an entry with no duration correctly', async () => {
             const totalTime = Trace.Types.Timing.Micro(0);
             const formattedTime = Timeline.AppenderUtils.getDurationString(totalTime);
             assert.strictEqual(formattedTime, '');

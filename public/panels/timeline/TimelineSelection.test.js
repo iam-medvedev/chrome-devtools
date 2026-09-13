@@ -3,16 +3,17 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import * as Trace from '../../models/trace/trace.js';
-import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
-import { microseconds, milliseconds } from '../../testing/TraceHelpers.js';
-import { TraceLoader } from '../../testing/TraceLoader.js';
+import { makeCompleteEvent, makeInstantEvent, microseconds, milliseconds } from '../../testing/TraceHelpers.js';
 import * as Timeline from './timeline.js';
-describeWithEnvironment('TimelineSelection', function () {
+describe('TimelineSelection', function () {
     const { TimelineSelection } = Timeline;
-    it('can be created with a frame', async function () {
-        const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
-        const frame = parsedTrace.data.Frames.frames.at(0);
-        assert.isOk(frame);
+    it('can be created with a frame', function () {
+        const frame = {
+            startTime: microseconds(1000),
+            endTime: microseconds(2000),
+            ts: microseconds(1000),
+            dur: microseconds(1000),
+        };
         const selection = TimelineSelection.selectionFromEvent(frame);
         assert.strictEqual(selection.event, frame);
         const timings = TimelineSelection.rangeForSelection(selection);
@@ -21,10 +22,8 @@ describeWithEnvironment('TimelineSelection', function () {
         assert.isTrue(TimelineSelection.selectionIsEvent(selection));
         assert.isFalse(TimelineSelection.selectionIsRange(selection));
     });
-    it('can be created with a network request', async function () {
-        const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
-        const request = parsedTrace.data.NetworkRequests.byTime.at(0);
-        assert.isOk(request);
+    it('can be created with a network request', function () {
+        const request = makeCompleteEvent("ResourceSendRequest" /* Trace.Types.Events.Name.RESOURCE_SEND_REQUEST */, 1000, 2000);
         const selection = TimelineSelection.selectionFromEvent(request);
         assert.strictEqual(selection.event, request);
         const timings = TimelineSelection.rangeForSelection(selection);
@@ -33,17 +32,13 @@ describeWithEnvironment('TimelineSelection', function () {
         assert.isTrue(TimelineSelection.selectionIsEvent(selection));
         assert.isFalse(TimelineSelection.selectionIsRange(selection));
     });
-    it('can be created with a random trace event', async function () {
-        const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
-        const firstLCPEvent = parsedTrace.data.PageLoadMetrics.allMarkerEvents.find(event => {
-            return event.name === 'largestContentfulPaint::Candidate';
-        });
-        assert.isOk(firstLCPEvent);
-        const selection = TimelineSelection.selectionFromEvent(firstLCPEvent);
-        assert.strictEqual(selection.event, firstLCPEvent);
+    it('can be created with an LCP event', function () {
+        const lcpEvent = makeInstantEvent("largestContentfulPaint::Candidate" /* Trace.Types.Events.Name.MARK_LCP_CANDIDATE */, 1000);
+        const selection = TimelineSelection.selectionFromEvent(lcpEvent);
+        assert.strictEqual(selection.event, lcpEvent);
         const timings = TimelineSelection.rangeForSelection(selection);
-        assert.strictEqual(timings.min, Trace.Helpers.Timing.eventTimingsMicroSeconds(firstLCPEvent).startTime);
-        assert.strictEqual(timings.max, Trace.Helpers.Timing.eventTimingsMicroSeconds(firstLCPEvent).endTime);
+        assert.strictEqual(timings.min, Trace.Helpers.Timing.eventTimingsMicroSeconds(lcpEvent).startTime);
+        assert.strictEqual(timings.max, Trace.Helpers.Timing.eventTimingsMicroSeconds(lcpEvent).endTime);
         assert.isTrue(TimelineSelection.selectionIsEvent(selection));
         assert.isFalse(TimelineSelection.selectionIsRange(selection));
     });
@@ -57,7 +52,7 @@ describeWithEnvironment('TimelineSelection', function () {
         assert.isTrue(TimelineSelection.selectionIsRange(selection));
         assert.isFalse(TimelineSelection.selectionIsEvent(selection));
     });
-    it('can be created with a millisecond range', async () => {
+    it('can be created with a millisecond range', () => {
         const selection = TimelineSelection.selectionFromRangeMilliSeconds(milliseconds(1), milliseconds(10));
         assert.deepEqual(selection.bounds, {
             min: 1_000,
@@ -67,34 +62,25 @@ describeWithEnvironment('TimelineSelection', function () {
         assert.isTrue(TimelineSelection.selectionIsRange(selection));
         assert.isFalse(TimelineSelection.selectionIsEvent(selection));
     });
-    it('knows if two event selections are equal if they have the same event', async function () {
-        const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
-        const firstLCPEvent = parsedTrace.data.PageLoadMetrics.allMarkerEvents.find(event => {
-            return event.name === 'largestContentfulPaint::Candidate';
-        });
-        assert.isOk(firstLCPEvent);
-        const selection1 = TimelineSelection.selectionFromEvent(firstLCPEvent);
-        const selection2 = TimelineSelection.selectionFromEvent(firstLCPEvent);
+    it('knows if two event selections are equal if they have the same event', function () {
+        const lcpEvent = makeInstantEvent("largestContentfulPaint::Candidate" /* Trace.Types.Events.Name.MARK_LCP_CANDIDATE */, 1000);
+        const selection1 = TimelineSelection.selectionFromEvent(lcpEvent);
+        const selection2 = TimelineSelection.selectionFromEvent(lcpEvent);
         assert.isTrue(TimelineSelection.selectionsEqual(selection1, selection2));
-        const networkEvent = parsedTrace.data.NetworkRequests.byTime.at(0);
-        assert.isOk(networkEvent);
+        const networkEvent = makeCompleteEvent("ResourceSendRequest" /* Trace.Types.Events.Name.RESOURCE_SEND_REQUEST */, 1000, 2000);
         const selection3 = TimelineSelection.selectionFromEvent(networkEvent);
         assert.isFalse(TimelineSelection.selectionsEqual(selection1, selection3));
     });
-    it('knows if two range selections are equal if they have the same range', async () => {
+    it('knows if two range selections are equal if they have the same range', () => {
         const selection1 = TimelineSelection.selectionFromRangeMicroSeconds(microseconds(0), microseconds(10));
         const selection2 = TimelineSelection.selectionFromRangeMicroSeconds(microseconds(0), microseconds(10));
         const selection3 = TimelineSelection.selectionFromRangeMicroSeconds(microseconds(20), microseconds(40));
         assert.isTrue(TimelineSelection.selectionsEqual(selection1, selection2));
         assert.isFalse(TimelineSelection.selectionsEqual(selection1, selection3));
     });
-    it('knows selections of different types are not equal', async function () {
-        const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
-        const firstLCPEvent = parsedTrace.data.PageLoadMetrics.allMarkerEvents.find(event => {
-            return event.name === 'largestContentfulPaint::Candidate';
-        });
-        assert.isOk(firstLCPEvent);
-        const selection1 = TimelineSelection.selectionFromEvent(firstLCPEvent);
+    it('knows selections of different types are not equal', function () {
+        const lcpEvent = makeInstantEvent("largestContentfulPaint::Candidate" /* Trace.Types.Events.Name.MARK_LCP_CANDIDATE */, 1000);
+        const selection1 = TimelineSelection.selectionFromEvent(lcpEvent);
         const selection2 = TimelineSelection.selectionFromRangeMicroSeconds(microseconds(0), microseconds(10));
         assert.isFalse(TimelineSelection.selectionsEqual(selection1, selection2));
     });

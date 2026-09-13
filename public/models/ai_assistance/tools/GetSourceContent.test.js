@@ -5,6 +5,8 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as Common from '../../../core/common/common.js';
 import * as Platform from '../../../core/platform/platform.js';
+import * as SDK from '../../../core/sdk/sdk.js';
+import { assertIsError, assertIsResult } from '../../../testing/AiAssistanceHelpers.js';
 import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import { setupRuntimeHooks } from '../../../testing/RuntimeHelpers.js';
 import { setupSettingsHooks } from '../../../testing/SettingsHelpers.js';
@@ -46,23 +48,21 @@ describe('GetSourceContentTool', () => {
             universe,
         });
         // Populate ID mapping by running ListSourcesTool scan.
-        AiAssistance.ListSources.ListSourcesTool.getUISourceCodes();
+        AiAssistance.ListSources.ListSourcesTool.getUISourceCodes(SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'), universe.workspace);
         const sourceId = AiAssistance.ListSources.ListSourcesTool.uiSourceCodeId.get(uiSourceCodes[0]);
         const context = {
-            getEstablishedOrigin: () => 'https://example.com',
+            getEstablishedOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
         };
         const response = await tool.handler({ id: sourceId }, context);
-        assert.isUndefined(response.error);
-        const result = response.result;
-        assert.include(result.content, 'console.log("hello");');
+        assertIsResult(response);
+        assert.include(response.result.content, 'console.log("hello");');
     });
     it('returns error when file is not found', async () => {
         const context = {
-            getEstablishedOrigin: () => 'https://example.com',
+            getEstablishedOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
         };
         const response = await tool.handler({ id: 999 }, context);
-        assert.exists(response.error);
-        assert.strictEqual(response.error, 'Unable to find file.');
+        assertIsError(response, 'Unable to find file.');
     });
     it('returns error when accessing cross-origin file', async () => {
         const { uiSourceCodes } = createContentProviderUISourceCodes({
@@ -77,14 +77,13 @@ describe('GetSourceContentTool', () => {
             projectType: Workspace.Workspace.projectTypes.Network,
             universe,
         });
-        AiAssistance.ListSources.ListSourcesTool.getUISourceCodes();
+        AiAssistance.ListSources.ListSourcesTool.getUISourceCodes(SDK.SecurityOrigin.SecurityOrigin.create('https://another.com'), universe.workspace);
         const sourceId = AiAssistance.ListSources.ListSourcesTool.uiSourceCodeId.get(uiSourceCodes[0]);
         const context = {
-            getEstablishedOrigin: () => 'https://example.com',
+            getEstablishedOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
         };
         const response = await tool.handler({ id: sourceId }, context);
-        assert.exists(response.error);
-        assert.strictEqual(response.error, 'Cross-origin access blocked.');
+        assertIsError(response, 'Unable to find file.');
     });
     it('returns error when file content request fails', async () => {
         const { uiSourceCodes } = createContentProviderUISourceCodes({
@@ -101,14 +100,27 @@ describe('GetSourceContentTool', () => {
         });
         // Stub requestContentData to return an error.
         sinon.stub(uiSourceCodes[0], 'requestContentData').resolves({ error: 'Failed to load' });
-        AiAssistance.ListSources.ListSourcesTool.getUISourceCodes();
+        AiAssistance.ListSources.ListSourcesTool.getUISourceCodes(SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'), universe.workspace);
         const sourceId = AiAssistance.ListSources.ListSourcesTool.uiSourceCodeId.get(uiSourceCodes[0]);
         const context = {
-            getEstablishedOrigin: () => 'https://example.com',
+            getEstablishedOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
         };
         const response = await tool.handler({ id: sourceId }, context);
-        assert.exists(response.error);
-        assert.strictEqual(response.error, 'Failed to load file content: Failed to load');
+        assertIsError(response, 'Failed to load file content: Failed to load');
+    });
+    it('returns error for opaque origins', async () => {
+        const context = {
+            getEstablishedOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('about:blank'),
+        };
+        const response = await tool.handler({ id: 1 }, context);
+        assertIsError(response, 'Unable to find file.');
+    });
+    it('returns error when origin lock is not established', async () => {
+        const context = {
+            getEstablishedOrigin: () => undefined,
+        };
+        const response = await tool.handler({ id: 1 }, context);
+        assertIsError(response, 'Unable to find file.');
     });
 });
 //# sourceMappingURL=GetSourceContent.test.js.map

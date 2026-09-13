@@ -6,6 +6,7 @@ import * as Platform from '../../core/platform/platform.js';
 import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import { TestUniverse } from '../../testing/TestUniverse.js';
 import { createContentProviderUISourceCode, createFileSystemUISourceCode } from '../../testing/UISourceCodeHelpers.js';
+import * as Formatter from '../formatter/formatter.js';
 import * as Persistence from '../persistence/persistence.js';
 import * as WorkspaceDiff from '../workspace_diff/workspace_diff.js';
 const { urlString } = Platform.DevToolsPath;
@@ -14,6 +15,9 @@ describe('UISourceCodeDiff', () => {
     let universe;
     beforeEach(() => {
         universe = new TestUniverse();
+    });
+    afterEach(() => {
+        Formatter.FormatterWorkerPool.FormatterWorkerPool.removeInstance();
     });
     it('returns formatted mapping with a diff', async () => {
         const workspace = universe.workspace;

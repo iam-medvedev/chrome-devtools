@@ -7,20 +7,25 @@ var __export = (target, all) => {
 // ../../front_end/ui/comments/CommentAnchorResolver.ts
 var CommentAnchorResolver_exports = {};
 __export(CommentAnchorResolver_exports, {
+  clearCustomAnchorResolversForTest: () => clearCustomAnchorResolversForTest,
   closestAcrossShadow: () => closestAcrossShadow,
   computeVisibleRect: () => computeVisibleRect,
   deepQuerySelector: () => deepQuerySelector,
   deepQuerySelectorAll: () => deepQuerySelectorAll,
   extractVeName: () => extractVeName,
+  getCustomAnchorResolverForElement: () => getCustomAnchorResolverForElement,
   getEditorFilePath: () => getEditorFilePath,
   getSiblingIndex: () => getSiblingIndex,
+  isDomTrackedAnchor: () => isDomTrackedAnchor,
   isElementVisible: () => isElementVisible,
   isNonEmptyItem: () => isNonEmptyItem,
   isTabTitle: () => isTabTitle,
   matchesVePath: () => matchesVePath,
+  registerCustomAnchorResolver: () => registerCustomAnchorResolver,
   rematchCommentAnchor: () => rematchCommentAnchor,
   resolveCommentAnchor: () => resolveCommentAnchor,
-  resolveCommentAnchorElement: () => resolveCommentAnchorElement
+  resolveCommentAnchorElement: () => resolveCommentAnchorElement,
+  unregisterCustomAnchorResolver: () => unregisterCustomAnchorResolver
 });
 import * as CodeMirror from "../../third_party/codemirror.next/codemirror.next.js";
 import * as VisualLogging from "../visual_logging/visual_logging.js";
@@ -56,6 +61,27 @@ function isCodeMirrorEditor(element) {
 }
 function getEditorFilePath(element) {
   return element.getAttribute("data-file-path") ?? void 0;
+}
+function isDomTrackedAnchor(anchor) {
+  return !anchor.timeline;
+}
+var customAnchorResolvers = /* @__PURE__ */ new Set();
+function registerCustomAnchorResolver(resolver) {
+  customAnchorResolvers.add(resolver);
+}
+function unregisterCustomAnchorResolver(resolver) {
+  customAnchorResolvers.delete(resolver);
+}
+function clearCustomAnchorResolversForTest() {
+  customAnchorResolvers.clear();
+}
+function getCustomAnchorResolverForElement(element) {
+  for (const resolver of customAnchorResolvers) {
+    if (resolver.matches(element)) {
+      return resolver;
+    }
+  }
+  return null;
 }
 function isNonEmptyItem(element) {
   return element.deepTextContent().trim().length > 0;
@@ -119,9 +145,17 @@ function resolveCodeMirrorLineInfo(element) {
   }
   return null;
 }
-function resolveCommentAnchorElement(element) {
+function resolveCommentAnchorElement(element, options) {
   if (isTabTitle(element)) {
     return null;
+  }
+  const customResolver = getCustomAnchorResolverForElement(element);
+  if (customResolver) {
+    const result = customResolver.resolve(element, options);
+    if (!result) {
+      return null;
+    }
+    return result.anchorElement ?? element;
   }
   const cmEditor = element.closest(".cm-editor");
   if (cmEditor) {
@@ -199,8 +233,13 @@ function checkCodeMirrorLineMatch(editor, editorLineNumber, textSignature) {
   const line = doc.line(editorLineNumber);
   return line.text.trim() === textSignature;
 }
-function resolveCommentAnchor(element, root = element.ownerDocument || document) {
-  const target = resolveCommentAnchorElement(element);
+function resolveCommentAnchor(element, root = element.ownerDocument || document, options) {
+  const customResolver = getCustomAnchorResolverForElement(element);
+  if (customResolver) {
+    const result = customResolver.resolve(element, options);
+    return result ? result.anchor : null;
+  }
+  const target = resolveCommentAnchorElement(element, options);
   if (!target) {
     return null;
   }
@@ -229,13 +268,15 @@ function resolveCommentAnchor(element, root = element.ownerDocument || document)
   const networkRequestId = target.getAttribute("data-network-request-id") ?? void 0;
   const backendNodeIdStr = target.getAttribute("data-backend-node-id");
   const backendNodeId = backendNodeIdStr ? Number(backendNodeIdStr) : void 0;
+  const targetId = target.getAttribute("data-target-id") ?? void 0;
+  const node = backendNodeId !== void 0 && targetId !== void 0 ? { backendNodeId, targetId } : void 0;
   return {
     vePath,
     textSignature,
     parentTextSignature,
     siblingIndex,
     networkRequestId,
-    backendNodeId,
+    node,
     editor
   };
 }
@@ -276,8 +317,11 @@ function rematchCommentAnchor(comment, root = document, cachedJslogElements) {
   if (anchor.networkRequestId) {
     return deepQuerySelector(root, `[data-network-request-id="${CSS.escape(anchor.networkRequestId)}"]`);
   }
-  if (anchor.backendNodeId !== void 0) {
-    return deepQuerySelector(root, `[data-backend-node-id="${CSS.escape(String(anchor.backendNodeId))}"]`);
+  if (anchor.node) {
+    return deepQuerySelector(
+      root,
+      `[data-backend-node-id="${CSS.escape(String(anchor.node.backendNodeId))}"][data-target-id="${CSS.escape(anchor.node.targetId)}"]`
+    );
   }
   if (anchor.editor) {
     const { lineNumber, filePath } = anchor.editor;
@@ -412,11 +456,13 @@ function isElementVisible(element) {
 // ../../front_end/ui/comments/CommentOverlayManager.ts
 var CommentOverlayManager_exports = {};
 __export(CommentOverlayManager_exports, {
+  COMMENT_MODE_CURSOR: () => COMMENT_MODE_CURSOR,
   CommentOverlayManager: () => CommentOverlayManager,
   Events: () => Events
 });
 import * as Common from "../../core/common/common.js";
 import * as CommentManager from "../../models/comment_manager/comment_manager.js";
+var COMMENT_MODE_CURSOR = "var(--comment-cursor)";
 var Events = /* @__PURE__ */ ((Events2) => {
   Events2["POSITIONS_UPDATED"] = "PositionsUpdated";
   Events2["HOVER_HIGHLIGHT_CHANGED"] = "HoverHighlightChanged";
@@ -457,6 +503,7 @@ var CommentOverlayManager = class extends Common.ObjectWrapper.ObjectWrapper {
   #resizeRafId;
   #mutationObserver;
   #rematchTimeoutId;
+  #cursorElement = null;
   constructor(commentManager) {
     super();
     this.#commentManager = commentManager;
@@ -471,9 +518,9 @@ var CommentOverlayManager = class extends Common.ObjectWrapper.ObjectWrapper {
       CommentManager.CommentManager.Events.COMMENT_MODE_CHANGED,
       ({ data: active }) => {
         if (!active) {
-          this.#setHoverHighlight(null);
+          this.#clearHover();
         }
-        document.body.style.cursor = active ? "crosshair" : "";
+        document.body.style.cursor = active ? COMMENT_MODE_CURSOR : "";
       },
       this
     );
@@ -503,6 +550,22 @@ var CommentOverlayManager = class extends Common.ObjectWrapper.ObjectWrapper {
   isCommentMode() {
     return this.#commentManager.isCommentMode();
   }
+  #setHoverCursor(element) {
+    const previousElement = this.#cursorElement;
+    const newElement = element instanceof HTMLElement ? element : null;
+    if (previousElement === newElement) {
+      return;
+    }
+    if (previousElement) {
+      previousElement.style.cursor = "";
+      previousElement.style.removeProperty("--override-cursor");
+    }
+    if (newElement) {
+      newElement.style.cursor = COMMENT_MODE_CURSOR;
+      newElement.style.setProperty("--override-cursor", COMMENT_MODE_CURSOR);
+    }
+    this.#cursorElement = newElement;
+  }
   #setHoverHighlight(data) {
     if (data === null && this.#hoverData === null) {
       return;
@@ -513,6 +576,10 @@ var CommentOverlayManager = class extends Common.ObjectWrapper.ObjectWrapper {
     this.#hoverData = data;
     this.dispatchEventToListeners("HoverHighlightChanged" /* HOVER_HIGHLIGHT_CHANGED */, data);
   }
+  #clearHover() {
+    this.#setHoverHighlight(null);
+    this.#setHoverCursor(null);
+  }
   getHoverHighlight() {
     return this.#hoverData;
   }
@@ -522,23 +589,36 @@ var CommentOverlayManager = class extends Common.ObjectWrapper.ObjectWrapper {
   getHighlightRects() {
     return this.#highlightRects;
   }
-  handleElementClick(element, commentText = "New comment") {
+  handleElementClick(element, commentText = "New comment", options) {
     if (!this.isCommentMode()) {
       return null;
     }
-    return this.createComment(element, commentText, "DEVELOPER");
+    return this.createComment(element, commentText, "DEVELOPER", void 0, options);
   }
-  createComment(element, text, author = "DEVELOPER", changes) {
-    const anchorEl = resolveCommentAnchorElement(element);
-    const anchor = resolveCommentAnchor(element);
+  createComment(element, text, author = "DEVELOPER", changes, options) {
+    let anchorEl = null;
+    let anchor = null;
+    const customResolver = getCustomAnchorResolverForElement(element);
+    if (customResolver) {
+      const result = customResolver.resolve(element, options);
+      if (result) {
+        anchor = result.anchor;
+        anchorEl = result.anchorElement ?? element;
+      }
+    } else {
+      anchorEl = resolveCommentAnchorElement(element, options);
+      anchor = resolveCommentAnchor(element, void 0, options);
+    }
     if (!anchor || !anchorEl) {
       return null;
     }
     const thread = this.#commentManager.createCommentThread(anchor, text, author, changes);
-    this.#liveNodeCache.set(thread, anchorEl);
-    const observer = this.#getIntersectionObserver();
-    observer.observe(anchorEl);
-    this.#observedThreads.add(anchorEl);
+    if (isDomTrackedAnchor(anchor)) {
+      this.#liveNodeCache.set(thread, anchorEl);
+      const observer = this.#getIntersectionObserver();
+      observer.observe(anchorEl);
+      this.#observedThreads.add(anchorEl);
+    }
     this.#updatePositions();
     return thread;
   }
@@ -581,6 +661,9 @@ var CommentOverlayManager = class extends Common.ObjectWrapper.ObjectWrapper {
     const oldElements = /* @__PURE__ */ new Set();
     const newElements = /* @__PURE__ */ new Set();
     for (const thread of this.#commentManager.getCommentThreads()) {
+      if (!isDomTrackedAnchor(thread.anchor)) {
+        continue;
+      }
       const oldEl = this.#liveNodeCache.get(thread);
       if (oldEl) {
         oldElements.add(oldEl);
@@ -610,6 +693,9 @@ var CommentOverlayManager = class extends Common.ObjectWrapper.ObjectWrapper {
     const newHighlights = [];
     const elementPinCounts = /* @__PURE__ */ new Map();
     for (const thread of this.#commentManager.getCommentThreads()) {
+      if (!isDomTrackedAnchor(thread.anchor)) {
+        continue;
+      }
       const el = this.#liveNodeCache.get(thread) || null;
       if (!el || !el.isConnected) {
         continue;
@@ -636,7 +722,8 @@ var CommentOverlayManager = class extends Common.ObjectWrapper.ObjectWrapper {
         id: thread.id,
         top: scrollY + visibleRect.top - 12 + offsetY,
         left: scrollX + visibleRect.right - 12,
-        visible: true
+        visible: true,
+        index: thread.index
       });
       newHighlights.push({
         id: thread.id,
@@ -689,10 +776,15 @@ var CommentOverlayManager = class extends Common.ObjectWrapper.ObjectWrapper {
    * Stops and detaches all active listeners and observers without clearing comment threads.
    */
   stop() {
+    document.body.style.cursor = "";
     this.#removeClickListener();
     this.#removeScrollListener();
     this.#removeResizeObserver();
     this.#removeMutationObserver();
+    this.#clearHover();
+    this.#intersectionObserver?.disconnect();
+    this.#intersectionObserver = void 0;
+    this.#observedThreads = /* @__PURE__ */ new WeakSet();
   }
   /**
    * Sets up capturing click, hover, and pointer interaction listeners on the container.
@@ -715,7 +807,9 @@ var CommentOverlayManager = class extends Common.ObjectWrapper.ObjectWrapper {
       if (!(target instanceof Element)) {
         return;
       }
-      const thread = this.handleElementClick(target, defaultText);
+      const mouseEvent = event;
+      const options = { clientX: mouseEvent.clientX, clientY: mouseEvent.clientY };
+      const thread = this.handleElementClick(target, defaultText, options);
       if (thread) {
         event.consume(true);
       }
@@ -729,31 +823,40 @@ var CommentOverlayManager = class extends Common.ObjectWrapper.ObjectWrapper {
       if (!(target instanceof Element)) {
         return;
       }
-      const anchorEl = resolveCommentAnchorElement(target);
+      const mouseEvent = event;
+      const options = { clientX: mouseEvent.clientX, clientY: mouseEvent.clientY };
+      const anchorEl = resolveCommentAnchorElement(target, options);
       if (anchorEl) {
         event.consume(true);
       }
     };
     this.#hoverListener = (event) => {
       if (!this.isCommentMode()) {
-        this.#setHoverHighlight(null);
+        this.#clearHover();
         return;
       }
       const composedTarget = event.composedPath()[0];
       const target = composedTarget instanceof Element ? composedTarget : event.target;
       if (!(target instanceof Element)) {
-        this.#setHoverHighlight(null);
+        this.#clearHover();
         return;
       }
       const isLeaveEvent = event.type === "mouseout" || event.type === "mouseleave" || event.type === "pointerout";
-      const anchorEl = resolveCommentAnchorElement(target);
+      const customResolver = getCustomAnchorResolverForElement(target);
+      if (customResolver) {
+        this.#handleCustomHover(target, event, customResolver);
+        return;
+      }
+      const mouseEvent = event;
+      const options = { clientX: mouseEvent.clientX, clientY: mouseEvent.clientY };
+      const anchorEl = resolveCommentAnchorElement(target, options);
       if (isLeaveEvent) {
         const relatedTarget = event.relatedTarget;
-        if (anchorEl && relatedTarget instanceof Node && anchorEl.contains(relatedTarget)) {
+        if (anchorEl && relatedTarget instanceof Node && anchorEl.isSelfOrAncestor(relatedTarget)) {
           event.consume(true);
           return;
         }
-        this.#setHoverHighlight(null);
+        this.#clearHover();
         if (anchorEl) {
           event.consume(true);
         }
@@ -773,12 +876,13 @@ var CommentOverlayManager = class extends Common.ObjectWrapper.ObjectWrapper {
             height: visibleRect.height,
             visible: true
           });
+          this.#setHoverCursor(highlightTarget);
         } else {
-          this.#setHoverHighlight(null);
+          this.#clearHover();
         }
         event.consume(true);
       } else {
-        this.#setHoverHighlight(null);
+        this.#clearHover();
       }
     };
     container.addEventListener("click", this.#clickListener, { capture: true });
@@ -811,6 +915,40 @@ var CommentOverlayManager = class extends Common.ObjectWrapper.ObjectWrapper {
     }
   }
   /**
+   * Handles hover events for elements managed by a {@link CustomAnchorResolver}
+   * (e.g. canvas-rendered flame charts where individual items lack backing DOM nodes).
+   * Uses coordinate hit-testing to highlight specific entries rather than the entire element.
+   */
+  #handleCustomHover(target, event, customResolver) {
+    const isLeaveEvent = event.type === "mouseout" || event.type === "mouseleave" || event.type === "pointerout";
+    if (isLeaveEvent) {
+      this.#clearHover();
+      return;
+    }
+    const mouseEvent = event;
+    const result = customResolver.resolve(
+      target,
+      { clientX: mouseEvent.clientX, clientY: mouseEvent.clientY, forHover: true }
+    );
+    if (result) {
+      if (result.highlightRect && result.highlightRect.visible !== false) {
+        this.#setHoverHighlight({
+          top: result.highlightRect.top,
+          left: result.highlightRect.left,
+          width: result.highlightRect.width,
+          height: result.highlightRect.height,
+          visible: result.highlightRect.visible ?? true
+        });
+      } else {
+        this.#setHoverHighlight(null);
+      }
+      this.#setHoverCursor(result.anchorElement ?? target);
+      event.consume(true);
+      return;
+    }
+    this.#clearHover();
+  }
+  /**
    * Registers a capturing scroll listener on the window or target container.
    *
    * Because DevTools contains multiple independently scrolling subpanes (such as the Elements tree,
@@ -821,7 +959,7 @@ var CommentOverlayManager = class extends Common.ObjectWrapper.ObjectWrapper {
     this.#removeScrollListener();
     this.#scrollTarget = target;
     this.#scrollListener = () => {
-      this.#setHoverHighlight(null);
+      this.#clearHover();
       if (this.#scrollRafId !== void 0) {
         cancelAnimationFrame(this.#scrollRafId);
       }
@@ -853,7 +991,7 @@ var CommentOverlayManager = class extends Common.ObjectWrapper.ObjectWrapper {
   #installResizeObserver(element = document.body) {
     this.#removeResizeObserver();
     this.#devToolsResizeObserver = new ResizeObserver(() => {
-      this.#setHoverHighlight(null);
+      this.#clearHover();
       if (this.#resizeRafId !== void 0) {
         cancelAnimationFrame(this.#resizeRafId);
       }
@@ -903,8 +1041,14 @@ var CommentOverlayManager = class extends Common.ObjectWrapper.ObjectWrapper {
     this.#mutationObserver.observe(targetNode, {
       childList: true,
       subtree: true,
-      attributes: true,
-      attributeFilter: ["jslog", "data-network-request-id", "data-backend-node-id", "aria-expanded", "data-file-path"]
+      attributeFilter: [
+        "jslog",
+        "data-network-request-id",
+        "data-backend-node-id",
+        "data-target-id",
+        "aria-expanded",
+        "data-file-path"
+      ]
     });
   }
   #removeMutationObserver() {
@@ -924,9 +1068,6 @@ var CommentOverlayManager = class extends Common.ObjectWrapper.ObjectWrapper {
   clear() {
     this.#commentManager.clear();
     this.stop();
-    this.#intersectionObserver?.disconnect();
-    this.#intersectionObserver = void 0;
-    this.#observedThreads = /* @__PURE__ */ new WeakSet();
     this.#pinPositions = [];
     this.#highlightRects = [];
     this.#updatePositions();
@@ -968,16 +1109,35 @@ var commentsOverlay_css_default = `/*
     position: absolute;
     pointer-events: auto;
     cursor: pointer;
-    font-size: var(--sys-typescale-headline1-size);
-    line-height: var(--sys-typescale-body1-line-height);
-    filter: drop-shadow(0 2px 5px rgb(0 0 0 / 35%));
     user-select: none;
     transition: transform 0.1s ease;
+    transform-origin: center center;
+      will-change: transform;
   }
 
   .comment-pin:hover {
     transform: scale(1.15);
   }
+
+    .comment-cursor {
+      display: flex;
+      width: var(--sys-size-9);
+      height: var(--sys-size-9);
+      box-sizing: border-box;
+      padding: 0;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      flex-shrink: 0;
+      box-shadow: var(--sys-elevation-level2);
+      border-radius: 100px 100px 100px var(--sys-shape-corner-extra-small, 4px);
+      background: var(--sys-color-primary);
+      color: var(--sys-color-on-primary);
+      font-family: var(--default-font-family);
+      font-size: var(--sys-typescale-body5-size);
+      font-weight: var(--ref-typeface-weight-bold, 600);
+      line-height: 1;
+    }
 
   .comment-anchor-highlight {
     position: absolute;
@@ -1036,7 +1196,7 @@ var DEFAULT_VIEW = (input, _output, target) => {
     left: `${p.left}px`
   })}
           @click=${() => input.onPinClick(p.id)}>
-          💬
+          <div class="comment-cursor">${p.index}</div>
         </div>
       ` : nothing)}
     </div>
@@ -1106,8 +1266,8 @@ var CommentsOverlayWidget = class extends UI.Widget.Widget {
   }
   #onCommentModeChanged(event) {
     const isModeActive = event.data;
-    const action = UI.ActionRegistry.ActionRegistry.instance().getAction("comments.toggle-comment-mode");
-    action?.setToggled(isModeActive);
+    const action2 = UI.ActionRegistry.ActionRegistry.instance().getAction("comments.toggle-comment-mode");
+    action2?.setToggled(isModeActive);
     this.requestUpdate();
   }
   #onStateChanged() {
@@ -1147,9 +1307,84 @@ var ActionDelegate = class {
     return false;
   }
 };
+
+// ../../front_end/ui/comments/CommentsStatusBarPill.ts
+var CommentsStatusBarPill_exports = {};
+__export(CommentsStatusBarPill_exports, {
+  CommentsStatusBarPill: () => CommentsStatusBarPill,
+  DEFAULT_VIEW: () => DEFAULT_VIEW2
+});
+import * as i18n from "../../core/i18n/i18n.js";
+import * as CommentManager5 from "../../models/comment_manager/comment_manager.js";
+import * as UI2 from "../legacy/legacy.js";
+import * as Lit2 from "../lit/lit.js";
+import * as VisualLogging2 from "../visual_logging/visual_logging.js";
+var UIStrings = {
+  /**
+   * @description Button text for the comments status bar pill showing the number of open comments.
+   * @example {2} PH1
+   */
+  commentsCount: "Comments ({PH1})"
+};
+var str_ = i18n.i18n.registerUIStrings("ui/comments/CommentsStatusBarPill.ts", UIStrings);
+var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
+var { html: html2, render: render2 } = Lit2;
+var DEFAULT_VIEW2 = (input, _output, target) => {
+  render2(html2`
+    ${input.threads.length <= 0 ? Lit2.nothing : html2`
+      <button
+        class="devtools-pill"
+        ?disabled=${input.disabled}
+        @click=${input.onPillClick}
+        jslog=${VisualLogging2.action("comments-status-bar-pill").track({ click: true })}>
+        ${i18nString(UIStrings.commentsCount, { PH1: input.threads.length })}
+      </button>
+    `}
+  `, target);
+};
+var CommentsStatusBarPill = class extends UI2.Widget.Widget {
+  static INJECT = [CommentManager5.CommentManager.CommentManager];
+  #view;
+  #commentManager;
+  constructor(element, [commentManager], view = DEFAULT_VIEW2) {
+    super(element);
+    this.#view = view;
+    this.#commentManager = commentManager;
+  }
+  #onThreadsChanged() {
+    this.requestUpdate();
+  }
+  wasShown() {
+    super.wasShown();
+    this.#commentManager.addEventListener(
+      CommentManager5.CommentManager.Events.COMMENT_THREADS_CHANGED,
+      this.#onThreadsChanged,
+      this
+    );
+    this.requestUpdate();
+  }
+  willHide() {
+    this.#commentManager.removeEventListener(
+      CommentManager5.CommentManager.Events.COMMENT_THREADS_CHANGED,
+      this.#onThreadsChanged,
+      this
+    );
+    super.willHide();
+  }
+  performUpdate() {
+    const viewInput = {
+      threads: this.#commentManager.getCommentThreads(),
+      onPillClick: this.#handlePillClick
+    };
+    this.#view(viewInput, void 0, this.contentElement);
+  }
+  #handlePillClick = () => {
+  };
+};
 export {
   CommentAnchorResolver_exports as CommentAnchorResolver,
   CommentOverlayManager_exports as CommentOverlayManager,
-  CommentsOverlayWidget_exports as CommentsOverlayWidget
+  CommentsOverlayWidget_exports as CommentsOverlayWidget,
+  CommentsStatusBarPill_exports as CommentsStatusBarPill
 };
 //# sourceMappingURL=comments.js.map

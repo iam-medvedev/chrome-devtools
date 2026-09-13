@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
-import { TraceLoader } from '../../../testing/TraceLoader.js';
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import * as Components from './components.js';
-describeWithEnvironment('Utils', () => {
+describe('Utils', () => {
+    setupLocaleHooks();
     describe('NumberWithUnit', () => {
         const { NumberWithUnit } = Components.Utils;
         it('renders number with unit (formatMicroSecondsAsSeconds)', () => {
@@ -51,17 +51,15 @@ describeWithEnvironment('Utils', () => {
         const { networkResourceCategory, NetworkCategory } = Components.Utils;
         const { ResourceType } = Protocol.Network;
         const getCategory = networkResourceCategory;
-        let req;
-        before(async function () {
-            const events = await TraceLoader.fixtureContents(this, 'load-simple.json.gz');
-            const { parsedTrace } = await TraceLoader.executeTraceEngineOnFileContents(events);
-            req = parsedTrace.data.NetworkRequests.byId.get('2648544.35');
-        });
         function tweakRequest(mimeType, resourceType = "Other" /* Protocol.Network.ResourceType.Other */) {
-            assert.exists(req);
-            req.args.data.mimeType = mimeType;
-            req.args.data.resourceType = resourceType;
-            return req;
+            return {
+                args: {
+                    data: {
+                        mimeType,
+                        resourceType,
+                    },
+                },
+            };
         }
         it('uses resource type when available', () => {
             assert.strictEqual(getCategory(tweakRequest('text/html', "Document" /* ResourceType.Document */)), NetworkCategory.DOC);

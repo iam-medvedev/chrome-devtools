@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import * as CPUProfile from '../cpu_profile/cpu_profile.js';
 function makeCallFrame(functionName) {
     return {
@@ -133,7 +132,7 @@ describe('ProfileTreeModel', function () {
         assert.strictEqual(nodeF.depth, 2);
     });
 });
-describeWithEnvironment('CPUProfileDataModel', () => {
+describe('CPUProfileDataModel', () => {
     const buildBasicProfile = () => {
         const scriptId = 'Peperoni';
         const url = '';

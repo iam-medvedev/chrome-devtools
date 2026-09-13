@@ -6,6 +6,10 @@
     "emitDeclarationOnly": true,
     "outDir": ".",
     "rootDir": "../../../../../../../../front_end/ui/legacy/components/inline_editor",
+    "rootDirs": [
+      "../../../../../../../../",
+      "../../../../../"
+    ],
     "skipLibCheck": true
   },
   "files": [
@@ -32,10 +36,10 @@
       "path": "../../../../core/common/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../../../models/geometry/bundle-tsconfig.ref.json"
+      "path": "../../../../testing/testing-tsconfig.ref.json"
     },
     {
-      "path": "../../../../testing/testing-tsconfig.ref.json"
+      "path": "../../../geometry/bundle-tsconfig.ref.json"
     },
     {
       "path": "../../bundle-tsconfig.ref.json"

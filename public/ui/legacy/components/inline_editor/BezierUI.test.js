@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import * as Geometry from '../../../../models/geometry/geometry.js';
+import * as Geometry from '../../../geometry/geometry.js';
 import * as InlineEditor from './inline_editor.js';
 describe('BezierUI', () => {
     it('can be instantiated successfully', () => {

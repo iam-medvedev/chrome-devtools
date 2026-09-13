@@ -4,14 +4,13 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// ../../front_end/panels/issues/AffectedLazyLoadImagesView.ts
-var AffectedLazyLoadImagesView_exports = {};
-__export(AffectedLazyLoadImagesView_exports, {
-  AffectedLazyLoadImagesView: () => AffectedLazyLoadImagesView,
-  DEFAULT_VIEW: () => DEFAULT_VIEW
+// ../../front_end/panels/issues/AffectedElementsView.ts
+var AffectedElementsView_exports = {};
+__export(AffectedElementsView_exports, {
+  AffectedElementsView: () => AffectedElementsView
 });
 import * as i18n3 from "../../core/i18n/i18n.js";
-import { html, render as render2 } from "../../ui/lit/lit.js";
+import * as VisualLogging2 from "../../ui/visual_logging/visual_logging.js";
 
 // ../../front_end/panels/issues/AffectedResourcesView.ts
 import * as Common from "../../core/common/common.js";
@@ -254,15 +253,62 @@ var AffectedResourcesView = class extends UI.TreeOutline.TreeElement {
   }
 };
 
-// ../../front_end/panels/issues/AffectedLazyLoadImagesView.ts
+// ../../front_end/panels/issues/AffectedElementsView.ts
 var UIStrings2 = {
+  /**
+   * @description Label in the Issues panel for the number of affected elements.
+   */
+  nElements: "{n, plural, =1 {# element} other {# elements}}"
+};
+var str_2 = i18n3.i18n.registerUIStrings("panels/issues/AffectedElementsView.ts", UIStrings2);
+var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
+var AffectedElementsView = class extends AffectedResourcesView {
+  async #appendAffectedElements(affectedElements) {
+    let count = 0;
+    for (const element of affectedElements) {
+      await this.#appendAffectedElement(element);
+      count++;
+    }
+    this.updateAffectedResourceCount(count);
+  }
+  getResourceNameWithCount(count) {
+    return i18nString2(UIStrings2.nElements, { n: count });
+  }
+  async #appendAffectedElement(element) {
+    const cellElement = await this.createElementCell(element, this.issue.getCategory());
+    const rowElement = document.createElement("tr");
+    rowElement.setAttribute("jslog", `${VisualLogging2.tableRow("affected-element")}`);
+    if (element.backendNodeId) {
+      rowElement.setAttribute("data-backend-node-id", String(element.backendNodeId));
+      if (element.target) {
+        rowElement.setAttribute("data-target-id", element.target.id());
+      }
+    }
+    rowElement.appendChild(cellElement);
+    this.affectedResources.appendChild(rowElement);
+  }
+  update() {
+    this.clear();
+    void this.#appendAffectedElements(this.issue.elements());
+  }
+};
+
+// ../../front_end/panels/issues/AffectedLazyLoadImagesView.ts
+var AffectedLazyLoadImagesView_exports = {};
+__export(AffectedLazyLoadImagesView_exports, {
+  AffectedLazyLoadImagesView: () => AffectedLazyLoadImagesView,
+  DEFAULT_VIEW: () => DEFAULT_VIEW
+});
+import * as i18n5 from "../../core/i18n/i18n.js";
+import { html, render as render2 } from "../../ui/lit/lit.js";
+var UIStrings3 = {
   /**
    * @description Label in the Issues panel for the number of affected elements for lazy-load image issues.
    */
   nElements: "{n, plural, =1 {# element} other {# elements}}"
 };
-var str_2 = i18n3.i18n.registerUIStrings("panels/issues/AffectedLazyLoadImagesView.ts", UIStrings2);
-var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
+var str_3 = i18n5.i18n.registerUIStrings("panels/issues/AffectedLazyLoadImagesView.ts", UIStrings3);
+var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
 var DEFAULT_VIEW = async (input, _output, target) => {
   const templates = [];
   for (const issue of input.issues) {
@@ -285,7 +331,7 @@ var AffectedLazyLoadImagesView = class extends AffectedResourcesView {
     void this.#render();
   }
   getResourceNameWithCount(count) {
-    return i18nString2(UIStrings2.nElements, { n: count });
+    return i18nString3(UIStrings3.nElements, { n: count });
   }
   async #render() {
     const issues = this.issue.getLazyLoadImageIssues();
@@ -308,12 +354,12 @@ var AffectedSelectivePermissionsInterventionView_exports = {};
 __export(AffectedSelectivePermissionsInterventionView_exports, {
   AffectedSelectivePermissionsInterventionView: () => AffectedSelectivePermissionsInterventionView
 });
-import * as i18n5 from "../../core/i18n/i18n.js";
+import * as i18n7 from "../../core/i18n/i18n.js";
 import * as Bindings from "../../models/bindings/bindings.js";
 import * as Components2 from "../../ui/legacy/components/utils/utils.js";
 import * as UI2 from "../../ui/legacy/legacy.js";
 import { Directives, html as html2, nothing, render as render3 } from "../../ui/lit/lit.js";
-var UIStrings3 = {
+var UIStrings4 = {
   /**
    * @description Label in the Issues panel for the number of affected violations in the selective permissions intervention table.
    */
@@ -339,22 +385,22 @@ var UIStrings3 = {
    */
   loading: "Loading\u2026"
 };
-var str_3 = i18n5.i18n.registerUIStrings("panels/issues/AffectedSelectivePermissionsInterventionView.ts", UIStrings3);
-var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
+var str_4 = i18n7.i18n.registerUIStrings("panels/issues/AffectedSelectivePermissionsInterventionView.ts", UIStrings4);
+var i18nString4 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
 var { widget } = UI2.Widget;
 var AffectedSelectivePermissionsInterventionView = class extends AffectedResourcesView {
   #linkifier = new Components2.Linkifier.Linkifier();
   getResourceNameWithCount(count) {
-    return i18nString3(UIStrings3.nViolations, { n: count });
+    return i18nString4(UIStrings4.nViolations, { n: count });
   }
   #render() {
     const issues = Array.from(this.issue.getSelectivePermissionsInterventionIssues());
     render3(
       html2`
       <tr>
-        <td class="affected-resource-header">${i18nString3(UIStrings3.api)}</td>
-        <td class="affected-resource-header">${i18nString3(UIStrings3.script)}</td>
-        <td class="affected-resource-header">${i18nString3(UIStrings3.adAncestry)}</td>
+        <td class="affected-resource-header">${i18nString4(UIStrings4.api)}</td>
+        <td class="affected-resource-header">${i18nString4(UIStrings4.script)}</td>
+        <td class="affected-resource-header">${i18nString4(UIStrings4.adAncestry)}</td>
       </tr>
       ${issues.map((issue) => this.#renderDetail(issue))}
     `,
@@ -366,12 +412,12 @@ var AffectedSelectivePermissionsInterventionView = class extends AffectedResourc
   #renderDetail(issue) {
     const details = issue.details();
     const issuesModel = issue.model();
-    const stackTracePromise = details.stackTrace && issuesModel ? this.#resolveStackTrace(details.stackTrace, issuesModel) : Promise.resolve(html2`<span>${i18nString3(UIStrings3.unknown)}</span>`);
+    const stackTracePromise = details.stackTrace && issuesModel ? this.#resolveStackTrace(details.stackTrace, issuesModel) : Promise.resolve(html2`<span>${i18nString4(UIStrings4.unknown)}</span>`);
     const target = issuesModel ? issuesModel.target() : null;
     return html2`
       <tr class="affected-resource-directive">
         <td>${details.apiName}</td>
-        <td>${Directives.until(stackTracePromise, html2`<span>${i18nString3(UIStrings3.loading)}</span>`)}</td>
+        <td>${Directives.until(stackTracePromise, html2`<span>${i18nString4(UIStrings4.loading)}</span>`)}</td>
         <td class="affected-resource-cell">
           <div class="ad-ancestry-list">
             ${(details.adAncestry?.ancestryChain || []).map((script) => {
@@ -423,13 +469,13 @@ import * as VisualLogging7 from "../../ui/visual_logging/visual_logging.js";
 
 // ../../front_end/panels/issues/HiddenIssuesRow.ts
 import "../../ui/components/adorners/adorners.js";
-import * as i18n7 from "../../core/i18n/i18n.js";
+import * as i18n9 from "../../core/i18n/i18n.js";
 import * as IssuesManager from "../../models/issues_manager/issues_manager.js";
 import * as Buttons from "../../ui/components/buttons/buttons.js";
 import * as UI3 from "../../ui/legacy/legacy.js";
 import { html as html3, render as render4 } from "../../ui/lit/lit.js";
-import * as VisualLogging2 from "../../ui/visual_logging/visual_logging.js";
-var UIStrings4 = {
+import * as VisualLogging3 from "../../ui/visual_logging/visual_logging.js";
+var UIStrings5 = {
   /**
    * @description Title in the Issues panel for the hidden issues row.
    */
@@ -439,8 +485,8 @@ var UIStrings4 = {
    */
   unhideAll: "Unhide all"
 };
-var str_4 = i18n7.i18n.registerUIStrings("panels/issues/HiddenIssuesRow.ts", UIStrings4);
-var i18nString4 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
+var str_5 = i18n9.i18n.registerUIStrings("panels/issues/HiddenIssuesRow.ts", UIStrings5);
+var i18nString5 = i18n9.i18n.getLocalizedString.bind(void 0, str_5);
 var DEFAULT_VIEW2 = (input, _output, target) => {
   const stopPropagationForEnter = (event) => {
     if (event.key === "Enter") {
@@ -452,12 +498,12 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
     <devtools-adorner class="aggregated-issues-count" .name=${"countWrapper"}>
       <span>${input.count}</span>
     </devtools-adorner>
-    <div class="title">${i18nString4(UIStrings4.hiddenIssues)}</div>
+    <div class="title">${i18nString5(UIStrings5.hiddenIssues)}</div>
     <devtools-button class="unhide-all-issues-button"
-                     jslog=${VisualLogging2.action().track({ click: true }).context("issues.unhide-all-hiddes")}
+                     jslog=${VisualLogging3.action().track({ click: true }).context("issues.unhide-all-hiddes")}
                      @click=${input.onUnhideAllIssues}
                      @keydown=${stopPropagationForEnter}
-                     .variant=${Buttons.Button.Variant.OUTLINED}>${i18nString4(UIStrings4.unhideAll)}</devtools-button>
+                     .variant=${Buttons.Button.Variant.OUTLINED}>${i18nString5(UIStrings5.unhideAll)}</devtools-button>
   </div>`, target);
 };
 var HiddenIssuesRow = class extends UI3.TreeOutline.TreeElement {
@@ -484,7 +530,7 @@ var HiddenIssuesRow = class extends UI3.TreeOutline.TreeElement {
 
 // ../../front_end/panels/issues/IssueKindView.ts
 import * as Common2 from "../../core/common/common.js";
-import * as i18n9 from "../../core/i18n/i18n.js";
+import * as i18n11 from "../../core/i18n/i18n.js";
 import * as Platform from "../../core/platform/platform.js";
 import * as IssuesManager3 from "../../models/issues_manager/issues_manager.js";
 import * as Adorners from "../../ui/components/adorners/adorners.js";
@@ -492,7 +538,7 @@ import * as IssueCounter from "../../ui/components/issue_counter/issue_counter.j
 import { Icon as Icon2 } from "../../ui/kit/kit.js";
 import * as UI4 from "../../ui/legacy/legacy.js";
 import * as Components3 from "./components/components.js";
-var UIStrings5 = {
+var UIStrings6 = {
   /**
    * @description Context menu item in the Issues panel to hide all current page errors.
    */
@@ -506,8 +552,8 @@ var UIStrings5 = {
    */
   hideAllCurrentImprovements: "Hide all current improvements"
 };
-var str_5 = i18n9.i18n.registerUIStrings("panels/issues/IssueKindView.ts", UIStrings5);
-var i18nString5 = i18n9.i18n.getLocalizedString.bind(void 0, str_5);
+var str_6 = i18n11.i18n.registerUIStrings("panels/issues/IssueKindView.ts", UIStrings6);
+var i18nString6 = i18n11.i18n.getLocalizedString.bind(void 0, str_6);
 function getGroupIssuesByKindSetting() {
   return Common2.Settings.Settings.instance().createSetting("group-issues-by-kind", false);
 }
@@ -551,11 +597,11 @@ var IssueKindView = class extends UI4.TreeOutline.TreeElement {
   getHideAllCurrentKindString() {
     switch (this.#kind) {
       case IssuesManager3.Issue.IssueKind.PAGE_ERROR:
-        return i18nString5(UIStrings5.hideAllCurrentPageErrors);
+        return i18nString6(UIStrings6.hideAllCurrentPageErrors);
       case IssuesManager3.Issue.IssueKind.IMPROVEMENT:
-        return i18nString5(UIStrings5.hideAllCurrentImprovements);
+        return i18nString6(UIStrings6.hideAllCurrentImprovements);
       case IssuesManager3.Issue.IssueKind.BREAKING_CHANGE:
-        return i18nString5(UIStrings5.hideAllCurrentBreakingChanges);
+        return i18nString6(UIStrings6.hideAllCurrentBreakingChanges);
     }
   }
   #appendHeader() {
@@ -1511,6 +1557,7 @@ var Audits;
     FederatedAuthRequestIssueReason2["UiDismissedNoEmbargo"] = "UiDismissedNoEmbargo";
     FederatedAuthRequestIssueReason2["CorsError"] = "CorsError";
     FederatedAuthRequestIssueReason2["SuppressedBySegmentationPlatform"] = "SuppressedBySegmentationPlatform";
+    FederatedAuthRequestIssueReason2["PopupBlockedByConnectionAllowlist"] = "PopupBlockedByConnectionAllowlist";
   })(FederatedAuthRequestIssueReason = Audits2.FederatedAuthRequestIssueReason || (Audits2.FederatedAuthRequestIssueReason = {}));
   let FederatedAuthUserInfoRequestIssueReason;
   ((FederatedAuthUserInfoRequestIssueReason2) => {
@@ -1583,6 +1630,7 @@ var Audits;
     EmailVerificationRequestIssueReason2["TokenVerificationKbInvalidSdHash"] = "TokenVerificationKbInvalidSdHash";
     EmailVerificationRequestIssueReason2["TokenVerificationKbMissingCnf"] = "TokenVerificationKbMissingCnf";
     EmailVerificationRequestIssueReason2["TokenVerificationKbSignatureFailed"] = "TokenVerificationKbSignatureFailed";
+    EmailVerificationRequestIssueReason2["CrossOriginIframeNotSupported"] = "CrossOriginIframeNotSupported";
   })(EmailVerificationRequestIssueReason = Audits2.EmailVerificationRequestIssueReason || (Audits2.EmailVerificationRequestIssueReason = {}));
   let PartitioningBlobURLInfo;
   ((PartitioningBlobURLInfo2) => {
@@ -2039,6 +2087,11 @@ var Emulation;
     SetDeviceMetricsOverrideRequestScrollbarType2["Overlay"] = "overlay";
     SetDeviceMetricsOverrideRequestScrollbarType2["Default"] = "default";
   })(SetDeviceMetricsOverrideRequestScrollbarType = Emulation2.SetDeviceMetricsOverrideRequestScrollbarType || (Emulation2.SetDeviceMetricsOverrideRequestScrollbarType = {}));
+  let SetDeviceMetricsOverrideRequestViewportMeta;
+  ((SetDeviceMetricsOverrideRequestViewportMeta2) => {
+    SetDeviceMetricsOverrideRequestViewportMeta2["Enable"] = "enable";
+    SetDeviceMetricsOverrideRequestViewportMeta2["Default"] = "default";
+  })(SetDeviceMetricsOverrideRequestViewportMeta = Emulation2.SetDeviceMetricsOverrideRequestViewportMeta || (Emulation2.SetDeviceMetricsOverrideRequestViewportMeta = {}));
   let SetEmitTouchEventsForMouseRequestConfiguration;
   ((SetEmitTouchEventsForMouseRequestConfiguration2) => {
     SetEmitTouchEventsForMouseRequestConfiguration2["Mobile"] = "mobile";
@@ -2707,6 +2760,7 @@ var Network;
     TerminationEventDetailsDeletionReason2["InvalidSessionParams"] = "InvalidSessionParams";
     TerminationEventDetailsDeletionReason2["RefreshFatalError"] = "RefreshFatalError";
     TerminationEventDetailsDeletionReason2["DevTools"] = "DevTools";
+    TerminationEventDetailsDeletionReason2["Replaced"] = "Replaced";
   })(TerminationEventDetailsDeletionReason = Network2.TerminationEventDetailsDeletionReason || (Network2.TerminationEventDetailsDeletionReason = {}));
   let ChallengeEventDetailsChallengeResult;
   ((ChallengeEventDetailsChallengeResult2) => {
@@ -3829,6 +3883,7 @@ var Runtime;
     RemoteObjectSubtype2["Dataview"] = "dataview";
     RemoteObjectSubtype2["Webassemblymemory"] = "webassemblymemory";
     RemoteObjectSubtype2["Wasmvalue"] = "wasmvalue";
+    RemoteObjectSubtype2["Deferredmodule"] = "deferredmodule";
     RemoteObjectSubtype2["Trustedtype"] = "trustedtype";
   })(RemoteObjectSubtype = Runtime2.RemoteObjectSubtype || (Runtime2.RemoteObjectSubtype = {}));
   let ObjectPreviewType;
@@ -3863,6 +3918,7 @@ var Runtime;
     ObjectPreviewSubtype2["Dataview"] = "dataview";
     ObjectPreviewSubtype2["Webassemblymemory"] = "webassemblymemory";
     ObjectPreviewSubtype2["Wasmvalue"] = "wasmvalue";
+    ObjectPreviewSubtype2["Deferredmodule"] = "deferredmodule";
     ObjectPreviewSubtype2["Trustedtype"] = "trustedtype";
   })(ObjectPreviewSubtype = Runtime2.ObjectPreviewSubtype || (Runtime2.ObjectPreviewSubtype = {}));
   let PropertyPreviewType;
@@ -3898,6 +3954,7 @@ var Runtime;
     PropertyPreviewSubtype2["Dataview"] = "dataview";
     PropertyPreviewSubtype2["Webassemblymemory"] = "webassemblymemory";
     PropertyPreviewSubtype2["Wasmvalue"] = "wasmvalue";
+    PropertyPreviewSubtype2["Deferredmodule"] = "deferredmodule";
     PropertyPreviewSubtype2["Trustedtype"] = "trustedtype";
   })(PropertyPreviewSubtype = Runtime2.PropertyPreviewSubtype || (Runtime2.PropertyPreviewSubtype = {}));
   let ConsoleAPICalledEventType;
@@ -3936,9 +3993,9 @@ import * as VisualLogging6 from "../../ui/visual_logging/visual_logging.js";
 
 // ../../front_end/panels/issues/AffectedBlockedByResponseView.ts
 import * as Host2 from "../../core/host/host.js";
-import * as i18n11 from "../../core/i18n/i18n.js";
+import * as i18n13 from "../../core/i18n/i18n.js";
 import * as IssuesManager5 from "../../models/issues_manager/issues_manager.js";
-var UIStrings6 = {
+var UIStrings7 = {
   /**
    * @description Label in the Issues panel for the number of affected network requests.
    */
@@ -3956,14 +4013,14 @@ var UIStrings6 = {
    */
   blockedResource: "Blocked resource"
 };
-var str_6 = i18n11.i18n.registerUIStrings("panels/issues/AffectedBlockedByResponseView.ts", UIStrings6);
-var i18nString6 = i18n11.i18n.getLocalizedString.bind(void 0, str_6);
+var str_7 = i18n13.i18n.registerUIStrings("panels/issues/AffectedBlockedByResponseView.ts", UIStrings7);
+var i18nString7 = i18n13.i18n.getLocalizedString.bind(void 0, str_7);
 var AffectedBlockedByResponseView = class extends AffectedResourcesView {
   #appendDetails(details) {
     const header = document.createElement("tr");
-    this.appendColumnTitle(header, i18nString6(UIStrings6.requestC));
-    this.appendColumnTitle(header, i18nString6(UIStrings6.parentFrame));
-    this.appendColumnTitle(header, i18nString6(UIStrings6.blockedResource));
+    this.appendColumnTitle(header, i18nString7(UIStrings7.requestC));
+    this.appendColumnTitle(header, i18nString7(UIStrings7.parentFrame));
+    this.appendColumnTitle(header, i18nString7(UIStrings7.blockedResource));
     this.affectedResources.appendChild(header);
     let count = 0;
     for (const detail of details) {
@@ -3973,7 +4030,7 @@ var AffectedBlockedByResponseView = class extends AffectedResourcesView {
     this.updateAffectedResourceCount(count);
   }
   getResourceNameWithCount(count) {
-    return i18nString6(UIStrings6.nRequests, { n: count });
+    return i18nString7(UIStrings7.nRequests, { n: count });
   }
   #appendDetail(details) {
     const element = document.createElement("tr");
@@ -4010,10 +4067,10 @@ var AffectedBlockedByResponseView = class extends AffectedResourcesView {
 // ../../front_end/panels/issues/AffectedCookiesView.ts
 import * as Common3 from "../../core/common/common.js";
 import * as Host3 from "../../core/host/host.js";
-import * as i18n13 from "../../core/i18n/i18n.js";
+import * as i18n15 from "../../core/i18n/i18n.js";
 import * as NetworkForward from "../network/forward/forward.js";
-import * as VisualLogging3 from "../../ui/visual_logging/visual_logging.js";
-var UIStrings7 = {
+import * as VisualLogging4 from "../../ui/visual_logging/visual_logging.js";
+var UIStrings8 = {
   /**
    * @description Label in the Issues panel for the number of affected cookies. See https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies.
    */
@@ -4039,18 +4096,18 @@ var UIStrings7 = {
    */
   filterSetCookieTitle: "Show network requests that include this `Set-Cookie` header in the Network panel"
 };
-var str_7 = i18n13.i18n.registerUIStrings("panels/issues/AffectedCookiesView.ts", UIStrings7);
-var i18nString7 = i18n13.i18n.getLocalizedString.bind(void 0, str_7);
+var str_8 = i18n15.i18n.registerUIStrings("panels/issues/AffectedCookiesView.ts", UIStrings8);
+var i18nString8 = i18n15.i18n.getLocalizedString.bind(void 0, str_8);
 var AffectedCookiesView = class extends AffectedResourcesView {
   getResourceNameWithCount(count) {
-    return i18nString7(UIStrings7.nCookies, { n: count });
+    return i18nString8(UIStrings8.nCookies, { n: count });
   }
   #appendAffectedCookies(cookies) {
     const header = document.createElement("tr");
-    this.appendColumnTitle(header, i18nString7(UIStrings7.name));
+    this.appendColumnTitle(header, i18nString8(UIStrings8.name));
     this.appendColumnTitle(
       header,
-      i18nString7(UIStrings7.domain) + " & " + i18nString7(UIStrings7.path),
+      i18nString8(UIStrings8.domain) + " & " + i18nString8(UIStrings8.path),
       "affected-resource-cookie-info-header"
     );
     this.affectedResources.appendChild(header);
@@ -4064,7 +4121,7 @@ var AffectedCookiesView = class extends AffectedResourcesView {
   #appendAffectedCookie(cookie, hasAssociatedRequest) {
     const element = document.createElement("tr");
     element.classList.add("affected-resource-cookie");
-    element.setAttribute("jslog", `${VisualLogging3.tableRow("affected-cookie")}`);
+    element.setAttribute("jslog", `${VisualLogging4.tableRow("affected-cookie")}`);
     const name = document.createElement("td");
     if (hasAssociatedRequest) {
       const link4 = document.createElement("button");
@@ -4073,7 +4130,7 @@ var AffectedCookiesView = class extends AffectedResourcesView {
       link4.tabIndex = 0;
       link4.setAttribute(
         "jslog",
-        `${VisualLogging3.link("issues.filter-network-requests-by-cookie").track({ click: true })}`
+        `${VisualLogging4.link("issues.filter-network-requests-by-cookie").track({ click: true })}`
       );
       link4.addEventListener("click", () => {
         Host3.userMetrics.issuesPanelResourceOpened(this.issue.getCategory(), "Cookie" /* COOKIE */);
@@ -4107,7 +4164,7 @@ var AffectedCookiesView = class extends AffectedResourcesView {
 };
 var AffectedRawCookieLinesView = class extends AffectedResourcesView {
   getResourceNameWithCount(count) {
-    return i18nString7(UIStrings7.nRawCookieLines, { n: count });
+    return i18nString8(UIStrings8.nRawCookieLines, { n: count });
   }
   update() {
     this.clear();
@@ -4116,17 +4173,17 @@ var AffectedRawCookieLinesView = class extends AffectedResourcesView {
     for (const cookie of cookieLinesWithRequestIndicator) {
       const row = document.createElement("tr");
       row.classList.add("affected-resource-directive");
-      row.setAttribute("jslog", `${VisualLogging3.tableRow("affected-raw-cookie")}`);
+      row.setAttribute("jslog", `${VisualLogging4.tableRow("affected-raw-cookie")}`);
       if (cookie.hasRequest) {
         const cookieLine = document.createElement("td");
         const link4 = document.createElement("button");
         link4.classList.add("link", "devtools-link");
         link4.textContent = cookie.rawCookieLine;
-        link4.title = i18nString7(UIStrings7.filterSetCookieTitle);
+        link4.title = i18nString8(UIStrings8.filterSetCookieTitle);
         link4.tabIndex = 0;
         link4.setAttribute(
           "jslog",
-          `${VisualLogging3.link("issues.filter-network-requests-by-raw-cookie").track({ click: true })}`
+          `${VisualLogging4.link("issues.filter-network-requests-by-raw-cookie").track({ click: true })}`
         );
         link4.addEventListener("click", () => {
           void Common3.Revealer.reveal(NetworkForward.UIFilter.UIRequestFilter.filters([
@@ -4150,47 +4207,6 @@ var AffectedRawCookieLinesView = class extends AffectedResourcesView {
 
 // ../../front_end/panels/issues/AffectedDescendantsWithinSelectElementView.ts
 import * as i18n17 from "../../core/i18n/i18n.js";
-
-// ../../front_end/panels/issues/AffectedElementsView.ts
-import * as i18n15 from "../../core/i18n/i18n.js";
-import * as VisualLogging4 from "../../ui/visual_logging/visual_logging.js";
-var UIStrings8 = {
-  /**
-   * @description Label in the Issues panel for the number of affected elements.
-   */
-  nElements: "{n, plural, =1 {# element} other {# elements}}"
-};
-var str_8 = i18n15.i18n.registerUIStrings("panels/issues/AffectedElementsView.ts", UIStrings8);
-var i18nString8 = i18n15.i18n.getLocalizedString.bind(void 0, str_8);
-var AffectedElementsView = class extends AffectedResourcesView {
-  async #appendAffectedElements(affectedElements) {
-    let count = 0;
-    for (const element of affectedElements) {
-      await this.#appendAffectedElement(element);
-      count++;
-    }
-    this.updateAffectedResourceCount(count);
-  }
-  getResourceNameWithCount(count) {
-    return i18nString8(UIStrings8.nElements, { n: count });
-  }
-  async #appendAffectedElement(element) {
-    const cellElement = await this.createElementCell(element, this.issue.getCategory());
-    const rowElement = document.createElement("tr");
-    rowElement.setAttribute("jslog", `${VisualLogging4.tableRow("affected-element")}`);
-    if (element.backendNodeId) {
-      rowElement.setAttribute("data-backend-node-id", String(element.backendNodeId));
-    }
-    rowElement.appendChild(cellElement);
-    this.affectedResources.appendChild(rowElement);
-  }
-  update() {
-    this.clear();
-    void this.#appendAffectedElements(this.issue.elements());
-  }
-};
-
-// ../../front_end/panels/issues/AffectedDescendantsWithinSelectElementView.ts
 var UIStrings9 = {
   /**
    * @description Label in the Issues panel for the number of affected descendant nodes.
@@ -6282,6 +6298,7 @@ var IssueRevealer = class {
   }
 };
 export {
+  AffectedElementsView_exports as AffectedElementsView,
   AffectedLazyLoadImagesView_exports as AffectedLazyLoadImagesView,
   AffectedSelectivePermissionsInterventionView_exports as AffectedSelectivePermissionsInterventionView,
   IssueRevealer_exports as IssueRevealer,

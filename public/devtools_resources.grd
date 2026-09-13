@@ -98,6 +98,7 @@
       <include file="Images/colon.svg" name="IMAGES_COLON_SVG" resource_path="Images/colon.svg" type="BINDATA" compress="false"/>
       <include file="Images/color-picker-filled.svg" name="IMAGES_COLOR_PICKER_FILLED_SVG" resource_path="Images/color-picker-filled.svg" type="BINDATA" compress="false"/>
       <include file="Images/color-picker.svg" name="IMAGES_COLOR_PICKER_SVG" resource_path="Images/color-picker.svg" type="BINDATA" compress="false"/>
+      <include file="Images/comment-mode-cursor.svg" name="IMAGES_COMMENT_MODE_CURSOR_SVG" resource_path="Images/comment-mode-cursor.svg" type="BINDATA" compress="false"/>
       <include file="Images/comment-mode.svg" name="IMAGES_COMMENT_MODE_SVG" resource_path="Images/comment-mode.svg" type="BINDATA" compress="false"/>
       <include file="Images/compress.svg" name="IMAGES_COMPRESS_SVG" resource_path="Images/compress.svg" type="BINDATA" compress="false"/>
       <include file="Images/console-conditional-breakpoint.svg" name="IMAGES_CONSOLE_CONDITIONAL_BREAKPOINT_SVG" resource_path="Images/console-conditional-breakpoint.svg" type="BINDATA" compress="false"/>
@@ -382,7 +383,6 @@
       <include file="models/emulation/emulation.js" name="MODELS_EMULATION_EMULATION_JS" resource_path="models/emulation/emulation.js" type="BINDATA" compress="false"/>
       <include file="models/extensions/extensions.js" name="MODELS_EXTENSIONS_EXTENSIONS_JS" resource_path="models/extensions/extensions.js" type="BINDATA" compress="false"/>
       <include file="models/formatter/formatter.js" name="MODELS_FORMATTER_FORMATTER_JS" resource_path="models/formatter/formatter.js" type="BINDATA" compress="false"/>
-      <include file="models/geometry/geometry.js" name="MODELS_GEOMETRY_GEOMETRY_JS" resource_path="models/geometry/geometry.js" type="BINDATA" compress="false"/>
       <include file="models/har/har.js" name="MODELS_HAR_HAR_JS" resource_path="models/har/har.js" type="BINDATA" compress="false"/>
       <include file="models/heap_snapshot/heap_snapshot.js" name="MODELS_HEAP_SNAPSHOT_HEAP_SNAPSHOT_JS" resource_path="models/heap_snapshot/heap_snapshot.js" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/CoepCoopSandboxedIframeCannotNavigateToCoopPage.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_COEPCOOPSANDBOXEDIFRAMECANNOTNAVIGATETOCOOPPAGE_MD" resource_path="models/issues_manager/descriptions/CoepCoopSandboxedIframeCannotNavigateToCoopPage.md" type="BINDATA" compress="false"/>
@@ -843,6 +843,7 @@
       <include file="ui/components/tooltips/tooltips.js" name="UI_COMPONENTS_TOOLTIPS_TOOLTIPS_JS" resource_path="ui/components/tooltips/tooltips.js" type="BINDATA" compress="false"/>
       <include file="ui/components/tree_outline/tree_outline.js" name="UI_COMPONENTS_TREE_OUTLINE_TREE_OUTLINE_JS" resource_path="ui/components/tree_outline/tree_outline.js" type="BINDATA" compress="false"/>
       <include file="ui/dom_extension/dom_extension.js" name="UI_DOM_EXTENSION_DOM_EXTENSION_JS" resource_path="ui/dom_extension/dom_extension.js" type="BINDATA" compress="false"/>
+      <include file="ui/geometry/geometry.js" name="UI_GEOMETRY_GEOMETRY_JS" resource_path="ui/geometry/geometry.js" type="BINDATA" compress="false"/>
       <include file="ui/helpers/helpers.js" name="UI_HELPERS_HELPERS_JS" resource_path="ui/helpers/helpers.js" type="BINDATA" compress="false"/>
       <include file="ui/i18n/i18n.js" name="UI_I18N_I18N_JS" resource_path="ui/i18n/i18n.js" type="BINDATA" compress="false"/>
       <include file="ui/kit/kit.js" name="UI_KIT_KIT_JS" resource_path="ui/kit/kit.js" type="BINDATA" compress="false"/>

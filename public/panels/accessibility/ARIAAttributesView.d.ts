@@ -8,6 +8,7 @@ interface ViewInput {
     attributeBeingEdited: SDK.DOMModel.Attribute | null;
     attributes: SDK.DOMModel.Attribute[];
     backendNodeId?: number;
+    targetId?: string;
 }
 type View = (input: ViewInput, output: object, target: HTMLElement | DocumentFragment) => void;
 export declare const DEFAULT_VIEW: View;

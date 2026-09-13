@@ -56,7 +56,7 @@ import elementsTreeOutlineStyles from './elementsTreeOutline.css.js';
 import { ImagePreviewPopover } from './ImagePreviewPopover.js';
 import { ShortcutTreeElement } from './ShortcutTreeElement.js';
 import { TopLayerContainer } from './TopLayerContainer.js';
-const { html, nothing, render, Directives: { classMap } } = Lit;
+const { html, nothing, render, Directives: { classMap, styleMap } } = Lit;
 const UIStrings = {
     /**
      * @description ARIA accessible name in the DOM tree outline of the Elements panel.
@@ -378,12 +378,13 @@ export const DECLARATIVE_VIEW = (input, _output, target) => {
             event.stopPropagation();
             SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight(SDK.TargetManager.TargetManager.instance());
         };
+        // clang-format off
         return html `
       <li role="treeitem"
           ?selected=${isShortcutSelected}
           ?open=${isShortcutExpanded}
           class="elements-tree-shortcut"
-          style="--indent: ${computeLeftIndent(shortcutDepth, hasShortcutChildren)}px"
+          style=${styleMap({ '--indent': `${computeLeftIndent(shortcutDepth, hasShortcutChildren)}px` })}
           @select=${onShortcutSelect}
           @expand=${onShortcutExpand}
           @mousemove=${on(onShortcutMouseMove)}
@@ -392,18 +393,16 @@ export const DECLARATIVE_VIEW = (input, _output, target) => {
         <div class="selection fill"></div>
         <span class="elements-tree-shortcut-title">\u21AA ${title}</span>
         <devtools-adorner
-          .name=${ElementsComponents.AdornerManager.RegisteredAdorners.REVEAL}
-          class="adorner-reveal clickable"
-          role=button
-          tabindex=0
-          jslog=${VisualLogging.adorner('reveal').track({
-            click: true,
-        })}
-          aria-label=${i18nString(UIStrings.reveal)}
-          @click=${on(onReveal)}
-          @keydown=${handleAdornerKeydown(onReveal)}
-          @mousedown=${(e) => e.consume()}
-          ${adornerRef()}>
+            .name=${ElementsComponents.AdornerManager.RegisteredAdorners.REVEAL}
+            class="adorner-reveal clickable"
+            role=button
+            tabindex=0
+            jslog=${VisualLogging.adorner('reveal').track({ click: true })}
+            aria-label=${i18nString(UIStrings.reveal)}
+            @click=${on(onReveal)}
+            @keydown=${handleAdornerKeydown(onReveal)}
+            @mousedown=${(e) => e.consume()}
+            ${adornerRef()}>
           <span class="adorner-with-icon">
             <devtools-icon name="select-element"></devtools-icon>
             <span>${ElementsComponents.AdornerManager.RegisteredAdorners.REVEAL}</span>
@@ -415,10 +414,10 @@ export const DECLARATIVE_VIEW = (input, _output, target) => {
               ${shortcut.childShortcuts.map(child => renderShortcut(child, shortcutDepth + 1))}
             `)}
           </ul>
-        ` :
-            nothing}
+        ` : nothing}
       </li>
     `;
+        // clang-format on
     };
     const renderTopLayerContainer = (doc, containerDepth) => {
         const shortcuts = input.getTopLayerShortcuts?.(doc) ?? [];
@@ -432,23 +431,25 @@ export const DECLARATIVE_VIEW = (input, _output, target) => {
         const onTopLayerSelect = () => {
             input.onSelectTopLayerContainer?.(doc);
         };
+        // clang-format off
         return html `
-      <li role="treeitem"
-          ?open=${isTopLayerExpanded}
-          class="elements-tree-top-layer-container"
-          style="--indent: ${computeLeftIndent(containerDepth, true)}px"
-          @select=${onTopLayerSelect}
-          @expand=${onTopLayerExpand}
-          jslog=${VisualLogging.treeItem().parent('elementsTreeOutline')}>
-        <div class="selection fill"></div>
-        <span class="elements-tree-shortcut-title">#top-layer</span>
-        <ul role="group">
-          ${UI.TreeOutline.ifExpanded(html `
-            ${shortcuts.map(sc => renderShortcut(sc, containerDepth + 1))}
-          `)}
-        </ul>
-      </li>
-    `;
+          <li role="treeitem"
+              ?open=${isTopLayerExpanded}
+              class="elements-tree-top-layer-container"
+              style=${styleMap({ '--indent': `${computeLeftIndent(containerDepth, true)}px` })}
+              @select=${onTopLayerSelect}
+              @expand=${onTopLayerExpand}
+              jslog=${VisualLogging.treeItem().parent('elementsTreeOutline')}>
+            <div class="selection fill"></div>
+            <span class="elements-tree-shortcut-title">#top-layer</span>
+            <ul role="group">
+              ${UI.TreeOutline.ifExpanded(html `
+                ${shortcuts.map(sc => renderShortcut(sc, containerDepth + 1))}
+              `)}
+            </ul>
+          </li>
+        `;
+        // clang-format on
     };
     const renderAdoptedStyleSheet = (sheet, depth) => {
         const header = sheet.cssModel.styleSheetHeaderForId(sheet.id);
@@ -467,7 +468,7 @@ export const DECLARATIVE_VIEW = (input, _output, target) => {
           ?selected=${isSelected}
           ?open=${isExpanded}
           class="elements-tree-adopted-style-sheet"
-          style="--indent: ${computeLeftIndent(depth, true)}px"
+          style=${styleMap({ '--indent': `${computeLeftIndent(depth, true)}px` })}
           @select=${onSelect}
           @expand=${onExpand}
           jslog=${VisualLogging.treeItem('adopted-style-sheet').parent('elementsTreeOutline')}>
@@ -482,7 +483,7 @@ export const DECLARATIVE_VIEW = (input, _output, target) => {
             ${header ? html `
               <li role="treeitem"
                   class="elements-tree-adopted-style-sheet-contents"
-                  style="--indent: ${computeLeftIndent(depth + 1, false)}px"
+                  style=${styleMap({ '--indent': `${computeLeftIndent(depth + 1, false)}px` })}
                   jslog=${VisualLogging.treeItem('adopted-style-sheet-contents').parent('elementsTreeOutline')}>
                 <div class="selection fill"></div>
                 ${UI.Widget.widget(AdoptedStyleSheetContentsWidget, { styleSheetHeader: header })}
@@ -511,7 +512,7 @@ export const DECLARATIVE_VIEW = (input, _output, target) => {
       <li role="treeitem"
           ?open=${isExpanded}
           class="elements-tree-adopted-style-sheets"
-          style="--indent: ${computeLeftIndent(depth, true)}px"
+          style=${styleMap({ '--indent': `${computeLeftIndent(depth, true)}px` })}
           @select=${onSelect}
           @expand=${onExpand}
           jslog=${VisualLogging.treeItem('adopted-style-sheets').parent('elementsTreeOutline')}>
@@ -528,13 +529,20 @@ export const DECLARATIVE_VIEW = (input, _output, target) => {
     };
     const renderNode = (node, depth = 0) => {
         const isSelected = input.selectedNode === node;
-        const isHovered = (input.currentHighlightedNode === node) || (input.hoveredNode === node);
+        const isOpeningHovered = (input.currentHighlightedNode === node) || (input.hoveredNode === node && !input.hoveredClosingTag);
+        const isClosingHovered = input.hoveredNode === node && Boolean(input.hoveredClosingTag);
         const isExpanded = Boolean((input.currentHighlightedNode && isAncestorOf(node, input.currentHighlightedNode)) ||
             (input.isNodeExpanded ?
                 input.isNodeExpanded(node) :
                 (input.expandRoot &&
                     (node === input.rootDOMNode || (input.omitRootDOMNode && node.parentNode === input.rootDOMNode)))));
-        const hasChildren = nodeHasVisibleChildren(node, input.rootDOMNode, input.maxTreeDepth, input.omitRootDOMNode);
+        const isEditingAsHTML = input.multilineEditingNode === node ||
+            (input.nodeToEdit?.node === node && Boolean(input.nodeToEdit.isEditAsHTML));
+        const hasChildren = !isEditingAsHTML && nodeHasVisibleChildren(node, input.rootDOMNode, input.maxTreeDepth, input.omitRootDOMNode);
+        const isCollapsible = !isEditingAsHTML &&
+            !(node.nodeType() === Node.ELEMENT_NODE && node.parentNode?.nodeType() === Node.DOCUMENT_NODE &&
+                !node.parentNode.parentNode);
+        const isExpandable = hasChildren && isCollapsible;
         const allVisibleChildren = hasChildren ? getVisibleChildren(node, input.showComments ?? true) : [];
         const limit = input.expandedChildrenLimit ? input.expandedChildrenLimit(node) : InitialChildrenLimit;
         const children = allVisibleChildren.slice(0, limit);
@@ -543,24 +551,33 @@ export const DECLARATIVE_VIEW = (input, _output, target) => {
         const needsClosingTag = node.nodeType() === Node.ELEMENT_NODE && !ForbiddenClosingTagElements.has(tagName) &&
             !node.pseudoType() && (hasChildren || !ElementsTreeWidget.canShowInlineText(node));
         const on = Lit.Directive.directive(Lit.CustomDirectives.InterceptBindingDirective);
-        const onSelect = () => {
-            input.onSelect?.(node, /* selectedByUser= */ true);
+        const onSelect = (isClosingTag = false) => {
+            input.onSelect?.(node, isClosingTag, /* selectedByUser= */ true);
         };
         const onExpand = (event) => {
+            if (isEditingAsHTML) {
+                return;
+            }
             input.onExpand?.(node, event.detail.expanded);
         };
         const isDragOver = input.dragOverNode?.node === node && !input.dragOverNode.isClosingTag;
         const isClosingTagDragOver = input.dragOverNode?.node === node && Boolean(input.dragOverNode.isClosingTag);
         const isDraggable = !input.disableEdits && Boolean(input.isValidDragSource?.(node));
         const classes = classMap({
-            hovered: isHovered,
+            hovered: isOpeningHovered,
             'in-clipboard': Boolean(input.isNodeInClipboard?.(node)),
             'elements-drag-over': isDragOver,
+            'always-parent': !isCollapsible && !isEditingAsHTML,
         });
-        const onMouseMove = (event) => {
+        const onOpeningMouseMove = (event) => {
             event.stopPropagation();
             const showInfo = !UI.KeyboardShortcut.KeyboardShortcut.eventHasEitherCtrlOrMeta(event);
-            input.onHoverNode?.(node, showInfo);
+            input.onHoverNode?.(node, showInfo, /* isClosingTag= */ false);
+        };
+        const onClosingMouseMove = (event) => {
+            event.stopPropagation();
+            const showInfo = !UI.KeyboardShortcut.KeyboardShortcut.eventHasEitherCtrlOrMeta(event);
+            input.onHoverNode?.(node, showInfo, /* isClosingTag= */ true);
         };
         const onContextMenu = (event) => {
             event.stopPropagation();
@@ -596,16 +613,17 @@ export const DECLARATIVE_VIEW = (input, _output, target) => {
             event.stopPropagation();
             input.onDragEnd?.(event);
         };
-        /* clang-format off */
+        // clang-format off
         return html `
       <li role="treeitem"
-          ?selected=${isSelected}
+          ?selected=${isSelected && !input.selectedClosingTag}
           class=${classes}
-          ?open=${isExpanded}
+          style=${styleMap({ '--indent': `${computeLeftIndent(depth, isExpandable)}px` })}
+          ?open=${isExpanded && !isEditingAsHTML}
           draggable=${isDraggable ? 'true' : 'false'}
-          @select=${onSelect}
+          @select=${on(() => onSelect(false))}
           @expand=${onExpand}
-          @mousemove=${on(onMouseMove)}
+          @mousemove=${on(onOpeningMouseMove)}
           @contextmenu=${on(onContextMenu)}
           @dragstart=${on(onDragStart)}
           @dragover=${on(onDragOver)}
@@ -621,22 +639,22 @@ export const DECLARATIVE_VIEW = (input, _output, target) => {
         ${UI.Widget.widget(ElementsTreeWidget, {
             node,
             isClosingTag: false,
-            expanded: isExpanded,
+            expanded: isExpanded && !isEditingAsHTML,
             isExpandable: hasChildren,
-            selected: isSelected,
+            selected: isSelected && !input.selectedClosingTag,
             isDOMNodeSelected: isSelected,
-            hovered: isHovered,
+            hovered: isOpeningHovered,
             searchQuery: input.searchMatchNode === node ? (input.searchMatchQuery ?? null) : null,
             inClipboard: input.isNodeInClipboard?.(node) ?? false,
-            computeLeftIndent: computeLeftIndent(depth, hasChildren),
+            computeLeftIndent: computeLeftIndent(depth, isExpandable),
             disableEdits: input.disableEdits ?? false,
             showAIButton: input.showAIButton ?? true,
             initialEdit: input.nodeToEdit?.node === node ? input.nodeToEdit : null,
             onInitialEditCompleted: input.onInitialEditCompleted,
             revealInTopLayer: (n) => input.domTreeWidget?.revealInTopLayer(n),
-            setMultilineEditing: multilineEditing => input.domTreeWidget?.setMultilineEditing(multilineEditing),
+            setMultilineEditing: (multilineEditing, n) => input.domTreeWidget?.setMultilineEditing(multilineEditing, n ?? node),
             visibleWidth: () => input.domTreeWidget?.visibleWidth ?? 0,
-            selectDOMNode: (n, selectedByUser) => input.onSelect?.(n, selectedByUser),
+            selectDOMNode: (n, selectedByUser) => input.onSelect?.(n, false, selectedByUser),
             selectNodeAfterEdit: (wasExpanded, error, newNode, moveDirection) => {
                 input.onSelectNodeAfterEdit?.(wasExpanded, error, newNode, moveDirection);
             },
@@ -660,7 +678,7 @@ export const DECLARATIVE_VIEW = (input, _output, target) => {
               ${remainingChildrenCount > 0 ? html `
                 <li role="treeitem"
                     class="elements-tree-expand-all"
-                    style="--indent: ${computeLeftIndent(depth + 1, false)}px"
+                    style=${styleMap({ '--indent': `${computeLeftIndent(depth + 1, false)}px` })}
                     jslog=${VisualLogging.treeItem('show-all-nodes').parent('elementsTreeOutline')}>
                   <devtools-button
                       .variant=${"outlined" /* Buttons.Button.Variant.OUTLINED */}
@@ -676,21 +694,27 @@ export const DECLARATIVE_VIEW = (input, _output, target) => {
               ${node instanceof SDK.DOMModel.DOMDocument ? renderTopLayerContainer(node, depth + 1) : nothing}
               ${needsClosingTag ? html `
                 <li role="treeitem"
-                    class=${classMap({ hovered: isHovered, 'elements-drag-over': isClosingTagDragOver })}
+                    ?selected=${isSelected && Boolean(input.selectedClosingTag)}
+                    class=${classMap({ hovered: isClosingHovered, 'elements-drag-over': isClosingTagDragOver })}
+                    style=${styleMap({ '--indent': `${computeLeftIndent(depth + 1, false)}px` })}
+                    draggable=${isDraggable ? 'true' : 'false'}
                     jslog=${VisualLogging.treeItem().parent('elementsTreeOutline')}
-                    @mousemove=${on(onMouseMove)}
+                    @select=${on(() => onSelect(true))}
+                    @mousemove=${on(onClosingMouseMove)}
+                    @dragstart=${on(onDragStart)}
                     @dragover=${on(onClosingTagDragOver)}
                     @dragleave=${on(onDragLeave)}
-                    @drop=${on(onClosingTagDrop)}>
+                    @drop=${on(onClosingTagDrop)}
+                    @dragend=${on(onDragEnd)}>
                   ${UI.Widget.widget(ElementsTreeWidget, {
             node,
             isClosingTag: true,
             expanded: false,
             isExpandable: false,
-            selected: false,
-            isDOMNodeSelected: false,
-            hovered: isHovered,
-            computeLeftIndent: computeLeftIndent(depth, false),
+            selected: isSelected && Boolean(input.selectedClosingTag),
+            isDOMNodeSelected: isSelected,
+            hovered: isClosingHovered,
+            computeLeftIndent: computeLeftIndent(depth + 1, false),
             disableEdits: input.disableEdits ?? false,
             showAIButton: false,
             showContextMenu: (event, widget) => {
@@ -707,9 +731,9 @@ export const DECLARATIVE_VIEW = (input, _output, target) => {
         ` : nothing}
       </li>
     `;
-        /* clang-format on */
+        // clang-format on
     };
-    /* clang-format off */
+    // clang-format off
     render(html `
     <style>${UI.inspectorCommonStyles}</style>
     <style>${elementsTreeOutlineStyles}</style>
@@ -720,6 +744,7 @@ export const DECLARATIVE_VIEW = (input, _output, target) => {
         aria-label=${i18nString(UIStrings.pageDom)}
         jslog=${VisualLogging.tree('elements')}
         ?show-selection-on-keyboard-focus=${input.showSelectionOnKeyboardFocus}
+        @enter=${(event) => event.preventDefault()}
         @keydown=${input.onKeyDown}
         @clipboard-copy=${(event) => input.onCopyOrCut?.(false, event)}
         @clipboard-cut=${(event) => input.onCopyOrCut?.(true, event)}
@@ -730,6 +755,8 @@ export const DECLARATIVE_VIEW = (input, _output, target) => {
           <style>${elementsTreeOutlineStyles}</style>
           <style>${CodeHighlighter.codeHighlighterStyles}</style>
           <ul role="tree">
+            ${input.omitRootDOMNode && input.rootDOMNode && input.rootDOMNode.adoptedStyleSheetsForNode.length > 0 ?
+        renderAdoptedStyleSheets(input.rootDOMNode, 0) : nothing}
             ${rootNodes.map(node => renderNode(node))}
             ${input.omitRootDOMNode && input.rootDOMNode ? (() => {
         const remaining = allRootNodes.length - rootNodes.length;
@@ -740,7 +767,7 @@ export const DECLARATIVE_VIEW = (input, _output, target) => {
         return html `
                 <li role="treeitem"
                     class="elements-tree-expand-all"
-                    style="--indent: ${computeLeftIndent(0, false)}px"
+                    style=${styleMap({ '--indent': `${computeLeftIndent(0, false)}px` })}
                     jslog=${VisualLogging.treeItem('show-all-nodes').parent('elementsTreeOutline')}>
                   <devtools-button
                       .variant=${"outlined" /* Buttons.Button.Variant.OUTLINED */}
@@ -760,7 +787,7 @@ export const DECLARATIVE_VIEW = (input, _output, target) => {
       </devtools-tree>
     </div>
   `, target);
-    /* clang-format on */
+    // clang-format on
 };
 function getElementsTreeWidgetAndNode(element) {
     let current = element;
@@ -828,20 +855,35 @@ export class DOMTreeWidget extends UI.Widget.Widget {
     #selectedDOMNode = null;
     #expandedNodes = new Set();
     #expandedChildrenLimitByNode = new WeakMap();
+    #expandRootNode(node) {
+        if (!this.#expandRoot && !this.omitRootDOMNode) {
+            return;
+        }
+        this.#expandedNodes.add(node);
+        const expandChildren = () => {
+            if (this.#expandRoot && this.omitRootDOMNode && node.children()) {
+                for (const child of node.children() ?? []) {
+                    this.#expandedNodes.add(child);
+                }
+            }
+        };
+        if (node.children()) {
+            expandChildren();
+        }
+        else if (node.childNodeCount()) {
+            void node.getChildNodes(() => {
+                expandChildren();
+                this.performUpdate();
+            });
+        }
+    }
     // FIXME: this is not declarative because ElementsTreeOutline can
     // change root node internally.
     set rootDOMNode(node) {
         if (this.#view === DECLARATIVE_VIEW) {
             this.#rootDOMNode = node;
             if (node) {
-                if (this.expandRoot || this.omitRootDOMNode) {
-                    this.#expandedNodes.add(node);
-                }
-                if (!node.children() && node.childNodeCount()) {
-                    void node.getChildNodes(() => {
-                        this.performUpdate();
-                    });
-                }
+                this.#expandRootNode(node);
             }
             this.performUpdate();
             return;
@@ -899,6 +941,9 @@ export class DOMTreeWidget extends UI.Widget.Widget {
     }
     set expandRoot(expandRoot) {
         this.#expandRoot = expandRoot;
+        if (this.#rootDOMNode) {
+            this.#expandRootNode(this.#rootDOMNode);
+        }
         this.performUpdate();
     }
     #currentHighlightedNode = null;
@@ -1088,6 +1133,10 @@ export class DOMTreeWidget extends UI.Widget.Widget {
         this.#updateModifiedNodesSoon();
     }
     updateModifiedNodes() {
+        if (this.#updateModifiedNodesTimeout) {
+            clearTimeout(this.#updateModifiedNodesTimeout);
+            this.#updateModifiedNodesTimeout = undefined;
+        }
         if (this.#view === DECLARATIVE_VIEW) {
             this.performUpdate();
             return;
@@ -1148,7 +1197,7 @@ export class DOMTreeWidget extends UI.Widget.Widget {
         this.#currentHighlightedNode = null;
         this.performUpdate();
     }
-    selectDOMNode(node, focus) {
+    selectDOMNode(node, focus, isClosingTag = false) {
         this.#imagePreviewPopover?.hide();
         this.#issuePopoverHelper?.hidePopover();
         if (node instanceof SDK.DOMModel.AdoptedStyleSheet) {
@@ -1157,6 +1206,7 @@ export class DOMTreeWidget extends UI.Widget.Widget {
         }
         this.#selectedAdoptedStyleSheet = null;
         if (this.#view === DECLARATIVE_VIEW) {
+            this.#selectedClosingTag = Boolean(isClosingTag);
             const isSameNode = this.#selectedDOMNode === node;
             this.#selectedDOMNode = node;
             if (node) {
@@ -1214,6 +1264,9 @@ export class DOMTreeWidget extends UI.Widget.Widget {
         return this.#viewOutput.elementsTreeOutline?.selectedDOMNode() ?? null;
     }
     setNodeExpanded(node, expanded) {
+        if (!expanded && this.#multilineEditingNode === node) {
+            return;
+        }
         if (this.#view === DECLARATIVE_VIEW) {
             if (expanded) {
                 this.#expandedNodes.add(node);
@@ -1338,6 +1391,8 @@ export class DOMTreeWidget extends UI.Widget.Widget {
         return this.#viewOutput.elementsTreeOutline?.findTreeElement(node) || null;
     }
     #hoveredDOMNode = null;
+    #hoveredClosingTag = false;
+    #selectedClosingTag = false;
     #searchMatchNode = null;
     #searchMatchQuery = null;
     #nodeToEdit = null;
@@ -1354,17 +1409,24 @@ export class DOMTreeWidget extends UI.Widget.Widget {
         }
         return null;
     }
+    hoveredClosingTag() {
+        return this.#hoveredClosingTag;
+    }
+    selectedClosingTag() {
+        return this.#selectedClosingTag;
+    }
     searchMatchNode() {
         return this.#searchMatchNode;
     }
     searchMatchQuery() {
         return this.#searchMatchQuery;
     }
-    setHoveredNode(node, showInfo = true) {
-        if (this.#hoveredDOMNode === node) {
+    setHoveredNode(node, showInfo = true, isClosingTag = false) {
+        if (this.hoveredDOMNode() === node && this.#hoveredClosingTag === Boolean(isClosingTag)) {
             return;
         }
         this.#hoveredDOMNode = node;
+        this.#hoveredClosingTag = Boolean(isClosingTag);
         if (node) {
             const treeElement = this.treeElementForNode(node);
             const selectorList = treeElement?.isDisplayContents() ? '*' : undefined;
@@ -1409,9 +1471,11 @@ export class DOMTreeWidget extends UI.Widget.Widget {
             deindentSingleNode: this.deindentSingleNode,
             currentHighlightedNode: this.#currentHighlightedNode,
             hoveredNode: this.#hoveredDOMNode,
+            hoveredClosingTag: this.#hoveredClosingTag,
             searchMatchNode: this.#searchMatchNode,
             searchMatchQuery: this.#searchMatchQuery,
             selectedNode: this.selectedDOMNode(),
+            selectedClosingTag: this.#selectedClosingTag,
             onElementsTreeUpdated: this.onElementsTreeUpdated.bind(this),
             onSelectedNodeChanged: event => {
                 this.#clearHighlightedNode();
@@ -1423,14 +1487,14 @@ export class DOMTreeWidget extends UI.Widget.Widget {
             onElementExpanded: () => {
                 this.#clearHighlightedNode();
             },
-            onHoverNode: (node, showInfo) => {
-                this.setHoveredNode(node, showInfo);
+            onHoverNode: (node, showInfo, isClosingTag = false) => {
+                this.setHoveredNode(node, showInfo, isClosingTag);
             },
             onLeave: () => {
                 this.setHoveredNode(null);
             },
-            onSelect: (node, selectedByUser) => {
-                this.selectDOMNode(node, selectedByUser);
+            onSelect: (node, isClosingTag = false, selectedByUser) => {
+                this.selectDOMNode(node, selectedByUser, isClosingTag);
             },
             onExpand: (node, expanded) => {
                 this.setNodeExpanded(node, expanded);
@@ -1469,6 +1533,7 @@ export class DOMTreeWidget extends UI.Widget.Widget {
             onInitialEditCompleted: () => {
                 this.#nodeToEdit = null;
             },
+            multilineEditingNode: this.#multilineEditingNode,
             dragOverNode: this.#dragOverNode,
             isValidDragSource: (node) => this.isValidDragSource(node),
             onDragStart: (node, event, textContent) => this.onDragStart(node, event, textContent),
@@ -1583,12 +1648,10 @@ export class DOMTreeWidget extends UI.Widget.Widget {
         this.#viewOutput.elementsTreeOutline?.unwireFromDOMModel(domModel);
         this.performUpdate();
     }
-    /**
-     * FIXME: which node is expanded should be part of the view input.
-     */
     expand() {
-        if (this.#viewOutput.elementsTreeOutline?.selectedTreeElement) {
-            this.#viewOutput.elementsTreeOutline.selectedTreeElement.expand();
+        const selectedNode = this.selectedDOMNode();
+        if (selectedNode) {
+            this.setNodeExpanded(selectedNode, true);
         }
     }
     /**
@@ -1641,11 +1704,17 @@ export class DOMTreeWidget extends UI.Widget.Widget {
         return node.isToggledToHidden();
     }
     #multilineEditing = null;
-    setMultilineEditing(multilineEditing) {
+    #multilineEditingNode = null;
+    setMultilineEditing(multilineEditing, node) {
         this.#multilineEditing = multilineEditing;
+        this.#multilineEditingNode = multilineEditing ? (node ?? this.#multilineEditingNode) : null;
+        this.performUpdate();
     }
     multilineEditing() {
         return this.#multilineEditing;
+    }
+    multilineEditingNode() {
+        return this.#multilineEditingNode;
     }
     runPendingUpdates() {
         this.updateModifiedNodes();
@@ -1682,10 +1751,12 @@ export class DOMTreeWidget extends UI.Widget.Widget {
         const index = node.index;
         const wasExpanded = this.isNodeExpanded(node);
         const editingFinished = (success) => {
+            this.#multilineEditingNode = null;
             if (callback) {
                 callback();
             }
             if (!success) {
+                this.performUpdate();
                 return;
             }
             Badges.UserBadges.instance().recordAction(Badges.BadgeAction.DOM_ELEMENT_OR_ATTRIBUTE_EDITED);
@@ -1710,6 +1781,7 @@ export class DOMTreeWidget extends UI.Widget.Widget {
         if (startEditing === false) {
             return;
         }
+        this.#multilineEditingNode = node;
         this.#nodeToEdit = {
             node,
             isEditAsHTML: true,
@@ -1718,7 +1790,7 @@ export class DOMTreeWidget extends UI.Widget.Widget {
         this.performUpdate();
     }
     duplicateNode(node) {
-        node.duplicate();
+        void node.duplicate();
     }
     nodeBeingDragged() {
         return this.#draggedNode;
@@ -2344,8 +2416,8 @@ export class ElementsTreeOutline extends ElementsTreeOutlineBase {
     setWordWrap(wrap) {
         this.elementInternal.classList.toggle('elements-tree-nowrap', !wrap);
     }
-    setMultilineEditing(multilineEditing) {
-        this.domTreeWidget?.setMultilineEditing(multilineEditing);
+    setMultilineEditing(multilineEditing, node) {
+        this.domTreeWidget?.setMultilineEditing(multilineEditing, node);
     }
     visibleWidth() {
         return this.domTreeWidget?.visibleWidth ?? this.visibleWidthInternal ?? 0;
@@ -2664,13 +2736,8 @@ export class ElementsTreeOutline extends ElementsTreeOutlineBase {
         if (element && this.previousHoveredElement === element) {
             return;
         }
-        const showInfo = !UI.KeyboardShortcut.KeyboardShortcut.eventHasEitherCtrlOrMeta(event);
-        if (this.domTreeWidget && element instanceof ElementsTreeElement) {
-            this.domTreeWidget.setHoveredNode(element.node(), showInfo);
-            return;
-        }
-        this.domTreeWidget?.setHoveredNode(null);
         this.setHoverEffect(element);
+        const showInfo = !UI.KeyboardShortcut.KeyboardShortcut.eventHasEitherCtrlOrMeta(event);
         this.highlightTreeElement(element, showInfo);
     }
     highlightTreeElement(element, showInfo) {
@@ -2681,10 +2748,11 @@ export class ElementsTreeOutline extends ElementsTreeOutlineBase {
         }
         if (element instanceof ShortcutTreeElement) {
             element.domModel().overlayModel().highlightInOverlay({ deferredNode: element.deferredNode(), selectorList: undefined }, 'all', showInfo);
+            return;
         }
+        SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight(SDK.TargetManager.TargetManager.instance());
     }
     onmouseleave(_event) {
-        this.domTreeWidget?.setHoveredNode(null);
         this.setHoverEffect(null);
         SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight(SDK.TargetManager.TargetManager.instance());
     }

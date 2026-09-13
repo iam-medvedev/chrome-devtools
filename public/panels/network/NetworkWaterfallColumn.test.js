@@ -3,13 +3,11 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import * as Common from '../../core/common/common.js';
-import * as Platform from '../../core/platform/platform.js';
-import * as SDK from '../../core/sdk/sdk.js';
 import * as NetworkTimeCalculator from '../../models/network_time_calculator/network_time_calculator.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { createNetworkRequest } from '../../testing/NetworkRequestHelpers.js';
 import * as Network from './network.js';
-const { urlString } = Platform.DevToolsPath;
 // Fails compilation if a RequestTimeRangeNames enum value is missing.
 const ALL_REQUEST_TIME_RANGE_NAMES = {
     ["push" /* NetworkTimeCalculator.RequestTimeRangeNames.PUSH */]: true,
@@ -63,13 +61,11 @@ describeWithEnvironment('NetworkWaterfallColumn', () => {
         return column;
     }
     function createRequestNode(timingInfo, routerInfo) {
-        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com`, urlString ``, null, null, null);
-        if (timingInfo) {
-            request.timing = timingInfo;
-        }
-        if (routerInfo) {
-            request.serviceWorkerRouterInfo = routerInfo;
-        }
+        const request = createNetworkRequest({
+            url: 'https://www.example.com',
+            timing: timingInfo,
+            serviceWorkerRouterInfo: routerInfo,
+        });
         return new Network.NetworkDataGridNode.NetworkRequestNode({}, request);
     }
     it('renders requests with service worker router evaluation and cache lookup without throwing', () => {

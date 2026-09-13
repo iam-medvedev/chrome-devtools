@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import * as SDK from '../../core/sdk/sdk.js';
+import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { dispatchEvent } from '../../testing/MockConnection.js';
+import { navigate } from '../../testing/ResourceTreeHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Console from './console.js';
 describeWithEnvironment('ConsoleContextSelector', () => {
@@ -69,6 +71,86 @@ describeWithEnvironment('ConsoleContextSelector', () => {
         assert.strictEqual(UI.Context.Context.instance().flavor(SDK.RuntimeModel.ExecutionContext), targetContext);
         selector.itemSelected(subtargetContext);
         assert.strictEqual(UI.Context.Context.instance().flavor(SDK.RuntimeModel.ExecutionContext), subtargetContext);
+    });
+    describe('createElementForItem subtitle', () => {
+        async function getSubtitle(executionContext) {
+            const element = selector.createElementForItem(executionContext);
+            renderElementIntoDOM(element, { allowMultipleChildren: true });
+            await UI.Widget.Widget.allUpdatesComplete;
+            const subtitle = element.querySelector('.subtitle')?.textContent;
+            return subtitle ?? '';
+        }
+        function createCustomExecutionContext(target, origin, frameId) {
+            ++id;
+            dispatchEvent(target, 'Runtime.executionContextCreated', {
+                context: {
+                    id: id,
+                    origin,
+                    name: `c${id}`,
+                    uniqueId: `c${id}`,
+                    auxData: frameId ? { frameId } : undefined,
+                },
+            });
+            const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+            assert.exists(runtimeModel);
+            const executionContext = runtimeModel.executionContext(id);
+            assert.exists(executionContext);
+            return executionContext;
+        }
+        it('renders domain for top-level frame without parent frame', async () => {
+            const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
+            assert.exists(resourceTreeModel);
+            const mainFrame = resourceTreeModel.frameAttached('main-frame', null);
+            assert.exists(mainFrame);
+            navigate(mainFrame, { url: 'https://example.com/', securityOrigin: 'https://example.com' });
+            const context = createCustomExecutionContext(target, 'https://example.com', mainFrame.id);
+            const subtitle = await getSubtitle(context);
+            assert.strictEqual(subtitle, 'example.com');
+        });
+        it('renders domain for subframe with different-origin parent frame', async () => {
+            const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
+            assert.exists(resourceTreeModel);
+            const parentFrame = resourceTreeModel.frameAttached('parent-frame', null);
+            assert.exists(parentFrame);
+            navigate(parentFrame, { url: 'https://parent.com/', securityOrigin: 'https://parent.com' });
+            const childFrame = resourceTreeModel.frameAttached('child-frame', parentFrame.id);
+            assert.exists(childFrame);
+            navigate(childFrame, { url: 'https://child.com/', securityOrigin: 'https://child.com' });
+            const context = createCustomExecutionContext(target, 'https://child.com', childFrame.id);
+            const subtitle = await getSubtitle(context);
+            assert.strictEqual(subtitle, 'child.com');
+        });
+        it('renders frame domain for subframe with same-origin parent frame', async () => {
+            const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
+            assert.exists(resourceTreeModel);
+            const parentFrame = resourceTreeModel.frameAttached('same-parent', null);
+            assert.exists(parentFrame);
+            navigate(parentFrame, { url: 'https://example.com/', securityOrigin: 'https://example.com' });
+            const childFrame = resourceTreeModel.frameAttached('same-child', parentFrame.id);
+            assert.exists(childFrame);
+            navigate(childFrame, { url: 'https://example.com/sub', securityOrigin: 'https://example.com' });
+            const context = createCustomExecutionContext(target, 'https://example.com', childFrame.id);
+            const subtitle = await getSubtitle(context);
+            assert.strictEqual(subtitle, 'example.com');
+        });
+        it('renders fallback IFrame for subframe with opaque origin', async () => {
+            const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
+            assert.exists(resourceTreeModel);
+            const parentFrame = resourceTreeModel.frameAttached('opaque-parent', null);
+            assert.exists(parentFrame);
+            navigate(parentFrame, { url: 'https://example.com/', securityOrigin: 'https://example.com' });
+            const childFrame = resourceTreeModel.frameAttached('opaque-child', parentFrame.id);
+            assert.exists(childFrame);
+            navigate(childFrame, { url: 'about:blank', securityOrigin: '' });
+            const context = createCustomExecutionContext(target, 'about:blank', childFrame.id);
+            const subtitle = await getSubtitle(context);
+            assert.strictEqual(subtitle, 'IFrame');
+        });
+        it('renders Extension for chrome-extension execution context', async () => {
+            const context = createCustomExecutionContext(target, 'chrome-extension://abcdefghijklmnop');
+            const subtitle = await getSubtitle(context);
+            assert.strictEqual(subtitle, 'Extension');
+        });
     });
 });
 //# sourceMappingURL=ConsoleContextSelector.test.js.map

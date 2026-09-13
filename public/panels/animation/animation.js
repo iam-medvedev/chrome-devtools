@@ -24,7 +24,7 @@ __export(AnimationUI_exports, {
 import * as Common2 from "../../core/common/common.js";
 import * as i18n3 from "../../core/i18n/i18n.js";
 import * as Platform2 from "../../core/platform/platform.js";
-import * as Geometry from "../../models/geometry/geometry.js";
+import * as Geometry from "../../ui/geometry/geometry.js";
 import * as InlineEditor from "../../ui/legacy/components/inline_editor/inline_editor.js";
 import * as UI2 from "../../ui/legacy/legacy.js";
 import * as VisualLogging2 from "../../ui/visual_logging/visual_logging.js";
@@ -434,6 +434,7 @@ var Audits;
     FederatedAuthRequestIssueReason2["UiDismissedNoEmbargo"] = "UiDismissedNoEmbargo";
     FederatedAuthRequestIssueReason2["CorsError"] = "CorsError";
     FederatedAuthRequestIssueReason2["SuppressedBySegmentationPlatform"] = "SuppressedBySegmentationPlatform";
+    FederatedAuthRequestIssueReason2["PopupBlockedByConnectionAllowlist"] = "PopupBlockedByConnectionAllowlist";
   })(FederatedAuthRequestIssueReason = Audits2.FederatedAuthRequestIssueReason || (Audits2.FederatedAuthRequestIssueReason = {}));
   let FederatedAuthUserInfoRequestIssueReason;
   ((FederatedAuthUserInfoRequestIssueReason2) => {
@@ -506,6 +507,7 @@ var Audits;
     EmailVerificationRequestIssueReason2["TokenVerificationKbInvalidSdHash"] = "TokenVerificationKbInvalidSdHash";
     EmailVerificationRequestIssueReason2["TokenVerificationKbMissingCnf"] = "TokenVerificationKbMissingCnf";
     EmailVerificationRequestIssueReason2["TokenVerificationKbSignatureFailed"] = "TokenVerificationKbSignatureFailed";
+    EmailVerificationRequestIssueReason2["CrossOriginIframeNotSupported"] = "CrossOriginIframeNotSupported";
   })(EmailVerificationRequestIssueReason = Audits2.EmailVerificationRequestIssueReason || (Audits2.EmailVerificationRequestIssueReason = {}));
   let PartitioningBlobURLInfo;
   ((PartitioningBlobURLInfo2) => {
@@ -962,6 +964,11 @@ var Emulation;
     SetDeviceMetricsOverrideRequestScrollbarType2["Overlay"] = "overlay";
     SetDeviceMetricsOverrideRequestScrollbarType2["Default"] = "default";
   })(SetDeviceMetricsOverrideRequestScrollbarType = Emulation2.SetDeviceMetricsOverrideRequestScrollbarType || (Emulation2.SetDeviceMetricsOverrideRequestScrollbarType = {}));
+  let SetDeviceMetricsOverrideRequestViewportMeta;
+  ((SetDeviceMetricsOverrideRequestViewportMeta2) => {
+    SetDeviceMetricsOverrideRequestViewportMeta2["Enable"] = "enable";
+    SetDeviceMetricsOverrideRequestViewportMeta2["Default"] = "default";
+  })(SetDeviceMetricsOverrideRequestViewportMeta = Emulation2.SetDeviceMetricsOverrideRequestViewportMeta || (Emulation2.SetDeviceMetricsOverrideRequestViewportMeta = {}));
   let SetEmitTouchEventsForMouseRequestConfiguration;
   ((SetEmitTouchEventsForMouseRequestConfiguration2) => {
     SetEmitTouchEventsForMouseRequestConfiguration2["Mobile"] = "mobile";
@@ -1630,6 +1637,7 @@ var Network;
     TerminationEventDetailsDeletionReason2["InvalidSessionParams"] = "InvalidSessionParams";
     TerminationEventDetailsDeletionReason2["RefreshFatalError"] = "RefreshFatalError";
     TerminationEventDetailsDeletionReason2["DevTools"] = "DevTools";
+    TerminationEventDetailsDeletionReason2["Replaced"] = "Replaced";
   })(TerminationEventDetailsDeletionReason = Network2.TerminationEventDetailsDeletionReason || (Network2.TerminationEventDetailsDeletionReason = {}));
   let ChallengeEventDetailsChallengeResult;
   ((ChallengeEventDetailsChallengeResult2) => {
@@ -2752,6 +2760,7 @@ var Runtime;
     RemoteObjectSubtype2["Dataview"] = "dataview";
     RemoteObjectSubtype2["Webassemblymemory"] = "webassemblymemory";
     RemoteObjectSubtype2["Wasmvalue"] = "wasmvalue";
+    RemoteObjectSubtype2["Deferredmodule"] = "deferredmodule";
     RemoteObjectSubtype2["Trustedtype"] = "trustedtype";
   })(RemoteObjectSubtype = Runtime2.RemoteObjectSubtype || (Runtime2.RemoteObjectSubtype = {}));
   let ObjectPreviewType;
@@ -2786,6 +2795,7 @@ var Runtime;
     ObjectPreviewSubtype2["Dataview"] = "dataview";
     ObjectPreviewSubtype2["Webassemblymemory"] = "webassemblymemory";
     ObjectPreviewSubtype2["Wasmvalue"] = "wasmvalue";
+    ObjectPreviewSubtype2["Deferredmodule"] = "deferredmodule";
     ObjectPreviewSubtype2["Trustedtype"] = "trustedtype";
   })(ObjectPreviewSubtype = Runtime2.ObjectPreviewSubtype || (Runtime2.ObjectPreviewSubtype = {}));
   let PropertyPreviewType;
@@ -2821,6 +2831,7 @@ var Runtime;
     PropertyPreviewSubtype2["Dataview"] = "dataview";
     PropertyPreviewSubtype2["Webassemblymemory"] = "webassemblymemory";
     PropertyPreviewSubtype2["Wasmvalue"] = "wasmvalue";
+    PropertyPreviewSubtype2["Deferredmodule"] = "deferredmodule";
     PropertyPreviewSubtype2["Trustedtype"] = "trustedtype";
   })(PropertyPreviewSubtype = Runtime2.PropertyPreviewSubtype || (Runtime2.PropertyPreviewSubtype = {}));
   let ConsoleAPICalledEventType;
@@ -4442,6 +4453,7 @@ var NodeUI = class {
       return;
     }
     this.element.setAttribute("data-backend-node-id", String(node.backendNodeId()));
+    this.element.setAttribute("data-target-id", node.domModel().target().id());
     this.#node = node;
     this.nodeChanged();
     const link = PanelsCommon.DOMLinkifier.Linkifier.instance().linkify(node, {

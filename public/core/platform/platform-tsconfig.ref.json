@@ -6,6 +6,10 @@
     "emitDeclarationOnly": true,
     "outDir": ".",
     "rootDir": "../../../../../../front_end/core/platform",
+    "rootDirs": [
+      "../../../../../../",
+      "../../../"
+    ],
     "skipLibCheck": true
   },
   "files": [
@@ -19,6 +23,7 @@
     "../../../../../../front_end/core/platform/MapUtilities.ts",
     "../../../../../../front_end/core/platform/MimeType.ts",
     "../../../../../../front_end/core/platform/NumberUtilities.ts",
+    "../../../../../../front_end/core/platform/Size.ts",
     "../../../../../../front_end/core/platform/StringUtilities.ts",
     "../../../../../../front_end/core/platform/Timing.ts",
     "../../../../../../front_end/core/platform/TypedArrayUtilities.ts",

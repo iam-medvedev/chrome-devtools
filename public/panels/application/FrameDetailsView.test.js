@@ -14,7 +14,7 @@ import * as Application from './application.js';
 const makeFrame = (target) => {
     const newFrame = {
         url: 'https://www.example.com/path/page.html',
-        securityOrigin: 'https://www.example.com',
+        securityOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('https://www.example.com'),
         displayName: () => 'TestTitle',
         unreachableUrl: () => '',
         adFrameType: () => "none" /* Protocol.Page.AdFrameType.None */,

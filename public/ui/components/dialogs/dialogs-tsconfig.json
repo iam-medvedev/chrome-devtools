@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "allowJs": true,
+    "allowJs": false,
     "allowSyntheticDefaultImports": true,
-    "checkJs": true,
+    "checkJs": false,
     "composite": false,
     "declaration": false,
     "disableSourceOfProjectReferenceRedirect": true,
@@ -28,6 +28,10 @@
     "outDir": ".",
     "preserveConstEnums": true,
     "rootDir": "../../../../../../../front_end/ui/components/dialogs",
+    "rootDirs": [
+      "../../../../../../../",
+      "../../../../"
+    ],
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
@@ -62,7 +66,7 @@
       "path": "../../../core/platform/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../../models/geometry/bundle-tsconfig.ref.json"
+      "path": "../../geometry/bundle-tsconfig.ref.json"
     },
     {
       "path": "../../legacy/bundle-tsconfig.ref.json"

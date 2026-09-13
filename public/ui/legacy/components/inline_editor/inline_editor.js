@@ -10,7 +10,7 @@ __export(AnimationTimingModel_exports, {
   AnimationTimingModel: () => AnimationTimingModel,
   LINEAR_BEZIER: () => LINEAR_BEZIER2
 });
-import * as Geometry from "../../../../models/geometry/geometry.js";
+import * as Geometry from "../../../geometry/geometry.js";
 
 // ../../front_end/ui/legacy/components/inline_editor/CSSLinearEasingModel.ts
 var CSSLinearEasingModel_exports = {};
@@ -188,7 +188,7 @@ __export(AnimationTimingUI_exports, {
 });
 import * as i18n from "../../../../core/i18n/i18n.js";
 import * as Platform from "../../../../core/platform/platform.js";
-import * as Geometry3 from "../../../../models/geometry/geometry.js";
+import * as Geometry3 from "../../../geometry/geometry.js";
 import * as VisualLogging2 from "../../../visual_logging/visual_logging.js";
 import * as UI2 from "../../legacy.js";
 
@@ -198,7 +198,7 @@ __export(BezierUI_exports, {
   BezierUI: () => BezierUI,
   Height: () => Height
 });
-import * as Geometry2 from "../../../../models/geometry/geometry.js";
+import * as Geometry2 from "../../../geometry/geometry.js";
 import * as VisualLogging from "../../../visual_logging/visual_logging.js";
 import * as UI from "../../legacy.js";
 var BezierUI = class {
@@ -1048,9 +1048,9 @@ var BezierEditor = class extends BezierEditorBase {
     }
   }
 };
-var Events = /* @__PURE__ */ ((Events4) => {
-  Events4["BEZIER_CHANGED"] = "BezierChanged";
-  return Events4;
+var Events = /* @__PURE__ */ ((Events5) => {
+  Events5["BEZIER_CHANGED"] = "BezierChanged";
+  return Events5;
 })(Events || {});
 var Presets = [
   [
@@ -1116,9 +1116,9 @@ var colorMixSwatch_css_default = `/*
   display: inline-grid;
   inline-size: 15px;
   grid: [stack] 1fr / [stack] 1fr;
-  margin-left: 1px;
-  margin-right: 1px;
-  vertical-align: -1px;
+  margin-left: var(--sys-size-1);
+  margin-right: var(--sys-size-1);
+  vertical-align: calc(-1 * var(--sys-size-1));
   color: var(--color); /* stylelint-disable-line plugin/use_theme_colors */
 }
 
@@ -1126,7 +1126,7 @@ var colorMixSwatch_css_default = `/*
   aspect-ratio: 1 / 1;
   display: inline-block;
   width: 10px;
-  border-radius: 1e5px;
+  border-radius: var(--sys-shape-corner-full);
   /* stylelint-disable-next-line plugin/use_theme_colors */
   background: linear-gradient(var(--color), var(--color)),
     var(--image-file-checker);
@@ -1549,7 +1549,7 @@ __export(CSSAngleUtils_exports, {
   roundAngleByUnit: () => roundAngleByUnit
 });
 import * as Platform4 from "../../../../core/platform/platform.js";
-import * as Geometry4 from "../../../../models/geometry/geometry.js";
+import * as Geometry4 from "../../../geometry/geometry.js";
 import * as UI4 from "../../legacy.js";
 var CSSAngleRegex = /(?<value>[+-]?\d*\.?\d+)(?<unit>deg|grad|rad|turn)/;
 var AngleUnit = /* @__PURE__ */ ((AngleUnit2) => {
@@ -1801,10 +1801,10 @@ var cssAngleSwatch_css_default = `/*
 .swatch {
   position: relative;
   display: inline-block;
-  margin-bottom: -2px;
+  margin-bottom: calc(-1 * var(--sys-size-2));
   width: 1em;
   height: 1em;
-  border: 1px solid var(--sys-color-neutral-outline);
+  border: var(--sys-size-1) solid var(--sys-color-neutral-outline);
   border-radius: 50%;
   overflow: hidden;
   cursor: pointer;
@@ -1816,7 +1816,7 @@ var cssAngleSwatch_css_default = `/*
   margin: auto;
   inset: 0;
   height: 55%;
-  width: 2px;
+  width: var(--sys-size-2);
   background-color: var(--sys-color-tonal-container);
   border-radius: 5px;
 }
@@ -2108,7 +2108,7 @@ __export(CSSShadowEditor_exports, {
 import * as Common4 from "../../../../core/common/common.js";
 import * as i18n5 from "../../../../core/i18n/i18n.js";
 import * as Platform6 from "../../../../core/platform/platform.js";
-import * as Geometry5 from "../../../../models/geometry/geometry.js";
+import * as Geometry5 from "../../../geometry/geometry.js";
 import * as VisualLogging7 from "../../../visual_logging/visual_logging.js";
 import * as UI5 from "../../legacy.js";
 
@@ -2659,9 +2659,9 @@ var CSSShadowEditor = class extends CSSShadowEditorBase {
     return this.constrainPoint(new Geometry5.Point(x, y), this.innerCanvasSize);
   }
 };
-var Events2 = /* @__PURE__ */ ((Events4) => {
-  Events4["SHADOW_CHANGED"] = "ShadowChanged";
-  return Events4;
+var Events2 = /* @__PURE__ */ ((Events5) => {
+  Events5["SHADOW_CHANGED"] = "ShadowChanged";
+  return Events5;
 })(Events2 || {});
 
 // ../../front_end/ui/legacy/components/inline_editor/LinkSwatch.ts
@@ -2687,7 +2687,7 @@ var linkSwatch_css_default = `/*
 
 .link-swatch-link:not(.undefined) {
   cursor: pointer;
-  text-underline-offset: 2px;
+  text-underline-offset: var(--sys-size-2);
   color: var(--text-link);
 }
 
@@ -2761,11 +2761,230 @@ customElements.define("devtools-link-swatch", LinkSwatch);
 var PositionAreaEditor_exports = {};
 __export(PositionAreaEditor_exports, {
   Axis: () => Axis,
+  DEFAULT_VIEW: () => DEFAULT_VIEW,
+  Events: () => Events3,
   Keyword: () => Keyword,
   Mode: () => Mode,
+  PositionAreaEditor: () => PositionAreaEditor,
   parsePositionArea: () => parsePositionArea,
   stringifyPositionArea: () => stringifyPositionArea
 });
+import * as Common5 from "../../../../core/common/common.js";
+import * as i18n7 from "../../../../core/i18n/i18n.js";
+import * as Lit7 from "../../../lit/lit.js";
+import * as UI6 from "../../legacy.js";
+
+// gen/front_end/ui/legacy/components/inline_editor/positionAreaEditor.css.js
+var positionAreaEditor_css_default = `/*
+ * Copyright 2026 The Chromium Authors
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+@scope to (devtools-widget > *) {
+  :scope {
+    padding: var(--sys-size-7);
+    width: min-content;
+  }
+
+  .property {
+    display: flex;
+    gap: var(--sys-size-2);
+    line-height: 16px;
+    height: 32px;
+    padding-bottom: var(--sys-size-3);
+    overflow-wrap: break-word;
+    flex-shrink: 0;
+  }
+
+  .property-name,
+  .property-keyword {
+    white-space: nowrap;
+  }
+
+  .property-name {
+    flex-shrink: 0;
+    color: var(--sys-color-token-property-special);
+  }
+
+  .property-value {
+    color: var(--sys-color-on-surface);
+  }
+
+  .position-area-builder {
+    --x-start: attr(data-x-start type(<number>));
+    --x-end: attr(data-x-end type(<number>));
+    --y-start: attr(data-y-start type(<number>));
+    --y-end: attr(data-y-end type(<number>));
+    --box-size: 28px;
+
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(3, var(--box-size));
+    grid-template-rows: repeat(3, var(--box-size));
+    gap: 4px;
+    margin: var(--sys-size-6) auto var(--sys-size-9);
+    touch-action: none;
+    user-select: none;
+    flex-shrink: 0;
+
+    div {
+      background-color: if(
+        style(
+          (--x-start <= attr(data-x type(<number>))) and
+          (--x-end >= attr(data-x type(<number>))) and
+          (--y-start <= attr(data-y type(<number>))) and
+          (--y-end >= attr(data-y type(<number>)))
+        ): var(--sys-color-tonal-container);
+        else: transparent
+      );
+      min-width: var(--box-size);
+      min-height: var(--box-size);
+      outline: 1px solid var(--sys-color-neutral-outline);
+
+      &:focus-visible {
+        outline: 1px solid var(--sys-color-state-focus-ring);
+        outline-offset: -1px;
+        z-index: 2;
+      }
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      grid-column: calc(var(--x-start) + 1) / calc(var(--x-end) + 2);
+      grid-row: calc(var(--y-start) + 1) / calc(var(--y-end) + 2);
+      border: 2px solid var(--sys-color-primary);
+      pointer-events: none;
+      z-index: 1;
+    }
+  }
+
+  .position-area-controls {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sys-size-5);
+    flex-shrink: 0;
+  }
+
+  .axis-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sys-size-1);
+  }
+
+  .axis-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .self-checkbox-label {
+    padding-inline-end: var(--sys-size-2);
+  }
+
+  .axis-title {
+    font-size: var(--sys-typescale-body4-size);
+    font-weight: 500;
+    color: var(--sys-color-on-surface-subtle);
+  }
+
+  .chip-radio-group {
+    display: inline-flex;
+    gap: var(--sys-size-3);
+    border: none;
+    padding: 0;
+    margin: 0;
+
+    & > input[type='radio'] {
+      position: absolute;
+      opacity: 0%;
+      width: 0;
+      height: 0;
+      pointer-events: none;
+    }
+
+    & > label {
+      box-sizing: border-box;
+      display: inline-block;
+      padding: 3px var(--sys-size-4);
+      border-radius: var(--sys-shape-corner-extra-small);
+      outline: var(--sys-size-1) solid var(--sys-color-neutral-outline);
+      outline-offset: calc(-1 * var(--sys-size-1));
+      background: transparent;
+      color: var(--sys-color-on-surface);
+      font-size: var(--sys-typescale-body5-size);
+      font-weight: 500;
+      cursor: pointer;
+      user-select: none;
+
+      &:hover {
+        background-color: var(--sys-color-state-hover-on-subtle);
+      }
+    }
+
+    & > input[type='radio']:checked + label {
+      background-color: var(--sys-color-tonal-container);
+      color: var(--sys-color-on-tonal-container);
+      outline: none;
+    }
+
+    & > input[type='radio']:focus-visible + label {
+      outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
+    }
+  }
+}
+
+/*# sourceURL=${import.meta.resolve("./positionAreaEditor.css")} */`;
+
+// ../../front_end/ui/legacy/components/inline_editor/PositionAreaEditor.ts
+var UIStrings4 = {
+  /**
+   * @description Accessible description for the position-area grid editor explaining keyboard navigation and range selection.
+   */
+  positionAreaGridDescription: "Use arrow keys to navigate, Space or Enter to select, and Shift + arrow keys to select a range.",
+  /**
+   * @description Accessible label for the position-area grid editor.
+   */
+  positionAreaGrid: "position-area grid",
+  /**
+   * @description Title for the block axis section in the position-area editor.
+   */
+  block: "Block",
+  /**
+   * @description Title for the inline axis section in the position-area editor.
+   */
+  inline: "Inline",
+  /**
+   * @description Accessible label for the block axis mode radio button group.
+   */
+  blockAxisMode: "Block axis mode",
+  /**
+   * @description Accessible label for the inline axis mode radio button group.
+   */
+  inlineAxisMode: "Inline axis mode",
+  /**
+   * @description Label for physical mode radio button in the position-area editor.
+   */
+  physical: "Physical",
+  /**
+   * @description Label for coordinate mode radio button in the position-area editor.
+   */
+  coordinate: "Coordinate",
+  /**
+   * @description Label for logical mode radio button in the position-area editor.
+   */
+  logical: "Logical",
+  /**
+   * @description Label for auto mode radio button in the position-area editor.
+   */
+  auto: "Auto"
+};
+var str_4 = i18n7.i18n.registerUIStrings("ui/legacy/components/inline_editor/PositionAreaEditor.ts", UIStrings4);
+var i18nString4 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
+var { Directives: Directives5, html: html7, nothing: nothing2, render: render7 } = Lit7;
+var { repeat } = Directives5;
 var Mode = /* @__PURE__ */ ((Mode2) => {
   Mode2["PHYSICAL"] = "physical";
   Mode2["COORDINATE"] = "coordinate";
@@ -2900,8 +3119,11 @@ function parsePositionArea(text) {
     return null;
   }
   const first = KEYWORD_MAP.get(tokens[0]);
-  const second = KEYWORD_MAP.get(tokens[1] ?? (tokens[0] === "center" /* CENTER */ ? "center" /* CENTER */ : "span-all" /* SPAN_ALL */));
-  if (!first || !second) {
+  if (!first) {
+    return null;
+  }
+  const second = KEYWORD_MAP.get(tokens[1] ?? (first.axis ? "span-all" /* SPAN_ALL */ : tokens[0]));
+  if (!second) {
     return null;
   }
   if (first.axis && second.axis && first.axis === second.axis) {
@@ -2938,14 +3160,434 @@ function stringifyPositionArea(area) {
   if (!firstKw || !secondKw) {
     return "";
   }
-  if (firstKw === "center" /* CENTER */ && secondKw === "center" /* CENTER */) {
-    return "center" /* CENTER */;
+  const firstDef = KEYWORD_MAP.get(firstKw);
+  if (!firstDef?.axis && firstKw === secondKw) {
+    return firstKw;
   }
-  if (secondKw === "span-all" /* SPAN_ALL */) {
+  if (firstDef?.axis && secondKw === "span-all" /* SPAN_ALL */) {
     return firstKw;
   }
   return `${firstKw} ${secondKw}`;
 }
+var DEFAULT_VIEW = (input, output, target) => {
+  const container = {
+    attributes: {
+      tabindex: "0"
+    }
+  };
+  if (!input.area) {
+    render7(nothing2, target, { container });
+    return;
+  }
+  const x = input.area.primaryAxis === "inline" /* INLINE */ ? input.area.first : input.area.second;
+  const y = input.area.primaryAxis === "block" /* BLOCK */ ? input.area.first : input.area.second;
+  const grid = [[0, 0], [1, 0], [2, 0], [0, 1], [1, 1], [2, 1], [0, 2], [1, 2], [2, 2]];
+  const activeCell = target.querySelector(".position-area-builder > div:focus");
+  const focusedX = activeCell ? Number(activeCell.dataset.x) : x.start;
+  const focusedY = activeCell ? Number(activeCell.dataset.y) : y.start;
+  function getCellCoords(e, container2) {
+    const root = container2.getRootNode();
+    const el = root.elementFromPoint(e.clientX, e.clientY);
+    const cell = el?.closest(".position-area-builder > div");
+    if (!cell || !container2.contains(cell)) {
+      return null;
+    }
+    const cellX = Number(cell.dataset.x);
+    const cellY = Number(cell.dataset.y);
+    return [cellX, cellY];
+  }
+  function focusCell(cell, container2) {
+    for (const c of container2.querySelectorAll("[data-x]")) {
+      c.tabIndex = c === cell ? 0 : -1;
+    }
+    cell.focus();
+  }
+  function onPointerDown(e) {
+    const container2 = e.currentTarget;
+    const targetCell = e.target.closest("[data-x]");
+    if (!targetCell) {
+      return;
+    }
+    const startX = Number(targetCell.dataset.x);
+    const startY = Number(targetCell.dataset.y);
+    focusCell(targetCell, container2);
+    container2.setPointerCapture(e.pointerId);
+    input.onSelectStart(startX, startY);
+  }
+  function onPointerMove(e) {
+    const container2 = e.currentTarget;
+    if (!container2.hasPointerCapture(e.pointerId)) {
+      return;
+    }
+    const cell = getCellCoords(e, container2);
+    if (cell) {
+      const targetCell = container2.querySelector(`[data-x="${cell[0]}"][data-y="${cell[1]}"]`);
+      if (targetCell && targetCell !== document.activeElement) {
+        focusCell(targetCell, container2);
+      }
+      input.onSelect(...cell);
+    }
+  }
+  function onPointerUp(e) {
+    const container2 = e.currentTarget;
+    if (!container2.hasPointerCapture(e.pointerId)) {
+      return;
+    }
+    container2.releasePointerCapture(e.pointerId);
+    const coords = getCellCoords(e, container2);
+    if (coords) {
+      const targetCell = container2.querySelector(`[data-x="${coords[0]}"][data-y="${coords[1]}"]`);
+      if (targetCell) {
+        focusCell(targetCell, container2);
+      }
+      input.onSelectEnd(...coords);
+    } else {
+      input.onSelectEnd(x.end, y.end);
+    }
+  }
+  function onPointerCancel(e) {
+    const container2 = e.currentTarget;
+    if (!container2.hasPointerCapture(e.pointerId)) {
+      return;
+    }
+    container2.releasePointerCapture(e.pointerId);
+    input.onSelectEnd();
+  }
+  function onCellKeyDown(e) {
+    const currentCell = e.currentTarget;
+    const cellX = Number(currentCell.dataset.x);
+    const cellY = Number(currentCell.dataset.y);
+    const builder = currentCell.closest(".position-area-builder");
+    if (!builder) {
+      return;
+    }
+    if (e.key === " " || e.key === "Enter") {
+      e.preventDefault();
+      input.onSelectStart(cellX, cellY);
+      input.onSelectEnd(cellX, cellY);
+      return;
+    }
+    let dx = 0;
+    let dy = 0;
+    switch (e.key) {
+      case "ArrowLeft":
+        dx = -1;
+        break;
+      case "ArrowRight":
+        dx = 1;
+        break;
+      case "ArrowUp":
+        dy = -1;
+        break;
+      case "ArrowDown":
+        dy = 1;
+        break;
+      default:
+        return;
+    }
+    const nextX = Math.max(0, Math.min(2, cellX + dx));
+    const nextY = Math.max(0, Math.min(2, cellY + dy));
+    if (nextX === cellX && nextY === cellY) {
+      return;
+    }
+    e.preventDefault();
+    const nextCell = builder.querySelector(`[data-x="${nextX}"][data-y="${nextY}"]`);
+    if (!nextCell) {
+      return;
+    }
+    focusCell(nextCell, builder);
+    if (e.shiftKey) {
+      if (!input.isSelecting) {
+        input.onSelectStart(cellX, cellY);
+      }
+      input.onSelect(nextX, nextY);
+    }
+  }
+  function onKeyUp(e) {
+    if (e.key === "Shift" && input.isSelecting) {
+      const activeCell2 = e.target.closest("[data-x]");
+      if (activeCell2) {
+        const activeX = Number(activeCell2.dataset.x);
+        const activeY = Number(activeCell2.dataset.y);
+        input.onSelectEnd(activeX, activeY);
+      } else {
+        input.onSelectEnd();
+      }
+    }
+  }
+  function getCellTitle(cellX, cellY) {
+    if (!input.area) {
+      return "";
+    }
+    const cellArea = {
+      first: input.area.primaryAxis === "inline" /* INLINE */ ? { ...x, start: cellX, end: cellX } : { ...y, start: cellY, end: cellY },
+      second: input.area.primaryAxis === "block" /* BLOCK */ ? { ...x, start: cellX, end: cellX } : { ...y, start: cellY, end: cellY },
+      primaryAxis: input.area.primaryAxis
+    };
+    return stringifyPositionArea(cellArea);
+  }
+  const propertyValue = stringifyPositionArea(input.area);
+  const blockAxis = input.area.primaryAxis === "block" /* BLOCK */ ? input.area.first : input.area.second;
+  const inlineAxis = input.area.primaryAxis === "inline" /* INLINE */ ? input.area.first : input.area.second;
+  function renderModeRadioGroup(axis, currentMode) {
+    const modes = [
+      { mode: "physical" /* PHYSICAL */, label: i18nString4(UIStrings4.physical) },
+      { mode: "coordinate" /* COORDINATE */, label: i18nString4(UIStrings4.coordinate) },
+      { mode: "logical" /* LOGICAL */, label: i18nString4(UIStrings4.logical) },
+      { mode: "auto" /* AUTO */, label: i18nString4(UIStrings4.auto) }
+    ];
+    const axisModeLabel = axis === "block" /* BLOCK */ ? i18nString4(UIStrings4.blockAxisMode) : i18nString4(UIStrings4.inlineAxisMode);
+    return html7`
+      <fieldset class="chip-radio-group" aria-label=${axisModeLabel}>
+        ${modes.map(({ mode, label }) => {
+      const id = `${axis}-mode-${mode}`;
+      return html7`
+            <input
+              type="radio"
+              id=${id}
+              name="${axis}-mode"
+              value=${mode}
+              .checked=${currentMode === mode}
+              @change=${() => input.onModeChange(axis, mode)}
+            >
+            <label for=${id}>${label}</label>
+          `;
+    })}
+      </fieldset>
+    `;
+  }
+  render7(
+    html7`
+    <style>${positionAreaEditor_css_default}</style>
+    <div class=property aria-live="polite" aria-atomic="true">
+      <span class=property-name>position-area:</span>
+      <span class=property-value>${propertyValue.split(" ").map(
+      (keyword, i) => html7`${i > 0 ? " " : ""}<span class=property-keyword>${keyword}</span>`
+    )}</span>
+    </div>
+    <div class=position-area-builder
+        role="grid"
+        aria-label=${i18nString4(UIStrings4.positionAreaGrid)}
+        aria-description=${i18nString4(UIStrings4.positionAreaGridDescription)}
+        aria-multiselectable="true"
+        data-x-start=${x.start} data-x-end=${x.end} data-y-start=${y.start} data-y-end=${y.end}
+        @pointerdown=${onPointerDown}
+        @pointermove=${onPointerMove}
+        @pointerup=${onPointerUp}
+        @pointercancel=${onPointerCancel}
+        @keyup=${onKeyUp}>
+      ${repeat(grid, ([cellX, cellY]) => cellX * 10 + cellY, ([cellX, cellY]) => {
+      const isFocused = cellX === focusedX && cellY === focusedY;
+      const isSelected = cellX >= x.start && cellX <= x.end && cellY >= y.start && cellY <= y.end;
+      const cellTitle = getCellTitle(cellX, cellY);
+      return html7`
+         <div
+           role="gridcell"
+           data-x=${cellX}
+           data-y=${cellY}
+           title=${cellTitle}
+           aria-label=${cellTitle}
+           tabindex=${isFocused ? 0 : -1}
+           aria-selected=${isSelected ? "true" : "false"}
+           @keydown=${onCellKeyDown}>
+         </div>
+        `;
+    })}
+    </div>
+    <div class=position-area-controls>
+      <div class=axis-section>
+        <div class=axis-header>
+          <span class=axis-title>${i18nString4(UIStrings4.block)}</span>
+          <devtools-checkbox
+            .checked=${blockAxis.self}
+            ?disabled=${isGeneric(blockAxis)}
+            @change=${(e) => input.onSelfChange("block" /* BLOCK */, e.target.checked)}>
+            <span class="self-checkbox-label source-code">self</span>
+          </devtools-checkbox>
+        </div>
+        ${renderModeRadioGroup("block" /* BLOCK */, blockAxis.mode)}
+      </div>
+      <div class=axis-section>
+        <div class=axis-header>
+          <span class=axis-title>${i18nString4(UIStrings4.inline)}</span>
+          <devtools-checkbox
+            .checked=${inlineAxis.self}
+            ?disabled=${isGeneric(inlineAxis)}
+            @change=${(e) => input.onSelfChange("inline" /* INLINE */, e.target.checked)}>
+            <span class="self-checkbox-label source-code">self</span>
+          </devtools-checkbox>
+        </div>
+        ${renderModeRadioGroup("inline" /* INLINE */, inlineAxis.mode)}
+      </div>
+    </div>
+    `,
+    // clang-format on
+    target,
+    { container }
+  );
+};
+var Events3 = /* @__PURE__ */ ((Events5) => {
+  Events5["POSITION_AREA_CHANGED"] = "positionAreaChanged";
+  return Events5;
+})(Events3 || {});
+var PositionAreaEditorBase = Common5.ObjectWrapper.eventMixin(
+  UI6.Widget.VBox
+);
+var PositionAreaEditor = class extends PositionAreaEditorBase {
+  #view;
+  #area;
+  #inProgressSelection;
+  constructor(element, view = DEFAULT_VIEW) {
+    super(element);
+    this.setDefaultFocusedElement(this.contentElement);
+    this.#view = view;
+  }
+  wasShown() {
+    super.wasShown();
+    this.performUpdate();
+  }
+  get area() {
+    return this.#area;
+  }
+  set area(val) {
+    if ((this.#inProgressSelection?.origin ?? this.#area) === val) {
+      return;
+    }
+    this.#area = val;
+    this.#inProgressSelection = void 0;
+    this.requestUpdate();
+  }
+  #startSelection(x, y) {
+    this.#finishSelection();
+    this.#select(x, y);
+  }
+  #inlineAxis() {
+    if (!this.#area) {
+      return { start: 0, end: 0, mode: "physical" /* PHYSICAL */, self: false };
+    }
+    return this.#area.primaryAxis === "inline" /* INLINE */ ? this.#area.first : this.#area.second;
+  }
+  #blockAxis() {
+    if (!this.#area) {
+      return { start: 0, end: 0, mode: "physical" /* PHYSICAL */, self: false };
+    }
+    return this.#area.primaryAxis === "block" /* BLOCK */ ? this.#area.first : this.#area.second;
+  }
+  #axis(axis) {
+    return axis === "inline" /* INLINE */ ? this.#inlineAxis() : this.#blockAxis();
+  }
+  #notifyChange() {
+    if (!this.#area) {
+      return;
+    }
+    this.dispatchEventToListeners("positionAreaChanged" /* POSITION_AREA_CHANGED */, this.#area);
+  }
+  #select(x, y) {
+    if (!this.#inProgressSelection) {
+      this.#inProgressSelection = { origin: this.#area, start: { x, y }, end: { x, y } };
+    }
+    this.#inProgressSelection.end = { x, y };
+    const { start, end } = this.#inProgressSelection;
+    const primaryAxis = this.#area?.primaryAxis ?? "inline" /* INLINE */;
+    const inlineAxis = { ...this.#inlineAxis(), start: Math.min(start.x, end.x), end: Math.max(start.x, end.x) };
+    const blockAxis = { ...this.#blockAxis(), start: Math.min(start.y, end.y), end: Math.max(start.y, end.y) };
+    this.#area = {
+      first: primaryAxis === "inline" /* INLINE */ ? inlineAxis : blockAxis,
+      second: primaryAxis === "block" /* BLOCK */ ? inlineAxis : blockAxis,
+      primaryAxis
+    };
+    this.requestUpdate();
+    this.#notifyChange();
+  }
+  #finishSelection(x, y) {
+    if (!this.#inProgressSelection) {
+      return;
+    }
+    if (x === void 0 || y === void 0) {
+      this.#area = this.#inProgressSelection.origin ?? this.#area;
+      this.#inProgressSelection = void 0;
+      this.#notifyChange();
+      this.requestUpdate();
+      return;
+    }
+    this.#select(x, y);
+    this.#inProgressSelection = void 0;
+  }
+  #setAxisMode(axis, mode) {
+    if (!this.#area) {
+      return;
+    }
+    const otherAxis = axis === "inline" /* INLINE */ ? "block" /* BLOCK */ : "inline" /* INLINE */;
+    const current = this.#axis(axis);
+    if (mode === current.mode) {
+      return;
+    }
+    const other = this.#axis(otherAxis);
+    current.mode = mode;
+    if (isGeneric(current) || mode === "physical" /* PHYSICAL */) {
+      current.self = false;
+    }
+    if (!isGeneric(other)) {
+      if (mode === "physical" /* PHYSICAL */ || mode === "coordinate" /* COORDINATE */) {
+        if (other.mode !== "physical" /* PHYSICAL */ && other.mode !== "coordinate" /* COORDINATE */) {
+          other.mode = mode === "coordinate" /* COORDINATE */ ? "coordinate" /* COORDINATE */ : other.self ? "coordinate" /* COORDINATE */ : "physical" /* PHYSICAL */;
+        }
+      } else {
+        other.mode = mode;
+        if (!isGeneric(current)) {
+          other.self = current.self;
+        }
+      }
+    } else {
+      other.mode = mode;
+      other.self = false;
+    }
+    this.requestUpdate();
+    this.#notifyChange();
+  }
+  #setAxisSelf(axis, self) {
+    if (!this.#area) {
+      return;
+    }
+    const current = this.#axis(axis);
+    const other = this.#axis(axis === "inline" /* INLINE */ ? "block" /* BLOCK */ : "inline" /* INLINE */);
+    if (isGeneric(current)) {
+      if (!isGeneric(other)) {
+        this.#setAxisSelf(axis === "inline" /* INLINE */ ? "block" /* BLOCK */ : "inline" /* INLINE */, self);
+      }
+      this.requestUpdate();
+      this.#notifyChange();
+      return;
+    }
+    current.self = self;
+    if (current.mode === "physical" /* PHYSICAL */ && self) {
+      current.mode = "coordinate" /* COORDINATE */;
+    }
+    if (!isGeneric(other) && other.mode !== "physical" /* PHYSICAL */ && other.mode !== "coordinate" /* COORDINATE */) {
+      other.self = self;
+    }
+    this.requestUpdate();
+    this.#notifyChange();
+  }
+  performUpdate() {
+    const isSelecting = () => this.#inProgressSelection !== void 0;
+    this.#view(
+      {
+        area: this.#area,
+        get isSelecting() {
+          return isSelecting();
+        },
+        onSelectStart: this.#startSelection.bind(this),
+        onSelect: this.#select.bind(this),
+        onSelectEnd: this.#finishSelection.bind(this),
+        onModeChange: this.#setAxisMode.bind(this),
+        onSelfChange: this.#setAxisSelf.bind(this)
+      },
+      void 0,
+      this.contentElement
+    );
+  }
+};
 
 // ../../front_end/ui/legacy/components/inline_editor/Swatches.ts
 var Swatches_exports = {};
@@ -2953,7 +3595,7 @@ __export(Swatches_exports, {
   CSSShadowSwatch: () => CSSShadowSwatch
 });
 import "../../../kit/kit.js";
-import { html as html7, render as render7 } from "../../../lit/lit.js";
+import { html as html8, render as render8 } from "../../../lit/lit.js";
 
 // gen/front_end/ui/legacy/components/inline_editor/cssShadowSwatch.css.js
 var cssShadowSwatch_css_default = `/*
@@ -2985,8 +3627,8 @@ var CSSShadowSwatch = class extends HTMLElement {
   constructor(model) {
     super();
     this.#model = model;
-    render7(
-      html7`
+    render8(
+      html8`
         <style>${cssShadowSwatch_css_default}</style>
         <devtools-icon tabindex=-1 name="shadow" class="shadow-swatch-icon"></devtools-icon>`,
       this,
@@ -3006,13 +3648,13 @@ customElements.define("css-shadow-swatch", CSSShadowSwatch);
 // ../../front_end/ui/legacy/components/inline_editor/SwatchPopoverHelper.ts
 var SwatchPopoverHelper_exports = {};
 __export(SwatchPopoverHelper_exports, {
-  Events: () => Events3,
+  Events: () => Events4,
   SwatchPopoverHelper: () => SwatchPopoverHelper
 });
-import * as Common5 from "../../../../core/common/common.js";
+import * as Common6 from "../../../../core/common/common.js";
 import * as Platform8 from "../../../../core/platform/platform.js";
 import * as VisualLogging9 from "../../../visual_logging/visual_logging.js";
-import * as UI6 from "../../legacy.js";
+import * as UI7 from "../../legacy.js";
 
 // gen/front_end/ui/legacy/components/inline_editor/swatchPopover.css.js
 var swatchPopover_css_default = `/*
@@ -3040,7 +3682,7 @@ var swatchPopover_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./swatchPopover.css")} */`;
 
 // ../../front_end/ui/legacy/components/inline_editor/SwatchPopoverHelper.ts
-var SwatchPopoverHelper = class extends Common5.ObjectWrapper.ObjectWrapper {
+var SwatchPopoverHelper = class extends Common6.ObjectWrapper.ObjectWrapper {
   popover;
   hideProxy;
   boundOnKeyDown;
@@ -3052,9 +3694,9 @@ var SwatchPopoverHelper = class extends Common5.ObjectWrapper.ObjectWrapper {
   focusRestorer;
   constructor() {
     super();
-    this.popover = new UI6.GlassPane.GlassPane();
-    this.popover.setSizeBehavior(UI6.GlassPane.SizeBehavior.MEASURE_CONTENT);
-    this.popover.setMarginBehavior(UI6.GlassPane.MarginBehavior.DEFAULT_MARGIN);
+    this.popover = new UI7.GlassPane.GlassPane();
+    this.popover.setSizeBehavior(UI7.GlassPane.SizeBehavior.MEASURE_CONTENT);
+    this.popover.setMarginBehavior(UI7.GlassPane.MarginBehavior.DEFAULT_MARGIN);
     this.popover.element.addEventListener("mousedown", (e) => e.consume(), false);
     this.hideProxy = this.hide.bind(this, true);
     this.boundOnKeyDown = this.onKeyDown.bind(this);
@@ -3118,7 +3760,7 @@ var SwatchPopoverHelper = class extends Common5.ObjectWrapper.ObjectWrapper {
     }
     this.view.contentElement.addEventListener("focusout", this.boundFocusOut, false);
     if (!this.focusRestorer) {
-      this.focusRestorer = new UI6.Widget.WidgetFocusRestorer(this.view);
+      this.focusRestorer = new UI7.Widget.WidgetFocusRestorer(this.view);
     }
   }
   hide(commitEdit) {
@@ -3158,10 +3800,10 @@ var SwatchPopoverHelper = class extends Common5.ObjectWrapper.ObjectWrapper {
     }
   }
 };
-var Events3 = /* @__PURE__ */ ((Events4) => {
-  Events4["WILL_SHOW_POPOVER"] = "WillShowPopover";
-  return Events4;
-})(Events3 || {});
+var Events4 = /* @__PURE__ */ ((Events5) => {
+  Events5["WILL_SHOW_POPOVER"] = "WillShowPopover";
+  return Events5;
+})(Events4 || {});
 export {
   AnimationTimingModel_exports as AnimationTimingModel,
   AnimationTimingUI_exports as AnimationTimingUI,

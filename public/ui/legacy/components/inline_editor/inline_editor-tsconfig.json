@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "allowJs": true,
+    "allowJs": false,
     "allowSyntheticDefaultImports": true,
-    "checkJs": true,
+    "checkJs": false,
     "composite": false,
     "declaration": false,
     "disableSourceOfProjectReferenceRedirect": true,
@@ -28,6 +28,10 @@
     "outDir": ".",
     "preserveConstEnums": true,
     "rootDir": "../../../../../../../../front_end/ui/legacy/components/inline_editor",
+    "rootDirs": [
+      "../../../../../../../../",
+      "../../../../../"
+    ],
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
@@ -74,9 +78,6 @@
       "path": "../../../../core/platform/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../../../models/geometry/bundle-tsconfig.ref.json"
-    },
-    {
       "path": "../../../../third_party/codemirror.next/bundle-tsconfig.ref.json"
     },
     {
@@ -90,6 +91,9 @@
     },
     {
       "path": "../../../visual_logging/bundle-tsconfig.ref.json"
+    },
+    {
+      "path": "../../../geometry/bundle-tsconfig.ref.json"
     },
     {
       "path": "../../../kit/bundle-tsconfig.ref.json"

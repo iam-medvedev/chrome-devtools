@@ -157,10 +157,6 @@ const UIStringsNotTranslate = {
      */
     inputPlaceholderForNoContextBranded: 'Ask Gemini',
     /**
-     * @description Placeholder text for the chat UI input when AIAgent2 is enabled.
-     */
-    inputPlaceholderForV2: 'Ask a question (AIAgent2 enabled)',
-    /**
      * @description Placeholder text for the chat UI input.
      */
     inputPlaceholderForAccessibility: 'Ask a question about the selected Lighthouse report',
@@ -246,6 +242,9 @@ async function getEmptyStateSuggestions(conversation) {
 }
 function createV2MarkdownRenderer(conversation) {
     const options = {};
+    if (conversation) {
+        options.getEstablishedOrigin = () => conversation.origin;
+    }
     const primaryTarget = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
     const domModel = primaryTarget?.model(SDK.DOMModel.DOMModel);
     const resourceTreeModel = primaryTarget?.model(SDK.ResourceTreeModel.ResourceTreeModel);
@@ -455,7 +454,6 @@ function createStorageContext(item) {
 }
 let panelInstance;
 export class AiAssistancePanel extends UI.Panel.Panel {
-    view;
     static panelName = 'freestyler';
     // NodeJS debugging does not have Elements panel, thus this action might not exist.
     #toggleSearchElementAction;
@@ -488,6 +486,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         inlineExpandedMessages: [],
     };
     #textInputValue = '';
+    view;
     constructor(view = defaultView, { aidaClient, aidaAvailability }) {
         super(AiAssistancePanel.panelName);
         this.view = view;
@@ -581,8 +580,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                     },
                     onTextSubmit: async (text, imageInput, multimodalInputType) => {
                         const submit = () => {
-                            Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceQuerySubmitted);
-                            void this.#startConversation(text, imageInput, multimodalInputType);
+                            void this.#submitQuery(text, imageInput, multimodalInputType);
                         };
                         const seenSetting = Common.Settings.Settings.instance().resolve(AiAssistanceModel.AiUtils.aiAssistanceV2OptInChangeDialogSeenSettingDescriptor);
                         if (!seenSetting.get()) {
@@ -808,7 +806,8 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         this.#updateConversationState(conversation);
     }
     #updateConversationState(conversation) {
-        if (this.#conversation !== conversation) {
+        const isNewConversation = this.#conversation !== conversation;
+        if (isNewConversation) {
             // Cancel any previous conversation
             this.#cancel();
             this.#messages = [];
@@ -838,12 +837,20 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                 this.#conversation.setContext(context);
             }
             else {
+                const previousContext = this.#conversation.selectedContext;
+                const previousItem = previousContext?.getItem();
                 const context = this.#getConversationContext(this.#conversation.type);
+                const newItem = context?.getItem();
                 // Don't reset to the context selection agent if
                 // we remove context automatically.
                 // Require explicit user action.
                 if (context || !AiAssistanceModel.AiUtils.isContextSelectionEnabled()) {
                     this.#conversation.setContext(context);
+                }
+                // Log when the user selects a different target mid-conversation (ContextA -> ContextB).
+                if (AiAssistanceModel.AiUtils.isContextSelectionEnabled() && !this.#conversation.isReadOnly &&
+                    previousItem !== newItem && previousContext && context) {
+                    void VisualLogging.logFunctionCall('ai-v2-context-user-change', getContextTypeString(context));
                 }
             }
         }
@@ -1023,6 +1030,11 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         }
         return true;
     }
+    #getContextlessPlaceholder() {
+        return AiAssistanceModel.AiUtils.isGeminiBranding() ?
+            lockedString(UIStringsNotTranslate.inputPlaceholderForNoContextBranded) :
+            lockedString(UIStringsNotTranslate.inputPlaceholderForNoContext);
+    }
     #getChatInputPlaceholder() {
         if (!this.#conversation) {
             return i18nString(UIStrings.followTheSteps);
@@ -1030,8 +1042,12 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         if (this.#conversation && this.#conversation.isBlockedByOrigin) {
             return lockedString(UIStringsNotTranslate.crossOriginError);
         }
+        // The unified V2 agent answers questions across every domain, but the
+        // conversation type still tracks whichever context happens to be attached.
+        // Falling through to the switch below would therefore describe that single
+        // context, for example 'Ask a question about the selected element'.
         if (Root.Runtime.hostConfig.devToolsAiV2Architecture?.enabled) {
-            return lockedString(UIStringsNotTranslate.inputPlaceholderForV2);
+            return this.#getContextlessPlaceholder();
         }
         switch (this.#conversation.type) {
             case "freestyler" /* AiAssistanceModel.AiHistoryStorage.ConversationType.STYLING */:
@@ -1062,10 +1078,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             case "storage" /* AiAssistanceModel.AiHistoryStorage.ConversationType.STORAGE */:
                 return lockedString(UIStringsNotTranslate.inputPlaceholderForNoContext);
             case "none" /* AiAssistanceModel.AiHistoryStorage.ConversationType.NONE */:
-                if (AiAssistanceModel.AiUtils.isGeminiBranding()) {
-                    return lockedString(UIStringsNotTranslate.inputPlaceholderForNoContextBranded);
-                }
-                return lockedString(UIStringsNotTranslate.inputPlaceholderForNoContext);
+                return this.#getContextlessPlaceholder();
         }
     }
     #getDisclaimerText() {
@@ -1119,11 +1132,21 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         // Node picker is using linkifier.
     }
     #handleContextRemoved() {
+        const previousContext = this.#conversation?.selectedContext;
         this.#conversation?.setContext(null);
+        // Log when the user removes the active context (ContextA -> null).
+        if (AiAssistanceModel.AiUtils.isContextSelectionEnabled() && previousContext) {
+            void VisualLogging.logFunctionCall('ai-v2-context-user-removal', getContextTypeString(previousContext));
+        }
         this.requestUpdate();
     }
     #handleContextAdd() {
-        this.#conversation?.setContext(this.#getConversationContext(this.#getDefaultConversationType()));
+        const context = this.#getConversationContext(this.#getDefaultConversationType());
+        this.#conversation?.setContext(context);
+        // Log when the user adds context (null -> ContextB).
+        if (AiAssistanceModel.AiUtils.isContextSelectionEnabled() && context) {
+            void VisualLogging.logFunctionCall('ai-v2-context-user-add', getContextTypeString(context));
+        }
         this.requestUpdate();
     }
     #canExecuteQuery() {
@@ -1192,7 +1215,8 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             return;
         }
         let conversation = this.#conversation;
-        if (!this.#conversation || this.#conversation.type !== targetConversationType || this.#conversation.isEmpty) {
+        const shouldCreateConversation = !this.#conversation || this.#conversation.type !== targetConversationType || this.#conversation.isEmpty;
+        if (shouldCreateConversation) {
             conversation = new AiAssistanceModel.AiConversation.AiConversation({
                 type: targetConversationType,
                 data: [],
@@ -1211,11 +1235,10 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             if (!this.#canExecuteQuery()) {
                 return;
             }
-            Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceQuerySubmitted);
             if (this.#conversation && this.#conversation.isBlockedByOrigin) {
                 this.#handleNewChatRequest();
             }
-            await this.#startConversation(predefinedPrompt);
+            await this.#submitQuery(predefinedPrompt);
         }
         else {
             this.#viewOutput.chatView?.focusTextInput();
@@ -1279,7 +1302,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             return;
         }
         this.#updateConversationState(conversation);
-        await this.#doConversation(conversation.history);
+        await this.#consumeResponseStream(conversation.history);
     }
     #handleNewChatRequest() {
         this.#textInputValue = '';
@@ -1329,8 +1352,14 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         else if (data instanceof AiAssistanceModel.StorageContext.StorageContext) {
             this.#selectedStorage = data;
         }
-        void VisualLogging.logFunctionCall(`context-change-${this.#conversation?.type}`);
-        this.requestUpdate();
+        if (this.#conversation) {
+            void VisualLogging.logFunctionCall(`context-change-${this.#conversation.type}`);
+            // Log when the agent selects context (* -> ContextB).
+            if (AiAssistanceModel.AiUtils.isContextSelectionEnabled() &&
+                data instanceof AiAssistanceModel.AiAgent.ConversationContext) {
+                void VisualLogging.logFunctionCall('ai-v2-context-agent-change', getContextTypeString(data));
+            }
+        }
     };
     async #handleInspectElement() {
         if (!this.#toggleSearchElementAction) {
@@ -1381,16 +1410,25 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             }
         }
     }
-    async #startConversation(text, imageInput, multimodalInputType) {
+    /**
+     * Submits a user query turn to the active conversation and streams the response.
+     * Executes on every turn (both initial prompt and follow-up turns).
+     */
+    async #submitQuery(text, imageInput, multimodalInputType) {
         if (!this.#conversation) {
             return;
         }
-        // Cancel any previous in-flight conversation.
+        // Cancel any previous in-flight query.
         this.#cancel();
+        Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceQuerySubmitted);
         const signal = this.#runAbortController.signal;
-        // If a different context is provided, it must be from the same origin.
+        // Initial conversation boundary (turn 1 only).
         if (this.#conversation.isEmpty) {
             Badges.UserBadges.instance().recordAction(Badges.BadgeAction.STARTED_AI_CONVERSATION);
+            // Note: Prior to September 2026 (crrev.com/c/8366147), this event erroneously logged on every query
+            // turn because this method was named #startConversation. It is now correctly
+            // restricted to conversation initialization.
+            void VisualLogging.logFunctionCall(`start-conversation-${this.#conversation.type}`, 'ui');
         }
         let multimodalInput;
         if (isAiAssistanceMultimodalInputEnabled() && imageInput && multimodalInputType) {
@@ -1400,13 +1438,15 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                 type: multimodalInputType,
             };
         }
-        void VisualLogging.logFunctionCall(`start-conversation-${this.#conversation.type}`, 'ui');
-        await this.#doConversation(this.#conversation.run(text, {
+        await this.#consumeResponseStream(this.#conversation.run(text, {
             signal,
             multimodalInput,
         }));
     }
-    async #doConversation(items) {
+    /**
+     * Consumes response items (live generator or historic array) and drives UI updates.
+     */
+    async #consumeResponseStream(items) {
         const release = await this.#mutex.acquire();
         try {
             let systemMessage = {
@@ -1654,6 +1694,15 @@ export function getResponseMarkdown(message) {
         }
     }
     return contentParts.join('\n\n');
+}
+/**
+ * Resolves the visual logging context identifier for a given conversation context.
+ */
+export function getContextTypeString(context) {
+    if (!context) {
+        return 'ai-context-none';
+    }
+    return context.jslogContext ?? 'ai-context-unknown';
 }
 export class ActionDelegate {
     handleAction(_context, actionId, opts) {

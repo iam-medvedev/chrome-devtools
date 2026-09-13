@@ -8,15 +8,18 @@ import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Logs from '../../models/logs/logs.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { createNetworkRequest } from '../../testing/NetworkRequestHelpers.js';
 import * as Network from './network.js';
 const { urlString } = Platform.DevToolsPath;
 describeWithEnvironment('NetworkLogView', () => {
     it('adds marker to requests with overridden headers', async () => {
-        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com`, urlString ``, null, null, null);
-        request.statusCode = 200;
+        const request = createNetworkRequest({
+            url: 'https://www.example.com',
+            statusCode: 200,
+            responseHeaders: [{ name: 'foo', value: 'overridden' }],
+            originalResponseHeaders: [{ name: 'foo', value: 'original' }],
+        });
         request.setWasIntercepted(true);
-        request.responseHeaders = [{ name: 'foo', value: 'overridden' }];
-        request.originalResponseHeaders = [{ name: 'foo', value: 'original' }];
         const networkRequestNode = new Network.NetworkDataGridNode.NetworkRequestNode({}, request);
         const el = document.createElement('div');
         networkRequestNode.renderCell(el, 'name');
@@ -26,8 +29,10 @@ describeWithEnvironment('NetworkLogView', () => {
         assert.isNotNull(tooltip);
     });
     it('adds marker to requests with overridden content', async () => {
-        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com`, urlString ``, null, null, null);
-        request.statusCode = 200;
+        const request = createNetworkRequest({
+            url: 'https://www.example.com',
+            statusCode: 200,
+        });
         request.setWasIntercepted(true);
         request.hasOverriddenContent = true;
         const networkRequestNode = new Network.NetworkDataGridNode.NetworkRequestNode({}, request);
@@ -39,12 +44,14 @@ describeWithEnvironment('NetworkLogView', () => {
         assert.isNotNull(tooltip);
     });
     it('adds marker to requests with overridden headers and content', async () => {
-        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com`, urlString ``, null, null, null);
-        request.statusCode = 200;
+        const request = createNetworkRequest({
+            url: 'https://www.example.com',
+            statusCode: 200,
+            responseHeaders: [{ name: 'foo', value: 'overridden' }],
+            originalResponseHeaders: [{ name: 'foo', value: 'original' }],
+        });
         request.setWasIntercepted(true);
         request.hasOverriddenContent = true;
-        request.responseHeaders = [{ name: 'foo', value: 'overridden' }];
-        request.originalResponseHeaders = [{ name: 'foo', value: 'original' }];
         const networkRequestNode = new Network.NetworkDataGridNode.NetworkRequestNode({}, request);
         const el = document.createElement('div');
         networkRequestNode.renderCell(el, 'name');
@@ -54,8 +61,10 @@ describeWithEnvironment('NetworkLogView', () => {
         assert.isNotNull(tooltip);
     });
     it('does not add marker to unoverridden request', async () => {
-        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com`, urlString ``, null, null, null);
-        request.statusCode = 200;
+        const request = createNetworkRequest({
+            url: 'https://www.example.com',
+            statusCode: 200,
+        });
         const networkRequestNode = new Network.NetworkDataGridNode.NetworkRequestNode({}, request);
         const el = document.createElement('div');
         networkRequestNode.renderCell(el, 'name');
@@ -63,8 +72,10 @@ describeWithEnvironment('NetworkLogView', () => {
         assert.isNull(marker);
     });
     it('does not add a marker to requests which are intercepted but not overridden', async () => {
-        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com`, urlString ``, null, null, null);
-        request.statusCode = 200;
+        const request = createNetworkRequest({
+            url: 'https://www.example.com',
+            statusCode: 200,
+        });
         request.setWasIntercepted(true);
         const networkRequestNode = new Network.NetworkDataGridNode.NetworkRequestNode({}, request);
         const el = document.createElement('div');
@@ -73,8 +84,10 @@ describeWithEnvironment('NetworkLogView', () => {
         assert.isNull(marker);
     });
     it('adds an error icon to the left of the failed requests', async () => {
-        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com`, urlString ``, null, null, null);
-        request.statusCode = 404;
+        const request = createNetworkRequest({
+            url: 'https://www.example.com',
+            statusCode: 404,
+        });
         const networkRequestNode = new Network.NetworkDataGridNode.NetworkRequestNode({}, request);
         const el = document.createElement('div');
         networkRequestNode.renderCell(el, 'name');
@@ -83,9 +96,11 @@ describeWithEnvironment('NetworkLogView', () => {
         assert.strictEqual('cross-circle-filled', iconImage);
     });
     it('show document icon', async () => {
-        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/`, urlString ``, null, null, null);
-        request.setResourceType(Common.ResourceType.resourceTypes.Document);
-        request.mimeType = 'text/html';
+        const request = createNetworkRequest({
+            url: 'https://www.example.com/',
+            resourceType: Common.ResourceType.resourceTypes.Document,
+            mimeType: 'text/html',
+        });
         const networkRequestNode = new Network.NetworkDataGridNode.NetworkRequestNode({}, request);
         const el = document.createElement('div');
         networkRequestNode.renderCell(el, 'name');
@@ -96,9 +111,11 @@ describeWithEnvironment('NetworkLogView', () => {
         // is correctly set to --sys-color-blue-bright. See https://crbug.com/346714111
     });
     it('show media icon', async () => {
-        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/test.mp3`, urlString ``, null, null, null);
-        request.setResourceType(Common.ResourceType.resourceTypes.Media);
-        request.mimeType = 'audio/mpeg';
+        const request = createNetworkRequest({
+            url: 'https://www.example.com/test.mp3',
+            resourceType: Common.ResourceType.resourceTypes.Media,
+            mimeType: 'audio/mpeg',
+        });
         const networkRequestNode = new Network.NetworkDataGridNode.NetworkRequestNode({}, request);
         const el = document.createElement('div');
         networkRequestNode.renderCell(el, 'name');
@@ -107,9 +124,11 @@ describeWithEnvironment('NetworkLogView', () => {
         assert.strictEqual('file-media', iconImage);
     });
     it('show wasm icon', async () => {
-        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/test.wasm`, urlString ``, null, null, null);
-        request.setResourceType(Common.ResourceType.resourceTypes.Wasm);
-        request.mimeType = 'application/wasm';
+        const request = createNetworkRequest({
+            url: 'https://www.example.com/test.wasm',
+            resourceType: Common.ResourceType.resourceTypes.Wasm,
+            mimeType: 'application/wasm',
+        });
         const networkRequestNode = new Network.NetworkDataGridNode.NetworkRequestNode({}, request);
         const el = document.createElement('div');
         networkRequestNode.renderCell(el, 'name');
@@ -118,9 +137,11 @@ describeWithEnvironment('NetworkLogView', () => {
         assert.strictEqual('file-wasm', iconImage);
     });
     it('show websocket icon', async () => {
-        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/ws`, urlString ``, null, null, null);
-        request.setResourceType(Common.ResourceType.resourceTypes.WebSocket);
-        request.mimeType = '';
+        const request = createNetworkRequest({
+            url: 'https://www.example.com/ws',
+            resourceType: Common.ResourceType.resourceTypes.WebSocket,
+            mimeType: '',
+        });
         const networkRequestNode = new Network.NetworkDataGridNode.NetworkRequestNode({}, request);
         const el = document.createElement('div');
         networkRequestNode.renderCell(el, 'name');
@@ -129,9 +150,11 @@ describeWithEnvironment('NetworkLogView', () => {
         assert.strictEqual('file-websocket', iconImage);
     });
     it('shows fetch icon', async () => {
-        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/test.json?keepalive=false`, urlString ``, null, null, null);
-        request.setResourceType(Common.ResourceType.resourceTypes.Fetch);
-        request.mimeType = '';
+        const request = createNetworkRequest({
+            url: 'https://www.example.com/test.json?keepalive=false',
+            resourceType: Common.ResourceType.resourceTypes.Fetch,
+            mimeType: '',
+        });
         const networkRequestNode = new Network.NetworkDataGridNode.NetworkRequestNode({}, request);
         const el = document.createElement('div');
         networkRequestNode.renderCell(el, 'name');
@@ -140,9 +163,11 @@ describeWithEnvironment('NetworkLogView', () => {
         assert.strictEqual('file-fetch-xhr', iconImage);
     });
     it('shows xhr icon', async () => {
-        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/test.json?keepalive=false`, urlString ``, null, null, null);
-        request.setResourceType(Common.ResourceType.resourceTypes.XHR);
-        request.mimeType = 'application/octet-stream';
+        const request = createNetworkRequest({
+            url: 'https://www.example.com/test.json?keepalive=false',
+            resourceType: Common.ResourceType.resourceTypes.XHR,
+            mimeType: 'application/octet-stream',
+        });
         const networkRequestNode = new Network.NetworkDataGridNode.NetworkRequestNode({}, request);
         const el = document.createElement('div');
         networkRequestNode.renderCell(el, 'name');
@@ -151,9 +176,11 @@ describeWithEnvironment('NetworkLogView', () => {
         assert.strictEqual('file-fetch-xhr', iconImage);
     });
     it('mime win: show image preview icon for xhr-image', async () => {
-        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/test.svg`, urlString ``, null, null, null);
-        request.setResourceType(Common.ResourceType.resourceTypes.XHR);
-        request.mimeType = 'image/svg+xml';
+        const request = createNetworkRequest({
+            url: 'https://www.example.com/test.svg',
+            resourceType: Common.ResourceType.resourceTypes.XHR,
+            mimeType: 'image/svg+xml',
+        });
         const networkRequestNode = new Network.NetworkDataGridNode.NetworkRequestNode({}, request);
         const el = document.createElement('div');
         networkRequestNode.renderCell(el, 'name');
@@ -163,9 +190,11 @@ describeWithEnvironment('NetworkLogView', () => {
         assert.instanceOf(imagePreview, HTMLImageElement);
     });
     it('mime win: show document icon for fetch-html', async () => {
-        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/page`, urlString ``, null, null, null);
-        request.setResourceType(Common.ResourceType.resourceTypes.Fetch);
-        request.mimeType = 'text/html';
+        const request = createNetworkRequest({
+            url: 'https://www.example.com/page',
+            resourceType: Common.ResourceType.resourceTypes.Fetch,
+            mimeType: 'text/html',
+        });
         const networkRequestNode = new Network.NetworkDataGridNode.NetworkRequestNode({}, request);
         const el = document.createElement('div');
         networkRequestNode.renderCell(el, 'name');
@@ -174,9 +203,11 @@ describeWithEnvironment('NetworkLogView', () => {
         assert.strictEqual('file-document', iconImage);
     });
     it('mime win: show generic icon for preflight-text', async () => {
-        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/api/test`, urlString ``, null, null, null);
-        request.setResourceType(Common.ResourceType.resourceTypes.Preflight);
-        request.mimeType = 'text/plain';
+        const request = createNetworkRequest({
+            url: 'https://www.example.com/api/test',
+            resourceType: Common.ResourceType.resourceTypes.Preflight,
+            mimeType: 'text/plain',
+        });
         const networkRequestNode = new Network.NetworkDataGridNode.NetworkRequestNode({}, request);
         const el = document.createElement('div');
         networkRequestNode.renderCell(el, 'name');
@@ -185,9 +216,11 @@ describeWithEnvironment('NetworkLogView', () => {
         assert.strictEqual('file-generic', iconImage);
     });
     it('mime win: show script icon for other-javascript)', async () => {
-        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/ping`, urlString ``, null, null, null);
-        request.setResourceType(Common.ResourceType.resourceTypes.Other);
-        request.mimeType = 'application/javascript';
+        const request = createNetworkRequest({
+            url: 'https://www.example.com/ping',
+            resourceType: Common.ResourceType.resourceTypes.Other,
+            mimeType: 'application/javascript',
+        });
         const networkRequestNode = new Network.NetworkDataGridNode.NetworkRequestNode({}, request);
         const el = document.createElement('div');
         networkRequestNode.renderCell(el, 'name');
@@ -196,9 +229,11 @@ describeWithEnvironment('NetworkLogView', () => {
         assert.strictEqual('file-script', iconImage);
     });
     it('mime win: shows json icon for fetch-json', async () => {
-        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/api/list`, urlString ``, null, null, null);
-        request.setResourceType(Common.ResourceType.resourceTypes.Fetch);
-        request.mimeType = 'application/json';
+        const request = createNetworkRequest({
+            url: 'https://www.example.com/api/list',
+            resourceType: Common.ResourceType.resourceTypes.Fetch,
+            mimeType: 'application/json',
+        });
         const networkRequestNode = new Network.NetworkDataGridNode.NetworkRequestNode({}, request);
         const el = document.createElement('div');
         networkRequestNode.renderCell(el, 'name');
@@ -207,19 +242,23 @@ describeWithEnvironment('NetworkLogView', () => {
         assert.strictEqual('file-json', iconImage);
     });
     it('shows the corresponding status text of a status code', async () => {
-        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com`, urlString ``, null, null, null);
-        request.statusCode = 305;
+        const request = createNetworkRequest({
+            url: 'https://www.example.com',
+            statusCode: 305,
+        });
         const networkRequestNode = new Network.NetworkDataGridNode.NetworkRequestNode({}, request);
         const el = document.createElement('div');
         networkRequestNode.renderCell(el, 'status');
         assert.strictEqual(el.title, '305 Use Proxy');
     });
     it('populate has-overrides: headers', async () => {
-        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com`, urlString ``, null, null, null);
-        request.statusCode = 200;
+        const request = createNetworkRequest({
+            url: 'https://www.example.com',
+            statusCode: 200,
+            responseHeaders: [{ name: 'foo', value: 'overridden' }],
+            originalResponseHeaders: [{ name: 'foo', value: 'original' }],
+        });
         request.setWasIntercepted(true);
-        request.responseHeaders = [{ name: 'foo', value: 'overridden' }];
-        request.originalResponseHeaders = [{ name: 'foo', value: 'original' }];
         const networkRequestNode = new Network.NetworkDataGridNode.NetworkRequestNode({}, request);
         const el = document.createElement('div');
         networkRequestNode.renderCell(el, 'has-overrides');
@@ -227,8 +266,10 @@ describeWithEnvironment('NetworkLogView', () => {
         assert.strictEqual(marker, 'headers');
     });
     it('populate has-overrides: content', async () => {
-        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com`, urlString ``, null, null, null);
-        request.statusCode = 200;
+        const request = createNetworkRequest({
+            url: 'https://www.example.com',
+            statusCode: 200,
+        });
         request.setWasIntercepted(true);
         request.hasOverriddenContent = true;
         const networkRequestNode = new Network.NetworkDataGridNode.NetworkRequestNode({}, request);
@@ -238,12 +279,14 @@ describeWithEnvironment('NetworkLogView', () => {
         assert.strictEqual(marker, 'content');
     });
     it('populate has-overrides: content, headers', async () => {
-        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com`, urlString ``, null, null, null);
-        request.statusCode = 200;
+        const request = createNetworkRequest({
+            url: 'https://www.example.com',
+            statusCode: 200,
+            responseHeaders: [{ name: 'foo', value: 'overridden' }],
+            originalResponseHeaders: [{ name: 'foo', value: 'original' }],
+        });
         request.setWasIntercepted(true);
         request.hasOverriddenContent = true;
-        request.responseHeaders = [{ name: 'foo', value: 'overridden' }];
-        request.originalResponseHeaders = [{ name: 'foo', value: 'original' }];
         const networkRequestNode = new Network.NetworkDataGridNode.NetworkRequestNode({}, request);
         const el = document.createElement('div');
         networkRequestNode.renderCell(el, 'has-overrides');
@@ -251,8 +294,10 @@ describeWithEnvironment('NetworkLogView', () => {
         assert.strictEqual(marker, 'content, headers');
     });
     it('populate has-overrides: null', async () => {
-        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com`, urlString ``, null, null, null);
-        request.statusCode = 200;
+        const request = createNetworkRequest({
+            url: 'https://www.example.com',
+            statusCode: 200,
+        });
         request.setWasIntercepted(false);
         const networkRequestNode = new Network.NetworkDataGridNode.NetworkRequestNode({}, request);
         const el = document.createElement('div');
@@ -261,7 +306,7 @@ describeWithEnvironment('NetworkLogView', () => {
         assert.strictEqual(marker, '');
     });
     it('only counts non-blocked response cookies', async () => {
-        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com`, urlString ``, null, null, null);
+        const request = createNetworkRequest({ url: 'https://www.example.com' });
         request.addExtraResponseInfo({
             responseHeaders: [{ name: 'Set-Cookie', value: 'good=123; Path=/; Secure; SameSite=None\nbad=456; Path=/; SameSite=None' }],
             blockedResponseCookies: [{
@@ -281,8 +326,14 @@ describeWithEnvironment('NetworkLogView', () => {
         assert.strictEqual(el.innerText, '1');
     });
     it('shows the request number in request-number column', async () => {
-        const request1 = SDK.NetworkRequest.NetworkRequest.create('requestId-1', urlString `https://www.example.com/1`, urlString ``, null, null, null);
-        const request2 = SDK.NetworkRequest.NetworkRequest.create('requestId-2', urlString `https://www.example.com/2`, urlString ``, null, null, null);
+        const request1 = createNetworkRequest({
+            requestId: 'requestId-1',
+            url: 'https://www.example.com/1',
+        });
+        const request2 = createNetworkRequest({
+            requestId: 'requestId-2',
+            url: 'https://www.example.com/2',
+        });
         Logs.NetworkLog.NetworkLog.instance().importRequests([request1, request2]);
         const networkRequestNode = new Network.NetworkDataGridNode.NetworkRequestNode({}, request2);
         const el = document.createElement('div');
@@ -290,7 +341,7 @@ describeWithEnvironment('NetworkLogView', () => {
         assert.strictEqual(el.innerText, '2');
     });
     it('shows early hints in initiator column when request is from early hints', async () => {
-        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com`, urlString ``, null, null, null);
+        const request = createNetworkRequest({ url: 'https://www.example.com' });
         request.setFromEarlyHints();
         const networkRequestNode = new Network.NetworkDataGridNode.NetworkRequestNode({}, request);
         const el = document.createElement('div');
@@ -300,7 +351,7 @@ describeWithEnvironment('NetworkLogView', () => {
         assert.strictEqual(tooltip, 'Early-hints');
     });
     it('shows other in initiator column when request has no initiator and is not from early hints', async () => {
-        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com`, urlString ``, null, null, null);
+        const request = createNetworkRequest({ url: 'https://www.example.com' });
         const networkRequestNode = new Network.NetworkDataGridNode.NetworkRequestNode({}, request);
         const el = document.createElement('div');
         networkRequestNode.renderCell(el, 'initiator');
@@ -309,14 +360,16 @@ describeWithEnvironment('NetworkLogView', () => {
         assert.strictEqual(tooltip, 'Other');
     });
     it('shows transferred size when the matched ServiceWorker router source is network', async () => {
-        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com`, urlString ``, null, null, null);
+        const request = createNetworkRequest({
+            url: 'https://www.example.com',
+            statusCode: 200,
+            serviceWorkerRouterInfo: {
+                ruleIdMatched: 1,
+                matchedSourceType: "network" /* Protocol.Network.ServiceWorkerRouterSource.Network */,
+            },
+        });
         request.resourceSize = 4;
         request.setTransferSize(2);
-        request.statusCode = 200;
-        request.serviceWorkerRouterInfo = {
-            ruleIdMatched: 1,
-            matchedSourceType: "network" /* Protocol.Network.ServiceWorkerRouterSource.Network */,
-        };
         const networkRequestNode = new Network.NetworkDataGridNode.NetworkRequestNode({}, request);
         const el = document.createElement('div');
         networkRequestNode.renderCell(el, 'size');
@@ -326,12 +379,14 @@ describeWithEnvironment('NetworkLogView', () => {
         assert.strictEqual(tooltip, expected);
     });
     it('shows ServiceWorker when the request matches no router rule but is fulfilled by the fetch handler', async () => {
-        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com`, urlString ``, null, null, null);
+        const request = createNetworkRequest({
+            url: 'https://www.example.com',
+            statusCode: 200,
+            fetchedViaServiceWorker: true,
+            serviceWorkerRouterInfo: {},
+        });
         request.resourceSize = 4;
         request.setTransferSize(2);
-        request.statusCode = 200;
-        request.fetchedViaServiceWorker = true;
-        request.serviceWorkerRouterInfo = {};
         const networkRequestNode = new Network.NetworkDataGridNode.NetworkRequestNode({}, request);
         const el = document.createElement('div');
         networkRequestNode.renderCell(el, 'size');
@@ -340,11 +395,13 @@ describeWithEnvironment('NetworkLogView', () => {
         assert.strictEqual(tooltip, 'Served from ServiceWorker, resource size: 0.0\xa0kB');
     });
     it('shows transferred size when the request matches no router rule and falls back to network', async () => {
-        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com`, urlString ``, null, null, null);
+        const request = createNetworkRequest({
+            url: 'https://www.example.com',
+            statusCode: 200,
+            serviceWorkerRouterInfo: {},
+        });
         request.resourceSize = 4;
         request.setTransferSize(2);
-        request.statusCode = 200;
-        request.serviceWorkerRouterInfo = {};
         const networkRequestNode = new Network.NetworkDataGridNode.NetworkRequestNode({}, request);
         const el = document.createElement('div');
         networkRequestNode.renderCell(el, 'size');
@@ -354,10 +411,12 @@ describeWithEnvironment('NetworkLogView', () => {
         assert.strictEqual(tooltip, expected);
     });
     it('styles a prefetch network request error as a warning', async () => {
-        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com`, urlString ``, null, null, null);
-        request.failed = true;
-        request.statusCode = 404;
-        request.setResourceType(Common.ResourceType.resourceTypes.Prefetch);
+        const request = createNetworkRequest({
+            url: 'https://www.example.com',
+            statusCode: 404,
+            failed: true,
+            resourceType: Common.ResourceType.resourceTypes.Prefetch,
+        });
         const networkRequestNode = new Network.NetworkDataGridNode.NetworkRequestNode({}, request);
         const el = document.createElement('div');
         networkRequestNode.createCells(el);
@@ -372,9 +431,12 @@ describeWithEnvironment('NetworkLogView', () => {
         assert.strictEqual('warning-filled', iconImage);
     });
     it('styles a preloading network request error as a warning', async () => {
-        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com`, urlString ``, null, null, { type: "preload" /* Protocol.Network.InitiatorType.Preload */ });
-        request.failed = true;
-        request.statusCode = 404;
+        const request = createNetworkRequest({
+            url: 'https://www.example.com',
+            statusCode: 404,
+            failed: true,
+            initiator: { type: "preload" /* Protocol.Network.InitiatorType.Preload */ },
+        });
         const networkRequestNode = new Network.NetworkDataGridNode.NetworkRequestNode({}, request);
         const el = document.createElement('div');
         networkRequestNode.createCells(el);
@@ -391,7 +453,13 @@ describeWithEnvironment('NetworkLogView', () => {
     describe('OverrideTypesComparator', () => {
         it('should sort correctly based on override types', () => {
             const createRequest = (hasContent, hasHeaders, id) => {
-                const request = SDK.NetworkRequest.NetworkRequest.create(id, urlString `https://www.example.com`, urlString ``, null, null, null);
+                const request = createNetworkRequest({
+                    requestId: id,
+                    url: 'https://www.example.com',
+                    statusCode: 200,
+                    responseHeaders: hasHeaders ? [{ name: 'foo', value: 'overridden' }] : undefined,
+                    originalResponseHeaders: hasHeaders ? [{ name: 'foo', value: 'original' }] : undefined,
+                });
                 request.statusCode = 200;
                 if (hasContent || hasHeaders) {
                     request.setWasIntercepted(true);
@@ -422,10 +490,19 @@ describeWithEnvironment('NetworkLogView', () => {
             assert.isAbove(Network.NetworkDataGridNode.NetworkRequestNode.OverrideTypesComparator(nodeNone2, nodeNone), 0);
         });
         it('should handle null requests correctly', () => {
-            const nodeA = new Network.NetworkDataGridNode.NetworkRequestNode({}, SDK.NetworkRequest.NetworkRequest.create('a', urlString `https://www.example.com`, urlString ``, null, null, null));
-            const nodeNull1 = new Network.NetworkDataGridNode.NetworkRequestNode({}, SDK.NetworkRequest.NetworkRequest.create('null1', urlString `https://www.example.com`, urlString ``, null, null, null));
+            const nodeA = new Network.NetworkDataGridNode.NetworkRequestNode({}, createNetworkRequest({
+                requestId: 'a',
+                url: 'https://www.example.com',
+            }));
+            const nodeNull1 = new Network.NetworkDataGridNode.NetworkRequestNode({}, createNetworkRequest({
+                requestId: 'null1',
+                url: 'https://www.example.com',
+            }));
             sinon.stub(nodeNull1, 'requestOrFirstKnownChildRequest').returns(null);
-            const nodeNull2 = new Network.NetworkDataGridNode.NetworkRequestNode({}, SDK.NetworkRequest.NetworkRequest.create('null2', urlString `https://www.example.com`, urlString ``, null, null, null));
+            const nodeNull2 = new Network.NetworkDataGridNode.NetworkRequestNode({}, createNetworkRequest({
+                requestId: 'null2',
+                url: 'https://www.example.com',
+            }));
             sinon.stub(nodeNull2, 'requestOrFirstKnownChildRequest').returns(null);
             // null vs null -> 0
             assert.strictEqual(Network.NetworkDataGridNode.NetworkRequestNode.OverrideTypesComparator(nodeNull1, nodeNull2), 0);
@@ -438,7 +515,10 @@ describeWithEnvironment('NetworkLogView', () => {
     describe('IsPreloadedComparator', () => {
         it('sorts nodes based on isLinkPreload status correctly', () => {
             const createPreloadRequest = (isLinkPreload, id) => {
-                const req = SDK.NetworkRequest.NetworkRequest.create(id, urlString `https://www.example.com/${id}`, urlString ``, null, null, null);
+                const req = createNetworkRequest({
+                    requestId: id,
+                    url: `https://www.example.com/${id}`,
+                });
                 req.setIsLinkPreload(isLinkPreload);
                 return new Network.NetworkDataGridNode.NetworkRequestNode({}, req);
             };
@@ -454,7 +534,7 @@ describeWithEnvironment('NetworkLogView', () => {
         });
     });
     it('renders is-preloaded cell correctly', async () => {
-        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com`, urlString ``, null, null, null);
+        const request = createNetworkRequest({ url: 'https://www.example.com' });
         request.setIsLinkPreload(true);
         const networkRequestNode = new Network.NetworkDataGridNode.NetworkRequestNode({}, request);
         const el = document.createElement('div');
@@ -467,12 +547,12 @@ describeWithEnvironment('NetworkLogView', () => {
     });
     describe('getExecutionContextDescription', () => {
         it('returns empty string when there is no frame and no target', () => {
-            const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com`, urlString ``, null, null, null);
+            const request = createNetworkRequest({ url: 'https://www.example.com' });
             const description = Network.NetworkDataGridNode.NetworkRequestNode.getExecutionContextDescription(request);
             assert.strictEqual(description, '');
         });
         it('returns context label for a service worker target with a named default execution context', () => {
-            const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com`, urlString ``, null, null, null);
+            const request = createNetworkRequest({ url: 'https://www.example.com' });
             const fakeTarget = {
                 type: () => SDK.Target.Type.ServiceWorker,
                 name: () => 'sw-target',
@@ -492,7 +572,7 @@ describeWithEnvironment('NetworkLogView', () => {
             assert.strictEqual(description, 'https://example.com/sw2.js');
         });
         it('falls back to target name when worker target has no default execution context', () => {
-            const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com`, urlString ``, null, null, null);
+            const request = createNetworkRequest({ url: 'https://www.example.com' });
             const fakeTarget = {
                 type: () => SDK.Target.Type.Worker,
                 name: () => 'my-worker',
@@ -512,7 +592,10 @@ describeWithEnvironment('NetworkLogView', () => {
             assert.strictEqual(description, 'my-worker');
         });
         it('returns context label for a frame-based request with matching execution context', () => {
-            const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com`, urlString ``, 'frame-id', null, null);
+            const request = createNetworkRequest({
+                url: 'https://www.example.com',
+                frameId: 'frame-id',
+            });
             const fakeTarget = {
                 type: () => SDK.Target.Type.FRAME,
                 name: () => 'main',
@@ -540,7 +623,10 @@ describeWithEnvironment('NetworkLogView', () => {
             assert.strictEqual(description, 'https://example.com/label');
         });
         it('falls back to frame displayName when no matching execution context is found', () => {
-            const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com`, urlString ``, 'frame-id', null, null);
+            const request = createNetworkRequest({
+                url: 'https://www.example.com',
+                frameId: 'frame-id',
+            });
             const fakeTarget = {
                 type: () => SDK.Target.Type.FRAME,
                 name: () => 'main',
@@ -570,14 +656,14 @@ describeWithEnvironment('NetworkLogView', () => {
     });
     describe('renderExecutionContextCell', () => {
         it('renders without error when context is empty', () => {
-            const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com`, urlString ``, null, null, null);
+            const request = createNetworkRequest({ url: 'https://www.example.com' });
             const networkRequestNode = new Network.NetworkDataGridNode.NetworkRequestNode({}, request);
             const cell = document.createElement('td');
             networkRequestNode.renderCell(cell, 'execution-context');
             assert.exists(cell);
         });
         it('shows context text in the cell', () => {
-            const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com`, urlString ``, null, null, null);
+            const request = createNetworkRequest({ url: 'https://www.example.com' });
             const fakeTarget = {
                 type: () => SDK.Target.Type.ServiceWorker,
                 name: () => 'sw',
@@ -601,16 +687,28 @@ describeWithEnvironment('NetworkLogView', () => {
     });
     describe('ExecutionContextComparator', () => {
         it('sorts empty contexts equal to each other', () => {
-            const requestA = SDK.NetworkRequest.NetworkRequest.create('a', urlString `https://www.example.com`, urlString ``, null, null, null);
-            const requestB = SDK.NetworkRequest.NetworkRequest.create('b', urlString `https://www.example.com`, urlString ``, null, null, null);
+            const requestA = createNetworkRequest({
+                requestId: 'a',
+                url: 'https://www.example.com',
+            });
+            const requestB = createNetworkRequest({
+                requestId: 'b',
+                url: 'https://www.example.com',
+            });
             const nodeA = new Network.NetworkDataGridNode.NetworkRequestNode({}, requestA);
             const nodeB = new Network.NetworkDataGridNode.NetworkRequestNode({}, requestB);
             // Both have empty context (no target/frame), so they should be equal
             assert.strictEqual(Network.NetworkDataGridNode.NetworkRequestNode.ExecutionContextComparator(nodeA, nodeB), 0);
         });
         it('sorts non-empty contexts alphabetically', () => {
-            const requestA = SDK.NetworkRequest.NetworkRequest.create('a', urlString `https://www.example.com`, urlString ``, null, null, null);
-            const requestB = SDK.NetworkRequest.NetworkRequest.create('b', urlString `https://www.example.com`, urlString ``, null, null, null);
+            const requestA = createNetworkRequest({
+                requestId: 'a',
+                url: 'https://www.example.com',
+            });
+            const requestB = createNetworkRequest({
+                requestId: 'b',
+                url: 'https://www.example.com',
+            });
             sinon.stub(Network.NetworkDataGridNode.NetworkRequestNode, 'getExecutionContextDescription')
                 .callsFake(request => {
                 if (request === requestA) {
@@ -627,9 +725,15 @@ describeWithEnvironment('NetworkLogView', () => {
             assert.isAbove(Network.NetworkDataGridNode.NetworkRequestNode.ExecutionContextComparator(nodeB, nodeA), 0);
         });
         it('handles missing request by sorting it first', () => {
-            const requestA = SDK.NetworkRequest.NetworkRequest.create('a', urlString `https://www.example.com`, urlString ``, null, null, null);
+            const requestA = createNetworkRequest({
+                requestId: 'a',
+                url: 'https://www.example.com',
+            });
             const nodeA = new Network.NetworkDataGridNode.NetworkRequestNode({}, requestA);
-            const nodeNull = new Network.NetworkDataGridNode.NetworkRequestNode({}, SDK.NetworkRequest.NetworkRequest.create('null', urlString `https://www.example.com`, urlString ``, null, null, null));
+            const nodeNull = new Network.NetworkDataGridNode.NetworkRequestNode({}, createNetworkRequest({
+                requestId: 'null',
+                url: 'https://www.example.com',
+            }));
             sinon.stub(nodeNull, 'requestOrFirstKnownChildRequest').returns(null);
             // null sorts before valid
             assert.isBelow(Network.NetworkDataGridNode.NetworkRequestNode.ExecutionContextComparator(nodeNull, nodeA), 0);
@@ -638,8 +742,10 @@ describeWithEnvironment('NetworkLogView', () => {
     });
     describe('isConsoleOriginated', () => {
         function createRequestWithInitiator(resourceType, initiator) {
-            const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/api`, urlString ``, null, null, null);
-            request.setResourceType(resourceType);
+            const request = createNetworkRequest({
+                url: 'https://www.example.com/api',
+                resourceType,
+            });
             if (initiator) {
                 sinon.stub(request, 'initiator').returns(initiator);
             }
@@ -717,8 +823,10 @@ describeWithEnvironment('NetworkLogView', () => {
     });
     describe('console originated icon', () => {
         it('adds icon to console-originated fetch', () => {
-            const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/api`, urlString ``, null, null, null);
-            request.setResourceType(Common.ResourceType.resourceTypes.Fetch);
+            const request = createNetworkRequest({
+                url: 'https://www.example.com/api',
+                resourceType: Common.ResourceType.resourceTypes.Fetch,
+            });
             sinon.stub(request, 'initiator').returns({
                 type: "script" /* Protocol.Network.InitiatorType.Script */,
                 url: urlString ``,
@@ -735,9 +843,11 @@ describeWithEnvironment('NetworkLogView', () => {
             assert.instanceOf(icon, HTMLElement);
         });
         it('does not add icon to non-console request', () => {
-            const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/`, urlString ``, null, null, null);
-            request.setResourceType(Common.ResourceType.resourceTypes.Document);
-            request.mimeType = 'text/html';
+            const request = createNetworkRequest({
+                url: 'https://www.example.com/',
+                resourceType: Common.ResourceType.resourceTypes.Document,
+                mimeType: 'text/html',
+            });
             const networkRequestNode = new Network.NetworkDataGridNode.NetworkRequestNode({}, request);
             const el = document.createElement('div');
             networkRequestNode.renderCell(el, 'name');

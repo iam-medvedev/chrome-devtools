@@ -1,7 +1,6 @@
 // Copyright 2026 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Common from '../../../core/common/common.js';
 import * as Host from '../../../core/host/host.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as TextUtils from '../../../core/text_utils/text_utils.js';
@@ -37,18 +36,16 @@ export class GetSourceContentTool {
         };
     }
     async handler(args, context) {
-        const origin = context.getEstablishedOrigin();
-        const file = ListSourcesTool.getUISourceCodes().find(f => ListSourcesTool.uiSourceCodeId.get(f) === args.id);
-        if (!file) {
+        const establishedOrigin = context.getEstablishedOrigin();
+        if (!establishedOrigin) {
             return {
                 error: 'Unable to find file.',
             };
         }
-        const fileUrl = file.url();
-        const fileOrigin = Common.ParsedURL.ParsedURL.extractOrigin(fileUrl);
-        if (origin && fileOrigin !== origin) {
+        const file = ListSourcesTool.getSourceById(args.id, establishedOrigin);
+        if (!file) {
             return {
-                error: 'Cross-origin access blocked.',
+                error: 'Unable to find file.',
             };
         }
         const contentData = await file.requestContentData();

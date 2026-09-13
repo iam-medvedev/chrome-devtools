@@ -707,6 +707,7 @@ describe('CSSPropertyIconResolver', () => {
                 },
                 iconName: 'flex-wrap',
                 expected: "left-to-right" /* ElementsComponents.CSSPropertyIconResolver.PhysicalDirection.LEFT_TO_RIGHT */,
+                reverse: false,
             },
             {
                 style: {
@@ -716,6 +717,7 @@ describe('CSSPropertyIconResolver', () => {
                 },
                 iconName: 'flex-no-wrap',
                 expected: "left-to-right" /* ElementsComponents.CSSPropertyIconResolver.PhysicalDirection.LEFT_TO_RIGHT */,
+                reverse: false,
             },
             {
                 style: {
@@ -725,6 +727,7 @@ describe('CSSPropertyIconResolver', () => {
                 },
                 iconName: 'flex-wrap',
                 expected: "top-to-bottom" /* ElementsComponents.CSSPropertyIconResolver.PhysicalDirection.TOP_TO_BOTTOM */,
+                reverse: false,
             },
             {
                 style: {
@@ -734,10 +737,31 @@ describe('CSSPropertyIconResolver', () => {
                 },
                 iconName: 'flex-no-wrap',
                 expected: "top-to-bottom" /* ElementsComponents.CSSPropertyIconResolver.PhysicalDirection.TOP_TO_BOTTOM */,
+                reverse: false,
+            },
+            {
+                style: {
+                    'flex-direction': 'row',
+                    'flex-wrap': 'wrap-reverse',
+                    display: 'flex',
+                },
+                iconName: 'flex-wrap',
+                expected: "left-to-right" /* ElementsComponents.CSSPropertyIconResolver.PhysicalDirection.LEFT_TO_RIGHT */,
+                reverse: true,
+            },
+            {
+                style: {
+                    'flex-direction': 'column',
+                    'flex-wrap': 'wrap-reverse',
+                    display: 'flex',
+                },
+                iconName: 'flex-wrap',
+                expected: "top-to-bottom" /* ElementsComponents.CSSPropertyIconResolver.PhysicalDirection.TOP_TO_BOTTOM */,
+                reverse: true,
             },
         ];
         for (const test of tests) {
-            assert.deepEqual(ElementsComponents.CSSPropertyIconResolver.findIcon(`flex-wrap: ${test.style['flex-wrap']}`, mapFromStyle(test.style)), ElementsComponents.CSSPropertyIconResolver.rotateFlexWrapIcon(test.iconName, test.expected), `Test flex-wrap(${JSON.stringify(test.style)}) failed.`);
+            assert.deepEqual(ElementsComponents.CSSPropertyIconResolver.findIcon(`flex-wrap: ${test.style['flex-wrap']}`, mapFromStyle(test.style)), ElementsComponents.CSSPropertyIconResolver.rotateFlexWrapIcon(test.iconName, test.expected, test.reverse), `Test flex-wrap(${JSON.stringify(test.style)}) failed.`);
         }
     });
     it('can rotate an icon for justify-items', () => {

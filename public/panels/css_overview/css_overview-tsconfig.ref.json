@@ -6,6 +6,10 @@
     "emitDeclarationOnly": true,
     "outDir": ".",
     "rootDir": "../../../../../../front_end/panels/css_overview",
+    "rootDirs": [
+      "../../../../../../",
+      "../../../"
+    ],
     "skipLibCheck": true
   },
   "files": [
@@ -44,9 +48,6 @@
       "path": "../../generated/generated-tsconfig.ref.json"
     },
     {
-      "path": "../../models/geometry/bundle-tsconfig.ref.json"
-    },
-    {
       "path": "../../ui/components/buttons/bundle-tsconfig.ref.json"
     },
     {
@@ -54,6 +55,9 @@
     },
     {
       "path": "../../ui/components/panel_introduction_steps/bundle-tsconfig.ref.json"
+    },
+    {
+      "path": "../../ui/geometry/bundle-tsconfig.ref.json"
     },
     {
       "path": "../../ui/kit/bundle-tsconfig.ref.json"

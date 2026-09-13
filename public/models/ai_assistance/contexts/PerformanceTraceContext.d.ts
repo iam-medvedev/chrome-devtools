@@ -21,6 +21,7 @@ export declare class PerformanceTraceContext extends ConversationContext<AgentFo
     static fromParsedTrace(parsedTrace: Trace.TraceModel.ParsedTrace, targetManager?: SDK.TargetManager.TargetManager, freshRecordingTracker?: Tracing.FreshRecording.Tracker, debuggerWorkspaceBinding?: Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding): PerformanceTraceContext;
     static fromInsight(parsedTrace: Trace.TraceModel.ParsedTrace, insight: Trace.Insights.Types.InsightModel, targetManager?: SDK.TargetManager.TargetManager, freshRecordingTracker?: Tracing.FreshRecording.Tracker, debuggerWorkspaceBinding?: Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding): PerformanceTraceContext;
     static fromCallTree(callTree: AICallTree, targetManager?: SDK.TargetManager.TargetManager, freshRecordingTracker?: Tracing.FreshRecording.Tracker, debuggerWorkspaceBinding?: Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding): PerformanceTraceContext;
+    readonly jslogContext: 'ai-context-performance-trace';
     constructor(focus: AgentFocus, targetManager?: SDK.TargetManager.TargetManager, freshRecordingTracker?: Tracing.FreshRecording.Tracker, debuggerWorkspaceBinding?: Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding);
     /**
      * Returns a PerformanceTraceFormatter configured to resolve function
@@ -31,17 +32,36 @@ export declare class PerformanceTraceContext extends ConversationContext<AgentFo
      * imported traces, it returns null to prevent mismatched source resolution.
      */
     createFormatter(): PerformanceTraceFormatter;
-    getURL(): string;
     /**
-     * Returns the origin for a performance trace in the AI context.
-     *
-     * To prevent cross-origin prompt injection attacks, imported traces
-     * are isolated from live pages. We assign them a virtual origin
-     * (`imported-trace://${domain}`) so they do not share the origin of live pages
-     * (e.g., `https://${domain}`). This forces a conversation reset when transitioning
-     * between imported trace data and live pages.
+     * Returns whether this trace was imported rather than recorded live in the current session.
      */
-    getOrigin(): string;
+    isImported(): boolean;
+    /**
+     * Checks whether the AI can access the resource at the specified URL.
+     *
+     * Access requires the resource origin to match the trace origin.
+     * Always rejects `file://` URLs to prevent local file leaks (b/523743289).
+     *
+     * @param url The URL of the resource to access.
+     * @returns `true` if the resource is same-origin with the trace and not a `file://` URL; otherwise `false`.
+     */
+    canAccessResource(url: string): boolean;
+    /**
+     * Returns the security origin for the performance trace.
+     *
+     * Live traces use the origin of the main frame URL.
+     *
+     * Imported traces use a custom scheme (`imported-trace://${host}`) to isolate
+     * them from live pages (such as `https://${host}`). This isolation prevents
+     * cross-origin prompt injection and requires a new conversation when switching
+     * between imported traces and live pages.
+     *
+     * If an imported trace origin does not contain a host, this method returns a
+     * unique opaque origin.
+     *
+     * @returns The security origin for the trace.
+     */
+    getOrigin(): SDK.SecurityOrigin.SecurityOrigin;
     getItem(): AgentFocus;
     getTitle(): string;
     /**

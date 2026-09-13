@@ -401,6 +401,18 @@ export class TreeOutlineInShadow extends TreeOutline {
     setDense(dense) {
         this.contentElement.classList.toggle('tree-outline-dense', dense);
     }
+    setDisclosureClass(disclosureClass) {
+        const isHideOverflow = this.disclosureElement.classList.contains('tree-outline-disclosure-hide-overflow');
+        this.disclosureElement.className = 'tree-outline-disclosure';
+        if (isHideOverflow) {
+            this.disclosureElement.classList.add('tree-outline-disclosure-hide-overflow');
+        }
+        for (const cls of disclosureClass.split(/\s+/)) {
+            if (cls) {
+                this.disclosureElement.classList.add(cls);
+            }
+        }
+    }
     onStartedEditingTitle(treeElement) {
         const selection = this.shadowRoot.getSelection();
         if (selection) {
@@ -578,6 +590,7 @@ export class TreeElement {
         }
         for (let current = child.firstChild(); this.treeOutline && current; current = current.traverseNextTreeElement(false, child, true)) {
             this.treeOutline.bindTreeElement(current);
+            current.ensureSelection();
         }
         child.onattach();
         child.ensureSelection();
@@ -866,12 +879,20 @@ export class TreeElement {
         if (!element || treeElementBylistItemNode.get(element) !== this) {
             return;
         }
+        if (event.defaultPrevented) {
+            return;
+        }
         const handled = this.ondblclick(event);
         if (handled) {
             return;
         }
         if (this.expandable && !this.expanded) {
             void this.#setExpandedFromUser(true, false);
+            // An inline editor or other interactive child may already hold the focus
+            // inside this row; expanding must not take it away from them.
+            if (!this.listItemElement.hasFocus()) {
+                this.listItemElement.focus();
+            }
         }
     }
     async #setExpandedFromUser(shouldExpand, recursively) {
@@ -1352,7 +1373,7 @@ export class TreeSearch extends Common.ObjectWrapper.ObjectWrapper {
     })(Events = TreeSearch.Events || (TreeSearch.Events = {}));
 })(TreeSearch || (TreeSearch = {}));
 class TreeViewTreeElement extends TreeElement {
-    static CLONED_ATTRIBUTES = SDK.DOMModel.ARIA_ATTRIBUTES.union(new Set(['jslog', 'draggable']));
+    static CLONED_ATTRIBUTES = SDK.DOMModel.ARIA_ATTRIBUTES.union(new Set(['jslog', 'draggable', 'style']));
     #clonedAttributes = new Set();
     #clonedClasses = new Set();
     #previousOpenAttributeValue;
@@ -1410,6 +1431,7 @@ class TreeViewTreeElement extends TreeElement {
         this.updateExpansionFromAttribute();
     }
     refresh() {
+        const hadFocus = this.listItemElement.hasFocus();
         this.titleElement.textContent = '';
         this.updateAttributes();
         const childUl = this.configElement.querySelector(':scope > ul[role="group"]');
@@ -1425,9 +1447,24 @@ class TreeViewTreeElement extends TreeElement {
         this.toggleOnClick = hasBooleanAttribute(this.configElement, 'toggle-on-click');
         this.updateExpansionFromAttribute();
         Highlighting.HighlightManager.HighlightManager.instance().apply(this.titleElement);
+        if (hadFocus) {
+            this.listItemElement.focus();
+        }
     }
     static get(configElement) {
         return configElement && TreeViewTreeElement.#elementToTreeElement.get(configElement);
+    }
+    onselect(selectedByUser) {
+        this.listItemElement.dispatchEvent(new TreeViewElement.SelectEvent({ selectedByUser: Boolean(selectedByUser) }));
+        return super.onselect(selectedByUser);
+    }
+    onenter() {
+        const enterEvent = new TreeViewElement.EnterEvent();
+        const shouldExpand = this.listItemElement.dispatchEvent(enterEvent);
+        if (!shouldExpand) {
+            return false;
+        }
+        return super.onenter();
     }
     remove() {
         removeNode(this, Boolean(this.parent &&
@@ -1547,20 +1584,23 @@ function removeNode(node, preserveParentExpandable = false) {
  * @attribute hide-overflow
  */
 export class TreeViewElement extends HTMLElementWithLightDOMTemplate {
-    static observedAttributes = ['navigation-variant', 'hide-overflow', 'dense', 'show-selection-on-keyboard-focus'];
+    static observedAttributes = ['navigation-variant', 'hide-overflow', 'dense', 'show-selection-on-keyboard-focus', 'disclosure-class'];
     #treeOutline = new TreeOutlineInShadow(undefined, this, true);
+    #syncedTreeClasses = new Set();
     constructor() {
         super();
+        this.#treeOutline.contentElement.removeAttribute('jslog');
+        if (!this.hasAttribute('jslog')) {
+            this.setAttribute('jslog', `${VisualLogging.tree()}`);
+        }
+        if (this.hasAttribute('disclosure-class')) {
+            this.#treeOutline.setDisclosureClass(this.getAttribute('disclosure-class') ?? '');
+        }
         this.addEventListener('focusin', (event) => {
             const actualTarget = event.composedPath()[0];
             if (actualTarget === this.#treeOutline.contentElement && !this.#treeOutline.selectedTreeElement &&
                 this.#treeOutline.firstChild()) {
                 this.#treeOutline.firstChild()?.select(/* omitFocus */ true, /* selectedByUser */ false);
-            }
-        });
-        this.#treeOutline.addEventListener(Events.ElementSelected, event => {
-            if (event.data instanceof TreeViewTreeElement) {
-                event.data.listItemElement.dispatchEvent(new TreeViewElement.SelectEvent());
             }
         });
         this.#treeOutline.addEventListener(Events.ElementExpanded, event => {
@@ -1612,6 +1652,24 @@ export class TreeViewElement extends HTMLElementWithLightDOMTemplate {
             null;
     }
     updateNode(node, attributeName) {
+        if (node instanceof HTMLUListElement && node.role === 'tree') {
+            if (attributeName === null || attributeName === 'class') {
+                for (const cls of this.#syncedTreeClasses) {
+                    if (!node.classList.contains(cls)) {
+                        this.#treeOutline.contentElement.classList.remove(cls);
+                    }
+                }
+                this.#syncedTreeClasses.clear();
+                for (const cls of node.classList) {
+                    if (cls) {
+                        this.#syncedTreeClasses.add(cls);
+                        this.#treeOutline.contentElement.classList.add(cls);
+                    }
+                }
+                this.#treeOutline.contentElement.classList.add('tree-outline');
+            }
+            return;
+        }
         let current = node;
         while (current?.parentNode && !(current instanceof HTMLElement)) {
             current = current.parentNode;
@@ -1744,13 +1802,16 @@ export class TreeViewElement extends HTMLElementWithLightDOMTemplate {
             case 'show-selection-on-keyboard-focus':
                 this.#treeOutline.setShowSelectionOnKeyboardFocus(booleanValueIsTrue);
                 break;
+            case 'disclosure-class':
+                this.#treeOutline.setDisclosureClass(newValue ?? '');
+                break;
         }
     }
 }
 (function (TreeViewElement) {
     class SelectEvent extends CustomEvent {
-        constructor() {
-            super('select');
+        constructor(detail) {
+            super('select', { detail });
         }
     }
     TreeViewElement.SelectEvent = SelectEvent;
@@ -1760,6 +1821,12 @@ export class TreeViewElement extends HTMLElementWithLightDOMTemplate {
         }
     }
     TreeViewElement.ExpandEvent = ExpandEvent;
+    class EnterEvent extends CustomEvent {
+        constructor() {
+            super('enter', { bubbles: true, cancelable: true, composed: true });
+        }
+    }
+    TreeViewElement.EnterEvent = EnterEvent;
     /**
      * @deprecated
      */

@@ -8,8 +8,8 @@ import * as Lit from '../../ui/lit/lit.js';
 import { CommentOverlayManager, } from './CommentOverlayManager.js';
 import commentsOverlayStyles from './commentsOverlay.css.js';
 const { html, render, nothing, Directives: { styleMap } } = Lit;
-// clang-format off
 const DEFAULT_VIEW = (input, _output, target) => {
+    // clang-format off
     render(html `
     <style>${commentsOverlayStyles}</style>
     <div class="comments-overlay-container">
@@ -45,13 +45,13 @@ const DEFAULT_VIEW = (input, _output, target) => {
         left: `${p.left}px`,
     })}
           @click=${() => input.onPinClick(p.id)}>
-          💬
+          <div class="comment-cursor">${p.index}</div>
         </div>
       ` : nothing)}
     </div>
   `, target);
+    // clang-format on
 };
-// clang-format on
 export class CommentsOverlayWidget extends UI.Widget.Widget {
     #view;
     #commentManager;

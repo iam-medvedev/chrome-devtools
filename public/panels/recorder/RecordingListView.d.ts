@@ -1,10 +1,5 @@
 import '../../ui/kit/kit.js';
 import * as UI from '../../ui/legacy/legacy.js';
-declare global {
-    interface HTMLElementTagNameMap {
-        'devtools-recording-list-view': RecordingListView;
-    }
-}
 interface Recording {
     storageName: string;
     name: string;

@@ -283,16 +283,20 @@ var ConsoleContextSelector = class {
       return i18nString(UIStrings.extension);
     }
     const sameTargetParentFrame = frame?.sameTargetParentFrame();
-    if (!frame || !sameTargetParentFrame || sameTargetParentFrame.securityOrigin !== executionContext.origin) {
+    const executionContextOrigin = executionContext.origin ? SDK.SecurityOrigin.SecurityOrigin.create(executionContext.origin) : null;
+    if (!frame || !sameTargetParentFrame || !sameTargetParentFrame.securityOrigin().isSameOriginWith(executionContextOrigin)) {
       const url = Common.ParsedURL.ParsedURL.fromString(executionContext.origin);
       if (url) {
         return url.domain();
       }
     }
-    if (frame?.securityOrigin) {
-      const domain = new Common.ParsedURL.ParsedURL(frame.securityOrigin).domain();
-      if (domain) {
-        return domain;
+    if (frame) {
+      const origin = frame.securityOrigin();
+      if (!origin.isOpaque()) {
+        const domain = Common.ParsedURL.ParsedURL.fromString(origin.siteId())?.domain();
+        if (domain) {
+          return domain;
+        }
       }
     }
     return "IFrame";
@@ -783,6 +787,7 @@ var Audits;
     FederatedAuthRequestIssueReason2["UiDismissedNoEmbargo"] = "UiDismissedNoEmbargo";
     FederatedAuthRequestIssueReason2["CorsError"] = "CorsError";
     FederatedAuthRequestIssueReason2["SuppressedBySegmentationPlatform"] = "SuppressedBySegmentationPlatform";
+    FederatedAuthRequestIssueReason2["PopupBlockedByConnectionAllowlist"] = "PopupBlockedByConnectionAllowlist";
   })(FederatedAuthRequestIssueReason = Audits2.FederatedAuthRequestIssueReason || (Audits2.FederatedAuthRequestIssueReason = {}));
   let FederatedAuthUserInfoRequestIssueReason;
   ((FederatedAuthUserInfoRequestIssueReason2) => {
@@ -855,6 +860,7 @@ var Audits;
     EmailVerificationRequestIssueReason2["TokenVerificationKbInvalidSdHash"] = "TokenVerificationKbInvalidSdHash";
     EmailVerificationRequestIssueReason2["TokenVerificationKbMissingCnf"] = "TokenVerificationKbMissingCnf";
     EmailVerificationRequestIssueReason2["TokenVerificationKbSignatureFailed"] = "TokenVerificationKbSignatureFailed";
+    EmailVerificationRequestIssueReason2["CrossOriginIframeNotSupported"] = "CrossOriginIframeNotSupported";
   })(EmailVerificationRequestIssueReason = Audits2.EmailVerificationRequestIssueReason || (Audits2.EmailVerificationRequestIssueReason = {}));
   let PartitioningBlobURLInfo;
   ((PartitioningBlobURLInfo2) => {
@@ -1311,6 +1317,11 @@ var Emulation;
     SetDeviceMetricsOverrideRequestScrollbarType2["Overlay"] = "overlay";
     SetDeviceMetricsOverrideRequestScrollbarType2["Default"] = "default";
   })(SetDeviceMetricsOverrideRequestScrollbarType = Emulation2.SetDeviceMetricsOverrideRequestScrollbarType || (Emulation2.SetDeviceMetricsOverrideRequestScrollbarType = {}));
+  let SetDeviceMetricsOverrideRequestViewportMeta;
+  ((SetDeviceMetricsOverrideRequestViewportMeta2) => {
+    SetDeviceMetricsOverrideRequestViewportMeta2["Enable"] = "enable";
+    SetDeviceMetricsOverrideRequestViewportMeta2["Default"] = "default";
+  })(SetDeviceMetricsOverrideRequestViewportMeta = Emulation2.SetDeviceMetricsOverrideRequestViewportMeta || (Emulation2.SetDeviceMetricsOverrideRequestViewportMeta = {}));
   let SetEmitTouchEventsForMouseRequestConfiguration;
   ((SetEmitTouchEventsForMouseRequestConfiguration2) => {
     SetEmitTouchEventsForMouseRequestConfiguration2["Mobile"] = "mobile";
@@ -1979,6 +1990,7 @@ var Network;
     TerminationEventDetailsDeletionReason2["InvalidSessionParams"] = "InvalidSessionParams";
     TerminationEventDetailsDeletionReason2["RefreshFatalError"] = "RefreshFatalError";
     TerminationEventDetailsDeletionReason2["DevTools"] = "DevTools";
+    TerminationEventDetailsDeletionReason2["Replaced"] = "Replaced";
   })(TerminationEventDetailsDeletionReason = Network2.TerminationEventDetailsDeletionReason || (Network2.TerminationEventDetailsDeletionReason = {}));
   let ChallengeEventDetailsChallengeResult;
   ((ChallengeEventDetailsChallengeResult2) => {
@@ -3101,6 +3113,7 @@ var Runtime;
     RemoteObjectSubtype2["Dataview"] = "dataview";
     RemoteObjectSubtype2["Webassemblymemory"] = "webassemblymemory";
     RemoteObjectSubtype2["Wasmvalue"] = "wasmvalue";
+    RemoteObjectSubtype2["Deferredmodule"] = "deferredmodule";
     RemoteObjectSubtype2["Trustedtype"] = "trustedtype";
   })(RemoteObjectSubtype = Runtime6.RemoteObjectSubtype || (Runtime6.RemoteObjectSubtype = {}));
   let ObjectPreviewType;
@@ -3135,6 +3148,7 @@ var Runtime;
     ObjectPreviewSubtype2["Dataview"] = "dataview";
     ObjectPreviewSubtype2["Webassemblymemory"] = "webassemblymemory";
     ObjectPreviewSubtype2["Wasmvalue"] = "wasmvalue";
+    ObjectPreviewSubtype2["Deferredmodule"] = "deferredmodule";
     ObjectPreviewSubtype2["Trustedtype"] = "trustedtype";
   })(ObjectPreviewSubtype = Runtime6.ObjectPreviewSubtype || (Runtime6.ObjectPreviewSubtype = {}));
   let PropertyPreviewType;
@@ -3170,6 +3184,7 @@ var Runtime;
     PropertyPreviewSubtype2["Dataview"] = "dataview";
     PropertyPreviewSubtype2["Webassemblymemory"] = "webassemblymemory";
     PropertyPreviewSubtype2["Wasmvalue"] = "wasmvalue";
+    PropertyPreviewSubtype2["Deferredmodule"] = "deferredmodule";
     PropertyPreviewSubtype2["Trustedtype"] = "trustedtype";
   })(PropertyPreviewSubtype = Runtime6.PropertyPreviewSubtype || (Runtime6.PropertyPreviewSubtype = {}));
   let ConsoleAPICalledEventType;
