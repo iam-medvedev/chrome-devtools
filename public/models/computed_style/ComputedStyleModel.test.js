@@ -4,9 +4,12 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
-import { createTarget, describeWithEnvironment, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
+import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
+import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import { getMatchedStyles, ruleMatch } from '../../testing/StyleHelpers.js';
+import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as ComputedStyle from './computed_style.js';
 function createNode(target, { nodeId }) {
     const domModel = target.model(SDK.DOMModel.DOMModel);
@@ -14,22 +17,26 @@ function createNode(target, { nodeId }) {
     const node = SDK.DOMModel.DOMNode.create(domModel, null, false, {
         nodeId,
         backendNodeId: 2,
-        nodeType: Node.ELEMENT_NODE,
+        nodeType: 1 /* SDK.DOMModel.NodeType.ELEMENT_NODE */,
         nodeName: 'div',
         localName: 'div',
         nodeValue: '',
     });
     return node;
 }
-describeWithEnvironment('ComputedStyleModel', () => {
+describe('ComputedStyleModel', () => {
+    setupLocaleHooks();
+    setupSettingsHooks();
+    setupRuntimeHooks();
     let target;
     let computedStyleModel;
     let domNode1;
     let connection;
+    let universe;
     beforeEach(() => {
-        stubNoopSettings();
+        universe = new TestUniverse();
         connection = new MockCDPConnection();
-        target = createTarget({ connection });
+        target = universe.createTarget({ connection });
         domNode1 = createNode(target, { nodeId: 1 });
         const cssModel = target.model(SDK.CSSModel.CSSModel);
         sinon.stub(ComputedStyle.ComputedStyleModel.ComputedStyleModel.prototype, 'cssModel').returns(cssModel);

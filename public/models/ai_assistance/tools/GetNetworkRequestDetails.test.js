@@ -3,14 +3,13 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import sinon from 'sinon';
-import * as Platform from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as TextUtils from '../../../core/text_utils/text_utils.js';
 import { assertIsError, assertIsResult, } from '../../../testing/AiAssistanceHelpers.js';
 import { deinitializeGlobalVars } from '../../../testing/EnvironmentHelpers.js';
+import { createNetworkRequest } from '../../../testing/NetworkRequestHelpers.js';
 import { TestUniverse } from '../../../testing/TestUniverse.js';
 import * as AiAssistance from '../ai_assistance.js';
-const { urlString } = Platform.DevToolsPath;
 describe('GetNetworkRequestDetailsTool', () => {
     let universe;
     let networkLog;
@@ -21,18 +20,25 @@ describe('GetNetworkRequestDetailsTool', () => {
     after(async () => {
         await deinitializeGlobalVars();
     });
+    it('returns displayInfoFromArgs correctly', () => {
+        const tool = new AiAssistance.GetNetworkRequestDetails.GetNetworkRequestDetailsTool(networkLog);
+        const displayInfo = tool.displayInfoFromArgs({ id: 'req123' });
+        assert.strictEqual(displayInfo.title, 'Getting network request details');
+        assert.strictEqual(displayInfo.action, 'getNetworkRequestDetails(req123)');
+    });
     it('retrieves details successfully', async () => {
-        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://example.com/api/users`, urlString `https://example.com/`, null, null, null);
-        request.responseHeaders = [{ name: 'Content-Type', value: 'application/json' }];
-        request.setRequestHeaders([{ name: 'Accept', value: 'application/json' }]);
-        request.statusCode = 200;
-        request.requestContentData = () => {
-            return Promise.resolve(new TextUtils.ContentData.ContentData('{}', false, 'application/json', 'utf-8'));
-        };
+        const request = createNetworkRequest({
+            url: 'https://example.com/api/users',
+            documentURL: 'https://example.com/',
+            statusCode: 200,
+            responseHeaders: [{ name: 'Content-Type', value: 'application/json' }],
+            requestHeaders: [{ name: 'Accept', value: 'application/json' }],
+            contentData: new TextUtils.ContentData.ContentData('{}', false, 'application/json', 'utf-8'),
+        });
         sinon.stub(networkLog, 'requests').returns([request]);
         const tool = new AiAssistance.GetNetworkRequestDetails.GetNetworkRequestDetailsTool(networkLog);
         const context = {
-            getEstablishedOrigin: () => 'https://example.com',
+            getEstablishedOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
         };
         const response = await tool.handler({ id: 'requestId' }, context);
         assertIsResult(response);
@@ -45,31 +51,177 @@ describe('GetNetworkRequestDetailsTool', () => {
         sinon.stub(networkLog, 'requests').returns([]);
         const tool = new AiAssistance.GetNetworkRequestDetails.GetNetworkRequestDetailsTool(networkLog);
         const context = {
-            getEstablishedOrigin: () => 'https://example.com',
+            getEstablishedOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
         };
         const response = await tool.handler({ id: 'requestId' }, context);
-        assertIsError(response);
-        assert.strictEqual(response.error, 'No request found');
+        assertIsError(response, 'No request found');
     });
     it('returns error if request origin does not match established origin', async () => {
-        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://another.com/api/users`, urlString `https://another.com/`, null, null, null);
+        const request = createNetworkRequest({
+            url: 'https://another.com/api/users',
+            documentURL: 'https://another.com/',
+        });
         sinon.stub(networkLog, 'requests').returns([request]);
         const tool = new AiAssistance.GetNetworkRequestDetails.GetNetworkRequestDetailsTool(networkLog);
         const context = {
-            getEstablishedOrigin: () => 'https://example.com',
+            getEstablishedOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
         };
         const response = await tool.handler({ id: 'requestId' }, context);
-        assertIsError(response);
-        assert.strictEqual(response.error, 'No request found');
+        assertIsError(response, 'No request found');
     });
     it('returns error for opaque origins', async () => {
         const tool = new AiAssistance.GetNetworkRequestDetails.GetNetworkRequestDetailsTool(networkLog);
         const context = {
-            getEstablishedOrigin: () => 'null',
+            getEstablishedOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('null'),
         };
         const response = await tool.handler({ id: 'requestId' }, context);
-        assertIsError(response);
-        assert.strictEqual(response.error, 'Opaque origin not allowed');
+        assertIsError(response, 'No request found');
+    });
+    it('redacts cross-origin response body and non-safelisted headers for opaque cross-origin requests', async () => {
+        const request = createNetworkRequest({
+            url: 'https://victim.com/sensitive-data',
+            documentURL: 'https://attacker.com/index.html',
+            statusCode: 200,
+            responseHeaders: [
+                { name: 'Content-Type', value: 'application/json' },
+                { name: 'Location', value: '/secret-redirect' },
+                { name: 'WWW-Authenticate', value: 'Bearer realm="secret"' },
+            ],
+            requestHeaders: [{ name: 'Accept', value: 'application/json' }],
+            contentData: new TextUtils.ContentData.ContentData('{"sensitive":"secret"}', false, 'application/json', 'utf-8'),
+        });
+        sinon.stub(networkLog, 'requests').returns([request]);
+        const tool = new AiAssistance.GetNetworkRequestDetails.GetNetworkRequestDetailsTool(networkLog);
+        const context = {
+            getEstablishedOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('https://attacker.com'),
+        };
+        const response = await tool.handler({ id: 'requestId' }, context);
+        assertIsResult(response);
+        assert.exists(response.widgets);
+        const result = response.result;
+        assert.include(result, 'Request: https://victim.com/sensitive-data');
+        assert.include(result, 'Content-Type: application/json');
+        assert.include(result, SDK.NetworkRequestAccess.REDACTED_RESPONSE_BODY);
+        assert.notInclude(result, '{"sensitive":"secret"}');
+        assert.notInclude(result, 'Location');
+        assert.notInclude(result, 'secret-redirect');
+        assert.notInclude(result, 'WWW-Authenticate');
+    });
+    it('includes response body and exposed headers for CORS_ALLOWED cross-origin requests', async () => {
+        const request = createNetworkRequest({
+            url: 'https://victim.com/api/data',
+            documentURL: 'https://attacker.com/index.html',
+            statusCode: 200,
+            responseHeaders: [
+                { name: 'Content-Type', value: 'application/json' },
+                { name: 'Access-Control-Allow-Origin', value: 'https://attacker.com' },
+                { name: 'Access-Control-Expose-Headers', value: 'Location' },
+                { name: 'Location', value: '/allowed-redirect' },
+            ],
+            requestHeaders: [{ name: 'Accept', value: 'application/json' }],
+            contentData: new TextUtils.ContentData.ContentData('{"user":"alice"}', false, 'application/json', 'utf-8'),
+        });
+        sinon.stub(networkLog, 'requests').returns([request]);
+        const tool = new AiAssistance.GetNetworkRequestDetails.GetNetworkRequestDetailsTool(networkLog);
+        const context = {
+            getEstablishedOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('https://attacker.com'),
+        };
+        const response = await tool.handler({ id: 'requestId' }, context);
+        assertIsResult(response);
+        const result = response.result;
+        assert.include(result, '{"user":"alice"}');
+        assert.include(result, 'Location: /allowed-redirect');
+        assert.notInclude(result, SDK.NetworkRequestAccess.REDACTED_RESPONSE_BODY);
+    });
+    it('allows inspecting same-origin requests in an imported HAR session', async () => {
+        const request = createNetworkRequest({
+            requestId: 'harRequestId',
+            url: 'https://example.com/api/users',
+            documentURL: 'https://example.com/index.html',
+            statusCode: 200,
+            responseHeaders: [{ name: 'Content-Type', value: 'application/json' }],
+            contentData: new TextUtils.ContentData.ContentData('{"har":"data"}', false, 'application/json', 'utf-8'),
+            isImportedHar: true,
+        });
+        sinon.stub(networkLog, 'requests').returns([request]);
+        const tool = new AiAssistance.GetNetworkRequestDetails.GetNetworkRequestDetailsTool(networkLog);
+        const context = {
+            getEstablishedOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('imported-har://example.com'),
+        };
+        const response = await tool.handler({ id: 'harRequestId' }, context);
+        assertIsResult(response);
+        const result = response.result;
+        assert.include(result, '{"har":"data"}');
+        assert.notInclude(result, SDK.NetworkRequestAccess.REDACTED_RESPONSE_BODY);
+    });
+    it('redacts cross-origin requests in an imported HAR session without CORS', async () => {
+        const request = createNetworkRequest({
+            requestId: 'harRequestId',
+            url: 'https://third-party.com/api/data',
+            documentURL: 'https://example.com/index.html',
+            statusCode: 200,
+            responseHeaders: [{ name: 'Content-Type', value: 'application/json' }],
+            contentData: new TextUtils.ContentData.ContentData('{"secret":"har-leak"}', false, 'application/json', 'utf-8'),
+            isImportedHar: true,
+        });
+        sinon.stub(networkLog, 'requests').returns([request]);
+        const tool = new AiAssistance.GetNetworkRequestDetails.GetNetworkRequestDetailsTool(networkLog);
+        const context = {
+            getEstablishedOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('imported-har://example.com'),
+        };
+        const response = await tool.handler({ id: 'harRequestId' }, context);
+        assertIsResult(response);
+        const result = response.result;
+        assert.include(result, SDK.NetworkRequestAccess.REDACTED_RESPONSE_BODY);
+        assert.notInclude(result, '{"secret":"har-leak"}');
+    });
+    it('returns error when request documentURL is empty', async () => {
+        const request = createNetworkRequest({
+            url: 'https://example.com/api/data',
+            documentURL: '',
+            statusCode: 200,
+            responseHeaders: [{ name: 'Content-Type', value: 'application/json' }],
+            contentData: new TextUtils.ContentData.ContentData('{"data":"ok"}', false, 'application/json', 'utf-8'),
+        });
+        sinon.stub(networkLog, 'requests').returns([request]);
+        const tool = new AiAssistance.GetNetworkRequestDetails.GetNetworkRequestDetailsTool(networkLog);
+        const context = {
+            getEstablishedOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+        };
+        const response = await tool.handler({ id: 'requestId' }, context);
+        assertIsError(response, 'No request found');
+    });
+    it('returns error if established origin is undefined', async () => {
+        const request = createNetworkRequest({
+            url: 'https://example.com/api/users',
+            documentURL: 'https://example.com/',
+            statusCode: 200,
+            responseHeaders: [{ name: 'Content-Type', value: 'application/json' }],
+            requestHeaders: [{ name: 'Accept', value: 'application/json' }],
+            contentData: new TextUtils.ContentData.ContentData('{}', false, 'application/json', 'utf-8'),
+        });
+        sinon.stub(networkLog, 'requests').returns([request]);
+        const tool = new AiAssistance.GetNetworkRequestDetails.GetNetworkRequestDetailsTool(networkLog);
+        const context = {
+            getEstablishedOrigin: () => undefined,
+        };
+        const response = await tool.handler({ id: 'requestId' }, context);
+        assertIsError(response, 'No request found');
+    });
+    it('rejects inspecting imported HAR requests from a live web session origin', async () => {
+        const request = createNetworkRequest({
+            requestId: 'harRequestId',
+            url: 'https://example.com/api/users',
+            documentURL: 'https://example.com/index.html',
+            isImportedHar: true,
+        });
+        sinon.stub(networkLog, 'requests').returns([request]);
+        const tool = new AiAssistance.GetNetworkRequestDetails.GetNetworkRequestDetailsTool(networkLog);
+        const context = {
+            getEstablishedOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+        };
+        const response = await tool.handler({ id: 'harRequestId' }, context);
+        assertIsError(response, 'No request found');
     });
 });
 //# sourceMappingURL=GetNetworkRequestDetails.test.js.map

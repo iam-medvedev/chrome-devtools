@@ -21,7 +21,7 @@ describe('GetCookieValuesTool', () => {
     });
     function createMockFrame(origin, resourceTreeModel) {
         const mockFrame = sinon.createStubInstance(SDK.ResourceTreeModel.ResourceTreeFrame);
-        sinon.stub(mockFrame, 'securityOrigin').get(() => origin);
+        mockFrame.securityOrigin.returns(SDK.SecurityOrigin.SecurityOrigin.create(origin));
         mockFrame.resourceTreeModel.returns(resourceTreeModel);
         return mockFrame;
     }
@@ -39,7 +39,8 @@ describe('GetCookieValuesTool', () => {
         return { primaryTarget, cookieModel };
     }
     function createMockContext(options) {
-        const origin = options && 'origin' in options ? options.origin : 'https://example.com';
+        const origin = options && 'origin' in options ? options.origin :
+            SDK.SecurityOrigin.SecurityOrigin.create('https://example.com');
         return {
             getEstablishedOrigin: sinon.stub().returns(origin),
             disableLogging: options?.disableLoggingStub ?? sinon.stub(),
@@ -199,7 +200,7 @@ describe('GetCookieValuesTool', () => {
         const foreignRtm = sinon.createStubInstance(SDK.ResourceTreeModel.ResourceTreeModel);
         foreignRtm.target.returns(foreignTarget);
         const foreignFrame = sinon.createStubInstance(SDK.ResourceTreeModel.ResourceTreeFrame);
-        sinon.stub(foreignFrame, 'securityOrigin').get(() => 'https://example.com');
+        foreignFrame.securityOrigin.returns(SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'));
         foreignFrame.resourceTreeModel.returns(foreignRtm);
         sinon.stub(SDK.ResourceTreeModel.ResourceTreeModel, 'frames').returns([foreignFrame]);
         const context = createMockContext();
@@ -248,7 +249,7 @@ describe('GetCookieValuesTool', () => {
     });
     it('rejects opaque established origin', async () => {
         setupPrimaryTarget('https://example.com');
-        const context = createMockContext({ origin: 'data:text/html,test' });
+        const context = createMockContext({ origin: SDK.SecurityOrigin.SecurityOrigin.create('data:text/html,test') });
         const tool = new AiAssistance.GetCookieValues.GetCookieValuesTool();
         const response = await tool.handler({ cookieNames: ['cookie1'], origins: ['https://example.com'] }, context, { approved: true });
         assertIsError(response);

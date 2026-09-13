@@ -10,8 +10,7 @@ describeWithEnvironment('Name', () => {
     describe('with web-dev-with-commit trace', () => {
         let parsedTrace;
         before(async function () {
-            parsedTrace =
-                await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz', undefined, { withTimelinePanel: false });
+            parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
         });
         it('uses the URL for the name of a network request', () => {
             const request = parsedTrace.data.NetworkRequests.byTime.at(0);
@@ -107,8 +106,7 @@ describeWithEnvironment('Name', () => {
     describe('profile calls', () => {
         let parsedTrace;
         before(async function () {
-            parsedTrace =
-                await TraceLoader.traceEngine(this, 'react-hello-world.json.gz', undefined, { withTimelinePanel: false });
+            parsedTrace = await TraceLoader.traceEngine(this, 'react-hello-world.json.gz');
         });
         it('uses the profile name for a ProfileCall if it has been set', () => {
             const { entry, profileNode } = getProfileEventAndNodeForReactTrace(parsedTrace);

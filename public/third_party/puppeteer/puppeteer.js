@@ -2627,7 +2627,7 @@ function mergeUint8Arrays(items) {
 }
 
 // ../../front_end/third_party/puppeteer/package/lib/puppeteer/util/version.js
-var packageVersion = "25.9.0";
+var packageVersion = "25.10.0";
 
 // ../../front_end/third_party/puppeteer/package/lib/puppeteer/common/Errors.js
 var PuppeteerError = class extends Error {
@@ -5148,7 +5148,7 @@ var Page = (() => {
      *
      * ```ts
      * import {KnownDevices} from 'puppeteer';
-     * const iPhone = KnownDevices['iPhone 15 Pro'];
+     * const iPhone = KnownDevices['iPhone 17 Pro'];
      *
      * const browser = await puppeteer.launch();
      * const page = await browser.newPage();
@@ -5225,7 +5225,7 @@ var Page = (() => {
       await environment.value.writeFile(path, typedArray);
     }
     /**
-     * Captures a screencast of this {@link Page | page}.
+     * Captures a screencast of this {@link Page | page}. Works in Chrome 153+.
      *
      * @example
      * Recording a {@link Page | page}:
@@ -5255,7 +5255,7 @@ var Page = (() => {
      *
      * @param options - Configures screencast behavior.
      *
-     * @experimental
+     * @deprecated Use {@link Page.record} instead.
      *
      * @remarks
      *
@@ -5319,6 +5319,75 @@ var Page = (() => {
       }
       return recorder;
     }
+    /**
+     * Records this {@link Page | page} using the Chrome DevTools Protocol
+     * {@link https://chromedevtools.github.io/devtools-protocol/tot/Page/#method-startScreenRecording | Page.startScreenRecording}
+     * API.
+     *
+     * Outputs mp4 video stream.
+     *
+     * @example
+     * Recording a {@link Page | page}:
+     *
+     * ```ts
+     * import puppeteer from 'puppeteer';
+     *
+     * // Launch a browser
+     * const browser = await puppeteer.launch();
+     *
+     * // Create a new page
+     * const page = await browser.newPage();
+     *
+     * // Go to your site.
+     * await page.goto('https://www.example.com');
+     *
+     * // Start recording.
+     * const recorder = await page.record({path: 'recording.mp4'});
+     *
+     * // Do something.
+     *
+     * // Stop recording.
+     * await recorder.stop();
+     *
+     * await browser.close();
+     * ```
+     *
+     * @param options - Configures recording behavior.
+     *
+     * @experimental
+     */
+    async record(options = {}) {
+      if (options.maxWidth !== void 0 && options.maxWidth <= 0) {
+        throw new Error("`maxWidth` must be greater than 0.");
+      }
+      if (options.maxHeight !== void 0 && options.maxHeight <= 0) {
+        throw new Error("`maxHeight` must be greater than 0.");
+      }
+      if (options.frameRate !== void 0 && options.frameRate <= 0) {
+        throw new Error("`frameRate` must be greater than 0.");
+      }
+      if (options.fps !== void 0 && options.fps <= 0) {
+        throw new Error("`fps` must be greater than 0.");
+      }
+      if (options.path && environment.value.path) {
+        await environment.value.mkdir(environment.value.path.dirname(options.path), { recursive: options.overwrite ?? true });
+      }
+      const stream = options.path ? environment.value.createWriteStream(options.path, {
+        encoding: "binary",
+        overwrite: options.overwrite
+      }) : void 0;
+      const recording = this.createScreenRecording(options);
+      try {
+        await recording._start();
+      } catch (error) {
+        void recording.stop();
+        throw error;
+      }
+      if (stream) {
+        recording.pipe(stream);
+      }
+      return recording;
+    }
     #screencastSessionCount = 0;
     #startScreencastPromise;
     /**
@@ -5327,12 +5396,14 @@ var Page = (() => {
     async _startScreencast() {
       ++this.#screencastSessionCount;
       if (!this.#startScreencastPromise) {
-        this.#startScreencastPromise = this.mainFrame().client.send("Page.startScreencast", { format: "png" }).then(() => {
-          return new Promise((resolve) => {
-            return this.mainFrame().client.once("Page.screencastFrame", () => {
-              return resolve();
-            });
+        const client = this.mainFrame().client;
+        const firstFrame = new Promise((resolve) => {
+          return client.once("Page.screencastFrame", () => {
+            return resolve();
           });
+        });
+        this.#startScreencastPromise = client.send("Page.startScreencast", { format: "png" }).then(() => {
+          return firstFrame;
         });
       }
       await this.#startScreencastPromise;
@@ -16559,6 +16630,214 @@ var CdpTouchscreen = class extends Touchscreen {
   }
 };
 
+// ../../front_end/third_party/puppeteer/package/lib/puppeteer/api/ScreenRecording.js
+var ScreenRecording = class extends ReadableStream {
+  /**
+   * @internal
+   */
+  page;
+  /**
+   * @internal
+   */
+  options;
+  /**
+   * @internal
+   */
+  logger;
+  /**
+   * @internal
+   */
+  controller;
+  /**
+   * @internal
+   */
+  destinations = /* @__PURE__ */ new Set();
+  /**
+   * @internal
+   */
+  stopped = false;
+  /**
+   * @internal
+   */
+  constructor(page, options = {}, logger) {
+    let controller;
+    super({
+      start(c) {
+        controller = c;
+      }
+    });
+    this.controller = controller;
+    this.page = page;
+    this.options = options;
+    this.logger = logger;
+  }
+  pipe(destination) {
+    if ("getWriter" in destination && typeof destination.getWriter === "function") {
+      return this.pipeTo(destination);
+    }
+    const dest = destination;
+    this.destinations.add(dest);
+    dest.once?.("unpipe", () => {
+      this.destinations.delete(dest);
+    });
+    dest.once?.("error", () => {
+      this.destinations.delete(dest);
+    });
+    dest.once?.("close", () => {
+      this.destinations.delete(dest);
+    });
+    dest.once?.("finish", () => {
+      this.destinations.delete(dest);
+    });
+    return dest;
+  }
+  /**
+   * @internal
+   */
+  async closeDestinations() {
+    try {
+      this.controller.close();
+    } catch {
+    }
+    for (const dest of this.destinations) {
+      dest.end();
+    }
+    const destinationPromises = Array.from(this.destinations).map((dest) => {
+      return new Promise((resolve) => {
+        if (dest.writableFinished || dest.closed || dest.destroyed) {
+          resolve(void 0);
+        } else {
+          dest.once?.("finish", resolve);
+          dest.once?.("close", resolve);
+          dest.once?.("error", resolve);
+        }
+      });
+    });
+    await Promise.all(destinationPromises);
+  }
+  async [asyncDisposeSymbol]() {
+    await this.stop();
+  }
+};
+
+// ../../front_end/third_party/puppeteer/package/lib/puppeteer/cdp/ScreenRecording.js
+var __runInitializers8 = function(thisArg, initializers, value) {
+  var useValue = arguments.length > 2;
+  for (var i = 0; i < initializers.length; i++) {
+    value = useValue ? initializers[i].call(thisArg, value) : initializers[i].call(thisArg);
+  }
+  return useValue ? value : void 0;
+};
+var __esDecorate8 = function(ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
+  function accept(f) {
+    if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected");
+    return f;
+  }
+  var kind = contextIn.kind, key = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
+  var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
+  var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
+  var _2, done = false;
+  for (var i = decorators.length - 1; i >= 0; i--) {
+    var context2 = {};
+    for (var p in contextIn) context2[p] = p === "access" ? {} : contextIn[p];
+    for (var p in contextIn.access) context2.access[p] = contextIn.access[p];
+    context2.addInitializer = function(f) {
+      if (done) throw new TypeError("Cannot add initializers after decoration has completed");
+      extraInitializers.push(accept(f || null));
+    };
+    var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key], context2);
+    if (kind === "accessor") {
+      if (result === void 0) continue;
+      if (result === null || typeof result !== "object") throw new TypeError("Object expected");
+      if (_2 = accept(result.get)) descriptor.get = _2;
+      if (_2 = accept(result.set)) descriptor.set = _2;
+      if (_2 = accept(result.init)) initializers.unshift(_2);
+    } else if (_2 = accept(result)) {
+      if (kind === "field") initializers.unshift(_2);
+      else descriptor[key] = _2;
+    }
+  }
+  if (target) Object.defineProperty(target, contextIn.name, descriptor);
+  done = true;
+};
+var CdpScreenRecording = (() => {
+  let _classSuper = ScreenRecording;
+  let _instanceExtraInitializers = [];
+  let _stop_decorators;
+  return class CdpScreenRecording extends _classSuper {
+    static {
+      const _metadata = typeof Symbol === "function" && Symbol.metadata ? Object.create(_classSuper[Symbol.metadata] ?? null) : void 0;
+      _stop_decorators = [guarded()];
+      __esDecorate8(this, null, _stop_decorators, { kind: "method", name: "stop", static: false, private: false, access: { has: (obj) => "stop" in obj, get: (obj) => obj.stop }, metadata: _metadata }, null, _instanceExtraInitializers);
+      if (_metadata) Object.defineProperty(this, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
+    }
+    #streamHandle = __runInitializers8(this, _instanceExtraInitializers);
+    /**
+     * @internal
+     */
+    constructor(page, options = {}, logger) {
+      super(page, options, logger);
+      const { client } = this.page.mainFrame();
+      client?.once?.(CDPSessionEvent.Disconnected, () => {
+        void this.stop().catch((err) => {
+          this.logger(DEBUG_PREFIXES.error)?.(err);
+        });
+      });
+    }
+    /**
+     * @internal
+     */
+    async _start() {
+      const { client } = this.page.mainFrame();
+      const frameRate = this.options.frameRate ?? this.options.fps;
+      const result = await client.send("Page.startScreenRecording", {
+        audio: this.options.audio,
+        maxWidth: this.options.maxWidth,
+        maxHeight: this.options.maxHeight,
+        frameRate
+      });
+      this.#streamHandle = result.stream;
+    }
+    /**
+     * Stops the screen recording.
+     *
+     * @public
+     */
+    async stop() {
+      if (this.stopped) {
+        return;
+      }
+      this.stopped = true;
+      try {
+        const { client } = this.page.mainFrame();
+        await client.send("Page.stopScreenRecording").catch((err) => {
+          this.logger(DEBUG_PREFIXES.error)?.(err);
+        });
+        if (!this.#streamHandle) {
+          throw new Error("Screen recording stream handle is missing.");
+        }
+        let eof = false;
+        while (!eof) {
+          const { data, base64Encoded, eof: isEof } = await client.send("IO.read", { handle: this.#streamHandle });
+          eof = isEof;
+          if (data) {
+            const buffer = stringToTypedArray(data, base64Encoded ?? false);
+            this.controller.enqueue(buffer);
+            for (const dest of this.destinations) {
+              dest.write(buffer);
+            }
+          }
+        }
+        await client.send("IO.close", { handle: this.#streamHandle }).catch((err) => {
+          this.logger(DEBUG_PREFIXES.error)?.(err);
+        });
+      } finally {
+        await this.closeDestinations();
+      }
+    }
+  };
+})();
+
 // ../../front_end/third_party/puppeteer/package/lib/puppeteer/cdp/Tracing.js
 var Tracing = class {
   #client;
@@ -17844,6 +18123,12 @@ var CdpPage = class _CdpPage extends Page {
   }
   extensionRealms() {
     return this.mainFrame().extensionRealms();
+  }
+  /**
+   * @internal
+   */
+  createScreenRecording(options) {
+    return new CdpScreenRecording(this, options, this.logger);
   }
 };
 var supportedMetrics = /* @__PURE__ */ new Set([

@@ -14,6 +14,7 @@ import * as Workspace from '../../models/workspace/workspace.js';
 import { createTarget, expectConsoleLogs } from '../../testing/EnvironmentHelpers.js';
 import { spyCall } from '../../testing/ExpectStubCall.js';
 import { getExtensionOrigin, setupDevtoolsExtensionHooks, } from '../../testing/ExtensionHelpers.js';
+import { createNetworkRequest } from '../../testing/NetworkRequestHelpers.js';
 import { addChildFrame, FRAME_URL, getMainFrame, mockResourceTree } from '../../testing/ResourceTreeHelpers.js';
 import { encodeSourceMap } from '../../testing/SourceMapEncoder.js';
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
@@ -829,13 +830,18 @@ describe('Runtime hosts policy', () => {
             sinon.stub(SDK.NetworkManager.NetworkManager, 'forRequest')
                 .callsFake(request => requestToManager.get(request) || null);
         }
-        const request = SDK.NetworkRequest.NetworkRequest.create(requestId, url, url, frameId, null, initiator, undefined);
-        request.responseHeaders = responseHeaders;
+        const request = createNetworkRequest({
+            requestId,
+            url,
+            documentURL: url,
+            frameId,
+            initiator,
+            responseHeaders,
+            finished: true,
+            contentData: () => Promise.resolve(new TextUtils.ContentData.ContentData('content', false, request.mimeType)),
+        });
         requestToManager.set(request, networkManager);
-        const dataProvider = () => Promise.resolve(new TextUtils.ContentData.ContentData('content', false, request.mimeType));
-        request.setContentDataProvider(dataProvider);
         networkManager.dispatchEventToListeners(SDK.NetworkManager.Events.RequestStarted, { request, originalRequest: null });
-        request.finished = true;
         networkManager.dispatchEventToListeners(SDK.NetworkManager.Events.RequestFinished, request);
     }
     it('can get request content', async () => {

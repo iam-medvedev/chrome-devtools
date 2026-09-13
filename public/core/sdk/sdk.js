@@ -455,6 +455,7 @@ var Audits;
     FederatedAuthRequestIssueReason2["UiDismissedNoEmbargo"] = "UiDismissedNoEmbargo";
     FederatedAuthRequestIssueReason2["CorsError"] = "CorsError";
     FederatedAuthRequestIssueReason2["SuppressedBySegmentationPlatform"] = "SuppressedBySegmentationPlatform";
+    FederatedAuthRequestIssueReason2["PopupBlockedByConnectionAllowlist"] = "PopupBlockedByConnectionAllowlist";
   })(FederatedAuthRequestIssueReason = Audits2.FederatedAuthRequestIssueReason || (Audits2.FederatedAuthRequestIssueReason = {}));
   let FederatedAuthUserInfoRequestIssueReason;
   ((FederatedAuthUserInfoRequestIssueReason2) => {
@@ -527,6 +528,7 @@ var Audits;
     EmailVerificationRequestIssueReason2["TokenVerificationKbInvalidSdHash"] = "TokenVerificationKbInvalidSdHash";
     EmailVerificationRequestIssueReason2["TokenVerificationKbMissingCnf"] = "TokenVerificationKbMissingCnf";
     EmailVerificationRequestIssueReason2["TokenVerificationKbSignatureFailed"] = "TokenVerificationKbSignatureFailed";
+    EmailVerificationRequestIssueReason2["CrossOriginIframeNotSupported"] = "CrossOriginIframeNotSupported";
   })(EmailVerificationRequestIssueReason = Audits2.EmailVerificationRequestIssueReason || (Audits2.EmailVerificationRequestIssueReason = {}));
   let PartitioningBlobURLInfo;
   ((PartitioningBlobURLInfo2) => {
@@ -983,6 +985,11 @@ var Emulation;
     SetDeviceMetricsOverrideRequestScrollbarType2["Overlay"] = "overlay";
     SetDeviceMetricsOverrideRequestScrollbarType2["Default"] = "default";
   })(SetDeviceMetricsOverrideRequestScrollbarType = Emulation2.SetDeviceMetricsOverrideRequestScrollbarType || (Emulation2.SetDeviceMetricsOverrideRequestScrollbarType = {}));
+  let SetDeviceMetricsOverrideRequestViewportMeta;
+  ((SetDeviceMetricsOverrideRequestViewportMeta2) => {
+    SetDeviceMetricsOverrideRequestViewportMeta2["Enable"] = "enable";
+    SetDeviceMetricsOverrideRequestViewportMeta2["Default"] = "default";
+  })(SetDeviceMetricsOverrideRequestViewportMeta = Emulation2.SetDeviceMetricsOverrideRequestViewportMeta || (Emulation2.SetDeviceMetricsOverrideRequestViewportMeta = {}));
   let SetEmitTouchEventsForMouseRequestConfiguration;
   ((SetEmitTouchEventsForMouseRequestConfiguration2) => {
     SetEmitTouchEventsForMouseRequestConfiguration2["Mobile"] = "mobile";
@@ -1651,6 +1658,7 @@ var Network;
     TerminationEventDetailsDeletionReason2["InvalidSessionParams"] = "InvalidSessionParams";
     TerminationEventDetailsDeletionReason2["RefreshFatalError"] = "RefreshFatalError";
     TerminationEventDetailsDeletionReason2["DevTools"] = "DevTools";
+    TerminationEventDetailsDeletionReason2["Replaced"] = "Replaced";
   })(TerminationEventDetailsDeletionReason = Network2.TerminationEventDetailsDeletionReason || (Network2.TerminationEventDetailsDeletionReason = {}));
   let ChallengeEventDetailsChallengeResult;
   ((ChallengeEventDetailsChallengeResult2) => {
@@ -2773,6 +2781,7 @@ var Runtime;
     RemoteObjectSubtype2["Dataview"] = "dataview";
     RemoteObjectSubtype2["Webassemblymemory"] = "webassemblymemory";
     RemoteObjectSubtype2["Wasmvalue"] = "wasmvalue";
+    RemoteObjectSubtype2["Deferredmodule"] = "deferredmodule";
     RemoteObjectSubtype2["Trustedtype"] = "trustedtype";
   })(RemoteObjectSubtype = Runtime9.RemoteObjectSubtype || (Runtime9.RemoteObjectSubtype = {}));
   let ObjectPreviewType;
@@ -2807,6 +2816,7 @@ var Runtime;
     ObjectPreviewSubtype2["Dataview"] = "dataview";
     ObjectPreviewSubtype2["Webassemblymemory"] = "webassemblymemory";
     ObjectPreviewSubtype2["Wasmvalue"] = "wasmvalue";
+    ObjectPreviewSubtype2["Deferredmodule"] = "deferredmodule";
     ObjectPreviewSubtype2["Trustedtype"] = "trustedtype";
   })(ObjectPreviewSubtype = Runtime9.ObjectPreviewSubtype || (Runtime9.ObjectPreviewSubtype = {}));
   let PropertyPreviewType;
@@ -2842,6 +2852,7 @@ var Runtime;
     PropertyPreviewSubtype2["Dataview"] = "dataview";
     PropertyPreviewSubtype2["Webassemblymemory"] = "webassemblymemory";
     PropertyPreviewSubtype2["Wasmvalue"] = "wasmvalue";
+    PropertyPreviewSubtype2["Deferredmodule"] = "deferredmodule";
     PropertyPreviewSubtype2["Trustedtype"] = "trustedtype";
   })(PropertyPreviewSubtype = Runtime9.PropertyPreviewSubtype || (Runtime9.PropertyPreviewSubtype = {}));
   let ConsoleAPICalledEventType;
@@ -3210,6 +3221,8 @@ var generatedProperties = [
       "center",
       "start",
       "end",
+      "flow-start",
+      "flow-end",
       "self-start",
       "self-end",
       "flex-start",
@@ -6449,6 +6462,8 @@ var generatedProperties = [
       "center",
       "start",
       "end",
+      "flow-start",
+      "flow-end",
       "self-start",
       "self-end",
       "flex-start",
@@ -7968,7 +7983,8 @@ var generatedProperties = [
   {
     "keywords": [
       "normal",
-      "always"
+      "always",
+      "before"
     ],
     "name": "scroll-snap-stop"
   },
@@ -8349,7 +8365,7 @@ var generatedProperties = [
     ],
     "name": "text-decoration-skip-spaces",
     "runtime_flag": "CSSTextDecorationSkipSpaces",
-    "runtime_flag_status": "experimental"
+    "runtime_flag_status": "stable"
   },
   {
     "keywords": [
@@ -9134,6 +9150,8 @@ var generatedPropertyValues = {
       "center",
       "start",
       "end",
+      "flow-start",
+      "flow-end",
       "self-start",
       "self-end",
       "flex-start",
@@ -10727,6 +10745,8 @@ var generatedPropertyValues = {
       "center",
       "start",
       "end",
+      "flow-start",
+      "flow-end",
       "self-start",
       "self-end",
       "flex-start",
@@ -11540,7 +11560,8 @@ var generatedPropertyValues = {
   "scroll-snap-stop": {
     "values": [
       "normal",
-      "always"
+      "always",
+      "before"
     ]
   },
   "scroll-snap-type": {
@@ -15685,7 +15706,7 @@ __export(ConsoleModel_exports, {
   FrontendMessageType: () => FrontendMessageType,
   MessageSourceDisplayName: () => MessageSourceDisplayName
 });
-import * as Common18 from "../common/common.js";
+import * as Common19 from "../common/common.js";
 import * as Host5 from "../host/host.js";
 import * as i18n11 from "../i18n/i18n.js";
 import * as Platform11 from "../platform/platform.js";
@@ -15715,14 +15736,196 @@ __export(Target_exports, {
   Target: () => Target2,
   Type: () => Type2
 });
-import * as Common3 from "../common/common.js";
+import * as Common4 from "../common/common.js";
 import * as Platform from "../platform/platform.js";
 import * as ProtocolClient from "../protocol_client/protocol_client.js";
+
+// ../../front_end/core/sdk/SecurityOrigin.ts
+var SecurityOrigin_exports = {};
+__export(SecurityOrigin_exports, {
+  IMPORTED_ORIGIN_PREFIXES: () => IMPORTED_ORIGIN_PREFIXES,
+  SecurityOrigin: () => SecurityOrigin
+});
+import * as Common3 from "../common/common.js";
+var OPAQUE_EXACT_MATCHES = /* @__PURE__ */ new Set([
+  "",
+  "null",
+  "undefined",
+  "data:",
+  "detached"
+]);
+var OPAQUE_PREFIXES = [
+  "about:",
+  "blob:about",
+  "blob:data",
+  "blob:null"
+];
+var IMPORTED_ORIGIN_PREFIXES = /* @__PURE__ */ new Set([
+  "imported-har:",
+  "imported-trace:"
+]);
+function isOpaqueUrlString(url) {
+  const lower = url.trim().toLowerCase();
+  if (OPAQUE_EXACT_MATCHES.has(lower)) {
+    return true;
+  }
+  return OPAQUE_PREFIXES.some((prefix) => lower.startsWith(prefix));
+}
+var SecurityOrigin = class _SecurityOrigin {
+  #origin;
+  constructor(origin) {
+    this.#origin = origin;
+  }
+  /**
+   * Creates a `SecurityOrigin` instance from a raw URL or origin string.
+   *
+   * - If the URL is determined to be opaque (e.g. `data:`, `about:blank`, empty, `null`),
+   *   a new unique opaque origin is returned.
+   * - If the URL is an imported artifact scheme (e.g. `imported-har:`, `imported-trace:`),
+   *   a scheme-and-host origin (`<scheme>//<host>`) is returned.
+   * - If the URL is a `file://` URL, a path-scoped origin (`file://<authority><path>`) is returned.
+   * - Otherwise, the standard origin (`<scheme>://<host>[:<port>]`) is extracted and returned.
+   *
+   * @param rawUrl The raw URL or origin string to evaluate.
+   */
+  static create(rawUrl) {
+    if (isOpaqueUrlString(rawUrl)) {
+      return _SecurityOrigin.createUniqueOpaque();
+    }
+    const importedOrigin = _SecurityOrigin.#tryCreateImportedArtifactOrigin(rawUrl);
+    if (importedOrigin) {
+      return importedOrigin;
+    }
+    if (rawUrl.toLowerCase().startsWith("file://")) {
+      const parsed = Common3.ParsedURL.ParsedURL.fromString(rawUrl);
+      if (!parsed) {
+        return _SecurityOrigin.createUniqueOpaque();
+      }
+      const authority = parsed.host + (parsed.port ? ":" + parsed.port : "");
+      return new _SecurityOrigin({ type: "file", value: `file://${authority}${parsed.path}` });
+    }
+    const origin = Common3.ParsedURL.ParsedURL.extractOrigin(rawUrl);
+    if (!origin || isOpaqueUrlString(origin)) {
+      return _SecurityOrigin.createUniqueOpaque();
+    }
+    return new _SecurityOrigin({ type: "origin", value: origin.toLowerCase() });
+  }
+  /**
+   * Attempts to parse a URL as an imported artifact scheme (such as `imported-har:` or `imported-trace:`).
+   *
+   * Standard web origins do not match imported artifact origins. If the URL starts with an imported
+   * prefix, this helper isolates the origin to `<scheme>//<host>`. If the authority or host is missing,
+   * or if the URL cannot be parsed, it returns a unique opaque origin.
+   *
+   * @param rawUrl The raw URL string to evaluate.
+   * @returns A `SecurityOrigin` if the URL matches an imported artifact scheme, or `null` otherwise.
+   */
+  static #tryCreateImportedArtifactOrigin(rawUrl) {
+    const lowerUrl = rawUrl.toLowerCase();
+    for (const prefix of IMPORTED_ORIGIN_PREFIXES) {
+      if (lowerUrl.startsWith(prefix)) {
+        try {
+          const parsedUrl = new URL(rawUrl);
+          if (!parsedUrl.host) {
+            return _SecurityOrigin.createUniqueOpaque();
+          }
+          return new _SecurityOrigin({ type: "origin", value: `${parsedUrl.protocol}//${parsedUrl.host.toLowerCase()}` });
+        } catch {
+          return _SecurityOrigin.createUniqueOpaque();
+        }
+      }
+    }
+    return null;
+  }
+  /**
+   * Creates a synthetic, unique opaque origin.
+   *
+   * Useful when an entity (like a sandboxed iframe or detached DOM tree) needs an
+   * isolated origin that will never match any other origin in the session.
+   */
+  static createUniqueOpaque() {
+    return new _SecurityOrigin({ type: "opaque", uuid: crypto.randomUUID() });
+  }
+  /**
+   * Creates an isolated security origin for an imported performance trace.
+   *
+   * Imported traces isolate to `imported-trace://${authority}` based on the recorded
+   * main frame URL. If the URL is missing, invalid, or has no host, this returns a
+   * unique opaque origin so that unhosted traces do not share access with each other
+   * or live web origins.
+   *
+   * @param mainFrameURL The URL string of the main frame recorded in the trace.
+   */
+  static createForImportedTrace(mainFrameURL) {
+    if (!mainFrameURL) {
+      return _SecurityOrigin.createUniqueOpaque();
+    }
+    const parsed = Common3.ParsedURL.ParsedURL.fromString(mainFrameURL);
+    if (!parsed?.host) {
+      return _SecurityOrigin.createUniqueOpaque();
+    }
+    const authority = parsed.host + (parsed.port ? `:${parsed.port}` : "");
+    return _SecurityOrigin.create(`imported-trace://${authority}`);
+  }
+  /**
+   * Checks whether this security origin is equivalent to another security origin.
+   *
+   * - Standard origins return `true` if their scheme, host, and port match.
+   * - File origins return `true` if their full file path and host match.
+   * - Opaque origins return `true` only if both instances have identical UUIDs.
+   * - Passing `null` always returns `false`.
+   *
+   * @param other The other `SecurityOrigin` to compare with.
+   */
+  isSameOriginWith(other) {
+    if (!other) {
+      return false;
+    }
+    if (this.#origin.type === "opaque" || other.#origin.type === "opaque") {
+      return this.#origin.type === "opaque" && other.#origin.type === "opaque" && this.#origin.uuid === other.#origin.uuid;
+    }
+    return this.#origin.type === other.#origin.type && this.#origin.value === other.#origin.value;
+  }
+  /**
+   * Returns whether this origin is opaque.
+   *
+   * Opaque origins include `data:` URLs, `about:blank`, invalid URLs, and instances
+   * created via `createUniqueOpaque()`.
+   */
+  isOpaque() {
+    return this.#origin.type === "opaque";
+  }
+  /**
+   * Returns whether this origin represents a local file origin (`file://`).
+   */
+  isFile() {
+    return this.#origin.type === "file";
+  }
+  /**
+   * Returns a stable string identifier for display, logging, or storage keys.
+   *
+   * WARNING: Do not compare `siteId()` strings to verify origin equality or
+   * enforce security boundaries. Always use `isSameOriginWith()` instead.
+   *
+   * Return formats:
+   * - Standard origins: `<scheme>://<host>[:<port>]` (e.g., `https://example.com:8080`).
+   * - File origins: `file://<authority><path>` (e.g., `file:///path/to/file.html`).
+   * - Opaque origins: A bare UUID string (e.g., `3fa85f64-5717-4562-b3fc-2c963f66afa6`).
+   *   Note: Opaque site IDs do not have URI schemes and are not valid URLs.
+   */
+  siteId() {
+    return this.#origin.type === "opaque" ? this.#origin.uuid : this.#origin.value;
+  }
+};
+
+// ../../front_end/core/sdk/Target.ts
 var Target2 = class extends ProtocolClient.InspectorBackend.TargetBase {
   #targetManager;
   #name;
   #inspectedURL = Platform.DevToolsPath.EmptyUrlString;
   #inspectedURLName = "";
+  /** Caches the parsed security origin for `#inspectedURL`. */
+  #inspectedSecurityOrigin = null;
   #capabilitiesMask;
   #type;
   #parentTarget;
@@ -15753,7 +15956,7 @@ var Target2 = class extends ProtocolClient.InspectorBackend.TargetBase {
         this.#capabilitiesMask = 1 /* BROWSER */ | 8192 /* STORAGE */ | 2 /* DOM */ | 4 /* JS */ | 8 /* LOG */ | 16 /* NETWORK */ | 32 /* TARGET */ | 128 /* TRACING */ | 256 /* EMULATION */ | 1024 /* INPUT */ | 2048 /* INSPECTOR */ | 32768 /* AUDITS */ | 65536 /* WEB_AUTHN */ | 131072 /* IO */ | 262144 /* MEDIA */ | 524288 /* EVENT_BREAKPOINTS */ | 1048576 /* DOM_STORAGE */ | 2097152 /* WEB_MCP */;
         if (parentTarget?.type() !== "frame" /* FRAME */) {
           this.#capabilitiesMask |= 4096 /* DEVICE_EMULATION */ | 64 /* SCREEN_CAPTURE */ | 512 /* SECURITY */ | 16384 /* SERVICE_WORKER */;
-          if (Common3.ParsedURL.schemeIs(targetInfo?.url, "chrome-extension:")) {
+          if (Common4.ParsedURL.schemeIs(targetInfo?.url, "chrome-extension:")) {
             this.#capabilitiesMask &= ~512 /* SECURITY */;
           }
         }
@@ -15879,9 +16082,23 @@ var Target2 = class extends ProtocolClient.InspectorBackend.TargetBase {
   inspectedURL() {
     return this.#inspectedURL;
   }
+  /**
+   * Returns the security origin for this target's inspected URL.
+   *
+   * The target caches the origin until `setInspectedURL()` changes the URL.
+   * If the URL is empty or invalid, this method returns a unique opaque origin.
+   * An opaque origin does not match any other origin.
+   */
+  inspectedSecurityOrigin() {
+    if (!this.#inspectedSecurityOrigin) {
+      this.#inspectedSecurityOrigin = SecurityOrigin.create(this.#inspectedURL);
+    }
+    return this.#inspectedSecurityOrigin;
+  }
   setInspectedURL(inspectedURL) {
     this.#inspectedURL = inspectedURL;
-    const parsedURL = Common3.ParsedURL.ParsedURL.fromString(inspectedURL);
+    this.#inspectedSecurityOrigin = null;
+    const parsedURL = Common4.ParsedURL.ParsedURL.fromString(inspectedURL);
     this.#inspectedURLName = parsedURL ? parsedURL.lastPathComponentWithFragment() : "#" + this.#id;
     this.#targetManager.onInspectedURLChange(this);
     if (!this.#name) {
@@ -16176,7 +16393,7 @@ __export(SDKSettings_exports, {
   touchSettingDescriptor: () => touchSettingDescriptor,
   webpFormatDisabledSettingDescriptor: () => webpFormatDisabledSettingDescriptor
 });
-import * as Common17 from "../common/common.js";
+import * as Common18 from "../common/common.js";
 
 // ../../front_end/core/sdk/EmulationModel.ts
 var EmulationModel_exports = {};
@@ -16200,7 +16417,7 @@ __export(CSSModel_exports, {
   Events: () => Events9,
   InlineStyleResult: () => InlineStyleResult
 });
-import * as Common13 from "../common/common.js";
+import * as Common14 from "../common/common.js";
 import * as Host4 from "../host/host.js";
 import * as Platform9 from "../platform/platform.js";
 import * as Root4 from "../root/root.js";
@@ -16240,6 +16457,32 @@ var CSSFontFace = class {
   }
 };
 
+// ../../front_end/core/sdk/CSSLocation.ts
+var CSSLocation_exports = {};
+__export(CSSLocation_exports, {
+  CSSLocation: () => CSSLocation
+});
+var CSSLocation = class {
+  #cssModel;
+  styleSheetId;
+  url;
+  lineNumber;
+  columnNumber;
+  constructor(header, lineNumber, columnNumber) {
+    this.#cssModel = header.cssModel();
+    this.styleSheetId = header.id;
+    this.url = header.resourceURL();
+    this.lineNumber = lineNumber;
+    this.columnNumber = columnNumber || 0;
+  }
+  cssModel() {
+    return this.#cssModel;
+  }
+  header() {
+    return this.#cssModel.styleSheetHeaderForId(this.styleSheetId);
+  }
+};
+
 // ../../front_end/core/sdk/CSSMatchedStyles.ts
 var CSSMatchedStyles_exports = {};
 __export(CSSMatchedStyles_exports, {
@@ -16257,7 +16500,7 @@ __export(CSSProperty_exports, {
   CSSProperty: () => CSSProperty,
   Events: () => Events3
 });
-import * as Common5 from "../common/common.js";
+import * as Common6 from "../common/common.js";
 import * as HostModule from "../host/host.js";
 import * as Platform2 from "../platform/platform.js";
 import * as TextUtils from "../text_utils/text_utils.js";
@@ -16333,6 +16576,8 @@ __export(CSSPropertyParserMatchers_exports, {
   MathFunctionMatcher: () => MathFunctionMatcher,
   PositionAnchorMatch: () => PositionAnchorMatch,
   PositionAnchorMatcher: () => PositionAnchorMatcher,
+  PositionAreaMatch: () => PositionAreaMatch,
+  PositionAreaMatcher: () => PositionAreaMatcher,
   PositionTryMatch: () => PositionTryMatch,
   PositionTryMatcher: () => PositionTryMatcher,
   RAW_STRING_TYPE: () => RAW_STRING_TYPE,
@@ -16357,7 +16602,7 @@ __export(CSSPropertyParserMatchers_exports, {
   localEvalCSS: () => localEvalCSS,
   removeCSSEvaluationElement: () => removeCSSEvaluationElement
 });
-import * as Common4 from "../common/common.js";
+import * as Common5 from "../common/common.js";
 var BaseVariableMatch = class {
   constructor(text, node, name, fallback, matching, computedTextCallback) {
     this.text = text;
@@ -16899,7 +17144,7 @@ var ColorMatcher = class _ColorMatcher extends ColorMatcherBase {
       return new ColorMatch(text, node);
     }
     if (node.name === "ValueName") {
-      if (Common4.Color.Nicknames.has(text)) {
+      if (Common5.Color.Nicknames.has(text)) {
         return new ColorMatch(text, node);
       }
       if (text.toLowerCase() === "currentcolor" && this.currentColorCallback) {
@@ -16925,7 +17170,7 @@ var ColorMatcher = class _ColorMatcher extends ColorMatcherBase {
         if (colorArgs.length !== (colorFunc === "color" ? 6 : 5)) {
           return null;
         }
-        const colorSpace = Common4.Color.getFormat(colorFunc !== "color" ? colorFunc : matching.ast.text(colorArgs[2]));
+        const colorSpace = Common5.Color.getFormat(colorFunc !== "color" ? colorFunc : matching.ast.text(colorArgs[2]));
         if (!colorSpace) {
           return null;
         }
@@ -16942,19 +17187,19 @@ var ColorMatcher = class _ColorMatcher extends ColorMatcherBase {
 function isRelativeColorChannelName(channel) {
   const maybeChannel = channel;
   switch (maybeChannel) {
-    case Common4.Color.ColorChannel.A:
-    case Common4.Color.ColorChannel.ALPHA:
-    case Common4.Color.ColorChannel.B:
-    case Common4.Color.ColorChannel.C:
-    case Common4.Color.ColorChannel.G:
-    case Common4.Color.ColorChannel.H:
-    case Common4.Color.ColorChannel.L:
-    case Common4.Color.ColorChannel.R:
-    case Common4.Color.ColorChannel.S:
-    case Common4.Color.ColorChannel.W:
-    case Common4.Color.ColorChannel.X:
-    case Common4.Color.ColorChannel.Y:
-    case Common4.Color.ColorChannel.Z:
+    case Common5.Color.ColorChannel.A:
+    case Common5.Color.ColorChannel.ALPHA:
+    case Common5.Color.ColorChannel.B:
+    case Common5.Color.ColorChannel.C:
+    case Common5.Color.ColorChannel.G:
+    case Common5.Color.ColorChannel.H:
+    case Common5.Color.ColorChannel.L:
+    case Common5.Color.ColorChannel.R:
+    case Common5.Color.ColorChannel.S:
+    case Common5.Color.ColorChannel.W:
+    case Common5.Color.ColorChannel.X:
+    case Common5.Color.ColorChannel.Y:
+    case Common5.Color.ColorChannel.Z:
       return true;
   }
   const catchFallback = maybeChannel;
@@ -16968,33 +17213,33 @@ var RelativeColorChannelMatch = class {
   text;
   node;
   getColorChannelValue(relativeColor) {
-    const color = Common4.Color.parse(relativeColor.baseColor.text)?.as(relativeColor.colorSpace);
-    if (color instanceof Common4.Color.ColorFunction) {
+    const color = Common5.Color.parse(relativeColor.baseColor.text)?.as(relativeColor.colorSpace);
+    if (color instanceof Common5.Color.ColorFunction) {
       switch (this.text) {
-        case Common4.Color.ColorChannel.R:
+        case Common5.Color.ColorChannel.R:
           return color.isXYZ() ? null : color.p0;
-        case Common4.Color.ColorChannel.G:
+        case Common5.Color.ColorChannel.G:
           return color.isXYZ() ? null : color.p1;
-        case Common4.Color.ColorChannel.B:
+        case Common5.Color.ColorChannel.B:
           return color.isXYZ() ? null : color.p2;
-        case Common4.Color.ColorChannel.X:
+        case Common5.Color.ColorChannel.X:
           return color.isXYZ() ? color.p0 : null;
-        case Common4.Color.ColorChannel.Y:
+        case Common5.Color.ColorChannel.Y:
           return color.isXYZ() ? color.p1 : null;
-        case Common4.Color.ColorChannel.Z:
+        case Common5.Color.ColorChannel.Z:
           return color.isXYZ() ? color.p2 : null;
-        case Common4.Color.ColorChannel.ALPHA:
+        case Common5.Color.ColorChannel.ALPHA:
           return color.alpha;
       }
-    } else if (color instanceof Common4.Color.Legacy) {
+    } else if (color instanceof Common5.Color.Legacy) {
       switch (this.text) {
-        case Common4.Color.ColorChannel.R:
+        case Common5.Color.ColorChannel.R:
           return color.rgba()[0];
-        case Common4.Color.ColorChannel.G:
+        case Common5.Color.ColorChannel.G:
           return color.rgba()[1];
-        case Common4.Color.ColorChannel.B:
+        case Common5.Color.ColorChannel.B:
           return color.rgba()[2];
-        case Common4.Color.ColorChannel.ALPHA:
+        case Common5.Color.ColorChannel.ALPHA:
           return color.rgba()[3];
       }
     } else if (color && this.text in color) {
@@ -17779,6 +18024,35 @@ var EnvFunctionMatcher = class extends EnvFunctionMatcherBase {
     return new EnvFunctionMatch(matching.ast.text(node), node, varName, value ?? fallbackValue ?? null, Boolean(value));
   }
 };
+var PositionAreaMatch = class {
+  constructor(text, node) {
+    this.text = text;
+    this.node = node;
+  }
+  text;
+  node;
+};
+var PositionAreaMatcherBase = matcherBase(PositionAreaMatch);
+var PositionAreaMatcher = class extends PositionAreaMatcherBase {
+  // clang-format on
+  accepts(propertyName) {
+    return propertyName === "position-area" || propertyName === "inset-area";
+  }
+  matches(node, matching) {
+    if (node.name !== "Declaration") {
+      return null;
+    }
+    const valueNodes = ASTUtils.siblings(ASTUtils.declValue(node));
+    if (valueNodes.length === 0) {
+      return null;
+    }
+    const valueText = matching.getComputedTextRange(valueNodes[0], valueNodes[valueNodes.length - 1]);
+    if (CSSMetadata.isCSSWideKeyword(valueText)) {
+      return null;
+    }
+    return new PositionAreaMatch(valueText, node);
+  }
+};
 
 // ../../front_end/core/sdk/CSSPropertyParser.ts
 var globalValues = /* @__PURE__ */ new Set(["inherit", "initial", "unset"]);
@@ -18318,7 +18592,7 @@ var Events3 = /* @__PURE__ */ ((Events35) => {
   Events35["LOCAL_VALUE_UPDATED"] = "localValueUpdated";
   return Events35;
 })(Events3 || {});
-var CSSProperty = class _CSSProperty extends Common5.ObjectWrapper.ObjectWrapper {
+var CSSProperty = class _CSSProperty extends Common6.ObjectWrapper.ObjectWrapper {
   ownerStyle;
   index;
   name;
@@ -19508,6 +19782,26 @@ var CSSStyleRule = class _CSSStyleRule extends CSSRule {
     this.navigations.forEach((navigation) => navigation.rebase(edit));
     super.rebase(edit);
   }
+  constructResolvedSelector(nestingIndex) {
+    const nestingSelectors = this.nestingSelectors;
+    if (!nestingSelectors) {
+      return nestingIndex === void 0 ? this.selectorText() : void 0;
+    }
+    if (nestingIndex !== void 0 && (nestingIndex < 0 || nestingIndex >= nestingSelectors.length)) {
+      return void 0;
+    }
+    const selectorText = nestingIndex !== void 0 ? nestingSelectors[nestingIndex] : this.selectorText();
+    const parentIndex = nestingIndex !== void 0 ? nestingIndex + 1 : 0;
+    const parentSelector = this.constructResolvedSelector(parentIndex);
+    if (!parentSelector) {
+      return selectorText;
+    }
+    const sanitizedParent = parentSelector.replace(/::[a-zA-Z-]+/g, "").trim();
+    if (selectorText.includes("&")) {
+      return selectorText.replaceAll("&", `:is(${sanitizedParent})`);
+    }
+    return `:is(${sanitizedParent}) ${selectorText.trim()}`;
+  }
 };
 var CSSPropertyRule = class extends CSSRule {
   #name;
@@ -20634,6 +20928,7 @@ var CSSMatchedStyles = class _CSSMatchedStyles {
       new AnchorFunctionMatcher(),
       new PositionAnchorMatcher(),
       new FlexGridGridLanesMatcher(),
+      new PositionAreaMatcher(),
       new PositionTryMatcher(),
       new LengthMatcher(),
       new MathFunctionMatcher(),
@@ -21278,7 +21573,7 @@ var CSSStyleSheetHeader_exports = {};
 __export(CSSStyleSheetHeader_exports, {
   CSSStyleSheetHeader: () => CSSStyleSheetHeader
 });
-import * as Common6 from "../common/common.js";
+import * as Common7 from "../common/common.js";
 import * as i18n3 from "../i18n/i18n.js";
 import * as Platform5 from "../platform/platform.js";
 import * as TextUtils12 from "../text_utils/text_utils.js";
@@ -21383,7 +21678,7 @@ var CSSStyleSheetHeader = class {
       return "";
     }
     console.assert(Boolean(frame));
-    const parsedURL = new Common6.ParsedURL.ParsedURL(frame.url);
+    const parsedURL = new Common7.ParsedURL.ParsedURL(frame.url);
     let urlPath = parsedURL.host;
     if (parsedURL.port) {
       urlPath += ":" + parsedURL.port;
@@ -21416,7 +21711,7 @@ var CSSStyleSheetHeader = class {
     return this.resourceURL();
   }
   contentType() {
-    return Common6.ResourceType.resourceTypes.Stylesheet;
+    return Common7.ResourceType.resourceTypes.Stylesheet;
   }
   async requestContentData() {
     const cssText = await this.#cssModel.getStyleSheetText(this.id);
@@ -21457,7 +21752,7 @@ __export(SourceMapManager_exports, {
   lazyLoadingSettingDescriptor: () => lazyLoadingSettingDescriptor,
   tryLoadSourceMap: () => tryLoadSourceMap
 });
-import * as Common12 from "../common/common.js";
+import * as Common13 from "../common/common.js";
 import * as Platform8 from "../platform/platform.js";
 
 // ../../front_end/core/sdk/PageResourceLoader.ts
@@ -21467,7 +21762,7 @@ __export(PageResourceLoader_exports, {
   PageResourceLoader: () => PageResourceLoader,
   ResourceKey: () => ResourceKey
 });
-import * as Common10 from "../common/common.js";
+import * as Common11 from "../common/common.js";
 import * as Host3 from "../host/host.js";
 import * as i18n5 from "../i18n/i18n.js";
 import * as Root3 from "../root/root.js";
@@ -21477,7 +21772,7 @@ var IOModel_exports = {};
 __export(IOModel_exports, {
   IOModel: () => IOModel
 });
-import * as Common7 from "../common/common.js";
+import * as Common8 from "../common/common.js";
 var IOModel = class extends SDKModel {
   async read(handle, size, offset) {
     const result = await this.target().ioAgent().invoke_read({ handle, offset, size });
@@ -21488,7 +21783,7 @@ var IOModel = class extends SDKModel {
       return null;
     }
     if (result.base64Encoded) {
-      return Common7.Base64.decode(result.data);
+      return Common8.Base64.decode(result.data);
     }
     return result.data;
   }
@@ -21559,7 +21854,7 @@ __export(TargetManager_exports, {
   SDKModelObserver: () => SDKModelObserver,
   TargetManager: () => TargetManager
 });
-import * as Common9 from "../common/common.js";
+import * as Common10 from "../common/common.js";
 import * as Host2 from "../host/host.js";
 import * as Platform6 from "../platform/platform.js";
 import { assertNotNullOrUndefined as assertNotNullOrUndefined2 } from "../platform/platform.js";
@@ -21571,9 +21866,9 @@ __export(FrameManager_exports, {
   Events: () => Events5,
   FrameManager: () => FrameManager
 });
-import * as Common8 from "../common/common.js";
+import * as Common9 from "../common/common.js";
 import * as Root from "../root/root.js";
-var FrameManager = class _FrameManager extends Common8.ObjectWrapper.ObjectWrapper {
+var FrameManager = class _FrameManager extends Common9.ObjectWrapper.ObjectWrapper {
   #eventListeners = /* @__PURE__ */ new WeakMap();
   // Maps frameIds to #frames and a count of how many ResourceTreeModels contain this frame.
   // (OOPIFs are usually first attached to a new target and then detached from their old target,
@@ -21610,7 +21905,7 @@ var FrameManager = class _FrameManager extends Common8.ObjectWrapper.ObjectWrapp
   modelRemoved(resourceTreeModel) {
     const listeners = this.#eventListeners.get(resourceTreeModel);
     if (listeners) {
-      Common8.EventTarget.removeEventListeners(listeners);
+      Common9.EventTarget.removeEventListeners(listeners);
     }
     const frameSet = this.#framesForTarget.get(resourceTreeModel.target().id());
     if (frameSet) {
@@ -21755,7 +22050,7 @@ var Events5 = /* @__PURE__ */ ((Events35) => {
 })(Events5 || {});
 
 // ../../front_end/core/sdk/TargetManager.ts
-var TargetManager = class _TargetManager extends Common9.ObjectWrapper.ObjectWrapper {
+var TargetManager = class _TargetManager extends Common10.ObjectWrapper.ObjectWrapper {
   /**
    * @deprecated
    *
@@ -21769,14 +22064,14 @@ var TargetManager = class _TargetManager extends Common9.ObjectWrapper.ObjectWra
   #targets;
   #observers;
   get settings() {
-    return this.context.get(Common9.Settings.Settings);
+    return this.context.get(Common10.Settings.Settings);
   }
   // TODO(crbug.com/493763857): Remove fallback once all unit tests use TestUniverse.
   getConsole() {
-    if ("has" in this.context && typeof this.context.has === "function" && !this.context.has(Common9.Console.Console)) {
-      return Common9.Console.Console.instance();
+    if ("has" in this.context && typeof this.context.has === "function" && !this.context.has(Common10.Console.Console)) {
+      return Common10.Console.Console.instance();
     }
-    return this.context.get(Common9.Console.Console);
+    return this.context.get(Common10.Console.Console);
   }
   // TODO(crbug.com/493763857): Remove fallback once all unit tests use TestUniverse.
   getFrameManager() {
@@ -22246,7 +22541,7 @@ var ResourceKey = class {
     this.key = key;
   }
 };
-var PageResourceLoader = class _PageResourceLoader extends Common10.ObjectWrapper.ObjectWrapper {
+var PageResourceLoader = class _PageResourceLoader extends Common11.ObjectWrapper.ObjectWrapper {
   #targetManager;
   #settings;
   #userAgentProvider;
@@ -22279,7 +22574,7 @@ var PageResourceLoader = class _PageResourceLoader extends Common10.ObjectWrappe
         _PageResourceLoader,
         new _PageResourceLoader(
           targetManager ?? TargetManager.instance(),
-          settings ?? Common10.Settings.Settings.instance(),
+          settings ?? Common11.Settings.Settings.instance(),
           userAgentProvider ?? MultitargetNetworkManager.instance(),
           loadOverride,
           maxConcurrentLoads
@@ -22433,7 +22728,7 @@ var PageResourceLoader = class _PageResourceLoader extends Common10.ObjectWrappe
     if (this.#loadOverride) {
       return await this.#loadOverride(url);
     }
-    const parsedURL = new Common10.ParsedURL.ParsedURL(url);
+    const parsedURL = new Common11.ParsedURL.ParsedURL(url);
     const eligibleForLoadFromTarget = this.getLoadThroughTargetSetting().get() && parsedURL && parsedURL.scheme !== "file" && parsedURL.scheme !== "data" && parsedURL.scheme !== "devtools" && initiator.target;
     Host3.userMetrics.developerResourceScheme(this.getDeveloperResourceScheme(parsedURL));
     if (eligibleForLoadFromTarget) {
@@ -22565,7 +22860,7 @@ __export(SourceMap_exports, {
   parseSourceMap: () => parseSourceMap
 });
 import * as ScopesCodec from "../../third_party/source-map-scopes-codec/source-map-scopes-codec.js";
-import * as Common11 from "../common/common.js";
+import * as Common12 from "../common/common.js";
 import * as Platform7 from "../platform/platform.js";
 import * as TextUtils15 from "../text_utils/text_utils.js";
 
@@ -23374,7 +23669,7 @@ var SourceMap = class _SourceMap {
     this.#script = script;
     this.#compiledURL = compiledURL;
     this.#sourceMappingURL = sourceMappingURL;
-    this.#baseURL = Common11.ParsedURL.schemeIs(sourceMappingURL, "data:") ? compiledURL : sourceMappingURL;
+    this.#baseURL = Common12.ParsedURL.schemeIs(sourceMappingURL, "data:") ? compiledURL : sourceMappingURL;
     this.#debugId = "debugId" in payload ? payload.debugId : void 0;
     this.#console = console2;
     if ("sections" in this.#json) {
@@ -23650,14 +23945,14 @@ var SourceMap = class _SourceMap {
     const ignoreList = new Set(sourceMap.ignoreList ?? sourceMap.x_google_ignoreList);
     for (let i = 0; i < sourceMap.sources.length; ++i) {
       let href = sourceMap.sources[i];
-      if (Common11.ParsedURL.ParsedURL.isRelativeURL(href)) {
+      if (Common12.ParsedURL.ParsedURL.isRelativeURL(href)) {
         if (sourceRoot && !sourceRoot.endsWith("/") && href && !href.startsWith("/")) {
           href = sourceRoot.concat("/", href);
         } else {
           href = sourceRoot.concat(href);
         }
       }
-      const url = Common11.ParsedURL.ParsedURL.completeURL(this.#baseURL, href) || href;
+      const url = Common12.ParsedURL.ParsedURL.completeURL(this.#baseURL, href) || href;
       const source = sourceMap.sourcesContent?.[i];
       const sourceInfo = {
         sourceURL: url,
@@ -23934,7 +24229,7 @@ var TokenIterator = class {
         throw new Error("Unexpected end of input while decodling VLQ number!");
       }
       const charCode = this.nextCharCode();
-      digit = Common11.Base64.BASE64_CODES[charCode];
+      digit = Common12.Base64.BASE64_CODES[charCode];
       if (charCode !== 65 && digit === 0) {
         throw new Error(`Unexpected char '${String.fromCharCode(charCode)}' encountered while decoding`);
       }
@@ -24020,11 +24315,11 @@ var IN_MEMORY_INSTANCE = new class {
 // ../../front_end/core/sdk/SourceMapManager.ts
 var lazyLoadingSettingDescriptor = {
   name: "source-maps-lazy-loading",
-  type: Common12.Settings.SettingType.BOOLEAN,
+  type: Common13.Settings.SettingType.BOOLEAN,
   defaultValue: false,
-  storageType: Common12.Settings.SettingStorageType.LOCAL
+  storageType: Common13.Settings.SettingStorageType.LOCAL
 };
-var SourceMapManager = class _SourceMapManager extends Common12.ObjectWrapper.ObjectWrapper {
+var SourceMapManager = class _SourceMapManager extends Common13.ObjectWrapper.ObjectWrapper {
   #target;
   #factory;
   #lazyLoadingSetting;
@@ -24063,7 +24358,7 @@ var SourceMapManager = class _SourceMapManager extends Common12.ObjectWrapper.Ob
     return target?.inspectedURL() ?? Platform8.DevToolsPath.EmptyUrlString;
   }
   static resolveRelativeSourceURL(target, url) {
-    url = Common12.ParsedURL.ParsedURL.completeURL(_SourceMapManager.getBaseUrl(target), url) ?? url;
+    url = Common13.ParsedURL.ParsedURL.completeURL(_SourceMapManager.getBaseUrl(target), url) ?? url;
     return url;
   }
   sourceMapForClient(client) {
@@ -24096,7 +24391,7 @@ var SourceMapManager = class _SourceMapManager extends Common12.ObjectWrapper.Ob
     this.#clientData.set(client, clientData);
     if (this.#isEnabled) {
       const sourceURL = _SourceMapManager.resolveRelativeSourceURL(this.#target, relativeSourceURL);
-      const sourceMapURL = Common12.ParsedURL.ParsedURL.completeURL(sourceURL, relativeSourceMapURL);
+      const sourceMapURL = Common13.ParsedURL.ParsedURL.completeURL(sourceURL, relativeSourceMapURL);
       if (sourceMapURL) {
         let sourceMapPromise;
         const doLoad = () => {
@@ -24180,7 +24475,7 @@ var SourceMapManager = class _SourceMapManager extends Common12.ObjectWrapper.Ob
 async function loadSourceMap(resourceLoader, sourceMapCache, url, debugId, initiator) {
   try {
     if (debugId) {
-      const securityOrigin = initiator.initiatorUrl ? Common12.ParsedURL.ParsedURL.extractOrigin(initiator.initiatorUrl) : Platform8.DevToolsPath.EmptyUrlString;
+      const securityOrigin = initiator.initiatorUrl ? Common13.ParsedURL.ParsedURL.extractOrigin(initiator.initiatorUrl) : Platform8.DevToolsPath.EmptyUrlString;
       const cachedSourceMap = await sourceMapCache.get(debugId, securityOrigin);
       if (cachedSourceMap) {
         return cachedSourceMap;
@@ -24189,7 +24484,7 @@ async function loadSourceMap(resourceLoader, sourceMapCache, url, debugId, initi
     const { content } = await resourceLoader.loadResource(url, initiator);
     const sourceMap = parseSourceMap(content);
     if (debugId && "debugId" in sourceMap && sourceMap.debugId === debugId) {
-      const securityOrigin = initiator.initiatorUrl ? Common12.ParsedURL.ParsedURL.extractOrigin(initiator.initiatorUrl) : Platform8.DevToolsPath.EmptyUrlString;
+      const securityOrigin = initiator.initiatorUrl ? Common13.ParsedURL.ParsedURL.extractOrigin(initiator.initiatorUrl) : Platform8.DevToolsPath.EmptyUrlString;
       await sourceMapCache.set(sourceMap.debugId, securityOrigin, sourceMap).catch();
     }
     return sourceMap;
@@ -24227,7 +24522,7 @@ var CSSModel = class _CSSModel extends SDKModel {
   #resourceTreeModel;
   #sourceMapManager;
   #styleLoader;
-  #stylePollingThrottler = new Common13.Throttler.Throttler(StylePollingInterval);
+  #stylePollingThrottler = new Common14.Throttler.Throttler(StylePollingInterval);
   #styleSheetIdsForURL = /* @__PURE__ */ new Map();
   #styleSheetIdToHeader = /* @__PURE__ */ new Map();
   #cachedMatchedCascadeNode = null;
@@ -25036,26 +25331,6 @@ var Edit = class {
     this.payload = payload;
   }
 };
-var CSSLocation = class {
-  #cssModel;
-  styleSheetId;
-  url;
-  lineNumber;
-  columnNumber;
-  constructor(header, lineNumber, columnNumber) {
-    this.#cssModel = header.cssModel();
-    this.styleSheetId = header.id;
-    this.url = header.resourceURL();
-    this.lineNumber = lineNumber;
-    this.columnNumber = columnNumber || 0;
-  }
-  cssModel() {
-    return this.#cssModel;
-  }
-  header() {
-    return this.#cssModel.styleSheetHeaderForId(this.styleSheetId);
-  }
-};
 var CSSDispatcher = class {
   #cssModel;
   constructor(cssModel) {
@@ -25122,7 +25397,7 @@ var InlineStyleResult = class {
     this.attributesStyle = attributesStyle;
   }
 };
-var CSSPropertyTracker = class extends Common13.ObjectWrapper.ObjectWrapper {
+var CSSPropertyTracker = class extends Common14.ObjectWrapper.ObjectWrapper {
   #cssModel;
   #properties;
   constructor(cssModel, propertiesToTrack) {
@@ -25156,7 +25431,7 @@ __export(OverlayModel_exports, {
   SourceOrderHighlighter: () => SourceOrderHighlighter,
   WindowControls: () => WindowControls
 });
-import * as Common16 from "../common/common.js";
+import * as Common17 from "../common/common.js";
 import * as i18n9 from "../i18n/i18n.js";
 
 // ../../front_end/core/sdk/OverlayPersistentHighlighter.ts
@@ -25165,7 +25440,7 @@ __export(OverlayPersistentHighlighter_exports, {
   HighlightType: () => HighlightType,
   OverlayPersistentHighlighter: () => OverlayPersistentHighlighter
 });
-import * as Common15 from "../common/common.js";
+import * as Common16 from "../common/common.js";
 import * as Platform10 from "../platform/platform.js";
 
 // ../../front_end/core/sdk/OverlayColorGenerator.ts
@@ -25173,31 +25448,31 @@ var OverlayColorGenerator_exports = {};
 __export(OverlayColorGenerator_exports, {
   OverlayColorGenerator: () => OverlayColorGenerator
 });
-import * as Common14 from "../common/common.js";
+import * as Common15 from "../common/common.js";
 var OverlayColorGenerator = class {
   #colors;
   #index;
   constructor() {
-    const format = Common14.Color.Format.RGBA;
+    const format = Common15.Color.Format.RGBA;
     this.#colors = [
       // F59794
-      new Common14.Color.Legacy([0.9607843137254902, 0.592156862745098, 0.5803921568627451, 1], format),
+      new Common15.Color.Legacy([0.9607843137254902, 0.592156862745098, 0.5803921568627451, 1], format),
       // F0BF4C
-      new Common14.Color.Legacy([0.9411764705882353, 0.7490196078431373, 0.2980392156862745, 1], format),
+      new Common15.Color.Legacy([0.9411764705882353, 0.7490196078431373, 0.2980392156862745, 1], format),
       // D4ED31
-      new Common14.Color.Legacy([0.8313725490196079, 0.9294117647058824, 0.19215686274509805, 1], format),
+      new Common15.Color.Legacy([0.8313725490196079, 0.9294117647058824, 0.19215686274509805, 1], format),
       // 9EEB47
-      new Common14.Color.Legacy([0.6196078431372549, 0.9215686274509803, 0.2784313725490196, 1], format),
+      new Common15.Color.Legacy([0.6196078431372549, 0.9215686274509803, 0.2784313725490196, 1], format),
       // 5BD1D7
-      new Common14.Color.Legacy([0.3568627450980392, 0.8196078431372549, 0.8431372549019608, 1], format),
+      new Common15.Color.Legacy([0.3568627450980392, 0.8196078431372549, 0.8431372549019608, 1], format),
       // BCCEFB
-      new Common14.Color.Legacy([0.7372549019607844, 0.807843137254902, 0.984313725490196, 1], format),
+      new Common15.Color.Legacy([0.7372549019607844, 0.807843137254902, 0.984313725490196, 1], format),
       // C6BEEE
-      new Common14.Color.Legacy([0.7764705882352941, 0.7450980392156863, 0.9333333333333333, 1], format),
+      new Common15.Color.Legacy([0.7764705882352941, 0.7450980392156863, 0.9333333333333333, 1], format),
       // D094EA
-      new Common14.Color.Legacy([0.8156862745098039, 0.5803921568627451, 0.9176470588235294, 1], format),
+      new Common15.Color.Legacy([0.8156862745098039, 0.5803921568627451, 0.9176470588235294, 1], format),
       // EB94CF
-      new Common14.Color.Legacy([0.9215686274509803, 0.5803921568627451, 0.8117647058823529, 1], format)
+      new Common15.Color.Legacy([0.9215686274509803, 0.5803921568627451, 0.8117647058823529, 1], format)
     ];
     this.#index = 0;
   }
@@ -25301,12 +25576,12 @@ var OverlayPersistentHighlighter = class {
   buildScrollSnapContainerHighlightConfig(_nodeId) {
     return {
       snapAreaBorder: {
-        color: Common15.Color.PageHighlight.GridBorder.toProtocolRGBA(),
+        color: Common16.Color.PageHighlight.GridBorder.toProtocolRGBA(),
         pattern: Overlay.LineStylePattern.Dashed
       },
-      snapportBorder: { color: Common15.Color.PageHighlight.GridBorder.toProtocolRGBA() },
-      scrollMarginColor: Common15.Color.PageHighlight.Margin.toProtocolRGBA(),
-      scrollPaddingColor: Common15.Color.PageHighlight.Padding.toProtocolRGBA()
+      snapportBorder: { color: Common16.Color.PageHighlight.GridBorder.toProtocolRGBA() },
+      scrollMarginColor: Common16.Color.PageHighlight.Margin.toProtocolRGBA(),
+      scrollPaddingColor: Common16.Color.PageHighlight.Padding.toProtocolRGBA()
     };
   }
   highlightGridInOverlay(nodeId) {
@@ -25402,11 +25677,11 @@ var OverlayPersistentHighlighter = class {
   buildContainerQueryContainerHighlightConfig() {
     return {
       containerBorder: {
-        color: Common15.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+        color: Common16.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
         pattern: Overlay.LineStylePattern.Dashed
       },
       descendantBorder: {
-        color: Common15.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+        color: Common16.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
         pattern: Overlay.LineStylePattern.Dashed
       }
     };
@@ -25428,9 +25703,9 @@ var OverlayPersistentHighlighter = class {
   }
   buildIsolationModeHighlightConfig() {
     return {
-      resizerColor: Common15.Color.IsolationModeHighlight.Resizer.toProtocolRGBA(),
-      resizerHandleColor: Common15.Color.IsolationModeHighlight.ResizerHandle.toProtocolRGBA(),
-      maskColor: Common15.Color.IsolationModeHighlight.Mask.toProtocolRGBA()
+      resizerColor: Common16.Color.IsolationModeHighlight.Resizer.toProtocolRGBA(),
+      resizerHandleColor: Common16.Color.IsolationModeHighlight.ResizerHandle.toProtocolRGBA(),
+      maskColor: Common16.Color.IsolationModeHighlight.Mask.toProtocolRGBA()
     };
   }
   hideAllInOverlayWithoutSave() {
@@ -25809,7 +26084,7 @@ var OverlayModel = class _OverlayModel extends SDKModel {
     this.#persistentHighlighter?.resetOverlay();
   }
   async suspendModel() {
-    Common16.EventTarget.removeEventListeners(this.#registeredListeners);
+    Common17.EventTarget.removeEventListeners(this.#registeredListeners);
     await this.overlayAgent.invoke_disable();
   }
   async resumeModel() {
@@ -25935,8 +26210,8 @@ var OverlayModel = class _OverlayModel extends SDKModel {
   }
   highlightSourceOrderInOverlay(node) {
     const sourceOrderConfig = {
-      parentOutlineColor: Common16.Color.SourceOrderHighlight.ParentOutline.toProtocolRGBA(),
-      childOutlineColor: Common16.Color.SourceOrderHighlight.ChildOutline.toProtocolRGBA()
+      parentOutlineColor: Common17.Color.SourceOrderHighlight.ParentOutline.toProtocolRGBA(),
+      childOutlineColor: Common17.Color.SourceOrderHighlight.ChildOutline.toProtocolRGBA()
     };
     this.#sourceOrderHighlighter.highlightSourceOrderInOverlay(node, sourceOrderConfig);
   }
@@ -25944,13 +26219,13 @@ var OverlayModel = class _OverlayModel extends SDKModel {
     if (!this.#persistentHighlighter) {
       return null;
     }
-    return this.#persistentHighlighter.colorOfGrid(nodeId).asString(Common16.Color.Format.HEX);
+    return this.#persistentHighlighter.colorOfGrid(nodeId).asString(Common17.Color.Format.HEX);
   }
   setColorOfGridInPersistentOverlay(nodeId, colorStr) {
     if (!this.#persistentHighlighter) {
       return;
     }
-    const color = Common16.Color.parse(colorStr);
+    const color = Common17.Color.parse(colorStr);
     if (!color) {
       return;
     }
@@ -25961,13 +26236,13 @@ var OverlayModel = class _OverlayModel extends SDKModel {
     if (!this.#persistentHighlighter) {
       return null;
     }
-    return this.#persistentHighlighter.colorOfFlex(nodeId).asString(Common16.Color.Format.HEX);
+    return this.#persistentHighlighter.colorOfFlex(nodeId).asString(Common17.Color.Format.HEX);
   }
   setColorOfFlexInPersistentOverlay(nodeId, colorStr) {
     if (!this.#persistentHighlighter) {
       return;
     }
-    const color = Common16.Color.parse(colorStr);
+    const color = Common17.Color.parse(colorStr);
     if (!color) {
       return;
     }
@@ -26059,187 +26334,187 @@ var OverlayModel = class _OverlayModel extends SDKModel {
       contrastAlgorithm: settings.resolve(apcaSettingDescriptor).get() ? Overlay.ContrastAlgorithm.Apca : Overlay.ContrastAlgorithm.Aa
     };
     if (mode === "all" || mode === "content") {
-      highlightConfig.contentColor = Common16.Color.PageHighlight.Content.toProtocolRGBA();
+      highlightConfig.contentColor = Common17.Color.PageHighlight.Content.toProtocolRGBA();
     }
     if (mode === "all" || mode === "padding") {
-      highlightConfig.paddingColor = Common16.Color.PageHighlight.Padding.toProtocolRGBA();
+      highlightConfig.paddingColor = Common17.Color.PageHighlight.Padding.toProtocolRGBA();
     }
     if (mode === "all" || mode === "border") {
-      highlightConfig.borderColor = Common16.Color.PageHighlight.Border.toProtocolRGBA();
+      highlightConfig.borderColor = Common17.Color.PageHighlight.Border.toProtocolRGBA();
     }
     if (mode === "all" || mode === "margin") {
-      highlightConfig.marginColor = Common16.Color.PageHighlight.Margin.toProtocolRGBA();
+      highlightConfig.marginColor = Common17.Color.PageHighlight.Margin.toProtocolRGBA();
     }
     if (mode === "all") {
-      highlightConfig.eventTargetColor = Common16.Color.PageHighlight.EventTarget.toProtocolRGBA();
-      highlightConfig.shapeColor = Common16.Color.PageHighlight.Shape.toProtocolRGBA();
-      highlightConfig.shapeMarginColor = Common16.Color.PageHighlight.ShapeMargin.toProtocolRGBA();
+      highlightConfig.eventTargetColor = Common17.Color.PageHighlight.EventTarget.toProtocolRGBA();
+      highlightConfig.shapeColor = Common17.Color.PageHighlight.Shape.toProtocolRGBA();
+      highlightConfig.shapeMarginColor = Common17.Color.PageHighlight.ShapeMargin.toProtocolRGBA();
       highlightConfig.gridHighlightConfig = {
-        rowGapColor: Common16.Color.PageHighlight.GapBackground.toProtocolRGBA(),
-        rowHatchColor: Common16.Color.PageHighlight.GapHatch.toProtocolRGBA(),
-        columnGapColor: Common16.Color.PageHighlight.GapBackground.toProtocolRGBA(),
-        columnHatchColor: Common16.Color.PageHighlight.GapHatch.toProtocolRGBA(),
-        rowLineColor: Common16.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
-        columnLineColor: Common16.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+        rowGapColor: Common17.Color.PageHighlight.GapBackground.toProtocolRGBA(),
+        rowHatchColor: Common17.Color.PageHighlight.GapHatch.toProtocolRGBA(),
+        columnGapColor: Common17.Color.PageHighlight.GapBackground.toProtocolRGBA(),
+        columnHatchColor: Common17.Color.PageHighlight.GapHatch.toProtocolRGBA(),
+        rowLineColor: Common17.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+        columnLineColor: Common17.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
         rowLineDash: true,
         columnLineDash: true
       };
       highlightConfig.flexContainerHighlightConfig = {
         containerBorder: {
-          color: Common16.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+          color: Common17.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
           pattern: Overlay.LineStylePattern.Dashed
         },
         itemSeparator: {
-          color: Common16.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+          color: Common17.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
           pattern: Overlay.LineStylePattern.Dotted
         },
         lineSeparator: {
-          color: Common16.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+          color: Common17.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
           pattern: Overlay.LineStylePattern.Dashed
         },
         mainDistributedSpace: {
-          hatchColor: Common16.Color.PageHighlight.GapHatch.toProtocolRGBA(),
-          fillColor: Common16.Color.PageHighlight.GapBackground.toProtocolRGBA()
+          hatchColor: Common17.Color.PageHighlight.GapHatch.toProtocolRGBA(),
+          fillColor: Common17.Color.PageHighlight.GapBackground.toProtocolRGBA()
         },
         crossDistributedSpace: {
-          hatchColor: Common16.Color.PageHighlight.GapHatch.toProtocolRGBA(),
-          fillColor: Common16.Color.PageHighlight.GapBackground.toProtocolRGBA()
+          hatchColor: Common17.Color.PageHighlight.GapHatch.toProtocolRGBA(),
+          fillColor: Common17.Color.PageHighlight.GapBackground.toProtocolRGBA()
         },
         rowGapSpace: {
-          hatchColor: Common16.Color.PageHighlight.GapHatch.toProtocolRGBA(),
-          fillColor: Common16.Color.PageHighlight.GapBackground.toProtocolRGBA()
+          hatchColor: Common17.Color.PageHighlight.GapHatch.toProtocolRGBA(),
+          fillColor: Common17.Color.PageHighlight.GapBackground.toProtocolRGBA()
         },
         columnGapSpace: {
-          hatchColor: Common16.Color.PageHighlight.GapHatch.toProtocolRGBA(),
-          fillColor: Common16.Color.PageHighlight.GapBackground.toProtocolRGBA()
+          hatchColor: Common17.Color.PageHighlight.GapHatch.toProtocolRGBA(),
+          fillColor: Common17.Color.PageHighlight.GapBackground.toProtocolRGBA()
         }
       };
       highlightConfig.flexItemHighlightConfig = {
         baseSizeBox: {
-          hatchColor: Common16.Color.PageHighlight.GapHatch.toProtocolRGBA()
+          hatchColor: Common17.Color.PageHighlight.GapHatch.toProtocolRGBA()
         },
         baseSizeBorder: {
-          color: Common16.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+          color: Common17.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
           pattern: Overlay.LineStylePattern.Dotted
         },
         flexibilityArrow: {
-          color: Common16.Color.PageHighlight.LayoutLine.toProtocolRGBA()
+          color: Common17.Color.PageHighlight.LayoutLine.toProtocolRGBA()
         }
       };
     }
     if (mode.endsWith("gap")) {
       highlightConfig.gridHighlightConfig = {
-        gridBorderColor: Common16.Color.PageHighlight.GridBorder.toProtocolRGBA(),
+        gridBorderColor: Common17.Color.PageHighlight.GridBorder.toProtocolRGBA(),
         gridBorderDash: true
       };
       if (mode === "gap" || mode === "row-gap") {
-        highlightConfig.gridHighlightConfig.rowGapColor = Common16.Color.PageHighlight.GapBackground.toProtocolRGBA();
-        highlightConfig.gridHighlightConfig.rowHatchColor = Common16.Color.PageHighlight.GapHatch.toProtocolRGBA();
+        highlightConfig.gridHighlightConfig.rowGapColor = Common17.Color.PageHighlight.GapBackground.toProtocolRGBA();
+        highlightConfig.gridHighlightConfig.rowHatchColor = Common17.Color.PageHighlight.GapHatch.toProtocolRGBA();
       }
       if (mode === "gap" || mode === "column-gap") {
-        highlightConfig.gridHighlightConfig.columnGapColor = Common16.Color.PageHighlight.GapBackground.toProtocolRGBA();
-        highlightConfig.gridHighlightConfig.columnHatchColor = Common16.Color.PageHighlight.GapHatch.toProtocolRGBA();
+        highlightConfig.gridHighlightConfig.columnGapColor = Common17.Color.PageHighlight.GapBackground.toProtocolRGBA();
+        highlightConfig.gridHighlightConfig.columnHatchColor = Common17.Color.PageHighlight.GapHatch.toProtocolRGBA();
       }
     }
     if (mode.endsWith("gap")) {
       highlightConfig.flexContainerHighlightConfig = {
         containerBorder: {
-          color: Common16.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+          color: Common17.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
           pattern: Overlay.LineStylePattern.Dashed
         }
       };
       if (mode === "gap" || mode === "row-gap") {
         highlightConfig.flexContainerHighlightConfig.rowGapSpace = {
-          hatchColor: Common16.Color.PageHighlight.GapHatch.toProtocolRGBA(),
-          fillColor: Common16.Color.PageHighlight.GapBackground.toProtocolRGBA()
+          hatchColor: Common17.Color.PageHighlight.GapHatch.toProtocolRGBA(),
+          fillColor: Common17.Color.PageHighlight.GapBackground.toProtocolRGBA()
         };
       }
       if (mode === "gap" || mode === "column-gap") {
         highlightConfig.flexContainerHighlightConfig.columnGapSpace = {
-          hatchColor: Common16.Color.PageHighlight.GapHatch.toProtocolRGBA(),
-          fillColor: Common16.Color.PageHighlight.GapBackground.toProtocolRGBA()
+          hatchColor: Common17.Color.PageHighlight.GapHatch.toProtocolRGBA(),
+          fillColor: Common17.Color.PageHighlight.GapBackground.toProtocolRGBA()
         };
       }
     }
     if (mode === "grid-areas") {
       highlightConfig.gridHighlightConfig = {
-        rowLineColor: Common16.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
-        columnLineColor: Common16.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+        rowLineColor: Common17.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+        columnLineColor: Common17.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
         rowLineDash: true,
         columnLineDash: true,
         showAreaNames: true,
-        areaBorderColor: Common16.Color.PageHighlight.GridAreaBorder.toProtocolRGBA()
+        areaBorderColor: Common17.Color.PageHighlight.GridAreaBorder.toProtocolRGBA()
       };
     }
     if (mode === "grid-template-columns") {
-      highlightConfig.contentColor = Common16.Color.PageHighlight.Content.toProtocolRGBA();
+      highlightConfig.contentColor = Common17.Color.PageHighlight.Content.toProtocolRGBA();
       highlightConfig.gridHighlightConfig = {
-        columnLineColor: Common16.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+        columnLineColor: Common17.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
         columnLineDash: true
       };
     }
     if (mode === "grid-template-rows") {
-      highlightConfig.contentColor = Common16.Color.PageHighlight.Content.toProtocolRGBA();
+      highlightConfig.contentColor = Common17.Color.PageHighlight.Content.toProtocolRGBA();
       highlightConfig.gridHighlightConfig = {
-        rowLineColor: Common16.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+        rowLineColor: Common17.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
         rowLineDash: true
       };
     }
     if (mode === "justify-content") {
       highlightConfig.flexContainerHighlightConfig = {
         containerBorder: {
-          color: Common16.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+          color: Common17.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
           pattern: Overlay.LineStylePattern.Dashed
         },
         mainDistributedSpace: {
-          hatchColor: Common16.Color.PageHighlight.GapHatch.toProtocolRGBA(),
-          fillColor: Common16.Color.PageHighlight.GapBackground.toProtocolRGBA()
+          hatchColor: Common17.Color.PageHighlight.GapHatch.toProtocolRGBA(),
+          fillColor: Common17.Color.PageHighlight.GapBackground.toProtocolRGBA()
         }
       };
     }
     if (mode === "align-content") {
       highlightConfig.flexContainerHighlightConfig = {
         containerBorder: {
-          color: Common16.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+          color: Common17.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
           pattern: Overlay.LineStylePattern.Dashed
         },
         crossDistributedSpace: {
-          hatchColor: Common16.Color.PageHighlight.GapHatch.toProtocolRGBA(),
-          fillColor: Common16.Color.PageHighlight.GapBackground.toProtocolRGBA()
+          hatchColor: Common17.Color.PageHighlight.GapHatch.toProtocolRGBA(),
+          fillColor: Common17.Color.PageHighlight.GapBackground.toProtocolRGBA()
         }
       };
     }
     if (mode === "align-items") {
       highlightConfig.flexContainerHighlightConfig = {
         containerBorder: {
-          color: Common16.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+          color: Common17.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
           pattern: Overlay.LineStylePattern.Dashed
         },
         lineSeparator: {
-          color: Common16.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+          color: Common17.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
           pattern: Overlay.LineStylePattern.Dashed
         },
-        crossAlignment: { color: Common16.Color.PageHighlight.LayoutLine.toProtocolRGBA() }
+        crossAlignment: { color: Common17.Color.PageHighlight.LayoutLine.toProtocolRGBA() }
       };
     }
     if (mode === "flexibility") {
       highlightConfig.flexItemHighlightConfig = {
         baseSizeBox: {
-          hatchColor: Common16.Color.PageHighlight.GapHatch.toProtocolRGBA()
+          hatchColor: Common17.Color.PageHighlight.GapHatch.toProtocolRGBA()
         },
         baseSizeBorder: {
-          color: Common16.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+          color: Common17.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
           pattern: Overlay.LineStylePattern.Dotted
         },
         flexibilityArrow: {
-          color: Common16.Color.PageHighlight.LayoutLine.toProtocolRGBA()
+          color: Common17.Color.PageHighlight.LayoutLine.toProtocolRGBA()
         }
       };
     }
     if (mode === "container-outline") {
       highlightConfig.containerQueryContainerHighlightConfig = {
         containerBorder: {
-          color: Common16.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+          color: Common17.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
           pattern: Overlay.LineStylePattern.Dashed
         }
       };
@@ -26264,7 +26539,7 @@ var OverlayModel = class _OverlayModel extends SDKModel {
         }
       });
     } else {
-      void Common16.Revealer.reveal(deferredNode);
+      void Common17.Revealer.reveal(deferredNode);
     }
     this.dispatchEventToListeners("InspectModeExited" /* EXITED_INSPECT_MODE */);
   }
@@ -26364,7 +26639,7 @@ var WindowControls = class _WindowControls {
     );
   }
   #fetchCssSourceUrl(url) {
-    const parentURL = Common16.ParsedURL.ParsedURL.extractOrigin(url);
+    const parentURL = Common17.ParsedURL.ParsedURL.extractOrigin(url);
     const cssHeaders = this.#cssModel.styleSheetHeaders();
     const header = cssHeaders.find((header2) => header2.sourceURL && header2.sourceURL.includes(parentURL));
     return header?.sourceURL;
@@ -26427,8 +26702,8 @@ var DefaultHighlighter = class {
   highlightFrame(frameId) {
     void this.#model.target().overlayAgent().invoke_highlightFrame({
       frameId,
-      contentColor: Common16.Color.PageHighlight.Content.toProtocolRGBA(),
-      contentOutlineColor: Common16.Color.PageHighlight.ContentOutline.toProtocolRGBA()
+      contentColor: Common17.Color.PageHighlight.Content.toProtocolRGBA(),
+      contentOutlineColor: Common17.Color.PageHighlight.ContentOutline.toProtocolRGBA()
     });
   }
 };
@@ -27009,291 +27284,291 @@ SDKModel.register(EmulationModel, { capabilities: 256 /* EMULATION */, autostart
 // ../../front_end/core/sdk/SDKSettings.ts
 var jsSourceMapsEnabledSettingDescriptor = {
   name: "js-source-maps-enabled",
-  type: Common17.Settings.SettingType.BOOLEAN,
+  type: Common18.Settings.SettingType.BOOLEAN,
   defaultValue: true,
-  storageType: Common17.Settings.SettingStorageType.SYNCED
+  storageType: Common18.Settings.SettingStorageType.SYNCED
 };
 var cssSourceMapsEnabledSettingDescriptor = {
   name: "css-source-maps-enabled",
-  type: Common17.Settings.SettingType.BOOLEAN,
+  type: Common18.Settings.SettingType.BOOLEAN,
   defaultValue: true,
-  storageType: Common17.Settings.SettingStorageType.SYNCED
+  storageType: Common18.Settings.SettingStorageType.SYNCED
 };
 var preserveConsoleLogSettingDescriptor = {
   name: "preserve-console-log",
-  type: Common17.Settings.SettingType.BOOLEAN,
+  type: Common18.Settings.SettingType.BOOLEAN,
   defaultValue: false,
-  storageType: Common17.Settings.SettingStorageType.SYNCED
+  storageType: Common18.Settings.SettingStorageType.SYNCED
 };
 var pauseOnExceptionEnabledSettingDescriptor = {
   name: "pause-on-exception-enabled",
-  type: Common17.Settings.SettingType.BOOLEAN,
+  type: Common18.Settings.SettingType.BOOLEAN,
   defaultValue: false
 };
 var pauseOnCaughtExceptionSettingDescriptor = {
   name: "pause-on-caught-exception",
-  type: Common17.Settings.SettingType.BOOLEAN,
+  type: Common18.Settings.SettingType.BOOLEAN,
   defaultValue: false
 };
 var pauseOnUncaughtExceptionSettingDescriptor = {
   name: "pause-on-uncaught-exception",
-  type: Common17.Settings.SettingType.BOOLEAN,
+  type: Common18.Settings.SettingType.BOOLEAN,
   defaultValue: false
 };
 var javaScriptDisabledSettingDescriptor = {
   name: "java-script-disabled",
-  type: Common17.Settings.SettingType.BOOLEAN,
+  type: Common18.Settings.SettingType.BOOLEAN,
   defaultValue: false,
-  storageType: Common17.Settings.SettingStorageType.SESSION
+  storageType: Common18.Settings.SettingStorageType.SESSION
 };
 var disableAsyncStackTracesSettingDescriptor = {
   name: "disable-async-stack-traces",
-  type: Common17.Settings.SettingType.BOOLEAN,
+  type: Common18.Settings.SettingType.BOOLEAN,
   defaultValue: false
 };
 var breakpointsActiveSettingDescriptor = {
   name: "breakpoints-active",
-  type: Common17.Settings.SettingType.BOOLEAN,
+  type: Common18.Settings.SettingType.BOOLEAN,
   defaultValue: true,
-  storageType: Common17.Settings.SettingStorageType.SESSION
+  storageType: Common18.Settings.SettingStorageType.SESSION
 };
 var showMetricsRulersSettingDescriptor = {
   name: "show-metrics-rulers",
-  type: Common17.Settings.SettingType.BOOLEAN,
+  type: Common18.Settings.SettingType.BOOLEAN,
   defaultValue: false,
-  storageType: Common17.Settings.SettingStorageType.SYNCED
+  storageType: Common18.Settings.SettingStorageType.SYNCED
 };
 var apcaSettingDescriptor = {
   name: "apca",
-  type: Common17.Settings.SettingType.BOOLEAN,
+  type: Common18.Settings.SettingType.BOOLEAN,
   defaultValue: false,
-  storageType: Common17.Settings.SettingStorageType.SYNCED
+  storageType: Common18.Settings.SettingStorageType.SYNCED
 };
 var showGridAreasSettingDescriptor = {
   name: "show-grid-areas",
-  type: Common17.Settings.SettingType.BOOLEAN,
+  type: Common18.Settings.SettingType.BOOLEAN,
   defaultValue: false,
-  storageType: Common17.Settings.SettingStorageType.SYNCED
+  storageType: Common18.Settings.SettingStorageType.SYNCED
 };
 var showGridTrackSizesSettingDescriptor = {
   name: "show-grid-track-sizes",
-  type: Common17.Settings.SettingType.BOOLEAN,
+  type: Common18.Settings.SettingType.BOOLEAN,
   defaultValue: false,
-  storageType: Common17.Settings.SettingStorageType.SYNCED
+  storageType: Common18.Settings.SettingStorageType.SYNCED
 };
 var extendGridLinesSettingDescriptor = {
   name: "extend-grid-lines",
-  type: Common17.Settings.SettingType.BOOLEAN,
+  type: Common18.Settings.SettingType.BOOLEAN,
   defaultValue: false,
-  storageType: Common17.Settings.SettingStorageType.SYNCED
+  storageType: Common18.Settings.SettingStorageType.SYNCED
 };
 var showGridLineLabelsSettingDescriptor = {
   name: "show-grid-line-labels",
-  type: Common17.Settings.SettingType.ENUM,
+  type: Common18.Settings.SettingType.ENUM,
   defaultValue: "lineNumbers",
-  storageType: Common17.Settings.SettingStorageType.SYNCED
+  storageType: Common18.Settings.SettingStorageType.SYNCED
 };
 var showPaintRectsSettingDescriptor = {
   name: "show-paint-rects",
-  type: Common17.Settings.SettingType.BOOLEAN,
+  type: Common18.Settings.SettingType.BOOLEAN,
   defaultValue: false,
-  storageType: Common17.Settings.SettingStorageType.SESSION
+  storageType: Common18.Settings.SettingStorageType.SESSION
 };
 var showLayoutShiftRegionsSettingDescriptor = {
   name: "show-layout-shift-regions",
-  type: Common17.Settings.SettingType.BOOLEAN,
+  type: Common18.Settings.SettingType.BOOLEAN,
   defaultValue: false,
-  storageType: Common17.Settings.SettingStorageType.SESSION
+  storageType: Common18.Settings.SettingStorageType.SESSION
 };
 var showAdHighlightsSettingDescriptor = {
   name: "show-ad-highlights",
-  type: Common17.Settings.SettingType.BOOLEAN,
+  type: Common18.Settings.SettingType.BOOLEAN,
   defaultValue: false,
-  storageType: Common17.Settings.SettingStorageType.SESSION
+  storageType: Common18.Settings.SettingStorageType.SESSION
 };
 var showDebugBordersSettingDescriptor = {
   name: "show-debug-borders",
-  type: Common17.Settings.SettingType.BOOLEAN,
+  type: Common18.Settings.SettingType.BOOLEAN,
   defaultValue: false,
-  storageType: Common17.Settings.SettingStorageType.SESSION
+  storageType: Common18.Settings.SettingStorageType.SESSION
 };
 var showFPSCounterSettingDescriptor = {
   name: "show-fps-counter",
-  type: Common17.Settings.SettingType.BOOLEAN,
+  type: Common18.Settings.SettingType.BOOLEAN,
   defaultValue: false,
-  storageType: Common17.Settings.SettingStorageType.SESSION
+  storageType: Common18.Settings.SettingStorageType.SESSION
 };
 var showScrollBottleneckRectsSettingDescriptor = {
   name: "show-scroll-bottleneck-rects",
-  type: Common17.Settings.SettingType.BOOLEAN,
+  type: Common18.Settings.SettingType.BOOLEAN,
   defaultValue: false,
-  storageType: Common17.Settings.SettingStorageType.SESSION
+  storageType: Common18.Settings.SettingStorageType.SESSION
 };
 var emulatePageFocusSettingDescriptor = {
   name: "emulate-page-focus",
-  type: Common17.Settings.SettingType.BOOLEAN,
+  type: Common18.Settings.SettingType.BOOLEAN,
   defaultValue: false,
-  storageType: Common17.Settings.SettingStorageType.LOCAL
+  storageType: Common18.Settings.SettingStorageType.LOCAL
 };
 var emulatedCSSMediaSettingDescriptor = {
   name: "emulated-css-media",
-  type: Common17.Settings.SettingType.ENUM,
+  type: Common18.Settings.SettingType.ENUM,
   defaultValue: "",
-  storageType: Common17.Settings.SettingStorageType.SESSION
+  storageType: Common18.Settings.SettingStorageType.SESSION
 };
 var cpuPressureSettingDescriptor = {
   name: "emulation.cpu-pressure",
-  type: Common17.Settings.SettingType.ENUM,
+  type: Common18.Settings.SettingType.ENUM,
   defaultValue: "none"
 };
 var cpuPerformanceSettingDescriptor = {
   name: "emulation.cpu-performance",
-  type: Common17.Settings.SettingType.ENUM,
+  type: Common18.Settings.SettingType.ENUM,
   defaultValue: "no-override"
 };
 var touchSettingDescriptor = {
   name: "emulation.touch",
-  type: Common17.Settings.SettingType.ENUM,
+  type: Common18.Settings.SettingType.ENUM,
   defaultValue: "none"
 };
 var idleDetectionSettingDescriptor = {
   name: "emulation.idle-detection",
-  type: Common17.Settings.SettingType.ENUM,
+  type: Common18.Settings.SettingType.ENUM,
   defaultValue: "none"
 };
 var emulatedCSSMediaFeaturePrefersColorSchemeSettingDescriptor = {
   name: "emulated-css-media-feature-prefers-color-scheme",
-  type: Common17.Settings.SettingType.ENUM,
+  type: Common18.Settings.SettingType.ENUM,
   defaultValue: "",
-  storageType: Common17.Settings.SettingStorageType.SESSION
+  storageType: Common18.Settings.SettingStorageType.SESSION
 };
 var emulatedCSSMediaFeatureForcedColorsSettingDescriptor = {
   name: "emulated-css-media-feature-forced-colors",
-  type: Common17.Settings.SettingType.ENUM,
+  type: Common18.Settings.SettingType.ENUM,
   defaultValue: "",
-  storageType: Common17.Settings.SettingStorageType.SESSION
+  storageType: Common18.Settings.SettingStorageType.SESSION
 };
 var emulatedCSSMediaFeaturePrefersReducedMotionSettingDescriptor = {
   name: "emulated-css-media-feature-prefers-reduced-motion",
-  type: Common17.Settings.SettingType.ENUM,
+  type: Common18.Settings.SettingType.ENUM,
   defaultValue: "",
-  storageType: Common17.Settings.SettingStorageType.SESSION
+  storageType: Common18.Settings.SettingStorageType.SESSION
 };
 var emulatedCSSMediaFeaturePrefersContrastSettingDescriptor = {
   name: "emulated-css-media-feature-prefers-contrast",
-  type: Common17.Settings.SettingType.ENUM,
+  type: Common18.Settings.SettingType.ENUM,
   defaultValue: "",
-  storageType: Common17.Settings.SettingStorageType.SESSION
+  storageType: Common18.Settings.SettingStorageType.SESSION
 };
 var emulatedCSSMediaFeaturePrefersReducedDataSettingDescriptor = {
   name: "emulated-css-media-feature-prefers-reduced-data",
-  type: Common17.Settings.SettingType.ENUM,
+  type: Common18.Settings.SettingType.ENUM,
   defaultValue: "",
-  storageType: Common17.Settings.SettingStorageType.SESSION
+  storageType: Common18.Settings.SettingStorageType.SESSION
 };
 var dataSaverSettingDescriptor = {
   name: "emulation.data-saver",
-  type: Common17.Settings.SettingType.ENUM,
+  type: Common18.Settings.SettingType.ENUM,
   defaultValue: "unset" /* UNSET */,
-  storageType: Common17.Settings.SettingStorageType.SESSION
+  storageType: Common18.Settings.SettingStorageType.SESSION
 };
 var emulatedCSSMediaFeaturePrefersReducedTransparencySettingDescriptor = {
   name: "emulated-css-media-feature-prefers-reduced-transparency",
-  type: Common17.Settings.SettingType.ENUM,
+  type: Common18.Settings.SettingType.ENUM,
   defaultValue: "",
-  storageType: Common17.Settings.SettingStorageType.SESSION
+  storageType: Common18.Settings.SettingStorageType.SESSION
 };
 var emulatedCSSMediaFeatureColorGamutSettingDescriptor = {
   name: "emulated-css-media-feature-color-gamut",
-  type: Common17.Settings.SettingType.ENUM,
+  type: Common18.Settings.SettingType.ENUM,
   defaultValue: "",
-  storageType: Common17.Settings.SettingStorageType.SESSION
+  storageType: Common18.Settings.SettingStorageType.SESSION
 };
 var emulatedVisionDeficiencySettingDescriptor = {
   name: "emulated-vision-deficiency",
-  type: Common17.Settings.SettingType.ENUM,
+  type: Common18.Settings.SettingType.ENUM,
   defaultValue: "none",
-  storageType: Common17.Settings.SettingStorageType.SESSION
+  storageType: Common18.Settings.SettingStorageType.SESSION
 };
 var emulatedOSTextScaleSettingDescriptor = {
   name: "emulated-os-text-scale",
-  type: Common17.Settings.SettingType.ENUM,
+  type: Common18.Settings.SettingType.ENUM,
   defaultValue: "",
-  storageType: Common17.Settings.SettingStorageType.SESSION
+  storageType: Common18.Settings.SettingStorageType.SESSION
 };
 var localFontsDisabledSettingDescriptor = {
   name: "local-fonts-disabled",
-  type: Common17.Settings.SettingType.BOOLEAN,
+  type: Common18.Settings.SettingType.BOOLEAN,
   defaultValue: false,
-  storageType: Common17.Settings.SettingStorageType.SESSION
+  storageType: Common18.Settings.SettingStorageType.SESSION
 };
 var avifFormatDisabledSettingDescriptor = {
   name: "avif-format-disabled",
-  type: Common17.Settings.SettingType.BOOLEAN,
+  type: Common18.Settings.SettingType.BOOLEAN,
   defaultValue: false,
-  storageType: Common17.Settings.SettingStorageType.SESSION
+  storageType: Common18.Settings.SettingStorageType.SESSION
 };
 var jpegXlFormatDisabledSettingDescriptor = {
   name: "jpeg-xl-format-disabled",
-  type: Common17.Settings.SettingType.BOOLEAN,
+  type: Common18.Settings.SettingType.BOOLEAN,
   defaultValue: false,
-  storageType: Common17.Settings.SettingStorageType.SESSION
+  storageType: Common18.Settings.SettingStorageType.SESSION
 };
 var webpFormatDisabledSettingDescriptor = {
   name: "webp-format-disabled",
-  type: Common17.Settings.SettingType.BOOLEAN,
+  type: Common18.Settings.SettingType.BOOLEAN,
   defaultValue: false,
-  storageType: Common17.Settings.SettingStorageType.SESSION
+  storageType: Common18.Settings.SettingStorageType.SESSION
 };
 var customFormattersSettingDescriptor = {
   name: "custom-formatters",
-  type: Common17.Settings.SettingType.BOOLEAN,
+  type: Common18.Settings.SettingType.BOOLEAN,
   defaultValue: false
 };
 var requestBlockingEnabledSettingDescriptor = {
   name: "request-blocking-enabled",
-  type: Common17.Settings.SettingType.BOOLEAN,
+  type: Common18.Settings.SettingType.BOOLEAN,
   defaultValue: false,
-  storageType: Common17.Settings.SettingStorageType.LOCAL
+  storageType: Common18.Settings.SettingStorageType.LOCAL
 };
 var cacheDisabledSettingDescriptor = {
   name: "cache-disabled",
-  type: Common17.Settings.SettingType.BOOLEAN,
+  type: Common18.Settings.SettingType.BOOLEAN,
   defaultValue: false
 };
 var emulateAutoDarkModeSettingDescriptor = {
   name: "emulate-auto-dark-mode",
-  type: Common17.Settings.SettingType.BOOLEAN,
+  type: Common18.Settings.SettingType.BOOLEAN,
   defaultValue: false,
-  storageType: Common17.Settings.SettingStorageType.SESSION
+  storageType: Common18.Settings.SettingStorageType.SESSION
 };
 var enableRemoteFileLoadingSettingDescriptor = {
   name: "network.enable-remote-file-loading",
-  type: Common17.Settings.SettingType.BOOLEAN,
+  type: Common18.Settings.SettingType.BOOLEAN,
   defaultValue: false,
-  storageType: Common17.Settings.SettingStorageType.SYNCED
+  storageType: Common18.Settings.SettingStorageType.SYNCED
 };
 var consoleUserActivationEvalSettingDescriptor = {
   name: "console-user-activation-eval",
-  type: Common17.Settings.SettingType.BOOLEAN,
+  type: Common18.Settings.SettingType.BOOLEAN,
   defaultValue: true,
-  storageType: Common17.Settings.SettingStorageType.SYNCED
+  storageType: Common18.Settings.SettingStorageType.SYNCED
 };
 var monitoringXHREnabledSettingDescriptor = {
   name: "monitoring-xhr-enabled",
-  type: Common17.Settings.SettingType.BOOLEAN,
+  type: Common18.Settings.SettingType.BOOLEAN,
   defaultValue: false,
-  storageType: Common17.Settings.SettingStorageType.SYNCED
+  storageType: Common18.Settings.SettingStorageType.SYNCED
 };
 var disablePausedStateOverlaySettingDescriptor = {
   name: "disable-paused-state-overlay",
-  type: Common17.Settings.SettingType.BOOLEAN,
+  type: Common18.Settings.SettingType.BOOLEAN,
   defaultValue: false,
-  storageType: Common17.Settings.SettingStorageType.SYNCED
+  storageType: Common18.Settings.SettingStorageType.SYNCED
 };
 var preserveNetworkLogSettingDescriptor = {
   name: "network-log.preserve-log",
-  type: Common17.Settings.SettingType.BOOLEAN,
+  type: Common18.Settings.SettingType.BOOLEAN,
   defaultValue: false
 };
 
@@ -27346,7 +27621,7 @@ var ConsoleModel = class _ConsoleModel extends SDKModel {
       return;
     }
     const eventListener = resourceTreeModel.addEventListener("CachedResourcesLoaded" /* CachedResourcesLoaded */, () => {
-      Common18.EventTarget.removeEventListeners([eventListener]);
+      Common19.EventTarget.removeEventListeners([eventListener]);
       this.initTarget(target);
     });
   }
@@ -27404,7 +27679,7 @@ var ConsoleModel = class _ConsoleModel extends SDKModel {
     if (runtimeModel) {
       this.#messageByExceptionId.delete(runtimeModel);
     }
-    Common18.EventTarget.removeEventListeners(this.#targetListeners.get(target) || []);
+    Common19.EventTarget.removeEventListeners(this.#targetListeners.get(target) || []);
   }
   async evaluateCommandInConsole(executionContext, originatingMessage, expression, useCommandLineAPI) {
     const result = await executionContext.evaluateWithSelectedFrameFallback(
@@ -27449,7 +27724,7 @@ var ConsoleModel = class _ConsoleModel extends SDKModel {
   }
   addMessage(msg) {
     msg.setPageLoadSequenceNumber(this.#pageLoadSequenceNumber);
-    if (msg.source === Common18.Console.FrontendMessageSource.ConsoleAPI && msg.type === Runtime.ConsoleAPICalledEventType.Clear) {
+    if (msg.source === Common19.Console.FrontendMessageSource.ConsoleAPI && msg.type === Runtime.ConsoleAPICalledEventType.Clear) {
       this.clearIfNecessary();
     }
     this.#messages.push(msg);
@@ -27524,7 +27799,7 @@ var ConsoleModel = class _ConsoleModel extends SDKModel {
       executionContextId: call.executionContextId,
       context: call.context
     };
-    const consoleMessage = new ConsoleMessage(runtimeModel, Common18.Console.FrontendMessageSource.ConsoleAPI, level, message, details);
+    const consoleMessage = new ConsoleMessage(runtimeModel, Common19.Console.FrontendMessageSource.ConsoleAPI, level, message, details);
     for (const msg of this.#messagesByTimestamp.get(consoleMessage.timestamp).values()) {
       if (consoleMessage.isEqual(msg)) {
         return;
@@ -27541,7 +27816,7 @@ var ConsoleModel = class _ConsoleModel extends SDKModel {
     };
     const consoleMessage = new ConsoleMessage(
       runtimeModel,
-      Common18.Console.FrontendMessageSource.ConsoleAPI,
+      Common19.Console.FrontendMessageSource.ConsoleAPI,
       Log.LogEntryLevel.Info,
       "",
       details
@@ -27595,7 +27870,7 @@ var ConsoleModel = class _ConsoleModel extends SDKModel {
     }];
     this.addMessage(new ConsoleMessage(
       cpuProfilerModel.runtimeModel(),
-      Common18.Console.FrontendMessageSource.ConsoleAPI,
+      Common19.Console.FrontendMessageSource.ConsoleAPI,
       Log.LogEntryLevel.Info,
       messageText,
       { type, stackTrace: { callFrames } }
@@ -27890,7 +28165,7 @@ var ConsoleMessage = class _ConsoleMessage {
   }
   isGroupable() {
     const isUngroupableError = this.level === Log.LogEntryLevel.Error && (this.source === Log.LogEntrySource.Javascript || this.source === Log.LogEntrySource.Network);
-    return this.source !== Common18.Console.FrontendMessageSource.ConsoleAPI && this.type !== "command" /* Command */ && this.type !== "result" /* Result */ && this.type !== "system" /* System */ && !isUngroupableError;
+    return this.source !== Common19.Console.FrontendMessageSource.ConsoleAPI && this.type !== "command" /* Command */ && this.type !== "result" /* Result */ && this.type !== "system" /* System */ && !isUngroupableError;
   }
   groupCategoryKey() {
     return [this.source, this.level, this.type, this.#pageLoadSequenceNumber].join(":");
@@ -27943,11 +28218,11 @@ var MessageSourceDisplayName = /* @__PURE__ */ new Map([
   [Log.LogEntrySource.XML, "xml"],
   [Log.LogEntrySource.Javascript, "javascript"],
   [Log.LogEntrySource.Network, "network"],
-  [Common18.Console.FrontendMessageSource.ConsoleAPI, "console-api"],
+  [Common19.Console.FrontendMessageSource.ConsoleAPI, "console-api"],
   [Log.LogEntrySource.Storage, "storage"],
   [Log.LogEntrySource.Appcache, "appcache"],
   [Log.LogEntrySource.Rendering, "rendering"],
-  [Common18.Console.FrontendMessageSource.CSS, "css"],
+  [Common19.Console.FrontendMessageSource.CSS, "css"],
   [Log.LogEntrySource.Security, "security"],
   [Log.LogEntrySource.Deprecation, "deprecation"],
   [Log.LogEntrySource.Worker, "worker"],
@@ -27955,132 +28230,8 @@ var MessageSourceDisplayName = /* @__PURE__ */ new Map([
   [Log.LogEntrySource.Intervention, "intervention"],
   [Log.LogEntrySource.Recommendation, "recommendation"],
   [Log.LogEntrySource.Other, "other"],
-  [Common18.Console.FrontendMessageSource.ISSUE_PANEL, "issue-panel"]
+  [Common19.Console.FrontendMessageSource.ISSUE_PANEL, "issue-panel"]
 ]);
-
-// ../../front_end/core/sdk/SecurityOrigin.ts
-var SecurityOrigin_exports = {};
-__export(SecurityOrigin_exports, {
-  IMPORTED_ORIGIN_PREFIXES: () => IMPORTED_ORIGIN_PREFIXES,
-  SecurityOrigin: () => SecurityOrigin
-});
-import * as Common19 from "../common/common.js";
-var OPAQUE_EXACT_MATCHES = /* @__PURE__ */ new Set([
-  "",
-  "null",
-  "undefined",
-  "data:",
-  "detached"
-]);
-var OPAQUE_PREFIXES = [
-  "about:",
-  "blob:about",
-  "blob:data",
-  "blob:null"
-];
-var IMPORTED_ORIGIN_PREFIXES = /* @__PURE__ */ new Set([
-  "imported-har:"
-]);
-function isOpaqueUrlString(url) {
-  const lower = url.trim().toLowerCase();
-  if (OPAQUE_EXACT_MATCHES.has(lower)) {
-    return true;
-  }
-  return OPAQUE_PREFIXES.some((prefix) => lower.startsWith(prefix));
-}
-var SecurityOrigin = class _SecurityOrigin {
-  #origin;
-  constructor(origin) {
-    this.#origin = origin;
-  }
-  /**
-   * Creates a `SecurityOrigin` instance from a raw URL or origin string.
-   *
-   * - If the URL is determined to be opaque (e.g. `data:`, `about:blank`, empty, `null`),
-   *   a new unique opaque origin is returned.
-   * - If the URL is a `file://` URL, a path-scoped origin (`file://<authority><path>`) is returned.
-   * - Otherwise, the standard origin (`<scheme>://<host>[:<port>]`) is extracted and returned.
-   *
-   * @param rawUrl The raw URL or origin string to evaluate.
-   */
-  static create(rawUrl) {
-    if (isOpaqueUrlString(rawUrl)) {
-      return _SecurityOrigin.createUniqueOpaque();
-    }
-    for (const prefix of IMPORTED_ORIGIN_PREFIXES) {
-      if (rawUrl.toLowerCase().startsWith(prefix)) {
-        const afterScheme = rawUrl.substring(prefix.length).replace(/^\/+/, "");
-        const slashIndex = afterScheme.indexOf("/");
-        const host = slashIndex === -1 ? afterScheme : afterScheme.substring(0, slashIndex);
-        if (!host) {
-          return _SecurityOrigin.createUniqueOpaque();
-        }
-        return new _SecurityOrigin({ type: "origin", value: `${prefix}//${host.toLowerCase()}` });
-      }
-    }
-    if (rawUrl.toLowerCase().startsWith("file://")) {
-      const parsed = Common19.ParsedURL.ParsedURL.fromString(rawUrl);
-      if (!parsed) {
-        return _SecurityOrigin.createUniqueOpaque();
-      }
-      const authority = parsed.host + (parsed.port ? ":" + parsed.port : "");
-      return new _SecurityOrigin({ type: "origin", value: `file://${authority}${parsed.path}` });
-    }
-    const origin = Common19.ParsedURL.ParsedURL.extractOrigin(rawUrl);
-    if (!origin || isOpaqueUrlString(origin)) {
-      return _SecurityOrigin.createUniqueOpaque();
-    }
-    return new _SecurityOrigin({ type: "origin", value: origin });
-  }
-  /**
-   * Creates a synthetic, unique opaque origin.
-   *
-   * Useful when an entity (like a sandboxed iframe or detached DOM tree) needs an
-   * isolated origin that will never match any other origin in the session.
-   */
-  static createUniqueOpaque() {
-    return new _SecurityOrigin({ type: "opaque", uuid: crypto.randomUUID() });
-  }
-  /**
-   * Checks whether this security origin is equivalent to another security origin.
-   *
-   * - Standard origins return `true` if their scheme, host, and port match.
-   * - File origins return `true` if their full file path and host match.
-   * - Opaque origins return `true` only if both instances have identical UUIDs.
-   * - Passing `null` always returns `false`.
-   *
-   * @param other The other `SecurityOrigin` to compare with.
-   */
-  isSameOriginWith(other) {
-    if (!other) {
-      return false;
-    }
-    if (this.#origin.type === "opaque" || other.#origin.type === "opaque") {
-      return this.#origin.type === "opaque" && other.#origin.type === "opaque" && this.#origin.uuid === other.#origin.uuid;
-    }
-    return this.#origin.value === other.#origin.value;
-  }
-  /**
-   * Returns whether this origin is opaque.
-   *
-   * Opaque origins include `data:` URLs, `about:blank`, invalid URLs, and instances
-   * created via `createUniqueOpaque()`.
-   */
-  isOpaque() {
-    return this.#origin.type === "opaque";
-  }
-  /**
-   * Returns a stable string representation of this origin for identification, storage keys,
-   * or debugging logs.
-   *
-   * - For standard origins, returns the serialized origin string (e.g. `https://example.com:8080`).
-   * - For file origins, returns the path-scoped origin (e.g. `file:///path/to/file.html`).
-   * - For opaque origins, returns the unique UUID string.
-   */
-  siteId() {
-    return this.#origin.type === "opaque" ? this.#origin.uuid : this.#origin.value;
-  }
-};
 
 // ../../front_end/core/sdk/DOMModel.ts
 var NodeType = /* @__PURE__ */ ((NodeType2) => {
@@ -28933,15 +29084,17 @@ var DOMNode = class _DOMNode extends Common20.ObjectWrapper.ObjectWrapper {
       }
     });
   }
-  duplicate() {
+  async duplicate() {
     if (this.isInShadowTree()) {
-      return;
+      return { error: "Cannot duplicate node in shadow tree", node: null };
     }
     const parentNode = this.parentNode ? this.parentNode : this;
     if (parentNode.nodeName() === "#document") {
-      return;
+      return { error: "Parent node is document", node: null };
     }
-    this.copyTo(parentNode, this.nextSibling);
+    return await new Promise((resolve) => {
+      this.copyTo(parentNode, this.nextSibling, (error, node) => resolve({ error, node }));
+    });
   }
   /**
    * Runs a script on the node's remote object that toggles a class name on
@@ -30158,6 +30311,7 @@ var DOMNodeSnapshot = class extends DOMNode {
   moveTo(_targetNode, _anchorNode, _callback) {
   }
   duplicate() {
+    return Promise.resolve({ error: null, node: null });
   }
   canInspectNode() {
     return false;
@@ -30190,6 +30344,7 @@ var DOMDocumentSnapshot = class extends DOMDocument {
   moveTo(_targetNode, _anchorNode, _callback) {
   }
   duplicate() {
+    return Promise.resolve({ error: null, node: null });
   }
   canInspectNode() {
     return false;
@@ -30548,6 +30703,32 @@ var ResourceTreeModel = class _ResourceTreeModel extends SDKModel {
       result.push(...resourceTreeModel.frames());
     }
     return result;
+  }
+  /**
+   * Finds the first active frame that matches the specified security origin under
+   * the given primary page target.
+   *
+   * Returns `null` if the target has no outermost target or if no matching frame
+   * exists.
+   *
+   * @param primaryPageTarget The primary page target that contains the candidate frames.
+   * @param origin The security origin to match.
+   * @returns The first matching frame, or `null` if no frame matches.
+   */
+  static frameForOrigin(primaryPageTarget, origin) {
+    const outermostTarget = primaryPageTarget.outermostTarget();
+    if (!outermostTarget) {
+      return null;
+    }
+    for (const frame of _ResourceTreeModel.frames(primaryPageTarget.targetManager())) {
+      if (frame.resourceTreeModel().target().outermostTarget() !== outermostTarget) {
+        continue;
+      }
+      if (frame.securityOrigin().isSameOriginWith(origin)) {
+        return frame;
+      }
+    }
+    return null;
   }
   static resourceForURL(targetManager, url) {
     for (const resourceTreeModel of targetManager.models(_ResourceTreeModel)) {
@@ -30920,21 +31101,23 @@ var ResourceTreeModel = class _ResourceTreeModel extends SDKModel {
     return ExecutionContext.comparator(a, b);
   }
   getSecurityOriginData() {
-    const securityOrigins = /* @__PURE__ */ new Set();
+    const securityOrigins = [];
     let mainSecurityOrigin = null;
     let unreachableMainSecurityOrigin = null;
     for (const frame of this.framesInternal.values()) {
-      const origin = frame.securityOrigin;
-      if (!origin) {
+      const origin = frame.securityOrigin();
+      if (frame.isMainFrame()) {
+        mainSecurityOrigin = origin.isOpaque() ? null : origin;
+        if (frame.unreachableUrl()) {
+          const unreachable = SecurityOrigin.create(frame.unreachableUrl());
+          unreachableMainSecurityOrigin = unreachable.isOpaque() ? null : unreachable;
+        }
+      }
+      if (origin.isOpaque()) {
         continue;
       }
-      securityOrigins.add(origin);
-      if (frame.isMainFrame()) {
-        mainSecurityOrigin = origin;
-        if (frame.unreachableUrl()) {
-          const unreachableParsed = new Common23.ParsedURL.ParsedURL(frame.unreachableUrl());
-          unreachableMainSecurityOrigin = unreachableParsed.securityOrigin();
-        }
+      if (!securityOrigins.some((existing) => existing.isSameOriginWith(origin))) {
+        securityOrigins.push(origin);
       }
     }
     return {
@@ -30967,10 +31150,10 @@ var ResourceTreeModel = class _ResourceTreeModel extends SDKModel {
   updateSecurityOrigins() {
     const data = this.getSecurityOriginData();
     this.#securityOriginManager.setMainSecurityOrigin(
-      data.mainSecurityOrigin || "",
-      data.unreachableMainSecurityOrigin || ""
+      data.mainSecurityOrigin?.siteId() || "",
+      data.unreachableMainSecurityOrigin?.siteId() || ""
     );
-    this.#securityOriginManager.updateSecurityOrigins(data.securityOrigins);
+    this.#securityOriginManager.updateSecurityOrigins(new Set(data.securityOrigins.map((o) => o.siteId())));
   }
   async updateStorageKeys() {
     const data = await this.getStorageKeyData();
@@ -30983,9 +31166,10 @@ var ResourceTreeModel = class _ResourceTreeModel extends SDKModel {
       false
     ) : null;
   }
+  // TODO(crbug.com/559122726): Remove siteId() usage and evaluate removing this method in favor of direct SecurityOrigin handling.
   getMainSecurityOrigin() {
     const data = this.getSecurityOriginData();
-    return data.mainSecurityOrigin || data.unreachableMainSecurityOrigin;
+    return data.mainSecurityOrigin?.siteId() || data.unreachableMainSecurityOrigin?.siteId() || null;
   }
   onBackForwardCacheNotUsed(event) {
     if (this.mainFrame && this.mainFrame.id === event.frameId && this.mainFrame.loaderId === event.loaderId) {
@@ -31063,7 +31247,7 @@ var ResourceTreeFrame = class {
     this.#name = payload?.name;
     this.#url = payload && payload.url || Platform14.DevToolsPath.EmptyUrlString;
     this.#domainAndRegistry = payload?.domainAndRegistry || "";
-    this.#securityOrigin = payload?.securityOrigin ?? null;
+    this.#securityOrigin = SecurityOrigin.create(payload?.securityOrigin ?? "");
     this.#securityOriginDetails = payload?.securityOriginDetails;
     this.#unreachableUrl = payload && payload.unreachableUrl || Platform14.DevToolsPath.EmptyUrlString;
     this.#adFrameStatus = payload?.adFrameStatus;
@@ -31101,7 +31285,7 @@ var ResourceTreeFrame = class {
     this.#name = framePayload.name;
     this.#url = framePayload.url;
     this.#domainAndRegistry = framePayload.domainAndRegistry;
-    this.#securityOrigin = framePayload.securityOrigin;
+    this.#securityOrigin = SecurityOrigin.create(framePayload.securityOrigin);
     this.#securityOriginDetails = framePayload.securityOriginDetails;
     void this.getStorageKey(
       /* forceFetch */
@@ -31144,7 +31328,15 @@ var ResourceTreeFrame = class {
     const res = await this.#model.agent.invoke_getAdScriptAncestry({ frameId });
     return res.adScriptAncestry || null;
   }
-  get securityOrigin() {
+  /**
+   * Returns the security origin of this frame.
+   *
+   * If the frame does not have a valid origin (such as `about:blank`), this
+   * method returns a unique opaque origin.
+   *
+   * @returns The security origin of the frame.
+   */
+  securityOrigin() {
     return this.#securityOrigin;
   }
   get securityOriginDetails() {
@@ -33061,8 +33253,11 @@ var Scope = class {
   icon() {
     return void 0;
   }
+  empty() {
+    return Boolean(this.#payload.empty);
+  }
   extraProperties() {
-    if (this.#ordinal !== 0 || this.#type !== Debugger.ScopeType.Local || this.#callFrame.script.isWasm()) {
+    if (this !== this.#callFrame.localScope() || this.#callFrame.script.isWasm()) {
       return [];
     }
     const extraProperties = [];
@@ -34646,6 +34841,9 @@ var NetworkDispatcher = class {
       }
       requestToManagerMap.set(networkRequest, this.#manager);
     }
+    networkRequest.setCacheDisabled(
+      this.#manager.target().targetManager().settings.resolve(cacheDisabledSettingDescriptor).get()
+    );
     networkRequest.hasNetworkData = true;
     this.updateNetworkRequestWithRequest(networkRequest, request);
     networkRequest.setIssueTime(timestamp, wallTime);
@@ -37153,6 +37351,7 @@ var NetworkRequest = class _NetworkRequest extends Common30.ObjectWrapper.Object
   #endTime = -1;
   #blockedReason = void 0;
   #renderBlockingBehavior;
+  #initiatorSecurityOrigin;
   #corsErrorStatus = void 0;
   statusCode = 0;
   statusText = "";
@@ -37221,6 +37420,7 @@ var NetworkRequest = class _NetworkRequest extends Common30.ObjectWrapper.Object
   #fromMemoryCache;
   #fromDiskCache;
   #fromPrefetchCache;
+  #cacheDisabled = false;
   #fromEarlyHints;
   #fetchedViaServiceWorker;
   #serviceWorkerRouterInfo;
@@ -37355,7 +37555,10 @@ var NetworkRequest = class _NetworkRequest extends Common30.ObjectWrapper.Object
    * @see {@link requestURLSecurityOrigin} to obtain the origin of the target resource URL being requested.
    */
   initiatorSecurityOrigin() {
-    return this.#resolveSecurityOrigin(this.#documentURL);
+    if (!this.#initiatorSecurityOrigin) {
+      this.#initiatorSecurityOrigin = this.#resolveSecurityOrigin(this.#documentURL);
+    }
+    return this.#initiatorSecurityOrigin;
   }
   #resolveSecurityOrigin(url) {
     if (this.#isImportedHar) {
@@ -37587,6 +37790,12 @@ var NetworkRequest = class _NetworkRequest extends Common30.ObjectWrapper.Object
   }
   setFromPrefetchCache() {
     this.#fromPrefetchCache = true;
+  }
+  cacheDisabled() {
+    return this.#cacheDisabled;
+  }
+  setCacheDisabled(cacheDisabled) {
+    this.#cacheDisabled = cacheDisabled;
   }
   fromEarlyHints() {
     return Boolean(this.#fromEarlyHints);
@@ -43253,16 +43462,14 @@ function isRequestCredentialed(request) {
     request.requestHeaderValue("authorization") || request.requestHeaderValue("proxy-authorization")
   );
   const hasCookies = request.includedRequestCookies().length > 0 || request.responseCookies.length > 0 || Boolean(request.requestHeaderValue("cookie")) || Boolean(request.responseHeaderValue("set-cookie"));
-  const hasAllowCredentials = request.responseHeaderValue("access-control-allow-credentials")?.trim().toLowerCase() === "true";
-  return hasAuthHeaders || hasCookies || hasAllowCredentials;
+  return hasAuthHeaders || hasCookies;
 }
-function evaluateResponseAccessMode(request, initiatorOrigin) {
-  const effectiveInitiatorOrigin = initiatorOrigin ?? SecurityOrigin.create(request.documentURL);
-  if (effectiveInitiatorOrigin.isOpaque()) {
+function evaluateResponseAccessMode(request, initiatorSecurityOrigin) {
+  if (initiatorSecurityOrigin.isOpaque()) {
     return "OPAQUE_CROSS_ORIGIN" /* OPAQUE_CROSS_ORIGIN */;
   }
-  const resourceOrigin = SecurityOrigin.create(request.url());
-  if (effectiveInitiatorOrigin.isSameOriginWith(resourceOrigin)) {
+  const resourceOrigin = request.requestURLSecurityOrigin();
+  if (initiatorSecurityOrigin.isSameOriginWith(resourceOrigin)) {
     return "SAME_ORIGIN" /* SAME_ORIGIN */;
   }
   if (request.corsErrorStatus()) {
@@ -43276,7 +43483,14 @@ function evaluateResponseAccessMode(request, initiatorOrigin) {
   if (allowOriginHeader === "*" && !isCredentialed) {
     return "CORS_ALLOWED" /* CORS_ALLOWED */;
   }
-  if (allowOriginHeader.toLowerCase() === effectiveInitiatorOrigin.siteId().toLowerCase()) {
+  const allowedOrigin = SecurityOrigin.create(allowOriginHeader);
+  if (initiatorSecurityOrigin.isSameOriginWith(allowedOrigin)) {
+    if (isCredentialed) {
+      const allowCredentials = request.responseHeaderValue("access-control-allow-credentials")?.trim().toLowerCase() === "true";
+      if (!allowCredentials) {
+        return "OPAQUE_CROSS_ORIGIN" /* OPAQUE_CROSS_ORIGIN */;
+      }
+    }
     return "CORS_ALLOWED" /* CORS_ALLOWED */;
   }
   return "OPAQUE_CROSS_ORIGIN" /* OPAQUE_CROSS_ORIGIN */;
@@ -45347,6 +45561,7 @@ export {
   CSSContainerQuery_exports as CSSContainerQuery,
   CSSFontFace_exports as CSSFontFace,
   CSSLayer_exports as CSSLayer,
+  CSSLocation_exports as CSSLocation,
   CSSMatchedStyles_exports as CSSMatchedStyles,
   CSSMedia_exports as CSSMedia,
   CSSMetadata_exports as CSSMetadata,

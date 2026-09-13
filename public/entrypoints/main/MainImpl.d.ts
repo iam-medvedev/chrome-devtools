@@ -17,6 +17,7 @@ export declare class MainImpl {
         localStorage: Common.Settings.SettingsStorage;
     };
     readyForTest(): Promise<void>;
+    redispatchClipboardEventForTest(event: Event): void;
     static instanceForTest: MainImpl | null;
 }
 export declare class ZoomActionDelegate implements UI.ActionRegistration.ActionDelegate {

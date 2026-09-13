@@ -4,6 +4,54 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
+// ../../front_end/panels/accessibility/AccessibilityAnnouncementRecordingListView.ts
+var AccessibilityAnnouncementRecordingListView_exports = {};
+__export(AccessibilityAnnouncementRecordingListView_exports, {
+  AccessibilityAnnouncementRecordingListView: () => AccessibilityAnnouncementRecordingListView,
+  DEFAULT_VIEW: () => DEFAULT_VIEW
+});
+import "../../ui/legacy/components/data_grid/data_grid.js";
+import * as i18n3 from "../../core/i18n/i18n.js";
+import * as UI2 from "../../ui/legacy/legacy.js";
+import * as Lit from "../../ui/lit/lit.js";
+
+// gen/front_end/panels/accessibility/accessibilityAnnouncementRecordingListView.css.js
+var accessibilityAnnouncementRecordingListView_css_default = `/*
+ * Copyright 2026 The Chromium Authors
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+:host {
+  font-family: inherit;
+  display: flex;
+  flex-direction: column;
+  flex: auto;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+@scope to (devtools-widget > *) {
+  :scope {
+    font-family: inherit;
+    display: flex;
+    flex-direction: column;
+    flex: auto;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  devtools-data-grid {
+    font-family: inherit;
+    flex: auto;
+    height: 100%;
+    border: none;
+  }
+}
+
+/*# sourceURL=${import.meta.resolve("./accessibilityAnnouncementRecordingListView.css")} */`;
+
 // ../../front_end/panels/accessibility/AccessibilityAnnouncementRecordingView.ts
 var AccessibilityAnnouncementRecordingView_exports = {};
 __export(AccessibilityAnnouncementRecordingView_exports, {
@@ -898,6 +946,144 @@ var AccessibilityAnnouncementRecordingView = class extends AccessibilitySubPane 
   }
 };
 
+// ../../front_end/panels/accessibility/AccessibilityAnnouncementRecordingListView.ts
+var { html, render } = Lit;
+var UIStrings2 = {
+  /**
+   * @description Column header for the announcement timestamp.
+   */
+  time: "Time",
+  /**
+   * @description Column header for the API type (DOM aria-live vs JS ariaNotify).
+   */
+  api: "API",
+  /**
+   * @description Column header for the politeness level (e.g. polite, assertive).
+   */
+  politeness: "Politeness",
+  /**
+   * @description Column header for the announcement message text.
+   */
+  message: "Message",
+  /**
+   * @description Value for DOM aria-live announcements in the API column.
+   */
+  ariaLive: "ARIA live",
+  /**
+   * @description Value for JS ariaNotify announcements in the API column.
+   */
+  jsTriggered: "JS-triggered",
+  /**
+   * @description Accessible title for the announcements data grid.
+   */
+  ariaLiveRecordingList: "Accessibility Announcements"
+};
+var str_2 = i18n3.i18n.registerUIStrings("panels/accessibility/AccessibilityAnnouncementRecordingListView.ts", UIStrings2);
+var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
+var DEFAULT_VIEW = (input, _output, target) => {
+  render(
+    html`
+    <style>${accessibilityAnnouncementRecordingListView_css_default}</style>
+    <devtools-data-grid
+      name=${i18nString2(UIStrings2.ariaLiveRecordingList)}
+      striped
+      class="flex-auto"
+      @deselect=${input.onDeselect}>
+      <table>
+        <tr>
+          <th id="time" sortable fixed width="110px" align="right">
+            ${i18nString2(UIStrings2.time)}
+          </th>
+          <th id="api" sortable fixed width="110px">
+            ${i18nString2(UIStrings2.api)}
+          </th>
+          <th id="politeness" sortable fixed width="90px">
+            ${i18nString2(UIStrings2.politeness)}
+          </th>
+          <th id="message" sortable width="300px">
+            ${i18nString2(UIStrings2.message)}
+          </th>
+        </tr>
+        ${input.items.map((item) => {
+      const timeString = new Date(item.time).toLocaleTimeString(i18n3.DevToolsLocale.DevToolsLocale.instance().locale);
+      const apiDisplay = item.api === "js-triggered" /* JS_TRIGGERED */ ? i18nString2(UIStrings2.jsTriggered) : i18nString2(UIStrings2.ariaLive);
+      return html`
+            <tr
+              ?selected=${item === input.selectedItem}
+              @select=${() => input.onSelect(item)}>
+              <td data-value=${item.time}>
+                <span>${timeString}</span>
+              </td>
+              <td>${apiDisplay}</td>
+              <td>${item.politeness}</td>
+              <td title=${item.message}>
+                ${item.message}
+              </td>
+            </tr>`;
+    })}
+      </table>
+    </devtools-data-grid>`,
+    target
+  );
+};
+var AccessibilityAnnouncementRecordingListView = class extends UI2.Widget.VBox {
+  #items = [];
+  #selectedItem = null;
+  #onSelect = null;
+  #view;
+  constructor(element, view = DEFAULT_VIEW) {
+    super(element, { useShadowDom: true });
+    this.#view = view;
+  }
+  wasShown() {
+    super.wasShown();
+    this.requestUpdate();
+  }
+  set items(items) {
+    if (this.#items === items) {
+      return;
+    }
+    this.#items = items;
+    this.requestUpdate();
+  }
+  get items() {
+    return this.#items;
+  }
+  set selectedItem(item) {
+    if (this.#selectedItem === item) {
+      return;
+    }
+    this.#selectedItem = item;
+    this.requestUpdate();
+  }
+  get selectedItem() {
+    return this.#selectedItem;
+  }
+  set onSelect(onSelect) {
+    this.#onSelect = onSelect;
+  }
+  reset() {
+    this.#items = [];
+    this.#selectedItem = null;
+    this.requestUpdate();
+  }
+  performUpdate() {
+    const input = {
+      items: this.#items,
+      selectedItem: this.#selectedItem,
+      onSelect: (item) => {
+        this.selectedItem = item;
+        this.#onSelect?.(item);
+      },
+      onDeselect: () => {
+        this.selectedItem = null;
+        this.#onSelect?.(null);
+      }
+    };
+    this.#view(input, void 0, this.contentElement);
+  }
+};
+
 // ../../front_end/panels/accessibility/AccessibilityNodeView.ts
 var AccessibilityNodeView_exports = {};
 __export(AccessibilityNodeView_exports, {
@@ -912,7 +1098,7 @@ __export(AccessibilityNodeView_exports, {
   TypeStyles: () => TypeStyles
 });
 import * as Common from "../../core/common/common.js";
-import * as i18n5 from "../../core/i18n/i18n.js";
+import * as i18n7 from "../../core/i18n/i18n.js";
 import * as SDK2 from "../../core/sdk/sdk.js";
 
 // ../../front_end/generated/protocol.ts
@@ -1304,6 +1490,7 @@ var Audits;
     FederatedAuthRequestIssueReason2["UiDismissedNoEmbargo"] = "UiDismissedNoEmbargo";
     FederatedAuthRequestIssueReason2["CorsError"] = "CorsError";
     FederatedAuthRequestIssueReason2["SuppressedBySegmentationPlatform"] = "SuppressedBySegmentationPlatform";
+    FederatedAuthRequestIssueReason2["PopupBlockedByConnectionAllowlist"] = "PopupBlockedByConnectionAllowlist";
   })(FederatedAuthRequestIssueReason = Audits2.FederatedAuthRequestIssueReason || (Audits2.FederatedAuthRequestIssueReason = {}));
   let FederatedAuthUserInfoRequestIssueReason;
   ((FederatedAuthUserInfoRequestIssueReason2) => {
@@ -1376,6 +1563,7 @@ var Audits;
     EmailVerificationRequestIssueReason2["TokenVerificationKbInvalidSdHash"] = "TokenVerificationKbInvalidSdHash";
     EmailVerificationRequestIssueReason2["TokenVerificationKbMissingCnf"] = "TokenVerificationKbMissingCnf";
     EmailVerificationRequestIssueReason2["TokenVerificationKbSignatureFailed"] = "TokenVerificationKbSignatureFailed";
+    EmailVerificationRequestIssueReason2["CrossOriginIframeNotSupported"] = "CrossOriginIframeNotSupported";
   })(EmailVerificationRequestIssueReason = Audits2.EmailVerificationRequestIssueReason || (Audits2.EmailVerificationRequestIssueReason = {}));
   let PartitioningBlobURLInfo;
   ((PartitioningBlobURLInfo2) => {
@@ -1832,6 +2020,11 @@ var Emulation;
     SetDeviceMetricsOverrideRequestScrollbarType2["Overlay"] = "overlay";
     SetDeviceMetricsOverrideRequestScrollbarType2["Default"] = "default";
   })(SetDeviceMetricsOverrideRequestScrollbarType = Emulation2.SetDeviceMetricsOverrideRequestScrollbarType || (Emulation2.SetDeviceMetricsOverrideRequestScrollbarType = {}));
+  let SetDeviceMetricsOverrideRequestViewportMeta;
+  ((SetDeviceMetricsOverrideRequestViewportMeta2) => {
+    SetDeviceMetricsOverrideRequestViewportMeta2["Enable"] = "enable";
+    SetDeviceMetricsOverrideRequestViewportMeta2["Default"] = "default";
+  })(SetDeviceMetricsOverrideRequestViewportMeta = Emulation2.SetDeviceMetricsOverrideRequestViewportMeta || (Emulation2.SetDeviceMetricsOverrideRequestViewportMeta = {}));
   let SetEmitTouchEventsForMouseRequestConfiguration;
   ((SetEmitTouchEventsForMouseRequestConfiguration2) => {
     SetEmitTouchEventsForMouseRequestConfiguration2["Mobile"] = "mobile";
@@ -2500,6 +2693,7 @@ var Network;
     TerminationEventDetailsDeletionReason2["InvalidSessionParams"] = "InvalidSessionParams";
     TerminationEventDetailsDeletionReason2["RefreshFatalError"] = "RefreshFatalError";
     TerminationEventDetailsDeletionReason2["DevTools"] = "DevTools";
+    TerminationEventDetailsDeletionReason2["Replaced"] = "Replaced";
   })(TerminationEventDetailsDeletionReason = Network2.TerminationEventDetailsDeletionReason || (Network2.TerminationEventDetailsDeletionReason = {}));
   let ChallengeEventDetailsChallengeResult;
   ((ChallengeEventDetailsChallengeResult2) => {
@@ -3622,6 +3816,7 @@ var Runtime;
     RemoteObjectSubtype2["Dataview"] = "dataview";
     RemoteObjectSubtype2["Webassemblymemory"] = "webassemblymemory";
     RemoteObjectSubtype2["Wasmvalue"] = "wasmvalue";
+    RemoteObjectSubtype2["Deferredmodule"] = "deferredmodule";
     RemoteObjectSubtype2["Trustedtype"] = "trustedtype";
   })(RemoteObjectSubtype = Runtime3.RemoteObjectSubtype || (Runtime3.RemoteObjectSubtype = {}));
   let ObjectPreviewType;
@@ -3656,6 +3851,7 @@ var Runtime;
     ObjectPreviewSubtype2["Dataview"] = "dataview";
     ObjectPreviewSubtype2["Webassemblymemory"] = "webassemblymemory";
     ObjectPreviewSubtype2["Wasmvalue"] = "wasmvalue";
+    ObjectPreviewSubtype2["Deferredmodule"] = "deferredmodule";
     ObjectPreviewSubtype2["Trustedtype"] = "trustedtype";
   })(ObjectPreviewSubtype = Runtime3.ObjectPreviewSubtype || (Runtime3.ObjectPreviewSubtype = {}));
   let PropertyPreviewType;
@@ -3691,6 +3887,7 @@ var Runtime;
     PropertyPreviewSubtype2["Dataview"] = "dataview";
     PropertyPreviewSubtype2["Webassemblymemory"] = "webassemblymemory";
     PropertyPreviewSubtype2["Wasmvalue"] = "wasmvalue";
+    PropertyPreviewSubtype2["Deferredmodule"] = "deferredmodule";
     PropertyPreviewSubtype2["Trustedtype"] = "trustedtype";
   })(PropertyPreviewSubtype = Runtime3.PropertyPreviewSubtype || (Runtime3.PropertyPreviewSubtype = {}));
   let ConsoleAPICalledEventType;
@@ -3718,8 +3915,8 @@ var Runtime;
 
 // ../../front_end/panels/accessibility/AccessibilityNodeView.ts
 import * as uiI18n from "../../ui/i18n/i18n.js";
-import * as UI2 from "../../ui/legacy/legacy.js";
-import { render } from "../../ui/lit/lit.js";
+import * as UI3 from "../../ui/legacy/legacy.js";
+import { render as render2 } from "../../ui/lit/lit.js";
 import * as VisualLogging from "../../ui/visual_logging/visual_logging.js";
 import * as PanelsCommon from "../common/common.js";
 
@@ -3730,8 +3927,8 @@ __export(AccessibilityStrings_exports, {
   AXNativeSourceTypes: () => AXNativeSourceTypes,
   AXSourceTypes: () => AXSourceTypes
 });
-import * as i18n3 from "../../core/i18n/i18n.js";
-var UIStrings2 = {
+import * as i18n5 from "../../core/i18n/i18n.js";
+var UIStrings3 = {
   /**
    * @description Text to indicate something is not enabled.
    */
@@ -4182,229 +4379,229 @@ var UIStrings2 = {
    */
   valueFromNativeHtmlUnknownSource: "Value from native HTML (unknown source)"
 };
-var str_2 = i18n3.i18n.registerUIStrings("panels/accessibility/AccessibilityStrings.ts", UIStrings2);
-var i18nLazyString = i18n3.i18n.getLazilyComputedLocalizedString.bind(void 0, str_2);
+var str_3 = i18n5.i18n.registerUIStrings("panels/accessibility/AccessibilityStrings.ts", UIStrings3);
+var i18nLazyString = i18n5.i18n.getLazilyComputedLocalizedString.bind(void 0, str_3);
 var AXAttributes = {
   disabled: {
-    name: i18nLazyString(UIStrings2.disabled),
-    description: i18nLazyString(UIStrings2.ifTrueThisElementCurrentlyCannot),
+    name: i18nLazyString(UIStrings3.disabled),
+    description: i18nLazyString(UIStrings3.ifTrueThisElementCurrentlyCannot),
     group: "AXGlobalStates"
   },
   invalid: {
-    name: i18nLazyString(UIStrings2.invalidUserEntry),
-    description: i18nLazyString(UIStrings2.ifTrueThisElementsUserentered),
+    name: i18nLazyString(UIStrings3.invalidUserEntry),
+    description: i18nLazyString(UIStrings3.ifTrueThisElementsUserentered),
     group: "AXGlobalStates"
   },
-  editable: { name: i18nLazyString(UIStrings2.editable), description: i18nLazyString(UIStrings2.ifAndHowThisElementCanBeEdited) },
+  editable: { name: i18nLazyString(UIStrings3.editable), description: i18nLazyString(UIStrings3.ifAndHowThisElementCanBeEdited) },
   focusable: {
-    name: i18nLazyString(UIStrings2.focusable),
-    description: i18nLazyString(UIStrings2.ifTrueThisElementCanReceiveFocus)
+    name: i18nLazyString(UIStrings3.focusable),
+    description: i18nLazyString(UIStrings3.ifTrueThisElementCanReceiveFocus)
   },
-  focused: { name: i18nLazyString(UIStrings2.focused), description: i18nLazyString(UIStrings2.ifTrueThisElementCurrentlyHas) },
+  focused: { name: i18nLazyString(UIStrings3.focused), description: i18nLazyString(UIStrings3.ifTrueThisElementCurrentlyHas) },
   settable: {
-    name: i18nLazyString(UIStrings2.canSetValue),
-    description: i18nLazyString(UIStrings2.whetherTheValueOfThisElementCan)
+    name: i18nLazyString(UIStrings3.canSetValue),
+    description: i18nLazyString(UIStrings3.whetherTheValueOfThisElementCan)
   },
   live: {
-    name: i18nLazyString(UIStrings2.liveRegion),
-    description: i18nLazyString(UIStrings2.whetherAndWhatPriorityOfLive),
+    name: i18nLazyString(UIStrings3.liveRegion),
+    description: i18nLazyString(UIStrings3.whetherAndWhatPriorityOfLive),
     group: "AXLiveRegionAttributes"
   },
   atomic: {
-    name: i18nLazyString(UIStrings2.atomicLiveRegions),
-    description: i18nLazyString(UIStrings2.ifThisElementMayReceiveLive),
+    name: i18nLazyString(UIStrings3.atomicLiveRegions),
+    description: i18nLazyString(UIStrings3.ifThisElementMayReceiveLive),
     group: "AXLiveRegionAttributes"
   },
   relevant: {
-    name: i18nLazyString(UIStrings2.relevantLiveRegions),
-    description: i18nLazyString(UIStrings2.ifThisElementMayReceiveLiveUpdates),
+    name: i18nLazyString(UIStrings3.relevantLiveRegions),
+    description: i18nLazyString(UIStrings3.ifThisElementMayReceiveLiveUpdates),
     group: "AXLiveRegionAttributes"
   },
   busy: {
-    name: i18nLazyString(UIStrings2.busyLiveRegions),
-    description: i18nLazyString(UIStrings2.whetherThisElementOrItsSubtree),
+    name: i18nLazyString(UIStrings3.busyLiveRegions),
+    description: i18nLazyString(UIStrings3.whetherThisElementOrItsSubtree),
     group: "AXLiveRegionAttributes"
   },
   root: {
-    name: i18nLazyString(UIStrings2.liveRegionRoot),
-    description: i18nLazyString(UIStrings2.ifThisElementMayReceiveLiveUpdatesThe),
+    name: i18nLazyString(UIStrings3.liveRegionRoot),
+    description: i18nLazyString(UIStrings3.ifThisElementMayReceiveLiveUpdatesThe),
     group: "AXLiveRegionAttributes"
   },
   autocomplete: {
-    name: i18nLazyString(UIStrings2.hasAutocomplete),
-    description: i18nLazyString(UIStrings2.whetherAndWhatTypeOfAutocomplete),
+    name: i18nLazyString(UIStrings3.hasAutocomplete),
+    description: i18nLazyString(UIStrings3.whetherAndWhatTypeOfAutocomplete),
     group: "AXWidgetAttributes"
   },
   haspopup: {
-    name: i18nLazyString(UIStrings2.hasPopup),
-    description: i18nLazyString(UIStrings2.whetherThisElementHasCausedSome),
+    name: i18nLazyString(UIStrings3.hasPopup),
+    description: i18nLazyString(UIStrings3.whetherThisElementHasCausedSome),
     group: "AXWidgetAttributes"
   },
   level: {
-    name: i18nLazyString(UIStrings2.level),
-    description: i18nLazyString(UIStrings2.theHierarchicalLevelOfThis),
+    name: i18nLazyString(UIStrings3.level),
+    description: i18nLazyString(UIStrings3.theHierarchicalLevelOfThis),
     group: "AXWidgetAttributes"
   },
   multiselectable: {
-    name: i18nLazyString(UIStrings2.multiselectable),
-    description: i18nLazyString(UIStrings2.whetherAUserMaySelectMoreThanOne),
+    name: i18nLazyString(UIStrings3.multiselectable),
+    description: i18nLazyString(UIStrings3.whetherAUserMaySelectMoreThanOne),
     group: "AXWidgetAttributes"
   },
   orientation: {
-    name: i18nLazyString(UIStrings2.orientation),
-    description: i18nLazyString(UIStrings2.whetherThisLinearElements),
+    name: i18nLazyString(UIStrings3.orientation),
+    description: i18nLazyString(UIStrings3.whetherThisLinearElements),
     group: "AXWidgetAttributes"
   },
   multiline: {
-    name: i18nLazyString(UIStrings2.multiline),
-    description: i18nLazyString(UIStrings2.whetherThisTextBoxMayHaveMore),
+    name: i18nLazyString(UIStrings3.multiline),
+    description: i18nLazyString(UIStrings3.whetherThisTextBoxMayHaveMore),
     group: "AXWidgetAttributes"
   },
   readonly: {
-    name: i18nLazyString(UIStrings2.readonlyString),
-    description: i18nLazyString(UIStrings2.ifTrueThisElementMayBeInteracted),
+    name: i18nLazyString(UIStrings3.readonlyString),
+    description: i18nLazyString(UIStrings3.ifTrueThisElementMayBeInteracted),
     group: "AXWidgetAttributes"
   },
   required: {
-    name: i18nLazyString(UIStrings2.requiredString),
-    description: i18nLazyString(UIStrings2.whetherThisElementIsARequired),
+    name: i18nLazyString(UIStrings3.requiredString),
+    description: i18nLazyString(UIStrings3.whetherThisElementIsARequired),
     group: "AXWidgetAttributes"
   },
   valuemin: {
-    name: i18nLazyString(UIStrings2.minimumValue),
-    description: i18nLazyString(UIStrings2.forARangeWidgetTheMinimumAllowed),
+    name: i18nLazyString(UIStrings3.minimumValue),
+    description: i18nLazyString(UIStrings3.forARangeWidgetTheMinimumAllowed),
     group: "AXWidgetAttributes"
   },
   valuemax: {
-    name: i18nLazyString(UIStrings2.maximumValue),
-    description: i18nLazyString(UIStrings2.forARangeWidgetTheMaximumAllowed),
+    name: i18nLazyString(UIStrings3.maximumValue),
+    description: i18nLazyString(UIStrings3.forARangeWidgetTheMaximumAllowed),
     group: "AXWidgetAttributes"
   },
   valuetext: {
-    name: i18nLazyString(UIStrings2.valueDescription),
-    description: i18nLazyString(UIStrings2.aHumanreadableVersionOfTheValue),
+    name: i18nLazyString(UIStrings3.valueDescription),
+    description: i18nLazyString(UIStrings3.aHumanreadableVersionOfTheValue),
     group: "AXWidgetAttributes"
   },
   checked: {
-    name: i18nLazyString(UIStrings2.checked),
-    description: i18nLazyString(UIStrings2.whetherThisCheckboxRadioButtonOr),
+    name: i18nLazyString(UIStrings3.checked),
+    description: i18nLazyString(UIStrings3.whetherThisCheckboxRadioButtonOr),
     group: "AXWidgetStates"
   },
   expanded: {
-    name: i18nLazyString(UIStrings2.expanded),
-    description: i18nLazyString(UIStrings2.whetherThisElementOrAnother),
+    name: i18nLazyString(UIStrings3.expanded),
+    description: i18nLazyString(UIStrings3.whetherThisElementOrAnother),
     group: "AXWidgetStates"
   },
   pressed: {
-    name: i18nLazyString(UIStrings2.pressed),
-    description: i18nLazyString(UIStrings2.whetherThisToggleButtonIs),
+    name: i18nLazyString(UIStrings3.pressed),
+    description: i18nLazyString(UIStrings3.whetherThisToggleButtonIs),
     group: "AXWidgetStates"
   },
   selected: {
-    name: i18nLazyString(UIStrings2.selectedString),
-    description: i18nLazyString(UIStrings2.whetherTheOptionRepresentedBy),
+    name: i18nLazyString(UIStrings3.selectedString),
+    description: i18nLazyString(UIStrings3.whetherTheOptionRepresentedBy),
     group: "AXWidgetStates"
   },
   activedescendant: {
-    name: i18nLazyString(UIStrings2.activeDescendant),
-    description: i18nLazyString(UIStrings2.theDescendantOfThisElementWhich),
+    name: i18nLazyString(UIStrings3.activeDescendant),
+    description: i18nLazyString(UIStrings3.theDescendantOfThisElementWhich),
     group: "AXRelationshipAttributes"
   },
   flowto: {
-    name: i18n3.i18n.lockedLazyString("Flows to"),
-    description: i18nLazyString(UIStrings2.elementToWhichTheUserMayChooseTo),
+    name: i18n5.i18n.lockedLazyString("Flows to"),
+    description: i18nLazyString(UIStrings3.elementToWhichTheUserMayChooseTo),
     group: "AXRelationshipAttributes"
   },
   controls: {
-    name: i18nLazyString(UIStrings2.controls),
-    description: i18nLazyString(UIStrings2.elementOrElementsWhoseContentOr),
+    name: i18nLazyString(UIStrings3.controls),
+    description: i18nLazyString(UIStrings3.elementOrElementsWhoseContentOr),
     group: "AXRelationshipAttributes"
   },
   describedby: {
-    name: i18nLazyString(UIStrings2.describedBy),
-    description: i18nLazyString(UIStrings2.elementOrElementsWhichFormThe),
+    name: i18nLazyString(UIStrings3.describedBy),
+    description: i18nLazyString(UIStrings3.elementOrElementsWhichFormThe),
     group: "AXRelationshipAttributes"
   },
   labelledby: {
-    name: i18nLazyString(UIStrings2.labeledBy),
-    description: i18nLazyString(UIStrings2.elementOrElementsWhichMayFormThe),
+    name: i18nLazyString(UIStrings3.labeledBy),
+    description: i18nLazyString(UIStrings3.elementOrElementsWhichMayFormThe),
     group: "AXRelationshipAttributes"
   },
   owns: {
-    name: i18n3.i18n.lockedLazyString("Owns"),
-    description: i18nLazyString(UIStrings2.elementOrElementsWhichShouldBe),
+    name: i18n5.i18n.lockedLazyString("Owns"),
+    description: i18nLazyString(UIStrings3.elementOrElementsWhichShouldBe),
     group: "AXRelationshipAttributes"
   },
   name: {
-    name: i18n3.i18n.lockedLazyString("Name"),
-    description: i18nLazyString(UIStrings2.theComputedNameOfThisElement),
+    name: i18n5.i18n.lockedLazyString("Name"),
+    description: i18nLazyString(UIStrings3.theComputedNameOfThisElement),
     group: "Default"
   },
   role: {
-    name: i18nLazyString(UIStrings2.role),
-    description: i18nLazyString(UIStrings2.indicatesThePurposeOfThisElement),
+    name: i18nLazyString(UIStrings3.role),
+    description: i18nLazyString(UIStrings3.indicatesThePurposeOfThisElement),
     group: "Default"
   },
   value: {
-    name: i18nLazyString(UIStrings2.value),
-    description: i18nLazyString(UIStrings2.theValueOfThisElementThisMayBe),
+    name: i18nLazyString(UIStrings3.value),
+    description: i18nLazyString(UIStrings3.theValueOfThisElementThisMayBe),
     group: "Default"
   },
   help: {
-    name: i18nLazyString(UIStrings2.help),
-    description: i18nLazyString(UIStrings2.theComputedHelpTextForThis),
+    name: i18nLazyString(UIStrings3.help),
+    description: i18nLazyString(UIStrings3.theComputedHelpTextForThis),
     group: "Default"
   },
   description: {
-    name: i18nLazyString(UIStrings2.description),
-    description: i18nLazyString(UIStrings2.theAccessibleDescriptionForThis),
+    name: i18nLazyString(UIStrings3.description),
+    description: i18nLazyString(UIStrings3.theAccessibleDescriptionForThis),
     group: "Default"
   }
 };
 var AXSourceTypes = {
-  attribute: { name: i18nLazyString(UIStrings2.fromAttribute), description: i18nLazyString(UIStrings2.valueFromAttribute) },
+  attribute: { name: i18nLazyString(UIStrings3.fromAttribute), description: i18nLazyString(UIStrings3.valueFromAttribute) },
   implicit: {
-    name: i18nLazyString(UIStrings2.implicit),
-    description: i18nLazyString(UIStrings2.implicitValue)
+    name: i18nLazyString(UIStrings3.implicit),
+    description: i18nLazyString(UIStrings3.implicitValue)
   },
-  style: { name: i18nLazyString(UIStrings2.fromStyle), description: i18nLazyString(UIStrings2.valueFromStyle) },
-  contents: { name: i18nLazyString(UIStrings2.contents), description: i18nLazyString(UIStrings2.valueFromElementContents) },
+  style: { name: i18nLazyString(UIStrings3.fromStyle), description: i18nLazyString(UIStrings3.valueFromStyle) },
+  contents: { name: i18nLazyString(UIStrings3.contents), description: i18nLazyString(UIStrings3.valueFromElementContents) },
   placeholder: {
-    name: i18nLazyString(UIStrings2.fromPlaceholderAttribute),
-    description: i18nLazyString(UIStrings2.valueFromPlaceholderAttribute)
+    name: i18nLazyString(UIStrings3.fromPlaceholderAttribute),
+    description: i18nLazyString(UIStrings3.valueFromPlaceholderAttribute)
   },
-  relatedElement: { name: i18nLazyString(UIStrings2.relatedElement), description: i18nLazyString(UIStrings2.valueFromRelatedElement) }
+  relatedElement: { name: i18nLazyString(UIStrings3.relatedElement), description: i18nLazyString(UIStrings3.valueFromRelatedElement) }
 };
 var AXNativeSourceTypes = {
   description: {
-    name: i18nLazyString(UIStrings2.fromDescription),
-    description: i18nLazyString(UIStrings2.valueFromDescriptionElement)
+    name: i18nLazyString(UIStrings3.fromDescription),
+    description: i18nLazyString(UIStrings3.valueFromDescriptionElement)
   },
-  figcaption: { name: i18nLazyString(UIStrings2.fromCaption), description: i18nLazyString(UIStrings2.valueFromFigcaptionElement) },
-  label: { name: i18nLazyString(UIStrings2.fromLabel), description: i18nLazyString(UIStrings2.valueFromLabelElement) },
+  figcaption: { name: i18nLazyString(UIStrings3.fromCaption), description: i18nLazyString(UIStrings3.valueFromFigcaptionElement) },
+  label: { name: i18nLazyString(UIStrings3.fromLabel), description: i18nLazyString(UIStrings3.valueFromLabelElement) },
   labelfor: {
-    name: i18nLazyString(UIStrings2.fromLabelFor),
-    description: i18nLazyString(UIStrings2.valueFromLabelElementWithFor)
+    name: i18nLazyString(UIStrings3.fromLabelFor),
+    description: i18nLazyString(UIStrings3.valueFromLabelElementWithFor)
   },
   labelwrapped: {
-    name: i18nLazyString(UIStrings2.fromLabelWrapped),
-    description: i18nLazyString(UIStrings2.valueFromLabelElementWrapped)
+    name: i18nLazyString(UIStrings3.fromLabelWrapped),
+    description: i18nLazyString(UIStrings3.valueFromLabelElementWrapped)
   },
-  legend: { name: i18nLazyString(UIStrings2.fromLegend), description: i18nLazyString(UIStrings2.valueFromLegendElement) },
+  legend: { name: i18nLazyString(UIStrings3.fromLegend), description: i18nLazyString(UIStrings3.valueFromLegendElement) },
   rubyannotation: {
-    name: i18nLazyString(UIStrings2.fromRubyAnnotation),
-    description: i18nLazyString(UIStrings2.valueFromNativeHtmlRuby)
+    name: i18nLazyString(UIStrings3.fromRubyAnnotation),
+    description: i18nLazyString(UIStrings3.valueFromNativeHtmlRuby)
   },
-  tablecaption: { name: i18nLazyString(UIStrings2.fromCaption), description: i18nLazyString(UIStrings2.valueFromTableCaption) },
-  title: { name: i18nLazyString(UIStrings2.fromTitle), description: i18nLazyString(UIStrings2.valueFromTitleAttribute) },
+  tablecaption: { name: i18nLazyString(UIStrings3.fromCaption), description: i18nLazyString(UIStrings3.valueFromTableCaption) },
+  title: { name: i18nLazyString(UIStrings3.fromTitle), description: i18nLazyString(UIStrings3.valueFromTitleAttribute) },
   other: {
-    name: i18nLazyString(UIStrings2.fromNativeHtml),
-    description: i18nLazyString(UIStrings2.valueFromNativeHtmlUnknownSource)
+    name: i18nLazyString(UIStrings3.fromNativeHtml),
+    description: i18nLazyString(UIStrings3.valueFromNativeHtmlUnknownSource)
   }
 };
 
 // ../../front_end/panels/accessibility/AccessibilityNodeView.ts
-var UIStrings3 = {
+var UIStrings4 = {
   /**
    * @description Text in the computed properties view under the Accessibility tab in the Elements panel.
    */
@@ -4506,8 +4703,8 @@ var UIStrings3 = {
    */
   elementNotInteresting: "Element not interesting for accessibility"
 };
-var str_3 = i18n5.i18n.registerUIStrings("panels/accessibility/AccessibilityNodeView.ts", UIStrings3);
-var i18nString2 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
+var str_4 = i18n7.i18n.registerUIStrings("panels/accessibility/AccessibilityNodeView.ts", UIStrings4);
+var i18nString3 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
 var AXNodeSubPane = class extends AccessibilitySubPane {
   axNode;
   noNodeInfo;
@@ -4516,15 +4713,15 @@ var AXNodeSubPane = class extends AccessibilitySubPane {
   ignoredReasonsTree;
   constructor() {
     super({
-      title: i18nString2(UIStrings3.computedProperties),
+      title: i18nString3(UIStrings4.computedProperties),
       viewId: "computed-properties",
       jslog: `${VisualLogging.section("computed-properties")}`
     });
     this.registerRequiredCSS(accessibilityNode_css_default);
     this.axNode = null;
     this.contentElement.classList.add("ax-subpane");
-    this.noNodeInfo = this.createInfo(i18nString2(UIStrings3.noAccessibilityNode));
-    this.ignoredInfo = this.createInfo(i18nString2(UIStrings3.accessibilityNodeNotExposed), "ax-ignored-info", "hidden");
+    this.noNodeInfo = this.createInfo(i18nString3(UIStrings4.noAccessibilityNode));
+    this.ignoredInfo = this.createInfo(i18nString3(UIStrings4.accessibilityNodeNotExposed), "ax-ignored-info", "hidden");
     this.treeOutline = this.createTreeOutline();
     this.ignoredReasonsTree = this.createTreeOutline();
     this.element.classList.add("accessibility-computed");
@@ -4606,7 +4803,7 @@ var AXNodeSubPane = class extends AccessibilitySubPane {
     this.axNode = null;
   }
 };
-var AXNodePropertyTreeElement = class _AXNodePropertyTreeElement extends UI2.TreeOutline.TreeElement {
+var AXNodePropertyTreeElement = class _AXNodePropertyTreeElement extends UI3.TreeOutline.TreeElement {
   axNode;
   constructor(axNode) {
     super("");
@@ -4631,12 +4828,12 @@ var AXNodePropertyTreeElement = class _AXNodePropertyTreeElement extends UI2.Tre
       valueElement.classList.add(TypeStyles[type]);
     }
     valueElement.setTextContentTruncatedIfNeeded(valueText || "");
-    UI2.Tooltip.Tooltip.install(valueElement, String(value) || "");
+    UI3.Tooltip.Tooltip.install(valueElement, String(value) || "");
     return valueElement;
   }
   static createExclamationMark(tooltip) {
-    const exclamationElement = UI2.UIUtils.createIconLabel({ iconName: "warning-filled", color: "var(--icon-warning)" });
-    UI2.Tooltip.Tooltip.install(exclamationElement, tooltip);
+    const exclamationElement = UI3.UIUtils.createIconLabel({ iconName: "warning-filled", color: "var(--icon-warning)" });
+    UI3.Tooltip.Tooltip.install(exclamationElement, tooltip);
     return exclamationElement;
   }
   appendNameElement(name) {
@@ -4644,7 +4841,7 @@ var AXNodePropertyTreeElement = class _AXNodePropertyTreeElement extends UI2.Tre
     if (name in AXAttributes) {
       const attribute = AXAttributes[name];
       nameElement.textContent = attribute.name();
-      UI2.Tooltip.Tooltip.install(nameElement, attribute.description());
+      UI3.Tooltip.Tooltip.install(nameElement, attribute.description());
       nameElement.classList.add("ax-readable-name");
     } else {
       nameElement.textContent = name;
@@ -4797,7 +4994,7 @@ var AXValueSourceTreeElement = class extends AXNodePropertyTreeElement {
         if (source.nativeSource) {
           const nativeSource = source.nativeSource;
           nameElement.textContent = AXNativeSourceTypes[nativeSource].name();
-          UI2.Tooltip.Tooltip.install(nameElement, AXNativeSourceTypes[nativeSource].description());
+          UI3.Tooltip.Tooltip.install(nameElement, AXNativeSourceTypes[nativeSource].description());
           nameElement.classList.add("ax-readable-name");
           break;
         }
@@ -4808,7 +5005,7 @@ var AXValueSourceTreeElement = class extends AXNodePropertyTreeElement {
       default:
         if (type in AXSourceTypes) {
           nameElement.textContent = AXSourceTypes[type].name();
-          UI2.Tooltip.Tooltip.install(nameElement, AXSourceTypes[type].description());
+          UI3.Tooltip.Tooltip.install(nameElement, AXSourceTypes[type].description());
           nameElement.classList.add("ax-readable-name");
         } else {
           console.warn(type, "not in AXSourceTypes");
@@ -4820,7 +5017,7 @@ var AXValueSourceTreeElement = class extends AXNodePropertyTreeElement {
   update() {
     this.listItemElement.removeChildren();
     if (this.source.invalid) {
-      const exclamationMark = AXNodePropertyTreeElement.createExclamationMark(i18nString2(UIStrings3.invalidSource));
+      const exclamationMark = AXNodePropertyTreeElement.createExclamationMark(i18nString3(UIStrings4.invalidSource));
       this.listItemElement.appendChild(exclamationMark);
       this.listItemElement.classList.add("ax-value-source-invalid");
     } else if (this.source.superseded) {
@@ -4830,10 +5027,10 @@ var AXValueSourceTreeElement = class extends AXNodePropertyTreeElement {
     this.listItemElement.createChild("span", "separator").textContent = ":\xA0";
     if (this.source.attributeValue) {
       this.appendValueElement(this.source.attributeValue);
-      UI2.UIUtils.createTextChild(this.listItemElement, "\xA0");
+      UI3.UIUtils.createTextChild(this.listItemElement, "\xA0");
     } else if (this.source.nativeSourceValue) {
       this.appendValueElement(this.source.nativeSourceValue);
-      UI2.UIUtils.createTextChild(this.listItemElement, "\xA0");
+      UI3.UIUtils.createTextChild(this.listItemElement, "\xA0");
       if (this.source.value) {
         this.appendValueElement(this.source.value);
       }
@@ -4842,7 +5039,7 @@ var AXValueSourceTreeElement = class extends AXNodePropertyTreeElement {
     } else {
       const valueElement = AXNodePropertyTreeElement.createSimpleValueElement(
         Accessibility.AXValueType.ValueUndefined,
-        i18nString2(UIStrings3.notSpecified)
+        i18nString3(UIStrings4.notSpecified)
       );
       this.listItemElement.appendChild(valueElement);
       this.listItemElement.classList.add("ax-value-source-unused");
@@ -4852,7 +5049,7 @@ var AXValueSourceTreeElement = class extends AXNodePropertyTreeElement {
     }
   }
 };
-var AXRelatedNodeSourceTreeElement = class extends UI2.TreeOutline.TreeElement {
+var AXRelatedNodeSourceTreeElement = class extends UI3.TreeOutline.TreeElement {
   value;
   axRelatedNodeElement;
   constructor(node, value) {
@@ -4894,7 +5091,7 @@ var AXRelatedNodeElement = class {
         if (!node) {
           return;
         }
-        render(
+        render2(
           PanelsCommon.DOMLinkifier.Linkifier.instance().linkify(node, {
             preventKeyboardFocus: true
           }),
@@ -4903,8 +5100,8 @@ var AXRelatedNodeElement = class {
       });
     } else if (this.idref) {
       element.classList.add("invalid");
-      const valueElement = AXNodePropertyTreeElement.createExclamationMark(i18nString2(UIStrings3.noNodeWithThisId));
-      UI2.UIUtils.createTextChild(valueElement, this.idref);
+      const valueElement = AXNodePropertyTreeElement.createExclamationMark(i18nString3(UIStrings4.noNodeWithThisId));
+      UI3.UIUtils.createTextChild(valueElement, this.idref);
       element.appendChild(valueElement);
     }
     return element;
@@ -4933,67 +5130,67 @@ var AXNodeIgnoredReasonTreeElement = class _AXNodeIgnoredReasonTreeElement exten
     let reasonElement = null;
     switch (reason) {
       case "activeModalDialog":
-        reasonElement = uiI18n.getFormatLocalizedString(str_3, UIStrings3.elementIsHiddenBy, {});
+        reasonElement = uiI18n.getFormatLocalizedString(str_4, UIStrings4.elementIsHiddenBy, {});
         break;
       case "hiddenByChildTree":
-        reasonElement = uiI18n.getFormatLocalizedString(str_3, UIStrings3.elementIsHiddenByChildTree, {});
+        reasonElement = uiI18n.getFormatLocalizedString(str_4, UIStrings4.elementIsHiddenByChildTree, {});
         break;
       case "ancestorIsLeafNode":
-        reasonElement = uiI18n.getFormatLocalizedString(str_3, UIStrings3.ancestorChildrenAreAll, {});
+        reasonElement = uiI18n.getFormatLocalizedString(str_4, UIStrings4.ancestorChildrenAreAll, {});
         break;
       case "ariaHiddenElement": {
         const ariaHiddenSpan = document.createElement("span", { is: "source-code" }).textContent = "aria-hidden";
-        reasonElement = uiI18n.getFormatLocalizedString(str_3, UIStrings3.elementIsPlaceholder, { PH1: ariaHiddenSpan });
+        reasonElement = uiI18n.getFormatLocalizedString(str_4, UIStrings4.elementIsPlaceholder, { PH1: ariaHiddenSpan });
         break;
       }
       case "ariaHiddenSubtree": {
         const ariaHiddenSpan = document.createElement("span", { is: "source-code" }).textContent = "aria-hidden";
         const trueSpan = document.createElement("span", { is: "source-code" }).textContent = "true";
         reasonElement = uiI18n.getFormatLocalizedString(
-          str_3,
-          UIStrings3.placeholderIsPlaceholderOnAncestor,
+          str_4,
+          UIStrings4.placeholderIsPlaceholderOnAncestor,
           { PH1: ariaHiddenSpan, PH2: trueSpan }
         );
         break;
       }
       case "emptyAlt":
-        reasonElement = uiI18n.getFormatLocalizedString(str_3, UIStrings3.elementHasEmptyAltText, {});
+        reasonElement = uiI18n.getFormatLocalizedString(str_4, UIStrings4.elementHasEmptyAltText, {});
         break;
       case "emptyText":
-        reasonElement = uiI18n.getFormatLocalizedString(str_3, UIStrings3.noTextContent, {});
+        reasonElement = uiI18n.getFormatLocalizedString(str_4, UIStrings4.noTextContent, {});
         break;
       case "inertElement":
-        reasonElement = uiI18n.getFormatLocalizedString(str_3, UIStrings3.elementIsInert, {});
+        reasonElement = uiI18n.getFormatLocalizedString(str_4, UIStrings4.elementIsInert, {});
         break;
       case "inertSubtree":
-        reasonElement = uiI18n.getFormatLocalizedString(str_3, UIStrings3.elementIsInAnInertSubTree, {});
+        reasonElement = uiI18n.getFormatLocalizedString(str_4, UIStrings4.elementIsInAnInertSubTree, {});
         break;
       case "inheritsPresentation":
-        reasonElement = uiI18n.getFormatLocalizedString(str_3, UIStrings3.elementsInheritsPresentational, {});
+        reasonElement = uiI18n.getFormatLocalizedString(str_4, UIStrings4.elementsInheritsPresentational, {});
         break;
       case "labelContainer":
-        reasonElement = uiI18n.getFormatLocalizedString(str_3, UIStrings3.partOfLabelElement, {});
+        reasonElement = uiI18n.getFormatLocalizedString(str_4, UIStrings4.partOfLabelElement, {});
         break;
       case "labelFor":
-        reasonElement = uiI18n.getFormatLocalizedString(str_3, UIStrings3.labelFor, {});
+        reasonElement = uiI18n.getFormatLocalizedString(str_4, UIStrings4.labelFor, {});
         break;
       case "notRendered":
-        reasonElement = uiI18n.getFormatLocalizedString(str_3, UIStrings3.elementIsNotRendered, {});
+        reasonElement = uiI18n.getFormatLocalizedString(str_4, UIStrings4.elementIsNotRendered, {});
         break;
       case "notVisible":
-        reasonElement = uiI18n.getFormatLocalizedString(str_3, UIStrings3.elementIsNotVisible, {});
+        reasonElement = uiI18n.getFormatLocalizedString(str_4, UIStrings4.elementIsNotVisible, {});
         break;
       case "presentationalRole": {
         const role = axNode?.role()?.value || "";
         const rolePresentationSpan = document.createElement("span", { is: "source-code" }).textContent = "role=" + role;
-        reasonElement = uiI18n.getFormatLocalizedString(str_3, UIStrings3.elementHasPlaceholder, { PH1: rolePresentationSpan });
+        reasonElement = uiI18n.getFormatLocalizedString(str_4, UIStrings4.elementHasPlaceholder, { PH1: rolePresentationSpan });
         break;
       }
       case "probablyPresentational":
-        reasonElement = uiI18n.getFormatLocalizedString(str_3, UIStrings3.elementIsPresentational, {});
+        reasonElement = uiI18n.getFormatLocalizedString(str_4, UIStrings4.elementIsPresentational, {});
         break;
       case "uninteresting":
-        reasonElement = uiI18n.getFormatLocalizedString(str_3, UIStrings3.elementNotInteresting, {});
+        reasonElement = uiI18n.getFormatLocalizedString(str_4, UIStrings4.elementNotInteresting, {});
         break;
     }
     if (reasonElement) {
@@ -5020,11 +5217,11 @@ __export(AccessibilitySidebarView_exports, {
   AccessibilitySidebarView: () => AccessibilitySidebarView
 });
 import "../../ui/components/switch/switch.js";
-import * as i18n11 from "../../core/i18n/i18n.js";
+import * as i18n13 from "../../core/i18n/i18n.js";
 import * as Root from "../../core/root/root.js";
 import * as SDK4 from "../../core/sdk/sdk.js";
-import * as UI4 from "../../ui/legacy/legacy.js";
-import * as Lit2 from "../../ui/lit/lit.js";
+import * as UI5 from "../../ui/legacy/legacy.js";
+import * as Lit3 from "../../ui/lit/lit.js";
 
 // gen/front_end/panels/accessibility/accessibilitySidebarView.css.js
 var accessibilitySidebarView_css_default = `/*
@@ -5044,13 +5241,13 @@ var accessibilitySidebarView_css_default = `/*
 var ARIAAttributesView_exports = {};
 __export(ARIAAttributesView_exports, {
   ARIAAttributesPane: () => ARIAAttributesPane,
-  DEFAULT_VIEW: () => DEFAULT_VIEW
+  DEFAULT_VIEW: () => DEFAULT_VIEW2
 });
-import * as i18n7 from "../../core/i18n/i18n.js";
+import * as i18n9 from "../../core/i18n/i18n.js";
 import * as Platform from "../../core/platform/platform.js";
 import * as SDK3 from "../../core/sdk/sdk.js";
-import * as UI3 from "../../ui/legacy/legacy.js";
-import * as Lit from "../../ui/lit/lit.js";
+import * as UI4 from "../../ui/legacy/legacy.js";
+import * as Lit2 from "../../ui/lit/lit.js";
 import * as VisualLogging2 from "../../ui/visual_logging/visual_logging.js";
 
 // ../../front_end/panels/accessibility/ARIAMetadata.ts
@@ -7761,7 +7958,7 @@ var Attribute = class {
 };
 
 // ../../front_end/panels/accessibility/ARIAAttributesView.ts
-var UIStrings4 = {
+var UIStrings5 = {
   /**
    * @description Text in the ARIA attributes view under the Accessibility tab in the Elements panel.
    */
@@ -7771,11 +7968,11 @@ var UIStrings4 = {
    */
   noAriaAttributes: "No ARIA attributes"
 };
-var str_4 = i18n7.i18n.registerUIStrings("panels/accessibility/ARIAAttributesView.ts", UIStrings4);
-var i18nString3 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
-var { render: render2, html } = Lit;
-var { widget } = UI3.Widget;
-var DEFAULT_VIEW = (input, output, target) => {
+var str_5 = i18n9.i18n.registerUIStrings("panels/accessibility/ARIAAttributesView.ts", UIStrings5);
+var i18nString4 = i18n9.i18n.getLocalizedString.bind(void 0, str_5);
+var { render: render3, html: html2 } = Lit2;
+var { widget } = UI4.Widget;
+var DEFAULT_VIEW2 = (input, output, target) => {
   const MAX_CONTENT_LENGTH = 1e4;
   const onStartEditing = (attribute, e) => {
     e.consume(true);
@@ -7784,23 +7981,23 @@ var DEFAULT_VIEW = (input, output, target) => {
   const propertyCompletions = (attribute) => {
     const values = input.propertyCompletions.get(attribute);
     if (!values?.length) {
-      return Lit.nothing;
+      return Lit2.nothing;
     }
-    return html`<datalist id=completions>
-      ${values.map((value) => html`<option>${value}</option>`)}
+    return html2`<datalist id=completions>
+      ${values.map((value) => html2`<option>${value}</option>`)}
     </datalist>`;
   };
-  render2(
+  render3(
     // clang-format off
-    input.attributes.length === 0 ? html`
+    input.attributes.length === 0 ? html2`
           <style>${accessibilityProperties_css_default}</style>
           <devtools-widget
-            ${widget(UI3.EmptyWidget.EmptyWidget, { text: i18nString3(UIStrings4.noAriaAttributes) })}
-            class="gray-info-message info-message-overflow"></devtools-widget>` : html`<devtools-tree
+            ${widget(UI4.EmptyWidget.EmptyWidget, { text: i18nString4(UIStrings5.noAriaAttributes) })}
+            class="gray-info-message info-message-overflow"></devtools-widget>` : html2`<devtools-tree
            hide-overflow
-           .template=${html`
+           .template=${html2`
              <ul role="tree">
-              ${input.attributes?.map((attribute) => html`
+              ${input.attributes?.map((attribute) => html2`
                 <li role="treeitem" jslog=${VisualLogging2.treeItem("aria-attribute")}>
                   <style>${accessibilityProperties_css_default}</style>
                   <span class="ax-name monospace" @mousedown=${onStartEditing.bind(null, attribute)}>
@@ -7828,7 +8025,8 @@ var DEFAULT_VIEW = (input, output, target) => {
       container: {
         attributes: {
           jslog: `${VisualLogging2.section("aria-attributes")}`,
-          ...input.backendNodeId ? { "data-backend-node-id": `${input.backendNodeId}` } : {}
+          ...input.backendNodeId ? { "data-backend-node-id": `${input.backendNodeId}` } : {},
+          ...input.targetId ? { "data-target-id": `${input.targetId}` } : {}
         }
       }
     }
@@ -7837,9 +8035,9 @@ var DEFAULT_VIEW = (input, output, target) => {
 var ARIAAttributesPane = class extends AccessibilitySubPane {
   #view;
   #attributeBeingEdited = null;
-  constructor(view = DEFAULT_VIEW) {
+  constructor(view = DEFAULT_VIEW2) {
     super({
-      title: i18nString3(UIStrings4.ariaAttributes),
+      title: i18nString4(UIStrings5.ariaAttributes),
       viewId: "aria-attributes",
       useShadowDom: "pure"
     });
@@ -7879,7 +8077,8 @@ var ARIAAttributesPane = class extends AccessibilitySubPane {
       onCommitEditing,
       onCancelEditing,
       propertyCompletions,
-      backendNodeId: this.node()?.backendNodeId()
+      backendNodeId: this.node()?.backendNodeId(),
+      targetId: this.node()?.domModel().target().id()
     };
     this.#view(input, {}, this.contentElement);
   }
@@ -7890,10 +8089,10 @@ var ARIAAttributesPane = class extends AccessibilitySubPane {
 
 // ../../front_end/panels/accessibility/SourceOrderView.ts
 import "../../ui/legacy/legacy.js";
-import * as i18n9 from "../../core/i18n/i18n.js";
-import { html as html2, nothing as nothing2, render as render3 } from "../../ui/lit/lit.js";
+import * as i18n11 from "../../core/i18n/i18n.js";
+import { html as html3, nothing as nothing2, render as render4 } from "../../ui/lit/lit.js";
 import * as VisualLogging3 from "../../ui/visual_logging/visual_logging.js";
-var UIStrings5 = {
+var UIStrings6 = {
   /**
    * @description Name of a feature that allows the developer to view the contents of the page in the
    * 'source order' (the order in which the HTML elements show up in the source code) under the
@@ -7914,32 +8113,32 @@ var UIStrings5 = {
    */
   showSourceOrder: "Show source order"
 };
-var str_5 = i18n9.i18n.registerUIStrings("panels/accessibility/SourceOrderView.ts", UIStrings5);
-var i18nString4 = i18n9.i18n.getLocalizedString.bind(void 0, str_5);
+var str_6 = i18n11.i18n.registerUIStrings("panels/accessibility/SourceOrderView.ts", UIStrings6);
+var i18nString5 = i18n11.i18n.getLocalizedString.bind(void 0, str_6);
 var MAX_CHILD_ELEMENTS_THRESHOLD = 300;
-var DEFAULT_VIEW2 = (input, _output, target) => {
+var DEFAULT_VIEW3 = (input, _output, target) => {
   function onShowSourceOrderChanged(event) {
     const checkbox = event.currentTarget;
     input.onShowSourceOrderChanged(checkbox.checked);
     event.consume();
   }
-  render3(html2`
-    ${input.showSourceOrder === void 0 ? html2`
+  render4(html3`
+    ${input.showSourceOrder === void 0 ? html3`
         <div class="gray-info-message info-message-overflow">
-          ${i18nString4(UIStrings5.noSourceOrderInformation)}
+          ${i18nString5(UIStrings6.noSourceOrderInformation)}
         </div>
-      ` : html2`
-      ${input.childCount >= MAX_CHILD_ELEMENTS_THRESHOLD ? html2`
+      ` : html3`
+      ${input.childCount >= MAX_CHILD_ELEMENTS_THRESHOLD ? html3`
           <div class="gray-info-message info-message-overflow"
                 id="source-order-warning">
-            ${i18nString4(UIStrings5.thereMayBeADelayInDisplaying)}
+            ${i18nString5(UIStrings6.thereMayBeADelayInDisplaying)}
           </div>
         ` : nothing2}
       <devtools-checkbox class="source-order-checkbox"
                           jslog=${VisualLogging3.toggle().track({ click: true })}
                           ?checked=${input.showSourceOrder}
                           @change=${onShowSourceOrderChanged}>
-        ${i18nString4(UIStrings5.showSourceOrder)}
+        ${i18nString5(UIStrings6.showSourceOrder)}
       </devtools-checkbox>
       `}
   `, target, { container: { attributes: { jslog: `${VisualLogging3.section("source-order-viewer")}` } } });
@@ -7948,9 +8147,9 @@ var SourceOrderPane = class extends AccessibilitySubPane {
   #childCount = 0;
   #showSourceOrder = void 0;
   #view;
-  constructor(view = DEFAULT_VIEW2) {
+  constructor(view = DEFAULT_VIEW3) {
     super({
-      title: i18nString4(UIStrings5.sourceOrderViewer),
+      title: i18nString5(UIStrings6.sourceOrderViewer),
       viewId: "source-order-viewer",
       useShadowDom: "pure"
     });
@@ -8004,17 +8203,17 @@ var SourceOrderPane = class extends AccessibilitySubPane {
 };
 
 // ../../front_end/panels/accessibility/AccessibilitySidebarView.ts
-var { html: html3, render: render4 } = Lit2;
-var UIStrings6 = {
+var { html: html4, render: render5 } = Lit3;
+var UIStrings7 = {
   /**
    * @description Text for a toggle to turn on the accessibility tree view.
    */
   showAccessibilityTree: "Show accessibility tree"
 };
-var str_6 = i18n11.i18n.registerUIStrings("panels/accessibility/AccessibilitySidebarView.ts", UIStrings6);
-var i18nString5 = i18n11.i18n.getLocalizedString.bind(void 0, str_6);
+var str_7 = i18n13.i18n.registerUIStrings("panels/accessibility/AccessibilitySidebarView.ts", UIStrings7);
+var i18nString6 = i18n13.i18n.getLocalizedString.bind(void 0, str_7);
 var accessibilitySidebarViewInstance;
-var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI4.Widget.VBox {
+var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI5.Widget.VBox {
   #node;
   #axNode;
   skipNextPullNode;
@@ -8032,12 +8231,12 @@ var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI4.Widge
     this.#node = null;
     this.#axNode = null;
     this.skipNextPullNode = false;
-    this.sidebarPaneStack = UI4.ViewManager.ViewManager.instance().createStackLocation();
+    this.sidebarPaneStack = UI5.ViewManager.ViewManager.instance().createStackLocation();
     this.toggleContainer = document.createElement("div");
     this.toggleContainer.classList.add("accessibility-toggle-container");
     this.element.appendChild(this.toggleContainer);
-    this.toggleAction = UI4.ActionRegistry.ActionRegistry.instance().getAction("elements.toggle-a11y-tree");
-    this.toggleAction.addEventListener(UI4.ActionRegistration.Events.TOGGLED, this.updateToggle, this);
+    this.toggleAction = UI5.ActionRegistry.ActionRegistry.instance().getAction("elements.toggle-a11y-tree");
+    this.toggleAction.addEventListener(UI5.ActionRegistration.Events.TOGGLED, this.updateToggle, this);
     this.updateToggle();
     this.ariaSubPane = new ARIAAttributesPane();
     void this.sidebarPaneStack.showView(this.ariaSubPane);
@@ -8050,7 +8249,7 @@ var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI4.Widge
       void this.sidebarPaneStack.showView(this.announcementsRecordingSubPane);
     }
     this.sidebarPaneStack.widget().show(this.element);
-    UI4.Context.Context.instance().addFlavorChangeListener(SDK4.DOMModel.DOMNode, this.pullNode, this);
+    UI5.Context.Context.instance().addFlavorChangeListener(SDK4.DOMModel.DOMNode, this.pullNode, this);
     this.pullNode();
   }
   static instance(opts) {
@@ -8161,23 +8360,23 @@ var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI4.Widge
       this.skipNextPullNode = false;
       return;
     }
-    this.setNode(UI4.Context.Context.instance().flavor(SDK4.DOMModel.DOMNode));
+    this.setNode(UI5.Context.Context.instance().flavor(SDK4.DOMModel.DOMNode));
   }
   updateToggle() {
     const isToggled = this.toggleAction.toggled();
     this.sidebarPaneStack.notifyVisibilityChanged(isToggled);
-    render4(
-      html3`
+    render5(
+      html4`
       <div style="display: flex; align-items: center; gap: 8px;">
         <devtools-switch
           role="switch"
-          aria-label=${i18nString5(UIStrings6.showAccessibilityTree)}
+          aria-label=${i18nString6(UIStrings7.showAccessibilityTree)}
           .checked=${isToggled}
-          .label=${i18nString5(UIStrings6.showAccessibilityTree)}
+          .label=${i18nString6(UIStrings7.showAccessibilityTree)}
           .jslogContext=${"elements.toggle-a11y-tree"}
           @switchchange=${this.onToggleChange}
         ></devtools-switch>
-        <span style="color: var(--sys-color-on-surface);">${i18nString5(UIStrings6.showAccessibilityTree)}</span>
+        <span style="color: var(--sys-color-on-surface);">${i18nString6(UIStrings7.showAccessibilityTree)}</span>
       </div>
     `,
       this.toggleContainer,
@@ -8202,6 +8401,7 @@ var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI4.Widge
 export {
   ARIAAttributesView_exports as ARIAAttributesView,
   ARIAMetadata_exports as ARIAMetadata,
+  AccessibilityAnnouncementRecordingListView_exports as AccessibilityAnnouncementRecordingListView,
   AccessibilityAnnouncementRecordingView_exports as AccessibilityAnnouncementRecordingView,
   AccessibilityNodeView_exports as AccessibilityNodeView,
   AccessibilitySidebarView_exports as AccessibilitySidebarView,

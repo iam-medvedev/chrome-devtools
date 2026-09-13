@@ -59,6 +59,7 @@ describe('StylingAgent', function () {
         element.ownerDocument = {
             documentURL: 'https://example.com',
         };
+        element.securityOrigin.returns(SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'));
     });
     describe('buildRequest', () => {
         beforeEach(() => {

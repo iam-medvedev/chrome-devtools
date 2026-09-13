@@ -16,13 +16,13 @@ describe('FileContext', () => {
     beforeEach(() => {
         universe = new TestUniverse();
     });
-    it('should return URL, item, and title correctly', async () => {
+    it('should return origin, item, and title correctly', async () => {
         const uiSourceCode = await createUISourceCode({
             url: urlString `https://example.com/script.js`,
             content: 'console.log("hello");',
         });
         const context = new AiAssistance.FileContext.FileContext(uiSourceCode, universe.debuggerWorkspaceBinding);
-        assert.strictEqual(context.getURL(), 'https://example.com/script.js');
+        assert.isTrue(context.getOrigin().isSameOriginWith(SDK.SecurityOrigin.SecurityOrigin.create('https://example.com')));
         assert.strictEqual(context.getItem(), uiSourceCode);
         assert.strictEqual(context.getTitle(), 'script.js');
     });
@@ -81,8 +81,7 @@ console.log("hello");
             .returns(SDK.SecurityOrigin.SecurityOrigin.create('http://attacker.com'));
         const context = new AiAssistance.FileContext.FileContext(uiSourceCode, universe.debuggerWorkspaceBinding);
         const origin = context.getOrigin();
-        const siteId = origin instanceof SDK.SecurityOrigin.SecurityOrigin ? origin.siteId() : origin;
-        assert.strictEqual(siteId, 'http://attacker.com');
+        assert.isTrue(origin.isSameOriginWith(SDK.SecurityOrigin.SecurityOrigin.create('http://attacker.com')));
     });
     it('should fall back to URL origin if project securityOrigin is absent', async () => {
         const uiSourceCode = await createUISourceCode({
@@ -93,8 +92,7 @@ console.log("hello");
         sinon.stub(uiSourceCode.project(), 'securityOrigin').returns(null);
         const context = new AiAssistance.FileContext.FileContext(uiSourceCode, universe.debuggerWorkspaceBinding);
         const origin = context.getOrigin();
-        const siteId = origin instanceof SDK.SecurityOrigin.SecurityOrigin ? origin.siteId() : origin;
-        assert.strictEqual(siteId, 'https://trusted-site.com');
+        assert.isTrue(origin.isSameOriginWith(SDK.SecurityOrigin.SecurityOrigin.create('https://trusted-site.com')));
     });
 });
 //# sourceMappingURL=FileContext.test.js.map

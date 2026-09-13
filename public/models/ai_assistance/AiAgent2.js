@@ -13,6 +13,7 @@ import { PerformanceTraceContext } from './contexts/PerformanceTraceContext.js';
 import { debugLog } from './debug.js';
 import { ExtensionScope } from './ExtensionScope.js';
 import { SKILLS } from './skills/SkillRegistry.js';
+import { isOriginAllowedByLock } from './tools/Tool.js';
 import { ToolRegistry } from './tools/ToolRegistry.js';
 const SKILL_DISPLAY_NAMES = {
     styling: 'CSS and styling',
@@ -75,7 +76,12 @@ export class AiAgent2 extends AiAgent {
             this.disableServerSideLogging();
         }
         const target = this.targetManager.primaryPageTarget();
-        const domModel = target?.model(SDK.DOMModel.DOMModel);
+        const establishedOrigin = this.#getConversationOrigin();
+        // Avoid fetching or caching top-level documents across origins or when
+        // the origin lock is blocked/uninitialized.
+        // Note: b/559642568 tracks making the tri-state ('blocked' | 'uninitialized' | 'locked') explicit.
+        const isTargetAllowed = target && isOriginAllowedByLock(establishedOrigin, target.inspectedSecurityOrigin());
+        const domModel = isTargetAllowed ? target.model(SDK.DOMModel.DOMModel) : null;
         // Ensure the DOM document is requested and cached in DOMModel so that
         // subsequent synchronous lookups via domModel.existingDocument() (e.g.,
         // in #getDocumentBodyNode()) resolve the document and body immediately.
@@ -220,9 +226,14 @@ User query: ${enhancedQuery}`;
         }
         return response.trim();
     }
+    #getExecutionContextNode() {
+        if (this.context instanceof DOMNodeContext) {
+            return this.context.getItem();
+        }
+        return this.#getDocumentBodyNode();
+    }
     #createExtensionScope(changes) {
-        const selectedNode = this.context && this.context instanceof DOMNodeContext ? this.context.getItem() : this.#getDocumentBodyNode();
-        return new ExtensionScope(changes, this.sessionId, selectedNode);
+        return new ExtensionScope(changes, this.sessionId, this.#getExecutionContextNode());
     }
     /**
      * Declares a tool to be available to the agent model, verifying first that
@@ -242,8 +253,8 @@ User query: ${enhancedQuery}`;
                     changeManager: this.#changes,
                     createExtensionScope: this.#createExtensionScope.bind(this),
                     execJs: this.#execJs,
-                    getExecutionContextNode: () => (this.context instanceof DOMNodeContext ? this.context.getItem() : this.#getDocumentBodyNode()),
-                    getTarget: () => this.targetManager.primaryPageTarget(),
+                    getExecutionContextNode: () => this.#getExecutionContextNode(),
+                    getTarget: () => this.#getTarget(),
                     getEstablishedOrigin: () => this.#getConversationOrigin(),
                     getLighthouseReport: () => (this.context instanceof AccessibilityContext ? this.context.getItem() : null),
                     runLighthouse: async (overrides) => await (this.#lighthouseRecording?.(overrides) ?? null),
@@ -258,13 +269,36 @@ User query: ${enhancedQuery}`;
         });
     }
     /**
+     * Returns the primary page target unless origin access is explicitly blocked
+     * (e.g. following cross-origin navigation).
+     * Tools use this target to resolve node IDs and fetch frame resources, and
+     * perform their own origin checks on the resolved entities.
+     */
+    #getTarget() {
+        const allowed = this.#allowedOrigin?.();
+        if (allowed && 'blocked' in allowed) {
+            return null;
+        }
+        return this.targetManager.primaryPageTarget();
+    }
+    /**
      * For non-DOM contexts (e.g., Lighthouse accessibility reports or storage items),
      * there is no user-selected DOM node. We fall back to the document body as the
      * default execution context node so scripts have a valid `$0` target.
+     * Fails closed and returns null if the conversation origin is not established or
+     * does not match the primary page document's security origin.
      */
     #getDocumentBodyNode() {
-        const document = this.targetManager.primaryPageTarget()?.model(SDK.DOMModel.DOMModel)?.existingDocument();
-        return document?.body ?? null;
+        const target = this.#getTarget();
+        const document = target?.model(SDK.DOMModel.DOMModel)?.existingDocument();
+        if (!document) {
+            return null;
+        }
+        const establishedOrigin = this.#getConversationOrigin();
+        if (!isOriginAllowedByLock(establishedOrigin, document.securityOrigin())) {
+            return null;
+        }
+        return document.body ?? null;
     }
     #getConversationOrigin() {
         const allowed = this.#allowedOrigin?.();

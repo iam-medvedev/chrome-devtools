@@ -10,7 +10,6 @@ import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { getMainFrame, navigate } from '../../testing/ResourceTreeHelpers.js';
 import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as EmulationModel from '../emulation/emulation.js';
-import * as Geometry from '../geometry/geometry.js';
 describe('Insets', () => {
     it('can be instantiated without issues', () => {
         const insets = new EmulationModel.DeviceModeModel.Insets(1, 2, 3, 4);
@@ -734,7 +733,7 @@ describe('DeviceModeModel', () => {
     });
     it('behaves correctly when adjusting inputs in responsive mode', () => {
         try {
-            const viewportSize = new Geometry.Size(320, 480);
+            const viewportSize = new Platform.Size(320, 480);
             deviceModeModel.setAvailableSize(viewportSize, viewportSize);
             deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.Responsive, null, null);
             function assertState(expectedScale, expectedAppliedDeviceSize, expectedScreenRect, expectedVisiblePageRect) {
@@ -795,7 +794,7 @@ describe('DeviceModeModel', () => {
             // Emulate before setAvailableSize is called (simulating DevTools startup).
             deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.Device, device, mode, undefined);
             // setAvailableSize is called on layout with preferred size 500x500.
-            deviceModeModel.setAvailableSize(new Geometry.Size(500, 500), new Geometry.Size(500, 500));
+            deviceModeModel.setAvailableSize(new Platform.Size(500, 500), new Platform.Size(500, 500));
             // Fit scale for 1000x1000 in 500x500 is 0.5.
             assert.strictEqual(deviceModeModel.scaleSetting().get(), 0.5);
             assert.strictEqual(deviceModeModel.scale(), 0.5);
@@ -819,7 +818,7 @@ describe('DeviceModeModel', () => {
             // Emulate with an explicit scale of 0.75 before setAvailableSize.
             deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.Device, device, mode, 0.75);
             // setAvailableSize is called on layout with preferred size 500x500.
-            deviceModeModel.setAvailableSize(new Geometry.Size(500, 500), new Geometry.Size(500, 500));
+            deviceModeModel.setAvailableSize(new Platform.Size(500, 500), new Platform.Size(500, 500));
             // Explicit scale of 0.75 should be preserved, not overwritten with fit scale (0.5).
             assert.strictEqual(deviceModeModel.scaleSetting().get(), 0.75);
             assert.strictEqual(deviceModeModel.scale(), 0.75);

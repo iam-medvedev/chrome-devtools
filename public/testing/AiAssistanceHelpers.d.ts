@@ -2,7 +2,6 @@ import sinon from 'sinon';
 import * as Common from '../core/common/common.js';
 import * as Host from '../core/host/host.js';
 import * as Platform from '../core/platform/platform.js';
-import * as SDK from '../core/sdk/sdk.js';
 import * as AiAssistance from '../models/ai_assistance/ai_assistance.js';
 import * as Persistence from '../models/persistence/persistence.js';
 import type * as Trace from '../models/trace/trace.js';
@@ -40,11 +39,6 @@ export declare function createUISourceCode(options?: {
     resourceType?: Common.ResourceType.ResourceType;
     requestContentData?: boolean;
 }): Promise<Workspace.UISourceCode.UISourceCode>;
-export declare function createNetworkRequest(opts?: {
-    url?: Platform.DevToolsPath.UrlString;
-    includeInitiators?: boolean;
-    documentURL?: Platform.DevToolsPath.UrlString;
-}): SDK.NetworkRequest.NetworkRequest;
 /**
  * Creates and shows an AiAssistancePanel instance returning the view
  * stubs and the initial view input caused by Widget.show().
@@ -87,7 +81,7 @@ export declare function createTestFilesystem(fileSystemPath: string, files?: Arr
     project: Persistence.FileSystemWorkspaceBinding.FileSystem;
     uiSourceCode: Workspace.UISourceCode.UISourceCode;
 };
-export declare function assertIsError<T>(response: AiAssistance.Tool.DataHandlerResult<T> | AiAssistance.Tool.ContextHandlerResult<T> | AiAssistance.AiAgent.ToolResult<T>): asserts response is AiAssistance.Tool.ToolErrorResult;
+export declare function assertIsError<T>(response: AiAssistance.Tool.DataHandlerResult<T> | AiAssistance.Tool.ContextHandlerResult<T> | AiAssistance.AiAgent.ToolResult<T>, expectedError?: string | RegExp): asserts response is AiAssistance.Tool.ToolErrorResult;
 export declare function assertIsResult<T>(response: AiAssistance.Tool.DataHandlerResult<T> | AiAssistance.Tool.ContextHandlerResult<T> | AiAssistance.AiAgent.ToolResult<T>): asserts response is AiAssistance.Tool.ToolDataResult<T>;
 export declare function assertRequiresApproval<T>(response: AiAssistance.Tool.DataHandlerResult<T> | AiAssistance.Tool.ContextHandlerResult<T> | AiAssistance.AiAgent.ToolResult<T>): asserts response is AiAssistance.Tool.ToolApprovalResult;
 export declare function assertIsContext<T>(response: AiAssistance.Tool.DataHandlerResult<T> | AiAssistance.Tool.ContextHandlerResult<T> | AiAssistance.AiAgent.ToolResult<T>): asserts response is AiAssistance.Tool.ToolContextResult<T>;

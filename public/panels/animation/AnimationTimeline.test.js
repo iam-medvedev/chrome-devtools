@@ -264,9 +264,26 @@ describeWithEnvironment('AnimationTimeline', () => {
                 assert.isTrue(gridHeader.classList.contains('scrubber-enabled'));
                 const animationNodeRow = view.element.shadowRoot.querySelector('.animation-node-row');
                 assert.exists(animationNodeRow);
+                assert.strictEqual(animationNodeRow.getAttribute('data-backend-node-id'), '1');
+                assert.strictEqual(animationNodeRow.getAttribute('data-target-id'), target.id());
                 assert.isFalse(animationNodeRow.classList.contains('animation-node-removed'));
                 domModel.dispatchEventToListeners(SDK.DOMModel.Events.NodeRemoved, { node: domNode, parent: contentDocument });
                 assert.isTrue(animationNodeRow.classList.contains('animation-node-removed'));
+            });
+            it('sets data-backend-node-id and data-target-id on the row element when node is resolved', () => {
+                const effect = sinon.createStubInstance(SDK.AnimationModel.AnimationEffect);
+                const nodeUi = new Animation.AnimationTimeline.NodeUI(effect);
+                const domNode = SDK.DOMModel.DOMNode.create(domModel, contentDocument, false, {
+                    nodeId: 2,
+                    backendNodeId: 123,
+                    nodeType: Node.ELEMENT_NODE,
+                    nodeName: 'div',
+                    localName: 'div',
+                    nodeValue: '',
+                });
+                nodeUi.nodeResolved(domNode);
+                assert.strictEqual(nodeUi.element.getAttribute('data-backend-node-id'), '123');
+                assert.strictEqual(nodeUi.element.getAttribute('data-target-id'), target.id());
             });
         });
         describe('when the animation group is not selected and the nodes are removed', () => {

@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "allowJs": true,
+    "allowJs": false,
     "allowSyntheticDefaultImports": true,
-    "checkJs": true,
+    "checkJs": false,
     "composite": false,
     "declaration": false,
     "disableSourceOfProjectReferenceRedirect": true,
@@ -28,6 +28,10 @@
     "outDir": ".",
     "preserveConstEnums": true,
     "rootDir": "../../../../../../front_end/ui/legacy",
+    "rootDirs": [
+      "../../../../../../",
+      "../../../"
+    ],
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
@@ -81,6 +85,7 @@
     "../../../../../../front_end/ui/legacy/SoftDropDown.ts",
     "../../../../../../front_end/ui/legacy/SplitWidget.ts",
     "../../../../../../front_end/ui/legacy/StackedPane.ts",
+    "../../../../../../front_end/ui/legacy/StatusBar.ts",
     "../../../../../../front_end/ui/legacy/SuggestBox.ts",
     "../../../../../../front_end/ui/legacy/TabbedPane.ts",
     "../../../../../../front_end/ui/legacy/TargetCrashedScreen.ts",
@@ -127,9 +132,6 @@
       "path": "../../foundation/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../../models/geometry/bundle-tsconfig.ref.json"
-    },
-    {
       "path": "../../models/stack_trace/bundle-tsconfig.ref.json"
     },
     {
@@ -140,6 +142,9 @@
     },
     {
       "path": "../dom_extension/bundle-tsconfig.ref.json"
+    },
+    {
+      "path": "../geometry/bundle-tsconfig.ref.json"
     },
     {
       "path": "../helpers/bundle-tsconfig.ref.json"

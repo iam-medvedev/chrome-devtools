@@ -8,7 +8,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../../core/text_utils/text_utils.js';
-import * as Geometry from '../../models/geometry/geometry.js';
+import * as Geometry from '../../ui/geometry/geometry.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { Directives, html, nothing, render } from '../../ui/lit/lit.js';
@@ -340,11 +340,11 @@ function renderFontMetrics(font, fontMetricInfo) {
       ${fontMetricInfo.map(({ label, values }) => html `
         <div>
           <h3>${label}</h3>
-          ${renderGroup(values, 'font-info', `${font}/${label}`)}
+          ${renderGroup(values, 'font-info', `${font}/${label}`, label)}
         </div>`)}
     </div>`;
 }
-function renderGroup(values, type, path = '') {
+function renderGroup(values, type, path = '', groupLabel = '') {
     const total = values.reduce((prev, curr) => prev + curr.nodes.length, 0);
     // clang-format off
     return html `
@@ -356,7 +356,7 @@ function renderGroup(values, type, path = '') {
             <div class="title">${title}</div>
             <button data-type=${type} data-path=${path} data-label=${title}
             jslog=${VisualLogging.action().track({ click: true }).context(`css-overview.${type}`)}
-            aria-label=${`${title}: ${itemLabel}`}>
+            aria-label=${`${groupLabel ? `${groupLabel}, ` : ''}${title}: ${itemLabel}`}>
               <div class="details">${itemLabel}</div>
               <div class="bar-container">
                 <div class="bar" style=${styleMap({ width })}></div>

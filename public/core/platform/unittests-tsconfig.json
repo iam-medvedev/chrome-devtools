@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "allowJs": true,
+    "allowJs": false,
     "allowSyntheticDefaultImports": true,
-    "checkJs": true,
+    "checkJs": false,
     "composite": false,
     "declaration": false,
     "disableSourceOfProjectReferenceRedirect": true,
@@ -28,6 +28,10 @@
     "outDir": ".",
     "preserveConstEnums": true,
     "rootDir": "../../../../../../front_end/core/platform",
+    "rootDirs": [
+      "../../../../../../",
+      "../../../"
+    ],
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
@@ -49,6 +53,7 @@
     "../../../../../../front_end/core/platform/MapUtilities.test.ts",
     "../../../../../../front_end/core/platform/MimeType.test.ts",
     "../../../../../../front_end/core/platform/NumberUtilities.test.ts",
+    "../../../../../../front_end/core/platform/Size.test.ts",
     "../../../../../../front_end/core/platform/StringUtilities.test.ts",
     "../../../../../../front_end/core/platform/TypedArrayUtilities.test.ts",
     "../../../../../../front_end/core/platform/TypescriptUtilities.test.ts",

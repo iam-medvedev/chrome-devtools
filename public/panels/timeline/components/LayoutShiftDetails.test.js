@@ -6,7 +6,10 @@ import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as TimelineComponents from './components.js';
-describeWithEnvironment('LayoutShiftDetails', () => {
+describeWithEnvironment('LayoutShiftDetails', function () {
+    if (this.timeout() > 0) {
+        this.timeout(20_000);
+    }
     it('correctly renders main shift details', async function () {
         const parsedTrace = await TraceLoader.traceEngine(this, 'shift-attribution.json.gz');
         const shiftEvent = parsedTrace.data.LayoutShifts.clusters[0].worstShiftEvent;

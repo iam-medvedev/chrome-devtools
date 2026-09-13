@@ -674,9 +674,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
     render(html `
     <div ${ref(el => { output.contentElement = el; })}>
       ${input.node ? html `<span class="highlight ${input.editorState ? 'hidden' : ''}">${renderTitle(input.node, input.isClosingTag, input.expanded, input.isExpandable, input.isXMLMimeType, input.updateRecord, input.onHighlightSearchResults, input.onExpand, input.issues)}</span>` : nothing}
-      ${input.isHovered || input.isSelected ? html `
-        <div class="selection fill ${input.editorState ? 'hidden' : ''}" style=${`margin-left: ${-input.indent}px`}></div>
-      ` : nothing}
+      <div class="selection fill ${input.editorState ? 'hidden' : ''}" style=${`margin-left: ${-input.indent}px`}></div>
       <div class=${classMap(gutterContainerClasses)}
            style="left: ${-input.indent}px"
            @click=${input.onGutterClick}>
@@ -1057,6 +1055,19 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
         this.#hovered = false;
         this.editing = null;
         this.expandAllButtonElement = null;
+        this.contentElement.addEventListener('dblclick', (event) => {
+            if (!this.node || this.editing || this.isClosingTag) {
+                return;
+            }
+            if (!this.isDOMNodeSelected) {
+                this.selectDOMNode?.(this.node, true);
+                this.isDOMNodeSelected = true;
+            }
+            const target = (event.composedPath()[0] || event.target);
+            if (this.startEditingTarget(target)) {
+                event.preventDefault();
+            }
+        });
     }
     static visibleShadowRoots(node) {
         let roots = node.shadowRoots();
@@ -1120,6 +1131,14 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
         // editorState) is happening. Doing an update would break editing
         // (crbug.com/515639787).
         if (this.editing && !this.#editorState) {
+            if (this.initialEdit) {
+                const edit = this.initialEdit;
+                this.initialEdit = null;
+                this.onInitialEditCompleted?.();
+                if (edit.isEditAsHTML) {
+                    edit.editAsHTMLCallback?.(false);
+                }
+            }
             return;
         }
         this.updateDecorations();
@@ -1875,10 +1894,12 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
         }
     }
     async startEditingAsHTML(commitCallback, disposeCallback, maybeInitialValue) {
-        if (maybeInitialValue === null) {
+        if (maybeInitialValue === null || maybeInitialValue === undefined) {
+            disposeCallback();
             return;
         }
         if (this.editing) {
+            disposeCallback();
             return;
         }
         // Hide children item.
@@ -1965,7 +1986,7 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
         this.requestUpdate();
         resize.call(this);
         this.editing = { commit: commit.bind(this), cancel: dispose.bind(this), resize: resize.bind(this) };
-        this.setMultilineEditing?.(this.editing);
+        this.setMultilineEditing?.(this.editing, this.node);
         await this.updateComplete;
         this.#editorRef?.focus();
         function resize() {
@@ -2264,7 +2285,9 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
             }
         }
         const node = this.node;
-        void node.getOuterHTML().then(this.startEditingAsHTML.bind(this, commitChange, disposeCallback));
+        void node.getOuterHTML()
+            .then(this.startEditingAsHTML.bind(this, commitChange, disposeCallback))
+            .catch(disposeCallback);
     }
     #highlightSearchResults() {
         this.hideSearchHighlights();
@@ -2547,8 +2570,8 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
             };
             this.widget.runPendingUpdates = () => outline.runPendingUpdates();
             this.widget.focusOutline = () => outline.focus();
-            this.widget.setMultilineEditing = multilineEditing => {
-                outline.domTreeWidget?.setMultilineEditing(multilineEditing);
+            this.widget.setMultilineEditing = (multilineEditing, n) => {
+                outline.domTreeWidget?.setMultilineEditing(multilineEditing, n ?? this.nodeInternal);
             };
             this.widget.visibleWidth = () => outline.domTreeWidget?.visibleWidth ?? outline.visibleWidth();
         }
@@ -2634,6 +2657,9 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
             outline.treeElementByNode.delete(this.nodeInternal);
         }
         this.widget.onunbind();
+    }
+    ensureSelection() {
+        // Selection element is rendered in DEFAULT_VIEW via ElementsTreeWidget.
     }
     static animateOnDOMUpdate(treeElement) {
         treeElement.widget.animateOnDOMUpdate();

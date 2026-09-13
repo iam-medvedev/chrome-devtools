@@ -4,9 +4,7 @@
 import { assert } from 'chai';
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
-import * as SDK from '../../core/sdk/sdk.js';
 import * as Trace from '../../models/trace/trace.js';
-import * as Workspace from '../../models/workspace/workspace.js';
 import { describeWithEnvironment, registerActions, stubNoopSettings, } from '../../testing/EnvironmentHelpers.js';
 import { allThreadEntriesInTrace, setupIgnoreListManagerEnvironment } from '../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../testing/TraceLoader.js';
@@ -16,14 +14,7 @@ import * as Timeline from './timeline.js';
 const { urlString } = Platform.DevToolsPath;
 describeWithEnvironment('TimelineFlameChartDataProvider', function () {
     beforeEach(() => {
-        SDK.TargetManager.TargetManager.instance({ forceNew: true });
-        Workspace.Workspace.WorkspaceImpl.instance({ forceNew: true });
-        Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
-    });
-    afterEach(() => {
-        SDK.TargetManager.TargetManager.removeInstance();
-        Workspace.Workspace.WorkspaceImpl.removeInstance();
-        Workspace.IgnoreListManager.IgnoreListManager.removeInstance();
+        setupIgnoreListManagerEnvironment();
     });
     it('shows initiator arrows when an event that has them is selected', async function () {
         const dataProvider = new Timeline.TimelineFlameChartDataProvider.TimelineFlameChartDataProvider();
@@ -115,7 +106,6 @@ describeWithEnvironment('TimelineFlameChartDataProvider', function () {
         });
     });
     it('can provide the index for an event and the event for a given index', async function () {
-        setupIgnoreListManagerEnvironment();
         const dataProvider = new Timeline.TimelineFlameChartDataProvider.TimelineFlameChartDataProvider();
         const parsedTrace = await TraceLoader.traceEngine(this, 'one-second-interaction.json.gz');
         const entityMapper = new Trace.EntityMapper.EntityMapper(parsedTrace);
@@ -125,8 +115,7 @@ describeWithEnvironment('TimelineFlameChartDataProvider', function () {
         assert.isOk(event);
         assert.strictEqual(dataProvider.indexForEvent(event), 100);
     });
-    it('renders track in the correct order by default', async function () {
-        setupIgnoreListManagerEnvironment();
+    it('renders tracks in the correct order by default', async function () {
         const dataProvider = new Timeline.TimelineFlameChartDataProvider.TimelineFlameChartDataProvider();
         const parsedTrace = await TraceLoader.traceEngine(this, 'extension-tracks-and-marks.json.gz');
         const entityMapper = new Trace.EntityMapper.EntityMapper(parsedTrace);
@@ -150,7 +139,6 @@ describeWithEnvironment('TimelineFlameChartDataProvider', function () {
         ]);
     });
     it('can return the FlameChart group for a given event', async function () {
-        setupIgnoreListManagerEnvironment();
         const dataProvider = new Timeline.TimelineFlameChartDataProvider.TimelineFlameChartDataProvider();
         const parsedTrace = await TraceLoader.traceEngine(this, 'one-second-interaction.json.gz');
         const entityMapper = new Trace.EntityMapper.EntityMapper(parsedTrace);
@@ -165,7 +153,6 @@ describeWithEnvironment('TimelineFlameChartDataProvider', function () {
         assert.strictEqual(group?.name, 'Interactions');
     });
     it('adds candy stripe and triangle decorations to long tasks in the main thread', async function () {
-        setupIgnoreListManagerEnvironment();
         const dataProvider = new Timeline.TimelineFlameChartDataProvider.TimelineFlameChartDataProvider();
         const parsedTrace = await TraceLoader.traceEngine(this, 'one-second-interaction.json.gz');
         const entityMapper = new Trace.EntityMapper.EntityMapper(parsedTrace);
@@ -207,7 +194,7 @@ describeWithEnvironment('TimelineFlameChartDataProvider', function () {
         }
         const framesLevel = framesTrack.startLevel;
         const screenshotsLevel = framesLevel + 1;
-        // The frames track first shows the frames, and then shows screenhots just below it.
+        // The frames track first shows the frames, and then shows screenshots just below it.
         assert.strictEqual(dataProvider.getEntryTypeForLevel(framesLevel), "Frame" /* Timeline.TimelineFlameChartDataProvider.EntryType.FRAME */);
         assert.strictEqual(dataProvider.getEntryTypeForLevel(screenshotsLevel), "Screenshot" /* Timeline.TimelineFlameChartDataProvider.EntryType.SCREENSHOT */);
         // There are 5 screenshots in this trace, so we expect there to be 5 events on the screenshots track level.

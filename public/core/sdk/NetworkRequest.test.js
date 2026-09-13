@@ -548,6 +548,13 @@ describeWithEnvironment('requestStreamingContent', () => {
             const initiatorOrigin = request.initiatorSecurityOrigin();
             assert.isTrue(initiatorOrigin.isOpaque());
         });
+        it('returns stable initiatorSecurityOrigin instance across multiple calls', () => {
+            const request = SDK.NetworkRequest.NetworkRequest.createWithoutBackendRequest('req1', urlString `https://api.example.com/data`, urlString ``, null);
+            const origin1 = request.initiatorSecurityOrigin();
+            const origin2 = request.initiatorSecurityOrigin();
+            assert.strictEqual(origin1, origin2);
+            assert.isTrue(origin1.isSameOriginWith(origin2));
+        });
     });
 });
 //# sourceMappingURL=NetworkRequest.test.js.map

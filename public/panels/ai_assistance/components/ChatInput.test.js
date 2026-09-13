@@ -282,6 +282,7 @@ describeWithEnvironment('ChatInput', () => {
     });
     describe('view', () => {
         class MockContext extends AiAssistanceModel.AiAgent.ConversationContext {
+            jslogContext = 'ai-context-file';
             getIcon() {
                 return document.createElement('span');
             }
@@ -291,8 +292,8 @@ describeWithEnvironment('ChatInput', () => {
             getItem() {
                 return 'test';
             }
-            getURL() {
-                return '';
+            getOrigin() {
+                return SDK.SecurityOrigin.SecurityOrigin.createUniqueOpaque();
             }
         }
         function createDefaultViewInput() {

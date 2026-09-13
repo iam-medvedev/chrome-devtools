@@ -5,9 +5,8 @@ import * as Host from '../../../core/host/host.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Logs from '../../logs/logs.js';
 import * as NetworkTimeCalculator from '../../network_time_calculator/network_time_calculator.js';
-import { isOpaqueOrigin } from '../AiOrigins.js';
-import { getRequestContextOrigin } from '../contexts/RequestContext.js';
 import { NetworkRequestFormatter } from '../data_formatters/NetworkRequestFormatter.js';
+import { isOriginAllowedByLock, } from './Tool.js';
 const UIStringsNotTranslate = {
     gettingNetworkRequestDetails: 'Getting network request details',
 };
@@ -49,33 +48,29 @@ export class GetNetworkRequestDetailsTool {
     async handler(args, context) {
         // A conversation is locked to an origin once the first query is made.
         // We only allow inspecting requests matching the conversation's established origin.
-        const origin = context.getEstablishedOrigin();
-        // Opaque origins are never allowed to be used as context.
-        if (origin && isOpaqueOrigin(origin)) {
-            return {
-                error: 'Opaque origin not allowed',
-            };
-        }
+        const establishedOrigin = context.getEstablishedOrigin();
         // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
         const networkLog = this.#networkLog ?? Logs.NetworkLog.NetworkLog.instance();
         const request = networkLog.requests().find(req => {
             if (req.requestId() !== args.id) {
                 return false;
             }
-            // To prevent cross-origin prompt injection attacks, HAR-imported requests
-            // are assigned a virtual origin (e.g., `imported-har://${domain}`) rather than
-            // sharing the origin of live pages.
-            const requestOrigin = getRequestContextOrigin(req);
             // If the conversation is locked to an origin, only allow accessing requests from that origin.
-            return !origin || requestOrigin === origin;
+            return isOriginAllowedByLock(establishedOrigin, req.initiatorSecurityOrigin());
         });
-        if (!request) {
+        // If establishedOrigin is undefined or opaque, isOriginAllowedByLock() fails closed,
+        // so find() will never return a request. We check establishedOrigin here as a defensive
+        // guard and to narrow the type for NetworkRequestFormatter below.
+        if (!establishedOrigin || !request) {
             return {
                 error: 'No request found',
             };
         }
         const calculator = new NetworkTimeCalculator.NetworkTransferTimeCalculator();
-        const formatter = new NetworkRequestFormatter(request, calculator, networkLog);
+        const formatter = new NetworkRequestFormatter(request, calculator, {
+            accessingSecurityOrigin: establishedOrigin,
+            networkLog,
+        });
         const formattedDetails = await formatter.formatNetworkRequest();
         return {
             result: formattedDetails,

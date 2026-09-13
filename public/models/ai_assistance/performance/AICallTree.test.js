@@ -10,7 +10,7 @@ import { TraceLoader } from '../../../testing/TraceLoader.js';
 import { AICallTree } from '../ai_assistance.js';
 const NODE_NAME_INDEX = 2;
 async function loadTrace(context, name, config) {
-    return await TraceLoader.traceEngine(context, name, config, { withTimelinePanel: false });
+    return await TraceLoader.traceEngine(context, name, config ? { config } : undefined);
 }
 describe('AICallTree', function () {
     setupLocaleHooks();

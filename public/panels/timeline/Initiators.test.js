@@ -3,21 +3,27 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import * as Trace from '../../models/trace/trace.js';
-import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { deinitializeGlobalVars, initializeGlobalVars } from '../../testing/EnvironmentHelpers.js';
 import { allThreadEntriesInTrace } from '../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../testing/TraceLoader.js';
 import * as Timeline from './timeline.js';
-describeWithEnvironment('Initiators', () => {
+describe('Initiators', function () {
+    before(async function () {
+        await initializeGlobalVars();
+    });
+    after(async function () {
+        await deinitializeGlobalVars();
+    });
     describe('initiator-initiated event relationships', () => {
         let requestIdleCallbackCall;
-        let functionCallByrequestIdleCallback;
+        let functionCallByRequestIdleCallback;
         let setTimeoutCall;
         let functionCallBySetTimeout;
         let rAFCall;
         let functionCallByRAF;
         let parsedTrace;
-        beforeEach(async function () {
-            parsedTrace = await TraceLoader.traceEngine(this, 'async-js-calls.json.gz');
+        before(async function () {
+            parsedTrace = await TraceLoader.traceEngine(null, 'async-js-calls.json.gz');
             setTimeoutCall =
                 allThreadEntriesInTrace(parsedTrace)
                     .filter(e => Trace.Types.Events.isProfileCall(e) && e.callFrame.functionName === 'setTimeout')
@@ -43,10 +49,10 @@ describeWithEnvironment('Initiators', () => {
                     .at(-1);
             assert.exists(requestIdleCallbackCall);
             assert.isTrue(Trace.Types.Events.isProfileCall(requestIdleCallbackCall));
-            functionCallByrequestIdleCallback =
-                allThreadEntriesInTrace(parsedTrace)
-                    .find(e => Trace.Types.Events.isFunctionCall(e) && e.ts > requestIdleCallbackCall.ts);
-            assert.exists(functionCallByrequestIdleCallback);
+            functionCallByRequestIdleCallback = allThreadEntriesInTrace(parsedTrace)
+                .find(e => Trace.Types.Events.isFunctionCall(e) &&
+                e.ts > requestIdleCallbackCall.ts);
+            assert.exists(functionCallByRequestIdleCallback);
         });
         it('returns the initiator data', async function () {
             const initiatorData = Timeline.Initiators.initiatorsDataToDraw(parsedTrace, functionCallBySetTimeout, [], []);
@@ -83,7 +89,7 @@ describeWithEnvironment('Initiators', () => {
             const initiatorsData = Timeline.Initiators.initiatorsDataToDraw(parsedTrace, bazCall, [], []);
             assert.deepEqual(initiatorsData, [
                 {
-                    event: functionCallByrequestIdleCallback,
+                    event: functionCallByRequestIdleCallback,
                     initiator: requestIdleCallbackCall,
                 },
                 {

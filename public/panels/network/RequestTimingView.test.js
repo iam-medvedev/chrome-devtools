@@ -4,23 +4,19 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
-import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Logs from '../../models/logs/logs.js';
 import * as NetworkTimeCalculator from '../../models/network_time_calculator/network_time_calculator.js';
 import { assertScreenshot, getCleanTextContentFromElements, raf, renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
+import { createNetworkRequest as createSharedNetworkRequest } from '../../testing/NetworkRequestHelpers.js';
 import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
 import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Network from './network.js';
-const { urlString } = Platform.DevToolsPath;
 function createNetworkRequest(matchedSource, actualSource) {
-    const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `http://devtools-frontend.test`, urlString ``, null, null, null);
-    request.mimeType = 'application/wasm';
-    request.finished = true;
     const timingInfo = {
         requestTime: 500,
         proxyStart: 0,
@@ -46,13 +42,17 @@ function createNetworkRequest(matchedSource, actualSource) {
     if (matchedSource === "cache" /* Protocol.Network.ServiceWorkerRouterSource.Cache */) {
         timingInfo.workerCacheLookupStart = -100;
     }
-    request.timing = timingInfo;
-    request.serviceWorkerRouterInfo = {
-        ruleIdMatched: 1,
-        matchedSourceType: matchedSource,
-        actualSourceType: actualSource,
-    };
-    return request;
+    return createSharedNetworkRequest({
+        url: 'http://devtools-frontend.test',
+        mimeType: 'application/wasm',
+        finished: true,
+        timing: timingInfo,
+        serviceWorkerRouterInfo: {
+            ruleIdMatched: 1,
+            matchedSourceType: matchedSource,
+            actualSourceType: actualSource,
+        },
+    });
 }
 describe('ResourceTimingView', () => {
     setupLocaleHooks();
@@ -253,10 +253,6 @@ describe('ResourceTimingView', () => {
         }
     });
     it('renders Service Worker timing details correctly', async () => {
-        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `http://devtools-frontend.test`, urlString ``, null, null, null);
-        request.mimeType = 'text/html';
-        request.finished = true;
-        request.fetchedViaServiceWorker = true;
         // Setup timing:
         // requestTime = 100s
         // workerStart = 10ms -> 100.010s
@@ -264,28 +260,34 @@ describe('ResourceTimingView', () => {
         // workerFetchStart = 40ms -> 100.040s
         // workerRespondWithSettled = 90ms -> 100.090s (respondWith duration = 50ms)
         // sendEnd = 110ms -> 100.110s (Request to SW duration = 80ms)
-        request.timing = {
-            requestTime: 100,
-            proxyStart: -1,
-            proxyEnd: -1,
-            dnsStart: -1,
-            dnsEnd: -1,
-            connectStart: -1,
-            connectEnd: -1,
-            sslStart: -1,
-            sslEnd: -1,
-            workerStart: 10,
-            workerReady: 30,
-            workerRouterEvaluationStart: -1,
-            workerFetchStart: 40,
-            workerRespondWithSettled: 90,
-            sendStart: 100,
-            sendEnd: 110,
-            pushStart: 0,
-            pushEnd: 0,
-            receiveHeadersStart: 120,
-            receiveHeadersEnd: -1,
-        };
+        const request = createSharedNetworkRequest({
+            url: 'http://devtools-frontend.test',
+            mimeType: 'text/html',
+            finished: true,
+            fetchedViaServiceWorker: true,
+            timing: {
+                requestTime: 100,
+                proxyStart: -1,
+                proxyEnd: -1,
+                dnsStart: -1,
+                dnsEnd: -1,
+                connectStart: -1,
+                connectEnd: -1,
+                sslStart: -1,
+                sslEnd: -1,
+                workerStart: 10,
+                workerReady: 30,
+                workerRouterEvaluationStart: -1,
+                workerFetchStart: 40,
+                workerRespondWithSettled: 90,
+                sendStart: 100,
+                sendEnd: 110,
+                pushStart: 0,
+                pushEnd: 0,
+                receiveHeadersStart: 120,
+                receiveHeadersEnd: -1,
+            },
+        });
         request.responseReceivedTime = 100.120;
         request.endTime = 100.150;
         const component = Network.RequestTimingView.RequestTimingView.create(request, new NetworkTimeCalculator.NetworkTimeCalculator(true));

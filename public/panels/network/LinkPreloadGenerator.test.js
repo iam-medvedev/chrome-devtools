@@ -2,31 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
-import * as Platform from '../../core/platform/platform.js';
-import * as SDK from '../../core/sdk/sdk.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { createNetworkRequest } from '../../testing/NetworkRequestHelpers.js';
 import * as Network from './network.js';
-function createMockRequestForPreload(options) {
-    const request = SDK.NetworkRequest.NetworkRequest.create('requestId', Platform.DevToolsPath.urlString `${options.url}`, Platform.DevToolsPath.urlString `${options.documentUrl ?? 'http://example.com/'}`, null, null, null);
-    request.setResourceType(options.resourceType);
-    if (options.mimeType) {
-        request.mimeType = options.mimeType;
-    }
-    if (options.headers) {
-        request.setRequestHeaders(options.headers);
-    }
-    if (options.cookiesCount) {
-        const mockCookies = Array.from({ length: options.cookiesCount }, () => ({}));
-        sinon.stub(request, 'includedRequestCookies').returns(mockCookies);
-    }
-    return request;
-}
 describeWithEnvironment('LinkPreloadGenerator', () => {
     const { canPreloadRequest, generatePreloadLink } = Network.LinkPreloadGenerator;
     it('generates correct preload element for same-origin script', () => {
-        const request = createMockRequestForPreload({
+        const request = createNetworkRequest({
             url: 'http://example.com/script.js',
             resourceType: Common.ResourceType.resourceTypes.Script,
             mimeType: 'text/javascript',
@@ -35,8 +18,9 @@ describeWithEnvironment('LinkPreloadGenerator', () => {
         assert.strictEqual(result, '<link rel="preload" href="/script.js" as="script" type="text/javascript">');
     });
     it('generates correct preload element for cross-origin font without credentials', () => {
-        const request = createMockRequestForPreload({
+        const request = createNetworkRequest({
             url: 'http://another-example.com/font.woff2',
+            documentURL: 'http://example.com/',
             resourceType: Common.ResourceType.resourceTypes.Font,
             mimeType: 'font/woff2',
         });
@@ -44,7 +28,7 @@ describeWithEnvironment('LinkPreloadGenerator', () => {
         assert.strictEqual(result, '<link rel="preload" href="http://another-example.com/font.woff2" as="font" type="font/woff2" crossorigin>');
     });
     it('generates correct preload element for font on same-origin (always needs crossorigin)', () => {
-        const request = createMockRequestForPreload({
+        const request = createNetworkRequest({
             url: 'http://example.com/font.woff2',
             resourceType: Common.ResourceType.resourceTypes.Font,
             mimeType: 'font/woff2',
@@ -53,37 +37,37 @@ describeWithEnvironment('LinkPreloadGenerator', () => {
         assert.strictEqual(result, '<link rel="preload" href="/font.woff2" as="font" type="font/woff2" crossorigin>');
     });
     it('generates correct preload element for same-origin font with credentials (uses crossorigin anonymous)', () => {
-        const request = createMockRequestForPreload({
+        const request = createNetworkRequest({
             url: 'http://example.com/font.woff2',
             resourceType: Common.ResourceType.resourceTypes.Font,
             mimeType: 'font/woff2',
-            cookiesCount: 1,
         });
+        request.setIncludedRequestCookies([{}]);
         const result = generatePreloadLink(request);
         assert.strictEqual(result, '<link rel="preload" href="/font.woff2" as="font" type="font/woff2" crossorigin>');
     });
     it('generates correct preload element for cross-origin font with credentials', () => {
-        const request = createMockRequestForPreload({
+        const request = createNetworkRequest({
             url: 'http://another-example.com/font.woff2',
+            documentURL: 'http://example.com/',
             resourceType: Common.ResourceType.resourceTypes.Font,
             mimeType: 'font/woff2',
-            documentUrl: 'http://example.com/',
-            cookiesCount: 1,
         });
+        request.setIncludedRequestCookies([{}]);
         const result = generatePreloadLink(request);
         assert.strictEqual(result, '<link rel="preload" href="http://another-example.com/font.woff2" as="font" type="font/woff2" crossorigin="use-credentials">');
     });
     describe('canPreloadRequest', () => {
         it('returns true for supported resource types', () => {
-            const scriptRequest = createMockRequestForPreload({
+            const scriptRequest = createNetworkRequest({
                 url: 'http://example.com/script.js',
                 resourceType: Common.ResourceType.resourceTypes.Script,
             });
-            const fontRequest = createMockRequestForPreload({
+            const fontRequest = createNetworkRequest({
                 url: 'http://example.com/font.woff2',
                 resourceType: Common.ResourceType.resourceTypes.Font,
             });
-            const stylesheetRequest = createMockRequestForPreload({
+            const stylesheetRequest = createNetworkRequest({
                 url: 'http://example.com/style.css',
                 resourceType: Common.ResourceType.resourceTypes.Stylesheet,
             });
@@ -92,11 +76,11 @@ describeWithEnvironment('LinkPreloadGenerator', () => {
             assert.isTrue(canPreloadRequest(stylesheetRequest));
         });
         it('returns false for unsupported resource types', () => {
-            const mediaRequest = createMockRequestForPreload({
+            const mediaRequest = createNetworkRequest({
                 url: 'http://example.com/video.mp4',
                 resourceType: Common.ResourceType.resourceTypes.Media,
             });
-            const websocketRequest = createMockRequestForPreload({
+            const websocketRequest = createNetworkRequest({
                 url: 'ws://example.com/socket',
                 resourceType: Common.ResourceType.resourceTypes.WebSocket,
             });
@@ -105,27 +89,29 @@ describeWithEnvironment('LinkPreloadGenerator', () => {
         });
     });
     it('generates correct preload element for cross-origin stylesheet (CORS mode)', () => {
-        const request = createMockRequestForPreload({
+        const request = createNetworkRequest({
             url: 'http://another-example.com/styles.css',
+            documentURL: 'http://example.com/',
             resourceType: Common.ResourceType.resourceTypes.Stylesheet,
             mimeType: 'text/css',
-            headers: [{ name: 'sec-fetch-mode', value: 'cors' }],
+            requestHeaders: [{ name: 'sec-fetch-mode', value: 'cors' }],
         });
         const result = generatePreloadLink(request);
         assert.strictEqual(result, '<link rel="preload" href="http://another-example.com/styles.css" as="style" type="text/css" crossorigin>');
     });
     it('generates correct preload element for cross-origin stylesheet (no-cors mode)', () => {
-        const request = createMockRequestForPreload({
+        const request = createNetworkRequest({
             url: 'http://another-example.com/styles.css',
+            documentURL: 'http://example.com/',
             resourceType: Common.ResourceType.resourceTypes.Stylesheet,
             mimeType: 'text/css',
-            headers: [{ name: 'sec-fetch-mode', value: 'no-cors' }],
+            requestHeaders: [{ name: 'sec-fetch-mode', value: 'no-cors' }],
         });
         const result = generatePreloadLink(request);
         assert.strictEqual(result, '<link rel="preload" href="http://another-example.com/styles.css" as="style" type="text/css">');
     });
     it('escapes HTML special characters in URL', () => {
-        const request = createMockRequestForPreload({
+        const request = createNetworkRequest({
             url: 'http://example.com/script.js?param1=a&param2="b"<c>',
             resourceType: Common.ResourceType.resourceTypes.Script,
             mimeType: 'text/javascript',
@@ -134,7 +120,7 @@ describeWithEnvironment('LinkPreloadGenerator', () => {
         assert.strictEqual(result, '<link rel="preload" href="/script.js?param1=a&amp;param2=&quot;b&quot;&lt;c&gt;" as="script" type="text/javascript">');
     });
     it('escapes HTML special characters in mimeType', () => {
-        const request = createMockRequestForPreload({
+        const request = createNetworkRequest({
             url: 'http://example.com/style.css',
             resourceType: Common.ResourceType.resourceTypes.Stylesheet,
             mimeType: 'text/css"; <script>alert(1)</script>',
@@ -143,7 +129,7 @@ describeWithEnvironment('LinkPreloadGenerator', () => {
         assert.include(result, 'type="text/css&quot;; &lt;script&gt;alert(1)&lt;/script&gt;"');
     });
     it('generates correct preload element for same-origin fetch request (always needs crossorigin)', () => {
-        const request = createMockRequestForPreload({
+        const request = createNetworkRequest({
             url: 'http://example.com/api/data',
             resourceType: Common.ResourceType.resourceTypes.Fetch,
         });

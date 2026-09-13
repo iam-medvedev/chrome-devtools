@@ -620,6 +620,7 @@ var MainImpl = class _MainImpl {
     };
     this.#universe = new Foundation.Universe.Universe(creationOptions);
     Root2.DevToolsContext.setGlobalInstance(this.#universe.context);
+    globalThis.universe = this.#universe;
     if (Root2.Runtime.Runtime.queryParam("hasOtherClients")) {
       this.#universe.settings.resolve(SDK2.SDKSettings.cacheDisabledSettingDescriptor).setRequiresUserAction(true);
     }
@@ -888,6 +889,7 @@ var MainImpl = class _MainImpl {
       }
     );
     await inspectorView.createToolbars();
+    inspectorView.renderStatusBar();
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.loadCompleted();
     UI2.ARIAUtils.LiveAnnouncer.initializeAnnouncerElements();
     UI2.DockController.DockController.instance().announceDockLocation();
@@ -988,7 +990,7 @@ var MainImpl = class _MainImpl {
     }
   }
   #redispatchClipboardEvent(event) {
-    const eventCopy = new CustomEvent("clipboard-" + event.type, { bubbles: true });
+    const eventCopy = new CustomEvent("clipboard-" + event.type, { bubbles: true, composed: true });
     eventCopy["original"] = event;
     const document2 = event.target && event.target.ownerDocument;
     const target = document2 ? UI2.DOMUtilities.deepActiveElement(document2) : null;
@@ -1015,6 +1017,9 @@ var MainImpl = class _MainImpl {
   #onSuspendStateChanged() {
     const suspended = SDK2.TargetManager.TargetManager.instance().allTargetsSuspended();
     UI2.InspectorView.InspectorView.instance().onSuspendStateChanged(suspended);
+  }
+  redispatchClipboardEventForTest(event) {
+    this.#redispatchClipboardEvent(event);
   }
   static instanceForTest = null;
 };

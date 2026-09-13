@@ -206,11 +206,11 @@ describeWithEnvironment('BackForwardCacheView', () => {
         stub.onCall(4).returns({ entries, currentIndex: 1 });
         resourceTreeModel.navigationHistory = stub;
         resourceTreeModel.navigate = (url) => {
-            resourceTreeModel.frameNavigated({ url }, undefined);
+            resourceTreeModel.frameNavigated({ url, securityOrigin: url }, undefined);
             return Promise.resolve({ frameId: '', getError() { } });
         };
         resourceTreeModel.navigateToHistoryEntry = (entry) => {
-            resourceTreeModel.frameNavigated({ url: entry.url }, undefined);
+            resourceTreeModel.frameNavigated({ url: entry.url, securityOrigin: entry.url }, undefined);
         };
         const navigateToHistoryEntrySpy = sinon.spy(resourceTreeModel, 'navigateToHistoryEntry');
         resourceTreeModel.storageKeyForFrame = () => Promise.resolve(null);

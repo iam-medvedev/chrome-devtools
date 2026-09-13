@@ -591,7 +591,7 @@ describe('StorageAgent', function () {
             assert.exists(primaryTarget);
             const frame = AiAssistance.StorageAgent.findFrameForOrigin(context, PRIMARY_ORIGIN, universe.targetManager);
             assert.exists(frame);
-            assert.strictEqual(frame.securityOrigin, PRIMARY_ORIGIN);
+            assert.strictEqual(frame.securityOrigin().siteId(), PRIMARY_ORIGIN);
         });
         it('returns the frame if it has a different origin but belongs to the same page target (iframe)', () => {
             const PRIMARY_ORIGIN = 'https://example.com';
@@ -607,7 +607,7 @@ describe('StorageAgent', function () {
             navigate(differentFrame, { url: urlString `${DIFFERENT_ORIGIN}/`, securityOrigin: DIFFERENT_ORIGIN });
             const frame = AiAssistance.StorageAgent.findFrameForOrigin(context, DIFFERENT_ORIGIN, universe.targetManager);
             assert.exists(frame);
-            assert.strictEqual(frame.securityOrigin, DIFFERENT_ORIGIN);
+            assert.strictEqual(frame.securityOrigin().siteId(), DIFFERENT_ORIGIN);
             assert.deepEqual(differentFrame, frame);
         });
         it('returns null if the origin frame belongs to a different page target', () => {
@@ -675,6 +675,11 @@ describe('StorageAgent', function () {
         });
     });
     describe('StorageContext', () => {
+        it('returns the primary target origin', () => {
+            const item = new AiAssistance.StorageItem.DOMStorageItem('https://example.com', 'https://cross-origin.com', 'https://cross-origin.com/', 'localStorage', 'key1');
+            const context = new AiAssistance.StorageContext.StorageContext(item);
+            assert.isTrue(context.getOrigin().isSameOriginWith(SDK.SecurityOrigin.SecurityOrigin.create('https://example.com')));
+        });
         it('correctly formats the title for DOMStorageItem with a key', () => {
             const item = new AiAssistance.StorageItem.DOMStorageItem('https://example.com', 'https://example.com', 'https://example.com/', 'localStorage', 'key1');
             const context = new AiAssistance.StorageContext.StorageContext(item);

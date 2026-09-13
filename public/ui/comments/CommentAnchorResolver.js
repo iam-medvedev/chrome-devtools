@@ -57,6 +57,59 @@ export function getEditorFilePath(element) {
     return element.getAttribute('data-file-path') ?? undefined;
 }
 /**
+ * Determines whether an anchor is backed by a tracked DOM element.
+ *
+ * Canvas-rendered anchors (such as Performance panel timeline entries) do not have
+ * individual DOM nodes and manage their own overlays in canvas coordinates.
+ * These anchors return false and bypass DOM-level node caching, rematching,
+ * and IntersectionObserver tracking.
+ *
+ * @param anchor The comment anchor signature to check.
+ * @returns True if the anchor corresponds to a DOM-tracked element; otherwise false.
+ */
+export function isDomTrackedAnchor(anchor) {
+    return !anchor.timeline;
+}
+const customAnchorResolvers = new Set();
+/**
+ * Registers a custom anchor resolver. Usually called when a view becomes visible
+ * (e.g. inside `wasShown()`).
+ *
+ * @param resolver The custom anchor resolver to register.
+ */
+export function registerCustomAnchorResolver(resolver) {
+    customAnchorResolvers.add(resolver);
+}
+/**
+ * Unregisters a custom anchor resolver. Usually called when a view hides
+ * (e.g. inside `willHide()`).
+ *
+ * @param resolver The custom anchor resolver to unregister.
+ */
+export function unregisterCustomAnchorResolver(resolver) {
+    customAnchorResolvers.delete(resolver);
+}
+/**
+ * Clears all registered custom anchor resolvers. Test-only helper.
+ */
+export function clearCustomAnchorResolversForTest() {
+    customAnchorResolvers.clear();
+}
+/**
+ * Finds the first registered custom anchor resolver that matches the given element.
+ *
+ * @param element The element to check.
+ * @returns The matching resolver, or null if no resolver matches.
+ */
+export function getCustomAnchorResolverForElement(element) {
+    for (const resolver of customAnchorResolvers) {
+        if (resolver.matches(element)) {
+            return resolver;
+        }
+    }
+    return null;
+}
+/**
  * Checks whether an element contains non-empty text content (after trimming whitespace),
  * including text from any nested shadow roots.
  *
@@ -163,9 +216,17 @@ function resolveCodeMirrorLineInfo(element) {
  * @param element The source DOM element to resolve.
  * @returns The resolved semantic anchor Element, or null if unresolvable/empty/excluded.
  */
-export function resolveCommentAnchorElement(element) {
+export function resolveCommentAnchorElement(element, options) {
     if (isTabTitle(element)) {
         return null;
+    }
+    const customResolver = getCustomAnchorResolverForElement(element);
+    if (customResolver) {
+        const result = customResolver.resolve(element, options);
+        if (!result) {
+            return null;
+        }
+        return result.anchorElement ?? element;
     }
     // CodeMirror internal lines, gutters, and content live inside .cm-editor.
     // We only allow commenting on non-empty lines within the editor; the whole editor
@@ -298,8 +359,13 @@ function checkCodeMirrorLineMatch(editor, editorLineNumber, textSignature) {
  * @param root Optional root Document or Element to search within for sibling index calculation.
  * @returns The resolved CommentAnchorSignature, or null if unresolvable.
  */
-export function resolveCommentAnchor(element, root = element.ownerDocument || document) {
-    const target = resolveCommentAnchorElement(element);
+export function resolveCommentAnchor(element, root = element.ownerDocument || document, options) {
+    const customResolver = getCustomAnchorResolverForElement(element);
+    if (customResolver) {
+        const result = customResolver.resolve(element, options);
+        return result ? result.anchor : null;
+    }
+    const target = resolveCommentAnchorElement(element, options);
     if (!target) {
         return null;
     }
@@ -333,13 +399,15 @@ export function resolveCommentAnchor(element, root = element.ownerDocument || do
     const networkRequestId = target.getAttribute('data-network-request-id') ?? undefined;
     const backendNodeIdStr = target.getAttribute('data-backend-node-id');
     const backendNodeId = backendNodeIdStr ? Number(backendNodeIdStr) : undefined;
+    const targetId = target.getAttribute('data-target-id') ?? undefined;
+    const node = (backendNodeId !== undefined && targetId !== undefined) ? { backendNodeId, targetId } : undefined;
     return {
         vePath,
         textSignature,
         parentTextSignature,
         siblingIndex,
         networkRequestId,
-        backendNodeId,
+        node,
         editor,
     };
 }
@@ -414,8 +482,8 @@ export function rematchCommentAnchor(comment, root = document, cachedJslogElemen
     if (anchor.networkRequestId) {
         return deepQuerySelector(root, `[data-network-request-id="${CSS.escape(anchor.networkRequestId)}"]`);
     }
-    if (anchor.backendNodeId !== undefined) {
-        return deepQuerySelector(root, `[data-backend-node-id="${CSS.escape(String(anchor.backendNodeId))}"]`);
+    if (anchor.node) {
+        return deepQuerySelector(root, `[data-backend-node-id="${CSS.escape(String(anchor.node.backendNodeId))}"][data-target-id="${CSS.escape(anchor.node.targetId)}"]`);
     }
     if (anchor.editor) {
         const { lineNumber, filePath } = anchor.editor;

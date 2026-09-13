@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import * as Common from '../../core/common/common.js';
+import * as SDK from '../../core/sdk/sdk.js';
+import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -17,6 +19,12 @@ describe('userAgentGroups', () => {
     });
 });
 describeWithEnvironment('NetworkConfigView', () => {
+    it('renders the network config view', async () => {
+        const networkConfigView = Network.NetworkConfigView.NetworkConfigView.instance({ forceNew: true });
+        renderElementIntoDOM(networkConfigView);
+        await UI.Widget.Widget.allUpdatesComplete;
+        await assertScreenshot('network/network_config_view.png');
+    });
     it('supports enabling data saver emulation', async () => {
         const connection = new MockCDPConnection();
         const target = createTarget({ connection });
@@ -28,9 +36,8 @@ describeWithEnvironment('NetworkConfigView', () => {
             saveDataSpy.resolve = resolve;
             return {};
         });
-        const networkConfigView = Network.NetworkConfigView.NetworkConfigView.instance();
-        networkConfigView.markAsRoot();
-        networkConfigView.show(renderElementIntoDOM(document.createElement('main')));
+        const networkConfigView = Network.NetworkConfigView.NetworkConfigView.instance({ forceNew: true });
+        renderElementIntoDOM(networkConfigView);
         await UI.Widget.Widget.allUpdatesComplete;
         const saveDataSelect = networkConfigView.contentElement.querySelector('select[aria-label="Override the value reported by navigator.connection.saveData on the page"]');
         assert.exists(saveDataSelect);
@@ -45,6 +52,81 @@ describeWithEnvironment('NetworkConfigView', () => {
         assert.deepEqual(await select(2), { dataSaverEnabled: false });
         assert.deepEqual(await select(0), { dataSaverEnabled: undefined });
         target.dispose('test');
+    });
+    it('supports toggling disable cache setting', async () => {
+        const networkConfigView = Network.NetworkConfigView.NetworkConfigView.instance({ forceNew: true });
+        renderElementIntoDOM(networkConfigView);
+        await UI.Widget.Widget.allUpdatesComplete;
+        const cacheDisabledSetting = Common.Settings.Settings.instance().resolve(SDK.SDKSettings.cacheDisabledSettingDescriptor);
+        cacheDisabledSetting.set(false);
+        const disableCacheCheckbox = networkConfigView.contentElement.querySelector('.network-config-disable-cache devtools-checkbox');
+        assert.exists(disableCacheCheckbox);
+        assert.instanceOf(disableCacheCheckbox, UI.UIUtils.CheckboxLabel);
+        assert.isFalse(disableCacheCheckbox.checked);
+        disableCacheCheckbox.click();
+        assert.isTrue(cacheDisabledSetting.get());
+        assert.isTrue(disableCacheCheckbox.checked);
+    });
+    it('supports toggling browser default user agent', async () => {
+        const networkConfigView = Network.NetworkConfigView.NetworkConfigView.instance({ forceNew: true });
+        renderElementIntoDOM(networkConfigView);
+        await UI.Widget.Widget.allUpdatesComplete;
+        const autoCheckbox = networkConfigView.contentElement.querySelector('.network-config-ua devtools-checkbox');
+        assert.exists(autoCheckbox);
+        assert.instanceOf(autoCheckbox, UI.UIUtils.CheckboxLabel);
+        assert.isTrue(autoCheckbox.checked);
+        const customSection = networkConfigView.contentElement.querySelector('.network-config-ua-custom');
+        assert.exists(customSection);
+        assert.isFalse(customSection.classList.contains('checked'));
+        autoCheckbox.click();
+        await UI.Widget.Widget.allUpdatesComplete;
+        assert.isFalse(autoCheckbox.checked);
+        const updatedCustomSection = networkConfigView.contentElement.querySelector('.network-config-ua-custom');
+        assert.exists(updatedCustomSection);
+        assert.isTrue(updatedCustomSection.classList.contains('checked'));
+    });
+    it('supports selecting a user agent preset', async () => {
+        const networkConfigView = Network.NetworkConfigView.NetworkConfigView.instance({ forceNew: true });
+        renderElementIntoDOM(networkConfigView);
+        await UI.Widget.Widget.allUpdatesComplete;
+        const autoCheckbox = networkConfigView.contentElement.querySelector('.network-config-ua devtools-checkbox');
+        if (autoCheckbox.checked) {
+            autoCheckbox.click();
+            await UI.Widget.Widget.allUpdatesComplete;
+        }
+        const uaSelect = networkConfigView.contentElement.querySelector('.network-config-ua-custom select');
+        assert.exists(uaSelect);
+        uaSelect.selectedIndex = 1;
+        uaSelect.dispatchEvent(new Event('change'));
+        await UI.Widget.Widget.allUpdatesComplete;
+        const uaInput = networkConfigView.contentElement.querySelector('.network-config-ua-custom input[type="text"]');
+        assert.exists(uaInput);
+        assert.strictEqual(uaInput.value, uaSelect.value);
+        assert.strictEqual(SDK.NetworkManager.MultitargetNetworkManager.instance().currentUserAgent(), uaSelect.value);
+    });
+    it('shows error validation when custom user agent is empty', async () => {
+        const networkConfigView = Network.NetworkConfigView.NetworkConfigView.instance({ forceNew: true });
+        renderElementIntoDOM(networkConfigView);
+        await UI.Widget.Widget.allUpdatesComplete;
+        const autoCheckbox = networkConfigView.contentElement.querySelector('.network-config-ua devtools-checkbox');
+        if (autoCheckbox.checked) {
+            autoCheckbox.click();
+            await UI.Widget.Widget.allUpdatesComplete;
+        }
+        const uaInput = networkConfigView.contentElement.querySelector('.network-config-ua-custom input[type="text"]');
+        assert.exists(uaInput);
+        uaInput.value = '';
+        uaInput.dispatchEvent(new Event('input'));
+        await UI.Widget.Widget.allUpdatesComplete;
+        const errorElement = networkConfigView.contentElement.querySelector('.network-config-input-validation-error');
+        assert.exists(errorElement);
+        assert.strictEqual(errorElement.textContent, 'Custom user agent field is required');
+        uaInput.value = 'Custom UA Test';
+        uaInput.dispatchEvent(new Event('input'));
+        await UI.Widget.Widget.allUpdatesComplete;
+        const updatedErrorElement = networkConfigView.contentElement.querySelector('.network-config-input-validation-error');
+        assert.exists(updatedErrorElement);
+        assert.strictEqual(updatedErrorElement.textContent, '');
     });
 });
 //# sourceMappingURL=NetworkConfigView.test.js.map

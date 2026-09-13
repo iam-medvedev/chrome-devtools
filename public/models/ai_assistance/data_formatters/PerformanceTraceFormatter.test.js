@@ -14,9 +14,7 @@ import { createTraceExtensionDataFromPerformanceAPITestInput, getBaseTraceHandle
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import { AICallTree, AIContext, PerformanceTraceFormatter } from '../ai_assistance.js';
 async function createFormatter(context, name, cruxManager) {
-    const parsedTrace = await TraceLoader.traceEngine(context, name, undefined, {
-        withTimelinePanel: false,
-    });
+    const parsedTrace = await TraceLoader.traceEngine(context, name);
     assert.isOk(parsedTrace.insights);
     const focus = AIContext.AgentFocus.fromParsedTrace(parsedTrace);
     const formatter = new PerformanceTraceFormatter.PerformanceTraceFormatter(focus, null, cruxManager);

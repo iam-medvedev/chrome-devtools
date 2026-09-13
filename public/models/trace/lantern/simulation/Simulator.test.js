@@ -43,7 +43,7 @@ describe('DependencyGraph/Simulator', () => {
     let originalDNSMultiplier = 1;
     let realTraceGraph;
     before(async function () {
-        const parsedTrace = await TraceLoader.traceEngine(this, 'lantern/progressive-app/trace.json.gz', undefined, { withTimelinePanel: false });
+        const parsedTrace = await TraceLoader.traceEngine(this, 'lantern/progressive-app/trace.json.gz');
         const trace = toLanternTrace(parsedTrace.traceEvents);
         const requests = Trace.LanternComputationData.createNetworkRequests(trace, parsedTrace.data);
         realTraceGraph = Trace.LanternComputationData.createGraph(requests, trace, parsedTrace.data);

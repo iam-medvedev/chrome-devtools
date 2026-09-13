@@ -27,14 +27,15 @@ describe('GetStorageBreakdownTool', () => {
         sinon.stub(SDK.TargetManager.TargetManager, 'instance').returns(universe.targetManager);
     });
     function createMockContext(options) {
-        const origin = options && 'origin' in options ? options.origin : 'https://example.com';
+        const origin = options && 'origin' in options ? options.origin :
+            SDK.SecurityOrigin.SecurityOrigin.create('https://example.com');
         return {
             getEstablishedOrigin: sinon.stub().returns(origin),
         };
     }
     function createMockFrame(origin, resourceTreeModel) {
         const mockFrame = sinon.createStubInstance(SDK.ResourceTreeModel.ResourceTreeFrame);
-        sinon.stub(mockFrame, 'securityOrigin').get(() => origin);
+        mockFrame.securityOrigin.returns(SDK.SecurityOrigin.SecurityOrigin.create(origin));
         mockFrame.resourceTreeModel.returns(resourceTreeModel);
         return mockFrame;
     }
@@ -166,7 +167,7 @@ describe('GetStorageBreakdownTool', () => {
     });
     it('returns error when origin is disallowed or mismatched', async () => {
         setupPrimaryTarget({ origin: 'https://example.com' });
-        const context = createMockContext({ origin: 'https://another-origin.com' });
+        const context = createMockContext({ origin: SDK.SecurityOrigin.SecurityOrigin.create('https://another-origin.com') });
         const tool = new AiAssistance.GetStorageBreakdown.GetStorageBreakdownTool();
         const response = await tool.handler({}, context);
         assertIsError(response);
@@ -174,7 +175,7 @@ describe('GetStorageBreakdownTool', () => {
     });
     it('returns error when origin is opaque', async () => {
         setupPrimaryTarget({ origin: 'data:text/html,hello' });
-        const context = createMockContext({ origin: 'data:text/html,hello' });
+        const context = createMockContext({ origin: SDK.SecurityOrigin.SecurityOrigin.create('data:text/html,hello') });
         const tool = new AiAssistance.GetStorageBreakdown.GetStorageBreakdownTool();
         const response = await tool.handler({}, context);
         assertIsError(response);

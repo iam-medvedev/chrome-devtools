@@ -8,10 +8,11 @@ import * as Host from '../../../core/host/host.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as TextUtils from '../../../core/text_utils/text_utils.js';
 import * as Tracing from '../../../services/tracing/tracing.js';
-import { createNetworkRequest, mockAidaClient } from '../../../testing/AiAssistanceHelpers.js';
+import { mockAidaClient } from '../../../testing/AiAssistanceHelpers.js';
 import { deinitializeGlobalVars, restoreUserAgentForTesting, setUserAgentForTesting, updateHostConfig, } from '../../../testing/EnvironmentHelpers.js';
 import { getInsightOrError } from '../../../testing/InsightHelpers.js';
 import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
+import { createNetworkRequest } from '../../../testing/NetworkRequestHelpers.js';
 import { setupSettingsHooks } from '../../../testing/SettingsHelpers.js';
 import { SnapshotTester } from '../../../testing/SnapshotTester.js';
 import { TestUniverse } from '../../../testing/TestUniverse.js';
@@ -37,7 +38,7 @@ function deleteAllWidgetData(responses) {
     }
 }
 async function loadTrace(context, name, config) {
-    return await TraceLoader.traceEngine(context, name, config, { withTimelinePanel: false });
+    return await TraceLoader.traceEngine(context, name, config ? { config } : undefined);
 }
 describe('PerformanceAgent', function () {
     setupLocaleHooks();
@@ -257,7 +258,7 @@ describe('PerformanceAgent', function () {
         const parsedTrace = await loadTrace(this, 'web-dev-with-commit.json.gz');
         Tracing.FreshRecording.Tracker.instance().registerFreshRecording(parsedTrace);
         const context = PerformanceTraceContext.PerformanceTraceContext.fromParsedTrace(parsedTrace);
-        assert.strictEqual(context.getOrigin(), 'https://web.dev');
+        assert.isTrue(context.getOrigin().isSameOriginWith(SDK.SecurityOrigin.SecurityOrigin.create('https://web.dev')));
     });
     it('falls back to the min and max bounds if the URL is invalid', () => {
         const parsedTrace = {
@@ -271,7 +272,7 @@ describe('PerformanceAgent', function () {
         };
         Tracing.FreshRecording.Tracker.instance().registerFreshRecording(parsedTrace);
         const context = PerformanceTraceContext.PerformanceTraceContext.fromParsedTrace(parsedTrace);
-        assert.strictEqual(context.getOrigin(), 'trace-100-200');
+        assert.isTrue(context.getOrigin().isOpaque());
     });
     it('outputs the right title for the selected insight', async () => {
         const context = PerformanceTraceContext.PerformanceTraceContext.fromInsight(FAKE_PARSED_TRACE, FAKE_LCP_MODEL);
@@ -519,7 +520,7 @@ code
                 aidaClient: mockAidaClient([[{ explanation: '', functionCalls: [{ name: 'getResourceContent', args: { url } }] }], [{ explanation: 'done' }]]),
             });
             const context = PerformanceTraceContext.PerformanceTraceContext.fromInsight(parsedTrace, lcpBreakdown);
-            sinon.stub(context, 'getOrigin').returns('file://');
+            sinon.stub(context, 'getOrigin').returns(SDK.SecurityOrigin.SecurityOrigin.create('file://'));
             // Mock script in trace with file URL
             parsedTrace.data.Scripts.scripts.push({
                 url,
@@ -604,6 +605,30 @@ code
             const actionResponse = responses.find(response => response.type === "action" /* AiAgent.ResponseType.ACTION */);
             assert.exists(actionResponse);
             assert.strictEqual(actionResponse.output, 'Cannot use this tool on an imported file.');
+        });
+        it('returns error from getFunctionCode when script URL is cross-origin or file://', async function () {
+            sinon.stub(Tracing.FreshRecording.Tracker.instance(), 'recordingIsFresh').returns(true);
+            const parsedTrace = await loadTrace(this, 'lcp-discovery-delay.json.gz');
+            assert.isOk(parsedTrace.insights);
+            const [firstNav] = parsedTrace.data.Meta.mainFrameNavigations;
+            const lcpBreakdown = getInsightOrError('LCPBreakdown', parsedTrace.insights, firstNav);
+            const agent = createAgentForConversation({
+                aidaClient: mockAidaClient([
+                    [{
+                            explanation: '',
+                            functionCalls: [{
+                                    name: 'getFunctionCode',
+                                    args: { scriptUrl: 'file:///etc/passwd', line: 10, column: 5 },
+                                }],
+                        }],
+                    [{ explanation: 'done' }],
+                ]),
+            });
+            const context = PerformanceTraceContext.PerformanceTraceContext.fromInsight(parsedTrace, lcpBreakdown);
+            const responses = await Array.fromAsync(agent.run('test', { selected: context }));
+            const actionResponse = responses.find(response => response.type === "action" /* AiAgent.ResponseType.ACTION */);
+            assert.exists(actionResponse);
+            assert.strictEqual(actionResponse.output, 'Resource not found');
         });
         it('can call getMainThreadTrackSummaryByLabel', async function () {
             const parsedTrace = await loadTrace(this, 'lcp-discovery-delay.json.gz');
@@ -776,7 +801,7 @@ code
                     // Run 3: after error, we try again.
                     [{ explanation: 'done' }],
                 ]),
-                allowedOrigin: () => originBlocked ? { blocked: true } : { origin: 'https://google.com' },
+                allowedOrigin: () => originBlocked ? { blocked: true } : { origin: SDK.SecurityOrigin.SecurityOrigin.create('https://google.com') },
             });
             const context = PerformanceTraceContext.PerformanceTraceContext.fromInsight(parsedTrace, lcpBreakdown);
             // Run 1: Succeeds.
@@ -948,12 +973,10 @@ code
                     4,
                     { takeSnapshot: sinon.stub().resolves({ root: { nodeName: 'IMG' } }) },
                 ]]));
-            const mockRequest = createNetworkRequest();
-            sinon.stub(mockRequest, 'contentType').returns({
-                isImage: () => true,
+            const mockRequest = createNetworkRequest({
+                resourceType: Common.ResourceType.resourceTypes.Image,
+                contentData: new TextUtils.ContentData.ContentData('base64', true, 'image/jpeg'),
             });
-            sinon.stub(mockRequest, 'requestContentData')
-                .resolves(new TextUtils.ContentData.ContentData('base64', true, 'image/jpeg'));
             // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
             sinon.stub(Logs.NetworkLog.NetworkLog.instance(), 'requestByManagerAndId').returns(mockRequest);
             const responses = await Array.fromAsync(agent.run('test', { selected: context }));
@@ -1686,7 +1709,7 @@ code
             };
             Tracing.FreshRecording.Tracker.instance().registerFreshRecording(parsedTrace);
             const context = PerformanceTraceContext.PerformanceTraceContext.fromParsedTrace(parsedTrace);
-            assert.strictEqual(context.getOrigin(), 'https://example.com');
+            assert.isTrue(context.getOrigin().isSameOriginWith(SDK.SecurityOrigin.SecurityOrigin.create('https://example.com')));
         });
         it('returns imported-trace origin for non-fresh (imported) recordings', () => {
             const parsedTrace = {
@@ -1701,9 +1724,9 @@ code
             };
             // Do not register as fresh
             const context = PerformanceTraceContext.PerformanceTraceContext.fromParsedTrace(parsedTrace);
-            assert.strictEqual(context.getOrigin(), 'imported-trace://example.com');
+            assert.isTrue(context.getOrigin().isSameOriginWith(SDK.SecurityOrigin.SecurityOrigin.create('imported-trace://example.com')));
         });
-        it('handles invalid URLs by prefixing the fallback URL', () => {
+        it('handles invalid URLs by returning an opaque origin', () => {
             const parsedTrace = {
                 insights: new Map(),
                 metadata: {},
@@ -1715,7 +1738,7 @@ code
                 },
             };
             const context = PerformanceTraceContext.PerformanceTraceContext.fromParsedTrace(parsedTrace);
-            assert.strictEqual(context.getOrigin(), 'imported-trace://trace-100-200');
+            assert.isTrue(context.getOrigin().isOpaque());
         });
     });
     describe('getEventByKey', () => {

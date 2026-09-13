@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import sinon from 'sinon';
-import * as Platform from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import { assertIsError, assertIsResult } from '../../../testing/AiAssistanceHelpers.js';
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import * as AiAssistance from '../ai_assistance.js';
-const { urlString } = Platform.DevToolsPath;
 describe('GetElementAccessibilityDetailsTool', () => {
+    setupLocaleHooks();
     /**
      * Creates a mock context suitable for testing GetElementAccessibilityDetailsTool.
      *
@@ -17,6 +17,7 @@ describe('GetElementAccessibilityDetailsTool', () => {
      *
      * @param overrides Configuration options to customize the mock context behavior.
      * @param overrides.nodeUrl The URL of the target document node. Defaults to 'https://example.com/page.html'.
+     * @param overrides.nodeSecurityOrigin Explicit SecurityOrigin to return from the node, or null for detached nodes.
      * @param overrides.establishedOrigin The origin locked in the conversation context. Defaults to 'https://example.com'.
      * @param overrides.hasTarget If false, simulates a missing target (e.g. target closed).
      * @param overrides.hasAxModel If false, simulates missing AccessibilityModel on target.
@@ -25,7 +26,9 @@ describe('GetElementAccessibilityDetailsTool', () => {
      */
     function createMockContext(overrides) {
         const nodeUrl = overrides?.nodeUrl ?? 'https://example.com/page.html';
-        const establishedOrigin = overrides && 'establishedOrigin' in overrides ? overrides.establishedOrigin : 'https://example.com';
+        const establishedOrigin = overrides && 'establishedOrigin' in overrides ?
+            overrides.establishedOrigin :
+            SDK.SecurityOrigin.SecurityOrigin.create('https://example.com');
         const hasTarget = overrides?.hasTarget ?? true;
         const hasAxModel = overrides?.hasAxModel ?? true;
         const hasAxNode = overrides?.hasAxNode ?? true;
@@ -60,9 +63,13 @@ describe('GetElementAccessibilityDetailsTool', () => {
             { name: 'aria-label', value: 'Click me', _node: mockNode },
             { name: 'role', value: 'button', _node: mockNode },
         ]);
-        const mockDocument = sinon.createStubInstance(SDK.DOMModel.DOMDocument);
-        sinon.stub(mockDocument, 'documentURL').get(() => urlString `${nodeUrl}`);
-        mockNode.ownerDocument = mockDocument;
+        const nodeSecurityOrigin = (overrides && 'nodeSecurityOrigin' in overrides) ?
+            (overrides.nodeSecurityOrigin ?? null) :
+            SDK.SecurityOrigin.SecurityOrigin.create(nodeUrl);
+        mockNode.securityOrigin.returns(nodeSecurityOrigin);
+        const mockDomModel = sinon.createStubInstance(SDK.DOMModel.DOMModel);
+        mockDomModel.target.returns(mockTarget);
+        mockNode.domModel.returns(mockDomModel);
         const mockSnapshot = sinon.createStubInstance(SDK.DOMModel.DOMNodeSnapshot);
         mockNode.takeSnapshot.resolves(mockSnapshot);
         const resolvedNode = canResolveDOMNode ? mockNode : null;
@@ -120,43 +127,57 @@ describe('GetElementAccessibilityDetailsTool', () => {
         const { context } = createMockContext({ hasTarget: false });
         const tool = new AiAssistance.GetElementAccessibilityDetails.GetElementAccessibilityDetailsTool();
         const response = await tool.handler({ element: 123, explanation: 'Inspect details' }, context);
-        assertIsError(response);
-        assert.strictEqual(response.error, 'Error: Inspected target not found.');
+        assertIsError(response, 'Error: Inspected target not found.');
     });
     it('returns error when origin lock is not established', async () => {
         const { context } = createMockContext({ establishedOrigin: undefined });
         const tool = new AiAssistance.GetElementAccessibilityDetails.GetElementAccessibilityDetailsTool();
         const response = await tool.handler({ element: 123, explanation: 'Inspect details' }, context);
-        assertIsError(response);
-        assert.strictEqual(response.error, 'Error: Origin lock is not established.');
+        assertIsError(response, 'Error: Node does not belong to the current origin.');
     });
     it('returns error when element cannot be resolved', async () => {
         const { context } = createMockContext({ canResolveDOMNode: false });
         const tool = new AiAssistance.GetElementAccessibilityDetails.GetElementAccessibilityDetailsTool();
         const response = await tool.handler({ element: 123, explanation: 'Inspect details' }, context);
-        assertIsError(response);
-        assert.strictEqual(response.error, 'Error: Could not resolve element by ID.');
+        assertIsError(response, 'Error: Could not resolve element by ID.');
     });
     it('returns error when element belongs to different origin', async () => {
         const { context } = createMockContext({ nodeUrl: 'https://different.com/page.html' });
         const tool = new AiAssistance.GetElementAccessibilityDetails.GetElementAccessibilityDetailsTool();
         const response = await tool.handler({ element: 123, explanation: 'Inspect details' }, context);
-        assertIsError(response);
-        assert.strictEqual(response.error, 'Error: Node does not belong to the locked origin.');
+        assertIsError(response, 'Error: Node does not belong to the current origin.');
     });
     it('returns error when AccessibilityModel is not found', async () => {
         const { context } = createMockContext({ hasAxModel: false });
         const tool = new AiAssistance.GetElementAccessibilityDetails.GetElementAccessibilityDetailsTool();
         const response = await tool.handler({ element: 123, explanation: 'Inspect details' }, context);
-        assertIsError(response);
-        assert.strictEqual(response.error, 'Error: Accessibility model not found.');
+        assertIsError(response, 'Error: Accessibility model not found.');
     });
     it('returns error when AX node is not found', async () => {
         const { context } = createMockContext({ hasAxNode: false });
         const tool = new AiAssistance.GetElementAccessibilityDetails.GetElementAccessibilityDetailsTool();
         const response = await tool.handler({ element: 123, explanation: 'Inspect details' }, context);
-        assertIsError(response);
-        assert.strictEqual(response.error, 'Error: AX node details not found.');
+        assertIsError(response, 'Error: AX node details not found.');
+    });
+    it('successfully returns AX details for an element in an iframe under iframe origin lock', async () => {
+        const iframeOrigin = SDK.SecurityOrigin.SecurityOrigin.create('https://iframe.example.com');
+        const { context } = createMockContext({
+            nodeUrl: 'https://iframe.example.com/frame.html',
+            establishedOrigin: iframeOrigin,
+        });
+        const tool = new AiAssistance.GetElementAccessibilityDetails.GetElementAccessibilityDetailsTool();
+        const response = await tool.handler({ element: 123, explanation: 'Inspect details' }, context);
+        assertIsResult(response);
+        const parsed = JSON.parse(response.result);
+        assert.strictEqual(parsed.role, 'button');
+        assert.strictEqual(parsed.name, 'Click me');
+        assert.strictEqual(parsed.backendNodeId, 123);
+    });
+    it('returns error if resolved node has no security origin (detached node)', async () => {
+        const { context } = createMockContext({ nodeSecurityOrigin: null });
+        const tool = new AiAssistance.GetElementAccessibilityDetails.GetElementAccessibilityDetailsTool();
+        const response = await tool.handler({ element: 123, explanation: 'Inspect details' }, context);
+        assertIsError(response, 'Error: Node does not belong to the current origin.');
     });
 });
 //# sourceMappingURL=GetElementAccessibilityDetails.test.js.map

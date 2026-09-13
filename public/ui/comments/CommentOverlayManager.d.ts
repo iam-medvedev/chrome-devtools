@@ -1,6 +1,7 @@
 import * as Common from '../../core/common/common.js';
 import * as CommentManager from '../../models/comment_manager/comment_manager.js';
 import { type CommentThread } from './CommentAnchorResolver.js';
+export declare const COMMENT_MODE_CURSOR = "var(--comment-cursor)";
 export interface StartOptions {
     root?: Document | Element;
     scrollTarget?: EventTarget;
@@ -12,6 +13,7 @@ export interface PinPositionData {
     top: number;
     left: number;
     visible: boolean;
+    index: number;
 }
 export interface HighlightRectData {
     id: string;
@@ -52,8 +54,14 @@ export declare class CommentOverlayManager extends Common.ObjectWrapper.ObjectWr
     getHoverHighlight(): HoverHighlightData | null;
     getPinPositions(): PinPositionData[];
     getHighlightRects(): HighlightRectData[];
-    handleElementClick(element: Element, commentText?: string): CommentThread | null;
-    createComment(element: Element, text: string, author?: 'DEVELOPER' | 'AGENT', changes?: Array<Record<string, unknown>>): CommentThread | null;
+    handleElementClick(element: Element, commentText?: string, options?: {
+        clientX: number;
+        clientY: number;
+    }): CommentThread | null;
+    createComment(element: Element, text: string, author?: 'DEVELOPER' | 'AGENT', changes?: CommentManager.CommentManager.ChangeRecord[], options?: {
+        clientX: number;
+        clientY: number;
+    }): CommentThread | null;
     getCommentThread(id: string): CommentThread | undefined;
     getCommentThreads(): CommentThread[];
     removeCommentThread(id: string): void;

@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "allowJs": true,
+    "allowJs": false,
     "allowSyntheticDefaultImports": true,
-    "checkJs": true,
+    "checkJs": false,
     "composite": false,
     "declaration": false,
     "disableSourceOfProjectReferenceRedirect": true,
@@ -28,6 +28,10 @@
     "outDir": ".",
     "preserveConstEnums": true,
     "rootDir": "../../../../../../front_end/panels/security",
+    "rootDirs": [
+      "../../../../../../",
+      "../../../"
+    ],
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
@@ -55,6 +59,9 @@
       "path": "bundle-tsconfig.ref.json"
     },
     {
+      "path": "../../core/common/bundle-tsconfig.ref.json"
+    },
+    {
       "path": "../../core/platform/bundle-tsconfig.ref.json"
     },
     {
@@ -62,6 +69,9 @@
     },
     {
       "path": "../../generated/generated-tsconfig.ref.json"
+    },
+    {
+      "path": "../network/forward/bundle-tsconfig.ref.json"
     },
     {
       "path": "../../testing/testing-tsconfig.ref.json"

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import * as Geometry from '../../models/geometry/geometry.js';
+import * as Geometry from '../../ui/geometry/geometry.js';
 export class LayerTreeModel extends SDK.SDKModel.SDKModel {
     layerTreeAgent;
     paintProfilerModel;

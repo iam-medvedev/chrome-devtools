@@ -4,6 +4,7 @@
 import { assert } from 'chai';
 import * as Trace from '../../../models/trace/trace.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
+import { makeInstantEvent } from '../../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as TimelineComponents from './components.js';
@@ -15,8 +16,11 @@ async function renderAnnotationsTab(annotations, annotationEntryToColorMap) {
     return component;
 }
 describeWithEnvironment('SidebarAnnotationsTab', () => {
-    it('renders annotations list in the sidebar', async function () {
-        const defaultTraceEvents = await TraceLoader.rawEvents(null, 'basic.json.gz');
+    it('renders annotations list in the sidebar', async () => {
+        const defaultTraceEvents = [
+            makeInstantEvent('thread_name', 0),
+            makeInstantEvent('thread_name', 5),
+        ];
         // Create Entry Label annotations
         const entryLabelAnnotation = {
             type: 'ENTRY_LABEL',
@@ -31,8 +35,8 @@ describeWithEnvironment('SidebarAnnotationsTab', () => {
         const labelledTimeRangeAnnotation = {
             type: 'TIME_RANGE',
             bounds: {
-                min: Trace.Types.Timing.Micro(0),
-                max: Trace.Types.Timing.Micro(10),
+                min: Trace.Types.Timing.Micro(10),
+                max: Trace.Types.Timing.Micro(20),
                 range: Trace.Types.Timing.Micro(10),
             },
             label: 'Labelled Time Range',
@@ -51,15 +55,17 @@ describeWithEnvironment('SidebarAnnotationsTab', () => {
         const annotationEntryIdentifierElements = component.contentElement.querySelectorAll('.annotation-identifier');
         assert.lengthOf(annotationEntryIdentifierElements, 3);
         const annotationEntryLabelElements = component.contentElement.querySelectorAll('.label');
-        assert.lengthOf(annotationEntryIdentifierElements, 3);
+        assert.lengthOf(annotationEntryLabelElements, 3);
         assert.strictEqual(annotationEntryLabelElements[0].innerText, 'Entry Label 1');
         assert.strictEqual(annotationEntryIdentifierElements[0].style['backgroundColor'], 'rgb(82, 252, 3)');
         assert.strictEqual(annotationEntryLabelElements[1].innerText, 'Entry Label 2');
         assert.strictEqual(annotationEntryIdentifierElements[1].style['backgroundColor'], 'rgb(252, 3, 157)');
         assert.strictEqual(annotationEntryLabelElements[2].innerText, 'Labelled Time Range');
     });
-    it('gives the delete button accessible labels', async function () {
-        const defaultTraceEvents = await TraceLoader.rawEvents(null, 'basic.json.gz');
+    it('gives the delete button accessible labels', async () => {
+        const defaultTraceEvents = [
+            makeInstantEvent('thread_name', 0),
+        ];
         const entryLabelAnnotation = {
             type: 'ENTRY_LABEL',
             entry: defaultTraceEvents[0],
@@ -86,8 +92,10 @@ describeWithEnvironment('SidebarAnnotationsTab', () => {
         const label = component.contentElement.querySelector('.annotation-identifier');
         assert.strictEqual(label?.innerText, 'private-aggregation-test.js (shared-storage-demo-content-producer.web.app)');
     });
-    it('dispatches RemoveAnnotation Events when delete annotation button is clicked', async function () {
-        const defaultTraceEvents = await TraceLoader.rawEvents(null, 'basic.json.gz');
+    it('dispatches RemoveAnnotation Events when delete annotation button is clicked', async () => {
+        const defaultTraceEvents = [
+            makeInstantEvent('thread_name', 0),
+        ];
         let removeAnnotationEventFired = false;
         // Create Entry Label annotation
         const entryLabelAnnotation = {
@@ -107,8 +115,11 @@ describeWithEnvironment('SidebarAnnotationsTab', () => {
         deleteButton.dispatchEvent(new MouseEvent('click'));
         assert.isTrue(removeAnnotationEventFired);
     });
-    it('updates annotations list in the sidebar when a new list is passed in', async function () {
-        const defaultTraceEvents = await TraceLoader.rawEvents(null, 'basic.json.gz');
+    it('updates annotations list in the sidebar when a new list is passed in', async () => {
+        const defaultTraceEvents = [
+            makeInstantEvent('thread_name', 0),
+            makeInstantEvent('thread_name', 5),
+        ];
         // Create Entry Label Annotation
         const entryLabelAnnotation = {
             type: 'ENTRY_LABEL',
@@ -136,8 +147,8 @@ describeWithEnvironment('SidebarAnnotationsTab', () => {
         const labelledTimeRangeAnnotation = {
             type: 'TIME_RANGE',
             bounds: {
-                min: Trace.Types.Timing.Micro(0),
-                max: Trace.Types.Timing.Micro(10),
+                min: Trace.Types.Timing.Micro(10),
+                max: Trace.Types.Timing.Micro(20),
                 range: Trace.Types.Timing.Micro(10),
             },
             label: 'Labelled Time Range',
@@ -155,8 +166,10 @@ describeWithEnvironment('SidebarAnnotationsTab', () => {
         assert.strictEqual(annotationLabelElements[1].innerText, 'New Entry Label 2');
         assert.strictEqual(annotationLabelElements[2].innerText, 'Labelled Time Range');
     });
-    it('does not display multiple not started annotations for one entry', async function () {
-        const defaultTraceEvents = await TraceLoader.rawEvents(null, 'basic.json.gz');
+    it('does not display multiple not started annotations for one entry', async () => {
+        const defaultTraceEvents = [
+            makeInstantEvent('thread_name', 0),
+        ];
         // Create Empty Entry Label Annotation (considered not started)
         const entryLabelAnnotation = {
             type: 'ENTRY_LABEL',
@@ -176,8 +189,11 @@ describeWithEnvironment('SidebarAnnotationsTab', () => {
         const annotationIdentifierElements = component.contentElement.querySelectorAll('.annotation-identifier');
         assert.lengthOf(annotationIdentifierElements, 1);
     });
-    it('displays multiple not started annotations if they are not different entries', async function () {
-        const defaultTraceEvents = await TraceLoader.rawEvents(null, 'basic.json.gz');
+    it('displays multiple not started annotations if they are on different entries', async () => {
+        const defaultTraceEvents = [
+            makeInstantEvent('thread_name', 0),
+            makeInstantEvent('thread_name', 10),
+        ];
         // Create Empty Entry Label Annotation (considered not started)
         const entryLabelAnnotation = {
             type: 'ENTRY_LABEL',

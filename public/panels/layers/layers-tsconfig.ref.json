@@ -6,6 +6,10 @@
     "emitDeclarationOnly": true,
     "outDir": ".",
     "rootDir": "../../../../../../front_end/panels/layers",
+    "rootDirs": [
+      "../../../../../../",
+      "../../../"
+    ],
     "skipLibCheck": true
   },
   "files": [
@@ -31,10 +35,10 @@
       "path": "../../generated/generated-tsconfig.ref.json"
     },
     {
-      "path": "../../models/geometry/bundle-tsconfig.ref.json"
+      "path": "../layer_viewer/bundle-tsconfig.ref.json"
     },
     {
-      "path": "../layer_viewer/bundle-tsconfig.ref.json"
+      "path": "../../ui/geometry/bundle-tsconfig.ref.json"
     },
     {
       "path": "../../ui/legacy/bundle-tsconfig.ref.json"

@@ -1,3 +1,4 @@
+import * as AccessibilityAnnouncementRecordingListView from './AccessibilityAnnouncementRecordingListView.js';
 import * as AccessibilityAnnouncementRecordingView from './AccessibilityAnnouncementRecordingView.js';
 import * as AccessibilityNodeView from './AccessibilityNodeView.js';
 import * as AccessibilitySidebarView from './AccessibilitySidebarView.js';
@@ -5,4 +6,4 @@ import * as AccessibilityStrings from './AccessibilityStrings.js';
 import * as AccessibilitySubPane from './AccessibilitySubPane.js';
 import * as ARIAAttributesView from './ARIAAttributesView.js';
 import * as ARIAMetadata from './ARIAMetadata.js';
-export { AccessibilityAnnouncementRecordingView, AccessibilityNodeView, AccessibilitySidebarView, AccessibilityStrings, AccessibilitySubPane, ARIAAttributesView, ARIAMetadata, };
+export { AccessibilityAnnouncementRecordingListView, AccessibilityAnnouncementRecordingView, AccessibilityNodeView, AccessibilitySidebarView, AccessibilityStrings, AccessibilitySubPane, ARIAAttributesView, ARIAMetadata, };

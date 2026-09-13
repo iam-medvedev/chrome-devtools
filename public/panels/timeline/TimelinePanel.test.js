@@ -28,6 +28,9 @@ async function contentDataToFile(contentData) {
     return JSON.parse(text);
 }
 describe('TimelinePanel', function () {
+    if (this.timeout() > 0) {
+        this.timeout(30_000);
+    }
     before(async () => {
         await initializeGlobalVars();
     });
@@ -166,11 +169,6 @@ describe('TimelinePanel', function () {
         assert.isNull(context.flavor(AIAssistance.AIContext.AgentFocus));
     });
     it('includes the trace metadata when saving to a file', async function () {
-        // Loading the trace file and serializing its payload to disk can take
-        // slightly longer on slower environments.
-        if (this.timeout() !== 0) {
-            this.timeout(20000);
-        }
         const events = await TraceLoader.rawEvents(this, 'web-dev-with-commit.json.gz');
         const metadata = await TraceLoader.metadata(this, 'web-dev-with-commit.json.gz');
         const fileManager = stubFileManager();
@@ -188,7 +186,7 @@ describe('TimelinePanel', function () {
         // contains values that are `undefined` which do not exist in the JSON
         // version.
         const file = await contentDataToFile(contentData);
-        for (const k in file) {
+        for (const k in file.metadata) {
             const key = k;
             assert.deepEqual(file.metadata[key], metadata[key]);
         }
@@ -396,13 +394,13 @@ describe('TimelinePanel', function () {
                 const { traceEvents, metadata } = await TraceLoader.traceFile(this, 'chrome-ext-sourcemap-script-content.json.gz');
                 await timeline.loadingComplete(traceEvents, null, metadata);
                 // 7192505913775043000.8 matches a chrome-extension script in the trace
-                let extensionTracesWithContent = traceEvents.filter(value => {
+                let extensionEventsWithContent = traceEvents.filter(value => {
                     return value.cat === 'disabled-by-default-devtools.v8-source-rundown-sources' &&
                         `${value.args.data.isolate}.${value.args.data.scriptId}` === '7192505913775043000.8';
                 });
                 // loading the trace and verifying the chrome extension script has associated source text
-                let castedEvent = extensionTracesWithContent[0];
-                assert.lengthOf(extensionTracesWithContent, 1);
+                let castedEvent = extensionEventsWithContent[0];
+                assert.lengthOf(extensionEventsWithContent, 1);
                 assert.isDefined(castedEvent.args.data.sourceText);
                 await timeline.saveToFile({
                     includeResourceContent: true,
@@ -417,21 +415,21 @@ describe('TimelinePanel', function () {
                 const file = await contentDataToFile(contentData);
                 assert.isDefined(file.metadata.enhancedTraceVersion);
                 // getting the same trace as before, but this time after saving has happened.
-                extensionTracesWithContent = file.traceEvents?.filter(value => {
+                extensionEventsWithContent = file.traceEvents?.filter(value => {
                     return value.cat === 'disabled-by-default-devtools.v8-source-rundown-sources' &&
                         `${value.args.data.isolate}.${value.args.data.scriptId}` === '7192505913775043000.8';
                 });
                 // the associated source text is now undefined from the chrome-extension script
-                castedEvent = extensionTracesWithContent[0];
-                assert.lengthOf(extensionTracesWithContent, 1);
+                castedEvent = extensionEventsWithContent[0];
+                assert.lengthOf(extensionEventsWithContent, 1);
                 assert.isUndefined(castedEvent.args.data.sourceText);
                 // non-extension script content is still present (7192505913775043000.10)
-                extensionTracesWithContent = file.traceEvents?.filter(value => {
+                extensionEventsWithContent = file.traceEvents?.filter(value => {
                     return value.cat === 'disabled-by-default-devtools.v8-source-rundown-sources' &&
                         `${value.args.data.isolate}.${value.args.data.scriptId}` === '7192505913775043000.10';
                 });
-                castedEvent = extensionTracesWithContent[0];
-                assert.lengthOf(extensionTracesWithContent, 1);
+                castedEvent = extensionEventsWithContent[0];
+                assert.lengthOf(extensionEventsWithContent, 1);
                 assert.isDefined(castedEvent.args.data.sourceText);
             });
             it('from trace sourcemaps when saving a trace with "Include source map" on', async function () {
@@ -448,11 +446,11 @@ describe('TimelinePanel', function () {
                 assert.match(fileName, /Trace-[\d|T]+\.json$/);
                 const file = await contentDataToFile(contentData);
                 assert.isDefined(file.metadata.enhancedTraceVersion);
-                const totalSourceMapsWithChromExtensionProtocol = file.metadata.sourceMaps?.filter(value => {
-                    value.url.startsWith('chrome-extension:');
+                const chromeExtensionSourceMaps = file.metadata.sourceMaps?.filter(value => {
+                    return value.url.startsWith('chrome-extension:');
                 });
-                assert.isNotNull(totalSourceMapsWithChromExtensionProtocol);
-                assert.strictEqual(totalSourceMapsWithChromExtensionProtocol?.length, 0);
+                assert.isNotNull(chromeExtensionSourceMaps);
+                assert.strictEqual(chromeExtensionSourceMaps?.length, 0);
             });
         });
     });

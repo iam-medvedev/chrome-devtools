@@ -1,6 +1,19 @@
 // Copyright 2026 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+/**
+ * Checks whether a target origin matches the established conversation origin lock.
+ * Fails closed (returns false) if established origin is missing/opaque or target is cross-origin.
+ */
+export function isOriginAllowedByLock(establishedOrigin, targetOrigin) {
+    if (!establishedOrigin || establishedOrigin.isOpaque()) {
+        return false;
+    }
+    if (!targetOrigin || targetOrigin.isOpaque()) {
+        return false;
+    }
+    return targetOrigin.isSameOriginWith(establishedOrigin);
+}
 // The maximum size (in bytes) of a function execution result.
 // Approximately 16k tokens at ~4 characters per token, designed to limit
 // result sizes to prevent overloading the LLM's context window.

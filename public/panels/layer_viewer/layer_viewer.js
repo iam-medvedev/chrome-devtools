@@ -417,6 +417,7 @@ var DEFAULT_VIEW = (input, _output, target) => {
     html`
     <div class="layer-details-container"
          data-backend-node-id=${domNode ? domNode.backendNodeId() : nothing}
+         data-target-id=${domNode ? domNode.domModel().target().id() : nothing}
          jslog=${VisualLogging.section("layer-details")}>
       <table>
         <tbody>
@@ -652,6 +653,7 @@ var DEFAULT_VIEW2 = (input, output, target) => {
       <li role="treeitem"
           data-layer-id=${layer.id()}
           data-backend-node-id=${domNode ? domNode.backendNodeId() : nothing2}
+          data-target-id=${domNode ? domNode.domModel().target().id() : nothing2}
           jslog=${VisualLogging2.treeItem("layer-item")}
           class=${isHovered ? "hovered" : ""}
           ?selected=${isSelected}
@@ -880,7 +882,7 @@ __export(Layers3DView_exports, {
 import * as Common5 from "../../core/common/common.js";
 import * as i18n9 from "../../core/i18n/i18n.js";
 import * as Platform2 from "../../core/platform/platform.js";
-import * as Geometry from "../../models/geometry/geometry.js";
+import * as Geometry from "../../ui/geometry/geometry.js";
 import * as uiI18n from "../../ui/i18n/i18n.js";
 import { Link } from "../../ui/kit/kit.js";
 import * as UI4 from "../../ui/legacy/legacy.js";

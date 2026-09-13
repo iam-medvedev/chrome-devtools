@@ -302,7 +302,7 @@ var developerResourcesView_css_default = `/*
 
   .developer-resource-view-toolbar-container {
     display: flex;
-    border-bottom: 1px solid var(--sys-color-divider);
+    border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
     flex: 0 0 auto;
   }
 
@@ -312,7 +312,7 @@ var developerResourcesView_css_default = `/*
 
   .developer-resource-view-toolbar-summary {
     background-color: var(--sys-color-cdt-base-container);
-    border-top: 1px solid var(--sys-color-divider);
+    border-top: var(--sys-size-1) solid var(--sys-color-divider);
     padding-left: 5px;
     flex: 0 0 19px;
     display: flex;
@@ -320,7 +320,7 @@ var developerResourcesView_css_default = `/*
   }
 
   .developer-resource-view-toolbar-summary .developer-resource-view-message {
-    padding-top: 2px;
+    padding-top: var(--sys-size-2);
     padding-left: 1ex;
     text-overflow: ellipsis;
     white-space: nowrap;

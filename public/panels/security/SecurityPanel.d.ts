@@ -20,7 +20,6 @@ export interface ViewOutput {
 }
 export type View = (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
 export declare class SecurityPanel extends UI.Panel.Panel implements SDK.TargetManager.SDKModelObserver<SecurityModel> {
-    private view;
     readonly mainView: SecurityMainView;
     readonly sidebar: SecurityPanelSidebar;
     private readonly lastResponseReceivedForLoaderId;
@@ -30,7 +29,8 @@ export declare class SecurityPanel extends UI.Panel.Panel implements SDK.TargetM
     private eventListeners;
     private securityModel;
     readonly splitWidget: UI.SplitWidget.SplitWidget;
-    constructor(view?: View);
+    private view;
+    constructor(view?: View | undefined);
     static instance(opts?: {
         forceNew: boolean | null;
     }): SecurityPanel;

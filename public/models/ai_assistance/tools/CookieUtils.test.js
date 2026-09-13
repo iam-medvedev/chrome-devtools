@@ -20,7 +20,7 @@ describe('CookieUtils', () => {
     });
     function createMockFrame(origin, resourceTreeModel) {
         const mockFrame = sinon.createStubInstance(SDK.ResourceTreeModel.ResourceTreeFrame);
-        sinon.stub(mockFrame, 'securityOrigin').get(() => origin);
+        mockFrame.securityOrigin.returns(SDK.SecurityOrigin.SecurityOrigin.create(origin));
         mockFrame.resourceTreeModel.returns(resourceTreeModel);
         return mockFrame;
     }
@@ -43,7 +43,7 @@ describe('CookieUtils', () => {
             const cookie = new SDK.Cookie.Cookie('test-cookie', 'test-value');
             cookie.addAttribute("domain" /* SDK.Cookie.Attribute.DOMAIN */, 'example.com');
             activeCookies = [cookie];
-            const result = await AiAssistance.CookieUtils.getCookiesForOrigin('https://example.com', universe.targetManager, primaryTarget);
+            const result = await AiAssistance.CookieUtils.getCookiesForOrigin('https://example.com', primaryTarget);
             assert.isFalse('error' in result);
             if (!('error' in result)) {
                 assert.lengthOf(result.cookies, 1);
@@ -53,7 +53,7 @@ describe('CookieUtils', () => {
         });
         it('returns error when frame is not found', async () => {
             const { primaryTarget } = setupPrimaryTarget('https://example.com');
-            const result = await AiAssistance.CookieUtils.getCookiesForOrigin('https://other.com', universe.targetManager, primaryTarget);
+            const result = await AiAssistance.CookieUtils.getCookiesForOrigin('https://other.com', primaryTarget);
             assert.isTrue('error' in result);
             if ('error' in result) {
                 assert.strictEqual(result.error, 'Frame not found or origin disallowed for https://other.com');
@@ -62,7 +62,7 @@ describe('CookieUtils', () => {
         it('returns error when cookie model is not found', async () => {
             const { primaryTarget } = setupPrimaryTarget('https://example.com');
             sinon.stub(primaryTarget, 'model').withArgs(SDK.CookieModel.CookieModel).returns(null);
-            const result = await AiAssistance.CookieUtils.getCookiesForOrigin('https://example.com', universe.targetManager, primaryTarget);
+            const result = await AiAssistance.CookieUtils.getCookiesForOrigin('https://example.com', primaryTarget);
             assert.isTrue('error' in result);
             if ('error' in result) {
                 assert.strictEqual(result.error, 'Cookie model not found for https://example.com');
@@ -76,7 +76,7 @@ describe('CookieUtils', () => {
             httpOnlyCookie.addAttribute("domain" /* SDK.Cookie.Attribute.DOMAIN */, 'example.com');
             httpOnlyCookie.addAttribute("http-only" /* SDK.Cookie.Attribute.HTTP_ONLY */);
             activeCookies = [normalCookie, httpOnlyCookie];
-            const result = await AiAssistance.CookieUtils.getCookiesForOrigin('https://example.com', universe.targetManager, primaryTarget);
+            const result = await AiAssistance.CookieUtils.getCookiesForOrigin('https://example.com', primaryTarget);
             assert.isFalse('error' in result);
             if (!('error' in result)) {
                 assert.lengthOf(result.cookies, 1);
@@ -90,7 +90,7 @@ describe('CookieUtils', () => {
             const foreignCookie = new SDK.Cookie.Cookie('tracker', 'val');
             foreignCookie.addAttribute("domain" /* SDK.Cookie.Attribute.DOMAIN */, 'tracker.com');
             activeCookies = [matchingCookie, foreignCookie];
-            const result = await AiAssistance.CookieUtils.getCookiesForOrigin('https://example.com', universe.targetManager, primaryTarget);
+            const result = await AiAssistance.CookieUtils.getCookiesForOrigin('https://example.com', primaryTarget);
             assert.isFalse('error' in result);
             if (!('error' in result)) {
                 assert.lengthOf(result.cookies, 1);
@@ -100,10 +100,80 @@ describe('CookieUtils', () => {
         it('returns error on CDP failure', async () => {
             const { primaryTarget, cookieModel } = setupPrimaryTarget('https://example.com');
             cookieModel.getCookiesForDomain.rejects(new Error('CDP target detached'));
-            const result = await AiAssistance.CookieUtils.getCookiesForOrigin('https://example.com', universe.targetManager, primaryTarget);
+            const result = await AiAssistance.CookieUtils.getCookiesForOrigin('https://example.com', primaryTarget);
             assert.isTrue('error' in result);
             if ('error' in result) {
                 assert.strictEqual(result.error, 'Failed to fetch cookies for https://example.com');
+            }
+        });
+    });
+    describe('resolveAllowedTargetOrigins', () => {
+        it('resolves primary page origin when requestedOrigins is omitted', () => {
+            const { primaryTarget } = setupPrimaryTarget('https://example.com');
+            const context = {
+                getEstablishedOrigin: sinon.stub().returns(SDK.SecurityOrigin.SecurityOrigin.create('https://example.com')),
+            };
+            const result = AiAssistance.CookieUtils.resolveAllowedTargetOrigins(undefined, context, universe.targetManager);
+            assert.isFalse('error' in result);
+            if (!('error' in result)) {
+                assert.deepEqual(result.targetOrigins, ['https://example.com']);
+                assert.strictEqual(result.primaryPageTarget, primaryTarget);
+            }
+        });
+        it('filters out requested origins that do not match the established origin', () => {
+            const { primaryTarget } = setupPrimaryTarget('https://example.com');
+            const context = {
+                getEstablishedOrigin: sinon.stub().returns(SDK.SecurityOrigin.SecurityOrigin.create('https://example.com')),
+            };
+            const result = AiAssistance.CookieUtils.resolveAllowedTargetOrigins(['https://example.com', 'https://other.com'], context, universe.targetManager);
+            assert.isFalse('error' in result);
+            if (!('error' in result)) {
+                assert.deepEqual(result.targetOrigins, ['https://example.com']);
+                assert.strictEqual(result.primaryPageTarget, primaryTarget);
+            }
+        });
+        it('returns error when established origin is opaque', () => {
+            setupPrimaryTarget('https://example.com');
+            const context = {
+                getEstablishedOrigin: sinon.stub().returns(SDK.SecurityOrigin.SecurityOrigin.createUniqueOpaque()),
+            };
+            const result = AiAssistance.CookieUtils.resolveAllowedTargetOrigins(undefined, context, universe.targetManager);
+            assert.isTrue('error' in result);
+            if ('error' in result) {
+                assert.strictEqual(result.error, 'No origin available or not allowed.');
+            }
+        });
+        it('returns error when primary target origin does not match established origin', () => {
+            setupPrimaryTarget('https://other.com');
+            const context = {
+                getEstablishedOrigin: sinon.stub().returns(SDK.SecurityOrigin.SecurityOrigin.create('https://example.com')),
+            };
+            const result = AiAssistance.CookieUtils.resolveAllowedTargetOrigins(undefined, context, universe.targetManager);
+            assert.isTrue('error' in result);
+            if ('error' in result) {
+                assert.strictEqual(result.error, 'Page origin does not match allowed origin.');
+            }
+        });
+        it('returns error when primaryPageTarget is null', () => {
+            sinon.stub(universe.targetManager, 'primaryPageTarget').returns(null);
+            const context = {
+                getEstablishedOrigin: sinon.stub().returns(SDK.SecurityOrigin.SecurityOrigin.create('https://example.com')),
+            };
+            const result = AiAssistance.CookieUtils.resolveAllowedTargetOrigins(undefined, context, universe.targetManager);
+            assert.isTrue('error' in result);
+            if ('error' in result) {
+                assert.strictEqual(result.error, 'Primary page target not found.');
+            }
+        });
+        it('returns error when all requested origins are cross-origin', () => {
+            setupPrimaryTarget('https://example.com');
+            const context = {
+                getEstablishedOrigin: sinon.stub().returns(SDK.SecurityOrigin.SecurityOrigin.create('https://example.com')),
+            };
+            const result = AiAssistance.CookieUtils.resolveAllowedTargetOrigins(['https://other1.com', 'https://other2.com'], context, universe.targetManager);
+            assert.isTrue('error' in result);
+            if ('error' in result) {
+                assert.strictEqual(result.error, 'No valid origins found.');
             }
         });
     });

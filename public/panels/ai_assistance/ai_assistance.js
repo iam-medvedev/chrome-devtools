@@ -317,9 +317,9 @@ var AIv2MarkdownRenderer = class extends MarkdownView3.MarkdownView.MarkdownInsi
       return html3`${fallbackText}`;
     }
     if (href.startsWith("#file-")) {
-      const file = AiAssistanceModel2.ListSources.ListSourcesTool.getUISourceCodes().find(
-        (file2) => AiAssistanceModel2.ListSources.ListSourcesTool.uiSourceCodeId.get(file2) === Number(href.substring(6))
-      );
+      const fileId = Number(href.substring(6));
+      const origin = this.options.getEstablishedOrigin?.();
+      const file = origin && Number.isInteger(fileId) && fileId > 0 ? AiAssistanceModel2.ListSources.ListSourcesTool.getSourceById(fileId, origin) : void 0;
       if (file) {
         return this.#revealableLink(file, file.name());
       }
@@ -444,9 +444,9 @@ import * as Trace2 from "../../models/trace/trace.js";
 import * as Workspace from "../../models/workspace/workspace.js";
 import * as PanelsCommon3 from "../common/common.js";
 import * as TraceBounds from "../../services/trace_bounds/trace_bounds.js";
-import * as Marked from "../../third_party/marked/marked.js";
 import * as Buttons2 from "../../ui/components/buttons/buttons.js";
 import * as Input2 from "../../ui/components/input/input.js";
+import * as MarkdownView5 from "../../ui/components/markdown_view/markdown_view.js";
 import * as Snackbars from "../../ui/components/snackbars/snackbars.js";
 import * as UIHelpers from "../../ui/helpers/helpers.js";
 import * as UI2 from "../../ui/legacy/legacy.js";
@@ -2084,7 +2084,7 @@ var DEFAULT_VIEW2 = (input, output, target) => {
       <div class="user-query-wrapper">
         <section class=${messageClasses2} jslog=${VisualLogging2.section("question")}>
           ${imageInput}
-          <div class="message-content">${renderTextAsMarkdown(message.text, input.markdownRenderer)}</div>
+          <div class="message-content">${MarkdownView5.MarkdownView.renderTextAsMarkdown(message.text, input.markdownRenderer)}</div>
         </section>
       </div>
     `, target);
@@ -2109,7 +2109,7 @@ var DEFAULT_VIEW2 = (input, output, target) => {
     (part, index) => {
       const isLastPart = index === message.parts.length - 1;
       if (part.type === "answer") {
-        return html5`<p>${renderTextAsMarkdown(part.text, input.markdownRenderer, { animate: !input.isReadOnly && input.isLoading && isLastPart && input.isLastMessage })}</p>`;
+        return html5`<p>${MarkdownView5.MarkdownView.renderTextAsMarkdown(part.text, input.markdownRenderer, { animate: !input.isReadOnly && input.isLoading && isLastPart && input.isLastMessage })}</p>`;
       }
       if (part.type === "widget") {
         return html5`${Lit5.Directives.until(renderWidgets(part.widgets, { wrapperClass: "main-widgets-wrapper" }))}`;
@@ -2124,21 +2124,6 @@ var DEFAULT_VIEW2 = (input, output, target) => {
     </section>
   `, target);
 };
-function renderTextAsMarkdown(text, markdownRenderer, { animate, ref: refFn } = {}) {
-  let tokens = [];
-  try {
-    tokens = Marked.Marked.lexer(text);
-    for (const token of tokens) {
-      markdownRenderer.renderToken(token);
-    }
-  } catch {
-    return html5`${text}`;
-  }
-  return html5`<devtools-markdown-view
-    .data=${{ tokens, renderer: markdownRenderer, animationEnabled: animate }}
-    ${refFn ? ref2(refFn) : Lit5.nothing}>
-  </devtools-markdown-view>`;
-}
 function titleForStep(step) {
   return step.title ?? `${lockedString2(UIStringsNotTranslate.investigating)}\u2026`;
 }
@@ -2177,7 +2162,7 @@ function renderStepDetails({
   isLast
 }) {
   const sideEffects = isLast && step.state.type === "needs_approval" ? renderSideEffectConfirmationUi(step) : Lit5.nothing;
-  const thought = step.thought ? html5`<p>${renderTextAsMarkdown(step.thought, markdownRenderer)}</p>` : Lit5.nothing;
+  const thought = step.thought ? html5`<p>${MarkdownView5.MarkdownView.renderTextAsMarkdown(step.thought, markdownRenderer)}</p>` : Lit5.nothing;
   const contextDetails = step.contextDetails ? html5`${Lit5.Directives.repeat(
     step.contextDetails,
     (contextDetail) => {
@@ -4011,6 +3996,7 @@ var Audits;
     FederatedAuthRequestIssueReason2["UiDismissedNoEmbargo"] = "UiDismissedNoEmbargo";
     FederatedAuthRequestIssueReason2["CorsError"] = "CorsError";
     FederatedAuthRequestIssueReason2["SuppressedBySegmentationPlatform"] = "SuppressedBySegmentationPlatform";
+    FederatedAuthRequestIssueReason2["PopupBlockedByConnectionAllowlist"] = "PopupBlockedByConnectionAllowlist";
   })(FederatedAuthRequestIssueReason = Audits2.FederatedAuthRequestIssueReason || (Audits2.FederatedAuthRequestIssueReason = {}));
   let FederatedAuthUserInfoRequestIssueReason;
   ((FederatedAuthUserInfoRequestIssueReason2) => {
@@ -4083,6 +4069,7 @@ var Audits;
     EmailVerificationRequestIssueReason2["TokenVerificationKbInvalidSdHash"] = "TokenVerificationKbInvalidSdHash";
     EmailVerificationRequestIssueReason2["TokenVerificationKbMissingCnf"] = "TokenVerificationKbMissingCnf";
     EmailVerificationRequestIssueReason2["TokenVerificationKbSignatureFailed"] = "TokenVerificationKbSignatureFailed";
+    EmailVerificationRequestIssueReason2["CrossOriginIframeNotSupported"] = "CrossOriginIframeNotSupported";
   })(EmailVerificationRequestIssueReason = Audits2.EmailVerificationRequestIssueReason || (Audits2.EmailVerificationRequestIssueReason = {}));
   let PartitioningBlobURLInfo;
   ((PartitioningBlobURLInfo2) => {
@@ -4539,6 +4526,11 @@ var Emulation;
     SetDeviceMetricsOverrideRequestScrollbarType2["Overlay"] = "overlay";
     SetDeviceMetricsOverrideRequestScrollbarType2["Default"] = "default";
   })(SetDeviceMetricsOverrideRequestScrollbarType = Emulation2.SetDeviceMetricsOverrideRequestScrollbarType || (Emulation2.SetDeviceMetricsOverrideRequestScrollbarType = {}));
+  let SetDeviceMetricsOverrideRequestViewportMeta;
+  ((SetDeviceMetricsOverrideRequestViewportMeta2) => {
+    SetDeviceMetricsOverrideRequestViewportMeta2["Enable"] = "enable";
+    SetDeviceMetricsOverrideRequestViewportMeta2["Default"] = "default";
+  })(SetDeviceMetricsOverrideRequestViewportMeta = Emulation2.SetDeviceMetricsOverrideRequestViewportMeta || (Emulation2.SetDeviceMetricsOverrideRequestViewportMeta = {}));
   let SetEmitTouchEventsForMouseRequestConfiguration;
   ((SetEmitTouchEventsForMouseRequestConfiguration2) => {
     SetEmitTouchEventsForMouseRequestConfiguration2["Mobile"] = "mobile";
@@ -5207,6 +5199,7 @@ var Network2;
     TerminationEventDetailsDeletionReason2["InvalidSessionParams"] = "InvalidSessionParams";
     TerminationEventDetailsDeletionReason2["RefreshFatalError"] = "RefreshFatalError";
     TerminationEventDetailsDeletionReason2["DevTools"] = "DevTools";
+    TerminationEventDetailsDeletionReason2["Replaced"] = "Replaced";
   })(TerminationEventDetailsDeletionReason = Network3.TerminationEventDetailsDeletionReason || (Network3.TerminationEventDetailsDeletionReason = {}));
   let ChallengeEventDetailsChallengeResult;
   ((ChallengeEventDetailsChallengeResult2) => {
@@ -6329,6 +6322,7 @@ var Runtime;
     RemoteObjectSubtype2["Dataview"] = "dataview";
     RemoteObjectSubtype2["Webassemblymemory"] = "webassemblymemory";
     RemoteObjectSubtype2["Wasmvalue"] = "wasmvalue";
+    RemoteObjectSubtype2["Deferredmodule"] = "deferredmodule";
     RemoteObjectSubtype2["Trustedtype"] = "trustedtype";
   })(RemoteObjectSubtype = Runtime6.RemoteObjectSubtype || (Runtime6.RemoteObjectSubtype = {}));
   let ObjectPreviewType;
@@ -6363,6 +6357,7 @@ var Runtime;
     ObjectPreviewSubtype2["Dataview"] = "dataview";
     ObjectPreviewSubtype2["Webassemblymemory"] = "webassemblymemory";
     ObjectPreviewSubtype2["Wasmvalue"] = "wasmvalue";
+    ObjectPreviewSubtype2["Deferredmodule"] = "deferredmodule";
     ObjectPreviewSubtype2["Trustedtype"] = "trustedtype";
   })(ObjectPreviewSubtype = Runtime6.ObjectPreviewSubtype || (Runtime6.ObjectPreviewSubtype = {}));
   let PropertyPreviewType;
@@ -6398,6 +6393,7 @@ var Runtime;
     PropertyPreviewSubtype2["Dataview"] = "dataview";
     PropertyPreviewSubtype2["Webassemblymemory"] = "webassemblymemory";
     PropertyPreviewSubtype2["Wasmvalue"] = "wasmvalue";
+    PropertyPreviewSubtype2["Deferredmodule"] = "deferredmodule";
     PropertyPreviewSubtype2["Trustedtype"] = "trustedtype";
   })(PropertyPreviewSubtype = Runtime6.PropertyPreviewSubtype || (Runtime6.PropertyPreviewSubtype = {}));
   let ConsoleAPICalledEventType;
@@ -9544,10 +9540,6 @@ var UIStringsNotTranslate5 = {
    */
   inputPlaceholderForNoContextBranded: "Ask Gemini",
   /**
-   * @description Placeholder text for the chat UI input when AIAgent2 is enabled.
-   */
-  inputPlaceholderForV2: "Ask a question (AIAgent2 enabled)",
-  /**
    * @description Placeholder text for the chat UI input.
    */
   inputPlaceholderForAccessibility: "Ask a question about the selected Lighthouse report",
@@ -9633,6 +9625,9 @@ async function getEmptyStateSuggestions(conversation) {
 }
 function createV2MarkdownRenderer(conversation) {
   const options = {};
+  if (conversation) {
+    options.getEstablishedOrigin = () => conversation.origin;
+  }
   const primaryTarget = SDK6.TargetManager.TargetManager.instance().primaryPageTarget();
   const domModel = primaryTarget?.model(SDK6.DOMModel.DOMModel);
   const resourceTreeModel = primaryTarget?.model(SDK6.ResourceTreeModel.ResourceTreeModel);
@@ -9827,18 +9822,6 @@ function createStorageContext(item) {
 }
 var panelInstance;
 var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
-  constructor(view = defaultView, { aidaClient, aidaAvailability }) {
-    super(_AiAssistancePanel.panelName);
-    this.view = view;
-    this.registerRequiredCSS(aiAssistancePanel_css_default);
-    this.#aiAssistanceEnabledSetting = this.#getAiAssistanceEnabledSetting();
-    this.#aidaClient = aidaClient;
-    this.#aidaAvailability = aidaAvailability;
-    if (UI9.ActionRegistry.ActionRegistry.instance().hasAction("elements.toggle-element-search")) {
-      this.#toggleSearchElementAction = UI9.ActionRegistry.ActionRegistry.instance().getAction("elements.toggle-element-search");
-    }
-  }
-  view;
   static panelName = "freestyler";
   // NodeJS debugging does not have Elements panel, thus this action might not exist.
   #toggleSearchElementAction;
@@ -9871,6 +9854,18 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
     inlineExpandedMessages: []
   };
   #textInputValue = "";
+  view;
+  constructor(view = defaultView, { aidaClient, aidaAvailability }) {
+    super(_AiAssistancePanel.panelName);
+    this.view = view;
+    this.registerRequiredCSS(aiAssistancePanel_css_default);
+    this.#aiAssistanceEnabledSetting = this.#getAiAssistanceEnabledSetting();
+    this.#aidaClient = aidaClient;
+    this.#aidaAvailability = aidaAvailability;
+    if (UI9.ActionRegistry.ActionRegistry.instance().hasAction("elements.toggle-element-search")) {
+      this.#toggleSearchElementAction = UI9.ActionRegistry.ActionRegistry.instance().getAction("elements.toggle-element-search");
+    }
+  }
   #getToolbarInput() {
     return {
       isLoading: this.#isLoading,
@@ -9948,8 +9943,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
           },
           onTextSubmit: async (text, imageInput, multimodalInputType) => {
             const submit = () => {
-              Host5.userMetrics.actionTaken(Host5.UserMetrics.Action.AiAssistanceQuerySubmitted);
-              void this.#startConversation(text, imageInput, multimodalInputType);
+              void this.#submitQuery(text, imageInput, multimodalInputType);
             };
             const seenSetting = Common5.Settings.Settings.instance().resolve(
               AiAssistanceModel7.AiUtils.aiAssistanceV2OptInChangeDialogSeenSettingDescriptor
@@ -10162,7 +10156,8 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
     this.#updateConversationState(conversation);
   }
   #updateConversationState(conversation) {
-    if (this.#conversation !== conversation) {
+    const isNewConversation = this.#conversation !== conversation;
+    if (isNewConversation) {
       this.#cancel();
       this.#messages = [];
       this.#isLoading = false;
@@ -10190,9 +10185,15 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
         const context = this.#getConversationContext(this.#getDefaultConversationType());
         this.#conversation.setContext(context);
       } else {
+        const previousContext = this.#conversation.selectedContext;
+        const previousItem = previousContext?.getItem();
         const context = this.#getConversationContext(this.#conversation.type);
+        const newItem = context?.getItem();
         if (context || !AiAssistanceModel7.AiUtils.isContextSelectionEnabled()) {
           this.#conversation.setContext(context);
+        }
+        if (AiAssistanceModel7.AiUtils.isContextSelectionEnabled() && !this.#conversation.isReadOnly && previousItem !== newItem && previousContext && context) {
+          void VisualLogging7.logFunctionCall("ai-v2-context-user-change", getContextTypeString(context));
         }
       }
     }
@@ -10461,6 +10462,9 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
     }
     return true;
   }
+  #getContextlessPlaceholder() {
+    return AiAssistanceModel7.AiUtils.isGeminiBranding() ? lockedString6(UIStringsNotTranslate5.inputPlaceholderForNoContextBranded) : lockedString6(UIStringsNotTranslate5.inputPlaceholderForNoContext);
+  }
   #getChatInputPlaceholder() {
     if (!this.#conversation) {
       return i18nString6(UIStrings6.followTheSteps);
@@ -10469,7 +10473,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
       return lockedString6(UIStringsNotTranslate5.crossOriginError);
     }
     if (Root4.Runtime.hostConfig.devToolsAiV2Architecture?.enabled) {
-      return lockedString6(UIStringsNotTranslate5.inputPlaceholderForV2);
+      return this.#getContextlessPlaceholder();
     }
     switch (this.#conversation.type) {
       case AiAssistanceModel7.AiHistoryStorage.ConversationType.STYLING:
@@ -10490,10 +10494,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
       case AiAssistanceModel7.AiHistoryStorage.ConversationType.STORAGE:
         return lockedString6(UIStringsNotTranslate5.inputPlaceholderForNoContext);
       case AiAssistanceModel7.AiHistoryStorage.ConversationType.NONE:
-        if (AiAssistanceModel7.AiUtils.isGeminiBranding()) {
-          return lockedString6(UIStringsNotTranslate5.inputPlaceholderForNoContextBranded);
-        }
-        return lockedString6(UIStringsNotTranslate5.inputPlaceholderForNoContext);
+        return this.#getContextlessPlaceholder();
     }
   }
   #getDisclaimerText() {
@@ -10548,11 +10549,19 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
     }
   }
   #handleContextRemoved() {
+    const previousContext = this.#conversation?.selectedContext;
     this.#conversation?.setContext(null);
+    if (AiAssistanceModel7.AiUtils.isContextSelectionEnabled() && previousContext) {
+      void VisualLogging7.logFunctionCall("ai-v2-context-user-removal", getContextTypeString(previousContext));
+    }
     this.requestUpdate();
   }
   #handleContextAdd() {
-    this.#conversation?.setContext(this.#getConversationContext(this.#getDefaultConversationType()));
+    const context = this.#getConversationContext(this.#getDefaultConversationType());
+    this.#conversation?.setContext(context);
+    if (AiAssistanceModel7.AiUtils.isContextSelectionEnabled() && context) {
+      void VisualLogging7.logFunctionCall("ai-v2-context-user-add", getContextTypeString(context));
+    }
     this.requestUpdate();
   }
   #canExecuteQuery() {
@@ -10619,7 +10628,8 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
       return;
     }
     let conversation = this.#conversation;
-    if (!this.#conversation || this.#conversation.type !== targetConversationType || this.#conversation.isEmpty) {
+    const shouldCreateConversation = !this.#conversation || this.#conversation.type !== targetConversationType || this.#conversation.isEmpty;
+    if (shouldCreateConversation) {
       conversation = new AiAssistanceModel7.AiConversation.AiConversation({
         type: targetConversationType,
         data: [],
@@ -10638,11 +10648,10 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
       if (!this.#canExecuteQuery()) {
         return;
       }
-      Host5.userMetrics.actionTaken(Host5.UserMetrics.Action.AiAssistanceQuerySubmitted);
       if (this.#conversation && this.#conversation.isBlockedByOrigin) {
         this.#handleNewChatRequest();
       }
-      await this.#startConversation(predefinedPrompt);
+      await this.#submitQuery(predefinedPrompt);
     } else {
       this.#viewOutput.chatView?.focusTextInput();
     }
@@ -10709,7 +10718,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
       return;
     }
     this.#updateConversationState(conversation);
-    await this.#doConversation(conversation.history);
+    await this.#consumeResponseStream(conversation.history);
   }
   #handleNewChatRequest() {
     this.#textInputValue = "";
@@ -10754,8 +10763,12 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
     } else if (data instanceof AiAssistanceModel7.StorageContext.StorageContext) {
       this.#selectedStorage = data;
     }
-    void VisualLogging7.logFunctionCall(`context-change-${this.#conversation?.type}`);
-    this.requestUpdate();
+    if (this.#conversation) {
+      void VisualLogging7.logFunctionCall(`context-change-${this.#conversation.type}`);
+      if (AiAssistanceModel7.AiUtils.isContextSelectionEnabled() && data instanceof AiAssistanceModel7.AiAgent.ConversationContext) {
+        void VisualLogging7.logFunctionCall("ai-v2-context-agent-change", getContextTypeString(data));
+      }
+    }
   };
   async #handleInspectElement() {
     if (!this.#toggleSearchElementAction) {
@@ -10802,14 +10815,20 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
       }
     }
   }
-  async #startConversation(text, imageInput, multimodalInputType) {
+  /**
+   * Submits a user query turn to the active conversation and streams the response.
+   * Executes on every turn (both initial prompt and follow-up turns).
+   */
+  async #submitQuery(text, imageInput, multimodalInputType) {
     if (!this.#conversation) {
       return;
     }
     this.#cancel();
+    Host5.userMetrics.actionTaken(Host5.UserMetrics.Action.AiAssistanceQuerySubmitted);
     const signal = this.#runAbortController.signal;
     if (this.#conversation.isEmpty) {
       Badges.UserBadges.instance().recordAction(Badges.BadgeAction.STARTED_AI_CONVERSATION);
+      void VisualLogging7.logFunctionCall(`start-conversation-${this.#conversation.type}`, "ui");
     }
     let multimodalInput;
     if (isAiAssistanceMultimodalInputEnabled() && imageInput && multimodalInputType) {
@@ -10819,8 +10838,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
         type: multimodalInputType
       };
     }
-    void VisualLogging7.logFunctionCall(`start-conversation-${this.#conversation.type}`, "ui");
-    await this.#doConversation(
+    await this.#consumeResponseStream(
       this.#conversation.run(
         text,
         {
@@ -10830,7 +10848,10 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
       )
     );
   }
-  async #doConversation(items) {
+  /**
+   * Consumes response items (live generator or historic array) and drives UI updates.
+   */
+  async #consumeResponseStream(items) {
     const release = await this.#mutex.acquire();
     try {
       let commitStep = function() {
@@ -11059,6 +11080,12 @@ ${step.output}
   }
   return contentParts.join("\n\n");
 }
+function getContextTypeString(context) {
+  if (!context) {
+    return "ai-context-none";
+  }
+  return context.jslogContext ?? "ai-context-unknown";
+}
 var ActionDelegate = class {
   handleAction(_context, actionId, opts) {
     switch (actionId) {
@@ -11183,6 +11210,7 @@ export {
   ViewState,
   WalkthroughUtils_exports as WalkthroughUtils,
   WalkthroughView_exports as WalkthroughView,
+  getContextTypeString,
   getResponseMarkdown
 };
 //# sourceMappingURL=ai_assistance.js.map

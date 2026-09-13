@@ -3,14 +3,12 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import * as Common from '../../core/common/common.js';
-import * as Platform from '../../core/platform/platform.js';
-import * as SDK from '../../core/sdk/sdk.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { createNetworkRequest } from '../../testing/NetworkRequestHelpers.js';
 import * as Diff from '../../third_party/diff/diff.js';
 import { render } from '../../ui/lit/lit.js';
 import * as PanelUtils from './utils.js';
-const { urlString } = Platform.DevToolsPath;
 describeWithEnvironment('panels/utils', () => {
     it('formats CSS changes from diff arrays', async () => {
         const original = `
@@ -78,112 +76,136 @@ describeWithEnvironment('panels/utils', () => {
             return container.firstElementChild;
         }
         it('creates an error icon for request with status code 404', async () => {
-            const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com`, urlString ``, null, null, null);
-            request.statusCode = 404;
+            const request = createNetworkRequest({ url: 'https://www.example.com', statusCode: 404 });
             const iconElement = renderIcon(request);
             const iconImage = iconElement.getAttribute('name');
             assert.strictEqual('cross-circle-filled', iconImage);
         });
         it('creates a warning icon for failed preloading request', async () => {
-            const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com`, urlString ``, null, null, { type: "preload" /* Protocol.Network.InitiatorType.Preload */ });
-            request.statusCode = 404;
+            const request = createNetworkRequest({
+                url: 'https://www.example.com',
+                statusCode: 404,
+                initiator: { type: "preload" /* Protocol.Network.InitiatorType.Preload */ },
+            });
             const iconElement = renderIcon(request);
             const iconImage = iconElement.getAttribute('name');
             assert.strictEqual('warning-filled', iconImage);
         });
         it('show document icon', async () => {
-            const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/`, urlString ``, null, null, null);
-            request.setResourceType(Common.ResourceType.resourceTypes.Document);
-            request.mimeType = 'text/html';
+            const request = createNetworkRequest({
+                url: 'https://www.example.com/',
+                resourceType: Common.ResourceType.resourceTypes.Document,
+                mimeType: 'text/html',
+            });
             const iconElement = renderIcon(request);
             const iconImage = iconElement.getAttribute('name');
             assert.strictEqual('file-document', iconImage);
         });
         it('show media icon', async () => {
-            const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/test.mp3`, urlString ``, null, null, null);
-            request.setResourceType(Common.ResourceType.resourceTypes.Media);
-            request.mimeType = 'audio/mpeg';
+            const request = createNetworkRequest({
+                url: 'https://www.example.com/test.mp3',
+                resourceType: Common.ResourceType.resourceTypes.Media,
+                mimeType: 'audio/mpeg',
+            });
             const iconElement = renderIcon(request);
             const iconImage = iconElement.getAttribute('name');
             assert.strictEqual('file-media', iconImage);
         });
         it('show wasm icon', async () => {
-            const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/test.wasm`, urlString ``, null, null, null);
-            request.setResourceType(Common.ResourceType.resourceTypes.Wasm);
-            request.mimeType = 'application/wasm';
+            const request = createNetworkRequest({
+                url: 'https://www.example.com/test.wasm',
+                resourceType: Common.ResourceType.resourceTypes.Wasm,
+                mimeType: 'application/wasm',
+            });
             const iconElement = renderIcon(request);
             const iconImage = iconElement.getAttribute('name');
             assert.strictEqual('file-wasm', iconImage);
         });
         it('show websocket icon', async () => {
-            const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/ws`, urlString ``, null, null, null);
-            request.setResourceType(Common.ResourceType.resourceTypes.WebSocket);
-            request.mimeType = '';
+            const request = createNetworkRequest({
+                url: 'https://www.example.com/ws',
+                resourceType: Common.ResourceType.resourceTypes.WebSocket,
+            });
             const iconElement = renderIcon(request);
             const iconImage = iconElement.getAttribute('name');
             assert.strictEqual('file-websocket', iconImage);
         });
         it('shows fetch icon', async () => {
-            const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/test.json?keepalive=false`, urlString ``, null, null, null);
-            request.setResourceType(Common.ResourceType.resourceTypes.Fetch);
-            request.mimeType = '';
+            const request = createNetworkRequest({
+                url: 'https://www.example.com/test.json?keepalive=false',
+                resourceType: Common.ResourceType.resourceTypes.Fetch,
+            });
             const iconElement = renderIcon(request);
             const iconImage = iconElement.getAttribute('name');
             assert.strictEqual('file-fetch-xhr', iconImage);
         });
         it('shows xhr icon', async () => {
-            const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/test.json?keepalive=false`, urlString ``, null, null, null);
-            request.setResourceType(Common.ResourceType.resourceTypes.XHR);
-            request.mimeType = 'application/octet-stream';
+            const request = createNetworkRequest({
+                url: 'https://www.example.com/test.json?keepalive=false',
+                resourceType: Common.ResourceType.resourceTypes.XHR,
+                mimeType: 'application/octet-stream',
+            });
             const iconElement = renderIcon(request);
             const iconImage = iconElement.getAttribute('name');
             assert.strictEqual('file-fetch-xhr', iconImage);
         });
         it('mime win: show image preview icon for xhr-image', async () => {
-            const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/test.svg`, urlString ``, null, null, null);
-            request.setResourceType(Common.ResourceType.resourceTypes.XHR);
-            request.mimeType = 'image/svg+xml';
+            const request = createNetworkRequest({
+                url: 'https://www.example.com/test.svg',
+                resourceType: Common.ResourceType.resourceTypes.XHR,
+                mimeType: 'image/svg+xml',
+            });
             const iconElement = renderIcon(request);
             const imagePreview = iconElement.querySelector('.image-network-icon-preview');
             assert.instanceOf(iconElement, HTMLDivElement);
             assert.instanceOf(imagePreview, HTMLImageElement);
         });
         it('mime win: show document icon for fetch-html', async () => {
-            const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/page`, urlString ``, null, null, null);
-            request.setResourceType(Common.ResourceType.resourceTypes.Fetch);
-            request.mimeType = 'text/html';
+            const request = createNetworkRequest({
+                url: 'https://www.example.com/page',
+                resourceType: Common.ResourceType.resourceTypes.Fetch,
+                mimeType: 'text/html',
+            });
             const iconElement = renderIcon(request);
             const iconImage = iconElement.getAttribute('name');
             assert.strictEqual('file-document', iconImage);
         });
         it('mime win: show generic icon for preflight-text', async () => {
-            const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/api/test`, urlString ``, null, null, null);
-            request.setResourceType(Common.ResourceType.resourceTypes.Preflight);
-            request.mimeType = 'text/plain';
+            const request = createNetworkRequest({
+                url: 'https://www.example.com/api/test',
+                resourceType: Common.ResourceType.resourceTypes.Preflight,
+                mimeType: 'text/plain',
+            });
             const iconElement = renderIcon(request);
             const iconImage = iconElement.getAttribute('name');
             assert.strictEqual('file-generic', iconImage);
         });
         it('mime win: show script icon for other-javascript)', async () => {
-            const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/ping`, urlString ``, null, null, null);
-            request.setResourceType(Common.ResourceType.resourceTypes.Other);
-            request.mimeType = 'application/javascript';
+            const request = createNetworkRequest({
+                url: 'https://www.example.com/ping',
+                resourceType: Common.ResourceType.resourceTypes.Other,
+                mimeType: 'application/javascript',
+            });
             const iconElement = renderIcon(request);
             const iconImage = iconElement.getAttribute('name');
             assert.strictEqual('file-script', iconImage);
         });
         it('mime win: shows json icon for fetch-json', async () => {
-            const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/api/list`, urlString ``, null, null, null);
-            request.setResourceType(Common.ResourceType.resourceTypes.Fetch);
-            request.mimeType = 'application/json';
+            const request = createNetworkRequest({
+                url: 'https://www.example.com/api/list',
+                resourceType: Common.ResourceType.resourceTypes.Fetch,
+                mimeType: 'application/json',
+            });
             const iconElement = renderIcon(request);
             const iconImage = iconElement.getAttribute('name');
             assert.strictEqual('file-json', iconImage);
         });
         it('preserves specific icon for overridden stylesheet request', async () => {
-            const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/styles.css`, urlString ``, null, null, null);
-            request.setResourceType(Common.ResourceType.resourceTypes.Stylesheet);
-            request.mimeType = 'text/css';
+            const request = createNetworkRequest({
+                url: 'https://www.example.com/styles.css',
+                resourceType: Common.ResourceType.resourceTypes.Stylesheet,
+                mimeType: 'text/css',
+            });
             request.hasOverriddenContent = true;
             const markerElement = renderIcon(request);
             assert.strictEqual(markerElement.className, 'network-override-marker');
@@ -193,11 +215,13 @@ describeWithEnvironment('panels/utils', () => {
             assert.strictEqual(iconElement?.getAttribute('title'), 'Request content is overridden');
         });
         it('preserves specific icon for overridden image request', async () => {
-            const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/image.png`, urlString ``, null, null, null);
-            request.setResourceType(Common.ResourceType.resourceTypes.Image);
-            request.mimeType = 'image/png';
-            request.responseHeaders = [{ name: 'foo', value: 'overridden' }];
-            request.originalResponseHeaders = [{ name: 'foo', value: 'original' }];
+            const request = createNetworkRequest({
+                url: 'https://www.example.com/image.png',
+                resourceType: Common.ResourceType.resourceTypes.Image,
+                mimeType: 'image/png',
+                responseHeaders: [{ name: 'foo', value: 'overridden' }],
+                originalResponseHeaders: [{ name: 'foo', value: 'original' }],
+            });
             const markerElement = renderIcon(request);
             assert.strictEqual(markerElement.className, 'network-override-marker');
             const iconElement = markerElement.querySelector('.image.icon');

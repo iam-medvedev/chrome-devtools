@@ -379,6 +379,65 @@ describeWithEnvironment('ElementsTreeOutline', () => {
         treeOutline['highlightTreeElement'](treeElement, true);
         sinon.assert.calledWith(highlightSpy, sinon.match({ node: childNode, selectorList: '*' }), 'all', true);
     });
+    it('highlights the closing tag and not the opening tag when hovering over expanded closing tag', () => {
+        const childPayload = {
+            nodeId: 3,
+            parentId: 2,
+            backendNodeId: 3,
+            nodeType: Node.ELEMENT_NODE,
+            nodeName: 'SPAN',
+            localName: 'span',
+            nodeValue: '',
+            childNodeCount: 0,
+            attributes: [],
+        };
+        const containerPayload = {
+            nodeId: 2,
+            parentId: 1,
+            backendNodeId: 2,
+            nodeType: Node.ELEMENT_NODE,
+            nodeName: 'DIV',
+            localName: 'div',
+            nodeValue: '',
+            childNodeCount: 1,
+            children: [childPayload],
+            attributes: [],
+        };
+        const rootNode = SDK.DOMModel.DOMNode.create(model, null, false, {
+            nodeId: 1,
+            backendNodeId: 1,
+            nodeType: Node.ELEMENT_NODE,
+            nodeName: 'BODY',
+            localName: 'body',
+            nodeValue: '',
+            childNodeCount: 1,
+            children: [containerPayload],
+            attributes: [],
+        });
+        assert.isNotNull(rootNode);
+        treeOutline.rootDOMNode = rootNode;
+        const containerNode = rootNode.children()[0];
+        const containerTreeElement = treeOutline.findTreeElement(containerNode);
+        assert.isNotNull(containerTreeElement);
+        containerTreeElement.expand();
+        const closingTreeElement = containerTreeElement.childAt(containerTreeElement.childCount() - 1);
+        assert.exists(closingTreeElement);
+        assert.isTrue(closingTreeElement.isClosingTag());
+        const highlightSpy = sinon.spy(model.overlayModel(), 'highlightInOverlay');
+        // Hover over closing tag.
+        closingTreeElement.listItemElement.dispatchEvent(new MouseEvent('mousemove', { bubbles: true }));
+        assert.isTrue(closingTreeElement.hovered);
+        assert.isTrue(closingTreeElement.listItemElement.classList.contains('hovered'));
+        assert.isFalse(containerTreeElement.hovered);
+        assert.isFalse(containerTreeElement.listItemElement.classList.contains('hovered'));
+        sinon.assert.calledWith(highlightSpy, sinon.match({ node: containerNode }), 'all', true);
+        // Hover over opening tag.
+        containerTreeElement.listItemElement.dispatchEvent(new MouseEvent('mousemove', { bubbles: true }));
+        assert.isFalse(closingTreeElement.hovered);
+        assert.isFalse(closingTreeElement.listItemElement.classList.contains('hovered'));
+        assert.isTrue(containerTreeElement.hovered);
+        assert.isTrue(containerTreeElement.listItemElement.classList.contains('hovered'));
+    });
     it('updates the DOM tree structure upon changing or removing namespaced attributes', () => {
         const aNodePayload = {
             nodeId: 2,
@@ -1111,6 +1170,13 @@ describeWithEnvironment('ElementsTreeOutline', () => {
             assert.isTrue(treeOutline.renderSelection);
             assert.isTrue(childTreeElement1.listItemElement.draggable);
             assert.isTrue(childTreeElement2.listItemElement.draggable);
+        });
+        it('renders exactly one selection element when hovered to avoid duplicate highlights', async () => {
+            childTreeElement1.hovered = true;
+            await doubleRaf();
+            const selections = childTreeElement1.listItemElement.querySelectorAll('.selection');
+            assert.lengthOf(selections, 1);
+            assert.isNull(childTreeElement1.listItemElement.querySelector(':scope > .selection'));
         });
         it('handles dragstart and populates dataTransfer', () => {
             const dataStore = new Map();

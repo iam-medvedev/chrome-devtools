@@ -4,13 +4,15 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import * as Host from '../../../core/host/host.js';
+import * as SDK from '../../../core/sdk/sdk.js';
 import { mockAidaClient, MockAidaPayloadLimitError, MockAidaQuotaError } from '../../../testing/AiAssistanceHelpers.js';
 import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import * as AiAssistance from '../ai_assistance.js';
 function mockConversationContext() {
     return new (class extends AiAssistance.AiAgent.ConversationContext {
-        getURL() {
-            return 'https://origin.test';
+        jslogContext = 'ai-context-file';
+        getOrigin() {
+            return SDK.SecurityOrigin.SecurityOrigin.create('https://origin.test');
         }
         getItem() {
             return null;
@@ -353,13 +355,14 @@ describe('AiAgent', () => {
         });
     });
     describe('ConversationContext', () => {
-        function getTestContext(url) {
+        function getTestContext(originString) {
             class TestContext extends AiAssistance.AiAgent.ConversationContext {
+                jslogContext = 'ai-context-file';
                 getTitle() {
                     throw new Error('Method not implemented.');
                 }
-                getURL() {
-                    return url;
+                getOrigin() {
+                    return SDK.SecurityOrigin.SecurityOrigin.create(originString);
                 }
                 getItem() {
                     return undefined;
@@ -368,81 +371,24 @@ describe('AiAgent', () => {
             return new TestContext();
         }
         it('checks context origins', () => {
-            const tests = [
-                {
-                    dataOrigin: 'https://google.test',
-                    establishedOrigin: 'https://google.test',
-                    isAllowed: true,
-                },
-                {
-                    dataOrigin: 'https://google.test',
-                    establishedOrigin: 'about:blank',
-                    isAllowed: false,
-                },
-                {
-                    dataOrigin: 'https://google.test',
-                    establishedOrigin: 'https://www.google.test',
-                    isAllowed: false,
-                },
-                {
-                    dataOrigin: 'https://a.test',
-                    establishedOrigin: 'https://b.test',
-                    isAllowed: false,
-                },
-                {
-                    dataOrigin: 'https://a.test',
-                    establishedOrigin: 'file:///tmp',
-                    isAllowed: false,
-                },
-                {
-                    dataOrigin: 'https://a.test',
-                    establishedOrigin: 'http://a.test',
-                    isAllowed: false,
-                },
-                {
-                    dataOrigin: 'null',
-                    establishedOrigin: 'null',
-                    isAllowed: false,
-                },
-                {
-                    dataOrigin: 'null',
-                    establishedOrigin: undefined,
-                    isAllowed: false,
-                },
-                {
-                    dataOrigin: 'data:',
-                    establishedOrigin: 'data:',
-                    isAllowed: false,
-                },
-                {
-                    dataOrigin: 'about://',
-                    establishedOrigin: 'about://',
-                    isAllowed: false,
-                },
-                {
-                    dataOrigin: 'about:srcdoc',
-                    establishedOrigin: 'about:srcdoc',
-                    isAllowed: false,
-                },
-                {
-                    dataOrigin: 'detached',
-                    establishedOrigin: 'detached',
-                    isAllowed: false,
-                },
-                {
-                    dataOrigin: 'trace-1-10',
-                    establishedOrigin: 'trace-1-10',
-                    isAllowed: true,
-                },
-                {
-                    dataOrigin: 'trace-1-10',
-                    establishedOrigin: 'trace-1-20',
-                    isAllowed: false,
-                },
-            ];
-            for (const test of tests) {
-                assert.strictEqual(getTestContext(test.dataOrigin).isOriginAllowed(test.establishedOrigin), test.isAllowed, `Checking origin ${test.dataOrigin} against ${test.establishedOrigin}`);
+            function isAllowed(opts) {
+                const origin = opts.established ? SDK.SecurityOrigin.SecurityOrigin.create(opts.established) : undefined;
+                return getTestContext(opts.newContext).isOriginAllowed(origin);
             }
+            assert.isTrue(isAllowed({ established: 'https://google.test', newContext: 'https://google.test' }));
+            assert.isFalse(isAllowed({ established: 'about:blank', newContext: 'https://google.test' }));
+            assert.isFalse(isAllowed({ established: 'https://www.google.test', newContext: 'https://google.test' }));
+            assert.isFalse(isAllowed({ established: 'https://b.test', newContext: 'https://a.test' }));
+            assert.isFalse(isAllowed({ established: 'file:///tmp', newContext: 'https://a.test' }));
+            assert.isFalse(isAllowed({ established: 'http://a.test', newContext: 'https://a.test' }));
+            assert.isFalse(isAllowed({ established: 'null', newContext: 'null' }));
+            assert.isFalse(isAllowed({ established: undefined, newContext: 'null' }));
+            assert.isFalse(isAllowed({ established: 'data:', newContext: 'data:' }));
+            assert.isFalse(isAllowed({ established: 'about://', newContext: 'about://' }));
+            assert.isFalse(isAllowed({ established: 'about:srcdoc', newContext: 'about:srcdoc' }));
+            assert.isFalse(isAllowed({ established: 'detached', newContext: 'detached' }));
+            assert.isTrue(isAllowed({ established: 'imported-trace://example.com', newContext: 'imported-trace://example.com' }));
+            assert.isFalse(isAllowed({ established: 'imported-trace://other.com', newContext: 'imported-trace://example.com' }));
         });
     });
     describe('functions', () => {
@@ -628,7 +574,7 @@ describe('AiAgent', () => {
                         }],
                 ]),
                 // Mock allowedOrigin to return blocked if our flag is set.
-                allowedOrigin: () => originBlocked ? { blocked: true } : { origin: 'https://google.com' },
+                allowedOrigin: () => originBlocked ? { blocked: true } : { origin: SDK.SecurityOrigin.SecurityOrigin.create('https://google.com') },
                 // Mock the side effect confirmation to simulate user approval AND concurrent navigation.
                 confirmSideEffectForTest: () => {
                     const resolvers = Promise.withResolvers();
@@ -677,7 +623,7 @@ describe('AiAgent', () => {
                             explanation: 'Final answer',
                         }],
                 ]),
-                allowedOrigin: () => originBlocked ? { blocked: true } : { origin: 'https://google.com' },
+                allowedOrigin: () => originBlocked ? { blocked: true } : { origin: SDK.SecurityOrigin.SecurityOrigin.create('https://google.com') },
             });
             agent.declareFunctionForTest('testFn', {
                 description: 'test fn description',

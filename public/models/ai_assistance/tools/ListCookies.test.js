@@ -21,12 +21,13 @@ describe('ListCookiesTool', () => {
     });
     function createMockFrame(origin, resourceTreeModel) {
         const mockFrame = sinon.createStubInstance(SDK.ResourceTreeModel.ResourceTreeFrame);
-        sinon.stub(mockFrame, 'securityOrigin').get(() => origin);
+        mockFrame.securityOrigin.returns(SDK.SecurityOrigin.SecurityOrigin.create(origin));
         mockFrame.resourceTreeModel.returns(resourceTreeModel);
         return mockFrame;
     }
     function createMockContext(options) {
-        const origin = options && 'origin' in options ? options.origin : 'https://example.com';
+        const origin = options && 'origin' in options ? options.origin :
+            SDK.SecurityOrigin.SecurityOrigin.create('https://example.com');
         return {
             getEstablishedOrigin: sinon.stub().returns(origin),
             disableLogging: sinon.stub(),
@@ -141,7 +142,7 @@ describe('ListCookiesTool', () => {
         const foreignRtm = sinon.createStubInstance(SDK.ResourceTreeModel.ResourceTreeModel);
         foreignRtm.target.returns(foreignTarget);
         const foreignFrame = sinon.createStubInstance(SDK.ResourceTreeModel.ResourceTreeFrame);
-        sinon.stub(foreignFrame, 'securityOrigin').get(() => 'https://example.com');
+        foreignFrame.securityOrigin.returns(SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'));
         foreignFrame.resourceTreeModel.returns(foreignRtm);
         sinon.stub(SDK.ResourceTreeModel.ResourceTreeModel, 'frames').returns([foreignFrame]);
         const context = createMockContext();
@@ -180,7 +181,7 @@ describe('ListCookiesTool', () => {
     });
     it('rejects opaque established origin', async () => {
         setupPrimaryTarget('https://example.com');
-        const context = createMockContext({ origin: 'data:text/html,test' });
+        const context = createMockContext({ origin: SDK.SecurityOrigin.SecurityOrigin.create('data:text/html,test') });
         const tool = new AiAssistance.ListCookies.ListCookiesTool();
         const response = await tool.handler({ origins: ['https://example.com'] }, context);
         assertIsError(response);
@@ -245,7 +246,7 @@ describe('ListCookiesTool', () => {
         cookie.addAttribute("path" /* SDK.Cookie.Attribute.PATH */, '/');
         activeCookies = [cookie];
         const context = {
-            getEstablishedOrigin: sinon.stub().returns('https://example.com'),
+            getEstablishedOrigin: sinon.stub().returns(SDK.SecurityOrigin.SecurityOrigin.create('https://example.com')),
             disableLogging: sinon.stub(),
         };
         const tool = new AiAssistance.ListCookies.ListCookiesTool();

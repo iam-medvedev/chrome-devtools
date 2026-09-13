@@ -4,19 +4,12 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// ../../front_end/panels/security/SecurityModel.ts
-var SecurityModel_exports = {};
-__export(SecurityModel_exports, {
-  CertificateSecurityState: () => CertificateSecurityState,
-  Events: () => Events,
-  PageVisibleSecurityState: () => PageVisibleSecurityState,
-  SecurityModel: () => SecurityModel,
-  SecurityStyleExplanation: () => SecurityStyleExplanation,
-  SummaryMessages: () => SummaryMessages,
-  securityStateCompare: () => securityStateCompare
+// ../../front_end/panels/security/OriginTreeElement.ts
+var OriginTreeElement_exports = {};
+__export(OriginTreeElement_exports, {
+  OriginTreeElement: () => OriginTreeElement,
+  ShowOriginEvent: () => ShowOriginEvent
 });
-import * as i18n from "../../core/i18n/i18n.js";
-import * as SDK from "../../core/sdk/sdk.js";
 
 // ../../front_end/generated/protocol.ts
 var Accessibility;
@@ -407,6 +400,7 @@ var Audits;
     FederatedAuthRequestIssueReason2["UiDismissedNoEmbargo"] = "UiDismissedNoEmbargo";
     FederatedAuthRequestIssueReason2["CorsError"] = "CorsError";
     FederatedAuthRequestIssueReason2["SuppressedBySegmentationPlatform"] = "SuppressedBySegmentationPlatform";
+    FederatedAuthRequestIssueReason2["PopupBlockedByConnectionAllowlist"] = "PopupBlockedByConnectionAllowlist";
   })(FederatedAuthRequestIssueReason = Audits2.FederatedAuthRequestIssueReason || (Audits2.FederatedAuthRequestIssueReason = {}));
   let FederatedAuthUserInfoRequestIssueReason;
   ((FederatedAuthUserInfoRequestIssueReason2) => {
@@ -479,6 +473,7 @@ var Audits;
     EmailVerificationRequestIssueReason2["TokenVerificationKbInvalidSdHash"] = "TokenVerificationKbInvalidSdHash";
     EmailVerificationRequestIssueReason2["TokenVerificationKbMissingCnf"] = "TokenVerificationKbMissingCnf";
     EmailVerificationRequestIssueReason2["TokenVerificationKbSignatureFailed"] = "TokenVerificationKbSignatureFailed";
+    EmailVerificationRequestIssueReason2["CrossOriginIframeNotSupported"] = "CrossOriginIframeNotSupported";
   })(EmailVerificationRequestIssueReason = Audits2.EmailVerificationRequestIssueReason || (Audits2.EmailVerificationRequestIssueReason = {}));
   let PartitioningBlobURLInfo;
   ((PartitioningBlobURLInfo2) => {
@@ -935,6 +930,11 @@ var Emulation;
     SetDeviceMetricsOverrideRequestScrollbarType2["Overlay"] = "overlay";
     SetDeviceMetricsOverrideRequestScrollbarType2["Default"] = "default";
   })(SetDeviceMetricsOverrideRequestScrollbarType = Emulation2.SetDeviceMetricsOverrideRequestScrollbarType || (Emulation2.SetDeviceMetricsOverrideRequestScrollbarType = {}));
+  let SetDeviceMetricsOverrideRequestViewportMeta;
+  ((SetDeviceMetricsOverrideRequestViewportMeta2) => {
+    SetDeviceMetricsOverrideRequestViewportMeta2["Enable"] = "enable";
+    SetDeviceMetricsOverrideRequestViewportMeta2["Default"] = "default";
+  })(SetDeviceMetricsOverrideRequestViewportMeta = Emulation2.SetDeviceMetricsOverrideRequestViewportMeta || (Emulation2.SetDeviceMetricsOverrideRequestViewportMeta = {}));
   let SetEmitTouchEventsForMouseRequestConfiguration;
   ((SetEmitTouchEventsForMouseRequestConfiguration2) => {
     SetEmitTouchEventsForMouseRequestConfiguration2["Mobile"] = "mobile";
@@ -1603,6 +1603,7 @@ var Network;
     TerminationEventDetailsDeletionReason2["InvalidSessionParams"] = "InvalidSessionParams";
     TerminationEventDetailsDeletionReason2["RefreshFatalError"] = "RefreshFatalError";
     TerminationEventDetailsDeletionReason2["DevTools"] = "DevTools";
+    TerminationEventDetailsDeletionReason2["Replaced"] = "Replaced";
   })(TerminationEventDetailsDeletionReason = Network2.TerminationEventDetailsDeletionReason || (Network2.TerminationEventDetailsDeletionReason = {}));
   let ChallengeEventDetailsChallengeResult;
   ((ChallengeEventDetailsChallengeResult2) => {
@@ -2725,6 +2726,7 @@ var Runtime;
     RemoteObjectSubtype2["Dataview"] = "dataview";
     RemoteObjectSubtype2["Webassemblymemory"] = "webassemblymemory";
     RemoteObjectSubtype2["Wasmvalue"] = "wasmvalue";
+    RemoteObjectSubtype2["Deferredmodule"] = "deferredmodule";
     RemoteObjectSubtype2["Trustedtype"] = "trustedtype";
   })(RemoteObjectSubtype = Runtime2.RemoteObjectSubtype || (Runtime2.RemoteObjectSubtype = {}));
   let ObjectPreviewType;
@@ -2759,6 +2761,7 @@ var Runtime;
     ObjectPreviewSubtype2["Dataview"] = "dataview";
     ObjectPreviewSubtype2["Webassemblymemory"] = "webassemblymemory";
     ObjectPreviewSubtype2["Wasmvalue"] = "wasmvalue";
+    ObjectPreviewSubtype2["Deferredmodule"] = "deferredmodule";
     ObjectPreviewSubtype2["Trustedtype"] = "trustedtype";
   })(ObjectPreviewSubtype = Runtime2.ObjectPreviewSubtype || (Runtime2.ObjectPreviewSubtype = {}));
   let PropertyPreviewType;
@@ -2794,6 +2797,7 @@ var Runtime;
     PropertyPreviewSubtype2["Dataview"] = "dataview";
     PropertyPreviewSubtype2["Webassemblymemory"] = "webassemblymemory";
     PropertyPreviewSubtype2["Wasmvalue"] = "wasmvalue";
+    PropertyPreviewSubtype2["Deferredmodule"] = "deferredmodule";
     PropertyPreviewSubtype2["Trustedtype"] = "trustedtype";
   })(PropertyPreviewSubtype = Runtime2.PropertyPreviewSubtype || (Runtime2.PropertyPreviewSubtype = {}));
   let ConsoleAPICalledEventType;
@@ -2819,7 +2823,84 @@ var Runtime;
   })(ConsoleAPICalledEventType = Runtime2.ConsoleAPICalledEventType || (Runtime2.ConsoleAPICalledEventType = {}));
 })(Runtime || (Runtime = {}));
 
+// ../../front_end/panels/security/SecurityPanelSidebarTreeElement.ts
+var SecurityPanelSidebarTreeElement_exports = {};
+__export(SecurityPanelSidebarTreeElement_exports, {
+  SecurityPanelSidebarTreeElement: () => SecurityPanelSidebarTreeElement
+});
+import * as UI from "../../ui/legacy/legacy.js";
+var SecurityPanelSidebarTreeElement = class extends UI.TreeOutline.TreeElement {
+  constructor(title = "", expandable = false, jslogContext) {
+    super(title, expandable, jslogContext);
+    UI.ARIAUtils.setLabel(this.listItemElement, title);
+  }
+  get elemId() {
+    return "overview";
+  }
+  showElement() {
+    throw new Error("Unimplemented Method");
+  }
+  onselect(selectedByUser) {
+    if (selectedByUser) {
+      const id = this.elemId;
+      this.listItemElement.dispatchEvent(
+        new CustomEvent("update-sidebar-selection", { bubbles: true, composed: true, detail: { id } })
+      );
+      this.showElement();
+    }
+    return false;
+  }
+};
+
+// ../../front_end/panels/security/OriginTreeElement.ts
+var ShowOriginEvent = class _ShowOriginEvent extends Event {
+  static eventName = "showorigin";
+  origin;
+  constructor(origin) {
+    super(_ShowOriginEvent.eventName, { bubbles: true, composed: true });
+    this.origin = origin;
+  }
+};
+var OriginTreeElement = class extends SecurityPanelSidebarTreeElement {
+  #securityState;
+  #renderTreeElement;
+  #origin = null;
+  constructor(className, renderTreeElement, origin = null) {
+    super();
+    this.#renderTreeElement = renderTreeElement;
+    this.#origin = origin;
+    this.listItemElement.classList.add(className);
+    this.#securityState = null;
+    this.setSecurityState(Security.SecurityState.Unknown);
+  }
+  setSecurityState(newSecurityState) {
+    this.#securityState = newSecurityState;
+    this.#renderTreeElement(this);
+  }
+  securityState() {
+    return this.#securityState;
+  }
+  origin() {
+    return this.#origin;
+  }
+  showElement() {
+    this.listItemElement.dispatchEvent(new ShowOriginEvent(this.#origin));
+  }
+};
+
 // ../../front_end/panels/security/SecurityModel.ts
+var SecurityModel_exports = {};
+__export(SecurityModel_exports, {
+  CertificateSecurityState: () => CertificateSecurityState,
+  Events: () => Events,
+  PageVisibleSecurityState: () => PageVisibleSecurityState,
+  SecurityModel: () => SecurityModel,
+  SecurityStyleExplanation: () => SecurityStyleExplanation,
+  SummaryMessages: () => SummaryMessages,
+  securityStateCompare: () => securityStateCompare
+});
+import * as i18n from "../../core/i18n/i18n.js";
+import * as SDK from "../../core/sdk/sdk.js";
 var UIStrings = {
   /**
    * @description Summary text displayed in the overview of the Security panel when the page's security state is unknown.
@@ -3025,7 +3106,7 @@ import * as SDK2 from "../../core/sdk/sdk.js";
 import * as NetworkForward from "../network/forward/forward.js";
 import * as Buttons from "../../ui/components/buttons/buttons.js";
 import { createIcon } from "../../ui/kit/kit.js";
-import * as UI2 from "../../ui/legacy/legacy.js";
+import * as UI3 from "../../ui/legacy/legacy.js";
 import { Directives, html as html2, nothing as nothing2, render as render2 } from "../../ui/lit/lit.js";
 import * as VisualLogging from "../../ui/visual_logging/visual_logging.js";
 
@@ -3419,7 +3500,8 @@ __export(SecurityPanelSidebar_exports, {
 });
 import * as Common from "../../core/common/common.js";
 import * as i18n3 from "../../core/i18n/i18n.js";
-import * as UI from "../../ui/legacy/legacy.js";
+import * as Platform from "../../core/platform/platform.js";
+import * as UI2 from "../../ui/legacy/legacy.js";
 import { html, nothing, render } from "../../ui/lit/lit.js";
 
 // gen/front_end/panels/security/sidebar.css.js
@@ -3648,97 +3730,247 @@ var DEFAULT_VIEW = (input, output, target) => {
     `}></devtools-tree>
   `, target);
 };
-var SecurityPanelSidebar = class extends UI.Widget.VBox {
+var SecurityPanelSidebar = class extends UI2.Widget.VBox {
   #securitySidebarLastItemSetting;
-  #mainOrigin = null;
-  #origins = /* @__PURE__ */ new Map();
-  #originsHidden = false;
-  #showOriginsUnconditionally = false;
-  #overviewSecurityState = Security.SecurityState.Unknown;
-  #selectedElementId = "overview";
-  #view;
-  #onShowOrigin;
-  constructor(element, view = DEFAULT_VIEW) {
+  sidebarTree;
+  #originGroupTitles;
+  #originGroups;
+  securityOverviewElement;
+  #elementsByOrigin;
+  #mainViewReloadMessage;
+  #mainOrigin;
+  constructor(element) {
     super(element);
-    this.#view = view;
-    this.registerRequiredCSS(lockIcon_css_default, sidebar_css_default);
     this.#securitySidebarLastItemSetting = Common.Settings.Settings.instance().createSetting("security-last-selected-element-path", "");
-  }
-  set onShowOrigin(callback) {
-    this.#onShowOrigin = callback;
-  }
-  wasShown() {
-    super.wasShown();
+    this.#mainOrigin = null;
+    this.sidebarTree = new UI2.TreeOutline.TreeOutlineInShadow(UI2.TreeOutline.TreeVariant.NAVIGATION_TREE);
+    this.sidebarTree.registerRequiredCSS(lockIcon_css_default, sidebar_css_default);
+    this.sidebarTree.element.classList.add("security-sidebar");
+    this.contentElement.appendChild(this.sidebarTree.element);
+    const securitySectionTitle = i18nString2(UIStrings2.security);
+    const securityTreeSection = this.#addSidebarSection(securitySectionTitle, "security");
+    this.securityOverviewElement = new OriginTreeElement("security-main-view-sidebar-tree-item", this.#renderTreeElement);
+    this.securityOverviewElement.tooltip = i18nString2(UIStrings2.overview);
+    securityTreeSection.appendChild(this.securityOverviewElement);
+    this.#originGroupTitles = /* @__PURE__ */ new Map([
+      ["MainOrigin" /* MainOrigin */, { title: i18nString2(UIStrings2.mainOrigin) }],
+      [
+        "NonSecure" /* NonSecure */,
+        {
+          title: i18nString2(UIStrings2.nonsecureOrigins),
+          icon: getSecurityStateIconForDetailedView(
+            Security.SecurityState.Insecure,
+            `lock-icon lock-icon-${Security.SecurityState.Insecure}`
+          )
+        }
+      ],
+      [
+        "Secure" /* Secure */,
+        {
+          title: i18nString2(UIStrings2.secureOrigins),
+          icon: getSecurityStateIconForDetailedView(
+            Security.SecurityState.Secure,
+            `lock-icon lock-icon-${Security.SecurityState.Secure}`
+          )
+        }
+      ],
+      [
+        "Unknown" /* Unknown */,
+        {
+          title: i18nString2(UIStrings2.unknownCanceled),
+          icon: getSecurityStateIconForDetailedView(
+            Security.SecurityState.Unknown,
+            `lock-icon lock-icon-${Security.SecurityState.Unknown}`
+          )
+        }
+      ]
+    ]);
+    this.#originGroups = /* @__PURE__ */ new Map();
+    for (const group of Object.values(OriginGroup)) {
+      const element2 = this.#createOriginGroupElement(
+        this.#originGroupTitles.get(group)?.title,
+        this.#originGroupTitles.get(group)?.icon
+      );
+      this.#originGroups.set(group, element2);
+      securityTreeSection.appendChild(element2);
+    }
+    this.#mainViewReloadMessage = new UI2.TreeOutline.TreeElement(i18nString2(UIStrings2.reloadToViewDetails));
+    this.#mainViewReloadMessage.selectable = false;
+    this.#mainViewReloadMessage.listItemElement.classList.add("security-main-view-reload-message");
+    const treeElement = this.#originGroups.get("MainOrigin" /* MainOrigin */);
+    treeElement.appendChild(this.#mainViewReloadMessage);
+    this.#clearOriginGroups();
+    this.#elementsByOrigin = /* @__PURE__ */ new Map();
+    this.element.addEventListener("update-sidebar-selection", (event) => {
+      const id = event.detail.id;
+      this.#securitySidebarLastItemSetting.set(id);
+    });
     this.showLastSelectedElement();
   }
+  // Used in web tests
+  elementsByOrigin() {
+    return this.#elementsByOrigin;
+  }
+  // Used in web tests
+  set selectedOrigin(origin) {
+    if (origin) {
+      const originElement = this.#elementsByOrigin.get(origin);
+      if (originElement) {
+        if (this.sidebarTree.selectedTreeElement === originElement) {
+          originElement.showElement();
+        } else {
+          originElement.select(void 0, true);
+        }
+      }
+    } else if (this.sidebarTree.selectedTreeElement === this.securityOverviewElement) {
+      this.securityOverviewElement.showElement();
+    } else {
+      this.securityOverviewElement.select(void 0, true);
+    }
+  }
+  get selectedOrigin() {
+    const selected = this.sidebarTree.selectedTreeElement;
+    if (selected instanceof OriginTreeElement) {
+      return selected.origin() ?? "overview";
+    }
+    return "overview";
+  }
   showLastSelectedElement() {
-    this.#selectedElementId = "overview";
-    this.#securitySidebarLastItemSetting.set("overview");
-    this.requestUpdate();
-    this.#onShowOrigin?.(null);
+    this.securityOverviewElement.select();
+    this.securityOverviewElement.showElement();
+  }
+  #addSidebarSection(title, jslogContext) {
+    const treeElement = new UI2.TreeOutline.TreeElement(title, true, jslogContext);
+    treeElement.listItemElement.classList.add("security-group-list-item");
+    treeElement.setCollapsible(false);
+    treeElement.selectable = false;
+    this.sidebarTree.appendChild(treeElement);
+    UI2.ARIAUtils.markAsHeading(treeElement.listItemElement, 3);
+    UI2.ARIAUtils.setLabel(treeElement.childrenListElement, title);
+    return treeElement;
+  }
+  #originGroupTitle(originGroup) {
+    return this.#originGroupTitles.get(originGroup)?.title;
+  }
+  #originGroupElement(originGroup) {
+    return this.#originGroups.get(originGroup);
+  }
+  #createOriginGroupElement(originGroupTitle, originGroupIcon) {
+    const originGroup = new UI2.TreeOutline.TreeElement(originGroupTitle, true);
+    originGroup.expand();
+    originGroup.listItemElement.classList.add("security-sidebar-origins");
+    if (originGroupIcon) {
+      originGroup.setLeadingIcons([originGroupIcon]);
+    }
+    UI2.ARIAUtils.setLabel(originGroup.childrenListElement, originGroupTitle);
+    return originGroup;
   }
   toggleOriginsList(hidden) {
-    this.#originsHidden = hidden;
-    this.#showOriginsUnconditionally = !hidden;
-    this.requestUpdate();
+    for (const element of this.#originGroups.values()) {
+      element.hidden = hidden;
+    }
   }
   addOrigin(origin, securityState) {
-    this.#origins.set(origin, securityState);
-    this.requestUpdate();
+    this.#mainViewReloadMessage.hidden = true;
+    const originElement = new OriginTreeElement("security-sidebar-tree-item", this.#renderTreeElement, origin);
+    originElement.tooltip = origin;
+    this.#elementsByOrigin.set(origin, originElement);
+    this.updateOrigin(origin, securityState);
   }
   setMainOrigin(origin) {
     this.#mainOrigin = origin;
-    this.requestUpdate();
   }
   get mainOrigin() {
     return this.#mainOrigin;
   }
-  updateOrigin(origin, securityState) {
-    this.#origins.set(origin, securityState);
-    this.requestUpdate();
+  get originGroups() {
+    return this.#originGroups;
   }
-  updateOverviewSecurityState(securityState) {
-    this.#overviewSecurityState = securityState;
-    this.requestUpdate();
+  updateOrigin(origin, securityState) {
+    const originElement = this.#elementsByOrigin.get(origin);
+    originElement.setSecurityState(securityState);
+    let newParent;
+    if (origin === this.#mainOrigin) {
+      newParent = this.#originGroups.get("MainOrigin" /* MainOrigin */);
+      newParent.title = i18nString2(UIStrings2.mainOrigin);
+      if (securityState === Security.SecurityState.Secure) {
+        newParent.setLeadingIcons(
+          [getSecurityStateIconForOverview(securityState, `lock-icon lock-icon-${securityState}`)]
+        );
+      } else {
+        newParent.setLeadingIcons(
+          [getSecurityStateIconForOverview(securityState, `lock-icon lock-icon-${securityState}`)]
+        );
+      }
+      UI2.ARIAUtils.setLabel(newParent.childrenListElement, newParent.title);
+    } else {
+      switch (securityState) {
+        case Security.SecurityState.Secure:
+          newParent = this.#originGroupElement("Secure" /* Secure */);
+          break;
+        case Security.SecurityState.Unknown:
+          newParent = this.#originGroupElement("Unknown" /* Unknown */);
+          break;
+        default:
+          newParent = this.#originGroupElement("NonSecure" /* NonSecure */);
+          break;
+      }
+    }
+    const oldParent = originElement.parent;
+    if (oldParent !== newParent) {
+      if (oldParent) {
+        oldParent.removeChild(originElement);
+        if (oldParent.childCount() === 0) {
+          oldParent.hidden = true;
+        }
+      }
+      newParent.appendChild(originElement);
+      newParent.hidden = false;
+    }
+  }
+  #clearOriginGroups() {
+    for (const [originGroup, originGroupElement] of this.#originGroups) {
+      if (originGroup === "MainOrigin" /* MainOrigin */) {
+        for (let i = originGroupElement.childCount() - 1; i > 0; i--) {
+          originGroupElement.removeChildAtIndex(i);
+        }
+        originGroupElement.title = this.#originGroupTitle("MainOrigin" /* MainOrigin */);
+        originGroupElement.hidden = false;
+        this.#mainViewReloadMessage.hidden = false;
+      } else {
+        originGroupElement.removeChildren();
+        originGroupElement.hidden = true;
+      }
+    }
   }
   clearOrigins() {
-    this.#origins.clear();
-    this.requestUpdate();
+    this.#clearOriginGroups();
+    this.#elementsByOrigin.clear();
   }
-  set selectedOrigin(origin) {
-    this.#selectedElementId = origin ?? "overview";
-    this.#securitySidebarLastItemSetting.set(this.#selectedElementId);
-    this.requestUpdate();
-    this.#onShowOrigin?.(origin);
+  focus() {
+    this.sidebarTree.focus();
   }
-  get selectedOrigin() {
-    return this.#selectedElementId;
-  }
-  performUpdate() {
-    const input = {
-      mainOrigin: this.#mainOrigin,
-      origins: this.#origins,
-      originsHidden: this.#originsHidden,
-      showOriginsUnconditionally: this.#showOriginsUnconditionally,
-      overviewSecurityState: this.#overviewSecurityState,
-      selectedElementId: this.#selectedElementId
-    };
-    const output = {
-      onElementSelected: (id) => {
-        this.#selectedElementId = id;
-        this.#securitySidebarLastItemSetting.set(id);
-        this.requestUpdate();
-      },
-      onShowOrigin: (origin) => {
-        this.#onShowOrigin?.(origin);
+  #renderTreeElement(element) {
+    if (element instanceof OriginTreeElement) {
+      const securityState = element.securityState() ?? Security.SecurityState.Unknown;
+      const isOverviewElement = element.listItemElement.classList.contains("security-main-view-sidebar-tree-item");
+      const icon = isOverviewElement ? getSecurityStateIconForOverview(securityState, `lock-icon lock-icon-${securityState}`) : getSecurityStateIconForDetailedView(securityState, `security-property security-property-${securityState}`);
+      element.setLeadingIcons([icon]);
+      if (isOverviewElement) {
+        element.title = i18nString2(UIStrings2.overview);
+      } else {
+        const elementTitle = createHighlightedUrl(element.origin() ?? Platform.DevToolsPath.EmptyUrlString, securityState);
+        if (element.listItemElement.lastChild) {
+          element.listItemElement.removeChild(element.listItemElement.lastChild);
+        }
+        element.listItemElement.appendChild(elementTitle);
       }
-    };
-    this.#view(input, output, this.contentElement);
+    }
   }
 };
 
 // ../../front_end/panels/security/SecurityPanel.ts
-var { widget, widgetRef } = UI2.Widget;
+var { widget, widgetRef } = UI3.Widget;
 var UIStrings3 = {
   /**
    * @description Title of the overview section in the Security panel.
@@ -4149,7 +4381,7 @@ var SignatureSchemeStrings = /* @__PURE__ */ new Map([
 var LOCK_ICON_NAME = "lock";
 var WARNING_ICON_NAME = "warning";
 var UNKNOWN_ICON_NAME = "indeterminate-question-box";
-function getSecurityStateIconForDetailedView(securityState, className) {
+function getSecurityStateIconNameForDetailedView(securityState) {
   let iconName;
   switch (securityState) {
     case Security.SecurityState.Neutral:
@@ -4168,7 +4400,10 @@ function getSecurityStateIconForDetailedView(securityState, className) {
       iconName = UNKNOWN_ICON_NAME;
       break;
   }
-  return createIcon(iconName, className);
+  return iconName;
+}
+function getSecurityStateIconForDetailedView(securityState, className) {
+  return createIcon(getSecurityStateIconNameForDetailedView(securityState), className);
 }
 function getSecurityStateIconForOverview(securityState, className) {
   let iconName;
@@ -4215,7 +4450,7 @@ var DEFAULT_VIEW2 = (input, output, target) => {
   render2(
     html2`
     <devtools-split-view direction="column" name="security"
-      ${UI2.Widget.widgetRef(UI2.SplitWidget.SplitWidget, (e) => {
+      ${UI3.Widget.widgetRef(UI3.SplitWidget.SplitWidget, (e) => {
       output.splitWidget = e;
     })}>
       <devtools-widget
@@ -4229,7 +4464,17 @@ var DEFAULT_VIEW2 = (input, output, target) => {
     target
   );
 };
-var SecurityPanel = class _SecurityPanel extends UI2.Panel.Panel {
+var SecurityPanel = class _SecurityPanel extends UI3.Panel.Panel {
+  mainView;
+  sidebar;
+  lastResponseReceivedForLoaderId;
+  origins;
+  filterRequestCounts;
+  visibleView;
+  eventListeners;
+  securityModel;
+  splitWidget;
+  view;
   constructor(view = DEFAULT_VIEW2) {
     super("security");
     this.view = view;
@@ -4239,13 +4484,13 @@ var SecurityPanel = class _SecurityPanel extends UI2.Panel.Panel {
     this.sidebar.element.setAttribute("jslog", `${VisualLogging.pane("sidebar").track({ resize: true })}`);
     this.mainView = new SecurityMainView();
     this.mainView.panel = this;
-    this.sidebar.onShowOrigin = (origin) => {
-      if (origin) {
-        this.showOrigin(origin);
+    this.element.addEventListener(ShowOriginEvent.eventName, (event) => {
+      if (event.origin) {
+        this.showOrigin(event.origin);
       } else {
         this.setVisibleView(this.mainView);
       }
-    };
+    });
     this.lastResponseReceivedForLoaderId = /* @__PURE__ */ new Map();
     this.origins = /* @__PURE__ */ new Map();
     this.filterRequestCounts = /* @__PURE__ */ new Map();
@@ -4261,16 +4506,6 @@ var SecurityPanel = class _SecurityPanel extends UI2.Panel.Panel {
     );
     this.sidebar.showLastSelectedElement();
   }
-  view;
-  mainView;
-  sidebar;
-  lastResponseReceivedForLoaderId;
-  origins;
-  filterRequestCounts;
-  visibleView;
-  eventListeners;
-  securityModel;
-  splitWidget;
   static instance(opts = { forceNew: null }) {
     const { forceNew } = opts;
     if (!securityPanelInstance || forceNew) {
@@ -4279,29 +4514,29 @@ var SecurityPanel = class _SecurityPanel extends UI2.Panel.Panel {
     return securityPanelInstance;
   }
   static createCertificateViewerButtonForOrigin(text, origin) {
-    const certificateButton = UI2.UIUtils.createTextButton(text, async (e) => {
+    const certificateButton = UI3.UIUtils.createTextButton(text, async (e) => {
       e.consume();
       const names = await SDK2.NetworkManager.MultitargetNetworkManager.instance().getCertificate(origin);
       if (names.length > 0) {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.showCertificateViewer(names);
       }
     }, { className: "origin-button", jslogContext: "security.view-certificate-for-origin", title: text });
-    UI2.ARIAUtils.markAsButton(certificateButton);
+    UI3.ARIAUtils.markAsButton(certificateButton);
     return certificateButton;
   }
   static createCertificateViewerButtonForCert(text, names) {
-    const certificateButton = UI2.UIUtils.createTextButton(text, (e) => {
+    const certificateButton = UI3.UIUtils.createTextButton(text, (e) => {
       e.consume();
       Host.InspectorFrontendHost.InspectorFrontendHostInstance.showCertificateViewer(names);
     }, { className: "origin-button", jslogContext: "security.view-certificate" });
-    UI2.ARIAUtils.markAsButton(certificateButton);
+    UI3.ARIAUtils.markAsButton(certificateButton);
     return certificateButton;
   }
   update() {
     this.view({ panel: this }, this, this.contentElement);
   }
   updateVisibleSecurityState(visibleSecurityState) {
-    this.sidebar.updateOverviewSecurityState(visibleSecurityState.securityState);
+    this.sidebar.securityOverviewElement.setSecurityState(visibleSecurityState.securityState);
     this.mainView.updateVisibleSecurityState(visibleSecurityState);
   }
   onVisibleSecurityStateChanged({ data }) {
@@ -4476,7 +4711,7 @@ var OriginGroup = /* @__PURE__ */ ((OriginGroup2) => {
   OriginGroup2["Unknown"] = "Unknown";
   return OriginGroup2;
 })(OriginGroup || {});
-var SecurityMainView = class extends UI2.Widget.VBox {
+var SecurityMainView = class extends UI3.Widget.VBox {
   panel;
   summarySection;
   securityExplanationsMain;
@@ -4495,7 +4730,7 @@ var SecurityMainView = class extends UI2.Widget.VBox {
     this.securityExplanationsExtra = this.contentElement.createChild("div", "security-explanation-list security-explanations-extra");
     const summaryDiv = this.summarySection.createChild("div", "security-summary-section-title");
     summaryDiv.textContent = i18nString3(UIStrings3.securityOverview);
-    UI2.ARIAUtils.markAsHeading(summaryDiv, 1);
+    UI3.ARIAUtils.markAsHeading(summaryDiv, 1);
     const lockSpectrum = this.summarySection.createChild("div", "lock-spectrum");
     this.lockSpectrum = /* @__PURE__ */ new Map([
       [
@@ -4517,21 +4752,21 @@ var SecurityMainView = class extends UI2.Widget.VBox {
         )
       ]
     ]);
-    UI2.Tooltip.Tooltip.install(
+    UI3.Tooltip.Tooltip.install(
       this.getLockSpectrumDiv(Security.SecurityState.Secure),
       i18nString3(UIStrings3.secure)
     );
-    UI2.Tooltip.Tooltip.install(
+    UI3.Tooltip.Tooltip.install(
       this.getLockSpectrumDiv(Security.SecurityState.Neutral),
       i18nString3(UIStrings3.info)
     );
-    UI2.Tooltip.Tooltip.install(
+    UI3.Tooltip.Tooltip.install(
       this.getLockSpectrumDiv(Security.SecurityState.Insecure),
       i18nString3(UIStrings3.notSecure)
     );
     this.summarySection.createChild("div", "triangle-pointer-container").createChild("div", "triangle-pointer-wrapper").createChild("div", "triangle-pointer");
     this.summaryText = this.summarySection.createChild("div", "security-summary-text");
-    UI2.ARIAUtils.markAsHeading(this.summaryText, 2);
+    UI3.ARIAUtils.markAsHeading(this.summaryText, 2);
     this.explanations = null;
     this.securityState = null;
   }
@@ -4580,14 +4815,14 @@ var SecurityMainView = class extends UI2.Widget.VBox {
     if (this.securityState === Security.SecurityState.Insecure) {
       this.getLockSpectrumDiv(Security.SecurityState.Insecure).classList.add("lock-icon-insecure");
       this.getLockSpectrumDiv(Security.SecurityState.Insecure).classList.remove("lock-icon-insecure-broken");
-      UI2.Tooltip.Tooltip.install(
+      UI3.Tooltip.Tooltip.install(
         this.getLockSpectrumDiv(Security.SecurityState.Insecure),
         i18nString3(UIStrings3.notSecure)
       );
     } else if (this.securityState === Security.SecurityState.InsecureBroken) {
       this.getLockSpectrumDiv(Security.SecurityState.Insecure).classList.add("lock-icon-insecure-broken");
       this.getLockSpectrumDiv(Security.SecurityState.Insecure).classList.remove("lock-icon-insecure");
-      UI2.Tooltip.Tooltip.install(
+      UI3.Tooltip.Tooltip.install(
         this.getLockSpectrumDiv(Security.SecurityState.Insecure),
         i18nString3(UIStrings3.notSecureBroken)
       );
@@ -4917,7 +5152,7 @@ ${i18nString3(UIStrings3.ifYouBelieveThisIsShownInErrorSafety)}`;
       return;
     }
     const requestsAnchor = element.createChild("button", "security-mixed-content devtools-link text-button link-style");
-    UI2.ARIAUtils.markAsLink(requestsAnchor);
+    UI3.ARIAUtils.markAsLink(requestsAnchor);
     requestsAnchor.tabIndex = 0;
     requestsAnchor.textContent = i18nString3(UIStrings3.viewDRequestsInNetworkPanel, { n: filterRequestCount });
     requestsAnchor.addEventListener("click", this.showNetworkFilter.bind(this, filterKey));
@@ -4996,39 +5231,41 @@ function renderConnectionSection(securityDetails) {
     <div class="origin-view-section-title" role="heading" aria-level="2">${i18nString3(UIStrings3.connection)}</div>
     ${renderDetailsTable(rows)}`;
 }
-var SecurityOriginView = class extends UI2.Widget.VBox {
+function renderTitleSection(origin, securityState, onRevealInNetwork) {
+  return html2`
+    <div class="title-section-header" role="heading" aria-level="1">${i18nString3(UIStrings3.origin)}</div>
+    <div class="origin-display">
+      <devtools-icon
+          name=${getSecurityStateIconNameForDetailedView(securityState)}
+          class=${`security-property security-property-${securityState}`}>
+      </devtools-icon>
+      ${renderHighlightedUrl(origin, securityState)}
+    </div>
+    <div class="view-network-button">
+      <devtools-button
+          .variant=${Buttons.Button.Variant.OUTLINED}
+          .jslogContext=${"reveal-in-network"}
+          @click=${onRevealInNetwork}>${i18nString3(UIStrings3.viewRequestsInNetworkPanel)}</devtools-button>
+    </div>`;
+}
+var SecurityOriginView = class extends UI3.Widget.VBox {
   #origin;
-  #originDisplay;
+  #titleSection;
   constructor(origin, originState) {
     super({ jslog: `${VisualLogging.pane("security.origin-view")}` });
     this.registerRequiredCSS(originView_css_default, lockIcon_css_default);
     this.setMinimumSize(200, 100);
     this.#origin = origin;
     this.element.classList.add("security-origin-view");
-    const titleSection = this.element.createChild("div", "title-section");
-    const titleDiv = titleSection.createChild("div", "title-section-header");
-    titleDiv.textContent = i18nString3(UIStrings3.origin);
-    UI2.ARIAUtils.markAsHeading(titleDiv, 1);
-    this.#originDisplay = titleSection.createChild("div", "origin-display");
-    this.#renderOriginDisplay(originState.securityState);
-    const originNetworkDiv = titleSection.createChild("div", "view-network-button");
-    const originNetworkButton = UI2.UIUtils.createTextButton(i18nString3(UIStrings3.viewRequestsInNetworkPanel), (event) => {
-      event.consume();
-      const parsedURL = new Common2.ParsedURL.ParsedURL(origin);
-      void Common2.Revealer.reveal(NetworkForward.UIFilter.UIRequestFilter.filters([
-        { filterType: NetworkForward.UIFilter.FilterType.Domain, filterValue: parsedURL.host },
-        { filterType: NetworkForward.UIFilter.FilterType.Scheme, filterValue: parsedURL.scheme }
-      ]));
-    }, { jslogContext: "reveal-in-network" });
-    originNetworkDiv.appendChild(originNetworkButton);
-    UI2.ARIAUtils.markAsLink(originNetworkButton);
+    this.#titleSection = this.element.createChild("div", "title-section");
+    this.#renderTitleSection(originState.securityState);
     if (originState.securityDetails) {
       const connectionSection = this.element.createChild("div", "origin-view-section connection-section");
       render2(renderConnectionSection(originState.securityDetails), connectionSection);
       const certificateSection = this.element.createChild("div", "origin-view-section");
       const certificateDiv = certificateSection.createChild("div", "origin-view-section-title");
       certificateDiv.textContent = i18nString3(UIStrings3.certificate);
-      UI2.ARIAUtils.markAsHeading(certificateDiv, 2);
+      UI3.ARIAUtils.markAsHeading(certificateDiv, 2);
       const sctListLength = originState.securityDetails.signedCertificateTimestampList.length;
       const ctCompliance = originState.securityDetails.certificateTransparencyCompliance;
       let sctSection;
@@ -5036,7 +5273,7 @@ var SecurityOriginView = class extends UI2.Widget.VBox {
         sctSection = this.element.createChild("div", "origin-view-section");
         const sctDiv = sctSection.createChild("div", "origin-view-section-title");
         sctDiv.textContent = i18nString3(UIStrings3.certificateTransparency);
-        UI2.ARIAUtils.markAsHeading(sctDiv, 2);
+        UI3.ARIAUtils.markAsHeading(sctDiv, 2);
       }
       const sanDiv = this.#createSanDiv(originState.securityDetails.sanList);
       const validFromString = new Date(1e3 * originState.securityDetails.validFrom).toUTCString();
@@ -5093,12 +5330,12 @@ var SecurityOriginView = class extends UI2.Widget.VBox {
             buttonText = i18nString3(UIStrings3.hideFullDetails);
           }
           toggleSctsDetailsLink.textContent = buttonText;
-          UI2.ARIAUtils.setLabel(toggleSctsDetailsLink, buttonText);
-          UI2.ARIAUtils.setExpanded(toggleSctsDetailsLink, !isDetailsShown);
+          UI3.ARIAUtils.setLabel(toggleSctsDetailsLink, buttonText);
+          UI3.ARIAUtils.setExpanded(toggleSctsDetailsLink, !isDetailsShown);
           sctSummaryTable.element().classList.toggle("hidden");
           sctTableWrapper.classList.toggle("hidden");
         };
-        const toggleSctsDetailsLink = UI2.UIUtils.createTextButton(
+        const toggleSctsDetailsLink = UI3.UIUtils.createTextButton(
           i18nString3(UIStrings3.showFullDetails),
           toggleSctDetailsDisplay,
           { className: "details-toggle", jslogContext: "security.toggle-scts-details" }
@@ -5124,19 +5361,19 @@ var SecurityOriginView = class extends UI2.Widget.VBox {
       const secureSection = this.element.createChild("div", "origin-view-section");
       const secureDiv = secureSection.createChild("div", "origin-view-section-title");
       secureDiv.textContent = i18nString3(UIStrings3.secure);
-      UI2.ARIAUtils.markAsHeading(secureDiv, 2);
+      UI3.ARIAUtils.markAsHeading(secureDiv, 2);
       secureSection.createChild("div").textContent = i18nString3(UIStrings3.thisOriginIsANonhttpsSecure);
     } else if (originState.securityState !== Security.SecurityState.Unknown) {
       const notSecureSection = this.element.createChild("div", "origin-view-section");
       const notSecureDiv = notSecureSection.createChild("div", "origin-view-section-title");
       notSecureDiv.textContent = i18nString3(UIStrings3.notSecure);
-      UI2.ARIAUtils.markAsHeading(notSecureDiv, 2);
+      UI3.ARIAUtils.markAsHeading(notSecureDiv, 2);
       notSecureSection.createChild("div").textContent = i18nString3(UIStrings3.yourConnectionToThisOriginIsNot);
     } else {
       const noInfoSection = this.element.createChild("div", "origin-view-section");
       const noInfoDiv = noInfoSection.createChild("div", "origin-view-section-title");
       noInfoDiv.textContent = i18nString3(UIStrings3.noSecurityInformation);
-      UI2.ARIAUtils.markAsHeading(noInfoDiv, 2);
+      UI3.ARIAUtils.markAsHeading(noInfoDiv, 2);
       noInfoSection.createChild("div").textContent = i18nString3(UIStrings3.noSecurityDetailsAreAvailableFor);
     }
   }
@@ -5155,15 +5392,19 @@ var SecurityOriginView = class extends UI2.Widget.VBox {
     return container;
   }
   setSecurityState(newSecurityState) {
-    this.#renderOriginDisplay(newSecurityState);
+    this.#renderTitleSection(newSecurityState);
   }
-  #renderOriginDisplay(securityState) {
-    const icon = getSecurityStateIconForDetailedView(securityState, `security-property security-property-${securityState}`);
-    render2(html2`
-      ${icon}
-      ${renderHighlightedUrl(this.#origin, securityState)}
-    `, this.#originDisplay);
+  #renderTitleSection(securityState) {
+    render2(renderTitleSection(this.#origin, securityState, this.#revealInNetwork), this.#titleSection);
   }
+  #revealInNetwork = (event) => {
+    event.consume();
+    const parsedURL = new Common2.ParsedURL.ParsedURL(this.#origin);
+    void Common2.Revealer.reveal(NetworkForward.UIFilter.UIRequestFilter.filters([
+      { filterType: NetworkForward.UIFilter.FilterType.Domain, filterValue: parsedURL.host },
+      { filterType: NetworkForward.UIFilter.FilterType.Scheme, filterValue: parsedURL.scheme }
+    ]));
+  };
 };
 var SecurityDetailsTable = class {
   #element;
@@ -5186,8 +5427,10 @@ var SecurityDetailsTable = class {
   }
 };
 export {
+  OriginTreeElement_exports as OriginTreeElement,
   SecurityModel_exports as SecurityModel,
   SecurityPanel_exports as SecurityPanel,
-  SecurityPanelSidebar_exports as SecurityPanelSidebar
+  SecurityPanelSidebar_exports as SecurityPanelSidebar,
+  SecurityPanelSidebarTreeElement_exports as SecurityPanelSidebarTreeElement
 };
 //# sourceMappingURL=security.js.map
