@@ -9,6 +9,7 @@ import { FrontendMessageType } from './ConsoleModelTypes.js';
 import { CPUProfilerModel } from './CPUProfilerModel.js';
 import { COND_BREAKPOINT_SOURCE_URL, Events as DebuggerModelEvents, LOGPOINT_SOURCE_URL, } from './DebuggerModel.js';
 import { LogModel } from './LogModel.js';
+import { saveVariable } from './PageFunctions.js';
 import { RemoteObject } from './RemoteObject.js';
 import { Events as ResourceTreeModelEvents, ResourceTreeModel, } from './ResourceTreeModel.js';
 import { Events as RuntimeModelEvents, RuntimeModel, } from './RuntimeModel.js';
@@ -32,16 +33,16 @@ const UIStrings = {
      * @description Text shown in the console when a performance profile (with the given name) was started.
      * @example {title} PH1
      */
-    profileSStarted: 'Profile \'\'{PH1}\'\' started.',
+    profileSStarted: 'Profile \'\'{PH1}\'\' started',
     /**
      * @description Text shown in the console when a performance profile (with the given name) was stopped.
      * @example {name} PH1
      */
-    profileSFinished: 'Profile \'\'{PH1}\'\' finished.',
+    profileSFinished: 'Profile \'\'{PH1}\'\' finished',
     /**
      * @description Error message shown in the console after the user tries to save a JavaScript value to a temporary variable.
      */
-    failedToSaveToTempVariable: 'Failed to save to temp variable.',
+    failedToSaveToTempVariable: 'Failed to save to temp variable',
 };
 const str_ = i18n.i18n.registerUIStrings('core/sdk/ConsoleModel.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -365,17 +366,6 @@ export class ConsoleModel extends SDKModel {
         }
         if (callFunctionResult.object) {
             callFunctionResult.object.release();
-        }
-        function saveVariable(value) {
-            const prefix = 'temp';
-            let index = 1;
-            while ((prefix + index) in this) {
-                ++index;
-            }
-            const name = prefix + index;
-            // @ts-expect-error Assignment to global object
-            this[name] = value;
-            return name;
         }
     }
 }

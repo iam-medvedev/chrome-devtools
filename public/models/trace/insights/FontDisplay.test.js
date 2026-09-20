@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { getFirstOrError, getInsightOrError, processTrace } from '../../../testing/InsightHelpers.js';
-describeWithEnvironment('FontDisplay', function () {
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
+describe('FontDisplay', function () {
+    setupLocaleHooks();
     it('finds no requests for remote fonts', async function () {
         const { data, insights } = await processTrace(this, 'load-simple.json.gz');
         assert.strictEqual(insights.size, 1);

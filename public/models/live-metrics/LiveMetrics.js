@@ -24,7 +24,7 @@ const UIStrings = {
     /**
      * @description Warning text indicating that the Largest Contentful Paint (LCP) performance metric was affected by the page loading in the background.
      */
-    lcpVisibilityWarning: 'LCP may be inflated because the page started loading in the background.',
+    lcpVisibilityWarning: 'LCP may be inflated because the page started loading in the background',
 };
 const str_ = i18n.i18n.registerUIStrings('models/live-metrics/LiveMetrics.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -34,8 +34,7 @@ class InjectedScript {
     static async get() {
         if (!this.#injectedScript) {
             const url = new URL('./web-vitals-injected/web-vitals-injected.generated.js', import.meta.url);
-            const result = await fetch(url);
-            this.#injectedScript = await result.text();
+            this.#injectedScript = await Platform.HostRuntime.HOST_RUNTIME.loadTextFile(url);
         }
         return this.#injectedScript;
     }

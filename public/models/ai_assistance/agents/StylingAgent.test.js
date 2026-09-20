@@ -56,9 +56,6 @@ describe('StylingAgent', function () {
         element = sinon.createStubInstance(SDK.DOMModel.DOMNode);
         element.domModel.returns(domModel);
         element.backendNodeId.returns(99);
-        element.ownerDocument = {
-            documentURL: 'https://example.com',
-        };
         element.securityOrigin.returns(SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'));
     });
     describe('buildRequest', () => {
@@ -606,12 +603,7 @@ describe('StylingAgent', function () {
         });
         it('returns error on origin mismatch', async () => {
             const { node: resolvedNode } = createStubbedDomNodeWithModels({ nodeId: 42 });
-            element.ownerDocument = {
-                documentURL: 'https://example.com',
-            };
-            resolvedNode.ownerDocument = {
-                documentURL: 'https://another.com',
-            };
+            resolvedNode.securityOrigin.returns(SDK.SecurityOrigin.SecurityOrigin.create('https://another.com'));
             sinon.stub(SDK.DOMModel.DeferredDOMNode.prototype, 'resolvePromise').resolves(resolvedNode);
             const agent = new StylingAgent.StylingAgent({
                 aidaClient: mockAidaClient([

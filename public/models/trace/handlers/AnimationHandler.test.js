@@ -5,6 +5,9 @@ import { assert } from 'chai';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Trace from '../trace.js';
 describe('AnimationHandler', function () {
+    beforeEach(() => {
+        Trace.Handlers.ModelHandlers.Animations.reset();
+    });
     it('calculates the amount of animation events correctly', async function () {
         const events = await TraceLoader.rawEvents(this, 'animation.json.gz');
         for (const event of events) {

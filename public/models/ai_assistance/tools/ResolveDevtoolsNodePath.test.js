@@ -8,9 +8,8 @@ import * as AiAssistance from '../ai_assistance.js';
 describe('ResolveDevtoolsNodePathTool', () => {
     function createMockContext(overrides) {
         const nodeUrl = overrides?.nodeUrl ?? 'https://example.com/page.html';
-        const establishedOrigin = overrides && 'establishedOrigin' in overrides ?
-            overrides.establishedOrigin :
-            SDK.SecurityOrigin.SecurityOrigin.create('https://example.com');
+        const originLock = overrides?.originLock ??
+            { status: 'ESTABLISHED_ORIGIN', origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com') };
         const resolvedNodeId = overrides?.resolvedNodeId ?? 123;
         const backendNodeId = overrides?.backendNodeId ?? 42;
         const pushNodeResult = overrides && 'pushNodeResult' in overrides ? overrides.pushNodeResult : 123;
@@ -36,7 +35,7 @@ describe('ResolveDevtoolsNodePathTool', () => {
             null;
         return {
             getTarget: () => mockTarget,
-            getEstablishedOrigin: () => establishedOrigin,
+            getOriginLock: () => originLock,
         };
     }
     it('resolves a path to a backend node ID under origin lock', async () => {
@@ -65,7 +64,13 @@ describe('ResolveDevtoolsNodePathTool', () => {
         assertIsError(result, 'Error: Could not find node by path.');
     });
     it('returns error when origin lock is not established', async () => {
-        const context = createMockContext({ establishedOrigin: undefined });
+        const context = createMockContext({ originLock: { status: 'UNINITIALIZED' } });
+        const tool = new AiAssistance.ResolveDevtoolsNodePath.ResolveDevtoolsNodePathTool();
+        const result = await tool.handler({ path: '1,HTML,1,BODY', explanation: 'resolve' }, context);
+        assertIsError(result, 'Error: Node does not belong to the current origin.');
+    });
+    it('returns error when cross-origin navigation occurred during run', async () => {
+        const context = createMockContext({ originLock: { status: 'BLOCKED_BY_NAVIGATION' } });
         const tool = new AiAssistance.ResolveDevtoolsNodePath.ResolveDevtoolsNodePathTool();
         const result = await tool.handler({ path: '1,HTML,1,BODY', explanation: 'resolve' }, context);
         assertIsError(result, 'Error: Node does not belong to the current origin.');
@@ -86,7 +91,7 @@ describe('ResolveDevtoolsNodePathTool', () => {
         const iframeOrigin = SDK.SecurityOrigin.SecurityOrigin.create('https://iframe.example.com');
         const context = createMockContext({
             nodeUrl: 'https://iframe.example.com/frame.html',
-            establishedOrigin: iframeOrigin,
+            originLock: { status: 'ESTABLISHED_ORIGIN', origin: iframeOrigin },
         });
         const tool = new AiAssistance.ResolveDevtoolsNodePath.ResolveDevtoolsNodePathTool();
         const result = await tool.handler({ path: '1,HTML,1,BODY', explanation: 'resolve' }, context);

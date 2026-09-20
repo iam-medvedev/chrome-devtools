@@ -3582,6 +3582,7 @@ devtools-recorder-step-editor.is-selected {
 .step-actions {
   border: none;
   border-radius: 0;
+  flex-shrink: 0;
   height: var(--sys-size-11);
 
   --override-select-menu-show-button-border-radius: 0;
@@ -3784,7 +3785,7 @@ var DEFAULT_VIEW8 = (input, _output, target) => {
     <div class=${Lit8.Directives.classMap(classes)}>
       <div class="overlay"></div>
       <div class="icon"><slot name="icon"></slot></div>
-      <svg width="24" height="100%" class="bar">
+      <svg width="24" height="100%" class="bar" aria-hidden="true">
         <rect class="line" x="7" y="0" width="2" height="100%" />
       </svg>
       <slot></slot>
@@ -3841,6 +3842,7 @@ var TimelineSection = class extends UI8.Widget.Widget {
 
 // ../../front_end/panels/recorder/StepView.ts
 var { html: html9 } = Lit9;
+var { ifDefined: ifDefined2 } = Lit9.Directives;
 var { widget: widget3 } = UI9.Widget;
 var UIStrings7 = {
   /**
@@ -4041,8 +4043,7 @@ function renderStepActions(input) {
   return html9`
     <devtools-menu-button
       class="step-actions"
-      title=${i18nString7(UIStrings7.openStepActions)}
-      aria-label=${i18nString7(UIStrings7.openStepActions)}
+      .accessibleLabel=${i18nString7(UIStrings7.openStepActions)}
       .populateMenuCall=${input.populateStepContextMenu}
       @keydown=${(event) => {
     event.stopPropagation();
@@ -4074,6 +4075,7 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
     section: input.section
   });
   const subtitle = input.step ? getSelectorPreview(input.step) : getSectionPreview(input.section);
+  const breakpointTitle = input.hasBreakpoint ? i18nString7(UIStrings7.removeBreakpoint) : i18nString7(UIStrings7.addBreakpoint);
   Lit9.render(
     html9`
     <style>${stepView_css_default}</style>
@@ -4106,13 +4108,26 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
       }
     }}
         class=${Lit9.Directives.classMap(stepClasses)}>
-        <svg slot="icon" width="24" height="24" class="icon">
+        <svg slot="icon" width="24" height="24" class="icon"
+          role=${input.step ? "button" : "presentation"}
+          aria-label=${ifDefined2(input.step ? breakpointTitle : void 0)}
+          aria-hidden=${ifDefined2(input.step ? void 0 : "true")}
+          tabindex=${ifDefined2(input.step ? 0 : void 0)}
+          @click=${input.step ? input.onBreakpointClick : void 0}
+          @keydown=${input.step ? (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        input.onBreakpointClick();
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    } : void 0}
+          jslog=${ifDefined2(input.step ? VisualLogging7.action("breakpoint").track({ click: true }) : void 0)}>
           <circle class="circle-icon"/>
           <g class="error-icon">
             <path d="M1.5 1.5L6.5 6.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
             <path d="M1.5 6.5L6.5 1.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
           </g>
-          <path @click=${input.onBreakpointClick} jslog=${VisualLogging7.action("breakpoint").track({ click: true })} class="breakpoint-icon" d="M2.5 5.5H17.7098L21.4241 12L17.7098 18.5H2.5V5.5Z"/>
+          <path class="breakpoint-icon" d="M2.5 5.5H17.7098L21.4241 12L17.7098 18.5H2.5V5.5Z"/>
         </svg>
         <div class="summary">
           <div class="title-container ${isExpandable ? "action" : ""}"
@@ -5599,7 +5614,7 @@ var UIStrings9 = {
   /**
    * @description Text to explain the usage of the Recorder panel.
    */
-  recordingDescription: "Use recordings to create automated end-to-end tests or performance traces.",
+  recordingDescription: "Use recordings to create automated end-to-end tests or performance traces",
   /**
    * @description Link text to forward to a documentation page on the Recorder panel.
    */

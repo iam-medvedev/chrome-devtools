@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
-import { allThreadEntriesInTrace } from '../../../testing/TraceHelpers.js';
+import { allThreadEntriesInTrace } from '../../../testing/TraceHelpersCore.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Trace from '../trace.js';
-describeWithEnvironment('InitiatorsHandler', () => {
+describe('InitiatorsHandler', () => {
     describe('for web-dev-with-commit trace', () => {
         let traceEvents;
         let eventToInitiator;

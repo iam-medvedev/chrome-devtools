@@ -26,7 +26,10 @@ describe('ListNetworkRequestsTool', () => {
         networkLog.requests.returns([request]);
         const tool = new AiAssistance.ListNetworkRequests.ListNetworkRequestsTool(networkLog);
         const context = {
-            getEstablishedOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+            getOriginLock: () => ({
+                status: 'ESTABLISHED_ORIGIN',
+                origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+            }),
         };
         const response = await tool.handler({}, context);
         assertIsResult(response);
@@ -59,7 +62,10 @@ describe('ListNetworkRequestsTool', () => {
         networkLog.requests.returns([request1, request2]);
         const tool = new AiAssistance.ListNetworkRequests.ListNetworkRequestsTool(networkLog);
         const context = {
-            getEstablishedOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+            getOriginLock: () => ({
+                status: 'ESTABLISHED_ORIGIN',
+                origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+            }),
         };
         const response = await tool.handler({}, context);
         assertIsResult(response);
@@ -79,7 +85,10 @@ describe('ListNetworkRequestsTool', () => {
         const tool = new AiAssistance.ListNetworkRequests.ListNetworkRequestsTool(networkLog);
         const context = {
             conversationContext: null,
-            getEstablishedOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+            getOriginLock: () => ({
+                status: 'ESTABLISHED_ORIGIN',
+                origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+            }),
         };
         const response = await tool.handler({}, context);
         assertIsResult(response);
@@ -94,10 +103,10 @@ describe('ListNetworkRequestsTool', () => {
     it('returns error for opaque origins', async () => {
         const tool = new AiAssistance.ListNetworkRequests.ListNetworkRequestsTool(networkLog);
         const context = {
-            getEstablishedOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('null'),
+            getOriginLock: () => ({ status: 'ESTABLISHED_ORIGIN', origin: SDK.SecurityOrigin.SecurityOrigin.create('null') }),
         };
         const response = await tool.handler({}, context);
-        assertIsError(response, 'Opaque origin not allowed');
+        assertIsError(response, 'No origin available or not allowed.');
     });
     it('returns error when requests exist but none match established origin', async () => {
         const request = createNetworkRequest({
@@ -108,12 +117,15 @@ describe('ListNetworkRequestsTool', () => {
         networkLog.requests.returns([request]);
         const tool = new AiAssistance.ListNetworkRequests.ListNetworkRequestsTool(networkLog);
         const context = {
-            getEstablishedOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+            getOriginLock: () => ({
+                status: 'ESTABLISHED_ORIGIN',
+                origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+            }),
         };
         const response = await tool.handler({}, context);
         assertIsError(response, 'No requests showing with origin https://example.com. Tell the user to start a new chat');
     });
-    it('returns error if established origin is undefined', async () => {
+    it('returns error if origin lock is uninitialized', async () => {
         const request = createNetworkRequest({
             requestId: 'requestId',
             url: 'https://example.com/api',
@@ -122,10 +134,24 @@ describe('ListNetworkRequestsTool', () => {
         networkLog.requests.returns([request]);
         const tool = new AiAssistance.ListNetworkRequests.ListNetworkRequestsTool(networkLog);
         const context = {
-            getEstablishedOrigin: () => undefined,
+            getOriginLock: () => ({ status: 'UNINITIALIZED' }),
         };
         const response = await tool.handler({}, context);
-        assertIsError(response, 'Opaque origin not allowed');
+        assertIsError(response, 'No origin established for this conversation.');
+    });
+    it('returns error when cross-origin navigation occurred during run', async () => {
+        const request = createNetworkRequest({
+            requestId: 'requestId',
+            url: 'https://example.com/api',
+            documentURL: 'https://example.com/',
+        });
+        networkLog.requests.returns([request]);
+        const tool = new AiAssistance.ListNetworkRequests.ListNetworkRequestsTool(networkLog);
+        const context = {
+            getOriginLock: () => ({ status: 'BLOCKED_BY_NAVIGATION' }),
+        };
+        const response = await tool.handler({}, context);
+        assertIsError(response, 'Cross-origin access blocked due to navigation.');
     });
 });
 //# sourceMappingURL=ListNetworkRequests.test.js.map

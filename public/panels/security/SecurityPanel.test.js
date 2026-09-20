@@ -4,10 +4,12 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
+import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import { querySelectorErrorOnMissing, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { doubleRaf, querySelectorErrorOnMissing, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { expectCall } from '../../testing/ExpectStubCall.js';
 import { createNetworkRequest } from '../../testing/NetworkRequestHelpers.js';
 import { getMainFrame, navigate } from '../../testing/ResourceTreeHelpers.js';
 import * as NetworkForward from '../network/forward/forward.js';
@@ -200,6 +202,66 @@ describeWithEnvironment('SecurityOriginView', () => {
             ]);
         });
     });
+    describe('certificate section', () => {
+        it('renders the heading', () => {
+            const view = new Security.SecurityPanel.SecurityOriginView(urlString `https://foo.bar`, createOriginState());
+            const certificateSection = querySelectorErrorOnMissing(view.element, '.certificate-section');
+            const heading = querySelectorErrorOnMissing(certificateSection, '.origin-view-section-title');
+            assert.strictEqual(heading.textContent, 'Certificate');
+            assert.strictEqual(heading.getAttribute('role'), 'heading');
+            assert.strictEqual(heading.getAttribute('aria-level'), '2');
+        });
+        it('does not render without security details', () => {
+            const view = new Security.SecurityPanel.SecurityOriginView(urlString `https://foo.bar`, {
+                securityState: "secure" /* Protocol.Security.SecurityState.Secure */,
+                securityDetails: null,
+                loadedFromCache: false,
+            });
+            assert.notExists(view.element.querySelector('.certificate-section'));
+        });
+        it('renders all certificate details in order', () => {
+            const view = new Security.SecurityPanel.SecurityOriginView(urlString `https://foo.bar`, createOriginState({
+                subjectName: 'example.com',
+                sanList: ['san.example.com'],
+                validFrom: 0,
+                validTo: 86400,
+                issuer: 'Test CA',
+            }));
+            const certificateSection = querySelectorErrorOnMissing(view.element, '.certificate-section');
+            assert.deepEqual(getDetailsTableRows(certificateSection), [
+                ['Subject', 'example.com'],
+                ['SAN', 'san.example.com'],
+                ['Valid from', 'Thu, 01 Jan 1970 00:00:00 GMT'],
+                ['Valid until', 'Fri, 02 Jan 1970 00:00:00 GMT'],
+                ['Issuer', 'Test CA'],
+                ['', 'Open full certificate details'],
+            ]);
+        });
+        it('opens the certificate viewer', async () => {
+            const getCertificate = sinon.stub(SDK.NetworkManager.MultitargetNetworkManager.instance(), 'getCertificate')
+                .resolves(['certificate']);
+            const showCertificateViewer = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'showCertificateViewer');
+            const showCertificateViewerCall = expectCall(showCertificateViewer);
+            const view = new Security.SecurityPanel.SecurityOriginView(urlString `https://foo.bar`, createOriginState());
+            const certificateSection = querySelectorErrorOnMissing(view.element, '.certificate-section');
+            const certificateButton = querySelectorErrorOnMissing(certificateSection, 'devtools-button.origin-button');
+            certificateButton.click();
+            await showCertificateViewerCall;
+            sinon.assert.calledOnceWithExactly(getCertificate, 'https://foo.bar');
+            sinon.assert.calledOnceWithExactly(showCertificateViewer, ['certificate']);
+        });
+        it('does not open the certificate viewer when no certificates are returned', async () => {
+            const getCertificate = sinon.stub(SDK.NetworkManager.MultitargetNetworkManager.instance(), 'getCertificate').resolves([]);
+            const showCertificateViewer = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'showCertificateViewer');
+            const view = new Security.SecurityPanel.SecurityOriginView(urlString `https://foo.bar`, createOriginState());
+            const certificateSection = querySelectorErrorOnMissing(view.element, '.certificate-section');
+            const certificateButton = querySelectorErrorOnMissing(certificateSection, 'devtools-button.origin-button');
+            certificateButton.click();
+            await getCertificate.firstCall.returnValue;
+            sinon.assert.calledOnceWithExactly(getCertificate, 'https://foo.bar');
+            sinon.assert.notCalled(showCertificateViewer);
+        });
+    });
     it('renders an empty SAN', () => {
         const view = new Security.SecurityPanel.SecurityOriginView(urlString `https://foo.bar`, createOriginState());
         const sanElement = view.element.querySelector('.san');
@@ -242,15 +304,17 @@ describeWithEnvironment('SecurityOriginView', () => {
 });
 describeWithEnvironment('SecurityPanelSidebarTree', () => {
     describe('updateOrigin', () => {
-        it('correctly updates the URL scheme highlighting', () => {
+        it('correctly updates the URL scheme highlighting', async () => {
             const origin = urlString `https://foo.bar`;
             const securityPanel = Security.SecurityPanel.SecurityPanel.instance({ forceNew: true });
             securityPanel.sidebar.addOrigin(origin, "unknown" /* Protocol.Security.SecurityState.Unknown */);
-            assert.notExists(securityPanel.sidebar.sidebarTree.contentElement.querySelector('.highlighted-url > .url-scheme-secure'));
-            assert.exists(securityPanel.sidebar.sidebarTree.contentElement.querySelector('.highlighted-url > .url-scheme-unknown'));
+            await doubleRaf();
+            assert.notExists(securityPanel.sidebar.contentElement.querySelector('devtools-tree').shadowRoot.querySelector('.highlighted-url > .url-scheme-secure'));
+            assert.exists(securityPanel.sidebar.contentElement.querySelector('devtools-tree').shadowRoot.querySelector('.highlighted-url > .url-scheme-unknown'));
             securityPanel.sidebar.updateOrigin(origin, "secure" /* Protocol.Security.SecurityState.Secure */);
-            assert.exists(securityPanel.sidebar.sidebarTree.contentElement.querySelector('.highlighted-url > .url-scheme-secure'));
-            assert.notExists(securityPanel.sidebar.sidebarTree.contentElement.querySelector('.highlighted-url > .url-scheme-unknown'));
+            await doubleRaf();
+            assert.exists(securityPanel.sidebar.contentElement.querySelector('devtools-tree').shadowRoot.querySelector('.highlighted-url > .url-scheme-secure'));
+            assert.notExists(securityPanel.sidebar.contentElement.querySelector('devtools-tree').shadowRoot.querySelector('.highlighted-url > .url-scheme-unknown'));
         });
     });
 });
@@ -314,14 +378,40 @@ describeWithEnvironment('SecurityPanel', () => {
         navigate(getMainFrame(target));
         sinon.assert.calledOnce(sidebarTreeClearSpy);
     });
+    it('preserves the selected origin when the panel is hidden and shown again', async () => {
+        const securityPanel = Security.SecurityPanel.SecurityPanel.instance({ forceNew: true });
+        const securityModel = target.model(Security.SecurityModel.SecurityModel);
+        assert.exists(securityModel);
+        const networkManager = securityModel.networkManager();
+        const request = createNetworkRequest({
+            url: 'https://foo.test',
+            documentURL: 'https://foo.test',
+            frameId: '0',
+            loaderId: '0',
+        });
+        request.setSecurityState("secure" /* Protocol.Security.SecurityState.Secure */);
+        networkManager.dispatchEventToListeners(SDK.NetworkManager.Events.RequestFinished, request);
+        // Select the origin
+        securityPanel.showOrigin(urlString `https://foo.test`);
+        // The active view should be the origin view, not the main view.
+        assert.instanceOf(securityPanel.visibleView, Security.SecurityPanel.SecurityOriginView);
+        // Hide and show the panel
+        securityPanel.willHide();
+        securityPanel.sidebar.willHide();
+        securityPanel.wasShown();
+        securityPanel.sidebar.wasShown();
+        // The active view should still be the origin view.
+        assert.instanceOf(securityPanel.visibleView, Security.SecurityPanel.SecurityOriginView);
+    });
     it('shows \'reload page\' message when no data is available', async () => {
         const securityModel = target.model(Security.SecurityModel.SecurityModel);
         assert.exists(securityModel);
         const securityPanel = Security.SecurityPanel.SecurityPanel.instance({ forceNew: true });
+        await doubleRaf();
         // Check that reload message is visible initially.
-        const reloadMessage = securityPanel.sidebar.sidebarTree.shadowRoot.querySelector('.security-main-view-reload-message');
+        const reloadMessage = securityPanel.sidebar.contentElement.querySelector('devtools-tree').shadowRoot.querySelector('.security-main-view-reload-message');
         assert.instanceOf(reloadMessage, HTMLLIElement);
-        assert.isFalse(reloadMessage.classList.contains('hidden'));
+        assert.exists(securityPanel.sidebar.contentElement.querySelector('devtools-tree').shadowRoot.querySelector('.security-main-view-reload-message'));
         // Check that reload message is hidden when there is data to display.
         const networkManager = securityModel.networkManager();
         const request = {
@@ -332,10 +422,12 @@ describeWithEnvironment('SecurityPanel', () => {
             cached: () => false,
         };
         networkManager.dispatchEventToListeners(SDK.NetworkManager.Events.RequestFinished, request);
-        assert.isTrue(reloadMessage.classList.contains('hidden'));
+        await doubleRaf();
+        assert.notExists(securityPanel.sidebar.contentElement.querySelector('devtools-tree').shadowRoot.querySelector('.security-main-view-reload-message'));
         // Check that reload message is hidden after clearing data.
         navigate(getMainFrame(target));
-        assert.isFalse(reloadMessage.classList.contains('hidden'));
+        await doubleRaf();
+        assert.exists(securityPanel.sidebar.contentElement.querySelector('devtools-tree').shadowRoot.querySelector('.security-main-view-reload-message'));
     });
     it('shows origins with blockable and optionally blockable resources in the sidebar', async () => {
         const securityPanel = Security.SecurityPanel.SecurityPanel.instance({ forceNew: true });

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { getEventsIn, makeCompleteEvent, makeProfileCall, prettyPrint, } from '../../../testing/TraceHelpers.js';
+import { getEventsIn, makeCompleteEvent, makeProfileCall, prettyPrint, } from '../../../testing/TraceHelpersCore.js';
 import * as Trace from '../trace.js';
 describe('TreeHelpers', () => {
     describe('treify', () => {

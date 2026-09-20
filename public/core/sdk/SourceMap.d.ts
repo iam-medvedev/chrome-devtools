@@ -23,6 +23,7 @@ export interface SourceMapV3Object {
     names?: string[];
     ignoreList?: number[];
     scopes?: string;
+    rangeMappings?: string;
     debugId?: string;
     x_google_linecount?: number;
     x_google_ignoreList?: number[];
@@ -72,8 +73,20 @@ export declare class SourceMapEntry {
     readonly sourceLineNumber: number;
     readonly sourceColumnNumber: number;
     readonly name?: string;
-    constructor(lineNumber: number, columnNumber: number, sourceIndex?: number, sourceURL?: Platform.DevToolsPath.UrlString, sourceLineNumber?: number, sourceColumnNumber?: number, name?: string);
+    /**
+     * Whether this entry covers everything up to the following entry, mapping the generated
+     * code character by character (including newlines) onto the original code.
+     *
+     * @see https://github.com/tc39/source-map/blob/main/proposals/range-mappings.md
+     */
+    readonly isRangeMapping: boolean;
+    constructor(lineNumber: number, columnNumber: number, sourceIndex?: number, sourceURL?: Platform.DevToolsPath.UrlString, sourceLineNumber?: number, sourceColumnNumber?: number, name?: string, isRangeMapping?: boolean);
     static compare(entry1: SourceMapEntry, entry2: SourceMapEntry): number;
+}
+export declare const enum SourceMapProvenance {
+    CDP = "cdp",
+    EXTENSION = "extension",
+    USER = "user"
 }
 export declare class SourceMap {
     #private;
@@ -82,7 +95,8 @@ export declare class SourceMap {
      * Implements Source Map V3 model. See https://github.com/google/closure-compiler/wiki/Source-Maps
      * for format description.
      */
-    constructor(compiledURL: Platform.DevToolsPath.UrlString, sourceMappingURL: Platform.DevToolsPath.UrlString, payload: SourceMapV3, console: Common.Console.Console, script?: Script);
+    constructor(compiledURL: Platform.DevToolsPath.UrlString, sourceMappingURL: Platform.DevToolsPath.UrlString, payload: SourceMapV3, console: Common.Console.Console, script?: Script, provenance?: SourceMapProvenance);
+    provenance(): SourceMapProvenance;
     json(): SourceMapV3 | null;
     augmentWithScopes(scriptUrl: Platform.DevToolsPath.UrlString, ranges: NamedFunctionRange[]): void;
     compiledURL(): Platform.DevToolsPath.UrlString;
@@ -166,6 +180,15 @@ export declare class TokenIterator {
     peek(): string;
     hasNext(): boolean;
     nextVLQ(): number;
+    /**
+     * Decodes an unsigned Base64 VLQ number, as used by the `rangeMappings` field of the
+     * "range mappings" proposal. In contrast to {@link nextVLQ} the least significant bit
+     * carries a value rather than a sign, so the full 32 bit range is available. Numbers
+     * that don't fit into 32 bits are rejected.
+     *
+     * @see https://github.com/tc39/source-map/blob/main/proposals/range-mappings.md
+     */
+    nextUnsignedVLQ(): number;
     /**
      * @returns the next VLQ number without iterating further. Or returns null if
      * the iterator is at the end or it's not a valid number.

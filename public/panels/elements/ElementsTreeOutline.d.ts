@@ -1,8 +1,9 @@
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as ChangeTracker from '../../models/change_tracker/change_tracker.js';
 import * as Elements from '../../models/elements/elements.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { ElementsTreeElement, ElementsTreeWidget, type InitialEditState } from './ElementsTreeElement.js';
+import { ElementsTreeElement, type InitialEditState } from './ElementsTreeElement.js';
 import elementsTreeOutlineStyles from './elementsTreeOutline.css.js';
 import { ImagePreviewPopover } from './ImagePreviewPopover.js';
 import { TopLayerContainer } from './TopLayerContainer.js';
@@ -43,10 +44,11 @@ interface ViewInput {
     onElementExpanded: () => void;
     onSelect?: (node: SDK.DOMModel.DOMNode, isClosingTag?: boolean, selectedByUser?: boolean) => void;
     onExpand?: (node: SDK.DOMModel.DOMNode, expanded: boolean) => void;
-    onContextMenu?: (node: SDK.DOMModel.DOMNode, event: MouseEvent, widget?: ElementsTreeWidget) => void;
+    onContextMenu?: (node: SDK.DOMModel.DOMNode, event: MouseEvent) => void;
+    onClearMaxRows?: () => void;
     onHoverNode?: (node: SDK.DOMModel.DOMNode | null, showInfo?: boolean, isClosingTag?: boolean) => void;
     onLeave?: () => void;
-    onToggleHideElement?: (node: SDK.DOMModel.DOMNode) => void;
+    onToggleHideElement?: (node: SDK.DOMModel.DOMNode) => Promise<void>;
     onKeyDown?: (event: KeyboardEvent) => void;
     isToggledToHidden?: (node: SDK.DOMModel.DOMNode) => boolean;
     onDuplicateNode?: (node: SDK.DOMModel.DOMNode) => void;
@@ -59,6 +61,18 @@ interface ViewInput {
         node: SDK.DOMModel.DOMNode;
     } & InitialEditState) | null;
     onInitialEditCompleted?: () => void;
+    attributeToHighlight?: {
+        node: SDK.DOMModel.DOMNode;
+        attribute: string;
+    } | null;
+    onAttributeHighlighted?: () => void;
+    nodesWithDirtyAdorners?: Set<SDK.DOMModel.DOMNode>;
+    nodeAdornerVersions?: WeakMap<SDK.DOMModel.DOMNode, number>;
+    onDirtyAdornersUpdated?: () => void;
+    forceOpenPopovers?: WeakSet<SDK.DOMModel.DOMNode>;
+    onPopoverAdornerToggled?: (node: SDK.DOMModel.DOMNode, active: boolean) => void;
+    forceOpenInterests?: WeakSet<SDK.DOMModel.DOMNode>;
+    onInterestAdornerToggled?: (node: SDK.DOMModel.DOMNode, active: boolean) => void;
     multilineEditingNode?: SDK.DOMModel.DOMNode | null;
     dragOverNode?: {
         node: SDK.DOMModel.DOMNode;
@@ -109,6 +123,7 @@ export declare const DECLARATIVE_VIEW: View;
  */
 export declare class DOMTreeWidget extends UI.Widget.Widget {
     #private;
+    static readonly INJECT: readonly [typeof ChangeTracker.ChangeTracker.ChangeTracker];
     omitRootDOMNode: boolean;
     selectEnabled: boolean;
     hideGutter: boolean;
@@ -141,7 +156,8 @@ export declare class DOMTreeWidget extends UI.Widget.Widget {
     set disableEdits(disableEdits: boolean);
     get expandRoot(): boolean;
     set expandRoot(expandRoot: boolean);
-    constructor(element?: HTMLElement, view?: View);
+    get changeTracker(): ChangeTracker.ChangeTracker.ChangeTracker | undefined;
+    constructor(element?: HTMLElement, [changeTracker]?: UI.Widget.WidgetDependencies<typeof DOMTreeWidget> | [ChangeTracker.ChangeTracker.ChangeTracker?], view?: View);
     updateRecordsForTest(): Map<SDK.DOMModel.DOMNode, Elements.ElementUpdateRecord.ElementUpdateRecord>;
     updateModifiedNodes(): void;
     selectDOMNode(node: SDK.DOMModel.DOMNode | SDK.DOMModel.AdoptedStyleSheet | null, focus?: boolean, isClosingTag?: boolean): void;
@@ -157,7 +173,7 @@ export declare class DOMTreeWidget extends UI.Widget.Widget {
     expandAllChildren(node: SDK.DOMModel.DOMNode): void;
     expandRecursively(node: SDK.DOMModel.DOMNode, maxDepth?: number): Promise<void>;
     collapseChildren(node: SDK.DOMModel.DOMNode): void;
-    showContextMenu(node: SDK.DOMModel.DOMNode, event: MouseEvent, widget?: ElementsTreeWidget): Promise<UI.ContextMenu.ContextMenu | undefined>;
+    showContextMenu(node: SDK.DOMModel.DOMNode, event: MouseEvent): Promise<UI.ContextMenu.ContextMenu | undefined>;
     /**
      * FIXME: this is called to re-render everything from scratch, for
      * example, if global settings changed. Instead, the setting values
@@ -189,7 +205,7 @@ export declare class DOMTreeWidget extends UI.Widget.Widget {
     updateNodeAdorners(node: SDK.DOMModel.DOMNode): void;
     highlightMatch(node: SDK.DOMModel.DOMNode, query?: string): void;
     hideMatchHighlights(node: SDK.DOMModel.DOMNode): void;
-    toggleHideElement(node: SDK.DOMModel.DOMNode): void;
+    toggleHideElement(node: SDK.DOMModel.DOMNode): Promise<void>;
     removeNode(node: SDK.DOMModel.DOMNode): Promise<void>;
     isToggledToHidden(node: SDK.DOMModel.DOMNode): boolean;
     setMultilineEditing(multilineEditing: MultilineEditorController | null, node?: SDK.DOMModel.DOMNode): void;
@@ -225,7 +241,9 @@ export declare class DOMTreeWidget extends UI.Widget.Widget {
     isAdoptedStyleSheetExpanded(sheet: SDK.DOMModel.AdoptedStyleSheet): boolean;
     setAdoptedStyleSheetExpanded(sheet: SDK.DOMModel.AdoptedStyleSheet, expanded: boolean): void;
     highlightAdoptedStyleSheet(adoptedStyleSheet: SDK.DOMModel.AdoptedStyleSheet): void;
-    startEditing(node: SDK.DOMModel.DOMNode): void;
+    addNewAttribute(node: SDK.DOMModel.DOMNode): void;
+    startEditingTextNode(node: SDK.DOMModel.DOMNode): void;
+    startEditing(node: SDK.DOMModel.DOMNode, attributeName?: string): void;
     onKeyDown(event: KeyboardEvent): boolean;
     clipboardData(): ClipboardData | null;
     setClipboardData(data: ClipboardData | null): void;

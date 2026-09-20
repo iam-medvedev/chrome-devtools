@@ -142,7 +142,7 @@ describeWithEnvironment('OriginMap', () => {
             [
                 'http://localhost:8080',
                 'https://no-data.com',
-                'The Chrome UX Report doesn’t have enough real user data for this page.',
+                'The Chrome UX Report doesn’t have enough real user data for this page',
             ],
         ]);
     });
@@ -266,7 +266,7 @@ describeWithEnvironment('OriginMap', () => {
         await originMap.updateComplete;
         await RenderCoordinator.done();
         const errors = getValidationErrors(originMap);
-        assert.deepEqual(errors, '"bad-origin" isn’t a valid origin or URL.\n"jj**Sdafsdf" isn’t a valid origin or URL.');
+        assert.deepEqual(errors, '"bad-origin" isn’t a valid origin or URL\n"jj**Sdafsdf" isn’t a valid origin or URL');
     });
     it('should show warning for duplicate dev origin', async () => {
         cruxManager.getConfigSetting().set({
@@ -287,7 +287,7 @@ describeWithEnvironment('OriginMap', () => {
         await originMap.updateComplete;
         await RenderCoordinator.done();
         const errors = getValidationErrors(originMap);
-        assert.deepEqual(errors, '"http://localhost:8080" is already mapped to a production origin.');
+        assert.deepEqual(errors, '"http://localhost:8080" is already mapped to a production origin');
     });
 });
 //# sourceMappingURL=OriginMap.test.js.map

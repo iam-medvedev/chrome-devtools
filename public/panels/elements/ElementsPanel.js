@@ -94,19 +94,19 @@ const UIStrings = {
     /**
      * @description Warning/error text displayed when a node cannot be found in the current page.
      */
-    nodeCannotBeFoundInTheCurrent: 'Node cannot be found in the current page.',
+    nodeCannotBeFoundInTheCurrent: 'Node cannot be found in the current page',
     /**
      * @description Console warning when a user tries to reveal a non-node type Remote Object. A remote
      * object is a JavaScript object that is not stored in DevTools, that DevTools has a connection to.
      * It should correspond to a local node.
      */
-    theRemoteObjectCouldNotBe: 'The remote object could not be resolved to a valid node.',
+    theRemoteObjectCouldNotBe: 'The remote object could not be resolved to a valid node',
     /**
      * @description Console warning when the user tries to reveal a deferred DOM Node that resolves as
      * null. A deferred DOM node is a node we know about but have not yet fetched from the backend (we
      * defer the work until later).
      */
-    theDeferredDomNodeCouldNotBe: 'The deferred `DOM` Node could not be resolved to a valid node.',
+    theDeferredDomNodeCouldNotBe: 'The deferred `DOM` Node could not be resolved to a valid node',
     /**
      * @description Text in Elements Panel of the Elements panel. Shows the current CSS Pseudo-classes
      * applicable to the selected HTML element.
@@ -188,6 +188,9 @@ export class ElementsPanel extends UI.Panel.Panel {
     }
     getTreeOutlineForTesting() {
         return this.#domTreeWidget.getTreeOutlineForTesting();
+    }
+    getDOMTreeWidgetForTesting() {
+        return this.#domTreeWidget;
     }
     constructor(targetManager, settings) {
         super('elements');
@@ -707,7 +710,7 @@ export class ElementsPanel extends UI.Panel.Panel {
                 searchResult.node = node;
                 // If any of these properties are undefined or reset to an invalid value,
                 // this means the search/highlight request is outdated.
-                const highlightRequestValid = this.searchConfig && this.searchResults && (this.currentSearchResultIndex !== -1);
+                const highlightRequestValid = this.searchConfig && this.searchResults && (this.currentSearchResultIndex === index);
                 if (highlightRequestValid) {
                     this.highlightCurrentSearchResult();
                 }
@@ -715,11 +718,10 @@ export class ElementsPanel extends UI.Panel.Panel {
             return;
         }
         void searchResult.node.scrollIntoView();
-        if (searchResult.node) {
-            this.#domTreeWidget.highlightMatch(searchResult.node, this.searchConfig?.query);
-        }
+        this.#domTreeWidget.highlightMatch(searchResult.node, this.searchConfig?.query);
     }
     hideSearchHighlights() {
+        SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight(this.#targetManager);
         if (!this.searchResults?.length || this.currentSearchResultIndex === -1) {
             return;
         }
@@ -1070,7 +1072,7 @@ export class ElementsPanel extends UI.Panel.Panel {
         adornerSet.delete(adorner);
     }
     toggleHideElement(node) {
-        this.#domTreeWidget.toggleHideElement(node);
+        void this.#domTreeWidget.toggleHideElement(node);
     }
     toggleEditAsHTML(node) {
         this.#domTreeWidget.toggleEditAsHTML(node);

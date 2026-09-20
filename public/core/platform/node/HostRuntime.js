@@ -1,6 +1,8 @@
 // Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Fs from 'node:fs';
+import * as Url from 'node:url';
 import * as WorkerThreads from 'node:worker_threads';
 class NodeWorkerScope {
     postMessage(message, transfer) {
@@ -13,13 +15,15 @@ class NodeWorkerScope {
     }
 }
 class NodeWorker {
+    #worker;
     #workerPromise;
     #disposed = false;
     #rejectWorkerPromise;
     constructor(url) {
+        const worker = new WorkerThreads.Worker(new URL(url));
+        this.#worker = worker;
         this.#workerPromise = new Promise((resolve, reject) => {
             this.#rejectWorkerPromise = reject;
-            const worker = new WorkerThreads.Worker(new URL(url));
             worker.once('message', (message) => {
                 if (message === 'workerReady') {
                     resolve(worker);
@@ -27,6 +31,8 @@ class NodeWorker {
             });
             worker.on('error', reject);
         });
+        // Prevent unhandled promise rejections if the worker is terminated early.
+        this.#workerPromise.catch(() => { });
     }
     postMessage(message, transfer) {
         void this.#workerPromise.then(worker => {
@@ -37,7 +43,7 @@ class NodeWorker {
     }
     dispose() {
         this.#disposed = true;
-        void this.#workerPromise.then(worker => worker.terminate());
+        void this.#worker.terminate();
     }
     terminate(immediately) {
         if (immediately) {
@@ -64,6 +70,30 @@ class NodeWorker {
         });
     }
 }
+class NodeCacheEntry {
+    #entries = new Map();
+    async put(url, response) {
+        this.#entries.set(url, response.clone());
+    }
+    async match(url) {
+        return this.#entries.get(url)?.clone();
+    }
+}
+class NodeCacheStorage {
+    #caches = new Map();
+    async open(name) {
+        let cache = this.#caches.get(name);
+        if (!cache) {
+            cache = new NodeCacheEntry();
+            this.#caches.set(name, cache);
+        }
+        return cache;
+    }
+    async delete(name) {
+        return this.#caches.delete(name);
+    }
+}
+const nodeCacheStorage = new NodeCacheStorage();
 export const HOST_RUNTIME = {
     createWorker(url) {
         return new NodeWorker(url);
@@ -78,5 +108,20 @@ export const HOST_RUNTIME = {
     getLocalStorage() {
         return undefined;
     },
+    getCacheStorage() {
+        return nodeCacheStorage;
+    },
+    getDevicePixelRatio() {
+        return 1;
+    },
+    async saveScreenshot(_options) { },
+    revokeLastScreenshotUrl() { },
+    async loadTextFile(url) {
+        return await Fs.promises.readFile(Url.fileURLToPath(url), 'utf-8');
+    },
+    evaluateCSS(_dataValue, _customExpr) {
+        return null;
+    },
+    removeCSSEvaluationElement() { },
 };
 //# sourceMappingURL=HostRuntime.js.map

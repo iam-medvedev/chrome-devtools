@@ -35,7 +35,7 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
-    "target": "ES2023",
+    "target": "es2023",
     "typeRoots": [
 
     ],
@@ -59,9 +59,6 @@
     },
     {
       "path": "../../core/platform/bundle-tsconfig.ref.json"
-    },
-    {
-      "path": "../../core/platform/api/bundle-tsconfig.ref.json"
     }
   ]
 }

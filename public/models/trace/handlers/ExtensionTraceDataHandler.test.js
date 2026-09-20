@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { createTraceExtensionDataFromEvents, createTraceExtensionDataFromPerformanceAPITestInput, makeTimingEventWithConsoleExtensionData, } from '../../../testing/TraceHelpers.js';
+import { createTraceExtensionDataFromEvents, createTraceExtensionDataFromPerformanceAPITestInput, makeTimingEventWithConsoleExtensionData, } from '../../../testing/TraceHelpersCore.js';
 import * as Trace from '../trace.js';
 async function createTraceExtensionDataFromConsoleAPITestInput(extensionData) {
     const events = extensionData.flatMap(makeTimingEventWithConsoleExtensionData).sort((e1, e2) => e1.ts - e2.ts);

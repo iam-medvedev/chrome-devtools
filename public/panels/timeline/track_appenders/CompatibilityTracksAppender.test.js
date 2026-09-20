@@ -124,7 +124,7 @@ describeWithEnvironment('CompatibilityTracksAppender', function () {
             if (!(warning instanceof HTMLSpanElement)) {
                 throw new Error('Found unexpected warning');
             }
-            assert.strictEqual(warning?.innerText, 'Long task took 1.30\u00A0s.');
+            assert.strictEqual(warning?.innerText, 'Long task took 1.30\u00A0s');
         });
         it('shows the correct warning for a forced recalc styles when hovered', async function () {
             await initTrackAppender(this, 'large-layout-small-recalc.json.gz');
@@ -142,7 +142,7 @@ describeWithEnvironment('CompatibilityTracksAppender', function () {
             if (!(warning instanceof HTMLSpanElement)) {
                 throw new Error('Found unexpected warning');
             }
-            assert.strictEqual(warning?.innerText, 'Forced reflow is a likely performance bottleneck.');
+            assert.strictEqual(warning?.innerText, 'Forced reflow is a likely performance bottleneck');
         });
         it('shows the correct warning for a forced layout when hovered', async function () {
             await initTrackAppender(this, 'large-layout-small-recalc.json.gz');
@@ -160,7 +160,7 @@ describeWithEnvironment('CompatibilityTracksAppender', function () {
             if (!(warning instanceof HTMLSpanElement)) {
                 throw new Error('Found unexpected warning');
             }
-            assert.strictEqual(warning?.innerText, 'Forced reflow is a likely performance bottleneck.');
+            assert.strictEqual(warning?.innerText, 'Forced reflow is a likely performance bottleneck');
         });
         it('shows the correct warning for slow idle callbacks', async function () {
             await initTrackAppender(this, 'idle-callback.json.gz');

@@ -6,6 +6,7 @@ import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Trace from '../trace.js';
 describe('ImagePaintingHandler', () => {
     beforeEach(() => {
+        Trace.Handlers.ModelHandlers.Meta.reset();
         Trace.Handlers.ModelHandlers.ImagePainting.reset();
     });
     it('can pair DrawLazyPixelRef events to PaintImages by their reference number', async function () {

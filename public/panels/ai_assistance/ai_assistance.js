@@ -88,6 +88,11 @@ import * as MarkdownView from "../../ui/components/markdown_view/markdown_view.j
 import * as Lit from "../../ui/lit/lit.js";
 var { html } = Lit;
 var MarkdownRendererWithCodeBlock = class extends MarkdownView.MarkdownView.MarkdownInsightRenderer {
+  constructor(options = {}) {
+    super();
+    this.options = options;
+  }
+  options;
   #revealableLink(revealable, label) {
     return html`<devtools-link @click=${(e) => {
       e.preventDefault();
@@ -106,8 +111,10 @@ var MarkdownRendererWithCodeBlock = class extends MarkdownView.MarkdownView.Mark
       return html`${fallbackText}`;
     }
     if (href.startsWith("#file-")) {
-      const file = AiAssistanceModel.ContextSelectionAgent.ContextSelectionAgent.getUISourceCodes().find(
-        (file2) => AiAssistanceModel.ContextSelectionAgent.ContextSelectionAgent.uiSourceCodeId.get(file2) === Number(href.substring(6))
+      const fileId = Number(href.substring(6));
+      const file = AiAssistanceModel.ContextSelectionAgent.ContextSelectionAgent.getSourceById(
+        fileId,
+        this.options.getEstablishedOrigin?.()
       );
       if (file) {
         return this.#revealableLink(file, file.name());
@@ -258,7 +265,7 @@ import * as PanelsCommon2 from "../common/common.js";
 var { html: html3 } = Lit3.StaticHtml;
 var { until: until2 } = Lit3.Directives;
 var AIv2MarkdownRenderer = class extends MarkdownView3.MarkdownView.MarkdownInsightRenderer {
-  constructor(options = {}) {
+  constructor(options) {
     super();
     this.options = options;
   }
@@ -318,8 +325,7 @@ var AIv2MarkdownRenderer = class extends MarkdownView3.MarkdownView.MarkdownInsi
     }
     if (href.startsWith("#file-")) {
       const fileId = Number(href.substring(6));
-      const origin = this.options.getEstablishedOrigin?.();
-      const file = origin && Number.isInteger(fileId) && fileId > 0 ? AiAssistanceModel2.ListSources.ListSourcesTool.getSourceById(fileId, origin) : void 0;
+      const file = AiAssistanceModel2.ListSources.ListSourcesTool.getSourceById(fileId, this.options.getOriginLock());
       if (file) {
         return this.#revealableLink(file, file.name());
       }
@@ -1753,7 +1759,7 @@ var UIStringsNotTranslate = {
   /**
    * @description The error message when the LLM selects context from a different origin.
    */
-  crossOriginError: "I have selected the new context but you will have to start a new chat.",
+  crossOriginError: "I have selected the new context but you will have to start a new chat",
   /**
    * @description The error message when the request payload is too large.
    */
@@ -4129,6 +4135,14 @@ var Audits;
     PermissionElementIssueType2["NonSecureContext"] = "NonSecureContext";
     PermissionElementIssueType2["MissingTransientUserActivation"] = "MissingTransientUserActivation";
   })(PermissionElementIssueType = Audits2.PermissionElementIssueType || (Audits2.PermissionElementIssueType = {}));
+  let WebInstallIssueReason;
+  ((WebInstallIssueReason2) => {
+    WebInstallIssueReason2["ManifestParsingOrNetworkError"] = "ManifestParsingOrNetworkError";
+    WebInstallIssueReason2["StartUrlInvalid"] = "StartUrlInvalid";
+    WebInstallIssueReason2["ManifestMissingNameOrShortName"] = "ManifestMissingNameOrShortName";
+    WebInstallIssueReason2["ManifestMissingId"] = "ManifestMissingId";
+    WebInstallIssueReason2["NoManifest"] = "NoManifest";
+  })(WebInstallIssueReason = Audits2.WebInstallIssueReason || (Audits2.WebInstallIssueReason = {}));
   let InspectorIssueCode;
   ((InspectorIssueCode2) => {
     InspectorIssueCode2["CookieIssue"] = "CookieIssue";
@@ -4161,6 +4175,7 @@ var Audits;
     InspectorIssueCode2["SelectivePermissionsInterventionIssue"] = "SelectivePermissionsInterventionIssue";
     InspectorIssueCode2["EmailVerificationRequestIssue"] = "EmailVerificationRequestIssue";
     InspectorIssueCode2["LazyLoadImageIssue"] = "LazyLoadImageIssue";
+    InspectorIssueCode2["WebInstallIssue"] = "WebInstallIssue";
   })(InspectorIssueCode = Audits2.InspectorIssueCode || (Audits2.InspectorIssueCode = {}));
   let GetEncodedResponseRequestEncoding;
   ((GetEncodedResponseRequestEncoding2) => {
@@ -4443,6 +4458,11 @@ var DOM;
     GetElementByRelationRequestRelation2["InterestTarget"] = "InterestTarget";
     GetElementByRelationRequestRelation2["CommandFor"] = "CommandFor";
   })(GetElementByRelationRequestRelation = DOM2.GetElementByRelationRequestRelation || (DOM2.GetElementByRelationRequestRelation = {}));
+  let SetTextMarkerRequestType;
+  ((SetTextMarkerRequestType2) => {
+    SetTextMarkerRequestType2["Spelling"] = "spelling";
+    SetTextMarkerRequestType2["Grammar"] = "grammar";
+  })(SetTextMarkerRequestType = DOM2.SetTextMarkerRequestType || (DOM2.SetTextMarkerRequestType = {}));
 })(DOM || (DOM = {}));
 var DOMDebugger;
 ((DOMDebugger2) => {
@@ -6948,7 +6968,7 @@ var UIStringsNotTranslate2 = {
   /**
    * @description Text displayed when the chat input is disabled due to reading past conversation.
    */
-  pastConversation: "You\u2019re viewing a past conversation.",
+  pastConversation: "You\u2019re viewing a past conversation",
   /**
    * @description Message displayed in toast in case of any failures while taking a screenshot of the page.
    */
@@ -9472,7 +9492,7 @@ var UIStrings6 = {
   /**
    * @description Disclaimer text right after the chat input.
    */
-  inputDisclaimerForEmptyState: "This is an experimental AI feature and won\u2019t always get it right.",
+  inputDisclaimerForEmptyState: "This is an experimental AI feature and won\u2019t always get it right",
   /**
    * @description The message shown in a toast when the response is copied to the clipboard.
    */
@@ -9624,10 +9644,9 @@ async function getEmptyStateSuggestions(conversation) {
   }
 }
 function createV2MarkdownRenderer(conversation) {
-  const options = {};
-  if (conversation) {
-    options.getEstablishedOrigin = () => conversation.origin;
-  }
+  const options = {
+    getOriginLock: () => conversation.getOriginLock()
+  };
   const primaryTarget = SDK6.TargetManager.TargetManager.instance().primaryPageTarget();
   const domModel = primaryTarget?.model(SDK6.DOMModel.DOMModel);
   const resourceTreeModel = primaryTarget?.model(SDK6.ResourceTreeModel.ResourceTreeModel);
@@ -9666,7 +9685,9 @@ function getMarkdownRenderer(conversation) {
     const mainDocumentURL = domModel?.existingDocument()?.documentURL;
     return new AccessibilityAgentMarkdownRenderer(mainDocumentURL);
   }
-  return new MarkdownRendererWithCodeBlock();
+  return new MarkdownRendererWithCodeBlock({
+    getEstablishedOrigin: () => conversation?.origin
+  });
 }
 var ViewState = /* @__PURE__ */ ((ViewState2) => {
   ViewState2["DISABLED_VIEW"] = "disabled-view";
@@ -9687,9 +9708,8 @@ function toolbarView(input) {
           @click=${input.onNewChatClick}></devtools-button>
         <div class="toolbar-divider"></div>
         <devtools-menu-button
-          title=${i18nString6(UIStrings6.history)}
-          aria-label=${i18nString6(UIStrings6.history)}
           .iconName=${"history"}
+          .accessibleLabel=${i18nString6(UIStrings6.history)}
           .jslogContext=${"freestyler.history"}
           .populateMenuCall=${input.populateHistoryMenu}
         ></devtools-menu-button>` : Lit10.nothing}

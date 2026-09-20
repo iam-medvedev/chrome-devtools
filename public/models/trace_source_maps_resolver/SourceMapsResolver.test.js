@@ -13,7 +13,7 @@ import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { MockDebuggerBackend } from '../../testing/MockScopeChain.js';
 import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import { encodeSourceMap } from '../../testing/SourceMapEncoder.js';
-import { makeMockRendererHandlerData, makeMockSamplesHandlerData, makeProfileCall, } from '../../testing/TraceHelpers.js';
+import { makeMockRendererHandlerData, makeMockSamplesHandlerData, makeProfileCall, } from '../../testing/TraceHelpersCore.js';
 import { TraceLoader } from '../../testing/TraceLoader.js';
 import * as TraceSourceMapsResolver from './trace_source_maps_resolver.js';
 const { SourceMapsResolver, SourceMappingsUpdated } = TraceSourceMapsResolver;

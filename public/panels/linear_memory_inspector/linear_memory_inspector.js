@@ -40,7 +40,7 @@ var UIStrings = {
    * @description Label in the Memory inspector panel that serves as a placeholder if no inspections are open (i.e., nothing to see here).
    *             Inspection here refers to viewing, navigating, and understanding the memory through this panel.
    */
-  memoryInspectorExplanation: "On this page you can inspect binary data.",
+  memoryInspectorExplanation: "On this page you can inspect binary data",
   /**
    * @description Label in the Memory inspector panel for a link.
    */
@@ -230,7 +230,7 @@ var UIStrings2 = {
   /**
    * @description Error message that shows up in the console if a buffer to be opened in the Memory inspector panel cannot be found.
    */
-  couldNotOpenLinearMemory: "Could not open Memory inspector: buffer not found.",
+  couldNotOpenLinearMemory: "Could not open Memory inspector: buffer not found",
   /**
    * @description A context menu item in the Scope view of the Sources panel.
    */
@@ -473,9 +473,9 @@ var LinearMemoryInspectorController = class _LinearMemoryInspectorController ext
     void UI2.ViewManager.ViewManager.instance().showView("linear-memory-inspector", omitFocus);
   }
   appendApplicableItems(_event, contextMenu, target) {
-    if (target.property.object?.isLinearMemoryInspectable()) {
-      const expression = target.path();
-      const object = target.property.object;
+    if (target.object?.isLinearMemoryInspectable()) {
+      const expression = target.path;
+      const object = target.object;
       contextMenu.debugSection().appendItem(
         i18nString2(UIStrings2.openInMemoryInspectorPanel),
         this.reveal.bind(this, new SDK.RemoteObject.LinearMemoryInspectable(object, expression)),

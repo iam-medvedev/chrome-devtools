@@ -19,6 +19,13 @@ describe('AccessibilityModel', () => {
             new SDK.AccessibilityModel.AccessibilityModel(target);
         });
     });
+    it('returns empty array when requesting children for a node not in the model', async () => {
+        const universe = new TestUniverse();
+        const target = universe.createTarget();
+        const model = new SDK.AccessibilityModel.AccessibilityModel(target);
+        const children = await model.requestAXChildren('non-existent-id');
+        assert.deepEqual(children, []);
+    });
     describe('axNodeToText', function () {
         const snapshotTester = new SnapshotTester(this, import.meta);
         it('correctly formats an accessibility node tree to text', async function () {

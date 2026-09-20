@@ -16,6 +16,6 @@ import "../../ui/legacy/components/source_frame/source_frame-meta.js";
 import "../../panels/console_counters/console_counters-meta.js";
 import "../../panels/explain/explain-meta.js";
 import "../../panels/ai_assistance/ai_assistance-meta.js";
-import "../../ui/comments/comments-meta.js";
+import "../../panels/common/common-meta.js";
 import "../main/main.js";
 //# sourceMappingURL=shell.js.map

@@ -1,8 +1,8 @@
-import type * as PlatformApi from '../../core/platform/api/api.js';
+import type * as Platform from '../../core/platform/platform.js';
 import * as HeapSnapshotModel from '../../models/heap_snapshot/heap_snapshot.js';
 export declare class HeapSnapshotWorkerDispatcher {
     #private;
-    constructor(postMessage: PlatformApi.HostRuntime.Worker['postMessage']);
+    constructor(postMessage: Platform.HostRuntime.Worker['postMessage']);
     sendEvent(name: string, data: unknown): void;
-    dispatchMessage({ data, ports, }: PlatformApi.HostRuntime.WorkerMessageEvent<HeapSnapshotModel.HeapSnapshotModel.WorkerCommand>): Promise<void>;
+    dispatchMessage({ data, ports, }: Platform.HostRuntime.WorkerMessageEvent<HeapSnapshotModel.HeapSnapshotModel.WorkerCommand>): Promise<void>;
 }

@@ -11,6 +11,7 @@ __export(AdsView_exports, {
 });
 import "../../../ui/legacy/components/data_grid/data_grid.js";
 import "../../../ui/kit/kit.js";
+import "../../../ui/components/tooltips/tooltips.js";
 import * as Common from "../../../core/common/common.js";
 import * as i18n from "../../../core/i18n/i18n.js";
 import * as SDK from "../../../core/sdk/sdk.js";
@@ -18,6 +19,32 @@ import * as Components from "../../../ui/legacy/components/utils/utils.js";
 import * as UI from "../../../ui/legacy/legacy.js";
 import * as Lit from "../../../ui/lit/lit.js";
 import * as VisualLogging from "../../../ui/visual_logging/visual_logging.js";
+
+// gen/front_end/panels/application/components/adScriptsTable.css.js
+var adScriptsTable_css_default = `/*
+ * Copyright 2026 The Chromium Authors
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+.ad-provenance-tooltip {
+  user-select: text;
+}
+
+.ad-provenance-tooltip-title {
+  color: var(--sys-color-on-surface-subtle);
+  margin-top: var(--sys-size-2);
+}
+
+.ad-provenance-tooltip-title:first-child {
+  margin-top: 0;
+}
+
+.ad-provenance-tooltip-content {
+  padding-left: var(--sys-size-4);
+}
+
+/*# sourceURL=${import.meta.resolve("./adScriptsTable.css")} */`;
 
 // gen/front_end/panels/application/components/adsView.css.js
 var adsView_css_default = `/*
@@ -51,17 +78,20 @@ var adsView_css_default = `/*
 
 .metric-box {
   background-color: var(--sys-color-surface);
-  padding: var(--sys-size-6);
+  padding: var(--sys-size-4);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  position: relative;
 }
 
 .metric-title {
   font-size: var(--sys-typescale-body4-size);
   color: var(--sys-color-on-surface-subtle);
   margin: 0 0 var(--sys-size-3);
+  padding: 0 var(--sys-size-8);
+  text-align: center;
 }
 
 .metric-value {
@@ -79,6 +109,13 @@ var adsView_css_default = `/*
   font-size: var(--sys-typescale-body4-size);
   font-weight: normal;
   color: var(--sys-color-on-surface-subtle);
+}
+
+.metric-info-icon {
+  position: absolute;
+  top: var(--sys-size-4);
+  right: var(--sys-size-4);
+  cursor: pointer;
 }
 
 .metrics-title,
@@ -141,6 +178,11 @@ var adsView_css_default = `/*
 var { html } = Lit;
 var { repeat } = Lit.Directives;
 var { bindToSetting } = UI.UIUtils;
+var DENSITY_DOC_URL = "https://developer.chrome.com/docs/ads/metrics/density";
+var COUNT_DOC_URL = "https://developer.chrome.com/docs/ads/metrics/count";
+var CPU_USAGE_DOC_URL = "https://developer.chrome.com/docs/ads/metrics/weight-cpu";
+var NETWORK_USAGE_DOC_URL = "https://developer.chrome.com/docs/ads/metrics/weight-network";
+var AD_DETECTION_DOC_URL = "https://developer.chrome.com/docs/ads/detection";
 var UIStrings = {
   /**
    * @description Title for the metrics table.
@@ -151,17 +193,33 @@ var UIStrings = {
    */
   viewportAdDensity: "Viewport ad density",
   /**
+   * @description Tooltip text explaining the viewport ad density metric in the ads view of the Application panel.
+   */
+  viewportAdDensityExplanation: "Percentage of the viewport covered by ads",
+  /**
    * @description Title for a metric showing the number of ads in the viewport.
    */
   viewportAdCount: "Viewport ad count",
+  /**
+   * @description Tooltip text explaining the viewport ad count metric in the ads view of the Application panel.
+   */
+  viewportAdCountExplanation: "Number of ads in the viewport",
   /**
    * @description Title for a metric showing the total CPU usage by ads.
    */
   totalCpuUsage: "Total CPU usage by ads",
   /**
+   * @description Tooltip text explaining the total CPU usage metric in the ads view of the Application panel.
+   */
+  totalCpuUsageExplanation: "Total CPU time consumed by ads",
+  /**
    * @description Title for a metric showing the total network usage by ads.
    */
   totalNetworkUsage: "Total network usage by ads",
+  /**
+   * @description Tooltip text explaining the total network usage metric in the ads view of the Application panel.
+   */
+  totalNetworkUsageExplanation: "Total network data consumed by ads",
   /**
    * @description Subtext showing the average value of a metric.
    * @example {5.00%} PH1
@@ -214,6 +272,30 @@ var UIStrings = {
    */
   adScripts: "Ad scripts",
   /**
+   * @description Title for the ad provenance column in the ad scripts table.
+   */
+  adProvenance: "Ad provenance",
+  /**
+   * @description Text to display when a script has no provenance.
+   */
+  noProvenance: "<no provenance>",
+  /**
+   * @description Text to display in the tooltip when a script has no provenance.
+   */
+  noProvenanceTooltip: "No provenance data is available",
+  /**
+   * @description Title for the filter list rule in the ad provenance tooltip.
+   */
+  filterListRule: "Filter list rule",
+  /**
+   * @description Title for the root script filter list rule in the ad provenance tooltip.
+   */
+  rootScriptFilterListRule: "Root script filter list rule",
+  /**
+   * @description Title for the creator ad script ancestry in the ad provenance tooltip.
+   */
+  creatorAdScriptAncestry: "Creator ad script ancestry",
+  /**
    * @description Title for the settings section.
    */
   settings: "Settings",
@@ -225,11 +307,11 @@ var UIStrings = {
   /**
    * @description Explanation text for the 'Highlight ads' setting.
    */
-  highlightsElementsRedDetectedToBe: "Highlights elements (red) detected to be ads.",
+  highlightsElementsRedDetectedToBe: "Highlights elements (red) detected to be ads",
   /**
    * @description Text explaining that ad detection is not perfect.
    */
-  adDetectionMistakes: "Chrome\u2019s ad detection can make mistakes.",
+  adDetectionMistakes: "Chrome\u2019s ad detection can make mistakes",
   /**
    * @description Link text for learning more about ad detection in Chrome.
    */
@@ -249,6 +331,10 @@ var formatCpu = (val) => {
 var formatNetwork = (val) => {
   return formatMetric(val, (v) => i18n.ByteUtilities.bytesToString(v));
 };
+var SCRIPT_LINK_OPTIONS = {
+  jslogContext: "ad-script"
+};
+var stopPropagation = (e) => e.stopPropagation();
 var DEFAULT_VIEW = (input, output, target) => {
   const metrics = input.metrics;
   const formatValue = (val, isPercentage) => {
@@ -277,6 +363,25 @@ var DEFAULT_VIEW = (input, output, target) => {
       }).format(v);
     });
   };
+  const renderMetricTooltip = (tooltipId, explanation, url) => {
+    return html`
+      <devtools-icon
+        name="info"
+        class="small metric-info-icon"
+        tabindex="0"
+        role="button"
+        aria-details=${tooltipId}
+        aria-label=${explanation}
+      ></devtools-icon>
+      <devtools-tooltip id=${tooltipId} variant="rich" prefer-span-left @copy=${stopPropagation}>
+        <span>${explanation}</span>
+        &#32;
+        <devtools-link href=${url} jslogcontext="learn-more">
+          ${i18nString(UIStrings.learnMore)}
+        </devtools-link>
+      </devtools-tooltip>
+    `;
+  };
   Lit.render(html`
     <style>${adsView_css_default}</style>
     <div class="ads-view-container" jslog=${VisualLogging.pane("ads")}>
@@ -290,6 +395,11 @@ var DEFAULT_VIEW = (input, output, target) => {
     PH1: formatAverage(metrics.averageViewportAdDensityByArea, true)
   })}</span>
           </dd>
+          ${renderMetricTooltip(
+    "density-metric-tooltip",
+    i18nString(UIStrings.viewportAdDensityExplanation),
+    DENSITY_DOC_URL
+  )}
         </div>
         <div class="metric-box">
           <dt class="metric-title">${i18nString(UIStrings.viewportAdCount)}</dt>
@@ -299,18 +409,33 @@ var DEFAULT_VIEW = (input, output, target) => {
     PH1: formatAverage(metrics.averageViewportAdCount, false)
   })}</span>
           </dd>
+          ${renderMetricTooltip(
+    "count-metric-tooltip",
+    i18nString(UIStrings.viewportAdCountExplanation),
+    COUNT_DOC_URL
+  )}
         </div>
         <div class="metric-box">
           <dt class="metric-title">${i18nString(UIStrings.totalCpuUsage)}</dt>
           <dd class="metric-value">
             <span>${formatCpu(metrics.totalAdCpuTime)}</span>
           </dd>
+          ${renderMetricTooltip(
+    "cpu-metric-tooltip",
+    i18nString(UIStrings.totalCpuUsageExplanation),
+    CPU_USAGE_DOC_URL
+  )}
         </div>
         <div class="metric-box">
           <dt class="metric-title">${i18nString(UIStrings.totalNetworkUsage)}</dt>
           <dd class="metric-value">
             <span>${formatNetwork(metrics.totalAdNetworkBytes)}</span>
           </dd>
+          ${renderMetricTooltip(
+    "network-metric-tooltip",
+    i18nString(UIStrings.totalNetworkUsageExplanation),
+    NETWORK_USAGE_DOC_URL
+  )}
         </div>
       </dl>
       <hr class="divider">
@@ -346,13 +471,54 @@ var DEFAULT_VIEW = (input, output, target) => {
       <div class="ad-scripts-container">
         <devtools-data-grid striped resize="last" class="ad-scripts-data-grid" name=${i18nString(UIStrings.adScripts)}>
           <table>
+            ${Lit.Directives.unsafeHTML(`<style>${adScriptsTable_css_default}</style>`)}
             <tr>
               <th id="url" weight="1" sortable>${i18nString(UIStrings.url)}</th>
+              <th id="provenance" weight="1" sortable>${i18nString(UIStrings.adProvenance)}</th>
             </tr>
             ${repeat(input.adScripts, (script) => script.url, (script) => html`
               <tr>
                 <td title=${script.url}>
-                  ${Components.Linkifier.Linkifier.renderLinkifiedUrl(script.url, { text: script.url })}
+                  ${input.getLinkElement(script.url)}
+                </td>
+                <td>
+                  <devtools-tooltip id=${`ad-tooltip-${script.scriptId}`} variant=rich @copy=${stopPropagation}>
+                    <div class="ad-provenance-tooltip">
+                      ${script.parsedProvenance?.filterlistRule ? html`
+                        <div class="ad-provenance-tooltip-title">${i18nString(UIStrings.filterListRule)}</div>
+                        <div class="ad-provenance-tooltip-content">${script.parsedProvenance.filterlistRule}</div>
+                      ` : Lit.nothing}
+                      ${script.parsedProvenance?.adScriptAncestry ? html`
+                        <div class="ad-provenance-tooltip-title">${i18nString(UIStrings.creatorAdScriptAncestry)}</div>
+                        <div class="ad-provenance-tooltip-content">
+                          ${input.target ? script.parsedProvenance.adScriptAncestry.ancestryChain.map((ancestor) => html`
+                            <div>
+                              ${UI.Widget.widget(Components.Linkifier.ScriptLocationLink, {
+    target: input.target ?? void 0,
+    scriptId: ancestor.scriptId,
+    options: SCRIPT_LINK_OPTIONS
+  })}
+                            </div>
+                          `) : Lit.nothing}
+                        </div>
+                        ${script.parsedProvenance.adScriptAncestry.rootScriptFilterlistRule ? html`
+                          <div class="ad-provenance-tooltip-title">${i18nString(UIStrings.rootScriptFilterListRule)}</div>
+                          <div class="ad-provenance-tooltip-content">${script.parsedProvenance.adScriptAncestry.rootScriptFilterlistRule}</div>
+                        ` : Lit.nothing}
+                      ` : Lit.nothing}
+                      ${!script.parsedProvenance?.adScriptAncestry && !script.parsedProvenance?.filterlistRule ? i18nString(UIStrings.noProvenanceTooltip) : Lit.nothing}
+                    </div>
+                  </devtools-tooltip>
+                  <div aria-details=${`ad-tooltip-${script.scriptId}`}>
+                    ${script.parsedProvenance?.filterlistRule ? html`<span>${script.parsedProvenance.filterlistRule}</span>` : Lit.nothing}
+                    ${script.parsedProvenance?.filterlistRule && script.parsedProvenance?.adScriptAncestry && input.target ? html`<span>, </span>` : Lit.nothing}
+                    ${script.parsedProvenance?.adScriptAncestry && input.target ? UI.Widget.widget(Components.Linkifier.ScriptLocationLink, {
+    target: input.target ?? void 0,
+    scriptId: script.parsedProvenance.adScriptAncestry.ancestryChain[0].scriptId,
+    options: SCRIPT_LINK_OPTIONS
+  }) : Lit.nothing}
+                    ${!script.parsedProvenance?.adScriptAncestry && !script.parsedProvenance?.filterlistRule ? i18nString(UIStrings.noProvenance) : Lit.nothing}
+                  </div>
                 </td>
               </tr>
             `)}
@@ -375,7 +541,7 @@ var DEFAULT_VIEW = (input, output, target) => {
         <span>
           ${i18nString(UIStrings.adDetectionMistakes)}
           &#32;
-          <devtools-link class="link devtools-link" href="https://chromium.googlesource.com/chromium/src/+/main/docs/ad_tagging.md" jslogcontext="learn-more">
+          <devtools-link href=${AD_DETECTION_DOC_URL} jslogcontext="learn-more">
             ${i18nString(UIStrings.learnMore)}
           </devtools-link>
         </span>
@@ -394,7 +560,8 @@ var AdsView = class extends UI.Widget.Widget {
   #fetchingElementIds = /* @__PURE__ */ new Set();
   #unresolvedScriptIds = /* @__PURE__ */ new Set();
   #adScriptNodeData = [];
-  #seenUrls = /* @__PURE__ */ new Set();
+  #urlToLinkElement = /* @__PURE__ */ new Map();
+  #reconstructedProvenance = /* @__PURE__ */ new Map();
   constructor(view = DEFAULT_VIEW) {
     super({ useShadowDom: true });
     this.#view = view;
@@ -505,9 +672,48 @@ var AdsView = class extends UI.Widget.Widget {
       }
     }
   }
+  // Lazily reconstructs the full script ancestry chain for a given script.
+  // The backend guarantees that scripts across different batches are ordered
+  // correctly (i.e., an ancestor script will always be sent in the same or an
+  // earlier batch than its descendants). However, scripts arriving within the
+  // same batch may be out of order. This recursive, topological approach ensures
+  // we can resolve those in-batch ordering issues while maintaining O(N)
+  // complexity overall via memoization in #reconstructedProvenance.
+  #reconstructProvenance(scriptId, newScriptsMap) {
+    if (this.#reconstructedProvenance.has(scriptId)) {
+      return this.#reconstructedProvenance.get(scriptId) ?? null;
+    }
+    const script = newScriptsMap.get(scriptId);
+    if (!script || !script.provenance) {
+      return null;
+    }
+    let fullProvenance = script.provenance;
+    if (script.provenance.adScriptAncestry) {
+      const immediateAncestor = script.provenance.adScriptAncestry.ancestryChain[0];
+      const ancestorProvenance = immediateAncestor ? this.#reconstructProvenance(immediateAncestor.scriptId, newScriptsMap) : null;
+      if (ancestorProvenance) {
+        const newChain = [immediateAncestor];
+        if (ancestorProvenance.adScriptAncestry) {
+          newChain.push(...ancestorProvenance.adScriptAncestry.ancestryChain);
+        }
+        const rootScriptFilterlistRule = ancestorProvenance.filterlistRule || ancestorProvenance.adScriptAncestry?.rootScriptFilterlistRule;
+        fullProvenance = {
+          ...script.provenance,
+          adScriptAncestry: {
+            ancestryChain: newChain,
+            ...rootScriptFilterlistRule ? { rootScriptFilterlistRule } : {}
+          }
+        };
+      }
+    }
+    this.#reconstructedProvenance.set(scriptId, fullProvenance);
+    return fullProvenance;
+  }
   #processAdScripts(newScripts) {
+    const newScriptsMap = new Map(newScripts.map((s) => [s.scriptId, s]));
     for (const script of newScripts) {
       this.#unresolvedScriptIds.add(script.scriptId);
+      this.#reconstructProvenance(script.scriptId, newScriptsMap);
     }
   }
   async #fetchIframeElementId(frameId) {
@@ -538,7 +744,8 @@ var AdsView = class extends UI.Widget.Widget {
     this.#fetchingElementIds.clear();
     this.#unresolvedScriptIds.clear();
     this.#adScriptNodeData.length = 0;
-    this.#seenUrls.clear();
+    this.#urlToLinkElement.clear();
+    this.#reconstructedProvenance.clear();
     this.requestUpdate();
   }
   performUpdate() {
@@ -575,18 +782,23 @@ var AdsView = class extends UI.Widget.Widget {
         continue;
       }
       const url = sdkScript.sourceURL;
-      if (this.#seenUrls.has(url)) {
+      if (this.#urlToLinkElement.has(url)) {
         continue;
       }
-      this.#seenUrls.add(url);
+      this.#urlToLinkElement.set(url, Components.Linkifier.Linkifier.linkifyURL(url, { text: url }));
+      const parsedProvenance = this.#reconstructedProvenance.get(scriptId) ?? null;
       this.#adScriptNodeData.push({
-        url
+        url,
+        parsedProvenance,
+        scriptId
       });
     }
     const viewInput = {
       metrics: this.#currentMetrics,
       adFrames: adFramesArray,
-      adScripts: this.#adScriptNodeData
+      adScripts: this.#adScriptNodeData,
+      target: target || null,
+      getLinkElement: (url) => this.#urlToLinkElement.get(url)
     };
     this.#view(viewInput, void 0, this.contentElement);
   }
@@ -1127,6 +1339,14 @@ var Audits;
     PermissionElementIssueType2["NonSecureContext"] = "NonSecureContext";
     PermissionElementIssueType2["MissingTransientUserActivation"] = "MissingTransientUserActivation";
   })(PermissionElementIssueType = Audits2.PermissionElementIssueType || (Audits2.PermissionElementIssueType = {}));
+  let WebInstallIssueReason;
+  ((WebInstallIssueReason2) => {
+    WebInstallIssueReason2["ManifestParsingOrNetworkError"] = "ManifestParsingOrNetworkError";
+    WebInstallIssueReason2["StartUrlInvalid"] = "StartUrlInvalid";
+    WebInstallIssueReason2["ManifestMissingNameOrShortName"] = "ManifestMissingNameOrShortName";
+    WebInstallIssueReason2["ManifestMissingId"] = "ManifestMissingId";
+    WebInstallIssueReason2["NoManifest"] = "NoManifest";
+  })(WebInstallIssueReason = Audits2.WebInstallIssueReason || (Audits2.WebInstallIssueReason = {}));
   let InspectorIssueCode;
   ((InspectorIssueCode2) => {
     InspectorIssueCode2["CookieIssue"] = "CookieIssue";
@@ -1159,6 +1379,7 @@ var Audits;
     InspectorIssueCode2["SelectivePermissionsInterventionIssue"] = "SelectivePermissionsInterventionIssue";
     InspectorIssueCode2["EmailVerificationRequestIssue"] = "EmailVerificationRequestIssue";
     InspectorIssueCode2["LazyLoadImageIssue"] = "LazyLoadImageIssue";
+    InspectorIssueCode2["WebInstallIssue"] = "WebInstallIssue";
   })(InspectorIssueCode = Audits2.InspectorIssueCode || (Audits2.InspectorIssueCode = {}));
   let GetEncodedResponseRequestEncoding;
   ((GetEncodedResponseRequestEncoding2) => {
@@ -1441,6 +1662,11 @@ var DOM;
     GetElementByRelationRequestRelation2["InterestTarget"] = "InterestTarget";
     GetElementByRelationRequestRelation2["CommandFor"] = "CommandFor";
   })(GetElementByRelationRequestRelation = DOM2.GetElementByRelationRequestRelation || (DOM2.GetElementByRelationRequestRelation = {}));
+  let SetTextMarkerRequestType;
+  ((SetTextMarkerRequestType2) => {
+    SetTextMarkerRequestType2["Spelling"] = "spelling";
+    SetTextMarkerRequestType2["Grammar"] = "grammar";
+  })(SetTextMarkerRequestType = DOM2.SetTextMarkerRequestType || (DOM2.SetTextMarkerRequestType = {}));
 })(DOM || (DOM = {}));
 var DOMDebugger;
 ((DOMDebugger2) => {
@@ -3430,7 +3656,7 @@ var UIStrings2 = {
   /**
    * @description Description text for not restored reason NotMainFrame.
    */
-  notMainFrame: "Navigation happened in a frame other than the main frame.",
+  notMainFrame: "Navigation happened in a frame other than the main frame",
   /**
    * @description Description text for not restored reason BackForwardCacheDisabled.
    */
@@ -3439,104 +3665,104 @@ var UIStrings2 = {
    * @description Description text for not restored reason RelatedActiveContentsExist.
    * Note: "window.open()" is the name of a JavaScript method and should not be translated.
    */
-  relatedActiveContentsExist: "The page was opened using '`window.open()`' and another tab has a reference to it, or the page opened a window.",
+  relatedActiveContentsExist: "The page was opened using '`window.open()`' and another tab has a reference to it, or the page opened a window",
   /**
    * @description Description text for not restored reason HTTPStatusNotOK.
    */
-  HTTPStatusNotOK: "Only pages with a status code of 2XX can be cached.",
+  HTTPStatusNotOK: "Only pages with a status code of 2XX can be cached",
   /**
    * @description Description text for not restored reason SchemeNotHTTPOrHTTPS.
    */
-  schemeNotHTTPOrHTTPS: "Only pages whose URL scheme is HTTP / HTTPS can be cached.",
+  schemeNotHTTPOrHTTPS: "Only pages whose URL scheme is HTTP / HTTPS can be cached",
   /**
    * @description Description text for not restored reason Loading.
    */
-  loading: "The page did not finish loading before navigating away.",
+  loading: "The page did not finish loading before navigating away",
   /**
    * @description Description text for not restored reason WasGrantedMediaAccess.
    */
-  wasGrantedMediaAccess: "Pages that have granted access to record video or audio are not currently eligible for back/forward cache.",
+  wasGrantedMediaAccess: "Pages that have granted access to record video or audio are not currently eligible for back/forward cache",
   /**
    * @description Description text for not restored reason HTTPMethodNotGET.
    */
-  HTTPMethodNotGET: "Only pages loaded via a GET request are eligible for back/forward cache.",
+  HTTPMethodNotGET: "Only pages loaded via a GET request are eligible for back/forward cache",
   /**
    * @description Description text for not restored reason SubframeIsNavigating.
    */
-  subframeIsNavigating: "An iframe on the page started a navigation that did not complete.",
+  subframeIsNavigating: "An iframe on the page started a navigation that did not complete",
   /**
    * @description Description text for not restored reason Timeout.
    */
-  timeout: "The page exceeded the maximum time in back/forward cache and was expired.",
+  timeout: "The page exceeded the maximum time in back/forward cache and was expired",
   /**
    * @description Description text for not restored reason CacheLimit.
    */
-  cacheLimit: "The page was evicted from the cache to allow another page to be cached.",
+  cacheLimit: "The page was evicted from the cache to allow another page to be cached",
   /**
    * @description Description text for not restored reason JavaScriptExecution.
    */
-  JavaScriptExecution: "Chrome detected an attempt to execute JavaScript while in the cache.",
+  JavaScriptExecution: "Chrome detected an attempt to execute JavaScript while in the cache",
   /**
    * @description Description text for not restored reason RendererProcessKilled.
    */
-  rendererProcessKilled: "The renderer process for the page in back/forward cache was killed.",
+  rendererProcessKilled: "The renderer process for the page in back/forward cache was killed",
   /**
    * @description Description text for not restored reason RendererProcessCrashed.
    */
-  rendererProcessCrashed: "The renderer process for the page in back/forward cache crashed.",
+  rendererProcessCrashed: "The renderer process for the page in back/forward cache crashed",
   /**
    * @description Description text for not restored reason GrantedMediaStreamAccess.
    */
-  grantedMediaStreamAccess: "Pages that have granted media stream access are not currently eligible for back/forward cache.",
+  grantedMediaStreamAccess: "Pages that have granted media stream access are not currently eligible for back/forward cache",
   /**
    * @description Description text for not restored reason CacheFlushed.
    */
-  cacheFlushed: "The cache was intentionally cleared.",
+  cacheFlushed: "The cache was intentionally cleared",
   /**
    * @description Description text for not restored reason ServiceWorkerVersionActivation.
    */
-  serviceWorkerVersionActivation: "The page was evicted from back/forward cache due to a service worker activation.",
+  serviceWorkerVersionActivation: "The page was evicted from back/forward cache due to a service worker activation",
   /**
    * @description Description text for not restored reason SessionRestored.
    */
-  sessionRestored: "Chrome restarted and cleared the back/forward cache entries.",
+  sessionRestored: "Chrome restarted and cleared the back/forward cache entries",
   /**
    * @description Description text for not restored reason ServiceWorkerPostMessage.
    * Note: "MessageEvent" should not be translated.
    */
-  serviceWorkerPostMessage: "A service worker attempted to send the page in back/forward cache a `MessageEvent`.",
+  serviceWorkerPostMessage: "A service worker attempted to send the page in back/forward cache a `MessageEvent`",
   /**
    * @description Description text for not restored reason EnteredBackForwardCacheBeforeServiceWorkerHostAdded.
    */
-  enteredBackForwardCacheBeforeServiceWorkerHostAdded: "A service worker was activated while the page was in back/forward cache.",
+  enteredBackForwardCacheBeforeServiceWorkerHostAdded: "A service worker was activated while the page was in back/forward cache",
   /**
    * @description Description text for not restored reason ServiceWorkerClaim.
    */
-  serviceWorkerClaim: "The page was claimed by a service worker while it is in back/forward cache.",
+  serviceWorkerClaim: "The page was claimed by a service worker while it is in back/forward cache",
   /**
    * @description Description text for not restored reason HaveInnerContents.
    */
-  haveInnerContents: "Pages that have certain kinds of embedded content (e.g. PDFs) are not currently eligible for back/forward cache.",
+  haveInnerContents: "Pages that have certain kinds of embedded content (e.g. PDFs) are not currently eligible for back/forward cache",
   /**
    * @description Description text for not restored reason TimeoutPuttingInCache.
    */
-  timeoutPuttingInCache: "The page timed out entering back/forward cache (likely due to long-running pagehide handlers).",
+  timeoutPuttingInCache: "The page timed out entering back/forward cache (likely due to long-running pagehide handlers)",
   /**
    * @description Description text for not restored reason BackForwardCacheDisabledByLowMemory.
    */
-  backForwardCacheDisabledByLowMemory: "Back/forward cache is disabled due to insufficient memory.",
+  backForwardCacheDisabledByLowMemory: "Back/forward cache is disabled due to insufficient memory",
   /**
    * @description Description text for not restored reason BackForwardcCacheDisabledByCommandLine.
    */
-  backForwardCacheDisabledByCommandLine: "Back/forward cache is disabled by the command line.",
+  backForwardCacheDisabledByCommandLine: "Back/forward cache is disabled by the command line",
   /**
    * @description Description text for not restored reason NetworkRequestDatapipeDrainedAsBytesConsumer.
    */
-  networkRequestDatapipeDrainedAsBytesConsumer: "Pages that have inflight fetch() or XHR are not currently eligible for back/forward cache.",
+  networkRequestDatapipeDrainedAsBytesConsumer: "Pages that have inflight fetch() or XHR are not currently eligible for back/forward cache",
   /**
    * @description Description text for not restored reason NetworkRequestRedirected.
    */
-  networkRequestRedirected: "The page was evicted from back/forward cache because an active network request involved a redirect.",
+  networkRequestRedirected: "The page was evicted from back/forward cache because an active network request involved a redirect",
   /**
    * @description Description text for not restored reason NetworkRequestTimeout.
    */
@@ -3548,139 +3774,139 @@ var UIStrings2 = {
   /**
    * @description Description text for not restored reason NavigationCancelledWhileRestoring.
    */
-  navigationCancelledWhileRestoring: "Navigation was cancelled before the page could be restored from back/forward cache.",
+  navigationCancelledWhileRestoring: "Navigation was cancelled before the page could be restored from back/forward cache",
   /**
    * @description Description text for not restored reason BackForwardCacheDisabledForPrerender.
    */
-  backForwardCacheDisabledForPrerender: "Back/forward cache is disabled for prerenderer.",
+  backForwardCacheDisabledForPrerender: "Back/forward cache is disabled for prerenderer",
   /**
    * @description Description text for not restored reason userAgentOverrideDiffers.
    */
-  userAgentOverrideDiffers: "Browser has changed the user agent override header.",
+  userAgentOverrideDiffers: "Browser has changed the user agent override header",
   /**
    * @description Description text for not restored reason ForegroundCacheLimit.
    */
-  foregroundCacheLimit: "The page was evicted from the cache to allow another page to be cached.",
+  foregroundCacheLimit: "The page was evicted from the cache to allow another page to be cached",
   /**
    * @description Description text for not restored reason BackForwardCacheDisabledForDelegate.
    */
-  backForwardCacheDisabledForDelegate: "Back/forward cache is not supported by delegate.",
+  backForwardCacheDisabledForDelegate: "Back/forward cache is not supported by delegate",
   /**
    * @description Description text for not restored reason UnloadHandlerExistsInMainFrame.
    */
-  unloadHandlerExistsInMainFrame: "The page has an unload handler in the main frame.",
+  unloadHandlerExistsInMainFrame: "The page has an unload handler in the main frame",
   /**
    * @description Description text for not restored reason UnloadHandlerExistsInSubFrame.
    */
-  unloadHandlerExistsInSubFrame: "The page has an unload handler in a sub frame.",
+  unloadHandlerExistsInSubFrame: "The page has an unload handler in a sub frame",
   /**
    * @description Description text for not restored reason ServiceWorkerUnregistration.
    */
-  serviceWorkerUnregistration: "ServiceWorker was unregistered while a page was in back/forward cache.",
+  serviceWorkerUnregistration: "ServiceWorker was unregistered while a page was in back/forward cache",
   /**
    * @description Description text for not restored reason NoResponseHead.
    */
-  noResponseHead: "Pages that do not have a valid response head cannot enter back/forward cache.",
+  noResponseHead: "Pages that do not have a valid response head cannot enter back/forward cache",
   /**
    * @description Description text for not restored reason CacheControlNoStore.
    */
-  cacheControlNoStore: "Pages with cache-control:no-store header cannot enter back/forward cache.",
+  cacheControlNoStore: "Pages with cache-control:no-store header cannot enter back/forward cache",
   /**
    * @description Description text for not restored reason IneligibleAPI.
    */
-  ineligibleAPI: "Ineligible APIs were used.",
+  ineligibleAPI: "Ineligible APIs were used",
   /**
    * @description Description text for not restored reason InternalError.
    */
-  internalError: "Internal error.",
+  internalError: "Internal error",
   /**
    * @description Description text for not restored reason WebSocket.
    */
-  webSocket: "Pages with WebSocket cannot enter back/forward cache.",
+  webSocket: "Pages with WebSocket cannot enter back/forward cache",
   /**
    * @description Description text for not restored reason WebTransport.
    */
-  webTransport: "Pages with WebTransport cannot enter back/forward cache.",
+  webTransport: "Pages with WebTransport cannot enter back/forward cache",
   /**
    * @description Description text for not restored reason WebRTC.
    */
-  webRTC: "Pages with WebRTC cannot enter back/forward cache.",
+  webRTC: "Pages with WebRTC cannot enter back/forward cache",
   /**
    * @description Description text for not restored reason MainResourceHasCacheControlNoStore.
    */
-  mainResourceHasCacheControlNoStore: "Pages whose main resource has cache-control:no-store cannot enter back/forward cache.",
+  mainResourceHasCacheControlNoStore: "Pages whose main resource has cache-control:no-store cannot enter back/forward cache",
   /**
    * @description Description text for not restored reason MainResourceHasCacheControlNoCache.
    */
-  mainResourceHasCacheControlNoCache: "Pages whose main resource has cache-control:no-cache cannot enter back/forward cache.",
+  mainResourceHasCacheControlNoCache: "Pages whose main resource has cache-control:no-cache cannot enter back/forward cache",
   /**
    * @description Description text for not restored reason SubresourceHasCacheControlNoStore.
    */
-  subresourceHasCacheControlNoStore: "Pages whose subresource has cache-control:no-store cannot enter back/forward cache.",
+  subresourceHasCacheControlNoStore: "Pages whose subresource has cache-control:no-store cannot enter back/forward cache",
   /**
    * @description Description text for not restored reason SubresourceHasCacheControlNoCache.
    */
-  subresourceHasCacheControlNoCache: "Pages whose subresource has cache-control:no-cache cannot enter back/forward cache.",
+  subresourceHasCacheControlNoCache: "Pages whose subresource has cache-control:no-cache cannot enter back/forward cache",
   /**
    * @description Description text for not restored reason ContainsPlugins.
    */
-  containsPlugins: "Pages containing plugins are not currently eligible for back/forward cache.",
+  containsPlugins: "Pages containing plugins are not currently eligible for back/forward cache",
   /**
    * @description Description text for not restored reason DocumentLoaded.
    */
-  documentLoaded: "The document did not finish loading before navigating away.",
+  documentLoaded: "The document did not finish loading before navigating away",
   /**
    * @description Description text for not restored reason DedicatedWorkerOrWorklet.
    */
-  dedicatedWorkerOrWorklet: "Pages that use a dedicated worker or worklet are not currently eligible for back/forward cache.",
+  dedicatedWorkerOrWorklet: "Pages that use a dedicated worker or worklet are not currently eligible for back/forward cache",
   /**
    * @description Description text for not restored reason OutstandingNetworkRequestOthers.
    */
-  outstandingNetworkRequestOthers: "Pages with an in-flight network request are not currently eligible for back/forward cache.",
+  outstandingNetworkRequestOthers: "Pages with an in-flight network request are not currently eligible for back/forward cache",
   /**
    * @description Description text for not restored reason OutstandingIndexedDBTransaction.
    */
-  outstandingIndexedDBTransaction: "Page with ongoing indexed DB transactions are not currently eligible for back/forward cache.",
+  outstandingIndexedDBTransaction: "Page with ongoing indexed DB transactions are not currently eligible for back/forward cache",
   /**
    * @description Description text for not restored reason RequestedNotificationsPermission.
    */
-  requestedNotificationsPermission: "Pages that have requested notifications permissions are not currently eligible for back/forward cache.",
+  requestedNotificationsPermission: "Pages that have requested notifications permissions are not currently eligible for back/forward cache",
   /**
    * @description Description text for not restored reason RequestedMIDIPermission.
    */
-  requestedMIDIPermission: "Pages that have requested MIDI permissions are not currently eligible for back/forward cache.",
+  requestedMIDIPermission: "Pages that have requested MIDI permissions are not currently eligible for back/forward cache",
   /**
    * @description Description text for not restored reason RequestedAudioCapturePermission.
    */
-  requestedAudioCapturePermission: "Pages that have requested audio capture permissions are not currently eligible for back/forward cache.",
+  requestedAudioCapturePermission: "Pages that have requested audio capture permissions are not currently eligible for back/forward cache",
   /**
    * @description Description text for not restored reason RequestedVideoCapturePermission.
    */
-  requestedVideoCapturePermission: "Pages that have requested video capture permissions are not currently eligible for back/forward cache.",
+  requestedVideoCapturePermission: "Pages that have requested video capture permissions are not currently eligible for back/forward cache",
   /**
    * @description Description text for not restored reason RequestedBackForwardCacheBlockedSensors.
    */
-  requestedBackForwardCacheBlockedSensors: "Pages that have requested sensor permissions are not currently eligible for back/forward cache.",
+  requestedBackForwardCacheBlockedSensors: "Pages that have requested sensor permissions are not currently eligible for back/forward cache",
   /**
    * @description Description text for not restored reason RequestedBackgroundWorkPermission.
    */
-  requestedBackgroundWorkPermission: "Pages that have requested background sync or fetch permissions are not currently eligible for back/forward cache.",
+  requestedBackgroundWorkPermission: "Pages that have requested background sync or fetch permissions are not currently eligible for back/forward cache",
   /**
    * @description Description text for not restored reason BroadcastChannel.
    */
-  broadcastChannel: "The page cannot be cached because it has a BroadcastChannel instance with registered listeners.",
+  broadcastChannel: "The page cannot be cached because it has a BroadcastChannel instance with registered listeners",
   /**
    * @description Description text for not restored reason IndexedDBConnection.
    */
-  indexedDBConnection: "Pages that have an open IndexedDB connection are not currently eligible for back/forward cache.",
+  indexedDBConnection: "Pages that have an open IndexedDB connection are not currently eligible for back/forward cache",
   /**
    * @description Description text for not restored reason WebXR.
    */
-  webXR: "Pages that use WebXR are not currently eligible for back/forward cache.",
+  webXR: "Pages that use WebXR are not currently eligible for back/forward cache",
   /**
    * @description Description text for not restored reason SharedWorker.
    */
-  sharedWorker: "Pages that use SharedWorker are not currently eligible for back/forward cache.",
+  sharedWorker: "Pages that use SharedWorker are not currently eligible for back/forward cache",
   /**
    * @description Description text for not restored reason SharedWorkerMessage.
    */
@@ -3688,83 +3914,83 @@ var UIStrings2 = {
   /**
    * @description Description text for not restored reason WebLocks.
    */
-  webLocks: "Pages that use WebLocks are not currently eligible for back/forward cache.",
+  webLocks: "Pages that use WebLocks are not currently eligible for back/forward cache",
   /**
    * @description Description text for not restored reason WebHID.
    */
-  webHID: "Pages that use WebHID are not currently eligible for back/forward cache.",
+  webHID: "Pages that use WebHID are not currently eligible for back/forward cache",
   /**
    * @description Description text for not restored reason WebShare.
    */
-  webShare: "Pages that use WebShare are not currently eligible for back/forwad cache.",
+  webShare: "Pages that use WebShare are not currently eligible for back/forwad cache",
   /**
    * @description Description text for not restored reason RequestedStorageAccessGrant.
    */
-  requestedStorageAccessGrant: "Pages that have requested storage access are not currently eligible for back/forward cache.",
+  requestedStorageAccessGrant: "Pages that have requested storage access are not currently eligible for back/forward cache",
   /**
    * @description Description text for not restored reason WebNfc.
    */
-  webNfc: "Pages that use WebNfc are not currently eligible for back/forwad cache.",
+  webNfc: "Pages that use WebNfc are not currently eligible for back/forwad cache",
   /**
    * @description Description text for not restored reason OutstandingNetworkRequestFetch.
    */
-  outstandingNetworkRequestFetch: "Pages with an in-flight fetch network request are not currently eligible for back/forward cache.",
+  outstandingNetworkRequestFetch: "Pages with an in-flight fetch network request are not currently eligible for back/forward cache",
   /**
    * @description Description text for not restored reason OutstandingNetworkRequestXHR.
    */
-  outstandingNetworkRequestXHR: "Pages with an in-flight XHR network request are not currently eligible for back/forward cache.",
+  outstandingNetworkRequestXHR: "Pages with an in-flight XHR network request are not currently eligible for back/forward cache",
   /**
    * @description Description text for not restored reason AppBanner.
    */
-  appBanner: "Pages that requested an AppBanner are not currently eligible for back/forward cache.",
+  appBanner: "Pages that requested an AppBanner are not currently eligible for back/forward cache",
   /**
    * @description Description text for not restored reason Printing.
    */
-  printing: "Pages that show Printing UI are not currently eligible for back/forward cache.",
+  printing: "Pages that show Printing UI are not currently eligible for back/forward cache",
   /**
    * @description Description text for not restored reason WebDatabase.
    */
-  webDatabase: "Pages that use WebDatabase are not currently eligible for back/forward cache.",
+  webDatabase: "Pages that use WebDatabase are not currently eligible for back/forward cache",
   /**
    * @description Description text for not restored reason PictureInPicture.
    */
-  pictureInPicture: "Pages that use Picture-in-Picture are not currently eligible for back/forward cache.",
+  pictureInPicture: "Pages that use Picture-in-Picture are not currently eligible for back/forward cache",
   /**
    * @description Description text for not restored reason SpeechRecognizer.
    */
-  speechRecognizer: "Pages that use SpeechRecognizer are not currently eligible for back/forward cache.",
+  speechRecognizer: "Pages that use SpeechRecognizer are not currently eligible for back/forward cache",
   /**
    * @description Description text for not restored reason IdleManager.
    */
-  idleManager: "Pages that use IdleManager are not currently eligible for back/forward cache.",
+  idleManager: "Pages that use IdleManager are not currently eligible for back/forward cache",
   /**
    * @description Description text for not restored reason PaymentManager.
    */
-  paymentManager: "Pages that use PaymentManager are not currently eligible for back/forward cache.",
+  paymentManager: "Pages that use PaymentManager are not currently eligible for back/forward cache",
   /**
    * @description Description text for not restored reason SpeechSynthesis.
    */
-  speechSynthesis: "Pages that use SpeechSynthesis are not currently eligible for back/forward cache.",
+  speechSynthesis: "Pages that use SpeechSynthesis are not currently eligible for back/forward cache",
   /**
    * @description Description text for not restored reason KeyboardLock.
    */
-  keyboardLock: "Pages that use Keyboard lock are not currently eligible for back/forward cache.",
+  keyboardLock: "Pages that use Keyboard lock are not currently eligible for back/forward cache",
   /**
    * @description Description text for not restored reason WebOTPService.
    */
-  webOTPService: "Pages that use WebOTPService are not currently eligible for bfcache.",
+  webOTPService: "Pages that use WebOTPService are not currently eligible for bfcache",
   /**
    * @description Description text for not restored reason OutstandingNetworkRequestDirectSocket.
    */
-  outstandingNetworkRequestDirectSocket: "Pages with an in-flight network request are not currently eligible for back/forward cache.",
+  outstandingNetworkRequestDirectSocket: "Pages with an in-flight network request are not currently eligible for back/forward cache",
   /**
    * @description Description text for not restored reason InjectedJavascript.
    */
-  injectedJavascript: "Pages that `JavaScript` is injected into by extensions are not currently eligible for back/forward cache.",
+  injectedJavascript: "Pages that `JavaScript` is injected into by extensions are not currently eligible for back/forward cache",
   /**
    * @description Description text for not restored reason InjectedStyleSheet.
    */
-  injectedStyleSheet: "Pages that a `StyleSheet` is injected into by extensions are not currently eligible for back/forward cache.",
+  injectedStyleSheet: "Pages that a `StyleSheet` is injected into by extensions are not currently eligible for back/forward cache",
   // TODO(tluk): Please provide meaningful description.
   /**
    * @description Description text for not restored reason ContentDiscarded.
@@ -3773,147 +3999,147 @@ var UIStrings2 = {
   /**
    * @description Description text for not restored reason ContentSecurityHandler.
    */
-  contentSecurityHandler: "Pages that use SecurityHandler are not eligible for back/forward cache.",
+  contentSecurityHandler: "Pages that use SecurityHandler are not eligible for back/forward cache",
   /**
    * @description Description text for not restored reason NotMainFrame.
    */
-  contentWebAuthenticationAPI: "Pages that use WebAuthetication API are not eligible for back/forward cache.",
+  contentWebAuthenticationAPI: "Pages that use WebAuthetication API are not eligible for back/forward cache",
   /**
    * @description Description text for not restored reason NotMainFrame.
    */
-  contentFileChooser: "Pages that use FileChooser API are not eligible for back/forward cache.",
+  contentFileChooser: "Pages that use FileChooser API are not eligible for back/forward cache",
   /**
    * @description Description text for not restored reason NotMainFrame.
    */
-  contentSerial: "Pages that use Serial API are not eligible for back/forward cache.",
+  contentSerial: "Pages that use Serial API are not eligible for back/forward cache",
   /**
    * @description Description text for not restored reason NotMainFrame.
    */
-  contentFileSystemAccess: "Pages that use File System Access API are not eligible for back/forward cache.",
+  contentFileSystemAccess: "Pages that use File System Access API are not eligible for back/forward cache",
   /**
    * @description Description text for not restored reason NotMainFrame.
    */
-  contentMediaDevicesDispatcherHost: "Pages that use Media Device Dispatcher are not eligible for back/forward cache.",
+  contentMediaDevicesDispatcherHost: "Pages that use Media Device Dispatcher are not eligible for back/forward cache",
   /**
    * @description Description text for not restored reason NotMainFrame.
    */
-  contentWebBluetooth: "Pages that use WebBluetooth API are not eligible for back/forward cache.",
+  contentWebBluetooth: "Pages that use WebBluetooth API are not eligible for back/forward cache",
   /**
    * @description Description text for not restored reason ContentWebUSB.
    */
-  contentWebUSB: "Pages that use WebUSB API are not eligible for back/forward cache.",
+  contentWebUSB: "Pages that use WebUSB API are not eligible for back/forward cache",
   /**
    * @description Description text for not restored reason ContentMediaSession.
    */
-  contentMediaSession: "Pages that use MediaSession API and set a playback state are not eligible for back/forward cache.",
+  contentMediaSession: "Pages that use MediaSession API and set a playback state are not eligible for back/forward cache",
   /**
    * @description Description text for not restored reason ContentMediaSessionService.
    */
-  contentMediaSessionService: "Pages that use MediaSession API and set action handlers are not eligible for back/forward cache.",
+  contentMediaSessionService: "Pages that use MediaSession API and set action handlers are not eligible for back/forward cache",
   /**
    * @description Description text for not restored reason ContentMediaPlay.
    */
-  contentMediaPlay: "A media player was playing upon navigating away.",
+  contentMediaPlay: "A media player was playing upon navigating away",
   /**
    * @description Description text for not restored reason ContentScreenReader.
    */
-  contentScreenReader: "Back/forward cache is disabled due to screen reader.",
+  contentScreenReader: "Back/forward cache is disabled due to screen reader",
   /**
    *  @description Description text for not restored reason EmbedderPopupBlockerTabHelper.
    */
-  embedderPopupBlockerTabHelper: "Popup blocker was present upon navigating away.",
+  embedderPopupBlockerTabHelper: "Popup blocker was present upon navigating away",
   /**
    *  @description Description text for not restored reason EmbedderSafeBrowsingTriggeredPopupBlocker.
    */
-  embedderSafeBrowsingTriggeredPopupBlocker: "Safe Browsing considered this page to be abusive and blocked popup.",
+  embedderSafeBrowsingTriggeredPopupBlocker: "Safe Browsing considered this page to be abusive and blocked popup",
   /**
    *  @description Description text for not restored reason EmbedderSafeBrowsingThreatDetails.
    */
-  embedderSafeBrowsingThreatDetails: "Safe Browsing details were shown upon navigating away.",
+  embedderSafeBrowsingThreatDetails: "Safe Browsing details were shown upon navigating away",
   /**
    *  @description Description text for not restored reason EmbedderAppBannerManager.
    */
-  embedderAppBannerManager: "App Banner was present upon navigating away.",
+  embedderAppBannerManager: "App Banner was present upon navigating away",
   /**
    *  @description Description text for not restored reason EmbedderDomDistillerViewerSource.
    */
-  embedderDomDistillerViewerSource: "DOM Distiller Viewer was present upon navigating away.",
+  embedderDomDistillerViewerSource: "DOM Distiller Viewer was present upon navigating away",
   /**
    *  @description Description text for not restored reason EmbedderDomDistillerSelfDeletingRequestDelegate.
    */
-  embedderDomDistillerSelfDeletingRequestDelegate: "DOM distillation was in progress upon navigating away.",
+  embedderDomDistillerSelfDeletingRequestDelegate: "DOM distillation was in progress upon navigating away",
   /**
    *  @description Description text for not restored reason EmbedderOomInterventionTabHelper.
    */
-  embedderOomInterventionTabHelper: "Out-Of-Memory Intervention bar was present upon navigating away.",
+  embedderOomInterventionTabHelper: "Out-Of-Memory Intervention bar was present upon navigating away",
   /**
    *  @description Description text for not restored reason EmbedderOfflinePage.
    */
-  embedderOfflinePage: "The offline page was shown upon navigating away.",
+  embedderOfflinePage: "The offline page was shown upon navigating away",
   /**
    *  @description Description text for not restored reason EmbedderChromePasswordManagerClientBindCredentialManager.
    */
-  embedderChromePasswordManagerClientBindCredentialManager: "Chrome Password Manager was present upon navigating away.",
+  embedderChromePasswordManagerClientBindCredentialManager: "Chrome Password Manager was present upon navigating away",
   /**
    *  @description Description text for not restored reason EmbedderPermissionRequestManager.
    */
-  embedderPermissionRequestManager: "There were permission requests upon navigating away.",
+  embedderPermissionRequestManager: "There were permission requests upon navigating away",
   /**
    *  @description Description text for not restored reason EmbedderModalDialog.
    */
-  embedderModalDialog: "Modal dialog such as form resubmission or http password dialog was shown for the page upon navigating away.",
+  embedderModalDialog: "Modal dialog such as form resubmission or http password dialog was shown for the page upon navigating away",
   /**
    *  @description Description text for not restored reason EmbedderExtensions.
    */
-  embedderExtensions: "Back/forward cache is disabled due to extensions.",
+  embedderExtensions: "Back/forward cache is disabled due to extensions",
   /**
    *  @description Description text for not restored reason EmbedderExtensionMessaging.
    */
-  embedderExtensionMessaging: "Back/forward cache is disabled due to extensions using messaging API.",
+  embedderExtensionMessaging: "Back/forward cache is disabled due to extensions using messaging API",
   /**
    *  @description Description text for not restored reason EmbedderExtensionMessagingForOpenPort.
    */
-  embedderExtensionMessagingForOpenPort: "Extensions with long-lived connection should close the connection before entering back/forward cache.",
+  embedderExtensionMessagingForOpenPort: "Extensions with long-lived connection should close the connection before entering back/forward cache",
   /**
    *  @description Description text for not restored reason EmbedderExtensionSentMessageToCachedFrame.
    */
-  embedderExtensionSentMessageToCachedFrame: "Extensions with long-lived connection attempted to send messages to frames in back/forward cache.",
+  embedderExtensionSentMessageToCachedFrame: "Extensions with long-lived connection attempted to send messages to frames in back/forward cache",
   /**
    *  @description Description text for not restored reason ErrorDocument.
    */
-  errorDocument: "Back/forward cache is disabled due to a document error.",
+  errorDocument: "Back/forward cache is disabled due to a document error",
   /**
    *  @description Description text for not restored reason FencedFramesEmbedder.
    */
-  fencedFramesEmbedder: "Pages using FencedFrames cannot be stored in bfcache.",
+  fencedFramesEmbedder: "Pages using FencedFrames cannot be stored in bfcache",
   /**
    *  @description Description text for not restored reason KeepaliveRequest.
    */
-  keepaliveRequest: "Back/forward cache is disabled due to a keepalive request.",
+  keepaliveRequest: "Back/forward cache is disabled due to a keepalive request",
   /**
    *  @description Description text for not restored reason JsNetworkRequestReceivedCacheControlNoStoreResource.
    */
-  jsNetworkRequestReceivedCacheControlNoStoreResource: "Back/forward cache is disabled because some JavaScript network request received resource with `Cache-Control: no-store` header.",
+  jsNetworkRequestReceivedCacheControlNoStoreResource: "Back/forward cache is disabled because some JavaScript network request received resource with `Cache-Control: no-store` header",
   /**
    *  @description Description text for not restored reason IndexedDBEvent.
    */
-  indexedDBEvent: "Back/forward cache is disabled due to an IndexedDB event.",
+  indexedDBEvent: "Back/forward cache is disabled due to an IndexedDB event",
   /**
    * @description Description text for not restored reason CookieDisabled.
    */
-  cookieDisabled: "Back/forward cache is disabled because cookies are disabled on a page that uses `Cache-Control: no-store`.",
+  cookieDisabled: "Back/forward cache is disabled because cookies are disabled on a page that uses `Cache-Control: no-store`",
   /**
    * @description Description text for not restored reason WebRTCUsedWithCCNS.
    */
-  webRTCUsedWithCCNS: "Back/forward cache is disabled because WebRTC has been used.",
+  webRTCUsedWithCCNS: "Back/forward cache is disabled because WebRTC has been used",
   /**
    * @description Description text for not restored reason WebTransportUsedWithCCNS.
    */
-  webTransportUsedWithCCNS: "Back/forward cache is disabled because WebTransport has been used.",
+  webTransportUsedWithCCNS: "Back/forward cache is disabled because WebTransport has been used",
   /**
    * @description Description text for not restored reason WebSocketUsedWithCCNS.
    */
-  webSocketUsedWithCCNS: "Back/forward cache is disabled because WebSocket has been used."
+  webSocketUsedWithCCNS: "Back/forward cache is disabled because WebSocket has been used"
 };
 var str_2 = i18n3.i18n.registerUIStrings("panels/application/components/BackForwardCacheStrings.ts", UIStrings2);
 var i18nLazyString = i18n3.i18n.getLazilyComputedLocalizedString.bind(void 0, str_2);
@@ -4200,12 +4426,12 @@ var UIStrings3 = {
    * @description Status text for the status of the back/forward cache status indicating that
    * the back/forward cache was not used and a normal navigation occurred instead.
    */
-  normalNavigation: "Not served from back/forward cache: to trigger back/forward cache, use Chrome\u2019s back/forward buttons, or use the test button below to automatically navigate away and back.",
+  normalNavigation: "Not served from back/forward cache: to trigger back/forward cache, use Chrome\u2019s back/forward buttons, or use the test button below to automatically navigate away and back",
   /**
    * @description Status text for the status of the back/forward cache status indicating that
    * the back/forward cache was used to restore the page instead of reloading it.
    */
-  restoredFromBFCache: "Successfully served from back/forward cache.",
+  restoredFromBFCache: "Successfully served from back/forward cache",
   /**
    * @description Label for a list of reasons which prevent the page from being eligible for
    * back/forward cache. These reasons are actionable i.e. they can be cleaned up to make the
@@ -4215,12 +4441,12 @@ var UIStrings3 = {
   /**
    * @description Label for the completion of the back/forward cache test
    */
-  testCompleted: "Back/forward cache test completed.",
+  testCompleted: "Back/forward cache test completed",
   /**
    * @description Explanation for actionable items which prevent the page from being eligible
    * for back/forward cache.
    */
-  pageSupportNeededExplanation: "These reasons are actionable i.e. they can be cleaned up to make the page eligible for back/forward cache.",
+  pageSupportNeededExplanation: "These reasons are actionable i.e. they can be cleaned up to make the page eligible for back/forward cache",
   /**
    * @description Label for a list of reasons which prevent the page from being eligible for
    * back/forward cache. These reasons are circumstantial / not actionable i.e. they cannot be
@@ -4231,7 +4457,7 @@ var UIStrings3 = {
    * @description Explanation for circumstantial/non-actionable items which prevent the page from being eligible
    * for back/forward cache.
    */
-  circumstantialExplanation: "These reasons are not actionable i.e. caching was prevented by something outside of the direct control of the page.",
+  circumstantialExplanation: "These reasons are not actionable i.e. caching was prevented by something outside of the direct control of the page",
   /**
    * @description Label for a list of reasons which prevent the page from being eligible for
    * back/forward cache. These reasons are pending support by chrome i.e. in a future version
@@ -4258,7 +4484,7 @@ var UIStrings3 = {
    * @description Explanation for 'pending support' items which prevent the page from being eligible
    * for back/forward cache.
    */
-  supportPendingExplanation: "Chrome support for these reasons is pending i.e. they will not prevent the page from being eligible for back/forward cache in a future version of Chrome.",
+  supportPendingExplanation: "Chrome support for these reasons is pending i.e. they will not prevent the page from being eligible for back/forward cache in a future version of Chrome",
   /**
    * @description Text that precedes displaying a link to the extension which blocked the page from being eligible for back/forward cache.
    */
@@ -4271,7 +4497,7 @@ var UIStrings3 = {
   /**
    * @description Top level summary of the total number of issues found in a single frame.
    */
-  issuesInSingleFrame: "{n, plural, =1 {# issue found in 1 frame.} other {# issues found in 1 frame.}}",
+  issuesInSingleFrame: "{n, plural, =1 {# issue found in 1 frame} other {# issues found in 1 frame}}",
   /**
    * @description Top level summary of the total number of issues found and the number of frames they were found in.
    * 'm' is never less than 2.
@@ -4780,7 +5006,7 @@ var UIStrings4 = {
   /**
    * @description Text shown once the deletion command has been sent to the browser process.
    */
-  checkingPotentialTrackers: "Checking for potential bounce tracking sites.",
+  checkingPotentialTrackers: "Checking for potential bounce tracking sites",
   /**
    * @description Link text about explanation of Bounce Tracking Mitigations.
    */
@@ -4794,7 +5020,7 @@ var UIStrings4 = {
   /**
    * @description Text shown when bounce tracking mitigations are disabled.
    */
-  featureDisabled: "Bounce tracking mitigations are disabled."
+  featureDisabled: "Bounce tracking mitigations are disabled"
 };
 var str_4 = i18n7.i18n.registerUIStrings("panels/application/components/BounceTrackingMitigationsView.ts", UIStrings4);
 var i18nString3 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
@@ -5294,12 +5520,12 @@ var UIStrings7 = {
   /**
    * @description Tooltip text for a link to a specific request's headers in the Network panel.
    */
-  clickToShowHeader: 'Click to reveal the request whose "`Permissions-Policy`" HTTP header disables this feature.',
+  clickToShowHeader: 'Click to reveal the request whose "`Permissions-Policy`" HTTP header disables this feature',
   /**
    * @description Tooltip text for a link to a specific iframe in the Elements panel (Iframes can be nested, the link goes
    *  to the outer-most iframe which blocks a certain feature).
    */
-  clickToShowIframe: "Click to reveal the top-most iframe which does not allow this feature in the elements panel.",
+  clickToShowIframe: "Click to reveal the top-most iframe which does not allow this feature in the elements panel",
   /**
    * @description Text describing that a specific feature is blocked by not being included in the iframe's "allow" attribute.
    */
@@ -5582,7 +5808,7 @@ var UIStrings8 = {
    * @description Status message for when protocol handlers are not detected in the manifest
    * @example {protocolhandler/manifest.json} PH1
    */
-  protocolNotDetected: "Define protocol handlers in the {PH1} to register your app as a handler for custom protocols when your app is installed.",
+  protocolNotDetected: "Define protocol handlers in the {PH1} to register your app as a handler for custom protocols when your app is installed",
   /**
    * @description Text wrapping a link pointing to more information on handling protocol handlers
    * @example {https://example.com/} PH1
@@ -5791,7 +6017,7 @@ var UIStrings9 = {
    * @description Placeholder text that explains Reporting API reports.
    *(https://developers.google.com/web/updates/2018/09/reportingapi#sending)
    */
-  reportingApiDescription: "Here you will find reporting api reports that are generated by the page.",
+  reportingApiDescription: "Here you will find reporting api reports that are generated by the page",
   /**
    * @description Link text to forward to a documentation page on reporting API.
    */
@@ -6130,7 +6356,7 @@ var UIStrings10 = {
   /**
    * @description Explanation text shown in the confirmation dialogue that displays before deleting the bucket.
    */
-  bucketWillBeRemoved: "The selected storage bucket and contained data will be removed."
+  bucketWillBeRemoved: "The selected storage bucket and contained data will be removed"
 };
 var str_10 = i18n19.i18n.registerUIStrings("panels/application/components/StorageMetadataView.ts", UIStrings10);
 var i18nString9 = i18n19.i18n.getLocalizedString.bind(void 0, str_10);
@@ -6364,7 +6590,7 @@ var UIStrings11 = {
   /**
    * @description Hover text for an info icon in the Private State Token panel
    */
-  allStoredTrustTokensAvailableIn: "All stored private state tokens available in this browser instance.",
+  allStoredTrustTokensAvailableIn: "All stored private state tokens available in this browser instance",
   /**
    * @description Text shown instead of a table when the table would be empty. https://developers.google.com/privacy-sandbox/protections/private-state-tokens
    */
@@ -6372,14 +6598,14 @@ var UIStrings11 = {
   /**
    * @description Text shown if there are no private state tokens. https://developers.google.com/privacy-sandbox/protections/private-state-tokens
    */
-  trustTokensDescription: "On this page you can view all available private state tokens in the current browsing context.",
+  trustTokensDescription: "On this page you can view all available private state tokens in the current browsing context",
   /**
    * @description Each row in the Private State Token table has a delete button. This is the text shown
    * when hovering over this button. The placeholder is a normal URL, indicating the site which
    * provided the Private State Tokens that will be deleted when the button is clicked.
    * @example {https://google.com} PH1
    */
-  deleteTrustTokens: "Delete all stored private state tokens issued by {PH1}.",
+  deleteTrustTokens: "Delete all stored private state tokens issued by {PH1}",
   /**
    * @description Heading label for a view. Previously known as 'Trust Tokens'.
    */

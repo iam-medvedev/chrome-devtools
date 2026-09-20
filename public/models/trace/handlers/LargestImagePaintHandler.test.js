@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Trace from '../trace.js';
-describeWithEnvironment('LargestImagePaintHandler', function () {
+describe('LargestImagePaintHandler', function () {
     beforeEach(async () => {
         Trace.Handlers.ModelHandlers.LargestImagePaint.reset();
     });

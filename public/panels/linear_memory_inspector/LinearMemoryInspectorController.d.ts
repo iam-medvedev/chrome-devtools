@@ -14,7 +14,7 @@ export declare class RemoteArrayBufferWrapper implements LazyUint8Array {
     length(): number;
     getRange(start: number, end: number): Promise<Uint8Array<ArrayBuffer>>;
 }
-export declare class LinearMemoryInspectorController extends SDK.TargetManager.SDKModelObserver<SDK.RuntimeModel.RuntimeModel> implements Common.Revealer.Revealer<SDK.RemoteObject.LinearMemoryInspectable>, UI.ContextMenu.Provider<ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement> {
+export declare class LinearMemoryInspectorController extends SDK.TargetManager.SDKModelObserver<SDK.RuntimeModel.RuntimeModel> implements Common.Revealer.Revealer<SDK.RemoteObject.LinearMemoryInspectable>, UI.ContextMenu.Provider<ObjectUI.ObjectPropertiesSection.ObjectTreeNode> {
     #private;
     private constructor();
     static instance(): LinearMemoryInspectorController;
@@ -37,7 +37,7 @@ export declare class LinearMemoryInspectorController extends SDK.TargetManager.S
     static extractObjectTypeDescription(obj: SDK.RemoteObject.RemoteObject): string;
     static extractObjectName(obj: SDK.RemoteObject.RemoteObject, expression: string): string;
     reveal({ object, expression }: SDK.RemoteObject.LinearMemoryInspectable, omitFocus?: boolean | undefined): Promise<void>;
-    appendApplicableItems(_event: Event, contextMenu: UI.ContextMenu.ContextMenu, target: ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement): void;
+    appendApplicableItems(_event: Event, contextMenu: UI.ContextMenu.ContextMenu, target: ObjectUI.ObjectPropertiesSection.ObjectTreeNode): void;
     static extractHighlightInfo(obj: SDK.RemoteObject.RemoteObject, expression?: string): LinearMemoryInspectorComponents.LinearMemoryViewerUtils.HighlightInfo | undefined;
     modelRemoved(model: SDK.RuntimeModel.RuntimeModel): void;
     updateHighlightedMemory(bufferId: string, callFrame: SDK.DebuggerModel.CallFrame): Promise<void>;

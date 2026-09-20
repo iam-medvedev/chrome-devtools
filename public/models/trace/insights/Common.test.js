@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { getFirstOrError, getInsightSetOrError, processTrace } from '../../../testing/InsightHelpers.js';
-import { microsecondsTraceWindow } from '../../../testing/TraceHelpers.js';
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
+import { microsecondsTraceWindow } from '../../../testing/TraceHelpersCore.js';
 import * as Insights from './insights.js';
 const { calculateMetricWeightsForSorting, estimateCompressedContentSize } = Insights.Common;
-describeWithEnvironment('Common', function () {
+describe('Common', function () {
+    setupLocaleHooks();
     describe('calculateMetricWeightsForSorting', () => {
         async function process(testContext, traceFile) {
             const { data, insights, metadata } = await processTrace(testContext, traceFile);

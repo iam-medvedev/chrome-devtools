@@ -4,9 +4,12 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import { expectCookie } from '../../testing/Cookies.js';
-import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { createTarget } from '../../testing/EnvironmentHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import { mockResourceTree } from '../../testing/ResourceTreeHelpers.js';
+import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
+import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as Platform from '../platform/platform.js';
 import * as TextUtils from '../text_utils/text_utils.js';
@@ -174,7 +177,10 @@ describe('NetworkRequest', () => {
         assert.isTrue(preloadRequest.isPreloadRequest());
     });
 });
-describeWithEnvironment('NetworkRequest (MockConnection)', () => {
+describe('NetworkRequest (MockConnection)', () => {
+    setupLocaleHooks();
+    setupSettingsHooks();
+    setupRuntimeHooks();
     let networkManagerForRequestStub;
     let cookie;
     let addBlockedCookieSpy;
@@ -239,7 +245,10 @@ describeWithEnvironment('NetworkRequest (MockConnection)', () => {
         assert.isEmpty(await cookieModel.getCookiesForDomain(''));
     });
 });
-describeWithEnvironment('ServerSentEvents', () => {
+describe('ServerSentEvents', () => {
+    setupLocaleHooks();
+    setupSettingsHooks();
+    setupRuntimeHooks();
     let target;
     let networkManager;
     let universe;
@@ -338,7 +347,10 @@ data: bar\n\n`;
         assert.deepInclude(networkEvents[1], { data: 'bar', eventId: 'barId', eventName: 'barName' });
     });
 });
-describeWithEnvironment('requestStreamingContent', () => {
+describe('requestStreamingContent', () => {
+    setupLocaleHooks();
+    setupSettingsHooks();
+    setupRuntimeHooks();
     let target;
     let networkManager;
     beforeEach(() => {

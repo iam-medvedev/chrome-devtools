@@ -7,7 +7,6 @@ import * as SDK from '../../core/sdk/sdk.js';
 import { assertScreenshot, dispatchClickEvent, raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import * as Resources from './application.js';
-// eslint-disable-next-line @devtools/es-modules-import
 import serviceWorkerUpdateCycleViewStyles from './serviceWorkerUpdateCycleView.css.js';
 var View = Resources.ServiceWorkerUpdateCycleView;
 describe('ServiceWorkerUpdateCycleView', () => {

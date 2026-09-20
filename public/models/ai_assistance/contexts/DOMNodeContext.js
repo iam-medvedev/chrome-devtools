@@ -28,15 +28,15 @@ export class DOMNodeContext extends ConversationContext {
      * @returns The security origin of the owner document, or a unique opaque origin.
      */
     getOrigin() {
-        const ownerDocument = this.#node.ownerDocument;
-        if (!ownerDocument) {
-            // Detached nodes have no security document; isolate them with a unique opaque origin.
+        const origin = this.#node.securityOrigin();
+        if (!origin) {
+            // A node that is not attached to a document has no origin; isolate it with a unique opaque origin.
             if (!this.#opaqueOrigin) {
                 this.#opaqueOrigin = SDK.SecurityOrigin.SecurityOrigin.createUniqueOpaque();
             }
             return this.#opaqueOrigin;
         }
-        return SDK.SecurityOrigin.SecurityOrigin.create(ownerDocument.documentURL);
+        return origin;
     }
     getItem() {
         return this.#node;
@@ -105,8 +105,8 @@ ${await this.describe()}`;
 * Its selector is \`${element.simpleSelector()}\``;
         const childNodes = await element.getChildNodesPromise();
         if (childNodes) {
-            const textChildNodes = childNodes.filter(childNode => childNode.nodeType() === Node.TEXT_NODE);
-            const elementChildNodes = childNodes.filter(childNode => childNode.nodeType() === Node.ELEMENT_NODE);
+            const textChildNodes = childNodes.filter(childNode => childNode.nodeType() === 3 /* SDK.DOMModel.NodeType.TEXT_NODE */);
+            const elementChildNodes = childNodes.filter(childNode => childNode.nodeType() === 1 /* SDK.DOMModel.NodeType.ELEMENT_NODE */);
             switch (elementChildNodes.length) {
                 case 0:
                     output += '\n* It doesn\'t have any child element nodes';
@@ -129,13 +129,13 @@ ${await this.describe()}`;
             }
         }
         if (element.nextSibling) {
-            const elementOrNodeElementNodeText = element.nextSibling.nodeType() === Node.ELEMENT_NODE ?
+            const elementOrNodeElementNodeText = element.nextSibling.nodeType() === 1 /* SDK.DOMModel.NodeType.ELEMENT_NODE */ ?
                 `an element (uid=${element.nextSibling.backendNodeId()})` :
                 'a non element';
             output += `\n* It has a next sibling and it is ${elementOrNodeElementNodeText} node`;
         }
         if (element.previousSibling) {
-            const elementOrNodeElementNodeText = element.previousSibling.nodeType() === Node.ELEMENT_NODE ?
+            const elementOrNodeElementNodeText = element.previousSibling.nodeType() === 1 /* SDK.DOMModel.NodeType.ELEMENT_NODE */ ?
                 `an element (uid=${element.previousSibling.backendNodeId()})` :
                 'a non element';
             output += `\n* It has a previous sibling and it is ${elementOrNodeElementNodeText} node`;
@@ -147,13 +147,13 @@ ${await this.describe()}`;
         if (parentNode) {
             const parentChildrenNodes = await parentNode.getChildNodesPromise();
             output += `\n* Its parent's selector is \`${parentNode.simpleSelector()}\` (uid=${parentNode.backendNodeId()})`;
-            const elementOrNodeElementNodeText = parentNode.nodeType() === Node.ELEMENT_NODE ? 'an element' : 'a non element';
+            const elementOrNodeElementNodeText = parentNode.nodeType() === 1 /* SDK.DOMModel.NodeType.ELEMENT_NODE */ ? 'an element' : 'a non element';
             output += `\n* Its parent is ${elementOrNodeElementNodeText} node`;
             if (parentNode.isShadowRoot()) {
                 output += '\n* Its parent is a shadow root.';
             }
             if (parentChildrenNodes) {
-                const childElementNodes = parentChildrenNodes.filter(siblingNode => siblingNode.nodeType() === Node.ELEMENT_NODE);
+                const childElementNodes = parentChildrenNodes.filter(siblingNode => siblingNode.nodeType() === 1 /* SDK.DOMModel.NodeType.ELEMENT_NODE */);
                 switch (childElementNodes.length) {
                     case 0:
                         break;
@@ -165,7 +165,7 @@ ${await this.describe()}`;
                             .join(', ')}`;
                         break;
                 }
-                const siblingTextNodes = parentChildrenNodes.filter(siblingNode => siblingNode.nodeType() === Node.TEXT_NODE);
+                const siblingTextNodes = parentChildrenNodes.filter(siblingNode => siblingNode.nodeType() === 3 /* SDK.DOMModel.NodeType.TEXT_NODE */);
                 switch (siblingTextNodes.length) {
                     case 0:
                         break;

@@ -1,5 +1,6 @@
 import '../../ui/kit/kit.js';
 import * as Common from '../../core/common/common.js';
+import type * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as SettingUIRegistration from '../../ui/settings/settings.js';
@@ -37,14 +38,22 @@ export declare class GenericSettingsTab extends UI.Widget.VBox implements Settin
     private createStandardSectionElement;
     highlightObject(setting: Object): void;
 }
-export declare class ExperimentsSettingsTab extends UI.Widget.VBox implements SettingsTab {
+export interface ExperimentsSettingsTabViewInput {
+    filterText: string;
+    experiments: Root.Runtime.Experiment[];
+    onFilterChanged: (filterText: string) => void;
+    onExperimentToggled: (experiment: Root.Runtime.Experiment, enabled: boolean) => void;
+    onOpenDocumentation: (url: Platform.DevToolsPath.UrlString) => void;
+}
+export interface ExperimentsSettingsTabViewOutput {
+    setExperimentElement: (experiment: Root.Runtime.Experiment, element: HTMLElement) => void;
+}
+export type ExperimentsSettingsTabView = (input: ExperimentsSettingsTabViewInput, output: ExperimentsSettingsTabViewOutput, target: HTMLElement) => void;
+export declare const EXPERIMENTS_SETTINGS_TAB_DEFAULT_VIEW: ExperimentsSettingsTabView;
+export declare class ExperimentsSettingsTab extends UI.Widget.Widget implements SettingsTab {
     #private;
-    private readonly experimentToControl;
-    private readonly containerElement;
-    constructor();
-    private renderExperiments;
-    private createExperimentsWarningSubsection;
-    private createExperimentCheckbox;
+    constructor(element?: HTMLElement, view?: ExperimentsSettingsTabView);
+    performUpdate(): void;
     highlightObject(experiment: Object): void;
     wasShown(): void;
     willHide(): void;

@@ -154,7 +154,7 @@ describeWithEnvironment('AISettingsTab', () => {
         assert.isTrue(setting.value[1].settingExpandState.isSettingExpanded);
     });
     it('disables switches if blocked by age', async () => {
-        const underAgeExplainer = 'This feature is only available to users 18 years or older.';
+        const underAgeExplainer = 'This feature is only available to users 18 years or older';
         updateHostConfig({
             aidaAvailability: {
                 blockedByAge: true,
@@ -170,7 +170,7 @@ describeWithEnvironment('AISettingsTab', () => {
         assert.deepEqual(view.input.disabledReasons, [underAgeExplainer]);
     });
     it('updates when the user logs in', async () => {
-        const notLoggedInExplainer = 'This feature is only available when you sign in to Chrome with your Google account.';
+        const notLoggedInExplainer = 'This feature is only available when you sign in to Chrome with your Google account';
         aidaAccessStub.returns(Promise.resolve("no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */));
         const { view } = await setupWidget();
         assert.deepEqual(view.input.disabledReasons, [notLoggedInExplainer]);
@@ -179,7 +179,7 @@ describeWithEnvironment('AISettingsTab', () => {
         assert.deepEqual(view.input.disabledReasons, []);
     });
     it('disables switches if off the record (incognito)', async () => {
-        const incognitoExplainer = 'AI assistance isn’t available in Incognito mode or Guest mode.';
+        const incognitoExplainer = 'AI assistance isn’t available in Incognito mode or Guest mode';
         updateHostConfig({
             isOffTheRecord: true,
         });
@@ -187,13 +187,13 @@ describeWithEnvironment('AISettingsTab', () => {
         assert.deepEqual(view.input.disabledReasons, [incognitoExplainer]);
     });
     it('disables switches if offline', async () => {
-        const offlineExplainer = 'This feature is only available with an active internet connection.';
+        const offlineExplainer = 'This feature is only available with an active internet connection';
         aidaAccessStub.returns(Promise.resolve("no-internet" /* Host.AidaClient.AidaAccessPreconditions.NO_INTERNET */));
         const { view } = await setupWidget();
         assert.deepEqual(view.input.disabledReasons, [offlineExplainer]);
     });
     it('disables switches if sync is paused', async () => {
-        const notLoggedInExplainer = 'This feature is only available when you sign in to Chrome with your Google account.';
+        const notLoggedInExplainer = 'This feature is only available when you sign in to Chrome with your Google account';
         aidaAccessStub.returns(Promise.resolve("sync-is-paused" /* Host.AidaClient.AidaAccessPreconditions.SYNC_IS_PAUSED */));
         const { view } = await setupWidget();
         assert.deepEqual(view.input.disabledReasons, [notLoggedInExplainer]);
@@ -205,7 +205,7 @@ describeWithEnvironment('AISettingsTab', () => {
         });
         const { view } = await setupWidget();
         assert.deepEqual(view.input.disabledReasons, [
-            'To use this feature, set your language preference to English in DevTools settings.',
+            'To use this feature, set your language preference to English in DevTools settings',
         ]);
         isAvailableStub.restore();
     });

@@ -549,6 +549,14 @@ var Audits;
     PermissionElementIssueType2["NonSecureContext"] = "NonSecureContext";
     PermissionElementIssueType2["MissingTransientUserActivation"] = "MissingTransientUserActivation";
   })(PermissionElementIssueType = Audits2.PermissionElementIssueType || (Audits2.PermissionElementIssueType = {}));
+  let WebInstallIssueReason;
+  ((WebInstallIssueReason2) => {
+    WebInstallIssueReason2["ManifestParsingOrNetworkError"] = "ManifestParsingOrNetworkError";
+    WebInstallIssueReason2["StartUrlInvalid"] = "StartUrlInvalid";
+    WebInstallIssueReason2["ManifestMissingNameOrShortName"] = "ManifestMissingNameOrShortName";
+    WebInstallIssueReason2["ManifestMissingId"] = "ManifestMissingId";
+    WebInstallIssueReason2["NoManifest"] = "NoManifest";
+  })(WebInstallIssueReason = Audits2.WebInstallIssueReason || (Audits2.WebInstallIssueReason = {}));
   let InspectorIssueCode;
   ((InspectorIssueCode2) => {
     InspectorIssueCode2["CookieIssue"] = "CookieIssue";
@@ -581,6 +589,7 @@ var Audits;
     InspectorIssueCode2["SelectivePermissionsInterventionIssue"] = "SelectivePermissionsInterventionIssue";
     InspectorIssueCode2["EmailVerificationRequestIssue"] = "EmailVerificationRequestIssue";
     InspectorIssueCode2["LazyLoadImageIssue"] = "LazyLoadImageIssue";
+    InspectorIssueCode2["WebInstallIssue"] = "WebInstallIssue";
   })(InspectorIssueCode = Audits2.InspectorIssueCode || (Audits2.InspectorIssueCode = {}));
   let GetEncodedResponseRequestEncoding;
   ((GetEncodedResponseRequestEncoding2) => {
@@ -863,6 +872,11 @@ var DOM;
     GetElementByRelationRequestRelation2["InterestTarget"] = "InterestTarget";
     GetElementByRelationRequestRelation2["CommandFor"] = "CommandFor";
   })(GetElementByRelationRequestRelation = DOM2.GetElementByRelationRequestRelation || (DOM2.GetElementByRelationRequestRelation = {}));
+  let SetTextMarkerRequestType;
+  ((SetTextMarkerRequestType2) => {
+    SetTextMarkerRequestType2["Spelling"] = "spelling";
+    SetTextMarkerRequestType2["Grammar"] = "grammar";
+  })(SetTextMarkerRequestType = DOM2.SetTextMarkerRequestType || (DOM2.SetTextMarkerRequestType = {}));
 })(DOM || (DOM = {}));
 var DOMDebugger;
 ((DOMDebugger2) => {
@@ -4802,63 +4816,63 @@ var UIStrings2 = {
    * @description Error message shown on the Devices settings tab when the user enters an empty
    * width for a custom device.
    */
-  widthCannotBeEmpty: "Width can\u2019t be empty.",
+  widthCannotBeEmpty: "Width can\u2019t be empty",
   /**
    * @description Error message shown on the Devices settings tab when the user enters an invalid
    * width for a custom device.
    */
-  widthMustBeANumber: "Width must be a number.",
+  widthMustBeANumber: "Width must be a number",
   /**
    * @description Error message shown on the Devices settings tab when the user has entered a width
    * for a custom device that is too large.
    * @example {9999} PH1
    */
-  widthMustBeLessThanOrEqualToS: "Width must be less than or equal to {PH1}.",
+  widthMustBeLessThanOrEqualToS: "Width must be less than or equal to {PH1}",
   /**
    * @description Error message shown on the Devices settings tab when the user has entered a width
    * for a custom device that is too small.
    * @example {50} PH1
    */
-  widthMustBeGreaterThanOrEqualToS: "Width must be greater than or equal to {PH1}.",
+  widthMustBeGreaterThanOrEqualToS: "Width must be greater than or equal to {PH1}",
   /**
    * @description Error message shown on the Devices settings tab when the user enters an empty
    * height for a custom device.
    */
-  heightCannotBeEmpty: "Height can\u2019t be empty.",
+  heightCannotBeEmpty: "Height can\u2019t be empty",
   /**
    * @description Error message shown on the Devices settings tab when the user enters an invalid
    * height for a custom device.
    */
-  heightMustBeANumber: "Height must be a number.",
+  heightMustBeANumber: "Height must be a number",
   /**
    * @description Error message shown on the Devices settings tab when the user has entered a height
    * for a custom device that is too large.
    * @example {9999} PH1
    */
-  heightMustBeLessThanOrEqualToS: "Height must be less than or equal to {PH1}.",
+  heightMustBeLessThanOrEqualToS: "Height must be less than or equal to {PH1}",
   /**
    * @description Error message shown on the Devices settings tab when the user has entered a height
    * for a custom device that is too small.
    * @example {50} PH1
    */
-  heightMustBeGreaterThanOrEqualTo: "Height must be greater than or equal to {PH1}.",
+  heightMustBeGreaterThanOrEqualTo: "Height must be greater than or equal to {PH1}",
   /**
    * @description Error message shown on the Devices settings tab when the user enters an invalid
    * device pixel ratio for a custom device.
    */
-  devicePixelRatioMustBeANumberOr: "Device pixel ratio must be a number or blank.",
+  devicePixelRatioMustBeANumberOr: "Device pixel ratio must be a number or blank",
   /**
    * @description Error message shown on the Devices settings tab when the user enters a device
    * pixel ratio for a custom device that is too large.
    * @example {10} PH1
    */
-  devicePixelRatioMustBeLessThanOr: "Device pixel ratio must be less than or equal to {PH1}.",
+  devicePixelRatioMustBeLessThanOr: "Device pixel ratio must be less than or equal to {PH1}",
   /**
    * @description Error message shown on the Devices settings tab when the user enters a device
    * pixel ratio for a custom device that is too small.
    * @example {0} PH1
    */
-  devicePixelRatioMustBeGreater: "Device pixel ratio must be greater than or equal to {PH1}."
+  devicePixelRatioMustBeGreater: "Device pixel ratio must be greater than or equal to {PH1}"
 };
 var str_2 = i18n3.i18n.registerUIStrings("models/emulation/DeviceModeModel.ts", UIStrings2);
 var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
@@ -4880,6 +4894,8 @@ var DeviceModeModel = class _DeviceModeModel extends Common2.ObjectWrapper.Objec
   #appliedUserAgentType;
   #scaleSetting;
   #scale;
+  #autoAdjustScaleSetting;
+  #deviceScaleMapSetting;
   #widthSetting;
   #heightSetting;
   #uaSetting;
@@ -4897,7 +4913,6 @@ var DeviceModeModel = class _DeviceModeModel extends Common2.ObjectWrapper.Objec
   #targetManager;
   #settings;
   #multitargetNetworkManager;
-  #lastScreenshotBlobUrl = null;
   constructor(targetManager, settings, multitargetNetworkManager) {
     super();
     this.#targetManager = targetManager;
@@ -4910,7 +4925,7 @@ var DeviceModeModel = class _DeviceModeModel extends Common2.ObjectWrapper.Objec
     this.#initialized = false;
     this.#autoFitScaleOnInitialize = false;
     this.#appliedDeviceSize = new Platform.Size(1, 1);
-    this.#appliedDeviceScaleFactor = globalThis.devicePixelRatio;
+    this.#appliedDeviceScaleFactor = Platform.HostRuntime.HOST_RUNTIME.getDevicePixelRatio();
     this.#appliedUserAgentType = "Desktop" /* DESKTOP */;
     this.#scaleSetting = this.#settings.createSetting("emulation.device-scale", 1);
     if (!this.#scaleSetting.get()) {
@@ -4918,6 +4933,8 @@ var DeviceModeModel = class _DeviceModeModel extends Common2.ObjectWrapper.Objec
     }
     this.#scaleSetting.addChangeListener(this.scaleSettingChanged, this);
     this.#scale = 1;
+    this.#autoAdjustScaleSetting = this.#settings.createSetting("emulation.auto-adjust-scale", true);
+    this.#deviceScaleMapSetting = this.#settings.createSetting("emulation.device-scale-map", {});
     this.#widthSetting = this.#settings.createSetting("emulation.device-width", 400);
     if (this.#widthSetting.get() < MinDeviceSize) {
       this.#widthSetting.set(MinDeviceSize);
@@ -5064,11 +5081,39 @@ var DeviceModeModel = class _DeviceModeModel extends Common2.ObjectWrapper.Objec
   }
   emulate(type, device, mode, scale) {
     const resetPageScaleFactor = this.#type !== type || this.#device !== device || this.#mode !== mode;
+    const deviceChanged = this.#type !== type || this.#device !== device;
+    if (deviceChanged) {
+      if (this.#type === "Device" /* Device */ && this.#device) {
+        const map = this.#deviceScaleMapSetting.get();
+        map[this.#device.title] = {
+          scale: this.#scaleSetting.get(),
+          autoAdjust: this.#autoAdjustScaleSetting.get()
+        };
+        this.#deviceScaleMapSetting.set(map);
+      } else if (this.#type === "Responsive" /* Responsive */) {
+        const map = this.#deviceScaleMapSetting.get();
+        map["Responsive"] = {
+          scale: this.#scaleSetting.get(),
+          autoAdjust: this.#autoAdjustScaleSetting.get()
+        };
+        this.#deviceScaleMapSetting.set(map);
+      }
+    }
     this.#type = type;
     if (type === "Device" /* Device */ && device && mode) {
       console.assert(Boolean(device) && Boolean(mode), "Must pass device and mode for device emulation");
       this.#mode = mode;
       this.#device = device;
+      if (deviceChanged) {
+        const map = this.#deviceScaleMapSetting.get();
+        const savedDevice = map[device.title];
+        if (savedDevice) {
+          this.#autoAdjustScaleSetting.set(savedDevice.autoAdjust);
+          scale = savedDevice.autoAdjust ? void 0 : savedDevice.scale;
+        } else {
+          this.#autoAdjustScaleSetting.set(scale === void 0);
+        }
+      }
       if (scale !== void 0) {
         this.#autoFitScaleOnInitialize = false;
         this.#scaleSetting.set(scale);
@@ -5082,6 +5127,21 @@ var DeviceModeModel = class _DeviceModeModel extends Common2.ObjectWrapper.Objec
       this.#device = null;
       this.#mode = null;
       this.#autoFitScaleOnInitialize = false;
+      if (deviceChanged && type === "Responsive" /* Responsive */) {
+        const map = this.#deviceScaleMapSetting.get();
+        const savedDevice = map["Responsive"];
+        if (savedDevice) {
+          this.#autoAdjustScaleSetting.set(savedDevice.autoAdjust);
+          if (!savedDevice.autoAdjust) {
+            this.#scaleSetting.set(savedDevice.scale);
+          } else {
+            this.#scaleSetting.set(this.calculateFitScale(this.#widthSetting.get(), this.#heightSetting.get()));
+          }
+        } else {
+          this.#autoAdjustScaleSetting.set(true);
+          this.#scaleSetting.set(1);
+        }
+      }
     }
     if (type !== "None" /* None */) {
       Host.userMetrics.actionTaken(Host.UserMetrics.Action.DeviceModeEnabled);
@@ -5435,7 +5495,7 @@ var DeviceModeModel = class _DeviceModeModel extends Common2.ObjectWrapper.Objec
     const positionY = 0;
     const screenOrientationAngle = screenOrientation === Emulation.ScreenOrientationType.LandscapePrimary ? 90 : 0;
     this.#appliedDeviceSize = screenSize;
-    this.#appliedDeviceScaleFactor = deviceScaleFactor || window.devicePixelRatio;
+    this.#appliedDeviceScaleFactor = deviceScaleFactor || Platform.HostRuntime.HOST_RUNTIME.getDevicePixelRatio();
     this.#screenRect = new Rect(
       Math.max(0, (this.#availableSize.width - screenSize.width * scale) / 2),
       0,
@@ -5544,80 +5604,7 @@ var DeviceModeModel = class _DeviceModeModel extends Common2.ObjectWrapper.Objec
       this.calculateAndEmulate(false);
     }
   }
-  async captureScreenshot() {
-    const screenshot = await this.#captureScreenshot(false);
-    if (screenshot === null) {
-      return;
-    }
-    const pageImage = new Image();
-    pageImage.src = "data:image/png;base64," + screenshot;
-    pageImage.onload = async () => {
-      const scale = pageImage.naturalWidth / this.screenRect().width;
-      const screenRect = this.screenRect().scale(scale);
-      const visiblePageRect = this.visiblePageRect().scale(scale);
-      const contentLeft = visiblePageRect.left;
-      const contentTop = visiblePageRect.top;
-      const canvas = new OffscreenCanvas(
-        Math.floor(screenRect.width),
-        // Cap the height to not hit the GPU limit.
-        // https://crbug.com/1260828
-        Math.min(1 << 14, Math.floor(screenRect.height))
-      );
-      const ctx = canvas.getContext("2d", { willReadFrequently: true });
-      if (!ctx) {
-        throw new Error("Could not get 2d context from canvas.");
-      }
-      ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(pageImage, Math.floor(contentLeft), Math.floor(contentTop));
-      void this.saveScreenshot(canvas);
-    };
-  }
-  async captureFullSizeScreenshot() {
-    const screenshot = await this.#captureScreenshot(true);
-    if (screenshot === null) {
-      return;
-    }
-    return this.saveScreenshotBase64(screenshot);
-  }
-  async captureAreaScreenshot(clip) {
-    const screenshot = await this.#captureScreenshot(false, clip);
-    if (screenshot === null) {
-      return;
-    }
-    return this.saveScreenshotBase64(screenshot);
-  }
-  saveScreenshotBase64(screenshot) {
-    const pageImage = new Image();
-    pageImage.src = "data:image/png;base64," + screenshot;
-    pageImage.onload = () => {
-      const canvas = new OffscreenCanvas(
-        pageImage.naturalWidth,
-        // Cap the height to not hit the GPU limit.
-        // https://crbug.com/1260828
-        Math.min(1 << 14, Math.floor(pageImage.naturalHeight))
-      );
-      const ctx = canvas.getContext("2d", { willReadFrequently: true });
-      if (!ctx) {
-        throw new Error("Could not get 2d context for base64 screenshot.");
-      }
-      ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(pageImage, 0, 0);
-      void this.saveScreenshot(canvas);
-    };
-  }
-  paintImage(ctx, src, rect) {
-    return new Promise((resolve) => {
-      const image = new Image();
-      image.crossOrigin = "Anonymous";
-      image.srcset = src;
-      image.onerror = () => resolve();
-      image.onload = () => {
-        ctx.drawImage(image, rect.left, rect.top, rect.width, rect.height);
-        resolve();
-      };
-    });
-  }
-  async saveScreenshot(canvas) {
+  getScreenshotFileName() {
     const url = this.inspectedURL();
     let fileName = "";
     if (url) {
@@ -5628,20 +5615,46 @@ var DeviceModeModel = class _DeviceModeModel extends Common2.ObjectWrapper.Objec
     if (device && this.type() === "Device" /* Device */) {
       fileName += `(${device.title})`;
     }
-    this.#revokeLastScreenshotBlobUrl();
-    const link = document.createElement("a");
-    link.download = fileName + ".png";
-    const blob = await canvas.convertToBlob({ type: "image/png" });
-    const blobUrl = URL.createObjectURL(blob);
-    this.#lastScreenshotBlobUrl = blobUrl;
-    link.href = blobUrl;
-    link.click();
+    return fileName;
+  }
+  async captureScreenshot() {
+    const screenshot = await this.#captureScreenshot(false);
+    if (screenshot === null) {
+      return;
+    }
+    await Platform.HostRuntime.HOST_RUNTIME.saveScreenshot({
+      base64Png: screenshot,
+      fileName: this.getScreenshotFileName(),
+      clip: {
+        screenRectWidth: this.screenRect().width,
+        screenRectHeight: this.screenRect().height,
+        visiblePageRectLeft: this.visiblePageRect().left,
+        visiblePageRectTop: this.visiblePageRect().top
+      }
+    });
+  }
+  async captureFullSizeScreenshot() {
+    const screenshot = await this.#captureScreenshot(true);
+    if (screenshot === null) {
+      return;
+    }
+    await this.saveScreenshot(screenshot);
+  }
+  async captureAreaScreenshot(clip) {
+    const screenshot = await this.#captureScreenshot(false, clip);
+    if (screenshot === null) {
+      return;
+    }
+    await this.saveScreenshot(screenshot);
+  }
+  async saveScreenshot(screenshot) {
+    await Platform.HostRuntime.HOST_RUNTIME.saveScreenshot({
+      base64Png: screenshot,
+      fileName: this.getScreenshotFileName()
+    });
   }
   #revokeLastScreenshotBlobUrl() {
-    if (this.#lastScreenshotBlobUrl) {
-      URL.revokeObjectURL(this.#lastScreenshotBlobUrl);
-      this.#lastScreenshotBlobUrl = null;
-    }
+    Platform.HostRuntime.HOST_RUNTIME.revokeLastScreenshotUrl();
   }
   applyTouch(touchEnabled, mobile) {
     this.#touchEnabled = touchEnabled;

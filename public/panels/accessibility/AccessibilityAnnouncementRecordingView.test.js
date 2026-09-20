@@ -4,12 +4,14 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
-import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
+import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
+import * as UI from '../../ui/legacy/legacy.js';
 import * as Accessibility from './accessibility.js';
 describeWithEnvironment('AccessibilityAnnouncementRecordingView', () => {
-    const { BINDING_NAME, validateAndSanitizeAnnouncement, checkForBlockedPayload, injectedScript, teardownScript, INJECTED_SCRIPT_SOURCE, TEARDOWN_SCRIPT_SOURCE, AnnouncementApi, } = Accessibility.AccessibilityAnnouncementRecordingView;
+    const { BINDING_NAME, validateAndSanitizeAnnouncement, checkForBlockedPayload, injectedScript, teardownScript, INJECTED_SCRIPT_SOURCE, TEARDOWN_SCRIPT_SOURCE, AnnouncementApi, RecordTypeFilter, } = Accessibility.AccessibilityAnnouncementRecordingView;
     let target;
     let view;
     beforeEach(() => {
@@ -40,12 +42,39 @@ describeWithEnvironment('AccessibilityAnnouncementRecordingView', () => {
         SDK.TargetManager.TargetManager.instance().setScopeTarget(null);
     });
     function setupMockBinding(recorded) {
+        const unconsumed = [];
+        const waiters = [];
         window.__announcementsRecorderBinding = (payload) => {
             try {
-                recorded.push(JSON.parse(payload));
+                const parsed = JSON.parse(payload);
+                recorded.push(parsed);
+                const waiterIndex = waiters.findIndex(w => w.predicate(parsed));
+                if (waiterIndex !== -1) {
+                    const { resolve } = waiters.splice(waiterIndex, 1)[0];
+                    resolve(parsed);
+                }
+                else {
+                    unconsumed.push(parsed);
+                }
             }
             catch {
             }
+        };
+        return {
+            waitForAnnouncement: (predicate = () => true) => {
+                const unconsumedIndex = unconsumed.findIndex(predicate);
+                if (unconsumedIndex !== -1) {
+                    const [item] = unconsumed.splice(unconsumedIndex, 1);
+                    return Promise.resolve(item);
+                }
+                return new Promise(resolve => {
+                    waiters.push({ predicate, resolve });
+                });
+            },
+            clear: () => {
+                recorded.length = 0;
+                unconsumed.length = 0;
+            },
         };
     }
     describe('validateAndSanitizeAnnouncement', () => {
@@ -61,7 +90,7 @@ describeWithEnvironment('AccessibilityAnnouncementRecordingView', () => {
             const result = validateAndSanitizeAnnouncement(payload);
             assert.isNotNull(result);
             assert.deepEqual(result, {
-                api: "aria-live" /* AnnouncementApi.ARIA_LIVE */,
+                api: AnnouncementApi.ARIA_LIVE,
                 message: 'Status updated',
                 politeness: 'polite',
                 element: '<div aria-live="polite">Status updated</div>',
@@ -82,7 +111,7 @@ describeWithEnvironment('AccessibilityAnnouncementRecordingView', () => {
             const result = validateAndSanitizeAnnouncement(payload);
             assert.isNotNull(result);
             assert.deepEqual(result, {
-                api: "js-triggered" /* AnnouncementApi.JS_TRIGGERED */,
+                api: AnnouncementApi.JS_TRIGGERED,
                 message: 'Form submitted',
                 politeness: 'assertive',
                 element: '<form></form>',
@@ -413,6 +442,382 @@ describeWithEnvironment('AccessibilityAnnouncementRecordingView', () => {
             assert.lengthOf(view.announcementsForTest(), 0);
         });
     });
+    describe('Toolbar Controls and State Integration', () => {
+        function emitBindingPayload(payload) {
+            const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+            assert.exists(runtimeModel);
+            runtimeModel.dispatchEventToListeners(SDK.RuntimeModel.Events.BindingCalled, {
+                name: BINDING_NAME,
+                payload: JSON.stringify(payload),
+                executionContextId: 1,
+            });
+        }
+        it('initializes with default toolbar state and propagates to view input', async () => {
+            const viewStub = createViewFunctionStub(Accessibility.AccessibilityAnnouncementRecordingView.AccessibilityAnnouncementRecordingView);
+            view = new Accessibility.AccessibilityAnnouncementRecordingView.AccessibilityAnnouncementRecordingView(viewStub);
+            renderElementIntoDOM(view);
+            const input = await viewStub.nextInput;
+            assert.isFalse(input.isRecording);
+            assert.strictEqual(input.recordTypeFilter, "both" /* RecordTypeFilter.BOTH */);
+            assert.strictEqual(input.textFilter, '');
+            assert.isEmpty(input.blockedTargets);
+            assert.isEmpty(input.announcements);
+        });
+        it('toggles recording on and off via onToggleRecording', async () => {
+            const viewStub = createViewFunctionStub(Accessibility.AccessibilityAnnouncementRecordingView.AccessibilityAnnouncementRecordingView);
+            view = new Accessibility.AccessibilityAnnouncementRecordingView.AccessibilityAnnouncementRecordingView(viewStub);
+            renderElementIntoDOM(view);
+            let input = await viewStub.nextInput;
+            assert.isFalse(input.isRecording);
+            input.onToggleRecording();
+            input = await viewStub.nextInput;
+            assert.isTrue(input.isRecording);
+            assert.isTrue(view.isRecordingForTest());
+            input.onToggleRecording();
+            input = await viewStub.nextInput;
+            assert.isFalse(input.isRecording);
+            assert.isFalse(view.isRecordingForTest());
+        });
+        it('clears announcements list on onClear', async () => {
+            const viewStub = createViewFunctionStub(Accessibility.AccessibilityAnnouncementRecordingView.AccessibilityAnnouncementRecordingView);
+            view = new Accessibility.AccessibilityAnnouncementRecordingView.AccessibilityAnnouncementRecordingView(viewStub);
+            renderElementIntoDOM(view);
+            let input = await viewStub.nextInput;
+            await view.startRecording();
+            input = await viewStub.nextInput;
+            emitBindingPayload({
+                api: 'aria-live',
+                message: 'First update',
+                politeness: 'polite',
+                element: '<div>First update</div>',
+                time: 1000,
+            });
+            input = await viewStub.nextInput;
+            assert.lengthOf(input.announcements, 1);
+            input.onClear();
+            input = await viewStub.nextInput;
+            assert.isEmpty(input.announcements);
+            assert.isEmpty(view.announcementsForTest());
+        });
+        it('filters announcements by record type (Record both, Aria-Live Only, Announcements Only)', async () => {
+            const viewStub = createViewFunctionStub(Accessibility.AccessibilityAnnouncementRecordingView.AccessibilityAnnouncementRecordingView);
+            view = new Accessibility.AccessibilityAnnouncementRecordingView.AccessibilityAnnouncementRecordingView(viewStub);
+            renderElementIntoDOM(view);
+            let input = await viewStub.nextInput;
+            await view.startRecording();
+            input = await viewStub.nextInput;
+            emitBindingPayload({
+                api: 'aria-live',
+                message: 'Live status',
+                politeness: 'polite',
+                element: '<div>Live status</div>',
+                time: 1000,
+            });
+            await viewStub.nextInput;
+            emitBindingPayload({
+                api: 'js-triggered',
+                message: 'JS notice',
+                politeness: 'assertive',
+                element: '<form></form>',
+                time: 2000,
+            });
+            input = await viewStub.nextInput;
+            assert.lengthOf(input.announcements, 2);
+            // Filter: Aria-Live Only
+            input.onRecordTypeFilterChange("aria-live" /* RecordTypeFilter.ARIA_LIVE */);
+            input = await viewStub.nextInput;
+            assert.strictEqual(input.recordTypeFilter, "aria-live" /* RecordTypeFilter.ARIA_LIVE */);
+            assert.lengthOf(input.announcements, 1);
+            assert.strictEqual(input.announcements[0].api, AnnouncementApi.ARIA_LIVE);
+            assert.strictEqual(input.announcements[0].message, 'Live status');
+            // Filter: JS-triggered Only
+            input.onRecordTypeFilterChange("js-triggered" /* RecordTypeFilter.JS_TRIGGERED */);
+            input = await viewStub.nextInput;
+            assert.strictEqual(input.recordTypeFilter, "js-triggered" /* RecordTypeFilter.JS_TRIGGERED */);
+            assert.lengthOf(input.announcements, 1);
+            assert.strictEqual(input.announcements[0].api, AnnouncementApi.JS_TRIGGERED);
+            assert.strictEqual(input.announcements[0].message, 'JS notice');
+            // Filter: Record both
+            input.onRecordTypeFilterChange("both" /* RecordTypeFilter.BOTH */);
+            input = await viewStub.nextInput;
+            assert.strictEqual(input.recordTypeFilter, "both" /* RecordTypeFilter.BOTH */);
+            assert.lengthOf(input.announcements, 2);
+        });
+        it('strictly isolates regex text filter to message and ignores element HTML', async () => {
+            const viewStub = createViewFunctionStub(Accessibility.AccessibilityAnnouncementRecordingView.AccessibilityAnnouncementRecordingView);
+            view = new Accessibility.AccessibilityAnnouncementRecordingView.AccessibilityAnnouncementRecordingView(viewStub);
+            renderElementIntoDOM(view);
+            let input = await viewStub.nextInput;
+            await view.startRecording();
+            input = await viewStub.nextInput;
+            emitBindingPayload({
+                api: 'aria-live',
+                message: 'Order placed successfully',
+                politeness: 'polite',
+                element: '<section class="checkout-summary"><div id="order-msg">Order placed successfully</div></section>',
+                time: 1000,
+            });
+            await viewStub.nextInput;
+            emitBindingPayload({
+                api: 'js-triggered',
+                message: 'Payment received',
+                politeness: 'assertive',
+                element: '<div id="payment-widget" class="order-panel">Payment received</div>',
+                time: 2000,
+            });
+            input = await viewStub.nextInput;
+            assert.lengthOf(input.announcements, 2);
+            // Filtering for "checkout-summary" (present only in element HTML, NOT in message) must yield 0 results
+            input.onTextFilterChange('checkout-summary');
+            input = await viewStub.nextInput;
+            assert.strictEqual(input.textFilter, 'checkout-summary');
+            assert.lengthOf(input.announcements, 0, 'Filter must not match against element HTML');
+            // Filtering for "order-panel" (present only in element HTML of second announcement) must yield 0 results
+            input.onTextFilterChange('order-panel');
+            input = await viewStub.nextInput;
+            assert.lengthOf(input.announcements, 0, 'Filter must not match against element HTML');
+            // Filtering for "Order" (present in message of first announcement) must match only the first
+            input.onTextFilterChange('Order');
+            input = await viewStub.nextInput;
+            assert.lengthOf(input.announcements, 1);
+            assert.strictEqual(input.announcements[0].message, 'Order placed successfully');
+            // Regex matching case-insensitively with pattern
+            input.onTextFilterChange('payment.*received');
+            input = await viewStub.nextInput;
+            assert.lengthOf(input.announcements, 1);
+            assert.strictEqual(input.announcements[0].message, 'Payment received');
+        });
+        it('safely handles invalid regex syntax without throwing and produces zero matches', async () => {
+            const viewStub = createViewFunctionStub(Accessibility.AccessibilityAnnouncementRecordingView.AccessibilityAnnouncementRecordingView);
+            view = new Accessibility.AccessibilityAnnouncementRecordingView.AccessibilityAnnouncementRecordingView(viewStub);
+            renderElementIntoDOM(view);
+            let input = await viewStub.nextInput;
+            await view.startRecording();
+            input = await viewStub.nextInput;
+            emitBindingPayload({
+                api: 'aria-live',
+                message: 'Hello world',
+                politeness: 'polite',
+                element: '<div>Hello world</div>',
+                time: 1000,
+            });
+            input = await viewStub.nextInput;
+            assert.lengthOf(input.announcements, 1);
+            // Pass malformed regex syntax (unclosed group)
+            assert.doesNotThrow(() => {
+                input.onTextFilterChange('(?unclosed');
+            });
+            input = await viewStub.nextInput;
+            assert.strictEqual(input.textFilter, '(?unclosed');
+            assert.lengthOf(input.announcements, 0, 'Invalid regex must not throw and should match 0 items');
+            // Resetting text filter restores matches
+            input.onTextFilterChange('');
+            input = await viewStub.nextInput;
+            assert.lengthOf(input.announcements, 1);
+        });
+        it('shows blocked banner articulating target name and failure reason and updates on target removal', async () => {
+            const viewStub = createViewFunctionStub(Accessibility.AccessibilityAnnouncementRecordingView.AccessibilityAnnouncementRecordingView);
+            view = new Accessibility.AccessibilityAnnouncementRecordingView.AccessibilityAnnouncementRecordingView(viewStub);
+            renderElementIntoDOM(view);
+            let input = await viewStub.nextInput;
+            assert.isEmpty(input.blockedTargets);
+            await view.startRecording();
+            input = await viewStub.nextInput;
+            emitBindingPayload({
+                api: 'blocked',
+                reason: 'Prototype property ariaNotify is non-configurable',
+            });
+            input = await viewStub.nextInput;
+            assert.lengthOf(input.blockedTargets, 1);
+            const expectedName = target.name() || target.inspectedURL() || target.id();
+            assert.strictEqual(input.blockedTargets[0].targetName, expectedName);
+            assert.strictEqual(input.blockedTargets[0].reason, 'Prototype property ariaNotify is non-configurable');
+            // Target removed clears blocked targets
+            await view.targetRemoved(target);
+            input = await viewStub.nextInput;
+            assert.isEmpty(input.blockedTargets);
+        });
+        it('resyncs accumulated announcements after view detachment when wasShown is called', async () => {
+            view = new Accessibility.AccessibilityAnnouncementRecordingView.AccessibilityAnnouncementRecordingView();
+            renderElementIntoDOM(view);
+            await view.updateComplete;
+            await view.startRecording();
+            await view.updateComplete;
+            // Detach view
+            view.detach();
+            assert.isFalse(view.isShowing());
+            // Emit announcements in the background while view is detached
+            emitBindingPayload({
+                api: 'aria-live',
+                message: 'Background message 1',
+                politeness: 'polite',
+                element: '<div>Msg 1</div>',
+                time: 1000,
+            });
+            emitBindingPayload({
+                api: 'js-triggered',
+                message: 'Background message 2',
+                politeness: 'assertive',
+                element: '<button>Msg 2</button>',
+                time: 2000,
+            });
+            assert.lengthOf(view.announcementsForTest(), 2);
+            // Re-attach view (calls wasShown)
+            renderElementIntoDOM(view);
+            assert.isTrue(view.isShowing());
+            await view.updateComplete;
+            assert.lengthOf(view.filteredAnnouncements, 2);
+        });
+        it('announces match counts via UI.ARIAUtils.LiveAnnouncer.alert when filters change', async () => {
+            const alertSpy = sinon.spy(UI.ARIAUtils.LiveAnnouncer, 'alert');
+            view = new Accessibility.AccessibilityAnnouncementRecordingView.AccessibilityAnnouncementRecordingView();
+            renderElementIntoDOM(view);
+            await view.updateComplete;
+            await view.startRecording();
+            await view.updateComplete;
+            // Add two announcements
+            emitBindingPayload({
+                api: 'aria-live',
+                message: 'Alpha alert',
+                politeness: 'polite',
+                element: '<div>Alpha alert</div>',
+                time: 1000,
+            });
+            emitBindingPayload({
+                api: 'js-triggered',
+                message: 'Beta notice',
+                politeness: 'assertive',
+                element: '<span>Beta notice</span>',
+                time: 2000,
+            });
+            alertSpy.resetHistory();
+            // Filter by text with 1 match: "1 event matches"
+            view.setTextFilter('Alpha');
+            assert.isTrue(alertSpy.calledOnceWith('1 event matches'));
+            alertSpy.resetHistory();
+            // Filter with 0 matches: "No events match"
+            view.setTextFilter('Gamma');
+            assert.isTrue(alertSpy.calledOnceWith('No events match'));
+            alertSpy.resetHistory();
+            // Clear text filter -> 2 matches: "2 events match"
+            view.setTextFilter('');
+            assert.isTrue(alertSpy.calledOnceWith('2 events match'));
+            alertSpy.resetHistory();
+            // Filter by record type: ARIA_LIVE (1 match) -> "1 event matches"
+            view.setRecordTypeFilter("aria-live" /* RecordTypeFilter.ARIA_LIVE */);
+            assert.isTrue(alertSpy.calledOnceWith('1 event matches'));
+            alertSpy.restore();
+        });
+        it('memoizes filteredAnnouncements and reuses the cached reference', async () => {
+            view = new Accessibility.AccessibilityAnnouncementRecordingView.AccessibilityAnnouncementRecordingView();
+            renderElementIntoDOM(view);
+            await view.updateComplete;
+            await view.startRecording();
+            await view.updateComplete;
+            emitBindingPayload({
+                api: 'aria-live',
+                message: 'Item 1',
+                politeness: 'polite',
+                element: '<div>Item 1</div>',
+                time: 1000,
+            });
+            const firstRef = view.filteredAnnouncements;
+            const secondRef = view.filteredAnnouncements;
+            assert.strictEqual(firstRef, secondRef);
+            // Trigger render tick without changing filters
+            view.requestUpdate();
+            await view.updateComplete;
+            const thirdRef = view.filteredAnnouncements;
+            assert.strictEqual(firstRef, thirdRef);
+            // Change filter -> reference should update
+            view.setTextFilter('Non-matching');
+            const fourthRef = view.filteredAnnouncements;
+            assert.notStrictEqual(firstRef, fourthRef);
+            assert.lengthOf(fourthRef, 0);
+        });
+    });
+    describe('DEFAULT_VIEW screenshots', () => {
+        let targetEl;
+        beforeEach(() => {
+            targetEl = document.createElement('div');
+            renderElementIntoDOM(targetEl, { includeCommonStyles: true });
+            targetEl.style.display = 'flex';
+            targetEl.style.width = '640px';
+            targetEl.style.height = '300px';
+        });
+        it('renders empty state', async () => {
+            Accessibility.AccessibilityAnnouncementRecordingView.DEFAULT_VIEW({
+                isRecording: false,
+                onToggleRecording: () => { },
+                onClear: () => { },
+                recordTypeFilter: "both" /* RecordTypeFilter.BOTH */,
+                onRecordTypeFilterChange: () => { },
+                textFilter: '',
+                onTextFilterChange: () => { },
+                blockedTargets: [],
+                announcements: [],
+            }, undefined, targetEl);
+            const widgetEl = targetEl.querySelector('devtools-widget');
+            await widgetEl?.getWidget()?.updateComplete;
+            await assertScreenshot('accessibility/accessibility_announcement_recording_view_empty.png');
+        });
+        it('renders recording state with announcements', async () => {
+            const mockAnnouncement1 = {
+                api: AnnouncementApi.ARIA_LIVE,
+                message: 'Live status updated',
+                politeness: 'polite',
+                element: '<div aria-live="polite">Live status updated</div>',
+                time: 1700000000000,
+            };
+            const mockAnnouncement2 = {
+                api: AnnouncementApi.JS_TRIGGERED,
+                message: 'Notification sent',
+                politeness: 'assertive',
+                element: '<button>Save</button>',
+                time: 1700000005000,
+            };
+            Accessibility.AccessibilityAnnouncementRecordingView.DEFAULT_VIEW({
+                isRecording: true,
+                onToggleRecording: () => { },
+                onClear: () => { },
+                recordTypeFilter: "both" /* RecordTypeFilter.BOTH */,
+                onRecordTypeFilterChange: () => { },
+                textFilter: '',
+                onTextFilterChange: () => { },
+                blockedTargets: [],
+                announcements: [mockAnnouncement1, mockAnnouncement2],
+            }, undefined, targetEl);
+            const widgetEl = targetEl.querySelector('devtools-widget');
+            await widgetEl?.getWidget()?.updateComplete;
+            await assertScreenshot('accessibility/accessibility_announcement_recording_view_recording.png');
+        });
+        it('renders blocked targets warning banner', async () => {
+            const mockAnnouncement = {
+                api: AnnouncementApi.ARIA_LIVE,
+                message: 'Live status updated',
+                politeness: 'polite',
+                element: '<div aria-live="polite">Live status updated</div>',
+                time: 1700000000000,
+            };
+            Accessibility.AccessibilityAnnouncementRecordingView.DEFAULT_VIEW({
+                isRecording: true,
+                onToggleRecording: () => { },
+                onClear: () => { },
+                recordTypeFilter: "both" /* RecordTypeFilter.BOTH */,
+                onRecordTypeFilterChange: () => { },
+                textFilter: '',
+                onTextFilterChange: () => { },
+                blockedTargets: [{
+                        targetName: 'iframe#subframe',
+                        reason: 'Prototype property ariaNotify is non-configurable',
+                    }],
+                announcements: [mockAnnouncement],
+            }, undefined, targetEl);
+            const widgetEl = targetEl.querySelector('devtools-widget');
+            await widgetEl?.getWidget()?.updateComplete;
+            await assertScreenshot('accessibility/accessibility_announcement_recording_view_blocked.png');
+        });
+    });
     describe('Injected Interception Script Execution', () => {
         afterEach(() => {
             teardownScript();
@@ -444,7 +849,7 @@ describeWithEnvironment('AccessibilityAnnouncementRecordingView', () => {
         });
         it('captures aria-live text mutations without polluting DOM attributes', async () => {
             const recorded = [];
-            setupMockBinding(recorded);
+            const { waitForAnnouncement, clear } = setupMockBinding(recorded);
             new Function(INJECTED_SCRIPT_SOURCE)();
             const container = document.createElement('div');
             const liveRegion = document.createElement('div');
@@ -454,18 +859,15 @@ describeWithEnvironment('AccessibilityAnnouncementRecordingView', () => {
             nonLiveElement.textContent = 'Static non-live text';
             container.appendChild(nonLiveElement);
             renderElementIntoDOM(container);
-            await new Promise(resolve => setTimeout(resolve, 30));
-            recorded.length = 0;
+            clear();
             // 1. Attribute change on non-live element (CRITICAL FIX check: must NOT record)
             nonLiveElement.className = 'some-new-class';
-            await new Promise(resolve => setTimeout(resolve, 50));
-            assert.lengthOf(recorded, 0, 'Attribute change on non-live element should not be recorded');
             // 2. Text mutation on live region (must record)
             liveRegion.textContent = 'Live update!';
-            await new Promise(resolve => setTimeout(resolve, 50));
+            const announcement = await waitForAnnouncement(r => r.message === 'Live update!');
             assert.lengthOf(recorded, 1);
-            assert.strictEqual(recorded[0].message, 'Live update!');
-            assert.strictEqual(recorded[0].politeness, 'polite');
+            assert.strictEqual(announcement.message, 'Live update!');
+            assert.strictEqual(announcement.politeness, 'polite');
             // 3. Verify NO DOM attribute pollution occurred on liveRegion
             assert.isFalse(liveRegion.hasAttribute('data-devtools-aria-live-record-id'));
             assert.isNull(liveRegion.getAttribute('data-devtools-aria-live-record-id'));
@@ -473,7 +875,7 @@ describeWithEnvironment('AccessibilityAnnouncementRecordingView', () => {
         });
         it('assigns unique element IDs across cloned elements', async () => {
             const recorded = [];
-            setupMockBinding(recorded);
+            const { waitForAnnouncement, clear } = setupMockBinding(recorded);
             new Function(INJECTED_SCRIPT_SOURCE)();
             const container = document.createElement('div');
             const liveRegion = document.createElement('div');
@@ -481,28 +883,25 @@ describeWithEnvironment('AccessibilityAnnouncementRecordingView', () => {
             liveRegion.textContent = 'Original text';
             container.appendChild(liveRegion);
             renderElementIntoDOM(container);
-            await new Promise(resolve => setTimeout(resolve, 30));
-            recorded.length = 0;
+            await waitForAnnouncement(r => r.message === 'Original text');
+            clear();
             // Mutate original live region
             liveRegion.textContent = 'Original updated';
-            await new Promise(resolve => setTimeout(resolve, 50));
-            assert.lengthOf(recorded, 1);
-            const originalId = recorded[0].elementId;
+            const originalRecord = await waitForAnnouncement(r => r.message === 'Original updated');
+            const originalId = originalRecord.elementId;
             // Clone original element and add to container
             const cloned = liveRegion.cloneNode(true);
             cloned.textContent = 'Clone initial';
             container.appendChild(cloned);
-            await new Promise(resolve => setTimeout(resolve, 50));
+            await waitForAnnouncement(r => r.message === 'Clone initial');
             cloned.textContent = 'Clone updated';
-            await new Promise(resolve => setTimeout(resolve, 50));
-            const cloneRecords = recorded.filter(r => r.message === 'Clone updated');
-            assert.lengthOf(cloneRecords, 1);
-            assert.notStrictEqual(cloneRecords[0].elementId, originalId);
+            const cloneRecord = await waitForAnnouncement(r => r.message === 'Clone updated');
+            assert.notStrictEqual(cloneRecord.elementId, originalId);
             container.remove();
         });
         it('captures live region mutations inside open Shadow DOM trees', async () => {
             const recorded = [];
-            setupMockBinding(recorded);
+            const { waitForAnnouncement } = setupMockBinding(recorded);
             new Function(INJECTED_SCRIPT_SOURCE)();
             const host = document.createElement('div');
             const shadowRoot = host.attachShadow({ mode: 'open' });
@@ -510,18 +909,16 @@ describeWithEnvironment('AccessibilityAnnouncementRecordingView', () => {
             shadowLiveRegion.setAttribute('role', 'status');
             shadowRoot.appendChild(shadowLiveRegion);
             renderElementIntoDOM(host);
-            await new Promise(resolve => setTimeout(resolve, 30));
-            recorded.length = 0;
             shadowLiveRegion.textContent = 'Notification in shadow DOM';
-            await new Promise(resolve => setTimeout(resolve, 50));
+            const announcement = await waitForAnnouncement(r => r.message === 'Notification in shadow DOM');
             assert.lengthOf(recorded, 1);
-            assert.strictEqual(recorded[0].message, 'Notification in shadow DOM');
-            assert.strictEqual(recorded[0].politeness, 'polite');
+            assert.strictEqual(announcement.message, 'Notification in shadow DOM');
+            assert.strictEqual(announcement.politeness, 'polite');
             host.remove();
         });
         it('isolates ariaNotify failure so MutationObserver still captures live regions', async () => {
             const recorded = [];
-            setupMockBinding(recorded);
+            const { waitForAnnouncement, clear } = setupMockBinding(recorded);
             const frozenElementProto = Object.freeze({
                 ariaNotify: function () { },
             });
@@ -535,14 +932,12 @@ describeWithEnvironment('AccessibilityAnnouncementRecordingView', () => {
             runScript({ prototype: frozenElementProto }, { prototype: {} }, window, Node, MutationObserver);
             // Verify blocked event was emitted for ariaNotify
             assert.isTrue(recorded.some(r => r.api === 'blocked'));
-            recorded.length = 0;
+            clear();
             // Verify that MutationObserver still functions for ARIA-live
             liveRegion.textContent = 'Assertive message despite frozen proto';
-            await new Promise(resolve => setTimeout(resolve, 50));
-            const liveAnnouncements = recorded.filter(r => r.api === 'aria-live');
-            assert.lengthOf(liveAnnouncements, 1);
-            assert.strictEqual(liveAnnouncements[0].message, 'Assertive message despite frozen proto');
-            assert.strictEqual(liveAnnouncements[0].politeness, 'assertive');
+            const announcement = await waitForAnnouncement(r => r.api === 'aria-live');
+            assert.strictEqual(announcement.message, 'Assertive message despite frozen proto');
+            assert.strictEqual(announcement.politeness, 'assertive');
             container.remove();
         });
         it('restores original methods and observer on teardown', () => {
@@ -581,15 +976,37 @@ describeWithEnvironment('AccessibilityAnnouncementRecordingView', () => {
         it('works when calling injectedScript and teardownScript functions directly', () => {
             const recorded = [];
             setupMockBinding(recorded);
-            injectedScript("aria-live" /* AnnouncementApi.ARIA_LIVE */, "js-triggered" /* AnnouncementApi.JS_TRIGGERED */);
+            injectedScript(AnnouncementApi.ARIA_LIVE, AnnouncementApi.JS_TRIGGERED);
             const btn = document.createElement('button');
             renderElementIntoDOM(btn);
             btn.ariaNotify('Direct function call');
             assert.lengthOf(recorded, 1);
             assert.strictEqual(recorded[0].message, 'Direct function call');
-            assert.strictEqual(recorded[0].api, "js-triggered" /* AnnouncementApi.JS_TRIGGERED */);
+            assert.strictEqual(recorded[0].api, AnnouncementApi.JS_TRIGGERED);
             teardownScript();
             btn.remove();
+        });
+        it('handles deeply nested DOM trees without stack overflow during scanAndObserveShadowRoots', async () => {
+            const recorded = [];
+            const { waitForAnnouncement } = setupMockBinding(recorded);
+            new Function(INJECTED_SCRIPT_SOURCE)();
+            const depth = 600;
+            const root = document.createElement('div');
+            let current = root;
+            for (let i = 0; i < depth; i++) {
+                const next = document.createElement('div');
+                current.appendChild(next);
+                current = next;
+            }
+            const liveRegion = document.createElement('div');
+            liveRegion.setAttribute('aria-live', 'polite');
+            current.appendChild(liveRegion);
+            renderElementIntoDOM(root);
+            liveRegion.textContent = 'Deep announcement';
+            const announcement = await waitForAnnouncement(r => r.message === 'Deep announcement');
+            assert.strictEqual(announcement.message, 'Deep announcement');
+            assert.strictEqual(announcement.politeness, 'polite');
+            root.remove();
         });
     });
 });

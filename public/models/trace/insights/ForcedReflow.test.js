@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { getInsightOrError } from '../../../testing/InsightHelpers.js';
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
-describeWithEnvironment('ForcedReflow', function () {
+describe('ForcedReflow', function () {
+    setupLocaleHooks();
     async function processTrace(context, traceFile) {
         const { data, insights } = await TraceLoader.traceEngine(context, traceFile);
         if (!insights) {

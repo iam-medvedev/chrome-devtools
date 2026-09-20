@@ -42,7 +42,7 @@ UI.ContextMenu.registerProvider({
   },
   contextTypes() {
     return [
-      ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement
+      ObjectUI.ObjectPropertiesSection.ObjectTreeNode
     ];
   }
 });

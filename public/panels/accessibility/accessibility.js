@@ -8,12 +8,12 @@ var __export = (target, all) => {
 var AccessibilityAnnouncementRecordingListView_exports = {};
 __export(AccessibilityAnnouncementRecordingListView_exports, {
   AccessibilityAnnouncementRecordingListView: () => AccessibilityAnnouncementRecordingListView,
-  DEFAULT_VIEW: () => DEFAULT_VIEW
+  DEFAULT_VIEW: () => DEFAULT_VIEW2
 });
 import "../../ui/legacy/components/data_grid/data_grid.js";
 import * as i18n3 from "../../core/i18n/i18n.js";
-import * as UI2 from "../../ui/legacy/legacy.js";
-import * as Lit from "../../ui/lit/lit.js";
+import * as UI3 from "../../ui/legacy/legacy.js";
+import * as Lit2 from "../../ui/lit/lit.js";
 
 // gen/front_end/panels/accessibility/accessibilityAnnouncementRecordingListView.css.js
 var accessibilityAnnouncementRecordingListView_css_default = `/*
@@ -58,7 +58,9 @@ __export(AccessibilityAnnouncementRecordingView_exports, {
   AccessibilityAnnouncementRecordingView: () => AccessibilityAnnouncementRecordingView,
   AnnouncementApi: () => AnnouncementApi,
   BINDING_NAME: () => BINDING_NAME,
+  DEFAULT_VIEW: () => DEFAULT_VIEW,
   INJECTED_SCRIPT_SOURCE: () => INJECTED_SCRIPT_SOURCE,
+  RecordTypeFilter: () => RecordTypeFilter,
   TEARDOWN_SCRIPT_SOURCE: () => TEARDOWN_SCRIPT_SOURCE,
   checkForBlockedPayload: () => checkForBlockedPayload,
   injectedScript: () => injectedScript,
@@ -67,6 +69,99 @@ __export(AccessibilityAnnouncementRecordingView_exports, {
 });
 import * as i18n from "../../core/i18n/i18n.js";
 import * as SDK from "../../core/sdk/sdk.js";
+import * as Buttons from "../../ui/components/buttons/buttons.js";
+import * as UI2 from "../../ui/legacy/legacy.js";
+import * as Lit from "../../ui/lit/lit.js";
+import * as VisualLogging from "../../ui/visual_logging/visual_logging.js";
+
+// gen/front_end/panels/accessibility/accessibilityAnnouncementRecordingView.css.js
+var accessibilityAnnouncementRecordingView_css_default = `/*
+ * Copyright 2026 The Chromium Authors
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+@scope to (devtools-widget > *) {
+  :scope {
+    font-family: inherit;
+    display: flex;
+    flex-direction: column;
+    flex: auto;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .accessibility-announcement-recording-view {
+    display: flex;
+    flex-direction: column;
+    flex: auto;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .announcements-toolbar-container {
+    display: flex;
+    flex: none;
+    background-color: var(--sys-color-cdt-base-container);
+    border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
+  }
+
+  .announcements-toolbar {
+    flex: auto;
+  }
+
+  .announcements-toolbar select {
+    background-color: transparent;
+    border: none;
+    color: var(--sys-color-on-surface);
+    font-size: var(--sys-typescale-body4-size);
+    padding: var(--sys-size-2) var(--sys-size-4);
+    height: 100%;
+    cursor: pointer;
+  }
+
+  .toolbar-divider {
+    background-color: var(--sys-color-divider);
+    width: var(--sys-size-1);
+    margin: 5px var(--sys-size-3);
+    height: var(--sys-size-8);
+  }
+
+  .announcements-blocked-banner {
+    display: flex;
+    flex-direction: column;
+    flex: none;
+    gap: var(--sys-size-3);
+    padding: var(--sys-size-5) var(--sys-size-8);
+    background-color: var(--sys-color-surface-yellow);
+    color: var(--sys-color-on-surface-yellow);
+    border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
+    font-size: var(--sys-typescale-body4-size);
+    line-height: var(--sys-typescale-body4-line-height);
+  }
+
+  .blocked-banner-header {
+    display: flex;
+    align-items: center;
+    gap: var(--sys-size-4);
+    font-weight: var(--ref-typeface-weight-medium);
+  }
+
+  .blocked-targets-list {
+    margin: 0;
+    padding-left: var(--sys-size-8);
+  }
+
+  .announcements-main-pane {
+    display: flex;
+    flex-direction: column;
+    flex: auto;
+    min-height: 0;
+    overflow: hidden;
+  }
+}
+
+/*# sourceURL=${import.meta.resolve("./accessibilityAnnouncementRecordingView.css")} */`;
 
 // ../../front_end/panels/accessibility/AccessibilitySubPane.ts
 var AccessibilitySubPane_exports = {};
@@ -355,11 +450,72 @@ var AccessibilitySubPane = class extends UI.View.SimpleView {
 };
 
 // ../../front_end/panels/accessibility/AccessibilityAnnouncementRecordingView.ts
+var { html, render } = Lit;
+var { widget } = UI2.Widget;
 var UIStrings = {
   /**
    * @description Title for the ARIA-Live and JS announcements recording tool
    */
-  ariaLiveRecording: "Announcements recording"
+  ariaLiveRecording: "Announcements recording",
+  /**
+   * @description Tooltip for the start recording button in the announcements tool.
+   */
+  startRecording: "Start recording",
+  /**
+   * @description Tooltip for the stop recording button in the announcements tool.
+   */
+  stopRecording: "Stop recording",
+  /**
+   * @description Tooltip for the clear announcements button in the announcements tool.
+   */
+  clearAnnouncements: "Clear announcements",
+  /**
+   * @description Label/title for the dropdown filter to select which announcement types to record.
+   */
+  filterByType: "Filter by type",
+  /**
+   * @description Option label to record and display both ARIA-live and JavaScript announcements.
+   */
+  recordBoth: "Record both",
+  /**
+   * @description Option label to record and display only ARIA-live announcements.
+   */
+  ariaLiveOnly: "ARIA-live only",
+  /**
+   * @description Option label to record and display only JavaScript-triggered announcements.
+   */
+  announcementsOnly: "Announcements only",
+  /**
+   * @description Placeholder text for the filter input in the announcements tool.
+   */
+  filter: "Filter",
+  /**
+   * @description Screen reader announcement when no events match the filter in the announcements tool.
+   */
+  noEventsMatch: "No events match",
+  /**
+   * @description Screen reader announcement when exactly one event matches the filter in the announcements tool.
+   */
+  oneEventMatches: "1 event matches",
+  /**
+   * @description Screen reader announcement when multiple events match the filter in the announcements tool.
+   * @example {15} PH1
+   */
+  nEventsMatch: "{PH1} events match",
+  /**
+   * @description Warning banner title shown when recording could not be enabled in some frames.
+   */
+  recordingBlockedWarning: "Recording was blocked for some frames:",
+  /**
+   * @description Warning item describing a specific frame and the reason recording was blocked.
+   * @example {iframe#main} PH1
+   * @example {Script evaluation failed} PH2
+   */
+  frameBlockedReason: "{PH1}: {PH2}",
+  /**
+   * @description Fallback reason shown when an unknown error occurs while blocking recording.
+   */
+  unknownError: "Unknown error"
 };
 var str_ = i18n.i18n.registerUIStrings("panels/accessibility/AccessibilityAnnouncementRecordingView.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
@@ -369,6 +525,85 @@ var AnnouncementApi = /* @__PURE__ */ ((AnnouncementApi2) => {
   AnnouncementApi2["JS_TRIGGERED"] = "js-triggered";
   return AnnouncementApi2;
 })(AnnouncementApi || {});
+var RecordTypeFilter = /* @__PURE__ */ ((RecordTypeFilter2) => {
+  RecordTypeFilter2["BOTH"] = "both";
+  RecordTypeFilter2["ARIA_LIVE"] = "aria-live";
+  RecordTypeFilter2["JS_TRIGGERED"] = "js-triggered";
+  return RecordTypeFilter2;
+})(RecordTypeFilter || {});
+var DEFAULT_VIEW = (input, _output, target) => {
+  render(
+    html`
+    <style>${accessibilityAnnouncementRecordingView_css_default}</style>
+    <div class="accessibility-announcement-recording-view">
+      <div class="announcements-toolbar-container">
+        <devtools-toolbar class="announcements-toolbar" jslog=${VisualLogging.toolbar()}>
+          <devtools-button
+            title=${input.isRecording ? i18nString(UIStrings.stopRecording) : i18nString(UIStrings.startRecording)}
+            aria-label=${input.isRecording ? i18nString(UIStrings.stopRecording) : i18nString(UIStrings.startRecording)}
+            .iconName=${"record-start"}
+            .toggledIconName=${"record-stop"}
+            .toggleType=${Buttons.Button.ToggleType.PRIMARY}
+            .toggled=${input.isRecording}
+            @click=${input.onToggleRecording}
+            .variant=${Buttons.Button.Variant.TOOLBAR}
+            .jslogContext=${"accessibility.toggle-recording"}>
+          </devtools-button>
+          <devtools-button
+            title=${i18nString(UIStrings.clearAnnouncements)}
+            aria-label=${i18nString(UIStrings.clearAnnouncements)}
+            .iconName=${"clear"}
+            @click=${input.onClear}
+            .variant=${Buttons.Button.Variant.TOOLBAR}
+            .jslogContext=${"accessibility.clear-announcements"}>
+          </devtools-button>
+          <div class="toolbar-divider" role="separator"></div>
+          <select
+            title=${i18nString(UIStrings.filterByType)}
+            aria-label=${i18nString(UIStrings.filterByType)}
+            @change=${(event) => input.onRecordTypeFilterChange(event.target.value)}
+            .value=${input.recordTypeFilter}
+            jslog=${VisualLogging.dropDown("accessibility-announcements.filter-by-type").track({ change: true })}>
+            <option value=${"both" /* BOTH */} .selected=${input.recordTypeFilter === "both" /* BOTH */}>
+              ${i18nString(UIStrings.recordBoth)}
+            </option>
+            <option value=${"aria-live" /* ARIA_LIVE */} .selected=${input.recordTypeFilter === "aria-live" /* ARIA_LIVE */}>
+              ${i18nString(UIStrings.ariaLiveOnly)}
+            </option>
+            <option value=${"js-triggered" /* JS_TRIGGERED */} .selected=${input.recordTypeFilter === "js-triggered" /* JS_TRIGGERED */}>
+              ${i18nString(UIStrings.announcementsOnly)}
+            </option>
+          </select>
+          <div class="toolbar-divider" role="separator"></div>
+          <devtools-toolbar-input
+            type="filter"
+            placeholder=${i18nString(UIStrings.filter)}
+            .value=${input.textFilter}
+            @change=${(event) => input.onTextFilterChange(event.detail)}
+            style="flex-grow: 1">
+          </devtools-toolbar-input>
+        </devtools-toolbar>
+      </div>
+      ${input.blockedTargets.length > 0 ? html`
+        <div class="announcements-blocked-banner" role="alert">
+          <div class="blocked-banner-header">
+            <devtools-icon name="warning-filled"></devtools-icon>
+            <span>${i18nString(UIStrings.recordingBlockedWarning)}</span>
+          </div>
+          <ul class="blocked-targets-list">
+            ${input.blockedTargets.map((targetInfo) => html`
+              <li>${i18nString(UIStrings.frameBlockedReason, { PH1: targetInfo.targetName, PH2: targetInfo.reason || i18nString(UIStrings.unknownError) })}</li>
+            `)}
+          </ul>
+        </div>
+      ` : Lit.nothing}
+      <div class="announcements-main-pane">
+        ${widget(AccessibilityAnnouncementRecordingListView, { items: input.announcements })}
+      </div>
+    </div>`,
+    target
+  );
+};
 function injectedScript(ariaLiveApi, jsTriggeredApi) {
   if (window.__announcementsRecorderBinding_loaded) {
     return;
@@ -509,11 +744,43 @@ function injectedScript(ariaLiveApi, jsTriggeredApi) {
   let lastRecordedText = null;
   let lastRecordedPoliteness = null;
   let lastRecordedTime = 0;
+  const pendingLiveNodes = /* @__PURE__ */ new Set();
+  let scheduledFlushId = null;
+  function scheduleFlush() {
+    if (scheduledFlushId !== null) {
+      return;
+    }
+    scheduledFlushId = window.requestAnimationFrame(() => {
+      scheduledFlushId = null;
+      flushPendingNodes();
+    });
+  }
+  function flushPendingNodes() {
+    const nodes = Array.from(pendingLiveNodes);
+    pendingLiveNodes.clear();
+    for (let i = 0; i < nodes.length; i++) {
+      processLiveNode(nodes[i]);
+    }
+  }
   function recordLiveNode(node) {
     if (!node || node.nodeType !== Node.ELEMENT_NODE) {
       return;
     }
     const element = node;
+    const politeness = derivePoliteness(element);
+    if (politeness === "off") {
+      return;
+    }
+    if (element.getAttribute("aria-hidden") === "true") {
+      return;
+    }
+    pendingLiveNodes.add(element);
+    scheduleFlush();
+  }
+  function processLiveNode(element) {
+    if ("isConnected" in element && !element.isConnected) {
+      return;
+    }
     const politeness = derivePoliteness(element);
     if (politeness === "off") {
       return;
@@ -589,17 +856,13 @@ function injectedScript(ariaLiveApi, jsTriggeredApi) {
         for (const node of mutation.addedNodes) {
           if (node.nodeType === Node.ELEMENT_NODE) {
             const el = node;
-            if (el.shadowRoot) {
-              observeSubtree(el.shadowRoot);
-              scanAndObserveShadowRoots(el.shadowRoot);
-            }
             scanAndObserveShadowRoots(el);
-            if (el.matches && el.matches(selector)) {
+            if (el.matches(selector)) {
               recordLiveNode(el);
             }
-            const children = el.querySelectorAll ? el.querySelectorAll(selector) : [];
-            for (const child of children) {
-              recordLiveNode(child);
+            const children = el.querySelectorAll(selector);
+            for (let i = 0; i < children.length; i++) {
+              recordLiveNode(children[i]);
             }
           }
         }
@@ -639,20 +902,29 @@ function injectedScript(ariaLiveApi, jsTriggeredApi) {
     } catch {
     }
   }
-  function scanAndObserveShadowRoots(node) {
-    if (!node) {
+  function scanAndObserveShadowRoots(root) {
+    if (!root) {
       return;
     }
-    if (node.nodeType === Node.ELEMENT_NODE) {
-      const el = node;
-      if (el.shadowRoot) {
-        observeSubtree(el.shadowRoot);
-        scanAndObserveShadowRoots(el.shadowRoot);
+    const queue = [root];
+    while (queue.length > 0) {
+      const current = queue.pop();
+      if (!current) {
+        continue;
       }
-    }
-    const children = node.children || [];
-    for (let i = 0; i < children.length; i++) {
-      scanAndObserveShadowRoots(children[i]);
+      const el = current;
+      if (el.shadowRoot && !observedRoots.has(el.shadowRoot)) {
+        observeSubtree(el.shadowRoot);
+        queue.push(el.shadowRoot);
+      }
+      const descendants = current.querySelectorAll("*");
+      for (let i = 0; i < descendants.length; i++) {
+        const descendant = descendants[i];
+        if (descendant.shadowRoot && !observedRoots.has(descendant.shadowRoot)) {
+          observeSubtree(descendant.shadowRoot);
+          queue.push(descendant.shadowRoot);
+        }
+      }
     }
   }
   const rootNode = document.body || document.documentElement;
@@ -668,6 +940,7 @@ function injectedScript(ariaLiveApi, jsTriggeredApi) {
         const shadow = origAttachShadow.apply(this, [init]);
         if (init && init.mode === "open") {
           observeSubtree(shadow);
+          scanAndObserveShadowRoots(shadow);
         }
         return shadow;
       };
@@ -677,6 +950,11 @@ function injectedScript(ariaLiveApi, jsTriggeredApi) {
   window.__announcementsRecorderBinding_loaded = true;
   window.__announcementsRecorderBinding_cleanup = function() {
     observer.disconnect();
+    if (scheduledFlushId !== null) {
+      window.cancelAnimationFrame(scheduledFlushId);
+      scheduledFlushId = null;
+    }
+    pendingLiveNodes.clear();
     if (originalElementAriaNotify) {
       try {
         Element.prototype["ariaNotify"] = originalElementAriaNotify;
@@ -775,16 +1053,22 @@ function validateAndSanitizeAnnouncement(payload) {
 }
 var AccessibilityAnnouncementRecordingView = class extends AccessibilitySubPane {
   #announcements = [];
+  #filteredAnnouncements = null;
   #isRecording = false;
   #blockedTargets = /* @__PURE__ */ new Map();
   #scriptIdentifiers = /* @__PURE__ */ new Map();
   #targets = /* @__PURE__ */ new Set();
   #enabledTargets = /* @__PURE__ */ new Set();
-  constructor() {
+  #recordTypeFilter = "both" /* BOTH */;
+  #textFilter = "";
+  #regexFilter = null;
+  #view;
+  constructor(view = DEFAULT_VIEW) {
     super({
       title: i18nString(UIStrings.ariaLiveRecording),
       viewId: "aria-live-recording"
     });
+    this.#view = view;
     SDK.TargetManager.TargetManager.instance().observeTargets(this, { scoped: true });
   }
   wasShown() {
@@ -802,8 +1086,11 @@ var AccessibilityAnnouncementRecordingView = class extends AccessibilitySubPane 
   }
   async targetRemoved(target) {
     this.#targets.delete(target);
-    this.#blockedTargets.delete(target);
+    const wasBlocked = this.#blockedTargets.delete(target);
     await this.#disableTarget(target);
+    if (wasBlocked) {
+      this.requestUpdate();
+    }
   }
   async #enableTarget(target) {
     if (this.#enabledTargets.has(target)) {
@@ -905,6 +1192,11 @@ var AccessibilityAnnouncementRecordingView = class extends AccessibilitySubPane 
       return;
     }
     this.#announcements.push(announcement);
+    if (this.#filteredAnnouncements !== null) {
+      if (this.#matchesFilter(announcement)) {
+        this.#filteredAnnouncements = [...this.#filteredAnnouncements, announcement];
+      }
+    }
     this.requestUpdate();
   }
   async startRecording() {
@@ -930,7 +1222,97 @@ var AccessibilityAnnouncementRecordingView = class extends AccessibilitySubPane 
   }
   clearAnnouncements() {
     this.#announcements = [];
+    this.#filteredAnnouncements = [];
     this.requestUpdate();
+  }
+  #matchesFilter(announcement) {
+    if (this.#recordTypeFilter === "aria-live" /* ARIA_LIVE */ && announcement.api !== "aria-live" /* ARIA_LIVE */) {
+      return false;
+    }
+    if (this.#recordTypeFilter === "js-triggered" /* JS_TRIGGERED */ && announcement.api !== "js-triggered" /* JS_TRIGGERED */) {
+      return false;
+    }
+    if (this.#regexFilter && !this.#regexFilter.test(announcement.message)) {
+      return false;
+    }
+    return true;
+  }
+  get filteredAnnouncements() {
+    if (this.#filteredAnnouncements !== null) {
+      return this.#filteredAnnouncements;
+    }
+    this.#filteredAnnouncements = this.#announcements.filter((announcement) => this.#matchesFilter(announcement));
+    return this.#filteredAnnouncements;
+  }
+  #announceFilterMatches() {
+    const count = this.filteredAnnouncements.length;
+    let message;
+    if (count === 0) {
+      message = i18nString(UIStrings.noEventsMatch);
+    } else if (count === 1) {
+      message = i18nString(UIStrings.oneEventMatches);
+    } else {
+      message = i18nString(UIStrings.nEventsMatch, { PH1: count });
+    }
+    UI2.ARIAUtils.LiveAnnouncer.alert(message);
+  }
+  setRecordTypeFilter(type) {
+    if (this.#recordTypeFilter === type) {
+      return;
+    }
+    this.#recordTypeFilter = type;
+    this.#filteredAnnouncements = null;
+    this.#announceFilterMatches();
+    this.requestUpdate();
+  }
+  setTextFilter(text) {
+    if (this.#textFilter === text) {
+      return;
+    }
+    this.#textFilter = text;
+    if (!text) {
+      this.#regexFilter = null;
+    } else {
+      try {
+        this.#regexFilter = new RegExp(text, "i");
+      } catch {
+        this.#regexFilter = new RegExp("(?!)", "i");
+      }
+    }
+    this.#filteredAnnouncements = null;
+    this.#announceFilterMatches();
+    this.requestUpdate();
+  }
+  performUpdate() {
+    const blockedTargets = [];
+    for (const [target, reason] of this.#blockedTargets) {
+      const targetName = target.name() || target.inspectedURL() || target.id();
+      blockedTargets.push({ targetName, reason });
+    }
+    const input = {
+      isRecording: this.#isRecording,
+      onToggleRecording: () => {
+        if (this.#isRecording) {
+          void this.stopRecording();
+        } else {
+          void this.startRecording();
+        }
+      },
+      onClear: () => {
+        this.clearAnnouncements();
+      },
+      recordTypeFilter: this.#recordTypeFilter,
+      onRecordTypeFilterChange: (type) => {
+        this.setRecordTypeFilter(type);
+      },
+      textFilter: this.#textFilter,
+      onTextFilterChange: (text) => {
+        this.setTextFilter(text);
+      },
+      blockedTargets,
+      announcements: this.filteredAnnouncements
+    };
+    this.#view(input, void 0, this.contentElement);
   }
   announcementsForTest() {
     return [...this.#announcements];
@@ -947,7 +1329,7 @@ var AccessibilityAnnouncementRecordingView = class extends AccessibilitySubPane 
 };
 
 // ../../front_end/panels/accessibility/AccessibilityAnnouncementRecordingListView.ts
-var { html, render } = Lit;
+var { html: html2, render: render2 } = Lit2;
 var UIStrings2 = {
   /**
    * @description Column header for the announcement timestamp.
@@ -980,9 +1362,9 @@ var UIStrings2 = {
 };
 var str_2 = i18n3.i18n.registerUIStrings("panels/accessibility/AccessibilityAnnouncementRecordingListView.ts", UIStrings2);
 var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
-var DEFAULT_VIEW = (input, _output, target) => {
-  render(
-    html`
+var DEFAULT_VIEW2 = (input, _output, target) => {
+  render2(
+    html2`
     <style>${accessibilityAnnouncementRecordingListView_css_default}</style>
     <devtools-data-grid
       name=${i18nString2(UIStrings2.ariaLiveRecordingList)}
@@ -1007,7 +1389,7 @@ var DEFAULT_VIEW = (input, _output, target) => {
         ${input.items.map((item) => {
       const timeString = new Date(item.time).toLocaleTimeString(i18n3.DevToolsLocale.DevToolsLocale.instance().locale);
       const apiDisplay = item.api === "js-triggered" /* JS_TRIGGERED */ ? i18nString2(UIStrings2.jsTriggered) : i18nString2(UIStrings2.ariaLive);
-      return html`
+      return html2`
             <tr
               ?selected=${item === input.selectedItem}
               @select=${() => input.onSelect(item)}>
@@ -1026,12 +1408,12 @@ var DEFAULT_VIEW = (input, _output, target) => {
     target
   );
 };
-var AccessibilityAnnouncementRecordingListView = class extends UI2.Widget.VBox {
+var AccessibilityAnnouncementRecordingListView = class extends UI3.Widget.VBox {
   #items = [];
   #selectedItem = null;
   #onSelect = null;
   #view;
-  constructor(element, view = DEFAULT_VIEW) {
+  constructor(element, view = DEFAULT_VIEW2) {
     super(element, { useShadowDom: true });
     this.#view = view;
   }
@@ -1623,6 +2005,14 @@ var Audits;
     PermissionElementIssueType2["NonSecureContext"] = "NonSecureContext";
     PermissionElementIssueType2["MissingTransientUserActivation"] = "MissingTransientUserActivation";
   })(PermissionElementIssueType = Audits2.PermissionElementIssueType || (Audits2.PermissionElementIssueType = {}));
+  let WebInstallIssueReason;
+  ((WebInstallIssueReason2) => {
+    WebInstallIssueReason2["ManifestParsingOrNetworkError"] = "ManifestParsingOrNetworkError";
+    WebInstallIssueReason2["StartUrlInvalid"] = "StartUrlInvalid";
+    WebInstallIssueReason2["ManifestMissingNameOrShortName"] = "ManifestMissingNameOrShortName";
+    WebInstallIssueReason2["ManifestMissingId"] = "ManifestMissingId";
+    WebInstallIssueReason2["NoManifest"] = "NoManifest";
+  })(WebInstallIssueReason = Audits2.WebInstallIssueReason || (Audits2.WebInstallIssueReason = {}));
   let InspectorIssueCode;
   ((InspectorIssueCode2) => {
     InspectorIssueCode2["CookieIssue"] = "CookieIssue";
@@ -1655,6 +2045,7 @@ var Audits;
     InspectorIssueCode2["SelectivePermissionsInterventionIssue"] = "SelectivePermissionsInterventionIssue";
     InspectorIssueCode2["EmailVerificationRequestIssue"] = "EmailVerificationRequestIssue";
     InspectorIssueCode2["LazyLoadImageIssue"] = "LazyLoadImageIssue";
+    InspectorIssueCode2["WebInstallIssue"] = "WebInstallIssue";
   })(InspectorIssueCode = Audits2.InspectorIssueCode || (Audits2.InspectorIssueCode = {}));
   let GetEncodedResponseRequestEncoding;
   ((GetEncodedResponseRequestEncoding2) => {
@@ -1937,6 +2328,11 @@ var DOM;
     GetElementByRelationRequestRelation2["InterestTarget"] = "InterestTarget";
     GetElementByRelationRequestRelation2["CommandFor"] = "CommandFor";
   })(GetElementByRelationRequestRelation = DOM2.GetElementByRelationRequestRelation || (DOM2.GetElementByRelationRequestRelation = {}));
+  let SetTextMarkerRequestType;
+  ((SetTextMarkerRequestType2) => {
+    SetTextMarkerRequestType2["Spelling"] = "spelling";
+    SetTextMarkerRequestType2["Grammar"] = "grammar";
+  })(SetTextMarkerRequestType = DOM2.SetTextMarkerRequestType || (DOM2.SetTextMarkerRequestType = {}));
 })(DOM || (DOM = {}));
 var DOMDebugger;
 ((DOMDebugger2) => {
@@ -3915,9 +4311,9 @@ var Runtime;
 
 // ../../front_end/panels/accessibility/AccessibilityNodeView.ts
 import * as uiI18n from "../../ui/i18n/i18n.js";
-import * as UI3 from "../../ui/legacy/legacy.js";
-import { render as render2 } from "../../ui/lit/lit.js";
-import * as VisualLogging from "../../ui/visual_logging/visual_logging.js";
+import * as UI4 from "../../ui/legacy/legacy.js";
+import { render as render3 } from "../../ui/lit/lit.js";
+import * as VisualLogging2 from "../../ui/visual_logging/visual_logging.js";
 import * as PanelsCommon from "../common/common.js";
 
 // ../../front_end/panels/accessibility/AccessibilityStrings.ts
@@ -4642,7 +5038,7 @@ var UIStrings4 = {
    * @description Reason in the Accessibility tab in the Elements panel.
    * @example {aria-hidden} PH1
    */
-  elementIsPlaceholder: "Element is {PH1}.",
+  elementIsPlaceholder: "Element is {PH1}",
   /**
    * @description Reason in the Accessibility tab in the Elements panel.
    * @example {aria-hidden} PH1
@@ -4691,7 +5087,7 @@ var UIStrings4 = {
    * (which are not translated). https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles
    * @example {role=link} PH1
    */
-  elementHasPlaceholder: "Element has {PH1}.",
+  elementHasPlaceholder: "Element has {PH1}",
   /**
    * @description Reason in the Accessibility tab in the Elements panel.
    */
@@ -4715,7 +5111,7 @@ var AXNodeSubPane = class extends AccessibilitySubPane {
     super({
       title: i18nString3(UIStrings4.computedProperties),
       viewId: "computed-properties",
-      jslog: `${VisualLogging.section("computed-properties")}`
+      jslog: `${VisualLogging2.section("computed-properties")}`
     });
     this.registerRequiredCSS(accessibilityNode_css_default);
     this.axNode = null;
@@ -4803,7 +5199,7 @@ var AXNodeSubPane = class extends AccessibilitySubPane {
     this.axNode = null;
   }
 };
-var AXNodePropertyTreeElement = class _AXNodePropertyTreeElement extends UI3.TreeOutline.TreeElement {
+var AXNodePropertyTreeElement = class _AXNodePropertyTreeElement extends UI4.TreeOutline.TreeElement {
   axNode;
   constructor(axNode) {
     super("");
@@ -4828,12 +5224,12 @@ var AXNodePropertyTreeElement = class _AXNodePropertyTreeElement extends UI3.Tre
       valueElement.classList.add(TypeStyles[type]);
     }
     valueElement.setTextContentTruncatedIfNeeded(valueText || "");
-    UI3.Tooltip.Tooltip.install(valueElement, String(value) || "");
+    UI4.Tooltip.Tooltip.install(valueElement, String(value) || "");
     return valueElement;
   }
   static createExclamationMark(tooltip) {
-    const exclamationElement = UI3.UIUtils.createIconLabel({ iconName: "warning-filled", color: "var(--icon-warning)" });
-    UI3.Tooltip.Tooltip.install(exclamationElement, tooltip);
+    const exclamationElement = UI4.UIUtils.createIconLabel({ iconName: "warning-filled", color: "var(--icon-warning)" });
+    UI4.Tooltip.Tooltip.install(exclamationElement, tooltip);
     return exclamationElement;
   }
   appendNameElement(name) {
@@ -4841,7 +5237,7 @@ var AXNodePropertyTreeElement = class _AXNodePropertyTreeElement extends UI3.Tre
     if (name in AXAttributes) {
       const attribute = AXAttributes[name];
       nameElement.textContent = attribute.name();
-      UI3.Tooltip.Tooltip.install(nameElement, attribute.description());
+      UI4.Tooltip.Tooltip.install(nameElement, attribute.description());
       nameElement.classList.add("ax-readable-name");
     } else {
       nameElement.textContent = name;
@@ -4994,7 +5390,7 @@ var AXValueSourceTreeElement = class extends AXNodePropertyTreeElement {
         if (source.nativeSource) {
           const nativeSource = source.nativeSource;
           nameElement.textContent = AXNativeSourceTypes[nativeSource].name();
-          UI3.Tooltip.Tooltip.install(nameElement, AXNativeSourceTypes[nativeSource].description());
+          UI4.Tooltip.Tooltip.install(nameElement, AXNativeSourceTypes[nativeSource].description());
           nameElement.classList.add("ax-readable-name");
           break;
         }
@@ -5005,7 +5401,7 @@ var AXValueSourceTreeElement = class extends AXNodePropertyTreeElement {
       default:
         if (type in AXSourceTypes) {
           nameElement.textContent = AXSourceTypes[type].name();
-          UI3.Tooltip.Tooltip.install(nameElement, AXSourceTypes[type].description());
+          UI4.Tooltip.Tooltip.install(nameElement, AXSourceTypes[type].description());
           nameElement.classList.add("ax-readable-name");
         } else {
           console.warn(type, "not in AXSourceTypes");
@@ -5027,10 +5423,10 @@ var AXValueSourceTreeElement = class extends AXNodePropertyTreeElement {
     this.listItemElement.createChild("span", "separator").textContent = ":\xA0";
     if (this.source.attributeValue) {
       this.appendValueElement(this.source.attributeValue);
-      UI3.UIUtils.createTextChild(this.listItemElement, "\xA0");
+      UI4.UIUtils.createTextChild(this.listItemElement, "\xA0");
     } else if (this.source.nativeSourceValue) {
       this.appendValueElement(this.source.nativeSourceValue);
-      UI3.UIUtils.createTextChild(this.listItemElement, "\xA0");
+      UI4.UIUtils.createTextChild(this.listItemElement, "\xA0");
       if (this.source.value) {
         this.appendValueElement(this.source.value);
       }
@@ -5049,7 +5445,7 @@ var AXValueSourceTreeElement = class extends AXNodePropertyTreeElement {
     }
   }
 };
-var AXRelatedNodeSourceTreeElement = class extends UI3.TreeOutline.TreeElement {
+var AXRelatedNodeSourceTreeElement = class extends UI4.TreeOutline.TreeElement {
   value;
   axRelatedNodeElement;
   constructor(node, value) {
@@ -5091,7 +5487,7 @@ var AXRelatedNodeElement = class {
         if (!node) {
           return;
         }
-        render2(
+        render3(
           PanelsCommon.DOMLinkifier.Linkifier.instance().linkify(node, {
             preventKeyboardFocus: true
           }),
@@ -5101,7 +5497,7 @@ var AXRelatedNodeElement = class {
     } else if (this.idref) {
       element.classList.add("invalid");
       const valueElement = AXNodePropertyTreeElement.createExclamationMark(i18nString3(UIStrings4.noNodeWithThisId));
-      UI3.UIUtils.createTextChild(valueElement, this.idref);
+      UI4.UIUtils.createTextChild(valueElement, this.idref);
       element.appendChild(valueElement);
     }
     return element;
@@ -5220,8 +5616,8 @@ import "../../ui/components/switch/switch.js";
 import * as i18n13 from "../../core/i18n/i18n.js";
 import * as Root from "../../core/root/root.js";
 import * as SDK4 from "../../core/sdk/sdk.js";
-import * as UI5 from "../../ui/legacy/legacy.js";
-import * as Lit3 from "../../ui/lit/lit.js";
+import * as UI6 from "../../ui/legacy/legacy.js";
+import * as Lit4 from "../../ui/lit/lit.js";
 
 // gen/front_end/panels/accessibility/accessibilitySidebarView.css.js
 var accessibilitySidebarView_css_default = `/*
@@ -5241,14 +5637,14 @@ var accessibilitySidebarView_css_default = `/*
 var ARIAAttributesView_exports = {};
 __export(ARIAAttributesView_exports, {
   ARIAAttributesPane: () => ARIAAttributesPane,
-  DEFAULT_VIEW: () => DEFAULT_VIEW2
+  DEFAULT_VIEW: () => DEFAULT_VIEW3
 });
 import * as i18n9 from "../../core/i18n/i18n.js";
 import * as Platform from "../../core/platform/platform.js";
 import * as SDK3 from "../../core/sdk/sdk.js";
-import * as UI4 from "../../ui/legacy/legacy.js";
-import * as Lit2 from "../../ui/lit/lit.js";
-import * as VisualLogging2 from "../../ui/visual_logging/visual_logging.js";
+import * as UI5 from "../../ui/legacy/legacy.js";
+import * as Lit3 from "../../ui/lit/lit.js";
+import * as VisualLogging3 from "../../ui/visual_logging/visual_logging.js";
 
 // ../../front_end/panels/accessibility/ARIAMetadata.ts
 var ARIAMetadata_exports = {};
@@ -7970,9 +8366,9 @@ var UIStrings5 = {
 };
 var str_5 = i18n9.i18n.registerUIStrings("panels/accessibility/ARIAAttributesView.ts", UIStrings5);
 var i18nString4 = i18n9.i18n.getLocalizedString.bind(void 0, str_5);
-var { render: render3, html: html2 } = Lit2;
-var { widget } = UI4.Widget;
-var DEFAULT_VIEW2 = (input, output, target) => {
+var { render: render4, html: html3 } = Lit3;
+var { widget: widget2 } = UI5.Widget;
+var DEFAULT_VIEW3 = (input, output, target) => {
   const MAX_CONTENT_LENGTH = 1e4;
   const onStartEditing = (attribute, e) => {
     e.consume(true);
@@ -7981,24 +8377,24 @@ var DEFAULT_VIEW2 = (input, output, target) => {
   const propertyCompletions = (attribute) => {
     const values = input.propertyCompletions.get(attribute);
     if (!values?.length) {
-      return Lit2.nothing;
+      return Lit3.nothing;
     }
-    return html2`<datalist id=completions>
-      ${values.map((value) => html2`<option>${value}</option>`)}
+    return html3`<datalist id=completions>
+      ${values.map((value) => html3`<option>${value}</option>`)}
     </datalist>`;
   };
-  render3(
+  render4(
     // clang-format off
-    input.attributes.length === 0 ? html2`
+    input.attributes.length === 0 ? html3`
           <style>${accessibilityProperties_css_default}</style>
           <devtools-widget
-            ${widget(UI4.EmptyWidget.EmptyWidget, { text: i18nString4(UIStrings5.noAriaAttributes) })}
-            class="gray-info-message info-message-overflow"></devtools-widget>` : html2`<devtools-tree
+            ${widget2(UI5.EmptyWidget.EmptyWidget, { text: i18nString4(UIStrings5.noAriaAttributes) })}
+            class="gray-info-message info-message-overflow"></devtools-widget>` : html3`<devtools-tree
            hide-overflow
-           .template=${html2`
+           .template=${html3`
              <ul role="tree">
-              ${input.attributes?.map((attribute) => html2`
-                <li role="treeitem" jslog=${VisualLogging2.treeItem("aria-attribute")}>
+              ${input.attributes?.map((attribute) => html3`
+                <li role="treeitem" jslog=${VisualLogging3.treeItem("aria-attribute")}>
                   <style>${accessibilityProperties_css_default}</style>
                   <span class="ax-name monospace" @mousedown=${onStartEditing.bind(null, attribute)}>
                     ${attribute.name}
@@ -8024,7 +8420,7 @@ var DEFAULT_VIEW2 = (input, output, target) => {
     {
       container: {
         attributes: {
-          jslog: `${VisualLogging2.section("aria-attributes")}`,
+          jslog: `${VisualLogging3.section("aria-attributes")}`,
           ...input.backendNodeId ? { "data-backend-node-id": `${input.backendNodeId}` } : {},
           ...input.targetId ? { "data-target-id": `${input.targetId}` } : {}
         }
@@ -8035,7 +8431,7 @@ var DEFAULT_VIEW2 = (input, output, target) => {
 var ARIAAttributesPane = class extends AccessibilitySubPane {
   #view;
   #attributeBeingEdited = null;
-  constructor(view = DEFAULT_VIEW2) {
+  constructor(view = DEFAULT_VIEW3) {
     super({
       title: i18nString4(UIStrings5.ariaAttributes),
       viewId: "aria-attributes",
@@ -8090,8 +8486,8 @@ var ARIAAttributesPane = class extends AccessibilitySubPane {
 // ../../front_end/panels/accessibility/SourceOrderView.ts
 import "../../ui/legacy/legacy.js";
 import * as i18n11 from "../../core/i18n/i18n.js";
-import { html as html3, nothing as nothing2, render as render4 } from "../../ui/lit/lit.js";
-import * as VisualLogging3 from "../../ui/visual_logging/visual_logging.js";
+import { html as html4, nothing as nothing3, render as render5 } from "../../ui/lit/lit.js";
+import * as VisualLogging4 from "../../ui/visual_logging/visual_logging.js";
 var UIStrings6 = {
   /**
    * @description Name of a feature that allows the developer to view the contents of the page in the
@@ -8116,38 +8512,38 @@ var UIStrings6 = {
 var str_6 = i18n11.i18n.registerUIStrings("panels/accessibility/SourceOrderView.ts", UIStrings6);
 var i18nString5 = i18n11.i18n.getLocalizedString.bind(void 0, str_6);
 var MAX_CHILD_ELEMENTS_THRESHOLD = 300;
-var DEFAULT_VIEW3 = (input, _output, target) => {
+var DEFAULT_VIEW4 = (input, _output, target) => {
   function onShowSourceOrderChanged(event) {
     const checkbox = event.currentTarget;
     input.onShowSourceOrderChanged(checkbox.checked);
     event.consume();
   }
-  render4(html3`
-    ${input.showSourceOrder === void 0 ? html3`
+  render5(html4`
+    ${input.showSourceOrder === void 0 ? html4`
         <div class="gray-info-message info-message-overflow">
           ${i18nString5(UIStrings6.noSourceOrderInformation)}
         </div>
-      ` : html3`
-      ${input.childCount >= MAX_CHILD_ELEMENTS_THRESHOLD ? html3`
+      ` : html4`
+      ${input.childCount >= MAX_CHILD_ELEMENTS_THRESHOLD ? html4`
           <div class="gray-info-message info-message-overflow"
                 id="source-order-warning">
             ${i18nString5(UIStrings6.thereMayBeADelayInDisplaying)}
           </div>
-        ` : nothing2}
+        ` : nothing3}
       <devtools-checkbox class="source-order-checkbox"
-                          jslog=${VisualLogging3.toggle().track({ click: true })}
+                          jslog=${VisualLogging4.toggle().track({ click: true })}
                           ?checked=${input.showSourceOrder}
                           @change=${onShowSourceOrderChanged}>
         ${i18nString5(UIStrings6.showSourceOrder)}
       </devtools-checkbox>
       `}
-  `, target, { container: { attributes: { jslog: `${VisualLogging3.section("source-order-viewer")}` } } });
+  `, target, { container: { attributes: { jslog: `${VisualLogging4.section("source-order-viewer")}` } } });
 };
 var SourceOrderPane = class extends AccessibilitySubPane {
   #childCount = 0;
   #showSourceOrder = void 0;
   #view;
-  constructor(view = DEFAULT_VIEW3) {
+  constructor(view = DEFAULT_VIEW4) {
     super({
       title: i18nString5(UIStrings6.sourceOrderViewer),
       viewId: "source-order-viewer",
@@ -8203,7 +8599,7 @@ var SourceOrderPane = class extends AccessibilitySubPane {
 };
 
 // ../../front_end/panels/accessibility/AccessibilitySidebarView.ts
-var { html: html4, render: render5 } = Lit3;
+var { html: html5, render: render6 } = Lit4;
 var UIStrings7 = {
   /**
    * @description Text for a toggle to turn on the accessibility tree view.
@@ -8213,7 +8609,7 @@ var UIStrings7 = {
 var str_7 = i18n13.i18n.registerUIStrings("panels/accessibility/AccessibilitySidebarView.ts", UIStrings7);
 var i18nString6 = i18n13.i18n.getLocalizedString.bind(void 0, str_7);
 var accessibilitySidebarViewInstance;
-var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI5.Widget.VBox {
+var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI6.Widget.VBox {
   #node;
   #axNode;
   skipNextPullNode;
@@ -8231,12 +8627,12 @@ var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI5.Widge
     this.#node = null;
     this.#axNode = null;
     this.skipNextPullNode = false;
-    this.sidebarPaneStack = UI5.ViewManager.ViewManager.instance().createStackLocation();
+    this.sidebarPaneStack = UI6.ViewManager.ViewManager.instance().createStackLocation();
     this.toggleContainer = document.createElement("div");
     this.toggleContainer.classList.add("accessibility-toggle-container");
     this.element.appendChild(this.toggleContainer);
-    this.toggleAction = UI5.ActionRegistry.ActionRegistry.instance().getAction("elements.toggle-a11y-tree");
-    this.toggleAction.addEventListener(UI5.ActionRegistration.Events.TOGGLED, this.updateToggle, this);
+    this.toggleAction = UI6.ActionRegistry.ActionRegistry.instance().getAction("elements.toggle-a11y-tree");
+    this.toggleAction.addEventListener(UI6.ActionRegistration.Events.TOGGLED, this.updateToggle, this);
     this.updateToggle();
     this.ariaSubPane = new ARIAAttributesPane();
     void this.sidebarPaneStack.showView(this.ariaSubPane);
@@ -8249,7 +8645,7 @@ var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI5.Widge
       void this.sidebarPaneStack.showView(this.announcementsRecordingSubPane);
     }
     this.sidebarPaneStack.widget().show(this.element);
-    UI5.Context.Context.instance().addFlavorChangeListener(SDK4.DOMModel.DOMNode, this.pullNode, this);
+    UI6.Context.Context.instance().addFlavorChangeListener(SDK4.DOMModel.DOMNode, this.pullNode, this);
     this.pullNode();
   }
   static instance(opts) {
@@ -8360,13 +8756,13 @@ var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI5.Widge
       this.skipNextPullNode = false;
       return;
     }
-    this.setNode(UI5.Context.Context.instance().flavor(SDK4.DOMModel.DOMNode));
+    this.setNode(UI6.Context.Context.instance().flavor(SDK4.DOMModel.DOMNode));
   }
   updateToggle() {
     const isToggled = this.toggleAction.toggled();
     this.sidebarPaneStack.notifyVisibilityChanged(isToggled);
-    render5(
-      html4`
+    render6(
+      html5`
       <div style="display: flex; align-items: center; gap: 8px;">
         <devtools-switch
           role="switch"

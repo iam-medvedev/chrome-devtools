@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
-import { allThreadEntriesInTrace, getAllNetworkRequestsByHost } from '../../testing/TraceHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
+import { allThreadEntriesInTrace, getAllNetworkRequestsByHost } from '../../testing/TraceHelpersCore.js';
 import { TraceLoader } from '../../testing/TraceLoader.js';
 import * as Trace from './trace.js';
-describeWithEnvironment('EntityMapper', function () {
+describe('EntityMapper', function () {
+    setupLocaleHooks();
     it('correctly merges handler data', async function () {
         const parsedTrace = await TraceLoader.traceEngine(this, 'lantern/paul/trace.json.gz');
         const fromRenderer = parsedTrace.data.Renderer.entityMappings.eventsByEntity;

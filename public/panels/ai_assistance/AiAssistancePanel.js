@@ -86,7 +86,7 @@ const UIStrings = {
     /**
      * @description Disclaimer text right after the chat input.
      */
-    inputDisclaimerForEmptyState: 'This is an experimental AI feature and won’t always get it right.',
+    inputDisclaimerForEmptyState: 'This is an experimental AI feature and won’t always get it right',
     /**
      * @description The message shown in a toast when the response is copied to the clipboard.
      */
@@ -241,10 +241,9 @@ async function getEmptyStateSuggestions(conversation) {
     }
 }
 function createV2MarkdownRenderer(conversation) {
-    const options = {};
-    if (conversation) {
-        options.getEstablishedOrigin = () => conversation.origin;
-    }
+    const options = {
+        getOriginLock: () => conversation.getOriginLock(),
+    };
     const primaryTarget = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
     const domModel = primaryTarget?.model(SDK.DOMModel.DOMModel);
     const resourceTreeModel = primaryTarget?.model(SDK.ResourceTreeModel.ResourceTreeModel);
@@ -287,7 +286,9 @@ function getMarkdownRenderer(conversation) {
         const mainDocumentURL = domModel?.existingDocument()?.documentURL;
         return new AccessibilityAgentMarkdownRenderer(mainDocumentURL);
     }
-    return new MarkdownRendererWithCodeBlock();
+    return new MarkdownRendererWithCodeBlock({
+        getEstablishedOrigin: () => conversation?.origin,
+    });
 }
 export var ViewState;
 (function (ViewState) {
@@ -310,9 +311,8 @@ function toolbarView(input) {
           @click=${input.onNewChatClick}></devtools-button>
         <div class="toolbar-divider"></div>
         <devtools-menu-button
-          title=${i18nString(UIStrings.history)}
-          aria-label=${i18nString(UIStrings.history)}
           .iconName=${'history'}
+          .accessibleLabel=${i18nString(UIStrings.history)}
           .jslogContext=${'freestyler.history'}
           .populateMenuCall=${input.populateHistoryMenu}
         ></devtools-menu-button>`

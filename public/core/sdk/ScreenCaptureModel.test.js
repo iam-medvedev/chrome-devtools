@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import sinon from 'sinon';
-import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
+import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
+import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as SDK from './sdk.js';
 const noop = () => { };
@@ -49,7 +51,10 @@ async function stopMockScreencast(connection, screenCaptureModel, { id }) {
         screenCaptureModel.stopScreencast(id);
     });
 }
-describeWithEnvironment('ScreenCaptureModel', () => {
+describe('ScreenCaptureModel', () => {
+    setupLocaleHooks();
+    setupSettingsHooks();
+    setupRuntimeHooks();
     let target;
     let screenCaptureModel;
     let universe;

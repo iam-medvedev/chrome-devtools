@@ -38,7 +38,7 @@ const UIStrings = {
     /**
      * @description Explanation text in Application panel IndexedDB delete confirmation dialog
      */
-    databaseWillBeRemoved: 'The selected database and contained data will be removed.',
+    databaseWillBeRemoved: 'The selected database and contained data will be removed',
     /**
      * @description Title of the confirmation dialog in the IndexedDB tab of the Application panel
      *              that the user is about to clear an object store and this cannot be undone.
@@ -49,7 +49,7 @@ const UIStrings = {
      * @description Description in the confirmation dialog in the IndexedDB tab of the Application
      *              panel that the user is about to clear an object store and this cannot be undone.
      */
-    objectStoreWillBeCleared: 'The data contained in the selected object store will be removed.',
+    objectStoreWillBeCleared: 'The data contained in the selected object store will be removed',
     /**
      * @description Text in Indexed DBViews of the Application panel
      */
@@ -235,7 +235,7 @@ const populateContextMenu = (e) => {
 const renderDataGrid = (input) => {
     const keyPath = input.isIndex && input.index ? input.index.keyPath : input.objectStore.keyPath;
     // clang-format off
-    return html `<devtools-data-grid row-height="auto" striped style="flex: auto;" name=${i18nString(UIStrings.indexedDb)} .template=${html `
+    return html `<devtools-data-grid row-height="auto" striped deletable style="flex: auto;" name=${i18nString(UIStrings.indexedDb)} .template=${html `
     <style>${indexedDBViewsStyles}</style>
     <table>
       <tr>
@@ -244,7 +244,7 @@ const renderDataGrid = (input) => {
         ${input.isIndex ? html `<th id="primary-key" weight="2">${renderKeyColumnHeader(i18nString(UIStrings.primaryKey), input.objectStore.keyPath)}</th>` : nothing}
         <th id="value" weight="8">${i18nString(UIStrings.valueString)}</th>
       </tr>
-      ${repeat(input.entries, (_entry, index) => index, (entry, index) => {
+      ${repeat(input.entries, entry => entry, (entry, index) => {
         return html `
           <tr ?selected=${index + input.skipCount === input.selectedRowNumber}
               class="data-grid-data-row"

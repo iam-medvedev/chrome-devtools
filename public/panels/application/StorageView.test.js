@@ -6,7 +6,7 @@ import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { dispatchFocusOutEvent } from '../../testing/DOMHelpers.js';
-import { createTarget, describeWithEnvironment, expectConsoleLogs } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { SECURITY_ORIGIN } from '../../testing/ResourceTreeHelpers.js';
 import * as RenderCoordinator from '../../ui/components/render_coordinator/render_coordinator.js';
 import * as Resources from './application.js';
@@ -15,6 +15,7 @@ describeWithEnvironment('StorageView', () => {
     let target;
     let domStorageModel;
     let storageKeyManager;
+    let view = null;
     beforeEach(() => {
         const tabTarget = createTarget({ type: SDK.Target.Type.TAB });
         createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
@@ -27,8 +28,12 @@ describeWithEnvironment('StorageView', () => {
             getError: () => undefined,
         });
     });
-    expectConsoleLogs({
-        error: ['Error: No LanguageSelector instance exists yet.'],
+    afterEach(() => {
+        if (view) {
+            SDK.TargetManager.TargetManager.instance().unobserveTargets(view);
+            view.detach();
+            view = null;
+        }
     });
     it('emits correct events on clear', () => {
         const testId = { storageKey: testKey, isLocalStorage: true };
@@ -49,13 +54,13 @@ describeWithEnvironment('StorageView', () => {
     it('changes subtitle on MainStorageKeyChanged event', () => {
         assert.exists(domStorageModel);
         assert.exists(storageKeyManager);
-        const view = new Resources.StorageView.StorageView();
+        view = new Resources.StorageView.StorageView();
         storageKeyManager.dispatchEventToListeners("MainStorageKeyChanged" /* SDK.StorageKeyManager.Events.MAIN_STORAGE_KEY_CHANGED */, { mainStorageKey: testKey });
         const subtitle = view.element.shadowRoot?.querySelector('div.flex-auto')?.shadowRoot?.querySelector('div.report-subtitle');
         assert.strictEqual(subtitle?.textContent, testKey);
     });
     it('groups site-data checkboxes into columns and indents third-party cookies under cookies', () => {
-        const view = new Resources.StorageView.StorageView();
+        view = new Resources.StorageView.StorageView();
         const container = view.element.shadowRoot?.querySelector('.clear-storage-header') || null;
         assert.instanceOf(container, HTMLDivElement);
         const checkboxesRow = container.shadowRoot.querySelector('.clear-site-data-checkboxes-row');
@@ -76,7 +81,7 @@ describeWithEnvironment('StorageView', () => {
         const includeThirdPartyCookiesSetting = Common.Settings.Settings.instance().createSetting('clear-storage-include-third-party-cookies', false);
         cookiesSetting.set(true);
         includeThirdPartyCookiesSetting.set(false);
-        const view = new Resources.StorageView.StorageView();
+        view = new Resources.StorageView.StorageView();
         const container = view.element.shadowRoot?.querySelector('.clear-storage-header') || null;
         assert.instanceOf(container, HTMLDivElement);
         const includeThirdPartyCookiesCheckbox = container.shadowRoot.querySelector('.third-party-cookies-checkbox');
@@ -110,7 +115,7 @@ describeWithEnvironment('StorageView', () => {
         const securityOriginManager = target.model(SDK.SecurityOriginManager.SecurityOriginManager);
         assert.exists(securityOriginManager);
         sinon.stub(securityOriginManager, 'mainSecurityOrigin').returns(SECURITY_ORIGIN);
-        const view = new Resources.StorageView.StorageView();
+        view = new Resources.StorageView.StorageView();
         const container = view.element.shadowRoot?.querySelector('.clear-storage-header') || null;
         assert.instanceOf(container, HTMLDivElement);
         const customQuotaCheckbox = container.shadowRoot.querySelector('.quota-override-row devtools-checkbox').shadowRoot.querySelector('[title="Simulate custom storage quota"]');

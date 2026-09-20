@@ -60,7 +60,15 @@ var UIStrings = {
   /**
    * @description Command for showing the Workspace tool in Settings.
    */
-  showWorkspace: "Show Workspace settings"
+  showWorkspace: "Show Workspace settings",
+  /**
+   * @description Title of the Backend linking settings tab in Settings.
+   */
+  backendLinking: "Backend linking",
+  /**
+   * @description Command for showing the Backend linking settings tab in Settings.
+   */
+  showBackendLinking: "Show Backend linking"
 };
 var str_ = i18n.i18n.registerUIStrings("panels/settings/settings-meta.ts", UIStrings);
 var i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(void 0, str_);
@@ -135,6 +143,22 @@ UI.ViewManager.registerViewExtension({
     return new Settings2.FrameworkIgnoreListSettingsTab.FrameworkIgnoreListSettingsTab();
   },
   iconName: "clear-list"
+});
+UI.ViewManager.registerViewExtension({
+  location: UI.ViewManager.ViewLocationValues.SETTINGS_VIEW,
+  id: "backend-linking",
+  commandPrompt: i18nLazyString(UIStrings.showBackendLinking),
+  title: i18nLazyString(UIStrings.backendLinking),
+  order: 36,
+  async loadView() {
+    const Settings2 = await loadSettingsModule();
+    return new Settings2.BackendLinkingSettingsTab.BackendLinkingSettingsTab();
+  },
+  iconName: "open-externally",
+  settings: [
+    "network.backend-linking-rules"
+  ],
+  condition: (config) => config?.devToolsNetworkBackendLinking?.enabled ?? false
 });
 UI.ViewManager.registerViewExtension({
   location: UI.ViewManager.ViewLocationValues.SETTINGS_VIEW,

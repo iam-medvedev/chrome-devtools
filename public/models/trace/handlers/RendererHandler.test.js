@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
-import { getAllNodes, getEventsIn, getRootAt, makeBeginEvent, makeCompleteEvent, makeEndEvent, makeInstantEvent, prettyPrint, } from '../../../testing/TraceHelpers.js';
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
+import { getAllNodes, getEventsIn, getRootAt, makeBeginEvent, makeCompleteEvent, makeEndEvent, makeInstantEvent, prettyPrint, } from '../../../testing/TraceHelpersCore.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Trace from '../trace.js';
 const MAIN_FRAME_PID = 2154214;
@@ -14,7 +14,8 @@ async function handleEventsFromTraceFile(context, file) {
     const parsedTrace = await TraceLoader.traceEngine(context, file);
     return parsedTrace.data;
 }
-describeWithEnvironment('RendererHandler', function () {
+describe('RendererHandler', function () {
+    setupLocaleHooks();
     describe('process and thread structure with multiple navigations and iframes', () => {
         let parsedData;
         before(async function () {

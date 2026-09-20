@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { assertScreenshot, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import { assertScreenshot, doubleRaf, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import { createViewFunctionStub, } from '../../../testing/ViewFunctionHelpers.js';
 import * as LinearMemoryInspectorComponents from './components.js';
@@ -57,6 +57,13 @@ describe('LinearMemoryInspector', () => {
             memorySlice: new Uint8Array(memory),
             viewerStart: 0,
         }, {}, target);
+        const viewer = target.querySelector('devtools-linear-memory-inspector-viewer');
+        assert.exists(viewer);
+        let prevHeight = -1;
+        while (viewer.clientHeight !== prevHeight) {
+            prevHeight = viewer.clientHeight;
+            await doubleRaf();
+        }
         await assertScreenshot('linear_memory_inspector/lmi.png');
     });
 });

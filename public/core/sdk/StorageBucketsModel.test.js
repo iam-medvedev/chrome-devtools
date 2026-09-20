@@ -3,7 +3,10 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import sinon from 'sinon';
-import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
+import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
+import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
+import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as SDK from './sdk.js';
 class StorageBucketModelListener {
     #model;
@@ -39,7 +42,14 @@ class StorageBucketModelListener {
         });
     }
 }
-describeWithEnvironment('StorageBucketsModel', () => {
+describe('StorageBucketsModel', () => {
+    setupLocaleHooks();
+    setupSettingsHooks();
+    setupRuntimeHooks();
+    let universe;
+    beforeEach(() => {
+        universe = new TestUniverse();
+    });
     let storageKeyManager;
     let storageBucketsModel;
     let target;
@@ -106,7 +116,7 @@ describeWithEnvironment('StorageBucketsModel', () => {
         });
     };
     beforeEach(() => {
-        target = createTarget();
+        target = universe.createTarget();
         storageKeyManager =
             target.model(SDK.StorageKeyManager.StorageKeyManager);
         storageBucketsModel =

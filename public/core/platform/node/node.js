@@ -9,6 +9,8 @@ var HostRuntime_exports = {};
 __export(HostRuntime_exports, {
   HOST_RUNTIME: () => HOST_RUNTIME
 });
+import * as Fs from "node:fs";
+import * as Url from "node:url";
 import * as WorkerThreads from "node:worker_threads";
 var NodeWorkerScope = class {
   postMessage(message, transfer) {
@@ -21,19 +23,23 @@ var NodeWorkerScope = class {
   }
 };
 var NodeWorker = class {
+  #worker;
   #workerPromise;
   #disposed = false;
   #rejectWorkerPromise;
   constructor(url) {
+    const worker = new WorkerThreads.Worker(new URL(url));
+    this.#worker = worker;
     this.#workerPromise = new Promise((resolve, reject) => {
       this.#rejectWorkerPromise = reject;
-      const worker = new WorkerThreads.Worker(new URL(url));
       worker.once("message", (message) => {
         if (message === "workerReady") {
           resolve(worker);
         }
       });
       worker.on("error", reject);
+    });
+    this.#workerPromise.catch(() => {
     });
   }
   postMessage(message, transfer) {
@@ -45,7 +51,7 @@ var NodeWorker = class {
   }
   dispose() {
     this.#disposed = true;
-    void this.#workerPromise.then((worker) => worker.terminate());
+    void this.#worker.terminate();
   }
   terminate(immediately) {
     if (immediately) {
@@ -72,6 +78,30 @@ var NodeWorker = class {
     });
   }
 };
+var NodeCacheEntry = class {
+  #entries = /* @__PURE__ */ new Map();
+  async put(url, response) {
+    this.#entries.set(url, response.clone());
+  }
+  async match(url) {
+    return this.#entries.get(url)?.clone();
+  }
+};
+var NodeCacheStorage = class {
+  #caches = /* @__PURE__ */ new Map();
+  async open(name) {
+    let cache = this.#caches.get(name);
+    if (!cache) {
+      cache = new NodeCacheEntry();
+      this.#caches.set(name, cache);
+    }
+    return cache;
+  }
+  async delete(name) {
+    return this.#caches.delete(name);
+  }
+};
+var nodeCacheStorage = new NodeCacheStorage();
 var HOST_RUNTIME = {
   createWorker(url) {
     return new NodeWorker(url);
@@ -85,6 +115,24 @@ var HOST_RUNTIME = {
   },
   getLocalStorage() {
     return void 0;
+  },
+  getCacheStorage() {
+    return nodeCacheStorage;
+  },
+  getDevicePixelRatio() {
+    return 1;
+  },
+  async saveScreenshot(_options) {
+  },
+  revokeLastScreenshotUrl() {
+  },
+  async loadTextFile(url) {
+    return await Fs.promises.readFile(Url.fileURLToPath(url), "utf-8");
+  },
+  evaluateCSS(_dataValue, _customExpr) {
+    return null;
+  },
+  removeCSSEvaluationElement() {
   }
 };
 export {

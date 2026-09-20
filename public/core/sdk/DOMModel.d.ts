@@ -207,7 +207,7 @@ export declare class DOMNode extends Common.ObjectWrapper.ObjectWrapper<DOMNodeE
     canInspectNode(): boolean;
     setAsInspectedNode(): Promise<void>;
     enclosingElementOrSelf(): DOMNode | null;
-    callFunction<T, U extends string | number>(fn: (this: HTMLElement, ...args: U[]) => T, args?: U[]): Promise<{
+    callFunction<T, U extends string | number, This = never>(fn: (this: This, ...args: U[]) => T, args?: U[]): Promise<{
         value: T;
     } | null>;
     saveNodeToTempVariable(): Promise<void>;
@@ -215,6 +215,7 @@ export declare class DOMNode extends Common.ObjectWrapper.ObjectWrapper<DOMNodeE
     focus(): Promise<void>;
     simpleSelector(): string;
     getAnchorBySpecifier(specifier?: string): Promise<DOMNode | null>;
+    getImplicitAnchorCandidates(): Promise<DeferredDOMNode[]>;
     takeSnapshot(ownerDocumentSnapshot?: DOMDocument): Promise<DOMNode>;
     classNames(): string[];
 }

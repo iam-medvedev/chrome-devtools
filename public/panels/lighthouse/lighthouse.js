@@ -757,6 +757,14 @@ var Audits;
     PermissionElementIssueType2["NonSecureContext"] = "NonSecureContext";
     PermissionElementIssueType2["MissingTransientUserActivation"] = "MissingTransientUserActivation";
   })(PermissionElementIssueType = Audits2.PermissionElementIssueType || (Audits2.PermissionElementIssueType = {}));
+  let WebInstallIssueReason;
+  ((WebInstallIssueReason2) => {
+    WebInstallIssueReason2["ManifestParsingOrNetworkError"] = "ManifestParsingOrNetworkError";
+    WebInstallIssueReason2["StartUrlInvalid"] = "StartUrlInvalid";
+    WebInstallIssueReason2["ManifestMissingNameOrShortName"] = "ManifestMissingNameOrShortName";
+    WebInstallIssueReason2["ManifestMissingId"] = "ManifestMissingId";
+    WebInstallIssueReason2["NoManifest"] = "NoManifest";
+  })(WebInstallIssueReason = Audits2.WebInstallIssueReason || (Audits2.WebInstallIssueReason = {}));
   let InspectorIssueCode;
   ((InspectorIssueCode2) => {
     InspectorIssueCode2["CookieIssue"] = "CookieIssue";
@@ -789,6 +797,7 @@ var Audits;
     InspectorIssueCode2["SelectivePermissionsInterventionIssue"] = "SelectivePermissionsInterventionIssue";
     InspectorIssueCode2["EmailVerificationRequestIssue"] = "EmailVerificationRequestIssue";
     InspectorIssueCode2["LazyLoadImageIssue"] = "LazyLoadImageIssue";
+    InspectorIssueCode2["WebInstallIssue"] = "WebInstallIssue";
   })(InspectorIssueCode = Audits2.InspectorIssueCode || (Audits2.InspectorIssueCode = {}));
   let GetEncodedResponseRequestEncoding;
   ((GetEncodedResponseRequestEncoding2) => {
@@ -1071,6 +1080,11 @@ var DOM;
     GetElementByRelationRequestRelation2["InterestTarget"] = "InterestTarget";
     GetElementByRelationRequestRelation2["CommandFor"] = "CommandFor";
   })(GetElementByRelationRequestRelation = DOM2.GetElementByRelationRequestRelation || (DOM2.GetElementByRelationRequestRelation = {}));
+  let SetTextMarkerRequestType;
+  ((SetTextMarkerRequestType2) => {
+    SetTextMarkerRequestType2["Spelling"] = "spelling";
+    SetTextMarkerRequestType2["Grammar"] = "grammar";
+  })(SetTextMarkerRequestType = DOM2.SetTextMarkerRequestType || (DOM2.SetTextMarkerRequestType = {}));
 })(DOM || (DOM = {}));
 var DOMDebugger;
 ((DOMDebugger2) => {
@@ -3073,7 +3087,7 @@ var UIStrings = {
   /**
    * @description Help text in the Lighthouse panel.
    */
-  atLeastOneCategoryMustBeSelected: "At least one category must be selected.",
+  atLeastOneCategoryMustBeSelected: "At least one category must be selected",
   /**
    * @description Text in sidebar of the Application panel.
    */
@@ -3149,7 +3163,7 @@ var UIStrings = {
   /**
    * @description Tooltip description of a radio option for a Lighthouse mode that audits a page navigation.
    */
-  navigationTooltip: "Navigation mode analyzes a page load, exactly like the original Lighthouse reports.",
+  navigationTooltip: "Navigation mode analyzes a page load, exactly like the original Lighthouse reports",
   /**
    * @description Label of a radio option for a Lighthouse mode that audits user interactions over a period of time.
    */
@@ -3157,7 +3171,7 @@ var UIStrings = {
   /**
    * @description Tooltip description of a radio option for a Lighthouse mode that audits user interactions over a period of time.
    */
-  timespanTooltip: "Timespan mode analyzes an arbitrary period of time, typically containing user interactions.",
+  timespanTooltip: "Timespan mode analyzes an arbitrary period of time, typically containing user interactions",
   /**
    * @description Label of a radio option for a Lighthouse mode that audits the current page state.
    */
@@ -3165,7 +3179,7 @@ var UIStrings = {
   /**
    * @description Tooltip description of a radio option for a Lighthouse mode that audits the current page state.
    */
-  snapshotTooltip: "Snapshot mode analyzes the page in a particular state, typically after user interactions.",
+  snapshotTooltip: "Snapshot mode analyzes the page in a particular state, typically after user interactions",
   /**
    * @description Text for the mobile platform, as opposed to desktop.
    */
@@ -3198,7 +3212,7 @@ var UIStrings = {
    * @description Tooltip text of checkbox to reset storage features prior to running audits in
    * Lighthouse. Resetting the storage clears/empties it to a neutral state.
    */
-  resetStorageLocalstorage: "Reset storage (`cache`, `service workers`, etc) before auditing. (Good for performance & `PWA` testing)",
+  resetStorageLocalstorage: "Reset storage (`cache`, `service workers`, etc) before auditing (Good for performance & `PWA` testing)",
   /**
    * @description Text of checkbox to enable JavaScript sampling while running audits in Lighthouse.
    */
@@ -5259,23 +5273,23 @@ var UIStrings4 = {
   /**
    * @description Error header shown when an audit encounters an error.
    */
-  ahSorryWeRanIntoAnError: "We ran into an error.",
+  ahSorryWeRanIntoAnError: "We ran into an error",
   /**
    * @description Suggestion for recovering from an audit error.
    */
-  tryToNavigateToTheUrlInAFresh: "Try to navigate to the URL in a fresh `Chrome` profile without any other tabs or extensions open and try again.",
+  tryToNavigateToTheUrlInAFresh: "Try to navigate to the URL in a fresh `Chrome` profile without any other tabs or extensions open and try again",
   /**
    * @description Instruction to report a bug if the issue is reproducible.
    */
-  ifThisIssueIsReproduciblePlease: "If this issue is reproducible, report it at the `Lighthouse` `GitHub` repo.",
+  ifThisIssueIsReproduciblePlease: "If this issue is reproducible, report it at the `Lighthouse` `GitHub` repo",
   /**
    * @description Text in Lighthouse splash screen when loading the page for auditing.
    */
-  lighthouseIsLoadingThePage: "`Lighthouse` is loading the page.",
+  lighthouseIsLoadingThePage: "`Lighthouse` is loading the page",
   /**
    * @description Text in Lighthouse splash screen when Lighthouse is gathering information for display.
    */
-  lighthouseIsGatheringInformation: "`Lighthouse` is gathering information about the page to compute your score.",
+  lighthouseIsGatheringInformation: "`Lighthouse` is gathering information about the page to compute your score",
   /**
    * @description Text in Lighthouse splash screen when Lighthouse is generating a report.
    */
@@ -5283,19 +5297,19 @@ var UIStrings4 = {
   /**
    * @description Text in Lighthouse splash screen when loading the page for auditing.
    */
-  lighthouseIsLoadingYourPageWith: "`Lighthouse` is loading your page with throttling to measure performance on a mobile device on 3G.",
+  lighthouseIsLoadingYourPageWith: "`Lighthouse` is loading your page with throttling to measure performance on a mobile device on 3G",
   /**
    * @description Text in Lighthouse splash screen when loading the page for auditing.
    */
-  lighthouseIsLoadingYourPageWithThrottling: "`Lighthouse` is loading your page with throttling to measure performance on a slow desktop on 3G.",
+  lighthouseIsLoadingYourPageWithThrottling: "`Lighthouse` is loading your page with throttling to measure performance on a slow desktop on 3G",
   /**
    * @description Text in Lighthouse splash screen when loading the page for auditing.
    */
-  lighthouseIsLoadingYourPageWithMobile: "`Lighthouse` is loading your page with mobile emulation.",
+  lighthouseIsLoadingYourPageWithMobile: "`Lighthouse` is loading your page with mobile emulation",
   /**
    * @description Fast fact in the splash screen while Lighthouse is performing an audit.
    */
-  mbTakesAMinimumOfSecondsTo: "1MB takes a minimum of 5 seconds to download on a typical 3G connection [Source: `WebPageTest` and `DevTools` 3G definition].",
+  mbTakesAMinimumOfSecondsTo: "1MB takes a minimum of 5 seconds to download on a typical 3G connection [Source: `WebPageTest` and `DevTools` 3G definition]",
   /**
    * @description Fast fact in the splash screen while Lighthouse is performing an audit.
    */
@@ -5696,7 +5710,7 @@ var UIStrings5 = {
   /**
    * @description Call to action for the user to interact with the web page.
    */
-  interactWithPage: "Interact with the page.",
+  interactWithPage: "Interact with the page",
   /**
    * @description Label for a button that ends a Lighthouse timespan. "timespan" is a Lighthouse mode that analyzes user interactions over a period of time.
    */

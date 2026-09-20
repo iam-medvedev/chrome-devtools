@@ -55,6 +55,14 @@ const UIStrings = {
      */
     packetLoss: 'Packet Loss',
     /**
+     * @description Label for a textbox that sets the low-tier mobile device CPU throttling in the throttling settings tab.
+     */
+    calibratedLowTierMobile: 'Low-tier mobile device',
+    /**
+     * @description Label for a textbox that sets the mid-tier mobile device CPU throttling in the throttling settings tab.
+     */
+    calibratedMidTierMobile: 'Mid-tier mobile device',
+    /**
      * @description Label for a textbox that sets the maximum packet queue length for real-time networks in the throttling settings tab.
      */
     packetQueueLength: 'Packet Queue Length',
@@ -145,11 +153,11 @@ const UIStrings = {
     /**
      * @description Text to explain why the user should run the CPU calibration process.
      */
-    calibrationCTA: 'To use the CPU throttling presets, run the calibration process to determine the ideal throttling rate for your device.',
+    calibrationCTA: 'To use the CPU throttling presets, run the calibration process to determine the ideal throttling rate for your device',
     /**
      * @description Text to explain what CPU throttling presets are.
      */
-    cpuCalibrationDescription: 'These presets throttle your CPU to approximate the performance of typical low or mid-tier mobile devices.',
+    cpuCalibrationDescription: 'These presets throttle your CPU to approximate the performance of typical low or mid-tier mobile devices',
     /**
      * @description Text to explain how the CPU calibration process will work.
      */
@@ -161,11 +169,11 @@ const UIStrings = {
     /**
      * @description Text to explain an issue that may impact the CPU calibration process.
      */
-    calibrationWarningRunningOnBattery: 'Device is running on battery. Plug in charger for best results',
+    calibrationWarningRunningOnBattery: 'Device is running on battery. Plug in charger for best results.',
     /**
      * @description Text to explain an issue that may impact the CPU calibration process.
      */
-    calibrationWarningLowBattery: 'Device battery is low (<20%). Results may be impacted by CPU throttling',
+    calibrationWarningLowBattery: 'Device battery is low (<20%). Results may be impacted by CPU throttling.',
     /**
      * @description Text label for a menu item indicating that a specific slowdown multiplier is applied.
      * @example {2} PH1
@@ -222,10 +230,10 @@ export class CPUThrottlingCard {
         const descriptionEl = this.element.createChild('span');
         descriptionEl.textContent = i18nString(UIStrings.cpuCalibrationDescription);
         this.lowTierMobileDeviceEl = this.element.createChild('div', 'cpu-preset-section');
-        this.lowTierMobileDeviceEl.append('Low-tier mobile device');
+        this.lowTierMobileDeviceEl.append(i18nString(UIStrings.calibratedLowTierMobile));
         this.lowTierMobileDeviceEl.createChild('div', 'cpu-preset-result');
         this.midTierMobileDeviceEl = this.element.createChild('div', 'cpu-preset-section');
-        this.midTierMobileDeviceEl.append('Mid-tier mobile device');
+        this.midTierMobileDeviceEl.append(i18nString(UIStrings.calibratedMidTierMobile));
         this.midTierMobileDeviceEl.createChild('div', 'cpu-preset-result');
         this.calibrateEl = this.element.createChild('div', 'cpu-preset-section cpu-preset-calibrate');
         const buttonContainerEl = this.calibrateEl.createChild('div', 'button-container');

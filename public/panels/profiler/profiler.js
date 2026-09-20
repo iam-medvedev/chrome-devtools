@@ -1172,7 +1172,7 @@ var UIStrings3 = {
   /**
    * @description Description for the detached elements profiling option in the Memory panel.
    */
-  detachedElementsDescription: "Detached elements show objects retained by a JS reference.",
+  detachedElementsDescription: "Detached elements show objects retained by a JS reference",
   /**
    * @description Name of a profile.
    * @example {2} PH1
@@ -3968,43 +3968,43 @@ var UIStrings5 = {
   /**
    * @description A short summary of the text at https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots#compiled-code.
    */
-  compiledCodeSummary: "Internal data which V8 uses to run functions defined by JavaScript or WebAssembly.",
+  compiledCodeSummary: "Internal data which V8 uses to run functions defined by JavaScript or WebAssembly",
   /**
    * @description A short summary of the text at https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots#concatenated-string.
    */
-  concatenatedStringSummary: "A string which represents the contents of two other strings joined together.",
+  concatenatedStringSummary: "A string which represents the contents of two other strings joined together",
   /**
    * @description A short summary of the text at https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots#system-context.
    */
-  contextSummary: "An internal object containing variables from a JavaScript scope which may be needed by a function created within that scope.",
+  contextSummary: "An internal object containing variables from a JavaScript scope which may be needed by a function created within that scope",
   /**
    * @description A short description of the data type internal type DescriptorArray, which is described more fully at https://v8.dev/blog/fast-properties.
    */
-  descriptorArraySummary: "A list of the property names used by a JavaScript Object.",
+  descriptorArraySummary: "A list of the property names used by a JavaScript Object",
   /**
    * @description A short summary of the text at https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots#array.
    */
-  internalArraySummary: "An internal array-like data structure (not a JavaScript Array).",
+  internalArraySummary: "An internal array-like data structure (not a JavaScript Array)",
   /**
    * @description A short summary of the text at https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots#internal-node.
    */
-  internalNodeSummary: "An object allocated by a component other than V8, such as C++ objects defined by Blink.",
+  internalNodeSummary: "An object allocated by a component other than V8, such as C++ objects defined by Blink",
   /**
    * @description A short description of the data type "system / Map" described at https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots#object-shape.
    */
-  mapSummary: "An internal object representing the shape of a JavaScript Object (not a JavaScript Map).",
+  mapSummary: "An internal object representing the shape of a JavaScript Object (not a JavaScript Map)",
   /**
    * @description A short summary of the "(object elements)[]" described at https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots#array.
    */
-  objectElementsSummary: "An internal object which stores the indexed properties in a JavaScript Object, such as the contents of an Array.",
+  objectElementsSummary: "An internal object which stores the indexed properties in a JavaScript Object, such as the contents of an Array",
   /**
    * @description A short summary of the "(object properties)[]" described at https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots#array.
    */
-  objectPropertiesSummary: "An internal object which stores the named properties in a JavaScript Object.",
+  objectPropertiesSummary: "An internal object which stores the named properties in a JavaScript Object",
   /**
    * @description A short summary of the text at https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots#sliced-string.
    */
-  slicedStringSummary: "A string which represents some of the characters from another string."
+  slicedStringSummary: "A string which represents some of the characters from another string"
 };
 var str_5 = i18n11.i18n.registerUIStrings("panels/profiler/HeapSnapshotGridNodes.ts", UIStrings5);
 var i18nString5 = i18n11.i18n.getLocalizedString.bind(void 0, str_5);
@@ -6160,7 +6160,7 @@ var UIStrings7 = {
   /**
    * @description Text to indicate the status of a heap snapshot in the Performance panel.
    */
-  finishedProcessing: "Finished processing.",
+  finishedProcessing: "Finished processing",
   /**
    * @description Text to indicate the status of a heap snapshot in the Performance panel.
    */
@@ -6435,7 +6435,7 @@ var UIStrings8 = {
   /**
    * @description Text of a DOM element in heap snapshot view of a profiler tool.
    */
-  stackWasNotRecordedForThisObject: "Stack wasn\u2019t recorded for this object because it had been allocated before this profile recording started.",
+  stackWasNotRecordedForThisObject: "Stack wasn\u2019t recorded for this object because it had been allocated before this profile recording started",
   /**
    * @description Button label in the Retainers view to restore all ignored retainers.
    * This text is on a button to undo all previous "Ignore this retainer" actions.
@@ -8057,11 +8057,11 @@ var UIStrings9 = {
    * @description Tooltip for the overall page JavaScript heap size change trend over the specified time window.
    * @example {3} PH1
    */
-  totalPageJsHeapSizeChangeTrend: "Total page JS heap size change trend over the last {PH1} minutes.",
+  totalPageJsHeapSizeChangeTrend: "Total page JS heap size change trend over the last {PH1} minutes",
   /**
    * @description Tooltip for total page JavaScript heap size across all VM instances.
    */
-  totalPageJsHeapSizeAcrossAllVm: "Total page JS heap size across all VM instances.",
+  totalPageJsHeapSizeAcrossAllVm: "Total page JS heap size across all VM instances",
   /**
    * @description Heap size change trend measured in kB/s.
    * @example {2 kB} PH1
@@ -8080,12 +8080,12 @@ var UIStrings9 = {
   /**
    * @description Tooltip for individual VM instance heap size in use by live JavaScript objects.
    */
-  heapSizeInUseByLiveJsObjects: "Heap size in use by live JS objects.",
+  heapSizeInUseByLiveJsObjects: "Heap size in use by live JS objects",
   /**
    * @description Tooltip for the heap size growth rate trend over the specified time window.
    * @example {3} PH1
    */
-  heapSizeChangeTrendOverTheLastS: "Heap size change trend over the last {PH1} minutes.",
+  heapSizeChangeTrendOverTheLastS: "Heap size change trend over the last {PH1} minutes",
   /**
    * @description Text to show an item is empty.
    */
@@ -9106,7 +9106,7 @@ var UIStrings12 = {
   /**
    * @description Error message when trying to load a profile while a recording is currently active.
    */
-  cantLoadProfileWhileAnother: "Can\u2019t load profile while another profile is being recorded.",
+  cantLoadProfileWhileAnother: "Can\u2019t load profile while another profile is being recorded",
   /**
    * @description Error header when loading a profile file fails.
    */
@@ -9115,7 +9115,7 @@ var UIStrings12 = {
    * @description Detailed error reason string shown when profile loading fails.
    * @example {cannot open file} PH1
    */
-  failReason: "Reason: {PH1}.",
+  failReason: "Reason: {PH1}",
   /**
    * @description Header for a profile run iteration in the Profiles sidebar.
    * @example {2} PH1

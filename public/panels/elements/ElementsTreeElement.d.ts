@@ -3,12 +3,21 @@ import '../../ui/components/buttons/buttons.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../../core/text_utils/text_utils.js';
 import * as Protocol from '../../generated/protocol.js';
-import type * as Elements from '../../models/elements/elements.js';
+import * as ChangeTracker from '../../models/change_tracker/change_tracker.js';
+import * as Elements from '../../models/elements/elements.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
 import * as TextEditor from '../../ui/components/text_editor/text_editor.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import type { DirectiveResult } from '../../ui/lit/lit.js';
+/**
+ * Returns the CSS selector of `node` that is used as the text signature of the anchor a change is
+ * recorded on, or `undefined` if `tracker` is absent or not recording changes.
+ *
+ * Resolving the selector walks the ancestor chain and scans sibling lists, so it is skipped
+ * entirely while change tracking is disabled.
+ */
+export declare function buildChangeSelector(tracker: ChangeTracker.ChangeTracker.ChangeTracker | undefined, node: SDK.DOMModel.DOMNode): string | undefined;
 declare const enum TagType {
     OPENING = "OPENING_TAG",
     CLOSING = "CLOSING_TAG"
@@ -83,6 +92,7 @@ export interface ViewInput {
     descendantDecorations: Decoration[];
     decorationsTooltip: string;
     indent: number;
+    renderSelection?: boolean;
     editorState: CodeMirror.EditorState | null;
     editorWidth: number | null;
 }
@@ -108,14 +118,23 @@ export interface InitialEditState {
 }
 export declare class ElementsTreeWidget extends UI.Widget.Widget {
     #private;
-    static readonly INJECT: readonly [typeof IssuesManager.DOMIssuesManager.DOMIssuesManager];
-    isClosingTag: boolean;
+    static readonly INJECT: readonly [
+        typeof IssuesManager.DOMIssuesManager.DOMIssuesManager,
+        typeof ChangeTracker.ChangeTracker.ChangeTracker
+    ];
     isXMLMimeType: boolean;
     disableEdits: boolean;
     showAIButton: boolean;
+    renderSelection: boolean;
     isDOMNodeSelected: boolean;
     initialEdit?: InitialEditState | null;
     onInitialEditCompleted?: () => void;
+    attributeToHighlight?: string | null;
+    onAttributeHighlighted?: () => void;
+    get adornersDirty(): boolean;
+    set adornersDirty(dirty: boolean);
+    get adornersUpdateVersion(): number;
+    set adornersUpdateVersion(version: number);
     expand?: () => void;
     collapse?: () => void;
     selectTreeElement?: (omitFocus?: boolean, selectedByUser?: boolean) => boolean | void;
@@ -126,10 +145,9 @@ export declare class ElementsTreeWidget extends UI.Widget.Widget {
     updateShadowRootDepth?: (depth: number) => void;
     computeLeftIndent?: number | (() => number);
     setChildrenListElementVisible?: (visible: boolean) => void;
-    findStartTagWidget?: () => ElementsTreeWidget | null;
     selectDOMNode?: (node: SDK.DOMModel.DOMNode, selectedByUser?: boolean) => void;
     revealInTopLayer?: (node: SDK.DOMModel.DOMNode) => void;
-    showContextMenu?: (event: Event, widget?: ElementsTreeWidget) => void;
+    showContextMenu?: (event: Event) => void;
     populateTreeElement?: () => Promise<void>;
     toggleHideElement?: (node: SDK.DOMModel.DOMNode) => Promise<void>;
     isToggledToHidden?: (node: SDK.DOMModel.DOMNode) => boolean;
@@ -141,10 +159,18 @@ export declare class ElementsTreeWidget extends UI.Widget.Widget {
     inClipboard: boolean;
     editing: EditorHandles | null;
     expandAllButtonElement: UI.TreeOutline.TreeElement | null;
+    get popoverAdornerActive(): boolean;
+    set popoverAdornerActive(active: boolean);
+    get interestAdornerActive(): boolean;
+    set interestAdornerActive(active: boolean);
+    onPopoverAdornerToggled?: (node: SDK.DOMModel.DOMNode, active: boolean) => void;
+    onInterestAdornerToggled?: (node: SDK.DOMModel.DOMNode, active: boolean) => void;
     get updateRecord(): Elements.ElementUpdateRecord.ElementUpdateRecord | null;
     set updateRecord(updateRecord: Elements.ElementUpdateRecord.ElementUpdateRecord | null);
     get node(): SDK.DOMModel.DOMNode;
     set node(node: SDK.DOMModel.DOMNode);
+    get isClosingTag(): boolean;
+    set isClosingTag(isClosingTag: boolean);
     get expanded(): boolean;
     set expanded(expanded: boolean);
     get isExpandable(): boolean;
@@ -155,12 +181,17 @@ export declare class ElementsTreeWidget extends UI.Widget.Widget {
     set searchQuery(query: string | null);
     get tagTypeContext(): TagTypeContext;
     get issues(): IssuesManager.Issue.Issue[];
-    constructor(element?: HTMLElement, [domIssuesManager]?: UI.Widget.WidgetDependencies<typeof ElementsTreeWidget> | [undefined], view?: View);
+    get changeTracker(): ChangeTracker.ChangeTracker.ChangeTracker | undefined;
+    constructor(element?: HTMLElement, [domIssuesManager, changeTracker]?: UI.Widget.WidgetDependencies<typeof ElementsTreeWidget> | [
+        IssuesManager.DOMIssuesManager.DOMIssuesManager?,
+        ChangeTracker.ChangeTracker.ChangeTracker?
+    ], view?: View);
     static visibleShadowRoots(node: SDK.DOMModel.DOMNode): SDK.DOMModel.DOMNode[];
     static canShowInlineText(node: SDK.DOMModel.DOMNode): boolean;
     static populateForcedPseudoStateItems(contextMenu: UI.ContextMenu.ContextMenu, node: SDK.DOMModel.DOMNode): void;
     animateOnDOMUpdate(): void;
     wasShown(): void;
+    willHide(): void;
     performUpdate(): void;
     highlightAttribute(attributeName: string): void;
     isDisplayContents(): boolean;

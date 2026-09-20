@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { getInsightOrError, processTrace } from '../../../testing/InsightHelpers.js';
-describeWithEnvironment('RenderBlocking', function () {
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
+describe('RenderBlocking', function () {
+    setupLocaleHooks();
     it('finds render-blocking requests', async function () {
         const { data, insights } = await processTrace(this, 'load-simple.json.gz');
         assert.deepEqual([...insights.keys()], ['NAVIGATION_0']);

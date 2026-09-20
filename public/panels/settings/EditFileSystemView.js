@@ -55,7 +55,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
           @create=${input.onCreate}
           class="exclude-subfolders-table"
           parts="excluded-folder-row-with-error"
-          inline striped>
+          inline striped deletable>
           <table>
             <thead>
               <tr>

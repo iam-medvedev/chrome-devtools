@@ -114,14 +114,15 @@ ElementsTestRunner.findNodePromise = function(matchFunction) {
 /**
  * @param {!UI.TreeOutline.TreeElement} treeElement
  */
-function dumpObjectPropertyTreeElement(treeElement) {
+function dumpEventListenerTreeElement(treeElement) {
   const expandedSubstring = treeElement.expanded ? '[expanded]' : '[collapsed]';
   TestRunner.addResult(expandedSubstring + ' ' + treeElement.listItemElement.deepTextContent());
 
   for (const child of treeElement.children()) {
-    const property = /** @type {!ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement} */ (child).property;
-    const key = property.name;
-    const value = /** @type {!SDK.RemoteObject.RemoteObjectImpl} */ (property.value).description;
+    const key = child.listItemElement.querySelector('.name')?.textContent;
+    const valueElement = child.listItemElement.querySelector('.value');
+    const value = valueElement?.querySelector('.object-value-function')?.getAttribute('title') ||
+        valueElement?.getAttribute('title') || valueElement?.textContent;
     TestRunner.addResult('    ' + key + ': ' + value);
   }
 }
@@ -132,38 +133,54 @@ function dumpObjectPropertyTreeElement(treeElement) {
  * @param {boolean=} force
  */
 ElementsTestRunner.expandAndDumpEventListeners = function(eventListenersView, callback, force) {
-  function listenersArrived() {
-    const listenerTypes = eventListenersView.treeOutline.rootElement().children();
-    for (let i = 0; i < listenerTypes.length; ++i) {
-      listenerTypes[i].expand();
-      const listenerItems = listenerTypes[i].children();
-      for (let j = 0; j < listenerItems.length; ++j) {
-        listenerItems[j].expand();
-      }
-    }
-    TestRunner.deprecatedRunAfterPendingDispatches(objectsExpanded);
+  function getTreeOutline(view) {
+    return view.contentElement.querySelector('devtools-tree')?.getInternalTreeOutlineForTest();
   }
 
-  function objectsExpanded() {
-    const listenerTypes = eventListenersView.treeOutline.rootElement().children();
-    for (let i = 0; i < listenerTypes.length; ++i) {
-      if (!listenerTypes[i].children().length) {
-        continue;
+  function listenersArrived() {
+    const view = eventListenersView || this;
+    TestRunner.deprecatedRunAfterPendingDispatches(async () => {
+      await UI.Widget.Widget.allUpdatesComplete;
+      const treeOutline = getTreeOutline(view);
+      if (!treeOutline) {
+        callback();
+        return;
       }
-      const eventType = listenerTypes[i].title;
-      TestRunner.addResult('');
-      TestRunner.addResult('======== ' + eventType + ' ========');
-      const listenerItems = listenerTypes[i].children();
-      for (let j = 0; j < listenerItems.length; ++j) {
-        TestRunner.addResult('== ' + listenerItems[j].eventListener().origin());
-        dumpObjectPropertyTreeElement(listenerItems[j]);
+      for (const typeElement of treeOutline.rootElement().children()) {
+        typeElement.expand();
+        for (const item of typeElement.children()) {
+          item.expand();
+        }
+      }
+      TestRunner.deprecatedRunAfterPendingDispatches(async () => {
+        await UI.Widget.Widget.allUpdatesComplete;
+        objectsExpanded(view);
+      });
+    });
+  }
+
+  function objectsExpanded(view) {
+    const treeOutline = getTreeOutline(view);
+    if (treeOutline) {
+      for (const typeElement of treeOutline.rootElement().children()) {
+        if (!typeElement.children().length) {
+          continue;
+        }
+        const eventType = typeElement.titleElement.textContent.trim();
+        TestRunner.addResult('');
+        TestRunner.addResult('======== ' + eventType + ' ========');
+        for (const item of typeElement.children()) {
+          const origin = item.configElement.dataset.origin;
+          TestRunner.addResult('== ' + origin);
+          dumpEventListenerTreeElement(item);
+        }
       }
     }
     callback();
   }
 
   if (force) {
-    listenersArrived();
+    listenersArrived.call(eventListenersView);
   } else {
     TestRunner.addSniffer(
         EventListeners.EventListenersView.EventListenersView.prototype, 'eventListenersArrivedForTest',
@@ -398,8 +415,115 @@ ElementsTestRunner.selectNodeAndWaitForStylesWithComputed = function(idValue, ca
   }
 };
 
+const treeOutlineShimByWidget = new WeakMap();
+
 ElementsTestRunner.firstElementsTreeOutline = function() {
-  return Elements.ElementsPanel.ElementsPanel.instance().getTreeOutlineForTesting();
+  const panel = Elements.ElementsPanel.ElementsPanel.instance();
+  const legacyOutline = panel.getTreeOutlineForTesting();
+  if (legacyOutline) {
+    return legacyOutline;
+  }
+  const domTreeWidget = panel.getDOMTreeWidgetForTesting();
+  let shim = treeOutlineShimByWidget.get(domTreeWidget);
+  if (shim) {
+    return shim;
+  }
+  function getInternalOutline() {
+    const treeView = domTreeWidget.contentElement.querySelector('devtools-tree');
+    return treeView ? treeView.getInternalTreeOutlineForTest() : null;
+  }
+  function getWidgetForTreeElement(treeElement) {
+    const widgetEl = treeElement.titleElement?.querySelector?.('devtools-widget');
+    return widgetEl ? UI.Widget.Widget.get(widgetEl) : null;
+  }
+  function decorateTreeElement(treeElement) {
+    if (!treeElement) {
+      return null;
+    }
+    if (typeof treeElement.isClosingTag !== 'function') {
+      treeElement.isClosingTag = function() {
+        return Boolean(getWidgetForTreeElement(this)?.isClosingTag);
+      };
+    }
+    if (typeof treeElement.node !== 'function') {
+      treeElement.node = function() {
+        return getWidgetForTreeElement(this)?.node ?? null;
+      };
+    }
+    if (!treeElement.title || typeof treeElement.title === 'string') {
+      treeElement.title = treeElement.titleElement;
+    }
+    return treeElement;
+  }
+  function findTreeElementRecursive(parent, targetNode) {
+    if (!parent) {
+      return null;
+    }
+    const children = parent.children();
+    for (let i = 0; children && i < children.length; ++i) {
+      const child = decorateTreeElement(children[i]);
+      const widget = getWidgetForTreeElement(child);
+      if (widget && widget.node === targetNode && !widget.isClosingTag) {
+        return child;
+      }
+      const found = findTreeElementRecursive(child, targetNode);
+      if (found) {
+        return found;
+      }
+    }
+    return null;
+  }
+  shim = {
+    runPendingUpdates() {
+      domTreeWidget.performUpdate();
+    },
+    rootElement() {
+      domTreeWidget.performUpdate();
+      const root = getInternalOutline()?.rootElement() ?? null;
+      if (root) {
+        const stack = [...root.children()];
+        while (stack.length) {
+          const item = decorateTreeElement(stack.pop());
+          if (item?.children()) {
+            stack.push(...item.children());
+          }
+        }
+      }
+      return root;
+    },
+    findTreeElement(node) {
+      domTreeWidget.performUpdate();
+      return findTreeElementRecursive(getInternalOutline()?.rootElement(), node);
+    },
+    selectedDOMNode() {
+      return domTreeWidget.selectedDOMNode();
+    },
+    get selectedTreeElement() {
+      return decorateTreeElement(getInternalOutline()?.selectedTreeElement ?? null);
+    },
+    get element() {
+      return domTreeWidget.contentElement;
+    },
+    toggleHideElement(node) {
+      return domTreeWidget.toggleHideElement(node);
+    },
+    addEventListener(eventType, listener, thisObject) {
+      if (eventType === Elements.ElementsTreeOutline.ElementsTreeOutline.Events.SelectedNodeChanged) {
+        return domTreeWidget.addEventListener(Elements.ElementsTreeOutline.DOMTreeWidget.Events.SelectedNodeChanged,
+                                              listener, thisObject);
+      }
+      return domTreeWidget.addEventListener(eventType, listener, thisObject);
+    },
+    removeEventListener(eventType, listener, thisObject) {
+      if (eventType === Elements.ElementsTreeOutline.ElementsTreeOutline.Events.SelectedNodeChanged) {
+        return domTreeWidget.removeEventListener(Elements.ElementsTreeOutline.DOMTreeWidget.Events.SelectedNodeChanged,
+                                                 listener, thisObject);
+      }
+      return domTreeWidget.removeEventListener(eventType, listener, thisObject);
+    },
+  };
+  treeOutlineShimByWidget.set(domTreeWidget, shim);
+  return shim;
 };
 
 ElementsTestRunner.filterMatchedStyles = function(text) {
@@ -596,6 +720,17 @@ ElementsTestRunner.toggleMatchedStyleProperty = function(propertyName, checked) 
 ElementsTestRunner.eventListenersWidget = function() {
   UI.ViewManager.ViewManager.instance().showView('elements.event-listeners');
   return Elements.EventListenersWidget.EventListenersWidget.instance();
+};
+
+ElementsTestRunner.removeAllEventListeners = function() {
+  const widget = ElementsTestRunner.eventListenersWidget();
+  const treeOutline = widget.contentElement.querySelector('devtools-tree')?.getInternalTreeOutlineForTest();
+  const buttons = treeOutline?.contentElement.querySelectorAll('devtools-button[title="Delete event listener"]') ?? [];
+  for (const button of buttons) {
+    if (!button.hidden) {
+      button.click();
+    }
+  }
 };
 
 ElementsTestRunner.showEventListenersWidget = function() {
@@ -854,6 +989,7 @@ ElementsTestRunner.expandElementsTree = function(callback) {
 
       if (child.isExpandable() && !child.expanded) {
         child.expand();
+        ElementsTestRunner.firstElementsTreeOutline().runPendingUpdates();
         expandedSomething = true;
       }
 

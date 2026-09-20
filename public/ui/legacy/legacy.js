@@ -2504,6 +2504,7 @@ __export(Widget_exports, {
   WidgetDirective: () => WidgetDirective,
   WidgetElement: () => WidgetElement,
   WidgetFocusRestorer: () => WidgetFocusRestorer,
+  WrapperWidget: () => WrapperWidget,
   instantiateWidget: () => instantiateWidget,
   lookupUniverseForElement: () => lookupUniverseForElement,
   registerWidgetConfig: () => registerWidgetConfig,
@@ -3747,6 +3748,38 @@ Node.prototype.removeChildren = function() {
     throw domOperationError("removeChildren");
   }
   return originalRemoveChildren.call(this);
+};
+var WrapperWidget = class extends Widget {
+  #widget = null;
+  constructor(element, _deps, params) {
+    super(element);
+    this.element.style.setProperty("display", "contents");
+    if (params?.widget) {
+      this.widget = params.widget;
+    }
+  }
+  set widget(widget2) {
+    if (this.#widget === widget2) {
+      return;
+    }
+    if (this.#widget) {
+      this.#widget.detach();
+    }
+    this.#widget = widget2;
+    if (this.#widget) {
+      this.#widget.show(
+        this.element,
+        void 0,
+        /* suppressOrphanWidgetError */
+        true
+      );
+    }
+  }
+  focus() {
+    if (this.#widget) {
+      this.#widget.focus();
+    }
+  }
 };
 
 // ../../front_end/ui/legacy/ZoomManager.ts
@@ -6936,7 +6969,7 @@ var PLUS_BUTTON_VIEW = (input, output, target) => {
     })}
             slot="trailing-button"
             .iconName=${"plus"}
-            .title=${input.title}
+            .accessibleLabel=${input.title}
             .jslogContext=${input.jslogContext}
             .populateMenuCall=${input.populateMenuCall}>
         </devtools-menu-button>`,
@@ -9589,6 +9622,7 @@ var SoftContextMenu = class _SoftContextMenu {
     if (this.subMenu) {
       this.subMenu.discard();
     }
+    this.highlightMenuItem(null, false);
     if (this.focusRestorer) {
       this.focusRestorer.restore();
     }
@@ -9674,6 +9708,7 @@ var SoftContextMenu = class _SoftContextMenu {
     menuItemElement.addEventListener("mouseover", this.menuItemMouseOver.bind(this), false);
     menuItemElement.addEventListener("mouseleave", this.menuItemMouseLeave.bind(this), false);
     detailsForElement.actionId = item8.id;
+    detailsForElement.onHover = item8.onHover;
     let accessibleName = item8.label || "";
     if (item8.type === "checkbox") {
       const checkedState = item8.checked ? i18nString10(UIStrings10.checked) : i18nString10(UIStrings10.unchecked);
@@ -9840,6 +9875,7 @@ var SoftContextMenu = class _SoftContextMenu {
         window.clearTimeout(detailsForElement.subMenuTimer);
         delete detailsForElement.subMenuTimer;
       }
+      detailsForElement?.onHover?.(false);
     }
     this.highlightedMenuItemElement = menuItemElement;
     if (this.highlightedMenuItemElement) {
@@ -9854,6 +9890,7 @@ var SoftContextMenu = class _SoftContextMenu {
       if (scheduleSubMenu && detailsForElement?.subItems && !detailsForElement.subMenuTimer) {
         detailsForElement.subMenuTimer = window.setTimeout(this.showSubMenu.bind(this, this.highlightedMenuItemElement), 150);
       }
+      detailsForElement?.onHover?.(true);
     }
     if (this.contextMenuElement) {
       setActiveDescendant(this.contextMenuElement, menuItemElement);
@@ -9984,6 +10021,7 @@ var Item = class {
   shortcut;
   #tooltip;
   jslogContext;
+  #hoverHandler;
   constructor(contextMenu, type, label, isPreviewFeature, disabled, checked, accelerator, tooltip, jslogContext, featureName) {
     this.typeInternal = type;
     this.label = label;
@@ -10068,6 +10106,9 @@ var Item = class {
             result.isDevToolsPerformanceMenuItem = true;
           }
         }
+        if (this.#hoverHandler) {
+          result.onHover = this.#hoverHandler;
+        }
         return result;
       }
       case "separator": {
@@ -10089,10 +10130,16 @@ var Item = class {
         if (this.customElement) {
           result.element = this.customElement;
         }
+        if (this.#hoverHandler) {
+          result.onHover = this.#hoverHandler;
+        }
         return result;
       }
     }
     throw new Error("Invalid item type:" + this.typeInternal);
+  }
+  setHoverHandler(handler) {
+    this.#hoverHandler = handler;
   }
   /**
    * Sets a keyboard accelerator for this item.
@@ -10157,6 +10204,9 @@ var Section = class {
       );
       if (options?.additionalElement) {
         item8.customElement = options?.additionalElement;
+      }
+      if (options?.onHover) {
+        item8.setHoverHandler(options.onHover);
       }
     }
     this.items.push(item8);
@@ -10269,6 +10319,9 @@ var Section = class {
     }
     if (options?.additionalElement) {
       item8.customElement = options.additionalElement;
+    }
+    if (options?.onHover) {
+      item8.setHoverHandler(options.onHover);
     }
     return item8;
   }
@@ -10828,12 +10881,22 @@ var MenuButton = class extends HTMLElement {
   #shadow = this.attachShadow({ mode: "open" });
   #triggerTimeoutId;
   #populateMenuCall;
+  #accessibleLabel;
   /**
    * Sets the callback function used to populate the context menu when the button is clicked.
    * @param populateCall A function that takes a `ContextMenu` instance and adds items to it.
    */
   set populateMenuCall(populateCall) {
     this.#populateMenuCall = populateCall;
+  }
+  set accessibleLabel(accessibleLabel) {
+    this.#accessibleLabel = accessibleLabel;
+    if (this.iconName) {
+      this.#render();
+    }
+  }
+  get accessibleLabel() {
+    return this.#accessibleLabel;
   }
   /**
    * Reflects the `soft-menu` attribute. If true, uses the `SoftContextMenu` implementation.
@@ -10931,12 +10994,14 @@ var MenuButton = class extends HTMLElement {
     if (!this.iconName) {
       throw new Error("<devtools-menu-button> expects an icon.");
     }
+    const accessibleLabel = this.accessibleLabel ?? this.title;
     render6(
       html5`
         <devtools-button .disabled=${this.disabled}
                          .iconName=${this.iconName}
                          .variant=${Buttons4.Button.Variant.ICON}
-                         .title=${this.title}
+                         .accessibleLabel=${accessibleLabel}
+                         .buttonTitle=${accessibleLabel}
                          aria-haspopup='menu'
                          @click=${this.#triggerContextMenu}>
         </devtools-button>`,
@@ -20928,7 +20993,7 @@ var UIStrings18 = {
    * @description Text in a dialog stating the reason why the remote debugging connection was closed.
    * @example {target_closed} PH1
    */
-  connectionClosedReason: "Reason: {PH1}.",
+  connectionClosedReason: "Reason: {PH1}",
   /**
    * @description Instructions in a dialog on how to reconnect remote debugging by reopening DevTools.
    * "Remote debugging" here means that DevTools on a PC is inspecting a website running on an actual mobile device
@@ -20936,7 +21001,7 @@ var UIStrings18 = {
    * "Reconnect when ready" refers to the state of the mobile device: the developer first has to put the mobile
    * device back in a state where it can be inspected before DevTools can reconnect to it.
    */
-  reconnectWhenReadyByReopening: "Reconnect when ready by reopening DevTools.",
+  reconnectWhenReadyByReopening: "Reconnect when ready by reopening DevTools",
   /**
    * @description Button text to reconnect DevTools when remote debugging is terminated.
    * "Remote debugging" here means that DevTools on a PC is inspecting a website running on an actual mobile device
@@ -22577,11 +22642,11 @@ var UIStrings21 = {
   /**
    * @description Message shown when the inspected page crashes and DevTools is disconnected.
    */
-  devtoolsWasDisconnectedFromThe: "DevTools was disconnected from the page.",
+  devtoolsWasDisconnectedFromThe: "DevTools was disconnected from the page",
   /**
    * @description Message explaining that DevTools will reconnect once the page is reloaded.
    */
-  oncePageIsReloadedDevtoolsWill: "Once page is reloaded, DevTools will automatically reconnect."
+  oncePageIsReloadedDevtoolsWill: "Once page is reloaded, DevTools will automatically reconnect"
 };
 var str_21 = i18n41.i18n.registerUIStrings("ui/legacy/TargetCrashedScreen.ts", UIStrings21);
 var i18nString21 = i18n41.i18n.getLocalizedString.bind(void 0, str_21);
@@ -24260,6 +24325,10 @@ var TreeViewTreeElement = class _TreeViewTreeElement extends TreeElement {
     this.refresh();
   }
   updateExpansionFromAttribute() {
+    if (!this.isExpandable()) {
+      this.#previousOpenAttributeValue = void 0;
+      return;
+    }
     const openAttr = this.configElement.getAttribute("open");
     if (openAttr === this.#previousOpenAttributeValue) {
       return;
@@ -24300,6 +24369,7 @@ var TreeViewTreeElement = class _TreeViewTreeElement extends TreeElement {
       this.#clonedClasses.add(className);
     }
     this.hidden = hasBooleanAttribute(this.configElement, "hidden");
+    this.selectable = !this.configElement.hasAttribute("selectable") || hasBooleanAttribute(this.configElement, "selectable");
     this.updateExpansionFromAttribute();
   }
   refresh() {

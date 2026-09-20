@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import sinon from 'sinon';
+import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../../core/text_utils/text_utils.js';
 import { setupMockedUISourceCode } from '../../testing/UISourceCodeHelpers.js';
 import * as Workspace from './workspace.js';
@@ -265,6 +266,37 @@ describe('UISourceCode', () => {
         const sutObject = setupMockedUISourceCode();
         sutObject.sut.disableEdit();
         assert.isTrue(sutObject.sut.editDisabled());
+    });
+    describe('securityOrigin', () => {
+        it('derives and caches security origin from file url when project origin is null', () => {
+            const sutObject = setupMockedUISourceCode('https://example.com/app.js');
+            sutObject.projectStub.securityOrigin.returns(null);
+            const originFirst = sutObject.sut.securityOrigin();
+            const originSecond = sutObject.sut.securityOrigin();
+            assert.strictEqual(originFirst.siteId(), 'https://example.com');
+            assert.strictEqual(originFirst, originSecond);
+        });
+        it('prefers project security origin when provided', () => {
+            const sutObject = setupMockedUISourceCode('https://example.com/app.js');
+            const projectOrigin = SDK.SecurityOrigin.SecurityOrigin.create('https://project-origin.com');
+            sutObject.projectStub.securityOrigin.returns(projectOrigin);
+            assert.strictEqual(sutObject.sut.securityOrigin(), projectOrigin);
+        });
+        it('clears cached security origin when renamed', async () => {
+            const sutObject = setupMockedUISourceCode('https://example.com/app.js');
+            sutObject.projectStub.securityOrigin.returns(null);
+            sutObject.projectStub.workspace.returns(sinon.createStubInstance(Workspace.Workspace.WorkspaceImpl));
+            const originBefore = sutObject.sut.securityOrigin();
+            assert.strictEqual(originBefore.siteId(), 'https://example.com');
+            const rawPathstringExample = 'newName.js';
+            sutObject.projectStub.rename.callsFake((_uiSourceCode, rawPathstringExample, innerCallback) => {
+                innerCallback(true, rawPathstringExample);
+            });
+            await sutObject.sut.rename(rawPathstringExample);
+            const originAfter = sutObject.sut.securityOrigin();
+            assert.strictEqual(originAfter.siteId(), 'https://example.com');
+            assert.notStrictEqual(originBefore, originAfter);
+        });
     });
 });
 describe('UILocation', () => {

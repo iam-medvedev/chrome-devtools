@@ -51,7 +51,7 @@ describeWithEnvironment('PreloadingDisabledInfobar', () => {
             header: i18n.i18n.lockedString('Speculative loading is disabled'),
             warnings: [{
                     key: i18n.i18n.lockedString('Data Saver'),
-                    valueId: 'Speculative loading is disabled because of the operating system’s Data Saver mode.',
+                    valueId: 'Speculative loading is disabled because of the operating system’s Data Saver mode',
                 }],
         });
     });
@@ -64,7 +64,7 @@ describeWithEnvironment('PreloadingDisabledInfobar', () => {
             header: i18n.i18n.lockedString('Speculative loading is disabled'),
             warnings: [{
                     key: i18n.i18n.lockedString('Battery Saver'),
-                    valueId: 'Speculative loading is disabled because of the operating system’s Battery Saver mode.',
+                    valueId: 'Speculative loading is disabled because of the operating system’s Battery Saver mode',
                 }],
         });
     });
@@ -77,7 +77,7 @@ describeWithEnvironment('PreloadingDisabledInfobar', () => {
             header: i18n.i18n.lockedString('Speculative loading is force-enabled'),
             warnings: [{
                     key: i18n.i18n.lockedString('Prefetch was disabled, but is force-enabled now'),
-                    valueId: 'Prefetch is forced-enabled because DevTools is open. When DevTools is closed, prefetch will be disabled because this browser session is part of a holdback group used for performance comparisons.',
+                    valueId: 'Prefetch is force-enabled because DevTools is open. When DevTools is closed, prefetch will be disabled because this browser session is part of a holdback group used for performance comparisons.',
                 }],
         });
     });
@@ -90,7 +90,7 @@ describeWithEnvironment('PreloadingDisabledInfobar', () => {
             header: i18n.i18n.lockedString('Speculative loading is force-enabled'),
             warnings: [{
                     key: i18n.i18n.lockedString('Prerendering was disabled, but is force-enabled now'),
-                    valueId: 'Prerendering is forced-enabled because DevTools is open. When DevTools is closed, prerendering will be disabled because this browser session is part of a holdback group used for performance comparisons.',
+                    valueId: 'Prerendering is force-enabled because DevTools is open. When DevTools is closed, prerendering will be disabled because this browser session is part of a holdback group used for performance comparisons.',
                 }],
         });
     });
@@ -122,19 +122,19 @@ describeWithEnvironment('PreloadingDisabledInfobar', () => {
                 },
                 {
                     key: i18n.i18n.lockedString('Data Saver'),
-                    valueId: 'Speculative loading is disabled because of the operating system’s Data Saver mode.',
+                    valueId: 'Speculative loading is disabled because of the operating system’s Data Saver mode',
                 },
                 {
                     key: i18n.i18n.lockedString('Battery Saver'),
-                    valueId: 'Speculative loading is disabled because of the operating system’s Battery Saver mode.',
+                    valueId: 'Speculative loading is disabled because of the operating system’s Battery Saver mode',
                 },
                 {
                     key: i18n.i18n.lockedString('Prefetch was disabled, but is force-enabled now'),
-                    valueId: 'Prefetch is forced-enabled because DevTools is open. When DevTools is closed, prefetch will be disabled because this browser session is part of a holdback group used for performance comparisons.',
+                    valueId: 'Prefetch is force-enabled because DevTools is open. When DevTools is closed, prefetch will be disabled because this browser session is part of a holdback group used for performance comparisons.',
                 },
                 {
                     key: i18n.i18n.lockedString('Prerendering was disabled, but is force-enabled now'),
-                    valueId: 'Prerendering is forced-enabled because DevTools is open. When DevTools is closed, prerendering will be disabled because this browser session is part of a holdback group used for performance comparisons.',
+                    valueId: 'Prerendering is force-enabled because DevTools is open. When DevTools is closed, prerendering will be disabled because this browser session is part of a holdback group used for performance comparisons.',
                 },
             ],
         });

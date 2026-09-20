@@ -12,13 +12,24 @@ import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Network from './network.js';
 const { urlString } = Platform.DevToolsPath;
+async function waitForViewToSettle(view) {
+    await doubleRaf();
+    const viewer = view.element.querySelector('devtools-linear-memory-inspector-viewer');
+    if (viewer) {
+        let prevHeight = -1;
+        while (viewer.clientHeight !== prevHeight) {
+            prevHeight = viewer.clientHeight;
+            await doubleRaf();
+        }
+    }
+}
 describeWithEnvironment('BinaryResourceView', () => {
     it('renders the hex view correctly', async () => {
         const base64content = btoa('hello world');
         const contentData = TextUtils.StreamingContentData.StreamingContentData.from(new TextUtils.ContentData.ContentData(base64content, true, 'application/octet-stream'));
         const view = new Network.BinaryResourceView.BinaryResourceView(contentData, urlString `http://example.com`, Common.ResourceType.resourceTypes.XHR);
         renderElementIntoDOM(view, { width: 400, height: 400, includeCommonStyles: true });
-        await doubleRaf();
+        await waitForViewToSettle(view);
         await assertScreenshot('network/binary_resource_view_hex.png');
         view.detach();
     });
@@ -27,6 +38,7 @@ describeWithEnvironment('BinaryResourceView', () => {
         const contentData = TextUtils.StreamingContentData.StreamingContentData.from(new TextUtils.ContentData.ContentData(base64content, true, 'application/octet-stream'));
         const view = new Network.BinaryResourceView.BinaryResourceView(contentData, urlString `http://example.com`, Common.ResourceType.resourceTypes.XHR);
         renderElementIntoDOM(view, { width: 400, height: 400, includeCommonStyles: true });
+        await waitForViewToSettle(view);
         const combobox = view.element.querySelector('select');
         assert.isOk(combobox);
         combobox.value = 'base64';
@@ -40,6 +52,7 @@ describeWithEnvironment('BinaryResourceView', () => {
         const contentData = TextUtils.StreamingContentData.StreamingContentData.from(new TextUtils.ContentData.ContentData(base64content, true, 'application/octet-stream'));
         const view = new Network.BinaryResourceView.BinaryResourceView(contentData, urlString `http://example.com`, Common.ResourceType.resourceTypes.XHR);
         renderElementIntoDOM(view, { width: 400, height: 400, includeCommonStyles: true });
+        await waitForViewToSettle(view);
         const combobox = view.element.querySelector('select');
         assert.isOk(combobox);
         combobox.value = 'utf8';
@@ -53,7 +66,7 @@ describeWithEnvironment('BinaryResourceView', () => {
         const contentData = TextUtils.StreamingContentData.StreamingContentData.from(new TextUtils.ContentData.ContentData(base64content, true, 'application/octet-stream'));
         const view = new Network.BinaryResourceView.BinaryResourceView(contentData, urlString `http://example.com`, Common.ResourceType.resourceTypes.XHR);
         renderElementIntoDOM(view);
-        await doubleRaf();
+        await waitForViewToSettle(view);
         const combobox = view.element.querySelector('select');
         assert.isNotNull(combobox);
         assert.strictEqual(combobox?.value, 'hex');
@@ -64,7 +77,7 @@ describeWithEnvironment('BinaryResourceView', () => {
         const contentData = TextUtils.StreamingContentData.StreamingContentData.from(new TextUtils.ContentData.ContentData(base64content, true, 'application/octet-stream'));
         const view = new Network.BinaryResourceView.BinaryResourceView(contentData, urlString `http://example.com`, Common.ResourceType.resourceTypes.XHR);
         renderElementIntoDOM(view);
-        await doubleRaf();
+        await waitForViewToSettle(view);
         const combobox = view.element.querySelector('select');
         assert.isOk(combobox);
         combobox.value = 'utf8';
@@ -77,7 +90,7 @@ describeWithEnvironment('BinaryResourceView', () => {
         const contentData = TextUtils.StreamingContentData.StreamingContentData.from(new TextUtils.ContentData.ContentData(base64content, true, 'application/octet-stream'));
         const view = new Network.BinaryResourceView.BinaryResourceView(contentData, urlString `http://example.com`, Common.ResourceType.resourceTypes.XHR);
         renderElementIntoDOM(view);
-        await doubleRaf();
+        await waitForViewToSettle(view);
         let copiedText = '';
         const copyTextStub = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'copyText')
             .callsFake((text) => {
@@ -101,7 +114,7 @@ describeWithEnvironment('BinaryResourceView Position Syncing', () => {
         const view = new Network.BinaryResourceView.BinaryResourceView(contentData, urlString `http://example.com`, Common.ResourceType.resourceTypes.XHR);
         // Needed to instantiate CodeMirror for the base64 view
         renderElementIntoDOM(view, { width: 800, height: 600 });
-        await doubleRaf();
+        await waitForViewToSettle(view);
         const currentViewWidget = view.element.querySelector('devtools-widget');
         assert.isOk(currentViewWidget);
         const oldWidget = UI.Widget.Widget.get(currentViewWidget);

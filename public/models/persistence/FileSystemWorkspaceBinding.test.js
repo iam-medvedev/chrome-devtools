@@ -6,11 +6,24 @@ import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as TextUtils from '../../core/text_utils/text_utils.js';
-import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
+import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
+import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
+import { TestUniverse } from '../../testing/TestUniverse.js';
 import { createFileSystemUISourceCode } from '../../testing/UISourceCodeHelpers.js';
 import * as Workspace from '../workspace/workspace.js';
 const { urlString } = Platform.DevToolsPath;
-describeWithEnvironment('FileSystemWorkspaceBinding', () => {
+describe('FileSystemWorkspaceBinding', () => {
+    setupLocaleHooks();
+    setupSettingsHooks();
+    setupRuntimeHooks();
+    let universe;
+    beforeEach(() => {
+        universe = new TestUniverse();
+    });
+    afterEach(() => {
+        sinon.restore();
+    });
     it('does not conflict when file system paths share a prefix', async () => {
         const fsPath1 = 'file:///var/www';
         const fsPath2 = 'file:///var/www_suffix';
@@ -19,15 +32,16 @@ describeWithEnvironment('FileSystemWorkspaceBinding', () => {
             content: 'foo',
             fileSystemPath: fsPath1,
             mimeType: 'text/javascript',
+            universe,
         });
         const { project: project2, uiSourceCode: barSourceCode } = createFileSystemUISourceCode({
             url: urlString `file:///var/www_suffix/bar.js`,
             content: 'bar',
             fileSystemPath: fsPath2,
             mimeType: 'text/javascript',
+            universe,
         });
-        // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
-        const workspace = Workspace.Workspace.WorkspaceImpl.instance();
+        const workspace = universe.workspace;
         // Ensure the UISourceCodes are added to the workspace
         assert.strictEqual(workspace.uiSourceCodeForURL(urlString `file:///var/www/foo.js`), fooSourceCode);
         assert.strictEqual(workspace.uiSourceCodeForURL(urlString `file:///var/www_suffix/bar.js`), barSourceCode);
@@ -51,6 +65,7 @@ describeWithEnvironment('FileSystemWorkspaceBinding', () => {
             content: 'existing content',
             fileSystemPath: fsPath,
             mimeType: 'text/javascript',
+            universe,
         });
         const platformFileSystem = project.fileSystem();
         // Stub createFile to simulate successful file creation on disk.
@@ -61,8 +76,7 @@ describeWithEnvironment('FileSystemWorkspaceBinding', () => {
         // Stub contentType to return the correct resource type.
         const contentTypeStub = sinon.stub(platformFileSystem, 'contentType');
         contentTypeStub.returns(Common.ResourceType.resourceTypes.Script);
-        // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
-        const workspace = Workspace.Workspace.WorkspaceImpl.instance();
+        const workspace = universe.workspace;
         const addedPromise = new Promise(resolve => {
             const listener = (event) => {
                 const uiSourceCode = event.data;
@@ -91,13 +105,13 @@ describeWithEnvironment('FileSystemWorkspaceBinding', () => {
                 mimeType: 'text/javascript',
                 content: 'testme',
                 fileSystemPath,
+                universe,
             });
             const platformFileSystem = project.fileSystem();
             const deleteFileStub = sinon.stub(platformFileSystem, 'deleteFile').resolves(true);
             assert.lengthOf([...project.uiSourceCodes()], 1);
             assert.strictEqual([...project.uiSourceCodes()][0], uiSourceCode);
-            // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
-            const workspace = Workspace.Workspace.WorkspaceImpl.instance();
+            const workspace = universe.workspace;
             const uiSourceCodeRemovedPromise = new Promise(resolve => {
                 const listener = (event) => {
                     if (event.data === uiSourceCode) {
@@ -121,6 +135,7 @@ describeWithEnvironment('FileSystemWorkspaceBinding', () => {
                 mimeType: 'text/javascript',
                 content: 'testme',
                 fileSystemPath,
+                universe,
             });
             const platformFileSystem = project.fileSystem();
             const deleteFileStub = sinon.stub(platformFileSystem, 'deleteFile').resolves(false);

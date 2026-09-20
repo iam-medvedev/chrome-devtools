@@ -37,6 +37,7 @@ export class Item {
     shortcut;
     #tooltip;
     jslogContext;
+    #hoverHandler;
     constructor(contextMenu, type, label, isPreviewFeature, disabled, checked, accelerator, tooltip, jslogContext, featureName) {
         this.typeInternal = type;
         this.label = label;
@@ -121,6 +122,9 @@ export class Item {
                         result.isDevToolsPerformanceMenuItem = true;
                     }
                 }
+                if (this.#hoverHandler) {
+                    result.onHover = this.#hoverHandler;
+                }
                 return result;
             }
             case 'separator': {
@@ -142,10 +146,16 @@ export class Item {
                 if (this.customElement) {
                     result.element = this.customElement;
                 }
+                if (this.#hoverHandler) {
+                    result.onHover = this.#hoverHandler;
+                }
                 return result;
             }
         }
         throw new Error('Invalid item type:' + this.typeInternal);
+    }
+    setHoverHandler(handler) {
+        this.#hoverHandler = handler;
     }
     /**
      * Sets a keyboard accelerator for this item.
@@ -203,6 +213,9 @@ export class Section {
             item = new Item(this.contextMenu, 'item', labelOrItem, options?.isPreviewFeature, options?.disabled, undefined, options?.accelerator, options?.tooltip, options?.jslogContext, options?.featureName);
             if (options?.additionalElement) {
                 item.customElement = options?.additionalElement;
+            }
+            if (options?.onHover) {
+                item.setHoverHandler(options.onHover);
             }
         }
         this.items.push(item);
@@ -290,6 +303,9 @@ export class Section {
         }
         if (options?.additionalElement) {
             item.customElement = options.additionalElement;
+        }
+        if (options?.onHover) {
+            item.setHoverHandler(options.onHover);
         }
         return item;
     }
@@ -818,6 +834,7 @@ export class ContextMenu extends SubMenu {
  * @property keepOpen -Reflects the `"keep-open"` attribute.
  * @property iconName - Reflects the `"icon-name"` attribute.
  * @property disabled - Reflects the `"disabled"` attribute.
+ * @property accessibleLabel - Sets the accessible name and tooltip on the internal button.
  * @attribute soft-menu - Whether to use the soft menu implementation.
  * @attribute keep-open - Whether the menu should stay open after an item is clicked.
  * @attribute icon-name - Name of the icon to display on the button.
@@ -830,12 +847,22 @@ export class MenuButton extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #triggerTimeoutId;
     #populateMenuCall;
+    #accessibleLabel;
     /**
      * Sets the callback function used to populate the context menu when the button is clicked.
      * @param populateCall A function that takes a `ContextMenu` instance and adds items to it.
      */
     set populateMenuCall(populateCall) {
         this.#populateMenuCall = populateCall;
+    }
+    set accessibleLabel(accessibleLabel) {
+        this.#accessibleLabel = accessibleLabel;
+        if (this.iconName) {
+            this.#render();
+        }
+    }
+    get accessibleLabel() {
+        return this.#accessibleLabel;
     }
     /**
      * Reflects the `soft-menu` attribute. If true, uses the `SoftContextMenu` implementation.
@@ -933,12 +960,14 @@ export class MenuButton extends HTMLElement {
         if (!this.iconName) {
             throw new Error('<devtools-menu-button> expects an icon.');
         }
+        const accessibleLabel = this.accessibleLabel ?? this.title;
         // clang-format off
         render(html `
         <devtools-button .disabled=${this.disabled}
                          .iconName=${this.iconName}
                          .variant=${"icon" /* Buttons.Button.Variant.ICON */}
-                         .title=${this.title}
+                         .accessibleLabel=${accessibleLabel}
+                         .buttonTitle=${accessibleLabel}
                          aria-haspopup='menu'
                          @click=${this.#triggerContextMenu}>
         </devtools-button>`, this.#shadow, { host: this });

@@ -35,7 +35,10 @@ describe('GetStylesTool', () => {
         const tool = new AiAssistance.GetStyles.GetStylesTool();
         const context = {
             getTarget: () => target,
-            getEstablishedOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+            getOriginLock: () => ({
+                status: 'ESTABLISHED_ORIGIN',
+                origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+            }),
         };
         const response = await tool.handler({
             explanation: 'Get element styles',
@@ -54,7 +57,7 @@ describe('GetStylesTool', () => {
         const tool = new AiAssistance.GetStyles.GetStylesTool();
         const context = {
             getTarget: () => null,
-            getEstablishedOrigin: () => undefined,
+            getOriginLock: () => ({ status: 'UNINITIALIZED' }),
         };
         const response = await tool.handler({
             explanation: 'Get element styles',
@@ -73,7 +76,10 @@ describe('GetStylesTool', () => {
         const tool = new AiAssistance.GetStyles.GetStylesTool();
         const context = {
             getTarget: () => target,
-            getEstablishedOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+            getOriginLock: () => ({
+                status: 'ESTABLISHED_ORIGIN',
+                origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+            }),
         };
         const response = await tool.handler({
             explanation: 'Get element styles',
@@ -96,7 +102,10 @@ describe('GetStylesTool', () => {
         const tool = new AiAssistance.GetStyles.GetStylesTool();
         const context = {
             getTarget: () => target,
-            getEstablishedOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('https://iframe.example.com'),
+            getOriginLock: () => ({
+                status: 'ESTABLISHED_ORIGIN',
+                origin: SDK.SecurityOrigin.SecurityOrigin.create('https://iframe.example.com'),
+            }),
         };
         const response = await tool.handler({
             explanation: 'Get element styles',
@@ -118,7 +127,10 @@ describe('GetStylesTool', () => {
         const tool = new AiAssistance.GetStyles.GetStylesTool();
         const context = {
             getTarget: () => target,
-            getEstablishedOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+            getOriginLock: () => ({
+                status: 'ESTABLISHED_ORIGIN',
+                origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+            }),
         };
         const response = await tool.handler({
             explanation: 'Get element styles',
@@ -133,7 +145,22 @@ describe('GetStylesTool', () => {
         const tool = new AiAssistance.GetStyles.GetStylesTool();
         const context = {
             getTarget: () => target,
-            getEstablishedOrigin: () => undefined,
+            getOriginLock: () => ({ status: 'UNINITIALIZED' }),
+        };
+        const response = await tool.handler({
+            explanation: 'Get element styles',
+            elements: [42],
+            styleProperties: ['color'],
+        }, context);
+        assertIsError(response, 'Error: Node does not belong to the current origin.');
+    });
+    it('returns error when navigation occurred during run', async () => {
+        const { node: resolvedNode } = createStubbedDomNodeWithModels({ nodeId: 42 });
+        sinon.stub(SDK.DOMModel.DeferredDOMNode.prototype, 'resolvePromise').resolves(resolvedNode);
+        const tool = new AiAssistance.GetStyles.GetStylesTool();
+        const context = {
+            getTarget: () => target,
+            getOriginLock: () => ({ status: 'BLOCKED_BY_NAVIGATION' }),
         };
         const response = await tool.handler({
             explanation: 'Get element styles',

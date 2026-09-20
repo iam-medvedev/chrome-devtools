@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Trace from '../trace.js';
 function countMetricOcurrences(scoresByMetricName, metricName) {
@@ -13,7 +12,7 @@ function countMetricOcurrences(scoresByMetricName, metricName) {
         return acc;
     }, 0);
 }
-describeWithEnvironment('PageLoadMetricsHandler', function () {
+describe('PageLoadMetricsHandler', function () {
     describe('contentful paints', () => {
         it('obtains all the FCP and LCP events for all frames', async function () {
             const { data } = await TraceLoader.traceEngine(this, 'multiple-navigations-with-iframes.json.gz');

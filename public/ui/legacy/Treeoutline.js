@@ -1387,6 +1387,10 @@ class TreeViewTreeElement extends TreeElement {
         this.refresh();
     }
     updateExpansionFromAttribute() {
+        if (!this.isExpandable()) {
+            this.#previousOpenAttributeValue = undefined;
+            return;
+        }
         const openAttr = this.configElement.getAttribute('open');
         if (openAttr === this.#previousOpenAttributeValue) {
             return;
@@ -1428,6 +1432,8 @@ class TreeViewTreeElement extends TreeElement {
             this.#clonedClasses.add(className);
         }
         this.hidden = hasBooleanAttribute(this.configElement, 'hidden');
+        this.selectable =
+            !this.configElement.hasAttribute('selectable') || hasBooleanAttribute(this.configElement, 'selectable');
         this.updateExpansionFromAttribute();
     }
     refresh() {

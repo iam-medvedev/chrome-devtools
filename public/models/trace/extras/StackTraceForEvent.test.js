@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
-import { allThreadEntriesInTrace, getBaseTraceHandlerData, makeCompleteEvent, makeInstantEvent, makeMockRendererHandlerData, makeProfileCall, } from '../../../testing/TraceHelpers.js';
+import { allThreadEntriesInTrace, getBaseTraceHandlerData, makeCompleteEvent, makeInstantEvent, makeMockRendererHandlerData, makeProfileCall, } from '../../../testing/TraceHelpersCore.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Trace from '../trace.js';
 function shapeStackTraceAsArray(stackTrace) {
@@ -21,7 +20,7 @@ function shapeStackTraceAsArray(stackTrace) {
 function parsedTraceFromEvents(events) {
     return getBaseTraceHandlerData({ Renderer: makeMockRendererHandlerData(events) });
 }
-describeWithEnvironment('StackTraceForTraceEvent', function () {
+describe('StackTraceForTraceEvent', function () {
     let parsedTrace;
     let data;
     beforeEach(async function () {

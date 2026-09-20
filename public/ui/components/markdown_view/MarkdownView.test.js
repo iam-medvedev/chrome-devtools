@@ -5,12 +5,11 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Deprecation from '../../../generated/Deprecation.js';
-/* eslint-disable @devtools/es-modules-import */
 import ISSUE_DESCRIPTIONS from '../../../models/issues_manager/description_list.json' with { type: 'json' };
-/* eslint-enable @devtools/es-modules-import */
 import * as IssuesManager from '../../../models/issues_manager/issues_manager.js';
 import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
-import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
+import { setupSettingsHooks } from '../../../testing/SettingsHelpers.js';
 import * as Marked from '../../../third_party/marked/marked.js';
 import * as Lit from '../../lit/lit.js';
 import * as MarkdownView from './markdown_view.js';
@@ -23,7 +22,7 @@ function renderTemplateResult(templateResult) {
     Lit.render(templateResult, container);
     return container;
 }
-describeWithEnvironment('MarkdownView', () => {
+describe('MarkdownView', () => {
     describe('tokenizer', () => {
         it('tokenizers links in single quotes', () => {
             assert.deepEqual(Marked.Marked.lexer('\'https://example.test\''), [
@@ -306,6 +305,8 @@ ${paragraphText}
         return element ? element : document.createElement('span');
     };
     describe('component', () => {
+        setupLocaleHooks();
+        setupSettingsHooks();
         it('renders basic markdown correctly', () => {
             const component = new MarkdownView.MarkdownView.MarkdownView();
             renderElementIntoDOM(component);
@@ -383,7 +384,9 @@ console.log('test')
 // eslint-disable-next-line @devtools/l10n-filename-matches
 const strDeprecation = i18n.i18n.registerUIStrings('generated/Deprecation.ts', Deprecation.UIStrings);
 const i18nDeprecationString = i18n.i18n.getLocalizedString.bind(undefined, strDeprecation);
-describeWithEnvironment('Issue description smoke test', () => {
+describe('Issue description smoke test', () => {
+    setupLocaleHooks();
+    setupSettingsHooks();
     // These tests load all the markdown issue descriptions and render each of them once, to make sure
     // syntax and links are valid.
     ISSUE_DESCRIPTIONS.forEach(descriptionFile => {

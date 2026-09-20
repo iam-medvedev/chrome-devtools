@@ -59,7 +59,7 @@ details .hide-when-closed {
 }
 
 details[open] .hide-when-closed {
-  display: block;
+  display: revert;
 }
 
 details summary input {
@@ -182,6 +182,7 @@ div.raw-headers-row {
 
 .header-grid-container div:last-child {
   text-align: right;
+  white-space: nowrap;
 }
 
 .header .devtools-link {
@@ -219,6 +220,11 @@ summary label {
 
 summary devtools-checkbox {
   margin-top: var(--sys-size-1);
+}
+
+.backend-link-button {
+  margin-left: var(--sys-size-4);
+  vertical-align: middle;
 }
 
 /*# sourceURL=${import.meta.resolve("./RequestHeadersView.css")} */`;
@@ -824,11 +830,11 @@ var UIStrings2 = {
   /**
    * @description Comment used in decoded X-Client-Data HTTP header output in Headers View of the Network panel
    */
-  activeClientExperimentVariation: "Active `client experiment variation IDs`.",
+  activeClientExperimentVariation: "Active `client experiment variation IDs`",
   /**
    * @description Comment used in decoded X-Client-Data HTTP header output in Headers View of the Network panel
    */
-  activeClientExperimentVariationIds: "Active `client experiment variation IDs` that trigger server-side behavior.",
+  activeClientExperimentVariationIds: "Active `client experiment variation IDs` that trigger server-side behavior",
   /**
    * @description Text in Headers View of the Network panel for X-Client-Data HTTP headers
    */
@@ -1313,7 +1319,7 @@ var UIStrings3 = {
   /**
    * @description Message to explain lack of raw headers for a particular network request
    */
-  provisionalHeadersAreShown: "Provisional headers are shown."
+  provisionalHeadersAreShown: "Provisional headers are shown"
 };
 var str_3 = i18n5.i18n.registerUIStrings("panels/network/components/RequestHeaderSection.ts", UIStrings3);
 var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
@@ -1929,6 +1935,14 @@ var Audits;
     PermissionElementIssueType2["NonSecureContext"] = "NonSecureContext";
     PermissionElementIssueType2["MissingTransientUserActivation"] = "MissingTransientUserActivation";
   })(PermissionElementIssueType = Audits2.PermissionElementIssueType || (Audits2.PermissionElementIssueType = {}));
+  let WebInstallIssueReason;
+  ((WebInstallIssueReason2) => {
+    WebInstallIssueReason2["ManifestParsingOrNetworkError"] = "ManifestParsingOrNetworkError";
+    WebInstallIssueReason2["StartUrlInvalid"] = "StartUrlInvalid";
+    WebInstallIssueReason2["ManifestMissingNameOrShortName"] = "ManifestMissingNameOrShortName";
+    WebInstallIssueReason2["ManifestMissingId"] = "ManifestMissingId";
+    WebInstallIssueReason2["NoManifest"] = "NoManifest";
+  })(WebInstallIssueReason = Audits2.WebInstallIssueReason || (Audits2.WebInstallIssueReason = {}));
   let InspectorIssueCode;
   ((InspectorIssueCode2) => {
     InspectorIssueCode2["CookieIssue"] = "CookieIssue";
@@ -1961,6 +1975,7 @@ var Audits;
     InspectorIssueCode2["SelectivePermissionsInterventionIssue"] = "SelectivePermissionsInterventionIssue";
     InspectorIssueCode2["EmailVerificationRequestIssue"] = "EmailVerificationRequestIssue";
     InspectorIssueCode2["LazyLoadImageIssue"] = "LazyLoadImageIssue";
+    InspectorIssueCode2["WebInstallIssue"] = "WebInstallIssue";
   })(InspectorIssueCode = Audits2.InspectorIssueCode || (Audits2.InspectorIssueCode = {}));
   let GetEncodedResponseRequestEncoding;
   ((GetEncodedResponseRequestEncoding2) => {
@@ -2243,6 +2258,11 @@ var DOM;
     GetElementByRelationRequestRelation2["InterestTarget"] = "InterestTarget";
     GetElementByRelationRequestRelation2["CommandFor"] = "CommandFor";
   })(GetElementByRelationRequestRelation = DOM2.GetElementByRelationRequestRelation || (DOM2.GetElementByRelationRequestRelation = {}));
+  let SetTextMarkerRequestType;
+  ((SetTextMarkerRequestType2) => {
+    SetTextMarkerRequestType2["Spelling"] = "spelling";
+    SetTextMarkerRequestType2["Grammar"] = "grammar";
+  })(SetTextMarkerRequestType = DOM2.SetTextMarkerRequestType || (DOM2.SetTextMarkerRequestType = {}));
 })(DOM || (DOM = {}));
 var DOMDebugger;
 ((DOMDebugger2) => {
@@ -4311,11 +4331,11 @@ var UIStrings4 = {
   /**
    * @description Detailed text for a success status in the Network panel
    */
-  theOperationsResultWasServedFrom: "The operation\u2019s result was served from cache.",
+  theOperationsResultWasServedFrom: "The operation\u2019s result was served from cache",
   /**
    * @description Detailed text for a success status in the Network panel
    */
-  theOperationWasFulfilledLocally: "The operation was fulfilled locally, no request was sent.",
+  theOperationWasFulfilledLocally: "The operation was fulfilled locally, no request was sent",
   /**
    * @description Text for an error status in the Network panel
    */
@@ -4323,23 +4343,23 @@ var UIStrings4 = {
   /**
    * @description Text for an error status in the Network panel
    */
-  aClientprovidedArgumentWas: "A client-provided argument was malformed or otherwise invalid.",
+  aClientprovidedArgumentWas: "A client-provided argument was malformed or otherwise invalid",
   /**
    * @description Text for an error status in the Network panel
    */
-  eitherNoInputsForThisOperation: "Either no inputs for this operation are available or the output exceeds the operations quota.",
+  eitherNoInputsForThisOperation: "Either no inputs for this operation are available or the output exceeds the operations quota",
   /**
    * @description Text for an error status in the Network panel
    */
-  theServersResponseWasMalformedOr: "The server\u2019s response was malformed or otherwise invalid.",
+  theServersResponseWasMalformedOr: "The server\u2019s response was malformed or otherwise invalid",
   /**
    * @description Text for an error status in the Network panel
    */
-  theOperationFailedForAnUnknown: "The operation failed for an unknown reason.",
+  theOperationFailedForAnUnknown: "The operation failed for an unknown reason",
   /**
    * @description Text for an error status in the Network panel
    */
-  perSiteLimit: "Per-site issuer limit reached."
+  perSiteLimit: "Per-site issuer limit reached"
 };
 var str_4 = i18n7.i18n.registerUIStrings("panels/network/components/RequestTrustTokensView.ts", UIStrings4);
 var i18nString4 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
@@ -4561,15 +4581,15 @@ var UIStrings5 = {
   /**
    * @description Explanation text for which cross-origin policy to set.
    */
-  chooseThisOptionIfTheResourceAnd: "Choose this option if the resource and the document are served from the same site.",
+  chooseThisOptionIfTheResourceAnd: "Choose this option if the resource and the document are served from the same site",
   /**
    * @description Explanation text for which cross-origin policy to set.
    */
-  onlyChooseThisOptionIfAn: "Only choose this option if an arbitrary website including this resource does not impose a security risk.",
+  onlyChooseThisOptionIfAn: "Only choose this option if an arbitrary website including this resource does not impose a security risk",
   /**
    * @description Message in the Headers View of the Network panel when a cross-origin opener policy blocked loading a sandbox iframe.
    */
-  thisDocumentWasBlockedFrom: "The document was blocked from loading in a popup opened by a sandboxed iframe because this document specified a cross-origin opener policy.",
+  thisDocumentWasBlockedFrom: "The document was blocked from loading in a popup opened by a sandboxed iframe because this document specified a cross-origin opener policy",
   /**
    * @description Message in the Headers View of the Network panel when a cross-origin embedder policy header needs to be set.
    */

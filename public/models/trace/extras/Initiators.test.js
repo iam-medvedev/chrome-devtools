@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { deinitializeGlobalVars, initializeGlobalVars } from '../../../testing/EnvironmentHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Extras from './extras.js';
 /**
@@ -11,12 +10,6 @@ import * as Extras from './extras.js';
  * https://github.com/ChromeDevTools/performance-stories/tree/main/resource-initiators
  */
 describe('getNetworkInitiator', () => {
-    before(async () => {
-        await initializeGlobalVars();
-    });
-    after(async () => {
-        await deinitializeGlobalVars();
-    });
     const { getNetworkInitiator } = Extras.Initiators;
     let parsedTrace;
     let documentRequest;

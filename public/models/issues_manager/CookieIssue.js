@@ -18,7 +18,7 @@ const UIStrings = {
     /**
      * @description Text to show in Console panel when a third-party cookie is blocked in Chrome.
      */
-    consoleTpcdErrorMessage: 'Third-party cookie blocked in Chrome due to Chrome flags or browser settings.',
+    consoleTpcdErrorMessage: 'Third-party cookie blocked in Chrome due to Chrome flags or browser settings',
 };
 const str_ = i18n.i18n.registerUIStrings('models/issues_manager/CookieIssue.ts', UIStrings);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
@@ -327,10 +327,6 @@ const excludeDomainNonAscii = {
     file: 'cookieExcludeDomainNonAscii.md',
     links: [],
 };
-const excludeBlockedWithinRelatedWebsiteSet = {
-    file: 'cookieExcludeBlockedWithinRelatedWebsiteSet.md',
-    links: [],
-};
 const cookieCrossSiteRedirectDowngrade = {
     file: 'cookieCrossSiteRedirectDowngrade.md',
     links: [{
@@ -369,14 +365,6 @@ const issueDescriptions = new Map([
     ['CookieIssue::WarnDomainNonASCII::SetCookie', warnDomainNonAscii],
     ['CookieIssue::ExcludeDomainNonASCII::ReadCookie', excludeDomainNonAscii],
     ['CookieIssue::ExcludeDomainNonASCII::SetCookie', excludeDomainNonAscii],
-    [
-        'CookieIssue::ExcludeThirdPartyCookieBlockedInRelatedWebsiteSet::ReadCookie',
-        excludeBlockedWithinRelatedWebsiteSet,
-    ],
-    [
-        'CookieIssue::ExcludeThirdPartyCookieBlockedInRelatedWebsiteSet::SetCookie',
-        excludeBlockedWithinRelatedWebsiteSet,
-    ],
     ['CookieIssue::WarnThirdPartyPhaseout::ReadCookie', placeholderDescriptionForInvisibleIssues],
     ['CookieIssue::WarnThirdPartyPhaseout::SetCookie', placeholderDescriptionForInvisibleIssues],
     ['CookieIssue::WarnDeprecationTrialMetadata::ReadCookie', placeholderDescriptionForInvisibleIssues],

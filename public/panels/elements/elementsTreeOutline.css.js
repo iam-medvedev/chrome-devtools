@@ -61,11 +61,13 @@ export default `/*
   line-height: normal;
 }
 
+:host(.elements-tree-outline),
 .elements-disclosure devtools-tree {
   width: 100%;
   min-width: 100%;
   min-height: 100%;
   display: inline-block;
+  padding: 0;
 }
 
 .elements-disclosure li {
@@ -89,6 +91,10 @@ export default `/*
 
 .elements-disclosure li.parent {
   display: flex;
+}
+
+.elements-disclosure li .tree-element-title {
+  display: contents;
 }
 
 .elements-disclosure li.parent:not(.always-parent) {
@@ -575,7 +581,7 @@ li.hovered:not(.always-parent) + ol.children:not(.shadow-root) {
 .tree-outline-disclosure li .selection {
   display: none;
   z-index: -1;
-  margin-left: 0;
+  margin-left: calc(var(--indent, 0px) * -1);
 }
 
 .tree-outline-disclosure li.selected .selection {
@@ -610,6 +616,10 @@ li.hovered:not(.always-parent) + ol.children:not(.shadow-root) {
   background-color: var(--sys-color-tonal-container);
 }
 
+.tree-outline-disclosure .elements-tree-outline li:has(.elements-tree-editor) .selection {
+  display: none;
+}
+
 .tree-outline-disclosure ol {
   list-style-type: none;
   padding-inline-start: 12px;
@@ -627,10 +637,6 @@ li.hovered:not(.always-parent) + ol.children:not(.shadow-root) {
 
 .tree-outline-disclosure li.in-clipboard .highlight {
   outline: 1px dotted var(--sys-color-divider);
-}
-
-.tree-outline-disclosure li.elements-tree-expand-all {
-  margin: var(--sys-size-2) 0;
 }
 
 /*# sourceURL=${import.meta.resolve('./elementsTreeOutline.css')} */`;

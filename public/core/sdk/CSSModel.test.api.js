@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import sinon from 'sinon';
-// eslint-disable-next-line @devtools/es-modules-import
 import * as SDK from './sdk.js';
 describe('CSSModel API Test', () => {
     it('adds a semicolon when enabling a property that lacked one, inserts properties, and enables them correctly', async ({ inspectedPage, universe }) => {

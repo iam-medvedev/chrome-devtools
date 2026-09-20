@@ -647,16 +647,9 @@ var CompilerScriptMapping = class {
     const scripts = /* @__PURE__ */ new Set([script]);
     this.removeStubUISourceCode(script);
     const target = script.target();
-    const embedderName = script.embedderName();
-    let securityOrigin;
-    if (embedderName) {
-      const extractedOrigin = Common2.ParsedURL.ParsedURL.extractOrigin(embedderName);
-      if (extractedOrigin && extractedOrigin !== "null") {
-        securityOrigin = SDK2.SecurityOrigin.SecurityOrigin.create(extractedOrigin);
-      }
-    }
-    const parsedOrigin = securityOrigin ? `:${securityOrigin.siteId()}` : "";
-    const projectId = `jsSourceMaps:${script.isContentScript() ? "extensions" : ""}:${target.id()}${parsedOrigin}`;
+    const securityOrigin = script.securityOrigin();
+    const originPart = securityOrigin.isOpaque() ? "" : `:${securityOrigin.siteId()}`;
+    const projectId = `jsSourceMaps:${script.isContentScript() ? "extensions" : ""}:${target.id()}${originPart}`;
     let project = this.#projects.get(projectId);
     if (!project) {
       const projectType = script.isContentScript() ? Workspace3.Workspace.projectTypes.ContentScripts : Workspace3.Workspace.projectTypes.Network;
@@ -1399,7 +1392,7 @@ var StyleFile = class {
     const sourceMapManager = this.#cssModel.sourceMapManager();
     this.headers.forEach((header) => {
       sourceMapManager.detachSourceMap(header);
-      sourceMapManager.attachSourceMap(header, sourceUrl, sourceMapUrl);
+      sourceMapManager.attachSourceMap(header, sourceUrl, sourceMapUrl, SDK5.SourceMap.SourceMapProvenance.USER);
     });
   }
 };
@@ -2195,6 +2188,14 @@ var Audits;
     PermissionElementIssueType2["NonSecureContext"] = "NonSecureContext";
     PermissionElementIssueType2["MissingTransientUserActivation"] = "MissingTransientUserActivation";
   })(PermissionElementIssueType = Audits2.PermissionElementIssueType || (Audits2.PermissionElementIssueType = {}));
+  let WebInstallIssueReason;
+  ((WebInstallIssueReason2) => {
+    WebInstallIssueReason2["ManifestParsingOrNetworkError"] = "ManifestParsingOrNetworkError";
+    WebInstallIssueReason2["StartUrlInvalid"] = "StartUrlInvalid";
+    WebInstallIssueReason2["ManifestMissingNameOrShortName"] = "ManifestMissingNameOrShortName";
+    WebInstallIssueReason2["ManifestMissingId"] = "ManifestMissingId";
+    WebInstallIssueReason2["NoManifest"] = "NoManifest";
+  })(WebInstallIssueReason = Audits2.WebInstallIssueReason || (Audits2.WebInstallIssueReason = {}));
   let InspectorIssueCode;
   ((InspectorIssueCode2) => {
     InspectorIssueCode2["CookieIssue"] = "CookieIssue";
@@ -2227,6 +2228,7 @@ var Audits;
     InspectorIssueCode2["SelectivePermissionsInterventionIssue"] = "SelectivePermissionsInterventionIssue";
     InspectorIssueCode2["EmailVerificationRequestIssue"] = "EmailVerificationRequestIssue";
     InspectorIssueCode2["LazyLoadImageIssue"] = "LazyLoadImageIssue";
+    InspectorIssueCode2["WebInstallIssue"] = "WebInstallIssue";
   })(InspectorIssueCode = Audits2.InspectorIssueCode || (Audits2.InspectorIssueCode = {}));
   let GetEncodedResponseRequestEncoding;
   ((GetEncodedResponseRequestEncoding2) => {
@@ -2509,6 +2511,11 @@ var DOM;
     GetElementByRelationRequestRelation2["InterestTarget"] = "InterestTarget";
     GetElementByRelationRequestRelation2["CommandFor"] = "CommandFor";
   })(GetElementByRelationRequestRelation = DOM2.GetElementByRelationRequestRelation || (DOM2.GetElementByRelationRequestRelation = {}));
+  let SetTextMarkerRequestType;
+  ((SetTextMarkerRequestType2) => {
+    SetTextMarkerRequestType2["Spelling"] = "spelling";
+    SetTextMarkerRequestType2["Grammar"] = "grammar";
+  })(SetTextMarkerRequestType = DOM2.SetTextMarkerRequestType || (DOM2.SetTextMarkerRequestType = {}));
 })(DOM || (DOM = {}));
 var DOMDebugger;
 ((DOMDebugger2) => {
@@ -4964,10 +4971,10 @@ var DebuggerLanguagePluginManager = class {
     }
     return { rawModuleId, plugin: null };
   }
-  uiSourceCodeForURL(debuggerModel, url) {
+  uiSourceCodeForURL(debuggerModel, url, script) {
     const modelData = this.#debuggerModelToData.get(debuggerModel);
     if (modelData) {
-      return modelData.getProject().uiSourceCodeForURL(url);
+      return modelData.uiSourceCodeForURL(url, script);
     }
     return null;
   }
@@ -4992,7 +4999,8 @@ var DebuggerLanguagePluginManager = class {
       for (const sourceLocation of sourceLocations) {
         const uiSourceCode = this.uiSourceCodeForURL(
           script.debuggerModel,
-          sourceLocation.sourceFileURL
+          sourceLocation.sourceFileURL,
+          script
         );
         if (!uiSourceCode) {
           continue;
@@ -5426,26 +5434,44 @@ var DebuggerLanguagePluginManager = class {
   }
 };
 var ModelData = class {
-  project;
+  #debuggerModel;
+  #workspace;
+  #projects = /* @__PURE__ */ new Map();
   uiSourceCodeToScripts;
   constructor(debuggerModel, workspace) {
-    this.project = new ContentProviderBasedProject(
-      workspace,
-      "language_plugins::" + debuggerModel.target().id(),
-      Workspace11.Workspace.projectTypes.Network,
-      "",
-      false
-      /* isServiceProject */
-    );
-    NetworkProject.setTargetForProject(this.project, debuggerModel.target());
+    this.#debuggerModel = debuggerModel;
+    this.#workspace = workspace;
     this.uiSourceCodeToScripts = /* @__PURE__ */ new Map();
   }
+  #projectIdForScript(script) {
+    const securityOrigin = script.securityOrigin();
+    const originPart = securityOrigin.isOpaque() ? "" : `:${securityOrigin.siteId()}`;
+    return `language_plugins::${this.#debuggerModel.target().id()}${originPart}`;
+  }
+  #projectForScript(script) {
+    const projectId = this.#projectIdForScript(script);
+    let project = this.#projects.get(projectId);
+    if (!project) {
+      project = new ContentProviderBasedProject(
+        this.#workspace,
+        projectId,
+        Workspace11.Workspace.projectTypes.Network,
+        "",
+        false,
+        script.securityOrigin()
+      );
+      NetworkProject.setTargetForProject(project, this.#debuggerModel.target());
+      this.#projects.set(projectId, project);
+    }
+    return project;
+  }
   addSourceFiles(script, urls) {
+    const project = this.#projectForScript(script);
     const initiator = script.createPageResourceLoadInitiator();
     for (const url of urls) {
-      let uiSourceCode = this.project.uiSourceCodeForURL(url);
+      let uiSourceCode = project.uiSourceCodeForURL(url);
       if (!uiSourceCode) {
-        uiSourceCode = this.project.createUISourceCode(url, Common7.ResourceType.resourceTypes.SourceMapScript);
+        uiSourceCode = project.createUISourceCode(url, Common7.ResourceType.resourceTypes.SourceMapScript);
         NetworkProject.setInitialFrameAttribution(uiSourceCode, script.frameId);
         this.uiSourceCodeToScripts.set(uiSourceCode, [script]);
         const contentProvider = new SDK7.CompilerSourceMappingContentProvider.CompilerSourceMappingContentProvider(
@@ -5455,7 +5481,7 @@ var ModelData = class {
           script.target().targetManager().getPageResourceLoader()
         );
         const mimeType = Common7.ResourceType.ResourceType.mimeFromURL(url) || "text/javascript";
-        this.project.addUISourceCodeWithProvider(uiSourceCode, contentProvider, null, mimeType);
+        project.addUISourceCodeWithProvider(uiSourceCode, contentProvider, null, mimeType);
       } else {
         const scripts = this.uiSourceCodeToScripts.get(uiSourceCode);
         if (!scripts.includes(script)) {
@@ -5469,17 +5495,29 @@ var ModelData = class {
       scripts = scripts.filter((s) => s !== script);
       if (scripts.length === 0) {
         this.uiSourceCodeToScripts.delete(uiSourceCode);
-        this.project.removeUISourceCode(uiSourceCode.url());
+        uiSourceCode.project().removeUISourceCode(uiSourceCode.url());
       } else {
         this.uiSourceCodeToScripts.set(uiSourceCode, scripts);
       }
     });
   }
   dispose() {
-    this.project.dispose();
+    for (const project of this.#projects.values()) {
+      project.dispose();
+    }
+    this.#projects.clear();
   }
-  getProject() {
-    return this.project;
+  uiSourceCodeForURL(url, script) {
+    if (script) {
+      return this.#projects.get(this.#projectIdForScript(script))?.uiSourceCodeForURL(url) ?? null;
+    }
+    for (const project of this.#projects.values()) {
+      const uiSourceCode = project.uiSourceCodeForURL(url);
+      if (uiSourceCode) {
+        return uiSourceCode;
+      }
+    }
+    return null;
   }
 };
 
@@ -5878,11 +5916,11 @@ var ResourceScriptFile = class {
     this.uiSourceCode = uiSourceCode;
     this.script = this.uiSourceCode.contentType().isScript() ? script : null;
   }
-  addSourceMapURL(sourceMapURL) {
+  addSourceMapURL(sourceMapURL, provenance) {
     if (!this.script) {
       return;
     }
-    this.script.debuggerModel.setSourceMapURL(this.script, sourceMapURL);
+    this.script.debuggerModel.setSourceMapURL(this.script, sourceMapURL, provenance);
   }
   addDebugInfoURL(debugInfoURL) {
     if (!this.script) {
@@ -6625,19 +6663,17 @@ var ChunkedFileReader = class {
   #streamReader;
   #chunkSize;
   #chunkTransferredCallback;
-  #decoder;
+  #decoder = new TextDecoder();
   #isCanceled;
   #error;
   #transferFinished;
   #output;
-  #reader;
   constructor(file, chunkSize, chunkTransferredCallback) {
     this.#file = file;
     this.#fileSize = file.size;
     this.#loadedSize = 0;
     this.#chunkSize = chunkSize ? chunkSize : Number.MAX_VALUE;
     this.#chunkTransferredCallback = chunkTransferredCallback;
-    this.#decoder = new TextDecoder();
     this.#isCanceled = false;
     this.#error = null;
     this.#streamReader = null;
@@ -6650,10 +6686,6 @@ var ChunkedFileReader = class {
       const fileStream = this.#file.stream();
       const stream = Common11.Gzip.decompressStream(fileStream);
       this.#streamReader = stream.getReader();
-    } else {
-      this.#reader = new FileReader();
-      this.#reader.onload = this.onChunkLoaded.bind(this);
-      this.#reader.onerror = this.onError.bind(this);
     }
     this.#output = output;
     void this.loadChunk();
@@ -6679,22 +6711,6 @@ var ChunkedFileReader = class {
   error() {
     return this.#error;
   }
-  onChunkLoaded(event) {
-    if (this.#isCanceled) {
-      return;
-    }
-    const eventTarget = event.target;
-    if (eventTarget.readyState !== FileReader.DONE) {
-      return;
-    }
-    if (!this.#reader) {
-      return;
-    }
-    const buffer = this.#reader.result;
-    this.#loadedSize += buffer.byteLength;
-    const endOfFile = this.#loadedSize === this.#fileSize;
-    void this.decodeChunkBuffer(buffer, endOfFile);
-  }
   async decodeChunkBuffer(buffer, endOfFile) {
     if (!this.#output) {
       return;
@@ -6718,7 +6734,6 @@ var ChunkedFileReader = class {
       return;
     }
     this.#file = null;
-    this.#reader = null;
     await this.#output.close();
     this.#transferFinished(!this.#error);
   }
@@ -6733,18 +6748,23 @@ var ChunkedFileReader = class {
         return await this.finishRead();
       }
       void this.decodeChunkBuffer(value.buffer, false);
+      return;
     }
-    if (this.#reader) {
-      const chunkStart = this.#loadedSize;
-      const chunkEnd = Math.min(this.#fileSize, chunkStart + this.#chunkSize);
-      const nextPart = this.#file.slice(chunkStart, chunkEnd);
-      this.#reader.readAsArrayBuffer(nextPart);
+    const chunkStart = this.#loadedSize;
+    const chunkEnd = Math.min(this.#fileSize, chunkStart + this.#chunkSize);
+    const nextPart = this.#file.slice(chunkStart, chunkEnd);
+    try {
+      const buffer = await nextPart.arrayBuffer();
+      if (this.#isCanceled) {
+        return;
+      }
+      this.#loadedSize += buffer.byteLength;
+      const endOfFile = this.#loadedSize === this.#fileSize;
+      void this.decodeChunkBuffer(buffer, endOfFile);
+    } catch (error) {
+      this.#error = error;
+      this.#transferFinished(false);
     }
-  }
-  onError(event) {
-    const eventTarget = event.target;
-    this.#error = eventTarget.error;
-    this.#transferFinished(false);
   }
 };
 var FileOutputStream = class {
@@ -7701,17 +7721,12 @@ var TempFile = class {
       return "";
     }
     const blob = typeof startOffset === "number" || typeof endOffset === "number" ? this.#lastBlob.slice(startOffset, endOffset) : this.#lastBlob;
-    const reader = new FileReader();
     try {
-      await new Promise((resolve, reject) => {
-        reader.onloadend = resolve;
-        reader.onerror = reject;
-        reader.readAsText(blob);
-      });
+      return await blob.text();
     } catch (error) {
       this.#console.error("Failed to read from temp file: " + error.message);
+      return null;
     }
-    return reader.result;
   }
   async copyToOutputStream(outputStream, progress) {
     if (!this.#lastBlob) {

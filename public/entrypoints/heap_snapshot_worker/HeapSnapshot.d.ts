@@ -1,4 +1,3 @@
-import type * as PlatformApi from '../../core/platform/api/api.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as HeapSnapshotModel from '../../models/heap_snapshot/heap_snapshot.js';
 import type { HeapSnapshotWorkerDispatcher } from './HeapSnapshotWorkerDispatcher.js';
@@ -173,6 +172,9 @@ export interface Profile {
     samples: number[];
     strings: string[];
     locations: number[];
+    scopes?: number[];
+    scope_context_vars?: number[];
+    scope_uses?: number[];
     trace_function_infos: Uint32Array;
     trace_tree: Object;
 }
@@ -206,7 +208,7 @@ interface Retainers {
 }
 interface ArgumentsToComputeDominatorsAndRetainedSizes extends SecondaryInitArgumentsStep1, Retainers, SecondaryInitArgumentsStep2 {
     essentialEdges: Platform.TypedArrayUtilities.BitVector;
-    port: PlatformApi.HostRuntime.WorkerMessagePort;
+    port: Platform.HostRuntime.WorkerMessagePort;
     nodeSelfSizesPromise: Promise<Uint32Array>;
 }
 interface DominatorsAndRetainedSizes {
@@ -227,7 +229,7 @@ export declare class SecondaryInitManager {
     argsStep1: Promise<SecondaryInitArgumentsStep1>;
     argsStep2: Promise<SecondaryInitArgumentsStep2>;
     argsStep3: Promise<SecondaryInitArgumentsStep3>;
-    constructor(port: PlatformApi.HostRuntime.WorkerMessagePort);
+    constructor(port: Platform.HostRuntime.WorkerMessagePort);
     private getNodeSelfSizes;
     private initialize;
 }
@@ -283,9 +285,14 @@ export declare abstract class HeapSnapshot {
     detachednessAndClassIndexArray: Uint32Array;
     nodeNativeContextAttribution: Int32Array;
     constructor(profile: Profile, progress: HeapSnapshotProgress);
-    initialize(secondWorker: PlatformApi.HostRuntime.WorkerMessagePort): Promise<void>;
+    initialize(secondWorker: Platform.HostRuntime.WorkerMessagePort): Promise<void>;
     nodeIndexForId(nodeId: number): number | undefined;
     getObjectInfo(nodeIndex: number): HeapSnapshotModel.HeapSnapshotModel.ObjectInfo;
+    /**
+     * Computes for every context field whether it is still live, i.e. whether it
+     * can be reached by some closure, and reports the dead fields.
+     */
+    analyzeContexts(): HeapSnapshotModel.HeapSnapshotModel.ContextAnalysisResult;
     private startInitStep1InSecondThread;
     private startInitStep2InSecondThread;
     private startInitStep3InSecondThread;
@@ -419,6 +426,9 @@ interface HeapSnapshotMetaInfo {
     trace_node_fields: string[];
     sample_fields: string[];
     type_strings: Record<string, string>;
+    scope_fields?: string[];
+    scope_context_var_fields?: string[];
+    scope_use_fields?: string[];
 }
 export interface HeapSnapshotHeader {
     title: string;

@@ -1,5 +1,5 @@
 import * as Common from '../../core/common/common.js';
-import type * as PlatformApi from '../../core/platform/api/api.js';
+import * as Platform from '../../core/platform/platform.js';
 import type { ChildrenProvider } from './ChildrenProvider.js';
 import type * as HeapSnapshotModel from './HeapSnapshotModel.js';
 export declare class HeapSnapshotWorkerProxy extends Common.ObjectWrapper.ObjectWrapper<HeapSnapshotWorkerProxy.EventTypes> {
@@ -9,7 +9,7 @@ export declare class HeapSnapshotWorkerProxy extends Common.ObjectWrapper.Object
     nextCallId: number;
     callbacks: Map<number, (error?: string, result?: unknown) => void>;
     readonly previousCallbacks: Set<number>;
-    readonly worker: PlatformApi.HostRuntime.Worker;
+    readonly worker: Platform.HostRuntime.Worker;
     interval?: ReturnType<typeof setInterval>;
     readonly workerUrl?: string;
     constructor(eventHandler: (arg0: string, arg1: string) => void, console: Common.Console.Console, workerUrl?: string);
@@ -18,14 +18,14 @@ export declare class HeapSnapshotWorkerProxy extends Common.ObjectWrapper.Object
     dispose(): void;
     disposeObject(objectId: number): void;
     evaluateForTest(script: string, callback: (...arg0: any[]) => void): void;
-    callFactoryMethod<T extends Object>(callback: null, objectId: string, methodName: string, proxyConstructor: new (...arg1: any[]) => T, transfer: PlatformApi.HostRuntime.WorkerTransferable[], ...methodArguments: any[]): T;
-    callFactoryMethod<T extends Object>(callback: ((error?: string, result?: T) => void), objectId: string, methodName: string, proxyConstructor: new (...arg1: any[]) => T, transfer: PlatformApi.HostRuntime.WorkerTransferable[], ...methodArguments: any[]): null;
+    callFactoryMethod<T extends Object>(callback: null, objectId: string, methodName: string, proxyConstructor: new (...arg1: any[]) => T, transfer: Platform.HostRuntime.WorkerTransferable[], ...methodArguments: any[]): T;
+    callFactoryMethod<T extends Object>(callback: ((error?: string, result?: T) => void), objectId: string, methodName: string, proxyConstructor: new (...arg1: any[]) => T, transfer: Platform.HostRuntime.WorkerTransferable[], ...methodArguments: any[]): null;
     callMethod(callback: ((error?: string, result?: unknown) => void) | null, objectId: string, methodName: string, ...methodArguments: any[]): void;
     startCheckingForLongRunningCalls(): void;
     checkLongRunningCalls(): void;
-    setupForSecondaryInit(port: MessagePort): Promise<void>;
-    messageReceived(event: PlatformApi.HostRuntime.WorkerMessageEvent): void;
-    postMessage(message: unknown, transfer?: PlatformApi.HostRuntime.WorkerTransferable[]): void;
+    setupForSecondaryInit(port: Platform.HostRuntime.WorkerMessagePort): Promise<void>;
+    messageReceived(event: Platform.HostRuntime.WorkerMessageEvent): void;
+    postMessage(message: unknown, transfer?: Platform.HostRuntime.WorkerTransferable[]): void;
 }
 export declare namespace HeapSnapshotWorkerProxy {
     const enum Events {
@@ -41,7 +41,7 @@ export declare class HeapSnapshotProxyObject {
     constructor(worker: HeapSnapshotWorkerProxy, objectId: number);
     dispose(): void;
     callFactoryMethod<T extends Object>(methodName: string, proxyConstructor: new (...arg1: any[]) => T, ...args: any[]): T;
-    callFactoryMethodPromise<T extends Object>(methodName: string, proxyConstructor: new (...arg1: any[]) => T, transfer: PlatformApi.HostRuntime.WorkerTransferable[], ...args: any[]): Promise<T>;
+    callFactoryMethodPromise<T extends Object>(methodName: string, proxyConstructor: new (...arg1: any[]) => T, transfer: Platform.HostRuntime.WorkerTransferable[], ...args: any[]): Promise<T>;
     callMethodPromise<T>(methodName: string, ...args: any[]): Promise<T>;
 }
 export declare class HeapSnapshotLoaderProxy extends HeapSnapshotProxyObject implements Common.StringOutputStream.OutputStream {
@@ -66,6 +66,7 @@ export declare class HeapSnapshotProxy extends HeapSnapshotProxyObject {
     nodeClassKey(snapshotObjectId: number): Promise<string | null>;
     nodeIndexForId(nodeId: number): Promise<number | undefined>;
     getObjectInfo(nodeIndex: number): Promise<HeapSnapshotModel.ObjectInfo>;
+    analyzeContexts(): Promise<HeapSnapshotModel.ContextAnalysisResult>;
     createEdgesProvider(nodeIndex: number, options?: HeapSnapshotModel.HeapEdgesQueryOptions): HeapSnapshotProviderProxy;
     createRetainingEdgesProvider(nodeIndex: number): HeapSnapshotProviderProxy;
     createAddedNodesProvider(baseSnapshotId: number, classKey: string): HeapSnapshotProviderProxy;

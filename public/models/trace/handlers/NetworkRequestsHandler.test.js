@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { getAllNetworkRequestsByHost } from '../../../testing/TraceHelpers.js';
+import { getAllNetworkRequestsByHost } from '../../../testing/TraceHelpersCore.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Trace from '../trace.js';
 describe('NetworkRequestsHandler', function () {
@@ -441,6 +441,8 @@ describe('NetworkRequestsHandler', function () {
     });
 });
 async function runHandlers(events) {
+    Trace.Handlers.ModelHandlers.Meta.reset();
+    Trace.Handlers.ModelHandlers.NetworkRequests.reset();
     for (const event of events) {
         Trace.Handlers.ModelHandlers.Meta.handleEvent(event);
         Trace.Handlers.ModelHandlers.NetworkRequests.handleEvent(event);

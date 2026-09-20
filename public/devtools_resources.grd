@@ -331,7 +331,6 @@
       <include file="core/i18n/i18n.js" name="CORE_I18N_I18N_JS" resource_path="core/i18n/i18n.js" type="BINDATA" compress="false"/>
       <include file="core/i18n/locales/en-US.json" name="CORE_I18N_LOCALES_EN_US_JSON" resource_path="core/i18n/locales/en-US.json" type="BINDATA" compress="false"/>
       <include file="core/i18n/locales/zh.json" name="CORE_I18N_LOCALES_ZH_JSON" resource_path="core/i18n/locales/zh.json" type="BINDATA" compress="false"/>
-      <include file="core/platform/api/api.js" name="CORE_PLATFORM_API_API_JS" resource_path="core/platform/api/api.js" type="BINDATA" compress="false"/>
       <include file="core/platform/browser/browser.js" name="CORE_PLATFORM_BROWSER_BROWSER_JS" resource_path="core/platform/browser/browser.js" type="BINDATA" compress="false"/>
       <include file="core/platform/node/node.js" name="CORE_PLATFORM_NODE_NODE_JS" resource_path="core/platform/node/node.js" type="BINDATA" compress="false"/>
       <include file="core/platform/platform.js" name="CORE_PLATFORM_PLATFORM_JS" resource_path="core/platform/platform.js" type="BINDATA" compress="false"/>
@@ -375,6 +374,7 @@
       <include file="models/badges/badges.js" name="MODELS_BADGES_BADGES_JS" resource_path="models/badges/badges.js" type="BINDATA" compress="false"/>
       <include file="models/bindings/bindings.js" name="MODELS_BINDINGS_BINDINGS_JS" resource_path="models/bindings/bindings.js" type="BINDATA" compress="false"/>
       <include file="models/breakpoints/breakpoints.js" name="MODELS_BREAKPOINTS_BREAKPOINTS_JS" resource_path="models/breakpoints/breakpoints.js" type="BINDATA" compress="false"/>
+      <include file="models/change_tracker/change_tracker.js" name="MODELS_CHANGE_TRACKER_CHANGE_TRACKER_JS" resource_path="models/change_tracker/change_tracker.js" type="BINDATA" compress="false"/>
       <include file="models/comment_manager/comment_manager.js" name="MODELS_COMMENT_MANAGER_COMMENT_MANAGER_JS" resource_path="models/comment_manager/comment_manager.js" type="BINDATA" compress="false"/>
       <include file="models/computed_style/computed_style.js" name="MODELS_COMPUTED_STYLE_COMPUTED_STYLE_JS" resource_path="models/computed_style/computed_style.js" type="BINDATA" compress="false"/>
       <include file="models/cpu_profile/cpu_profile.js" name="MODELS_CPU_PROFILE_CPU_PROFILE_JS" resource_path="models/cpu_profile/cpu_profile.js" type="BINDATA" compress="false"/>
@@ -412,7 +412,6 @@
       <include file="models/issues_manager/descriptions/connectionAllowlistMoreThanOneList.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_CONNECTIONALLOWLISTMORETHANONELIST_MD" resource_path="models/issues_manager/descriptions/connectionAllowlistMoreThanOneList.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/connectionAllowlistReportingEndpointNotToken.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_CONNECTIONALLOWLISTREPORTINGENDPOINTNOTTOKEN_MD" resource_path="models/issues_manager/descriptions/connectionAllowlistReportingEndpointNotToken.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/cookieCrossSiteRedirectDowngrade.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_COOKIECROSSSITEREDIRECTDOWNGRADE_MD" resource_path="models/issues_manager/descriptions/cookieCrossSiteRedirectDowngrade.md" type="BINDATA" compress="false"/>
-      <include file="models/issues_manager/descriptions/cookieExcludeBlockedWithinRelatedWebsiteSet.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_COOKIEEXCLUDEBLOCKEDWITHINRELATEDWEBSITESET_MD" resource_path="models/issues_manager/descriptions/cookieExcludeBlockedWithinRelatedWebsiteSet.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/cookieExcludeDomainNonAscii.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_COOKIEEXCLUDEDOMAINNONASCII_MD" resource_path="models/issues_manager/descriptions/cookieExcludeDomainNonAscii.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/cookieExcludePortMismatch.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_COOKIEEXCLUDEPORTMISMATCH_MD" resource_path="models/issues_manager/descriptions/cookieExcludePortMismatch.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/cookieExcludeSchemeMismatch.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_COOKIEEXCLUDESCHEMEMISMATCH_MD" resource_path="models/issues_manager/descriptions/cookieExcludeSchemeMismatch.md" type="BINDATA" compress="false"/>
@@ -636,6 +635,11 @@
       <include file="models/issues_manager/descriptions/unencodedDigestIncorrectDigestType.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_UNENCODEDDIGESTINCORRECTDIGESTTYPE_MD" resource_path="models/issues_manager/descriptions/unencodedDigestIncorrectDigestType.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/unencodedDigestMalformedDictionary.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_UNENCODEDDIGESTMALFORMEDDICTIONARY_MD" resource_path="models/issues_manager/descriptions/unencodedDigestMalformedDictionary.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/unencodedDigestUnknownAlgorithm.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_UNENCODEDDIGESTUNKNOWNALGORITHM_MD" resource_path="models/issues_manager/descriptions/unencodedDigestUnknownAlgorithm.md" type="BINDATA" compress="false"/>
+      <include file="models/issues_manager/descriptions/webInstallManifestMissingId.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_WEBINSTALLMANIFESTMISSINGID_MD" resource_path="models/issues_manager/descriptions/webInstallManifestMissingId.md" type="BINDATA" compress="false"/>
+      <include file="models/issues_manager/descriptions/webInstallManifestMissingNameOrShortName.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_WEBINSTALLMANIFESTMISSINGNAMEORSHORTNAME_MD" resource_path="models/issues_manager/descriptions/webInstallManifestMissingNameOrShortName.md" type="BINDATA" compress="false"/>
+      <include file="models/issues_manager/descriptions/webInstallManifestParsingOrNetworkError.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_WEBINSTALLMANIFESTPARSINGORNETWORKERROR_MD" resource_path="models/issues_manager/descriptions/webInstallManifestParsingOrNetworkError.md" type="BINDATA" compress="false"/>
+      <include file="models/issues_manager/descriptions/webInstallNoManifest.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_WEBINSTALLNOMANIFEST_MD" resource_path="models/issues_manager/descriptions/webInstallNoManifest.md" type="BINDATA" compress="false"/>
+      <include file="models/issues_manager/descriptions/webInstallStartUrlInvalid.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_WEBINSTALLSTARTURLINVALID_MD" resource_path="models/issues_manager/descriptions/webInstallStartUrlInvalid.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/issues_manager.js" name="MODELS_ISSUES_MANAGER_ISSUES_MANAGER_JS" resource_path="models/issues_manager/issues_manager.js" type="BINDATA" compress="false"/>
       <include file="models/javascript_metadata/javascript_metadata.js" name="MODELS_JAVASCRIPT_METADATA_JAVASCRIPT_METADATA_JS" resource_path="models/javascript_metadata/javascript_metadata.js" type="BINDATA" compress="false"/>
       <include file="models/lighthouse/lighthouse.js" name="MODELS_LIGHTHOUSE_LIGHTHOUSE_JS" resource_path="models/lighthouse/lighthouse.js" type="BINDATA" compress="false"/>
@@ -684,6 +688,7 @@
       <include file="panels/browser_debugger/browser_debugger.js" name="PANELS_BROWSER_DEBUGGER_BROWSER_DEBUGGER_JS" resource_path="panels/browser_debugger/browser_debugger.js" type="BINDATA" compress="false"/>
       <include file="panels/changes/changes-meta.js" name="PANELS_CHANGES_CHANGES_META_JS" resource_path="panels/changes/changes-meta.js" type="BINDATA" compress="false"/>
       <include file="panels/changes/changes.js" name="PANELS_CHANGES_CHANGES_JS" resource_path="panels/changes/changes.js" type="BINDATA" compress="false"/>
+      <include file="panels/common/common-meta.js" name="PANELS_COMMON_COMMON_META_JS" resource_path="panels/common/common-meta.js" type="BINDATA" compress="false"/>
       <include file="panels/common/common.js" name="PANELS_COMMON_COMMON_JS" resource_path="panels/common/common.js" type="BINDATA" compress="false"/>
       <include file="panels/console/console-meta.js" name="PANELS_CONSOLE_CONSOLE_META_JS" resource_path="panels/console/console-meta.js" type="BINDATA" compress="false"/>
       <include file="panels/console/console.js" name="PANELS_CONSOLE_CONSOLE_JS" resource_path="panels/console/console.js" type="BINDATA" compress="false"/>
@@ -808,7 +813,6 @@
       <include file="third_party/wasmparser/wasmparser.js" name="THIRD_PARTY_WASMPARSER_WASMPARSER_JS" resource_path="third_party/wasmparser/wasmparser.js" type="BINDATA" compress="false"/>
       <include file="third_party/web-vitals/web-vitals.js" name="THIRD_PARTY_WEB_VITALS_WEB_VITALS_JS" resource_path="third_party/web-vitals/web-vitals.js" type="BINDATA" compress="false"/>
       <include file="trace_app.html" name="TRACE_APP_HTML" resource_path="trace_app.html" type="BINDATA" compress="false"/>
-      <include file="ui/comments/comments-meta.js" name="UI_COMMENTS_COMMENTS_META_JS" resource_path="ui/comments/comments-meta.js" type="BINDATA" compress="false"/>
       <include file="ui/comments/comments.js" name="UI_COMMENTS_COMMENTS_JS" resource_path="ui/comments/comments.js" type="BINDATA" compress="false"/>
       <include file="ui/components/adorners/adorners.js" name="UI_COMPONENTS_ADORNERS_ADORNERS_JS" resource_path="ui/components/adorners/adorners.js" type="BINDATA" compress="false"/>
       <include file="ui/components/buttons/buttons.js" name="UI_COMPONENTS_BUTTONS_BUTTONS_JS" resource_path="ui/components/buttons/buttons.js" type="BINDATA" compress="false"/>

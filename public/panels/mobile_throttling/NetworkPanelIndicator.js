@@ -13,11 +13,11 @@ const UIStrings = {
     /**
      * @description Icon title for warning indicator in the Network panel title.
      */
-    requestsMayBeOverridden: 'Requests may be overridden locally. See the Sources panel',
+    requestsMayBeOverridden: 'Requests may be overridden locally. See the Sources panel.',
     /**
      * @description Icon title for warning indicator in the Network panel title.
      */
-    requestsMayBeBlocked: 'Requests may be blocked. See the Request conditions panel',
+    requestsMayBeBlocked: 'Requests may be blocked. See the Request conditions panel.',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/mobile_throttling/NetworkPanelIndicator.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);

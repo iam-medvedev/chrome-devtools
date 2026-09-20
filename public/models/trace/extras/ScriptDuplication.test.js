@@ -5,7 +5,7 @@ import { assert } from 'chai';
 import * as Common from '../../../core/common/common.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
-import { describeWithEnvironment, expectConsoleLogs } from '../../../testing/EnvironmentHelpers.js';
+import { expectConsoleLogs } from '../../../testing/EnvironmentHelpers.js';
 import { fetchFileAsText } from '../../../testing/TraceLoader.js';
 import * as Trace from '../trace.js';
 async function loadScriptFixture(name, modify) {
@@ -28,7 +28,7 @@ async function loadScriptFixture(name, modify) {
         sourceMap: new SDK.SourceMap.SourceMap(compiledUrl, mapUrl, fixture.sourceMapJson, new Common.Console.Console()),
     };
 }
-describeWithEnvironment('ScriptDuplication', function () {
+describe('ScriptDuplication', function () {
     describe('computeGeneratedFileSizes', () => {
         it('works (simple map)', async function () {
             const script = await loadScriptFixture('foo.min');

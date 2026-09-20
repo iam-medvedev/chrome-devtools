@@ -27,25 +27,38 @@ export function computeBuildTestId(file, titlePath) {
     const exactTestId = `${file}:${caseName}`;
     return exactTestId;
 }
-export function generateExactTestId(genDir, file, titlePath) {
+export function generateExactTestId(genDir, file, titlePath, sourceDir) {
     const blocks = titlePath.map(escapeTestIdBlock);
     const caseName = blocks.join(':');
     const normalizedGenDir = genDir.replace(/\\/g, '/');
     const normalizedFile = file.replace(/\\/g, '/');
     let relativeSourceFileName = normalizedFile;
+    let isCompiledFromGenDir = false;
     if (normalizedFile.startsWith(normalizedGenDir)) {
         relativeSourceFileName = normalizedFile.substring(normalizedGenDir.length);
         if (relativeSourceFileName.startsWith('/')) {
             relativeSourceFileName = relativeSourceFileName.substring(1);
         }
+        isCompiledFromGenDir = true;
     }
-    relativeSourceFileName = relativeSourceFileName.replace(/\.js$/, '.ts');
+    else if (sourceDir) {
+        const normalizedSourceDir = sourceDir.replace(/\\/g, '/');
+        if (normalizedFile.startsWith(normalizedSourceDir)) {
+            relativeSourceFileName = normalizedFile.substring(normalizedSourceDir.length);
+            if (relativeSourceFileName.startsWith('/')) {
+                relativeSourceFileName = relativeSourceFileName.substring(1);
+            }
+        }
+    }
+    if (isCompiledFromGenDir || !sourceDir) {
+        relativeSourceFileName = relativeSourceFileName.replace(/\.js$/, '.ts');
+    }
     const parsedPath = relativeSourceFileName.split('/');
     const fineName = parsedPath.pop() || '';
     const coarseName = parsedPath.length > 0 ? `${parsedPath.join('/')}/` : '';
     const exactTestId = `${relativeSourceFileName}:${caseName}`;
     if (exactTestId.length >= 512) {
-        throw new Error('Test ID is too long');
+        throw new Error(`Test ID is too long (${exactTestId.length}): ${exactTestId}`);
     }
     return { exactTestId, coarseName, fineName, caseName };
 }

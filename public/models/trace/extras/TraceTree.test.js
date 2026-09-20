@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import * as Timeline from '../../../panels/timeline/timeline.js';
-import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
-import { getMainThread, makeCompleteEvent, makeProfileCall, } from '../../../testing/TraceHelpers.js';
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
+import { getMainThread, makeCompleteEvent, makeProfileCall, } from '../../../testing/TraceHelpersCore.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Trace from '../trace.js';
-describeWithEnvironment('TraceTree', () => {
+describe('TraceTree', () => {
+    setupLocaleHooks();
     describe('TopDownRootNode', () => {
         it('builds the root node and its children properly from an event tree', () => {
             // This builds the following tree:
@@ -306,9 +306,14 @@ describeWithEnvironment('TraceTree', () => {
             const mainThread = getMainThread(data.Renderer);
             const bounds = Trace.Helpers.Timing.traceWindowMilliSeconds(data.Meta.traceBounds);
             // Replicate the filters as they would be when rendering in the actual panel.
-            const textFilter = new Timeline.TimelineFilters.TimelineRegExp();
+            class AcceptAllFilter extends Trace.Extras.TraceFilter.TraceFilter {
+                accept() {
+                    return true;
+                }
+            }
+            const textFilter = new AcceptAllFilter();
             const modelFilters = [
-                Timeline.TimelineUIUtils.TimelineUIUtils.visibleEventsFilter(),
+                new Trace.Extras.TraceFilter.VisibleEventsFilter(Trace.Styles.visibleTypes()),
                 new Trace.Extras.TraceFilter.ExclusiveNameFilter([
                     "RunTask" /* Trace.Types.Events.Name.RUN_TASK */,
                 ]),

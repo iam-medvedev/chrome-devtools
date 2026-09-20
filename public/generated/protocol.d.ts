@@ -702,9 +702,15 @@ export declare namespace Animation {
          */
         animations: string[];
         /**
-         * Set the current time of each animation.
+         * Set each animation to the same time.
          */
-        currentTime: number;
+        currentTime?: number;
+        /**
+         * Set each animation to a different time. If set, should have the same
+         * length as animations. Exactly one of currentTime or currentTimes should
+         * be set.
+         */
+        currentTimes?: number[];
     }
     interface SetPausedRequest {
         /**
@@ -1567,6 +1573,21 @@ export declare namespace Audits {
          */
         disableReason?: string;
     }
+    const enum WebInstallIssueReason {
+        ManifestParsingOrNetworkError = "ManifestParsingOrNetworkError",
+        StartUrlInvalid = "StartUrlInvalid",
+        ManifestMissingNameOrShortName = "ManifestMissingNameOrShortName",
+        ManifestMissingId = "ManifestMissingId",
+        NoManifest = "NoManifest"
+    }
+    /**
+     * This issue reports a failure involving a web app manifest used by a Web
+     * Install operation.
+     */
+    interface WebInstallIssueDetails {
+        manifestUrl?: string;
+        reason: WebInstallIssueReason;
+    }
     /**
      * The issue warns about blocked calls to privacy sensitive APIs via the
      * Selective Permissions Intervention.
@@ -1637,7 +1658,8 @@ export declare namespace Audits {
         PerformanceIssue = "PerformanceIssue",
         SelectivePermissionsInterventionIssue = "SelectivePermissionsInterventionIssue",
         EmailVerificationRequestIssue = "EmailVerificationRequestIssue",
-        LazyLoadImageIssue = "LazyLoadImageIssue"
+        LazyLoadImageIssue = "LazyLoadImageIssue",
+        WebInstallIssue = "WebInstallIssue"
     }
     /**
      * This struct holds a list of optional fields with additional information
@@ -1678,6 +1700,7 @@ export declare namespace Audits {
         selectivePermissionsInterventionIssueDetails?: SelectivePermissionsInterventionIssueDetails;
         emailVerificationRequestIssueDetails?: EmailVerificationRequestIssueDetails;
         lazyLoadImageIssueDetails?: LazyLoadImageIssueDetails;
+        webInstallIssueDetails?: WebInstallIssueDetails;
     }
     /**
      * A unique id for a DevTools inspector issue. Allows other entities (e.g.
@@ -5488,6 +5511,18 @@ export declare namespace DOM {
          */
         nodeIds: NodeId[];
     }
+    interface GetImplicitAnchorCandidatesRequest {
+        /**
+         * Id of the popover HTMLElement.
+         */
+        nodeId: NodeId;
+    }
+    interface GetImplicitAnchorCandidatesResponse extends ProtocolResponseWithError {
+        /**
+         * Candidate elements that can invoke this popover.
+         */
+        backendNodeIds: BackendNodeId[];
+    }
     interface ForceShowInterestRequest {
         /**
          * Id of the interest invoker HTMLElement.
@@ -5497,6 +5532,39 @@ export declare namespace DOM {
          * If true, opens and holds interest. If false, releases forced interest.
          */
         enable: boolean;
+    }
+    const enum SetTextMarkerRequestType {
+        Spelling = "spelling",
+        Grammar = "grammar"
+    }
+    interface SetTextMarkerRequest {
+        /**
+         * Identifier of the node.
+         */
+        nodeId?: NodeId;
+        /**
+         * Identifier of the backend node.
+         */
+        backendNodeId?: BackendNodeId;
+        /**
+         * JavaScript object id of the node wrapper.
+         */
+        objectId?: Runtime.RemoteObjectId;
+        /**
+         * The type of marker to set on the given range of text.
+         */
+        type: SetTextMarkerRequestType;
+        /**
+         * Start offset into the element's rendered text in UTF-16 code units.
+         * For a text control, an offset into the control's value.
+         * Offsets count text in DOM order and do not enter shadow trees.
+         * To mark text inside a shadow tree, pass the element inside the shadow tree.
+         */
+        start: integer;
+        /**
+         * End offset (exclusive) in the same units and space as start.
+         */
+        end: integer;
     }
     /**
      * Fired when `Element`'s attribute is modified.
@@ -16489,9 +16557,7 @@ export declare namespace ServiceWorker {
     }
     /**
      * Mostly corresponds to `RouterCondition` in ServiceWorker spec
-     * (https://www.w3.org/TR/service-workers/#dictdef-routercondition) while this
-     * currently lacks support for the nested conditions ("or" and "not").
-     * TODO(crbug.com/540469610): Support recursive conditions.
+     * (https://www.w3.org/TR/service-workers/#dictdef-routercondition)
      */
     interface ServiceWorkerRouterCondition {
         /**
@@ -16502,6 +16568,8 @@ export declare namespace ServiceWorker {
         requestMode?: string;
         requestDestination?: string;
         runningStatus?: ServiceWorkerVersionRunningStatus;
+        or?: ServiceWorkerRouterCondition[];
+        not?: ServiceWorkerRouterCondition;
     }
     const enum ServiceWorkerRouterSourceType {
         Cache = "cache",

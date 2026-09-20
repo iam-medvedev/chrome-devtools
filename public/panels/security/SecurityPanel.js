@@ -14,7 +14,6 @@ import { Directives, html, nothing, render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import lockIconStyles from './lockIcon.css.js';
 import mainViewStyles from './mainView.css.js';
-import { ShowOriginEvent } from './OriginTreeElement.js';
 import originViewStyles from './originView.css.js';
 import { Events, SecurityModel, securityStateCompare, SecurityStyleExplanation, SummaryMessages, } from './SecurityModel.js';
 import { SecurityPanelSidebar } from './SecurityPanelSidebar.js';
@@ -526,14 +525,14 @@ export class SecurityPanel extends UI.Panel.Panel {
         this.sidebar.element.setAttribute('jslog', `${VisualLogging.pane('sidebar').track({ resize: true })}`);
         this.mainView = new SecurityMainView();
         this.mainView.panel = this;
-        this.element.addEventListener(ShowOriginEvent.eventName, (event) => {
-            if (event.origin) {
-                this.showOrigin(event.origin);
+        this.sidebar.onShowOrigin = (origin) => {
+            if (origin) {
+                this.showOrigin(origin);
             }
             else {
                 this.setVisibleView(this.mainView);
             }
-        });
+        };
         this.lastResponseReceivedForLoaderId = new Map();
         this.origins = new Map();
         this.filterRequestCounts = new Map();
@@ -542,7 +541,7 @@ export class SecurityPanel extends UI.Panel.Panel {
         this.securityModel = null;
         SDK.TargetManager.TargetManager.instance().observeModels(SecurityModel, this, { scoped: true });
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.onPrimaryPageChanged, this);
-        this.sidebar.showLastSelectedElement();
+        this.sidebar.showOverview();
     }
     static instance(opts = { forceNew: null }) {
         const { forceNew } = opts;
@@ -550,17 +549,6 @@ export class SecurityPanel extends UI.Panel.Panel {
             securityPanelInstance = new SecurityPanel();
         }
         return securityPanelInstance;
-    }
-    static createCertificateViewerButtonForOrigin(text, origin) {
-        const certificateButton = UI.UIUtils.createTextButton(text, async (e) => {
-            e.consume();
-            const names = await SDK.NetworkManager.MultitargetNetworkManager.instance().getCertificate(origin);
-            if (names.length > 0) {
-                Host.InspectorFrontendHost.InspectorFrontendHostInstance.showCertificateViewer(names);
-            }
-        }, { className: 'origin-button', jslogContext: 'security.view-certificate-for-origin', title: text });
-        UI.ARIAUtils.markAsButton(certificateButton);
-        return certificateButton;
     }
     static createCertificateViewerButtonForCert(text, names) {
         const certificateButton = UI.UIUtils.createTextButton(text, e => {
@@ -574,7 +562,7 @@ export class SecurityPanel extends UI.Panel.Panel {
         this.view({ panel: this }, this, this.contentElement);
     }
     updateVisibleSecurityState(visibleSecurityState) {
-        this.sidebar.securityOverviewElement.setSecurityState(visibleSecurityState.securityState);
+        this.sidebar.updateOverviewSecurityState(visibleSecurityState.securityState);
         this.mainView.updateVisibleSecurityState(visibleSecurityState);
     }
     onVisibleSecurityStateChanged({ data }) {
@@ -593,7 +581,7 @@ export class SecurityPanel extends UI.Panel.Panel {
     wasShown() {
         super.wasShown();
         if (!this.visibleView) {
-            this.sidebar.showLastSelectedElement();
+            this.sidebar.showOverview();
         }
     }
     focus() {
@@ -718,7 +706,7 @@ export class SecurityPanel extends UI.Panel.Panel {
     onPrimaryPageChanged(event) {
         const { frame } = event.data;
         const request = this.lastResponseReceivedForLoaderId.get(frame.loaderId);
-        this.sidebar.showLastSelectedElement();
+        this.sidebar.showOverview();
         this.sidebar.clearOrigins();
         this.origins.clear();
         this.lastResponseReceivedForLoaderId.clear();
@@ -738,8 +726,8 @@ export class SecurityPanel extends UI.Panel.Panel {
     onInterstitialShown() {
         // The panel might have been displaying the origin view on the
         // previously loaded page. When showing an interstitial, switch
-        // back to the sidebar's last shown view.
-        this.sidebar.showLastSelectedElement();
+        // back to the overview view.
+        this.sidebar.showOverview();
         this.sidebar.toggleOriginsList(true /* hidden */);
     }
     onInterstitialHidden() {
@@ -1095,10 +1083,14 @@ export class SecurityMainView extends UI.Widget.VBox {
     }
 }
 const SAN_NUM_SHOWN_WHEN_TRUNCATED = 2;
-function renderSan(sanList, isSanListTruncatable, isSanListTruncated, onToggleTruncation) {
+function isSanListTruncatable(sanList) {
+    return sanList.length > SAN_NUM_SHOWN_WHEN_TRUNCATED + 1;
+}
+function renderSan(sanList, isSanListTruncated, onToggleTruncation) {
     if (sanList.length === 0) {
         return html `<div class="san empty-san">${i18nString(UIStrings.na)}</div>`;
     }
+    const isTruncatable = isSanListTruncatable(sanList);
     const toggleButtonText = isSanListTruncated ? i18nString(UIStrings.showMoreSTotal, { PH1: sanList.length }) : i18nString(UIStrings.showLess);
     // clang-format off
     return html `
@@ -1107,10 +1099,10 @@ function renderSan(sanList, isSanListTruncatable, isSanListTruncated, onToggleTr
         return html `
           <span class=${Directives.classMap({
             'san-entry': true,
-            'truncated-entry': isSanListTruncatable && index >= SAN_NUM_SHOWN_WHEN_TRUNCATED,
+            'truncated-entry': isTruncatable && index >= SAN_NUM_SHOWN_WHEN_TRUNCATED,
         })}>${san}</span>`;
     })}
-      ${isSanListTruncatable ? html `
+      ${isTruncatable ? html `
         <devtools-button
           .variant=${"outlined" /* Buttons.Button.Variant.OUTLINED */}
           .accessibleLabel=${toggleButtonText}
@@ -1127,7 +1119,7 @@ function renderDetailsTable(rows) {
     <table class="details-table">
       ${rows.map(row => html `
         <tr class="details-table-row">
-          <td>${row.key}</td>
+          <td>${row.key ?? nothing}</td>
           <td>${row.value}</td>
         </tr>`)}
     </table>`;
@@ -1205,6 +1197,39 @@ function renderTitleSection(origin, securityState, onRevealInNetwork) {
     </div>`;
     // clang-format on
 }
+function buildCertificateDetailsRows(input) {
+    const { securityDetails, isSanListTruncated, onToggleSanTruncation, onViewCertificate, } = input;
+    const certificateButtonText = i18nString(UIStrings.openFullCertificateDetails);
+    // clang-format off
+    return [
+        { key: i18nString(UIStrings.subject), value: securityDetails.subjectName },
+        {
+            key: i18n.i18n.lockedString('SAN'),
+            value: renderSan(securityDetails.sanList, isSanListTruncated, onToggleSanTruncation),
+        },
+        { key: i18nString(UIStrings.validFrom), value: new Date(1000 * securityDetails.validFrom).toUTCString() },
+        { key: i18nString(UIStrings.validUntil), value: new Date(1000 * securityDetails.validTo).toUTCString() },
+        { key: i18nString(UIStrings.issuer), value: securityDetails.issuer },
+        {
+            value: html `
+        <devtools-button
+            class="origin-button"
+            title=${certificateButtonText}
+            .variant=${"outlined" /* Buttons.Button.Variant.OUTLINED */}
+            .jslogContext=${'security.view-certificate-for-origin'}
+            @click=${onViewCertificate}>${certificateButtonText}</devtools-button>`,
+        },
+    ];
+    // clang-format on
+}
+function renderCertificateSection(input) {
+    const rows = buildCertificateDetailsRows(input);
+    // clang-format off
+    return html `
+    <div class="origin-view-section-title" role="heading" aria-level="2">${i18nString(UIStrings.certificate)}</div>
+    ${renderDetailsTable(rows)}`;
+    // clang-format on
+}
 export class SecurityOriginView extends UI.Widget.VBox {
     #origin;
     #titleSection;
@@ -1220,11 +1245,7 @@ export class SecurityOriginView extends UI.Widget.VBox {
             const connectionSection = this.element.createChild('div', 'origin-view-section connection-section');
             // eslint-disable-next-line @devtools/no-lit-render-outside-of-view
             render(renderConnectionSection(originState.securityDetails), connectionSection);
-            // Create the certificate section outside the callback, so that it appears in the right place.
-            const certificateSection = this.element.createChild('div', 'origin-view-section');
-            const certificateDiv = certificateSection.createChild('div', 'origin-view-section-title');
-            certificateDiv.textContent = i18nString(UIStrings.certificate);
-            UI.ARIAUtils.markAsHeading(certificateDiv, 2);
+            this.#createCertificateSection(originState.securityDetails);
             const sctListLength = originState.securityDetails.signedCertificateTimestampList.length;
             const ctCompliance = originState.securityDetails.certificateTransparencyCompliance;
             let sctSection;
@@ -1235,17 +1256,6 @@ export class SecurityOriginView extends UI.Widget.VBox {
                 sctDiv.textContent = i18nString(UIStrings.certificateTransparency);
                 UI.ARIAUtils.markAsHeading(sctDiv, 2);
             }
-            const sanDiv = this.#createSanDiv(originState.securityDetails.sanList);
-            const validFromString = new Date(1000 * originState.securityDetails.validFrom).toUTCString();
-            const validUntilString = new Date(1000 * originState.securityDetails.validTo).toUTCString();
-            const table = new SecurityDetailsTable();
-            certificateSection.appendChild(table.element());
-            table.addRow(i18nString(UIStrings.subject), originState.securityDetails.subjectName);
-            table.addRow(i18n.i18n.lockedString('SAN'), sanDiv);
-            table.addRow(i18nString(UIStrings.validFrom), validFromString);
-            table.addRow(i18nString(UIStrings.validUntil), validUntilString);
-            table.addRow(i18nString(UIStrings.issuer), originState.securityDetails.issuer);
-            table.addRow('', SecurityPanel.createCertificateViewerButtonForOrigin(i18nString(UIStrings.openFullCertificateDetails), origin));
             if (!sctSection) {
                 return;
             }
@@ -1336,21 +1346,31 @@ export class SecurityOriginView extends UI.Widget.VBox {
             noInfoSection.createChild('div').textContent = i18nString(UIStrings.noSecurityDetailsAreAvailableFor);
         }
     }
-    #createSanDiv(sanList) {
-        const container = document.createElement('div');
-        const isSanListTruncatable = sanList.length > SAN_NUM_SHOWN_WHEN_TRUNCATED + 1;
-        let isSanListTruncated = isSanListTruncatable;
-        const onToggleTruncation = () => {
+    #createCertificateSection(securityDetails) {
+        const certificateSection = this.element.createChild('div', 'origin-view-section certificate-section');
+        let isSanListTruncated = isSanListTruncatable(securityDetails.sanList);
+        const onToggleSanTruncation = () => {
             isSanListTruncated = !isSanListTruncated;
-            updateSan();
+            updateCertificateSection();
         };
-        const updateSan = () => {
+        const updateCertificateSection = () => {
             // eslint-disable-next-line @devtools/no-lit-render-outside-of-view
-            render(renderSan(sanList, isSanListTruncatable, isSanListTruncated, onToggleTruncation), container);
+            render(renderCertificateSection({
+                securityDetails,
+                isSanListTruncated,
+                onToggleSanTruncation,
+                onViewCertificate: this.#showCertificateViewer,
+            }), certificateSection);
         };
-        updateSan();
-        return container;
+        updateCertificateSection();
     }
+    #showCertificateViewer = async (event) => {
+        event.consume();
+        const names = await SDK.NetworkManager.MultitargetNetworkManager.instance().getCertificate(this.#origin);
+        if (names.length > 0) {
+            Host.InspectorFrontendHost.InspectorFrontendHostInstance.showCertificateViewer(names);
+        }
+    };
     setSecurityState(newSecurityState) {
         this.#renderTitleSection(newSecurityState);
     }

@@ -26,10 +26,19 @@ describe('ListCookiesTool', () => {
         return mockFrame;
     }
     function createMockContext(options) {
-        const origin = options && 'origin' in options ? options.origin :
-            SDK.SecurityOrigin.SecurityOrigin.create('https://example.com');
+        if (options && 'originLock' in options && options.originLock) {
+            return {
+                getOriginLock: sinon.stub().returns(options.originLock),
+                disableLogging: sinon.stub(),
+            };
+        }
+        const origin = options?.origin ?? SDK.SecurityOrigin.SecurityOrigin.create('https://example.com');
+        const originLock = {
+            status: 'ESTABLISHED_ORIGIN',
+            origin,
+        };
         return {
-            getEstablishedOrigin: sinon.stub().returns(origin),
+            getOriginLock: sinon.stub().returns(originLock),
             disableLogging: sinon.stub(),
         };
     }
@@ -187,14 +196,6 @@ describe('ListCookiesTool', () => {
         assertIsError(response);
         assert.strictEqual(response.error, 'No origin available or not allowed.');
     });
-    it('rejects null established origin', async () => {
-        setupPrimaryTarget('https://example.com');
-        const context = createMockContext({ origin: undefined });
-        const tool = new AiAssistance.ListCookies.ListCookiesTool();
-        const response = await tool.handler({ origins: ['https://example.com'] }, context);
-        assertIsError(response);
-        assert.strictEqual(response.error, 'No origin available or not allowed.');
-    });
     it('rejects when primaryPageTarget is null', async () => {
         sinon.stub(universe.targetManager, 'primaryPageTarget').returns(null);
         const context = createMockContext();
@@ -246,7 +247,10 @@ describe('ListCookiesTool', () => {
         cookie.addAttribute("path" /* SDK.Cookie.Attribute.PATH */, '/');
         activeCookies = [cookie];
         const context = {
-            getEstablishedOrigin: sinon.stub().returns(SDK.SecurityOrigin.SecurityOrigin.create('https://example.com')),
+            getOriginLock: sinon.stub().returns({
+                status: 'ESTABLISHED_ORIGIN',
+                origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+            }),
             disableLogging: sinon.stub(),
         };
         const tool = new AiAssistance.ListCookies.ListCookiesTool();
@@ -257,6 +261,22 @@ describe('ListCookiesTool', () => {
                 cookies: ['default-cookie'],
             },
         });
+    });
+    it('returns error when origin lock is uninitialized', async () => {
+        setupPrimaryTarget('https://example.com');
+        const context = createMockContext({ originLock: { status: 'UNINITIALIZED' } });
+        const tool = new AiAssistance.ListCookies.ListCookiesTool();
+        const response = await tool.handler({}, context);
+        assertIsError(response);
+        assert.strictEqual(response.error, 'No origin established for this conversation.');
+    });
+    it('returns error when origin lock is blocked', async () => {
+        setupPrimaryTarget('https://example.com');
+        const context = createMockContext({ originLock: { status: 'BLOCKED_BY_NAVIGATION' } });
+        const tool = new AiAssistance.ListCookies.ListCookiesTool();
+        const response = await tool.handler({}, context);
+        assertIsError(response);
+        assert.strictEqual(response.error, 'Cross-origin access blocked due to navigation.');
     });
     it('formats displayInfoFromArgs correctly', () => {
         const tool = new AiAssistance.ListCookies.ListCookiesTool();
