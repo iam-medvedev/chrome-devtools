@@ -566,6 +566,14 @@ export var Audits;
         PermissionElementIssueType["NonSecureContext"] = "NonSecureContext";
         PermissionElementIssueType["MissingTransientUserActivation"] = "MissingTransientUserActivation";
     })(PermissionElementIssueType = Audits.PermissionElementIssueType || (Audits.PermissionElementIssueType = {}));
+    let WebInstallIssueReason;
+    (function (WebInstallIssueReason) {
+        WebInstallIssueReason["ManifestParsingOrNetworkError"] = "ManifestParsingOrNetworkError";
+        WebInstallIssueReason["StartUrlInvalid"] = "StartUrlInvalid";
+        WebInstallIssueReason["ManifestMissingNameOrShortName"] = "ManifestMissingNameOrShortName";
+        WebInstallIssueReason["ManifestMissingId"] = "ManifestMissingId";
+        WebInstallIssueReason["NoManifest"] = "NoManifest";
+    })(WebInstallIssueReason = Audits.WebInstallIssueReason || (Audits.WebInstallIssueReason = {}));
     /**
      * A unique identifier for the type of issue. Each type may use one of the
      * optional fields in InspectorIssueDetails to convey more specific
@@ -603,6 +611,7 @@ export var Audits;
         InspectorIssueCode["SelectivePermissionsInterventionIssue"] = "SelectivePermissionsInterventionIssue";
         InspectorIssueCode["EmailVerificationRequestIssue"] = "EmailVerificationRequestIssue";
         InspectorIssueCode["LazyLoadImageIssue"] = "LazyLoadImageIssue";
+        InspectorIssueCode["WebInstallIssue"] = "WebInstallIssue";
     })(InspectorIssueCode = Audits.InspectorIssueCode || (Audits.InspectorIssueCode = {}));
     let GetEncodedResponseRequestEncoding;
     (function (GetEncodedResponseRequestEncoding) {
@@ -974,6 +983,11 @@ export var DOM;
         GetElementByRelationRequestRelation["InterestTarget"] = "InterestTarget";
         GetElementByRelationRequestRelation["CommandFor"] = "CommandFor";
     })(GetElementByRelationRequestRelation = DOM.GetElementByRelationRequestRelation || (DOM.GetElementByRelationRequestRelation = {}));
+    let SetTextMarkerRequestType;
+    (function (SetTextMarkerRequestType) {
+        SetTextMarkerRequestType["Spelling"] = "spelling";
+        SetTextMarkerRequestType["Grammar"] = "grammar";
+    })(SetTextMarkerRequestType = DOM.SetTextMarkerRequestType || (DOM.SetTextMarkerRequestType = {}));
 })(DOM || (DOM = {}));
 /**
  * DOM debugging allows setting breakpoints on particular DOM operations and events. JavaScript

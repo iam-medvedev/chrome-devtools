@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { makeCompleteEvent, makeFlowEvents, makeProfileCall, } from '../../../testing/TraceHelpers.js';
+import { makeCompleteEvent, makeFlowEvents, makeProfileCall, } from '../../../testing/TraceHelpersCore.js';
 import * as Trace from '../trace.js';
 const cat = 'mewtwo';
 const pid = 1;
 const tid = 1;
 async function buildAsyncJSCallsHandlerData(events) {
+    Trace.Handlers.ModelHandlers.Meta.reset();
     Trace.Handlers.ModelHandlers.Renderer.reset();
     Trace.Handlers.ModelHandlers.Flows.reset();
-    Trace.Handlers.ModelHandlers.Flows.reset();
+    Trace.Handlers.ModelHandlers.Samples.reset();
+    Trace.Handlers.ModelHandlers.AsyncJSCalls.reset();
     for (const event of events) {
         Trace.Handlers.ModelHandlers.Renderer.handleEvent(event);
         Trace.Handlers.ModelHandlers.Flows.handleEvent(event);

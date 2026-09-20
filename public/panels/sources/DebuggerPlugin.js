@@ -96,7 +96,7 @@ const UIStrings = {
      * @description Title of the filtered list widget provider of Quick Open.
      * @example {Ctrl+P Ctrl+O} PH1
      */
-    associatedFilesAreAvailable: 'Associated files are available via file tree or {PH1}.',
+    associatedFilesAreAvailable: 'Associated files are available via file tree or {PH1}',
     /**
      * @description Text in Debugger plugin of the Sources panel.
      */
@@ -104,7 +104,7 @@ const UIStrings = {
     /**
      * @description Text in Debugger plugin of the Sources panel.
      */
-    theDebuggerWillSkipStepping: 'The debugger will skip stepping through this script, and will not stop on exceptions.',
+    theDebuggerWillSkipStepping: 'The debugger will skip stepping through this script, and will not stop on exceptions',
     /**
      * @description Text in Debugger plugin of the Sources panel.
      */
@@ -116,11 +116,11 @@ const UIStrings = {
     /**
      * @description Text in Debugger plugin of the Sources panel.
      */
-    debuggingPowerReduced: 'DevTools can’t show authored sources, but you can debug the deployed code.',
+    debuggingPowerReduced: 'DevTools can’t show authored sources, but you can debug the deployed code',
     /**
      * @description Text in Debugger plugin of the Sources panel.
      */
-    reloadForSourceMap: 'To enable again, make sure the file isn’t on the ignore list and reload.',
+    reloadForSourceMap: 'To enable again, make sure the file isn’t on the ignore list and reload',
     /**
      * @description Text in Debugger plugin of the Sources panel.
      * @example {https://example.com/lib.js.map} PH1
@@ -131,7 +131,7 @@ const UIStrings = {
      * @description Error message that is displayed in UI when a file needed for debugging information for a call frame is missing.
      * @example {src/myapp.debug.wasm.dwp} PH1
      */
-    debugFileNotFound: 'Failed to load debug file "{PH1}".',
+    debugFileNotFound: 'Failed to load debug file "{PH1}"',
     /**
      * @description Error message that is displayed when no debug info could be loaded.
      * @example {app.wasm} PH1
@@ -452,7 +452,7 @@ export class DebuggerPlugin extends Plugin {
             if (!url) {
                 return;
             }
-            scriptFile.addSourceMapURL(url);
+            scriptFile.addSourceMapURL(url, "user" /* SDK.SourceMap.SourceMapProvenance.USER */);
         }
         function addDebugInfoURL(scriptFile) {
             const dialog = AddDebugInfoURLDialog.createAddDWARFSymbolsURLDialog(addDebugInfoURLDialogCallback.bind(this, scriptFile));

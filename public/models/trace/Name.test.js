@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
-import { allThreadEntriesInTrace, getMainThread } from '../../testing/TraceHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
+import { allThreadEntriesInTrace, getMainThread } from '../../testing/TraceHelpersCore.js';
 import { TraceLoader } from '../../testing/TraceLoader.js';
 import * as Trace from './trace.js';
-describeWithEnvironment('Name', () => {
+describe('Name', () => {
+    setupLocaleHooks();
     describe('with web-dev-with-commit trace', () => {
         let parsedTrace;
-        before(async function () {
+        beforeEach(async function () {
             parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
         });
         it('uses the URL for the name of a network request', () => {

@@ -111,7 +111,10 @@ describe('CookieUtils', () => {
         it('resolves primary page origin when requestedOrigins is omitted', () => {
             const { primaryTarget } = setupPrimaryTarget('https://example.com');
             const context = {
-                getEstablishedOrigin: sinon.stub().returns(SDK.SecurityOrigin.SecurityOrigin.create('https://example.com')),
+                getOriginLock: sinon.stub().returns({
+                    status: 'ESTABLISHED_ORIGIN',
+                    origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+                }),
             };
             const result = AiAssistance.CookieUtils.resolveAllowedTargetOrigins(undefined, context, universe.targetManager);
             assert.isFalse('error' in result);
@@ -123,7 +126,10 @@ describe('CookieUtils', () => {
         it('filters out requested origins that do not match the established origin', () => {
             const { primaryTarget } = setupPrimaryTarget('https://example.com');
             const context = {
-                getEstablishedOrigin: sinon.stub().returns(SDK.SecurityOrigin.SecurityOrigin.create('https://example.com')),
+                getOriginLock: sinon.stub().returns({
+                    status: 'ESTABLISHED_ORIGIN',
+                    origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+                }),
             };
             const result = AiAssistance.CookieUtils.resolveAllowedTargetOrigins(['https://example.com', 'https://other.com'], context, universe.targetManager);
             assert.isFalse('error' in result);
@@ -135,7 +141,10 @@ describe('CookieUtils', () => {
         it('returns error when established origin is opaque', () => {
             setupPrimaryTarget('https://example.com');
             const context = {
-                getEstablishedOrigin: sinon.stub().returns(SDK.SecurityOrigin.SecurityOrigin.createUniqueOpaque()),
+                getOriginLock: sinon.stub().returns({
+                    status: 'ESTABLISHED_ORIGIN',
+                    origin: SDK.SecurityOrigin.SecurityOrigin.createUniqueOpaque(),
+                }),
             };
             const result = AiAssistance.CookieUtils.resolveAllowedTargetOrigins(undefined, context, universe.targetManager);
             assert.isTrue('error' in result);
@@ -146,7 +155,10 @@ describe('CookieUtils', () => {
         it('returns error when primary target origin does not match established origin', () => {
             setupPrimaryTarget('https://other.com');
             const context = {
-                getEstablishedOrigin: sinon.stub().returns(SDK.SecurityOrigin.SecurityOrigin.create('https://example.com')),
+                getOriginLock: sinon.stub().returns({
+                    status: 'ESTABLISHED_ORIGIN',
+                    origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+                }),
             };
             const result = AiAssistance.CookieUtils.resolveAllowedTargetOrigins(undefined, context, universe.targetManager);
             assert.isTrue('error' in result);
@@ -157,7 +169,10 @@ describe('CookieUtils', () => {
         it('returns error when primaryPageTarget is null', () => {
             sinon.stub(universe.targetManager, 'primaryPageTarget').returns(null);
             const context = {
-                getEstablishedOrigin: sinon.stub().returns(SDK.SecurityOrigin.SecurityOrigin.create('https://example.com')),
+                getOriginLock: sinon.stub().returns({
+                    status: 'ESTABLISHED_ORIGIN',
+                    origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+                }),
             };
             const result = AiAssistance.CookieUtils.resolveAllowedTargetOrigins(undefined, context, universe.targetManager);
             assert.isTrue('error' in result);
@@ -168,12 +183,37 @@ describe('CookieUtils', () => {
         it('returns error when all requested origins are cross-origin', () => {
             setupPrimaryTarget('https://example.com');
             const context = {
-                getEstablishedOrigin: sinon.stub().returns(SDK.SecurityOrigin.SecurityOrigin.create('https://example.com')),
+                getOriginLock: sinon.stub().returns({
+                    status: 'ESTABLISHED_ORIGIN',
+                    origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+                }),
             };
             const result = AiAssistance.CookieUtils.resolveAllowedTargetOrigins(['https://other1.com', 'https://other2.com'], context, universe.targetManager);
             assert.isTrue('error' in result);
             if ('error' in result) {
                 assert.strictEqual(result.error, 'No valid origins found.');
+            }
+        });
+        it('returns error when origin lock is uninitialized', () => {
+            setupPrimaryTarget('https://example.com');
+            const context = {
+                getOriginLock: sinon.stub().returns({ status: 'UNINITIALIZED' }),
+            };
+            const result = AiAssistance.CookieUtils.resolveAllowedTargetOrigins(undefined, context, universe.targetManager);
+            assert.isTrue('error' in result);
+            if ('error' in result) {
+                assert.strictEqual(result.error, 'No origin established for this conversation.');
+            }
+        });
+        it('returns error when origin lock is blocked', () => {
+            setupPrimaryTarget('https://example.com');
+            const context = {
+                getOriginLock: sinon.stub().returns({ status: 'BLOCKED_BY_NAVIGATION' }),
+            };
+            const result = AiAssistance.CookieUtils.resolveAllowedTargetOrigins(undefined, context, universe.targetManager);
+            assert.isTrue('error' in result);
+            if ('error' in result) {
+                assert.strictEqual(result.error, 'Cross-origin access blocked due to navigation.');
             }
         });
     });

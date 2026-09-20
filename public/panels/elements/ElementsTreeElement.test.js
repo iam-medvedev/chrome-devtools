@@ -8,15 +8,19 @@ import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../../core/text_utils/text_utils.js';
+import * as Badges from '../../models/badges/badges.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import { findMenuItemWithLabel } from '../../testing/ContextMenuHelpers.js';
 import { assertScreenshot, raf, renderElementIntoDOM, setTestUniverseForWidgets } from '../../testing/DOMHelpers.js';
-import { createTarget, describeWithEnvironment, registerActions } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, describeWithEnvironment, registerActions, updateHostConfig, } from '../../testing/EnvironmentHelpers.js';
+import { expectCall } from '../../testing/ExpectStubCall.js';
+import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import { dispatchEvent } from '../../testing/MockConnection.js';
 import { MockIssuesModel } from '../../testing/MockIssuesModel.js';
 import { TestUniverse } from '../../testing/TestUniverse.js';
+import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as Highlighting from '../../ui/components/highlighting/highlighting.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -570,6 +574,58 @@ describeWithEnvironment('ElementsTreeElement', () => {
         const finalSpacesCount = finalAttributeElement.textContent.split('\u200B').length - 1;
         assert.strictEqual(finalSpacesCount, initialSpacesCount);
     });
+    it('starts editing boolean attributes without values via triggerEditAttribute', async () => {
+        const target = createTarget();
+        const domModel = target.model(SDK.DOMModel.DOMModel);
+        assert.exists(domModel);
+        const nodePayload = {
+            nodeId: 1,
+            backendNodeId: 2,
+            nodeType: Node.ELEMENT_NODE,
+            nodeName: 'BUTTON',
+            localName: 'button',
+            nodeValue: '',
+            attributes: ['disabled', ''],
+            childNodeCount: 0,
+        };
+        const node = SDK.DOMModel.DOMNode.create(domModel, null, false, nodePayload);
+        const treeOutline = new Elements.ElementsTreeOutline.ElementsTreeOutline();
+        const treeElement = new Elements.ElementsTreeElement.ElementsTreeElement(node);
+        treeElement.treeOutline = treeOutline;
+        treeElement.onbind();
+        treeElement.requestUpdate();
+        await treeElement.updateComplete;
+        const attributeElement = treeElement.widget.contentElement.querySelector('.webkit-html-attribute');
+        assert.exists(attributeElement);
+        assert.isNull(attributeElement.querySelector('.webkit-html-attribute-value'));
+        const editStarted = treeElement.triggerEditAttribute('disabled');
+        assert.isTrue(editStarted);
+    });
+    it('starts editing boolean attribute on startEditing when it is the first attribute', async () => {
+        const target = createTarget();
+        const domModel = target.model(SDK.DOMModel.DOMModel);
+        assert.exists(domModel);
+        const nodePayload = {
+            nodeId: 1,
+            backendNodeId: 2,
+            nodeType: Node.ELEMENT_NODE,
+            nodeName: 'BUTTON',
+            localName: 'button',
+            nodeValue: '',
+            attributes: ['disabled', ''],
+            childNodeCount: 0,
+        };
+        const node = SDK.DOMModel.DOMNode.create(domModel, null, false, nodePayload);
+        const treeOutline = new Elements.ElementsTreeOutline.ElementsTreeOutline();
+        const treeElement = new Elements.ElementsTreeElement.ElementsTreeElement(node);
+        treeElement.treeOutline = treeOutline;
+        treeElement.onbind();
+        treeElement.requestUpdate();
+        await treeElement.updateComplete;
+        treeElement.widget.isDOMNodeSelected = true;
+        const editStarted = treeElement.widget.startEditing();
+        assert.isTrue(editStarted);
+    });
     it('truncates long data URL attribute values in the UI but shows them in full when editing', () => {
         const target = createTarget();
         const domModel = target.model(SDK.DOMModel.DOMModel);
@@ -1042,6 +1098,22 @@ describeWithEnvironment('ElementsTreeElement highlighting', () => {
         const highlight = CSS.highlights.get('highlighted-search-result');
         assert.exists(highlight);
         assert.deepEqual(Array.from(highlight).map(range => range.toString()), ['Foo', 'foo']);
+    });
+    it('hides search highlights and clears searchQuery without resurrecting on update', async () => {
+        attrTestTreeElement.highlightSearchResults('foo');
+        await attrTestTreeElement.widget.updateComplete;
+        let highlight = CSS.highlights.get('highlighted-search-result');
+        assert.exists(highlight);
+        assert.strictEqual(highlight.size, 2);
+        attrTestTreeElement.hideSearchHighlights();
+        await attrTestTreeElement.widget.updateComplete;
+        assert.isNull(attrTestTreeElement.widget.searchQuery);
+        highlight = CSS.highlights.get('highlighted-search-result');
+        assert.strictEqual(highlight?.size ?? 0, 0);
+        attrTestTreeElement.widget.requestUpdate();
+        await attrTestTreeElement.widget.updateComplete;
+        highlight = CSS.highlights.get('highlighted-search-result');
+        assert.strictEqual(highlight?.size ?? 0, 0);
     });
 });
 describeWithEnvironment('ElementsTreeElement in Snapshot Mode', () => {
@@ -1521,6 +1593,30 @@ describeWithEnvironment('ElementsTreeElement issue management', () => {
             widget.editing?.cancel();
             assert.isFalse(widget.isEditing);
         });
+        it('cancels tag name editing when the new tag name is empty', () => {
+            const widget = testTreeElement.widget;
+            const setNodeNameStub = sinon.stub(labelNode, 'setNodeName');
+            const editingCancelledSpy = sinon.spy(widget, 'editingCancelled');
+            assert.isTrue(widget.startEditingTagName());
+            const tagNameElement = widget.contentElement.querySelector('.webkit-html-tag-name');
+            assert.exists(tagNameElement);
+            tagNameElement.textContent = '   ';
+            widget.editing?.commit();
+            sinon.assert.notCalled(setNodeNameStub);
+            sinon.assert.calledOnce(editingCancelledSpy);
+        });
+        it('records a renamed tag without a selectNodeAfterEdit hook', () => {
+            const widget = testTreeElement.widget;
+            widget.selectNodeAfterEdit = undefined;
+            const recordActionStub = sinon.stub(Badges.UserBadges.instance(), 'recordAction');
+            sinon.stub(labelNode, 'setNodeName').callsFake((_name, callback) => callback?.(null, labelNode));
+            assert.isTrue(widget.startEditingTagName());
+            const tagNameElement = widget.contentElement.querySelector('.webkit-html-tag-name');
+            assert.exists(tagNameElement);
+            tagNameElement.textContent = 'section';
+            widget.editing?.commit();
+            sinon.assert.calledOnceWithExactly(recordActionStub, Badges.BadgeAction.DOM_ELEMENT_OR_ATTRIBUTE_EDITED);
+        });
         it('supports double click on tag name or attribute to initiate editing', async () => {
             const widget = testTreeElement.widget;
             widget.isDOMNodeSelected = true;
@@ -1587,6 +1683,536 @@ describeWithEnvironment('ElementsTreeElement issue management', () => {
             assert.strictEqual(getText(attrs[0]), 'for="input-id"');
             assert.strictEqual(getText(attrs[1]), 'data-new="value123"');
         });
+    });
+    describe('Popover adorner', () => {
+        let popoverNode;
+        let candidate1;
+        let candidate2;
+        let deferredCandidate1;
+        let deferredCandidate2;
+        let connection;
+        let target;
+        let domModel;
+        beforeEach(() => {
+            sinon.stub(Workspace.Workspace.WorkspaceImpl, 'instance').returns(universe.workspace);
+            sinon.stub(SDK.TargetManager.TargetManager, 'instance').returns(universe.targetManager);
+            sinon.stub(Workspace.IgnoreListManager.IgnoreListManager, 'instance').returns(universe.ignoreListManager);
+            connection = new MockCDPConnection();
+            target = universe.createTarget({ connection });
+            domModel = target.model(SDK.DOMModel.DOMModel);
+            const popoverNodePayload = {
+                nodeId: 2,
+                parentId: 1,
+                backendNodeId: 2,
+                nodeType: Node.ELEMENT_NODE,
+                nodeName: 'DIV',
+                localName: 'div',
+                nodeValue: '',
+                attributes: ['popover', 'auto', 'id', 'my-popover'],
+                childNodeCount: 0,
+            };
+            const candidate1Payload = {
+                nodeId: 3,
+                parentId: 1,
+                backendNodeId: 10,
+                nodeType: Node.ELEMENT_NODE,
+                nodeName: 'BUTTON',
+                localName: 'button',
+                nodeValue: '',
+                attributes: ['id', 'btn1', 'class', 'primary btn-lg'],
+                childNodeCount: 0,
+            };
+            const candidate2Payload = {
+                nodeId: 4,
+                parentId: 1,
+                backendNodeId: 20,
+                nodeType: Node.ELEMENT_NODE,
+                nodeName: 'BUTTON',
+                localName: 'button',
+                nodeValue: '',
+                attributes: ['id', 'btn2', 'class', 'secondary'],
+                childNodeCount: 0,
+            };
+            const rootNode = SDK.DOMModel.DOMNode.create(domModel, null, false, {
+                nodeId: 1,
+                backendNodeId: 1,
+                nodeType: Node.ELEMENT_NODE,
+                nodeName: 'BODY',
+                localName: 'body',
+                nodeValue: 'Body',
+                childNodeCount: 3,
+                children: [popoverNodePayload, candidate1Payload, candidate2Payload],
+            });
+            assert.isNotNull(rootNode);
+            popoverNode = rootNode.children()[0];
+            candidate1 = rootNode.children()[1];
+            candidate2 = rootNode.children()[2];
+            assert.isNotNull(popoverNode);
+            assert.isNotNull(candidate1);
+            assert.isNotNull(candidate2);
+            deferredCandidate1 = new SDK.DOMModel.DeferredDOMNode(target, candidate1.backendNodeId());
+            deferredCandidate2 = new SDK.DOMModel.DeferredDOMNode(target, candidate2.backendNodeId());
+            deferredCandidate1.resolvePromise = () => Promise.resolve(candidate1);
+            deferredCandidate2.resolvePromise = () => Promise.resolve(candidate2);
+        });
+        function createWidget(node, view) {
+            const widget = new Elements.ElementsTreeElement.ElementsTreeWidget(undefined, [undefined], view);
+            widget.node = node;
+            return widget;
+        }
+        it('eagerly fetches implicit anchor candidates when adorner is updated', async () => {
+            const candidatesStub = sinon.stub(popoverNode, 'getImplicitAnchorCandidates').resolves([deferredCandidate1, deferredCandidate2]);
+            const view = createViewFunctionStub(Elements.ElementsTreeElement.ElementsTreeWidget);
+            createWidget(popoverNode, view);
+            await view.nextInput;
+            sinon.assert.called(candidatesStub);
+            const nonPopoverNode = candidate1;
+            const nonPopoverStub = sinon.stub(nonPopoverNode, 'getImplicitAnchorCandidates');
+            const nonPopoverView = createViewFunctionStub(Elements.ElementsTreeElement.ElementsTreeWidget);
+            createWidget(nonPopoverNode, nonPopoverView);
+            await nonPopoverView.nextInput;
+            sinon.assert.notCalled(nonPopoverStub);
+        });
+        it('toggles forceShowPopover directly when candidate count <= 1', async () => {
+            sinon.stub(popoverNode, 'getImplicitAnchorCandidates').resolves([deferredCandidate1]);
+            const forceShowStub = sinon.stub();
+            connection.setSuccessHandler('DOM.forceShowPopover', forceShowStub);
+            const view = createViewFunctionStub(Elements.ElementsTreeElement.ElementsTreeWidget);
+            createWidget(popoverNode, view);
+            await view.nextInput;
+            assert.isTrue(view.input.showPopoverAdorner);
+            assert.isFalse(view.input.popoverAdornerActive);
+            // Click to force-show
+            let nextInput = view.nextInput;
+            const firstForceShowCall = expectCall(forceShowStub, { fakeFn: () => ({}) });
+            view.input.onPopoverAdornerClick(new Event('click'));
+            const [firstParams] = await firstForceShowCall;
+            let input = await nextInput;
+            assert.deepEqual(firstParams, {
+                nodeId: popoverNode.id,
+                enable: true,
+                invokerNodeId: 10,
+            });
+            assert.isTrue(input.popoverAdornerActive);
+            // Click again to unforce
+            nextInput = view.nextInput;
+            const secondForceShowCall = expectCall(forceShowStub, { callCount: 2, fakeFn: () => ({}) });
+            input.onPopoverAdornerClick(new Event('click'));
+            const [secondParams] = await secondForceShowCall;
+            input = await nextInput;
+            assert.deepEqual(secondParams, {
+                nodeId: popoverNode.id,
+                enable: false,
+                invokerNodeId: undefined,
+            });
+            assert.isFalse(input.popoverAdornerActive);
+        });
+        it('shows context menu with candidates when candidate count > 1', async () => {
+            sinon.stub(popoverNode, 'getImplicitAnchorCandidates').resolves([deferredCandidate1, deferredCandidate2]);
+            const forceShowStub = sinon.stub();
+            connection.setSuccessHandler('DOM.forceShowPopover', forceShowStub);
+            const contextMenuShow = sinon.stub(UI.ContextMenu.ContextMenu.prototype, 'show');
+            const view = createViewFunctionStub(Elements.ElementsTreeElement.ElementsTreeWidget);
+            createWidget(popoverNode, view);
+            await view.nextInput;
+            assert.isTrue(view.input.showPopoverAdorner);
+            assert.isFalse(view.input.popoverAdornerActive);
+            // Click adorner with 2 candidates
+            const showMenuCall1 = expectCall(contextMenuShow, { fakeFn: () => Promise.resolve() });
+            view.input.onPopoverAdornerClick(new Event('click'));
+            await showMenuCall1;
+            const menu1 = contextMenuShow.lastCall.thisValue;
+            // Should not invoke forceShowPopover directly
+            assert.lengthOf(forceShowStub.args, 0);
+            const items = menu1.defaultSection().items;
+            assert.lengthOf(items, 2);
+            const desc1 = items[0].buildDescriptor();
+            const desc2 = items[1].buildDescriptor();
+            assert.strictEqual(desc1.label, 'button#btn1.primary.btn-lg');
+            assert.isFalse(desc1.checked);
+            assert.strictEqual(desc2.label, 'button#btn2.secondary');
+            assert.isFalse(desc2.checked);
+            // Test hover highlight
+            const highlightSpy1 = sinon.spy(deferredCandidate1, 'highlight');
+            const hideHighlightSpy = sinon.spy(SDK.OverlayModel.OverlayModel, 'hideDOMNodeHighlight');
+            desc1.onHover?.(true);
+            sinon.assert.calledOnce(highlightSpy1);
+            desc1.onHover?.(false);
+            sinon.assert.calledOnce(hideHighlightSpy);
+            // Select candidate 1
+            let nextInput = view.nextInput;
+            const forceShowCall1 = expectCall(forceShowStub, { fakeFn: () => ({}) });
+            menu1.invokeHandler(items[0].id());
+            const [forceParams1] = await forceShowCall1;
+            let input = await nextInput;
+            assert.deepEqual(forceParams1, {
+                nodeId: popoverNode.id,
+                enable: true,
+                invokerNodeId: 10,
+            });
+            assert.isTrue(input.popoverAdornerActive);
+            // Click adorner again: active candidate should be checked
+            const showMenuCall2 = expectCall(contextMenuShow, { callCount: 2, fakeFn: () => Promise.resolve() });
+            input.onPopoverAdornerClick(new Event('click'));
+            await showMenuCall2;
+            const menu2 = contextMenuShow.lastCall.thisValue;
+            const itemsAfter = menu2.defaultSection().items;
+            assert.isTrue(itemsAfter[0].buildDescriptor().checked);
+            assert.isFalse(itemsAfter[1].buildDescriptor().checked);
+            // Directly selecting a different candidate unforces the old one and forces the new one
+            nextInput = view.nextInput;
+            const forceShowCall3 = expectCall(forceShowStub, { callCount: 3, fakeFn: () => ({}) });
+            menu2.invokeHandler(itemsAfter[1].id());
+            await forceShowCall3;
+            input = await nextInput;
+            assert.deepEqual(forceShowStub.getCall(1).args[0], { nodeId: popoverNode.id, enable: false });
+            assert.deepEqual(forceShowStub.getCall(2).args[0], {
+                nodeId: popoverNode.id,
+                enable: true,
+                invokerNodeId: 20,
+            });
+            assert.isTrue(input.popoverAdornerActive);
+            // Click adorner again: candidate 2 should now be checked
+            const showMenuCall3 = expectCall(contextMenuShow, { callCount: 3, fakeFn: () => Promise.resolve() });
+            input.onPopoverAdornerClick(new Event('click'));
+            await showMenuCall3;
+            const menu3 = contextMenuShow.lastCall.thisValue;
+            const itemsAfter2 = menu3.defaultSection().items;
+            assert.isFalse(itemsAfter2[0].buildDescriptor().checked);
+            assert.isTrue(itemsAfter2[1].buildDescriptor().checked);
+            // Clicking active candidate 2 un-forces popover
+            nextInput = view.nextInput;
+            const forceShowCall4 = expectCall(forceShowStub, { callCount: 4, fakeFn: () => ({}) });
+            menu3.invokeHandler(itemsAfter2[1].id());
+            const [forceParams4] = await forceShowCall4;
+            input = await nextInput;
+            assert.deepEqual(forceParams4, { nodeId: popoverNode.id, enable: false });
+            assert.isFalse(input.popoverAdornerActive);
+        });
+    });
+});
+describeWithEnvironment('ElementsTreeElement Change Tracking', () => {
+    let target;
+    let testDomModel;
+    let universe;
+    let tracker;
+    let node;
+    let treeElement;
+    let outline;
+    /**
+     * `ChangeTracker` records the location of a change on the comment thread it
+     * creates, not on the `ChangeRecord` itself, so the affected node has to be
+     * read back from the `CommentManager`.
+     */
+    function lastChangeBackendNodeId() {
+        return universe.commentManager.getCommentThreads().at(-1)?.anchor.node?.backendNodeId;
+    }
+    /** Types `newText` into the attribute that is currently edited in place and commits it. */
+    function commitEditedAttribute(newText) {
+        const editedAttribute = treeElement.widget.contentElement.querySelector('.webkit-html-attribute.editing');
+        assert.exists(editedAttribute);
+        editedAttribute.textContent = newText;
+        treeElement.widget.editing?.commit();
+    }
+    /** Starts in-place editing of the tag name, types `newTagName` and commits it. */
+    function editTagName(newTagName) {
+        assert.isTrue(treeElement.widget.startEditingTagName());
+        const tagNameElement = treeElement.widget.contentElement.querySelector('.webkit-html-tag-name');
+        assert.exists(tagNameElement);
+        tagNameElement.textContent = newTagName;
+        treeElement.widget.editing?.commit();
+    }
+    /** Starts in-place editing of the inline text node, types `newText` and commits it. */
+    function editInlineTextNode(newText) {
+        const textNodeElement = treeElement.widget.contentElement.querySelector('.webkit-html-text-node');
+        assert.exists(textNodeElement);
+        assert.isTrue(treeElement.widget.startEditingTextNode(textNodeElement));
+        textNodeElement.textContent = newText;
+        treeElement.widget.editing?.commit();
+    }
+    /** Starts editing the node as HTML and waits for the multiline editor to be rendered. */
+    async function startEditingAsHTML() {
+        treeElement.toggleEditAsHTML();
+        // `toggleEditAsHTML` reads the outer HTML asynchronously before it creates the editor.
+        await new Promise(resolve => setTimeout(resolve, 0));
+        await UI.Widget.Widget.allUpdatesComplete;
+        const editor = treeElement.widget.contentElement.querySelector('devtools-text-editor');
+        assert.exists(editor);
+        return editor;
+    }
+    /** Replaces the content of the multiline HTML editor with `newHTML` and commits it. */
+    function commitEditedHTML(editor, newHTML) {
+        editor.dispatch({ changes: { from: 0, to: editor.state.doc.length, insert: newHTML } });
+        treeElement.widget.editing?.commit();
+    }
+    beforeEach(() => {
+        updateHostConfig({
+            devToolsComments: {
+                enabled: true,
+            },
+        });
+        universe = new TestUniverse();
+        tracker = universe.changeTracker;
+        setTestUniverseForWidgets(universe);
+        sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, 'instance')
+            .returns(universe.debuggerWorkspaceBinding);
+        sinon.stub(Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding, 'instance').returns(universe.cssWorkspaceBinding);
+        target = universe.createTarget();
+        testDomModel = target.model(SDK.DOMModel.DOMModel);
+        const rootNode = SDK.DOMModel.DOMNode.create(testDomModel, null, false, {
+            nodeId: 1,
+            backendNodeId: 1,
+            nodeType: Node.ELEMENT_NODE,
+            nodeName: 'DIV',
+            localName: 'div',
+            nodeValue: '',
+            attributes: ['id', 'main-div', 'class', 'container'],
+            childNodeCount: 1,
+            children: [{
+                    nodeId: 2,
+                    parentId: 1,
+                    backendNodeId: 2,
+                    nodeType: Node.TEXT_NODE,
+                    nodeName: '#text',
+                    localName: '',
+                    nodeValue: 'Initial Text',
+                    childNodeCount: 0,
+                }],
+        });
+        assert.isNotNull(rootNode);
+        node = rootNode;
+        outline = new Elements.ElementsTreeOutline.ElementsTreeOutline();
+        treeElement = new Elements.ElementsTreeElement.ElementsTreeElement(node, false);
+        treeElement.widget = new Elements.ElementsTreeElement.ElementsTreeWidget(undefined, [undefined, tracker]);
+        treeElement.widget.node = node;
+        treeElement.widget.selectTreeElement = (omitFocus, selectedByUser) => treeElement.select(omitFocus, selectedByUser);
+        outline.appendChild(treeElement);
+        treeElement.widget.performUpdate();
+    });
+    it('records a change when adding a new attribute', () => {
+        sinon.stub(node, 'setAttribute').callsFake((_name, _text, callback) => callback?.(null));
+        assert.isTrue(treeElement.widget.addNewAttribute());
+        commitEditedAttribute('data-test="value"');
+        const record = tracker.getLastChange();
+        assert.exists(record);
+        assert.strictEqual(record?.description, 'Added attribute data-test="value"');
+        assert.isString(record?.id);
+        assert.isNumber(record?.timestamp);
+        assert.strictEqual(lastChangeBackendNodeId(), 1);
+    });
+    it('records a change when modifying an existing attribute', () => {
+        sinon.stub(node, 'setAttribute').callsFake((_name, _text, callback) => callback?.(null));
+        assert.isTrue(treeElement.widget.triggerEditAttribute('class'));
+        commitEditedAttribute('class="container active"');
+        const record = tracker.getLastChange();
+        assert.exists(record);
+        assert.strictEqual(record?.description, 'Changed attribute "class" from "container" to "container active"');
+        assert.strictEqual(lastChangeBackendNodeId(), 1);
+    });
+    it('records a change when renaming an existing attribute', () => {
+        sinon.stub(node, 'setAttribute').callsFake((_name, _text, callback) => callback?.(null));
+        assert.isTrue(treeElement.widget.triggerEditAttribute('class'));
+        commitEditedAttribute('foo="container"');
+        const record = tracker.getLastChange();
+        assert.exists(record);
+        assert.strictEqual(record?.description, 'Renamed attribute "class" to "foo"');
+        assert.strictEqual(lastChangeBackendNodeId(), 1);
+    });
+    it('records a change when renaming and modifying an existing attribute', () => {
+        sinon.stub(node, 'setAttribute').callsFake((_name, _text, callback) => callback?.(null));
+        assert.isTrue(treeElement.widget.triggerEditAttribute('class'));
+        commitEditedAttribute('foo="bar"');
+        const record = tracker.getLastChange();
+        assert.exists(record);
+        assert.strictEqual(record?.description, 'Renamed attribute "class"="container" to "foo"="bar"');
+        assert.strictEqual(lastChangeBackendNodeId(), 1);
+    });
+    it('records a change when deleting an attribute', () => {
+        sinon.stub(node, 'setAttribute').callsFake((_name, _text, callback) => callback?.(null));
+        assert.isTrue(treeElement.widget.triggerEditAttribute('class'));
+        commitEditedAttribute('');
+        const record = tracker.getLastChange();
+        assert.exists(record);
+        assert.strictEqual(record?.description, 'Removed attribute "class"');
+        assert.strictEqual(lastChangeBackendNodeId(), 1);
+    });
+    it('does not record a change when setAttribute fails with an error', () => {
+        sinon.stub(node, 'setAttribute').callsFake((_name, _text, callback) => callback?.('Invalid attribute name syntax'));
+        assert.isTrue(treeElement.widget.addNewAttribute());
+        commitEditedAttribute('invalid<attr>=1');
+        const record = tracker.getLastChange();
+        assert.isUndefined(record);
+        assert.isEmpty(universe.commentManager.getCommentThreads());
+    });
+    it('records a change when renaming a tag name', () => {
+        let callbackCaptured;
+        sinon.stub(node, 'setNodeName').callsFake((_name, callback) => {
+            callbackCaptured = callback;
+        });
+        treeElement.widget.selectNodeAfterEdit = sinon.stub().returns(null);
+        editTagName('section');
+        assert.exists(callbackCaptured);
+        callbackCaptured(null, node);
+        const record = tracker.getLastChange();
+        assert.exists(record);
+        assert.strictEqual(record?.description, 'Renamed tag from <div> to <section>');
+        assert.strictEqual(lastChangeBackendNodeId(), 1);
+    });
+    it('does not record a change when renaming a tag name fails', () => {
+        let callbackCaptured;
+        sinon.stub(node, 'setNodeName').callsFake((_name, callback) => {
+            callbackCaptured = callback;
+        });
+        editTagName('invalid<tag>');
+        assert.exists(callbackCaptured);
+        callbackCaptured('Invalid tag name syntax', null);
+        const record = tracker.getLastChange();
+        assert.isUndefined(record);
+        assert.isEmpty(universe.commentManager.getCommentThreads());
+    });
+    it('records a change when editing an inline text node', () => {
+        const textNode = node.children()[0];
+        sinon.stub(textNode, 'setNodeValue').callsFake((_value, callback) => callback?.(null));
+        editInlineTextNode('Updated Text');
+        const record = tracker.getLastChange();
+        assert.exists(record);
+        assert.strictEqual(record?.description, 'Changed text from "Initial Text" to "Updated Text"');
+        assert.strictEqual(lastChangeBackendNodeId(), 2);
+    });
+    it('does not record a change when editing inline text node fails with an error', () => {
+        const textNode = node.children()[0];
+        const setNodeValue = sinon.stub(textNode, 'setNodeValue').callsFake((_value, callback) => {
+            callback?.('Failed to set text');
+        });
+        editInlineTextNode('Updated Text');
+        sinon.assert.calledOnceWithMatch(setNodeValue, 'Updated Text');
+        const record = tracker.getLastChange();
+        assert.isUndefined(record);
+        assert.isEmpty(universe.commentManager.getCommentThreads());
+    });
+    it('records a change when editing as HTML', async () => {
+        sinon.stub(node, 'getOuterHTML').resolves('<div id="main-div" class="container"></div>');
+        sinon.stub(node, 'setOuterHTML').callsFake((_value, callback) => callback?.(null));
+        const editor = await startEditingAsHTML();
+        commitEditedHTML(editor, '<div id="main-div" class="container"><p>New Child</p></div>');
+        const record = tracker.getLastChange();
+        assert.exists(record);
+        assert.strictEqual(record?.description, 'Changed HTML from "<div id="main-div" class="container"></div>" to ' +
+            '"<div id="main-div" class="container"><p>New Child</p></div>"');
+        assert.strictEqual(lastChangeBackendNodeId(), 1);
+    });
+    it('does not record a change when editing as HTML fails with an error', async () => {
+        sinon.stub(node, 'getOuterHTML').resolves('<div id="main-div" class="container"></div>');
+        const setOuterHTML = sinon.stub(node, 'setOuterHTML').callsFake((_value, callback) => {
+            callback?.('Malformed HTML');
+        });
+        const editor = await startEditingAsHTML();
+        commitEditedHTML(editor, '<div id="main-div" class="container"><p>New Child</p></div>');
+        sinon.assert.calledOnceWithMatch(setOuterHTML, '<div id="main-div" class="container"><p>New Child</p></div>');
+        const record = tracker.getLastChange();
+        assert.isUndefined(record);
+        assert.isEmpty(universe.commentManager.getCommentThreads());
+    });
+    it('records a change when removing a node', async () => {
+        const parentNode = SDK.DOMModel.DOMNode.create(testDomModel, null, false, {
+            nodeId: 10,
+            backendNodeId: 10,
+            nodeType: Node.ELEMENT_NODE,
+            nodeName: 'BODY',
+            localName: 'body',
+            nodeValue: '',
+            childNodeCount: 1,
+            children: [{
+                    nodeId: 11,
+                    parentId: 10,
+                    backendNodeId: 11,
+                    nodeType: Node.ELEMENT_NODE,
+                    nodeName: 'SPAN',
+                    localName: 'span',
+                    nodeValue: '',
+                    childNodeCount: 0,
+                }],
+        });
+        const childNode = parentNode.children()[0];
+        sinon.stub(childNode, 'removeNode').callsFake(async (callback) => {
+            callback?.(null);
+        });
+        const childTreeElement = new Elements.ElementsTreeElement.ElementsTreeElement(childNode, false);
+        childTreeElement.widget = new Elements.ElementsTreeElement.ElementsTreeWidget(undefined, [undefined, tracker]);
+        childTreeElement.widget.node = childNode;
+        await childTreeElement.widget.remove();
+        const record = tracker.getLastChange();
+        assert.exists(record);
+        assert.strictEqual(record?.description, 'Removed node <span>');
+        assert.strictEqual(lastChangeBackendNodeId(), 11);
+    });
+    it('does not record a change when removing a node fails with an error', async () => {
+        const parentNode = SDK.DOMModel.DOMNode.create(testDomModel, null, false, {
+            nodeId: 10,
+            backendNodeId: 10,
+            nodeType: Node.ELEMENT_NODE,
+            nodeName: 'BODY',
+            localName: 'body',
+            nodeValue: '',
+            childNodeCount: 1,
+            children: [{
+                    nodeId: 11,
+                    parentId: 10,
+                    backendNodeId: 11,
+                    nodeType: Node.ELEMENT_NODE,
+                    nodeName: 'SPAN',
+                    localName: 'span',
+                    nodeValue: '',
+                    childNodeCount: 0,
+                }],
+        });
+        const childNode = parentNode.children()[0];
+        sinon.stub(childNode, 'removeNode').callsFake(async (callback) => {
+            callback?.('Cannot remove node');
+        });
+        const childTreeElement = new Elements.ElementsTreeElement.ElementsTreeElement(childNode, false);
+        childTreeElement.widget = new Elements.ElementsTreeElement.ElementsTreeWidget(undefined, [undefined, tracker]);
+        childTreeElement.widget.node = childNode;
+        await childTreeElement.widget.remove();
+        const record = tracker.getLastChange();
+        assert.isUndefined(record);
+        assert.isEmpty(universe.commentManager.getCommentThreads());
+    });
+    it('unhides hidden node before removal without recording an additional change', async () => {
+        const parentNode = SDK.DOMModel.DOMNode.create(testDomModel, null, false, {
+            nodeId: 10,
+            backendNodeId: 10,
+            nodeType: Node.ELEMENT_NODE,
+            nodeName: 'BODY',
+            localName: 'body',
+            nodeValue: '',
+            childNodeCount: 1,
+            children: [{
+                    nodeId: 11,
+                    parentId: 10,
+                    backendNodeId: 11,
+                    nodeType: Node.ELEMENT_NODE,
+                    nodeName: 'SPAN',
+                    localName: 'span',
+                    nodeValue: '',
+                    childNodeCount: 0,
+                }],
+        });
+        const childNode = parentNode.children()[0];
+        sinon.stub(childNode, 'isToggledToHidden').returns(true);
+        const toggleHideStub = sinon.stub(childNode, 'toggleHideElement').resolves();
+        sinon.stub(childNode, 'removeNode').callsFake(async (callback) => {
+            callback?.(null);
+        });
+        const childTreeElement = new Elements.ElementsTreeElement.ElementsTreeElement(childNode, false);
+        childTreeElement.widget = new Elements.ElementsTreeElement.ElementsTreeWidget(undefined, [undefined, tracker]);
+        childTreeElement.widget.isToggledToHidden = node => node.isToggledToHidden();
+        childTreeElement.widget.node = childNode;
+        await childTreeElement.widget.remove();
+        sinon.assert.calledOnce(toggleHideStub);
+        const changes = tracker.getChanges();
+        assert.lengthOf(changes, 1);
+        assert.strictEqual(changes[0].description, 'Removed node <span>');
     });
 });
 //# sourceMappingURL=ElementsTreeElement.test.js.map

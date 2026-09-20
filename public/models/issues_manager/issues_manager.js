@@ -533,6 +533,14 @@ var Audits;
     PermissionElementIssueType2["NonSecureContext"] = "NonSecureContext";
     PermissionElementIssueType2["MissingTransientUserActivation"] = "MissingTransientUserActivation";
   })(PermissionElementIssueType = Audits2.PermissionElementIssueType || (Audits2.PermissionElementIssueType = {}));
+  let WebInstallIssueReason;
+  ((WebInstallIssueReason2) => {
+    WebInstallIssueReason2["ManifestParsingOrNetworkError"] = "ManifestParsingOrNetworkError";
+    WebInstallIssueReason2["StartUrlInvalid"] = "StartUrlInvalid";
+    WebInstallIssueReason2["ManifestMissingNameOrShortName"] = "ManifestMissingNameOrShortName";
+    WebInstallIssueReason2["ManifestMissingId"] = "ManifestMissingId";
+    WebInstallIssueReason2["NoManifest"] = "NoManifest";
+  })(WebInstallIssueReason = Audits2.WebInstallIssueReason || (Audits2.WebInstallIssueReason = {}));
   let InspectorIssueCode;
   ((InspectorIssueCode2) => {
     InspectorIssueCode2["CookieIssue"] = "CookieIssue";
@@ -565,6 +573,7 @@ var Audits;
     InspectorIssueCode2["SelectivePermissionsInterventionIssue"] = "SelectivePermissionsInterventionIssue";
     InspectorIssueCode2["EmailVerificationRequestIssue"] = "EmailVerificationRequestIssue";
     InspectorIssueCode2["LazyLoadImageIssue"] = "LazyLoadImageIssue";
+    InspectorIssueCode2["WebInstallIssue"] = "WebInstallIssue";
   })(InspectorIssueCode = Audits2.InspectorIssueCode || (Audits2.InspectorIssueCode = {}));
   let GetEncodedResponseRequestEncoding;
   ((GetEncodedResponseRequestEncoding2) => {
@@ -847,6 +856,11 @@ var DOM;
     GetElementByRelationRequestRelation2["InterestTarget"] = "InterestTarget";
     GetElementByRelationRequestRelation2["CommandFor"] = "CommandFor";
   })(GetElementByRelationRequestRelation = DOM2.GetElementByRelationRequestRelation || (DOM2.GetElementByRelationRequestRelation = {}));
+  let SetTextMarkerRequestType;
+  ((SetTextMarkerRequestType2) => {
+    SetTextMarkerRequestType2["Spelling"] = "spelling";
+    SetTextMarkerRequestType2["Grammar"] = "grammar";
+  })(SetTextMarkerRequestType = DOM2.SetTextMarkerRequestType || (DOM2.SetTextMarkerRequestType = {}));
 })(DOM || (DOM = {}));
 var DOMDebugger;
 ((DOMDebugger2) => {
@@ -3013,6 +3027,7 @@ __export(MarkdownIssueDescription_exports, {
   resolveLazyDescription: () => resolveLazyDescription,
   substitutePlaceholders: () => substitutePlaceholders
 });
+import * as Platform from "../../core/platform/platform.js";
 import * as Marked from "../../third_party/marked/marked.js";
 function resolveLazyDescription(lazyDescription) {
   function linksMap(currentLink) {
@@ -3031,8 +3046,7 @@ function resolveLazyDescription(lazyDescription) {
 }
 async function getFileContent(url) {
   try {
-    const response = await fetch(url.toString());
-    return await response.text();
+    return await Platform.HostRuntime.HOST_RUNTIME.loadTextFile(url);
   } catch {
     throw new Error(
       `Markdown file ${url.toString()} not found. Make sure it is correctly listed in the relevant BUILD.gn files.`
@@ -3446,7 +3460,7 @@ var UIStrings6 = {
   /**
    * @description Text to show in Console panel when a third-party cookie is blocked in Chrome.
    */
-  consoleTpcdErrorMessage: "Third-party cookie blocked in Chrome due to Chrome flags or browser settings."
+  consoleTpcdErrorMessage: "Third-party cookie blocked in Chrome due to Chrome flags or browser settings"
 };
 var str_6 = i18n11.i18n.registerUIStrings("models/issues_manager/CookieIssue.ts", UIStrings6);
 var i18nLazyString4 = i18n11.i18n.getLazilyComputedLocalizedString.bind(void 0, str_6);
@@ -3738,10 +3752,6 @@ var excludeDomainNonAscii = {
   file: "cookieExcludeDomainNonAscii.md",
   links: []
 };
-var excludeBlockedWithinRelatedWebsiteSet = {
-  file: "cookieExcludeBlockedWithinRelatedWebsiteSet.md",
-  links: []
-};
 var cookieCrossSiteRedirectDowngrade = {
   file: "cookieCrossSiteRedirectDowngrade.md",
   links: [{
@@ -3777,14 +3787,6 @@ var issueDescriptions3 = /* @__PURE__ */ new Map([
   ["CookieIssue::WarnDomainNonASCII::SetCookie", warnDomainNonAscii],
   ["CookieIssue::ExcludeDomainNonASCII::ReadCookie", excludeDomainNonAscii],
   ["CookieIssue::ExcludeDomainNonASCII::SetCookie", excludeDomainNonAscii],
-  [
-    "CookieIssue::ExcludeThirdPartyCookieBlockedInRelatedWebsiteSet::ReadCookie",
-    excludeBlockedWithinRelatedWebsiteSet
-  ],
-  [
-    "CookieIssue::ExcludeThirdPartyCookieBlockedInRelatedWebsiteSet::SetCookie",
-    excludeBlockedWithinRelatedWebsiteSet
-  ],
   ["CookieIssue::WarnThirdPartyPhaseout::ReadCookie", placeholderDescriptionForInvisibleIssues],
   ["CookieIssue::WarnThirdPartyPhaseout::SetCookie", placeholderDescriptionForInvisibleIssues],
   ["CookieIssue::WarnDeprecationTrialMetadata::ReadCookie", placeholderDescriptionForInvisibleIssues],
@@ -4609,12 +4611,12 @@ var UIStrings10 = {
   /**
    * @description This links to the Chrome feature status page when one exists.
    */
-  feature: "Check the feature status page for more details.",
+  feature: "Check the feature status page for more details",
   /**
    * @description This links to the Chromium Dash schedule when a milestone is set.
    * @example {100} milestone
    */
-  milestone: "This change will go into effect with milestone {milestone}.",
+  milestone: "This change will go into effect with milestone {milestone}",
   /**
    * @description Title of issue raised when a deprecated feature is used.
    */
@@ -4695,7 +4697,7 @@ __export(DOMIssuesManager_exports, {
   Events: () => Events2
 });
 import * as Common2 from "../../core/common/common.js";
-import * as Platform from "../../core/platform/platform.js";
+import * as Platform2 from "../../core/platform/platform.js";
 import * as SDK2 from "../../core/sdk/sdk.js";
 
 // ../../front_end/models/issues_manager/IssuesManagerEvents.ts
@@ -4717,8 +4719,8 @@ var DOMIssuesManager = class extends Common2.ObjectWrapper.ObjectWrapper {
   #issuesManager;
   #targetManager;
   #currentIssues = /* @__PURE__ */ new Set();
-  #nodeToIssues = new Platform.MapUtilities.Multimap();
-  #nodeIdSubscribers = new Platform.MapUtilities.Multimap();
+  #nodeToIssues = new Platform2.MapUtilities.Multimap();
+  #nodeIdSubscribers = new Platform2.MapUtilities.Multimap();
   constructor(issuesManager, targetManager) {
     super();
     this.#issuesManager = issuesManager;
@@ -7956,6 +7958,58 @@ var UnencodedDigestIssue = class _UnencodedDigestIssue extends Issue {
   }
 };
 
+// ../../front_end/models/issues_manager/WebInstallIssue.ts
+var WebInstallIssue_exports = {};
+__export(WebInstallIssue_exports, {
+  WebInstallIssue: () => WebInstallIssue
+});
+var WebInstallIssue = class _WebInstallIssue extends Issue {
+  constructor(issueDetails, issuesModel) {
+    super(`${Audits.InspectorIssueCode.WebInstallIssue}::${issueDetails.reason}`, issueDetails, issuesModel);
+  }
+  requests() {
+    const { manifestUrl, reason } = this.details();
+    if (reason === Audits.WebInstallIssueReason.NoManifest || !manifestUrl) {
+      return [];
+    }
+    return [{ url: manifestUrl }];
+  }
+  getCategory() {
+    return "Other" /* OTHER */;
+  }
+  getDescription() {
+    switch (this.details().reason) {
+      case Audits.WebInstallIssueReason.ManifestParsingOrNetworkError:
+        return { file: "webInstallManifestParsingOrNetworkError.md", links: [] };
+      case Audits.WebInstallIssueReason.StartUrlInvalid:
+        return { file: "webInstallStartUrlInvalid.md", links: [] };
+      case Audits.WebInstallIssueReason.ManifestMissingNameOrShortName:
+        return { file: "webInstallManifestMissingNameOrShortName.md", links: [] };
+      case Audits.WebInstallIssueReason.ManifestMissingId:
+        return { file: "webInstallManifestMissingId.md", links: [] };
+      case Audits.WebInstallIssueReason.NoManifest:
+        return { file: "webInstallNoManifest.md", links: [] };
+      default:
+        console.warn("Unknown WebInstallIssueReason:", this.details().reason);
+        return null;
+    }
+  }
+  getKind() {
+    return "PageError" /* PAGE_ERROR */;
+  }
+  primaryKey() {
+    return JSON.stringify(this.details());
+  }
+  static fromInspectorIssue(issuesModel, inspectorIssue) {
+    const details = inspectorIssue.details.webInstallIssueDetails;
+    if (!details) {
+      console.warn("Web install issue without details received.");
+      return [];
+    }
+    return [new _WebInstallIssue(details, issuesModel)];
+  }
+};
+
 // ../../front_end/models/issues_manager/IssuesManager.ts
 function createIssuesForBlockedByResponseIssue(issuesModel, inspectorIssue) {
   const blockedByResponseIssueDetails = inspectorIssue.details.blockedByResponseIssueDetails;
@@ -8058,6 +8112,10 @@ var issueCodeHandlers = /* @__PURE__ */ new Map(
     [
       Audits.InspectorIssueCode.ConnectionAllowlistIssue,
       ConnectionAllowlistIssue.fromInspectorIssue
+    ],
+    [
+      Audits.InspectorIssueCode.WebInstallIssue,
+      WebInstallIssue.fromInspectorIssue
     ],
     [
       Audits.InspectorIssueCode.PermissionElementIssue,
@@ -8476,6 +8534,7 @@ export {
   SharedDictionaryIssue_exports as SharedDictionaryIssue,
   SourceFrameIssuesManager_exports as SourceFrameIssuesManager,
   StylesheetLoadingIssue_exports as StylesheetLoadingIssue,
-  UnencodedDigestIssue_exports as UnencodedDigestIssue
+  UnencodedDigestIssue_exports as UnencodedDigestIssue,
+  WebInstallIssue_exports as WebInstallIssue
 };
 //# sourceMappingURL=issues_manager.js.map

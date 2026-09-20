@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as CommentManager from '../../models/comment_manager/comment_manager.js';
-import { computeVisibleRect, deepQuerySelectorAll, getCustomAnchorResolverForElement, getEditorFilePath, isDomTrackedAnchor, rematchCommentAnchor, resolveCommentAnchor, resolveCommentAnchorElement, } from './CommentAnchorResolver.js';
+import { closestAcrossShadow, computeVisibleRect, deepQuerySelectorAll, getCustomAnchorResolverForElement, getEditorFilePath, isDomTrackedAnchor, rematchCommentAnchor, resolveCommentAnchor, resolveCommentAnchorElement, } from './CommentAnchorResolver.js';
 export const COMMENT_MODE_CURSOR = 'var(--comment-cursor)';
 export var Events;
 (function (Events) {
@@ -50,15 +50,19 @@ export class CommentOverlayManager extends Common.ObjectWrapper.ObjectWrapper {
     #mutationObserver;
     #rematchTimeoutId;
     #cursorElement = null;
+    #isCreatingComment = false;
     constructor(commentManager) {
         super();
         this.#commentManager = commentManager;
         this.#commentManager.addEventListener("CommentThreadsChanged" /* CommentManager.CommentManager.Events.COMMENT_THREADS_CHANGED */, () => {
-            this.#updatePositions();
+            if (!this.#isCreatingComment) {
+                this.#updatePositions();
+            }
         }, this);
         this.#commentManager.addEventListener("CommentModeChanged" /* CommentManager.CommentManager.Events.COMMENT_MODE_CHANGED */, ({ data: active }) => {
             if (!active) {
                 this.#clearHover();
+                this.clearDraftThreads();
             }
             document.body.style.cursor = active ? COMMENT_MODE_CURSOR : '';
         }, this);
@@ -129,41 +133,78 @@ export class CommentOverlayManager extends Common.ObjectWrapper.ObjectWrapper {
     getHighlightRects() {
         return this.#highlightRects;
     }
-    handleElementClick(element, commentText = 'New comment', options) {
-        if (!this.isCommentMode()) {
+    getAnchorElement(thread) {
+        return this.#liveNodeCache.get(thread);
+    }
+    clearDraftThreads() {
+        const draftThreads = this.#commentManager.getCommentThreads().filter(t => t.status === 'DRAFT');
+        for (const thread of draftThreads) {
+            this.removeCommentThread(thread.id);
+        }
+    }
+    handleElementClick(element, options) {
+        if (!this.isCommentMode() || closestAcrossShadow(element, '.comment-thread-widget')) {
+            return false;
+        }
+        this.clearDraftThreads();
+        const resolved = this.#resolveAnchor(element, options);
+        if (!resolved) {
+            return false;
+        }
+        const { anchorElement: anchorEl } = resolved;
+        const visibleRect = computeVisibleRect(anchorEl);
+        if (!visibleRect) {
+            return false;
+        }
+        const thread = this.createComment(element, undefined, { coordinates: options });
+        return thread !== null;
+    }
+    createComment(element, text, options) {
+        const author = options?.author ?? 'DEVELOPER';
+        const changes = options?.changes;
+        const resolved = this.#resolveAnchor(element, options?.coordinates);
+        if (!resolved) {
             return null;
         }
-        return this.createComment(element, commentText, 'DEVELOPER', undefined, options);
+        const { anchor, anchorElement } = resolved;
+        let thread;
+        this.#isCreatingComment = true;
+        try {
+            thread = this.#commentManager.createCommentThread(anchor, text, author, changes);
+        }
+        finally {
+            this.#isCreatingComment = false;
+        }
+        // Non-DOM anchors (e.g. canvas-rendered timeline entries) manage their own overlays
+        // and do not have individual backing DOM nodes to cache or observe.
+        if (isDomTrackedAnchor(anchor)) {
+            this.#liveNodeCache.set(thread, anchorElement);
+            const observer = this.#getIntersectionObserver();
+            observer.observe(anchorElement);
+            this.#observedThreads.add(anchorElement);
+        }
+        this.#updatePositions();
+        return thread;
     }
-    createComment(element, text, author = 'DEVELOPER', changes, options) {
-        let anchorEl = null;
+    #resolveAnchor(element, options) {
+        let anchorElement = null;
         let anchor = null;
         const customResolver = getCustomAnchorResolverForElement(element);
         if (customResolver) {
             const result = customResolver.resolve(element, options);
             if (result) {
                 anchor = result.anchor;
-                anchorEl = result.anchorElement ?? element;
+                anchorElement = result.anchorElement ?? element;
             }
         }
         else {
-            anchorEl = resolveCommentAnchorElement(element, options);
+            anchorElement = resolveCommentAnchorElement(element, options);
             anchor = resolveCommentAnchor(element, undefined, options);
         }
-        if (!anchor || !anchorEl) {
+        if (!anchor || !anchorElement) {
             return null;
         }
-        const thread = this.#commentManager.createCommentThread(anchor, text, author, changes);
-        // Non-DOM anchors (e.g. canvas-rendered timeline entries) manage their own overlays
-        // and do not have individual backing DOM nodes to cache or observe.
-        if (isDomTrackedAnchor(anchor)) {
-            this.#liveNodeCache.set(thread, anchorEl);
-            const observer = this.#getIntersectionObserver();
-            observer.observe(anchorEl);
-            this.#observedThreads.add(anchorEl);
-        }
-        this.#updatePositions();
-        return thread;
+        return { anchor, anchorElement };
     }
     getCommentThread(id) {
         return this.#commentManager.getCommentThread(id);
@@ -300,16 +341,14 @@ export class CommentOverlayManager extends Common.ObjectWrapper.ObjectWrapper {
      * - A ResizeObserver to recalculate overlay coordinates when DevTools panels or drawers are resized.
      * - A MutationObserver to automatically rematch existing comment anchors when the DOM re-renders.
      */
-    start(rootOrOptions, defaultText = 'New comment') {
+    start(rootOrOptions) {
         let root;
         let scrollTarget;
         let resizeTarget;
-        let text = defaultText;
         if (rootOrOptions && !(rootOrOptions instanceof Document) && !(rootOrOptions instanceof Element)) {
             root = rootOrOptions.root;
             scrollTarget = rootOrOptions.scrollTarget;
             resizeTarget = rootOrOptions.resizeTarget;
-            text = rootOrOptions.defaultText ?? defaultText;
         }
         else if (rootOrOptions) {
             root = rootOrOptions;
@@ -318,7 +357,7 @@ export class CommentOverlayManager extends Common.ObjectWrapper.ObjectWrapper {
         scrollTarget = scrollTarget || (root instanceof Document ? (root.defaultView || window) : window);
         resizeTarget = resizeTarget || (root instanceof Document ? (root.body || root.documentElement) : root);
         this.stop();
-        this.#installClickListener(root, text);
+        this.#installClickListener(root);
         this.#installScrollListener(scrollTarget);
         this.#installResizeObserver(resizeTarget);
         this.#installMutationObserver(root);
@@ -328,6 +367,7 @@ export class CommentOverlayManager extends Common.ObjectWrapper.ObjectWrapper {
      */
     stop() {
         document.body.style.cursor = '';
+        this.clearDraftThreads();
         this.#removeClickListener();
         this.#removeScrollListener();
         this.#removeResizeObserver();
@@ -341,12 +381,12 @@ export class CommentOverlayManager extends Common.ObjectWrapper.ObjectWrapper {
      * Sets up capturing click, hover, and pointer interaction listeners on the container.
      *
      * When Comment Mode is active:
-     * - Clicks on anchorable elements create new comment threads and consume the click event,
+     * - Clicks on anchorable elements open a comment thread creation draft and consume the click event,
      *   preventing normal DevTools UI triggers such as node selection or navigation.
      * - Pointer and mouse press events are suppressed to prevent accidental text selections or drag interactions.
      * - Hover events compute and display a real-time preview highlight over the candidate anchor element.
      */
-    #installClickListener(container = document, defaultText = 'New comment') {
+    #installClickListener(container = document) {
         this.#removeClickListener();
         this.#clickContainer = container;
         this.#clickListener = (event) => {
@@ -358,10 +398,8 @@ export class CommentOverlayManager extends Common.ObjectWrapper.ObjectWrapper {
             if (!(target instanceof Element)) {
                 return;
             }
-            const mouseEvent = event;
-            const options = { clientX: mouseEvent.clientX, clientY: mouseEvent.clientY };
-            const thread = this.handleElementClick(target, defaultText, options);
-            if (thread) {
+            const options = event instanceof MouseEvent ? { clientX: event.clientX, clientY: event.clientY } : undefined;
+            if (this.handleElementClick(target, options)) {
                 event.consume(true);
             }
         };

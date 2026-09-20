@@ -34,7 +34,6 @@ export declare class SecurityPanel extends UI.Panel.Panel implements SDK.TargetM
     static instance(opts?: {
         forceNew: boolean | null;
     }): SecurityPanel;
-    static createCertificateViewerButtonForOrigin(text: string, origin: string): Element;
     static createCertificateViewerButtonForCert(text: string, names: string[]): Element;
     update(): void;
     private updateVisibleSecurityState;

@@ -2,13 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import sinon from 'sinon';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
+import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
+import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as Platform from '../platform/platform.js';
 import * as SDK from './sdk.js';
 const { urlString } = Platform.DevToolsPath;
-describeWithEnvironment('OverlayModel', () => {
+describe('OverlayModel', () => {
+    setupLocaleHooks();
+    setupSettingsHooks();
+    setupRuntimeHooks();
     const DOCUMENT_URL_FOR_TEST = urlString `https://example.com/`;
     let cssModel;
     let windowControls;
@@ -143,6 +149,27 @@ describeWithEnvironment('OverlayModel', () => {
         expectedStyleSheet = `: env(titlebar-area-xxx, 9px); width: env(titlebar-area-width, calc(100% - ${width}px));`;
         parsedStyleSheet = windowControls.transformStyleSheetforTesting(x, y, width, height, originalStyleSheet);
         assert.strictEqual(parsedStyleSheet, expectedStyleSheet);
+    });
+    it('clears active highlight when hideDOMNodeHighlight is called', () => {
+        assert.exists(overlayModel);
+        const clock = sinon.useFakeTimers();
+        try {
+            let hideCalled = false;
+            connection.setSuccessHandler('Overlay.hideHighlight', () => {
+                hideCalled = true;
+                return {};
+            });
+            overlayModel.highlightInOverlayForTwoSeconds({ node: { id: 1 } });
+            assert.isFalse(hideCalled);
+            SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight(universe.targetManager);
+            assert.isFalse(hideCalled);
+            // Advance clock by 0ms (next tick)
+            clock.tick(0);
+            assert.isTrue(hideCalled);
+        }
+        finally {
+            clock.restore();
+        }
     });
 });
 //# sourceMappingURL=OverlayModel.test.js.map

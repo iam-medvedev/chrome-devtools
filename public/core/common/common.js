@@ -37,13 +37,14 @@ function decode(input) {
   return bytes;
 }
 async function encode(input) {
-  if (typeof FileReader === "undefined") {
+  const maybeFileReader = globalThis["FileReader"];
+  if (!maybeFileReader) {
     const blob = new Blob([input]);
     const arrayBuffer = await blob.arrayBuffer();
     return globalThis.Buffer.from(arrayBuffer).toString("base64");
   }
   return await new Promise((resolve, reject) => {
-    const reader = new FileReader();
+    const reader = new maybeFileReader();
     reader.onerror = () => reject(new Error("failed to convert to base64: internal error"));
     reader.onload = () => {
       if (reader.result === "") {
@@ -1074,18 +1075,19 @@ function findFgColorForContrastAPCA(fgColor, bgColor, requiredContrast) {
   const fgLuminance = candidateLuminance(candidateHSVA);
   const fgIsLighter = fgLuminance >= bgLuminance;
   const desiredLuminance2 = desiredLuminanceAPCA(bgLuminance, requiredContrast, fgIsLighter);
+  const meetsRequiredContrast = (candidate) => Math.round(Math.abs(contrastRatioAPCA(candidate.rgba(), bgColor.rgba()))) >= requiredContrast;
   const saturationComponentIndex = 1;
   const valueComponentIndex = 2;
   if (approachColorValue(candidateHSVA, valueComponentIndex, desiredLuminance2, candidateLuminance)) {
     const candidate = Legacy.fromHSVA(candidateHSVA);
-    if (Math.abs(contrastRatioAPCA(bgColor.rgba(), candidate.rgba())) >= requiredContrast) {
+    if (meetsRequiredContrast(candidate)) {
       return candidate;
     }
   }
   candidateHSVA[valueComponentIndex] = 1;
   if (approachColorValue(candidateHSVA, saturationComponentIndex, desiredLuminance2, candidateLuminance)) {
     const candidate = Legacy.fromHSVA(candidateHSVA);
-    if (Math.abs(contrastRatioAPCA(bgColor.rgba(), candidate.rgba())) >= requiredContrast) {
+    if (meetsRequiredContrast(candidate)) {
       return candidate;
     }
   }
@@ -2910,7 +2912,6 @@ var ObjectWrapper = class {
   }
 };
 function eventMixin(base) {
-  console.assert(base !== HTMLElement);
   return class EventHandling extends base {
     // Note that the weird name is due to TSC disallowing private/protected fields in
     // anonmous exported classes. We use a `__` prefix to prevent clashes with `base`.
@@ -3239,7 +3240,7 @@ async function arrayBufferToString(ab) {
   if (isGzip(ab)) {
     return await decompress(ab);
   }
-  const str = new TextDecoder("utf-8").decode(ab);
+  const str = new TextDecoder("utf-8").decode(new Uint8Array(ab));
   return str;
 }
 async function fileToString(file) {
@@ -4903,7 +4904,7 @@ var VersionController = class _VersionController {
   static GLOBAL_VERSION_SETTING_NAME = "inspectorVersion";
   static SYNCED_VERSION_SETTING_NAME = "syncedInspectorVersion";
   static LOCAL_VERSION_SETTING_NAME = "localInspectorVersion";
-  static CURRENT_VERSION = 46;
+  static CURRENT_VERSION = 47;
   #settings;
   #globalVersionSetting;
   #syncedVersionSetting;
@@ -5594,6 +5595,9 @@ var VersionController = class _VersionController {
       } catch {
       }
     }
+  }
+  updateVersionFrom46To47() {
+    this.#settings.syncedStorage.remove("network.backend-linking-rules");
   }
   /*
    * Any new migration should be added before this comment.

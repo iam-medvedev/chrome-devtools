@@ -2814,6 +2814,14 @@ var Audits;
     PermissionElementIssueType2["NonSecureContext"] = "NonSecureContext";
     PermissionElementIssueType2["MissingTransientUserActivation"] = "MissingTransientUserActivation";
   })(PermissionElementIssueType = Audits2.PermissionElementIssueType || (Audits2.PermissionElementIssueType = {}));
+  let WebInstallIssueReason;
+  ((WebInstallIssueReason2) => {
+    WebInstallIssueReason2["ManifestParsingOrNetworkError"] = "ManifestParsingOrNetworkError";
+    WebInstallIssueReason2["StartUrlInvalid"] = "StartUrlInvalid";
+    WebInstallIssueReason2["ManifestMissingNameOrShortName"] = "ManifestMissingNameOrShortName";
+    WebInstallIssueReason2["ManifestMissingId"] = "ManifestMissingId";
+    WebInstallIssueReason2["NoManifest"] = "NoManifest";
+  })(WebInstallIssueReason = Audits2.WebInstallIssueReason || (Audits2.WebInstallIssueReason = {}));
   let InspectorIssueCode;
   ((InspectorIssueCode2) => {
     InspectorIssueCode2["CookieIssue"] = "CookieIssue";
@@ -2846,6 +2854,7 @@ var Audits;
     InspectorIssueCode2["SelectivePermissionsInterventionIssue"] = "SelectivePermissionsInterventionIssue";
     InspectorIssueCode2["EmailVerificationRequestIssue"] = "EmailVerificationRequestIssue";
     InspectorIssueCode2["LazyLoadImageIssue"] = "LazyLoadImageIssue";
+    InspectorIssueCode2["WebInstallIssue"] = "WebInstallIssue";
   })(InspectorIssueCode = Audits2.InspectorIssueCode || (Audits2.InspectorIssueCode = {}));
   let GetEncodedResponseRequestEncoding;
   ((GetEncodedResponseRequestEncoding2) => {
@@ -3128,6 +3137,11 @@ var DOM;
     GetElementByRelationRequestRelation2["InterestTarget"] = "InterestTarget";
     GetElementByRelationRequestRelation2["CommandFor"] = "CommandFor";
   })(GetElementByRelationRequestRelation = DOM2.GetElementByRelationRequestRelation || (DOM2.GetElementByRelationRequestRelation = {}));
+  let SetTextMarkerRequestType;
+  ((SetTextMarkerRequestType2) => {
+    SetTextMarkerRequestType2["Spelling"] = "spelling";
+    SetTextMarkerRequestType2["Grammar"] = "grammar";
+  })(SetTextMarkerRequestType = DOM2.SetTextMarkerRequestType || (DOM2.SetTextMarkerRequestType = {}));
 })(DOM || (DOM = {}));
 var DOMDebugger;
 ((DOMDebugger2) => {
@@ -6180,7 +6194,7 @@ var UIStrings6 = {
   /**
    * @description Text in a dialog which appears when users click on 'Exclude from workspace' menu item.
    */
-  folderWillNotBeShown: "This folder and its contents will not be shown in workspace.",
+  folderWillNotBeShown: "This folder and its contents will not be shown in workspace",
   /**
    * @description Text in Navigator view of the Sources panel.
    */
@@ -6208,7 +6222,7 @@ var UIStrings6 = {
   /**
    * @description Text in Navigator view of the Sources panel. A confirmation message on action to delete a folder or file.
    */
-  actionCannotBeUndone: "This action cannot be undone.",
+  actionCannotBeUndone: "This action cannot be undone",
   /**
    * @description A context menu item in the Navigator view of the Sources panel.
    */
@@ -6233,7 +6247,7 @@ var UIStrings6 = {
   /**
    * @description Text in Navigator view of the Sources panel. Warning message when user removes a folder.
    */
-  workspaceStopSyncing: "This will stop syncing changes from DevTools to your sources.",
+  workspaceStopSyncing: "This will stop syncing changes from DevTools to your sources",
   /**
    * @description Name of an item from a source map.
    * @example {compile.html} PH1
@@ -8563,11 +8577,11 @@ var UIStrings8 = {
   /**
    * @description Swatch icon element title in CSSPlugin of the Sources panel
    */
-  openColorPicker: "Open color picker.",
+  openColorPicker: "Open color picker",
   /**
    * @description Text to open the cubic bezier editor
    */
-  openCubicBezierEditor: "Open cubic bezier editor.",
+  openCubicBezierEditor: "Open cubic bezier editor",
   /**
    * @description Text for a context menu item for attaching a sourcemap to the currently open css file
    */
@@ -9066,7 +9080,7 @@ var UIStrings9 = {
    * @description Title of the filtered list widget provider of Quick Open.
    * @example {Ctrl+P Ctrl+O} PH1
    */
-  associatedFilesAreAvailable: "Associated files are available via file tree or {PH1}.",
+  associatedFilesAreAvailable: "Associated files are available via file tree or {PH1}",
   /**
    * @description Text in Debugger plugin of the Sources panel.
    */
@@ -9074,7 +9088,7 @@ var UIStrings9 = {
   /**
    * @description Text in Debugger plugin of the Sources panel.
    */
-  theDebuggerWillSkipStepping: "The debugger will skip stepping through this script, and will not stop on exceptions.",
+  theDebuggerWillSkipStepping: "The debugger will skip stepping through this script, and will not stop on exceptions",
   /**
    * @description Text in Debugger plugin of the Sources panel.
    */
@@ -9086,11 +9100,11 @@ var UIStrings9 = {
   /**
    * @description Text in Debugger plugin of the Sources panel.
    */
-  debuggingPowerReduced: "DevTools can\u2019t show authored sources, but you can debug the deployed code.",
+  debuggingPowerReduced: "DevTools can\u2019t show authored sources, but you can debug the deployed code",
   /**
    * @description Text in Debugger plugin of the Sources panel.
    */
-  reloadForSourceMap: "To enable again, make sure the file isn\u2019t on the ignore list and reload.",
+  reloadForSourceMap: "To enable again, make sure the file isn\u2019t on the ignore list and reload",
   /**
    * @description Text in Debugger plugin of the Sources panel.
    * @example {https://example.com/lib.js.map} PH1
@@ -9101,7 +9115,7 @@ var UIStrings9 = {
    * @description Error message that is displayed in UI when a file needed for debugging information for a call frame is missing.
    * @example {src/myapp.debug.wasm.dwp} PH1
    */
-  debugFileNotFound: 'Failed to load debug file "{PH1}".',
+  debugFileNotFound: 'Failed to load debug file "{PH1}"',
   /**
    * @description Error message that is displayed when no debug info could be loaded.
    * @example {app.wasm} PH1
@@ -9474,7 +9488,7 @@ var DebuggerPlugin = class extends Plugin {
       if (!url) {
         return;
       }
-      scriptFile.addSourceMapURL(url);
+      scriptFile.addSourceMapURL(url, SDK8.SourceMap.SourceMapProvenance.USER);
     }
     function addDebugInfoURL(scriptFile) {
       const dialog4 = AddDebugInfoURLDialog.createAddDWARFSymbolsURLDialog(addDebugInfoURLDialogCallback.bind(this, scriptFile));
@@ -12231,7 +12245,7 @@ var UIStrings14 = {
   /**
    * @description Error message for tooltip showing that a file in the Sources panel could not be loaded.
    */
-  unableToLoadThisContent: "Unable to load this content.",
+  unableToLoadThisContent: "Unable to load this content",
   /**
    * @description Tooltip shown for the warning icon on an editor tab in the Sources panel
    *              when the developer saved changes via Ctrl+S/Cmd+S, while there was an
@@ -15249,7 +15263,7 @@ var UIStrings18 = {
    * @description Error message that is displayed in UI when a file needed for debugging information for a call frame is missing
    * @example {src/myapp.debug.wasm.dwp} PH1
    */
-  debugFileNotFound: 'Failed to load debug file "{PH1}".',
+  debugFileNotFound: 'Failed to load debug file "{PH1}"',
   /**
    * @description A context menu item in the call stack sidebar pane. "Restart" is a verb and
    * "frame" is a noun. "Frame" refers to an individual item in the call stack, i.e. a call frame.
@@ -16356,7 +16370,7 @@ var UIStrings21 = {
   /**
    * @description Text in Go to line Quick Open of the Sources panel.
    */
-  noFileSelected: "No file selected.",
+  noFileSelected: "No file selected",
   /**
    * @description Text in Outline Quick Open of the Sources panel.
    */
@@ -16743,12 +16757,12 @@ var UIStrings22 = {
    * @description A message in a confirmation dialog to explain why the action failed in the Persistence actions.
    * @example {index.ts} PH1
    */
-  overrideSourceMappedFileExplanation: "\u2018{PH1}\u2019 is a source mapped file and cannot be overridden.",
+  overrideSourceMappedFileExplanation: "\u2018{PH1}\u2019 is a source mapped file and cannot be overridden",
   /**
    * @description An error message shown in the DevTools Console after the user clicked "Save as" in
    * the context menu of a page resource.
    */
-  saveFailed: "Failed to save file to disk.",
+  saveFailed: "Failed to save file to disk",
   /**
    * @description An error message shown in the DevTools Console after the user clicked "Save as" in
    * the context menu of a WebAssembly file.
@@ -17295,7 +17309,7 @@ var UIStrings24 = {
   /**
    * @description Text to explain the workspace feature in the Sources panel. Learn more at https://goo.gle/devtools-workspace.
    */
-  explainWorkspace: "Set up workspaces to sync edits directly to the sources you develop.",
+  explainWorkspace: "Set up workspaces to sync edits directly to the sources you develop",
   /**
    * @description Text to show if no local overrides are set up. Learn more at https://goo.gle/devtools-overrides.
    */
@@ -17303,7 +17317,7 @@ var UIStrings24 = {
   /**
    * @description Text to explain the local overrides feature. Learn more at https://goo.gle/devtools-overrides.
    */
-  explainLocalOverrides: "Override network requests and web content locally to mock remote resources.",
+  explainLocalOverrides: "Override network requests and web content locally to mock remote resources",
   /**
    * @description Tooltip text that appears when hovering over the clear button in the Sources navigator of the Sources panel.
    */
@@ -17319,7 +17333,7 @@ var UIStrings24 = {
   /**
    * @description Text to explain the content scripts sidebar in the Sources panel.
    */
-  explainContentScripts: "View content scripts served by extensions.",
+  explainContentScripts: "View content scripts served by extensions",
   /**
    * @description Text to show if no snippets were created and saved in the Sources panel. Learn more at https://goo.gle/devtools-snippets.
    */
@@ -17327,7 +17341,7 @@ var UIStrings24 = {
   /**
    * @description Text to explain the snippets feature in the Sources panel. Learn more at https://goo.gle/devtools-snippets.
    */
-  explainSnippets: "Save the JavaScript code you run often in a snippet to run it again anytime.",
+  explainSnippets: "Save the JavaScript code you run often in a snippet to run it again anytime",
   /**
    * @description Text in Sources navigator of the Sources panel.
    */
@@ -17357,7 +17371,7 @@ var UIStrings24 = {
    *              the "Save as…" context menu in the Sources panel and the operation
    *              fails.
    */
-  saveAsFailed: "Failed to save file to disk.",
+  saveAsFailed: "Failed to save file to disk",
   /**
    * @description Message shown in the Workspace tab of the Sources panel to nudge
    *              developers into utilizing the Automatic Workspace Folders feature
@@ -18272,6 +18286,7 @@ var DEFAULT_VIEW8 = (input, output, target) => {
     const completionsId = `watch-expression-completions-${input.watchExpressions.indexOf(e)}`;
     return html14`<li
           class=${classMap3({ "watch-expression-tree-item": true, "watch-expression-editing": e.editing })}
+          ?open=${Boolean(e.result?.expanded)}
           @keydown=${onExpressionKeydown.bind(void 0, e)}
           @expand=${(event) => input.onExpand(e, event.detail.expanded)}
           role=treeitem>
@@ -18285,17 +18300,7 @@ var DEFAULT_VIEW8 = (input, output, target) => {
       onDelete: () => input.onDelete(e),
       onContextMenu: (event) => onContextMenu(e, event)
     })}></devtools-widget>
-        ${e.editing || !e.result || e.exceptionDetails || !e.result.hasChildren || e.result.object.customPreview() ? nothing8 : html14`
-          <ul role=group>
-            ${ObjectUI4.ObjectPropertiesSection.ObjectPropertyTreeElement.createPropertyNodes(
-      e.result.children ?? {},
-      false,
-      false,
-      input.linkifier
-    ).map(
-      (node) => html14`<devtools-tree-wrapper .treeElement=${node}></devtools-tree-wrapper>`
-    )}
-          </ul>`}
+        ${e.editing || !e.result || e.exceptionDetails || !e.result.hasChildren || e.result.object.customPreview() ? nothing8 : ObjectUI4.ObjectPropertiesSection.renderObjectTree(e.result, input.linkifier)}
       </li>`;
   };
   render11(
@@ -18463,10 +18468,9 @@ var WatchExpressionsSidebarPane = class _WatchExpressionsSidebarPane extends UI2
           this.saveExpressions();
           this.requestUpdate();
         },
-        onExpand: async (e, expanded) => {
-          if (expanded) {
-            await e.result?.populateChildrenIfNeeded();
-            this.requestUpdate();
+        onExpand: (e, expanded) => {
+          if (e.result) {
+            e.result.expanded = expanded;
           }
         }
       },
@@ -18509,11 +18513,11 @@ var WatchExpressionsSidebarPane = class _WatchExpressionsSidebarPane extends UI2
     return true;
   }
   appendApplicableItems(_event, contextMenu, target) {
-    if (target instanceof ObjectUI4.ObjectPropertiesSection.ObjectPropertyTreeElement) {
-      if (!target.property.property.synthetic) {
+    if (target instanceof ObjectUI4.ObjectPropertiesSection.ObjectTreeNode) {
+      if (!target.property.synthetic) {
         contextMenu.debugSection().appendItem(
           i18nString24(UIStrings25.addPropertyPathToWatch),
-          () => this.#focusAndAddExpressionToWatch(target.path()),
+          () => this.#focusAndAddExpressionToWatch(target.path),
           { jslogContext: "add-property-path-to-watch" }
         );
       }

@@ -11,6 +11,7 @@ import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import { encodeSourceMap, waitForAllSourceMapsProcessed } from '../../testing/SourceMapEncoder.js';
 import { protocolCallFrame, stringifyFrame } from '../../testing/StackTraceHelpers.js';
 import * as ScopesCodec from '../../third_party/source-map-scopes-codec/source-map-scopes-codec.js';
+import * as Formatter from '../formatter/formatter.js';
 import * as Workspace from '../workspace/workspace.js';
 import * as Bindings from './bindings.js';
 const { urlString } = Platform.DevToolsPath;
@@ -26,6 +27,7 @@ describe('CompilerScriptMapping', () => {
     });
     afterEach(async () => {
         await waitForAllSourceMapsProcessed();
+        Formatter.FormatterWorkerPool.FormatterWorkerPool.removeInstance();
     });
     const waitForUISourceCodeAdded = (url, target) => debuggerWorkspaceBinding.waitForUISourceCodeAdded(urlString `${url}`, target);
     const waitForUISourceCodeRemoved = (uiSourceCode) => new Promise(resolve => {
@@ -67,6 +69,51 @@ describe('CompilerScriptMapping', () => {
         const project = uiSourceCode.project();
         assert.strictEqual(project.securityOrigin()?.siteId(), 'http://attacker.com');
         assert.isTrue(project.id().includes('http://attacker.com'));
+    });
+    it('assigns an opaque security origin to the compiled source project for data URL scripts', async () => {
+        const target = backend.createTarget();
+        const sourceRoot = 'http://example.com';
+        const sources = ['foo.ts'];
+        const scriptInfo = {
+            url: 'data:text/javascript,console.log(1)',
+            embedderName: 'data:text/javascript,console.log(1)',
+            content: 'console.log(1);\n',
+        };
+        const sourceMapInfo = {
+            url: 'http://attacker.com/bundle.js.map',
+            content: { version: 3, mappings: '', sourceRoot, sources },
+        };
+        const [uiSourceCode] = await Promise.all([
+            waitForUISourceCodeAdded(`${sourceRoot}/foo.ts`, target),
+            backend.addScript(target, scriptInfo, sourceMapInfo),
+        ]);
+        const project = uiSourceCode.project();
+        assert.strictEqual(project.id(), `jsSourceMaps::${target.id()}`);
+        assert.isNotNull(project.securityOrigin());
+        assert.isTrue(project.securityOrigin()?.isOpaque());
+    });
+    it('ignores spoofed sourceURL when embedderName is empty or eval', async () => {
+        const target = backend.createTarget();
+        const sourceRoot = 'http://example.com';
+        const sources = ['foo.ts'];
+        const scriptInfo = {
+            url: 'http://example.com/spoofed.js',
+            hasSourceURL: true,
+            embedderName: '',
+            content: 'console.log(1);\n//# sourceURL=http://example.com/spoofed.js\n',
+        };
+        const sourceMapInfo = {
+            url: 'http://attacker.com/bundle.js.map',
+            content: { version: 3, mappings: '', sourceRoot, sources },
+        };
+        const [uiSourceCode] = await Promise.all([
+            waitForUISourceCodeAdded(`${sourceRoot}/foo.ts`, target),
+            backend.addScript(target, scriptInfo, sourceMapInfo),
+        ]);
+        const project = uiSourceCode.project();
+        assert.strictEqual(project.id(), `jsSourceMaps::${target.id()}`);
+        assert.isNotNull(project.securityOrigin());
+        assert.isTrue(project.securityOrigin()?.isOpaque());
     });
     it('removes webpack hashes from display names', async () => {
         const target = backend.createTarget();

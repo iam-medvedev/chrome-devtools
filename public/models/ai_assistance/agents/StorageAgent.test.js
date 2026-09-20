@@ -8,7 +8,7 @@ import * as SDK from '../../../core/sdk/sdk.js';
 import { mockAidaClient } from '../../../testing/AiAssistanceHelpers.js';
 import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import { MockCDPConnection } from '../../../testing/MockCDPConnection.js';
-import { getMainFrame, navigate } from '../../../testing/ResourceTreeHelpers.js';
+import { addChildFrame, getMainFrame, navigate } from '../../../testing/ResourceTreeHelpers.js';
 import { setupRuntimeHooks } from '../../../testing/RuntimeHelpers.js';
 import { setupSettingsHooks } from '../../../testing/SettingsHelpers.js';
 import { TestUniverse } from '../../../testing/TestUniverse.js';
@@ -593,18 +593,14 @@ describe('StorageAgent', function () {
             assert.exists(frame);
             assert.strictEqual(frame.securityOrigin().siteId(), PRIMARY_ORIGIN);
         });
-        it('returns the frame if it has a different origin but belongs to the same page target (iframe)', () => {
+        it('returns the frame if it has a different origin but belongs to the same page target (iframe)', async () => {
             const PRIMARY_ORIGIN = 'https://example.com';
             const DIFFERENT_ORIGIN = 'https://different.com';
             const context = new AiAssistance.StorageContext.StorageContext(new AiAssistance.StorageItem.CookieItem(PRIMARY_ORIGIN, PRIMARY_ORIGIN));
             const primaryTarget = universe.targetManager.primaryPageTarget();
             assert.exists(primaryTarget);
-            const resourceTreeModel = primaryTarget.model(SDK.ResourceTreeModel.ResourceTreeModel);
-            assert.exists(resourceTreeModel);
             // Create a subframe and navigate it to set its origin
-            const differentFrame = resourceTreeModel.frameAttached('different', 'main');
-            assert.exists(differentFrame);
-            navigate(differentFrame, { url: urlString `${DIFFERENT_ORIGIN}/`, securityOrigin: DIFFERENT_ORIGIN });
+            const differentFrame = await addChildFrame(primaryTarget, { url: urlString `${DIFFERENT_ORIGIN}/`, securityOrigin: DIFFERENT_ORIGIN });
             const frame = AiAssistance.StorageAgent.findFrameForOrigin(context, DIFFERENT_ORIGIN, universe.targetManager);
             assert.exists(frame);
             assert.strictEqual(frame.securityOrigin().siteId(), DIFFERENT_ORIGIN);

@@ -47,7 +47,10 @@ describe('ListSourcesTool', () => {
             universe,
         });
         const context = {
-            getEstablishedOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+            getOriginLock: () => ({
+                status: 'ESTABLISHED_ORIGIN',
+                origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+            }),
         };
         const response = await tool.handler({}, context);
         assertIsResult(response);
@@ -74,7 +77,10 @@ describe('ListSourcesTool', () => {
         });
         sinon.stub(uiSourceCodes[1], 'isIgnoreListed').returns(true);
         const context = {
-            getEstablishedOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+            getOriginLock: () => ({
+                status: 'ESTABLISHED_ORIGIN',
+                origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+            }),
         };
         const response = await tool.handler({}, context);
         assertIsResult(response);
@@ -99,7 +105,10 @@ describe('ListSourcesTool', () => {
             universe,
         });
         const context = {
-            getEstablishedOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+            getOriginLock: () => ({
+                status: 'ESTABLISHED_ORIGIN',
+                origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+            }),
         };
         const response = await tool.handler({}, context);
         assertIsResult(response);
@@ -132,29 +141,39 @@ describe('ListSourcesTool', () => {
             universe,
         });
         const context = {
-            getEstablishedOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+            getOriginLock: () => ({
+                status: 'ESTABLISHED_ORIGIN',
+                origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+            }),
         };
         const response = await tool.handler({}, context);
         assertIsResult(response);
         assert.lengthOf(response.result.files, 1);
         assert.strictEqual(response.result.files[0].name, 'example.com/script.js');
-        const sourceCodes = AiAssistance.ListSources.ListSourcesTool.getUISourceCodes(SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'), universe.workspace);
+        const sourceCodes = AiAssistance.ListSources.ListSourcesTool.getUISourceCodes({ status: 'ESTABLISHED_ORIGIN', origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com') }, universe.workspace);
         assert.lengthOf(sourceCodes, 1);
         assert.isTrue(sourceCodes[0].contentType().isFromSourceMap());
     });
     it('returns error for opaque origins', async () => {
         const context = {
-            getEstablishedOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('about:blank'),
+            getOriginLock: () => ({ status: 'ESTABLISHED_ORIGIN', origin: SDK.SecurityOrigin.SecurityOrigin.create('about:blank') }),
         };
         const response = await tool.handler({}, context);
-        assertIsError(response, 'Opaque origin not allowed');
+        assertIsError(response, 'No origin available or not allowed.');
     });
     it('returns error when origin lock is not established', async () => {
         const context = {
-            getEstablishedOrigin: () => undefined,
+            getOriginLock: () => ({ status: 'UNINITIALIZED' }),
         };
         const response = await tool.handler({}, context);
-        assertIsError(response, 'Opaque origin not allowed');
+        assertIsError(response, 'No origin established for this conversation.');
+    });
+    it('returns error when cross-origin navigation occurred during run', async () => {
+        const context = {
+            getOriginLock: () => ({ status: 'BLOCKED_BY_NAVIGATION' }),
+        };
+        const response = await tool.handler({}, context);
+        assertIsError(response, 'Cross-origin access blocked due to navigation.');
     });
     describe('getUISourceCodes and getSourceById', () => {
         it('filters sources by established origin in getUISourceCodes', () => {
@@ -174,12 +193,15 @@ describe('ListSourcesTool', () => {
                 projectType: Workspace.Workspace.projectTypes.Network,
                 universe,
             });
-            const sameOrigin = SDK.SecurityOrigin.SecurityOrigin.create('https://example.com');
-            const filtered = AiAssistance.ListSources.ListSourcesTool.getUISourceCodes(sameOrigin, universe.workspace);
+            const originLock = {
+                status: 'ESTABLISHED_ORIGIN',
+                origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+            };
+            const filtered = AiAssistance.ListSources.ListSourcesTool.getUISourceCodes(originLock, universe.workspace);
             assert.lengthOf(filtered, 1);
             assert.strictEqual(filtered[0].url(), 'https://example.com/script1.js');
         });
-        it('returns empty array from getUISourceCodes when origin is opaque', () => {
+        it('returns empty array from getUISourceCodes when origin is opaque or not established', () => {
             createContentProviderUISourceCodes({
                 items: [
                     {
@@ -191,9 +213,15 @@ describe('ListSourcesTool', () => {
                 projectType: Workspace.Workspace.projectTypes.Network,
                 universe,
             });
-            const opaqueOrigin = SDK.SecurityOrigin.SecurityOrigin.create('about:blank');
-            const filtered = AiAssistance.ListSources.ListSourcesTool.getUISourceCodes(opaqueOrigin, universe.workspace);
-            assert.lengthOf(filtered, 0);
+            const opaqueLock = {
+                status: 'ESTABLISHED_ORIGIN',
+                origin: SDK.SecurityOrigin.SecurityOrigin.create('about:blank'),
+            };
+            assert.lengthOf(AiAssistance.ListSources.ListSourcesTool.getUISourceCodes(opaqueLock, universe.workspace), 0);
+            const uninitializedLock = { status: 'UNINITIALIZED' };
+            assert.lengthOf(AiAssistance.ListSources.ListSourcesTool.getUISourceCodes(uninitializedLock, universe.workspace), 0);
+            const blockedLock = { status: 'BLOCKED_BY_NAVIGATION' };
+            assert.lengthOf(AiAssistance.ListSources.ListSourcesTool.getUISourceCodes(blockedLock, universe.workspace), 0);
         });
         it('retrieves source by ID when matching established origin in getSourceById', () => {
             const { uiSourceCodes } = createContentProviderUISourceCodes({
@@ -207,13 +235,16 @@ describe('ListSourcesTool', () => {
                 projectType: Workspace.Workspace.projectTypes.Network,
                 universe,
             });
-            const sameOrigin = SDK.SecurityOrigin.SecurityOrigin.create('https://example.com');
-            AiAssistance.ListSources.ListSourcesTool.getUISourceCodes(sameOrigin, universe.workspace);
+            const originLock = {
+                status: 'ESTABLISHED_ORIGIN',
+                origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+            };
+            AiAssistance.ListSources.ListSourcesTool.getUISourceCodes(originLock, universe.workspace);
             const id = AiAssistance.ListSources.ListSourcesTool.uiSourceCodeId.get(uiSourceCodes[0]);
-            const found = AiAssistance.ListSources.ListSourcesTool.getSourceById(id, sameOrigin, universe.workspace);
+            const found = AiAssistance.ListSources.ListSourcesTool.getSourceById(id, originLock, universe.workspace);
             assert.strictEqual(found, uiSourceCodes[0]);
         });
-        it('returns undefined from getSourceById when origin does not match or is opaque', () => {
+        it('returns undefined from getSourceById when origin does not match or is not established', () => {
             const { uiSourceCodes } = createContentProviderUISourceCodes({
                 items: [
                     {
@@ -225,13 +256,83 @@ describe('ListSourcesTool', () => {
                 projectType: Workspace.Workspace.projectTypes.Network,
                 universe,
             });
-            const sameOrigin = SDK.SecurityOrigin.SecurityOrigin.create('https://example.com');
-            AiAssistance.ListSources.ListSourcesTool.getUISourceCodes(sameOrigin, universe.workspace);
+            const originLock = {
+                status: 'ESTABLISHED_ORIGIN',
+                origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+            };
+            AiAssistance.ListSources.ListSourcesTool.getUISourceCodes(originLock, universe.workspace);
             const id = AiAssistance.ListSources.ListSourcesTool.uiSourceCodeId.get(uiSourceCodes[0]);
-            const crossOrigin = SDK.SecurityOrigin.SecurityOrigin.create('https://attacker.com');
-            assert.isUndefined(AiAssistance.ListSources.ListSourcesTool.getSourceById(id, crossOrigin, universe.workspace));
-            const opaqueOrigin = SDK.SecurityOrigin.SecurityOrigin.create('about:blank');
-            assert.isUndefined(AiAssistance.ListSources.ListSourcesTool.getSourceById(id, opaqueOrigin, universe.workspace));
+            const crossOriginLock = {
+                status: 'ESTABLISHED_ORIGIN',
+                origin: SDK.SecurityOrigin.SecurityOrigin.create('https://attacker.com'),
+            };
+            assert.isUndefined(AiAssistance.ListSources.ListSourcesTool.getSourceById(id, crossOriginLock, universe.workspace));
+            const opaqueLock = {
+                status: 'ESTABLISHED_ORIGIN',
+                origin: SDK.SecurityOrigin.SecurityOrigin.create('about:blank'),
+            };
+            assert.isUndefined(AiAssistance.ListSources.ListSourcesTool.getSourceById(id, opaqueLock, universe.workspace));
+            const uninitializedLock = { status: 'UNINITIALIZED' };
+            assert.isUndefined(AiAssistance.ListSources.ListSourcesTool.getSourceById(id, uninitializedLock, universe.workspace));
+            const blockedLock = { status: 'BLOCKED_BY_NAVIGATION' };
+            assert.isUndefined(AiAssistance.ListSources.ListSourcesTool.getSourceById(id, blockedLock, universe.workspace));
+        });
+        it('returns undefined from getSourceById when id is not a positive integer', () => {
+            const originLock = {
+                status: 'ESTABLISHED_ORIGIN',
+                origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+            };
+            assert.isUndefined(AiAssistance.ListSources.ListSourcesTool.getSourceById(0, originLock, universe.workspace));
+            assert.isUndefined(AiAssistance.ListSources.ListSourcesTool.getSourceById(-1, originLock, universe.workspace));
+            assert.isUndefined(AiAssistance.ListSources.ListSourcesTool.getSourceById(1.5, originLock, universe.workspace));
+            assert.isUndefined(AiAssistance.ListSources.ListSourcesTool.getSourceById(NaN, originLock, universe.workspace));
+        });
+        it('does not assign numeric IDs to cross-origin files', () => {
+            const { uiSourceCodes } = createContentProviderUISourceCodes({
+                items: [
+                    {
+                        url: urlString `https://example.com/script1.js`,
+                        mimeType: 'application/javascript',
+                        resourceType: Common.ResourceType.resourceTypes.Script,
+                    },
+                    {
+                        url: urlString `https://cross-origin.com/script2.js`,
+                        mimeType: 'application/javascript',
+                        resourceType: Common.ResourceType.resourceTypes.Script,
+                    },
+                ],
+                projectType: Workspace.Workspace.projectTypes.Network,
+                universe,
+            });
+            const originLock = {
+                status: 'ESTABLISHED_ORIGIN',
+                origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+            };
+            AiAssistance.ListSources.ListSourcesTool.getUISourceCodes(originLock, universe.workspace);
+            assert.isTrue(AiAssistance.ListSources.ListSourcesTool.uiSourceCodeId.has(uiSourceCodes[0]));
+            assert.isFalse(AiAssistance.ListSources.ListSourcesTool.uiSourceCodeId.has(uiSourceCodes[1]));
+        });
+        it('skips projects whose security origin does not match the lock', () => {
+            const { project, uiSourceCodes } = createContentProviderUISourceCodes({
+                items: [
+                    {
+                        url: urlString `https://example.com/script1.js`,
+                        mimeType: 'application/javascript',
+                        resourceType: Common.ResourceType.resourceTypes.Script,
+                    },
+                ],
+                projectId: 'cross-origin-project',
+                projectType: Workspace.Workspace.projectTypes.Network,
+                universe,
+            });
+            sinon.stub(project, 'securityOrigin').returns(SDK.SecurityOrigin.SecurityOrigin.create('https://other.com'));
+            const originLock = {
+                status: 'ESTABLISHED_ORIGIN',
+                origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+            };
+            const filtered = AiAssistance.ListSources.ListSourcesTool.getUISourceCodes(originLock, universe.workspace);
+            assert.notInclude(filtered, uiSourceCodes[0]);
+            assert.isFalse(AiAssistance.ListSources.ListSourcesTool.uiSourceCodeId.has(uiSourceCodes[0]));
         });
     });
 });

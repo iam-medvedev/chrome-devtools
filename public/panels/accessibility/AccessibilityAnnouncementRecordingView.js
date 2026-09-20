@@ -3,12 +3,79 @@
 // found in the LICENSE file.
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Buttons from '../../ui/components/buttons/buttons.js';
+import * as UI from '../../ui/legacy/legacy.js';
+import * as Lit from '../../ui/lit/lit.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
+import { AccessibilityAnnouncementRecordingListView } from './AccessibilityAnnouncementRecordingListView.js';
+import accessibilityAnnouncementRecordingViewStyles from './accessibilityAnnouncementRecordingView.css.js';
 import { AccessibilitySubPane } from './AccessibilitySubPane.js';
+const { html, render } = Lit;
+const { widget } = UI.Widget;
 const UIStrings = {
     /**
      * @description Title for the ARIA-Live and JS announcements recording tool
      */
     ariaLiveRecording: 'Announcements recording',
+    /**
+     * @description Tooltip for the start recording button in the announcements tool.
+     */
+    startRecording: 'Start recording',
+    /**
+     * @description Tooltip for the stop recording button in the announcements tool.
+     */
+    stopRecording: 'Stop recording',
+    /**
+     * @description Tooltip for the clear announcements button in the announcements tool.
+     */
+    clearAnnouncements: 'Clear announcements',
+    /**
+     * @description Label/title for the dropdown filter to select which announcement types to record.
+     */
+    filterByType: 'Filter by type',
+    /**
+     * @description Option label to record and display both ARIA-live and JavaScript announcements.
+     */
+    recordBoth: 'Record both',
+    /**
+     * @description Option label to record and display only ARIA-live announcements.
+     */
+    ariaLiveOnly: 'ARIA-live only',
+    /**
+     * @description Option label to record and display only JavaScript-triggered announcements.
+     */
+    announcementsOnly: 'Announcements only',
+    /**
+     * @description Placeholder text for the filter input in the announcements tool.
+     */
+    filter: 'Filter',
+    /**
+     * @description Screen reader announcement when no events match the filter in the announcements tool.
+     */
+    noEventsMatch: 'No events match',
+    /**
+     * @description Screen reader announcement when exactly one event matches the filter in the announcements tool.
+     */
+    oneEventMatches: '1 event matches',
+    /**
+     * @description Screen reader announcement when multiple events match the filter in the announcements tool.
+     * @example {15} PH1
+     */
+    nEventsMatch: '{PH1} events match',
+    /**
+     * @description Warning banner title shown when recording could not be enabled in some frames.
+     */
+    recordingBlockedWarning: 'Recording was blocked for some frames:',
+    /**
+     * @description Warning item describing a specific frame and the reason recording was blocked.
+     * @example {iframe#main} PH1
+     * @example {Script evaluation failed} PH2
+     */
+    frameBlockedReason: '{PH1}: {PH2}',
+    /**
+     * @description Fallback reason shown when an unknown error occurs while blocking recording.
+     */
+    unknownError: 'Unknown error',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/accessibility/AccessibilityAnnouncementRecordingView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -18,6 +85,84 @@ export var AnnouncementApi;
     AnnouncementApi["ARIA_LIVE"] = "aria-live";
     AnnouncementApi["JS_TRIGGERED"] = "js-triggered";
 })(AnnouncementApi || (AnnouncementApi = {}));
+export var RecordTypeFilter;
+(function (RecordTypeFilter) {
+    RecordTypeFilter["BOTH"] = "both";
+    RecordTypeFilter["ARIA_LIVE"] = "aria-live";
+    RecordTypeFilter["JS_TRIGGERED"] = "js-triggered";
+})(RecordTypeFilter || (RecordTypeFilter = {}));
+export const DEFAULT_VIEW = (input, _output, target) => {
+    // clang-format off
+    render(html `
+    <style>${accessibilityAnnouncementRecordingViewStyles}</style>
+    <div class="accessibility-announcement-recording-view">
+      <div class="announcements-toolbar-container">
+        <devtools-toolbar class="announcements-toolbar" jslog=${VisualLogging.toolbar()}>
+          <devtools-button
+            title=${input.isRecording ? i18nString(UIStrings.stopRecording) : i18nString(UIStrings.startRecording)}
+            aria-label=${input.isRecording ? i18nString(UIStrings.stopRecording) : i18nString(UIStrings.startRecording)}
+            .iconName=${'record-start'}
+            .toggledIconName=${'record-stop'}
+            .toggleType=${"primary-toggle" /* Buttons.Button.ToggleType.PRIMARY */}
+            .toggled=${input.isRecording}
+            @click=${input.onToggleRecording}
+            .variant=${"toolbar" /* Buttons.Button.Variant.TOOLBAR */}
+            .jslogContext=${'accessibility.toggle-recording'}>
+          </devtools-button>
+          <devtools-button
+            title=${i18nString(UIStrings.clearAnnouncements)}
+            aria-label=${i18nString(UIStrings.clearAnnouncements)}
+            .iconName=${'clear'}
+            @click=${input.onClear}
+            .variant=${"toolbar" /* Buttons.Button.Variant.TOOLBAR */}
+            .jslogContext=${'accessibility.clear-announcements'}>
+          </devtools-button>
+          <div class="toolbar-divider" role="separator"></div>
+          <select
+            title=${i18nString(UIStrings.filterByType)}
+            aria-label=${i18nString(UIStrings.filterByType)}
+            @change=${(event) => input.onRecordTypeFilterChange(event.target.value)}
+            .value=${input.recordTypeFilter}
+            jslog=${VisualLogging.dropDown('accessibility-announcements.filter-by-type').track({ change: true })}>
+            <option value=${"both" /* RecordTypeFilter.BOTH */} .selected=${input.recordTypeFilter === "both" /* RecordTypeFilter.BOTH */}>
+              ${i18nString(UIStrings.recordBoth)}
+            </option>
+            <option value=${"aria-live" /* RecordTypeFilter.ARIA_LIVE */} .selected=${input.recordTypeFilter === "aria-live" /* RecordTypeFilter.ARIA_LIVE */}>
+              ${i18nString(UIStrings.ariaLiveOnly)}
+            </option>
+            <option value=${"js-triggered" /* RecordTypeFilter.JS_TRIGGERED */} .selected=${input.recordTypeFilter === "js-triggered" /* RecordTypeFilter.JS_TRIGGERED */}>
+              ${i18nString(UIStrings.announcementsOnly)}
+            </option>
+          </select>
+          <div class="toolbar-divider" role="separator"></div>
+          <devtools-toolbar-input
+            type="filter"
+            placeholder=${i18nString(UIStrings.filter)}
+            .value=${input.textFilter}
+            @change=${(event) => input.onTextFilterChange(event.detail)}
+            style="flex-grow: 1">
+          </devtools-toolbar-input>
+        </devtools-toolbar>
+      </div>
+      ${input.blockedTargets.length > 0 ? html `
+        <div class="announcements-blocked-banner" role="alert">
+          <div class="blocked-banner-header">
+            <devtools-icon name="warning-filled"></devtools-icon>
+            <span>${i18nString(UIStrings.recordingBlockedWarning)}</span>
+          </div>
+          <ul class="blocked-targets-list">
+            ${input.blockedTargets.map(targetInfo => html `
+              <li>${i18nString(UIStrings.frameBlockedReason, { PH1: targetInfo.targetName, PH2: targetInfo.reason || i18nString(UIStrings.unknownError) })}</li>
+            `)}
+          </ul>
+        </div>
+      ` : Lit.nothing}
+      <div class="announcements-main-pane">
+        ${widget(AccessibilityAnnouncementRecordingListView, { items: input.announcements })}
+      </div>
+    </div>`, target);
+    // clang-format on
+};
 export function injectedScript(ariaLiveApi, jsTriggeredApi) {
     // Prevent duplicate script evaluation if already injected.
     if (window.__announcementsRecorderBinding_loaded) {
@@ -170,12 +315,45 @@ export function injectedScript(ariaLiveApi, jsTriggeredApi) {
     let lastRecordedText = null;
     let lastRecordedPoliteness = null;
     let lastRecordedTime = 0;
-    // Emits an announcement payload for an active live region node via the CDP binding.
+    const pendingLiveNodes = new Set();
+    let scheduledFlushId = null;
+    function scheduleFlush() {
+        if (scheduledFlushId !== null) {
+            return;
+        }
+        scheduledFlushId = window.requestAnimationFrame(() => {
+            scheduledFlushId = null;
+            flushPendingNodes();
+        });
+    }
+    function flushPendingNodes() {
+        const nodes = Array.from(pendingLiveNodes);
+        pendingLiveNodes.clear();
+        for (let i = 0; i < nodes.length; i++) {
+            processLiveNode(nodes[i]);
+        }
+    }
+    // Queues an active live region node for deferred visibility checking and emission.
     function recordLiveNode(node) {
         if (!node || node.nodeType !== Node.ELEMENT_NODE) {
             return;
         }
         const element = node;
+        const politeness = derivePoliteness(element);
+        if (politeness === 'off') {
+            return;
+        }
+        if (element.getAttribute('aria-hidden') === 'true') {
+            return;
+        }
+        pendingLiveNodes.add(element);
+        scheduleFlush();
+    }
+    // Emits an announcement payload for an active live region node via the CDP binding after layout.
+    function processLiveNode(element) {
+        if ('isConnected' in element && !element.isConnected) {
+            return;
+        }
         const politeness = derivePoliteness(element);
         if (politeness === 'off') {
             return;
@@ -255,17 +433,13 @@ export function injectedScript(ariaLiveApi, jsTriggeredApi) {
                 for (const node of mutation.addedNodes) {
                     if (node.nodeType === Node.ELEMENT_NODE) {
                         const el = node;
-                        if (el.shadowRoot) {
-                            observeSubtree(el.shadowRoot);
-                            scanAndObserveShadowRoots(el.shadowRoot);
-                        }
                         scanAndObserveShadowRoots(el);
-                        if (el.matches && el.matches(selector)) {
+                        if (el.matches(selector)) {
                             recordLiveNode(el);
                         }
-                        const children = el.querySelectorAll ? el.querySelectorAll(selector) : [];
-                        for (const child of children) {
-                            recordLiveNode(child);
+                        const children = el.querySelectorAll(selector);
+                        for (let i = 0; i < children.length; i++) {
+                            recordLiveNode(children[i]);
                         }
                     }
                 }
@@ -309,20 +483,29 @@ export function injectedScript(ariaLiveApi, jsTriggeredApi) {
         catch {
         }
     }
-    function scanAndObserveShadowRoots(node) {
-        if (!node) {
+    function scanAndObserveShadowRoots(root) {
+        if (!root) {
             return;
         }
-        if (node.nodeType === Node.ELEMENT_NODE) {
-            const el = node;
-            if (el.shadowRoot) {
-                observeSubtree(el.shadowRoot);
-                scanAndObserveShadowRoots(el.shadowRoot);
+        const queue = [root];
+        while (queue.length > 0) {
+            const current = queue.pop();
+            if (!current) {
+                continue;
             }
-        }
-        const children = node.children || [];
-        for (let i = 0; i < children.length; i++) {
-            scanAndObserveShadowRoots(children[i]);
+            const el = current;
+            if (el.shadowRoot && !observedRoots.has(el.shadowRoot)) {
+                observeSubtree(el.shadowRoot);
+                queue.push(el.shadowRoot);
+            }
+            const descendants = current.querySelectorAll('*');
+            for (let i = 0; i < descendants.length; i++) {
+                const descendant = descendants[i];
+                if (descendant.shadowRoot && !observedRoots.has(descendant.shadowRoot)) {
+                    observeSubtree(descendant.shadowRoot);
+                    queue.push(descendant.shadowRoot);
+                }
+            }
         }
     }
     const rootNode = document.body || document.documentElement;
@@ -339,6 +522,7 @@ export function injectedScript(ariaLiveApi, jsTriggeredApi) {
                 const shadow = origAttachShadow.apply(this, [init]);
                 if (init && init.mode === 'open') {
                     observeSubtree(shadow);
+                    scanAndObserveShadowRoots(shadow);
                 }
                 return shadow;
             };
@@ -350,6 +534,11 @@ export function injectedScript(ariaLiveApi, jsTriggeredApi) {
     // Registers cleanup function invoked during recording teardown.
     window.__announcementsRecorderBinding_cleanup = function () {
         observer.disconnect();
+        if (scheduledFlushId !== null) {
+            window.cancelAnimationFrame(scheduledFlushId);
+            scheduledFlushId = null;
+        }
+        pendingLiveNodes.clear();
         if (originalElementAriaNotify) {
             try {
                 Element.prototype['ariaNotify'] = originalElementAriaNotify;
@@ -380,7 +569,7 @@ export function teardownScript() {
         window.__announcementsRecorderBinding_cleanup();
     }
 }
-export const INJECTED_SCRIPT_SOURCE = `(${injectedScript.toString()})(${JSON.stringify("aria-live" /* AnnouncementApi.ARIA_LIVE */)}, ${JSON.stringify("js-triggered" /* AnnouncementApi.JS_TRIGGERED */)});`;
+export const INJECTED_SCRIPT_SOURCE = `(${injectedScript.toString()})(${JSON.stringify(AnnouncementApi.ARIA_LIVE)}, ${JSON.stringify(AnnouncementApi.JS_TRIGGERED)});`;
 export const TEARDOWN_SCRIPT_SOURCE = `(${teardownScript.toString()})();`;
 export function checkForBlockedPayload(payload) {
     if (typeof payload !== 'string') {
@@ -412,7 +601,7 @@ export function validateAndSanitizeAnnouncement(payload) {
         return null;
     }
     const parsedObj = parsed;
-    if (parsedObj.api !== "aria-live" /* AnnouncementApi.ARIA_LIVE */ && parsedObj.api !== "js-triggered" /* AnnouncementApi.JS_TRIGGERED */) {
+    if (parsedObj.api !== AnnouncementApi.ARIA_LIVE && parsedObj.api !== AnnouncementApi.JS_TRIGGERED) {
         return null;
     }
     if (typeof parsedObj.message !== 'string') {
@@ -453,16 +642,22 @@ export function validateAndSanitizeAnnouncement(payload) {
 }
 export class AccessibilityAnnouncementRecordingView extends AccessibilitySubPane {
     #announcements = [];
+    #filteredAnnouncements = null;
     #isRecording = false;
     #blockedTargets = new Map();
     #scriptIdentifiers = new Map();
     #targets = new Set();
     #enabledTargets = new Set();
-    constructor() {
+    #recordTypeFilter = "both" /* RecordTypeFilter.BOTH */;
+    #textFilter = '';
+    #regexFilter = null;
+    #view;
+    constructor(view = DEFAULT_VIEW) {
         super({
             title: i18nString(UIStrings.ariaLiveRecording),
             viewId: 'aria-live-recording',
         });
+        this.#view = view;
         SDK.TargetManager.TargetManager.instance().observeTargets(this, { scoped: true });
     }
     wasShown() {
@@ -480,8 +675,11 @@ export class AccessibilityAnnouncementRecordingView extends AccessibilitySubPane
     }
     async targetRemoved(target) {
         this.#targets.delete(target);
-        this.#blockedTargets.delete(target);
+        const wasBlocked = this.#blockedTargets.delete(target);
         await this.#disableTarget(target);
+        if (wasBlocked) {
+            this.requestUpdate();
+        }
     }
     async #enableTarget(target) {
         if (this.#enabledTargets.has(target)) {
@@ -590,6 +788,11 @@ export class AccessibilityAnnouncementRecordingView extends AccessibilitySubPane
             return;
         }
         this.#announcements.push(announcement);
+        if (this.#filteredAnnouncements !== null) {
+            if (this.#matchesFilter(announcement)) {
+                this.#filteredAnnouncements = [...this.#filteredAnnouncements, announcement];
+            }
+        }
         this.requestUpdate();
     }
     async startRecording() {
@@ -615,7 +818,102 @@ export class AccessibilityAnnouncementRecordingView extends AccessibilitySubPane
     }
     clearAnnouncements() {
         this.#announcements = [];
+        this.#filteredAnnouncements = [];
         this.requestUpdate();
+    }
+    #matchesFilter(announcement) {
+        if (this.#recordTypeFilter === "aria-live" /* RecordTypeFilter.ARIA_LIVE */ && announcement.api !== AnnouncementApi.ARIA_LIVE) {
+            return false;
+        }
+        if (this.#recordTypeFilter === "js-triggered" /* RecordTypeFilter.JS_TRIGGERED */ && announcement.api !== AnnouncementApi.JS_TRIGGERED) {
+            return false;
+        }
+        if (this.#regexFilter && !this.#regexFilter.test(announcement.message)) {
+            return false;
+        }
+        return true;
+    }
+    get filteredAnnouncements() {
+        if (this.#filteredAnnouncements !== null) {
+            return this.#filteredAnnouncements;
+        }
+        this.#filteredAnnouncements = this.#announcements.filter(announcement => this.#matchesFilter(announcement));
+        return this.#filteredAnnouncements;
+    }
+    #announceFilterMatches() {
+        const count = this.filteredAnnouncements.length;
+        let message;
+        if (count === 0) {
+            message = i18nString(UIStrings.noEventsMatch);
+        }
+        else if (count === 1) {
+            message = i18nString(UIStrings.oneEventMatches);
+        }
+        else {
+            message = i18nString(UIStrings.nEventsMatch, { PH1: count });
+        }
+        UI.ARIAUtils.LiveAnnouncer.alert(message);
+    }
+    setRecordTypeFilter(type) {
+        if (this.#recordTypeFilter === type) {
+            return;
+        }
+        this.#recordTypeFilter = type;
+        this.#filteredAnnouncements = null;
+        this.#announceFilterMatches();
+        this.requestUpdate();
+    }
+    setTextFilter(text) {
+        if (this.#textFilter === text) {
+            return;
+        }
+        this.#textFilter = text;
+        if (!text) {
+            this.#regexFilter = null;
+        }
+        else {
+            try {
+                this.#regexFilter = new RegExp(text, 'i');
+            }
+            catch {
+                this.#regexFilter = new RegExp('(?!)', 'i');
+            }
+        }
+        this.#filteredAnnouncements = null;
+        this.#announceFilterMatches();
+        this.requestUpdate();
+    }
+    performUpdate() {
+        const blockedTargets = [];
+        for (const [target, reason] of this.#blockedTargets) {
+            const targetName = target.name() || target.inspectedURL() || target.id();
+            blockedTargets.push({ targetName, reason });
+        }
+        const input = {
+            isRecording: this.#isRecording,
+            onToggleRecording: () => {
+                if (this.#isRecording) {
+                    void this.stopRecording();
+                }
+                else {
+                    void this.startRecording();
+                }
+            },
+            onClear: () => {
+                this.clearAnnouncements();
+            },
+            recordTypeFilter: this.#recordTypeFilter,
+            onRecordTypeFilterChange: (type) => {
+                this.setRecordTypeFilter(type);
+            },
+            textFilter: this.#textFilter,
+            onTextFilterChange: (text) => {
+                this.setTextFilter(text);
+            },
+            blockedTargets,
+            announcements: this.filteredAnnouncements,
+        };
+        this.#view(input, undefined, this.contentElement);
     }
     announcementsForTest() {
         return [...this.#announcements];

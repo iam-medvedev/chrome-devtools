@@ -1157,6 +1157,88 @@ describeWithEnvironment('Overlays', () => {
             const pendingContext = Overlays.Overlays.jsLogContext(overlayPending);
             assert.isNull(pendingContext);
         });
+        it('defines a log for comment pin overlay', () => {
+            const overlay = {
+                type: 'COMMENT_PIN',
+                entry: FAKE_EVENT,
+                commentThreadId: 'thread-123',
+            };
+            const context = Overlays.Overlays.jsLogContext(overlay);
+            assert.strictEqual(context, 'timeline.overlays.comment-pin');
+        });
+    });
+    describe('Comment Pin Overlay', () => {
+        it('creates an accessible comment pin overlay element with badge and thread id', async () => {
+            const container = document.createElement('div');
+            const mainFlameChartsContainer = document.createElement('div');
+            const networkFlameChartsContainer = document.createElement('div');
+            renderElementIntoDOM(container, { allowMultipleChildren: true });
+            renderElementIntoDOM(mainFlameChartsContainer, { allowMultipleChildren: true });
+            renderElementIntoDOM(networkFlameChartsContainer, { allowMultipleChildren: true });
+            const charts = createCharts();
+            const overlays = new Overlays.Overlays.Overlays({
+                container,
+                flameChartsContainers: {
+                    main: mainFlameChartsContainer,
+                    network: networkFlameChartsContainer,
+                },
+                charts,
+                entryQueries: FAKE_OVERLAY_ENTRY_QUERIES,
+            });
+            const testEvent = makeInstantEvent('test-event', 0);
+            const overlay = {
+                type: 'COMMENT_PIN',
+                entry: testEvent,
+                commentThreadId: 'thread-test-pin-1',
+            };
+            const addedOverlay = overlays.add(overlay);
+            await overlays.update();
+            const element = overlays.elementForOverlay(addedOverlay);
+            assert.isNotNull(element);
+            assert.isTrue(element?.classList.contains('overlay-type-COMMENT_PIN'));
+            const pin = element?.querySelector('.comment-pin');
+            assert.isNotNull(pin);
+            assert.strictEqual(pin?.getAttribute('role'), 'button');
+            assert.strictEqual(pin?.getAttribute('tabindex'), '0');
+            assert.isNotNull(pin?.querySelector('.comment-cursor'));
+        });
+        it('dispatches CommentPinClick when the pin is clicked', async () => {
+            const container = document.createElement('div');
+            const mainFlameChartsContainer = document.createElement('div');
+            const networkFlameChartsContainer = document.createElement('div');
+            renderElementIntoDOM(container, { allowMultipleChildren: true });
+            renderElementIntoDOM(mainFlameChartsContainer, { allowMultipleChildren: true });
+            renderElementIntoDOM(networkFlameChartsContainer, { allowMultipleChildren: true });
+            const charts = createCharts();
+            const overlays = new Overlays.Overlays.Overlays({
+                container,
+                flameChartsContainers: {
+                    main: mainFlameChartsContainer,
+                    network: networkFlameChartsContainer,
+                },
+                charts,
+                entryQueries: FAKE_OVERLAY_ENTRY_QUERIES,
+            });
+            const testEvent = makeInstantEvent('test-event', 0);
+            const overlay = {
+                type: 'COMMENT_PIN',
+                entry: testEvent,
+                commentThreadId: 'thread-test-pin-1',
+            };
+            overlays.add(overlay);
+            await overlays.update();
+            const element = overlays.elementForOverlay(overlay);
+            const pin = element?.querySelector('.comment-pin');
+            assert.isNotNull(pin);
+            const clickEventPromise = new Promise(resolve => {
+                overlays.addEventListener(Overlays.Overlays.CommentPinClick.eventName, event => {
+                    resolve(event);
+                }, { once: true });
+            });
+            pin.click();
+            const dispatchedEvent = await clickEventPromise;
+            assert.strictEqual(dispatchedEvent.overlay.commentThreadId, 'thread-test-pin-1');
+        });
     });
 });
 //# sourceMappingURL=OverlaysImpl.test.js.map

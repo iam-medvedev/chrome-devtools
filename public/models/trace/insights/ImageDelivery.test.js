@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { getFirstOrError, getInsightOrError, processTrace } from '../../../testing/InsightHelpers.js';
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import * as Insights from './insights.js';
 const { ImageOptimizationType } = Insights.Models.ImageDelivery;
-describeWithEnvironment('ImageDelivery', function () {
+describe('ImageDelivery', function () {
+    setupLocaleHooks();
     it('finds requests for remote fonts', async function () {
         // See the following for a description of each test case:
         // https://gist.github.com/adamraine/397e2bd08665f9e45f6072e446715115

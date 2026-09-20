@@ -588,6 +588,14 @@ var Audits;
     PermissionElementIssueType2["NonSecureContext"] = "NonSecureContext";
     PermissionElementIssueType2["MissingTransientUserActivation"] = "MissingTransientUserActivation";
   })(PermissionElementIssueType = Audits2.PermissionElementIssueType || (Audits2.PermissionElementIssueType = {}));
+  let WebInstallIssueReason;
+  ((WebInstallIssueReason2) => {
+    WebInstallIssueReason2["ManifestParsingOrNetworkError"] = "ManifestParsingOrNetworkError";
+    WebInstallIssueReason2["StartUrlInvalid"] = "StartUrlInvalid";
+    WebInstallIssueReason2["ManifestMissingNameOrShortName"] = "ManifestMissingNameOrShortName";
+    WebInstallIssueReason2["ManifestMissingId"] = "ManifestMissingId";
+    WebInstallIssueReason2["NoManifest"] = "NoManifest";
+  })(WebInstallIssueReason = Audits2.WebInstallIssueReason || (Audits2.WebInstallIssueReason = {}));
   let InspectorIssueCode;
   ((InspectorIssueCode2) => {
     InspectorIssueCode2["CookieIssue"] = "CookieIssue";
@@ -620,6 +628,7 @@ var Audits;
     InspectorIssueCode2["SelectivePermissionsInterventionIssue"] = "SelectivePermissionsInterventionIssue";
     InspectorIssueCode2["EmailVerificationRequestIssue"] = "EmailVerificationRequestIssue";
     InspectorIssueCode2["LazyLoadImageIssue"] = "LazyLoadImageIssue";
+    InspectorIssueCode2["WebInstallIssue"] = "WebInstallIssue";
   })(InspectorIssueCode = Audits2.InspectorIssueCode || (Audits2.InspectorIssueCode = {}));
   let GetEncodedResponseRequestEncoding;
   ((GetEncodedResponseRequestEncoding2) => {
@@ -902,6 +911,11 @@ var DOM;
     GetElementByRelationRequestRelation2["InterestTarget"] = "InterestTarget";
     GetElementByRelationRequestRelation2["CommandFor"] = "CommandFor";
   })(GetElementByRelationRequestRelation = DOM2.GetElementByRelationRequestRelation || (DOM2.GetElementByRelationRequestRelation = {}));
+  let SetTextMarkerRequestType;
+  ((SetTextMarkerRequestType2) => {
+    SetTextMarkerRequestType2["Spelling"] = "spelling";
+    SetTextMarkerRequestType2["Grammar"] = "grammar";
+  })(SetTextMarkerRequestType = DOM2.SetTextMarkerRequestType || (DOM2.SetTextMarkerRequestType = {}));
 })(DOM || (DOM = {}));
 var DOMDebugger;
 ((DOMDebugger2) => {
@@ -14400,7 +14414,7 @@ __export(NetworkRequest_exports, {
 });
 import * as Common30 from "../common/common.js";
 import * as i18n25 from "../i18n/i18n.js";
-import * as Platform18 from "../platform/platform.js";
+import * as Platform20 from "../platform/platform.js";
 import * as TextUtils24 from "../text_utils/text_utils.js";
 
 // ../../front_end/core/sdk/Cookie.ts
@@ -14654,7 +14668,7 @@ __export(CookieModel_exports, {
   Events: () => Events20
 });
 import * as Common28 from "../common/common.js";
-import * as Platform17 from "../platform/platform.js";
+import * as Platform19 from "../platform/platform.js";
 import * as Root8 from "../root/root.js";
 
 // ../../front_end/core/sdk/NetworkManager.ts
@@ -14690,7 +14704,7 @@ __export(NetworkManager_exports, {
 import * as Common27 from "../common/common.js";
 import * as Host7 from "../host/host.js";
 import * as i18n19 from "../i18n/i18n.js";
-import * as Platform16 from "../platform/platform.js";
+import * as Platform18 from "../platform/platform.js";
 import * as Root7 from "../root/root.js";
 import * as TextUtils21 from "../text_utils/text_utils.js";
 
@@ -15673,7 +15687,7 @@ __export(ResourceTreeModel_exports, {
 });
 import * as Common23 from "../common/common.js";
 import * as i18n13 from "../i18n/i18n.js";
-import * as Platform14 from "../platform/platform.js";
+import * as Platform16 from "../platform/platform.js";
 
 // ../../front_end/core/sdk/DOMModel.ts
 var DOMModel_exports = {};
@@ -15694,7 +15708,7 @@ __export(DOMModel_exports, {
   cssEscape: () => cssEscape
 });
 import * as Common20 from "../common/common.js";
-import * as Platform12 from "../platform/platform.js";
+import * as Platform14 from "../platform/platform.js";
 import * as Root5 from "../root/root.js";
 
 // ../../front_end/core/sdk/ConsoleModel.ts
@@ -15709,7 +15723,7 @@ __export(ConsoleModel_exports, {
 import * as Common19 from "../common/common.js";
 import * as Host5 from "../host/host.js";
 import * as i18n11 from "../i18n/i18n.js";
-import * as Platform11 from "../platform/platform.js";
+import * as Platform13 from "../platform/platform.js";
 
 // ../../front_end/core/sdk/ConsoleModelTypes.ts
 var FrontendMessageType = /* @__PURE__ */ ((FrontendMessageType2) => {
@@ -16339,6 +16353,143 @@ var Events2 = /* @__PURE__ */ ((Events35) => {
 })(Events2 || {});
 SDKModel.register(LogModel, { capabilities: 8 /* LOG */, autostart: true });
 
+// ../../front_end/core/sdk/PageFunctions.ts
+function scrollListenerInPage(id, reportScrollPositionBindingName, scrollListenerNameInPage) {
+  if ("scrollingElement" in this && !this.scrollingElement) {
+    return;
+  }
+  const scrollingElement = "scrollingElement" in this ? this.scrollingElement : this;
+  this[scrollListenerNameInPage] = () => {
+    globalThis[reportScrollPositionBindingName](
+      JSON.stringify({ scrollTop: scrollingElement.scrollTop, scrollLeft: scrollingElement.scrollLeft, id })
+    );
+  };
+  this.addEventListener("scroll", this[scrollListenerNameInPage], true);
+}
+function removeScrollListenerInPage(scrollListenerNameInPage) {
+  this.removeEventListener("scroll", this[scrollListenerNameInPage]);
+  delete this[scrollListenerNameInPage];
+}
+function scrollTopInPage() {
+  if ("scrollingElement" in this) {
+    if (!this.scrollingElement) {
+      return 0;
+    }
+    return this.scrollingElement.scrollTop;
+  }
+  return this.scrollTop;
+}
+function scrollLeftInPage() {
+  if ("scrollingElement" in this) {
+    if (!this.scrollingElement) {
+      return 0;
+    }
+    return this.scrollingElement.scrollLeft;
+  }
+  return this.scrollLeft;
+}
+function setScrollTopInPage(offsetInPage) {
+  if ("scrollingElement" in this) {
+    if (!this.scrollingElement) {
+      return;
+    }
+    this.scrollingElement.scrollTop = offsetInPage;
+  } else {
+    this.scrollTop = offsetInPage;
+  }
+}
+function setScrollLeftInPage(offsetInPage) {
+  if ("scrollingElement" in this) {
+    if (!this.scrollingElement) {
+      return;
+    }
+    this.scrollingElement.scrollLeft = offsetInPage;
+  } else {
+    this.scrollLeft = offsetInPage;
+  }
+}
+function verticalScrollRangeInPage() {
+  if ("scrollingElement" in this) {
+    if (!this.scrollingElement) {
+      return 0;
+    }
+    return this.scrollingElement.scrollHeight - this.scrollingElement.clientHeight;
+  }
+  return this.scrollHeight - this.clientHeight;
+}
+function horizontalScrollRangeInPage() {
+  if ("scrollingElement" in this) {
+    if (!this.scrollingElement) {
+      return 0;
+    }
+    return this.scrollingElement.scrollWidth - this.scrollingElement.clientWidth;
+  }
+  return this.scrollWidth - this.clientWidth;
+}
+function toggleClassAndInjectStyleRule(pseudoElementName, hidden) {
+  const classNamePrefix = "__web-inspector-hide";
+  const classNameSuffix = "-shortcut__";
+  const styleTagId = "__web-inspector-hide-shortcut-style__";
+  const pseudoElementNameEscaped = pseudoElementName ? pseudoElementName.replace(/[\(\)\:]/g, "_") : "";
+  const className = classNamePrefix + pseudoElementNameEscaped + classNameSuffix;
+  this.classList.toggle(className, hidden);
+  let localRoot = this;
+  while (localRoot.parentNode) {
+    localRoot = localRoot.parentNode;
+  }
+  if (localRoot.nodeType === Node.DOCUMENT_NODE) {
+    localRoot = document.head;
+  }
+  let style = localRoot.querySelector("style#" + styleTagId);
+  if (!style) {
+    const selectors = [];
+    selectors.push(".__web-inspector-hide-shortcut__");
+    selectors.push(".__web-inspector-hide-shortcut__ *");
+    const selector = selectors.join(", ");
+    const ruleBody = "    visibility: hidden !important;";
+    const rule = "\n" + selector + "\n{\n" + ruleBody + "\n}\n";
+    style = document.createElement("style");
+    style.id = styleTagId;
+    style.textContent = rule;
+    localRoot.appendChild(style);
+  }
+  if (pseudoElementName && !style.classList.contains(className)) {
+    style.classList.add(className);
+    style.textContent = `.${className}${pseudoElementName}, ${style.textContent}`;
+  }
+}
+function scrollIntoViewInPage() {
+  this.scrollIntoViewIfNeeded(true);
+}
+function focusInPage() {
+  this.focus();
+}
+function toStringForClipboard(data) {
+  const subtype = data.subtype;
+  const indent = data.indent;
+  if (subtype === "node") {
+    return this instanceof Element ? this.outerHTML : void 0;
+  }
+  if (subtype && typeof this === "undefined") {
+    return String(subtype);
+  }
+  try {
+    return JSON.stringify(this, null, indent);
+  } catch {
+    return String(this);
+  }
+}
+function saveVariable(value) {
+  const prefix = "temp";
+  let index = 1;
+  while (prefix + index in this) {
+    ++index;
+  }
+  const name = prefix + index;
+  this[name] = value;
+  return name;
+}
+
 // ../../front_end/core/sdk/SDKSettings.ts
 var SDKSettings_exports = {};
 __export(SDKSettings_exports, {
@@ -16419,7 +16570,7 @@ __export(CSSModel_exports, {
 });
 import * as Common14 from "../common/common.js";
 import * as Host4 from "../host/host.js";
-import * as Platform9 from "../platform/platform.js";
+import * as Platform11 from "../platform/platform.js";
 import * as Root4 from "../root/root.js";
 import * as TextUtils16 from "../text_utils/text_utils.js";
 
@@ -16492,7 +16643,7 @@ __export(CSSMatchedStyles_exports, {
   PropertyState: () => PropertyState,
   distanceToTreeScope: () => distanceToTreeScope
 });
-import * as Platform4 from "../platform/platform.js";
+import * as Platform5 from "../platform/platform.js";
 
 // ../../front_end/core/sdk/CSSProperty.ts
 var CSSProperty_exports = {};
@@ -16502,7 +16653,7 @@ __export(CSSProperty_exports, {
 });
 import * as Common6 from "../common/common.js";
 import * as HostModule from "../host/host.js";
-import * as Platform2 from "../platform/platform.js";
+import * as Platform3 from "../platform/platform.js";
 import * as TextUtils from "../text_utils/text_utils.js";
 
 // ../../front_end/core/sdk/CSSPropertyParser.ts
@@ -16510,7 +16661,6 @@ var CSSPropertyParser_exports = {};
 __export(CSSPropertyParser_exports, {
   ASTUtils: () => ASTUtils,
   BottomUpTreeMatching: () => BottomUpTreeMatching,
-  CSSControlMap: () => CSSControlMap,
   ComputedText: () => ComputedText,
   SyntaxTree: () => SyntaxTree,
   TreeSearch: () => TreeSearch,
@@ -16599,10 +16749,10 @@ __export(CSSPropertyParserMatchers_exports, {
   VariableNameMatcher: () => VariableNameMatcher,
   defaultValueForCSSType: () => defaultValueForCSSType,
   isValidCSSType: () => isValidCSSType,
-  localEvalCSS: () => localEvalCSS,
-  removeCSSEvaluationElement: () => removeCSSEvaluationElement
+  localEvalCSS: () => localEvalCSS
 });
 import * as Common5 from "../common/common.js";
+import * as Platform2 from "../platform/platform.js";
 var BaseVariableMatch = class {
   constructor(text, node, name, fallback, matching, computedTextCallback) {
     this.text = text;
@@ -16782,41 +16932,14 @@ var AttributeMatch = class extends BaseVariableMatch {
     );
   }
 };
-var cssEvaluationElement = null;
-function getCssEvaluationElement() {
-  const id = "css-evaluation-element";
-  if (!cssEvaluationElement) {
-    cssEvaluationElement = document.getElementById(id);
-    if (!cssEvaluationElement) {
-      cssEvaluationElement = document.createElement("div");
-      cssEvaluationElement.setAttribute("id", id);
-      cssEvaluationElement.setAttribute("style", "hidden: true; --evaluation: attr(data-custom-expr type(*))");
-      document.body.appendChild(cssEvaluationElement);
-    }
-  }
-  return cssEvaluationElement;
-}
-function removeCSSEvaluationElement() {
-  if (cssEvaluationElement) {
-    document.body.removeChild(cssEvaluationElement);
-    cssEvaluationElement = null;
-  }
-}
 function localEvalCSS(value, type) {
-  const element = getCssEvaluationElement();
-  element.setAttribute("data-value", value);
-  element.setAttribute("data-custom-expr", `attr(data-value ${type})`);
-  return element.computedStyleMap().get("--evaluation")?.toString() ?? null;
+  return Platform2.HostRuntime.HOST_RUNTIME.evaluateCSS(value, `attr(data-value ${type})`);
 }
 function isValidCSSType(type) {
-  const element = getCssEvaluationElement();
-  element.setAttribute("data-custom-expr", `attr(data-nonexistent ${type}, "good")`);
-  return '"good"' === (element.computedStyleMap().get("--evaluation")?.toString() ?? null);
+  return '"good"' === Platform2.HostRuntime.HOST_RUNTIME.evaluateCSS(null, `attr(data-nonexistent ${type}, "good")`);
 }
 function defaultValueForCSSType(type) {
-  const element = getCssEvaluationElement();
-  element.setAttribute("data-custom-expr", `attr(data-nonexistent ${type ?? ""})`);
-  return element.computedStyleMap().get("--evaluation")?.toString() ?? null;
+  return Platform2.HostRuntime.HOST_RUNTIME.evaluateCSS(null, `attr(data-nonexistent ${type ?? ""})`);
 }
 var RAW_STRING_TYPE = "raw-string";
 var AttributeMatcherBase = matcherBase(AttributeMatch);
@@ -16918,11 +17041,6 @@ var TextMatch = class {
   text;
   node;
   computedText;
-  render() {
-    const span = document.createElement("span");
-    span.appendChild(document.createTextNode(this.text));
-    return [span];
-  }
 };
 var TextMatcherBase = matcherBase(TextMatch);
 var TextMatcher = class extends TextMatcherBase {
@@ -18437,7 +18555,6 @@ function requiresSpace(a, b) {
   const noSpaceBefore = ["", "(", ")", ",", ":", "*", "{", ";", "]"];
   return !/\s/.test(trailingChar) && !/\s/.test(leadingChar) && !noSpaceAfter.includes(trailingChar) && !noSpaceBefore.includes(leadingChar);
 }
-var CSSControlMap = Map;
 var ASTUtils;
 ((ASTUtils2) => {
   function siblings(node) {
@@ -18754,7 +18871,7 @@ var CSSProperty = class _CSSProperty extends Common6.ObjectWrapper.ObjectWrapper
     const indentation = this.ownerStyle.cssText ? this.detectIndentation(this.ownerStyle.cssText) : this.ownerStyle.cssModel().target().targetManager().settings.moduleSetting("text-editor-indent").get();
     const endIndentation = this.ownerStyle.cssText ? indentation.substring(0, this.ownerStyle.range.endColumn) : "";
     const text = new TextUtils.Text.Text(this.ownerStyle.cssText || "");
-    const newStyleText = text.replaceRange(range, Platform2.StringUtilities.sprintf(";%s;", propertyText));
+    const newStyleText = text.replaceRange(range, Platform3.StringUtilities.sprintf(";%s;", propertyText));
     const styleText = await _CSSProperty.formatStyle(newStyleText, indentation, endIndentation);
     return await this.ownerStyle.setText(styleText, majorChange);
   }
@@ -18914,7 +19031,7 @@ __export(CSSRule_exports, {
   CSSRule: () => CSSRule,
   CSSStyleRule: () => CSSStyleRule
 });
-import * as Platform3 from "../platform/platform.js";
+import * as Platform4 from "../platform/platform.js";
 import * as TextUtils11 from "../text_utils/text_utils.js";
 
 // ../../front_end/core/sdk/CSSContainerQuery.ts
@@ -19625,7 +19742,7 @@ var CSSRule = class {
     this.style.rebase(edit);
   }
   resourceURL() {
-    return this.header?.resourceURL() ?? Platform3.DevToolsPath.EmptyUrlString;
+    return this.header?.resourceURL() ?? Platform4.DevToolsPath.EmptyUrlString;
   }
   isUserAgent() {
     return this.origin === CSS.StyleSheetOrigin.UserAgent;
@@ -20703,7 +20820,7 @@ var CSSMatchedStyles = class _CSSMatchedStyles {
     map.set(selectorText, value);
   }
   nodeStyles() {
-    Platform4.assertNotNullOrUndefined(this.#mainDOMCascade);
+    Platform5.assertNotNullOrUndefined(this.#mainDOMCascade);
     return this.#mainDOMCascade.styles();
   }
   inheritedStyles() {
@@ -20755,21 +20872,21 @@ var CSSMatchedStyles = class _CSSMatchedStyles {
     return this.#activePositionFallbackIndex;
   }
   pseudoStyles(pseudoType) {
-    Platform4.assertNotNullOrUndefined(this.#pseudoDOMCascades);
+    Platform5.assertNotNullOrUndefined(this.#pseudoDOMCascades);
     const domCascade = this.#pseudoDOMCascades.get(pseudoType);
     return domCascade ? domCascade.styles() : [];
   }
   pseudoTypes() {
-    Platform4.assertNotNullOrUndefined(this.#pseudoDOMCascades);
+    Platform5.assertNotNullOrUndefined(this.#pseudoDOMCascades);
     return new Set(this.#pseudoDOMCascades.keys());
   }
   customHighlightPseudoStyles(highlightName) {
-    Platform4.assertNotNullOrUndefined(this.#customHighlightPseudoDOMCascades);
+    Platform5.assertNotNullOrUndefined(this.#customHighlightPseudoDOMCascades);
     const domCascade = this.#customHighlightPseudoDOMCascades.get(highlightName);
     return domCascade ? domCascade.styles() : [];
   }
   customHighlightPseudoNames() {
-    Platform4.assertNotNullOrUndefined(this.#customHighlightPseudoDOMCascades);
+    Platform5.assertNotNullOrUndefined(this.#customHighlightPseudoDOMCascades);
     return new Set(this.#customHighlightPseudoDOMCascades.keys());
   }
   /**
@@ -20898,9 +21015,9 @@ var CSSMatchedStyles = class _CSSMatchedStyles {
     return domCascade?.isPropertyOverriddenByAnimation(property) ?? false;
   }
   resetActiveProperties() {
-    Platform4.assertNotNullOrUndefined(this.#mainDOMCascade);
-    Platform4.assertNotNullOrUndefined(this.#pseudoDOMCascades);
-    Platform4.assertNotNullOrUndefined(this.#customHighlightPseudoDOMCascades);
+    Platform5.assertNotNullOrUndefined(this.#mainDOMCascade);
+    Platform5.assertNotNullOrUndefined(this.#pseudoDOMCascades);
+    Platform5.assertNotNullOrUndefined(this.#customHighlightPseudoDOMCascades);
     this.#mainDOMCascade.reset();
     for (const domCascade of this.#pseudoDOMCascades.values()) {
       domCascade.reset();
@@ -21575,17 +21692,17 @@ __export(CSSStyleSheetHeader_exports, {
 });
 import * as Common7 from "../common/common.js";
 import * as i18n3 from "../i18n/i18n.js";
-import * as Platform5 from "../platform/platform.js";
+import * as Platform6 from "../platform/platform.js";
 import * as TextUtils12 from "../text_utils/text_utils.js";
 var UIStrings2 = {
   /**
    * @description Error message for when a CSS file can't be loaded.
    */
-  couldNotFindTheOriginalStyle: "Could not find the original style sheet.",
+  couldNotFindTheOriginalStyle: "Could not find the original style sheet",
   /**
    * @description Error message to display when a source CSS file could not be retrieved.
    */
-  couldNotRetrieveSourceStyles: "Could not retrieve source styles."
+  couldNotRetrieveSourceStyles: "Could not retrieve source styles"
 };
 var str_2 = i18n3.i18n.registerUIStrings("core/sdk/CSSStyleSheetHeader.ts", UIStrings2);
 var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
@@ -21736,11 +21853,1703 @@ var CSSStyleSheetHeader = class {
     return {
       target: this.#cssModel.target(),
       frameId: this.frameId,
-      initiatorUrl: this.hasSourceURL ? Platform5.DevToolsPath.EmptyUrlString : this.sourceURL
+      initiatorUrl: this.hasSourceURL ? Platform6.DevToolsPath.EmptyUrlString : this.sourceURL
     };
   }
   debugId() {
     return null;
+  }
+};
+
+// ../../front_end/core/sdk/SourceMap.ts
+var SourceMap_exports = {};
+__export(SourceMap_exports, {
+  SourceMap: () => SourceMap,
+  SourceMapEntry: () => SourceMapEntry,
+  SourceMapProvenance: () => SourceMapProvenance,
+  TokenIterator: () => TokenIterator,
+  parseSourceMap: () => parseSourceMap
+});
+import * as ScopesCodec from "../../third_party/source-map-scopes-codec/source-map-scopes-codec.js";
+import * as Common8 from "../common/common.js";
+import * as Platform7 from "../platform/platform.js";
+import * as TextUtils15 from "../text_utils/text_utils.js";
+
+// ../../front_end/core/sdk/ScopeTreeCache.ts
+var ScopeTreeCache_exports = {};
+__export(ScopeTreeCache_exports, {
+  scopeTreeForScript: () => scopeTreeForScript
+});
+import * as Formatter from "../../models/formatter/formatter.js";
+import * as TextUtils14 from "../text_utils/text_utils.js";
+var scopeTrees = /* @__PURE__ */ new WeakMap();
+function scopeTreeForScript(script) {
+  if (script.isWasm()) {
+    return Promise.resolve(null);
+  }
+  let promise = scopeTrees.get(script);
+  if (promise === void 0) {
+    promise = script.requestContentData().then((content) => {
+      if (TextUtils14.ContentData.ContentData.isError(content)) {
+        return null;
+      }
+      const sourceType = script.isModule ? "module" : "script";
+      return Formatter.FormatterWorkerPool.formatterWorkerPool().javaScriptScopeTree(content.text, sourceType).then((scopeTree) => scopeTree ? { scopeTree, text: content.textObj } : null).catch(() => null);
+    });
+    scopeTrees.set(script, promise);
+  }
+  return promise;
+}
+
+// ../../front_end/core/sdk/SourceMapFunctionRanges.ts
+var SourceMapFunctionRanges_exports = {};
+__export(SourceMapFunctionRanges_exports, {
+  buildOriginalScopes: () => buildOriginalScopes,
+  decodePastaRanges: () => decodePastaRanges
+});
+function buildOriginalScopes(ranges) {
+  validateStartBeforeEnd(ranges);
+  ranges.sort((a, b) => comparePositions(a.start, b.start) || comparePositions(b.end, a.end));
+  const root = {
+    start: { line: 0, column: 0 },
+    end: { line: Number.POSITIVE_INFINITY, column: Number.POSITIVE_INFINITY },
+    kind: "Global",
+    isStackFrame: false,
+    children: [],
+    variables: []
+  };
+  const stack = [root];
+  for (const range of ranges) {
+    let stackTop = stack.at(-1);
+    while (true) {
+      if (comparePositions(stackTop.end, range.start) <= 0) {
+        stack.pop();
+        stackTop = stack.at(-1);
+      } else {
+        break;
+      }
+    }
+    if (comparePositions(range.start, stackTop.end) < 0 && comparePositions(stackTop.end, range.end) < 0) {
+      throw new Error(`Range ${JSON.stringify(range)} and ${JSON.stringify(stackTop)} partially overlap.`);
+    }
+    const scope = createScopeFrom(range);
+    stackTop.children.push(scope);
+    stack.push(scope);
+  }
+  const lastChild = root.children.at(-1);
+  if (lastChild) {
+    root.end = lastChild.end;
+  }
+  return root;
+}
+function validateStartBeforeEnd(ranges) {
+  for (const range of ranges) {
+    if (comparePositions(range.start, range.end) >= 0) {
+      throw new Error(`Invalid range. End before start: ${JSON.stringify(range)}`);
+    }
+  }
+}
+function createScopeFrom(range) {
+  return {
+    ...range,
+    kind: "Function",
+    isStackFrame: true,
+    children: [],
+    variables: []
+  };
+}
+function decodePastaRanges(encodedRanges, names) {
+  const result = [];
+  let nameIndex = 0;
+  let startLineNumber = 0;
+  let startColumnNumber = 0;
+  let endLineNumber = 0;
+  let endColumnNumber = 0;
+  const tokenIter = new TokenIterator(encodedRanges);
+  let atStart = true;
+  while (tokenIter.hasNext()) {
+    if (atStart) {
+      atStart = false;
+    } else if (tokenIter.peek() === ",") {
+      tokenIter.next();
+    } else {
+      break;
+    }
+    nameIndex += tokenIter.nextVLQ();
+    startLineNumber = endLineNumber + tokenIter.nextVLQ();
+    startColumnNumber += tokenIter.nextVLQ();
+    endLineNumber = startLineNumber + tokenIter.nextVLQ();
+    endColumnNumber += tokenIter.nextVLQ();
+    const name = names[nameIndex];
+    if (name === void 0) {
+      continue;
+    }
+    result.push({
+      start: { line: startLineNumber, column: startColumnNumber },
+      end: { line: endLineNumber, column: endColumnNumber },
+      name
+    });
+  }
+  return result;
+}
+function comparePositions(a, b) {
+  return a.line - b.line || a.column - b.column;
+}
+
+// ../../front_end/core/sdk/SourceMapRangeMappings.ts
+var SourceMapRangeMappings_exports = {};
+__export(SourceMapRangeMappings_exports, {
+  decodeRangeMappings: () => decodeRangeMappings
+});
+function decodeRangeMappings(encodedRangeMappings) {
+  const rangeMappings = [];
+  const tokenIter = new TokenIterator(encodedRangeMappings);
+  let indices = [];
+  let currentIndex = 0;
+  while (tokenIter.hasNext()) {
+    if (tokenIter.peek() === ";") {
+      tokenIter.next();
+      rangeMappings.push(indices);
+      indices = [];
+      currentIndex = 0;
+      continue;
+    }
+    currentIndex += tokenIter.nextUnsignedVLQ();
+    indices.push(currentIndex);
+  }
+  rangeMappings.push(indices);
+  return rangeMappings;
+}
+
+// ../../front_end/core/sdk/SourceMapScopesInfo.ts
+var SourceMapScopesInfo_exports = {};
+__export(SourceMapScopesInfo_exports, {
+  SourceMapScopesInfo: () => SourceMapScopesInfo,
+  comparePositions: () => comparePositions2,
+  contains: () => contains,
+  findMatchingScopeNumber: () => findMatchingScopeNumber
+});
+import * as Formatter2 from "../../models/formatter/formatter.js";
+
+// ../../front_end/core/sdk/SourceMapScopeChainEntry.ts
+var SourceMapScopeChainEntry_exports = {};
+__export(SourceMapScopeChainEntry_exports, {
+  SourceMapScopeChainEntry: () => SourceMapScopeChainEntry
+});
+import * as i18n5 from "../i18n/i18n.js";
+var UIStrings3 = {
+  /**
+   * @description Title of a section in the debugger showing local JavaScript variables.
+   */
+  local: "Local",
+  /**
+   * @description Text that refers to closure as a programming term.
+   */
+  closure: "Closure",
+  /**
+   * @description Noun that represents a section or block of code in the Debugger Model. Shown in the Sources tab, while paused on a breakpoint.
+   */
+  block: "Block",
+  /**
+   * @description Title of a section in the debugger showing JavaScript variables from the global scope.
+   */
+  global: "Global",
+  /**
+   * @description Text in Scope Chain section of the Sources panel.
+   */
+  exception: "Exception",
+  /**
+   * @description Text in Scope Chain section of the Sources panel.
+   */
+  returnValue: "Return value"
+};
+var str_3 = i18n5.i18n.registerUIStrings("core/sdk/SourceMapScopeChainEntry.ts", UIStrings3);
+var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
+var SourceMapScopeChainEntry = class {
+  #callFrame;
+  #scope;
+  #range;
+  #isInnerMostFunction;
+  #returnValue;
+  #scopeNumber;
+  #object;
+  /**
+   * @param isInnerMostFunction If `scope` is the innermost 'function' scope. Only used for labeling as we name the
+   * scope of the paused function 'Local', while other outer 'function' scopes are named 'Closure'.
+   * @param scopeNumber The V8 scope in which `scope`s binding expressions must be evaluated. Defaults to the
+   * inner-most scope.
+   */
+  constructor(callFrame, scope, range, isInnerMostFunction, returnValue, scopeNumber) {
+    this.#callFrame = callFrame;
+    this.#scope = scope;
+    this.#range = range;
+    this.#isInnerMostFunction = isInnerMostFunction;
+    this.#returnValue = returnValue;
+    this.#scopeNumber = scopeNumber;
+  }
+  originalScope() {
+    return this.#scope;
+  }
+  extraProperties() {
+    const extraProperties = [];
+    if (this.#isInnerMostFunction && this.#callFrame.exception) {
+      extraProperties.push(new RemoteObjectProperty(
+        i18nString3(UIStrings3.exception),
+        this.#callFrame.exception,
+        void 0,
+        void 0,
+        void 0,
+        void 0,
+        void 0,
+        /* synthetic */
+        true
+      ));
+    }
+    if (this.#returnValue) {
+      extraProperties.push(new RemoteObjectProperty(
+        i18nString3(UIStrings3.returnValue),
+        this.#returnValue,
+        void 0,
+        void 0,
+        void 0,
+        void 0,
+        void 0,
+        /* synthetic */
+        true,
+        this.#callFrame.setReturnValue.bind(this.#callFrame)
+      ));
+    }
+    return extraProperties;
+  }
+  callFrame() {
+    return this.#callFrame;
+  }
+  type() {
+    if (this.#scope.isStackFrame) {
+      return this.#isInnerMostFunction ? Debugger.ScopeType.Local : Debugger.ScopeType.Closure;
+    }
+    switch (this.#scope.kind?.toLowerCase()) {
+      case "global":
+        return Debugger.ScopeType.Global;
+      case "block":
+        return Debugger.ScopeType.Block;
+    }
+    return this.#scope.kind ?? "";
+  }
+  typeName() {
+    if (this.#scope.isStackFrame) {
+      return this.#isInnerMostFunction ? i18nString3(UIStrings3.local) : i18nString3(UIStrings3.closure);
+    }
+    switch (this.#scope.kind?.toLowerCase()) {
+      case "global":
+        return i18nString3(UIStrings3.global);
+      case "block":
+        return i18nString3(UIStrings3.block);
+    }
+    return this.#scope.kind ?? "";
+  }
+  name() {
+    return this.#scope.name;
+  }
+  range() {
+    return null;
+  }
+  object() {
+    if (!this.#object) {
+      this.#object = new SourceMapScopeRemoteObject(this.#callFrame, this.#scope, this.#range, this.#scopeNumber);
+    }
+    return this.#object;
+  }
+  description() {
+    return "";
+  }
+  icon() {
+    return void 0;
+  }
+};
+var SourceMapScopeRemoteObject = class _SourceMapScopeRemoteObject extends RemoteObjectImpl {
+  #callFrame;
+  #scope;
+  #range;
+  #scopeNumber;
+  #propertiesPromise;
+  #cachedWithPreview = false;
+  constructor(callFrame, scope, range, scopeNumber) {
+    super(
+      callFrame.debuggerModel.runtimeModel(),
+      /* objectId */
+      void 0,
+      "object",
+      /* sub type */
+      void 0,
+      /* value */
+      null
+    );
+    this.#callFrame = callFrame;
+    this.#scope = scope;
+    this.#range = range;
+    this.#scopeNumber = scopeNumber;
+  }
+  async doGetProperties(_ownProperties, accessorPropertiesOnly, _nonIndexedPropertiesOnly, generatePreview) {
+    if (accessorPropertiesOnly) {
+      return { properties: [], internalProperties: [] };
+    }
+    if (!this.#propertiesPromise || generatePreview && !this.#cachedWithPreview) {
+      this.#cachedWithPreview = generatePreview;
+      this.#propertiesPromise = this.#evaluateProperties(generatePreview);
+    }
+    return await this.#propertiesPromise;
+  }
+  async #evaluateProperties(generatePreview) {
+    if (this.#scope.variables.length === 0) {
+      return { properties: [], internalProperties: [] };
+    }
+    const expressions = this.#scope.variables.map((_, index) => this.#findExpression(index));
+    const values = await this.#evaluateAsBatch(expressions, generatePreview) ?? await this.#evaluateSeparately(expressions, generatePreview);
+    const properties = this.#scope.variables.map((variable, index) => {
+      const value = values[index];
+      if (value === null) {
+        return _SourceMapScopeRemoteObject.#unavailableProperty(variable);
+      }
+      return new RemoteObjectProperty(
+        variable,
+        value,
+        /* enumerable */
+        false,
+        /* writable */
+        false,
+        /* isOwn */
+        true,
+        /* wasThrown */
+        false
+      );
+    });
+    return { properties, internalProperties: [] };
+  }
+  /**
+   * Evaluates all binding expressions of this scope with a single `evaluateOnCallFrame` call.
+   *
+   * We build an object literal that spreads in one `{index: value}` object per binding, each produced by
+   * its own arrow function wrapped in `try`/`catch`. A binding that throws contributes nothing, which is
+   * how we tell it apart from one that legitimately evaluates to `undefined`, and it doesn't take the
+   * rest of the scope down with it.
+   *
+   * The expressions are inlined rather than passed to `eval`. `eval` in the evaluated code is the page's
+   * `eval`, which a `script-src` CSP without `'unsafe-eval'` blocks. `Runtime.evaluate` can opt out of
+   * that via `allowUnsafeEvalBlockedByCSP`, but `Debugger.evaluateOnCallFrame` has no such option.
+   * Inlining also means we don't introduce bindings of our own that could shadow the names a binding
+   * expression refers to, and arrow functions keep `this` pointing at the paused frame's receiver.
+   *
+   * @returns The value for each expression, or null if the batch failed as a whole. The latter happens
+   *          when a binding expression doesn't parse, since that takes out the entire object literal.
+   */
+  async #evaluateAsBatch(expressions, generatePreview) {
+    const spreads = [];
+    for (const [index, expression] of expressions.entries()) {
+      if (expression !== null) {
+        spreads.push(`...(() => { try { return {${index}: (${expression})}; } catch {} })()`);
+      }
+    }
+    if (spreads.length === 0) {
+      return expressions.map(() => null);
+    }
+    const result = await this.#callFrame.evaluate({
+      expression: `({__proto__: null, ${spreads.join(", ")}})`,
+      // The wrapper object is a throw-away. We only need previews for the values inside of it.
+      generatePreview: false,
+      scopeNumber: this.#scopeNumber
+    });
+    if ("error" in result || result.exceptionDetails || !result.object) {
+      return null;
+    }
+    const { properties } = await result.object.getOwnProperties(generatePreview);
+    result.object.release();
+    const valueByIndex = new Map(properties?.map(({ name, value }) => [name, value]));
+    return expressions.map((_, index) => valueByIndex.get(String(index)) ?? null);
+  }
+  /**
+   * Fallback for when {@link #evaluateAsBatch} fails as a whole, so that a single binding expression
+   * that doesn't parse only costs us that one variable.
+   */
+  async #evaluateSeparately(expressions, generatePreview) {
+    const values = [];
+    for (const expression of expressions) {
+      if (expression === null) {
+        values.push(null);
+        continue;
+      }
+      const result = await this.#callFrame.evaluate({ expression, generatePreview, scopeNumber: this.#scopeNumber });
+      if ("error" in result || result.exceptionDetails) {
+        values.push(null);
+      } else {
+        values.push(result.object);
+      }
+    }
+    return values;
+  }
+  /** @returns null if the variable is unavailable at the current paused location */
+  #findExpression(index) {
+    if (!this.#range) {
+      return null;
+    }
+    const expressionOrSubRanges = this.#range.values[index];
+    if (typeof expressionOrSubRanges === "string") {
+      return expressionOrSubRanges;
+    }
+    if (!expressionOrSubRanges) {
+      return null;
+    }
+    const pausedPosition = this.#callFrame.location();
+    for (const range of expressionOrSubRanges) {
+      if (contains({ start: range.from, end: range.to }, pausedPosition.lineNumber, pausedPosition.columnNumber)) {
+        return range.value ?? null;
+      }
+    }
+    return null;
+  }
+  static #unavailableProperty(name) {
+    return new RemoteObjectProperty(
+      name,
+      null,
+      /* enumerable */
+      false,
+      /* writeable */
+      false,
+      /* isOwn */
+      true,
+      /* wasThrown */
+      false
+    );
+  }
+};
+
+// ../../front_end/core/sdk/SourceMapScopesInfo.ts
+var SourceMapScopesInfo = class _SourceMapScopesInfo {
+  #sourceMap;
+  #originalScopes;
+  #generatedRanges;
+  #cachedVariablesAndBindingsPresent = null;
+  constructor(sourceMap, scopeInfo) {
+    this.#sourceMap = sourceMap;
+    this.#originalScopes = scopeInfo.scopes;
+    this.#generatedRanges = scopeInfo.ranges;
+  }
+  /**
+   * If the source map does not contain any scopes information, this factory function attempts to create scope information
+   * via the script's AST combined with the mappings.
+   *
+   * We create the generated ranges from the scope tree and for each range we create an original scope that matches the bounds 1:1.
+   */
+  static createFromAst(sourceMap, scopeTree, text) {
+    const numSourceUrls = sourceMap.sourceURLs().length;
+    const scopeBySourceUrl = [];
+    for (let i = 0; i < numSourceUrls; i++) {
+      const scope = {
+        start: { line: 0, column: 0 },
+        end: { line: Number.POSITIVE_INFINITY, column: Number.POSITIVE_INFINITY },
+        isStackFrame: false,
+        variables: [],
+        children: []
+      };
+      scopeBySourceUrl.push(scope);
+    }
+    const stack = [{ node: scopeTree }];
+    let rootRange = void 0;
+    while (stack.length > 0) {
+      const popped = stack.pop();
+      if (!popped) {
+        break;
+      }
+      const { node, parentRange, parentScopeHint } = popped;
+      const start = positionFromOffset(node.start);
+      const end = positionFromOffset(node.end);
+      const startEntry = sourceMap.findEntry(start.line, start.column);
+      const endEntry = sourceMap.findEntry(end.line, end.column);
+      const sourceIndex = startEntry?.sourceIndex;
+      const canMapOriginalPosition = startEntry && endEntry && sourceIndex !== void 0 && startEntry.sourceIndex === endEntry.sourceIndex && startEntry.sourceIndex !== void 0 && sourceIndex >= 0 && sourceIndex < numSourceUrls;
+      const isStackFrame = node.kind === Formatter2.FormatterWorkerPool.ScopeKind.FUNCTION || node.kind === Formatter2.FormatterWorkerPool.ScopeKind.ARROW_FUNCTION;
+      let name = void 0;
+      for (const offset of node.nameMappingLocations ?? []) {
+        const position = positionFromOffset(offset);
+        const entry = sourceMap.findEntryExact(position.line, position.column);
+        if (entry?.name !== void 0) {
+          name = entry.name;
+          break;
+        }
+      }
+      let scope;
+      if (canMapOriginalPosition) {
+        scope = {
+          start: { line: startEntry.sourceLineNumber, column: startEntry.sourceColumnNumber },
+          end: { line: endEntry.sourceLineNumber, column: endEntry.sourceColumnNumber },
+          name: name ?? node.name,
+          isStackFrame,
+          variables: [],
+          children: []
+        };
+      }
+      const range = {
+        start,
+        end,
+        originalScope: scope,
+        isStackFrame,
+        isHidden: false,
+        values: [],
+        children: []
+      };
+      if (!rootRange) {
+        rootRange = range;
+      }
+      parentRange?.children.push(range);
+      let nextParentScopeHint = parentScopeHint;
+      if (canMapOriginalPosition && scope) {
+        const rootScope = scopeBySourceUrl[sourceIndex];
+        const startSearchFrom = parentScopeHint && containsOriginal(parentScopeHint, scope) ? parentScopeHint : rootScope;
+        insertInScope(startSearchFrom, scope);
+        nextParentScopeHint = scope;
+      }
+      for (let i = node.children.length - 1; i >= 0; --i) {
+        stack.push({ node: node.children[i], parentRange: range, parentScopeHint: nextParentScopeHint });
+      }
+    }
+    return new _SourceMapScopesInfo(sourceMap, { scopes: scopeBySourceUrl, ranges: rootRange ? [rootRange] : [] });
+    function insertInScope(rootScope, newScope) {
+      let parent = rootScope;
+      while (true) {
+        let deeperParent = null;
+        for (const child of parent.children) {
+          if (containsOriginal(child, newScope)) {
+            deeperParent = child;
+            break;
+          }
+        }
+        if (deeperParent) {
+          parent = deeperParent;
+        } else {
+          break;
+        }
+      }
+      const childrenToKeep = [];
+      for (const child of parent.children) {
+        if (containsOriginal(newScope, child)) {
+          newScope.children.push(child);
+          child.parent = newScope;
+        } else {
+          childrenToKeep.push(child);
+        }
+      }
+      const insertIndex = childrenToKeep.findIndex((child) => compareScopes(newScope, child) < 0);
+      if (insertIndex === -1) {
+        childrenToKeep.push(newScope);
+      } else {
+        childrenToKeep.splice(insertIndex, 0, newScope);
+      }
+      parent.children = childrenToKeep;
+      newScope.parent = parent;
+    }
+    function containsOriginal(outer, inner) {
+      return comparePositions2(outer.start, inner.start) <= 0 && comparePositions2(outer.end, inner.end) >= 0;
+    }
+    function compareScopes(a, b) {
+      return comparePositions2(a.start, b.start);
+    }
+    function positionFromOffset(offset) {
+      const location = text.positionFromOffset(offset);
+      return { line: location.lineNumber, column: location.columnNumber };
+    }
+  }
+  addOriginalScopes(scopes) {
+    for (const scope of scopes) {
+      this.#originalScopes.push(scope);
+    }
+  }
+  addGeneratedRanges(ranges) {
+    for (const range of ranges) {
+      this.#generatedRanges.push(range);
+    }
+  }
+  hasOriginalScopes(sourceIdx) {
+    return Boolean(this.#originalScopes[sourceIdx]);
+  }
+  isEmpty() {
+    const noScopes = this.#originalScopes.every((scope) => scope === null);
+    return noScopes && !this.#generatedRanges.length;
+  }
+  addOriginalScopesAtIndex(sourceIdx, scope) {
+    if (!this.#originalScopes[sourceIdx]) {
+      this.#originalScopes[sourceIdx] = scope;
+    } else {
+      throw new Error(`Trying to re-augment existing scopes for source at index: ${sourceIdx}`);
+    }
+  }
+  /**
+   * @returns true, iff the function surrounding the provided position is marked as "hidden".
+   */
+  isOutlinedFrame(generatedLine, generatedColumn) {
+    const rangeChain = this.#findGeneratedRangeChain(generatedLine, generatedColumn);
+    return this.#isOutlinedFrame(rangeChain);
+  }
+  #isOutlinedFrame(rangeChain) {
+    for (let i = rangeChain.length - 1; i >= 0; --i) {
+      if (rangeChain[i].isStackFrame) {
+        return rangeChain[i].isHidden;
+      }
+    }
+    return false;
+  }
+  /**
+   * @returns true, iff the range surrounding the provided position contains multiple
+   * inlined original functions.
+   */
+  hasInlinedFrames(generatedLine, generatedColumn) {
+    const rangeChain = this.#findGeneratedRangeChain(generatedLine, generatedColumn);
+    for (let i = rangeChain.length - 1; i >= 0; --i) {
+      if (rangeChain[i].isStackFrame) {
+        return false;
+      }
+      if (rangeChain[i].callSite) {
+        return true;
+      }
+    }
+    return false;
+  }
+  /**
+   * Given a generated position, this returns all the surrounding generated ranges from outer
+   * to inner.
+   */
+  #findGeneratedRangeChain(line, column) {
+    const result = [];
+    (function walkRanges(ranges) {
+      for (const range of ranges) {
+        if (!contains(range, line, column)) {
+          continue;
+        }
+        result.push(range);
+        walkRanges(range.children);
+      }
+    })(this.#generatedRanges);
+    return result;
+  }
+  /**
+   * @returns true if we have enough info (i.e. variable and binding expressions) to build
+   * a scope view.
+   */
+  hasVariablesAndBindings() {
+    if (this.#cachedVariablesAndBindingsPresent === null) {
+      this.#cachedVariablesAndBindingsPresent = this.#areVariablesAndBindingsPresent();
+    }
+    return this.#cachedVariablesAndBindingsPresent;
+  }
+  #areVariablesAndBindingsPresent() {
+    function walkTree(nodes) {
+      for (const node of nodes) {
+        if (!node) {
+          continue;
+        }
+        if ("variables" in node && node.variables.length > 0) {
+          return true;
+        }
+        if ("values" in node && node.values.some((v) => v !== null)) {
+          return true;
+        }
+        if (walkTree(node.children)) {
+          return true;
+        }
+      }
+      return false;
+    }
+    return walkTree(this.#originalScopes) && walkTree(this.#generatedRanges);
+  }
+  /**
+   * Constructs a scope chain based on the CallFrame's paused position.
+   *
+   * The algorithm to obtain the original scope chain is straight-forward:
+   *
+   *   1) Find the inner-most generated range that contains the CallFrame's
+   *      paused position.
+   *
+   *   2) Does the found range have an associated original scope?
+   *
+   *      2a) If no, return null. This is a "hidden" range and technically
+   *          we shouldn't be pausing here in the first place. This code doesn't
+   *          correspond to anything in the authored code.
+   *
+   *      2b) If yes, the associated original scope is the inner-most
+   *          original scope in the resulting scope chain.
+   *
+   *   3) Walk the parent chain of the found original scope outwards. This is
+   *      our scope view. For each original scope we also try to find a
+   *      corresponding generated range that contains the CallFrame's
+   *      paused position. We need the generated range to resolve variable
+   *      values.
+   */
+  resolveMappedScopeChain(callFrame) {
+    const rangeChain = this.#findGeneratedRangeChainForFrame(callFrame);
+    const innerMostOriginalScope = rangeChain.at(-1)?.originalScope;
+    if (innerMostOriginalScope === void 0) {
+      return null;
+    }
+    let seenFunctionScope = false;
+    const result = [];
+    for (let originalScope = innerMostOriginalScope; originalScope; originalScope = originalScope.parent) {
+      const range = rangeChain.findLast((r) => r.originalScope === originalScope);
+      const isFunctionScope = originalScope.isStackFrame;
+      const isInnerMostFunction = isFunctionScope && !seenFunctionScope;
+      const returnValue = isInnerMostFunction ? callFrame.returnValue() : null;
+      const scopeNumber = range ? findMatchingScopeNumber(callFrame, range) : void 0;
+      result.push(new SourceMapScopeChainEntry(
+        callFrame,
+        originalScope,
+        range,
+        isInnerMostFunction,
+        returnValue ?? void 0,
+        scopeNumber
+      ));
+      seenFunctionScope ||= isFunctionScope;
+    }
+    const globalScope = callFrame.scopeChain()?.find((s) => s.type() === Debugger.ScopeType.Global);
+    if (globalScope) {
+      result.push(globalScope);
+    }
+    if (callFrame.returnValue() !== null) {
+      while (result.length && result[0].type() !== Debugger.ScopeType.Local) {
+        result.shift();
+      }
+    }
+    return result;
+  }
+  /** Similar to #findGeneratedRangeChain, but takes inlineFrameIndex of virtual call frames into account */
+  #findGeneratedRangeChainForFrame(callFrame) {
+    const rangeChain = this.#findGeneratedRangeChain(callFrame.location().lineNumber, callFrame.location().columnNumber);
+    if (callFrame.inlineFrameIndex === 0) {
+      return rangeChain;
+    }
+    for (let inlineIndex = 0; inlineIndex < callFrame.inlineFrameIndex; ) {
+      const range = rangeChain.pop();
+      if (range?.callSite) {
+        ++inlineIndex;
+      }
+    }
+    return rangeChain;
+  }
+  /**
+   * Returns the authored function name of the function containing the provided generated position.
+   */
+  findOriginalFunctionName(position) {
+    const originalInnerMostScope = this.findOriginalFunctionScope(position)?.scope;
+    return this.#findFunctionNameInOriginalScopeChain(originalInnerMostScope);
+  }
+  /**
+   * Returns the authored function scope of the function containing the provided generated position.
+   */
+  findOriginalFunctionScope({ line, column }) {
+    let originalInnerMostScope;
+    if (this.#generatedRanges.length > 0) {
+      const rangeChain = this.#findGeneratedRangeChain(line, column);
+      originalInnerMostScope = rangeChain.at(-1)?.originalScope;
+    } else {
+      const entry = this.#sourceMap.findEntry(line, column);
+      if (entry?.sourceIndex === void 0) {
+        return null;
+      }
+      originalInnerMostScope = this.#findOriginalScopeChain(
+        { sourceIndex: entry.sourceIndex, line: entry.sourceLineNumber, column: entry.sourceColumnNumber }
+      ).at(-1);
+    }
+    if (!originalInnerMostScope) {
+      return null;
+    }
+    const functionScope = this.#findFunctionScopeInOriginalScopeChain(originalInnerMostScope);
+    if (!functionScope) {
+      return null;
+    }
+    let rootScope = functionScope;
+    while (rootScope.parent) {
+      rootScope = rootScope.parent;
+    }
+    const sourceIndex = this.#originalScopes.indexOf(rootScope);
+    const url = sourceIndex !== -1 ? this.#sourceMap.sourceURLForSourceIndex(sourceIndex) : void 0;
+    return functionScope ? { scope: functionScope, url } : null;
+  }
+  /**
+   * Given an original position, this returns all the surrounding original scopes from outer
+   * to inner.
+   */
+  #findOriginalScopeChain({ sourceIndex, line, column }) {
+    const scope = this.#originalScopes[sourceIndex];
+    if (!scope) {
+      return [];
+    }
+    const result = [];
+    (function walkScopes(scopes) {
+      for (const scope2 of scopes) {
+        if (!contains(scope2, line, column)) {
+          continue;
+        }
+        result.push(scope2);
+        walkScopes(scope2.children);
+      }
+    })([scope]);
+    return result;
+  }
+  #findFunctionScopeInOriginalScopeChain(innerOriginalScope) {
+    for (let originalScope = innerOriginalScope; originalScope; originalScope = originalScope.parent) {
+      if (originalScope.isStackFrame) {
+        return originalScope;
+      }
+    }
+    return null;
+  }
+  #findFunctionNameInOriginalScopeChain(innerOriginalScope) {
+    const functionScope = this.#findFunctionScopeInOriginalScopeChain(innerOriginalScope);
+    if (!functionScope) {
+      return null;
+    }
+    return functionScope.name ?? "";
+  }
+  /**
+   * Returns one or more original stack frames for this single "raw frame" or call-site.
+   *
+   * @returns An empty array if no mapping at the call-site was found, or the resulting frames
+   * in top-to-bottom order in case of inlining.
+   * @throws If this range is marked "hidden". Outlining needs to be handled externally as
+   * outlined function segments in stack traces can span across bundles.
+   */
+  translateCallSite(generatedLine, generatedColumn) {
+    const rangeChain = this.#findGeneratedRangeChain(generatedLine, generatedColumn);
+    if (this.#isOutlinedFrame(rangeChain)) {
+      throw new Error("SourceMapScopesInfo is unable to translate an outlined function by itself");
+    }
+    const mapping = this.#sourceMap.findEntry(generatedLine, generatedColumn);
+    if (mapping?.sourceIndex === void 0) {
+      return [];
+    }
+    const result = [{
+      line: mapping.sourceLineNumber,
+      column: mapping.sourceColumnNumber,
+      name: this.findOriginalFunctionName({ line: generatedLine, column: generatedColumn }) ?? void 0,
+      url: mapping.sourceURL
+    }];
+    for (let i = rangeChain.length - 1; i >= 0 && !rangeChain[i].isStackFrame; --i) {
+      const range = rangeChain[i];
+      if (!range.callSite) {
+        continue;
+      }
+      const originalScopeChain = this.#findOriginalScopeChain(range.callSite);
+      result.push({
+        line: range.callSite.line,
+        column: range.callSite.column,
+        name: this.#findFunctionNameInOriginalScopeChain(originalScopeChain.at(-1)) ?? void 0,
+        url: this.#sourceMap.sourceURLForSourceIndex(range.callSite.sourceIndex)
+      });
+    }
+    return result;
+  }
+};
+function contains(range, line, column) {
+  if (range.start.line > line || range.start.line === line && range.start.column > column) {
+    return false;
+  }
+  if (range.end.line < line || range.end.line === line && range.end.column <= column) {
+    return false;
+  }
+  return true;
+}
+function comparePositions2(a, b) {
+  if (a.line !== b.line) {
+    return a.line - b.line;
+  }
+  return a.column - b.column;
+}
+function positionRange(callFrame, scope) {
+  const range = scope.range();
+  if (range === null || range.start.scriptId !== callFrame.location().scriptId || range.end.scriptId !== callFrame.location().scriptId) {
+    return null;
+  }
+  return {
+    start: { line: range.start.lineNumber, column: range.start.columnNumber },
+    end: { line: range.end.lineNumber, column: range.end.columnNumber }
+  };
+}
+function findMatchingScopeNumber(callFrame, range) {
+  const scopeChain = callFrame.scopeChain();
+  const exactMatch = scopeChain.find((scope) => {
+    const scopeRange = positionRange(callFrame, scope);
+    return scopeRange !== null && comparePositions2(scopeRange.start, range.start) === 0 && comparePositions2(scopeRange.end, range.end) === 0;
+  });
+  if (exactMatch !== void 0) {
+    return exactMatch.ordinal();
+  }
+  if (range.isStackFrame) {
+    const functionScopes = scopeChain.filter((scope) => scope.type() === Debugger.ScopeType.Local || scope.type() === Debugger.ScopeType.Closure);
+    const functionScope = findBestScope(callFrame, functionScopes, range);
+    if (functionScope !== void 0) {
+      return functionScope.ordinal();
+    }
+  }
+  return findBestScope(callFrame, scopeChain, range)?.ordinal();
+}
+function findBestScope(callFrame, scopes, range) {
+  let outerMostContainedScope;
+  let innerMostContainingScope;
+  for (const scope of scopes) {
+    const scopeRange = positionRange(callFrame, scope);
+    if (scopeRange === null) {
+      continue;
+    }
+    const rangeContainsScope = comparePositions2(range.start, scopeRange.start) <= 0 && comparePositions2(scopeRange.end, range.end) <= 0;
+    const scopeContainsRange = comparePositions2(scopeRange.start, range.start) <= 0 && comparePositions2(range.end, scopeRange.end) <= 0;
+    if (rangeContainsScope) {
+      outerMostContainedScope = scope;
+    } else if (scopeContainsRange) {
+      innerMostContainingScope ??= scope;
+    }
+  }
+  return outerMostContainedScope ?? innerMostContainingScope;
+}
+
+// ../../front_end/core/sdk/SourceMap.ts
+function parseSourceMap(content) {
+  if (content.startsWith(")]}")) {
+    content = content.substring(content.indexOf("\n"));
+  }
+  if (content.charCodeAt(0) === 65279) {
+    content = content.slice(1);
+  }
+  return JSON.parse(content);
+}
+var SourceMapEntry = class {
+  lineNumber;
+  columnNumber;
+  sourceIndex;
+  sourceURL;
+  sourceLineNumber;
+  sourceColumnNumber;
+  name;
+  /**
+   * Whether this entry covers everything up to the following entry, mapping the generated
+   * code character by character (including newlines) onto the original code.
+   *
+   * @see https://github.com/tc39/source-map/blob/main/proposals/range-mappings.md
+   */
+  isRangeMapping;
+  constructor(lineNumber, columnNumber, sourceIndex, sourceURL, sourceLineNumber, sourceColumnNumber, name, isRangeMapping = false) {
+    this.lineNumber = lineNumber;
+    this.columnNumber = columnNumber;
+    this.sourceIndex = sourceIndex;
+    this.sourceURL = sourceURL;
+    this.sourceLineNumber = sourceLineNumber;
+    this.sourceColumnNumber = sourceColumnNumber;
+    this.name = name;
+    this.isRangeMapping = isRangeMapping;
+  }
+  static compare(entry1, entry2) {
+    if (entry1.lineNumber !== entry2.lineNumber) {
+      return entry1.lineNumber - entry2.lineNumber;
+    }
+    return entry1.columnNumber - entry2.columnNumber;
+  }
+};
+var SourceMapProvenance = /* @__PURE__ */ ((SourceMapProvenance2) => {
+  SourceMapProvenance2["CDP"] = "cdp";
+  SourceMapProvenance2["EXTENSION"] = "extension";
+  SourceMapProvenance2["USER"] = "user";
+  return SourceMapProvenance2;
+})(SourceMapProvenance || {});
+var SourceMap = class _SourceMap {
+  static retainRawSourceMaps = false;
+  #json;
+  #compiledURL;
+  #sourceMappingURL;
+  #baseURL;
+  #mappings = null;
+  #sourceInfos = [];
+  #sourceInfoByURL = /* @__PURE__ */ new Map();
+  #script;
+  #scopesInfo = null;
+  #debugId;
+  #scopesFallbackPromise;
+  #console;
+  #provenance;
+  /**
+   * Implements Source Map V3 model. See https://github.com/google/closure-compiler/wiki/Source-Maps
+   * for format description.
+   */
+  constructor(compiledURL, sourceMappingURL, payload, console2, script, provenance = "cdp" /* CDP */) {
+    this.#json = payload;
+    this.#script = script;
+    this.#compiledURL = compiledURL;
+    this.#sourceMappingURL = sourceMappingURL;
+    this.#baseURL = Common8.ParsedURL.schemeIs(sourceMappingURL, "data:") ? compiledURL : sourceMappingURL;
+    this.#debugId = "debugId" in payload ? payload.debugId : void 0;
+    this.#console = console2;
+    this.#provenance = provenance;
+    if ("sections" in this.#json) {
+      if (this.#json.sections.find((section) => "url" in section)) {
+        this.#console.warn(`SourceMap "${sourceMappingURL}" contains unsupported "URL" field in one of its sections.`);
+      }
+    }
+    this.eachSection(this.parseSources.bind(this));
+  }
+  provenance() {
+    return this.#provenance;
+  }
+  json() {
+    return this.#json;
+  }
+  augmentWithScopes(scriptUrl, ranges) {
+    this.#ensureSourceMapProcessed();
+    if (this.#json && this.#json.version > 3) {
+      throw new Error("Only support augmenting source maps up to version 3.");
+    }
+    const sourceIdx = this.#sourceIndex(scriptUrl);
+    if (sourceIdx >= 0) {
+      if (!this.#scopesInfo || this.#scopesFallbackPromise !== void 0) {
+        this.#scopesInfo = new SourceMapScopesInfo(this, { scopes: [], ranges: [] });
+        this.#scopesFallbackPromise = void 0;
+      }
+      if (!this.#scopesInfo.hasOriginalScopes(sourceIdx)) {
+        const originalScopes = buildOriginalScopes(ranges);
+        this.#scopesInfo.addOriginalScopesAtIndex(sourceIdx, originalScopes);
+      }
+    } else {
+      throw new Error(`Could not find sourceURL ${scriptUrl} in sourceMap`);
+    }
+  }
+  #sourceIndex(sourceURL) {
+    return this.#sourceInfos.findIndex((info) => info.sourceURL === sourceURL);
+  }
+  compiledURL() {
+    return this.#compiledURL;
+  }
+  url() {
+    return this.#sourceMappingURL;
+  }
+  debugId() {
+    return this.#debugId ?? null;
+  }
+  sourceURLForSourceIndex(index) {
+    return this.#sourceInfos[index]?.sourceURL;
+  }
+  sourceURLs() {
+    return [...this.#sourceInfoByURL.keys()];
+  }
+  embeddedContentByURL(sourceURL) {
+    const entry = this.#sourceInfoByURL.get(sourceURL);
+    if (!entry) {
+      return null;
+    }
+    return entry.content;
+  }
+  hasScopeInfo() {
+    this.#ensureSourceMapProcessed();
+    return this.#scopesInfo !== null && !this.#scopesInfo.isEmpty();
+  }
+  waitForScopeInfo() {
+    this.#ensureSourceMapProcessed();
+    return this.#scopesFallbackPromise ?? Promise.resolve();
+  }
+  findEntry(lineNumber, columnNumber) {
+    this.#ensureSourceMapProcessed();
+    const mappings = this.mappings();
+    const index = Platform7.ArrayUtilities.upperBound(
+      mappings,
+      void 0,
+      (_, entry) => lineNumber - entry.lineNumber || columnNumber - entry.columnNumber
+    );
+    return index ? mappings[index - 1] : null;
+  }
+  /** Returns the entry at the given position but only if an entry exists for that exact position */
+  findEntryExact(lineNumber, columnNumber) {
+    const entry = this.findEntry(lineNumber, columnNumber);
+    if (entry?.lineNumber === lineNumber && entry.columnNumber === columnNumber) {
+      return entry;
+    }
+    return null;
+  }
+  findEntryRanges(lineNumber, columnNumber) {
+    const mappings = this.mappings();
+    const endIndex = Platform7.ArrayUtilities.upperBound(
+      mappings,
+      void 0,
+      (_, entry) => lineNumber - entry.lineNumber || columnNumber - entry.columnNumber
+    );
+    if (!endIndex) {
+      return null;
+    }
+    const startIndex = endIndex - 1;
+    const sourceURL = mappings[startIndex].sourceURL;
+    if (!sourceURL) {
+      return null;
+    }
+    const endLine = endIndex < mappings.length ? mappings[endIndex].lineNumber : 2 ** 31 - 1;
+    const endColumn = endIndex < mappings.length ? mappings[endIndex].columnNumber : 2 ** 31 - 1;
+    const range = new TextUtils15.TextRange.TextRange(
+      mappings[startIndex].lineNumber,
+      mappings[startIndex].columnNumber,
+      endLine,
+      endColumn
+    );
+    const reverseMappings = this.reversedMappings(sourceURL);
+    const startSourceLine = mappings[startIndex].sourceLineNumber;
+    const startSourceColumn = mappings[startIndex].sourceColumnNumber;
+    const endReverseIndex = Platform7.ArrayUtilities.upperBound(
+      reverseMappings,
+      void 0,
+      (_, i) => startSourceLine - mappings[i].sourceLineNumber || startSourceColumn - mappings[i].sourceColumnNumber
+    );
+    if (!endReverseIndex) {
+      return null;
+    }
+    const endSourceLine = endReverseIndex < reverseMappings.length ? mappings[reverseMappings[endReverseIndex]].sourceLineNumber : 2 ** 31 - 1;
+    const endSourceColumn = endReverseIndex < reverseMappings.length ? mappings[reverseMappings[endReverseIndex]].sourceColumnNumber : 2 ** 31 - 1;
+    const sourceRange = new TextUtils15.TextRange.TextRange(startSourceLine, startSourceColumn, endSourceLine, endSourceColumn);
+    return { range, sourceRange, sourceURL };
+  }
+  sourceLineMapping(sourceURL, lineNumber, columnNumber) {
+    const mappings = this.mappings();
+    const reverseMappings = this.reversedMappings(sourceURL);
+    const first = Platform7.ArrayUtilities.lowerBound(reverseMappings, lineNumber, lineComparator);
+    const last = Platform7.ArrayUtilities.upperBound(reverseMappings, lineNumber, lineComparator);
+    if (first >= reverseMappings.length || mappings[reverseMappings[first]].sourceLineNumber !== lineNumber) {
+      return null;
+    }
+    const columnMappings = reverseMappings.slice(first, last);
+    if (!columnMappings.length) {
+      return null;
+    }
+    const index = Platform7.ArrayUtilities.lowerBound(
+      columnMappings,
+      columnNumber,
+      (columnNumber2, i) => columnNumber2 - mappings[i].sourceColumnNumber
+    );
+    return index >= columnMappings.length ? mappings[columnMappings[columnMappings.length - 1]] : mappings[columnMappings[index]];
+    function lineComparator(lineNumber2, i) {
+      return lineNumber2 - mappings[i].sourceLineNumber;
+    }
+  }
+  findReverseIndices(sourceURL, lineNumber, columnNumber) {
+    const mappings = this.mappings();
+    const reverseMappings = this.reversedMappings(sourceURL);
+    const endIndex = Platform7.ArrayUtilities.upperBound(
+      reverseMappings,
+      void 0,
+      (_, i) => lineNumber - mappings[i].sourceLineNumber || columnNumber - mappings[i].sourceColumnNumber
+    );
+    let startIndex = endIndex;
+    while (startIndex > 0 && mappings[reverseMappings[startIndex - 1]].sourceLineNumber === mappings[reverseMappings[endIndex - 1]].sourceLineNumber && mappings[reverseMappings[startIndex - 1]].sourceColumnNumber === mappings[reverseMappings[endIndex - 1]].sourceColumnNumber) {
+      --startIndex;
+    }
+    return reverseMappings.slice(startIndex, endIndex);
+  }
+  findReverseEntries(sourceURL, lineNumber, columnNumber, filterContiguous = false) {
+    const mappings = this.mappings();
+    let indices = this.findReverseIndices(sourceURL, lineNumber, columnNumber);
+    if (filterContiguous) {
+      indices = indices.filter((index, i) => i === 0 || index !== indices[i - 1] + 1);
+    }
+    return indices.map((i) => mappings[i]);
+  }
+  findReverseRanges(sourceURL, lineNumber, columnNumber) {
+    const mappings = this.mappings();
+    const indices = this.findReverseIndices(sourceURL, lineNumber, columnNumber);
+    const ranges = [];
+    for (let i = 0; i < indices.length; ++i) {
+      const startIndex = indices[i];
+      let endIndex = startIndex + 1;
+      while (i + 1 < indices.length && endIndex === indices[i + 1]) {
+        ++endIndex;
+        ++i;
+      }
+      const startLine = mappings[startIndex].lineNumber;
+      const startColumn = mappings[startIndex].columnNumber;
+      const endLine = endIndex < mappings.length ? mappings[endIndex].lineNumber : 2 ** 31 - 1;
+      const endColumn = endIndex < mappings.length ? mappings[endIndex].columnNumber : 2 ** 31 - 1;
+      ranges.push(new TextUtils15.TextRange.TextRange(startLine, startColumn, endLine, endColumn));
+    }
+    return ranges;
+  }
+  mappings() {
+    this.#ensureSourceMapProcessed();
+    return this.#mappings ?? [];
+  }
+  /**
+   * If the source map does not contain scope information by itself (e.g. "scopes proposal"
+   * or "pasta" scopes), then we'll use this getter to calculate basic function name information from
+   * the AST and mappings.
+   */
+  async #buildScopesFallback() {
+    const scopeTreeAndText = this.#script ? await scopeTreeForScript(this.#script) : null;
+    if (!scopeTreeAndText) {
+      return null;
+    }
+    const { scopeTree, text } = scopeTreeAndText;
+    return SourceMapScopesInfo.createFromAst(this, scopeTree, text);
+  }
+  reversedMappings(sourceURL) {
+    this.#ensureSourceMapProcessed();
+    return this.#sourceInfoByURL.get(sourceURL)?.reverseMappings ?? [];
+  }
+  #ensureSourceMapProcessed() {
+    if (this.#mappings === null) {
+      this.#mappings = [];
+      try {
+        this.eachSection(this.parseMap.bind(this));
+        if (!this.hasScopeInfo()) {
+          this.#scopesFallbackPromise = this.#buildScopesFallback().then((info) => {
+            this.#scopesInfo = info;
+          });
+        }
+      } catch (e) {
+        console.error("Failed to parse source map", e);
+        this.#mappings = [];
+      }
+      this.mappings().sort(SourceMapEntry.compare);
+      this.#computeReverseMappings(this.#mappings);
+    }
+    if (!_SourceMap.retainRawSourceMaps) {
+      this.#json = null;
+    }
+  }
+  #computeReverseMappings(mappings) {
+    const reverseMappingsPerUrl = /* @__PURE__ */ new Map();
+    for (let i = 0; i < mappings.length; i++) {
+      const entryUrl = mappings[i]?.sourceURL;
+      if (!entryUrl) {
+        continue;
+      }
+      let reverseMap = reverseMappingsPerUrl.get(entryUrl);
+      if (!reverseMap) {
+        reverseMap = [];
+        reverseMappingsPerUrl.set(entryUrl, reverseMap);
+      }
+      reverseMap.push(i);
+    }
+    for (const [url, reverseMap] of reverseMappingsPerUrl.entries()) {
+      const info = this.#sourceInfoByURL.get(url);
+      if (!info) {
+        continue;
+      }
+      reverseMap.sort(sourceMappingComparator);
+      info.reverseMappings = reverseMap;
+    }
+    function sourceMappingComparator(indexA, indexB) {
+      const a = mappings[indexA];
+      const b = mappings[indexB];
+      return a.sourceLineNumber - b.sourceLineNumber || a.sourceColumnNumber - b.sourceColumnNumber || a.lineNumber - b.lineNumber || a.columnNumber - b.columnNumber;
+    }
+  }
+  eachSection(callback) {
+    if (!this.#json) {
+      return;
+    }
+    if ("sections" in this.#json) {
+      let sourcesIndex = 0;
+      for (const section of this.#json.sections) {
+        if ("map" in section) {
+          callback(section.map, sourcesIndex, section.offset.line, section.offset.column);
+          sourcesIndex += section.map.sources.length;
+        }
+      }
+    } else {
+      callback(this.#json, 0, 0, 0);
+    }
+  }
+  parseSources(sourceMap) {
+    const sourceRoot = sourceMap.sourceRoot ?? "";
+    const ignoreList = new Set(sourceMap.ignoreList ?? sourceMap.x_google_ignoreList);
+    for (let i = 0; i < sourceMap.sources.length; ++i) {
+      let href = sourceMap.sources[i];
+      if (Common8.ParsedURL.ParsedURL.isRelativeURL(href)) {
+        if (sourceRoot && !sourceRoot.endsWith("/") && href && !href.startsWith("/")) {
+          href = sourceRoot.concat("/", href);
+        } else {
+          href = sourceRoot.concat(href);
+        }
+      }
+      const url = Common8.ParsedURL.ParsedURL.completeURL(this.#baseURL, href) || href;
+      const source = sourceMap.sourcesContent?.[i];
+      const sourceInfo = {
+        sourceURL: url,
+        content: source ?? null,
+        ignoreListHint: ignoreList.has(i),
+        reverseMappings: null
+      };
+      this.#sourceInfos.push(sourceInfo);
+      if (!this.#sourceInfoByURL.has(url)) {
+        this.#sourceInfoByURL.set(url, sourceInfo);
+      }
+    }
+  }
+  parseMap(map, baseSourceIndex, baseLineNumber, baseColumnNumber) {
+    let sourceIndex = baseSourceIndex;
+    let lineNumber = baseLineNumber;
+    let columnNumber = baseColumnNumber;
+    let sourceLineNumber = 0;
+    let sourceColumnNumber = 0;
+    let nameIndex = 0;
+    const names = map.names ?? [];
+    const tokenIter = new TokenIterator(map.mappings);
+    let sourceURL = this.#sourceInfos[sourceIndex]?.sourceURL;
+    const lineStarts = [];
+    const lineCounts = [];
+    const mappings = this.mappings();
+    const pushEntry = (entry) => {
+      const line = entry.lineNumber - baseLineNumber;
+      if (lineCounts[line] === void 0) {
+        lineStarts[line] = mappings.length;
+        lineCounts[line] = 0;
+      }
+      lineCounts[line]++;
+      mappings.push(entry);
+    };
+    while (true) {
+      if (tokenIter.peek() === ",") {
+        tokenIter.next();
+      } else {
+        while (tokenIter.peek() === ";") {
+          lineNumber += 1;
+          columnNumber = 0;
+          tokenIter.next();
+        }
+        if (!tokenIter.hasNext()) {
+          break;
+        }
+      }
+      columnNumber += tokenIter.nextVLQ();
+      if (!tokenIter.hasNext() || this.isSeparator(tokenIter.peek())) {
+        pushEntry(new SourceMapEntry(lineNumber, columnNumber));
+        continue;
+      }
+      const sourceIndexDelta = tokenIter.nextVLQ();
+      if (sourceIndexDelta) {
+        sourceIndex += sourceIndexDelta;
+        sourceURL = this.#sourceInfos[sourceIndex]?.sourceURL;
+      }
+      sourceLineNumber += tokenIter.nextVLQ();
+      sourceColumnNumber += tokenIter.nextVLQ();
+      if (!tokenIter.hasNext() || this.isSeparator(tokenIter.peek())) {
+        pushEntry(
+          new SourceMapEntry(lineNumber, columnNumber, sourceIndex, sourceURL, sourceLineNumber, sourceColumnNumber)
+        );
+        continue;
+      }
+      nameIndex += tokenIter.nextVLQ();
+      pushEntry(new SourceMapEntry(
+        lineNumber,
+        columnNumber,
+        sourceIndex,
+        sourceURL,
+        sourceLineNumber,
+        sourceColumnNumber,
+        names[nameIndex]
+      ));
+    }
+    this.#markRangeMappings(map, lineStarts, lineCounts);
+    if (!this.#scopesInfo) {
+      this.#scopesInfo = new SourceMapScopesInfo(this, { scopes: [], ranges: [] });
+    }
+    if (map.scopes) {
+      const { scopes, ranges } = ScopesCodec.decode(
+        map,
+        { mode: ScopesCodec.DecodeMode.LAX, generatedOffset: { line: baseLineNumber, column: baseColumnNumber } }
+      );
+      this.#scopesInfo.addOriginalScopes(scopes);
+      this.#scopesInfo.addGeneratedRanges(ranges);
+    } else if (map.x_com_bloomberg_sourcesFunctionMappings) {
+      const originalScopes = this.parseBloombergScopes(map);
+      this.#scopesInfo.addOriginalScopes(originalScopes);
+    } else {
+      this.#scopesInfo.addOriginalScopes(new Array(map.sources.length).fill(null));
+    }
+  }
+  /**
+   * Marks the entries of the section that was just parsed which the `rangeMappings` field of
+   * that section points at.
+   *
+   * A malformed field never invalidates the SourceMap: a field that can't be decoded is
+   * ignored altogether, and indices that don't point at a mapping with an original position
+   * are skipped.
+   *
+   * @param lineStarts index in `mappings` of the first entry of each line of the section.
+   * @param lineCounts number of entries on each line of the section.
+   */
+  #markRangeMappings(map, lineStarts, lineCounts) {
+    if (typeof map.rangeMappings !== "string") {
+      return;
+    }
+    let rangeMappings;
+    try {
+      rangeMappings = decodeRangeMappings(map.rangeMappings);
+    } catch {
+      return;
+    }
+    const mappings = this.mappings();
+    for (let line = 0; line < rangeMappings.length; ++line) {
+      for (const index of rangeMappings[line]) {
+        if (index >= (lineCounts[line] ?? 0)) {
+          break;
+        }
+        const mappingIndex = lineStarts[line] + index;
+        if (mappings[mappingIndex].sourceURL === void 0) {
+          continue;
+        }
+        mappings[mappingIndex] = asRangeMapping(mappings[mappingIndex]);
+      }
+    }
+  }
+  parseBloombergScopes(map) {
+    const scopeList = map.x_com_bloomberg_sourcesFunctionMappings;
+    if (!scopeList) {
+      throw new Error("Cant decode pasta scopes without x_com_bloomberg_sourcesFunctionMappings field");
+    } else if (scopeList.length !== map.sources.length) {
+      throw new Error(`x_com_bloomberg_sourcesFunctionMappings must have ${map.sources.length} scope trees`);
+    }
+    const names = map.names ?? [];
+    return scopeList.map((rawScopes) => {
+      if (!rawScopes) {
+        return null;
+      }
+      const ranges = decodePastaRanges(rawScopes, names);
+      return buildOriginalScopes(ranges);
+    });
+  }
+  isSeparator(char) {
+    return char === "," || char === ";";
+  }
+  /**
+   * Finds all the reverse mappings that intersect with the given `textRange` within the
+   * source entity identified by the `url`. If the `url` does not have any reverse mappings
+   * within this source map, an empty array is returned.
+   *
+   * @param url the URL of the source entity to query.
+   * @param textRange the range of text within the entity to check, considered `[start,end[`.
+   * @returns the list of ranges in the generated file that map to locations overlapping the
+   *          {@link textRange} in the source file identified by the {@link url}, or `[]`
+   *          if the {@link url} does not identify an entity in this source map.
+   */
+  reverseMapTextRanges(url, textRange) {
+    const reverseMappings = this.reversedMappings(url);
+    const mappings = this.mappings();
+    if (reverseMappings.length === 0) {
+      return [];
+    }
+    let startReverseIndex = Platform7.ArrayUtilities.lowerBound(reverseMappings, textRange, ({ startLine, startColumn }, index) => {
+      const { sourceLineNumber, sourceColumnNumber } = mappings[index];
+      return startLine - sourceLineNumber || startColumn - sourceColumnNumber;
+    });
+    while (startReverseIndex === reverseMappings.length || startReverseIndex > 0 && (mappings[reverseMappings[startReverseIndex]].sourceLineNumber > textRange.startLine || mappings[reverseMappings[startReverseIndex]].sourceColumnNumber > textRange.startColumn)) {
+      startReverseIndex--;
+    }
+    let endReverseIndex = startReverseIndex + 1;
+    for (; endReverseIndex < reverseMappings.length; ++endReverseIndex) {
+      const { sourceLineNumber, sourceColumnNumber } = mappings[reverseMappings[endReverseIndex]];
+      if (sourceLineNumber < textRange.endLine || sourceLineNumber === textRange.endLine && sourceColumnNumber < textRange.endColumn) {
+        continue;
+      }
+      break;
+    }
+    const ranges = [];
+    for (let reverseIndex = startReverseIndex; reverseIndex < endReverseIndex; ++reverseIndex) {
+      const startIndex = reverseMappings[reverseIndex], endIndex = startIndex + 1;
+      const range = TextUtils15.TextRange.TextRange.createUnboundedFromLocation(
+        mappings[startIndex].lineNumber,
+        mappings[startIndex].columnNumber
+      );
+      if (endIndex < mappings.length) {
+        range.endLine = mappings[endIndex].lineNumber;
+        range.endColumn = mappings[endIndex].columnNumber;
+      }
+      ranges.push(range);
+    }
+    ranges.sort(TextUtils15.TextRange.TextRange.comparator);
+    let j = 0;
+    for (let i = 1; i < ranges.length; ++i) {
+      if (ranges[j].immediatelyPrecedes(ranges[i])) {
+        ranges[j].endLine = ranges[i].endLine;
+        ranges[j].endColumn = ranges[i].endColumn;
+      } else {
+        ranges[++j] = ranges[i];
+      }
+    }
+    ranges.length = j + 1;
+    return ranges;
+  }
+  mapsOrigin() {
+    const mappings = this.mappings();
+    if (mappings.length > 0) {
+      const firstEntry = mappings[0];
+      return firstEntry?.lineNumber === 0 || firstEntry.columnNumber === 0;
+    }
+    return false;
+  }
+  hasIgnoreListHint(sourceURL) {
+    return this.#sourceInfoByURL.get(sourceURL)?.ignoreListHint ?? false;
+  }
+  /**
+   * Returns a list of ranges in the generated script for original sources that
+   * match a predicate. Each range is a [begin, end) pair, meaning that code at
+   * the beginning location, up to but not including the end location, matches
+   * the predicate.
+   */
+  findRanges(predicate, options) {
+    const mappings = this.mappings();
+    const ranges = [];
+    if (!mappings.length) {
+      return [];
+    }
+    let current = null;
+    if ((mappings[0].lineNumber !== 0 || mappings[0].columnNumber !== 0) && options?.isStartMatching) {
+      current = TextUtils15.TextRange.TextRange.createUnboundedFromLocation(0, 0);
+      ranges.push(current);
+    }
+    for (const { sourceURL, lineNumber, columnNumber } of mappings) {
+      const ignoreListHint = sourceURL && predicate(sourceURL);
+      if (!current && ignoreListHint) {
+        current = TextUtils15.TextRange.TextRange.createUnboundedFromLocation(lineNumber, columnNumber);
+        ranges.push(current);
+        continue;
+      }
+      if (current && !ignoreListHint) {
+        current.endLine = lineNumber;
+        current.endColumn = columnNumber;
+        current = null;
+      }
+    }
+    return ranges;
+  }
+  /**
+   * Determines whether this and the {@link other} `SourceMap` agree on content and ignore-list hint
+   * with respect to the {@link sourceURL}.
+   *
+   * @param sourceURL the URL to test for (might not be provided by either of the sourcemaps).
+   * @param other the other `SourceMap` to check.
+   * @returns `true` if both this and the {@link other} `SourceMap` either both have the ignore-list
+   *          hint for {@link sourceURL} or neither, and if both of them either provide the same
+   *          content for the {@link sourceURL} inline or both provide no `sourcesContent` entry
+   *          for it.
+   */
+  compatibleForURL(sourceURL, other) {
+    return this.embeddedContentByURL(sourceURL) === other.embeddedContentByURL(sourceURL) && this.hasIgnoreListHint(sourceURL) === other.hasIgnoreListHint(sourceURL);
+  }
+  resolveScopeChain(frame) {
+    this.#ensureSourceMapProcessed();
+    if (this.#provenance === "user" /* USER */ || !this.#scopesInfo?.hasVariablesAndBindings()) {
+      return null;
+    }
+    return this.#scopesInfo.resolveMappedScopeChain(frame);
+  }
+  findOriginalFunctionName(position) {
+    this.#ensureSourceMapProcessed();
+    return this.#scopesInfo?.findOriginalFunctionName(position) ?? null;
+  }
+  findOriginalFunctionScope(position) {
+    this.#ensureSourceMapProcessed();
+    return this.#scopesInfo?.findOriginalFunctionScope(position) ?? null;
+  }
+  isOutlinedFrame(generatedLine, generatedColumn) {
+    this.#ensureSourceMapProcessed();
+    return this.#scopesInfo?.isOutlinedFrame(generatedLine, generatedColumn) ?? false;
+  }
+  hasInlinedFrames(generatedLine, generatedColumn) {
+    this.#ensureSourceMapProcessed();
+    return this.#scopesInfo?.hasInlinedFrames(generatedLine, generatedColumn) ?? false;
+  }
+  translateCallSite(generatedLine, generatedColumn) {
+    this.#ensureSourceMapProcessed();
+    return this.#scopesInfo?.translateCallSite(generatedLine, generatedColumn) ?? [];
+  }
+};
+function asRangeMapping(entry) {
+  return new SourceMapEntry(
+    entry.lineNumber,
+    entry.columnNumber,
+    entry.sourceIndex,
+    entry.sourceURL,
+    entry.sourceLineNumber,
+    entry.sourceColumnNumber,
+    entry.name,
+    true
+  );
+}
+var VLQ_BASE_SHIFT = 5;
+var VLQ_BASE_MASK = (1 << 5) - 1;
+var VLQ_CONTINUATION_MASK = 1 << 5;
+var VLQ_UNSIGNED_MAX_SHIFT = 30;
+var TokenIterator = class {
+  #string;
+  #position;
+  constructor(string) {
+    this.#string = string;
+    this.#position = 0;
+  }
+  next() {
+    return this.#string.charAt(this.#position++);
+  }
+  /** Returns the unicode value of the next character and advances the iterator  */
+  nextCharCode() {
+    return this.#string.charCodeAt(this.#position++);
+  }
+  peek() {
+    return this.#string.charAt(this.#position);
+  }
+  hasNext() {
+    return this.#position < this.#string.length;
+  }
+  nextVLQ() {
+    let result = this.#decodeVLQ(false);
+    const negative = result & 1;
+    result >>= 1;
+    return negative ? -result : result;
+  }
+  /**
+   * Decodes an unsigned Base64 VLQ number, as used by the `rangeMappings` field of the
+   * "range mappings" proposal. In contrast to {@link nextVLQ} the least significant bit
+   * carries a value rather than a sign, so the full 32 bit range is available. Numbers
+   * that don't fit into 32 bits are rejected.
+   *
+   * @see https://github.com/tc39/source-map/blob/main/proposals/range-mappings.md
+   */
+  nextUnsignedVLQ() {
+    return this.#decodeVLQ(true);
+  }
+  #decodeVLQ(unsigned) {
+    let result = 0;
+    let shift = 0;
+    let digit = VLQ_CONTINUATION_MASK;
+    while (digit & VLQ_CONTINUATION_MASK) {
+      if (!this.hasNext()) {
+        throw new Error("Unexpected end of input while decoding VLQ number!");
+      }
+      if (unsigned && shift > VLQ_UNSIGNED_MAX_SHIFT) {
+        throw new Error("Unsigned VLQ number does not fit into 32 bits!");
+      }
+      const charCode = this.nextCharCode();
+      digit = Common8.Base64.BASE64_CODES[charCode];
+      if (charCode !== 65 && digit === 0) {
+        throw new Error(`Unexpected char '${String.fromCharCode(charCode)}' encountered while decoding`);
+      }
+      result += unsigned ? (digit & VLQ_BASE_MASK) * 2 ** shift : (digit & VLQ_BASE_MASK) << shift;
+      shift += VLQ_BASE_SHIFT;
+    }
+    if (unsigned && result > 4294967295) {
+      throw new Error("Unsigned VLQ number does not fit into 32 bits!");
+    }
+    return result;
+  }
+  /**
+   * @returns the next VLQ number without iterating further. Or returns null if
+   * the iterator is at the end or it's not a valid number.
+   */
+  peekVLQ() {
+    const pos = this.#position;
+    try {
+      return this.nextVLQ();
+    } catch {
+      return null;
+    } finally {
+      this.#position = pos;
+    }
   }
 };
 
@@ -21753,7 +23562,7 @@ __export(SourceMapManager_exports, {
   tryLoadSourceMap: () => tryLoadSourceMap
 });
 import * as Common13 from "../common/common.js";
-import * as Platform8 from "../platform/platform.js";
+import * as Platform10 from "../platform/platform.js";
 
 // ../../front_end/core/sdk/PageResourceLoader.ts
 var PageResourceLoader_exports = {};
@@ -21762,9 +23571,9 @@ __export(PageResourceLoader_exports, {
   PageResourceLoader: () => PageResourceLoader,
   ResourceKey: () => ResourceKey
 });
-import * as Common11 from "../common/common.js";
+import * as Common12 from "../common/common.js";
 import * as Host3 from "../host/host.js";
-import * as i18n5 from "../i18n/i18n.js";
+import * as i18n7 from "../i18n/i18n.js";
 import * as Root3 from "../root/root.js";
 
 // ../../front_end/core/sdk/IOModel.ts
@@ -21772,7 +23581,7 @@ var IOModel_exports = {};
 __export(IOModel_exports, {
   IOModel: () => IOModel
 });
-import * as Common8 from "../common/common.js";
+import * as Common9 from "../common/common.js";
 var IOModel = class extends SDKModel {
   async read(handle, size, offset) {
     const result = await this.target().ioAgent().invoke_read({ handle, offset, size });
@@ -21783,7 +23592,7 @@ var IOModel = class extends SDKModel {
       return null;
     }
     if (result.base64Encoded) {
-      return Common8.Base64.decode(result.data);
+      return Common9.Base64.decode(result.data);
     }
     return result.data;
   }
@@ -21854,9 +23663,9 @@ __export(TargetManager_exports, {
   SDKModelObserver: () => SDKModelObserver,
   TargetManager: () => TargetManager
 });
-import * as Common10 from "../common/common.js";
+import * as Common11 from "../common/common.js";
 import * as Host2 from "../host/host.js";
-import * as Platform6 from "../platform/platform.js";
+import * as Platform8 from "../platform/platform.js";
 import { assertNotNullOrUndefined as assertNotNullOrUndefined2 } from "../platform/platform.js";
 import * as Root2 from "../root/root.js";
 
@@ -21866,9 +23675,9 @@ __export(FrameManager_exports, {
   Events: () => Events5,
   FrameManager: () => FrameManager
 });
-import * as Common9 from "../common/common.js";
+import * as Common10 from "../common/common.js";
 import * as Root from "../root/root.js";
-var FrameManager = class _FrameManager extends Common9.ObjectWrapper.ObjectWrapper {
+var FrameManager = class _FrameManager extends Common10.ObjectWrapper.ObjectWrapper {
   #eventListeners = /* @__PURE__ */ new WeakMap();
   // Maps frameIds to #frames and a count of how many ResourceTreeModels contain this frame.
   // (OOPIFs are usually first attached to a new target and then detached from their old target,
@@ -21905,7 +23714,7 @@ var FrameManager = class _FrameManager extends Common9.ObjectWrapper.ObjectWrapp
   modelRemoved(resourceTreeModel) {
     const listeners = this.#eventListeners.get(resourceTreeModel);
     if (listeners) {
-      Common9.EventTarget.removeEventListeners(listeners);
+      Common10.EventTarget.removeEventListeners(listeners);
     }
     const frameSet = this.#framesForTarget.get(resourceTreeModel.target().id());
     if (frameSet) {
@@ -22050,7 +23859,7 @@ var Events5 = /* @__PURE__ */ ((Events35) => {
 })(Events5 || {});
 
 // ../../front_end/core/sdk/TargetManager.ts
-var TargetManager = class _TargetManager extends Common10.ObjectWrapper.ObjectWrapper {
+var TargetManager = class _TargetManager extends Common11.ObjectWrapper.ObjectWrapper {
   /**
    * @deprecated
    *
@@ -22064,14 +23873,14 @@ var TargetManager = class _TargetManager extends Common10.ObjectWrapper.ObjectWr
   #targets;
   #observers;
   get settings() {
-    return this.context.get(Common10.Settings.Settings);
+    return this.context.get(Common11.Settings.Settings);
   }
   // TODO(crbug.com/493763857): Remove fallback once all unit tests use TestUniverse.
   getConsole() {
-    if ("has" in this.context && typeof this.context.has === "function" && !this.context.has(Common10.Console.Console)) {
-      return Common10.Console.Console.instance();
+    if ("has" in this.context && typeof this.context.has === "function" && !this.context.has(Common11.Console.Console)) {
+      return Common11.Console.Console.instance();
     }
-    return this.context.get(Common10.Console.Console);
+    return this.context.get(Common11.Console.Console);
   }
   // TODO(crbug.com/493763857): Remove fallback once all unit tests use TestUniverse.
   getFrameManager() {
@@ -22113,8 +23922,8 @@ var TargetManager = class _TargetManager extends Common10.ObjectWrapper.ObjectWr
     this.context = context;
     this.#targets = /* @__PURE__ */ new Set();
     this.#observers = /* @__PURE__ */ new Set();
-    this.#modelListeners = new Platform6.MapUtilities.Multimap();
-    this.#modelObservers = new Platform6.MapUtilities.Multimap();
+    this.#modelListeners = new Platform8.MapUtilities.Multimap();
+    this.#modelObservers = new Platform8.MapUtilities.Multimap();
     this.#isSuspended = false;
     this.#browserTarget = null;
     this.#scopeTarget = null;
@@ -22157,7 +23966,7 @@ var TargetManager = class _TargetManager extends Common10.ObjectWrapper.ObjectWr
       return;
     }
     Host2.InspectorFrontendHost.InspectorFrontendHostInstance.inspectedURLChanged(
-      target.inspectedURL() || Platform6.DevToolsPath.EmptyUrlString
+      target.inspectedURL() || Platform8.DevToolsPath.EmptyUrlString
     );
     this.dispatchEventToListeners("InspectedURLChanged" /* INSPECTED_URL_CHANGED */, target);
   }
@@ -22524,14 +24333,14 @@ function isSDKModelEvent(arg) {
 }
 
 // ../../front_end/core/sdk/PageResourceLoader.ts
-var UIStrings3 = {
+var UIStrings4 = {
   /**
    * @description Error message for canceled source map loads.
    */
   loadCanceledDueToReloadOf: "Load canceled due to reload of inspected page"
 };
-var str_3 = i18n5.i18n.registerUIStrings("core/sdk/PageResourceLoader.ts", UIStrings3);
-var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
+var str_4 = i18n7.i18n.registerUIStrings("core/sdk/PageResourceLoader.ts", UIStrings4);
+var i18nString4 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
 function isExtensionInitiator(initiator) {
   return "extensionId" in initiator;
 }
@@ -22541,7 +24350,7 @@ var ResourceKey = class {
     this.key = key;
   }
 };
-var PageResourceLoader = class _PageResourceLoader extends Common11.ObjectWrapper.ObjectWrapper {
+var PageResourceLoader = class _PageResourceLoader extends Common12.ObjectWrapper.ObjectWrapper {
   #targetManager;
   #settings;
   #userAgentProvider;
@@ -22574,7 +24383,7 @@ var PageResourceLoader = class _PageResourceLoader extends Common11.ObjectWrappe
         _PageResourceLoader,
         new _PageResourceLoader(
           targetManager ?? TargetManager.instance(),
-          settings ?? Common11.Settings.Settings.instance(),
+          settings ?? Common12.Settings.Settings.instance(),
           userAgentProvider ?? MultitargetNetworkManager.instance(),
           loadOverride,
           maxConcurrentLoads
@@ -22592,7 +24401,7 @@ var PageResourceLoader = class _PageResourceLoader extends Common11.ObjectWrappe
       return;
     }
     for (const { reject } of this.#queuedLoads) {
-      reject(new Error(i18nString3(UIStrings3.loadCanceledDueToReloadOf)));
+      reject(new Error(i18nString4(UIStrings4.loadCanceledDueToReloadOf)));
     }
     this.#queuedLoads = [];
     const mainFrameTarget = mainFrame.resourceTreeModel().target();
@@ -22728,7 +24537,7 @@ var PageResourceLoader = class _PageResourceLoader extends Common11.ObjectWrappe
     if (this.#loadOverride) {
       return await this.#loadOverride(url);
     }
-    const parsedURL = new Common11.ParsedURL.ParsedURL(url);
+    const parsedURL = new Common12.ParsedURL.ParsedURL(url);
     const eligibleForLoadFromTarget = this.getLoadThroughTargetSetting().get() && parsedURL && parsedURL.scheme !== "file" && parsedURL.scheme !== "data" && parsedURL.scheme !== "devtools" && initiator.target;
     Host3.userMetrics.developerResourceScheme(this.getDeveloperResourceScheme(parsedURL));
     if (eligibleForLoadFromTarget) {
@@ -22851,1419 +24660,15 @@ var Events7 = /* @__PURE__ */ ((Events35) => {
   return Events35;
 })(Events7 || {});
 
-// ../../front_end/core/sdk/SourceMap.ts
-var SourceMap_exports = {};
-__export(SourceMap_exports, {
-  SourceMap: () => SourceMap,
-  SourceMapEntry: () => SourceMapEntry,
-  TokenIterator: () => TokenIterator,
-  parseSourceMap: () => parseSourceMap
-});
-import * as ScopesCodec from "../../third_party/source-map-scopes-codec/source-map-scopes-codec.js";
-import * as Common12 from "../common/common.js";
-import * as Platform7 from "../platform/platform.js";
-import * as TextUtils15 from "../text_utils/text_utils.js";
-
-// ../../front_end/core/sdk/ScopeTreeCache.ts
-var ScopeTreeCache_exports = {};
-__export(ScopeTreeCache_exports, {
-  scopeTreeForScript: () => scopeTreeForScript
-});
-import * as Formatter from "../../models/formatter/formatter.js";
-import * as TextUtils14 from "../text_utils/text_utils.js";
-var scopeTrees = /* @__PURE__ */ new WeakMap();
-function scopeTreeForScript(script) {
-  if (script.isWasm()) {
-    return Promise.resolve(null);
-  }
-  let promise = scopeTrees.get(script);
-  if (promise === void 0) {
-    promise = script.requestContentData().then((content) => {
-      if (TextUtils14.ContentData.ContentData.isError(content)) {
-        return null;
-      }
-      const sourceType = script.isModule ? "module" : "script";
-      return Formatter.FormatterWorkerPool.formatterWorkerPool().javaScriptScopeTree(content.text, sourceType).then((scopeTree) => scopeTree ? { scopeTree, text: content.textObj } : null).catch(() => null);
-    });
-    scopeTrees.set(script, promise);
-  }
-  return promise;
-}
-
-// ../../front_end/core/sdk/SourceMapFunctionRanges.ts
-var SourceMapFunctionRanges_exports = {};
-__export(SourceMapFunctionRanges_exports, {
-  buildOriginalScopes: () => buildOriginalScopes,
-  decodePastaRanges: () => decodePastaRanges
-});
-function buildOriginalScopes(ranges) {
-  validateStartBeforeEnd(ranges);
-  ranges.sort((a, b) => comparePositions(a.start, b.start) || comparePositions(b.end, a.end));
-  const root = {
-    start: { line: 0, column: 0 },
-    end: { line: Number.POSITIVE_INFINITY, column: Number.POSITIVE_INFINITY },
-    kind: "Global",
-    isStackFrame: false,
-    children: [],
-    variables: []
-  };
-  const stack = [root];
-  for (const range of ranges) {
-    let stackTop = stack.at(-1);
-    while (true) {
-      if (comparePositions(stackTop.end, range.start) <= 0) {
-        stack.pop();
-        stackTop = stack.at(-1);
-      } else {
-        break;
-      }
-    }
-    if (comparePositions(range.start, stackTop.end) < 0 && comparePositions(stackTop.end, range.end) < 0) {
-      throw new Error(`Range ${JSON.stringify(range)} and ${JSON.stringify(stackTop)} partially overlap.`);
-    }
-    const scope = createScopeFrom(range);
-    stackTop.children.push(scope);
-    stack.push(scope);
-  }
-  const lastChild = root.children.at(-1);
-  if (lastChild) {
-    root.end = lastChild.end;
-  }
-  return root;
-}
-function validateStartBeforeEnd(ranges) {
-  for (const range of ranges) {
-    if (comparePositions(range.start, range.end) >= 0) {
-      throw new Error(`Invalid range. End before start: ${JSON.stringify(range)}`);
-    }
-  }
-}
-function createScopeFrom(range) {
-  return {
-    ...range,
-    kind: "Function",
-    isStackFrame: true,
-    children: [],
-    variables: []
-  };
-}
-function decodePastaRanges(encodedRanges, names) {
-  const result = [];
-  let nameIndex = 0;
-  let startLineNumber = 0;
-  let startColumnNumber = 0;
-  let endLineNumber = 0;
-  let endColumnNumber = 0;
-  const tokenIter = new TokenIterator(encodedRanges);
-  let atStart = true;
-  while (tokenIter.hasNext()) {
-    if (atStart) {
-      atStart = false;
-    } else if (tokenIter.peek() === ",") {
-      tokenIter.next();
-    } else {
-      break;
-    }
-    nameIndex += tokenIter.nextVLQ();
-    startLineNumber = endLineNumber + tokenIter.nextVLQ();
-    startColumnNumber += tokenIter.nextVLQ();
-    endLineNumber = startLineNumber + tokenIter.nextVLQ();
-    endColumnNumber += tokenIter.nextVLQ();
-    const name = names[nameIndex];
-    if (name === void 0) {
-      continue;
-    }
-    result.push({
-      start: { line: startLineNumber, column: startColumnNumber },
-      end: { line: endLineNumber, column: endColumnNumber },
-      name
-    });
-  }
-  return result;
-}
-function comparePositions(a, b) {
-  return a.line - b.line || a.column - b.column;
-}
-
-// ../../front_end/core/sdk/SourceMapScopesInfo.ts
-var SourceMapScopesInfo_exports = {};
-__export(SourceMapScopesInfo_exports, {
-  SourceMapScopesInfo: () => SourceMapScopesInfo,
-  contains: () => contains
-});
-import * as Formatter2 from "../../models/formatter/formatter.js";
-
-// ../../front_end/core/sdk/SourceMapScopeChainEntry.ts
-var SourceMapScopeChainEntry_exports = {};
-__export(SourceMapScopeChainEntry_exports, {
-  SourceMapScopeChainEntry: () => SourceMapScopeChainEntry
-});
-import * as i18n7 from "../i18n/i18n.js";
-var UIStrings4 = {
-  /**
-   * @description Title of a section in the debugger showing local JavaScript variables.
-   */
-  local: "Local",
-  /**
-   * @description Text that refers to closure as a programming term.
-   */
-  closure: "Closure",
-  /**
-   * @description Noun that represents a section or block of code in the Debugger Model. Shown in the Sources tab, while paused on a breakpoint.
-   */
-  block: "Block",
-  /**
-   * @description Title of a section in the debugger showing JavaScript variables from the global scope.
-   */
-  global: "Global",
-  /**
-   * @description Text in Scope Chain section of the Sources panel.
-   */
-  returnValue: "Return value"
-};
-var str_4 = i18n7.i18n.registerUIStrings("core/sdk/SourceMapScopeChainEntry.ts", UIStrings4);
-var i18nString4 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
-var SourceMapScopeChainEntry = class {
-  #callFrame;
-  #scope;
-  #range;
-  #isInnerMostFunction;
-  #returnValue;
-  /**
-   * @param isInnerMostFunction If `scope` is the innermost 'function' scope. Only used for labeling as we name the
-   * scope of the paused function 'Local', while other outer 'function' scopes are named 'Closure'.
-   */
-  constructor(callFrame, scope, range, isInnerMostFunction, returnValue) {
-    this.#callFrame = callFrame;
-    this.#scope = scope;
-    this.#range = range;
-    this.#isInnerMostFunction = isInnerMostFunction;
-    this.#returnValue = returnValue;
-  }
-  extraProperties() {
-    if (this.#returnValue) {
-      return [new RemoteObjectProperty(
-        i18nString4(UIStrings4.returnValue),
-        this.#returnValue,
-        void 0,
-        void 0,
-        void 0,
-        void 0,
-        void 0,
-        /* synthetic */
-        true
-      )];
-    }
-    return [];
-  }
-  callFrame() {
-    return this.#callFrame;
-  }
-  type() {
-    switch (this.#scope.kind) {
-      case "global":
-        return Debugger.ScopeType.Global;
-      case "function":
-        return this.#isInnerMostFunction ? Debugger.ScopeType.Local : Debugger.ScopeType.Closure;
-      case "block":
-        return Debugger.ScopeType.Block;
-    }
-    return this.#scope.kind ?? "";
-  }
-  typeName() {
-    switch (this.#scope.kind) {
-      case "global":
-        return i18nString4(UIStrings4.global);
-      case "function":
-        return this.#isInnerMostFunction ? i18nString4(UIStrings4.local) : i18nString4(UIStrings4.closure);
-      case "block":
-        return i18nString4(UIStrings4.block);
-    }
-    return this.#scope.kind ?? "";
-  }
-  name() {
-    return this.#scope.name;
-  }
-  range() {
-    return null;
-  }
-  object() {
-    return new SourceMapScopeRemoteObject(this.#callFrame, this.#scope, this.#range);
-  }
-  description() {
-    return "";
-  }
-  icon() {
-    return void 0;
-  }
-};
-var SourceMapScopeRemoteObject = class _SourceMapScopeRemoteObject extends RemoteObjectImpl {
-  #callFrame;
-  #scope;
-  #range;
-  constructor(callFrame, scope, range) {
-    super(
-      callFrame.debuggerModel.runtimeModel(),
-      /* objectId */
-      void 0,
-      "object",
-      /* sub type */
-      void 0,
-      /* value */
-      null
-    );
-    this.#callFrame = callFrame;
-    this.#scope = scope;
-    this.#range = range;
-  }
-  async doGetProperties(_ownProperties, accessorPropertiesOnly, generatePreview) {
-    if (accessorPropertiesOnly) {
-      return { properties: [], internalProperties: [] };
-    }
-    const properties = [];
-    for (const [index, variable] of this.#scope.variables.entries()) {
-      const expression = this.#findExpression(index);
-      if (expression === null) {
-        properties.push(_SourceMapScopeRemoteObject.#unavailableProperty(variable));
-        continue;
-      }
-      const result = await this.#callFrame.evaluate({ expression, generatePreview });
-      if ("error" in result || result.exceptionDetails) {
-        properties.push(_SourceMapScopeRemoteObject.#unavailableProperty(variable));
-      } else {
-        properties.push(new RemoteObjectProperty(
-          variable,
-          result.object,
-          /* enumerable */
-          false,
-          /* writable */
-          false,
-          /* isOwn */
-          true,
-          /* wasThrown */
-          false
-        ));
-      }
-    }
-    return { properties, internalProperties: [] };
-  }
-  /** @returns null if the variable is unavailable at the current paused location */
-  #findExpression(index) {
-    if (!this.#range) {
-      return null;
-    }
-    const expressionOrSubRanges = this.#range.values[index];
-    if (typeof expressionOrSubRanges === "string") {
-      return expressionOrSubRanges;
-    }
-    if (expressionOrSubRanges === null) {
-      return null;
-    }
-    const pausedPosition = this.#callFrame.location();
-    for (const range of expressionOrSubRanges) {
-      if (contains({ start: range.from, end: range.to }, pausedPosition.lineNumber, pausedPosition.columnNumber)) {
-        return range.value ?? null;
-      }
-    }
-    return null;
-  }
-  static #unavailableProperty(name) {
-    return new RemoteObjectProperty(
-      name,
-      null,
-      /* enumerable */
-      false,
-      /* writeable */
-      false,
-      /* isOwn */
-      true,
-      /* wasThrown */
-      false
-    );
-  }
-};
-
-// ../../front_end/core/sdk/SourceMapScopesInfo.ts
-var SourceMapScopesInfo = class _SourceMapScopesInfo {
-  #sourceMap;
-  #originalScopes;
-  #generatedRanges;
-  #cachedVariablesAndBindingsPresent = null;
-  constructor(sourceMap, scopeInfo) {
-    this.#sourceMap = sourceMap;
-    this.#originalScopes = scopeInfo.scopes;
-    this.#generatedRanges = scopeInfo.ranges;
-  }
-  /**
-   * If the source map does not contain any scopes information, this factory function attempts to create scope information
-   * via the script's AST combined with the mappings.
-   *
-   * We create the generated ranges from the scope tree and for each range we create an original scope that matches the bounds 1:1.
-   */
-  static createFromAst(sourceMap, scopeTree, text) {
-    const numSourceUrls = sourceMap.sourceURLs().length;
-    const scopeBySourceUrl = [];
-    for (let i = 0; i < numSourceUrls; i++) {
-      const scope = {
-        start: { line: 0, column: 0 },
-        end: { line: Number.POSITIVE_INFINITY, column: Number.POSITIVE_INFINITY },
-        isStackFrame: false,
-        variables: [],
-        children: []
-      };
-      scopeBySourceUrl.push(scope);
-    }
-    const stack = [{ node: scopeTree }];
-    let rootRange = void 0;
-    while (stack.length > 0) {
-      const popped = stack.pop();
-      if (!popped) {
-        break;
-      }
-      const { node, parentRange, parentScopeHint } = popped;
-      const start = positionFromOffset(node.start);
-      const end = positionFromOffset(node.end);
-      const startEntry = sourceMap.findEntry(start.line, start.column);
-      const endEntry = sourceMap.findEntry(end.line, end.column);
-      const sourceIndex = startEntry?.sourceIndex;
-      const canMapOriginalPosition = startEntry && endEntry && sourceIndex !== void 0 && startEntry.sourceIndex === endEntry.sourceIndex && startEntry.sourceIndex !== void 0 && sourceIndex >= 0 && sourceIndex < numSourceUrls;
-      const isStackFrame = node.kind === Formatter2.FormatterWorkerPool.ScopeKind.FUNCTION || node.kind === Formatter2.FormatterWorkerPool.ScopeKind.ARROW_FUNCTION;
-      let name = void 0;
-      for (const offset of node.nameMappingLocations ?? []) {
-        const position = positionFromOffset(offset);
-        const entry = sourceMap.findEntryExact(position.line, position.column);
-        if (entry?.name !== void 0) {
-          name = entry.name;
-          break;
-        }
-      }
-      let scope;
-      if (canMapOriginalPosition) {
-        scope = {
-          start: { line: startEntry.sourceLineNumber, column: startEntry.sourceColumnNumber },
-          end: { line: endEntry.sourceLineNumber, column: endEntry.sourceColumnNumber },
-          name: name ?? node.name,
-          isStackFrame,
-          variables: [],
-          children: []
-        };
-      }
-      const range = {
-        start,
-        end,
-        originalScope: scope,
-        isStackFrame,
-        isHidden: false,
-        values: [],
-        children: []
-      };
-      if (!rootRange) {
-        rootRange = range;
-      }
-      parentRange?.children.push(range);
-      let nextParentScopeHint = parentScopeHint;
-      if (canMapOriginalPosition && scope) {
-        const rootScope = scopeBySourceUrl[sourceIndex];
-        const startSearchFrom = parentScopeHint && containsOriginal(parentScopeHint, scope) ? parentScopeHint : rootScope;
-        insertInScope(startSearchFrom, scope);
-        nextParentScopeHint = scope;
-      }
-      for (let i = node.children.length - 1; i >= 0; --i) {
-        stack.push({ node: node.children[i], parentRange: range, parentScopeHint: nextParentScopeHint });
-      }
-    }
-    return new _SourceMapScopesInfo(sourceMap, { scopes: scopeBySourceUrl, ranges: rootRange ? [rootRange] : [] });
-    function insertInScope(rootScope, newScope) {
-      let parent = rootScope;
-      while (true) {
-        let deeperParent = null;
-        for (const child of parent.children) {
-          if (containsOriginal(child, newScope)) {
-            deeperParent = child;
-            break;
-          }
-        }
-        if (deeperParent) {
-          parent = deeperParent;
-        } else {
-          break;
-        }
-      }
-      const childrenToKeep = [];
-      for (const child of parent.children) {
-        if (containsOriginal(newScope, child)) {
-          newScope.children.push(child);
-          child.parent = newScope;
-        } else {
-          childrenToKeep.push(child);
-        }
-      }
-      const insertIndex = childrenToKeep.findIndex((child) => compareScopes(newScope, child) < 0);
-      if (insertIndex === -1) {
-        childrenToKeep.push(newScope);
-      } else {
-        childrenToKeep.splice(insertIndex, 0, newScope);
-      }
-      parent.children = childrenToKeep;
-      newScope.parent = parent;
-    }
-    function containsOriginal(outer, inner) {
-      return comparePositions2(outer.start, inner.start) <= 0 && comparePositions2(outer.end, inner.end) >= 0;
-    }
-    function compareScopes(a, b) {
-      return comparePositions2(a.start, b.start);
-    }
-    function comparePositions2(a, b) {
-      if (a.line !== b.line) {
-        return a.line - b.line;
-      }
-      return a.column - b.column;
-    }
-    function positionFromOffset(offset) {
-      const location = text.positionFromOffset(offset);
-      return { line: location.lineNumber, column: location.columnNumber };
-    }
-  }
-  addOriginalScopes(scopes) {
-    for (const scope of scopes) {
-      this.#originalScopes.push(scope);
-    }
-  }
-  addGeneratedRanges(ranges) {
-    for (const range of ranges) {
-      this.#generatedRanges.push(range);
-    }
-  }
-  hasOriginalScopes(sourceIdx) {
-    return Boolean(this.#originalScopes[sourceIdx]);
-  }
-  isEmpty() {
-    const noScopes = this.#originalScopes.every((scope) => scope === null);
-    return noScopes && !this.#generatedRanges.length;
-  }
-  addOriginalScopesAtIndex(sourceIdx, scope) {
-    if (!this.#originalScopes[sourceIdx]) {
-      this.#originalScopes[sourceIdx] = scope;
-    } else {
-      throw new Error(`Trying to re-augment existing scopes for source at index: ${sourceIdx}`);
-    }
-  }
-  /**
-   * @returns true, iff the function surrounding the provided position is marked as "hidden".
-   */
-  isOutlinedFrame(generatedLine, generatedColumn) {
-    const rangeChain = this.#findGeneratedRangeChain(generatedLine, generatedColumn);
-    return this.#isOutlinedFrame(rangeChain);
-  }
-  #isOutlinedFrame(rangeChain) {
-    for (let i = rangeChain.length - 1; i >= 0; --i) {
-      if (rangeChain[i].isStackFrame) {
-        return rangeChain[i].isHidden;
-      }
-    }
-    return false;
-  }
-  /**
-   * @returns true, iff the range surrounding the provided position contains multiple
-   * inlined original functions.
-   */
-  hasInlinedFrames(generatedLine, generatedColumn) {
-    const rangeChain = this.#findGeneratedRangeChain(generatedLine, generatedColumn);
-    for (let i = rangeChain.length - 1; i >= 0; --i) {
-      if (rangeChain[i].isStackFrame) {
-        return false;
-      }
-      if (rangeChain[i].callSite) {
-        return true;
-      }
-    }
-    return false;
-  }
-  /**
-   * Given a generated position, this returns all the surrounding generated ranges from outer
-   * to inner.
-   */
-  #findGeneratedRangeChain(line, column) {
-    const result = [];
-    (function walkRanges(ranges) {
-      for (const range of ranges) {
-        if (!contains(range, line, column)) {
-          continue;
-        }
-        result.push(range);
-        walkRanges(range.children);
-      }
-    })(this.#generatedRanges);
-    return result;
-  }
-  /**
-   * @returns true if we have enough info (i.e. variable and binding expressions) to build
-   * a scope view.
-   */
-  hasVariablesAndBindings() {
-    if (this.#cachedVariablesAndBindingsPresent === null) {
-      this.#cachedVariablesAndBindingsPresent = this.#areVariablesAndBindingsPresent();
-    }
-    return this.#cachedVariablesAndBindingsPresent;
-  }
-  #areVariablesAndBindingsPresent() {
-    function walkTree(nodes) {
-      for (const node of nodes) {
-        if (!node) {
-          continue;
-        }
-        if ("variables" in node && node.variables.length > 0) {
-          return true;
-        }
-        if ("values" in node && node.values.some((v) => v !== null)) {
-          return true;
-        }
-        if (walkTree(node.children)) {
-          return true;
-        }
-      }
-      return false;
-    }
-    return walkTree(this.#originalScopes) && walkTree(this.#generatedRanges);
-  }
-  /**
-   * Constructs a scope chain based on the CallFrame's paused position.
-   *
-   * The algorithm to obtain the original scope chain is straight-forward:
-   *
-   *   1) Find the inner-most generated range that contains the CallFrame's
-   *      paused position.
-   *
-   *   2) Does the found range have an associated original scope?
-   *
-   *      2a) If no, return null. This is a "hidden" range and technically
-   *          we shouldn't be pausing here in the first place. This code doesn't
-   *          correspond to anything in the authored code.
-   *
-   *      2b) If yes, the associated original scope is the inner-most
-   *          original scope in the resulting scope chain.
-   *
-   *   3) Walk the parent chain of the found original scope outwards. This is
-   *      our scope view. For each original scope we also try to find a
-   *      corresponding generated range that contains the CallFrame's
-   *      paused position. We need the generated range to resolve variable
-   *      values.
-   */
-  resolveMappedScopeChain(callFrame) {
-    const rangeChain = this.#findGeneratedRangeChainForFrame(callFrame);
-    const innerMostOriginalScope = rangeChain.at(-1)?.originalScope;
-    if (innerMostOriginalScope === void 0) {
-      return null;
-    }
-    let seenFunctionScope = false;
-    const result = [];
-    for (let originalScope = rangeChain.at(-1)?.originalScope; originalScope; originalScope = originalScope.parent) {
-      const range = rangeChain.findLast((r) => r.originalScope === originalScope);
-      const isFunctionScope = originalScope.kind === "function";
-      const isInnerMostFunction = isFunctionScope && !seenFunctionScope;
-      const returnValue = isInnerMostFunction ? callFrame.returnValue() : null;
-      result.push(
-        new SourceMapScopeChainEntry(callFrame, originalScope, range, isInnerMostFunction, returnValue ?? void 0)
-      );
-      seenFunctionScope ||= isFunctionScope;
-    }
-    if (callFrame.returnValue() !== null) {
-      while (result.length && result[0].type() !== Debugger.ScopeType.Local) {
-        result.shift();
-      }
-    }
-    return result;
-  }
-  /** Similar to #findGeneratedRangeChain, but takes inlineFrameIndex of virtual call frames into account */
-  #findGeneratedRangeChainForFrame(callFrame) {
-    const rangeChain = this.#findGeneratedRangeChain(callFrame.location().lineNumber, callFrame.location().columnNumber);
-    if (callFrame.inlineFrameIndex === 0) {
-      return rangeChain;
-    }
-    for (let inlineIndex = 0; inlineIndex < callFrame.inlineFrameIndex; ) {
-      const range = rangeChain.pop();
-      if (range?.callSite) {
-        ++inlineIndex;
-      }
-    }
-    return rangeChain;
-  }
-  /**
-   * Returns the authored function name of the function containing the provided generated position.
-   */
-  findOriginalFunctionName(position) {
-    const originalInnerMostScope = this.findOriginalFunctionScope(position)?.scope;
-    return this.#findFunctionNameInOriginalScopeChain(originalInnerMostScope);
-  }
-  /**
-   * Returns the authored function scope of the function containing the provided generated position.
-   */
-  findOriginalFunctionScope({ line, column }) {
-    let originalInnerMostScope;
-    if (this.#generatedRanges.length > 0) {
-      const rangeChain = this.#findGeneratedRangeChain(line, column);
-      originalInnerMostScope = rangeChain.at(-1)?.originalScope;
-    } else {
-      const entry = this.#sourceMap.findEntry(line, column);
-      if (entry?.sourceIndex === void 0) {
-        return null;
-      }
-      originalInnerMostScope = this.#findOriginalScopeChain(
-        { sourceIndex: entry.sourceIndex, line: entry.sourceLineNumber, column: entry.sourceColumnNumber }
-      ).at(-1);
-    }
-    if (!originalInnerMostScope) {
-      return null;
-    }
-    const functionScope = this.#findFunctionScopeInOriginalScopeChain(originalInnerMostScope);
-    if (!functionScope) {
-      return null;
-    }
-    let rootScope = functionScope;
-    while (rootScope.parent) {
-      rootScope = rootScope.parent;
-    }
-    const sourceIndex = this.#originalScopes.indexOf(rootScope);
-    const url = sourceIndex !== -1 ? this.#sourceMap.sourceURLForSourceIndex(sourceIndex) : void 0;
-    return functionScope ? { scope: functionScope, url } : null;
-  }
-  /**
-   * Given an original position, this returns all the surrounding original scopes from outer
-   * to inner.
-   */
-  #findOriginalScopeChain({ sourceIndex, line, column }) {
-    const scope = this.#originalScopes[sourceIndex];
-    if (!scope) {
-      return [];
-    }
-    const result = [];
-    (function walkScopes(scopes) {
-      for (const scope2 of scopes) {
-        if (!contains(scope2, line, column)) {
-          continue;
-        }
-        result.push(scope2);
-        walkScopes(scope2.children);
-      }
-    })([scope]);
-    return result;
-  }
-  #findFunctionScopeInOriginalScopeChain(innerOriginalScope) {
-    for (let originalScope = innerOriginalScope; originalScope; originalScope = originalScope.parent) {
-      if (originalScope.isStackFrame) {
-        return originalScope;
-      }
-    }
-    return null;
-  }
-  #findFunctionNameInOriginalScopeChain(innerOriginalScope) {
-    const functionScope = this.#findFunctionScopeInOriginalScopeChain(innerOriginalScope);
-    if (!functionScope) {
-      return null;
-    }
-    return functionScope.name ?? "";
-  }
-  /**
-   * Returns one or more original stack frames for this single "raw frame" or call-site.
-   *
-   * @returns An empty array if no mapping at the call-site was found, or the resulting frames
-   * in top-to-bottom order in case of inlining.
-   * @throws If this range is marked "hidden". Outlining needs to be handled externally as
-   * outlined function segments in stack traces can span across bundles.
-   */
-  translateCallSite(generatedLine, generatedColumn) {
-    const rangeChain = this.#findGeneratedRangeChain(generatedLine, generatedColumn);
-    if (this.#isOutlinedFrame(rangeChain)) {
-      throw new Error("SourceMapScopesInfo is unable to translate an outlined function by itself");
-    }
-    const mapping = this.#sourceMap.findEntry(generatedLine, generatedColumn);
-    if (mapping?.sourceIndex === void 0) {
-      return [];
-    }
-    const result = [{
-      line: mapping.sourceLineNumber,
-      column: mapping.sourceColumnNumber,
-      name: this.findOriginalFunctionName({ line: generatedLine, column: generatedColumn }) ?? void 0,
-      url: mapping.sourceURL
-    }];
-    for (let i = rangeChain.length - 1; i >= 0 && !rangeChain[i].isStackFrame; --i) {
-      const range = rangeChain[i];
-      if (!range.callSite) {
-        continue;
-      }
-      const originalScopeChain = this.#findOriginalScopeChain(range.callSite);
-      result.push({
-        line: range.callSite.line,
-        column: range.callSite.column,
-        name: this.#findFunctionNameInOriginalScopeChain(originalScopeChain.at(-1)) ?? void 0,
-        url: this.#sourceMap.sourceURLForSourceIndex(range.callSite.sourceIndex)
-      });
-    }
-    return result;
-  }
-};
-function contains(range, line, column) {
-  if (range.start.line > line || range.start.line === line && range.start.column > column) {
-    return false;
-  }
-  if (range.end.line < line || range.end.line === line && range.end.column <= column) {
-    return false;
-  }
-  return true;
-}
-
-// ../../front_end/core/sdk/SourceMap.ts
-function parseSourceMap(content) {
-  if (content.startsWith(")]}")) {
-    content = content.substring(content.indexOf("\n"));
-  }
-  if (content.charCodeAt(0) === 65279) {
-    content = content.slice(1);
-  }
-  return JSON.parse(content);
-}
-var SourceMapEntry = class {
-  lineNumber;
-  columnNumber;
-  sourceIndex;
-  sourceURL;
-  sourceLineNumber;
-  sourceColumnNumber;
-  name;
-  constructor(lineNumber, columnNumber, sourceIndex, sourceURL, sourceLineNumber, sourceColumnNumber, name) {
-    this.lineNumber = lineNumber;
-    this.columnNumber = columnNumber;
-    this.sourceIndex = sourceIndex;
-    this.sourceURL = sourceURL;
-    this.sourceLineNumber = sourceLineNumber;
-    this.sourceColumnNumber = sourceColumnNumber;
-    this.name = name;
-  }
-  static compare(entry1, entry2) {
-    if (entry1.lineNumber !== entry2.lineNumber) {
-      return entry1.lineNumber - entry2.lineNumber;
-    }
-    return entry1.columnNumber - entry2.columnNumber;
-  }
-};
-var SourceMap = class _SourceMap {
-  static retainRawSourceMaps = false;
-  #json;
-  #compiledURL;
-  #sourceMappingURL;
-  #baseURL;
-  #mappings = null;
-  #sourceInfos = [];
-  #sourceInfoByURL = /* @__PURE__ */ new Map();
-  #script;
-  #scopesInfo = null;
-  #debugId;
-  #scopesFallbackPromise;
-  #console;
-  /**
-   * Implements Source Map V3 model. See https://github.com/google/closure-compiler/wiki/Source-Maps
-   * for format description.
-   */
-  constructor(compiledURL, sourceMappingURL, payload, console2, script) {
-    this.#json = payload;
-    this.#script = script;
-    this.#compiledURL = compiledURL;
-    this.#sourceMappingURL = sourceMappingURL;
-    this.#baseURL = Common12.ParsedURL.schemeIs(sourceMappingURL, "data:") ? compiledURL : sourceMappingURL;
-    this.#debugId = "debugId" in payload ? payload.debugId : void 0;
-    this.#console = console2;
-    if ("sections" in this.#json) {
-      if (this.#json.sections.find((section) => "url" in section)) {
-        this.#console.warn(`SourceMap "${sourceMappingURL}" contains unsupported "URL" field in one of its sections.`);
-      }
-    }
-    this.eachSection(this.parseSources.bind(this));
-  }
-  json() {
-    return this.#json;
-  }
-  augmentWithScopes(scriptUrl, ranges) {
-    this.#ensureSourceMapProcessed();
-    if (this.#json && this.#json.version > 3) {
-      throw new Error("Only support augmenting source maps up to version 3.");
-    }
-    const sourceIdx = this.#sourceIndex(scriptUrl);
-    if (sourceIdx >= 0) {
-      if (!this.#scopesInfo || this.#scopesFallbackPromise !== void 0) {
-        this.#scopesInfo = new SourceMapScopesInfo(this, { scopes: [], ranges: [] });
-        this.#scopesFallbackPromise = void 0;
-      }
-      if (!this.#scopesInfo.hasOriginalScopes(sourceIdx)) {
-        const originalScopes = buildOriginalScopes(ranges);
-        this.#scopesInfo.addOriginalScopesAtIndex(sourceIdx, originalScopes);
-      }
-    } else {
-      throw new Error(`Could not find sourceURL ${scriptUrl} in sourceMap`);
-    }
-  }
-  #sourceIndex(sourceURL) {
-    return this.#sourceInfos.findIndex((info) => info.sourceURL === sourceURL);
-  }
-  compiledURL() {
-    return this.#compiledURL;
-  }
-  url() {
-    return this.#sourceMappingURL;
-  }
-  debugId() {
-    return this.#debugId ?? null;
-  }
-  sourceURLForSourceIndex(index) {
-    return this.#sourceInfos[index]?.sourceURL;
-  }
-  sourceURLs() {
-    return [...this.#sourceInfoByURL.keys()];
-  }
-  embeddedContentByURL(sourceURL) {
-    const entry = this.#sourceInfoByURL.get(sourceURL);
-    if (!entry) {
-      return null;
-    }
-    return entry.content;
-  }
-  hasScopeInfo() {
-    this.#ensureSourceMapProcessed();
-    return this.#scopesInfo !== null && !this.#scopesInfo.isEmpty();
-  }
-  waitForScopeInfo() {
-    this.#ensureSourceMapProcessed();
-    return this.#scopesFallbackPromise ?? Promise.resolve();
-  }
-  findEntry(lineNumber, columnNumber) {
-    this.#ensureSourceMapProcessed();
-    const mappings = this.mappings();
-    const index = Platform7.ArrayUtilities.upperBound(
-      mappings,
-      void 0,
-      (_, entry) => lineNumber - entry.lineNumber || columnNumber - entry.columnNumber
-    );
-    return index ? mappings[index - 1] : null;
-  }
-  /** Returns the entry at the given position but only if an entry exists for that exact position */
-  findEntryExact(lineNumber, columnNumber) {
-    const entry = this.findEntry(lineNumber, columnNumber);
-    if (entry?.lineNumber === lineNumber && entry.columnNumber === columnNumber) {
-      return entry;
-    }
-    return null;
-  }
-  findEntryRanges(lineNumber, columnNumber) {
-    const mappings = this.mappings();
-    const endIndex = Platform7.ArrayUtilities.upperBound(
-      mappings,
-      void 0,
-      (_, entry) => lineNumber - entry.lineNumber || columnNumber - entry.columnNumber
-    );
-    if (!endIndex) {
-      return null;
-    }
-    const startIndex = endIndex - 1;
-    const sourceURL = mappings[startIndex].sourceURL;
-    if (!sourceURL) {
-      return null;
-    }
-    const endLine = endIndex < mappings.length ? mappings[endIndex].lineNumber : 2 ** 31 - 1;
-    const endColumn = endIndex < mappings.length ? mappings[endIndex].columnNumber : 2 ** 31 - 1;
-    const range = new TextUtils15.TextRange.TextRange(
-      mappings[startIndex].lineNumber,
-      mappings[startIndex].columnNumber,
-      endLine,
-      endColumn
-    );
-    const reverseMappings = this.reversedMappings(sourceURL);
-    const startSourceLine = mappings[startIndex].sourceLineNumber;
-    const startSourceColumn = mappings[startIndex].sourceColumnNumber;
-    const endReverseIndex = Platform7.ArrayUtilities.upperBound(
-      reverseMappings,
-      void 0,
-      (_, i) => startSourceLine - mappings[i].sourceLineNumber || startSourceColumn - mappings[i].sourceColumnNumber
-    );
-    if (!endReverseIndex) {
-      return null;
-    }
-    const endSourceLine = endReverseIndex < reverseMappings.length ? mappings[reverseMappings[endReverseIndex]].sourceLineNumber : 2 ** 31 - 1;
-    const endSourceColumn = endReverseIndex < reverseMappings.length ? mappings[reverseMappings[endReverseIndex]].sourceColumnNumber : 2 ** 31 - 1;
-    const sourceRange = new TextUtils15.TextRange.TextRange(startSourceLine, startSourceColumn, endSourceLine, endSourceColumn);
-    return { range, sourceRange, sourceURL };
-  }
-  sourceLineMapping(sourceURL, lineNumber, columnNumber) {
-    const mappings = this.mappings();
-    const reverseMappings = this.reversedMappings(sourceURL);
-    const first = Platform7.ArrayUtilities.lowerBound(reverseMappings, lineNumber, lineComparator);
-    const last = Platform7.ArrayUtilities.upperBound(reverseMappings, lineNumber, lineComparator);
-    if (first >= reverseMappings.length || mappings[reverseMappings[first]].sourceLineNumber !== lineNumber) {
-      return null;
-    }
-    const columnMappings = reverseMappings.slice(first, last);
-    if (!columnMappings.length) {
-      return null;
-    }
-    const index = Platform7.ArrayUtilities.lowerBound(
-      columnMappings,
-      columnNumber,
-      (columnNumber2, i) => columnNumber2 - mappings[i].sourceColumnNumber
-    );
-    return index >= columnMappings.length ? mappings[columnMappings[columnMappings.length - 1]] : mappings[columnMappings[index]];
-    function lineComparator(lineNumber2, i) {
-      return lineNumber2 - mappings[i].sourceLineNumber;
-    }
-  }
-  findReverseIndices(sourceURL, lineNumber, columnNumber) {
-    const mappings = this.mappings();
-    const reverseMappings = this.reversedMappings(sourceURL);
-    const endIndex = Platform7.ArrayUtilities.upperBound(
-      reverseMappings,
-      void 0,
-      (_, i) => lineNumber - mappings[i].sourceLineNumber || columnNumber - mappings[i].sourceColumnNumber
-    );
-    let startIndex = endIndex;
-    while (startIndex > 0 && mappings[reverseMappings[startIndex - 1]].sourceLineNumber === mappings[reverseMappings[endIndex - 1]].sourceLineNumber && mappings[reverseMappings[startIndex - 1]].sourceColumnNumber === mappings[reverseMappings[endIndex - 1]].sourceColumnNumber) {
-      --startIndex;
-    }
-    return reverseMappings.slice(startIndex, endIndex);
-  }
-  findReverseEntries(sourceURL, lineNumber, columnNumber, filterContiguous = false) {
-    const mappings = this.mappings();
-    let indices = this.findReverseIndices(sourceURL, lineNumber, columnNumber);
-    if (filterContiguous) {
-      indices = indices.filter((index, i) => i === 0 || index !== indices[i - 1] + 1);
-    }
-    return indices.map((i) => mappings[i]);
-  }
-  findReverseRanges(sourceURL, lineNumber, columnNumber) {
-    const mappings = this.mappings();
-    const indices = this.findReverseIndices(sourceURL, lineNumber, columnNumber);
-    const ranges = [];
-    for (let i = 0; i < indices.length; ++i) {
-      const startIndex = indices[i];
-      let endIndex = startIndex + 1;
-      while (i + 1 < indices.length && endIndex === indices[i + 1]) {
-        ++endIndex;
-        ++i;
-      }
-      const startLine = mappings[startIndex].lineNumber;
-      const startColumn = mappings[startIndex].columnNumber;
-      const endLine = endIndex < mappings.length ? mappings[endIndex].lineNumber : 2 ** 31 - 1;
-      const endColumn = endIndex < mappings.length ? mappings[endIndex].columnNumber : 2 ** 31 - 1;
-      ranges.push(new TextUtils15.TextRange.TextRange(startLine, startColumn, endLine, endColumn));
-    }
-    return ranges;
-  }
-  mappings() {
-    this.#ensureSourceMapProcessed();
-    return this.#mappings ?? [];
-  }
-  /**
-   * If the source map does not contain scope information by itself (e.g. "scopes proposal"
-   * or "pasta" scopes), then we'll use this getter to calculate basic function name information from
-   * the AST and mappings.
-   */
-  async #buildScopesFallback() {
-    const scopeTreeAndText = this.#script ? await scopeTreeForScript(this.#script) : null;
-    if (!scopeTreeAndText) {
-      return null;
-    }
-    const { scopeTree, text } = scopeTreeAndText;
-    return SourceMapScopesInfo.createFromAst(this, scopeTree, text);
-  }
-  reversedMappings(sourceURL) {
-    this.#ensureSourceMapProcessed();
-    return this.#sourceInfoByURL.get(sourceURL)?.reverseMappings ?? [];
-  }
-  #ensureSourceMapProcessed() {
-    if (this.#mappings === null) {
-      this.#mappings = [];
-      try {
-        this.eachSection(this.parseMap.bind(this));
-        if (!this.hasScopeInfo()) {
-          this.#scopesFallbackPromise = this.#buildScopesFallback().then((info) => {
-            this.#scopesInfo = info;
-          });
-        }
-      } catch (e) {
-        console.error("Failed to parse source map", e);
-        this.#mappings = [];
-      }
-      this.mappings().sort(SourceMapEntry.compare);
-      this.#computeReverseMappings(this.#mappings);
-    }
-    if (!_SourceMap.retainRawSourceMaps) {
-      this.#json = null;
-    }
-  }
-  #computeReverseMappings(mappings) {
-    const reverseMappingsPerUrl = /* @__PURE__ */ new Map();
-    for (let i = 0; i < mappings.length; i++) {
-      const entryUrl = mappings[i]?.sourceURL;
-      if (!entryUrl) {
-        continue;
-      }
-      let reverseMap = reverseMappingsPerUrl.get(entryUrl);
-      if (!reverseMap) {
-        reverseMap = [];
-        reverseMappingsPerUrl.set(entryUrl, reverseMap);
-      }
-      reverseMap.push(i);
-    }
-    for (const [url, reverseMap] of reverseMappingsPerUrl.entries()) {
-      const info = this.#sourceInfoByURL.get(url);
-      if (!info) {
-        continue;
-      }
-      reverseMap.sort(sourceMappingComparator);
-      info.reverseMappings = reverseMap;
-    }
-    function sourceMappingComparator(indexA, indexB) {
-      const a = mappings[indexA];
-      const b = mappings[indexB];
-      return a.sourceLineNumber - b.sourceLineNumber || a.sourceColumnNumber - b.sourceColumnNumber || a.lineNumber - b.lineNumber || a.columnNumber - b.columnNumber;
-    }
-  }
-  eachSection(callback) {
-    if (!this.#json) {
-      return;
-    }
-    if ("sections" in this.#json) {
-      let sourcesIndex = 0;
-      for (const section of this.#json.sections) {
-        if ("map" in section) {
-          callback(section.map, sourcesIndex, section.offset.line, section.offset.column);
-          sourcesIndex += section.map.sources.length;
-        }
-      }
-    } else {
-      callback(this.#json, 0, 0, 0);
-    }
-  }
-  parseSources(sourceMap) {
-    const sourceRoot = sourceMap.sourceRoot ?? "";
-    const ignoreList = new Set(sourceMap.ignoreList ?? sourceMap.x_google_ignoreList);
-    for (let i = 0; i < sourceMap.sources.length; ++i) {
-      let href = sourceMap.sources[i];
-      if (Common12.ParsedURL.ParsedURL.isRelativeURL(href)) {
-        if (sourceRoot && !sourceRoot.endsWith("/") && href && !href.startsWith("/")) {
-          href = sourceRoot.concat("/", href);
-        } else {
-          href = sourceRoot.concat(href);
-        }
-      }
-      const url = Common12.ParsedURL.ParsedURL.completeURL(this.#baseURL, href) || href;
-      const source = sourceMap.sourcesContent?.[i];
-      const sourceInfo = {
-        sourceURL: url,
-        content: source ?? null,
-        ignoreListHint: ignoreList.has(i),
-        reverseMappings: null
-      };
-      this.#sourceInfos.push(sourceInfo);
-      if (!this.#sourceInfoByURL.has(url)) {
-        this.#sourceInfoByURL.set(url, sourceInfo);
-      }
-    }
-  }
-  parseMap(map, baseSourceIndex, baseLineNumber, baseColumnNumber) {
-    let sourceIndex = baseSourceIndex;
-    let lineNumber = baseLineNumber;
-    let columnNumber = baseColumnNumber;
-    let sourceLineNumber = 0;
-    let sourceColumnNumber = 0;
-    let nameIndex = 0;
-    const names = map.names ?? [];
-    const tokenIter = new TokenIterator(map.mappings);
-    let sourceURL = this.#sourceInfos[sourceIndex]?.sourceURL;
-    while (true) {
-      if (tokenIter.peek() === ",") {
-        tokenIter.next();
-      } else {
-        while (tokenIter.peek() === ";") {
-          lineNumber += 1;
-          columnNumber = 0;
-          tokenIter.next();
-        }
-        if (!tokenIter.hasNext()) {
-          break;
-        }
-      }
-      columnNumber += tokenIter.nextVLQ();
-      if (!tokenIter.hasNext() || this.isSeparator(tokenIter.peek())) {
-        this.mappings().push(new SourceMapEntry(lineNumber, columnNumber));
-        continue;
-      }
-      const sourceIndexDelta = tokenIter.nextVLQ();
-      if (sourceIndexDelta) {
-        sourceIndex += sourceIndexDelta;
-        sourceURL = this.#sourceInfos[sourceIndex]?.sourceURL;
-      }
-      sourceLineNumber += tokenIter.nextVLQ();
-      sourceColumnNumber += tokenIter.nextVLQ();
-      if (!tokenIter.hasNext() || this.isSeparator(tokenIter.peek())) {
-        this.mappings().push(
-          new SourceMapEntry(lineNumber, columnNumber, sourceIndex, sourceURL, sourceLineNumber, sourceColumnNumber)
-        );
-        continue;
-      }
-      nameIndex += tokenIter.nextVLQ();
-      this.mappings().push(new SourceMapEntry(
-        lineNumber,
-        columnNumber,
-        sourceIndex,
-        sourceURL,
-        sourceLineNumber,
-        sourceColumnNumber,
-        names[nameIndex]
-      ));
-    }
-    if (!this.#scopesInfo) {
-      this.#scopesInfo = new SourceMapScopesInfo(this, { scopes: [], ranges: [] });
-    }
-    if (map.scopes) {
-      const { scopes, ranges } = ScopesCodec.decode(
-        map,
-        { mode: ScopesCodec.DecodeMode.LAX, generatedOffset: { line: baseLineNumber, column: baseColumnNumber } }
-      );
-      this.#scopesInfo.addOriginalScopes(scopes);
-      this.#scopesInfo.addGeneratedRanges(ranges);
-    } else if (map.x_com_bloomberg_sourcesFunctionMappings) {
-      const originalScopes = this.parseBloombergScopes(map);
-      this.#scopesInfo.addOriginalScopes(originalScopes);
-    } else {
-      this.#scopesInfo.addOriginalScopes(new Array(map.sources.length).fill(null));
-    }
-  }
-  parseBloombergScopes(map) {
-    const scopeList = map.x_com_bloomberg_sourcesFunctionMappings;
-    if (!scopeList) {
-      throw new Error("Cant decode pasta scopes without x_com_bloomberg_sourcesFunctionMappings field");
-    } else if (scopeList.length !== map.sources.length) {
-      throw new Error(`x_com_bloomberg_sourcesFunctionMappings must have ${map.sources.length} scope trees`);
-    }
-    const names = map.names ?? [];
-    return scopeList.map((rawScopes) => {
-      if (!rawScopes) {
-        return null;
-      }
-      const ranges = decodePastaRanges(rawScopes, names);
-      return buildOriginalScopes(ranges);
-    });
-  }
-  isSeparator(char) {
-    return char === "," || char === ";";
-  }
-  /**
-   * Finds all the reverse mappings that intersect with the given `textRange` within the
-   * source entity identified by the `url`. If the `url` does not have any reverse mappings
-   * within this source map, an empty array is returned.
-   *
-   * @param url the URL of the source entity to query.
-   * @param textRange the range of text within the entity to check, considered `[start,end[`.
-   * @returns the list of ranges in the generated file that map to locations overlapping the
-   *          {@link textRange} in the source file identified by the {@link url}, or `[]`
-   *          if the {@link url} does not identify an entity in this source map.
-   */
-  reverseMapTextRanges(url, textRange) {
-    const reverseMappings = this.reversedMappings(url);
-    const mappings = this.mappings();
-    if (reverseMappings.length === 0) {
-      return [];
-    }
-    let startReverseIndex = Platform7.ArrayUtilities.lowerBound(reverseMappings, textRange, ({ startLine, startColumn }, index) => {
-      const { sourceLineNumber, sourceColumnNumber } = mappings[index];
-      return startLine - sourceLineNumber || startColumn - sourceColumnNumber;
-    });
-    while (startReverseIndex === reverseMappings.length || startReverseIndex > 0 && (mappings[reverseMappings[startReverseIndex]].sourceLineNumber > textRange.startLine || mappings[reverseMappings[startReverseIndex]].sourceColumnNumber > textRange.startColumn)) {
-      startReverseIndex--;
-    }
-    let endReverseIndex = startReverseIndex + 1;
-    for (; endReverseIndex < reverseMappings.length; ++endReverseIndex) {
-      const { sourceLineNumber, sourceColumnNumber } = mappings[reverseMappings[endReverseIndex]];
-      if (sourceLineNumber < textRange.endLine || sourceLineNumber === textRange.endLine && sourceColumnNumber < textRange.endColumn) {
-        continue;
-      }
-      break;
-    }
-    const ranges = [];
-    for (let reverseIndex = startReverseIndex; reverseIndex < endReverseIndex; ++reverseIndex) {
-      const startIndex = reverseMappings[reverseIndex], endIndex = startIndex + 1;
-      const range = TextUtils15.TextRange.TextRange.createUnboundedFromLocation(
-        mappings[startIndex].lineNumber,
-        mappings[startIndex].columnNumber
-      );
-      if (endIndex < mappings.length) {
-        range.endLine = mappings[endIndex].lineNumber;
-        range.endColumn = mappings[endIndex].columnNumber;
-      }
-      ranges.push(range);
-    }
-    ranges.sort(TextUtils15.TextRange.TextRange.comparator);
-    let j = 0;
-    for (let i = 1; i < ranges.length; ++i) {
-      if (ranges[j].immediatelyPrecedes(ranges[i])) {
-        ranges[j].endLine = ranges[i].endLine;
-        ranges[j].endColumn = ranges[i].endColumn;
-      } else {
-        ranges[++j] = ranges[i];
-      }
-    }
-    ranges.length = j + 1;
-    return ranges;
-  }
-  mapsOrigin() {
-    const mappings = this.mappings();
-    if (mappings.length > 0) {
-      const firstEntry = mappings[0];
-      return firstEntry?.lineNumber === 0 || firstEntry.columnNumber === 0;
-    }
-    return false;
-  }
-  hasIgnoreListHint(sourceURL) {
-    return this.#sourceInfoByURL.get(sourceURL)?.ignoreListHint ?? false;
-  }
-  /**
-   * Returns a list of ranges in the generated script for original sources that
-   * match a predicate. Each range is a [begin, end) pair, meaning that code at
-   * the beginning location, up to but not including the end location, matches
-   * the predicate.
-   */
-  findRanges(predicate, options) {
-    const mappings = this.mappings();
-    const ranges = [];
-    if (!mappings.length) {
-      return [];
-    }
-    let current = null;
-    if ((mappings[0].lineNumber !== 0 || mappings[0].columnNumber !== 0) && options?.isStartMatching) {
-      current = TextUtils15.TextRange.TextRange.createUnboundedFromLocation(0, 0);
-      ranges.push(current);
-    }
-    for (const { sourceURL, lineNumber, columnNumber } of mappings) {
-      const ignoreListHint = sourceURL && predicate(sourceURL);
-      if (!current && ignoreListHint) {
-        current = TextUtils15.TextRange.TextRange.createUnboundedFromLocation(lineNumber, columnNumber);
-        ranges.push(current);
-        continue;
-      }
-      if (current && !ignoreListHint) {
-        current.endLine = lineNumber;
-        current.endColumn = columnNumber;
-        current = null;
-      }
-    }
-    return ranges;
-  }
-  /**
-   * Determines whether this and the {@link other} `SourceMap` agree on content and ignore-list hint
-   * with respect to the {@link sourceURL}.
-   *
-   * @param sourceURL the URL to test for (might not be provided by either of the sourcemaps).
-   * @param other the other `SourceMap` to check.
-   * @returns `true` if both this and the {@link other} `SourceMap` either both have the ignore-list
-   *          hint for {@link sourceURL} or neither, and if both of them either provide the same
-   *          content for the {@link sourceURL} inline or both provide no `sourcesContent` entry
-   *          for it.
-   */
-  compatibleForURL(sourceURL, other) {
-    return this.embeddedContentByURL(sourceURL) === other.embeddedContentByURL(sourceURL) && this.hasIgnoreListHint(sourceURL) === other.hasIgnoreListHint(sourceURL);
-  }
-  resolveScopeChain(frame) {
-    this.#ensureSourceMapProcessed();
-    if (this.#scopesInfo === null) {
-      return null;
-    }
-    return this.#scopesInfo.resolveMappedScopeChain(frame);
-  }
-  findOriginalFunctionName(position) {
-    this.#ensureSourceMapProcessed();
-    return this.#scopesInfo?.findOriginalFunctionName(position) ?? null;
-  }
-  findOriginalFunctionScope(position) {
-    this.#ensureSourceMapProcessed();
-    return this.#scopesInfo?.findOriginalFunctionScope(position) ?? null;
-  }
-  isOutlinedFrame(generatedLine, generatedColumn) {
-    this.#ensureSourceMapProcessed();
-    return this.#scopesInfo?.isOutlinedFrame(generatedLine, generatedColumn) ?? false;
-  }
-  hasInlinedFrames(generatedLine, generatedColumn) {
-    this.#ensureSourceMapProcessed();
-    return this.#scopesInfo?.hasInlinedFrames(generatedLine, generatedColumn) ?? false;
-  }
-  translateCallSite(generatedLine, generatedColumn) {
-    this.#ensureSourceMapProcessed();
-    return this.#scopesInfo?.translateCallSite(generatedLine, generatedColumn) ?? [];
-  }
-};
-var VLQ_BASE_SHIFT = 5;
-var VLQ_BASE_MASK = (1 << 5) - 1;
-var VLQ_CONTINUATION_MASK = 1 << 5;
-var TokenIterator = class {
-  #string;
-  #position;
-  constructor(string) {
-    this.#string = string;
-    this.#position = 0;
-  }
-  next() {
-    return this.#string.charAt(this.#position++);
-  }
-  /** Returns the unicode value of the next character and advances the iterator  */
-  nextCharCode() {
-    return this.#string.charCodeAt(this.#position++);
-  }
-  peek() {
-    return this.#string.charAt(this.#position);
-  }
-  hasNext() {
-    return this.#position < this.#string.length;
-  }
-  nextVLQ() {
-    let result = 0;
-    let shift = 0;
-    let digit = VLQ_CONTINUATION_MASK;
-    while (digit & VLQ_CONTINUATION_MASK) {
-      if (!this.hasNext()) {
-        throw new Error("Unexpected end of input while decodling VLQ number!");
-      }
-      const charCode = this.nextCharCode();
-      digit = Common12.Base64.BASE64_CODES[charCode];
-      if (charCode !== 65 && digit === 0) {
-        throw new Error(`Unexpected char '${String.fromCharCode(charCode)}' encountered while decoding`);
-      }
-      result += (digit & VLQ_BASE_MASK) << shift;
-      shift += VLQ_BASE_SHIFT;
-    }
-    const negative = result & 1;
-    result >>= 1;
-    return negative ? -result : result;
-  }
-  /**
-   * @returns the next VLQ number without iterating further. Or returns null if
-   * the iterator is at the end or it's not a valid number.
-   */
-  peekVLQ() {
-    const pos = this.#position;
-    try {
-      return this.nextVLQ();
-    } catch {
-      return null;
-    } finally {
-      this.#position = pos;
-    }
-  }
-};
-
 // ../../front_end/core/sdk/SourceMapCache.ts
 var SourceMapCache_exports = {};
 __export(SourceMapCache_exports, {
   SourceMapCache: () => SourceMapCache
 });
+import * as Platform9 from "../platform/platform.js";
 var SourceMapCache = class _SourceMapCache {
   static create() {
-    if (typeof window === "undefined") {
+    if (!Platform9.HostRuntime.HOST_RUNTIME.getCacheStorage()) {
       return IN_MEMORY_INSTANCE;
     }
     return new _SourceMapCache("devtools-source-map-cache");
@@ -24278,18 +24683,22 @@ var SourceMapCache = class _SourceMapCache {
   }
   async set(debugId, securityOrigin, sourceMap) {
     const cache = await this.#cache();
-    await cache.put(_SourceMapCache.#urlForDebugId(debugId, securityOrigin), new Response(JSON.stringify(sourceMap)));
+    await cache?.put(_SourceMapCache.#urlForDebugId(debugId, securityOrigin), new Response(JSON.stringify(sourceMap)));
   }
   async get(debugId, securityOrigin) {
     const cache = await this.#cache();
-    const response = await cache.match(_SourceMapCache.#urlForDebugId(debugId, securityOrigin));
+    const response = await cache?.match(_SourceMapCache.#urlForDebugId(debugId, securityOrigin));
     return await response?.json() ?? null;
   }
   async #cache() {
     if (this.#cachePromise) {
       return await this.#cachePromise;
     }
-    this.#cachePromise = window.caches.open(this.#name);
+    const cacheStorage = Platform9.HostRuntime.HOST_RUNTIME.getCacheStorage();
+    if (!cacheStorage) {
+      return void 0;
+    }
+    this.#cachePromise = cacheStorage.open(this.#name);
     return await this.#cachePromise;
   }
   /** The Cache API only allows URL as keys, so we construct a simple one. Given that we have our own cache, we have no risk of conflicting URLs */
@@ -24297,7 +24706,7 @@ var SourceMapCache = class _SourceMapCache {
     return `http://debug.id/${encodeURIComponent(debugId)}?origin=${encodeURIComponent(securityOrigin)}`;
   }
   async disposeForTest() {
-    await window.caches.delete(this.#name);
+    await Platform9.HostRuntime.HOST_RUNTIME.getCacheStorage()?.delete(this.#name);
   }
 };
 var IN_MEMORY_INSTANCE = new class {
@@ -24331,7 +24740,14 @@ var SourceMapManager = class _SourceMapManager extends Common13.ObjectWrapper.Ob
   constructor(target, factory) {
     super();
     this.#target = target;
-    this.#factory = factory ?? ((compiledURL, sourceMappingURL, payload) => new SourceMap(compiledURL, sourceMappingURL, payload, this.#target.targetManager().getConsole()));
+    this.#factory = factory ?? ((compiledURL, sourceMappingURL, payload, _client, provenance) => new SourceMap(
+      compiledURL,
+      sourceMappingURL,
+      payload,
+      this.#target.targetManager().getConsole(),
+      void 0,
+      provenance
+    ));
     const settings = target.targetManager().settings;
     this.#lazyLoadingSetting = settings.resolve(lazyLoadingSettingDescriptor);
   }
@@ -24347,15 +24763,15 @@ var SourceMapManager = class _SourceMapManager extends Common13.ObjectWrapper.Ob
       this.detachSourceMap(client);
     }
     this.#isEnabled = isEnabled;
-    for (const [client, { relativeSourceURL, relativeSourceMapURL }] of clientData) {
-      this.attachSourceMap(client, relativeSourceURL, relativeSourceMapURL);
+    for (const [client, { relativeSourceURL, relativeSourceMapURL, provenance }] of clientData) {
+      this.attachSourceMap(client, relativeSourceURL, relativeSourceMapURL, provenance);
     }
   }
   static getBaseUrl(target) {
     while (target && target.type() !== "frame" /* FRAME */) {
       target = target.parentTarget();
     }
-    return target?.inspectedURL() ?? Platform8.DevToolsPath.EmptyUrlString;
+    return target?.inspectedURL() ?? Platform10.DevToolsPath.EmptyUrlString;
   }
   static resolveRelativeSourceURL(target, url) {
     url = Common13.ParsedURL.ParsedURL.completeURL(_SourceMapManager.getBaseUrl(target), url) ?? url;
@@ -24376,7 +24792,7 @@ var SourceMapManager = class _SourceMapManager extends Common13.ObjectWrapper.Ob
     return this.#sourceMaps.get(sourceMap);
   }
   // TODO(bmeurer): We are lying about the type of |relativeSourceURL| here.
-  attachSourceMap(client, relativeSourceURL, relativeSourceMapURL) {
+  attachSourceMap(client, relativeSourceURL, relativeSourceMapURL, provenance) {
     if (this.#clientData.has(client)) {
       throw new Error("SourceMap is already attached or being attached to client");
     }
@@ -24386,6 +24802,7 @@ var SourceMapManager = class _SourceMapManager extends Common13.ObjectWrapper.Ob
     const clientData = {
       relativeSourceURL,
       relativeSourceMapURL,
+      provenance,
       getSourceMap: () => Promise.resolve(void 0)
     };
     this.#clientData.set(client, clientData);
@@ -24407,7 +24824,7 @@ var SourceMapManager = class _SourceMapManager extends Common13.ObjectWrapper.Ob
               const resourceLoader = this.#target.targetManager().context.get(PageResourceLoader);
               sourceMapPromise = loadSourceMap(resourceLoader, this.#sourceMapCache, sourceMapURL, client.debugId(), initiator).then(
                 (payload) => {
-                  const sourceMap = this.#factory(sourceURL, sourceMapURL, payload, client);
+                  const sourceMap = this.#factory(sourceURL, sourceMapURL, payload, client, provenance);
                   if (this.#clientData.get(client) === clientData) {
                     clientData.sourceMap = sourceMap;
                     this.#sourceMaps.set(sourceMap, client);
@@ -24475,7 +24892,7 @@ var SourceMapManager = class _SourceMapManager extends Common13.ObjectWrapper.Ob
 async function loadSourceMap(resourceLoader, sourceMapCache, url, debugId, initiator) {
   try {
     if (debugId) {
-      const securityOrigin = initiator.initiatorUrl ? Common13.ParsedURL.ParsedURL.extractOrigin(initiator.initiatorUrl) : Platform8.DevToolsPath.EmptyUrlString;
+      const securityOrigin = initiator.initiatorUrl ? Common13.ParsedURL.ParsedURL.extractOrigin(initiator.initiatorUrl) : Platform10.DevToolsPath.EmptyUrlString;
       const cachedSourceMap = await sourceMapCache.get(debugId, securityOrigin);
       if (cachedSourceMap) {
         return cachedSourceMap;
@@ -24484,7 +24901,7 @@ async function loadSourceMap(resourceLoader, sourceMapCache, url, debugId, initi
     const { content } = await resourceLoader.loadResource(url, initiator);
     const sourceMap = parseSourceMap(content);
     if (debugId && "debugId" in sourceMap && sourceMap.debugId === debugId) {
-      const securityOrigin = initiator.initiatorUrl ? Common13.ParsedURL.ParsedURL.extractOrigin(initiator.initiatorUrl) : Platform8.DevToolsPath.EmptyUrlString;
+      const securityOrigin = initiator.initiatorUrl ? Common13.ParsedURL.ParsedURL.extractOrigin(initiator.initiatorUrl) : Platform10.DevToolsPath.EmptyUrlString;
       await sourceMapCache.set(sourceMap.debugId, securityOrigin, sourceMap).catch();
     }
     return sourceMap;
@@ -24589,7 +25006,7 @@ var CSSModel = class _CSSModel extends SDKModel {
   createRawLocationsByURL(sourceURL, lineNumber, columnNumber = 0) {
     const headers = this.headersForSourceURL(sourceURL);
     headers.sort(stylesheetComparator);
-    const endIndex = Platform9.ArrayUtilities.upperBound(
+    const endIndex = Platform11.ArrayUtilities.upperBound(
       headers,
       void 0,
       (_, header) => lineNumber - header.startLine || columnNumber - header.startColumn
@@ -24891,7 +25308,7 @@ var CSSModel = class _CSSModel extends SDKModel {
       if (!hasPseudoClass) {
         return false;
       }
-      Platform9.ArrayUtilities.removeElement(forcedPseudoClasses, pseudoClass);
+      Platform11.ArrayUtilities.removeElement(forcedPseudoClasses, pseudoClass);
       if (forcedPseudoClasses.length) {
         node.setMarker(PseudoStateMarker, forcedPseudoClasses);
       } else {
@@ -25127,7 +25544,12 @@ var CSSModel = class _CSSModel extends SDKModel {
       }
       styleSheetIds.add(styleSheetHeader.id);
     }
-    this.#sourceMapManager.attachSourceMap(styleSheetHeader, styleSheetHeader.sourceURL, styleSheetHeader.sourceMapURL);
+    this.#sourceMapManager.attachSourceMap(
+      styleSheetHeader,
+      styleSheetHeader.sourceURL,
+      styleSheetHeader.sourceMapURL,
+      "cdp" /* CDP */
+    );
     this.dispatchEventToListeners("StyleSheetAdded" /* StyleSheetAdded */, styleSheetHeader);
   }
   styleSheetRemoved(id) {
@@ -25184,7 +25606,7 @@ var CSSModel = class _CSSModel extends SDKModel {
     const sourceMapURL = response.sourceMapURL;
     this.#sourceMapManager.detachSourceMap(header);
     header.setSourceMapURL(sourceMapURL);
-    this.#sourceMapManager.attachSourceMap(header, header.sourceURL, header.sourceMapURL);
+    this.#sourceMapManager.attachSourceMap(header, header.sourceURL, header.sourceMapURL, "cdp" /* CDP */);
     if (sourceMapURL === null) {
       return "Error in CSS.setStyleSheetText";
     }
@@ -25441,7 +25863,7 @@ __export(OverlayPersistentHighlighter_exports, {
   OverlayPersistentHighlighter: () => OverlayPersistentHighlighter
 });
 import * as Common16 from "../common/common.js";
-import * as Platform10 from "../platform/platform.js";
+import * as Platform12 from "../platform/platform.js";
 
 // ../../front_end/core/sdk/OverlayColorGenerator.ts
 var OverlayColorGenerator_exports = {};
@@ -25811,7 +26233,7 @@ var OverlayPersistentHighlighter = class {
     this.#containerQueryHighlights = /* @__PURE__ */ new Map();
     this.#isolatedElementHighlights = /* @__PURE__ */ new Map();
     const document2 = await this.#model.getDOMModel().requestDocument();
-    const currentURL = document2 ? document2.documentURL : Platform10.DevToolsPath.EmptyUrlString;
+    const currentURL = document2 ? document2.documentURL : Platform12.DevToolsPath.EmptyUrlString;
     await Promise.all(this.#persistentHighlightSetting.get().map(async (persistentHighlight) => {
       if (persistentHighlight.url === currentURL) {
         return await this.#model.getDOMModel().pushNodeByPathToFrontend(persistentHighlight.path).then((nodeId) => {
@@ -25847,7 +26269,7 @@ var OverlayPersistentHighlighter = class {
   }
   currentUrl() {
     const domDocument = this.#model.getDOMModel().existingDocument();
-    return domDocument ? domDocument.documentURL : Platform10.DevToolsPath.EmptyUrlString;
+    return domDocument ? domDocument.documentURL : Platform12.DevToolsPath.EmptyUrlString;
   }
   getPersistentHighlightSettingForOneType(highlights, type) {
     const persistentHighlights = [];
@@ -26256,12 +26678,11 @@ var OverlayModel = class _OverlayModel extends SDKModel {
     this.#sourceOrderModeActive = isActive;
   }
   delayedHideHighlight(delay) {
-    if (this.#hideHighlightTimeout === void 0) {
-      this.#hideHighlightTimeout = globalThis.setTimeout(
-        () => this.highlightInOverlay({ clear: true }),
-        delay
-      );
-    }
+    clearTimeout(this.#hideHighlightTimeout);
+    this.#hideHighlightTimeout = globalThis.setTimeout(
+      () => this.highlightInOverlay({ clear: true }),
+      delay
+    );
   }
   highlightFrame(frameId) {
     clearTimeout(this.#hideHighlightTimeout);
@@ -27589,23 +28010,23 @@ var UIStrings6 = {
    * @description Text shown in the console when a performance profile (with the given name) was started.
    * @example {title} PH1
    */
-  profileSStarted: "Profile ''{PH1}'' started.",
+  profileSStarted: "Profile ''{PH1}'' started",
   /**
    * @description Text shown in the console when a performance profile (with the given name) was stopped.
    * @example {name} PH1
    */
-  profileSFinished: "Profile ''{PH1}'' finished.",
+  profileSFinished: "Profile ''{PH1}'' finished",
   /**
    * @description Error message shown in the console after the user tries to save a JavaScript value to a temporary variable.
    */
-  failedToSaveToTempVariable: "Failed to save to temp variable."
+  failedToSaveToTempVariable: "Failed to save to temp variable"
 };
 var str_6 = i18n11.i18n.registerUIStrings("core/sdk/ConsoleModel.ts", UIStrings6);
 var i18nString6 = i18n11.i18n.getLocalizedString.bind(void 0, str_6);
 var ConsoleModel = class _ConsoleModel extends SDKModel {
   #console;
   #messages = [];
-  #messagesByTimestamp = new Platform11.MapUtilities.Multimap();
+  #messagesByTimestamp = new Platform13.MapUtilities.Multimap();
   #messageByExceptionId = /* @__PURE__ */ new Map();
   #warnings = 0;
   #errors = 0;
@@ -27987,16 +28408,6 @@ var ConsoleModel = class _ConsoleModel extends SDKModel {
     }
     if (callFunctionResult.object) {
       callFunctionResult.object.release();
-    }
-    function saveVariable(value) {
-      const prefix = "temp";
-      let index = 1;
-      while (prefix + index in this) {
-        ++index;
-      }
-      const name = prefix + index;
-      this[name] = value;
-      return name;
     }
   }
 };
@@ -29128,38 +29539,6 @@ var DOMNode = class _DOMNode extends Common20.ObjectWrapper.ObjectWrapper {
     );
     object.release();
     this.setMarker("hidden-marker", hidden ? null : true);
-    function toggleClassAndInjectStyleRule(pseudoElementName2, hidden2) {
-      const classNamePrefix = "__web-inspector-hide";
-      const classNameSuffix = "-shortcut__";
-      const styleTagId = "__web-inspector-hide-shortcut-style__";
-      const pseudoElementNameEscaped = pseudoElementName2 ? pseudoElementName2.replace(/[\(\)\:]/g, "_") : "";
-      const className = classNamePrefix + pseudoElementNameEscaped + classNameSuffix;
-      this.classList.toggle(className, hidden2);
-      let localRoot = this;
-      while (localRoot.parentNode) {
-        localRoot = localRoot.parentNode;
-      }
-      if (localRoot.nodeType === Node.DOCUMENT_NODE) {
-        localRoot = document.head;
-      }
-      let style = localRoot.querySelector("style#" + styleTagId);
-      if (!style) {
-        const selectors = [];
-        selectors.push(".__web-inspector-hide-shortcut__");
-        selectors.push(".__web-inspector-hide-shortcut__ *");
-        const selector = selectors.join(", ");
-        const ruleBody = "    visibility: hidden !important;";
-        const rule = "\n" + selector + "\n{\n" + ruleBody + "\n}\n";
-        style = document.createElement("style");
-        style.id = styleTagId;
-        style.textContent = rule;
-        localRoot.appendChild(style);
-      }
-      if (pseudoElementName2 && !style.classList.contains(className)) {
-        style.classList.add(className);
-        style.textContent = `.${className}${pseudoElementName2}, ${style.textContent}`;
-      }
-    }
   }
   isToggledToHidden() {
     return Boolean(this.marker("hidden-marker"));
@@ -29326,14 +29705,8 @@ var DOMNode = class _DOMNode extends Common20.ObjectWrapper.ObjectWrapper {
     if (!node) {
       return;
     }
-    const result = await node.callFunction(scrollIntoViewInPage);
-    if (!result) {
-      return;
-    }
     node.highlightForTwoSeconds();
-    function scrollIntoViewInPage() {
-      this.scrollIntoViewIfNeeded(true);
-    }
+    await node.callFunction(scrollIntoViewInPage);
   }
   async focus() {
     const node = this.enclosingElementOrSelf();
@@ -29346,9 +29719,6 @@ var DOMNode = class _DOMNode extends Common20.ObjectWrapper.ObjectWrapper {
     }
     node.highlightForTwoSeconds();
     await this.#domModel.target().pageAgent().invoke_bringToFront();
-    function focusInPage() {
-      this.focus();
-    }
   }
   simpleSelector() {
     const lowerCaseName = this.localName() || this.nodeName().toLowerCase();
@@ -29382,6 +29752,16 @@ var DOMNode = class _DOMNode extends Common20.ObjectWrapper.ObjectWrapper {
       return null;
     }
     return this.domModel().nodeForId(response.nodeId);
+  }
+  async getImplicitAnchorCandidates() {
+    const response = await this.#agent.invoke_getImplicitAnchorCandidates({
+      nodeId: this.id
+    });
+    if (response.getError() || !response.backendNodeIds) {
+      return [];
+    }
+    const target = this.domModel().target();
+    return response.backendNodeIds.map((backendNodeId) => new DeferredDOMNode(target, backendNodeId));
   }
   async takeSnapshot(ownerDocumentSnapshot) {
     const snapshot = this instanceof DOMDocument ? new DOMDocumentSnapshot(this.domModel(), {
@@ -30279,7 +30659,7 @@ var DOMModelUndoStack = class _DOMModelUndoStack {
         ++shift;
       }
     }
-    Platform12.ArrayUtilities.removeElement(this.#stack, model);
+    Platform14.ArrayUtilities.removeElement(this.#stack, model);
     this.#index -= shift;
     if (this.#lastModelWithMinorChange === model) {
       this.#lastModelWithMinorChange = null;
@@ -30360,7 +30740,7 @@ __export(Resource_exports, {
   Resource: () => Resource
 });
 import * as Common21 from "../common/common.js";
-import * as Platform13 from "../platform/platform.js";
+import * as Platform15 from "../platform/platform.js";
 import * as TextUtils17 from "../text_utils/text_utils.js";
 var Resource = class {
   #resourceTreeModel;
@@ -30391,7 +30771,7 @@ var Resource = class {
     this.#type = type || Common21.ResourceType.resourceTypes.Other;
     this.#mimeType = mimeType;
     this.#isGenerated = false;
-    this.#lastModified = lastModified && Platform13.DateUtilities.isValid(lastModified) ? lastModified : null;
+    this.#lastModified = lastModified && Platform15.DateUtilities.isValid(lastModified) ? lastModified : null;
     this.#contentSize = contentSize;
   }
   lastModified() {
@@ -30400,7 +30780,7 @@ var Resource = class {
     }
     const lastModifiedHeader = this.#request.responseLastModified();
     const date = lastModifiedHeader ? new Date(lastModifiedHeader) : null;
-    this.#lastModified = date && Platform13.DateUtilities.isValid(date) ? date : null;
+    this.#lastModified = date && Platform15.DateUtilities.isValid(date) ? date : null;
     return this.#lastModified;
   }
   contentSize() {
@@ -31245,11 +31625,11 @@ var ResourceTreeFrame = class {
     this.#id = frameId;
     this.#loaderId = payload?.loaderId ?? "";
     this.#name = payload?.name;
-    this.#url = payload && payload.url || Platform14.DevToolsPath.EmptyUrlString;
+    this.#url = payload && payload.url || Platform16.DevToolsPath.EmptyUrlString;
     this.#domainAndRegistry = payload?.domainAndRegistry || "";
     this.#securityOrigin = SecurityOrigin.create(payload?.securityOrigin ?? "");
     this.#securityOriginDetails = payload?.securityOriginDetails;
-    this.#unreachableUrl = payload && payload.unreachableUrl || Platform14.DevToolsPath.EmptyUrlString;
+    this.#unreachableUrl = payload && payload.unreachableUrl || Platform16.DevToolsPath.EmptyUrlString;
     this.#adFrameStatus = payload?.adFrameStatus;
     this.#secureContextType = payload?.secureContextType ?? null;
     this.#crossOriginIsolatedContextType = payload?.crossOriginIsolatedContextType ?? null;
@@ -31291,7 +31671,7 @@ var ResourceTreeFrame = class {
       /* forceFetch */
       true
     );
-    this.#unreachableUrl = framePayload.unreachableUrl || Platform14.DevToolsPath.EmptyUrlString;
+    this.#unreachableUrl = framePayload.unreachableUrl || Platform16.DevToolsPath.EmptyUrlString;
     this.#adFrameStatus = framePayload?.adFrameStatus;
     this.#secureContextType = framePayload.secureContextType;
     this.#crossOriginIsolatedContextType = framePayload.crossOriginIsolatedContextType;
@@ -31670,7 +32050,7 @@ __export(Script_exports, {
   disassembleWasm: () => disassembleWasm,
   sourceURLRegex: () => sourceURLRegex
 });
-import * as Platform15 from "../platform/platform.js";
+import * as Platform17 from "../platform/platform.js";
 import * as Common24 from "../common/common.js";
 import * as i18n15 from "../i18n/i18n.js";
 import * as TextUtils19 from "../text_utils/text_utils.js";
@@ -31678,11 +32058,11 @@ var UIStrings7 = {
   /**
    * @description Error message for when a script can't be loaded because it was removed or deleted.
    */
-  scriptRemovedOrDeleted: "Script removed or deleted.",
+  scriptRemovedOrDeleted: "Script removed or deleted",
   /**
    * @description Error message when failing to load a script source text.
    */
-  unableToFetchScriptSource: "Unable to fetch script source."
+  unableToFetchScriptSource: "Unable to fetch script source"
 };
 var str_7 = i18n15.i18n.registerUIStrings("core/sdk/Script.ts", UIStrings7);
 var i18nString7 = i18n15.i18n.getLocalizedString.bind(void 0, str_7);
@@ -31711,6 +32091,7 @@ var Script = class _Script {
   #language;
   #contentPromise;
   #embedderName;
+  #securityOrigin;
   isModule;
   buildId;
   constructor(debuggerModel, scriptId, sourceURL, startLine, startColumn, endLine, endColumn, executionContextId, hash, isContentScript, sourceMapURL, hasSourceURL, length, isModule, originStackTrace, codeOffset, scriptLanguage, debugSymbols, embedderName, buildId) {
@@ -31735,9 +32116,27 @@ var Script = class _Script {
     this.#language = scriptLanguage;
     this.#contentPromise = null;
     this.#embedderName = embedderName;
+    this.#securityOrigin = SecurityOrigin.create(this.#embedderName ?? "");
   }
   embedderName() {
     return this.#embedderName;
+  }
+  /**
+   * Returns the security origin of the script derived exclusively from its
+   * embedder/network URL (`#embedderName`), or a unique opaque origin if the
+   * script has no valid network provenance (e.g. `eval()` or buffer-based Wasm).
+   *
+   * Security note: Do NOT fall back to `this.sourceURL` or
+   * `this.target().inspectedSecurityOrigin()`:
+   * - `sourceURL` is overwritten by `//# sourceURL=` comments, allowing a script
+   *   to spoof an arbitrary origin.
+   * - Third-party scripts (`<script src="https://attacker.example/...">`) run in
+   *   the same target/frame as the main page; falling back to the target's
+   *   origin would allow them to launder their origin by dynamically evaluating
+   *   code via `eval()` or `WebAssembly.instantiate(buffer)`.
+   */
+  securityOrigin() {
+    return this.#securityOrigin;
   }
   target() {
     return this.debuggerModel.target();
@@ -32003,7 +32402,7 @@ function frameIdForScript(script) {
 }
 var sourceURLRegex = /^[\x20\t]*\/\/[@#] sourceURL=\s*(\S*?)\s*$/;
 async function disassembleWasm(content) {
-  const worker = Platform15.HostRuntime.HOST_RUNTIME.createWorker(
+  const worker = Platform17.HostRuntime.HOST_RUNTIME.createWorker(
     new URL("../../entrypoints/wasmparser_worker/wasmparser_worker-entrypoint.js", import.meta.url).toString()
   );
   const promise = new Promise((resolve, reject) => {
@@ -32183,12 +32582,13 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
     this.#runtimeModel = target.model(RuntimeModel);
     this.#sourceMapManager = new SourceMapManager(
       target,
-      (compiledURL, sourceMappingURL, payload, script) => new SourceMap(
+      (compiledURL, sourceMappingURL, payload, script, provenance) => new SourceMap(
         compiledURL,
         sourceMappingURL,
         payload,
         target.targetManager().getConsole(),
-        script
+        script,
+        provenance
       )
     );
     const settings = this.target().targetManager().settings;
@@ -32632,7 +33032,7 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
     this.registerScript(script);
     this.dispatchEventToListeners("ParsedScriptSource" /* ParsedScriptSource */, script);
     if ((!selectedDebugSymbol || selectedDebugSymbol.type === Debugger.DebugSymbolsType.SourceMap) && script.sourceMapURL && !hasSyntaxError) {
-      this.#sourceMapManager.attachSourceMap(script, script.sourceURL, script.sourceMapURL);
+      this.#sourceMapManager.attachSourceMap(script, script.sourceURL, script.sourceMapURL, "cdp" /* CDP */);
     }
     const isDiscardable = hasSyntaxError && script.isAnonymousScript();
     if (isDiscardable) {
@@ -32641,10 +33041,10 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
     }
     return script;
   }
-  setSourceMapURL(script, newSourceMapURL) {
+  setSourceMapURL(script, newSourceMapURL, provenance) {
     this.#sourceMapManager.detachSourceMap(script);
     script.sourceMapURL = newSourceMapURL;
-    this.#sourceMapManager.attachSourceMap(script, script.sourceURL, script.sourceMapURL);
+    this.#sourceMapManager.attachSourceMap(script, script.sourceURL, script.sourceMapURL, provenance);
   }
   async setDebugInfoURL(script, _externalURL) {
     this.dispatchEventToListeners("DebugInfoAttached" /* DebugInfoAttached */, script);
@@ -33156,7 +33556,8 @@ var CallFrame = class _CallFrame {
       returnByValue: options.returnByValue,
       generatePreview: options.generatePreview,
       throwOnSideEffect: options.throwOnSideEffect,
-      timeout: options.timeout
+      timeout: options.timeout,
+      scopeNumber: options.scopeNumber
     });
     const error = response.getError();
     if (error) {
@@ -33198,6 +33599,10 @@ var Scope = class {
   }
   callFrame() {
     return this.#callFrame;
+  }
+  /** The index of this scope in {@link CallFrame.scopeChain}, usable as an `evaluateOnCallFrame` `scopeNumber`. */
+  ordinal() {
+    return this.#ordinal;
   }
   type() {
     return this.#type;
@@ -33739,21 +34144,6 @@ var RuntimeModel = class extends SDKModel {
     }]).then(Host6.InspectorFrontendHost.InspectorFrontendHostInstance.copyText.bind(
       Host6.InspectorFrontendHost.InspectorFrontendHostInstance
     ));
-    function toStringForClipboard(data) {
-      const subtype = data.subtype;
-      const indent2 = data.indent;
-      if (subtype === "node") {
-        return this instanceof Element ? this.outerHTML : void 0;
-      }
-      if (subtype && typeof this === "undefined") {
-        return String(subtype);
-      }
-      try {
-        return JSON.stringify(this, null, indent2);
-      } catch {
-        return String(this);
-      }
-    }
   }
   async queryObjectsRequested(object, executionContextId) {
     const result = await this.queryObjects(object);
@@ -34093,14 +34483,14 @@ var UIStrings9 = {
    * @example {GET} PH2
    * @example {https://example.com} PH3
    */
-  sFailedLoadingSS: '{PH1} failed loading: {PH2} "{PH3}".',
+  sFailedLoadingSS: '{PH1} failed loading: {PH2} "{PH3}"',
   /**
    * @description Console message when a request finished loading.
    * @example {XHR} PH1
    * @example {GET} PH2
    * @example {https://example.com} PH3
    */
-  sFinishedLoadingSS: '{PH1} finished loading: {PH2} "{PH3}".',
+  sFinishedLoadingSS: '{PH1} finished loading: {PH2} "{PH3}"',
   /**
    * @description One of direct socket connection statuses.
    */
@@ -34374,7 +34764,7 @@ var NetworkManager = class _NetworkManager extends SDKModel {
           bytes[i] = binaryString.charCodeAt(i);
         }
         const requestContentType = request.requestContentType();
-        const charset = requestContentType ? Platform16.MimeType.parseContentType(requestContentType).charset ?? "utf-8" : "utf-8";
+        const charset = requestContentType ? Platform18.MimeType.parseContentType(requestContentType).charset ?? "utf-8" : "utf-8";
         const contentEncoding = request.requestContentEncoding()?.toLowerCase();
         if (contentEncoding) {
           const decompressed = await _NetworkManager.#tryDecompressBody(bytes.buffer, contentEncoding, charset);
@@ -34416,7 +34806,7 @@ var NetworkManager = class _NetworkManager extends SDKModel {
         return { error: "No post data" };
       }
       const requestContentType = request.requestContentType() ?? "application/octet-stream";
-      const { charset } = Platform16.MimeType.parseContentType(requestContentType);
+      const { charset } = Platform18.MimeType.parseContentType(requestContentType);
       if (base64Encoded && postData) {
         return await TextUtils21.ContentData.ContentData.fromCompressedBase64(
           postData,
@@ -35741,7 +36131,7 @@ var RequestConditions = class _RequestConditions extends Common27.ObjectWrapper.
     if (index < 0 || index >= this.#conditions.length - 1) {
       return;
     }
-    Platform16.ArrayUtilities.swap(this.#conditions, index, index + 1);
+    Platform18.ArrayUtilities.swap(this.#conditions, index, index + 1);
     this.#conditionsChanged();
   }
   increasePriority(condition) {
@@ -35749,7 +36139,7 @@ var RequestConditions = class _RequestConditions extends Common27.ObjectWrapper.
     if (index <= 0) {
       return;
     }
-    Platform16.ArrayUtilities.swap(this.#conditions, index - 1, index);
+    Platform18.ArrayUtilities.swap(this.#conditions, index - 1, index);
     this.#conditionsChanged();
   }
   delete(condition) {
@@ -35879,7 +36269,7 @@ var MultitargetNetworkManager = class _MultitargetNetworkManager extends Common2
   #networkConditions = NoThrottlingConditions;
   #updatingInterceptionPatternsPromise = null;
   #requestConditions;
-  #urlsForRequestInterceptor = new Platform16.MapUtilities.Multimap();
+  #urlsForRequestInterceptor = new Platform18.MapUtilities.Multimap();
   #extraHeaders;
   #customUserAgent;
   #isBlocking = false;
@@ -35916,7 +36306,7 @@ var MultitargetNetworkManager = class _MultitargetNetworkManager extends Common2
     const chromeVersion = Root7.Runtime.getChromeVersion();
     if (chromeVersion.length > 0) {
       const additionalAppVersion = chromeVersion.split(".", 1)[0] + ".0.100.0";
-      return Platform16.StringUtilities.sprintf(uaString, chromeVersion, additionalAppVersion);
+      return Platform18.StringUtilities.sprintf(uaString, chromeVersion, additionalAppVersion);
     }
     return uaString;
   }
@@ -35931,12 +36321,12 @@ var MultitargetNetworkManager = class _MultitargetNetworkManager extends Common2
     const majorVersion = chromeVersion.split(".", 1)[0];
     for (const brand of userAgentMetadata.brands) {
       if (brand.version.includes("%s")) {
-        brand.version = Platform16.StringUtilities.sprintf(brand.version, majorVersion);
+        brand.version = Platform18.StringUtilities.sprintf(brand.version, majorVersion);
       }
     }
     if (userAgentMetadata.fullVersion) {
       if (userAgentMetadata.fullVersion.includes("%s")) {
-        userAgentMetadata.fullVersion = Platform16.StringUtilities.sprintf(userAgentMetadata.fullVersion, chromeVersion);
+        userAgentMetadata.fullVersion = Platform18.StringUtilities.sprintf(userAgentMetadata.fullVersion, chromeVersion);
       }
     }
   }
@@ -36259,7 +36649,7 @@ var InterceptedRequest = class _InterceptedRequest {
   getMimeTypeAndCharset() {
     for (const header of this.responseHeaders ?? []) {
       if (header.name.toLowerCase() === "content-type") {
-        return Platform16.MimeType.parseContentType(header.value);
+        return Platform18.MimeType.parseContentType(header.value);
       }
     }
     const mimeType = this.networkRequest?.mimeType ?? null;
@@ -36578,7 +36968,7 @@ var CookieModel = class extends SDKModel {
     return this.#refreshThrottler.schedule(() => this.#refresh());
   }
   #refresh() {
-    const resourceURLs = new Platform17.MapUtilities.Multimap();
+    const resourceURLs = new Platform19.MapUtilities.Multimap();
     function populateResourceURLs(resource) {
       const documentURL = Common28.ParsedURL.ParsedURL.fromString(resource.documentURL);
       if (documentURL) {
@@ -37003,32 +37393,32 @@ var UIStrings10 = {
    * @description Warning message when deprecated Server-Timing header syntax is found.
    * @example {sql-lookup} PH1
    */
-  deprecatedSyntaxFoundPleaseUse: 'Deprecated syntax found for metric "{PH1}". Use: <name>;dur=<duration>;desc=<description>',
+  deprecatedSyntaxFoundPleaseUse: 'Deprecated syntax found for metric "{PH1}". Use: <name>;dur=<duration>;desc=<description>.',
   /**
    * @description Warning message when a duplicate parameter is found in Server-Timing header.
    * @example {https} PH1
    */
-  duplicateParameterSIgnored: 'Duplicate parameter "{PH1}" ignored.',
+  duplicateParameterSIgnored: 'Duplicate parameter "{PH1}" ignored',
   /**
    * @description Warning message when no value is found for a parameter in Server-Timing header.
    * @example {https} PH1
    */
-  noValueFoundForParameterS: 'No value found for parameter "{PH1}".',
+  noValueFoundForParameterS: 'No value found for parameter "{PH1}"',
   /**
    * @description Warning message when an unrecognized parameter is found in Server-Timing header.
    * @example {https} PH1
    */
-  unrecognizedParameterS: 'Unrecognized parameter "{PH1}".',
+  unrecognizedParameterS: 'Unrecognized parameter "{PH1}"',
   /**
    * @description Warning message when extraneous trailing characters are found in Server-Timing header.
    */
-  extraneousTrailingCharacters: "Extraneous trailing characters.",
+  extraneousTrailingCharacters: "Extraneous trailing characters",
   /**
    * @description Warning message when a parameter value cannot be parsed in Server-Timing header.
    * @example {https} PH1
    * @example {2.0} PH2
    */
-  unableToParseSValueS: 'Unable to parse "{PH1}" value "{PH2}".'
+  unableToParseSValueS: 'Unable to parse "{PH1}" value "{PH2}"'
 };
 var str_10 = i18n23.i18n.registerUIStrings("core/sdk/ServerTiming.ts", UIStrings10);
 var i18nString10 = i18n23.i18n.getLocalizedString.bind(void 0, str_10);
@@ -37207,15 +37597,15 @@ var UIStrings11 = {
   /**
    * @description Tooltip to explain why a cookie was blocked.
    */
-  secureOnly: 'This cookie was blocked because it had the "`Secure`" attribute and the connection was not secure.',
+  secureOnly: 'This cookie was blocked because it had the "`Secure`" attribute and the connection was not secure',
   /**
    * @description Tooltip to explain why a cookie was blocked.
    */
-  notOnPath: "This cookie was blocked because its path was not an exact match for or a superdirectory of the request URL\u2019s path.",
+  notOnPath: "This cookie was blocked because its path was not an exact match for or a superdirectory of the request URL\u2019s path",
   /**
    * @description Tooltip to explain why a cookie was blocked.
    */
-  domainMismatch: "This cookie was blocked because neither did the request URL\u2019s domain exactly match the cookie\u2019s domain, nor was the request URL\u2019s domain a subdomain of the cookie\u2019s Domain attribute value.",
+  domainMismatch: "This cookie was blocked because neither did the request URL\u2019s domain exactly match the cookie\u2019s domain, nor was the request URL\u2019s domain a subdomain of the cookie\u2019s Domain attribute value",
   /**
    * @description Tooltip to explain why a cookie was blocked.
    */
@@ -37223,7 +37613,7 @@ var UIStrings11 = {
   /**
    * @description Tooltip to explain why a cookie was blocked.
    */
-  sameSiteLax: 'This cookie was blocked because it had the "`SameSite=Lax`" attribute and the request was made from a different site and was not initiated by a top-level navigation.',
+  sameSiteLax: 'This cookie was blocked because it had the "`SameSite=Lax`" attribute and the request was made from a different site and was not initiated by a top-level navigation',
   /**
    * @description Tooltip to explain why a cookie was blocked.
    */
@@ -37235,7 +37625,7 @@ var UIStrings11 = {
   /**
    * @description Tooltip to explain why a cookie was blocked.
    */
-  userPreferences: "This cookie was blocked due to user preferences.",
+  userPreferences: "This cookie was blocked due to user preferences",
   /**
    * @description Tooltip to explain why a cookie was blocked.
    */
@@ -37243,7 +37633,7 @@ var UIStrings11 = {
   /**
    * @description Tooltip to explain why a cookie was blocked.
    */
-  unknownError: "An unknown error was encountered when trying to send this cookie.",
+  unknownError: "An unknown error was encountered when trying to send this cookie",
   /**
    * @description Tooltip to explain why a cookie was blocked due to exceeding the maximum size.
    */
@@ -37251,7 +37641,7 @@ var UIStrings11 = {
   /**
    * @description Tooltip to explain why an attempt to set a cookie via `Set-Cookie` HTTP header on a request's response was blocked.
    */
-  thisSetcookieWasBlockedDueToUser: 'This attempt to set a cookie via a "`Set-Cookie`" header was blocked due to user preferences.',
+  thisSetcookieWasBlockedDueToUser: 'This attempt to set a cookie via a "`Set-Cookie`" header was blocked due to user preferences',
   /**
    * @description Tooltip to explain why an attempt to set a cookie via `Set-Cookie` HTTP header on a request's response was blocked.
    */
@@ -37259,28 +37649,28 @@ var UIStrings11 = {
   /**
    * @description Tooltip to explain why an attempt to set a cookie via `Set-Cookie` HTTP header on a request's response was blocked.
    */
-  thisSetcookieHadInvalidSyntax: 'This "`Set-Cookie`" header had invalid syntax.',
+  thisSetcookieHadInvalidSyntax: 'This "`Set-Cookie`" header had invalid syntax',
   /**
    * @description Tooltip to explain why a cookie was blocked.
    */
-  thisSetcookieHadADisallowedCharacter: 'This "`Set-Cookie`" header contained a disallowed character (a forbidden ASCII control character, or the tab character if it appears in the middle of the cookie name, value, an attribute name, or an attribute value).',
+  thisSetcookieHadADisallowedCharacter: 'This "`Set-Cookie`" header contained a disallowed character (a forbidden ASCII control character, or the tab character if it appears in the middle of the cookie name, value, an attribute name, or an attribute value)',
   /**
    * @description Tooltip to explain why a cookie was blocked.
    */
-  theSchemeOfThisConnectionIsNot: "The scheme of this connection is not allowed to store cookies.",
+  theSchemeOfThisConnectionIsNot: "The scheme of this connection is not allowed to store cookies",
   /**
    * @description Tooltip to explain why a cookie was blocked.
    */
-  anUnknownErrorWasEncounteredWhenTrying: "An unknown error was encountered when trying to store this cookie.",
+  anUnknownErrorWasEncounteredWhenTrying: "An unknown error was encountered when trying to store this cookie",
   /**
    * @description Tooltip to explain why an attempt to set a cookie via a `Set-Cookie` HTTP header on a request's response was blocked.
    */
-  blockedReasonSecureOnly: 'This attempt to set a cookie via a "`Set-Cookie`" header was blocked because it had the "`Secure`" attribute but was not received over a secure connection.',
+  blockedReasonSecureOnly: 'This attempt to set a cookie via a "`Set-Cookie`" header was blocked because it had the "`Secure`" attribute but was not received over a secure connection',
   /**
    * @description Tooltip to explain why an attempt to set a cookie via a `Set-Cookie` HTTP header on a request's response was blocked.
    * @example {SameSite=Strict} PH1
    */
-  blockedReasonSameSiteStrictLax: 'This attempt to set a cookie via a "`Set-Cookie`" header was blocked because it had the "{PH1}" attribute but came from a cross-site response which was not the response to a top-level navigation.',
+  blockedReasonSameSiteStrictLax: 'This attempt to set a cookie via a "`Set-Cookie`" header was blocked because it had the "{PH1}" attribute but came from a cross-site response which was not the response to a top-level navigation',
   /**
    * @description Tooltip to explain why an attempt to set a cookie via a `Set-Cookie` HTTP header on a request's response was blocked.
    */
@@ -37288,19 +37678,19 @@ var UIStrings11 = {
   /**
    * @description Tooltip to explain why an attempt to set a cookie via a `Set-Cookie` HTTP header on a request's response was blocked.
    */
-  blockedReasonSameSiteNoneInsecure: 'This attempt to set a cookie via a "`Set-Cookie`" header was blocked because it had the "`SameSite=None`" attribute but did not have the "`Secure`" attribute, which is required in order to use "`SameSite=None`".',
+  blockedReasonSameSiteNoneInsecure: 'This attempt to set a cookie via a "`Set-Cookie`" header was blocked because it had the "`SameSite=None`" attribute but did not have the "`Secure`" attribute, which is required in order to use "`SameSite=None`"',
   /**
    * @description Tooltip to explain why an attempt to set a cookie via a `Set-Cookie` HTTP header on a request's response was blocked.
    */
-  blockedReasonOverwriteSecure: 'This attempt to set a cookie via a "`Set-Cookie`" header was blocked because it was not sent over a secure connection and would have overwritten a cookie with the "`Secure`" attribute.',
+  blockedReasonOverwriteSecure: 'This attempt to set a cookie via a "`Set-Cookie`" header was blocked because it was not sent over a secure connection and would have overwritten a cookie with the "`Secure`" attribute',
   /**
    * @description Tooltip to explain why an attempt to set a cookie via a `Set-Cookie` HTTP header on a request's response was blocked.
    */
-  blockedReasonInvalidDomain: 'This attempt to set a cookie via a "`Set-Cookie`" header was blocked because its "`Domain`" attribute was invalid with regards to the current host URL.',
+  blockedReasonInvalidDomain: 'This attempt to set a cookie via a "`Set-Cookie`" header was blocked because its "`Domain`" attribute was invalid with regards to the current host URL',
   /**
    * @description Tooltip to explain why an attempt to set a cookie via a `Set-Cookie` HTTP header on a request's response was blocked.
    */
-  blockedReasonInvalidPrefix: 'This attempt to set a cookie via a "`Set-Cookie`" header was blocked because it used the "`__Secure-`" or "`__Host-`" prefix in its name and broke the additional rules applied to cookies with these prefixes as defined in `https://tools.ietf.org/html/draft-west-cookie-prefixes-05`.',
+  blockedReasonInvalidPrefix: 'This attempt to set a cookie via a "`Set-Cookie`" header was blocked because it used the "`__Secure-`" or "`__Host-`" prefix in its name and broke the additional rules applied to cookies with these prefixes as defined in `https://tools.ietf.org/html/draft-west-cookie-prefixes-05`',
   /**
    * @description Tooltip to explain why a cookie was blocked when the size of the #name plus the size of the value exceeds the max size.
    */
@@ -37313,7 +37703,7 @@ var UIStrings11 = {
   /**
    * @description Tooltip to explain why the cookie should have been blocked by third-party cookie phaseout but is exempted.
    */
-  exemptionReasonUserSetting: "This cookie is allowed by user preference.",
+  exemptionReasonUserSetting: "This cookie is allowed by user preference",
   /**
    * @description Tooltip to explain why the cookie should have been blocked by third-party cookie phaseout but is exempted.
    */
@@ -37329,7 +37719,7 @@ var UIStrings11 = {
   /**
    * @description Tooltip to explain why the cookie should have been blocked by third-party cookie phaseout but is exempted.
    */
-  exemptionReasonScheme: "This cookie is allowed by the top-level URL scheme."
+  exemptionReasonScheme: "This cookie is allowed by the top-level URL scheme"
 };
 var str_11 = i18n25.i18n.registerUIStrings("core/sdk/NetworkRequest.ts", UIStrings11);
 var i18nString11 = i18n25.i18n.getLocalizedString.bind(void 0, str_11);
@@ -37484,7 +37874,7 @@ var NetworkRequest = class _NetworkRequest extends Common30.ObjectWrapper.Object
       backendRequestId,
       backendRequestId,
       requestURL,
-      Platform18.DevToolsPath.EmptyUrlString,
+      Platform20.DevToolsPath.EmptyUrlString,
       null,
       null,
       initiator || null,
@@ -37863,7 +38253,7 @@ var NetworkRequest = class _NetworkRequest extends Common30.ObjectWrapper.Object
   }
   set mimeType(x) {
     this.#mimeType = x;
-    if (x === Platform18.MimeType.MimeType.EVENTSTREAM && !this.#serverSentEvents) {
+    if (x === Platform20.MimeType.MimeType.EVENTSTREAM && !this.#serverSentEvents) {
       const parseFromStreamedData = this.resourceType() !== Common30.ResourceType.resourceTypes.EventSource;
       this.#serverSentEvents = new ServerSentEvents(
         this,
@@ -37904,7 +38294,7 @@ var NetworkRequest = class _NetworkRequest extends Common30.ObjectWrapper.Object
       const inspectedURL = networkManager ? Common30.ParsedURL.ParsedURL.fromString(
         networkManager.target().inspectedURL()
       ) : null;
-      this.#path = Platform18.StringUtilities.trimURL(
+      this.#path = Platform20.StringUtilities.trimURL(
         this.#path,
         inspectedURL ? inspectedURL.host : ""
       );
@@ -38086,7 +38476,7 @@ var NetworkRequest = class _NetworkRequest extends Common30.ObjectWrapper.Object
     }
     this.#sortedResponseHeaders = this.responseHeaders.slice();
     return this.#sortedResponseHeaders.sort(function(a, b) {
-      return Platform18.StringUtilities.compare(
+      return Platform20.StringUtilities.compare(
         a.name.toLowerCase(),
         b.name.toLowerCase()
       );
@@ -38098,7 +38488,7 @@ var NetworkRequest = class _NetworkRequest extends Common30.ObjectWrapper.Object
     }
     this.#sortedOriginalResponseHeaders = this.originalResponseHeaders.slice();
     return this.#sortedOriginalResponseHeaders.sort(function(a, b) {
-      return Platform18.StringUtilities.compare(
+      return Platform20.StringUtilities.compare(
         a.name.toLowerCase(),
         b.name.toLowerCase()
       );
@@ -38333,7 +38723,7 @@ var NetworkRequest = class _NetworkRequest extends Common30.ObjectWrapper.Object
    * --boundaryString--
    */
   parseMultipartFormDataParameters(data, boundary) {
-    const sanitizedBoundary = Platform18.StringUtilities.escapeForRegExp(boundary);
+    const sanitizedBoundary = Platform20.StringUtilities.escapeForRegExp(boundary);
     const keyValuePattern = new RegExp(
       // Header with an optional file #name.
       '^\\r\\ncontent-disposition\\s*:\\s*form-data\\s*;\\s*name="([^"]*)"(?:\\s*;\\s*filename="([^"]*)")?(?:\\r\\ncontent-type\\s*:\\s*([^\\r\\n]*))?\\r\\n\\r\\n(.*)\\r\\n$',
@@ -39235,7 +39625,7 @@ var AccessibilityModel = class extends SDKModel {
   async requestAXChildren(nodeId, frameId) {
     const parent = this.#axIdToAXNode.get(nodeId);
     if (!parent) {
-      throw new Error("Cannot request children before parent");
+      return [];
     }
     if (!parent.hasUnloadedChildren()) {
       return parent.children();
@@ -39252,7 +39642,7 @@ var AccessibilityModel = class extends SDKModel {
         this.#pendingChildRequests.delete(nodeId);
       }
     }
-    return parent.children();
+    return this.#axIdToAXNode.get(nodeId)?.children() ?? [];
   }
   async requestAndLoadSubTreeToNode(node) {
     const result = [];
@@ -39448,18 +39838,6 @@ var AnimationDOMNode = class _AnimationDOMNode {
     ].map((arg) => RemoteObject.toCallArgument(arg)));
     object.release();
     return id;
-    function scrollListenerInPage(id2, reportScrollPositionBindingName, scrollListenerNameInPage) {
-      if ("scrollingElement" in this && !this.scrollingElement) {
-        return;
-      }
-      const scrollingElement = "scrollingElement" in this ? this.scrollingElement : this;
-      this[scrollListenerNameInPage] = () => {
-        globalThis[reportScrollPositionBindingName](
-          JSON.stringify({ scrollTop: scrollingElement.scrollTop, scrollLeft: scrollingElement.scrollLeft, id: id2 })
-        );
-      };
-      this.addEventListener("scroll", this[scrollListenerNameInPage], true);
-    }
   }
   async removeScrollEventListener(id) {
     const object = await resolveToObjectInWorld(this.#domNode, DEVTOOLS_ANIMATIONS_WORLD_NAME);
@@ -39475,84 +39853,24 @@ var AnimationDOMNode = class _AnimationDOMNode {
     if (this.#scrollListenersById.size === 0) {
       await this.#removeReportScrollPositionBinding();
     }
-    function removeScrollListenerInPage(scrollListenerNameInPage) {
-      this.removeEventListener("scroll", this[scrollListenerNameInPage]);
-      delete this[scrollListenerNameInPage];
-    }
   }
   async scrollTop() {
     return await this.#domNode.callFunction(scrollTopInPage).then((res) => res?.value ?? null);
-    function scrollTopInPage() {
-      if ("scrollingElement" in this) {
-        if (!this.scrollingElement) {
-          return 0;
-        }
-        return this.scrollingElement.scrollTop;
-      }
-      return this.scrollTop;
-    }
   }
   async scrollLeft() {
     return await this.#domNode.callFunction(scrollLeftInPage).then((res) => res?.value ?? null);
-    function scrollLeftInPage() {
-      if ("scrollingElement" in this) {
-        if (!this.scrollingElement) {
-          return 0;
-        }
-        return this.scrollingElement.scrollLeft;
-      }
-      return this.scrollLeft;
-    }
   }
   async setScrollTop(offset) {
     await this.#domNode.callFunction(setScrollTopInPage, [offset]);
-    function setScrollTopInPage(offsetInPage) {
-      if ("scrollingElement" in this) {
-        if (!this.scrollingElement) {
-          return;
-        }
-        this.scrollingElement.scrollTop = offsetInPage;
-      } else {
-        this.scrollTop = offsetInPage;
-      }
-    }
   }
   async setScrollLeft(offset) {
     await this.#domNode.callFunction(setScrollLeftInPage, [offset]);
-    function setScrollLeftInPage(offsetInPage) {
-      if ("scrollingElement" in this) {
-        if (!this.scrollingElement) {
-          return;
-        }
-        this.scrollingElement.scrollLeft = offsetInPage;
-      } else {
-        this.scrollLeft = offsetInPage;
-      }
-    }
   }
   async verticalScrollRange() {
     return await this.#domNode.callFunction(verticalScrollRangeInPage).then((res) => res?.value ?? null);
-    function verticalScrollRangeInPage() {
-      if ("scrollingElement" in this) {
-        if (!this.scrollingElement) {
-          return 0;
-        }
-        return this.scrollingElement.scrollHeight - this.scrollingElement.clientHeight;
-      }
-      return this.scrollHeight - this.clientHeight;
-    }
   }
   async horizontalScrollRange() {
     return await this.#domNode.callFunction(horizontalScrollRangeInPage).then((res) => res?.value ?? null);
-    function horizontalScrollRangeInPage() {
-      if ("scrollingElement" in this) {
-        if (!this.scrollingElement) {
-          return 0;
-        }
-        return this.scrollingElement.scrollWidth - this.scrollingElement.clientWidth;
-      }
-      return this.scrollWidth - this.clientWidth;
-    }
   }
 };
 function shouldGroupAnimations(firstAnimation, anim) {
@@ -40077,7 +40395,13 @@ var AnimationGroup = class {
     return this.#scrollNode;
   }
   seekTo(currentTime) {
-    void this.#animationModel.agent.invoke_seekAnimations({ animations: this.animationIds(), currentTime });
+    const animations = [];
+    const currentTimes = [];
+    for (const animation of this.#animations) {
+      animations.push(animation.id());
+      currentTimes.push(animation.playbackRate() >= 0 ? currentTime : animation.endTime() - animation.startTime() - currentTime);
+    }
+    void this.#animationModel.agent.invoke_seekAnimations({ animations, currentTimes });
   }
   paused() {
     return this.#paused;
@@ -41493,7 +41817,11 @@ var UIStrings15 = {
   /**
    * @description Text on the remote debugging window to indicate the connection is lost.
    */
-  websocketDisconnected: "WebSocket disconnected"
+  websocketDisconnected: "WebSocket disconnected",
+  /**
+   * @description Text in the remote debugging terminated dialog when the WebSocket connection fails, instructing the user to check the --remote-allow-origins flag on the Chrome instance.
+   */
+  websocketConnectionFailed: "WebSocket disconnected. Make sure `--remote-allow-origins` on the Chrome instance allows the current origin."
 };
 var str_15 = i18n33.i18n.registerUIStrings("core/sdk/Connections.ts", UIStrings15);
 var i18nString15 = i18n33.i18n.getLocalizedString.bind(void 0, str_15);
@@ -41583,7 +41911,7 @@ var WebSocketTransport = class {
   }
   onError() {
     if (this.#onWebSocketDisconnect) {
-      this.#onWebSocketDisconnect.call(null, i18nString15(UIStrings15.websocketDisconnected));
+      this.#onWebSocketDisconnect.call(null, i18nString15(UIStrings15.websocketConnectionFailed));
     }
     if (this.#onDisconnect) {
       this.#onDisconnect.call(null, "connection failed");
@@ -42006,7 +42334,7 @@ __export(DOMDebuggerModel_exports, {
   EventListener: () => EventListener,
   Events: () => Events26
 });
-import * as Platform19 from "../platform/platform.js";
+import * as Platform21 from "../platform/platform.js";
 import * as Root12 from "../root/root.js";
 var DOMDebuggerModel = class extends SDKModel {
   agent;
@@ -42146,7 +42474,7 @@ var DOMDebuggerModel = class extends SDKModel {
   }
   currentURL() {
     const domDocument = this.#domModel.existingDocument();
-    return domDocument ? domDocument.documentURL : Platform19.DevToolsPath.EmptyUrlString;
+    return domDocument ? domDocument.documentURL : Platform21.DevToolsPath.EmptyUrlString;
   }
   async documentUpdated() {
     if (this.suspended) {
@@ -42156,7 +42484,7 @@ var DOMDebuggerModel = class extends SDKModel {
     this.#domBreakpoints = [];
     this.dispatchEventToListeners("DOMBreakpointsRemoved" /* DOM_BREAKPOINTS_REMOVED */, removed);
     const document2 = await this.#domModel.requestDocument();
-    const currentURL = document2 ? document2.documentURL : Platform19.DevToolsPath.EmptyUrlString;
+    const currentURL = document2 ? document2.documentURL : Platform21.DevToolsPath.EmptyUrlString;
     for (const breakpoint of this.#domBreakpointsSetting.get()) {
       if (breakpoint.url === currentURL) {
         void this.#domModel.pushNodeByPathToFrontend(breakpoint.path).then(appendBreakpoint.bind(this, breakpoint));
@@ -42263,7 +42591,7 @@ var EventListener = class _EventListener {
     this.#originalHandler = originalHandler || handler;
     this.#location = location;
     const script = location.script();
-    this.#sourceURL = script ? script.contentURL() : Platform19.DevToolsPath.EmptyUrlString;
+    this.#sourceURL = script ? script.contentURL() : Platform21.DevToolsPath.EmptyUrlString;
     this.#customRemoveFunction = customRemoveFunction;
     this.#origin = origin || _EventListener.Origin.RAW;
   }
@@ -43624,7 +43952,7 @@ var PerformanceMetricsModel_exports = {};
 __export(PerformanceMetricsModel_exports, {
   PerformanceMetricsModel: () => PerformanceMetricsModel
 });
-import * as Platform20 from "../platform/platform.js";
+import * as Platform22 from "../platform/platform.js";
 var PerformanceMetricsModel = class extends SDKModel {
   #agent;
   #metricModes = /* @__PURE__ */ new Map([
@@ -43659,7 +43987,7 @@ var PerformanceMetricsModel = class extends SDKModel {
       let value;
       switch (this.#metricModes.get(metric.name)) {
         case "CumulativeTime" /* CUMULATIVE_TIME */:
-          value = data.lastTimestamp && data.lastValue ? Platform20.NumberUtilities.clamp(
+          value = data.lastTimestamp && data.lastValue ? Platform22.NumberUtilities.clamp(
             (metric.value - data.lastValue) * 1e3 / (timestamp - data.lastTimestamp),
             0,
             1
@@ -45633,6 +45961,7 @@ export {
   SourceMapCache_exports as SourceMapCache,
   SourceMapFunctionRanges_exports as SourceMapFunctionRanges,
   SourceMapManager_exports as SourceMapManager,
+  SourceMapRangeMappings_exports as SourceMapRangeMappings,
   SourceMapScopeChainEntry_exports as SourceMapScopeChainEntry,
   SourceMapScopesInfo_exports as SourceMapScopesInfo,
   StorageBucketsModel_exports as StorageBucketsModel,

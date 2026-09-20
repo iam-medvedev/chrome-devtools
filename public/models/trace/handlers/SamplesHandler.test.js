@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
-import { getAllNodes, getMainThread } from '../../../testing/TraceHelpers.js';
+import { getAllNodes, getMainThread } from '../../../testing/TraceHelpersCore.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Trace from '../trace.js';
 async function handleEventsFromTraceFile(context, name) {
@@ -30,7 +29,7 @@ async function handleEventsFromCpuProfile(context, name) {
     await Trace.Handlers.ModelHandlers.Samples.finalize({ isCPUProfile: true });
     return Trace.Handlers.ModelHandlers.Samples.data();
 }
-describeWithEnvironment('SamplesHandler', function () {
+describe('SamplesHandler', function () {
     it('finds all the profiles in a real world recording', async () => {
         const data = await handleEventsFromTraceFile(this, 'multiple-navigations-with-iframes.json.gz');
         // The same thread id is shared across profiles in the profiled

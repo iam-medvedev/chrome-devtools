@@ -38,7 +38,10 @@ describe('GetNetworkRequestDetailsTool', () => {
         sinon.stub(networkLog, 'requests').returns([request]);
         const tool = new AiAssistance.GetNetworkRequestDetails.GetNetworkRequestDetailsTool(networkLog);
         const context = {
-            getEstablishedOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+            getOriginLock: () => ({
+                status: 'ESTABLISHED_ORIGIN',
+                origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+            }),
         };
         const response = await tool.handler({ id: 'requestId' }, context);
         assertIsResult(response);
@@ -51,7 +54,10 @@ describe('GetNetworkRequestDetailsTool', () => {
         sinon.stub(networkLog, 'requests').returns([]);
         const tool = new AiAssistance.GetNetworkRequestDetails.GetNetworkRequestDetailsTool(networkLog);
         const context = {
-            getEstablishedOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+            getOriginLock: () => ({
+                status: 'ESTABLISHED_ORIGIN',
+                origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+            }),
         };
         const response = await tool.handler({ id: 'requestId' }, context);
         assertIsError(response, 'No request found');
@@ -64,7 +70,10 @@ describe('GetNetworkRequestDetailsTool', () => {
         sinon.stub(networkLog, 'requests').returns([request]);
         const tool = new AiAssistance.GetNetworkRequestDetails.GetNetworkRequestDetailsTool(networkLog);
         const context = {
-            getEstablishedOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+            getOriginLock: () => ({
+                status: 'ESTABLISHED_ORIGIN',
+                origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+            }),
         };
         const response = await tool.handler({ id: 'requestId' }, context);
         assertIsError(response, 'No request found');
@@ -72,10 +81,10 @@ describe('GetNetworkRequestDetailsTool', () => {
     it('returns error for opaque origins', async () => {
         const tool = new AiAssistance.GetNetworkRequestDetails.GetNetworkRequestDetailsTool(networkLog);
         const context = {
-            getEstablishedOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('null'),
+            getOriginLock: () => ({ status: 'ESTABLISHED_ORIGIN', origin: SDK.SecurityOrigin.SecurityOrigin.create('null') }),
         };
         const response = await tool.handler({ id: 'requestId' }, context);
-        assertIsError(response, 'No request found');
+        assertIsError(response, 'No origin available or not allowed.');
     });
     it('redacts cross-origin response body and non-safelisted headers for opaque cross-origin requests', async () => {
         const request = createNetworkRequest({
@@ -93,7 +102,10 @@ describe('GetNetworkRequestDetailsTool', () => {
         sinon.stub(networkLog, 'requests').returns([request]);
         const tool = new AiAssistance.GetNetworkRequestDetails.GetNetworkRequestDetailsTool(networkLog);
         const context = {
-            getEstablishedOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('https://attacker.com'),
+            getOriginLock: () => ({
+                status: 'ESTABLISHED_ORIGIN',
+                origin: SDK.SecurityOrigin.SecurityOrigin.create('https://attacker.com'),
+            }),
         };
         const response = await tool.handler({ id: 'requestId' }, context);
         assertIsResult(response);
@@ -124,7 +136,10 @@ describe('GetNetworkRequestDetailsTool', () => {
         sinon.stub(networkLog, 'requests').returns([request]);
         const tool = new AiAssistance.GetNetworkRequestDetails.GetNetworkRequestDetailsTool(networkLog);
         const context = {
-            getEstablishedOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('https://attacker.com'),
+            getOriginLock: () => ({
+                status: 'ESTABLISHED_ORIGIN',
+                origin: SDK.SecurityOrigin.SecurityOrigin.create('https://attacker.com'),
+            }),
         };
         const response = await tool.handler({ id: 'requestId' }, context);
         assertIsResult(response);
@@ -146,7 +161,10 @@ describe('GetNetworkRequestDetailsTool', () => {
         sinon.stub(networkLog, 'requests').returns([request]);
         const tool = new AiAssistance.GetNetworkRequestDetails.GetNetworkRequestDetailsTool(networkLog);
         const context = {
-            getEstablishedOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('imported-har://example.com'),
+            getOriginLock: () => ({
+                status: 'ESTABLISHED_ORIGIN',
+                origin: SDK.SecurityOrigin.SecurityOrigin.create('imported-har://example.com'),
+            }),
         };
         const response = await tool.handler({ id: 'harRequestId' }, context);
         assertIsResult(response);
@@ -167,7 +185,10 @@ describe('GetNetworkRequestDetailsTool', () => {
         sinon.stub(networkLog, 'requests').returns([request]);
         const tool = new AiAssistance.GetNetworkRequestDetails.GetNetworkRequestDetailsTool(networkLog);
         const context = {
-            getEstablishedOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('imported-har://example.com'),
+            getOriginLock: () => ({
+                status: 'ESTABLISHED_ORIGIN',
+                origin: SDK.SecurityOrigin.SecurityOrigin.create('imported-har://example.com'),
+            }),
         };
         const response = await tool.handler({ id: 'harRequestId' }, context);
         assertIsResult(response);
@@ -186,12 +207,15 @@ describe('GetNetworkRequestDetailsTool', () => {
         sinon.stub(networkLog, 'requests').returns([request]);
         const tool = new AiAssistance.GetNetworkRequestDetails.GetNetworkRequestDetailsTool(networkLog);
         const context = {
-            getEstablishedOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+            getOriginLock: () => ({
+                status: 'ESTABLISHED_ORIGIN',
+                origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+            }),
         };
         const response = await tool.handler({ id: 'requestId' }, context);
         assertIsError(response, 'No request found');
     });
-    it('returns error if established origin is undefined', async () => {
+    it('returns error if origin lock is uninitialized', async () => {
         const request = createNetworkRequest({
             url: 'https://example.com/api/users',
             documentURL: 'https://example.com/',
@@ -203,10 +227,27 @@ describe('GetNetworkRequestDetailsTool', () => {
         sinon.stub(networkLog, 'requests').returns([request]);
         const tool = new AiAssistance.GetNetworkRequestDetails.GetNetworkRequestDetailsTool(networkLog);
         const context = {
-            getEstablishedOrigin: () => undefined,
+            getOriginLock: () => ({ status: 'UNINITIALIZED' }),
         };
         const response = await tool.handler({ id: 'requestId' }, context);
-        assertIsError(response, 'No request found');
+        assertIsError(response, 'No origin established for this conversation.');
+    });
+    it('returns error when cross-origin navigation occurred during run', async () => {
+        const request = createNetworkRequest({
+            url: 'https://example.com/api/users',
+            documentURL: 'https://example.com/',
+            statusCode: 200,
+            responseHeaders: [{ name: 'Content-Type', value: 'application/json' }],
+            requestHeaders: [{ name: 'Accept', value: 'application/json' }],
+            contentData: new TextUtils.ContentData.ContentData('{}', false, 'application/json', 'utf-8'),
+        });
+        sinon.stub(networkLog, 'requests').returns([request]);
+        const tool = new AiAssistance.GetNetworkRequestDetails.GetNetworkRequestDetailsTool(networkLog);
+        const context = {
+            getOriginLock: () => ({ status: 'BLOCKED_BY_NAVIGATION' }),
+        };
+        const response = await tool.handler({ id: 'requestId' }, context);
+        assertIsError(response, 'Cross-origin access blocked due to navigation.');
     });
     it('rejects inspecting imported HAR requests from a live web session origin', async () => {
         const request = createNetworkRequest({
@@ -218,7 +259,10 @@ describe('GetNetworkRequestDetailsTool', () => {
         sinon.stub(networkLog, 'requests').returns([request]);
         const tool = new AiAssistance.GetNetworkRequestDetails.GetNetworkRequestDetailsTool(networkLog);
         const context = {
-            getEstablishedOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+            getOriginLock: () => ({
+                status: 'ESTABLISHED_ORIGIN',
+                origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+            }),
         };
         const response = await tool.handler({ id: 'harRequestId' }, context);
         assertIsError(response, 'No request found');

@@ -31,7 +31,6 @@ import '../../ui/components/buttons/buttons.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as AIAssistance from '../../models/ai_assistance/ai_assistance.js';
 import * as Geometry from '../../ui/geometry/geometry.js';
-// eslint-disable-next-line @devtools/es-modules-import
 import dataGridAiButtonStyles from '../../ui/legacy/components/data_grid/dataGridAiButton.css.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { Directives as LitDirectives, html, nothing, render } from '../../ui/lit/lit.js';
@@ -107,6 +106,7 @@ export class KeyValueStorageItemsView extends UI.Widget.VBox {
                 <devtools-data-grid
                   .name=${`${id}-datagrid-with-preview`}
                   striped
+                  deletable
                   style="flex: auto"
                   @sort=${(e) => input.onSort(e.detail.ascending)}
                   @refresh=${input.onRefresh}

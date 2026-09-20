@@ -98,7 +98,6 @@ describeWithEnvironment('AdsView', () => {
         const panel = new ApplicationComponents.AdsView.AdsView();
         renderElementIntoDOM(panel);
         // Wait for the initial poll to resolve
-        await clock.tickAsync(0);
         await panel.updateComplete;
         await RenderCoordinator.done();
         assert.include(panel.contentElement.textContent, '10%');
@@ -115,7 +114,6 @@ describeWithEnvironment('AdsView', () => {
         const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
         assert.exists(resourceTreeModel);
         // Wait for the initial poll to resolve
-        await clock.tickAsync(0);
         await panel.updateComplete;
         await RenderCoordinator.done();
         assert.include(panel.contentElement.textContent, '10%'); // verify data was loaded
@@ -201,7 +199,6 @@ describeWithEnvironment('AdsView', () => {
         const panel = new ApplicationComponents.AdsView.AdsView();
         renderElementIntoDOM(panel);
         // Wait for the initial poll and subsequent async element ID fetches to resolve
-        await clock.tickAsync(0);
         await panel.updateComplete;
         await RenderCoordinator.done();
         assert.include(panel.contentElement.textContent, 'Ad iframes (total 2)');
@@ -269,7 +266,6 @@ describeWithEnvironment('AdsView', () => {
         const panel = new ApplicationComponents.AdsView.AdsView();
         renderElementIntoDOM(panel);
         // Wait for the initial poll and subsequent async element ID fetches to resolve
-        await clock.tickAsync(0);
         await panel.updateComplete;
         await RenderCoordinator.done();
         const dataGrid = panel.contentElement.querySelector('devtools-data-grid');
@@ -361,7 +357,6 @@ describeWithEnvironment('AdsView', () => {
         const panel = new ApplicationComponents.AdsView.AdsView();
         renderElementIntoDOM(panel);
         // Wait for the initial poll and subsequent async element ID fetches to resolve
-        await clock.tickAsync(0);
         await panel.updateComplete;
         await RenderCoordinator.done();
         const revealStub = sinon.stub(Common.Revealer.RevealerRegistry.instance(), 'reveal').resolves();
@@ -421,7 +416,6 @@ describeWithEnvironment('AdsView', () => {
         });
         const panel = new ApplicationComponents.AdsView.AdsView();
         renderElementIntoDOM(panel);
-        await clock.tickAsync(0);
         await panel.updateComplete;
         await RenderCoordinator.done();
         assert.include(panel.contentElement.textContent, 'Ad scripts (total 2)');
@@ -430,6 +424,128 @@ describeWithEnvironment('AdsView', () => {
         assert.notInclude(panel.contentElement.textContent, 'https://example.com/index.html');
         assert.notInclude(panel.contentElement.textContent, 'https://example.com/content-script.js');
         panel.detach();
+    });
+    it('renders ad script provenance scenarios', async () => {
+        let callCount = 0;
+        connection.setHandler('Ads.getAdScripts', null);
+        connection.setSuccessHandler('Ads.getAdScripts', () => {
+            callCount++;
+            if (callCount === 1) {
+                return {
+                    newScripts: [
+                        {
+                            scriptId: 'script-4',
+                            provenance: {
+                                adScriptAncestry: {
+                                    ancestryChain: [
+                                        { scriptId: 'script-2' },
+                                    ],
+                                },
+                            },
+                        },
+                        {
+                            scriptId: 'script-2',
+                            provenance: {
+                                adScriptAncestry: {
+                                    ancestryChain: [
+                                        { scriptId: 'script-1' },
+                                    ],
+                                },
+                            },
+                        },
+                        {
+                            scriptId: 'script-3',
+                        },
+                        {
+                            scriptId: 'script-1',
+                            provenance: {
+                                filterlistRule: 'easylist-rule-1',
+                            },
+                        },
+                    ],
+                };
+            }
+            return { newScripts: [] };
+        });
+        const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
+        assert.exists(debuggerModel);
+        sinon.stub(debuggerModel, 'scriptForId').callsFake((scriptId) => {
+            const mockScript = {
+                scriptId,
+                sourceURL: urlString `https://example.com/${scriptId}.js`,
+                isInlineScript: () => false,
+                isContentScript: () => false,
+            };
+            return mockScript;
+        });
+        const panel = new ApplicationComponents.AdsView.AdsView();
+        renderElementIntoDOM(panel);
+        await panel.updateComplete;
+        await RenderCoordinator.done();
+        const dataGrid = panel.contentElement.querySelector('devtools-data-grid');
+        assert.isNotNull(dataGrid);
+        // Check that we have an aria-details element for each script
+        const ariaDetailsDivs = panel.contentElement.querySelectorAll('div[aria-details]');
+        assert.lengthOf(ariaDetailsDivs, 4, 'Should have one aria-details div per ad script');
+        // Scenario 1: Filter list rule
+        const script1Details = panel.contentElement.querySelector('div[aria-details="ad-tooltip-script-1"]');
+        assert.isNotNull(script1Details);
+        assert.include(script1Details.textContent, 'easylist-rule-1');
+        // Scenario 2: Ad script ancestry and filter list rule
+        const script2Details = panel.contentElement.querySelector('div[aria-details="ad-tooltip-script-2"]');
+        assert.isNotNull(script2Details);
+        assert.isDefined(script2Details.textContent);
+        const script2Tooltip = panel.contentElement.querySelector('devtools-tooltip[id="ad-tooltip-script-2"]');
+        assert.isNotNull(script2Tooltip);
+        assert.include(script2Tooltip.textContent, 'Creator ad script ancestry');
+        assert.include(script2Tooltip.textContent, 'Root script filter list rule');
+        assert.include(script2Tooltip.textContent, 'easylist-rule-1');
+        // The ancestry link should be rendered via the ScriptLocationLink widget (wrapped in devtools-widget).
+        const widget = script2Details.querySelector('devtools-widget');
+        assert.isNotNull(widget);
+        const linkComponent = widget.getWidget();
+        assert.exists(linkComponent);
+        assert.strictEqual(linkComponent.scriptId, 'script-1');
+        // Scenario 3: No provenance
+        const script3Details = panel.contentElement.querySelector('div[aria-details="ad-tooltip-script-3"]');
+        assert.isNotNull(script3Details);
+        assert.include(script3Details.textContent, '<no provenance>');
+        const script3Tooltip = panel.contentElement.querySelector('devtools-tooltip[id="ad-tooltip-script-3"]');
+        assert.isNotNull(script3Tooltip);
+        assert.include(script3Tooltip.textContent, 'No provenance data is available');
+        // Scenario 4: Recursive Ad script ancestry and filter list rule
+        const script4Details = panel.contentElement.querySelector('div[aria-details="ad-tooltip-script-4"]');
+        assert.isNotNull(script4Details);
+        const script4Tooltip = panel.contentElement.querySelector('devtools-tooltip[id="ad-tooltip-script-4"]');
+        assert.isNotNull(script4Tooltip);
+        assert.include(script4Tooltip.textContent, 'Creator ad script ancestry');
+        assert.include(script4Tooltip.textContent, 'Root script filter list rule');
+        assert.include(script4Tooltip.textContent, 'easylist-rule-1');
+        // It should have two ancestors rendered in the tooltip
+        const script4Widgets = script4Tooltip.querySelectorAll('devtools-widget');
+        assert.lengthOf(script4Widgets, 2);
+        const linkComponent1 = script4Widgets[0].getWidget();
+        assert.exists(linkComponent1);
+        assert.strictEqual(linkComponent1.scriptId, 'script-2');
+        const linkComponent2 = script4Widgets[1].getWidget();
+        assert.exists(linkComponent2);
+        assert.strictEqual(linkComponent2.scriptId, 'script-1');
+        panel.detach();
+    });
+    it('verifies tooltip styles are in the datagrid shadow dom', async () => {
+        const panel = new ApplicationComponents.AdsView.AdsView();
+        renderElementIntoDOM(panel);
+        await panel.updateComplete;
+        await RenderCoordinator.done();
+        const dataGrid = panel.contentElement.querySelector('.ad-scripts-data-grid');
+        const styles = dataGrid.shadowRoot.querySelectorAll('style');
+        let found = false;
+        for (const style of styles) {
+            if (style.textContent.includes('ad-provenance-tooltip-content')) {
+                found = true;
+            }
+        }
+        assert.isTrue(found, 'Style not found in DataGrid shadow root');
     });
 });
 //# sourceMappingURL=AdsView.test.js.map

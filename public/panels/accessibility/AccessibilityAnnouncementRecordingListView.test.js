@@ -10,7 +10,7 @@ import * as Accessibility from './accessibility.js';
 describeWithEnvironment('AccessibilityAnnouncementRecordingListView', () => {
     const { AnnouncementApi } = Accessibility.AccessibilityAnnouncementRecordingView;
     const mockAnnouncement = {
-        api: "aria-live" /* AnnouncementApi.ARIA_LIVE */,
+        api: AnnouncementApi.ARIA_LIVE,
         message: 'Live status updated',
         politeness: 'polite',
         element: '<div aria-live="polite">Live status updated</div>',

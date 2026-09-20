@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { describeWithEnvironment, expectConsoleLogs } from '../../../testing/EnvironmentHelpers.js';
+import { expectConsoleLogs } from '../../../testing/EnvironmentHelpers.js';
 import { createContextForNavigation, getFirstOrError, getInsightOrError, processTrace, } from '../../../testing/InsightHelpers.js';
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Trace from '../trace.js';
 import * as Types from '../types/types.js';
-describeWithEnvironment('DocumentLatency', function () {
+describe('DocumentLatency', function () {
+    setupLocaleHooks();
     expectConsoleLogs({
         error: ['Error: missing metric scores for specified navigation'],
     });

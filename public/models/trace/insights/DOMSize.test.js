@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { describeWithEnvironment, expectConsoleLogs } from '../../../testing/EnvironmentHelpers.js';
+import { expectConsoleLogs } from '../../../testing/EnvironmentHelpers.js';
 import { getFirstOrError, getInsightOrError, processTrace } from '../../../testing/InsightHelpers.js';
-describeWithEnvironment('DOMSize', function () {
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
+describe('DOMSize', function () {
+    setupLocaleHooks();
     // Processing traces in this file can take a while due to a performance bottleneck
     // b/38254550
     this.timeout(30_000);

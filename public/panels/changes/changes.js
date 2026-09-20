@@ -631,7 +631,7 @@ var UIStrings3 = {
   /**
    * @description Description text shown in the Changes panel explaining how to track code changes.
    */
-  changesViewDescription: "Track code changes made within DevTools."
+  changesViewDescription: "Track code changes made within DevTools"
 };
 var str_3 = i18n5.i18n.registerUIStrings("panels/changes/ChangesView.ts", UIStrings3);
 var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);

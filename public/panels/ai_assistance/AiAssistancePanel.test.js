@@ -26,6 +26,20 @@ import * as UI from '../../ui/legacy/legacy.js';
 import * as Timeline from '../timeline/timeline.js';
 import * as AiAssistancePanel from './ai_assistance.js';
 const { urlString } = Platform.DevToolsPath;
+/**
+ * Creates a stubbed element node belonging to a document at `documentUrl`.
+ *
+ * `sinon.createStubInstance` replaces every method, including `securityOrigin()`,
+ * so it is stubbed explicitly. Without it the node reports no origin at all and
+ * the panel treats it as cross-origin.
+ */
+function createStubbedElementNodeInDocument(documentUrl) {
+    const node = sinon.createStubInstance(SDK.DOMModel.DOMNode, {
+        nodeType: Node.ELEMENT_NODE,
+    });
+    node.securityOrigin.returns(SDK.SecurityOrigin.SecurityOrigin.create(documentUrl));
+    return node;
+}
 describeWithEnvironment('AI Assistance Panel', () => {
     setupSettingsHooks();
     let viewManagerIsViewVisibleStub;
@@ -317,6 +331,7 @@ describeWithEnvironment('AI Assistance Panel', () => {
                     const file = sinon.createStubInstance(Workspace.UISourceCode.UISourceCode, {
                         url: urlString `https://www.example.com/app.js`,
                     });
+                    file.securityOrigin.returns(SDK.SecurityOrigin.SecurityOrigin.create('https://www.example.com'));
                     return new AiAssistanceModel.FileContext.FileContext(file);
                 },
                 action: 'drjones.sources-panel-context',
@@ -469,12 +484,7 @@ describeWithEnvironment('AI Assistance Panel', () => {
                 documentURL: urlString `https://example.com`,
             });
             UI.Context.Context.instance().setFlavor(SDK.NetworkRequest.NetworkRequest, networkRequest);
-            const initialNode = sinon.createStubInstance(SDK.DOMModel.DOMNode, {
-                nodeType: Node.ELEMENT_NODE,
-            });
-            const ownerDoc = sinon.createStubInstance(SDK.DOMModel.DOMDocument);
-            sinon.stub(ownerDoc, 'documentURL').get(() => urlString `https://example.com`);
-            initialNode.ownerDocument = ownerDoc;
+            const initialNode = createStubbedElementNodeInDocument('https://example.com');
             UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, initialNode);
             viewManagerIsViewVisibleStub.callsFake(viewName => viewName === 'elements');
             const { panel, view } = await createAiAssistancePanel({
@@ -802,12 +812,8 @@ describeWithEnvironment('AI Assistance Panel', () => {
             sinon.assert.neverCalledWith(recordFunctionCallStub, sinon.match({ name: expectedAgentChange }));
         });
         it('should log ai-v2-context-user-change when selected DOM node changes during an active conversation', async () => {
-            const ownerDoc = sinon.createStubInstance(SDK.DOMModel.DOMDocument);
-            sinon.stub(ownerDoc, 'documentURL').get(() => Platform.DevToolsPath.urlString `https://example.com`);
-            const node1 = sinon.createStubInstance(SDK.DOMModel.DOMNode, { nodeType: Node.ELEMENT_NODE });
-            node1.ownerDocument = ownerDoc;
-            const node2 = sinon.createStubInstance(SDK.DOMModel.DOMNode, { nodeType: Node.ELEMENT_NODE });
-            node2.ownerDocument = ownerDoc;
+            const node1 = createStubbedElementNodeInDocument('https://example.com');
+            const node2 = createStubbedElementNodeInDocument('https://example.com');
             UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node1);
             const { panel, view } = await createAiAssistancePanel({
                 aidaClient: mockAidaClient([
@@ -828,12 +834,8 @@ describeWithEnvironment('AI Assistance Panel', () => {
             });
         });
         it('should not log context telemetry when selected DOM node changes after context removal in active conversation', async () => {
-            const ownerDoc = sinon.createStubInstance(SDK.DOMModel.DOMDocument);
-            sinon.stub(ownerDoc, 'documentURL').get(() => Platform.DevToolsPath.urlString `https://example.com`);
-            const node1 = sinon.createStubInstance(SDK.DOMModel.DOMNode, { nodeType: Node.ELEMENT_NODE });
-            node1.ownerDocument = ownerDoc;
-            const node2 = sinon.createStubInstance(SDK.DOMModel.DOMNode, { nodeType: Node.ELEMENT_NODE });
-            node2.ownerDocument = ownerDoc;
+            const node1 = createStubbedElementNodeInDocument('https://example.com');
+            const node2 = createStubbedElementNodeInDocument('https://example.com');
             UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node1);
             const { panel, view } = await createAiAssistancePanel({
                 aidaClient: mockAidaClient([
@@ -2315,12 +2317,7 @@ describeWithEnvironment('AI Assistance Panel', () => {
                         enabled: true,
                     },
                 });
-                const node = sinon.createStubInstance(SDK.DOMModel.DOMNode, {
-                    nodeType: Node.ELEMENT_NODE,
-                });
-                const ownerDoc = sinon.createStubInstance(SDK.DOMModel.DOMDocument);
-                sinon.stub(ownerDoc, 'documentURL').get(() => urlString `https://example.com`);
-                node.ownerDocument = ownerDoc;
+                const node = createStubbedElementNodeInDocument('https://example.com');
                 UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node);
                 const { panel, view } = await createAiAssistancePanel();
                 void panel.handleAction('freestyler.elements-floating-button');
@@ -2431,12 +2428,7 @@ describeWithEnvironment('AI Assistance Panel', () => {
                 const { panel, view } = await createAiAssistancePanel({
                     aidaClient: mockAidaClient([[{ explanation: 'test' }]]),
                 });
-                const node = sinon.createStubInstance(SDK.DOMModel.DOMNode, {
-                    nodeType: Node.ELEMENT_NODE,
-                });
-                const ownerDoc = sinon.createStubInstance(SDK.DOMModel.DOMDocument);
-                sinon.stub(ownerDoc, 'documentURL').get(() => urlString `https://example.com`);
-                node.ownerDocument = ownerDoc;
+                const node = createStubbedElementNodeInDocument('https://example.com');
                 UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node);
                 viewManagerIsViewVisibleStub.callsFake(viewName => viewName === 'elements');
                 void panel.handleAction('freestyler.elements-floating-button');

@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
-import { microsecondsTraceWindow } from '../../../testing/TraceHelpers.js';
+import { microsecondsTraceWindow } from '../../../testing/TraceHelpersCore.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Trace from '../trace.js';
 function milliToMicro(value) {
     return Trace.Types.Timing.Micro(value * 1000);
 }
-describeWithEnvironment('Timing helpers', () => {
+describe('Timing helpers', () => {
     describe('Timing conversions', () => {
         it('can convert milliseconds to microseconds', () => {
             const input = Trace.Types.Timing.Milli(1);

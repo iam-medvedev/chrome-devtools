@@ -16,11 +16,11 @@ describeWithEnvironment('DOMTreeContextMenu', () => {
         target = createTarget();
         domModel = target.model(SDK.DOMModel.DOMModel);
     });
-    function createTestNode() {
+    function createTestNode(nodeType = Node.ELEMENT_NODE) {
         const node = new SDK.DOMModel.DOMNode(domModel);
-        sinon.stub(node, 'nodeType').returns(Node.ELEMENT_NODE);
-        sinon.stub(node, 'nodeNameInCorrectCase').returns('div');
-        sinon.stub(node, 'nodeName').returns('DIV');
+        sinon.stub(node, 'nodeType').returns(nodeType);
+        sinon.stub(node, 'nodeNameInCorrectCase').returns(nodeType === Node.TEXT_NODE ? '#text' : 'div');
+        sinon.stub(node, 'nodeName').returns(nodeType === Node.TEXT_NODE ? '#text' : 'DIV');
         sinon.stub(node, 'id').value(1);
         return node;
     }
@@ -67,7 +67,7 @@ describeWithEnvironment('DOMTreeContextMenu', () => {
             Elements.ElementsTreeOutline.DEFAULT_VIEW;
         describe(viewName, () => {
             it('populates context menu with standard actions for element nodes', async () => {
-                const domTree = new Elements.ElementsTreeOutline.DOMTreeWidget(undefined, getView());
+                const domTree = new Elements.ElementsTreeOutline.DOMTreeWidget(undefined, [], getView());
                 try {
                     const node = createTestNode();
                     const event = createContextMenuEvent();
@@ -81,13 +81,14 @@ describeWithEnvironment('DOMTreeContextMenu', () => {
                     assert.include(labels, 'Delete element');
                     assert.include(labels, 'Scroll into view');
                     assert.include(labels, 'Focus');
+                    assert.include(labels, 'Add attribute');
                 }
                 finally {
                     domTree.detach();
                 }
             });
             it('does not show context menu when enableContextMenu is false', async () => {
-                const domTree = new Elements.ElementsTreeOutline.DOMTreeWidget(undefined, getView());
+                const domTree = new Elements.ElementsTreeOutline.DOMTreeWidget(undefined, [], getView());
                 try {
                     domTree.enableContextMenu = false;
                     const node = createTestNode();
@@ -100,7 +101,7 @@ describeWithEnvironment('DOMTreeContextMenu', () => {
                 }
             });
             it('triggers performCopyOrCut, toggleHideElement, and removeNode from context menu actions', async () => {
-                const domTree = new Elements.ElementsTreeOutline.DOMTreeWidget(undefined, getView());
+                const domTree = new Elements.ElementsTreeOutline.DOMTreeWidget(undefined, [], getView());
                 try {
                     const node = createTestNode();
                     const copyOrCutSpy = sinon.spy(domTree, 'performCopyOrCut');
@@ -134,7 +135,7 @@ describeWithEnvironment('DOMTreeContextMenu', () => {
                 }
             });
             it('triggers expandRecursively and collapseChildren on DOMTreeWidget', async () => {
-                const domTree = new Elements.ElementsTreeOutline.DOMTreeWidget(undefined, getView());
+                const domTree = new Elements.ElementsTreeOutline.DOMTreeWidget(undefined, [], getView());
                 try {
                     const node = createTestNode();
                     const expandSpy = sinon.spy(domTree, 'expandRecursively');
@@ -158,29 +159,68 @@ describeWithEnvironment('DOMTreeContextMenu', () => {
                     domTree.detach();
                 }
             });
-            it('redirects addAttribute to start tag widget when invoked on closing tag', async () => {
-                const domTree = new Elements.ElementsTreeOutline.DOMTreeWidget(undefined, getView());
+            it('triggers addNewAttribute on DOMTreeWidget when Add attribute is clicked', async () => {
+                const domTree = new Elements.ElementsTreeOutline.DOMTreeWidget(undefined, [], getView());
                 try {
                     const node = createTestNode();
-                    const startTagWidget = {
-                        isClosingTag: false,
-                        addNewAttribute: sinon.spy(),
-                    };
-                    const closingTagWidget = {
-                        isClosingTag: true,
-                        findStartTagWidget: () => startTagWidget,
-                        addNewAttribute: sinon.spy(),
-                    };
+                    const addNewAttributeSpy = sinon.spy(domTree, 'addNewAttribute');
                     const event = createContextMenuEvent();
-                    const contextMenu = await domTree.showContextMenu(node, event, closingTagWidget);
+                    const contextMenu = await domTree.showContextMenu(node, event);
                     assert.exists(contextMenu);
                     const descriptor = contextMenu.buildDescriptor();
                     const addItem = findItem(descriptor.subItems, 'Add attribute');
                     assert.exists(addItem);
                     assert.exists(addItem.id);
                     contextMenu.invokeHandler(addItem.id);
-                    sinon.assert.calledOnce(startTagWidget.addNewAttribute);
-                    sinon.assert.notCalled(closingTagWidget.addNewAttribute);
+                    sinon.assert.calledOnceWithExactly(addNewAttributeSpy, node);
+                }
+                finally {
+                    domTree.detach();
+                }
+            });
+            it('triggers startEditing on DOMTreeWidget when Edit attribute is clicked', async () => {
+                const domTree = new Elements.ElementsTreeOutline.DOMTreeWidget(undefined, [], getView());
+                try {
+                    const node = createTestNode();
+                    const startEditingSpy = sinon.spy(domTree, 'startEditing');
+                    const attrSpan = document.createElement('span');
+                    attrSpan.className = 'webkit-html-attribute';
+                    const nameSpan = document.createElement('span');
+                    nameSpan.className = 'webkit-html-attribute-name';
+                    nameSpan.textContent = 'class';
+                    attrSpan.appendChild(nameSpan);
+                    const event = new MouseEvent('contextmenu');
+                    Object.defineProperty(event, 'target', { value: nameSpan });
+                    const contextMenu = await domTree.showContextMenu(node, event);
+                    assert.exists(contextMenu);
+                    const descriptor = contextMenu.buildDescriptor();
+                    const editItem = findItem(descriptor.subItems, 'Edit attribute');
+                    assert.exists(editItem);
+                    assert.exists(editItem.id);
+                    contextMenu.invokeHandler(editItem.id);
+                    sinon.assert.calledOnceWithExactly(startEditingSpy, node, 'class');
+                }
+                finally {
+                    domTree.detach();
+                }
+            });
+            it('triggers startEditingTextNode on DOMTreeWidget when Edit text is clicked', async () => {
+                const domTree = new Elements.ElementsTreeOutline.DOMTreeWidget(undefined, [], getView());
+                try {
+                    const node = createTestNode(Node.TEXT_NODE);
+                    const startEditingTextNodeSpy = sinon.spy(domTree, 'startEditingTextNode');
+                    const textSpan = document.createElement('span');
+                    textSpan.className = 'webkit-html-text-node';
+                    const event = new MouseEvent('contextmenu');
+                    Object.defineProperty(event, 'target', { value: textSpan });
+                    const contextMenu = await domTree.showContextMenu(node, event);
+                    assert.exists(contextMenu);
+                    const descriptor = contextMenu.buildDescriptor();
+                    const editItem = findItem(descriptor.subItems, 'Edit text');
+                    assert.exists(editItem);
+                    assert.exists(editItem.id);
+                    contextMenu.invokeHandler(editItem.id);
+                    sinon.assert.calledOnceWithExactly(startEditingTextNodeSpy, node);
                 }
                 finally {
                     domTree.detach();
@@ -189,7 +229,7 @@ describeWithEnvironment('DOMTreeContextMenu', () => {
         });
     }
     it('declarative expandRecursively calls getSubtree on the node', async () => {
-        const domTree = new Elements.ElementsTreeOutline.DOMTreeWidget(undefined, Elements.ElementsTreeOutline.DECLARATIVE_VIEW);
+        const domTree = new Elements.ElementsTreeOutline.DOMTreeWidget(undefined, [], Elements.ElementsTreeOutline.DECLARATIVE_VIEW);
         try {
             const node = createTestNode();
             const getSubtreeStub = sinon.stub(node, 'getSubtree').resolves(null);

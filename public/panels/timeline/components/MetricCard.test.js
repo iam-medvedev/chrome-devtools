@@ -291,7 +291,7 @@ describeWithEnvironment('MetricCard', () => {
             renderElementIntoDOM(view);
             await RenderCoordinator.done();
             const compareText = getCompareText(view);
-            assert.strictEqual(compareText.innerText, 'Your local LCP value of 0.10 s is good, and is similar to your users’ experience.');
+            assert.strictEqual(compareText.innerText, 'Your local LCP value of 0.10 s is good, and is similar to your users’ experience');
         });
         it('should show message when local is better', async () => {
             const view = new Components.MetricCard.MetricCard();
@@ -304,7 +304,7 @@ describeWithEnvironment('MetricCard', () => {
             renderElementIntoDOM(view);
             await RenderCoordinator.done();
             const compareText = getCompareText(view);
-            assert.strictEqual(compareText.innerText, 'Your local LCP value of 0.10 s is good, but is significantly better than your users’ experience.');
+            assert.strictEqual(compareText.innerText, 'Your local LCP value of 0.10 s is good, but is significantly better than your users’ experience');
         });
         it('should show message when local is worse', async () => {
             const view = new Components.MetricCard.MetricCard();
@@ -317,7 +317,7 @@ describeWithEnvironment('MetricCard', () => {
             renderElementIntoDOM(view);
             await RenderCoordinator.done();
             const compareText = getCompareText(view);
-            assert.strictEqual(compareText.innerText, 'Your local LCP value of 5.00 s is poor, but is significantly worse than your users’ experience.');
+            assert.strictEqual(compareText.innerText, 'Your local LCP value of 5.00 s is poor, but is significantly worse than your users’ experience');
         });
         it('should always be similar if local and field are rated "good"', async () => {
             const view = new Components.MetricCard.MetricCard();
@@ -330,7 +330,7 @@ describeWithEnvironment('MetricCard', () => {
             renderElementIntoDOM(view);
             await RenderCoordinator.done();
             const compareText = getCompareText(view);
-            assert.strictEqual(compareText.innerText, 'Your local LCP value of 0.01 s is good, and is similar to your users’ experience.');
+            assert.strictEqual(compareText.innerText, 'Your local LCP value of 0.01 s is good, and is similar to your users’ experience');
         });
         it('should show generic summary if field is missing', async () => {
             const view = new Components.MetricCard.MetricCard();
@@ -341,7 +341,7 @@ describeWithEnvironment('MetricCard', () => {
             renderElementIntoDOM(view);
             await RenderCoordinator.done();
             const compareText = getCompareText(view);
-            assert.strictEqual(compareText.innerText, 'Your local LCP value of 3.00 s needs improvement.');
+            assert.strictEqual(compareText.innerText, 'Your local LCP value of 3.00 s needs improvement');
         });
         it('should suggest interaction if local INP is missing', async () => {
             const view = new Components.MetricCard.MetricCard();
@@ -351,7 +351,7 @@ describeWithEnvironment('MetricCard', () => {
             renderElementIntoDOM(view);
             await RenderCoordinator.done();
             const compareText = getCompareText(view);
-            assert.strictEqual(compareText.innerText, 'Interact with the page to measure INP.');
+            assert.strictEqual(compareText.innerText, 'Interact with the page to measure INP');
         });
     });
     describe('detailed local/field comparison', () => {
@@ -390,7 +390,7 @@ describeWithEnvironment('MetricCard', () => {
             renderElementIntoDOM(view);
             await RenderCoordinator.done();
             const compareText = getDetailedCompareText(view);
-            assert.strictEqual(compareText.textContent, 'Your local LCP value of 3.00 s needs improvement.');
+            assert.strictEqual(compareText.textContent, 'Your local LCP value of 3.00 s needs improvement');
         });
         it('should suggest interaction if local INP is missing', async () => {
             const view = new Components.MetricCard.MetricCard();
@@ -400,7 +400,7 @@ describeWithEnvironment('MetricCard', () => {
             renderElementIntoDOM(view);
             await RenderCoordinator.done();
             const compareText = getDetailedCompareText(view);
-            assert.strictEqual(compareText.textContent, 'Interact with the page to measure INP.');
+            assert.strictEqual(compareText.textContent, 'Interact with the page to measure INP');
         });
     });
     describe('environment recommendations', () => {
@@ -442,7 +442,7 @@ describeWithEnvironment('MetricCard', () => {
             assert.deepEqual(recs, [
                 'Real users may experience longer page loads due to slower network conditions. Increasing network throttling will simulate slower network conditions.',
                 'Screen size can influence what the LCP element is. Ensure you are testing common viewport sizes.',
-                'The LCP element can vary between page loads if content is dynamic.',
+                'The LCP element can vary between page loads if content is dynamic',
             ]);
         });
         it('should hide LCP throttling rec if local is bigger', async () => {
@@ -458,7 +458,7 @@ describeWithEnvironment('MetricCard', () => {
             const recs = getEnvironmentRecs(view);
             assert.deepEqual(recs, [
                 'Screen size can influence what the LCP element is. Ensure you are testing common viewport sizes.',
-                'The LCP element can vary between page loads if content is dynamic.',
+                'The LCP element can vary between page loads if content is dynamic',
             ]);
         });
         it('should show CLS recs', async () => {
@@ -475,7 +475,7 @@ describeWithEnvironment('MetricCard', () => {
             assert.deepEqual(recs, [
                 'Screen size can influence what layout shifts happen. Ensure you are testing common viewport sizes.',
                 'How a user interacts with the page can influence layout shifts. Ensure you are testing common interactions like scrolling the page.',
-                'Dynamic content can influence what layout shifts happen.',
+                'Dynamic content can influence what layout shifts happen',
             ]);
         });
         it('should show INP recs', async () => {

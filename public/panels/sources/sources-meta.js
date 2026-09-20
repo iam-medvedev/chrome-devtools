@@ -1950,7 +1950,7 @@ UI.ContextMenu.registerProvider({
   },
   contextTypes() {
     return [
-      ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement,
+      ObjectUI.ObjectPropertiesSection.ObjectTreeNode,
       ...maybeRetrieveContextTypes((Sources) => [Sources.UISourceCodeFrame.UISourceCodeFrame])
     ];
   }

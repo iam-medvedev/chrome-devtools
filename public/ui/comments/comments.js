@@ -504,13 +504,16 @@ var CommentOverlayManager = class extends Common.ObjectWrapper.ObjectWrapper {
   #mutationObserver;
   #rematchTimeoutId;
   #cursorElement = null;
+  #isCreatingComment = false;
   constructor(commentManager) {
     super();
     this.#commentManager = commentManager;
     this.#commentManager.addEventListener(
       CommentManager.CommentManager.Events.COMMENT_THREADS_CHANGED,
       () => {
-        this.#updatePositions();
+        if (!this.#isCreatingComment) {
+          this.#updatePositions();
+        }
       },
       this
     );
@@ -519,6 +522,7 @@ var CommentOverlayManager = class extends Common.ObjectWrapper.ObjectWrapper {
       ({ data: active }) => {
         if (!active) {
           this.#clearHover();
+          this.clearDraftThreads();
         }
         document.body.style.cursor = active ? COMMENT_MODE_CURSOR : "";
       },
@@ -589,38 +593,74 @@ var CommentOverlayManager = class extends Common.ObjectWrapper.ObjectWrapper {
   getHighlightRects() {
     return this.#highlightRects;
   }
-  handleElementClick(element, commentText = "New comment", options) {
-    if (!this.isCommentMode()) {
+  getAnchorElement(thread) {
+    return this.#liveNodeCache.get(thread);
+  }
+  clearDraftThreads() {
+    const draftThreads = this.#commentManager.getCommentThreads().filter((t) => t.status === "DRAFT");
+    for (const thread of draftThreads) {
+      this.removeCommentThread(thread.id);
+    }
+  }
+  handleElementClick(element, options) {
+    if (!this.isCommentMode() || closestAcrossShadow(element, ".comment-thread-widget")) {
+      return false;
+    }
+    this.clearDraftThreads();
+    const resolved = this.#resolveAnchor(element, options);
+    if (!resolved) {
+      return false;
+    }
+    const { anchorElement: anchorEl } = resolved;
+    const visibleRect = computeVisibleRect(anchorEl);
+    if (!visibleRect) {
+      return false;
+    }
+    const thread = this.createComment(element, void 0, { coordinates: options });
+    return thread !== null;
+  }
+  createComment(element, text, options) {
+    const author = options?.author ?? "DEVELOPER";
+    const changes = options?.changes;
+    const resolved = this.#resolveAnchor(element, options?.coordinates);
+    if (!resolved) {
       return null;
     }
-    return this.createComment(element, commentText, "DEVELOPER", void 0, options);
+    const { anchor, anchorElement } = resolved;
+    let thread;
+    this.#isCreatingComment = true;
+    try {
+      thread = this.#commentManager.createCommentThread(anchor, text, author, changes);
+    } finally {
+      this.#isCreatingComment = false;
+    }
+    if (isDomTrackedAnchor(anchor)) {
+      this.#liveNodeCache.set(thread, anchorElement);
+      const observer = this.#getIntersectionObserver();
+      observer.observe(anchorElement);
+      this.#observedThreads.add(anchorElement);
+    }
+    this.#updatePositions();
+    return thread;
   }
-  createComment(element, text, author = "DEVELOPER", changes, options) {
-    let anchorEl = null;
+  #resolveAnchor(element, options) {
+    let anchorElement = null;
     let anchor = null;
     const customResolver = getCustomAnchorResolverForElement(element);
     if (customResolver) {
       const result = customResolver.resolve(element, options);
       if (result) {
         anchor = result.anchor;
-        anchorEl = result.anchorElement ?? element;
+        anchorElement = result.anchorElement ?? element;
       }
     } else {
-      anchorEl = resolveCommentAnchorElement(element, options);
+      anchorElement = resolveCommentAnchorElement(element, options);
       anchor = resolveCommentAnchor(element, void 0, options);
     }
-    if (!anchor || !anchorEl) {
+    if (!anchor || !anchorElement) {
       return null;
     }
-    const thread = this.#commentManager.createCommentThread(anchor, text, author, changes);
-    if (isDomTrackedAnchor(anchor)) {
-      this.#liveNodeCache.set(thread, anchorEl);
-      const observer = this.#getIntersectionObserver();
-      observer.observe(anchorEl);
-      this.#observedThreads.add(anchorEl);
-    }
-    this.#updatePositions();
-    return thread;
+    return { anchor, anchorElement };
   }
   getCommentThread(id) {
     return this.#commentManager.getCommentThread(id);
@@ -750,16 +790,14 @@ var CommentOverlayManager = class extends Common.ObjectWrapper.ObjectWrapper {
    * - A ResizeObserver to recalculate overlay coordinates when DevTools panels or drawers are resized.
    * - A MutationObserver to automatically rematch existing comment anchors when the DOM re-renders.
    */
-  start(rootOrOptions, defaultText = "New comment") {
+  start(rootOrOptions) {
     let root;
     let scrollTarget;
     let resizeTarget;
-    let text = defaultText;
     if (rootOrOptions && !(rootOrOptions instanceof Document) && !(rootOrOptions instanceof Element)) {
       root = rootOrOptions.root;
       scrollTarget = rootOrOptions.scrollTarget;
       resizeTarget = rootOrOptions.resizeTarget;
-      text = rootOrOptions.defaultText ?? defaultText;
     } else if (rootOrOptions) {
       root = rootOrOptions;
     }
@@ -767,7 +805,7 @@ var CommentOverlayManager = class extends Common.ObjectWrapper.ObjectWrapper {
     scrollTarget = scrollTarget || (root instanceof Document ? root.defaultView || window : window);
     resizeTarget = resizeTarget || (root instanceof Document ? root.body || root.documentElement : root);
     this.stop();
-    this.#installClickListener(root, text);
+    this.#installClickListener(root);
     this.#installScrollListener(scrollTarget);
     this.#installResizeObserver(resizeTarget);
     this.#installMutationObserver(root);
@@ -777,6 +815,7 @@ var CommentOverlayManager = class extends Common.ObjectWrapper.ObjectWrapper {
    */
   stop() {
     document.body.style.cursor = "";
+    this.clearDraftThreads();
     this.#removeClickListener();
     this.#removeScrollListener();
     this.#removeResizeObserver();
@@ -790,12 +829,12 @@ var CommentOverlayManager = class extends Common.ObjectWrapper.ObjectWrapper {
    * Sets up capturing click, hover, and pointer interaction listeners on the container.
    *
    * When Comment Mode is active:
-   * - Clicks on anchorable elements create new comment threads and consume the click event,
+   * - Clicks on anchorable elements open a comment thread creation draft and consume the click event,
    *   preventing normal DevTools UI triggers such as node selection or navigation.
    * - Pointer and mouse press events are suppressed to prevent accidental text selections or drag interactions.
    * - Hover events compute and display a real-time preview highlight over the candidate anchor element.
    */
-  #installClickListener(container = document, defaultText = "New comment") {
+  #installClickListener(container = document) {
     this.#removeClickListener();
     this.#clickContainer = container;
     this.#clickListener = (event) => {
@@ -807,10 +846,8 @@ var CommentOverlayManager = class extends Common.ObjectWrapper.ObjectWrapper {
       if (!(target instanceof Element)) {
         return;
       }
-      const mouseEvent = event;
-      const options = { clientX: mouseEvent.clientX, clientY: mouseEvent.clientY };
-      const thread = this.handleElementClick(target, defaultText, options);
-      if (thread) {
+      const options = event instanceof MouseEvent ? { clientX: event.clientX, clientY: event.clientY } : void 0;
+      if (this.handleElementClick(target, options)) {
         event.consume(true);
       }
     };
@@ -1073,318 +1110,8 @@ var CommentOverlayManager = class extends Common.ObjectWrapper.ObjectWrapper {
     this.#updatePositions();
   }
 };
-
-// ../../front_end/ui/comments/CommentsOverlayWidget.ts
-var CommentsOverlayWidget_exports = {};
-__export(CommentsOverlayWidget_exports, {
-  ActionDelegate: () => ActionDelegate,
-  CommentsOverlayWidget: () => CommentsOverlayWidget
-});
-import * as Root from "../../core/root/root.js";
-import * as CommentManager3 from "../../models/comment_manager/comment_manager.js";
-import * as UI from "../legacy/legacy.js";
-import * as Lit from "../lit/lit.js";
-
-// gen/front_end/ui/comments/commentsOverlay.css.js
-var commentsOverlay_css_default = `/*
- * Copyright 2026 The Chromium Authors
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
-
-@scope to (devtools-widget > *) {
-  :scope,
-  .comments-overlay-container {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    /* Needs to be above regular panel widgets (e.g. flame chart at z-index 2000) but below floating glass panes (which start at z-index 3000). */
-    z-index: 2500;
-    overflow: hidden;
-    width: 100vw;
-    height: 100vh;
-  }
-
-  .comment-pin {
-    position: absolute;
-    pointer-events: auto;
-    cursor: pointer;
-    user-select: none;
-    transition: transform 0.1s ease;
-    transform-origin: center center;
-      will-change: transform;
-  }
-
-  .comment-pin:hover {
-    transform: scale(1.15);
-  }
-
-    .comment-cursor {
-      display: flex;
-      width: var(--sys-size-9);
-      height: var(--sys-size-9);
-      box-sizing: border-box;
-      padding: 0;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      flex-shrink: 0;
-      box-shadow: var(--sys-elevation-level2);
-      border-radius: 100px 100px 100px var(--sys-shape-corner-extra-small, 4px);
-      background: var(--sys-color-primary);
-      color: var(--sys-color-on-primary);
-      font-family: var(--default-font-family);
-      font-size: var(--sys-typescale-body5-size);
-      font-weight: var(--ref-typeface-weight-bold, 600);
-      line-height: 1;
-    }
-
-  .comment-anchor-highlight {
-    position: absolute;
-    pointer-events: none;
-    border: var(--sys-size-2) dashed var(--sys-color-primary);
-    background-color: color-mix(in srgb, var(--sys-color-primary), transparent 90%);
-    box-sizing: border-box;
-  }
-
-  .comment-hover-highlight {
-    position: absolute;
-    pointer-events: none;
-    border: var(--sys-size-2) solid var(--sys-color-primary);
-    background-color: color-mix(in srgb, var(--sys-color-primary), transparent 85%);
-    box-sizing: border-box;
-  }
-}
-
-/*# sourceURL=${import.meta.resolve("./commentsOverlay.css")} */`;
-
-// ../../front_end/ui/comments/CommentsOverlayWidget.ts
-var { html, render, nothing, Directives: { styleMap } } = Lit;
-var DEFAULT_VIEW = (input, _output, target) => {
-  render(html`
-    <style>${commentsOverlay_css_default}</style>
-    <div class="comments-overlay-container">
-      ${input.hoverHighlight && input.hoverHighlight.visible ? html`
-        <div
-          class="comment-hover-highlight"
-          style=${styleMap({
-    top: `${input.hoverHighlight.top}px`,
-    left: `${input.hoverHighlight.left}px`,
-    width: `${input.hoverHighlight.width}px`,
-    height: `${input.hoverHighlight.height}px`
-  })}>
-        </div>
-      ` : nothing}
-      ${input.highlights.map((h) => h.visible ? html`
-        <div
-          class="comment-anchor-highlight"
-          data-comment-id=${h.id}
-          style=${styleMap({
-    top: `${h.top}px`,
-    left: `${h.left}px`,
-    width: `${h.width}px`,
-    height: `${h.height}px`
-  })}>
-        </div>
-      ` : nothing)}
-      ${input.pins.map((p) => p.visible ? html`
-        <div
-          class="comment-pin"
-          data-comment-id=${p.id}
-          style=${styleMap({
-    top: `${p.top}px`,
-    left: `${p.left}px`
-  })}
-          @click=${() => input.onPinClick(p.id)}>
-          <div class="comment-cursor">${p.index}</div>
-        </div>
-      ` : nothing)}
-    </div>
-  `, target);
-};
-var CommentsOverlayWidget = class extends UI.Widget.Widget {
-  #view;
-  #commentManager;
-  #commentOverlayManager;
-  constructor(element, commentManager, view = DEFAULT_VIEW) {
-    super(element, { useShadowDom: false });
-    this.#view = view;
-    this.#commentManager = commentManager;
-    this.#commentOverlayManager = new CommentOverlayManager(this.#commentManager);
-  }
-  setOverlayManagerForTest(overlayManager) {
-    this.#commentOverlayManager = overlayManager;
-  }
-  wasShown() {
-    super.wasShown();
-    this.#commentOverlayManager.start();
-    this.#commentOverlayManager.addEventListener(
-      "PositionsUpdated" /* POSITIONS_UPDATED */,
-      this.#onStateChanged,
-      this
-    );
-    this.#commentOverlayManager.addEventListener(
-      "HoverHighlightChanged" /* HOVER_HIGHLIGHT_CHANGED */,
-      this.#onStateChanged,
-      this
-    );
-    this.#commentManager.addEventListener(
-      CommentManager3.CommentManager.Events.COMMENT_THREADS_CHANGED,
-      this.#onStateChanged,
-      this
-    );
-    this.#commentManager.addEventListener(
-      CommentManager3.CommentManager.Events.COMMENT_MODE_CHANGED,
-      this.#onCommentModeChanged,
-      this
-    );
-    this.requestUpdate();
-  }
-  willHide() {
-    this.#commentOverlayManager.stop();
-    this.#commentOverlayManager.removeEventListener(
-      "PositionsUpdated" /* POSITIONS_UPDATED */,
-      this.#onStateChanged,
-      this
-    );
-    this.#commentOverlayManager.removeEventListener(
-      "HoverHighlightChanged" /* HOVER_HIGHLIGHT_CHANGED */,
-      this.#onStateChanged,
-      this
-    );
-    this.#commentManager.removeEventListener(
-      CommentManager3.CommentManager.Events.COMMENT_THREADS_CHANGED,
-      this.#onStateChanged,
-      this
-    );
-    this.#commentManager.removeEventListener(
-      CommentManager3.CommentManager.Events.COMMENT_MODE_CHANGED,
-      this.#onCommentModeChanged,
-      this
-    );
-    super.willHide();
-  }
-  #onCommentModeChanged(event) {
-    const isModeActive = event.data;
-    const action2 = UI.ActionRegistry.ActionRegistry.instance().getAction("comments.toggle-comment-mode");
-    action2?.setToggled(isModeActive);
-    this.requestUpdate();
-  }
-  #onStateChanged() {
-    this.requestUpdate();
-  }
-  #handlePinClick = (_threadId) => {
-  };
-  performUpdate() {
-    const viewInput = {
-      pins: this.#commentOverlayManager.getPinPositions(),
-      highlights: this.#commentOverlayManager.getHighlightRects(),
-      hoverHighlight: this.#commentOverlayManager.getHoverHighlight(),
-      commentMode: this.#commentManager.isCommentMode(),
-      onPinClick: this.#handlePinClick
-    };
-    this.#view(viewInput, void 0, this.contentElement);
-  }
-};
-var widgetInstance = null;
-var ActionDelegate = class {
-  #commentManager;
-  constructor(commentManager) {
-    this.#commentManager = commentManager ?? Root.DevToolsContext.globalInstance().get(
-      CommentManager3.CommentManager.CommentManager
-    );
-  }
-  handleAction(_context, actionId) {
-    if (actionId === "comments.toggle-comment-mode") {
-      if (!widgetInstance) {
-        widgetInstance = new CommentsOverlayWidget(void 0, this.#commentManager);
-        widgetInstance.markAsRoot();
-        widgetInstance.show(document.body);
-      }
-      this.#commentManager.setCommentMode(!this.#commentManager.isCommentMode());
-      return true;
-    }
-    return false;
-  }
-};
-
-// ../../front_end/ui/comments/CommentsStatusBarPill.ts
-var CommentsStatusBarPill_exports = {};
-__export(CommentsStatusBarPill_exports, {
-  CommentsStatusBarPill: () => CommentsStatusBarPill,
-  DEFAULT_VIEW: () => DEFAULT_VIEW2
-});
-import * as i18n from "../../core/i18n/i18n.js";
-import * as CommentManager5 from "../../models/comment_manager/comment_manager.js";
-import * as UI2 from "../legacy/legacy.js";
-import * as Lit2 from "../lit/lit.js";
-import * as VisualLogging2 from "../visual_logging/visual_logging.js";
-var UIStrings = {
-  /**
-   * @description Button text for the comments status bar pill showing the number of open comments.
-   * @example {2} PH1
-   */
-  commentsCount: "Comments ({PH1})"
-};
-var str_ = i18n.i18n.registerUIStrings("ui/comments/CommentsStatusBarPill.ts", UIStrings);
-var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
-var { html: html2, render: render2 } = Lit2;
-var DEFAULT_VIEW2 = (input, _output, target) => {
-  render2(html2`
-    ${input.threads.length <= 0 ? Lit2.nothing : html2`
-      <button
-        class="devtools-pill"
-        ?disabled=${input.disabled}
-        @click=${input.onPillClick}
-        jslog=${VisualLogging2.action("comments-status-bar-pill").track({ click: true })}>
-        ${i18nString(UIStrings.commentsCount, { PH1: input.threads.length })}
-      </button>
-    `}
-  `, target);
-};
-var CommentsStatusBarPill = class extends UI2.Widget.Widget {
-  static INJECT = [CommentManager5.CommentManager.CommentManager];
-  #view;
-  #commentManager;
-  constructor(element, [commentManager], view = DEFAULT_VIEW2) {
-    super(element);
-    this.#view = view;
-    this.#commentManager = commentManager;
-  }
-  #onThreadsChanged() {
-    this.requestUpdate();
-  }
-  wasShown() {
-    super.wasShown();
-    this.#commentManager.addEventListener(
-      CommentManager5.CommentManager.Events.COMMENT_THREADS_CHANGED,
-      this.#onThreadsChanged,
-      this
-    );
-    this.requestUpdate();
-  }
-  willHide() {
-    this.#commentManager.removeEventListener(
-      CommentManager5.CommentManager.Events.COMMENT_THREADS_CHANGED,
-      this.#onThreadsChanged,
-      this
-    );
-    super.willHide();
-  }
-  performUpdate() {
-    const viewInput = {
-      threads: this.#commentManager.getCommentThreads(),
-      onPillClick: this.#handlePillClick
-    };
-    this.#view(viewInput, void 0, this.contentElement);
-  }
-  #handlePillClick = () => {
-  };
-};
 export {
   CommentAnchorResolver_exports as CommentAnchorResolver,
-  CommentOverlayManager_exports as CommentOverlayManager,
-  CommentsOverlayWidget_exports as CommentsOverlayWidget,
-  CommentsStatusBarPill_exports as CommentsStatusBarPill
+  CommentOverlayManager_exports as CommentOverlayManager
 };
 //# sourceMappingURL=comments.js.map

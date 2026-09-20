@@ -14,6 +14,7 @@
   },
   "files": [
     "../../../../../../front_end/entrypoints/heap_snapshot_worker/AllocationProfile.ts",
+    "../../../../../../front_end/entrypoints/heap_snapshot_worker/ContextAnalyzer.ts",
     "../../../../../../front_end/entrypoints/heap_snapshot_worker/HeapSnapshot.ts",
     "../../../../../../front_end/entrypoints/heap_snapshot_worker/HeapSnapshotLoader.ts",
     "../../../../../../front_end/entrypoints/heap_snapshot_worker/HeapSnapshotWorkerDispatcher.ts",
@@ -28,9 +29,6 @@
     },
     {
       "path": "../../core/platform/bundle-tsconfig.ref.json"
-    },
-    {
-      "path": "../../core/platform/api/bundle-tsconfig.ref.json"
     },
     {
       "path": "../../core/text_utils/bundle-tsconfig.ref.json"

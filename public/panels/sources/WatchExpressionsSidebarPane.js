@@ -42,7 +42,6 @@ import * as StackTrace from '../../models/stack_trace/stack_trace.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as TextEditor from '../../ui/components/text_editor/text_editor.js';
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
-// eslint-disable-next-line @devtools/es-modules-import
 import objectValueStyles from '../../ui/legacy/components/object_ui/objectValue.css.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -282,6 +281,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
         // clang-format off
         return html `<li
           class=${classMap({ 'watch-expression-tree-item': true, 'watch-expression-editing': e.editing })}
+          ?open=${Boolean(e.result?.expanded)}
           @keydown=${onExpressionKeydown.bind(undefined, e)}
           @expand=${(event) => input.onExpand(e, event.detail.expanded)}
           role=treeitem>
@@ -296,10 +296,8 @@ export const DEFAULT_VIEW = (input, output, target) => {
             onContextMenu: (event) => onContextMenu(e, event),
         })}></devtools-widget>
         ${e.editing || !e.result || e.exceptionDetails ||
-            !e.result.hasChildren || e.result.object.customPreview() ? nothing : html `
-          <ul role=group>
-            ${ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement.createPropertyNodes(e.result.children ?? {}, false /* skipProto */, false /* skipGettersAndSetters */, input.linkifier).map(node => html `<devtools-tree-wrapper .treeElement=${node}></devtools-tree-wrapper>`)}
-          </ul>`}
+            !e.result.hasChildren || e.result.object.customPreview() ? nothing :
+            ObjectUI.ObjectPropertiesSection.renderObjectTree(e.result, input.linkifier)}
       </li>`;
         // clang-format on
     };
@@ -463,10 +461,9 @@ export class WatchExpressionsSidebarPane extends UI.Widget.VBox {
                 this.saveExpressions();
                 this.requestUpdate();
             },
-            onExpand: async (e, expanded) => {
-                if (expanded) {
-                    await e.result?.populateChildrenIfNeeded();
-                    this.requestUpdate();
+            onExpand: (e, expanded) => {
+                if (e.result) {
+                    e.result.expanded = expanded;
                 }
             },
         }, {}, this.contentElement);
@@ -506,9 +503,9 @@ export class WatchExpressionsSidebarPane extends UI.Widget.VBox {
         return true;
     }
     appendApplicableItems(_event, contextMenu, target) {
-        if (target instanceof ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement) {
-            if (!target.property.property.synthetic) {
-                contextMenu.debugSection().appendItem(i18nString(UIStrings.addPropertyPathToWatch), () => this.#focusAndAddExpressionToWatch(target.path()), { jslogContext: 'add-property-path-to-watch' });
+        if (target instanceof ObjectUI.ObjectPropertiesSection.ObjectTreeNode) {
+            if (!target.property.synthetic) {
+                contextMenu.debugSection().appendItem(i18nString(UIStrings.addPropertyPathToWatch), () => this.#focusAndAddExpressionToWatch(target.path), { jslogContext: 'add-property-path-to-watch' });
             }
             return;
         }

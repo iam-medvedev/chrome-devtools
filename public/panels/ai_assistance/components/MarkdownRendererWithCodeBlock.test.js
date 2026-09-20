@@ -5,6 +5,7 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as Common from '../../../core/common/common.js';
 import * as Platform from '../../../core/platform/platform.js';
+import * as SDK from '../../../core/sdk/sdk.js';
 import * as AiAssistanceModel from '../../../models/ai_assistance/ai_assistance.js';
 import * as Logs from '../../../models/logs/logs.js';
 import * as Workspace from '../../../models/workspace/workspace.js';
@@ -36,12 +37,12 @@ color: red;
         }));
     });
     describe('link', () => {
-        const renderToElem = (string) => {
+        const renderToElem = (string, options) => {
             const component = new MarkdownView.MarkdownView.MarkdownView();
             renderElementIntoDOM(component, { allowMultipleChildren: true });
             component.data = {
                 tokens: Marked.Marked.lexer(string),
-                renderer: new AiAssistance.MarkdownRendererWithCodeBlock(),
+                renderer: new AiAssistance.MarkdownRendererWithCodeBlock(options),
             };
             for (const el of component.shadowRoot?.children ?? []) {
                 if (el.nodeType === Node.ELEMENT_NODE && el.tagName !== 'STYLE') {
@@ -50,6 +51,20 @@ color: red;
             }
             assert.fail('No Element node found');
         };
+        function setupMockUiSourceCode(url, id) {
+            Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
+            const workspace = Workspace.Workspace.WorkspaceImpl.instance();
+            const project = {
+                id: () => 'test-project',
+                type: () => Workspace.Workspace.projectTypes.Network,
+                uiSourceCodes: () => [file],
+                fullDisplayName: () => 'script.js',
+            };
+            const file = new Workspace.UISourceCode.UISourceCode(project, url, Common.ResourceType.resourceTypes.Script);
+            sinon.stub(workspace, 'projects').returns([project]);
+            AiAssistanceModel.ContextSelectionAgent.ContextSelectionAgent.uiSourceCodeId.set(file, id);
+            return file;
+        }
         describe('linkifies DevTools resources', () => {
             it('work for requests', () => {
                 const request = createNetworkRequest({
@@ -74,29 +89,57 @@ color: red;
                 assert.isFalse(el.textContent.includes('#req-unknown'));
             });
             it('works for sources', () => {
-                Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
-                const workspace = Workspace.Workspace.WorkspaceImpl.instance();
-                const project = {
-                    id: () => 'test-project',
-                    type: () => Workspace.Workspace.projectTypes.Network,
-                    uiSourceCodes: () => [file],
-                    fullDisplayName: () => 'script.js',
-                };
-                const file = new Workspace.UISourceCode.UISourceCode(project, urlString `https://example.com/script.js`, Common.ResourceType.resourceTypes.Script);
-                sinon.stub(workspace, 'projects').returns([project]);
-                // Populate the IDs.
-                AiAssistanceModel.ContextSelectionAgent.ContextSelectionAgent.uiSourceCodeId.set(file, 1);
-                const el = renderToElem('[text](#file-1)');
+                setupMockUiSourceCode(urlString `https://example.com/script.js`, 1);
+                const origin = SDK.SecurityOrigin.SecurityOrigin.create('https://example.com');
+                const el = renderToElem('[text](#file-1)', { getEstablishedOrigin: () => origin });
                 const link = el.querySelector('devtools-link');
                 assert.exists(link);
                 // We should be attaching a handler and not
                 // a href.
                 assert.isNull(link.getAttribute('href'));
             });
+            it('works for sources inside codespan', () => {
+                setupMockUiSourceCode(urlString `https://example.com/script.js`, 1);
+                const origin = SDK.SecurityOrigin.SecurityOrigin.create('https://example.com');
+                const el = renderToElem('`[text](#file-1)`', { getEstablishedOrigin: () => origin });
+                const link = el.querySelector('devtools-link');
+                assert.exists(link);
+                assert.isNull(link.getAttribute('href'));
+            });
+            it('falls back to text when origin is missing or does not match', () => {
+                setupMockUiSourceCode(urlString `https://example.com/script.js`, 1);
+                const origin = SDK.SecurityOrigin.SecurityOrigin.create('https://example.com');
+                const crossOrigin = SDK.SecurityOrigin.SecurityOrigin.create('https://attacker.com');
+                const opaqueOrigin = SDK.SecurityOrigin.SecurityOrigin.create('about:blank');
+                const elCrossOrigin = renderToElem('[text](#file-1)', { getEstablishedOrigin: () => crossOrigin });
+                assert.isNull(elCrossOrigin.querySelector('devtools-link'));
+                assert.strictEqual(elCrossOrigin.textContent?.trim(), 'text');
+                const elOpaqueOrigin = renderToElem('[text](#file-1)', { getEstablishedOrigin: () => opaqueOrigin });
+                assert.isNull(elOpaqueOrigin.querySelector('devtools-link'));
+                assert.strictEqual(elOpaqueOrigin.textContent?.trim(), 'text');
+                const elUndefinedGetter = renderToElem('[text](#file-1)', { getEstablishedOrigin: () => undefined });
+                assert.isNull(elUndefinedGetter.querySelector('devtools-link'));
+                assert.strictEqual(elUndefinedGetter.textContent?.trim(), 'text');
+                const elNoOrigin = renderToElem('[text](#file-1)');
+                assert.isNull(elNoOrigin.querySelector('devtools-link'));
+                assert.strictEqual(elNoOrigin.textContent?.trim(), 'text');
+                const elInvalidId = renderToElem('[text](#file-notanumber)', { getEstablishedOrigin: () => origin });
+                assert.isNull(elInvalidId.querySelector('devtools-link'));
+                assert.strictEqual(elInvalidId.textContent?.trim(), 'text');
+            });
+            it('blocks cross-origin files bypassing origin lock inside codespan', () => {
+                setupMockUiSourceCode(urlString `https://malicious.com/script.js`, 123);
+                const origin = SDK.SecurityOrigin.SecurityOrigin.create('https://example.com');
+                const el = renderToElem('`[click me](#file-123)`', { getEstablishedOrigin: () => origin });
+                const link = el.querySelector('devtools-link');
+                assert.notExists(link);
+                assert.include(el.textContent, 'click me');
+            });
             it('does not link unknown files', () => {
                 const el = renderToElem('[text](#file-unknown)');
                 const link = el.querySelector('devtools-link');
                 assert.notExists(link);
+                assert.strictEqual(el.textContent?.trim(), 'text');
             });
             it('work for links inside codespan', () => {
                 const request = createNetworkRequest({

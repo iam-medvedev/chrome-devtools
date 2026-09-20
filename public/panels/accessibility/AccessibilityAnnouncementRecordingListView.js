@@ -6,6 +6,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Lit from '../../ui/lit/lit.js';
 import accessibilityAnnouncementRecordingListViewStyles from './accessibilityAnnouncementRecordingListView.css.js';
+import { AnnouncementApi, } from './AccessibilityAnnouncementRecordingView.js';
 const { html, render } = Lit;
 const UIStrings = {
     /**
@@ -65,7 +66,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
         </tr>
         ${input.items.map(item => {
         const timeString = new Date(item.time).toLocaleTimeString(i18n.DevToolsLocale.DevToolsLocale.instance().locale);
-        const apiDisplay = item.api === "js-triggered" /* AnnouncementApi.JS_TRIGGERED */ ?
+        const apiDisplay = item.api === AnnouncementApi.JS_TRIGGERED ?
             i18nString(UIStrings.jsTriggered) :
             i18nString(UIStrings.ariaLive);
         return html `

@@ -4,7 +4,7 @@ export declare function escapeTestIdBlock(block: string): string;
  * an absolute path to the build dir.
  */
 export declare function computeBuildTestId(file: string, titlePath: string[]): string;
-export declare function generateExactTestId(genDir: string, file: string, titlePath: string[]): {
+export declare function generateExactTestId(genDir: string, file: string, titlePath: string[], sourceDir?: string): {
     exactTestId: string;
     coarseName: string;
     fineName: string;

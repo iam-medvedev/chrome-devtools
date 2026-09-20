@@ -94,16 +94,12 @@ var customPreviewComponent_css_default = `/*
 // ../../front_end/ui/legacy/components/object_ui/ObjectPropertiesSection.ts
 var ObjectPropertiesSection_exports = {};
 __export(ObjectPropertiesSection_exports, {
-  ArrayGroupingTreeElement: () => ArrayGroupingTreeElement,
   EXPANDABLE_MAX_DEPTH: () => EXPANDABLE_MAX_DEPTH,
-  EXPANDABLE_TEXT_DEFAULT_VIEW: () => EXPANDABLE_TEXT_DEFAULT_VIEW,
   ExpandableTextPropertyValue: () => ExpandableTextPropertyValue,
   OBJECT_PROPERTIES_SECTION_DEFAULT_VIEW: () => OBJECT_PROPERTIES_SECTION_DEFAULT_VIEW,
   OBJECT_PROPERTY_DEFAULT_VIEW: () => OBJECT_PROPERTY_DEFAULT_VIEW,
-  OBJECT_TREE_DEFAULT_VIEW: () => OBJECT_TREE_DEFAULT_VIEW,
   ObjectPropertiesMode: () => ObjectPropertiesMode,
   ObjectPropertiesSectionWidget: () => ObjectPropertiesSectionWidget,
-  ObjectPropertyTreeElement: () => ObjectPropertyTreeElement,
   ObjectPropertyWidget: () => ObjectPropertyWidget,
   ObjectTree: () => ObjectTree,
   ObjectTreeExpansionTracker: () => ObjectTreeExpansionTracker,
@@ -685,6 +681,14 @@ var Audits;
     PermissionElementIssueType2["NonSecureContext"] = "NonSecureContext";
     PermissionElementIssueType2["MissingTransientUserActivation"] = "MissingTransientUserActivation";
   })(PermissionElementIssueType = Audits2.PermissionElementIssueType || (Audits2.PermissionElementIssueType = {}));
+  let WebInstallIssueReason;
+  ((WebInstallIssueReason2) => {
+    WebInstallIssueReason2["ManifestParsingOrNetworkError"] = "ManifestParsingOrNetworkError";
+    WebInstallIssueReason2["StartUrlInvalid"] = "StartUrlInvalid";
+    WebInstallIssueReason2["ManifestMissingNameOrShortName"] = "ManifestMissingNameOrShortName";
+    WebInstallIssueReason2["ManifestMissingId"] = "ManifestMissingId";
+    WebInstallIssueReason2["NoManifest"] = "NoManifest";
+  })(WebInstallIssueReason = Audits2.WebInstallIssueReason || (Audits2.WebInstallIssueReason = {}));
   let InspectorIssueCode;
   ((InspectorIssueCode2) => {
     InspectorIssueCode2["CookieIssue"] = "CookieIssue";
@@ -717,6 +721,7 @@ var Audits;
     InspectorIssueCode2["SelectivePermissionsInterventionIssue"] = "SelectivePermissionsInterventionIssue";
     InspectorIssueCode2["EmailVerificationRequestIssue"] = "EmailVerificationRequestIssue";
     InspectorIssueCode2["LazyLoadImageIssue"] = "LazyLoadImageIssue";
+    InspectorIssueCode2["WebInstallIssue"] = "WebInstallIssue";
   })(InspectorIssueCode = Audits2.InspectorIssueCode || (Audits2.InspectorIssueCode = {}));
   let GetEncodedResponseRequestEncoding;
   ((GetEncodedResponseRequestEncoding2) => {
@@ -999,6 +1004,11 @@ var DOM;
     GetElementByRelationRequestRelation2["InterestTarget"] = "InterestTarget";
     GetElementByRelationRequestRelation2["CommandFor"] = "CommandFor";
   })(GetElementByRelationRequestRelation = DOM2.GetElementByRelationRequestRelation || (DOM2.GetElementByRelationRequestRelation = {}));
+  let SetTextMarkerRequestType;
+  ((SetTextMarkerRequestType2) => {
+    SetTextMarkerRequestType2["Spelling"] = "spelling";
+    SetTextMarkerRequestType2["Grammar"] = "grammar";
+  })(SetTextMarkerRequestType = DOM2.SetTextMarkerRequestType || (DOM2.SetTextMarkerRequestType = {}));
 })(DOM || (DOM = {}));
 var DOMDebugger;
 ((DOMDebugger2) => {
@@ -3783,6 +3793,9 @@ var ObjectTreeExpansionTracker = class _ObjectTreeExpansionTracker {
     }
   }
 };
+var ARRAY_LOAD_THRESHOLD = 100;
+var ARRAY_BUCKET_THRESHOLD = 100;
+var ARRAY_SPARSE_ITERATION_THRESHOLD = 25e4;
 var ObjectTreeNodeBase = class _ObjectTreeNodeBase extends Common2.ObjectWrapper.ObjectWrapper {
   constructor(parent, options) {
     super();
@@ -4071,7 +4084,7 @@ var ArrayGroupTreeNode = class _ArrayGroupTreeNode extends ObjectTreeNodeBase {
     this.#range = range;
   }
   async populateChildrenIfNeededImpl() {
-    if (this.#range.count > ArrayGroupingTreeElement.bucketThreshold) {
+    if (this.#range.count > ARRAY_BUCKET_THRESHOLD) {
       const ranges = await arrayRangeGroups(this.object, this.#range.fromIndex, this.#range.toIndex);
       const arrayRanges = ranges?.ranges.map(
         ([fromIndex, toIndex, count]) => new _ArrayGroupTreeNode(this.object, { fromIndex, toIndex, count }, this, {
@@ -4085,7 +4098,7 @@ var ArrayGroupTreeNode = class _ArrayGroupTreeNode extends ObjectTreeNodeBase {
     const result = await this.#object.callFunction(buildArrayFragment, [
       { value: this.#range.fromIndex },
       { value: this.#range.toIndex },
-      { value: ArrayGroupingTreeElement.sparseIterationThreshold }
+      { value: ARRAY_SPARSE_ITERATION_THRESHOLD }
     ]);
     if (!result.object || result.wasThrown) {
       return {};
@@ -4519,7 +4532,6 @@ var ObjectPropertiesSectionWidget = class extends UI2.Widget.Widget {
     );
   };
 };
-var ARRAY_LOAD_THRESHOLD = 100;
 var maxRenderableStringLength = 1e4;
 var ObjectPropertiesMode = /* @__PURE__ */ ((ObjectPropertiesMode2) => {
   ObjectPropertiesMode2[ObjectPropertiesMode2["ALL"] = 0] = "ALL";
@@ -4582,7 +4594,7 @@ var OBJECT_TREE_DEFAULT_VIEW = (input, output, target) => {
     const nodes = Array.from(ObjectPropertyTreeElement.createNodes(
       objectTree,
       input.skipProto,
-      false,
+      input.skipGettersAndSetters,
       input.linkifier,
       input.emptyPlaceholder
     ));
@@ -4609,6 +4621,7 @@ var ObjectTreeWidget = class extends UI2.Widget.Widget {
   #emptyPlaceholder;
   #renderAsSubtree = false;
   #skipProto = false;
+  #skipGettersAndSetters = false;
   #view;
   constructor(element, view = OBJECT_TREE_DEFAULT_VIEW) {
     super(element);
@@ -4624,6 +4637,13 @@ var ObjectTreeWidget = class extends UI2.Widget.Widget {
   }
   set skipProto(val) {
     this.#skipProto = val;
+    this.requestUpdate();
+  }
+  get skipGettersAndSetters() {
+    return this.#skipGettersAndSetters;
+  }
+  set skipGettersAndSetters(val) {
+    this.#skipGettersAndSetters = val;
     this.requestUpdate();
   }
   get objectTree() {
@@ -5125,7 +5145,7 @@ var ObjectPropertyTreeElement = class _ObjectPropertyTreeElement extends UI2.Tre
     if (arrayRanges && arrayRanges.length > 0) {
       empty = false;
     }
-    const sortPropertiesAlphabetically = properties?.[0]?.parent?.sortPropertiesAlphabetically ?? true;
+    const sortPropertiesAlphabetically = properties?.[0]?.sortPropertiesAlphabetically ?? true;
     properties?.sort((a, b) => compareProperties(a, b, sortPropertiesAlphabetically));
     const entriesProperty = internalProperties?.find(({ property }) => property.name === "[[Entries]]");
     if (entriesProperty) {
@@ -5268,7 +5288,7 @@ var ObjectPropertyTreeElement = class _ObjectPropertyTreeElement extends UI2.Tre
   }
   getContextMenu(event) {
     const contextMenu = new UI2.ContextMenu.ContextMenu(event);
-    contextMenu.appendApplicableItems(this);
+    contextMenu.appendApplicableItems(this.property);
     if (this.property.property.symbol) {
       contextMenu.appendApplicableItems(this.property.property.symbol);
     }
@@ -5341,16 +5361,13 @@ var ObjectPropertyTreeElement = class _ObjectPropertyTreeElement extends UI2.Tre
       this.setExpandable(false);
     }
   }
-  path() {
-    return this.property.path;
-  }
 };
 async function arrayRangeGroups(object, fromIndex, toIndex) {
   return await object.callFunctionJSON(packArrayRanges, [
     { value: fromIndex },
     { value: toIndex },
-    { value: ArrayGroupingTreeElement.bucketThreshold },
-    { value: ArrayGroupingTreeElement.sparseIterationThreshold }
+    { value: ARRAY_BUCKET_THRESHOLD },
+    { value: ARRAY_SPARSE_ITERATION_THRESHOLD }
   ]);
   function packArrayRanges(fromIndex2, toIndex2, bucketThreshold, sparseIterationThreshold) {
     if (fromIndex2 === void 0 || toIndex2 === void 0 || sparseIterationThreshold === void 0 || bucketThreshold === void 0) {
@@ -5532,9 +5549,6 @@ var ArrayGroupingTreeElement = class _ArrayGroupingTreeElement extends UI2.TreeO
   onattach() {
     this.listItemElement.classList.add("object-properties-section-name");
   }
-  // These should be module constants but they are modified by layout tests.
-  static bucketThreshold = 100;
-  static sparseIterationThreshold = 25e4;
 };
 var EXPANDABLE_TEXT_DEFAULT_VIEW = (input, output, target) => {
   const totalBytesText = i18n3.ByteUtilities.bytesToString(input.byteCount);

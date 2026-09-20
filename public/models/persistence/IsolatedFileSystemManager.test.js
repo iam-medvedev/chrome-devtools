@@ -5,7 +5,9 @@ import { assert } from 'chai';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
-import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
+import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
+import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as Persistence from './persistence.js';
 const { urlString } = Platform.DevToolsPath;
@@ -23,10 +25,19 @@ class TestPlatformFileSystem extends Persistence.PlatformFileSystem.PlatformFile
         return Common.ParsedURL.ParsedURL.urlToRawPathString(this.path(), Host.Platform.isWin());
     }
 }
-describeWithEnvironment('IsolatedFileSystemManager', () => {
+describe('IsolatedFileSystemManager', () => {
+    setupLocaleHooks();
+    setupSettingsHooks();
+    setupRuntimeHooks();
+    let universe;
+    beforeEach(() => {
+        universe = new TestUniverse();
+    });
+    afterEach(() => {
+        universe.dispose();
+    });
     it('does not propagate events for ignored files', () => {
-        // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
-        const manager = Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance();
+        const manager = universe.isolatedFileSystemManager;
         manager.workspaceFolderExcludePatternSetting().set('[iI]gnored');
         const fileSystemPath = urlString `file:///var/www`;
         const fileSystem = new TestPlatformFileSystem(fileSystemPath, manager);

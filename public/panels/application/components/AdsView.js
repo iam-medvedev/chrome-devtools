@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import '../../../ui/legacy/components/data_grid/data_grid.js';
 import '../../../ui/kit/kit.js';
+import '../../../ui/components/tooltips/tooltips.js';
 import * as Common from '../../../core/common/common.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as SDK from '../../../core/sdk/sdk.js';
@@ -10,10 +11,16 @@ import * as Components from '../../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
+import adScriptsTableStyles from './adScriptsTable.css.js';
 import adsViewStyles from './adsView.css.js';
 const { html } = Lit;
 const { repeat } = Lit.Directives;
 const { bindToSetting } = UI.UIUtils;
+const DENSITY_DOC_URL = 'https://developer.chrome.com/docs/ads/metrics/density';
+const COUNT_DOC_URL = 'https://developer.chrome.com/docs/ads/metrics/count';
+const CPU_USAGE_DOC_URL = 'https://developer.chrome.com/docs/ads/metrics/weight-cpu';
+const NETWORK_USAGE_DOC_URL = 'https://developer.chrome.com/docs/ads/metrics/weight-network';
+const AD_DETECTION_DOC_URL = 'https://developer.chrome.com/docs/ads/detection';
 const UIStrings = {
     /**
      * @description Title for the metrics table.
@@ -24,17 +31,33 @@ const UIStrings = {
      */
     viewportAdDensity: 'Viewport ad density',
     /**
+     * @description Tooltip text explaining the viewport ad density metric in the ads view of the Application panel.
+     */
+    viewportAdDensityExplanation: 'Percentage of the viewport covered by ads',
+    /**
      * @description Title for a metric showing the number of ads in the viewport.
      */
     viewportAdCount: 'Viewport ad count',
+    /**
+     * @description Tooltip text explaining the viewport ad count metric in the ads view of the Application panel.
+     */
+    viewportAdCountExplanation: 'Number of ads in the viewport',
     /**
      * @description Title for a metric showing the total CPU usage by ads.
      */
     totalCpuUsage: 'Total CPU usage by ads',
     /**
+     * @description Tooltip text explaining the total CPU usage metric in the ads view of the Application panel.
+     */
+    totalCpuUsageExplanation: 'Total CPU time consumed by ads',
+    /**
      * @description Title for a metric showing the total network usage by ads.
      */
     totalNetworkUsage: 'Total network usage by ads',
+    /**
+     * @description Tooltip text explaining the total network usage metric in the ads view of the Application panel.
+     */
+    totalNetworkUsageExplanation: 'Total network data consumed by ads',
     /**
      * @description Subtext showing the average value of a metric.
      * @example {5.00%} PH1
@@ -87,6 +110,30 @@ const UIStrings = {
      */
     adScripts: 'Ad scripts',
     /**
+     * @description Title for the ad provenance column in the ad scripts table.
+     */
+    adProvenance: 'Ad provenance',
+    /**
+     * @description Text to display when a script has no provenance.
+     */
+    noProvenance: '<no provenance>',
+    /**
+     * @description Text to display in the tooltip when a script has no provenance.
+     */
+    noProvenanceTooltip: 'No provenance data is available',
+    /**
+     * @description Title for the filter list rule in the ad provenance tooltip.
+     */
+    filterListRule: 'Filter list rule',
+    /**
+     * @description Title for the root script filter list rule in the ad provenance tooltip.
+     */
+    rootScriptFilterListRule: 'Root script filter list rule',
+    /**
+     * @description Title for the creator ad script ancestry in the ad provenance tooltip.
+     */
+    creatorAdScriptAncestry: 'Creator ad script ancestry',
+    /**
      * @description Title for the settings section.
      */
     settings: 'Settings',
@@ -98,11 +145,11 @@ const UIStrings = {
     /**
      * @description Explanation text for the 'Highlight ads' setting.
      */
-    highlightsElementsRedDetectedToBe: 'Highlights elements (red) detected to be ads.',
+    highlightsElementsRedDetectedToBe: 'Highlights elements (red) detected to be ads',
     /**
      * @description Text explaining that ad detection is not perfect.
      */
-    adDetectionMistakes: 'Chrome’s ad detection can make mistakes.',
+    adDetectionMistakes: 'Chrome’s ad detection can make mistakes',
     /**
      * @description Link text for learning more about ad detection in Chrome.
      */
@@ -122,6 +169,10 @@ const formatCpu = (val) => {
 const formatNetwork = (val) => {
     return formatMetric(val, (v) => i18n.ByteUtilities.bytesToString(v));
 };
+const SCRIPT_LINK_OPTIONS = {
+    jslogContext: 'ad-script',
+};
+const stopPropagation = (e) => e.stopPropagation();
 const DEFAULT_VIEW = (input, output, target) => {
     const metrics = input.metrics;
     const formatValue = (val, isPercentage) => {
@@ -156,6 +207,25 @@ const DEFAULT_VIEW = (input, output, target) => {
                 .format(v);
         });
     };
+    const renderMetricTooltip = (tooltipId, explanation, url) => {
+        return html `
+      <devtools-icon
+        name="info"
+        class="small metric-info-icon"
+        tabindex="0"
+        role="button"
+        aria-details=${tooltipId}
+        aria-label=${explanation}
+      ></devtools-icon>
+      <devtools-tooltip id=${tooltipId} variant="rich" prefer-span-left @copy=${stopPropagation}>
+        <span>${explanation}</span>
+        &#32;
+        <devtools-link href=${url} jslogcontext="learn-more">
+          ${i18nString(UIStrings.learnMore)}
+        </devtools-link>
+      </devtools-tooltip>
+    `;
+    };
     // clang-format off
     Lit.render(html `
     <style>${adsViewStyles}</style>
@@ -170,6 +240,7 @@ const DEFAULT_VIEW = (input, output, target) => {
         PH1: formatAverage(metrics.averageViewportAdDensityByArea, true),
     })}</span>
           </dd>
+          ${renderMetricTooltip('density-metric-tooltip', i18nString(UIStrings.viewportAdDensityExplanation), DENSITY_DOC_URL)}
         </div>
         <div class="metric-box">
           <dt class="metric-title">${i18nString(UIStrings.viewportAdCount)}</dt>
@@ -179,18 +250,21 @@ const DEFAULT_VIEW = (input, output, target) => {
         PH1: formatAverage(metrics.averageViewportAdCount, false),
     })}</span>
           </dd>
+          ${renderMetricTooltip('count-metric-tooltip', i18nString(UIStrings.viewportAdCountExplanation), COUNT_DOC_URL)}
         </div>
         <div class="metric-box">
           <dt class="metric-title">${i18nString(UIStrings.totalCpuUsage)}</dt>
           <dd class="metric-value">
             <span>${formatCpu(metrics.totalAdCpuTime)}</span>
           </dd>
+          ${renderMetricTooltip('cpu-metric-tooltip', i18nString(UIStrings.totalCpuUsageExplanation), CPU_USAGE_DOC_URL)}
         </div>
         <div class="metric-box">
           <dt class="metric-title">${i18nString(UIStrings.totalNetworkUsage)}</dt>
           <dd class="metric-value">
             <span>${formatNetwork(metrics.totalAdNetworkBytes)}</span>
           </dd>
+          ${renderMetricTooltip('network-metric-tooltip', i18nString(UIStrings.totalNetworkUsageExplanation), NETWORK_USAGE_DOC_URL)}
         </div>
       </dl>
       <hr class="divider">
@@ -228,13 +302,55 @@ const DEFAULT_VIEW = (input, output, target) => {
       <div class="ad-scripts-container">
         <devtools-data-grid striped resize="last" class="ad-scripts-data-grid" name=${i18nString(UIStrings.adScripts)}>
           <table>
+            ${Lit.Directives.unsafeHTML(`<style>${adScriptsTableStyles}</style>`)}
             <tr>
               <th id="url" weight="1" sortable>${i18nString(UIStrings.url)}</th>
+              <th id="provenance" weight="1" sortable>${i18nString(UIStrings.adProvenance)}</th>
             </tr>
             ${repeat(input.adScripts, script => script.url, script => html `
               <tr>
                 <td title=${script.url}>
-                  ${Components.Linkifier.Linkifier.renderLinkifiedUrl(script.url, { text: script.url })}
+                  ${input.getLinkElement(script.url)}
+                </td>
+                <td>
+                  <devtools-tooltip id=${`ad-tooltip-${script.scriptId}`} variant=rich @copy=${stopPropagation}>
+                    <div class="ad-provenance-tooltip">
+                      ${script.parsedProvenance?.filterlistRule ? html `
+                        <div class="ad-provenance-tooltip-title">${i18nString(UIStrings.filterListRule)}</div>
+                        <div class="ad-provenance-tooltip-content">${script.parsedProvenance.filterlistRule}</div>
+                      ` : Lit.nothing}
+                      ${script.parsedProvenance?.adScriptAncestry ? html `
+                        <div class="ad-provenance-tooltip-title">${i18nString(UIStrings.creatorAdScriptAncestry)}</div>
+                        <div class="ad-provenance-tooltip-content">
+                          ${input.target ? script.parsedProvenance.adScriptAncestry.ancestryChain.map(ancestor => html `
+                            <div>
+                              ${UI.Widget.widget(Components.Linkifier.ScriptLocationLink, {
+        target: input.target ?? undefined,
+        scriptId: ancestor.scriptId,
+        options: SCRIPT_LINK_OPTIONS,
+    })}
+                            </div>
+                          `) : Lit.nothing}
+                        </div>
+                        ${script.parsedProvenance.adScriptAncestry.rootScriptFilterlistRule ? html `
+                          <div class="ad-provenance-tooltip-title">${i18nString(UIStrings.rootScriptFilterListRule)}</div>
+                          <div class="ad-provenance-tooltip-content">${script.parsedProvenance.adScriptAncestry.rootScriptFilterlistRule}</div>
+                        ` : Lit.nothing}
+                      ` : Lit.nothing}
+                      ${!script.parsedProvenance?.adScriptAncestry && !script.parsedProvenance?.filterlistRule ? i18nString(UIStrings.noProvenanceTooltip) : Lit.nothing}
+                    </div>
+                  </devtools-tooltip>
+                  <div aria-details=${`ad-tooltip-${script.scriptId}`}>
+                    ${script.parsedProvenance?.filterlistRule ? html `<span>${script.parsedProvenance.filterlistRule}</span>` : Lit.nothing}
+                    ${script.parsedProvenance?.filterlistRule && script.parsedProvenance?.adScriptAncestry && input.target ? html `<span>, </span>` : Lit.nothing}
+                    ${script.parsedProvenance?.adScriptAncestry && input.target ?
+        UI.Widget.widget(Components.Linkifier.ScriptLocationLink, {
+            target: input.target ?? undefined,
+            scriptId: script.parsedProvenance.adScriptAncestry.ancestryChain[0].scriptId,
+            options: SCRIPT_LINK_OPTIONS,
+        }) : Lit.nothing}
+                    ${!script.parsedProvenance?.adScriptAncestry && !script.parsedProvenance?.filterlistRule ? i18nString(UIStrings.noProvenance) : Lit.nothing}
+                  </div>
                 </td>
               </tr>
             `)}
@@ -257,7 +373,7 @@ const DEFAULT_VIEW = (input, output, target) => {
         <span>
           ${i18nString(UIStrings.adDetectionMistakes)}
           &#32;
-          <devtools-link class="link devtools-link" href="https://chromium.googlesource.com/chromium/src/+/main/docs/ad_tagging.md" jslogcontext="learn-more">
+          <devtools-link href=${AD_DETECTION_DOC_URL} jslogcontext="learn-more">
             ${i18nString(UIStrings.learnMore)}
           </devtools-link>
         </span>
@@ -277,7 +393,8 @@ export class AdsView extends UI.Widget.Widget {
     #fetchingElementIds = new Set();
     #unresolvedScriptIds = new Set();
     #adScriptNodeData = [];
-    #seenUrls = new Set();
+    #urlToLinkElement = new Map();
+    #reconstructedProvenance = new Map();
     constructor(view = DEFAULT_VIEW) {
         super({ useShadowDom: true });
         this.#view = view;
@@ -390,9 +507,48 @@ export class AdsView extends UI.Widget.Widget {
             }
         }
     }
+    // Lazily reconstructs the full script ancestry chain for a given script.
+    // The backend guarantees that scripts across different batches are ordered
+    // correctly (i.e., an ancestor script will always be sent in the same or an
+    // earlier batch than its descendants). However, scripts arriving within the
+    // same batch may be out of order. This recursive, topological approach ensures
+    // we can resolve those in-batch ordering issues while maintaining O(N)
+    // complexity overall via memoization in #reconstructedProvenance.
+    #reconstructProvenance(scriptId, newScriptsMap) {
+        if (this.#reconstructedProvenance.has(scriptId)) {
+            return this.#reconstructedProvenance.get(scriptId) ?? null;
+        }
+        const script = newScriptsMap.get(scriptId);
+        if (!script || !script.provenance) {
+            return null;
+        }
+        let fullProvenance = script.provenance;
+        if (script.provenance.adScriptAncestry) {
+            const immediateAncestor = script.provenance.adScriptAncestry.ancestryChain[0];
+            const ancestorProvenance = immediateAncestor ? this.#reconstructProvenance(immediateAncestor.scriptId, newScriptsMap) : null;
+            if (ancestorProvenance) {
+                const newChain = [immediateAncestor];
+                if (ancestorProvenance.adScriptAncestry) {
+                    newChain.push(...ancestorProvenance.adScriptAncestry.ancestryChain);
+                }
+                const rootScriptFilterlistRule = ancestorProvenance.filterlistRule || ancestorProvenance.adScriptAncestry?.rootScriptFilterlistRule;
+                fullProvenance = {
+                    ...script.provenance,
+                    adScriptAncestry: {
+                        ancestryChain: newChain,
+                        ...(rootScriptFilterlistRule ? { rootScriptFilterlistRule } : {}),
+                    },
+                };
+            }
+        }
+        this.#reconstructedProvenance.set(scriptId, fullProvenance);
+        return fullProvenance;
+    }
     #processAdScripts(newScripts) {
+        const newScriptsMap = new Map(newScripts.map(s => [s.scriptId, s]));
         for (const script of newScripts) {
             this.#unresolvedScriptIds.add(script.scriptId);
+            this.#reconstructProvenance(script.scriptId, newScriptsMap);
         }
     }
     async #fetchIframeElementId(frameId) {
@@ -423,7 +579,8 @@ export class AdsView extends UI.Widget.Widget {
         this.#fetchingElementIds.clear();
         this.#unresolvedScriptIds.clear();
         this.#adScriptNodeData.length = 0;
-        this.#seenUrls.clear();
+        this.#urlToLinkElement.clear();
+        this.#reconstructedProvenance.clear();
         this.requestUpdate();
     }
     performUpdate() {
@@ -470,18 +627,23 @@ export class AdsView extends UI.Widget.Widget {
             // De-duplicate scripts by URL. V8 frequently generates multiple
             // ScriptIds for the same URL (e.g., when the same external script
             // is loaded into multiple iframes).
-            if (this.#seenUrls.has(url)) {
+            if (this.#urlToLinkElement.has(url)) {
                 continue;
             }
-            this.#seenUrls.add(url);
+            this.#urlToLinkElement.set(url, Components.Linkifier.Linkifier.linkifyURL(url, { text: url }));
+            const parsedProvenance = this.#reconstructedProvenance.get(scriptId) ?? null;
             this.#adScriptNodeData.push({
                 url,
+                parsedProvenance,
+                scriptId,
             });
         }
         const viewInput = {
             metrics: this.#currentMetrics,
             adFrames: adFramesArray,
             adScripts: this.#adScriptNodeData,
+            target: target || null,
+            getLinkElement: (url) => this.#urlToLinkElement.get(url),
         };
         this.#view(viewInput, undefined, this.contentElement);
     }

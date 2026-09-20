@@ -7,6 +7,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as HeapSnapshotModel from '../../models/heap_snapshot/heap_snapshot.js';
 import { AllocationProfile } from './AllocationProfile.js';
+import * as ContextAnalyzer from './ContextAnalyzer.js';
 export class HeapSnapshotEdge {
     snapshot;
     edges;
@@ -861,7 +862,7 @@ export class HeapSnapshot {
             }
             this.#allocationProfile = new AllocationProfile(this.profile, liveObjects);
         }
-        this.#progress.updateStatus('Finished processing.');
+        this.#progress.updateStatus('Finished processing');
     }
     nodeIndexForId(nodeId) {
         const nodesLength = this.nodes.length;
@@ -892,6 +893,13 @@ export class HeapSnapshot {
             edgeCount: node.edgesCount(),
             retainerCount: node.retainersCount(),
         };
+    }
+    /**
+     * Computes for every context field whether it is still live, i.e. whether it
+     * can be reached by some closure, and reports the dead fields.
+     */
+    analyzeContexts() {
+        return ContextAnalyzer.analyzeContexts(this);
     }
     startInitStep1InSecondThread(secondWorker) {
         const resultsFromSecondWorker = new Promise((resolve, reject) => {

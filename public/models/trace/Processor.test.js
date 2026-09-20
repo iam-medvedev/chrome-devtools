@@ -3,22 +3,23 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import sinon from 'sinon';
-import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
-import { makeCompleteEvent } from '../../testing/TraceHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
+import { makeCompleteEvent } from '../../testing/TraceHelpersCore.js';
 import { TraceLoader } from '../../testing/TraceLoader.js';
 import * as Trace from '../trace/trace.js';
-describeWithEnvironment('TraceProcessor', function () {
+describe('TraceProcessor', function () {
+    setupLocaleHooks();
     it('can use a trace processor', async () => {
         const processor = Trace.Processor.TraceProcessor.createWithAllHandlers();
         const file = [makeCompleteEvent('Program', 0, 10)];
         // Check parsing after instantiation.
         assert.isNull(processor.data);
-        await processor.parse(file, { isFreshRecording: true, isCPUProfile: false });
+        await processor.parse(file, { isFreshRecording: true, isCPUProfile: false, yieldToMain: false });
         assert.isNotNull(processor.data);
         // Check parsing without a reset.
         let thrown;
         try {
-            await processor.parse(file, { isFreshRecording: true, isCPUProfile: false });
+            await processor.parse(file, { isFreshRecording: true, isCPUProfile: false, yieldToMain: false });
         }
         catch (e) {
             thrown = e;
@@ -28,7 +29,7 @@ describeWithEnvironment('TraceProcessor', function () {
         processor.reset();
         assert.isNull(processor.data);
         assert.isNull(processor.insights);
-        await processor.parse(file, { isFreshRecording: true, isCPUProfile: false });
+        await processor.parse(file, { isFreshRecording: true, isCPUProfile: false, yieldToMain: false });
         assert.isNotNull(processor.data);
         assert.isNotNull(processor.insights);
         // Cleanup.
@@ -36,8 +37,8 @@ describeWithEnvironment('TraceProcessor', function () {
         // Check simultaneous parsing without waiting.
         let promise;
         try {
-            promise = processor.parse(file, { isFreshRecording: true, isCPUProfile: false });
-            await processor.parse(file, { isFreshRecording: true, isCPUProfile: false });
+            promise = processor.parse(file, { isFreshRecording: true, isCPUProfile: false, yieldToMain: false });
+            await processor.parse(file, { isFreshRecording: true, isCPUProfile: false, yieldToMain: false });
         }
         catch (e) {
             thrown = e;
@@ -51,7 +52,7 @@ describeWithEnvironment('TraceProcessor', function () {
         // Check if data is null immediately after resetting.
         assert.isNull(processor.data);
         assert.isNull(processor.insights);
-        await processor.parse(file, { isFreshRecording: true, isCPUProfile: false });
+        await processor.parse(file, { isFreshRecording: true, isCPUProfile: false, yieldToMain: false });
         assert.isNotNull(processor.data);
         assert.isNotNull(processor.insights);
         processor.reset();
@@ -59,7 +60,7 @@ describeWithEnvironment('TraceProcessor', function () {
         assert.isNull(processor.insights);
         // Check resetting while parsing.
         try {
-            promise = processor.parse(file, { isFreshRecording: true, isCPUProfile: false });
+            promise = processor.parse(file, { isFreshRecording: true, isCPUProfile: false, yieldToMain: false });
             processor.reset();
         }
         catch (e) {
@@ -74,7 +75,7 @@ describeWithEnvironment('TraceProcessor', function () {
         // Check parsing after resetting while parsing.
         assert.isNull(processor.data);
         assert.isNull(processor.insights);
-        await processor.parse(file, { isFreshRecording: true, isCPUProfile: false });
+        await processor.parse(file, { isFreshRecording: true, isCPUProfile: false, yieldToMain: false });
         assert.isNotNull(processor.data);
         assert.isNotNull(processor.insights);
     });
@@ -83,7 +84,7 @@ describeWithEnvironment('TraceProcessor', function () {
             Animations: Trace.Handlers.ModelHandlers.Animations,
         });
         const events = await TraceLoader.rawEvents(this, 'animation.json.gz');
-        await processor.parse(events, { isFreshRecording: true, isCPUProfile: false });
+        await processor.parse(events, { isFreshRecording: true, isCPUProfile: false, yieldToMain: false });
         assert.isNotNull(processor.data);
         assert.deepEqual(Object.keys(processor.data || {}), ['Meta', 'Animations']);
     });
@@ -225,7 +226,7 @@ describeWithEnvironment('TraceProcessor', function () {
         it('returns a single group of insights even if no navigations', async function () {
             const processor = Trace.Processor.TraceProcessor.createWithAllHandlers();
             const file = await TraceLoader.rawEvents(this, 'nested-interactions.json.gz');
-            await processor.parse(file, { isFreshRecording: true, isCPUProfile: false });
+            await processor.parse(file, { isFreshRecording: true, isCPUProfile: false, yieldToMain: false });
             if (!processor.insights) {
                 throw new Error('No insights');
             }
@@ -254,7 +255,7 @@ describeWithEnvironment('TraceProcessor', function () {
             });
             const processor = Trace.Processor.TraceProcessor.createWithAllHandlers();
             const file = await TraceLoader.rawEvents(this, 'load-simple.json.gz');
-            await processor.parse(file, { isFreshRecording: true, isCPUProfile: false });
+            await processor.parse(file, { isFreshRecording: true, isCPUProfile: false, yieldToMain: false });
             if (!processor.insights) {
                 throw new Error('No insights');
             }
@@ -266,7 +267,7 @@ describeWithEnvironment('TraceProcessor', function () {
         it('returns insights for a navigation', async function () {
             const processor = Trace.Processor.TraceProcessor.createWithAllHandlers();
             const file = await TraceLoader.rawEvents(this, 'load-simple.json.gz');
-            await processor.parse(file, { isFreshRecording: true, isCPUProfile: false });
+            await processor.parse(file, { isFreshRecording: true, isCPUProfile: false, yieldToMain: false });
             if (!processor.insights) {
                 throw new Error('No insights');
             }
@@ -284,7 +285,7 @@ describeWithEnvironment('TraceProcessor', function () {
         it('returns insights for multiple navigations', async function () {
             const processor = Trace.Processor.TraceProcessor.createWithAllHandlers();
             const file = await TraceLoader.rawEvents(this, 'multiple-navigations.json.gz');
-            await processor.parse(file, { isFreshRecording: true, isCPUProfile: false });
+            await processor.parse(file, { isFreshRecording: true, isCPUProfile: false, yieldToMain: false });
             if (!processor.insights) {
                 throw new Error('No insights');
             }
@@ -307,7 +308,7 @@ describeWithEnvironment('TraceProcessor', function () {
         it('returns insights for soft navigations', async function () {
             const processor = Trace.Processor.TraceProcessor.createWithAllHandlers();
             const file = await TraceLoader.rawEvents(this, 'soft-navs.json.gz');
-            await processor.parse(file, { isFreshRecording: true, isCPUProfile: false });
+            await processor.parse(file, { isFreshRecording: true, isCPUProfile: false, yieldToMain: false });
             if (!processor.insights) {
                 throw new Error('No insights');
             }
@@ -327,7 +328,7 @@ describeWithEnvironment('TraceProcessor', function () {
             config.enableSoftNavigation = false;
             const processor = new Trace.Processor.TraceProcessor(Trace.Handlers.ModelHandlers, config);
             const file = await TraceLoader.rawEvents(this, 'soft-navs.json.gz');
-            await processor.parse(file, { isFreshRecording: true, isCPUProfile: false });
+            await processor.parse(file, { isFreshRecording: true, isCPUProfile: false, yieldToMain: false });
             if (!processor.insights) {
                 throw new Error('No insights');
             }
@@ -341,7 +342,7 @@ describeWithEnvironment('TraceProcessor', function () {
             const getInsightOrder = async (includeMetadata) => {
                 const processor = Trace.Processor.TraceProcessor.createWithAllHandlers();
                 const metadata = includeMetadata ? loadedMetadata : undefined;
-                await processor.parse(file, { isFreshRecording: true, isCPUProfile: false, metadata });
+                await processor.parse(file, { isFreshRecording: true, isCPUProfile: false, metadata, yieldToMain: false });
                 if (!processor.insights) {
                     throw new Error('No insights');
                 }

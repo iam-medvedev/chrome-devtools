@@ -965,6 +965,14 @@ var Audits;
     PermissionElementIssueType2["NonSecureContext"] = "NonSecureContext";
     PermissionElementIssueType2["MissingTransientUserActivation"] = "MissingTransientUserActivation";
   })(PermissionElementIssueType = Audits2.PermissionElementIssueType || (Audits2.PermissionElementIssueType = {}));
+  let WebInstallIssueReason;
+  ((WebInstallIssueReason2) => {
+    WebInstallIssueReason2["ManifestParsingOrNetworkError"] = "ManifestParsingOrNetworkError";
+    WebInstallIssueReason2["StartUrlInvalid"] = "StartUrlInvalid";
+    WebInstallIssueReason2["ManifestMissingNameOrShortName"] = "ManifestMissingNameOrShortName";
+    WebInstallIssueReason2["ManifestMissingId"] = "ManifestMissingId";
+    WebInstallIssueReason2["NoManifest"] = "NoManifest";
+  })(WebInstallIssueReason = Audits2.WebInstallIssueReason || (Audits2.WebInstallIssueReason = {}));
   let InspectorIssueCode;
   ((InspectorIssueCode2) => {
     InspectorIssueCode2["CookieIssue"] = "CookieIssue";
@@ -997,6 +1005,7 @@ var Audits;
     InspectorIssueCode2["SelectivePermissionsInterventionIssue"] = "SelectivePermissionsInterventionIssue";
     InspectorIssueCode2["EmailVerificationRequestIssue"] = "EmailVerificationRequestIssue";
     InspectorIssueCode2["LazyLoadImageIssue"] = "LazyLoadImageIssue";
+    InspectorIssueCode2["WebInstallIssue"] = "WebInstallIssue";
   })(InspectorIssueCode = Audits2.InspectorIssueCode || (Audits2.InspectorIssueCode = {}));
   let GetEncodedResponseRequestEncoding;
   ((GetEncodedResponseRequestEncoding2) => {
@@ -1279,6 +1288,11 @@ var DOM;
     GetElementByRelationRequestRelation2["InterestTarget"] = "InterestTarget";
     GetElementByRelationRequestRelation2["CommandFor"] = "CommandFor";
   })(GetElementByRelationRequestRelation = DOM2.GetElementByRelationRequestRelation || (DOM2.GetElementByRelationRequestRelation = {}));
+  let SetTextMarkerRequestType;
+  ((SetTextMarkerRequestType2) => {
+    SetTextMarkerRequestType2["Spelling"] = "spelling";
+    SetTextMarkerRequestType2["Grammar"] = "grammar";
+  })(SetTextMarkerRequestType = DOM2.SetTextMarkerRequestType || (DOM2.SetTextMarkerRequestType = {}));
 })(DOM || (DOM = {}));
 var DOMDebugger;
 ((DOMDebugger2) => {
@@ -3361,7 +3375,7 @@ var UIStrings2 = {
   /**
    * @description Description shown when no DOM breakpoints are set.
    */
-  domBreakpointsDescription: "DOM breakpoints pause on the code that changes a DOM node or its children.",
+  domBreakpointsDescription: "DOM breakpoints pause on the code that changes a DOM node or its children",
   /**
    * @description Accessibility label for the DOM breakpoints list in the Sources panel.
    */
@@ -3778,8 +3792,6 @@ var ObjectEventListenersSidebarPane = class _ObjectEventListenersSidebarPane ext
     super();
     this.contentElement.setAttribute("jslog", `${VisualLogging5.section("sources.global-listeners")}`);
     this.eventListenersView = new EventListeners.EventListenersView.EventListenersView();
-    this.eventListenersView.changeCallback = this.requestUpdate.bind(this);
-    this.eventListenersView.enableDefaultTreeFocus = true;
     this.eventListenersView.show(this.element);
     this.setDefaultFocusedChild(this.eventListenersView);
     this.requestUpdate();
@@ -3816,7 +3828,8 @@ var ObjectEventListenersSidebarPane = class _ObjectEventListenersSidebarPane ext
         windowObjects.push(result.object);
       }
     }
-    await this.eventListenersView.addObjects(windowObjects);
+    this.eventListenersView.objects = windowObjects;
+    await this.eventListenersView.updateComplete;
   }
   wasShown() {
     super.wasShown();

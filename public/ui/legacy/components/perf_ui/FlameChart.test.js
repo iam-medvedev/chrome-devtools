@@ -1654,5 +1654,87 @@ describeWithEnvironment('FlameChart', () => {
             assert.deepEqual(offset, { x: 0, y: 106 });
         });
     });
+    describe('getEntryDimensions', () => {
+        it('returns dimensions for a valid entry index and null for invalid index', () => {
+            class TestFlameChartProvider extends FakeFlameChartProvider {
+                timelineData() {
+                    return PerfUI.FlameChart.FlameChartTimelineData.create({
+                        entryLevels: [0, 1],
+                        entryTotalTimes: [100, 50],
+                        entryStartTimes: [0, 10],
+                        groups: [],
+                    });
+                }
+                maxStackDepth() {
+                    return 2;
+                }
+            }
+            const provider = new TestFlameChartProvider();
+            const delegate = new MockFlameChartDelegate();
+            chartInstance = new PerfUI.FlameChart.FlameChart(provider, delegate);
+            renderChart(chartInstance);
+            const validDimensions = chartInstance.getEntryDimensions(0);
+            assert.isNotNull(validDimensions);
+            assert.isTrue(validDimensions?.visible);
+            assert.isTrue(validDimensions !== null && validDimensions.width >= 2);
+            assert.isTrue(validDimensions !== null && validDimensions.height > 0);
+            const invalidDimensions = chartInstance.getEntryDimensions(-1);
+            assert.isNull(invalidDimensions);
+            const outOfBoundsDimensions = chartInstance.getEntryDimensions(99999);
+            assert.isNull(outOfBoundsDimensions);
+        });
+        it('returns null when entry is outside the visible viewport window', () => {
+            class TestFlameChartProvider extends FakeFlameChartProvider {
+                timelineData() {
+                    return PerfUI.FlameChart.FlameChartTimelineData.create({
+                        entryLevels: [0],
+                        entryTotalTimes: [100],
+                        entryStartTimes: [0],
+                        groups: [],
+                    });
+                }
+            }
+            const provider = new TestFlameChartProvider();
+            const delegate = new MockFlameChartDelegate();
+            chartInstance = new PerfUI.FlameChart.FlameChart(provider, delegate);
+            renderChart(chartInstance);
+            chartInstance.setWindowTimes(500, 600);
+            const dimensions = chartInstance.getEntryDimensions(0);
+            assert.isNull(dimensions);
+        });
+    });
+    it('does not transform empty entry colors when dimmed', () => {
+        class UncoloredEntryProvider extends FakeFlameChartProvider {
+            #timelineData = PerfUI.FlameChart.FlameChartTimelineData.create({
+                entryLevels: [0, 0],
+                entryStartTimes: [10.0, 60.0],
+                entryTotalTimes: [40.0, 40.0],
+                groups: [{
+                        name: 'Test Group',
+                        startLevel: 0,
+                        style: defaultGroupStyle,
+                        expanded: true,
+                    }],
+            });
+            entryColor(entryIndex) {
+                return entryIndex === 0 ? '#ff0000' : '';
+            }
+            timelineData() {
+                return this.#timelineData;
+            }
+        }
+        const provider = new UncoloredEntryProvider();
+        chartInstance = new PerfUI.FlameChart.FlameChart(provider, new MockFlameChartDelegate());
+        renderChart(chartInstance);
+        chartInstance.setWindowTimes(0, 100);
+        // Verify normal state.
+        assert.strictEqual(chartInstance.getColorForEntry(0), '#ff0000');
+        assert.strictEqual(chartInstance.getColorForEntry(1), '');
+        // Dim all entries (e.g. search filter active).
+        chartInstance.enableDimming([0, 1], true, false);
+        // Colored entry is converted to grayscale/dimmed, but uncolored entry remains empty string.
+        assert.notStrictEqual(chartInstance.getColorForEntry(0), '#ff0000');
+        assert.strictEqual(chartInstance.getColorForEntry(1), '');
+    });
 });
 //# sourceMappingURL=FlameChart.test.js.map

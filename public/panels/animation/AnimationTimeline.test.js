@@ -581,7 +581,7 @@ describeWithEnvironment('AnimationTimeline', () => {
         const emptyWidget = placeholder.firstElementChild;
         assert.exists(emptyWidget);
         assert.deepEqual(emptyWidget.shadowRoot?.querySelector('.empty-state-header')?.textContent, 'Currently waiting for animations');
-        assert.deepEqual(emptyWidget.shadowRoot?.querySelector('.empty-state-description span')?.textContent, 'On this page you can inspect and modify animations.');
+        assert.deepEqual(emptyWidget.shadowRoot?.querySelector('.empty-state-description span')?.textContent, 'On this page you can inspect and modify animations');
         view.detach();
     });
     it('shows placeholder if no animation has been selected', async () => {

@@ -587,6 +587,9 @@ function addArray(array, customFormatters, prefix, firstLinePrefix) {
 }
 function dumpDeepInnerHTML(node) {
   function innerHTML(prefix, node2) {
+    if (node2.nodeType === Node.COMMENT_NODE) {
+      return;
+    }
     const openTag = [];
     if (node2.nodeType === Node.TEXT_NODE) {
       if (!node2.parentElement || node2.parentElement.nodeName !== "STYLE") {

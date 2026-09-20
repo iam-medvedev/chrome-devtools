@@ -3,8 +3,11 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import sinon from 'sinon';
-import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
+import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
+import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
+import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as SDK from './sdk.js';
 describe('RemoteObject', () => {
     describe('fromLocalObject', () => {
@@ -321,7 +324,14 @@ describe('RemoteObjectProperty', () => {
         });
     });
 });
-describeWithEnvironment('ScopeRemoteObject', () => {
+describe('ScopeRemoteObject', () => {
+    setupLocaleHooks();
+    setupSettingsHooks();
+    setupRuntimeHooks();
+    let universe;
+    beforeEach(() => {
+        universe = new TestUniverse();
+    });
     it('preserves writability of properties', async () => {
         const connection = new MockCDPConnection();
         connection.setSuccessHandler('Runtime.getProperties', () => ({
@@ -331,7 +341,7 @@ describeWithEnvironment('ScopeRemoteObject', () => {
                 { name: 'c', configurable: true, enumerable: true, writable: true },
             ],
         }));
-        const target = createTarget({ connection });
+        const target = universe.createTarget({ connection });
         const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
         const scopeRef = new SDK.RemoteObject.ScopeRef(0, '0');
         const remoteObject = new SDK.RemoteObject.ScopeRemoteObject(runtimeModel, '0', scopeRef, "string" /* Protocol.Runtime.RemoteObjectType.String */, undefined, 'value');
@@ -339,11 +349,18 @@ describeWithEnvironment('ScopeRemoteObject', () => {
         assert.deepEqual(properties.properties?.map(p => p.writable), [true, true, true]);
     });
 });
-describeWithEnvironment('RemoteError', () => {
+describe('RemoteError', () => {
+    setupLocaleHooks();
+    setupSettingsHooks();
+    setupRuntimeHooks();
+    let universe;
+    beforeEach(() => {
+        universe = new TestUniverse();
+    });
     let target;
     let runtimeModel;
     beforeEach(() => {
-        target = createTarget();
+        target = universe.createTarget();
         runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
     });
     it('throws on creation for non-error subtypes', () => {
@@ -382,11 +399,18 @@ describeWithEnvironment('RemoteError', () => {
         assert.strictEqual(await error.cause(), causeValue);
     });
 });
-describeWithEnvironment('RemoteObject TypedArray', () => {
+describe('RemoteObject TypedArray', () => {
+    setupLocaleHooks();
+    setupSettingsHooks();
+    setupRuntimeHooks();
+    let universe;
+    beforeEach(() => {
+        universe = new TestUniverse();
+    });
     let target;
     let runtimeModel;
     beforeEach(() => {
-        target = createTarget();
+        target = universe.createTarget();
         runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
     });
     const typedArrayTypes = [

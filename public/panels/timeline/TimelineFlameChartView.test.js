@@ -367,6 +367,44 @@ describe('TimelineFlameChartView', function () {
         dispatchClickEvent(overlayElement);
         sinon.assert.calledOnceWithExactly(labelAnnotationClickedStub, labelAnnotation.entry);
     });
+    it('coalesces overlay updates when main and network flame charts redraw in the same turn', async () => {
+        const mockViewDelegate = new MockViewDelegate();
+        const flameChartView = new Timeline.TimelineFlameChartView.TimelineFlameChartView(mockViewDelegate);
+        const updateSpy = sinon.spy(flameChartView.overlays(), 'update');
+        const updateDimensionsSpy = sinon.spy(flameChartView.overlays(), 'updateChartDimensions');
+        const mainDimensions = {
+            chart: {
+                widthPixels: 1000,
+                heightPixels: 500,
+                scrollOffsetPixels: 0,
+                allGroupsCollapsed: false,
+            },
+            traceWindow: Trace.Helpers.Timing.traceWindowFromMilliSeconds(Trace.Types.Timing.Milli(100), Trace.Types.Timing.Milli(500)),
+        };
+        const networkDimensions = {
+            chart: {
+                widthPixels: 1000,
+                heightPixels: 200,
+                scrollOffsetPixels: 0,
+                allGroupsCollapsed: false,
+            },
+            traceWindow: Trace.Helpers.Timing.traceWindowFromMilliSeconds(Trace.Types.Timing.Milli(100), Trace.Types.Timing.Milli(500)),
+        };
+        flameChartView.getMainFlameChart().dispatchEventToListeners("LatestDrawDimensions" /* PerfUI.FlameChart.Events.LATEST_DRAW_DIMENSIONS */, mainDimensions);
+        flameChartView.getNetworkFlameChart().dispatchEventToListeners("LatestDrawDimensions" /* PerfUI.FlameChart.Events.LATEST_DRAW_DIMENSIONS */, networkDimensions);
+        // Dimension updates are recorded synchronously for both charts.
+        sinon.assert.calledWith(updateDimensionsSpy, 'main', mainDimensions.chart);
+        sinon.assert.calledWith(updateDimensionsSpy, 'network', networkDimensions.chart);
+        // Overlay updates are queued via microtask, so update() should not have run synchronously.
+        sinon.assert.notCalled(updateSpy);
+        await new Promise(resolve => queueMicrotask(resolve));
+        // Both draw dimension events collapse into a single overlay update pass.
+        sinon.assert.calledOnce(updateSpy);
+        // Subsequent redraw in a new turn must trigger another update pass.
+        flameChartView.getMainFlameChart().dispatchEventToListeners("LatestDrawDimensions" /* PerfUI.FlameChart.Events.LATEST_DRAW_DIMENSIONS */, mainDimensions);
+        await new Promise(resolve => queueMicrotask(resolve));
+        sinon.assert.calledTwice(updateSpy);
+    });
     describe('groupForLevel', () => {
         const { groupForLevel } = Timeline.TimelineFlameChartView;
         it('finds the right group for the given level', async () => {

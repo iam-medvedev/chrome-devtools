@@ -61,6 +61,7 @@ export declare class Item {
      * @throws If the item type is invalid.
      */
     buildDescriptor(): SoftContextMenuDescriptor | Host.InspectorFrontendHostAPI.ContextMenuDescriptor;
+    setHoverHandler(handler?: (hovered: boolean) => void): void;
     /**
      * Sets a keyboard accelerator for this item.
      * @param key The key code for the accelerator.
@@ -106,6 +107,7 @@ export declare class Section {
         tooltip?: Platform.UIString.LocalizedString;
         jslogContext?: string;
         featureName?: string;
+        onHover?: (hovered: boolean) => void;
     }): Item;
     /**
      * Appends an item that contains a custom HTML element (for non-native menus only).
@@ -150,6 +152,7 @@ export declare class Section {
         tooltip?: Platform.UIString.LocalizedString;
         jslogContext?: string;
         featureName?: string;
+        onHover?: (hovered: boolean) => void;
     }): Item;
 }
 /**
@@ -383,6 +386,7 @@ export declare class ContextMenu extends SubMenu {
  * @property keepOpen -Reflects the `"keep-open"` attribute.
  * @property iconName - Reflects the `"icon-name"` attribute.
  * @property disabled - Reflects the `"disabled"` attribute.
+ * @property accessibleLabel - Sets the accessible name and tooltip on the internal button.
  * @attribute soft-menu - Whether to use the soft menu implementation.
  * @attribute keep-open - Whether the menu should stay open after an item is clicked.
  * @attribute icon-name - Name of the icon to display on the button.
@@ -398,6 +402,8 @@ export declare class MenuButton extends HTMLElement {
      * @param populateCall A function that takes a `ContextMenu` instance and adds items to it.
      */
     set populateMenuCall(populateCall: (arg0: ContextMenu) => void);
+    set accessibleLabel(accessibleLabel: string | undefined);
+    get accessibleLabel(): string | undefined;
     /**
      * Reflects the `soft-menu` attribute. If true, uses the `SoftContextMenu` implementation.
      * @default false

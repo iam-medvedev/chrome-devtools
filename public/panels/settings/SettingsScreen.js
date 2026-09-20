@@ -1,7 +1,6 @@
 // Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable @devtools/no-lit-render-outside-of-view */
 /* eslint-disable @devtools/no-imperative-dom-api */
 import '../../ui/kit/kit.js';
 import * as Common from '../../core/common/common.js';
@@ -10,16 +9,16 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Root from '../../core/root/root.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as UIHelpers from '../../ui/helpers/helpers.js';
-import { createIcon, Link } from '../../ui/kit/kit.js';
 import * as SettingsUI from '../../ui/legacy/components/settings_ui/settings_ui.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { html, render } from '../../ui/lit/lit.js';
+import * as Lit from '../../ui/lit/lit.js';
 import * as SettingUIRegistration from '../../ui/settings/settings.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { PanelUtils } from '../utils/utils.js';
 import * as PanelComponents from './components/components.js';
 import settingsScreenStyles from './settingsScreen.css.js';
+const { html, render, Directives: { ref } } = Lit;
 const UIStrings = {
     /**
      * @description Name of the Settings view.
@@ -44,7 +43,7 @@ const UIStrings = {
     /**
      * @description Message shown in the experiments tab to warn users about any possible unstable features.
      */
-    theseExperimentsCouldBeUnstable: 'Warning: These experiments could be unstable or unreliable.',
+    theseExperimentsCouldBeUnstable: 'Warning: These experiments could be unstable or unreliable',
     /**
      * @description Message to display if a setting change requires a reload of DevTools.
      */
@@ -322,113 +321,143 @@ export class GenericSettingsTab extends UI.Widget.VBox {
         }
     }
 }
-export class ExperimentsSettingsTab extends UI.Widget.VBox {
-    #experimentsSection;
-    experimentToControl = new Map();
-    containerElement;
-    constructor() {
-        super({ jslog: `${VisualLogging.pane('experiments')}` });
+export const EXPERIMENTS_SETTINGS_TAB_DEFAULT_VIEW = (input, output, target) => {
+    // clang-format off
+    render(html `
+        <div class="settings-card-container-wrapper">
+          <div class="settings-card-container">
+            <div class="experiments-filter">
+              <devtools-toolbar>
+                <devtools-toolbar-input
+                  autofocus
+                  type="filter"
+                  placeholder=${i18nString(UIStrings.searchExperiments)}
+                  style="flex-grow:1"
+                  .value=${input.filterText}
+                  @change=${(e) => input.onFilterChanged(e.detail)}>
+                </devtools-toolbar-input>
+              </devtools-toolbar>
+            </div>
+            <devtools-card heading=${i18nString(UIStrings.experiments)}>
+              ${input.experiments.length ? html `
+                <div class="experiments-warning-subsection">
+                  <devtools-icon name="warning"></devtools-icon>
+                  <span>${i18nString(UIStrings.theseExperimentsCouldBeUnstable)}</span>
+                </div>
+                <div class="settings-experiments-block">
+                  ${input.experiments.map(experiment => html `
+                    <p class="settings-experiment" ${ref(el => {
+        if (el) {
+            output.setExperimentElement(experiment, el);
+        }
+    })}>
+                      <devtools-checkbox
+                        class="experiment-label"
+                        name=${experiment.name}
+                        title=${experiment.title}
+                        ?checked=${experiment.isEnabled()}
+                        .jslogContext=${experiment.name}
+                        @click=${(e) => {
+        const checkbox = e.currentTarget;
+        input.onExperimentToggled(experiment, checkbox.checked);
+    }}>
+                        ${experiment.title}
+                      </devtools-checkbox>
+                      ${experiment.docLink ? html `
+                        <devtools-button
+                          class="link-icon"
+                          title=${i18nString(UIStrings.learnMore)}
+                          .iconName=${'help'}
+                          .variant=${"icon" /* Buttons.Button.Variant.ICON */}
+                          .size=${"SMALL" /* Buttons.Button.Size.SMALL */}
+                          .jslogContext=${`${experiment.name}-documentation`}
+                          @click=${() => {
+        if (experiment.docLink) {
+            input.onOpenDocumentation(experiment.docLink);
+        }
+    }}>
+                        </devtools-button>
+                      ` : Lit.nothing}
+                      ${experiment.feedbackLink ? html `
+                        <devtools-link
+                          class="feedback-link"
+                          href=${experiment.feedbackLink}
+                          jslogcontext=${`${experiment.name}-feedback`}>
+                          ${i18nString(UIStrings.sendFeedback)}
+                        </devtools-link>
+                      ` : Lit.nothing}
+                    </p>
+                  `)}
+                </div>
+              ` : html `
+                <span>${i18nString(UIStrings.noResults)}</span>
+              `}
+            </devtools-card>
+          </div>
+        </div>
+      `, target);
+    // clang-format on
+};
+export class ExperimentsSettingsTab extends UI.Widget.Widget {
+    #experimentToControl = new Map();
+    #view;
+    #viewOutput = {
+        setExperimentElement: (experiment, element) => {
+            this.#experimentToControl.set(experiment, element);
+        },
+    };
+    #filterText = '';
+    constructor(element, view = EXPERIMENTS_SETTINGS_TAB_DEFAULT_VIEW) {
+        super(element, { jslog: `${VisualLogging.pane('experiments')}` });
         this.element.classList.add('settings-tab-container');
         this.element.id = 'experiments-tab-content';
-        this.containerElement =
-            this.contentElement.createChild('div', 'settings-card-container-wrapper').createChild('div');
-        this.containerElement.classList.add('settings-card-container');
-        const filterSection = this.containerElement.createChild('div');
-        filterSection.classList.add('experiments-filter');
-        render(html `
-        <devtools-toolbar>
-          <devtools-toolbar-input autofocus type="filter" placeholder=${i18nString(UIStrings.searchExperiments)} style="flex-grow:1" @change=${this.#onFilterChanged.bind(this)}></devtools-toolbar-input>
-        </devtools-toolbar>
-    `, filterSection);
-        this.renderExperiments('');
+        this.#view = view;
     }
-    #onFilterChanged(e) {
-        this.renderExperiments(e.detail.toLowerCase());
-    }
-    renderExperiments(filterText) {
-        this.experimentToControl.clear();
-        if (this.#experimentsSection) {
-            this.#experimentsSection.remove();
-        }
+    #filterExperiments(filterText) {
         const experiments = Root.Runtime.experiments.allConfigurableExperiments().sort((a, b) => {
             return a.title.localeCompare(b.title);
         });
-        const filteredExperiments = experiments.filter(e => e.title.toLowerCase().includes(filterText));
-        if (filteredExperiments.length) {
-            const experimentsBlock = document.createElement('div');
-            experimentsBlock.classList.add('settings-experiments-block');
-            const warningMessage = i18nString(UIStrings.theseExperimentsCouldBeUnstable);
-            const warningSection = this.createExperimentsWarningSubsection(warningMessage);
-            for (const experiment of filteredExperiments) {
-                experimentsBlock.appendChild(this.createExperimentCheckbox(experiment));
-            }
-            this.#experimentsSection =
-                createSettingsCard(i18nString(UIStrings.experiments), warningSection, experimentsBlock);
-            this.containerElement.appendChild(this.#experimentsSection);
-            UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.experimentsFound, { n: filteredExperiments.length }));
-        }
-        else {
-            const warning = document.createElement('span');
-            warning.textContent = i18nString(UIStrings.noResults);
-            UI.ARIAUtils.LiveAnnouncer.alert(warning.textContent);
-            this.#experimentsSection = createSettingsCard(i18nString(UIStrings.experiments), warning);
-            this.containerElement.appendChild(this.#experimentsSection);
-        }
+        return experiments.filter(e => e.title.toLowerCase().includes(filterText));
     }
-    createExperimentsWarningSubsection(warningMessage) {
-        const subsection = document.createElement('div');
-        subsection.classList.add('experiments-warning-subsection');
-        const warningIcon = createIcon('warning');
-        subsection.appendChild(warningIcon);
-        const warning = subsection.createChild('span');
-        warning.textContent = warningMessage;
-        return subsection;
-    }
-    createExperimentCheckbox(experiment) {
-        const checkbox = UI.UIUtils.CheckboxLabel.createWithStringLiteral(experiment.title, experiment.isEnabled(), experiment.name);
-        checkbox.classList.add('experiment-label');
-        checkbox.name = experiment.name;
-        function listener() {
-            Host.InspectorFrontendHost.InspectorFrontendHostInstance.setChromeFlag(experiment.aboutFlag, checkbox.checked);
-            experiment.setEnabled(checkbox.checked);
-            Host.userMetrics.experimentChanged(experiment.name, experiment.isEnabled());
-            if (experiment.requiresChromeRestart) {
-                UI.InspectorView.InspectorView.instance().displayChromeRestartRequiredWarning(i18nString(UIStrings.settingsChangedRestartChrome));
+    #onFilterChanged(filterText) {
+        this.#filterText = filterText.toLowerCase();
+        if (this.#filterText) {
+            const filteredExperiments = this.#filterExperiments(this.#filterText);
+            if (filteredExperiments.length) {
+                UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.experimentsFound, { n: filteredExperiments.length }));
             }
             else {
-                UI.InspectorView.InspectorView.instance().displayReloadRequiredWarning(i18nString(UIStrings.settingsChangedReloadDevTools));
+                UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.noResults));
             }
         }
-        checkbox.addEventListener('click', listener, false);
-        const p = document.createElement('p');
-        this.experimentToControl.set(experiment, p);
-        p.classList.add('settings-experiment');
-        p.appendChild(checkbox);
-        const experimentLink = experiment.docLink;
-        if (experimentLink) {
-            const linkButton = new Buttons.Button.Button();
-            linkButton.data = {
-                iconName: 'help',
-                variant: "icon" /* Buttons.Button.Variant.ICON */,
-                size: "SMALL" /* Buttons.Button.Size.SMALL */,
-                jslogContext: `${experiment.name}-documentation`,
-                title: i18nString(UIStrings.learnMore),
-            };
-            linkButton.addEventListener('click', () => UIHelpers.openInNewTab(experimentLink));
-            linkButton.classList.add('link-icon');
-            p.appendChild(linkButton);
+        this.requestUpdate();
+    }
+    #onExperimentToggled(experiment, enabled) {
+        Host.InspectorFrontendHost.InspectorFrontendHostInstance.setChromeFlag(experiment.aboutFlag, enabled);
+        experiment.setEnabled(enabled);
+        Host.userMetrics.experimentChanged(experiment.name, experiment.isEnabled());
+        if (experiment.requiresChromeRestart) {
+            UI.InspectorView.InspectorView.instance().displayChromeRestartRequiredWarning(i18nString(UIStrings.settingsChangedRestartChrome));
         }
-        if (experiment.feedbackLink) {
-            const link = Link.create(experiment.feedbackLink, undefined, undefined, `${experiment.name}-feedback`);
-            link.textContent = i18nString(UIStrings.sendFeedback);
-            link.classList.add('feedback-link');
-            p.appendChild(link);
+        else {
+            UI.InspectorView.InspectorView.instance().displayReloadRequiredWarning(i18nString(UIStrings.settingsChangedReloadDevTools));
         }
-        return p;
+        this.requestUpdate();
+    }
+    performUpdate() {
+        const filteredExperiments = this.#filterExperiments(this.#filterText);
+        this.#experimentToControl.clear();
+        this.#view({
+            filterText: this.#filterText,
+            experiments: filteredExperiments,
+            onFilterChanged: this.#onFilterChanged.bind(this),
+            onExperimentToggled: this.#onExperimentToggled.bind(this),
+            onOpenDocumentation: (url) => UIHelpers.openInNewTab(url),
+        }, this.#viewOutput, this.contentElement);
     }
     highlightObject(experiment) {
         if (experiment instanceof Root.Runtime.Experiment) {
-            const element = this.experimentToControl.get(experiment);
+            const element = this.#experimentToControl.get(experiment);
             if (element) {
                 PanelUtils.highlightElement(element);
             }
@@ -437,6 +466,7 @@ export class ExperimentsSettingsTab extends UI.Widget.VBox {
     wasShown() {
         UI.Context.Context.instance().setFlavor(ExperimentsSettingsTab, this);
         super.wasShown();
+        this.requestUpdate();
     }
     willHide() {
         super.willHide();

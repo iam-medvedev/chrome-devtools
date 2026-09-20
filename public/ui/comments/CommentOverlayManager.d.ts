@@ -6,7 +6,6 @@ export interface StartOptions {
     root?: Document | Element;
     scrollTarget?: EventTarget;
     resizeTarget?: Element;
-    defaultText?: string;
 }
 export interface PinPositionData {
     id: string;
@@ -22,6 +21,14 @@ export interface HighlightRectData {
     width: number;
     height: number;
     visible: boolean;
+}
+export interface CreateCommentOptions {
+    author?: 'DEVELOPER' | 'AGENT';
+    changes?: CommentManager.CommentManager.ChangeRecord[];
+    coordinates?: {
+        clientX: number;
+        clientY: number;
+    };
 }
 export interface HoverHighlightData {
     top: number;
@@ -54,14 +61,13 @@ export declare class CommentOverlayManager extends Common.ObjectWrapper.ObjectWr
     getHoverHighlight(): HoverHighlightData | null;
     getPinPositions(): PinPositionData[];
     getHighlightRects(): HighlightRectData[];
-    handleElementClick(element: Element, commentText?: string, options?: {
+    getAnchorElement(thread: CommentThread): Element | undefined;
+    clearDraftThreads(): void;
+    handleElementClick(element: Element, options?: {
         clientX: number;
         clientY: number;
-    }): CommentThread | null;
-    createComment(element: Element, text: string, author?: 'DEVELOPER' | 'AGENT', changes?: CommentManager.CommentManager.ChangeRecord[], options?: {
-        clientX: number;
-        clientY: number;
-    }): CommentThread | null;
+    }): boolean;
+    createComment(element: Element, text?: string, options?: CreateCommentOptions): CommentThread | null;
     getCommentThread(id: string): CommentThread | undefined;
     getCommentThreads(): CommentThread[];
     removeCommentThread(id: string): void;
@@ -74,7 +80,7 @@ export declare class CommentOverlayManager extends Common.ObjectWrapper.ObjectWr
      * - A ResizeObserver to recalculate overlay coordinates when DevTools panels or drawers are resized.
      * - A MutationObserver to automatically rematch existing comment anchors when the DOM re-renders.
      */
-    start(rootOrOptions?: Document | Element | StartOptions, defaultText?: string): void;
+    start(rootOrOptions?: Document | Element | StartOptions): void;
     /**
      * Stops and detaches all active listeners and observers without clearing comment threads.
      */

@@ -1440,14 +1440,14 @@ describeWithEnvironment('ChatMessage', () => {
             const widgetHeader = (await waitFor('.widget-header', targetElement));
             assert.isNotNull(widgetHeader);
             const revealBtn = querySelectorErrorOnMissing(widgetHeader, 'devtools-button.widget-reveal-button');
-            const revealError = new Error('Node cannot be found in the current page.');
+            const revealError = new Error('Node cannot be found in the current page');
             const revealStub = sinon.stub(Common.Revealer.RevealerRegistry.instance(), 'reveal').rejects(revealError);
             const snackbarShowStub = sinon.stub(Snackbars.Snackbar.Snackbar, 'show');
             revealBtn.click();
             // Since it's async, we need to wait for the promise microtask queue to drain
             await new Promise(resolve => setTimeout(resolve, 0));
             sinon.assert.calledOnceWithExactly(snackbarShowStub, {
-                message: 'Node cannot be found in the current page.',
+                message: 'Node cannot be found in the current page',
             });
             revealStub.restore();
             snackbarShowStub.restore();

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Trace from '../trace.js';
 function extractUrlsFromSummaries(summaries) {
@@ -17,7 +16,7 @@ function extractUrlsFromSummaries(summaries) {
         return [s.entity.name, Array.from(uniqueUrls)];
     });
 }
-describeWithEnvironment('ThirdParties', function () {
+describe('ThirdParties', function () {
     describe('summarizeByThirdParty', function () {
         it('full trace bounds', async function () {
             const { data } = await TraceLoader.traceEngine(this, 'load-simple.json.gz');

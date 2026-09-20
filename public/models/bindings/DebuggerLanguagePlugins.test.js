@@ -5,9 +5,11 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { TestPlugin } from '../../testing/LanguagePluginHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { MockDebuggerBackend } from '../../testing/MockScopeChain.js';
+import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
+import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import { protocolCallFrame, stringifyFrame } from '../../testing/StackTraceHelpers.js';
 import { TestUniverse } from '../../testing/TestUniverse.js';
 import { createContentProviderUISourceCode } from '../../testing/UISourceCodeHelpers.js';
@@ -41,7 +43,10 @@ describe('ExtensionRemoteObject', () => {
     });
 });
 describe('DebuggerLanguagePluginManager', () => {
-    describeWithEnvironment('getFunctionInfo', () => {
+    setupLocaleHooks();
+    setupSettingsHooks();
+    setupRuntimeHooks();
+    describe('getFunctionInfo', () => {
         let target;
         let pluginManager;
         let debuggerWorkspaceBinding;
@@ -120,7 +125,7 @@ describe('DebuggerLanguagePluginManager', () => {
             sinon.assert.calledWith(updateLocationsSpy, script);
         });
     });
-    describeWithEnvironment('translateRawFramesStep', () => {
+    describe('translateRawFramesStep', () => {
         function setup() {
             const backend = new MockDebuggerBackend();
             const target = backend.createTarget();
@@ -279,6 +284,66 @@ describe('DebuggerLanguagePluginManager', () => {
                 type: "PARTIAL_INFO" /* StackTrace.StackTrace.MissingDebugInfoType.PARTIAL_INFO */,
                 missingDebugFiles: [{ resourceUrl: urlString `foo.dwo`, initiator: plugin.createPageResourceLoadInitiator() }],
             });
+        });
+    });
+    describe('project securityOrigin partitioning', () => {
+        it('assigns the script network origin to language plugin projects and isolates cross-origin scripts', async () => {
+            const backend = new MockDebuggerBackend();
+            const target = backend.createTarget();
+            const pluginManager = backend.universe.debuggerWorkspaceBinding.pluginManager;
+            const plugin = new (class extends TestPlugin {
+                handleScript(_) {
+                    return true;
+                }
+                addRawModule(_rawModuleId, _symbolsURL, _rawModule) {
+                    return Promise.resolve(['https://victim.example/source.c']);
+                }
+            })('TestPlugin');
+            pluginManager.addPlugin(plugin);
+            const attackerScript = await backend.addScript(target, {
+                url: urlString `https://attacker.com/module.wasm`,
+                embedderName: urlString `https://attacker.com/module.wasm`,
+                content: '',
+            }, null);
+            const attackerUiSourceCode = await backend.universe.debuggerWorkspaceBinding.uiSourceCodeForDebuggerLanguagePluginSourceURLPromise(attackerScript.debuggerModel, urlString `https://victim.example/source.c`);
+            assert.isNotNull(attackerUiSourceCode);
+            assert.strictEqual(attackerUiSourceCode.project().securityOrigin()?.siteId(), 'https://attacker.com');
+            assert.isTrue(attackerUiSourceCode.project().id().includes('https://attacker.com'));
+            const victimScript = await backend.addScript(target, {
+                url: urlString `https://victim.example/module.wasm`,
+                embedderName: urlString `https://victim.example/module.wasm`,
+                content: '',
+            }, null);
+            await pluginManager.getSourcesForScript(victimScript);
+            const victimUiSourceCode = pluginManager.uiSourceCodeForURL(victimScript.debuggerModel, urlString `https://victim.example/source.c`, victimScript);
+            assert.isNotNull(victimUiSourceCode);
+            assert.notStrictEqual(victimUiSourceCode, attackerUiSourceCode);
+            assert.strictEqual(victimUiSourceCode.project().securityOrigin()?.siteId(), 'https://victim.example');
+        });
+        it('assigns an opaque security origin to language plugin projects for opaque scripts', async () => {
+            const backend = new MockDebuggerBackend();
+            const target = backend.createTarget();
+            const pluginManager = backend.universe.debuggerWorkspaceBinding.pluginManager;
+            const plugin = new (class extends TestPlugin {
+                handleScript(_) {
+                    return true;
+                }
+                addRawModule(_rawModuleId, _symbolsURL, _rawModule) {
+                    return Promise.resolve(['https://victim.example/source.c']);
+                }
+            })('TestPlugin');
+            pluginManager.addPlugin(plugin);
+            const dataScript = await backend.addScript(target, {
+                url: urlString `data:application/wasm;base64,AGFzbQEAAAA=`,
+                embedderName: urlString `data:application/wasm;base64,AGFzbQEAAAA=`,
+                content: '',
+            }, null);
+            const uiSourceCode = await backend.universe.debuggerWorkspaceBinding.uiSourceCodeForDebuggerLanguagePluginSourceURLPromise(dataScript.debuggerModel, urlString `https://victim.example/source.c`);
+            assert.isNotNull(uiSourceCode);
+            assert.strictEqual(dataScript.securityOrigin(), dataScript.securityOrigin());
+            assert.isNotNull(uiSourceCode.project().securityOrigin());
+            assert.isTrue(uiSourceCode.project().securityOrigin()?.isOpaque());
+            assert.strictEqual(pluginManager.uiSourceCodeForURL(dataScript.debuggerModel, urlString `https://victim.example/source.c`, dataScript), uiSourceCode);
         });
     });
 });

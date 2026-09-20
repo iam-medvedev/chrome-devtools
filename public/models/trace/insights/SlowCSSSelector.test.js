@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { getInsightOrError, processTrace } from '../../../testing/InsightHelpers.js';
-describeWithEnvironment('SelectorStatsInsights', function () {
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
+describe('SelectorStatsInsights', function () {
+    setupLocaleHooks();
     it('generates slow selectors', async function () {
         const { data, insights } = await processTrace(this, 'selector-stats.json.gz');
         assert.strictEqual(insights.size, 1);

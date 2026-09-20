@@ -3,19 +3,14 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import * as Platform from '../../../core/platform/platform.js';
-import { deinitializeGlobalVars, describeWithEnvironment, initializeGlobalVars, } from '../../../testing/EnvironmentHelpers.js';
 import { getFirstOrError, getInsightOrError, processTrace } from '../../../testing/InsightHelpers.js';
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import * as Trace from '../trace.js';
 const { urlString } = Platform.DevToolsPath;
 describe('NetworkDependencyTree', function () {
-    before(async () => {
-        await initializeGlobalVars();
-    });
-    after(async () => {
-        await deinitializeGlobalVars();
-    });
+    setupLocaleHooks();
     let insight;
-    before(async function () {
+    beforeEach(async function () {
         const { data, insights } = await processTrace(this, 'lcp-multiple-frames.json.gz');
         const firstNav = getFirstOrError(data.Meta.navigationsByNavigationId.values());
         insight = getInsightOrError('NetworkDependencyTree', insights, firstNav);
@@ -110,12 +105,7 @@ describe('NetworkDependencyTree', function () {
     });
 });
 describe('generatePreconnectedOrigins', () => {
-    before(async () => {
-        await initializeGlobalVars();
-    });
-    after(async () => {
-        await deinitializeGlobalVars();
-    });
+    setupLocaleHooks();
     describe('generatePreconnectedOriginsFromDom', () => {
         const mockParsedTrace = {
             NetworkRequests: {
@@ -229,7 +219,7 @@ describe('generatePreconnectedOrigins', () => {
     describe('PreconnectedOriginFromResponseHeader', function () {
         let insight;
         let documentRequest;
-        before(async function () {
+        beforeEach(async function () {
             const { data, insights } = await processTrace(this, 'preconnect-advice.json.gz');
             const firstNav = getFirstOrError(data.Meta.navigationsByNavigationId.values());
             insight = getInsightOrError('NetworkDependencyTree', insights, firstNav);
@@ -343,7 +333,8 @@ describe('generatePreconnectedOrigins', () => {
         });
     });
 });
-describeWithEnvironment('generatePreconnectCandidates', () => {
+describe('generatePreconnectCandidates', () => {
+    setupLocaleHooks();
     const mockParsedTrace = {
         NetworkRequests: {
             incompleteInitiator: new Map(),

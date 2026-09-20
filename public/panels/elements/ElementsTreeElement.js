@@ -44,6 +44,8 @@ import * as TextUtils from '../../core/text_utils/text_utils.js';
 import * as AIAssistance from '../../models/ai_assistance/ai_assistance.js';
 import * as Badges from '../../models/badges/badges.js';
 import * as Bindings from '../../models/bindings/bindings.js';
+import * as ChangeTracker from '../../models/change_tracker/change_tracker.js';
+import * as Elements from '../../models/elements/elements.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
@@ -57,12 +59,38 @@ import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as PanelsCommon from '../common/common.js';
 import * as Media from '../media/media.js';
 import * as ElementsComponents from './components/components.js';
+import { cssPath } from './DOMPath.js';
 import { getElementIssueDetails } from './ElementIssueUtils.js';
 import { ElementsPanel } from './ElementsPanel.js';
 import * as ElementStatePaneWidget from './ElementStatePaneWidget.js';
 import { MappedCharToEntity } from './ElementsTreeOutline.js';
 import { ImagePreviewPopover } from './ImagePreviewPopover.js';
 import { getRegisteredDecorators } from './MarkerDecorator.js';
+/**
+ * Returns the CSS selector of `node` that is used as the text signature of the anchor a change is
+ * recorded on, or `undefined` if `tracker` is absent or not recording changes.
+ *
+ * Resolving the selector walks the ancestor chain and scans sibling lists, so it is skipped
+ * entirely while change tracking is disabled.
+ */
+export function buildChangeSelector(tracker, node) {
+    if (!tracker?.isTracking) {
+        return undefined;
+    }
+    if (node.nodeType() === Node.ELEMENT_NODE) {
+        const selector = cssPath(node, true);
+        if (selector) {
+            return selector;
+        }
+    }
+    else if (node.parentNode && node.parentNode.nodeType() === Node.ELEMENT_NODE) {
+        const selector = cssPath(node.parentNode, true);
+        if (selector) {
+            return selector;
+        }
+    }
+    return undefined;
+}
 const { html, nothing, render, Directives: { classMap, ref, repeat, until } } = Lit;
 const { animateOn } = UI.UIUtils;
 const UIStrings = {
@@ -94,7 +122,7 @@ const UIStrings = {
      * @description Hint element title in the DOM tree of the Elements panel.
      * @example {0} PH1
      */
-    useSInTheConsoleToReferToThis: 'Use {PH1} in the console to refer to this element.',
+    useSInTheConsoleToReferToThis: 'Use {PH1} in the console to refer to this element',
     /**
      * @description Text to cut an element, cut should be used as a verb.
      */
@@ -262,6 +290,21 @@ export function handleAdornerKeydown(cb) {
             event.stopPropagation();
         }
     };
+}
+function formatCandidateLabel(node) {
+    let label = node.localName() || node.nodeName().toLowerCase();
+    const id = node.getAttribute('id');
+    if (id) {
+        label += '#' + id;
+    }
+    const classes = node.getAttribute('class');
+    if (classes) {
+        const classList = classes.trim().split(/\s+/g).filter(Boolean);
+        if (classList.length) {
+            label += '.' + classList.join('.');
+        }
+    }
+    return label;
 }
 function renderTitle(node, isClosingTag, expanded, isExpandable, isXMLMimeType, updateRecord, onUpdateSearchHighlight, onExpand, issues) {
     switch (node.nodeType()) {
@@ -581,13 +624,6 @@ function renderTag(node, tagName, isClosingTag, expanded, isDistinctTreeElement,
         hasUpdates = updateRecord.hasRemovedAttributes() || updateRecord.hasRemovedChildren();
         hasUpdates = hasUpdates || (!expanded && updateRecord.hasChangedChildren());
     }
-    // We are taking full text content of the tag, including attributes and children, to set the aria label.
-    // FIXME: we should compute the aria label ourselves if it is event needed.
-    const setAriaLabel = ref(el => {
-        if (el?.textContent) {
-            UI.ARIAUtils.setLabel(el, el.textContent);
-        }
-    });
     const tagNameClass = isClosingTag ? 'webkit-html-close-tag-name' : 'webkit-html-tag-name';
     const hasTagIssues = !isClosingTag && Boolean(issues?.some(issue => {
         const details = getElementIssueDetails(issue);
@@ -599,8 +635,11 @@ function renderTag(node, tagName, isClosingTag, expanded, isDistinctTreeElement,
     };
     const tagString = (isClosingTag ? '/' : '') + tagName;
     const jslog = !isClosingTag ? VisualLogging.value('tag-name').track({ change: true, dblclick: true }) : '';
+    const ariaLabel = isClosingTag ?
+        `</${tagName}>` :
+        `<${tagName}${attributes.map(attr => (attr.value ? ` ${attr.name}="${attr.value}"` : ` ${attr.name}`)).join('')}>`;
     return html `<span
-      class=${classMap(tagClasses)} ${setAriaLabel}
+      class=${classMap(tagClasses)} aria-label=${ariaLabel}
       >&lt;<span class=${classMap(tagNameClasses)} jslog=${jslog || nothing} ${animateOn(hasUpdates, DOM_UPDATE_ANIMATION_CLASS_NAME)}>${tagString}</span>${attributes.map(attr => html ` ${renderAttribute(attr, updateRecord, false, node, issues)}`)}&gt;</span>\u200B`;
 }
 function maybeRenderAdAdorner(input) {
@@ -674,7 +713,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
     render(html `
     <div ${ref(el => { output.contentElement = el; })}>
       ${input.node ? html `<span class="highlight ${input.editorState ? 'hidden' : ''}">${renderTitle(input.node, input.isClosingTag, input.expanded, input.isExpandable, input.isXMLMimeType, input.updateRecord, input.onHighlightSearchResults, input.onExpand, input.issues)}</span>` : nothing}
-      <div class="selection fill ${input.editorState ? 'hidden' : ''}" style=${`margin-left: ${-input.indent}px`}></div>
+      ${input.renderSelection !== false ? html `<div class="selection fill ${input.editorState ? 'hidden' : ''}" style=${`margin-left: ${-input.indent}px`}></div>` : nothing}
       <div class=${classMap(gutterContainerClasses)}
            style="left: ${-input.indent}px"
            @click=${input.onGutterClick}>
@@ -896,7 +935,10 @@ export const DEFAULT_VIEW = (input, output, target) => {
         if (event.key === 'Escape') {
             event.consume(true);
         }
-    }} class="source-code elements-tree-editor" style="width: ${input.editorWidth ?? 0}px;">
+    }}
+      @mousedown=${(event) => event.stopPropagation()}
+      @click=${(event) => event.stopPropagation()}
+      class="source-code elements-tree-editor" style="width: ${input.editorWidth ?? 0}px;">
         <devtools-text-editor .state=${input.editorState} ${ref(el => {
         output.editorRef = el;
     })}></devtools-text-editor>
@@ -906,19 +948,47 @@ export const DEFAULT_VIEW = (input, output, target) => {
     // clang-format on
 };
 export class ElementsTreeWidget extends UI.Widget.Widget {
-    static INJECT = [IssuesManager.DOMIssuesManager.DOMIssuesManager];
+    static INJECT = [
+        IssuesManager.DOMIssuesManager.DOMIssuesManager,
+        ChangeTracker.ChangeTracker.ChangeTracker,
+    ];
     #domIssuesManager;
+    #changeTracker;
     #node;
-    isClosingTag = false;
+    #eventsBound = false;
+    #isClosingTag = false;
     #expanded = false;
     #isExpandable = false;
     #selected = false;
     isXMLMimeType = false;
     disableEdits = false;
     showAIButton = false;
+    renderSelection = true;
     isDOMNodeSelected = false;
     initialEdit;
     onInitialEditCompleted;
+    attributeToHighlight;
+    onAttributeHighlighted;
+    #adornersDirty = false;
+    get adornersDirty() {
+        return this.#adornersDirty;
+    }
+    set adornersDirty(dirty) {
+        this.#adornersDirty = dirty;
+    }
+    #adornersUpdateVersion = 0;
+    get adornersUpdateVersion() {
+        return this.#adornersUpdateVersion;
+    }
+    set adornersUpdateVersion(version) {
+        if (this.#adornersUpdateVersion === version) {
+            return;
+        }
+        this.#adornersUpdateVersion = version;
+        if (version > 0) {
+            void this.updateAdorners();
+        }
+    }
     expand;
     collapse;
     selectTreeElement;
@@ -929,7 +999,6 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
     updateShadowRootDepth;
     computeLeftIndent;
     setChildrenListElementVisible;
-    findStartTagWidget;
     selectDOMNode;
     revealInTopLayer;
     showContextMenu;
@@ -961,7 +1030,31 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
     #flexAdornerActive = false;
     #gridAdornerActive = false;
     #popoverAdornerActive = false;
+    get popoverAdornerActive() {
+        return this.#popoverAdornerActive;
+    }
+    set popoverAdornerActive(active) {
+        if (this.#popoverAdornerActive === active) {
+            return;
+        }
+        this.#popoverAdornerActive = active;
+        this.requestUpdate();
+    }
+    #activePopoverInvokerId = null;
+    #implicitAnchorCandidatesPromise = null;
     #interestAdornerActive = false;
+    get interestAdornerActive() {
+        return this.#interestAdornerActive;
+    }
+    set interestAdornerActive(active) {
+        if (this.#interestAdornerActive === active) {
+            return;
+        }
+        this.#interestAdornerActive = active;
+        this.requestUpdate();
+    }
+    onPopoverAdornerToggled;
+    onInterestAdornerToggled;
     #scrollSnapAdornerActive = false;
     #startingStyleAdornerActive = false;
     #layout = null;
@@ -985,10 +1078,39 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
         return this.#node;
     }
     set node(node) {
+        if (this.#node === node) {
+            return;
+        }
+        this.#unbindEvents();
+        if (this.#isBound && this.editing) {
+            this.editing.cancel();
+        }
         this.#node = node;
-        if (!this.isClosingTag) {
+        this.#bindEvents();
+        if (this.#isBound) {
+            this.requestUpdate();
+        }
+        if (!this.#isClosingTag) {
             void this.#updateAdorners();
             this.updateDecorations();
+        }
+    }
+    get isClosingTag() {
+        return this.#isClosingTag;
+    }
+    set isClosingTag(isClosingTag) {
+        if (this.#isClosingTag === isClosingTag) {
+            return;
+        }
+        this.#unbindEvents();
+        this.#isClosingTag = isClosingTag;
+        this.#bindEvents();
+        if (this.#isBound) {
+            if (!this.#isClosingTag) {
+                void this.#updateAdorners();
+                this.updateDecorations();
+            }
+            this.requestUpdate();
         }
     }
     get expanded() {
@@ -1039,16 +1161,25 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
             const universe = UI.Widget.lookupUniverseForElement(this.contentElement);
             if (universe) {
                 this.#domIssuesManager = universe.get(IssuesManager.DOMIssuesManager.DOMIssuesManager);
-                if (this.node?.id) {
-                    this.#domIssuesManager.subscribeByNodeId(this.node.id, this.#onDOMIssueUpdated);
+                if (this.#eventsBound && this.#node?.id) {
+                    this.#domIssuesManager.subscribeByNodeId(this.#node.id, this.#onDOMIssueUpdated);
                 }
             }
         }
         return this.#domIssuesManager?.issuesForNode(this.node) ?? [];
     }
-    constructor(element, [domIssuesManager] = [undefined], view = DEFAULT_VIEW) {
+    get changeTracker() {
+        // The widget is currently created for non-widget ElementsTreeElement so
+        // the changeTracker can be empty, relying on the manual resolution.
+        // Note that this only works once the widget is attached to the DOM.
+        this.#changeTracker ??=
+            UI.Widget.lookupUniverseForElement(this.contentElement)?.get(ChangeTracker.ChangeTracker.ChangeTracker);
+        return this.#changeTracker;
+    }
+    constructor(element, [domIssuesManager, changeTracker] = [], view = DEFAULT_VIEW) {
         super(element);
         this.#domIssuesManager = domIssuesManager;
+        this.#changeTracker = changeTracker;
         this.#view = view;
         this.#expandedChildrenLimit = InitialChildrenLimit;
         this.inClipboard = false;
@@ -1119,12 +1250,18 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
         UI.UIUtils.runCSSAnimationOnce(tagName || this.contentElement, DOM_UPDATE_ANIMATION_CLASS_NAME);
     }
     #clearDOMNextUpdate = false;
+    #isBound = false;
     wasShown() {
         super.wasShown();
+        this.onbind();
         if (!this.isClosingTag) {
             void this.#updateAdorners();
             this.updateDecorations();
         }
+    }
+    willHide() {
+        super.willHide();
+        this.onunbind();
     }
     performUpdate() {
         // Skip updating when in-place editing (not HTML editing indicated by the
@@ -1185,6 +1322,7 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
             descendantDecorations: this.#expanded ? [] : this.#descendantDecorations,
             decorationsTooltip: this.#decorationsTooltip,
             indent: this.#getLeftIndent(),
+            renderSelection: this.renderSelection,
             showScrollSnapAdorner: Boolean(this.#layout?.hasScroll) && !isClosingTag,
             scrollSnapAdornerActive: this.#scrollSnapAdornerActive,
             showSlotAdorner: Boolean(this.node.assignedSlot) && !isClosingTag,
@@ -1205,7 +1343,7 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
             },
             topLayerIndex: this.node.topLayerIndex(),
             onViewSourceAdornerClick: this.disableEdits ? () => { } : this.revealHTMLInSources.bind(this),
-            onGutterClick: this.showContextMenu ? (event) => this.showContextMenu?.(event, this) : () => { },
+            onGutterClick: this.showContextMenu ? (event) => this.showContextMenu?.(event) : () => { },
             onContainerAdornerClick: this.disableEdits ? () => { } : (event) => this.#onContainerAdornerClick(event),
             onFlexAdornerClick: this.disableEdits ? () => { } : (event) => this.#onFlexAdornerClick(event),
             onGridAdornerClick: this.disableEdits ? () => { } : (event) => this.#onGridAdornerClick(event),
@@ -1269,6 +1407,12 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
             else if (edit.attributeName) {
                 this.triggerEditAttribute(edit.attributeName);
             }
+        }
+        if (this.attributeToHighlight) {
+            const attribute = this.attributeToHighlight;
+            this.attributeToHighlight = null;
+            this.onAttributeHighlighted?.();
+            this.highlightAttribute(attribute);
         }
     }
     async #onCustomElementAdornerClick(event) {
@@ -1406,9 +1550,13 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
             this.#highlightSearchResults();
         }
     }
-    hideSearchHighlights() {
+    #clearHighlights() {
         Highlighting.HighlightManager.HighlightManager.instance().removeHighlights(this.#highlights);
         this.#highlights = [];
+    }
+    hideSearchHighlights() {
+        this.#searchQuery = null;
+        this.#clearHighlights();
     }
     setInClipboard(inClipboard) {
         if (this.inClipboard === inClipboard) {
@@ -1437,18 +1585,27 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
         this.requestUpdate();
     }
     onbind() {
+        if (this.#isBound) {
+            return;
+        }
+        this.#isBound = true;
         this.requestUpdate();
-        if (!this.isClosingTag) {
-            this.node.addEventListener(SDK.DOMModel.DOMNodeEvents.TOP_LAYER_INDEX_CHANGED, this.onTopLayerIndexChanged, this);
-            this.node.addEventListener(SDK.DOMModel.DOMNodeEvents.SCROLLABLE_FLAG_UPDATED, this.#onScrollableFlagUpdated, this);
-            this.node.addEventListener(SDK.DOMModel.DOMNodeEvents.AD_RELATED_STATE_UPDATED, this.#onAdRelatedStateUpdated, this);
-            this.node.addEventListener(SDK.DOMModel.DOMNodeEvents.CONTAINER_QUERY_OVERLAY_STATE_CHANGED, this.#onPersistentContainerQueryOverlayStateChanged, this);
-            this.node.addEventListener(SDK.DOMModel.DOMNodeEvents.FLEX_CONTAINER_OVERLAY_STATE_CHANGED, this.#onPersistentFlexContainerOverlayStateChanged, this);
-            this.node.addEventListener(SDK.DOMModel.DOMNodeEvents.GRID_OVERLAY_STATE_CHANGED, this.#onPersistentGridOverlayStateChanged, this);
-            this.node.addEventListener(SDK.DOMModel.DOMNodeEvents.SCROLL_SNAP_OVERLAY_STATE_CHANGED, this.#onPersistentScrollSnapOverlayStateChanged, this);
-            if (this.#domIssuesManager && this.node.id) {
-                this.#domIssuesManager.subscribeByNodeId(this.node.id, this.#onDOMIssueUpdated);
-            }
+        this.#bindEvents();
+    }
+    #bindEvents() {
+        if (!this.#isBound || this.#isClosingTag || !this.#node || this.#eventsBound) {
+            return;
+        }
+        this.#eventsBound = true;
+        this.#node.addEventListener(SDK.DOMModel.DOMNodeEvents.TOP_LAYER_INDEX_CHANGED, this.onTopLayerIndexChanged, this);
+        this.#node.addEventListener(SDK.DOMModel.DOMNodeEvents.SCROLLABLE_FLAG_UPDATED, this.#onScrollableFlagUpdated, this);
+        this.#node.addEventListener(SDK.DOMModel.DOMNodeEvents.AD_RELATED_STATE_UPDATED, this.#onAdRelatedStateUpdated, this);
+        this.#node.addEventListener(SDK.DOMModel.DOMNodeEvents.CONTAINER_QUERY_OVERLAY_STATE_CHANGED, this.#onPersistentContainerQueryOverlayStateChanged, this);
+        this.#node.addEventListener(SDK.DOMModel.DOMNodeEvents.FLEX_CONTAINER_OVERLAY_STATE_CHANGED, this.#onPersistentFlexContainerOverlayStateChanged, this);
+        this.#node.addEventListener(SDK.DOMModel.DOMNodeEvents.GRID_OVERLAY_STATE_CHANGED, this.#onPersistentGridOverlayStateChanged, this);
+        this.#node.addEventListener(SDK.DOMModel.DOMNodeEvents.SCROLL_SNAP_OVERLAY_STATE_CHANGED, this.#onPersistentScrollSnapOverlayStateChanged, this);
+        if (this.#domIssuesManager && this.#node.id) {
+            this.#domIssuesManager.subscribeByNodeId(this.#node.id, this.#onDOMIssueUpdated);
         }
     }
     clearView() {
@@ -1520,20 +1677,33 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
         }, {}, this.contentElement);
     }
     onunbind() {
+        if (!this.#isBound) {
+            return;
+        }
+        this.#isBound = false;
         if (this.editing) {
             this.editing.cancel();
         }
         this.clearView();
-        this.node.removeEventListener(SDK.DOMModel.DOMNodeEvents.TOP_LAYER_INDEX_CHANGED, this.onTopLayerIndexChanged, this);
-        this.node.removeEventListener(SDK.DOMModel.DOMNodeEvents.SCROLLABLE_FLAG_UPDATED, this.#onScrollableFlagUpdated, this);
-        this.node.removeEventListener(SDK.DOMModel.DOMNodeEvents.AD_RELATED_STATE_UPDATED, this.#onAdRelatedStateUpdated, this);
-        this.node.removeEventListener(SDK.DOMModel.DOMNodeEvents.CONTAINER_QUERY_OVERLAY_STATE_CHANGED, this.#onPersistentContainerQueryOverlayStateChanged, this);
-        this.node.removeEventListener(SDK.DOMModel.DOMNodeEvents.FLEX_CONTAINER_OVERLAY_STATE_CHANGED, this.#onPersistentFlexContainerOverlayStateChanged, this);
-        this.node.removeEventListener(SDK.DOMModel.DOMNodeEvents.GRID_OVERLAY_STATE_CHANGED, this.#onPersistentGridOverlayStateChanged, this);
-        this.node.removeEventListener(SDK.DOMModel.DOMNodeEvents.SCROLL_SNAP_OVERLAY_STATE_CHANGED, this.#onPersistentScrollSnapOverlayStateChanged, this);
-        if (this.#domIssuesManager && this.node.id) {
-            this.#domIssuesManager.unsubscribeByNodeId(this.node.id, this.#onDOMIssueUpdated);
+        this.#unbindEvents();
+    }
+    #unbindEvents() {
+        this.#implicitAnchorCandidatesPromise = null;
+        this.#activePopoverInvokerId = null;
+        if (!this.#eventsBound || !this.#node) {
+            return;
         }
+        this.#node.removeEventListener(SDK.DOMModel.DOMNodeEvents.TOP_LAYER_INDEX_CHANGED, this.onTopLayerIndexChanged, this);
+        this.#node.removeEventListener(SDK.DOMModel.DOMNodeEvents.SCROLLABLE_FLAG_UPDATED, this.#onScrollableFlagUpdated, this);
+        this.#node.removeEventListener(SDK.DOMModel.DOMNodeEvents.AD_RELATED_STATE_UPDATED, this.#onAdRelatedStateUpdated, this);
+        this.#node.removeEventListener(SDK.DOMModel.DOMNodeEvents.CONTAINER_QUERY_OVERLAY_STATE_CHANGED, this.#onPersistentContainerQueryOverlayStateChanged, this);
+        this.#node.removeEventListener(SDK.DOMModel.DOMNodeEvents.FLEX_CONTAINER_OVERLAY_STATE_CHANGED, this.#onPersistentFlexContainerOverlayStateChanged, this);
+        this.#node.removeEventListener(SDK.DOMModel.DOMNodeEvents.GRID_OVERLAY_STATE_CHANGED, this.#onPersistentGridOverlayStateChanged, this);
+        this.#node.removeEventListener(SDK.DOMModel.DOMNodeEvents.SCROLL_SNAP_OVERLAY_STATE_CHANGED, this.#onPersistentScrollSnapOverlayStateChanged, this);
+        if (this.#domIssuesManager && this.#node.id) {
+            this.#domIssuesManager.unsubscribeByNodeId(this.#node.id, this.#onDOMIssueUpdated);
+        }
+        this.#eventsBound = false;
     }
     #onDOMIssueUpdated = () => {
         this.performUpdate();
@@ -1702,7 +1872,8 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
         if (isOpeningTag(this.tagTypeContext) && this.tagTypeContext.canAddAttributes) {
             const attribute = listItem.getElementsByClassName('webkit-html-attribute')[0];
             if (attribute) {
-                return this.startEditingAttribute(attribute, attribute.getElementsByClassName('webkit-html-attribute-value')[0]);
+                const valueElement = attribute.getElementsByClassName('webkit-html-attribute-value')[0];
+                return this.startEditingAttribute(attribute, valueElement ?? attribute);
             }
             return this.addNewAttribute();
         }
@@ -1750,6 +1921,7 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
                         return this.startEditingAttribute(elem.parentElement, elem);
                     }
                 }
+                return this.startEditingAttribute(attributeElements[i].parentElement, attributeElements[i]);
             }
         }
         return;
@@ -1767,7 +1939,9 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
         const attributeValueElement = attribute.getElementsByClassName('webkit-html-attribute-value')[0];
         // Make sure elementForSelection is not a child of attributeValueElement.
         elementForSelection =
-            attributeValueElement?.isAncestor(elementForSelection) ? attributeValueElement : elementForSelection;
+            (attributeValueElement && elementForSelection && attributeValueElement.isAncestor(elementForSelection)) ?
+                attributeValueElement :
+                (elementForSelection ?? attribute);
         function removeZeroWidthSpaceRecursive(node) {
             if (node.nodeType === Node.TEXT_NODE) {
                 node.nodeValue = node.nodeValue ? node.nodeValue.replace(/\u200B/g, '') : '';
@@ -1941,7 +2115,8 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
                         }
                         // The relatedTarget is null when no element gains focus, e.g. switching windows.
                         const relatedTarget = event.relatedTarget;
-                        if (relatedTarget && !relatedTarget.isSelfOrDescendant(this.#editorRef)) {
+                        if (relatedTarget && !relatedTarget.isSelfOrDescendant(this.#editorRef) &&
+                            !relatedTarget.isSelfOrDescendant(this.contentElement)) {
                             this.editing?.commit();
                         }
                     },
@@ -2074,8 +2249,15 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
             }
         }
         if (attributeName !== null && (attributeName.trim() || newText.trim()) && oldText !== newText) {
-            this.node.setAttribute(attributeName, newText, moveToNextAttributeIfNeeded.bind(this));
-            Badges.UserBadges.instance().recordAction(Badges.BadgeAction.DOM_ELEMENT_OR_ATTRIBUTE_EDITED);
+            const edit = { attributeName, oldText, newText };
+            this.node.setAttribute(attributeName, newText, (error) => {
+                if (!error) {
+                    const changeTracker = this.changeTracker;
+                    Elements.DOMChanges.trackAttributeEdit(changeTracker, this.node, buildChangeSelector(changeTracker, this.node), edit);
+                    Badges.UserBadges.instance().recordAction(Badges.BadgeAction.DOM_ELEMENT_OR_ATTRIBUTE_EDITED);
+                }
+                moveToNextAttributeIfNeeded.call(this, error);
+            });
             return;
         }
         this.updateTitle();
@@ -2110,7 +2292,7 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
             }
         }
         newText = newText.trim();
-        if (newText === oldText) {
+        if (!newText || newText === oldText) {
             cancel();
             return;
         }
@@ -2120,16 +2302,22 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
                 cancel();
                 return;
             }
-            if (!this.selectNodeAfterEdit) {
-                return;
-            }
             Badges.UserBadges.instance().recordAction(Badges.BadgeAction.DOM_ELEMENT_OR_ATTRIBUTE_EDITED);
-            this.selectNodeAfterEdit(wasExpanded, error, newNode, moveDirection);
+            const changeTracker = this.changeTracker;
+            Elements.DOMChanges.trackTagNameEdit(changeTracker, newNode, buildChangeSelector(changeTracker, newNode), oldText ?? tagName ?? '', newText);
+            if (this.selectNodeAfterEdit) {
+                this.selectNodeAfterEdit(wasExpanded, error, newNode, moveDirection);
+            }
         });
     }
     textNodeEditingCommitted(textNode, _element, newText) {
         this.editing = null;
-        function callback() {
+        const oldValue = textNode.nodeValue() ?? '';
+        function callback(error) {
+            if (!error && oldValue !== newText) {
+                const changeTracker = this.changeTracker;
+                Elements.DOMChanges.trackTextNodeEdit(changeTracker, textNode, buildChangeSelector(changeTracker, textNode), oldValue, newText);
+            }
             this.#clearDOMNextUpdate = true;
             this.updateTitle();
         }
@@ -2251,7 +2439,7 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
     async remove() {
         if (this.isToggledToHidden?.(this.node)) {
             // Unhide the node before removing. This avoids inconsistent state if the node is restored via undo.
-            await this.toggleHideElement?.(this.node);
+            await this.node.toggleHideElement();
         }
         if (this.node.pseudoType()) {
             return;
@@ -2259,7 +2447,14 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
         if (!this.node.parentNode || this.node.parentNode.nodeType() === Node.DOCUMENT_NODE) {
             return;
         }
-        void this.node.removeNode();
+        // The selector has to be resolved before the node is detached from the tree.
+        const changeTracker = this.changeTracker;
+        const selector = buildChangeSelector(changeTracker, this.node);
+        await this.node.removeNode((err) => {
+            if (!err) {
+                Elements.DOMChanges.trackNodeRemoval(changeTracker, this.node, selector);
+            }
+        });
     }
     toggleEditAsHTML(callback, startEditing) {
         if (this.editing && this.#editorState) {
@@ -2274,11 +2469,19 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
                 callback(!error);
             }
         }
-        function commitChange(initialValue, value) {
+        const commitChange = (initialValue, value) => {
             if (initialValue !== value) {
-                node.setOuterHTML(value, selectNode);
+                // The selector has to be resolved before the node is detached from the tree.
+                const changeTracker = this.changeTracker;
+                const selector = buildChangeSelector(changeTracker, node);
+                node.setOuterHTML(value, (error) => {
+                    if (!error) {
+                        Elements.DOMChanges.trackHTMLEdit(changeTracker, node, selector, initialValue, value);
+                    }
+                    selectNode(error);
+                });
             }
-        }
+        };
         function disposeCallback() {
             if (callback) {
                 callback(false);
@@ -2290,7 +2493,7 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
             .catch(disposeCallback);
     }
     #highlightSearchResults() {
-        this.hideSearchHighlights();
+        this.#clearHighlights();
         if (!this.searchQuery) {
             return;
         }
@@ -2332,6 +2535,12 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
         else {
             this.#layout = null;
         }
+        if (this.node.attributes().some(attr => attr.name === 'popover')) {
+            this.#implicitAnchorCandidatesPromise = this.node.getImplicitAnchorCandidates();
+        }
+        else {
+            this.#implicitAnchorCandidatesPromise = null;
+        }
         this.requestUpdate();
     }
     async #onPopoverAdornerClick(event) {
@@ -2341,12 +2550,93 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
         if (!nodeId) {
             return;
         }
-        await node.domModel().agent.invoke_forceShowPopover({ nodeId, enable: !this.#popoverAdornerActive });
-        this.#popoverAdornerActive = !this.#popoverAdornerActive;
-        if (this.#popoverAdornerActive) {
-            Badges.UserBadges.instance().recordAction(Badges.BadgeAction.MODERN_DOM_BADGE_CLICKED);
+        const candidates = await this.#implicitAnchorCandidatesPromise;
+        if (!candidates) {
+            return;
         }
-        this.requestUpdate();
+        if (candidates.length <= 1) {
+            const enable = !this.#popoverAdornerActive;
+            const invokerNodeId = enable && candidates.length === 1 ? candidates[0].backendNodeId() : undefined;
+            await node.domModel().agent.invoke_forceShowPopover({ nodeId, enable, invokerNodeId });
+            this.#popoverAdornerActive = enable;
+            this.#activePopoverInvokerId = enable ? (invokerNodeId ?? null) : null;
+            if (this.#popoverAdornerActive) {
+                Badges.UserBadges.instance().recordAction(Badges.BadgeAction.MODERN_DOM_BADGE_CLICKED);
+            }
+            this.onPopoverAdornerToggled?.(node, this.#popoverAdornerActive);
+            this.requestUpdate();
+            return;
+        }
+        let activeInvokerId = this.#activePopoverInvokerId;
+        if (this.#popoverAdornerActive && activeInvokerId === null && candidates.length > 0) {
+            activeInvokerId = candidates[0].backendNodeId();
+        }
+        let x;
+        let y;
+        if (event.target instanceof HTMLElement) {
+            const rect = event.target.getBoundingClientRect();
+            if (event instanceof MouseEvent && (event.clientX || event.clientY)) {
+                x = event.clientX;
+                y = event.clientY;
+            }
+            else {
+                x = rect.left;
+                y = rect.bottom;
+            }
+        }
+        const contextMenu = new UI.ContextMenu.ContextMenu(event, {
+            useSoftMenu: true,
+            x,
+            y,
+            onSoftMenuClosed: () => {
+                SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight(SDK.TargetManager.TargetManager.instance());
+            },
+        });
+        const resolvedNodes = await Promise.all(candidates.map(candidate => candidate.resolvePromise()));
+        for (let i = 0; i < candidates.length; ++i) {
+            const candidate = candidates[i];
+            const resolvedNode = resolvedNodes[i];
+            const candidateBackendId = candidate.backendNodeId();
+            const isActive = this.#popoverAdornerActive && candidateBackendId === activeInvokerId;
+            const label = resolvedNode ? formatCandidateLabel(resolvedNode) : '';
+            if (!label) {
+                continue;
+            }
+            contextMenu.defaultSection().appendCheckboxItem(label, async () => {
+                if (isActive) {
+                    await node.domModel().agent.invoke_forceShowPopover({ nodeId, enable: false });
+                    this.#popoverAdornerActive = false;
+                    this.#activePopoverInvokerId = null;
+                }
+                else {
+                    if (this.#popoverAdornerActive) {
+                        await node.domModel().agent.invoke_forceShowPopover({ nodeId, enable: false });
+                    }
+                    await node.domModel().agent.invoke_forceShowPopover({
+                        nodeId,
+                        enable: true,
+                        invokerNodeId: candidateBackendId,
+                    });
+                    this.#popoverAdornerActive = true;
+                    this.#activePopoverInvokerId = candidateBackendId;
+                    Badges.UserBadges.instance().recordAction(Badges.BadgeAction.MODERN_DOM_BADGE_CLICKED);
+                }
+                this.onPopoverAdornerToggled?.(node, this.#popoverAdornerActive);
+                this.requestUpdate();
+            }, {
+                checked: isActive,
+                onHover: (hovered) => {
+                    if (hovered) {
+                        candidate.highlight();
+                    }
+                    else {
+                        SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight(SDK.TargetManager.TargetManager.instance());
+                    }
+                },
+                jslogContext: 'implicit-anchor-candidate',
+            });
+        }
+        await contextMenu.show();
     }
     async #onInterestAdornerClick(event) {
         event.stopPropagation();
@@ -2360,6 +2650,7 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
         if (this.#interestAdornerActive) {
             Badges.UserBadges.instance().recordAction(Badges.BadgeAction.MODERN_DOM_BADGE_CLICKED);
         }
+        this.onInterestAdornerToggled?.(node, this.#interestAdornerActive);
         this.requestUpdate();
     }
     #onStartingStyleAdornerClick(event) {
@@ -2556,9 +2847,6 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
                 outline.suppressRevealAndSelect = true;
                 outline.selectDOMNode(node, selectedByUser);
                 outline.suppressRevealAndSelect = false;
-            };
-            this.widget.findStartTagWidget = () => {
-                return outline.findTreeElement(this.nodeInternal)?.widget ?? null;
             };
             this.widget.revealInTopLayer = node => outline.revealInTopLayer(node);
             this.widget.showContextMenu = event => void outline.showContextMenu(this, event);

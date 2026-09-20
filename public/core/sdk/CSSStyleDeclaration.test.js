@@ -2,16 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
+import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
+import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
+import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as SDK from './sdk.js';
 function assertPropertValues(object, expectedKeyValuePairs) {
     for (const [key, value] of expectedKeyValuePairs) {
         assert.propertyVal(object, key, value);
     }
 }
-describeWithEnvironment('CSSStyleDeclaration', () => {
+describe('CSSStyleDeclaration', () => {
+    setupLocaleHooks();
+    setupSettingsHooks();
+    setupRuntimeHooks();
+    let universe;
+    beforeEach(() => {
+        universe = new TestUniverse();
+    });
     it('should correctly construct new CSSStyleDeclaration', () => {
-        const target = createTarget();
+        const target = universe.createTarget();
         const cssModel = new SDK.CSSModel.CSSModel(target);
         const stubCSSStyle = {
             styleSheetId: 'STYLE_SHEET_ID',
@@ -89,7 +99,7 @@ describeWithEnvironment('CSSStyleDeclaration', () => {
         assert.isTrue(style.allProperties()[5].activeInStyle());
     });
     it('should correctly compute active and inactive declarations', () => {
-        const target = createTarget();
+        const target = universe.createTarget();
         const cssModel = new SDK.CSSModel.CSSModel(target);
         const stubCSSStyle = {
             styleSheetId: 'STYLE_SHEET_ID',
@@ -161,7 +171,7 @@ describeWithEnvironment('CSSStyleDeclaration', () => {
         assert.strictEqual(style.getPropertyValue('margin-left'), '30px');
     });
     it('correclty computes inactive variable properties in the presence of properties that failed to parse', () => {
-        const target = createTarget();
+        const target = universe.createTarget();
         const cssModel = new SDK.CSSModel.CSSModel(target);
         const stubCSSStyle = {
             styleSheetId: 'STYLE_SHEET_ID',
@@ -203,7 +213,7 @@ describeWithEnvironment('CSSStyleDeclaration', () => {
         assert.isFalse(style.hasActiveProperty('--a'));
     });
     it('should use ranged declaration as the active one', () => {
-        const target = createTarget();
+        const target = universe.createTarget();
         const cssModel = new SDK.CSSModel.CSSModel(target);
         const stubCSSStyle = {
             styleSheetId: 'STYLE_SHEET_ID',

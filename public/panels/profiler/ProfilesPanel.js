@@ -31,7 +31,6 @@ import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createIcon } from '../../ui/kit/kit.js';
-// eslint-disable-next-line @devtools/es-modules-import
 import objectValueStyles from '../../ui/legacy/components/object_ui/objectValue.css.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { render } from '../../ui/lit/lit.js';
@@ -55,7 +54,7 @@ const UIStrings = {
     /**
      * @description Error message when trying to load a profile while a recording is currently active.
      */
-    cantLoadProfileWhileAnother: 'Can’t load profile while another profile is being recorded.',
+    cantLoadProfileWhileAnother: 'Can’t load profile while another profile is being recorded',
     /**
      * @description Error header when loading a profile file fails.
      */
@@ -64,7 +63,7 @@ const UIStrings = {
      * @description Detailed error reason string shown when profile loading fails.
      * @example {cannot open file} PH1
      */
-    failReason: 'Reason: {PH1}.',
+    failReason: 'Reason: {PH1}',
     /**
      * @description Header for a profile run iteration in the Profiles sidebar.
      * @example {2} PH1

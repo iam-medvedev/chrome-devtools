@@ -87,30 +87,32 @@ describeWithEnvironment('PropertiesWidget', () => {
         });
         connection.setHandler('Runtime.callFunctionOn', callFunctionOn);
         sinon.stub(node, 'resolveToObject').withArgs('properties-sidebar-pane').resolves(object);
-        const viewFunction = createViewFunctionStub(Elements.PropertiesWidget.PropertiesWidget);
-        new Elements.PropertiesWidget.PropertiesWidget(viewFunction);
+        const widget = new Elements.PropertiesWidget.PropertiesWidget();
+        renderElementIntoDOM(widget);
         UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node);
-        const { objectTree } = await viewFunction.nextInput;
-        assert.exists(objectTree);
-        await objectTree.populateChildrenIfNeeded();
-        const nodes = Array.from(ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement.createPropertyNodes(objectTree.children || { properties: [], internalProperties: [], accessors: [] }, true, true));
-        // We need to attach the node to a TreeOutline so that its onattach() lifecycle hook
-        // is triggered and the DOM is fully constructed.
-        const dummyTree = new UI.TreeOutline.TreeOutlineInShadow();
-        for (const node of nodes) {
-            dummyTree.appendChild(node);
-        }
         await UI.Widget.Widget.allUpdatesComplete;
-        // The second node should be the accessor
-        const accessorNode = nodes.find(n => n instanceof ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement && n.property?.name === 'myGetter');
-        assert.instanceOf(accessorNode, ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement);
-        const invokeButton = accessorNode.listItemElement.querySelector('.object-value-calculate-value-button');
-        assert.instanceOf(invokeButton, HTMLElement);
+        const tree = widget.contentElement.querySelector('devtools-tree');
+        const invokeButton = tree?.shadowRoot?.querySelector('.object-value-calculate-value-button');
+        assert.exists(invokeButton);
         invokeButton.click();
         sinon.assert.calledWith(callFunctionOn, sinon.match({
             objectId: '1',
             arguments: sinon.match([{ objectId: '2' }]),
         }));
+    });
+    it('creates a read-only object tree', async () => {
+        SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
+        const model = target.model(SDK.DOMModel.DOMModel);
+        assert.exists(model);
+        const node = new SDK.DOMModel.DOMNode(model);
+        const object = SDK.RemoteObject.RemoteObject.fromLocalObject({});
+        sinon.stub(node, 'resolveToObject').withArgs('properties-sidebar-pane').resolves(object);
+        const viewFunction = createViewFunctionStub(Elements.PropertiesWidget.PropertiesWidget);
+        new Elements.PropertiesWidget.PropertiesWidget(viewFunction);
+        UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node);
+        const { objectTree } = await viewFunction.nextInput;
+        assert.exists(objectTree);
+        assert.isTrue(objectTree.readOnly);
     });
     describe('regex filter toggle', () => {
         it('passes isRegex=false to the view by default', async () => {
@@ -204,6 +206,7 @@ describeWithEnvironment('PropertiesWidget DEFAULT_VIEW', () => {
             propertiesMode: 1 /* ObjectUI.ObjectPropertiesSection.ObjectPropertiesMode.OWN_AND_INTERNAL_AND_INHERITED */,
             readOnly: true,
         });
+        objectTree.expanded = true;
         const viewFunction = createViewFunctionStub(Elements.PropertiesWidget.PropertiesWidget);
         new Elements.PropertiesWidget.PropertiesWidget(viewFunction);
         if (filter) {
@@ -212,25 +215,6 @@ describeWithEnvironment('PropertiesWidget DEFAULT_VIEW', () => {
         await objectTree.populateChildrenIfNeeded();
         return { container, objectTree };
     }
-    it('creates a read-only tree outline', async () => {
-        const { container, objectTree } = await setUpView();
-        Elements.PropertiesWidget.DEFAULT_VIEW({
-            onFilterChanged: () => { },
-            objectTree,
-            allChildrenFiltered: false,
-            onRegexToggled: function () {
-                throw new Error('Function not implemented.');
-            },
-            isRegex: false,
-        }, {}, container);
-        await UI.Widget.Widget.allUpdatesComplete;
-        const tree = container.querySelector('devtools-tree');
-        assert.exists(tree);
-        const treeOutline = tree.getInternalTreeOutlineForTest();
-        const child = treeOutline.rootElement().childAt(0);
-        assert.instanceOf(child, ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement);
-        assert.isFalse(child.editable);
-    });
     it('renders the view without filter', async () => {
         const { container, objectTree } = await setUpView();
         Elements.PropertiesWidget.DEFAULT_VIEW({

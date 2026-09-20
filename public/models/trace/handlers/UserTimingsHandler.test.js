@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { deinitializeGlobalVars, initializeGlobalVars } from '../../../testing/EnvironmentHelpers.js';
-import { makeCompleteEvent, makeTimingEventWithConsoleExtensionData, makeTimingEventWithPerformanceExtensionData, } from '../../../testing/TraceHelpers.js';
+import { makeCompleteEvent, makeTimingEventWithConsoleExtensionData, makeTimingEventWithPerformanceExtensionData, } from '../../../testing/TraceHelpersCore.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Trace from '../trace.js';
 export async function createEventDataFromTestInput(extensionData) {
@@ -29,12 +28,6 @@ async function createUserTimingsDataFromEvents(events) {
     return Trace.Handlers.ModelHandlers.UserTimings.data();
 }
 describe('UserTimingsHandler', function () {
-    before(async () => {
-        await initializeGlobalVars();
-    });
-    after(async () => {
-        await deinitializeGlobalVars();
-    });
     let timingsData;
     describe('performance timings', function () {
         async function getTimingsDataFromEvents(events) {

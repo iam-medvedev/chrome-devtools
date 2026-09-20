@@ -2,15 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
+import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
+import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
+import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as SDK from './sdk.js';
-describeWithEnvironment('DOMStorageModel', () => {
+describe('DOMStorageModel', () => {
+    setupLocaleHooks();
+    setupSettingsHooks();
+    setupRuntimeHooks();
+    let universe;
+    beforeEach(() => {
+        universe = new TestUniverse();
+    });
     let domStorageModel;
     let domStorage;
     let target;
     const initKey = 'storageKey1';
     beforeEach(() => {
-        target = createTarget();
+        target = universe.createTarget();
         domStorageModel = new SDK.DOMStorageModel.DOMStorageModel(target);
         domStorage = new SDK.DOMStorageModel.DOMStorage(domStorageModel, initKey, true);
     });

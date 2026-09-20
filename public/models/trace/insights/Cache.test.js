@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { getFirstOrError, getInsightOrError, processTrace } from '../../../testing/InsightHelpers.js';
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import * as Trace from '../trace.js';
-describeWithEnvironment('Cache', function () {
+describe('Cache', function () {
+    setupLocaleHooks();
     describe('isCacheable', () => {
         it('should return true for cacheable requests', () => {
             const cacheableRequest = {

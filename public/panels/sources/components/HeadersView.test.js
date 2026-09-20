@@ -165,7 +165,7 @@ describe('HeadersView', () => {
         assert.isNotNull(editor.shadowRoot);
         await RenderCoordinator.done();
         const errorHeader = editor.shadowRoot.querySelector('.error-header');
-        assert.strictEqual(errorHeader?.textContent, 'Error when parsing \'.headers\'.');
+        assert.strictEqual(errorHeader?.textContent, 'Error when parsing \'.headers\'');
     });
     it('displays data and allows editing', async () => {
         const editor = await renderEditor();

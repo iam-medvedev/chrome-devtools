@@ -49,7 +49,7 @@ describeWithEnvironment('CommentOverlayManager', () => {
         assert.strictEqual(manager.getCommentThread(thread.id), thread);
         assert.strictEqual(thread?.comments[0].text, 'Needs adjustment');
         assert.strictEqual(thread?.comments[0].author, 'DEVELOPER');
-        assert.strictEqual(thread?.status, 'ACTIVE');
+        assert.strictEqual(thread?.status, 'DRAFT');
         const pins = manager.getPinPositions();
         assert.lengthOf(pins, 1);
         assert.isTrue(pins[0].visible);
@@ -71,7 +71,7 @@ describeWithEnvironment('CommentOverlayManager', () => {
                 description: 'Changed property "color" from "#333" to "#000"',
                 timestamp: 123456789,
             }];
-        const thread = manager.createComment(item, 'Auto-fixed color', 'AGENT', changes);
+        const thread = manager.createComment(item, 'Auto-fixed color', { author: 'AGENT', changes });
         assert.isNotNull(thread);
         assert.strictEqual(thread?.comments[0].author, 'AGENT');
         assert.strictEqual(thread?.comments[0].text, 'Auto-fixed color');
@@ -124,7 +124,7 @@ describeWithEnvironment('CommentOverlayManager', () => {
         assert.isFalse(manager.isCommentMode());
     });
     it('updates cursor when hovering over commentable elements in comment mode', () => {
-        manager.start(container, 'Hover cursor test');
+        manager.start(container);
         manager.setCommentMode(true);
         const commentableEl = document.createElement('div');
         commentableEl.setAttribute('jslog', 'TreeItem; context: commentable-hover');
@@ -143,36 +143,20 @@ describeWithEnvironment('CommentOverlayManager', () => {
         item.setAttribute('jslog', 'TreeItem; context: click-item');
         item.textContent = 'display: block;';
         container.appendChild(item);
-        const threadInactive = manager.handleElementClick(item, 'Not in mode');
-        assert.isNull(threadInactive);
+        const handledInactive = manager.handleElementClick(item);
+        assert.isFalse(handledInactive);
+        assert.isEmpty(manager.getCommentThreads());
         manager.setCommentMode(true);
-        const threadActive = manager.handleElementClick(item, 'In mode');
-        assert.isNotNull(threadActive);
-        assert.strictEqual(threadActive?.comments[0].text, 'In mode');
-    });
-    it('creates comments when clicking elements with start() in Comment Mode', () => {
-        manager.start(container, 'Clicked comment');
-        manager.setCommentMode(true);
-        const el = document.createElement('div');
-        el.setAttribute('jslog', 'TreeItem; context: clickable');
-        el.textContent = 'line-height: 1.5;';
-        container.appendChild(el);
-        el.click();
+        const handledActive = manager.handleElementClick(item);
+        assert.isTrue(handledActive);
         const threads = manager.getCommentThreads();
         assert.lengthOf(threads, 1);
-        assert.strictEqual(threads[0].comments[0].text, 'Clicked comment');
-        assert.include(threads[0].anchor.vePath, 'TreeItem: clickable');
+        assert.strictEqual(threads[0].status, 'DRAFT');
+        assert.strictEqual(manager.getAnchorElement(threads[0]), item);
+        assert.lengthOf(manager.getPinPositions(), 1);
     });
-    it('does not create comments when clicking elements in Comment Mode if not anchorable', () => {
-        manager.start(container, 'Clicked comment');
-        manager.setCommentMode(true);
-        const emptyDiv = document.createElement('div');
-        container.appendChild(emptyDiv);
-        emptyDiv.click();
-        assert.lengthOf(manager.getCommentThreads(), 0);
-    });
-    it('creates comments when clicking elements inside Shadow DOM using composed target', () => {
-        manager.start(container, 'Shadow comment');
+    it('creates draft thread when clicking elements inside Shadow DOM using composed target', () => {
+        manager.start(container);
         manager.setCommentMode(true);
         const host = document.createElement('div');
         const shadow = host.attachShadow({ mode: 'open' });
@@ -184,11 +168,64 @@ describeWithEnvironment('CommentOverlayManager', () => {
         innerEl.click();
         const threads = manager.getCommentThreads();
         assert.lengthOf(threads, 1);
-        assert.strictEqual(threads[0].comments[0].text, 'Shadow comment');
-        assert.include(threads[0].anchor.vePath, 'TreeItem: shadow-item');
+        assert.strictEqual(threads[0].status, 'DRAFT');
+        assert.strictEqual(manager.getAnchorElement(threads[0]), innerEl);
+        assert.lengthOf(manager.getPinPositions(), 1);
+    });
+    it('creates draft thread and updates positions when clicking in Comment Mode', () => {
+        manager.start(container);
+        manager.setCommentMode(true);
+        const el = document.createElement('div');
+        el.setAttribute('jslog', 'TreeItem; context: draft-clickable');
+        el.textContent = 'font-size: 14px;';
+        container.appendChild(el);
+        const positionsListener = sinon.spy();
+        manager.addEventListener("PositionsUpdated" /* Comments.CommentOverlayManager.Events.POSITIONS_UPDATED */, positionsListener);
+        const clickEvent = new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            composed: true,
+            clientX: 150,
+            clientY: 250,
+        });
+        el.dispatchEvent(clickEvent);
+        const threads = manager.getCommentThreads();
+        assert.isTrue(clickEvent.defaultPrevented);
+        assert.lengthOf(threads, 1);
+        assert.strictEqual(threads[0].status, 'DRAFT');
+        assert.strictEqual(manager.getAnchorElement(threads[0]), el);
+        assert.isTrue(manager.getPinPositions()[0]?.visible ?? false);
+        assert.isTrue(manager.getHighlightRects()[0]?.visible ?? false);
+        sinon.assert.calledOnce(positionsListener);
+    });
+    it('clears draft thread when clicking an unanchorable element', () => {
+        manager.start(container);
+        manager.setCommentMode(true);
+        const el = document.createElement('div');
+        el.setAttribute('jslog', 'TreeItem; context: draft-clear-target');
+        el.textContent = 'draft clear item';
+        container.appendChild(el);
+        manager.handleElementClick(el);
+        assert.lengthOf(manager.getCommentThreads(), 1);
+        const emptyDiv = document.createElement('div');
+        container.appendChild(emptyDiv);
+        emptyDiv.click();
+        assert.isEmpty(manager.getCommentThreads());
+    });
+    it('clears draft thread when toggling Comment Mode off', () => {
+        manager.start(container);
+        manager.setCommentMode(true);
+        const el = document.createElement('div');
+        el.setAttribute('jslog', 'TreeItem; context: mode-toggle-target');
+        el.textContent = 'mode toggle item';
+        container.appendChild(el);
+        manager.handleElementClick(el);
+        assert.lengthOf(manager.getCommentThreads(), 1);
+        manager.setCommentMode(false);
+        assert.isEmpty(manager.getCommentThreads());
     });
     it('suppresses pointer and mouse events on anchorable elements in Comment Mode', () => {
-        manager.start(container, 'Suppress test');
+        manager.start(container);
         manager.setCommentMode(true);
         const el = document.createElement('div');
         el.setAttribute('jslog', 'TreeItem; context: suppress-item');
@@ -201,7 +238,7 @@ describeWithEnvironment('CommentOverlayManager', () => {
         }
     });
     it('sets hover highlight data on mouseover in Comment Mode and clears it on mouseleave', () => {
-        manager.start(container, 'Highlight test');
+        manager.start(container);
         manager.setCommentMode(true);
         const el = document.createElement('div');
         el.setAttribute('jslog', 'TreeItem; context: highlighted');
@@ -219,7 +256,7 @@ describeWithEnvironment('CommentOverlayManager', () => {
         assert.isNull(manager.getHoverHighlight());
     });
     it('does not consume mouseleave event on non-anchorable elements in Comment Mode', () => {
-        manager.start(container, 'Hover test');
+        manager.start(container);
         manager.setCommentMode(true);
         const nonAnchorEl = document.createElement('div');
         container.appendChild(nonAnchorEl);
@@ -229,7 +266,7 @@ describeWithEnvironment('CommentOverlayManager', () => {
         assert.isNull(manager.getHoverHighlight());
     });
     it('does not clear hover highlight when moving pointer between children of the same anchor element', () => {
-        manager.start(container, 'Child hover test');
+        manager.start(container);
         manager.setCommentMode(true);
         const anchorEl = document.createElement('div');
         anchorEl.setAttribute('jslog', 'TreeItem; context: parent-anchor');
@@ -248,7 +285,7 @@ describeWithEnvironment('CommentOverlayManager', () => {
         assert.isNotNull(manager.getHoverHighlight());
     });
     it('deduplicates HOVER_HIGHLIGHT_CHANGED events when hover data has not changed', () => {
-        manager.start(container, 'Deduplication test');
+        manager.start(container);
         manager.setCommentMode(true);
         const anchorEl = document.createElement('div');
         anchorEl.setAttribute('jslog', 'TreeItem; context: dedup-anchor');
@@ -274,7 +311,7 @@ describeWithEnvironment('CommentOverlayManager', () => {
         assert.strictEqual(eventCount, 2);
     });
     it('starts and stops listeners and observers cleanly', () => {
-        manager.start({ root: container, defaultText: 'Test' });
+        manager.start({ root: container });
         manager.stop();
     });
     it('staggers pin vertical offsets when multiple comments are on the same element', () => {
@@ -410,8 +447,13 @@ describeWithEnvironment('CommentOverlayManager', () => {
             line2.dispatchEvent(new MouseEvent('click', { bubbles: true, composed: true }));
             const threads = manager.getCommentThreads();
             assert.lengthOf(threads, 1);
-            assert.strictEqual(threads[0].anchor.editor?.lineNumber, 2);
-            assert.strictEqual(threads[0].anchor.editor?.filePath, 'src/code.ts');
+            const thread = threads[0];
+            assert.strictEqual(thread.status, 'DRAFT');
+            assert.strictEqual(thread.anchor.editor?.lineNumber, 2);
+            assert.strictEqual(thread.anchor.editor?.filePath, 'src/code.ts');
+            thread.save('Editor comment');
+            assert.strictEqual(thread.status, 'ACTIVE');
+            assert.strictEqual(thread.comments[0].text, 'Editor comment');
             const highlights = manager.getHighlightRects();
             assert.lengthOf(highlights, 1);
             const editorRect = textEditor.editor.dom.getBoundingClientRect();
@@ -451,7 +493,7 @@ describeWithEnvironment('CommentOverlayManager', () => {
                 const lines = textEditor.editor.dom.querySelectorAll('.cm-content > .cm-line');
                 const line2 = lines[1];
                 assert.isDefined(line2);
-                line2.dispatchEvent(new MouseEvent('click', { bubbles: true, composed: true }));
+                manager.createComment(line2, 'Rematch comment');
                 assert.lengthOf(manager.getPinPositions(), 1);
                 // Trigger rematch observer debounced timer
                 await Promise.resolve();
@@ -585,7 +627,7 @@ describeWithEnvironment('CommentOverlayManager', () => {
         try {
             manager.start(container);
             manager.setCommentMode(true);
-            const thread = manager.createComment(customTarget, 'Investigate custom target', 'DEVELOPER', undefined, { clientX: 40, clientY: 60 });
+            const thread = manager.createComment(customTarget, 'Investigate custom target', { coordinates: { clientX: 40, clientY: 60 } });
             assert.isNotNull(thread);
             assert.isNotNull(thread?.anchor.timeline);
             assert.strictEqual(thread?.anchor.timeline?.traceId, 'trace-test-1');
