@@ -7,6 +7,7 @@ import * as Marked from '../../third_party/marked/marked.js';
  */
 export interface MarkdownIssueDescription {
     file: string;
+    title?: string;
     substitutions?: Map<string, string>;
     links: Array<{
         link: string;
@@ -15,6 +16,7 @@ export interface MarkdownIssueDescription {
 }
 export interface LazyMarkdownIssueDescription {
     file: string;
+    title?: () => string;
     substitutions?: Map<string, () => string>;
     links: Array<{
         link: string;
@@ -38,6 +40,7 @@ export interface IssueDescription {
         link: string;
         linkTitle: string;
     }>;
+    substitutions?: Map<string, string>;
 }
 export declare function getFileContent(url: URL): Promise<string>;
 export declare function getMarkdownFileContent(filename: string): Promise<string>;
@@ -46,18 +49,5 @@ export declare function createIssueDescriptionFromMarkdown(description: Markdown
  * This function is exported separately for unit testing.
  */
 export declare function createIssueDescriptionFromRawMarkdown(markdown: string, description: MarkdownIssueDescription): IssueDescription;
-/**
- * Replaces placeholders in markdown text with a string provided by the
- * `substitutions` map. To keep mental overhead to a minimum, the same
- * syntax is used as for l10n placeholders. Please note that the
- * placeholders require a mandatory 'PLACEHOLDER_' prefix.
- *
- * Example:
- *   const str = "This is markdown with `code` and two placeholders, namely {PLACEHOLDER_PH1} and {PLACEHOLDER_PH2}".
- *   const result = substitutePlaceholders(str, new Map([['PLACEHOLDER_PH1', 'foo'], ['PLACEHOLDER_PH2', 'bar']]));
- *
- * Exported only for unit testing.
- */
-export declare function substitutePlaceholders(markdown: string, substitutions?: Map<string, string>): string;
 export declare function findTitleFromMarkdownAst(markdownAst: Marked.Marked.Token[]): string | null;
 export declare function getIssueTitleFromMarkdownDescription(description: MarkdownIssueDescription): Promise<string | null>;

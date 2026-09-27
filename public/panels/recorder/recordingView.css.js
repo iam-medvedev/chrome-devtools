@@ -331,9 +331,18 @@ export default `/*
     gap: 3px;
   }
 
-  .section-toolbar > devtools-select-menu {
+  .code-format-label {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    gap: var(--sys-size-3);
+    min-width: 0;
+    white-space: nowrap;
+  }
+
+  .code-format-label > select {
     height: var(--sys-size-11);
-    min-width: 50px;
+    min-width: 0;
   }
 
   .sections .section-toolbar {

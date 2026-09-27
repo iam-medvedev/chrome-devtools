@@ -47,7 +47,7 @@ describeWithEnvironment('AdoptedStyleSheetTreeElement highlighting', () => {
         };
         containerNode = SDK.DOMModel.DOMNode.create(domModel, null, false, containerPayload);
         shadowRootNode = containerNode.shadowRoots()[0];
-        treeOutline = new Elements.ElementsTreeOutline.ElementsTreeOutline();
+        treeOutline = new Elements.DOMTreeWidget.ElementsTreeOutline();
         treeOutline.wireToDOMModel(domModel);
         const containerTreeElement = new Elements.ElementsTreeElement.ElementsTreeElement(containerNode);
         treeOutline.appendChild(containerTreeElement);

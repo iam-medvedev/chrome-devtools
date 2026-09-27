@@ -3823,7 +3823,7 @@ function nodeMixin(base) {
     }
     createElement() {
       const element = super.createElement();
-      element.addEventListener("click", this.#onRowMouseEvent.bind(this));
+      element.addEventListener("click", this.#onRowMouseEvent.bind(this), { capture: true });
       element.addEventListener("mouseenter", this.#onRowMouseEvent.bind(this));
       element.addEventListener("mouseleave", this.#onRowMouseEvent.bind(this));
       if (this.#configElement.hasAttribute("style")) {
@@ -3986,6 +3986,7 @@ __export(DataGridExporter_exports, {
   exportToCSV: () => exportToCSV,
   exportToMarkdown: () => exportToMarkdown
 });
+import * as Platform5 from "../../../../core/platform/platform.js";
 function exportToMarkdown(dataGrid) {
   const grid = serializeGrid(dataGrid, escapeMarkdown);
   if (grid.length === 0) {
@@ -4030,19 +4031,7 @@ function escapeMarkdown(val) {
   return val.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/([\\`*_{}[\]()#+\-.!|])/g, "\\$1").replace(/\r?\n/g, "<br>");
 }
 function escapeCSV(val) {
-  let needQuotes = false;
-  let escaped = val;
-  if (escaped.includes('"')) {
-    escaped = escaped.replace(/"/g, '""');
-    needQuotes = true;
-  }
-  if (escaped.includes(",") || escaped.includes("\n") || escaped.includes("\r")) {
-    needQuotes = true;
-  }
-  if (needQuotes) {
-    return `"${escaped}"`;
-  }
-  return escaped;
+  return Platform5.StringUtilities.escapeCsvCell(val);
 }
 export {
   DataGrid_exports as DataGrid,

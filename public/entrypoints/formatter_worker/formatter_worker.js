@@ -4955,10 +4955,13 @@ import { DefinitionKind, ScopeKind } from "../formatter_actions/formatter_action
 function parseScopes(expression, sourceType = "script") {
   let root = null;
   try {
-    root = Acorn3.parse(
-      expression,
-      { ecmaVersion: ECMA_VERSION, allowAwaitOutsideFunction: true, ranges: false, sourceType }
-    );
+    root = Acorn3.parse(expression, {
+      ecmaVersion: ECMA_VERSION,
+      allowAwaitOutsideFunction: true,
+      checkPrivateFields: false,
+      ranges: false,
+      sourceType
+    });
   } catch {
     return null;
   }
@@ -5485,11 +5488,37 @@ function indexOfCharInBounds(str, needle, start, end) {
 }
 
 // ../../front_end/entrypoints/formatter_worker/Substitute.ts
-function substituteExpression(expression, nameMap) {
-  const replacements = computeSubstitution(expression, nameMap);
+function substituteExpression(expression, nameMaps) {
+  const replacements = computeSubstitution(expression, nameMaps);
   return applySubstitution(expression, replacements);
 }
-function computeSubstitution(expression, nameMap) {
+function parseBindingExpression(expression) {
+  const options = {
+    ecmaVersion: ECMA_VERSION,
+    allowAwaitOutsideFunction: true,
+    allowImportExportEverywhere: true,
+    checkPrivateFields: false,
+    ranges: false
+  };
+  const root = Acorn4.parse(`(${expression})`, options);
+  const exprAt = Acorn4.Parser.parseExpressionAt(expression, 0, options);
+  if (root.body.length !== 1 || root.body[0].type !== "ExpressionStatement") {
+    throw new SyntaxError(`Invalid binding expression '${expression}'`);
+  }
+  const expr = root.body[0].expression;
+  if (exprAt.start !== expr.start - 1 || exprAt.end !== expr.end - 1) {
+    throw new SyntaxError(`Invalid binding expression '${expression}'`);
+  }
+  const analysis = new ScopeVariableAnalysis(root, `(${expression})`);
+  analysis.run();
+  const needsParens = expr.type !== "Identifier" && expr.type !== "MemberExpression" && expr.type !== "ThisExpression";
+  return {
+    replacement: needsParens ? `(${expression})` : expression,
+    freeVariables: [...analysis.getFreeVariables().keys()],
+    allNames: analysis.getAllNames()
+  };
+}
+function computeSubstitution(expression, nameMaps) {
   const root = Acorn4.parse(expression, {
     ecmaVersion: ECMA_VERSION,
     allowAwaitOutsideFunction: true,
@@ -5502,10 +5531,33 @@ function computeSubstitution(expression, nameMap) {
   const freeVariables = scopeVariables.getFreeVariables();
   const result = [];
   const allNames = scopeVariables.getAllNames();
-  for (const rename of nameMap.values()) {
-    if (rename) {
-      allNames.add(rename);
+  const nameMap = /* @__PURE__ */ new Map();
+  const parsedBindings = /* @__PURE__ */ new Map();
+  const shadowedNames = /* @__PURE__ */ new Set();
+  for (const scopeMap of nameMaps) {
+    const scopeNames = /* @__PURE__ */ new Set();
+    for (const [name, rename] of scopeMap.entries()) {
+      let parsed;
+      if (rename !== null) {
+        try {
+          parsed = parseBindingExpression(rename);
+          parsed.allNames.forEach((id) => allNames.add(id));
+          parsed.freeVariables.forEach((id) => scopeNames.add(id));
+        } catch (error) {
+          if (!nameMap.has(name) && freeVariables.has(name)) {
+            throw error;
+          }
+        }
+      }
+      if (!nameMap.has(name)) {
+        const isShadowed = parsed?.freeVariables.some((id) => shadowedNames.has(id));
+        nameMap.set(name, isShadowed ? null : rename);
+        if (parsed && !isShadowed) {
+          parsedBindings.set(name, parsed);
+        }
+      }
     }
+    scopeNames.forEach((id) => shadowedNames.add(id));
   }
   function getNewName(base) {
     let i = 1;
@@ -5516,6 +5568,7 @@ function computeSubstitution(expression, nameMap) {
     allNames.add(newName);
     return newName;
   }
+  const capturedBinders = /* @__PURE__ */ new Map();
   for (const [name, rename] of nameMap.entries()) {
     const defUse = freeVariables.get(name);
     if (!defUse) {
@@ -5524,29 +5577,37 @@ function computeSubstitution(expression, nameMap) {
     if (rename === null) {
       throw new Error(`Cannot substitute '${name}' as the underlying variable '${rename}' is unavailable`);
     }
-    const binders = [];
+    const parsed = parsedBindings.get(name);
+    if (!parsed) {
+      continue;
+    }
+    const freeIds = [...parsed.freeVariables];
     for (const use of defUse) {
       result.push({
         from: name,
-        to: rename,
+        to: parsed.replacement,
         offset: use.offset,
         isShorthandAssignmentProperty: use.isShorthandAssignmentProperty
       });
-      binders.push(...use.scope.findBinders(rename));
+      for (const freeId of freeIds) {
+        for (const binder of use.scope.findBinders(freeId)) {
+          capturedBinders.set(binder, freeId);
+        }
+      }
     }
-    for (const binder of binders) {
-      if (binder.definitionKind === DefinitionKind2.FIXED) {
-        throw new Error(`Cannot avoid capture of '${rename}'`);
-      }
-      const newName = getNewName(rename);
-      for (const use of binder.uses) {
-        result.push({
-          from: rename,
-          to: newName,
-          offset: use.offset,
-          isShorthandAssignmentProperty: use.isShorthandAssignmentProperty
-        });
-      }
+  }
+  for (const [binder, freeId] of capturedBinders.entries()) {
+    if (binder.definitionKind === DefinitionKind2.FIXED) {
+      throw new Error(`Cannot avoid capture of '${freeId}'`);
+    }
+    const newName = getNewName(freeId);
+    for (const use of binder.uses) {
+      result.push({
+        from: freeId,
+        to: newName,
+        offset: use.offset,
+        isShorthandAssignmentProperty: use.isShorthandAssignmentProperty
+      });
     }
   }
   result.sort((l, r) => l.offset - r.offset);

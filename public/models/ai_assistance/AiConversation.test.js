@@ -11,6 +11,7 @@ import { assertSkillLoaded, assertSkillNotLoaded, mockAidaClient, } from '../../
 import { deinitializeGlobalVars, updateHostConfig, } from '../../testing/EnvironmentHelpers.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { createNetworkRequest } from '../../testing/NetworkRequestHelpers.js';
+import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
 import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as Bindings from '../bindings/bindings.js';
 import * as Logs from '../logs/logs.js';
@@ -19,6 +20,7 @@ import * as Workspace from '../workspace/workspace.js';
 import * as AiAssistance from './ai_assistance.js';
 describe('AiConversation', () => {
     setupLocaleHooks();
+    setupRuntimeHooks();
     after(async () => {
         await deinitializeGlobalVars();
     });
@@ -227,6 +229,11 @@ describe('AiConversation', () => {
     });
     it('should update context when agent returns CONTEXT_CHANGE', async () => {
         updateHostConfig({ devToolsAiAssistanceContextSelectionAgent: { enabled: true } });
+        const origin = Platform.DevToolsPath.urlString `https://example.com`;
+        const target = sinon.createStubInstance(SDK.Target.Target);
+        target.inspectedURL.returns(Platform.DevToolsPath.urlString `${origin}/`);
+        target.inspectedSecurityOrigin.returns(SDK.SecurityOrigin.SecurityOrigin.create(origin));
+        sinon.stub(universe.targetManager, 'primaryPageTarget').returns(target);
         const workspace = universe.workspace;
         const project = {
             id: () => 'test-project',
@@ -297,6 +304,11 @@ describe('AiConversation', () => {
     });
     it('should update conversation origin when agent returns CONTEXT_CHANGE', async () => {
         updateHostConfig({ devToolsAiAssistanceContextSelectionAgent: { enabled: true } });
+        const originUrl = Platform.DevToolsPath.urlString `https://example.com`;
+        const target = sinon.createStubInstance(SDK.Target.Target);
+        target.inspectedURL.returns(Platform.DevToolsPath.urlString `${originUrl}/`);
+        target.inspectedSecurityOrigin.returns(SDK.SecurityOrigin.SecurityOrigin.create(originUrl));
+        sinon.stub(universe.targetManager, 'primaryPageTarget').returns(target);
         const aidaClient = mockAidaClient([
             [
                 {
@@ -335,8 +347,60 @@ describe('AiConversation', () => {
         assert.isOk(origin);
         assert.isTrue(origin.isSameOriginWith(SDK.SecurityOrigin.SecurityOrigin.create('https://example.com')));
     });
+    it('does not leak network requests or lock origin when primary page origin is undefined (uncommitted navigation)', async () => {
+        updateHostConfig({ devToolsAiAssistanceContextSelectionAgent: { enabled: true } });
+        const target = sinon.createStubInstance(SDK.Target.Target);
+        target.inspectedURL.returns(Platform.DevToolsPath.EmptyUrlString);
+        sinon.stub(universe.targetManager, 'primaryPageTarget').returns(target);
+        const networkRequest = createNetworkRequest({
+            requestId: 'requestId-0',
+            url: Platform.DevToolsPath.urlString `https://idp.example/auth?saml_assertion=secret`,
+            documentURL: Platform.DevToolsPath.urlString `https://idp.example/login`,
+        });
+        sinon.stub(universe.networkLog, 'requests').returns([networkRequest]);
+        const aidaClient = mockAidaClient([
+            [{
+                    explanation: '',
+                    functionCalls: [{ name: 'listNetworkRequests', args: {} }],
+                }],
+            [{
+                    explanation: '',
+                    functionCalls: [{ name: 'selectNetworkRequest', args: { id: 'requestId-0' } }],
+                }],
+            [{ explanation: 'Done' }],
+        ]);
+        const conversation = new AiAssistance.AiConversation.AiConversation({
+            type: "none" /* AiAssistance.AiHistoryStorage.ConversationType.NONE */,
+            data: [],
+            id: 'test-id',
+            isReadOnly: false,
+            aidaClient,
+        });
+        await Array.fromAsync(conversation.run('what requests are slow?'));
+        assert.isUndefined(conversation.origin);
+        assert.isUndefined(conversation.selectedContext);
+        const listCall = aidaClient.doConversation.getCall(1).firstArg;
+        const listPart = listCall.current_message.parts[0];
+        assert(listPart && 'functionResponse' in listPart);
+        assert.deepEqual(listPart.functionResponse.response, {
+            error: 'No requests recorded by DevTools',
+            widgets: undefined,
+        });
+        const selectCall = aidaClient.doConversation.getCall(2).firstArg;
+        const selectPart = selectCall.current_message.parts[0];
+        assert(selectPart && 'functionResponse' in selectPart);
+        assert.deepEqual(selectPart.functionResponse.response, {
+            error: 'No request found',
+            widgets: undefined,
+        });
+    });
     it('should forward history to the new agent when switching agents', async () => {
         updateHostConfig({ devToolsAiAssistanceContextSelectionAgent: { enabled: true } });
+        const originUrl = Platform.DevToolsPath.urlString `https://example.com`;
+        const target = sinon.createStubInstance(SDK.Target.Target);
+        target.inspectedURL.returns(Platform.DevToolsPath.urlString `${originUrl}/`);
+        target.inspectedSecurityOrigin.returns(SDK.SecurityOrigin.SecurityOrigin.create(originUrl));
+        sinon.stub(universe.targetManager, 'primaryPageTarget').returns(target);
         function hasFunctionCalls(request) {
             return request.historical_contexts?.some(history => {
                 return history.parts.some(part => 'functionCall' in part || 'functionResponse' in part);

@@ -30,9 +30,15 @@ var controlButton_css_default = `/*
 .control {
   background: none;
   border: none;
+  border-radius: var(--sys-shape-corner-small);
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+.control:focus-visible {
+  outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
+  outline-offset: var(--sys-size-2);
 }
 
 .control[disabled] {
@@ -665,7 +671,7 @@ import * as EmulationModel2 from "../../models/emulation/emulation.js";
 import * as PublicExtensions from "../../models/extensions/extensions.js";
 import * as Tracing from "../../services/tracing/tracing.js";
 import * as Buttons8 from "../../ui/components/buttons/buttons.js";
-import * as Dialogs2 from "../../ui/components/dialogs/dialogs.js";
+import * as Dialogs from "../../ui/components/dialogs/dialogs.js";
 import * as UI11 from "../../ui/legacy/legacy.js";
 import { Directives as Directives5, html as html11, render as render11 } from "../../ui/lit/lit.js";
 import * as VisualLogging9 from "../../ui/visual_logging/visual_logging.js";
@@ -1159,7 +1165,6 @@ import * as SDK2 from "../../core/sdk/sdk.js";
 import * as CodeMirror from "../../third_party/codemirror.next/codemirror.next.js";
 import * as Buttons7 from "../../ui/components/buttons/buttons.js";
 import * as CodeHighlighter from "../../ui/components/code_highlighter/code_highlighter.js";
-import * as Dialogs from "../../ui/components/dialogs/dialogs.js";
 import * as Input2 from "../../ui/components/input/input.js";
 import * as TextEditor from "../../ui/components/text_editor/text_editor.js";
 import * as UI10 from "../../ui/legacy/legacy.js";
@@ -1657,9 +1662,18 @@ var recordingView_css_default = `/*
     gap: 3px;
   }
 
-  .section-toolbar > devtools-select-menu {
+  .code-format-label {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    gap: var(--sys-size-3);
+    min-width: 0;
+    white-space: nowrap;
+  }
+
+  .code-format-label > select {
     height: var(--sys-size-11);
-    min-width: 50px;
+    min-width: 0;
   }
 
   .sections .section-toolbar {
@@ -4629,7 +4643,11 @@ var UIStrings8 = {
   /**
    * @description The announcement when the code sidebar is closed.
    */
-  codeSidebarClosed: "Code sidebar closed"
+  codeSidebarClosed: "Code sidebar closed",
+  /**
+   * @description Label for the select that changes the code format in the Recorder panel.
+   */
+  codeFormat: "Code format"
 };
 var str_8 = i18n15.i18n.registerUIStrings(
   "panels/recorder/RecordingView.ts",
@@ -4651,7 +4669,6 @@ var networkConditionPresets = [
 function renderSettings({
   settings,
   replaySettingsExpanded,
-  onSelectMenuLabelClick,
   onNetworkConditionsChange,
   onTimeoutInput,
   isRecording,
@@ -4717,7 +4734,7 @@ function renderSettings({
       menuButtonTitle = selectedOptionTitle.title instanceof Function ? selectedOptionTitle.title() : selectedOptionTitle.title;
     }
     replaySettingsFragments.push(html10`<div class="editable-setting">
-      <label class="wrapping-label" @click=${onSelectMenuLabelClick}>
+      <label class="wrapping-label">
         ${i18nString8(UIStrings8.network)}
         <select
             title=${menuButtonTitle}
@@ -4808,35 +4825,33 @@ function renderTimelineArea(input, output) {
           <div slot="sidebar" jslog=${VisualLogging8.pane("source-code").track({ resize: true })}>
             ${input.showCodeView ? html10`
             <div class="section-toolbar" jslog=${VisualLogging8.toolbar()}>
-              <devtools-select-menu
-                @selectmenuselected=${input.onCodeFormatChange}
-                .showDivider=${true}
-                .showArrow=${true}
-                .sideButton=${false}
-                .showSelectedItem=${true}
-                .position=${Dialogs.Dialog.DialogVerticalPosition.BOTTOM}
-                .buttonTitle=${input.converterName || ""}
-                .jslogContext=${"code-format"}
-              >
+              <label class="code-format-label">
+                ${i18nString8(UIStrings8.codeFormat)}
+                <select
+                  @change=${(event) => {
+    if (event.target instanceof HTMLSelectElement) {
+      input.onCodeFormatChange(event.target.value);
+    }
+  }}
+                  jslog=${VisualLogging8.dropDown("code-format").track({ change: true })}>
                 ${input.builtInConverters.map((converter) => {
-    return html10`<devtools-menu-item
-                    .value=${converter.getId()}
-                    .selected=${input.converterId === converter.getId()}
-                    jslog=${VisualLogging8.action().track({ click: true }).context(`converter-${Platform5.StringUtilities.toKebabCase(converter.getId())}`)}
-                  >
+    return html10`<option
+                    value=${converter.getId()}
+                    ?selected=${input.converterId === converter.getId()}
+                    jslog=${VisualLogging8.item(`converter-${Platform5.StringUtilities.toKebabCase(converter.getId())}`)}>
                     ${converter.getFormatName()}
-                  </devtools-menu-item>`;
+                  </option>`;
   })}
                 ${input.extensionConverters.map((converter) => {
-    return html10`<devtools-menu-item
-                    .value=${converter.getId()}
-                    .selected=${input.converterId === converter.getId()}
-                    jslog=${VisualLogging8.action().track({ click: true }).context("converter-extension")}
-                  >
+    return html10`<option
+                    value=${converter.getId()}
+                    ?selected=${input.converterId === converter.getId()}
+                    jslog=${VisualLogging8.item("converter-extension")}>
                     ${converter.getFormatName()}
-                  </devtools-menu-item>`;
+                  </option>`;
   })}
-              </devtools-select-menu>
+                </select>
+              </label>
               <devtools-button
                 title=${Models7.Tooltip.getTooltipForActions(
     i18nString8(UIStrings8.hideCode),
@@ -5201,16 +5216,11 @@ var RecordingView = class extends UI10.Widget.Widget {
     this.#view = view || DEFAULT_VIEW10;
   }
   performUpdate() {
-    const converter = [
-      ...this.builtInConverters || [],
-      ...this.extensionConverters || []
-    ].find((converter2) => converter2.getId() === this.#converterId) ?? this.builtInConverters[0];
     this.#view(
       {
         breakpointIndexes: this.breakpointIndexes,
         builtInConverters: this.builtInConverters,
         converterId: this.#converterId,
-        converterName: converter?.getFormatName(),
         currentError: this.currentError ?? null,
         currentStep: this.currentStep ?? null,
         editorState: this.#editorState ?? null,
@@ -5260,7 +5270,6 @@ var RecordingView = class extends UI10.Widget.Widget {
         onEditTitleButtonClick: this.#onEditTitleButtonClick.bind(this),
         onNetworkConditionsChange: this.#onNetworkConditionsChange.bind(this),
         onReplaySettingsKeydown: this.#onReplaySettingsKeydown.bind(this),
-        onSelectMenuLabelClick: this.#onSelectMenuLabelClick.bind(this),
         onStepClick: this.#onStepClick.bind(this),
         onStepHover: this.#onStepHover.bind(this),
         onTimeoutInput: this.#onTimeoutInput.bind(this),
@@ -5419,12 +5428,6 @@ var RecordingView = class extends UI10.Widget.Widget {
     }
     input.focus();
   };
-  #onSelectMenuLabelClick = (event) => {
-    const target = event.target;
-    if (target.matches(".wrapping-label")) {
-      target.querySelector("devtools-select-menu")?.click();
-    }
-  };
   async #copyCurrentSelection(step) {
     let converter = [
       ...this.builtInConverters,
@@ -5514,10 +5517,10 @@ var RecordingView = class extends UI10.Widget.Widget {
     const length = this.#sourceMap[stepIndex * 2 + 1];
     this.#viewOutput.highlightLinesInEditor?.(line, length, scroll);
   };
-  #onCodeFormatChange = (event) => {
-    this.#converterId = event.itemValue;
+  #onCodeFormatChange = (codeFormat) => {
+    this.#converterId = codeFormat;
     if (this.recorderSettings) {
-      this.recorderSettings.preferredCopyFormat = event.itemValue;
+      this.recorderSettings.preferredCopyFormat = codeFormat;
     }
     void this.#convertToCode();
   };
@@ -6886,7 +6889,7 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
     if (Root.Runtime.Runtime.queryParam("isChromeForTesting") || Root.Runtime.Runtime.queryParam("disableSelfXssWarnings") || this.#selfXssWarningDisabledSetting.get()) {
       return true;
     }
-    const result = await Dialogs2.TypeToAllowDialog.TypeToAllowDialog.show({
+    const result = await Dialogs.TypeToAllowDialog.TypeToAllowDialog.show({
       jslogContext: {
         input: "confirm-import-recording-input",
         dialog: "confirm-import-recording-dialog"

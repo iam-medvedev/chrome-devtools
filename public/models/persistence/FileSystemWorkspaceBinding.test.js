@@ -4,6 +4,7 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
+import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as TextUtils from '../../core/text_utils/text_utils.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
@@ -12,6 +13,7 @@ import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import { TestUniverse } from '../../testing/TestUniverse.js';
 import { createFileSystemUISourceCode } from '../../testing/UISourceCodeHelpers.js';
 import * as Workspace from '../workspace/workspace.js';
+import * as Persistence from './persistence.js';
 const { urlString } = Platform.DevToolsPath;
 describe('FileSystemWorkspaceBinding', () => {
     setupLocaleHooks();
@@ -145,6 +147,116 @@ describe('FileSystemWorkspaceBinding', () => {
             sinon.assert.callCount(deleteFileStub, 1);
             assert.lengthOf([...project.uiSourceCodes()], 1);
             assert.strictEqual([...project.uiSourceCodes()][0], uiSourceCode);
+        });
+    });
+    describe('with a file system root that has a trailing slash', () => {
+        const embedderPath = '/tmp/wstest/';
+        const changedEmbedderPath = '/tmp/wstest/app.js';
+        const fileSystemURL = urlString `file:///tmp/wstest`;
+        const fileURL = urlString `file:///tmp/wstest/app.js`;
+        function createFakeDOMFileSystem() {
+            const fileEntry = { isFile: true, isDirectory: false, name: 'app.js', fullPath: '/app.js' };
+            const rootEntry = {
+                isFile: false,
+                isDirectory: true,
+                name: '',
+                fullPath: '/',
+                createReader() {
+                    let done = false;
+                    return {
+                        readEntries(successCallback) {
+                            const entries = done ? [] : [fileEntry];
+                            done = true;
+                            successCallback(entries);
+                        },
+                    };
+                },
+                getDirectory(_path, _options, successCallback) {
+                    successCallback(rootEntry);
+                },
+            };
+            return { name: 'wstest', root: rootEntry };
+        }
+        async function addFileSystem(manager) {
+            const hostInstance = Host.InspectorFrontendHost.InspectorFrontendHostInstance;
+            sinon.stub(hostInstance, 'isolatedFileSystem').returns(createFakeDOMFileSystem());
+            const fileSystemAdded = manager.once(Persistence.IsolatedFileSystemManager.Events.FileSystemAdded);
+            hostInstance.events.dispatchEventToListeners(Host.InspectorFrontendHostAPI.Events.FileSystemAdded, {
+                fileSystem: {
+                    type: '',
+                    fileSystemName: 'wstest',
+                    rootURL: 'filesystem:devtools://devtools/isolated/wstest',
+                    fileSystemPath: embedderPath,
+                },
+            });
+            return await fileSystemAdded;
+        }
+        function removeFileSystem() {
+            Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.dispatchEventToListeners(Host.InspectorFrontendHostAPI.Events.FileSystemRemoved, embedderPath);
+        }
+        function changeFile() {
+            Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.dispatchEventToListeners(Host.InspectorFrontendHostAPI.Events.FileSystemFilesChangedAddedRemoved, { changed: [changedEmbedderPath], added: [], removed: [] });
+        }
+        it('does not create a duplicate UISourceCode when an existing file changes', async () => {
+            const workspace = universe.workspace;
+            const manager = universe.isolatedFileSystemManager;
+            const binding = universe.fileSystemWorkspaceBinding;
+            try {
+                await addFileSystem(manager);
+                const [project] = workspace.projectsForType(Workspace.Workspace.projectTypes.FileSystem);
+                assert.exists(project);
+                const [uiSourceCode] = project.uiSourceCodes();
+                assert.exists(uiSourceCode);
+                changeFile();
+                assert.deepEqual([...project.uiSourceCodes()], [uiSourceCode], 'the change must be reported to the existing UISourceCode instead of creating a new one');
+                assert.strictEqual(workspace.uiSourceCodeForURL(fileURL), uiSourceCode);
+            }
+            finally {
+                removeFileSystem();
+                binding.dispose();
+            }
+        });
+        it('uses canonical URLs, but keeps the embedder path verbatim', async () => {
+            const workspace = universe.workspace;
+            const manager = universe.isolatedFileSystemManager;
+            const binding = universe.fileSystemWorkspaceBinding;
+            try {
+                const fileSystem = await addFileSystem(manager);
+                assert.strictEqual(fileSystem.path(), fileSystemURL);
+                assert.strictEqual(fileSystem.embedderPath(), embedderPath);
+                assert.strictEqual(manager.fileSystem(fileSystemURL), fileSystem);
+                const project = workspace.project(fileSystemURL);
+                assert.exists(project);
+                assert.strictEqual(project.fileSystemPath(), fileSystemURL);
+                assert.strictEqual(project.fileSystemBaseURL, urlString `file:///tmp/wstest/`);
+                assert.strictEqual(project.displayName(), 'wstest');
+                const uiSourceCode = workspace.uiSourceCodeForURL(fileURL);
+                assert.exists(uiSourceCode);
+                assert.strictEqual(uiSourceCode.project(), project);
+                assert.strictEqual(project.fullDisplayName(uiSourceCode), 'wstest/app.js');
+                assert.deepEqual(Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.relativePath(uiSourceCode), ['app.js']);
+            }
+            finally {
+                removeFileSystem();
+                binding.dispose();
+            }
+        });
+        it('removes the file system when the embedder reports its removal', async () => {
+            const workspace = universe.workspace;
+            const manager = universe.isolatedFileSystemManager;
+            const binding = universe.fileSystemWorkspaceBinding;
+            try {
+                await addFileSystem(manager);
+                assert.lengthOf(manager.fileSystems(), 1);
+                assert.lengthOf(workspace.projectsForType(Workspace.Workspace.projectTypes.FileSystem), 1);
+                removeFileSystem();
+                assert.lengthOf(manager.fileSystems(), 0);
+                assert.lengthOf(workspace.projectsForType(Workspace.Workspace.projectTypes.FileSystem), 0);
+                assert.isNull(workspace.uiSourceCodeForURL(fileURL));
+            }
+            finally {
+                binding.dispose();
+            }
         });
     });
 });

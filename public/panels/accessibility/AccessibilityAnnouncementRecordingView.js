@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../core/i18n/i18n.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -29,6 +30,10 @@ const UIStrings = {
      * @description Tooltip for the clear announcements button in the announcements tool.
      */
     clearAnnouncements: 'Clear announcements',
+    /**
+     * @description Tooltip for the export to CSV button in the announcements tool.
+     */
+    exportCsv: 'Export to CSV',
     /**
      * @description Label/title for the dropdown filter to select which announcement types to record.
      */
@@ -116,6 +121,14 @@ export const DEFAULT_VIEW = (input, _output, target) => {
             @click=${input.onClear}
             .variant=${"toolbar" /* Buttons.Button.Variant.TOOLBAR */}
             .jslogContext=${'accessibility.clear-announcements'}>
+          </devtools-button>
+          <devtools-button
+            title=${i18nString(UIStrings.exportCsv)}
+            .iconName=${'download'}
+            .disabled=${!input.canExport}
+            @click=${input.onExportCsv}
+            .variant=${"toolbar" /* Buttons.Button.Variant.TOOLBAR */}
+            .jslogContext=${'accessibility.export-csv'}>
           </devtools-button>
           <div class="toolbar-divider" role="separator"></div>
           <select
@@ -640,6 +653,21 @@ export function validateAndSanitizeAnnouncement(payload) {
         time: parsedObj.time,
     };
 }
+export function buildCsvContent(announcements) {
+    const csvRows = [];
+    csvRows.push(['Time', 'API', 'Politeness', 'Message'].join(','));
+    for (const item of announcements) {
+        const timeString = new Date(item.time).toISOString();
+        const row = [
+            Platform.StringUtilities.escapeCsvCell(timeString),
+            Platform.StringUtilities.escapeCsvCell(item.api),
+            Platform.StringUtilities.escapeCsvCell(item.politeness),
+            Platform.StringUtilities.escapeCsvCell(item.message),
+        ];
+        csvRows.push(row.join(','));
+    }
+    return csvRows.join('\r\n');
+}
 export class AccessibilityAnnouncementRecordingView extends AccessibilitySubPane {
     #announcements = [];
     #filteredAnnouncements = null;
@@ -883,12 +911,33 @@ export class AccessibilityAnnouncementRecordingView extends AccessibilitySubPane
         this.#announceFilterMatches();
         this.requestUpdate();
     }
+    #exportCsv() {
+        const csvContent = this.#buildCsvContent();
+        const blob = new Blob(['\ufeff', csvContent], { type: 'text/csv;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        /* eslint-disable-next-line @devtools/no-imperative-dom-api */
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', `aria-live-announcements-${Platform.DateUtilities.toISO8601Compact(new Date())}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+    #buildCsvContent() {
+        return buildCsvContent(this.filteredAnnouncements);
+    }
+    exportCsvForTest() {
+        return this.#buildCsvContent();
+    }
     performUpdate() {
         const blockedTargets = [];
         for (const [target, reason] of this.#blockedTargets) {
             const targetName = target.name() || target.inspectedURL() || target.id();
             blockedTargets.push({ targetName, reason });
         }
+        const filteredAnnouncements = this.filteredAnnouncements;
         const input = {
             isRecording: this.#isRecording,
             onToggleRecording: () => {
@@ -902,6 +951,10 @@ export class AccessibilityAnnouncementRecordingView extends AccessibilitySubPane
             onClear: () => {
                 this.clearAnnouncements();
             },
+            onExportCsv: () => {
+                this.#exportCsv();
+            },
+            canExport: filteredAnnouncements.length > 0,
             recordTypeFilter: this.#recordTypeFilter,
             onRecordTypeFilterChange: (type) => {
                 this.setRecordTypeFilter(type);
@@ -911,7 +964,7 @@ export class AccessibilityAnnouncementRecordingView extends AccessibilitySubPane
                 this.setTextFilter(text);
             },
             blockedTargets,
-            announcements: this.filteredAnnouncements,
+            announcements: filteredAnnouncements,
         };
         this.#view(input, undefined, this.contentElement);
     }

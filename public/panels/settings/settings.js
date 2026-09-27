@@ -2659,7 +2659,7 @@ var keybindsSettingsTab_css_default = `/*
 }
 
 .keybinds-list-item:not(.keybinds-editing):hover .keybinds-edit-button,
-.keybinds-list-item:not(.keybinds-editing):focus-within .keybinds-edit-button {
+.keybinds-list-item-wrapper:focus-within > .keybinds-list-item:not(.keybinds-editing) .keybinds-edit-button {
   display: inline-block;
 }
 

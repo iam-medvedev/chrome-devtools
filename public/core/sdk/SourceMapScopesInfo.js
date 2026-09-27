@@ -331,7 +331,8 @@ export class SourceMapScopesInfo {
     }
     /** Similar to #findGeneratedRangeChain, but takes inlineFrameIndex of virtual call frames into account */
     #findGeneratedRangeChainForFrame(callFrame) {
-        const rangeChain = this.#findGeneratedRangeChain(callFrame.location().lineNumber, callFrame.location().columnNumber);
+        const { line, column } = scriptRelativePosition(callFrame.location());
+        const rangeChain = this.#findGeneratedRangeChain(line, column);
         if (callFrame.inlineFrameIndex === 0) {
             return rangeChain;
         }
@@ -343,6 +344,17 @@ export class SourceMapScopesInfo {
             }
         }
         return rangeChain;
+    }
+    resolveMappedVariablesAtPosition(line, column, ignoreInnerBlockScopes = false) {
+        const rangeChain = this.#findGeneratedRangeChain(line, column);
+        const startScope = rangeChain.at(-1)?.originalScope;
+        const innerMostScope = (startScope && ignoreInnerBlockScopes && this.#findFunctionScopeInOriginalScopeChain(startScope)) || startScope;
+        const result = [];
+        for (let scope = innerMostScope; scope; scope = scope.parent) {
+            const range = rangeChain.findLast(r => r.originalScope === scope);
+            result.push(new Map(scope.variables.map((v, i) => [v, findExpression(range, i, line, column)])));
+        }
+        return innerMostScope ? result : null;
     }
     /**
      * Returns the authored function name of the function containing the provided generated position.
@@ -473,6 +485,11 @@ export class SourceMapScopesInfo {
         return result;
     }
 }
+export function findExpression(range, index, line = 0, column = 0) {
+    const val = range?.values[index];
+    return (typeof val === 'string' ? val : val?.find(r => contains({ start: r.from, end: r.to }, line, column))?.value) ??
+        null;
+}
 export function contains(range, line, column) {
     if (range.start.line > line || (range.start.line === line && range.start.column > column)) {
         return false;
@@ -488,6 +505,17 @@ export function comparePositions(a, b) {
     }
     return a.column - b.column;
 }
+/**
+ * Converts a raw V8 {@link location} into a generated position relative to the start of its script.
+ *
+ * Positions in source maps (mappings and generated ranges) are relative to the start of the script,
+ * while V8 reports locations in inline `<script>`s (without `//# sourceURL`) relative to the start of
+ * the surrounding document.
+ */
+export function scriptRelativePosition(location) {
+    const { lineNumber, columnNumber } = location.script()?.rawLocationToRelativeLocation(location) ?? location;
+    return { line: lineNumber, column: columnNumber };
+}
 function positionRange(callFrame, scope) {
     const range = scope.range();
     if (range === null || range.start.scriptId !== callFrame.location().scriptId ||
@@ -495,8 +523,8 @@ function positionRange(callFrame, scope) {
         return null;
     }
     return {
-        start: { line: range.start.lineNumber, column: range.start.columnNumber },
-        end: { line: range.end.lineNumber, column: range.end.columnNumber },
+        start: scriptRelativePosition(range.start),
+        end: scriptRelativePosition(range.end),
     };
 }
 /**

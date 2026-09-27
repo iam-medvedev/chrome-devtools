@@ -1367,9 +1367,11 @@ export class TrackingHeapSnapshotProfileType extends TrackingHeapSnapshotProfile
         void heapProfilerModel.startTrackingHeapObjects(this.recordAllocationStacksSettingInternal.get());
     }
     customContent() {
-        const checkboxSetting = SettingsUI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.recordAllocationStacksExtra), this.recordAllocationStacksSettingInternal);
-        this.customContentInternal = (checkboxSetting);
-        return checkboxSetting;
+        if (!this.customContentInternal) {
+            const checkboxSetting = SettingsUI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.recordAllocationStacksExtra), this.recordAllocationStacksSettingInternal);
+            this.customContentInternal = checkboxSetting;
+        }
+        return this.customContentInternal;
     }
     setCustomContentEnabled(enable) {
         if (this.customContentInternal) {

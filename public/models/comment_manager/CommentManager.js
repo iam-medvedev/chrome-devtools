@@ -8,6 +8,7 @@ export var Events;
 (function (Events) {
     Events["COMMENT_THREADS_CHANGED"] = "CommentThreadsChanged";
     Events["COMMENT_MODE_CHANGED"] = "CommentModeChanged";
+    Events["AGENT_ATTACHED_CHANGED"] = "AgentAttachedChanged";
 })(Events || (Events = {}));
 /**
  * Headless model managing comment thread data, CRUD operations, and comment mode.
@@ -15,6 +16,7 @@ export var Events;
 export class CommentManager extends Common.ObjectWrapper.ObjectWrapper {
     #commentThreads = new Map();
     #commentMode = false;
+    #agentAttached = false;
     constructor() {
         super();
         CommentThread.resetIndex();
@@ -22,7 +24,23 @@ export class CommentManager extends Common.ObjectWrapper.ObjectWrapper {
     #onThreadChanged() {
         this.dispatchEventToListeners("CommentThreadsChanged" /* Events.COMMENT_THREADS_CHANGED */, this.getCommentThreads());
     }
+    setAgentAttached(value) {
+        if (this.#agentAttached === value) {
+            return;
+        }
+        this.#agentAttached = value;
+        if (!value) {
+            this.setCommentMode(false);
+        }
+        this.dispatchEventToListeners("AgentAttachedChanged" /* Events.AGENT_ATTACHED_CHANGED */, value);
+    }
+    isAgentAttached() {
+        return this.#agentAttached;
+    }
     setCommentMode(active) {
+        if (active && !this.#agentAttached) {
+            return;
+        }
         if (this.#commentMode === active) {
             return;
         }
@@ -32,7 +50,7 @@ export class CommentManager extends Common.ObjectWrapper.ObjectWrapper {
     isCommentMode() {
         return this.#commentMode;
     }
-    createCommentThread(anchor, text, author = 'DEVELOPER', changes) {
+    createCommentThread(anchor, text, author = 'DEVELOPER', isGeneratedComment) {
         const comments = text ? [{
                 author,
                 text,
@@ -42,7 +60,7 @@ export class CommentManager extends Common.ObjectWrapper.ObjectWrapper {
         const thread = new CommentThread({
             anchor,
             comments,
-            changes,
+            isGeneratedComment,
         });
         thread.addEventListener("Changed" /* CommentThreadEvents.CHANGED */, this.#onThreadChanged, this);
         this.#commentThreads.set(thread.id, thread);
@@ -58,7 +76,7 @@ export class CommentManager extends Common.ObjectWrapper.ObjectWrapper {
     takeComments() {
         const threads = [];
         for (const thread of this.#commentThreads.values()) {
-            if (thread.status === 'ACTIVE' && !thread.transmitted) {
+            if (thread.status === 'SENT_TO_AGENT' && !thread.transmitted) {
                 thread.transmitted = true;
                 threads.push(thread);
             }

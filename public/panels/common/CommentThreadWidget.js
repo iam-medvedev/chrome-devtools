@@ -3,12 +3,15 @@
 // found in the LICENSE file.
 import '../../ui/components/tooltips/tooltips.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as Input from '../../ui/components/input/input.js';
 import * as MarkdownView from '../../ui/components/markdown_view/markdown_view.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Lit from '../../ui/lit/lit.js';
 import commentThreadWidgetStyles from './commentThreadWidget.css.js';
+import { DOMNodeLink } from './DOMLinkifier.js';
 const { html, render, Directives: { createRef, ref } } = Lit;
+const { widget } = UI.Widget;
 const UIStrings = {
     /**
      * @description Text next to the checkmark in the comment thread header indicating that comments have been sent to
@@ -27,11 +30,15 @@ const UIStrings = {
     /**
      * @description Label for the aria-label of the add comment button.
      */
-    addCommentButton: 'Add comment',
+    sendToAgent: 'Send to agent',
     /**
      * @description aria-label for the comment text area.
      */
     commentInputAriaLabel: 'Comment input',
+    /**
+     * @description Tooltip and aria-label for the close button in the comment thread header.
+     */
+    close: 'Close',
 };
 const UIStringsNotTranslate = {
     /**
@@ -50,18 +57,31 @@ export const DEFAULT_VIEW = (input, _output, target) => {
     <div class="comment-thread-widget ${hasComment ? 'submitted' : ''}">
       <div class="header">
         <span class="selected-item">
-          <span class="selected-item-text">${input.title}</span>
+          ${'node' in input.title ?
+        widget(DOMNodeLink, { node: input.title.node }) :
+        html `<span class="selected-item-text">${input.title.text}</span>`}
         </span>
-        ${hasComment ? html `
-          <div class="sent-status">
-            <devtools-icon
-              class="check-icon"
-              name="checkmark"
-              aria-label=${i18nString(UIStrings.sentCheckmark)}>
-            </devtools-icon>
-            <span>${i18nString(UIStrings.sent)}</span>
-          </div>
-        ` : Lit.nothing}
+        <div class="header-actions">
+          ${hasComment ? html `
+            <div class="sent-status">
+              <devtools-icon
+                class="check-icon"
+                name="checkmark"
+                aria-label=${i18nString(UIStrings.sentCheckmark)}>
+              </devtools-icon>
+              <span>${i18nString(UIStrings.sent)}</span>
+            </div>
+          ` : Lit.nothing}
+          <devtools-button
+            class="close-button"
+            aria-label=${i18nString(UIStrings.close)}
+            .iconName=${'cross'}
+            .variant=${"icon" /* Buttons.Button.Variant.ICON */}
+            .size=${"SMALL" /* Buttons.Button.Size.SMALL */}
+            .title=${i18nString(UIStrings.close)}
+            @click=${input.onClose}
+          ></devtools-button>
+        </div>
       </div>
 
       ${hasComment ? html `
@@ -112,10 +132,10 @@ export const DEFAULT_VIEW = (input, _output, target) => {
             </div>
           </devtools-tooltip>
           <devtools-button
-            aria-label=${i18nString(UIStrings.addCommentButton)}
+            aria-label=${i18nString(UIStrings.sendToAgent)}
             .disabled=${!input.commentText.trim()}
             @click=${() => input.onAddComment(input.commentText)}>
-            ${i18nString(UIStrings.addCommentButton)}
+            ${i18nString(UIStrings.sendToAgent)}
           </devtools-button>
         </div>
       ` : Lit.nothing}
@@ -124,12 +144,13 @@ export const DEFAULT_VIEW = (input, _output, target) => {
     // clang-format on
 };
 export class CommentThreadWidget extends UI.Widget.Widget {
-    title = 'Comment Thread';
+    title = { text: '' };
     #comments = [];
     #commentText = '';
     #textAreaRef = createRef();
     #view;
     onAddComment;
+    onClose;
     constructor(element, view = DEFAULT_VIEW) {
         super(element);
         this.#view = view;
@@ -166,6 +187,7 @@ export class CommentThreadWidget extends UI.Widget.Widget {
             textAreaRef: this.#textAreaRef,
             onAddComment: this.#handleAddComment,
             onCommentTextChange: this.#handleCommentTextChange,
+            onClose: this.onClose,
         };
         this.#view(viewInput, undefined, this.contentElement);
     }

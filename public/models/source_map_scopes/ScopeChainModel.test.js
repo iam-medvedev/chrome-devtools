@@ -82,5 +82,43 @@ describe('ScopeChainModel', () => {
         sinon.assert.calledThrice(listenerStub);
         scopeChainModel.dispose();
     });
+    it('reuses the exact same ScopeChainEntry and RemoteObject instances across consumers and invalidates on DebugInfoAttached', async () => {
+        const target = universe.createTarget();
+        const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
+        const fakeFrame = sinon.createStubInstance(SDK.DebuggerModel.CallFrame);
+        fakeFrame.debuggerModel = debuggerModel;
+        const script = sinon.createStubInstance(SDK.Script.Script, { isWasm: false });
+        // @ts-expect-error readonly for test.
+        fakeFrame.script = script;
+        const localScope = sinon.createStubInstance(SDK.DebuggerModel.Scope, {
+            callFrame: fakeFrame,
+            type: "local" /* Protocol.Debugger.ScopeType.Local */,
+            empty: false,
+        });
+        localScope.object.callsFake(() => new SDK.RemoteObject.LocalJSONObject({ x: 42 }));
+        fakeFrame.scopeChain.returns([localScope]);
+        const model1 = new SourceMapScopes.ScopeChainModel.ScopeChainModel(fakeFrame, universe.debuggerWorkspaceBinding);
+        const listenerStub = sinon.stub();
+        model1.addEventListener("ScopeChainUpdated" /* SourceMapScopes.ScopeChainModel.Events.SCOPE_CHAIN_UPDATED */, listenerStub);
+        await clock.tickAsync(10);
+        sinon.assert.calledOnce(listenerStub);
+        const chainFromEvent = listenerStub.firstCall.args[0].data.scopeChain;
+        const model2 = new SourceMapScopes.ScopeChainModel.ScopeChainModel(fakeFrame, universe.debuggerWorkspaceBinding);
+        const chainFromSecondModel = await model2.resolveScopeChain();
+        sinon.assert.calledOnce(stubPluginManager.resolveScopeChain);
+        assert.lengthOf(chainFromEvent, 1);
+        assert.strictEqual(chainFromEvent, chainFromSecondModel);
+        assert.strictEqual(chainFromEvent[0], chainFromSecondModel[0]);
+        assert.strictEqual(chainFromEvent[0].object(), chainFromSecondModel[0].object());
+        sinon.assert.calledOnce(localScope.object);
+        debuggerModel.dispatchEventToListeners(SDK.DebuggerModel.Events.DebugInfoAttached, script);
+        await clock.tickAsync(10);
+        sinon.assert.calledTwice(listenerStub);
+        const refreshedChain = listenerStub.secondCall.args[0].data.scopeChain;
+        assert.notStrictEqual(refreshedChain, chainFromEvent);
+        assert.notStrictEqual(refreshedChain[0], chainFromEvent[0]);
+        model1.dispose();
+        model2.dispose();
+    });
 });
 //# sourceMappingURL=ScopeChainModel.test.js.map

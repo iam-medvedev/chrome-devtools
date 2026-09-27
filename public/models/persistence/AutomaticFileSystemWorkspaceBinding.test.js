@@ -29,6 +29,13 @@ describe('Persistence', () => {
                 const fileSystem = new FileSystem({ root, uuid, state: 'disconnected' }, automaticFileSystemManager, workspace);
                 assert.strictEqual(fileSystem.displayName(), 'bar');
             });
+            it('ignores trailing slashes of the root when computing the display name', () => {
+                const automaticFileSystemManager = sinon.createStubInstance(AutomaticFileSystemManager);
+                const workspace = sinon.createStubInstance(Workspace.Workspace.WorkspaceImpl);
+                const rootWithTrailingSlash = '/path/to/bar/';
+                const fileSystem = new FileSystem({ root: rootWithTrailingSlash, uuid, state: 'disconnected' }, automaticFileSystemManager, workspace);
+                assert.strictEqual(fileSystem.displayName(), 'bar');
+            });
             it('marks the progress as done when indexing content', async () => {
                 const automaticFileSystemManager = sinon.createStubInstance(AutomaticFileSystemManager);
                 const workspace = sinon.createStubInstance(Workspace.Workspace.WorkspaceImpl);

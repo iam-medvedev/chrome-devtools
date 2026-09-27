@@ -108,7 +108,7 @@ Learn more`);
         assert.instanceOf(headerValue, HTMLDivElement);
         assert.isTrue(headerValue.classList.contains('flex-columns'));
         assert.isTrue((getCleanTextContentFromElements(component.shadowRoot, '.header-value')[0]).startsWith('CJa2yQEIpLbJAQiTocsB'));
-        assert.strictEqual(getCleanTextContentFromElements(component.shadowRoot, '.header-value code')[0], 'message ClientVariations { // Active Google-visible variation IDs on this client. These are reported for analysis, but do not directly affect any server-side behavior. repeated int32 variation_id = [3300118, 3300132, 3330195];\n}');
+        assert.strictEqual(getCleanTextContentFromElements(component.shadowRoot, '.header-value code')[0], 'message ClientVariations { // Active client experiment variation IDs repeated int32 variation_id = [3300118, 3300132, 3330195];\n}');
     });
     it('displays info about blocked "Set-Cookie"-headers', async () => {
         const headerData = {

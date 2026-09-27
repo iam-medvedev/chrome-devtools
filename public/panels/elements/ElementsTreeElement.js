@@ -60,10 +60,10 @@ import * as PanelsCommon from '../common/common.js';
 import * as Media from '../media/media.js';
 import * as ElementsComponents from './components/components.js';
 import { cssPath } from './DOMPath.js';
+import { MappedCharToEntity } from './DOMTreeWidget.js';
 import { getElementIssueDetails } from './ElementIssueUtils.js';
 import { ElementsPanel } from './ElementsPanel.js';
 import * as ElementStatePaneWidget from './ElementStatePaneWidget.js';
-import { MappedCharToEntity } from './ElementsTreeOutline.js';
 import { ImagePreviewPopover } from './ImagePreviewPopover.js';
 import { getRegisteredDecorators } from './MarkerDecorator.js';
 /**
@@ -2695,6 +2695,8 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
             drag: true,
             click: true,
         })}`);
+        this.listItemElement.setAttribute('data-backend-node-id', String(node.backendNodeId()));
+        this.listItemElement.setAttribute('data-target-id', node.domModel().target().id());
         this.widgetWrapper = document.createElement('div');
         this.widgetWrapper.style.display = 'contents';
         this.title = this.widgetWrapper;

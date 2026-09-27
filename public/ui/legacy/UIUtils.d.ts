@@ -274,9 +274,10 @@ export declare class HTMLElementWithLightDOMTemplate extends HTMLElement {
     constructor();
     static getClones(node: Node): Node[];
     static cloneNode(node: Node): Node;
-    private static patchLitTemplate;
+    static patchLitTemplate(template: Lit.LitTemplate): void;
     get templateRoot(): DocumentFragment | HTMLElement;
     set template(template: Lit.LitTemplate);
+    flushPendingMutationsForTesting(): void;
     protected onChange(_mutationList: MutationRecord[]): void;
     protected updateNode(_node: Node, _attributeName: string | null): void;
     protected addNodes(_nodes: NodeList | Node[]): void;

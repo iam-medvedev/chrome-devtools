@@ -1144,7 +1144,6 @@ var Audits;
     CookieExclusionReason2["ExcludeSameSiteLax"] = "ExcludeSameSiteLax";
     CookieExclusionReason2["ExcludeSameSiteStrict"] = "ExcludeSameSiteStrict";
     CookieExclusionReason2["ExcludeDomainNonASCII"] = "ExcludeDomainNonASCII";
-    CookieExclusionReason2["ExcludeThirdPartyCookieBlockedInFirstPartySet"] = "ExcludeThirdPartyCookieBlockedInFirstPartySet";
     CookieExclusionReason2["ExcludeThirdPartyPhaseout"] = "ExcludeThirdPartyPhaseout";
     CookieExclusionReason2["ExcludePortMismatch"] = "ExcludePortMismatch";
     CookieExclusionReason2["ExcludeSchemeMismatch"] = "ExcludeSchemeMismatch";
@@ -2396,7 +2395,6 @@ var Network;
     SetCookieBlockedReason2["SameSiteNoneInsecure"] = "SameSiteNoneInsecure";
     SetCookieBlockedReason2["UserPreferences"] = "UserPreferences";
     SetCookieBlockedReason2["ThirdPartyPhaseout"] = "ThirdPartyPhaseout";
-    SetCookieBlockedReason2["ThirdPartyBlockedInFirstPartySet"] = "ThirdPartyBlockedInFirstPartySet";
     SetCookieBlockedReason2["SyntaxError"] = "SyntaxError";
     SetCookieBlockedReason2["SchemeNotSupported"] = "SchemeNotSupported";
     SetCookieBlockedReason2["OverwriteSecure"] = "OverwriteSecure";
@@ -2421,7 +2419,6 @@ var Network;
     CookieBlockedReason2["SameSiteNoneInsecure"] = "SameSiteNoneInsecure";
     CookieBlockedReason2["UserPreferences"] = "UserPreferences";
     CookieBlockedReason2["ThirdPartyPhaseout"] = "ThirdPartyPhaseout";
-    CookieBlockedReason2["ThirdPartyBlockedInFirstPartySet"] = "ThirdPartyBlockedInFirstPartySet";
     CookieBlockedReason2["UnknownError"] = "UnknownError";
     CookieBlockedReason2["SchemefulSameSiteStrict"] = "SchemefulSameSiteStrict";
     CookieBlockedReason2["SchemefulSameSiteLax"] = "SchemefulSameSiteLax";
@@ -15300,7 +15297,11 @@ var UIStrings16 = {
   /**
    * @description Text to show more content
    */
-  showMore: "Show more"
+  showMore: "Show more",
+  /**
+   * @description Context menu item to copy the shown text to the clipboard
+   */
+  copy: "Copy"
 };
 var str_16 = i18n31.i18n.registerUIStrings("panels/network/ShowMoreDetailsWidget.ts", UIStrings16);
 var i18nString15 = i18n31.i18n.getLocalizedString.bind(void 0, str_16);
@@ -15310,7 +15311,7 @@ var DEFAULT_VIEW7 = (input, output, target) => {
   const onContextMenuShowMore = (event) => {
     const contextMenu = new UI16.ContextMenu.ContextMenu(event);
     if (input.copy) {
-      contextMenu.clipboardSection().appendItem(input.copy.menuItem, input.copy.handler);
+      contextMenu.clipboardSection().appendItem(i18nString15(UIStrings16.copy), input.copy, { jslogContext: "copy" });
     }
     if (!input.showMore) {
       contextMenu.newSection().appendItem(i18nString15(UIStrings16.showMore), input.onToggle, { jslogContext: "show-more" });
@@ -15345,6 +15346,9 @@ var ShowMoreDetailsWidget = class extends UI16.Widget.Widget {
   set text(text) {
     this.#text = text;
     this.requestUpdate();
+  }
+  get copy() {
+    return this.#copy;
   }
   set copy(copy) {
     this.#copy = copy;
@@ -15905,17 +15909,6 @@ li.object-properties-section  {
   }
 }
 
-.object-properties-section li.editing-sub-part {
-  padding: 3px var(--sys-size-6) var(--sys-size-5) var(--sys-size-4);
-  margin: calc(-1 * var(--sys-size-1)) calc(-1 * var(--sys-size-4)) calc(-1 * var(--sys-size-5));
-  text-overflow: clip;
-}
-
-.object-properties-section li.editing {
-  margin-left: 10px;
-  text-overflow: clip;
-}
-
 .tree-outline ol.title-less-mode {
   padding-left: 0;
 }
@@ -15937,10 +15930,6 @@ li.object-properties-section  {
   flex-direction: row;
 }
 
-.object-properties-section .editable-div {
-  overflow: hidden;
-}
-
 .name-and-value {
   line-height: var(--sys-size-8);
   display: flex;
@@ -15952,15 +15941,6 @@ li.object-properties-section  {
   flex-shrink: 0;
 }
 
-.editing-sub-part .name-and-value {
-  overflow: visible;
-  display: inline-flex;
-}
-
-.property-prompt {
-  margin-left: var(--sys-size-3);
-}
-
 .tree-outline.hide-selection-when-blurred .selected:focus-visible {
   background: none;
   outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
@@ -15968,7 +15948,7 @@ li.object-properties-section  {
 }
 
 .tree-outline.hide-selection-when-blurred .selected:focus-visible ::slotted(*),
-.tree-outline.hide-selection-when-blurred .selected:focus-visible .tree-element-title,
+.tree-outline.hide-selection-when-blurred .selected:focus-visible .tree-element-title:not(:has(.name-and-value, .gray-info-message)),
 .tree-outline.hide-selection-when-blurred .selected:focus-visible .name-and-value,
 .tree-outline.hide-selection-when-blurred .selected:focus-visible .gray-info-message {
   background: var(--sys-color-state-focus-highlight);
@@ -15989,8 +15969,7 @@ li.object-properties-section  {
     color: ButtonText;
   }
 
-  .tree-outline.hide-selection-when-blurred .selected:focus-visible .tree-element-title,
-  .tree-outline.hide-selection-when-blurred .selected:focus-visible .name-and-value {
+  .tree-outline.hide-selection-when-blurred .selected:focus-visible .tree-element-title {
     background: transparent;
     box-shadow: none;
   }
@@ -16349,11 +16328,14 @@ var DEFAULT_VIEW9 = (input, output, target) => {
     contextMenu.clipboardSection().appendItem(title, copyValueHandler, { jslogContext });
     void contextMenu.show();
   };
-  const createSourceText = (text) => html11`<li role=treeitem
+  const createSourceText = (text) => {
+    const copy = () => input.copyValue(text);
+    return html11`<li role=treeitem
       @contextmenu=${copyValueContextmenu(i18nString17(UIStrings18.copyPayload), () => text, "copy-payload")}>
-        <devtools-widget class='payload-value source-code' ${widget6(ShowMoreDetailsWidget, { text })}>
+        <devtools-widget class='payload-value source-code' ${widget6(ShowMoreDetailsWidget, { text, copy })}>
         </devtools-widget>
       </li>`;
+  };
   const createParsedParams = (params, decodeParameters) => params.map((param) => {
     return html11`
         <li role=treeitem
@@ -16639,21 +16621,23 @@ var RequestPayloadView = class extends UI18.Widget.VBox {
         ObjectUI2.ObjectPropertiesSection.populateObjectTreeContextMenu(
           contextMenu,
           objectTree,
-          async () => {
-            await objectTree.expandRecursively(ObjectUI2.ObjectPropertiesSection.EXPANDABLE_MAX_DEPTH);
-            this.requestUpdate();
-          },
-          () => {
-            objectTree.collapseRecursively();
-            this.requestUpdate();
-          },
-          () => {
-            objectTree.sortPropertiesAlphabetically = !objectTree.sortPropertiesAlphabetically;
-            this.requestUpdate();
-          },
-          () => {
-            objectTree.includeNullOrUndefinedValues = !objectTree.includeNullOrUndefinedValues;
-            this.requestUpdate();
+          {
+            expandRecursively: async () => {
+              await objectTree.expandRecursively(ObjectUI2.ObjectPropertiesSection.EXPANDABLE_MAX_DEPTH);
+              this.requestUpdate();
+            },
+            collapseChildren: () => {
+              objectTree.collapseRecursively();
+              this.requestUpdate();
+            },
+            sortPropertiesAlphabetically: () => {
+              objectTree.sortPropertiesAlphabetically = !objectTree.sortPropertiesAlphabetically;
+              this.requestUpdate();
+            },
+            onShowAllToggled: () => {
+              objectTree.includeNullOrUndefinedValues = !objectTree.includeNullOrUndefinedValues;
+              this.requestUpdate();
+            }
           }
         );
       },

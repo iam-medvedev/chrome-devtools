@@ -17,6 +17,11 @@ describe('CommentManager', () => {
             modeChangedEvents.push(event.data);
         });
         assert.isFalse(manager.isCommentMode());
+        // Cannot enable comment mode when agent is not attached
+        manager.setCommentMode(true);
+        assert.isFalse(manager.isCommentMode());
+        assert.deepEqual(modeChangedEvents, []);
+        manager.setAgentAttached(true);
         manager.setCommentMode(true);
         assert.isTrue(manager.isCommentMode());
         assert.deepEqual(modeChangedEvents, [true]);
@@ -26,6 +31,25 @@ describe('CommentManager', () => {
         manager.setCommentMode(false);
         assert.isFalse(manager.isCommentMode());
         assert.deepEqual(modeChangedEvents, [true, false]);
+    });
+    it('manages agent attached state and dispatches AGENT_ATTACHED_CHANGED event', () => {
+        const attachedChangedEvents = [];
+        manager.addEventListener("AgentAttachedChanged" /* CommentManager.CommentManager.Events.AGENT_ATTACHED_CHANGED */, event => {
+            attachedChangedEvents.push(event.data);
+        });
+        assert.isFalse(manager.isAgentAttached());
+        manager.setAgentAttached(true);
+        assert.isTrue(manager.isAgentAttached());
+        assert.deepEqual(attachedChangedEvents, [true]);
+        // Setting same value should not dispatch again
+        manager.setAgentAttached(true);
+        assert.deepEqual(attachedChangedEvents, [true]);
+        manager.setCommentMode(true);
+        assert.isTrue(manager.isCommentMode());
+        manager.setAgentAttached(false);
+        assert.isFalse(manager.isAgentAttached());
+        assert.isFalse(manager.isCommentMode());
+        assert.deepEqual(attachedChangedEvents, [true, false]);
     });
     it('creates and retrieves comment threads and dispatches COMMENT_THREADS_CHANGED event', () => {
         const threadChangedEvents = [];
@@ -90,20 +114,15 @@ describe('CommentManager', () => {
         });
         assert.strictEqual(thread.comments[0].text, 'Flamechart comment');
     });
-    it('supports changes metadata in created threads', () => {
+    it('supports isGeneratedComment metadata in created threads', () => {
         const anchor = {
             vePath: 'Panel: elements > TreeItem: rule',
             textSignature: 'margin: 0;',
         };
-        const changes = [{
-                id: 'change-1',
-                description: 'Changed property "margin" from "0" to "8px"',
-                timestamp: 123456789,
-            }];
-        const thread = manager.createCommentThread(anchor, 'CSS fix', 'DEVELOPER', changes);
+        const thread = manager.createCommentThread(anchor, 'Changed property "margin" from "0" to "8px"', 'DEVELOPER', true);
         assert.strictEqual(thread.comments[0].author, 'DEVELOPER');
-        assert.strictEqual(thread.comments[0].text, 'CSS fix');
-        assert.deepEqual(thread.changes, changes);
+        assert.strictEqual(thread.comments[0].text, 'Changed property "margin" from "0" to "8px"');
+        assert.isTrue(thread.isGeneratedComment);
     });
     it('resolves comment threads with optional reply text', () => {
         const anchor = {
@@ -112,6 +131,7 @@ describe('CommentManager', () => {
         };
         const thread = manager.createCommentThread(anchor, 'Initial comment');
         assert.strictEqual(thread.status, 'DRAFT');
+        assert.isFalse(thread.isGeneratedComment);
         const success = manager.resolveCommentThread(thread.id, 'Done');
         assert.isTrue(success);
         assert.strictEqual(thread.status, 'RESOLVED');
@@ -124,15 +144,10 @@ describe('CommentManager', () => {
             vePath: 'Panel: elements > TreeOutline > TreeItem',
             textSignature: 'div.header',
         };
-        const changes = [{
-                id: 'change-2',
-                description: 'Changed attribute "class" to "header active"',
-                timestamp: 123456789,
-            }];
-        const thread = manager.createCommentThread(anchor, undefined, undefined, changes);
+        const thread = manager.createCommentThread(anchor, undefined, undefined, true);
         assert.isNotNull(thread);
         assert.isEmpty(thread.comments);
-        assert.deepEqual(thread.changes, changes);
+        assert.isTrue(thread.isGeneratedComment);
         assert.strictEqual(thread.status, 'DRAFT');
     });
     it('returns undefined for non-existent comment thread ID', () => {
@@ -162,6 +177,7 @@ describe('CommentManager', () => {
         assert.strictEqual(eventCount, 0);
     });
     it('clears all threads and resets comment mode on clear()', () => {
+        manager.setAgentAttached(true);
         manager.setCommentMode(true);
         const anchor = {
             vePath: 'Panel: sources > TreeItem: file',
@@ -185,7 +201,13 @@ describe('CommentManager', () => {
         // Returns empty array when thread is in DRAFT state
         assert.isEmpty(manager.takeComments());
         assert.isFalse(thread1.transmitted);
+        // Returns empty array when thread is in ACTIVE (saved, unsent) state
         thread1.save();
+        assert.strictEqual(thread1.status, 'ACTIVE');
+        assert.isEmpty(manager.takeComments());
+        assert.isFalse(thread1.transmitted);
+        thread1.sendToAgent();
+        assert.strictEqual(thread1.status, 'SENT_TO_AGENT');
         const taken = manager.takeComments();
         assert.lengthOf(taken, 1);
         assert.strictEqual(taken[0].id, thread1.id);
@@ -196,11 +218,11 @@ describe('CommentManager', () => {
         // Calling takeComments again returns empty array as it was marked as sent
         const takenAgain = manager.takeComments();
         assert.lengthOf(takenAgain, 0);
-        // Creating another thread makes it available in takeComments after save()
+        // Creating another thread makes it available in takeComments after sendToAgent()
         const thread2 = manager.createCommentThread(anchor, 'Second thread', 'DEVELOPER');
         assert.isFalse(thread2.transmitted);
         assert.isEmpty(manager.takeComments());
-        thread2.save();
+        thread2.sendToAgent();
         const takenNew = manager.takeComments();
         assert.lengthOf(takenNew, 1);
         assert.strictEqual(takenNew[0].id, thread2.id);

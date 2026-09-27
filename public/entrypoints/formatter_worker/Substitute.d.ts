@@ -1,1 +1,1 @@
-export declare function substituteExpression(expression: string, nameMap: Map<string, string | null>): string;
+export declare function substituteExpression(expression: string, nameMaps: Array<Map<string, string | null>>): string;

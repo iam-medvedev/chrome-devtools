@@ -42,6 +42,7 @@ import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Foundation from '../../foundation/foundation.js';
 import * as AiAssistanceModel from '../../models/ai_assistance/ai_assistance.js';
+import * as CommentManager from '../../models/comment_manager/comment_manager.js';
 import * as CrUXManager from '../../models/crux-manager/crux-manager.js';
 import * as Persistence from '../../models/persistence/persistence.js';
 import * as Workspace from '../../models/workspace/workspace.js';
@@ -116,9 +117,9 @@ const UIStrings = {
      */
     aiModelDownloaded: 'AI model downloaded',
     /**
-     * @description Title of the menu item in the customize and control menu leading to the DevTools MCP repository.
+     * @description Title of the menu item in the customize and control menu leading to the Chrome DevTools for agents repository.
      */
-    getDevToolsMcp: 'Get `DevTools MCP`',
+    getChromeDevToolsForAgents: 'Give your agent access to `DevTools`',
 };
 const str_ = i18n.i18n.registerUIStrings('entrypoints/main/MainImpl.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -364,6 +365,13 @@ export class MainImpl {
             isEnabled: Root.Runtime.hostConfig.devToolsPlusButton?.enabled ?? false,
             requiresChromeRestart: false,
         });
+        Root.Runtime.experiments.register({
+            name: Root.ExperimentNames.ExperimentName.SOURCE_MAP_SCOPES_IN_SOURCES_PANEL,
+            title: 'Source map scopes in the Sources panel',
+            aboutFlag: 'devtools-source-map-scopes-in-sources-panel',
+            isEnabled: Root.Runtime.hostConfig.devToolsSourceMapScopesInSourcesPanel?.enabled ?? false,
+            requiresChromeRestart: false,
+        });
         for (const experiment of Root.Runtime.experiments.allConfigurableExperiments()) {
             if (experiment.isEnabled()) {
                 Host.userMetrics.experimentEnabledAtLaunch(experiment.name);
@@ -470,7 +478,10 @@ export class MainImpl {
             inspectorView.displaySelectOverrideFolderInfobar(event.data);
         });
         await inspectorView.createToolbars();
-        inspectorView.renderStatusBar();
+        inspectorView.renderStatusBar(this.#universe.commentManager.isAgentAttached());
+        this.#universe.commentManager.addEventListener("AgentAttachedChanged" /* CommentManager.CommentManager.Events.AGENT_ATTACHED_CHANGED */, event => {
+            inspectorView.renderStatusBar(event.data);
+        });
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.loadCompleted();
         // Initialize elements for the live announcer functionality for a11y.
         UI.ARIAUtils.LiveAnnouncer.initializeAnnouncerElements();
@@ -756,7 +767,7 @@ export class MainMenuItem {
             contextMenu.discard();
         }
         contextMenu.defaultSection().appendAction('freestyler.main-menu', undefined, /* optional */ true);
-        contextMenu.defaultSection().appendItem(i18nString(UIStrings.getDevToolsMcp), () => {
+        contextMenu.defaultSection().appendItem(i18nString(UIStrings.getChromeDevToolsForAgents), () => {
             UIHelpers.openInNewTab('https://github.com/ChromeDevTools/chrome-devtools-mcp');
         }, {
             additionalElement: UI.UIUtils.maybeCreateNewBadge('get-devtools-mcp'),

@@ -23,7 +23,7 @@ export class ExecutionContextSelector {
         queueMicrotask(deferred.bind(this));
         function deferred() {
             // We always want the second context for the service worker targets.
-            if (!this.#context.flavor(SDK.Target.Target)) {
+            if (!this.#context.flavor(SDK.Target.Target) && !runtimeModel.target().targetInfo()?.subtype) {
                 this.#context.setFlavor(SDK.Target.Target, runtimeModel.target());
             }
         }
@@ -35,7 +35,8 @@ export class ExecutionContextSelector {
         }
         const models = this.#targetManager.models(SDK.RuntimeModel.RuntimeModel);
         if (this.#context.flavor(SDK.Target.Target) === runtimeModel.target() && models.length) {
-            this.#context.setFlavor(SDK.Target.Target, models[0].target());
+            const nextModel = models.find(m => !m.target().targetInfo()?.subtype);
+            this.#context.setFlavor(SDK.Target.Target, nextModel ? nextModel.target() : null);
         }
     }
     #executionContextChanged({ data: newContext, }) {
@@ -75,7 +76,8 @@ export class ExecutionContextSelector {
         this.#ignoreContextChanged = false;
     }
     #shouldSwitchToContext(executionContext) {
-        if (executionContext.target().targetInfo()?.subtype) {
+        if (executionContext.target().targetInfo()?.subtype &&
+            this.#context.flavor(SDK.Target.Target) !== executionContext.target()) {
             return false;
         }
         if (this.#lastSelectedContextId && this.#lastSelectedContextId === this.#contextPersistentId(executionContext)) {
@@ -132,7 +134,10 @@ export class ExecutionContextSelector {
         }
     }
     #switchContextIfNecessary(executionContext) {
-        if (!this.#context.flavor(SDK.RuntimeModel.ExecutionContext) || this.#shouldSwitchToContext(executionContext)) {
+        if ((!this.#context.flavor(SDK.RuntimeModel.ExecutionContext) &&
+            (!executionContext.target().targetInfo()?.subtype ||
+                this.#context.flavor(SDK.Target.Target) === executionContext.target())) ||
+            this.#shouldSwitchToContext(executionContext)) {
             this.#ignoreContextChanged = true;
             this.#context.setFlavor(SDK.RuntimeModel.ExecutionContext, executionContext);
             this.#ignoreContextChanged = false;
@@ -144,6 +149,10 @@ export class ExecutionContextSelector {
         const runtimeModels = this.#targetManager.models(SDK.RuntimeModel.RuntimeModel);
         let newContext = null;
         for (let i = 0; i < runtimeModels.length && !newContext; ++i) {
+            if (runtimeModels[i].target().targetInfo()?.subtype &&
+                this.#context.flavor(SDK.Target.Target) !== runtimeModels[i].target()) {
+                continue;
+            }
             const executionContexts = runtimeModels[i].executionContexts();
             for (const executionContext of executionContexts) {
                 if (this.#isDefaultContext(executionContext)) {
@@ -154,6 +163,10 @@ export class ExecutionContextSelector {
         }
         if (!newContext) {
             for (let i = 0; i < runtimeModels.length && !newContext; ++i) {
+                if (runtimeModels[i].target().targetInfo()?.subtype &&
+                    this.#context.flavor(SDK.Target.Target) !== runtimeModels[i].target()) {
+                    continue;
+                }
                 const executionContexts = runtimeModels[i].executionContexts();
                 if (executionContexts.length) {
                     newContext = executionContexts[0];

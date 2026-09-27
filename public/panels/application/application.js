@@ -157,7 +157,6 @@ var Audits;
     CookieExclusionReason2["ExcludeSameSiteLax"] = "ExcludeSameSiteLax";
     CookieExclusionReason2["ExcludeSameSiteStrict"] = "ExcludeSameSiteStrict";
     CookieExclusionReason2["ExcludeDomainNonASCII"] = "ExcludeDomainNonASCII";
-    CookieExclusionReason2["ExcludeThirdPartyCookieBlockedInFirstPartySet"] = "ExcludeThirdPartyCookieBlockedInFirstPartySet";
     CookieExclusionReason2["ExcludeThirdPartyPhaseout"] = "ExcludeThirdPartyPhaseout";
     CookieExclusionReason2["ExcludePortMismatch"] = "ExcludePortMismatch";
     CookieExclusionReason2["ExcludeSchemeMismatch"] = "ExcludeSchemeMismatch";
@@ -1409,7 +1408,6 @@ var Network;
     SetCookieBlockedReason2["SameSiteNoneInsecure"] = "SameSiteNoneInsecure";
     SetCookieBlockedReason2["UserPreferences"] = "UserPreferences";
     SetCookieBlockedReason2["ThirdPartyPhaseout"] = "ThirdPartyPhaseout";
-    SetCookieBlockedReason2["ThirdPartyBlockedInFirstPartySet"] = "ThirdPartyBlockedInFirstPartySet";
     SetCookieBlockedReason2["SyntaxError"] = "SyntaxError";
     SetCookieBlockedReason2["SchemeNotSupported"] = "SchemeNotSupported";
     SetCookieBlockedReason2["OverwriteSecure"] = "OverwriteSecure";
@@ -1434,7 +1432,6 @@ var Network;
     CookieBlockedReason2["SameSiteNoneInsecure"] = "SameSiteNoneInsecure";
     CookieBlockedReason2["UserPreferences"] = "UserPreferences";
     CookieBlockedReason2["ThirdPartyPhaseout"] = "ThirdPartyPhaseout";
-    CookieBlockedReason2["ThirdPartyBlockedInFirstPartySet"] = "ThirdPartyBlockedInFirstPartySet";
     CookieBlockedReason2["UnknownError"] = "UnknownError";
     CookieBlockedReason2["SchemefulSameSiteStrict"] = "SchemefulSameSiteStrict";
     CookieBlockedReason2["SchemefulSameSiteLax"] = "SchemefulSameSiteLax";
@@ -3160,312 +3157,306 @@ var { linkifyURL } = Components.Linkifier.Linkifier;
 var { widget } = UI2.Widget;
 var UIStrings = {
   /**
-   * @description Text in App Manifest View of the Application panel
+   * @description Header text in an empty state view when no manifest is detected in the manifest view of the Application panel.
    */
   noManifestDetected: "No manifest detected",
   /**
-   * @description Description text on manifests in App Manifest View of the Application panel which describes the app manifest view tab
+   * @description Explanatory text in an empty state view describing what a manifest is in the manifest view of the Application panel.
    */
   manifestDescription: "A manifest defines how your app appears on phone\u2019s home screens and what the app looks like on launch",
   /**
-   * @description Text in App Manifest View of the Application panel
+   * @description Header title for the manifest report in the Application panel.
    */
   appManifest: "Manifest",
   /**
-   * @description Text in App Manifest View of the Application panel
+   * @description Section header for errors and warnings in the manifest view of the Application panel.
    */
   errorsAndWarnings: "Errors and warnings",
   /**
-   * @description Text in App Manifest View of the Application panel
+   * @description Section header for installability in the manifest view of the Application panel.
    */
   installability: "Installability",
   /**
-   * @description Text in App Manifest View of the Application panel
+   * @description Section header for identity in the manifest view of the Application panel.
    */
   identity: "Identity",
   /**
-   * @description Text in App Manifest View of the Application panel
+   * @description Section header for presentation in the manifest view of the Application panel.
    */
   presentation: "Presentation",
   /**
-   * @description Text in App Manifest View of the Application panel
+   * @description Section header for protocol handlers in the manifest view of the Application panel.
    */
-  protocolHandlers: "Protocol Handlers",
+  protocolHandlers: "Protocol handlers",
   /**
-   * @description Text in App Manifest View of the Application panel
+   * @description Section header for icons in the manifest view of the Application panel.
    */
   icons: "Icons",
   /**
-   * @description Text in App Manifest View of the Application panel
-   */
-  windowControlsOverlay: "Window Controls Overlay",
-  /**
-   * @description Label in the App Manifest View for the "name" property of web app or shortcut item
+   * @description Label for the name property of a web app or shortcut item in the manifest view of the Application panel.
    */
   name: "Name",
   /**
-   * @description Label in the App Manifest View for the "short_name" property of web app or shortcut item
+   * @description Label for the short name property of a web app or shortcut item in the manifest view of the Application panel.
    */
   shortName: "Short name",
   /**
-   * @description Label in the App Manifest View for the "url" property of shortcut item
+   * @description Label for the URL property of a shortcut item in the manifest view of the Application panel.
    */
   url: "URL",
   /**
-   * @description Label in the App Manifest View for the Computed App Id
+   * @description Label for the computed app ID in the manifest view of the Application panel.
    */
-  computedAppId: "Computed App ID",
+  computedAppId: "Computed app ID",
   /**
-   * @description Popup-text explaining what the App Id is used for.
+   * @description Tooltip text explaining what the app ID is used for in the manifest view of the Application panel.
    */
   appIdExplainer: "This is used by the browser to know whether the manifest should be updating an existing application, or whether it refers to a new web app that can be installed",
   /**
-   * @description Text which is a hyperlink to more documentation
+   * @description Link text to open documentation in the manifest view of the Application panel.
    */
   learnMore: "Learn more",
   /**
-   * @description Explanation why it is advisable to specify an 'id' field in the manifest.
+   * @description Explanatory note about specifying an id field in the manifest view of the Application panel.
    * @example {/index.html} PH1
    * @example {(button for copying suggested value into clipboard)} PH2
    */
-  appIdNote: "Note: `id` is not specified in the manifest, `start_url` is used instead. To specify an App ID that matches the current identity, set the `id` field to {PH1} {PH2}.",
+  appIdNote: "Note: `id` isn\u2019t specified in the manifest, `start_url` is used instead. To specify an app ID that matches the current identity, set the `id` field to {PH1} {PH2}.",
   /**
-   * @description Tooltip text that appears when hovering over a button which copies the previous text to the clipboard.
+   * @description Tooltip text for a button that copies the suggested app ID to the clipboard in the manifest view of the Application panel.
    */
   copyToClipboard: "Copy suggested ID to clipboard",
   /**
-   * @description Screen reader announcement string when the user clicks the copy to clipboard button.
+   * @description Screen reader announcement when the suggested app ID is copied to the clipboard in the manifest view of the Application panel.
    * @example {/index.html} PH1
    */
   copiedToClipboard: "Copied suggested ID {PH1} to clipboard",
   /**
-   * @description Label in the App Manifest View for the "description" property of web app or shortcut item
+   * @description Label for the description property of a web app or shortcut item in the manifest view of the Application panel.
    */
   description: "Description",
   /**
-   * @description Text in App Manifest View of the Application panel
+   * @description Label for the start URL property in the manifest view of the Application panel.
    */
   startUrl: "Start URL",
   /**
-   * @description Text in App Manifest View of the Application panel
+   * @description Label for the theme color property in the manifest view of the Application panel.
    */
   themeColor: "Theme color",
   /**
-   * @description Text in App Manifest View of the Application panel
+   * @description Label for the background color property in the manifest view of the Application panel.
    */
   backgroundColor: "Background color",
   /**
-   * @description Text for the orientation of something
+   * @description Label for the orientation property in the manifest view of the Application panel.
    */
   orientation: "Orientation",
   /**
-   * @description Title of the display attribute in App Manifest View of the Application panel
+   * @description Label for the display property in the manifest view of the Application panel.
    * The display attribute defines the preferred display mode for the app such fullscreen or
    * standalone.
    * For more details see https://www.w3.org/TR/appmanifest/#display-member.
    */
   display: "Display",
   /**
-   * @description Title of the new_note_url attribute in the Application panel
+   * @description Label for the new note URL property in the manifest view of the Application panel.
    */
   newNoteUrl: "New note URL",
   /**
-   * @description Text in App Manifest View of the Application panel
+   * @description Warning text indicating that the description may be truncated in the manifest view of the Application panel.
    */
   descriptionMayBeTruncated: "Description may be truncated",
   /**
-   * @description Warning text about too many shortcuts
+   * @description Warning text indicating that some shortcuts may not be available depending on the platform in the manifest view of the Application panel.
    */
-  shortcutsMayBeNotAvailable: "The maximum number of shortcuts is platform dependent. Some shortcuts may be not available.",
+  shortcutsMayBeNotAvailable: "The maximum number of shortcuts is platform dependent. Some shortcuts may not be available.",
   /**
-   * @description Text in App Manifest View of the Application panel
+   * @description Checkbox label to show only the minimum safe area for maskable icons in the manifest view of the Application panel.
    */
   showOnlyTheMinimumSafeAreaFor: "Show only the minimum safe area for maskable icons",
   /**
-   * @description Link text for more information on maskable icons in App Manifest view of the Application panel
+   * @description Link text pointing to documentation on maskable icons in the manifest view of the Application panel.
    */
   documentationOnMaskableIcons: "documentation on maskable icons",
   /**
-   * @description Text wrapping a link pointing to more information on maskable icons in App Manifest view of the Application panel
-   * @example {https://web.dev/maskable-icon/} PH1
+   * @description Explanatory text with a link to documentation on maskable icons in the manifest view of the Application panel.
+   * @example {documentation on maskable icons} PH1
    */
   needHelpReadOurS: "Need help? Read the {PH1}.",
   /**
-   * @description Text in App Manifest View of the Application panel
+   * @description Label for a shortcut item in the manifest view of the Application panel.
    * @example {1} PH1
    */
   shortcutS: "Shortcut #{PH1}",
   /**
-   * @description Text in App Manifest View of the Application panel
+   * @description Warning text indicating that a shortcut should include a 96x96 pixel icon in the manifest view of the Application panel.
    * @example {1} PH1
    */
   shortcutSShouldIncludeAXPixel: "Shortcut #{PH1} should include a 96\xD796 pixel icon",
   /**
-   * @description Text in App Manifest View of the Application panel
+   * @description Label for a screenshot item in the manifest view of the Application panel.
    * @example {1} PH1
    */
   screenshotS: "Screenshot #{PH1}",
   /**
-   * @description Manifest installability error in the Application panel
+   * @description Error message explaining that the page isn't loaded in the main frame in the manifest view of the Application panel.
    */
-  pageIsNotLoadedInTheMainFrame: "Page is not loaded in the main frame",
+  pageIsNotLoadedInTheMainFrame: "Page isn\u2019t loaded in the main frame",
   /**
-   * @description Manifest installability error in the Application panel
+   * @description Error message explaining that the page isn't served from a secure origin in the manifest view of the Application panel.
    */
-  pageIsNotServedFromASecureOrigin: "Page is not served from a secure origin",
+  pageIsNotServedFromASecureOrigin: "Page isn\u2019t served from a secure origin",
   /**
-   * @description Manifest installability error in the Application panel
+   * @description Error message explaining that the page has no manifest link URL in the manifest view of the Application panel.
    */
   pageHasNoManifestLinkUrl: "Page has no manifest <link> `URL`",
   /**
-   * @description Manifest installability error in the Application panel
+   * @description Error message explaining that the manifest couldn't be fetched, is empty, or couldn't be parsed in the manifest view of the Application panel.
    */
-  manifestCouldNotBeFetchedIsEmpty: "Manifest could not be fetched, is empty, or could not be parsed",
+  manifestCouldNotBeFetchedIsEmpty: "Manifest couldn\u2019t be fetched, is empty, or couldn\u2019t be parsed",
   /**
-   * @description Manifest installability error in the Application panel
+   * @description Error message explaining that the manifest start_url isn't valid in the manifest view of the Application panel.
    */
-  manifestStartUrlIsNotValid: "Manifest '`start_url`' is not valid",
+  manifestStartUrlIsNotValid: "Manifest '`start_url`' isn\u2019t valid",
   /**
-   * @description Manifest installability error in the Application panel
+   * @description Error message explaining that the manifest doesn't contain a name or short_name field in the manifest view of the Application panel.
    */
-  manifestDoesNotContainANameOr: "Manifest does not contain a '`name`' or '`short_name`' field",
+  manifestDoesNotContainANameOr: "Manifest doesn\u2019t contain a '`name`' or '`short_name`' field",
   /**
-   * @description Manifest installability error in the Application panel
+   * @description Error message explaining that the manifest display property must be one of the supported modes in the manifest view of the Application panel.
    */
   manifestDisplayPropertyMustBeOne: "Manifest '`display`' property must be one of '`standalone`', '`fullscreen`', or '`minimal-ui`'",
   /**
-   * @description Manifest installability error in the Application panel
+   * @description Error message explaining that the manifest doesn't contain an icon that fits in the manifest view of the Application panel.
    * @example {100} PH1
    */
-  manifestDoesNotContainASuitable: "Manifest does not contain a suitable icon\u2014PNG, SVG, or WebP format of at least {PH1}px is required, the '`sizes`' attribute must be set, and the '`purpose`' attribute, if set, must include '`any`'",
+  manifestDoesNotContainASuitable: "Manifest doesn\u2019t contain an icon that fits\u2014PNG, SVG, or WebP format of at least {PH1}px is required, the '`sizes`' attribute must be set, and the '`purpose`' attribute, if set, must include '`any`'",
   /**
-   * @description Manifest installability error in the Application panel
+   * @description Warning message discouraging declaring an icon with purpose of 'any maskable' in the manifest view of the Application panel.
    */
-  avoidPurposeAnyAndMaskable: "Declaring an icon with '`purpose`' of '`any maskable`' is discouraged. It is likely to look incorrect on some platforms due to too much or too little padding.",
+  avoidPurposeAnyAndMaskable: "Declaring an icon with '`purpose`' of '`any maskable`' is discouraged. It\u2019s likely to look incorrect on some platforms due to too much or too little padding.",
   /**
-   * @description Manifest installability error in the Application panel
+   * @description Error message explaining that no supplied icon is at least the required size in the manifest view of the Application panel.
    * @example {100} PH1
    */
   noSuppliedIconIsAtLeastSpxSquare: "No supplied icon is at least {PH1} pixels square in `PNG`, `SVG`, or `WebP` format, with the purpose attribute unset or set to '`any`'",
   /**
-   * @description Manifest installability error in the Application panel
+   * @description Error message explaining that a required icon couldn't be downloaded from the manifest in the manifest view of the Application panel.
    */
-  couldNotDownloadARequiredIcon: "Could not download a required icon from the manifest",
+  couldNotDownloadARequiredIcon: "Couldn\u2019t download a required icon from the manifest",
   /**
-   * @description Manifest installability error in the Application panel
+   * @description Error message explaining that the downloaded icon was empty or corrupted in the manifest view of the Application panel.
    */
   downloadedIconWasEmptyOr: "Downloaded icon was empty or corrupted",
   /**
-   * @description Manifest installability error in the Application panel
+   * @description Error message explaining that the specified application platform isn't supported on Android in the manifest view of the Application panel.
    */
-  theSpecifiedApplicationPlatform: "The specified application platform is not supported on Android",
+  theSpecifiedApplicationPlatform: "The specified application platform isn\u2019t supported on Android",
   /**
-   * @description Manifest installability error in the Application panel
+   * @description Error message explaining that no Play Store ID was provided in the manifest view of the Application panel.
    */
-  noPlayStoreIdProvided: "No Play store ID provided",
+  noPlayStoreIdProvided: "No Play Store ID provided",
   /**
-   * @description Manifest installability error in the Application panel
+   * @description Error message explaining that the Play Store app URL and Play Store ID don't match in the manifest view of the Application panel.
    */
-  thePlayStoreAppUrlAndPlayStoreId: "The Play Store app URL and Play Store ID do not match",
+  thePlayStoreAppUrlAndPlayStoreId: "The Play Store app URL and Play Store ID don\u2019t match",
   /**
-   * @description Manifest installability error in the Application panel
+   * @description Error message explaining that the app is already installed in the manifest view of the Application panel.
    */
   theAppIsAlreadyInstalled: "The app is already installed",
   /**
-   * @description Manifest installability error in the Application panel
+   * @description Error message explaining that a URL in the manifest contains a username, password, or port in the manifest view of the Application panel.
    */
   aUrlInTheManifestContainsA: "A URL in the manifest contains a username, password, or port",
   /**
-   * @description Manifest installability error in the Application panel
+   * @description Error message explaining that the page is loaded in an incognito window in the manifest view of the Application panel.
    */
   pageIsLoadedInAnIncognitoWindow: "Page is loaded in an incognito window",
   /**
-   * @description Manifest installability error in the Application panel
+   * @description Error message explaining that the page doesn't work offline in the manifest view of the Application panel.
    */
-  pageDoesNotWorkOffline: "Page does not work offline",
+  pageDoesNotWorkOffline: "Page doesn\u2019t work offline",
   /**
-   * @description Manifest installability error in the Application panel
+   * @description Error message explaining that the service worker couldn't be checked without a start_url field in the manifest view of the Application panel.
    */
-  couldNotCheckServiceWorker: "Could not check `service worker` without a '`start_url`' field in the manifest",
+  couldNotCheckServiceWorker: "Couldn\u2019t check `service worker` without a '`start_url`' field in the manifest",
   /**
-   * @description Manifest installability error in the Application panel
+   * @description Error message explaining that the manifest specifies prefer_related_applications as true in the manifest view of the Application panel.
    */
   manifestSpecifies: "Manifest specifies '`prefer_related_applications`: true'",
   /**
-   * @description Manifest installability error in the Application panel
+   * @description Error message explaining that prefer_related_applications is only supported on Chrome Beta and Stable channels on Android in the manifest view of the Application panel.
    */
   preferrelatedapplicationsIsOnly: "'`prefer_related_applications`' is only supported on `Chrome` Beta and Stable channels on `Android`",
   /**
-   * @description Manifest installability error in the Application panel
+   * @description Error message explaining that the manifest display_override field must specify a supported display mode in the manifest view of the Application panel.
    */
   manifestContainsDisplayoverride: "Manifest contains '`display_override`' field, and the first supported display mode must be one of '`standalone`', '`fullscreen`', or '`minimal-ui`'",
   /**
-   * @description Warning message for offline capability check
+   * @description Warning message explaining that the page doesn't work offline and won't be installable in the manifest view of the Application panel.
    * @example {https://developer.chrome.com/blog/improved-pwa-offline-detection} PH1
    */
-  pageDoesNotWorkOfflineThePage: "Page does not work offline. Starting in Chrome 93, the installability criteria are changing, and this site will not be installable. See {PH1} for more information.",
+  pageDoesNotWorkOfflineThePage: "Page doesn\u2019t work offline. Starting in Chrome 93, the installability criteria are changing, and this site won\u2019t be installable. See {PH1} for more information.",
   /**
-   * @description Text to indicate the source of an image
+   * @description Label indicating the source of an image in the manifest view of the Application panel.
    * @example {example.com} PH1
    */
   imageFromS: "Image from {PH1}",
   /**
-   * @description Text for one or a group of screenshots
+   * @description Section title for screenshots in the manifest view of the Application panel.
    */
   screenshot: "Screenshot",
   /**
-   * @description Label in the App Manifest View for the "form_factor" property of screenshot
+   * @description Label for the form_factor property of a screenshot in the manifest view of the Application panel.
    */
   formFactor: "Form factor",
   /**
-   * @description Label in the App Manifest View for the "label" property of screenshot
+   * @description Label for the label property of a screenshot in the manifest view of the Application panel.
    */
   label: "Label",
   /**
-   * @description Label in the App Manifest View for the "platform" property of screenshot
+   * @description Label for the platform property of a screenshot in the manifest view of the Application panel.
    */
   platform: "Platform",
   /**
-   * @description Text in App Manifest View of the Application panel
+   * @description Label for an icon in the manifest view of the Application panel.
    */
   icon: "Icon",
   /**
-   * @description This is a warning message telling the user about a problem where the src attribute
-   * of an image has not be entered/provided correctly. 'src' is part of the DOM API and should not
-   * be translated.
-   * @example {ImageName} PH1
+   * @description Warning message explaining that the src attribute is not set in the manifest view of the Application panel.
+   * @example {Screenshot} PH1
    */
-  sSrcIsNotSet: "{PH1} '`src`' is not set",
+  sSrcIsNotSet: "{PH1} '`src`' isn\u2019t set",
   /**
-   * @description Warning message for image resources from the manifest
+   * @description Warning message explaining that an image URL failed to parse in the manifest view of the Application panel.
    * @example {Screenshot} PH1
    * @example {https://example.com/image.png} PH2
    */
-  sUrlSFailedToParse: "{PH1} URL ''{PH2}'' failed to parse",
+  sUrlSFailedToParse: '{PH1} URL "{PH2}" failed to parse',
   /**
-   * @description Warning message for image resources from the manifest
+   * @description Warning message explaining that an image resource failed to load in the manifest view of the Application panel.
    * @example {Image} PH1
    * @example {https://example.com/image.png} PH2
    */
   sSFailedToLoad: "{PH1} {PH2} failed to load",
   /**
-   * @description Warning message for image resources from the manifest
+   * @description Warning message explaining that an image doesn't specify its size in the manifest view of the Application panel.
    * @example {Image} PH1
    * @example {https://example.com/image.png} PH2
    */
-  sSDoesNotSpecifyItsSizeInThe: "{PH1} {PH2} does not specify its size in the manifest",
+  sSDoesNotSpecifyItsSizeInThe: "{PH1} {PH2} doesn\u2019t specify its size in the manifest",
   /**
-   * @description Warning message for image resources from the manifest
+   * @description Warning message explaining how an image should specify its size in the manifest view of the Application panel.
    * @example {Image} PH1
    * @example {https://example.com/image.png} PH2
    */
   sSShouldSpecifyItsSizeAs: "{PH1} {PH2} should specify its size as `[width]x[height]`",
   /**
-   * @description Warning message for image resources from the manifest
+   * @description Warning message explaining that square icons are required in the manifest view of the Application panel.
    */
-  sSShouldHaveSquareIcon: "Most operating systems require square icons. Please include at least one square icon in the array.",
+  sSShouldHaveSquareIcon: "Most operating systems require square icons. Include at least one square icon in the array.",
   /**
-   * @description Warning message for image resources from the manifest
+   * @description Warning message explaining that the actual size of an image doesn't match the specified size in the manifest view of the Application panel.
    * @example {100} PH1
    * @example {100} PH2
    * @example {Image} PH3
@@ -3473,100 +3464,100 @@ var UIStrings = {
    * @example {200} PH5
    * @example {200} PH6
    */
-  actualSizeSspxOfSSDoesNotMatch: "Actual size ({PH1}\xD7{PH2})px of {PH3} {PH4} does not match specified size ({PH5}\xD7{PH6}px)",
+  actualSizeSspxOfSSDoesNotMatch: "Actual size ({PH1}\xD7{PH2})px of {PH3} {PH4} doesn\u2019t match specified size ({PH5}\xD7{PH6}px)",
   /**
-   * @description Warning message for image resources from the manifest
+   * @description Warning message explaining that the actual width of an image doesn't match the specified width in the manifest view of the Application panel.
    * @example {100} PH1
    * @example {Image} PH2
    * @example {https://example.com/image.png} PH3
    * @example {200} PH4
    */
-  actualWidthSpxOfSSDoesNotMatch: "Actual width ({PH1}px) of {PH2} {PH3} does not match specified width ({PH4}px)",
+  actualWidthSpxOfSSDoesNotMatch: "Actual width ({PH1}px) of {PH2} {PH3} doesn\u2019t match specified width ({PH4}px)",
   /**
-   * @description Warning message for image resources from the manifest
+   * @description Warning message explaining that the actual height of an image doesn't match the specified height in the manifest view of the Application panel.
    * @example {100} PH1
    * @example {Image} PH2
    * @example {https://example.com/image.png} PH3
    * @example {100} PH4
    */
-  actualHeightSpxOfSSDoesNotMatch: "Actual height ({PH1}px) of {PH2} {PH3} does not match specified height ({PH4}px)",
+  actualHeightSpxOfSSDoesNotMatch: "Actual height ({PH1}px) of {PH2} {PH3} doesn\u2019t match specified height ({PH4}px)",
   /**
-   * @description Warning message for image resources from the manifest
+   * @description Warning message explaining the minimum size requirement for an image in the manifest view of the Application panel.
    * @example {Image} PH1
    * @example {https://example.com/image.png} PH2
    */
   sSSizeShouldBeAtLeast320: "{PH1} {PH2} size should be at least 320\xD7320",
   /**
-   * @description Warning message for image resources from the manifest
+   * @description Warning message explaining the maximum size requirement for an image in the manifest view of the Application panel.
    * @example {Image} PH1
    * @example {https://example.com/image.png} PH2
    */
   sSSizeShouldBeAtMost3840: "{PH1} {PH2} size should be at most 3840\xD73840",
   /**
-   * @description Warning message for image resources from the manifest
+   * @description Warning message explaining the width-to-height ratio requirement for an image in the manifest view of the Application panel.
    * @example {Image} PH1
    * @example {https://example.com/image.png} PH2
    */
   sSWidthDoesNotComplyWithRatioRequirement: "{PH1} {PH2} width can\u2019t be more than 2.3 times as long as the height",
   /**
-   * @description Warning message for image resources from the manifest
+   * @description Warning message explaining the height-to-width ratio requirement for an image in the manifest view of the Application panel.
    * @example {Image} PH1
    * @example {https://example.com/image.png} PH2
    */
   sSHeightDoesNotComplyWithRatioRequirement: "{PH1} {PH2} height can\u2019t be more than 2.3 times as long as the width",
   /**
-   * @description Manifest installability error in the Application panel
+   * @description Error message explaining that a screenshot should specify a pixel size in the manifest view of the Application panel.
    * @example {https://example.com/image.png} url
    */
   screenshotPixelSize: "Screenshot {url} should specify a pixel size `[width]x[height]` instead of `any` as first size",
   /**
-   * @description Warning text about screenshots for Richer PWA Install UI on desktop
+   * @description Warning message explaining that a screenshot with form_factor set to wide is needed for richer PWA install UI on desktop in the manifest view of the Application panel.
    */
-  noScreenshotsForRicherPWAInstallOnDesktop: "Richer PWA Install UI won\u2019t be available on desktop. Please add at least one screenshot with the `form_factor` set to `wide`.",
+  noScreenshotsForRicherPWAInstallOnDesktop: "Richer PWA install UI won\u2019t be available on desktop. Add at least one screenshot with the `form_factor` set to `wide`.",
   /**
-   * @description Warning text about screenshots for Richer PWA Install UI on mobile
+   * @description Warning message explaining that a screenshot for mobile is needed for richer PWA install UI on mobile in the manifest view of the Application panel.
    */
-  noScreenshotsForRicherPWAInstallOnMobile: "Richer PWA Install UI won\u2019t be available on mobile. Please add at least one screenshot for which `form_factor` is not set or set to a value other than `wide`.",
+  noScreenshotsForRicherPWAInstallOnMobile: "Richer PWA install UI won\u2019t be available on mobile. Add at least one screenshot for which `form_factor` isn\u2019t set or set to a value other than `wide`.",
   /**
-   * @description Warning text about too many screenshots for desktop
+   * @description Warning text indicating that no more than 8 screenshots will be displayed on desktop in the manifest view of the Application panel.
    */
   tooManyScreenshotsForDesktop: "No more than 8 screenshots will be displayed on desktop. The rest will be ignored.",
   /**
-   * @description Warning text about too many screenshots for mobile
+   * @description Warning text indicating that no more than 5 screenshots will be displayed on mobile in the manifest view of the Application panel.
    */
   tooManyScreenshotsForMobile: "No more than 5 screenshots will be displayed on mobile. The rest will be ignored.",
   /**
-   * @description Warning text about not all screenshots matching the appropriate form factor have the same aspect ratio
+   * @description Warning text indicating that all screenshots with the same form_factor must have the same aspect ratio in the manifest view of the Application panel.
    */
   screenshotsMustHaveSameAspectRatio: "All screenshots with the same `form_factor` must have the same aspect ratio as the first screenshot with that `form_factor`. Some screenshots will be ignored.",
   /**
-   * @description Message for Window Controls Overlay value succsessfully found with links to documnetation
+   * @description Message explaining that the window-controls-overlay value was found in the manifest in the manifest view of the Application panel.
    * @example {window-controls-overlay} PH1
    * @example {https://developer.mozilla.org/en-US/docs/Web/Manifest/display_override} PH2
    * @example {https://developer.mozilla.org/en-US/docs/Web/Manifest} PH3
    */
-  wcoFound: "Chrome has successfully found the {PH1} value for the {PH2} field in the {PH3}",
+  wcoFound: "Chrome found the {PH1} value for the {PH2} field in the {PH3}",
   /**
-   * @description Message for Windows Control Overlay value not found with link to documentation
+   * @description Message explaining how to use the Window Controls Overlay API in the manifest view of the Application panel.
    * @example {https://developer.mozilla.org/en-US/docs/Web/Manifest/display_override} PH1
    */
-  wcoNotFound: "Define {PH1} in the manifest to use the Window Controls Overlay API and customize your app\u2019s title bar",
+  wcoNotFound: "Define {PH1} in the manifest to use the `Window Controls Overlay` API and customize your app\u2019s title bar",
   /**
-   * @description Link text for more information on customizing Window Controls Overlay title bar in the Application panel
+   * @description Link text for documentation on customizing the Window Controls Overlay title bar in the manifest view of the Application panel.
    */
-  customizePwaTitleBar: "Customize the window controls overlay of your PWA\u2019s title bar",
+  customizePwaTitleBar: "Customize the `Window Controls Overlay` of your PWA\u2019s title bar",
   /**
-   * @description Text wrapping link to documentation on how to customize WCO title bar
-   * @example {https://learn.microsoft.com/en-us/microsoft-edge/progressive-web-apps-chromium/how-to/window-controls-overlay} PH1
+   * @description Explanatory text with a link to documentation on the Window Controls Overlay in the manifest view of the Application panel.
+   * @example {Customize the Window Controls Overlay of your PWA's title bar} PH1
    */
   wcoNeedHelpReadMore: "Need help? Read {PH1}.",
   /**
-   * @description Text for emulation OS selection dropdown
+   * @description Checkbox label and tooltip for toggling Window Controls Overlay emulation in the manifest view of the Application panel.
    */
-  selectWindowControlsOverlayEmulationOs: "Emulate the Window Controls Overlay on",
+  selectWindowControlsOverlayEmulationOs: "Emulate `Window Controls Overlay`",
   /**
-   * @description Alert message for screen reader to announce which subsection is being scrolled to
-   * @example {"Identity"} PH1
+   * @description Screen reader announcement when scrolling to a subsection in the manifest view of the Application panel.
+   * @example {Identity} PH1
    */
   onInvokeAlert: "Scrolled to {PH1}"
 };
@@ -3787,7 +3778,7 @@ function renderInstallability(installabilityErrors) {
 }
 function renderWindowControlsSection(data, selectedPlatform, onSelectOs, onToggleWcoToolbar, output) {
   return html2`
-    ${renderSectionHeader(i18nString(UIStrings.windowControlsOverlay), output)}
+    ${renderSectionHeader(i18n.i18n.lockedString("Window Controls Overlay"), output)}
     <div class="report-section" jslog=${VisualLogging.section("window-controls-overlay")}>
       ${data?.hasWco && output ? html2`
         <div class="report-row">
@@ -3798,7 +3789,7 @@ function renderWindowControlsSection(data, selectedPlatform, onSelectOs, onToggl
               <devtools-link
                 href="https://developer.mozilla.org/en-US/docs/Web/Manifest/display_override"
                 jslogcontext="display-override"
-                ${ref(setFocusOnSection(i18nString(UIStrings.windowControlsOverlay), output))}>
+                ${ref(setFocusOnSection(i18n.i18n.lockedString("Window Controls Overlay"), output))}>
                 display-override
               </devtools-link>
             </code>`,
@@ -3812,7 +3803,7 @@ function renderWindowControlsSection(data, selectedPlatform, onSelectOs, onToggl
                 <devtools-link
                     href="https://developer.mozilla.org/en-US/docs/Web/Manifest/display_override"
                     jslogcontext="display-override"
-                    ${ref(setFocusOnSection(i18nString(UIStrings.windowControlsOverlay), output))}>
+                    ${ref(setFocusOnSection(i18n.i18n.lockedString("Window Controls Overlay"), output))}>
                   display-override
                 </devtools-link>
               </code>` })}
@@ -4051,7 +4042,7 @@ var AppManifestView = class extends AppManifestViewBase {
       { title: i18nString(UIStrings.presentation), jslogContext: "presentation" },
       { title: i18nString(UIStrings.protocolHandlers), jslogContext: "protocol-handlers" },
       { title: i18nString(UIStrings.icons), jslogContext: "icons" },
-      { title: i18nString(UIStrings.windowControlsOverlay), jslogContext: "window-controls" }
+      { title: i18n.i18n.lockedString("Window Controls Overlay"), jslogContext: "window-controls" }
     ];
   }
   getManifestElement() {
@@ -4574,7 +4565,7 @@ import * as UI3 from "../../ui/legacy/legacy.js";
 import * as ApplicationComponents2 from "./components/components.js";
 var UIStrings2 = {
   /**
-   * @description Text in Application Panel Sidebar of the Application panel
+   * @description Label for the back/forward cache tree item in the sidebar of the Application panel.
    */
   backForwardCache: "Back/forward cache"
 };
@@ -5541,7 +5532,7 @@ import { createIcon as createIcon3 } from "../../ui/kit/kit.js";
 import * as UI6 from "../../ui/legacy/legacy.js";
 var UIStrings5 = {
   /**
-   *@description Text for section title Application panel sidebar. A website
+   *@description Section title in the sidebar of the Application panel. A website
    * may decide to create a session for a user, for example when the user logs
    * in. They can use a protocol to make it a "device bound session". That
    * means that when the session expires, it is only possible for it to be
@@ -5552,36 +5543,36 @@ var UIStrings5 = {
    */
   deviceBoundSessions: "Device bound sessions",
   /**
-   *@description Empty state description for root tree element and site tree
-   * elements. A website may decide to create a session for a user, for example
-   * when the user logs in. They can use a protocol to make it a "device bound
-   * session". That means that when the session expires, it is only possible
-   * for it to be extended on the device it was created on. Thus the session
-   * is considered to be bound to that device. A session can have various events,
-   * such as when it's first created, when it's extended, or when it's
-   * terminated. For more details on the protocol, see
+   *@description Empty state description for the root tree element and site tree
+   * elements in the Application panel sidebar. A website may decide to create a
+   * session for a user, for example when the user logs in. They can use a
+   * protocol to make it a "device bound session". That means that when the
+   * session expires, it is only possible for it to be extended on the device it
+   * was created on. Thus the session is considered to be bound to that device. A
+   * session can have various events, such as when it's first created, when it's
+   * extended, or when it's terminated. For more details on the protocol, see
    * https://github.com/w3c/webappsec-dbsc/blob/main/README.md and
    * https://w3c.github.io/webappsec-dbsc/.
    */
   deviceBoundSessionsCategoryDescription: "On this page you can view device bound sessions and associated events",
   /**
-   *@description Events are sometimes linked to sessions. These are grouped
-   * visually either by session name or by 'No session' if any events are not
-   * linked to a session.
+   *@description Label for a tree item in the Application panel sidebar. Events
+   * are sometimes linked to sessions. These are grouped visually either by
+   * session name or by 'No session' if any events are not linked to a session.
    */
   noSession: "No session",
   /**
-   *@description Tooltip text for a terminated session.
+   *@description Accessible label for a terminated session tree item in the Application panel sidebar.
    *@example {session_1} sessionName
    */
-  terminatedSession: "{sessionName}, Session terminated",
+  terminatedSession: "{sessionName}, session terminated",
   /**
-   *@description Tooltip text for a session with errors.
+   *@description Accessible label for a session tree item with errors in the Application panel sidebar.
    *@example {session_1} sessionName
    */
-  sessionWithErrors: "{sessionName}, Session has errors",
+  sessionWithErrors: "{sessionName}, session has errors",
   /**
-   *@description Context menu item for clearing a session.
+   *@description Context menu item in the Application panel sidebar to clear a session.
    */
   clear: "Clear"
 };
@@ -6276,53 +6267,48 @@ var { classMap: classMap2 } = Directives2;
 var { widget: widget2 } = UI7.Widget;
 var UIStrings6 = {
   /**
-   * @description Label for the 'origin' field in a parsed Origin Trial Token.
+   * @description Label for the origin field in an origin trial token.
    */
   origin: "Origin",
   /**
-   * @description Label for `trialName` field in a parsed Origin Trial Token.
-   * This field is only shown when token has unknown trial name as the token
-   * will be put into 'UNKNOWN' group.
+   * @description Label for the trial name field in an origin trial token.
    */
-  trialName: "Trial Name",
+  trialName: "Trial name",
   /**
-   * @description Label for `expiryTime` field in a parsed Origin Trial Token.
+   * @description Label for the expiry time field in an origin trial token.
    */
-  expiryTime: "Expiry Time",
+  expiryTime: "Expiry time",
   /**
-   * @description Label for `usageRestriction` field in a parsed Origin Trial Token.
+   * @description Label for the usage restriction field in an origin trial token.
    */
-  usageRestriction: "Usage Restriction",
+  usageRestriction: "Usage restriction",
   /**
-   * @description Label for `isThirdParty` field in a parsed Origin Trial Token.
+   * @description Label for the third party field in an origin trial token.
    */
-  isThirdParty: "Third Party",
+  isThirdParty: "Third party",
   /**
-   * @description Label for a field containing info about an Origin Trial Token's `matchSubDomains` field.
-   *An Origin Trial Token contains an origin URL. The `matchSubDomains` field describes whether the token
-   *only applies to the origin URL or to all subdomains of the origin URL as well.
-   *The field contains either 'true' or 'false'.
+   * @description Label for the subdomain matching field in an origin trial token.
    */
-  matchSubDomains: "Subdomain Matching",
+  matchSubDomains: "Subdomain matching",
   /**
-   * @description Label for the raw(= encoded / not human-readable) Origin Trial Token.
+   * @description Label for the raw token text in an origin trial token.
    */
-  rawTokenText: "Raw Token",
+  rawTokenText: "Raw token",
   /**
-   * @description Label for `status` field in an Origin Trial Token.
+   * @description Label for the token status field in an origin trial token.
    */
-  status: "Token Status",
+  status: "Token status",
   /**
-   * @description Label for tokenWithStatus node.
+   * @description Label for a token node in the origin trials tree view.
    */
   token: "Token",
   /**
-   * @description Label for a badge showing the number of Origin Trial Tokens. This number is always greater than 1.
+   * @description Label for a badge showing the number of origin trial tokens.
    * @example {2} PH1
    */
   tokens: "{PH1} tokens",
   /**
-   * @description Label shown when there are no Origin Trial Tokens in the Frame view of the Application panel.
+   * @description Label shown when there are no origin trial tokens in the frame details view of the Application panel.
    */
   noTrialTokens: "No trial tokens"
 };
@@ -6520,220 +6506,203 @@ var OriginTrialTreeView = class extends UI7.Widget.Widget {
 var { widget: widget3 } = UI8.Widget;
 var UIStrings7 = {
   /**
-   * @description Section header in the Frame Details view
+   * @description Section header for debugging information in the frame details view.
    */
-  additionalInformation: "Additional Information",
+  additionalInformation: "More information",
   /**
-   * @description Explanation for why the additional information section is being shown
+   * @description Explanation for why the debugging information section is shown in the frame details view.
    */
-  thisAdditionalDebugging: "This additional (debugging) information is shown because the 'Protocol Monitor' experiment is enabled",
+  thisAdditionalDebugging: 'This debugging information is shown because the "Protocol Monitor" experiment is enabled',
   /**
-   * @description Label for subtitle of frame details view
+   * @description Field label for the frame ID in the frame details view.
    */
   frameId: "Frame ID",
   /**
-   * @description Name of a network resource type
+   * @description Section header for document details in the frame details view.
    */
   document: "Document",
   /**
-   * @description A web URL (for a lot of languages this does not need to be translated, please translate only where necessary)
+   * @description Field label for the URL in the frame details view.
    */
   url: "URL",
   /**
-   * /**
-   * @description Title for a link to the Sources panel
+   * @description Tooltip for the button to open the URL in the Sources panel.
    */
   clickToOpenInSourcesPanel: "Click to open in Sources panel",
   /**
-   * @description Title for a link to the Network panel
+   * @description Tooltip for the button to open the URL in the Network panel.
    */
   clickToOpenInNetworkPanel: "Click to open in Network panel",
   /**
-   * @description Title for unreachable URL field
+   * @description Field label for an unreachable URL in the frame details view.
    */
   unreachableUrl: "Unreachable URL",
   /**
-   * @description Title for a link that applies a filter to the network panel
+   * @description Tooltip for the button to filter by frame in the Network panel.
    */
   clickToOpenInNetworkPanelMight: "Click to open in Network panel (might require page reload)",
   /**
-   * @description The origin of a URL (https://web.dev/same-site-same-origin/#origin)
-   *(for a lot of languages this does not need to be translated, please translate only where necessary)
+   * @description Field label for the origin of a URL in the frame details view.
    */
   origin: "Origin",
   /**
-   * /**
-   * @description Related node label in Timeline UIUtils of the Performance panel
+   * @description Field label for the owner DOM element of the frame in the frame details view.
    */
-  ownerElement: "Owner Element",
+  ownerElement: "Owner element",
   /**
-   * @description Title for ad frame type field
+   * @description Field label for the ad status in the frame details view.
    */
-  adStatus: "Ad Status",
+  adStatus: "Ad status",
   /**
-   * @description Description for ad frame type
+   * @description Description explaining that this frame is the root frame of an ad in the frame details view.
    */
   rootDescription: "This frame has been identified as the root frame of an ad",
   /**
-   * @description Value for ad frame type
+   * @description Value for the root ad frame type in the frame details view.
    */
   root: "root",
   /**
-   * @description Description for ad frame type
+   * @description Description explaining that this frame is a child frame of an ad in the frame details view.
    */
   childDescription: "This frame has been identified as a child frame of an ad",
   /**
-   * @description Value for ad frame type
+   * @description Value for the child ad frame type in the frame details view.
    */
   child: "child",
   /**
-   * @description Section header in the Frame Details view
+   * @description Section header for security and isolation in the frame details view.
    */
-  securityIsolation: "Security & Isolation",
+  securityIsolation: "Security & isolation",
   /**
-   * @description Section header in the Frame Details view
+   * @description Section header for Content Security Policy in the frame details view.
    */
   contentSecurityPolicy: "Content Security Policy (CSP)",
   /**
-   * @description Row title for in the Frame Details view
+   * @description Field label indicating whether the frame is a secure context in the frame details view.
    */
-  secureContext: "Secure Context",
+  secureContext: "Secure context",
   /**
-   * @description Text in Timeline indicating that input has happened recently
+   * @description Value indicating affirmative status in the frame details view.
    */
   yes: "Yes",
   /**
-   * @description Text in Timeline indicating that input has not happened recently
+   * @description Value indicating negative status in the frame details view.
    */
   no: "No",
   /**
-   * @description Label for whether a frame is cross-origin isolated
-   *(https://developer.chrome.com/docs/extensions/mv3/cross-origin-isolation/)
-   *(for a lot of languages this does not need to be translated, please translate only where necessary)
+   * @description Field label indicating whether the frame is cross-origin isolated in the frame details view.
    */
-  crossoriginIsolated: "Cross-Origin Isolated",
+  crossoriginIsolated: "Cross-origin isolated",
   /**
-   * @description Explanatory text in the Frame Details view
+   * @description Explanatory text indicating that localhost is always a secure context in the frame details view.
    */
   localhostIsAlwaysASecureContext: "`Localhost` is always a secure context",
   /**
-   * @description Explanatory text in the Frame Details view
+   * @description Explanatory text indicating that a frame ancestor is an insecure context in the frame details view.
    */
   aFrameAncestorIsAnInsecure: "A frame ancestor is an insecure context",
   /**
-   * @description Explanatory text in the Frame Details view
+   * @description Explanatory text indicating that the frame's scheme is insecure in the frame details view.
    */
   theFramesSchemeIsInsecure: "The frame\u2019s scheme is insecure",
   /**
-   * @description This label specifies the server endpoints to which the server is reporting errors
-   *and warnings through the Report-to API. Following this label will be the URL of the server.
+   * @description Label prefix for the reporting endpoint in the security & isolation section of the frame details view.
    */
   reportingTo: "reporting to",
   /**
-   * @description Section header in the Frame Details view
+   * @description Section header for API availability in the frame details view.
    */
   apiAvailability: "API availability",
   /**
-   * @description Explanation of why cross-origin isolation is important
-   *(https://web.dev/why-coop-coep/)
-   *(for a lot of languages 'cross-origin isolation' does not need to be translated, please translate only where necessary)
+   * @description Explanation of why cross-origin isolation is needed for certain APIs in the frame details view.
    */
   availabilityOfCertainApisDepends: "Availability of certain APIs depends on the document being cross-origin isolated",
   /**
-   * @description Description of the SharedArrayBuffer status
+   * @description Status indicating that SharedArrayBuffer is available and transferable in the frame details view.
    */
   availableTransferable: "available, transferable",
   /**
-   * @description Description of the SharedArrayBuffer status
+   * @description Status indicating that SharedArrayBuffer is available but not transferable in the frame details view.
    */
   availableNotTransferable: "available, not transferable",
   /**
-   * @description Explanation for the SharedArrayBuffer availability status
+   * @description Status indicating that a feature is unavailable in the frame details view.
    */
   unavailable: "unavailable",
   /**
-   * @description Tooltip for the SharedArrayBuffer availability status
+   * @description Tooltip explaining that the SharedArrayBuffer constructor is available and SABs can be transferred via postMessage in the frame details view.
    */
   sharedarraybufferConstructorIs: "`SharedArrayBuffer` constructor is available and `SABs` can be transferred via `postMessage`",
   /**
-   * @description Tooltip for the SharedArrayBuffer availability status
+   * @description Tooltip explaining that the SharedArrayBuffer constructor is available but SABs cannot be transferred via postMessage in the frame details view.
    */
-  sharedarraybufferConstructorIsAvailable: "`SharedArrayBuffer` constructor is available but `SABs` cannot be transferred via `postMessage`",
+  sharedarraybufferConstructorIsAvailable: "`SharedArrayBuffer` constructor is available but `SABs` can\u2019t be transferred via `postMessage`",
   /**
-   * @description Explanation why SharedArrayBuffer will not be available in the future
-   *(https://developer.chrome.com/docs/extensions/mv3/cross-origin-isolation/)
-   *(for a lot of languages 'cross-origin isolation' does not need to be translated, please translate only where necessary)
+   * @description Warning indicating that a feature will require a cross-origin isolated context in the future in the frame details view.
    */
   willRequireCrossoriginIsolated: "\u26A0\uFE0F will require cross-origin isolated context in the future",
   /**
-   * @description Explanation why SharedArrayBuffer is not available
-   *(https://developer.chrome.com/docs/extensions/mv3/cross-origin-isolation/)
-   *(for a lot of languages 'cross-origin isolation' does not need to be translated, please translate only where necessary).
+   * @description Status explanation indicating that a feature requires a cross-origin isolated context in the frame details view.
    */
   requiresCrossoriginIsolated: "requires cross-origin isolated context",
   /**
-   * @description Explanation for the SharedArrayBuffer availability status in case the transfer of a SAB requires the
-   * permission policy `cross-origin-isolated` to be enabled (e.g. because the message refers to the situation in an iframe).
+   * @description Explanation that SharedArrayBuffer transfer requires enabling the permission policy in the frame details view.
    */
   transferRequiresCrossoriginIsolatedPermission: "`SharedArrayBuffer` transfer requires enabling the permission policy:",
   /**
-   * @description Explanation for the Measure Memory availability status
+   * @description Status indicating that a feature is available in the frame details view.
    */
   available: "available",
   /**
-   * @description Tooltip for the Measure Memory availability status
+   * @description Tooltip indicating that the performance.measureUserAgentSpecificMemory() API is available in the frame details view.
    */
   thePerformanceAPI: "The `performance.measureUserAgentSpecificMemory()` API is available",
   /**
-   * @description Tooltip for the Measure Memory availability status
+   * @description Tooltip indicating that the performance.measureUserAgentSpecificMemory() API is not available in the frame details view.
    */
-  thePerformancemeasureuseragentspecificmemory: "The `performance.measureUserAgentSpecificMemory()` API is not available",
+  thePerformancemeasureuseragentspecificmemory: "The `performance.measureUserAgentSpecificMemory()` API isn\u2019t available",
   /**
-   * @description Entry in the API availability section of the frame details view
+   * @description Field label for the measure memory API in the frame details view.
    */
-  measureMemory: "Measure Memory",
+  measureMemory: "Measure memory",
   /**
-   * @description Text that is usually a hyperlink to more documentation
+   * @description Link text to open documentation in the frame details view.
    */
   learnMore: "Learn more",
   /**
-   * @description Label for a stack trace. If a frame is created programmatically (i.e. via JavaScript), there is a
-   * stack trace for the line of code which caused the creation of the iframe. This is the stack trace we are showing here.
+   * @description Field label for the stack trace showing where the frame was created in the frame details view.
    */
-  creationStackTrace: "Frame Creation `Stack Trace`",
+  creationStackTrace: "Frame creation `stack trace`",
   /**
-   * @description Tooltip for 'Frame Creation Stack Trace' explaining that the stack
-   *trace shows where in the code the frame has been created programmatically
+   * @description Tooltip explaining that the stack trace shows where the frame was created in the frame details view.
    */
   creationStackTraceExplanation: "This frame was created programmatically. The `stack trace` shows where this happened.",
   /**
-   * @description Text descripting why a frame has been indentified as an advertisement.
+   * @description Tooltip explaining that this frame is considered an ad because its parent frame is an ad in the frame details view.
    */
   parentIsAdExplanation: "This frame is considered an ad frame because its parent frame is an ad frame",
   /**
-   * @description Text descripting why a frame has been indentified as an advertisement.
+   * @description Tooltip explaining that this frame is considered an ad because its main document is an ad resource in the frame details view.
    */
   matchedBlockingRuleExplanation: "This frame is considered an ad frame because its current (or previous) main document is an ad resource",
   /**
-   * @description Text descripting why a frame has been indentified as an advertisement.
+   * @description Tooltip explaining that this frame is considered an ad because an ad script was in the stack when it was created in the frame details view.
    */
-  createdByAdScriptExplanation: "There was an ad script in the `(async) stack` when this frame was created. Examining the creation `stack trace` of this frame might provide more insight.",
+  createdByAdScriptExplanation: "An ad script was in the `(async) stack` when this frame was created. Examining the creation `stack trace` of this frame might provide more insight.",
   /**
-   * @description Label for the link(s) to the ad script(s) that led to this frame's creation.
+   * @description Field label for the ad script ancestry that led to the frame creation in the frame details view.
    */
-  creatorAdScriptAncestry: "Creator Ad Script Ancestry",
+  creatorAdScriptAncestry: "Creator ad script ancestry",
   /**
-   * @description Label for the filterlist rule that identified the root script in 'Creator Ad Script Ancestry' as an ad.
+   * @description Field label for the filterlist rule that identified the root script as an ad in the frame details view.
    */
-  rootScriptFilterlistRule: "Root Script Filterlist Rule",
+  rootScriptFilterlistRule: "Root script filterlist rule",
   /**
-   * @description Text describing the absence of a value.
+   * @description Value indicating the absence of a value in the frame details view.
    */
   none: "None",
   /**
-   * @description Explanation of what origin trials are
-   *(https://developer.chrome.com/docs/web-platform/origin-trials/)
-   *(please don't translate 'origin trials').
+   * @description Explanation of origin trials in the origin trials section of the frame details view.
    */
   originTrialsExplanation: "Origin trials give you access to a new or experimental feature"
 };
@@ -7698,6 +7667,8 @@ var IndexedDBModel = class _IndexedDBModel extends SDK8.SDKModel.SDKModel {
   }
   storageBucketDeleted(_event) {
   }
+  privateVerificationTokensUpdated() {
+  }
 };
 SDK8.SDKModel.SDKModel.register(IndexedDBModel, { capabilities: SDK8.Target.Capability.STORAGE, autostart: false });
 var Events4 = /* @__PURE__ */ ((Events5) => {
@@ -8639,76 +8610,75 @@ var openedWindowDetailsView_css_default = `/*
 // ../../front_end/panels/application/OpenedWindowDetailsView.ts
 var UIStrings9 = {
   /**
-   * @description Text in Timeline indicating that input has happened recently
+   * @description Text indicating that the opened window has access to its opener.
    */
   yes: "Yes",
   /**
-   * @description Text in Timeline indicating that input has not happened recently
+   * @description Text indicating that the opened window does not have access to its opener.
    */
   no: "No",
   /**
-   * @description Title for a link to the Elements panel
+   * @description Tooltip for the button to reveal the opener frame DOM node in the Elements panel.
    */
   clickToOpenInElementsPanel: "Click to open in Elements panel",
   /**
-   * @description Name of a network resource type
+   * @description Section header for document details in the opened window details view and worker details view.
    */
   document: "Document",
   /**
-   * @description Text for web URLs
+   * @description Field label for the URL in the opened window details view and worker details view.
    */
   url: "URL",
   /**
-   * @description Title of the 'Security' tool
+   * @description Section header for security information in the opened window details view.
    */
   security: "Security",
   /**
-   * @description Label for link to Opener Frame in Detail View for Opened Window
+   * @description Field label for the link to the opener frame in the opened window details view.
    */
-  openerFrame: "Opener Frame",
+  openerFrame: "Opener frame",
   /**
-   * @description Label in opened window's details view whether window has access to its opener
+   * @description Field label indicating whether the opened window has access to its opener in the opened window details view.
    */
   accessToOpener: "Access to opener",
   /**
-   * @description Description for the 'Access to Opener' field
+   * @description Tooltip explaining whether the opened window has access to its opener in the opened window details view.
    */
   showsWhetherTheOpenedWindowIs: "Shows whether the opened window is able to access its opener and vice versa",
   /**
-   * @description Text in Frames View of the Application panel
+   * @description Fallback title for an opened window without a title in the opened window details view.
    */
   windowWithoutTitle: "Window without title",
   /**
-   * @description Label suffix in the Application Panel Frames section for windows which are already closed
+   * @description Suffix for the title of an opened window that has been closed in the opened window details view.
    */
   closed: "closed",
   /**
-   * @description Default name for worker
+   * @description Fallback title for a worker in the worker details view.
    */
   worker: "worker",
   /**
-   * @description Text that refers to some types
+   * @description Field label for the worker type in the worker details view.
    */
   type: "Type",
   /**
-   * @description Section header in the Frame Details view
+   * @description Section header for security and isolation in the worker details view.
    */
-  securityIsolation: "Security & Isolation",
+  securityIsolation: "Security & isolation",
   /**
-   * @description Row title in the Frame Details view
+   * @description Field label for the Cross-Origin Embedder Policy in the worker details view.
    */
   crossoriginEmbedderPolicy: "Cross-Origin Embedder Policy",
   /**
-   * @description Label for worker type: web worker
+   * @description Value for dedicated Web Worker type in the worker details view.
    */
   webWorker: "Web Worker",
   /**
-   * @description Text for an unspecified service worker response source
+   * @description Value for an unknown worker type in the worker details view.
    */
   unknown: "Unknown",
   /**
-   * @description This label specifies the server endpoints to which the server is reporting errors
-   *and warnings through the Report-to API. Following this label will be the URL of the server.
+   * @description Prefix for the reporting endpoint in the security & isolation section of the worker details view.
    */
   reportingTo: "reporting to"
 };
@@ -9712,15 +9682,15 @@ var PreloadingRuleSetSelector = class {
 // ../../front_end/panels/application/PreloadingTreeElement.ts
 var UIStrings11 = {
   /**
-   * @description Text in Application Panel Sidebar of the Application panel
+   * @description Label for the speculative loads tree item in the sidebar of the Application panel.
    */
   speculativeLoads: "Speculative loads",
   /**
-   * @description Text in Application Panel Sidebar of the Application panel
+   * @description Label for the rules child tree item under speculative loads in the sidebar of the Application panel.
    */
   rules: "Rules",
   /**
-   * @description Text in Application Panel Sidebar of the Application panel
+   * @description Label for the speculations child tree item under speculative loads in the sidebar of the Application panel.
    */
   speculations: "Speculations"
 };
@@ -9891,19 +9861,19 @@ import * as VisualLogging6 from "../../ui/visual_logging/visual_logging.js";
 import * as ApplicationComponents6 from "./components/components.js";
 var UIStrings12 = {
   /**
-   * @description Placeholder text when no context is detected.
+   * @description Header text in an empty state view when no context entries are detected in the crash report context view of the Application panel.
    */
   noContext: "No context entries detected across frames",
   /**
-   * @description Fallback label when a frame has no URL.
+   * @description Fallback label when a frame has no URL in the crash report context view of the Application panel.
    */
-  unknownFrame: "Unknown Frame",
+  unknownFrame: "Unknown frame",
   /**
-   * @description Placeholder for a search field in a toolbar
+   * @description Placeholder text for the filter input in the crash report context view of the Application panel.
    */
   filterByText: "Filter by key or value",
   /**
-   * @description Text to refresh the page
+   * @description Tooltip text for the refresh button in the toolbar of the crash report context view in the Application panel.
    */
   refresh: "Refresh"
 };
@@ -10090,29 +10060,21 @@ import * as ApplicationComponents7 from "./components/components.js";
 var { widget: widget6 } = UI13.Widget;
 var UIStrings13 = {
   /**
-   * @description Placeholder text that shows if no report or endpoint was detected.
-   *             A report contains information on issues or events that were encountered by a web browser.
-   *             An endpoint is a URL where the report is sent to.
-   *             (https://developer.chrome.com/docs/capabilities/web-apis/reporting-api)
+   * @description Header text in an empty state view when no report or endpoint has been detected in the reporting API view of the Application panel.
    */
   noReportOrEndpoint: "No report or endpoint",
   /**
-   * @description Placeholder text that shows if no report or endpoint was detected.
-   *             A report contains information on issues or events that were encountered by a web browser.
-   *             An endpoint is a URL where the report is sent to.
-   *             (https://developer.chrome.com/docs/capabilities/web-apis/reporting-api)
+   * @description Explanatory text in an empty state view describing the reporting API view of the Application panel.
    */
-  reportingApiDescription: "On this page you will be able to inspect `Reporting API` reports and endpoints",
+  reportingApiDescription: "Inspect `Reporting API` reports and endpoints",
   /**
-   * @description Placeholder text that shows if no report was selected for viewing
-   *report body (https://developers.google.com/web/updates/2018/09/reportingapi#sending).
+   * @description Header text in an empty state view when no report is selected in the reporting API view of the Application panel.
    */
   noReportSelected: "No report selected",
   /**
-   * @description Placeholder text instructing the user how to display a Reporting API
-   *report body (https://developers.google.com/web/updates/2018/09/reportingapi#sending).
+   * @description Explanatory text instructing the user how to display a report body in the reporting API view of the Application panel.
    */
-  clickToDisplayBody: "Click on any report to display its body"
+  clickToDisplayBody: "Click any report to display its body"
 };
 var str_13 = i18n25.i18n.registerUIStrings("panels/application/ReportingApiView.ts", UIStrings13);
 var i18nString13 = i18n25.i18n.getLocalizedString.bind(void 0, str_13);
@@ -10251,13 +10213,13 @@ var ReportingApiView = class extends UI13.Widget.VBox {
 // ../../front_end/panels/application/ReportingApiTreeElement.ts
 var UIStrings14 = {
   /**
-   * @description Label for an item in the Application Panel Sidebar of the Application panel
+   * @description Label for an item in the sidebar of the Application panel.
    */
   reportingApi: "Reporting API",
   /**
-   * @description Label for the Crash Report Context child item in the Reporting API section.
+   * @description Label for the crash report context item in the sidebar of the Application panel.
    */
-  crashReportContext: "Crash Report Context"
+  crashReportContext: "Crash report context"
 };
 var str_14 = i18n27.i18n.registerUIStrings("panels/application/ReportingApiTreeElement.ts", UIStrings14);
 var i18nString14 = i18n27.i18n.getLocalizedString.bind(void 0, str_14);
@@ -13539,528 +13501,527 @@ var deviceBoundSessionsView_css_default = `/*
 var { widget: widget9 } = UI22.Widget;
 var UIStrings22 = {
   /**
-   *@description Label for a site, e.g. https://example.com/.
+   *@description Label for the site in the device bound sessions view of the Application panel.
    */
   keySite: "Site",
   /**
-   *@description Label for the ID of a session.
+   *@description Label for the session ID in the device bound sessions view of the Application panel.
    */
   keyId: "ID",
   /**
-   *@description Label that shows the URL that can be used to refresh a session.
+   *@description Label for the refresh URL in the device bound sessions view of the Application panel.
    */
   refreshUrl: "Refresh URL",
   /**
-   *@description Section header for how a session's scope is defined.
+   *@description Section header and datagrid name for the session scope in the device bound sessions view of the Application panel.
    */
   scope: "Scope",
   /**
-   *@description Section header for HTTP cookies.
+   *@description Section header and datagrid name for cookies in the device bound sessions view of the Application panel.
    */
   cookieCravings: "Cookies",
   /**
-   *@description Label for the name of an HTTP cookie.
+   *@description Column header for the cookie name in the cookies datagrid of the device bound sessions view in the Application panel.
    */
   name: "Name",
   /**
-   *@description Label for an expiration date.
+   *@description Label for the expiration date in the device bound sessions view of the Application panel.
    */
   expiryDate: "Expiry date",
   /**
-   *@description Label for a cryptographic string challenge that has been cached for a session.
+   *@description Label for a cached cryptographic challenge in the device bound sessions view of the Application panel.
    */
   cachedChallenge: "Cached challenge",
   /**
-   *@description Label for the HTTP initiator that is allowed to trigger a refresh of a session.
+   *@description Label for the allowed refresh initiators in the device bound sessions view of the Application panel.
    */
   allowedRefreshInitiators: "Allowed refresh initiators",
   /**
-   *@description Section header for a session's basic configuration.
+   *@description Section header for the session configuration in the device bound sessions view of the Application panel.
    */
   sessionConfig: "Session config",
   /**
-   *@description Label for an HTTP origin.
+   *@description Label for the origin in the device bound sessions view of the Application panel.
    */
   origin: "Origin",
   /**
-   *@description Text for whether a site is included.
+   *@description Label indicating whether a site is included in the device bound sessions view of the Application panel.
    */
   includeSite: "Include site",
   /**
-   *@description Value for a label that indicates that a site is included.
+   *@description Value indicating affirmative or true in the device bound sessions view of the Application panel.
    */
   yes: "Yes",
   /**
-   *@description Value for a label that indicates that a site is not included.
+   *@description Value indicating negative or false in the device bound sessions view of the Application panel.
    */
   no: "No",
   /**
-   *@description Label the host pattern of a URL, e.g. *.example.com
+   *@description Column header for the URL host pattern in the scope datagrid of the device bound sessions view in the Application panel.
    */
   ruleHostPattern: "Host pattern",
   /**
-   *@description Label for the path prefix of a URL, e.g. /path/1/2/3
+   *@description Column header for the URL path prefix in the scope datagrid of the device bound sessions view in the Application panel.
    */
   rulePathPrefix: "Path prefix",
   /**
-   *@description The type of a rule. The possible types are "exclude" or "include".
+   *@description Column header for the rule type in the scope datagrid of the device bound sessions view in the Application panel.
    */
   ruleType: "Rule type",
   /**
-   *@description Text describing that a rule excludes something.
+   *@description Table cell value indicating that a rule excludes a URL in the device bound sessions view of the Application panel.
    */
   ruleTypeExclude: "Exclude",
   /**
-   *@description Text describing that a rule includes something.
+   *@description Table cell value indicating that a rule includes a URL in the device bound sessions view of the Application panel.
    */
   ruleTypeInclude: "Include",
   /**
-   *@description Label for an event that has created something.
+   *@description Event type label for a creation event in the device bound sessions view of the Application panel.
    */
   creation: "Creation",
   /**
-   *@description Label for an event that has refreshed something.
+   *@description Event type label for a refresh event in the device bound sessions view of the Application panel.
    */
   refresh: "Refresh",
   /**
-   *@description Label for an event that has set a cryptographic string challenge.
+   *@description Event type label and report key for a challenge event in the device bound sessions view of the Application panel.
    */
   challenge: "Challenge",
   /**
-   *@description Label for an event that has terminated something.
+   *@description Event type label for a termination event in the device bound sessions view of the Application panel.
    */
   termination: "Termination",
   /**
-   *@description Label for an event whose type is not known.
+   *@description Event type label for an unknown event in the device bound sessions view of the Application panel.
    */
   unknown: "Unknown",
   /**
-   *@description Heading for a section that will display events that have occurred.
+   *@description Section header and datagrid name for events in the device bound sessions view of the Application panel.
    */
   events: "Events",
   /**
-   *@description Section header for details about an event.
+   *@description Section header and accessible label for event details in the device bound sessions view of the Application panel.
    */
   eventDetails: "Event details",
   /**
-   *@description Accessible label for the main area containing session details.
+   *@description Accessible label for the session details area in the device bound sessions view of the Application panel.
    */
   sessionDetails: "Session details",
   /**
-   *@description Placeholder text when no row is selected in a table of events.
+   *@description Empty state text displayed in the event details sidebar when no event row is selected in the device bound sessions view of the Application panel.
    */
-  selectEventToViewDetails: "Select an event row to view more details",
+  selectEventToViewDetails: "Select an event row to view details",
   /**
-   *@description Column heading for the type of event that has occurred.
+   *@description Column header for the event type in the events datagrid of the device bound sessions view in the Application panel.
    */
   type: "Type",
   /**
-   *@description Column heading for the date + time that an event occurred.
+   *@description Column header for the date and time that an event occurred in the events datagrid of the device bound sessions view in the Application panel.
    */
   timestamp: "Date",
   /**
-   *@description Column heading for the result of an event (whether it succeeded or had an error).
+   *@description Column header for the event result in the events datagrid of the device bound sessions view in the Application panel.
    */
   result: "Result",
   /**
-   *@description Notes the result status of an event was that it succeeded.
+   *@description Table cell or report value indicating that an event succeeded in the device bound sessions view of the Application panel.
    */
   success: "Success",
   /**
-   *@description Notes the result status of an event was that it had an error.
+   *@description Table cell or report value indicating that an event had an error in the device bound sessions view of the Application panel.
    */
   error: "Error",
   /**
-   *@description Default message when no events have appeared yet.
+   *@description Message displayed when no events have been logged in the device bound sessions view of the Application panel.
    */
   noEvents: "No events have been logged yet",
   /**
-   *@description Text to keep the log of events after refreshing.
+   *@description Label for the checkbox to keep the event log across page reloads in the device bound sessions view of the Application panel.
    */
   preserveLog: "Keep log",
   /**
-   *@description Tooltip text that appears on the keep log setting when hovering over it.
+   *@description Tooltip text for the keep log checkbox in the device bound sessions view of the Application panel.
    */
   doNotClearLogOnPageReload: "Don\u2019t clear log on page reload/navigation",
   /**
-   *@description Label for the ID of a session.
+   *@description Label for the session ID in the event details section of the device bound sessions view in the Application panel.
    */
   sessionId: "Session ID",
   /**
-   *@description Label for the result of an event (whether it succeeded or had an error).
+   *@description Label for the event result in the event details section of the device bound sessions view in the Application panel.
    */
   eventResult: "Event result",
   /**
-   *@description Label for the result of fetching new session information.
+   *@description Label for the fetch result in the event details section of the device bound sessions view in the Application panel.
    */
   fetchResult: "Fetch result",
   /**
-   *@description Label for whether a session's basic configuration was updated. The corresponding value is yes or no.
+   *@description Label indicating whether the session configuration was updated in the event details section of the device bound sessions view in the Application panel.
    */
   updatedSessionConfig: "Updated session config",
   /**
-   *@description Label for the result of an attempted refresh.
+   *@description Label for the refresh result in the event details section of the device bound sessions view in the Application panel.
    */
   refreshResult: "Refresh result",
   /**
-   *@description Label for whether a particular event caused any HTTP request to be deferred (i.e. paused and
-   * later unpaused). The corresponding value is yes or no.
+   *@description Label indicating whether an event caused HTTP requests to be deferred in the event details section of the device bound sessions view in the Application panel.
    */
   causedAnyRequestDeferrals: "Caused any request deferrals",
   /**
-   *@description Label for the result of attempting to set a cryptographic string challenge.
+   *@description Label for the challenge result in the event details section of the device bound sessions view in the Application panel.
    */
   challengeResult: "Challenge result",
   /**
-   *@description Label for the reason why a session was deleted.
+   *@description Label for the deletion reason in the event details section of the device bound sessions view in the Application panel.
    */
   deletionReason: "Deletion reason",
   /**
-   *@description Label for the URL of a failed network request.
+   *@description Label for the URL of a failed network request in the event details section of the device bound sessions view in the Application panel.
    */
   failedRequestUrl: "Failed request URL",
   /**
-   *@description Label for the network error of a failed network request.
+   *@description Label for the network error of a failed network request in the event details section of the device bound sessions view in the Application panel.
    */
   failedRequestNetError: "Net error",
   /**
-   *@description Label for the HTTP response error code of a failed network request.
+   *@description Label for the HTTP response error code of a failed network request in the event details section of the device bound sessions view in the Application panel.
    */
   failedRequestResponseCode: "Response error code",
   /**
-   *@description Label for the response body of a failed network request.
+   *@description Label for the response body of a failed network request in the event details section of the device bound sessions view in the Application panel.
    */
   failedRequestResponseBody: "Response body",
   /**
-   *@description Explanation for an event outcome. Key refers to a cryptographic key.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel. Key refers to a cryptographic key.
    */
   signingKeyGenerationError: "Signing key generation error",
   /**
-   *@description Explanation for an event outcome. Key refers to a cryptographic key.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel. Key refers to a cryptographic key.
    */
   attestationKeyGenerationError: "Attestation key generation error",
   /**
-   *@description Explanation for an event outcome. Signing refers to cryptographic signing.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel. Signing refers to cryptographic signing.
    */
   signingError: "Signing error",
   /**
-   *@description Explanation for an event outcome. Signing refers to cryptographic signing.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel. Signing refers to cryptographic signing.
    */
   transientSigningError: "Transient signing error",
   /**
-   *@description Explanation for an event outcome.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel.
    */
   serverRequestedTermination: "Server requested termination",
   /**
-   *@description Explanation for an event outcome.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel.
    */
   invalidSessionId: "Invalid session ID",
   /**
-   *@description Explanation for an event outcome. Challenge refers to a cryptographic string challenge.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel. Challenge refers to a cryptographic string challenge.
    */
   invalidChallenge: "Invalid challenge",
   /**
-   *@description Explanation for an event outcome. Challenge refers to a cryptographic string challenge.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel. Challenge refers to a cryptographic string challenge.
    */
   tooManyChallenges: "Too many challenges",
   /**
-   *@description Explanation for an event outcome.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel.
    */
   invalidFetcherUrl: "Invalid fetcher URL",
   /**
-   *@description Explanation for an event outcome.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel.
    */
   invalidRefreshUrl: "Invalid refresh URL",
   /**
-   *@description Explanation for an event outcome.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel.
    */
   transientHttpError: "Transient HTTP error",
   /**
-   *@description Explanation for an event outcome. This means there is a URL origin written into a session configuration's scope that is causing failures because it's for a different site.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel. This means there is a URL origin written into a session configuration's scope that is causing failures because it's for a different site.
    */
   scopeOriginSameSiteMismatch: "Same-site mismatch scope origin",
   /**
-   *@description Explanation for an event outcome. This means the session configuration's URL for refreshing is causing failures because it's for a different site.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel. This means the session configuration's URL for refreshing is causing failures because it's for a different site.
    */
   refreshUrlSameSiteMismatch: "Same-site mismatch refresh URL",
   /**
-   *@description Explanation for an event outcome. This means the session configuration's session ID does not match the relevant session ID.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel. This means the session configuration's session ID does not match the relevant session ID.
    */
   mismatchedSessionId: "Mismatched session ID",
   /**
-   *@description Explanation for an event outcome.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel.
    */
   missingScope: "Missing scope",
   /**
-   *@description Explanation for an event outcome. This means the credentials field in the session configuration is missing.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel. This means the credentials field in the session configuration is missing.
    */
   noCredentials: "No credentials",
   /**
-   *@description Explanation for an event outcome.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel.
    */
   subdomainRegistrationWellKnownUnavailable: "Subdomain registration .well-known unavailable",
   /**
-   *@description Explanation for an event outcome.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel.
    */
-  subdomainRegistrationUnauthorized: ".well-known did not authorize registration by subdomain",
+  subdomainRegistrationUnauthorized: ".well-known didn\u2019t authorize registration by subdomain",
   /**
-   *@description Explanation for an event outcome.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel.
    */
   subdomainRegistrationWellKnownMalformed: "Subdomain registration .well-known content malformed",
   /**
-   *@description Explanation for an event outcome.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel.
    */
   sessionProviderWellKnownUnavailable: "Session provider .well-known unavailable",
   /**
-   *@description Explanation for an event outcome.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel.
    */
   relyingPartyWellKnownUnavailable: "Relying party .well-known unavailable",
   /**
-   *@description Explanation for an event outcome. This refers to a JSON Web Key thumbprint (https://www.rfc-editor.org/rfc/rfc7638). Federated sessions are described in https://w3c.github.io/webappsec-dbsc/.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel. This refers to a JSON Web Key thumbprint (https://www.rfc-editor.org/rfc/rfc7638). Federated sessions are described in https://w3c.github.io/webappsec-dbsc/.
    */
   federatedKeyThumbprintMismatch: "Federated key had incorrect thumbprint",
   /**
-   *@description Explanation for an event outcome. Federated sessions are described in https://w3c.github.io/webappsec-dbsc/.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel. Federated sessions are described in https://w3c.github.io/webappsec-dbsc/.
    */
   invalidFederatedSessionUrl: "Federated provider URL not valid",
   /**
-   *@description Explanation for an event outcome. Federated sessions are described in https://w3c.github.io/webappsec-dbsc/.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel. Federated sessions are described in https://w3c.github.io/webappsec-dbsc/.
    */
   invalidFederatedKey: "Federated key invalid",
   /**
-   *@description Explanation for an event outcome. Origin labels are described in https://w3c.github.io/webappsec-dbsc/.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel. Origin labels are described in https://w3c.github.io/webappsec-dbsc/.
    */
   tooManyRelyingOriginLabels: "Too many relying origin labels in .well-known",
   /**
-   *@description Explanation for an event outcome.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel.
    */
-  boundCookieSetForbidden: "Registration in a context that cannot set bound cookies",
+  boundCookieSetForbidden: "Registration in a context that can\u2019t set bound cookies",
   /**
-   *@description Explanation for an event outcome.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel.
    */
   netError: "Network error",
   /**
-   *@description Explanation for an event outcome.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel.
    */
   proxyError: "Proxy error",
   /**
-   *@description Explanation for an event outcome.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel.
    */
   emptySessionConfig: "Empty session configuration for registration",
   /**
-   *@description Explanation for an event outcome.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel.
    */
   invalidCredentialsConfig: "Invalid credentials configuration",
   /**
-   *@description Explanation for an event outcome.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel.
    */
   invalidCredentialsType: "Invalid credentials - empty or non-cookie type",
   /**
-   *@description Explanation for an event outcome.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel.
    */
   invalidCredentialsEmptyName: "Invalid credentials - empty name",
   /**
-   *@description Explanation for an event outcome.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel.
    */
   invalidCredentialsCookie: "Invalid credentials - cookie invalid",
   /**
-   *@description Explanation for an event outcome.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel.
    */
   persistentHttpError: "Persistent HTTP error",
   /**
-   *@description Explanation for an event outcome. Challenge refers to a cryptographic string challenge.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel. Challenge refers to a cryptographic string challenge.
    */
   registrationAttemptedChallenge: "Registration returned challenge error response code",
   /**
-   *@description Explanation for an event outcome. This refers to a URL's origin.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel. This refers to a URL's origin.
    */
   invalidScopeOrigin: "Invalid scope origin",
   /**
-   *@description Explanation for an event outcome. This refers to an URL's path / origin.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel. This refers to an URL's path / origin.
    */
   scopeOriginContainsPath: "Scope origin contains a path",
   /**
-   *@description Explanation for an event outcome. This refers to an HTTP request's initiator.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel. This refers to an HTTP request's initiator.
    */
-  refreshInitiatorNotString: "Allowed refresh initiator is not a string",
+  refreshInitiatorNotString: "Allowed refresh initiator isn\u2019t a string",
   /**
-   *@description Explanation for an event outcome. This refers to an HTTP request's initiator and a URL's host.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel. This refers to an HTTP request's initiator and a URL's host.
    */
   refreshInitiatorInvalidHostPattern: "Allowed refresh initiator has invalid host pattern",
   /**
-   *@description Explanation for an event outcome. Scope specification is defined in https://w3c.github.io/webappsec-dbsc/.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel. Scope specification is defined in https://w3c.github.io/webappsec-dbsc/.
    */
   invalidScopeSpecification: "Invalid scope specification",
   /**
-   *@description Explanation for an event outcome. Scope specification is defined in https://w3c.github.io/webappsec-dbsc/.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel. Scope specification is defined in https://w3c.github.io/webappsec-dbsc/.
    */
   missingScopeSpecificationType: "Missing scope specification type",
   /**
-   *@description Explanation for an event outcome. Scope specification is defined in https://w3c.github.io/webappsec-dbsc/.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel. Scope specification is defined in https://w3c.github.io/webappsec-dbsc/.
    */
   emptyScopeSpecificationDomain: "Empty scope specification domain",
   /**
-   *@description Explanation for an event outcome. Scope specification is defined in https://w3c.github.io/webappsec-dbsc/.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel. Scope specification is defined in https://w3c.github.io/webappsec-dbsc/.
    */
   emptyScopeSpecificationPath: "Empty scope specification path",
   /**
-   *@description Explanation for an event outcome. Scope specification is defined in https://w3c.github.io/webappsec-dbsc/.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel. Scope specification is defined in https://w3c.github.io/webappsec-dbsc/.
    */
-  invalidScopeSpecificationType: "Scope specification type is neiher include or exclude",
+  invalidScopeSpecificationType: "Scope specification type is neither include nor exclude",
   /**
-   *@description Explanation for an event outcome. Scope specification is defined in https://w3c.github.io/webappsec-dbsc/.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel. Scope specification is defined in https://w3c.github.io/webappsec-dbsc/.
    */
   invalidScopeIncludeSite: "Invalid include_site in scope",
   /**
-   *@description Explanation for an event outcome. Scope specification is defined in https://w3c.github.io/webappsec-dbsc/.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel. Scope specification is defined in https://w3c.github.io/webappsec-dbsc/.
    */
   missingScopeIncludeSite: "Missing include_site in scope",
   /**
-   *@description Explanation for an event outcome. Federated sessions are defined in https://w3c.github.io/webappsec-dbsc/.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel. Federated sessions are defined in https://w3c.github.io/webappsec-dbsc/.
    */
   federatedNotAuthorizedByProvider: "Federated session not authorized by provider .well-known",
   /**
-   *@description Explanation for an event outcome. Federated sessions are defined in https://w3c.github.io/webappsec-dbsc/.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel. Federated sessions are defined in https://w3c.github.io/webappsec-dbsc/.
    */
   federatedNotAuthorizedByRelyingParty: "Federated session not authorized by relying party .well-known",
   /**
-   *@description Explanation for an event outcome. Federated sessions are defined in https://w3c.github.io/webappsec-dbsc/.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel. Federated sessions are defined in https://w3c.github.io/webappsec-dbsc/.
    */
   sessionProviderWellKnownMalformed: "Session provider .well-known content malformed",
   /**
-   *@description Explanation for an event outcome. Federated sessions are defined in https://w3c.github.io/webappsec-dbsc/.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel. Federated sessions are defined in https://w3c.github.io/webappsec-dbsc/.
    */
   sessionProviderWellKnownHasProviderOrigin: "Session provider .well-known content has provider_origin",
   /**
-   *@description Explanation for an event outcome. Federated sessions are defined in https://w3c.github.io/webappsec-dbsc/.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel. Federated sessions are defined in https://w3c.github.io/webappsec-dbsc/.
    */
   relyingPartyWellKnownMalformed: "Relying party .well-known content malformed",
   /**
-   *@description Explanation for an event outcome. Federated sessions are defined in https://w3c.github.io/webappsec-dbsc/.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel. Federated sessions are defined in https://w3c.github.io/webappsec-dbsc/.
    */
   relyingPartyWellKnownHasRelyingOrigins: "Relying party .well-known content has relying_origins",
   /**
-   *@description Explanation for an event outcome. Federated sessions are defined in https://w3c.github.io/webappsec-dbsc/.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel. Federated sessions are defined in https://w3c.github.io/webappsec-dbsc/.
    */
   invalidFederatedSessionProviderSessionMissing: "Federated session invalid due to provider session not found",
   /**
-   *@description Explanation for an event outcome. Federated sessions are defined in https://w3c.github.io/webappsec-dbsc/.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel. Federated sessions are defined in https://w3c.github.io/webappsec-dbsc/.
    */
   invalidFederatedSessionWrongProviderOrigin: "Federated session invalid due to provider origin mismatch",
   /**
-   *@description Explanation for an event outcome.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel.
    */
   invalidCredentialsCookieCreationTime: "Invalid credentials - cookie creation time invalid",
   /**
-   *@description Explanation for an event outcome.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel.
    */
   invalidCredentialsCookieName: "Invalid credentials - cookie name invalid",
   /**
-   *@description Explanation for an event outcome.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel.
    */
   invalidCredentialsCookieParsing: "Invalid credentials - cookie parsing failed",
   /**
-   *@description Explanation for an event outcome.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel.
    */
   invalidCredentialsCookieUnpermittedAttribute: "Invalid credentials - cookie attribute not permitted",
   /**
-   *@description Explanation for an event outcome.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel.
    */
   invalidCredentialsCookieInvalidDomain: "Invalid credentials - cookie invalid domain",
   /**
-   *@description Explanation for an event outcome.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel.
    */
   invalidCredentialsCookiePrefix: "Invalid credentials - cookie invalid prefix",
   /**
-   *@description Explanation for an event outcome. Scope specification is defined in https://w3c.github.io/webappsec-dbsc/.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel. Scope specification is defined in https://w3c.github.io/webappsec-dbsc/.
    */
   invalidScopeRulePath: "Invalid scope rule path",
   /**
-   *@description Explanation for an event outcome. Scope specification is defined in https://w3c.github.io/webappsec-dbsc/.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel. Scope specification is defined in https://w3c.github.io/webappsec-dbsc/.
    */
   invalidScopeRuleHostPattern: "Invalid scope rule host pattern",
   /**
-   *@description Explanation for an event outcome. A session can be scoped to just a specific URL origin. This error means that the session's origin does not match the provided URL host pattern.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel. A session can be scoped to just a specific URL origin. This error means that the session's origin does not match the provided URL host pattern.
    */
   scopeRuleOriginScopedHostPatternMismatch: "Origin-scoped session has mismatch between host pattern and origin",
   /**
-   *@description Explanation for an event outcome. A session can be scoped to an entire site. This error means that the session's site does not match the provided URL host pattern.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel. A session can be scoped to an entire site. This error means that the session's site does not match the provided URL host pattern.
    */
   scopeRuleSiteScopedHostPatternMismatch: "Site-scoped session has mismatch between host pattern and site",
   /**
-   *@description Explanation for an event outcome. This refers to cryptographic signing.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel. This refers to cryptographic signing.
    */
   signingQuotaExceeded: "Signing quota exceeded",
   /**
-   *@description Explanation for an event outcome.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel.
    */
   invalidConfigJson: "Invalid session configuration JSON",
   /**
-   *@description Explanation for an event outcome. Federated sessions are defined in https://w3c.github.io/webappsec-dbsc/. Key refers to a cryptographic key.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel. Federated sessions are defined in https://w3c.github.io/webappsec-dbsc/. Key refers to a cryptographic key.
    */
   invalidFederatedSessionProviderFailedToRestoreKey: "Federated session invalid due to failure to restore session provider key",
   /**
-   *@description Explanation for an event outcome. Key refers to a cryptographic key.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel. Key refers to a cryptographic key.
    */
   failedToUnwrapKey: "Failed to unwrap key",
   /**
-   *@description Explanation for an event outcome.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel.
    */
   sessionDeletedDuringRefresh: "Session deleted during refresh",
   /**
-   *@description Explanation for an event outcome.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel.
    */
   refreshed: "Refreshed",
   /**
-   *@description Explanation for an event outcome.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel.
    */
   initializedService: "Service initialized",
   /**
-   *@description Explanation for an event outcome.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel.
    */
   unreachable: "Endpoint unreachable",
   /**
-   *@description Explanation for an event outcome.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel.
    */
   serverError: "Endpoint transient error",
   /**
-   *@description Explanation for an event outcome.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel.
    */
   fatalError: "Fatal error",
   /**
-   *@description Explanation for an event outcome.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel.
    */
   noSessionId: "No session ID",
   /**
-   *@description Explanation for an event outcome.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel.
    */
   noSessionMatch: "No matching session ID",
   /**
-   *@description Explanation for an event outcome.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel.
    */
   cantSetBoundCookie: "Not allowed to set bound cookie",
   /**
-   *@description Explanation for an event outcome.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel.
    */
   expired: "Expired",
   /**
-   *@description Explanation for an event outcome. Key refers to a cryptographic key. This means there was an attempt to read a key from disk but it failed.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel. Key refers to a cryptographic key. This means there was an attempt to read a key from disk but it failed.
    */
   failedToRestoreKey: "Failed to restore key from disk",
   /**
-   *@description Explanation for an event outcome.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel.
    */
   storagePartitionCleared: "Removed from storage partition",
   /**
-   *@description Explanation for an event outcome.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel.
    */
   clearBrowsingData: "User-initiated browser data removal",
   /**
-   *@description Explanation for an event outcome.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel.
    */
   invalidSessionParams: "Invalid session parameters",
   /**
-   *@description Explanation for an event outcome.
+   *@description Explanation for an event outcome in the device bound sessions view of the Application panel.
    */
   refreshFatalError: "Fatal error during refresh"
 };
@@ -18329,206 +18290,205 @@ var WebMCPTreeElement = class extends ApplicationPanelTreeElement {
 // ../../front_end/panels/application/ApplicationPanelSidebar.ts
 var UIStrings29 = {
   /**
-   * @description Text of a context menu item to start a chat with AI
+   * @description Context menu item to start a chat with AI in the Application panel sidebar.
    */
   startAChat: "Start a chat",
   /**
-   * @description Text of a context menu item to explain contents of a local/session storage bucket with AI
+   * @description Context menu item to explain storage with AI in the Application panel sidebar.
    */
   explainStorage: "Explain storage",
   /**
-   * @description Text of a context menu item to explain web cookies with AI
+   * @description Context menu item to explain cookies with AI in the Application panel sidebar.
    */
   explainCookies: "Explain cookies",
   /**
-   * @description Text in Application Panel Sidebar of the Application panel
+   * @description Section header for the application section in the sidebar of the Application panel.
    */
   application: "Application",
   /**
-   * @description Text in Application Panel Sidebar of the Application panel
+   * @description Tree item label for ads in the sidebar of the Application panel.
    */
   ads: "Ads",
   /**
-   * @description Tooltip for the experimental icon in the Ads panel
+   * @description Tooltip for the experimental feature icon next to the ads item in the sidebar of the Application panel.
    */
   experimental: "Experimental",
   /**
-   * @description Text in Application Panel Sidebar of the Application panel
+   * @description Tree item label for storage in the sidebar of the Application panel.
    */
   storage: "Storage",
   /**
-   * @description Text in Application Panelthat shows if no local storage
-   *             can be shown.
+   * @description Empty state text displayed when no local storage is detected in the Application panel.
    */
   noLocalStorage: "No local storage detected",
   /**
-   * @description Text in Application Panel Sidebar of the Application panel
+   * @description Tree item label for local storage in the sidebar of the Application panel.
    */
   localStorage: "Local storage",
   /**
-   * @description Text in the Application panel describing the local storage tab.
+   * @description Informational text describing the local storage view in the Application panel.
    */
   localStorageDescription: "On this page you can view, add, edit, and delete local storage key-value pairs",
   /**
-   * @description Text in Application Panel Sidebar of the Application panel
+   * @description Tree item label for session storage in the sidebar of the Application panel.
    */
   sessionStorage: "Session storage",
   /**
-   * @description Text in Application Panel if no session storage can be shown.
+   * @description Empty state text displayed when no session storage is detected in the Application panel.
    */
   noSessionStorage: "No session storage detected",
   /**
-   * @description Text in the Application panel describing the session storage tab.
+   * @description Informational text describing the session storage view in the Application panel.
    */
   sessionStorageDescription: "On this page you can view, add, edit, and delete session storage key-value pairs",
   /**
-   * @description Text in Application Panel Sidebar of the Application panel
+   * @description Tree item label for extension storage in the sidebar of the Application panel.
    */
   extensionStorage: "Extension storage",
   /**
-   * @description Text in Application Panel if no extension storage can be shown
+   * @description Empty state text displayed when no extension storage is detected in the Application panel.
    */
   noExtensionStorage: "No extension storage detected",
   /**
-   * @description Text in the Application panel describing the extension storage tab.
+   * @description Informational text describing the extension storage view in the Application panel.
    */
   extensionStorageDescription: "On this page you can view, add, edit, and delete extension storage key-value pairs",
   /**
-   * @description Text for extension session storage in Application panel
+   * @description Label for extension session storage in the Application panel.
    */
   extensionSessionStorage: "Session",
   /**
-   * @description Text for extension local storage in Application panel
+   * @description Label for extension local storage in the Application panel.
    */
   extensionLocalStorage: "Local",
   /**
-   * @description Text for extension sync storage in Application panel
+   * @description Label for extension sync storage in the Application panel.
    */
   extensionSyncStorage: "Sync",
   /**
-   * @description Text for extension managed storage in Application panel
+   * @description Label for extension managed storage in the Application panel.
    */
   extensionManagedStorage: "Managed",
   /**
-   * @description Text for web cookies
+   * @description Tree item label for cookies in the sidebar of the Application panel.
    */
   cookies: "Cookies",
   /**
-   * @description Text in the Application Panel if no cookies are set
+   * @description Empty state text displayed when no cookies are set in the Application panel.
    */
   noCookies: "No cookies set",
   /**
-   * @description Text for web cookies
+   * @description Informational text describing the cookies view in the Application panel.
    */
   cookiesDescription: "On this page you can view, add, edit, and delete cookies",
   /**
-   * @description Text in Application Panel Sidebar of the Application panel
+   * @description Tree item label for background services in the sidebar of the Application panel.
    */
   backgroundServices: "Background services",
   /**
-   * @description Text for rendering frames
+   * @description Tree item label for frames in the sidebar of the Application panel.
    */
   frames: "Frames",
   /**
-   * @description Text that appears on a button for the manifest resource type filter.
+   * @description Tree item label for the web app manifest in the sidebar of the Application panel.
    */
   manifest: "Manifest",
   /**
-   * @description Text in Application Panel Sidebar of the Application panel
+   * @description Tree item label for IndexedDB in the sidebar of the Application panel.
    */
   indexeddb: "IndexedDB",
   /**
-   * @description Text in Application Panel if no indexedDB is detected
+   * @description Empty state text displayed when no IndexedDB database is detected in the Application panel.
    */
-  noIndexeddb: "No indexedDB detected",
+  noIndexeddb: "No IndexedDB detected",
   /**
-   * @description Text in the Application panel describing the extension storage tab.
+   * @description Informational text describing the IndexedDB view in the Application panel.
    */
-  indexeddbDescription: "On this page you can view and delete indexedDB key-value pairs and databases",
+  indexeddbDescription: "On this page you can view and delete IndexedDB key-value pairs and databases",
   /**
-   * @description A context menu item in the Application Panel Sidebar of the Application panel
+   * @description Context menu item to refresh IndexedDB in the Application panel sidebar.
    */
   refreshIndexeddb: "Refresh IndexedDB",
   /**
-   * @description Tooltip in Application Panel Sidebar of the Application panel
+   * @description Tooltip for an empty database showing its version in the IndexedDB tree item in the Application panel sidebar.
    * @example {1.0} PH1
    */
   versionSEmpty: "Version: {PH1} (empty)",
   /**
-   * @description Tooltip in Application Panel Sidebar of the Application panel
+   * @description Tooltip for a database showing its version in the IndexedDB tree item in the Application panel sidebar.
    * @example {1.0} PH1
    */
   versionS: "Version: {PH1}",
   /**
-   * @description Text to clear content
+   * @description Context menu item to clear data in the Application panel sidebar.
    */
   clear: "Clear",
   /**
-   * @description Text in Application Panel Sidebar of the Application panel
+   * @description Tooltip for an object store showing its key path in the IndexedDB tree item in the Application panel sidebar.
    * @example {"key path"} PH1
    */
   keyPathS: "Key path: {PH1}",
   /**
-   * @description Text in Application Panel Sidebar of the Application panel
+   * @description Tree item label for local files in the sidebar of the Application panel.
    */
-  localFiles: "Local Files",
+  localFiles: "Local files",
   /**
-   * @description Tooltip in Application Panel Sidebar of the Application panel
+   * @description Tooltip for a cookie domain showing which frames use its cookies in the Application panel sidebar.
    * @example {https://example.com} PH1
    */
   cookiesUsedByFramesFromS: "Cookies used by frames from {PH1}",
   /**
-   * @description Text in Frames View of the Application panel
+   * @description Tree item label for opened windows in the sidebar of the Application panel.
    */
-  openedWindows: "Opened Windows",
+  openedWindows: "Opened windows",
   /**
-   * @description Text in Frames View of the Application panel
+   * @description Informational text describing the opened windows view in the Application panel.
    */
-  openedWindowsDescription: "On this page you can view windows opened via window.open()",
+  openedWindowsDescription: "On this page you can view windows opened via `window.open()`",
   /**
-   * @description Label for plural of worker type: web workers
+   * @description Tree item label for Web Workers in the sidebar of the Application panel.
    */
   webWorkers: "Web Workers",
   /**
-   * @description Label in frame tree for unavailable document
+   * @description Tree item label in the frame tree when no document is detected in the Application panel sidebar.
    */
   documentNotAvailable: "No document detected",
   /**
-   * @description Description of content of unavailable document in Application panel
+   * @description Informational text explaining that a document was generated dynamically via document.write().
    */
-  theContentOfThisDocumentHasBeen: "The content of this document has been generated dynamically via 'document.write()'",
+  theContentOfThisDocumentHasBeen: "The content of this document has been generated dynamically via `document.write()`",
   /**
-   * @description Text in Frames View of the Application panel
+   * @description Tree item label for an opened window without a title in the sidebar of the Application panel.
    */
   windowWithoutTitle: "Window without title",
   /**
-   * @description Default name for worker
+   * @description Fallback tree item label for a worker without a title or URL in the sidebar of the Application panel.
    */
   worker: "worker",
   /**
-   * @description Description text for describing the dedicated worker tab.
+   * @description Informational text describing the dedicated workers view in the Application panel.
    */
-  workerDescription: "On this page you can view dedicated workers that are created by the parent frame",
+  workerDescription: "On this page you can view dedicated workers added by the parent frame",
   /**
-   * @description Aria text for screen reader to announce they can scroll to top of manifest if invoked
+   * @description Accessibility announcement indicating that invoking the element scrolls to the top of the manifest.
    */
-  onInvokeManifestAlert: "Manifest: Invoke to scroll to the top of manifest",
+  onInvokeManifestAlert: "Manifest: invoke to scroll to the top of manifest",
   /**
-   * @description Aria text for screen reader to announce they can scroll to a section if invoked
+   * @description Accessibility announcement indicating that invoking the element scrolls to a section in the manifest.
    * @example {"Identity"} PH1
    */
-  beforeInvokeAlert: "{PH1}: Invoke to scroll to this section in manifest",
+  beforeInvokeAlert: "{PH1}: invoke to scroll to this section in manifest",
   /**
-   * @description Alert message for screen reader to announce which subsection is being scrolled to
+   * @description Accessibility announcement indicating that the manifest view was scrolled to a section.
    * @example {"Identity"} PH1
    */
   onInvokeAlert: "Scrolled to {PH1}",
   /**
-   * @description Application sidebar panel
+   * @description Accessibility label for the Application panel sidebar.
    */
   applicationSidebarPanel: "Application panel sidebar",
   /**
-   * @description Description text in the Application Panel describing a frame's resources
+   * @description Informational text describing a frame's resources in the Application panel.
    */
   resourceDescription: "On this page you can view the frame\u2019s resources"
 };

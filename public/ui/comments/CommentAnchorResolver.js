@@ -21,6 +21,11 @@ const DISALLOWED_COMMENT_TARGETS = new Set([
     VisualLogging.VisualElements.Toolbar,
 ]);
 /**
+ * The comment thread UI itself is never a valid comment target: anything inside it (including the
+ * DOM node link in its header) must stay inert while comment mode is on.
+ */
+export const COMMENT_THREAD_UI_SELECTOR = '.comment-thread-widget';
+/**
  * Finds the closest ancestor (or the element itself) matching a CSS selector,
  * traversing across Shadow DOM boundaries (shadow root boundaries to shadow hosts).
  *
@@ -205,7 +210,7 @@ function resolveCodeMirrorLineInfo(element) {
  * Resolves an arbitrary clicked or targeted DOM element to its appropriate semantic comment anchor element.
  *
  * Traversal hierarchy:
- * 1. Checks if the element is part of a tab title (returns null if so).
+ * 1. Checks if the element is part of a tab title or of the comment thread UI (returns null if so).
  * 2. Escalates CodeMirror line/gutter elements to .cm-editor (only if the clicked line is non-empty).
  * 3. Checks for domain IDs (`data-network-request-id` or `data-backend-node-id`) across shadow boundaries,
  *    returning the owning domain element.
@@ -217,7 +222,7 @@ function resolveCodeMirrorLineInfo(element) {
  * @returns The resolved semantic anchor Element, or null if unresolvable/empty/excluded.
  */
 export function resolveCommentAnchorElement(element, options) {
-    if (isTabTitle(element)) {
+    if (isTabTitle(element) || closestAcrossShadow(element, COMMENT_THREAD_UI_SELECTOR)) {
         return null;
     }
     const customResolver = getCustomAnchorResolverForElement(element);
@@ -549,15 +554,43 @@ export function rematchCommentAnchor(comment, root = document, cachedJslogElemen
 function isClippingOverflow(overflow) {
     return overflow === 'hidden' || overflow === 'auto' || overflow === 'scroll' || overflow === 'clip';
 }
+let clippingAncestorsCache = new WeakMap();
+/**
+ * Clears the cached clipping ancestor chains for elements.
+ * Called when DOM mutations or comment rematches occur.
+ */
+export function clearClippingAncestorsCache() {
+    clippingAncestorsCache = new WeakMap();
+}
+function getClippingAncestors(element, doc, win) {
+    const cached = clippingAncestorsCache.get(element);
+    if (cached && cached.every(item => item.element.isConnected)) {
+        return cached;
+    }
+    const ancestors = [];
+    let current = element.parentElementOrShadowHost();
+    while (current && current !== doc.documentElement && current !== doc.body) {
+        const style = win.getComputedStyle(current);
+        const clipsX = isClippingOverflow(style.overflowX);
+        const clipsY = isClippingOverflow(style.overflowY);
+        if (clipsX || clipsY) {
+            ancestors.push({ element: current, clipsX, clipsY });
+        }
+        current = current.parentElementOrShadowHost();
+    }
+    clippingAncestorsCache.set(element, ancestors);
+    return ancestors;
+}
 /**
  * Computes the visible viewport-relative bounding box of an element after clipping against
  * all ancestor scroll/overflow containers and viewport boundaries across shadow DOM roots.
  *
  * @param element The source DOM element.
  * @param targetRect Optional explicit bounding box (e.g. for sub-lines or custom targets).
+ * @param rectCache Optional per-frame cache of element bounding client rects to avoid redundant queries.
  * @returns The clipped viewport-relative rectangle or null if the element is completely clipped out of view or invisible.
  */
-export function computeVisibleRect(element, targetRect) {
+export function computeVisibleRect(element, targetRect, rectCache) {
     if (!element.isConnected) {
         return null;
     }
@@ -583,26 +616,24 @@ export function computeVisibleRect(element, targetRect) {
     if (visibleLeft >= visibleRight || visibleTop >= visibleBottom) {
         return null;
     }
-    let current = element.parentElementOrShadowHost();
-    while (current && current !== doc.documentElement && current !== doc.body) {
-        const style = win.getComputedStyle(current);
-        const clipsX = isClippingOverflow(style.overflowX);
-        const clipsY = isClippingOverflow(style.overflowY);
-        if (clipsX || clipsY) {
-            const parentRect = current.getBoundingClientRect();
-            if (clipsX) {
-                visibleLeft = Math.max(visibleLeft, parentRect.left);
-                visibleRight = Math.min(visibleRight, parentRect.right);
-            }
-            if (clipsY) {
-                visibleTop = Math.max(visibleTop, parentRect.top);
-                visibleBottom = Math.min(visibleBottom, parentRect.bottom);
-            }
-            if (visibleLeft >= visibleRight || visibleTop >= visibleBottom) {
-                return null;
-            }
+    const clippingAncestors = getClippingAncestors(element, doc, win);
+    for (const { element: ancestor, clipsX, clipsY } of clippingAncestors) {
+        let parentRect = rectCache?.get(ancestor);
+        if (!parentRect) {
+            parentRect = ancestor.getBoundingClientRect();
+            rectCache?.set(ancestor, parentRect);
         }
-        current = current.parentElementOrShadowHost();
+        if (clipsX) {
+            visibleLeft = Math.max(visibleLeft, parentRect.left);
+            visibleRight = Math.min(visibleRight, parentRect.right);
+        }
+        if (clipsY) {
+            visibleTop = Math.max(visibleTop, parentRect.top);
+            visibleBottom = Math.min(visibleBottom, parentRect.bottom);
+        }
+        if (visibleLeft >= visibleRight || visibleTop >= visibleBottom) {
+            return null;
+        }
     }
     const width = visibleRight - visibleLeft;
     const height = visibleBottom - visibleTop;

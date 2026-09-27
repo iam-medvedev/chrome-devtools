@@ -123,7 +123,7 @@ describe('ElementsTreeElement', () => {
         target.style.height = '20px';
         const style = document.createElement('style');
         // FIXME: styles are currently external to ElementsTreeElement.
-        style.innerText = Elements.ElementsTreeOutline.elementsTreeOutlineStyles;
+        style.innerText = Elements.DOMTreeWidget.elementsTreeOutlineStyles;
         target.append(style);
         renderElementIntoDOM(target, {
             includeCommonStyles: true,
@@ -361,7 +361,7 @@ describeWithEnvironment('ElementsTreeElement', () => {
         sinon.stub(node, 'nodeType').returns(Node.ELEMENT_NODE);
         sinon.stub(node, 'nodeNameInCorrectCase').returns('div');
         sinon.stub(node, 'nodeName').returns('DIV');
-        const domTreeWidget = new Elements.ElementsTreeOutline.DOMTreeWidget();
+        const domTreeWidget = new Elements.DOMTreeWidget.DOMTreeWidget();
         const event = new Event('contextmenu');
         const contextMenu = new UI.ContextMenu.ContextMenu(event);
         await Elements.DOMTreeContextMenu.populateNodeContextMenu(contextMenu, domTreeWidget, node);
@@ -428,7 +428,7 @@ describeWithEnvironment('ElementsTreeElement', () => {
         sinon.stub(node, 'nodeType').returns(Node.ELEMENT_NODE);
         sinon.stub(node, 'nodeNameInCorrectCase').returns('div');
         sinon.stub(node, 'nodeName').returns('DIV');
-        const treeOutline = new Elements.ElementsTreeOutline.ElementsTreeOutline();
+        const treeOutline = new Elements.DOMTreeWidget.ElementsTreeOutline();
         const treeElement = new Elements.ElementsTreeElement.ElementsTreeElement(node);
         treeElement.treeOutline = treeOutline;
         // Simulate binding to the tree
@@ -452,7 +452,7 @@ describeWithEnvironment('ElementsTreeElement', () => {
         sinon.stub(node, 'nodeType').returns(Node.ELEMENT_NODE);
         sinon.stub(node, 'nodeNameInCorrectCase').returns('div');
         sinon.stub(node, 'nodeName').returns('DIV');
-        const treeOutline = new Elements.ElementsTreeOutline.ElementsTreeOutline();
+        const treeOutline = new Elements.DOMTreeWidget.ElementsTreeOutline();
         const treeElement = new Elements.ElementsTreeElement.ElementsTreeElement(node);
         treeElement.treeOutline = treeOutline;
         // Simulate binding to the tree
@@ -486,7 +486,7 @@ describeWithEnvironment('ElementsTreeElement', () => {
                 highlight: () => { },
             },
         };
-        const treeOutline = new Elements.ElementsTreeOutline.ElementsTreeOutline();
+        const treeOutline = new Elements.DOMTreeWidget.ElementsTreeOutline();
         sinon.stub(node, 'hasAssignedSlot').returns(true);
         sinon.stub(node, 'assignedSlot').value(shortcut);
         const treeElement = new Elements.ElementsTreeElement.ElementsTreeElement(node);
@@ -510,7 +510,7 @@ describeWithEnvironment('ElementsTreeElement', () => {
         sinon.stub(node, 'nodeNameInCorrectCase').returns('div');
         sinon.stub(node, 'nodeName').returns('DIV');
         node.id = 1;
-        const treeOutline = new Elements.ElementsTreeOutline.ElementsTreeOutline();
+        const treeOutline = new Elements.DOMTreeWidget.ElementsTreeOutline();
         sinon.stub(node, 'affectedByStartingStyles').returns(true);
         const treeElement = new Elements.ElementsTreeElement.ElementsTreeElement(node);
         treeElement.treeOutline = treeOutline;
@@ -540,7 +540,7 @@ describeWithEnvironment('ElementsTreeElement', () => {
             childNodeCount: 0,
         };
         const node = SDK.DOMModel.DOMNode.create(domModel, null, false, nodePayload);
-        const treeOutline = new Elements.ElementsTreeOutline.ElementsTreeOutline();
+        const treeOutline = new Elements.DOMTreeWidget.ElementsTreeOutline();
         const treeElement = new Elements.ElementsTreeElement.ElementsTreeElement(node);
         treeElement.treeOutline = treeOutline;
         treeElement.onbind();
@@ -589,7 +589,7 @@ describeWithEnvironment('ElementsTreeElement', () => {
             childNodeCount: 0,
         };
         const node = SDK.DOMModel.DOMNode.create(domModel, null, false, nodePayload);
-        const treeOutline = new Elements.ElementsTreeOutline.ElementsTreeOutline();
+        const treeOutline = new Elements.DOMTreeWidget.ElementsTreeOutline();
         const treeElement = new Elements.ElementsTreeElement.ElementsTreeElement(node);
         treeElement.treeOutline = treeOutline;
         treeElement.onbind();
@@ -616,7 +616,7 @@ describeWithEnvironment('ElementsTreeElement', () => {
             childNodeCount: 0,
         };
         const node = SDK.DOMModel.DOMNode.create(domModel, null, false, nodePayload);
-        const treeOutline = new Elements.ElementsTreeOutline.ElementsTreeOutline();
+        const treeOutline = new Elements.DOMTreeWidget.ElementsTreeOutline();
         const treeElement = new Elements.ElementsTreeElement.ElementsTreeElement(node);
         treeElement.treeOutline = treeOutline;
         treeElement.onbind();
@@ -645,7 +645,7 @@ describeWithEnvironment('ElementsTreeElement', () => {
         const node = SDK.DOMModel.DOMNode.create(domModel, null, false, nodePayload);
         // Stub resolveURL to return the URL as-is, which triggers DevTools linkification logic.
         sinon.stub(node, 'resolveURL').callsFake(url => Platform.DevToolsPath.urlString `${url}`);
-        const treeOutline = new Elements.ElementsTreeOutline.ElementsTreeOutline();
+        const treeOutline = new Elements.DOMTreeWidget.ElementsTreeOutline();
         const treeElement = new Elements.ElementsTreeElement.ElementsTreeElement(node);
         treeElement.treeOutline = treeOutline;
         treeElement.performUpdate();
@@ -685,7 +685,7 @@ describeWithEnvironment('ElementsTreeElement', () => {
             assert.exists(domModel);
         });
         function renderTreeNode(node) {
-            const treeOutline = new Elements.ElementsTreeOutline.ElementsTreeOutline();
+            const treeOutline = new Elements.DOMTreeWidget.ElementsTreeOutline();
             const treeElement = new Elements.ElementsTreeElement.ElementsTreeElement(node);
             treeElement.treeOutline = treeOutline;
             treeElement.performUpdate();
@@ -852,7 +852,7 @@ describeWithEnvironment('ElementsTreeElement highlighting', () => {
         attrTestNode = containerNode.children()[0];
         childTestNode = containerNode.children()[1];
         textTestNode = containerNode.children()[2];
-        treeOutline = new Elements.ElementsTreeOutline.ElementsTreeOutline();
+        treeOutline = new Elements.DOMTreeWidget.ElementsTreeOutline();
         treeOutline.wireToDOMModel(domModel);
         const containerTreeElement = new Elements.ElementsTreeElement.ElementsTreeElement(containerNode);
         attrTestTreeElement = new Elements.ElementsTreeElement.ElementsTreeElement(attrTestNode);
@@ -1137,7 +1137,7 @@ describeWithEnvironment('ElementsTreeElement in Snapshot Mode', () => {
         sinon.stub(node, 'nodeName').returns('DIV');
         sinon.stub(node, 'adProvenance').returns({});
         sinon.stub(node, 'isMediaNode').returns(true);
-        treeOutline = new Elements.ElementsTreeOutline.ElementsTreeOutline(
+        treeOutline = new Elements.DOMTreeWidget.ElementsTreeOutline(
         /* omitRootDOMNode */ false, /* selectEnabled */ true, /* hideGutter */ false, /* maxTreeDepth */ 2, 
         /* enableContextMenu */ false, /* showComments */ false, /* showAIButton */ false, /* disableEdits */ true);
         treeOutline.wireToDOMModel(domModel);
@@ -1168,7 +1168,7 @@ describeWithEnvironment('ElementsTreeElement in Snapshot Mode', () => {
         const snapshot = await parentNode.takeSnapshot();
         const nodeSnapshot = snapshot.children()?.[0];
         assert.exists(nodeSnapshot);
-        treeOutline = new Elements.ElementsTreeOutline.ElementsTreeOutline(
+        treeOutline = new Elements.DOMTreeWidget.ElementsTreeOutline(
         /* omitRootDOMNode */ false, /* selectEnabled */ true, /* hideGutter */ false, /* maxTreeDepth */ 2, 
         /* enableContextMenu */ false, /* showComments */ false, /* showAIButton */ false, /* disableEdits */ true);
         treeOutline.wireToDOMModel(domModel);
@@ -1331,7 +1331,7 @@ describeWithEnvironment('ElementsTreeElement in Snapshot Mode', () => {
         const originalDevToolsAllowInterestForcing = Root.Runtime.hostConfig.devToolsAllowInterestForcing;
         Root.Runtime.hostConfig.devToolsAllowInterestForcing = { enabled: true };
         sinon.stub(node, 'attributes').returns([{ name: 'interestfor', value: 'my-tooltip' }]);
-        treeOutline = new Elements.ElementsTreeOutline.ElementsTreeOutline(
+        treeOutline = new Elements.DOMTreeWidget.ElementsTreeOutline(
         /* omitRootDOMNode */ false, /* selectEnabled */ true, /* hideGutter */ false, /* maxTreeDepth */ 2, 
         /* enableContextMenu */ false, /* showComments */ false, /* showAIButton */ false, /* disableEdits */ false);
         treeOutline.wireToDOMModel(domModel);
@@ -1416,7 +1416,7 @@ describeWithEnvironment('ElementsTreeElement issue management', () => {
         assert.isNotNull(rootNode);
         labelNode = rootNode.children()[0];
         assert.isNotNull(labelNode);
-        outline = new Elements.ElementsTreeOutline.ElementsTreeOutline();
+        outline = new Elements.DOMTreeWidget.ElementsTreeOutline();
         outline.wireToDOMModel(testDomModel);
         outline.setVisible(true);
         renderElementIntoDOM(outline.element);
@@ -1900,12 +1900,13 @@ describeWithEnvironment('ElementsTreeElement Change Tracking', () => {
     let treeElement;
     let outline;
     /**
-     * `ChangeTracker` records the location of a change on the comment thread it
-     * creates, not on the `ChangeRecord` itself, so the affected node has to be
-     * read back from the `CommentManager`.
+     * `ChangeTracker` records changes on comment threads in `CommentManager`.
      */
     function lastChangeBackendNodeId() {
         return universe.commentManager.getCommentThreads().at(-1)?.anchor.node?.backendNodeId;
+    }
+    function lastChange() {
+        return universe.commentManager.getCommentThreads().at(-1)?.comments[0]?.text;
     }
     /** Types `newText` into the attribute that is currently edited in place and commits it. */
     function commitEditedAttribute(newText) {
@@ -1952,6 +1953,7 @@ describeWithEnvironment('ElementsTreeElement Change Tracking', () => {
             },
         });
         universe = new TestUniverse();
+        universe.commentManager.setAgentAttached(true);
         tracker = universe.changeTracker;
         setTestUniverseForWidgets(universe);
         sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, 'instance')
@@ -1981,7 +1983,7 @@ describeWithEnvironment('ElementsTreeElement Change Tracking', () => {
         });
         assert.isNotNull(rootNode);
         node = rootNode;
-        outline = new Elements.ElementsTreeOutline.ElementsTreeOutline();
+        outline = new Elements.DOMTreeWidget.ElementsTreeOutline();
         treeElement = new Elements.ElementsTreeElement.ElementsTreeElement(node, false);
         treeElement.widget = new Elements.ElementsTreeElement.ElementsTreeWidget(undefined, [undefined, tracker]);
         treeElement.widget.node = node;
@@ -1993,55 +1995,42 @@ describeWithEnvironment('ElementsTreeElement Change Tracking', () => {
         sinon.stub(node, 'setAttribute').callsFake((_name, _text, callback) => callback?.(null));
         assert.isTrue(treeElement.widget.addNewAttribute());
         commitEditedAttribute('data-test="value"');
-        const record = tracker.getLastChange();
-        assert.exists(record);
-        assert.strictEqual(record?.description, 'Added attribute data-test="value"');
-        assert.isString(record?.id);
-        assert.isNumber(record?.timestamp);
+        assert.strictEqual(lastChange(), 'Added attribute data-test="value"');
         assert.strictEqual(lastChangeBackendNodeId(), 1);
     });
     it('records a change when modifying an existing attribute', () => {
         sinon.stub(node, 'setAttribute').callsFake((_name, _text, callback) => callback?.(null));
         assert.isTrue(treeElement.widget.triggerEditAttribute('class'));
         commitEditedAttribute('class="container active"');
-        const record = tracker.getLastChange();
-        assert.exists(record);
-        assert.strictEqual(record?.description, 'Changed attribute "class" from "container" to "container active"');
+        assert.strictEqual(lastChange(), 'Changed attribute "class" from "container" to "container active"');
         assert.strictEqual(lastChangeBackendNodeId(), 1);
     });
     it('records a change when renaming an existing attribute', () => {
         sinon.stub(node, 'setAttribute').callsFake((_name, _text, callback) => callback?.(null));
         assert.isTrue(treeElement.widget.triggerEditAttribute('class'));
         commitEditedAttribute('foo="container"');
-        const record = tracker.getLastChange();
-        assert.exists(record);
-        assert.strictEqual(record?.description, 'Renamed attribute "class" to "foo"');
+        assert.strictEqual(lastChange(), 'Renamed attribute "class" to "foo"');
         assert.strictEqual(lastChangeBackendNodeId(), 1);
     });
     it('records a change when renaming and modifying an existing attribute', () => {
         sinon.stub(node, 'setAttribute').callsFake((_name, _text, callback) => callback?.(null));
         assert.isTrue(treeElement.widget.triggerEditAttribute('class'));
         commitEditedAttribute('foo="bar"');
-        const record = tracker.getLastChange();
-        assert.exists(record);
-        assert.strictEqual(record?.description, 'Renamed attribute "class"="container" to "foo"="bar"');
+        assert.strictEqual(lastChange(), 'Renamed attribute "class"="container" to "foo"="bar"');
         assert.strictEqual(lastChangeBackendNodeId(), 1);
     });
     it('records a change when deleting an attribute', () => {
         sinon.stub(node, 'setAttribute').callsFake((_name, _text, callback) => callback?.(null));
         assert.isTrue(treeElement.widget.triggerEditAttribute('class'));
         commitEditedAttribute('');
-        const record = tracker.getLastChange();
-        assert.exists(record);
-        assert.strictEqual(record?.description, 'Removed attribute "class"');
+        assert.strictEqual(lastChange(), 'Removed attribute "class"');
         assert.strictEqual(lastChangeBackendNodeId(), 1);
     });
     it('does not record a change when setAttribute fails with an error', () => {
         sinon.stub(node, 'setAttribute').callsFake((_name, _text, callback) => callback?.('Invalid attribute name syntax'));
         assert.isTrue(treeElement.widget.addNewAttribute());
         commitEditedAttribute('invalid<attr>=1');
-        const record = tracker.getLastChange();
-        assert.isUndefined(record);
+        assert.isUndefined(lastChange());
         assert.isEmpty(universe.commentManager.getCommentThreads());
     });
     it('records a change when renaming a tag name', () => {
@@ -2053,9 +2042,7 @@ describeWithEnvironment('ElementsTreeElement Change Tracking', () => {
         editTagName('section');
         assert.exists(callbackCaptured);
         callbackCaptured(null, node);
-        const record = tracker.getLastChange();
-        assert.exists(record);
-        assert.strictEqual(record?.description, 'Renamed tag from <div> to <section>');
+        assert.strictEqual(lastChange(), 'Renamed tag from <div> to <section>');
         assert.strictEqual(lastChangeBackendNodeId(), 1);
     });
     it('does not record a change when renaming a tag name fails', () => {
@@ -2066,17 +2053,14 @@ describeWithEnvironment('ElementsTreeElement Change Tracking', () => {
         editTagName('invalid<tag>');
         assert.exists(callbackCaptured);
         callbackCaptured('Invalid tag name syntax', null);
-        const record = tracker.getLastChange();
-        assert.isUndefined(record);
+        assert.isUndefined(lastChange());
         assert.isEmpty(universe.commentManager.getCommentThreads());
     });
     it('records a change when editing an inline text node', () => {
         const textNode = node.children()[0];
         sinon.stub(textNode, 'setNodeValue').callsFake((_value, callback) => callback?.(null));
         editInlineTextNode('Updated Text');
-        const record = tracker.getLastChange();
-        assert.exists(record);
-        assert.strictEqual(record?.description, 'Changed text from "Initial Text" to "Updated Text"');
+        assert.strictEqual(lastChange(), 'Changed text from "Initial Text" to "Updated Text"');
         assert.strictEqual(lastChangeBackendNodeId(), 2);
     });
     it('does not record a change when editing inline text node fails with an error', () => {
@@ -2086,8 +2070,7 @@ describeWithEnvironment('ElementsTreeElement Change Tracking', () => {
         });
         editInlineTextNode('Updated Text');
         sinon.assert.calledOnceWithMatch(setNodeValue, 'Updated Text');
-        const record = tracker.getLastChange();
-        assert.isUndefined(record);
+        assert.isUndefined(lastChange());
         assert.isEmpty(universe.commentManager.getCommentThreads());
     });
     it('records a change when editing as HTML', async () => {
@@ -2095,9 +2078,7 @@ describeWithEnvironment('ElementsTreeElement Change Tracking', () => {
         sinon.stub(node, 'setOuterHTML').callsFake((_value, callback) => callback?.(null));
         const editor = await startEditingAsHTML();
         commitEditedHTML(editor, '<div id="main-div" class="container"><p>New Child</p></div>');
-        const record = tracker.getLastChange();
-        assert.exists(record);
-        assert.strictEqual(record?.description, 'Changed HTML from "<div id="main-div" class="container"></div>" to ' +
+        assert.strictEqual(lastChange(), 'Changed HTML from "<div id="main-div" class="container"></div>" to ' +
             '"<div id="main-div" class="container"><p>New Child</p></div>"');
         assert.strictEqual(lastChangeBackendNodeId(), 1);
     });
@@ -2109,8 +2090,7 @@ describeWithEnvironment('ElementsTreeElement Change Tracking', () => {
         const editor = await startEditingAsHTML();
         commitEditedHTML(editor, '<div id="main-div" class="container"><p>New Child</p></div>');
         sinon.assert.calledOnceWithMatch(setOuterHTML, '<div id="main-div" class="container"><p>New Child</p></div>');
-        const record = tracker.getLastChange();
-        assert.isUndefined(record);
+        assert.isUndefined(lastChange());
         assert.isEmpty(universe.commentManager.getCommentThreads());
     });
     it('records a change when removing a node', async () => {
@@ -2141,9 +2121,7 @@ describeWithEnvironment('ElementsTreeElement Change Tracking', () => {
         childTreeElement.widget = new Elements.ElementsTreeElement.ElementsTreeWidget(undefined, [undefined, tracker]);
         childTreeElement.widget.node = childNode;
         await childTreeElement.widget.remove();
-        const record = tracker.getLastChange();
-        assert.exists(record);
-        assert.strictEqual(record?.description, 'Removed node <span>');
+        assert.strictEqual(lastChange(), 'Removed node <span>');
         assert.strictEqual(lastChangeBackendNodeId(), 11);
     });
     it('does not record a change when removing a node fails with an error', async () => {
@@ -2174,8 +2152,7 @@ describeWithEnvironment('ElementsTreeElement Change Tracking', () => {
         childTreeElement.widget = new Elements.ElementsTreeElement.ElementsTreeWidget(undefined, [undefined, tracker]);
         childTreeElement.widget.node = childNode;
         await childTreeElement.widget.remove();
-        const record = tracker.getLastChange();
-        assert.isUndefined(record);
+        assert.isUndefined(lastChange());
         assert.isEmpty(universe.commentManager.getCommentThreads());
     });
     it('unhides hidden node before removal without recording an additional change', async () => {
@@ -2210,9 +2187,9 @@ describeWithEnvironment('ElementsTreeElement Change Tracking', () => {
         childTreeElement.widget.node = childNode;
         await childTreeElement.widget.remove();
         sinon.assert.calledOnce(toggleHideStub);
-        const changes = tracker.getChanges();
-        assert.lengthOf(changes, 1);
-        assert.strictEqual(changes[0].description, 'Removed node <span>');
+        const threads = universe.commentManager.getCommentThreads();
+        assert.lengthOf(threads, 1);
+        assert.strictEqual(threads[0].comments[0].text, 'Removed node <span>');
     });
 });
 //# sourceMappingURL=ElementsTreeElement.test.js.map

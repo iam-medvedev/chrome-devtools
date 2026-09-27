@@ -408,17 +408,6 @@ li.object-properties-section  {
   }
 }
 
-.object-properties-section li.editing-sub-part {
-  padding: 3px var(--sys-size-6) var(--sys-size-5) var(--sys-size-4);
-  margin: calc(-1 * var(--sys-size-1)) calc(-1 * var(--sys-size-4)) calc(-1 * var(--sys-size-5));
-  text-overflow: clip;
-}
-
-.object-properties-section li.editing {
-  margin-left: 10px;
-  text-overflow: clip;
-}
-
 .tree-outline ol.title-less-mode {
   padding-left: 0;
 }
@@ -440,10 +429,6 @@ li.object-properties-section  {
   flex-direction: row;
 }
 
-.object-properties-section .editable-div {
-  overflow: hidden;
-}
-
 .name-and-value {
   line-height: var(--sys-size-8);
   display: flex;
@@ -455,15 +440,6 @@ li.object-properties-section  {
   flex-shrink: 0;
 }
 
-.editing-sub-part .name-and-value {
-  overflow: visible;
-  display: inline-flex;
-}
-
-.property-prompt {
-  margin-left: var(--sys-size-3);
-}
-
 .tree-outline.hide-selection-when-blurred .selected:focus-visible {
   background: none;
   outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
@@ -471,7 +447,7 @@ li.object-properties-section  {
 }
 
 .tree-outline.hide-selection-when-blurred .selected:focus-visible ::slotted(*),
-.tree-outline.hide-selection-when-blurred .selected:focus-visible .tree-element-title,
+.tree-outline.hide-selection-when-blurred .selected:focus-visible .tree-element-title:not(:has(.name-and-value, .gray-info-message)),
 .tree-outline.hide-selection-when-blurred .selected:focus-visible .name-and-value,
 .tree-outline.hide-selection-when-blurred .selected:focus-visible .gray-info-message {
   background: var(--sys-color-state-focus-highlight);
@@ -492,8 +468,7 @@ li.object-properties-section  {
     color: ButtonText;
   }
 
-  .tree-outline.hide-selection-when-blurred .selected:focus-visible .tree-element-title,
-  .tree-outline.hide-selection-when-blurred .selected:focus-visible .name-and-value {
+  .tree-outline.hide-selection-when-blurred .selected:focus-visible .tree-element-title {
     background: transparent;
     box-shadow: none;
   }
@@ -961,11 +936,16 @@ var EventListenersView = class _EventListenersView extends UI.Widget.VBox {
     this.requestUpdate();
   }
   async performUpdate() {
-    if (!this.#listeners && this.#objects) {
-      this.#listeners = await _EventListenersView.#loadListeners(this.#objects.filter((o) => !!o));
+    let listeners = this.#listeners;
+    if (!listeners && this.#objects) {
+      const objects = this.#objects;
+      listeners = await _EventListenersView.#loadListeners(objects.filter((o) => !!o));
+      if (this.#objects === objects) {
+        this.#listeners = listeners;
+      }
     }
     const input = {
-      listeners: this.#listeners ?? /* @__PURE__ */ new Map(),
+      listeners: listeners ?? /* @__PURE__ */ new Map(),
       filter: this.#filter,
       togglePassiveListener: (listener) => {
         void listener.togglePassive().then(() => {
@@ -1000,6 +980,7 @@ var EventListenersView = class _EventListenersView extends UI.Widget.VBox {
       },
       linkifier: this.#linkifier
     };
+    this.#linkifier.reset();
     this.#view(input, {}, this.contentElement);
     this.eventListenersArrivedForTest();
   }

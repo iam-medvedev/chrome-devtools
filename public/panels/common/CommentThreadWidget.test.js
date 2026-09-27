@@ -14,12 +14,13 @@ describeWithEnvironment('CommentThreadWidget DEFAULT_VIEW', () => {
         const target = document.createElement('div');
         target.style.width = '288px';
         DEFAULT_VIEW({
-            title: 'div#container',
+            title: { text: 'div#container.grid' },
             comments: [],
             commentText: '',
             textAreaRef: Lit.Directives.createRef(),
             onAddComment: () => { },
             onCommentTextChange: () => { },
+            onClose: () => { },
             ...inputOverrides,
         }, undefined, target);
         return target;
@@ -55,6 +56,47 @@ describeWithEnvironment('CommentThreadWidget DEFAULT_VIEW', () => {
         renderElementIntoDOM(target, { includeCommonStyles: true });
         await assertScreenshot('comments/comment_thread_widget_agent_response.png');
     });
+    it('calls onClose when clicking the close button in both draft and submitted states', () => {
+        const onCloseDraft = sinon.spy();
+        const draftTarget = renderView({ onClose: onCloseDraft });
+        renderElementIntoDOM(draftTarget);
+        const draftCloseButton = draftTarget.querySelector('.close-button');
+        assert.isNotNull(draftCloseButton);
+        draftCloseButton.click();
+        sinon.assert.calledOnce(onCloseDraft);
+        draftTarget.remove();
+        const onCloseSubmitted = sinon.spy();
+        const comments = [
+            { author: 'DEVELOPER', text: 'Align this to the grid', timestamp: 0 },
+        ];
+        const submittedTarget = renderView({ comments, onClose: onCloseSubmitted });
+        renderElementIntoDOM(submittedTarget);
+        const submittedCloseButton = submittedTarget.querySelector('.close-button');
+        assert.isNotNull(submittedCloseButton);
+        submittedCloseButton.click();
+        sinon.assert.calledOnce(onCloseSubmitted);
+    });
+    it('keeps sent status and close button within widget bounds when title is long', () => {
+        const comments = [
+            { author: 'DEVELOPER', text: 'Align this to the grid', timestamp: 0 },
+        ];
+        const target = renderView({
+            title: { text: 'div#very-long-container-id.class-one.class-two.class-three.class-four' },
+            comments,
+        });
+        renderElementIntoDOM(target, { includeCommonStyles: true });
+        const widgetEl = target.querySelector('.comment-thread-widget');
+        const sentStatusEl = target.querySelector('.sent-status');
+        const closeButtonEl = target.querySelector('.close-button');
+        assert.isNotNull(widgetEl);
+        assert.isNotNull(sentStatusEl);
+        assert.isNotNull(closeButtonEl);
+        const widgetRect = widgetEl.getBoundingClientRect();
+        const sentRect = sentStatusEl.getBoundingClientRect();
+        const closeRect = closeButtonEl.getBoundingClientRect();
+        assert.isAtMost(sentRect.right, widgetRect.right);
+        assert.isAtMost(closeRect.right, widgetRect.right);
+    });
 });
 describeWithEnvironment('CommentThreadWidget presenter', () => {
     it('passes title and comments to view input and handles comment submission', async () => {
@@ -65,10 +107,10 @@ describeWithEnvironment('CommentThreadWidget presenter', () => {
         const comments = [
             { author: 'DEVELOPER', text: 'First comment', timestamp: 0 },
         ];
-        widget.title = 'div#header';
+        widget.title = { text: 'div#header' };
         widget.comments = comments;
         widget.performUpdate();
-        assert.strictEqual(view.input.title, 'div#header');
+        assert.deepEqual(view.input.title, { text: 'div#header' });
         assert.deepEqual(view.input.comments, comments);
         view.input.onCommentTextChange({ target: { value: '  hello  ' } });
         await widget.updateComplete;

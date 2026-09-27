@@ -4,7 +4,6 @@
 import { assert } from 'chai';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
-import * as UI from '../../ui/legacy/legacy.js';
 import * as Network from './network.js';
 describeWithEnvironment('ShowMoreDetailsWidget', () => {
     it('updates view on text change', async () => {
@@ -18,13 +17,10 @@ describeWithEnvironment('ShowMoreDetailsWidget', () => {
     it('updates view on copy item change', async () => {
         const view = createViewFunctionStub(Network.ShowMoreDetailsWidget.ShowMoreDetailsWidget);
         const widget = new Network.ShowMoreDetailsWidget.ShowMoreDetailsWidget(undefined, view);
-        const copyItem = {
-            menuItem: new UI.ContextMenu.Item(null, 'item', 'Copy'),
-            handler: () => { },
-        };
-        widget.copy = copyItem;
+        const copyHandler = () => { };
+        widget.copy = copyHandler;
         const input = await view.nextInput;
-        assert.strictEqual(input.copy, copyItem);
+        assert.strictEqual(input.copy, copyHandler);
     });
     it('toggles showMore state', async () => {
         const view = createViewFunctionStub(Network.ShowMoreDetailsWidget.ShowMoreDetailsWidget);

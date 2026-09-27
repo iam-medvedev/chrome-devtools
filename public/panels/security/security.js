@@ -143,7 +143,6 @@ var Audits;
     CookieExclusionReason2["ExcludeSameSiteLax"] = "ExcludeSameSiteLax";
     CookieExclusionReason2["ExcludeSameSiteStrict"] = "ExcludeSameSiteStrict";
     CookieExclusionReason2["ExcludeDomainNonASCII"] = "ExcludeDomainNonASCII";
-    CookieExclusionReason2["ExcludeThirdPartyCookieBlockedInFirstPartySet"] = "ExcludeThirdPartyCookieBlockedInFirstPartySet";
     CookieExclusionReason2["ExcludeThirdPartyPhaseout"] = "ExcludeThirdPartyPhaseout";
     CookieExclusionReason2["ExcludePortMismatch"] = "ExcludePortMismatch";
     CookieExclusionReason2["ExcludeSchemeMismatch"] = "ExcludeSchemeMismatch";
@@ -1395,7 +1394,6 @@ var Network;
     SetCookieBlockedReason2["SameSiteNoneInsecure"] = "SameSiteNoneInsecure";
     SetCookieBlockedReason2["UserPreferences"] = "UserPreferences";
     SetCookieBlockedReason2["ThirdPartyPhaseout"] = "ThirdPartyPhaseout";
-    SetCookieBlockedReason2["ThirdPartyBlockedInFirstPartySet"] = "ThirdPartyBlockedInFirstPartySet";
     SetCookieBlockedReason2["SyntaxError"] = "SyntaxError";
     SetCookieBlockedReason2["SchemeNotSupported"] = "SchemeNotSupported";
     SetCookieBlockedReason2["OverwriteSecure"] = "OverwriteSecure";
@@ -1420,7 +1418,6 @@ var Network;
     CookieBlockedReason2["SameSiteNoneInsecure"] = "SameSiteNoneInsecure";
     CookieBlockedReason2["UserPreferences"] = "UserPreferences";
     CookieBlockedReason2["ThirdPartyPhaseout"] = "ThirdPartyPhaseout";
-    CookieBlockedReason2["ThirdPartyBlockedInFirstPartySet"] = "ThirdPartyBlockedInFirstPartySet";
     CookieBlockedReason2["UnknownError"] = "UnknownError";
     CookieBlockedReason2["SchemefulSameSiteStrict"] = "SchemefulSameSiteStrict";
     CookieBlockedReason2["SchemefulSameSiteLax"] = "SchemefulSameSiteLax";
@@ -3035,7 +3032,6 @@ var SecurityDispatcher = class {
 var SecurityPanel_exports = {};
 __export(SecurityPanel_exports, {
   OriginGroup: () => OriginGroup,
-  SecurityDetailsTable: () => SecurityDetailsTable,
   SecurityMainView: () => SecurityMainView,
   SecurityOriginView: () => SecurityOriginView,
   SecurityPanel: () => SecurityPanel,
@@ -4990,9 +4986,9 @@ function renderSan(sanList, isSanListTruncated, onToggleTruncation) {
         </devtools-button>` : nothing2}
     </div>`;
 }
-function renderDetailsTable(rows) {
+function renderDetailsTable(rows, additionalClasses = {}) {
   return html2`
-    <table class="details-table">
+    <table class=${Directives2.classMap({ "details-table": true, ...additionalClasses })}>
       ${rows.map((row) => html2`
         <tr class="details-table-row">
           <td>${row.key ?? nothing2}</td>
@@ -5083,6 +5079,53 @@ function renderCertificateSection(input) {
     <div class="origin-view-section-title" role="heading" aria-level="2">${i18nString3(UIStrings3.certificate)}</div>
     ${renderDetailsTable(rows)}`;
 }
+function renderSctSummary(scts, isShown) {
+  const rows = scts.map((sct) => ({
+    key: i18nString3(UIStrings3.sct),
+    value: `${sct.logDescription} (${sct.origin}, ${sct.status})`
+  }));
+  return renderDetailsTable(rows, { "sct-summary": true, hidden: !isShown });
+}
+function renderSctDetails(scts, isShown) {
+  return html2`
+    <div class=${Directives2.classMap({ "sct-details": true, hidden: !isShown })}>
+      ${scts.map((sct) => renderDetailsTable([
+    { key: i18nString3(UIStrings3.logName), value: sct.logDescription },
+    { key: i18nString3(UIStrings3.logId), value: sct.logId.replace(/(.{2})/g, "$1 ") },
+    { key: i18nString3(UIStrings3.validationStatus), value: sct.status },
+    { key: i18nString3(UIStrings3.source), value: sct.origin },
+    { key: i18nString3(UIStrings3.issuedAt), value: new Date(sct.timestamp).toUTCString() },
+    { key: i18nString3(UIStrings3.hashAlgorithm), value: sct.hashAlgorithm },
+    { key: i18nString3(UIStrings3.signatureAlgorithm), value: sct.signatureAlgorithm },
+    { key: i18nString3(UIStrings3.signatureData), value: sct.signatureData.replace(/(.{2})/g, "$1 ") }
+  ]))}
+    </div>`;
+}
+function renderCertificateTransparencyNote(compliance) {
+  if (compliance === Network.CertificateTransparencyCompliance.Unknown) {
+    return nothing2;
+  }
+  const note = compliance === Network.CertificateTransparencyCompliance.Compliant ? i18nString3(UIStrings3.thisRequestCompliesWithChromes) : i18nString3(UIStrings3.thisRequestDoesNotComplyWith);
+  return html2`<div class="origin-view-section-notes">${note}</div>`;
+}
+function renderCertificateTransparencySection(input) {
+  const { securityDetails, isDetailsShown, onToggleDetails } = input;
+  const scts = securityDetails.signedCertificateTimestampList;
+  const toggleButtonText = isDetailsShown ? i18nString3(UIStrings3.hideFullDetails) : i18nString3(UIStrings3.showFullDetails);
+  return html2`
+    <div class="origin-view-section-title" role="heading" aria-level="2">${i18nString3(UIStrings3.certificateTransparency)}</div>
+    ${renderSctSummary(scts, !isDetailsShown)}
+    ${renderSctDetails(scts, isDetailsShown)}
+    ${scts.length ? html2`
+      <devtools-button
+          class="details-toggle"
+          .variant=${Buttons.Button.Variant.OUTLINED}
+          .accessibleLabel=${toggleButtonText}
+          .accessibleExpanded=${isDetailsShown}
+          .jslogContext=${"security.toggle-scts-details"}
+          @click=${onToggleDetails}>${toggleButtonText}</devtools-button>` : nothing2}
+    ${renderCertificateTransparencyNote(securityDetails.certificateTransparencyCompliance)}`;
+}
 var SecurityOriginView = class extends UI2.Widget.VBox {
   #origin;
   #titleSection;
@@ -5100,73 +5143,10 @@ var SecurityOriginView = class extends UI2.Widget.VBox {
       this.#createCertificateSection(originState.securityDetails);
       const sctListLength = originState.securityDetails.signedCertificateTimestampList.length;
       const ctCompliance = originState.securityDetails.certificateTransparencyCompliance;
-      let sctSection;
-      if (sctListLength || ctCompliance !== Network.CertificateTransparencyCompliance.Unknown) {
-        sctSection = this.element.createChild("div", "origin-view-section");
-        const sctDiv = sctSection.createChild("div", "origin-view-section-title");
-        sctDiv.textContent = i18nString3(UIStrings3.certificateTransparency);
-        UI2.ARIAUtils.markAsHeading(sctDiv, 2);
-      }
-      if (!sctSection) {
+      if (!sctListLength && ctCompliance === Network.CertificateTransparencyCompliance.Unknown) {
         return;
       }
-      const sctSummaryTable = new SecurityDetailsTable();
-      sctSummaryTable.element().classList.add("sct-summary");
-      sctSection.appendChild(sctSummaryTable.element());
-      for (let i = 0; i < sctListLength; i++) {
-        const sct = originState.securityDetails.signedCertificateTimestampList[i];
-        sctSummaryTable.addRow(
-          i18nString3(UIStrings3.sct),
-          sct.logDescription + " (" + sct.origin + ", " + sct.status + ")"
-        );
-      }
-      const sctTableWrapper = sctSection.createChild("div", "sct-details");
-      sctTableWrapper.classList.add("hidden");
-      for (let i = 0; i < sctListLength; i++) {
-        const sctTable = new SecurityDetailsTable();
-        sctTableWrapper.appendChild(sctTable.element());
-        const sct = originState.securityDetails.signedCertificateTimestampList[i];
-        sctTable.addRow(i18nString3(UIStrings3.logName), sct.logDescription);
-        sctTable.addRow(i18nString3(UIStrings3.logId), sct.logId.replace(/(.{2})/g, "$1 "));
-        sctTable.addRow(i18nString3(UIStrings3.validationStatus), sct.status);
-        sctTable.addRow(i18nString3(UIStrings3.source), sct.origin);
-        sctTable.addRow(i18nString3(UIStrings3.issuedAt), new Date(sct.timestamp).toUTCString());
-        sctTable.addRow(i18nString3(UIStrings3.hashAlgorithm), sct.hashAlgorithm);
-        sctTable.addRow(i18nString3(UIStrings3.signatureAlgorithm), sct.signatureAlgorithm);
-        sctTable.addRow(i18nString3(UIStrings3.signatureData), sct.signatureData.replace(/(.{2})/g, "$1 "));
-      }
-      if (sctListLength) {
-        let toggleSctDetailsDisplay = function() {
-          let buttonText;
-          const isDetailsShown = !sctTableWrapper.classList.contains("hidden");
-          if (isDetailsShown) {
-            buttonText = i18nString3(UIStrings3.showFullDetails);
-          } else {
-            buttonText = i18nString3(UIStrings3.hideFullDetails);
-          }
-          toggleSctsDetailsLink.textContent = buttonText;
-          UI2.ARIAUtils.setLabel(toggleSctsDetailsLink, buttonText);
-          UI2.ARIAUtils.setExpanded(toggleSctsDetailsLink, !isDetailsShown);
-          sctSummaryTable.element().classList.toggle("hidden");
-          sctTableWrapper.classList.toggle("hidden");
-        };
-        const toggleSctsDetailsLink = UI2.UIUtils.createTextButton(
-          i18nString3(UIStrings3.showFullDetails),
-          toggleSctDetailsDisplay,
-          { className: "details-toggle", jslogContext: "security.toggle-scts-details" }
-        );
-        sctSection.appendChild(toggleSctsDetailsLink);
-      }
-      switch (ctCompliance) {
-        case Network.CertificateTransparencyCompliance.Compliant:
-          sctSection.createChild("div", "origin-view-section-notes").textContent = i18nString3(UIStrings3.thisRequestCompliesWithChromes);
-          break;
-        case Network.CertificateTransparencyCompliance.NotCompliant:
-          sctSection.createChild("div", "origin-view-section-notes").textContent = i18nString3(UIStrings3.thisRequestDoesNotComplyWith);
-          break;
-        case Network.CertificateTransparencyCompliance.Unknown:
-          break;
-      }
+      this.#createCertificateTransparencySection(originState.securityDetails);
       const noteSection = this.element.createChild("div", "origin-view-section origin-view-notes");
       if (originState.loadedFromCache) {
         noteSection.createChild("div").textContent = i18nString3(UIStrings3.thisResponseWasLoadedFromCache);
@@ -5212,6 +5192,18 @@ var SecurityOriginView = class extends UI2.Widget.VBox {
     };
     updateCertificateSection();
   }
+  #createCertificateTransparencySection(securityDetails) {
+    const section = this.element.createChild("div", "origin-view-section certificate-transparency-section");
+    let isDetailsShown = false;
+    const onToggleDetails = () => {
+      isDetailsShown = !isDetailsShown;
+      updateSection();
+    };
+    const updateSection = () => {
+      render2(renderCertificateTransparencySection({ securityDetails, isDetailsShown, onToggleDetails }), section);
+    };
+    updateSection();
+  }
   #showCertificateViewer = async (event) => {
     event.consume();
     const names = await SDK2.NetworkManager.MultitargetNetworkManager.instance().getCertificate(this.#origin);
@@ -5233,26 +5225,6 @@ var SecurityOriginView = class extends UI2.Widget.VBox {
       { filterType: NetworkForward.UIFilter.FilterType.Scheme, filterValue: parsedURL.scheme }
     ]));
   };
-};
-var SecurityDetailsTable = class {
-  #element;
-  constructor() {
-    this.#element = document.createElement("table");
-    this.#element.classList.add("details-table");
-  }
-  element() {
-    return this.#element;
-  }
-  addRow(key, value) {
-    const row = this.#element.createChild("tr", "details-table-row");
-    row.createChild("td").textContent = key;
-    const valueCell = row.createChild("td");
-    if (typeof value === "string") {
-      valueCell.textContent = value;
-    } else {
-      valueCell.appendChild(value);
-    }
-  }
 };
 export {
   SecurityModel_exports as SecurityModel,

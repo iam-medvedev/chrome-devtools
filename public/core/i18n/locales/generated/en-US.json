@@ -884,9 +884,6 @@
   "entrypoints/main/GlobalAiButton.ts | aiAssistance": {
     "message": "AI assistance"
   },
-  "entrypoints/main/GlobalAiButton.ts | gemini": {
-    "message": "Gemini"
-  },
   "entrypoints/main/GlobalAiButton.ts | openAiAssistance": {
     "message": "Open AI assistance panel"
   },
@@ -1100,8 +1097,8 @@
   "entrypoints/main/MainImpl.ts | focusDebuggee": {
     "message": "Focus page"
   },
-  "entrypoints/main/MainImpl.ts | getDevToolsMcp": {
-    "message": "Get DevTools MCP"
+  "entrypoints/main/MainImpl.ts | getChromeDevToolsForAgents": {
+    "message": "Give your agent access to DevTools"
   },
   "entrypoints/main/MainImpl.ts | help": {
     "message": "Help"
@@ -2564,6 +2561,12 @@
   "panels/accessibility/AccessibilityAnnouncementRecordingListView.ts | ariaLiveRecordingList": {
     "message": "Accessibility Announcements"
   },
+  "panels/accessibility/AccessibilityAnnouncementRecordingListView.ts | copyElementHtml": {
+    "message": "Copy element HTML"
+  },
+  "panels/accessibility/AccessibilityAnnouncementRecordingListView.ts | copyMessage": {
+    "message": "Copy message"
+  },
   "panels/accessibility/AccessibilityAnnouncementRecordingListView.ts | jsTriggered": {
     "message": "JS-triggered"
   },
@@ -2587,6 +2590,9 @@
   },
   "panels/accessibility/AccessibilityAnnouncementRecordingView.ts | clearAnnouncements": {
     "message": "Clear announcements"
+  },
+  "panels/accessibility/AccessibilityAnnouncementRecordingView.ts | exportCsv": {
+    "message": "Export to CSV"
   },
   "panels/accessibility/AccessibilityAnnouncementRecordingView.ts | filter": {
     "message": "Filter"
@@ -3032,9 +3038,6 @@
   "panels/ai_assistance/ai_assistance-meta.ts | enableGemini": {
     "message": "Enable Gemini"
   },
-  "panels/ai_assistance/ai_assistance-meta.ts | gemini": {
-    "message": "Gemini"
-  },
   "panels/ai_assistance/ai_assistance-meta.ts | showAiAssistance": {
     "message": "Show AI assistance"
   },
@@ -3276,7 +3279,7 @@
     "message": "Background services"
   },
   "panels/application/ApplicationPanelSidebar.ts | beforeInvokeAlert": {
-    "message": "{PH1}: Invoke to scroll to this section in manifest"
+    "message": "{PH1}: invoke to scroll to this section in manifest"
   },
   "panels/application/ApplicationPanelSidebar.ts | clear": {
     "message": "Clear"
@@ -3327,13 +3330,13 @@
     "message": "IndexedDB"
   },
   "panels/application/ApplicationPanelSidebar.ts | indexeddbDescription": {
-    "message": "On this page you can view and delete indexedDB key-value pairs and databases"
+    "message": "On this page you can view and delete IndexedDB key-value pairs and databases"
   },
   "panels/application/ApplicationPanelSidebar.ts | keyPathS": {
     "message": "Key path: {PH1}"
   },
   "panels/application/ApplicationPanelSidebar.ts | localFiles": {
-    "message": "Local Files"
+    "message": "Local files"
   },
   "panels/application/ApplicationPanelSidebar.ts | localStorage": {
     "message": "Local storage"
@@ -3351,7 +3354,7 @@
     "message": "No extension storage detected"
   },
   "panels/application/ApplicationPanelSidebar.ts | noIndexeddb": {
-    "message": "No indexedDB detected"
+    "message": "No IndexedDB detected"
   },
   "panels/application/ApplicationPanelSidebar.ts | noLocalStorage": {
     "message": "No local storage detected"
@@ -3363,10 +3366,10 @@
     "message": "Scrolled to {PH1}"
   },
   "panels/application/ApplicationPanelSidebar.ts | onInvokeManifestAlert": {
-    "message": "Manifest: Invoke to scroll to the top of manifest"
+    "message": "Manifest: invoke to scroll to the top of manifest"
   },
   "panels/application/ApplicationPanelSidebar.ts | openedWindows": {
-    "message": "Opened Windows"
+    "message": "Opened windows"
   },
   "panels/application/ApplicationPanelSidebar.ts | openedWindowsDescription": {
     "message": "On this page you can view windows opened via window.open()"
@@ -3390,7 +3393,7 @@
     "message": "Storage"
   },
   "panels/application/ApplicationPanelSidebar.ts | theContentOfThisDocumentHasBeen": {
-    "message": "The content of this document has been generated dynamically via 'document.write()'"
+    "message": "The content of this document has been generated dynamically via document.write()"
   },
   "panels/application/ApplicationPanelSidebar.ts | versionS": {
     "message": "Version: {PH1}"
@@ -3408,22 +3411,22 @@
     "message": "worker"
   },
   "panels/application/ApplicationPanelSidebar.ts | workerDescription": {
-    "message": "On this page you can view dedicated workers that are created by the parent frame"
+    "message": "On this page you can view dedicated workers added by the parent frame"
   },
   "panels/application/AppManifestView.ts | actualHeightSpxOfSSDoesNotMatch": {
-    "message": "Actual height ({PH1}px) of {PH2} {PH3} does not match specified height ({PH4}px)"
+    "message": "Actual height ({PH1}px) of {PH2} {PH3} doesn’t match specified height ({PH4}px)"
   },
   "panels/application/AppManifestView.ts | actualSizeSspxOfSSDoesNotMatch": {
-    "message": "Actual size ({PH1}×{PH2})px of {PH3} {PH4} does not match specified size ({PH5}×{PH6}px)"
+    "message": "Actual size ({PH1}×{PH2})px of {PH3} {PH4} doesn’t match specified size ({PH5}×{PH6}px)"
   },
   "panels/application/AppManifestView.ts | actualWidthSpxOfSSDoesNotMatch": {
-    "message": "Actual width ({PH1}px) of {PH2} {PH3} does not match specified width ({PH4}px)"
+    "message": "Actual width ({PH1}px) of {PH2} {PH3} doesn’t match specified width ({PH4}px)"
   },
   "panels/application/AppManifestView.ts | appIdExplainer": {
     "message": "This is used by the browser to know whether the manifest should be updating an existing application, or whether it refers to a new web app that can be installed"
   },
   "panels/application/AppManifestView.ts | appIdNote": {
-    "message": "Note: id is not specified in the manifest, start_url is used instead. To specify an App ID that matches the current identity, set the id field to {PH1} {PH2}."
+    "message": "Note: id isn’t specified in the manifest, start_url is used instead. To specify an app ID that matches the current identity, set the id field to {PH1} {PH2}."
   },
   "panels/application/AppManifestView.ts | appManifest": {
     "message": "Manifest"
@@ -3432,13 +3435,13 @@
     "message": "A URL in the manifest contains a username, password, or port"
   },
   "panels/application/AppManifestView.ts | avoidPurposeAnyAndMaskable": {
-    "message": "Declaring an icon with 'purpose' of 'any maskable' is discouraged. It is likely to look incorrect on some platforms due to too much or too little padding."
+    "message": "Declaring an icon with 'purpose' of 'any maskable' is discouraged. It’s likely to look incorrect on some platforms due to too much or too little padding."
   },
   "panels/application/AppManifestView.ts | backgroundColor": {
     "message": "Background color"
   },
   "panels/application/AppManifestView.ts | computedAppId": {
-    "message": "Computed App ID"
+    "message": "Computed app ID"
   },
   "panels/application/AppManifestView.ts | copiedToClipboard": {
     "message": "Copied suggested ID {PH1} to clipboard"
@@ -3447,13 +3450,13 @@
     "message": "Copy suggested ID to clipboard"
   },
   "panels/application/AppManifestView.ts | couldNotCheckServiceWorker": {
-    "message": "Could not check service worker without a 'start_url' field in the manifest"
+    "message": "Couldn’t check service worker without a 'start_url' field in the manifest"
   },
   "panels/application/AppManifestView.ts | couldNotDownloadARequiredIcon": {
-    "message": "Could not download a required icon from the manifest"
+    "message": "Couldn’t download a required icon from the manifest"
   },
   "panels/application/AppManifestView.ts | customizePwaTitleBar": {
-    "message": "Customize the window controls overlay of your PWA’s title bar"
+    "message": "Customize the Window Controls Overlay of your PWA’s title bar"
   },
   "panels/application/AppManifestView.ts | description": {
     "message": "Description"
@@ -3501,7 +3504,7 @@
     "message": "Manifest contains 'display_override' field, and the first supported display mode must be one of 'standalone', 'fullscreen', or 'minimal-ui'"
   },
   "panels/application/AppManifestView.ts | manifestCouldNotBeFetchedIsEmpty": {
-    "message": "Manifest could not be fetched, is empty, or could not be parsed"
+    "message": "Manifest couldn’t be fetched, is empty, or couldn’t be parsed"
   },
   "panels/application/AppManifestView.ts | manifestDescription": {
     "message": "A manifest defines how your app appears on phone’s home screens and what the app looks like on launch"
@@ -3510,16 +3513,16 @@
     "message": "Manifest 'display' property must be one of 'standalone', 'fullscreen', or 'minimal-ui'"
   },
   "panels/application/AppManifestView.ts | manifestDoesNotContainANameOr": {
-    "message": "Manifest does not contain a 'name' or 'short_name' field"
+    "message": "Manifest doesn’t contain a 'name' or 'short_name' field"
   },
   "panels/application/AppManifestView.ts | manifestDoesNotContainASuitable": {
-    "message": "Manifest does not contain a suitable icon—PNG, SVG, or WebP format of at least {PH1}px is required, the 'sizes' attribute must be set, and the 'purpose' attribute, if set, must include 'any'"
+    "message": "Manifest doesn’t contain an icon that fits—PNG, SVG, or WebP format of at least {PH1}px is required, the 'sizes' attribute must be set, and the 'purpose' attribute, if set, must include 'any'"
   },
   "panels/application/AppManifestView.ts | manifestSpecifies": {
     "message": "Manifest specifies 'prefer_related_applications: true'"
   },
   "panels/application/AppManifestView.ts | manifestStartUrlIsNotValid": {
-    "message": "Manifest 'start_url' is not valid"
+    "message": "Manifest 'start_url' isn’t valid"
   },
   "panels/application/AppManifestView.ts | name": {
     "message": "Name"
@@ -3534,13 +3537,13 @@
     "message": "No manifest detected"
   },
   "panels/application/AppManifestView.ts | noPlayStoreIdProvided": {
-    "message": "No Play store ID provided"
+    "message": "No Play Store ID provided"
   },
   "panels/application/AppManifestView.ts | noScreenshotsForRicherPWAInstallOnDesktop": {
-    "message": "Richer PWA Install UI won’t be available on desktop. Please add at least one screenshot with the form_factor set to wide."
+    "message": "Richer PWA install UI won’t be available on desktop. Add at least one screenshot with the form_factor set to wide."
   },
   "panels/application/AppManifestView.ts | noScreenshotsForRicherPWAInstallOnMobile": {
-    "message": "Richer PWA Install UI won’t be available on mobile. Please add at least one screenshot for which form_factor is not set or set to a value other than wide."
+    "message": "Richer PWA install UI won’t be available on mobile. Add at least one screenshot for which form_factor isn’t set or set to a value other than wide."
   },
   "panels/application/AppManifestView.ts | noSuppliedIconIsAtLeastSpxSquare": {
     "message": "No supplied icon is at least {PH1} pixels square in PNG, SVG, or WebP format, with the purpose attribute unset or set to 'any'"
@@ -3552,10 +3555,10 @@
     "message": "Orientation"
   },
   "panels/application/AppManifestView.ts | pageDoesNotWorkOffline": {
-    "message": "Page does not work offline"
+    "message": "Page doesn’t work offline"
   },
   "panels/application/AppManifestView.ts | pageDoesNotWorkOfflineThePage": {
-    "message": "Page does not work offline. Starting in Chrome 93, the installability criteria are changing, and this site will not be installable. See {PH1} for more information."
+    "message": "Page doesn’t work offline. Starting in Chrome 93, the installability criteria are changing, and this site won’t be installable. See {PH1} for more information."
   },
   "panels/application/AppManifestView.ts | pageHasNoManifestLinkUrl": {
     "message": "Page has no manifest <link> URL"
@@ -3564,10 +3567,10 @@
     "message": "Page is loaded in an incognito window"
   },
   "panels/application/AppManifestView.ts | pageIsNotLoadedInTheMainFrame": {
-    "message": "Page is not loaded in the main frame"
+    "message": "Page isn’t loaded in the main frame"
   },
   "panels/application/AppManifestView.ts | pageIsNotServedFromASecureOrigin": {
-    "message": "Page is not served from a secure origin"
+    "message": "Page isn’t served from a secure origin"
   },
   "panels/application/AppManifestView.ts | platform": {
     "message": "Platform"
@@ -3579,7 +3582,7 @@
     "message": "Presentation"
   },
   "panels/application/AppManifestView.ts | protocolHandlers": {
-    "message": "Protocol Handlers"
+    "message": "Protocol handlers"
   },
   "panels/application/AppManifestView.ts | screenshot": {
     "message": "Screenshot"
@@ -3594,13 +3597,13 @@
     "message": "All screenshots with the same form_factor must have the same aspect ratio as the first screenshot with that form_factor. Some screenshots will be ignored."
   },
   "panels/application/AppManifestView.ts | selectWindowControlsOverlayEmulationOs": {
-    "message": "Emulate the Window Controls Overlay on"
+    "message": "Emulate Window Controls Overlay"
   },
   "panels/application/AppManifestView.ts | shortcutS": {
     "message": "Shortcut #{PH1}"
   },
   "panels/application/AppManifestView.ts | shortcutsMayBeNotAvailable": {
-    "message": "The maximum number of shortcuts is platform dependent. Some shortcuts may be not available."
+    "message": "The maximum number of shortcuts is platform dependent. Some shortcuts may not be available."
   },
   "panels/application/AppManifestView.ts | shortcutSShouldIncludeAXPixel": {
     "message": "Shortcut #{PH1} should include a 96×96 pixel icon"
@@ -3612,7 +3615,7 @@
     "message": "Show only the minimum safe area for maskable icons"
   },
   "panels/application/AppManifestView.ts | sSDoesNotSpecifyItsSizeInThe": {
-    "message": "{PH1} {PH2} does not specify its size in the manifest"
+    "message": "{PH1} {PH2} doesn’t specify its size in the manifest"
   },
   "panels/application/AppManifestView.ts | sSFailedToLoad": {
     "message": "{PH1} {PH2} failed to load"
@@ -3621,10 +3624,10 @@
     "message": "{PH1} {PH2} height can’t be more than 2.3 times as long as the width"
   },
   "panels/application/AppManifestView.ts | sSrcIsNotSet": {
-    "message": "{PH1} 'src' is not set"
+    "message": "{PH1} 'src' isn’t set"
   },
   "panels/application/AppManifestView.ts | sSShouldHaveSquareIcon": {
-    "message": "Most operating systems require square icons. Please include at least one square icon in the array."
+    "message": "Most operating systems require square icons. Include at least one square icon in the array."
   },
   "panels/application/AppManifestView.ts | sSShouldSpecifyItsSizeAs": {
     "message": "{PH1} {PH2} should specify its size as [width]x[height]"
@@ -3642,7 +3645,7 @@
     "message": "Start URL"
   },
   "panels/application/AppManifestView.ts | sUrlSFailedToParse": {
-    "message": "{PH1} URL ''{PH2}'' failed to parse"
+    "message": "{PH1} URL \"{PH2}\" failed to parse"
   },
   "panels/application/AppManifestView.ts | theAppIsAlreadyInstalled": {
     "message": "The app is already installed"
@@ -3651,10 +3654,10 @@
     "message": "Theme color"
   },
   "panels/application/AppManifestView.ts | thePlayStoreAppUrlAndPlayStoreId": {
-    "message": "The Play Store app URL and Play Store ID do not match"
+    "message": "The Play Store app URL and Play Store ID don’t match"
   },
   "panels/application/AppManifestView.ts | theSpecifiedApplicationPlatform": {
-    "message": "The specified application platform is not supported on Android"
+    "message": "The specified application platform isn’t supported on Android"
   },
   "panels/application/AppManifestView.ts | tooManyScreenshotsForDesktop": {
     "message": "No more than 8 screenshots will be displayed on desktop. The rest will be ignored."
@@ -3666,16 +3669,13 @@
     "message": "URL"
   },
   "panels/application/AppManifestView.ts | wcoFound": {
-    "message": "Chrome has successfully found the {PH1} value for the {PH2} field in the {PH3}"
+    "message": "Chrome found the {PH1} value for the {PH2} field in the {PH3}"
   },
   "panels/application/AppManifestView.ts | wcoNeedHelpReadMore": {
     "message": "Need help? Read {PH1}."
   },
   "panels/application/AppManifestView.ts | wcoNotFound": {
     "message": "Define {PH1} in the manifest to use the Window Controls Overlay API and customize your app’s title bar"
-  },
-  "panels/application/AppManifestView.ts | windowControlsOverlay": {
-    "message": "Window Controls Overlay"
   },
   "panels/application/BackForwardCacheTreeElement.ts | backForwardCache": {
     "message": "Back/forward cache"
@@ -4542,7 +4542,7 @@
     "message": "Refresh"
   },
   "panels/application/CrashReportContextView.ts | unknownFrame": {
-    "message": "Unknown Frame"
+    "message": "Unknown frame"
   },
   "panels/application/DeviceBoundSessionsTreeElement.ts | clear": {
     "message": "Clear"
@@ -4557,10 +4557,10 @@
     "message": "No session"
   },
   "panels/application/DeviceBoundSessionsTreeElement.ts | sessionWithErrors": {
-    "message": "{sessionName}, Session has errors"
+    "message": "{sessionName}, session has errors"
   },
   "panels/application/DeviceBoundSessionsTreeElement.ts | terminatedSession": {
-    "message": "{sessionName}, Session terminated"
+    "message": "{sessionName}, session terminated"
   },
   "panels/application/DeviceBoundSessionsView.ts | allowedRefreshInitiators": {
     "message": "Allowed refresh initiators"
@@ -4569,7 +4569,7 @@
     "message": "Attestation key generation error"
   },
   "panels/application/DeviceBoundSessionsView.ts | boundCookieSetForbidden": {
-    "message": "Registration in a context that cannot set bound cookies"
+    "message": "Registration in a context that can’t set bound cookies"
   },
   "panels/application/DeviceBoundSessionsView.ts | cachedChallenge": {
     "message": "Cached challenge"
@@ -4740,7 +4740,7 @@
     "message": "Invalid scope specification"
   },
   "panels/application/DeviceBoundSessionsView.ts | invalidScopeSpecificationType": {
-    "message": "Scope specification type is neiher include or exclude"
+    "message": "Scope specification type is neither include nor exclude"
   },
   "panels/application/DeviceBoundSessionsView.ts | invalidSessionId": {
     "message": "Invalid session ID"
@@ -4812,7 +4812,7 @@
     "message": "Allowed refresh initiator has invalid host pattern"
   },
   "panels/application/DeviceBoundSessionsView.ts | refreshInitiatorNotString": {
-    "message": "Allowed refresh initiator is not a string"
+    "message": "Allowed refresh initiator isn’t a string"
   },
   "panels/application/DeviceBoundSessionsView.ts | refreshResult": {
     "message": "Refresh result"
@@ -4869,7 +4869,7 @@
     "message": "Site-scoped session has mismatch between host pattern and site"
   },
   "panels/application/DeviceBoundSessionsView.ts | selectEventToViewDetails": {
-    "message": "Select an event row to view more details"
+    "message": "Select an event row to view details"
   },
   "panels/application/DeviceBoundSessionsView.ts | serverError": {
     "message": "Endpoint transient error"
@@ -4911,7 +4911,7 @@
     "message": "Removed from storage partition"
   },
   "panels/application/DeviceBoundSessionsView.ts | subdomainRegistrationUnauthorized": {
-    "message": ".well-known did not authorize registration by subdomain"
+    "message": ".well-known didn’t authorize registration by subdomain"
   },
   "panels/application/DeviceBoundSessionsView.ts | subdomainRegistrationWellKnownMalformed": {
     "message": "Subdomain registration .well-known content malformed"
@@ -4977,10 +4977,10 @@
     "message": "Extension Storage Items cleared"
   },
   "panels/application/FrameDetailsView.ts | additionalInformation": {
-    "message": "Additional Information"
+    "message": "More information"
   },
   "panels/application/FrameDetailsView.ts | adStatus": {
-    "message": "Ad Status"
+    "message": "Ad status"
   },
   "panels/application/FrameDetailsView.ts | aFrameAncestorIsAnInsecure": {
     "message": "A frame ancestor is an insecure context"
@@ -5019,19 +5019,19 @@
     "message": "Content Security Policy (CSP)"
   },
   "panels/application/FrameDetailsView.ts | createdByAdScriptExplanation": {
-    "message": "There was an ad script in the (async) stack when this frame was created. Examining the creation stack trace of this frame might provide more insight."
+    "message": "An ad script was in the (async) stack when this frame was created. Examining the creation stack trace of this frame might provide more insight."
   },
   "panels/application/FrameDetailsView.ts | creationStackTrace": {
-    "message": "Frame Creation Stack Trace"
+    "message": "Frame creation stack trace"
   },
   "panels/application/FrameDetailsView.ts | creationStackTraceExplanation": {
     "message": "This frame was created programmatically. The stack trace shows where this happened."
   },
   "panels/application/FrameDetailsView.ts | creatorAdScriptAncestry": {
-    "message": "Creator Ad Script Ancestry"
+    "message": "Creator ad script ancestry"
   },
   "panels/application/FrameDetailsView.ts | crossoriginIsolated": {
-    "message": "Cross-Origin Isolated"
+    "message": "Cross-origin isolated"
   },
   "panels/application/FrameDetailsView.ts | document": {
     "message": "Document"
@@ -5049,7 +5049,7 @@
     "message": "This frame is considered an ad frame because its current (or previous) main document is an ad resource"
   },
   "panels/application/FrameDetailsView.ts | measureMemory": {
-    "message": "Measure Memory"
+    "message": "Measure memory"
   },
   "panels/application/FrameDetailsView.ts | no": {
     "message": "No"
@@ -5064,7 +5064,7 @@
     "message": "Origin trials give you access to a new or experimental feature"
   },
   "panels/application/FrameDetailsView.ts | ownerElement": {
-    "message": "Owner Element"
+    "message": "Owner element"
   },
   "panels/application/FrameDetailsView.ts | parentIsAdExplanation": {
     "message": "This frame is considered an ad frame because its parent frame is an ad frame"
@@ -5082,19 +5082,19 @@
     "message": "This frame has been identified as the root frame of an ad"
   },
   "panels/application/FrameDetailsView.ts | rootScriptFilterlistRule": {
-    "message": "Root Script Filterlist Rule"
+    "message": "Root script filterlist rule"
   },
   "panels/application/FrameDetailsView.ts | secureContext": {
-    "message": "Secure Context"
+    "message": "Secure context"
   },
   "panels/application/FrameDetailsView.ts | securityIsolation": {
-    "message": "Security & Isolation"
+    "message": "Security & isolation"
   },
   "panels/application/FrameDetailsView.ts | sharedarraybufferConstructorIs": {
     "message": "SharedArrayBuffer constructor is available and SABs can be transferred via postMessage"
   },
   "panels/application/FrameDetailsView.ts | sharedarraybufferConstructorIsAvailable": {
-    "message": "SharedArrayBuffer constructor is available but SABs cannot be transferred via postMessage"
+    "message": "SharedArrayBuffer constructor is available but SABs can’t be transferred via postMessage"
   },
   "panels/application/FrameDetailsView.ts | theFramesSchemeIsInsecure": {
     "message": "The frame’s scheme is insecure"
@@ -5103,10 +5103,10 @@
     "message": "The performance.measureUserAgentSpecificMemory() API is available"
   },
   "panels/application/FrameDetailsView.ts | thePerformancemeasureuseragentspecificmemory": {
-    "message": "The performance.measureUserAgentSpecificMemory() API is not available"
+    "message": "The performance.measureUserAgentSpecificMemory() API isn’t available"
   },
   "panels/application/FrameDetailsView.ts | thisAdditionalDebugging": {
-    "message": "This additional (debugging) information is shown because the 'Protocol Monitor' experiment is enabled"
+    "message": "This debugging information is shown because the \"Protocol Monitor\" experiment is enabled"
   },
   "panels/application/FrameDetailsView.ts | transferRequiresCrossoriginIsolatedPermission": {
     "message": "SharedArrayBuffer transfer requires enabling the permission policy:"
@@ -5238,7 +5238,7 @@
     "message": "No"
   },
   "panels/application/OpenedWindowDetailsView.ts | openerFrame": {
-    "message": "Opener Frame"
+    "message": "Opener frame"
   },
   "panels/application/OpenedWindowDetailsView.ts | reportingTo": {
     "message": "reporting to"
@@ -5247,7 +5247,7 @@
     "message": "Security"
   },
   "panels/application/OpenedWindowDetailsView.ts | securityIsolation": {
-    "message": "Security & Isolation"
+    "message": "Security & isolation"
   },
   "panels/application/OpenedWindowDetailsView.ts | showsWhetherTheOpenedWindowIs": {
     "message": "Shows whether the opened window is able to access its opener and vice versa"
@@ -5274,13 +5274,13 @@
     "message": "Yes"
   },
   "panels/application/OriginTrialTreeView.ts | expiryTime": {
-    "message": "Expiry Time"
+    "message": "Expiry time"
   },
   "panels/application/OriginTrialTreeView.ts | isThirdParty": {
-    "message": "Third Party"
+    "message": "Third party"
   },
   "panels/application/OriginTrialTreeView.ts | matchSubDomains": {
-    "message": "Subdomain Matching"
+    "message": "Subdomain matching"
   },
   "panels/application/OriginTrialTreeView.ts | noTrialTokens": {
     "message": "No trial tokens"
@@ -5289,10 +5289,10 @@
     "message": "Origin"
   },
   "panels/application/OriginTrialTreeView.ts | rawTokenText": {
-    "message": "Raw Token"
+    "message": "Raw token"
   },
   "panels/application/OriginTrialTreeView.ts | status": {
-    "message": "Token Status"
+    "message": "Token status"
   },
   "panels/application/OriginTrialTreeView.ts | token": {
     "message": "Token"
@@ -5301,10 +5301,10 @@
     "message": "{PH1} tokens"
   },
   "panels/application/OriginTrialTreeView.ts | trialName": {
-    "message": "Trial Name"
+    "message": "Trial name"
   },
   "panels/application/OriginTrialTreeView.ts | usageRestriction": {
-    "message": "Usage Restriction"
+    "message": "Usage restriction"
   },
   "panels/application/preloading/components/MismatchedPreloadingGrid.ts | action": {
     "message": "Action"
@@ -5883,13 +5883,13 @@
     "message": "Speculative loads"
   },
   "panels/application/ReportingApiTreeElement.ts | crashReportContext": {
-    "message": "Crash Report Context"
+    "message": "Crash report context"
   },
   "panels/application/ReportingApiTreeElement.ts | reportingApi": {
     "message": "Reporting API"
   },
   "panels/application/ReportingApiView.ts | clickToDisplayBody": {
-    "message": "Click on any report to display its body"
+    "message": "Click any report to display its body"
   },
   "panels/application/ReportingApiView.ts | noReportOrEndpoint": {
     "message": "No report or endpoint"
@@ -5898,7 +5898,7 @@
     "message": "No report selected"
   },
   "panels/application/ReportingApiView.ts | reportingApiDescription": {
-    "message": "On this page you will be able to inspect Reporting API reports and endpoints"
+    "message": "Inspect Reporting API reports and endpoints"
   },
   "panels/application/ServiceWorkerCacheTreeElement.ts | cacheStorage": {
     "message": "Cache storage"
@@ -6629,14 +6629,20 @@
   "panels/common/CommentsStatusBarPill.ts | commentsCount": {
     "message": "Comments ({PH1})"
   },
-  "panels/common/CommentThreadWidget.ts | addCommentButton": {
-    "message": "Add comment"
+  "panels/common/CommentsStatusBarPill.ts | sendToAgentCount": {
+    "message": "Send to agent ({PH1})"
+  },
+  "panels/common/CommentThreadWidget.ts | close": {
+    "message": "Close"
   },
   "panels/common/CommentThreadWidget.ts | commentInputAriaLabel": {
     "message": "Comment input"
   },
   "panels/common/CommentThreadWidget.ts | response": {
     "message": "Response:"
+  },
+  "panels/common/CommentThreadWidget.ts | sendToAgent": {
+    "message": "Send to agent"
   },
   "panels/common/CommentThreadWidget.ts | sent": {
     "message": "Sent"
@@ -7859,6 +7865,21 @@
   "panels/elements/DOMTreeContextMenu.ts | wrapTheseItems": {
     "message": "Wrap these items"
   },
+  "panels/elements/DOMTreeWidget.ts | pageDom": {
+    "message": "Page DOM"
+  },
+  "panels/elements/DOMTreeWidget.ts | reveal": {
+    "message": "reveal"
+  },
+  "panels/elements/DOMTreeWidget.ts | showAllLines": {
+    "message": "Show all ({PH1} lines)"
+  },
+  "panels/elements/DOMTreeWidget.ts | showAllNodesDMore": {
+    "message": "Show all nodes ({PH1} more)"
+  },
+  "panels/elements/DOMTreeWidget.ts | viewIssue": {
+    "message": "View issue:"
+  },
   "panels/elements/ElementIssueUtils.ts | disallowedOptGroupChild": {
     "message": "Invalid element or text node within <optgroup>"
   },
@@ -8239,21 +8260,6 @@
   },
   "panels/elements/ElementsTreeElement.ts | viewSourceCode": {
     "message": "View source code"
-  },
-  "panels/elements/ElementsTreeOutline.ts | pageDom": {
-    "message": "Page DOM"
-  },
-  "panels/elements/ElementsTreeOutline.ts | reveal": {
-    "message": "reveal"
-  },
-  "panels/elements/ElementsTreeOutline.ts | showAllLines": {
-    "message": "Show all ({PH1} lines)"
-  },
-  "panels/elements/ElementsTreeOutline.ts | showAllNodesDMore": {
-    "message": "Show all nodes ({PH1} more)"
-  },
-  "panels/elements/ElementsTreeOutline.ts | viewIssue": {
-    "message": "View issue:"
   },
   "panels/elements/EventListenersWidget.ts | all": {
     "message": "All"
@@ -11858,6 +11864,9 @@
   "panels/network/ResourceWebSocketFrameView.ts | webSocketFrame": {
     "message": "WebSocket frame"
   },
+  "panels/network/ShowMoreDetailsWidget.ts | copy": {
+    "message": "Copy"
+  },
   "panels/network/ShowMoreDetailsWidget.ts | showMore": {
     "message": "Show more"
   },
@@ -12836,6 +12845,9 @@
   "panels/recorder/RecordingView.ts | cancelReplay": {
     "message": "Cancel replay"
   },
+  "panels/recorder/RecordingView.ts | codeFormat": {
+    "message": "Code format"
+  },
   "panels/recorder/RecordingView.ts | codeSidebarClosed": {
     "message": "Code sidebar closed"
   },
@@ -13559,6 +13571,27 @@
   "panels/sensors/sensors-meta.ts | accelerometer": {
     "message": "accelerometer"
   },
+  "panels/sensors/sensors-meta.ts | cpuPerformance": {
+    "message": "CPU Performance Tier"
+  },
+  "panels/sensors/sensors-meta.ts | cpuPerformanceNoOverride": {
+    "message": "No override"
+  },
+  "panels/sensors/sensors-meta.ts | cpuPerformanceTierHigh": {
+    "message": "Tier 3: HIGH"
+  },
+  "panels/sensors/sensors-meta.ts | cpuPerformanceTierLow": {
+    "message": "Tier 1: LOW"
+  },
+  "panels/sensors/sensors-meta.ts | cpuPerformanceTierMid": {
+    "message": "Tier 2: MID"
+  },
+  "panels/sensors/sensors-meta.ts | cpuPerformanceTierUltra": {
+    "message": "Tier 4: ULTRA"
+  },
+  "panels/sensors/sensors-meta.ts | cpuPerformanceTierUnknown": {
+    "message": "Tier 0: UNKNOWN"
+  },
   "panels/sensors/sensors-meta.ts | cpuPressure": {
     "message": "CPU Pressure"
   },
@@ -13643,6 +13676,9 @@
   "panels/sensors/SensorsView.ts | beta": {
     "message": "β (beta)"
   },
+  "panels/sensors/SensorsView.ts | cpuPerformanceNoOverrideWithDefault": {
+    "message": "No override ({PH1})"
+  },
   "panels/sensors/SensorsView.ts | customOrientation": {
     "message": "Custom orientation"
   },
@@ -13660,6 +13696,9 @@
   },
   "panels/sensors/SensorsView.ts | error": {
     "message": "Error"
+  },
+  "panels/sensors/SensorsView.ts | forcesSelectedCpuPerformanceTierEmulation": {
+    "message": "Forces CPU performance tier emulation"
   },
   "panels/sensors/SensorsView.ts | forcesSelectedIdleStateEmulation": {
     "message": "Forces selected idle state emulation"
@@ -15867,7 +15906,7 @@
     "message": "Desktop"
   },
   "panels/timeline/components/LiveMetricsView.ts | device": {
-    "message": "Device: {PH1}"
+    "message": "Device:"
   },
   "panels/timeline/components/LiveMetricsView.ts | disableNetworkCache": {
     "message": "Disable network cache"
@@ -15939,9 +15978,6 @@
     "message": "{PH1} - No data"
   },
   "panels/timeline/components/LiveMetricsView.ts | network": {
-    "message": "Network: {PH1}"
-  },
-  "panels/timeline/components/LiveMetricsView.ts | networkThrottling": {
     "message": "Network:"
   },
   "panels/timeline/components/LiveMetricsView.ts | nextSteps": {
@@ -18017,23 +18053,14 @@
   "ui/legacy/components/inline_editor/PositionAreaEditor.ts | auto": {
     "message": "Auto"
   },
-  "ui/legacy/components/inline_editor/PositionAreaEditor.ts | block": {
-    "message": "Block"
-  },
-  "ui/legacy/components/inline_editor/PositionAreaEditor.ts | blockAxisMode": {
-    "message": "Block axis mode"
-  },
   "ui/legacy/components/inline_editor/PositionAreaEditor.ts | coordinate": {
     "message": "Coordinate"
   },
-  "ui/legacy/components/inline_editor/PositionAreaEditor.ts | inline": {
-    "message": "Inline"
-  },
-  "ui/legacy/components/inline_editor/PositionAreaEditor.ts | inlineAxisMode": {
-    "message": "Inline axis mode"
-  },
   "ui/legacy/components/inline_editor/PositionAreaEditor.ts | logical": {
     "message": "Logical"
+  },
+  "ui/legacy/components/inline_editor/PositionAreaEditor.ts | mode": {
+    "message": "Mode"
   },
   "ui/legacy/components/inline_editor/PositionAreaEditor.ts | physical": {
     "message": "Physical"
@@ -18080,7 +18107,7 @@
   "ui/legacy/components/object_ui/ObjectPropertiesSection.ts | noProperties": {
     "message": "No properties"
   },
-  "ui/legacy/components/object_ui/ObjectPropertiesSection.ts | openInMemoryInpector": {
+  "ui/legacy/components/object_ui/ObjectPropertiesSection.ts | openInMemoryInspector": {
     "message": "Open in Memory inspector panel"
   },
   "ui/legacy/components/object_ui/ObjectPropertiesSection.ts | showAll": {

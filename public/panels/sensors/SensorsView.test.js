@@ -3,9 +3,13 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import * as Common from '../../core/common/common.js';
+import * as SDK from '../../core/sdk/sdk.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
+import * as UI from '../../ui/legacy/legacy.js';
 import * as Sensors from './sensors.js';
+const { CPUPerformanceTier, CPUThrottlingManager } = SDK.CPUThrottlingManager;
 describeWithEnvironment('SensorsView', () => {
     let view;
     beforeEach(() => {
@@ -143,6 +147,99 @@ describeWithEnvironment('SensorsView', () => {
             alphaInput.dispatchEvent(event);
             // Shift increases/decreases by 10
             assert.strictEqual(alphaInput.value, '35');
+        });
+    });
+    describe('CPU Performance section', () => {
+        let mockHostTier = "ultra" /* CPUPerformanceTier.Ultra */;
+        beforeEach(async () => {
+            // Set the default host tier to "Ultra".
+            mockHostTier = "ultra" /* CPUPerformanceTier.Ultra */;
+            const connection = new MockCDPConnection();
+            connection.setSuccessHandler('Runtime.evaluate', ({ expression }) => {
+                assert.strictEqual(expression, 'navigator.cpuPerformance');
+                return {
+                    result: {
+                        value: SDK.CPUThrottlingManager.tierToNumber(mockHostTier),
+                        type: "number" /* Protocol.Runtime.RemoteObjectType.Number */,
+                    },
+                };
+            });
+            createTarget({ connection });
+            await CPUThrottlingManager.instance().updateHostDefaultCPUPerformanceTier();
+            await UI.Widget.Widget.allUpdatesComplete;
+        });
+        it('shows the default host tier in "no-override" option label on startup', () => {
+            const select = view.contentElement.querySelector('.cpu-performance-section select');
+            assert.exists(select);
+            const option = select.querySelector('option[value="no-override"]');
+            assert.exists(option);
+            assert.strictEqual(option.text, 'No override (Tier 4: ULTRA)');
+            assert.strictEqual(CPUThrottlingManager.instance().effectiveCPUPerformanceTier(), "ultra" /* CPUPerformanceTier.Ultra */);
+        });
+        it('updates emulation.cpu-performance setting and effective tier when dropdown value changes', () => {
+            const select = view.contentElement.querySelector('.cpu-performance-section select');
+            assert.exists(select);
+            select.value = 'mid';
+            select.dispatchEvent(new Event('change'));
+            const setting = Common.Settings.Settings.instance().resolve(SDK.SDKSettings.cpuPerformanceSettingDescriptor);
+            assert.strictEqual(setting.get(), 'mid');
+            assert.strictEqual(CPUThrottlingManager.instance().effectiveCPUPerformanceTier(), "mid" /* CPUPerformanceTier.Mid */);
+        });
+        it('dynamically updates "no-override" label when host default tier changes', async () => {
+            const select = view.contentElement.querySelector('.cpu-performance-section select');
+            assert.exists(select);
+            const option = select.querySelector('option[value="no-override"]');
+            assert.exists(option);
+            mockHostTier = "low" /* CPUPerformanceTier.Low */;
+            await CPUThrottlingManager.instance().updateHostDefaultCPUPerformanceTier();
+            assert.strictEqual(option.text, 'No override (Tier 1: LOW)');
+            assert.strictEqual(CPUThrottlingManager.instance().effectiveCPUPerformanceTier(), "low" /* CPUPerformanceTier.Low */);
+        });
+        it('dynamically updates "no-override" label when CPU throttling rate changes', () => {
+            const select = view.contentElement.querySelector('.cpu-performance-section select');
+            assert.exists(select);
+            const option = select.querySelector('option[value="no-override"]');
+            assert.exists(option);
+            assert.strictEqual(option.text, 'No override (Tier 4: ULTRA)');
+            CPUThrottlingManager.instance().setCPUThrottlingRate(4);
+            assert.strictEqual(option.text, 'No override (Tier 2: MID)');
+            assert.strictEqual(CPUThrottlingManager.instance().effectiveCPUPerformanceTier(), "mid" /* CPUPerformanceTier.Mid */);
+            CPUThrottlingManager.instance().setCPUThrottlingRate(1);
+            assert.strictEqual(option.text, 'No override (Tier 4: ULTRA)');
+            assert.strictEqual(CPUThrottlingManager.instance().effectiveCPUPerformanceTier(), "ultra" /* CPUPerformanceTier.Ultra */);
+        });
+        it('dynamically updates "no-override" label when CPU throttling rate changes even with active override', () => {
+            const select = view.contentElement.querySelector('.cpu-performance-section select');
+            assert.exists(select);
+            const option = select.querySelector('option[value="no-override"]');
+            assert.exists(option);
+            select.value = 'low';
+            select.dispatchEvent(new Event('change'));
+            assert.strictEqual(CPUThrottlingManager.instance().effectiveCPUPerformanceTier(), "low" /* CPUPerformanceTier.Low */);
+            assert.strictEqual(option.text, 'No override (Tier 4: ULTRA)');
+            CPUThrottlingManager.instance().setCPUThrottlingRate(4);
+            assert.strictEqual(CPUThrottlingManager.instance().effectiveCPUPerformanceTier(), "low" /* CPUPerformanceTier.Low */);
+            assert.strictEqual(option.text, 'No override (Tier 2: MID)');
+        });
+        it('shows the throttled tier in "no-override" option label when throttling is active on startup', () => {
+            CPUThrottlingManager.instance().setCPUThrottlingRate(4);
+            const localView = new Sensors.SensorsView.SensorsView();
+            const select = localView.contentElement.querySelector('.cpu-performance-section select');
+            assert.exists(select);
+            const option = select.querySelector('option[value="no-override"]');
+            assert.exists(option);
+            assert.strictEqual(option.text, 'No override (Tier 2: MID)');
+            assert.strictEqual(CPUThrottlingManager.instance().effectiveCPUPerformanceTier(), "mid" /* CPUPerformanceTier.Mid */);
+        });
+        it('resets effective tier when "no-override" is selected after an override', () => {
+            const select = view.contentElement.querySelector('.cpu-performance-section select');
+            assert.exists(select);
+            select.value = 'mid';
+            select.dispatchEvent(new Event('change'));
+            assert.strictEqual(CPUThrottlingManager.instance().effectiveCPUPerformanceTier(), "mid" /* CPUPerformanceTier.Mid */);
+            select.value = 'no-override';
+            select.dispatchEvent(new Event('change'));
+            assert.strictEqual(CPUThrottlingManager.instance().effectiveCPUPerformanceTier(), "ultra" /* CPUPerformanceTier.Ultra */);
         });
     });
 });

@@ -41,35 +41,55 @@ var CommentThread = class _CommentThread extends Common.ObjectWrapper.ObjectWrap
   }
   id = crypto.randomUUID();
   anchor;
+  /** True for comments generated from the change tracker. */
+  isGeneratedComment;
   #savedIndex;
   comments;
   status = "DRAFT";
   transmitted = false;
-  changes;
   constructor(options) {
     super();
     this.anchor = options.anchor;
     this.comments = options.comments ?? [];
-    this.changes = options.changes;
+    this.isGeneratedComment = Boolean(options.isGeneratedComment);
   }
   get index() {
     return this.#savedIndex ?? _CommentThread.#nextIndex;
   }
-  save(text, author = "DEVELOPER") {
-    let changed = false;
+  /**
+   * Returns whether it was changed.
+   */
+  #saveText(text, author = "DEVELOPER") {
     if (text && text.trim().length > 0) {
       this.comments.push({
         author,
         text: text.trim(),
         timestamp: Date.now()
       });
-      changed = true;
+      return true;
     }
+    return false;
+  }
+  save(text, author = "DEVELOPER") {
+    let changed = this.#saveText(text, author);
     if (this.status === "DRAFT") {
       if (this.#savedIndex === void 0) {
         this.#savedIndex = _CommentThread.#nextIndex++;
       }
       this.status = "ACTIVE";
+      changed = true;
+    }
+    if (changed) {
+      this.dispatchEventToListeners("Changed" /* CHANGED */);
+    }
+  }
+  sendToAgent(text, author = "DEVELOPER") {
+    let changed = this.#saveText(text, author);
+    if (this.status === "DRAFT" || this.status === "ACTIVE") {
+      if (this.#savedIndex === void 0) {
+        this.#savedIndex = _CommentThread.#nextIndex++;
+      }
+      this.status = "SENT_TO_AGENT";
       changed = true;
     }
     if (changed) {
@@ -96,11 +116,13 @@ var CommentThread = class _CommentThread extends Common.ObjectWrapper.ObjectWrap
 var Events2 = /* @__PURE__ */ ((Events4) => {
   Events4["COMMENT_THREADS_CHANGED"] = "CommentThreadsChanged";
   Events4["COMMENT_MODE_CHANGED"] = "CommentModeChanged";
+  Events4["AGENT_ATTACHED_CHANGED"] = "AgentAttachedChanged";
   return Events4;
 })(Events2 || {});
 var CommentManager = class extends Common2.ObjectWrapper.ObjectWrapper {
   #commentThreads = /* @__PURE__ */ new Map();
   #commentMode = false;
+  #agentAttached = false;
   constructor() {
     super();
     CommentThread.resetIndex();
@@ -108,7 +130,23 @@ var CommentManager = class extends Common2.ObjectWrapper.ObjectWrapper {
   #onThreadChanged() {
     this.dispatchEventToListeners("CommentThreadsChanged" /* COMMENT_THREADS_CHANGED */, this.getCommentThreads());
   }
+  setAgentAttached(value) {
+    if (this.#agentAttached === value) {
+      return;
+    }
+    this.#agentAttached = value;
+    if (!value) {
+      this.setCommentMode(false);
+    }
+    this.dispatchEventToListeners("AgentAttachedChanged" /* AGENT_ATTACHED_CHANGED */, value);
+  }
+  isAgentAttached() {
+    return this.#agentAttached;
+  }
   setCommentMode(active) {
+    if (active && !this.#agentAttached) {
+      return;
+    }
     if (this.#commentMode === active) {
       return;
     }
@@ -118,7 +156,7 @@ var CommentManager = class extends Common2.ObjectWrapper.ObjectWrapper {
   isCommentMode() {
     return this.#commentMode;
   }
-  createCommentThread(anchor, text, author = "DEVELOPER", changes) {
+  createCommentThread(anchor, text, author = "DEVELOPER", isGeneratedComment) {
     const comments = text ? [{
       author,
       text,
@@ -127,7 +165,7 @@ var CommentManager = class extends Common2.ObjectWrapper.ObjectWrapper {
     const thread = new CommentThread({
       anchor,
       comments,
-      changes
+      isGeneratedComment
     });
     thread.addEventListener("Changed" /* CHANGED */, this.#onThreadChanged, this);
     this.#commentThreads.set(thread.id, thread);
@@ -143,7 +181,7 @@ var CommentManager = class extends Common2.ObjectWrapper.ObjectWrapper {
   takeComments() {
     const threads = [];
     for (const thread of this.#commentThreads.values()) {
-      if (thread.status === "ACTIVE" && !thread.transmitted) {
+      if (thread.status === "SENT_TO_AGENT" && !thread.transmitted) {
         thread.transmitted = true;
         threads.push(thread);
       }
@@ -211,7 +249,7 @@ var CD4ABridge = class extends Common3.ObjectWrapper.ObjectWrapper {
     if (!this.#targetManager) {
       return void 0;
     }
-    const target = this.#targetManager.targetById(nodeSignature.targetId) ?? this.#targetManager.primaryPageTarget();
+    const target = this.#targetManager.targetById(nodeSignature.targetId);
     const domModel = target?.model(SDK.DOMModel.DOMModel);
     if (!domModel) {
       return void 0;
@@ -226,6 +264,9 @@ var CD4ABridge = class extends Common3.ObjectWrapper.ObjectWrapper {
   #formatCommentText(thread) {
     const rawText = thread.comments[0]?.text ?? "";
     const details = [];
+    if (thread.anchor.vePath) {
+      details.push(`- DevTools VEPath: ${thread.anchor.vePath}`);
+    }
     if (thread.anchor.textSignature) {
       details.push(`- DevTools element: ${thread.anchor.textSignature}`);
     }
@@ -263,8 +304,8 @@ ${details.join("\n")}` : details.join("\n");
       return threadPayload;
     });
   }
-  takeComments() {
-    return this.getCommentThreads();
+  setAgentAttached(value) {
+    this.#commentManager.setAgentAttached(value);
   }
   resolveCommentThread(threadId, replyText) {
     return this.#commentManager.resolveCommentThread(threadId, replyText);
@@ -283,7 +324,7 @@ ${details.join("\n")}` : details.join("\n");
       }
     }
     if (target?.node && this.#targetManager) {
-      const sdkTarget = this.#targetManager.targetById(target.node.targetId) ?? this.#targetManager.primaryPageTarget();
+      const sdkTarget = this.#targetManager.targetById(target.node.targetId);
       const domModel = sdkTarget?.model(SDK.DOMModel.DOMModel);
       if (domModel) {
         const cdpNodeId = target.node.backendNodeId;

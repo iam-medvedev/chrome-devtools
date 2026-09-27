@@ -20,8 +20,7 @@ describeWithEnvironment('ElementsTreeOutline', () => {
             .returns(universe.debuggerWorkspaceBinding);
         sinon.stub(Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding, 'instance').returns(universe.cssWorkspaceBinding);
         target = createTarget();
-        treeOutline =
-            new Elements.ElementsTreeOutline.ElementsTreeOutline(/* omitRootDOMNode */ true, /* selectEnabled */ true);
+        treeOutline = new Elements.DOMTreeWidget.ElementsTreeOutline(/* omitRootDOMNode */ true, /* selectEnabled */ true);
         treeOutline.wireToDOMModel(target.model(SDK.DOMModel.DOMModel));
         const modelBeforeAssertion = target.model(SDK.DOMModel.DOMModel);
         assert.exists(modelBeforeAssertion);
@@ -114,7 +113,7 @@ describeWithEnvironment('ElementsTreeOutline', () => {
     describe('Snapshot mode', () => {
         it('does not attach event listeners in snapshot mode', () => {
             const addEventListenerSpy = sinon.spy(HTMLElement.prototype, 'addEventListener');
-            const snapshotTreeOutline = new Elements.ElementsTreeOutline.ElementsTreeOutline(
+            const snapshotTreeOutline = new Elements.DOMTreeWidget.ElementsTreeOutline(
             /* omitRootDOMNode */ true, /* selectEnabled */ true, /* hideGutter */ true, /* maxTreeDepth */ 2, 
             /* enableContextMenu */ false, /* showComments */ false, /* showAIButton */ false, /* disableEdits */ true, 
             /* expandRoot */ true);
@@ -136,7 +135,7 @@ describeWithEnvironment('ElementsTreeOutline', () => {
             snapshotTreeOutline.element.remove();
         });
         it('auto-expands the root node in snapshot mode', async () => {
-            const snapshotTreeOutline = new Elements.ElementsTreeOutline.ElementsTreeOutline(
+            const snapshotTreeOutline = new Elements.DOMTreeWidget.ElementsTreeOutline(
             /* omitRootDOMNode */ false, /* selectEnabled */ true, /* hideGutter */ true, /* maxTreeDepth */ 2, 
             /* enableContextMenu */ false, /* showComments */ false, /* showAIButton */ false, /* disableEdits */ true, 
             /* expandRoot */ true);
@@ -168,7 +167,7 @@ describeWithEnvironment('ElementsTreeOutline', () => {
             assert.isTrue(rootTreeElement.expanded, 'Root element should be expanded in snapshot mode');
         });
         it('limits depth to root + 1 level in snapshot mode', async () => {
-            const snapshotTreeOutline = new Elements.ElementsTreeOutline.ElementsTreeOutline(
+            const snapshotTreeOutline = new Elements.DOMTreeWidget.ElementsTreeOutline(
             /* omitRootDOMNode */ false, /* selectEnabled */ true, /* hideGutter */ true, /* maxTreeDepth */ 2, 
             /* enableContextMenu */ false, /* showComments */ false, /* showAIButton */ false, /* disableEdits */ true, 
             /* expandRoot */ true);
@@ -217,7 +216,7 @@ describeWithEnvironment('ElementsTreeOutline', () => {
             assert.strictEqual(childTreeElement.childCount(), 0, 'Child should not have children populated');
         });
         it('allows ShadowRoot to exceed depth limit', async () => {
-            const snapshotTreeOutline = new Elements.ElementsTreeOutline.ElementsTreeOutline(
+            const snapshotTreeOutline = new Elements.DOMTreeWidget.ElementsTreeOutline(
             /* omitRootDOMNode */ false, /* selectEnabled */ true, /* hideGutter */ true, /* maxTreeDepth */ 2, 
             /* enableContextMenu */ false, /* showComments */ false, /* showAIButton */ false, /* disableEdits */ true);
             // Root -> ShadowRoot -> Child
@@ -271,11 +270,11 @@ describeWithEnvironment('ElementsTreeOutline', () => {
             assert.isFalse(childTreeElement.isExpandable(), 'Child inside ShadowRoot should NOT be expandable');
         });
         it('limits the total number of rows and shows a "Show all" button', async () => {
-            const snapshotTreeOutline = new Elements.ElementsTreeOutline.ElementsTreeOutline(
+            const snapshotTreeOutline = new Elements.DOMTreeWidget.ElementsTreeOutline(
             /* omitRootDOMNode */ false, /* selectEnabled */ true, /* hideGutter */ true, /* maxTreeDepth */ 2, 
             /* enableContextMenu */ false, /* showComments */ false, /* showAIButton */ false, /* disableEdits */ true, 
             /* expandRoot */ true);
-            snapshotTreeOutline.addEventListener(Elements.ElementsTreeOutline.ElementsTreeOutline.Events.ShowAllRows, () => {
+            snapshotTreeOutline.addEventListener(Elements.DOMTreeWidget.ElementsTreeOutline.Events.ShowAllRows, () => {
                 snapshotTreeOutline.maxRowsShown = undefined;
             });
             // Root -> 3 Children (Total 4 rows)
@@ -1157,7 +1156,7 @@ describeWithEnvironment('ElementsTreeOutline', () => {
             });
             childNode1 = parentNode.children()[0];
             childNode2 = parentNode.children()[1];
-            treeOutline.domTreeWidget = new Elements.ElementsTreeOutline.DOMTreeWidget();
+            treeOutline.domTreeWidget = new Elements.DOMTreeWidget.DOMTreeWidget();
             treeOutline.rootDOMNode = parentNode;
             renderElementIntoDOM(treeOutline.element);
             await doubleRaf();

@@ -14,6 +14,7 @@ import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
 import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import { createTarget } from '../../testing/TargetHelpers.js';
 import { createFileSystemUISourceCode } from '../../testing/UISourceCodeHelpers.js';
+import * as Bindings from '../bindings/bindings.js';
 import * as Formatter from '../formatter/formatter.js';
 import * as Persistence from '../persistence/persistence.js';
 import * as Workspace from '../workspace/workspace.js';
@@ -95,6 +96,36 @@ describe('NetworkPersistenceManager', () => {
         assert.isFalse(actual, 'should not allow override');
         assert.isTrue(saveSpy.notCalled, 'should not attempt to save override');
     });
+    it('does not persist sources that come from a source map', async () => {
+        const url = 'http://www.example.com/src/script.ts';
+        const resourceType = Common.ResourceType.resourceTypes.SourceMapScript;
+        const { uiSourceCode } = setUpEnvironmentWithUISourceCode(url, resourceType);
+        const networkPersistenceManager = await createWorkspaceProject(urlString `file:///path/to/overrides`, []);
+        const overridesProject = networkPersistenceManager.project();
+        assert.exists(overridesProject);
+        const createFileSpy = sinon.spy(overridesProject, 'createFile');
+        // The context menu still offers "Override content" for source mapped files, but it
+        // redirects to the deployed file instead of persisting the source mapped one.
+        assert.isTrue(networkPersistenceManager.isUISourceCodeOverridable(uiSourceCode));
+        const actual = await networkPersistenceManager.setupAndStartLocalOverrides(uiSourceCode);
+        await networkPersistenceManager.saveUISourceCodeForOverrides(uiSourceCode);
+        createFileSpy.restore();
+        assert.isFalse(actual, 'should not allow override');
+        assert.isTrue(createFileSpy.notCalled, 'should not write an override file');
+    });
+    it('does not allow overrides for sources synthesized from a `//# sourceURL` annotation', async () => {
+        const url = 'http://www.example.com/script.js';
+        const resourceType = Common.ResourceType.resourceTypes.Script;
+        const { uiSourceCode } = setUpEnvironmentWithUISourceCode(url, resourceType);
+        Bindings.NetworkProject.NetworkProject.setSourceURLSynthesized(uiSourceCode);
+        const networkPersistenceManager = await createWorkspaceProject(urlString `file:///path/to/overrides`, []);
+        assert.isFalse(networkPersistenceManager.isUISourceCodeOverridable(uiSourceCode));
+        const saveSpy = sinon.spy(networkPersistenceManager, 'saveUISourceCodeForOverrides');
+        const actual = await networkPersistenceManager.setupAndStartLocalOverrides(uiSourceCode);
+        saveSpy.restore();
+        assert.isFalse(actual, 'should not allow override');
+        assert.isTrue(saveSpy.notCalled, 'should not attempt to save override');
+    });
     it('does not save override on working copy committed for data URLs', async () => {
         const url = 'data:/../victim.com/script.js';
         const resourceType = Common.ResourceType.resourceTypes.Script;
@@ -162,6 +193,11 @@ describe('NetworkPersistenceManager', () => {
         assert.isTrue(Persistence.NetworkPersistenceManager.NetworkPersistenceManager.isForbiddenNetworkUrl(urlString `javascript:void(0)`));
         assert.isTrue(Persistence.NetworkPersistenceManager.NetworkPersistenceManager.isForbiddenNetworkUrl(urlString `mailto:test@example.com`));
         assert.isTrue(Persistence.NetworkPersistenceManager.NetworkPersistenceManager.isForbiddenNetworkUrl(urlString `vbscript:alert(1)`));
+        assert.isTrue(Persistence.NetworkPersistenceManager.NetworkPersistenceManager.isForbiddenNetworkUrl(urlString `https://./.headers`));
+        assert.isTrue(Persistence.NetworkPersistenceManager.NetworkPersistenceManager.isForbiddenNetworkUrl(urlString `http://./script.js`));
+        assert.isTrue(Persistence.NetworkPersistenceManager.NetworkPersistenceManager.isForbiddenNetworkUrl(urlString `https://../.headers`));
+        assert.isTrue(Persistence.NetworkPersistenceManager.NetworkPersistenceManager.isForbiddenNetworkUrl(urlString `https:///.headers`));
+        assert.isTrue(Persistence.NetworkPersistenceManager.NetworkPersistenceManager.isForbiddenNetworkUrl(urlString `http:///victim.com/script.js`));
         assert.isFalse(Persistence.NetworkPersistenceManager.NetworkPersistenceManager.isForbiddenNetworkUrl(urlString `https://www.example.com/script.js`));
         assert.isFalse(Persistence.NetworkPersistenceManager.NetworkPersistenceManager.isForbiddenNetworkUrl(urlString `http://www.example.com/script.js`));
         assert.isFalse(Persistence.NetworkPersistenceManager.NetworkPersistenceManager.isForbiddenNetworkUrl(urlString `file:///path/to/script.js`));
@@ -178,11 +214,33 @@ describe('NetworkPersistenceManager', () => {
         assert.strictEqual(networkPersistenceManager.encodedPathFromUrl(invalidUrl), Platform.DevToolsPath.EmptyEncodedPathString);
         assert.strictEqual(networkPersistenceManager.fileUrlFromNetworkUrl(invalidUrl), Platform.DevToolsPath.EmptyUrlString);
         assert.isNull(networkPersistenceManager.getHeadersUISourceCodeFromUrl(invalidUrl));
+        const dotHostUrl = urlString `https://./.headers`;
+        assert.strictEqual(networkPersistenceManager.rawPathFromUrl(dotHostUrl), Platform.DevToolsPath.EmptyRawPathString);
+        assert.strictEqual(networkPersistenceManager.encodedPathFromUrl(dotHostUrl), Platform.DevToolsPath.EmptyEncodedPathString);
+        assert.strictEqual(networkPersistenceManager.fileUrlFromNetworkUrl(dotHostUrl), Platform.DevToolsPath.EmptyUrlString);
+        assert.isNull(networkPersistenceManager.getHeadersUISourceCodeFromUrl(dotHostUrl));
     });
     it('encodes path traversal components in local path parts', () => {
         const parts = Persistence.NetworkPersistenceManager.NetworkPersistenceManager.encodeEncodedPathToLocalPathParts('data:/../victim.com/script.js');
         assert.isFalse(parts.includes('..'));
         assert.isTrue(parts.includes('%2E%2E'));
+        const singleDotParts = Persistence.NetworkPersistenceManager.NetworkPersistenceManager.encodeEncodedPathToLocalPathParts('./.headers');
+        assert.isFalse(singleDotParts.includes('.'));
+        assert.deepEqual(singleDotParts, ['%2E', '.headers']);
+    });
+    it('does not allow overrides for dot-host URLs or plant .headers via content overrides', async () => {
+        for (const url of ['https://./.headers', 'https://./victim.com/.headers', 'https:///.headers',
+            'https://www.example.com/.headers']) {
+            const { uiSourceCode } = setUpEnvironmentWithUISourceCode(url, Common.ResourceType.resourceTypes.Script);
+            const networkPersistenceManager = await createWorkspaceProject(urlString `file:///path/to/overrides`, []);
+            const overridesProject = networkPersistenceManager.project();
+            assert.exists(overridesProject);
+            const createFileSpy = sinon.spy(overridesProject, 'createFile');
+            await networkPersistenceManager.setupAndStartLocalOverrides(uiSourceCode);
+            await networkPersistenceManager.saveUISourceCodeForOverrides(uiSourceCode);
+            createFileSpy.restore();
+            assert.isTrue(createFileSpy.notCalled, `should not write an override file for ${url}`);
+        }
     });
 });
 describe('NetworkPersistenceManager', () => {
@@ -410,8 +468,8 @@ describe('NetworkPersistenceManager', () => {
             },
             {
                 url: 'www.example.com/.',
-                raw: 'www.example.com/.',
-                encoded: 'www.example.com/',
+                raw: 'www.example.com/%2E',
+                encoded: 'www.example.com/%252E',
             },
             {
                 url: 'localhost:8090/endswith.',

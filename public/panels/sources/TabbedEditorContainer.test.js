@@ -11,7 +11,7 @@ import * as Bindings from '../../models/bindings/bindings.js';
 import * as Breakpoints from '../../models/breakpoints/breakpoints.js';
 import * as Persistence from '../../models/persistence/persistence.js';
 import * as Workspace from '../../models/workspace/workspace.js';
-import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createFakeSetting, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { MockDebuggerBackend } from '../../testing/MockScopeChain.js';
 import { createContentProviderUISourceCode, createFileSystemUISourceCode } from '../../testing/UISourceCodeHelpers.js';
@@ -168,8 +168,9 @@ describe('TabbedEditorContainer', () => {
             sinon.stub(container, 'getOrCreateSourceView').returns(new UI.Widget.Widget());
             renderElementIntoDOM(container);
             const tabbedPane = container.tabbedPaneForTesting;
-            await tabbedPane.updateComplete;
-            const placeholder = tabbedPane.element.shadowRoot?.querySelector('.sources-placeholder');
+            await raf();
+            tabbedPane.getWidget().performUpdate();
+            const placeholder = tabbedPane.getWidget().contentElement?.querySelector('.sources-placeholder');
             assert.exists(placeholder);
             const shortcutLines = placeholder.querySelectorAll('.shortcut-line');
             assert.lengthOf(shortcutLines, 2);
@@ -185,8 +186,9 @@ describe('TabbedEditorContainer', () => {
                 .resolves(null);
             renderElementIntoDOM(tabbedEditorContainer);
             const tabbedPane = tabbedEditorContainer.tabbedPaneForTesting;
-            await tabbedPane.updateComplete;
-            const placeholder = tabbedPane.element.shadowRoot?.querySelector('.sources-placeholder');
+            await raf();
+            tabbedPane.getWidget().performUpdate();
+            const placeholder = tabbedPane.getWidget().contentElement?.querySelector('.sources-placeholder');
             assert.exists(placeholder);
             const button = placeholder.querySelector('button');
             assert.exists(button);
@@ -198,6 +200,7 @@ describe('TabbedEditorContainer', () => {
             const networkUrl = urlString `https://example.com/foo.js`;
             const fsUrlfoo = urlString `file:///var/www/foo.js`;
             const fsUrlbar = urlString `file:///var/www/bar.js`;
+            renderElementIntoDOM(tabbedEditorContainer);
             const { uiSourceCode: networkSourceCode } = createContentProviderUISourceCode({
                 url: networkUrl,
                 mimeType: 'text/javascript',
@@ -223,30 +226,28 @@ describe('TabbedEditorContainer', () => {
             tabbedEditorContainer.showFile(fsSourceCode);
             const tabbedPane = tabbedEditorContainer.tabbedPaneForTesting;
             // Verify initial tabs.
+            await raf();
             let tabs = tabbedPane.tabs;
             assert.lengthOf(tabs, 3);
             assert.strictEqual(tabs[0].title, 'bar.js');
-            assert.strictEqual(tabbedPane.tabView(tabs[0].id), views.get(barSourceCode));
             assert.strictEqual(tabs[1].title, 'foo.js');
-            assert.strictEqual(tabbedPane.tabView(tabs[1].id), views.get(networkSourceCode));
             assert.strictEqual(tabs[2].title, 'foo.js');
-            assert.strictEqual(tabbedPane.tabView(tabs[2].id), views.get(fsSourceCode));
             assert.isTrue(tabs[2].selected);
             // Create binding.
             const binding = new Persistence.Persistence.PersistenceBinding(networkSourceCode, fsSourceCode);
             await persistence.addBinding(binding);
             // Verify tabs after binding.
+            await raf();
             tabs = tabbedPane.tabs;
             assert.lengthOf(tabs, 2);
             assert.strictEqual(tabs[0].title, 'bar.js');
-            assert.strictEqual(tabbedPane.tabView(tabs[0].id), views.get(barSourceCode));
             assert.strictEqual(tabs[1].title, 'foo.js');
-            assert.strictEqual(tabbedPane.tabView(tabs[1].id), views.get(fsSourceCode));
             assert.isTrue(tabs[1].selected);
         });
         it('replaces network tab with file system tab when persistence binding is established', async () => {
             const networkUrl = urlString `http://127.0.0.1:8000/devtools/persistence/resources/foo.js`;
             const fsUrl = urlString `file:///var/www/devtools/persistence/resources/foo.js`;
+            renderElementIntoDOM(tabbedEditorContainer);
             const { uiSourceCode: networkSourceCode } = createContentProviderUISourceCode({
                 url: networkUrl,
                 mimeType: 'text/javascript',
@@ -264,20 +265,21 @@ describe('TabbedEditorContainer', () => {
             tabbedEditorContainer.showFile(networkSourceCode);
             const tabbedPane = tabbedEditorContainer.tabbedPaneForTesting;
             // Verify that the network tab is opened.
+            await raf();
             let tabs = tabbedPane.tabs;
             assert.lengthOf(tabs, 1);
-            assert.strictEqual(tabbedPane.tabView(tabs[0].id), views.get(networkSourceCode));
             // Create binding.
             const binding = new Persistence.Persistence.PersistenceBinding(networkSourceCode, fsSourceCode);
             await persistence.addBinding(binding);
             // Verify tabs after binding: network tab is replaced by the file system tab.
+            await raf();
             tabs = tabbedPane.tabs;
             assert.lengthOf(tabs, 1);
-            assert.strictEqual(tabbedPane.tabView(tabs[0].id), views.get(fsSourceCode));
         });
         it('opens filesystem UISourceCode when network UISourceCode with persistence binding is shown', async () => {
             const networkUrl = urlString `http://127.0.0.1:8000/devtools/persistence/resources/foo.js`;
             const fsUrl = urlString `file:///var/www/devtools/persistence/resources/foo.js`;
+            renderElementIntoDOM(tabbedEditorContainer);
             const { uiSourceCode: networkSourceCode } = createContentProviderUISourceCode({
                 url: networkUrl,
                 mimeType: 'text/javascript',
@@ -298,9 +300,9 @@ describe('TabbedEditorContainer', () => {
             tabbedEditorContainer.showFile(networkSourceCode);
             const tabbedPane = tabbedEditorContainer.tabbedPaneForTesting;
             // Verify that the filesystem tab is opened, not the network one.
+            await raf();
             const tabs = tabbedPane.tabs;
             assert.lengthOf(tabs, 1);
-            assert.strictEqual(tabbedPane.tabView(tabs[0].id), views.get(fsSourceCode));
             assert.strictEqual(tabbedEditorContainer.currentFile(), fsSourceCode);
         });
     });

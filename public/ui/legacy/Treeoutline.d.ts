@@ -167,7 +167,7 @@ export declare class TreeElement {
     setFocusable(focusable: boolean): void;
     private onFocus;
     private onBlur;
-    revealAndSelect(omitFocus?: boolean): void;
+    revealAndSelect(omitFocus?: boolean, selectedByUser?: boolean): void;
     deselect(): void;
     private populateIfNeeded;
     onpopulate(): Promise<void>;
@@ -292,6 +292,7 @@ export declare class TreeViewElement extends HTMLElementWithLightDOMTemplate {
     static readonly observedAttributes: string[];
     constructor();
     getInternalTreeOutlineForTest(): TreeOutlineInShadow;
+    flushPendingUpdatesForTesting(): void;
     focus(): void;
     protected updateNode(node: Node, attributeName: string | null): void;
     protected addNodes(nodes: NodeList | Node[]): void;
@@ -335,9 +336,9 @@ export declare namespace TreeViewElement {
 declare class IfExpandedDirective extends Lit.Directive.Directive {
     #private;
     constructor(partInfo: Lit.Directive.PartInfo);
-    render(content: Lit.LitTemplate | Iterable<Lit.LitTemplate>): Lit.LitTemplate | Iterable<Lit.LitTemplate>;
+    render(content: Lit.LitTemplate | Iterable<Lit.LitTemplate> | (() => Lit.LitTemplate | Iterable<Lit.LitTemplate>)): Lit.LitTemplate | Iterable<Lit.LitTemplate>;
 }
-export declare const ifExpanded: (content: Lit.LitTemplate | Iterable<Lit.LitTemplate>) => Lit.DirectiveResult<typeof IfExpandedDirective>;
+export declare const ifExpanded: (content: Lit.LitTemplate | Iterable<Lit.LitTemplate> | (() => Lit.LitTemplate | Iterable<Lit.LitTemplate>)) => Lit.DirectiveResult<typeof IfExpandedDirective>;
 export declare class TreeElementWrapper extends HTMLElement {
     #private;
     set treeElement(treeElement: TreeElement);

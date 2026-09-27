@@ -18,6 +18,8 @@ export interface ViewInput {
     isRecording: boolean;
     onToggleRecording: () => void;
     onClear: () => void;
+    onExportCsv: () => void;
+    canExport: boolean;
     recordTypeFilter: RecordTypeFilter;
     onRecordTypeFilterChange: (type: RecordTypeFilter) => void;
     textFilter: string;
@@ -50,6 +52,7 @@ export declare const INJECTED_SCRIPT_SOURCE: string;
 export declare const TEARDOWN_SCRIPT_SOURCE: string;
 export declare function checkForBlockedPayload(payload: unknown): string | null;
 export declare function validateAndSanitizeAnnouncement(payload: unknown): A11yAnnouncement | null;
+export declare function buildCsvContent(announcements: readonly A11yAnnouncement[]): string;
 export declare class AccessibilityAnnouncementRecordingView extends AccessibilitySubPane implements SDK.TargetManager.Observer {
     #private;
     constructor(view?: View);
@@ -62,6 +65,7 @@ export declare class AccessibilityAnnouncementRecordingView extends Accessibilit
     get filteredAnnouncements(): readonly A11yAnnouncement[];
     setRecordTypeFilter(type: RecordTypeFilter): void;
     setTextFilter(text: string): void;
+    exportCsvForTest(): string;
     performUpdate(): void;
     announcementsForTest(): A11yAnnouncement[];
     blockedReasonForTargetForTest(target: SDK.Target.Target): string | undefined;

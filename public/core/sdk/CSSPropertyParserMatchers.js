@@ -37,6 +37,9 @@ export class BaseVariableMatch {
         return this.matching.getComputedTextRange(this.fallback[0], this.fallback[this.fallback.length - 1]);
     }
 }
+function isVariableNameNode(node, ast) {
+    return node?.name === 'VariableName' && ast.text(node).length > 2;
+}
 const BaseVariableMatcherBase = matcherBase(BaseVariableMatch);
 // This matcher provides matching for var() functions and basic computedText support. Computed text is resolved by a
 // callback. This matcher is intended to be used directly only in environments where CSSMatchedStyles is not available.
@@ -61,13 +64,10 @@ export class BaseVariableMatcher extends BaseVariableMatcherBase {
         }
         const nameNode = args[0][0];
         const fallback = args.length === 2 ? args[1] : undefined;
-        if (nameNode?.name !== 'VariableName') {
+        if (!isVariableNameNode(nameNode, matching.ast)) {
             return null;
         }
         const varName = matching.ast.text(nameNode);
-        if (!varName.startsWith('--')) {
-            return null;
-        }
         return new BaseVariableMatch(matching.ast.text(node), node, varName, fallback, matching, this.#computedTextCallback);
     }
 }
@@ -853,7 +853,7 @@ export class LinkableNameMatcher extends LinkableNameMatcherBase {
             propertyName === "position-try-fallbacks" /* LinkableNameProperties.POSITION_TRY_FALLBACKS */;
         // We only mark top level nodes or nodes that are inside `var()` expressions as linkable names.
         if (!propertyName || (node.name !== 'ValueName' && node.name !== 'VariableName') ||
-            !isAParentDeclarationOrVarCall || (node.name === 'ValueName' && shouldMatchOnlyVariableName)) {
+            !isAParentDeclarationOrVarCall || (shouldMatchOnlyVariableName && !isVariableNameNode(node, matching.ast))) {
             return null;
         }
         // If it is a builtin keyword value, it is not linkable.
@@ -1074,7 +1074,7 @@ export class CustomFunctionMatcher extends CustomFunctionMatcherBase {
             return null;
         }
         const callee = matching.ast.text(node.getChild('VariableName'));
-        if (!callee?.startsWith('--')) {
+        if (!callee || callee.length <= 2 || !callee.startsWith('--')) {
             return null;
         }
         const args = ASTUtils.callArgs(node);
@@ -1267,7 +1267,7 @@ export class AnchorFunctionMatcher extends AnchorFunctionMatcherBase {
         return null;
     }
     matches(node, matching) {
-        if (node.name === 'VariableName') {
+        if (isVariableNameNode(node, matching.ast)) {
             // Double-dashed anchor reference to be rendered with a link to its matching anchor.
             let parent = node.parent;
             if (parent?.name !== 'ArgList') {
@@ -1288,7 +1288,7 @@ export class AnchorFunctionMatcher extends AnchorFunctionMatcherBase {
         if (calleeText === 'anchor' && args.length <= 2) {
             return null;
         }
-        if (args.find(arg => arg.name === 'VariableName')) {
+        if (args.find(arg => isVariableNameNode(arg, matching.ast))) {
             // We have an explicit anchor reference, no need to render swatch.
             return null;
         }
@@ -1314,7 +1314,7 @@ export class PositionAnchorMatcher extends PositionAnchorMatcherBase {
         return propertyName === 'position-anchor';
     }
     matches(node, matching) {
-        if (node.name !== 'VariableName') {
+        if (!isVariableNameNode(node, matching.ast)) {
             return null;
         }
         const dashedIdentifier = matching.ast.text(node);

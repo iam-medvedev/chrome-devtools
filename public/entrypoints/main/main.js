@@ -43,7 +43,7 @@ var ExecutionContextSelector = class {
   modelAdded(runtimeModel) {
     queueMicrotask(deferred.bind(this));
     function deferred() {
-      if (!this.#context.flavor(SDK.Target.Target)) {
+      if (!this.#context.flavor(SDK.Target.Target) && !runtimeModel.target().targetInfo()?.subtype) {
         this.#context.setFlavor(SDK.Target.Target, runtimeModel.target());
       }
     }
@@ -55,7 +55,8 @@ var ExecutionContextSelector = class {
     }
     const models = this.#targetManager.models(SDK.RuntimeModel.RuntimeModel);
     if (this.#context.flavor(SDK.Target.Target) === runtimeModel.target() && models.length) {
-      this.#context.setFlavor(SDK.Target.Target, models[0].target());
+      const nextModel = models.find((m) => !m.target().targetInfo()?.subtype);
+      this.#context.setFlavor(SDK.Target.Target, nextModel ? nextModel.target() : null);
     }
   }
   #executionContextChanged({
@@ -97,7 +98,7 @@ var ExecutionContextSelector = class {
     this.#ignoreContextChanged = false;
   }
   #shouldSwitchToContext(executionContext) {
-    if (executionContext.target().targetInfo()?.subtype) {
+    if (executionContext.target().targetInfo()?.subtype && this.#context.flavor(SDK.Target.Target) !== executionContext.target()) {
       return false;
     }
     if (this.#lastSelectedContextId && this.#lastSelectedContextId === this.#contextPersistentId(executionContext)) {
@@ -152,7 +153,7 @@ var ExecutionContextSelector = class {
     }
   }
   #switchContextIfNecessary(executionContext) {
-    if (!this.#context.flavor(SDK.RuntimeModel.ExecutionContext) || this.#shouldSwitchToContext(executionContext)) {
+    if (!this.#context.flavor(SDK.RuntimeModel.ExecutionContext) && (!executionContext.target().targetInfo()?.subtype || this.#context.flavor(SDK.Target.Target) === executionContext.target()) || this.#shouldSwitchToContext(executionContext)) {
       this.#ignoreContextChanged = true;
       this.#context.setFlavor(SDK.RuntimeModel.ExecutionContext, executionContext);
       this.#ignoreContextChanged = false;
@@ -164,6 +165,9 @@ var ExecutionContextSelector = class {
     const runtimeModels = this.#targetManager.models(SDK.RuntimeModel.RuntimeModel);
     let newContext = null;
     for (let i = 0; i < runtimeModels.length && !newContext; ++i) {
+      if (runtimeModels[i].target().targetInfo()?.subtype && this.#context.flavor(SDK.Target.Target) !== runtimeModels[i].target()) {
+        continue;
+      }
       const executionContexts = runtimeModels[i].executionContexts();
       for (const executionContext of executionContexts) {
         if (this.#isDefaultContext(executionContext)) {
@@ -174,6 +178,9 @@ var ExecutionContextSelector = class {
     }
     if (!newContext) {
       for (let i = 0; i < runtimeModels.length && !newContext; ++i) {
+        if (runtimeModels[i].target().targetInfo()?.subtype && this.#context.flavor(SDK.Target.Target) !== runtimeModels[i].target()) {
+          continue;
+        }
         const executionContexts = runtimeModels[i].executionContexts();
         if (executionContexts.length) {
           newContext = executionContexts[0];
@@ -291,13 +298,9 @@ var UIStrings = {
    */
   openAiAssistance: "Open AI assistance panel",
   /**
-   * @description Text label for the Gemini button in the main DevTools toolbar when expanded.
-   */
-  gemini: "Gemini",
-  /**
    * @description Tooltip for the Gemini button in the main DevTools toolbar.
    */
-  openGemini: "Open Gemini panel"
+  openGemini: "Open `Gemini` panel"
 };
 var str_ = i18n.i18n.registerUIStrings("entrypoints/main/GlobalAiButton.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
@@ -321,7 +324,7 @@ var DEFAULT_VIEW = (input, output, target) => {
     "global-ai-button": true,
     expanded: inPromotionState
   });
-  const strings = AIAssistance.AiUtils.isGeminiBranding() ? { title: i18nString(UIStrings.openGemini), label: i18nString(UIStrings.gemini) } : { title: i18nString(UIStrings.openAiAssistance), label: i18nString(UIStrings.aiAssistance) };
+  const strings = AIAssistance.AiUtils.isGeminiBranding() ? { title: i18nString(UIStrings.openGemini), label: i18n.i18n.lockedString("Gemini") } : { title: i18nString(UIStrings.openAiAssistance), label: i18nString(UIStrings.aiAssistance) };
   const icon = AIAssistance.AiUtils.getIconName();
   render(html`
     <style>${globalAiButton_css_default}</style>
@@ -463,6 +466,7 @@ import * as SDK2 from "../../core/sdk/sdk.js";
 import * as Foundation from "../../foundation/foundation.js";
 import * as AiAssistanceModel from "../../models/ai_assistance/ai_assistance.js";
 import * as Badges from "../../models/badges/badges.js";
+import * as CommentManager from "../../models/comment_manager/comment_manager.js";
 import * as CrUXManager from "../../models/crux-manager/crux-manager.js";
 import * as Persistence from "../../models/persistence/persistence.js";
 import * as Workspace from "../../models/workspace/workspace.js";
@@ -536,9 +540,9 @@ var UIStrings2 = {
    */
   aiModelDownloaded: "AI model downloaded",
   /**
-   * @description Title of the menu item in the customize and control menu leading to the DevTools MCP repository.
+   * @description Title of the menu item in the customize and control menu leading to the Chrome DevTools for agents repository.
    */
-  getDevToolsMcp: "Get `DevTools MCP`"
+  getChromeDevToolsForAgents: "Give your agent access to `DevTools`"
 };
 var str_2 = i18n3.i18n.registerUIStrings("entrypoints/main/MainImpl.ts", UIStrings2);
 var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
@@ -768,6 +772,13 @@ var MainImpl = class _MainImpl {
       isEnabled: Root2.Runtime.hostConfig.devToolsPlusButton?.enabled ?? false,
       requiresChromeRestart: false
     });
+    Root2.Runtime.experiments.register({
+      name: Root2.ExperimentNames.ExperimentName.SOURCE_MAP_SCOPES_IN_SOURCES_PANEL,
+      title: "Source map scopes in the Sources panel",
+      aboutFlag: "devtools-source-map-scopes-in-sources-panel",
+      isEnabled: Root2.Runtime.hostConfig.devToolsSourceMapScopesInSourcesPanel?.enabled ?? false,
+      requiresChromeRestart: false
+    });
     for (const experiment of Root2.Runtime.experiments.allConfigurableExperiments()) {
       if (experiment.isEnabled()) {
         Host.userMetrics.experimentEnabledAtLaunch(experiment.name);
@@ -889,7 +900,13 @@ var MainImpl = class _MainImpl {
       }
     );
     await inspectorView.createToolbars();
-    inspectorView.renderStatusBar();
+    inspectorView.renderStatusBar(this.#universe.commentManager.isAgentAttached());
+    this.#universe.commentManager.addEventListener(
+      CommentManager.CommentManager.Events.AGENT_ATTACHED_CHANGED,
+      (event) => {
+        inspectorView.renderStatusBar(event.data);
+      }
+    );
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.loadCompleted();
     UI2.ARIAUtils.LiveAnnouncer.initializeAnnouncerElements();
     UI2.DockController.DockController.instance().announceDockLocation();
@@ -1184,7 +1201,7 @@ var MainMenuItem = class {
       /* optional */
       true
     );
-    contextMenu.defaultSection().appendItem(i18nString2(UIStrings2.getDevToolsMcp), () => {
+    contextMenu.defaultSection().appendItem(i18nString2(UIStrings2.getChromeDevToolsForAgents), () => {
       UIHelpers.openInNewTab("https://github.com/ChromeDevTools/chrome-devtools-mcp");
     }, {
       additionalElement: UI2.UIUtils.maybeCreateNewBadge("get-devtools-mcp"),

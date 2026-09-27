@@ -49,17 +49,14 @@ function getClearLogButton(view) {
     return view.contentElement.querySelector('.logs-section devtools-widget').shadowRoot.querySelector('devtools-tabbed-pane devtools-toolbar devtools-button');
 }
 function selectDeviceOption(view, deviceOption) {
-    const deviceScopeSelector = view.contentElement.querySelector('devtools-select-menu#device-scope-select');
-    const deviceScopeOptions = Array.from(deviceScopeSelector.querySelectorAll('devtools-menu-item'));
-    deviceScopeSelector.click();
-    deviceScopeOptions.find(o => o.value === deviceOption).click();
+    const deviceScopeSelector = view.contentElement.querySelector('select#device-scope-select');
+    deviceScopeSelector.value = deviceOption;
+    deviceScopeSelector.dispatchEvent(new Event('change'));
 }
 function selectPageScope(view, pageScope) {
-    const pageScopeSelector = view.contentElement.querySelector('devtools-select-menu#page-scope-select');
-    pageScopeSelector.click();
-    const pageScopeOptions = Array.from(pageScopeSelector.querySelectorAll('devtools-menu-item'));
-    const originOption = pageScopeOptions.find(o => o.value === pageScope);
-    originOption.click();
+    const pageScopeSelector = view.contentElement.querySelector('select#page-scope-select');
+    pageScopeSelector.value = pageScope;
+    pageScopeSelector.dispatchEvent(new Event('change'));
 }
 function getFieldMessage(view) {
     return view.contentElement.querySelector('#field-setup .field-data-message');

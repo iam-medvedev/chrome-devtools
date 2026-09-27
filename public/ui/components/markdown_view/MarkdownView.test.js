@@ -391,11 +391,15 @@ describe('Issue description smoke test', () => {
     // syntax and links are valid.
     ISSUE_DESCRIPTIONS.forEach(descriptionFile => {
         it(`renders ${descriptionFile} without throwing`, async () => {
-            let descriptionContent = await IssuesManager.MarkdownIssueDescription.getMarkdownFileContent(descriptionFile);
-            descriptionContent = descriptionContent.replaceAll(/\{(PLACEHOLDER_[a-zA-Z][a-zA-Z0-9]*)\}/g, '$1'); // Identity substitute placeholders.
+            const descriptionContent = await IssuesManager.MarkdownIssueDescription.getMarkdownFileContent(descriptionFile);
+            const substitutions = new Map();
+            for (const match of descriptionContent.matchAll(/\{(PLACEHOLDER_[a-zA-Z][a-zA-Z0-9_]*)\}/g)) {
+                substitutions.set(match[1], match[1]);
+            }
             const issueDescription = IssuesManager.MarkdownIssueDescription.createIssueDescriptionFromRawMarkdown(descriptionContent, {
                 file: descriptionFile,
                 links: [],
+                substitutions,
             });
             assert.isNotEmpty(issueDescription.title, 'Title of a markdown description must never be empty');
             if (issueDescription.markdown.length === 0) {
@@ -405,35 +409,32 @@ describe('Issue description smoke test', () => {
             }
             const component = new MarkdownView.MarkdownView.MarkdownView();
             renderElementIntoDOM(component);
-            component.data = { tokens: issueDescription.markdown };
+            component.data = {
+                tokens: issueDescription.markdown,
+                renderer: new MarkdownView.MarkdownPlaceholderLitRenderer.MarkdownPlaceholderLitRenderer(issueDescription.substitutions),
+            };
             assert.isNotEmpty(component.shadowRoot.deepTextContent());
         });
     });
     Object.keys(Deprecation.DEPRECATIONS_METADATA).forEach(deprecation => {
-        // TODO(crbug.com/430801230): Re-enable these tests once the descriptions are fixed on the chromium side.
-        if ([
-            'CanRequestURLHTTPContainingNewline',
-            'CookieWithTruncatingChar',
-            'H1UserAgentFontSizeInSection',
-            'RequestedSubresourceWithEmbeddedCredentials',
-        ].includes(deprecation)) {
-            return;
-        }
         it(`renders the deprecation description for ${deprecation} without throwing`, async () => {
             const description = Deprecation.UIStrings[deprecation];
             const issueDescription = await IssuesManager.MarkdownIssueDescription.createIssueDescriptionFromMarkdown({
                 file: 'deprecation.md',
+                title: 'Deprecated feature used',
                 links: [],
                 substitutions: new Map([
-                    ['PLACEHOLDER_title', 'Deprecated feature used'],
                     ['PLACEHOLDER_message', i18nDeprecationString(description)],
                 ]),
             });
-            assert.isNotEmpty(issueDescription.title);
+            assert.strictEqual(issueDescription.title, 'Deprecated feature used');
             assert.isNotEmpty(issueDescription.markdown);
             const component = new MarkdownView.MarkdownView.MarkdownView();
             renderElementIntoDOM(component);
-            component.data = { tokens: issueDescription.markdown };
+            component.data = {
+                tokens: issueDescription.markdown,
+                renderer: new MarkdownView.MarkdownPlaceholderLitRenderer.MarkdownPlaceholderLitRenderer(issueDescription.substitutions),
+            };
             assert.isNotEmpty(component.shadowRoot.deepTextContent());
         });
     });

@@ -8,6 +8,7 @@ export declare class IssuesPane extends UI.Widget.VBox {
     #private;
     constructor();
     elementsToRestoreScrollPositionsFor(): Element[];
+    performUpdate(): Promise<void>;
     appendIssueViewToParent(issueView: IssueView, parent: UI.TreeOutline.TreeOutline | UI.TreeOutline.TreeElement): void;
     reveal(issue: IssuesManager.Issue.Issue): Promise<void>;
 }

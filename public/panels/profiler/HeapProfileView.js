@@ -911,10 +911,12 @@ export class SamplingHeapProfileType extends SamplingHeapProfileTypeBase {
         return this.#recordTimelineSetting.get();
     }
     customContent() {
-        const checkboxSetting = SettingsUI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.samplingHeapProfilerTimeline), this.#recordTimelineSetting);
-        this.customContentInternal = checkboxSetting;
-        checkboxSetting.setAttribute('jslog', `${VisualLogging.toggle('record-sampling-heap-profiler-timeline').track({ click: true })}`);
-        return checkboxSetting;
+        if (!this.customContentInternal) {
+            const checkboxSetting = SettingsUI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.samplingHeapProfilerTimeline), this.#recordTimelineSetting);
+            this.customContentInternal = checkboxSetting;
+            checkboxSetting.setAttribute('jslog', `${VisualLogging.toggle('record-sampling-heap-profiler-timeline').track({ click: true })}`);
+        }
+        return this.customContentInternal;
     }
     setCustomContentEnabled(enable) {
         if (this.customContentInternal) {

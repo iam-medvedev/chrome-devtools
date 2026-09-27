@@ -7,7 +7,6 @@ import * as Host from '../../core/host/host.js';
 import { describeWithEnvironment, setupActionRegistry, } from '../../testing/EnvironmentHelpers.js';
 import { expectCall } from '../../testing/ExpectStubCall.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
-import * as Menus from '../../ui/components/menus/menus.js';
 import * as Converters from './converters/converters.js';
 import * as Models from './models/models.js';
 import { RecordingView } from './recorder.js';
@@ -128,7 +127,7 @@ describeWithEnvironment('RecordingView', () => {
             const input = await view.nextInput;
             assert.isOk(input.showCodeView);
         }
-        view.input.onCodeFormatChange(new Menus.SelectMenu.SelectMenuItemSelectedEvent("@puppeteer/replay" /* Models.ConverterIds.ConverterIds.REPLAY */));
+        view.input.onCodeFormatChange("@puppeteer/replay" /* Models.ConverterIds.ConverterIds.REPLAY */);
         {
             const input = await view.nextInput;
             assert.strictEqual(input.recorderSettings?.preferredCopyFormat, "@puppeteer/replay" /* Models.ConverterIds.ConverterIds.REPLAY */);
