@@ -24,7 +24,7 @@ export interface HighlightRectData {
 }
 export interface CreateCommentOptions {
     author?: 'DEVELOPER' | 'AGENT';
-    changes?: CommentManager.CommentManager.ChangeRecord[];
+    isGeneratedComment?: boolean;
     coordinates?: {
         clientX: number;
         clientY: number;
@@ -45,6 +45,7 @@ export interface EventTypes {
     [Events.POSITIONS_UPDATED]: {
         pins: PinPositionData[];
         highlights: HighlightRectData[];
+        isRealtimeSync?: boolean;
     };
     [Events.HOVER_HIGHLIGHT_CHANGED]: HoverHighlightData | null;
 }

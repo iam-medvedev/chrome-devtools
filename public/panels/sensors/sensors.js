@@ -750,6 +750,7 @@ import * as Geometry from "../../ui/geometry/geometry.js";
 import * as SettingsUI from "../../ui/legacy/components/settings_ui/settings_ui.js";
 import * as UI2 from "../../ui/legacy/legacy.js";
 import { Directives as Directives2, html as html2, render as render2 } from "../../ui/lit/lit.js";
+import * as SettingUIRegistration from "../../ui/settings/settings.js";
 import * as VisualLogging2 from "../../ui/visual_logging/visual_logging.js";
 import * as MobileThrottling from "../mobile_throttling/mobile_throttling.js";
 
@@ -1194,6 +1195,15 @@ var UIStrings2 = {
    */
   forcesSelectedIdleStateEmulation: "Forces selected idle state emulation",
   /**
+   * @description Description of the Emulate CPU Performance Tier select in the Sensors view.
+   */
+  forcesSelectedCpuPerformanceTierEmulation: "Forces CPU performance tier emulation",
+  /**
+   * @description Option value for no CPU Performance override with default value
+   * @example {Tier 3: HIGH} PH1
+   */
+  cpuPerformanceNoOverrideWithDefault: "No override ({PH1})",
+  /**
    * @description Description of the Emulate CPU Pressure State select in the Sensors view.
    */
   forcesSelectedPressureStateEmulation: "Forces selected pressure state emulation",
@@ -1270,6 +1280,8 @@ var SensorsView = class extends UI2.Widget.VBox {
   boxMatrix;
   mouseDownVector;
   originalBoxMatrix;
+  #cpuThrottlingManager;
+  #cpuPerformanceNoOverrideOptionElement;
   constructor() {
     super({
       jslog: `${VisualLogging2.panel("sensors").track({ resize: true })}`,
@@ -1277,6 +1289,7 @@ var SensorsView = class extends UI2.Widget.VBox {
     });
     this.registerRequiredCSS(sensors_css_default);
     this.contentElement.classList.add("sensors-view");
+    this.#cpuThrottlingManager = SDK2.CPUThrottlingManager.CPUThrottlingManager.instance();
     this.#locationSetting = Common2.Settings.Settings.instance().createSetting("emulation.location-override", "");
     this.#location = SDK2.EmulationModel.Location.parseSetting(this.#locationSetting.get());
     this.#locationOverrideEnabled = false;
@@ -1297,6 +1310,8 @@ var SensorsView = class extends UI2.Widget.VBox {
     this.createHardwareConcurrencySection();
     this.createPanelSeparator();
     this.createPressureSection();
+    this.createPanelSeparator();
+    this.createCPUPerformanceSection();
     this.createPanelSeparator();
   }
   createPanelSeparator() {
@@ -1807,6 +1822,77 @@ var SensorsView = class extends UI2.Widget.VBox {
     );
     if (control) {
       container.appendChild(control);
+    }
+  }
+  createCPUPerformanceSection() {
+    const container = this.contentElement.createChild("div", "cpu-performance-section");
+    const control = SettingsUI.SettingsUI.createControlForSetting(
+      Common2.Settings.Settings.instance().resolve(SDK2.SDKSettings.cpuPerformanceSettingDescriptor),
+      i18nString2(UIStrings2.forcesSelectedCpuPerformanceTierEmulation)
+    );
+    if (control) {
+      container.appendChild(control);
+      const noOverrideOption = control.querySelector('select option[value="no-override"]');
+      if (noOverrideOption) {
+        this.#cpuPerformanceNoOverrideOptionElement = noOverrideOption;
+        this.#updateCPUPerformanceNoOverrideLabel();
+      } else {
+        this.#cpuPerformanceNoOverrideOptionElement = void 0;
+      }
+    }
+  }
+  wasShown() {
+    super.wasShown();
+    if (this.#cpuPerformanceNoOverrideOptionElement) {
+      this.#cpuThrottlingManager.addEventListener(
+        SDK2.CPUThrottlingManager.Events.CPU_PERFORMANCE_TIER_CHANGED,
+        this.#updateCPUPerformanceNoOverrideLabel,
+        this
+      );
+      this.#cpuThrottlingManager.addEventListener(
+        SDK2.CPUThrottlingManager.Events.RATE_CHANGED,
+        this.#updateCPUPerformanceNoOverrideLabel,
+        this
+      );
+      this.#updateCPUPerformanceNoOverrideLabel();
+    }
+  }
+  willHide() {
+    super.willHide();
+    if (this.#cpuPerformanceNoOverrideOptionElement) {
+      this.#cpuThrottlingManager.removeEventListener(
+        SDK2.CPUThrottlingManager.Events.CPU_PERFORMANCE_TIER_CHANGED,
+        this.#updateCPUPerformanceNoOverrideLabel,
+        this
+      );
+      this.#cpuThrottlingManager.removeEventListener(
+        SDK2.CPUThrottlingManager.Events.RATE_CHANGED,
+        this.#updateCPUPerformanceNoOverrideLabel,
+        this
+      );
+    }
+  }
+  #updateCPUPerformanceNoOverrideLabel() {
+    if (!this.#cpuPerformanceNoOverrideOptionElement) {
+      return;
+    }
+    const options = SettingUIRegistration.SettingUIRegistration.resolve(SDK2.SDKSettings.cpuPerformanceSettingDescriptor).options;
+    const getOptionTitle = (value) => {
+      const opt = options.find((o) => o.value === value);
+      if (!opt) {
+        return "";
+      }
+      return opt.title;
+    };
+    const getFallbackTitle = (tier) => {
+      return `Tier ${SDK2.CPUThrottlingManager.tierToNumber(tier)}: ${tier.toUpperCase()}`;
+    };
+    const calculatedTier = this.#cpuThrottlingManager.calculatedCPUPerformanceTier();
+    if (calculatedTier !== void 0) {
+      const tierTitle = getOptionTitle(calculatedTier) || getFallbackTitle(calculatedTier);
+      this.#cpuPerformanceNoOverrideOptionElement.text = i18nString2(UIStrings2.cpuPerformanceNoOverrideWithDefault, { PH1: tierTitle });
+    } else {
+      this.#cpuPerformanceNoOverrideOptionElement.text = getOptionTitle("no-override") || "No override";
     }
   }
   enableOrientationFields(disable) {

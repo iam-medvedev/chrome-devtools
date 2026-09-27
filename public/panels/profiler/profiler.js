@@ -745,7 +745,7 @@ var DEFAULT_VIEW = (input, output, target) => {
           <tr jslog=${VisualLogging.tableRow("detached-element")}>
             <td>
               <devtools-widget
-                ${widget(Elements.ElementsTreeOutline.DOMTreeWidget, {
+                ${widget(Elements.DOMTreeWidget.DOMTreeWidget, {
     omitRootDOMNode: false,
     selectEnabled: true,
     hideGutter: true,
@@ -3540,16 +3540,18 @@ var SamplingHeapProfileType = class _SamplingHeapProfileType extends SamplingHea
     return this.#recordTimelineSetting.get();
   }
   customContent() {
-    const checkboxSetting = SettingsUI.SettingsUI.createSettingCheckbox(
-      i18nString4(UIStrings4.samplingHeapProfilerTimeline),
-      this.#recordTimelineSetting
-    );
-    this.customContentInternal = checkboxSetting;
-    checkboxSetting.setAttribute(
-      "jslog",
-      `${VisualLogging3.toggle("record-sampling-heap-profiler-timeline").track({ click: true })}`
-    );
-    return checkboxSetting;
+    if (!this.customContentInternal) {
+      const checkboxSetting = SettingsUI.SettingsUI.createSettingCheckbox(
+        i18nString4(UIStrings4.samplingHeapProfilerTimeline),
+        this.#recordTimelineSetting
+      );
+      this.customContentInternal = checkboxSetting;
+      checkboxSetting.setAttribute(
+        "jslog",
+        `${VisualLogging3.toggle("record-sampling-heap-profiler-timeline").track({ click: true })}`
+      );
+    }
+    return this.customContentInternal;
   }
   setCustomContentEnabled(enable) {
     if (this.customContentInternal) {
@@ -5620,17 +5622,24 @@ var HeapSnapshotViewportDataGrid = class extends HeapSnapshotSortableDataGrid {
     const scrollTop = this.scrollContainer.scrollTop;
     const scrollBottom = scrollTop + this.scrollContainer.offsetHeight;
     if (height >= scrollTop && height < scrollBottom) {
+      if (!node.dataGrid) {
+        this.updateVisibleNodes(false);
+      }
       return Promise.resolve(node);
     }
     const scrollGap = 40;
     this.scrollContainer.scrollTop = Math.max(0, height - scrollGap);
+    this.updateVisibleNodes(false);
     return new Promise((resolve) => {
-      console.assert(!this.scrollToResolveCallback);
+      if (this.scrollToResolveCallback) {
+        this.scrollToResolveCallback();
+      }
       this.scrollToResolveCallback = resolve.bind(null, node);
       this.scrollContainer.window().requestAnimationFrame(() => {
         if (!this.scrollToResolveCallback) {
           return;
         }
+        this.updateVisibleNodes(false);
         this.scrollToResolveCallback();
         this.scrollToResolveCallback = null;
       });
@@ -7616,12 +7625,14 @@ var TrackingHeapSnapshotProfileType = class _TrackingHeapSnapshotProfileType ext
     void heapProfilerModel.startTrackingHeapObjects(this.recordAllocationStacksSettingInternal.get());
   }
   customContent() {
-    const checkboxSetting = SettingsUI3.SettingsUI.createSettingCheckbox(
-      i18nString7(UIStrings8.recordAllocationStacksExtra),
-      this.recordAllocationStacksSettingInternal
-    );
-    this.customContentInternal = checkboxSetting;
-    return checkboxSetting;
+    if (!this.customContentInternal) {
+      const checkboxSetting = SettingsUI3.SettingsUI.createSettingCheckbox(
+        i18nString7(UIStrings8.recordAllocationStacksExtra),
+        this.recordAllocationStacksSettingInternal
+      );
+      this.customContentInternal = checkboxSetting;
+    }
+    return this.customContentInternal;
   }
   setCustomContentEnabled(enable) {
     if (this.customContentInternal) {

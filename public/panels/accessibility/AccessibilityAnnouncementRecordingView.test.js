@@ -11,7 +11,7 @@ import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Accessibility from './accessibility.js';
 describeWithEnvironment('AccessibilityAnnouncementRecordingView', () => {
-    const { BINDING_NAME, validateAndSanitizeAnnouncement, checkForBlockedPayload, injectedScript, teardownScript, INJECTED_SCRIPT_SOURCE, TEARDOWN_SCRIPT_SOURCE, AnnouncementApi, RecordTypeFilter, } = Accessibility.AccessibilityAnnouncementRecordingView;
+    const { BINDING_NAME, validateAndSanitizeAnnouncement, checkForBlockedPayload, injectedScript, teardownScript, INJECTED_SCRIPT_SOURCE, TEARDOWN_SCRIPT_SOURCE, AnnouncementApi, RecordTypeFilter, buildCsvContent, } = Accessibility.AccessibilityAnnouncementRecordingView;
     let target;
     let view;
     beforeEach(() => {
@@ -735,6 +735,175 @@ describeWithEnvironment('AccessibilityAnnouncementRecordingView', () => {
             assert.notStrictEqual(firstRef, fourthRef);
             assert.lengthOf(fourthRef, 0);
         });
+        describe('CSV Export', () => {
+            it('exports CSV with Time, API, Politeness, and Message columns without Element or stack', async () => {
+                view = new Accessibility.AccessibilityAnnouncementRecordingView.AccessibilityAnnouncementRecordingView();
+                renderElementIntoDOM(view);
+                await view.updateComplete;
+                await view.startRecording();
+                await view.updateComplete;
+                const timestamp = 1700000000000;
+                emitBindingPayload({
+                    api: 'aria-live',
+                    message: 'Hello, CSV world!',
+                    politeness: 'polite',
+                    element: '<div aria-live="polite">Hello, CSV world!</div>',
+                    time: timestamp,
+                });
+                emitBindingPayload({
+                    api: 'js-triggered',
+                    message: 'JS alert message',
+                    politeness: 'assertive',
+                    element: '<button>Click</button>',
+                    stack: 'Error\n    at submit (https://example.com/app.js:10:5)',
+                    time: timestamp + 5000,
+                });
+                const csvContent = view.exportCsvForTest();
+                const lines = csvContent.split('\r\n');
+                assert.lengthOf(lines, 3);
+                assert.strictEqual(lines[0], 'Time,API,Politeness,Message');
+                const expectedTimeString1 = new Date(timestamp).toISOString();
+                assert.strictEqual(lines[1], `${expectedTimeString1},aria-live,polite,"Hello, CSV world!"`);
+                const expectedTimeString2 = new Date(timestamp + 5000).toISOString();
+                assert.strictEqual(lines[2], `${expectedTimeString2},js-triggered,assertive,JS alert message`);
+                assert.notInclude(csvContent, '<div aria-live="polite">');
+                assert.notInclude(csvContent, '<button>Click</button>');
+                assert.notInclude(csvContent, 'submit (https://example.com/app.js:10:5)');
+            });
+            it('escapes special characters and formula prefixes in CSV cells', () => {
+                const csvContent = buildCsvContent([
+                    {
+                        api: AnnouncementApi.ARIA_LIVE,
+                        message: 'Text with "quotes", commas, and\nnewlines',
+                        politeness: 'polite',
+                        element: '',
+                        time: 0,
+                    },
+                    {
+                        api: AnnouncementApi.ARIA_LIVE,
+                        message: '=SUM(1,2)',
+                        politeness: 'polite',
+                        element: '',
+                        time: 0,
+                    },
+                ]);
+                const expectedTime = new Date(0).toISOString();
+                assert.strictEqual(csvContent, [
+                    'Time,API,Politeness,Message',
+                    `${expectedTime},aria-live,polite,"Text with ""quotes"", commas, and\nnewlines"`,
+                    `${expectedTime},aria-live,polite,"'=SUM(1,2)"`,
+                ].join('\r\n'));
+            });
+            it('exports empty CSV with only header when no announcements are recorded', () => {
+                view = new Accessibility.AccessibilityAnnouncementRecordingView.AccessibilityAnnouncementRecordingView();
+                const csvContent = view.exportCsvForTest();
+                assert.strictEqual(csvContent, 'Time,API,Politeness,Message');
+                assert.strictEqual(buildCsvContent([]), 'Time,API,Politeness,Message');
+            });
+            it('disables the Export to CSV button when there are no announcements and enables when announcements exist', async () => {
+                const viewStub = createViewFunctionStub(Accessibility.AccessibilityAnnouncementRecordingView.AccessibilityAnnouncementRecordingView);
+                view = new Accessibility.AccessibilityAnnouncementRecordingView.AccessibilityAnnouncementRecordingView(viewStub);
+                renderElementIntoDOM(view);
+                let input = await viewStub.nextInput;
+                assert.isFalse(input.canExport);
+                await view.startRecording();
+                input = await viewStub.nextInput;
+                assert.isFalse(input.canExport);
+                emitBindingPayload({
+                    api: 'aria-live',
+                    message: 'First update',
+                    politeness: 'polite',
+                    element: '<div>First update</div>',
+                    time: 1000,
+                });
+                input = await viewStub.nextInput;
+                assert.isTrue(input.canExport);
+                input.onClear();
+                input = await viewStub.nextInput;
+                assert.isFalse(input.canExport);
+            });
+            it('exports only announcements matching active UI filters and updates canExport accordingly', async () => {
+                const viewStub = createViewFunctionStub(Accessibility.AccessibilityAnnouncementRecordingView.AccessibilityAnnouncementRecordingView);
+                view =
+                    new Accessibility.AccessibilityAnnouncementRecordingView.AccessibilityAnnouncementRecordingView(viewStub);
+                renderElementIntoDOM(view);
+                await view.startRecording();
+                await viewStub.nextInput;
+                const timestamp = 1700000000000;
+                emitBindingPayload({
+                    api: 'aria-live',
+                    message: 'Alpha live message',
+                    politeness: 'polite',
+                    element: '<div>Alpha live message</div>',
+                    time: timestamp,
+                });
+                await viewStub.nextInput;
+                emitBindingPayload({
+                    api: 'js-triggered',
+                    message: 'Beta JS notice',
+                    politeness: 'assertive',
+                    element: '<button>Beta</button>',
+                    time: timestamp + 1000,
+                });
+                let input = await viewStub.nextInput;
+                assert.isTrue(input.canExport);
+                assert.lengthOf(view.exportCsvForTest().split('\r\n'), 3);
+                // Filter by text matching only the second item
+                input.onTextFilterChange('Beta');
+                input = await viewStub.nextInput;
+                assert.isTrue(input.canExport);
+                const filteredLines = view.exportCsvForTest().split('\r\n');
+                assert.lengthOf(filteredLines, 2);
+                assert.include(filteredLines[1], 'Beta JS notice');
+                // Filter by record type (ARIA_LIVE) while text filter is 'Beta' -> 0 matches
+                input.onRecordTypeFilterChange("aria-live" /* RecordTypeFilter.ARIA_LIVE */);
+                input = await viewStub.nextInput;
+                assert.isFalse(input.canExport);
+                assert.strictEqual(view.exportCsvForTest(), 'Time,API,Politeness,Message');
+            });
+            it('triggers download with UTF-8 BOM, timestamped filename, and revokes object URL on export', async () => {
+                const viewStub = createViewFunctionStub(Accessibility.AccessibilityAnnouncementRecordingView.AccessibilityAnnouncementRecordingView);
+                view =
+                    new Accessibility.AccessibilityAnnouncementRecordingView.AccessibilityAnnouncementRecordingView(viewStub);
+                renderElementIntoDOM(view);
+                await view.startRecording();
+                await viewStub.nextInput;
+                emitBindingPayload({
+                    api: 'aria-live',
+                    message: 'Download test',
+                    politeness: 'polite',
+                    element: '<div>Download test</div>',
+                    time: 1000,
+                });
+                const input = await viewStub.nextInput;
+                let createdBlob = null;
+                const createObjectURLStub = sinon.stub(URL, 'createObjectURL').callsFake((obj) => {
+                    if (obj instanceof Blob) {
+                        createdBlob = obj;
+                    }
+                    return 'blob:mock-url';
+                });
+                const revokeObjectURLSpy = sinon.spy(URL, 'revokeObjectURL');
+                const clickSpy = sinon.spy(HTMLAnchorElement.prototype, 'click');
+                const setAttributeSpy = sinon.spy(HTMLAnchorElement.prototype, 'setAttribute');
+                input.onExportCsv();
+                sinon.assert.calledOnce(createObjectURLStub);
+                assert.isNotNull(createdBlob);
+                const blob = createdBlob;
+                assert.strictEqual(blob.type, 'text/csv;charset=utf-8');
+                const blobText = new TextDecoder('utf-8', { ignoreBOM: true }).decode(await blob.arrayBuffer());
+                assert.isTrue(blobText.startsWith('\ufeffTime,API,Politeness,Message\r\n'));
+                sinon.assert.calledOnce(clickSpy);
+                sinon.assert.calledOnceWithExactly(revokeObjectURLSpy, 'blob:mock-url');
+                const downloadCall = setAttributeSpy.getCalls().find(call => call.args[0] === 'download');
+                assert.exists(downloadCall);
+                assert.match(downloadCall.args[1], /^aria-live-announcements-\d{8}T\d{6}\.csv$/);
+                createObjectURLStub.restore();
+                revokeObjectURLSpy.restore();
+                clickSpy.restore();
+                setAttributeSpy.restore();
+            });
+        });
     });
     describe('DEFAULT_VIEW screenshots', () => {
         let targetEl;
@@ -750,6 +919,8 @@ describeWithEnvironment('AccessibilityAnnouncementRecordingView', () => {
                 isRecording: false,
                 onToggleRecording: () => { },
                 onClear: () => { },
+                onExportCsv: () => { },
+                canExport: false,
                 recordTypeFilter: "both" /* RecordTypeFilter.BOTH */,
                 onRecordTypeFilterChange: () => { },
                 textFilter: '',
@@ -780,6 +951,8 @@ describeWithEnvironment('AccessibilityAnnouncementRecordingView', () => {
                 isRecording: true,
                 onToggleRecording: () => { },
                 onClear: () => { },
+                onExportCsv: () => { },
+                canExport: true,
                 recordTypeFilter: "both" /* RecordTypeFilter.BOTH */,
                 onRecordTypeFilterChange: () => { },
                 textFilter: '',
@@ -803,6 +976,8 @@ describeWithEnvironment('AccessibilityAnnouncementRecordingView', () => {
                 isRecording: true,
                 onToggleRecording: () => { },
                 onClear: () => { },
+                onExportCsv: () => { },
+                canExport: true,
                 recordTypeFilter: "both" /* RecordTypeFilter.BOTH */,
                 onRecordTypeFilterChange: () => { },
                 textFilter: '',

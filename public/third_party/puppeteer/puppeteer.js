@@ -2627,7 +2627,7 @@ function mergeUint8Arrays(items) {
 }
 
 // ../../front_end/third_party/puppeteer/package/lib/puppeteer/util/version.js
-var packageVersion = "25.11.0";
+var packageVersion = "25.12.0";
 
 // ../../front_end/third_party/puppeteer/package/lib/puppeteer/common/Errors.js
 var PuppeteerError = class extends Error {
@@ -10571,20 +10571,23 @@ var ElementHandle = (() => {
      * returned.
      */
     async drag(target) {
-      await this.scrollIntoViewIfNeeded();
       const page = this.frame.page();
       if (page.isDragInterceptionEnabled()) {
+        await this.scrollIntoViewIfNeeded();
         const source2 = await this.clickablePoint();
         if (target instanceof ElementHandle2) {
           target = await target.clickablePoint();
         }
         return await page.mouse.drag(source2, target);
       }
+      let isMouseDown = page._isDragging;
       try {
+        await this.scrollIntoViewIfNeeded();
         if (!page._isDragging) {
           page._isDragging = true;
           await this.hover();
           await page.mouse.down();
+          isMouseDown = true;
         }
         if (target instanceof ElementHandle2) {
           await target.hover();
@@ -10593,6 +10596,11 @@ var ElementHandle = (() => {
         }
       } catch (error) {
         page._isDragging = false;
+        if (isMouseDown) {
+          await page.mouse.up().catch((error2) => {
+            this.logger(DEBUG_PREFIXES.error)?.(error2);
+          });
+        }
         throw error;
       }
     }
@@ -12484,7 +12492,10 @@ var AXNode = class _AXNode {
           }
           const handle = __addDisposableResource11(env_2, await this.#realm.adoptBackendNode(this.payload.backendDOMNodeId), false);
           return await handle.evaluateHandle((node2) => {
-            return node2.nodeType === Node.TEXT_NODE ? node2.parentElement : node2;
+            if (node2.nodeType !== Node.TEXT_NODE) {
+              return node2;
+            }
+            return node2.parentElement ?? node2.parentNode?.host ?? null;
           });
         } catch (e_2) {
           env_2.error = e_2;

@@ -32,6 +32,9 @@ export declare class SensorsView extends UI.Widget.VBox {
     private clearFieldsetElementInputs;
     private createDeviceOrientationSection;
     private createPressureSection;
+    private createCPUPerformanceSection;
+    wasShown(): void;
+    willHide(): void;
     private enableOrientationFields;
     private orientationSelectChanged;
     private applyDeviceOrientation;

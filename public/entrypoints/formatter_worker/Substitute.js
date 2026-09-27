@@ -4,9 +4,35 @@
 import * as Acorn from '../../third_party/acorn/acorn.js';
 import { ECMA_VERSION } from './AcornTokenizer.js';
 import { ScopeVariableAnalysis } from './ScopeParser.js';
-export function substituteExpression(expression, nameMap) {
-    const replacements = computeSubstitution(expression, nameMap);
+export function substituteExpression(expression, nameMaps) {
+    const replacements = computeSubstitution(expression, nameMaps);
     return applySubstitution(expression, replacements);
+}
+function parseBindingExpression(expression) {
+    const options = {
+        ecmaVersion: ECMA_VERSION,
+        allowAwaitOutsideFunction: true,
+        allowImportExportEverywhere: true,
+        checkPrivateFields: false,
+        ranges: false,
+    };
+    const root = Acorn.parse(`(${expression})`, options);
+    const exprAt = Acorn.Parser.parseExpressionAt(expression, 0, options);
+    if (root.body.length !== 1 || root.body[0].type !== 'ExpressionStatement') {
+        throw new SyntaxError(`Invalid binding expression '${expression}'`);
+    }
+    const expr = root.body[0].expression;
+    if (exprAt.start !== expr.start - 1 || exprAt.end !== expr.end - 1) {
+        throw new SyntaxError(`Invalid binding expression '${expression}'`);
+    }
+    const analysis = new ScopeVariableAnalysis(root, `(${expression})`);
+    analysis.run();
+    const needsParens = expr.type !== 'Identifier' && expr.type !== 'MemberExpression' && expr.type !== 'ThisExpression';
+    return {
+        replacement: needsParens ? `(${expression})` : expression,
+        freeVariables: [...analysis.getFreeVariables().keys()],
+        allNames: analysis.getAllNames(),
+    };
 }
 /**
  * Given an |expression| and a mapping from names to new names, the |computeSubstitution|
@@ -14,7 +40,7 @@ export function substituteExpression(expression, nameMap) {
  * it cannot parse the expression or the substitution is impossible to perform (for example
  * if the substitution target is 'this' within a function, it would become bound there).
  **/
-function computeSubstitution(expression, nameMap) {
+function computeSubstitution(expression, nameMaps) {
     // Parse the expression and find variables and scopes.
     const root = Acorn.parse(expression, {
         ecmaVersion: ECMA_VERSION,
@@ -29,10 +55,34 @@ function computeSubstitution(expression, nameMap) {
     const result = [];
     // Prepare the machinery for generating fresh names (to avoid variable captures).
     const allNames = scopeVariables.getAllNames();
-    for (const rename of nameMap.values()) {
-        if (rename) {
-            allNames.add(rename);
+    const nameMap = new Map();
+    const parsedBindings = new Map();
+    const shadowedNames = new Set();
+    for (const scopeMap of nameMaps) {
+        const scopeNames = new Set();
+        for (const [name, rename] of scopeMap.entries()) {
+            let parsed;
+            if (rename !== null) {
+                try {
+                    parsed = parseBindingExpression(rename);
+                    parsed.allNames.forEach(id => allNames.add(id));
+                    parsed.freeVariables.forEach(id => scopeNames.add(id));
+                }
+                catch (error) {
+                    if (!nameMap.has(name) && freeVariables.has(name)) {
+                        throw error;
+                    }
+                }
+            }
+            if (!nameMap.has(name)) {
+                const isShadowed = parsed?.freeVariables.some(id => shadowedNames.has(id));
+                nameMap.set(name, isShadowed ? null : rename);
+                if (parsed && !isShadowed) {
+                    parsedBindings.set(name, parsed);
+                }
+            }
         }
+        scopeNames.forEach(id => shadowedNames.add(id));
     }
     function getNewName(base) {
         let i = 1;
@@ -44,6 +94,7 @@ function computeSubstitution(expression, nameMap) {
         return newName;
     }
     // Perform the substitutions.
+    const capturedBinders = new Map();
     for (const [name, rename] of nameMap.entries()) {
         const defUse = freeVariables.get(name);
         if (!defUse) {
@@ -52,32 +103,40 @@ function computeSubstitution(expression, nameMap) {
         if (rename === null) {
             throw new Error(`Cannot substitute '${name}' as the underlying variable '${rename}' is unavailable`);
         }
-        const binders = [];
+        const parsed = parsedBindings.get(name);
+        if (!parsed) {
+            continue;
+        }
+        const freeIds = [...parsed.freeVariables];
         for (const use of defUse) {
             result.push({
                 from: name,
-                to: rename,
+                to: parsed.replacement,
                 offset: use.offset,
                 isShorthandAssignmentProperty: use.isShorthandAssignmentProperty,
             });
-            binders.push(...use.scope.findBinders(rename));
+            for (const freeId of freeIds) {
+                for (const binder of use.scope.findBinders(freeId)) {
+                    capturedBinders.set(binder, freeId);
+                }
+            }
         }
-        // If there is a capturing binder, rename the bound variable.
-        for (const binder of binders) {
-            if (binder.definitionKind === 3 /* DefinitionKind.FIXED */) {
-                // If the identifier is bound to a fixed name, such as 'this',
-                // then refuse to do the substitution.
-                throw new Error(`Cannot avoid capture of '${rename}'`);
-            }
-            const newName = getNewName(rename);
-            for (const use of binder.uses) {
-                result.push({
-                    from: rename,
-                    to: newName,
-                    offset: use.offset,
-                    isShorthandAssignmentProperty: use.isShorthandAssignmentProperty,
-                });
-            }
+    }
+    // If there is a capturing binder, rename the bound variable.
+    for (const [binder, freeId] of capturedBinders.entries()) {
+        if (binder.definitionKind === 3 /* DefinitionKind.FIXED */) {
+            // If the identifier is bound to a fixed name, such as 'this',
+            // then refuse to do the substitution.
+            throw new Error(`Cannot avoid capture of '${freeId}'`);
+        }
+        const newName = getNewName(freeId);
+        for (const use of binder.uses) {
+            result.push({
+                from: freeId,
+                to: newName,
+                offset: use.offset,
+                isShorthandAssignmentProperty: use.isShorthandAssignmentProperty,
+            });
         }
     }
     result.sort((l, r) => l.offset - r.offset);

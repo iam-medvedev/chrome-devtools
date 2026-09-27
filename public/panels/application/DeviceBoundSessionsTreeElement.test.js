@@ -248,7 +248,7 @@ describeWithEnvironment('DeviceBoundSessionsTreeElement', () => {
         model.dispatchEventToListeners("EVENT_OCCURRED" /* Application.DeviceBoundSessionsModel.DeviceBoundSessionModelEvents.EVENT_OCCURRED */, { site, sessionId });
         // Session 1 should now be terminated. Session 2 remains unterminated.
         assert.isTrue(session1Node.listItemElement.classList.contains('device-bound-session-terminated'));
-        assert.strictEqual(session1Node.listItemElement.getAttribute('aria-label'), 'session_1, Session terminated');
+        assert.strictEqual(session1Node.listItemElement.getAttribute('aria-label'), 'session_1, session terminated');
         assert.isFalse(session2Node.listItemElement.classList.contains('device-bound-session-terminated'));
         assert.strictEqual(session2Node.listItemElement.getAttribute('aria-label'), 'session_2');
         // Simulate recreation event.
@@ -287,7 +287,7 @@ describeWithEnvironment('DeviceBoundSessionsTreeElement', () => {
         sessionHasErrorsStub.withArgs(site, sessionId).returns(true);
         model.dispatchEventToListeners("EVENT_OCCURRED" /* Application.DeviceBoundSessionsModel.DeviceBoundSessionModelEvents.EVENT_OCCURRED */, { site, sessionId });
         checkIcon(sessionNode, 'warning');
-        assert.strictEqual(sessionNode.listItemElement.getAttribute('aria-label'), 'session_1, Session has errors');
+        assert.strictEqual(sessionNode.listItemElement.getAttribute('aria-label'), 'session_1, session has errors');
         checkIcon(sessionNode2, 'database');
         assert.strictEqual(sessionNode2.listItemElement.getAttribute('aria-label'), 'session_2');
         // Clearing events should change it back to a database icon.

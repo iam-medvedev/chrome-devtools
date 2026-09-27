@@ -13,7 +13,7 @@ import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
 import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as AiAssistance from './ai_assistance.js';
-import { SKILLS } from './skills/SkillRegistry.js';
+const SKILLS = AiAssistance.SkillRegistry.SKILLS;
 function assertIsFunctionResponse(part) {
     assert.isTrue('functionResponse' in part);
 }

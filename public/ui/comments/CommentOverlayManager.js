@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as CommentManager from '../../models/comment_manager/comment_manager.js';
-import { closestAcrossShadow, computeVisibleRect, deepQuerySelectorAll, getCustomAnchorResolverForElement, getEditorFilePath, isDomTrackedAnchor, rematchCommentAnchor, resolveCommentAnchor, resolveCommentAnchorElement, } from './CommentAnchorResolver.js';
+import { clearClippingAncestorsCache, closestAcrossShadow, COMMENT_THREAD_UI_SELECTOR, computeVisibleRect, deepQuerySelectorAll, getCustomAnchorResolverForElement, getEditorFilePath, isDomTrackedAnchor, rematchCommentAnchor, resolveCommentAnchor, resolveCommentAnchorElement, } from './CommentAnchorResolver.js';
 export const COMMENT_MODE_CURSOR = 'var(--comment-cursor)';
 export var Events;
 (function (Events) {
@@ -45,9 +45,11 @@ export class CommentOverlayManager extends Common.ObjectWrapper.ObjectWrapper {
     #scrollListener;
     #scrollTarget;
     #scrollRafId;
+    #observedScrollRoots = new Set();
     #devToolsResizeObserver;
-    #resizeRafId;
+    #resizeObservedElements = new WeakSet();
     #mutationObserver;
+    #mutationRafId;
     #rematchTimeoutId;
     #cursorElement = null;
     #isCreatingComment = false;
@@ -81,7 +83,7 @@ export class CommentOverlayManager extends Common.ObjectWrapper.ObjectWrapper {
     #getIntersectionObserver() {
         if (!this.#intersectionObserver) {
             this.#intersectionObserver = new IntersectionObserver(() => {
-                this.#updatePositions();
+                this.#updatePositions(true);
             });
         }
         return this.#intersectionObserver;
@@ -143,7 +145,7 @@ export class CommentOverlayManager extends Common.ObjectWrapper.ObjectWrapper {
         }
     }
     handleElementClick(element, options) {
-        if (!this.isCommentMode() || closestAcrossShadow(element, '.comment-thread-widget')) {
+        if (!this.isCommentMode() || closestAcrossShadow(element, COMMENT_THREAD_UI_SELECTOR)) {
             return false;
         }
         this.clearDraftThreads();
@@ -161,7 +163,7 @@ export class CommentOverlayManager extends Common.ObjectWrapper.ObjectWrapper {
     }
     createComment(element, text, options) {
         const author = options?.author ?? 'DEVELOPER';
-        const changes = options?.changes;
+        const isGeneratedComment = options?.isGeneratedComment;
         const resolved = this.#resolveAnchor(element, options?.coordinates);
         if (!resolved) {
             return null;
@@ -170,21 +172,40 @@ export class CommentOverlayManager extends Common.ObjectWrapper.ObjectWrapper {
         let thread;
         this.#isCreatingComment = true;
         try {
-            thread = this.#commentManager.createCommentThread(anchor, text, author, changes);
+            thread = this.#commentManager.createCommentThread(anchor, text, author, isGeneratedComment);
         }
         finally {
             this.#isCreatingComment = false;
         }
-        // Non-DOM anchors (e.g. canvas-rendered timeline entries) manage their own overlays
-        // and do not have individual backing DOM nodes to cache or observe.
-        if (isDomTrackedAnchor(anchor)) {
+        // Non-DOM anchors (e.g. canvas-rendered timeline entries) and generated comments
+        // do not render overlay pins or observe backing DOM nodes.
+        if (!thread.isGeneratedComment && isDomTrackedAnchor(anchor)) {
             this.#liveNodeCache.set(thread, anchorElement);
             const observer = this.#getIntersectionObserver();
             observer.observe(anchorElement);
             this.#observedThreads.add(anchorElement);
+            this.#trackElementAncestors(anchorElement);
         }
         this.#updatePositions();
         return thread;
+    }
+    #trackElementAncestors(element) {
+        if (!this.#devToolsResizeObserver || !this.#scrollListener) {
+            return;
+        }
+        let current = element;
+        while (current) {
+            if (this.#resizeObservedElements.has(current)) {
+                break;
+            }
+            this.#devToolsResizeObserver.observe(current);
+            this.#resizeObservedElements.add(current);
+            if (current.parentNode instanceof ShadowRoot && !this.#observedScrollRoots.has(current.parentNode)) {
+                current.parentNode.addEventListener('scroll', this.#scrollListener, { capture: true, passive: true });
+                this.#observedScrollRoots.add(current.parentNode);
+            }
+            current = current.parentElementOrShadowHost();
+        }
     }
     #resolveAnchor(element, options) {
         let anchorElement = null;
@@ -241,12 +262,13 @@ export class CommentOverlayManager extends Common.ObjectWrapper.ObjectWrapper {
      * during batch rematching, and cleans up unobserved IntersectionObserver nodes in O(N) time.
      */
     #rematchAllComments(root = document) {
+        clearClippingAncestorsCache();
         const jslogElements = deepQuerySelectorAll(root, '[jslog]');
         const oldElements = new Set();
         const newElements = new Set();
         for (const thread of this.#commentManager.getCommentThreads()) {
-            // Non-DOM anchors do not track DOM nodes and should not be rematched here.
-            if (!isDomTrackedAnchor(thread.anchor)) {
+            // Non-DOM anchors and generated comments do not track DOM nodes and should not be rematched here.
+            if (thread.isGeneratedComment || !isDomTrackedAnchor(thread.anchor)) {
                 continue;
             }
             const oldEl = this.#liveNodeCache.get(thread);
@@ -274,15 +296,17 @@ export class CommentOverlayManager extends Common.ObjectWrapper.ObjectWrapper {
         }
         this.#updatePositions();
     }
-    #updatePositions() {
+    #updatePositions(isRealtimeSync = false) {
         const scrollX = window.scrollX;
         const scrollY = window.scrollY;
         const newPins = [];
         const newHighlights = [];
         const elementPinCounts = new Map();
+        const rectCache = new Map();
         for (const thread of this.#commentManager.getCommentThreads()) {
-            // Non-DOM anchors have their positions managed by their respective panels.
-            if (!isDomTrackedAnchor(thread.anchor)) {
+            // Non-DOM anchors have their positions managed by their respective panels,
+            // and generated comments do not render overlay pins.
+            if (thread.isGeneratedComment || !isDomTrackedAnchor(thread.anchor)) {
                 continue;
             }
             const el = this.#liveNodeCache.get(thread) || null;
@@ -300,7 +324,8 @@ export class CommentOverlayManager extends Common.ObjectWrapper.ObjectWrapper {
                 observer.observe(el);
                 this.#observedThreads.add(el);
             }
-            const visibleRect = computeVisibleRect(el);
+            this.#trackElementAncestors(el);
+            const visibleRect = computeVisibleRect(el, undefined, rectCache);
             if (!visibleRect) {
                 continue;
             }
@@ -330,6 +355,7 @@ export class CommentOverlayManager extends Common.ObjectWrapper.ObjectWrapper {
         this.dispatchEventToListeners("PositionsUpdated" /* Events.POSITIONS_UPDATED */, {
             pins: newPins,
             highlights: newHighlights,
+            isRealtimeSync,
         });
     }
     /**
@@ -361,12 +387,14 @@ export class CommentOverlayManager extends Common.ObjectWrapper.ObjectWrapper {
         this.#installScrollListener(scrollTarget);
         this.#installResizeObserver(resizeTarget);
         this.#installMutationObserver(root);
+        this.#updatePositions();
     }
     /**
      * Stops and detaches all active listeners and observers without clearing comment threads.
      */
     stop() {
         document.body.style.cursor = '';
+        clearClippingAncestorsCache();
         this.clearDraftThreads();
         this.#removeClickListener();
         this.#removeScrollListener();
@@ -547,21 +575,36 @@ export class CommentOverlayManager extends Common.ObjectWrapper.ObjectWrapper {
     #installScrollListener(target = window) {
         this.#removeScrollListener();
         this.#scrollTarget = target;
+        let needsTrailingUpdate = false;
         this.#scrollListener = () => {
             this.#clearHover();
-            if (this.#scrollRafId !== undefined) {
-                cancelAnimationFrame(this.#scrollRafId);
+            if (this.#scrollRafId === undefined) {
+                // Leading-edge synchronous update so pins and highlights move immediately in the current frame.
+                this.#updatePositions(true);
+                needsTrailingUpdate = false;
+                this.#scrollRafId = requestAnimationFrame(() => {
+                    this.#scrollRafId = undefined;
+                    if (needsTrailingUpdate) {
+                        needsTrailingUpdate = false;
+                        this.#updatePositions(true);
+                    }
+                });
             }
-            this.#scrollRafId = requestAnimationFrame(() => {
-                this.#scrollRafId = undefined;
-                this.#updatePositions();
-            });
+            else {
+                needsTrailingUpdate = true;
+            }
         };
         target.addEventListener('scroll', this.#scrollListener, { capture: true, passive: true });
     }
     #removeScrollListener() {
-        if (this.#scrollTarget && this.#scrollListener) {
-            this.#scrollTarget.removeEventListener('scroll', this.#scrollListener, { capture: true });
+        if (this.#scrollListener) {
+            if (this.#scrollTarget) {
+                this.#scrollTarget.removeEventListener('scroll', this.#scrollListener, { capture: true });
+            }
+            for (const root of this.#observedScrollRoots) {
+                root.removeEventListener('scroll', this.#scrollListener, { capture: true });
+            }
+            this.#observedScrollRoots.clear();
             this.#scrollListener = undefined;
             this.#scrollTarget = undefined;
         }
@@ -581,30 +624,28 @@ export class CommentOverlayManager extends Common.ObjectWrapper.ObjectWrapper {
         this.#removeResizeObserver();
         this.#devToolsResizeObserver = new ResizeObserver(() => {
             this.#clearHover();
-            if (this.#resizeRafId !== undefined) {
-                cancelAnimationFrame(this.#resizeRafId);
-            }
-            this.#resizeRafId = requestAnimationFrame(() => {
-                this.#resizeRafId = undefined;
-                this.#updatePositions();
-            });
+            this.#updatePositions(true);
         });
         this.#devToolsResizeObserver.observe(element);
+        this.#resizeObservedElements.add(element);
     }
     #removeResizeObserver() {
         if (this.#devToolsResizeObserver) {
             this.#devToolsResizeObserver.disconnect();
             this.#devToolsResizeObserver = undefined;
         }
-        if (this.#resizeRafId !== undefined) {
-            cancelAnimationFrame(this.#resizeRafId);
-            this.#resizeRafId = undefined;
-        }
+        this.#resizeObservedElements = new WeakSet();
     }
     /**
      * Debounces rematching of comments across dynamic DOM updates.
      */
     #scheduleRematch(root = document) {
+        if (this.#mutationRafId === undefined) {
+            this.#mutationRafId = requestAnimationFrame(() => {
+                this.#mutationRafId = undefined;
+                this.#updatePositions(true);
+            });
+        }
         if (this.#rematchTimeoutId) {
             clearTimeout(this.#rematchTimeoutId);
         }
@@ -623,8 +664,15 @@ export class CommentOverlayManager extends Common.ObjectWrapper.ObjectWrapper {
      */
     #installMutationObserver(root = document) {
         this.#removeMutationObserver();
-        this.#mutationObserver = new MutationObserver(() => {
-            this.#scheduleRematch(root);
+        this.#mutationObserver = new MutationObserver(records => {
+            const hasExternalMutation = records.some(record => {
+                const target = record.target;
+                const element = target instanceof Element ? target : target.parentElement;
+                return !(element && element.closest('.comments-overlay-container'));
+            });
+            if (hasExternalMutation) {
+                this.#scheduleRematch(root);
+            }
         });
         const targetNode = root instanceof Document ? (root.body || root.documentElement) : root;
         this.#mutationObserver.observe(targetNode, {
@@ -644,6 +692,10 @@ export class CommentOverlayManager extends Common.ObjectWrapper.ObjectWrapper {
         if (this.#mutationObserver) {
             this.#mutationObserver.disconnect();
             this.#mutationObserver = undefined;
+        }
+        if (this.#mutationRafId !== undefined) {
+            cancelAnimationFrame(this.#mutationRafId);
+            this.#mutationRafId = undefined;
         }
         if (this.#rematchTimeoutId) {
             clearTimeout(this.#rematchTimeoutId);

@@ -111,5 +111,17 @@ describe('DataGridExporter', () => {
         const csv = DataGrid.DataGridExporter.exportToCSV(emptyDataGrid);
         assert.strictEqual(csv, '');
     });
+    it('escapes formula prefixes in CSV headers and cells', () => {
+        const columns = [
+            { id: 'col1', title: i18n.i18n.lockedString('=HeaderFormula'), sortable: false },
+            { id: 'col2', title: i18n.i18n.lockedString('Column 2'), sortable: false },
+        ];
+        const grid = new DataGrid.DataGrid.DataGridImpl({ displayName: 'Test', columns });
+        grid.rootNode().appendChild(new DataGrid.DataGrid.DataGridNode({ col1: '=SUM(1,2)', col2: -42 }));
+        const csv = DataGrid.DataGridExporter.exportToCSV(grid);
+        const expected = '\'=HeaderFormula,Column 2\n' +
+            '"\'=SUM(1,2)",-42';
+        assert.strictEqual(csv, expected);
+    });
 });
 //# sourceMappingURL=DataGridExporter.test.js.map

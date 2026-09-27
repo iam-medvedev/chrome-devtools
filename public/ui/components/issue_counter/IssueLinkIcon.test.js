@@ -147,5 +147,28 @@ describe('IssueLinkIcon', () => {
             sinon.assert.called(revealOverride);
         });
     });
+    it('resolves issue title tooltip from MarkdownIssueDescription', async () => {
+        const deprecationLikeIssue = {
+            ...mockIssue,
+            getDescription() {
+                return {
+                    file: 'deprecation.md',
+                    title: 'Deprecated feature used',
+                    substitutions: new Map([
+                        ['PLACEHOLDER_message', 'Some deprecation message'],
+                    ]),
+                    links: [],
+                };
+            },
+        };
+        const { shadowRoot } = await renderIssueLinkIcon({
+            issue: deprecationLikeIssue,
+        });
+        if (!extractElements(shadowRoot).button.title.includes('Deprecated feature used')) {
+            await RenderCoordinator.done({ waitForWork: true });
+        }
+        const { button } = extractElements(shadowRoot);
+        assert.strictEqual(button.title, 'Click to open the Issues tab and show issue: Deprecated feature used');
+    });
 });
 //# sourceMappingURL=IssueLinkIcon.test.js.map

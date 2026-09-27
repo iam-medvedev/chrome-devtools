@@ -4,6 +4,7 @@ import { type A11yAnnouncement } from './AccessibilityAnnouncementRecordingView.
 export interface ViewInput {
     items: readonly A11yAnnouncement[];
     selectedItem: A11yAnnouncement | null;
+    onContextMenu: (menu: UI.ContextMenu.ContextMenu, item: A11yAnnouncement) => void;
     onSelect: (item: A11yAnnouncement) => void;
     onDeselect: () => void;
 }

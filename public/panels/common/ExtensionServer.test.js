@@ -11,6 +11,7 @@ import * as Bindings from '../../models/bindings/bindings.js';
 import * as Extensions from '../../models/extensions/extensions.js';
 import * as Logs from '../../models/logs/logs.js';
 import * as Workspace from '../../models/workspace/workspace.js';
+import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, expectConsoleLogs } from '../../testing/EnvironmentHelpers.js';
 import { spyCall } from '../../testing/ExpectStubCall.js';
 import { getExtensionOrigin, setupDevtoolsExtensionHooks, } from '../../testing/ExtensionHelpers.js';
@@ -62,6 +63,29 @@ describe('Extensions', () => {
         target.setInspectedURL(allowedUrl);
         assert.isTrue(addExtensionSpy.calledOnce, 'addExtension called once');
         assert.isTrue(addExtensionSpy.returned(true), 'addExtension returned true');
+    });
+    it('does not allow extensions on foreign extension URLs', async () => {
+        const addExtensionSpy = sinon.spy(PanelCommon.ExtensionServer.ExtensionServer.instance(), 'addExtension');
+        const target = getBackend(context).createTarget({ type: SDK.Target.Type.FRAME });
+        for (const url of [urlString `chrome-extension://other-extension/page.html`,
+            urlString `blob:chrome-extension://other-extension/uuid`,
+            urlString `filesystem:chrome-extension://other-extension/temporary/page.html`,
+        ]) {
+            addExtensionSpy.resetHistory();
+            target.setInspectedURL(url);
+            assert.isTrue(addExtensionSpy.calledOnce, `addExtension called once for ${url}`);
+            assert.isUndefined(addExtensionSpy.firstCall.returnValue, `addExtension returned undefined for ${url}`);
+        }
+    });
+    it('does not allow extensions without file access on file and blob:file URLs', async () => {
+        const addExtensionSpy = sinon.spy(PanelCommon.ExtensionServer.ExtensionServer.instance(), 'addExtension');
+        const target = getBackend(context).createTarget({ type: SDK.Target.Type.FRAME });
+        for (const url of [urlString `file:///path/to/file.html`, urlString `blob:file:///path/to/file.html`]) {
+            addExtensionSpy.resetHistory();
+            target.setInspectedURL(url);
+            assert.isTrue(addExtensionSpy.calledOnce, `addExtension called once for ${url}`);
+            assert.isUndefined(addExtensionSpy.firstCall.returnValue, `addExtension returned undefined for ${url}`);
+        }
     });
     it('only returns page resources for allowed targets', async () => {
         const urls = ['http://example.com', 'chrome://version'];
@@ -494,11 +518,29 @@ describe('Runtime hosts policy', () => {
             assert.isUndefined(context.chrome.devtools);
         });
     }
+    it('blocks API calls on nested blocked protocols', async () => {
+        assert.isUndefined(context.chrome.devtools);
+        const addExtensionStub = sinon.stub(PanelCommon.ExtensionServer.ExtensionServer.instance(), 'addExtension');
+        for (const protocol of ['devtools', 'chrome', 'chrome-untrusted', 'chrome-error', 'chrome-search']) {
+            const target = getBackend(context).createTarget({ type: SDK.Target.Type.FRAME });
+            target.setInspectedURL(urlString `${`blob:${protocol}://foo/uuid`}`);
+            sinon.assert.notCalled(addExtensionStub);
+            assert.isUndefined(context.chrome.devtools);
+        }
+    });
     it('blocks API calls on blocked hosts', async () => {
         assert.isUndefined(context.chrome.devtools);
         const target = getBackend(context).createTarget({ type: SDK.Target.Type.FRAME });
         const addExtensionStub = sinon.spy(PanelCommon.ExtensionServer.ExtensionServer.instance(), 'addExtension');
         target.setInspectedURL(blockedUrl);
+        assert.isTrue(addExtensionStub.alwaysReturned(undefined));
+        assert.isUndefined(context.chrome.devtools);
+    });
+    it('blocks API calls on nested blocked hosts', async () => {
+        assert.isUndefined(context.chrome.devtools);
+        const target = getBackend(context).createTarget({ type: SDK.Target.Type.FRAME });
+        const addExtensionStub = sinon.spy(PanelCommon.ExtensionServer.ExtensionServer.instance(), 'addExtension');
+        target.setInspectedURL(urlString `blob:${blockedUrl}/uuid`);
         assert.isTrue(addExtensionStub.alwaysReturned(undefined));
         assert.isUndefined(context.chrome.devtools);
     });
@@ -883,7 +925,7 @@ describe('Runtime hosts policy', () => {
         assert.exists(requests.find(e => e.request.url === allowedUrl));
         assert.notExists(requests.find(e => e.request.url === blockedUrl));
     });
-    it('omits getHAR entries whose redirectURL references a blocked host', async () => {
+    it('redacts blocked redirect URLs without omitting getHAR entries', async () => {
         Logs.NetworkLog.NetworkLog.instance();
         const frameId = 'frame-id';
         const target = createTarget({ id: 'target' });
@@ -891,15 +933,18 @@ describe('Runtime hosts policy', () => {
         const networkManager = target.model(SDK.NetworkManager.NetworkManager);
         assert.exists(networkManager);
         const blockedRedirectUrl = urlString `${`${blockedUrl}/secret?token=abc`}`;
-        // Entry with a redirect to a blocked URL — should be omitted.
+        const allowedRedirectUrl = urlString `${`${allowedUrl}?redirect-target`}`;
         createRequest(networkManager, frameId, 'redirect-to-blocked', allowedUrl, [{ name: 'Location', value: `${blockedRedirectUrl}` }]);
-        // Entry with no blocked references — should be kept.
-        createRequest(networkManager, frameId, 'clean-entry', allowedUrl);
+        createRequest(networkManager, frameId, 'clean-entry', allowedUrl, [{ name: 'Location', value: `${allowedRedirectUrl}` }]);
         const result = await context.chrome.devtools.network.getHAR();
-        assert.lengthOf(result.entries, 1);
-        assert.notExists(result.entries.find(e => e.response.headers.some(h => h.name === 'Location')));
+        // Expect both requests to be present, with the first sanitized and the second intact.
+        assert.lengthOf(result.entries, 2);
+        assert.strictEqual(result.entries[0].response.redirectURL, '');
+        assert.notExists(result.entries[0].response.headers.find(h => h.name === 'Location'));
+        assert.strictEqual(result.entries[1].response.redirectURL, allowedRedirectUrl);
+        assert.strictEqual(result.entries[1].response.headers.find(h => h.name === 'Location')?.value, allowedRedirectUrl);
     });
-    it('omits getHAR entries whose initiator references a blocked host', async () => {
+    it('redacts blocked initiators without omitting getHAR entries', async () => {
         Logs.NetworkLog.NetworkLog.instance();
         const frameId = 'frame-id';
         const target = createTarget({ id: 'target' });
@@ -907,7 +952,6 @@ describe('Runtime hosts policy', () => {
         const networkManager = target.model(SDK.NetworkManager.NetworkManager);
         assert.exists(networkManager);
         const blockedScriptUrl = urlString `${`${blockedUrl}/app.js`}`;
-        // Entry whose initiator URL is blocked — should be omitted.
         createRequest(networkManager, frameId, 'blocked-initiator', allowedUrl, [], {
             type: "script" /* Protocol.Network.InitiatorType.Script */,
             url: blockedScriptUrl,
@@ -921,13 +965,27 @@ describe('Runtime hosts policy', () => {
                     }],
             },
         });
-        // Entry with no blocked references — should be kept.
-        createRequest(networkManager, frameId, 'clean-entry', allowedUrl);
+        const allowedInitiator = {
+            type: "script" /* Protocol.Network.InitiatorType.Script */,
+            url: allowedUrl,
+            stack: {
+                callFrames: [{
+                        functionName: 'allowedFn',
+                        scriptId: '2',
+                        url: allowedUrl,
+                        lineNumber: 2,
+                        columnNumber: 0,
+                    }],
+            },
+        };
+        createRequest(networkManager, frameId, 'clean-entry', allowedUrl, [], allowedInitiator);
         const result = await context.chrome.devtools.network.getHAR();
-        assert.lengthOf(result.entries, 1);
+        // Expect both requests to be present, with the first sanitized and the second intact.
+        assert.lengthOf(result.entries, 2);
         assert.isNull(result.entries[0]._initiator);
+        assert.deepEqual(result.entries[1]._initiator, allowedInitiator);
     });
-    it('omits getHAR entries with Location, Content-Location, Refresh, or Link headers referencing blocked hosts', async () => {
+    it('redacts Content-Location, Refresh, or Link headers referencing blocked hosts', async () => {
         Logs.NetworkLog.NetworkLog.instance();
         const frameId = 'frame-id';
         const target = createTarget({ id: 'target' });
@@ -935,17 +993,22 @@ describe('Runtime hosts policy', () => {
         const networkManager = target.model(SDK.NetworkManager.NetworkManager);
         assert.exists(networkManager);
         const blockedRedirectUrl = urlString `${`${blockedUrl}/target-page`}`;
-        // Each of these should cause the entry to be omitted.
         createRequest(networkManager, frameId, 'content-loc', allowedUrl, [{ name: 'Content-Location', value: `${blockedRedirectUrl}` }]);
         createRequest(networkManager, frameId, 'refresh', allowedUrl, [{ name: 'Refresh', value: `5; url=${blockedRedirectUrl}` }]);
         createRequest(networkManager, frameId, 'link', allowedUrl, [{ name: 'Link', value: `<${blockedRedirectUrl}>; rel=preload` }]);
-        // This entry references only allowed URLs — should be kept.
-        createRequest(networkManager, frameId, 'clean', allowedUrl, [{ name: 'Link', value: `<${allowedUrl}>; rel=stylesheet` }]);
+        const allowedHeaders = [
+            { name: 'Content-Location', value: `${allowedUrl}?content-location` },
+            { name: 'Refresh', value: `5; url=${allowedUrl}?refresh` },
+            { name: 'Link', value: `<${allowedUrl}?link>; rel=stylesheet` },
+        ];
+        createRequest(networkManager, frameId, 'clean', allowedUrl, allowedHeaders);
         const result = await context.chrome.devtools.network.getHAR();
-        assert.lengthOf(result.entries, 1);
-        assert.strictEqual(result.entries[0].response.headers.find(h => h.name === 'Link')?.value, `<${allowedUrl}>; rel=stylesheet`);
+        // Expect all 4 requests to be present, with the first three sanitized and the last intact.
+        assert.lengthOf(result.entries, 4);
+        assert.isFalse(result.entries.some(entry => entry.response.headers.some(h => h.value.includes(blockedUrl))));
+        assert.deepEqual(result.entries[3].response.headers, allowedHeaders);
     });
-    it('omits onRequestFinished entries that reference blocked hosts in redirectURL or initiator', async () => {
+    it('redacts blocked redirect URLs and initiators from onRequestFinished entries', async () => {
         const frameId = 'frame-id';
         const target = createTarget({ id: 'target' });
         target.setInspectedURL(allowedUrl);
@@ -956,9 +1019,7 @@ describe('Runtime hosts policy', () => {
         assert.exists(networkManager);
         const blockedRedirectUrl = urlString `${`${blockedUrl}/redirect-target?code=xyz`}`;
         const blockedScriptUrl = urlString `${`${blockedUrl}/subframe.js`}`;
-        // Entry redirecting to blocked URL — should be omitted.
         createRequest(networkManager, frameId, 'redirect-blocked', allowedUrl, [{ name: 'Location', value: `${blockedRedirectUrl}` }]);
-        // Entry with blocked initiator — should be omitted.
         createRequest(networkManager, frameId, 'initiator-blocked', allowedUrl, [], {
             type: "script" /* Protocol.Network.InitiatorType.Script */,
             url: blockedScriptUrl,
@@ -972,14 +1033,60 @@ describe('Runtime hosts policy', () => {
                     }],
             },
         });
-        // Clean entry — should be delivered.
-        createRequest(networkManager, frameId, 'clean-entry', allowedUrl);
+        const allowedRedirectUrl = urlString `${`${allowedUrl}?redirect-target`}`;
+        const allowedInitiator = {
+            type: "script" /* Protocol.Network.InitiatorType.Script */,
+            url: allowedUrl,
+            stack: {
+                callFrames: [{
+                        functionName: 'allowedFn',
+                        scriptId: '2',
+                        url: allowedUrl,
+                        lineNumber: 20,
+                        columnNumber: 2,
+                    }],
+            },
+        };
+        createRequest(networkManager, frameId, 'clean-entry', allowedUrl, [{ name: 'Location', value: `${allowedRedirectUrl}` }], allowedInitiator);
         await waitForFunction(() => requests.length >= 1);
         // Give a tick for any additional events to arrive.
         await new Promise(resolve => setTimeout(resolve, 0));
-        assert.lengthOf(requests, 1);
+        // Expect all 3 requests to be present, with the first two sanitized and the last intact.
+        assert.lengthOf(requests, 3);
         assert.strictEqual(requests[0].request.url, allowedUrl);
         assert.strictEqual(requests[0].response.redirectURL, '');
+        assert.notExists(requests[0].response.headers.find(h => h.name === 'Location'));
+        assert.isNull(requests[1]._initiator);
+        assert.strictEqual(requests[2].response.redirectURL, allowedRedirectUrl);
+        assert.strictEqual(requests[2].response.headers.find(h => h.name === 'Location')?.value, allowedRedirectUrl);
+        assert.deepEqual(requests[2]._initiator, allowedInitiator);
+    });
+    it('delivers onRequestFinished when another extension appears in the initiator stack', async () => {
+        const frameId = 'frame-id';
+        const target = createTarget({ id: 'target' });
+        target.setInspectedURL(allowedUrl);
+        const requests = [];
+        context.chrome.devtools?.network.onRequestFinished.addListener(r => requests.push(r));
+        await waitForFunction(() => PanelCommon.ExtensionServer.ExtensionServer.instance().hasSubscribers("network-request-finished" /* Extensions.ExtensionAPI.PrivateAPI.Events.NetworkRequestFinished */));
+        const networkManager = target.model(SDK.NetworkManager.NetworkManager);
+        assert.exists(networkManager);
+        const requestlyScriptUrl = urlString `chrome-extension://requestly-extension/interceptor.js`;
+        createRequest(networkManager, frameId, 'requestly-initiator', allowedUrl, [], {
+            type: "script" /* Protocol.Network.InitiatorType.Script */,
+            url: allowedUrl,
+            stack: {
+                callFrames: [{
+                        functionName: 'patchedFetch',
+                        scriptId: '1',
+                        url: requestlyScriptUrl,
+                        lineNumber: 10,
+                        columnNumber: 1,
+                    }],
+            },
+        });
+        await waitForFunction(() => requests.length === 1);
+        assert.strictEqual(requests[0].request.url, allowedUrl);
+        assert.isNull(requests[0]._initiator);
     });
     it('does not include requests from blocked targets in onRequestFinished event listener even if request URL is allowed', async () => {
         const frameId = 'frame-id';
@@ -1183,6 +1290,7 @@ describe('ExtensionServer', () => {
             'chrome-untrusted://extensions',
             'chrome-error://crash',
             'chrome-search://foo/bar',
+            'isolated-app://bundle-id/index.html',
         ];
         for (const url of blockedUrls) {
             assert.isFalse(PanelCommon.ExtensionServer.ExtensionServer.canInspectURL(url), url);
@@ -2112,6 +2220,66 @@ describe('Extension Panels', () => {
             assertIsStatus(result2);
             assert.strictEqual(result2.code, 'E_BADARGTYPE');
         });
+    });
+});
+describe('Keyboard event forwarding', () => {
+    const H_KEY_CODE = 72;
+    const CTRL_MODIFIER = 2;
+    const CTRL_H = H_KEY_CODE | (CTRL_MODIFIER << 8);
+    const context = setupDevtoolsExtensionHooks({}, [H_KEY_CODE, CTRL_H]);
+    beforeEach(() => {
+        getBackend(context).createTarget().setInspectedURL(urlString `http://example.com`);
+        // The injected API, and with it the keydown listener under test, is only installed once the
+        // target has been navigated to a non-privileged URL.
+        assert.exists(context.chrome.devtools);
+    });
+    // `EditContext` is not part of the TypeScript DOM typings yet.
+    const EditContext = Reflect.get(globalThis, 'EditContext');
+    function attachEditContext(element) {
+        element.editContext = new EditContext();
+    }
+    function focusNewElement(tagName, setUp = () => { }) {
+        const element = document.createElement(tagName);
+        renderElementIntoDOM(element);
+        setUp(element);
+        element.focus();
+        assert.strictEqual(document.activeElement, element, `<${tagName}> did not take focus`);
+    }
+    function forwardsH(ctrlKey = false) {
+        const event = new KeyboardEvent('keydown', { key: 'h', keyCode: H_KEY_CODE, ctrlKey, bubbles: true, cancelable: true });
+        document.activeElement?.dispatchEvent(event);
+        return event.defaultPrevented;
+    }
+    it('does not forward plain hotkeys out of an element with an attached EditContext', () => {
+        // Regression test for crbug.com/559426943.
+        focusNewElement('div', element => {
+            element.tabIndex = 0;
+            attachEditContext(element);
+        });
+        assert.isFalse(forwardsH(), 'keystroke was swallowed instead of reaching the editor');
+    });
+    it('does not forward plain hotkeys out of an input', () => {
+        focusNewElement('input');
+        assert.isFalse(forwardsH());
+    });
+    it('does not forward plain hotkeys out of a contentEditable element', () => {
+        focusNewElement('div', element => {
+            element.contentEditable = 'true';
+        });
+        assert.isFalse(forwardsH());
+    });
+    it('forwards plain hotkeys out of a non-editable element', () => {
+        focusNewElement('div', element => {
+            element.tabIndex = 0;
+        });
+        assert.isTrue(forwardsH(), 'hotkey did not reach DevTools');
+    });
+    it('forwards hotkeys with modifiers even out of an element with an attached EditContext', () => {
+        focusNewElement('div', element => {
+            element.tabIndex = 0;
+            attachEditContext(element);
+        });
+        assert.isTrue(forwardsH(/* ctrlKey= */ true), 'Ctrl+H did not reach DevTools');
     });
 });
 //# sourceMappingURL=ExtensionServer.test.js.map

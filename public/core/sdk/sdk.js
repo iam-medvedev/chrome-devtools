@@ -191,7 +191,6 @@ var Audits;
     CookieExclusionReason2["ExcludeSameSiteLax"] = "ExcludeSameSiteLax";
     CookieExclusionReason2["ExcludeSameSiteStrict"] = "ExcludeSameSiteStrict";
     CookieExclusionReason2["ExcludeDomainNonASCII"] = "ExcludeDomainNonASCII";
-    CookieExclusionReason2["ExcludeThirdPartyCookieBlockedInFirstPartySet"] = "ExcludeThirdPartyCookieBlockedInFirstPartySet";
     CookieExclusionReason2["ExcludeThirdPartyPhaseout"] = "ExcludeThirdPartyPhaseout";
     CookieExclusionReason2["ExcludePortMismatch"] = "ExcludePortMismatch";
     CookieExclusionReason2["ExcludeSchemeMismatch"] = "ExcludeSchemeMismatch";
@@ -1443,7 +1442,6 @@ var Network;
     SetCookieBlockedReason2["SameSiteNoneInsecure"] = "SameSiteNoneInsecure";
     SetCookieBlockedReason2["UserPreferences"] = "UserPreferences";
     SetCookieBlockedReason2["ThirdPartyPhaseout"] = "ThirdPartyPhaseout";
-    SetCookieBlockedReason2["ThirdPartyBlockedInFirstPartySet"] = "ThirdPartyBlockedInFirstPartySet";
     SetCookieBlockedReason2["SyntaxError"] = "SyntaxError";
     SetCookieBlockedReason2["SchemeNotSupported"] = "SchemeNotSupported";
     SetCookieBlockedReason2["OverwriteSecure"] = "OverwriteSecure";
@@ -1468,7 +1466,6 @@ var Network;
     CookieBlockedReason2["SameSiteNoneInsecure"] = "SameSiteNoneInsecure";
     CookieBlockedReason2["UserPreferences"] = "UserPreferences";
     CookieBlockedReason2["ThirdPartyPhaseout"] = "ThirdPartyPhaseout";
-    CookieBlockedReason2["ThirdPartyBlockedInFirstPartySet"] = "ThirdPartyBlockedInFirstPartySet";
     CookieBlockedReason2["UnknownError"] = "UnknownError";
     CookieBlockedReason2["SchemefulSameSiteStrict"] = "SchemefulSameSiteStrict";
     CookieBlockedReason2["SchemefulSameSiteLax"] = "SchemefulSameSiteLax";
@@ -3533,6 +3530,7 @@ var generatedProperties = [
       "line-clamp",
       "line-gap-override",
       "line-height",
+      "link-parameters",
       "list-style-image",
       "list-style-position",
       "list-style-type",
@@ -6555,6 +6553,14 @@ var generatedProperties = [
       "normal"
     ],
     "name": "line-height"
+  },
+  {
+    "keywords": [
+      "none"
+    ],
+    "name": "link-parameters",
+    "runtime_flag": "CSSLinkParametersProperty",
+    "runtime_flag_status": "experimental"
   },
   {
     "inherited": true,
@@ -10805,6 +10811,11 @@ var generatedPropertyValues = {
   "line-height": {
     "values": [
       "normal"
+    ]
+  },
+  "link-parameters": {
+    "values": [
+      "none"
     ]
   },
   "list-style-image": {
@@ -15772,6 +15783,7 @@ var OPAQUE_PREFIXES = [
   "about:",
   "blob:about",
   "blob:data",
+  "blob:file",
   "blob:null"
 ];
 var IMPORTED_ORIGIN_PREFIXES = /* @__PURE__ */ new Set([
@@ -16784,6 +16796,9 @@ var BaseVariableMatch = class {
     return this.matching.getComputedTextRange(this.fallback[0], this.fallback[this.fallback.length - 1]);
   }
 };
+function isVariableNameNode(node, ast) {
+  return node?.name === "VariableName" && ast.text(node).length > 2;
+}
 var BaseVariableMatcherBase = matcherBase(BaseVariableMatch);
 var BaseVariableMatcher = class extends BaseVariableMatcherBase {
   // clang-format on
@@ -16803,13 +16818,10 @@ var BaseVariableMatcher = class extends BaseVariableMatcherBase {
     }
     const nameNode = args[0][0];
     const fallback = args.length === 2 ? args[1] : void 0;
-    if (nameNode?.name !== "VariableName") {
+    if (!isVariableNameNode(nameNode, matching.ast)) {
       return null;
     }
     const varName = matching.ast.text(nameNode);
-    if (!varName.startsWith("--")) {
-      return null;
-    }
     return new BaseVariableMatch(
       matching.ast.text(node),
       node,
@@ -17545,7 +17557,7 @@ var LinkableNameMatcher = class _LinkableNameMatcher extends LinkableNameMatcher
     const isInsideVarCall = parentNode.name === "ArgList" && parentNode.prevSibling?.name === "Callee" && matching.ast.text(parentNode.prevSibling) === "var";
     const isAParentDeclarationOrVarCall = isParentADeclaration || isInsideVarCall;
     const shouldMatchOnlyVariableName = propertyName === "position-try" /* POSITION_TRY */ || propertyName === "position-try-fallbacks" /* POSITION_TRY_FALLBACKS */;
-    if (!propertyName || node.name !== "ValueName" && node.name !== "VariableName" || !isAParentDeclarationOrVarCall || node.name === "ValueName" && shouldMatchOnlyVariableName) {
+    if (!propertyName || node.name !== "ValueName" && node.name !== "VariableName" || !isAParentDeclarationOrVarCall || shouldMatchOnlyVariableName && !isVariableNameNode(node, matching.ast)) {
       return null;
     }
     if (cssMetadata().getPropertyValues(propertyName).includes(text)) {
@@ -17807,7 +17819,7 @@ var CustomFunctionMatcher = class extends CustomFunctionMatcherBase {
       return null;
     }
     const callee = matching.ast.text(node.getChild("VariableName"));
-    if (!callee?.startsWith("--")) {
+    if (!callee || callee.length <= 2 || !callee.startsWith("--")) {
       return null;
     }
     const args = ASTUtils.callArgs(node);
@@ -17970,7 +17982,7 @@ var AnchorFunctionMatcher = class extends AnchorFunctionMatcherBase {
     return null;
   }
   matches(node, matching) {
-    if (node.name === "VariableName") {
+    if (isVariableNameNode(node, matching.ast)) {
       let parent = node.parent;
       if (parent?.name !== "ArgList") {
         return null;
@@ -17989,7 +18001,7 @@ var AnchorFunctionMatcher = class extends AnchorFunctionMatcherBase {
     if (calleeText === "anchor" && args.length <= 2) {
       return null;
     }
-    if (args.find((arg) => arg.name === "VariableName")) {
+    if (args.find((arg) => isVariableNameNode(arg, matching.ast))) {
       return null;
     }
     return new AnchorFunctionMatch(matching.ast.text(node), node, calleeText);
@@ -18012,7 +18024,7 @@ var PositionAnchorMatcher = class extends PositionAnchorMatcherBase {
     return propertyName === "position-anchor";
   }
   matches(node, matching) {
-    if (node.name !== "VariableName") {
+    if (!isVariableNameNode(node, matching.ast)) {
       return null;
     }
     const dashedIdentifier = matching.ast.text(node);
@@ -22027,7 +22039,9 @@ __export(SourceMapScopesInfo_exports, {
   SourceMapScopesInfo: () => SourceMapScopesInfo,
   comparePositions: () => comparePositions2,
   contains: () => contains,
-  findMatchingScopeNumber: () => findMatchingScopeNumber
+  findExpression: () => findExpression,
+  findMatchingScopeNumber: () => findMatchingScopeNumber,
+  scriptRelativePosition: () => scriptRelativePosition
 });
 import * as Formatter2 from "../../models/formatter/formatter.js";
 
@@ -22289,23 +22303,9 @@ var SourceMapScopeRemoteObject = class _SourceMapScopeRemoteObject extends Remot
   }
   /** @returns null if the variable is unavailable at the current paused location */
   #findExpression(index) {
-    if (!this.#range) {
-      return null;
-    }
-    const expressionOrSubRanges = this.#range.values[index];
-    if (typeof expressionOrSubRanges === "string") {
-      return expressionOrSubRanges;
-    }
-    if (!expressionOrSubRanges) {
-      return null;
-    }
-    const pausedPosition = this.#callFrame.location();
-    for (const range of expressionOrSubRanges) {
-      if (contains({ start: range.from, end: range.to }, pausedPosition.lineNumber, pausedPosition.columnNumber)) {
-        return range.value ?? null;
-      }
-    }
-    return null;
+    const pausedLocation = this.#callFrame.location();
+    const pausedPosition = pausedLocation ? scriptRelativePosition(pausedLocation) : void 0;
+    return findExpression(this.#range, index, pausedPosition?.line, pausedPosition?.column);
   }
   static #unavailableProperty(name) {
     return new RemoteObjectProperty(
@@ -22620,7 +22620,8 @@ var SourceMapScopesInfo = class _SourceMapScopesInfo {
   }
   /** Similar to #findGeneratedRangeChain, but takes inlineFrameIndex of virtual call frames into account */
   #findGeneratedRangeChainForFrame(callFrame) {
-    const rangeChain = this.#findGeneratedRangeChain(callFrame.location().lineNumber, callFrame.location().columnNumber);
+    const { line, column } = scriptRelativePosition(callFrame.location());
+    const rangeChain = this.#findGeneratedRangeChain(line, column);
     if (callFrame.inlineFrameIndex === 0) {
       return rangeChain;
     }
@@ -22631,6 +22632,17 @@ var SourceMapScopesInfo = class _SourceMapScopesInfo {
       }
     }
     return rangeChain;
+  }
+  resolveMappedVariablesAtPosition(line, column, ignoreInnerBlockScopes = false) {
+    const rangeChain = this.#findGeneratedRangeChain(line, column);
+    const startScope = rangeChain.at(-1)?.originalScope;
+    const innerMostScope = startScope && ignoreInnerBlockScopes && this.#findFunctionScopeInOriginalScopeChain(startScope) || startScope;
+    const result = [];
+    for (let scope = innerMostScope; scope; scope = scope.parent) {
+      const range = rangeChain.findLast((r) => r.originalScope === scope);
+      result.push(new Map(scope.variables.map((v, i) => [v, findExpression(range, i, line, column)])));
+    }
+    return innerMostScope ? result : null;
   }
   /**
    * Returns the authored function name of the function containing the provided generated position.
@@ -22746,6 +22758,10 @@ var SourceMapScopesInfo = class _SourceMapScopesInfo {
     return result;
   }
 };
+function findExpression(range, index, line = 0, column = 0) {
+  const val = range?.values[index];
+  return (typeof val === "string" ? val : val?.find((r) => contains({ start: r.from, end: r.to }, line, column))?.value) ?? null;
+}
 function contains(range, line, column) {
   if (range.start.line > line || range.start.line === line && range.start.column > column) {
     return false;
@@ -22761,14 +22777,18 @@ function comparePositions2(a, b) {
   }
   return a.column - b.column;
 }
+function scriptRelativePosition(location) {
+  const { lineNumber, columnNumber } = location.script()?.rawLocationToRelativeLocation(location) ?? location;
+  return { line: lineNumber, column: columnNumber };
+}
 function positionRange(callFrame, scope) {
   const range = scope.range();
   if (range === null || range.start.scriptId !== callFrame.location().scriptId || range.end.scriptId !== callFrame.location().scriptId) {
     return null;
   }
   return {
-    start: { line: range.start.lineNumber, column: range.start.columnNumber },
-    end: { line: range.end.lineNumber, column: range.end.columnNumber }
+    start: scriptRelativePosition(range.start),
+    end: scriptRelativePosition(range.end)
   };
 }
 function findMatchingScopeNumber(callFrame, range) {
@@ -23438,6 +23458,14 @@ var SourceMap = class _SourceMap {
       return null;
     }
     return this.#scopesInfo.resolveMappedScopeChain(frame);
+  }
+  resolveMappedVariablesAtPosition(location, ignoreInnerBlockScopes = false) {
+    this.#ensureSourceMapProcessed();
+    if (this.#provenance === "user" /* USER */ || !this.#scopesInfo?.hasVariablesAndBindings()) {
+      return null;
+    }
+    const { line, column } = scriptRelativePosition(location);
+    return this.#scopesInfo.resolveMappedVariablesAtPosition(line, column, ignoreInnerBlockScopes);
   }
   findOriginalFunctionName(position) {
     this.#ensureSourceMapProcessed();
@@ -24682,10 +24710,16 @@ var SourceMapCache = class _SourceMapCache {
     this.#name = name;
   }
   async set(debugId, securityOrigin, sourceMap) {
+    if (!securityOrigin || securityOrigin === "file://") {
+      return;
+    }
     const cache = await this.#cache();
     await cache?.put(_SourceMapCache.#urlForDebugId(debugId, securityOrigin), new Response(JSON.stringify(sourceMap)));
   }
   async get(debugId, securityOrigin) {
+    if (!securityOrigin || securityOrigin === "file://") {
+      return null;
+    }
     const cache = await this.#cache();
     const response = await cache?.match(_SourceMapCache.#urlForDebugId(debugId, securityOrigin));
     return await response?.json() ?? null;
@@ -24712,9 +24746,15 @@ var SourceMapCache = class _SourceMapCache {
 var IN_MEMORY_INSTANCE = new class {
   #cache = /* @__PURE__ */ new Map();
   async set(debugId, securityOrigin, sourceMap) {
+    if (!securityOrigin || securityOrigin === "file://") {
+      return;
+    }
     this.#cache.set(`${debugId}|${securityOrigin}`, sourceMap);
   }
   async get(debugId, securityOrigin) {
+    if (!securityOrigin || securityOrigin === "file://") {
+      return null;
+    }
     return this.#cache.get(`${debugId}|${securityOrigin}`) ?? null;
   }
   async disposeForTest() {
@@ -24889,20 +24929,29 @@ var SourceMapManager = class _SourceMapManager extends Common13.ObjectWrapper.Ob
     return Promise.all(this.#sourceMaps.keys().map((sourceMap) => sourceMap.waitForScopeInfo()));
   }
 };
+function getCacheOrigin(initiator) {
+  if (!initiator.initiatorUrl) {
+    return null;
+  }
+  const securityOrigin = SecurityOrigin.create(initiator.initiatorUrl);
+  if (securityOrigin.isOpaque() || securityOrigin.isFile() && securityOrigin.siteId() === "file:///") {
+    return null;
+  }
+  return securityOrigin.siteId();
+}
 async function loadSourceMap(resourceLoader, sourceMapCache, url, debugId, initiator) {
   try {
-    if (debugId) {
-      const securityOrigin = initiator.initiatorUrl ? Common13.ParsedURL.ParsedURL.extractOrigin(initiator.initiatorUrl) : Platform10.DevToolsPath.EmptyUrlString;
-      const cachedSourceMap = await sourceMapCache.get(debugId, securityOrigin);
+    const cacheOrigin = debugId ? getCacheOrigin(initiator) : null;
+    if (debugId && cacheOrigin) {
+      const cachedSourceMap = await sourceMapCache.get(debugId, cacheOrigin);
       if (cachedSourceMap) {
         return cachedSourceMap;
       }
     }
     const { content } = await resourceLoader.loadResource(url, initiator);
     const sourceMap = parseSourceMap(content);
-    if (debugId && "debugId" in sourceMap && sourceMap.debugId === debugId) {
-      const securityOrigin = initiator.initiatorUrl ? Common13.ParsedURL.ParsedURL.extractOrigin(initiator.initiatorUrl) : Platform10.DevToolsPath.EmptyUrlString;
-      await sourceMapCache.set(sourceMap.debugId, securityOrigin, sourceMap).catch();
+    if (debugId && cacheOrigin && "debugId" in sourceMap && sourceMap.debugId === debugId) {
+      await sourceMapCache.set(sourceMap.debugId, cacheOrigin, sourceMap).catch();
     }
     return sourceMap;
   } catch (cause) {
@@ -36612,6 +36661,18 @@ var InterceptedRequest = class _InterceptedRequest {
       const setCookieHeadersFromOverrides = responseHeaders.filter((header) => header.name === "set-cookie");
       this.networkRequest.setCookieHeaders = _InterceptedRequest.mergeSetCookieHeaders(originalSetCookieHeaders, setCookieHeadersFromOverrides);
       this.networkRequest.hasOverriddenContent = isBodyOverridden;
+      if (isBodyOverridden) {
+        this.networkRequest.setContentDataProvider(async () => {
+          const { mimeType, charset } = this.getMimeTypeAndCharset();
+          return new TextUtils21.ContentData.ContentData(
+            body,
+            /* isBase64= */
+            true,
+            mimeType ?? "application/octet-stream",
+            charset ?? void 0
+          );
+        });
+      }
     }
     void this.#fetchAgent.invoke_fulfillRequest({ requestId: this.requestId, responseCode, body, responseHeaders });
     this.#multitargetNetworkManager.dispatchEventToListeners(
@@ -42253,7 +42314,7 @@ var CPUThrottlingManager = class _CPUThrottlingManager extends Common37.ObjectWr
     return result.value;
   }
   async updateHostDefaultCPUPerformanceTier() {
-    if (this.#manualCPUPerformanceOverride !== void 0) {
+    if (this.#isCPUPerformanceOverrideActive()) {
       return;
     }
     const target = this.#targetManager.primaryPageTarget();
@@ -44939,6 +45000,8 @@ var StorageBucketsModel = class extends SDKModel {
   }
   cacheStorageContentUpdated(_event) {
   }
+  privateVerificationTokensUpdated() {
+  }
 };
 SDKModel.register(StorageBucketsModel, { capabilities: 8192 /* STORAGE */, autostart: false });
 var Events31 = /* @__PURE__ */ ((Events35) => {
@@ -45177,6 +45240,8 @@ var ServiceWorkerCacheModel = class extends SDKModel {
   storageBucketCreatedOrUpdated(_event) {
   }
   storageBucketDeleted(_event) {
+  }
+  privateVerificationTokensUpdated() {
   }
   setThrottlerSchedulesAsSoonAsPossibleForTest() {
     this.#scheduleAsSoonAsPossible = true;

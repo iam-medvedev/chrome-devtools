@@ -40,7 +40,7 @@ const DEFAULT_VIEW = (input, output, target) => {
           <tr jslog=${VisualLogging.tableRow('detached-element')}>
             <td>
               <devtools-widget
-                ${widget(Elements.ElementsTreeOutline.DOMTreeWidget, {
+                ${widget(Elements.DOMTreeWidget.DOMTreeWidget, {
         omitRootDOMNode: false,
         selectEnabled: true,
         hideGutter: true,

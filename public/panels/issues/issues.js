@@ -1293,7 +1293,6 @@ var Audits;
     CookieExclusionReason2["ExcludeSameSiteLax"] = "ExcludeSameSiteLax";
     CookieExclusionReason2["ExcludeSameSiteStrict"] = "ExcludeSameSiteStrict";
     CookieExclusionReason2["ExcludeDomainNonASCII"] = "ExcludeDomainNonASCII";
-    CookieExclusionReason2["ExcludeThirdPartyCookieBlockedInFirstPartySet"] = "ExcludeThirdPartyCookieBlockedInFirstPartySet";
     CookieExclusionReason2["ExcludeThirdPartyPhaseout"] = "ExcludeThirdPartyPhaseout";
     CookieExclusionReason2["ExcludePortMismatch"] = "ExcludePortMismatch";
     CookieExclusionReason2["ExcludeSchemeMismatch"] = "ExcludeSchemeMismatch";
@@ -2545,7 +2544,6 @@ var Network;
     SetCookieBlockedReason2["SameSiteNoneInsecure"] = "SameSiteNoneInsecure";
     SetCookieBlockedReason2["UserPreferences"] = "UserPreferences";
     SetCookieBlockedReason2["ThirdPartyPhaseout"] = "ThirdPartyPhaseout";
-    SetCookieBlockedReason2["ThirdPartyBlockedInFirstPartySet"] = "ThirdPartyBlockedInFirstPartySet";
     SetCookieBlockedReason2["SyntaxError"] = "SyntaxError";
     SetCookieBlockedReason2["SchemeNotSupported"] = "SchemeNotSupported";
     SetCookieBlockedReason2["OverwriteSecure"] = "OverwriteSecure";
@@ -2570,7 +2568,6 @@ var Network;
     CookieBlockedReason2["SameSiteNoneInsecure"] = "SameSiteNoneInsecure";
     CookieBlockedReason2["UserPreferences"] = "UserPreferences";
     CookieBlockedReason2["ThirdPartyPhaseout"] = "ThirdPartyPhaseout";
-    CookieBlockedReason2["ThirdPartyBlockedInFirstPartySet"] = "ThirdPartyBlockedInFirstPartySet";
     CookieBlockedReason2["UnknownError"] = "UnknownError";
     CookieBlockedReason2["SchemefulSameSiteStrict"] = "SchemefulSameSiteStrict";
     CookieBlockedReason2["SchemefulSameSiteLax"] = "SchemefulSameSiteLax";
@@ -5802,7 +5799,12 @@ var IssueView = class _IssueView extends UI5.TreeOutline.TreeElement {
     messageElement.setCollapsible(false);
     messageElement.selectable = false;
     const markdownComponent = new MarkdownView.MarkdownView.MarkdownView();
-    markdownComponent.data = { tokens: this.#description.markdown };
+    markdownComponent.data = {
+      tokens: this.#description.markdown,
+      renderer: new MarkdownView.MarkdownPlaceholderLitRenderer.MarkdownPlaceholderLitRenderer(
+        this.#description.substitutions
+      )
+    };
     messageElement.listItemElement.appendChild(markdownComponent);
     UI5.ARIAUtils.setPositionInSet(messageElement.listItemElement, 1);
     UI5.ARIAUtils.setSetSize(messageElement.listItemElement, this.#description.links.length === 0 ? 2 : 3);
@@ -6009,7 +6011,7 @@ var IssuesPane = class extends UI6.Widget.VBox {
   #noIssuesMessageDiv;
   #issuesManager;
   #aggregator;
-  #issueViewUpdatePromise = Promise.resolve();
+  #dirtyIssues = /* @__PURE__ */ new Set();
   constructor() {
     super({
       jslog: `${VisualLogging7.panel("issues")}`,
@@ -6034,11 +6036,10 @@ var IssuesPane = class extends UI6.Widget.VBox {
     this.#noIssuesMessageDiv.show(this.contentElement);
     this.#issuesManager = IssuesManager11.IssuesManager.IssuesManager.instance();
     this.#aggregator = new IssuesManager11.IssueAggregator.IssueAggregator(this.#issuesManager);
-    this.#aggregator.addEventListener(
-      IssuesManager11.IssueAggregator.Events.AGGREGATED_ISSUE_UPDATED,
-      this.#issueUpdated,
-      this
-    );
+    this.#aggregator.addEventListener(IssuesManager11.IssueAggregator.Events.AGGREGATED_ISSUE_UPDATED, (event) => {
+      this.#dirtyIssues.add(event.data);
+      this.requestUpdate();
+    });
     this.#aggregator.addEventListener(
       IssuesManager11.IssueAggregator.Events.FULL_UPDATE_REQUIRED,
       this.#onFullUpdate,
@@ -6048,7 +6049,7 @@ var IssuesPane = class extends UI6.Widget.VBox {
     this.#onFullUpdate();
     this.#issuesManager.addEventListener(
       IssuesManager11.IssuesManager.Events.ISSUES_COUNT_UPDATED,
-      this.#updateCounts,
+      this.requestUpdate,
       this
     );
   }
@@ -6118,13 +6119,13 @@ var IssuesPane = class extends UI6.Widget.VBox {
     rightToolbar.appendToolbarItem(issuesToolbarItem);
     return { toolbarContainer };
   }
-  #issueUpdated(event) {
-    this.#scheduleIssueViewUpdate(event.data);
+  async performUpdate() {
+    const issuesToUpdate = [...this.#dirtyIssues];
+    this.#dirtyIssues.clear();
+    await Promise.allSettled(issuesToUpdate.map((issue) => this.#updateIssueView(issue)));
+    this.#updateCounts();
   }
-  #scheduleIssueViewUpdate(issue) {
-    this.#issueViewUpdatePromise = this.#issueViewUpdatePromise.then(() => this.#updateIssueView(issue));
-  }
-  /** Don't call directly. Use `scheduleIssueViewUpdate` instead. */
+  /** Don't call directly. Use `requestUpdate` instead. */
   async #updateIssueView(issue) {
     let issueView = this.#issueViews.get(issue.aggregationKey());
     if (!issueView) {
@@ -6133,11 +6134,17 @@ var IssuesPane = class extends UI6.Widget.VBox {
         console.warn("Could not find description for issue code:", issue.code());
         return;
       }
-      const markdownDescription = await IssuesManager11.MarkdownIssueDescription.createIssueDescriptionFromMarkdown(description);
-      issueView = new IssueView(issue, markdownDescription);
-      this.#issueViews.set(issue.aggregationKey(), issueView);
-      const parent = this.#getIssueViewParent(issue);
-      this.appendIssueViewToParent(issueView, parent);
+      try {
+        const markdownDescription = await IssuesManager11.MarkdownIssueDescription.createIssueDescriptionFromMarkdown(description);
+        issueView = new IssueView(issue, markdownDescription);
+        const parent = this.#getIssueViewParent(issue);
+        this.appendIssueViewToParent(issueView, parent);
+        this.#issueViews.set(issue.aggregationKey(), issueView);
+      } catch (err) {
+        console.error(err);
+        issueView?.parent?.removeChild(issueView);
+        return;
+      }
     } else {
       issueView.setIssue(issue);
       const newParent = this.#getIssueViewParent(issue);
@@ -6147,7 +6154,6 @@ var IssuesPane = class extends UI6.Widget.VBox {
       }
     }
     issueView.update();
-    this.#updateCounts();
   }
   appendIssueViewToParent(issueView, parent) {
     parent.appendChild(issueView, (a, b) => {
@@ -6229,15 +6235,16 @@ var IssuesPane = class extends UI6.Widget.VBox {
     this.#fullUpdate(false);
   }
   #fullUpdate(force) {
+    this.#dirtyIssues.clear();
     this.#clearViews(this.#categoryViews, force ? void 0 : this.#aggregator.aggregatedIssueCategories());
     this.#clearViews(this.#kindViews, force ? void 0 : this.#aggregator.aggregatedIssueKinds());
     this.#clearViews(this.#issueViews, force ? void 0 : this.#aggregator.aggregatedIssueCodes());
     if (this.#aggregator) {
       for (const issue of this.#aggregator.aggregatedIssues()) {
-        this.#scheduleIssueViewUpdate(issue);
+        this.#dirtyIssues.add(issue);
       }
     }
-    this.#updateCounts();
+    this.requestUpdate();
   }
   #updateIssueKindViewsCount() {
     for (const view of this.#kindViews.values()) {
@@ -6276,7 +6283,7 @@ var IssuesPane = class extends UI6.Widget.VBox {
     }
   }
   async reveal(issue) {
-    await this.#issueViewUpdatePromise;
+    await this.updateComplete;
     const key = this.#aggregator.keyForIssue(issue);
     const issueView = this.#issueViews.get(key);
     if (issueView) {

@@ -87,12 +87,6 @@ export declare class SecurityOriginView extends UI.Widget.VBox {
     constructor(origin: Platform.DevToolsPath.UrlString, originState: OriginState);
     setSecurityState(newSecurityState: Protocol.Security.SecurityState): void;
 }
-export declare class SecurityDetailsTable {
-    #private;
-    constructor();
-    element(): HTMLTableElement;
-    addRow(key: string, value: string | Node): void;
-}
 export interface OriginState {
     securityState: Protocol.Security.SecurityState;
     securityDetails: Protocol.Network.SecurityDetails | null;

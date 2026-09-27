@@ -37,7 +37,7 @@ export class CD4ABridge extends Common.ObjectWrapper.ObjectWrapper {
         if (!this.#targetManager) {
             return undefined;
         }
-        const target = this.#targetManager.targetById(nodeSignature.targetId) ?? this.#targetManager.primaryPageTarget();
+        const target = this.#targetManager.targetById(nodeSignature.targetId);
         const domModel = target?.model(SDK.DOMModel.DOMModel);
         if (!domModel) {
             return undefined;
@@ -52,6 +52,9 @@ export class CD4ABridge extends Common.ObjectWrapper.ObjectWrapper {
     #formatCommentText(thread) {
         const rawText = thread.comments[0]?.text ?? '';
         const details = [];
+        if (thread.anchor.vePath) {
+            details.push(`- DevTools VEPath: ${thread.anchor.vePath}`);
+        }
         if (thread.anchor.textSignature) {
             details.push(`- DevTools element: ${thread.anchor.textSignature}`);
         }
@@ -89,8 +92,8 @@ export class CD4ABridge extends Common.ObjectWrapper.ObjectWrapper {
             return threadPayload;
         });
     }
-    takeComments() {
-        return this.getCommentThreads();
+    setAgentAttached(value) {
+        this.#commentManager.setAgentAttached(value);
     }
     resolveCommentThread(threadId, replyText) {
         return this.#commentManager.resolveCommentThread(threadId, replyText);
@@ -106,7 +109,7 @@ export class CD4ABridge extends Common.ObjectWrapper.ObjectWrapper {
             }
         }
         if (target?.node && this.#targetManager) {
-            const sdkTarget = this.#targetManager.targetById(target.node.targetId) ?? this.#targetManager.primaryPageTarget();
+            const sdkTarget = this.#targetManager.targetById(target.node.targetId);
             const domModel = sdkTarget?.model(SDK.DOMModel.DOMModel);
             if (domModel) {
                 const cdpNodeId = target.node.backendNodeId;

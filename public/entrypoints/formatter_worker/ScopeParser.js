@@ -7,7 +7,13 @@ export function parseScopes(expression, sourceType = 'script') {
     // Parse the expression and find variables and scopes.
     let root = null;
     try {
-        root = Acorn.parse(expression, { ecmaVersion: ECMA_VERSION, allowAwaitOutsideFunction: true, ranges: false, sourceType });
+        root = Acorn.parse(expression, {
+            ecmaVersion: ECMA_VERSION,
+            allowAwaitOutsideFunction: true,
+            checkPrivateFields: false,
+            ranges: false,
+            sourceType,
+        });
     }
     catch {
         return null;

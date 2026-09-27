@@ -153,6 +153,7 @@ describe('ContextSelectionAgent', function () {
                         }],
                     [{ explanation: 'Done' }],
                 ]),
+                allowedOrigin: () => ({ origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com') }),
             });
             await Array.fromAsync(agent.run('test', { selected: null }));
             const requestToAida = agent.buildRequest({ text: '' }, Host.AidaClient.Role.USER);
@@ -195,6 +196,36 @@ describe('ContextSelectionAgent', function () {
                     parts: [{ text: 'Done' }],
                 },
             ]);
+        });
+        it('fails to list network requests when origin is undefined', async () => {
+            const request = createNetworkRequest({
+                requestId: 'requestId',
+                url: 'https://example.com/secret',
+                documentURL: 'https://example.com/',
+                statusCode: 200,
+            });
+            sinon.stub(universe.networkLog, 'requests').returns([request]);
+            const agent = new ContextSelectionAgent.ContextSelectionAgent({
+                aidaClient: mockAidaClient([
+                    [{
+                            functionCalls: [{
+                                    name: 'listNetworkRequests',
+                                    args: {},
+                                }],
+                            explanation: '',
+                        }],
+                    [{ explanation: 'Done' }],
+                ]),
+                allowedOrigin: () => ({ origin: undefined }),
+            });
+            await Array.fromAsync(agent.run('test', { selected: null }));
+            const requestToAida = agent.buildRequest({ text: '' }, Host.AidaClient.Role.USER);
+            const part = requestToAida.historical_contexts?.[2].parts[0];
+            assert(part && 'functionResponse' in part);
+            assert.deepEqual(part.functionResponse.response, {
+                error: 'No requests recorded by DevTools',
+                widgets: undefined,
+            });
         });
         it('fails to list network requests for opaque origins', async () => {
             const agent = new ContextSelectionAgent.ContextSelectionAgent({
@@ -649,6 +680,7 @@ describe('ContextSelectionAgent', function () {
                         }],
                     [{ explanation: 'Done' }],
                 ]),
+                allowedOrigin: () => ({ origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com') }),
             });
             const responses = await Array.fromAsync(agent.run('test', { selected: null }));
             const contextChange = responses.find(r => r.type === "context-change" /* AiAgent.ResponseType.CONTEXT_CHANGE */);
@@ -660,6 +692,37 @@ describe('ContextSelectionAgent', function () {
             const widget = contextChange.widgets[0];
             assert.strictEqual(widget.name, 'NETWORK_REQUEST_GENERAL_HEADERS');
             assert.strictEqual(widget.data.request, request);
+        });
+        it('fails to select network request when origin is undefined', async () => {
+            const request = createNetworkRequest({
+                requestId: 'requestId',
+                url: 'https://example.com/',
+                documentURL: 'https://example.com/',
+                statusCode: 200,
+            });
+            sinon.stub(universe.networkLog, 'requests').returns([request]);
+            const agent = new ContextSelectionAgent.ContextSelectionAgent({
+                aidaClient: mockAidaClient([
+                    [{
+                            functionCalls: [{
+                                    name: 'selectNetworkRequest',
+                                    args: { id: 'requestId' },
+                                }],
+                            explanation: '',
+                        }],
+                    [{ explanation: 'Done' }],
+                ]),
+                allowedOrigin: () => ({ origin: undefined }),
+            });
+            const responses = await Array.fromAsync(agent.run('test', { selected: null }));
+            assert.isUndefined(responses.find(r => r.type === "context-change" /* AiAgent.ResponseType.CONTEXT_CHANGE */));
+            const requestToAida = agent.buildRequest({ text: '' }, Host.AidaClient.Role.USER);
+            const part = requestToAida.historical_contexts?.[2].parts[0];
+            assert(part && 'functionResponse' in part);
+            assert.deepEqual(part.functionResponse.response, {
+                error: 'No request found',
+                widgets: undefined,
+            });
         });
         it('returns an error when selecting cross-origin network request', async () => {
             const request = createNetworkRequest({
@@ -767,6 +830,7 @@ describe('ContextSelectionAgent', function () {
                         }],
                     [{ explanation: 'Done' }],
                 ]),
+                allowedOrigin: () => ({ origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com') }),
             });
             const responses = await Array.fromAsync(agent.run('test', { selected: null }));
             const contextChange = responses.find(r => r.type === "context-change" /* AiAgent.ResponseType.CONTEXT_CHANGE */);
@@ -778,6 +842,40 @@ describe('ContextSelectionAgent', function () {
             const widget = contextChange.widgets[0];
             assert.strictEqual(widget.name, 'SOURCE_FILE');
             assert.strictEqual(widget.data.uiSourceCode, file);
+        });
+        it('fails to select source file when origin is undefined', async () => {
+            const workspace = universe.workspace;
+            const project = {
+                id: () => 'test-project',
+                type: () => Workspace.Workspace.projectTypes.Network,
+                uiSourceCodes: () => [file],
+                fullDisplayName: () => 'script.js',
+            };
+            const file = new Workspace.UISourceCode.UISourceCode(project, urlString `https://example.com/script.js`, Common.ResourceType.resourceTypes.Script);
+            sinon.stub(workspace, 'projects').returns([project]);
+            ContextSelectionAgent.ContextSelectionAgent.uiSourceCodeId.set(file, 1);
+            const agent = new ContextSelectionAgent.ContextSelectionAgent({
+                aidaClient: mockAidaClient([
+                    [{
+                            functionCalls: [{
+                                    name: 'selectSourceFile',
+                                    args: { id: 1 },
+                                }],
+                            explanation: '',
+                        }],
+                    [{ explanation: 'Done' }],
+                ]),
+                allowedOrigin: () => ({ origin: undefined }),
+            });
+            const responses = await Array.fromAsync(agent.run('test', { selected: null }));
+            assert.isUndefined(responses.find(r => r.type === "context-change" /* AiAgent.ResponseType.CONTEXT_CHANGE */));
+            const requestToAida = agent.buildRequest({ text: '' }, Host.AidaClient.Role.USER);
+            const part = requestToAida.historical_contexts?.[2].parts[0];
+            assert(part && 'functionResponse' in part);
+            assert.deepEqual(part.functionResponse.response, {
+                error: 'Unable to find file.',
+                widgets: undefined,
+            });
         });
         it('returns an error when selecting cross-origin source file', async () => {
             const workspace = universe.workspace;
@@ -844,6 +942,7 @@ describe('ContextSelectionAgent', function () {
                         }],
                     [{ explanation: 'Done' }],
                 ]),
+                allowedOrigin: () => ({ origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com') }),
             });
             const responses = await Array.fromAsync(agent.run('test', { selected: null }));
             const actionResponse = responses.find(response => response.type === "action" /* AiAgent.ResponseType.ACTION */);
@@ -877,6 +976,42 @@ describe('ContextSelectionAgent', function () {
                         widgets: undefined,
                     },
                 },
+            });
+        });
+        it('returns empty list for listSourceFiles when origin is undefined', async () => {
+            const workspace = universe.workspace;
+            const project = {
+                id: () => 'test-project',
+                type: () => Workspace.Workspace.projectTypes.Network,
+                uiSourceCodes: () => [file],
+                fullDisplayName: () => 'script.js',
+            };
+            const file = new Workspace.UISourceCode.UISourceCode(project, urlString `https://example.com/script.js`, Common.ResourceType.resourceTypes.Script);
+            sinon.stub(workspace, 'projects').returns([project]);
+            ContextSelectionAgent.ContextSelectionAgent.uiSourceCodeId.set(file, 1);
+            const agent = new ContextSelectionAgent.ContextSelectionAgent({
+                aidaClient: mockAidaClient([
+                    [{
+                            functionCalls: [{
+                                    name: 'listSourceFiles',
+                                    args: {},
+                                }],
+                            explanation: '',
+                        }],
+                    [{ explanation: 'Done' }],
+                ]),
+                allowedOrigin: () => ({ origin: undefined }),
+            });
+            const responses = await Array.fromAsync(agent.run('test', { selected: null }));
+            const actionResponse = responses.find(response => response.type === "action" /* AiAgent.ResponseType.ACTION */);
+            assert.exists(actionResponse);
+            assert.isUndefined(actionResponse.widgets);
+            const requestToAida = agent.buildRequest({ text: '' }, Host.AidaClient.Role.USER);
+            const part = requestToAida.historical_contexts?.[2].parts[0];
+            assert(part && 'functionResponse' in part);
+            assert.deepEqual(part.functionResponse.response, {
+                result: [],
+                widgets: undefined,
             });
         });
         it('filters source files by origin', async () => {
@@ -970,6 +1105,40 @@ describe('ContextSelectionAgent', function () {
             assert.strictEqual(storageContext.getItem().origin, 'https://example.com');
             assert.strictEqual(storageContext.getItem().primaryTargetOrigin, 'https://example.com');
             assert.strictEqual(contextChange.description, 'User selected page storage');
+        });
+        it('fails to analyzeStorage when origin is undefined or opaque', async () => {
+            updateHostConfig({
+                devToolsAiAssistanceContextSelectionAgent: {
+                    enabled: true,
+                },
+                devToolsAiAssistanceStorageAgent: {
+                    enabled: true,
+                },
+            });
+            for (const origin of [undefined, SDK.SecurityOrigin.SecurityOrigin.create('about:blank')]) {
+                const agent = new ContextSelectionAgent.ContextSelectionAgent({
+                    aidaClient: mockAidaClient([
+                        [{
+                                functionCalls: [{
+                                        name: 'analyzeStorage',
+                                        args: {},
+                                    }],
+                                explanation: '',
+                            }],
+                        [{ explanation: 'Done' }],
+                    ]),
+                    allowedOrigin: () => ({ origin }),
+                });
+                const responses = await Array.fromAsync(agent.run('test', { selected: null }));
+                assert.isUndefined(responses.find(response => response.type === "context-change" /* AiAgent.ResponseType.CONTEXT_CHANGE */));
+                const requestToAida = agent.buildRequest({ text: '' }, Host.AidaClient.Role.USER);
+                const part = requestToAida.historical_contexts?.[2].parts[0];
+                assert(part && 'functionResponse' in part);
+                assert.deepEqual(part.functionResponse.response, {
+                    error: 'Unable to find page storage.',
+                    widgets: undefined,
+                });
+            }
         });
     });
     describe('getSourceById', () => {

@@ -778,6 +778,10 @@ export namespace ProtocolMapping {
     'Storage.storageBucketCreatedOrUpdated': [Protocol.Storage.StorageBucketCreatedOrUpdatedEvent];
     'Storage.storageBucketDeleted': [Protocol.Storage.StorageBucketDeletedEvent];
     /**
+     * Private Verification Tokens have been stored or deleted.
+     */
+    'Storage.privateVerificationTokensUpdated': [];
+    /**
      * Issued when attached to target because of auto-attach or `attachToTarget` command.
      */
     'Target.attachedToTarget': [Protocol.Target.AttachedToTargetEvent];
@@ -4161,12 +4165,26 @@ export namespace ProtocolMapping {
       returnType: Protocol.Page.GetManifestIconsResponse;
     };
     /**
-     * Returns the unique (PWA) app id.
+     * Returns the unique (PWA) app id, along with IWA bundle ID and parent app info.
      * Only returns values if the feature flag 'WebAppEnableManifestId' is enabled
      */
     'Page.getAppId': {
       paramsType: [];
       returnType: Protocol.Page.GetAppIdResponse;
+    };
+    /**
+     * Returns the list of installed child Sub-Apps for the inspected parent app.
+     */
+    'Page.getSubApps': {
+      paramsType: [];
+      returnType: Protocol.Page.GetSubAppsResponse;
+    };
+    /**
+     * Returns the list of sibling Sub-Apps sharing the same parent app if the inspected context is a Sub-App.
+     */
+    'Page.getSiblingSubApps': {
+      paramsType: [];
+      returnType: Protocol.Page.GetSiblingSubAppsResponse;
     };
     'Page.getAdScriptAncestry': {
       paramsType: [Protocol.Page.GetAdScriptAncestryRequest];
@@ -4929,6 +4947,43 @@ export namespace ProtocolMapping {
       returnType: Protocol.Storage.ClearTrustTokensResponse;
     };
     /**
+     * Returns all stored Private Verification Tokens for the current browsing
+     * context.
+     */
+    'Storage.getPrivateVerificationTokens': {
+      paramsType: [];
+      returnType: Protocol.Storage.GetPrivateVerificationTokensResponse;
+    };
+    /**
+     * Returns the configured Private Verification Tokens issuers and their redeemer
+     * origins.
+     */
+    'Storage.getPrivateVerificationTokensIssuerConfigs': {
+      paramsType: [];
+      returnType: Protocol.Storage.GetPrivateVerificationTokensIssuerConfigsResponse;
+    };
+    /**
+     * Removes all Private Verification Tokens issued by the provided issuerOrigin.
+     */
+    'Storage.clearPrivateVerificationTokens': {
+      paramsType: [Protocol.Storage.ClearPrivateVerificationTokensRequest];
+      returnType: void;
+    };
+    /**
+     * Removes a specific Private Verification Token by its ID.
+     */
+    'Storage.deletePrivateVerificationToken': {
+      paramsType: [Protocol.Storage.DeletePrivateVerificationTokenRequest];
+      returnType: void;
+    };
+    /**
+     * Set tracking for Private Verification Tokens.
+     */
+    'Storage.setPrivateVerificationTokensTracking': {
+      paramsType: [Protocol.Storage.SetPrivateVerificationTokensTrackingRequest];
+      returnType: void;
+    };
+    /**
      * Set tracking for a storage key's buckets.
      */
     'Storage.setStorageBucketTracking': {
@@ -4948,14 +5003,6 @@ export namespace ProtocolMapping {
     'Storage.runBounceTrackingMitigations': {
       paramsType: [];
       returnType: Protocol.Storage.RunBounceTrackingMitigationsResponse;
-    };
-    /**
-     * Returns the effective Related Website Sets in use by this profile for the browser
-     * session. The effective Related Website Sets will not change during a browser session.
-     */
-    'Storage.getRelatedWebsiteSets': {
-      paramsType: [];
-      returnType: Protocol.Storage.GetRelatedWebsiteSetsResponse;
     };
     /**
      * Returns information about the system.

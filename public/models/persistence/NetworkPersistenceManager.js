@@ -7,6 +7,7 @@ import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../../core/text_utils/text_utils.js';
+import * as Bindings from '../bindings/bindings.js';
 import * as Breakpoints from '../breakpoints/breakpoints.js';
 import * as Workspace from '../workspace/workspace.js';
 import { FileSystemWorkspaceBinding } from './FileSystemWorkspaceBinding.js';
@@ -209,6 +210,9 @@ export class NetworkPersistenceManager extends Common.ObjectWrapper.ObjectWrappe
             if (encodedName === '..') {
                 encodedName = '%2E%2E';
             }
+            else if (encodedName === '.') {
+                encodedName = '%2E';
+            }
             if (Host.Platform.isWin()) {
                 // Windows does not allow ':' and '?' in filenames
                 encodedName = encodedName.replace(/[:\?]/g, match => '%' + match[0].charCodeAt(0).toString(16).toUpperCase());
@@ -266,7 +270,10 @@ export class NetworkPersistenceManager extends Common.ObjectWrapper.ObjectWrappe
             if (!encodedFilePath) {
                 return null;
             }
-            const encodedPath = Common.ParsedURL.ParsedURL.substring(encodedFilePath, 0, encodedFilePath.lastIndexOf('/'));
+            const encodedPath = Common.ParsedURL.ParsedURL.substr(encodedFilePath, 0, encodedFilePath.lastIndexOf('/'));
+            if (!encodedPath) {
+                return null;
+            }
             uiSourceCode = await this.#project.createFile(encodedPath, HEADERS_FILENAME, '');
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.HeaderOverrideFileCreated);
         }
@@ -349,8 +356,31 @@ export class NetworkPersistenceManager extends Common.ObjectWrapper.ObjectWrappe
             this.hasMatchingNetworkUISourceCodeForHeaderOverridesFile(uiSourceCode);
     }
     isUISourceCodeOverridable(uiSourceCode) {
-        return uiSourceCode.project().type() === Workspace.Workspace.projectTypes.Network &&
-            !NetworkPersistenceManager.isForbiddenNetworkUrl(uiSourceCode.url());
+        if (uiSourceCode.project().type() !== Workspace.Workspace.projectTypes.Network) {
+            return false;
+        }
+        if (NetworkPersistenceManager.isForbiddenNetworkUrl(uiSourceCode.url())) {
+            return false;
+        }
+        // A `//# sourceURL=` annotation is fully controlled by the page and doesn't refer
+        // to an actual network resource, so there is nothing to override here. Persisting
+        // it would poison the overrides folder with a file that masquerades as a genuine
+        // resource (b/553931271).
+        if (Bindings.NetworkProject.NetworkProject.isSourceURLSynthesized(uiSourceCode)) {
+            return false;
+        }
+        return true;
+    }
+    /**
+     * Whether the contents of `uiSourceCode` may be written into the overrides folder.
+     *
+     * Sources that originate from a source map are overridable in the sense that the
+     * deployed resource they are mapped from can be overridden (see
+     * `PersistenceActions`), but their own URL and content are page controlled and
+     * must never be persisted themselves (b/553931271).
+     */
+    #canPersistUISourceCodeAsOverride(uiSourceCode) {
+        return this.isUISourceCodeOverridable(uiSourceCode) && !uiSourceCode.contentType().isFromSourceMap();
     }
     #isUISourceCodeAlreadyOverridden(uiSourceCode) {
         return this.#bindings.has(uiSourceCode) || this.#savingForOverrides.has(uiSourceCode);
@@ -360,11 +390,11 @@ export class NetworkPersistenceManager extends Common.ObjectWrapper.ObjectWrappe
             !this.#active && !this.#project;
     }
     #canSaveUISourceCodeForOverrides(uiSourceCode) {
-        return this.#active && this.isUISourceCodeOverridable(uiSourceCode) &&
+        return this.#active && this.#canPersistUISourceCodeAsOverride(uiSourceCode) &&
             !this.#isUISourceCodeAlreadyOverridden(uiSourceCode);
     }
     async setupAndStartLocalOverrides(uiSourceCode) {
-        if (!this.isUISourceCodeOverridable(uiSourceCode)) {
+        if (!this.#canPersistUISourceCodeAsOverride(uiSourceCode)) {
             return false;
         }
         // No overrides folder, set it up
@@ -410,6 +440,10 @@ export class NetworkPersistenceManager extends Common.ObjectWrapper.ObjectWrappe
         const encodedFileName = Common.ParsedURL.ParsedURL.substring(encodedPath, lastIndexOfSlash + 1);
         const rawFileName = Common.ParsedURL.ParsedURL.encodedPathToRawPathString(encodedFileName);
         encodedPath = Common.ParsedURL.ParsedURL.substr(encodedPath, 0, lastIndexOfSlash);
+        if (!encodedPath || rawFileName === HEADERS_FILENAME) {
+            this.#savingForOverrides.delete(uiSourceCode);
+            return;
+        }
         if (this.#project) {
             await this.#project.createFile(encodedPath, rawFileName, content ?? '', isEncoded);
         }
@@ -446,7 +480,7 @@ export class NetworkPersistenceManager extends Common.ObjectWrapper.ObjectWrappe
         const relativePathParts = FileSystemWorkspaceBinding.relativePath(uiSourceCode);
         // Decode twice to handle paths generated on Windows OS.
         const host = this.decodeLocalPathToUrlPath(this.decodeLocalPathToUrlPath(relativePathParts[0] || '')).toLowerCase();
-        return ['chrome:', 'data:', 'blob:', 'javascript:', 'about:', 'mailto:', 'vbscript:'].includes(host) ||
+        return ['chrome:', 'data:', 'blob:', 'javascript:', 'about:', 'mailto:', 'vbscript:', '.', '..'].includes(host) ||
             forbiddenUrls.includes(host);
     }
     static isForbiddenNetworkUrl(urlString) {
@@ -458,6 +492,9 @@ export class NetworkPersistenceManager extends Common.ObjectWrapper.ObjectWrappe
         const url = Common.ParsedURL.ParsedURL.fromString(urlString);
         if (!url) {
             return false;
+        }
+        if ((url.scheme === 'http' || url.scheme === 'https') && (!url.host || url.host === '.' || url.host === '..')) {
+            return true;
         }
         return !['http', 'https', 'file'].includes(url.scheme) || forbiddenUrls.includes(url.host);
     }

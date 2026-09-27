@@ -16,6 +16,7 @@ describe('DOMChanges', () => {
             },
         });
         commentManager = new CommentManager.CommentManager.CommentManager();
+        commentManager.setAgentAttached(true);
         tracker = new ChangeTracker.ChangeTracker.ChangeTracker(commentManager);
     });
     function createNode(backendNodeId = 1, nodeName = 'DIV') {
@@ -29,7 +30,7 @@ describe('DOMChanges', () => {
         return commentManager.getCommentThreads().at(-1)?.anchor;
     }
     function lastDescription() {
-        return tracker.getLastChange()?.description;
+        return commentManager.getCommentThreads().at(-1)?.comments[0]?.text;
     }
     function trackAttributeEdit(edit) {
         Elements.DOMChanges.trackAttributeEdit(tracker, createNode(), 'div.main', edit);
@@ -135,7 +136,7 @@ describe('DOMChanges', () => {
     it('does nothing while change tracking is disabled', () => {
         updateHostConfig({ devToolsComments: { enabled: false } });
         Elements.DOMChanges.trackNodeRemoval(tracker, createNode(), 'div.main');
-        assert.isUndefined(tracker.getLastChange());
+        assert.isUndefined(lastDescription());
         assert.isEmpty(commentManager.getCommentThreads());
     });
 });

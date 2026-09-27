@@ -262,6 +262,120 @@ describeWithEnvironment('SecurityOriginView', () => {
             sinon.assert.notCalled(showCertificateViewer);
         });
     });
+    describe('certificate transparency section', () => {
+        it('renders the heading, SCT summary, and details', () => {
+            const view = new Security.SecurityPanel.SecurityOriginView(urlString `https://foo.bar`, createOriginState({
+                signedCertificateTimestampList: [{
+                        logDescription: 'Test log',
+                        logId: 'AABB',
+                        status: 'Verified',
+                        origin: 'Embedded in certificate',
+                        timestamp: 1_000,
+                        hashAlgorithm: 'SHA-256',
+                        signatureAlgorithm: 'ECDSA',
+                        signatureData: 'CCDD',
+                    }],
+                certificateTransparencyCompliance: "compliant" /* Protocol.Network.CertificateTransparencyCompliance.Compliant */,
+            }));
+            const section = querySelectorErrorOnMissing(view.element, '.certificate-transparency-section');
+            const heading = querySelectorErrorOnMissing(section, '.origin-view-section-title');
+            assert.strictEqual(heading.textContent, 'Certificate Transparency');
+            assert.strictEqual(heading.getAttribute('role'), 'heading');
+            assert.strictEqual(heading.getAttribute('aria-level'), '2');
+            const summary = querySelectorErrorOnMissing(section, '.sct-summary');
+            assert.deepEqual(getDetailsTableRows(summary), [['SCT', 'Test log (Embedded in certificate, Verified)']]);
+            const details = querySelectorErrorOnMissing(section, '.sct-details');
+            assert.deepEqual(getDetailsTableRows(details), [
+                ['Log name', 'Test log'],
+                ['Log ID', 'AA BB '],
+                ['Validation status', 'Verified'],
+                ['Source', 'Embedded in certificate'],
+                ['Issued at', 'Thu, 01 Jan 1970 00:00:01 GMT'],
+                ['Hash algorithm', 'SHA-256'],
+                ['Signature algorithm', 'ECDSA'],
+                ['Signature data', 'CC DD '],
+            ]);
+        });
+        it('does not render when the SCT list is empty and compliance is unknown', () => {
+            const view = new Security.SecurityPanel.SecurityOriginView(urlString `https://foo.bar`, createOriginState({
+                signedCertificateTimestampList: [],
+                certificateTransparencyCompliance: "unknown" /* Protocol.Network.CertificateTransparencyCompliance.Unknown */,
+            }));
+            assert.notExists(view.element.querySelector('.certificate-transparency-section'));
+            assert.notExists(view.element.querySelector('.origin-view-notes'));
+        });
+        it('renders without a note when the SCT list is not empty and compliance is unknown', () => {
+            const view = new Security.SecurityPanel.SecurityOriginView(urlString `https://foo.bar`, createOriginState({
+                signedCertificateTimestampList: [{
+                        logDescription: 'Test log',
+                        logId: '00',
+                        status: 'Verified',
+                        origin: 'Embedded in certificate',
+                        timestamp: 0,
+                        hashAlgorithm: 'SHA-256',
+                        signatureAlgorithm: 'ECDSA',
+                        signatureData: '00',
+                    }],
+                certificateTransparencyCompliance: "unknown" /* Protocol.Network.CertificateTransparencyCompliance.Unknown */,
+            }));
+            const section = querySelectorErrorOnMissing(view.element, '.certificate-transparency-section');
+            assert.notExists(section.querySelector('.origin-view-section-notes'));
+        });
+        const cases = [
+            {
+                compliance: "compliant" /* Protocol.Network.CertificateTransparencyCompliance.Compliant */,
+                expectedNote: 'This request complies with Chrome’s Certificate Transparency policy.',
+            },
+            {
+                compliance: "not-compliant" /* Protocol.Network.CertificateTransparencyCompliance.NotCompliant */,
+                expectedNote: 'This request doesn’t comply with Chrome’s Certificate Transparency policy.',
+            },
+        ];
+        for (const { compliance, expectedNote } of cases) {
+            it(`renders with a note when compliance is ${compliance}`, () => {
+                const originState = createOriginState({
+                    signedCertificateTimestampList: [],
+                    certificateTransparencyCompliance: compliance,
+                });
+                const view = new Security.SecurityPanel.SecurityOriginView(urlString `https://foo.bar`, originState);
+                const section = querySelectorErrorOnMissing(view.element, '.certificate-transparency-section');
+                const note = querySelectorErrorOnMissing(section, '.origin-view-section-notes');
+                assert.strictEqual(note.textContent, expectedNote);
+            });
+        }
+        it('toggles SCT details', () => {
+            const view = new Security.SecurityPanel.SecurityOriginView(urlString `https://foo.bar`, createOriginState({
+                signedCertificateTimestampList: [{
+                        logDescription: 'Test log',
+                        logId: '00',
+                        status: 'Verified',
+                        origin: 'Embedded in certificate',
+                        timestamp: 0,
+                        hashAlgorithm: 'SHA-256',
+                        signatureAlgorithm: 'ECDSA',
+                        signatureData: '00',
+                    }],
+                certificateTransparencyCompliance: "compliant" /* Protocol.Network.CertificateTransparencyCompliance.Compliant */,
+            }));
+            renderElementIntoDOM(view, { includeCommonStyles: true });
+            const section = querySelectorErrorOnMissing(view.element, '.certificate-transparency-section');
+            const summary = querySelectorErrorOnMissing(section, '.sct-summary');
+            const details = querySelectorErrorOnMissing(section, '.sct-details');
+            const toggle = section.querySelector('devtools-button');
+            assert.isTrue(summary.checkVisibility());
+            assert.isFalse(details.checkVisibility());
+            assert.instanceOf(toggle, HTMLElement);
+            assert.strictEqual(toggle.textContent, 'Show full details');
+            assert.strictEqual(toggle.accessibleLabel, 'Show full details');
+            assert.isFalse(toggle.accessibleExpanded);
+            toggle.click();
+            assert.isFalse(summary.checkVisibility());
+            assert.isTrue(details.checkVisibility());
+            assert.strictEqual(toggle.textContent, 'Hide full details');
+            assert.strictEqual(toggle.accessibleLabel, 'Hide full details');
+            assert.isTrue(toggle.accessibleExpanded);
+        });
+    });
     it('renders an empty SAN', () => {
         const view = new Security.SecurityPanel.SecurityOriginView(urlString `https://foo.bar`, createOriginState());
         const sanElement = view.element.querySelector('.san');
@@ -428,6 +542,111 @@ describeWithEnvironment('SecurityPanel', () => {
         navigate(getMainFrame(target));
         await doubleRaf();
         assert.exists(securityPanel.sidebar.contentElement.querySelector('devtools-tree').shadowRoot.querySelector('.security-main-view-reload-message'));
+    });
+    it('does not show blank origins in the sidebar', async () => {
+        const securityPanel = Security.SecurityPanel.SecurityPanel.instance({ forceNew: true });
+        renderElementIntoDOM(securityPanel);
+        const networkManager = target.model(SDK.NetworkManager.NetworkManager);
+        assert.exists(networkManager);
+        const request1 = createNetworkRequest({
+            url: 'https://foo.test/foo.jpg',
+            documentURL: 'https://foo.test',
+            frameId: '0',
+            loaderId: '0',
+        });
+        networkManager.dispatchEventToListeners(SDK.NetworkManager.Events.RequestFinished, request1);
+        const request2 = createNetworkRequest({
+            url: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAKCAYAAABmBXS+AAAAPElEQVR42mNgQAMZGRn/GfABkIIdO3b8x6kQpgAEsCpEVgADKAqxKcBQCCLwARRFIBodYygiyiSCighhAO4e2jskhrm3AAAAAElFTkSuQmCC',
+            documentURL: 'https://foo.test',
+            frameId: '0',
+            loaderId: '0',
+        });
+        networkManager.dispatchEventToListeners(SDK.NetworkManager.Events.RequestFinished, request2);
+        await doubleRaf();
+        const sidebarRoot = securityPanel.sidebar.contentElement.querySelector('devtools-tree').shadowRoot;
+        const groupTitles = Array.from(sidebarRoot.querySelectorAll('.security-sidebar-origins-title'))
+            .filter(element => element.checkVisibility())
+            .map(element => element.textContent);
+        assert.deepEqual(groupTitles, ['Main origin', 'Unknown / canceled']);
+        const allOriginElements = sidebarRoot.querySelectorAll('.security-sidebar-tree-item');
+        assert.lengthOf(allOriginElements, 1);
+        const unknownOriginGroup = sidebarRoot.querySelector('[aria-label="Unknown / canceled"]');
+        assert.exists(unknownOriginGroup);
+        const originElements = unknownOriginGroup.querySelectorAll('.security-sidebar-tree-item');
+        assert.lengthOf(originElements, 1);
+        const originElement = querySelectorErrorOnMissing(originElements[0], '.highlighted-url');
+        assert.strictEqual(originElement.textContent, 'https://foo.test');
+    });
+    it('shows origins with failed requests in the sidebar', async () => {
+        const securityPanel = Security.SecurityPanel.SecurityPanel.instance({ forceNew: true });
+        renderElementIntoDOM(securityPanel);
+        const networkManager = target.model(SDK.NetworkManager.NetworkManager);
+        assert.exists(networkManager);
+        const request1 = createNetworkRequest({
+            url: 'https://foo.test/foo.jpg',
+            documentURL: 'https://foo.test',
+            frameId: '0',
+            loaderId: '0',
+        });
+        request1.setSecurityState("secure" /* Protocol.Security.SecurityState.Secure */);
+        networkManager.dispatchEventToListeners(SDK.NetworkManager.Events.RequestFinished, request1);
+        const request2 = createNetworkRequest({
+            url: 'https://does-not-resolve.test',
+            documentURL: 'https://does-not-resolve.test',
+            frameId: '0',
+            loaderId: '0',
+        });
+        // Leave the security state unknown.
+        networkManager.dispatchEventToListeners(SDK.NetworkManager.Events.RequestFinished, request2);
+        await doubleRaf();
+        const sidebarRoot = securityPanel.sidebar.contentElement.querySelector('devtools-tree').shadowRoot;
+        const groupTitles = Array.from(sidebarRoot.querySelectorAll('.security-sidebar-origins-title'))
+            .filter(element => element.checkVisibility())
+            .map(element => element.textContent);
+        assert.deepEqual(groupTitles, ['Main origin', 'Secure origins', 'Unknown / canceled']);
+        const allOriginElements = sidebarRoot.querySelectorAll('.security-sidebar-tree-item');
+        assert.lengthOf(allOriginElements, 2);
+        const secureOriginGroup = sidebarRoot.querySelector('[aria-label="Secure origins"]');
+        assert.exists(secureOriginGroup);
+        const secureOriginElements = secureOriginGroup.querySelectorAll('.security-sidebar-tree-item');
+        assert.lengthOf(secureOriginElements, 1);
+        const secureOriginElement = querySelectorErrorOnMissing(secureOriginElements[0], '.highlighted-url');
+        assert.strictEqual(secureOriginElement.textContent, 'https://foo.test');
+        const unknownOriginGroup = sidebarRoot.querySelector('[aria-label="Unknown / canceled"]');
+        assert.exists(unknownOriginGroup);
+        const unknownOriginElements = unknownOriginGroup.querySelectorAll('.security-sidebar-tree-item');
+        assert.lengthOf(unknownOriginElements, 1);
+        const unknownOriginElement = querySelectorErrorOnMissing(unknownOriginElements[0], '.highlighted-url');
+        assert.strictEqual(unknownOriginElement.textContent, 'https://does-not-resolve.test');
+    });
+    it('shows an explanation for blocked mixed content', () => {
+        const securityPanel = Security.SecurityPanel.SecurityPanel.instance({ forceNew: true });
+        renderElementIntoDOM(securityPanel);
+        const securityModel = target.model(Security.SecurityModel.SecurityModel);
+        assert.exists(securityModel);
+        const pageVisibleSecurityState = new Security.SecurityModel.PageVisibleSecurityState("neutral" /* Protocol.Security.SecurityState.Neutral */, null, null, ['scheme-is-not-cryptographic']);
+        securityModel.dispatchEventToListeners(Security.SecurityModel.Events.VisibleSecurityStateChanged, pageVisibleSecurityState);
+        const request = createNetworkRequest({
+            url: 'http://foo.test',
+            documentURL: 'https://foo.test',
+            frameId: '0',
+            loaderId: '0',
+        });
+        request.setBlockedReason("mixed-content" /* Protocol.Network.BlockedReason.MixedContent */);
+        request.mixedContentType = "blockable" /* Protocol.Security.MixedContentType.Blockable */;
+        const networkManager = securityModel.networkManager();
+        networkManager.dispatchEventToListeners(SDK.NetworkManager.Events.RequestFinished, request);
+        const explanations = securityPanel.mainView.contentElement.querySelectorAll('.security-explanation');
+        assert.lengthOf(explanations, 1);
+        const explanation = explanations[0];
+        assert.isTrue(explanation.classList.contains('security-explanation-info'));
+        const title = querySelectorErrorOnMissing(explanation, '.security-explanation-title');
+        assert.strictEqual(title.textContent, 'Blocked mixed content');
+        const explanationText = querySelectorErrorOnMissing(explanation, '.security-explanation-text');
+        assert.include(explanationText.textContent, 'Your page requested non-secure resources that were blocked.');
+        const requestsLink = querySelectorErrorOnMissing(explanation, 'button.security-mixed-content');
+        assert.strictEqual(requestsLink.textContent, 'View 1 request in Network panel');
+        assert.strictEqual(requestsLink.getAttribute('role'), 'link');
     });
     it('shows origins with blockable and optionally blockable resources in the sidebar', async () => {
         const securityPanel = Security.SecurityPanel.SecurityPanel.instance({ forceNew: true });

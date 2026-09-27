@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Root from '../../core/root/root.js';
+import * as SDK from '../../core/sdk/sdk.js';
 import * as CommentManager from '../../models/comment_manager/comment_manager.js';
 import * as Comments from '../../ui/comments/comments.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -13,6 +14,7 @@ const POPUP_MARGIN = 8;
 const PIN_HEIGHT = 30;
 const POPUP_WIDTH = 288;
 const POPUP_HEIGHT = 220;
+const AUTO_CLOSE_DELAY_MS = 2000;
 const DEFAULT_VIEW = (input, _output, target) => {
     // clang-format off
     render(html `
@@ -22,48 +24,50 @@ const DEFAULT_VIEW = (input, _output, target) => {
         <div
           class="comment-hover-highlight"
           style=${styleMap({
-        top: `${input.hoverHighlight.top}px`,
-        left: `${input.hoverHighlight.left}px`,
+        transform: `translate3d(${input.hoverHighlight.left}px, ${input.hoverHighlight.top}px, 0)`,
         width: `${input.hoverHighlight.width}px`,
         height: `${input.hoverHighlight.height}px`,
     })}>
         </div>
       ` : nothing}
-      ${input.highlights.map(h => h.visible ? html `
-        <div
-          class="comment-anchor-highlight"
-          style=${styleMap({
-        top: `${h.top}px`,
-        left: `${h.left}px`,
+      ${repeat(input.highlights.filter(h => h.visible), h => h.id, h => html `
+          <div
+            class="comment-anchor-highlight"
+            style=${styleMap({
+        transform: `translate3d(${h.left}px, ${h.top}px, 0)`,
         width: `${h.width}px`,
         height: `${h.height}px`,
     })}>
-        </div>
-      ` : nothing)}
-      ${input.pins.map(p => p.visible ? html `
-        <div
-          class="comment-pin"
-          style=${styleMap({
-        top: `${p.top}px`,
-        left: `${p.left}px`,
-    })}
-          @click=${() => input.onPinClick(p.id)}>
-          <div class="comment-cursor">${p.index}</div>
-        </div>
-      ` : nothing)}
-      ${input.activePin && input.activeThread ? repeat([{ pin: input.activePin, thread: input.activeThread }], item => item.thread.id, item => html `
-          <div
-            class="comment-popup-widget"
-            style=${styleMap({
-        top: `${Math.min(Math.max(POPUP_MARGIN, item.pin.top + PIN_HEIGHT), Math.max(POPUP_MARGIN, target.clientHeight - POPUP_HEIGHT))}px`,
-        left: `${Math.min(Math.max(POPUP_MARGIN, item.pin.left), Math.max(POPUP_MARGIN, target.clientWidth - POPUP_WIDTH - POPUP_MARGIN))}px`,
-    })}>
-            ${UI.Widget.widget(CommentThreadWidget, {
-        comments: [...item.thread.comments],
-        onAddComment: input.onAddComment,
-    })}
           </div>
-        `) : nothing}
+        `)}
+      ${repeat(input.pins.filter(p => p.visible), p => p.id, p => html `
+          <div
+            class="comment-pin"
+            style=${styleMap({
+        transform: `translate3d(${p.left}px, ${p.top}px, 0)`,
+    })}
+            @click=${() => input.onPinClick(p.id)}>
+            <div class="comment-cursor">${p.index}</div>
+          </div>
+        `)}
+      ${input.activePin && input.activeThread ? repeat([{ pin: input.activePin, thread: input.activeThread }], item => item.thread.id, item => {
+        const popupTop = Math.min(Math.max(POPUP_MARGIN, item.pin.top + PIN_HEIGHT), Math.max(POPUP_MARGIN, target.clientHeight - POPUP_HEIGHT));
+        const popupLeft = Math.min(Math.max(POPUP_MARGIN, item.pin.left), Math.max(POPUP_MARGIN, target.clientWidth - POPUP_WIDTH - POPUP_MARGIN));
+        return html `
+            <div
+              class="comment-popup-widget"
+              style=${styleMap({
+            transform: `translate3d(${popupLeft}px, ${popupTop}px, 0)`,
+        })}>
+              ${UI.Widget.widget(CommentThreadWidget, {
+            title: input.title,
+            comments: [...item.thread.comments],
+            onAddComment: input.onAddComment,
+            onClose: input.onCloseCommentThread,
+        })}
+            </div>
+          `;
+    }) : nothing}
     </div>
   `, target);
     // clang-format on
@@ -74,6 +78,21 @@ export class CommentsOverlayWidget extends UI.Widget.Widget {
     #commentManager;
     #commentOverlayManager;
     #activeThreadId = null;
+    #closeTimeoutId = null;
+    #cachedTitle = { text: '' };
+    #cachedTitleAnchor = null;
+    #setActiveThreadId(threadId) {
+        if (this.#activeThreadId !== threadId) {
+            this.#clearCloseTimeout();
+            this.#activeThreadId = threadId;
+            if (threadId && this.isShowing()) {
+                document.documentElement.addEventListener('keydown', this.#onKeyDown);
+            }
+            else {
+                document.documentElement.removeEventListener('keydown', this.#onKeyDown);
+            }
+        }
+    }
     constructor(element, [commentManager], view = DEFAULT_VIEW) {
         super(element, { useShadowDom: false });
         this.#view = view;
@@ -86,62 +105,167 @@ export class CommentsOverlayWidget extends UI.Widget.Widget {
     wasShown() {
         super.wasShown();
         this.#commentOverlayManager.start();
-        this.#commentOverlayManager.addEventListener("PositionsUpdated" /* Comments.CommentOverlayManager.Events.POSITIONS_UPDATED */, this.#onStateChanged, this);
-        this.#commentOverlayManager.addEventListener("HoverHighlightChanged" /* Comments.CommentOverlayManager.Events.HOVER_HIGHLIGHT_CHANGED */, this.#onStateChanged, this);
+        this.#commentOverlayManager.addEventListener("PositionsUpdated" /* Comments.CommentOverlayManager.Events.POSITIONS_UPDATED */, this.#onPositionsUpdated, this);
+        this.#commentOverlayManager.addEventListener("HoverHighlightChanged" /* Comments.CommentOverlayManager.Events.HOVER_HIGHLIGHT_CHANGED */, this.#onHoverHighlightChanged, this);
         this.#commentManager.addEventListener("CommentThreadsChanged" /* CommentManager.CommentManager.Events.COMMENT_THREADS_CHANGED */, this.#onStateChanged, this);
         this.#commentManager.addEventListener("CommentModeChanged" /* CommentManager.CommentManager.Events.COMMENT_MODE_CHANGED */, this.#onCommentModeChanged, this);
+        this.#commentManager.addEventListener("AgentAttachedChanged" /* CommentManager.CommentManager.Events.AGENT_ATTACHED_CHANGED */, this.#onAgentAttachedChanged, this);
+        if (this.#activeThreadId) {
+            document.documentElement.addEventListener('keydown', this.#onKeyDown);
+        }
         this.requestUpdate();
     }
     willHide() {
+        this.#clearCloseTimeout();
+        document.documentElement.removeEventListener('keydown', this.#onKeyDown);
         this.#commentOverlayManager.stop();
-        this.#commentOverlayManager.removeEventListener("PositionsUpdated" /* Comments.CommentOverlayManager.Events.POSITIONS_UPDATED */, this.#onStateChanged, this);
-        this.#commentOverlayManager.removeEventListener("HoverHighlightChanged" /* Comments.CommentOverlayManager.Events.HOVER_HIGHLIGHT_CHANGED */, this.#onStateChanged, this);
+        this.#commentOverlayManager.removeEventListener("PositionsUpdated" /* Comments.CommentOverlayManager.Events.POSITIONS_UPDATED */, this.#onPositionsUpdated, this);
+        this.#commentOverlayManager.removeEventListener("HoverHighlightChanged" /* Comments.CommentOverlayManager.Events.HOVER_HIGHLIGHT_CHANGED */, this.#onHoverHighlightChanged, this);
         this.#commentManager.removeEventListener("CommentThreadsChanged" /* CommentManager.CommentManager.Events.COMMENT_THREADS_CHANGED */, this.#onStateChanged, this);
         this.#commentManager.removeEventListener("CommentModeChanged" /* CommentManager.CommentManager.Events.COMMENT_MODE_CHANGED */, this.#onCommentModeChanged, this);
+        this.#commentManager.removeEventListener("AgentAttachedChanged" /* CommentManager.CommentManager.Events.AGENT_ATTACHED_CHANGED */, this.#onAgentAttachedChanged, this);
         super.willHide();
+    }
+    #clearCloseTimeout() {
+        if (this.#closeTimeoutId !== null) {
+            window.clearTimeout(this.#closeTimeoutId);
+            this.#closeTimeoutId = null;
+        }
+    }
+    #onAgentAttachedChanged(event) {
+        if (!event.data) {
+            this.#setActiveThreadId(null);
+        }
+        this.requestUpdate();
     }
     #onCommentModeChanged(event) {
         const isModeActive = event.data;
         if (!isModeActive) {
-            this.#activeThreadId = null;
+            this.#setActiveThreadId(null);
         }
         const action = UI.ActionRegistry.ActionRegistry.instance().getAction('comments.toggle-comment-mode');
         action?.setToggled(isModeActive);
         this.requestUpdate();
     }
-    #onStateChanged() {
+    #syncActiveThreadFromManager() {
         const draftThread = this.#commentManager.getCommentThreads().find(t => t.status === 'DRAFT');
         if (draftThread) {
-            this.#activeThreadId = draftThread.id;
+            this.#setActiveThreadId(draftThread.id);
         }
         else if (this.#activeThreadId && !this.#commentManager.getCommentThread(this.#activeThreadId)) {
-            this.#activeThreadId = null;
+            this.#setActiveThreadId(null);
+        }
+    }
+    #onPositionsUpdated(event) {
+        this.#syncActiveThreadFromManager();
+        if (event.data.isRealtimeSync && this.isShowing() && this.#trySynchronousRender()) {
+            return;
         }
         this.requestUpdate();
     }
-    #handlePinClick = (threadId) => {
-        const thread = this.#commentManager.getCommentThread(threadId);
-        if (this.#activeThreadId === threadId) {
-            if (thread?.status === 'DRAFT') {
-                this.#commentOverlayManager.clearDraftThreads();
-            }
-            this.#activeThreadId = null;
-        }
-        else {
-            this.#commentOverlayManager.clearDraftThreads();
-            this.#activeThreadId = threadId;
+    #onHoverHighlightChanged() {
+        this.#syncActiveThreadFromManager();
+        if (this.isShowing() && this.#trySynchronousRender()) {
+            return;
         }
         this.requestUpdate();
+    }
+    #onStateChanged() {
+        this.#syncActiveThreadFromManager();
+        this.requestUpdate();
+    }
+    #trySynchronousRender() {
+        if (!this.#commentManager.isAgentAttached()) {
+            this.#renderDisconnectedView();
+            return true;
+        }
+        const activeThread = this.#activeThreadId ? this.#commentManager.getCommentThread(this.#activeThreadId) ?? null : null;
+        const anchor = activeThread?.anchor ?? null;
+        if (anchor === null) {
+            this.#cachedTitleAnchor = null;
+            this.#cachedTitle = { text: '' };
+            this.#renderWithTitle(activeThread, this.#cachedTitle);
+            return true;
+        }
+        if (anchor === this.#cachedTitleAnchor) {
+            this.#renderWithTitle(activeThread, this.#cachedTitle);
+            return true;
+        }
+        return false;
+    }
+    async #getOrComputeTitle(anchor) {
+        if (anchor === this.#cachedTitleAnchor) {
+            return this.#cachedTitle;
+        }
+        const title = anchor ? await this.#computeTitle(anchor) : { text: '' };
+        this.#cachedTitleAnchor = anchor;
+        this.#cachedTitle = title;
+        return title;
+    }
+    async #computeTitle(anchor) {
+        if (anchor.node) {
+            const target = SDK.TargetManager.TargetManager.instance().targetById(anchor.node.targetId);
+            if (target) {
+                const deferredNode = new SDK.DOMModel.DeferredDOMNode(target, anchor.node.backendNodeId);
+                const node = await deferredNode.resolvePromise();
+                if (node) {
+                    return { node };
+                }
+            }
+        }
+        if (anchor.networkRequestId) {
+            const target = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
+            const request = target?.model(SDK.NetworkManager.NetworkManager)?.requestForId(anchor.networkRequestId);
+            if (request) {
+                return { text: request.name() };
+            }
+        }
+        return { text: anchor.textSignature || '' };
+    }
+    #handlePinClick = (threadId) => {
+        if (this.#activeThreadId === threadId) {
+            this.#handleCloseCommentThread();
+            return;
+        }
+        this.#commentOverlayManager.clearDraftThreads();
+        this.#setActiveThreadId(threadId);
+        this.requestUpdate();
     };
-    performUpdate() {
+    #handleCloseCommentThread = () => {
+        if (!this.#activeThreadId) {
+            return;
+        }
+        const thread = this.#commentManager.getCommentThread(this.#activeThreadId);
+        if (thread?.status === 'DRAFT') {
+            this.#commentOverlayManager.clearDraftThreads();
+        }
+        this.#setActiveThreadId(null);
+        this.requestUpdate();
+    };
+    #onKeyDown = (event) => {
+        if (this.#activeThreadId && event.key === 'Escape' && !event.isComposing) {
+            event.consume(true);
+            this.#handleCloseCommentThread();
+        }
+    };
+    #renderDisconnectedView() {
+        this.#view({
+            pins: [],
+            highlights: [],
+            hoverHighlight: null,
+            commentMode: false,
+            onPinClick: this.#handlePinClick,
+            activeThread: null,
+            activePin: null,
+            title: { text: '' },
+            onAddComment: () => { },
+            onCloseCommentThread: this.#handleCloseCommentThread,
+        }, undefined, this.contentElement);
+    }
+    #renderWithTitle(activeThread, title) {
         const pins = this.#commentOverlayManager.getPinPositions();
         const highlights = this.#commentOverlayManager.getHighlightRects();
-        let activePin = null;
-        let activeThread = null;
-        if (this.#activeThreadId) {
-            activePin = pins.find(p => p.id === this.#activeThreadId) ?? null;
-            activeThread = this.#commentManager.getCommentThread(this.#activeThreadId) ?? null;
-        }
+        const activePin = this.#activeThreadId ? pins.find(p => p.id === this.#activeThreadId) ?? null : null;
         const viewInput = {
             pins,
             highlights,
@@ -150,11 +274,47 @@ export class CommentsOverlayWidget extends UI.Widget.Widget {
             onPinClick: this.#handlePinClick,
             activeThread,
             activePin,
+            title,
             onAddComment: (text) => {
-                activeThread?.save(text);
+                if (!activeThread) {
+                    return;
+                }
+                activeThread.sendToAgent(text);
+                const threadId = activeThread.id;
+                this.#clearCloseTimeout();
+                this.#closeTimeoutId = window.setTimeout(() => {
+                    this.#closeTimeoutId = null;
+                    if (this.#activeThreadId === threadId) {
+                        this.#setActiveThreadId(null);
+                        this.requestUpdate();
+                    }
+                }, AUTO_CLOSE_DELAY_MS);
             },
+            onCloseCommentThread: this.#handleCloseCommentThread,
         };
         this.#view(viewInput, undefined, this.contentElement);
+    }
+    async performUpdate(signal) {
+        if (!this.#commentManager.isAgentAttached()) {
+            this.#renderDisconnectedView();
+            return;
+        }
+        const activeThread = this.#activeThreadId ? this.#commentManager.getCommentThread(this.#activeThreadId) ?? null : null;
+        const anchor = activeThread?.anchor ?? null;
+        let title;
+        if (anchor === null) {
+            this.#cachedTitleAnchor = null;
+            this.#cachedTitle = { text: '' };
+            title = this.#cachedTitle;
+        }
+        else if (anchor === this.#cachedTitleAnchor) {
+            title = this.#cachedTitle;
+        }
+        else {
+            title = await this.#getOrComputeTitle(anchor);
+            signal?.throwIfAborted();
+        }
+        this.#renderWithTitle(activeThread, title);
     }
 }
 let widgetInstance = null;
@@ -166,6 +326,9 @@ export class ActionDelegate {
     }
     handleAction(_context, actionId) {
         if (actionId === 'comments.toggle-comment-mode') {
+            if (!this.#commentManager.isAgentAttached()) {
+                return false;
+            }
             if (!widgetInstance) {
                 widgetInstance = new CommentsOverlayWidget(undefined, [this.#commentManager]);
                 widgetInstance.markAsRoot();
@@ -181,6 +344,25 @@ export class ActionDelegate {
             widgetInstance.detach();
             widgetInstance = null;
         }
+    }
+}
+export class ButtonProvider {
+    #button;
+    #commentManager;
+    constructor(commentManager) {
+        this.#commentManager = commentManager ??
+            Root.DevToolsContext.globalInstance().get(CommentManager.CommentManager.CommentManager);
+        const action = UI.ActionRegistry.ActionRegistry.instance().getAction('comments.toggle-comment-mode');
+        action.setEnabled(this.#commentManager.isAgentAttached());
+        this.#button = UI.Toolbar.Toolbar.createActionButton(action);
+        this.#button.setVisible(this.#commentManager.isAgentAttached());
+        this.#commentManager.addEventListener("AgentAttachedChanged" /* CommentManager.CommentManager.Events.AGENT_ATTACHED_CHANGED */, event => {
+            action.setEnabled(event.data);
+            this.#button.setVisible(event.data);
+        });
+    }
+    item() {
+        return this.#button;
     }
 }
 //# sourceMappingURL=CommentsOverlayWidget.js.map

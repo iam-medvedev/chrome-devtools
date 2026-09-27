@@ -614,6 +614,16 @@ var getMarkdownLink = (key) => {
   return link3;
 };
 
+// ../../front_end/ui/components/markdown_view/MarkdownPlaceholderLitRenderer.ts
+var MarkdownPlaceholderLitRenderer_exports = {};
+__export(MarkdownPlaceholderLitRenderer_exports, {
+  MarkdownPlaceholderLitRenderer: () => MarkdownPlaceholderLitRenderer,
+  tokenizeWithPlaceholders: () => tokenizeWithPlaceholders
+});
+import * as Platform from "../../../core/platform/platform.js";
+import * as TextUtils from "../../../core/text_utils/text_utils.js";
+import * as Lit4 from "../../lit/lit.js";
+
 // ../../front_end/ui/components/markdown_view/MarkdownView.ts
 var MarkdownView_exports = {};
 __export(MarkdownView_exports, {
@@ -1124,11 +1134,55 @@ function renderTextAsMarkdown(text, markdownRenderer = new MarkdownLitRenderer()
     ${refFn ? Lit3.Directives.ref(refFn) : Lit3.nothing}>
   </devtools-markdown-view>`;
 }
+
+// ../../front_end/ui/components/markdown_view/MarkdownPlaceholderLitRenderer.ts
+var { html: html6 } = Lit4;
+var tokenizeWithPlaceholders = TextUtils.Markdown.tokenizeWithPlaceholders;
+var MarkdownPlaceholderLitRenderer = class extends MarkdownLitRenderer {
+  #substitutions;
+  constructor(substitutions) {
+    super();
+    this.#substitutions = substitutions;
+  }
+  #resolvePlaceholder(key, raw) {
+    const replacement = this.#substitutions?.get(key) ?? this.#substitutions?.get(key.replace(/^PLACEHOLDER_/, ""));
+    return replacement !== void 0 ? Platform.StringUtilities.safeEscapeUnicode(replacement) : raw;
+  }
+  unescape(text) {
+    return super.unescape(text).replace(
+      TextUtils.Markdown.VALID_PLACEHOLDER_MATCH_PATTERN,
+      (raw, key) => this.#resolvePlaceholder(key, raw)
+    );
+  }
+  templateForToken(token) {
+    if (token.type === "placeholder") {
+      const placeholder = token;
+      const value = this.#resolvePlaceholder(placeholder.key, placeholder.raw);
+      return html6`<span class="markdown-placeholder">${value}</span>`;
+    }
+    if (token.type === "link" && token.text.includes("{PLACEHOLDER_")) {
+      return html6`<devtools-link
+        class=${this.customClassMapForToken("link")}
+        href=${getMarkdownLink(token.href)}
+        >${this.renderText(token)}</devtools-link>`;
+    }
+    if (token.type === "image" && token.text.includes("{PLACEHOLDER_")) {
+      return html6`<devtools-markdown-image
+        class=${this.customClassMapForToken("image")}
+        .data=${{
+        key: token.href,
+        title: this.unescape(token.text)
+      }}></devtools-markdown-image>`;
+    }
+    return super.templateForToken(token);
+  }
+};
 export {
   CodeBlock_exports as CodeBlock,
   MarkdownImage_exports as MarkdownImage,
   MarkdownImagesMap_exports as MarkdownImagesMap,
   MarkdownLinksMap_exports as MarkdownLinksMap,
+  MarkdownPlaceholderLitRenderer_exports as MarkdownPlaceholderLitRenderer,
   MarkdownView_exports as MarkdownView
 };
 //# sourceMappingURL=markdown_view.js.map

@@ -11,6 +11,7 @@ __export(AccessibilityAnnouncementRecordingListView_exports, {
   DEFAULT_VIEW: () => DEFAULT_VIEW2
 });
 import "../../ui/legacy/components/data_grid/data_grid.js";
+import * as Host from "../../core/host/host.js";
 import * as i18n3 from "../../core/i18n/i18n.js";
 import * as UI3 from "../../ui/legacy/legacy.js";
 import * as Lit2 from "../../ui/lit/lit.js";
@@ -62,12 +63,14 @@ __export(AccessibilityAnnouncementRecordingView_exports, {
   INJECTED_SCRIPT_SOURCE: () => INJECTED_SCRIPT_SOURCE,
   RecordTypeFilter: () => RecordTypeFilter,
   TEARDOWN_SCRIPT_SOURCE: () => TEARDOWN_SCRIPT_SOURCE,
+  buildCsvContent: () => buildCsvContent,
   checkForBlockedPayload: () => checkForBlockedPayload,
   injectedScript: () => injectedScript,
   teardownScript: () => teardownScript,
   validateAndSanitizeAnnouncement: () => validateAndSanitizeAnnouncement
 });
 import * as i18n from "../../core/i18n/i18n.js";
+import * as Platform from "../../core/platform/platform.js";
 import * as SDK from "../../core/sdk/sdk.js";
 import * as Buttons from "../../ui/components/buttons/buttons.js";
 import * as UI2 from "../../ui/legacy/legacy.js";
@@ -470,6 +473,10 @@ var UIStrings = {
    */
   clearAnnouncements: "Clear announcements",
   /**
+   * @description Tooltip for the export to CSV button in the announcements tool.
+   */
+  exportCsv: "Export to CSV",
+  /**
    * @description Label/title for the dropdown filter to select which announcement types to record.
    */
   filterByType: "Filter by type",
@@ -556,6 +563,14 @@ var DEFAULT_VIEW = (input, _output, target) => {
             @click=${input.onClear}
             .variant=${Buttons.Button.Variant.TOOLBAR}
             .jslogContext=${"accessibility.clear-announcements"}>
+          </devtools-button>
+          <devtools-button
+            title=${i18nString(UIStrings.exportCsv)}
+            .iconName=${"download"}
+            .disabled=${!input.canExport}
+            @click=${input.onExportCsv}
+            .variant=${Buttons.Button.Variant.TOOLBAR}
+            .jslogContext=${"accessibility.export-csv"}>
           </devtools-button>
           <div class="toolbar-divider" role="separator"></div>
           <select
@@ -1051,6 +1066,21 @@ function validateAndSanitizeAnnouncement(payload) {
     time: parsedObj.time
   };
 }
+function buildCsvContent(announcements) {
+  const csvRows = [];
+  csvRows.push(["Time", "API", "Politeness", "Message"].join(","));
+  for (const item of announcements) {
+    const timeString = new Date(item.time).toISOString();
+    const row = [
+      Platform.StringUtilities.escapeCsvCell(timeString),
+      Platform.StringUtilities.escapeCsvCell(item.api),
+      Platform.StringUtilities.escapeCsvCell(item.politeness),
+      Platform.StringUtilities.escapeCsvCell(item.message)
+    ];
+    csvRows.push(row.join(","));
+  }
+  return csvRows.join("\r\n");
+}
 var AccessibilityAnnouncementRecordingView = class extends AccessibilitySubPane {
   #announcements = [];
   #filteredAnnouncements = null;
@@ -1283,12 +1313,32 @@ var AccessibilityAnnouncementRecordingView = class extends AccessibilitySubPane 
     this.#announceFilterMatches();
     this.requestUpdate();
   }
+  #exportCsv() {
+    const csvContent = this.#buildCsvContent();
+    const blob = new Blob(["\uFEFF", csvContent], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `aria-live-announcements-${Platform.DateUtilities.toISO8601Compact(/* @__PURE__ */ new Date())}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+  #buildCsvContent() {
+    return buildCsvContent(this.filteredAnnouncements);
+  }
+  exportCsvForTest() {
+    return this.#buildCsvContent();
+  }
   performUpdate() {
     const blockedTargets = [];
     for (const [target, reason] of this.#blockedTargets) {
       const targetName = target.name() || target.inspectedURL() || target.id();
       blockedTargets.push({ targetName, reason });
     }
+    const filteredAnnouncements = this.filteredAnnouncements;
     const input = {
       isRecording: this.#isRecording,
       onToggleRecording: () => {
@@ -1301,6 +1351,10 @@ var AccessibilityAnnouncementRecordingView = class extends AccessibilitySubPane 
       onClear: () => {
         this.clearAnnouncements();
       },
+      onExportCsv: () => {
+        this.#exportCsv();
+      },
+      canExport: filteredAnnouncements.length > 0,
       recordTypeFilter: this.#recordTypeFilter,
       onRecordTypeFilterChange: (type) => {
         this.setRecordTypeFilter(type);
@@ -1310,7 +1364,7 @@ var AccessibilityAnnouncementRecordingView = class extends AccessibilitySubPane 
         this.setTextFilter(text);
       },
       blockedTargets,
-      announcements: this.filteredAnnouncements
+      announcements: filteredAnnouncements
     };
     this.#view(input, void 0, this.contentElement);
   }
@@ -1358,7 +1412,15 @@ var UIStrings2 = {
   /**
    * @description Accessible title for the announcements data grid.
    */
-  ariaLiveRecordingList: "Accessibility Announcements"
+  ariaLiveRecordingList: "Accessibility Announcements",
+  /**
+   * @description Context menu item for copying the announcement message text to the clipboard.
+   */
+  copyMessage: "Copy message",
+  /**
+   * @description Context menu item for copying the announcement element HTML snippet to the clipboard.
+   */
+  copyElementHtml: "Copy element HTML"
 };
 var str_2 = i18n3.i18n.registerUIStrings("panels/accessibility/AccessibilityAnnouncementRecordingListView.ts", UIStrings2);
 var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
@@ -1392,7 +1454,12 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
       return html2`
             <tr
               ?selected=${item === input.selectedItem}
-              @select=${() => input.onSelect(item)}>
+              @select=${() => input.onSelect(item)}
+              @contextmenu=${(e) => {
+        if (e.detail instanceof UI3.ContextMenu.ContextMenu) {
+          input.onContextMenu(e.detail, item);
+        }
+      }}>
               <td data-value=${item.time}>
                 <span>${timeString}</span>
               </td>
@@ -1449,10 +1516,25 @@ var AccessibilityAnnouncementRecordingListView = class extends UI3.Widget.VBox {
     this.#selectedItem = null;
     this.requestUpdate();
   }
+  #populateContextMenu(contextMenu, item) {
+    if (item.message) {
+      contextMenu.clipboardSection().appendItem(i18nString2(UIStrings2.copyMessage), () => {
+        Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(item.message);
+      }, { jslogContext: "copy-message" });
+    }
+    if (item.element) {
+      contextMenu.clipboardSection().appendItem(i18nString2(UIStrings2.copyElementHtml), () => {
+        Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(item.element);
+      }, { jslogContext: "copy-element-html" });
+    }
+  }
   performUpdate() {
     const input = {
       items: this.#items,
       selectedItem: this.#selectedItem,
+      onContextMenu: (contextMenu, item) => {
+        this.#populateContextMenu(contextMenu, item);
+      },
       onSelect: (item) => {
         this.selectedItem = item;
         this.#onSelect?.(item);
@@ -1608,7 +1690,6 @@ var Audits;
     CookieExclusionReason2["ExcludeSameSiteLax"] = "ExcludeSameSiteLax";
     CookieExclusionReason2["ExcludeSameSiteStrict"] = "ExcludeSameSiteStrict";
     CookieExclusionReason2["ExcludeDomainNonASCII"] = "ExcludeDomainNonASCII";
-    CookieExclusionReason2["ExcludeThirdPartyCookieBlockedInFirstPartySet"] = "ExcludeThirdPartyCookieBlockedInFirstPartySet";
     CookieExclusionReason2["ExcludeThirdPartyPhaseout"] = "ExcludeThirdPartyPhaseout";
     CookieExclusionReason2["ExcludePortMismatch"] = "ExcludePortMismatch";
     CookieExclusionReason2["ExcludeSchemeMismatch"] = "ExcludeSchemeMismatch";
@@ -2860,7 +2941,6 @@ var Network;
     SetCookieBlockedReason2["SameSiteNoneInsecure"] = "SameSiteNoneInsecure";
     SetCookieBlockedReason2["UserPreferences"] = "UserPreferences";
     SetCookieBlockedReason2["ThirdPartyPhaseout"] = "ThirdPartyPhaseout";
-    SetCookieBlockedReason2["ThirdPartyBlockedInFirstPartySet"] = "ThirdPartyBlockedInFirstPartySet";
     SetCookieBlockedReason2["SyntaxError"] = "SyntaxError";
     SetCookieBlockedReason2["SchemeNotSupported"] = "SchemeNotSupported";
     SetCookieBlockedReason2["OverwriteSecure"] = "OverwriteSecure";
@@ -2885,7 +2965,6 @@ var Network;
     CookieBlockedReason2["SameSiteNoneInsecure"] = "SameSiteNoneInsecure";
     CookieBlockedReason2["UserPreferences"] = "UserPreferences";
     CookieBlockedReason2["ThirdPartyPhaseout"] = "ThirdPartyPhaseout";
-    CookieBlockedReason2["ThirdPartyBlockedInFirstPartySet"] = "ThirdPartyBlockedInFirstPartySet";
     CookieBlockedReason2["UnknownError"] = "UnknownError";
     CookieBlockedReason2["SchemefulSameSiteStrict"] = "SchemefulSameSiteStrict";
     CookieBlockedReason2["SchemefulSameSiteLax"] = "SchemefulSameSiteLax";
@@ -5640,7 +5719,7 @@ __export(ARIAAttributesView_exports, {
   DEFAULT_VIEW: () => DEFAULT_VIEW3
 });
 import * as i18n9 from "../../core/i18n/i18n.js";
-import * as Platform from "../../core/platform/platform.js";
+import * as Platform2 from "../../core/platform/platform.js";
 import * as SDK3 from "../../core/sdk/sdk.js";
 import * as UI5 from "../../ui/legacy/legacy.js";
 import * as Lit3 from "../../ui/lit/lit.js";
@@ -8409,7 +8488,7 @@ var DEFAULT_VIEW3 = (input, output, target) => {
                     ?editing=${input.attributeBeingEdited === attribute}
                     @commit=${(e) => input.onCommitEditing(attribute, e.detail)}
                     @cancel=${() => input.onCancelEditing(attribute)}>
-                      ${Platform.StringUtilities.trimMiddle(attribute.value, MAX_CONTENT_LENGTH)}
+                      ${Platform2.StringUtilities.trimMiddle(attribute.value, MAX_CONTENT_LENGTH)}
                       ${propertyCompletions(attribute)}
                   </devtools-prompt>
                 </li>`)}

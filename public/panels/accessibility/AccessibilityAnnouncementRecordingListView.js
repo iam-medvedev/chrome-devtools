@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import '../../ui/legacy/components/data_grid/data_grid.js';
+import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Lit from '../../ui/lit/lit.js';
@@ -37,6 +38,14 @@ const UIStrings = {
      * @description Accessible title for the announcements data grid.
      */
     ariaLiveRecordingList: 'Accessibility Announcements',
+    /**
+     * @description Context menu item for copying the announcement message text to the clipboard.
+     */
+    copyMessage: 'Copy message',
+    /**
+     * @description Context menu item for copying the announcement element HTML snippet to the clipboard.
+     */
+    copyElementHtml: 'Copy element HTML',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/accessibility/AccessibilityAnnouncementRecordingListView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -72,7 +81,12 @@ export const DEFAULT_VIEW = (input, _output, target) => {
         return html `
             <tr
               ?selected=${item === input.selectedItem}
-              @select=${() => input.onSelect(item)}>
+              @select=${() => input.onSelect(item)}
+              @contextmenu=${(e) => {
+            if (e.detail instanceof UI.ContextMenu.ContextMenu) {
+                input.onContextMenu(e.detail, item);
+            }
+        }}>
               <td data-value=${item.time}>
                 <span>${timeString}</span>
               </td>
@@ -128,10 +142,25 @@ export class AccessibilityAnnouncementRecordingListView extends UI.Widget.VBox {
         this.#selectedItem = null;
         this.requestUpdate();
     }
+    #populateContextMenu(contextMenu, item) {
+        if (item.message) {
+            contextMenu.clipboardSection().appendItem(i18nString(UIStrings.copyMessage), () => {
+                Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(item.message);
+            }, { jslogContext: 'copy-message' });
+        }
+        if (item.element) {
+            contextMenu.clipboardSection().appendItem(i18nString(UIStrings.copyElementHtml), () => {
+                Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(item.element);
+            }, { jslogContext: 'copy-element-html' });
+        }
+    }
     performUpdate() {
         const input = {
             items: this.#items,
             selectedItem: this.#selectedItem,
+            onContextMenu: (contextMenu, item) => {
+                this.#populateContextMenu(contextMenu, item);
+            },
             onSelect: (item) => {
                 this.selectedItem = item;
                 this.#onSelect?.(item);

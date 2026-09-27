@@ -13,19 +13,87 @@ import * as Badges from '../../models/badges/badges.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as NetworkTimeCalculator from '../../models/network_time_calculator/network_time_calculator.js';
 import * as Workspace from '../../models/workspace/workspace.js';
-import { cleanup, createAiAssistancePanel, mockAidaClient, openHistoryContextMenu, stripId, waitForLoadingToFinish, waitForSideEffectDialog, } from '../../testing/AiAssistanceHelpers.js';
+import { mockAidaClient, stripId, } from '../../testing/AiAssistanceHelpers.js';
 import { findMenuItemWithLabel } from '../../testing/ContextMenuHelpers.js';
+import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, deinitializeGlobalVars, describeWithEnvironment, initializeGlobalVars, registerNoopActions, updateHostConfig, } from '../../testing/EnvironmentHelpers.js';
 import { expectCall, expectCalled } from '../../testing/ExpectStubCall.js';
 import { createNetworkRequest } from '../../testing/NetworkRequestHelpers.js';
 import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import { SnapshotTester } from '../../testing/SnapshotTester.js';
+import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import { getVeHash } from '../../testing/VisualLoggingHelpers.js';
 import * as Snackbars from '../../ui/components/snackbars/snackbars.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Timeline from '../timeline/timeline.js';
 import * as AiAssistancePanel from './ai_assistance.js';
 const { urlString } = Platform.DevToolsPath;
+let panels = [];
+async function createAiAssistancePanel(options) {
+    let aidaAvailabilityForStub = options?.aidaAvailability ?? "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */;
+    const view = createViewFunctionStub(AiAssistancePanel.AiAssistancePanel, { chatView: options?.chatView });
+    const aidaClient = options?.aidaClient ?? mockAidaClient();
+    const checkAccessPreconditionsStub = sinon.stub(Host.AidaClient.AidaClient, 'checkAccessPreconditions').callsFake(() => {
+        return Promise.resolve(aidaAvailabilityForStub);
+    });
+    const panel = new AiAssistancePanel.AiAssistancePanel(view, {
+        aidaClient,
+        aidaAvailability: aidaAvailabilityForStub,
+    });
+    panels.push(panel);
+    renderElementIntoDOM(panel, { allowMultipleChildren: true });
+    await view.nextInput;
+    const stubAidaCheckAccessPreconditions = (aidaAvailability) => {
+        aidaAvailabilityForStub = aidaAvailability;
+        return checkAccessPreconditionsStub;
+    };
+    return {
+        panel,
+        view,
+        aidaClient,
+        stubAidaCheckAccessPreconditions,
+    };
+}
+function cleanup() {
+    for (const panel of panels) {
+        panel.detach();
+    }
+    panels = [];
+}
+function openHistoryContextMenu(lastUpdate, item) {
+    const contextMenu = new UI.ContextMenu.ContextMenu(new MouseEvent('click'));
+    lastUpdate.populateHistoryMenu(contextMenu);
+    const entry = findMenuItemWithLabel(contextMenu.defaultSection(), item);
+    return {
+        contextMenu,
+        id: entry?.id(),
+        entry,
+    };
+}
+async function waitForSideEffectDialog(view) {
+    let nextInput = await view.nextInput;
+    while (nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */) {
+        const lastMessage = nextInput.props.messages.at(-1);
+        const stepPart = lastMessage && 'parts' in lastMessage ?
+            lastMessage.parts.find(p => p.type === 'step' && p.step.state.type === 'needs_approval') :
+            null;
+        if (stepPart && stepPart.type === 'step' && stepPart.step.state.type === 'needs_approval') {
+            return stepPart.step.state.sideEffectDialog;
+        }
+        if (!nextInput.props.isLoading) {
+            throw new Error('Conversation finished without showing a side effect dialog');
+        }
+        nextInput = await view.nextInput;
+    }
+    throw new Error('Side effect dialog was not reached');
+}
+async function waitForLoadingToFinish(view) {
+    let nextInput = await view.nextInput;
+    while (nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */ && nextInput.props.isLoading) {
+        nextInput = await view.nextInput;
+    }
+    return nextInput;
+}
 /**
  * Creates a stubbed element node belonging to a document at `documentUrl`.
  *

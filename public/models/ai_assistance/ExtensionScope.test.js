@@ -15,7 +15,7 @@ function createNode(options) {
     const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
     node.id = 1;
     // Needed to process the inline styles
-    node.nodeType.returns(Node.ELEMENT_NODE);
+    node.nodeType.returns(1);
     node.localName.returns('div');
     node.simpleSelector.callThrough();
     if (options?.getAttribute) {

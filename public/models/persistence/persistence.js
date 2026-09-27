@@ -2430,7 +2430,7 @@ var FileSystem2 = class {
     return null;
   }
   displayName() {
-    const { root } = this.automaticFileSystem;
+    const root = this.automaticFileSystem.root.replace(Host7.Platform.isWin() ? /[/\\]+$/ : /\/+$/, "");
     let slash = root.lastIndexOf("/");
     if (slash === -1 && Host7.Platform.isWin()) {
       slash = root.lastIndexOf("\\");
@@ -2758,7 +2758,6 @@ var Audits;
     CookieExclusionReason2["ExcludeSameSiteLax"] = "ExcludeSameSiteLax";
     CookieExclusionReason2["ExcludeSameSiteStrict"] = "ExcludeSameSiteStrict";
     CookieExclusionReason2["ExcludeDomainNonASCII"] = "ExcludeDomainNonASCII";
-    CookieExclusionReason2["ExcludeThirdPartyCookieBlockedInFirstPartySet"] = "ExcludeThirdPartyCookieBlockedInFirstPartySet";
     CookieExclusionReason2["ExcludeThirdPartyPhaseout"] = "ExcludeThirdPartyPhaseout";
     CookieExclusionReason2["ExcludePortMismatch"] = "ExcludePortMismatch";
     CookieExclusionReason2["ExcludeSchemeMismatch"] = "ExcludeSchemeMismatch";
@@ -4010,7 +4009,6 @@ var Network;
     SetCookieBlockedReason2["SameSiteNoneInsecure"] = "SameSiteNoneInsecure";
     SetCookieBlockedReason2["UserPreferences"] = "UserPreferences";
     SetCookieBlockedReason2["ThirdPartyPhaseout"] = "ThirdPartyPhaseout";
-    SetCookieBlockedReason2["ThirdPartyBlockedInFirstPartySet"] = "ThirdPartyBlockedInFirstPartySet";
     SetCookieBlockedReason2["SyntaxError"] = "SyntaxError";
     SetCookieBlockedReason2["SchemeNotSupported"] = "SchemeNotSupported";
     SetCookieBlockedReason2["OverwriteSecure"] = "OverwriteSecure";
@@ -4035,7 +4033,6 @@ var Network;
     CookieBlockedReason2["SameSiteNoneInsecure"] = "SameSiteNoneInsecure";
     CookieBlockedReason2["UserPreferences"] = "UserPreferences";
     CookieBlockedReason2["ThirdPartyPhaseout"] = "ThirdPartyPhaseout";
-    CookieBlockedReason2["ThirdPartyBlockedInFirstPartySet"] = "ThirdPartyBlockedInFirstPartySet";
     CookieBlockedReason2["UnknownError"] = "UnknownError";
     CookieBlockedReason2["SchemefulSameSiteStrict"] = "SchemefulSameSiteStrict";
     CookieBlockedReason2["SchemefulSameSiteLax"] = "SchemefulSameSiteLax";
@@ -5460,6 +5457,7 @@ var Runtime;
 })(Runtime || (Runtime = {}));
 
 // ../../front_end/models/persistence/NetworkPersistenceManager.ts
+import * as Bindings3 from "../bindings/bindings.js";
 import * as Breakpoints from "../breakpoints/breakpoints.js";
 import * as Workspace9 from "../workspace/workspace.js";
 var forbiddenUrls = ["chromewebstore.google.com", "chrome.google.com"];
@@ -5678,6 +5676,8 @@ var NetworkPersistenceManager = class _NetworkPersistenceManager extends Common9
       let encodedName = encodeURI(pathPart).replace(/[\/\*]/g, (match) => "%" + match[0].charCodeAt(0).toString(16).toUpperCase());
       if (encodedName === "..") {
         encodedName = "%2E%2E";
+      } else if (encodedName === ".") {
+        encodedName = "%2E";
       }
       if (Host8.Platform.isWin()) {
         encodedName = encodedName.replace(/[:\?]/g, (match) => "%" + match[0].charCodeAt(0).toString(16).toUpperCase());
@@ -5741,7 +5741,10 @@ var NetworkPersistenceManager = class _NetworkPersistenceManager extends Common9
       if (!encodedFilePath) {
         return null;
       }
-      const encodedPath = Common9.ParsedURL.ParsedURL.substring(encodedFilePath, 0, encodedFilePath.lastIndexOf("/"));
+      const encodedPath = Common9.ParsedURL.ParsedURL.substr(encodedFilePath, 0, encodedFilePath.lastIndexOf("/"));
+      if (!encodedPath) {
+        return null;
+      }
       uiSourceCode = await this.#project.createFile(encodedPath, HEADERS_FILENAME, "");
       Host8.userMetrics.actionTaken(Host8.UserMetrics.Action.HeaderOverrideFileCreated);
     }
@@ -5820,7 +5823,27 @@ var NetworkPersistenceManager = class _NetworkPersistenceManager extends Common9
     return uiSourceCode.url().endsWith(HEADERS_FILENAME) && this.hasMatchingNetworkUISourceCodeForHeaderOverridesFile(uiSourceCode);
   }
   isUISourceCodeOverridable(uiSourceCode) {
-    return uiSourceCode.project().type() === Workspace9.Workspace.projectTypes.Network && !_NetworkPersistenceManager.isForbiddenNetworkUrl(uiSourceCode.url());
+    if (uiSourceCode.project().type() !== Workspace9.Workspace.projectTypes.Network) {
+      return false;
+    }
+    if (_NetworkPersistenceManager.isForbiddenNetworkUrl(uiSourceCode.url())) {
+      return false;
+    }
+    if (Bindings3.NetworkProject.NetworkProject.isSourceURLSynthesized(uiSourceCode)) {
+      return false;
+    }
+    return true;
+  }
+  /**
+   * Whether the contents of `uiSourceCode` may be written into the overrides folder.
+   *
+   * Sources that originate from a source map are overridable in the sense that the
+   * deployed resource they are mapped from can be overridden (see
+   * `PersistenceActions`), but their own URL and content are page controlled and
+   * must never be persisted themselves (b/553931271).
+   */
+  #canPersistUISourceCodeAsOverride(uiSourceCode) {
+    return this.isUISourceCodeOverridable(uiSourceCode) && !uiSourceCode.contentType().isFromSourceMap();
   }
   #isUISourceCodeAlreadyOverridden(uiSourceCode) {
     return this.#bindings.has(uiSourceCode) || this.#savingForOverrides.has(uiSourceCode);
@@ -5829,10 +5852,10 @@ var NetworkPersistenceManager = class _NetworkPersistenceManager extends Common9
     return this.isUISourceCodeOverridable(uiSourceCode) && !this.#isUISourceCodeAlreadyOverridden(uiSourceCode) && !this.#active && !this.#project;
   }
   #canSaveUISourceCodeForOverrides(uiSourceCode) {
-    return this.#active && this.isUISourceCodeOverridable(uiSourceCode) && !this.#isUISourceCodeAlreadyOverridden(uiSourceCode);
+    return this.#active && this.#canPersistUISourceCodeAsOverride(uiSourceCode) && !this.#isUISourceCodeAlreadyOverridden(uiSourceCode);
   }
   async setupAndStartLocalOverrides(uiSourceCode) {
-    if (!this.isUISourceCodeOverridable(uiSourceCode)) {
+    if (!this.#canPersistUISourceCodeAsOverride(uiSourceCode)) {
       return false;
     }
     if (this.#shouldPromptSaveForOverridesDialog(uiSourceCode)) {
@@ -5874,6 +5897,10 @@ var NetworkPersistenceManager = class _NetworkPersistenceManager extends Common9
     const encodedFileName = Common9.ParsedURL.ParsedURL.substring(encodedPath, lastIndexOfSlash + 1);
     const rawFileName = Common9.ParsedURL.ParsedURL.encodedPathToRawPathString(encodedFileName);
     encodedPath = Common9.ParsedURL.ParsedURL.substr(encodedPath, 0, lastIndexOfSlash);
+    if (!encodedPath || rawFileName === HEADERS_FILENAME) {
+      this.#savingForOverrides.delete(uiSourceCode);
+      return;
+    }
     if (this.#project) {
       await this.#project.createFile(encodedPath, rawFileName, content ?? "", isEncoded);
     }
@@ -5905,7 +5932,7 @@ var NetworkPersistenceManager = class _NetworkPersistenceManager extends Common9
   isForbiddenFileUrl(uiSourceCode) {
     const relativePathParts = FileSystemWorkspaceBinding.relativePath(uiSourceCode);
     const host = this.decodeLocalPathToUrlPath(this.decodeLocalPathToUrlPath(relativePathParts[0] || "")).toLowerCase();
-    return ["chrome:", "data:", "blob:", "javascript:", "about:", "mailto:", "vbscript:"].includes(host) || forbiddenUrls.includes(host);
+    return ["chrome:", "data:", "blob:", "javascript:", "about:", "mailto:", "vbscript:", ".", ".."].includes(host) || forbiddenUrls.includes(host);
   }
   static isForbiddenNetworkUrl(urlString) {
     const trimmedUrl = urlString.trim().toLowerCase();
@@ -5915,6 +5942,9 @@ var NetworkPersistenceManager = class _NetworkPersistenceManager extends Common9
     const url = Common9.ParsedURL.ParsedURL.fromString(urlString);
     if (!url) {
       return false;
+    }
+    if ((url.scheme === "http" || url.scheme === "https") && (!url.host || url.host === "." || url.host === "..")) {
+      return true;
     }
     return !["http", "https", "file"].includes(url.scheme) || forbiddenUrls.includes(url.host);
   }

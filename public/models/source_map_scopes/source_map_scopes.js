@@ -336,7 +336,6 @@ var Audits;
     CookieExclusionReason2["ExcludeSameSiteLax"] = "ExcludeSameSiteLax";
     CookieExclusionReason2["ExcludeSameSiteStrict"] = "ExcludeSameSiteStrict";
     CookieExclusionReason2["ExcludeDomainNonASCII"] = "ExcludeDomainNonASCII";
-    CookieExclusionReason2["ExcludeThirdPartyCookieBlockedInFirstPartySet"] = "ExcludeThirdPartyCookieBlockedInFirstPartySet";
     CookieExclusionReason2["ExcludeThirdPartyPhaseout"] = "ExcludeThirdPartyPhaseout";
     CookieExclusionReason2["ExcludePortMismatch"] = "ExcludePortMismatch";
     CookieExclusionReason2["ExcludeSchemeMismatch"] = "ExcludeSchemeMismatch";
@@ -1588,7 +1587,6 @@ var Network;
     SetCookieBlockedReason2["SameSiteNoneInsecure"] = "SameSiteNoneInsecure";
     SetCookieBlockedReason2["UserPreferences"] = "UserPreferences";
     SetCookieBlockedReason2["ThirdPartyPhaseout"] = "ThirdPartyPhaseout";
-    SetCookieBlockedReason2["ThirdPartyBlockedInFirstPartySet"] = "ThirdPartyBlockedInFirstPartySet";
     SetCookieBlockedReason2["SyntaxError"] = "SyntaxError";
     SetCookieBlockedReason2["SchemeNotSupported"] = "SchemeNotSupported";
     SetCookieBlockedReason2["OverwriteSecure"] = "OverwriteSecure";
@@ -1613,7 +1611,6 @@ var Network;
     CookieBlockedReason2["SameSiteNoneInsecure"] = "SameSiteNoneInsecure";
     CookieBlockedReason2["UserPreferences"] = "UserPreferences";
     CookieBlockedReason2["ThirdPartyPhaseout"] = "ThirdPartyPhaseout";
-    CookieBlockedReason2["ThirdPartyBlockedInFirstPartySet"] = "ThirdPartyBlockedInFirstPartySet";
     CookieBlockedReason2["UnknownError"] = "UnknownError";
     CookieBlockedReason2["SchemefulSameSiteStrict"] = "SchemefulSameSiteStrict";
     CookieBlockedReason2["SchemefulSameSiteLax"] = "SchemefulSameSiteLax";
@@ -3112,9 +3109,11 @@ async function findScopeChainForDebuggerScope(scope) {
     return [];
   }
   const { scopeTree, text } = scopeTreeAndText;
+  const start = script.rawLocationToRelativeLocation(startLocation);
+  const end = script.rawLocationToRelativeLocation(endLocation);
   const scopeOffsets = {
-    start: text.offsetFromPosition(startLocation.lineNumber, startLocation.columnNumber),
-    end: text.offsetFromPosition(endLocation.lineNumber, endLocation.columnNumber)
+    start: text.offsetFromPosition(start.lineNumber, start.columnNumber),
+    end: text.offsetFromPosition(end.lineNumber, end.columnNumber)
   };
   return findScopeChain(scopeTree, scopeOffsets);
 }
@@ -3324,35 +3323,39 @@ var resolveScopeChain = async function(callFrame, debuggerWorkspaceBinding) {
   const scopes = callFrame.scopeChain().filter((scope) => !scope.empty() || scope.type() === Debugger.ScopeType.Local);
   return scopes.map((scope) => new ScopeWithSourceMappedVariables(scope, thisObject, debuggerWorkspaceBinding));
 };
+function reverseScopeMapping(variableMapping) {
+  const result = /* @__PURE__ */ new Map();
+  for (const [compiledName, originalName] of variableMapping) {
+    if (originalName && !result.has(originalName)) {
+      result.set(originalName, compiledName);
+    }
+  }
+  return result;
+}
 var allVariablesInCallFrame = async (callFrame, debuggerWorkspaceBinding) => {
   if (!callFrame.debuggerModel.target().targetManager().settings.resolve(SDK2.SDKSettings.jsSourceMapsEnabledSettingDescriptor).get()) {
-    return /* @__PURE__ */ new Map();
+    return [];
   }
-  const cachedMap = cachedMapByCallFrame.get(callFrame);
-  if (cachedMap) {
-    return cachedMap;
+  const cached = cachedMapByCallFrame.get(callFrame);
+  if (cached) {
+    return cached;
+  }
+  if (Root.Runtime.hostConfig.devToolsSourceMapScopesInSourcesPanel?.enabled) {
+    const sourceMap = callFrame.script.sourceMap() ?? await callFrame.debuggerModel.sourceMapManager().sourceMapForClientPromise(callFrame.script);
+    const mappedVariables = sourceMap?.resolveMappedVariablesAtPosition(callFrame.location(), callFrame.returnValue() !== null);
+    if (mappedVariables) {
+      cachedMapByCallFrame.set(callFrame, mappedVariables);
+      return mappedVariables;
+    }
   }
   const scopeChain = callFrame.scopeChain().filter((scope) => !scope.empty());
   const nameMappings = await Promise.all(scopeChain.map((scope) => resolveDebuggerScope(scope, debuggerWorkspaceBinding)));
-  const reverseMapping = /* @__PURE__ */ new Map();
-  const compiledNames = /* @__PURE__ */ new Set();
-  for (const { variableMapping } of nameMappings) {
-    for (const [compiledName, originalName] of variableMapping) {
-      if (!originalName) {
-        continue;
-      }
-      if (!reverseMapping.has(originalName)) {
-        const compiledNameOrNull = compiledNames.has(compiledName) ? null : compiledName;
-        reverseMapping.set(originalName, compiledNameOrNull);
-      }
-      compiledNames.add(compiledName);
-    }
-  }
+  const reverseMapping = nameMappings.map(({ variableMapping }) => reverseScopeMapping(variableMapping));
   cachedMapByCallFrame.set(callFrame, reverseMapping);
   return reverseMapping;
 };
 var allVariablesAtPosition = async (location, debuggerWorkspaceBinding) => {
-  const reverseMapping = /* @__PURE__ */ new Map();
+  const reverseMapping = [];
   const script = location.script();
   if (!script) {
     return reverseMapping;
@@ -3360,26 +3363,24 @@ var allVariablesAtPosition = async (location, debuggerWorkspaceBinding) => {
   if (!script.debuggerModel.target().targetManager().settings.resolve(SDK2.SDKSettings.jsSourceMapsEnabledSettingDescriptor).get()) {
     return reverseMapping;
   }
+  if (Root.Runtime.hostConfig.devToolsSourceMapScopesInSourcesPanel?.enabled) {
+    const sourceMap = script.sourceMap() ?? await script.debuggerModel.sourceMapManager().sourceMapForClientPromise(script);
+    const mappedVariables = sourceMap?.resolveMappedVariablesAtPosition(location);
+    if (mappedVariables) {
+      return mappedVariables;
+    }
+  }
   const scopeTreeAndText = await computeScopeTree(script);
   if (!scopeTreeAndText) {
     return reverseMapping;
   }
   const { scopeTree, text } = scopeTreeAndText;
-  const locationOffset = text.offsetFromPosition(location.lineNumber, location.columnNumber);
+  const { lineNumber, columnNumber } = script.rawLocationToRelativeLocation(location);
+  const locationOffset = text.offsetFromPosition(lineNumber, columnNumber);
   const scopeChain = findScopeChain(scopeTree, { start: locationOffset, end: locationOffset });
-  const compiledNames = /* @__PURE__ */ new Set();
   while (scopeChain.length > 0) {
     const { variableMapping } = await resolveScope(script, scopeChain, debuggerWorkspaceBinding);
-    for (const [compiledName, originalName] of variableMapping) {
-      if (!originalName) {
-        continue;
-      }
-      if (!reverseMapping.has(originalName)) {
-        const compiledNameOrNull = compiledNames.has(compiledName) ? null : compiledName;
-        reverseMapping.set(originalName, compiledNameOrNull);
-      }
-      compiledNames.add(compiledName);
-    }
+    reverseMapping.push(reverseScopeMapping(variableMapping));
     scopeChain.pop();
   }
   return reverseMapping;
@@ -3419,6 +3420,7 @@ var ScopeWithSourceMappedVariables = class {
   /** The resolved `this` of the current call frame */
   #thisObject;
   #debuggerWorkspaceBinding;
+  #object;
   constructor(scope, thisObject, debuggerWorkspaceBinding) {
     this.#debuggerScope = scope;
     this.#thisObject = thisObject;
@@ -3440,7 +3442,10 @@ var ScopeWithSourceMappedVariables = class {
     return this.#debuggerScope.range();
   }
   object() {
-    return resolveScopeInObject(this.#debuggerScope, this.#debuggerWorkspaceBinding);
+    if (!this.#object) {
+      this.#object = resolveScopeInObject(this.#debuggerScope, this.#debuggerWorkspaceBinding);
+    }
+    return this.#object;
   }
   description() {
     return this.#debuggerScope.description();
@@ -3470,6 +3475,8 @@ var RemoteObject2 = class extends SDK2.RemoteObject.RemoteObject {
   scope;
   object;
   #debuggerWorkspaceBinding;
+  #allPropertiesPromise;
+  #cachedWithPreview = false;
   constructor(scope, debuggerWorkspaceBinding) {
     super();
     this.scope = scope;
@@ -3507,6 +3514,16 @@ var RemoteObject2 = class extends SDK2.RemoteObject.RemoteObject {
     return this.object.getOwnProperties(generatePreview);
   }
   async getAllProperties(accessorPropertiesOnly, generatePreview) {
+    if (accessorPropertiesOnly) {
+      return await this.#resolveAllProperties(true, generatePreview);
+    }
+    if (!this.#allPropertiesPromise || generatePreview && !this.#cachedWithPreview) {
+      this.#cachedWithPreview = generatePreview;
+      this.#allPropertiesPromise = this.#resolveAllProperties(false, generatePreview);
+    }
+    return await this.#allPropertiesPromise;
+  }
+  async #resolveAllProperties(accessorPropertiesOnly, generatePreview) {
     const allProperties = await this.object.getAllProperties(accessorPropertiesOnly, generatePreview);
     const { variableMapping } = await resolveDebuggerScope(this.scope, this.#debuggerWorkspaceBinding);
     const properties = allProperties.properties;
@@ -3518,6 +3535,8 @@ var RemoteObject2 = class extends SDK2.RemoteObject.RemoteObject {
     return { properties: newProperties ?? [], internalProperties };
   }
   async setPropertyValue(argumentName, value) {
+    this.#allPropertiesPromise = void 0;
+    this.#cachedWithPreview = false;
     const { variableMapping } = await resolveDebuggerScope(this.scope, this.#debuggerWorkspaceBinding);
     let name;
     if (typeof argumentName === "string") {
@@ -3535,6 +3554,8 @@ var RemoteObject2 = class extends SDK2.RemoteObject.RemoteObject {
     return await this.object.setPropertyValue(actualName, value);
   }
   async deleteProperty(name) {
+    this.#allPropertiesPromise = void 0;
+    this.#cachedWithPreview = false;
     return await this.object.deleteProperty(name);
   }
   callFunction(functionDeclaration, args) {
@@ -3556,11 +3577,12 @@ var RemoteObject2 = class extends SDK2.RemoteObject.RemoteObject {
     return this.object.isNode();
   }
 };
-async function getFunctionNameFromScopeStart(script, lineNumber, columnNumber) {
+async function getFunctionNameFromScopeStart(script, rawLineNumber, rawColumnNumber) {
   const sourceMap = script.sourceMap();
   if (!sourceMap) {
     return null;
   }
+  const { lineNumber, columnNumber } = script.rawLocationToRelativeLocation({ lineNumber: rawLineNumber, columnNumber: rawColumnNumber });
   const scopeName = sourceMap.findOriginalFunctionName({ line: lineNumber, column: columnNumber });
   if (scopeName !== null) {
     return scopeName;
@@ -3627,7 +3649,8 @@ __export(ScopeChainModel_exports, {
 });
 import * as Common from "../../core/common/common.js";
 import * as SDK3 from "../../core/sdk/sdk.js";
-var ScopeChainModel = class extends Common.ObjectWrapper.ObjectWrapper {
+var ScopeChainModel = class _ScopeChainModel extends Common.ObjectWrapper.ObjectWrapper {
+  static #cachedScopeChainByCallFrame = /* @__PURE__ */ new WeakMap();
   #callFrame;
   #debuggerWorkspaceBinding;
   /** We use the `Throttler` here to make sure that `#boundUpdate` is not run multiple times simultanously */
@@ -3672,17 +3695,30 @@ var ScopeChainModel = class extends Common.ObjectWrapper.ObjectWrapper {
     );
     this.listeners?.clear();
   }
+  static resolveScopeChain(callFrame, debuggerWorkspaceBinding) {
+    let cachedPromise = _ScopeChainModel.#cachedScopeChainByCallFrame.get(callFrame);
+    if (!cachedPromise) {
+      cachedPromise = resolveScopeChain(callFrame, debuggerWorkspaceBinding);
+      _ScopeChainModel.#cachedScopeChainByCallFrame.set(callFrame, cachedPromise);
+    }
+    return cachedPromise;
+  }
+  resolveScopeChain() {
+    return _ScopeChainModel.resolveScopeChain(this.#callFrame, this.#debuggerWorkspaceBinding);
+  }
   async #update() {
-    const scopeChain = await resolveScopeChain(this.#callFrame, this.#debuggerWorkspaceBinding);
+    const scopeChain = await this.resolveScopeChain();
     this.dispatchEventToListeners("ScopeChainUpdated" /* SCOPE_CHAIN_UPDATED */, new ScopeChain(scopeChain));
   }
   #debugInfoAttached(event) {
     if (event.data === this.#callFrame.script) {
+      _ScopeChainModel.#cachedScopeChainByCallFrame.delete(this.#callFrame);
       void this.#throttler.schedule(this.#boundUpdate);
     }
   }
   #sourceMapChanged(event) {
     if (event.data.client === this.#callFrame.script) {
+      _ScopeChainModel.#cachedScopeChainByCallFrame.delete(this.#callFrame);
       void this.#throttler.schedule(this.#boundUpdate);
     }
   }

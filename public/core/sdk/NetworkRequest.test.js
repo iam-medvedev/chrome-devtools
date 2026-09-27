@@ -4,7 +4,6 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import { expectCookie } from '../../testing/Cookies.js';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import { mockResourceTree } from '../../testing/ResourceTreeHelpers.js';
@@ -351,10 +350,12 @@ describe('requestStreamingContent', () => {
     setupLocaleHooks();
     setupSettingsHooks();
     setupRuntimeHooks();
+    let universe;
     let target;
     let networkManager;
     beforeEach(() => {
-        target = createTarget();
+        universe = new TestUniverse();
+        target = universe.createTarget();
         networkManager = target.model(SDK.NetworkManager.NetworkManager);
     });
     it('retrieves the full response body for finished requests', () => {

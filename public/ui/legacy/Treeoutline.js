@@ -46,6 +46,7 @@ import { Keys } from './KeyboardShortcut.js';
 import { Tooltip } from './Tooltip.js';
 import treeoutlineStyles from './treeoutline.css.js';
 import { createShadowRootWithCoreStyles, deepElementFromPoint, enclosingNodeOrSelfWithNodeNameInArray, HTMLElementWithLightDOMTemplate, isEditing, } from './UIUtils.js';
+import { Widget } from './Widget.js';
 const UIStrings = {
     /**
      * @description Screen reader announcement made when the user expands a tree item, such as a DOM
@@ -687,6 +688,9 @@ export class TreeElement {
     }
     set selectable(x) {
         this.selectableInternal = x;
+        if (!x && this.selected) {
+            this.deselect();
+        }
     }
     get listItemElement() {
         return this.listItemNode;
@@ -1131,9 +1135,9 @@ export class TreeElement {
             this.listItemNode.classList.remove('force-white-icons');
         }
     }
-    revealAndSelect(omitFocus) {
+    revealAndSelect(omitFocus, selectedByUser) {
         this.reveal(true);
-        this.select(omitFocus);
+        this.select(omitFocus, selectedByUser ?? false);
     }
     deselect() {
         const hadFocus = this.listItemNode.hasFocus();
@@ -1235,9 +1239,8 @@ export class TreeElement {
             if (!dontPopulate) {
                 void element.populateIfNeeded();
             }
-            element =
-                (skipUnrevealed ? (element.revealed() && element.expanded ? element.lastChild() : null) :
-                    element.lastChild());
+            element = (skipUnrevealed ? (element.revealed() && element.expanded ? element.lastChild() : null) :
+                element.lastChild());
         }
         if (element) {
             return element;
@@ -1409,9 +1412,15 @@ class TreeViewTreeElement extends TreeElement {
         }
         this.#refreshScheduled = true;
         queueMicrotask(() => {
-            this.#refreshScheduled = false;
-            this.refresh();
+            if (this.#refreshScheduled) {
+                this.refresh();
+            }
         });
+    }
+    flushPendingRefreshForTesting() {
+        if (this.#refreshScheduled) {
+            this.refresh();
+        }
     }
     updateAttributes() {
         const expandable = Boolean(this.configElement.querySelector(':scope > ul[role="group"]'));
@@ -1422,7 +1431,8 @@ class TreeViewTreeElement extends TreeElement {
         this.#clonedClasses.clear();
         for (let i = 0; i < this.configElement.attributes.length; ++i) {
             const attribute = this.configElement.attributes.item(i);
-            if (attribute && attribute.name !== 'role' && TreeViewTreeElement.CLONED_ATTRIBUTES.has(attribute.name)) {
+            if (attribute && attribute.name !== 'role' &&
+                (TreeViewTreeElement.CLONED_ATTRIBUTES.has(attribute.name) || attribute.name.startsWith('data-'))) {
                 this.listItemElement.setAttribute(attribute.name, attribute.value);
                 this.#clonedAttributes.add(attribute.name);
             }
@@ -1437,6 +1447,7 @@ class TreeViewTreeElement extends TreeElement {
         this.updateExpansionFromAttribute();
     }
     refresh() {
+        this.#refreshScheduled = false;
         const hadFocus = this.listItemElement.hasFocus();
         this.titleElement.textContent = '';
         this.updateAttributes();
@@ -1453,7 +1464,7 @@ class TreeViewTreeElement extends TreeElement {
         this.toggleOnClick = hasBooleanAttribute(this.configElement, 'toggle-on-click');
         this.updateExpansionFromAttribute();
         Highlighting.HighlightManager.HighlightManager.instance().apply(this.titleElement);
-        if (hadFocus) {
+        if (hadFocus && this.selected) {
             this.listItemElement.focus();
         }
     }
@@ -1472,7 +1483,7 @@ class TreeViewTreeElement extends TreeElement {
         }
         return super.onenter();
     }
-    remove() {
+    removeFromTree() {
         removeNode(this, Boolean(this.parent &&
             this.parent.configElement?.querySelector(':scope > ul[role="group"]')));
         TreeViewTreeElement.#elementToTreeElement.delete(this.configElement);
@@ -1628,6 +1639,25 @@ export class TreeViewElement extends HTMLElementWithLightDOMTemplate {
     getInternalTreeOutlineForTest() {
         return this.#treeOutline;
     }
+    flushPendingUpdatesForTesting() {
+        this.flushPendingMutationsForTesting();
+        const stack = [...this.#treeOutline.rootElement().children()];
+        while (stack.length > 0) {
+            const item = stack.pop();
+            if (!item) {
+                continue;
+            }
+            if (item instanceof TreeViewTreeElement) {
+                item.flushPendingRefreshForTesting();
+            }
+            if (item.children()) {
+                stack.push(...item.children());
+            }
+        }
+        for (const widgetEl of this.#treeOutline.shadowRoot.querySelectorAll('devtools-widget')) {
+            void Widget.get(widgetEl)?.performUpdate();
+        }
+    }
     focus() {
         if (!this.#treeOutline.selectedTreeElement && this.#treeOutline.firstChild()) {
             this.#treeOutline.firstChild()?.select(/* omitFocus */ true, /* selectedByUser */ false);
@@ -1763,7 +1793,7 @@ export class TreeViewElement extends HTMLElementWithLightDOMTemplate {
     removeNodes(nodes) {
         for (const node of getTreeNodes(nodes)) {
             if (node instanceof HTMLLIElement) {
-                TreeViewTreeElement.get(node)?.remove();
+                TreeViewTreeElement.get(node)?.removeFromTree();
             }
             else if (node.treeElement) {
                 removeNode(node.treeElement, Boolean(node.treeElement.parent &&
@@ -1853,7 +1883,13 @@ class IfExpandedDirective extends Lit.Directive.Directive {
         this.#partInfo = partInfo;
     }
     render(content) {
-        return this.#isInExpandedRow(this.#partInfo.startNode) ? content : Lit.nothing;
+        if (!this.#isInExpandedRow(this.#partInfo.startNode)) {
+            return Lit.nothing;
+        }
+        if (typeof content === 'function') {
+            return content();
+        }
+        return content;
     }
     #isInExpandedRow(element) {
         if (!element) {

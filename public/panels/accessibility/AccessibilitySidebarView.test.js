@@ -30,6 +30,8 @@ describeWithEnvironment('AccessibilitySidebarView', () => {
     afterEach(() => {
         UI.ActionRegistration.maybeRemoveActionExtension('elements.toggle-a11y-tree');
         view?.detach();
+        view = undefined;
+        UI.ViewManager.ViewManager.removeInstance();
     });
     it('notifies ViewManager when visibility is toggled', async () => {
         view = Accessibility.AccessibilitySidebarView.AccessibilitySidebarView.instance({ forceNew: true });

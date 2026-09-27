@@ -139,7 +139,6 @@ var Audits;
     CookieExclusionReason2["ExcludeSameSiteLax"] = "ExcludeSameSiteLax";
     CookieExclusionReason2["ExcludeSameSiteStrict"] = "ExcludeSameSiteStrict";
     CookieExclusionReason2["ExcludeDomainNonASCII"] = "ExcludeDomainNonASCII";
-    CookieExclusionReason2["ExcludeThirdPartyCookieBlockedInFirstPartySet"] = "ExcludeThirdPartyCookieBlockedInFirstPartySet";
     CookieExclusionReason2["ExcludeThirdPartyPhaseout"] = "ExcludeThirdPartyPhaseout";
     CookieExclusionReason2["ExcludePortMismatch"] = "ExcludePortMismatch";
     CookieExclusionReason2["ExcludeSchemeMismatch"] = "ExcludeSchemeMismatch";
@@ -1391,7 +1390,6 @@ var Network;
     SetCookieBlockedReason2["SameSiteNoneInsecure"] = "SameSiteNoneInsecure";
     SetCookieBlockedReason2["UserPreferences"] = "UserPreferences";
     SetCookieBlockedReason2["ThirdPartyPhaseout"] = "ThirdPartyPhaseout";
-    SetCookieBlockedReason2["ThirdPartyBlockedInFirstPartySet"] = "ThirdPartyBlockedInFirstPartySet";
     SetCookieBlockedReason2["SyntaxError"] = "SyntaxError";
     SetCookieBlockedReason2["SchemeNotSupported"] = "SchemeNotSupported";
     SetCookieBlockedReason2["OverwriteSecure"] = "OverwriteSecure";
@@ -1416,7 +1414,6 @@ var Network;
     CookieBlockedReason2["SameSiteNoneInsecure"] = "SameSiteNoneInsecure";
     CookieBlockedReason2["UserPreferences"] = "UserPreferences";
     CookieBlockedReason2["ThirdPartyPhaseout"] = "ThirdPartyPhaseout";
-    CookieBlockedReason2["ThirdPartyBlockedInFirstPartySet"] = "ThirdPartyBlockedInFirstPartySet";
     CookieBlockedReason2["UnknownError"] = "UnknownError";
     CookieBlockedReason2["SchemefulSameSiteStrict"] = "SchemefulSameSiteStrict";
     CookieBlockedReason2["SchemefulSameSiteLax"] = "SchemefulSameSiteLax";
@@ -9346,6 +9343,7 @@ var StylePropertiesSection = class _StylePropertiesSection {
       closeBrace.createChild("span").textContent = "}";
     } else {
       this.titleElement.classList.add("hidden");
+      this.updateAncestorRuleList();
     }
     if (rule) {
       const newRuleButton = new UI9.Toolbar.ToolbarButton(
@@ -9452,6 +9450,7 @@ var StylePropertiesSection = class _StylePropertiesSection {
     this.computedStyleExtraFields = computedStyleExtraFields;
     this.#lastInheritedNode = matchedStyles.isInherited(style) ? matchedStyles.nodeForStyle(style) : null;
     this.update(true);
+    this.updateCollapsedState();
   }
   inheritedNode() {
     return this.#lastInheritedNode;
@@ -10152,6 +10151,14 @@ var StylePropertiesSection = class _StylePropertiesSection {
     this.#ancestorClosingBracesElement.removeChildren();
     this.maybeCreateAncestorRules(this.styleInternal);
     this.#styleRuleElement.style.paddingLeft = `${this.nestingLevel}ch`;
+    if (this.headerText().length === 0 && this.styleInternal.parentRule instanceof SDK6.CSSRule.CSSStyleRule) {
+      const lastAncestor = this.#ancestorRuleListElement.lastElementChild;
+      if (lastAncestor && this.#collapseIcon && this.#statusElement) {
+        this.#collapseIcon.slot = "indent";
+        lastAncestor.append(this.#collapseIcon, this.#statusElement);
+      }
+      this.#ancestorClosingBracesElement.firstElementChild?.classList.add("sidebar-pane-closing-brace");
+    }
   }
   isPropertyInherited(propertyName) {
     if (this.matchedStyles.isInherited(this.styleInternal)) {
@@ -11468,11 +11475,17 @@ var stylesSidebarPane_css_default = `/**
   & .section-collapse-icon {
     width: var(--sys-size-6);
     height: var(--sys-size-6);
+    margin-block: calc(-1 * var(--sys-size-3));
     margin-right: var(--sys-size-2);
     margin-left: calc(-1 * var(--sys-size-2));
     vertical-align: middle;
     cursor: pointer;
     display: none;
+  }
+
+  & .styles-section-status {
+    margin-block: calc(-1 * var(--sys-size-4));
+    vertical-align: middle;
   }
 
   &.collapsible .section-collapse-icon {
@@ -12334,9 +12347,6 @@ var StylesSidebarPane = class _StylesSidebarPane extends StylesSidebarPaneBase {
     }
   }
   setEditingStyle(editing) {
-    if (editing) {
-      this.isSuppressingResets = false;
-    }
     if (this.isEditingStyle === editing) {
       return;
     }
@@ -12408,10 +12418,11 @@ var StylesSidebarPane = class _StylesSidebarPane extends StylesSidebarPaneBase {
   }
   #scheduleResetUpdateIfNotEditing() {
     this.scheduleResetUpdateIfNotEditingCalledForTest();
-    if (this.isSuppressingResets) {
+    if (this.userOperation || this.isEditingStyle) {
       return;
     }
-    if (this.userOperation || this.isEditingStyle) {
+    if (this.isSuppressingResets) {
+      this.isSuppressingResets = false;
       return;
     }
     void this.resetUpdateThrottler.schedule(async () => {
@@ -12634,27 +12645,37 @@ var StylesSidebarPane = class _StylesSidebarPane extends StylesSidebarPaneBase {
       this.#lastNode = node;
     }
   }
-  getStyleId(style) {
+  getStyleId(section5) {
+    const style = section5.styleInternal;
+    const node = section5.matchedStyles.isInherited(style) ? section5.matchedStyles.nodeForStyle(style) : section5.matchedStyles.node();
+    const nodeId = node?.id ?? "";
     if (style.range) {
-      return `${style.styleSheetId || ""}:${style.range.toString()}`;
+      return `${nodeId}:${style.styleSheetId || ""}:${style.range.toString()}`;
     }
     if (style.type === SDK7.CSSStyleDeclaration.Type.Inline || style.type === SDK7.CSSStyleDeclaration.Type.Attributes) {
-      return style.type;
+      return `${nodeId}:${style.type}`;
     }
     if (style.type === SDK7.CSSStyleDeclaration.Type.Animation) {
-      return `${style.type}:${style.animationName() || ""}:${style.cssText}`;
+      return `${nodeId}:${style.type}:${style.animationName() || ""}:${style.cssText}`;
     }
     const parentRule = style.parentRule;
     if (parentRule instanceof SDK7.CSSRule.CSSStyleRule) {
-      return `${style.type}:${parentRule.selectorText()}`;
+      const ruleTypes = parentRule.ruleTypes.join(",");
+      const nesting = parentRule.nestingSelectors?.join(",") ?? "";
+      const media = parentRule.media.map((m) => m.text).join(",");
+      const containers = parentRule.containerQueries.map((c) => c.text).join(",");
+      const supports = parentRule.supports.map((s) => s.text).join(",");
+      const scopes = parentRule.scopes.map((s) => s.text).join(",");
+      const layers = parentRule.layers.map((l) => l.text).join(",");
+      return `${nodeId}:${style.type}:${parentRule.selectorText()}:${ruleTypes}:${nesting}:${media}:${containers}:${supports}:${scopes}:${layers}`;
     }
     if (parentRule instanceof SDK7.CSSRule.CSSKeyframeRule) {
-      return `${style.type}:${parentRule.parentRuleName()}:${parentRule.key().text}`;
+      return `${nodeId}:${style.type}:${parentRule.parentRuleName()}:${parentRule.key().text}`;
     }
     if (parentRule instanceof SDK7.CSSRule.CSSPropertyRule) {
-      return `${style.type}:${parentRule.propertyName().text}`;
+      return `${nodeId}:${style.type}:${parentRule.propertyName().text}`;
     }
-    return `${style.type}:${style.cssText}`;
+    return `${nodeId}:${style.type}:${style.cssText}`;
   }
   rebuildSectionsForMatchedStyleRulesForTest(matchedStyles, computedStyles, parentsComputedStyles, computedStyleExtraFields) {
     return this.rebuildSectionsForMatchedStyleRules(
@@ -12670,7 +12691,7 @@ var StylesSidebarPane = class _StylesSidebarPane extends StylesSidebarPaneBase {
       this.idleCallbackManager.discard();
     }
     this.idleCallbackManager = new IdleCallbackManager();
-    const blocks = [new SectionBlock(null)];
+    const blocks = [new SectionBlock(null, void 0, void 0, "main")];
     let sectionIdx = 0;
     let lastParentNode = null;
     let lastLayerParent = blocks[0];
@@ -12681,7 +12702,7 @@ var StylesSidebarPane = class _StylesSidebarPane extends StylesSidebarPaneBase {
       if (parentRule instanceof SDK7.CSSRule.CSSStyleRule) {
         const layers = parentRule.layers;
         if ((layers.length || lastLayers) && lastLayers !== layers) {
-          const block = SectionBlock.createLayerBlock(parentRule);
+          const block = SectionBlock.createLayerBlock(parentRule, lastLayerParent?.id);
           blocks.push(block);
           lastLayerParent?.childBlocks.push(block);
           sawLayers = true;
@@ -12893,34 +12914,38 @@ var StylesSidebarPane = class _StylesSidebarPane extends StylesSidebarPaneBase {
     if (!showInactiveCSSRules) {
       return blocks;
     }
-    return this.mergeInactiveStyles(blocks);
+    return this.mergeInactiveStyles(
+      blocks,
+      matchedStyles,
+      computedStyles,
+      parentsComputedStyles,
+      computedStyleExtraFields
+    );
   }
-  computeBlockIds(blocks) {
-    let nullBlockCounter = 0;
-    const blockIds = /* @__PURE__ */ new Map();
-    for (const block of blocks) {
-      blockIds.set(block, block.titleElement()?.textContent || `MAIN_BLOCK_NULL_${nullBlockCounter++}`);
-    }
-    return blockIds;
-  }
-  mergeInactiveStyles(blocks) {
-    const blockIds = this.computeBlockIds(blocks);
-    for (const [id, block] of this.#allKnownBlocks) {
-      if (!blockIds.has(block)) {
-        blockIds.set(block, id);
-      }
-    }
-    const getBlockId = (block) => blockIds.get(block) || "UNKNOWN_BLOCK";
+  mergeInactiveStyles(blocks, matchedStyles, computedStyles, parentsComputedStyles, computedStyleExtraFields) {
+    const getBlockId = (block) => block.id;
     for (const block of blocks) {
       const bid = getBlockId(block);
       const knownBlock = this.#allKnownBlocks.get(bid);
       if (knownBlock) {
-        block.sections = mergeOrderedItems(
+        knownBlock.sections = mergeOrderedItems(
           knownBlock.sections,
           block.sections,
-          (section5) => this.getStyleId(section5.styleInternal),
-          (section5) => section5.setInactive(true)
+          (section5) => this.getStyleId(section5),
+          (section5, active, newSection) => {
+            if (active && newSection) {
+              section5.rebuildWithPayload(
+                matchedStyles,
+                newSection.style(),
+                computedStyles,
+                parentsComputedStyles,
+                computedStyleExtraFields
+              );
+            }
+            section5.setInactive(!active);
+          }
         );
+        block.sections = knownBlock.sections;
       }
     }
     const oldBlocks = Array.from(this.#allKnownBlocks.values());
@@ -12928,11 +12953,23 @@ var StylesSidebarPane = class _StylesSidebarPane extends StylesSidebarPaneBase {
       oldBlocks,
       blocks,
       getBlockId,
-      (block) => block.sections.forEach((section5) => section5.setInactive(true))
+      (block, active) => {
+        if (!active) {
+          block.sections.forEach((section5) => section5.setInactive(true));
+        }
+      }
     );
     this.#allKnownBlocks.clear();
     for (const block of finalBlocks) {
       this.#allKnownBlocks.set(getBlockId(block), block);
+    }
+    for (const newBlock of blocks) {
+      const finalBlock = this.#allKnownBlocks.get(getBlockId(newBlock));
+      if (finalBlock) {
+        const newChildBlocks = newBlock.childBlocks.map((child) => this.#allKnownBlocks.get(getBlockId(child))).filter((b) => b !== void 0);
+        finalBlock.childBlocks = finalBlock === newBlock ? newChildBlocks : mergeOrderedItems(finalBlock.childBlocks, newChildBlocks, getBlockId, () => {
+        });
+      }
     }
     return finalBlocks;
   }
@@ -13289,12 +13326,8 @@ var Events = /* @__PURE__ */ ((Events3) => {
 })(Events || {});
 var MAX_LINK_LENGTH = 23;
 var SectionBlock = class _SectionBlock {
-  #titleElement;
-  sections;
-  childBlocks = [];
-  #expanded = false;
-  #icon;
-  constructor(titleElement, expandable, expandedByDefault) {
+  constructor(titleElement, expandable, expandedByDefault, id = "main") {
+    this.id = id;
     this.#titleElement = titleElement;
     this.sections = [];
     this.#expanded = expandedByDefault ?? false;
@@ -13307,6 +13340,12 @@ var SectionBlock = class _SectionBlock {
       titleElement.addEventListener("click", () => this.expand(!this.#expanded), false);
     }
   }
+  id;
+  #titleElement;
+  sections;
+  childBlocks = [];
+  #expanded = false;
+  #icon;
   expand(expand2) {
     if (!this.#titleElement || !this.#icon) {
       return;
@@ -13324,7 +13363,7 @@ var SectionBlock = class _SectionBlock {
     const pseudoArgumentString = pseudoArgument ? `(${pseudoArgument})` : "";
     const pseudoTypeString = `${pseudoType}${pseudoArgumentString}`;
     separatorElement.textContent = i18nString8(UIStrings8.pseudoSElement, { PH1: pseudoTypeString });
-    return new _SectionBlock(separatorElement);
+    return new _SectionBlock(separatorElement, false, false, `pseudo:${pseudoType}:${pseudoArgument ?? ""}`);
   }
   static async createInheritedPseudoTypeBlock(pseudoType, pseudoArgument, node) {
     const separatorElement = document.createElement("div");
@@ -13335,18 +13374,23 @@ var SectionBlock = class _SectionBlock {
     UI10.UIUtils.createTextChild(separatorElement, i18nString8(UIStrings8.inheritedFromSPseudoOf, { PH1: pseudoTypeString }));
     const link2 = PanelsCommon2.DOMLinkifier.Linkifier.instance().linkify(node, { preventKeyboardFocus: true });
     render6(link2, separatorElement);
-    return new _SectionBlock(separatorElement);
+    return new _SectionBlock(
+      separatorElement,
+      false,
+      false,
+      `inherited-pseudo:${pseudoType}:${pseudoArgument ?? ""}:${node.id}`
+    );
   }
   static createRegisteredPropertiesBlock(expandedByDefault) {
     const separatorElement = document.createElement("div");
-    const block = new _SectionBlock(separatorElement, true, expandedByDefault);
+    const block = new _SectionBlock(separatorElement, true, expandedByDefault, "registered-properties");
     separatorElement.className = "sidebar-separator";
     separatorElement.appendChild(document.createTextNode(REGISTERED_PROPERTY_SECTION_NAME));
     return block;
   }
   static createFunctionBlock(expandedByDefault) {
     const separatorElement = document.createElement("div");
-    const block = new _SectionBlock(separatorElement, true, expandedByDefault);
+    const block = new _SectionBlock(separatorElement, true, expandedByDefault, "functions");
     separatorElement.className = "sidebar-separator";
     separatorElement.appendChild(document.createTextNode(FUNCTION_SECTION_NAME));
     return block;
@@ -13356,11 +13400,11 @@ var SectionBlock = class _SectionBlock {
     separatorElement.className = "sidebar-separator";
     separatorElement.setAttribute("jslog", `${VisualLogging5.sectionHeader("keyframes")}`);
     separatorElement.textContent = `@keyframes ${keyframesName}`;
-    return new _SectionBlock(separatorElement);
+    return new _SectionBlock(separatorElement, false, false, `keyframes:${keyframesName}`);
   }
   static createAtRuleBlock(expandedByDefault) {
     const separatorElement = document.createElement("div");
-    const block = new _SectionBlock(separatorElement, true, expandedByDefault);
+    const block = new _SectionBlock(separatorElement, true, expandedByDefault, "at-rules");
     separatorElement.className = "sidebar-separator";
     separatorElement.appendChild(document.createTextNode(i18nString8(UIStrings8.atRuleSection)));
     return block;
@@ -13370,7 +13414,7 @@ var SectionBlock = class _SectionBlock {
     separatorElement.className = "sidebar-separator";
     separatorElement.setAttribute("jslog", `${VisualLogging5.sectionHeader("position-try")}`);
     separatorElement.textContent = `@position-try ${positionTryName}`;
-    return new _SectionBlock(separatorElement);
+    return new _SectionBlock(separatorElement, false, false, `position-try:${positionTryName}`);
   }
   static async createInheritedNodeBlock(node) {
     const separatorElement = document.createElement("div");
@@ -13381,9 +13425,9 @@ var SectionBlock = class _SectionBlock {
       preventKeyboardFocus: true
     });
     render6(link2, separatorElement);
-    return new _SectionBlock(separatorElement);
+    return new _SectionBlock(separatorElement, false, false, `inherited-node:${node.id}`);
   }
-  static createLayerBlock(rule) {
+  static createLayerBlock(rule, parentBlockId = "main") {
     const separatorElement = document.createElement("div");
     separatorElement.className = "sidebar-separator layer-separator";
     separatorElement.setAttribute("jslog", `${VisualLogging5.sectionHeader("layer")}`);
@@ -13392,7 +13436,7 @@ var SectionBlock = class _SectionBlock {
     if (!layers.length && rule.origin === CSS2.StyleSheetOrigin.UserAgent) {
       const name2 = rule.origin === CSS2.StyleSheetOrigin.UserAgent ? "\xA0user\xA0agent\xA0stylesheet" : "\xA0implicit\xA0outer\xA0layer";
       UI10.UIUtils.createTextChild(separatorElement.createChild("div"), name2);
-      return new _SectionBlock(separatorElement);
+      return new _SectionBlock(separatorElement, false, false, `layer:${parentBlockId}:${name2}`);
     }
     const layerLink = separatorElement.createChild("button");
     layerLink.className = "link";
@@ -13400,7 +13444,7 @@ var SectionBlock = class _SectionBlock {
     const name = layers.map((layer) => SDK7.CSSModel.CSSModel.readableLayerName(layer.text)).join(".");
     layerLink.textContent = name;
     layerLink.onclick = () => LayersWidget.instance().revealLayer(name);
-    return new _SectionBlock(separatorElement);
+    return new _SectionBlock(separatorElement, false, false, `layer:${parentBlockId}:${name}`);
   }
   updateFilter() {
     let numVisibleSections = 0;
@@ -14022,27 +14066,50 @@ function escapeUrlAsCssComment(urlText) {
   }
   return url.toString();
 }
-function mergeOrderedItems(oldItems, newItems, getId, markInactive) {
+function mergeOrderedItems(oldItems, newItems, getId, toggleActive) {
   const newIds = new Set(newItems.map(getId));
+  const oldItemById = new Map(oldItems.map((item2) => [getId(item2), item2]));
+  const handledIds = /* @__PURE__ */ new Set();
   const merged = [];
   let newIdx = 0;
   for (const oldItem of oldItems) {
     const oldId = getId(oldItem);
+    if (handledIds.has(oldId)) {
+      continue;
+    }
     if (newIds.has(oldId)) {
       while (newIdx < newItems.length) {
         const newItem = newItems[newIdx++];
-        merged.push(newItem);
-        if (getId(newItem) === oldId) {
+        const newId = getId(newItem);
+        const existingItem = oldItemById.get(newId);
+        if (existingItem) {
+          toggleActive(existingItem, true, newItem);
+          merged.push(existingItem);
+          handledIds.add(newId);
+        } else {
+          merged.push(newItem);
+        }
+        if (newId === oldId) {
           break;
         }
       }
     } else {
-      markInactive(oldItem);
+      toggleActive(oldItem, false);
       merged.push(oldItem);
+      handledIds.add(oldId);
     }
   }
   while (newIdx < newItems.length) {
-    merged.push(newItems[newIdx++]);
+    const newItem = newItems[newIdx++];
+    const newId = getId(newItem);
+    const existingItem = oldItemById.get(newId);
+    if (existingItem && !handledIds.has(newId)) {
+      toggleActive(existingItem, true, newItem);
+      merged.push(existingItem);
+      handledIds.add(newId);
+    } else if (!handledIds.has(newId)) {
+      merged.push(newItem);
+    }
   }
   return merged;
 }
@@ -15230,104 +15297,9 @@ var ComputedStyleWidget = class extends UI12.Widget.VBox {
 var maxLinkLength = 30;
 var alwaysShownComputedProperties = /* @__PURE__ */ new Set(["display", "height", "width"]);
 
-// gen/front_end/panels/elements/elementsPanel.css.js
-var elementsPanel_css_default = `/* Copyright 2026 The Chromium Authors
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- *
- * Copyright (C) 2006, 2007, 2008 Apple Inc.  All rights reserved.
- * Copyright (C) 2009 Anthony Ricaud <rik@webkit.org>
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1.  Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- * 2.  Redistributions in binary form must reproduce the above copyright
- *     notice, this list of conditions and the following disclaimer in the
- *     documentation and/or other materials provided with the distribution.
- * 3.  Neither the name of Apple Computer, Inc. ("Apple") nor the names of
- *     its contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY APPLE AND ITS CONTRIBUTORS "AS IS" AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL APPLE OR ITS CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
-#main-content {
-  position: relative;
-  flex: 1 1;
-}
-
-#elements-content {
-  overflow: auto;
-  padding: var(--sys-size-2) 0 0;
-  height: 100%;
-}
-
-.style-panes-wrapper {
-  overflow: hidden scroll;
-  background-color: var(--sys-color-cdt-base-container);
-}
-
-.style-panes-wrapper:not(.computed-styles-pane-wrapper) > div:not(:last-child) {
-    border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
-}
-
-.style-panes-wrapper > div:has(+ .ai-code-completion-summary-toolbar-container) {
-  border-bottom: 0;
-}
-
-.style-panes-wrapper .ai-code-completion-summary-toolbar-container {
-  container-type: inline-size;
-  flex-shrink: 0;
-  overflow: hidden;
-  position: fixed;
-  bottom: 0;
-  background-color: var(--sys-color-cdt-base-container);
-  width: 100%;
-}
-
-#elements-content:not(.elements-wrap) > div {
-  display: inline-block;
-  min-width: 100%;
-}
-
-#elements-crumbs {
-  background-color: var(--sys-color-cdt-base-container);
-  border-top: var(--sys-size-1) solid var(--sys-color-divider);
-  overflow: hidden;
-  width: 100%;
-}
-
-devtools-adorner-settings-pane {
-  margin-bottom: 10px;
-  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
-  overflow: auto;
-}
-
-devtools-tree-outline {
-  overflow: auto;
-}
-
-.computed-styles-wrapper {
-  flex-shrink: 0;
-}
-
-/*# sourceURL=${import.meta.resolve("./elementsPanel.css")} */`;
-
-// ../../front_end/panels/elements/ElementsTreeOutline.ts
-var ElementsTreeOutline_exports = {};
-__export(ElementsTreeOutline_exports, {
+// ../../front_end/panels/elements/DOMTreeWidget.ts
+var DOMTreeWidget_exports = {};
+__export(DOMTreeWidget_exports, {
   DECLARATIVE_VIEW: () => DECLARATIVE_VIEW,
   DEFAULT_VIEW: () => DEFAULT_VIEW7,
   DOMTreeWidget: () => DOMTreeWidget,
@@ -15660,7 +15632,7 @@ var AdoptedStyleSheetContentsWidget = class extends UI13.Widget.Widget {
   }
 };
 
-// ../../front_end/panels/elements/ElementsTreeOutline.ts
+// ../../front_end/panels/elements/DOMTreeWidget.ts
 import * as ElementsComponents7 from "./components/components.js";
 
 // ../../front_end/panels/elements/DOMPath.ts
@@ -19264,6 +19236,8 @@ var ElementsTreeElement = class extends UI15.TreeOutline.TreeElement {
         click: true
       })}`
     );
+    this.listItemElement.setAttribute("data-backend-node-id", String(node.backendNodeId()));
+    this.listItemElement.setAttribute("data-target-id", node.domModel().target().id());
     this.widgetWrapper = document.createElement("div");
     this.widgetWrapper.style.display = "contents";
     this.title = this.widgetWrapper;
@@ -20679,6 +20653,10 @@ li.hovered:not(.always-parent) + ol.children:not(.shadow-root) {
   margin-left: -12px;
 }
 
+.tree-outline-disclosure > ol > li.parent:only-of-type:not(.expanded) {
+  margin-top: 2px;
+}
+
 .tree-outline-disclosure li.parent:not(.always-parent)::before {
   box-sizing: border-box;
   user-select: none;
@@ -20992,8 +20970,8 @@ var TopLayerContainer = class extends UI18.TreeOutline.TreeElement {
   }
 };
 
-// ../../front_end/panels/elements/ElementsTreeOutline.ts
-var { html: html15, nothing: nothing6, render: render13, Directives: { classMap: classMap4, repeat: repeat2, styleMap } } = Lit10;
+// ../../front_end/panels/elements/DOMTreeWidget.ts
+var { html: html15, nothing: nothing6, render: render13, Directives: { classMap: classMap4, ifDefined: ifDefined2, repeat: repeat2, styleMap } } = Lit10;
 var UIStrings17 = {
   /**
    * @description ARIA accessible name in the DOM tree outline of the Elements panel.
@@ -21018,7 +20996,7 @@ var UIStrings17 = {
    */
   reveal: "reveal"
 };
-var str_17 = i18n34.i18n.registerUIStrings("panels/elements/ElementsTreeOutline.ts", UIStrings17);
+var str_17 = i18n34.i18n.registerUIStrings("panels/elements/DOMTreeWidget.ts", UIStrings17);
 var i18nString16 = i18n34.i18n.getLocalizedString.bind(void 0, str_17);
 var elementsTreeOutlineByDOMModel = /* @__PURE__ */ new WeakMap();
 var populatedTreeElements = /* @__PURE__ */ new WeakSet();
@@ -21227,6 +21205,9 @@ function nodeHasVisibleChildren(node, rootDOMNode = null, maxTreeDepth, omitRoot
     return true;
   }
   return Boolean(node.childNodeCount()) && !ElementsTreeWidget.canShowInlineText(node);
+}
+function nodeNeedsClosingTag(node, hasChildren) {
+  return hasChildren && node.nodeType() === Node.ELEMENT_NODE && !ForbiddenClosingTagElements.has(node.nodeName().toLowerCase()) && !node.pseudoType();
 }
 function getVisibleChildren(node, showComments = true) {
   const children = [];
@@ -21533,9 +21514,7 @@ var DECLARATIVE_VIEW = (input, _output, target) => {
       if (node instanceof SDK16.DOMModel.DOMDocument) {
         rows += countTopLayerRows(node);
       }
-      const tagName = node.nodeName().toLowerCase();
-      const needsClosingTag = node.nodeType() === Node.ELEMENT_NODE && !ForbiddenClosingTagElements.has(tagName) && !node.pseudoType() && (hasChildren || !ElementsTreeWidget.canShowInlineText(node));
-      if (needsClosingTag) {
+      if (nodeNeedsClosingTag(node, hasChildren)) {
         rows += 1;
       }
     }
@@ -21575,8 +21554,7 @@ var DECLARATIVE_VIEW = (input, _output, target) => {
     const limit = input.expandedChildrenLimit ? input.expandedChildrenLimit(node) : InitialChildrenLimit;
     const children = allVisibleChildren.slice(0, limit);
     const remainingChildrenCount = allVisibleChildren.length - children.length;
-    const tagName = node.nodeName().toLowerCase();
-    const needsClosingTag = node.nodeType() === Node.ELEMENT_NODE && !ForbiddenClosingTagElements.has(tagName) && !node.pseudoType() && (hasChildren || !ElementsTreeWidget.canShowInlineText(node));
+    const needsClosingTag = nodeNeedsClosingTag(node, hasChildren);
     const on2 = Lit10.Directive.directive(Lit10.CustomDirectives.InterceptBindingDirective);
     const onSelect = (isClosingTag = false, selectedByUser = false) => {
       input.onSelect?.(node, isClosingTag, selectedByUser);
@@ -21679,6 +21657,8 @@ var DECLARATIVE_VIEW = (input, _output, target) => {
     };
     return html15`
       <li role="treeitem"
+          data-backend-node-id=${ifDefined2(node.backendNodeId())}
+          data-target-id=${ifDefined2(node.domModel().target().id())}
           selectable=${input.selectEnabled ? "true" : "false"}
           ?selected=${isSelected && !input.selectedClosingTag}
           class=${classes}
@@ -21736,7 +21716,7 @@ var DECLARATIVE_VIEW = (input, _output, target) => {
       },
       updateRecord: input.updateRecordForNode?.(node) ?? null
     })}${hasChildren ? html15`<ul role="group">
-            ${UI19.TreeOutline.ifExpanded(html15`
+            ${isExpanded && !isEditingAsHTML ? html15`
               ${node.adoptedStyleSheetsForNode.length > 0 ? renderAdoptedStyleSheets(node, depth + 1) : nothing6}
               ${repeat2(children, (child) => child.id, (child) => renderNode(child, depth + 1))}
               ${remainingChildrenCount > 0 ? html15`
@@ -21756,6 +21736,8 @@ var DECLARATIVE_VIEW = (input, _output, target) => {
               ${node instanceof SDK16.DOMModel.DOMDocument ? renderTopLayerContainer(node, depth + 1) : nothing6}
               ${needsClosingTag ? html15`
                 <li role="treeitem"
+                    data-backend-node-id=${ifDefined2(node.backendNodeId())}
+                    data-target-id=${ifDefined2(node.domModel().target().id())}
                     selectable=${input.selectEnabled ? "true" : "false"}
                     ?selected=${isSelected && Boolean(input.selectedClosingTag)}
                     class=${classMap4({
@@ -21793,7 +21775,7 @@ var DECLARATIVE_VIEW = (input, _output, target) => {
       updateRecord: input.updateRecordForNode?.(node) ?? null
     })}</li>
               ` : nothing6}
-            `)}
+            ` : nothing6}
           </ul>` : nothing6}</li>
     `;
   };
@@ -21814,7 +21796,7 @@ var DECLARATIVE_VIEW = (input, _output, target) => {
     <style>${CodeHighlighter5.codeHighlighterStyles}</style>
     <div class=${disclosureClasses} style=${disclosureStyles}>
       <devtools-tree
-        class="elements-tree-outline source-code ${input.wrap ? "" : "elements-tree-nowrap"} ${input.hideGutter ? "elements-hide-gutter" : ""} ${isSingleNode ? "single-node" : ""}"
+        class="elements-tree-outline ${input.wrap ? "" : "elements-tree-nowrap"} ${input.hideGutter ? "elements-hide-gutter" : ""} ${isSingleNode ? "single-node" : ""}"
         disclosure-class="elements-disclosure ${isSingleNode ? "single-node" : ""} ${input.maxRowsShown ? "elements-tree-truncated" : ""}"
         jslog=${VisualLogging10.tree("elements")}
         ?show-selection-on-keyboard-focus=${input.showSelectionOnKeyboardFocus}
@@ -22054,7 +22036,7 @@ var DOMTreeWidget = class extends UI19.Widget.Widget {
     this.#changeTracker ??= UI19.Widget.lookupUniverseForElement(this.contentElement)?.get(ChangeTracker3.ChangeTracker.ChangeTracker);
     return this.#changeTracker;
   }
-  constructor(element, [changeTracker] = [], view = DEFAULT_VIEW7) {
+  constructor(element, [changeTracker] = [], view = DECLARATIVE_VIEW) {
     super(element, {
       useShadowDom: false,
       delegatesFocus: false
@@ -22161,6 +22143,7 @@ var DOMTreeWidget = class extends UI19.Widget.Widget {
     const domModel = event.data;
     if (this.#view === DECLARATIVE_VIEW) {
       this.#selectedDOMNode = null;
+      this.#selectedClosingTag = false;
       this.#expandedNodes.clear();
       this.#currentHighlightedNode = null;
       this.#updateRecords.clear();
@@ -22168,7 +22151,6 @@ var DOMTreeWidget = class extends UI19.Widget.Widget {
     if (domModel.existingDocument()) {
       this.rootDOMNode = domModel.existingDocument();
     }
-    this.onDocumentUpdated(domModel);
   }
   #updateModifiedNodesTimeout;
   #updateModifiedNodesSoon() {
@@ -22216,11 +22198,11 @@ var DOMTreeWidget = class extends UI19.Widget.Widget {
   #onNodeRemoved(event) {
     const { node, parent } = event.data;
     this.resetClipboardIfNeeded(node);
-    if (this.#selectedDOMNode && (this.#selectedDOMNode === node || node.isAncestor(this.#selectedDOMNode))) {
-      this.selectDOMNode(this.#findNextNodeOnRemoval(node, parent), true);
-    }
     if (parent) {
       this.#addUpdateRecord(parent).nodeRemoved(node);
+    }
+    if (this.#selectedDOMNode && (this.#selectedDOMNode === node || node.isAncestor(this.#selectedDOMNode))) {
+      this.selectDOMNode(this.#findNextNodeOnRemoval(node, parent), true);
     }
     this.#updateModifiedNodesSoon();
   }
@@ -22353,9 +22335,9 @@ var DOMTreeWidget = class extends UI19.Widget.Widget {
     }
     this.#selectedAdoptedStyleSheet = null;
     if (this.#view === DECLARATIVE_VIEW) {
-      const isSameNode = this.#selectedDOMNode === node && this.#selectedClosingTag === Boolean(isClosingTag);
-      this.#selectedDOMNode = node;
-      this.#selectedClosingTag = Boolean(isClosingTag);
+      if (node?.nodeType() === Node.TEXT_NODE && node.parentNode && (!nodeHasVisibleChildren(node.parentNode, this.rootDOMNode, this.maxTreeDepth, this.omitRootDOMNode) || !getVisibleChildren(node.parentNode, this.#showComments).includes(node))) {
+        node = node.parentNode;
+      }
       if (node) {
         const ancestors = [];
         for (let current = node.parentNode; current; current = current.parentNode) {
@@ -22381,7 +22363,14 @@ var DOMTreeWidget = class extends UI19.Widget.Widget {
             });
           }
         }
+        if (isClosingTag && nodeHasVisibleChildren(node, this.rootDOMNode, this.maxTreeDepth, this.omitRootDOMNode)) {
+          this.#expandedNodes.add(node);
+        }
       }
+      const selectClosingTag = Boolean(isClosingTag) && Boolean(node && this.#hasClosingTag(node));
+      const isSameNode = this.#selectedDOMNode === node && this.#selectedClosingTag === selectClosingTag;
+      this.#selectedDOMNode = node;
+      this.#selectedClosingTag = selectClosingTag;
       this.#clearHighlightedNode();
       if (!isSameNode) {
         this.onSelectedNodeChanged(
@@ -22662,8 +22651,17 @@ var DOMTreeWidget = class extends UI19.Widget.Widget {
     }
     return current === this.#rootDOMNode ? selectedNode : fallback ?? this.#rootDOMNode;
   }
+  #hasClosingTag(node) {
+    const isEditingAsHTML = this.#multilineEditingNode === node || this.#nodeToEdit?.node === node && Boolean(this.#nodeToEdit.isEditAsHTML);
+    if (isEditingAsHTML || !this.isNodeExpanded(node)) {
+      return false;
+    }
+    const hasChildren = nodeHasVisibleChildren(node, this.#rootDOMNode, this.#maxTreeDepth, this.omitRootDOMNode);
+    return nodeNeedsClosingTag(node, hasChildren);
+  }
   #validateSelectedNode() {
     if (!this.#selectedDOMNode) {
+      this.#selectedClosingTag = false;
       return;
     }
     const validNode = this.#findValidSelectedNode(this.#selectedDOMNode);
@@ -22674,6 +22672,8 @@ var DOMTreeWidget = class extends UI19.Widget.Widget {
       this.onSelectedNodeChanged(
         { data: { node: validNode, focus: false } }
       );
+    } else if (this.#selectedClosingTag && !this.#hasClosingTag(this.#selectedDOMNode)) {
+      this.#selectedClosingTag = false;
     }
   }
   performUpdate() {
@@ -22888,7 +22888,7 @@ var DOMTreeWidget = class extends UI19.Widget.Widget {
           this.onDocumentUpdated(domModel);
         } else {
           void domModel.requestDocument().then((document2) => {
-            if (document2 && this.isShowing()) {
+            if (document2 && this.isShowing() && this.#wiredDOMModels.has(domModel)) {
               this.rootDOMNode = document2;
               this.onDocumentUpdated(domModel);
             }
@@ -22910,6 +22910,13 @@ var DOMTreeWidget = class extends UI19.Widget.Widget {
       if (this.#wiredDOMModels.has(domModel)) {
         this.#wiredDOMModels.delete(domModel);
         this.#unwireDOMModel(domModel);
+      }
+      if (this.#rootDOMNode?.domModel() === domModel) {
+        this.#rootDOMNode = null;
+        this.#selectedDOMNode = null;
+        this.#selectedClosingTag = false;
+        this.#expandedNodes.clear();
+        this.#updateRecords.clear();
       }
       this.performUpdate();
       return;
@@ -23707,7 +23714,7 @@ var DOMTreeWidget = class extends UI19.Widget.Widget {
           this.onDocumentUpdated(domModel);
         } else if (this.#view === DECLARATIVE_VIEW) {
           void domModel.requestDocument().then((document2) => {
-            if (document2 && this.isShowing()) {
+            if (document2 && this.isShowing() && this.#wiredDOMModels.has(domModel)) {
               this.rootDOMNode = document2;
               this.onDocumentUpdated(domModel);
             }
@@ -24730,6 +24737,101 @@ var MappedCharToEntity = /* @__PURE__ */ new Map([
   ["\u2060", "NoBreak"],
   ["\uFEFF", "#xFEFF"]
 ]);
+
+// gen/front_end/panels/elements/elementsPanel.css.js
+var elementsPanel_css_default = `/* Copyright 2026 The Chromium Authors
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ *
+ * Copyright (C) 2006, 2007, 2008 Apple Inc.  All rights reserved.
+ * Copyright (C) 2009 Anthony Ricaud <rik@webkit.org>
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1.  Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ * 2.  Redistributions in binary form must reproduce the above copyright
+ *     notice, this list of conditions and the following disclaimer in the
+ *     documentation and/or other materials provided with the distribution.
+ * 3.  Neither the name of Apple Computer, Inc. ("Apple") nor the names of
+ *     its contributors may be used to endorse or promote products derived
+ *     from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY APPLE AND ITS CONTRIBUTORS "AS IS" AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL APPLE OR ITS CONTRIBUTORS BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+#main-content {
+  position: relative;
+  flex: 1 1;
+}
+
+#elements-content {
+  overflow: auto;
+  padding: var(--sys-size-2) 0 0;
+  height: 100%;
+}
+
+.style-panes-wrapper {
+  overflow: hidden scroll;
+  background-color: var(--sys-color-cdt-base-container);
+}
+
+.style-panes-wrapper:not(.computed-styles-pane-wrapper) > div:not(:last-child) {
+    border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
+}
+
+.style-panes-wrapper > div:has(+ .ai-code-completion-summary-toolbar-container) {
+  border-bottom: 0;
+}
+
+.style-panes-wrapper .ai-code-completion-summary-toolbar-container {
+  container-type: inline-size;
+  flex-shrink: 0;
+  overflow: hidden;
+  position: fixed;
+  bottom: 0;
+  background-color: var(--sys-color-cdt-base-container);
+  width: 100%;
+}
+
+#elements-content:not(.elements-wrap) > div {
+  display: inline-block;
+  min-width: 100%;
+}
+
+#elements-crumbs {
+  background-color: var(--sys-color-cdt-base-container);
+  border-top: var(--sys-size-1) solid var(--sys-color-divider);
+  overflow: hidden;
+  width: 100%;
+}
+
+devtools-adorner-settings-pane {
+  margin-bottom: 10px;
+  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
+  overflow: auto;
+}
+
+devtools-tree-outline {
+  overflow: auto;
+}
+
+.computed-styles-wrapper {
+  flex-shrink: 0;
+}
+
+/*# sourceURL=${import.meta.resolve("./elementsPanel.css")} */`;
 
 // ../../front_end/panels/elements/LayoutPane.ts
 var LayoutPane_exports = {};
@@ -28333,7 +28435,8 @@ var ClassNamePrompt = class extends UI27.TextPrompt.TextPrompt {
     }
     let completions = await this.classNamesPromise;
     const classesMap = this.nodeClasses(selectedNode);
-    completions = completions.filter((value5) => !classesMap.get(value5));
+    const existingClasses = new Set(expression.split(/[,\s]/).map((className) => className.trim()).filter(Boolean));
+    completions = completions.filter((value5) => !classesMap.get(value5) && !existingClasses.has(value5));
     if (prefix[0] === ".") {
       completions = completions.map((value5) => "." + value5);
     }
@@ -28636,11 +28739,11 @@ export {
   ComputedStyleWidget_exports as ComputedStyleWidget,
   DOMPath_exports as DOMPath,
   DOMTreeContextMenu_exports as DOMTreeContextMenu,
+  DOMTreeWidget_exports as DOMTreeWidget,
   ElementStatePaneWidget_exports as ElementStatePaneWidget,
   ElementsPanel_exports as ElementsPanel,
   ElementsSidebarPane_exports as ElementsSidebarPane,
   ElementsTreeElement_exports as ElementsTreeElement,
-  ElementsTreeOutline_exports as ElementsTreeOutline,
   EventListenersWidget_exports as EventListenersWidget,
   ImagePreviewPopover_exports as ImagePreviewPopover,
   InspectElementModeController_exports as InspectElementModeController,

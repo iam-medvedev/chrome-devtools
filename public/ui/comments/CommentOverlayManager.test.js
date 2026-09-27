@@ -32,6 +32,7 @@ describeWithEnvironment('CommentOverlayManager', () => {
         container = document.createElement('div');
         renderElementIntoDOM(container);
         const commentManager = new CommentManager.CommentManager.CommentManager();
+        commentManager.setAgentAttached(true);
         manager = new Comments.CommentOverlayManager.CommentOverlayManager(commentManager);
     });
     afterEach(() => {
@@ -61,21 +62,18 @@ describeWithEnvironment('CommentOverlayManager', () => {
         assert.isNull(thread);
         assert.lengthOf(manager.getCommentThreads(), 0);
     });
-    it('supports AGENT author and custom changes metadata in created comment threads', () => {
+    it('supports AGENT author and isGeneratedComment metadata in created comment threads and skips pins', () => {
         const item = document.createElement('div');
         item.setAttribute('jslog', 'TreeItem; context: agent-item');
         item.textContent = 'color: #333;';
         container.appendChild(item);
-        const changes = [{
-                id: 'change-1',
-                description: 'Changed property "color" from "#333" to "#000"',
-                timestamp: 123456789,
-            }];
-        const thread = manager.createComment(item, 'Auto-fixed color', { author: 'AGENT', changes });
+        const thread = manager.createComment(item, 'Auto-fixed color', { author: 'AGENT', isGeneratedComment: true });
         assert.isNotNull(thread);
         assert.strictEqual(thread?.comments[0].author, 'AGENT');
         assert.strictEqual(thread?.comments[0].text, 'Auto-fixed color');
-        assert.deepEqual(thread?.changes, changes);
+        assert.isTrue(thread?.isGeneratedComment);
+        assert.isEmpty(manager.getPinPositions());
+        assert.isEmpty(manager.getHighlightRects());
     });
     it('removes comment threads and cleans up DOM observer and pin positions', () => {
         const unobserveSpy = sinon.spy(IntersectionObserver.prototype, 'unobserve');
@@ -721,6 +719,31 @@ describeWithEnvironment('CommentOverlayManager', () => {
         finally {
             Comments.CommentAnchorResolver.unregisterCustomAnchorResolver(customResolver);
         }
+    });
+    it('updates positions synchronously when a scroll container inside a ShadowRoot fires a non-composed scroll event', () => {
+        manager.start(container);
+        manager.setCommentMode(true);
+        const host = document.createElement('div');
+        const shadow = host.attachShadow({ mode: 'open' });
+        const shadowScrollContainer = document.createElement('div');
+        shadowScrollContainer.style.overflow = 'auto';
+        shadowScrollContainer.getBoundingClientRect = () => new DOMRect(0, 0, 300, 300);
+        let itemTop = 80;
+        const innerEl = document.createElement('div');
+        innerEl.setAttribute('jslog', 'TreeItem; context: shadow-scroll-item');
+        innerEl.textContent = 'shadow scrollable item';
+        innerEl.getBoundingClientRect = () => new DOMRect(10, itemTop, 100, 24);
+        shadowScrollContainer.appendChild(innerEl);
+        shadow.appendChild(shadowScrollContainer);
+        container.appendChild(host);
+        const thread = manager.createComment(innerEl, 'Shadow scroll comment');
+        assert.isNotNull(thread);
+        assert.strictEqual(manager.getHighlightRects()[0]?.top, 80);
+        // Simulate scrolling inside the ShadowRoot: native scroll events have bubbles: false, composed: false.
+        itemTop = 40;
+        shadowScrollContainer.dispatchEvent(new Event('scroll', { bubbles: false, composed: false }));
+        // Position should be updated synchronously on the leading edge of the scroll event without waiting for a timer.
+        assert.strictEqual(manager.getHighlightRects()[0]?.top, 40);
     });
 });
 //# sourceMappingURL=CommentOverlayManager.test.js.map

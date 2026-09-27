@@ -3402,6 +3402,8 @@ var Mutex = class {
 var ParsedURL_exports = {};
 __export(ParsedURL_exports, {
   ParsedURL: () => ParsedURL,
+  hasWebSafeScheme: () => hasWebSafeScheme,
+  isPrivilegedScheme: () => isPrivilegedScheme,
   normalizePath: () => normalizePath,
   schemeIs: () => schemeIs
 });
@@ -3433,6 +3435,44 @@ function normalizePath(path) {
 function schemeIs(url, scheme) {
   try {
     return new URL(url).protocol === scheme;
+  } catch {
+    return false;
+  }
+}
+var WEB_SAFE_SCHEMES = /* @__PURE__ */ new Set([
+  "http:",
+  "https:",
+  "ws:",
+  "wss:",
+  "data:"
+]);
+function hasWebSafeScheme(url) {
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol === "blob:") {
+      return hasWebSafeScheme(parsed.pathname);
+    }
+    return WEB_SAFE_SCHEMES.has(parsed.protocol);
+  } catch {
+    return false;
+  }
+}
+var PRIVILEGED_SCHEMES = /* @__PURE__ */ new Set([
+  "chrome:",
+  "chrome-extension:",
+  "chrome-search:",
+  "chrome-untrusted:",
+  "devtools:",
+  "file:",
+  "isolated-app:"
+]);
+function isPrivilegedScheme(url) {
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol === "blob:") {
+      return isPrivilegedScheme(parsed.pathname);
+    }
+    return PRIVILEGED_SCHEMES.has(parsed.protocol);
   } catch {
     return false;
   }
@@ -3544,7 +3584,11 @@ var ParsedURL = class _ParsedURL {
         preEncodedPath = "file:///" + preEncodedPath;
       }
     }
-    return new URL(preEncodedPath).toString();
+    let url = new URL(preEncodedPath).toString();
+    while (url.endsWith("/") && url.length > "file:///".length) {
+      url = url.substring(0, url.length - 1);
+    }
+    return url;
   }
   static relativePathToUrlString(relativePath, baseURL) {
     const preEncodedPath = _ParsedURL.preEncodeSpecialCharactersInPath(

@@ -1,6 +1,8 @@
 // Copyright 2011 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import '../../ui/components/tooltips/tooltips.js';
+import '../../ui/kit/kit.js';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
@@ -8,12 +10,10 @@ import * as Platform from '../../core/platform/platform.js';
 import * as TextUtils from '../../core/text_utils/text_utils.js';
 import * as Persistence from '../../models/persistence/persistence.js';
 import * as Workspace from '../../models/workspace/workspace.js';
-import * as Tooltips from '../../ui/components/tooltips/tooltips.js';
 import * as uiI18n from '../../ui/i18n/i18n.js';
-import { Icon, Link } from '../../ui/kit/kit.js';
 import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { html, render } from '../../ui/lit/lit.js';
+import { Directives, html, nothing, render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as PanelCommon from '../common/common.js';
 import * as Snippets from '../snippets/snippets.js';
@@ -68,6 +68,8 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/sources/TabbedEditorContainer.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+const { repeat } = Directives;
+const { widget } = UI.Widget;
 var SourceViewType;
 (function (SourceViewType) {
     SourceViewType["IMAGE_VIEW"] = "ImageView";
@@ -76,20 +78,305 @@ var SourceViewType;
     SourceViewType["SOURCE_VIEW"] = "SourceView";
 })(SourceViewType || (SourceViewType = {}));
 const HEADER_OVERRIDES_FILENAME = '.headers';
+const UI_SOURCE_CODE_WIDGET_MAP = new WeakMap();
+function getOrCreateSourceView(uiSourceCode, onCreate) {
+    const existing = UI_SOURCE_CODE_WIDGET_MAP.get(uiSourceCode);
+    if (existing) {
+        return existing;
+    }
+    let sourceView;
+    const contentType = uiSourceCode.contentType();
+    if (contentType === Common.ResourceType.resourceTypes.Image || uiSourceCode.mimeType().startsWith('image/')) {
+        sourceView = new SourceFrame.ImageView.ImageView(uiSourceCode.mimeType(), uiSourceCode);
+    }
+    else if (contentType === Common.ResourceType.resourceTypes.Font || uiSourceCode.mimeType().includes('font')) {
+        sourceView = new SourceFrame.FontView.FontView(uiSourceCode.mimeType(), uiSourceCode);
+    }
+    else if (uiSourceCode.name() === Persistence.NetworkPersistenceManager.HEADERS_FILENAME) {
+        sourceView = new Components.HeadersView.HeadersView(uiSourceCode);
+    }
+    else {
+        sourceView = new UISourceCodeFrame(uiSourceCode);
+    }
+    UI_SOURCE_CODE_WIDGET_MAP.set(uiSourceCode, sourceView);
+    onCreate(sourceView);
+    return sourceView;
+}
+function recycleUISourceCodeFrame(sourceFrame, uiSourceCode) {
+    UI_SOURCE_CODE_WIDGET_MAP.delete(sourceFrame.uiSourceCode());
+    sourceFrame.setUISourceCode(uiSourceCode);
+    UI_SOURCE_CODE_WIDGET_MAP.set(uiSourceCode, sourceFrame);
+}
+function getViewByUISourceCode(uiSourceCode) {
+    return UI_SOURCE_CODE_WIDGET_MAP.get(uiSourceCode);
+}
+function removeSourceViewCache(uiSourceCode) {
+    const view = UI_SOURCE_CODE_WIDGET_MAP.get(uiSourceCode);
+    if (view) {
+        UI_SOURCE_CODE_WIDGET_MAP.delete(uiSourceCode);
+    }
+    return view;
+}
+function renderPlaceholder(input) {
+    // clang-format off
+    return html `
+    <div class="sources-placeholder">
+      <div class="tabbed-pane-placeholder-row workspace">
+        <span class="icon-container">
+          <devtools-icon name="sync" class="sync-icon"></devtools-icon>
+        </span>
+        <span>
+          ${i18nString(UIStrings.workspaceDropInAFolderToSyncSources)}
+          <button @click=${input.onAddFileSystemClicked}>${i18nString(UIStrings.selectFolder)}</button>
+        </span>
+      </div>
+      <div class="shortcuts-list tabbed-pane-placeholder-row" role="list"
+            aria-label=${i18nString(UIStrings.sourceViewActions)}>
+        ${input.shortcuts.map(shortcut => !shortcut.keys.length
+        ? html `<div class="shortcut-line" role="listitem"></div>`
+        : html `<div class="shortcut-line" role="listitem">
+              <button @click=${shortcut.onClick}>${shortcut.description}</button>
+              <span class="shortcuts">
+                ${shortcut.keys.map(key => html `
+                  <span class="keybinds-key"><span>${key}</span></span>
+                `)}
+              </span>
+            </div>`)}
+      </div>
+    </div>`;
+    // clang-format on
+}
+function renderTabIcon(tab) {
+    if (tab.hasLoadError) {
+        // clang-format off
+        return html `
+      <span slot="icon">
+        <devtools-icon class="small" name="cross-circle-filled"
+                        title=${i18nString(UIStrings.unableToLoadThisContent)}>
+        </devtools-icon>
+      </span>`;
+        // clang-format on
+    }
+    if (tab.icon) {
+        return html `<span slot="icon">${tab.icon}</span>`;
+    }
+    return nothing;
+}
+function renderTabSuffix(tab, input) {
+    if (!tab.hasUnsavedCommittedChanges) {
+        return nothing;
+    }
+    const tooltipId = `tab-tooltip-${tab.tabId}`;
+    // clang-format off
+    return html `
+    <span slot="suffix">
+      <div>
+        <devtools-icon name="warning-filled" class="small" aria-describedby=${tooltipId}></devtools-icon>
+        <devtools-tooltip id=${tooltipId} variant="rich">
+          ${tab.disconnectedAutomaticFileSystemRoot !== undefined
+        ? uiI18n.getFormatLocalizedStringTemplate(str_, UIStrings.changesWereNotSavedToFileSystemToSaveAddFolderToWorkspace, {
+            PH1: html `<devtools-link class="devtools-link" @click=${input.onConnectAutomaticFileSystem}>${tab.disconnectedAutomaticFileSystemRoot}</devtools-link>`,
+        })
+        : uiI18n.getFormatLocalizedStringTemplate(str_, UIStrings.changesWereNotSavedToFileSystemToSaveSetUpYourWorkspace, {
+            PH1: html `<devtools-link href="https://developer.chrome.com/docs/devtools/workspaces/">Workspace</devtools-link>`,
+        })}
+        </devtools-tooltip>
+      </div>
+    </span>`;
+    // clang-format on
+}
+export const DEFAULT_VIEW = (input, _output, target) => {
+    // clang-format off
+    render(html `
+    <devtools-tabbed-pane
+      class="flex-auto vbox"
+      .closeableTabs=${true}
+      .allowTabReorder=${true}
+      .automaticReorder=${true}
+      .tabDelegate=${input.tabDelegate}
+      .headerJslog=${`${VisualLogging.toolbar('top').track({ keydown: 'ArrowUp|ArrowLeft|ArrowDown|ArrowRight|Enter|Space' })}`}
+      .placeholder=${renderPlaceholder(input)}
+      @close=${input.onClose}
+      @taborderchanged=${input.onTabOrderChanged}
+      @select=${input.onSelect}
+    >
+      <devtools-toolbar class="tabbed-pane-left-toolbar" slot="left">
+        ${input.leftToolbarItems.map(item => item instanceof UI.Toolbar.ToolbarItem ? item.element : item)}
+      </devtools-toolbar>
+      <devtools-toolbar class="tabbed-pane-right-toolbar" slot="right">
+        ${input.rightToolbarItems.map(item => item instanceof UI.Toolbar.ToolbarItem ? item.element : item)}
+      </devtools-toolbar>
+      ${repeat(input.openTabs, tab => tab.tabId, tab => html `
+        <div id=${tab.tabId}
+             title=${tab.title}
+             ?closeable=${tab.isCloseable}
+             ?selected=${input.activeTabId === tab.tabId}
+             style="display: flex; flex: auto;">
+             ${renderTabIcon(tab)}
+             ${renderTabSuffix(tab, input)}
+             ${tab.widget ? html `${widget(UI.Widget.WrapperWidget, { widget: tab.widget })}` : nothing}
+        </div>`)}
+    </devtools-tabbed-pane>`, target);
+    // clang-format on
+};
 let tabId = 0;
 const TabbedEditorContainerBase = Common.ObjectWrapper.eventMixin(UI.Widget.VBox);
 export class TabbedEditorContainer extends TabbedEditorContainerBase {
+    focus() {
+        if (this.visibleView) {
+            this.visibleView.focus();
+        }
+    }
+    #scheduleUpdate() {
+        this.performUpdate();
+    }
+    performUpdate() {
+        const shortcuts = [
+            { actionId: 'quick-open.show', description: i18nString(UIStrings.openFile) },
+            { actionId: 'quick-open.show-command-menu', description: i18nString(UIStrings.runCommand) },
+        ];
+        const separator = Host.Platform.isMac() ? '\u2004' : ' + ';
+        const shortcutElements = shortcuts.map(shortcut => {
+            const shortcutKeys = UI.ShortcutRegistry.ShortcutRegistry.instance().shortcutsForAction(shortcut.actionId);
+            if (!shortcutKeys?.[0]) {
+                return {
+                    description: shortcut.description,
+                    onClick: () => { },
+                    keys: [],
+                };
+            }
+            const action = UI.ActionRegistry.ActionRegistry.instance().getAction(shortcut.actionId);
+            const keys = shortcutKeys[0].descriptors.flatMap(descriptor => descriptor.name.split(separator));
+            return {
+                description: shortcut.description,
+                onClick: () => {
+                    void action.execute();
+                },
+                keys,
+            };
+        });
+        const input = {
+            openTabs: [...this.files.entries()].map(([tabId, uiSourceCode]) => {
+                const hasLoadError = Boolean(uiSourceCode.loadError()) || this.#loadErrorFiles.has(uiSourceCode);
+                const hasUnsavedCommittedChanges = !hasLoadError &&
+                    Persistence.Persistence.PersistenceImpl.instance().hasUnsavedCommittedChanges(uiSourceCode);
+                let disconnectedAutomaticFileSystemRoot;
+                if (hasUnsavedCommittedChanges) {
+                    const { automaticFileSystem } = Persistence.AutomaticFileSystemManager.AutomaticFileSystemManager.instance();
+                    if (automaticFileSystem?.state === 'disconnected') {
+                        disconnectedAutomaticFileSystemRoot = Common.ParsedURL.ParsedURL.extractName(automaticFileSystem.root);
+                    }
+                }
+                const icon = !hasLoadError ?
+                    (PanelCommon.PersistenceUtils.PersistenceUtils.iconForUISourceCode(uiSourceCode) ?? undefined) :
+                    undefined;
+                return {
+                    tabId,
+                    title: this.titleForFile(uiSourceCode),
+                    tooltip: this.tooltipForFile(uiSourceCode),
+                    uiSourceCode,
+                    isCloseable: true,
+                    hasLoadError,
+                    hasUnsavedCommittedChanges,
+                    disconnectedAutomaticFileSystemRoot,
+                    icon,
+                    widget: (this.#currentFile === uiSourceCode) ? this.getOrCreateSourceView(uiSourceCode) :
+                        this.getCreatedSourceView(uiSourceCode),
+                };
+            }),
+            activeTabId: this.#currentFile ? this.tabIds.get(this.#currentFile) : undefined,
+            leftToolbarItems: this.#leftToolbarItems,
+            rightToolbarItems: this.#rightToolbarItems,
+            tabDelegate: this.#tabDelegate,
+            shortcuts: shortcutElements,
+            onAddFileSystemClicked: () => {
+                void this.#addFileSystemClicked();
+            },
+            onConnectAutomaticFileSystem: async (event) => {
+                event.consume();
+                await UI.ViewManager.ViewManager.instance().showView('navigator-files');
+                await Persistence.AutomaticFileSystemManager.AutomaticFileSystemManager.instance().connectAutomaticFileSystem(
+                /* addIfMissing= */ true);
+            },
+            onClose: (e) => {
+                this.tabClosed(e.detail.tabId, e.detail.isUserGesture);
+                this.#scheduleUpdate();
+            },
+            onTabOrderChanged: (e) => {
+                const tabIds = e.detail.tabIds;
+                const newFiles = new Map();
+                for (const id of tabIds) {
+                    if (this.files.has(id)) {
+                        const file = this.files.get(id);
+                        if (file) {
+                            newFiles.set(id, file);
+                        }
+                    }
+                }
+                this.files = newFiles;
+                this.#scheduleUpdate();
+            },
+            onSelect: (e) => {
+                this.tabSelected(e.detail.tabId, e.detail.isUserGesture);
+                this.#scheduleUpdate();
+            },
+        };
+        this.#view(input, undefined, this.contentElement);
+    }
     #historyManager;
     set historyManager(historyManager) {
         this.#historyManager = historyManager;
     }
-    sourceViewByUISourceCode = new Map();
-    tabbedPane;
+    #leftToolbarItems = [];
+    set leftToolbarItems(items) {
+        if (this.#leftToolbarItems === items) {
+            return;
+        }
+        this.#leftToolbarItems = items;
+        this.#scheduleUpdate();
+    }
+    #rightToolbarItems = [];
+    set rightToolbarItems(items) {
+        if (this.#rightToolbarItems === items) {
+            return;
+        }
+        this.#rightToolbarItems = items;
+        this.#scheduleUpdate();
+    }
+    #syncedUISourceCodes = new Set();
+    set uiSourceCodes(uiSourceCodes) {
+        const removed = [];
+        for (const existing of this.#syncedUISourceCodes) {
+            if (!uiSourceCodes.has(existing)) {
+                removed.push(existing);
+                this.#syncedUISourceCodes.delete(existing);
+            }
+        }
+        if (removed.length > 0) {
+            this.removeUISourceCodes(removed);
+        }
+        UI.UIUtils.startBatchUpdate();
+        for (const uiSourceCode of uiSourceCodes) {
+            if (!this.#syncedUISourceCodes.has(uiSourceCode)) {
+                this.#syncedUISourceCodes.add(uiSourceCode);
+                this.addUISourceCode(uiSourceCode);
+            }
+        }
+        UI.UIUtils.endBatchUpdate();
+    }
+    onEditorSelected;
+    onEditorClosed;
+    #view;
+    #tabDelegate;
     tabIds;
     files;
+    #loadErrorFiles = new Set();
     #previouslyViewedFilesSetting;
     history;
     set previouslyViewedFilesSetting(setting) {
+        if (this.#previouslyViewedFilesSetting === setting) {
+            return;
+        }
         this.#previouslyViewedFilesSetting = setting;
         this.history = History.fromObject(this.#previouslyViewedFilesSetting.get());
     }
@@ -102,33 +389,32 @@ export class TabbedEditorContainer extends TabbedEditorContainerBase {
     currentView;
     scrollTimer;
     reentrantShow;
-    constructor(element) {
+    constructor(element, view = DEFAULT_VIEW) {
         super(element);
-        this.tabbedPane = new UI.TabbedPane.TabbedPane();
-        // eslint-disable-next-line @devtools/no-imperative-dom-api
-        this.tabbedPane.show(this.contentElement);
-        // eslint-disable-next-line @devtools/no-imperative-dom-api
-        const placeholderElement = document.createElement('div');
-        placeholderElement.classList.add('sources-placeholder');
-        this.tabbedPane.setPlaceholderElement(placeholderElement);
-        this.#renderPlaceholder(placeholderElement);
-        this.tabbedPane.setTabDelegate(new EditorContainerTabDelegate(this));
-        this.tabbedPane.setCloseableTabs(true);
-        this.tabbedPane.setAllowTabReorder(true, true);
-        this.tabbedPane.addEventListener(UI.TabbedPane.Events.TabClosed, this.tabClosed, this);
-        this.tabbedPane.addEventListener(UI.TabbedPane.Events.TabSelected, this.tabSelected, this);
-        this.tabbedPane.headerElement().setAttribute('jslog', `${VisualLogging.toolbar('top').track({ keydown: 'ArrowUp|ArrowLeft|ArrowDown|ArrowRight|Enter|Space' })}`);
-        Persistence.Persistence.PersistenceImpl.instance().addEventListener(Persistence.Persistence.Events.BindingCreated, this.onBindingCreated, this);
-        Persistence.Persistence.PersistenceImpl.instance().addEventListener(Persistence.Persistence.Events.BindingRemoved, this.onBindingRemoved, this);
-        Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance().addEventListener("RequestsForHeaderOverridesFileChanged" /* Persistence.NetworkPersistenceManager.Events.REQUEST_FOR_HEADER_OVERRIDES_FILE_CHANGED */, this.#onRequestsForHeaderOverridesFileChanged, this);
+        this.#view = view;
+        this.#tabDelegate = new EditorContainerTabDelegate(this);
         this.tabIds = new Map();
         this.files = new Map();
         this.uriToUISourceCode = new Map();
         this.idToUISourceCode = new Map();
         this.reentrantShow = false;
+        this.performUpdate();
+        Persistence.Persistence.PersistenceImpl.instance().addEventListener(Persistence.Persistence.Events.BindingCreated, this.onBindingCreated, this);
+        Persistence.Persistence.PersistenceImpl.instance().addEventListener(Persistence.Persistence.Events.BindingRemoved, this.onBindingRemoved, this);
+        Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance().addEventListener("RequestsForHeaderOverridesFileChanged" /* Persistence.NetworkPersistenceManager.Events.REQUEST_FOR_HEADER_OVERRIDES_FILE_CHANGED */, this.#onRequestsForHeaderOverridesFileChanged, this);
+    }
+    #tabsHistory = [];
+    #appendHistory(tabId) {
+        this.#tabsHistory.unshift(tabId);
+    }
+    get #tabbedPane() {
+        return this.contentElement.querySelector('devtools-tabbed-pane');
+    }
+    get tabbedPane() {
+        return this.#tabbedPane;
     }
     get tabbedPaneForTesting() {
-        return this.tabbedPane;
+        return this.#tabbedPane;
     }
     onBindingCreated(event) {
         const binding = event.data;
@@ -144,21 +430,24 @@ export class TabbedEditorContainer extends TabbedEditorContainerBase {
             return;
         }
         if (!fileSystemTabId) {
-            const networkView = this.tabbedPane.tabView(networkTabId);
-            const tabIndex = this.tabbedPane.tabIndex(networkTabId);
+            const networkView = this.viewForFile(binding.network);
+            const tabIndex = Array.from(this.files.keys()).indexOf(networkTabId);
             if (networkView instanceof UISourceCodeFrame) {
                 this.recycleUISourceCodeFrame(networkView, binding.fileSystem);
-                fileSystemTabId = this.appendFileTab(binding.fileSystem, false, tabIndex, networkView);
+                fileSystemTabId = this.appendFileTab(binding.fileSystem, tabIndex, true);
             }
             else {
-                fileSystemTabId = this.appendFileTab(binding.fileSystem, false, tabIndex);
-                const fileSystemTabView = this.tabbedPane.tabView(fileSystemTabId);
-                this.restoreEditorProperties(fileSystemTabView, currentSelectionRange, currentScrollLineNumber);
+                fileSystemTabId = this.appendFileTab(binding.fileSystem, tabIndex);
+                const fileSystemTabView = this.viewForFile(binding.fileSystem);
+                if (fileSystemTabView) {
+                    this.restoreEditorProperties(fileSystemTabView, currentSelectionRange, currentScrollLineNumber);
+                }
             }
         }
         this.closeTabs([networkTabId], true);
         if (wasSelectedInNetwork) {
-            this.tabbedPane.selectTab(fileSystemTabId, false);
+            this.#currentFile = this.files.get(fileSystemTabId) || null;
+            this.#scheduleUpdate();
         }
         this.updateHistory();
     }
@@ -170,16 +459,10 @@ export class TabbedEditorContainer extends TabbedEditorContainerBase {
         this.updateFileTitle(binding.fileSystem);
     }
     get visibleView() {
-        return this.tabbedPane.visibleView;
+        return this.#currentFile ? getViewByUISourceCode(this.#currentFile) || null : null;
     }
     fileViews() {
-        return this.tabbedPane.tabViews();
-    }
-    leftToolbar() {
-        return this.tabbedPane.leftToolbar();
-    }
-    rightToolbar() {
-        return this.tabbedPane.rightToolbar();
+        return Array.from(this.files.values()).map(getViewByUISourceCode).filter(Boolean);
     }
     showFile(uiSourceCode) {
         const binding = Persistence.Persistence.PersistenceImpl.instance().binding(uiSourceCode);
@@ -204,10 +487,12 @@ export class TabbedEditorContainer extends TabbedEditorContainerBase {
         this.closeTabs([tabId]);
     }
     closeAllFiles() {
-        this.closeTabs(this.tabbedPane.tabIds());
+        this.closeTabs(Array.from(this.files.keys()));
     }
     detachEditors() {
-        this.tabbedPane.detachChildWidgets();
+        for (const view of this.fileViews()) {
+            view.detach();
+        }
     }
     historyUISourceCodes() {
         const result = [];
@@ -220,10 +505,36 @@ export class TabbedEditorContainer extends TabbedEditorContainerBase {
         return result;
     }
     selectNextTab() {
-        this.tabbedPane.selectNextTab();
+        const tabIds = Array.from(this.files.keys());
+        if (tabIds.length === 0 || !this.#currentFile) {
+            return;
+        }
+        const currentTabId = this.tabIds.get(this.#currentFile);
+        if (!currentTabId) {
+            return;
+        }
+        const index = tabIds.indexOf(currentTabId);
+        const nextIndex = (index + 1) % tabIds.length;
+        const nextFile = this.files.get(tabIds[nextIndex]);
+        if (nextFile) {
+            this.#showFile(nextFile, false);
+        }
     }
     selectPrevTab() {
-        this.tabbedPane.selectPrevTab();
+        const tabIds = Array.from(this.files.keys());
+        if (tabIds.length === 0 || !this.#currentFile) {
+            return;
+        }
+        const currentTabId = this.tabIds.get(this.#currentFile);
+        if (!currentTabId) {
+            return;
+        }
+        const index = tabIds.indexOf(currentTabId);
+        const prevIndex = (index - 1 + tabIds.length) % tabIds.length;
+        const prevFile = this.files.get(tabIds[prevIndex]);
+        if (prevFile) {
+            this.#showFile(prevFile, false);
+        }
     }
     addViewListeners() {
         if (!this.currentView || !(this.currentView instanceof SourceFrame.SourceFrame.SourceFrameImpl)) {
@@ -283,8 +594,11 @@ export class TabbedEditorContainer extends TabbedEditorContainerBase {
             // Selecting the tab may cause showFile to be called again, but with the canonical source code,
             // which is not what we want, so we prevent reentrant calls.
             this.reentrantShow = true;
-            const tabId = this.tabIds.get(canonicalSourceCode) || this.appendFileTab(canonicalSourceCode, userGesture);
-            this.tabbedPane.selectTab(tabId, userGesture);
+            const tabId = this.tabIds.get(canonicalSourceCode) || this.appendFileTab(canonicalSourceCode);
+            this.#appendHistory(tabId);
+            this.#scheduleUpdate();
+            // Force TabbedPaneElement to sync its tabs synchronously to avoid layout races in E2E tests.
+            this.#tabbedPane?.tabs;
         }
         finally {
             this.reentrantShow = false;
@@ -293,6 +607,9 @@ export class TabbedEditorContainer extends TabbedEditorContainerBase {
             this.editorSelectedByUserAction();
         }
         const previousView = this.currentView;
+        if (uiSourceCode) {
+            this.getOrCreateSourceView(uiSourceCode);
+        }
         this.currentView = this.visibleView;
         this.addViewListeners();
         if (this.currentView instanceof UISourceCodeFrame && this.currentView.uiSourceCode() !== uiSourceCode) {
@@ -312,6 +629,7 @@ export class TabbedEditorContainer extends TabbedEditorContainerBase {
             userGesture,
         };
         this.dispatchEventToListeners("EditorSelected" /* Events.EDITOR_SELECTED */, eventData);
+        this.onEditorSelected?.(eventData);
     }
     titleForFile(uiSourceCode) {
         const maxDisplayNameLength = 30;
@@ -331,9 +649,13 @@ export class TabbedEditorContainer extends TabbedEditorContainerBase {
         if (!shouldPrompt || confirm(i18nString(UIStrings.areYouSureYouWantToCloseUnsaved, { PH1: uiSourceCode.name() }))) {
             uiSourceCode.resetWorkingCopy();
             if (nextTabId) {
-                this.tabbedPane.selectTab(nextTabId, true);
+                const nextFile = this.files.get(nextTabId);
+                if (nextFile) {
+                    this.#showFile(nextFile, false);
+                }
             }
-            this.tabbedPane.closeTab(id, true);
+            this.tabClosed(id, true);
+            this.#scheduleUpdate();
             return true;
         }
         return false;
@@ -354,9 +676,13 @@ export class TabbedEditorContainer extends TabbedEditorContainerBase {
             }
         }
         if (dirtyTabs.length) {
-            this.tabbedPane.selectTab(dirtyTabs[0], true);
+            const dirtyFile = this.files.get(dirtyTabs[0]);
+            if (dirtyFile) {
+                this.#showFile(dirtyFile, false);
+            }
         }
-        this.tabbedPane.closeTabs(cleanTabs, true);
+        cleanTabs.forEach(id => this.tabClosed(id, true));
+        this.#scheduleUpdate();
         for (let i = 0; i < dirtyTabs.length; ++i) {
             const nextTabId = i + 1 < dirtyTabs.length ? dirtyTabs[i + 1] : null;
             if (!this.maybeCloseTab(dirtyTabs[i], nextTabId)) {
@@ -397,7 +723,7 @@ export class TabbedEditorContainer extends TabbedEditorContainerBase {
             return;
         }
         if (!this.tabIds.has(uiSourceCode)) {
-            this.appendFileTab(uiSourceCode, false);
+            this.appendFileTab(uiSourceCode);
         }
         // Select tab if this file was the last to be shown.
         if (!index) {
@@ -423,15 +749,22 @@ export class TabbedEditorContainer extends TabbedEditorContainerBase {
             if (tabId) {
                 tabIds.push(tabId);
             }
-            if (this.uriToUISourceCode.get(uiSourceCode.url()) === uiSourceCode) {
-                this.uriToUISourceCode.delete(uiSourceCode.url());
+            else {
+                this.removeSourceFrame(uiSourceCode);
             }
-            if (this.idToUISourceCode.get(uiSourceCode.canonicalScriptId()) === uiSourceCode) {
-                this.idToUISourceCode.delete(uiSourceCode.canonicalScriptId());
+            for (const [k, v] of this.uriToUISourceCode) {
+                if (v === uiSourceCode) {
+                    this.uriToUISourceCode.delete(k);
+                }
             }
-            this.removeSourceFrame(uiSourceCode);
+            for (const [k, v] of this.idToUISourceCode) {
+                if (v === uiSourceCode) {
+                    this.idToUISourceCode.delete(k);
+                }
+            }
         }
-        this.tabbedPane.closeTabs(tabIds);
+        tabIds.forEach(id => this.tabClosed(id, false));
+        this.#scheduleUpdate();
     }
     editorClosedByUserAction(uiSourceCode) {
         this.history.remove(historyItemKey(uiSourceCode));
@@ -442,7 +775,7 @@ export class TabbedEditorContainer extends TabbedEditorContainerBase {
     }
     updateHistory() {
         const historyItemKeys = [];
-        for (const tabId of this.tabbedPane.lastOpenedTabIds(MAX_PREVIOUSLY_VIEWED_FILES_COUNT)) {
+        for (const tabId of this.#tabsHistory.slice(0, MAX_PREVIOUSLY_VIEWED_FILES_COUNT)) {
             const uiSourceCode = this.files.get(tabId);
             if (uiSourceCode !== undefined) {
                 historyItemKeys.push(historyItemKey(uiSourceCode));
@@ -455,19 +788,24 @@ export class TabbedEditorContainer extends TabbedEditorContainerBase {
         uiSourceCode = Persistence.Persistence.PersistenceImpl.instance().network(uiSourceCode) || uiSourceCode;
         return uiSourceCode.url();
     }
-    appendFileTab(uiSourceCode, userGesture, index, replaceView) {
-        const view = replaceView || this.viewForFile(uiSourceCode);
-        const title = this.titleForFile(uiSourceCode);
-        const tooltip = this.tooltipForFile(uiSourceCode);
+    appendFileTab(uiSourceCode, index, ignoreHistory) {
         const tabId = this.generateTabId();
         this.tabIds.set(uiSourceCode, tabId);
-        this.files.set(tabId, uiSourceCode);
-        if (!replaceView) {
-            const savedSelectionRange = this.history.selectionRange(historyItemKey(uiSourceCode));
-            const savedScrollLineNumber = this.history.scrollLineNumber(historyItemKey(uiSourceCode));
+        if (index !== undefined) {
+            const entries = Array.from(this.files.entries());
+            entries.splice(index, 0, [tabId, uiSourceCode]);
+            this.files = new Map(entries);
+        }
+        else {
+            this.files.set(tabId, uiSourceCode);
+        }
+        const savedSelectionRange = this.history.selectionRange(historyItemKey(uiSourceCode));
+        const savedScrollLineNumber = this.history.scrollLineNumber(historyItemKey(uiSourceCode));
+        const view = this.viewForFile(uiSourceCode);
+        if (view && !ignoreHistory) {
             this.restoreEditorProperties(view, savedSelectionRange, savedScrollLineNumber);
         }
-        this.tabbedPane.appendTab(tabId, title, view, tooltip, userGesture, undefined, undefined, index, 'editor');
+        this.#scheduleUpdate();
         this.updateFileTitle(uiSourceCode);
         this.addUISourceCodeListeners(uiSourceCode);
         if (uiSourceCode.loadError()) {
@@ -480,16 +818,16 @@ export class TabbedEditorContainer extends TabbedEditorContainerBase {
                 }
             });
         }
+        if (!this.#currentFile) {
+            this.#showFile(uiSourceCode, false);
+        }
         return tabId;
     }
     addLoadErrorIcon(tabId) {
-        // clang-format off
-        const icon = html `<devtools-icon class="small" name="cross-circle-filled"
-                                     title=${i18nString(UIStrings.unableToLoadThisContent)}>
-                      </devtools-icon>`;
-        // clang-format on
-        if (this.tabbedPane.tabView(tabId)) {
-            this.tabbedPane.setTrailingTabIcon(tabId, icon);
+        const uiSourceCode = this.files.get(tabId);
+        if (uiSourceCode) {
+            this.#loadErrorFiles.add(uiSourceCode);
+            this.#scheduleUpdate();
         }
     }
     restoreEditorProperties(editorView, selection, firstLineNumber) {
@@ -504,8 +842,7 @@ export class TabbedEditorContainer extends TabbedEditorContainerBase {
             sourceFrame.scrollToLine(firstLineNumber);
         }
     }
-    tabClosed(event) {
-        const { tabId, isUserGesture } = event.data;
+    tabClosed(tabId, isUserGesture) {
         const uiSourceCode = this.files.get(tabId);
         if (this.#currentFile && this.#currentFile.canonicalScriptId() === uiSourceCode?.canonicalScriptId()) {
             this.removeViewListeners();
@@ -514,19 +851,20 @@ export class TabbedEditorContainer extends TabbedEditorContainerBase {
         }
         if (uiSourceCode) {
             this.tabIds.delete(uiSourceCode);
+            this.#loadErrorFiles.delete(uiSourceCode);
         }
         this.files.delete(tabId);
         if (uiSourceCode) {
             this.removeUISourceCodeListeners(uiSourceCode);
             this.removeSourceFrame(uiSourceCode);
             this.dispatchEventToListeners("EditorClosed" /* Events.EDITOR_CLOSED */, uiSourceCode);
+            this.onEditorClosed?.(uiSourceCode);
             if (isUserGesture) {
                 this.editorClosedByUserAction(uiSourceCode);
             }
         }
     }
-    tabSelected(event) {
-        const { tabId, isUserGesture } = event.data;
+    tabSelected(tabId, isUserGesture) {
         const uiSourceCode = this.files.get(tabId);
         if (uiSourceCode) {
             this.#showFile(uiSourceCode, isUserGesture);
@@ -543,61 +881,16 @@ export class TabbedEditorContainer extends TabbedEditorContainerBase {
         uiSourceCode.removeEventListener(Workspace.UISourceCode.Events.WorkingCopyCommitted, this.uiSourceCodeWorkingCopyCommitted, this);
     }
     updateFileTitle(uiSourceCode) {
-        const tabId = this.tabIds.get(uiSourceCode);
-        if (tabId) {
-            const title = this.titleForFile(uiSourceCode);
-            const tooltip = this.tooltipForFile(uiSourceCode);
-            this.tabbedPane.changeTabTitle(tabId, title, tooltip);
-            if (uiSourceCode.loadError()) {
-                // clang-format off
-                const icon = html `<devtools-icon class="small" name="cross-circle-filled"
-                                         title=${i18nString(UIStrings.unableToLoadThisContent)}>
-                          </devtools-icon>`;
-                // clang-format on
-                this.tabbedPane.setTrailingTabIcon(tabId, icon);
+        if (this.tabIds.has(uiSourceCode)) {
+            if (!uiSourceCode.loadError()) {
+                this.#loadErrorFiles.delete(uiSourceCode);
             }
-            else if (Persistence.Persistence.PersistenceImpl.instance().hasUnsavedCommittedChanges(uiSourceCode)) {
-                /* eslint-disable @devtools/no-imperative-dom-api --
-                 * This is a temporary solution using the <devtools-tooltip>
-                 * and we will use a toast instead once available.
-                 **/
-                const suffixElement = document.createElement('div');
-                const icon = new Icon();
-                icon.name = 'warning-filled';
-                icon.classList.add('small');
-                const id = `tab-tooltip-${nextTooltipId++}`;
-                icon.setAttribute('aria-describedby', id);
-                const tooltip = new Tooltips.Tooltip.Tooltip({ id, anchor: icon, variant: 'rich' });
-                const automaticFileSystemManager = Persistence.AutomaticFileSystemManager.AutomaticFileSystemManager.instance();
-                const { automaticFileSystem } = automaticFileSystemManager;
-                if (automaticFileSystem?.state === 'disconnected') {
-                    const link = document.createElement('a');
-                    link.className = 'devtools-link';
-                    link.textContent = Common.ParsedURL.ParsedURL.extractName(automaticFileSystem.root);
-                    link.addEventListener('click', async (event) => {
-                        event.consume();
-                        await UI.ViewManager.ViewManager.instance().showView('navigator-files');
-                        await automaticFileSystemManager.connectAutomaticFileSystem(/* addIfMissing= */ true);
-                    });
-                    tooltip.append(uiI18n.getFormatLocalizedString(str_, UIStrings.changesWereNotSavedToFileSystemToSaveAddFolderToWorkspace, { PH1: link }));
-                }
-                else {
-                    const link = Link.create('https://developer.chrome.com/docs/devtools/workspaces/', 'Workspace');
-                    tooltip.append(uiI18n.getFormatLocalizedString(str_, UIStrings.changesWereNotSavedToFileSystemToSaveSetUpYourWorkspace, { PH1: link }));
-                }
-                suffixElement.append(icon, tooltip);
-                /* eslint-enable @devtools/no-imperative-dom-api */
-                this.tabbedPane.setSuffixElement(tabId, suffixElement);
-            }
-            else {
-                const icon = PanelCommon.PersistenceUtils.PersistenceUtils.iconForUISourceCode(uiSourceCode);
-                this.tabbedPane.setTrailingTabIcon(tabId, icon);
-            }
+            this.#scheduleUpdate();
         }
     }
     uiSourceCodeTitleChanged(event) {
         const uiSourceCode = event.data;
-        const widget = this.sourceViewByUISourceCode.get(uiSourceCode);
+        const widget = getViewByUISourceCode(uiSourceCode);
         if (widget) {
             if (this.#sourceViewTypeForWidget(widget) !== this.#sourceViewTypeForUISourceCode(uiSourceCode)) {
                 // Remove the existing editor tab and create a new one of the correct type.
@@ -635,58 +928,6 @@ export class TabbedEditorContainer extends TabbedEditorContainerBase {
     generateTabId() {
         return 'tab-' + (tabId++);
     }
-    #renderPlaceholder(placeholderElement) {
-        const shortcuts = [
-            { actionId: 'quick-open.show', description: i18nString(UIStrings.openFile) },
-            { actionId: 'quick-open.show-command-menu', description: i18nString(UIStrings.runCommand) },
-        ];
-        const separator = Host.Platform.isMac() ? '\u2004' : ' + ';
-        const shortcutElements = shortcuts.map(shortcut => {
-            const shortcutKeys = UI.ShortcutRegistry.ShortcutRegistry.instance().shortcutsForAction(shortcut.actionId);
-            if (!shortcutKeys?.[0]) {
-                return {
-                    description: shortcut.description,
-                    onClick: () => { },
-                    keys: [],
-                };
-            }
-            const action = UI.ActionRegistry.ActionRegistry.instance().getAction(shortcut.actionId);
-            const keys = shortcutKeys[0].descriptors.flatMap(descriptor => descriptor.name.split(separator));
-            return {
-                description: shortcut.description,
-                onClick: () => {
-                    void action.execute();
-                },
-                keys,
-            };
-        });
-        // clang-format off
-        // eslint-disable-next-line @devtools/no-lit-render-outside-of-view
-        render(html `
-    <div class="tabbed-pane-placeholder-row workspace">
-      <span class="icon-container">
-        <devtools-icon name="sync" class="sync-icon"></devtools-icon>
-      </span>
-      <span>
-        ${i18nString(UIStrings.workspaceDropInAFolderToSyncSources)}
-        <button @click=${this.#addFileSystemClicked.bind(this)}>${i18nString(UIStrings.selectFolder)}</button>
-      </span>
-    </div>
-    <div class="shortcuts-list tabbed-pane-placeholder-row" role="list"
-         aria-label=${i18nString(UIStrings.sourceViewActions)}>
-      ${shortcutElements.map(shortcut => !shortcut.keys.length
-            ? html `<div class="shortcut-line" role="listitem"></div>`
-            : html `<div class="shortcut-line" role="listitem">
-            <button @click=${shortcut.onClick}>${shortcut.description}</button>
-            <span class="shortcuts">
-              ${shortcut.keys.map(key => html `
-                <span class="keybinds-key"><span>${key}</span></span>
-              `)}
-            </span>
-          </div>`)}
-    </div>`, placeholderElement);
-        // clang-format on
-    }
     async #addFileSystemClicked() {
         const result = await Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance().addFileSystem();
         if (!result) {
@@ -696,44 +937,30 @@ export class TabbedEditorContainer extends TabbedEditorContainerBase {
         void UI.ViewManager.ViewManager.instance().showView('navigator-files');
     }
     getCreatedSourceView(uiSourceCode) {
-        return this.sourceViewByUISourceCode.get(uiSourceCode);
+        return getViewByUISourceCode(uiSourceCode);
+    }
+    getOrCreateSourceView(uiSourceCode) {
+        const view = getViewByUISourceCode(uiSourceCode);
+        if (view) {
+            return view;
+        }
+        return getOrCreateSourceView(uiSourceCode, sourceView => {
+            if (sourceView instanceof UISourceCodeFrame) {
+                this.#historyManager.trackSourceFrameCursorJumps(sourceView);
+            }
+            uiSourceCode.addEventListener(Workspace.UISourceCode.Events.TitleChanged, this.uiSourceCodeTitleChanged, this);
+        });
     }
     viewForFile(uiSourceCode) {
         return this.getOrCreateSourceView(uiSourceCode);
     }
-    getOrCreateSourceView(uiSourceCode) {
-        return this.sourceViewByUISourceCode.get(uiSourceCode) || this.createSourceView(uiSourceCode);
-    }
-    createSourceView(uiSourceCode) {
-        let sourceView;
-        const contentType = uiSourceCode.contentType();
-        if (contentType === Common.ResourceType.resourceTypes.Image || uiSourceCode.mimeType().startsWith('image/')) {
-            sourceView = new SourceFrame.ImageView.ImageView(uiSourceCode.mimeType(), uiSourceCode);
-        }
-        else if (contentType === Common.ResourceType.resourceTypes.Font || uiSourceCode.mimeType().includes('font')) {
-            sourceView = new SourceFrame.FontView.FontView(uiSourceCode.mimeType(), uiSourceCode);
-        }
-        else if (uiSourceCode.name() === HEADER_OVERRIDES_FILENAME) {
-            sourceView = new Components.HeadersView.HeadersView(uiSourceCode);
-        }
-        else {
-            sourceView = new UISourceCodeFrame(uiSourceCode);
-            this.#historyManager.trackSourceFrameCursorJumps(sourceView);
-        }
-        this.sourceViewByUISourceCode.set(uiSourceCode, sourceView);
-        uiSourceCode.addEventListener(Workspace.UISourceCode.Events.TitleChanged, this.uiSourceCodeTitleChanged, this);
-        return sourceView;
-    }
     recycleUISourceCodeFrame(sourceFrame, uiSourceCode) {
         sourceFrame.uiSourceCode().removeEventListener(Workspace.UISourceCode.Events.TitleChanged, this.uiSourceCodeTitleChanged, this);
-        this.sourceViewByUISourceCode.delete(sourceFrame.uiSourceCode());
-        sourceFrame.setUISourceCode(uiSourceCode);
-        this.sourceViewByUISourceCode.set(uiSourceCode, sourceFrame);
+        recycleUISourceCodeFrame(sourceFrame, uiSourceCode);
         uiSourceCode.addEventListener(Workspace.UISourceCode.Events.TitleChanged, this.uiSourceCodeTitleChanged, this);
     }
     removeSourceFrame(uiSourceCode) {
-        const sourceView = this.sourceViewByUISourceCode.get(uiSourceCode);
-        this.sourceViewByUISourceCode.delete(uiSourceCode);
+        const sourceView = removeSourceViewCache(uiSourceCode);
         if (sourceView) {
             uiSourceCode.removeEventListener(Workspace.UISourceCode.Events.TitleChanged, this.uiSourceCodeTitleChanged, this);
         }
@@ -771,7 +998,6 @@ export class TabbedEditorContainer extends TabbedEditorContainerBase {
         return this.#currentFile || null;
     }
 }
-let nextTooltipId = 1;
 export var Events;
 (function (Events) {
     Events["EDITOR_SELECTED"] = "EditorSelected";

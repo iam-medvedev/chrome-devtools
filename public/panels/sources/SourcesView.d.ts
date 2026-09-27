@@ -3,20 +3,31 @@ import * as Common from '../../core/common/common.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import type * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import { type LitTemplate } from '../../ui/lit/lit.js';
 import { EditingLocationHistoryManager } from './EditingLocationHistoryManager.js';
-import { type SerializedHistoryItem, TabbedEditorContainer } from './TabbedEditorContainer.js';
+import { type EditorSelectedEvent, type SerializedHistoryItem, TabbedEditorContainer } from './TabbedEditorContainer.js';
 import { UISourceCodeFrame } from './UISourceCodeFrame.js';
 export interface ViewInput {
     searchProvider: UI.SearchableView.Searchable;
     replaceProvider: UI.SearchableView.Replaceable;
     searchableViewId: string;
-    scriptViewToolbarItems: UI.Toolbar.ToolbarItem[];
-    bottomToolbarItems: UI.Toolbar.ToolbarItem[];
+    scriptViewToolbarItems: UI.Toolbar.ToolbarItem[] | LitTemplate;
+    isNavigatorSidebarOpen: boolean;
+    isDebuggerSidebarOpen: boolean;
+    isDebuggerSidebarButtonEnabled: boolean;
+    isVertical: boolean;
+    isInWrapper: boolean;
+    isTraceApp: boolean;
+    onToggleNavigatorSidebar?: () => void;
+    onToggleDebuggerSidebar?: () => void;
+    breakpointsActive: boolean;
+    uiSourceCodes: ReadonlySet<Workspace.UISourceCode.UISourceCode>;
     historyManager: EditingLocationHistoryManager;
     previouslyViewedFilesSetting: Common.Settings.Setting<SerializedHistoryItem[]>;
+    onEditorSelected: (event: EditorSelectedEvent) => void;
+    onEditorClosed: (uiSourceCode: Workspace.UISourceCode.UISourceCode) => void;
 }
 export interface ViewOutput {
-    scriptViewToolbar?: UI.Toolbar.Toolbar;
     editorContainer?: TabbedEditorContainer;
     searchableView?: UI.SearchableView.SearchableView;
 }
@@ -31,7 +42,7 @@ export declare class SourcesView extends SourcesViewBase implements UI.Searchabl
     private searchView?;
     private searchConfig?;
     readonly previouslyViewedFilesSetting: Common.Settings.Setting<SerializedHistoryItem[]>;
-    constructor();
+    constructor(element?: HTMLElement, view?: View);
     performUpdate(): void;
     onDetach(): void;
     setEditorContainer(editorContainer: TabbedEditorContainer): void;
@@ -41,7 +52,7 @@ export declare class SourcesView extends SourcesViewBase implements UI.Searchabl
     set isNavigatorSidebarOpen(isOpen: boolean);
     set isDebuggerSidebarOpen(isOpen: boolean);
     toggleDebuggerSidebarButtonEnabled(enabled: boolean): void;
-    setLayoutMode(splitWidget: UI.SplitWidget.SplitWidget, isVertical: boolean, isInWrapper: boolean): void;
+    setLayoutMode(isVertical: boolean, isInWrapper: boolean): void;
     wasShown(): void;
     willHide(): void;
     searchableView(): UI.SearchableView.SearchableView;

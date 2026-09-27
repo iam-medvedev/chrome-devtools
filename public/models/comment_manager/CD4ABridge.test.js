@@ -42,10 +42,13 @@ describe('CD4ABridge', () => {
             },
         }, 'Need color contrast fix', 'DEVELOPER');
         thread.save();
+        // Saved (ACTIVE) threads are not exposed over the bridge until sent to agent
+        assert.isEmpty(bridge.getCommentThreads());
+        thread.sendToAgent();
         const threads = bridge.getCommentThreads();
         assert.lengthOf(threads, 1);
         assert.strictEqual(threads[0].id, thread.id);
-        assert.strictEqual(threads[0].text, 'Need color contrast fix\n\n- DevTools element: color: red\n- DOM node selector: div.card#main\n- Editor: index.html:42');
+        assert.strictEqual(threads[0].text, 'Need color contrast fix\n\n- DevTools VEPath: Panel: elements > Pane: styles\n- DevTools element: color: red\n- DOM node selector: div.card#main\n- Editor: index.html:42');
         assert.strictEqual(threads[0].networkRequestId, 'req-1');
         assert.deepEqual(threads[0].node, {
             backendNodeId: 10,
@@ -70,14 +73,43 @@ describe('CD4ABridge', () => {
                 lineNumber: 15,
             },
         }, 'Check variable');
-        thread.save();
+        thread.sendToAgent();
         const threads = bridge.getCommentThreads();
         assert.lengthOf(threads, 1);
-        assert.strictEqual(threads[0].text, 'Check variable\n\n- DevTools element: const x = 1;\n- Editor: line 15');
+        assert.strictEqual(threads[0].text, 'Check variable\n\n- DevTools VEPath: Panel: sources\n- DevTools element: const x = 1;\n- Editor: line 15');
         assert.deepEqual(threads[0].node, {
             backendNodeId: 99,
             targetId: 'target-1',
         });
+    });
+    it('does not format comment with unrelated node when target is missing', () => {
+        const mockPrimaryNode = {
+            backendNodeId: () => 10,
+            simpleSelector: () => 'div.unrelated',
+        };
+        const mockPrimaryDomModel = {
+            idToDOMNode: new Map([[10, mockPrimaryNode]]),
+        };
+        const mockPrimaryTarget = {
+            model: sinon.stub().withArgs(SDK.DOMModel.DOMModel).returns(mockPrimaryDomModel),
+        };
+        const mockTargetManager = {
+            targetById: sinon.stub().withArgs('destroyed-target').returns(null),
+            primaryPageTarget: () => mockPrimaryTarget,
+        };
+        const bridge = new CommentManager.CD4ABridge.CD4ABridge(commentManager, mockTargetManager);
+        const thread = commentManager.createCommentThread({
+            vePath: 'Panel: elements',
+            textSignature: 'color: red',
+            node: {
+                backendNodeId: 10,
+                targetId: 'destroyed-target',
+            },
+        }, 'Missing target comment', 'DEVELOPER');
+        thread.sendToAgent();
+        const threads = bridge.getCommentThreads();
+        assert.lengthOf(threads, 1);
+        assert.strictEqual(threads[0].text, 'Missing target comment\n\n- DevTools VEPath: Panel: elements\n- DevTools element: color: red');
     });
     it('only takes the first comment text', () => {
         const bridge = new CommentManager.CD4ABridge.CD4ABridge(commentManager);
@@ -90,10 +122,27 @@ describe('CD4ABridge', () => {
             text: 'Second comment',
             timestamp: Date.now(),
         });
-        thread.save();
+        thread.sendToAgent();
         const threads = bridge.getCommentThreads();
         assert.lengthOf(threads, 1);
-        assert.strictEqual(threads[0].text, 'First comment\n\n- DevTools element: h1');
+        assert.strictEqual(threads[0].text, 'First comment\n\n- DevTools VEPath: Panel: elements\n- DevTools element: h1');
+    });
+    it('formats recorded change threads using their comment text', () => {
+        const bridge = new CommentManager.CD4ABridge.CD4ABridge(commentManager);
+        const changeOnlyThread = commentManager.createCommentThread({
+            vePath: 'Panel: elements > Tree: elements > TreeItem',
+            textSignature: '',
+        }, 'Changed attribute "class" from "old" to "new"', 'DEVELOPER', true);
+        changeOnlyThread.sendToAgent();
+        const commentAndElementThread = commentManager.createCommentThread({
+            vePath: 'Panel: elements > Tree: elements > TreeItem',
+            textSignature: 'button.cta',
+        }, 'Changed text from "Submit" to "Send"', 'DEVELOPER', true);
+        commentAndElementThread.sendToAgent();
+        const threads = bridge.getCommentThreads();
+        assert.lengthOf(threads, 2);
+        assert.strictEqual(threads[0].text, 'Changed attribute "class" from "old" to "new"\n\n- DevTools VEPath: Panel: elements > Tree: elements > TreeItem');
+        assert.strictEqual(threads[1].text, 'Changed text from "Submit" to "Send"\n\n- DevTools VEPath: Panel: elements > Tree: elements > TreeItem\n- DevTools element: button.cta');
     });
     it('delegates resolve to CommentManager and dispatches events', () => {
         const bridge = new CommentManager.CD4ABridge.CD4ABridge(commentManager);
@@ -126,6 +175,14 @@ describe('CD4ABridge', () => {
             textSignature: 'h1',
         }, 'Fix heading');
         assert.isFalse(eventFired);
+    });
+    it('delegates setAgentAttached to CommentManager', () => {
+        const bridge = new CommentManager.CD4ABridge.CD4ABridge(commentManager);
+        assert.isFalse(commentManager.isAgentAttached());
+        bridge.setAgentAttached(true);
+        assert.isTrue(commentManager.isAgentAttached());
+        bridge.setAgentAttached(false);
+        assert.isFalse(commentManager.isAgentAttached());
     });
     describe('reveal', () => {
         let mockHost;
@@ -178,6 +235,25 @@ describe('CD4ABridge', () => {
             assert.isTrue(showPanelSpy.calledOnceWith('elements'));
             assert.isTrue(revealStub.calledOnceWith(mockNode));
         });
+        it('does not reveal unrelated DOM node from primary page target when node target is missing', async () => {
+            const mockNode = {};
+            const mockDomModel = {
+                pushNodesByBackendIdsToFrontend: sinon.stub().resolves(new Map([[10, mockNode]])),
+            };
+            const mockPrimaryTarget = {
+                model: sinon.stub().withArgs(SDK.DOMModel.DOMModel).returns(mockDomModel),
+            };
+            const mockTargetManager = {
+                targetById: sinon.stub().withArgs('destroyed-target').returns(null),
+                primaryPageTarget: () => mockPrimaryTarget,
+            };
+            const revealStub = sinon.stub(Common.Revealer.RevealerRegistry.instance(), 'reveal').resolves();
+            const bridge = new CommentManager.CD4ABridge.CD4ABridge(commentManager, mockTargetManager, undefined, mockHost);
+            await bridge.reveal('elements', { node: { backendNodeId: 10, targetId: 'destroyed-target' } });
+            assert.isTrue(showPanelSpy.calledOnceWith('elements'));
+            sinon.assert.notCalled(revealStub);
+            sinon.assert.notCalled(mockDomModel.pushNodesByBackendIdsToFrontend);
+        });
         it('reveals both network request and DOM node if both are present in target', async () => {
             const mockRequest = { requestId: () => 'req-1' };
             const mockNetworkLog = {
@@ -191,7 +267,7 @@ describe('CD4ABridge', () => {
                 model: sinon.stub().withArgs(SDK.DOMModel.DOMModel).returns(mockDomModel),
             };
             const mockTargetManager = {
-                targetById: sinon.stub().returns(null),
+                targetById: sinon.stub().withArgs('target-1').returns(mockPrimaryTarget),
                 primaryPageTarget: () => mockPrimaryTarget,
             };
             const revealStub = sinon.stub(Common.Revealer.RevealerRegistry.instance(), 'reveal').resolves();
