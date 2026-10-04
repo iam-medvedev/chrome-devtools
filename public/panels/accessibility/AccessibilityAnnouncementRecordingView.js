@@ -680,8 +680,8 @@ export class AccessibilityAnnouncementRecordingView extends AccessibilitySubPane
     #textFilter = '';
     #regexFilter = null;
     #view;
-    constructor(view = DEFAULT_VIEW) {
-        super({
+    constructor(element, view = DEFAULT_VIEW) {
+        super(element, {
             title: i18nString(UIStrings.ariaLiveRecording),
             viewId: 'aria-live-recording',
         });

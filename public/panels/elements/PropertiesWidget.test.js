@@ -5,7 +5,7 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
 import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget, describeWithEnvironment, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
@@ -16,7 +16,6 @@ describeWithEnvironment('PropertiesWidget', () => {
     let target;
     let connection;
     beforeEach(() => {
-        stubNoopSettings();
         connection = new MockCDPConnection();
         target = createTarget({ connection });
         connection.setSuccessHandler('DOM.getDocument', () => ({ root: { nodeId: NODE_ID } }));
@@ -192,9 +191,6 @@ describeWithEnvironment('PropertiesWidget', () => {
     });
 });
 describeWithEnvironment('PropertiesWidget DEFAULT_VIEW', () => {
-    beforeEach(() => {
-        stubNoopSettings();
-    });
     async function setUpView(filter) {
         const container = document.createElement('div');
         renderElementIntoDOM(container, { includeCommonStyles: true });

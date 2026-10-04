@@ -5,7 +5,7 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget, describeWithEnvironment, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { expectCall } from '../../testing/ExpectStubCall.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as PerformanceMonitor from './performance_monitor.js';
@@ -72,7 +72,7 @@ describeWithEnvironment('PerformanceMonitor', () => {
         assert.strictEqual(heightAfterDeactivation, initialHeight);
     });
 });
-describe('ControlPane', () => {
+describeWithEnvironment('ControlPane', () => {
     const chartsInfo = [
         {
             title: 'Chart1',
@@ -83,9 +83,6 @@ describe('ControlPane', () => {
             metrics: [{ name: 'Metric2', color: 'blue' }],
         },
     ];
-    beforeEach(() => {
-        stubNoopSettings();
-    });
     it('renders indicators', async () => {
         const view = createViewFunctionStub(PerformanceMonitor.PerformanceMonitor.ControlPane);
         const controlPane = new PerformanceMonitor.PerformanceMonitor.ControlPane(document.createElement('div'), view);
@@ -100,6 +97,7 @@ describe('ControlPane', () => {
         renderElementIntoDOM(controlPane);
         const onMetricChanged = sinon.spy();
         controlPane.onMetricChanged = onMetricChanged;
+        onMetricChanged.resetHistory();
         controlPane.chartsInfo = chartsInfo;
         const { onCheckboxChange } = await view.nextInput;
         const event = { target: { checked: true } };

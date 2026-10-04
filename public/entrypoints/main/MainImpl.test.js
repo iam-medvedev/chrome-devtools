@@ -7,12 +7,11 @@ import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { getMenuForToolbarButton } from '../../testing/ContextMenuHelpers.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget, describeWithEnvironment, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Main from './main.js';
 describeWithEnvironment('MainMenuItem', () => {
     beforeEach(async () => {
-        stubNoopSettings();
         sinon.stub(UI.ShortcutRegistry.ShortcutRegistry, 'instance').returns({
             keyAndModifiersForAction: () => { },
             shortcutTitleForAction: () => { },

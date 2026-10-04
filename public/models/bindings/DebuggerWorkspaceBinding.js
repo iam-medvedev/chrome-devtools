@@ -398,25 +398,24 @@ export class DebuggerWorkspaceBinding {
             autoSteppingContext.lineNumber !== functionLocation.lineNumber;
     }
     async #translateRawFrames(frames, target) {
-        const rawFrames = frames.slice(0);
-        const translatedFrames = [];
-        while (rawFrames.length) {
-            await this.#translateRawFramesStep(rawFrames, translatedFrames, target);
-        }
-        return translatedFrames;
+        return await Promise.all(frames.map(frame => this.#translateRawFrame(frame, target)));
     }
-    async #translateRawFramesStep(rawFrames, translatedFrames, target) {
-        if (await this.pluginManager.translateRawFramesStep(rawFrames, translatedFrames, target)) {
-            return;
+    /** Translates a single raw frame: language plugins first, then the script mappings of the frame's debugger model. */
+    async #translateRawFrame(frame, target) {
+        const pluginTranslation = await this.pluginManager.translateRawFrame(frame, target);
+        if (pluginTranslation) {
+            return pluginTranslation;
         }
         const modelData = this.#debuggerModelToData.get(target.model(SDK.DebuggerModel.DebuggerModel));
         if (modelData) {
-            await modelData.translateRawFramesStep(rawFrames, translatedFrames);
-            return;
+            return await modelData.translateRawFrame(frame);
         }
-        const frame = rawFrames.shift();
         const { url, lineNumber, columnNumber, functionName } = frame;
-        translatedFrames.push([{ url, line: lineNumber, column: columnNumber, name: functionName }]);
+        return {
+            kind: "VISIBLE" /* StackTraceImpl.Trie.FrameKind.VISIBLE */,
+            frames: [{ url, line: lineNumber, column: columnNumber, name: functionName }],
+            unmapped: true,
+        };
     }
 }
 class ModelData {
@@ -456,8 +455,11 @@ class ModelData {
         await Promise.all(promises);
     }
     rawLocationToUILocation(rawLocation) {
-        let uiLocation = this.compilerMapping.rawLocationToUILocation(rawLocation);
-        uiLocation = uiLocation || this.#resourceScriptMapping.rawLocationToUILocation(rawLocation);
+        return this.compilerMapping.rawLocationToUILocation(rawLocation) ||
+            this.#nonCompilerRawLocationToUILocation(rawLocation);
+    }
+    #nonCompilerRawLocationToUILocation(rawLocation) {
+        let uiLocation = this.#resourceScriptMapping.rawLocationToUILocation(rawLocation);
         uiLocation = uiLocation || this.#resourceMapping.jsLocationToUILocation(rawLocation);
         uiLocation = uiLocation || this.#defaultMapping.rawLocationToUILocation(rawLocation);
         return uiLocation;
@@ -500,31 +502,28 @@ class ModelData {
         scope = scope || await this.#resourceMapping.functionBoundsAtRawLocation(rawLocation);
         return scope;
     }
-    async translateRawFramesStep(rawFrames, translatedFrames) {
-        if (!await this.compilerMapping.translateRawFramesStep(rawFrames, translatedFrames)) {
-            this.#defaultTranslateRawFramesStep(rawFrames, translatedFrames);
-        }
+    async translateRawFrame(frame) {
+        return await this.compilerMapping.translateRawFrame(frame) ?? this.#defaultTranslateRawFrame(frame);
     }
-    /** The default implementation translates one frame at a time and only translates the location, but not the function name. */
-    #defaultTranslateRawFramesStep(rawFrames, translatedFrames) {
-        const frame = rawFrames.shift();
+    /** The default translation only translates the location, but not the function name. */
+    #defaultTranslateRawFrame(frame) {
         const { scriptId, url, lineNumber, columnNumber, functionName } = frame;
         const rawLocation = scriptId ? this.#debuggerModel.createRawLocationByScriptId(scriptId, lineNumber, columnNumber) :
             url ? this.#debuggerModel.createRawLocationByURL(url, lineNumber, columnNumber) :
                 null;
-        if (rawLocation) {
-            const uiLocation = this.rawLocationToUILocation(rawLocation);
-            if (uiLocation) {
-                translatedFrames.push([{
-                        uiSourceCode: uiLocation.uiSourceCode,
-                        name: functionName,
-                        line: uiLocation.lineNumber,
-                        column: uiLocation.columnNumber ?? -1,
-                    }]);
-                return;
-            }
-        }
-        translatedFrames.push([{ url, line: lineNumber, column: columnNumber, name: functionName }]);
+        const mapped = rawLocation && this.compilerMapping.rawLocationToUILocation(rawLocation);
+        // A stub UISourceCode shows the generated script while its source map is loading.
+        const unmapped = !mapped || this.compilerMapping.isStubUISourceCode(mapped.uiSourceCode);
+        const uiLocation = mapped || (rawLocation && this.#nonCompilerRawLocationToUILocation(rawLocation));
+        const translatedFrame = uiLocation ?
+            {
+                uiSourceCode: uiLocation.uiSourceCode,
+                name: functionName,
+                line: uiLocation.lineNumber,
+                column: uiLocation.columnNumber ?? -1,
+            } :
+            { url, line: lineNumber, column: columnNumber, name: functionName };
+        return { kind: "VISIBLE" /* StackTraceImpl.Trie.FrameKind.VISIBLE */, frames: [translatedFrame], unmapped };
     }
     getMappedLines(uiSourceCode) {
         const mappedLines = this.compilerMapping.getMappedLines(uiSourceCode);

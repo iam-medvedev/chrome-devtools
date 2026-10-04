@@ -70,7 +70,7 @@ describe('AccessibilityAgent', () => {
         const agent = new AiAssistance.AccessibilityAgent.AccessibilityAgent({
             aidaClient,
         });
-        await Array.fromAsync(agent.run('test', { selected: new AiAssistance.AccessibilityContext.AccessibilityContext(mockReport) }));
+        await Array.fromAsync(agent.run('test', { selected: new AiAssistance.LighthouseContext.LighthouseContext(mockReport) }));
         const call = aidaClient.doConversation.getCall(0);
         assert.exists(call);
         const request = call.args[0];
@@ -89,7 +89,7 @@ describe('AccessibilityAgent', () => {
         const agent = new AiAssistance.AccessibilityAgent.AccessibilityAgent({
             aidaClient,
         });
-        const context = new AiAssistance.AccessibilityContext.AccessibilityContext(mockReport);
+        const context = new AiAssistance.LighthouseContext.LighthouseContext(mockReport);
         const responses = await Array.fromAsync(agent.run('test', { selected: context }));
         const contextResponse = responses.find(response => response.type === "context" /* AiAssistance.AiAgent.ResponseType.CONTEXT */);
         assert.exists(contextResponse);
@@ -111,7 +111,7 @@ describe('AccessibilityAgent', () => {
         const agent = new AiAssistance.AccessibilityAgent.AccessibilityAgent({
             aidaClient,
         });
-        const context = new AiAssistance.AccessibilityContext.AccessibilityContext(mockReport);
+        const context = new AiAssistance.LighthouseContext.LighthouseContext(mockReport);
         const responses = await Array.fromAsync(agent.run('test', { selected: context }));
         const titleResponse = responses.find(response => response.type === "title" /* AiAssistance.AiAgent.ResponseType.TITLE */);
         assert.exists(titleResponse);
@@ -134,7 +134,7 @@ describe('AccessibilityAgent', () => {
         const agent = new AiAssistance.AccessibilityAgent.AccessibilityAgent({
             aidaClient,
         });
-        const context = new AiAssistance.AccessibilityContext.AccessibilityContext(mockReport);
+        const context = new AiAssistance.LighthouseContext.LighthouseContext(mockReport);
         const responses = await Array.fromAsync(agent.run('test', { selected: context }));
         const titleResponse = responses.find(response => response.type === "title" /* AiAssistance.AiAgent.ResponseType.TITLE */);
         assert.exists(titleResponse);
@@ -151,7 +151,7 @@ describe('AccessibilityAgent', () => {
         const agent = new AiAssistance.AccessibilityAgent.AccessibilityAgent({
             aidaClient,
         });
-        const context = new AiAssistance.AccessibilityContext.AccessibilityContext(mockReport);
+        const context = new AiAssistance.LighthouseContext.LighthouseContext(mockReport);
         const responses = await Array.fromAsync(agent.run('test', { selected: context }));
         const titleResponse = responses.find(response => response.type === "title" /* AiAssistance.AiAgent.ResponseType.TITLE */);
         assert.exists(titleResponse);
@@ -169,7 +169,7 @@ describe('AccessibilityAgent', () => {
         const agent = new AiAssistance.AccessibilityAgent.AccessibilityAgent({
             aidaClient,
         });
-        const context = new AiAssistance.AccessibilityContext.AccessibilityContext(mockReport);
+        const context = new AiAssistance.LighthouseContext.LighthouseContext(mockReport);
         const domModel = target.model(SDK.DOMModel.DOMModel);
         const accessibilityModel = target.model(SDK.AccessibilityModel.AccessibilityModel);
         const mockNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
@@ -218,7 +218,7 @@ describe('AccessibilityAgent', () => {
         const agent = new AiAssistance.AccessibilityAgent.AccessibilityAgent({
             aidaClient,
         });
-        const context = new AiAssistance.AccessibilityContext.AccessibilityContext(mockReport);
+        const context = new AiAssistance.LighthouseContext.LighthouseContext(mockReport);
         const domModel = target.model(SDK.DOMModel.DOMModel);
         const mockNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
         mockNode.domModel.returns(domModel);
@@ -246,7 +246,7 @@ describe('AccessibilityAgent', () => {
         const agent = new AiAssistance.AccessibilityAgent.AccessibilityAgent({
             aidaClient,
         });
-        const context = new AiAssistance.AccessibilityContext.AccessibilityContext(mockReport);
+        const context = new AiAssistance.LighthouseContext.LighthouseContext(mockReport);
         const domModel = target.model(SDK.DOMModel.DOMModel);
         const mockNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
         mockNode.domModel.returns(domModel);
@@ -276,7 +276,7 @@ describe('AccessibilityAgent', () => {
         const agent = new AiAssistance.AccessibilityAgent.AccessibilityAgent({
             aidaClient,
         });
-        const context = new AiAssistance.AccessibilityContext.AccessibilityContext(mockReport);
+        const context = new AiAssistance.LighthouseContext.LighthouseContext(mockReport);
         const domModel = target.model(SDK.DOMModel.DOMModel);
         const mockNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
         mockNode.domModel.returns(domModel);
@@ -306,7 +306,7 @@ describe('AccessibilityAgent', () => {
         const agent = new AiAssistance.AccessibilityAgent.AccessibilityAgent({
             aidaClient,
         });
-        const context = new AiAssistance.AccessibilityContext.AccessibilityContext(mockReport);
+        const context = new AiAssistance.LighthouseContext.LighthouseContext(mockReport);
         const domModel = target.model(SDK.DOMModel.DOMModel);
         const mockNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
         mockNode.domModel.returns(domModel);
@@ -337,7 +337,7 @@ describe('AccessibilityAgent', () => {
             aidaClient,
             lighthouseRecording,
         });
-        const context = new AiAssistance.AccessibilityContext.AccessibilityContext(mockReport);
+        const context = new AiAssistance.LighthouseContext.LighthouseContext(mockReport);
         const responses = await Array.fromAsync(agent.run('test', { selected: context }));
         const titleResponse = responses.find(response => response.type === "title" /* AiAssistance.AiAgent.ResponseType.TITLE */);
         assert.exists(titleResponse);
@@ -380,7 +380,7 @@ describe('AccessibilityAgent', () => {
             execJs,
             createExtensionScope,
         });
-        const context = new AiAssistance.AccessibilityContext.AccessibilityContext(mockReport);
+        const context = new AiAssistance.LighthouseContext.LighthouseContext(mockReport);
         const domModel = target.model(SDK.DOMModel.DOMModel);
         const documentNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
         documentNode.domModel.returns(domModel);
@@ -415,7 +415,7 @@ describe('AccessibilityAgent', () => {
             ...mockReport,
             isImported: true,
         };
-        const context = new AiAssistance.AccessibilityContext.AccessibilityContext(importedReport);
+        const context = new AiAssistance.LighthouseContext.LighthouseContext(importedReport);
         const domModel = target.model(SDK.DOMModel.DOMModel);
         const documentNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
         documentNode.domModel.returns(domModel);
@@ -442,7 +442,7 @@ describe('AccessibilityAgent', () => {
             ...mockReport,
             isImported: true,
         };
-        const context = new AiAssistance.AccessibilityContext.AccessibilityContext(importedReport);
+        const context = new AiAssistance.LighthouseContext.LighthouseContext(importedReport);
         const responses = await Array.fromAsync(agent.run('test', { selected: context }));
         const actionResponse = responses.find(response => response.type === "action" /* AiAssistance.AiAgent.ResponseType.ACTION */);
         assert.exists(actionResponse);
@@ -461,7 +461,7 @@ describe('AccessibilityAgent', () => {
             ...mockReport,
             isImported: true,
         };
-        const context = new AiAssistance.AccessibilityContext.AccessibilityContext(importedReport);
+        const context = new AiAssistance.LighthouseContext.LighthouseContext(importedReport);
         const responses = await Array.fromAsync(agent.run('test', { selected: context }));
         const actionResponse = responses.find(response => response.type === "action" /* AiAssistance.AiAgent.ResponseType.ACTION */);
         assert.exists(actionResponse);
@@ -479,7 +479,7 @@ describe('AccessibilityAgent', () => {
             ...mockReport,
             isImported: true,
         };
-        const context = new AiAssistance.AccessibilityContext.AccessibilityContext(importedReport);
+        const context = new AiAssistance.LighthouseContext.LighthouseContext(importedReport);
         const responses = await Array.fromAsync(agent.run('test', { selected: context }));
         const actionResponse = responses.find(response => response.type === "action" /* AiAssistance.AiAgent.ResponseType.ACTION */);
         assert.exists(actionResponse);
@@ -500,7 +500,7 @@ describe('AccessibilityAgent', () => {
             ...mockReport,
             isImported: true,
         };
-        const context = new AiAssistance.AccessibilityContext.AccessibilityContext(importedReport);
+        const context = new AiAssistance.LighthouseContext.LighthouseContext(importedReport);
         const responses = await Array.fromAsync(agent.run('test', { selected: context }));
         const titleResponse = responses.find(response => response.type === "title" /* AiAssistance.AiAgent.ResponseType.TITLE */);
         assert.exists(titleResponse);
@@ -513,7 +513,7 @@ describe('AccessibilityAgent', () => {
             const agent = new AiAssistance.AccessibilityAgent.AccessibilityAgent({
                 aidaClient: mockAidaClient([]),
             });
-            const context = new AiAssistance.AccessibilityContext.AccessibilityContext(mockReport);
+            const context = new AiAssistance.LighthouseContext.LighthouseContext(mockReport);
             const enhancedQuery = await agent.enhanceQuery('user query', context);
             assert.include(enhancedQuery, '# Lighthouse Report');
             assert.include(enhancedQuery, 'user query');

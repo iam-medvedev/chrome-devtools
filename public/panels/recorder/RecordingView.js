@@ -116,6 +116,14 @@ const UIStrings = {
      */
     hideCode: 'Hide code',
     /**
+     * @description Heading for the list of steps in a recording.
+     */
+    steps: 'Steps',
+    /**
+     * @description Heading for the generated code of a recording.
+     */
+    code: 'Code',
+    /**
      * @description Button title that adds an assertion to the step editor.
      */
     addAssertion: 'Add assertion',
@@ -312,12 +320,14 @@ function renderTimelineArea(input, output) {
           sidebar-initial-size="300"
           sidebar-visibility=${input.showCodeView ? '' : 'hidden'}
         >
-          <div slot="main">
+          <div slot="main" role="region" aria-labelledby="recording-steps-heading">
             ${renderSections(input)}
           </div>
-          <div slot="sidebar" jslog=${VisualLogging.pane('source-code').track({ resize: true })}>
+          <div id="recording-code-pane" slot="sidebar" role="region" aria-labelledby="recording-code-heading"
+               jslog=${VisualLogging.pane('source-code').track({ resize: true })}>
             ${input.showCodeView ? html `
             <div class="section-toolbar" jslog=${VisualLogging.toolbar()}>
+              <h2 id="recording-code-heading" class="screen-reader-only">${i18nString(UIStrings.code)}</h2>
               <label class="code-format-label">
                 ${i18nString(UIStrings.codeFormat)}
                 <select
@@ -345,16 +355,6 @@ function renderTimelineArea(input, output) {
     })}
                 </select>
               </label>
-              <devtools-button
-                title=${Models.Tooltip.getTooltipForActions(i18nString(UIStrings.hideCode), "chrome-recorder.toggle-code-view" /* Actions.RecorderActions.TOGGLE_CODE_VIEW */)}
-                .data=${{
-        variant: "icon" /* Buttons.Button.Variant.ICON */,
-        size: "SMALL" /* Buttons.Button.Size.SMALL */,
-        iconName: 'cross',
-    }}
-                @click=${input.showCodeToggle}
-                jslog=${VisualLogging.close().track({ click: true })}
-              ></devtools-button>
             </div>
             ${renderTextEditor(input, output)}`
         : Lit.nothing}
@@ -425,25 +425,27 @@ function renderReplayOrAbortButton(input) {
     // clang-format on
 }
 function renderSections(input) {
+    const codeToggleTitle = input.showCodeView ? i18nString(UIStrings.hideCode) : i18nString(UIStrings.showCode);
     // clang-format off
     return html `
       <div class="sections">
-      ${!input.showCodeView
-        ? html `<div class="section-toolbar">
-        <devtools-button
-          @click=${input.showCodeToggle}
-          class="show-code"
-          .data=${{
-            variant: "outlined" /* Buttons.Button.Variant.OUTLINED */,
-            title: Models.Tooltip.getTooltipForActions(i18nString(UIStrings.showCode), "chrome-recorder.toggle-code-view" /* Actions.RecorderActions.TOGGLE_CODE_VIEW */),
-        }}
-          jslog=${VisualLogging.toggleSubpane("chrome-recorder.toggle-code-view" /* Actions.RecorderActions.TOGGLE_CODE_VIEW */).track({ click: true })}
-        >
-          ${i18nString(UIStrings.showCode)}
-        </devtools-button>
-      </div>`
-        : ''}
-      ${input.sections.map((section, i) => html `
+        <div class="section-toolbar">
+          <h2 id="recording-steps-heading">${i18nString(UIStrings.steps)}</h2>
+          <devtools-button
+            @click=${input.showCodeToggle}
+            class="show-code"
+            aria-controls="recording-code-pane"
+            aria-expanded=${input.showCodeView}
+            .data=${{
+        variant: "outlined" /* Buttons.Button.Variant.OUTLINED */,
+        title: Models.Tooltip.getTooltipForActions(codeToggleTitle, "chrome-recorder.toggle-code-view" /* Actions.RecorderActions.TOGGLE_CODE_VIEW */),
+    }}
+            jslog=${VisualLogging.toggleSubpane("chrome-recorder.toggle-code-view" /* Actions.RecorderActions.TOGGLE_CODE_VIEW */).track({ click: true })}
+          >
+            ${codeToggleTitle}
+          </devtools-button>
+        </div>
+        ${input.sections.map((section, i) => html `
             <div class="section">
               <div class="screenshot-wrapper">
                 ${renderScreenshot(section)}
@@ -528,7 +530,7 @@ function renderSections(input) {
                 </div>
               </div>
             </div>
-      `)}
+        `)}
       </div>
     `;
     // clang-format on
@@ -772,7 +774,7 @@ export class RecordingView extends UI.Widget.Widget {
             onTitleInputKeyDown: this.#onTitleInputKeyDown.bind(this),
             onToggleReplaySettings: this.#onToggleReplaySettings.bind(this),
             onWrapperClick: this.#onWrapperClick.bind(this),
-            showCodeToggle: this.showCodeToggle.bind(this),
+            showCodeToggle: this.showCodeToggle,
         }, this.#viewOutput, this.contentElement);
     }
     wasShown() {
@@ -953,11 +955,12 @@ export class RecordingView extends UI.Widget.Widget {
         this.#showCodeView = !this.#showCodeView;
         if (this.#showCodeView) {
             UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.codeSidebarOpened));
+            void this.#convertToCode();
         }
         else {
             UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.codeSidebarClosed));
+            this.requestUpdate();
         }
-        void this.#convertToCode();
     };
     #convertToCode = async () => {
         if (!this.recording) {

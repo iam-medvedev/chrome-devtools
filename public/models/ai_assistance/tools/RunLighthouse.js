@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Host from '../../../core/host/host.js';
-import { LighthouseFormatter } from '../data_formatters/LighthouseFormatter.js';
+import { LighthouseContext } from '../contexts/LighthouseContext.js';
+/**
+ * Runs Lighthouse audits on the inspected page and sets the resulting report as the active conversation context.
+ */
 export class RunLighthouseTool {
     name = "runLighthouse" /* ToolName.RUN_LIGHTHOUSE */;
     description = 'Runs Lighthouse audits on the active page. Supports "navigation" (for full initial page load audits), "snapshot" (for inspecting live in-page modifications without reload), and "timespan" (for interactions).';
@@ -18,7 +21,8 @@ export class RunLighthouseTool {
             },
             categoryId: {
                 type: 1 /* Host.AidaClient.ParametersTypes.STRING */,
-                description: 'Lighthouse category. E.g. "accessibility", "performance".',
+                // The experimental 'agentic-browsing' category is intentionally omitted from the prompt description so the agent does not invoke it unprompted. It is also excluded when 'all' is provided.
+                description: 'Lighthouse category. Use "all" to run all categories, or specify a category: "accessibility", "performance", "best-practices", "seo".',
                 nullable: false,
             },
             mode: {
@@ -39,19 +43,19 @@ export class RunLighthouseTool {
     async handler(params, context) {
         const mode = params.mode ?? 'snapshot';
         try {
+            // Passing undefined for categoryIds instructs the Lighthouse runner to audit all categories supported by the mode when isAIControlled is true.
             const report = await context.runLighthouse({
                 mode,
-                categoryIds: [params.categoryId],
+                categoryIds: params.categoryId === 'all' ? undefined : [params.categoryId],
                 isAIControlled: true,
             });
             if (!report) {
                 return { error: 'Error: Failed to record new audits.' };
             }
-            const audits = new LighthouseFormatter().audits(report, params.categoryId);
-            const isSnapshot = mode === 'snapshot';
             return {
-                result: { audits },
-                widgets: [{ name: 'LIGHTHOUSE_REPORT', data: { report, snapshotReport: isSnapshot } }],
+                // No widgets are returned here; LighthouseContext.getWidgets() provides the report widget.
+                context: new LighthouseContext(report),
+                description: 'Lighthouse audit completed',
             };
         }
         catch (err) {

@@ -4,14 +4,13 @@ import * as Workspace from '../../models/workspace/workspace.js';
 import type * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type LitTemplate } from '../../ui/lit/lit.js';
-import { EditingLocationHistoryManager } from './EditingLocationHistoryManager.js';
-import { type EditorSelectedEvent, type SerializedHistoryItem, TabbedEditorContainer } from './TabbedEditorContainer.js';
+import { type EditorSelectedEvent, type SourceLocation } from './TabbedEditorContainer.js';
 import { UISourceCodeFrame } from './UISourceCodeFrame.js';
 export interface ViewInput {
     searchProvider: UI.SearchableView.Searchable;
     replaceProvider: UI.SearchableView.Replaceable;
-    searchableViewId: string;
-    scriptViewToolbarItems: UI.Toolbar.ToolbarItem[] | LitTemplate;
+    isSearchReplaceable: boolean;
+    scriptViewToolbarItems: LitTemplate;
     isNavigatorSidebarOpen: boolean;
     isDebuggerSidebarOpen: boolean;
     isDebuggerSidebarButtonEnabled: boolean;
@@ -22,31 +21,20 @@ export interface ViewInput {
     onToggleDebuggerSidebar?: () => void;
     breakpointsActive: boolean;
     uiSourceCodes: ReadonlySet<Workspace.UISourceCode.UISourceCode>;
-    historyManager: EditingLocationHistoryManager;
-    previouslyViewedFilesSetting: Common.Settings.Setting<SerializedHistoryItem[]>;
+    sourceLocation?: SourceLocation;
     onEditorSelected: (event: EditorSelectedEvent) => void;
     onEditorClosed: (uiSourceCode: Workspace.UISourceCode.UISourceCode) => void;
 }
-export interface ViewOutput {
-    editorContainer?: TabbedEditorContainer;
-    searchableView?: UI.SearchableView.SearchableView;
-}
-export type View = (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
+export type View = (input: ViewInput, output: undefined, target: HTMLElement) => void;
 export declare const DEFAULT_VIEW: View;
 declare const SourcesViewBase: Common.ObjectWrapper.EventMixin<EventTypes, typeof UI.Widget.VBox>;
 export declare class SourcesView extends SourcesViewBase implements UI.SearchableView.Searchable, UI.SearchableView.Replaceable {
     #private;
-    editorContainer?: TabbedEditorContainer;
-    private readonly historyManager;
     private toolbarChangedListener;
     private searchView?;
     private searchConfig?;
-    readonly previouslyViewedFilesSetting: Common.Settings.Setting<SerializedHistoryItem[]>;
     constructor(element?: HTMLElement, view?: View);
     performUpdate(): void;
-    onDetach(): void;
-    setEditorContainer(editorContainer: TabbedEditorContainer): void;
-    static defaultUISourceCodeScores(): Map<Workspace.UISourceCode.UISourceCode, number>;
     set onToggleNavigatorSidebar(callback: () => void);
     set onToggleDebuggerSidebar(callback: () => void);
     set isNavigatorSidebarOpen(isOpen: boolean);
@@ -55,13 +43,10 @@ export declare class SourcesView extends SourcesViewBase implements UI.Searchabl
     setLayoutMode(isVertical: boolean, isInWrapper: boolean): void;
     wasShown(): void;
     willHide(): void;
-    searchableView(): UI.SearchableView.SearchableView;
+    searchableView(): UI.SearchableView.SearchableView | null;
     visibleView(): UI.Widget.Widget | null;
     currentSourceFrame(): UISourceCodeFrame | null;
     currentUISourceCode(): Workspace.UISourceCode.UISourceCode | null;
-    onCloseEditorTab(): boolean;
-    onJumpToPreviousLocation(): void;
-    onJumpToNextLocation(): void;
     private uiSourceCodeAdded;
     private addUISourceCode;
     private uiSourceCodeRemoved;
@@ -69,8 +54,6 @@ export declare class SourcesView extends SourcesViewBase implements UI.Searchabl
     private projectRemoved;
     private updateScriptViewToolbarItems;
     showSourceLocation(uiSourceCode: Workspace.UISourceCode.UISourceCode, location?: SourceFrame.SourceFrame.RevealPosition, omitFocus?: boolean, omitHighlight?: boolean): Promise<void>;
-    viewForFile(uiSourceCode: Workspace.UISourceCode.UISourceCode): UI.Widget.Widget | undefined;
-    getSourceView(uiSourceCode: Workspace.UISourceCode.UISourceCode): UI.Widget.Widget | undefined;
     private editorClosed;
     private editorSelected;
     private removeToolbarChangedListener;

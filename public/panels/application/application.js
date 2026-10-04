@@ -969,6 +969,11 @@ var Emulation;
     SetDeviceMetricsOverrideRequestViewportMeta2["Enable"] = "enable";
     SetDeviceMetricsOverrideRequestViewportMeta2["Default"] = "default";
   })(SetDeviceMetricsOverrideRequestViewportMeta = Emulation2.SetDeviceMetricsOverrideRequestViewportMeta || (Emulation2.SetDeviceMetricsOverrideRequestViewportMeta = {}));
+  let SetDeviceMetricsOverrideRequestTextLayoutMode;
+  ((SetDeviceMetricsOverrideRequestTextLayoutMode2) => {
+    SetDeviceMetricsOverrideRequestTextLayoutMode2["Mobile"] = "mobile";
+    SetDeviceMetricsOverrideRequestTextLayoutMode2["Default"] = "default";
+  })(SetDeviceMetricsOverrideRequestTextLayoutMode = Emulation2.SetDeviceMetricsOverrideRequestTextLayoutMode || (Emulation2.SetDeviceMetricsOverrideRequestTextLayoutMode = {}));
   let SetEmitTouchEventsForMouseRequestConfiguration;
   ((SetEmitTouchEventsForMouseRequestConfiguration2) => {
     SetEmitTouchEventsForMouseRequestConfiguration2["Mobile"] = "mobile";
@@ -1822,6 +1827,7 @@ var Page;
     PermissionsPolicyFeature2["PrivateStateTokenRedemption"] = "private-state-token-redemption";
     PermissionsPolicyFeature2["PublickeyCredentialsCreate"] = "publickey-credentials-create";
     PermissionsPolicyFeature2["PublickeyCredentialsGet"] = "publickey-credentials-get";
+    PermissionsPolicyFeature2["PublickeyCredentialsRemoteClientDataJson"] = "publickey-credentials-remote-client-data-json";
     PermissionsPolicyFeature2["Rewriter"] = "rewriter";
     PermissionsPolicyFeature2["ScreenWakeLock"] = "screen-wake-lock";
     PermissionsPolicyFeature2["Serial"] = "serial";
@@ -2628,6 +2634,11 @@ var Debugger;
     ScopeType2["Module"] = "module";
     ScopeType2["WasmExpressionStack"] = "wasm-expression-stack";
   })(ScopeType = Debugger2.ScopeType || (Debugger2.ScopeType = {}));
+  let ScopeEmptyReason;
+  ((ScopeEmptyReason2) => {
+    ScopeEmptyReason2["NoVariables"] = "no-variables";
+    ScopeEmptyReason2["AllUnavailable"] = "all-unavailable";
+  })(ScopeEmptyReason = Debugger2.ScopeEmptyReason || (Debugger2.ScopeEmptyReason = {}));
   let BreakLocationType;
   ((BreakLocationType2) => {
     BreakLocationType2["DebuggerStatement"] = "debuggerStatement";
@@ -4858,6 +4869,7 @@ var UIStrings3 = {
    * @description Inform users that DevTools are recording/waiting for events in the Periodic Background Sync tool of the Application panel
    * @example {Background Fetch} PH1
    */
+  // eslint-disable-next-line @devtools/l10n-uistrings-sentence-punctuation -- Concatenated with recordingSActivity in UI to form a multi-sentence message.
   devtoolsWillRecordAllSActivity: "DevTools will record all {PH1} activity for up to 3 days, even when closed.",
   /**
    * @description Text in Background Service View of the Application panel to instruct the user on how to start a recording for
@@ -7302,8 +7314,6 @@ var IndexedDBModel = class _IndexedDBModel extends SDK8.SDKModel.SDKModel {
     this.updatedStorageBuckets = /* @__PURE__ */ new Set();
     this.throttler = new Common6.Throttler.Throttler(1e3);
   }
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static keyFromIDBKey(idbKey) {
     if (typeof idbKey === "undefined" || idbKey === null) {
       return void 0;
@@ -7723,13 +7733,9 @@ var Database = class {
 };
 var ObjectStore = class {
   name;
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   keyPath;
   autoIncrement;
   indexes;
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(name, keyPath, autoIncrement) {
     this.name = name;
     this.keyPath = keyPath;
@@ -7742,13 +7748,9 @@ var ObjectStore = class {
 };
 var Index = class {
   name;
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   keyPath;
   unique;
   multiEntry;
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(name, keyPath, unique, multiEntry) {
     this.name = name;
     this.keyPath = keyPath;
@@ -11338,7 +11340,7 @@ var serviceWorkersView_css_default = `/*
 }
 
 .devtools-link {
-  line-height: 14px;
+  line-height: var(--sys-typescale-body4-line-height);
   align-self: center;
   padding: var(--sys-size-1);
 }

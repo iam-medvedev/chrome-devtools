@@ -6,7 +6,7 @@ import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import { renderElementIntoDOM, setTestUniverseForWidgets } from '../../testing/DOMHelpers.js';
-import { createTarget, describeWithEnvironment, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Elements from './elements.js';
@@ -20,7 +20,6 @@ describeWithEnvironment('ElementStatePaneWidget', () => {
         'indeterminate', 'placeholder-shown', 'autofill', 'open', 'target-current',
     ];
     beforeEach(() => {
-        stubNoopSettings();
         target = createTarget();
     });
     const assertExpectedPseudoClasses = async (nodeName, expectedPseudoClasses, formAssociated = false, attribute) => {

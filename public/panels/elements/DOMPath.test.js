@@ -273,5 +273,319 @@ describeWithEnvironment('DOMPath', () => {
         }
         assert.deepEqual(paths, expectedPaths);
     });
+    it('computes jsPath escaping quotes, special IDs, and class selectors', () => {
+        const rootNode = createDOMNode({
+            nodeType: Node.DOCUMENT_NODE,
+            nodeName: '#document',
+            children: [{
+                    nodeType: Node.ELEMENT_NODE,
+                    nodeName: 'HTML',
+                    children: [{
+                            nodeType: Node.ELEMENT_NODE,
+                            nodeName: 'BODY',
+                            children: [
+                                { nodeType: Node.ELEMENT_NODE, nodeName: 'ARTICLE' },
+                                { nodeType: Node.ELEMENT_NODE, nodeName: 'ARTICLE' },
+                                { nodeType: Node.ELEMENT_NODE, nodeName: 'INPUT', attributes: { type: 'number' } },
+                                { nodeType: Node.ELEMENT_NODE, nodeName: 'DIV', attributes: { id: 'inner-id' } },
+                                { nodeType: Node.ELEMENT_NODE, nodeName: 'DIV', attributes: { id: '__proto__' } },
+                                { nodeType: Node.ELEMENT_NODE, nodeName: 'DIV', attributes: { id: '#"ridiculous".id' } },
+                                { nodeType: Node.ELEMENT_NODE, nodeName: 'DIV', attributes: { id: '\'quoted.value\'' } },
+                                { nodeType: Node.ELEMENT_NODE, nodeName: 'DIV', attributes: { id: ':hover' } },
+                                {
+                                    nodeType: Node.ELEMENT_NODE,
+                                    nodeName: 'DIV',
+                                    attributes: { id: 'classes' },
+                                    children: [
+                                        { nodeType: Node.ELEMENT_NODE, nodeName: 'DIV', attributes: { class: 'foo bar' } },
+                                        { nodeType: Node.ELEMENT_NODE, nodeName: 'DIV', attributes: { class: 'baz' } },
+                                    ],
+                                },
+                            ],
+                        }],
+                }],
+        });
+        const jsPaths = [];
+        const collect = (node) => {
+            if (node.nodeType() === Node.ELEMENT_NODE) {
+                jsPaths.push(Elements.DOMPath.jsPath(node, true));
+            }
+            node.children()?.forEach(collect);
+        };
+        collect(rootNode);
+        assert.deepEqual(jsPaths, [
+            'document.querySelector("html")',
+            'document.querySelector("body")',
+            'document.querySelector("body > article:nth-child(1)")',
+            'document.querySelector("body > article:nth-child(2)")',
+            'document.querySelector("body > input[type=number]")',
+            'document.querySelector("#inner-id")',
+            'document.querySelector("#__proto__")',
+            'document.querySelector("#\\\\#\\\\\\"ridiculous\\\\\\"\\\\.id")',
+            'document.querySelector("#\\\\\'quoted\\\\.value\\\\\'")',
+            'document.querySelector("#\\\\:hover")',
+            'document.querySelector("#classes")',
+            'document.querySelector("#classes > div.foo.bar")',
+            'document.querySelector("#classes > div.baz")',
+        ]);
+    });
+    it('computes xPath with and without optimization for nested elements, sibling indices, and IDs', () => {
+        const docNode = createDOMNode({
+            nodeType: Node.DOCUMENT_NODE,
+            nodeName: '#document',
+            children: [{
+                    nodeType: Node.ELEMENT_NODE,
+                    nodeName: 'HTML',
+                    children: [{
+                            nodeType: Node.ELEMENT_NODE,
+                            nodeName: 'BODY',
+                            children: [
+                                { nodeType: Node.ELEMENT_NODE, nodeName: 'DIV' },
+                                {
+                                    nodeType: Node.ELEMENT_NODE,
+                                    nodeName: 'DIV',
+                                    attributes: { id: 'anchor-id' },
+                                    children: [
+                                        { nodeType: Node.ELEMENT_NODE, nodeName: 'SPAN' },
+                                        {
+                                            nodeType: Node.ELEMENT_NODE,
+                                            nodeName: 'SPAN',
+                                            children: [{ nodeType: Node.TEXT_NODE, nodeName: '#text', nodeValue: 'hello' }],
+                                        },
+                                        { nodeType: Node.COMMENT_NODE, nodeName: '#comment', nodeValue: 'note' },
+                                    ],
+                                },
+                            ],
+                        }],
+                }],
+        });
+        const bodyNode = docNode.children()[0].children()[0];
+        const [firstDiv, secondDiv] = bodyNode.children();
+        const [firstSpan, secondSpan, commentNode] = secondDiv.children();
+        const textNode = secondSpan.children()[0];
+        assert.strictEqual(Elements.DOMPath.xPath(docNode, true), '/');
+        assert.strictEqual(Elements.DOMPath.xPath(firstDiv, false), '/html/body/div[1]');
+        assert.strictEqual(Elements.DOMPath.xPath(firstDiv, true), '/html/body/div[1]');
+        assert.strictEqual(Elements.DOMPath.xPath(secondDiv, false), '/html/body/div[2]');
+        assert.strictEqual(Elements.DOMPath.xPath(secondDiv, true), '//*[@id="anchor-id"]');
+        assert.strictEqual(Elements.DOMPath.xPath(firstSpan, false), '/html/body/div[2]/span[1]');
+        assert.strictEqual(Elements.DOMPath.xPath(firstSpan, true), '//*[@id="anchor-id"]/span[1]');
+        assert.strictEqual(Elements.DOMPath.xPath(secondSpan, false), '/html/body/div[2]/span[2]');
+        assert.strictEqual(Elements.DOMPath.xPath(secondSpan, true), '//*[@id="anchor-id"]/span[2]');
+        assert.strictEqual(Elements.DOMPath.xPath(textNode, false), '/html/body/div[2]/span[2]/text()');
+        assert.strictEqual(Elements.DOMPath.xPath(textNode, true), '//*[@id="anchor-id"]/span[2]/text()');
+        assert.strictEqual(Elements.DOMPath.xPath(commentNode, true), '//*[@id="anchor-id"]/comment()');
+    });
+    it('computes jsPath and xPath for nodes inside nested shadow roots', () => {
+        const innerShadow = Object.assign(buildPayload({
+            nodeType: Node.DOCUMENT_FRAGMENT_NODE,
+            nodeName: '#document-fragment',
+            localName: '',
+            children: [{
+                    nodeType: Node.ELEMENT_NODE,
+                    nodeName: 'SPAN',
+                    attributes: { id: 'deep-shadow-target' },
+                    children: [{ nodeType: Node.ELEMENT_NODE, nodeName: 'B' }],
+                }],
+        }), { shadowRootType: 'open' });
+        const innerHost = Object.assign(buildPayload({ nodeType: Node.ELEMENT_NODE, nodeName: 'DIV', attributes: { id: 'inner-host' } }), { shadowRoots: [innerShadow] });
+        const outerShadow = Object.assign(buildPayload({ nodeType: Node.DOCUMENT_FRAGMENT_NODE, nodeName: '#document-fragment', localName: '' }), { shadowRootType: 'open', children: [innerHost] });
+        const outerHost = Object.assign(buildPayload({ nodeType: Node.ELEMENT_NODE, nodeName: 'DIV', attributes: { id: 'outer-host' } }), { shadowRoots: [outerShadow] });
+        const docPayload = buildPayload({
+            nodeType: Node.DOCUMENT_NODE,
+            nodeName: '#document',
+            children: [
+                { nodeType: Node.ELEMENT_NODE, nodeName: 'HTML', children: [{ nodeType: Node.ELEMENT_NODE, nodeName: 'BODY' }] },
+            ],
+        });
+        docPayload.children[0].children[0].children = [outerHost];
+        const doc = SDK.DOMModel.DOMNode.create(domModel, null, false, docPayload);
+        const deepTarget = doc.children()[0]
+            .children()[0]
+            .children()[0]
+            .shadowRoots()[0]
+            .children()[0]
+            .shadowRoots()[0]
+            .children()[0];
+        const deepChild = deepTarget.children()[0];
+        assert.isTrue(Elements.DOMPath.canGetJSPath(deepTarget));
+        assert.strictEqual(Elements.DOMPath.jsPath(deepTarget, true), 'document.querySelector("#outer-host").shadowRoot.querySelector("#inner-host").shadowRoot.querySelector("#deep-shadow-target")');
+        assert.strictEqual(Elements.DOMPath.jsPath(deepChild, true), 'document.querySelector("#outer-host").shadowRoot.querySelector("#inner-host").shadowRoot.querySelector("#deep-shadow-target > b")');
+        assert.strictEqual(Elements.DOMPath.xPath(deepTarget, true), '//*[@id="deep-shadow-target"]');
+        assert.strictEqual(Elements.DOMPath.xPath(deepChild, true), '//*[@id="deep-shadow-target"]/b');
+    });
+    it('computes xPath text()[n] across mixed text/CDATA siblings and document-level comment()[n]', () => {
+        // Mirrors legacy elements/node-xpath (resources/node-xpath.xhtml).
+        const doc = createDOMNode({
+            nodeType: Node.DOCUMENT_NODE,
+            nodeName: '#document',
+            children: [
+                { nodeType: Node.COMMENT_NODE, nodeName: '#comment', nodeValue: ' Pre-comment ' },
+                {
+                    nodeType: Node.ELEMENT_NODE,
+                    nodeName: 'html',
+                    children: [
+                        {
+                            nodeType: Node.ELEMENT_NODE,
+                            nodeName: 'head',
+                            children: [{
+                                    nodeType: Node.ELEMENT_NODE,
+                                    nodeName: 'script',
+                                    children: [
+                                        { nodeType: Node.TEXT_NODE, nodeName: '#text', nodeValue: '\n// Comment\n//' },
+                                        { nodeType: Node.CDATA_SECTION_NODE, nodeName: '#cdata-section', nodeValue: '\nfunction f() {}\n//' },
+                                    ],
+                                }],
+                        },
+                        {
+                            nodeType: Node.ELEMENT_NODE,
+                            nodeName: 'body',
+                            children: [
+                                { nodeType: Node.ELEMENT_NODE, nodeName: 'div', attributes: { id: 'id1' } },
+                                { nodeType: Node.ELEMENT_NODE, nodeName: 'div', attributes: { id: 'id2' } },
+                                {
+                                    nodeType: Node.ELEMENT_NODE,
+                                    nodeName: 'div',
+                                    attributes: { id: 'container' },
+                                    children: [
+                                        {
+                                            nodeType: Node.ELEMENT_NODE,
+                                            nodeName: 'div',
+                                            attributes: { id: 'id3' },
+                                            children: [
+                                                { nodeType: Node.TEXT_NODE, nodeName: '#text', nodeValue: '3 Prefix ' },
+                                                {
+                                                    nodeType: Node.CDATA_SECTION_NODE,
+                                                    nodeName: '#cdata-section',
+                                                    nodeValue: '<greeting>Hello, world!</greeting>',
+                                                },
+                                                { nodeType: Node.TEXT_NODE, nodeName: '#text', nodeValue: ' Suffix' },
+                                            ],
+                                        },
+                                        {
+                                            nodeType: Node.ELEMENT_NODE,
+                                            nodeName: 'div',
+                                            attributes: { id: 'id4' },
+                                            children: [{ nodeType: Node.TEXT_NODE, nodeName: '#text', nodeValue: '4' }],
+                                        },
+                                    ],
+                                },
+                            ],
+                        },
+                    ],
+                },
+                { nodeType: Node.COMMENT_NODE, nodeName: '#comment', nodeValue: ' Post-comment ' },
+            ],
+        });
+        const lines = [];
+        const dump = (node) => {
+            lines.push(`${node.nodeName()} - ${Elements.DOMPath.xPath(node, true)} - ${Elements.DOMPath.xPath(node, false)}`);
+            node.children()?.forEach(dump);
+        };
+        dump(doc);
+        assert.deepEqual(lines, [
+            '#document - / - /',
+            '#comment - /comment()[1] - /comment()[1]',
+            'html - /html - /html',
+            'head - /html/head - /html/head',
+            'script - /html/head/script - /html/head/script',
+            '#text - /html/head/script/text()[1] - /html/head/script/text()[1]',
+            '#cdata-section - /html/head/script/text()[2] - /html/head/script/text()[2]',
+            'body - /html/body - /html/body',
+            'div - //*[@id="id1"] - /html/body/div[1]',
+            'div - //*[@id="id2"] - /html/body/div[2]',
+            'div - //*[@id="container"] - /html/body/div[3]',
+            'div - //*[@id="id3"] - /html/body/div[3]/div[1]',
+            '#text - //*[@id="id3"]/text()[1] - /html/body/div[3]/div[1]/text()[1]',
+            '#cdata-section - //*[@id="id3"]/text()[2] - /html/body/div[3]/div[1]/text()[2]',
+            '#text - //*[@id="id3"]/text()[3] - /html/body/div[3]/div[1]/text()[3]',
+            'div - //*[@id="id4"] - /html/body/div[3]/div[2]',
+            '#text - //*[@id="id4"]/text() - /html/body/div[3]/div[2]/text()',
+            '#comment - /comment()[2] - /comment()[2]',
+        ]);
+    });
+    it('computes non-optimized xPath and jsPath across shadow boundaries', () => {
+        // Mirrors legacy elements/shadow/inspect-deep-shadow-element.
+        function shadowTree(targetTag, targetId) {
+            return Object.assign(buildPayload({
+                nodeType: Node.DOCUMENT_FRAGMENT_NODE,
+                nodeName: '#document-fragment',
+                localName: '',
+                children: [{
+                        nodeType: Node.ELEMENT_NODE,
+                        nodeName: 'DIV',
+                        children: [{
+                                nodeType: Node.ELEMENT_NODE,
+                                nodeName: 'DIV',
+                                children: [{
+                                        nodeType: Node.ELEMENT_NODE,
+                                        nodeName: targetTag,
+                                        attributes: { id: targetId },
+                                        children: [{ nodeType: Node.TEXT_NODE, nodeName: '#text', nodeValue: 'Shadow' }],
+                                    }],
+                            }],
+                    }],
+            }), { shadowRootType: 'open' });
+        }
+        const host = Object.assign(buildPayload({ nodeType: Node.ELEMENT_NODE, nodeName: 'DIV', attributes: { id: 'host' } }), { shadowRoots: [shadowTree('SPAN', 'shadow')] });
+        const hostOpen = Object.assign(buildPayload({ nodeType: Node.ELEMENT_NODE, nodeName: 'SPAN', attributes: { id: 'hostOpen' } }), { shadowRoots: [shadowTree('SPAN', 'shadow-open')] });
+        const docPayload = buildPayload({
+            nodeType: Node.DOCUMENT_NODE,
+            nodeName: '#document',
+            children: [{
+                    nodeType: Node.ELEMENT_NODE,
+                    nodeName: 'HTML',
+                    children: [{
+                            nodeType: Node.ELEMENT_NODE,
+                            nodeName: 'BODY',
+                            children: [{
+                                    nodeType: Node.ELEMENT_NODE,
+                                    nodeName: 'DIV',
+                                    children: [{ nodeType: Node.ELEMENT_NODE, nodeName: 'DIV' }],
+                                }],
+                        }],
+                }],
+        });
+        const innerDivPayload = docPayload.children[0].children[0].children[0].children[0];
+        innerDivPayload.children = [host, hostOpen];
+        innerDivPayload.childNodeCount = 2;
+        const doc = SDK.DOMModel.DOMNode.create(domModel, null, false, docPayload);
+        const innerDiv = doc.children()[0].children()[0].children()[0].children()[0];
+        const [hostNode, hostOpenNode] = innerDiv.children();
+        const target = hostNode.shadowRoots()[0].children()[0].children()[0].children()[0];
+        const targetOpen = hostOpenNode.shadowRoots()[0].children()[0].children()[0].children()[0];
+        assert.strictEqual(target.getAttribute('id'), 'shadow');
+        assert.strictEqual(targetOpen.getAttribute('id'), 'shadow-open');
+        assert.strictEqual(Elements.DOMPath.xPath(target, false), '/html/body/div/div/div//div/div/span');
+        assert.strictEqual(Elements.DOMPath.jsPath(target, false), 'document.querySelector("div#host").shadowRoot.querySelector("span#shadow")');
+        assert.strictEqual(Elements.DOMPath.xPath(targetOpen, false), '/html/body/div/div/span//div/div/span');
+        assert.strictEqual(Elements.DOMPath.jsPath(targetOpen, false), 'document.querySelector("span#hostOpen").shadowRoot.querySelector("span#shadow-open")');
+    });
+    it('computes simpleSelector for tags, IDs, classes, and input types', () => {
+        const container = createDOMNode({
+            nodeType: Node.ELEMENT_NODE,
+            nodeName: 'SECTION',
+            children: [
+                { nodeType: Node.ELEMENT_NODE, nodeName: 'SPAN' },
+                { nodeType: Node.ELEMENT_NODE, nodeName: 'DIV' },
+                { nodeType: Node.ELEMENT_NODE, nodeName: 'DIV', attributes: { id: 'header' } },
+                { nodeType: Node.ELEMENT_NODE, nodeName: 'DIV', attributes: { class: 'class1 class2' } },
+                { nodeType: Node.ELEMENT_NODE, nodeName: 'SPAN', attributes: { class: 'class1 class2' } },
+                { nodeType: Node.ELEMENT_NODE, nodeName: 'INPUT', attributes: { type: 'text' } },
+                { nodeType: Node.ELEMENT_NODE, nodeName: 'INPUT', attributes: { type: 'checkbox', id: 'agree' } },
+                { nodeType: Node.ELEMENT_NODE, nodeName: 'INPUT', attributes: { type: 'submit', class: 'primary' } },
+            ],
+        });
+        assert.deepEqual(container.children().map(node => node.simpleSelector()), [
+            'span',
+            'div',
+            'div#header',
+            '.class1.class2',
+            'span.class1.class2',
+            'input[type="text"]',
+            'input#agree',
+            'input.primary',
+        ]);
+    });
 });
 //# sourceMappingURL=DOMPath.test.js.map

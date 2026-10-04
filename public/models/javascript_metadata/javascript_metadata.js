@@ -2033,7 +2033,7 @@ var NativeFunctions = [
   },
   {
     name: "read",
-    signatures: [["?options"]],
+    signatures: [["?formats"]],
     receivers: ["Clipboard"]
   },
   {
@@ -3218,7 +3218,7 @@ var NativeFunctions = [
   {
     name: "focus",
     signatures: [["?options"]],
-    receivers: ["HTMLOrSVGElement", "SVGElement", "MathMLElement", "HTMLElement"]
+    receivers: ["HTMLOrSVGElement", "SVGElement", "MathMLElement", "HTMLElement", "CSSPseudoElement", "Focusable"]
   },
   {
     name: "assign",
@@ -8970,11 +8970,15 @@ var NativeFunctions = [
     signatures: [["type", "?eventInitDict"]]
   },
   {
-    name: "TouchEvent",
+    name: "ToolActivatedEvent",
     signatures: [["type", "?eventInitDict"]]
   },
   {
-    name: "WebMCPEvent",
+    name: "ToolCancelEvent",
+    signatures: [["type", "?eventInitDict"]]
+  },
+  {
+    name: "TouchEvent",
     signatures: [["type", "?eventInitDict"]]
   },
   {
@@ -9160,6 +9164,10 @@ var NativeFunctions = [
   {
     name: "scrollIntoViewIfNeeded",
     signatures: [["?centerIfNeeded"]]
+  },
+  {
+    name: "Focusable",
+    signatures: [["target"]]
   },
   {
     name: "getBoxQuads",

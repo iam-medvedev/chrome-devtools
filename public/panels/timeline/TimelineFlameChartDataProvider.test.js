@@ -5,7 +5,7 @@ import { assert } from 'chai';
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Trace from '../../models/trace/trace.js';
-import { describeWithEnvironment, registerActions, stubNoopSettings, } from '../../testing/EnvironmentHelpers.js';
+import { describeWithEnvironment, registerActions, } from '../../testing/EnvironmentHelpers.js';
 import { allThreadEntriesInTrace, setupIgnoreListManagerEnvironment } from '../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../testing/TraceLoader.js';
 import * as PerfUi from '../../ui/legacy/components/perf_ui/perf_ui.js';
@@ -227,7 +227,6 @@ describeWithEnvironment('TimelineFlameChartDataProvider', function () {
         });
     });
     it('shows Debug with AI submenu items', async function () {
-        stubNoopSettings();
         registerActions([{
                 actionId: 'drjones.performance-panel-context',
                 title: () => 'Debug with AI',

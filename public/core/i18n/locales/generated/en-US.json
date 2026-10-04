@@ -3797,11 +3797,11 @@
   "panels/application/components/AdsView.ts | filterListRule": {
     "message": "Filter list rule"
   },
-  "panels/application/components/AdsView.ts | highlightAds": {
-    "message": "Highlight ads"
+  "panels/application/components/AdsView.ts | highlightAdRelatedResources": {
+    "message": "Highlight ad-related resources"
   },
-  "panels/application/components/AdsView.ts | highlightsElementsRedDetectedToBe": {
-    "message": "Highlights elements (red) detected to be ads"
+  "panels/application/components/AdsView.ts | highlightsElementsRedDetectedToBeAdRelated": {
+    "message": "Highlights elements (red) detected to be ad-related"
   },
   "panels/application/components/AdsView.ts | initialOrigin": {
     "message": "Initial origin"
@@ -4248,7 +4248,7 @@
     "message": "Frames"
   },
   "panels/application/components/BackForwardCacheView.ts | issuesInMultipleFrames": {
-    "message": "{n, plural, =1 {# issue found in {m} frames.} other {# issues found in {m} frames.}}"
+    "message": "{n, plural, =1 {# issue found in {m} frames} other {# issues found in {m} frames}}"
   },
   "panels/application/components/BackForwardCacheView.ts | issuesInSingleFrame": {
     "message": "{n, plural, =1 {# issue found in 1 frame} other {# issues found in 1 frame}}"
@@ -6598,6 +6598,24 @@
   },
   "panels/changes/CombinedDiffView.ts | copyFile": {
     "message": "Copy file {PH1} to clipboard"
+  },
+  "panels/comments/comments-meta.ts | comments": {
+    "message": "Comments"
+  },
+  "panels/comments/comments-meta.ts | showComments": {
+    "message": "Show Comments"
+  },
+  "panels/comments/CommentsPane.ts | clearComments": {
+    "message": "Clear all comments"
+  },
+  "panels/comments/CommentsPane.ts | deleteComment": {
+    "message": "Delete comment"
+  },
+  "panels/comments/CommentsPane.ts | noComments": {
+    "message": "No active comments. Add comments on elements in DevTools to send to your AI coding agent."
+  },
+  "panels/comments/CommentsPane.ts | sendToAgent": {
+    "message": "Send to Agent"
   },
   "panels/common/BadgeNotification.ts | activityBasedBadgeAwardMessage": {
     "message": "You earned the {PH1} badge! It’s been added to your Developer Profile."
@@ -10646,6 +10664,9 @@
   "panels/network/NetworkConfigView.ts | networkThrottling": {
     "message": "Network"
   },
+  "panels/network/NetworkConfigView.ts | saveDataSettingTooltip": {
+    "message": "Override the value reported by navigator.connection.saveData on the page"
+  },
   "panels/network/NetworkConfigView.ts | selectAutomatically": {
     "message": "Use browser default"
   },
@@ -12845,6 +12866,9 @@
   "panels/recorder/RecordingView.ts | cancelReplay": {
     "message": "Cancel replay"
   },
+  "panels/recorder/RecordingView.ts | code": {
+    "message": "Code"
+  },
   "panels/recorder/RecordingView.ts | codeFormat": {
     "message": "Code format"
   },
@@ -12907,6 +12931,9 @@
   },
   "panels/recorder/RecordingView.ts | showCode": {
     "message": "Show code"
+  },
+  "panels/recorder/RecordingView.ts | steps": {
+    "message": "Steps"
   },
   "panels/recorder/RecordingView.ts | timeout": {
     "message": "Timeout: {value} ms"
@@ -18056,6 +18083,9 @@
   "ui/legacy/components/inline_editor/PositionAreaEditor.ts | coordinate": {
     "message": "Coordinate"
   },
+  "ui/legacy/components/inline_editor/PositionAreaEditor.ts | deselectButton": {
+    "message": "Remove {propertyName}: {propertyValue}"
+  },
   "ui/legacy/components/inline_editor/PositionAreaEditor.ts | logical": {
     "message": "Logical"
   },
@@ -18070,6 +18100,9 @@
   },
   "ui/legacy/components/inline_editor/PositionAreaEditor.ts | positionAreaGridDescription": {
     "message": "Use arrow keys to navigate, Space or Enter to select, and Shift + arrow keys to select a range"
+  },
+  "ui/legacy/components/inline_editor/PositionAreaEditor.ts | selectButton": {
+    "message": "Add {propertyName}: {propertyValue}"
   },
   "ui/legacy/components/object_ui/CustomPreviewComponent.ts | showAsJavascriptObject": {
     "message": "Show as JavaScript object"

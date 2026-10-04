@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import * as FormatterWorker from './formatter_worker.js';
+function scope(bindings, generatedNames = []) {
+    return { bindings: new Map(bindings), generatedNames };
+}
 const mapping = new Map([
     ['varX', 'x'],
     ['varY', 'y'],
@@ -13,7 +16,7 @@ const mapping = new Map([
     ['varQ', null],
 ]);
 function substitute(expression) {
-    return FormatterWorker.Substitute.substituteExpression(expression, [mapping]);
+    return FormatterWorker.Substitute.substituteExpression(expression, [scope(mapping)]);
 }
 describe('Substitute', () => {
     it('Preserves unrelated variable', () => {
@@ -154,7 +157,7 @@ describe('Substitute', () => {
             ['multiStmtVar', 'a; b'],
         ]);
         function substituteExpr(expression, customMap = exprMapping) {
-            return FormatterWorker.Substitute.substituteExpression(expression, [customMap]);
+            return FormatterWorker.Substitute.substituteExpression(expression, [scope(customMap)]);
         }
         it('Substitutes member expressions without outer parentheses', () => {
             assert.strictEqual(substituteExpr('memberVar'), '_module.x');
@@ -225,12 +228,12 @@ describe('Substitute', () => {
     describe('Scope chain shadowing', () => {
         it('prioritizes inner scope authored variables over outer scope variables of the same name', () => {
             const scopes = [
-                new Map([
+                scope([
                     ['shadowedAvailable', 'inner_a'],
                     ['shadowedUnavailable', null],
                     ['shadowedBroken', 'valid_inner'],
                 ]),
-                new Map([
+                scope([
                     ['shadowedAvailable', 'outer_a'],
                     ['shadowedUnavailable', 'outer_u'],
                     ['shadowedBroken', 'broken +'],
@@ -243,19 +246,19 @@ describe('Substitute', () => {
         });
         it('marks outer variable bindings as unavailable when their generated identifier is shadowed by an inner scope', () => {
             const scopes = [
-                new Map([['innerN', 'n']]),
-                new Map([['outerN', 'n'], ['outerM', 'm']]),
+                scope([['innerN', 'n']]),
+                scope([['outerN', 'n'], ['outerM', 'm']]),
             ];
             assert.strictEqual(FormatterWorker.Substitute.substituteExpression('innerN + outerM', scopes), 'n + m');
             assert.throws(() => FormatterWorker.Substitute.substituteExpression('outerN', scopes), 'Cannot substitute \'outerN\' as the underlying variable \'null\' is unavailable');
         });
         it('distinguishes base object shadowing vs property name declarations for member expression bindings', () => {
-            const outerScope = new Map([
+            const outerScope = scope([
                 ['importedX', '_mod.x'],
                 ['localX', 'x'],
             ]);
-            const block1Scope = new Map([['blockX', 'x']]);
-            const block2Scope = new Map([['blockMod', '_mod']]);
+            const block1Scope = scope([['blockX', 'x']]);
+            const block2Scope = scope([['blockMod', '_mod']]);
             // In block1: `blockX` ('x') shadows `localX` ('x'), but NOT `importedX` ('_mod.x').
             assert.strictEqual(FormatterWorker.Substitute.substituteExpression('importedX + blockX', [block1Scope, outerScope]), '_mod.x + x');
             assert.throws(() => FormatterWorker.Substitute.substituteExpression('localX', [block1Scope, outerScope]), 'Cannot substitute \'localX\' as the underlying variable \'null\' is unavailable');
@@ -265,8 +268,8 @@ describe('Substitute', () => {
         });
         it('checks free variables of complex and computed binding expressions against inner scopes', () => {
             const scopes = [
-                new Map([['innerB', 'b']]),
-                new Map([
+                scope([['innerB', 'b']]),
+                scope([
                     ['sum', 'a + b'],
                     ['doubled', 'a * 2'],
                     ['computed', 'a[b]'],
@@ -277,12 +280,12 @@ describe('Substitute', () => {
             assert.throws(() => FormatterWorker.Substitute.substituteExpression('computed', scopes), 'Cannot substitute \'computed\' as the underlying variable \'null\' is unavailable');
         });
         it('shadows outer `this` and `this.prop` bindings when an inner scope binds `this`', () => {
-            const outerScope = new Map([
+            const outerScope = scope([
                 ['this', 'this'],
                 ['selfProp', 'this.prop'],
             ]);
-            const arrowScope = new Map([['arrowLocal', 'x']]);
-            const innerFnScope = new Map([['this', 'this']]);
+            const arrowScope = scope([['arrowLocal', 'x']]);
+            const innerFnScope = scope([['this', 'this']]);
             // Inside arrow function: `this` is not rebound in `arrowScope`, so outer `this` and `selfProp` remain available.
             assert.strictEqual(FormatterWorker.Substitute.substituteExpression('this.a + selfProp + arrowLocal', [arrowScope, outerScope]), 'this.a + this.prop + x');
             // Inside regular function: `innerFnScope` binds `this`, shadowing outer `selfProp` ('this.prop').
@@ -291,7 +294,7 @@ describe('Substitute', () => {
         });
         it('does not falsely shadow multiple variables in the same scope that share free generated identifiers', () => {
             const scopes = [
-                new Map([
+                scope([
                     ['propX', '_state.x'],
                     ['propY', '_state.y'],
                     ['plusOne', 'a + 1'],
@@ -302,13 +305,23 @@ describe('Substitute', () => {
         });
         it('tracks generated identifiers from middle scopes even when their authored name is shadowed by an inner scope', () => {
             const scopes = [
-                new Map([['x', 'a']]),
-                new Map([['x', 'b']]),
-                new Map([['outerY', 'b'], ['outerZ', 'c']]),
+                scope([['x', 'a']]),
+                scope([['x', 'b']]),
+                scope([['outerY', 'b'], ['outerZ', 'c']]),
             ];
             // `x` resolves to `'a'` from scope 0, while scope 1's binding `'b'` still shadows scope 2's `outerY` ('b').
             assert.strictEqual(FormatterWorker.Substitute.substituteExpression('x + outerZ', scopes), 'a + c');
             assert.throws(() => FormatterWorker.Substitute.substituteExpression('outerY', scopes), 'Cannot substitute \'outerY\' as the underlying variable \'null\' is unavailable');
+        });
+        it('shadows outer bindings with generated names of inner scopes that do not appear in any binding', () => {
+            // The inner scope declares both `x1` and `x2`, but only `x1` is used as a binding expression
+            // (e.g. because `x1` and `x2` both map to the same authored name `a`).
+            const scopes = [
+                scope([['a', 'x1']], ['x1', 'x2']),
+                scope([['b', 'x2'], ['c', 'x3']], ['x2', 'x3']),
+            ];
+            assert.strictEqual(FormatterWorker.Substitute.substituteExpression('a + c', scopes), 'x1 + x3');
+            assert.throws(() => FormatterWorker.Substitute.substituteExpression('b', scopes), 'Cannot substitute \'b\' as the underlying variable \'null\' is unavailable');
         });
     });
 });

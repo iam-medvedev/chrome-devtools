@@ -238,7 +238,7 @@
       <include file="Images/mouse.svg" name="IMAGES_MOUSE_SVG" resource_path="Images/mouse.svg" type="BINDATA" compress="false"/>
       <include file="Images/network-settings.svg" name="IMAGES_NETWORK_SETTINGS_SVG" resource_path="Images/network-settings.svg" type="BINDATA" compress="false"/>
       <include file="Images/node-stack-icon.svg" name="IMAGES_NODE_STACK_ICON_SVG" resource_path="Images/node-stack-icon.svg" type="BINDATA" compress="false"/>
-      <include file="Images/nodeIcon.avif" name="IMAGES_NODEICON_AVIF" resource_path="Images/nodeIcon.avif" type="BINDATA" compress="false"/>
+      <include file="Images/nodejsHex.svg" name="IMAGES_NODEJSHEX_SVG" resource_path="Images/nodejsHex.svg" type="BINDATA" compress="false"/>
       <include file="Images/open-externally.svg" name="IMAGES_OPEN_EXTERNALLY_SVG" resource_path="Images/open-externally.svg" type="BINDATA" compress="false"/>
       <include file="Images/override.svg" name="IMAGES_OVERRIDE_SVG" resource_path="Images/override.svg" type="BINDATA" compress="false"/>
       <include file="Images/palette.svg" name="IMAGES_PALETTE_SVG" resource_path="Images/palette.svg" type="BINDATA" compress="false"/>
@@ -690,6 +690,8 @@
       <include file="panels/browser_debugger/browser_debugger.js" name="PANELS_BROWSER_DEBUGGER_BROWSER_DEBUGGER_JS" resource_path="panels/browser_debugger/browser_debugger.js" type="BINDATA" compress="false"/>
       <include file="panels/changes/changes-meta.js" name="PANELS_CHANGES_CHANGES_META_JS" resource_path="panels/changes/changes-meta.js" type="BINDATA" compress="false"/>
       <include file="panels/changes/changes.js" name="PANELS_CHANGES_CHANGES_JS" resource_path="panels/changes/changes.js" type="BINDATA" compress="false"/>
+      <include file="panels/comments/comments-meta.js" name="PANELS_COMMENTS_COMMENTS_META_JS" resource_path="panels/comments/comments-meta.js" type="BINDATA" compress="false"/>
+      <include file="panels/comments/comments.js" name="PANELS_COMMENTS_COMMENTS_JS" resource_path="panels/comments/comments.js" type="BINDATA" compress="false"/>
       <include file="panels/common/common-meta.js" name="PANELS_COMMON_COMMON_META_JS" resource_path="panels/common/common-meta.js" type="BINDATA" compress="false"/>
       <include file="panels/common/common.js" name="PANELS_COMMON_COMMON_JS" resource_path="panels/common/common.js" type="BINDATA" compress="false"/>
       <include file="panels/console/console-meta.js" name="PANELS_CONSOLE_CONSOLE_META_JS" resource_path="panels/console/console-meta.js" type="BINDATA" compress="false"/>

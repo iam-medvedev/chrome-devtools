@@ -8,6 +8,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { Directives, html, nothing, render } from '../../ui/lit/lit.js';
+import * as SettingsUI from '../../ui/settings/settings.js';
 import { InputModel } from './InputModel.js';
 import screencastViewStyles from './screencastView.css.js';
 const { ref, styleMap, classMap } = Directives;
@@ -537,7 +538,8 @@ export class ScreencastView extends UI.Widget.Widget {
             return;
         }
         const position = this.convertIntoScreenSpace(event);
-        const node = await this.domModel.nodeForLocation(Math.floor(position.x / this.pageScaleFactor + this.scrollOffsetX), Math.floor(position.y / this.pageScaleFactor + this.scrollOffsetY), Common.Settings.Settings.instance().moduleSetting('show-ua-shadow-dom').get());
+        const showUAShadowDOM = Common.Settings.Settings.instance().resolve(SettingsUI.ElementsSettings.showUAShadowDOMSettingDescriptor).get();
+        const node = await this.domModel.nodeForLocation(Math.floor(position.x / this.pageScaleFactor + this.scrollOffsetX), Math.floor(position.y / this.pageScaleFactor + this.scrollOffsetY), showUAShadowDOM);
         if (!node) {
             return;
         }

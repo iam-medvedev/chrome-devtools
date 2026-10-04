@@ -26,7 +26,8 @@ function renderLiveMetrics() {
     return view;
 }
 function getFieldMetricValue(view, metric) {
-    const card = view.contentElement.querySelector(`#${metric} devtools-metric-card`);
+    const card = view.contentElement.querySelector(`#${metric} devtools-widget`);
+    assert.exists(card?.shadowRoot);
     return card.shadowRoot.querySelector('#field-value .metric-value');
 }
 function getEnvironmentRecs(view) {

@@ -1544,5 +1544,157 @@ describe('CSSMatchedStyles', () => {
             assert.isNull(parent);
         });
     });
+    it('reports property state and importance for CSSOM shorthands with !important longhands', async () => {
+        const cssomRule = ruleMatch('div', [
+            { name: 'padding-top', value: '10px', important: true },
+            { name: 'padding-right', value: '50px', important: true },
+            { name: 'padding-bottom', value: '10px', important: true },
+            { name: 'padding-left', value: '50px', important: true },
+        ]);
+        cssomRule.rule.style.shorthandEntries = [{ name: 'padding', value: '10px 50px', important: true }];
+        const overridingRule = ruleMatch('#inspected', [
+            { name: 'padding-top', value: '0px' },
+            { name: 'padding', value: '0px' },
+        ]);
+        const matchedStyles = await getMatchedStyles({
+            connection,
+            matchedPayload: [cssomRule, overridingRule],
+        });
+        const [overridingStyle, cssomStyle] = matchedStyles.nodeStyles();
+        const shorthandProp = cssomStyle.leadingProperties().find(p => p.name === 'padding');
+        assert.exists(shorthandProp);
+        assert.isTrue(shorthandProp.important);
+        assert.strictEqual(shorthandProp.propertyText, 'padding: 10px 50px !important;');
+        assert.strictEqual(matchedStyles.propertyState(shorthandProp), "Active" /* SDK.CSSMatchedStyles.PropertyState.ACTIVE */);
+        for (const prop of overridingStyle.allProperties()) {
+            assert.strictEqual(matchedStyles.propertyState(prop), "Overloaded" /* SDK.CSSMatchedStyles.PropertyState.OVERLOADED */);
+        }
+    });
+    it('parses and exposes @keyframes rules and keyframe declarations', async () => {
+        const matchedStyles = await getMatchedStyles({
+            connection,
+            matchedPayload: [ruleMatch('div', [{ name: 'animation-name', value: 'fadeSlide' }])],
+            animationsPayload: [{
+                    animationName: { text: 'fadeSlide' },
+                    keyframes: [
+                        {
+                            origin: "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */,
+                            keyText: { text: '0%' },
+                            style: {
+                                cssProperties: [{ name: 'opacity', value: '0' }],
+                                shorthandEntries: [],
+                            },
+                        },
+                        {
+                            origin: "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */,
+                            keyText: { text: '50%, 100%' },
+                            style: {
+                                cssProperties: [{ name: 'opacity', value: '1' }],
+                                shorthandEntries: [],
+                            },
+                        },
+                    ],
+                }],
+        });
+        const keyframesRules = matchedStyles.keyframes();
+        assert.lengthOf(keyframesRules, 1);
+        assert.strictEqual(keyframesRules[0].name().text, 'fadeSlide');
+        const keyframes = keyframesRules[0].keyframes();
+        assert.lengthOf(keyframes, 2);
+        assert.isTrue(keyframes[0].isKeyframeRule());
+        assert.strictEqual(keyframes[0].parentRuleName(), 'fadeSlide');
+        assert.strictEqual(keyframes[0].key().text, '0%');
+        assert.strictEqual(keyframes[0].style.getPropertyValue('opacity'), '0');
+        assert.strictEqual(keyframes[1].key().text, '50%, 100%');
+        assert.strictEqual(keyframes[1].style.getPropertyValue('opacity'), '1');
+    });
+    it('marks CSSOM properties without source range that have important: true as active over non-important properties', async () => {
+        const cssomRule = ruleMatch('div', [{ name: 'color', value: 'red', important: true }]);
+        const regularRule = ruleMatch('#inspected', [{ name: 'color', value: 'green' }]);
+        const matchedStyles = await getMatchedStyles({
+            connection,
+            matchedPayload: [cssomRule, regularRule],
+        });
+        const [regularStyle, cssomStyle] = matchedStyles.nodeStyles();
+        const regularColor = regularStyle.allProperties()[0];
+        const cssomColor = cssomStyle.allProperties()[0];
+        assert.isNull(cssomStyle.range);
+        assert.isTrue(cssomColor.important);
+        assert.strictEqual(matchedStyles.propertyState(cssomColor), "Active" /* SDK.CSSMatchedStyles.PropertyState.ACTIVE */);
+        assert.strictEqual(matchedStyles.propertyState(regularColor), "Overloaded" /* SDK.CSSMatchedStyles.PropertyState.OVERLOADED */);
+    });
+    describe('user agent rule cleanup', () => {
+        const UserAgent = "user-agent" /* Protocol.CSS.StyleSheetOrigin.UserAgent */;
+        function uaStyles(matchedStyles) {
+            return matchedStyles.nodeStyles().filter(style => style.parentRule?.origin === UserAgent);
+        }
+        function propertyTexts(style) {
+            return style.allProperties().map(property => `${property.name}: ${property.value}`);
+        }
+        it('merges consecutive user-agent rules with the same selector and media into one rule', async () => {
+            const first = ruleMatch('div', { display: 'block', color: 'black' }, { origin: UserAgent });
+            const second = ruleMatch('div', { color: 'red', 'unicode-bidi': 'isolate' }, { origin: UserAgent });
+            const regular = ruleMatch('div', { margin: '0' });
+            const matchedStyles = await getMatchedStyles({ connection, matchedPayload: [first, second, regular] });
+            assert.lengthOf(matchedStyles.nodeStyles(), 2);
+            const styles = uaStyles(matchedStyles);
+            assert.lengthOf(styles, 1);
+            const rule = styles[0].parentRule;
+            assert.strictEqual(rule.selectorText(), 'div');
+            // Properties of the later rule override same-named properties of the earlier one.
+            assert.deepEqual(propertyTexts(styles[0]), ['display: block', 'color: red', 'unicode-bidi: isolate']);
+        });
+        it('does not merge user-agent rules that differ in media, are not consecutive, or are not user-agent rules', async () => {
+            const printRule = ruleMatch('div', { display: 'none' }, { origin: UserAgent });
+            printRule.rule.media = [{ text: 'print', source: "mediaRule" /* Protocol.CSS.CSSMediaSource.MediaRule */ }];
+            const screenlessRule = ruleMatch('div', { display: 'block' }, { origin: UserAgent });
+            const regular = ruleMatch('div', { margin: '0' });
+            const afterRegular = ruleMatch('div', { color: 'black' }, { origin: UserAgent });
+            const regularSameSelector = ruleMatch('div', { padding: '0' });
+            const matchedStyles = await getMatchedStyles({
+                connection,
+                matchedPayload: [printRule, screenlessRule, regular, afterRegular, regularSameSelector],
+            });
+            assert.lengthOf(matchedStyles.nodeStyles(), 5);
+            const styles = uaStyles(matchedStyles);
+            assert.lengthOf(styles, 3);
+            assert.sameDeepMembers(styles.map(propertyTexts), [['display: none'], ['display: block'], ['color: black']]);
+        });
+        it('filters user-agent selector lists to the matching selectors only', async () => {
+            const selectorList = {
+                selectors: [{ text: 'p' }, { text: 'div' }, { text: 'span' }],
+                text: 'p, div, span',
+            };
+            const uaRule = ruleMatch(structuredClone(selectorList), { display: 'block' }, {
+                origin: UserAgent,
+                matchingSelectorsIndexes: [1],
+            });
+            const regularRule = ruleMatch(structuredClone(selectorList), { color: 'red' }, { matchingSelectorsIndexes: [1] });
+            const matchedStyles = await getMatchedStyles({ connection, matchedPayload: [uaRule, regularRule] });
+            const [uaStyle] = uaStyles(matchedStyles);
+            const filteredRule = uaStyle.parentRule;
+            assert.strictEqual(filteredRule.selectorText(), 'div');
+            assert.lengthOf(filteredRule.selectors, 1);
+            assert.deepEqual(matchedStyles.getMatchingSelectors(filteredRule), [0]);
+            // Non user-agent rules keep their full selector list.
+            const regularStyle = matchedStyles.nodeStyles().find(style => style !== uaStyle);
+            assert.exists(regularStyle);
+            const unfilteredRule = regularStyle.parentRule;
+            assert.strictEqual(unfilteredRule.selectorText(), 'p, div, span');
+            assert.deepEqual(matchedStyles.getMatchingSelectors(unfilteredRule), [1]);
+        });
+        it('merges user-agent rules whose selector lists become equal after filtering', async () => {
+            const listRule = ruleMatch({ selectors: [{ text: 'p' }, { text: 'div' }], text: 'p, div' }, { display: 'block' }, {
+                origin: UserAgent,
+                matchingSelectorsIndexes: [1],
+            });
+            const divRule = ruleMatch('div', { 'unicode-bidi': 'isolate' }, { origin: UserAgent });
+            const matchedStyles = await getMatchedStyles({ connection, matchedPayload: [listRule, divRule] });
+            const styles = uaStyles(matchedStyles);
+            assert.lengthOf(styles, 1);
+            assert.strictEqual(styles[0].parentRule.selectorText(), 'div');
+            assert.deepEqual(propertyTexts(styles[0]), ['display: block', 'unicode-bidi: isolate']);
+        });
+    });
 });
 //# sourceMappingURL=CSSMatchedStyles.test.js.map

@@ -311,7 +311,7 @@ __export(ContextAnalyzer_exports, {
 function analyzeContexts(snapshot) {
   const scopesByScript = parseEmbeddedScopes(snapshot);
   const scan = scanHeap(snapshot);
-  const liveFunctionsByScript = buildLiveFunctions(snapshot, scan.liveClosures);
+  const liveFunctionsByScript = buildLiveFunctions(snapshot, scan.liveClosures, scan.finishedModuleFunctionNodeIndexes);
   const { scopes, scriptsWithoutScopes } = correlateContextsWithScopes(snapshot, scan, scopesByScript);
   const scopeAnalyses = classifyFields(snapshot, scopes, liveFunctionsByScript);
   return sortAndBuildResult(scopeAnalyses, scriptsWithoutScopes);
@@ -408,6 +408,8 @@ function scanHeap(snapshot) {
   const scripts = /* @__PURE__ */ new Map();
   const contextNodes = [];
   const liveClosures = [];
+  const finishedModuleFunctionNodeIndexes = /* @__PURE__ */ new Set();
+  const generatorMapNodeIndexes = /* @__PURE__ */ new Map();
   const scopeInfoScriptNodeIndexes = /* @__PURE__ */ new Map();
   const node = snapshot.createNode();
   const nodes = snapshot.nodes;
@@ -418,15 +420,16 @@ function scanHeap(snapshot) {
     const rawName = node.rawName();
     if (rawName.startsWith("system / Script")) {
       processScript(scripts, node);
+      processScriptScopeInfos(scopeInfoScriptNodeIndexes, node);
     } else if (snapshot.isContextObject(node)) {
       processContext(contextNodes, node);
     } else if (node.rawType() === nodeClosureType) {
       processClosure(liveClosures, node);
-    } else if (rawName.startsWith("system / SharedFunctionInfo")) {
-      processSharedFunctionInfo(scopeInfoScriptNodeIndexes, node);
+    } else if (isGeneratorObject(generatorMapNodeIndexes, node)) {
+      processGeneratorObject(liveClosures, finishedModuleFunctionNodeIndexes, node);
     }
   }
-  return { scripts, contextNodes, liveClosures, scopeInfoScriptNodeIndexes };
+  return { scripts, contextNodes, liveClosures, finishedModuleFunctionNodeIndexes, scopeInfoScriptNodeIndexes };
 }
 function processScript(scripts, node) {
   const rawName = node.rawName();
@@ -440,6 +443,87 @@ function processScript(scripts, node) {
     name,
     nodeId: node.id()
   });
+}
+function processScriptScopeInfos(scopeInfoScriptNodeIndexes, scriptNode) {
+  const infos = scriptNode.findInternalEdgeTarget("infos");
+  if (!infos) {
+    return;
+  }
+  const scriptNodeIndex = scriptNode.nodeIndex;
+  const scopeInfoNode = scriptNode.snapshot.createNode();
+  const evalFromScopeInfo = scriptNode.findInternalEdgeTarget("eval_from_scope_info");
+  const stopAtNodeIndex = evalFromScopeInfo?.rawName() === "system / ScopeInfo" ? evalFromScopeInfo.nodeIndex : void 0;
+  for (let iter = infos.edges(); iter.hasNext(); iter.next()) {
+    const info = iter.edge.node();
+    const infoName = info.rawName();
+    if (infoName === "system / ScopeInfo") {
+      attributeScopeInfoChain(
+        scopeInfoScriptNodeIndexes,
+        info.nodeIndex,
+        stopAtNodeIndex,
+        scriptNodeIndex,
+        scopeInfoNode
+      );
+      continue;
+    }
+    if (!infoName.startsWith("system / SharedFunctionInfo")) {
+      continue;
+    }
+    const sharedFunctionInfo = info;
+    const scopeInfo = sharedFunctionInfo.findInternalEdgeTarget("name_or_scope_info");
+    if (scopeInfo?.rawName() === "system / ScopeInfo") {
+      attributeScopeInfoChain(
+        scopeInfoScriptNodeIndexes,
+        scopeInfo.nodeIndex,
+        stopAtNodeIndex,
+        scriptNodeIndex,
+        scopeInfoNode
+      );
+      continue;
+    }
+    const scopeId = sharedFunctionInfo.findInternalEdgeTarget("scope_id")?.nodeValueAsInt();
+    if (scopeId === void 0 || isScriptRootScopeId(scopeId)) {
+      continue;
+    }
+    const outerScopeInfo = sharedFunctionInfo.findInternalEdgeTarget("raw_outer_scope_info_or_feedback_metadata");
+    if (outerScopeInfo?.rawName() === "system / ScopeInfo") {
+      attributeScopeInfoChain(
+        scopeInfoScriptNodeIndexes,
+        outerScopeInfo.nodeIndex,
+        stopAtNodeIndex,
+        scriptNodeIndex,
+        scopeInfoNode
+      );
+    }
+  }
+}
+function attributeScopeInfoChain(scopeInfoScriptNodeIndexes, scopeInfoNodeIndex, stopAtNodeIndex, scriptNodeIndex, scopeInfoNode) {
+  let currentNodeIndex = scopeInfoNodeIndex;
+  for (; ; ) {
+    if (currentNodeIndex === stopAtNodeIndex) {
+      return;
+    }
+    if (scopeInfoScriptNodeIndexes.has(currentNodeIndex)) {
+      return;
+    }
+    scopeInfoScriptNodeIndexes.set(currentNodeIndex, scriptNodeIndex);
+    scopeInfoNode.nodeIndex = currentNodeIndex;
+    if (isScriptRootScopeInfo(scopeInfoNode)) {
+      return;
+    }
+    const outerScopeInfo = scopeInfoNode.findInternalEdgeTarget("outer_scope_info");
+    if (!outerScopeInfo) {
+      return;
+    }
+    currentNodeIndex = outerScopeInfo.nodeIndex;
+  }
+}
+function isScriptRootScopeInfo(node) {
+  const scopeId = node.findInternalEdgeTarget("scope_id")?.nodeValueAsInt();
+  return scopeId !== void 0 && isScriptRootScopeId(scopeId);
+}
+function isScriptRootScopeId(scopeId) {
+  return scopeId === -2;
 }
 function processContext(contextNodes, node) {
   const scopeInfoNodeIndex = node.findInternalEdgeTarget("scope_info")?.nodeIndex;
@@ -458,6 +542,9 @@ function processClosure(liveClosures, node) {
   if (!sharedFunctionInfo || !closureContext) {
     return;
   }
+  addLiveClosure(liveClosures, node, sharedFunctionInfo, closureContext);
+}
+function addLiveClosure(liveClosures, ownerNode, sharedFunctionInfo, contextNode) {
   const script = sharedFunctionInfo.findInternalEdgeTarget("script");
   if (!script) {
     return;
@@ -465,24 +552,65 @@ function processClosure(liveClosures, node) {
   const scopeId = sharedFunctionInfo.findInternalEdgeTarget("scope_id")?.nodeValueAsInt();
   if (scopeId !== void 0) {
     liveClosures.push({
-      contextNodeIndex: closureContext.nodeIndex,
+      ownerNodeIndex: ownerNode.nodeIndex,
+      contextNodeIndex: contextNode.nodeIndex,
       scriptNodeIndex: script.nodeIndex,
       scopeId
     });
   }
 }
-function processSharedFunctionInfo(scopeInfoScriptNodeIndexes, node) {
-  const scopeInfo = node.findInternalEdgeTarget("name_or_scope_info");
-  const script = node.findInternalEdgeTarget("script");
-  if (scopeInfo?.rawName() !== "system / ScopeInfo" || !script?.rawName().startsWith("system / Script")) {
+var GENERATOR_CLOSED = -1;
+function processGeneratorObject(liveClosures, finishedModuleFunctionNodeIndexes, node) {
+  const continuation = node.findInternalEdgeTarget("continuation")?.nodeValueAsInt();
+  const generatorFunction = node.findInternalEdgeTarget("function");
+  if (continuation === void 0 || generatorFunction?.rawType() !== node.snapshot.nodeClosureType) {
     return;
   }
-  scopeInfoScriptNodeIndexes.set(scopeInfo.nodeIndex, script.nodeIndex);
+  const sharedFunctionInfo = generatorFunction.findInternalEdgeTarget("shared");
+  if (!sharedFunctionInfo) {
+    return;
+  }
+  if (continuation === GENERATOR_CLOSED) {
+    const scopeId = sharedFunctionInfo.findInternalEdgeTarget("scope_id")?.nodeValueAsInt();
+    if (scopeId !== void 0 && isScriptRootScopeId(scopeId)) {
+      finishedModuleFunctionNodeIndexes.add(generatorFunction.nodeIndex);
+    }
+    return;
+  }
+  const generatorContext = node.findInternalEdgeTarget("context");
+  if (generatorContext) {
+    addLiveClosure(liveClosures, node, sharedFunctionInfo, generatorContext);
+  }
 }
-function buildLiveFunctions(snapshot, liveClosures) {
+var GENERATOR_INSTANCE_TYPE_NAMES = /* @__PURE__ */ new Set([
+  "JS_GENERATOR_OBJECT_TYPE",
+  "JS_ASYNC_FUNCTION_OBJECT_TYPE",
+  "JS_ASYNC_GENERATOR_OBJECT_TYPE"
+]);
+function isGeneratorObject(generatorMapNodeIndexes, node) {
+  if (node.rawType() !== node.snapshot.nodeObjectType) {
+    return false;
+  }
+  const map = node.findInternalEdgeTarget("map");
+  if (!map) {
+    return false;
+  }
+  const mapNodeIndex = map.nodeIndex;
+  let isGenerator = generatorMapNodeIndexes.get(mapNodeIndex);
+  if (isGenerator === void 0) {
+    const instanceTypeName = map.findInternalEdgeTarget("instance_type_name")?.rawName();
+    isGenerator = instanceTypeName !== void 0 && GENERATOR_INSTANCE_TYPE_NAMES.has(instanceTypeName);
+    generatorMapNodeIndexes.set(mapNodeIndex, isGenerator);
+  }
+  return isGenerator;
+}
+function buildLiveFunctions(snapshot, liveClosures, finishedModuleFunctionNodeIndexes) {
   const liveFunctionsByScript = /* @__PURE__ */ new Map();
   const node = snapshot.createNode();
   for (const closure of liveClosures) {
+    if (finishedModuleFunctionNodeIndexes.has(closure.ownerNodeIndex)) {
+      continue;
+    }
     let scriptFunctions = liveFunctionsByScript.get(closure.scriptNodeIndex);
     if (!scriptFunctions) {
       scriptFunctions = /* @__PURE__ */ new Map();
@@ -613,6 +741,9 @@ function resolveScopeInfoScriptNodeIndex(snapshot, scopeInfoScriptNodeIndexes, s
     seen.add(currentNodeIndex);
     visited.push(currentNodeIndex);
     node.nodeIndex = currentNodeIndex;
+    if (isScriptRootScopeInfo(node)) {
+      break;
+    }
     const outerScopeInfo = node.findInternalEdgeTarget("outer_scope_info");
     if (!outerScopeInfo) {
       break;
@@ -4668,16 +4799,22 @@ var HeapSnapshotLoader = class {
     this.#reset();
     return result;
   }
-  #parseUintArray() {
+  /**
+   * Parses (possibly negative) integers from `#json` into `#array`. Assumes
+   * valid input. Returns true if more input is needed and false once the
+   * closing bracket was reached.
+   */
+  #parseIntArray() {
     let index = 0;
     const char0 = "0".charCodeAt(0);
     const char9 = "9".charCodeAt(0);
+    const minus = "-".charCodeAt(0);
     const closingBracket = "]".charCodeAt(0);
     const length = this.#json.length;
     while (true) {
       while (index < length) {
         const code = this.#json.charCodeAt(index);
-        if (char0 <= code && code <= char9) {
+        if (char0 <= code && code <= char9 || code === minus) {
           break;
         } else if (code === closingBracket) {
           this.#json = this.#json.slice(index + 1);
@@ -4689,8 +4826,13 @@ var HeapSnapshotLoader = class {
         this.#json = "";
         return true;
       }
-      let nextNumber = 0;
       const startIndex = index;
+      let negative = false;
+      if (this.#json.charCodeAt(index) === minus) {
+        negative = true;
+        ++index;
+      }
+      let nextNumber = 0;
       while (index < length) {
         const code = this.#json.charCodeAt(index);
         if (char0 > code || code > char9) {
@@ -4707,7 +4849,7 @@ var HeapSnapshotLoader = class {
       if (!this.#array) {
         throw new Error("Array not instantiated");
       }
-      this.#array.setValue(this.#arrayIndex++, nextNumber);
+      this.#array.setValue(this.#arrayIndex++, negative ? -nextNumber : nextNumber);
     }
   }
   #parseStringsArray() {
@@ -4764,7 +4906,7 @@ var HeapSnapshotLoader = class {
     this.#json = this.#json.slice(bracketIndex + 1);
     this.#array = length === void 0 ? Platform2.TypedArrayUtilities.createExpandableBigUint32Array() : Platform2.TypedArrayUtilities.createFixedBigUint32Array(length);
     this.#arrayIndex = 0;
-    while (this.#parseUintArray()) {
+    while (this.#parseIntArray()) {
       if (length) {
         this.#progress.updateProgress(title, this.#arrayIndex, this.#array.length);
       } else {

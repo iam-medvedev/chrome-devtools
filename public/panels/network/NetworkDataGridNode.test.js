@@ -857,12 +857,11 @@ describeWithEnvironment('NetworkLogView', () => {
     });
     describe('initiator cell', () => {
         it('renders privileged initiator URLs as inert spans rather than clickable links', () => {
-            const request = SDK.NetworkRequest.NetworkRequest.createWithoutBackendRequest('har-0', urlString `https://www.example.com/asset.js`, urlString `https://www.example.com/`, {
+            const request = SDK.NetworkRequest.NetworkRequest.createForImportedHar('har-0', urlString `https://www.example.com/asset.js`, urlString `https://www.example.com/`, {
                 type: "parser" /* Protocol.Network.InitiatorType.Parser */,
                 url: urlString `chrome-extension://nnkmpipfcdgmkgepigmhifcgbddoohgk/secret.html?csrf=1`,
                 lineNumber: 0,
             });
-            request.setIsImportedHar(true);
             const networkRequestNode = new Network.NetworkDataGridNode.NetworkRequestNode({}, request);
             const cell = document.createElement('div');
             networkRequestNode.renderCell(cell, 'initiator');

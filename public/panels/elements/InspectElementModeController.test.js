@@ -5,7 +5,7 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import { createTarget, describeWithEnvironment, registerNoopActions, stubNoopSettings, } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, describeWithEnvironment, registerNoopActions, } from '../../testing/EnvironmentHelpers.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Elements from './elements.js';
@@ -27,7 +27,6 @@ describeWithEnvironment('InspectElementModeController', () => {
         model.addEventListener("InspectModeWillBeToggled" /* SDK.OverlayModel.Events.INSPECT_MODE_WILL_BE_TOGGLED */, () => assert.fail('Unexpected mode toggle on out of scope target'));
     }
     beforeEach(() => {
-        stubNoopSettings();
         registerNoopActions(['elements.toggle-element-search']);
         connection = new MockCDPConnection();
         tabTarget = createTarget({ type: SDK.Target.Type.TAB, connection });
@@ -70,7 +69,6 @@ describeWithEnvironment('InspectElementModeController panel interactions', () =>
     let viewManager;
     let connection;
     beforeEach(() => {
-        stubNoopSettings();
         registerNoopActions(['elements.toggle-element-search']);
         connection = new MockCDPConnection();
         createTarget({ connection });

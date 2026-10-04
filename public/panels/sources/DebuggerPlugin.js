@@ -524,7 +524,6 @@ export class DebuggerPlugin extends Plugin {
         if (!debuggableFrame) {
             return null;
         }
-        const selectedCallFrame = debuggableFrame.sdkFrame;
         let textPosition = editor.editor.posAtCoords(event);
         if (!textPosition) {
             return null;
@@ -556,62 +555,16 @@ export class DebuggerPlugin extends Plugin {
         return {
             box,
             show: async (popover) => {
-                const scopeMappings = await this.#getScopeMappings(debuggableFrame) ?? [];
-                const scopedVariable = findVariableInScopeMappings(evaluationText, highlightRange.from, scopeMappings);
-                if (scopedVariable.found) {
-                    if (!scopedVariable.value) {
-                        return false;
-                    }
-                    objectPopoverHelper =
-                        await ObjectUI.ObjectPopoverHelper.ObjectPopoverHelper.buildObjectPopover(scopedVariable.value, popover);
-                    const potentiallyUpdatedCallFrame = UI.Context.Context.instance().flavor(StackTrace.StackTrace.DebuggableFrameFlavor);
-                    if (!objectPopoverHelper || debuggableFrame !== potentiallyUpdatedCallFrame) {
-                        objectPopoverHelper?.dispose();
-                        return false;
-                    }
-                    return true;
-                }
-                let resolvedText = '';
-                if (selectedCallFrame.script.isJavaScript()) {
-                    const nameMap = await SourceMapScopes.NamesResolver.allVariablesInCallFrame(selectedCallFrame, Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance());
-                    try {
-                        resolvedText =
-                            await Formatter.FormatterWorkerPool.formatterWorkerPool().javaScriptSubstitute(evaluationText, nameMap);
-                    }
-                    catch {
-                    }
-                }
-                // We use side-effect free debug-evaluate when the highlighted expression contains a
-                // function/method call. Otherwise we allow side-effects. The motiviation here are
-                // frameworks like Vue, that heavily use proxies for caching:
-                //
-                //   * We deem a simple property access of a proxy as deterministic so it should be
-                //     successful even if V8 thinks its side-effecting.
-                //   * Explicit function calls on the other hand must be side-effect free. The canonical
-                //     example is hovering over {Math.random()} which would result in a different value
-                //     each time the user hovers over it.
-                const throwOnSideEffect = highlightRange.containsSideEffects;
-                const result = await selectedCallFrame.evaluate({
-                    expression: resolvedText || evaluationText,
-                    objectGroup: 'popover',
-                    includeCommandLineAPI: false,
-                    silent: true,
-                    returnByValue: false,
-                    generatePreview: false,
-                    throwOnSideEffect,
-                });
-                if (!result || 'error' in result || !result.object ||
-                    (result.object.type === 'object' && result.object.subtype === 'error')) {
+                const object = await this.#evaluateForPopover(debuggableFrame, highlightRange, evaluationText);
+                if (!object) {
                     return false;
                 }
                 objectPopoverHelper =
-                    await ObjectUI.ObjectPopoverHelper.ObjectPopoverHelper.buildObjectPopover(result.object, popover);
+                    await ObjectUI.ObjectPopoverHelper.ObjectPopoverHelper.buildObjectPopover(object, popover);
                 const potentiallyUpdatedCallFrame = UI.Context.Context.instance().flavor(StackTrace.StackTrace.DebuggableFrameFlavor);
                 if (!objectPopoverHelper || debuggableFrame !== potentiallyUpdatedCallFrame) {
                     debuggerModel.runtimeModel().releaseObjectGroup('popover');
-                    if (objectPopoverHelper) {
-                        objectPopoverHelper.dispose();
-                    }
+                    objectPopoverHelper?.dispose();
                     return false;
                 }
                 const decoration = CodeMirror.Decoration.set(evalExpressionMark.range(highlightRange.from, highlightRange.to));
@@ -626,6 +579,48 @@ export class DebuggerPlugin extends Plugin {
                 editor.dispatch({ effects: evalExpression.update.of(CodeMirror.Decoration.none) });
             },
         };
+    }
+    async #evaluateForPopover(debuggableFrame, highlightRange, evaluationText) {
+        const scopeMappings = await this.#getScopeMappings(debuggableFrame) ?? [];
+        const scopedVariable = findVariableInScopeMappings(evaluationText, highlightRange.from, scopeMappings);
+        if (scopedVariable.found) {
+            return scopedVariable.value;
+        }
+        const selectedCallFrame = debuggableFrame.sdkFrame;
+        let resolvedText = '';
+        if (selectedCallFrame.script.isJavaScript()) {
+            const nameMap = await SourceMapScopes.NamesResolver.allVariablesInCallFrame(selectedCallFrame, Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance());
+            try {
+                resolvedText =
+                    await Formatter.FormatterWorkerPool.formatterWorkerPool().javaScriptSubstitute(evaluationText, nameMap);
+            }
+            catch {
+            }
+        }
+        // We use side-effect free debug-evaluate when the highlighted expression contains a
+        // function/method call. Otherwise we allow side-effects. The motivation here are
+        // frameworks like Vue, that heavily use proxies for caching:
+        //
+        //   * We deem a simple property access of a proxy as deterministic so it should be
+        //     successful even if V8 thinks its side-effecting.
+        //   * Explicit function calls on the other hand must be side-effect free. The canonical
+        //     example is hovering over {Math.random()} which would result in a different value
+        //     each time the user hovers over it.
+        const throwOnSideEffect = highlightRange.containsSideEffects;
+        const result = await selectedCallFrame.evaluate({
+            expression: resolvedText || evaluationText,
+            objectGroup: 'popover',
+            includeCommandLineAPI: false,
+            silent: true,
+            returnByValue: false,
+            generatePreview: false,
+            throwOnSideEffect,
+        });
+        if (!result || 'error' in result || !result.object ||
+            (result.object.type === 'object' && result.object.subtype === 'error')) {
+            return null;
+        }
+        return result.object;
     }
     onEditorUpdate(update) {
         if (!update.changes.empty) {
@@ -737,6 +732,13 @@ export class DebuggerPlugin extends Plugin {
         dialog.editorLineNumber = line.number - 1;
         dialog.oldCondition = oldCondition,
             dialog.breakpointType = isLogpointForDialog ? "LOGPOINT" /* SDK.DebuggerModel.BreakpointType.LOGPOINT */ : "CONDITIONAL_BREAKPOINT" /* SDK.DebuggerModel.BreakpointType.CONDITIONAL_BREAKPOINT */;
+        dialog.location = async () => {
+            const uiLocation = breakpoint ? (breakpoint.getClosestResolvedLocation() ??
+                { lineNumber: breakpoint.lineNumber(), columnNumber: breakpoint.columnNumber() }) :
+                (location ?? await this.defaultBreakpointLocation(line));
+            const rawLocations = await Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().uiLocationToRawLocations(this.uiSourceCode, uiLocation.lineNumber, uiLocation.columnNumber);
+            return rawLocations[0] ?? null;
+        };
         dialog.onFinish = async (result) => {
             this.activeBreakpointDialog = null;
             this.#activeBreakpointEditRequest = undefined;
@@ -860,7 +862,7 @@ export class DebuggerPlugin extends Plugin {
         const callFrame = debuggableFrame.sdkFrame;
         const url = this.uiSourceCode.url();
         const uiPositionToEditorOffset = (lineNumber, columnNumber) => this.editor?.toOffset(this.transformer.uiLocationToEditorLocation(lineNumber, columnNumber)) ?? null;
-        const scopeChain = await SourceMapScopes.ScopeChainModel.ScopeChainModel.resolveScopeChain(callFrame, Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance());
+        const scopeChain = await SourceMapScopes.ScopeChainResolver.ScopeChainResolver.instance().resolveScopeChain(callFrame);
         const localOriginalScope = scopeChain
             .find((s) => s instanceof SDK.SourceMapScopeChainEntry.SourceMapScopeChainEntry &&
             s.type() === "local" /* Protocol.Debugger.ScopeType.Local */)
@@ -1865,7 +1867,7 @@ export class ScopeMappingsCache {
 export async function computeScopeMappings(callFrame, rawLocationToEditorOffset, uiPositionToEditorOffset, resolvedScopeChain) {
     const scopeMappings = [];
     const scopeChain = resolvedScopeChain ??
-        await SourceMapScopes.ScopeChainModel.ScopeChainModel.resolveScopeChain(callFrame, Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance());
+        await SourceMapScopes.ScopeChainResolver.ScopeChainResolver.instance().resolveScopeChain(callFrame);
     const activeScopes = new Set(scopeChain.filter(s => s instanceof SDK.SourceMapScopeChainEntry.SourceMapScopeChainEntry)
         .map(s => s.originalScope()));
     const addInactiveChildren = (children) => {
@@ -2048,6 +2050,12 @@ const evalExpressionMark = CodeMirror.Decoration.mark({ class: 'cm-evaluatedExpr
 const evalExpression = defineStatefulDecoration();
 // Styling for plugin-local elements
 const theme = CodeMirror.EditorView.baseTheme({
+    '&.source-frame-debugger-script': {
+        backgroundColor: 'rgb(255 255 194 / 50%)',
+    },
+    '&dark.source-frame-debugger-script': {
+        backgroundColor: 'rgb(61 61 0 / 50%)',
+    },
     '.cm-line::selection': {
         backgroundColor: 'transparent',
         color: 'currentColor',

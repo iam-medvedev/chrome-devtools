@@ -4,7 +4,7 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
-import { createTarget, describeWithEnvironment, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 describeWithEnvironment('LighthousePanel', () => {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -28,8 +28,8 @@ describeWithEnvironment('LighthousePanel', () => {
         },
     };
     beforeEach(async () => {
-        stubNoopSettings();
         Lighthouse = await import('./lighthouse.js');
+        Lighthouse.LighthouseController.clearSettingsCacheForTest();
         const tabTarget = createTarget({ type: SDK.Target.Type.TAB });
         createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
         target = createTarget({ parentTarget: tabTarget });

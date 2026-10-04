@@ -1,6 +1,7 @@
 // Copyright 2026 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { assert } from 'chai';
 import { SnapshotTester } from '../../../testing/SnapshotTester.js';
 import * as AiAssistance from '../ai_assistance.js';
 describe('LighthouseFormatter', function () {
@@ -56,6 +57,19 @@ describe('LighthouseFormatter', function () {
         const formatter = new AiAssistance.LighthouseFormatter.LighthouseFormatter();
         const output = formatter.audits(report, 'seo');
         snapshotTester.assert(this, output);
+    });
+    it('formats report for a specific category', function () {
+        const formatter = new AiAssistance.LighthouseFormatter.LighthouseFormatter();
+        const output = formatter.formatReport(report, 'performance');
+        assert.include(output, '# Audits for Performance');
+    });
+    it('formats full report across all categories when categoryId is "all"', function () {
+        const formatter = new AiAssistance.LighthouseFormatter.LighthouseFormatter();
+        const output = formatter.formatReport(report, 'all');
+        assert.include(output, '# Lighthouse Report Summary');
+        assert.include(output, '## Category Scores');
+        assert.include(output, '# Audits for Performance');
+        assert.include(output, '# Audits for Accessibility');
     });
     it('formats table details', function () {
         const tableReport = {

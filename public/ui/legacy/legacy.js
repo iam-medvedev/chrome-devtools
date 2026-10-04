@@ -9414,6 +9414,8 @@ var softContextMenu_css_default = `/*
 }
 
 .dockside-title + devtools-toolbar {
+  /* Keep the title aligned with the other menu items when the menu is wider than the dock side row. */
+  margin-left: auto;
   margin-right: calc(-1 * var(--sys-size-5));
 }
 
@@ -12527,6 +12529,8 @@ var TextPrompt = class extends Common13.ObjectWrapper.ObjectWrapper {
   completionStopCharacters;
   usesSuggestionBuilder;
   #element;
+  #ariaPlaceholder = null;
+  #ariaLabelFromPlaceholder = false;
   boundOnKeyDown;
   boundOnInput;
   boundOnMouseWheel;
@@ -12560,6 +12564,29 @@ var TextPrompt = class extends Common13.ObjectWrapper.ObjectWrapper {
     this.loadCompletions = completions;
     this.completionStopCharacters = stopCharacters || " =:[({;,!+-*/&|^<>.";
     this.usesSuggestionBuilder = usesSuggestionBuilder || false;
+    this.#updateAriaRole();
+  }
+  #updateAriaRole() {
+    if (!this.#element) {
+      return;
+    }
+    if (this.loadCompletions) {
+      markAsCombobox(this.#element);
+      setAutocomplete(this.#element, "both" /* BOTH */);
+      setHasPopup(this.#element, "listbox" /* LIST_BOX */);
+      setExpanded(this.#element, this.isSuggestBoxVisible());
+      setPlaceholder(this.#element, null);
+      if (this.#ariaPlaceholder && (!this.#element.hasAttribute("aria-label") || this.#ariaLabelFromPlaceholder)) {
+        setLabel(this.#element, this.#ariaPlaceholder);
+        this.#ariaLabelFromPlaceholder = true;
+      }
+    } else {
+      markAsTextBox(this.#element);
+      clearAutocomplete(this.#element);
+      setHasPopup(this.#element, "false" /* FALSE */);
+      unsetExpandable(this.#element);
+      setPlaceholder(this.#element, this.#ariaPlaceholder);
+    }
   }
   setAutocompletionTimeout(timeout) {
     this.autocompletionTimeout = timeout;
@@ -12623,9 +12650,7 @@ var TextPrompt = class extends Common13.ObjectWrapper.ObjectWrapper {
       this.#element.setAttribute("jslog", `${jslog}`);
     }
     this.#element.classList.add("text-prompt");
-    markAsTextBox(this.#element);
-    setAutocomplete(this.#element, "both" /* BOTH */);
-    setHasPopup(this.#element, "listbox" /* LIST_BOX */);
+    this.#updateAriaRole();
     this.#element.setAttribute("contenteditable", "plaintext-only");
     this.element().addEventListener("keydown", this.boundOnKeyDown, false);
     this.#element.addEventListener("input", this.boundOnInput, false);
@@ -12659,6 +12684,7 @@ var TextPrompt = class extends Common13.ObjectWrapper.ObjectWrapper {
     this.element().removeAttribute("role");
     clearAutocomplete(this.element());
     setHasPopup(this.element(), "false" /* FALSE */);
+    unsetExpandable(this.element());
   }
   textWithCurrentSuggestion() {
     const text = this.text();
@@ -12722,11 +12748,16 @@ var TextPrompt = class extends Common13.ObjectWrapper.ObjectWrapper {
   setPlaceholder(placeholder, ariaPlaceholder) {
     if (placeholder) {
       this.element().setAttribute("data-placeholder", placeholder);
-      setPlaceholder(this.element(), ariaPlaceholder || placeholder);
+      this.#ariaPlaceholder = ariaPlaceholder || placeholder;
     } else {
       this.element().removeAttribute("data-placeholder");
-      setPlaceholder(this.element(), null);
+      this.#ariaPlaceholder = null;
+      if (this.#ariaLabelFromPlaceholder) {
+        this.element().removeAttribute("aria-label");
+        this.#ariaLabelFromPlaceholder = false;
+      }
     }
+    this.#updateAriaRole();
   }
   setEnabled(enabled) {
     if (enabled) {
@@ -12929,7 +12960,7 @@ var TextPrompt = class extends Common13.ObjectWrapper.ObjectWrapper {
   }
   async complete(force) {
     this.clearAutocompleteTimeout();
-    if (!this.element().isConnected) {
+    if (!this.loadCompletions || !this.element().isConnected) {
       return;
     }
     const selection = this.element().getComponentSelection();
@@ -13814,11 +13845,13 @@ var ToolbarInput = class _ToolbarInput extends ToolbarItem {
     this.proxyElement = this.prompt.attach(internalPromptElement);
     this.proxyElement.classList.add("toolbar-prompt-proxy");
     this.proxyElement.addEventListener("keydown", (event) => this.onKeydownCallback(event));
-    this.prompt.initialize(
-      completions || (() => Promise.resolve([])),
-      " ",
-      dynamicCompletions
-    );
+    if (completions) {
+      this.prompt.initialize(
+        completions,
+        " ",
+        dynamicCompletions
+      );
+    }
     if (tooltip) {
       this.prompt.setTitle(tooltip);
     }
@@ -14731,6 +14764,17 @@ iframe.widget {
 [hidden],
 .hidden { /* TODO(crbug.com/458299714): remove the class */
   display: none !important; /* stylelint-disable-line declaration-no-important */
+}
+
+.screen-reader-only {
+  position: absolute;
+  overflow: hidden;
+  clip-path: rect(0 0 0 0);
+  width: var(--sys-size-1);
+  height: var(--sys-size-1);
+  margin: calc(-1 * var(--sys-size-1));
+  padding: 0;
+  border: 0;
 }
 
 .highlighted-search-result,
@@ -21775,12 +21819,12 @@ function createClearButton(jslogContext) {
   return button;
 }
 var SearchableView = class extends VBox {
-  searchProvider;
-  replaceProvider;
+  #searchProvider;
+  replaceProvider = null;
   // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  setting;
-  replaceable;
+  setting = null;
+  #replaceable = false;
   footerElementContainer;
   footerElement;
   replaceToggleButton;
@@ -21790,23 +21834,21 @@ var SearchableView = class extends VBox {
   searchNavigationPrevElement;
   searchNavigationNextElement;
   replaceInputElement;
+  #searchConfigButtons;
   caseSensitiveButton;
   wholeWordButton;
   regexButton;
   replaceButtonElement;
   replaceAllButtonElement;
-  minimalSearchQuerySize;
+  minimalSearchQuerySize = 3;
   searchIsVisible;
   currentQuery;
   valueChangedTimeoutId;
-  constructor(searchable, replaceable, settingName, element) {
-    super(element, { useShadowDom: true });
+  constructor(searchableOrElement, replaceable = null, settingName, element) {
+    const isElement = searchableOrElement instanceof HTMLElement || searchableOrElement === void 0;
+    super(isElement ? searchableOrElement : element, { useShadowDom: true });
     this.registerRequiredCSS(searchableView_css_default);
     searchableViewsByElement.set(this.element, this);
-    this.searchProvider = searchable;
-    this.replaceProvider = replaceable;
-    this.setting = settingName ? Common18.Settings.Settings.instance().createSetting(settingName, {}) : null;
-    this.replaceable = false;
     this.contentElement.createChild("slot");
     this.footerElementContainer = this.contentElement.createChild("div", "search-bar hidden");
     this.footerElementContainer.style.order = "100";
@@ -21846,69 +21888,14 @@ var SearchableView = class extends VBox {
       this.replaceInputElement.focus();
     });
     replaceInputElements.appendChild(replaceInputClearButton);
-    const searchConfigButtons = searchInputElements.createChild("div", "search-config-buttons");
+    this.#searchConfigButtons = searchInputElements.createChild("div", "search-config-buttons");
     const clearButton = createClearButton("clear-search-input");
     clearButton.addEventListener("click", () => {
       this.searchInputElement.value = "";
       this.clearSearch();
       this.searchInputElement.focus();
     });
-    searchConfigButtons.appendChild(clearButton);
-    const saveSettingAndPerformSearch = () => {
-      this.saveSetting();
-      this.performSearch(false, true);
-    };
-    if (this.searchProvider.supportsCaseSensitiveSearch()) {
-      const iconName = "match-case";
-      this.caseSensitiveButton = new Buttons10.Button.Button();
-      this.caseSensitiveButton.data = {
-        variant: Buttons10.Button.Variant.ICON_TOGGLE,
-        size: Buttons10.Button.Size.SMALL,
-        iconName,
-        toggledIconName: iconName,
-        toggled: false,
-        toggleType: Buttons10.Button.ToggleType.PRIMARY,
-        title: i18nString19(UIStrings19.matchCase),
-        jslogContext: iconName
-      };
-      setLabel(this.caseSensitiveButton, i18nString19(UIStrings19.matchCase));
-      this.caseSensitiveButton.addEventListener("click", saveSettingAndPerformSearch);
-      searchConfigButtons.appendChild(this.caseSensitiveButton);
-    }
-    if (this.searchProvider.supportsWholeWordSearch()) {
-      const iconName = "match-whole-word";
-      this.wholeWordButton = new Buttons10.Button.Button();
-      this.wholeWordButton.data = {
-        variant: Buttons10.Button.Variant.ICON_TOGGLE,
-        size: Buttons10.Button.Size.SMALL,
-        iconName,
-        toggledIconName: iconName,
-        toggled: false,
-        toggleType: Buttons10.Button.ToggleType.PRIMARY,
-        title: i18nString19(UIStrings19.matchWholeWord),
-        jslogContext: iconName
-      };
-      setLabel(this.wholeWordButton, i18nString19(UIStrings19.matchWholeWord));
-      this.wholeWordButton.addEventListener("click", saveSettingAndPerformSearch);
-      searchConfigButtons.appendChild(this.wholeWordButton);
-    }
-    if (this.searchProvider.supportsRegexSearch()) {
-      const iconName = "regular-expression";
-      this.regexButton = new Buttons10.Button.Button();
-      this.regexButton.data = {
-        variant: Buttons10.Button.Variant.ICON_TOGGLE,
-        size: Buttons10.Button.Size.SMALL,
-        iconName,
-        toggledIconName: iconName,
-        toggleType: Buttons10.Button.ToggleType.PRIMARY,
-        toggled: false,
-        jslogContext: iconName,
-        title: i18nString19(UIStrings19.useRegularExpression)
-      };
-      setLabel(this.regexButton, i18nString19(UIStrings19.useRegularExpression));
-      this.regexButton.addEventListener("click", saveSettingAndPerformSearch);
-      searchConfigButtons.appendChild(this.regexButton);
-    }
+    this.#searchConfigButtons.appendChild(clearButton);
     searchInputElements.createChild("div", "input-line search-input-background");
     const buttonsContainer = this.footerElement.createChild("div", "toolbar-search-buttons");
     const firstRowButtons = buttonsContainer.createChild("div", "first-row-buttons");
@@ -21955,7 +21942,106 @@ var SearchableView = class extends VBox {
     });
     secondRowButtons.appendChild(this.replaceAllButtonElement);
     this.replaceAllButtonElement.disabled = true;
-    this.minimalSearchQuerySize = 3;
+    if (!isElement) {
+      this.settingName = settingName;
+      this.replaceProvider = replaceable;
+      this.searchProvider = searchableOrElement;
+    }
+  }
+  get searchProvider() {
+    return this.#searchProvider;
+  }
+  set searchProvider(searchable) {
+    if (this.#searchProvider === searchable) {
+      return;
+    }
+    this.#searchProvider = searchable;
+    this.#updateSearchConfigButtons();
+  }
+  set settingName(settingName) {
+    if (this.setting?.name === settingName) {
+      return;
+    }
+    this.setting = settingName ? Common18.Settings.Settings.instance().createSetting(settingName, {}) : null;
+    this.loadSetting();
+  }
+  get replaceable() {
+    return this.#replaceable;
+  }
+  set replaceable(replaceable) {
+    if (this.#replaceable === replaceable) {
+      return;
+    }
+    this.#replaceable = replaceable;
+    if (this.searchIsVisible) {
+      this.updateReplaceVisibility();
+    }
+  }
+  #updateSearchConfigButtons() {
+    this.caseSensitiveButton?.remove();
+    this.caseSensitiveButton = void 0;
+    this.wholeWordButton?.remove();
+    this.wholeWordButton = void 0;
+    this.regexButton?.remove();
+    this.regexButton = void 0;
+    if (!this.#searchProvider) {
+      return;
+    }
+    const saveSettingAndPerformSearch = () => {
+      this.saveSetting();
+      this.performSearch(false, true);
+    };
+    if (this.#searchProvider.supportsCaseSensitiveSearch()) {
+      const iconName = "match-case";
+      this.caseSensitiveButton = new Buttons10.Button.Button();
+      this.caseSensitiveButton.data = {
+        variant: Buttons10.Button.Variant.ICON_TOGGLE,
+        size: Buttons10.Button.Size.SMALL,
+        iconName,
+        toggledIconName: iconName,
+        toggled: false,
+        toggleType: Buttons10.Button.ToggleType.PRIMARY,
+        title: i18nString19(UIStrings19.matchCase),
+        jslogContext: iconName
+      };
+      setLabel(this.caseSensitiveButton, i18nString19(UIStrings19.matchCase));
+      this.caseSensitiveButton.addEventListener("click", saveSettingAndPerformSearch);
+      this.#searchConfigButtons.appendChild(this.caseSensitiveButton);
+    }
+    if (this.#searchProvider.supportsWholeWordSearch()) {
+      const iconName = "match-whole-word";
+      this.wholeWordButton = new Buttons10.Button.Button();
+      this.wholeWordButton.data = {
+        variant: Buttons10.Button.Variant.ICON_TOGGLE,
+        size: Buttons10.Button.Size.SMALL,
+        iconName,
+        toggledIconName: iconName,
+        toggled: false,
+        toggleType: Buttons10.Button.ToggleType.PRIMARY,
+        title: i18nString19(UIStrings19.matchWholeWord),
+        jslogContext: iconName
+      };
+      setLabel(this.wholeWordButton, i18nString19(UIStrings19.matchWholeWord));
+      this.wholeWordButton.addEventListener("click", saveSettingAndPerformSearch);
+      this.#searchConfigButtons.appendChild(this.wholeWordButton);
+    }
+    if (this.#searchProvider.supportsRegexSearch()) {
+      const iconName = "regular-expression";
+      this.regexButton = new Buttons10.Button.Button();
+      this.regexButton.data = {
+        variant: Buttons10.Button.Variant.ICON_TOGGLE,
+        size: Buttons10.Button.Size.SMALL,
+        iconName,
+        toggledIconName: iconName,
+        toggleType: Buttons10.Button.ToggleType.PRIMARY,
+        toggled: false,
+        jslogContext: iconName,
+        title: i18nString19(UIStrings19.useRegularExpression)
+      };
+      setLabel(this.regexButton, i18nString19(UIStrings19.useRegularExpression));
+      this.regexButton.addEventListener("click", saveSettingAndPerformSearch);
+      this.#searchConfigButtons.appendChild(this.regexButton);
+    }
     this.loadSetting();
   }
   static fromElement(element) {
@@ -22467,12 +22553,19 @@ var SoftDropDown = class {
     this.list.element.addEventListener("focusout", this.hide.bind(this), false);
     this.list.element.addEventListener("mousedown", (event) => event.consume(true), false);
     this.list.element.addEventListener("mouseup", (event) => {
-      if (event.target === this.list.element) {
+      if (event.button !== 0 || event.target === this.list.element) {
+        return;
+      }
+      const item8 = this.list.itemForNode(event.target);
+      if (!item8 || !this.delegate.isItemSelectable(item8)) {
         return;
       }
       this.selectHighlightedItem();
-      if (event.target instanceof Element && event.target?.parentElement) {
-        void VisualLogging25.logClick(event.target.parentElement, event);
+      if (event.target instanceof Element) {
+        const loggable = event.target.closest("[jslog]") ?? event.target.closest(".item")?.querySelector("[jslog]") ?? event.target.parentElement;
+        if (loggable) {
+          void VisualLogging25.logClick(loggable, event);
+        }
       }
       this.hide(event);
     }, false);
@@ -22632,6 +22725,16 @@ var SoftDropDown = class {
         );
       }
     });
+    element.addEventListener("mousedown", (e) => {
+      if (e.button === 0 && this.delegate.isItemSelectable(item8)) {
+        this.list.selectItem(
+          item8,
+          false,
+          /* Don't scroll */
+          true
+        );
+      }
+    });
     element.classList.toggle("disabled", !this.delegate.isItemSelectable(item8));
     element.classList.toggle("highlighted", this.list.selectedItem() === item8);
     markAsMenuItem(element);
@@ -22670,6 +22773,152 @@ var SoftDropDown = class {
   }
 };
 
+// ../../front_end/ui/legacy/StackPane.ts
+var StackPane_exports = {};
+__export(StackPane_exports, {
+  StackPaneElement: () => StackPaneElement
+});
+import * as Lit5 from "../lit/lit.js";
+
+// ../../front_end/ui/legacy/View.ts
+var View_exports = {};
+__export(View_exports, {
+  SimpleView: () => SimpleView
+});
+import * as Platform23 from "../../core/platform/platform.js";
+var SimpleView = class extends VBox {
+  #title;
+  #viewId;
+  constructor(elementOrOptions, options) {
+    super(elementOrOptions, options);
+    const optionsObj = elementOrOptions instanceof HTMLElement ? options : elementOrOptions;
+    this.#title = optionsObj.title;
+    this.#viewId = optionsObj.viewId;
+    if (!Platform23.StringUtilities.isExtendedKebabCase(this.#viewId)) {
+      throw new TypeError(`Invalid view ID '${this.#viewId}'`);
+    }
+  }
+  viewId() {
+    return this.#viewId;
+  }
+  title() {
+    return this.#title;
+  }
+  isCloseable() {
+    return false;
+  }
+  isTransient() {
+    return false;
+  }
+  toolbarItems() {
+    return Promise.resolve([]);
+  }
+  widget() {
+    return Promise.resolve(this);
+  }
+  revealView() {
+    return ViewManager.instance().revealView(this);
+  }
+  disposeView() {
+  }
+  isPreviewFeature() {
+    return false;
+  }
+  iconName() {
+    return void 0;
+  }
+};
+
+// ../../front_end/ui/legacy/StackPane.ts
+var { html: html9, render: render14 } = Lit5;
+var SLOT_VIEW = (input, _output, target) => {
+  render14(html9`<slot name=${input.name}></slot>`, target);
+};
+var SlotView = class extends SimpleView {
+  #pane;
+  #view;
+  constructor(pane4, view = SLOT_VIEW) {
+    super({ title: pane4.title(), viewId: pane4.viewId() });
+    this.#pane = pane4;
+    this.#view = view;
+  }
+  wasShown() {
+    super.wasShown();
+    this.requestUpdate();
+  }
+  performUpdate() {
+    this.#view({ name: this.#pane.viewId() }, void 0, this.contentElement);
+  }
+  toolbarItems() {
+    return this.#pane.toolbarItems();
+  }
+  focus() {
+    this.#pane.focus();
+  }
+};
+var STACK_VIEW = (input, _output, target) => {
+  render14(html9`<devtools-widget ${widget(WrapperWidget, { widget: input.location.widget() })}></devtools-widget>`, target);
+};
+var StackPaneElement = class extends HTMLElement {
+  #location = ViewManager.instance().createStackLocation();
+  #slotViews = /* @__PURE__ */ new Map();
+  #observer = new MutationObserver(() => this.#syncPanes());
+  #shadow = createShadowRootWithCoreStyles(this);
+  set isVisible(isVisible) {
+    this.#location.notifyVisibilityChanged(isVisible);
+  }
+  connectedCallback() {
+    STACK_VIEW({ location: this.#location }, void 0, this.#shadow);
+    this.#syncPanes();
+    this.#observer.observe(this, { childList: true });
+  }
+  disconnectedCallback() {
+    this.#observer.disconnect();
+    for (const [child, slotView] of this.#slotViews) {
+      this.#location.removeView(slotView);
+      this.#slotViews.delete(child);
+    }
+  }
+  #syncPanes() {
+    this.#removeStalePanes();
+    this.#addNewPanes();
+  }
+  #childPanes() {
+    const panes2 = /* @__PURE__ */ new Map();
+    for (const child of this.children) {
+      if (child instanceof HTMLElement && widgetConfigs.has(child)) {
+        const pane4 = Widget.getOrCreateWidget(child);
+        if (pane4 instanceof SimpleView) {
+          panes2.set(child, pane4);
+        }
+      }
+    }
+    return panes2;
+  }
+  #removeStalePanes() {
+    const panes2 = this.#childPanes();
+    for (const [child, slotView] of this.#slotViews) {
+      if (!panes2.has(child)) {
+        this.#location.removeView(slotView);
+        this.#slotViews.delete(child);
+      }
+    }
+  }
+  #addNewPanes() {
+    let next;
+    for (const [child, pane4] of [...this.#childPanes()].reverse()) {
+      if (!this.#slotViews.has(child)) {
+        child.slot = pane4.viewId();
+        const slotView = new SlotView(pane4);
+        this.#slotViews.set(child, slotView);
+        void this.#location.showView(slotView, next);
+      }
+      next = this.#slotViews.get(child);
+    }
+  }
+};
+customElements.define("devtools-stack-pane", StackPaneElement);
+
 // ../../front_end/ui/legacy/TargetCrashedScreen.ts
 var TargetCrashedScreen_exports = {};
 __export(TargetCrashedScreen_exports, {
@@ -22677,7 +22926,7 @@ __export(TargetCrashedScreen_exports, {
   TargetCrashedScreen: () => TargetCrashedScreen
 });
 import * as i18n41 from "../../core/i18n/i18n.js";
-import { html as html9, render as render14 } from "../lit/lit.js";
+import { html as html10, render as render15 } from "../lit/lit.js";
 
 // gen/front_end/ui/legacy/targetCrashedScreen.css.js
 var targetCrashedScreen_css_default = `/*
@@ -22713,8 +22962,8 @@ var UIStrings21 = {
 var str_21 = i18n41.i18n.registerUIStrings("ui/legacy/TargetCrashedScreen.ts", UIStrings21);
 var i18nString21 = i18n41.i18n.getLocalizedString.bind(void 0, str_21);
 var DEFAULT_VIEW4 = (input, _output, target) => {
-  render14(
-    html9`
+  render15(
+    html10`
     <style>${targetCrashedScreen_css_default}</style>
     <div class="message">${i18nString21(UIStrings21.devtoolsWasDisconnectedFromThe)}</div>
     <div class="message">${i18nString21(UIStrings21.oncePageIsReloadedDevtoolsWill)}</div>`,
@@ -22751,10 +23000,10 @@ __export(Treeoutline_exports, {
 import * as Common19 from "../../core/common/common.js";
 import * as Host13 from "../../core/host/host.js";
 import * as i18n43 from "../../core/i18n/i18n.js";
-import * as Platform24 from "../../core/platform/platform.js";
+import * as Platform25 from "../../core/platform/platform.js";
 import * as SDK2 from "../../core/sdk/sdk.js";
 import * as Highlighting from "../components/highlighting/highlighting.js";
-import * as Lit5 from "../lit/lit.js";
+import * as Lit6 from "../lit/lit.js";
 import * as VisualLogging26 from "../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/treeoutline.css.js
@@ -23098,7 +23347,7 @@ var UIStrings22 = {
 var str_22 = i18n43.i18n.registerUIStrings("ui/legacy/Treeoutline.ts", UIStrings22);
 var i18nString22 = i18n43.i18n.getLocalizedString.bind(void 0, str_22);
 var nodeToParentTreeElementMap = /* @__PURE__ */ new WeakMap();
-var { render: render15 } = Lit5;
+var { render: render16 } = Lit6;
 var Events11 = /* @__PURE__ */ ((Events12) => {
   Events12["ElementAttached"] = "ElementAttached";
   Events12["ElementsDetached"] = "ElementsDetached";
@@ -23344,7 +23593,7 @@ var TreeOutline = class extends Common19.ObjectWrapper.ObjectWrapper {
       let scrollParentElement = this.element;
       while (getComputedStyle(scrollParentElement).overflow === "visible" && scrollParentElement.parentElementOrShadowHost()) {
         const parent = scrollParentElement.parentElementOrShadowHost();
-        Platform24.assertNotNullOrUndefined(parent);
+        Platform25.assertNotNullOrUndefined(parent);
         scrollParentElement = parent;
       }
       const viewRect = scrollParentElement.getBoundingClientRect();
@@ -23560,9 +23809,9 @@ var TreeElement = class {
     }
     let insertionIndex;
     if (comparator) {
-      insertionIndex = Platform24.ArrayUtilities.lowerBound(this.childrenInternal, child, comparator);
+      insertionIndex = Platform25.ArrayUtilities.lowerBound(this.childrenInternal, child, comparator);
     } else if (this.treeOutline?.comparator) {
-      insertionIndex = Platform24.ArrayUtilities.lowerBound(this.childrenInternal, child, this.treeOutline.comparator);
+      insertionIndex = Platform25.ArrayUtilities.lowerBound(this.childrenInternal, child, this.treeOutline.comparator);
     } else {
       insertionIndex = this.childrenInternal.length;
     }
@@ -23757,7 +24006,7 @@ var TreeElement = class {
       this.listItemNode.insertBefore(this.leadingIconsElement, this.titleElement);
       this.ensureSelection();
     }
-    render15(icons, this.leadingIconsElement);
+    render16(icons, this.leadingIconsElement);
   }
   setTrailingIcons(icons) {
     if (!this.trailingIconsElement && !icons.length) {
@@ -23770,7 +24019,7 @@ var TreeElement = class {
       this.listItemNode.appendChild(this.trailingIconsElement);
       this.ensureSelection();
     }
-    render15(icons, this.trailingIconsElement);
+    render16(icons, this.trailingIconsElement);
   }
   get tooltip() {
     return this.tooltipInternal;
@@ -24290,7 +24539,7 @@ var TreeSearch = class _TreeSearch extends Common19.ObjectWrapper.ObjectWrapper 
     return this.#getNodeMatchMap().get(node) ?? [];
   }
   static highlight(ranges, selectedRange) {
-    return Lit5.Directives.ref((element) => {
+    return Lit6.Directives.ref((element) => {
       if (!(element instanceof HTMLElement)) {
         return;
       }
@@ -24313,12 +24562,12 @@ var TreeSearch = class _TreeSearch extends Common19.ObjectWrapper.ObjectWrapper 
     view.updateCurrentMatchIndex(this.#currentMatchIndex);
   }
   next() {
-    this.#currentMatchIndex = Platform24.NumberUtilities.mod(this.#currentMatchIndex + 1, this.#matches.length);
+    this.#currentMatchIndex = Platform25.NumberUtilities.mod(this.#currentMatchIndex + 1, this.#matches.length);
     this.dispatchEventToListeners(_TreeSearch.Events.SEARCH_CHANGED);
     return this.currentMatch();
   }
   prev() {
-    this.#currentMatchIndex = Platform24.NumberUtilities.mod(this.#currentMatchIndex - 1, this.#matches.length);
+    this.#currentMatchIndex = Platform25.NumberUtilities.mod(this.#currentMatchIndex - 1, this.#matches.length);
     this.dispatchEventToListeners(_TreeSearch.Events.SEARCH_CHANGED);
     return this.currentMatch();
   }
@@ -24364,7 +24613,7 @@ var TreeSearch = class _TreeSearch extends Common19.ObjectWrapper.ObjectWrapper 
     this.#reset();
     for (const _ of this.#innerSearch(node, currentMatch, jumpBackwards, match)) {
     }
-    this.#currentMatchIndex = Platform24.NumberUtilities.mod(this.#currentMatchIndex, this.#matches.length);
+    this.#currentMatchIndex = Platform25.NumberUtilities.mod(this.#currentMatchIndex, this.#matches.length);
     this.dispatchEventToListeners(_TreeSearch.Events.SEARCH_CHANGED);
     return this.#matches.length;
   }
@@ -24450,7 +24699,7 @@ var TreeViewTreeElement = class _TreeViewTreeElement extends TreeElement {
     this.updateAttributes();
     const childUl = this.configElement.querySelector(':scope > ul[role="group"]');
     const templateElements = childUl ? [this.configElement, childUl] : [this.configElement];
-    Lit5.CustomDirectives.InterceptBindingDirective.setEventListeners(templateElements, this.listItemElement);
+    Lit6.CustomDirectives.InterceptBindingDirective.setEventListeners(templateElements, this.listItemElement);
     for (const child of this.configElement.childNodes) {
       if (child instanceof HTMLUListElement && child.role === "group") {
         continue;
@@ -24801,10 +25050,10 @@ var TreeViewElement = class _TreeViewElement extends HTMLElementWithLightDOMTemp
   }
   TreeViewElement2.TreeElementExpandEvent = TreeElementExpandEvent;
 })(TreeViewElement || (TreeViewElement = {}));
-var IfExpandedDirective = class extends Lit5.Directive.Directive {
+var IfExpandedDirective = class extends Lit6.Directive.Directive {
   #partInfo;
   constructor(partInfo) {
-    if (partInfo.type !== Lit5.Directive.PartType.CHILD) {
+    if (partInfo.type !== Lit6.Directive.PartType.CHILD) {
       throw new Error("ifExpanded directive must be used in a child node");
     }
     super(partInfo);
@@ -24812,7 +25061,7 @@ var IfExpandedDirective = class extends Lit5.Directive.Directive {
   }
   render(content) {
     if (!this.#isInExpandedRow(this.#partInfo.startNode)) {
-      return Lit5.nothing;
+      return Lit6.nothing;
     }
     if (typeof content === "function") {
       return content();
@@ -24843,7 +25092,7 @@ var IfExpandedDirective = class extends Lit5.Directive.Directive {
     return node.expanded;
   }
 };
-var ifExpanded = Lit5.Directive.directive(IfExpandedDirective);
+var ifExpanded = Lit6.Directive.directive(IfExpandedDirective);
 var TreeElementWrapper = class extends HTMLElement {
   #treeElement;
   set treeElement(treeElement) {
@@ -24870,55 +25119,6 @@ function loggingParentProvider(e) {
   return parentElement?.isConnected && parentElement || treeElement?.treeOutline?.contentElement;
 }
 VisualLogging26.registerParentProvider("parentTreeItem", loggingParentProvider);
-
-// ../../front_end/ui/legacy/View.ts
-var View_exports = {};
-__export(View_exports, {
-  SimpleView: () => SimpleView
-});
-import * as Platform25 from "../../core/platform/platform.js";
-var SimpleView = class extends VBox {
-  #title;
-  #viewId;
-  constructor(elementOrOptions, options) {
-    super(elementOrOptions, options);
-    const optionsObj = elementOrOptions instanceof HTMLElement ? options : elementOrOptions;
-    this.#title = optionsObj.title;
-    this.#viewId = optionsObj.viewId;
-    if (!Platform25.StringUtilities.isExtendedKebabCase(this.#viewId)) {
-      throw new TypeError(`Invalid view ID '${this.#viewId}'`);
-    }
-  }
-  viewId() {
-    return this.#viewId;
-  }
-  title() {
-    return this.#title;
-  }
-  isCloseable() {
-    return false;
-  }
-  isTransient() {
-    return false;
-  }
-  toolbarItems() {
-    return Promise.resolve([]);
-  }
-  widget() {
-    return Promise.resolve(this);
-  }
-  revealView() {
-    return ViewManager.instance().revealView(this);
-  }
-  disposeView() {
-  }
-  isPreviewFeature() {
-    return false;
-  }
-  iconName() {
-    return void 0;
-  }
-};
 export {
   ARIAUtils_exports as ARIAUtils,
   ActionRegistration_exports as ActionRegistration,
@@ -24958,6 +25158,7 @@ export {
   SoftContextMenu_exports as SoftContextMenu,
   SoftDropDown_exports as SoftDropDown,
   SplitWidget_exports as SplitWidget,
+  StackPane_exports as StackPane,
   StackedPane_exports as StackedPane,
   StatusBar_exports as StatusBar,
   SuggestBox_exports as SuggestBox,

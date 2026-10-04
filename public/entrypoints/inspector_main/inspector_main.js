@@ -427,7 +427,7 @@ var nodeIcon_css_default = `/*
   width: var(--sys-size-12);
   height: 26px;
   /* stylelint-disable-next-line custom-property-pattern */
-  background-image: var(--image-file-nodeIcon);
+  background-image: var(--image-file-nodejsHex);
   background-size: 17px 17px;
   background-repeat: no-repeat;
   background-position: center;

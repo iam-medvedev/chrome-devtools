@@ -11,11 +11,14 @@ import * as Bindings from '../../models/bindings/bindings.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import { assertScreenshot, renderElementIntoDOM, setTestUniverseForWidgets } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
+import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
+import { createCSSStyle, getMatchedStyles, ruleMatch } from '../../testing/StyleHelpers.js';
 import { TestUniverse } from '../../testing/TestUniverse.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as Highlighting from '../../ui/components/highlighting/highlighting.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as SettingsUI from '../../ui/settings/settings.js';
 import * as Elements from './elements.js';
 describeWithEnvironment('DOMTreeWidget', () => {
     let target;
@@ -30,17 +33,11 @@ describeWithEnvironment('DOMTreeWidget', () => {
     });
     describe('node highlighting', () => {
         function createDomTree() {
-            const elementsTreeOutline = new Elements.DOMTreeWidget.ElementsTreeOutline();
-            const view = createViewFunctionStub(Elements.DOMTreeWidget.DOMTreeWidget, {
-                elementsTreeOutline,
-                alreadyExpandedParentTreeElement: null,
-                highlightedTreeElement: null,
-                isUpdatingHighlights: false,
-            });
+            const view = createViewFunctionStub(Elements.DOMTreeWidget.DOMTreeWidget);
             const domTree = new Elements.DOMTreeWidget.DOMTreeWidget(undefined, [], view);
-            domTree.performUpdate();
+            renderElementIntoDOM(domTree);
             domTree.modelAdded(target.model(SDK.DOMModel.DOMModel));
-            return { view };
+            return { view, domTree };
         }
         const highlightsNodeOnRequestEvent = (inScope) => async () => {
             const { view } = createDomTree();
@@ -63,85 +60,70 @@ describeWithEnvironment('DOMTreeWidget', () => {
         };
         it('highlights node on in scope request event', highlightsNodeOnRequestEvent(true));
         it('does not highlight node on out of scope request event', highlightsNodeOnRequestEvent(false));
+        it('listens to overlay model events only while showing', () => {
+            const targetManager = SDK.TargetManager.TargetManager.instance();
+            const addModelListener = sinon.spy(targetManager, 'addModelListener');
+            const removeModelListener = sinon.spy(targetManager, 'removeModelListener');
+            const domTree = new Elements.DOMTreeWidget.DOMTreeWidget(undefined, [], createViewFunctionStub(Elements.DOMTreeWidget.DOMTreeWidget));
+            const registered = (spy, eventType) => spy.getCalls()
+                .filter(call => call.args[0] === SDK.OverlayModel.OverlayModel && call.args[1] === eventType &&
+                call.args[3] === domTree)
+                .length;
+            const HIGHLIGHT_NODE_REQUESTED = "HighlightNodeRequested" /* SDK.OverlayModel.Events.HIGHLIGHT_NODE_REQUESTED */;
+            const INSPECT_MODE_WILL_BE_TOGGLED = "InspectModeWillBeToggled" /* SDK.OverlayModel.Events.INSPECT_MODE_WILL_BE_TOGGLED */;
+            // Creating a tree (e.g. for a node logged to the Console that is never
+            // shown) must not register anything that keeps it alive.
+            sinon.assert.notCalled(addModelListener);
+            renderElementIntoDOM(domTree);
+            assert.strictEqual(registered(addModelListener, HIGHLIGHT_NODE_REQUESTED), 1);
+            assert.strictEqual(registered(addModelListener, INSPECT_MODE_WILL_BE_TOGGLED), 1);
+            sinon.assert.notCalled(removeModelListener);
+            domTree.detach();
+            assert.strictEqual(registered(removeModelListener, HIGHLIGHT_NODE_REQUESTED), 1);
+            assert.strictEqual(registered(removeModelListener, INSPECT_MODE_WILL_BE_TOGGLED), 1);
+        });
     });
     describe('show-html-comments setting', () => {
         it('updates showComments when setting changes', async () => {
-            const elementsTreeOutline = new Elements.DOMTreeWidget.ElementsTreeOutline();
-            const view = createViewFunctionStub(Elements.DOMTreeWidget.DOMTreeWidget, {
-                elementsTreeOutline,
-                alreadyExpandedParentTreeElement: null,
-                highlightedTreeElement: null,
-                isUpdatingHighlights: false,
-            });
+            const view = createViewFunctionStub(Elements.DOMTreeWidget.DOMTreeWidget);
             const domTree = new Elements.DOMTreeWidget.DOMTreeWidget(undefined, [], view);
-            domTree.performUpdate();
+            renderElementIntoDOM(domTree);
             assert.isTrue(domTree.showComments);
             assert.isTrue(view.input.showComments);
-            const setting = Common.Settings.Settings.instance().moduleSetting('show-html-comments');
+            const setting = Common.Settings.Settings.instance().resolve(SettingsUI.ElementsSettings.showHTMLCommentsSettingDescriptor);
             setting.set(false);
             assert.isFalse(domTree.showComments);
             assert.isFalse(view.input.showComments);
         });
         it('removes change listener on detach', async () => {
-            const elementsTreeOutline = new Elements.DOMTreeWidget.ElementsTreeOutline();
-            const view = createViewFunctionStub(Elements.DOMTreeWidget.DOMTreeWidget, {
-                elementsTreeOutline,
-                alreadyExpandedParentTreeElement: null,
-                highlightedTreeElement: null,
-                isUpdatingHighlights: false,
-            });
+            const view = createViewFunctionStub(Elements.DOMTreeWidget.DOMTreeWidget);
             const domTree = new Elements.DOMTreeWidget.DOMTreeWidget(undefined, [], view);
-            domTree.performUpdate();
+            renderElementIntoDOM(domTree);
             domTree.detach();
-            const setting = Common.Settings.Settings.instance().moduleSetting('show-html-comments');
+            const setting = Common.Settings.Settings.instance().resolve(SettingsUI.ElementsSettings.showHTMLCommentsSettingDescriptor);
             const viewCallCount = view.callCount;
             setting.set(false);
             sinon.assert.callCount(view, viewCallCount);
+            assert.isTrue(domTree.showComments);
+        });
+        it('applies a setting change made while hidden once shown again', async () => {
+            const view = createViewFunctionStub(Elements.DOMTreeWidget.DOMTreeWidget);
+            const domTree = new Elements.DOMTreeWidget.DOMTreeWidget(undefined, [], view);
+            renderElementIntoDOM(domTree);
+            domTree.detach();
+            const setting = Common.Settings.Settings.instance().moduleSetting('show-html-comments');
+            setting.set(false);
+            assert.isTrue(domTree.showComments);
+            renderElementIntoDOM(domTree);
+            assert.isFalse(domTree.showComments);
+            assert.isFalse(view.input.showComments);
         });
     });
     describe('image preview popover', () => {
-        it('shows preview when hovering over a link within the elements tree outline', async () => {
+        it('shows preview when hovering over a link', async () => {
             const clock = sinon.useFakeTimers();
             try {
-                const domTree = new Elements.DOMTreeWidget.DOMTreeWidget(undefined, [], Elements.DOMTreeWidget.DEFAULT_VIEW);
-                domTree.markAsRoot();
-                renderElementIntoDOM(domTree);
-                domTree.performUpdate();
-                const shadowHost = domTree.contentElement.firstElementChild;
-                assert.exists(shadowHost);
-                const elementsTreeOutline = shadowHost.shadowRoot?.querySelector('.elements-tree-outline');
-                assert.exists(elementsTreeOutline);
-                const link = elementsTreeOutline.createChild('span');
-                link.boxInWindow = () => new AnchorBox(0, 0, 10, 10);
-                const imageUrl = Platform.DevToolsPath.urlString `http://example.com/image.png`;
-                Elements.ImagePreviewPopover.ImagePreviewPopover.setImageUrl(link, imageUrl);
-                const buildStub = sinon.stub(Components.ImagePreview.ImagePreview, 'build').resolves(document.createElement('div'));
-                const event = new MouseEvent('mousemove', {
-                    bubbles: true,
-                    cancelable: true,
-                    composed: true,
-                    clientX: 5,
-                    clientY: 5,
-                });
-                link.dispatchEvent(event);
-                for (let i = 0; i < 20; i++) {
-                    if (buildStub.called) {
-                        break;
-                    }
-                    clock.tick(1);
-                    await Promise.resolve();
-                }
-                sinon.assert.calledWith(buildStub, imageUrl, true);
-                domTree.detach();
-            }
-            finally {
-                clock.restore();
-            }
-        });
-        it('shows preview when hovering over a link in DECLARATIVE_VIEW', async () => {
-            const clock = sinon.useFakeTimers();
-            try {
-                const domTree = new Elements.DOMTreeWidget.DOMTreeWidget(undefined, [], Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+                const domTree = new Elements.DOMTreeWidget.DOMTreeWidget();
                 domTree.markAsRoot();
                 renderElementIntoDOM(domTree);
                 domTree.performUpdate();
@@ -176,10 +158,10 @@ describeWithEnvironment('DOMTreeWidget', () => {
         });
     });
     describe('issue tooltip popover', () => {
-        it('shows issue tooltip when hovering over a violating element in DECLARATIVE_VIEW', async () => {
+        it('shows issue tooltip when hovering over a violating element', async () => {
             const domModel = target.model(SDK.DOMModel.DOMModel);
             sinon.stub(domModel, 'requestDocument').resolves(null);
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -228,10 +210,10 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 domTree.detach();
             }
         });
-        it('shows issue tooltip when hovering over an attribute violating element in DEFAULT_VIEW', async () => {
+        it('shows issue tooltip when hovering over an attribute violating element', async () => {
             const domModel = target.model(SDK.DOMModel.DOMModel);
             sinon.stub(domModel, 'requestDocument').resolves(null);
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DEFAULT_VIEW);
+            const { domTree } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -241,17 +223,19 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 domTree.rootDOMNode = rootNode;
                 domTree.performUpdate();
                 await waitForTreeUpdates();
-                const treeOutline = Elements.DOMTreeWidget.ElementsTreeOutline.forDOMModel(domModel);
-                assert.exists(treeOutline);
-                const treeElement = treeOutline.findTreeElement(rootNode);
-                assert.exists(treeElement);
+                const tree = domTree.contentElement.querySelector('devtools-tree');
+                assert.exists(tree);
+                const widgetElement = tree.shadowRoot?.querySelector('devtools-widget');
+                assert.exists(widgetElement);
+                const widget = UI.Widget.Widget.get(widgetElement);
+                assert.exists(widget);
                 const mockIssue = new IssuesManager.GenericIssue.GenericIssue({
                     errorType: "FormLabelForNameError" /* Protocol.Audits.GenericIssueErrorType.FormLabelForNameError */,
                     frameId: '1',
                     violatingNodeAttribute: 'id',
                 }, null);
-                sinon.stub(treeElement.widget, 'issues').get(() => [mockIssue]);
-                const violatingAttr = treeElement.listItemElement.querySelector('.webkit-html-attribute-name');
+                sinon.stub(widget, 'issues').get(() => [mockIssue]);
+                const violatingAttr = widget.contentElement.querySelector('.webkit-html-attribute-name');
                 assert.exists(violatingAttr);
                 violatingAttr.classList.add('violating-element');
                 violatingAttr.boxInWindow = () => new AnchorBox(0, 0, 10, 10);
@@ -326,19 +310,19 @@ describeWithEnvironment('DOMTreeWidget', () => {
         assert.isNotNull(node);
         return node;
     }
-    function setupDOMTreeWidget(target, view, options) {
+    function setupDOMTreeWidget(target, options) {
         const domModel = target.model(SDK.DOMModel.DOMModel);
         if (!('restore' in domModel.requestDocument)) {
             sinon.stub(domModel, 'requestDocument').resolves(null);
         }
-        const domTree = new Elements.DOMTreeWidget.DOMTreeWidget(undefined, [], view);
+        const domTree = new Elements.DOMTreeWidget.DOMTreeWidget();
         domTree.markAsRoot();
         renderElementIntoDOM(domTree, options);
         domTree.performUpdate();
         domTree.modelAdded(domModel);
         return { domTree, domModel };
     }
-    // In DECLARATIVE_VIEW, updating DOMTreeWidget renders the outer devtools-tree element.
+    // Updating DOMTreeWidget renders the outer devtools-tree element.
     // When devtools-tree connects the child devtools-widget elements, their internal
     // ElementsTreeWidgets schedule their render updates in a subsequent microtask/tick.
     // We wait for DOMTreeWidget, yield a tick to allow child widgets to mount, and then
@@ -348,29 +332,45 @@ describeWithEnvironment('DOMTreeWidget', () => {
         await new Promise(resolve => setTimeout(resolve, 0));
         await UI.Widget.Widget.allUpdatesComplete;
     }
+    function findElementsTreeWidget(domTree, node) {
+        const tree = domTree.contentElement.querySelector('devtools-tree');
+        if (!tree) {
+            return null;
+        }
+        for (const el of tree.getInternalTreeOutlineForTest().contentElement.querySelectorAll('devtools-widget')) {
+            const widget = UI.Widget.Widget.get(el);
+            if (widget instanceof Elements.ElementsTreeElement.ElementsTreeWidget && widget.node === node) {
+                return widget;
+            }
+        }
+        return null;
+    }
     describe('context menu', () => {
+        async function setupTextNodeTree() {
+            const { domTree, domModel } = setupDOMTreeWidget(target);
+            const rootNode = createTestDOMTree(domModel, {
+                nodeId: 1,
+                nodeName: 'BODY',
+                children: [{ nodeId: 2, nodeName: '#text', nodeValue: 'Some text' }],
+            });
+            domTree.rootDOMNode = rootNode;
+            domTree.selectDOMNode(rootNode.children()[0]);
+            domTree.performUpdate();
+            await waitForTreeUpdates();
+            // A single text child is rendered inline in the parent's widget.
+            const widget = findElementsTreeWidget(domTree, rootNode);
+            assert.exists(widget);
+            const textNodeContainer = widget.contentElement.querySelector('.webkit-html-text-node');
+            assert.exists(textNodeContainer);
+            return { domTree, textNodeContainer };
+        }
         it('allows default context menu on text selection when editing', async () => {
-            const { domTree, domModel } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DEFAULT_VIEW);
+            const { domTree, textNodeContainer } = await setupTextNodeTree();
             try {
-                const rootNode = createTestDOMTree(domModel, {
-                    nodeId: 1,
-                    nodeName: 'BODY',
-                    children: [{ nodeId: 2, nodeName: '#text', nodeValue: 'Some text' }],
-                });
-                domTree.rootDOMNode = rootNode;
-                const pNode = rootNode.children()[0];
-                domTree.selectDOMNode(pNode);
-                const treeOutline = Elements.DOMTreeWidget.ElementsTreeOutline.forDOMModel(domModel);
-                assert.exists(treeOutline);
-                const treeElement = treeOutline.findTreeElement(pNode);
-                assert.isNotNull(treeElement);
-                const textNodeContainer = treeElement.widget.contentElement.querySelector('.webkit-html-text-node');
-                assert.isNotNull(textNodeContainer);
                 assert.isFalse(UI.UIUtils.isEditing());
                 UI.UIUtils.markBeingEdited(textNodeContainer, true);
                 assert.isTrue(UI.UIUtils.isEditing());
-                const event = new MouseEvent('contextmenu', { bubbles: true, composed: true });
-                sinon.stub(treeOutline, 'treeElementFromEventInternal').returns(treeElement);
+                const event = new MouseEvent('contextmenu', { bubbles: true, composed: true, cancelable: true });
                 const preventDefaultSpy = sinon.spy(event, 'preventDefault');
                 textNodeContainer.dispatchEvent(event);
                 sinon.assert.notCalled(preventDefaultSpy);
@@ -381,28 +381,10 @@ describeWithEnvironment('DOMTreeWidget', () => {
             }
         });
         it('prevents default context menu on node selection and no edit', async () => {
-            const { domTree, domModel } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DEFAULT_VIEW);
+            const { domTree, textNodeContainer } = await setupTextNodeTree();
             try {
-                const rootNode = createTestDOMTree(domModel, {
-                    nodeId: 1,
-                    nodeName: 'BODY',
-                    children: [{ nodeId: 2, nodeName: '#text', nodeValue: 'Some text' }],
-                });
-                domTree.rootDOMNode = rootNode;
-                const pNode = rootNode.children()[0];
-                domTree.selectDOMNode(pNode);
-                const treeOutline = Elements.DOMTreeWidget.ElementsTreeOutline.forDOMModel(domModel);
-                assert.exists(treeOutline);
-                const treeElement = treeOutline.findTreeElement(pNode);
-                assert.isNotNull(treeElement);
                 assert.isFalse(UI.UIUtils.isEditing());
-                const textNodeContainer = treeElement.widget.contentElement.querySelector('.webkit-html-text-node');
-                assert.isNotNull(textNodeContainer);
-                const event = new MouseEvent('contextmenu', {
-                    bubbles: true,
-                    composed: true,
-                });
-                sinon.stub(treeOutline, 'treeElementFromEventInternal').returns(treeElement);
+                const event = new MouseEvent('contextmenu', { bubbles: true, composed: true, cancelable: true });
                 const preventDefaultSpy = sinon.spy(event, 'preventDefault');
                 textNodeContainer.dispatchEvent(event);
                 sinon.assert.called(preventDefaultSpy);
@@ -412,125 +394,9 @@ describeWithEnvironment('DOMTreeWidget', () => {
             }
         });
     });
-    describe('DEFAULT_VIEW', () => {
-        it('renders screenshot of default view', async () => {
-            const { domTree, domModel } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DEFAULT_VIEW, { includeCommonStyles: true });
-            try {
-                const rootNode = createTestDOMTree(domModel, {
-                    nodeId: 1,
-                    nodeName: 'DIV',
-                    attributes: ['id', 'container', 'class', 'main-view'],
-                    children: [
-                        { nodeId: 2, nodeName: 'H1', children: [{ nodeId: 3, nodeName: '#text', nodeValue: 'Title' }] },
-                        { nodeId: 4, nodeName: 'SPAN', children: [{ nodeId: 5, nodeName: '#text', nodeValue: 'Description' }] },
-                    ],
-                });
-                domTree.rootDOMNode = rootNode;
-                const treeOutline = Elements.DOMTreeWidget.ElementsTreeOutline.forDOMModel(domModel);
-                assert.exists(treeOutline);
-                const rootTreeElement = treeOutline.findTreeElement(rootNode);
-                assert.exists(rootTreeElement);
-                rootTreeElement.expand();
-                domTree.performUpdate();
-                await UI.Widget.Widget.allUpdatesComplete;
-                await assertScreenshot('elements/elements_tree_outline_default.png');
-            }
-            finally {
-                domTree.detach();
-            }
-        });
-        it('collapses children of a node in DEFAULT_VIEW', async () => {
-            const { domTree, domModel } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DEFAULT_VIEW);
-            try {
-                const rootNode = createTestDOMTree(domModel, {
-                    nodeId: 1,
-                    nodeName: 'DIV',
-                    children: [
-                        {
-                            nodeId: 2,
-                            nodeName: 'DIV',
-                            children: [
-                                {
-                                    nodeId: 3,
-                                    nodeName: 'SPAN',
-                                    children: [{ nodeId: 4, nodeName: 'B' }],
-                                },
-                            ],
-                        },
-                    ],
-                });
-                domTree.rootDOMNode = rootNode;
-                domTree.performUpdate();
-                await waitForTreeUpdates();
-                const treeOutline = Elements.DOMTreeWidget.ElementsTreeOutline.forDOMModel(domModel);
-                assert.exists(treeOutline);
-                const rootTreeElement = treeOutline.findTreeElement(rootNode);
-                assert.exists(rootTreeElement);
-                await rootTreeElement.expandRecursively();
-                const childNode = rootNode.children()[0];
-                const childTreeElement = treeOutline.findTreeElement(childNode);
-                assert.exists(childTreeElement);
-                assert.isTrue(childTreeElement.expanded);
-                domTree.collapseChildren(rootNode);
-                assert.isTrue(rootTreeElement.expanded);
-                assert.isFalse(childTreeElement.expanded);
-            }
-            finally {
-                domTree.detach();
-            }
-        });
-        it('highlights closing tag and not opening tag when hovering over expanded closing tag in DEFAULT_VIEW', async () => {
-            const { domTree, domModel } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DEFAULT_VIEW);
-            try {
-                const rootNode = createTestDOMTree(domModel, {
-                    nodeId: 1,
-                    nodeName: 'DIV',
-                    children: [
-                        { nodeId: 2, nodeName: 'P' },
-                    ],
-                });
-                domTree.rootDOMNode = rootNode;
-                domTree.performUpdate();
-                await waitForTreeUpdates();
-                const treeOutline = Elements.DOMTreeWidget.ElementsTreeOutline.forDOMModel(domModel);
-                assert.exists(treeOutline);
-                const rootTreeElement = treeOutline.findTreeElement(rootNode);
-                assert.exists(rootTreeElement);
-                rootTreeElement.expand();
-                await waitForTreeUpdates();
-                const closingTreeElement = rootTreeElement.childAt(rootTreeElement.childCount() - 1);
-                assert.exists(closingTreeElement);
-                assert.isTrue(closingTreeElement.isClosingTag());
-                const highlightSpy = sinon.spy(domModel.overlayModel(), 'highlightInOverlay');
-                // Hover over the opening tag first.
-                rootTreeElement.listItemElement.dispatchEvent(new MouseEvent('mousemove', { bubbles: true }));
-                assert.isTrue(rootTreeElement.hovered);
-                assert.isTrue(rootTreeElement.listItemElement.classList.contains('hovered'));
-                assert.isFalse(closingTreeElement.hovered);
-                assert.isFalse(closingTreeElement.listItemElement.classList.contains('hovered'));
-                assert.strictEqual(domTree.hoveredDOMNode(), rootNode);
-                // Move hover to the closing tag.
-                closingTreeElement.listItemElement.dispatchEvent(new MouseEvent('mousemove', { bubbles: true }));
-                assert.isFalse(rootTreeElement.hovered);
-                assert.isFalse(rootTreeElement.listItemElement.classList.contains('hovered'));
-                assert.isTrue(closingTreeElement.hovered);
-                assert.isTrue(closingTreeElement.listItemElement.classList.contains('hovered'));
-                assert.strictEqual(domTree.hoveredDOMNode(), rootNode);
-                sinon.assert.calledWith(highlightSpy, sinon.match({ node: rootNode }), 'all', true);
-                // Move mouse away.
-                treeOutline.elementInternal.dispatchEvent(new MouseEvent('mouseleave'));
-                assert.isFalse(closingTreeElement.hovered);
-                assert.isFalse(closingTreeElement.listItemElement.classList.contains('hovered'));
-                assert.isNull(domTree.hoveredDOMNode());
-            }
-            finally {
-                domTree.detach();
-            }
-        });
-    });
-    describe('DECLARATIVE_VIEW', () => {
-        it('renders DOM tree declaratively using <devtools-tree> and ElementsTreeWidget', async () => {
-            const { domTree, domModel } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+    describe('rendering and interactions', () => {
+        it('renders DOM tree using <devtools-tree> and ElementsTreeWidget', async () => {
+            const { domTree, domModel } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -539,8 +405,6 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 });
                 domTree.rootDOMNode = rootNode;
                 domTree.performUpdate();
-                // Ensure ElementsTreeOutline is not created in declarative mode.
-                assert.isUndefined(domTree.getTreeOutlineForTesting());
                 // Wait for devtools-tree to render its template.
                 await UI.Widget.Widget.allUpdatesComplete;
                 const tree = domTree.contentElement.querySelector('devtools-tree');
@@ -560,7 +424,7 @@ describeWithEnvironment('DOMTreeWidget', () => {
             }
         });
         it('renders exactly one selection fill element on tree element level for DOM nodes, shortcuts, and adopted style sheets', async () => {
-            const { domTree, domModel } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree, domModel } = setupDOMTreeWidget(target);
             const sheetId = 'sheet-selection-test';
             try {
                 const rootNode = createTestDOMTree(domModel, {
@@ -632,7 +496,7 @@ describeWithEnvironment('DOMTreeWidget', () => {
             }
         });
         it('handles selection and expansion', async () => {
-            const { domTree, domModel } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree, domModel } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -652,7 +516,7 @@ describeWithEnvironment('DOMTreeWidget', () => {
             }
         });
         it('collapses children of a node', async () => {
-            const { domTree, domModel } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree, domModel } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -698,7 +562,7 @@ describeWithEnvironment('DOMTreeWidget', () => {
             }
         });
         it('supports omitRootDOMNode', async () => {
-            const { domTree, domModel } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree, domModel } = setupDOMTreeWidget(target);
             try {
                 domTree.omitRootDOMNode = true;
                 const rootNode = createTestDOMTree(domModel, {
@@ -726,7 +590,7 @@ describeWithEnvironment('DOMTreeWidget', () => {
             }
         });
         it('fetches children asynchronously when children are not loaded initially', async () => {
-            const { domTree, domModel } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree, domModel } = setupDOMTreeWidget(target);
             try {
                 domTree.omitRootDOMNode = true;
                 const rootNode = SDK.DOMModel.DOMNode.create(domModel, null, false, {
@@ -761,8 +625,8 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 domTree.detach();
             }
         });
-        it('automatically expands html element and renders its children when root is document in DECLARATIVE_VIEW', async () => {
-            const { domTree, domModel } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+        it('automatically expands html element and renders its children when root is document', async () => {
+            const { domTree, domModel } = setupDOMTreeWidget(target);
             try {
                 domTree.omitRootDOMNode = true;
                 const docNode = createTestDOMTree(domModel, {
@@ -800,8 +664,8 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 domTree.detach();
             }
         });
-        it('renders screenshot of declarative view', async () => {
-            const { domTree, domModel } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW, { includeCommonStyles: true });
+        it('renders screenshot', async () => {
+            const { domTree, domModel } = setupDOMTreeWidget(target, { includeCommonStyles: true });
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -823,7 +687,7 @@ describeWithEnvironment('DOMTreeWidget', () => {
             }
         });
         it('supports maxTreeDepth', async () => {
-            const { domTree, domModel } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree, domModel } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -850,7 +714,7 @@ describeWithEnvironment('DOMTreeWidget', () => {
             }
         });
         it('filters comment nodes based on showComments setting', async () => {
-            const { domTree, domModel } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree, domModel } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -883,7 +747,7 @@ describeWithEnvironment('DOMTreeWidget', () => {
             }
         });
         it('sets correct jslog attributes on treeitems', async () => {
-            const { domTree, domModel } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree, domModel } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, { nodeId: 1, nodeName: 'DIV' });
                 domTree.rootDOMNode = rootNode;
@@ -904,7 +768,7 @@ describeWithEnvironment('DOMTreeWidget', () => {
             }
         });
         it('computes left indent correctly across nesting levels', async () => {
-            const { domTree, domModel } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree, domModel } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -956,7 +820,7 @@ describeWithEnvironment('DOMTreeWidget', () => {
             SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
             const domModel = target.model(SDK.DOMModel.DOMModel);
             sinon.stub(domModel, 'requestDocument').resolves(null);
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -1015,11 +879,11 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 domTree.detach();
             }
         });
-        it('handles keyboard shortcuts (h to toggle hide, Delete to remove, Ctrl+ArrowUp/Down to reorder) in declarative view', async () => {
+        it('handles keyboard shortcuts (h to toggle hide, Delete to remove, Ctrl+ArrowUp/Down to reorder)', async () => {
             SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
             const domModel = target.model(SDK.DOMModel.DOMModel);
             sinon.stub(domModel, 'requestDocument').resolves(null);
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -1078,7 +942,7 @@ describeWithEnvironment('DOMTreeWidget', () => {
             SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
             const domModel = target.model(SDK.DOMModel.DOMModel);
             sinon.stub(domModel, 'requestDocument').resolves(null);
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -1122,93 +986,11 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 domTree.detach();
             }
         });
-        it('supports toggleEditAsHTML and multiline editing in DEFAULT_VIEW', async () => {
-            const domModel = target.model(SDK.DOMModel.DOMModel);
-            sinon.stub(domModel, 'requestDocument').resolves(null);
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DEFAULT_VIEW);
-            try {
-                const rootNode = createTestDOMTree(domModel, {
-                    nodeId: 1,
-                    nodeName: 'DIV',
-                    attributes: ['id', 'test-div'],
-                    children: [
-                        { nodeId: 2, nodeName: 'P', attributes: ['class', 'intro'] },
-                    ],
-                });
-                const pNode = rootNode.children()[0];
-                sinon.stub(pNode, 'getOuterHTML').resolves('<p class="intro"></p>');
-                domTree.rootDOMNode = rootNode;
-                domTree.setNodeExpanded(rootNode, true);
-                domTree.performUpdate();
-                await UI.Widget.Widget.allUpdatesComplete;
-                // Start Edit as HTML on pNode
-                domTree.toggleEditAsHTML(pNode);
-                await UI.Widget.Widget.allUpdatesComplete;
-                const multiline = domTree.multilineEditing();
-                assert.exists(multiline);
-                const treeElement = domTree.treeElementForNode(pNode);
-                assert.exists(treeElement);
-                assert.isTrue(treeElement.widget.isEditing);
-                // Cancel editing
-                multiline.cancel();
-                assert.isNull(domTree.multilineEditing());
-                assert.isFalse(treeElement.widget.isEditing);
-            }
-            finally {
-                domTree.detach();
-            }
-        });
-        it('handles drag and drop reordering in DEFAULT_VIEW', async () => {
-            const domModel = target.model(SDK.DOMModel.DOMModel);
-            sinon.stub(domModel, 'requestDocument').resolves(null);
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DEFAULT_VIEW);
-            try {
-                const rootNode = createTestDOMTree(domModel, {
-                    nodeId: 1,
-                    nodeName: 'DIV',
-                    children: [
-                        { nodeId: 2, nodeName: 'P' },
-                        { nodeId: 3, nodeName: 'SPAN' },
-                    ],
-                });
-                const pNode = rootNode.children()[0];
-                const spanNode = rootNode.children()[1];
-                const moveToStub = sinon.stub(pNode, 'moveTo');
-                domTree.rootDOMNode = rootNode;
-                domTree.setNodeExpanded(rootNode, true);
-                domTree.performUpdate();
-                await UI.Widget.Widget.allUpdatesComplete;
-                assert.isTrue(domTree.isValidDragSource(pNode));
-                assert.isFalse(domTree.isValidDragSource(rootNode));
-                // 1. Drag start on pNode
-                const dataTransfer = new DataTransfer();
-                const dragStartEvent = new DragEvent('dragstart', { dataTransfer });
-                Object.defineProperty(dragStartEvent, 'target', { value: document.createElement('div') });
-                const started = domTree.onDragStart(pNode, dragStartEvent);
-                assert.isTrue(started);
-                assert.strictEqual(domTree.nodeBeingDragged(), pNode);
-                // 2. Drag over spanNode
-                assert.isTrue(domTree.isValidDragTarget(spanNode));
-                assert.isFalse(domTree.isValidDragTarget(pNode));
-                const dragOverEvent = new DragEvent('dragover', { dataTransfer });
-                domTree.onDragOver(spanNode, /* isClosingTag= */ false, dragOverEvent);
-                assert.deepEqual(domTree.dragOverNode(), { node: spanNode, isClosingTag: false });
-                // 3. Drop onto spanNode
-                const dropEvent = new DragEvent('drop', { dataTransfer });
-                domTree.onDrop(spanNode, /* isClosingTag= */ false, dropEvent);
-                assert.isNull(domTree.nodeBeingDragged());
-                assert.isNull(domTree.dragOverNode());
-                sinon.assert.calledWith(moveToStub, rootNode, spanNode);
-            }
-            finally {
-                domTree.detach();
-            }
-        });
-        it('handles clipboard operations (cut, copy, paste, .in-clipboard styling, and events) in declarative view', async () => {
+        it('handles clipboard operations (cut, copy, paste, .in-clipboard styling, and events)', async () => {
             SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
             const domModel = target.model(SDK.DOMModel.DOMModel);
             sinon.stub(domModel, 'requestDocument').resolves(null);
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -1277,7 +1059,7 @@ describeWithEnvironment('DOMTreeWidget', () => {
             SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
             const domModel = target.model(SDK.DOMModel.DOMModel);
             sinon.stub(domModel, 'requestDocument').resolves(null);
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -1310,11 +1092,11 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 domTree.detach();
             }
         });
-        it('dispatches mousemove and mouseleave to trigger overlay highlight and .hovered styling in declarative view', async () => {
+        it('dispatches mousemove and mouseleave to trigger overlay highlight and .hovered styling', async () => {
             SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
             const domModel = target.model(SDK.DOMModel.DOMModel);
             sinon.stub(domModel, 'requestDocument').resolves(null);
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -1352,11 +1134,11 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 domTree.detach();
             }
         });
-        it('highlights search match and clears match highlights in declarative view', async () => {
+        it('highlights search match and clears match highlights', async () => {
             SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
             const domModel = target.model(SDK.DOMModel.DOMModel);
             sinon.stub(domModel, 'requestDocument').resolves(null);
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -1391,11 +1173,11 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 domTree.detach();
             }
         });
-        it('expands ancestors and selects node when highlightMatch is called on a nested node in declarative view', async () => {
+        it('expands ancestors and selects node when highlightMatch is called on a nested node', async () => {
             SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
             const domModel = target.model(SDK.DOMModel.DOMModel);
             sinon.stub(domModel, 'requestDocument').resolves(null);
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -1429,49 +1211,11 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 domTree.detach();
             }
         });
-        it('highlights search match and clears match highlights in default (imperative) view', async () => {
+        it('highlights search match when node is already selected', async () => {
             SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
             const domModel = target.model(SDK.DOMModel.DOMModel);
             sinon.stub(domModel, 'requestDocument').resolves(null);
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DEFAULT_VIEW);
-            try {
-                const rootNode = createTestDOMTree(domModel, {
-                    nodeId: 1,
-                    nodeName: 'DIV',
-                    children: [
-                        { nodeId: 2, nodeName: 'P', attributes: ['id', 'test-default-view'] },
-                    ],
-                });
-                domTree.omitRootDOMNode = true;
-                domTree.rootDOMNode = rootNode;
-                domTree.performUpdate();
-                await UI.Widget.Widget.allUpdatesComplete;
-                const pNode = rootNode.children()[0];
-                // 1. Highlight search match
-                domTree.highlightMatch(pNode, 'test-default-view');
-                assert.strictEqual(domTree.searchMatchNode(), pNode);
-                assert.strictEqual(domTree.searchMatchQuery(), 'test-default-view');
-                await UI.Widget.Widget.allUpdatesComplete;
-                const highlights = CSS.highlights.get(Highlighting.HighlightManager.HIGHLIGHT_REGISTRY);
-                assert.exists(highlights);
-                assert.isAbove(highlights.size, 0);
-                assert.isTrue(Array.from(highlights).some(range => range.toString() === 'test-default-view'));
-                // 2. Hide match highlights
-                domTree.hideMatchHighlights(pNode);
-                assert.isNull(domTree.searchMatchNode());
-                assert.isNull(domTree.searchMatchQuery());
-                await UI.Widget.Widget.allUpdatesComplete;
-                assert.strictEqual(highlights.size, 0);
-            }
-            finally {
-                domTree.detach();
-            }
-        });
-        it('highlights search match when node is already selected in default (imperative) view', async () => {
-            SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
-            const domModel = target.model(SDK.DOMModel.DOMModel);
-            sinon.stub(domModel, 'requestDocument').resolves(null);
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DEFAULT_VIEW);
+            const { domTree } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -1501,11 +1245,11 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 domTree.detach();
             }
         });
-        it('clears previous search match highlights when navigating to a new match in default (imperative) view', async () => {
+        it('clears previous search match highlights when navigating to a new match', async () => {
             SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
             const domModel = target.model(SDK.DOMModel.DOMModel);
             sinon.stub(domModel, 'requestDocument').resolves(null);
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DEFAULT_VIEW);
+            const { domTree } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -1527,30 +1271,30 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 let highlights = CSS.highlights.get(Highlighting.HighlightManager.HIGHLIGHT_REGISTRY);
                 assert.exists(highlights);
                 assert.strictEqual(highlights.size, 1);
-                const treeElement1 = domTree.treeElementForNode(p1);
-                assert.isNotNull(treeElement1);
-                assert.strictEqual(treeElement1.widget.searchQuery, 'match');
-                // 2. Navigate to second match (which deselects treeElement1 and triggers its performUpdate)
+                const widget1 = findElementsTreeWidget(domTree, p1);
+                assert.exists(widget1);
+                assert.strictEqual(widget1.searchQuery, 'match');
+                // 2. Navigate to second match (which deselects widget1 and triggers its performUpdate)
                 domTree.highlightMatch(p2, 'match');
                 await UI.Widget.Widget.allUpdatesComplete;
-                assert.isNull(treeElement1.widget.searchQuery);
+                assert.isNull(widget1.searchQuery);
                 highlights = CSS.highlights.get(Highlighting.HighlightManager.HIGHLIGHT_REGISTRY);
                 assert.exists(highlights);
                 assert.strictEqual(highlights.size, 1);
-                const treeElement2 = domTree.treeElementForNode(p2);
-                assert.isNotNull(treeElement2);
-                assert.strictEqual(treeElement2.widget.searchQuery, 'match');
+                const widget2 = findElementsTreeWidget(domTree, p2);
+                assert.exists(widget2);
+                assert.strictEqual(widget2.searchQuery, 'match');
                 const activeRange = Array.from(highlights)[0];
-                assert.isTrue(treeElement2.listItemElement.contains(activeRange.startContainer));
+                assert.isTrue(widget2.contentElement.contains(activeRange.startContainer));
             }
             finally {
                 domTree.detach();
             }
         });
-        it('updates rendered attributes on AttrModified and AttrRemoved in DECLARATIVE_VIEW without duplicates', async () => {
+        it('updates rendered attributes on AttrModified and AttrRemoved without duplicates', async () => {
             const domModel = target.model(SDK.DOMModel.DOMModel);
             sinon.stub(domModel, 'requestDocument').resolves(null);
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -1606,10 +1350,10 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 domTree.detach();
             }
         });
-        it('applies DOM update highlight animation on attribute modified and fires onElementsTreeUpdated in DECLARATIVE_VIEW', async () => {
+        it('applies DOM update highlight animation on attribute modified and fires onElementsTreeUpdated', async () => {
             const domModel = target.model(SDK.DOMModel.DOMModel);
             sinon.stub(domModel, 'requestDocument').resolves(null);
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -1650,10 +1394,10 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 domTree.detach();
             }
         });
-        it('applies DOM update highlight animation on character data modified in DECLARATIVE_VIEW', async () => {
+        it('applies DOM update highlight animation on character data modified', async () => {
             const domModel = target.model(SDK.DOMModel.DOMModel);
             sinon.stub(domModel, 'requestDocument').resolves(null);
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -1687,10 +1431,10 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 domTree.detach();
             }
         });
-        it('continues receiving DOMModel updates after detach and re-show in DECLARATIVE_VIEW', async () => {
+        it('continues receiving DOMModel updates after detach and re-show', async () => {
             const domModel = target.model(SDK.DOMModel.DOMModel);
             sinon.stub(domModel, 'requestDocument').resolves(null);
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -1729,10 +1473,10 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 domTree.detach();
             }
         });
-        it('starts editing attribute or new attribute on selectNodeAfterEdit with moveDirection in DECLARATIVE_VIEW', async () => {
+        it('starts editing attribute or new attribute on selectNodeAfterEdit with moveDirection', async () => {
             const domModel = target.model(SDK.DOMModel.DOMModel);
             sinon.stub(domModel, 'requestDocument').resolves(null);
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -1775,10 +1519,10 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 domTree.detach();
             }
         });
-        it('supports toggleEditAsHTML and multiline editing in DECLARATIVE_VIEW', async () => {
+        it('supports toggleEditAsHTML and multiline editing', async () => {
             const domModel = target.model(SDK.DOMModel.DOMModel);
             sinon.stub(domModel, 'requestDocument').resolves(null);
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -1825,10 +1569,10 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 domTree.detach();
             }
         });
-        it('hides children and closing tag when editing an element with children as HTML in DECLARATIVE_VIEW', async () => {
+        it('hides children and closing tag when editing an element with children as HTML', async () => {
             const domModel = target.model(SDK.DOMModel.DOMModel);
             sinon.stub(domModel, 'requestDocument').resolves(null);
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -1875,10 +1619,10 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 domTree.detach();
             }
         });
-        it('cleans up multilineEditingNode when Edit as HTML is requested during active inline edit in DECLARATIVE_VIEW', async () => {
+        it('cleans up multilineEditingNode when Edit as HTML is requested during active inline edit', async () => {
             const domModel = target.model(SDK.DOMModel.DOMModel);
             sinon.stub(domModel, 'requestDocument').resolves(null);
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -1916,10 +1660,10 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 domTree.detach();
             }
         });
-        it('cleans up multilineEditingNode when getOuterHTML fails in DECLARATIVE_VIEW', async () => {
+        it('cleans up multilineEditingNode when getOuterHTML fails', async () => {
             const domModel = target.model(SDK.DOMModel.DOMModel);
             sinon.stub(domModel, 'requestDocument').resolves(null);
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -1950,10 +1694,10 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 domTree.detach();
             }
         });
-        it('handles drag and drop reordering and class styling in DECLARATIVE_VIEW', async () => {
+        it('handles drag and drop reordering and class styling', async () => {
             const domModel = target.model(SDK.DOMModel.DOMModel);
             sinon.stub(domModel, 'requestDocument').resolves(null);
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -2006,10 +1750,10 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 domTree.detach();
             }
         });
-        it('triggers in-place editing on Enter and edit-as-html on F2 in DECLARATIVE_VIEW', async () => {
+        it('triggers in-place editing on Enter and edit-as-html on F2', async () => {
             const domModel = target.model(SDK.DOMModel.DOMModel);
             sinon.stub(domModel, 'requestDocument').resolves(null);
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -2096,10 +1840,10 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 domTree.detach();
             }
         });
-        it('triggers in-place editing on double click in DECLARATIVE_VIEW', async () => {
+        it('triggers in-place editing on double click', async () => {
             const domModel = target.model(SDK.DOMModel.DOMModel);
             sinon.stub(domModel, 'requestDocument').resolves(null);
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -2133,10 +1877,10 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 domTree.detach();
             }
         });
-        it('does not abort in-place editing on second double click on expandable node in DECLARATIVE_VIEW', async () => {
+        it('does not abort in-place editing on second double click on expandable node', async () => {
             const domModel = target.model(SDK.DOMModel.DOMModel);
             sinon.stub(domModel, 'requestDocument').resolves(null);
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -2178,70 +1922,10 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 domTree.detach();
             }
         });
-        it('triggers in-place editing on Enter and edit-as-html on F2 in DEFAULT_VIEW', async () => {
+        it('renders and reveals top layer shortcuts', async () => {
             const domModel = target.model(SDK.DOMModel.DOMModel);
             sinon.stub(domModel, 'requestDocument').resolves(null);
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DEFAULT_VIEW);
-            try {
-                const rootNode = createTestDOMTree(domModel, {
-                    nodeId: 1,
-                    nodeName: 'DIV',
-                    attributes: ['id', 'test-div'],
-                    children: [
-                        { nodeId: 2, nodeName: 'SPAN' },
-                        { nodeId: 3, nodeName: '#text', nodeValue: 'Hello world', nodeType: Node.TEXT_NODE },
-                    ],
-                });
-                const spanNode = rootNode.children()[0];
-                const textNode = rootNode.children()[1];
-                domTree.rootDOMNode = rootNode;
-                domTree.expandRoot = true;
-                domTree.performUpdate();
-                await waitForTreeUpdates();
-                const treeOutline = domTree.getTreeOutlineForTesting();
-                assert.exists(treeOutline);
-                // 1. Enter on element with attributes -> edits first attribute
-                domTree.selectDOMNode(rootNode);
-                await waitForTreeUpdates();
-                const rootTreeElement = treeOutline.findTreeElement(rootNode);
-                assert.exists(rootTreeElement);
-                rootTreeElement.onenter();
-                await waitForTreeUpdates();
-                assert.isTrue(rootTreeElement.widget.isEditing);
-                rootTreeElement.widget.editing?.cancel();
-                // 2. Enter on element with no attributes -> adds new attribute
-                domTree.selectDOMNode(spanNode);
-                await waitForTreeUpdates();
-                const spanTreeElement = treeOutline.findTreeElement(spanNode);
-                assert.exists(spanTreeElement);
-                spanTreeElement.onenter();
-                await waitForTreeUpdates();
-                assert.isTrue(spanTreeElement.widget.isEditing);
-                spanTreeElement.widget.editing?.cancel();
-                // 3. Enter on text node -> edits text node
-                domTree.selectDOMNode(textNode);
-                await waitForTreeUpdates();
-                const textTreeElement = treeOutline.findTreeElement(textNode);
-                assert.exists(textTreeElement);
-                textTreeElement.onenter();
-                await waitForTreeUpdates();
-                assert.isTrue(textTreeElement.widget.isEditing);
-                textTreeElement.widget.editing?.cancel();
-                // 4. F2 on element -> triggers toggleEditAsHTML
-                const toggleEditAsHTMLSpy = sinon.spy(domTree, 'toggleEditAsHTML');
-                domTree.selectDOMNode(rootNode);
-                await waitForTreeUpdates();
-                treeOutline.elementInternal.dispatchEvent(new KeyboardEvent('keydown', { key: 'F2', bubbles: true }));
-                sinon.assert.calledWith(toggleEditAsHTMLSpy, rootNode);
-            }
-            finally {
-                domTree.detach();
-            }
-        });
-        it('renders and reveals top layer shortcuts in DECLARATIVE_VIEW', async () => {
-            const domModel = target.model(SDK.DOMModel.DOMModel);
-            sinon.stub(domModel, 'requestDocument').resolves(null);
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -2303,50 +1987,12 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 domTree.detach();
             }
         });
-        it('delegates revealInTopLayer to elementsTreeOutline in DEFAULT_VIEW', async () => {
-            const domModel = target.model(SDK.DOMModel.DOMModel);
-            sinon.stub(domModel, 'requestDocument').resolves(null);
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DEFAULT_VIEW);
-            try {
-                const rootNode = createTestDOMTree(domModel, {
-                    nodeId: 1,
-                    nodeName: '#document',
-                    children: [
-                        {
-                            nodeId: 2,
-                            nodeName: 'HTML',
-                            children: [
-                                {
-                                    nodeId: 3,
-                                    nodeName: 'BODY',
-                                    children: [
-                                        { nodeId: 4, nodeName: 'DIALOG' },
-                                    ],
-                                },
-                            ],
-                        },
-                    ],
-                });
-                const dialogNode = rootNode.children()[0].children()[0].children()[0];
-                domTree.rootDOMNode = rootNode;
-                domTree.performUpdate();
-                await waitForTreeUpdates();
-                const treeOutline = domTree.getTreeOutlineForTesting();
-                assert.exists(treeOutline);
-                const revealInTopLayerSpy = sinon.spy(treeOutline, 'revealInTopLayer');
-                domTree.revealInTopLayer(dialogNode);
-                sinon.assert.calledWith(revealInTopLayerSpy, dialogNode);
-            }
-            finally {
-                domTree.detach();
-            }
-        });
-        it('renders and reveals adopted style sheets in DECLARATIVE_VIEW', async () => {
+        it('renders and reveals adopted style sheets', async () => {
             const domModel = target.model(SDK.DOMModel.DOMModel);
             sinon.stub(domModel, 'requestDocument').resolves(null);
             const sheetId = 'sheet-id';
             const initialCSS = '.button { color: blue; }';
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -2416,11 +2062,11 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 domTree.detach();
             }
         });
-        it('renders adopted style sheets when omitRootDOMNode is true in DECLARATIVE_VIEW', async () => {
+        it('renders adopted style sheets when omitRootDOMNode is true', async () => {
             const domModel = target.model(SDK.DOMModel.DOMModel);
             sinon.stub(domModel, 'requestDocument').resolves(null);
             const sheetId = 'sheet-id';
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree } = setupDOMTreeWidget(target);
             domTree.omitRootDOMNode = true;
             try {
                 const rootNode = createTestDOMTree(domModel, {
@@ -2450,43 +2096,10 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 domTree.detach();
             }
         });
-        it('delegates highlightAdoptedStyleSheet to elementsTreeOutline in DEFAULT_VIEW', async () => {
+        it('renders gutter marker decorations', async () => {
             const domModel = target.model(SDK.DOMModel.DOMModel);
             sinon.stub(domModel, 'requestDocument').resolves(null);
-            const sheetId = 'sheet-id';
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DEFAULT_VIEW);
-            try {
-                const rootNode = createTestDOMTree(domModel, {
-                    nodeId: 1,
-                    nodeName: '#document',
-                    adoptedStyleSheets: [sheetId],
-                    children: [
-                        {
-                            nodeId: 2,
-                            nodeName: 'HTML',
-                            children: [],
-                        },
-                    ],
-                });
-                const adoptedSheet = rootNode.adoptedStyleSheetsForNode[0];
-                assert.exists(adoptedSheet);
-                domTree.rootDOMNode = rootNode;
-                domTree.performUpdate();
-                await waitForTreeUpdates();
-                const treeOutline = domTree.getTreeOutlineForTesting();
-                assert.exists(treeOutline);
-                const highlightSpy = sinon.spy(treeOutline, 'highlightAdoptedStyleSheet');
-                domTree.selectDOMNode(adoptedSheet);
-                sinon.assert.calledWith(highlightSpy, adoptedSheet);
-            }
-            finally {
-                domTree.detach();
-            }
-        });
-        it('renders gutter marker decorations in DECLARATIVE_VIEW', async () => {
-            const domModel = target.model(SDK.DOMModel.DOMModel);
-            sinon.stub(domModel, 'requestDocument').resolves(null);
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -2531,10 +2144,10 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 domTree.detach();
             }
         });
-        it('renders descendant gutter marker decorations for collapsed nodes in DECLARATIVE_VIEW', async () => {
+        it('renders descendant gutter marker decorations for collapsed nodes', async () => {
             const domModel = target.model(SDK.DOMModel.DOMModel);
             sinon.stub(domModel, 'requestDocument').resolves(null);
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -2589,10 +2202,10 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 domTree.detach();
             }
         });
-        it('limits expanded children and renders "Show all nodes" button in DECLARATIVE_VIEW', async () => {
+        it('limits expanded children and renders "Show all nodes" button', async () => {
             const domModel = target.model(SDK.DOMModel.DOMModel);
             sinon.stub(domModel, 'requestDocument').resolves(null);
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree } = setupDOMTreeWidget(target);
             try {
                 const childNodes = Array.from({ length: 10 }, (_, i) => ({
                     nodeId: i + 2,
@@ -2628,10 +2241,10 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 domTree.detach();
             }
         });
-        it('expands children limit when "Show all nodes" button is clicked in DECLARATIVE_VIEW', async () => {
+        it('expands children limit when "Show all nodes" button is clicked', async () => {
             const domModel = target.model(SDK.DOMModel.DOMModel);
             sinon.stub(domModel, 'requestDocument').resolves(null);
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree } = setupDOMTreeWidget(target);
             try {
                 const childNodes = Array.from({ length: 10 }, (_, i) => ({
                     nodeId: i + 2,
@@ -2672,10 +2285,10 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 domTree.detach();
             }
         });
-        it('auto-expands children limit when hidden child beyond limit is selected in DECLARATIVE_VIEW', async () => {
+        it('auto-expands children limit when hidden child beyond limit is selected', async () => {
             const domModel = target.model(SDK.DOMModel.DOMModel);
             sinon.stub(domModel, 'requestDocument').resolves(null);
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree } = setupDOMTreeWidget(target);
             try {
                 const childNodes = Array.from({ length: 10 }, (_, i) => ({
                     nodeId: i + 2,
@@ -2712,10 +2325,10 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 domTree.detach();
             }
         });
-        it('renders "Show all nodes" button with depth 0 indent when omitRootDOMNode is true in DECLARATIVE_VIEW', async () => {
+        it('renders "Show all nodes" button with depth 0 indent when omitRootDOMNode is true', async () => {
             const domModel = target.model(SDK.DOMModel.DOMModel);
             sinon.stub(domModel, 'requestDocument').resolves(null);
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree } = setupDOMTreeWidget(target);
             try {
                 const childNodes = Array.from({ length: 10 }, (_, i) => ({
                     nodeId: i + 2,
@@ -2748,10 +2361,10 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 domTree.detach();
             }
         });
-        it('auto-expands children limit when ancestor children are loaded asynchronously in DECLARATIVE_VIEW', async () => {
+        it('auto-expands children limit when ancestor children are loaded asynchronously', async () => {
             const domModel = target.model(SDK.DOMModel.DOMModel);
             sinon.stub(domModel, 'requestDocument').resolves(null);
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree } = setupDOMTreeWidget(target);
             try {
                 const childNodes = Array.from({ length: 10 }, (_, i) => ({
                     nodeId: i + 2,
@@ -2787,46 +2400,11 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 domTree.detach();
             }
         });
-        it('synchronizes expandedChildrenLimit with treeElement in DEFAULT_VIEW', async () => {
-            const domModel = target.model(SDK.DOMModel.DOMModel);
-            sinon.stub(domModel, 'requestDocument').resolves(null);
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DEFAULT_VIEW);
-            try {
-                const childNodes = Array.from({ length: 10 }, (_, i) => ({
-                    nodeId: i + 2,
-                    nodeName: 'SPAN',
-                    attributes: ['id', `child-${i + 1}`],
-                }));
-                const rootNode = createTestDOMTree(domModel, {
-                    nodeId: 1,
-                    nodeName: 'DIV',
-                    children: childNodes,
-                });
-                domTree.rootDOMNode = rootNode;
-                domTree.performUpdate();
-                await waitForTreeUpdates();
-                const treeOutline = Elements.DOMTreeWidget.ElementsTreeOutline.forDOMModel(domModel);
-                assert.exists(treeOutline);
-                const treeElement = treeOutline.findTreeElement(rootNode);
-                assert.exists(treeElement);
-                // 1. Updating limit via ElementsTreeOutline updates DOMTreeWidget
-                treeOutline.setExpandedChildrenLimit(treeElement, 5);
-                assert.strictEqual(treeElement.expandedChildrenLimit(), 5);
-                assert.strictEqual(domTree.expandedChildrenLimit(rootNode), 5);
-                // 2. Updating limit via DOMTreeWidget updates ElementsTreeOutline
-                domTree.setExpandedChildrenLimit(rootNode, 15);
-                assert.strictEqual(treeElement.expandedChildrenLimit(), 15);
-                assert.strictEqual(domTree.expandedChildrenLimit(rootNode), 15);
-            }
-            finally {
-                domTree.detach();
-            }
-        });
-        it('separates hover highlight between opening tag and closing tag in declarative view', async () => {
+        it('separates hover highlight between opening tag and closing tag', async () => {
             SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
             const domModel = target.model(SDK.DOMModel.DOMModel);
             sinon.stub(domModel, 'requestDocument').resolves(null);
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -2903,8 +2481,8 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 domTree.detach();
             }
         });
-        it('attaches dragstart and dragend listeners to closing tags in declarative view', async () => {
-            const { domTree, domModel } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+        it('attaches dragstart and dragend listeners to closing tags', async () => {
+            const { domTree, domModel } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -2951,7 +2529,7 @@ describeWithEnvironment('DOMTreeWidget', () => {
             }
         });
         it('supports closing tag selection and clones style attribute with --indent', async () => {
-            const { domTree, domModel } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree, domModel } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -3012,7 +2590,7 @@ describeWithEnvironment('DOMTreeWidget', () => {
             }
         });
         it('does not lose selection when node with selected closing tag transitions to inline text', async () => {
-            const { domTree, domModel } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree, domModel } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -3061,7 +2639,7 @@ describeWithEnvironment('DOMTreeWidget', () => {
             }
         });
         it('focuses devtools-tree when focus() is called and when selecting with focus', async () => {
-            const { domTree, domModel } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree, domModel } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -3086,7 +2664,7 @@ describeWithEnvironment('DOMTreeWidget', () => {
             }
         });
         it('selects DOM node without expanding ancestors in selectDOMNodeWithoutReveal', async () => {
-            const { domTree, domModel } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree, domModel } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -3128,7 +2706,7 @@ describeWithEnvironment('DOMTreeWidget', () => {
         it('calculates truncated lines accurately with adopted style sheets and top-layer shortcuts', async () => {
             const domModel = target.model(SDK.DOMModel.DOMModel);
             sinon.stub(domModel, 'requestDocument').resolves(null);
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree } = setupDOMTreeWidget(target);
             try {
                 const sheetId = 'sheet-1';
                 const rootNode = createTestDOMTree(domModel, {
@@ -3207,7 +2785,7 @@ describeWithEnvironment('DOMTreeWidget', () => {
         it('updates adorners via updateNodeAdorners', async () => {
             const domModel = target.model(SDK.DOMModel.DOMModel);
             sinon.stub(domModel, 'requestDocument').resolves(null);
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -3248,7 +2826,7 @@ describeWithEnvironment('DOMTreeWidget', () => {
         it('selects node and highlights attribute in highlightNodeAttribute', async () => {
             const domModel = target.model(SDK.DOMModel.DOMModel);
             sinon.stub(domModel, 'requestDocument').resolves(null);
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -3278,7 +2856,7 @@ describeWithEnvironment('DOMTreeWidget', () => {
         it('handles maxRows truncation and clears on show all click', async () => {
             const domModel = target.model(SDK.DOMModel.DOMModel);
             sinon.stub(domModel, 'requestDocument').resolves(null);
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -3312,7 +2890,7 @@ describeWithEnvironment('DOMTreeWidget', () => {
             }
         });
         it('recovers selection to next sibling, previous sibling, or parent when selected node is removed', async () => {
-            const { domTree, domModel } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree, domModel } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -3352,7 +2930,7 @@ describeWithEnvironment('DOMTreeWidget', () => {
             }
         });
         it('validates and updates selected node when showComments is toggled off', async () => {
-            const { domTree, domModel } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree, domModel } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -3379,7 +2957,7 @@ describeWithEnvironment('DOMTreeWidget', () => {
             }
         });
         it('guards focusout during editAsHTML and stops click propagation on editor container', async () => {
-            const { domTree, domModel } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree, domModel } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -3426,7 +3004,7 @@ describeWithEnvironment('DOMTreeWidget', () => {
         it('triggers showContextMenu on opening and closing tag right-click', async () => {
             const domModel = target.model(SDK.DOMModel.DOMModel);
             sinon.stub(domModel, 'requestDocument').resolves(null);
-            const { domTree } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree } = setupDOMTreeWidget(target);
             try {
                 const rootNode = createTestDOMTree(domModel, {
                     nodeId: 1,
@@ -3540,7 +3118,7 @@ describeWithEnvironment('DOMTreeWidget', () => {
         }
         describe('expanding', () => {
             it('renders screenshot of deeply nested expanded tree', async () => {
-                const { domTree, domModel } = setupDOMTreeWidget(target, undefined, { includeCommonStyles: true });
+                const { domTree, domModel } = setupDOMTreeWidget(target, { includeCommonStyles: true });
                 try {
                     const rootNode = createTestDOMTree(domModel, {
                         nodeId: 1,
@@ -3592,7 +3170,7 @@ describeWithEnvironment('DOMTreeWidget', () => {
             it('renders screenshot of expanded node with "Show all nodes" limit', async () => {
                 const domModel = target.model(SDK.DOMModel.DOMModel);
                 sinon.stub(domModel, 'requestDocument').resolves(null);
-                const { domTree } = setupDOMTreeWidget(target, undefined, { includeCommonStyles: true });
+                const { domTree } = setupDOMTreeWidget(target, { includeCommonStyles: true });
                 try {
                     const childNodes = Array.from({ length: 10 }, (_, i) => ({
                         nodeId: i + 2,
@@ -3621,7 +3199,7 @@ describeWithEnvironment('DOMTreeWidget', () => {
         });
         describe('collapsing', () => {
             it('renders screenshot of collapsed root node with children', async () => {
-                const { domTree, domModel } = setupDOMTreeWidget(target, undefined, { includeCommonStyles: true });
+                const { domTree, domModel } = setupDOMTreeWidget(target, { includeCommonStyles: true });
                 try {
                     const rootNode = createTestDOMTree(domModel, {
                         nodeId: 1,
@@ -3645,7 +3223,7 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 }
             });
             it('renders screenshot of partially collapsed tree', async () => {
-                const { domTree, domModel } = setupDOMTreeWidget(target, undefined, { includeCommonStyles: true });
+                const { domTree, domModel } = setupDOMTreeWidget(target, { includeCommonStyles: true });
                 try {
                     const rootNode = createTestDOMTree(domModel, {
                         nodeId: 1,
@@ -3705,7 +3283,7 @@ describeWithEnvironment('DOMTreeWidget', () => {
         });
         describe('highlighting', () => {
             it('renders screenshot of selected element node', async () => {
-                const { domTree, domModel } = setupDOMTreeWidget(target, undefined, { includeCommonStyles: true });
+                const { domTree, domModel } = setupDOMTreeWidget(target, { includeCommonStyles: true });
                 try {
                     const rootNode = createTestDOMTree(domModel, {
                         nodeId: 1,
@@ -3730,7 +3308,7 @@ describeWithEnvironment('DOMTreeWidget', () => {
             });
             it('renders screenshot of search match highlighting', async () => {
                 SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
-                const { domTree, domModel } = setupDOMTreeWidget(target, undefined, { includeCommonStyles: true });
+                const { domTree, domModel } = setupDOMTreeWidget(target, { includeCommonStyles: true });
                 try {
                     const rootNode = createTestDOMTree(domModel, {
                         nodeId: 1,
@@ -3757,7 +3335,7 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 }
             });
             it('renders screenshot of selected closing tag', async () => {
-                const { domTree, domModel } = setupDOMTreeWidget(target, undefined, { includeCommonStyles: true });
+                const { domTree, domModel } = setupDOMTreeWidget(target, { includeCommonStyles: true });
                 try {
                     const rootNode = createTestDOMTree(domModel, {
                         nodeId: 1,
@@ -3785,7 +3363,7 @@ describeWithEnvironment('DOMTreeWidget', () => {
             });
             it('renders screenshot of hovered opening tag', async () => {
                 SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
-                const { domTree, domModel } = setupDOMTreeWidget(target, undefined, { includeCommonStyles: true });
+                const { domTree, domModel } = setupDOMTreeWidget(target, { includeCommonStyles: true });
                 try {
                     const rootNode = createTestDOMTree(domModel, {
                         nodeId: 1,
@@ -3812,7 +3390,7 @@ describeWithEnvironment('DOMTreeWidget', () => {
             });
             it('renders screenshot of hovered closing tag', async () => {
                 SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
-                const { domTree, domModel } = setupDOMTreeWidget(target, undefined, { includeCommonStyles: true });
+                const { domTree, domModel } = setupDOMTreeWidget(target, { includeCommonStyles: true });
                 try {
                     const rootNode = createTestDOMTree(domModel, {
                         nodeId: 1,
@@ -3841,28 +3419,18 @@ describeWithEnvironment('DOMTreeWidget', () => {
         describe('editing', () => {
             function cancelActiveEditing(domTree) {
                 const tree = domTree.contentElement.querySelector('devtools-tree');
-                if (tree) {
-                    for (const el of tree.getInternalTreeOutlineForTest().element.querySelectorAll('devtools-widget')) {
-                        const widget = UI.Widget.Widget.get(el);
-                        widget?.editing?.cancel();
-                    }
+                if (!tree) {
                     return;
                 }
-                const treeOutline = domTree.getTreeOutlineForTesting();
-                if (treeOutline) {
-                    let item = treeOutline.rootElement();
-                    while (item) {
-                        if (item instanceof Elements.ElementsTreeElement.ElementsTreeElement) {
-                            item.widget.editing?.cancel();
-                        }
-                        item = item.traverseNextTreeElement(false, null, true);
-                    }
+                for (const el of tree.getInternalTreeOutlineForTest().contentElement.querySelectorAll('devtools-widget')) {
+                    const widget = UI.Widget.Widget.get(el);
+                    widget?.editing?.cancel();
                 }
             }
             it('renders screenshot of in-place attribute editing', async () => {
                 const domModel = target.model(SDK.DOMModel.DOMModel);
                 sinon.stub(domModel, 'requestDocument').resolves(null);
-                const { domTree } = setupDOMTreeWidget(target, undefined, { includeCommonStyles: true });
+                const { domTree } = setupDOMTreeWidget(target, { includeCommonStyles: true });
                 try {
                     const rootNode = createTestDOMTree(domModel, {
                         nodeId: 1,
@@ -3887,7 +3455,7 @@ describeWithEnvironment('DOMTreeWidget', () => {
             it('renders screenshot of multiline Edit as HTML', async () => {
                 const domModel = target.model(SDK.DOMModel.DOMModel);
                 sinon.stub(domModel, 'requestDocument').resolves(null);
-                const { domTree } = setupDOMTreeWidget(target, undefined, { includeCommonStyles: true });
+                const { domTree } = setupDOMTreeWidget(target, { includeCommonStyles: true });
                 try {
                     const rootNode = createTestDOMTree(domModel, {
                         nodeId: 1,
@@ -3930,7 +3498,7 @@ describeWithEnvironment('DOMTreeWidget', () => {
             it('renders screenshot of adding new attribute', async () => {
                 const domModel = target.model(SDK.DOMModel.DOMModel);
                 sinon.stub(domModel, 'requestDocument').resolves(null);
-                const { domTree } = setupDOMTreeWidget(target, undefined, { includeCommonStyles: true });
+                const { domTree } = setupDOMTreeWidget(target, { includeCommonStyles: true });
                 try {
                     const rootNode = createTestDOMTree(domModel, {
                         nodeId: 1,
@@ -3953,7 +3521,7 @@ describeWithEnvironment('DOMTreeWidget', () => {
             it('renders screenshot of in-place text node editing', async () => {
                 const domModel = target.model(SDK.DOMModel.DOMModel);
                 sinon.stub(domModel, 'requestDocument').resolves(null);
-                const { domTree } = setupDOMTreeWidget(target, undefined, { includeCommonStyles: true });
+                const { domTree } = setupDOMTreeWidget(target, { includeCommonStyles: true });
                 try {
                     const rootNode = createTestDOMTree(domModel, {
                         nodeId: 1,
@@ -4193,7 +3761,7 @@ describeWithEnvironment('DOMTreeWidget', () => {
             assert.strictEqual(lastChangeBackendNodeId(), 2);
         });
         it('ignores late requestDocument resolution for a DOMModel that was removed via modelRemoved', async () => {
-            const { domTree, domModel: primaryDomModel } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+            const { domTree, domModel: primaryDomModel } = setupDOMTreeWidget(target);
             const prerenderTarget = createTarget({ type: SDK.Target.Type.FRAME, subtype: 'prerender' });
             const prerenderDomModel = prerenderTarget.model(SDK.DOMModel.DOMModel);
             try {
@@ -4242,8 +3810,8 @@ describeWithEnvironment('DOMTreeWidget', () => {
             }
         });
     });
-    it('preserves syntax highlighting colors when a tree element is selected and focused in DECLARATIVE_VIEW', async () => {
-        const { domTree, domModel } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW, { includeCommonStyles: true });
+    it('preserves syntax highlighting colors when a tree element is selected and focused', async () => {
+        const { domTree, domModel } = setupDOMTreeWidget(target, { includeCommonStyles: true });
         try {
             const rootNode = createTestDOMTree(domModel, {
                 nodeId: 1,
@@ -4286,8 +3854,8 @@ describeWithEnvironment('DOMTreeWidget', () => {
             domTree.detach();
         }
     });
-    it('sets data-backend-node-id and data-target-id on tree item li elements in DECLARATIVE_VIEW', async () => {
-        const { domTree, domModel } = setupDOMTreeWidget(target, Elements.DOMTreeWidget.DECLARATIVE_VIEW);
+    it('sets data-backend-node-id and data-target-id on tree item li elements', async () => {
+        const { domTree, domModel } = setupDOMTreeWidget(target);
         try {
             const rootNode = createTestDOMTree(domModel, {
                 nodeId: 1,
@@ -4310,6 +3878,273 @@ describeWithEnvironment('DOMTreeWidget', () => {
             assert.strictEqual(childTreeElement.listItemElement.getAttribute('data-target-id'), target.id());
             assert.strictEqual(closingTagTreeElement.listItemElement.getAttribute('data-backend-node-id'), '101');
             assert.strictEqual(closingTagTreeElement.listItemElement.getAttribute('data-target-id'), target.id());
+        }
+        finally {
+            domTree.detach();
+        }
+    });
+    it('copies matched CSS declarations for a DOMNode via copyStyles', async () => {
+        const { domTree, domModel } = setupDOMTreeWidget(target);
+        try {
+            const rootNode = createTestDOMTree(domModel, { nodeId: 1, nodeName: 'DIV' });
+            const mockStyle = {
+                leadingProperties: () => [{
+                        name: 'display',
+                        value: 'block',
+                        parsedOk: true,
+                        disabled: false,
+                        implicit: false,
+                        activeInStyle: () => true,
+                    },
+                    { name: 'color', value: 'red', parsedOk: true, disabled: false, implicit: false, activeInStyle: () => true },
+                    { name: 'margin', value: '0px', parsedOk: true, disabled: true, implicit: false, activeInStyle: () => true },
+                ],
+                parentRule: { isUserAgent: () => false },
+            };
+            sinon.stub(domModel.cssModel(), 'cachedMatchedCascadeForNode').resolves({
+                nodeStyles: () => [mockStyle],
+                isInherited: () => false,
+                propertyState: () => "Active" /* SDK.CSSMatchedStyles.PropertyState.ACTIVE */,
+            });
+            const copySpy = sinon.spy(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'copyText');
+            await domTree.copyStyles(rootNode);
+            sinon.assert.calledOnceWithExactly(copySpy, '    display: block;\n    color: red;');
+        }
+        finally {
+            domTree.detach();
+        }
+    });
+    it('copies only active, non-UA, inheritable styles from a real matched styles cascade', async () => {
+        // Mirrors legacy elements/copy-styles.
+        const connection = new MockCDPConnection();
+        const cdpTarget = createTarget({ connection });
+        const { domTree, domModel } = setupDOMTreeWidget(cdpTarget);
+        try {
+            const cssModel = domModel.cssModel();
+            const bodyNode = createTestDOMTree(domModel, {
+                nodeId: 1,
+                nodeName: 'BODY',
+                children: [
+                    { nodeId: 2, nodeName: 'DIV', attributes: ['style', 'padding: 5px'] },
+                    { nodeId: 3, nodeName: 'BUTTON' },
+                    { nodeId: 4, nodeName: 'BUTTON', attributes: ['style', 'color: green'] },
+                ],
+            });
+            const [divNode, redButtonNode, greenButtonNode] = bodyNode.children();
+            const UA = "user-agent" /* Protocol.CSS.StyleSheetOrigin.UserAgent */;
+            const uaBody = ruleMatch('body', { display: 'block', margin: '8px' }, { origin: UA });
+            const authorBody = ruleMatch('body', { border: '1px solid black', 'font-weight': 'bold' });
+            const uaDiv = ruleMatch('div', { display: 'block' }, { origin: UA });
+            const uaButton = ruleMatch('button', { display: 'inline-block', 'font-weight': '400', color: 'buttontext' }, { origin: UA });
+            const authorButton = ruleMatch('button', { color: 'red' });
+            const inheritedFromBody = () => [{ matchedCSSRules: [uaBody, authorBody] }];
+            const cascades = new Map([
+                [
+                    bodyNode,
+                    await getMatchedStyles({ connection, cssModel, node: bodyNode, matchedPayload: [uaBody, authorBody] }),
+                ],
+                [
+                    divNode,
+                    await getMatchedStyles({
+                        connection,
+                        cssModel,
+                        node: divNode,
+                        inlinePayload: createCSSStyle([{ name: 'padding', value: '5px' }]),
+                        matchedPayload: [uaDiv],
+                        inheritedPayload: inheritedFromBody(),
+                    }),
+                ],
+                [
+                    redButtonNode,
+                    await getMatchedStyles({
+                        connection,
+                        cssModel,
+                        node: redButtonNode,
+                        matchedPayload: [uaButton, authorButton],
+                        inheritedPayload: inheritedFromBody(),
+                    }),
+                ],
+                [
+                    greenButtonNode,
+                    await getMatchedStyles({
+                        connection,
+                        cssModel,
+                        node: greenButtonNode,
+                        inlinePayload: createCSSStyle([{ name: 'color', value: 'green' }]),
+                        matchedPayload: [uaButton, authorButton],
+                        inheritedPayload: inheritedFromBody(),
+                    }),
+                ],
+            ]);
+            sinon.stub(cssModel, 'cachedMatchedCascadeForNode').callsFake(async (node) => cascades.get(node) ?? null);
+            const copyStub = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'copyText');
+            const copied = [];
+            for (const node of [bodyNode, divNode, redButtonNode, greenButtonNode]) {
+                copyStub.resetHistory();
+                await domTree.copyStyles(node);
+                sinon.assert.calledOnce(copyStub);
+                copied.push(copyStub.firstCall.args[0]);
+            }
+            assert.deepEqual(copied, [
+                // UA display/margin are dropped.
+                '    border: 1px solid black;\n    font-weight: bold;',
+                // Inherited non-inheritable border is dropped; inherited font-weight is kept before own styles.
+                '    font-weight: bold;\n    padding: 5px;',
+                // Inherited font-weight is overloaded by the UA button rule, UA properties are dropped.
+                '    color: red;',
+                // The author rule color is overloaded by the inline style.
+                '    color: green;',
+            ]);
+        }
+        finally {
+            domTree.detach();
+        }
+    });
+    it('hides and shows HTML comment DOMNodes when toggling show-html-comments setting', async () => {
+        const setting = Common.Settings.Settings.instance().resolve(SettingsUI.ElementsSettings.showHTMLCommentsSettingDescriptor);
+        setting.set(true);
+        const { domTree, domModel } = setupDOMTreeWidget(target);
+        try {
+            const rootNode = createTestDOMTree(domModel, {
+                nodeId: 1,
+                nodeName: 'DIV',
+                children: [
+                    { nodeId: 2, nodeName: '#comment', nodeType: Node.COMMENT_NODE, nodeValue: ' hidden comment ' },
+                    { nodeId: 3, nodeName: 'SPAN' },
+                ],
+            });
+            domTree.rootDOMNode = rootNode;
+            domTree.setNodeExpanded(rootNode, true);
+            domTree.performUpdate();
+            await waitForTreeUpdates();
+            const tree = domTree.contentElement.querySelector('devtools-tree');
+            assert.exists(tree);
+            const rootChildCount = () => tree.getInternalTreeOutlineForTest().rootElement().children()[0].children().length;
+            // comment + span + closing tag
+            assert.strictEqual(rootChildCount(), 3);
+            setting.set(false);
+            await waitForTreeUpdates();
+            assert.strictEqual(rootChildCount(), 2);
+            setting.set(true);
+            await waitForTreeUpdates();
+            assert.strictEqual(rootChildCount(), 3);
+        }
+        finally {
+            setting.set(true);
+            domTree.detach();
+        }
+    });
+    it('paginates children via expandedChildrenLimit and expands all children via expandAllChildren', async () => {
+        const { domTree, domModel } = setupDOMTreeWidget(target);
+        try {
+            const children = Array.from({ length: 8 }, (_, i) => ({ nodeId: i + 2, nodeName: 'SPAN' }));
+            const rootNode = createTestDOMTree(domModel, { nodeId: 1, nodeName: 'DIV', children });
+            domTree.rootDOMNode = rootNode;
+            domTree.setExpandedChildrenLimit(rootNode, 3);
+            domTree.setNodeExpanded(rootNode, true);
+            domTree.performUpdate();
+            await waitForTreeUpdates();
+            const tree = domTree.contentElement.querySelector('devtools-tree');
+            assert.exists(tree);
+            const rootChildCount = () => tree.getInternalTreeOutlineForTest().rootElement().children()[0].children().length;
+            assert.strictEqual(domTree.expandedChildrenLimit(rootNode), 3);
+            assert.exists(tree.shadowRoot?.querySelector('.elements-tree-expand-all'));
+            // 3 children + expand-all item + closing tag
+            assert.strictEqual(rootChildCount(), 5);
+            domTree.expandAllChildren(rootNode);
+            await waitForTreeUpdates();
+            assert.isAtLeast(domTree.expandedChildrenLimit(rootNode), 8);
+            assert.isNull(tree.shadowRoot?.querySelector('.elements-tree-expand-all'));
+            // 8 children + closing tag
+            assert.strictEqual(rootChildCount(), 9);
+        }
+        finally {
+            domTree.detach();
+        }
+    });
+    it('toggles hide-marker and injects visibility: hidden rule via toggleHideElement', async () => {
+        const { domTree, domModel } = setupDOMTreeWidget(target);
+        try {
+            const rootNode = createTestDOMTree(domModel, {
+                nodeId: 1,
+                nodeName: 'DIV',
+                children: [{ nodeId: 2, nodeName: 'P' }],
+            });
+            domTree.rootDOMNode = rootNode;
+            const pNode = rootNode.children()[0];
+            const callFunctionStub = sinon.stub().resolves({});
+            sinon.stub(pNode, 'resolveToObject').resolves({
+                callFunction: callFunctionStub,
+                release: sinon.stub(),
+            });
+            assert.isFalse(domTree.isToggledToHidden(pNode));
+            await domTree.toggleHideElement(pNode);
+            assert.isTrue(domTree.isToggledToHidden(pNode));
+            assert.isTrue(pNode.marker('hidden-marker'));
+            sinon.assert.calledOnce(callFunctionStub);
+            assert.include(callFunctionStub.firstCall.args[0].toString(), 'visibility: hidden');
+            assert.deepEqual(callFunctionStub.firstCall.args[1], [{ value: null }, { value: true }]);
+            await domTree.toggleHideElement(pNode);
+            assert.isFalse(domTree.isToggledToHidden(pNode));
+        }
+        finally {
+            domTree.detach();
+        }
+    });
+    it('updates text node when CharacterDataModified event fires', async () => {
+        const { domTree, domModel } = setupDOMTreeWidget(target);
+        try {
+            const rootNode = createTestDOMTree(domModel, {
+                nodeId: 1,
+                nodeName: 'DIV',
+                children: [{ nodeId: 2, nodeName: '#text', nodeValue: 'initial text' }],
+            });
+            domTree.rootDOMNode = rootNode;
+            domTree.setNodeExpanded(rootNode, true);
+            domTree.performUpdate();
+            await waitForTreeUpdates();
+            // A single text child is rendered inline in the parent's widget.
+            const rootWidget = findElementsTreeWidget(domTree, rootNode);
+            assert.exists(rootWidget);
+            assert.strictEqual(rootWidget.contentElement.querySelector('.webkit-html-text-node')?.textContent, 'initial text');
+            domModel.characterDataModified(2, 'updated text content');
+            domTree.runPendingUpdates();
+            await waitForTreeUpdates();
+            assert.strictEqual(rootNode.children()[0].nodeValue(), 'updated text content');
+            const textEl = rootWidget.contentElement.querySelector('.webkit-html-text-node');
+            assert.strictEqual(textEl?.textContent, 'updated text content');
+        }
+        finally {
+            domTree.detach();
+        }
+    });
+    it('preserves current selectedDOMNode when ChildNodeInserted fires on an unselected sibling', () => {
+        const { domTree, domModel } = setupDOMTreeWidget(target);
+        try {
+            const rootNode = createTestDOMTree(domModel, {
+                nodeId: 1,
+                nodeName: 'BODY',
+                children: [
+                    { nodeId: 2, nodeName: 'DIV' },
+                    { nodeId: 3, nodeName: 'DIV', children: [] },
+                ],
+            });
+            domTree.rootDOMNode = rootNode;
+            const firstDiv = rootNode.children()[0];
+            domTree.selectDOMNode(firstDiv);
+            assert.strictEqual(domTree.selectedDOMNode(), firstDiv);
+            domModel.childNodeInserted(3, 0, {
+                nodeId: 4,
+                parentId: 3,
+                backendNodeId: 4,
+                nodeType: Node.ELEMENT_NODE,
+                nodeName: 'SPAN',
+                localName: 'span',
+                nodeValue: '',
+                childNodeCount: 0,
+            });
+            domTree.runPendingUpdates();
+            assert.strictEqual(domTree.selectedDOMNode(), firstDiv);
         }
         finally {
             domTree.detach();

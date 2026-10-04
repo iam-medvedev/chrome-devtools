@@ -522,23 +522,15 @@ UI.ActionRegistration.registerActionExtension({
     return maybeRetrieveContextTypes((Elements2) => [Elements2.EventListenersWidget.EventListenersWidget]);
   }
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.ElementsSettings.showUAShadowDOMSettingDescriptor, {
   category: Common.Settings.SettingCategory.ELEMENTS,
-  storageType: Common.Settings.SettingStorageType.SYNCED,
   order: 1,
-  title: i18nLazyString(UIStrings.userAgentShadowDOM),
-  settingName: "show-ua-shadow-dom",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: false
+  title: i18nLazyString(UIStrings.userAgentShadowDOM)
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.ElementsSettings.domWordWrapSettingDescriptor, {
   category: Common.Settings.SettingCategory.ELEMENTS,
-  storageType: Common.Settings.SettingStorageType.SYNCED,
   order: 2,
-  title: i18nLazyString(UIStrings.wordWrap),
-  settingName: "dom-word-wrap",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: true
+  title: i18nLazyString(UIStrings.wordWrap)
 });
 UI.ActionRegistration.registerActionExtension({
   category: UI.ActionRegistration.ActionCategory.ELEMENTS,
@@ -558,14 +550,10 @@ UI.ActionRegistration.registerActionExtension({
     }
   ]
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.ElementsSettings.showHTMLCommentsSettingDescriptor, {
   category: Common.Settings.SettingCategory.ELEMENTS,
-  storageType: Common.Settings.SettingStorageType.SYNCED,
   order: 3,
   title: i18nLazyString(UIStrings.htmlComments),
-  settingName: "show-html-comments",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: true,
   options: [
     {
       value: true,
@@ -577,14 +565,10 @@ Common.Settings.registerSettingExtension({
     }
   ]
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.ElementsSettings.highlightNodeOnHoverInOverlaySettingDescriptor, {
   category: Common.Settings.SettingCategory.ELEMENTS,
-  storageType: Common.Settings.SettingStorageType.SYNCED,
   order: 4,
-  title: i18nLazyString(UIStrings.revealDomNodeOnHover),
-  settingName: "highlight-node-on-hover-in-overlay",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: true
+  title: i18nLazyString(UIStrings.revealDomNodeOnHover)
 });
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.ELEMENTS,

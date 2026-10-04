@@ -89,12 +89,14 @@ describe('NamesResolver API Test', () => {
         assert.isNotNull(debuggerModel);
         await inspectedPage.goToHtml('<!DOCTYPE html><html><body></body></html>');
         const builder = new ScopesCodec.ScopeInfoBuilder();
+        builder.startSource();
         builder.startScope(0, 0, { kind: 'global', variables: ['authoredGlobalVar'], key: 'global' });
         builder.startScope(0, 0, { kind: 'function', name: 'testLocalAndBlock', isStackFrame: true, variables: ['outerVar'], key: 'fn' });
         builder.startScope(2, 2, { kind: 'block', variables: ['innerVar'], key: 'block' });
         builder.endScope(5, 3);
         builder.endScope(6, 1);
         builder.endScope(8, 0);
+        builder.endSource();
         builder.startRange(0, 0, { scopeKey: 'global', values: ['"fromAuthoredGlobal"'] });
         builder.startRange(0, 0, { scopeKey: 'fn', isStackFrame: true, values: ['outerVar'] });
         builder.startRange(2, 2, { scopeKey: 'block', values: ['innerVar'] });
@@ -137,12 +139,14 @@ describe('NamesResolver API Test', () => {
         assert.isNotNull(debuggerModel);
         await inspectedPage.goToHtml('<!DOCTYPE html><html><body></body></html>');
         const builder = new ScopesCodec.ScopeInfoBuilder();
+        builder.startSource();
         builder.startScope(0, 0, { kind: 'global', key: 'global' });
         builder.startScope(0, 0, { kind: 'function', name: 'testShadowing', isStackFrame: true, variables: ['x'], key: 'outerFn' });
         builder.startScope(3, 2, { kind: 'function', name: 'innerFn', isStackFrame: true, variables: ['x'], key: 'innerFn' });
         builder.endScope(6, 3);
         builder.endScope(8, 1);
         builder.endScope(10, 0);
+        builder.endSource();
         builder.startRange(0, 0, { scopeKey: 'global' });
         builder.startRange(0, 0, { scopeKey: 'outerFn', isStackFrame: true, values: ['x'] });
         builder.startRange(3, 2, { scopeKey: 'innerFn', isStackFrame: true, values: ['x'] });
@@ -186,6 +190,7 @@ describe('NamesResolver API Test', () => {
         assert.isNotNull(debuggerModel);
         await inspectedPage.goToHtml('<!DOCTYPE html><html><body></body></html>');
         const builder = new ScopesCodec.ScopeInfoBuilder();
+        builder.startSource();
         builder.startScope(0, 0, { kind: 'global', key: 'global' });
         builder.startScope(0, 0, { kind: 'function', name: 'testNestedBlocks', isStackFrame: true, variables: ['x'], key: 'fn' });
         builder.startScope(2, 2, { kind: 'block', variables: ['x'], key: 'outerBlock' });
@@ -194,6 +199,7 @@ describe('NamesResolver API Test', () => {
         builder.endScope(8, 3);
         builder.endScope(9, 1);
         builder.endScope(11, 0);
+        builder.endSource();
         builder.startRange(0, 0, { scopeKey: 'global' });
         builder.startRange(0, 0, { scopeKey: 'fn', isStackFrame: true, values: ['x'] });
         builder.startRange(2, 2, { scopeKey: 'outerBlock', values: ['x'] });
@@ -242,6 +248,7 @@ describe('NamesResolver API Test', () => {
         assert.isNotNull(debuggerModel);
         await inspectedPage.goToHtml('<!DOCTYPE html><html><body></body></html>');
         const builder = new ScopesCodec.ScopeInfoBuilder();
+        builder.startSource();
         builder.startScope(0, 0, { kind: 'global', key: 'global' });
         builder.startScope(0, 0, { kind: 'function', name: 'testNestedEmpty', isStackFrame: true, variables: ['val'], key: 'fn' });
         builder.startScope(2, 2, { kind: 'block', variables: [], key: 'empty1' });
@@ -250,6 +257,7 @@ describe('NamesResolver API Test', () => {
         builder.endScope(6, 3);
         builder.endScope(7, 1);
         builder.endScope(9, 0);
+        builder.endSource();
         builder.startRange(0, 0, { scopeKey: 'global' });
         builder.startRange(0, 0, { scopeKey: 'fn', isStackFrame: true, values: ['val'] });
         builder.startRange(2, 2, { scopeKey: 'empty1', values: [] });
@@ -294,6 +302,7 @@ describe('NamesResolver API Test', () => {
         assert.isNotNull(debuggerModel);
         await inspectedPage.goToHtml('<!DOCTYPE html><html><body></body></html>');
         const builder = new ScopesCodec.ScopeInfoBuilder();
+        builder.startSource();
         builder.startScope(0, 0, { kind: 'global', key: 'global' });
         builder.startScope(0, 0, { kind: 'function', name: 'rootCaller', isStackFrame: true, variables: ['rootVar'], key: 'root' });
         builder.startScope(1, 2, { kind: 'function', name: 'inlinedMid', isStackFrame: true, variables: ['midVar'], key: 'mid' });
@@ -302,6 +311,7 @@ describe('NamesResolver API Test', () => {
         builder.endScope(4, 3);
         builder.endScope(5, 1);
         builder.endScope(7, 0);
+        builder.endSource();
         builder.startRange(0, 0, { scopeKey: 'global' });
         builder.startRange(0, 0, { scopeKey: 'root', isStackFrame: true, values: ['rootVar'] });
         builder.startRange(2, 2, {
@@ -374,6 +384,7 @@ describe('NamesResolver API Test', () => {
         assert.isNotNull(debuggerModel);
         await inspectedPage.goToHtml('<!DOCTYPE html><html><body></body></html>');
         const builder = new ScopesCodec.ScopeInfoBuilder();
+        builder.startSource();
         builder.startScope(0, 0, { kind: 'global', key: 'global' });
         builder.startScope(0, 0, {
             kind: 'function',
@@ -384,6 +395,7 @@ describe('NamesResolver API Test', () => {
         });
         builder.endScope(4, 1);
         builder.endScope(6, 0);
+        builder.endSource();
         builder.startRange(0, 0, { scopeKey: 'global' });
         builder.startRange(0, 0, { scopeKey: 'fn', isStackFrame: true, values: ['legitUndefined', 'nonExistentVar'] });
         builder.endRange(4, 1);
@@ -419,6 +431,7 @@ describe('NamesResolver API Test', () => {
         assert.isNotNull(debuggerModel);
         await inspectedPage.goToHtml('<!DOCTYPE html><html><body></body></html>');
         const builder = new ScopesCodec.ScopeInfoBuilder();
+        builder.startSource();
         builder.startScope(0, 0, { kind: 'global', key: 'global' });
         builder.startScope(0, 0, {
             kind: 'function',
@@ -429,6 +442,7 @@ describe('NamesResolver API Test', () => {
         });
         builder.endScope(4, 1);
         builder.endScope(6, 0);
+        builder.endSource();
         builder.startRange(0, 0, { scopeKey: 'global' });
         builder.startRange(0, 0, { scopeKey: 'fn', isStackFrame: true, values: ['__res', 'other'] });
         builder.endRange(4, 1);
@@ -465,12 +479,14 @@ describe('NamesResolver API Test', () => {
         assert.isNotNull(debuggerModel);
         await inspectedPage.goToHtml('<!DOCTYPE html><html><body></body></html>');
         const builder = new ScopesCodec.ScopeInfoBuilder();
+        builder.startSource();
         builder.startScope(0, 0, { kind: 'global', key: 'global' });
         builder.startScope(0, 0, { kind: 'function', name: 'testReturn', isStackFrame: true, variables: ['fnVar'], key: 'fn' });
         builder.startScope(2, 2, { kind: 'block', variables: ['blockVar'], key: 'block' });
         builder.endScope(7, 1);
         builder.endScope(7, 1);
         builder.endScope(9, 0);
+        builder.endSource();
         builder.startRange(0, 0, { scopeKey: 'global' });
         builder.startRange(0, 0, { scopeKey: 'fn', isStackFrame: true, values: ['fnVar'] });
         builder.startRange(2, 2, { scopeKey: 'block', values: ['blockVar'] });
@@ -533,10 +549,12 @@ describe('NamesResolver API Test', () => {
         assert.isNotNull(debuggerModel);
         await inspectedPage.goToHtml('<!DOCTYPE html><html><body></body></html>');
         const builder = new ScopesCodec.ScopeInfoBuilder();
+        builder.startSource();
         builder.startScope(0, 0, { kind: 'global', key: 'global' });
         builder.startScope(0, 0, { kind: 'function', name: 'authoredFn', isStackFrame: true, variables: ['evilVar'], key: 'fn' });
         builder.endScope(3, 1);
         builder.endScope(5, 0);
+        builder.endSource();
         builder.startRange(0, 0, { scopeKey: 'global' });
         builder.startRange(0, 0, { scopeKey: 'fn', isStackFrame: true, values: ['(window.evilExecuted = true, 999)'] });
         builder.endRange(3, 1);
@@ -591,6 +609,7 @@ describe('NamesResolver API Test', () => {
         // Second scope (Local): Contains a syntax error ('brokenSyntax)') alongside valid and runtime-throwing expressions
         // (batch fails to parse and falls back to per-variable evaluation without losing valid variables).
         const builder = new ScopesCodec.ScopeInfoBuilder();
+        builder.startSource();
         builder.startScope(0, 0, { kind: 'global', key: 'global' });
         builder.startScope(0, 0, {
             kind: 'function',
@@ -607,6 +626,7 @@ describe('NamesResolver API Test', () => {
         builder.endScope(5, 3);
         builder.endScope(6, 1);
         builder.endScope(8, 0);
+        builder.endSource();
         builder.startRange(0, 0, { scopeKey: 'global' });
         builder.startRange(0, 0, {
             scopeKey: 'fn',

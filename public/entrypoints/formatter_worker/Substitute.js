@@ -4,8 +4,8 @@
 import * as Acorn from '../../third_party/acorn/acorn.js';
 import { ECMA_VERSION } from './AcornTokenizer.js';
 import { ScopeVariableAnalysis } from './ScopeParser.js';
-export function substituteExpression(expression, nameMaps) {
-    const replacements = computeSubstitution(expression, nameMaps);
+export function substituteExpression(expression, scopes) {
+    const replacements = computeSubstitution(expression, scopes);
     return applySubstitution(expression, replacements);
 }
 function parseBindingExpression(expression) {
@@ -35,12 +35,12 @@ function parseBindingExpression(expression) {
     };
 }
 /**
- * Given an |expression| and a mapping from names to new names, the |computeSubstitution|
+ * Given an |expression| and a list of |scopes| (from inner-most to outer-most), the |computeSubstitution|
  * function returns a list of replacements sorted by the offset. The function throws if
  * it cannot parse the expression or the substitution is impossible to perform (for example
  * if the substitution target is 'this' within a function, it would become bound there).
  **/
-function computeSubstitution(expression, nameMaps) {
+function computeSubstitution(expression, scopes) {
     // Parse the expression and find variables and scopes.
     const root = Acorn.parse(expression, {
         ecmaVersion: ECMA_VERSION,
@@ -57,10 +57,11 @@ function computeSubstitution(expression, nameMaps) {
     const allNames = scopeVariables.getAllNames();
     const nameMap = new Map();
     const parsedBindings = new Map();
+    // Generated identifiers declared by the scopes visited so far. Outer bindings referring to them are shadowed.
     const shadowedNames = new Set();
-    for (const scopeMap of nameMaps) {
-        const scopeNames = new Set();
-        for (const [name, rename] of scopeMap.entries()) {
+    for (const { bindings, generatedNames } of scopes) {
+        const scopeNames = new Set(generatedNames);
+        for (const [name, rename] of bindings.entries()) {
             let parsed;
             if (rename !== null) {
                 try {

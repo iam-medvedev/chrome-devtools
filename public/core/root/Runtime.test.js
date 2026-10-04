@@ -70,11 +70,6 @@ describe('Runtime', () => {
         assert.deepEqual(experiments.map(experiment => experiment.name), [dummyExperiment1, dummyExperiment2]);
     });
     describe('ExperimentsSupport', () => {
-        beforeEach(() => {
-            if (typeof localStorage !== 'undefined') {
-                localStorage.removeItem('experiments');
-            }
-        });
         it('throws for unknown experiment', () => {
             const support = new Root.Runtime.ExperimentsSupport();
             assert.throws(() => support.isEnabled('test-experiment'));

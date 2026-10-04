@@ -1107,6 +1107,11 @@ export var Emulation;
         SetDeviceMetricsOverrideRequestViewportMeta["Enable"] = "enable";
         SetDeviceMetricsOverrideRequestViewportMeta["Default"] = "default";
     })(SetDeviceMetricsOverrideRequestViewportMeta = Emulation.SetDeviceMetricsOverrideRequestViewportMeta || (Emulation.SetDeviceMetricsOverrideRequestViewportMeta = {}));
+    let SetDeviceMetricsOverrideRequestTextLayoutMode;
+    (function (SetDeviceMetricsOverrideRequestTextLayoutMode) {
+        SetDeviceMetricsOverrideRequestTextLayoutMode["Mobile"] = "mobile";
+        SetDeviceMetricsOverrideRequestTextLayoutMode["Default"] = "default";
+    })(SetDeviceMetricsOverrideRequestTextLayoutMode = Emulation.SetDeviceMetricsOverrideRequestTextLayoutMode || (Emulation.SetDeviceMetricsOverrideRequestTextLayoutMode = {}));
     let SetEmitTouchEventsForMouseRequestConfiguration;
     (function (SetEmitTouchEventsForMouseRequestConfiguration) {
         SetEmitTouchEventsForMouseRequestConfiguration["Mobile"] = "mobile";
@@ -2100,6 +2105,7 @@ export var Page;
         PermissionsPolicyFeature["PrivateStateTokenRedemption"] = "private-state-token-redemption";
         PermissionsPolicyFeature["PublickeyCredentialsCreate"] = "publickey-credentials-create";
         PermissionsPolicyFeature["PublickeyCredentialsGet"] = "publickey-credentials-get";
+        PermissionsPolicyFeature["PublickeyCredentialsRemoteClientDataJson"] = "publickey-credentials-remote-client-data-json";
         PermissionsPolicyFeature["Rewriter"] = "rewriter";
         PermissionsPolicyFeature["ScreenWakeLock"] = "screen-wake-lock";
         PermissionsPolicyFeature["Serial"] = "serial";
@@ -3054,6 +3060,11 @@ export var Debugger;
         ScopeType["Module"] = "module";
         ScopeType["WasmExpressionStack"] = "wasm-expression-stack";
     })(ScopeType = Debugger.ScopeType || (Debugger.ScopeType = {}));
+    let ScopeEmptyReason;
+    (function (ScopeEmptyReason) {
+        ScopeEmptyReason["NoVariables"] = "no-variables";
+        ScopeEmptyReason["AllUnavailable"] = "all-unavailable";
+    })(ScopeEmptyReason = Debugger.ScopeEmptyReason || (Debugger.ScopeEmptyReason = {}));
     let BreakLocationType;
     (function (BreakLocationType) {
         BreakLocationType["DebuggerStatement"] = "debuggerStatement";

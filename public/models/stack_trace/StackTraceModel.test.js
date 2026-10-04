@@ -18,12 +18,13 @@ const { urlString } = Platform.DevToolsPath;
 describe('StackTraceModel', () => {
     setupSettingsHooks();
     setupRuntimeHooks();
-    const identityTranslateFn = (frames, _target) => Promise.resolve(frames.map(f => [{
+    const visible = (frames) => ({ kind: "VISIBLE" /* StackTraceImpl.Trie.FrameKind.VISIBLE */, frames });
+    const identityTranslateFn = (frames, _target) => Promise.resolve(frames.map(f => visible([{
             url: f.url || undefined,
             name: f.functionName || undefined,
             line: f.lineNumber,
             column: f.columnNumber,
-        }]));
+        }])));
     function setup() {
         const connection = new MockCDPConnection();
         const target = createTarget({ connection });
@@ -186,26 +187,163 @@ describe('StackTraceModel', () => {
             await model.createFromProtocolRuntime({ callFrames }, translateSpy);
             sinon.assert.calledOnce(translateSpy);
         });
+        it('only translates the new frames of a stack trace that shares frames with a previous one', async () => {
+            const { model, translateSpy } = setup();
+            const base = ['bar.js:2:bar:2:20', 'baz.js:3:baz:3:30'];
+            await model.createFromProtocolRuntime({ callFrames: ['foo.js:1:foo:1:10', ...base].map(protocolCallFrame) }, translateSpy);
+            const stackTrace = await model.createFromProtocolRuntime({ callFrames: ['qux.js:4:qux:4:40', ...base].map(protocolCallFrame) }, translateSpy);
+            sinon.assert.calledTwice(translateSpy);
+            sinon.assert.calledWithMatch(translateSpy.secondCall, [{ ...protocolCallFrame('qux.js:4:qux:4:40'), isWasm: false }], model.target());
+            assert.strictEqual(stringifyStackTrace(stackTrace), [
+                'at qux (qux.js:4:40)',
+                'at bar (bar.js:2:20)',
+                'at baz (baz.js:3:30)',
+            ].join('\n'));
+        });
+        it('retries the translation of frames whose translation threw', async () => {
+            const { model } = setup();
+            const callFrames = ['foo.js:1:foo:1:10', 'bar.js:2:bar:2:20'].map(protocolCallFrame);
+            const translateFn = sinon.stub();
+            translateFn.onFirstCall().rejects(new Error('translation failed'));
+            translateFn.callsFake(identityTranslateFn);
+            let error;
+            try {
+                await model.createFromProtocolRuntime({ callFrames }, translateFn);
+            }
+            catch (e) {
+                error = e;
+            }
+            const stackTrace = await model.createFromProtocolRuntime({ callFrames }, translateFn);
+            assert.instanceOf(error, Error);
+            sinon.assert.calledTwice(translateFn);
+            assert.strictEqual(stringifyStackTrace(stackTrace), [
+                'at foo (foo.js:1:10)',
+                'at bar (bar.js:2:20)',
+            ].join('\n'));
+        });
+        it('translates the evalOrigin of a frame that was first seen without one', async () => {
+            const { model, translateSpy } = setup();
+            await model.createFromProtocolRuntime({ callFrames: [protocolCallFrame('<anonymous>::eval:0:0')] }, translateSpy);
+            const stackTrace = await model.createFromErrorStackLikeString(`Error: foo
+              at eval (eval at outerEval (foo.js:10:5), <anonymous>:1:1)`, translateSpy);
+            assert.exists(stackTrace);
+            sinon.assert.calledTwice(translateSpy);
+            sinon.assert.calledWithMatch(translateSpy.secondCall, [sinon.match({ functionName: 'outerEval' })]);
+            assert.strictEqual(stackTrace.syncFragment.frames[0].evalOrigin?.name, 'outerEval');
+        });
         it('throws if the translation function returns the wrong number of frames', async () => {
             const { model } = setup();
+            let error;
             try {
                 await model.createFromProtocolRuntime({
                     callFrames: [protocolCallFrame('foo.js:1:foo:1:10')],
                 }, () => Promise.resolve([]));
-                assert.fail('Expected translateFragment to throw');
             }
-            catch {
+            catch (e) {
+                error = e;
             }
+            assert.instanceOf(error, Error);
+        });
+        it('stores the kind and function keys of each translated frame on the trie nodes', async () => {
+            const { model } = setup();
+            const keys = { top: 'outer', bottom: 'outer' };
+            const translateFn = frames => Promise.resolve(frames.map(({ url, functionName: name, lineNumber: line, columnNumber: column }) => {
+                if (name === 'outlined') {
+                    return {
+                        kind: "OUTLINED" /* StackTraceImpl.Trie.FrameKind.OUTLINED */,
+                        frames: [{ url, name, line, column }],
+                        functionKeys: keys,
+                    };
+                }
+                if (name === 'helper') {
+                    return { kind: "HIDDEN" /* StackTraceImpl.Trie.FrameKind.HIDDEN */, frames: [] };
+                }
+                return {
+                    kind: "VISIBLE" /* StackTraceImpl.Trie.FrameKind.VISIBLE */,
+                    frames: [{ url, name, line, column }],
+                    functionKeys: keys,
+                };
+            }));
+            const stackTrace = await model.createFromProtocolRuntime({
+                callFrames: ['foo.js:1:outlined:1:10', 'foo.js:1:helper:2:20', 'foo.js:1:outer:3:30'].map(protocolCallFrame),
+            }, translateFn);
+            const nodes = [...stackTrace.syncFragment.node.getCallStack()];
+            assert.deepEqual(nodes.map(n => n.kind), [
+                "OUTLINED" /* StackTraceImpl.Trie.FrameKind.OUTLINED */,
+                "HIDDEN" /* StackTraceImpl.Trie.FrameKind.HIDDEN */,
+                "VISIBLE" /* StackTraceImpl.Trie.FrameKind.VISIBLE */,
+            ]);
+            assert.deepEqual(nodes.map(n => n.functionKeys), [keys, undefined, keys]);
+            assert.deepEqual(nodes.map(n => n.frames.map(f => f.name)), [['outlined'], [], ['outer']]);
+        });
+        it('turns a VISIBLE translation without frames into a HIDDEN one', async () => {
+            const { model } = setup();
+            const assertStub = sinon.stub(console, 'assert');
+            const translateFn = frames => Promise.resolve(frames.map(() => ({ kind: "VISIBLE" /* StackTraceImpl.Trie.FrameKind.VISIBLE */, frames: [], functionKeys: { top: 'a', bottom: 'a' } })));
+            const stackTrace = await model.createFromProtocolRuntime({
+                callFrames: [protocolCallFrame('foo.js:1:visibleWithoutFrames:2:20')],
+            }, translateFn);
+            const [node] = stackTrace.syncFragment.node.getCallStack();
+            assert.strictEqual(node.kind, "HIDDEN" /* StackTraceImpl.Trie.FrameKind.HIDDEN */);
+            assert.isUndefined(node.functionKeys);
+            sinon.assert.calledOnceWithExactly(assertStub, false, 'Non-HIDDEN translation without frames');
+        });
+        it('does not change the frames of a stack trace that shares its caller with an outlined frame', async () => {
+            const { model } = setup();
+            const translations = {
+                '_loop@1:17': {
+                    kind: "OUTLINED" /* StackTraceImpl.Trie.FrameKind.OUTLINED */,
+                    frames: [{ url: 'index.ts', name: 'outer', line: 2, column: 4 }],
+                    functionKeys: { top: 'outer', bottom: 'outer' },
+                },
+                'outer@0:17': {
+                    kind: "VISIBLE" /* StackTraceImpl.Trie.FrameKind.VISIBLE */,
+                    frames: [{ url: 'index.ts', name: 'outer', line: 1, column: 2 }],
+                    functionKeys: { top: 'outer', bottom: 'outer' },
+                },
+                'main@2:16': {
+                    kind: "VISIBLE" /* StackTraceImpl.Trie.FrameKind.VISIBLE */,
+                    frames: [{ url: 'index.ts', name: 'main', line: 6, column: 2 }],
+                    functionKeys: { top: 'main', bottom: 'main' },
+                },
+            };
+            const translateFn = frames => Promise.resolve(frames.map(f => translations[`${f.functionName}@${f.lineNumber}:${f.columnNumber}`]));
+            const callFramesX = ['index.js:1:outer:0:17', 'index.js:1:main:2:16'].map(protocolCallFrame);
+            const callFramesY = [protocolCallFrame('index.js:1:_loop:1:17'), ...callFramesX];
+            const expectedX = ['at outer (index.ts:1:2)', 'at main (index.ts:6:2)'].join('\n');
+            const stackTraceX = await model.createFromProtocolRuntime({ callFrames: callFramesX }, translateFn);
+            const stackTraceY = await model.createFromProtocolRuntime({ callFrames: callFramesY }, translateFn);
+            assert.strictEqual(stringifyStackTrace(stackTraceX), expectedX);
+            assert.strictEqual(stringifyStackTrace(stackTraceY), ['at outer (index.ts:2:4)', 'at main (index.ts:6:2)'].join('\n'));
+            assert.strictEqual(stringifyStackTrace(await model.createFromProtocolRuntime({ callFrames: callFramesX }, translateFn)), expectedX);
+        });
+        it('stores whether a translation is unmapped on the trie nodes', async () => {
+            const { model } = setup();
+            const translateFn = frames => Promise.resolve(frames.map(({ url, functionName: name, lineNumber: line, columnNumber: column }) => {
+                if (name === 'helper') {
+                    return { kind: "HIDDEN" /* StackTraceImpl.Trie.FrameKind.HIDDEN */, frames: [] };
+                }
+                return {
+                    kind: "VISIBLE" /* StackTraceImpl.Trie.FrameKind.VISIBLE */,
+                    frames: [{ url, name, line, column }],
+                    unmapped: name === 'generated',
+                };
+            }));
+            const stackTrace = await model.createFromProtocolRuntime({
+                callFrames: ['foo.js:1:generated:1:10', 'foo.js:1:helper:2:20', 'foo.js:1:mapped:3:30'].map(protocolCallFrame),
+            }, translateFn);
+            const nodes = [...stackTrace.syncFragment.node.getCallStack()];
+            assert.deepEqual(nodes.map(n => n.isUnmapped), [true, false, false]);
         });
         it('forwards missing debug info', async () => {
             const { model } = setup();
-            const translateFn = (frames, _target) => Promise.resolve(frames.map(f => [{
+            const translateFn = (frames, _target) => Promise.resolve(frames.map(f => visible([{
                     url: f.url,
                     name: f.functionName,
                     line: f.lineNumber,
                     column: f.columnNumber,
                     missingDebugInfo: { type: "NO_INFO" /* StackTrace.StackTrace.MissingDebugInfoType.NO_INFO */ },
-                }]));
+                }])));
             const stackTrace = await model.createFromProtocolRuntime({ callFrames: [protocolCallFrame('foo.js:1:foo:1:10')] }, translateFn);
             assert.strictEqual(stackTrace.syncFragment.frames[0].missingDebugInfo?.type, "NO_INFO" /* StackTrace.StackTrace.MissingDebugInfoType.NO_INFO */);
         });
@@ -241,6 +379,8 @@ describe('StackTraceModel', () => {
             stackTrace.addEventListener("UPDATED" /* StackTrace.StackTrace.Events.UPDATED */, updatedSpy);
             return updatedSpy;
         };
+        /** @returns the function names of the raw frames passed to each call of `spy`. */
+        const translatedNames = (spy) => spy.getCalls().map(call => call.args[0].map(f => f.functionName));
         it('re-translates and notifies a single stack trace', async () => {
             const { model, translateSpy } = setup();
             const callFrames = [
@@ -252,9 +392,9 @@ describe('StackTraceModel', () => {
             const script = { scriptId: 'id1', sourceURL: 'foo.js' };
             await model.scriptInfoChanged(script, translateSpy);
             sinon.assert.calledOnce(updatedSpy);
-            sinon.assert.calledOnceWithMatch(translateSpy, callFrames.map(f => ({ ...f, isWasm: false })), model.target());
+            assert.deepEqual(translatedNames(translateSpy), [['foo']]);
         });
-        it('only re-translates affected fragments and notifies affected stack traces', async () => {
+        it('only re-translates affected frames and notifies affected stack traces', async () => {
             const { model, translateSpy } = setup();
             const callFrames1 = [
                 'foo.js:id1:foo:1:10',
@@ -269,7 +409,7 @@ describe('StackTraceModel', () => {
             const [updatedSpy1, updatedSpy2] = [createUpdatedSpy(stackTrace1), createUpdatedSpy(stackTrace2)];
             const script = { scriptId: 'id2', sourceURL: 'bar.js' };
             await model.scriptInfoChanged(script, translateSpy);
-            sinon.assert.calledOnceWithMatch(translateSpy, callFrames1.map(f => ({ ...f, isWasm: false })), model.target());
+            assert.deepEqual(translatedNames(translateSpy), [['bar']]);
             sinon.assert.calledOnce(updatedSpy1);
             sinon.assert.notCalled(updatedSpy2);
         });
@@ -291,7 +431,36 @@ describe('StackTraceModel', () => {
             const updatedSpy = createUpdatedSpy(stackTrace);
             const script = { scriptId: 'id1', sourceURL: 'foo.js' };
             await model.scriptInfoChanged(script, translateSpy);
-            sinon.assert.calledTwice(translateSpy);
+            sinon.assert.calledOnce(translateSpy);
+            assert.sameMembers(translatedNames(translateSpy)[0], ['foo', 'someFn']);
+            sinon.assert.calledOnce(updatedSpy);
+        });
+        it('re-translates all frames of a script that appears multiple times in a stack trace', async () => {
+            const { model, translateSpy } = setup();
+            const stackTrace = await model.createFromProtocolRuntime({
+                callFrames: [
+                    'foo.js:id1:foo:1:10',
+                    'bar.js:id2:bar:2:20',
+                    'foo.js:id1:baz:3:30',
+                ].map(protocolCallFrame),
+            }, identityTranslateFn);
+            const updatedSpy = createUpdatedSpy(stackTrace);
+            const script = { scriptId: 'id1', sourceURL: 'foo.js' };
+            await model.scriptInfoChanged(script, translateSpy);
+            sinon.assert.calledOnce(translateSpy);
+            assert.sameMembers(translatedNames(translateSpy)[0], ['foo', 'baz']);
+            sinon.assert.calledOnce(updatedSpy);
+        });
+        it('re-translates eval origins whose chain references the script', async () => {
+            const { model, translateSpy } = setup();
+            const stackTrace = await model.createFromErrorStackLikeString(`Error: foo
+              at end (eval at inner (eval at outer (foo.js:10:5)), <anonymous>:1:1)`, identityTranslateFn);
+            assert.exists(stackTrace);
+            const updatedSpy = createUpdatedSpy(stackTrace);
+            const script = { scriptId: 'id1', sourceURL: 'http://example.com/foo.js' };
+            await model.scriptInfoChanged(script, translateSpy);
+            // Only the eval origin chain is re-translated, not the raw frame of `end` itself.
+            assert.deepEqual(translatedNames(translateSpy), [['inner'], ['outer']]);
             sinon.assert.calledOnce(updatedSpy);
         });
         it('matches fragments based on URL if scriptId is missing', async () => {
@@ -330,19 +499,19 @@ describe('StackTraceModel', () => {
             const [updatedSpyFull, updatedSpySubSet] = [createUpdatedSpy(fullStackTrace), createUpdatedSpy(subSetStackTrace)];
             const script = { scriptId: 'id2', sourceURL: 'bar.js' };
             await model.scriptInfoChanged(script, translateSpy);
-            sinon.assert.calledOnceWithMatch(translateSpy, fullCallFrames.map(f => ({ ...f, isWasm: false })), model.target());
+            assert.deepEqual(translatedNames(translateSpy), [['bar']]);
             sinon.assert.calledOnce(updatedSpyFull);
             sinon.assert.calledOnce(updatedSpySubSet);
         });
         it('forwards missing debug info', async () => {
             const { model } = setup();
-            const translateFn = (frames, _target) => Promise.resolve(frames.map(f => [{
+            const translateFn = (frames, _target) => Promise.resolve(frames.map(f => visible([{
                     url: f.url,
                     name: f.functionName,
                     line: f.lineNumber,
                     column: f.columnNumber,
                     missingDebugInfo: { type: "NO_INFO" /* StackTrace.StackTrace.MissingDebugInfoType.NO_INFO */ },
-                }]));
+                }])));
             const stackTrace = await model.createFromProtocolRuntime({ callFrames: [protocolCallFrame('foo.js:1:foo:1:10')] }, identityTranslateFn);
             assert.isUndefined(stackTrace.syncFragment.frames[0].missingDebugInfo);
             const script = { scriptId: '1', sourceURL: 'bar.js' };
@@ -383,16 +552,75 @@ describe('StackTraceModel', () => {
             const { model, debuggerModel } = setup();
             sinon.stub(debuggerModel, 'scriptForId').returns({ isWasm: () => false });
             const details = new SDK.DebuggerModel.DebuggerPausedDetails(debuggerModel, [debuggerCallFrame('foo.js:id1:foo:1:10')], "other" /* Protocol.Debugger.PausedEventReason.Other */, undefined, []);
-            const stackTrace = await model.createFromDebuggerPaused(details, () => Promise.resolve([[
+            const stackTrace = await model.createFromDebuggerPaused(details, () => Promise.resolve([visible([
                     { url: 'foo.ts', name: 'foo', line: 10, column: 20 },
                     { url: 'bar.ts', name: 'bar', line: 20, column: 30 },
                     { url: 'baz.ts', name: 'baz', line: 40, column: 50 },
-                ]]));
+                ])]));
             assert.strictEqual(stackTrace.syncFragment.frames[0].sdkFrame, details.callFrames[0]);
             assert.strictEqual(stackTrace.syncFragment.frames[1].sdkFrame.inlineFrameIndex, 1);
             assert.strictEqual(stackTrace.syncFragment.frames[1].sdkFrame.functionName, 'bar');
             assert.strictEqual(stackTrace.syncFragment.frames[2].sdkFrame.inlineFrameIndex, 2);
             assert.strictEqual(stackTrace.syncFragment.frames[2].sdkFrame.functionName, 'baz');
+        });
+        it('returns the same virtual DebuggerModel.CallFrame for inlined frames on repeated reads', async () => {
+            const { model, debuggerModel } = setup();
+            const script = { scriptId: 'id1', sourceURL: 'foo.js', isWasm: () => false };
+            sinon.stub(debuggerModel, 'scriptForId').returns(script);
+            const details = new SDK.DebuggerModel.DebuggerPausedDetails(debuggerModel, [debuggerCallFrame('foo.js:id1:foo:1:10')], "other" /* Protocol.Debugger.PausedEventReason.Other */, undefined, []);
+            const translateFn = (inlinedName) => () => Promise.resolve([visible([
+                    { url: 'foo.ts', name: 'foo', line: 10, column: 20 },
+                    { url: 'bar.ts', name: inlinedName, line: 20, column: 30 },
+                ])]);
+            const stackTrace = await model.createFromDebuggerPaused(details, translateFn('bar'));
+            const [, inlined] = stackTrace.syncFragment.frames;
+            assert.strictEqual(stackTrace.syncFragment.frames[1].sdkFrame, inlined.sdkFrame);
+            assert.strictEqual(StackTrace.StackTrace.DebuggableFrameFlavor.for(stackTrace.syncFragment.frames[1]), StackTrace.StackTrace.DebuggableFrameFlavor.for(inlined));
+            // A re-translation that changes the name of the inlined frame gets a new virtual CallFrame.
+            await model.scriptInfoChanged(script, translateFn('renamed'));
+            const renamed = stackTrace.syncFragment.frames[1].sdkFrame;
+            assert.notStrictEqual(renamed, inlined.sdkFrame);
+            assert.strictEqual(renamed.functionName, 'renamed');
+            assert.strictEqual(stackTrace.syncFragment.frames[1].sdkFrame, renamed);
+        });
+        it('assigns the CallFrame of the terminator to inlined callers of a merged outlined frame', async () => {
+            const { model, debuggerModel } = setup();
+            sinon.stub(debuggerModel, 'scriptForId').returns({ isWasm: () => false });
+            const details = new SDK.DebuggerModel.DebuggerPausedDetails(debuggerModel, ['bundle.js:id1:_o:1:10', 'bundle.js:id1:main:2:20'].map(debuggerCallFrame), "other" /* Protocol.Debugger.PausedEventReason.Other */, undefined, []);
+            const stackTrace = await model.createFromDebuggerPaused(details, frames => Promise.resolve(frames.map(({ functionName }) => {
+                if (functionName === '_o') {
+                    return {
+                        kind: "OUTLINED" /* StackTraceImpl.Trie.FrameKind.OUTLINED */,
+                        frames: [{ url: 'app.ts', name: 'outer', line: 2, column: 4 }],
+                        functionKeys: { top: 'outer', bottom: 'outer' },
+                    };
+                }
+                return {
+                    kind: "VISIBLE" /* StackTraceImpl.Trie.FrameKind.VISIBLE */,
+                    frames: [
+                        { url: 'app.ts', name: 'outer', line: 5, column: 2 },
+                        { url: 'app.ts', name: 'main', line: 9, column: 2 },
+                    ],
+                    functionKeys: { top: 'outer', bottom: 'main' },
+                };
+            })));
+            const { frames } = stackTrace.syncFragment;
+            assert.lengthOf(frames, 2);
+            assert.strictEqual(frames[0].sdkFrame, details.callFrames[0]);
+            assert.strictEqual(frames[1].sdkFrame.inlineFrameIndex, 1);
+            assert.strictEqual(frames[1].sdkFrame.payload, details.callFrames[1].payload);
+            assert.strictEqual(frames[1].sdkFrame.functionName, 'main');
+        });
+        it('assigns the CallFrame of the caller when the top frame is HIDDEN', async () => {
+            const { model, debuggerModel } = setup();
+            sinon.stub(debuggerModel, 'scriptForId').returns({ isWasm: () => false });
+            const details = new SDK.DebuggerModel.DebuggerPausedDetails(debuggerModel, ['bundle.js:id1:helper:1:10', 'bundle.js:id1:main:2:20'].map(debuggerCallFrame), "other" /* Protocol.Debugger.PausedEventReason.Other */, undefined, []);
+            const stackTrace = await model.createFromDebuggerPaused(details, frames => Promise.resolve(frames.map(({ functionName }) => functionName === 'helper' ?
+                { kind: "HIDDEN" /* StackTraceImpl.Trie.FrameKind.HIDDEN */, frames: [] } :
+                visible([{ url: 'app.ts', name: 'main', line: 9, column: 2 }]))));
+            const { frames } = stackTrace.syncFragment;
+            assert.lengthOf(frames, 1);
+            assert.strictEqual(frames[0].sdkFrame, details.callFrames[1]);
         });
         it('sets isWasm on StackTrace.Frame when paused in Wasm', async () => {
             const { model, debuggerModel } = setup();
@@ -414,11 +642,11 @@ describe('StackTraceModel', () => {
         it('preserves the raw function name for inlined frames', async () => {
             const { model } = setup();
             const details = [protocolCallFrame('foo.js:id1:foo:1:10')];
-            const stackTrace = await model.createFromProtocolRuntime({ callFrames: details }, () => Promise.resolve([[
+            const stackTrace = await model.createFromProtocolRuntime({ callFrames: details }, () => Promise.resolve([visible([
                     { url: 'foo.ts', name: 'foo', line: 10, column: 20 },
                     { url: 'bar.ts', name: 'bar', line: 20, column: 30 },
                     { url: 'baz.ts', name: 'baz', line: 40, column: 50 },
-                ]]));
+                ])]));
             assert.strictEqual(stackTrace.syncFragment.frames[0].rawName, 'foo');
             assert.isTrue(stackTrace.syncFragment.frames[0].isInline);
             assert.strictEqual(stackTrace.syncFragment.frames[1].rawName, 'foo');
@@ -495,17 +723,17 @@ describe('StackTraceModel', () => {
                 // Expand the evalOrigin into 2 frames to simulate inlining.
                 return Promise.resolve(frames.map(f => {
                     if (f.functionName === 'outerEval') { // the evalOrigin frame
-                        return [
+                        return visible([
                             { url: 'inlined.js', name: 'inlinedFn', line: 5, column: 5 },
                             { url: f.url, name: f.functionName, line: f.lineNumber, column: f.columnNumber },
-                        ];
+                        ]);
                     }
-                    return [{
+                    return visible([{
                             url: f.url,
                             name: f.functionName,
                             line: f.lineNumber,
                             column: f.columnNumber,
-                        }];
+                        }]);
                 }));
             };
             const stackTrace = await model.createFromErrorStackLikeString(`Error: foo
@@ -524,29 +752,48 @@ describe('StackTraceModel', () => {
             // the remaining inlined frames ('outerEval' at 'foo.js:10:5') are technically dropped in the public API!
             // This is a known limitation of having evalOrigin as a single frame rather than an array.
         });
+        it('shows the raw location of an evalOrigin frame that translates to a HIDDEN frame', async () => {
+            const { model } = setup();
+            const translateFn = frames => Promise.resolve(frames.map(f => {
+                if (f.functionName === 'helper') {
+                    return { kind: "HIDDEN" /* StackTraceImpl.Trie.FrameKind.HIDDEN */, frames: [] };
+                }
+                return visible([{ url: f.url, name: f.functionName, line: f.lineNumber, column: f.columnNumber }]);
+            }));
+            const stackTrace = await model.createFromErrorStackLikeString(`Error: foo
+              at eval (eval at helper (foo.js:10:5), <anonymous>:1:1)`, translateFn);
+            assert.exists(stackTrace);
+            const evalOrigin = stackTrace.syncFragment.frames[0].evalOrigin;
+            assert.exists(evalOrigin);
+            assert.strictEqual(evalOrigin.name, 'helper');
+            assert.strictEqual(evalOrigin.rawName, 'helper');
+            assert.isTrue(evalOrigin.url?.endsWith('foo.js'));
+            assert.strictEqual(evalOrigin.line, 9);
+            assert.strictEqual(evalOrigin.column, 4);
+        });
         it('correctly translates complex recursive nested evalOrigin frames', async () => {
             const { model } = setup();
             const translateFn = (frames, _target) => {
                 // Expand baseCaller into 2 frames to simulate inlining.
                 return Promise.resolve(frames.map(f => {
                     if (f.functionName === 'baseCaller') {
-                        return [
+                        return visible([
                             { url: 'inlined_base.js', name: 'inlinedBaseFn', line: 12, column: 12 },
                             { url: f.url, name: f.functionName, line: f.lineNumber, column: f.columnNumber },
-                        ];
+                        ]);
                     }
                     if (f.functionName === 'intermediate1') {
-                        return [{ url: 'inter1.js', name: 'inter1Fn', line: 20, column: 20 }];
+                        return visible([{ url: 'inter1.js', name: 'inter1Fn', line: 20, column: 20 }]);
                     }
                     if (f.functionName === 'intermediate2') {
-                        return [{ url: 'inter2.js', name: 'inter2Fn', line: 30, column: 30 }];
+                        return visible([{ url: 'inter2.js', name: 'inter2Fn', line: 30, column: 30 }]);
                     }
-                    return [{
+                    return visible([{
                             url: f.url,
                             name: f.functionName,
                             line: f.lineNumber,
                             column: f.columnNumber,
-                        }];
+                        }]);
                 }));
             };
             const stackTrace = await model.createFromErrorStackLikeString(`Error: foo

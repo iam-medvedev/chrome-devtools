@@ -9,9 +9,11 @@ export default `/*
  * found in the LICENSE file.
  */
 
-.accessibility-toggle-container {
-  padding: var(--sys-size-6) 18px;
-  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
+@scope to (devtools-widget > *) {
+  .accessibility-toggle-container {
+    padding: var(--sys-size-6) 18px;
+    border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
+  }
 }
 
 /*# sourceURL=${import.meta.resolve('./accessibilitySidebarView.css')} */`;

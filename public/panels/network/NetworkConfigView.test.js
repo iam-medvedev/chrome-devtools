@@ -128,5 +128,27 @@ describeWithEnvironment('NetworkConfigView', () => {
         assert.exists(updatedErrorElement);
         assert.strictEqual(updatedErrorElement.textContent, '');
     });
+    it('selects the custom user agent input when the custom option is chosen', async () => {
+        const networkConfigView = Network.NetworkConfigView.NetworkConfigView.instance({ forceNew: true });
+        renderElementIntoDOM(networkConfigView);
+        await UI.Widget.Widget.allUpdatesComplete;
+        const autoCheckbox = networkConfigView.contentElement.querySelector('.network-config-ua devtools-checkbox');
+        if (autoCheckbox.checked) {
+            autoCheckbox.click();
+            await UI.Widget.Widget.allUpdatesComplete;
+        }
+        const uaSelect = networkConfigView.contentElement.querySelector('.network-config-ua-custom select');
+        const uaInput = networkConfigView.contentElement.querySelector('.network-config-ua-custom input[type="text"]');
+        assert.exists(uaSelect);
+        assert.exists(uaInput);
+        uaSelect.selectedIndex = 1;
+        uaSelect.dispatchEvent(new Event('change'));
+        await UI.Widget.Widget.allUpdatesComplete;
+        assert.isNotEmpty(uaInput.value);
+        uaSelect.value = 'custom';
+        uaSelect.dispatchEvent(new Event('change'));
+        assert.strictEqual(uaInput.selectionStart, 0);
+        assert.strictEqual(uaInput.selectionEnd, uaInput.value.length);
+    });
 });
 //# sourceMappingURL=NetworkConfigView.test.js.map

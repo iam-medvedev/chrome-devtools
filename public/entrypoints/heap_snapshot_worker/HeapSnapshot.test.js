@@ -968,6 +968,47 @@ describe('HeapSnapshot', () => {
         };
         assert.strictEqual(JSON.stringify(referenceToCompare), JSON.stringify(resultToCompare));
     });
+    it('heapSnapshotLoader parses negative values in scope arrays', async () => {
+        const { strings, ...raw } = createHeapSnapshotMockRaw();
+        const source = {
+            ...raw,
+            snapshot: {
+                ...raw.snapshot,
+                meta: {
+                    ...raw.snapshot.meta,
+                    scope_fields: ['script_node_index', 'scope_id', 'depth', 'scope_context_vars_count', 'scope_uses_count'],
+                    scope_context_var_fields: ['name'],
+                    scope_use_fields: ['declaring_scope_id', 'slot_index'],
+                },
+            },
+            scopes: [0, -1, 0, 1, 1, 0, -12345, 1, 0, 0, 0, 2147483648, 2, 0, 1],
+            scope_context_vars: [6, 7],
+            scope_uses: [-1, 0, -12345, 3, 2147483648, 12],
+            // The loader expects `strings` to be the last field.
+            strings,
+        };
+        const sourceStringified = JSON.stringify(source);
+        // Use various chunk sizes so that numbers (and minus signs) get split across chunk boundaries.
+        // The header is written as a single chunk as the loader expects `"snapshot":` to be in one chunk.
+        const headerEnd = sourceStringified.indexOf('"nodes"');
+        for (const partSize of [1, 2, 3, 7, sourceStringified.length]) {
+            const dispatcher = new HeapSnapshotWorker.HeapSnapshotWorkerDispatcher.HeapSnapshotWorkerDispatcher(() => { });
+            const loader = new HeapSnapshotWorker.HeapSnapshotLoader.HeapSnapshotLoader(dispatcher);
+            loader.write(sourceStringified.slice(0, headerEnd));
+            for (let i = headerEnd, l = sourceStringified.length; i < l; i += partSize) {
+                loader.write(sourceStringified.slice(i, i + partSize));
+            }
+            loader.close();
+            const channel = new MessageChannel();
+            new HeapSnapshotWorker.HeapSnapshot.SecondaryInitManager(channel.port2);
+            const result = await loader.buildSnapshot(channel.port1);
+            channel.port1.close();
+            channel.port2.close();
+            assert.deepEqual(result.profile.scopes, source.scopes, `scopes (partSize=${partSize})`);
+            assert.deepEqual(result.profile.scope_context_vars, source.scope_context_vars, `scope_context_vars (partSize=${partSize})`);
+            assert.deepEqual(result.profile.scope_uses, source.scope_uses, `scope_uses (partSize=${partSize})`);
+        }
+    });
     it('heapSnapshotLoaderThrowsOnMalformedSnapshot', async () => {
         const dispatcher = new HeapSnapshotWorker.HeapSnapshotWorkerDispatcher.HeapSnapshotWorkerDispatcher(() => { });
         const loader = new HeapSnapshotWorker.HeapSnapshotLoader.HeapSnapshotLoader(dispatcher);
@@ -1660,11 +1701,23 @@ describe('HeapSnapshot', () => {
                     scopeInfo.linkNode(node(scopeInfoMock.outerScopeInfo), 'internal', 'outer_scope_info');
                 }
             }
+            // Script lists the SharedFunctionInfos of its functions in `infos`.
+            const infosByScript = new Map();
+            function infosOf(scriptName) {
+                let infos = infosByScript.get(scriptName);
+                if (!infos) {
+                    infos = new HeapNode('system / WeakFixedArray', 0, 'array');
+                    node(scriptName).linkNode(infos, 'internal', 'infos');
+                    infosByScript.set(scriptName, infos);
+                }
+                return infos;
+            }
             for (const sfiMock of snapshotMock.sfis) {
                 const sfi = node(sfiMock.name);
                 sfi.linkNode(node(sfiMock.scopeInfo), 'internal', 'name_or_scope_info');
                 sfi.linkNode(node(sfiMock.script), 'internal', 'script');
                 addIntEdge(sfi, 'scope_id', sfiMock.scopeId);
+                infosOf(sfiMock.script).linkNode(sfi, 'weak');
             }
             for (const contextMock of snapshotMock.contexts) {
                 const context = node(contextMock.name);

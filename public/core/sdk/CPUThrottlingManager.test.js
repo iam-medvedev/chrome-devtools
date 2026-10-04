@@ -177,11 +177,25 @@ describe('CPUThrottlingManager', () => {
         // Apply manual override to Low.
         manager.setCPUPerformanceTier("low" /* CPUPerformanceTier.Low */);
         assert.strictEqual(manager.effectiveCPUPerformanceTier(), "low" /* CPUPerformanceTier.Low */);
-        // Enable 4x throttling (which would normally calculate to Mid).
+        // Enable 4x throttling (which maps Ultra to Mid), but manual override to Low still takes precedence.
         manager.setCPUThrottlingRate(4);
         assert.strictEqual(manager.effectiveCPUPerformanceTier(), "low" /* CPUPerformanceTier.Low */);
         // Clear manual override -> should fall back to Mid (from 4x throttling).
         manager.setCPUPerformanceTier(undefined);
+        assert.strictEqual(manager.effectiveCPUPerformanceTier(), "mid" /* CPUPerformanceTier.Mid */);
+    });
+    it('calculates effective CPU performance tier when host tier is discovered while throttling is active', async () => {
+        const universe = new TestUniverse();
+        // Apply manual override to Low before initialization so the host tier is not queried on startup.
+        universe.cpuThrottlingManager.setCPUPerformanceTier("low" /* CPUPerformanceTier.Low */);
+        const manager = await createManagerWithHostTier(universe, "ultra" /* CPUPerformanceTier.Ultra */);
+        assert.strictEqual(manager.effectiveCPUPerformanceTier(), "low" /* CPUPerformanceTier.Low */);
+        // Enable 4x throttling; the manual override to Low still takes precedence.
+        manager.setCPUThrottlingRate(4);
+        assert.strictEqual(manager.effectiveCPUPerformanceTier(), "low" /* CPUPerformanceTier.Low */);
+        // Clear manual override -> should discover the Ultra host tier and calculate Mid (from 4x throttling).
+        manager.setCPUPerformanceTier(undefined);
+        await new Promise(resolve => setTimeout(resolve, 0));
         assert.strictEqual(manager.effectiveCPUPerformanceTier(), "mid" /* CPUPerformanceTier.Mid */);
     });
     it('applies active CPU performance override to newly attached targets', async () => {

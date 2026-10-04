@@ -8,7 +8,7 @@ import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as AiAssistance from '../../models/ai_assistance/ai_assistance.js';
 import { getContextMenuForElement } from '../../testing/ContextMenuHelpers.js';
-import { createTarget, describeWithEnvironment, expectConsoleLogs, stubNoopSettings, updateHostConfig, } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, describeWithEnvironment, expectConsoleLogs, updateHostConfig, } from '../../testing/EnvironmentHelpers.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import { createResource, getMainFrame, mockResourceTree } from '../../testing/ResourceTreeHelpers.js';
@@ -21,7 +21,6 @@ describeWithEnvironment('ApplicationPanelSidebar', () => {
     let tabTarget;
     const TEST_EXTENSION_NAME = 'Test Extension';
     beforeEach(() => {
-        stubNoopSettings();
         SDK.ChildTargetManager.ChildTargetManager.install();
         const connection = new MockCDPConnection();
         mockResourceTree(connection);
@@ -215,7 +214,6 @@ describeWithEnvironment('ApplicationPanelSidebar', () => {
 describeWithEnvironment('IDBDatabaseTreeElement', () => {
     let target;
     beforeEach(() => {
-        stubNoopSettings();
         const connection = new MockCDPConnection();
         mockResourceTree(connection);
         target = createTarget({ connection });
@@ -239,7 +237,6 @@ describeWithEnvironment('ResourcesSection', () => {
     const tests = (inScope) => () => {
         let target;
         beforeEach(() => {
-            stubNoopSettings();
             SDK.FrameManager.FrameManager.instance({ forceNew: true });
             const connection = new MockCDPConnection();
             mockResourceTree(connection);
@@ -285,7 +282,6 @@ describeWithEnvironment('IndexedDBTreeElement live update', () => {
     let sidebar;
     let indexedDBTreeElement;
     beforeEach(async () => {
-        stubNoopSettings();
         const connection = new MockCDPConnection();
         mockResourceTree(connection);
         target = createTarget({ connection });

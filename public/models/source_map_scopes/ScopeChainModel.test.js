@@ -31,7 +31,7 @@ describe('ScopeChainModel', () => {
         // @ts-expect-error readonly for test.
         fakeFrame.script = sinon.createStubInstance(SDK.Script.Script, { isWasm: false });
         fakeFrame.scopeChain.returns([]);
-        const scopeChainModel = new SourceMapScopes.ScopeChainModel.ScopeChainModel(fakeFrame, universe.debuggerWorkspaceBinding);
+        const scopeChainModel = new SourceMapScopes.ScopeChainModel.ScopeChainModel(fakeFrame, universe.scopeChainResolver);
         const listenerStub = sinon.stub();
         scopeChainModel.addEventListener("ScopeChainUpdated" /* SourceMapScopes.ScopeChainModel.Events.SCOPE_CHAIN_UPDATED */, listenerStub);
         await clock.tickAsync(10);
@@ -48,7 +48,7 @@ describe('ScopeChainModel', () => {
         // @ts-expect-error readonly for test.
         fakeFrame.script = sinon.createStubInstance(SDK.Script.Script, { isWasm: false });
         fakeFrame.scopeChain.returns([]);
-        const scopeChainModel = new SourceMapScopes.ScopeChainModel.ScopeChainModel(fakeFrame, universe.debuggerWorkspaceBinding);
+        const scopeChainModel = new SourceMapScopes.ScopeChainModel.ScopeChainModel(fakeFrame, universe.scopeChainResolver);
         const listenerStub = sinon.stub();
         scopeChainModel.addEventListener("ScopeChainUpdated" /* SourceMapScopes.ScopeChainModel.Events.SCOPE_CHAIN_UPDATED */, listenerStub);
         await clock.tickAsync(10);
@@ -68,7 +68,7 @@ describe('ScopeChainModel', () => {
         // @ts-expect-error readonly for test.
         fakeFrame.script = script;
         fakeFrame.scopeChain.returns([]);
-        const scopeChainModel = new SourceMapScopes.ScopeChainModel.ScopeChainModel(fakeFrame, universe.debuggerWorkspaceBinding);
+        const scopeChainModel = new SourceMapScopes.ScopeChainModel.ScopeChainModel(fakeFrame, universe.scopeChainResolver);
         const listenerStub = sinon.stub();
         scopeChainModel.addEventListener("ScopeChainUpdated" /* SourceMapScopes.ScopeChainModel.Events.SCOPE_CHAIN_UPDATED */, listenerStub);
         await clock.tickAsync(10);
@@ -93,17 +93,16 @@ describe('ScopeChainModel', () => {
         const localScope = sinon.createStubInstance(SDK.DebuggerModel.Scope, {
             callFrame: fakeFrame,
             type: "local" /* Protocol.Debugger.ScopeType.Local */,
-            empty: false,
         });
         localScope.object.callsFake(() => new SDK.RemoteObject.LocalJSONObject({ x: 42 }));
         fakeFrame.scopeChain.returns([localScope]);
-        const model1 = new SourceMapScopes.ScopeChainModel.ScopeChainModel(fakeFrame, universe.debuggerWorkspaceBinding);
+        const model1 = new SourceMapScopes.ScopeChainModel.ScopeChainModel(fakeFrame, universe.scopeChainResolver);
         const listenerStub = sinon.stub();
         model1.addEventListener("ScopeChainUpdated" /* SourceMapScopes.ScopeChainModel.Events.SCOPE_CHAIN_UPDATED */, listenerStub);
         await clock.tickAsync(10);
         sinon.assert.calledOnce(listenerStub);
         const chainFromEvent = listenerStub.firstCall.args[0].data.scopeChain;
-        const model2 = new SourceMapScopes.ScopeChainModel.ScopeChainModel(fakeFrame, universe.debuggerWorkspaceBinding);
+        const model2 = new SourceMapScopes.ScopeChainModel.ScopeChainModel(fakeFrame, universe.scopeChainResolver);
         const chainFromSecondModel = await model2.resolveScopeChain();
         sinon.assert.calledOnce(stubPluginManager.resolveScopeChain);
         assert.lengthOf(chainFromEvent, 1);
@@ -118,6 +117,50 @@ describe('ScopeChainModel', () => {
         assert.notStrictEqual(refreshedChain, chainFromEvent);
         assert.notStrictEqual(refreshedChain[0], chainFromEvent[0]);
         model1.dispose();
+        model2.dispose();
+    });
+    it('does not emit an event when the scope chain for a different script is invalidated', async () => {
+        const target = universe.createTarget();
+        const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
+        const fakeFrame = sinon.createStubInstance(SDK.DebuggerModel.CallFrame);
+        fakeFrame.debuggerModel = debuggerModel;
+        // @ts-expect-error readonly for test.
+        fakeFrame.script = sinon.createStubInstance(SDK.Script.Script, { isWasm: false });
+        fakeFrame.scopeChain.returns([]);
+        const scopeChainModel = new SourceMapScopes.ScopeChainModel.ScopeChainModel(fakeFrame, universe.scopeChainResolver);
+        const listenerStub = sinon.stub();
+        scopeChainModel.addEventListener("ScopeChainUpdated" /* SourceMapScopes.ScopeChainModel.Events.SCOPE_CHAIN_UPDATED */, listenerStub);
+        await clock.tickAsync(10);
+        sinon.assert.calledOnce(listenerStub);
+        const otherScript = sinon.createStubInstance(SDK.Script.Script);
+        debuggerModel.dispatchEventToListeners(SDK.DebuggerModel.Events.DebugInfoAttached, otherScript);
+        await clock.tickAsync(10);
+        sinon.assert.calledOnce(listenerStub);
+        scopeChainModel.dispose();
+    });
+    it('picks up a source map that was attached while no ScopeChainModel for the call frame existed', async () => {
+        const target = universe.createTarget();
+        const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
+        const fakeFrame = sinon.createStubInstance(SDK.DebuggerModel.CallFrame);
+        fakeFrame.debuggerModel = debuggerModel;
+        const script = sinon.createStubInstance(SDK.Script.Script, { isWasm: false });
+        // @ts-expect-error readonly for test.
+        fakeFrame.script = script;
+        fakeFrame.scopeChain.returns([]);
+        // Simulate selecting the call frame, and then selecting a different one.
+        const model1 = new SourceMapScopes.ScopeChainModel.ScopeChainModel(fakeFrame, universe.scopeChainResolver);
+        const chainFromFirstModel = await model1.resolveScopeChain();
+        model1.dispose();
+        const sourceMap = sinon.createStubInstance(SDK.SourceMap.SourceMap);
+        debuggerModel.sourceMapManager().dispatchEventToListeners(SDK.SourceMapManager.Events.SourceMapAttached, { client: script, sourceMap });
+        // Simulate selecting the original call frame again.
+        const model2 = new SourceMapScopes.ScopeChainModel.ScopeChainModel(fakeFrame, universe.scopeChainResolver);
+        const listenerStub = sinon.stub();
+        model2.addEventListener("ScopeChainUpdated" /* SourceMapScopes.ScopeChainModel.Events.SCOPE_CHAIN_UPDATED */, listenerStub);
+        await clock.tickAsync(10);
+        sinon.assert.calledOnce(listenerStub);
+        assert.notStrictEqual(listenerStub.firstCall.args[0].data.scopeChain, chainFromFirstModel);
+        sinon.assert.calledTwice(stubPluginManager.resolveScopeChain);
         model2.dispose();
     });
 });

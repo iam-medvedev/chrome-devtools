@@ -7,6 +7,8 @@ import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../../core/text_utils/text_utils.js';
 import * as StackTrace from '../stack_trace/stack_trace.js';
+// eslint-disable-next-line @devtools/es-modules-import
+import * as StackTraceImpl from '../stack_trace/stack_trace_impl.js';
 import * as Workspace from '../workspace/workspace.js';
 import { ContentProviderBasedProject } from './ContentProviderBasedProject.js';
 import { NetworkProject } from './NetworkProject.js';
@@ -140,7 +142,7 @@ class SourceScopeRemoteObject extends SDK.RemoteObject.RemoteObjectImpl {
             return { properties: [], internalProperties: [] };
         }
         const properties = [];
-        const namespaces = {};
+        const namespaces = Object.create(null);
         function makeProperty(name, obj) {
             return new SDK.RemoteObject.RemoteObjectProperty(name, obj, 
             /* enumerable=*/ false, /* writable=*/ false, /* isOwn=*/ true, /* wasThrown=*/ false);
@@ -162,7 +164,7 @@ class SourceScopeRemoteObject extends SDK.RemoteObject.RemoteObjectImpl {
                     const nestedName = variable.nestedName[index];
                     let child = parent[nestedName];
                     if (!child) {
-                        child = new NamespaceObject({});
+                        child = new NamespaceObject(Object.create(null));
                         parent[nestedName] = child;
                     }
                     parent = child.value;
@@ -460,6 +462,9 @@ export class DebuggerLanguagePluginManager {
             // new instance of the #plugin added before we remove
             // the previous instance.
             this.parsedScriptSource({ data: script });
+            if (!this.hasPluginForScript(script)) {
+                void this.#debuggerWorkspaceBinding.updateLocations(script);
+            }
         }
     }
     hasPluginForScript(script) {
@@ -590,50 +595,40 @@ export class DebuggerLanguagePluginManager {
         }
         return ranges;
     }
-    async translateRawFramesStep(rawFrames, translatedFrames, target) {
-        const frame = rawFrames[0];
+    /**
+     * Translates a raw frame via the language plugin responsible for its script.
+     *
+     * @returns null if no plugin is responsible for the frame. Otherwise the frame is translated, either
+     * successfully, or identity mapped with the "missing debug info details" attached.
+     */
+    async translateRawFrame(frame, target) {
         const script = target.model(SDK.DebuggerModel.DebuggerModel)?.scriptForId(frame.scriptId ?? '');
         if (!script) {
-            return false;
+            return null;
         }
         const functionInfo = await this.getFunctionInfo(script, frame);
         if (!functionInfo) {
-            return false;
+            return null;
         }
-        // The plugin is responsible for translating this frame. The only question is whether it was successful,
-        // or if we identity map the raw frame and attach the "missing debug info details".
-        rawFrames.shift();
         if ('frames' in functionInfo && functionInfo.frames.length) {
             const framePromises = functionInfo.frames.map(async ({ name }, index) => {
                 const rawLocation = new SDK.DebuggerModel.Location(script.debuggerModel, script.scriptId, frame.lineNumber, frame.columnNumber, index);
                 const uiLocation = await this.rawLocationToUILocation(rawLocation);
                 return translatedFromUILocation(uiLocation, name, frame);
             });
-            translatedFrames.push(await Promise.all(framePromises));
-            return true;
+            return { kind: "VISIBLE" /* StackTraceImpl.Trie.FrameKind.VISIBLE */, frames: await Promise.all(framePromises), unmapped: false };
         }
         // Translate the location only. We go through via "DebuggerWorkspaceBinding". It'll still try the plugin
         // first, but this way, we'll get a UISourceCode for the raw script if the plugin fails to translate.
         const uiLocation = await this.#debuggerWorkspaceBinding.rawLocationToUILocation(new SDK.DebuggerModel.Location(script.debuggerModel, script.scriptId, frame.lineNumber, frame.columnNumber));
         const mappedFrame = translatedFromUILocation(uiLocation, frame.functionName, frame);
-        if ('missingSymbolFiles' in functionInfo && functionInfo.missingSymbolFiles.length) {
-            translatedFrames.push([{
-                    ...mappedFrame,
-                    missingDebugInfo: {
-                        type: "PARTIAL_INFO" /* StackTrace.StackTrace.MissingDebugInfoType.PARTIAL_INFO */,
-                        missingDebugFiles: functionInfo.missingSymbolFiles,
-                    },
-                }]);
-        }
-        else {
-            translatedFrames.push([{
-                    ...mappedFrame,
-                    missingDebugInfo: {
-                        type: "NO_INFO" /* StackTrace.StackTrace.MissingDebugInfoType.NO_INFO */,
-                    },
-                }]);
-        }
-        return true;
+        const missingDebugInfo = 'missingSymbolFiles' in functionInfo && functionInfo.missingSymbolFiles.length ?
+            {
+                type: "PARTIAL_INFO" /* StackTrace.StackTrace.MissingDebugInfoType.PARTIAL_INFO */,
+                missingDebugFiles: functionInfo.missingSymbolFiles,
+            } :
+            { type: "NO_INFO" /* StackTrace.StackTrace.MissingDebugInfoType.NO_INFO */ };
+        return { kind: "VISIBLE" /* StackTraceImpl.Trie.FrameKind.VISIBLE */, frames: [{ ...mappedFrame, missingDebugInfo }], unmapped: true };
         function translatedFromUILocation(uiLocation, name, fallback) {
             if (uiLocation) {
                 return {

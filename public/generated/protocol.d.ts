@@ -6941,6 +6941,10 @@ export declare namespace Emulation {
         Enable = "enable",
         Default = "default"
     }
+    const enum SetDeviceMetricsOverrideRequestTextLayoutMode {
+        Mobile = "mobile",
+        Default = "default"
+    }
     interface SetDeviceMetricsOverrideRequest {
         /**
          * Overriding width value in pixels (minimum 0, maximum 10000000). 0 disables the override.
@@ -7023,6 +7027,11 @@ export declare namespace Emulation {
          * the viewport meta tag is always enabled.
          */
         viewportMeta?: SetDeviceMetricsOverrideRequestViewportMeta;
+        /**
+         * Text layout mode. Default: `default`. Note: if `mobile` is `true`,
+         * mobile text layout mode (text autosizing) is always enabled.
+         */
+        textLayoutMode?: SetDeviceMetricsOverrideRequestTextLayoutMode;
     }
     interface SetDevicePostureOverrideRequest {
         posture: DevicePosture;
@@ -8014,6 +8023,14 @@ export declare namespace FileSystem {
          * Returns the directory object at the path.
          */
         directory: Directory;
+    }
+}
+/**
+ * This domain provides commands to trigger the "Find in page" feature.
+ */
+export declare namespace FindInPage {
+    interface FindFirstRequest {
+        query: string;
     }
 }
 /**
@@ -13729,6 +13746,7 @@ export declare namespace Page {
         PrivateStateTokenRedemption = "private-state-token-redemption",
         PublickeyCredentialsCreate = "publickey-credentials-create",
         PublickeyCredentialsGet = "publickey-credentials-get",
+        PublickeyCredentialsRemoteClientDataJson = "publickey-credentials-remote-client-data-json",
         Rewriter = "rewriter",
         ScreenWakeLock = "screen-wake-lock",
         Serial = "serial",
@@ -16297,6 +16315,12 @@ export declare namespace Preload {
         key: PreloadingAttemptKey;
         pipelineId: PreloadPipelineId;
         status: PreloadingStatus;
+        /**
+         * The action currently performed by this attempt. This differs from
+         * `key.action` after a prerender-until-script attempt is upgraded in place
+         * to a full prerender.
+         */
+        effectiveAction?: SpeculationAction;
         prerenderStatus?: PrerenderFinalStatus;
         /**
          * This is used to give users more information about the name of Mojo interface
@@ -19167,6 +19191,10 @@ export declare namespace Debugger {
         Module = "module",
         WasmExpressionStack = "wasm-expression-stack"
     }
+    const enum ScopeEmptyReason {
+        NoVariables = "no-variables",
+        AllUnavailable = "all-unavailable"
+    }
     /**
      * Scope description.
      */
@@ -19191,13 +19219,13 @@ export declare namespace Debugger {
          */
         endLocation?: Location;
         /**
-         * True if the scope does not declare any variables or have a runtime context.
-         * Only present if true.
+         * Present if the scope has no variable values to show. Absent means that
+         * the scope declares at least one variable with an available value.
          * Empty scopes are retained in the scope chain because
          * they can be targeted via `evaluateOnCallFrame` (using `scopeNumber`) or
          * matched against scopes in source maps.
          */
-        empty?: boolean;
+        emptyReason?: ScopeEmptyReason;
     }
     /**
      * Search match for resource.

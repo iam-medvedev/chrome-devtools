@@ -13,7 +13,7 @@ import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { expectCalled, spyCall } from '../../testing/ExpectStubCall.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
-import { getMatchedStyles, getMatchedStylesWithBlankRule, } from '../../testing/StyleHelpers.js';
+import { getMatchedStyles, getMatchedStylesWithBlankRule, getMatchedStylesWithStylesheet, } from '../../testing/StyleHelpers.js';
 import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
 import * as Tooltips from '../../ui/components/tooltips/tooltips.js';
 import { Icon } from '../../ui/kit/kit.js';
@@ -2347,6 +2347,1070 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
         assert.exists(li);
         const computedStyle = getComputedStyle(li);
         assert.strictEqual(computedStyle.overflowWrap, 'break-word');
+    });
+    describe('Property editing, undo/redo, value stepping, and URL rendering', () => {
+        function setupEditableTreeElement(name, value, newProperty = false) {
+            const property = addProperty(name, value);
+            const section = new Elements.StylePropertiesSection.StylePropertiesSection(stylesSidebarPane, matchedStyles, matchedStyles.nodeStyles()[0], 0, null, null, null);
+            const treeElement = new Elements.StylePropertyTreeElement.StylePropertyTreeElement({
+                stylesContainer: stylesSidebarPane,
+                section,
+                matchedStyles,
+                property,
+                isShorthand: false,
+                inherited: false,
+                overloaded: false,
+                newProperty,
+            });
+            section.propertiesTreeOutline.appendChild(treeElement);
+            const style = treeElement.property.ownerStyle;
+            const cssText = `${name}: ${value};`;
+            treeElement.property.text = cssText;
+            style.styleSheetId = '1';
+            style.cssText = cssText;
+            style.range = new TextUtils.TextRange.TextRange(0, 0, 0, cssText.length);
+            treeElement.property.range = new TextUtils.TextRange.TextRange(0, 0, 0, cssText.length);
+            if (!('restore' in style.cssModel().cachedMatchedCascadeForNode)) {
+                sinon.stub(style.cssModel(), 'cachedMatchedCascadeForNode').resolves(matchedStyles);
+            }
+            connection.setHandler('CSS.getStyleSheetText', null);
+            connection.setSuccessHandler('CSS.getStyleSheetText', () => ({ text: cssText }));
+            connection.setHandler('DOM.markUndoableState', null);
+            connection.setSuccessHandler('DOM.markUndoableState', () => ({}));
+            treeElement.updateTitle();
+            renderElementIntoDOM(section.element, { allowMultipleChildren: true });
+            return { treeElement, section, style };
+        }
+        it('restores original value and cancels edit when applying an invalid syntax property edit', async () => {
+            const { treeElement } = setupEditableTreeElement('color', 'red');
+            treeElement.startEditingValue();
+            const setTextStub = sinon.stub(treeElement.property, 'setText');
+            setTextStub.withArgs('color: green;', false, true).resolves(true);
+            setTextStub.withArgs('color: ;;;invalid;', true, true).resolves(false);
+            setTextStub.withArgs('color: red;', false, true).resolves(true);
+            await treeElement.applyStyleText('color: green', false);
+            sinon.assert.calledWithExactly(setTextStub, 'color: green;', false, true);
+            await treeElement.applyStyleText('color: ;;;invalid', true);
+            sinon.assert.calledWithExactly(setTextStub, 'color: red;', false, true);
+            assert.strictEqual(treeElement.valueElement?.textContent, 'red');
+        });
+        it('preserves clean property text without duplicating sourceURL when editing stylesheet with sourceURL', async () => {
+            const { treeElement, style } = setupEditableTreeElement('color', 'red');
+            style.cssModel().styleSheetAdded({
+                styleSheetId: '1',
+                frameId: 'frame-1',
+                sourceURL: 'http://example.com/app.css',
+                hasSourceURL: true,
+                origin: "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */,
+                title: '',
+                disabled: false,
+                isInline: false,
+                isMutable: true,
+                isConstructed: false,
+                startLine: 0,
+                startColumn: 0,
+                length: 40,
+                endLine: 1,
+                endColumn: 0,
+            });
+            connection.setHandler('CSS.getStyleSheetText', null);
+            connection.setSuccessHandler('CSS.getStyleSheetText', () => ({ text: 'color: red;\n/*# sourceURL=http://example.com/app.css */' }));
+            const setStyleTextsSpy = sinon.stub().callsFake((_params) => ({
+                styles: [{
+                        styleSheetId: '1',
+                        cssProperties: [{
+                                name: 'color',
+                                value: 'blue',
+                                disabled: false,
+                                range: {
+                                    startLine: 0,
+                                    startColumn: 0,
+                                    endLine: 0,
+                                    endColumn: 12,
+                                },
+                            }],
+                        shorthandEntries: [],
+                        range: {
+                            startLine: 0,
+                            startColumn: 0,
+                            endLine: 0,
+                            endColumn: 12,
+                        },
+                        cssText: 'color: blue;',
+                    }],
+            }));
+            connection.setHandler('CSS.setStyleTexts', null);
+            connection.setSuccessHandler('CSS.setStyleTexts', setStyleTextsSpy);
+            await treeElement.applyStyleText('color: blue', true);
+            sinon.assert.calledOnce(setStyleTextsSpy);
+            assert.strictEqual(setStyleTextsSpy.firstCall.args[0].edits[0].text, 'color: blue;');
+            assert.notInclude(setStyleTextsSpy.firstCall.args[0].edits[0].text, 'sourceURL');
+        });
+        it('does not push an undoable action to DOMModelUndoStack when cancelling property editing', async () => {
+            const { treeElement, style } = setupEditableTreeElement('color', 'red');
+            const undoStack = SDK.DOMModel.DOMModelUndoStack.instance({ forceNew: true });
+            const markUndoableSpy = sinon.spy(style.cssModel().domModel(), 'markUndoableState');
+            const undoSpy = sinon.spy();
+            connection.setHandler('DOM.undo', null);
+            connection.setSuccessHandler('DOM.undo', undoSpy);
+            treeElement.startEditingValue();
+            assert.exists(treeElement.valueElement);
+            treeElement.valueElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+            sinon.assert.notCalled(markUndoableSpy);
+            await undoStack.undo();
+            sinon.assert.notCalled(undoSpy);
+        });
+        it('supports undo and redo via DOMModelUndoStack when changing a property value', async () => {
+            const { treeElement } = setupEditableTreeElement('color', 'red');
+            const undoStack = SDK.DOMModel.DOMModelUndoStack.instance({ forceNew: true });
+            const undoSpy = sinon.spy(() => ({}));
+            const redoSpy = sinon.spy(() => ({}));
+            connection.setHandler('DOM.undo', null);
+            connection.setSuccessHandler('DOM.undo', undoSpy);
+            connection.setHandler('DOM.redo', null);
+            connection.setSuccessHandler('DOM.redo', redoSpy);
+            connection.setHandler('CSS.setStyleTexts', null);
+            connection.setSuccessHandler('CSS.setStyleTexts', () => ({
+                styles: [{
+                        styleSheetId: '1',
+                        cssProperties: [{
+                                name: 'color',
+                                value: 'green',
+                                disabled: false,
+                                range: {
+                                    startLine: 0,
+                                    startColumn: 0,
+                                    endLine: 0,
+                                    endColumn: 13,
+                                },
+                            }],
+                        shorthandEntries: [],
+                        range: {
+                            startLine: 0,
+                            startColumn: 0,
+                            endLine: 0,
+                            endColumn: 13,
+                        },
+                        cssText: 'color: green;',
+                    }],
+            }));
+            await treeElement.applyStyleText('color: green;', true);
+            await undoStack.undo();
+            sinon.assert.calledOnce(undoSpy);
+            await undoStack.redo();
+            sinon.assert.calledOnce(redoSpy);
+        });
+        it('comments out property on toggleDisabled and supports undo and redo', async () => {
+            const { treeElement } = setupEditableTreeElement('color', 'red');
+            const undoStack = SDK.DOMModel.DOMModelUndoStack.instance({ forceNew: true });
+            const undoSpy = sinon.spy(() => ({}));
+            const redoSpy = sinon.spy(() => ({}));
+            connection.setHandler('DOM.undo', null);
+            connection.setSuccessHandler('DOM.undo', undoSpy);
+            connection.setHandler('DOM.redo', null);
+            connection.setSuccessHandler('DOM.redo', redoSpy);
+            const setStyleTextsStub = sinon.stub().callsFake((params) => ({
+                styles: [{
+                        styleSheetId: '1',
+                        cssProperties: [{
+                                name: 'color',
+                                value: 'red',
+                                disabled: true,
+                                text: params.edits[0].text,
+                                range: {
+                                    startLine: 0,
+                                    startColumn: 0,
+                                    endLine: 0,
+                                    endColumn: params.edits[0].text.length,
+                                },
+                            }],
+                        shorthandEntries: [],
+                        range: {
+                            startLine: 0,
+                            startColumn: 0,
+                            endLine: 0,
+                            endColumn: params.edits[0].text.length,
+                        },
+                        cssText: params.edits[0].text,
+                    }],
+            }));
+            connection.setHandler('CSS.setStyleTexts', null);
+            connection.setSuccessHandler('CSS.setStyleTexts', setStyleTextsStub);
+            await treeElement.property.setDisabled(true);
+            treeElement.property.ownerStyle.cssModel().domModel().markUndoableState();
+            sinon.assert.calledOnce(setStyleTextsStub);
+            assert.strictEqual(setStyleTextsStub.firstCall.args[0].edits[0].text, '/* color: red; */');
+            await undoStack.undo();
+            sinon.assert.calledOnce(undoSpy);
+            await undoStack.redo();
+            sinon.assert.calledOnce(redoSpy);
+        });
+        it('increments and decrements numeric values and hex colors via arrow keys', () => {
+            const { treeElement: lengthElement } = setupEditableTreeElement('margin-top', '10px');
+            const applyLengthStub = sinon.stub(lengthElement, 'applyStyleText').resolves();
+            lengthElement.startEditingValue();
+            assert.exists(lengthElement.valueElement);
+            lengthElement.valueElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true }));
+            assert.strictEqual(lengthElement.valueElement.textContent, '11px');
+            sinon.assert.calledWithExactly(applyLengthStub, 'margin-top: 11px', false);
+            lengthElement.valueElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+            assert.strictEqual(lengthElement.valueElement.textContent, '10px');
+            const { treeElement: colorElement } = setupEditableTreeElement('color', '#111');
+            const applyColorStub = sinon.stub(colorElement, 'applyStyleText').resolves();
+            colorElement.startEditingValue();
+            assert.exists(colorElement.valueElement);
+            colorElement.valueElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true }));
+            assert.strictEqual(colorElement.valueElement.textContent, '#112');
+            sinon.assert.calledWithExactly(applyColorStub, 'color: #112', false);
+        });
+        it('retains the full untruncated property value when editing property name with a long data URL value', async () => {
+            const longDataUrl = 'url(data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7' +
+                'A'.repeat(200) + ')';
+            const { treeElement } = setupEditableTreeElement('background', longDataUrl);
+            const applyStyleTextStub = sinon.stub(treeElement, 'applyStyleText').resolves();
+            treeElement.startEditingName();
+            assert.exists(treeElement.nameElement);
+            treeElement.nameElement.textContent = 'background-image';
+            treeElement.nameElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+            sinon.assert.calledOnceWithExactly(applyStyleTextStub, `background-image: ${longDataUrl}`, true);
+        });
+        it('does not turn color keywords inside url(...) into a color swatch', () => {
+            const treeElement = getTreeElement('background-image', 'url(white.png)');
+            treeElement.updateTitle();
+            assert.exists(treeElement.valueElement);
+            assert.strictEqual(treeElement.valueElement.textContent, 'url(white.png)');
+            assert.isNull(treeElement.valueElement.querySelector('devtools-color-swatch'));
+        });
+        it('only renders color swatches for colors outside of url(...) in mixed values', () => {
+            // styles-1/edit-value-url-with-color variants.
+            const cases = [
+                ['green url(white)', 1],
+                ['url( white )', 0],
+                ['url(\'white\')', 0],
+                ['hsl(0deg 100% 50%) url(white)', 1],
+                ['url(white) green', 1],
+            ];
+            for (const [value, swatchCount] of cases) {
+                const treeElement = getTreeElement('background', value);
+                treeElement.updateTitle();
+                assert.exists(treeElement.valueElement);
+                assert.lengthOf(treeElement.valueElement.querySelectorAll('devtools-color-swatch'), swatchCount, value);
+            }
+        });
+        it('populates the untruncated property value when starting value editing on a property with a long data URL', () => {
+            const longDataUrl = 'url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==' +
+                'B'.repeat(200) + ')';
+            const { treeElement } = setupEditableTreeElement('background-image', longDataUrl);
+            treeElement.startEditingValue();
+            assert.strictEqual(treeElement.valueElement?.textContent, longDataUrl);
+        });
+    });
+    describe('Autocompletion swatches, blank properties, commit/cancel, UA overrides, and undo add', () => {
+        function createRegularTreeElement(name, value) {
+            const property = addProperty(name, value);
+            const section = new Elements.StylePropertiesSection.StylePropertiesSection(stylesSidebarPane, matchedStyles, matchedStyles.nodeStyles()[0], 0, null, null, null);
+            return new Elements.StylePropertyTreeElement.StylePropertyTreeElement({
+                stylesContainer: stylesSidebarPane,
+                section,
+                matchedStyles,
+                property,
+                isShorthand: false,
+                inherited: false,
+                overloaded: false,
+                newProperty: false,
+            });
+        }
+        it('provides CSSPropertyPrompt autocomplete suggestions for property names and keyword values', async () => {
+            const promptStub = sinon.stub(Elements.StylesSidebarPane.CSSPropertyPrompt.prototype, 'initialize').resolves();
+            const nameTreeElement = getTreeElement('color', 'red');
+            nameTreeElement.updateTitle();
+            nameTreeElement.startEditingName();
+            sinon.assert.calledOnce(promptStub);
+            const nameCompletions = await promptStub.args[0][0].call(null, '', 'background-', false);
+            assert.includeMembers(nameCompletions.map(item => item.text), ['background-color', 'background-image', 'background-size']);
+            promptStub.resetHistory();
+            const valueTreeElement = getTreeElement('display', 'block');
+            valueTreeElement.updateTitle();
+            valueTreeElement.startEditingValue();
+            sinon.assert.calledOnce(promptStub);
+            const valueCompletions = await promptStub.args[0][0].call(null, '', 'fl', false);
+            assert.includeMembers(valueCompletions.map(item => item.text), ['flex', 'flow-root', 'inline-flex']);
+            const importantCompletions = await promptStub.args[0][0].call(null, '', '!im', false);
+            assert.deepEqual(importantCompletions.map(item => item.text), ['!important']);
+        });
+        it('provides CSSPropertyPrompt autocomplete suggestions for CSS variables with color swatches and value subtitles', async () => {
+            const promptStub = sinon.stub(Elements.StylesSidebarPane.CSSPropertyPrompt.prototype, 'initialize').resolves();
+            const treeElement = getTreeElement('color', 'var(--');
+            treeElement.updateTitle();
+            treeElement.startEditingValue();
+            sinon.assert.calledOnce(promptStub);
+            const completions = await promptStub.args[0][0].call(null, 'var(', '--', false);
+            const redVar = completions.find(item => item.title === '--a');
+            const customPropVar = completions.find(item => item.title === '--prop');
+            assert.exists(redVar);
+            assert.strictEqual(redVar.text, '--a)');
+            assert.exists(redVar.subtitleRenderer);
+            const swatchElement = redVar.subtitleRenderer();
+            assert.instanceOf(swatchElement, InlineEditor.ColorSwatch.ColorSwatch);
+            assert.exists(customPropVar);
+            assert.strictEqual(customPropVar.text, '--prop)');
+            assert.exists(customPropVar.subtitleRenderer);
+            const subtitleElement = customPropVar.subtitleRenderer();
+            assert.strictEqual(subtitleElement.textContent, 'customproperty');
+        });
+        it('adds and commits a new blank property in StylePropertyTreeElement', async () => {
+            const existingElement = getTreeElement('color', 'red');
+            const section = existingElement.section();
+            renderElementIntoDOM(section.element);
+            const blankTreeElement = section.addNewBlankProperty();
+            const applyStyleTextStub = sinon.stub(blankTreeElement, 'applyStyleText').resolves();
+            blankTreeElement.startEditingName();
+            assert.exists(blankTreeElement.nameElement);
+            blankTreeElement.nameElement.textContent = 'padding: 12px';
+            blankTreeElement.nameElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+            sinon.assert.calledOnceWithExactly(applyStyleTextStub, 'padding: 12px', true);
+        });
+        it('handles incremental preview followed by cancelling vs committing a property value edit', async () => {
+            const treeElement = createRegularTreeElement('color', 'red');
+            treeElement.property.text = 'color: red;';
+            const section = treeElement.section();
+            section.propertiesTreeOutline.appendChild(treeElement);
+            treeElement.updateTitle();
+            renderElementIntoDOM(section.element);
+            sinon.stub(treeElement.property, 'setText').resolves(true);
+            const applySpy = sinon.spy(treeElement, 'applyStyleText');
+            treeElement.startEditingValue();
+            assert.exists(treeElement.valueElement);
+            treeElement.valueElement.textContent = 'green';
+            await treeElement.kickFreeFlowStyleEditForTest();
+            sinon.assert.calledWith(applySpy, 'color: green', false);
+            treeElement.valueElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+            sinon.assert.calledWith(applySpy, 'color: red;', false);
+            applySpy.resetHistory();
+            treeElement.startEditingValue();
+            treeElement.valueElement.textContent = 'blue';
+            treeElement.valueElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+            sinon.assert.calledWith(applySpy, 'color: blue', true);
+        });
+        it('disables and then re-enables a property when toggling disabled state twice', async () => {
+            const treeElement = createRegularTreeElement('color', 'red');
+            const section = treeElement.section();
+            section.propertiesTreeOutline.appendChild(treeElement);
+            const style = treeElement.property.ownerStyle;
+            treeElement.property.text = 'color: red;';
+            style.styleSheetId = '1';
+            style.cssText = 'color: red;';
+            style.range = new TextUtils.TextRange.TextRange(0, 0, 0, style.cssText.length);
+            treeElement.property.range = new TextUtils.TextRange.TextRange(0, 0, 0, style.cssText.length);
+            sinon.stub(style.cssModel(), 'cachedMatchedCascadeForNode').resolves(matchedStyles);
+            connection.setHandler('CSS.getStyleSheetText', null);
+            connection.setSuccessHandler('CSS.getStyleSheetText', () => ({ text: style.cssText || '' }));
+            connection.setHandler('DOM.markUndoableState', null);
+            connection.setSuccessHandler('DOM.markUndoableState', () => ({}));
+            const setStyleTextsStub = sinon.stub().callsFake((params) => {
+                const newText = params.edits[0].text;
+                const isDisabled = newText.startsWith('/*');
+                return {
+                    styles: [{
+                            styleSheetId: '1',
+                            cssProperties: [{
+                                    name: 'color',
+                                    value: 'red',
+                                    disabled: isDisabled,
+                                    text: newText,
+                                    range: { startLine: 0, startColumn: 0, endLine: 0, endColumn: newText.length },
+                                }],
+                            shorthandEntries: [],
+                            range: { startLine: 0, startColumn: 0, endLine: 0, endColumn: newText.length },
+                            cssText: newText,
+                        }],
+                };
+            });
+            connection.setHandler('CSS.setStyleTexts', null);
+            connection.setSuccessHandler('CSS.setStyleTexts', setStyleTextsStub);
+            treeElement.updateTitle();
+            renderElementIntoDOM(section.element);
+            await treeElement.property.setDisabled(true);
+            sinon.assert.calledOnce(setStyleTextsStub);
+            assert.strictEqual(setStyleTextsStub.firstCall.args[0].edits[0].text, '/* color: red; */');
+            const disabledPayload = setStyleTextsStub.firstCall.returnValue.styles[0];
+            style.rebase(new SDK.CSSModel.Edit('1', style.range, '/* color: red; */', disabledPayload));
+            treeElement.property = style.allProperties()[0];
+            treeElement.updateTitle();
+            assert.isTrue(treeElement.property.disabled);
+            setStyleTextsStub.resetHistory();
+            await treeElement.property.setDisabled(false);
+            sinon.assert.calledOnce(setStyleTextsStub);
+            assert.strictEqual(setStyleTextsStub.firstCall.args[0].edits[0].text, 'color: red;');
+        });
+        it('updates overloaded state on an overridden user-agent property when toggling an author property', async () => {
+            await stylesSidebarPane.node()?.domModel().cssModel().resumeModel();
+            const paneCssModel = stylesSidebarPane.cssModel();
+            assert.exists(paneCssModel);
+            const matchedStylesForTest = await getMatchedStylesWithStylesheet({
+                cssModel: paneCssModel,
+                origin: "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */,
+                styleSheetId: '1',
+                node: stylesSidebarPane.node() ?? undefined,
+                connection,
+                matchedPayload: [
+                    {
+                        rule: {
+                            selectorList: { selectors: [{ text: 'div' }], text: 'div' },
+                            origin: "user-agent" /* Protocol.CSS.StyleSheetOrigin.UserAgent */,
+                            style: {
+                                cssProperties: [{ name: 'display', value: 'block' }],
+                                shorthandEntries: [],
+                            },
+                        },
+                        matchingSelectors: [0],
+                    },
+                    {
+                        rule: {
+                            selectorList: { selectors: [{ text: 'div' }], text: 'div' },
+                            origin: "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */,
+                            styleSheetId: '1',
+                            style: {
+                                styleSheetId: '1',
+                                range: { startLine: 0, startColumn: 0, endLine: 0, endColumn: 14 },
+                                cssProperties: [{
+                                        name: 'display',
+                                        value: 'flex',
+                                        disabled: false,
+                                        text: 'display: flex;',
+                                        range: { startLine: 0, startColumn: 0, endLine: 0, endColumn: 14 },
+                                    }],
+                                shorthandEntries: [],
+                                cssText: 'display: flex;',
+                            },
+                        },
+                        matchingSelectors: [0],
+                    },
+                ],
+            });
+            sinon.stub(paneCssModel, 'cachedMatchedCascadeForNode').resolves(matchedStylesForTest);
+            connection.setHandler('CSS.getComputedStyleForNode', null);
+            connection.setSuccessHandler('CSS.getComputedStyleForNode', () => ({ computedStyle: [], extraFields: { isAppearanceBase: false } }));
+            connection.setHandler('CSS.getStyleSheetText', null);
+            connection.setSuccessHandler('CSS.getStyleSheetText', () => ({ text: 'div { display: flex; }' }));
+            connection.setHandler('DOM.markUndoableState', null);
+            connection.setSuccessHandler('DOM.markUndoableState', () => ({}));
+            connection.setHandler('CSS.setStyleTexts', null);
+            connection.setSuccessHandler('CSS.setStyleTexts', (params) => {
+                const newText = params.edits[0].text;
+                const isDisabled = newText.startsWith('/*');
+                return {
+                    styles: [{
+                            styleSheetId: '1',
+                            cssProperties: [{
+                                    name: 'display',
+                                    value: 'flex',
+                                    disabled: isDisabled,
+                                    text: newText,
+                                    range: { startLine: 0, startColumn: 0, endLine: 0, endColumn: newText.length },
+                                }],
+                            shorthandEntries: [],
+                            range: { startLine: 0, startColumn: 0, endLine: 0, endColumn: newText.length },
+                            cssText: newText,
+                        }],
+                };
+            });
+            const authorSection = new Elements.StylePropertiesSection.StylePropertiesSection(stylesSidebarPane, matchedStylesForTest, matchedStylesForTest.nodeStyles()[0], 0, null, null, null);
+            const uaSection = new Elements.StylePropertiesSection.StylePropertiesSection(stylesSidebarPane, matchedStylesForTest, matchedStylesForTest.nodeStyles()[1], 1, null, null, null);
+            sinon.stub(stylesSidebarPane, 'allSections').returns([authorSection, uaSection]);
+            const container = document.createElement('div');
+            container.append(authorSection.element, uaSection.element);
+            renderElementIntoDOM(container);
+            const authorTreeElement = authorSection.propertiesTreeOutline.firstChild();
+            const uaTreeElement = uaSection.propertiesTreeOutline.firstChild();
+            assert.exists(authorTreeElement);
+            assert.exists(uaTreeElement);
+            assert.isTrue(uaTreeElement.overloaded());
+            assert.isTrue(uaTreeElement.listItemElement.classList.contains('overloaded'));
+            const disableApplied = new Promise(resolve => {
+                sinon.stub(authorTreeElement, 'styleTextAppliedForTest').callsFake(resolve);
+            });
+            const disableCheckbox = authorTreeElement.listItemElement.querySelector('.enabled-button');
+            assert.exists(disableCheckbox);
+            disableCheckbox.click();
+            await disableApplied;
+            assert.isFalse(uaTreeElement.overloaded());
+            assert.isFalse(uaTreeElement.listItemElement.classList.contains('overloaded'));
+            const disabledAuthorTreeElement = authorSection.propertiesTreeOutline.firstChild();
+            assert.exists(disabledAuthorTreeElement);
+            assert.isTrue(disabledAuthorTreeElement.listItemElement.classList.contains('disabled'));
+            authorTreeElement.styleTextAppliedForTest.restore();
+            const enableApplied = new Promise(resolve => {
+                sinon.stub(disabledAuthorTreeElement, 'styleTextAppliedForTest').callsFake(resolve);
+            });
+            const enableCheckbox = disabledAuthorTreeElement.listItemElement.querySelector('.enabled-button');
+            assert.exists(enableCheckbox);
+            enableCheckbox.click();
+            await enableApplied;
+            assert.isTrue(uaTreeElement.overloaded());
+            assert.isTrue(uaTreeElement.listItemElement.classList.contains('overloaded'));
+        });
+        it('applies setStyleText when editing a property in a rule following an unparseable rule', async () => {
+            const treeElement = createRegularTreeElement('color', 'red');
+            const section = treeElement.section();
+            section.propertiesTreeOutline.appendChild(treeElement);
+            const style = treeElement.property.ownerStyle;
+            style.styleSheetId = '1';
+            style.cssText = 'color: red;';
+            style.range = new TextUtils.TextRange.TextRange(2, 0, 2, 11);
+            treeElement.property.text = 'color: red;';
+            treeElement.property.range = new TextUtils.TextRange.TextRange(2, 0, 2, 11);
+            sinon.stub(style.cssModel(), 'cachedMatchedCascadeForNode').resolves(matchedStyles);
+            connection.setHandler('CSS.getStyleSheetText', null);
+            connection.setSuccessHandler('CSS.getStyleSheetText', () => ({ text: '@invalid-rule {\n  ???\n}\ndiv {\ncolor: red;\n}' }));
+            connection.setHandler('DOM.markUndoableState', null);
+            connection.setSuccessHandler('DOM.markUndoableState', () => ({}));
+            const setStyleTextsStub = sinon.stub().callsFake((_params) => ({
+                styles: [{
+                        styleSheetId: '1',
+                        cssProperties: [{
+                                name: 'color',
+                                value: 'green',
+                                disabled: false,
+                                range: {
+                                    startLine: 2,
+                                    startColumn: 0,
+                                    endLine: 2,
+                                    endColumn: 13,
+                                },
+                            }],
+                        shorthandEntries: [],
+                        range: {
+                            startLine: 2,
+                            startColumn: 0,
+                            endLine: 2,
+                            endColumn: 13,
+                        },
+                        cssText: 'color: green;',
+                    }],
+            }));
+            connection.setHandler('CSS.setStyleTexts', null);
+            connection.setSuccessHandler('CSS.setStyleTexts', setStyleTextsStub);
+            treeElement.updateTitle();
+            renderElementIntoDOM(section.element);
+            await treeElement.applyStyleText('color: green', true);
+            sinon.assert.calledOnce(setStyleTextsStub);
+            assert.deepEqual(setStyleTextsStub.firstCall.args[0].edits[0], {
+                styleSheetId: '1',
+                range: { startLine: 2, startColumn: 0, endLine: 2, endColumn: 11 },
+                text: 'color: green;',
+            });
+        });
+        it('applies typed text cleanly when committing property value edit before slow completions resolve', async () => {
+            let resolveCompletions;
+            const slowCompletionsPromise = new Promise(resolve => {
+                resolveCompletions = resolve;
+            });
+            let completionsRequested;
+            const completionsRequestedPromise = new Promise(resolve => {
+                completionsRequested = resolve;
+            });
+            let completionsFinished;
+            const completionsFinishedPromise = new Promise(resolve => {
+                completionsFinished = resolve;
+            });
+            connection.setHandler('CSS.getComputedStyleForNode', null);
+            connection.setSuccessHandler('CSS.getComputedStyleForNode', () => ({ computedStyle: [], extraFields: { isAppearanceBase: false } }));
+            const originalInitialize = Elements.StylesSidebarPane.CSSPropertyPrompt.prototype.initialize;
+            sinon.stub(Elements.StylesSidebarPane.CSSPropertyPrompt.prototype, 'initialize')
+                .callsFake(function (completions, stopCharacters, usesSuggestionBuilder) {
+                const slowAutocompleteProvider = async (expression, filter, force) => {
+                    const result = await completions.call(null, expression, filter, force);
+                    completionsRequested();
+                    await slowCompletionsPromise;
+                    completionsFinished();
+                    return result;
+                };
+                originalInitialize.call(this, slowAutocompleteProvider, stopCharacters, usesSuggestionBuilder);
+            });
+            const treeElement = createRegularTreeElement('display', 'block');
+            const section = treeElement.section();
+            section.propertiesTreeOutline.appendChild(treeElement);
+            const applyStyleTextStub = sinon.stub(treeElement, 'applyStyleText').resolves();
+            treeElement.updateTitle();
+            renderElementIntoDOM(section.element);
+            treeElement.startEditingValue();
+            assert.exists(treeElement.valueElement);
+            treeElement.valueElement.textContent = 'inline-block';
+            const selection = treeElement.valueElement.getComponentSelection();
+            assert.exists(selection);
+            const range = document.createRange();
+            range.setStart(treeElement.valueElement.firstChild, treeElement.valueElement.textContent.length);
+            range.setEnd(treeElement.valueElement.firstChild, treeElement.valueElement.textContent.length);
+            selection.removeAllRanges();
+            selection.addRange(range);
+            treeElement.valueElement.dispatchEvent(new InputEvent('input', { data: 'inline-block', bubbles: true }));
+            await completionsRequestedPromise;
+            applyStyleTextStub.resetHistory();
+            treeElement.valueElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+            sinon.assert.calledOnceWithExactly(applyStyleTextStub, 'display: inline-block', true);
+            resolveCompletions();
+            await completionsFinishedPromise;
+            assert.strictEqual(treeElement.valueElement.textContent, 'inline-block');
+        });
+        it('removes an added property when calling DOMModelUndoStack.instance().undo()', async () => {
+            const existingElement = getTreeElement('color', 'red');
+            const section = existingElement.section();
+            const style = existingElement.property.ownerStyle;
+            style.styleSheetId = '1';
+            style.cssText = 'color: red;';
+            style.range = new TextUtils.TextRange.TextRange(0, 0, 0, style.cssText.length);
+            existingElement.property.range = new TextUtils.TextRange.TextRange(0, 0, 0, style.cssText.length);
+            sinon.stub(style.cssModel(), 'cachedMatchedCascadeForNode').resolves(matchedStyles);
+            connection.setHandler('CSS.getStyleSheetText', null);
+            connection.setSuccessHandler('CSS.getStyleSheetText', () => ({ text: 'color: red;' }));
+            connection.setHandler('DOM.markUndoableState', null);
+            connection.setSuccessHandler('DOM.markUndoableState', () => ({}));
+            const undoStack = SDK.DOMModel.DOMModelUndoStack.instance({ forceNew: true });
+            const undoSpy = sinon.spy(() => ({}));
+            connection.setHandler('DOM.undo', null);
+            connection.setSuccessHandler('DOM.undo', undoSpy);
+            connection.setHandler('CSS.setStyleTexts', null);
+            connection.setSuccessHandler('CSS.setStyleTexts', () => ({
+                styles: [{
+                        styleSheetId: '1',
+                        cssProperties: [
+                            { name: 'color', value: 'red' },
+                            { name: 'margin', value: '10px' },
+                        ],
+                        shorthandEntries: [],
+                        range: {
+                            startLine: 0,
+                            startColumn: 0,
+                            endLine: 0,
+                            endColumn: 24,
+                        },
+                        cssText: 'color: red; margin: 10px;',
+                    }],
+            }));
+            renderElementIntoDOM(section.element);
+            const blankTreeElement = section.addNewBlankProperty();
+            await blankTreeElement.applyStyleText('margin: 10px;', true);
+            await undoStack.undo();
+            sinon.assert.calledOnce(undoSpy);
+        });
+    });
+    describe('CSSPropertyPrompt completion rules', () => {
+        async function completions(propertyName, isEditingName, expression, query, force = false) {
+            connection.setHandler('CSS.getComputedStyleForNode', null);
+            connection.setSuccessHandler('CSS.getComputedStyleForNode', () => ({ computedStyle: [], extraFields: { isAppearanceBase: false } }));
+            const treeElement = getTreeElement(propertyName, 'initial');
+            const initializeStub = sinon.stub(Elements.StylesSidebarPane.CSSPropertyPrompt.prototype, 'initialize');
+            new Elements.StylesSidebarPane.CSSPropertyPrompt(treeElement, isEditingName);
+            const provider = initializeStub.firstCall.args[0];
+            initializeStub.restore();
+            return await provider.call(null, expression, query, force);
+        }
+        function titles(suggestions) {
+            return suggestions.map(suggestion => suggestion.title || suggestion.text);
+        }
+        it('only suggests property names for an empty name when completion is forced', async () => {
+            assert.notInclude(titles(await completions('color', true, '', '', false)), 'width');
+            assert.include(titles(await completions('color', true, '', '', true)), 'width');
+            assert.include(titles(await completions('color', true, '', 'w', false)), 'width');
+        });
+        it('suggests property names that contain the query as a substring', async () => {
+            const result = titles(await completions('color', true, '', 'size'));
+            assert.includeMembers(result, ['font-size', 'background-size', 'resize']);
+            assert.notInclude(result, 'font-align');
+        });
+        it('suggests all keyword values for an empty value', async () => {
+            assert.includeMembers(titles(await completions('color', false, '', '')), ['aliceblue', 'red', 'inherit']);
+        });
+        it('does not suggest !important for a lone "!" but does for "!i"', async () => {
+            // The legacy test typed 'red !' and 'red !i'; the word before the caret is the query.
+            assert.notInclude(titles(await completions('color', false, 'red ', '!')), '!important');
+            assert.include(titles(await completions('color', false, 'red ', '!i')), '!important');
+        });
+        it('upper-cases every value suggestion when the query is upper case', async () => {
+            const result = titles(await completions('color', false, '', 'R'));
+            assert.includeMembers(result, ['RED', 'ROSYBROWN']);
+            assert.notInclude(result, 'aliceblue');
+            assert.notInclude(result, 'inherit');
+            assert.isTrue(result.every(text => text === text.toUpperCase()));
+        });
+        it('suggests nothing after a closing parenthesis', async () => {
+            assert.deepEqual(titles(await completions('color', false, 'saturate(0%)', '')), []);
+        });
+        it('suggests transform functions for prefixed and unprefixed transform with value presets applied', async () => {
+            for (const name of ['-webkit-transform', 'transform']) {
+                const result = await completions(name, false, '', 'tr');
+                const resultTitles = titles(result);
+                assert.includeMembers(resultTitles, ['translate', 'translateY', 'translate3d'], name);
+                assert.notInclude(resultTitles, 'initial', name);
+                assert.notInclude(resultTitles, 'inherit', name);
+            }
+            const applied = (await completions('transform', false, '', 'tr')).map(suggestion => suggestion.text);
+            assert.includeMembers(applied, ['translate(10px, 10px)', 'translateY(10px)', 'translate3d(10px, 10px, 10px)']);
+        });
+        it('suggests name:value presets in the property name prompt', async () => {
+            assert.include(titles(await completions('color', true, '', 'underli')), 'text-decoration: underline');
+            assert.include(titles(await completions('color', true, '', 'display')), 'display: block');
+        });
+        it('suggests values that contain the query as a substring', async () => {
+            const result = titles(await completions('color', false, '', 'blue'));
+            assert.includeMembers(result, ['blue', 'darkblue', 'lightblue']);
+            assert.notInclude(result, 'darkred');
+            assert.notInclude(result, 'yellow');
+            assert.notInclude(result, 'initial');
+            assert.notInclude(result, 'inherit');
+        });
+        it('suggests CSS variable names in the property name prompt when forced', async () => {
+            assert.includeMembers(titles(await completions('color', true, '', '', true)), ['--a', '--blue']);
+        });
+    });
+    describe('Keyboard navigation and undo against a live CSSModel', () => {
+        const liveStyleSheetId = 'live-sheet';
+        let sheetText;
+        let setStyleTextsStub;
+        let markUndoableStateStub;
+        let undoStub;
+        let redoStub;
+        // Builds a CSS.CSSStyle payload for `text` the way the backend would report it for a style that
+        // starts at the beginning of the style sheet.
+        function stylePayload(text) {
+            const textObject = new TextUtils.Text.Text(text);
+            const toRange = (start, end) => {
+                const startPosition = textObject.positionFromOffset(start);
+                const endPosition = textObject.positionFromOffset(end);
+                return {
+                    startLine: startPosition.lineNumber,
+                    startColumn: startPosition.columnNumber,
+                    endLine: endPosition.lineNumber,
+                    endColumn: endPosition.columnNumber,
+                };
+            };
+            const cssProperties = [];
+            for (const match of text.matchAll(/(\/\*\s*)?([-\w]+)\s*:\s*([^;]*?)\s*;(\s*\*\/)?/g)) {
+                cssProperties.push({
+                    name: match[2],
+                    value: match[3],
+                    text: match[0],
+                    disabled: Boolean(match[1]),
+                    implicit: false,
+                    range: toRange(match.index, match.index + match[0].length),
+                });
+            }
+            return {
+                styleSheetId: liveStyleSheetId,
+                cssText: text,
+                cssProperties,
+                shorthandEntries: [],
+                range: toRange(0, text.length),
+            };
+        }
+        // The declarations in the current style sheet text, in order, independent of whitespace formatting.
+        function declarations() {
+            return stylePayload(sheetText).cssProperties.map(property => property.disabled ?
+                `/* ${property.name}: ${property.value}; */` :
+                `${property.name}: ${property.value}`);
+        }
+        async function createLiveSection(cssText, { inline = false } = {}) {
+            const liveCSSModel = createTarget({ connection }).model(SDK.CSSModel.CSSModel);
+            assert.exists(liveCSSModel);
+            sheetText = cssText;
+            connection.setHandler('CSS.getStyleSheetText', null);
+            connection.setSuccessHandler('CSS.getStyleSheetText', () => ({ text: sheetText }));
+            setStyleTextsStub = sinon.stub().callsFake((params) => {
+                sheetText = params.edits[0].text;
+                return { styles: [stylePayload(sheetText)] };
+            });
+            connection.setHandler('CSS.setStyleTexts', null);
+            connection.setSuccessHandler('CSS.setStyleTexts', setStyleTextsStub);
+            markUndoableStateStub = sinon.stub().returns({});
+            connection.setHandler('DOM.markUndoableState', null);
+            connection.setSuccessHandler('DOM.markUndoableState', markUndoableStateStub);
+            undoStub = sinon.stub().returns({});
+            connection.setHandler('DOM.undo', null);
+            connection.setSuccessHandler('DOM.undo', undoStub);
+            redoStub = sinon.stub().returns({});
+            connection.setHandler('DOM.redo', null);
+            connection.setSuccessHandler('DOM.redo', redoStub);
+            connection.setHandler('CSS.getComputedStyleForNode', null);
+            connection.setSuccessHandler('CSS.getComputedStyleForNode', () => ({ computedStyle: [], extraFields: { isAppearanceBase: false } }));
+            SDK.DOMModel.DOMModelUndoStack.instance({ forceNew: true });
+            const origin = "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */;
+            const style = stylePayload(cssText);
+            const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+            node.id = 1;
+            node.nodeType.returns(Node.ELEMENT_NODE);
+            const liveMatchedStyles = await getMatchedStylesWithStylesheet({
+                cssModel: liveCSSModel,
+                node,
+                origin,
+                styleSheetId: liveStyleSheetId,
+                isMutable: true,
+                connection,
+                ...(inline ? { inlinePayload: style } : {
+                    matchedPayload: [{
+                            rule: {
+                                selectorList: { selectors: [{ text: 'div' }], text: 'div' },
+                                origin,
+                                styleSheetId: liveStyleSheetId,
+                                style,
+                            },
+                            matchingSelectors: [0],
+                        }],
+                }),
+            });
+            const section = new Elements.StylePropertiesSection.StylePropertiesSection(stylesSidebarPane, liveMatchedStyles, liveMatchedStyles.nodeStyles()[0], 0, null, null, null);
+            // Let the pane re-render the section after a committed edit and rebase it on style sheet edits, as it
+            // does when the section is part of the Styles pane.
+            sinon.stub(stylesSidebarPane, 'allSections').returns([section]);
+            liveCSSModel.addEventListener(SDK.CSSModel.Events.StyleSheetChanged, event => {
+                if (event.data.edit) {
+                    section.styleSheetEdited(event.data.edit);
+                }
+            });
+            const container = document.createElement('div');
+            container.appendChild(section.element);
+            renderElementIntoDOM(container);
+            return section;
+        }
+        function treeElementAt(section, index) {
+            const treeElement = section.propertiesTreeOutline.rootElement().childAt(index);
+            assert.instanceOf(treeElement, Elements.StylePropertyTreeElement.StylePropertyTreeElement);
+            return treeElement;
+        }
+        async function waitFor(predicate) {
+            while (!predicate()) {
+                await new Promise(resolve => setTimeout(resolve, 0));
+            }
+        }
+        function isEditingName(treeElement) {
+            return LegacyUI.UIUtils.isBeingEdited(treeElement.nameElement);
+        }
+        function isEditingValue(treeElement) {
+            return LegacyUI.UIUtils.isBeingEdited(treeElement.valueElement);
+        }
+        function pressKey(element, init) {
+            assert.exists(element);
+            element.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, ...init }));
+        }
+        function typeCharacter(element, character) {
+            assert.exists(element);
+            element.dispatchEvent(new KeyboardEvent('keypress', { key: character, charCode: character.charCodeAt(0), bubbles: true, cancelable: true }));
+        }
+        function setTextWithCaretAtEnd(element, text) {
+            assert.exists(element);
+            element.textContent = text;
+            const selection = element.getComponentSelection();
+            assert.exists(selection);
+            const range = document.createRange();
+            assert.exists(element.firstChild);
+            range.setStart(element.firstChild, text.length);
+            range.setEnd(element.firstChild, text.length);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+        function selectAllText(element, text) {
+            assert.exists(element);
+            element.textContent = text;
+            const selection = element.getComponentSelection();
+            assert.exists(selection);
+            const range = document.createRange();
+            assert.exists(element.firstChild);
+            range.selectNodeContents(element.firstChild);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+        it('commits the name and moves to the value editor when ":" is typed in the name', async () => {
+            // styles-3/styles-add-new-rule-colon
+            const section = await createLiveSection('color: red; margin: 1px;');
+            const color = treeElementAt(section, 0);
+            color.startEditingName();
+            setTextWithCaretAtEnd(color.nameElement, 'background-color');
+            typeCharacter(color.nameElement, ':');
+            await waitFor(() => isEditingValue(treeElementAt(section, 0)));
+            sinon.assert.calledOnce(setStyleTextsStub);
+            assert.deepEqual(declarations(), ['background-color: red', 'margin: 1px']);
+            assert.isFalse(isEditingName(treeElementAt(section, 0)));
+            assert.strictEqual(treeElementAt(section, 0).name, 'background-color');
+        });
+        it('commits the value and moves to the next property name when ";" is typed outside of parentheses', async () => {
+            // styles-3/styles-add-new-rule-colon
+            const section = await createLiveSection('color: red; margin: 1px;');
+            const color = treeElementAt(section, 0);
+            color.startEditingValue();
+            // A semicolon inside an unterminated function does not commit.
+            setTextWithCaretAtEnd(color.valueElement, 'rgb(1, 2');
+            typeCharacter(color.valueElement, ';');
+            assert.isTrue(isEditingValue(color));
+            sinon.assert.notCalled(setStyleTextsStub);
+            const applySpy = sinon.spy(color, 'applyStyleText');
+            setTextWithCaretAtEnd(color.valueElement, 'blue');
+            typeCharacter(color.valueElement, ';');
+            await waitFor(() => isEditingName(treeElementAt(section, 1)));
+            sinon.assert.calledWith(applySpy, 'color: blue', true);
+            sinon.assert.calledOnce(setStyleTextsStub);
+            assert.deepEqual(declarations(), ['color: blue', 'margin: 1px']);
+            assert.strictEqual(treeElementAt(section, 1).name, 'margin');
+        });
+        it('moves between name, value, next property and the selector with Tab and Shift+Tab', async () => {
+            // styles-3/styles-add-new-rule-tab
+            const section = await createLiveSection('color: red; margin: 1px;');
+            const color = treeElementAt(section, 0);
+            const margin = treeElementAt(section, 1);
+            color.startEditingName();
+            pressKey(color.nameElement, { key: 'Tab' });
+            assert.isFalse(isEditingName(color));
+            assert.isTrue(isEditingValue(color));
+            pressKey(color.valueElement, { key: 'Tab' });
+            assert.isFalse(isEditingValue(color));
+            assert.isTrue(isEditingName(margin));
+            pressKey(margin.nameElement, { key: 'Tab', shiftKey: true });
+            assert.isFalse(isEditingName(margin));
+            assert.isTrue(isEditingValue(color));
+            pressKey(color.valueElement, { key: 'Tab', shiftKey: true });
+            assert.isFalse(isEditingValue(color));
+            assert.isTrue(isEditingName(color));
+            pressKey(color.nameElement, { key: 'Tab', shiftKey: true });
+            assert.isFalse(isEditingName(color));
+            const selectorElement = section.element.querySelector('.selector');
+            assert.isTrue(LegacyUI.UIUtils.isBeingEdited(selectorElement));
+            pressKey(selectorElement, { key: 'Escape' });
+            assert.isFalse(LegacyUI.UIUtils.isBeingEdited(selectorElement));
+            margin.startEditingValue();
+            pressKey(margin.valueElement, { key: 'Tab' });
+            assert.strictEqual(section.propertiesTreeOutline.rootElement().childCount(), 3);
+            const blank = treeElementAt(section, 2);
+            assert.strictEqual(blank.property.name, '');
+            assert.isTrue(isEditingName(blank));
+            // Nothing was changed, so nothing was written to the backend.
+            sinon.assert.notCalled(setStyleTextsStub);
+        });
+        it('opens a blank property editor after committing the last value and loops back on an empty Enter', async () => {
+            // styles-3/styles-commit-editing
+            const section = await createLiveSection('color: red;', { inline: true });
+            const color = treeElementAt(section, 0);
+            color.startEditingName();
+            pressKey(color.nameElement, { key: 'Enter' });
+            assert.isTrue(isEditingValue(color));
+            // Preview broken text, then commit.
+            assert.exists(color.valueElement);
+            color.valueElement.textContent = 'rgb(/*';
+            await color.kickFreeFlowStyleEditForTest();
+            selectAllText(color.valueElement, 'green');
+            pressKey(color.valueElement, { key: 'Enter' });
+            await waitFor(() => section.propertiesTreeOutline.rootElement().childCount() === 2);
+            const blank = treeElementAt(section, 1);
+            assert.strictEqual(blank.property.name, '');
+            assert.isTrue(isEditingName(blank));
+            assert.deepEqual(declarations(), ['color: green']);
+            pressKey(blank.nameElement, { key: 'Enter' });
+            await waitFor(() => isEditingName(treeElementAt(section, 0)));
+            assert.strictEqual(section.propertiesTreeOutline.rootElement().childCount(), 1);
+            assert.strictEqual(treeElementAt(section, 0).name, 'color');
+            assert.deepEqual(declarations(), ['color: green']);
+        });
+        it('inserts blank properties at the requested index and supports undo and redo', async () => {
+            // styles-3/styles-add-blank-property and styles-4/undo-add-property
+            const section = await createLiveSection('font-size: 12px;', { inline: true });
+            const first = section.addNewBlankProperty(0);
+            first.startEditingName();
+            assert.exists(first.nameElement);
+            first.nameElement.textContent = 'margin-left';
+            pressKey(first.nameElement, { key: 'Enter' });
+            assert.isTrue(isEditingValue(first));
+            // ArrowUp increments the value of the new property and previews it.
+            selectAllText(first.valueElement, '1px');
+            pressKey(first.valueElement, { key: 'ArrowUp' });
+            await waitFor(() => setStyleTextsStub.callCount === 1);
+            assert.strictEqual(first.valueElement?.textContent, '2px');
+            assert.deepEqual(declarations(), ['margin-left: 2px', 'font-size: 12px']);
+            pressKey(first.valueElement, { key: 'ArrowUp' });
+            await waitFor(() => setStyleTextsStub.callCount === 2);
+            assert.deepEqual(declarations(), ['margin-left: 3px', 'font-size: 12px']);
+            pressKey(first.valueElement, { key: 'Enter' });
+            await waitFor(() => isEditingName(treeElementAt(section, 1)));
+            assert.deepEqual(declarations(), ['margin-left: 3px', 'font-size: 12px']);
+            pressKey(treeElementAt(section, 1).nameElement, { key: 'Escape' });
+            const middle = section.addNewBlankProperty(1);
+            middle.startEditingName();
+            assert.exists(middle.nameElement);
+            middle.nameElement.textContent = 'color';
+            pressKey(middle.nameElement, { key: 'Enter' });
+            selectAllText(middle.valueElement, 'green');
+            pressKey(middle.valueElement, { key: 'Enter' });
+            await waitFor(() => isEditingName(treeElementAt(section, 2)));
+            assert.deepEqual(declarations(), ['margin-left: 3px', 'color: green', 'font-size: 12px']);
+            assert.deepEqual(section.propertiesTreeOutline.rootElement().children().map(child => child.name), ['margin-left', 'color', 'font-size']);
+            // Previews are minor changes that are coalesced with the commit into one undoable state per insertion.
+            sinon.assert.calledTwice(markUndoableStateStub);
+            const undoStack = SDK.DOMModel.DOMModelUndoStack.instance();
+            await undoStack.undo();
+            sinon.assert.calledOnce(undoStub);
+            await undoStack.redo();
+            sinon.assert.calledOnce(redoStub);
+        });
+        it('marks an undoable state when toggling a property through its checkbox', async () => {
+            // styles/undo-property-toggle
+            const section = await createLiveSection('font-weight: bold;', { inline: true });
+            const checkbox = treeElementAt(section, 0).listItemElement.querySelector('.enabled-button');
+            assert.instanceOf(checkbox, HTMLInputElement);
+            assert.isTrue(checkbox.checked);
+            checkbox.click();
+            await waitFor(() => treeElementAt(section, 0).listItemElement.classList.contains('disabled'));
+            assert.deepEqual(declarations(), ['/* font-weight: bold; */']);
+            assert.isTrue(treeElementAt(section, 0).property.disabled);
+            const disabledCheckbox = treeElementAt(section, 0).listItemElement.querySelector('.enabled-button');
+            assert.instanceOf(disabledCheckbox, HTMLInputElement);
+            assert.isFalse(disabledCheckbox.checked);
+            sinon.assert.calledOnce(markUndoableStateStub);
+            const undoStack = SDK.DOMModel.DOMModelUndoStack.instance();
+            await undoStack.undo();
+            sinon.assert.calledOnce(undoStub);
+            await undoStack.redo();
+            sinon.assert.calledOnce(redoStub);
+        });
+        it('does not add an undoable state when a previewed edit is cancelled', async () => {
+            // styles/undo-after-cancelled-editing
+            const section = await createLiveSection('');
+            const added = section.addNewBlankProperty();
+            added.startEditingName();
+            assert.exists(added.nameElement);
+            added.nameElement.textContent = 'color';
+            pressKey(added.nameElement, { key: 'Enter' });
+            selectAllText(added.valueElement, 'blue');
+            pressKey(added.valueElement, { key: 'Enter' });
+            await waitFor(() => section.propertiesTreeOutline.rootElement().childCount() === 2);
+            assert.deepEqual(declarations(), ['color: blue']);
+            pressKey(treeElementAt(section, 1).nameElement, { key: 'Escape' });
+            assert.strictEqual(section.propertiesTreeOutline.rootElement().childCount(), 1);
+            sinon.assert.calledOnce(markUndoableStateStub);
+            const color = treeElementAt(section, 0);
+            color.startEditingValue();
+            assert.exists(color.valueElement);
+            color.valueElement.textContent = 'red';
+            await color.kickFreeFlowStyleEditForTest();
+            assert.deepEqual(declarations(), ['color: red']);
+            pressKey(color.valueElement, { key: 'Escape' });
+            await waitFor(() => declarations()[0] === 'color: blue');
+            sinon.assert.calledOnce(markUndoableStateStub);
+            await SDK.DOMModel.DOMModelUndoStack.instance().undo();
+            sinon.assert.calledOnce(undoStub);
+        });
+    });
+    describe('PositionAreaRenderer', () => {
+        it('sets the property as active before entering style editing mode when opening the position-area editor', () => {
+            const stylePropertyTreeElement = getTreeElement('position-area', 'top left');
+            stylePropertyTreeElement.updateTitle();
+            assert.exists(stylePropertyTreeElement.valueElement);
+            const setActivePropertySpy = sinon.spy(stylesSidebarPane, 'setActiveProperty');
+            const setEditingStyleSpy = sinon.spy(stylesSidebarPane, 'setEditingStyle');
+            sinon.stub(stylesSidebarPane.swatchPopoverHelper(), 'show');
+            const button = stylePropertyTreeElement.valueElement.querySelector('.position-area-swatch-icon');
+            assert.exists(button);
+            button.click();
+            sinon.assert.calledOnceWithExactly(setActivePropertySpy, stylePropertyTreeElement);
+            sinon.assert.calledOnceWithExactly(setEditingStyleSpy, true);
+            sinon.assert.callOrder(setActivePropertySpy, setEditingStyleSpy);
+        });
     });
 });
 //# sourceMappingURL=StylePropertyTreeElement.test.js.map

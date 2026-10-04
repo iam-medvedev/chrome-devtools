@@ -158,6 +158,20 @@ describe('StepEditor', () => {
             '1',
         ]);
     });
+    it('should not show the current step type as the only suggestion', async () => {
+        const editor = await renderEditor({ type: Models.Schema.StepType.Navigate, url: 'https://example.com' });
+        const input = getInputByAttribute(editor, 'type');
+        const suggestionBox = input.shadowRoot?.querySelector('devtools-suggestion-box');
+        assert.exists(suggestionBox);
+        await suggestionBox.updateComplete;
+        assert.isNull(suggestionBox.shadowRoot?.querySelector('.suggestions'));
+        input.value = 'nav';
+        await input.updateComplete;
+        await suggestionBox.updateComplete;
+        const suggestions = suggestionBox.shadowRoot?.querySelectorAll('.suggestions > li');
+        assert.lengthOf(suggestions, 1);
+        assert.strictEqual(suggestions[0].textContent?.trim(), Models.Schema.StepType.Navigate);
+    });
     it('should edit other attributes', async () => {
         const editor = await renderEditor({
             type: Models.Schema.StepType.CustomStep,

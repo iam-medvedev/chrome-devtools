@@ -7,8 +7,8 @@ import * as SDK from '../../core/sdk/sdk.js';
 import { AiAgent, } from './agents/AiAgent.js';
 import { executeJsCode } from './agents/ExecuteJavascript.js';
 import { ChangeManager } from './ChangeManager.js';
-import { AccessibilityContext } from './contexts/AccessibilityContext.js';
 import { DOMNodeContext } from './contexts/DOMNodeContext.js';
+import { LighthouseContext } from './contexts/LighthouseContext.js';
 import { PerformanceTraceContext } from './contexts/PerformanceTraceContext.js';
 import { debugLog } from './debug.js';
 import { ExtensionScope } from './ExtensionScope.js';
@@ -22,6 +22,7 @@ const SKILL_DISPLAY_NAMES = {
     performance: 'Performance',
     storage: 'Storage',
     sources: 'Sources',
+    lighthouse: 'Lighthouse',
 };
 const preamble = `You are the most advanced unified AI assistant integrated into Chrome DevTools.
 Your role is to help web developers debug, analyze, and optimize web applications by learning specialized skills and utilizing tools.
@@ -267,7 +268,7 @@ User query: ${enhancedQuery}`;
                     getExecutionContextNode: () => this.#getExecutionContextNode(),
                     getTarget: () => this.#getTarget(),
                     getOriginLock: () => this.#originLock(),
-                    getLighthouseReport: () => (this.context instanceof AccessibilityContext ? this.context.getItem() : null),
+                    getLighthouseReport: () => (this.context instanceof LighthouseContext ? this.context.getItem() : null),
                     runLighthouse: async (overrides) => await (this.#lighthouseRecording?.(overrides) ?? null),
                     getPerformanceTraceContext: () => (this.context instanceof PerformanceTraceContext ? this.context : null),
                     performanceRecordAndReload: this.#performanceRecordAndReload,
