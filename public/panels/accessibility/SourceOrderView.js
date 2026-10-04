@@ -67,19 +67,22 @@ export class SourceOrderPane extends AccessibilitySubPane {
     #childCount = 0;
     #showSourceOrder = undefined;
     #view;
-    constructor(view = DEFAULT_VIEW) {
-        super({
+    constructor(element, view = DEFAULT_VIEW) {
+        super(element, {
             title: i18nString(UIStrings.sourceOrderViewer),
             viewId: 'source-order-viewer',
             useShadowDom: 'pure',
         });
         this.#view = view;
     }
-    async setNodeAsync(node) {
+    setNode(node) {
         if (this.nodeInternal && this.#showSourceOrder) {
             this.nodeInternal.domModel().overlayModel().hideSourceOrderInOverlay();
         }
         super.setNode(node);
+        void this.#updateNodeAsync();
+    }
+    async #updateNodeAsync() {
         this.#childCount = this.nodeInternal?.childNodeCount() ?? 0;
         if (!this.nodeInternal || !this.#childCount) {
             this.#showSourceOrder = undefined;

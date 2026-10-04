@@ -55,7 +55,7 @@ export declare function validateAndSanitizeAnnouncement(payload: unknown): A11yA
 export declare function buildCsvContent(announcements: readonly A11yAnnouncement[]): string;
 export declare class AccessibilityAnnouncementRecordingView extends AccessibilitySubPane implements SDK.TargetManager.Observer {
     #private;
-    constructor(view?: View);
+    constructor(element?: HTMLElement, view?: View);
     wasShown(): void;
     targetAdded(target: SDK.Target.Target): Promise<void>;
     targetRemoved(target: SDK.Target.Target): Promise<void>;

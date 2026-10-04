@@ -4,6 +4,7 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import * as Host from '../../core/host/host.js';
+import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment, setupActionRegistry, } from '../../testing/EnvironmentHelpers.js';
 import { expectCall } from '../../testing/ExpectStubCall.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
@@ -78,11 +79,38 @@ describeWithEnvironment('RecordingView', () => {
             const input = await view.nextInput;
             assert.isOk(input.showCodeView);
         }
+        const closeInput = view.nextInput;
         view.input.showCodeToggle();
         {
-            const input = await view.nextInput;
+            const input = await closeInput;
             assert.isNotOk(input.showCodeView);
         }
+    });
+    it('should use the same focused button when showing code', async () => {
+        const [view] = await createView();
+        const closedInput = view.input;
+        closedInput.showCodeToggle();
+        const openedInput = await view.nextInput;
+        const target = document.createElement('div');
+        renderElementIntoDOM(target);
+        RecordingView.DEFAULT_VIEW(closedInput, {}, target);
+        const codeToggle = target.querySelector('devtools-button.show-code');
+        if (!(codeToggle instanceof HTMLElement)) {
+            assert.fail('Code toggle button was not rendered');
+        }
+        assert.strictEqual(codeToggle.getAttribute('aria-controls'), 'recording-code-pane');
+        assert.strictEqual(codeToggle.getAttribute('aria-expanded'), 'false');
+        assert.strictEqual(target.querySelector('[slot="main"]')?.getAttribute('role'), 'region');
+        assert.strictEqual(target.querySelector('[slot="main"]')?.getAttribute('aria-labelledby'), 'recording-steps-heading');
+        assert.strictEqual(target.querySelector('#recording-steps-heading')?.textContent, 'Steps');
+        codeToggle.focus();
+        RecordingView.DEFAULT_VIEW(openedInput, {}, target);
+        assert.strictEqual(target.querySelector('devtools-button.show-code'), codeToggle);
+        assert.strictEqual(document.activeElement, codeToggle);
+        assert.strictEqual(codeToggle.getAttribute('aria-expanded'), 'true');
+        assert.strictEqual(target.querySelector('#recording-code-pane')?.getAttribute('role'), 'region');
+        assert.strictEqual(target.querySelector('#recording-code-pane')?.getAttribute('aria-labelledby'), 'recording-code-heading');
+        assert.strictEqual(target.querySelector('#recording-code-heading')?.textContent, 'Code');
     });
     it('should copy the recording to clipboard via copy event', async () => {
         await createView();

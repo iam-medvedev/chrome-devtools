@@ -4,9 +4,9 @@ import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as TextUtils from '../../core/text_utils/text_utils.js';
 import * as Workspace from '../../models/workspace/workspace.js';
+import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type LitTemplate } from '../../ui/lit/lit.js';
-import type { EditingLocationHistoryManager } from './EditingLocationHistoryManager.js';
 import { UISourceCodeFrame } from './UISourceCodeFrame.js';
 interface TabInfo {
     tabId: string;
@@ -23,8 +23,8 @@ interface TabInfo {
 export interface TabbedEditorViewInput {
     openTabs: TabInfo[];
     activeTabId?: string;
-    leftToolbarItems: Array<UI.Toolbar.ToolbarItem | LitTemplate>;
-    rightToolbarItems: Array<UI.Toolbar.ToolbarItem | LitTemplate>;
+    leftToolbarItems: LitTemplate[];
+    rightToolbarItems: LitTemplate[];
     tabDelegate: UI.TabbedPane.TabbedPaneTabDelegate;
     shortcuts: Array<{
         description: Platform.UIString.LocalizedString;
@@ -40,14 +40,20 @@ export interface TabbedEditorViewInput {
 export type View = (input: TabbedEditorViewInput, output: undefined, target: HTMLElement) => void;
 export declare const DEFAULT_VIEW: View;
 declare const TabbedEditorContainerBase: Common.ObjectWrapper.EventMixin<EventTypes, typeof UI.Widget.VBox>;
+export interface SourceLocation {
+    uiSourceCode: Workspace.UISourceCode.UISourceCode;
+    location?: SourceFrame.SourceFrame.RevealPosition;
+    omitFocus?: boolean;
+    omitHighlight?: boolean;
+}
 export declare class TabbedEditorContainer extends TabbedEditorContainerBase {
     #private;
     focus(): void;
     performUpdate(): void;
-    set historyManager(historyManager: EditingLocationHistoryManager);
-    set leftToolbarItems(items: Array<UI.Toolbar.ToolbarItem | LitTemplate>);
-    set rightToolbarItems(items: Array<UI.Toolbar.ToolbarItem | LitTemplate>);
+    set leftToolbarItems(items: LitTemplate[]);
+    set rightToolbarItems(items: LitTemplate[]);
     set uiSourceCodes(uiSourceCodes: ReadonlySet<Workspace.UISourceCode.UISourceCode>);
+    set sourceLocation(sourceLocation: SourceLocation | undefined);
     onEditorSelected?: (event: EditorSelectedEvent) => void;
     onEditorClosed?: (uiSourceCode: Workspace.UISourceCode.UISourceCode) => void;
     private tabIds;
@@ -61,13 +67,21 @@ export declare class TabbedEditorContainer extends TabbedEditorContainerBase {
     private scrollTimer?;
     private reentrantShow;
     constructor(element?: HTMLElement, view?: View);
+    wasShown(): void;
+    willHide(): void;
+    onDetach(): void;
+    static defaultUISourceCodeScores(): Map<Workspace.UISourceCode.UISourceCode, number>;
     get tabbedPane(): UI.TabbedPane.TabbedPaneElement;
     get tabbedPaneForTesting(): UI.TabbedPane.TabbedPaneElement;
     private onBindingCreated;
     private onBindingRemoved;
     get visibleView(): UI.Widget.Widget | null;
     fileViews(): UI.Widget.Widget[];
+    showSourceLocation(uiSourceCode: Workspace.UISourceCode.UISourceCode, location?: SourceFrame.SourceFrame.RevealPosition, omitFocus?: boolean, omitHighlight?: boolean): void;
+    rollback(): void;
+    rollover(): void;
     showFile(uiSourceCode: Workspace.UISourceCode.UISourceCode): void;
+    closeActiveTab(): boolean;
     closeFile(uiSourceCode: Workspace.UISourceCode.UISourceCode): void;
     closeAllFiles(): void;
     detachEditors(): void;

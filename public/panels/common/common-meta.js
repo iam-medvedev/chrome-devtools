@@ -1,5 +1,7 @@
 // ../../front_end/panels/common/common-meta.ts
+import * as Common from "../../core/common/common.js";
 import * as i18n from "../../core/i18n/i18n.js";
+import * as CommentManager from "../../models/comment_manager/comment_manager.js";
 import * as UI from "../../ui/legacy/legacy.js";
 var UIStrings = {
   /**
@@ -35,8 +37,8 @@ UI.ViewManager.registerViewExtension({
   commandPrompt: i18nLazyString(UIStrings.showComments),
   title: i18nLazyString(UIStrings.comments),
   async loadView(universe) {
-    const Common = await loadCommonModule();
-    return new Common.CommentsStatusBarPill.CommentsStatusBarPill(void 0, [universe.commentManager]);
+    const CommonModule = await loadCommonModule();
+    return new CommonModule.CommentsStatusBarPill.CommentsStatusBarPill(void 0, [universe.commentManager]);
   }
 });
 UI.ActionRegistration.registerActionExtension({
@@ -47,17 +49,26 @@ UI.ActionRegistration.registerActionExtension({
   toggleable: true,
   condition: isCommentsEnabled,
   async loadActionDelegate() {
-    const Common = await loadCommonModule();
-    return new Common.CommentsOverlayWidget.ActionDelegate();
+    const CommonModule = await loadCommonModule();
+    return new CommonModule.CommentsOverlayWidget.ActionDelegate();
   }
 });
 UI.Toolbar.registerToolbarItem({
   async loadItem() {
-    const Common = await loadCommonModule();
-    return new Common.CommentsOverlayWidget.ButtonProvider();
+    const CommonModule = await loadCommonModule();
+    return new CommonModule.CommentsOverlayWidget.ButtonProvider();
   },
   location: UI.Toolbar.ToolbarItemLocation.MAIN_TOOLBAR_LEFT,
   order: 1,
   condition: isCommentsEnabled
+});
+Common.Revealer.registerRevealer({
+  contextTypes() {
+    return [CommentManager.CommentManager.CommentThread];
+  },
+  async loadRevealer() {
+    const CommonModule = await loadCommonModule();
+    return new CommonModule.CommentsOverlayWidget.ThreadRevealer();
+  }
 });
 //# sourceMappingURL=common-meta.js.map

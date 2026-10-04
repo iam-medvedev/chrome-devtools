@@ -5,7 +5,7 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget, describeWithEnvironment, expectConsoleLogs, stubNoopSettings, } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, describeWithEnvironment, expectConsoleLogs, } from '../../testing/EnvironmentHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Application from './application.js';
 describeWithEnvironment('StorageBucketsTreeElement', function () {
@@ -78,7 +78,6 @@ describeWithEnvironment('StorageBucketsTreeElement', function () {
         });
     };
     beforeEach(async () => {
-        stubNoopSettings();
         SDK.ChildTargetManager.ChildTargetManager.install();
         const tabTarget = createTarget({ type: SDK.Target.Type.TAB });
         createTarget({ parentTarget: tabTarget, subtype: 'prerender' });

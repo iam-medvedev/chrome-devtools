@@ -4,7 +4,7 @@
 import { assert } from 'chai';
 import * as Root from '../../../core/root/root.js';
 import { renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
-import { createFakeSetting, stubNoopSettings } from '../../../testing/EnvironmentHelpers.js';
+import { createFakeSetting } from '../../../testing/EnvironmentHelpers.js';
 import * as Settings from './settings.js';
 function renderSettingCheckbox(data) {
     const component = new Settings.SettingCheckbox.SettingCheckbox();
@@ -64,7 +64,6 @@ describe('SettingCheckbox', () => {
         assert.isFalse(setting.get());
     });
     it('disables checkbox when disabled property is true', () => {
-        stubNoopSettings();
         const setting = createFakeSetting('setting', false);
         const { checkbox } = renderSettingCheckbox({ setting, disabled: true });
         assert.isTrue(checkbox.disabled);

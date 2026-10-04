@@ -628,7 +628,6 @@ var MainImpl = class _MainImpl {
     if (Root2.Runtime.Runtime.queryParam("hasOtherClients")) {
       this.#universe.settings.resolve(SDK2.SDKSettings.cacheDisabledSettingDescriptor).setRequiresUserAction(true);
     }
-    Root2.Runtime.experiments.removeAllExperimentsFromLocalStorage();
     await this.requestAndRegisterLocaleData();
     Host.userMetrics.syncSetting(
       Common2.Settings.Settings.instance().resolve(SettingsUI.MainSettings.syncPreferencesSettingDescriptor).get()
@@ -718,17 +717,9 @@ var MainImpl = class _MainImpl {
     const globalStorage = new Common2.Settings.SettingsStorage(prefs, hostUnsyncedStorage, storagePrefix);
     return { syncedStorage, globalStorage, localStorage };
   }
-  // TODO(crbug.com/464173054) remove after M156
-  #migrateValueFromLegacyExperiment(legacyExperimentName, experiment) {
-    const value = Root2.Runtime.experiments.getValueFromStorage(legacyExperimentName);
-    if (value !== void 0 && experiment.aboutFlag) {
-      experiment.setEnabled(value);
-      Host.InspectorFrontendHost.InspectorFrontendHostInstance.setChromeFlag(experiment.aboutFlag, value);
-    }
-  }
   #initializeExperiments() {
     const enableProtocolMonitor = (Root2.Runtime.hostConfig.devToolsProtocolMonitor?.enabled ?? false) || Boolean(Root2.Runtime.Runtime.queryParam("isChromeForTesting"));
-    const protocolMonitorExperiment = Root2.Runtime.experiments.register({
+    Root2.Runtime.experiments.register({
       name: Root2.ExperimentNames.ExperimentName.PROTOCOL_MONITOR,
       title: "Protocol Monitor",
       aboutFlag: "devtools-protocol-monitor",
@@ -736,21 +727,13 @@ var MainImpl = class _MainImpl {
       requiresChromeRestart: false,
       docLink: "https://developer.chrome.com/blog/new-in-devtools-92/#protocol-monitor"
     });
-    this.#migrateValueFromLegacyExperiment(
-      Root2.ExperimentNames.ExperimentName.PROTOCOL_MONITOR,
-      protocolMonitorExperiment
-    );
-    const instrumentationBreakpointsExperiment = Root2.Runtime.experiments.register({
+    Root2.Runtime.experiments.register({
       name: Root2.ExperimentNames.ExperimentName.INSTRUMENTATION_BREAKPOINTS,
       title: "Instrumentation breakpoints",
       aboutFlag: "devtools-instrumentation-breakpoints",
       isEnabled: Root2.Runtime.hostConfig.devToolsInstrumentationBreakpoints?.enabled ?? false,
       requiresChromeRestart: false
     });
-    this.#migrateValueFromLegacyExperiment(
-      Root2.ExperimentNames.ExperimentName.INSTRUMENTATION_BREAKPOINTS,
-      instrumentationBreakpointsExperiment
-    );
     Root2.Runtime.experiments.register({
       name: Root2.ExperimentNames.ExperimentName.DURABLE_MESSAGES,
       title: "Durable Messages",

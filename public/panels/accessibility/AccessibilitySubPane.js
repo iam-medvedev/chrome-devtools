@@ -7,17 +7,31 @@ import * as UI from '../../ui/legacy/legacy.js';
 import accessibilityNodeStyles from './accessibilityNode.css.js';
 import accessibilityPropertiesStyles from './accessibilityProperties.css.js';
 export class AccessibilitySubPane extends UI.View.SimpleView {
-    axNode;
-    nodeInternal;
-    constructor(options) {
-        super(options);
+    axNodeInternal = null;
+    nodeInternal = null;
+    constructor(element, options) {
+        if (element) {
+            super(element, options);
+        }
+        else {
+            super(options);
+        }
         this.registerRequiredCSS(accessibilityPropertiesStyles);
-        this.axNode = null;
     }
-    setAXNode(_axNode) {
+    get axNode() {
+        return this.axNodeInternal;
     }
-    node() {
-        return this.nodeInternal || null;
+    set axNode(axNode) {
+        this.setAXNode(axNode);
+    }
+    setAXNode(axNode) {
+        this.axNodeInternal = axNode;
+    }
+    get node() {
+        return this.nodeInternal;
+    }
+    set node(node) {
+        this.setNode(node);
     }
     setNode(node) {
         this.nodeInternal = node;

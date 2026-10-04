@@ -7,16 +7,21 @@ import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Workspace from '../../models/workspace/workspace.js';
+import { dispatchClickEvent, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { createContentProviderUISourceCode } from '../../testing/UISourceCodeHelpers.js';
+import * as UI from '../../ui/legacy/legacy.js';
+import * as Lit from '../../ui/lit/lit.js';
 import * as Coverage from '../coverage/coverage.js';
 import * as Sources from './sources.js';
 const { urlString } = Platform.DevToolsPath;
+const { html } = Lit;
 describeWithEnvironment('CoveragePlugin', () => {
     let target;
     let uiSourceCode;
     let model;
     let coverageInfo;
+    let container;
     const URL = urlString `test.js`;
     beforeEach(() => {
         const tabTarget = createTarget({ type: SDK.Target.Type.TAB });
@@ -43,27 +48,67 @@ describeWithEnvironment('CoveragePlugin', () => {
         coverageInfo.addToSizes(9, 28);
         sinon.stub(model, 'getCoverageForUrl').withArgs(URL).returns(coverageInfo);
         ({ uiSourceCode } = createContentProviderUISourceCode({ url: URL, mimeType: 'text/javascript' }));
+        container = renderElementIntoDOM(document.createElement('div'));
     });
+    function createPlugin(code = uiSourceCode) {
+        return new Sources.CoveragePlugin.CoveragePlugin(code, {});
+    }
+    function renderToolbarButton(plugin) {
+        Lit.render(html `${plugin.rightToolbarItems()}`, container);
+        const button = container.querySelector('devtools-button');
+        assert.isNotNull(button);
+        return button;
+    }
+    function listenForToolbarItemsChanged(plugin) {
+        const listener = sinon.spy();
+        plugin.addEventListener("ToolbarItemsChanged" /* Sources.Plugin.Events.TOOLBAR_ITEMS_CHANGED */, listener);
+        return listener;
+    }
     it('shows stats', () => {
-        const coveragePlugin = new Sources.CoveragePlugin.CoveragePlugin(uiSourceCode, {});
-        const [toolbarItem] = coveragePlugin.rightToolbarItems();
-        assert.strictEqual('Show details', toolbarItem.element.shadowRoot?.querySelector('button')?.title);
-        assert.strictEqual('Coverage: 32.1%', toolbarItem.element.textContent);
+        const button = renderToolbarButton(createPlugin());
+        assert.strictEqual(button.textContent, 'Coverage: 32.1%');
+        assert.strictEqual(button.getAttribute('title'), 'Show details');
+        assert.strictEqual(button.getAttribute('aria-label'), 'Show details');
+        assert.isTrue(button.classList.contains('toolbar-button-secondary'));
+    });
+    it('shows N/A when there is no coverage for the URL', () => {
+        const { uiSourceCode: otherUISourceCode } = createContentProviderUISourceCode({ url: urlString `other.js`, mimeType: 'text/javascript', projectId: 'other' });
+        const button = renderToolbarButton(createPlugin(otherUISourceCode));
+        assert.strictEqual(button.textContent, 'Coverage: N/A');
+        assert.strictEqual(button.getAttribute('title'), 'Click to show Coverage panel');
+        assert.strictEqual(button.getAttribute('aria-label'), 'Click to show Coverage panel');
     });
     it('updates stats', () => {
-        const coveragePlugin = new Sources.CoveragePlugin.CoveragePlugin(uiSourceCode, {});
-        const [toolbarItem] = coveragePlugin.rightToolbarItems();
-        assert.strictEqual('Coverage: 32.1%', toolbarItem.element.textContent);
+        const coveragePlugin = createPlugin();
+        assert.strictEqual(renderToolbarButton(coveragePlugin).textContent, 'Coverage: 32.1%');
+        const listener = listenForToolbarItemsChanged(coveragePlugin);
         coverageInfo.addToSizes(10, 2);
-        assert.strictEqual('Coverage: 63.3%', toolbarItem.element.textContent);
+        sinon.assert.calledOnce(listener);
+        assert.strictEqual(renderToolbarButton(coveragePlugin).textContent, 'Coverage: 63.3%');
+    });
+    it('does not request a toolbar update when the label is unchanged', () => {
+        const coveragePlugin = createPlugin();
+        const listener = listenForToolbarItemsChanged(coveragePlugin);
+        // 18/56 formats to the same 32.1% as the initial 9/28.
+        coverageInfo.addToSizes(9, 28);
+        sinon.assert.notCalled(listener);
     });
     it('resets stats', () => {
-        const coveragePlugin = new Sources.CoveragePlugin.CoveragePlugin(uiSourceCode, {});
-        const [toolbarItem] = coveragePlugin.rightToolbarItems();
-        assert.strictEqual('Coverage: 32.1%', toolbarItem.element.textContent);
+        const coveragePlugin = createPlugin();
+        assert.strictEqual(renderToolbarButton(coveragePlugin).textContent, 'Coverage: 32.1%');
+        const listener = listenForToolbarItemsChanged(coveragePlugin);
         model.dispatchEventToListeners(Coverage.CoverageModel.Events.CoverageReset);
-        assert.strictEqual('Click to show Coverage panel', toolbarItem.element.ariaLabel);
-        assert.strictEqual('Coverage: N/A', toolbarItem.element.textContent);
+        sinon.assert.calledOnce(listener);
+        const button = renderToolbarButton(coveragePlugin);
+        assert.strictEqual(button.textContent, 'Coverage: N/A');
+        assert.strictEqual(button.getAttribute('title'), 'Click to show Coverage panel');
+        assert.strictEqual(button.getAttribute('aria-label'), 'Click to show Coverage panel');
+    });
+    it('opens the Coverage panel when clicked', () => {
+        const showView = sinon.stub(UI.ViewManager.ViewManager.instance(), 'showView').resolves();
+        const button = renderToolbarButton(createPlugin());
+        dispatchClickEvent(button);
+        sinon.assert.calledOnceWithExactly(showView, 'coverage');
     });
 });
 //# sourceMappingURL=CoveragePlugin.test.js.map

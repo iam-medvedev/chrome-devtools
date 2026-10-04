@@ -174,15 +174,13 @@ describe('NetworkRequestAccess', () => {
             assert.strictEqual(mode, "OPAQUE_CROSS_ORIGIN" /* SDK.NetworkRequestAccess.ResponseAccessMode.OPAQUE_CROSS_ORIGIN */);
         });
         it('returns SAME_ORIGIN for requests within the same domain in an imported HAR', () => {
-            const request = SDK.NetworkRequest.NetworkRequest.createWithoutBackendRequest('requestId', urlString `https://example.com/api/data`, urlString `https://example.com/index.html`, null);
-            request.setIsImportedHar(true);
+            const request = SDK.NetworkRequest.NetworkRequest.createForImportedHar('requestId', urlString `https://example.com/api/data`, urlString `https://example.com/index.html`, null);
             const initiatorSecurityOrigin = SDK.SecurityOrigin.SecurityOrigin.create('imported-har://example.com');
             const mode = SDK.NetworkRequestAccess.evaluateResponseAccessMode(request, initiatorSecurityOrigin);
             assert.strictEqual(mode, "SAME_ORIGIN" /* SDK.NetworkRequestAccess.ResponseAccessMode.SAME_ORIGIN */);
         });
         it('returns OPAQUE_CROSS_ORIGIN for requests to different domains in an imported HAR without CORS', () => {
-            const request = SDK.NetworkRequest.NetworkRequest.createWithoutBackendRequest('requestId', urlString `https://other-domain.com/api/data`, urlString `https://example.com/index.html`, null);
-            request.setIsImportedHar(true);
+            const request = SDK.NetworkRequest.NetworkRequest.createForImportedHar('requestId', urlString `https://other-domain.com/api/data`, urlString `https://example.com/index.html`, null);
             const initiatorSecurityOrigin = SDK.SecurityOrigin.SecurityOrigin.create('imported-har://example.com');
             const mode = SDK.NetworkRequestAccess.evaluateResponseAccessMode(request, initiatorSecurityOrigin);
             assert.strictEqual(mode, "OPAQUE_CROSS_ORIGIN" /* SDK.NetworkRequestAccess.ResponseAccessMode.OPAQUE_CROSS_ORIGIN */);

@@ -6,7 +6,7 @@ import sinon from 'sinon';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget, describeWithEnvironment, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import { mockResourceTree } from '../../testing/ResourceTreeHelpers.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
@@ -20,7 +20,6 @@ describeWithEnvironment('AppManifestView', () => {
     let view;
     let viewFunction;
     beforeEach(() => {
-        stubNoopSettings();
         const connection = new MockCDPConnection([]);
         mockResourceTree(connection);
         const tabTarget = createTarget({ type: SDK.Target.Type.TAB, connection });

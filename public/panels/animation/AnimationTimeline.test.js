@@ -6,7 +6,7 @@ import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
 import { raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { cleanTestDOM } from '../../testing/DOMHooks.js';
-import { createTarget, describeWithEnvironment, stubNoopSettings, waitFor } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, describeWithEnvironment, waitFor } from '../../testing/EnvironmentHelpers.js';
 import { expectCall } from '../../testing/ExpectStubCall.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as Animation from './animation.js';
@@ -100,7 +100,6 @@ describeWithEnvironment('AnimationTimeline', () => {
     let target;
     let view;
     beforeEach(() => {
-        stubNoopSettings();
         target = createTarget();
         const runtimeAgent = target.model(SDK.RuntimeModel.RuntimeModel)?.agent;
         const stub = sinon.stub(runtimeAgent, 'invoke_evaluate');

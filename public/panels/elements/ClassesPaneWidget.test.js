@@ -5,7 +5,7 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget, describeWithEnvironment, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Elements from './elements.js';
 const CLASS_NAMES = ['class-1', 'class-2', 'class-3'];
@@ -13,7 +13,6 @@ describeWithEnvironment('ClassesPaneWidget', () => {
     let target;
     let view;
     beforeEach(() => {
-        stubNoopSettings();
         target = createTarget();
     });
     afterEach(() => {
@@ -94,6 +93,14 @@ describeWithEnvironment('ClassesPaneWidget', () => {
             sinon.stub(node, 'getAttribute').withArgs('class').returns('abc');
             const texts = await getCompletions('a', new Map([['abc', true]]));
             assert.deepEqual(texts, ['a1', 'a2']);
+        });
+        it('filters out classes already present in the prompt', async () => {
+            const texts = await getCompletions('a1 a');
+            assert.deepEqual(texts, ['a2', 'abc']);
+        });
+        it('filters out dot-prefixed classes already present in the prompt', async () => {
+            const texts = await getCompletions('.a1 .a');
+            assert.deepEqual(texts, ['.a2', '.abc']);
         });
     });
 });

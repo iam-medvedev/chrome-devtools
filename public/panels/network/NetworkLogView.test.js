@@ -12,7 +12,7 @@ import * as HAR from '../../models/har/har.js';
 import * as Logs from '../../models/logs/logs.js';
 import { findMenuItemWithLabel, getContextMenuForElement, getMenu, getMenuItemLabels, } from '../../testing/ContextMenuHelpers.js';
 import { assertScreenshot, dispatchClickEvent, raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget, describeWithEnvironment, registerActions, registerNoopActions, stubNoopSettings, } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, describeWithEnvironment, registerActions, registerNoopActions, } from '../../testing/EnvironmentHelpers.js';
 import { expectCalled } from '../../testing/ExpectStubCall.js';
 import { stubFileManager } from '../../testing/FileManagerHelpers.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
@@ -595,6 +595,31 @@ describeWithEnvironment('NetworkLogView', () => {
         networkColumnWidget = columns.dataGrid().asWidget().parentWidget();
         assert.instanceOf(networkColumnWidget, UI.SplitWidget.SplitWidget);
         assert.strictEqual((networkColumnWidget).showMode(), "Both" /* UI.SplitWidget.ShowMode.BOTH */);
+    });
+    it('persists waterfall and custom header column visibility across reloads', async () => {
+        const columnSettings = Common.Settings.Settings.instance().createSetting('network-log-columns', {});
+        columnSettings.set({
+            'response-header-content-type': { visible: false, title: 'Content-Type' },
+            waterfall: { visible: true, title: 'Waterfall' },
+        });
+        // First open of NetworkLogView loads custom columns and settings.
+        networkLogView = createNetworkLogView();
+        let columns = networkLogView.columns();
+        columns.switchViewMode(true);
+        let networkColumnWidget = columns.dataGrid().asWidget().parentWidget();
+        assert.instanceOf(networkColumnWidget, UI.SplitWidget.SplitWidget);
+        assert.strictEqual(networkColumnWidget.showMode(), "Both" /* UI.SplitWidget.ShowMode.BOTH */);
+        assert.isFalse(columns.dataGrid().visibleColumnsArray.some(c => c.id === 'response-header-content-type'));
+        // Second open of NetworkLogView (simulating closing and reopening DevTools) should preserve visibility.
+        networkLogView = createNetworkLogView();
+        columns = networkLogView.columns();
+        columns.switchViewMode(true);
+        networkColumnWidget = columns.dataGrid().asWidget().parentWidget();
+        assert.instanceOf(networkColumnWidget, UI.SplitWidget.SplitWidget);
+        assert.strictEqual(networkColumnWidget.showMode(), "Both" /* UI.SplitWidget.ShowMode.BOTH */);
+        assert.isFalse(columns.dataGrid().visibleColumnsArray.some(c => c.id === 'response-header-content-type'));
+        assert.isTrue(columnSettings.get()['waterfall'].visible);
+        assert.isFalse(columnSettings.get()['response-header-content-type'].visible);
     });
     function createOverrideRequests() {
         const urlNotOverridden = urlString `https://url-not-overridden`;
@@ -1310,7 +1335,6 @@ describeWithEnvironment('NetworkLogView placeholder', () => {
     const START_RECORDING_ID = 'network.toggle-recording';
     const RELOAD_ID = 'inspector-main.reload';
     beforeEach(() => {
-        stubNoopSettings();
         registerActions([
             {
                 actionId: START_RECORDING_ID,
@@ -1344,7 +1368,6 @@ describeWithEnvironment('NetworkLogView placeholder', () => {
 });
 describeWithEnvironment('NetworkLogView', () => {
     it('renders when actions aren\'t registered', async () => {
-        stubNoopSettings();
         sinon.stub(UI.ShortcutRegistry.ShortcutRegistry, 'instance').returns({
             shortcutTitleForAction: () => 'Ctrl',
             shortcutsForAction: () => [new UI.KeyboardShortcut.KeyboardShortcut([{ key: UI.KeyboardShortcut.Keys.Ctrl.code, name: 'Ctrl' }], '', "DefaultShortcut" /* UI.KeyboardShortcut.Type.DEFAULT_SHORTCUT */)],
@@ -1357,7 +1380,6 @@ describeWithEnvironment('NetworkLogView', () => {
         }
     });
     it('shows Debug with AI menu and submenu items when the flag is on', () => {
-        stubNoopSettings();
         registerActions([{
                 actionId: 'drjones.network-panel-context',
                 title: () => 'Debug with AI',
@@ -1377,7 +1399,6 @@ describeWithEnvironment('NetworkLogView', () => {
         assert.deepEqual(debugWithAiItem?.subItems?.map(item => item.label), ['Start a chat', 'Explain purpose', 'Explain slowness', 'Explain failures', 'Assess security headers']);
     });
     it('configures visual logging for preloaded column in header context menu', () => {
-        stubNoopSettings();
         SDK.NetworkManager.MultitargetNetworkManager.instance({ forceNew: true });
         const networkLogView = createNetworkLogView(new UI.FilterBar.FilterBar('network-test'));
         renderElementIntoDOM(networkLogView);
@@ -1388,7 +1409,6 @@ describeWithEnvironment('NetworkLogView', () => {
         assert.exists(preloadedItem);
     });
     it('dispatches RequestSelected with null when reset', () => {
-        stubNoopSettings();
         const networkLogView = createNetworkLogView();
         const dispatchEventSpy = sinon.spy(networkLogView, 'dispatchEventToListeners');
         Logs.NetworkLog.NetworkLog.instance().dispatchEventToListeners(Logs.NetworkLog.Events.Reset, { clearIfPreserved: false });

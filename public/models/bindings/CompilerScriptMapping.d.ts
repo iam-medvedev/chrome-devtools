@@ -30,6 +30,8 @@ export declare class CompilerScriptMapping implements DebuggerSourceMapping {
     setFunctionRanges(uiSourceCode: Workspace.UISourceCode.UISourceCode, ranges: SDK.SourceMapFunctionRanges.NamedFunctionRange[]): void;
     private addStubUISourceCode;
     private removeStubUISourceCode;
+    /** @returns whether `uiSourceCode` is a placeholder for a script whose source map is still loading. */
+    isStubUISourceCode(uiSourceCode: Workspace.UISourceCode.UISourceCode): boolean;
     getLocationRangesForSameSourceLocation(rawLocation: SDK.DebuggerModel.Location): SDK.DebuggerModel.LocationRange[];
     uiSourceCodeForURL(url: Platform.DevToolsPath.UrlString, isContentScript: boolean): Workspace.UISourceCode.UISourceCode | null;
     /**
@@ -64,7 +66,20 @@ export declare class CompilerScriptMapping implements DebuggerSourceMapping {
     uiLocationToRawLocations(uiSourceCode: Workspace.UISourceCode.UISourceCode, lineNumber: number, columnNumber: number): SDK.DebuggerModel.Location[];
     uiLocationRangeToRawLocationRanges(uiSourceCode: Workspace.UISourceCode.UISourceCode, textRange: TextUtils.TextRange.TextRange): SDK.DebuggerModel.LocationRange[] | null;
     functionBoundsAtRawLocation(rawLocation: SDK.DebuggerModel.Location): Promise<Workspace.UISourceCode.UIFunctionBounds | null>;
-    translateRawFramesStep(rawFrames: StackTraceImpl.Trie.RawFrame[], translatedFrames: Awaited<ReturnType<StackTraceImpl.StackTraceModel.TranslateRawFrames>>): Promise<boolean>;
+    /**
+     * Translates a raw frame using the "scopes" information of its script's source map. Frames of compiler helpers
+     * are dropped (see {@link SDK.SourceMapScopesInfo.GeneratedFrameKind}).
+     *
+     * Outlined frames are merged at read time by the stack_trace model (see `consolidate`). The function keys
+     * tell it which authored function the top and bottom frames of a translation belong to. A frame at an
+     * unmapped position still gets its keys from the generated ranges; it shows the generated location, named
+     * after the authored function.
+     *
+     * @returns null if the raw frame can't be translated via "scopes" information, e.g. because the script doesn't
+     * have a source map (with scopes information), the source map is still loading, or neither mappings nor
+     * generated ranges know the position. It's then left to the default mapping.
+     */
+    translateRawFrame(rawFrame: StackTraceImpl.Trie.RawFrame): Promise<StackTraceImpl.StackTraceModel.TranslatedRawFrame | null>;
     /**
      * Computes the set of line numbers which are source-mapped to a script within the
      * given {@link uiSourceCode}.

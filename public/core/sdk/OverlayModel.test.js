@@ -171,5 +171,105 @@ describe('OverlayModel', () => {
             clock.restore();
         }
     });
+    it('sends imcbHighlightConfig in Overlay.highlightNode for mode all', () => {
+        assert.exists(overlayModel);
+        let highlightParams;
+        connection.setSuccessHandler('Overlay.highlightNode', params => {
+            highlightParams = params;
+            return {};
+        });
+        const deferredNode = new SDK.DOMModel.DeferredDOMNode(overlayModel.target(), 1);
+        overlayModel.highlightInOverlay({ deferredNode }, 'all');
+        assert.exists(highlightParams);
+        const imcbConfig = highlightParams.highlightConfig.imcbHighlightConfig;
+        assert.isDefined(imcbConfig);
+        assert.isTrue(imcbConfig.showPositionAreaGrid);
+        assert.isDefined(imcbConfig.imcbBorderColor);
+        assert.isDefined(imcbConfig.imcbBackgroundColor);
+        assert.isDefined(imcbConfig.insetsBackgroundColor);
+        assert.isDefined(imcbConfig.insetsHatchColor);
+        assert.isDefined(imcbConfig.anchorBorderColor);
+        assert.isDefined(imcbConfig.anchorBackgroundColor);
+        assert.isDefined(imcbConfig.positionAreaGridLineColor);
+        assert.isDefined(imcbConfig.positionAreaActiveRegionColor);
+    });
+    it('omits imcbHighlightConfig in Overlay.highlightNode for unrelated modes', () => {
+        assert.exists(overlayModel);
+        let highlightParams;
+        connection.setSuccessHandler('Overlay.highlightNode', params => {
+            highlightParams = params;
+            return {};
+        });
+        const deferredNode = new SDK.DOMModel.DeferredDOMNode(overlayModel.target(), 1);
+        overlayModel.highlightInOverlay({ deferredNode }, 'content');
+        assert.exists(highlightParams);
+        assert.isUndefined(highlightParams.highlightConfig.imcbHighlightConfig);
+    });
+    it('sends imcbHighlightConfig for mode anchor-positioning', () => {
+        assert.exists(overlayModel);
+        let highlightParams;
+        connection.setSuccessHandler('Overlay.highlightNode', params => {
+            highlightParams = params;
+            return {};
+        });
+        const deferredNode = new SDK.DOMModel.DeferredDOMNode(overlayModel.target(), 1);
+        overlayModel.highlightInOverlay({ deferredNode }, 'anchor-positioning');
+        assert.exists(highlightParams);
+        const imcbConfig = highlightParams.highlightConfig.imcbHighlightConfig;
+        assert.isDefined(imcbConfig);
+        assert.isTrue(imcbConfig.showPositionAreaGrid);
+        assert.isDefined(imcbConfig.imcbBorderColor);
+        assert.isDefined(imcbConfig.imcbBackgroundColor);
+        assert.isDefined(imcbConfig.insetsBackgroundColor);
+        assert.isDefined(imcbConfig.insetsHatchColor);
+        assert.isDefined(imcbConfig.anchorBorderColor);
+        assert.isDefined(imcbConfig.anchorBackgroundColor);
+        assert.isDefined(imcbConfig.positionAreaGridLineColor);
+        assert.isDefined(imcbConfig.positionAreaActiveRegionColor);
+    });
+    it('sends imcbHighlightConfig without insets for mode position-area', () => {
+        assert.exists(overlayModel);
+        let highlightParams;
+        connection.setSuccessHandler('Overlay.highlightNode', params => {
+            highlightParams = params;
+            return {};
+        });
+        const deferredNode = new SDK.DOMModel.DeferredDOMNode(overlayModel.target(), 1);
+        overlayModel.highlightInOverlay({ deferredNode }, 'position-area');
+        assert.exists(highlightParams);
+        const imcbConfig = highlightParams.highlightConfig.imcbHighlightConfig;
+        assert.isDefined(imcbConfig);
+        assert.isTrue(imcbConfig.showPositionAreaGrid);
+        assert.isDefined(imcbConfig.imcbBorderColor);
+        assert.isDefined(imcbConfig.imcbBackgroundColor);
+        assert.isUndefined(imcbConfig.insetsBackgroundColor);
+        assert.isUndefined(imcbConfig.insetsHatchColor);
+        assert.isDefined(imcbConfig.anchorBorderColor);
+        assert.isDefined(imcbConfig.anchorBackgroundColor);
+        assert.isDefined(imcbConfig.positionAreaGridLineColor);
+        assert.isDefined(imcbConfig.positionAreaActiveRegionColor);
+    });
+    it('sends imcbHighlightConfig without position-area grid for mode insets', () => {
+        assert.exists(overlayModel);
+        let highlightParams;
+        connection.setSuccessHandler('Overlay.highlightNode', params => {
+            highlightParams = params;
+            return {};
+        });
+        const deferredNode = new SDK.DOMModel.DeferredDOMNode(overlayModel.target(), 1);
+        overlayModel.highlightInOverlay({ deferredNode }, 'insets');
+        assert.exists(highlightParams);
+        const imcbConfig = highlightParams.highlightConfig.imcbHighlightConfig;
+        assert.isDefined(imcbConfig);
+        assert.isUndefined(imcbConfig.showPositionAreaGrid);
+        assert.isDefined(imcbConfig.imcbBorderColor);
+        assert.isDefined(imcbConfig.imcbBackgroundColor);
+        assert.isDefined(imcbConfig.insetsBackgroundColor);
+        assert.isDefined(imcbConfig.insetsHatchColor);
+        assert.isDefined(imcbConfig.anchorBorderColor);
+        assert.isDefined(imcbConfig.anchorBackgroundColor);
+        assert.isUndefined(imcbConfig.positionAreaGridLineColor);
+        assert.isUndefined(imcbConfig.positionAreaActiveRegionColor);
+    });
 });
 //# sourceMappingURL=OverlayModel.test.js.map

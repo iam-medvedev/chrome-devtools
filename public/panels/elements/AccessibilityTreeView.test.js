@@ -6,7 +6,7 @@ import sinon from 'sinon';
 import * as Host from '../../core/host/host.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget, describeWithEnvironment, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import * as TreeOutline from '../../ui/components/tree_outline/tree_outline.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Elements from './elements.js';
@@ -14,7 +14,6 @@ const MAIN_FRAME_ID = 'MAIN_FRAME_ID';
 describeWithEnvironment('AccessibilityTreeView', () => {
     let target;
     beforeEach(() => {
-        stubNoopSettings();
         target = createTarget();
     });
     const updatesUiOnEvent = (inScope) => async () => {

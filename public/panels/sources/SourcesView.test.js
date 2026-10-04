@@ -4,7 +4,6 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
-import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
@@ -14,9 +13,7 @@ import * as Workspace from '../../models/workspace/workspace.js';
 import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { createContentProviderUISourceCodes, createFileSystemUISourceCode, } from '../../testing/UISourceCodeHelpers.js';
-import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import * as SourcesComponents from './components/components.js';
 import * as Sources from './sources.js';
 const { urlString } = Platform.DevToolsPath;
 describeWithEnvironment('SourcesView', () => {
@@ -50,75 +47,6 @@ describeWithEnvironment('SourcesView', () => {
         await sourcesView.updateComplete;
         await assertScreenshot('sources/sources-view-placeholder.png');
         sourcesView.detach();
-    });
-    it('creates new source view of updated type when renamed file requires a different viewer', async () => {
-        const sourcesView = new Sources.SourcesView.SourcesView();
-        renderElementIntoDOM(sourcesView);
-        await sourcesView.updateComplete;
-        const workspace = Workspace.Workspace.WorkspaceImpl.instance();
-        const { uiSourceCode, project } = createFileSystemUISourceCode({
-            url: urlString `file:///path/to/overrides/example.html`,
-            mimeType: 'text/html',
-        });
-        project.canSetFileContent = () => true;
-        project.rename = (_uiSourceCode, newName, callback) => {
-            const newURL = urlString `${'file:///path/to/overrides/' + newName}`;
-            let newContentType = Common.ResourceType.resourceTypes.Document;
-            if (newName.endsWith('.jpg')) {
-                newContentType = Common.ResourceType.resourceTypes.Image;
-            }
-            else if (newName.endsWith('.woff')) {
-                newContentType = Common.ResourceType.resourceTypes.Font;
-            }
-            callback(true, newName, newURL, newContentType);
-        };
-        sourcesView.viewForFile(uiSourceCode);
-        assert.instanceOf(sourcesView.getSourceView(uiSourceCode), Sources.UISourceCodeFrame.UISourceCodeFrame);
-        // Rename, but contentType stays the same
-        await uiSourceCode.rename('newName.html');
-        await sourcesView.updateComplete;
-        assert.instanceOf(sourcesView.getSourceView(uiSourceCode), Sources.UISourceCodeFrame.UISourceCodeFrame);
-        // Rename which changes contentType
-        await uiSourceCode.rename('image.jpg');
-        await sourcesView.updateComplete;
-        assert.instanceOf(sourcesView.getSourceView(uiSourceCode), SourceFrame.ImageView.ImageView);
-        // Rename which changes contentType
-        await uiSourceCode.rename('font.woff');
-        await sourcesView.updateComplete;
-        assert.instanceOf(sourcesView.getSourceView(uiSourceCode), SourceFrame.FontView.FontView);
-        workspace.removeProject(project);
-        sourcesView.detach();
-    });
-    it('creates a HeadersView when the filename is \'.headers\'', async () => {
-        const sourcesView = new Sources.SourcesView.SourcesView();
-        await sourcesView.updateComplete;
-        const uiSourceCode = new Workspace.UISourceCode.UISourceCode({}, urlString `file:///path/to/overrides/www.example.com/.headers`, Common.ResourceType.resourceTypes.Document);
-        sinon.stub(uiSourceCode, 'mimeType').returns('text/plain');
-        sourcesView.viewForFile(uiSourceCode);
-        assert.instanceOf(sourcesView.getSourceView(uiSourceCode), SourcesComponents.HeadersView.HeadersView);
-        sourcesView.detach();
-    });
-    describe('viewForFile', () => {
-        it('records the correct media type in the DevTools.SourcesPanelFileOpened metric', async () => {
-            const sourcesView = new Sources.SourcesView.SourcesView();
-            await sourcesView.updateComplete;
-            const { uiSourceCode } = createFileSystemUISourceCode({
-                url: urlString `file:///path/to/project/example.ts`,
-                mimeType: 'text/typescript',
-                content: 'export class Foo {}',
-            });
-            const sourcesPanelFileOpenedSpy = sinon.spy(Host.userMetrics, 'sourcesPanelFileOpened');
-            const contentLoadedPromise = new Promise(res => window.addEventListener('source-file-loaded', res));
-            const widget = sourcesView.viewForFile(uiSourceCode);
-            assert.instanceOf(widget, Sources.UISourceCodeFrame.UISourceCodeFrame);
-            const uiSourceCodeFrame = widget;
-            // Skip creating the DebuggerPlugin, which times out and simulate DOM attach/showing.
-            sinon.stub(uiSourceCodeFrame, 'loadPlugins');
-            uiSourceCodeFrame.wasShown();
-            await contentLoadedPromise;
-            sinon.assert.calledWithExactly(sourcesPanelFileOpenedSpy, 'text/typescript');
-            sourcesView.detach();
-        });
     });
 });
 describeWithEnvironment('SourcesView', () => {
@@ -196,9 +124,29 @@ describeWithEnvironment('SourcesView', () => {
         const sourcesView = new Sources.SourcesView.SourcesView();
         renderElementIntoDOM(sourcesView);
         await sourcesView.updateComplete;
-        const removeUISourceCodesSpy = sinon.spy(sourcesView.editorContainer, 'removeUISourceCodes');
+        const removeUISourceCodesSpy = sinon.spy(Sources.TabbedEditorContainer.TabbedEditorContainer.prototype, 'removeUISourceCodes');
         target2.targetManager().setScopeTarget(target2);
+        await sourcesView.updateComplete;
         sinon.assert.notCalled(removeUISourceCodesSpy);
+        sourcesView.detach();
+    });
+    it('reveals and focuses the source location synchronously', async () => {
+        const { uiSourceCode } = createFileSystemUISourceCode({
+            url: urlString `snippet:///foo.js`,
+            mimeType: 'application/javascript',
+            type: Persistence.PlatformFileSystem.PlatformFileSystemType.SNIPPETS,
+        });
+        const sourcesView = new Sources.SourcesView.SourcesView();
+        renderElementIntoDOM(sourcesView);
+        await sourcesView.updateComplete;
+        const showSourceLocationSpy = sinon.spy(Sources.TabbedEditorContainer.TabbedEditorContainer.prototype, 'showSourceLocation');
+        // Input that immediately follows the reveal (e.g. typing after committing
+        // a new snippet name) must go to the editor, so the editor has to be
+        // revealed and focused before `showSourceLocation` yields.
+        const revealed = sourcesView.showSourceLocation(uiSourceCode);
+        sinon.assert.calledOnceWithExactly(showSourceLocationSpy, uiSourceCode, undefined, undefined, undefined);
+        assert.strictEqual(sourcesView.currentUISourceCode(), uiSourceCode);
+        await revealed;
         sourcesView.detach();
     });
 });

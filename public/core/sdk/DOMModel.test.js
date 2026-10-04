@@ -144,6 +144,93 @@ describe('DOMModel', () => {
             const nodeSnapshot = await childNode.takeSnapshot(docSnapshot);
             assert.isTrue(nodeSnapshot.securityOrigin()?.isSameOriginWith(documentNode.securityOrigin()));
         });
+        it('returns the frameId for DOMDocument when provided, and null when omitted', () => {
+            const target = universe.createTarget();
+            const domModel = target.model(SDK.DOMModel.DOMModel);
+            assert.exists(domModel);
+            const docWithFrame = new SDK.DOMModel.DOMDocument(domModel, {
+                nodeId: 1,
+                backendNodeId: 1,
+                nodeType: 9 /* NodeType.DOCUMENT_NODE */,
+                nodeName: '#document',
+                localName: '',
+                nodeValue: '',
+                documentURL: 'https://example.com/page.html',
+            }, 'frame-1');
+            assert.strictEqual(docWithFrame.frameId(), 'frame-1');
+            const docWithoutFrame = new SDK.DOMModel.DOMDocument(domModel, {
+                nodeId: 2,
+                backendNodeId: 2,
+                nodeType: 9 /* NodeType.DOCUMENT_NODE */,
+                nodeName: '#document',
+                localName: '',
+                nodeValue: '',
+                documentURL: 'https://example.com/page.html',
+            });
+            assert.isNull(docWithoutFrame.frameId());
+        });
+        it('does not assign mainFrameId to detached root documents', () => {
+            const dataUrl = Platform.DevToolsPath.urlString `data:text/html,<h1>Hello</h1>`;
+            const target = universe.createTarget({ url: dataUrl });
+            const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
+            assert.exists(resourceTreeModel);
+            const mainFrame = resourceTreeModel.frameAttached('main', null);
+            assert.exists(mainFrame);
+            const domModel = target.model(SDK.DOMModel.DOMModel);
+            assert.exists(domModel);
+            // Trigger setDetachedRoot by passing a parentId of 0.
+            domModel.setChildNodes(0, [{
+                    nodeId: 10,
+                    backendNodeId: 10,
+                    nodeType: 9 /* NodeType.DOCUMENT_NODE */,
+                    nodeName: '#document',
+                    localName: '',
+                    nodeValue: '',
+                    documentURL: 'about:blank',
+                }]);
+            const detachedDoc = domModel.nodeForId(10);
+            assert.exists(detachedDoc);
+            assert.instanceOf(detachedDoc, SDK.DOMModel.DOMDocument);
+            assert.isNull(detachedDoc.frameId());
+        });
+        it('detached root documents receive an opaque security origin and do not use documentURL or mainFrame origin', () => {
+            const mainFrameUrl = Platform.DevToolsPath.urlString `https://example.com`;
+            const target = universe.createTarget({ url: mainFrameUrl });
+            const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
+            assert.exists(resourceTreeModel);
+            const mainFrame = resourceTreeModel.frameAttached('main', null);
+            assert.exists(mainFrame);
+            mainFrame.navigate({
+                id: 'main',
+                loaderId: 'loaderId',
+                url: mainFrameUrl,
+                domainAndRegistry: 'example.com',
+                securityOrigin: 'https://example.com',
+                mimeType: 'text/html',
+                secureContextType: "Secure" /* ProtocolModule.Page.SecureContextType.Secure */,
+                crossOriginIsolatedContextType: "NotIsolated" /* ProtocolModule.Page.CrossOriginIsolatedContextType.NotIsolated */,
+                gatedAPIFeatures: [],
+            });
+            const domModel = target.model(SDK.DOMModel.DOMModel);
+            assert.exists(domModel);
+            // Trigger setDetachedRoot by passing a parentId of 0 with a cross-origin documentURL.
+            domModel.setChildNodes(0, [{
+                    nodeId: 10,
+                    backendNodeId: 10,
+                    nodeType: 9 /* NodeType.DOCUMENT_NODE */,
+                    nodeName: '#document',
+                    localName: '',
+                    nodeValue: '',
+                    documentURL: 'https://victim.example/page.html',
+                }]);
+            const detachedDoc = domModel.nodeForId(10);
+            assert.instanceOf(detachedDoc, SDK.DOMModel.DOMDocument);
+            const mainOrigin = mainFrame.securityOrigin();
+            const detachedOrigin = detachedDoc.securityOrigin();
+            assert.isFalse(detachedOrigin.isSameOriginWith(mainOrigin));
+            assert.isFalse(detachedOrigin.isSameOriginWith(SDK.SecurityOrigin.SecurityOrigin.create('https://victim.example')));
+            assert.isTrue(detachedOrigin.isOpaque());
+        });
     });
     it('updates top layer elements correctly', async () => {
         const parentTarget = universe.createTarget();
@@ -565,6 +652,18 @@ describe('DOMModel', () => {
                 });
                 assert.isFalse(domNode.isCustomElement());
             });
+            it('should return false for pseudo-elements with hyphens', () => {
+                const domNode = SDK.DOMModel.DOMNode.create(model, null, false, {
+                    nodeId: 1,
+                    backendNodeId: 2,
+                    nodeType: 1 /* NodeType.ELEMENT_NODE */,
+                    nodeName: '::interest-button',
+                    localName: '::interest-button',
+                    pseudoType: "interest-button" /* ProtocolModule.DOM.PseudoType.InterestButton */,
+                    nodeValue: '',
+                });
+                assert.isFalse(domNode.isCustomElement());
+            });
         });
         describe('duplicate', () => {
             it('calls copyTo on parent node with nextSibling as anchor', () => {
@@ -612,6 +711,55 @@ describe('DOMModel', () => {
                 await domNode.toggleHideElement();
                 assert.isFalse(domNode.isToggledToHidden());
             });
+            for (const [pseudoType, pseudoName] of [["before" /* ProtocolModule.DOM.PseudoType.Before */, '::before'],
+                ["after" /* ProtocolModule.DOM.PseudoType.After */, '::after'],
+            ]) {
+                it(`hides the ${pseudoName} pseudo element through its parent element`, async () => {
+                    // Mirrors legacy elements/hide-shortcut (testToggleHide{Before,After}PseudoShortcut{On,Off}).
+                    const target = universe.createTarget();
+                    const model = target.model(SDK.DOMModel.DOMModel);
+                    const parentNode = SDK.DOMModel.DOMNode.create(model, null, false, {
+                        nodeId: 1,
+                        backendNodeId: 1,
+                        nodeType: 1 /* NodeType.ELEMENT_NODE */,
+                        nodeName: 'DIV',
+                        localName: 'div',
+                        nodeValue: '',
+                        attributes: ['id', 'parent-node'],
+                        pseudoElements: [{
+                                nodeId: 2,
+                                backendNodeId: 2,
+                                nodeType: 1 /* NodeType.ELEMENT_NODE */,
+                                nodeName: pseudoName,
+                                localName: '',
+                                nodeValue: '',
+                                pseudoType,
+                            }],
+                    });
+                    const pseudoNode = pseudoType === "before" /* ProtocolModule.DOM.PseudoType.Before */ ? parentNode.beforePseudoElement() :
+                        parentNode.afterPseudoElement();
+                    assert.exists(pseudoNode);
+                    assert.strictEqual(pseudoNode.parentNode, parentNode);
+                    const callFunction = sinon.stub().resolves({});
+                    const release = sinon.stub();
+                    const parentResolve = sinon.stub(parentNode, 'resolveToObject').resolves({ callFunction,
+                        release });
+                    const pseudoResolve = sinon.stub(pseudoNode, 'resolveToObject');
+                    await pseudoNode.toggleHideElement();
+                    // The pseudo element cannot be resolved to a JS object, so its parent element is used instead.
+                    sinon.assert.calledOnce(parentResolve);
+                    sinon.assert.notCalled(pseudoResolve);
+                    sinon.assert.calledOnce(callFunction);
+                    assert.deepEqual(callFunction.firstCall.args[1], [{ value: pseudoName }, { value: true }]);
+                    sinon.assert.calledOnce(release);
+                    assert.isTrue(pseudoNode.isToggledToHidden());
+                    assert.isFalse(parentNode.isToggledToHidden());
+                    await pseudoNode.toggleHideElement();
+                    sinon.assert.calledTwice(callFunction);
+                    assert.deepEqual(callFunction.secondCall.args[1], [{ value: pseudoName }, { value: false }]);
+                    assert.isFalse(pseudoNode.isToggledToHidden());
+                });
+            }
         });
     });
     describe('document.open() URL update (crbug.com/370690261)', () => {
@@ -1496,6 +1644,43 @@ describe('DOMModel', () => {
         assert.strictEqual(iframeDocument.documentURL, iframeDocumentURL);
         assert.strictEqual(iframeDocument.parentNode, iframeNode);
     });
+    it('resolves canonical SecurityOrigin from ResourceTreeModel mainFrame for opaque documents', () => {
+        const parentTarget = universe.createTarget();
+        const dataUrl = urlString `data:text/html,<h1>Hello</h1>`;
+        const target = universe.createTarget({ parentTarget, url: dataUrl });
+        const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
+        assert.exists(resourceTreeModel);
+        const mainFrame = resourceTreeModel.frameAttached('main', null);
+        assert.exists(mainFrame);
+        mainFrame.navigate({
+            id: 'main',
+            loaderId: 'loaderId',
+            url: dataUrl,
+            domainAndRegistry: '',
+            securityOrigin: 'null',
+            mimeType: 'text/html',
+            secureContextType: "Secure" /* ProtocolModule.Page.SecureContextType.Secure */,
+            crossOriginIsolatedContextType: "NotIsolated" /* ProtocolModule.Page.CrossOriginIsolatedContextType.NotIsolated */,
+            gatedAPIFeatures: [],
+        });
+        const domModel = target.model(SDK.DOMModel.DOMModel);
+        assert.exists(domModel);
+        domModel.setDocumentForTest({
+            nodeId: 1,
+            backendNodeId: 1,
+            nodeType: 9 /* NodeType.DOCUMENT_NODE */,
+            nodeName: '#document',
+            localName: '',
+            nodeValue: '',
+            baseURL: dataUrl,
+            documentURL: dataUrl,
+            childNodeCount: 0,
+            children: [],
+        });
+        const document = domModel.existingDocument();
+        assert.exists(document);
+        assert.strictEqual(document.securityOrigin(), mainFrame.securityOrigin());
+    });
     describe('DOMModelUndoStack', () => {
         it('allows calling undo multiple times with non-empty history', async () => {
             const parentTarget = universe.createTarget();
@@ -1517,6 +1702,27 @@ describe('DOMModel', () => {
             await undoStack.undo();
             // Should not call invoke_undo again because stack index is 0.
             sinon.assert.calledOnce(undoSpy);
+        });
+        it('supports undo and subsequent perform/redo of mergeable actions', async () => {
+            const target = universe.createTarget();
+            const domModel = target.model(SDK.DOMModel.DOMModel);
+            assert.exists(domModel);
+            const undoSpy = sinon.stub(domModel.agent, 'invoke_undo').resolves({ getError: () => undefined });
+            const redoSpy = sinon.stub(domModel.agent, 'invoke_redo').resolves({ getError: () => undefined });
+            const undoStack = new SDK.DOMModel.DOMModelUndoStack();
+            // Coalesce two minor (mergeable) actions into a single undoable entry.
+            await undoStack.markUndoableState(domModel, true);
+            await undoStack.markUndoableState(domModel, true);
+            await undoStack.undo();
+            sinon.assert.calledOnce(undoSpy);
+            await undoStack.redo();
+            sinon.assert.calledOnce(redoSpy);
+            // Undo again and perform a new mergeable action; it should not coalesce with the undone entry.
+            await undoStack.undo();
+            sinon.assert.calledTwice(undoSpy);
+            await undoStack.markUndoableState(domModel, true);
+            await undoStack.undo();
+            sinon.assert.calledThrice(undoSpy);
         });
     });
 });

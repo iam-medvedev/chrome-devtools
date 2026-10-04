@@ -27,5 +27,27 @@ describe('FormatterWorkerPool', () => {
             pool.dispose();
         });
     });
+    describe('javaScriptSubstitute', () => {
+        it('substitutes authored names with their generated names', async () => {
+            const pool = new Formatter.FormatterWorkerPool.FormatterWorkerPool();
+            const result = await pool.javaScriptSubstitute('origObj.prop', [{ bindings: new Map([['origObj', 'a']]), generatedNames: [] }]);
+            assert.strictEqual(result, 'a.prop');
+            pool.dispose();
+        });
+        it('rejects without crashing the worker if a variable is unavailable', async () => {
+            const pool = new Formatter.FormatterWorkerPool.FormatterWorkerPool();
+            const mapping = [{ bindings: new Map([['origObj', null], ['other', 'b']]), generatedNames: [] }];
+            try {
+                await pool.javaScriptSubstitute('origObj.prop', mapping);
+                assert.fail('Expected javaScriptSubstitute to reject');
+            }
+            catch (error) {
+                assert.include(error.message, 'Cannot substitute \'origObj\'');
+            }
+            // The pool keeps working afterwards.
+            assert.strictEqual(await pool.javaScriptSubstitute('other', mapping), 'b');
+            pool.dispose();
+        });
+    });
 });
 //# sourceMappingURL=FormatterWorkerPool.test.js.map

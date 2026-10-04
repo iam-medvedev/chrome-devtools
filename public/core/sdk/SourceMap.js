@@ -462,9 +462,9 @@ export class SourceMap {
         if (!this.#scopesInfo) {
             this.#scopesInfo = new SourceMapScopesInfo(this, { scopes: [], ranges: [] });
         }
-        if (map.scopes) {
+        if (map.scopes || map.ranges) {
             const { scopes, ranges } = ScopesCodec.decode(map, { mode: 2 /* ScopesCodec.DecodeMode.LAX */, generatedOffset: { line: baseLineNumber, column: baseColumnNumber } });
-            this.#scopesInfo.addOriginalScopes(scopes);
+            this.#scopesInfo.addOriginalScopes(scopes.length ? scopes : new Array(map.sources.length).fill(null));
             this.#scopesInfo.addGeneratedRanges(ranges);
         }
         else if (map.x_com_bloomberg_sourcesFunctionMappings) {
@@ -675,7 +675,7 @@ export class SourceMap {
             return null;
         }
         const { line, column } = scriptRelativePosition(location);
-        return this.#scopesInfo.resolveMappedVariablesAtPosition(line, column, ignoreInnerBlockScopes);
+        return this.#scopesInfo.resolveMappedVariablesAtPosition(line, column, ignoreInnerBlockScopes, location.inlineFrameIndex);
     }
     findOriginalFunctionName(position) {
         this.#ensureSourceMapProcessed();
@@ -685,17 +685,10 @@ export class SourceMap {
         this.#ensureSourceMapProcessed();
         return this.#scopesInfo?.findOriginalFunctionScope(position) ?? null;
     }
-    isOutlinedFrame(generatedLine, generatedColumn) {
+    /** See {@link SourceMapScopesInfo.translateRawFrame}. `null` if no scopes information is available. */
+    translateRawFrame(generatedLine, generatedColumn) {
         this.#ensureSourceMapProcessed();
-        return this.#scopesInfo?.isOutlinedFrame(generatedLine, generatedColumn) ?? false;
-    }
-    hasInlinedFrames(generatedLine, generatedColumn) {
-        this.#ensureSourceMapProcessed();
-        return this.#scopesInfo?.hasInlinedFrames(generatedLine, generatedColumn) ?? false;
-    }
-    translateCallSite(generatedLine, generatedColumn) {
-        this.#ensureSourceMapProcessed();
-        return this.#scopesInfo?.translateCallSite(generatedLine, generatedColumn) ?? [];
+        return this.#scopesInfo?.translateRawFrame(generatedLine, generatedColumn) ?? null;
     }
 }
 _a = SourceMap;

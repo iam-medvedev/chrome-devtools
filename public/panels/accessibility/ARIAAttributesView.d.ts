@@ -14,7 +14,7 @@ type View = (input: ViewInput, output: object, target: HTMLElement | DocumentFra
 export declare const DEFAULT_VIEW: View;
 export declare class ARIAAttributesPane extends AccessibilitySubPane<ShadowRoot> {
     #private;
-    constructor(view?: View);
+    constructor(element?: HTMLElement, view?: View);
     setNode(node: SDK.DOMModel.DOMNode | null): void;
     performUpdate(): void;
     private isARIAAttribute;

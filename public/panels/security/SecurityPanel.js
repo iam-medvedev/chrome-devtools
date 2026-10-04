@@ -18,6 +18,7 @@ import originViewStyles from './originView.css.js';
 import { Events, SecurityModel, securityStateCompare, SecurityStyleExplanation, SummaryMessages, } from './SecurityModel.js';
 import { SecurityPanelSidebar } from './SecurityPanelSidebar.js';
 const { widget, widgetRef } = UI.Widget;
+/* eslint-disable @devtools/l10n-uistrings-sentence-punctuation -- Kept with periods to avoid breaking Blink layout tests in chromium/src: http/tests/devtools/security/ */
 const UIStrings = {
     /**
      * @description Title of the overview section in the Security panel.
@@ -405,6 +406,7 @@ const UIStrings = {
      */
     enabled: 'enabled',
 };
+/* eslint-enable @devtools/l10n-uistrings-sentence-punctuation */
 const str_ = i18n.i18n.registerUIStrings('panels/security/SecurityPanel.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 let securityPanelInstance;
@@ -1283,6 +1285,13 @@ function renderCertificateTransparencySection(input) {
     ${renderCertificateTransparencyNote(securityDetails.certificateTransparencyCompliance)}`;
     // clang-format on
 }
+function renderNoteSection(loadedFromCache) {
+    // clang-format off
+    return html `
+    ${loadedFromCache ? html `<div>${i18nString(UIStrings.thisResponseWasLoadedFromCache)}</div>` : nothing}
+    <div>${i18nString(UIStrings.theSecurityDetailsAboveAreFrom)}</div>`;
+    // clang-format on
+}
 export class SecurityOriginView extends UI.Widget.VBox {
     #origin;
     #titleSection;
@@ -1301,15 +1310,12 @@ export class SecurityOriginView extends UI.Widget.VBox {
             this.#createCertificateSection(originState.securityDetails);
             const sctListLength = originState.securityDetails.signedCertificateTimestampList.length;
             const ctCompliance = originState.securityDetails.certificateTransparencyCompliance;
-            if (!sctListLength && ctCompliance === "unknown" /* Protocol.Network.CertificateTransparencyCompliance.Unknown */) {
-                return;
+            if (sctListLength || ctCompliance !== "unknown" /* Protocol.Network.CertificateTransparencyCompliance.Unknown */) {
+                this.#createCertificateTransparencySection(originState.securityDetails);
             }
-            this.#createCertificateTransparencySection(originState.securityDetails);
             const noteSection = this.element.createChild('div', 'origin-view-section origin-view-notes');
-            if (originState.loadedFromCache) {
-                noteSection.createChild('div').textContent = i18nString(UIStrings.thisResponseWasLoadedFromCache);
-            }
-            noteSection.createChild('div').textContent = i18nString(UIStrings.theSecurityDetailsAboveAreFrom);
+            // eslint-disable-next-line @devtools/no-lit-render-outside-of-view
+            render(renderNoteSection(originState.loadedFromCache), noteSection);
         }
         else if (originState.securityState === "secure" /* Protocol.Security.SecurityState.Secure */) {
             // If the security state is secure but there are no security details,

@@ -1172,6 +1172,11 @@ var Emulation;
     SetDeviceMetricsOverrideRequestViewportMeta2["Enable"] = "enable";
     SetDeviceMetricsOverrideRequestViewportMeta2["Default"] = "default";
   })(SetDeviceMetricsOverrideRequestViewportMeta = Emulation3.SetDeviceMetricsOverrideRequestViewportMeta || (Emulation3.SetDeviceMetricsOverrideRequestViewportMeta = {}));
+  let SetDeviceMetricsOverrideRequestTextLayoutMode;
+  ((SetDeviceMetricsOverrideRequestTextLayoutMode2) => {
+    SetDeviceMetricsOverrideRequestTextLayoutMode2["Mobile"] = "mobile";
+    SetDeviceMetricsOverrideRequestTextLayoutMode2["Default"] = "default";
+  })(SetDeviceMetricsOverrideRequestTextLayoutMode = Emulation3.SetDeviceMetricsOverrideRequestTextLayoutMode || (Emulation3.SetDeviceMetricsOverrideRequestTextLayoutMode = {}));
   let SetEmitTouchEventsForMouseRequestConfiguration;
   ((SetEmitTouchEventsForMouseRequestConfiguration2) => {
     SetEmitTouchEventsForMouseRequestConfiguration2["Mobile"] = "mobile";
@@ -2025,6 +2030,7 @@ var Page;
     PermissionsPolicyFeature2["PrivateStateTokenRedemption"] = "private-state-token-redemption";
     PermissionsPolicyFeature2["PublickeyCredentialsCreate"] = "publickey-credentials-create";
     PermissionsPolicyFeature2["PublickeyCredentialsGet"] = "publickey-credentials-get";
+    PermissionsPolicyFeature2["PublickeyCredentialsRemoteClientDataJson"] = "publickey-credentials-remote-client-data-json";
     PermissionsPolicyFeature2["Rewriter"] = "rewriter";
     PermissionsPolicyFeature2["ScreenWakeLock"] = "screen-wake-lock";
     PermissionsPolicyFeature2["Serial"] = "serial";
@@ -2831,6 +2837,11 @@ var Debugger;
     ScopeType2["Module"] = "module";
     ScopeType2["WasmExpressionStack"] = "wasm-expression-stack";
   })(ScopeType = Debugger2.ScopeType || (Debugger2.ScopeType = {}));
+  let ScopeEmptyReason;
+  ((ScopeEmptyReason2) => {
+    ScopeEmptyReason2["NoVariables"] = "no-variables";
+    ScopeEmptyReason2["AllUnavailable"] = "all-unavailable";
+  })(ScopeEmptyReason = Debugger2.ScopeEmptyReason || (Debugger2.ScopeEmptyReason = {}));
   let BreakLocationType;
   ((BreakLocationType2) => {
     BreakLocationType2["DebuggerStatement"] = "debuggerStatement";
@@ -3515,14 +3526,18 @@ var LighthouseController = class extends Common.ObjectWrapper.ObjectWrapper {
     }
     return flags;
   }
-  getCategoryIDs() {
-    const { mode } = this.getFlags();
+  getCategoryIDs(options) {
+    const mode = options?.mode ?? this.getFlags().mode;
     const categoryIDs = [];
     for (const preset of getPresets()) {
       if (mode && !preset.supportedModes.includes(mode)) {
         continue;
       }
-      if (preset.setting.get()) {
+      if (options?.isAIControlled) {
+        if (preset.configID !== "agentic-browsing") {
+          categoryIDs.push(preset.configID);
+        }
+      } else if (preset.setting.get()) {
         categoryIDs.push(preset.configID);
       }
     }
@@ -3592,11 +3607,11 @@ var LighthouseController = class extends Common.ObjectWrapper.ObjectWrapper {
         this.currentLighthouseRun = void 0;
       }
       const inspectedURL = await this.getInspectedURL({ force: true });
-      const categoryIDs = overrides?.categoryIds ?? this.getCategoryIDs();
       const flags = this.getFlags();
       if (overrides?.mode) {
         flags.mode = overrides.mode;
       }
+      const categoryIDs = overrides?.categoryIds ?? this.getCategoryIDs({ isAIControlled: overrides?.isAIControlled, mode: flags.mode });
       this.recordMetrics(flags, categoryIDs);
       this.currentLighthouseRun = new LighthouseRun(
         this,

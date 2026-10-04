@@ -129,12 +129,6 @@ entrypoints/formatter_worker/Substitute.test.js
 entrypoints/heap_snapshot_worker/HeapSnapshot.test.js
 entrypoints/heap_snapshot_worker/heap_snapshot_worker.test.js
 foundation/Universe.test.js
-models/ai_assistance/data_formatters/FileFormatter.test.js
-models/ai_assistance/data_formatters/LighthouseFormatter.test.js
-models/ai_assistance/data_formatters/NetworkRequestFormatter.test.js
-models/ai_assistance/data_formatters/PerformanceInsightFormatter.test.js
-models/ai_assistance/data_formatters/PerformanceTraceFormatter.test.js
-models/ai_assistance/data_formatters/UnitFormatters.test.js
 models/ai_assistance/AiAgent2.test.js
 models/ai_assistance/AiConversation.test.js
 models/ai_assistance/AiHistoryStorage.test.js
@@ -153,11 +147,17 @@ models/ai_assistance/agents/NetworkAgent.test.js
 models/ai_assistance/agents/PerformanceAgent.test.js
 models/ai_assistance/agents/StorageAgent.test.js
 models/ai_assistance/agents/StylingAgent.test.js
-models/ai_assistance/contexts/AccessibilityContext.test.js
 models/ai_assistance/contexts/DOMNodeContext.test.js
 models/ai_assistance/contexts/FileContext.test.js
+models/ai_assistance/contexts/LighthouseContext.test.js
 models/ai_assistance/contexts/PerformanceTraceContext.test.js
 models/ai_assistance/contexts/RequestContext.test.js
+models/ai_assistance/data_formatters/FileFormatter.test.js
+models/ai_assistance/data_formatters/LighthouseFormatter.test.js
+models/ai_assistance/data_formatters/NetworkRequestFormatter.test.js
+models/ai_assistance/data_formatters/PerformanceInsightFormatter.test.js
+models/ai_assistance/data_formatters/PerformanceTraceFormatter.test.js
+models/ai_assistance/data_formatters/UnitFormatters.test.js
 models/ai_assistance/performance/AICallTree.test.js
 models/ai_assistance/performance/AIContext.test.js
 models/ai_assistance/performance/AIQueries.test.js
@@ -221,6 +221,7 @@ models/crux-manager/CrUXManager.test.js
 models/elements/DOMChanges.test.js
 models/emulation/DeviceModeModel.test.js
 models/emulation/EmulatedDevices.test.js
+models/extensions/ExtensionEndpoint.test.js
 models/extensions/HostUrlPattern.test.js
 models/extensions/LanguageExtensionEndpoint.test.js
 models/extensions/RecorderPluginManager.test.js
@@ -268,6 +269,7 @@ models/project_settings/ProjectSettingsModel.test.js
 models/source_map_scopes/FunctionCodeResolver.test.js
 models/source_map_scopes/NamesResolver.test.js
 models/source_map_scopes/ScopeChainModel.test.js
+models/source_map_scopes/ScopeChainResolver.test.js
 models/stack_trace/DetailedErrorStackParser.test.js
 models/stack_trace/StackTrace.test.js
 models/stack_trace/StackTraceImpl.test.js

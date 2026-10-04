@@ -6,14 +6,13 @@ import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as ComputedStyle from '../../models/computed_style/computed_style.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget, describeWithEnvironment, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import { getMatchedStylesWithBlankRule } from '../../testing/StyleHelpers.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Elements from './elements.js';
 async function setUpStyles(connection) {
-    stubNoopSettings();
     connection.setSuccessHandler('CSS.enable', () => ({}));
     connection.setSuccessHandler('CSS.getEnvironmentVariables', () => ({}));
     const computedStyleModel = new ComputedStyle.ComputedStyleModel.ComputedStyleModel();

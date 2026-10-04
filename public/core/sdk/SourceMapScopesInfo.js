@@ -7,11 +7,14 @@ export class SourceMapScopesInfo {
     #sourceMap;
     #originalScopes;
     #generatedRanges;
+    /** Whether the scope information was derived from the AST and mappings (see {@link createFromAst}). */
+    #isFromAst;
     #cachedVariablesAndBindingsPresent = null;
-    constructor(sourceMap, scopeInfo) {
+    constructor(sourceMap, scopeInfo, { isFromAst = false } = {}) {
         this.#sourceMap = sourceMap;
         this.#originalScopes = scopeInfo.scopes;
         this.#generatedRanges = scopeInfo.ranges;
+        this.#isFromAst = isFromAst;
     }
     /**
      * If the source map does not contain any scopes information, this factory function attempts to create scope information
@@ -21,19 +24,9 @@ export class SourceMapScopesInfo {
      */
     static createFromAst(sourceMap, scopeTree, text) {
         const numSourceUrls = sourceMap.sourceURLs().length;
-        const scopeBySourceUrl = [];
-        for (let i = 0; i < numSourceUrls; i++) {
-            const scope = {
-                start: { line: 0, column: 0 },
-                end: { line: Number.POSITIVE_INFINITY, column: Number.POSITIVE_INFINITY },
-                isStackFrame: false,
-                variables: [],
-                children: [],
-            };
-            scopeBySourceUrl.push(scope);
-        }
+        const scopesBySourceUrl = Array.from({ length: numSourceUrls }, () => []);
         // Convert the entire scopeTree. Returns a root range that encompasses everything,
-        // and inserts scopes by sourceIndex into the above scopeBySourceUrl.
+        // and inserts scopes by sourceIndex into the above scopesBySourceUrl.
         const stack = [{ node: scopeTree }];
         let rootRange = undefined;
         while (stack.length > 0) {
@@ -88,28 +81,27 @@ export class SourceMapScopesInfo {
             parentRange?.children.push(range);
             let nextParentScopeHint = parentScopeHint;
             if (canMapOriginalPosition && scope) {
-                const rootScope = scopeBySourceUrl[sourceIndex];
-                const startSearchFrom = (parentScopeHint && containsOriginal(parentScopeHint, scope)) ? parentScopeHint : rootScope;
-                insertInScope(startSearchFrom, scope);
+                const startParent = (parentScopeHint && containsOriginal(parentScopeHint, scope)) ? parentScopeHint : undefined;
+                insertInScope(sourceIndex, startParent, scope);
                 nextParentScopeHint = scope;
             }
             for (let i = node.children.length - 1; i >= 0; --i) {
                 stack.push({ node: node.children[i], parentRange: range, parentScopeHint: nextParentScopeHint });
             }
         }
-        return new SourceMapScopesInfo(sourceMap, { scopes: scopeBySourceUrl, ranges: rootRange ? [rootRange] : [] });
+        return new SourceMapScopesInfo(sourceMap, { scopes: scopesBySourceUrl, ranges: rootRange ? [rootRange] : [] }, { isFromAst: true });
         /**
          * Finds the correct place in the tree to insert the new scope.
          * Maintains the invariant that children are sorted and contained by their parent.
          */
-        function insertInScope(rootScope, newScope) {
-            let parent = rootScope;
+        function insertInScope(sourceIndex, parent, newScope) {
+            let children = parent ? parent.children : scopesBySourceUrl[sourceIndex];
             // Check if the newScope fits strictly inside any of the existing children.
             // We iterate to find the deepest parent to avoid Maximum Call Stack Size Exceeded
             // errors on highly nested scripts.
             while (true) {
                 let deeperParent = null;
-                for (const child of parent.children) {
+                for (const child of children) {
                     if (containsOriginal(child, newScope)) {
                         deeperParent = child;
                         break;
@@ -117,17 +109,18 @@ export class SourceMapScopesInfo {
                 }
                 if (deeperParent) {
                     parent = deeperParent;
+                    children = deeperParent.children;
                 }
                 else {
                     break;
                 }
             }
-            // When here, newScope belongs directly in parent.
-            // However, newScope might encompass some of parent's existing children (due
+            // When here, newScope belongs directly in parent (or at the root of the source file).
+            // However, newScope might encompass some of the existing children (due
             // to compiler transform quirks or arbitrary insertion order). We must move
             // those children inside newScope.
             const childrenToKeep = [];
-            for (const child of parent.children) {
+            for (const child of children) {
                 if (containsOriginal(newScope, child)) {
                     // child is actually inside newScope, so re-parent it.
                     newScope.children.push(child);
@@ -147,8 +140,13 @@ export class SourceMapScopesInfo {
             else {
                 childrenToKeep.splice(insertIndex, 0, newScope);
             }
-            // Update parent's children to only be the ones that don't belong to newScope.
-            parent.children = childrenToKeep;
+            // Update parent's children (or root scopes) to only be the ones that don't belong to newScope.
+            if (parent) {
+                parent.children = childrenToKeep;
+            }
+            else {
+                scopesBySourceUrl[sourceIndex] = childrenToKeep;
+            }
             newScope.parent = parent;
         }
         function containsOriginal(outer, inner) {
@@ -173,57 +171,38 @@ export class SourceMapScopesInfo {
         }
     }
     hasOriginalScopes(sourceIdx) {
-        return Boolean(this.#originalScopes[sourceIdx]);
+        return Boolean(this.#originalScopes[sourceIdx]?.length);
     }
     isEmpty() {
-        const noScopes = this.#originalScopes.every(scope => scope === null);
+        const noScopes = this.#originalScopes.every(scopes => scopes === null || scopes.length === 0);
         return noScopes && !this.#generatedRanges.length;
     }
-    addOriginalScopesAtIndex(sourceIdx, scope) {
-        if (!this.#originalScopes[sourceIdx]) {
-            this.#originalScopes[sourceIdx] = scope;
+    addOriginalScopesAtIndex(sourceIdx, scopes) {
+        if (!this.#originalScopes[sourceIdx]?.length) {
+            this.#originalScopes[sourceIdx] = scopes;
         }
         else {
             throw new Error(`Trying to re-augment existing scopes for source at index: ${sourceIdx}`);
         }
     }
-    /**
-     * @returns true, iff the function surrounding the provided position is marked as "hidden".
-     */
-    isOutlinedFrame(generatedLine, generatedColumn) {
-        const rangeChain = this.#findGeneratedRangeChain(generatedLine, generatedColumn);
-        return this.#isOutlinedFrame(rangeChain);
-    }
-    #isOutlinedFrame(rangeChain) {
-        for (let i = rangeChain.length - 1; i >= 0; --i) {
-            if (rangeChain[i].isStackFrame) {
-                return rangeChain[i].isHidden;
-            }
+    #generatedFrameKind(rangeChain) {
+        const functionRange = rangeChain.findLast(range => range.isStackFrame);
+        if (!functionRange) {
+            // Top-level code.
+            return "VISIBLE" /* GeneratedFrameKind.VISIBLE */;
         }
-        return false;
-    }
-    /**
-     * @returns true, iff the range surrounding the provided position contains multiple
-     * inlined original functions.
-     */
-    hasInlinedFrames(generatedLine, generatedColumn) {
-        const rangeChain = this.#findGeneratedRangeChain(generatedLine, generatedColumn);
-        for (let i = rangeChain.length - 1; i >= 0; --i) {
-            if (rangeChain[i].isStackFrame) {
-                // We stop looking for inlined original functions once we reach the current frame.
-                return false;
-            }
-            if (rangeChain[i].callSite) {
-                return true;
-            }
+        if (!functionRange.originalScope) {
+            // For scope information derived from the AST, we merely failed to map the function.
+            return this.#isFromAst ? "VISIBLE" /* GeneratedFrameKind.VISIBLE */ : "HIDDEN" /* GeneratedFrameKind.HIDDEN */;
         }
-        return false;
+        return functionRange.isHidden ? "OUTLINED" /* GeneratedFrameKind.OUTLINED */ : "VISIBLE" /* GeneratedFrameKind.VISIBLE */;
     }
     /**
      * Given a generated position, this returns all the surrounding generated ranges from outer
-     * to inner.
+     * to inner. When `inlineFrameIndex > 0`, drops inner ranges up to the specified virtual
+     * call frame.
      */
-    #findGeneratedRangeChain(line, column) {
+    #findGeneratedRangeChain(line, column, inlineFrameIndex = 0) {
         const result = [];
         (function walkRanges(ranges) {
             for (const range of ranges) {
@@ -234,6 +213,16 @@ export class SourceMapScopesInfo {
                 walkRanges(range.children);
             }
         })(this.#generatedRanges);
+        // Drop ranges in the chain until we reach our desired inlined range.
+        for (let inlineIndex = 0; inlineIndex < inlineFrameIndex;) {
+            const range = result.pop();
+            if (!range) {
+                break;
+            }
+            if (range.callSite) {
+                ++inlineIndex;
+            }
+        }
         return result;
     }
     /**
@@ -251,9 +240,6 @@ export class SourceMapScopesInfo {
         // generated ranges with a non-empty binding list.
         function walkTree(nodes) {
             for (const node of nodes) {
-                if (!node) {
-                    continue;
-                }
                 if ('variables' in node && node.variables.length > 0) {
                     return true;
                 }
@@ -266,7 +252,7 @@ export class SourceMapScopesInfo {
             }
             return false;
         }
-        return walkTree(this.#originalScopes) && walkTree(this.#generatedRanges);
+        return this.#originalScopes.some(scopes => scopes !== null && walkTree(scopes)) && walkTree(this.#generatedRanges);
     }
     /**
      * Constructs a scope chain based on the CallFrame's paused position.
@@ -329,24 +315,12 @@ export class SourceMapScopesInfo {
         }
         return result;
     }
-    /** Similar to #findGeneratedRangeChain, but takes inlineFrameIndex of virtual call frames into account */
     #findGeneratedRangeChainForFrame(callFrame) {
         const { line, column } = scriptRelativePosition(callFrame.location());
-        const rangeChain = this.#findGeneratedRangeChain(line, column);
-        if (callFrame.inlineFrameIndex === 0) {
-            return rangeChain;
-        }
-        // Drop ranges in the chain until we reach our desired inlined range.
-        for (let inlineIndex = 0; inlineIndex < callFrame.inlineFrameIndex;) {
-            const range = rangeChain.pop();
-            if (range?.callSite) {
-                ++inlineIndex;
-            }
-        }
-        return rangeChain;
+        return this.#findGeneratedRangeChain(line, column, callFrame.inlineFrameIndex);
     }
-    resolveMappedVariablesAtPosition(line, column, ignoreInnerBlockScopes = false) {
-        const rangeChain = this.#findGeneratedRangeChain(line, column);
+    resolveMappedVariablesAtPosition(line, column, ignoreInnerBlockScopes = false, inlineFrameIndex = 0) {
+        const rangeChain = this.#findGeneratedRangeChain(line, column, inlineFrameIndex);
         const startScope = rangeChain.at(-1)?.originalScope;
         const innerMostScope = (startScope && ignoreInnerBlockScopes && this.#findFunctionScopeInOriginalScopeChain(startScope)) || startScope;
         const result = [];
@@ -366,55 +340,54 @@ export class SourceMapScopesInfo {
     /**
      * Returns the authored function scope of the function containing the provided generated position.
      */
-    findOriginalFunctionScope({ line, column }) {
+    findOriginalFunctionScope(position) {
+        const rangeChain = this.#findGeneratedRangeChain(position.line, position.column);
+        const functionScope = this.#findFunctionScopeInOriginalScopeChain(this.#innerMostOriginalScope(rangeChain, position));
+        return functionScope ? { scope: functionScope, url: this.#sourceURLOfScope(functionScope) } : null;
+    }
+    /**
+     * Returns the inner-most original scope containing the generated `position`. `rangeChain` must be the generated
+     * range chain of `position`.
+     */
+    #innerMostOriginalScope(rangeChain, position) {
         // There are 2 approaches:
         //   1) Find the inner-most generated range containing the provided generated position
-        //      and use it's OriginalScope (then walk it outwards until we hit a function).
+        //      and use its OriginalScope.
         //   2) Use the mappings to turn the generated position into an original position.
         //      Then find the inner-most original scope containing that original position.
-        //      Then walk it outwards until we hit a function.
         //
         // Both approaches should yield the same result (assuming the mappings are spec compliant
         // w.r.t. generated ranges). But in the case of "pasta" scopes and extension provided
         // scope info, we only have the OriginalScope parts and mappings without GeneratedRanges.
-        let originalInnerMostScope;
         if (this.#generatedRanges.length > 0) {
-            const rangeChain = this.#findGeneratedRangeChain(line, column);
-            originalInnerMostScope = rangeChain.at(-1)?.originalScope;
+            return rangeChain.at(-1)?.originalScope;
         }
-        else {
-            // No GeneratedRanges. Try to use mappings.
-            const entry = this.#sourceMap.findEntry(line, column);
-            if (entry?.sourceIndex === undefined) {
-                return null;
-            }
-            originalInnerMostScope =
-                this.#findOriginalScopeChain({ sourceIndex: entry.sourceIndex, line: entry.sourceLineNumber, column: entry.sourceColumnNumber })
-                    .at(-1);
+        // No GeneratedRanges. Try to use mappings.
+        const entry = this.#sourceMap.findEntry(position.line, position.column);
+        if (entry?.sourceIndex === undefined) {
+            return undefined;
         }
-        if (!originalInnerMostScope) {
-            return null;
-        }
-        const functionScope = this.#findFunctionScopeInOriginalScopeChain(originalInnerMostScope);
-        if (!functionScope) {
-            return null;
-        }
+        return this
+            .#findOriginalScopeChain({ sourceIndex: entry.sourceIndex, line: entry.sourceLineNumber, column: entry.sourceColumnNumber })
+            .at(-1);
+    }
+    /** @returns the URL of the original source that `scope` belongs to. */
+    #sourceURLOfScope(scope) {
         // Find the root scope for some given original source, to get the source url.
-        let rootScope = functionScope;
+        let rootScope = scope;
         while (rootScope.parent) {
             rootScope = rootScope.parent;
         }
-        const sourceIndex = this.#originalScopes.indexOf(rootScope);
-        const url = sourceIndex !== -1 ? this.#sourceMap.sourceURLForSourceIndex(sourceIndex) : undefined;
-        return functionScope ? { scope: functionScope, url } : null;
+        const sourceIndex = this.#originalScopes.findIndex(scopes => scopes?.includes(rootScope));
+        return sourceIndex !== -1 ? this.#sourceMap.sourceURLForSourceIndex(sourceIndex) : undefined;
     }
     /**
      * Given an original position, this returns all the surrounding original scopes from outer
      * to inner.
      */
     #findOriginalScopeChain({ sourceIndex, line, column }) {
-        const scope = this.#originalScopes[sourceIndex];
-        if (!scope) {
+        const scopes = this.#originalScopes[sourceIndex];
+        if (!scopes) {
             return [];
         }
         const result = [];
@@ -426,7 +399,7 @@ export class SourceMapScopesInfo {
                 result.push(scope);
                 walkScopes(scope.children);
             }
-        })([scope]);
+        })(scopes);
         return result;
     }
     #findFunctionScopeInOriginalScopeChain(innerOriginalScope) {
@@ -445,46 +418,92 @@ export class SourceMapScopesInfo {
         return functionScope.name ?? '';
     }
     /**
-     * Returns one or more original stack frames for this single "raw frame" or call-site.
-     *
-     * @returns An empty array if no mapping at the call-site was found, or the resulting frames
-     * in top-to-bottom order in case of inlining.
-     * @throws If this range is marked "hidden". Outlining needs to be handled externally as
-     * outlined function segments in stack traces can span across bundles.
+     * Translates a single "raw frame" or call-site, including outlined functions. It's the caller's responsibility to
+     * merge outlined frames with their caller(s) (see {@link GeneratedFrameKind}).
      */
-    translateCallSite(generatedLine, generatedColumn) {
+    translateRawFrame(generatedLine, generatedColumn) {
         const rangeChain = this.#findGeneratedRangeChain(generatedLine, generatedColumn);
-        if (this.#isOutlinedFrame(rangeChain)) {
-            throw new Error('SourceMapScopesInfo is unable to translate an outlined function by itself');
+        const kind = this.#generatedFrameKind(rangeChain);
+        if (kind === "HIDDEN" /* GeneratedFrameKind.HIDDEN */) {
+            return { kind, frames: [] };
         }
+        const frame = this.#translateTopFrame(generatedLine, generatedColumn, rangeChain);
+        return { kind, frames: frame ? [frame, ...this.#translateInlinedCallers(rangeChain)] : [] };
+    }
+    /**
+     * The top-most frame is translated the same, regardless of whether we have inlined functions: The name is the
+     * original function surrounding the generated position, and the location is the mapped generated position.
+     *
+     * If the generated position has no mapping, the generated ranges may still tell which authored function (or
+     * which file, for top-level code) the position belongs to. The frame then has no position.
+     */
+    #translateTopFrame(generatedLine, generatedColumn, rangeChain) {
+        const position = { line: generatedLine, column: generatedColumn };
+        const innerMostScope = this.#innerMostOriginalScope(rangeChain, position);
+        const functionScope = this.#findFunctionScopeInOriginalScopeChain(innerMostScope);
+        const name = functionScope ? (functionScope.name ?? '') : undefined;
         const mapping = this.#sourceMap.findEntry(generatedLine, generatedColumn);
-        if (mapping?.sourceIndex === undefined) {
-            return [];
-        }
-        // The top-most frame is translated the same even if we have inlined functions.
-        const result = [{
+        if (mapping?.sourceIndex !== undefined) {
+            return {
                 line: mapping.sourceLineNumber,
                 column: mapping.sourceColumnNumber,
-                name: this.findOriginalFunctionName({ line: generatedLine, column: generatedColumn }) ?? undefined,
+                name,
                 url: mapping.sourceURL,
-            }];
-        // Walk the range chain inside out until we find a generated function and for each inlined function add a frame.
+                functionStart: functionScope?.start,
+            };
+        }
+        if (!innerMostScope) {
+            return null;
+        }
+        return { name, url: this.#sourceURLOfScope(functionScope ?? innerMostScope), functionStart: functionScope?.start };
+    }
+    /**
+     * Walk the range chain inside out until we find a generated function and for each inlined function add a frame.
+     */
+    #translateInlinedCallers(rangeChain) {
+        const result = [];
         for (let i = rangeChain.length - 1; i >= 0 && !rangeChain[i].isStackFrame; --i) {
             const range = rangeChain[i];
             if (!range.callSite) {
                 continue;
             }
             const originalScopeChain = this.#findOriginalScopeChain(range.callSite);
+            const functionScope = this.#findFunctionScopeInOriginalScopeChain(originalScopeChain.at(-1));
             result.push({
                 line: range.callSite.line,
                 column: range.callSite.column,
-                name: this.#findFunctionNameInOriginalScopeChain(originalScopeChain.at(-1)) ?? undefined,
+                name: functionScope ? (functionScope.name ?? '') : undefined,
                 url: this.#sourceMap.sourceURLForSourceIndex(range.callSite.sourceIndex),
+                functionStart: functionScope?.start,
             });
         }
         return result;
     }
 }
+/**
+ * Describes how the generated function surrounding a generated position shows up in stack traces.
+ *
+ * Compilers tend to introduce functions (and calls to them) that don't exist in the authored code. The scopes
+ * proposal distinguishes two cases:
+ *
+ *   1) The generated function contains authored code, e.g. a block scope that was turned into a function. The
+ *      generated range is marked "hidden", but links to the original scope via its definition. We can pause
+ *      in such a function, but the frame is merged with its caller(s) in stack traces: The outlined code
+ *      logically belongs to the (authored) function that transitively calls it.
+ *
+ *   2) The generated function doesn't represent any authored code, e.g. a compiler helper. The generated range
+ *      has no definition. The scopes spec is being updated to say that such a range can be ignored in stack
+ *      traces, so we drop these frames.
+ */
+export var GeneratedFrameKind;
+(function (GeneratedFrameKind) {
+    /** A regular (possibly with inlined functions) generated function, or top-level code. */
+    GeneratedFrameKind["VISIBLE"] = "VISIBLE";
+    /** A generated function marked as "hidden" that has a definition (case 1). */
+    GeneratedFrameKind["OUTLINED"] = "OUTLINED";
+    /** A generated function without a definition (case 2). */
+    GeneratedFrameKind["HIDDEN"] = "HIDDEN";
+})(GeneratedFrameKind || (GeneratedFrameKind = {}));
 export function findExpression(range, index, line = 0, column = 0) {
     const val = range?.values[index];
     return (typeof val === 'string' ? val : val?.find(r => contains({ start: r.from, end: r.to }, line, column))?.value) ??

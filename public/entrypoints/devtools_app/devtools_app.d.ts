@@ -1,4 +1,5 @@
 import '../shell/shell.js';
+import '../../panels/comments/comments-meta.js';
 import '../../panels/css_overview/css_overview-meta.js';
 import '../../panels/elements/elements-meta.js';
 import '../../panels/browser_debugger/browser_debugger-meta.js';

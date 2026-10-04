@@ -2026,7 +2026,7 @@ export const NativeFunctions = [
     },
     {
         name: "read",
-        signatures: [["?options"]],
+        signatures: [["?formats"]],
         receivers: ["Clipboard"]
     },
     {
@@ -3211,7 +3211,7 @@ export const NativeFunctions = [
     {
         name: "focus",
         signatures: [["?options"]],
-        receivers: ["HTMLOrSVGElement", "SVGElement", "MathMLElement", "HTMLElement"]
+        receivers: ["HTMLOrSVGElement", "SVGElement", "MathMLElement", "HTMLElement", "CSSPseudoElement", "Focusable"]
     },
     {
         name: "assign",
@@ -8963,11 +8963,15 @@ export const NativeFunctions = [
         signatures: [["type", "?eventInitDict"]]
     },
     {
-        name: "TouchEvent",
+        name: "ToolActivatedEvent",
         signatures: [["type", "?eventInitDict"]]
     },
     {
-        name: "WebMCPEvent",
+        name: "ToolCancelEvent",
+        signatures: [["type", "?eventInitDict"]]
+    },
+    {
+        name: "TouchEvent",
         signatures: [["type", "?eventInitDict"]]
     },
     {
@@ -9153,6 +9157,10 @@ export const NativeFunctions = [
     {
         name: "scrollIntoViewIfNeeded",
         signatures: [["?centerIfNeeded"]]
+    },
+    {
+        name: "Focusable",
+        signatures: [["target"]]
     },
     {
         name: "getBoxQuads",

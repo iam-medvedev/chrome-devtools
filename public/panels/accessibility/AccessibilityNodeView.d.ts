@@ -3,14 +3,13 @@ import * as Protocol from '../../generated/protocol.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { AccessibilitySubPane } from './AccessibilitySubPane.js';
 export declare class AXNodeSubPane extends AccessibilitySubPane {
-    axNode: SDK.AccessibilityModel.AccessibilityNode | null;
     private readonly noNodeInfo;
     private readonly ignoredInfo;
     private readonly treeOutline;
     private readonly ignoredReasonsTree;
-    constructor();
-    setAXNode(axNode: SDK.AccessibilityModel.AccessibilityNode | null): void;
-    setNode(node: SDK.DOMModel.DOMNode | null): void;
+    constructor(element?: HTMLElement);
+    protected setAXNode(axNode: SDK.AccessibilityModel.AccessibilityNode | null): void;
+    protected setNode(node: SDK.DOMModel.DOMNode | null): void;
 }
 export declare class AXNodePropertyTreeElement extends UI.TreeOutline.TreeElement {
     protected axNode: SDK.AccessibilityModel.AccessibilityNode;

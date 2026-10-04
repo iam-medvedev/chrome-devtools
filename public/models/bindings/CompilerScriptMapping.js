@@ -58,6 +58,11 @@ export class CompilerScriptMapping {
     setFunctionRanges(uiSourceCode, ranges) {
         for (const sourceMap of this.#uiSourceCodeToSourceMaps.get(uiSourceCode)) {
             sourceMap.augmentWithScopes(uiSourceCode.url(), ranges);
+            // The scopes information changed, so stack traces of the script need to be re-translated.
+            const script = this.#sourceMapManager.clientForSourceMap(sourceMap);
+            if (script) {
+                void this.#debuggerWorkspaceBinding.updateLocations(script);
+            }
         }
     }
     addStubUISourceCode(script) {
@@ -70,6 +75,10 @@ export class CompilerScriptMapping {
         if (uiSourceCode) {
             this.#stubProject.removeUISourceCode(uiSourceCode.url());
         }
+    }
+    /** @returns whether `uiSourceCode` is a placeholder for a script whose source map is still loading. */
+    isStubUISourceCode(uiSourceCode) {
+        return uiSourceCode.project() === this.#stubProject;
     }
     getLocationRangesForSameSourceLocation(rawLocation) {
         const debuggerModel = rawLocation.debuggerModel;
@@ -262,49 +271,81 @@ export class CompilerScriptMapping {
         const range = new TextUtils.TextRange.TextRange(scope.start.line, scope.start.column, scope.end.line, scope.end.column);
         return new Workspace.UISourceCode.UIFunctionBounds(uiSourceCode, range, name);
     }
-    async translateRawFramesStep(rawFrames, translatedFrames) {
-        const frame = rawFrames[0];
-        if (StackTraceImpl.Trie.isBuiltinFrame(frame)) {
-            return false;
+    /**
+     * Translates a raw frame using the "scopes" information of its script's source map. Frames of compiler helpers
+     * are dropped (see {@link SDK.SourceMapScopesInfo.GeneratedFrameKind}).
+     *
+     * Outlined frames are merged at read time by the stack_trace model (see `consolidate`). The function keys
+     * tell it which authored function the top and bottom frames of a translation belong to. A frame at an
+     * unmapped position still gets its keys from the generated ranges; it shows the generated location, named
+     * after the authored function.
+     *
+     * @returns null if the raw frame can't be translated via "scopes" information, e.g. because the script doesn't
+     * have a source map (with scopes information), the source map is still loading, or neither mappings nor
+     * generated ranges know the position. It's then left to the default mapping.
+     */
+    async translateRawFrame(rawFrame) {
+        const translation = await this.#scopesTranslation(rawFrame);
+        if (!translation) {
+            return null;
         }
-        const sourceMapWithScopeInfoForFrame = async (rawFrame) => {
-            const script = this.#debuggerModel.scriptForId(rawFrame.scriptId ?? '');
-            if (!script || this.#stubUISourceCodes.has(script)) {
-                // Use fallback while source map is being loaded.
-                return null;
-            }
-            const sourceMap = script.sourceMap();
-            await sourceMap?.waitForScopeInfo();
-            return sourceMap?.hasScopeInfo() ? { sourceMap, script } : null;
+        if (translation.kind === "HIDDEN" /* SDK.SourceMapScopesInfo.GeneratedFrameKind.HIDDEN */) {
+            // Compiler helpers don't represent any authored code.
+            return { kind: "HIDDEN" /* StackTraceImpl.Trie.FrameKind.HIDDEN */, frames: [] };
+        }
+        const { frames } = translation;
+        if (!frames.length) {
+            return null;
+        }
+        return {
+            kind: translation.kind === "OUTLINED" /* SDK.SourceMapScopesInfo.GeneratedFrameKind.OUTLINED */ ? "OUTLINED" /* StackTraceImpl.Trie.FrameKind.OUTLINED */ : "VISIBLE" /* StackTraceImpl.Trie.FrameKind.VISIBLE */,
+            frames: await this.#toUIFrames(translation, rawFrame),
+            functionKeys: { top: functionKey(frames[0]), bottom: functionKey(frames[frames.length - 1]) },
         };
-        const sourceMapAndScript = await sourceMapWithScopeInfoForFrame(frame);
-        if (!sourceMapAndScript) {
-            return false;
+    }
+    /** The raw translation of `rawFrame` by the "scopes" information of its script's source map, if any. */
+    async #scopesTranslation(rawFrame) {
+        if (StackTraceImpl.Trie.isBuiltinFrame(rawFrame)) {
+            return null;
         }
-        const { sourceMap, script } = sourceMapAndScript;
-        const { lineNumber, columnNumber } = script.rawLocationToRelativeLocation(frame);
-        if (!sourceMap.isOutlinedFrame(lineNumber, columnNumber)) {
-            const frames = sourceMap.translateCallSite(lineNumber, columnNumber);
-            if (!frames.length) {
-                return false;
-            }
-            rawFrames.shift();
-            const result = [];
-            translatedFrames.push(result);
-            const project = this.#sourceMapToProject.get(sourceMap);
-            for (const frame of frames) {
-                // Switch out url for UISourceCode where we have it.
-                const uiSourceCode = frame.url ? project?.uiSourceCodeForURL(frame.url) : undefined;
-                result.push({
-                    ...frame,
-                    url: uiSourceCode ? undefined : frame.url,
-                    uiSourceCode: uiSourceCode ?? undefined,
-                });
-            }
-            return true;
+        const script = this.#debuggerModel.scriptForId(rawFrame.scriptId ?? '');
+        if (!script || this.#stubUISourceCodes.has(script)) {
+            // Use fallback while source map is being loaded.
+            return null;
         }
-        // TODO(crbug.com/433162438): Consolidate outlined frames.
-        return false;
+        const sourceMap = script.sourceMap();
+        await sourceMap?.waitForScopeInfo();
+        if (!sourceMap?.hasScopeInfo()) {
+            return null;
+        }
+        const { lineNumber, columnNumber } = script.rawLocationToRelativeLocation(rawFrame);
+        const translation = sourceMap.translateRawFrame(lineNumber, columnNumber);
+        return translation ? { ...translation, sourceMap, script } : null;
+    }
+    /**
+     * Switch out url for UISourceCode where we have it. A top frame without position (unmapped generated position)
+     * gets the generated location of `rawFrame`.
+     */
+    async #toUIFrames({ sourceMap, script, frames }, rawFrame) {
+        const project = this.#sourceMapToProject.get(sourceMap);
+        return await Promise.all(frames.map(async ({ line, column, name, url }) => {
+            if (line === undefined || column === undefined) {
+                return { ...await this.#generatedUIFrame(script, rawFrame), name };
+            }
+            const uiSourceCode = url ? project?.uiSourceCodeForURL(url) : undefined;
+            return { line, column, name, url: uiSourceCode ? undefined : url, uiSourceCode: uiSourceCode ?? undefined };
+        }));
+    }
+    /** The location of `rawFrame` in terms of the generated `script`, as the non-compiler mappings would show it. */
+    async #generatedUIFrame(script, rawFrame) {
+        const rawLocation = this.#debuggerModel.createRawLocation(script, rawFrame.lineNumber, rawFrame.columnNumber);
+        // Goes through the DebuggerWorkspaceBinding so that e.g. inline scripts resolve to their document.
+        const uiLocation = await this.#debuggerWorkspaceBinding.rawLocationToUILocation(rawLocation);
+        if (uiLocation) {
+            const { uiSourceCode, lineNumber: line, columnNumber } = uiLocation;
+            return { uiSourceCode, line, column: columnNumber ?? -1 };
+        }
+        return { url: rawFrame.url, line: rawFrame.lineNumber, column: rawFrame.columnNumber };
     }
     /**
      * Computes the set of line numbers which are source-mapped to a script within the
@@ -498,5 +539,14 @@ export class CompilerScriptMapping {
         }
         this.#stubProject.dispose();
     }
+}
+/**
+ * Identifies the authored function of a translated frame. The frames can originate from different source maps
+ * (bundles), so we can't compare original scopes directly. The start position tells apart anonymous and
+ * same-named functions in one file. All top-level code of a file shares a key.
+ */
+function functionKey(frame) {
+    const start = frame.functionStart ? `${frame.functionStart.line}:${frame.functionStart.column}` : '';
+    return `${frame.url ?? ''}\n${frame.name ?? ''}\n${start}`;
 }
 //# sourceMappingURL=CompilerScriptMapping.js.map

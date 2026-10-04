@@ -6,8 +6,10 @@ import sinon from 'sinon';
 import * as Platform from '../../core/platform/platform.js';
 import * as ProtocolClient from '../../core/protocol_client/protocol_client.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as TextUtils from '../../core/text_utils/text_utils.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
+import { getMainFrame } from '../../testing/ResourceTreeHelpers.js';
 import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
 import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import { TestUniverse } from '../../testing/TestUniverse.js';
@@ -112,6 +114,230 @@ describe('StylesSourceMapping', () => {
         // Restore stubs
         syncStub.restore();
         project.dispose();
+    });
+    it('marks UISourceCode as having synthesized sourceURL if header hasSourceURL', async () => {
+        const connection = new MockCDPConnection();
+        const target = universe.createTarget({ connection });
+        const cssModel = target.model(SDK.CSSModel.CSSModel);
+        assert.exists(cssModel);
+        void universe.cssWorkspaceBinding;
+        const styleSheetId = 'stylesheet-source-url';
+        const frameId = 'frame';
+        const sourceURL = urlString `http://example.com/custom-style.css`;
+        const headerPayload = {
+            styleSheetId,
+            frameId,
+            sourceURL,
+            hasSourceURL: true,
+            origin: "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */,
+            title: 'custom-style.css',
+            disabled: false,
+            isInline: false,
+            isMutable: false,
+            isConstructed: false,
+            loadingFailed: false,
+            startLine: 0,
+            startColumn: 0,
+            length: 0,
+            endLine: 0,
+            endColumn: 0,
+        };
+        const networkUISourceCodePromise = new Promise(resolve => {
+            const listener = (event) => {
+                if (event.data.project().type() === Workspace.Workspace.projectTypes.Network &&
+                    event.data.url() === sourceURL) {
+                    universe.workspace.removeEventListener(Workspace.Workspace.Events.UISourceCodeAdded, listener);
+                    resolve(event.data);
+                }
+            };
+            universe.workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeAdded, listener);
+        });
+        cssModel.styleSheetAdded(headerPayload);
+        const networkUISourceCode = await networkUISourceCodePromise;
+        assert.isTrue(Bindings.NetworkProject.NetworkProject.isSourceURLSynthesized(networkUISourceCode));
+        assert.isFalse(universe.networkPersistenceManager.isUISourceCodeOverridable(networkUISourceCode));
+    });
+    function waitForNetworkUISourceCode(predicate) {
+        return new Promise(resolve => {
+            const listener = (event) => {
+                if (event.data.project().type() === Workspace.Workspace.projectTypes.Network && predicate(event.data)) {
+                    universe.workspace.removeEventListener(Workspace.Workspace.Events.UISourceCodeAdded, listener);
+                    resolve(event.data);
+                }
+            };
+            universe.workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeAdded, listener);
+        });
+    }
+    function stubStyleFileSynced() {
+        const styleFileProto = Bindings.StylesSourceMapping.StyleFile.prototype;
+        const { promise, resolve } = Promise.withResolvers();
+        const stub = sinon.stub(styleFileProto, 'styleFileSyncedForTest').callsFake(() => resolve());
+        return { promise, stub };
+    }
+    async function addInspectorStyleSheet(target, cssModel, styleSheetId) {
+        // The inspector stylesheet URL is derived from the URL of the frame it belongs to.
+        const frame = getMainFrame(target);
+        const uiSourceCodePromise = waitForNetworkUISourceCode(uiSourceCode => uiSourceCode.url().startsWith('inspector://'));
+        cssModel.styleSheetAdded({
+            styleSheetId,
+            frameId: frame.id,
+            sourceURL: '',
+            origin: "inspector" /* Protocol.CSS.StyleSheetOrigin.Inspector */,
+            title: '',
+            disabled: false,
+            isInline: false,
+            isMutable: true,
+            isConstructed: false,
+            loadingFailed: false,
+            startLine: 0,
+            startColumn: 0,
+            length: 0,
+            endLine: 0,
+            endColumn: 0,
+        });
+        const uiSourceCode = await uiSourceCodePromise;
+        assert.strictEqual(uiSourceCode.displayName(), 'inspector-stylesheet');
+        await uiSourceCode.requestContentData();
+        assert.strictEqual(uiSourceCode.workingCopy(), '');
+        return uiSourceCode;
+    }
+    it('pushes committed working copy of the inspector stylesheet UISourceCode to the backend', async () => {
+        const connection = new MockCDPConnection();
+        connection.setSuccessHandler('DOM.enable', () => ({}));
+        connection.setSuccessHandler('CSS.enable', () => ({}));
+        connection.setSuccessHandler('DOM.markUndoableState', () => ({}));
+        let styleSheetText = '';
+        connection.setSuccessHandler('CSS.getStyleSheetText', () => ({ text: styleSheetText }));
+        const setStyleSheetTextCalls = [];
+        connection.setSuccessHandler('CSS.setStyleSheetText', ({ styleSheetId, text }) => {
+            setStyleSheetTextCalls.push({ styleSheetId, text });
+            styleSheetText = text;
+            return { sourceMapURL: '' };
+        });
+        const target = universe.createTarget({ connection });
+        const cssModel = target.model(SDK.CSSModel.CSSModel);
+        assert.exists(cssModel);
+        void universe.cssWorkspaceBinding;
+        const styleSheetId = 'inspector-sheet';
+        const uiSourceCode = await addInspectorStyleSheet(target, cssModel, styleSheetId);
+        const setStyleSheetTextSpy = sinon.spy(cssModel, 'setStyleSheetText');
+        const { promise: syncPromise, stub: syncStub } = stubStyleFileSynced();
+        const newContent = '#inspected { background-color: green; }';
+        uiSourceCode.setWorkingCopy(newContent);
+        uiSourceCode.commitWorkingCopy();
+        await syncPromise;
+        // The commit is mirrored to the backend as a single major change.
+        sinon.assert.calledOnceWithExactly(setStyleSheetTextSpy, styleSheetId, newContent, true);
+        assert.deepEqual(setStyleSheetTextCalls, [{ styleSheetId, text: newContent }]);
+        assert.isFalse(uiSourceCode.isDirty());
+        assert.strictEqual(uiSourceCode.workingCopy(), newContent);
+        syncStub.restore();
+    });
+    it('mirrors CSS edits of an inline stylesheet with sourceURL into the UISourceCode working copy', async () => {
+        const sourceURL = urlString `http://localhost:8000/inspector/elements/styles/foo.css`;
+        const sourceURLComment = `/*# sourceURL=${sourceURL} */`;
+        const connection = new MockCDPConnection();
+        connection.setSuccessHandler('DOM.enable', () => ({}));
+        connection.setSuccessHandler('CSS.enable', () => ({}));
+        connection.setSuccessHandler('DOM.markUndoableState', () => ({}));
+        let styleSheetText = `#inspected {\n    color: red;\n}\n${sourceURLComment}`;
+        connection.setSuccessHandler('CSS.getStyleSheetText', () => ({ text: styleSheetText }));
+        connection.setSuccessHandler('CSS.setStyleTexts', ({ edits }) => {
+            assert.lengthOf(edits, 1);
+            assert.strictEqual(edits[0].text, 'color: green;');
+            styleSheetText = `#inspected {\n    color: green;\n}\n${sourceURLComment}`;
+            return { styles: [{ cssProperties: [], shorthandEntries: [] }] };
+        });
+        const setStyleSheetTextStub = sinon.stub().returns({ sourceMapURL: '' });
+        connection.setSuccessHandler('CSS.setStyleSheetText', setStyleSheetTextStub);
+        const target = universe.createTarget({ connection });
+        const cssModel = target.model(SDK.CSSModel.CSSModel);
+        assert.exists(cssModel);
+        void universe.cssWorkspaceBinding;
+        const styleSheetId = 'inline-sheet';
+        const uiSourceCodePromise = waitForNetworkUISourceCode(uiSourceCode => uiSourceCode.url() === sourceURL);
+        cssModel.styleSheetAdded({
+            styleSheetId,
+            frameId: 'frame',
+            sourceURL,
+            hasSourceURL: true,
+            origin: "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */,
+            title: '',
+            disabled: false,
+            isInline: true,
+            isMutable: false,
+            isConstructed: false,
+            loadingFailed: false,
+            startLine: 1,
+            startColumn: 13,
+            length: styleSheetText.length,
+            endLine: 5,
+            endColumn: 0,
+        });
+        const uiSourceCode = await uiSourceCodePromise;
+        assert.strictEqual(uiSourceCode.displayName(), 'foo.css');
+        await uiSourceCode.requestContentData();
+        // The sourceURL comment is stripped from the UISourceCode content.
+        assert.strictEqual(uiSourceCode.workingCopy(), '#inspected {\n    color: red;\n}');
+        assert.isFalse(uiSourceCode.isDirty());
+        const { promise: syncPromise, stub: syncStub } = stubStyleFileSynced();
+        const success = await cssModel.setStyleText(styleSheetId, new TextUtils.TextRange.TextRange(1, 4, 1, 15), 'color: green;', /* majorChange */ true);
+        assert.isTrue(success);
+        await syncPromise;
+        const workingCopy = uiSourceCode.workingCopy();
+        assert.strictEqual(workingCopy, '#inspected {\n    color: green;\n}');
+        assert.notInclude(workingCopy, 'sourceURL');
+        assert.isTrue(uiSourceCode.isDirty());
+        // The origin link is rendered as dirty ('*foo.css:1').
+        assert.strictEqual(uiSourceCode.uiLocation(0).linkText(), '*foo.css:1');
+        // The edit came from the only header, so it is not pushed back to the backend.
+        sinon.assert.notCalled(setStyleSheetTextStub);
+        syncStub.restore();
+    });
+    it('updates the inspector stylesheet UISourceCode when rules are added to it', async () => {
+        const connection = new MockCDPConnection();
+        connection.setSuccessHandler('DOM.enable', () => ({}));
+        connection.setSuccessHandler('CSS.enable', () => ({}));
+        connection.setSuccessHandler('DOM.markUndoableState', () => ({}));
+        let styleSheetText = '';
+        connection.setSuccessHandler('CSS.getStyleSheetText', () => ({ text: styleSheetText }));
+        const styleSheetId = 'inspector-sheet';
+        connection.setSuccessHandler('CSS.addRule', ({ ruleText }) => {
+            styleSheetText += ruleText;
+            const selector = ruleText.substring(0, ruleText.indexOf('{')).trim();
+            return {
+                rule: {
+                    styleSheetId,
+                    selectorList: { selectors: [{ text: selector }], text: selector },
+                    origin: "inspector" /* Protocol.CSS.StyleSheetOrigin.Inspector */,
+                    style: { cssProperties: [], shorthandEntries: [] },
+                },
+            };
+        });
+        const setStyleSheetTextStub = sinon.stub().returns({ sourceMapURL: '' });
+        connection.setSuccessHandler('CSS.setStyleSheetText', setStyleSheetTextStub);
+        const target = universe.createTarget({ connection });
+        const cssModel = target.model(SDK.CSSModel.CSSModel);
+        assert.exists(cssModel);
+        void universe.cssWorkspaceBinding;
+        const uiSourceCode = await addInspectorStyleSheet(target, cssModel, styleSheetId);
+        const firstRuleText = 'foo, div#inspected, bar {}';
+        let { promise: syncPromise, stub: syncStub } = stubStyleFileSynced();
+        const firstRule = await cssModel.addRule(styleSheetId, firstRuleText, TextUtils.TextRange.TextRange.createFromLocation(0, 0));
+        assert.exists(firstRule);
+        await syncPromise;
+        assert.strictEqual(uiSourceCode.workingCopy(), firstRuleText);
+        syncStub.restore();
+        const secondRuleText = '\n\ndiv#other {}';
+        ({ promise: syncPromise, stub: syncStub } = stubStyleFileSynced());
+        const secondRule = await cssModel.addRule(styleSheetId, secondRuleText, TextUtils.TextRange.TextRange.createFromLocation(0, 26));
+        assert.exists(secondRule);
+        await syncPromise;
+        assert.strictEqual(uiSourceCode.workingCopy(), firstRuleText + secondRuleText);
+        assert.isTrue(uiSourceCode.isDirty());
+        // The change originates from the backend, so it is not echoed back via setStyleSheetText.
+        sinon.assert.notCalled(setStyleSheetTextStub);
+        syncStub.restore();
     });
 });
 //# sourceMappingURL=StylesSourceMapping.test.js.map

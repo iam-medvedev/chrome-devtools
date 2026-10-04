@@ -119,19 +119,17 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/accessibility/AccessibilityNodeView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class AXNodeSubPane extends AccessibilitySubPane {
-    axNode;
     noNodeInfo;
     ignoredInfo;
     treeOutline;
     ignoredReasonsTree;
-    constructor() {
-        super({
+    constructor(element) {
+        super(element, {
             title: i18nString(UIStrings.computedProperties),
             viewId: 'computed-properties',
             jslog: `${VisualLogging.section('computed-properties')}`,
         });
         this.registerRequiredCSS(accessibilityNodeStyles);
-        this.axNode = null;
         this.contentElement.classList.add('ax-subpane');
         this.noNodeInfo = this.createInfo(i18nString(UIStrings.noAccessibilityNode));
         this.ignoredInfo = this.createInfo(i18nString(UIStrings.accessibilityNodeNotExposed), 'ax-ignored-info', 'hidden');
@@ -144,7 +142,7 @@ export class AXNodeSubPane extends AccessibilitySubPane {
         if (this.axNode === axNode) {
             return;
         }
-        this.axNode = axNode;
+        super.setAXNode(axNode);
         const treeOutline = this.treeOutline;
         treeOutline.removeChildren();
         const ignoredReasons = this.ignoredReasonsTree;
@@ -204,7 +202,7 @@ export class AXNodeSubPane extends AccessibilitySubPane {
     }
     setNode(node) {
         super.setNode(node);
-        this.axNode = null;
+        this.setAXNode(null);
     }
 }
 export class AXNodePropertyTreeElement extends UI.TreeOutline.TreeElement {

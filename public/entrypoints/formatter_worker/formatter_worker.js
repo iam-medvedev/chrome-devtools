@@ -5488,8 +5488,8 @@ function indexOfCharInBounds(str, needle, start, end) {
 }
 
 // ../../front_end/entrypoints/formatter_worker/Substitute.ts
-function substituteExpression(expression, nameMaps) {
-  const replacements = computeSubstitution(expression, nameMaps);
+function substituteExpression(expression, scopes) {
+  const replacements = computeSubstitution(expression, scopes);
   return applySubstitution(expression, replacements);
 }
 function parseBindingExpression(expression) {
@@ -5518,7 +5518,7 @@ function parseBindingExpression(expression) {
     allNames: analysis.getAllNames()
   };
 }
-function computeSubstitution(expression, nameMaps) {
+function computeSubstitution(expression, scopes) {
   const root = Acorn4.parse(expression, {
     ecmaVersion: ECMA_VERSION,
     allowAwaitOutsideFunction: true,
@@ -5534,9 +5534,9 @@ function computeSubstitution(expression, nameMaps) {
   const nameMap = /* @__PURE__ */ new Map();
   const parsedBindings = /* @__PURE__ */ new Map();
   const shadowedNames = /* @__PURE__ */ new Set();
-  for (const scopeMap of nameMaps) {
-    const scopeNames = /* @__PURE__ */ new Set();
-    for (const [name, rename] of scopeMap.entries()) {
+  for (const { bindings, generatedNames } of scopes) {
+    const scopeNames = new Set(generatedNames);
+    for (const [name, rename] of bindings.entries()) {
       let parsed;
       if (rename !== null) {
         try {

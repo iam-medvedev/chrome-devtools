@@ -331,6 +331,10 @@ export default `/*
     gap: 3px;
   }
 
+  .show-code {
+    margin-inline-start: auto;
+  }
+
   .code-format-label {
     display: flex;
     align-items: center;
@@ -343,10 +347,6 @@ export default `/*
   .code-format-label > select {
     height: var(--sys-size-11);
     min-width: 0;
-  }
-
-  .sections .section-toolbar {
-    justify-content: flex-end;
   }
 
   devtools-split-view {

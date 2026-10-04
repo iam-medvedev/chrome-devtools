@@ -1003,6 +1003,11 @@ var Emulation;
     SetDeviceMetricsOverrideRequestViewportMeta2["Enable"] = "enable";
     SetDeviceMetricsOverrideRequestViewportMeta2["Default"] = "default";
   })(SetDeviceMetricsOverrideRequestViewportMeta = Emulation2.SetDeviceMetricsOverrideRequestViewportMeta || (Emulation2.SetDeviceMetricsOverrideRequestViewportMeta = {}));
+  let SetDeviceMetricsOverrideRequestTextLayoutMode;
+  ((SetDeviceMetricsOverrideRequestTextLayoutMode2) => {
+    SetDeviceMetricsOverrideRequestTextLayoutMode2["Mobile"] = "mobile";
+    SetDeviceMetricsOverrideRequestTextLayoutMode2["Default"] = "default";
+  })(SetDeviceMetricsOverrideRequestTextLayoutMode = Emulation2.SetDeviceMetricsOverrideRequestTextLayoutMode || (Emulation2.SetDeviceMetricsOverrideRequestTextLayoutMode = {}));
   let SetEmitTouchEventsForMouseRequestConfiguration;
   ((SetEmitTouchEventsForMouseRequestConfiguration2) => {
     SetEmitTouchEventsForMouseRequestConfiguration2["Mobile"] = "mobile";
@@ -1856,6 +1861,7 @@ var Page;
     PermissionsPolicyFeature2["PrivateStateTokenRedemption"] = "private-state-token-redemption";
     PermissionsPolicyFeature2["PublickeyCredentialsCreate"] = "publickey-credentials-create";
     PermissionsPolicyFeature2["PublickeyCredentialsGet"] = "publickey-credentials-get";
+    PermissionsPolicyFeature2["PublickeyCredentialsRemoteClientDataJson"] = "publickey-credentials-remote-client-data-json";
     PermissionsPolicyFeature2["Rewriter"] = "rewriter";
     PermissionsPolicyFeature2["ScreenWakeLock"] = "screen-wake-lock";
     PermissionsPolicyFeature2["Serial"] = "serial";
@@ -2662,6 +2668,11 @@ var Debugger;
     ScopeType2["Module"] = "module";
     ScopeType2["WasmExpressionStack"] = "wasm-expression-stack";
   })(ScopeType = Debugger2.ScopeType || (Debugger2.ScopeType = {}));
+  let ScopeEmptyReason;
+  ((ScopeEmptyReason2) => {
+    ScopeEmptyReason2["NoVariables"] = "no-variables";
+    ScopeEmptyReason2["AllUnavailable"] = "all-unavailable";
+  })(ScopeEmptyReason = Debugger2.ScopeEmptyReason || (Debugger2.ScopeEmptyReason = {}));
   let BreakLocationType;
   ((BreakLocationType2) => {
     BreakLocationType2["DebuggerStatement"] = "debuggerStatement";
@@ -7473,8 +7484,16 @@ var generatedProperties = [
     "name": "position-try-order"
   },
   {
+    "devtools_keywords": [
+      "always",
+      "anchor-valid",
+      "anchor-visible",
+      "no-overflow"
+    ],
     "keywords": [
       "always",
+      "anchor-valid",
+      "anchor-visible",
       "anchors-visible",
       "no-overflow"
     ],
@@ -8352,7 +8371,7 @@ var generatedProperties = [
     ],
     "name": "text-decoration-inset",
     "runtime_flag": "CSSTextDecorationInset",
-    "runtime_flag_status": "experimental"
+    "runtime_flag_status": "stable"
   },
   {
     "keywords": [
@@ -11354,7 +11373,8 @@ var generatedPropertyValues = {
   "position-visibility": {
     "values": [
       "always",
-      "anchors-visible",
+      "anchor-valid",
+      "anchor-visible",
       "no-overflow"
     ]
   },
@@ -21922,37 +21942,26 @@ __export(SourceMapFunctionRanges_exports, {
 function buildOriginalScopes(ranges) {
   validateStartBeforeEnd(ranges);
   ranges.sort((a, b) => comparePositions(a.start, b.start) || comparePositions(b.end, a.end));
-  const root = {
-    start: { line: 0, column: 0 },
-    end: { line: Number.POSITIVE_INFINITY, column: Number.POSITIVE_INFINITY },
-    kind: "Global",
-    isStackFrame: false,
-    children: [],
-    variables: []
-  };
-  const stack = [root];
+  const roots = [];
+  const stack = [];
   for (const range of ranges) {
     let stackTop = stack.at(-1);
-    while (true) {
-      if (comparePositions(stackTop.end, range.start) <= 0) {
-        stack.pop();
-        stackTop = stack.at(-1);
-      } else {
-        break;
-      }
+    while (stackTop && comparePositions(stackTop.end, range.start) <= 0) {
+      stack.pop();
+      stackTop = stack.at(-1);
     }
-    if (comparePositions(range.start, stackTop.end) < 0 && comparePositions(stackTop.end, range.end) < 0) {
-      throw new Error(`Range ${JSON.stringify(range)} and ${JSON.stringify(stackTop)} partially overlap.`);
+    if (stackTop && comparePositions(range.start, stackTop.end) < 0 && comparePositions(stackTop.end, range.end) < 0) {
+      throw new Error(`Range ${JSON.stringify(range)} and ${JSON.stringify(stackTop, (key, value) => key === "parent" ? void 0 : value)} partially overlap.`);
     }
-    const scope = createScopeFrom(range);
-    stackTop.children.push(scope);
+    const scope = createScopeFrom(range, stackTop);
+    if (stackTop) {
+      stackTop.children.push(scope);
+    } else {
+      roots.push(scope);
+    }
     stack.push(scope);
   }
-  const lastChild = root.children.at(-1);
-  if (lastChild) {
-    root.end = lastChild.end;
-  }
-  return root;
+  return roots;
 }
 function validateStartBeforeEnd(ranges) {
   for (const range of ranges) {
@@ -21961,11 +21970,12 @@ function validateStartBeforeEnd(ranges) {
     }
   }
 }
-function createScopeFrom(range) {
+function createScopeFrom(range, parent) {
   return {
     ...range,
     kind: "Function",
     isStackFrame: true,
+    parent,
     children: [],
     variables: []
   };
@@ -22036,6 +22046,7 @@ function decodeRangeMappings(encodedRangeMappings) {
 // ../../front_end/core/sdk/SourceMapScopesInfo.ts
 var SourceMapScopesInfo_exports = {};
 __export(SourceMapScopesInfo_exports, {
+  GeneratedFrameKind: () => GeneratedFrameKind,
   SourceMapScopesInfo: () => SourceMapScopesInfo,
   comparePositions: () => comparePositions2,
   contains: () => contains,
@@ -22229,7 +22240,7 @@ var SourceMapScopeRemoteObject = class _SourceMapScopeRemoteObject extends Remot
         variable,
         value,
         /* enumerable */
-        false,
+        true,
         /* writable */
         false,
         /* isOwn */
@@ -22312,7 +22323,7 @@ var SourceMapScopeRemoteObject = class _SourceMapScopeRemoteObject extends Remot
       name,
       null,
       /* enumerable */
-      false,
+      true,
       /* writeable */
       false,
       /* isOwn */
@@ -22328,11 +22339,14 @@ var SourceMapScopesInfo = class _SourceMapScopesInfo {
   #sourceMap;
   #originalScopes;
   #generatedRanges;
+  /** Whether the scope information was derived from the AST and mappings (see {@link createFromAst}). */
+  #isFromAst;
   #cachedVariablesAndBindingsPresent = null;
-  constructor(sourceMap, scopeInfo) {
+  constructor(sourceMap, scopeInfo, { isFromAst = false } = {}) {
     this.#sourceMap = sourceMap;
     this.#originalScopes = scopeInfo.scopes;
     this.#generatedRanges = scopeInfo.ranges;
+    this.#isFromAst = isFromAst;
   }
   /**
    * If the source map does not contain any scopes information, this factory function attempts to create scope information
@@ -22342,17 +22356,7 @@ var SourceMapScopesInfo = class _SourceMapScopesInfo {
    */
   static createFromAst(sourceMap, scopeTree, text) {
     const numSourceUrls = sourceMap.sourceURLs().length;
-    const scopeBySourceUrl = [];
-    for (let i = 0; i < numSourceUrls; i++) {
-      const scope = {
-        start: { line: 0, column: 0 },
-        end: { line: Number.POSITIVE_INFINITY, column: Number.POSITIVE_INFINITY },
-        isStackFrame: false,
-        variables: [],
-        children: []
-      };
-      scopeBySourceUrl.push(scope);
-    }
+    const scopesBySourceUrl = Array.from({ length: numSourceUrls }, () => []);
     const stack = [{ node: scopeTree }];
     let rootRange = void 0;
     while (stack.length > 0) {
@@ -22403,21 +22407,24 @@ var SourceMapScopesInfo = class _SourceMapScopesInfo {
       parentRange?.children.push(range);
       let nextParentScopeHint = parentScopeHint;
       if (canMapOriginalPosition && scope) {
-        const rootScope = scopeBySourceUrl[sourceIndex];
-        const startSearchFrom = parentScopeHint && containsOriginal(parentScopeHint, scope) ? parentScopeHint : rootScope;
-        insertInScope(startSearchFrom, scope);
+        const startParent = parentScopeHint && containsOriginal(parentScopeHint, scope) ? parentScopeHint : void 0;
+        insertInScope(sourceIndex, startParent, scope);
         nextParentScopeHint = scope;
       }
       for (let i = node.children.length - 1; i >= 0; --i) {
         stack.push({ node: node.children[i], parentRange: range, parentScopeHint: nextParentScopeHint });
       }
     }
-    return new _SourceMapScopesInfo(sourceMap, { scopes: scopeBySourceUrl, ranges: rootRange ? [rootRange] : [] });
-    function insertInScope(rootScope, newScope) {
-      let parent = rootScope;
+    return new _SourceMapScopesInfo(
+      sourceMap,
+      { scopes: scopesBySourceUrl, ranges: rootRange ? [rootRange] : [] },
+      { isFromAst: true }
+    );
+    function insertInScope(sourceIndex, parent, newScope) {
+      let children = parent ? parent.children : scopesBySourceUrl[sourceIndex];
       while (true) {
         let deeperParent = null;
-        for (const child of parent.children) {
+        for (const child of children) {
           if (containsOriginal(child, newScope)) {
             deeperParent = child;
             break;
@@ -22425,12 +22432,13 @@ var SourceMapScopesInfo = class _SourceMapScopesInfo {
         }
         if (deeperParent) {
           parent = deeperParent;
+          children = deeperParent.children;
         } else {
           break;
         }
       }
       const childrenToKeep = [];
-      for (const child of parent.children) {
+      for (const child of children) {
         if (containsOriginal(newScope, child)) {
           newScope.children.push(child);
           child.parent = newScope;
@@ -22444,7 +22452,11 @@ var SourceMapScopesInfo = class _SourceMapScopesInfo {
       } else {
         childrenToKeep.splice(insertIndex, 0, newScope);
       }
-      parent.children = childrenToKeep;
+      if (parent) {
+        parent.children = childrenToKeep;
+      } else {
+        scopesBySourceUrl[sourceIndex] = childrenToKeep;
+      }
       newScope.parent = parent;
     }
     function containsOriginal(outer, inner) {
@@ -22469,55 +22481,35 @@ var SourceMapScopesInfo = class _SourceMapScopesInfo {
     }
   }
   hasOriginalScopes(sourceIdx) {
-    return Boolean(this.#originalScopes[sourceIdx]);
+    return Boolean(this.#originalScopes[sourceIdx]?.length);
   }
   isEmpty() {
-    const noScopes = this.#originalScopes.every((scope) => scope === null);
+    const noScopes = this.#originalScopes.every((scopes) => scopes === null || scopes.length === 0);
     return noScopes && !this.#generatedRanges.length;
   }
-  addOriginalScopesAtIndex(sourceIdx, scope) {
-    if (!this.#originalScopes[sourceIdx]) {
-      this.#originalScopes[sourceIdx] = scope;
+  addOriginalScopesAtIndex(sourceIdx, scopes) {
+    if (!this.#originalScopes[sourceIdx]?.length) {
+      this.#originalScopes[sourceIdx] = scopes;
     } else {
       throw new Error(`Trying to re-augment existing scopes for source at index: ${sourceIdx}`);
     }
   }
-  /**
-   * @returns true, iff the function surrounding the provided position is marked as "hidden".
-   */
-  isOutlinedFrame(generatedLine, generatedColumn) {
-    const rangeChain = this.#findGeneratedRangeChain(generatedLine, generatedColumn);
-    return this.#isOutlinedFrame(rangeChain);
-  }
-  #isOutlinedFrame(rangeChain) {
-    for (let i = rangeChain.length - 1; i >= 0; --i) {
-      if (rangeChain[i].isStackFrame) {
-        return rangeChain[i].isHidden;
-      }
+  #generatedFrameKind(rangeChain) {
+    const functionRange = rangeChain.findLast((range) => range.isStackFrame);
+    if (!functionRange) {
+      return "VISIBLE" /* VISIBLE */;
     }
-    return false;
-  }
-  /**
-   * @returns true, iff the range surrounding the provided position contains multiple
-   * inlined original functions.
-   */
-  hasInlinedFrames(generatedLine, generatedColumn) {
-    const rangeChain = this.#findGeneratedRangeChain(generatedLine, generatedColumn);
-    for (let i = rangeChain.length - 1; i >= 0; --i) {
-      if (rangeChain[i].isStackFrame) {
-        return false;
-      }
-      if (rangeChain[i].callSite) {
-        return true;
-      }
+    if (!functionRange.originalScope) {
+      return this.#isFromAst ? "VISIBLE" /* VISIBLE */ : "HIDDEN" /* HIDDEN */;
     }
-    return false;
+    return functionRange.isHidden ? "OUTLINED" /* OUTLINED */ : "VISIBLE" /* VISIBLE */;
   }
   /**
    * Given a generated position, this returns all the surrounding generated ranges from outer
-   * to inner.
+   * to inner. When `inlineFrameIndex > 0`, drops inner ranges up to the specified virtual
+   * call frame.
    */
-  #findGeneratedRangeChain(line, column) {
+  #findGeneratedRangeChain(line, column, inlineFrameIndex = 0) {
     const result = [];
     (function walkRanges(ranges) {
       for (const range of ranges) {
@@ -22528,6 +22520,15 @@ var SourceMapScopesInfo = class _SourceMapScopesInfo {
         walkRanges(range.children);
       }
     })(this.#generatedRanges);
+    for (let inlineIndex = 0; inlineIndex < inlineFrameIndex; ) {
+      const range = result.pop();
+      if (!range) {
+        break;
+      }
+      if (range.callSite) {
+        ++inlineIndex;
+      }
+    }
     return result;
   }
   /**
@@ -22543,9 +22544,6 @@ var SourceMapScopesInfo = class _SourceMapScopesInfo {
   #areVariablesAndBindingsPresent() {
     function walkTree(nodes) {
       for (const node of nodes) {
-        if (!node) {
-          continue;
-        }
         if ("variables" in node && node.variables.length > 0) {
           return true;
         }
@@ -22558,7 +22556,7 @@ var SourceMapScopesInfo = class _SourceMapScopesInfo {
       }
       return false;
     }
-    return walkTree(this.#originalScopes) && walkTree(this.#generatedRanges);
+    return this.#originalScopes.some((scopes) => scopes !== null && walkTree(scopes)) && walkTree(this.#generatedRanges);
   }
   /**
    * Constructs a scope chain based on the CallFrame's paused position.
@@ -22618,23 +22616,12 @@ var SourceMapScopesInfo = class _SourceMapScopesInfo {
     }
     return result;
   }
-  /** Similar to #findGeneratedRangeChain, but takes inlineFrameIndex of virtual call frames into account */
   #findGeneratedRangeChainForFrame(callFrame) {
     const { line, column } = scriptRelativePosition(callFrame.location());
-    const rangeChain = this.#findGeneratedRangeChain(line, column);
-    if (callFrame.inlineFrameIndex === 0) {
-      return rangeChain;
-    }
-    for (let inlineIndex = 0; inlineIndex < callFrame.inlineFrameIndex; ) {
-      const range = rangeChain.pop();
-      if (range?.callSite) {
-        ++inlineIndex;
-      }
-    }
-    return rangeChain;
+    return this.#findGeneratedRangeChain(line, column, callFrame.inlineFrameIndex);
   }
-  resolveMappedVariablesAtPosition(line, column, ignoreInnerBlockScopes = false) {
-    const rangeChain = this.#findGeneratedRangeChain(line, column);
+  resolveMappedVariablesAtPosition(line, column, ignoreInnerBlockScopes = false, inlineFrameIndex = 0) {
+    const rangeChain = this.#findGeneratedRangeChain(line, column, inlineFrameIndex);
     const startScope = rangeChain.at(-1)?.originalScope;
     const innerMostScope = startScope && ignoreInnerBlockScopes && this.#findFunctionScopeInOriginalScopeChain(startScope) || startScope;
     const result = [];
@@ -22654,54 +22641,55 @@ var SourceMapScopesInfo = class _SourceMapScopesInfo {
   /**
    * Returns the authored function scope of the function containing the provided generated position.
    */
-  findOriginalFunctionScope({ line, column }) {
-    let originalInnerMostScope;
+  findOriginalFunctionScope(position) {
+    const rangeChain = this.#findGeneratedRangeChain(position.line, position.column);
+    const functionScope = this.#findFunctionScopeInOriginalScopeChain(this.#innerMostOriginalScope(rangeChain, position));
+    return functionScope ? { scope: functionScope, url: this.#sourceURLOfScope(functionScope) } : null;
+  }
+  /**
+   * Returns the inner-most original scope containing the generated `position`. `rangeChain` must be the generated
+   * range chain of `position`.
+   */
+  #innerMostOriginalScope(rangeChain, position) {
     if (this.#generatedRanges.length > 0) {
-      const rangeChain = this.#findGeneratedRangeChain(line, column);
-      originalInnerMostScope = rangeChain.at(-1)?.originalScope;
-    } else {
-      const entry = this.#sourceMap.findEntry(line, column);
-      if (entry?.sourceIndex === void 0) {
-        return null;
-      }
-      originalInnerMostScope = this.#findOriginalScopeChain(
-        { sourceIndex: entry.sourceIndex, line: entry.sourceLineNumber, column: entry.sourceColumnNumber }
-      ).at(-1);
+      return rangeChain.at(-1)?.originalScope;
     }
-    if (!originalInnerMostScope) {
-      return null;
+    const entry = this.#sourceMap.findEntry(position.line, position.column);
+    if (entry?.sourceIndex === void 0) {
+      return void 0;
     }
-    const functionScope = this.#findFunctionScopeInOriginalScopeChain(originalInnerMostScope);
-    if (!functionScope) {
-      return null;
-    }
-    let rootScope = functionScope;
+    return this.#findOriginalScopeChain(
+      { sourceIndex: entry.sourceIndex, line: entry.sourceLineNumber, column: entry.sourceColumnNumber }
+    ).at(-1);
+  }
+  /** @returns the URL of the original source that `scope` belongs to. */
+  #sourceURLOfScope(scope) {
+    let rootScope = scope;
     while (rootScope.parent) {
       rootScope = rootScope.parent;
     }
-    const sourceIndex = this.#originalScopes.indexOf(rootScope);
-    const url = sourceIndex !== -1 ? this.#sourceMap.sourceURLForSourceIndex(sourceIndex) : void 0;
-    return functionScope ? { scope: functionScope, url } : null;
+    const sourceIndex = this.#originalScopes.findIndex((scopes) => scopes?.includes(rootScope));
+    return sourceIndex !== -1 ? this.#sourceMap.sourceURLForSourceIndex(sourceIndex) : void 0;
   }
   /**
    * Given an original position, this returns all the surrounding original scopes from outer
    * to inner.
    */
   #findOriginalScopeChain({ sourceIndex, line, column }) {
-    const scope = this.#originalScopes[sourceIndex];
-    if (!scope) {
+    const scopes = this.#originalScopes[sourceIndex];
+    if (!scopes) {
       return [];
     }
     const result = [];
-    (function walkScopes(scopes) {
-      for (const scope2 of scopes) {
-        if (!contains(scope2, line, column)) {
+    (function walkScopes(scopes2) {
+      for (const scope of scopes2) {
+        if (!contains(scope, line, column)) {
           continue;
         }
-        result.push(scope2);
-        walkScopes(scope2.children);
+        result.push(scope);
+        walkScopes(scope.children);
       }
-    })([scope]);
+    })(scopes);
     return result;
   }
   #findFunctionScopeInOriginalScopeChain(innerOriginalScope) {
@@ -22720,44 +22708,74 @@ var SourceMapScopesInfo = class _SourceMapScopesInfo {
     return functionScope.name ?? "";
   }
   /**
-   * Returns one or more original stack frames for this single "raw frame" or call-site.
-   *
-   * @returns An empty array if no mapping at the call-site was found, or the resulting frames
-   * in top-to-bottom order in case of inlining.
-   * @throws If this range is marked "hidden". Outlining needs to be handled externally as
-   * outlined function segments in stack traces can span across bundles.
+   * Translates a single "raw frame" or call-site, including outlined functions. It's the caller's responsibility to
+   * merge outlined frames with their caller(s) (see {@link GeneratedFrameKind}).
    */
-  translateCallSite(generatedLine, generatedColumn) {
+  translateRawFrame(generatedLine, generatedColumn) {
     const rangeChain = this.#findGeneratedRangeChain(generatedLine, generatedColumn);
-    if (this.#isOutlinedFrame(rangeChain)) {
-      throw new Error("SourceMapScopesInfo is unable to translate an outlined function by itself");
+    const kind = this.#generatedFrameKind(rangeChain);
+    if (kind === "HIDDEN" /* HIDDEN */) {
+      return { kind, frames: [] };
     }
+    const frame = this.#translateTopFrame(generatedLine, generatedColumn, rangeChain);
+    return { kind, frames: frame ? [frame, ...this.#translateInlinedCallers(rangeChain)] : [] };
+  }
+  /**
+   * The top-most frame is translated the same, regardless of whether we have inlined functions: The name is the
+   * original function surrounding the generated position, and the location is the mapped generated position.
+   *
+   * If the generated position has no mapping, the generated ranges may still tell which authored function (or
+   * which file, for top-level code) the position belongs to. The frame then has no position.
+   */
+  #translateTopFrame(generatedLine, generatedColumn, rangeChain) {
+    const position = { line: generatedLine, column: generatedColumn };
+    const innerMostScope = this.#innerMostOriginalScope(rangeChain, position);
+    const functionScope = this.#findFunctionScopeInOriginalScopeChain(innerMostScope);
+    const name = functionScope ? functionScope.name ?? "" : void 0;
     const mapping = this.#sourceMap.findEntry(generatedLine, generatedColumn);
-    if (mapping?.sourceIndex === void 0) {
-      return [];
+    if (mapping?.sourceIndex !== void 0) {
+      return {
+        line: mapping.sourceLineNumber,
+        column: mapping.sourceColumnNumber,
+        name,
+        url: mapping.sourceURL,
+        functionStart: functionScope?.start
+      };
     }
-    const result = [{
-      line: mapping.sourceLineNumber,
-      column: mapping.sourceColumnNumber,
-      name: this.findOriginalFunctionName({ line: generatedLine, column: generatedColumn }) ?? void 0,
-      url: mapping.sourceURL
-    }];
+    if (!innerMostScope) {
+      return null;
+    }
+    return { name, url: this.#sourceURLOfScope(functionScope ?? innerMostScope), functionStart: functionScope?.start };
+  }
+  /**
+   * Walk the range chain inside out until we find a generated function and for each inlined function add a frame.
+   */
+  #translateInlinedCallers(rangeChain) {
+    const result = [];
     for (let i = rangeChain.length - 1; i >= 0 && !rangeChain[i].isStackFrame; --i) {
       const range = rangeChain[i];
       if (!range.callSite) {
         continue;
       }
       const originalScopeChain = this.#findOriginalScopeChain(range.callSite);
+      const functionScope = this.#findFunctionScopeInOriginalScopeChain(originalScopeChain.at(-1));
       result.push({
         line: range.callSite.line,
         column: range.callSite.column,
-        name: this.#findFunctionNameInOriginalScopeChain(originalScopeChain.at(-1)) ?? void 0,
-        url: this.#sourceMap.sourceURLForSourceIndex(range.callSite.sourceIndex)
+        name: functionScope ? functionScope.name ?? "" : void 0,
+        url: this.#sourceMap.sourceURLForSourceIndex(range.callSite.sourceIndex),
+        functionStart: functionScope?.start
       });
     }
     return result;
   }
 };
+var GeneratedFrameKind = /* @__PURE__ */ ((GeneratedFrameKind2) => {
+  GeneratedFrameKind2["VISIBLE"] = "VISIBLE";
+  GeneratedFrameKind2["OUTLINED"] = "OUTLINED";
+  GeneratedFrameKind2["HIDDEN"] = "HIDDEN";
+  return GeneratedFrameKind2;
+})(GeneratedFrameKind || {});
 function findExpression(range, index, line = 0, column = 0) {
   const val = range?.values[index];
   return (typeof val === "string" ? val : val?.find((r) => contains({ start: r.from, end: r.to }, line, column))?.value) ?? null;
@@ -23269,12 +23287,12 @@ var SourceMap = class _SourceMap {
     if (!this.#scopesInfo) {
       this.#scopesInfo = new SourceMapScopesInfo(this, { scopes: [], ranges: [] });
     }
-    if (map.scopes) {
+    if (map.scopes || map.ranges) {
       const { scopes, ranges } = ScopesCodec.decode(
         map,
         { mode: ScopesCodec.DecodeMode.LAX, generatedOffset: { line: baseLineNumber, column: baseColumnNumber } }
       );
-      this.#scopesInfo.addOriginalScopes(scopes);
+      this.#scopesInfo.addOriginalScopes(scopes.length ? scopes : new Array(map.sources.length).fill(null));
       this.#scopesInfo.addGeneratedRanges(ranges);
     } else if (map.x_com_bloomberg_sourcesFunctionMappings) {
       const originalScopes = this.parseBloombergScopes(map);
@@ -23465,7 +23483,12 @@ var SourceMap = class _SourceMap {
       return null;
     }
     const { line, column } = scriptRelativePosition(location);
-    return this.#scopesInfo.resolveMappedVariablesAtPosition(line, column, ignoreInnerBlockScopes);
+    return this.#scopesInfo.resolveMappedVariablesAtPosition(
+      line,
+      column,
+      ignoreInnerBlockScopes,
+      location.inlineFrameIndex
+    );
   }
   findOriginalFunctionName(position) {
     this.#ensureSourceMapProcessed();
@@ -23475,17 +23498,10 @@ var SourceMap = class _SourceMap {
     this.#ensureSourceMapProcessed();
     return this.#scopesInfo?.findOriginalFunctionScope(position) ?? null;
   }
-  isOutlinedFrame(generatedLine, generatedColumn) {
+  /** See {@link SourceMapScopesInfo.translateRawFrame}. `null` if no scopes information is available. */
+  translateRawFrame(generatedLine, generatedColumn) {
     this.#ensureSourceMapProcessed();
-    return this.#scopesInfo?.isOutlinedFrame(generatedLine, generatedColumn) ?? false;
-  }
-  hasInlinedFrames(generatedLine, generatedColumn) {
-    this.#ensureSourceMapProcessed();
-    return this.#scopesInfo?.hasInlinedFrames(generatedLine, generatedColumn) ?? false;
-  }
-  translateCallSite(generatedLine, generatedColumn) {
-    this.#ensureSourceMapProcessed();
-    return this.#scopesInfo?.translateCallSite(generatedLine, generatedColumn) ?? [];
+    return this.#scopesInfo?.translateRawFrame(generatedLine, generatedColumn) ?? null;
   }
 };
 function asRangeMapping(entry) {
@@ -24557,6 +24573,24 @@ var PageResourceLoader = class _PageResourceLoader extends Common12.ObjectWrappe
       this.dispatchEventToListeners("Update" /* UPDATE */);
     }
   }
+  #resolveFrameTarget(initiator) {
+    let frameTarget = initiator.target;
+    let parentFrameId = null;
+    while (frameTarget && !frameTarget.model(ResourceTreeModel)) {
+      parentFrameId = parentFrameId ?? frameTarget.targetInfo()?.parentFrameId ?? null;
+      frameTarget = frameTarget.parentTarget();
+    }
+    const frameId = initiator.frameId ?? parentFrameId ?? frameTarget?.model(ResourceTreeModel)?.mainFrame?.id ?? null;
+    return { frameTarget, frameId };
+  }
+  #isSameOriginWithPrimaryPage(frameTarget, frameId) {
+    const primaryFrame = this.#targetManager.primaryPageTarget()?.model(ResourceTreeModel)?.mainFrame;
+    const initiatorFrame = frameId ? frameTarget?.model(ResourceTreeModel)?.frameForId(frameId) : null;
+    if (!primaryFrame || !initiatorFrame) {
+      return false;
+    }
+    return initiatorFrame.securityOrigin().isSameOriginWith(primaryFrame.securityOrigin());
+  }
   async dispatchLoad(url, initiator, isBinary) {
     if (isExtensionInitiator(initiator)) {
       throw new Error("Invalid initiator");
@@ -24571,27 +24605,24 @@ var PageResourceLoader = class _PageResourceLoader extends Common12.ObjectWrappe
     if (eligibleForLoadFromTarget) {
       const isHttp = parsedURL.scheme === "http" || parsedURL.scheme === "https";
       let mustEnforceCSP = isHttp;
-      if (isHttp && initiator.target) {
-        const networkManager = initiator.target.model(NetworkManager);
+      const { frameTarget, frameId } = this.#resolveFrameTarget(initiator);
+      if (isHttp && frameTarget) {
+        const networkManager = frameTarget.model(NetworkManager);
         if (networkManager) {
-          let status = await networkManager.getSecurityIsolationStatus(initiator.frameId);
-          if (!status && initiator.frameId) {
-            status = await networkManager.getSecurityIsolationStatus(null);
-          }
-          if (status) {
-            const csps = status.csp ?? [];
-            mustEnforceCSP = csps.some((csp) => csp.effectiveDirectives.includes("connect-src") || csp.effectiveDirectives.includes("default-src"));
+          const status = await networkManager.getSecurityIsolationStatus(frameId);
+          if (status?.csp) {
+            mustEnforceCSP = status.csp.some((csp) => csp.effectiveDirectives.includes("connect-src") || csp.effectiveDirectives.includes("default-src"));
           }
         }
       }
       try {
         Host3.userMetrics.developerResourceLoaded(Host3.UserMetrics.DeveloperResourceLoaded.LOAD_THROUGH_PAGE_VIA_TARGET);
-        const result2 = await this.loadFromTarget(initiator.target, initiator.frameId, url, isBinary);
+        const result2 = await this.loadFromTarget(frameTarget ?? initiator.target, frameId, url, isBinary);
         return result2;
       } catch (e) {
         if (e instanceof Error) {
           Host3.userMetrics.developerResourceLoaded(Host3.UserMetrics.DeveloperResourceLoaded.LOAD_THROUGH_PAGE_FAILURE);
-          if (mustEnforceCSP || e.message.includes("CSP violation")) {
+          if (mustEnforceCSP || !this.#isSameOriginWithPrimaryPage(frameTarget, frameId) || e.message.includes("CSP violation")) {
             return {
               success: false,
               content: "",
@@ -24980,6 +25011,58 @@ var ColorScheme = /* @__PURE__ */ ((ColorScheme2) => {
   ColorScheme2["DARK"] = "dark";
   return ColorScheme2;
 })(ColorScheme || {});
+function isAnchorPositioned(computedStyle, matchedStyles) {
+  const position = computedStyle.get("position");
+  if (position !== "absolute" && position !== "fixed") {
+    return false;
+  }
+  const positionAnchor = computedStyle.get("position-anchor");
+  if (positionAnchor && positionAnchor !== "none") {
+    return true;
+  }
+  const positionArea = computedStyle.get("position-area");
+  if (positionArea && positionArea !== "none") {
+    return true;
+  }
+  const anchorProperties = [
+    "top",
+    "right",
+    "bottom",
+    "left",
+    "inset",
+    "inset-block",
+    "inset-inline",
+    "inset-block-start",
+    "inset-block-end",
+    "inset-inline-start",
+    "inset-inline-end",
+    "width",
+    "height",
+    "min-width",
+    "min-height",
+    "max-width",
+    "max-height"
+  ];
+  if (anchorProperties.some((prop) => {
+    const val = computedStyle.get(prop);
+    return Boolean(val && (val.includes("anchor(") || val.includes("anchor-size(")));
+  })) {
+    return true;
+  }
+  if (matchedStyles) {
+    for (const style of matchedStyles.nodeStyles()) {
+      for (const property of style.allProperties()) {
+        if (!property.activeInStyle() || !matchedStyles.propertyState(property)) {
+          continue;
+        }
+        if (property.value.includes("anchor(") || property.value.includes("anchor-size(")) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
 var CSSModel = class _CSSModel extends SDKModel {
   agent;
   #domModel;
@@ -25284,6 +25367,7 @@ var CSSModel = class _CSSModel extends SDKModel {
     const containerType = styles.get("container-type");
     const isContainer = Boolean(containerType) && containerType !== "" && containerType !== "normal";
     const hasScroll = Boolean(styles.get("scroll-snap-type")) && styles.get("scroll-snap-type") !== "none";
+    const isAnchored = isAnchorPositioned(styles);
     return {
       isFlex,
       isGrid,
@@ -25291,7 +25375,8 @@ var CSSModel = class _CSSModel extends SDKModel {
       isGridLanes,
       isContents,
       containerType: isContainer ? containerType : void 0,
-      hasScroll
+      hasScroll,
+      isAnchorPositioned: isAnchored
     };
   }
   async getEnvironmentVariables() {
@@ -26871,6 +26956,17 @@ var OverlayModel = class _OverlayModel extends SDKModel {
           color: Common17.Color.PageHighlight.LayoutLine.toProtocolRGBA()
         }
       };
+      highlightConfig.imcbHighlightConfig = {
+        imcbBorderColor: Common17.Color.PageHighlight.AnchorIMCB.toProtocolRGBA(),
+        imcbBackgroundColor: Common17.Color.PageHighlight.AnchorIMCBBackground.toProtocolRGBA(),
+        insetsBackgroundColor: Common17.Color.PageHighlight.AnchorInsetsBackground.toProtocolRGBA(),
+        insetsHatchColor: Common17.Color.PageHighlight.AnchorInsetsHatch.toProtocolRGBA(),
+        anchorBorderColor: Common17.Color.PageHighlight.AnchorTarget.toProtocolRGBA(),
+        anchorBackgroundColor: Common17.Color.PageHighlight.AnchorTargetBackground.toProtocolRGBA(),
+        showPositionAreaGrid: true,
+        positionAreaGridLineColor: Common17.Color.PageHighlight.AnchorTarget.toProtocolRGBA(),
+        positionAreaActiveRegionColor: Common17.Color.PageHighlight.AnchorTargetBackground.toProtocolRGBA()
+      };
     }
     if (mode.endsWith("gap")) {
       highlightConfig.gridHighlightConfig = {
@@ -26987,6 +27083,37 @@ var OverlayModel = class _OverlayModel extends SDKModel {
           color: Common17.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
           pattern: Overlay.LineStylePattern.Dashed
         }
+      };
+    }
+    const baseImcbHighlightConfig = {
+      imcbBorderColor: Common17.Color.PageHighlight.AnchorIMCB.toProtocolRGBA(),
+      imcbBackgroundColor: Common17.Color.PageHighlight.AnchorIMCBBackground.toProtocolRGBA(),
+      anchorBorderColor: Common17.Color.PageHighlight.AnchorTarget.toProtocolRGBA(),
+      anchorBackgroundColor: Common17.Color.PageHighlight.AnchorTargetBackground.toProtocolRGBA()
+    };
+    if (mode === "anchor-positioning") {
+      highlightConfig.imcbHighlightConfig = {
+        ...baseImcbHighlightConfig,
+        insetsBackgroundColor: Common17.Color.PageHighlight.AnchorInsetsBackground.toProtocolRGBA(),
+        insetsHatchColor: Common17.Color.PageHighlight.AnchorInsetsHatch.toProtocolRGBA(),
+        showPositionAreaGrid: true,
+        positionAreaGridLineColor: Common17.Color.PageHighlight.AnchorTarget.toProtocolRGBA(),
+        positionAreaActiveRegionColor: Common17.Color.PageHighlight.AnchorTargetBackground.toProtocolRGBA()
+      };
+    }
+    if (mode === "position-area") {
+      highlightConfig.imcbHighlightConfig = {
+        ...baseImcbHighlightConfig,
+        showPositionAreaGrid: true,
+        positionAreaGridLineColor: Common17.Color.PageHighlight.AnchorTarget.toProtocolRGBA(),
+        positionAreaActiveRegionColor: Common17.Color.PageHighlight.AnchorTargetBackground.toProtocolRGBA()
+      };
+    }
+    if (mode === "insets") {
+      highlightConfig.imcbHighlightConfig = {
+        ...baseImcbHighlightConfig,
+        insetsBackgroundColor: Common17.Color.PageHighlight.AnchorInsetsBackground.toProtocolRGBA(),
+        insetsHatchColor: Common17.Color.PageHighlight.AnchorInsetsHatch.toProtocolRGBA()
       };
     }
     return highlightConfig;
@@ -28922,7 +29049,7 @@ var DOMNode = class _DOMNode extends Common20.ObjectWrapper.ObjectWrapper {
     }
     const frameOwnerTags = /* @__PURE__ */ new Set(["EMBED", "IFRAME", "OBJECT", "FENCEDFRAME"]);
     if (payload.contentDocument) {
-      this.contentDocumentInternal = new DOMDocument(this.#domModel, payload.contentDocument);
+      this.contentDocumentInternal = new DOMDocument(this.#domModel, payload.contentDocument, payload.frameId);
       this.contentDocumentInternal.parentNode = this;
       this.childrenInternal = [];
     } else if (payload.frameId && frameOwnerTags.has(payload.nodeName)) {
@@ -29596,7 +29723,7 @@ var DOMNode = class _DOMNode extends Common20.ObjectWrapper.ObjectWrapper {
     return Boolean(this.#xmlVersion);
   }
   isCustomElement() {
-    if (this.nodeType() !== 1 /* ELEMENT_NODE */ || this.isXMLNode()) {
+    if (this.nodeType() !== 1 /* ELEMENT_NODE */ || this.isXMLNode() || Boolean(this.pseudoType())) {
       return false;
     }
     const localName = this.localName() || this.nodeName().toLowerCase();
@@ -29813,16 +29940,27 @@ var DOMNode = class _DOMNode extends Common20.ObjectWrapper.ObjectWrapper {
     return response.backendNodeIds.map((backendNodeId) => new DeferredDOMNode(target, backendNodeId));
   }
   async takeSnapshot(ownerDocumentSnapshot) {
-    const snapshot = this instanceof DOMDocument ? new DOMDocumentSnapshot(this.domModel(), {
-      nodeId: this.id,
-      backendNodeId: this.backendNodeId(),
-      nodeType: this.nodeType(),
-      nodeName: this.nodeName(),
-      localName: this.localName(),
-      nodeValue: this.nodeValueInternal,
-      documentURL: this.documentURL,
-      baseURL: this.baseURL
-    }) : new DOMNodeSnapshot(this.domModel());
+    let snapshot;
+    if (this instanceof DOMDocument) {
+      const doc = this;
+      snapshot = new DOMDocumentSnapshot(
+        this.domModel(),
+        {
+          nodeId: this.id,
+          backendNodeId: this.backendNodeId(),
+          nodeType: this.nodeType(),
+          nodeName: this.nodeName(),
+          localName: this.localName(),
+          nodeValue: this.nodeValueInternal,
+          documentURL: this.documentURL,
+          baseURL: this.baseURL
+        },
+        this.frameId(),
+        doc.securityOrigin()
+      );
+    } else {
+      snapshot = new DOMNodeSnapshot(this.domModel());
+    }
     snapshot.id = this.id;
     snapshot.#backendNodeId = this.#backendNodeId;
     snapshot.#frameOwnerFrameId = this.#frameOwnerFrameId;
@@ -29962,15 +30100,25 @@ var DOMDocument = class extends DOMNode {
   documentElement;
   #documentURL;
   #baseURL;
+  #frameId;
   #securityOrigin;
-  constructor(domModel, payload) {
+  constructor(domModel, payload, frameId) {
     super(domModel);
     this.body = null;
     this.documentElement = null;
     this.init(this, false, payload);
     this.#documentURL = payload.documentURL || "";
     this.#baseURL = payload.baseURL || "";
-    this.#securityOrigin = SecurityOrigin.create(this.#documentURL);
+    this.#frameId = frameId ?? null;
+    const resourceTreeModel = this.domModel().target().model(ResourceTreeModel);
+    const frame = this.#frameId ? resourceTreeModel?.frameForId(this.#frameId) : null;
+    if (frame) {
+      this.#securityOrigin = frame.securityOrigin();
+    } else if (resourceTreeModel?.mainFrame) {
+      this.#securityOrigin = SecurityOrigin.createUniqueOpaque();
+    } else {
+      this.#securityOrigin = SecurityOrigin.create(this.#documentURL);
+    }
   }
   get documentURL() {
     return this.#documentURL;
@@ -29978,22 +30126,25 @@ var DOMDocument = class extends DOMNode {
   get baseURL() {
     return this.#baseURL;
   }
+  frameId() {
+    return this.#frameId;
+  }
   /**
    * Returns the security origin of this document.
    *
-   * The security origin is derived from the document URL and is recomputed
+   * The security origin is resolved from the document's frame and is recomputed
    * when the document navigates to a new URL via `setDocumentURL`.
    */
   securityOrigin() {
     return this.#securityOrigin;
   }
   /**
-   * Updates the document and base URLs, and recomputes the document's security origin.
+   * Updates the document and base URLs, and updates the document's security origin.
    */
-  setDocumentURL(url) {
+  setDocumentURL(url, securityOrigin) {
     this.#documentURL = url;
     this.#baseURL = url;
-    this.#securityOrigin = SecurityOrigin.create(url);
+    this.#securityOrigin = securityOrigin ?? SecurityOrigin.create(url);
   }
 };
 var AdoptedStyleSheet = class {
@@ -30066,7 +30217,7 @@ var DOMModel = class _DOMModel extends SDKModel {
     if (node) {
       const contentDocument = node.contentDocument();
       if (contentDocument && contentDocument.documentURL !== frame.url) {
-        contentDocument.setDocumentURL(frame.url);
+        contentDocument.setDocumentURL(frame.url, frame.securityOrigin());
         this.dispatchEventToListeners("DocumentURLChanged" /* DocumentURLChanged */, contentDocument);
       }
     }
@@ -30218,7 +30369,8 @@ var DOMModel = class _DOMModel extends SDKModel {
     this.idToDOMNode = /* @__PURE__ */ new Map();
     this.frameIdToOwnerNode = /* @__PURE__ */ new Map();
     if (payload && "nodeId" in payload) {
-      this.#document = new DOMDocument(this, payload);
+      const mainFrameId = this.target().model(ResourceTreeModel)?.mainFrame?.id;
+      this.#document = new DOMDocument(this, payload, mainFrameId);
     } else {
       this.#document = null;
     }
@@ -30750,6 +30902,14 @@ var DOMNodeSnapshot = class extends DOMNode {
   }
 };
 var DOMDocumentSnapshot = class extends DOMDocument {
+  #snapshotSecurityOrigin;
+  constructor(domModel, payload, frameId, securityOrigin) {
+    super(domModel, payload, frameId);
+    this.#snapshotSecurityOrigin = securityOrigin;
+  }
+  securityOrigin() {
+    return this.#snapshotSecurityOrigin;
+  }
   init(_doc, _isInShadowTree, _payload, _retainedNodes) {
   }
   setNodeName(_name, _callback) {
@@ -33706,9 +33866,6 @@ var Scope = class {
   }
   icon() {
     return void 0;
-  }
-  empty() {
-    return Boolean(this.#payload.empty);
   }
   extraProperties() {
     if (this !== this.#callFrame.localScope() || this.#callFrame.script.isWasm()) {
@@ -37803,6 +37960,7 @@ var NetworkRequest = class _NetworkRequest extends Common30.ObjectWrapper.Object
   #blockedReason = void 0;
   #renderBlockingBehavior;
   #initiatorSecurityOrigin;
+  #requestURLSecurityOrigin;
   #corsErrorStatus = void 0;
   statusCode = 0;
   statusText = "";
@@ -37817,6 +37975,7 @@ var NetworkRequest = class _NetworkRequest extends Common30.ObjectWrapper.Object
   #resourceType = Common30.ResourceType.resourceTypes.Other;
   #contentData = null;
   #streamingContentData = null;
+  #resolvedStreamingContentData = null;
   #frames = [];
   #responseHeaderValues = {};
   #responseHeadersText = "";
@@ -37890,7 +38049,7 @@ var NetworkRequest = class _NetworkRequest extends Common30.ObjectWrapper.Object
   /**
    * Whether this request was imported from a HAR file.
    */
-  #isImportedHar = false;
+  #isImportedHar;
   #associatedData = /* @__PURE__ */ new Map();
   #hasOverriddenContent = false;
   #hasThirdPartyCookiePhaseoutIssue = false;
@@ -37903,7 +38062,7 @@ var NetworkRequest = class _NetworkRequest extends Common30.ObjectWrapper.Object
   #isLinkPreload;
   #appliedNetworkConditionsId;
   #console;
-  constructor(requestId, backendRequestId, url, documentURL, frameId, loaderId, initiator, hasUserGesture, console2 = Common30.Console.Console.instance()) {
+  constructor(requestId, backendRequestId, url, documentURL, frameId, loaderId, initiator, hasUserGesture, console2 = Common30.Console.Console.instance(), isImportedHar = false) {
     super();
     this.#requestId = requestId;
     this.#backendRequestId = backendRequestId;
@@ -37916,6 +38075,7 @@ var NetworkRequest = class _NetworkRequest extends Common30.ObjectWrapper.Object
     this.#isAdRelated = false;
     this.#isLinkPreload = false;
     this.#console = console2;
+    this.#isImportedHar = isImportedHar;
   }
   static create(backendRequestId, url, documentURL, frameId, loaderId, initiator, hasUserGesture, console2) {
     return new _NetworkRequest(
@@ -37956,6 +38116,29 @@ var NetworkRequest = class _NetworkRequest extends Common30.ObjectWrapper.Object
       console2
     );
   }
+  /**
+   * Creates a network request representing an entry imported from a HAR file.
+   *
+   * Use this instead of {@link createWithoutBackendRequest} when importing HAR logs
+   * (or testing HAR-imported traffic) so that the request is marked as HAR-imported
+   * at construction time and its security origins ({@link requestURLSecurityOrigin}
+   * and {@link initiatorSecurityOrigin}) resolve to isolated `imported-har://`
+   * virtual origins rather than colliding with live web origins.
+   */
+  static createForImportedHar(requestId, url, documentURL, initiator, console2) {
+    return new _NetworkRequest(
+      requestId,
+      void 0,
+      url,
+      documentURL,
+      null,
+      null,
+      initiator,
+      void 0,
+      console2,
+      true
+    );
+  }
   identityCompare(other) {
     const thisId = this.requestId();
     const thatId = other.requestId();
@@ -37984,10 +38167,16 @@ var NetworkRequest = class _NetworkRequest extends Common30.ObjectWrapper.Object
    * (`imported-har://${authority}`) to ensure recorded network traffic never collides with
    * live web origins.
    *
+   * The result is cached, so repeated calls return the same instance until the URL changes.
+   * This keeps opaque origins (such as `data:` URLs) same-origin with themselves.
+   *
    * @see {@link initiatorSecurityOrigin} to obtain the origin of the document that initiated the request.
    */
   requestURLSecurityOrigin() {
-    return this.#resolveSecurityOrigin(this.#url);
+    if (!this.#requestURLSecurityOrigin) {
+      this.#requestURLSecurityOrigin = this.#resolveSecurityOrigin(this.#url);
+    }
+    return this.#requestURLSecurityOrigin;
   }
   /**
    * Returns the security origin of the document or context (`request.documentURL`) that initiated
@@ -38002,6 +38191,9 @@ var NetworkRequest = class _NetworkRequest extends Common30.ObjectWrapper.Object
    *
    * For imported HAR files, the origin is mapped to an isolated virtual domain
    * (`imported-har://${authority}`) matching the imported initiating document.
+   *
+   * The result is cached, so repeated calls return the same instance. This keeps opaque
+   * origins same-origin with themselves.
    *
    * @see {@link requestURLSecurityOrigin} to obtain the origin of the target resource URL being requested.
    */
@@ -38038,6 +38230,7 @@ var NetworkRequest = class _NetworkRequest extends Common30.ObjectWrapper.Object
     this.#parsedQueryParameters = void 0;
     this.#name = void 0;
     this.#path = void 0;
+    this.#requestURLSecurityOrigin = void 0;
   }
   get documentURL() {
     return this.#documentURL;
@@ -38624,9 +38817,6 @@ var NetworkRequest = class _NetworkRequest extends Common30.ObjectWrapper.Object
   isImportedHar() {
     return this.#isImportedHar;
   }
-  setIsImportedHar(isImportedHar) {
-    this.#isImportedHar = isImportedHar;
-  }
   setEarlyHintsHeaders(headers) {
     this.earlyHintsHeaders = headers;
   }
@@ -38847,9 +39037,11 @@ var NetworkRequest = class _NetworkRequest extends Common30.ObjectWrapper.Object
       if (TextUtils24.ContentData.ContentData.isError(contentData)) {
         return contentData;
       }
-      return TextUtils24.StreamingContentData.StreamingContentData.from(
+      const streamingContentData = TextUtils24.StreamingContentData.StreamingContentData.from(
         contentData
       );
+      this.#resolvedStreamingContentData = streamingContentData;
+      return streamingContentData;
     });
     return this.#streamingContentData;
   }
@@ -38861,6 +39053,15 @@ var NetworkRequest = class _NetworkRequest extends Common30.ObjectWrapper.Object
   }
   async searchInContent(query, caseSensitive, isRegex) {
     if (!this.#contentDataProvider) {
+      const cachedContentData = this.finished && !this.failed ? await this.#contentData ?? this.#resolvedStreamingContentData?.content() : void 0;
+      if (cachedContentData && !TextUtils24.ContentData.ContentData.isError(cachedContentData) && cachedContentData.isTextContent) {
+        return TextUtils24.TextUtils.performSearchInContentData(
+          cachedContentData,
+          query,
+          caseSensitive,
+          isRegex
+        );
+      }
       return await NetworkManager.searchInRequest(
         this,
         query,
@@ -39197,11 +39398,15 @@ var NetworkRequest = class _NetworkRequest extends Common30.ObjectWrapper.Object
     }
     this.endTime = timestamp;
     if (data) {
-      void this.#streamingContentData?.then((contentData) => {
-        if (!TextUtils24.StreamingContentData.isError(contentData)) {
-          contentData.addChunk(data);
-        }
-      });
+      if (this.#resolvedStreamingContentData) {
+        this.#resolvedStreamingContentData.addChunk(data);
+      } else {
+        void this.#streamingContentData?.then((contentData) => {
+          if (!TextUtils24.StreamingContentData.isError(contentData)) {
+            contentData.addChunk(data);
+          }
+        });
+      }
     }
   }
   waitForResponseReceived() {
@@ -42240,16 +42445,18 @@ var CPUThrottlingManager = class _CPUThrottlingManager extends Common37.ObjectWr
       void this.updateHostDefaultCPUPerformanceTier();
     }
   }
-  #isCPUPerformanceOverrideActive() {
-    return this.#manualCPUPerformanceOverride !== void 0 || this.#cpuThrottlingRate !== 1;
+  #activeCPUPerformanceOverride() {
+    if (this.#manualCPUPerformanceOverride === void 0 && this.#cpuThrottlingRate === 1) {
+      return void 0;
+    }
+    return this.effectiveCPUPerformanceTier();
   }
   #syncCPUPerformanceTier() {
-    const effectiveTier = this.effectiveCPUPerformanceTier();
-    const activeOverride = this.#isCPUPerformanceOverrideActive() ? effectiveTier : void 0;
+    const activeOverride = this.#activeCPUPerformanceOverride();
     for (const emulationModel of this.#targetManager.models(EmulationModel)) {
       void emulationModel.setCPUPerformanceOverride(activeOverride);
     }
-    this.dispatchEventToListeners("CpuPerformanceTierChanged" /* CPU_PERFORMANCE_TIER_CHANGED */, effectiveTier);
+    this.dispatchEventToListeners("CpuPerformanceTierChanged" /* CPU_PERFORMANCE_TIER_CHANGED */, this.effectiveCPUPerformanceTier());
   }
   setCPUThrottlingRate(rate) {
     if (rate === this.#cpuThrottlingRate) {
@@ -42314,7 +42521,7 @@ var CPUThrottlingManager = class _CPUThrottlingManager extends Common37.ObjectWr
     return result.value;
   }
   async updateHostDefaultCPUPerformanceTier() {
-    if (this.#isCPUPerformanceOverrideActive()) {
+    if (this.#activeCPUPerformanceOverride() !== void 0) {
       return;
     }
     const target = this.#targetManager.primaryPageTarget();
@@ -42344,8 +42551,9 @@ var CPUThrottlingManager = class _CPUThrottlingManager extends Common37.ObjectWr
     if (this.#hardwareConcurrency !== void 0) {
       void emulationModel.setHardwareConcurrency(this.#hardwareConcurrency);
     }
-    if (this.#isCPUPerformanceOverrideActive()) {
-      void emulationModel.setCPUPerformanceOverride(this.effectiveCPUPerformanceTier());
+    const activeOverride = this.#activeCPUPerformanceOverride();
+    if (activeOverride !== void 0) {
+      void emulationModel.setCPUPerformanceOverride(activeOverride);
     }
     if (this.#pendingMainTargetPromise) {
       const existingCallback = this.#pendingMainTargetPromise;

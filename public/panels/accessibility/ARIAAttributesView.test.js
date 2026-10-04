@@ -5,14 +5,13 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
 import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget, describeWithEnvironment, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as Accessibility from './accessibility.js';
 describeWithEnvironment('ARIAAttributesView', () => {
     let node;
     beforeEach(() => {
-        stubNoopSettings();
         const connection = new MockCDPConnection();
         connection.setSuccessHandler('Debugger.enable', () => ({}));
         connection.setSuccessHandler('Storage.getStorageKey', () => ({}));
@@ -23,7 +22,7 @@ describeWithEnvironment('ARIAAttributesView', () => {
     });
     it('can modify an ARIA attribute value', async () => {
         const viewFunction = createViewFunctionStub(Accessibility.ARIAAttributesView.ARIAAttributesPane);
-        const view = new Accessibility.ARIAAttributesView.ARIAAttributesPane(viewFunction);
+        const view = new Accessibility.ARIAAttributesView.ARIAAttributesPane(undefined, viewFunction);
         view.setNode(node);
         const input = await viewFunction.nextInput;
         const ariaChecked = input.attributes.find(attr => attr.name === 'aria-checked');
@@ -34,7 +33,7 @@ describeWithEnvironment('ARIAAttributesView', () => {
     });
     it('can modify an ARIA role', async () => {
         const viewFunction = createViewFunctionStub(Accessibility.ARIAAttributesView.ARIAAttributesPane);
-        const view = new Accessibility.ARIAAttributesView.ARIAAttributesPane(viewFunction);
+        const view = new Accessibility.ARIAAttributesView.ARIAAttributesPane(undefined, viewFunction);
         view.setNode(node);
         const input = await viewFunction.nextInput;
         const role = input.attributes.find(attr => attr.name === 'role');
@@ -45,7 +44,7 @@ describeWithEnvironment('ARIAAttributesView', () => {
     });
     it('autocompletes attributes', async () => {
         const viewFunction = createViewFunctionStub(Accessibility.ARIAAttributesView.ARIAAttributesPane);
-        const view = new Accessibility.ARIAAttributesView.ARIAAttributesPane(viewFunction);
+        const view = new Accessibility.ARIAAttributesView.ARIAAttributesPane(undefined, viewFunction);
         view.setNode(node);
         const input = await viewFunction.nextInput;
         const role = input.attributes.find(attr => attr.name === 'role');
@@ -118,7 +117,7 @@ describeWithEnvironment('ARIAAttributesView', () => {
     it('passes backendNodeId and targetId from node to view input', async () => {
         sinon.stub(node, 'backendNodeId').returns(55);
         const viewFunction = createViewFunctionStub(Accessibility.ARIAAttributesView.ARIAAttributesPane);
-        const view = new Accessibility.ARIAAttributesView.ARIAAttributesPane(viewFunction);
+        const view = new Accessibility.ARIAAttributesView.ARIAAttributesPane(undefined, viewFunction);
         view.setNode(node);
         const input = await viewFunction.nextInput;
         assert.strictEqual(input.backendNodeId, 55);

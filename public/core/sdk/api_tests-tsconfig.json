@@ -61,7 +61,13 @@
       "path": "bundle-tsconfig.ref.json"
     },
     {
+      "path": "../../testing/testing-tsconfig.ref.json"
+    },
+    {
       "path": "../common/bundle-tsconfig.ref.json"
+    },
+    {
+      "path": "../text_utils/bundle-tsconfig.ref.json"
     },
     {
       "path": "../../../test/api/test_interface_types-tsconfig.ref.json"

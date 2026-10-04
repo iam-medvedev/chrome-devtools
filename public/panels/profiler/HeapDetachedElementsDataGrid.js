@@ -46,7 +46,6 @@ const DEFAULT_VIEW = (input, output, target) => {
         hideGutter: true,
         rootDOMNode: parsed.node,
         showSelectionOnKeyboardFocus: true,
-        preventTabOrder: true,
         deindentSingleNode: true,
     })}
               ></devtools-widget>

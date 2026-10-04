@@ -1662,6 +1662,10 @@ var recordingView_css_default = `/*
     gap: 3px;
   }
 
+  .show-code {
+    margin-inline-start: auto;
+  }
+
   .code-format-label {
     display: flex;
     align-items: center;
@@ -1674,10 +1678,6 @@ var recordingView_css_default = `/*
   .code-format-label > select {
     height: var(--sys-size-11);
     min-width: 0;
-  }
-
-  .sections .section-toolbar {
-    justify-content: flex-end;
   }
 
   devtools-split-view {
@@ -2809,6 +2809,7 @@ var DEFAULT_VIEW7 = (input, _output, target) => {
         aria-labelledby="type"
         .disabled=${!editable || input.disabled}
         .options=${Object.values(Models5.Schema.StepType)}
+        .hideExactMatch=${true}
         .placeholder=${defaultValuesByAttribute.type}
         .value=${live(input.state.type)}
         @blur=${input.handleTypeInputBlur}
@@ -4629,6 +4630,14 @@ var UIStrings8 = {
    */
   hideCode: "Hide code",
   /**
+   * @description Heading for the list of steps in a recording.
+   */
+  steps: "Steps",
+  /**
+   * @description Heading for the generated code of a recording.
+   */
+  code: "Code",
+  /**
    * @description Button title that adds an assertion to the step editor.
    */
   addAssertion: "Add assertion",
@@ -4819,12 +4828,14 @@ function renderTimelineArea(input, output) {
           sidebar-initial-size="300"
           sidebar-visibility=${input.showCodeView ? "" : "hidden"}
         >
-          <div slot="main">
+          <div slot="main" role="region" aria-labelledby="recording-steps-heading">
             ${renderSections(input)}
           </div>
-          <div slot="sidebar" jslog=${VisualLogging8.pane("source-code").track({ resize: true })}>
+          <div id="recording-code-pane" slot="sidebar" role="region" aria-labelledby="recording-code-heading"
+               jslog=${VisualLogging8.pane("source-code").track({ resize: true })}>
             ${input.showCodeView ? html10`
             <div class="section-toolbar" jslog=${VisualLogging8.toolbar()}>
+              <h2 id="recording-code-heading" class="screen-reader-only">${i18nString8(UIStrings8.code)}</h2>
               <label class="code-format-label">
                 ${i18nString8(UIStrings8.codeFormat)}
                 <select
@@ -4852,19 +4863,6 @@ function renderTimelineArea(input, output) {
   })}
                 </select>
               </label>
-              <devtools-button
-                title=${Models7.Tooltip.getTooltipForActions(
-    i18nString8(UIStrings8.hideCode),
-    Actions4.RecorderActions.TOGGLE_CODE_VIEW
-  )}
-                .data=${{
-    variant: Buttons7.Button.Variant.ICON,
-    size: Buttons7.Button.Size.SMALL,
-    iconName: "cross"
-  }}
-                @click=${input.showCodeToggle}
-                jslog=${VisualLogging8.close().track({ click: true })}
-              ></devtools-button>
             </div>
             ${renderTextEditor(input, output)}` : Lit10.nothing}
           </div>
@@ -4933,25 +4931,29 @@ function renderReplayOrAbortButton(input) {
   })}`;
 }
 function renderSections(input) {
+  const codeToggleTitle = input.showCodeView ? i18nString8(UIStrings8.hideCode) : i18nString8(UIStrings8.showCode);
   return html10`
       <div class="sections">
-      ${!input.showCodeView ? html10`<div class="section-toolbar">
-        <devtools-button
-          @click=${input.showCodeToggle}
-          class="show-code"
-          .data=${{
+        <div class="section-toolbar">
+          <h2 id="recording-steps-heading">${i18nString8(UIStrings8.steps)}</h2>
+          <devtools-button
+            @click=${input.showCodeToggle}
+            class="show-code"
+            aria-controls="recording-code-pane"
+            aria-expanded=${input.showCodeView}
+            .data=${{
     variant: Buttons7.Button.Variant.OUTLINED,
     title: Models7.Tooltip.getTooltipForActions(
-      i18nString8(UIStrings8.showCode),
+      codeToggleTitle,
       Actions4.RecorderActions.TOGGLE_CODE_VIEW
     )
   }}
-          jslog=${VisualLogging8.toggleSubpane(Actions4.RecorderActions.TOGGLE_CODE_VIEW).track({ click: true })}
-        >
-          ${i18nString8(UIStrings8.showCode)}
-        </devtools-button>
-      </div>` : ""}
-      ${input.sections.map(
+            jslog=${VisualLogging8.toggleSubpane(Actions4.RecorderActions.TOGGLE_CODE_VIEW).track({ click: true })}
+          >
+            ${codeToggleTitle}
+          </devtools-button>
+        </div>
+        ${input.sections.map(
     (section5, i) => html10`
             <div class="section">
               <div class="screenshot-wrapper">
@@ -5034,7 +5036,7 @@ function renderSections(input) {
                 </div>
               </div>
             </div>
-      `
+        `
   )}
       </div>
     `;
@@ -5277,7 +5279,7 @@ var RecordingView = class extends UI10.Widget.Widget {
         onTitleInputKeyDown: this.#onTitleInputKeyDown.bind(this),
         onToggleReplaySettings: this.#onToggleReplaySettings.bind(this),
         onWrapperClick: this.#onWrapperClick.bind(this),
-        showCodeToggle: this.showCodeToggle.bind(this)
+        showCodeToggle: this.showCodeToggle
       },
       this.#viewOutput,
       this.contentElement
@@ -5471,10 +5473,11 @@ var RecordingView = class extends UI10.Widget.Widget {
     this.#showCodeView = !this.#showCodeView;
     if (this.#showCodeView) {
       UI10.ARIAUtils.LiveAnnouncer.alert(i18nString8(UIStrings8.codeSidebarOpened));
+      void this.#convertToCode();
     } else {
       UI10.ARIAUtils.LiveAnnouncer.alert(i18nString8(UIStrings8.codeSidebarClosed));
+      this.requestUpdate();
     }
-    void this.#convertToCode();
   };
   #convertToCode = async () => {
     if (!this.recording) {

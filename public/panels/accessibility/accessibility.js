@@ -419,17 +419,30 @@ span.ax-internal-role {
 
 // ../../front_end/panels/accessibility/AccessibilitySubPane.ts
 var AccessibilitySubPane = class extends UI.View.SimpleView {
-  axNode;
-  nodeInternal;
-  constructor(options) {
-    super(options);
+  axNodeInternal = null;
+  nodeInternal = null;
+  constructor(element, options) {
+    if (element) {
+      super(element, options);
+    } else {
+      super(options);
+    }
     this.registerRequiredCSS(accessibilityProperties_css_default);
-    this.axNode = null;
   }
-  setAXNode(_axNode) {
+  get axNode() {
+    return this.axNodeInternal;
   }
-  node() {
-    return this.nodeInternal || null;
+  set axNode(axNode) {
+    this.setAXNode(axNode);
+  }
+  setAXNode(axNode) {
+    this.axNodeInternal = axNode;
+  }
+  get node() {
+    return this.nodeInternal;
+  }
+  set node(node) {
+    this.setNode(node);
   }
   setNode(node) {
     this.nodeInternal = node;
@@ -1093,8 +1106,8 @@ var AccessibilityAnnouncementRecordingView = class extends AccessibilitySubPane 
   #textFilter = "";
   #regexFilter = null;
   #view;
-  constructor(view = DEFAULT_VIEW) {
-    super({
+  constructor(element, view = DEFAULT_VIEW) {
+    super(element, {
       title: i18nString(UIStrings.ariaLiveRecording),
       viewId: "aria-live-recording"
     });
@@ -2502,6 +2515,11 @@ var Emulation;
     SetDeviceMetricsOverrideRequestViewportMeta2["Enable"] = "enable";
     SetDeviceMetricsOverrideRequestViewportMeta2["Default"] = "default";
   })(SetDeviceMetricsOverrideRequestViewportMeta = Emulation2.SetDeviceMetricsOverrideRequestViewportMeta || (Emulation2.SetDeviceMetricsOverrideRequestViewportMeta = {}));
+  let SetDeviceMetricsOverrideRequestTextLayoutMode;
+  ((SetDeviceMetricsOverrideRequestTextLayoutMode2) => {
+    SetDeviceMetricsOverrideRequestTextLayoutMode2["Mobile"] = "mobile";
+    SetDeviceMetricsOverrideRequestTextLayoutMode2["Default"] = "default";
+  })(SetDeviceMetricsOverrideRequestTextLayoutMode = Emulation2.SetDeviceMetricsOverrideRequestTextLayoutMode || (Emulation2.SetDeviceMetricsOverrideRequestTextLayoutMode = {}));
   let SetEmitTouchEventsForMouseRequestConfiguration;
   ((SetEmitTouchEventsForMouseRequestConfiguration2) => {
     SetEmitTouchEventsForMouseRequestConfiguration2["Mobile"] = "mobile";
@@ -3355,6 +3373,7 @@ var Page;
     PermissionsPolicyFeature2["PrivateStateTokenRedemption"] = "private-state-token-redemption";
     PermissionsPolicyFeature2["PublickeyCredentialsCreate"] = "publickey-credentials-create";
     PermissionsPolicyFeature2["PublickeyCredentialsGet"] = "publickey-credentials-get";
+    PermissionsPolicyFeature2["PublickeyCredentialsRemoteClientDataJson"] = "publickey-credentials-remote-client-data-json";
     PermissionsPolicyFeature2["Rewriter"] = "rewriter";
     PermissionsPolicyFeature2["ScreenWakeLock"] = "screen-wake-lock";
     PermissionsPolicyFeature2["Serial"] = "serial";
@@ -4161,6 +4180,11 @@ var Debugger;
     ScopeType2["Module"] = "module";
     ScopeType2["WasmExpressionStack"] = "wasm-expression-stack";
   })(ScopeType = Debugger2.ScopeType || (Debugger2.ScopeType = {}));
+  let ScopeEmptyReason;
+  ((ScopeEmptyReason2) => {
+    ScopeEmptyReason2["NoVariables"] = "no-variables";
+    ScopeEmptyReason2["AllUnavailable"] = "all-unavailable";
+  })(ScopeEmptyReason = Debugger2.ScopeEmptyReason || (Debugger2.ScopeEmptyReason = {}));
   let BreakLocationType;
   ((BreakLocationType2) => {
     BreakLocationType2["DebuggerStatement"] = "debuggerStatement";
@@ -5181,19 +5205,17 @@ var UIStrings4 = {
 var str_4 = i18n7.i18n.registerUIStrings("panels/accessibility/AccessibilityNodeView.ts", UIStrings4);
 var i18nString3 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
 var AXNodeSubPane = class extends AccessibilitySubPane {
-  axNode;
   noNodeInfo;
   ignoredInfo;
   treeOutline;
   ignoredReasonsTree;
-  constructor() {
-    super({
+  constructor(element) {
+    super(element, {
       title: i18nString3(UIStrings4.computedProperties),
       viewId: "computed-properties",
       jslog: `${VisualLogging2.section("computed-properties")}`
     });
     this.registerRequiredCSS(accessibilityNode_css_default);
-    this.axNode = null;
     this.contentElement.classList.add("ax-subpane");
     this.noNodeInfo = this.createInfo(i18nString3(UIStrings4.noAccessibilityNode));
     this.ignoredInfo = this.createInfo(i18nString3(UIStrings4.accessibilityNodeNotExposed), "ax-ignored-info", "hidden");
@@ -5206,7 +5228,7 @@ var AXNodeSubPane = class extends AccessibilitySubPane {
     if (this.axNode === axNode) {
       return;
     }
-    this.axNode = axNode;
+    super.setAXNode(axNode);
     const treeOutline = this.treeOutline;
     treeOutline.removeChildren();
     const ignoredReasons = this.ignoredReasonsTree;
@@ -5275,7 +5297,7 @@ var AXNodeSubPane = class extends AccessibilitySubPane {
   }
   setNode(node) {
     super.setNode(node);
-    this.axNode = null;
+    this.setAXNode(null);
   }
 };
 var AXNodePropertyTreeElement = class _AXNodePropertyTreeElement extends UI4.TreeOutline.TreeElement {
@@ -5689,7 +5711,8 @@ var AXNodeIgnoredReasonTreeElement = class _AXNodeIgnoredReasonTreeElement exten
 // ../../front_end/panels/accessibility/AccessibilitySidebarView.ts
 var AccessibilitySidebarView_exports = {};
 __export(AccessibilitySidebarView_exports, {
-  AccessibilitySidebarView: () => AccessibilitySidebarView
+  AccessibilitySidebarView: () => AccessibilitySidebarView,
+  DEFAULT_VIEW: () => DEFAULT_VIEW5
 });
 import "../../ui/components/switch/switch.js";
 import * as i18n13 from "../../core/i18n/i18n.js";
@@ -5705,9 +5728,11 @@ var accessibilitySidebarView_css_default = `/*
  * found in the LICENSE file.
  */
 
-.accessibility-toggle-container {
-  padding: var(--sys-size-6) 18px;
-  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
+@scope to (devtools-widget > *) {
+  .accessibility-toggle-container {
+    padding: var(--sys-size-6) 18px;
+    border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
+  }
 }
 
 /*# sourceURL=${import.meta.resolve("./accessibilitySidebarView.css")} */`;
@@ -8510,8 +8535,8 @@ var DEFAULT_VIEW3 = (input, output, target) => {
 var ARIAAttributesPane = class extends AccessibilitySubPane {
   #view;
   #attributeBeingEdited = null;
-  constructor(view = DEFAULT_VIEW3) {
-    super({
+  constructor(element, view = DEFAULT_VIEW3) {
+    super(element, {
       title: i18nString4(UIStrings5.ariaAttributes),
       viewId: "aria-attributes",
       useShadowDom: "pure"
@@ -8534,7 +8559,7 @@ var ARIAAttributesPane = class extends AccessibilitySubPane {
       this.requestUpdate();
     };
     const onCommitEditing = (attribute, result) => {
-      const node = this.node();
+      const node = this.node;
       if (node && attribute.value !== result) {
         node.setAttributeValue(attribute.name, result);
       }
@@ -8543,7 +8568,7 @@ var ARIAAttributesPane = class extends AccessibilitySubPane {
       }
       this.requestUpdate();
     };
-    const attributes = this.node()?.attributes()?.filter((attribute) => this.isARIAAttribute(attribute)) ?? [];
+    const attributes = this.node?.attributes()?.filter((attribute) => this.isARIAAttribute(attribute)) ?? [];
     const propertyCompletions = new Map(attributes.map((attribute) => [attribute, ariaMetadata().valuesForProperty(attribute.name)]));
     const input = {
       attributeBeingEdited: this.#attributeBeingEdited,
@@ -8552,8 +8577,8 @@ var ARIAAttributesPane = class extends AccessibilitySubPane {
       onCommitEditing,
       onCancelEditing,
       propertyCompletions,
-      backendNodeId: this.node()?.backendNodeId(),
-      targetId: this.node()?.domModel().target().id()
+      backendNodeId: this.node?.backendNodeId(),
+      targetId: this.node?.domModel().target().id()
     };
     this.#view(input, {}, this.contentElement);
   }
@@ -8622,19 +8647,22 @@ var SourceOrderPane = class extends AccessibilitySubPane {
   #childCount = 0;
   #showSourceOrder = void 0;
   #view;
-  constructor(view = DEFAULT_VIEW4) {
-    super({
+  constructor(element, view = DEFAULT_VIEW4) {
+    super(element, {
       title: i18nString5(UIStrings6.sourceOrderViewer),
       viewId: "source-order-viewer",
       useShadowDom: "pure"
     });
     this.#view = view;
   }
-  async setNodeAsync(node) {
+  setNode(node) {
     if (this.nodeInternal && this.#showSourceOrder) {
       this.nodeInternal.domModel().overlayModel().hideSourceOrderInOverlay();
     }
     super.setNode(node);
+    void this.#updateNodeAsync();
+  }
+  async #updateNodeAsync() {
     this.#childCount = this.nodeInternal?.childNodeCount() ?? 0;
     if (!this.nodeInternal || !this.#childCount) {
       this.#showSourceOrder = void 0;
@@ -8678,7 +8706,8 @@ var SourceOrderPane = class extends AccessibilitySubPane {
 };
 
 // ../../front_end/panels/accessibility/AccessibilitySidebarView.ts
-var { html: html5, render: render6 } = Lit4;
+var { html: html5, nothing: nothing4, render: render6 } = Lit4;
+var { widget: widget3 } = UI6.Widget;
 var UIStrings7 = {
   /**
    * @description Text for a toggle to turn on the accessibility tree view.
@@ -8687,49 +8716,60 @@ var UIStrings7 = {
 };
 var str_7 = i18n13.i18n.registerUIStrings("panels/accessibility/AccessibilitySidebarView.ts", UIStrings7);
 var i18nString6 = i18n13.i18n.getLocalizedString.bind(void 0, str_7);
+var DEFAULT_VIEW5 = (input, _output, target) => {
+  render6(
+    html5`
+      <style>${accessibilitySidebarView_css_default}</style>
+      <div class="accessibility-toggle-container">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <devtools-switch
+            role="switch"
+            aria-label=${i18nString6(UIStrings7.showAccessibilityTree)}
+            .checked=${input.isToggled}
+            .label=${i18nString6(UIStrings7.showAccessibilityTree)}
+            .jslogContext=${"elements.toggle-a11y-tree"}
+            @switchchange=${input.onToggleChange}
+          ></devtools-switch>
+          <span style="color: var(--sys-color-on-surface);">${i18nString6(UIStrings7.showAccessibilityTree)}</span>
+        </div>
+      </div>
+      <devtools-stack-pane .isVisible=${input.isToggled}>
+        ${input.showAriaSubPane ? html5`
+          <devtools-widget
+            ${widget3(ARIAAttributesPane, { node: input.node })}></devtools-widget>` : nothing4}
+        <devtools-widget
+          ${widget3(AXNodeSubPane, { node: input.node, axNode: input.axNode })}></devtools-widget>
+        <devtools-widget
+          ${widget3(SourceOrderPane, { node: input.node })}></devtools-widget>
+        ${input.showAnnouncementsRecordingSubPane ? html5`<devtools-widget ${widget3(AccessibilityAnnouncementRecordingView)}></devtools-widget>` : nothing4}
+      </devtools-stack-pane>
+    `,
+    target,
+    { container: { classes: ["accessibility-sidebar-view"] } }
+  );
+};
 var accessibilitySidebarViewInstance;
 var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI6.Widget.VBox {
+  #view;
   #node;
   #axNode;
+  #showAriaSubPane = true;
   skipNextPullNode;
-  sidebarPaneStack;
-  ariaSubPane;
-  axNodeSubPane;
-  sourceOrderSubPane;
-  announcementsRecordingSubPane;
-  toggleContainer;
   toggleAction;
-  constructor() {
+  constructor(view = DEFAULT_VIEW5) {
     super();
-    this.registerRequiredCSS(accessibilitySidebarView_css_default);
-    this.element.classList.add("accessibility-sidebar-view");
+    this.#view = view;
     this.#node = null;
     this.#axNode = null;
     this.skipNextPullNode = false;
-    this.sidebarPaneStack = UI6.ViewManager.ViewManager.instance().createStackLocation();
-    this.toggleContainer = document.createElement("div");
-    this.toggleContainer.classList.add("accessibility-toggle-container");
-    this.element.appendChild(this.toggleContainer);
     this.toggleAction = UI6.ActionRegistry.ActionRegistry.instance().getAction("elements.toggle-a11y-tree");
-    this.toggleAction.addEventListener(UI6.ActionRegistration.Events.TOGGLED, this.updateToggle, this);
-    this.updateToggle();
-    this.ariaSubPane = new ARIAAttributesPane();
-    void this.sidebarPaneStack.showView(this.ariaSubPane);
-    this.axNodeSubPane = new AXNodeSubPane();
-    void this.sidebarPaneStack.showView(this.axNodeSubPane);
-    this.sourceOrderSubPane = new SourceOrderPane();
-    void this.sidebarPaneStack.showView(this.sourceOrderSubPane);
-    if (Boolean(Root.Runtime.hostConfig.devToolsAriaLiveRecording?.enabled)) {
-      this.announcementsRecordingSubPane = new AccessibilityAnnouncementRecordingView();
-      void this.sidebarPaneStack.showView(this.announcementsRecordingSubPane);
-    }
-    this.sidebarPaneStack.widget().show(this.element);
+    this.toggleAction.addEventListener(UI6.ActionRegistration.Events.TOGGLED, this.requestUpdate, this);
     UI6.Context.Context.instance().addFlavorChangeListener(SDK4.DOMModel.DOMNode, this.pullNode, this);
     this.pullNode();
   }
   static instance(opts) {
     if (!accessibilitySidebarViewInstance || opts?.forceNew) {
-      accessibilitySidebarViewInstance = new _AccessibilitySidebarView();
+      accessibilitySidebarViewInstance = new _AccessibilitySidebarView(opts?.view);
     }
     return accessibilitySidebarViewInstance;
   }
@@ -8748,19 +8788,28 @@ var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI6.Widge
     if (!axNode) {
       return;
     }
-    this.#axNode = axNode;
-    if (axNode.isDOMNode()) {
-      void this.sidebarPaneStack.showView(this.ariaSubPane, this.axNodeSubPane);
-    } else {
-      this.sidebarPaneStack.removeView(this.ariaSubPane);
+    if (this.#axNode !== axNode) {
+      this.#axNode = axNode;
+      this.#showAriaSubPane = axNode.isDOMNode();
+      this.requestUpdate();
     }
-    this.axNodeSubPane.setAXNode(axNode);
   }
-  async performUpdate() {
-    const node = this.node();
-    this.axNodeSubPane.setNode(node);
-    this.ariaSubPane.setNode(node);
-    void this.sourceOrderSubPane.setNodeAsync(node);
+  performUpdate() {
+    void this.#updateSubPanes(this.node());
+    this.#view(
+      {
+        isToggled: this.toggleAction.toggled(),
+        onToggleChange: this.onToggleChange,
+        node: this.node(),
+        axNode: this.#axNode,
+        showAriaSubPane: this.#showAriaSubPane,
+        showAnnouncementsRecordingSubPane: Boolean(Root.Runtime.hostConfig.devToolsAriaLiveRecording?.enabled)
+      },
+      void 0,
+      this.contentElement
+    );
+  }
+  async #updateSubPanes(node) {
     if (!node) {
       return;
     }
@@ -8773,7 +8822,7 @@ var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI6.Widge
   }
   wasShown() {
     super.wasShown();
-    void this.performUpdate();
+    this.requestUpdate();
     SDK4.TargetManager.TargetManager.instance().addModelListener(
       SDK4.DOMModel.DOMModel,
       SDK4.DOMModel.Events.AttrModified,
@@ -8837,30 +8886,9 @@ var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI6.Widge
     }
     this.setNode(UI6.Context.Context.instance().flavor(SDK4.DOMModel.DOMNode));
   }
-  updateToggle() {
-    const isToggled = this.toggleAction.toggled();
-    this.sidebarPaneStack.notifyVisibilityChanged(isToggled);
-    render6(
-      html5`
-      <div style="display: flex; align-items: center; gap: 8px;">
-        <devtools-switch
-          role="switch"
-          aria-label=${i18nString6(UIStrings7.showAccessibilityTree)}
-          .checked=${isToggled}
-          .label=${i18nString6(UIStrings7.showAccessibilityTree)}
-          .jslogContext=${"elements.toggle-a11y-tree"}
-          @switchchange=${this.onToggleChange}
-        ></devtools-switch>
-        <span style="color: var(--sys-color-on-surface);">${i18nString6(UIStrings7.showAccessibilityTree)}</span>
-      </div>
-    `,
-      this.toggleContainer,
-      { host: this }
-    );
-  }
-  onToggleChange(_event) {
+  onToggleChange = (_event) => {
     void this.toggleAction.execute();
-  }
+  };
   onNodeChange(event) {
     if (!this.node()) {
       return;
